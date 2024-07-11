@@ -69,14 +69,18 @@ implicit none
       incoming_lat_concentration = 0._dp
       call realloc(outgoing_lat_concentration, [num_layers, numconst, numlatsg])
       call realloc(lateral_volume_per_layer,[num_layers,numlatsg])
-
+      call realloc(lateral_center_position_per_layer,[num_layers,numlatsg])
+      
    end subroutine initialize_lateraldata
 
    !> deallocate the arrays for laterals on 3d/BMI
    module subroutine dealloc_lateraldata()
    
       if (allocated(incoming_lat_concentration)) then
-         deallocate(incoming_lat_concentration, outgoing_lat_concentration, lateral_volume_per_layer)
+         deallocate(incoming_lat_concentration)
+         deallocate(outgoing_lat_concentration)
+         deallocate(lateral_volume_per_layer)
+         deallocate(lateral_center_position_per_layer)
       end if
    
 
@@ -243,6 +247,70 @@ implicit none
       
    end subroutine get_lateral_volume_per_layer
 
+   !> Calculate the average cell center positions for each layer for all laterals.
+   module subroutine get_lateral_layer_positions(lateral_center_position_per_layer, cell_center_position)
+   
+      use m_flow, only: cell_center_position, kmx, kmxn
+      
+      real(kind=dp), dimension(:,:), intent(out) :: lateral_center_position_per_layer  !< Lateral center position of each layer, 
+                                                                                       !< dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg).
+      real(kind=dp), dimension(:),   intent(in)  :: cell_center_position               !< Vertical cell center positions.
+      
+      integer, allocatable, target, dimension(:) :: active_cell_count    !< Help array for counting the active cells.
+      integer :: i_node, i_lateral, i_layer, i_nnlat, index_bottom_layer, index_top_layer, index_active_bottom_layer
+      
+      if (kmx == 0) then
+         return
+      end if
+      allocate(active_cell_count(kmx))
+      
+      lateral_center_position_per_layer = 0.0_dp
+      do i_lateral = 1, numlatsg
+
+         ! Totalize the cell center positions and count the number of active cells per layer.
+         active_cell_count = 0
+         do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
+            i_node = nnlat(i_nnlat)
+            call getkbotktop(i_node, index_bottom_layer, index_top_layer)
+            index_active_bottom_layer = kmx - kmxn(i_node) + 1
+
+            call accumulate_active_cell_positions(lateral_center_position_per_layer(index_active_bottom_layer :, i_lateral), &
+                                               cell_center_position(index_bottom_layer : index_top_layer), &
+                                               active_cell_count(index_active_bottom_layer : ))
+         end do
+         
+         ! Use the totalized center positions to calculate the average center positions.
+         do i_layer = 1, kmx
+            if (active_cell_count(i_layer) > 0) then
+               lateral_center_position_per_layer(i_layer, i_lateral) = &
+                              lateral_center_position_per_layer(i_layer, i_lateral)/active_cell_count(i_layer)
+            else
+               lateral_center_position_per_layer(i_layer, i_lateral) = huge(1.0_dp)
+            end if
+         end do
+      
+      end do
+      deallocate(active_cell_count)
+      
+   end subroutine get_lateral_layer_positions
+
+   !> Add the cell center positions of 1 node to the lateral_center_position_per_layer and update the active_cell_count.
+   subroutine accumulate_active_cell_positions(lateral_center_position_per_layer, cell_center_position, active_cell_count)
+      real(kind=dp), dimension(:), intent(out)   :: lateral_center_position_per_layer  !< Cumulative cell center positions for 1 lateral.
+      real(kind=dp), dimension(:), intent(in)    :: cell_center_position               !< Cell center positions per layer for the current cell.
+      integer,       dimension(:), intent(inout) :: active_cell_count                  !< Number of active cells per layer.
+
+      integer :: i
+
+      do i = 1, size(cell_center_position)
+         active_cell_count(i) = active_cell_count(i) + 1
+         lateral_center_position_per_layer(i) = lateral_center_position_per_layer(i) + &
+                                                cell_center_position(i)
+      end do
+
+   end subroutine accumulate_active_cell_positions
+            
+
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
    !> In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
    !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
@@ -273,6 +341,7 @@ implicit none
 
       integer :: i_lateral, i_layer, i_nnlat, i_node, i_flownode
       integer :: i_node_bottom_layer, i_node_top_layer, i_active_bottom_layer
+
 
       lateral_discharge_per_layer_per_cell(:,:) = 0.0_dp
 

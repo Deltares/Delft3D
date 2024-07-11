@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <testCase name="e02_f300_c01_dflowfm3d_dwaq-grevelingen-j19_6-w4" ref="dimr_trunk_4">
             <path version="2024-01-11T12:00:00">e02_dflowfm/f300_rws_waq_models/c01_dflowfm3d_dwaq-grevelingen-j19_6-w4</path>
              <checks>

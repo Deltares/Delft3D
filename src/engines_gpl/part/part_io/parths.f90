@@ -44,12 +44,12 @@ use typos
 implicit none            ! force explicit typing
 !
 contains
-      subroutine parths(lun1     , lun2     , title    , subst    , mmax     ,  &
-                        lgrid2   , nmax     , volume   , area     , npart    ,  &
+      subroutine parths(lun1     , lun2     , title    , subst    , num_columns     ,  &
+                        lgrid2   , num_rows     , volume   , area     , npart    ,  &
                         mpart    , xpart    , ypart    , wpart    , nopart   ,  &
                         itime    , idelt    , xa       , npwndw   , lgrid    ,  &
                         ya       , xb       , yb       , pg       , pblay    ,  &
-                        modtyp   , nolay    , nosubs   , conc     , chismp   ,  &
+                        modtyp   , num_layers    , nosubs   , conc     , chismp   ,  &
                         chispl   , nosta    , nmstat   , xstat    , ystat    ,  &
                         nstat    , mstat    , nplsta   , mplsta   , ihstrt   ,  &
                         ihstop   , ihstep   , ihplot   , finam    , kpart    ,  &
@@ -82,7 +82,7 @@ contains
 !
 !     name    kind     length     funct.  description
 !     ====    ====     ======     ======  ===========
-!     amap    real  nolay*nosubs* in/out  plot grid to be dumped
+!     amap    real  num_layers*nosubs* in/out  plot grid to be dumped
 !                    nmap*mmap
 !     area    real      mnmaxk    input   surface areas of the lgrid2 cells
 !     angle   real        *       input   angles in the computational grid
@@ -98,8 +98,8 @@ contains
 !     ihstop  integer     1       input   stop time history file
 !     itime   integer     1       input   simulation time
 !     kpart   integer   nopart    input   k-values of particles
-!     lgrid   integer  nmax*mmax  input   active grid numbers
-!     lgrid2  integer  nmax*mmax  input   model grid layout (total)
+!     lgrid   integer  num_rows*num_columns  input   active grid numbers
+!     lgrid2  integer  num_rows*num_columns  input   model grid layout (total)
 !     lun1    integer     1       input   unit number 1 (history)
 !     lun2    integer     1       input   unit number 2 (logging)
 !     use_settling  logical     1       input   if .true. then settling substances
@@ -115,8 +115,8 @@ contains
 !     mpart   integer   nopart    input   m-values of particles
 !     mstick  integer   nosubs    input   sticking material if mstick > 0
 !     nmap    integer     1       input   dimension of amap
-!     nmax    integer     1       input   dimension of lgrid2
-!     nolay   integer     1       input   actual number of layers
+!     num_rows    integer     1       input   dimension of lgrid2
+!     num_layers   integer     1       input   actual number of layers
 !     nopart  integer     1       input   nr of particles
 !     nosubc  integer     1       input   leading dimension conc-array
 !     nosubs  integer     1       input   actual number of substances
@@ -148,7 +148,7 @@ contains
 !     ix      integer     1       local   grid pointer for x dir.
 !     iy      integer     1       local   grid pointer for y dir.
 !     noerr   integer     1       local   help var. for no. of errors
-!     nosubt  integer     1       local   nosubs * nolay
+!     nosubt  integer     1       local   nosubs * num_layers
 !     thickn  real        2       local   ptlay and pblay
 !     windw1  real        1       local   help var for window (speed)
 !     windw3  real        1       local   help var for window (speed)
@@ -210,9 +210,9 @@ contains
 !
       integer(int_wp ) :: i1        ,i2        ,idelt     ,ierror    ,ihstep    ,ihstop
       integer(int_wp ) :: ipos      ,iseg      ,ist2      ,istat     ,isub
-      integer(int_wp ) :: jsub      ,lun1      ,lun2      ,mmap      ,mmax      ,mmloc
+      integer(int_wp ) :: jsub      ,lun1      ,lun2      ,mmap      ,num_columns      ,mmloc
       integer(int_wp ) :: mnmax2    ,noseglp   ,modtyp    ,nfract    ,ihstrt    ,ilay
-      integer(int_wp ) :: nmap      ,nmax      ,nmloc     ,noerr     ,nolay     ,nopart
+      integer(int_wp ) :: nmap      ,num_rows      ,nmloc     ,noerr     ,num_layers     ,nopart
       integer(int_wp ) :: nosubs    ,nosubt    ,npwndw    ,itime     ,ix        ,iy      ,nosta
       real   (sp) :: depthl    ,fvolum    ,pblay     ,surf      ,windw1
       real   (sp) :: windw3    ,xmloc     ,xnloc     ,xpf
@@ -259,7 +259,7 @@ contains
           ypf       = (window(4) - windw3) / nmap
           thickn(1) = 1.0 - pblay
           thickn(2) = pblay
-          nosubt    = (nosubs + 1) * nolay
+          nosubt    = (nosubs + 1) * num_layers
           write ( lun2, * ) ' Writing to new history file:', finam(1:len_trim(finam))
           call openfl ( lun1, finam, 1 )
 
@@ -270,7 +270,7 @@ contains
           do istat = 1, nosta
               xnloc = xstat(istat)
               ynloc = ystat(istat)
-              call part07 ( lgrid  , lgrid2 , nmax   , mmax   , xb     , &
+              call part07 ( lgrid  , lgrid2 , num_rows   , num_columns   , xb     , &
                             yb     , xnloc  , ynloc  , nmloc  , mmloc  , &
                             xmloc  , ymloc  , ierror )
 
@@ -335,13 +335,13 @@ contains
               cycle
           endif
           i2   = lgrid3(nstat(istat), mstat(istat))
-          do ilay = 1, nolay
+          do ilay = 1, num_layers
               iseg = i2 + (ilay - 1)*noseglp
               do isub = 1, nosubs
                   if (modtyp /= model_two_layer_temp) then
                       chismp(isub , ilay , istat) = conc(isub  , iseg)
                   else
-                      ipos = (isub-1)*nolay  + ilay
+                      ipos = (isub-1)*num_layers  + ilay
                       chismp(isub , ilay , istat) = conc(ipos  , i2  )
                   endif
               enddo
@@ -353,10 +353,10 @@ contains
 !
 !       compute particle coordinate
 !
-          call part11(lgrid , xb    , yb    , nmax  , npart , mpart , &
+          call part11(lgrid , xb    , yb    , num_rows  , npart , mpart , &
                       xpart , ypart , xa    , ya    , nopart, npwndw, &
                       lgrid2, kpart , zpart , za    , locdep, dps   , &
-                      nolay , mmax  , tcktot)
+                      num_layers , num_columns  , tcktot)
 
 !
 !   zero plot grid for all substances   (which ones after part13 ????)
@@ -386,7 +386,7 @@ contains
                                   fvolum = surf * thickn(ilay) * depthl
                               else
                                   iseg   = (ilay-1)*mnmax2 + i2
-                                  if ( use_settling .and. ilay == nolay ) then
+                                  if ( use_settling .and. ilay == num_layers ) then
                                       fvolum = surf
                                   else
                                       depthl = volume(iseg)/area(i2)
@@ -411,7 +411,7 @@ contains
                                           elseif ( mstick(isub) < 0 ) then
                                               fvolum = surf
                                           endif
-                                      elseif ( use_settling .and. ilay == nolay ) then
+                                      elseif ( use_settling .and. ilay == num_layers ) then
                                           fvolum = surf
                                       elseif( mstick(isub) < 0 ) then
                                           fvolum = surf
@@ -442,14 +442,14 @@ contains
 !
               ihplot(istat) = 0
               do isub = 1, nosubs+1
-                  do ilay = 1, nolay
+                  do ilay = 1, num_layers
                      chispl(isub, ilay, istat) = chismp(isub, ilay, istat)
                   enddo
               enddo
           else
               ihplot(istat) = 1
               do isub = 1, nosubs+1
-                  do ilay = 1, nolay
+                  do ilay = 1, num_layers
                       chispl(isub, ilay ,istat) = amap(isub, ilay, mplsta(istat), nplsta(istat))
 
                   enddo
@@ -461,7 +461,7 @@ contains
 !
       call dlpr12 ( lun1   , lun2      , ihplot    , chispl    , itime     , &
                     idelt  , ihstrt    , ihstop    , ihstep    , nmstat    , &
-                    subst  , title     , nosta     , nosubs+1  , nolay     , &
+                    subst  , title     , nosta     , nosubs+1  , num_layers     , &
                     ihflag , elt_names , elt_types , elt_dims  , elt_bytes , &
                     rbuffr)
 !

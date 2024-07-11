@@ -68,7 +68,7 @@ contains
    use m_longculverts
    use timers,           only : timstrt, timstop
    use m_sethu
-   use m_external_forcings
+   use fm_external_forcings
    use m_1d2d_fixedweirs, only : n_1d2d_fixedweirs, realloc_1d2d_fixedweirs, initialise_1d2d_fixedweirs
    use m_fm_icecover, only: ice_apply_pressure, ice_p, fm_ice_update_press
    use fm_manhole_losses, only: init_manhole_losses
@@ -82,8 +82,6 @@ contains
    logical           :: jawelrestart
 
    double precision  :: upot, ukin, ueaa
-   
-   integer, external :: flow_initexternalforcings
 
    double precision, allocatable :: weirdte_save(:)
       
@@ -175,7 +173,7 @@ contains
    ! First call to setexternalforcingsonboundaries, here only for the structure timeseries (prior to adjust_bobs_for_dams_and_structs())
    call setzminmax()                                 ! our side of preparation for 3D ec module
    call setsigmabnds()
-   call flow_setexternalforcingsonboundaries(tstart_user, error)  ! set structure (and bnd) external forcings. Error handling later in 2nd call for bnds. 
+   call set_external_forcings_boundaries(tstart_user, error)  ! set structure (and bnd) external forcings. Error handling later in 2nd call for bnds. 
    call initialize_structures_actual_params(network%sts)          ! After structure time series, and prior to adjust_bobs, to use proper crest levels.
 
    call adjust_bobs_for_dams_and_structs()
@@ -232,7 +230,7 @@ contains
    end if
 
    ! Actual boundary forcing (now that initial water levels, etc. are also known):
-   call flow_setexternalforcingsonboundaries(tstart_user, error)         ! set bnd   oriented external forcings
+   call set_external_forcings_boundaries(tstart_user, error)         ! set bnd   oriented external forcings
    if( is_error_at_any_processor(error) ) then
        call qnerror('Error occurred when setting external forcings on boundaries.',' ', ' ')
        return
@@ -733,7 +731,7 @@ end subroutine set_internal_tides_friction_coefficient
 subroutine remember_initial_water_levels_at_water_level_boundaries()
    use m_flow,                 only : s1
    use m_flowgeom,             only : bl
-   use m_flowexternalforcings, only : nbndz, kbndz, zbndz0
+   use fm_external_forcings_data, only : nbndz, kbndz, zbndz0
 
    implicit none
 
@@ -854,7 +852,7 @@ end subroutine initialize_morphological_start_time
  
 !> for normal velocity boundaries, also initialise velocity on link
 subroutine initialize_values_at_normal_velocity_boundaries()
-   use m_flowexternalforcings, only : nbndn, kbndn, zbndn
+   use fm_external_forcings_data, only : nbndn, kbndn, zbndn
    use m_flow,                 only : u1
 
    implicit none
@@ -878,7 +876,7 @@ end subroutine initialize_values_at_normal_velocity_boundaries
 !> initialize discharge boundaries
 subroutine initialize_values_at_discharge_boundaries()
    use m_flowparameters,       only : epshu
-   use m_flowexternalforcings, only : nqbnd, L1qbnd, L2qbnd, kbndu
+   use fm_external_forcings_data, only : nqbnd, L1qbnd, L2qbnd, kbndu
    use m_flowgeom,             only : bob
    use m_flow,                 only : s1
 
@@ -1067,7 +1065,7 @@ subroutine set_data_for_ship_modelling()
    use m_ship,                 only : nshiptxy
    use m_flowparameters,       only : jasal
    use m_flow,                 only : kmx, ndkx, sa1
-   use m_flowexternalforcings, only : success
+   use fm_external_forcings_data, only : success
    
    implicit none
 
@@ -2292,7 +2290,7 @@ end subroutine apply_hardcoded_specific_input
 !> restore au and q1 for 3D case for the first write into a history file    
 subroutine restore_au_q1_3D_for_1st_history_record()
    use m_flow,                 only : q1, LBot, kmx, kmxL   
-   use m_flowexternalforcings, only : fusav, rusav, ausav, ncgen
+   use fm_external_forcings_data, only : fusav, rusav, ausav, ncgen
    use m_flowgeom,             only : lnx
 
    implicit none

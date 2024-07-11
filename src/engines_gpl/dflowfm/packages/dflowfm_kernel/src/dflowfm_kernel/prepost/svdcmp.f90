@@ -45,40 +45,40 @@
       G=0.0
       SCALE=0.0
       ANORM=0.0
-      DO 25 I=1,N
+      do I=1,N
         L=I+1
         RV1(I)=SCALE*G
         G=0.0
         S=0.0
         SCALE=0.0
         IF (I.LE.M) THEN
-          DO 11 K=I,M
+          do K=I,M
             SCALE=SCALE+ABS(A(K,I))
-11        CONTINUE
+          end do
           IF (SCALE.NE.0.0) THEN
-            DO 12 K=I,M
+            do K=I,M
               A(K,I)=A(K,I)/SCALE
               S=S+A(K,I)*A(K,I)
-12          CONTINUE
+            end do
             F=A(I,I)
             G=-SIGN(SQRT(S),F)
             H=F*G-S
             A(I,I)=F-G
             IF (I.NE.N) THEN
-              DO 15 J=L,N
+              do J=L,N
                 S=0.0
-                DO 13 K=I,M
+                do K=I,M
                   S=S+A(K,I)*A(K,J)
-13              CONTINUE
+               end do
                 F=S/H
-                DO 14 K=I,M
+                do K=I,M
                   A(K,J)=A(K,J)+F*A(K,I)
-14              CONTINUE
-15            CONTINUE
+               end do
+            end do
             ENDIF
-            DO 16 K= I,M
+            do K= I,M
               A(K,I)=SCALE*A(K,I)
-16          CONTINUE
+end do
           ENDIF
         ENDIF
         W(I)=SCALE *G
@@ -86,106 +86,106 @@
         S=0.0
         SCALE=0.0
         IF ((I.LE.M).AND.(I.NE.N)) THEN
-          DO 17 K=L,N
+          do K=L,N
             SCALE=SCALE+ABS(A(I,K))
-17        CONTINUE
+end do
           IF (SCALE.NE.0.0) THEN
-            DO 18 K=L,N
+            do K=L,N
               A(I,K)=A(I,K)/SCALE
               S=S+A(I,K)*A(I,K)
-18          CONTINUE
+end do
             F=A(I,L)
             G=-SIGN(SQRT(S),F)
             H=F*G-S
             A(I,L)=F-G
-            DO 19 K=L,N
+            do K=L,N
               RV1(K)=A(I,K)/H
-19          CONTINUE
+end do
             IF (I.NE.M) THEN
-              DO 23 J=L,M
+              do J=L,M
                 S=0.0
-                DO 21 K=L,N
+                do K=L,N
                   S=S+A(J,K)*A(I,K)
-21              CONTINUE
-                DO 22 K=L,N
+end do
+                do K=L,N
                   A(J,K)=A(J,K)+S*RV1(K)
-22              CONTINUE
-23            CONTINUE
+end do
+end do
             ENDIF
-            DO 24 K=L,N
+            do K=L,N
               A(I,K)=SCALE*A(I,K)
-24          CONTINUE
+end do
           ENDIF
         ENDIF
         ANORM=MAX(ANORM,(ABS(W(I))+ABS(RV1(I))))
-25    CONTINUE
-      DO 32 I=N,1,-1
+end do
+      do I=N,1,-1
         IF (I.LT.N) THEN
           IF (G.NE.0.0) THEN
-            DO 26 J=L,N
+            do J=L,N
               V(J,I)=(A(I,J)/A(I,L))/G
-26          CONTINUE
-            DO 29 J=L,N
+end do
+            do J=L,N
               S=0.0
-              DO 27 K=L,N
+              do K=L,N
                 S=S+A(I,K)*V(K,J)
-27            CONTINUE
-              DO 28 K=L,N
+end do
+              do K=L,N
                 V(K,J)=V(K,J)+S*V(K,I)
-28            CONTINUE
-29          CONTINUE
+end do
+end do
           ENDIF
-          DO 31 J=L,N
+          do J=L,N
             V(I,J)=0.0
             V(J,I)=0.0
-31        CONTINUE
+end do
         ENDIF
         V(I,I)=1.0
         G=RV1(I)
         L=I
-32    CONTINUE
-      DO 39 I=N,1,-1
+end do
+      do I=N,1,-1
         L=I+1
         G=W(I)
         IF (I.LT.N) THEN
-          DO 33 J=L,N
+          do J=L,N
             A(I,J)=0.0
-33        CONTINUE
+end do
         ENDIF
         IF (G.NE.0.0) THEN
           G=1.0/G
           IF (I.NE.N) THEN
-            DO 36 J=L,N
+            do J=L,N
               S=0.0
-              DO 34 K=L,M
+              do K=L,M
                 S=S+A(K,I)*A(K,J)
-34            CONTINUE
+end do
               F=(S/A(I,I))*G
-              DO 35 K=I,M
+              do K=I,M
                 A(K,J)=A(K,J)+F*A(K,I)
-35            CONTINUE
-36          CONTINUE
+end do
+end do
           ENDIF
-          DO 37 J=I,M
+          do J=I,M
             A(J,I)=A(J,I)*G
-37        CONTINUE
+end do
         ELSE
-          DO 38 J= I,M
+          do J= I,M
             A(J,I)=0.0
-38        CONTINUE
+end do
         ENDIF
         A(I,I)=A(I,I)+1.0
-39    CONTINUE
-      DO 49 K=N,1,-1
-        DO 48 ITS=1,30
-          DO 41 L=K,1,-1
+end do
+k_loop: do K=N,1,-1
+        do ITS=1,30
+l_loop:    do L=K,1,-1
             NM=L-1
             IF ((ABS(RV1(L))+ANORM).EQ.ANORM)  GO TO 2
-            IF ((ABS(W(NM))+ANORM).EQ.ANORM)  GO TO 1
-41        CONTINUE
-1         C=0.0
+            IF ((ABS(W(NM))+ANORM).EQ.ANORM)  exit l_loop
+          end do l_loop
+          C=0.0
           S=1.0
-          DO 43 I=L,K
+          do I=L,K
             F=S*RV1(I)
             IF ((ABS(F)+ANORM).NE.ANORM) THEN
               G=W(I)
@@ -194,23 +194,23 @@
               H=1.0/H
               C= (G*H)
               S=-(F*H)
-              DO 42 J=1,M
+              do J=1,M
                 Y=A(J,NM)
                 Z=A(J,I)
                 A(J,NM)=(Y*C)+(Z*S)
                 A(J,I)=-(Y*S)+(Z*C)
-42            CONTINUE
+               end do
             ENDIF
-43        CONTINUE
+          end do
 2         Z=W(K)
           IF (L.EQ.K) THEN
             IF (Z.LT.0.0) THEN
               W(K)=-Z
-              DO 44 J=1,N
+              do J=1,N
                 V(J,K)=-V(J,K)
-44            CONTINUE
+              end do
             ENDIF
-            GO TO 3
+            cycle k_loop
           ENDIF
 !          IF (ITS.EQ.30) PAUSE 'No convergence in 30 iterations'
           IF (ITS.EQ.30) then ! SPvdP: error handling
@@ -229,7 +229,7 @@
           F=((X-Z)*(X+Z)+H*((Y/(F+SIGN(G,F)))-H))/X
           C=1.0
           S=1.0
-          DO 47 J=L,NM
+          do J=L,NM
             I=J+1
             G=RV1(I)
             Y=W(I)
@@ -243,12 +243,12 @@
             G=-(X*S)+(G*C)
             H=Y*S
             Y=Y*C
-            DO 45 NM=1,N
+            do NM=1,N
               X=V(NM,J)
               Z=V(NM,I)
               V(NM,J)= (X*C)+(Z*S)
               V(NM,I)=-(X*S)+(Z*C)
-45          CONTINUE
+            end do
             Z=SQRT(F*F+H*H)
             W(J)=Z
             IF (Z.NE.0.0) THEN
@@ -258,18 +258,17 @@
             ENDIF
             F= (C*G)+(S*Y)
             X=-(S*G)+(C*Y)
-            DO 46 NM=1,M
+            do NM=1,M
               Y=A(NM,J)
               Z=A(NM,I)
               A(NM,J)= (Y*C)+(Z*S)
               A(NM,I)=-(Y*S)+(Z*C)
-46          CONTINUE
-47        CONTINUE
+            end do
+          end do
           RV1(L)=0.0
           RV1(K)=F
           W(K)=X
-48      CONTINUE
-3       CONTINUE
-49    CONTINUE
+        end do
+      end do k_loop
       RETURN
       END

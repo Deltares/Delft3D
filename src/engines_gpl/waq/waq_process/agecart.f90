@@ -28,9 +28,9 @@ module m_agecart
 contains
 
 
-    subroutine AGECART    (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine AGECART    (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !
         !*******************************************************************************
         !
@@ -38,18 +38,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(4) ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(4) ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(4) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(4)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
         !
@@ -71,19 +71,19 @@ contains
         Iageprod = 1
         !
         temp_watersrc_c = 0.0
-        do iseg = 1, noseg
-            watersrc = pmsa(ipnt(1))
+        do iseg = 1, num_cells
+            watersrc = process_space_real(ipnt(1))
             temp_watersrc_c =temp_watersrc_c +watersrc
             ipnt(1) = ipnt(1) + increm(1)
         end do
-        temp_watersrc_c = temp_watersrc_c/noseg
+        temp_watersrc_c = temp_watersrc_c/num_cells
                     
         ipnt = ipoint            
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             !
-            watersrc = pmsa(ipnt(1))
-            ageconc = pmsa(ipnt(2))
-            age_threshold = pmsa(ipnt(3))
+            watersrc = process_space_real(ipnt(1))
+            ageconc = process_space_real(ipnt(2))
+            age_threshold = process_space_real(ipnt(3))
             !
             !   *****     Insert your code here  *****
             !
@@ -94,9 +94,9 @@ contains
             fl  (Iageprod) = ageprod
 
             if (watersrc > age_threshold*temp_watersrc_c)then
-                pmsa(ipnt(4)) = ageconc / watersrc
+                process_space_real(ipnt(4)) = ageconc / watersrc
             else
-                pmsa(ipnt(4)) = -999.0
+                process_space_real(ipnt(4)) = -999.0
             endif
             !
             Iageprod = Iageprod + noflux

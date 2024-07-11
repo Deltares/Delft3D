@@ -39,10 +39,12 @@
       integer :: mmax
       integer :: nmax
       INTEGER*2 X(MMAX,NMAX,LMAX)
-      DO 10 I = 1,MMAX
-         DO 10 J = 1,NMAX
-            DO 10 L = 1,LMAX
+      do I = 1,MMAX
+         do J = 1,NMAX
+            do L = 1,LMAX
                X(I,J,L)    = 0d0
-   10 CONTINUE
+            end do
+         end do
+      end do
       RETURN
       END

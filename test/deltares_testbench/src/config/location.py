@@ -51,7 +51,7 @@ class Location:
 
     @property
     def root(self) -> str:
-        """root of the network path (http(s), net, disk, svn)"""
+        """root of the network path (http(s), net, disk)"""
         return self.__root
 
     @root.setter

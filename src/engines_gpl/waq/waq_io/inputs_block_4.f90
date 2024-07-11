@@ -79,7 +79,7 @@ contains
         use exchange_pointers, only : read_exchange_pointers_regular_grid
         use partmem
         use timers       !   performance timers
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
         use m_error_status
 
         integer(kind = int_wp), intent(inout) :: file_unit_list    (*)         !< array with unit numbers
@@ -106,30 +106,14 @@ contains
 
         !     COMMON BLOCK  :
 
-        !     integer :: noseg    !  number of elements
-        !     integer :: nolay    !  number of layers in the water
-        !     integer :: nseg2    !  number of bottom elements
-        !     integer :: nosys    !  number of active systems
-        !     integer :: nodisp   !  number of dispersion arrays
-        !     integer :: novelo   !  number of velocity arrays
-        !     integer :: noq1     !  number of exch. 1st direction
-        !     integer :: noq2     !  number of exch. 2nd direction
-        !     integer :: noq3     !  number of exch. 3rd direction
-        !     integer :: noq4     !  number of exch. bottom direction
-        !     integer :: noq      !  number of exchanges
-        !     integer :: nobnd    !  number of boundaries
-        !     integer :: jtrack   !  number of codiagonals
+        !     integer :: num_exchanges_u_dir     !  number of exch. 1st direction
+        !     integer :: num_exchanges_v_dir     !  number of exch. 2nd direction
+        !     integer :: num_exchanges_z_dir     !  number of exch. 3rd direction
         !     integer :: ndmpar   !  Number of dump area's for balance output
         !     integer :: ndmpq    !  Number of exchanges of interest for balance
-        !     integer :: ndmps    !  Number of segments of interest for balance
+        !     integer :: num_monitoring_cells    !  Number of segments of interest for balance
         !     integer :: ntdmpq   !  Number of times exchanges contribute to balance
         !     integer :: ntdmps   !  Number of times segments contribute to balance
-        !     integer :: noraai   !  Number of raaien
-        !     integer :: ntraaq   !  Total number of times exchanges contribute to raai
-        !     integer :: nomat    !  Size of the fast solvers matrix
-        !     integer :: mmax     !  Number of columns in regular grid
-        !     integer :: nmax     !  Number of rows in regular grid
-        !     integer :: kmax     !  Number of layers in regular grid
 
         !     Locals
 
@@ -143,8 +127,8 @@ contains
         integer(kind = int_wp) :: ifact      !  factor between clocks ( 1 in the case of transport )
         integer(kind = int_wp) :: ierr2      !  local error count
         integer(kind = int_wp) :: nosegl     !  number of volumes per layer
-        integer(kind = int_wp) :: noq12      !  noq1 + noq2 (number of horizontal exchanges)
-        integer(kind = int_wp) :: noq34      !  noq3 + noq4 (number of vertical exchanges)
+        integer(kind = int_wp) :: noq12      !  num_exchanges_u_dir + num_exchanges_v_dir (number of horizontal exchanges)
+        integer(kind = int_wp) :: noq34      !  num_exchanges_z_dir + num_exchanges_bottom_dir (number of vertical exchanges)
         integer(kind = int_wp) :: noqt       !  total number of exchanges (water and bed)
         integer(kind = int_wp) :: i, j, k    !  loop counters
         integer(kind = int_wp) :: ifound     !  help variable to find things
@@ -158,16 +142,16 @@ contains
         character(20), allocatable :: dispnam(:)       !  dispersion names
         integer(kind = int_wp), pointer :: ipnt   (:, :)      !  room for the 'from-to' pointer table
         real(kind = real_wp), allocatable :: rwork  (:, :)      !  room for tabular input option
-        integer(kind = int_wp) :: idisp  (nosys)    !  dispersion number per substance
-        integer(kind = int_wp) :: ivelo  (nosys)    !  velocity number per substance
+        integer(kind = int_wp) :: idisp  (num_substances_transported)    !  dispersion number per substance
+        integer(kind = int_wp) :: ivelo  (num_substances_transported)    !  velocity number per substance
         real(kind = real_wp) :: factor (5)      !  scale factor tabular input
-        integer(kind = int_wp), pointer :: cellpnt(:)        !  backpointer noseg to mnmaxk
-        integer(kind = int_wp), pointer :: flowpnt(:)        !  backpointer noq to 3*mnmaxk-mnmax
+        integer(kind = int_wp), pointer :: cellpnt(:)        !  backpointer num_cells to mnmaxk
+        integer(kind = int_wp), pointer :: flowpnt(:)        !  backpointer num_exchanges to 3*mnmaxk-mnmax
         real(kind = real_wp) :: length (3, 1)      !  lengthes per direction
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("read_block_4_flow_dims_pointers", ithndl)
 
-        nosss = noseg + nseg2
+        nosss = num_cells + num_cells_bottom
         iposr = 0
         volume = 0
         adummy = 0.0
@@ -175,89 +159,89 @@ contains
         ifact = 1
         ierr2 = 0
 
-        !        Read exchange dimensions of the system (NOQ1,NOQ2,NOQ3)
+        !        Read exchange dimensions of the system (num_exchanges_u_dir,num_exchanges_v_dir,num_exchanges_z_dir)
 
         if (has_hydfile) then
-            noq1 = nexch(1)
-            noq2 = nexch(2)
-            noq3 = nexch(3)
+            num_exchanges_u_dir = nexch(1)
+            num_exchanges_v_dir = nexch(2)
+            num_exchanges_z_dir = nexch(3)
         else
             regular = .false.
-            if (gettoken(cdummy, noq1, itype, ierr2) > 0) goto 100
+            if (gettoken(cdummy, num_exchanges_u_dir, itype, ierr2) > 0) goto 100
             if (itype == 1) then
                 if (cdummy(1:12) == 'REGULAR_GRID') then
                     regular = .true.
-                    if (gettoken(noq1, ierr2) > 0) goto 100
+                    if (gettoken(num_exchanges_u_dir, ierr2) > 0) goto 100
                 else
                     ierr2 = 1
                     goto 100
                 endif
             endif
-            if (gettoken(noq2, ierr2) > 0) goto 100
-            if (gettoken(noq3, ierr2) > 0) goto 100
+            if (gettoken(num_exchanges_v_dir, ierr2) > 0) goto 100
+            if (gettoken(num_exchanges_z_dir, ierr2) > 0) goto 100
         endif
 
-        noq = noq1 + noq2 + noq3
+        num_exchanges = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
         !        These 2 options use a regular grid with full matrix.
 
         if (regular) then
-            nmax = noq1
-            mmax = noq2
-            kmax = noq3
-            write(file_unit, 2000) nmax, mmax, kmax
-            GridPs%Pointers(1)%nolay = kmax
-            nolay = kmax
+            num_rows = num_exchanges_u_dir
+            num_columns = num_exchanges_v_dir
+            num_layers_grid = num_exchanges_z_dir
+            write(file_unit, 2000) num_rows, num_columns, num_layers_grid
+            GridPs%Pointers(1)%num_layers = num_layers_grid
+            num_layers = num_layers_grid
         else
-            nmax = 0
-            mmax = 0
-            kmax = 0
-            write (file_unit, 2010) noq1, noq2, noq3, noq
+            num_rows = 0
+            num_columns = 0
+            num_layers_grid = 0
+            write (file_unit, 2010) num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges
 
-            !        detect number of layers (only structured sigma or z model, otherwise KMAX=0)
+            !        detect number of layers (only structured sigma or z model, otherwise num_layers_grid=0)
 
-            if (nolay <= 1) then
-                if (noq3 > 0) then
-                    kmax = 0
-                    nosegl = noseg - noq3
+            if (num_layers <= 1) then
+                if (num_exchanges_z_dir > 0) then
+                    num_layers_grid = 0
+                    nosegl = num_cells - num_exchanges_z_dir
                     if (nosegl > 0) then
-                        nolay = noseg / nosegl
-                        if (nolay * nosegl == noseg) then
-                            kmax = nolay
+                        num_layers = num_cells / nosegl
+                        if (num_layers * nosegl == num_cells) then
+                            num_layers_grid = num_layers
                         else
-                            nolay = 1
+                            num_layers = 1
                         endif
                     endif
                 else
-                    kmax = 1
-                    nolay = 1
-                    nosegl = noseg
+                    num_layers_grid = 1
+                    num_layers = 1
+                    nosegl = num_cells
                 endif
             else
-                kmax = nolay
+                num_layers_grid = num_layers
             endif
         endif
         if (.not. alone) then
-            if (noq /= noqp) then
+            if (num_exchanges /= noqp) then
                 write (file_unit, 2020) noqp
                 call status%increase_error_count()
             endif
         endif
-        noq4 = 0
-        if (nseg2 /= 0) then
-            noq4 = nseg2 + noseg / nolay
-            noq4 = noq4 * 2
-            write (file_unit, 2040) noq4
+        num_exchanges_bottom_dir = 0
+        if (num_cells_bottom /= 0) then
+            num_exchanges_bottom_dir = num_cells_bottom + num_cells / num_layers
+            num_exchanges_bottom_dir = num_exchanges_bottom_dir * 2
+            write (file_unit, 2040) num_exchanges_bottom_dir
         endif
 
-        !        Read number of additional dispersion arrays NODISP
+        !        Read number of additional dispersion arrays num_dispersion_arrays
 
-        if (gettoken(nodisp, ierr2) > 0) goto 100
-        write (file_unit, 2050) nodisp
+        if (gettoken(num_dispersion_arrays, ierr2) > 0) goto 100
+        write (file_unit, 2050) num_dispersion_arrays
         idisp = 0
-        if (nodisp > 0) then
-            allocate (dispnam(nodisp))   !    'Dispersion nnnn'
-            do i = 1, nodisp
+        if (num_dispersion_arrays > 0) then
+            allocate (dispnam(num_dispersion_arrays))   !    'Dispersion nnnn'
+            do i = 1, num_dispersion_arrays
                 if (gettoken(dispnam(i), ierr2) > 0) goto 100
                 if (dispnam(i) == ' ') write (dispnam(i), 2060) i
                 ifound = index_in_array(dispnam(i), dispnam(1:i - 1))
@@ -267,32 +251,32 @@ contains
                 endif
             enddo
             if (output_verbose_level >= 2) then
-                write (file_unit, 2080) (i, dispnam(i), i = 1, nodisp)
+                write (file_unit, 2080) (i, dispnam(i), i = 1, num_dispersion_arrays)
             else
                 write (file_unit, 2090)
             endif
             write (file_unit, *)
-            write (file_unit_list(2)) (dispnam(i), i = 1, nodisp)
+            write (file_unit_list(2)) (dispnam(i), i = 1, num_dispersion_arrays)
             deallocate (dispnam)
 
-            do i = 1, nosys     !   read which dispersion array applies (0=none) for each subst.
+            do i = 1, num_substances_transported     !   read which dispersion array applies (0=none) for each subst.
                 if (gettoken(idisp(i), ierr2) > 0) goto 100
-                if (idisp(i) > nodisp) then
-                    write (file_unit, 2100) idisp(i), nodisp
+                if (idisp(i) > num_dispersion_arrays) then
+                    write (file_unit, 2100) idisp(i), num_dispersion_arrays
                     call status%increase_error_count()
                 endif
             enddo
         endif
 
-        !        Read number of additional velocity arrays NOVELO in exactly
+        !        Read number of additional velocity arrays num_velocity_arrays in exactly
         !                   the same way (could probably be better 1 code)
 
-        if (gettoken(novelo, ierr2) > 0) goto 100
-        write (file_unit, 2110) novelo
+        if (gettoken(num_velocity_arrays, ierr2) > 0) goto 100
+        write (file_unit, 2110) num_velocity_arrays
         ivelo = 0
-        if (novelo > 0) then
-            allocate (dispnam(novelo))   !
-            do i = 1, novelo
+        if (num_velocity_arrays > 0) then
+            allocate (dispnam(num_velocity_arrays))   !
+            do i = 1, num_velocity_arrays
                 if (gettoken(dispnam(i), ierr2) > 0) goto 100
                 if (dispnam(i) == ' ') write (dispnam(i), 2120) i
                 ifound = index_in_array(dispnam(i), dispnam(1:i - 1))
@@ -302,30 +286,30 @@ contains
                 endif
             enddo
             if (output_verbose_level >= 2) then
-                write (file_unit, 2080) (i, dispnam(i), i = 1, novelo)
+                write (file_unit, 2080) (i, dispnam(i), i = 1, num_velocity_arrays)
             else
                 write (file_unit, 2090)
             endif
             write (file_unit, *)
-            write (file_unit_list(2)) (dispnam(i), i = 1, novelo)
+            write (file_unit_list(2)) (dispnam(i), i = 1, num_velocity_arrays)
             deallocate (dispnam)
 
-            do i = 1, nosys     !   read which dispersion array applies (0=none) for each subst.
+            do i = 1, num_substances_transported     !   read which dispersion array applies (0=none) for each subst.
                 if (gettoken(ivelo(i), ierr2) > 0) goto 100
-                if (ivelo(i) > novelo) then
-                    write (file_unit, 2100) ivelo(i), novelo
+                if (ivelo(i) > num_velocity_arrays) then
+                    write (file_unit, 2100) ivelo(i), num_velocity_arrays
                     call status%increase_error_count()
                 endif
             enddo
         endif
         !           write a report if sensible and write binary file
-        if ((nodisp > 0 .or. novelo > 0) .and. output_verbose_level >= 2) &
-                write (file_unit, 2140) (i, idisp(i), ivelo(i), i = 1, nosys)
+        if ((num_dispersion_arrays > 0 .or. num_velocity_arrays > 0) .and. output_verbose_level >= 2) &
+                write (file_unit, 2140) (i, idisp(i), ivelo(i), i = 1, num_substances_transported)
         write (file_unit_list(2)) idisp
         write (file_unit_list(2)) ivelo
         !           a very obvious (and rude) check on correctness
-        if (noq1 < 0 .or. noq2   < 0 .or. noq3   < 0 .or. &
-                noq  == 0 .or. nodisp < 0 .or. novelo < 0) then
+        if (num_exchanges_u_dir < 0 .or. num_exchanges_v_dir   < 0 .or. num_exchanges_z_dir   < 0 .or. &
+                num_exchanges  == 0 .or. num_dispersion_arrays < 0 .or. num_velocity_arrays < 0) then
             write (file_unit, 2150)
             call status%increase_error_count()
         endif
@@ -337,7 +321,7 @@ contains
         else
             if (gettoken(integration_id, ierr2) > 0) goto 100
             write (file_unit, 2170) integration_id
-            noqt = noq
+            noqt = num_exchanges
             if (integration_id == 2) goto 10
 
             !***************  first type of input ******************
@@ -352,11 +336,11 @@ contains
                         is_date_format, is_yyddhh_format, 0, ierr2, status, &
                         .false.)
                 if (ierr2  > 0) goto 100
-                noqt = noq4
-                call read_exchange_pointers_regular_grid (file_unit_list, file_name_list, noseg, nmax, mmax, &
-                        kmax, noq, noq1, noq2, noq3, &
-                        noqt, nobnd, ipnt, intsrt, iopt1, &
-                        jtrack, output_verbose_level, iwidth, GridPs, cellpnt, &
+                noqt = num_exchanges_bottom_dir
+                call read_exchange_pointers_regular_grid (file_unit_list, file_name_list, num_cells, num_rows, num_columns, &
+                        num_layers_grid, num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+                        noqt, num_boundary_conditions, ipnt, intsrt, iopt1, &
+                        num_codiagonals, output_verbose_level, iwidth, GridPs, cellpnt, &
                         flowpnt, status)
             endif
         endif
@@ -365,26 +349,26 @@ contains
                     is_date_format, is_yyddhh_format, 0, ierr2, status, &
                     has_hydfile)
             if (ierr2  > 0) goto 100
-            noqt = noq + noq4
+            noqt = num_exchanges + num_exchanges_bottom_dir
             allocate (ipnt(4, noqt), stat = ierr2)
             if (ierr2 /= 0) then
                 write (file_unit, 2160) ierr2, 4 * noqt
                 goto 100
             endif
             ipnt = 0
-            call read_exchange_pointers_irregular_grid (file_unit_list, file_name_list, noseg, noq, noq1, &
-                    noq2, noq3, noqt, nobnd, ipnt, &
-                    intsrt, iopt1, jtrack, filtype(44), output_verbose_level, &
+            call read_exchange_pointers_irregular_grid (file_unit_list, file_name_list, num_cells, num_exchanges, num_exchanges_u_dir, &
+                    num_exchanges_v_dir, num_exchanges_z_dir, noqt, num_boundary_conditions, ipnt, &
+                    intsrt, iopt1, num_codiagonals, filtype(44), output_verbose_level, &
                     GridPs, status)
         endif
-        noq12 = noq1 + noq2
-        noq34 = noq3 + noq4
+        noq12 = num_exchanges_u_dir + num_exchanges_v_dir
+        noq34 = num_exchanges_z_dir + num_exchanges_bottom_dir
 
         !        set dump area structure
 
         call create_write_monitoring_area_array (file_unit_list, ndmpar, ntdmps, noqt, nosss, &
-                nobnd, ipnt, ntdmpq, ndmpq, ndmps, &
-                noraai, ntraaq, nsegdmp, isegdmp, nexcraai, &
+                num_boundary_conditions, ipnt, ntdmpq, ndmpq, num_monitoring_cells, &
+                num_transects, num_transect_exchanges, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, status)
 
         !        calculate size of the fast solvers matrix
@@ -392,9 +376,9 @@ contains
         if (intsrt == 15 .or. intsrt == 16 .or. &
                 intsrt == 17 .or. intsrt == 18 .or. &
                 intsrt == 21 .or. intsrt == 22) then
-            call compute_matrix_size (noq1, noq2, noq34, nosss, ipnt, &
-                    nomat)
-            write (file_unit, 2190) nomat
+            call compute_matrix_size (num_exchanges_u_dir, num_exchanges_v_dir, noq34, nosss, ipnt, &
+                    fast_solver_arr_size)
+            write (file_unit, 2190) fast_solver_arr_size
         endif
         if (associated(ipnt)) then
             deallocate (ipnt)
@@ -405,8 +389,8 @@ contains
         write (file_unit, 2200)
         disper = .true.
         ierr2 = 0
-        call read_constants_time_variables   (file_unit_list, 9, noq1, noq2, noq3, &
-                nodisp, 1, nrftot(3), nrharm(3), ifact, &
+        call read_constants_time_variables   (file_unit_list, 9, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+                num_dispersion_arrays, 1, nrftot(3), nrharm(3), ifact, &
                 is_date_format, disper, volume, iwidth, file_name_list, &
                 filtype, is_yyddhh_format, output_verbose_level, ierr2, &
                 status, .false.)
@@ -417,7 +401,7 @@ contains
 
         write (file_unit, 2210)
         ierr2 = 0
-        call read_constants_time_variables   (file_unit_list, 10, noq1, noq2, noq3, &
+        call read_constants_time_variables   (file_unit_list, 10, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
                 1, 1, nrftot(4), nrharm(4), ifact, &
                 is_date_format, disper, volume, iwidth, file_name_list, &
                 filtype, is_yyddhh_format, output_verbose_level, ierr2, &
@@ -428,7 +412,7 @@ contains
 
         write (file_unit, 2220)
         ierr2 = 0
-        call read_constants_time_variables   (file_unit_list, 11, noq1, noq2, noq3, &
+        call read_constants_time_variables   (file_unit_list, 11, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
                 1, 1, nrftot(5), nrharm(5), ifact, &
                 is_date_format, disper, volume, iwidth, file_name_list, &
                 filtype, is_yyddhh_format, output_verbose_level, ierr2, &
@@ -443,11 +427,11 @@ contains
 
         !        Read velos
 
-        if (novelo > 0) then
+        if (num_velocity_arrays > 0) then
             write (file_unit, 2230)
             ierr2 = 0
-            call read_constants_time_variables   (file_unit_list, 12, noq1, noq2, noq3, &
-                    novelo, 1, nrftot(6), nrharm(6), ifact, &
+            call read_constants_time_variables   (file_unit_list, 12, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+                    num_velocity_arrays, 1, nrftot(6), nrharm(6), ifact, &
                     is_date_format, disper, volume, iwidth, file_name_list, &
                     filtype, is_yyddhh_format, output_verbose_level, ierr2, &
                     status, .false.)
@@ -476,7 +460,7 @@ contains
             write (file_unit, 2270)
             write (file_unit_list(2)) idummy, (adummy, k = 1, 3)
             ierr2 = 0
-            call read_constants_time_variables   (file_unit_list, 13, noq1, noq2, noq3, &
+            call read_constants_time_variables   (file_unit_list, 13, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
                     2, 1, nrftot(7), nrharm(7), ifact, &
                     is_date_format, disper, volume, iwidth, file_name_list, &
                     filtype, is_yyddhh_format, output_verbose_level, ierr2, &
@@ -500,15 +484,15 @@ contains
         ipnt = 0
 
         ilflag = 1
-        if (nodisp < 1) then
-            write (file_unit, 2290) nodisp
+        if (num_dispersion_arrays < 1) then
+            write (file_unit, 2290) num_dispersion_arrays
             ierr2 = 1
             goto 100
         endif
 
-        allocate (rwork(5, noq), stat = ierr2)
+        allocate (rwork(5, num_exchanges), stat = ierr2)
         if (ierr2 /= 0) then
-            write (file_unit, 2310) ierr2, 5 * noq
+            write (file_unit, 2310) ierr2, 5 * num_exchanges
             goto 100
         endif
 
@@ -530,7 +514,7 @@ contains
             if (gettoken(factor(k), ierr2) > 0) goto 100
         enddo
 
-        do j = 1, noq
+        do j = 1, num_exchanges
             do i = 1, 4
                 if (gettoken(ipnt (i, j), ierr2) > 0) goto 100
             enddo
@@ -542,19 +526,19 @@ contains
         write (file_unit, 2330) (factor(i), i = 1, 4)
         write (file_unit, 2340)
         write (file_unit, 2350) ((ipnt (i, j), i = 1, 4), &
-                (rwork(i, j), i = 1, 5), j = 1, noq)
+                (rwork(i, j), i = 1, 5), j = 1, num_exchanges)
 
         !       calculate number of boundaries and bandwith of matrix
 
-        call create_boundary_pointers  (file_unit_list, noseg, noq, noqt, intsrt, &
-                output_verbose_level, GridPs, nobnd, jtrack, ipnt, &
+        call create_boundary_pointers  (file_unit_list, num_cells, num_exchanges, noqt, intsrt, &
+                output_verbose_level, GridPs, num_boundary_conditions, num_codiagonals, ipnt, &
                 status)
 
         !        set dump area structure
 
-        call create_write_monitoring_area_array (file_unit_list, ndmpar, ntdmps, noq, noseg, &
-                nobnd, ipnt, ntdmpq, ndmpq, ndmps, &
-                noraai, ntraaq, nsegdmp, isegdmp, nexcraai, &
+        call create_write_monitoring_area_array (file_unit_list, ndmpar, ntdmps, num_exchanges, num_cells, &
+                num_boundary_conditions, ipnt, ntdmpq, ndmpq, num_monitoring_cells, &
+                num_transects, num_transect_exchanges, nsegdmp, isegdmp, nexcraai, &
                 iexcraai, ioptraai, status)
 
         !        calculate size of the fast solvers matrix
@@ -562,9 +546,9 @@ contains
         if (intsrt == 15 .or. intsrt == 16 .or. &
                 intsrt == 17 .or. intsrt == 18 .or. &
                 intsrt == 21 .or. intsrt == 22) then
-            call compute_matrix_size (noq1, noq2, noq34, nosss, ipnt, &
-                    nomat)
-            write (file_unit, 2190) nomat
+            call compute_matrix_size (num_exchanges_u_dir, num_exchanges_v_dir, noq34, nosss, ipnt, &
+                    fast_solver_arr_size)
+            write (file_unit, 2190) fast_solver_arr_size
         endif
 
         factor(5) = factor(4)
@@ -575,36 +559,36 @@ contains
 
         call open_waq_files  (file_unit_list(8), file_name_list(8), 8, 1, ierr2)
         if (ierr2 /= 0) goto 100
-        if (noq1 > 0) write(file_unit_list(8))(ipnt(:, i), i = 1, noq1)
-        if (noq2 > 0) write(file_unit_list(8))(ipnt(:, i), i = noq1 + 1, noq12)
-        if (noq3 > 0) write(file_unit_list(8))(ipnt(:, i), i = noq12 + 1, noq)
+        if (num_exchanges_u_dir > 0) write(file_unit_list(8))(ipnt(:, i), i = 1, num_exchanges_u_dir)
+        if (num_exchanges_v_dir > 0) write(file_unit_list(8))(ipnt(:, i), i = num_exchanges_u_dir + 1, noq12)
+        if (num_exchanges_z_dir > 0) write(file_unit_list(8))(ipnt(:, i), i = noq12 + 1, num_exchanges)
         close (file_unit_list(8))
 
         call open_waq_files  (file_unit_list(9), file_name_list(9), 9, 1, ierr2)
         if (ierr2 /= 0) goto 100
-        write (file_unit_list(9)) idummy, (rwork(1, i), (adummy, k = 1, nodisp - 1), i = 1, noq)
+        write (file_unit_list(9)) idummy, (rwork(1, i), (adummy, k = 1, num_dispersion_arrays - 1), i = 1, num_exchanges)
         close (file_unit_list(9))
 
         call open_waq_files  (file_unit_list(10), file_name_list(10), 10, 1, ierr2)
         if (ierr2 /= 0) goto 100
-        write (file_unit_list(10)) idummy, (rwork(2, i), i = 1, noq)
+        write (file_unit_list(10)) idummy, (rwork(2, i), i = 1, num_exchanges)
         close (file_unit_list(10))
 
         call open_waq_files (file_unit_list(11), file_name_list(11), 11, 1, ierr2)
         if (ierr2 /= 0) goto 100
-        write (file_unit_list(11)) idummy, (rwork(3, i), i = 1, noq)
+        write (file_unit_list(11)) idummy, (rwork(3, i), i = 1, num_exchanges)
         close (file_unit_list(11))
 
-        if (novelo > 0) then
+        if (num_velocity_arrays > 0) then
             call open_waq_files  (file_unit_list(12), file_name_list(12), 12, 1, ierr2)
             if (ierr2 /= 0) goto 100
-            write (file_unit_list(12)) idummy, ((adummy, k = 1, novelo), i = 1, noq)
+            write (file_unit_list(12)) idummy, ((adummy, k = 1, num_velocity_arrays), i = 1, num_exchanges)
             close (file_unit_list(12))
         endif
 
         call open_waq_files  (file_unit_list(13), file_name_list(13), 13, 1, ierr2)
         if (ierr2 /= 0) goto 100
-        write (file_unit_list(13)) idummy, (rwork(4, i), rwork(5, i), i = 1, noq)
+        write (file_unit_list(13)) idummy, (rwork(4, i), rwork(5, i), i = 1, num_exchanges)
         close (file_unit_list(13))
 
         deallocate(ipnt, rwork)
@@ -618,15 +602,15 @@ contains
         !       - is it a 3D model?
         !       - do we have consistency?
 
-        if (noq3 /= 0) then
-            if (nolay == 1) then
+        if (num_exchanges_z_dir /= 0) then
+            if (num_layers == 1) then
                 call status%increase_warning_count()
-                write(file_unit, 3000) noseg, noq3, noseg - noq3
+                write(file_unit, 3000) num_cells, num_exchanges_z_dir, num_cells - num_exchanges_z_dir
                 write(file_unit, 3005)
                 write(*, '(1x,a)') 'WARNING: inconsistency if 3D model', &
                         '         check .lst file'
             else
-                write(file_unit, 3010) nolay
+                write(file_unit, 3010) num_layers
             endif
         endif
 
@@ -679,7 +663,7 @@ contains
         2260 format (' Lengths constant per direction all over the area.')
         2270 format (' Lengths variable over the area.')
         2280 format (/, ' ERROR, option not implemented')
-        2290 format (/, ' ERROR. Option incompatible with NODISP=', I4)
+        2290 format (/, ' ERROR. Option incompatible with num_dispersion_arrays=', I4)
         2310 format (/, ' ERROR. allocating memory for input table:', I4)
         2320 format (/, ' Option selected for input    :', I7)
         2330 format (/, ' Scale factor for dispersions :', E13.6, &
@@ -699,7 +683,7 @@ contains
                 ' (1) layer!' &
                 , //, '          You can specify the number of layers via' &
                 , /, '          these keywords:' &
-                , //, '          MULTIGRID ZMODEL NOLAY ... END_MULTIGRID')
+                , //, '          MULTIGRID ZMODEL num_layers ... END_MULTIGRID')
         3010 format (//, ' Number of layers in the model:', I5)
 
     end subroutine read_block_4_flow_dims_pointers

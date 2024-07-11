@@ -28,9 +28,9 @@ module m_satch4
 contains
 
 
-    subroutine satch4 (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine satch4 (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Methane saturation concentration based on atmospheric methane pressure
 
@@ -53,9 +53,9 @@ contains
         !
         IMPLICIT NONE
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IN1, IN2, IN3
         INTEGER(kind = int_wp) :: ISEG, IFLUX
@@ -72,11 +72,11 @@ contains
         IP3 = IPOINT(3)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                PCH4 = PMSA(IP1)
-                TEMP = PMSA(IP2)
+                PCH4 = process_space_real(IP1)
+                TEMP = process_space_real(IP2)
                 !
                 !           Calculate the saturation concentration
                 !
@@ -85,7 +85,7 @@ contains
                 !
                 !           The saturation concentration is output
                 !
-                PMSA(IP3) = CCH4S
+                process_space_real(IP3) = CCH4S
                 !
             ENDIF
             !

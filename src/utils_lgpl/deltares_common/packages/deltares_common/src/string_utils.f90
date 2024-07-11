@@ -28,8 +28,6 @@
 !
 module m_string_utils
 
-    use string_module
-
     implicit none
 
     private
@@ -114,8 +112,8 @@ contains
             string_to_check = trim(whole_string)
 
             if (.not. case_sensitive_) then
-                string_to_check = str_tolower(string_to_check)
-                string_to_compare = str_tolower(string_to_compare)
+                string_to_check = convert_to_lower_case(string_to_check)
+                string_to_compare = convert_to_lower_case(string_to_compare)
             end if
 
             if (index(string_to_check, string_to_compare) > 0) then
@@ -235,7 +233,7 @@ contains
             if (case_sensitive_) then
                 found = source_string == target_string
             else
-                found = str_tolower(source_string) == str_tolower(target_string)
+                found = convert_to_lower_case(source_string) == convert_to_lower_case(target_string)
             end if
         else
             found = starts_with(target_string, source_string, case_sensitive_)
@@ -314,5 +312,23 @@ contains
 
         check_case_insensitive = .true.
     end function check_case_insensitive
+
+    !> Return copy of input string with all uppercase characters changed
+    !! into lowercase.
+    function convert_to_lower_case(string) result(string_out)
+        character(len=*), intent(in) :: string !< String to be converted.
+        character(len=len(string))   :: string_out
+
+        integer                      :: i, j
+
+        string_out = string
+        do i = 1, len(string)
+           j = iachar(string(i:i))
+           if ( j > 64 .and. j < 91 ) then
+              j = j + 32
+              string_out(i:i) = achar(j)
+           endif
+        enddo
+    end function convert_to_lower_case
 
 end module m_string_utils

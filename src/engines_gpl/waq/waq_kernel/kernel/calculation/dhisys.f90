@@ -49,8 +49,8 @@ contains
         !
         !     declarations
         use m_array_manipulation, only : copy_integer_array_elements
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
         !
         INTEGER(kind = int_wp) :: ISYSI(:), ISYSN(:)
 

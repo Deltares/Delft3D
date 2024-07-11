@@ -4,7 +4,7 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
                    & fw1       ,dstar     ,drho      ,phicur    ,qbcu      , &
                    & qbcv      ,qbwu      ,qbwv      ,qswu      ,qswv      , &
                    & tetacr    ,aks       ,fsilt     ,sig       ,thick     , &
-                   & concin    ,kmax      ,deltas    ,ws        ,rksrs     , &
+                   & concin    ,num_layers_grid      ,deltas    ,ws        ,rksrs     , &
                    & dzduu     ,dzdvv     ,rhowat    ,ag        ,bedw      , &
                    & pangle    ,fpco      ,susw      ,wave      ,eps       , &
                    & subiw     ,vcr       ,error     ,message   ,wform     , &
@@ -60,7 +60,7 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
 !
 ! Arguments
 !
-    integer                  , intent(in)  :: kmax     !< number of layers (counted top to bottom)
+    integer                  , intent(in)  :: num_layers_grid     !< number of layers (counted top to bottom)
     real(fp)                 , intent(in)  :: aks
     real(fp)                 , intent(in)  :: d50
     real(fp)                 , intent(in)  :: d90
@@ -94,9 +94,9 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
     real(fp)                 , intent(in)  :: rksrs
     real(fp)                 , intent(in)  :: ws
     real(fp)                 , intent(in)  :: deltas
-    real(fp), dimension(kmax), intent(in)  :: sig      !< sigma coordinate of the centre of each layer
-    real(fp), dimension(kmax), intent(in)  :: thick    !< thickness of each layer
-    real(fp), dimension(kmax), intent(in)  :: concin
+    real(fp), dimension(num_layers_grid), intent(in)  :: sig      !< sigma coordinate of the centre of each layer
+    real(fp), dimension(num_layers_grid), intent(in)  :: thick    !< thickness of each layer
+    real(fp), dimension(num_layers_grid), intent(in)  :: concin
     real(fp)                 , intent(in)  :: rhowat
     real(fp)                 , intent(in)  :: ag
     real(fp)                 , intent(in)  :: bedw
@@ -387,7 +387,7 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
        ! STEP 1
        ! Integrate concentration between aks and 3*deltas
        !
-       do k = kmax, 1, -1
+       do k = num_layers_grid, 1, -1
           dif_aks  = aks/h1           - (1.0_fp+sig(k)-thick(k)/2.0_fp)
           dif_upp  = 3.0_fp*deltas/h1 - (1.0_fp+sig(k)-thick(k)/2.0_fp)
           if (dif_aks<=thick(k) .and. dif_aks>=0.0_fp) then

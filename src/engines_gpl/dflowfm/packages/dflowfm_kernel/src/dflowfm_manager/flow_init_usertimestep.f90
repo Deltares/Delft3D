@@ -39,7 +39,7 @@ subroutine flow_init_usertimestep(iresult)
    use MessageHandling
    use m_flowparameters,     only: janudge
    use m_partitioninfo,      only: jampi, abort_all
-   use m_external_forcings
+   use fm_external_forcings
 
    implicit none
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.

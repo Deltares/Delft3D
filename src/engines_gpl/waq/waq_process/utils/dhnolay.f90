@@ -34,7 +34,7 @@ contains
         !
         !     created             : nov 07 by jan van beek
         !
-        !     function            : get nolay from /sysn/ common , system characteristics
+        !     function            : get num_layers from /sysn/ common , system characteristics
         !
         !     logical unitnumbers : -
         !
@@ -44,17 +44,17 @@ contains
         !
         !     name    kind     length     funct.  description
         !     ----    -----    ------     ------- -----------
-        !     pnolay  integer       1     output  copy of the nolay from sysn
+        !     pnolay  integer       1     output  copy of the num_layers from sysn
         !
         !     declarations
         !
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
         integer(kind = int_wp) :: pnolay
         !
         !     common  /  sysn   /   system characteristics
         !
 
-        pnolay = nolay
+        pnolay = num_layers
 
         return
     end

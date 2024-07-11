@@ -63,8 +63,8 @@
          ISHOT = 0
       ENDIF
 
-      DO 10 I = M1,M2
-         DO 10 J = N1,N2
+      do I = M1,M2
+         do J = N1,N2
             IF (X(I,J) .NE. XYMIS) THEN
                IF (ABS(XL - X(I,J)) .LT. RCIR) THEN
                   IF (ABS(YL - Y(I,J)) .LT. RCIR) THEN
@@ -79,7 +79,8 @@
                   ENDIF
                ENDIF
             ENDIF
-   10 CONTINUE
+         end do
+      end do
       IF (ISHOT .EQ. 1) GOTO 666
       MVOL = 0
       CALL DISVAL(0,0,0d0)

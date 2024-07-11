@@ -48,8 +48,8 @@ module rdhydr_mod
       implicit none      ! force explicit typing
 !
    contains
-      subroutine rdhydr ( nmax   , mmax   , mnmaxk , nflow  , noseg  ,  &
-                          noq    , itime  , itstrt , idelt  , volume ,  &
+      subroutine rdhydr ( num_rows   , num_columns   , mnmaxk , nflow  , num_cells  ,  &
+                          num_exchanges    , itime  , itstrt , idelt  , volume ,  &
                           vdiff  , hsurf  , flow   , vol1   , vol2   ,  &
                           flow1  , flow2m , vdiff1 , update , cellpnt, flowpnt,  &
                           tau    , tau1   , caltau , salin  , salin1 ,  &
@@ -82,12 +82,12 @@ module rdhydr_mod
 !
 !     parameters            :
 
-      integer  (int_wp ), intent(in   ) :: nmax             !< size of first index in the cube
-      integer  (int_wp ), intent(in   ) :: mmax             !< size of second index in the cube
+      integer  (int_wp ), intent(in   ) :: num_rows             !< size of first index in the cube
+      integer  (int_wp ), intent(in   ) :: num_columns             !< size of second index in the cube
       integer  (int_wp ), intent(in   ) :: mnmaxk           !< number of cells in the cube
       integer  (int_wp ), intent(in   ) :: nflow            !< size of 3*3d flow array
-      integer  (int_wp ), intent(in   ) :: noseg            !< nr of computational volumes
-      integer  (int_wp ), intent(in   ) :: noq              !< total number of exchanges
+      integer  (int_wp ), intent(in   ) :: num_cells            !< nr of computational volumes
+      integer  (int_wp ), intent(in   ) :: num_exchanges              !< total number of exchanges
       integer  (int_wp ), intent(in   ) :: itime            !< current time
       integer  (int_wp ), intent(  out) :: itstrt           !< start of the hydrodynamic files
       integer  (int_wp ), intent(  out) :: idelt            !< time step of hydrodynamic files
@@ -95,33 +95,33 @@ module rdhydr_mod
       real     (sp), intent(  out) :: vdiff  (mnmaxk)  !< a grid with vertical diffusions
       real     (sp), intent(in   ) :: hsurf  (mnmaxk)  !< a grid with horizontal surfaces
       real     (sp), intent(  out) :: flow   (nflow )  !< a grid with flows
-      real     (sp), intent(  out) :: vol1   (noseg )  !< first volume record
-      real     (sp), intent(  out) :: vol2   (noseg )  !< second volume record
-      real     (sp), intent(  out) :: flow1  ( noq  )  !< flow record in file
+      real     (sp), intent(  out) :: vol1   (num_cells )  !< first volume record
+      real     (sp), intent(  out) :: vol2   (num_cells )  !< second volume record
+      real     (sp), intent(  out) :: flow1  ( num_exchanges  )  !< flow record in file
       real     (sp), intent(  out) :: flow2m (nflow )  !< a grid with flows
-      real     (sp), intent(  out) :: vdiff1 (noseg )  !< vertical diffusion record in file
+      real     (sp), intent(  out) :: vdiff1 (num_cells )  !< vertical diffusion record in file
       logical      , intent(  out) :: update           !< values have been updated
-      integer  (int_wp ), intent(in   ) :: cellpnt(noseg )  !< backpointering from volumes to grid
-      integer  (int_wp ), intent(in   ) :: flowpnt(noq,2 )  !< backpointering from flows to grid
+      integer  (int_wp ), intent(in   ) :: cellpnt(num_cells )  !< backpointering from volumes to grid
+      integer  (int_wp ), intent(in   ) :: flowpnt(num_exchanges,2 )  !< backpointering from flows to grid
       real     (sp), intent(  out) :: tau    (mnmaxk)  !< tau record on the grid
-      real     (sp), intent(  out) :: tau1   (noseg )  !< tau record in file
+      real     (sp), intent(  out) :: tau1   (num_cells )  !< tau record in file
       logical      , intent(  out) :: caltau           !< should the tau be calculated ?
       real     (sp), intent(  out) :: salin  (mnmaxk)  !< salinity record on the grid
-      real     (sp), intent(  out) :: salin1 (noseg )  !< salinity record in file
+      real     (sp), intent(  out) :: salin1 (num_cells )  !< salinity record in file
       real     (sp), intent(  out) :: temper (mnmaxk)  !< temperature record on the grid
-      real     (sp), intent(  out) :: temper1(noseg )  !< temperature record in file
-      real     (sp), intent(  out) :: rhowatc(noseg )  !< density water calculated from temperature and salinity on the active grid
+      real     (sp), intent(  out) :: temper1(num_cells )  !< temperature record in file
+      real     (sp), intent(  out) :: rhowatc(num_cells )  !< density water calculated from temperature and salinity on the active grid
       integer  (int_wp ), intent(in   ) :: nfiles           !< nr. of files
       integer  (int_wp ), intent(inout) :: lunit(nfiles)    !< unit nrs of all files
       character(* ), intent(inout) :: fname(nfiles)    !< file names of all files
-      real     (sp), intent(  out) :: flow2  ( noq  )  !< flow record in file second record
+      real     (sp), intent(  out) :: flow2  ( num_exchanges  )  !< flow record in file second record
 
 !     locals
 
       logical           :: updatv, updatf, updatd, lblock
 !
       logical :: first  = .true.
-      integer(int_wp ) :: i, i0, i03d, i1, i2, idelt1, ifflag , iocond , isflag, kmax
+      integer(int_wp ) :: i, i0, i03d, i1, i2, idelt1, ifflag , iocond , isflag, num_layers_grid
       integer(int_wp ) :: it1   , it2   , max    , mod    , lunut
       integer(int_wp ) :: mnmax                        ! number of cells per layer in the cube
       integer(int_wp ) :: idtimv , itimv1 , itimv2     ! timings of the volumes file
@@ -138,10 +138,10 @@ module rdhydr_mod
       if (zmodel) then
          depmin = 0.05
       else
-         depmin = 0.05*nmax*mmax/mnmaxk
+         depmin = 0.05*num_rows*num_columns/mnmaxk
          depmin = max(depmin,0.001)
       end if
-      kmax   = mnmaxk/nmax/mmax
+      num_layers_grid   = mnmaxk/num_rows/num_columns
       if ( idelt == -999 ) then
 !
 !        Save current value of idelt for later
@@ -211,7 +211,7 @@ module rdhydr_mod
 
          flow   = 0.0
          flow2m = 0.0
-         do i = 1, noq
+         do i = 1, num_exchanges
             if ( flowpnt(i,1) .gt. 0 ) flow(flowpnt(i,1)) = flow(flowpnt(i,1)) + flow1(i)
             if ( flowpnt(i,2) .gt. 0 ) flow(flowpnt(i,2)) = flow(flowpnt(i,2)) + flow1(i)
             if ( flowpnt(i,1) .gt. 0 ) flow2m(flowpnt(i,1)) = flow2m(flowpnt(i,1)) + flow2(i)
@@ -230,14 +230,14 @@ module rdhydr_mod
 
          lblock = .false.
          call parttd ( lunit(6), lunut   , itime   , idtimv  , itimv1  ,   &
-                       itimv2  , noseg   , mnmaxk  , vol1    , vol2    ,   &
+                       itimv2  , num_cells   , mnmaxk  , vol1    , vol2    ,   &
                        volume  , cellpnt , lblock  , fname(6), isflag  ,   &
                        ifflag  , updatv  )
 
 !.. flows
 !.. note that flows must be block since no space is reserved for flow-interpolation
          call dlwqfl ( lunit(7), lunut   , itime   , idtimf  , itimf1  ,   &
-                       itimf2  , idelt   , noq     , nflow   , flow1   ,   &
+                       itimf2  , idelt   , num_exchanges     , nflow   , flow1   ,   &
                        flow2   , flow    , flowpnt , fname(7), isflag  , ifflag  ,   &
                        updatf  , flow2m  )
 
@@ -245,11 +245,11 @@ module rdhydr_mod
 
          if ( lunit(20) .ne. 0 ) then
             call dlwqbl ( lunit(20), lunut   , itime    , idtimd  , itimd1  ,   &
-                          itimd2   , idelt   , noseg    , mnmaxk  , vdiff1  ,   &
+                          itimd2   , idelt   , num_cells    , mnmaxk  , vdiff1  ,   &
                           vdiff    , cellpnt , fname(20), isflag  , ifflag  ,   &
                           updatd  )
-            if ( kmax .gt. 1 ) then                                    ! fill the zero last layer with the
-               mnmax = nmax*mmax
+            if ( num_layers_grid .gt. 1 ) then                                    ! fill the zero last layer with the
+               mnmax = num_rows*num_columns
                do i = mnmaxk-mnmax+1,mnmaxk
                   vdiff(i) = vdiff(i-mnmax)                        ! values above
                end do
@@ -260,7 +260,7 @@ module rdhydr_mod
 
          if ( .not. caltau ) then
             call dlwqbl ( lunit(21), lunut   , itime    , idtimt , itimt1 ,   &
-                          itimt2   , idelt   , noseg    , mnmaxk , tau1   ,   &
+                          itimt2   , idelt   , num_cells    , mnmaxk , tau1   ,   &
                           tau      , cellpnt , fname(21), isflag , ifflag ,   &
                           updatd   )
          endif
@@ -269,7 +269,7 @@ module rdhydr_mod
 
          if ( lunit(22) .ne. 0 ) then
             call dlwqbl ( lunit(22), lunut   , itime    , idtimt , itimt1 ,   &
-                          itimt2   , idelt   , noseg    , mnmaxk , salin1 ,   &
+                          itimt2   , idelt   , num_cells    , mnmaxk , salin1 ,   &
                           salin    , cellpnt , fname(22), isflag , ifflag ,   &
                           updatd   )
          endif
@@ -278,7 +278,7 @@ module rdhydr_mod
 
          if ( lunit(23) .ne. 0 ) then
             call dlwqbl ( lunit(23), lunut   , itime    , idtimt , itimt1 ,   &
-                          itimt2   , idelt   , noseg    , mnmaxk , temper1,   &
+                          itimt2   , idelt   , num_cells    , mnmaxk , temper1,   &
                           temper   , cellpnt , fname(23), isflag , ifflag ,   &
                           updatd   )
          endif
@@ -295,11 +295,11 @@ module rdhydr_mod
 !
       if (zmodel) then
          ! only make sure the deepest
-         do i2 = 2, mmax
-            do i1 = 2, nmax
+         do i2 = 2, num_columns
+            do i1 = 2, num_rows
                i0 = lgrid(i1, i2)
                if (i0  >  0) then
-                  i03d = i0 + (laybot(i1, i2)-1)*nmax*mmax
+                  i03d = i0 + (laybot(i1, i2)-1)*num_rows*num_columns
                   volume(i03d) = max(volume(i03d), hsurf(i0) * depmin)
                end if
             end do
@@ -309,8 +309,8 @@ module rdhydr_mod
 
 !          limit volume to 5cm
 
-           i2 = mod(i,nmax*mmax)
-           if(i2==0) i2 = nmax*mmax
+           i2 = mod(i,num_rows*num_columns)
+           if(i2==0) i2 = num_rows*num_columns
            volume(i) = max(volume(i), hsurf(i2) * depmin)
 
 !          apply scaling to vertical diffusion
@@ -329,11 +329,11 @@ module rdhydr_mod
             .and. (lunit(23) .ne. 0) &
             .and. (ideltold .ne. -999) &
             .and. (modtyp .eq. model_prob_dens_settling)) then
-         do i = 1, noseg
+         do i = 1, num_cells
             rhowatc(i) = densty(max(0.0e0,salin1(i)), temper1(i))
          enddo
       else
-         do i = 1, noseg
+         do i = 1, num_cells
             rhowatc(i) = rhow
          enddo
       endif

@@ -27,7 +27,7 @@
 !  
 !  
 
-      subroutine write_lgt ( file_lgt, mmax  , nmax  , nolay )
+      subroutine write_lgt ( file_lgt, num_columns  , num_rows  , num_layers )
 !
 !     delft hydraulics
 !
@@ -42,9 +42,9 @@
 !     name    kind     length     funct.  description
 !     ----    -----    ------     ------- -----------
 !     filnr   integer  1          input   index file in file administr.
-!     mmax    integer  1          input   x,u direction, second in lgrid
-!     nmax    integer  1          input   y,v direction, first in lgrid
-!     nolay   integer  1          input   number of layers
+!     num_columns    integer  1          input   x,u direction, second in lgrid
+!     num_rows    integer  1          input   y,v direction, first in lgrid
+!     num_layers   integer  1          input   number of layers
 !
       ! global declarations
 
@@ -54,7 +54,7 @@
 !     declaration of arguments
 
       type(t_file)                       :: file_lgt               ! aggregation-file
-      integer       mmax  , nmax  , nolay
+      integer       num_columns  , num_rows  , num_layers
 !
 !     local declarations
 !
@@ -78,11 +78,11 @@
 !     write table
 !
       if ( filtyp .eq. FT_UNF .or. filtyp .eq. FT_BIN) then
-         write (lun) nmax,mmax,nmax*mmax,nolay
-         write (lun) (i,i=1,nmax*mmax)
+         write (lun) num_rows,num_columns,num_rows*num_columns,num_layers
+         write (lun) (i,i=1,num_rows*num_columns)
       elseif ( filtyp .eq. FT_ASC ) then
-         write (lun,'(4i8)') nmax,mmax,nmax*mmax,nolay
-         write (lun,'(i7)') (i,i=1,nmax*mmax)
+         write (lun,'(4i8)') num_rows,num_columns,num_rows*num_columns,num_layers
+         write (lun,'(i7)') (i,i=1,num_rows*num_columns)
       endif
 !
       return

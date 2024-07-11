@@ -28,9 +28,9 @@ module m_swoxy
 contains
 
 
-    subroutine swoxy  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine swoxy  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Partitioning switch in WC, S1 and S2 based on actual and critical oxygen concentration
 
@@ -51,9 +51,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: ISEG, &
                 IP1, IP2, IP3, IP4, IP5, IP6, &
@@ -76,13 +76,13 @@ contains
         IN5 = INCREM(5)
         IN6 = INCREM(6)
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                OXY = PMSA(IP1)
-                CROXY = PMSA(IP2)
-                POROS = PMSA(IP3)
+                OXY = process_space_real(IP1)
+                CROXY = process_space_real(IP2)
+                POROS = process_space_real(IP3)
 
                 !*******************************************************************************
                 !**** if OXY > CROXY ISWOXY = 1  in Water Column and S1 (poriewater)
@@ -100,9 +100,9 @@ contains
                     ISWS2 = 0
                 ENDIF
 
-                PMSA(IP4) = ISWWK
-                PMSA(IP5) = ISWS1
-                PMSA(IP6) = ISWS2
+                process_space_real(IP4) = ISWWK
+                process_space_real(IP5) = ISWS1
+                process_space_real(IP6) = ISWS2
 
             ENDIF
             !

@@ -221,7 +221,7 @@ end subroutine reset_sobekdfm
    subroutine init_1d2d()
       use m_flowgeom
       use m_flowparameters
-      use m_flowexternalforcings
+      use fm_external_forcings_data
       use network_data
       use m_GlobalParameters, only: pi
       

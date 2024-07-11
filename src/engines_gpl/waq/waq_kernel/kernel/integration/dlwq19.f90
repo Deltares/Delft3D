@@ -49,82 +49,82 @@ contains
     !! () The time step of the bed layer is still the overall time step (typically 1 hour). That may be
     !!   too long. It is possible to have an input variable that specifies a shorter time step
     !!   for the bed underneath all cells only. Please indicate if that is interesting.
-    subroutine dlwq19(file_unit, nosys, notot, nototp, noseg, &
-                      nosss, noq1, noq2, noq3, noq, &
-                      noq4, nodisp, novelo, disp, disper, &
+    subroutine dlwq19(file_unit, num_substances_transported, num_substances_total, num_substances_part, num_cells, &
+                      nosss, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges, &
+                      num_exchanges_bottom_dir, num_dispersion_arrays, num_velocity_arrays, disp, disper, &
                       velo, volold, volnew, area, flow, &
                       surface, aleng, ipoint, idpnt, ivpnt, &
                       amass, conc, dconc2, bound, idt, &
                       ibas, ibaf, work, volint, iords, &
                       iordf, deriv, wdrawal, iaflag, amass2, &
-                      ndmpq, ndmps, nowst, iqdmp, dmpq, &
+                      ndmpq, num_monitoring_cells, num_waste_loads, iqdmp, dmpq, &
                       isdmp, dmps, iwaste, wstdmp, integration_id, &
                       ilflag, rhs, diag, acodia, bcodia, &
-                      nvert, ivert, nocons, coname, const)
+                      nvert, ivert, num_constants, coname, const)
 
         use m_cli_utils, only: is_command_arg_specified
         use timers
 
         integer(kind=int_wp), intent(in   ) :: file_unit               !< Unit number of the monitoring file
-        integer(kind=int_wp), intent(in   ) :: nosys                   !< Number of transported substances
-        integer(kind=int_wp), intent(in   ) :: notot                   !< Total number of substances
-        integer(kind=int_wp), intent(in   ) :: nototp                  !< Number of particle substances
-        integer(kind=int_wp), intent(in   ) :: noseg                   !< Number of computational volumes
-        integer(kind=int_wp), intent(in   ) :: nosss                   !< Noseg + bed-computational volumes
-        integer(kind=int_wp), intent(in   ) :: noq1                    !< Number of interfaces in direction 1
-        integer(kind=int_wp), intent(in   ) :: noq2                    !< Number of interfaces in direction 2
-        integer(kind=int_wp), intent(in   ) :: noq3                    !< Number of interfaces in direction 3
-        integer(kind=int_wp), intent(in   ) :: noq                     !< Total number of interfaces
-        integer(kind=int_wp), intent(in   ) :: noq4                    !< Number of interfaces in the bed
-        integer(kind=int_wp), intent(in   ) :: nodisp                  !< Number additional dispersions
-        integer(kind=int_wp), intent(in   ) :: novelo                  !< Number additional velocities
+        integer(kind=int_wp), intent(in   ) :: num_substances_transported                   !< Number of transported substances
+        integer(kind=int_wp), intent(in   ) :: num_substances_total                   !< Total number of substances
+        integer(kind=int_wp), intent(in   ) :: num_substances_part                  !< Number of particle substances
+        integer(kind=int_wp), intent(in   ) :: num_cells                   !< Number of computational volumes
+        integer(kind=int_wp), intent(in   ) :: nosss                   !< num_cells + bed-computational volumes
+        integer(kind=int_wp), intent(in   ) :: num_exchanges_u_dir                    !< Number of interfaces in direction 1
+        integer(kind=int_wp), intent(in   ) :: num_exchanges_v_dir                    !< Number of interfaces in direction 2
+        integer(kind=int_wp), intent(in   ) :: num_exchanges_z_dir                    !< Number of interfaces in direction 3
+        integer(kind=int_wp), intent(in   ) :: num_exchanges                     !< Total number of interfaces
+        integer(kind=int_wp), intent(in   ) :: num_exchanges_bottom_dir                    !< Number of interfaces in the bed
+        integer(kind=int_wp), intent(in   ) :: num_dispersion_arrays                  !< Number additional dispersions
+        integer(kind=int_wp), intent(in   ) :: num_velocity_arrays                  !< Number additional velocities
         real(kind=real_wp),   intent(in   ) :: disp(3)                 !< Fixed dispersions in the 3 directions
-        real(kind=real_wp),   intent(in   ) :: disper(nodisp, noq)     !< Additional dispersions
-        real(kind=real_wp),   intent(in   ) :: velo(novelo, noq)       !< Additional velocities
+        real(kind=real_wp),   intent(in   ) :: disper(num_dispersion_arrays, num_exchanges)     !< Additional dispersions
+        real(kind=real_wp),   intent(in   ) :: velo(num_velocity_arrays, num_exchanges)       !< Additional velocities
         real(kind=real_wp),   intent(in   ) :: volold(nosss)           !< Volumes of the segments at start of step
         real(kind=real_wp),   intent(in   ) :: volnew(nosss)           !< Volumes of the segments at stop of step
-        real(kind=real_wp),   intent(in   ) :: area(noq)               !< Exchange areas in m2
-        real(kind=real_wp),   intent(in   ) :: flow(noq)               !< Flows through the exchange areas in m3/s
+        real(kind=real_wp),   intent(in   ) :: area(num_exchanges)               !< Exchange areas in m2
+        real(kind=real_wp),   intent(in   ) :: flow(num_exchanges)               !< Flows through the exchange areas in m3/s
         real(kind=real_wp),   intent(in   ) :: surface(nosss)          !< Horizontal surface area
-        real(kind=real_wp),   intent(inout) :: aleng(2, noq)           !< Mixing length to and from the exchange area
-        integer(kind=int_wp), intent(in   ) :: ipoint(4, noq)          !< From, to, from-1, to+1 volume numbers
-        integer(kind=int_wp), intent(in   ) :: idpnt(nosys)            !< Additional dispersion number per substance
-        integer(kind=int_wp), intent(in   ) :: ivpnt(nosys)            !< Additional velocity number per substance
-        real(kind=real_wp),   intent(inout) :: amass(notot, nosss)     !< Masses per substance per volume
-        real(kind=real_wp),   intent(inout) :: conc(notot, nosss)      !< Concentrations at previous time level
-        real(kind=dp),        intent(inout) :: dconc2(notot, nosss)    !< Estimate used in flux correction
-        real(kind=real_wp),   intent(in   ) :: bound(nosys, *)         !< Open boundary concentrations
+        real(kind=real_wp),   intent(inout) :: aleng(2, num_exchanges)           !< Mixing length to and from the exchange area
+        integer(kind=int_wp), intent(in   ) :: ipoint(4, num_exchanges)          !< From, to, from-1, to+1 volume numbers
+        integer(kind=int_wp), intent(in   ) :: idpnt(num_substances_transported)            !< Additional dispersion number per substance
+        integer(kind=int_wp), intent(in   ) :: ivpnt(num_substances_transported)            !< Additional velocity number per substance
+        real(kind=real_wp),   intent(inout) :: amass(num_substances_total, nosss)     !< Masses per substance per volume
+        real(kind=real_wp),   intent(inout) :: conc(num_substances_total, nosss)      !< Concentrations at previous time level
+        real(kind=dp),        intent(inout) :: dconc2(num_substances_total, nosss)    !< Estimate used in flux correction
+        real(kind=real_wp),   intent(in   ) :: bound(num_substances_transported, *)         !< Open boundary concentrations
         integer(kind=int_wp), intent(in   ) :: idt                     !< Time step in seconds
-        integer(kind=int_wp), intent(inout) :: ibas(noseg)             !< In which basket is my cell
-        integer(kind=int_wp), intent(inout) :: ibaf(noq)               !< In which basket is my flow
-        real(kind=dp),        intent(inout) :: work(3, noseg)          !< Work array
-        real(kind=dp),        intent(inout) :: volint(noseg)           !< Fractional migrating volume
-        integer(kind=int_wp), intent(inout) :: iords(noseg)            !< Order of segments
-        integer(kind=int_wp), intent(inout) :: iordf(noq)              !< Order of fluxes
-        real(kind=real_wp),   intent(inout) :: deriv(notot, nosss)     !< Derivatives of the concentrations
-        real(kind=real_wp),   intent(inout) :: wdrawal(noseg)          !< Withdrawals applied to all substances
+        integer(kind=int_wp), intent(inout) :: ibas(num_cells)             !< In which basket is my cell
+        integer(kind=int_wp), intent(inout) :: ibaf(num_exchanges)               !< In which basket is my flow
+        real(kind=dp),        intent(inout) :: work(3, num_cells)          !< Work array
+        real(kind=dp),        intent(inout) :: volint(num_cells)           !< Fractional migrating volume
+        integer(kind=int_wp), intent(inout) :: iords(num_cells)            !< Order of segments
+        integer(kind=int_wp), intent(inout) :: iordf(num_exchanges)              !< Order of fluxes
+        real(kind=real_wp),   intent(inout) :: deriv(num_substances_total, nosss)     !< Derivatives of the concentrations
+        real(kind=real_wp),   intent(inout) :: wdrawal(num_cells)          !< Withdrawals applied to all substances
         integer(kind=int_wp), intent(in   ) :: iaflag                  !< If 1 then accumulate mass in report array
-        real(kind=real_wp),   intent(inout) :: amass2(notot, 5)        !< Report array for monitoring file
+        real(kind=real_wp),   intent(inout) :: amass2(num_substances_total, 5)        !< Report array for monitoring file
         integer(kind=int_wp), intent(in   ) :: ndmpq                   !< Number of dumped exchanges for mass balances
-        integer(kind=int_wp), intent(in   ) :: ndmps                   !< Number of dumped volumes for balances
-        integer(kind=int_wp), intent(in   ) :: nowst                   !< Number of wastes
-        integer(kind=int_wp), intent(in   ) :: iqdmp(noq)              !< Pointer from echange to dump location
-        real(kind=real_wp),   intent(inout) :: dmpq(nosys, ndmpq, 2)   !< Array with mass balance information
-        integer(kind=int_wp), intent(in   ) :: isdmp(noseg)            !< Volume to dump-location pointer
-        real(kind=real_wp),   intent(inout) :: dmps(notot, ndmps, *)   !< Dumped segment fluxes if integration_id > 7
-        integer(kind=int_wp), intent(in   ) :: iwaste(nowst)           !< Volume numbers of the waste locations
-        real(kind=real_wp),   intent(inout) :: wstdmp(notot, nowst, 2) !< Accumulated wasteloads 1/2 in and out
+        integer(kind=int_wp), intent(in   ) :: num_monitoring_cells
+        integer(kind=int_wp), intent(in   ) :: num_waste_loads                   !< Number of wastes
+        integer(kind=int_wp), intent(in   ) :: iqdmp(num_exchanges)              !< Pointer from echange to dump location
+        real(kind=real_wp),   intent(inout) :: dmpq(num_substances_transported, ndmpq, 2)   !< Array with mass balance information
+        integer(kind=int_wp), intent(in   ) :: isdmp(num_cells)            !< Volume to dump-location pointer
+        real(kind=real_wp),   intent(inout) :: dmps(num_substances_total, num_monitoring_cells, *)   !< Dumped segment fluxes if integration_id > 7
+        integer(kind=int_wp), intent(in   ) :: iwaste(num_waste_loads)           !< Volume numbers of the waste locations
+        real(kind=real_wp),   intent(inout) :: wstdmp(num_substances_total, num_waste_loads, 2) !< Accumulated wasteloads 1/2 in and out
         integer(kind=int_wp), intent(in   ) :: integration_id          !< Integration
         integer(kind=int_wp), intent(in   ) :: ilflag                  !< If 0 then only 3 constant lenght values
-        real(kind=dp),        intent(inout) :: rhs(notot, nosss)       !< Local right hand side
-        real(kind=dp),        intent(inout) :: diag(notot, nosss)      !< Local diagonal filled with volumes
-        real(kind=dp),        intent(inout) :: acodia(notot, max(noq3 + noq4, 1)) !< Local work array lower codiagonal
-        real(kind=dp),        intent(inout) :: bcodia(notot, max(noq3 + noq4, 1)) !< Local work array upper codiagonal
-        integer(kind=int_wp), intent(inout) :: nvert(2, noseg)         !< Number of vertical cells per column, entry point in ivert
-        integer(kind=int_wp), intent(inout) :: ivert(noseg)            !< Number of vertical columns
-        integer(kind=int_wp), intent(in   ) :: nocons                  !< Number of constants used
-        character(20),        intent(in   ) :: coname(nocons)          !< Constant names
-        real(kind=real_wp),   intent(in   ) :: const(nocons)           !< Constants
+        real(kind=dp),        intent(inout) :: rhs(num_substances_total, nosss)       !< Local right hand side
+        real(kind=dp),        intent(inout) :: diag(num_substances_total, nosss)      !< Local diagonal filled with volumes
+        real(kind=dp),        intent(inout) :: acodia(num_substances_total, max(num_exchanges_z_dir + num_exchanges_bottom_dir, 1)) !< Local work array lower codiagonal
+        real(kind=dp),        intent(inout) :: bcodia(num_substances_total, max(num_exchanges_z_dir + num_exchanges_bottom_dir, 1)) !< Local work array upper codiagonal
+        integer(kind=int_wp), intent(inout) :: nvert(2, num_cells)         !< Number of vertical cells per column, entry point in ivert
+        integer(kind=int_wp), intent(inout) :: ivert(num_cells)            !< Number of vertical columns
+        integer(kind=int_wp), intent(in   ) :: num_constants                  !< Number of constants used
+        character(20),        intent(in   ) :: coname(num_constants)          !< Constant names
+        real(kind=real_wp),   intent(in   ) :: const(num_constants)           !< Constants
 
         ! Local variables
         integer(kind=int_wp) :: i, j, k                     !< General loop counter
@@ -197,7 +197,7 @@ contains
 
         ! Initialisations
         if (timon) call timstrt("administration", ithand1)
-        noqh = noq1 + noq2
+        noqh = num_exchanges_u_dir + num_exchanges_v_dir
         massbal = iaflag == 1
         disp0q0 = btest(integration_id, 0)
         disp0bnd = btest(integration_id, 1)
@@ -241,13 +241,13 @@ contains
                     '          This is known to cause problems in some cases'
             end if
 
-            if (noq3 == 0) then         ! vertically integrated model
-                do iseg = 1, noseg
+            if (num_exchanges_z_dir == 0) then         ! vertically integrated model
+                do iseg = 1, num_cells
                     nvert(1, iseg) = iseg
                     nvert(2, iseg) = iseg
                     ivert(iseg) = iseg
                 end do
-                nosegl = noseg
+                nosegl = num_cells
                 write (file_unit, '(A)') ' This model is vertically integrated!'
             else                            ! model with (per cell varying nr of) layers
                 ivert = 0
@@ -264,7 +264,7 @@ contains
                         nvert(2, ito) = 0
                     end if
                 end do
-                do iq = noqh + 1, noq                           !  Make the vertical administration
+                do iq = noqh + 1, num_exchanges                           !  Make the vertical administration
                     ifrom = ipoint(1, iq)
                     ito = ipoint(2, iq)
                     if (ifrom <= 0 .or. ito <= 0) cycle
@@ -272,7 +272,7 @@ contains
                     nvert(2, ito) = ifrom                     !  this is the one cell above 'ito'
                 end do
                 ioff = 0
-                do iseg = 1, noseg
+                do iseg = 1, num_cells
                     if (nvert(2, iseg) == 0) then           !  this cell starts a column (has no 'ifrom')
                         ioff = ioff + 1
                         nvert(2, iseg) = ioff                  !  column starts at ioff in ivert
@@ -288,22 +288,22 @@ contains
                     end if
                 end do
                 nosegl = 0
-                do iseg = 1, noseg
+                do iseg = 1, num_cells
                     if (nvert(2, iseg) > 0) then
                         nosegl = nosegl + 1
                         nvert(1, nosegl) = nvert(2, iseg)         !  to find head of column
                         nvert(2, iseg) = nosegl                !  point to column number
                     end if
                 end do
-                if (nosegl < noseg) nvert(1, nosegl + 1) = ioff + 1
+                if (nosegl < num_cells) nvert(1, nosegl + 1) = ioff + 1
                 write (file_unit, '(A,i8,A)') ' This model has            : ', nosegl, ' columns of cells'
                 maxlay = 0
                 do i = 1, nosegl
                     is1 = nvert(1, i)                         !  offset of the cell that heads the column in ivert table
-                    if (i < noseg) then
+                    if (i < num_cells) then
                         is2 = nvert(1, i + 1)                      !  offset of the cell that heads next column
                     else
-                        is2 = noseg + 1
+                        is2 = num_cells + 1
                     end if
                     maxlay = max(maxlay, is2 - is1)
                     do j = is1 + 1, is2 - 1
@@ -314,15 +314,15 @@ contains
                 allocate (low(maxlay), dia(maxlay), upr(maxlay))
                 write (file_unit, '(A,i4,A)') ' This model has at most    : ', maxlay, ' layers'
             end if
-            !    after this all: ivert(1:noseg)     contains all water cell numbers in their order of appearance in the columns
+            !    after this all: ivert(1:num_cells)     contains all water cell numbers in their order of appearance in the columns
             !                    nvert(1,1:nosegl)  contains the start locations in ivert of columns 1:nosegl
             !                    nvert(1,nosegl+1)  contains the start location of the non existing column nosegl+1
-            !                    nvert(2,1:noseg)   contains the column number of each cell, negative if not head of column
+            !                    nvert(2,1:num_cells)   contains the column number of each cell, negative if not head of column
             !    the procedure works for any cell numbering if: the columns all are 1D-vertical so all 1-cell wide stacks
-            !                                                   the vertical exchanges run from noq1+noq2+1 to noq1+noq2+noq3
+            !                                                   the vertical exchanges run from num_exchanges_u_dir+num_exchanges_v_dir+1 to num_exchanges_u_dir+num_exchanges_v_dir+num_exchanges_z_dir
             !                                                   the positive velocity or flow is from ipoint(1,iq) to ipoint(2,iq)
             !    it is easily seen that for 2D-horizontal models ivert and nvert(1:2,*) just contain the sequential cell numbers and
-            !                    nosegl = noseg. Since nvert(1,noseg+1) is out of range, you will find statements that deal with this.
+            !                    nosegl = num_cells. Since nvert(1,num_cells+1) is out of range, you will find statements that deal with this.
             write (file_unit, '(A)') ' '
             init = 1    !   do this only once per simulation
         end if
@@ -340,15 +340,15 @@ contains
         work = 0.0d0
         d = disp(1)
         al = aleng(1, 1)
-        do iq = 1, noq
+        do iq = 1, num_exchanges
 
-            ! Note: If the model uses an unstructured grid, noq2 may be zero, so noqh == noq1.
+            ! Note: If the model uses an unstructured grid, num_exchanges_v_dir may be zero, so noqh == num_exchanges_u_dir.
             ! Therefore first check for the vertical direction, then for the second
             ! horizontal direction
             if (iq == noqh + 1) then
                 d = 0.0d0
                 al = aleng(1, 2)
-            elseif (iq == noq1 + 1) then
+            elseif (iq == num_exchanges_u_dir + 1) then
                 d = disp(2)
                 al = aleng(2, 1)
             end if
@@ -399,14 +399,14 @@ contains
             end if
         end do
         ! Add withdrawals to outgoing (1,..) too
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             work(1, iseg) = work(1, iseg) + wdrawal(iseg)
         end do
 
         !   1c: assign a basket number to each cell
         ibas = 0
         wetting = .false.
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             if (work(1, iseg) <= 0.0d0 .and. &
                 work(2, iseg) <= 0.0d0 .and. &
                 work(3, iseg) <= 0.0d0) then
@@ -445,10 +445,10 @@ contains
         !   1d: give each cell of a column the highest basket nr. of the column
         do i = 1, nosegl
             is1 = nvert(1, i)
-            if (i < noseg) then
+            if (i < num_cells) then
                 is2 = nvert(1, i + 1)
             else
-                is2 = noseg + 1
+                is2 = num_cells + 1
             end if
             bmax = 0
             do j = is1, is2 - 1
@@ -466,7 +466,7 @@ contains
             end do
         end do
         if (wetting .and. report) then
-            if (nosegl == noseg) then
+            if (nosegl == num_cells) then
                 write (file_unit, '(/A/A)') &
                     ' WARNING in dlwq19, next cells are becoming wet or dry:', &
                     '  cell       outflow         inflow          diffusion       volume-1        volume-2'
@@ -484,14 +484,14 @@ contains
 
         !   1e: count the size of the baskets for segments
         its = 0
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             its(ibas(iseg)) = its(ibas(iseg)) + 1
         end do
 
         !   1f: determine size of the baskets for fluxes (highest of 'from' and 'to')
         itf = 0
         ibaf = 0
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             ibox = 0
@@ -520,7 +520,7 @@ contains
         iofs = 0
         ioff = 0
         do ibox = nob + 2, 1, -1         ! start with highest frequency
-            do iseg = 1, noseg            ! array of segments in this basket
+            do iseg = 1, num_cells            ! array of segments in this basket
                 if (ibas(iseg) == ibox) then
                     iofs = iofs + 1
                     iords(iofs) = iseg
@@ -533,7 +533,7 @@ contains
                 end if
             end do
             iqsep(ibox) = ioff            ! now the vertical fluxes start
-            do iq = noqh + 1, noq           ! array of the vertical fluxes
+            do iq = noqh + 1, num_exchanges           ! array of the vertical fluxes
                 if (ibaf(iq) == ibox) then
                     ioff = ioff + 1
                     iordf(ioff) = iq
@@ -590,8 +590,8 @@ contains
         if (timon) call timstop(ithand1)
 
         ! PART2: set the fractional step loop for this time step
-        do iseg = 1, noseg
-            do isys = 1, nosys
+        do iseg = 1, num_cells
+            do isys = 1, num_substances_transported
                 dconc2(isys, iseg) = conc(isys, iseg)      ! Initialize dconc2. Becomes new estimate
                 rhs(isys, iseg) = amass(isys, iseg)
             end do
@@ -627,15 +627,15 @@ contains
                 j = nvert(2, iseg)                      ! column number if iseg = head of column
                 if (j <= 0) cycle                     !    zero if not head of column
                 ih1 = nvert(1, j)                          ! pointer to first cell of this column
-                if (j < noseg) then
+                if (j < num_cells) then
                     ih2 = nvert(1, j + 1)                     ! pointer to first cell of next column
                 else
-                    ih2 = noseg + 1                          ! or to just over the edge if j = last column
+                    ih2 = num_cells + 1                          ! or to just over the edge if j = last column
                 end if
                 do j = ih1 + 1, ih2 - 1
                     iseg2 = ivert(j)                                       ! cell number of this cell in column
                     volint(iseg) = volint(iseg) + volint(iseg2)            ! sum volumes to volumes of 'head of column'
-                    do isys = 1, nosys
+                    do isys = 1, num_substances_transported
                         rhs(isys, iseg) = rhs(isys, iseg) + rhs(isys, iseg2)   ! sum masses  to masses  of 'head of column'
                     end do
                 end do
@@ -645,11 +645,11 @@ contains
                 j = nvert(2, iseg)
                 if (j <= 0) cycle
                 if (abs(volint(iseg)) > 1.0d-25) then
-                    do isys = 1, nosys
+                    do isys = 1, num_substances_transported
                         conc(isys, iseg) = rhs(isys, iseg)/volint(iseg)      ! column averaged concentrations
                     end do
                 else                                                      ! dry
-                    do isys = 1, nosys
+                    do isys = 1, num_substances_transported
                         rhs(isys, iseg) = 0.0d0
                         conc(isys, iseg) = 0.0d0
                     end do
@@ -678,7 +678,7 @@ contains
                         if (q > 0.0d0) then
                             ito = ivert(nvert(1, abs(nvert(2, ito))))   ! cell-nr at offset of head of collumn in ivert
                             volint(ito) = volint(ito) + q
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 dq = q*bound(isys, -ifrom)
                                 rhs(isys, ito) = rhs(isys, ito) + dq
                                 conc(isys, ito) = rhs(isys, ito)/volint(ito)
@@ -694,7 +694,7 @@ contains
                         if (q < 0.0d0) then
                             ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
                             volint(ifrom) = volint(ifrom) - q
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 dq = q*bound(isys, -ito)
                                 rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                                 conc(isys, ifrom) = rhs(isys, ifrom)/volint(ifrom)
@@ -714,7 +714,7 @@ contains
                                 if (volint(ifrom) >= q) then             !          it should then have enough volume
                                     volint(ifrom) = volint(ifrom) - q
                                     volint(ito) = volint(ito) + q
-                                    do isys = 1, nosys
+                                    do isys = 1, num_substances_transported
                                         dq = q*conc(isys, ifrom)
                                         rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                                         rhs(isys, ito) = rhs(isys, ito) + dq
@@ -731,7 +731,7 @@ contains
                                 ito = ivert(nvert(1, abs(nvert(2, ito))))
                                 volint(ifrom) = volint(ifrom) - q
                                 volint(ito) = volint(ito) + q
-                                do isys = 1, nosys
+                                do isys = 1, num_substances_transported
                                     dq = q*conc(isys, ifrom)
                                     rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                                     rhs(isys, ito) = rhs(isys, ito) + dq
@@ -751,7 +751,7 @@ contains
                                 if (volint(ito) > -q) then
                                     volint(ifrom) = volint(ifrom) - q
                                     volint(ito) = volint(ito) + q
-                                    do isys = 1, nosys
+                                    do isys = 1, num_substances_transported
                                         dq = q*conc(isys, ito)
                                         rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                                         rhs(isys, ito) = rhs(isys, ito) + dq
@@ -768,7 +768,7 @@ contains
                                 ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
                                 volint(ifrom) = volint(ifrom) - q
                                 volint(ito) = volint(ito) + q
-                                do isys = 1, nosys
+                                do isys = 1, num_substances_transported
                                     dq = q*conc(isys, ito)
                                     rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                                     rhs(isys, ito) = rhs(isys, ito) + dq
@@ -812,7 +812,7 @@ contains
                     if (q < 0.0d0) then
                         ito = ivert(nvert(1, abs(nvert(2, ito))))
                         volint(ito) = volint(ito) + q
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             dq = q*conc(isys, ito)
                             rhs(isys, ito) = rhs(isys, ito) + dq
                             if (volint(ito) > 1.0d-25) conc(isys, ito) = rhs(isys, ito)/volint(ito)
@@ -826,7 +826,7 @@ contains
                     if (q > 0.0d0) then
                         ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
                         volint(ifrom) = volint(ifrom) - q
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             dq = q*conc(isys, ifrom)
                             rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                             if (volint(ifrom) > 1.0d-25) conc(isys, ifrom) = rhs(isys, ifrom)/volint(ifrom)
@@ -840,7 +840,7 @@ contains
                     ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))         !    'from' should be wetting if q > 0
                     volint(ifrom) = volint(ifrom) - q
                     volint(ito) = volint(ito) + q
-                    do isys = 1, nosys
+                    do isys = 1, num_substances_transported
                         dq = q*conc(isys, ifrom)
                         rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                         rhs(isys, ito) = rhs(isys, ito) + dq
@@ -852,7 +852,7 @@ contains
                     ito = ivert(nvert(1, abs(nvert(2, ito))))         !    'to' should be wetting if q < 0
                     volint(ifrom) = volint(ifrom) - q
                     volint(ito) = volint(ito) + q
-                    do isys = 1, nosys
+                    do isys = 1, num_substances_transported
                         dq = q*conc(isys, ito)
                         rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                         rhs(isys, ito) = rhs(isys, ito) + dq
@@ -881,15 +881,15 @@ contains
                     volint(iseg) = 0.0d0
                 end if
                 ipb = isdmp(iseg2)
-                do isys = 1, nosys
+                do isys = 1, num_substances_transported
                     dq = q*conc(isys, iseg)
                     rhs(isys, iseg) = rhs(isys, iseg) - dq
                     if (massbal) amass2(isys, 3) = amass2(isys, 3) - dq
                     if (ipb > 0) dmps(isys, ipb, 3) = dmps(isys, ipb, 3) + dq
                 end do
-                do k = 1, nowst
+                do k = 1, num_waste_loads
                     if (iseg2 == iwaste(k)) then
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             wstdmp(isys, k, 2) = wstdmp(isys, k, 2) + q*conc(isys, iseg)
                         end do
                         exit
@@ -903,21 +903,21 @@ contains
                 j = nvert(2, iseg)
                 if (j > 0) then                                      ! this is head of column
                     ih1 = nvert(1, j)
-                    if (j < noseg) then
+                    if (j < num_cells) then
                         ih2 = nvert(1, j + 1)
                     else
-                        ih2 = noseg + 1
+                        ih2 = num_cells + 1
                     end if
                     vol = 0.0d0                                            ! determine new integrated volume in the flow-file
                     do j = ih1, ih2 - 1
                         iseg2 = ivert(j)
                         vol = vol + fact*volnew(iseg2) + (1.0d0 - fact)*volold(iseg2)
-                        do isys = 1, nosys                                  !    apply the derivatives (also wasteloads)
+                        do isys = 1, num_substances_transported                                  !    apply the derivatives (also wasteloads)
                             rhs(isys, iseg) = rhs(isys, iseg) + deriv(isys, iseg2)*dt(fbox)
                         end do
                     end do
                     if (vol > 1.0d-25) then
-                        do isys = 1, nosys                                  !    the new concentrations
+                        do isys = 1, num_substances_transported                                  !    the new concentrations
                             conc(isys, iseg) = rhs(isys, iseg)/vol
                         end do
                     end if
@@ -925,7 +925,7 @@ contains
                         iseg2 = ivert(j)
                         f1 = fact*volnew(iseg2) + (1.0d0 - fact)*volold(iseg2)
                         volint(iseg2) = f1
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             conc(isys, iseg2) = conc(isys, iseg)
                             if (f1 > 1.0d-25) then
                                 rhs(isys, iseg2) = conc(isys, iseg)*f1
@@ -953,12 +953,12 @@ contains
                     if (ifrom < 0) then                               ! The 'from' element was a boundary.
                         volint(ito) = volint(ito) + q
                         if (q > 0.0d0) then
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 dq = q*bound(isys, -ifrom)
                                 rhs(isys, ito) = rhs(isys, ito) + dq
                             end do
                         else
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 dq = q*conc(isys, ito)
                                 rhs(isys, ito) = rhs(isys, ito) + dq
                             end do
@@ -968,12 +968,12 @@ contains
                     if (ito < 0) then                               ! The 'to' element was a boundary.
                         volint(ifrom) = volint(ifrom) - q
                         if (q > 0.0d0) then
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 dq = q*conc(isys, ifrom)
                                 rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                             end do
                         else
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 dq = q*bound(isys, -ito)
                                 rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                             end do
@@ -983,13 +983,13 @@ contains
                     volint(ifrom) = volint(ifrom) - q                      ! The regular case
                     volint(ito) = volint(ito) + q
                     if (q > 0.0d0) then
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             dq = q*conc(isys, ifrom)
                             rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                             rhs(isys, ito) = rhs(isys, ito) + dq
                         end do
                     else
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             dq = q*conc(isys, ito)
                             rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                             rhs(isys, ito) = rhs(isys, ito) + dq
@@ -1003,11 +1003,11 @@ contains
                 do i = is1, is2
                     iseg = iords(i)
                     if (volint(iseg) > 1.0d-25) then
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             dconc2(isys, iseg) = rhs(isys, iseg)/volint(iseg)
                         end do
                     else
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             dconc2(isys, iseg) = conc(isys, iseg)
                         end do
                     end if
@@ -1039,7 +1039,7 @@ contains
                         if (iqdmp(iq) > 0) ipb = iqdmp(iq)
                     end if
 
-                    if (iq <= noq1) then
+                    if (iq <= num_exchanges_u_dir) then
                         e = disp(1)
                         al = aleng(1, 1)
                     else
@@ -1065,7 +1065,7 @@ contains
                             d = d + min(-f2*q + 0.5d0*q*q*dt(ibox)/a/al, 0.0d0)
                         end if
                         d = d*dt(ibox)
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             dq = d*(bound(isys, -ifrom) - conc(isys, ito))
                             rhs(isys, ito) = rhs(isys, ito) + dq
                             dconc2(isys, ito) = dconc2(isys, ito) + dq/vto
@@ -1095,7 +1095,7 @@ contains
                             d = d + min(-f2*q + 0.5d0*q*q*dt(ibox)/a/al, 0.0d0)
                         end if
                         d = d*dt(ibox)
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             dq = d*(conc(isys, ifrom) - bound(isys, -ito))
                             rhs(isys, ifrom) = rhs(isys, ifrom) - dq
                             dconc2(isys, ifrom) = dconc2(isys, ifrom) - dq/vfrom
@@ -1121,7 +1121,7 @@ contains
                     if (q < 0.0d0) f2 = f2 - 1.0d0
                     d = e + min(-f2*q + 0.5d0*q*q*dt(ibox)/a/al, 0.0d0)
                     d = d*dt(ibox)
-                    do isys = 1, nosys
+                    do isys = 1, num_substances_transported
                         if (d < 0.0d0) then
                             e2 = d*(conc(isys, ifrom) - conc(isys, ito))
                             s = sign(1.0d0, e2)
@@ -1186,13 +1186,13 @@ contains
                     j = nvert(2, iseg)
                     if (j <= 0) cycle                                  ! Do this only for head of columns
                     ih1 = nvert(1, j)
-                    if (j < noseg) then
+                    if (j < num_cells) then
                         ih2 = nvert(1, j + 1)
                     else
-                        ih2 = noseg + 1
+                        ih2 = num_cells + 1
                     end if
                     if (ih2 == ih1 + 1) then                             ! One cell in the column
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             rhs(isys, iseg) = dconc2(isys, iseg)
                         end do
                     else
@@ -1229,7 +1229,7 @@ contains
                             ilay = ilay + 1
                             pivot = low(ilay + 1)/dia(ilay)
                             dia(ilay + 1) = dia(ilay + 1) - pivot*upr(ilay)
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 rhs(isys, iseg2) = rhs(isys, iseg2) - pivot*rhs(isys, iseg)
                             end do
                         end do
@@ -1240,13 +1240,13 @@ contains
                             iseg = ivert(j)
                             iseg2 = ivert(j + 1)
                             pivot = upr(ilay)
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 rhs(isys, iseg2) = rhs(isys, iseg2)/dia(ilay + 1)
                                 rhs(isys, iseg) = rhs(isys, iseg) - pivot*rhs(isys, iseg2)
                             end do
                             ilay = ilay - 1
                         end do
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             rhs(isys, iseg) = rhs(isys, iseg)/dia(1)
                         end do
                     end if
@@ -1254,7 +1254,7 @@ contains
                     !   The new concentrations are stored and rhs contains the mass of them again
                     do j = ih1, ih2 - 1
                         iseg = ivert(j)
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             dconc2(isys, iseg) = rhs(isys, iseg)
                             rhs(isys, iseg) = rhs(isys, iseg)*volint(iseg)
                         end do
@@ -1281,15 +1281,15 @@ contains
                         volint(iseg) = 0.0d0
                     end if
                     ipb = isdmp(iseg)
-                    do isys = 1, nosys
+                    do isys = 1, num_substances_transported
                         dq = q*dconc2(isys, iseg)
                         rhs(isys, iseg) = rhs(isys, iseg) - dq
                         if (massbal) amass2(isys, 3) = amass2(isys, 3) - dq
                         if (ipb > 0) dmps(isys, ipb, 3) = dmps(isys, ipb, 3) + dq
                     end do
-                    do k = 1, nowst
+                    do k = 1, num_waste_loads
                         if (iseg == iwaste(k)) then
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 wstdmp(isys, k, 2) = wstdmp(isys, k, 2) + q*dconc2(isys, iseg)
                             end do
                             exit
@@ -1309,12 +1309,12 @@ contains
                     if (vertical_upwind) then
                         q = flow(iq)*dt(ibox)                      ! This is the upwind differences version
                         if (q > 0.0) then
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 dq = q*dconc2(isys, ifrom)
                                 dmpq(isys, ipb, 1) = dmpq(isys, ipb, 1) + dq
                             end do
                         else
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 dq = q*dconc2(isys, ito)
                                 dmpq(isys, ipb, 2) = dmpq(isys, ipb, 2) - dq
                             end do
@@ -1322,12 +1322,12 @@ contains
                     else
                         q = flow(iq)*dt(ibox)/2.0d0              ! This is the central differences version
                         if (q > 0.0) then
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 dq = q*(dconc2(isys, ifrom) + dconc2(isys, ito))
                                 dmpq(isys, ipb, 1) = dmpq(isys, ipb, 1) + dq
                             end do
                         else
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 dq = q*(dconc2(isys, ifrom) + dconc2(isys, ito))
                                 dmpq(isys, ipb, 2) = dmpq(isys, ipb, 2) - dq
                             end do
@@ -1345,12 +1345,12 @@ contains
                     vol = fact*volnew(iseg) + (1.0d0 - fact)*volold(iseg)
                     volint(iseg) = vol
                     if (vol > 1.0d-25) then
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             rhs(isys, iseg) = rhs(isys, iseg) + deriv(isys, iseg)*dt(ibox)
                             conc(isys, iseg) = rhs(isys, iseg)/vol
                         end do
                     else
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             rhs(isys, iseg) = rhs(isys, iseg) + deriv(isys, iseg)*dt(ibox)
                             conc(isys, iseg) = dconc2(isys, iseg)
                         end do
@@ -1369,15 +1369,15 @@ contains
 
         do i = 1, its(nob + 2)                  !  update mass of box of dry cells
             iseg = iords(i)
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 rhs(isys, iseg) = rhs(isys, iseg) + deriv(isys, iseg)*idt
             end do
         end do
 
         ! PART3:  set now the implicit step of additional velocities and diffusions per substance in the vertical
-        ! There is also an implicit part in the bed if NOQ4 > 0.
+        ! There is also an implicit part in the bed if num_exchanges_bottom_dir > 0.
 
-        noqv = noq - noqh + noq4
+        noqv = num_exchanges - noqh + num_exchanges_bottom_dir
         if (noqv <= 0) goto 9999
         if (timon) call timstrt("vert.add.fluxes", ithand7)
 
@@ -1398,9 +1398,9 @@ contains
         ! Prepare implicit step additional velocities and dispersions, finalize passive substances (dlwq42)
         do iseg = 1, nosss
             vol = volnew(iseg)
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 diag(isys, iseg) = vol
-                if (iseg > noseg) rhs(isys, iseg) = amass(isys, iseg) + deriv(isys, iseg)*idt
+                if (iseg > num_cells) rhs(isys, iseg) = amass(isys, iseg) + deriv(isys, iseg)*idt
             end do
         end do
 
@@ -1409,7 +1409,7 @@ contains
         bcodia(:, 1:noqv) = 0.0d0
 
         ! Loop over exchanges to fill the matrices
-        do iq = noqh + 1, noq + noq4
+        do iq = noqh + 1, num_exchanges + num_exchanges_bottom_dir
 
             ! Initialisations, check for transport anyhow
             iqv = iq - noqh
@@ -1439,9 +1439,9 @@ contains
                 dl = 0.0d0
             end if
             e = e*dl
-            if (iq > noq) e = 0.0d0        !  no constant water diffusion in the bed
+            if (iq > num_exchanges) e = 0.0d0        !  no constant water diffusion in the bed
 
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
 
                 ! advection
                 q = 0.0d0
@@ -1454,7 +1454,7 @@ contains
                         q1 = 0.0d0
                         q2 = q
                     end if
-                else if (iq > noq .or. (abound .and. loword)) then  ! in the bed upwind
+                else if (iq > num_exchanges .or. (abound .and. loword)) then  ! in the bed upwind
                     if (q > 0.0d0) then
                         q1 = q
                         q2 = 0.0d0
@@ -1509,12 +1509,12 @@ contains
         end do
 
         ! Now make the solution:  loop over vertical exchanges in the water
-        do iq = noqh + 1, noq
+        do iq = noqh + 1, num_exchanges
             iqv = iq - noqh
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom <= 0 .or. ito <= 0) cycle
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 pivot = acodia(isys, iqv)/diag(isys, ifrom)
                 diag(isys, ito) = diag(isys, ito) - pivot*bcodia(isys, iqv)
                 rhs(isys, ito) = rhs(isys, ito) - pivot*rhs(isys, ifrom)
@@ -1522,13 +1522,13 @@ contains
         end do
 
         ! loop over exchanges in the bed
-        do iq = noq + 1, noq + noq4
+        do iq = num_exchanges + 1, num_exchanges + num_exchanges_bottom_dir
             iqv = iq - noqh
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom <= 0 .or. ito <= 0) cycle
             iq3 = 0                            !  find the second equivalent
-            do iq2 = iq + 1, noq + noq4            !  pointer
+            do iq2 = iq + 1, num_exchanges + num_exchanges_bottom_dir            !  pointer
                 if (ipoint(1, iq2) == ifrom .and. &
                     ipoint(2, iq2) == ito) then
                     iq3 = iq2
@@ -1536,7 +1536,7 @@ contains
                 end if
             end do                              !  if not found, this was the
             if (iq3 == 0) cycle            !  the second and must be skipped
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 pivot = acodia(isys, iqv) + acodia(isys, iq3 - noqh)
                 pivot = pivot/diag(isys, ifrom)
                 rhs(isys, ito) = rhs(isys, ito) - pivot*rhs(isys, ifrom)
@@ -1545,13 +1545,13 @@ contains
         end do
 
         ! inverse loop over exchanges in the bed
-        do iq = noq + noq4, noq + 1, -1
+        do iq = num_exchanges + num_exchanges_bottom_dir, num_exchanges + 1, -1
             iqv = iq - noqh
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ito <= 0) cycle
             iq3 = 0                            !  find the second equivalent
-            do iq2 = iq - 1, noq + 1, -1          !  pointer
+            do iq2 = iq - 1, num_exchanges + 1, -1          !  pointer
                 if (ipoint(1, iq2) == ifrom .and. &
                     ipoint(2, iq2) == ito) then
                     iq3 = iq2
@@ -1559,38 +1559,38 @@ contains
                 end if
             end do                              !  if not found, this was the
             if (iq3 == 0) cycle            !  the second and must be skipped
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 pivot = diag(isys, ito) + tiny(pivot)
                 rhs(isys, ito) = rhs(isys, ito)/pivot
                 diag(isys, ito) = 1.0
             end do
             if (ifrom <= 0) cycle
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 pivot = bcodia(isys, iqv) + bcodia(isys, iq3 - noqh)
                 rhs(isys, ifrom) = rhs(isys, ifrom) - pivot*rhs(isys, ito)
             end do
         end do
 
         ! Inverse loop over exchanges in the water phase
-        do iq = noq, noqh + 1, -1
+        do iq = num_exchanges, noqh + 1, -1
             iqv = iq - noqh
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ito <= 0) cycle
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 pivot = diag(isys, ito) + tiny(pivot)
                 rhs(isys, ito) = rhs(isys, ito)/pivot
                 diag(isys, ito) = 1.0
             end do
             if (ifrom <= 0) cycle
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 pivot = bcodia(isys, iqv)
                 rhs(isys, ifrom) = rhs(isys, ifrom) - pivot*rhs(isys, ito)
             end do
         end do
 
         do iseg = 1, nosss       !  for if some diagonal entries are not 1.0
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 rhs(isys, iseg) = rhs(isys, iseg)/diag(isys, iseg)
             end do
         end do
@@ -1598,7 +1598,7 @@ contains
         ! Mass balances ?
         if (.not. massbal) goto 9998
 
-        do iq = noqh + 1, noq + noq4
+        do iq = noqh + 1, num_exchanges + num_exchanges_bottom_dir
 
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
@@ -1627,9 +1627,9 @@ contains
                 dl = 0.0d0
             end if
             e = e*dl
-            if (iq > noq) e = 0.0d0      !  no constant water diffusion in the bottom
+            if (iq > num_exchanges) e = 0.0d0      !  no constant water diffusion in the bottom
 
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
 
                 ! advection
                 q = 0.0d0
@@ -1642,7 +1642,7 @@ contains
                         q1 = 0.0d0
                         q2 = q
                     end if
-                else if (iq > noq .or. (abound .and. loword)) then  ! in the bed upwind
+                else if (iq > num_exchanges .or. (abound .and. loword)) then  ! in the bed upwind
                     if (q > 0.0d0) then
                         q1 = q
                         q2 = 0.0d0
@@ -1705,22 +1705,22 @@ contains
 
         ! take care that rhs of water cells contains the mass again
 
-        9998 do iseg = 1, noseg
+        9998 do iseg = 1, num_cells
             vol = volnew(iseg)
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 rhs(isys, iseg) = rhs(isys, iseg)*vol
             end do
         end do
 
         ! assign the double precisison results to the single precision system arrays
         ! for the bed phase only
-        do iseg = noseg + 1, nosss
+        do iseg = num_cells + 1, nosss
             vol = volnew(iseg)
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 amass(isys, iseg) = rhs(isys, iseg)*vol
                 conc(isys, iseg) = rhs(isys, iseg)
             end do
-            do isys = nosys + 1, notot - nototp         ! all passive substances
+            do isys = num_substances_transported + 1, num_substances_total - num_substances_part         ! all passive substances
                 amass(isys, iseg) = amass(isys, iseg) + deriv(isys, iseg)*idt
                 conc(isys, iseg) = amass(isys, iseg)/surface(iseg)
             end do
@@ -1730,14 +1730,14 @@ contains
         !         assign the double precisison results to the single precision system arrays
         !                                                          for the water phase only
 
-        9999 do iseg = 1, noseg
+        9999 do iseg = 1, num_cells
             vol = volnew(iseg)
             if (report) then
                 if (abs(vol - volint(iseg)) > 1.0e-6*max(vol, volint(iseg))) &
                     write (file_unit, '(A,i8,A,e16.7,A,e16.7)') &
                     ' cell: ', iseg, '; computed volume: ', volint(iseg), '; in file: ', vol
             end if
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 amass(isys, iseg) = rhs(isys, iseg)
                 if (abs(vol) > 1.0d-25) then
                     conc(isys, iseg) = rhs(isys, iseg)/vol
@@ -1745,7 +1745,7 @@ contains
                     conc(isys, iseg) = dconc2(isys, iseg)
                 end if
             end do
-            do isys = nosys + 1, notot - nototp         ! all passive substances
+            do isys = num_substances_transported + 1, num_substances_total - num_substances_part         ! all passive substances
                 amass(isys, iseg) = amass(isys, iseg) + deriv(isys, iseg)*idt
                 conc(isys, iseg) = amass(isys, iseg)/surface(iseg)
             end do

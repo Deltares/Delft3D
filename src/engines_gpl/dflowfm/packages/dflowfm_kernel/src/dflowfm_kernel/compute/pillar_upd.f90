@@ -33,7 +33,7 @@
   ! =================================================================================================
   ! =================================================================================================
   subroutine pillar_upd()
-    use m_flowexternalforcings, only: Cpil
+    use fm_external_forcings_data, only: Cpil
     use m_flowgeom            , only: lnx, ln, dx
     use m_flow                , only: u1, v, advi
     use m_flowparameters      , only: japillar

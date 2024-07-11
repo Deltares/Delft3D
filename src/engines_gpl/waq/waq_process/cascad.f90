@@ -28,9 +28,9 @@ module m_cascad
 contains
 
 
-    subroutine cascad (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine cascad (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
         !>\file
@@ -81,9 +81,9 @@ contains
 
         implicit none
 
-        real(kind = real_wp) :: pmsa  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(20), increm(20), noseg, noflux, &
-                iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(20), increm(20), num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         integer(kind = int_wp) :: iseg, iflux, ikmrk1
 
@@ -99,31 +99,31 @@ contains
         ipnt = ipoint(1:20)
         iflux = 0
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
             call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
 
-                c1 = pmsa(ipnt(1))
-                c2 = pmsa(ipnt(2))
-                c3 = pmsa(ipnt(3))
-                c4 = pmsa(ipnt(4))
-                c5 = pmsa(ipnt(5))
-                decay1 = pmsa(ipnt(6))
-                decay2 = pmsa(ipnt(7))
-                decay3 = pmsa(ipnt(8))
-                decay4 = pmsa(ipnt(9))
-                decay5 = pmsa(ipnt(10))
-                trc1c2 = pmsa(ipnt(11))
-                trc1c3 = pmsa(ipnt(12))
-                trc1c4 = pmsa(ipnt(13))
-                trc1c5 = pmsa(ipnt(14))
-                trc2c3 = pmsa(ipnt(15))
-                trc2c4 = pmsa(ipnt(16))
-                trc2c5 = pmsa(ipnt(17))
-                trc3c4 = pmsa(ipnt(18))
-                trc3c5 = pmsa(ipnt(19))
-                trc4c5 = pmsa(ipnt(20))
+                c1 = process_space_real(ipnt(1))
+                c2 = process_space_real(ipnt(2))
+                c3 = process_space_real(ipnt(3))
+                c4 = process_space_real(ipnt(4))
+                c5 = process_space_real(ipnt(5))
+                decay1 = process_space_real(ipnt(6))
+                decay2 = process_space_real(ipnt(7))
+                decay3 = process_space_real(ipnt(8))
+                decay4 = process_space_real(ipnt(9))
+                decay5 = process_space_real(ipnt(10))
+                trc1c2 = process_space_real(ipnt(11))
+                trc1c3 = process_space_real(ipnt(12))
+                trc1c4 = process_space_real(ipnt(13))
+                trc1c5 = process_space_real(ipnt(14))
+                trc2c3 = process_space_real(ipnt(15))
+                trc2c4 = process_space_real(ipnt(16))
+                trc2c5 = process_space_real(ipnt(17))
+                trc3c4 = process_space_real(ipnt(18))
+                trc3c5 = process_space_real(ipnt(19))
+                trc4c5 = process_space_real(ipnt(20))
 
                 !
                 ! All processes considered here are linear ...

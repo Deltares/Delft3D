@@ -34,7 +34,7 @@ use timers
 implicit none
 
 contains
-    subroutine orien_temperature ( n          , m           , nmax     , mmax        , mnmaxk   ,    &
+    subroutine orien_temperature ( n          , m           , num_rows     , num_columns        , mnmaxk   ,    &
                                    lgrid      , lgrid2      , lgrid3   , temper1     , v_swim   ,    &
                                    d_swim     , angle       , ipart    , xpart       , ypart    ,    &
                                    a          , b           , flow     , local_angle , lb_temp  ,    &
@@ -78,8 +78,8 @@ contains
 
         integer                    :: m                   ! m
         integer                    :: n                   ! n
-        integer(int_wp )                :: nmax                ! first grid dimension
-        integer(int_wp )                :: mmax                ! second grid dimension
+        integer(int_wp )                :: num_rows                ! first grid dimension
+        integer(int_wp )                :: num_columns                ! second grid dimension
         integer                    :: nlower              ! nlower
         integer                    :: nhigher             ! nhigher
         integer                    :: mlower              ! mlower
@@ -133,12 +133,12 @@ contains
         !Make sure all grid selections are within limits
         if(m-1 .le. 1) mlower = 1
         if(m-1 .gt. 1) mlower = m-1
-        if(m+1 .gt. mmax) mhigher = mmax
-        if(m+1 .le. mmax) mhigher = m+1
+        if(m+1 .gt. num_columns) mhigher = num_columns
+        if(m+1 .le. num_columns) mhigher = m+1
         if(n-1 .le. 1) nlower = 1
         if(n-1 .gt. 1) nlower = n-1
-        if(n+1 .gt. nmax) nhigher = nmax
-        if(n+1 .le. nmax) nhigher = n+1
+        if(n+1 .gt. num_rows) nhigher = num_rows
+        if(n+1 .le. num_rows) nhigher = n+1
 
         n1  = lgrid2(nlower,m)                                                     ! Get the gridnumbering from the total grid to down of particle position
         n2  = lgrid2(n,mlower)                                                     ! Get the gridnumbering from the total grid to the left of particle position

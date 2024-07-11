@@ -9,7 +9,7 @@ from src.config.types.presence_type import PresenceType
 from src.suite.run_data import RunData
 from src.suite.test_case_result import TestCaseResult
 from src.suite.test_set_runner import TestSetRunner
-from src.utils.common import log_header, log_separator, log_table
+from src.utils.common import log_header, log_separator, log_table, get_default_logging_folder_path
 from src.utils.comparers.comparer_factory import ComparerFactory
 from src.utils.comparers.comparison_result import ComparisonResult
 from src.utils.comparers.i_comparer import IComparer
@@ -79,7 +79,7 @@ class ComparisonRunner(TestSetRunner):
             return test_result
 
         # Step 3: Write the results to a .txt file in the test case directory.
-        log_file = os.path.join(test_case_config.absolute_test_case_path, "result.txt")
+        log_file = os.path.join(get_default_logging_folder_path(), test_case_config.name, "result.txt")
         logger.info(f"Detailed comparison results will be written to: {log_file}")
 
         logger_list = [FileLogger(LogLevel.DEBUG, test_case_config.name, log_file)]

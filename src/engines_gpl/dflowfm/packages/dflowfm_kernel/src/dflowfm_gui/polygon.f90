@@ -40,9 +40,9 @@
       COMMON /COLNOW/ NCOLNOW
       CALL SETCOL(NCOL)
       call PTABS(X(1),Y(1))
-      DO 10 I = 2,N
+      do I = 2,N
          call LNABS(X(I),Y(I))
-   10 CONTINUE
+      end do
       call LNABS(X(1),Y(1))
       RETURN
     END

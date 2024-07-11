@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e03_f02_c04_statistics" ref="dwaq_default">
         <dependency version="2024-01-11T09:00:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
         <path version="2024-01-11T13:20:00">e03_waq/f02_hongkong/c04_statistics</path>

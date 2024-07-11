@@ -16,7 +16,7 @@ from src.utils.logging.test_loggers.test_result_type import TestResultType
 
 class FileTestLogger(FileLogger, ITestLogger):
     def __init__(self, test_case_id: str) -> None:
-        path = os.path.join(get_default_logging_folder_path(), test_case_id + ".log")
+        path = os.path.join(get_default_logging_folder_path(), test_case_id, test_case_id + ".log")
         super().__init__(LogLevel.DEBUG, test_case_id, path)
         self.__test_case_id = test_case_id
 

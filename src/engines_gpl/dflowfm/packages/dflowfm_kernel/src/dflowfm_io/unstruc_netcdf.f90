@@ -487,6 +487,7 @@ type t_unc_mapids
    integer :: id_flowelemzw(MAX_ID_VAR)      = -1 !< Variable ID for time dependent layer interface z-coord
    integer :: id_flowlinkzu(MAX_ID_VAR)      = -1 !< Variable ID for time dependent layered flow link z-coord
    integer :: id_flowlinkzu_bnd(MAX_ID_VAR)  = -1 !< Variable ID for time dependent layered flow link z-coord bounds
+   integer :: id_flowlinkzwu(MAX_ID_VAR)     = -1 !< Variable ID for time dependent layered flow link interface z-coord
    integer :: id_negdpt(MAX_ID_VAR)       = -1 !< Variable ID for number of times negative depth is calculated in a node
    integer :: id_negdpt_cum(MAX_ID_VAR)   = -1 !< Variable ID for cumulative number of times negative depth is calculated in a node
    integer :: id_noiter(MAX_ID_VAR)       = -1 !< Variable ID for number of times no iteration is generated in a node
@@ -2956,7 +2957,7 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, const_units, ifrac2const
     use m_fm_wq_processes, only: wqbot3D_output, numwqbots, wqbotnames, wqbotunits, wqbot
     use m_xbeach_data, only: E, thetamean, sigmwav
-    use m_flowexternalforcings, only: numtracers
+    use fm_external_forcings_data, only: numtracers
     use m_partitioninfo
     use m_missing
     use m_turbulence
@@ -5279,7 +5280,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
    character(len=10000)                                :: flag_mean
 
    double precision, dimension(:), allocatable         :: numlimdtdbl
-   double precision, dimension(:), allocatable         :: work1d
+   double precision, dimension(:), allocatable         :: work1d, work1d2
    double precision                                    :: vicc, dicc
 
    double precision, dimension(:), pointer             :: dens
@@ -5385,32 +5386,35 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
       endif
 
       ! Time dependent grid layers
-      if (kmx > 0 .and. jafullgridoutput == 1) then
+      if (kmx > 0 .and. jafullgridoutput > 0) then
          ! Face-centred z-coordinates:
          ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowelemzcc, nc_precision, UNC_LOC_S3D, 'flowelem_zcc', 'altitude', 'Vertical coordinate of layer centres at pressure points'   , 'm' , jabndnd=jabndnd_)
          ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowelemzw , nc_precision, UNC_LOC_W  , 'flowelem_zw' , 'altitude', 'Vertical coordinate of layer interfaces at pressure points', 'm' , jabndnd=jabndnd_)
 
-         if (ndx2d > 0) then ! Borrow the "2-dimension" from the already defined mesh (either 2d or 1d, does not matter)
-            id_twodim = mapids%id_tsp%meshids2d%dimids(mdim_two)
-         else
-            id_twodim = mapids%id_tsp%meshids1d%dimids(mdim_two)
-      endif
-
-         ! Bounds variable for face-centred z-coordinates:
-         ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowelemzcc_bnd, nc_precision, UNC_LOC_S3D, 'flowelem_zcc_bnd', 'altitude', 'Bounds of vertical coordinate of layers at pressure points'   , 'm' , &
-            dimids = (/ id_twodim, -3, -2, -1 /), jabndnd=jabndnd_)
-         ierr = nf90_put_att(mapids%ncid, mapids%id_flowelemzcc(2), 'bounds', trim(mesh2dname)//'_flowelem_zcc_bnd')
-         ierr = nf90_put_att(mapids%ncid, mapids%id_flowelemzcc(1), 'bounds', trim(mesh1dname)//'_flowelem_zcc_bnd')
-
          ! Edge-centred z-coordinates:
          ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzu, nc_precision, UNC_LOC_U3D, 'flowlink_zu', 'altitude', 'Vertical coordinate of layer centres at velocity points'   , 'm' , jabndnd=jabndnd_)
+         ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzwu,nc_precision, UNC_LOC_WU,  'flowlink_zwu','altitude', 'Vertical coordinate of layer interfaces at velocity points', 'm' , jabndnd=jabndnd_)
 
-         ! Bounds variable for edge-centred z-coordinates:
-         ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzu_bnd, nc_precision, UNC_LOC_U3D, 'flowlink_zu_bnd', 'altitude', 'Bounds of vertical coordinate of layers at velocity points'   , 'm' , &
-            dimids = (/ id_twodim, -3, -2, -1 /), jabndnd=jabndnd_)
-         ierr = nf90_put_att(mapids%ncid, mapids%id_flowlinkzu(2), 'bounds', trim(mesh2dname)//'_flowlink_zu_bnd')
-         ierr = nf90_put_att(mapids%ncid, mapids%id_flowlinkzu(1), 'bounds', trim(mesh1dname)//'_flowlink_zu_bnd')
-      endif
+         if (jafullgridoutput == 2) then
+             if (ndx2d > 0) then ! Borrow the "2-dimension" from the already defined mesh (either 2d or 1d, does not matter)
+                id_twodim = mapids%id_tsp%meshids2d%dimids(mdim_two)
+             else
+                id_twodim = mapids%id_tsp%meshids1d%dimids(mdim_two)
+             endif
+
+             ! Bounds variable for face-centred z-coordinates:
+             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowelemzcc_bnd, nc_precision, UNC_LOC_S3D, 'flowelem_zcc_bnd', 'altitude', 'Bounds of vertical coordinate of layers at pressure points'   , 'm' , &
+             dimids = (/ id_twodim, -3, -2, -1 /), jabndnd=jabndnd_)
+             ierr = nf90_put_att(mapids%ncid, mapids%id_flowelemzcc(2), 'bounds', trim(mesh2dname)//'_flowelem_zcc_bnd')
+             ierr = nf90_put_att(mapids%ncid, mapids%id_flowelemzcc(1), 'bounds', trim(mesh1dname)//'_flowelem_zcc_bnd')
+         
+             ! Bounds variable for edge-centred z-coordinates:
+             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzu_bnd, nc_precision, UNC_LOC_U3D, 'flowlink_zu_bnd', 'altitude', 'Bounds of vertical coordinate of layers at velocity points'   , 'm' , &
+             dimids = (/ id_twodim, -3, -2, -1 /), jabndnd=jabndnd_)
+             ierr = nf90_put_att(mapids%ncid, mapids%id_flowlinkzu(2), 'bounds', trim(mesh2dname)//'_flowlink_zu_bnd')
+             ierr = nf90_put_att(mapids%ncid, mapids%id_flowlinkzu(1), 'bounds', trim(mesh1dname)//'_flowlink_zu_bnd')
+         end if
+      end if
 
       ! Water levels
       if (jamaps1 > 0) then
@@ -6482,7 +6486,7 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
    endif
 
    ! Time dependent grid layers
-   if (kmx > 0 .and. jafullgridoutput == 1) then
+   if (kmx > 0 .and. jafullgridoutput > 0) then
       call realloc(work1d, ndkx, keepExisting = .false.)
       call realloc(work3d2, (/ 2, kmx, max(lnx, ndxndxi) /), keepExisting=.false., fill = dmiss)
       do kk = 1,ndxndxi
@@ -6495,11 +6499,14 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
       enddo
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowelemzcc, UNC_LOC_S3D, work1d, jabndnd=jabndnd_)
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowelemzw , UNC_LOC_W  , zws   , jabndnd=jabndnd_)
-      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowelemzcc_bnd, UNC_LOC_S, work3d2, locdim = 3, jabndnd=jabndnd_)
-      !ierr = nf90_put_var(mapids%ncid, mapids%id_flowelemzcc_bnd(2), work3d2(1:2, 1:kmx, 1:ndxndxi), start=(/ 1, 1, 1, itim /), count=(/ 2, kmx, ndxndxi, 1 /))
-      ! TODO: support this in 1D or 1D2D as well, via unc_put_var_map interfaces.
+      if (jafullgridoutput == 2) then
+          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowelemzcc_bnd, UNC_LOC_S, work3d2, locdim = 3, jabndnd=jabndnd_)
+          !ierr = nf90_put_var(mapids%ncid, mapids%id_flowelemzcc_bnd(2), work3d2(1:2, 1:kmx, 1:ndxndxi), start=(/ 1, 1, 1, itim /), count=(/ 2, kmx, ndxndxi, 1 /))
+          ! TODO: support this in 1D or 1D2D as well, via unc_put_var_map interfaces.
+      end if
 
       call realloc(work1d, lnkx, keepExisting = .false., fill = dmiss)
+      call realloc(work1d2, lnkx, keepExisting = .false., fill = dmiss)
       ! work3d2 already sufficiently allocated above.
       do LL = 1,lnx
          !DIR$ INLINE
@@ -6511,9 +6518,15 @@ subroutine unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
             work1d(L) = zwu0 + .5d0 * (hu(L) + hu(L-1))
             work3d2(1:2,L-Lb+nlaybL,LL) = (/ zwu0 + hu(L-1), zwu0 + hu(L) /) ! vertical z-bounds of this cell in this layer
          enddo
+         do L = Lb-1,Ltx
+            work1d2(L) = zwu0 + hu(L)
+         enddo
       enddo
       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzu, UNC_LOC_U3D, work1d, jabndnd=jabndnd_)
-      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzu_bnd, UNC_LOC_U, work3d2, locdim = 3, jabndnd=jabndnd_)
+      ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzwu, UNC_LOC_WU, work1d2, jabndnd=jabndnd_)
+      if (jafullgridoutput == 2) then
+        ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzu_bnd, UNC_LOC_U, work3d2, locdim = 3, jabndnd=jabndnd_)
+      end if
    endif
 
    ! Water level
@@ -13073,7 +13086,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
     use m_flowtimes
     use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, constituents, itrac2const, const_names,ifrac2const
     use m_fm_wq_processes
-    use m_flowexternalforcings, only: numtracers, trnames
+    use fm_external_forcings_data, only: numtracers, trnames
     use m_sediment
     use bedcomposition_module
     use m_flowgeom
@@ -14428,7 +14441,7 @@ function unc_read_merged_map(um, imapfile, filename, ierr) result (success)
    use dfm_error             , only : DFM_GENERICERROR
    use m_partitioninfo       , only : jampi, my_rank, idomain, ighostlev, sdmn, link_ghostdata, reduce_key, reduce_int_sum
    use m_flowgeom            , only : ndxi, lnx, ln, ndx
-   use m_flowexternalforcings, only : ibnd_own, kbndz, ndxbnd_own, jaoldrstfile
+   use fm_external_forcings_data, only : ibnd_own, kbndz, ndxbnd_own, jaoldrstfile
    character(len=*)     , intent(in   ) :: filename  !< Name of NetCDF file.
    integer              , intent(in   ) :: imapfile
    integer              , intent(inout) :: ierr
@@ -17319,7 +17332,7 @@ subroutine read_structures_from_rst(ncid, filename, it_read)
    use m_flow, only: au
    use m_1d_structures
    use m_General_Structure
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_longculverts
    implicit none
    integer,          intent(in   )   :: ncid        !< ID of the rst file
@@ -18421,7 +18434,7 @@ use m_flowgeom, only: ndxi, ndx
 use m_flow, only: kmx, work1
 use m_flowparameters, only: jarstbnd
 use m_missing, only: dmiss
-use m_flowexternalforcings, only: ndxbnd_own
+use fm_external_forcings_data, only: ndxbnd_own
 use m_partitioninfo, only: jampi
 
 !input/output

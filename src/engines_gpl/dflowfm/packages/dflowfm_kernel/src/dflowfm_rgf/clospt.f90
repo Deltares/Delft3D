@@ -43,8 +43,8 @@
       integer :: i, j
       RMIN  = 1d+20
 
-      DO 10 I = 1,MC
-         DO 10 J = 1,NC
+      do I = 1,MC
+         do J = 1,NC
             IF (X(I,J) .NE. XYMIS) THEN
                R = ABS(XL - X(I,J) ) + ABS(YL - Y(I,J) )
                IF (R .LT. RMIN) THEN
@@ -53,6 +53,7 @@
                   NV   = J
                ENDIF
             ENDIF
-   10 CONTINUE
+         end do
+      end do
       RETURN
       END subroutine clospt

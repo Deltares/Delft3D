@@ -29,7 +29,7 @@ implicit none
 contains
 
 
-subroutine getdps ( lunpr  , lundp  , lnam   , nmax   , mmax   ,      &
+subroutine getdps ( lunpr  , lundp  , lnam   , num_rows   , num_columns   ,      &
                     nosegl , dps    , cellpnt, ltrack )
 !
 !     programmer : antoon koster
@@ -61,10 +61,10 @@ subroutine getdps ( lunpr  , lundp  , lnam   , nmax   , mmax   ,      &
       integer  ( int_wp ), intent(in   ) :: lunpr               !< unit nr of the diagnostics file
       integer  ( int_wp ), intent(in   ) :: lundp               !< unit nr of the depth file
       character( * ), intent(in   ) :: lnam                !< name of the depth file
-      integer  ( int_wp ), intent(in   ) :: nmax                !< first dimension of the grid
-      integer  ( int_wp ), intent(in   ) :: mmax                !< second dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: num_rows                !< first dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: num_columns                !< second dimension of the grid
       integer  ( int_wp ), intent(in   ) :: nosegl              !< nr of active segments of a layer
-      real     ( real_wp), intent(  out) :: dps   (nmax*mmax)   !< array with depth values
+      real     ( real_wp), intent(  out) :: dps   (num_rows*num_columns)   !< array with depth values
       integer  ( int_wp ), intent(in   ) :: cellpnt(nosegl)     !< backpointer of nosegl to mnmax
       logical       , intent(in   ) :: ltrack              !< if .true. then particle tracing
 

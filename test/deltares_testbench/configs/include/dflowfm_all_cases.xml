@@ -1,4 +1,4 @@
-  <testCases>
+  <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f001_c010_Channel_with_refinement_squares" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c010_Channel_with_refinement_squares</path>
       <programs>

@@ -35,7 +35,7 @@
  use m_flowgeom
  use m_GlobalParameters, only: INDTP_2D
  use unstruc_model
- use m_flowexternalforcings
+ use fm_external_forcings_data
  use m_physcoef
  use m_flowparameters
  use m_flowtimes, only : ti_waq
@@ -46,7 +46,7 @@
  use m_orthosettings
  use m_xbeach_data, only: itheta_view
  use m_heatfluxes
- use m_init_ext_forcings
+ use fm_external_forcings
  use m_partitioninfo
  use dfm_error
  use m_ship
@@ -506,7 +506,7 @@
  allocate ( xu(lnx), yu(lnx) , blu(lnx) ,  stat = ierr)
  call aerr('xu(lnx), yu(lnx) , blu(lnx)',  ierr, 3*lnx)
  blu = dmiss
- if (jafullgridoutput == 1) then
+ if (jafullgridoutput > 0) then
     call realloc(blup, lnx, keepExisting = .false., fill = dmiss, stat = ierr)
     call aerr('blup(lnx)', ierr, lnx)
  end if

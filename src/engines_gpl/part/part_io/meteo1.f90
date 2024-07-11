@@ -59,7 +59,7 @@ function readwindseriesfiles(minp) result(success)
 end function readwindseriesfiles
 
 
-function reaarctim(minp,d,mx,nx,tread,dmiss,start_upleft) result(success)
+function reaarctim(minp,d,mx,num_cells_u_dir,tread,dmiss,start_upleft) result(success)
    !
    ! read arcinfo time and field
    !
@@ -67,7 +67,7 @@ function reaarctim(minp,d,mx,nx,tread,dmiss,start_upleft) result(success)
    !
    integer                  :: minp
    integer                  :: mx
-   integer                  :: nx
+   integer                  :: num_cells_u_dir
    integer                  :: l
    double precision         :: tread
    double precision         :: dmiss
@@ -76,7 +76,7 @@ function reaarctim(minp,d,mx,nx,tread,dmiss,start_upleft) result(success)
    character(4)             :: keywrd
    logical                  :: success, start_upleft
    !
-   if ( size(d,1) .ne. mx .or. size(d,2) .ne. nx ) then
+   if ( size(d,1) .ne. mx .or. size(d,2) .ne. num_cells_u_dir ) then
         errormessage = 'REAARCTIM: wrong sizes'
         success = .false.
         return
@@ -99,15 +99,15 @@ function reaarctim(minp,d,mx,nx,tread,dmiss,start_upleft) result(success)
    if (index(rec, 'HRS') .gt. 0 .or. index(rec, 'hrs') .gt. 0 .or. index(rec, 'hours') .gt. 0) then
       tread = tread*60d0
    endif
-   success = readarcinfoblock(minp,d,mx,nx,dmiss,start_upleft)
+   success = readarcinfoblock(minp,d,mx,num_cells_u_dir,dmiss,start_upleft)
 end function reaarctim
 
 
 ! Routine ad hoc to read a grid file - assumes a fixed structure
 !
-subroutine readgrid( gridfile, mmax, nmax, x, y )
+subroutine readgrid( gridfile, num_columns, num_rows, x, y )
     character(len=*)     :: gridfile
-    integer, intent(out) :: mmax, nmax
+    integer, intent(out) :: num_columns, num_rows
     double precision, dimension(:), allocatable :: x, y
 
     integer              :: lugrd, ierror, i, j
@@ -128,25 +128,25 @@ subroutine readgrid( gridfile, mmax, nmax, x, y )
         endif
     enddo
 
-    read( lugrd, * ) mmax, nmax
+    read( lugrd, * ) num_columns, num_rows
     read( lugrd, * ) header
 
-!!  allocate( x((mmax-1)*(nmax-1)), y((mmax-1)*(nmax-1)) )
+!!  allocate( x((num_columns-1)*(num_rows-1)), y((num_columns-1)*(num_rows-1)) )
     allocate( x(2), y(2) ) ! Terrible hack: assume a rectilinear grid!
-    allocate( xc(mmax,nmax), yc(mmax,nmax) )
+    allocate( xc(num_columns,num_rows), yc(num_columns,num_rows) )
 
-    do j = 1,nmax
+    do j = 1,num_rows
         read( lugrd, * ) dummy, dummy, xc(:,j)
     enddo
 
-    do j = 1,nmax
+    do j = 1,num_rows
         read( lugrd, * ) dummy, dummy, yc(:,j)
     enddo
 
-!!  do j = 1,nmax-1
-!!      do i = 1,mmax-1
-!!          x(i+(j-1)*(mmax-1)) = 0.25 * (xc(j,i) + xc(j+1,i) + xc(j,i+1) + xc(j+1,i+1))
-!!          y(i+(j-1)*(mmax-1)) = 0.25 * (yc(j,i) + yc(j+1,i) + yc(j,i+1) + yc(j+1,i+1))
+!!  do j = 1,num_rows-1
+!!      do i = 1,num_columns-1
+!!          x(i+(j-1)*(num_columns-1)) = 0.25 * (xc(j,i) + xc(j+1,i) + xc(j,i+1) + xc(j+1,i+1))
+!!          y(i+(j-1)*(num_columns-1)) = 0.25 * (yc(j,i) + yc(j+1,i) + yc(j,i+1) + yc(j+1,i+1))
 !!      enddo
 !!  enddo
     x(1) = xc(1,1)
@@ -164,7 +164,7 @@ subroutine readgrid( gridfile, mmax, nmax, x, y )
 
 end subroutine readgrid
 
-function readarcinfoblock(minp,d,mx,nx,dmiss,start_upleft) result(success)
+function readarcinfoblock(minp,d,mx,num_cells_u_dir,dmiss,start_upleft) result(success)
    !
    ! read arcinfoveld
    !
@@ -172,7 +172,7 @@ function readarcinfoblock(minp,d,mx,nx,dmiss,start_upleft) result(success)
    !
    integer                  :: minp
    integer                  :: mx
-   integer                  :: nx
+   integer                  :: num_cells_u_dir
    integer                  :: j
    integer                  :: i
    double precision         :: dmiss
@@ -181,24 +181,24 @@ function readarcinfoblock(minp,d,mx,nx,dmiss,start_upleft) result(success)
    character(16)            :: tex
    character(4000)          :: rec
    !
-   if ( size(d,1) .ne. mx .or. size(d,2) .ne. nx ) then
+   if ( size(d,1) .ne. mx .or. size(d,2) .ne. num_cells_u_dir ) then
         errormessage = 'READARCINFOBLOCK: wrong sizes'
         success = .false.
         return
    endif
    if ( start_upleft ) then
-      do j = nx,1,-1
+      do j = num_cells_u_dir,1,-1
          read(minp,'(a)',end=100) rec
          read(rec,*,err=101) (d(i,j),i = 1,mx)
       enddo
    else
-      do j = 1,nx,1
+      do j = 1,num_cells_u_dir,1
          read(minp,'(a)',end=100) rec
          read(rec,*,err=101) (d(i,j),i = 1,mx)
       enddo
    endif
    do i = 1,mx
-      do j = 1,nx
+      do j = 1,num_cells_u_dir
          if (d(i,j) .eq. dmiss) d(i,j) = dmiss_default
       enddo
    enddo
@@ -358,7 +358,7 @@ function readseries(minp,d,kx,tread) result(success)
 end function readseries
 
 
-function reaspv(minp,d,mx,nx,kx,tread) result(success)
+function reaspv(minp,d,mx,num_cells_u_dir,kx,tread) result(success)
    !
    ! Read Space Varying Wind
    !
@@ -366,7 +366,7 @@ function reaspv(minp,d,mx,nx,kx,tread) result(success)
    !
    integer                    :: minp
    integer                    :: mx
-   integer                    :: nx
+   integer                    :: num_cells_u_dir
    integer                    :: kx
    integer                    :: i
    integer                    :: j
@@ -375,7 +375,7 @@ function reaspv(minp,d,mx,nx,kx,tread) result(success)
    logical                    :: success
    character(132)             :: rec
    !
-   if ( size(d,1) .ne. mx .or. size(d,2) .ne. nx .or. size(d,3) .ne. kx ) then
+   if ( size(d,1) .ne. mx .or. size(d,2) .ne. num_cells_u_dir .or. size(d,3) .ne. kx ) then
       errormessage = 'REASPV: wrong sizes'
       success = .false.
       return
@@ -386,13 +386,13 @@ function reaspv(minp,d,mx,nx,kx,tread) result(success)
    ! Loop over the first dimension in flow
    !
    do j = 1,mx
-      read(minp,*,end = 100, err=102) ( d(j,i,1), i = 1,nx )
+      read(minp,*,end = 100, err=102) ( d(j,i,1), i = 1,num_cells_u_dir )
    enddo
    do j = 1,mx
-      read(minp,*,end = 100, err=103) ( d(j,i,2), i = 1,nx )
+      read(minp,*,end = 100, err=103) ( d(j,i,2), i = 1,num_cells_u_dir )
    enddo
    do j = 1,mx
-      read(minp,*,end = 100, err=104) ( d(j,i,3), i = 1,nx )
+      read(minp,*,end = 100, err=104) ( d(j,i,3), i = 1,num_cells_u_dir )
    enddo
    success = .true.
    return
@@ -419,7 +419,7 @@ function reaspv(minp,d,mx,nx,kx,tread) result(success)
 end function reaspv
 
 
-function reaspwtim(minp,d,mx,nx,tread,x0r,y0r) result(success)
+function reaspwtim(minp,d,mx,num_cells_u_dir,tread,x0r,y0r) result(success)
    !
    ! Read spiderweb time and field
    !
@@ -429,7 +429,7 @@ function reaspwtim(minp,d,mx,nx,tread,x0r,y0r) result(success)
    integer                    :: j
    integer                    :: minp
    integer                    :: mx
-   integer                    :: nx
+   integer                    :: num_cells_u_dir
    double precision           :: pdrop
    double precision           :: tread
    double precision           :: x0r
@@ -438,7 +438,7 @@ function reaspwtim(minp,d,mx,nx,tread,x0r,y0r) result(success)
    character(132)             :: rec
    logical                    :: success
    !
-   if ( size(d,1) .ne. mx .or. size(d,2) .ne. nx ) then
+   if ( size(d,1) .ne. mx .or. size(d,2) .ne. num_cells_u_dir ) then
       errormessage = 'REASPWTIM: wrong sizes'
       success = .false.
       return
@@ -447,13 +447,13 @@ function reaspwtim(minp,d,mx,nx,tread,x0r,y0r) result(success)
    read (rec,*,err=101)      tread
    read (minp,'(a)',end=100) rec
    read (rec,*,err=102)      x0r,y0r,pdrop
-   do j = 2,nx
+   do j = 2,num_cells_u_dir
       read(minp,*,end = 100, err=201) ( d(i,j,1), i = 1,mx-1 )
    enddo
-   do j = 2,nx
+   do j = 2,num_cells_u_dir
       read(minp,*,end = 100, err=202) ( d(i,j,2), i = 1,mx-1 )
    enddo
-   do j = 2,nx
+   do j = 2,num_cells_u_dir
       read(minp,*,end = 100, err=203) ( d(i,j,3), i = 1,mx-1 )
    enddo
    do i = 1,mx-1
@@ -464,7 +464,7 @@ function reaspwtim(minp,d,mx,nx,tread,x0r,y0r) result(success)
       !
       d(i,1,3) = pdrop
    enddo
-   do j = 1,nx
+   do j = 1,num_cells_u_dir
       !
       ! Fill 360 degrees
       !
@@ -500,7 +500,7 @@ function reaspwtim(minp,d,mx,nx,tread,x0r,y0r) result(success)
    return
 end function reaspwtim
 
-function readarcinfoheader(minp      ,mmax      ,nmax      ,x0        ,y0        , &
+function readarcinfoheader(minp      ,num_columns      ,num_rows      ,x0        ,y0        , &
                          & dxa       ,dya       ,dmiss      ) result(success)
 
     use m_waq_precision
@@ -510,8 +510,8 @@ function readarcinfoheader(minp      ,mmax      ,nmax      ,x0        ,y0       
 ! Global variables
 !
     integer               :: minp
-    integer , intent(out) :: mmax
-    integer , intent(out) :: nmax
+    integer , intent(out) :: num_columns
+    integer , intent(out) :: num_rows
     double precision, intent(out) :: dxa
     double precision, intent(out) :: dya
     double precision, intent(out) :: dmiss
@@ -534,8 +534,8 @@ function readarcinfoheader(minp      ,mmax      ,nmax      ,x0        ,y0       
 !
 !! executable statements -------------------------------------------------------
 !
-    mmax       = -1
-    nmax       = -1
+    num_columns       = -1
+    num_rows       = -1
     jacornerx  = -1
     jacornery  = -1
     dxa        = -1.0
@@ -549,9 +549,9 @@ function readarcinfoheader(minp      ,mmax      ,nmax      ,x0        ,y0       
        read( rec, * ) keyword
        select case ( keyword )
           case( 'n_cols' )
-             read ( rec, *, err = 101) dummy, dummy, mmax
+             read ( rec, *, err = 101) dummy, dummy, num_columns
           case( 'n_rows' )
-             read ( rec, *, err = 101) dummy, dummy, nmax
+             read ( rec, *, err = 101) dummy, dummy, num_rows
           case( 'x_llcenter' )
              read ( rec, *, err = 101) dummy, dummy, x0
              jacornerx = 0
@@ -614,7 +614,7 @@ function readarcinfoheader(minp      ,mmax      ,nmax      ,x0        ,y0       
     !
     ! Check if all relevant data were present
     !
-    if ( mmax < 0 .or. nmax < 0 .or. jacornerx < 0 .or. jacornery < 0 .or. dxa < 0.0 .or. dya < 0.0 ) then
+    if ( num_columns < 0 .or. num_rows < 0 .or. jacornerx < 0 .or. jacornery < 0 .or. dxa < 0.0 .or. dya < 0.0 ) then
         goto 102
     endif
 
@@ -637,7 +637,7 @@ function readarcinfoheader(minp      ,mmax      ,nmax      ,x0        ,y0       
    return
 end function readarcinfoheader
 
-function readarcinfoheader_d3d(minp      ,mmax      ,nmax      ,x         ,y         , &
+function readarcinfoheader_d3d(minp      ,num_columns      ,num_rows      ,x         ,y         , &
                              & kcs       ,dmiss      ) result(success)
 
     use m_waq_precision
@@ -647,8 +647,8 @@ function readarcinfoheader_d3d(minp      ,mmax      ,nmax      ,x         ,y    
 ! Global variables
 !
     integer               :: minp
-    integer , intent(out) :: mmax
-    integer , intent(out) :: nmax
+    integer , intent(out) :: num_columns
+    integer , intent(out) :: num_rows
     double precision, intent(out) :: dmiss
     double precision, dimension(:), allocatable, intent(out) :: x
     double precision, dimension(:), allocatable, intent(out) :: y
@@ -680,8 +680,8 @@ function readarcinfoheader_d3d(minp      ,mmax      ,nmax      ,x         ,y    
 !
 !! executable statements -------------------------------------------------------
 !
-    mmax       = -1
-    nmax       = -1
+    num_columns       = -1
+    num_rows       = -1
 
     linecount  = 0
     do
@@ -703,8 +703,8 @@ function readarcinfoheader_d3d(minp      ,mmax      ,nmax      ,x         ,y    
           case( 'grid_file' )
              read ( rec, *, err = 101) dummy, dummy, gridfile
              if ( .not. allocated(x) ) then
-                 call readgrid( gridfile, mmax, nmax, x, y )
-                 allocate( kcs(mmax*nmax) )
+                 call readgrid( gridfile, num_columns, num_rows, x, y )
+                 allocate( kcs(num_columns*num_rows) )
                  kcs = 1
              endif
           case( 'first_data_value' )
@@ -753,7 +753,7 @@ function readarcinfoheader_d3d(minp      ,mmax      ,nmax      ,x         ,y    
     !
     ! Check if all relevant data were present
     !
-    if ( mmax < 0 .or. nmax < 0 ) then
+    if ( num_columns < 0 .or. num_rows < 0 ) then
         goto 102
     endif
 
@@ -777,7 +777,7 @@ function readarcinfoheader_d3d(minp      ,mmax      ,nmax      ,x         ,y    
 end function readarcinfoheader_d3d
 
 
-function reaspwheader(minp      ,mx        ,nx        ,dxa        ,dya        , &
+function reaspwheader(minp      ,mx        ,num_cells_u_dir        ,dxa        ,dya        , &
                       & mncoor    ) result(success)
 
     use m_waq_precision
@@ -788,7 +788,7 @@ function reaspwheader(minp      ,mx        ,nx        ,dxa        ,dya        , 
     integer               :: minp
     integer, intent(out)  :: mncoor
     integer               :: mx
-    integer               :: nx
+    integer               :: num_cells_u_dir
     double precision, intent(out) :: dxa
     double precision, intent(out) :: dya
     logical               :: success
@@ -810,7 +810,7 @@ function reaspwheader(minp      ,mx        ,nx        ,dxa        ,dya        , 
        read (minp, '(A)', end = 100) rec
        if (index(rec, 'MNCOOR')/=0) mncoor = 1
        if (index(rec, 'LON,LAT')/=0) sferic = .true.
-       if (k==3) read (rec(2:), *, err = 101) nx, mx
+       if (k==3) read (rec(2:), *, err = 101) num_cells_u_dir, mx
        if (k==4) read (rec(2:), *, err = 102) radius
     enddo
 
@@ -818,8 +818,8 @@ function reaspwheader(minp      ,mx        ,nx        ,dxa        ,dya        , 
     !
     mx  = mx + 1              ! 1 KOLOM EXTRA VOOR 360 GRADEN = 0 GRADEN IVM INTERPOLATIE
     dxa = 2*pi/dble(mx - 1)   ! MX-1 INTERVALLEN IN HOEK
-    nx  = nx + 1              ! 1 RIJ EXTRA VOOR DE PUNTEN OP STRAAL = 0
-    dya = radius/dble(nx - 1) ! NX-1 INTERVALLEN IN DE STRAAL
+    num_cells_u_dir  = num_cells_u_dir + 1              ! 1 RIJ EXTRA VOOR DE PUNTEN OP STRAAL = 0
+    dya = radius/dble(num_cells_u_dir - 1) ! num_cells_u_dir-1 INTERVALLEN IN DE STRAAL
     success = .true.
     return
     !
@@ -877,44 +877,44 @@ function readcurviheader(minp, gridfilnam, mfirst, mlast, nfirst, nlast, mrow, d
           read(rec(l:),'(a)', err = 101) gridfilnam
        elseif (index(rec, 'firstrow')/=0) then
           l = index(rec, '=') + 1
-          if (index(rec(l:), 'mmax') > 0) then
+          if (index(rec(l:), 'num_columns') > 0) then
              mrow = .true.
              mfirst = 2
              mlast  = 1
-          elseif (index(rec(l:), 'nmax') > 0) then
+          elseif (index(rec(l:), 'num_rows') > 0) then
              mrow = .false.
              nfirst = 2
              nlast  = 1
           endif
        elseif (index(rec, 'lastrow')/=0) then
           l = index(rec, '=') + 1
-          if (index(rec(l:), 'mmax') > 0) then
+          if (index(rec(l:), 'num_columns') > 0) then
              mrow = .true.
              mfirst = 1
              mlast  = 2
-          elseif (index(rec(l:), 'nmax') > 0) then
+          elseif (index(rec(l:), 'num_rows') > 0) then
              mrow = .false.
              nfirst = 1
              nlast  = 2
           endif
        elseif (index(rec, 'firstcol')/=0) then
           l = index(rec, '=') + 1
-          if (index(rec(l:), 'mmax') > 0) then
+          if (index(rec(l:), 'num_columns') > 0) then
              mrow = .false.
              mfirst = 2
              mlast  = 1
-          elseif (index(rec(l:), 'nmax') > 0) then
+          elseif (index(rec(l:), 'num_rows') > 0) then
              mrow = .true.
              nfirst = 2
              nlast  = 1
           endif
        elseif (index(rec, 'lastcol')/=0) then
           l = index(rec, '=') + 1
-          if (index(rec(l:), 'mmax') > 0) then
+          if (index(rec(l:), 'num_columns') > 0) then
              mrow = .false.
              mfirst = 1
              mlast  = 2
-          elseif (index(rec(l:), 'nmax') > 0) then
+          elseif (index(rec(l:), 'num_rows') > 0) then
              mrow = .true.
              nfirst = 1
              nlast  = 2
@@ -1081,7 +1081,7 @@ module m_waq_timespace_data
      integer                  :: it0          !
      integer                  :: it1          ! index oude of nieuwe velden
      integer                  :: mx           ! size of meteo fields  m
-     integer                  :: nx           !                       n
+     integer                  :: num_cells_u_dir           !                       n
      integer                  :: kx           !                       k
      double precision                 :: dmiss        ! missing value
 
@@ -1417,7 +1417,7 @@ function addprovider(idom, qid, kx, filename, filetype, method, operand, nump, i
 
   ! locals
   integer                      :: mx
-  integer                      :: nx
+  integer                      :: num_cells_u_dir
   integer                      :: minp, mncoor
   double precision, allocatable        :: xe(:)      ! lokale elementset waarop de provider is gedefinieerd
   double precision, allocatable        :: ye(:)      ! wordt gedimensioneerd in de leesroutine
@@ -1467,7 +1467,7 @@ function addprovider(idom, qid, kx, filename, filetype, method, operand, nump, i
   endif
 
   mx = 1  ! default dimension of provided field
-  nx = 1  !
+  num_cells_u_dir = 1  !
   dmiss = dmiss_default
   allocate(xe(2))
   allocate(ye(2))
@@ -1502,13 +1502,13 @@ function addprovider(idom, qid, kx, filename, filetype, method, operand, nump, i
 
   case ( arcinfo )
 
-     success = readarcinfoheader(minp,mx,nx,x0,y0,dxa,dya,dmiss)
+     success = readarcinfoheader(minp,mx,num_cells_u_dir,x0,y0,dxa,dya,dmiss)
      xe(1) = x0 ; ye(1) = y0 ; xe(2) = dxa ; ye(2) = dya
 
   case ( d3d_flow_arcinfo )
 
      deallocate( xe, ye, kcse )
-     success = readarcinfoheader_d3d(minp,mx,nx,xe,ye,kcse,dmiss)
+     success = readarcinfoheader_d3d(minp,mx,num_cells_u_dir,xe,ye,kcse,dmiss)
   case ( curvi )
 
   case ( triangulationmagdir )
@@ -1524,7 +1524,7 @@ function addprovider(idom, qid, kx, filename, filetype, method, operand, nump, i
            xe(1)   = x0 ; ye(1) = y0 ; num0 = num0 + 1
            method0 = justupdate  ! this provider just updates
            success = adddataprovider(elementsets, dataproviders, qid, filename0, filetype0, minp0, &
-                                     mx, nx, kx, dmiss, xe, ye, kcse, method0, operand0, nump, ielsetq0 )
+                                     mx, num_cells_u_dir, kx, dmiss, xe, ye, kcse, method0, operand0, nump, ielsetq0 )
            kcse0 (num0) = nump ; xe0(num0) = x0 ; ye0(num0) = y0
         endif
      enddo
@@ -1619,19 +1619,19 @@ function addprovider(idom, qid, kx, filename, filetype, method, operand, nump, i
 
   case ( spiderweb )
 
-     success = reaspwheader(minp,mx,nx,dxa,dya,mncoor)
+     success = reaspwheader(minp,mx,num_cells_u_dir,dxa,dya,mncoor)
      xe(2) = dxa ; ye(2) = dya
 
   case ( fourier )
 
-     success = readfourierdims(minp, mx, nx)
+     success = readfourierdims(minp, mx, num_cells_u_dir)
 
   end select
 
   if (.not. success) return
 
   success = adddataprovider(elementsets, dataproviders, qid, filename, filetype, minp,      &
-                            mx, nx, kx, dmiss, xe, ye, kcse, method, operand, nump, ielsetq )
+                            mx, num_cells_u_dir, kx, dmiss, xe, ye, kcse, method, operand, nump, ielsetq )
 
   deallocate (xe, ye, kcse)
 
@@ -1682,7 +1682,7 @@ end function connectsinglestationfile
 
 
 function adddataprovider(elementsets, dataproviders, qid, filename, filetype, minp, &
-                         my, ny, ky, dmiss, x, y, kcs, method, operand, nump, ielsetq ) result(success)
+                         my, num_cells_v_dir, ky, dmiss, x, y, kcs, method, operand, nump, ielsetq ) result(success)
   implicit none
   ! globals
   logical :: success
@@ -1696,7 +1696,7 @@ function adddataprovider(elementsets, dataproviders, qid, filename, filetype, mi
   integer                      :: filetype     ! type of file
   integer                      :: minp         ! unit nr
   integer                      :: my           ! field dim 1
-  integer                      :: ny           ! field dim 2
+  integer                      :: num_cells_v_dir           ! field dim 2
   integer                      :: ky           ! field dim 3
   double precision             :: dmiss        ! misssing value
   double precision             :: x(:)         ! elset, als size = 2, dan x0 en dx in x(1) en x(2)
@@ -1715,7 +1715,7 @@ function adddataprovider(elementsets, dataproviders, qid, filename, filetype, mi
   double precision                     :: time           ! starttijd
   integer                      :: ielset       ! pointer naar elementset bijhorend bij datagrid
   integer                      :: mx           ! size of meteo fields  m
-  integer                      :: nx           !                       n
+  integer                      :: num_cells_u_dir           !                       n
   integer                      :: kx           !                       k
 
   integer                      :: kk, i, k, mnx
@@ -1731,13 +1731,13 @@ function adddataprovider(elementsets, dataproviders, qid, filename, filetype, mi
         hdataproviders(k) = dataproviders(k)
         allocate ( hdataproviders(k)%field(0:1) )
         mx    = dataproviders(k)%mx
-        nx    = dataproviders(k)%nx
+        num_cells_u_dir    = dataproviders(k)%num_cells_u_dir
         kx    = dataproviders(k)%kx
         do i  = 0,1
            time   =   dataproviders(k)%field(i)%time
            ielset =   dataproviders(k)%field(i)%ielset
            hfield => hdataproviders(k)%field(i)
-           success = addfield( hfield, mx, nx, kx, time, dmiss, ielset )
+           success = addfield( hfield, mx, num_cells_u_dir, kx, time, dmiss, ielset )
            hdataproviders(k)%field(i) = hfield
            hdataproviders(k)%field(i)%arr3d  = dataproviders(k)%field(i)%arr3d
         enddo
@@ -1757,13 +1757,13 @@ function adddataprovider(elementsets, dataproviders, qid, filename, filetype, mi
         dataproviders(k) = hdataproviders(k)
         allocate( dataproviders(k)%field(0:1) )
         mx    = hdataproviders(k)%mx
-        nx    = hdataproviders(k)%nx
+        num_cells_u_dir    = hdataproviders(k)%num_cells_u_dir
         kx    = hdataproviders(k)%kx
         do i  = 0, 1
            time   =  hdataproviders(k)%field(i)%time
            ielset =  hdataproviders(k)%field(i)%ielset
            hfield => hdataproviders(k)%field(i)
-           success = addfield( hfield, mx, nx, kx, time, dmiss, ielset )
+           success = addfield( hfield, mx, num_cells_u_dir, kx, time, dmiss, ielset )
            dataproviders(k)%field(i) = hfield
            dataproviders(k)%field(i)%arr3d  = hdataproviders(k)%field(i)%arr3d
         enddo
@@ -1783,7 +1783,7 @@ function adddataprovider(elementsets, dataproviders, qid, filename, filetype, mi
   dataproviders(k)%it0      = 0
   dataproviders(k)%it1      = 1
   dataproviders(k)%mx       = my
-  dataproviders(k)%nx       = ny
+  dataproviders(k)%num_cells_u_dir       = num_cells_v_dir
   dataproviders(k)%kx       = ky
   nullify(dataproviders(k)%indxn)
   nullify(dataproviders(k)%wfn)
@@ -1794,7 +1794,7 @@ function adddataprovider(elementsets, dataproviders, qid, filename, filetype, mi
      success = addelementset(elementsets, x, y, kcs, ielset)  ! each field is defined on its own elementset
      hfield  => dataproviders(k)%field(i)
      time    = t01ini
-     success = addfield( hfield, my, ny, ky, time, dmiss, ielset )
+     success = addfield( hfield, my, num_cells_v_dir, ky, time, dmiss, ielset )
   enddo
 
   if (method .eq. weightfactors) then
@@ -1965,15 +1965,15 @@ end subroutine read1polylin
 
 
 
-function timespaceinitialfield(xz, yz, zz, nx, filename, filetype, method, operand, transformcoef) result(success)  !
+function timespaceinitialfield(xz, yz, zz, num_cells_u_dir, filename, filetype, method, operand, transformcoef) result(success)  !
    implicit none
 
    logical :: success
 
-   integer,          intent(in)    :: nx
-   double precision, intent(in)    :: xz(nx)
-   double precision, intent(in)    :: yz(nx)
-   double precision, intent(out)   :: zz(nx)
+   integer,          intent(in)    :: num_cells_u_dir
+   double precision, intent(in)    :: xz(num_cells_u_dir)
+   double precision, intent(in)    :: yz(num_cells_u_dir)
+   double precision, intent(out)   :: zz(num_cells_u_dir)
    character(*),     intent(in)    :: filename   ! file name for meteo data file
    integer     ,     intent(in)    :: filetype   ! spw, arcinfo, uniuvp etc
    integer     ,     intent(in)    :: method     ! time/space interpolation method
@@ -1990,7 +1990,7 @@ function timespaceinitialfield(xz, yz, zz, nx, filename, filetype, method, opera
       allocate(xpli(maxpli), ypli(maxpli))
 
       call read1polylin(minp0,xpli,ypli,npli)
-      do k=1,nx
+      do k=1,num_cells_u_dir
          call pinpok(xz(k), yz(k), npli, xpli, ypli, inside)
          if (inside == 1) then
             if (operand == '+') then
@@ -2013,16 +2013,16 @@ function timespaceinitialfield(xz, yz, zz, nx, filename, filetype, method, opera
 
 end function timespaceinitialfield
 
-function timespaceinitialfield_int(xz, yz, zz, nx, filename, filetype, method, operand, transformcoef)  result(success) ! deze subroutine moet veralgemeniseerd en naar meteo module
+function timespaceinitialfield_int(xz, yz, zz, num_cells_u_dir, filename, filetype, method, operand, transformcoef)  result(success) ! deze subroutine moet veralgemeniseerd en naar meteo module
 
    implicit none
 
    logical :: success
 
-   integer,          intent(in)    :: nx
-   double precision, intent(in)    :: xz(nx)
-   double precision, intent(in)    :: yz(nx)
-   integer         , intent(out)   :: zz(nx)
+   integer,          intent(in)    :: num_cells_u_dir
+   double precision, intent(in)    :: xz(num_cells_u_dir)
+   double precision, intent(in)    :: yz(num_cells_u_dir)
+   integer         , intent(out)   :: zz(num_cells_u_dir)
    character(*),     intent(in)    :: filename   ! file name for meteo data file
    integer     ,     intent(in)    :: filetype   ! spw, arcinfo, uniuvp etc
    integer     ,     intent(in)    :: method     ! time/space interpolation method
@@ -2039,7 +2039,7 @@ function timespaceinitialfield_int(xz, yz, zz, nx, filename, filetype, method, o
 
    call oldfil(minp0, filename)
    call read1polylin(minp0,xpli,ypli,npli)
-   do k=1,nx
+   do k=1,num_cells_u_dir
       call pinpok(xz(k), yz(k), npli, xpli, ypli, inside)
       if (inside == 1) then
          if (operand == '+') then
@@ -2058,12 +2058,12 @@ end function timespaceinitialfield_int
 
 
 
-function readfourierdims(minp,mx,nx) result(success)
+function readfourierdims(minp,mx,num_cells_u_dir) result(success)
    implicit none
 
    integer                      :: minp
    integer                      :: mx      ! standard = 3, for omeg, ampl, phas
-   integer                      :: nx      ! nr of fourier components
+   integer                      :: num_cells_u_dir      ! nr of fourier components
    logical                      :: success
 
 
@@ -2075,7 +2075,7 @@ function readfourierdims(minp,mx,nx) result(success)
 
 
    success = .false.
-   mx = 3 ; nx = 0
+   mx = 3 ; num_cells_u_dir = 0
 
 10 read(minp,'(a)',end = 999) rec
    if  (rec(1:1) == '*' .or. len_trim(rec) == 0) goto 10
@@ -2090,7 +2090,7 @@ function readfourierdims(minp,mx,nx) result(success)
       read(rec ,*    ,err = 888) omeg, ampl, phas   ! todo als hier meer ampl, phas cols staan, increase mx todo
 
    endif
-   nx = nx + 1
+   num_cells_u_dir = num_cells_u_dir + 1
    goto 10
 
 
@@ -2107,7 +2107,7 @@ end function readfourierdims
 
 
 
-function readfouriercompstim(minp,d0,d1,mx,nx,kx,tim,tread) result(success)
+function readfouriercompstim(minp,d0,d1,mx,num_cells_u_dir,kx,tim,tread) result(success)
 use m_waq_itdate
    !
    ! Read fourier components initially, next generate
@@ -2116,7 +2116,7 @@ use m_waq_itdate
    !
    integer,  intent (inout)                   :: minp
    integer,  intent (in )                     :: mx
-   integer,  intent (in )                     :: nx
+   integer,  intent (in )                     :: num_cells_u_dir
    integer,  intent (in )                     :: kx
    double precision, intent (in )                     :: tim
    double precision, intent (inout)                   :: tread
@@ -2177,7 +2177,7 @@ use m_waq_itdate
 
    do k = 1, kx          ! for all kx quantities
       fff = 0d0
-      do n = 1,nx        ! for all nx components
+      do n = 1,num_cells_u_dir        ! for all num_cells_u_dir components
          omeg    = d0(1,n)
          ampl    = d0(2+(k-1)*kx,n)
          phas    = d0(3+(k-1)*kx,n)
@@ -3189,7 +3189,7 @@ contains
 
 
 
-! This subroutine interpolates one unstructured dataset xss, yss, zss, kcss, nss to another x, y, z, kcs, nx
+! This subroutine interpolates one unstructured dataset xss, yss, zss, kcss, nss to another x, y, z, kcs, num_cells_u_dir
 ! It is the only one in this module that is of practical interest to the meteo module.
 ! The rest of the subroutines in this module are assisting this one.
 ! JDLA = 1 (re)triangulates
@@ -3212,7 +3212,7 @@ subroutine triint_z2D( xss, yss, zss, kcsss, nss,                        &
     integer,  intent(in)                    :: kx       ! vectormax
     double precision, dimension(:),   intent(in)    :: x        ! grid
     double precision, dimension(:),   intent(in)    :: y
-    double precision, dimension(:,:), intent(out)   :: z        ! dimension: nx*kx
+    double precision, dimension(:,:), intent(out)   :: z        ! dimension: num_cells_u_dir*kx
     integer , dimension(:),   intent(in)    :: kcs      ! grid mask
     integer,  intent(in)                    :: jdla     ! refresh delauney yes /no
 
@@ -3242,7 +3242,7 @@ subroutine triint_z3D( xss, yss, zss, kcsss, nss,                       &
     integer,  intent(in)                    :: kx       ! vectormax
     double precision, dimension(:),   intent(in)    :: x        ! grid
     double precision, dimension(:),   intent(in)    :: y
-    double precision, dimension(:,:,:), intent(out) :: z        ! dimension: nx*kx
+    double precision, dimension(:,:,:), intent(out) :: z        ! dimension: num_cells_u_dir*kx
     integer , dimension(:),   intent(in)    :: kcs      ! grid mask
     integer,  intent(in)                    :: jdla     ! refresh delauney yes /no
 
@@ -4288,7 +4288,7 @@ function updateprovider(dataprovider, tim, elementsets) result(success)
 
   ! locals
   integer                             :: mx
-  integer                             :: nx
+  integer                             :: num_cells_u_dir
   integer                             :: kx
   integer, pointer                    :: minp
   integer                             :: it1
@@ -4330,7 +4330,7 @@ function updateprovider(dataprovider, tim, elementsets) result(success)
      tread    = 0
      minp     =>dataprovider%minp ! pointer, so closed minp (=0) is set for provider directly.
      mx       = dataprovider%mx
-     nx       = dataprovider%nx
+     num_cells_u_dir       = dataprovider%num_cells_u_dir
      kx       = dataprovider%kx
      dmiss    = dataprovider%dmiss
      filetype = dataprovider%filetype
@@ -4357,7 +4357,7 @@ function updateprovider(dataprovider, tim, elementsets) result(success)
 
               tread   = dataprovider%field(1)%time  ! groot negatief bij aanvang
               success = readfouriercompstim(minp,dataprovider%field(0)%arr2d, dataprovider%field(1)%arr2d,  &
-                                            mx,nx,kx,tim,tread)     ! field 0 holds comps, 1 holds result
+                                            mx,num_cells_u_dir,kx,tim,tread)     ! field 0 holds comps, 1 holds result
 
               dataprovider%field(0)%time  = tread                   ! trick fourier into being update
               dataprovider%field(1)%time  = tread
@@ -4367,20 +4367,20 @@ function updateprovider(dataprovider, tim, elementsets) result(success)
            case ( svwp  )
 
               wz     => dataprovider%field(it1)%arr3d
-              success = reaspv(minp,wz,mx,nx,kx,tread)
+              success = reaspv(minp,wz,mx,num_cells_u_dir,kx,tread)
               if (.not. success) return
 
            case ( arcinfo )
 
               vz     => dataprovider%field(it1)%arr2d
-              success = reaarctim(minp,vz,mx,nx,tread,dmiss,.true.)
+              success = reaarctim(minp,vz,mx,num_cells_u_dir,tread,dmiss,.true.)
 
               if (.not. success) return
 
            case ( d3d_flow_arcinfo )
 
               vz     => dataprovider%field(it1)%arr2d
-              success = reaarctim(minp,vz,mx,nx,tread,dmiss,.false.)
+              success = reaarctim(minp,vz,mx,num_cells_u_dir,tread,dmiss,.false.)
 
               if (.not. success) return
 
@@ -4390,7 +4390,7 @@ function updateprovider(dataprovider, tim, elementsets) result(success)
            case ( spiderweb )
 
               wz     => dataprovider%field(it1)%arr3d
-              success = reaspwtim(minp,wz,mx,nx,tread,x0r,y0r)
+              success = reaspwtim(minp,wz,mx,num_cells_u_dir,tread,x0r,y0r)
               if (.not. success) return
               elementsets(ielset)%x(1) = x0r
               elementsets(ielset)%y(1) = y0r
@@ -4523,7 +4523,7 @@ function updateprovider(dataprovider, tim, elementsets) result(success)
                  ncheckprev = ncheck
 
                  call triint  (xs, ys, zs , kcss(ns+1:), ns,      &
-                               x , y , z  , kcs , kx, mx*nx, jdla )
+                               x , y , z  , kcs , kx, mx*num_cells_u_dir, jdla )
 
                  if (mdia > 0) then
                     write(mdia,*) tim, tread, ncheck, jdla
@@ -4537,13 +4537,13 @@ function updateprovider(dataprovider, tim, elementsets) result(success)
                     call polyint (xs, ys, zs , kcss(ns+1:), ns,      &
                                   x , y , z  , kcs , kx, mx, jdla, xyen, &
                                   dataprovider%indxn, dataprovider%wfn)
-                                    !hier niet mx*nx, mx = elsetq
+                                    !hier niet mx*num_cells_u_dir, mx = elsetq
                     dataprovider%refresh = 0
                  else
                     jdla = 1
                     call polyint (xs, ys, zs , kcss(ns+1:), ns,      &
                                   x , y , z  , kcs , kx, mx, jdla, xyen)
-                                    !hier niet mx*nx, mx = elsetq
+                                    !hier niet mx*num_cells_u_dir, mx = elsetq
                  end if
 
                  if (mdia > 0) then
@@ -4608,7 +4608,7 @@ function updateprovider(dataprovider, tim, elementsets) result(success)
                  if (jpoly == 0) then
                     jdla = 1 ;  ! allways triangulate
                     call triint  (xs, ys, zs , kcss(ns+1:), ns,             &
-                                  x , y , z  , kcs , kx, mx*nx, jdla)
+                                  x , y , z  , kcs , kx, mx*num_cells_u_dir, jdla)
                  else
                     xyen => elementsets(ielsetq)%xyen
                     if (dataprovider%method == weightfactors) then
@@ -4616,13 +4616,13 @@ function updateprovider(dataprovider, tim, elementsets) result(success)
                         call polyint (xs, ys, zs , kcss(ns+1:), ns,      &
                                      x , y , z  , kcs , kx, mx, jdla, xyen, &
                                      dataprovider%indxn, dataprovider%wfn)
-                                       !hier niet mx*nx, mx = elsetq
+                                       !hier niet mx*num_cells_u_dir, mx = elsetq
                         dataprovider%refresh = 0
                     else
                        jdla = 1
                        call polyint (xs, ys, zs , kcss(ns+1:), ns,      &
                                      x , y , z  , kcs , kx, mx, jdla, xyen)
-                                       !hier niet mx*nx, mx = elsetq
+                                       !hier niet mx*num_cells_u_dir, mx = elsetq
                     end if
 
                  endif
@@ -4658,7 +4658,7 @@ implicit none
   integer                             :: i
   integer                             :: k
 
-  integer                             :: kx, nmx, mx, nx, method
+  integer                             :: kx, nmx, mx, num_cells_u_dir, method
   integer                             :: it1
   integer                             :: it0
   integer                             :: ierr, ielset
@@ -4746,7 +4746,7 @@ implicit none
      j = quantity%providernrs(i)
      dataprovider => dataproviders(j)
      mx       = dataprovider%mx
-     nx       = dataprovider%nx
+     num_cells_u_dir       = dataprovider%num_cells_u_dir
      kx       = dataprovider%kx
      it0      = dataprovider%it0
      it1      = dataprovider%it1
@@ -4857,9 +4857,9 @@ implicit none
             dy1 =  elsetp%y(2)
 
            if (.not. allocated (arcuv)) then
-                upperindex = (/4,mx,nx/)
+                upperindex = (/4,mx,num_cells_u_dir/)
                 lowerindex = (/1,1,1/)
-                call realloc(arcuv,upperindex,lowerindex) !4,mx,nx)
+                call realloc(arcuv,upperindex,lowerindex) !4,mx,num_cells_u_dir)
                 arcuv = 0
             endif
 
@@ -4873,7 +4873,7 @@ implicit none
                   if (x1 < -0.5d0 .or. x1 .gt. mx - 0.5d0) cycle
 
                   y1 = (elsetq%y(n) - y01)/dy1
-                  if (y1 < -0.5d0 .or. y1 .gt. nx - 0.5d0) cycle
+                  if (y1 < -0.5d0 .or. y1 .gt. num_cells_u_dir - 0.5d0) cycle
 
                   i1  = int(x1 + 1)
                   i1  = min(mx - 1,max(1,i1))
@@ -4881,7 +4881,7 @@ implicit none
 
 
                   j1  = int(y1 + 1)
-                  j1  = min(nx - 1,max(1,j1))
+                  j1  = min(num_cells_u_dir - 1,max(1,j1))
                   dj1 = y1 + 1 - j1
 
 
@@ -4908,7 +4908,7 @@ implicit none
             enddo
 
             do i1 = 1,mx
-               do j1 = 1,nx
+               do j1 = 1,num_cells_u_dir
 
                   arcuv(1,i1,j1) = x01 + (i1-1)*dx1
                   arcuv(2,i1,j1) = y01 + (j1-1)*dy1

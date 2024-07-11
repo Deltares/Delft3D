@@ -39,8 +39,8 @@ implicit none               ! force explicit typing
 contains
       subroutine partur ( itime  , noudef , iutime  , mpart   , npart  , &
                           kpart  , xpart  , ypart   , zpart   , wpart  , &
-                          iptime , nopart , lgrid   , nmax    , mmax   , &
-                          amasud , ipnt   , sname   , nosubs  , nolay  , &
+                          iptime , nopart , lgrid   , num_rows    , num_columns   , &
+                          amasud , ipnt   , sname   , nosubs  , num_layers  , &
                           nocont , ndprt  , nodye   , lun     , buffer , &
                           volume , aconud , uscal   , isub    , finam  , &
                           iftime , ifopt  , nosyss  , isfil   , nosubud, &
@@ -78,7 +78,7 @@ contains
 !     ====    ====     ======     ======  ===========
 !     aconud   real nosubs*noudef in/out  released mass per particle per load
 !     amasud  real      noudef    input   released mass
-!     buffer  real  nmax*mmax*nolay in/out scratch array
+!     buffer  real  num_rows*num_columns*num_layers in/out scratch array
 !     finam   char*256  noudef    input   name of the file for ud release
 !     kpart   integer   nopart    output  k-values particles
 !     ifopt   integer   noudef    input   when 1 from restart file/ 0 from mapfile
@@ -88,21 +88,21 @@ contains
 !     isub    integer   nosubs    input   substance numbers user def. releases
 !     itime   integer     1       input   simulation time
 !     iutime  integer   noudef    in/out  time of user defined release
-!     lgrid   integer  nmax*mmax  input   active grid
+!     lgrid   integer  num_rows*num_columns  input   active grid
 !     lun     integer     1       input   unit report file
 !     mpart   integer   nopart    output  m-values particles
-!     nmax    integer     1       input   dimension of lgrid
+!     num_rows    integer     1       input   dimension of lgrid
 !     nocont  integer     1       input   nr of dye release points
-!     nocons  real        1       input   number of constants from input
+!     num_constants  real        1       input   number of constants from input
 !     nodye  integer     1       input   nr of continuous release points
 !     nosyss   integer     1       input   number of substances on release file
 !     noudef  integer     1       input   nr of user defined release points
-!     nolay   integer     1       input   number of comp. layers
+!     num_layers   integer     1       input   number of comp. layers
 !     nopart  integer     1       in/out  number of active particles
 !     nosubs  integer     1       input   number of substances
 !     npart   integer   nopart    output  n-values particles
 !     sname   char*20   nosubs    input   delpar substance names
-!     volume  real nmax*mmmax*nolay input voluems of sgements
+!     volume  real num_rows*mmmax*num_layers input voluems of sgements
 !     uscal   real      noudef    input   scale factor ud release
 !     wpart   real      nopart    output  weight of the particles
 !     xpart   real      nopart    output  x-in-cell of particles
@@ -141,10 +141,10 @@ contains
 !
 !     local scalars
 !
-      integer(int_wp ) ::  nmax
+      integer(int_wp ) ::  num_rows
       integer(int_wp ) ::  is     , isout  , itime
-      integer(int_wp ) ::  iu     , iwt    , lun    , mmax
-      integer(int_wp ) ::  nocont , nodye  , noemax , nolay   , nopart
+      integer(int_wp ) ::  iu     , iwt    , lun    , num_columns
+      integer(int_wp ) ::  nocont , nodye  , noemax , num_layers   , nopart
       integer(int_wp ) ::  nosegm , noudef , npold
       integer(int_wp ) ::  nosubs , nosubud
       integer(4) ithndl              ! handle to time this subroutine
@@ -164,7 +164,7 @@ contains
 !
 !   read the cell density from a delwaq restart file or map file
 !
-      nosegm = nolay*nmax*mmax
+      nosegm = num_layers*num_rows*num_columns
 !
 !     loop over the number of user defined releases
 !
@@ -180,7 +180,7 @@ contains
             npold = nopart
 !..
             call mudrel(  xpart     , ypart       , zpart      , mpart           , npart     , &
-                          kpart     , lgrid       , mmax       , nmax            , nolay     , &
+                          kpart     , lgrid       , num_columns       , num_rows            , num_layers     , &
                           iu        , buffer      , iftime(iu) , ndprt(noemax+iu), nosegm    , &
                           finam(iu) , ifopt(iu)   , isfil(iu)  , iutime(iu)      , nosyss(iu) , &
                           aconud    , wpart       , nosubs     , uscal(iu)       , amasud    , &

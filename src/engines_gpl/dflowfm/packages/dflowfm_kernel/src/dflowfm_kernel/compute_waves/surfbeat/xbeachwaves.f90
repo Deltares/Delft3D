@@ -399,7 +399,7 @@ end subroutine xbeach_all_input
 
 subroutine xbeach_wave_init()
    use m_flowgeom
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_xbeach_data
    use m_sferic, only: pi, twopi
    use m_physcoef
@@ -745,7 +745,7 @@ subroutine xbeach_wave_init()
    use m_xbeach_data, only: sigmwav, L0, L1, Ltemp, cwav, nwav, cgwav, kwav
    use m_physcoef, only: ag
    use m_flowtimes, only: time0
-   use m_flowexternalforcings
+   use fm_external_forcings_data
 
    implicit none
    
@@ -1497,7 +1497,7 @@ subroutine xbeach_wave_compute_flowforcing2D()
    use m_flowtimes
    use m_sferic, only: pi
    use m_xbeach_data
-   use m_flowexternalforcings, only: nbndw, kbndw, nbndz, kbndz, nbndu, kbndu
+   use fm_external_forcings_data, only: nbndw, kbndw, nbndz, kbndz, nbndu, kbndu
    use m_physcoef, only: ag
 
    implicit none
@@ -1663,7 +1663,7 @@ end subroutine     ! xbeach_wave_dispersion
 subroutine xbeach_wave_bc()
    use m_flowgeom
    use m_xbeach_data
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use wave_boundary_main_module
    use m_flowtimes, only: time0, tstop_user, tstart_user
    use m_physcoef, only: rhomean, ag
@@ -2148,7 +2148,7 @@ subroutine xbeach_wave_bc()
    subroutine xbeach_apply_wave_bc()
    use m_sferic
    use m_flowgeom
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_xbeach_data
    use m_physcoef
 
@@ -2197,7 +2197,7 @@ subroutine xbeach_wave_breaker_dissipation(dtmaxwav, break, deltaH, waveps, hhw,
    use m_flowgeom
    use m_sferic, only: pi
    use m_physcoef, only: rhomean
-   use m_xerf
+   use math_tools, only: xerf
    use m_xbeach_typesandkinds, only: slen
    use m_debug
    
@@ -2733,7 +2733,7 @@ end subroutine advec_horzho_bulk
 
    !> compute flow boundary conditions
    subroutine xbeach_flow_bc()
-   use m_flowexternalforcings, only: nbndu
+   use fm_external_forcings_data, only: nbndu
    use m_partitioninfo, only: jampi
    implicit none
 
@@ -2758,7 +2758,7 @@ subroutine xbeach_spectral_wave_init()
    use m_xbeach_filefunctions
    use wave_boundary_datastore
    use m_xbeach_data
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_flowgeom
    use m_xbeach_errorhandling
    use m_polygon
@@ -3143,7 +3143,7 @@ subroutine xbeach_spectral_wave_init()
 
    !> get reference point for wave energy bc
    subroutine get_refpoint(xref0, yref0)
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_partitioninfo
    implicit none
 
@@ -3341,7 +3341,7 @@ subroutine xbeach_waves(ierr)
    use m_flowgeom
    use m_flow
    use m_physcoef, only: ag, rhomean
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_alloc
    use unstruc_messages
    use m_xbeach_errorhandling
@@ -4173,7 +4173,7 @@ subroutine borecharacter()
 !   use m_xbeach_data, only: hdisp, deltaH, H, waveps, sigt, sigmwav, L0t, L1t, Ltempt, cwavt, nwavt, cgwavt, kwavt, cwav, nwav, cgwav, kwav, ee1
 !   use m_physcoef, only: ag
 !   use m_flowtimes, only: time0
-!   use m_flowexternalforcings
+!   use fm_external_forcings_data
 !
 !   implicit none
 !
@@ -4279,7 +4279,7 @@ subroutine xbeach_solve_wave_stationary(callType,ierr)
    use m_sferic, only: pi, dg2rd, rd2dg
    use m_physcoef, only: ag, rhomean
    use m_waves, only: hwav, twav, phiwav, uorb, rlabda
-   use m_flowexternalforcings, only: nbndw, kbndw
+   use fm_external_forcings_data, only: nbndw, kbndw
    use m_alloc
    use unstruc_display
    
@@ -5397,7 +5397,7 @@ subroutine fill_connected_nodes(ierr)
    end subroutine fill_connected_nodes
       
    subroutine getbndwzcornerpts(ierr)
-      use m_flowexternalforcings
+      use fm_external_forcings_data
       use m_flowgeom
       use network_data
       use m_xbeach_data, only: kbndu2kbndw, kbndz2kbndw, noseapts, seapts, wmask, nmmask, inner
@@ -5627,7 +5627,7 @@ subroutine fill_connected_nodes(ierr)
    
    subroutine corner2flownod(quantin, numk, quantout, ndxi, ndx, skipnbndw, ierr)
       use m_flowgeom, only: banf, ba, mxban, nban
-      use m_flowexternalforcings
+      use fm_external_forcings_data
       use m_xbeach_data, only: kbndz2kbndw, kbndu2kbndw
    
       implicit none
@@ -6011,7 +6011,7 @@ subroutine xbeach_wave_compute_flowforcing3D()
    use m_waves 
    use m_flowgeom, only: ndx  
    use mathconsts, only: degrad
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_alloc
 
    implicit none

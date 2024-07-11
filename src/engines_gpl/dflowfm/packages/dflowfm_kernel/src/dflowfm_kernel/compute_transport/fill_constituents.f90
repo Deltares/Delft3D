@@ -39,7 +39,7 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
    use m_physcoef,             only: dicouv, dicoww, difmolsal, difmoltem, difmoltracer, Jaallowcoolingbelowzero, ag, vonkar
    use m_nudge,                only: nudge_rate, nudge_tem, nudge_sal
    use m_turbulence,           only: sigsal, sigtem, sigtracer, sigdifi, sigsed, wsf
-   use m_flowexternalforcings, only: wstracers, numsrc, ksrc, qsrc, ccsrc
+   use fm_external_forcings_data, only: wstracers, numsrc, ksrc, qsrc, ccsrc
    use m_sediment,             only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
    use m_mass_balance_areas,   only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
    use m_partitioninfo,        only: jampi, idomain, my_rank

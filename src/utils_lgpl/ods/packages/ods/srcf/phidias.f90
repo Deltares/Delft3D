@@ -28,30 +28,7 @@
 !        $Date: 1-04-03 10:52 $
 !        $Source: /u/cvsroot/gpp/libsrc/ods/phidias.f,v $
 !
-!#ifdef WINNT
-!     INCLUDE '../include/nfsintrf.i'
-!
-!     INTERFACE TO FUNCTION GETELT_i [ALIAS:'_GETELT']
-!    +                             ( VALUE1, VALUE2, VALUE3, VALUE4 ,
-!    +                               VALUE5, VALUE6, VALUE7, VALUE8 )
-!
-!     INTEGER   GETELT_i
-!
-!     INTEGER   VALUE1
-!     INTEGER   VALUE2
-!     CHARACTER VALUE3
-!     CHARACTER VALUE4
-!     INTEGER   VALUE5
-!     INTEGER   VALUE6
-!     INTEGER   VALUE7
-!     CHARACTER VALUE8
-!
-!     END
-!#endif
 subroutine phspdim&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phspdim']
-!#endif
 &(fname ,itype ,dimtyp, pardep, timdep, locdep,&
 &ndim  ,ierror, option                       )
 !-----------------------------------------------------------------------
@@ -345,9 +322,6 @@ end
 
 
 subroutine phsppar&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phsppar']
-!#endif
 &(fname , itype , pardef, maxdef, timdep, locdep,&
 &maxlst, lang  , parlst, paruni, partyp, parcod,&
 &nrlst , ierror, option                        )
@@ -570,9 +544,6 @@ subroutine phsppar&
 end
 
 subroutine phsploc&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phsploc']
-!#endif
 &(fname , itype , locdef, maxdef, pardep, timdep,&
 &loclst, loctyp, locnr , maxlst, nrlst , ierror,&
 &option )
@@ -771,9 +742,6 @@ subroutine phsploc&
 !-----------------------------------------------------------------------
 end
 subroutine             phsptme&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phsptme']
-!#endif
 &(fname  ,itype  ,timdef, maxdef ,pardep , locdep,&
 &maxlst ,        timlst,         timtyp ,&
 &nrlst  ,ierror ,option                         )
@@ -844,7 +812,7 @@ subroutine             phsptme&
 ! ITDATE      I*4                  Initial simulation start date
 ! IY          I*4                  Year part of ITDATE (yyyy)
 ! JULDAY      I*4                  julian day number of ITDATE
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! L           I*4                  Help var.
 ! LMAX        I*4                  Number of constituents
 ! M           I*4                  Help var.
@@ -889,9 +857,6 @@ subroutine             phsptme&
    integer       i, idp, itp, n
    integer       itmodc, icurtm, ihou, imin, isec, l
    integer       GETELT, GETELS, INQMXI
-!#ifdef WINNT
-!     integer       GETELT_i
-!#endif
    real          tmodc
    character*12  tnul
    character*16  elmnam(maxelm), grpnam
@@ -962,11 +927,7 @@ subroutine             phsptme&
 
    buflen    =12
    elmnam(1) = 'tijd-spcc'
-!#ifdef WINNT
-!     ierror = GETELT_i
-!#else
    ierror = GETELS&
-!#endif
    &(hdefds   ,grpnam    ,elmnam(1) ,&
    &uindex   ,usrord    ,buflen    ,tnul      )
 
@@ -1058,9 +1019,6 @@ subroutine             phsptme&
 end
 
 subroutine             phspmat&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phspmat']
-!#endif
 &(fname ,itype  ,parcod, loc   , tim   ,misval,&
 &i3gl  ,maxdim ,xdata , ierror, option,&
 &ibuffs,rbuffs                               )
@@ -1174,14 +1132,11 @@ subroutine             phspmat&
    integer       maxelm
    parameter     ( maxelm = 50 )
    integer       hdefds( 2997),hdafds(  999)
-   integer       nrelm, i, idp, itp, n, m, nmax, mmax
+   integer       nrelm, i, idp, itp, n, m, num_rows, num_columns
    integer       elmdms(5), nbytsg, elmndm, n1, n2, ipar
    integer       nrlst
    integer       itmodc, icurtm, ihou, imin, isec, l
    integer       GETELT, GETELS, INQMXI, INQCEL, INQELM
-!#ifdef WINNT
-!     integer       GETELT_i
-!#endif
    real          tmodc
    real*8        timlev
    character*8   elmtyp
@@ -1242,11 +1197,7 @@ subroutine             phspmat&
 
    buflen    =12 * 4
    elmnaa    = 'tijd-spcc'
-!#ifdef WINNT
-!     ierror = GETELT_i
-!#else
    ierror = GETELS&
-!#endif
    &(hdefds   ,grpdef    ,elmnaa    ,&
    &uindex   ,usrord    ,buflen    ,tnul      )
    read(tnul(1:6),'(i6)')itdate
@@ -1281,10 +1232,10 @@ subroutine             phspmat&
          ierror = IEOTHR
          go to 900
       endif
-      nmax = elmdms(1)
-      mmax = elmdms(2)
-      buflen = 4 * nmax *mmax
-      if ( nmax * mmax .gt. maxdim ) then
+      num_rows = elmdms(1)
+      num_columns = elmdms(2)
+      buflen = 4 * num_rows *num_columns
+      if ( num_rows * num_columns .gt. maxdim ) then
          ierror = IEPMNY
          go to 900
       endif
@@ -1295,17 +1246,17 @@ subroutine             phspmat&
          ierror = IEOTHR
          go to 900
       endif
-      do 100 n = 1,nmax
-         do 100 m = 1,mmax
-            n1 = (n-1) * mmax + m
-            n2 = (m-1) * nmax + n
+      do 100 n = 1,num_rows
+         do 100 m = 1,num_columns
+            n1 = (n-1) * num_columns + m
+            n2 = (m-1) * num_rows + n
             xdata(n1) = rbuffs(n2)
 100   continue
 !
 !        Add values for last directional sector
 !
-      do 150 m = 1,mmax
-         n1 = nmax * mmax + m
+      do 150 m = 1,num_columns
+         n1 = num_rows * num_columns + m
          if ( elmnam(parcod+1) .eq. '2D-directions' ) then
             xdata(n1) = 360.0
          else
@@ -1329,10 +1280,10 @@ subroutine             phspmat&
          ierror = IEOTHR
          go to 900
       endif
-      nmax = elmdms(1)
-      mmax = elmdms(2)
-      buflen = 4 * nmax *mmax
-      if ( nmax * mmax .gt. maxdim ) then
+      num_rows = elmdms(1)
+      num_columns = elmdms(2)
+      buflen = 4 * num_rows *num_columns
+      if ( num_rows * num_columns .gt. maxdim ) then
          ierror = IEPMNY
          go to 900
       endif
@@ -1425,7 +1376,7 @@ subroutine             phspmat&
             uindex(2,1) = i
             uindex(3,1) = 1
 
-            if ( (ind + nmax * mmax) .gt. maxdim ) then
+            if ( (ind + num_rows * num_columns) .gt. maxdim ) then
                ierror = IEPMNY
                go to 900
             endif
@@ -1436,10 +1387,10 @@ subroutine             phspmat&
                ierror = IEOTHR
                goto 900
             endif
-            do 200 n = 1,nmax
-               do 200 m = 1,mmax
-                  n1 = (n-1) * mmax + m
-                  n2 = (m-1) * nmax + n
+            do 200 n = 1,num_rows
+               do 200 m = 1,num_columns
+                  n1 = (n-1) * num_columns + m
+                  n2 = (m-1) * num_rows + n
                   xdata(ind+n1) = rbuffs(n2)
                   if ( xdata(ind+n1) .lt. 1.e-3 )&
                   &xdata(ind+n1) = misval
@@ -1447,11 +1398,11 @@ subroutine             phspmat&
 !
 !              Add values for last directional sector
 !
-            do 250 m = 1,mmax
-               n1 = nmax * mmax + m
+            do 250 m = 1,num_columns
+               n1 = num_rows * num_columns + m
                xdata(n1) = xdata(m)
 250         continue
-            ind = ind + (nmax + 1) * mmax
+            ind = ind + (num_rows + 1) * num_columns
 !
 !              For the moment: just read one dataset
 !
@@ -1470,9 +1421,6 @@ subroutine             phspmat&
 end
 
 subroutine phi_dim&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phi_dim']
-!#endif
 &(fname ,itype ,dimtyp, pardep, timdep, locdep,&
 &ndim  ,ierror, option                       )
 !-----------------------------------------------------------------------
@@ -1545,7 +1493,7 @@ subroutine phi_dim&
 !
    integer         ierror,itype,ind
    integer                npar
-   integer         mmax  ,nmax
+   integer         num_columns  ,num_rows
    integer         pardep,timdep,locdep
    integer         ndim   (4    )
 !
@@ -1620,9 +1568,9 @@ subroutine phi_dim&
 !-----Read array-dimensions from Nefis files
 !--------------------------------------------------------------------
    maplast=0
-   nmax=0
-   mmax=0
-   call phidim(hdafds,hdefds,okee,npar,nmax,mmax,maplast,itype,&
+   num_rows=0
+   num_columns=0
+   call phidim(hdafds,hdefds,okee,npar,num_rows,num_columns,maplast,itype,&
    &nloc,hislast,&
    &grpnam,grpdef,cel,elmnam,elmtyp,elmqty,&
    &elmunt,elmdes,&
@@ -1642,8 +1590,8 @@ subroutine phi_dim&
          ndim (2) = maplast
       else if (dimtyp(1:3) .eq. 'loc') then
          ndim (1) = 2
-         ndim (2) = mmax
-         ndim (3) = nmax
+         ndim (2) = num_columns
+         ndim (3) = num_rows
       else
          okee = .false.
       endif
@@ -1684,9 +1632,6 @@ subroutine phi_dim&
 end
 
 subroutine phi_par&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phi_par']
-!#endif
 &(fname , itype , pardef, maxdef, timdep, locdep,&
 &maxlst, lang  , parlst, paruni, partyp, parcod,&
 &nrlst , ierror, option                        )
@@ -1864,9 +1809,6 @@ subroutine phi_par&
 !-----------------------------------------------------------------------
 end
 subroutine phi_loc&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phi_loc']
-!#endif
 &(fname  ,itype  ,locdef ,maxdef ,pardep ,timdep ,&
 &maxlst ,        loclst ,        loctyp ,nrlst  ,&
 &locnr  ,ierror ,zbuffs ,option                 )
@@ -2065,9 +2007,6 @@ subroutine phi_loc&
 end
 
 subroutine             phi_tme&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phi_tme']
-!#endif
 &(fname  ,itype  ,timdef, maxdef ,pardep , locdep,&
 &maxlst ,        timlst,         timtyp ,&
 &nrlst  ,ierror ,option                         )
@@ -2138,7 +2077,7 @@ subroutine             phi_tme&
 ! ITDATE      I*4                  Initial simulation start date
 ! IY          I*4                  Year part of ITDATE (yyyy)
 ! JULDAY      I*4                  julian day number of ITDATE
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! L           I*4                  Help var.
 ! LMAX        I*4                  Number of constituents
 ! M           I*4                  Help var.
@@ -2188,16 +2127,13 @@ subroutine             phi_tme&
    &grpdms(5,maxgrp),elmdms(5,maxgrp,maxelm),&
    &elmndm(maxgrp,maxelm)
    integer       hdefds( 2997),hdafds(  999)
-   integer maplast,nmax,mmax,npar
+   integer maplast,num_rows,num_columns,npar
 !
    integer&
    &uindex(3,5  ),usrord(5),buflen
 !
 !
    integer       GETELT, GETELS
-!#ifdef WINNT
-!     integer       GETELT_i
-!#endif
 
 !-----------------------------------------------------------------------
 !-----Initialisation
@@ -2255,11 +2191,7 @@ subroutine             phi_tme&
    buflen    =12 * 4
    elmnaa    = 'tijd-mapc'
    if(itype.eq.5050)elmnaa='tijd-tsrc'
-!#ifdef WINNT
-!     ierror = GETELT_i
-!#else
    ierror = GETELS&
-!#endif
    &(hdefds   ,grpdaf    ,elmnaa    ,&
    &uindex   ,usrord    ,buflen    ,tnul      )
    okee = okee .and. ierror .eq. 0
@@ -2283,7 +2215,7 @@ subroutine             phi_tme&
 !-----Read array-timlst from Nefis files
 !--------------------------------------------------------------------
    maplast=0
-   call phitme(hdafds,hdefds,okee,npar,nmax,mmax,itype,&
+   call phitme(hdafds,hdefds,okee,npar,num_rows,num_columns,itype,&
    &grpnam,grpdef,cel,elmnam,elmtyp,elmqty,&
    &elmunt,elmdes,&
    &grpndm,grpdms,elmdms,elmndm,maxgrp,maxelm,&
@@ -2308,9 +2240,6 @@ subroutine             phi_tme&
 end
 
 subroutine             phi_mat&
-!#ifdef WINNT
-!    *                 [ALIAS:'_phi_mat']
-!#endif
 &(fname ,itype  ,parcod, loc   , tim   ,misval,&
 &i3gl  ,maxdim ,xdata , ierror, option,&
 &ibuffs,rbuffs                               )
@@ -2430,12 +2359,9 @@ subroutine             phi_mat&
    &grpdms(5,maxgrp),elmdms(5,maxgrp,maxelm),&
    &elmndm(maxgrp,maxelm)
    integer       hdefds( 2997),hdafds(  999)
-   integer maplast,nmax,mmax,npar
+   integer maplast,num_rows,num_columns,npar
    integer       uindex(3,5),usrord(5),buflen
    integer       GETELT, GETELS
-!#ifdef WINNT
-!     integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----Initialisation
 !-----------------------------------------------------------------------
@@ -2496,11 +2422,7 @@ subroutine             phi_mat&
    buflen    =12 * 4
    elmnaa    = 'tijd-mapc'
    if(itype.eq.5050)elmnaa='tijd-tsrc'
-!#ifdef WINNT
-!     ierror = GETELT_i
-!#else
    ierror = GETELS&
-!#endif
    &(hdefds   ,grpdaf    ,elmnaa    ,&
    &uindex   ,usrord    ,buflen    ,tnul      )
    okee  =  ierror .eq. 0
@@ -2521,7 +2443,7 @@ subroutine             phi_mat&
 !-----------------------------------------------------------------------
    maplast=0
 !pvb  write(*,*)' in phi_mat voor phimat'
-   call phimat(hdafds,hdefds,okee,npar,nmax,mmax,itype,&
+   call phimat(hdafds,hdefds,okee,npar,num_rows,num_columns,itype,&
    &grpnam,grpdef,cel,elmnam,elmtyp,elmqty,&
    &elmunt,elmdes,&
    &grpndm,grpdms,elmdms,elmndm,maxgrp,maxelm,&
@@ -2548,7 +2470,7 @@ subroutine             phi_mat&
    return
 !-----------------------------------------------------------------------
 end
-subroutine phidim(datfds,deffds,okee,npar,nmax,mmax,maplast,&
+subroutine phidim(datfds,deffds,okee,npar,num_rows,num_columns,maplast,&
 &itype,nloc,hislast,&
 &grpnam,grpdef,cel,elmnam,elmtyp,elmqty,&
 &elmunt,elmdes,&
@@ -2561,7 +2483,7 @@ subroutine phidim(datfds,deffds,okee,npar,nmax,mmax,maplast,&
    integer datfds(*),deffds(*),nelems(100),grpdms(maxgrp),&
    &grpndm(5,maxgrp),elmdms(5,maxgrp,maxelm),elmndm(maxgrp,*)
    integer i,j,igrp,itype,&
-   &nmax,mmax,&
+   &num_rows,num_columns,&
    &npar,maplast,nloc,hislast
    logical okee
 !pvb  write(*,*)' call phidim'
@@ -2570,21 +2492,21 @@ subroutine phidim(datfds,deffds,okee,npar,nmax,mmax,maplast,&
 !  map file
 !
       npar=0
-      nmax=0
-      mmax=0
+      num_rows=0
+      num_columns=0
       igrp=0
       okee=.true.
-      call mapphi(datfds,deffds,okee,nmax,mmax,igrp,&
+      call mapphi(datfds,deffds,okee,num_rows,num_columns,igrp,&
       &grpnam,grpdef,cel,elmnam,elmtyp,elmqty,&
       &elmunt,elmdes,nelems,&
       &grpndm,grpdms,elmdms,elmndm,maxgrp,maxelm,&
       &maplast)
-      if(nmax.eq.0.and.mmax.eq.0)then
+      if(num_rows.eq.0.and.num_columns.eq.0)then
          do 15 i=1,igrp-1
             do 15 j=1,nelems(i)
                if(elmndm(j,I).eq.2)then
-                  nmax=elmdms(1,j,i)
-                  mmax=elmdms(2,j,i)
+                  num_rows=elmdms(1,j,i)
+                  num_columns=elmdms(2,j,i)
                   goto 17
                endif
 15       continue
@@ -2593,7 +2515,7 @@ subroutine phidim(datfds,deffds,okee,npar,nmax,mmax,maplast,&
       do 20 i=1,igrp-1
          do 20 j=1,nelems(i)
             if(elmndm(j,i).eq.2)then
-               if(elmdms(1,j,i).eq.nmax.and.elmdms(2,j,i).eq.mmax)then
+               if(elmdms(1,j,i).eq.num_rows.and.elmdms(2,j,i).eq.num_columns)then
                   npar=npar+1
                endif
             endif
@@ -2634,7 +2556,7 @@ subroutine phipar(datfds,deffds,okee,tmlcdp,iplmnk,tmlcdh,npar,&
    &parlst(*)*(21),paruni(*)*21
    integer datfds(*),deffds(*),nelems(100),grpdms(maxgrp),&
    &grpndm(5,maxgrp),elmdms(5,maxgrp,maxelm),elmndm(maxgrp,*)
-   integer nmax,mmax,maplast,i,j,igrp,nloc,hislast,itype,&
+   integer num_rows,num_columns,maplast,i,j,igrp,nloc,hislast,itype,&
    &partyp(*),parcod(*),tmlcdp,npar,iplmnk,tmlcdh
    logical okee
 !pvb  write(*,*)' call phipar'
@@ -2643,21 +2565,21 @@ subroutine phipar(datfds,deffds,okee,tmlcdp,iplmnk,tmlcdh,npar,&
 !   map file
 !
       npar=0
-      nmax=0
-      mmax=0
+      num_rows=0
+      num_columns=0
       igrp=0
       okee=.true.
-      call mapphi(datfds,deffds,okee,nmax,mmax,igrp,&
+      call mapphi(datfds,deffds,okee,num_rows,num_columns,igrp,&
       &grpnam,grpdef,cel,elmnam,elmtyp,elmqty,&
       &elmunt,elmdes,nelems,&
       &grpndm,grpdms,elmdms,elmndm,maxgrp,maxelm,&
       &maplast)
-      if(nmax.eq.0.and.mmax.eq.0)then
+      if(num_rows.eq.0.and.num_columns.eq.0)then
          do 15 i=1,igrp-1
             do 15 j=1,nelems(i)
                if(elmndm(j,I).eq.2)then
-                  nmax=elmdms(1,j,i)
-                  mmax=elmdms(2,j,i)
+                  num_rows=elmdms(1,j,i)
+                  num_columns=elmdms(2,j,i)
                   goto 17
                endif
 15       continue
@@ -2666,7 +2588,7 @@ subroutine phipar(datfds,deffds,okee,tmlcdp,iplmnk,tmlcdh,npar,&
       do 20 i=1,igrp-1
          do 20 j=1,nelems(i)
             if(elmndm(j,i).eq.2)then
-               if(elmdms(1,j,i).eq.nmax.and.elmdms(2,j,i).eq.mmax)then
+               if(elmdms(1,j,i).eq.num_rows.and.elmdms(2,j,i).eq.num_columns)then
                   npar=npar+1
                   parcod(npar)=npar
                   parlst(npar)=elmnam(j,i)
@@ -2717,7 +2639,7 @@ subroutine philoc(datfds,deffds,okee,npar,nostat,maplast,&
    integer datfds(*),deffds(*),nelems(100),grpdms(maxgrp),&
    &grpndm(5,maxgrp),elmdms(5,maxgrp,maxelm),elmndm(maxgrp,*)
    integer i,j,igrp,itype,error,getelt,&
-   &nmax,mmax,nostat,ilen,&
+   &num_rows,num_columns,nostat,ilen,&
    &npar,maplast,nloc,hislast,&
    &uindex(3,5),&
    &usrord(5)
@@ -2729,21 +2651,21 @@ subroutine philoc(datfds,deffds,okee,npar,nostat,maplast,&
 !  map file
 !
       npar=0
-      nmax=0
-      mmax=0
+      num_rows=0
+      num_columns=0
       igrp=0
       okee=.true.
-      call mapphi(datfds,deffds,okee,nmax,mmax,igrp,&
+      call mapphi(datfds,deffds,okee,num_rows,num_columns,igrp,&
       &grpnam,grpdef,cel,elmnam,elmtyp,elmqty,&
       &elmunt,elmdes,nelems,&
       &grpndm,grpdms,elmdms,elmndm,maxgrp,maxelm,&
       &maplast)
-      if(nmax.eq.0.and.mmax.eq.0)then
+      if(num_rows.eq.0.and.num_columns.eq.0)then
          do 15 i=1,igrp-1
             do 15 j=1,nelems(i)
                if(elmndm(j,I).eq.2)then
-                  nmax=elmdms(1,j,i)
-                  mmax=elmdms(2,j,i)
+                  num_rows=elmdms(1,j,i)
+                  num_columns=elmdms(2,j,i)
                   goto 17
                endif
 15       continue
@@ -2752,7 +2674,7 @@ subroutine philoc(datfds,deffds,okee,npar,nostat,maplast,&
       do 20 i=1,igrp-1
          do 20 j=1,nelems(i)
             if(elmndm(j,i).eq.2)then
-               if(elmdms(1,j,i).eq.nmax.and.elmdms(2,j,i).eq.mmax)then
+               if(elmdms(1,j,i).eq.num_rows.and.elmdms(2,j,i).eq.num_columns)then
                   npar=npar+1
                endif
             endif
@@ -2800,7 +2722,7 @@ subroutine philoc(datfds,deffds,okee,npar,nostat,maplast,&
    endif
    return
 end
-subroutine phitme(datfds,deffds,okee,npar,nmax,mmax,itype,&
+subroutine phitme(datfds,deffds,okee,npar,num_rows,num_columns,itype,&
 &grpnam,grpdef,cel,elmnam,elmtyp,elmqty,&
 &elmunt,elmdes,&
 &grpndm,grpdms,elmdms,elmndm,maxgrp,maxelm,&
@@ -2814,7 +2736,7 @@ subroutine phitme(datfds,deffds,okee,npar,nmax,mmax,itype,&
    integer datfds(*),deffds(*),nelems(100),grpdms(maxgrp),&
    &grpndm(5,maxgrp),elmdms(5,maxgrp,maxelm),elmndm(maxgrp,*)
    integer error,i,j,igrp,itype,&
-   &uindex(3,5),nmax,mmax,&
+   &uindex(3,5),num_rows,num_columns,&
    &usrord(5),npar,maplast,hislast,nloc
    integer pardep,julday,ilen,ii,itmodc,icurtm,iday,ihou,imin,isec
    integer l,n,iy,imo,imo1,idp,itp,nhulp,nrlist
@@ -2833,21 +2755,21 @@ subroutine phitme(datfds,deffds,okee,npar,nmax,mmax,itype,&
       uindex(3,1)=1
       usrord(1)=1
       npar=0
-      nmax=0
-      mmax=0
+      num_rows=0
+      num_columns=0
       igrp=0
       okee=.true.
-      call mapphi(datfds,deffds,okee,nmax,mmax,igrp,&
+      call mapphi(datfds,deffds,okee,num_rows,num_columns,igrp,&
       &grpnam,grpdef,cel,elmnam,elmtyp,elmqty,&
       &elmunt,elmdes,nelems,&
       &grpndm,grpdms,elmdms,elmndm,maxgrp,maxelm,&
       &maplast)
-      if(nmax.eq.0.and.mmax.eq.0)then
+      if(num_rows.eq.0.and.num_columns.eq.0)then
          do 15 i=1,igrp-1
             do 15 j=1,nelems(i)
                if(elmndm(j,I).eq.2)then
-                  nmax=elmdms(1,j,i)
-                  mmax=elmdms(2,j,i)
+                  num_rows=elmdms(1,j,i)
+                  num_columns=elmdms(2,j,i)
                   goto 17
                endif
 15       continue
@@ -2857,7 +2779,7 @@ subroutine phitme(datfds,deffds,okee,npar,nmax,mmax,itype,&
       do 20 i=1,igrp-1
          do 20 j=1,nelems(i)
             if(elmndm(j,i).eq.2)then
-               if(elmdms(1,j,i).eq.nmax.and.elmdms(2,j,i).eq.mmax)then
+               if(elmdms(1,j,i).eq.num_rows.and.elmdms(2,j,i).eq.num_columns)then
                   npar=npar+1
                   if(pardep.eq.npar)then
                      ii=i
@@ -3031,7 +2953,7 @@ subroutine phitme(datfds,deffds,okee,npar,nmax,mmax,itype,&
    endif
    return
 end
-subroutine phimat(datfds,deffds,okee,npar,nmax,mmax,itype,&
+subroutine phimat(datfds,deffds,okee,npar,num_rows,num_columns,itype,&
 &grpnam,grpdef,cel,elmnam,elmtyp,elmqty,&
 &elmunt,elmdes,&
 &grpndm,grpdms,elmdms,elmndm,maxgrp,maxelm,&
@@ -3049,7 +2971,7 @@ subroutine phimat(datfds,deffds,okee,npar,nmax,mmax,itype,&
    &grpndm(5,maxgrp),elmdms(5,maxgrp,maxelm),elmndm(maxgrp,*)
    integer error,i,j,igrp,itype,nhulp,&
    &maplast,hislast,&
-   &uindex(3,5),nmax,mmax,nloc,&
+   &uindex(3,5),num_rows,num_columns,nloc,&
    &usrord(5),npar,ibuffs(*),nindex(3)
    integer pardep,julday,ilen,ii,jj,itmodc,icurtm,iday,ihou,imin,isec
    integer l,n,iy,imo,imo1,idp,itp,m,n1,n2
@@ -3070,21 +2992,21 @@ subroutine phimat(datfds,deffds,okee,npar,nmax,mmax,itype,&
       usrord(1)=1
       vector=.true.
       npar=0
-      nmax=0
-      mmax=0
+      num_rows=0
+      num_columns=0
       igrp=0
       okee=.true.
-      call mapphi(datfds,deffds,okee,nmax,mmax,igrp,&
+      call mapphi(datfds,deffds,okee,num_rows,num_columns,igrp,&
       &grpnam,grpdef,cel,elmnam,elmtyp,elmqty,&
       &elmunt,elmdes,nelems,&
       &grpndm,grpdms,elmdms,elmndm,maxgrp,maxelm,&
       &maplast)
-      if(nmax.eq.0.and.mmax.eq.0)then
+      if(num_rows.eq.0.and.num_columns.eq.0)then
          do 15 i=1,igrp-1
             do 15 j=1,nelems(i)
                if(elmndm(j,I).eq.2)then
-                  nmax=elmdms(1,j,i)
-                  mmax=elmdms(2,j,i)
+                  num_rows=elmdms(1,j,i)
+                  num_columns=elmdms(2,j,i)
                   goto 17
                endif
 15       continue
@@ -3094,7 +3016,7 @@ subroutine phimat(datfds,deffds,okee,npar,nmax,mmax,itype,&
       do 20 i=1,igrp-1
          do 20 j=1,nelems(i)
             if(elmndm(j,i).eq.2)then
-               if(elmdms(1,j,i).eq.nmax.and.elmdms(2,j,i).eq.mmax)then
+               if(elmdms(1,j,i).eq.num_rows.and.elmdms(2,j,i).eq.num_columns)then
                   npar=npar+1
                   if(pardep.eq.npar)then
                      ii=i
@@ -3177,25 +3099,25 @@ subroutine phimat(datfds,deffds,okee,npar,nmax,mmax,itype,&
       uindex(1,1) = nindex(1)
       uindex(2,1) = nindex(2)
       uindex(3,1) = nindex(3)
-      ilen=4*nmax*mmax
+      ilen=4*num_rows*num_columns
       if(elmtyp(jj,ii).eq.'REAL')then
          error=getelt(deffds,grpdef(ii),&
          &elmnam(jj,ii),uindex,usrord,&
          &ilen,rbuffs)
-         do 35 n = 1,nmax
-            do 35 m = 1,mmax
-               n1           =   (n-1) * mmax +  m
-               n2           =   (m-1) *nmax+n
+         do 35 n = 1,num_rows
+            do 35 m = 1,num_columns
+               n1           =   (n-1) * num_columns +  m
+               n2           =   (m-1) *num_rows+n
                xdata ( n1 ) = rbuffs(n2)
 35       continue
       else
          error=getelt(deffds,grpdef(ii),&
          &elmnam(jj,ii),uindex,usrord,&
          &ilen,ibuffs)
-         do 40 n = 1,nmax
-            do 40 m = 1,mmax
-               n1           =   (n-1) * mmax +  m
-               n2=(m-1)*nmax+n
+         do 40 n = 1,num_rows
+            do 40 m = 1,num_columns
+               n1           =   (n-1) * num_columns +  m
+               n2=(m-1)*num_rows+n
                xdata ( n1 ) = ibuffs(n2)
 40       continue
       endif
@@ -3328,7 +3250,7 @@ subroutine hisphi(datfds,deffds,okee,nloc,igrp,&
    GOTO 1111
 9999 CONTINUE
 end
-subroutine mapphi(datfds,deffds,okee,nmax,mmax,igrp,&
+subroutine mapphi(datfds,deffds,okee,num_rows,num_columns,igrp,&
 &grpnam,grpdef,cel,elmnam,elmtyp,elmqty,&
 &elmunt,elmdes,&
 &nelems,&
@@ -3343,7 +3265,7 @@ subroutine mapphi(datfds,deffds,okee,nmax,mmax,igrp,&
    integer datfds(*),deffds(*),nelems(100),grpdms(maxgrp),&
    &grpndm(5,maxgrp),elmdms(5,maxgrp,maxelm),elmndm(maxgrp,*)
    integer error,i,igrp,nbytsg,&
-   &uindex(3,5),nmax,mmax,jor(5),maplast,&
+   &uindex(3,5),num_rows,num_columns,jor(5),maplast,&
    &usrord(5),grpdm
    INTEGER INQGRP,INQCEL,INQFST,INQNXT,inqelm,&
    &getelt

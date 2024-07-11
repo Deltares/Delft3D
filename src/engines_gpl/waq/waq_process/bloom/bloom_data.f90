@@ -100,7 +100,7 @@ module bloom_data_arran
     real(8) :: effic(51, ms)             ! Efficiency per species group
     integer :: nz                       ! Actual size of zvec/fun/der
     integer :: npoint                   ! Actual size of power/effic
-    real(8) :: aroot(2 * mt)              ! KMIN and KMAX roots of types
+    real(8) :: aroot(2 * mt)              ! KMIN and num_layers_grid roots of types
     real(8) :: euligh                   ! Eutrophic light
 end module bloom_data_arran
 
@@ -132,7 +132,7 @@ module bloom_data_matrix
     real(8) :: a(ia, mt)                 ! Matrix A
     real(8) :: b(ia)                    ! Vector B
     real(8) :: c(mt)                    ! Vector C
-    real(8) :: aco(mt, mt)               ! Use ACO (INOW,K) if the Kmax of SOME type of species I is not yet exceeded, or if the mortality constraint is 0.0: nothing to conserve.
+    real(8) :: aco(mt, mt)               ! Use ACO (INOW,K) if the num_layers_grid of SOME type of species I is not yet exceeded, or if the mortality constraint is 0.0: nothing to conserve.
     real(8) :: bgro(ms)                 ! Growth constrains
     integer :: isplim(mt)               ! List of actually limiting constraint numbers
 end module bloom_data_matrix
@@ -189,7 +189,7 @@ module bloom_data_xvect
 end module bloom_data_xvect
 
 module bloom_data_3dl
-    integer :: noseg_3dl                 ! number of segments, copy of NOSEG
+    integer :: noseg_3dl                 ! number of segments, copy of num_cells
     integer :: nosegl_3dl                ! number of segments per layer
     integer :: nolay_3dl                 ! number of layers
     integer :: ngro_3dl                  ! number of BLOOM algae groups, copy of NGRO_A
@@ -205,7 +205,7 @@ module bloom_data_3dl
 end module bloom_data_3dl
 
 module bloom_data_vtrans
-    integer :: noseglocal                 ! number of segments, copy of NOSEG
+    integer :: noseglocal                 ! number of segments, copy of num_cells
     integer :: nolaylocal                 ! number of layers
     real :: timtot                     ! total time
     logical :: active_vtrans = .false.    ! switch indicating if VTRANS functionality is active

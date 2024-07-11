@@ -28,9 +28,9 @@ module m_pripro
 contains
 
 
-    subroutine pripro (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine pripro (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper
 
         !>\file
@@ -45,7 +45,7 @@ contains
         ! EFF     R*4 1 L average light efficiency green-algae                 [
         ! FNUT    R*4 1 L nutrient limitation function green-algae             [
         ! PPMAX1  R*4 1 I pot. max. pr. prod. rc. green-algae (st.temp)      [1/
-        ! PMSA    R*4 1 L Gross act. pr. prod. rc. green-algae               [1/
+        ! process_space_real    R*4 1 L Gross act. pr. prod. rc. green-algae               [1/
         ! TFUNG1  R*4 1 L temp. function for growth processes green            [
 
         !     Logical Units : -
@@ -58,9 +58,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declaration
         !
@@ -94,11 +94,11 @@ contains
         IP20 = IPOINT(20)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                ALG = PMSA(IP1)
+                ALG = process_space_real(IP1)
                 IF (ALG < 0.0) THEN
                     IF (NR_MES < 25) THEN
                         NR_MES = NR_MES + 1
@@ -112,20 +112,20 @@ contains
                     ENDIF
                     ALG = 0.0
                 ENDIF
-                DL = PMSA(IP2)
-                FNUT = PMSA(IP3)
-                EFF = PMSA(IP4)
-                TFUNG = PMSA(IP5)
-                TFUNM = PMSA(IP6)
-                PPMAX = PMSA(IP7)
-                MRESP = PMSA(IP8)
-                GRESP = PMSA(IP9)
-                MORT0 = PMSA(IP10)
-                MORTS = PMSA(IP11)
-                SAL1 = PMSA(IP12)
-                SAL2 = PMSA(IP13)
-                SAL = PMSA(IP14)
-                ALGMIN = PMSA(IP15)
+                DL = process_space_real(IP2)
+                FNUT = process_space_real(IP3)
+                EFF = process_space_real(IP4)
+                TFUNG = process_space_real(IP5)
+                TFUNM = process_space_real(IP6)
+                PPMAX = process_space_real(IP7)
+                MRESP = process_space_real(IP8)
+                GRESP = process_space_real(IP9)
+                MORT0 = process_space_real(IP10)
+                MORTS = process_space_real(IP11)
+                SAL1 = process_space_real(IP12)
+                SAL2 = process_space_real(IP13)
+                SAL = process_space_real(IP14)
+                ALGMIN = process_space_real(IP15)
                 ACTMOR = MORT0
 
                 !     Mortality coefficient depends on salinity
@@ -159,11 +159,11 @@ contains
                 !     Mortality, including processes as autolysis and zooplankton 'graas
                 FL (2 + IFLUX) = ACTMOR * TFUNM * MAX(ALG - ALGMIN, 0.0)
 
-                PMSA (IP16) = PPROD - RESP
-                PMSA (IP17) = ACTMOR * TFUNM
-                PMSA (IP18) = RESP
-                PMSA (IP19) = (PPROD - RESP) * ALG
-                PMSA (IP20) = ACTMOR * TFUNM * MAX(ALG - ALGMIN, 0.0)
+                process_space_real (IP16) = PPROD - RESP
+                process_space_real (IP17) = ACTMOR * TFUNM
+                process_space_real (IP18) = RESP
+                process_space_real (IP19) = (PPROD - RESP) * ALG
+                process_space_real (IP20) = ACTMOR * TFUNM * MAX(ALG - ALGMIN, 0.0)
 
             ENDIF
             !

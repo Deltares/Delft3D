@@ -36,7 +36,7 @@
       use m_flowgeom , only : ln, wu, bob, bl
       use m_flow
       use m_structures
-      use m_flowexternalforcings, only: ngenstru
+      use fm_external_forcings_data, only: ngenstru
       use m_partitioninfo
       use m_flowtimes
       use m_missing, only: dmiss

@@ -31,9 +31,9 @@ contains
                           npart  , mpart  , xpart  , ypart  , zpart  ,  &
                           wpart  , iptime , nopart , radius , nrowswaste, &
                           xpolwaste       , ypolwaste       , lgrid  ,  &
-                          lgrid2 , nmax   , mmax   , xp     , yp     ,  &
+                          lgrid2 , num_rows   , num_columns   , xp     , yp     ,  &
                           dx     , dy     , ndprt  , nosubs , kpart  ,  &
-                          layt   , tcktot , zmodel , laytop , laybot , nplay  , kwaste , nolay  ,  &
+                          layt   , tcktot , zmodel , laytop , laybot , nplay  , kwaste , num_layers  ,  &
                           modtyp , zwaste , track  , nmdyer , substi ,  &
                           rhopart )
 
@@ -99,8 +99,8 @@ contains
       integer  ( int_wp ), pointer       :: nrowswaste(:)         !< length of waste polygon
       integer  ( int_wp ), pointer       :: lgrid  (:,:)          !< grid numbering active
       integer  ( int_wp ), pointer       :: lgrid2(:,:)           !< total grid layout of the area
-      integer  ( int_wp ), intent(in   ) :: nmax                  !< first dimension of the grid
-      integer  ( int_wp ), intent(in   ) :: mmax                  !< second dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: num_rows                  !< first dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: num_columns                  !< second dimension of the grid
       real     ( real_wp), pointer       :: xp     (:)            !< x of upper right corner grid point
       real     ( real_wp), pointer       :: yp     (:)            !< y of upper right corner grid point
       real     ( real_wp), pointer       :: dx     (:)            !< dx of the grid cells
@@ -114,7 +114,7 @@ contains
       integer  ( int_wp ), intent(in   ) :: laybot(:,:)           !< highest active layer in z-layer model
       integer  ( int_wp )                :: nplay  (layt)         !< work array that could as well remain inside
       integer  ( int_wp ), intent(inout) :: kwaste (nodye)        !< k-values of dye points
-      integer  ( int_wp ), intent(in   ) :: nolay                 !< number of comp. layer
+      integer  ( int_wp ), intent(in   ) :: num_layers                 !< number of comp. layer
       real     ( real_wp), intent(inout) :: track  (8,*)          !< track array for all particles
       character( 20), intent(in   ) :: nmdyer (nodye)        !< names of the dye loads
       character( 20), intent(in   ) :: substi (nosubs)       !< names of the substances
@@ -215,7 +215,7 @@ contains
                                  lgrid   , dx      , dy      , lcircl  )
             else
 !              spread the particles over a polygon
-               call findpoly   (nmax, mmax, lgrid, lgrid2, xp, yp, nrowswaste(id), &
+               call findpoly   (num_rows, num_columns, lgrid, lgrid2, xp, yp, nrowswaste(id), &
                                 xpolwaste(1:nrowswaste(id), id), ypolwaste(1:nrowswaste(id), id), &
                                 xpart(i), ypart(i), npart(i), mpart(i))
             end if
@@ -226,15 +226,15 @@ contains
             if ( ipart .gt. nplay(nulay) ) then
                ipart = 0
                nulay = nulay + 1
-               if ( nulay .gt. nolay ) then
-                  nulay = nolay
+               if ( nulay .gt. num_layers ) then
+                  nulay = num_layers
                   goto 20
                endif
                goto 10
             endif
-            if ( nulay .gt. nolay ) then
-               write (*,*) ' Nulay > nolay in part09 '
-               write( lun2,*) ' Nulay > nolay in part09 '
+            if ( nulay .gt. num_layers ) then
+               write (*,*) ' Nulay > num_layers in part09 '
+               write( lun2,*) ' Nulay > num_layers in part09 '
                call stop_exit(1)
             endif
    20       continue
@@ -248,7 +248,7 @@ contains
 
             if ( (modtyp .eq. model_oil .or. leeway) .and. kpart(i) .eq. 1 ) then
                zpart(i) = zwasth
-            elseif ( nolay .eq. 1 ) then
+            elseif ( num_layers .eq. 1 ) then
                zpart(i) = zwasth/100.0
             else
 

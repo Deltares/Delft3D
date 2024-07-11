@@ -21,9 +21,9 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      SUBROUTINE KOPPNT ( MMAX  , NMAX  , KMAX  , MNMAXK, LGRID , & 
-                         IPNT  , ILPNT , NOSEG , NOQ1  , NOQ2  , & 
-                         NOQ3  , NOBND , IPNM  , IPNN  , IPOINT, & 
+      SUBROUTINE KOPPNT ( num_columns  , num_rows  , num_layers_grid  , MNMAXK, LGRID , &
+                         IPNT  , ILPNT , num_cells , num_exchanges_u_dir  , num_exchanges_v_dir  , &
+                         num_exchanges_z_dir  , num_boundary_conditions , IPNM  , IPNN  , IPOINT, &
                          ISAMEN)
 !     
 !          DELFT HYDRAULICS           SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -38,18 +38,18 @@
 !     
 !          NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
 !          ----    -----    ------     ------- -----------
-!          MMAX    INTEGER  1          INPUT   X,U direction, second in LGRID
-!          NMAX    INTEGER  1          INPUT   Y,V direction, first in LGRID
-!          KMAX    INTEGER  1          INPUT   Number of TRIWAQ layers
+!          num_columns    INTEGER  1          INPUT   X,U direction, second in LGRID
+!          num_rows    INTEGER  1          INPUT   Y,V direction, first in LGRID
+!          num_layers_grid    INTEGER  1          INPUT   Number of TRIWAQ layers
 !          MNMAXK  INTEGER  1          INPUT   Number of WAQUA  cells
-!          LGRID   INTEGER  NMAX,MMAX  INPUT   Grid table
+!          LGRID   INTEGER  num_rows,num_columns  INPUT   Grid table
 !          IPNT    INTEGER  0:MNMAXK   INPUT   Pointer to active segments
-!          ILPNT   INTEGER  KMAX       INPUT   Layer aggregation pointer
-!          NOSEG   INTEGER  1          OUTPUT  Number of DELWAQ cells aggregated
-!          NOQ1    INTEGER  1          OUTPUT  Number of N-exchanges
-!          NOQ2    INTEGER  1          OUTPUT  Number of M-exchanges
-!          NOQ3    INTEGER  1          OUTPUT  Number of K-exchanges
-!          NOBND   INTEGER  1          OUTPUT  Number of boundaries
+!          ILPNT   INTEGER  num_layers_grid       INPUT   Layer aggregation pointer
+!          num_cells   INTEGER  1          OUTPUT  Number of DELWAQ cells aggregated
+!          num_exchanges_u_dir    INTEGER  1          OUTPUT  Number of N-exchanges
+!          num_exchanges_v_dir    INTEGER  1          OUTPUT  Number of M-exchanges
+!          num_exchanges_z_dir    INTEGER  1          OUTPUT  Number of K-exchanges
+!          num_boundary_conditions   INTEGER  1          OUTPUT  Number of boundaries
 !          IPNM    INTEGER  MNMAXK     OUTPUT  Pointer to active M-exchanges
 !          IPNN    INTEGER  MNMAXK     OUTPUT  Pointer to active N-exchanges
 !          IPOINT  INTEGER  MNMAXK*4   OUTPUT  Delwaq pointers
@@ -57,9 +57,9 @@
 !     
 !          Declaration of arguments
 !     
-      INTEGER    MMAX  , NMAX  , KMAX  , MNMAXK, NOSEG , & 
-                NOQ1  , NOQ2  , NOQ3  , NOBND , ISAMEN
-      INTEGER    LGRID(NMAX,*)    , IPNT(0:*)        , & 
+      INTEGER    num_columns  , num_rows  , num_layers_grid  , MNMAXK, num_cells , &
+                num_exchanges_u_dir  , num_exchanges_v_dir  , num_exchanges_z_dir  , num_boundary_conditions , ISAMEN
+      INTEGER    LGRID(num_rows,*)    , IPNT(0:*)        , &
                 ILPNT(*)         , IPNM(*)          , & 
                 IPNN(*)          , IPOINT(4,*)
 !     
@@ -68,7 +68,7 @@
 !     
 
 !     
-!          Set NOSEG and NOBND ( top layer )
+!          Set num_cells and num_boundary_conditions ( top layer )
 !          clear the pointers
 !     
       NOSEGL = 0
@@ -80,26 +80,26 @@
          IPNM(ICEL) = 0
    10 CONTINUE
 !     
-      IF ( KMAX .GT. 1 ) THEN
-         NLAY   = ILPNT(KMAX)
-         NOSEG  = NLAY*NOSEGL
-         NOBND  = NLAY*NOBNDL
+      IF ( num_layers_grid .GT. 1 ) THEN
+         NLAY   = ILPNT(num_layers_grid)
+         num_cells  = NLAY*NOSEGL
+         num_boundary_conditions  = NLAY*NOBNDL
       ELSE
          NLAY   = 1
-         NOSEG  = NOSEGL
-         NOBND  = NOBNDL
+         num_cells  = NOSEGL
+         num_boundary_conditions  = NOBNDL
       ENDIF
 !     
 !              fill the active exchanges in N-direction
 !     
-      NOQ1  = 0
-      DO 30 M = 1,MMAX
-      DO 30 N = 1,NMAX
+      num_exchanges_u_dir  = 0
+      DO 30 M = 1,num_columns
+      DO 30 N = 1,num_rows
          IP0 = LGRID(N,M)
          IP1 = IPNT(IP0)
          IF ( IP1 .EQ. 0 ) GOTO 30
          IP2 = 0
-         IF ( N .LE. NMAX-1 ) IP2 = IPNT(LGRID(N+1,M))
+         IF ( N .LE. num_rows-1 ) IP2 = IPNT(LGRID(N+1,M))
          IF ( IP2 .EQ. 0 .OR.  IP1 .EQ. IP2 ) GOTO 30
          IF ( IP1 .LT. 0 .AND. IP2 .LT.   0 ) GOTO 30
 !     
@@ -114,7 +114,7 @@
 !     
 !             look up till we find a segment with another number for the +1 pointer
 !     
-         DO IN2 = N+2 , NMAX
+         DO IN2 = N+2 , num_rows
             IP4 = IPNT(LGRID(IN2,M))
             IF ( IP4 .NE. IP2 ) GOTO 16
          ENDDO
@@ -124,7 +124,7 @@
 !             Excange unique ?
 !     
          IF ( ISAMEN .EQ. 1 ) THEN
-            DO 20  IQ1 = 1 , NOQ1
+            DO 20  IQ1 = 1 , num_exchanges_u_dir
                IF ( IPOINT(1,IQ1).EQ.IP1 .AND. IPOINT(2,IQ1).EQ.IP2 ) & 
               THEN
                     IPNN ( IP0 ) = IQ1
@@ -136,19 +136,19 @@
                ENDIF
    20       CONTINUE
          ENDIF
-         NOQ1 = NOQ1 + 1
-         IPOINT(1,NOQ1) = IP1
-         IPOINT(2,NOQ1) = IP2
-         IPOINT(3,NOQ1) = IP3
-         IPOINT(4,NOQ1) = IP4
-         IPNN  (IP0   ) = NOQ1
+         num_exchanges_u_dir = num_exchanges_u_dir + 1
+         IPOINT(1,num_exchanges_u_dir) = IP1
+         IPOINT(2,num_exchanges_u_dir) = IP2
+         IPOINT(3,num_exchanges_u_dir) = IP3
+         IPOINT(4,num_exchanges_u_dir) = IP4
+         IPNN  (IP0   ) = num_exchanges_u_dir
    30 CONTINUE
-      NOQ1L  = NOQ1
+      NOQ1L  = num_exchanges_u_dir
 !     
 !          rest of the layers
 !     
-      IF ( KMAX .GT. 1 ) THEN
-         NOQ1   = NLAY*NOQ1L
+      IF ( num_layers_grid .GT. 1 ) THEN
+         num_exchanges_u_dir   = NLAY*NOQ1L
          DO 50 ILAY = 2 , NLAY
             ISOFF = (ILAY-1)*NOSEGL
             IQOFF = (ILAY-1)*NOQ1L
@@ -188,15 +188,15 @@
 !     
 !              follow the same procedure in M-direction
 !     
-      NOQ2     = NOQ1
-      DO 70 M = 1,MMAX
-      DO 70 N = 1,NMAX
+      num_exchanges_v_dir     = num_exchanges_u_dir
+      DO 70 M = 1,num_columns
+      DO 70 N = 1,num_rows
 !     
          IP0 = LGRID(N  ,M)
          IP1 = IPNT(IP0)
          IF ( IP1 .EQ. 0 ) GOTO 70
          IP2 = 0
-         IF ( M .LE. MMAX-1 ) IP2 = IPNT(LGRID(N,M+1))
+         IF ( M .LE. num_columns-1 ) IP2 = IPNT(LGRID(N,M+1))
          IF ( IP2 .EQ. 0 .OR.  IP1 .EQ. IP2 ) GOTO 70
          IF ( IP1 .LT. 0 .AND. IP2 .LT.   0 ) GOTO 70
 !     
@@ -211,7 +211,7 @@
 !     
 !             look right till we find a segment with another number for the +1 pointer
 !     
-         DO IM2 = M+2 , MMAX
+         DO IM2 = M+2 , num_columns
             IP4 = IPNT(LGRID(N,IM2))
             IF ( IP4 .NE. IP2 ) GOTO 56
          ENDDO
@@ -232,7 +232,7 @@
                     GOTO 70
                ENDIF
    60       CONTINUE
-            DO 65  IQ2 = NOQ1 + 1 , NOQ2
+            DO 65  IQ2 = num_exchanges_u_dir + 1 , num_exchanges_v_dir
                IF ( IPOINT(1,IQ2).EQ.IP1 .AND. IPOINT(2,IQ2).EQ.IP2 ) & 
               THEN
                     IPNM ( IP0 ) = IQ2
@@ -244,29 +244,29 @@
                ENDIF
   65        CONTINUE
          ENDIF
-         NOQ2 = NOQ2 + 1
-         IPOINT(1,NOQ2) = IP1
-         IPOINT(2,NOQ2) = IP2
-         IPOINT(3,NOQ2) = IP3
-         IPOINT(4,NOQ2) = IP4
-         IPNM  (IP0   ) = NOQ2
+         num_exchanges_v_dir = num_exchanges_v_dir + 1
+         IPOINT(1,num_exchanges_v_dir) = IP1
+         IPOINT(2,num_exchanges_v_dir) = IP2
+         IPOINT(3,num_exchanges_v_dir) = IP3
+         IPOINT(4,num_exchanges_v_dir) = IP4
+         IPNM  (IP0   ) = num_exchanges_v_dir
    70 CONTINUE
-      NOQ2  = NOQ2 - NOQ1
-      NOQ2L = NOQ2
+      num_exchanges_v_dir  = num_exchanges_v_dir - num_exchanges_u_dir
+      NOQ2L = num_exchanges_v_dir
 !     
 !          rest of the layers
 !     
-      IF ( KMAX .GT. 1 ) THEN
-         NOQ2   = NLAY*NOQ2L
+      IF ( num_layers_grid .GT. 1 ) THEN
+         num_exchanges_v_dir   = NLAY*NOQ2L
          DO 90 ILAY = 2 , NLAY
             ISOFF = (ILAY-1)*NOSEGL
-            IQOFF = NOQ1 + (ILAY-1)*NOQ2L
+            IQOFF = num_exchanges_u_dir + (ILAY-1)*NOQ2L
             IBOFF = (ILAY-1)*NOBNDL
             DO 80 IQ = 1 , NOQ2L
-               IP1 = IPOINT(1,IQ+NOQ1)
-               IP2 = IPOINT(2,IQ+NOQ1)
-               IP3 = IPOINT(3,IQ+NOQ1)
-               IP4 = IPOINT(4,IQ+NOQ1)
+               IP1 = IPOINT(1,IQ+num_exchanges_u_dir)
+               IP2 = IPOINT(2,IQ+num_exchanges_u_dir)
+               IP3 = IPOINT(3,IQ+num_exchanges_u_dir)
+               IP4 = IPOINT(4,IQ+num_exchanges_u_dir)
                IF ( IP1 .GT. 0 ) THEN
                   IPOINT(1,IQ+IQOFF) = IP1 + ISOFF
                ELSEIF( IP1 .LT. 0 ) THEN
@@ -298,9 +298,9 @@
 !          The third direction
 !     
       IF ( NLAY .GT. 1 ) THEN
-         NOQ3 = (NLAY-1)*NOSEGL
+         num_exchanges_z_dir = (NLAY-1)*NOSEGL
          DO 110 ILAY = 1 , NLAY-1
-            IQOFF  = NOQ1 + NOQ2 + (ILAY-1)*NOSEGL
+            IQOFF  = num_exchanges_u_dir + num_exchanges_v_dir + (ILAY-1)*NOSEGL
             ISOFF1 = (ILAY-1)*NOSEGL
             ISOFF2 = (ILAY  )*NOSEGL
             ISOFF3 = (ILAY-2)*NOSEGL
@@ -317,7 +317,7 @@
   100       CONTINUE
   110    CONTINUE
       ELSE
-         NOQ3 = 0
+         num_exchanges_z_dir = 0
       ENDIF
 !     
       RETURN

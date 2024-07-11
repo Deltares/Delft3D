@@ -28,9 +28,9 @@ module m_cselac
 contains
 
 
-    subroutine cselac (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine cselac (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper
 
         !>\file
@@ -141,9 +141,9 @@ contains
         !
         IMPLICIT NONE
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(43), INCREM(43), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(43), INCREM(43), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP(43)
         INTEGER(kind = int_wp) :: IN(43)
@@ -182,35 +182,35 @@ contains
         !     -----Warnings-----
         !
         IF (FIRST) THEN
-            IF (PMSA(IP(11))<= 0.0) THEN
+            IF (process_space_real(IP(11))<= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : half saturation constant', &
                         ' KsOxCon should be greater than zero'
-            ELSEIF (PMSA(IP(12))<= 0.0) THEN
+            ELSEIF (process_space_real(IP(12))<= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : half saturation constant', &
                         ' KsNiDen should be greater than zero'
-            ELSEIF (PMSA(IP(13))<= 0.0) THEN
+            ELSEIF (process_space_real(IP(13))<= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : half saturation constant', &
                         ' KsFeRed should be greater than zero'
-            ELSEIF (PMSA(IP(14)) <= 0.0) THEN
+            ELSEIF (process_space_real(IP(14)) <= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : half saturation constant', &
                         ' KsSuRed should be greater than zero'
-            ELSEIF (PMSA(IP(15)) <= 0.0) THEN
+            ELSEIF (process_space_real(IP(15)) <= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : half saturation constant', &
                         ' KsOxDen should be greater than zero'
-            ELSEIF (PMSA(IP(16)) <= 0.0) THEN
+            ELSEIF (process_space_real(IP(16)) <= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : half saturation constant', &
                         ' KsNiIRdInh should be greater than zero'
-            ELSEIF (PMSA(IP(17)) <= 0.0) THEN
+            ELSEIF (process_space_real(IP(17)) <= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : half saturation constant', &
                         ' KsNiSRdInh should be greater than zero'
-            ELSEIF (PMSA(IP(18)) <= 0.0) THEN
+            ELSEIF (process_space_real(IP(18)) <= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : half saturation constant', &
                         ' KsSuMet should be greater than zero'
-            ELSEIF (PMSA(IP(35)) <= 0.0) THEN
+            ELSEIF (process_space_real(IP(35)) <= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : Poros, PORS1 or PORS2', &
                         ' should be greater than zero'
             ENDIF
-            IF (PMSA(IP(38)) > 0.5) THEN
+            IF (process_space_real(IP(38)) > 0.5) THEN
                 ONLY_OX = .TRUE.
             ELSE
                 ONLY_OX = .FALSE.
@@ -221,50 +221,50 @@ contains
         !     Do the segment loop.
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
                 !           Read input. Adjust concentrations to zero, when negative.
                 !           Adjust half saturation const. to prevent division by zero.
                 !
-                COX = MAX (0.0, PMSA(IP(1)))
-                CNI = MAX (0.0, PMSA(IP(2)))
-                CFEA = MAX (0.0, PMSA(IP(3)))
-                CSU = MAX (0.0, PMSA(IP(4)))
-                RMIN1 = PMSA(IP(5))
-                RMIN2 = PMSA(IP(6))
-                RMIN3 = PMSA(IP(7))
-                RMIN4 = PMSA(IP(8))
-                RMIN5 = PMSA(IP(9))
-                RMIN6 = PMSA(IP(10))
-                KSOX = MAX (1.0E-06, PMSA(IP(11)))
-                KSNI = MAX (1.0E-06, PMSA(IP(12)))
-                KSFE = MAX (1.0E-06, PMSA(IP(13)))
-                KSSU = MAX (1.0E-06, PMSA(IP(14)))
-                KSOXI = MAX (1.0E-06, PMSA(IP(15)))
-                KSNIFEI = MAX (1.0E-06, PMSA(IP(16)))
-                KSNISUI = MAX (1.0E-06, PMSA(IP(17)))
-                KSSUI = MAX (1.0E-06, PMSA(IP(18)))
-                KTMIN = PMSA(IP(19))
-                KTDEN = PMSA(IP(20))
-                KTIRED = PMSA(IP(21))
-                KTSRED = PMSA(IP(22))
-                KTMET = PMSA(IP(23))
-                FDEN = PMSA(IP(24))
-                FIRED = PMSA(IP(25))
-                FSRED = PMSA(IP(26))
-                FMET = PMSA(IP(27))
-                COXC1 = PMSA(IP(28))
-                COXC2 = PMSA(IP(29))
-                COXC3 = PMSA(IP(30))
-                COXC4 = PMSA(IP(31))
-                CNIC = PMSA(IP(32))
-                CRTEMP = PMSA(IP(33))
-                TEMP = PMSA(IP(34))
-                POROS = PMSA(IP(35))
-                DELT = PMSA(IP(36))
-                FRMCH4 = PMSA(IP(37))
+                COX = MAX (0.0, process_space_real(IP(1)))
+                CNI = MAX (0.0, process_space_real(IP(2)))
+                CFEA = MAX (0.0, process_space_real(IP(3)))
+                CSU = MAX (0.0, process_space_real(IP(4)))
+                RMIN1 = process_space_real(IP(5))
+                RMIN2 = process_space_real(IP(6))
+                RMIN3 = process_space_real(IP(7))
+                RMIN4 = process_space_real(IP(8))
+                RMIN5 = process_space_real(IP(9))
+                RMIN6 = process_space_real(IP(10))
+                KSOX = MAX (1.0E-06, process_space_real(IP(11)))
+                KSNI = MAX (1.0E-06, process_space_real(IP(12)))
+                KSFE = MAX (1.0E-06, process_space_real(IP(13)))
+                KSSU = MAX (1.0E-06, process_space_real(IP(14)))
+                KSOXI = MAX (1.0E-06, process_space_real(IP(15)))
+                KSNIFEI = MAX (1.0E-06, process_space_real(IP(16)))
+                KSNISUI = MAX (1.0E-06, process_space_real(IP(17)))
+                KSSUI = MAX (1.0E-06, process_space_real(IP(18)))
+                KTMIN = process_space_real(IP(19))
+                KTDEN = process_space_real(IP(20))
+                KTIRED = process_space_real(IP(21))
+                KTSRED = process_space_real(IP(22))
+                KTMET = process_space_real(IP(23))
+                FDEN = process_space_real(IP(24))
+                FIRED = process_space_real(IP(25))
+                FSRED = process_space_real(IP(26))
+                FMET = process_space_real(IP(27))
+                COXC1 = process_space_real(IP(28))
+                COXC2 = process_space_real(IP(29))
+                COXC3 = process_space_real(IP(30))
+                COXC4 = process_space_real(IP(31))
+                CNIC = process_space_real(IP(32))
+                CRTEMP = process_space_real(IP(33))
+                TEMP = process_space_real(IP(34))
+                POROS = process_space_real(IP(35))
+                DELT = process_space_real(IP(36))
+                FRMCH4 = process_space_real(IP(37))
                 !
                 !           Calculate the sum of the mineralisation fluxes
                 !
@@ -406,11 +406,11 @@ contains
                 !
                 !           The corrected scaled contributions are output
                 !
-                PMSA(IP(39)) = FROXC
-                PMSA(IP(40)) = FRNIC
-                PMSA(IP(41)) = FRFEC
-                PMSA(IP(42)) = FRSUC
-                PMSA(IP(43)) = FRCH4C
+                process_space_real(IP(39)) = FROXC
+                process_space_real(IP(40)) = FRNIC
+                process_space_real(IP(41)) = FRFEC
+                process_space_real(IP(42)) = FRSUC
+                process_space_real(IP(43)) = FRCH4C
                 !
             ENDIF
             !

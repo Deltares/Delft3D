@@ -37,7 +37,7 @@ use m_hash_search
 use m_alloc
 use m_flowgeom
 use m_netw
-use m_init_ext_forcings, only : adduniformtimerelation_objects
+use fm_external_forcings, only : adduniformtimerelation_objects
 use unstruc_channel_flow
 use m_structures ! Jan's channel_flow for Sobek's generalstructure (TODO)
 use m_strucs     ! Herman's generalstructure

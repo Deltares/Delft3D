@@ -34,7 +34,7 @@ module m_nearfield
     use iso_c_binding
     use precision
     use MessageHandling
-    use m_flowexternalforcings
+    use fm_external_forcings_data
     use m_transport
     !
     implicit none

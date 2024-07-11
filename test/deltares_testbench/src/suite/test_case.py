@@ -152,6 +152,7 @@ class TestCase(object):
             # overwrite run configuration with given overrides
             program_config.shell_arguments = shell_arguments
             program_config.shell = shell
+            program_config.case_name = self.__config.name
             program_copy.overwriteConfiguration(program_config)
 
             # add runner sequence number and runner configuration to local storage

@@ -37,8 +37,8 @@
 
       integer :: K
 
-      DO 10 K = 1,KMAX
+      do K = 1,KMAX
          X0(K) = X1(K)
-   10 CONTINUE
+      end do
       RETURN
       END SUBROUTINE F0ISF1

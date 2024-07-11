@@ -103,7 +103,7 @@ end subroutine unc_close_trk
 
 !> Writes the (possibly aggregated) unstructured network and edge type to a netCDF file for DelWAQ.
 !! If file exists, it will be overwritten.
-subroutine unc_init_map(crs, meshgeom, nosegl, nolay)
+subroutine unc_init_map(crs, meshgeom, nosegl, num_layers)
 
     use partmem, only: nosubs, nfract, oil, substi
     use io_ugrid
@@ -112,7 +112,7 @@ subroutine unc_init_map(crs, meshgeom, nosegl, nolay)
     type(t_crs),         intent(in)  :: crs      !< Optional crs containing metadata of unsupported coordinate reference systems
     type(t_ug_meshgeom), intent(in)  :: meshgeom !< The complete mesh geometry in a single struct.
     integer,             intent(in)  :: nosegl   !< Number of segments per layer
-    integer,             intent(in)  :: nolay    !< Number of layers (meshgeom%numlayer turns out to be -1)
+    integer,             intent(in)  :: num_layers    !< Number of layers (meshgeom%numlayer turns out to be -1)
 
     character(len=10)                :: cell_method   !< cell_method for this variable (one of 'mean', 'point', see CF for details).
     character(len=50)                :: cell_measures !< cell_measures for this variable (e.g. 'area: mesh2d_ba', see CF for details).
@@ -148,8 +148,8 @@ subroutine unc_init_map(crs, meshgeom, nosegl, nolay)
     ierr = nf90_put_att(imapfile, id_map_time,  'standard_name', 'time')
 
     ! Note: a bit of trickery here ... we should probably define the concentrations as a 2D array
-    if ( nolay > 1 ) then
-        ierr = nf90_def_dim(imapfile, 'layer', nolay, id_map_layersdim)
+    if ( num_layers > 1 ) then
+        ierr = nf90_def_dim(imapfile, 'layer', num_layers, id_map_layersdim)
     endif
 
     ! Write mesh geometry.
@@ -181,7 +181,7 @@ subroutine unc_init_map(crs, meshgeom, nosegl, nolay)
             endif
         enddo
 
-        if ( nolay == 1 ) then
+        if ( num_layers == 1 ) then
             ierr = ug_def_var(imapfile, id_map_depth_averaged_particle_concentration(isub), [meshids%dimids(mdim_face), id_map_timedim], nf90_double, UG_LOC_FACE, &
                        trim(meshgeom%meshName), substnc, 'depth_averaged_particle_concentration', &
                        substi(isub), unit(isub), cell_method, cell_measures, crs, ifill=-999, dfill=dmiss)
@@ -240,9 +240,9 @@ subroutine unc_write_map()
    do isub = 1, nosubs
       call comp_concentration(h1,nosubs,isub,constituents)
 
-      ! AM: consider using a 2D pointer p, pointing to the work array as p(nosegl,nolay)
+      ! AM: consider using a 2D pointer p, pointing to the work array as p(nosegl,num_layers)
       !     then we can make the structure of the netCDF file nicer
-      if ( hyd%nolay == 1 ) then
+      if ( hyd%num_layers == 1 ) then
          ierr = nf90_put_var(imapfile, id_map_depth_averaged_particle_concentration(isub), &
                     constituents(isub,:,1), start = [1, it_map])
       else
@@ -422,7 +422,7 @@ subroutine unc_write_part(ifile, itime, id_trk_parttime, id_trk_partx, id_trk_pa
                 ! If the particles are still in the water, then determine
                 ! the height from the bottom
                 if ( lay < noslay .or. .not. use_settling ) then
-                    do layacc = hyd%nolay,lay+1,-1
+                    do layacc = hyd%num_layers,lay+1,-1
                         kl    = k + (layacc-1) * hyd%nosegl
                         zz(i) = zz(i) + h1(kl)
                     enddo

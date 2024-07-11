@@ -167,7 +167,7 @@
 !          Table P4 (PROCESSES)
 !
       CALL WR_TABP4 ( DEFFDS      , &
-                     NPROC       , PROCID      , &
+                     num_processes_activated       , PROCID      , &
                      PROCNM      , PROCFO      , &
                      PROCCO      , LUNREP      , &
                      IERROR      )
@@ -192,7 +192,7 @@
 !          Table R1 (CONFIGURATIONS-PROCESSES)
 !
       ITEL = 1
-      DO IP = 1 , NPROC
+      DO IP = 1 , num_processes_activated
          DO IC = 1 , NCONF
             IF ( CONPRO(IC,IP) ) THEN
                ICNPRO(ITEL) = 1
@@ -203,7 +203,7 @@
          ENDDO
       ENDDO
       CALL WR_TABR1 ( DEFFDS      , &
-                     NCONF       , NPROC       , &
+                     NCONF       , num_processes_activated       , &
                      ICNPRO      , LUNREP      , &
                      IERROR      )
       IF ( IERROR .NE. 0 ) THEN
@@ -241,7 +241,7 @@
 !          Table R4 (OUTPUT ITEMS)
 !
       CALL WR_TABR4 ( DEFFDS      , &
-                     NOUTP       , OUTPPR      , &
+                     num_output_files       , OUTPPR      , &
                      OUTPIT      , OUTPNM      , &
                      OUTPDO      , OUTPSX      , &
                      LUNREP      , IERROR      )
@@ -336,7 +336,7 @@
                       R2_IIN      , NCNSB       , &
                       INPUII      , NINPU       , &
                       INPUPI      , OUTPII      , &
-                      NOUTP       , OUTPPI      , &
+                      num_output_files       , OUTPPI      , &
                       LUNREP      , IERROR      )
       IF ( IERROR .NE. 0 ) THEN
          WRITE(LUNREP,*) 'ERROR writing INDICES'

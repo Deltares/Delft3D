@@ -35,7 +35,7 @@ contains
     !! DERIV is set to the new diagonal. This procedure
     !! is required for the old ADI solver (nr. 4) and for
     !! the 2 solvers with implicit vertical (nrs. 11 & 12)
-subroutine dlwq42(nosys, notot, nototp, noseg, volume, &
+subroutine dlwq42(num_substances_transported, num_substances_total, num_substances_part, num_cells, volume, &
             surface, amass, conc, deriv, idt, &
             ivflag, file_unit_list)
 
@@ -43,15 +43,15 @@ subroutine dlwq42(nosys, notot, nototp, noseg, volume, &
 
         implicit none
 
-        integer(kind = int_wp), intent(in)    :: nosys                   !< number of transported substances
-        integer(kind = int_wp), intent(in)    :: notot                   !< total number of substances
-        integer(kind = int_wp), intent(in)    :: nototp                  !< number of particle substances
-        integer(kind = int_wp), intent(in)    :: noseg                   !< number of computational volumes
-        real(kind = real_wp),   intent(inout) :: volume(noseg)           !< volumes of the segments
-        real(kind = real_wp),   intent(in)    :: surface(noseg)          !< horizontal surface area
-        real(kind = real_wp),   intent(inout) :: amass (notot, noseg)    !< masses per substance per volume
-        real(kind = real_wp),   intent(inout) :: conc  (notot, noseg)    !< concentrations per substance per volume
-        real(kind = real_wp),   intent(inout) :: deriv (notot, noseg)    !< derivatives per substance per volume
+        integer(kind = int_wp), intent(in)    :: num_substances_transported                   !< number of transported substances
+        integer(kind = int_wp), intent(in)    :: num_substances_total                   !< total number of substances
+        integer(kind = int_wp), intent(in)    :: num_substances_part                  !< number of particle substances
+        integer(kind = int_wp), intent(in)    :: num_cells                   !< number of computational volumes
+        real(kind = real_wp),   intent(inout) :: volume(num_cells)           !< volumes of the segments
+        real(kind = real_wp),   intent(in)    :: surface(num_cells)          !< horizontal surface area
+        real(kind = real_wp),   intent(inout) :: amass (num_substances_total, num_cells)    !< masses per substance per volume
+        real(kind = real_wp),   intent(inout) :: conc  (num_substances_total, num_cells)    !< concentrations per substance per volume
+        real(kind = real_wp),   intent(inout) :: deriv (num_substances_total, num_cells)    !< derivatives per substance per volume
         integer(kind = int_wp), intent(in)    :: idt                     !< integration time step size
         integer(kind = int_wp), intent(in)    :: ivflag                  !< if 1 computational volumes
         integer(kind = int_wp), intent(in)    :: file_unit_list          !< unit number of the monitoring file
@@ -68,7 +68,7 @@ subroutine dlwq42(nosys, notot, nototp, noseg, volume, &
         if (timon) call timstrt ("dlwq42", ithandl)
 
         ! loop accross the number of computational volumes for the concentrations
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
             ! compute volumes if necessary and check for positivity
             if (ivflag == 1) volume(iseg) = amass(1, iseg) + idt * deriv(1, iseg)
@@ -86,15 +86,15 @@ subroutine dlwq42(nosys, notot, nototp, noseg, volume, &
             end if
 
             ! transported substances first
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 conc (isys, iseg) = amass(isys, iseg) + idt * deriv(isys, iseg)
                 deriv(isys, iseg) = vol
             end do
 
             ! then the passive substances
-            if (notot - nototp > nosys) then
+            if (num_substances_total - num_substances_part > num_substances_transported) then
                 surf = surface(iseg)
-                do isys = nosys + 1, notot - nototp
+                do isys = num_substances_transported + 1, num_substances_total - num_substances_part
                     amass(isys, iseg) = amass(isys, iseg) + idt * deriv(isys, iseg)
                     conc (isys, iseg) = amass(isys, iseg) / surf
                     deriv(isys, iseg) = 0.0

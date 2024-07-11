@@ -77,32 +77,32 @@
 
       IF (JADUBBEL .GE. 1) THEN
 !        VERDUBBEL AANTAL STEUNPUNTEN ALS
-         DO 15 I = 1,NUMSPL
+         do I = 1,NUMSPL
             CALL NUMPold(X,mmax, nmax, I,NUMPI)
             CALL GETIJ( X,     XI,mmax, nmax, imax,      I,    I,      1,  NUMPI)
             CALL GETIJ( Y,     YI,mmax, nmax, imax,      I,    I,      1,  NUMPI)
             CALL SPLINE(XI,NUMPI,XJ)
             CALL SPLINE(YI,NUMPI,YJ)
-            DO 16 J = 2*NUMPI-1,2,-2
+            do J = 2*NUMPI-1,2,-2
                J2     = 1 + J/2
                X(I,J) = X(I,J2)
                Y(I,J) = Y(I,J2)
-    16      CONTINUE
-            DO 17 J = 1,NUMPI-1
+end do
+            do J = 1,NUMPI-1
                TI = J - 0.5
                J2 = 2*J
                CALL SPLINT(XI,XJ,NUMPI,TI,X(I,J2))
                CALL SPLINT(YI,YJ,NUMPI,TI,Y(I,J2))
-    17      CONTINUE
-    15   CONTINUE
+end do
+end do
          CALL NUMS(      X, mmax, nmax, NUMSPL,  NUMPX)
       ENDIF
 
       IONBENOEMD = 0
      6 CONTINUE
-      DO 10 I = 1,NUMSPL
+      DO I = 1,NUMSPL
          CALL READYY(' ', 0.01d0 + 0.3d0*dble(I-1)/dble(NUMSPL) )
-         DO 10 J = I+1,NUMSPL
+         do J = I+1,NUMSPL
             CALL NUMPold  (      X,     mmax, nmax, I,  NUMPI)
             CALL NUMPold  (      X,     mmax, nmax, J,  NUMPJ)
             CALL GETIJ (      X,     XI,mmax, nmax, imax,     I,    I,      1, NUMPI)
@@ -156,9 +156,10 @@
                   GOTO 5
                ENDIF
             ENDIF
-    10 CONTINUE
+         end do
+      end do
 
-      DO 20 I = 1,NUMSPL
+      DO I = 1,NUMSPL
          CALL NUMPold  (      X,     mmax, nmax, I,  NUMPI)
          IF (NTYP(I) .EQ. 0) THEN
             IONBENOEMD = IONBENOEMD + 1
@@ -171,12 +172,12 @@
             ENDIF
             GOTO 6
          ENDIF
-    20 CONTINUE
+      end do
 
 !     sorteren op type, eerst de horizontalen (N = CONSTANT)
-      DO 40 I = 1,NUMSPL
+      DO I = 1,NUMSPL
          IF (NTYP(I) .EQ. -1) THEN
-            DO 50 L = I+1,NUMSPL
+            DO L = I+1,NUMSPL
                IF (NTYP(L) .EQ. 1) THEN
                   CALL CHAROW(    X  ,mmax, nmax,    I,    L, NUMPX)
                   CALL CHAROW(    Y  ,mmax, nmax,    I,    L, NUMPX)
@@ -184,27 +185,28 @@
                   CALL CHACOL(  TIJ  ,mmax, nmax,    I,    L, NUMSPL)
                   NTYP(I) =  1
                   NTYP(L) = -1
-                  GOTO 40
+                  exit
                ENDIF
-    50      CONTINUE
+            end do
          ENDIF
-    40 CONTINUE
+      end do
 
-      DO 45 I = 1,NUMSPL
+      DO I = 1,NUMSPL
          IF (NTYP(I) .EQ. 1) NUMI = I
-    45 CONTINUE
+      end do
+      
 
-    59 CONTINUE
+59  continue
 !     Sorteer de M
       JACHANGE = 0
       ICOUNT   = 0
-      DO 60 I = 1,NUMI
+      DO I = 1,NUMI
 !        CALL READYY(' ',0.35 + 0.65*REAL(I-1)/REAL(NUMSPL-1) )
-         DO 60 J = NUMI+1,NUMSPL
+         DO J = NUMI+1,NUMSPL
             CALL NUMPold  (      X,     mmax, nmax, I,  NUMPI)
             CALL NUMPold  (      X,     mmax, nmax, J,  NUMPJ)
             IF (TIJ(I,J) .NE. 0) THEN
-               DO 70 JK = J+1,NUMSPL
+               DO JK = J+1,NUMSPL
                   IF (TIJ(I,JK) .NE. 0) THEN
                      IF (TIJ(I,J) .GT. TIJ(I,JK) ) THEN
                         CALL CHAROW(    X,mmax, nmax,     J,     JK, NUMPX )
@@ -222,20 +224,23 @@
                         GOTO 59
                      ENDIF
                   ENDIF
-    70         CONTINUE
+               end do
+               
             ENDIF
-    60 CONTINUE
+         end do
+      end do
+      
 
-    79 CONTINUE
+79 continue
       ICOUNT = 0
 !     Sorteer de N
-      DO 80 I = NUMI+1,NUMSPL
+      DO I = NUMI+1,NUMSPL
 !        CALL READYY(' ',0.35 + 0.65*REAL(I-1)/REAL(NUMSPL-1) )
-         DO 80 J = 1,NUMI
+         DO J = 1,NUMI
             CALL NUMPold  (      X,     mmax, nmax, I,  NUMPI)
             CALL NUMPold  (      X,     mmax, nmax, J,  NUMPJ)
             IF (TIJ(I,J) .NE. 0) THEN
-               DO 90 JK = J+1,NUMI
+               DO JK = J+1,NUMI
                   IF (TIJ(I,JK) .NE. 0) THEN
                      IF (TIJ(I,J) .GT. TIJ(I,JK) ) THEN
                         CALL CHAROW(    X,mmax, nmax,     J,     JK, NUMPX )
@@ -253,89 +258,104 @@
                         GOTO 79
                      ENDIF
                   ENDIF
-    90         CONTINUE
+               end do
             ENDIF
-    80 CONTINUE
+         end do
+      end do
       IF (JACHANGE .EQ. 1) GOTO 59
 
 
 !     Initialiseer ranking, start en eind, 1,2,3
-      DO 100 I = 1,NUMSPL
+      DO I = 1,NUMSPL
          MN12(I,1) = 0
          MN12(I,2) = 0
          MN12(I,3) = 0
-   100 CONTINUE
+      end do
+      
+      
 
 !     CALL SHOWADM(TIJ,MMAX,NMAX)
 
 !     Eerst alles ranken in N richting
-      DO 110 I  = 1,NUMI
-         DO 120 J = NUMI+1, NUMSPL
+      DO i = 1,NUMI
+         DO J = NUMI+1, NUMSPL
             MAXN   = 0
             JJLAST = 1
-            DO 130 JJ = 1,I
+            DO JJ = 1,I
                IF (TIJ(J,JJ) .NE. 0) THEN
                   MAXN   = MN12(JJLAST,1) + 1
                   JJLAST = JJ
                ENDIF
-   130      CONTINUE
+            end do
+            
             MN12(J,2) = MAXN
-   120   CONTINUE
+         end do
+         
          MAXN = 0
-         DO 140 J = NUMI+1,NUMSPL
+         DO J = NUMI+1,NUMSPL
             IF (TIJ(J,I) .NE. 0) MAXN = MAX(MN12(J,2),MAXN)
-   140   CONTINUE
+         end do
+         
          MN12(I,1) = MAXN
-   110 CONTINUE
+      end do
+      
 
 !     Dan alles ranken in M richting
-      DO 210 I  = NUMI+1,NUMSPL
-         DO 220 J = 1, NUMI
+      DO I  = NUMI+1,NUMSPL
+         DO J = 1, NUMI
             MAXM   = 0
             IILAST = NUMI+1
-            DO 230 II = NUMI+1,I
+            DO II = NUMI+1,I
                IF (TIJ(J,II) .NE. 0) THEN
                   MAXM   = MN12(IILAST,1) + 1
                   IILAST = II
                ENDIF
-   230      CONTINUE
+            end do
+            
             MN12(J,3) = MAXM
-   220   CONTINUE
+         end do
          MAXM = 0
-         DO 240 J = 1,NUMI
+         DO J = 1,NUMI
             IF (TIJ(J,I) .NE. 0) MAXM = MAX(MN12(J,3),MAXM)
-   240   CONTINUE
+         end do
          MN12(I,1) = MAXM
-   210 CONTINUE
+      end do
+      
 
-      DO 250 I = 1,NUMSPL
+      DO I = 1,NUMSPL
          MN12(I,2) = 0
          MN12(I,3) = 0
-   250 CONTINUE
+      end do
+      
 
 !     Daarna per spline begin- en eindpunt tellen, eerst N = constant
-      DO 300 I = 1,NUMI
-         DO 300 J = NUMI+1,NUMSPL
+      DO  I = 1,NUMI
+         DO  J = NUMI+1,NUMSPL
             IF (TIJ(I,J) .NE. 0) THEN
                IF (MN12(I,2) .EQ. 0) MN12(I,2) = MN12(J,1)
                MN12(I,3) = MN12(J,1)
             ENDIF
-   300 CONTINUE
+         end do
+      end do
+      
+         
 
 !     Dan M = constant
-      DO 310 I = NUMI+1,NUMSPL
-         DO 310 J = 1,NUMI
+      DO I = NUMI+1,NUMSPL
+         DO J = 1,NUMI
             IF (TIJ(I,J) .NE. 0) THEN
                IF (MN12(I,2) .EQ. 0) MN12(I,2) = MN12(J,1)
                MN12(I,3) = MN12(J,1)
             ENDIF
-   310 CONTINUE
+         end do
+      end do
+      
       CALL READYY(' ',0.95d0)
 
-      DO 400 I = 1,NUMSPL
+      DO I = 1,NUMSPL
          WRITE(msgbuf,*) I, (MN12(I,J), J = 1,3)
          call dbg_flush()
-   400 CONTINUE
-
+      end do
+      
       RETURN
       END subroutine sectr

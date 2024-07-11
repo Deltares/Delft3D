@@ -28,9 +28,9 @@ module m_sedcar
 contains
 
 
-    subroutine sedcar (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine sedcar (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Sedimentation routine used for OOC, algae, BOD pools, bacteria etc.
 
@@ -71,9 +71,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         REAL(kind = real_wp) :: MINDEP, MINDE2, DEPTH, DEPTH2
 
@@ -123,12 +123,12 @@ contains
         IN12 = INCREM(12)
 
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             !     zero output
 
-            PMSA (IP10) = 0.0
-            PMSA (IP11) = 0.0
+            process_space_real (IP10) = 0.0
+            process_space_real (IP11) = 0.0
 
             !     sedimentation towards the bottom
 
@@ -137,14 +137,14 @@ contains
                 CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
                     !
-                    CONC = MAX (0.0, PMSA(IP1))
-                    ZERSED = PMSA(IP2)
-                    VSED = MAX (0.0, PMSA(IP3))  ! Avoid inadvertent source if VSED negative (Delft3D-35562)
-                    TAU = PMSA(IP4)
-                    TCRSED = PMSA(IP5)
-                    DEPTH = PMSA(IP6)
-                    DELT = PMSA(IP7)
-                    MINDEP = PMSA(IP8)
+                    CONC = MAX (0.0, process_space_real(IP1))
+                    ZERSED = process_space_real(IP2)
+                    VSED = MAX (0.0, process_space_real(IP3))  ! Avoid inadvertent source if VSED negative (Delft3D-35562)
+                    TAU = process_space_real(IP4)
+                    TCRSED = process_space_real(IP5)
+                    DEPTH = process_space_real(IP6)
+                    DELT = process_space_real(IP7)
+                    MINDEP = process_space_real(IP8)
 
                     !***********************************************************************
                     !**** Processes connected to the SEDIMENTATION
@@ -179,8 +179,8 @@ contains
                     ENDIF
 
                     !     Output of calculated sedimentation rate
-                    PMSA (IP10) = PSED
-                    PMSA (IP11) = MAXSED
+                    process_space_real (IP10) = PSED
+                    process_space_real (IP11) = MAXSED
                     !
                 ENDIF
             ENDIF
@@ -205,18 +205,18 @@ contains
         IP11 = IPOINT(11)
 
         !.....Exchangeloop over de horizontale richting
-        DO IQ = 1, NOQ1 + NOQ2
+        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
 
-            PMSA(IP12) = 0.0
+            process_space_real(IP12) = 0.0
 
             IP12 = IP12 + IN12
 
         end do
 
-        IP9 = IP9 + (NOQ1 + NOQ2) * IN9
+        IP9 = IP9 + (num_exchanges_u_dir + num_exchanges_v_dir) * IN9
 
         !.....Exchangeloop over de verticale richting
-        DO IQ = NOQ1 + NOQ2 + 1, NOQ1 + NOQ2 + NOQ3 + NOQ4
+        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
 
             IVAN = IEXPNT(1, IQ)
             INAAR = IEXPNT(2, IQ)
@@ -233,9 +233,9 @@ contains
                     !                                         TE KUNNEN GEBRUIKEN
                     !               Snelheid behoeft niet gezet (gebeurt in TRASED)
 
-                    !               MAXSED = PMSA (IP11+(IVAN-1)*IN11)
-                    !               CONC   = MAX (1E-20, PMSA(IP1+(IVAN-1)*IN1) )
-                    !               PMSA(IP12) = MAXSED/86400./CONC
+                    !               MAXSED = process_space_real (IP11+(IVAN-1)*IN11)
+                    !               CONC   = MAX (1E-20, process_space_real(IP1+(IVAN-1)*IN1) )
+                    !               process_space_real(IP12) = MAXSED/86400./CONC
                     FL (1 + (IVAN - 1) * NOFLUX) = 0.0
 
                 ELSEIF (IKMRKV==1.AND.IKMRKN==1) THEN
@@ -244,17 +244,17 @@ contains
                     !rs             alleen conversie van 1/d naar 1/s. Ten overvloede:
                     !rs             scu (s) en aux-timer (d) liggen dus vast!
 
-                    DEPTH = PMSA(IP6 + (IVAN - 1) * IN6)
-                    DEPTH2 = PMSA(IP6 + (INAAR - 1) * IN6)
-                    MINDEP = PMSA(IP8 + (IVAN - 1) * IN8)
-                    MINDE2 = PMSA(IP8 + (INAAR - 1) * IN8)
+                    DEPTH = process_space_real(IP6 + (IVAN - 1) * IN6)
+                    DEPTH2 = process_space_real(IP6 + (INAAR - 1) * IN6)
+                    MINDEP = process_space_real(IP8 + (IVAN - 1) * IN8)
+                    MINDE2 = process_space_real(IP8 + (INAAR - 1) * IN8)
                     IF (DEPTH > MINDEP .AND. DEPTH2 > MINDE2) THEN
-                        PMSA(IP12) = PMSA(IP9) / 86400.
+                        process_space_real(IP12) = process_space_real(IP9) / 86400.
                     ELSE
-                        PMSA(IP12) = 0.0
+                        process_space_real(IP12) = 0.0
                     ENDIF
                 ELSE
-                    PMSA(IP12) = 0.0
+                    process_space_real(IP12) = 0.0
                 ENDIF
 
             ENDIF
@@ -287,14 +287,14 @@ contains
             DO IQ = IWA1, IWA2
                 IWATER = IEXPNT(1, IQ)
 
-                CONC = MAX (0.0, PMSA(IP1 + (IWATER - 1) * IN1))
-                ZERSED = PMSA(IP2 + (IWATER - 1) * IN2)
-                VSED = MAX (0.0, PMSA(IP3 + (IWATER - 1) * IN3))
-                TAU = PMSA(IP4 + (IWATER - 1) * IN4)
-                TCRSED = PMSA(IP5 + (IWATER - 1) * IN5)
-                DEPTH = PMSA(IP6 + (IWATER - 1) * IN6)
-                DELT = PMSA(IP7 + (IWATER - 1) * IN7)
-                MINDEP = PMSA(IP8 + (IWATER - 1) * IN8)
+                CONC = MAX (0.0, process_space_real(IP1 + (IWATER - 1) * IN1))
+                ZERSED = process_space_real(IP2 + (IWATER - 1) * IN2)
+                VSED = MAX (0.0, process_space_real(IP3 + (IWATER - 1) * IN3))
+                TAU = process_space_real(IP4 + (IWATER - 1) * IN4)
+                TCRSED = process_space_real(IP5 + (IWATER - 1) * IN5)
+                DEPTH = process_space_real(IP6 + (IWATER - 1) * IN6)
+                DELT = process_space_real(IP7 + (IWATER - 1) * IN7)
+                MINDEP = process_space_real(IP8 + (IWATER - 1) * IN8)
 
                 !           Calculate sedimenation probability
 
@@ -321,7 +321,7 @@ contains
                 ENDIF
 
                 IF (CONC > 1.E-10) THEN
-                    PMSA(IP12 + (IQ - 1) * IN12) = MAXSED / 86400. / CONC
+                    process_space_real(IP12 + (IQ - 1) * IN12) = MAXSED / 86400. / CONC
                 ENDIF
 
             ENDDO

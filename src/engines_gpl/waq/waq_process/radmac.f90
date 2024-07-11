@@ -28,9 +28,9 @@ module m_radmac
 contains
 
 
-    SUBROUTINE RADMAC     (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
+    SUBROUTINE RADMAC     (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper
         use m_extract_waq_attribute
 
@@ -41,18 +41,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        REAL(kind = real_wp) :: PMSA(*)     !I/O Process Manager System Array, window of routine to process library
+        REAL(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         REAL(kind = real_wp) :: FL(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        INTEGER(kind = int_wp) :: IPOINT(9) ! I  Array of pointers in PMSA to get and store the data
+        INTEGER(kind = int_wp) :: IPOINT(9) ! I  Array of pointers in process_space_real to get and store the data
         INTEGER(kind = int_wp) :: INCREM(9) ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-        INTEGER(kind = int_wp) :: NOSEG       ! I  Number of computational elements in the whole model schematisation
+        INTEGER(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         INTEGER(kind = int_wp) :: NOFLUX      ! I  Number of fluxes, increment in the FL array
         INTEGER(kind = int_wp) :: IEXPNT      ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         INTEGER(kind = int_wp) :: IKNMRK(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        INTEGER(kind = int_wp) :: NOQ1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        INTEGER(kind = int_wp) :: NOQ2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
-        INTEGER(kind = int_wp) :: NOQ3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        INTEGER(kind = int_wp) :: NOQ4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         INTEGER(kind = int_wp) :: IPNT(9)   !    Local work array for the pointering
         INTEGER(kind = int_wp) :: ISEG        !    Local loop counter for computational element loop
         !
@@ -71,7 +71,7 @@ contains
         !
         IPNT = IPOINT
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1) THEN
@@ -79,7 +79,7 @@ contains
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
 
                     !         Access conditions from the cell where the top of the plant is
-                    ITOPSEG = NINT(PMSA(IPNT(1)))
+                    ITOPSEG = NINT(process_space_real(IPNT(1)))
                     IF (ITOPSEG <= 0) THEN
                         CALL get_log_unit_number(LUNREP)
                         WRITE(LUNREP, *) 'RADMAC: top segment missing - needed for light intensity at tip of plant'
@@ -89,12 +89,12 @@ contains
                     ENDIF
 
                     !         Calculate light intensity at the tip of the plant
-                    RADTOP = PMSA(IPOINT(2) + (ITOPSEG - 1) * INCREM(2))
-                    HACT = PMSA(IPNT(3))
-                    TOTDEP = PMSA(IPNT(4))
-                    LOCDEP = PMSA(IPOINT(5) + (ITOPSEG - 1) * INCREM(5))
-                    DEPTH = PMSA(IPOINT(6) + (ITOPSEG - 1) * INCREM(6))
-                    EXT = PMSA(IPOINT(7) + (ITOPSEG - 1) * INCREM(7))
+                    RADTOP = process_space_real(IPOINT(2) + (ITOPSEG - 1) * INCREM(2))
+                    HACT = process_space_real(IPNT(3))
+                    TOTDEP = process_space_real(IPNT(4))
+                    LOCDEP = process_space_real(IPOINT(5) + (ITOPSEG - 1) * INCREM(5))
+                    DEPTH = process_space_real(IPOINT(6) + (ITOPSEG - 1) * INCREM(6))
+                    EXT = process_space_real(IPOINT(7) + (ITOPSEG - 1) * INCREM(7))
                     ZM = TOTDEP - HACT
                     Z1 = LOCDEP - DEPTH
                     DZ = ZM - Z1
@@ -122,10 +122,10 @@ contains
                     ACTRAD = RADTOP * EXP(-EXT * DZ)
 
                     !         Calculate and store light efficiency
-                    SATRAD = PMSA(IPNT(8))
+                    SATRAD = process_space_real(IPNT(8))
 
                     FRAD = MIN(1.0, ACTRAD / SATRAD)
-                    PMSA(IPNT(9)) = FRAD
+                    process_space_real(IPNT(9)) = FRAD
                     !
                 ENDIF
             ENDIF

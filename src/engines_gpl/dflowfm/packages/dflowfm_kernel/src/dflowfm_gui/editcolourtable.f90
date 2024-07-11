@@ -63,7 +63,7 @@
       NPUT   =  33
       NUMB   =  14
 
-   10 CONTINUE
+10    continue
       CALL DRAWNU(KEY)
       CALL ALLCOLOURS()
       CALL KTEXT(TEX,1,2,15)

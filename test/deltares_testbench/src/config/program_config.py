@@ -22,6 +22,7 @@ class ProgramConfig:
         self.__ignore_return_value: bool = False
         self.__log_output_to_file: bool = False
         self.__name: str = ""
+        self.__case_name: str = ""
         self.__locations: List[Location] = []
         self.__path: str = ""
         self.__search_paths: List[str] = []
@@ -99,6 +100,15 @@ class ProgramConfig:
     @name.setter
     def name(self, value: str):
         self.__name = value
+
+    @property
+    def case_name(self) -> str:
+        """Name of the testcase that the program executes."""
+        return self.__case_name
+
+    @case_name.setter
+    def case_name(self, value: str):
+        self.__case_name = value
 
     @property
     def locations(self) -> List[Location]:

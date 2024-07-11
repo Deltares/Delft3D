@@ -29,7 +29,7 @@ implicit none
 contains
 
 
-      subroutine rdwnd ( lunut  , sfile  , nmax   , mmax  , noseg  ,      &
+      subroutine rdwnd ( lunut  , sfile  , num_rows   , num_columns  , num_cells  ,      &
      &                   xb     , yb     , lgrida , ierr  )
 
 !     Deltares Software Centre
@@ -61,12 +61,12 @@ contains
 
       integer      , intent(in   ) :: lunut             !< unit number report file
       character( *), intent(in   ) :: sfile             !< steering file
-      integer      , intent(in   ) :: nmax              !< first index
-      integer      , intent(in   ) :: mmax              !< second index
-      integer      , intent(in   ) :: noseg             !< dimension of linear arrays
-      real     (real_wp), intent(in   ) :: xb    (nmax,mmax) !< x-cco values
-      real     (real_wp), intent(in   ) :: yb    (nmax,mmax) !< y-cco values
-      integer      , intent(in   ) :: lgrida(nmax,mmax) !< active grid table
+      integer      , intent(in   ) :: num_rows              !< first index
+      integer      , intent(in   ) :: num_columns              !< second index
+      integer      , intent(in   ) :: num_cells             !< dimension of linear arrays
+      real     (real_wp), intent(in   ) :: xb    (num_rows,num_columns) !< x-cco values
+      real     (real_wp), intent(in   ) :: yb    (num_rows,num_columns) !< y-cco values
+      integer      , intent(in   ) :: lgrida(num_rows,num_columns) !< active grid table
       integer      , intent(  out) :: ierr              !< if non-zero then error
 
 !     Locals
@@ -93,17 +93,17 @@ contains
 
 !     make the coordinates in cell centres and the property array kcs (0=inactive)
 
-      allocate ( xz(noseg), yz(noseg), kcs(noseg) )
+      allocate ( xz(num_cells), yz(num_cells), kcs(num_cells) )
       kcs = 1
       ik  = 1
-      do im = 1, mmax
-         do in = 1, nmax
+      do im = 1, num_columns
+         do in = 1, num_rows
             if ( lgrida(in,im) .gt. 0 ) then        ! compute coords for cell centres
                xz(ik) = ( xb(in-1,im-1) + xb(in-1,im) + xb(in,im-1) + xb(in,im) ) / 4.0d0
                yz(ik) = ( yb(in-1,im-1) + yb(in-1,im) + yb(in,im-1) + yb(in,im) ) / 4.0d0
                ik = ik + 1
             else
-               if ( noseg .eq. nmax*mmax ) then     ! full matrix
+               if ( num_cells .eq. num_rows*num_columns ) then     ! full matrix
                   kcs(ik) = 0
                   xz (ik) = 0.0d0
                   yz (ik) = 0.0d0

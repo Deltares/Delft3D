@@ -28,9 +28,9 @@ module m_tempermode
 contains
 
 
-    subroutine tmode  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine tmode  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper
 
         !>\file
@@ -40,20 +40,20 @@ contains
 
         !     arguments
 
-        REAL(kind = real_wp) :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+        REAL(kind = real_wp) :: process_space_real(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
         REAL(kind = real_wp) :: FL(*)              ! in/out flux array
-        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-        INTEGER(kind = int_wp) :: NOSEG              ! in     number of segments
+        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+        INTEGER(kind = int_wp) :: num_cells              ! in     number of segments
         INTEGER(kind = int_wp) :: NOFLUX             ! in     total number of fluxes (increment in FL array)
         INTEGER(kind = int_wp) :: IEXPNT(4, *)        ! in     exchange pointer table
         INTEGER(kind = int_wp) :: IKNMRK(*)          ! in     segment features array
-        INTEGER(kind = int_wp) :: NOQ1               ! in     number of exchanges in first direction
-        INTEGER(kind = int_wp) :: NOQ2               ! in     number of exchanges in second direction
-        INTEGER(kind = int_wp) :: NOQ3               ! in     number of exchanges in third direction
-        INTEGER(kind = int_wp) :: NOQ4               ! in     number of exchanges in fourth direction
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir               ! in     number of exchanges in first direction
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir               ! in     number of exchanges in second direction
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir               ! in     number of exchanges in third direction
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
 
-        !     from PMSA array
+        !     from process_space_real array
 
         REAL(kind = real_wp) :: MTEMP              ! 1  in  Modelled temperature                                [oC]
         REAL(kind = real_wp) :: TMPNAT             ! 2  in  natural temperature of ambient water                [oC]
@@ -73,11 +73,11 @@ contains
         IP5 = IPOINT(5)
         IP6 = IPOINT(6)
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
-            MTEMP = PMSA(IP1)
-            TMPNAT = PMSA(IP2)
-            ISWTMP = NINT(PMSA(IP3))
+            MTEMP = process_space_real(IP1)
+            TMPNAT = process_space_real(IP2)
+            ISWTMP = NINT(process_space_real(IP3))
 
             !        What is the meaning of modelled temperatures (one or two may be modelled)
 
@@ -101,9 +101,9 @@ contains
             !        Output flux, temp, surtemp, heat exchage and temperature increase due to radiation
             !
 
-            PMSA (IP4) = TTEMP
-            PMSA (IP5) = ETEMP
-            PMSA (IP6) = TMPNAT + 1
+            process_space_real (IP4) = TTEMP
+            process_space_real (IP5) = ETEMP
+            process_space_real (IP6) = TMPNAT + 1
             !
             IP1 = IP1 + INCREM (1)
             IP2 = IP2 + INCREM (2)

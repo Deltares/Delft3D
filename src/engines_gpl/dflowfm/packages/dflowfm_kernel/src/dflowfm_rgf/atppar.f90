@@ -72,8 +72,8 @@
       DG2RD   = (ACOS(-1d0))/180d0
 !     A,B = METRISCH EN SOM, ATP,E = STUUR, C,D = SOM ATP EN E
 !     A,ATP EN C IN M-RICHTING
-      DO 10 I = M1,M2
-         DO 10 J = N1,N2
+      do I = M1,M2
+         do J = N1,N2
             IF (IJYES(I,J) .EQ. 1) THEN
                X1 = X(I,J)
                X2 = X(I+1,J)
@@ -96,7 +96,8 @@
                ATP(I,J) = A(I,J)
                E(I,J)   = B(I,J)
             ENDIF
-    10 CONTINUE
+         end do
+      end do
 
       IF (MDESIGN .GE. 2) THEN
 !        andere stuurparameters, in celmiddens
@@ -106,20 +107,21 @@
          NDRAW(8) = NDRAW8
       ENDIF
 
-      DO 30 I = M1,M2
-         DO 30 J = N1,N2
+      DO I = M1,M2
+         DO J = N1,N2
             C(I,J) = ATP(I,J)
             D(I,J) =   E(I,J)
-    30 CONTINUE
-
+         end do
+      end do
+      
 !     sommmen
       CALL SOMDIST(X,Y,A,B,C,D,M1,N1,M2,N2)
 
 !     normeren
 
       AF = 1 - ATPF
-      DO 60 I = M1,M2
-         DO 60 J = N1,N2
+      do I = M1,M2
+         do J = N1,N2
             IF (IJYES(I,J) .EQ. 1) THEN
                ATP(I,J) = ATP(I,J)*A(I,J)/C(I,J)
                ATP(I,J) = ATPF*ATP(I,J) + AF*A(I,J)
@@ -129,21 +131,23 @@
                A(I,J)   = ATP(I,J)
                B(I,J)   = E(I,J)
             ENDIF
-    60 CONTINUE
-
-      DO 90 I = M1,M2
-         DO 90 J = N1,N2
+         end do
+      end do
+            
+      do I = M1,M2
+         do J = N1,N2
             IF (IJYES(I,J) .EQ. 1) THEN
                ATP(I,J) = B(I,J) / A(I,J)
             ELSE
                ATP(I,J) = dmiss
             ENDIF
-   90 CONTINUE
-!     CALL TEKSHOW(X, Y, M2, N2, ATP, 2,'FINAL ATP')
+         end do
+      end do
+            !     CALL TEKSHOW(X, Y, M2, N2, ATP, 2,'FINAL ATP')
 
       A = 0D0 ; B = 0D0 ; C = 0D0 ; D = 0D0 ; E = 0D0
-      DO 100 I = M1+1,M2
-         DO 100 J = N1+1,N2
+      do I = M1+1,M2
+         do J = N1+1,N2
             IF (IJC(I,J) .EQ. 10) THEN
 
 !              A(I,J) = ( ATP(I,J-1) + ATP(I,J) )*0.5
@@ -163,7 +167,8 @@
 
                E(I,J) = -( A(I,J) + B(I,J) + C(I,J) + D(I,J) )
             ENDIF
-   100 CONTINUE
+         end do
+      end do
 
       RETURN
       END SUBROUTINE ATPPAR

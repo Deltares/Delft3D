@@ -47,7 +47,7 @@ contains
         use rd_token       ! tokenized reading
         use partmem, only : alone, use_settling, layt        ! for the interface with Delpar (Tau and VertDisp)
         use timers       !   performance timers
-        use m_sysn
+        use m_waq_memory_dimensions
         use omp_lib
 
         integer(kind = int_wp), intent(inout) :: file_unit_list(*)        !< unit numbers used
@@ -80,7 +80,7 @@ contains
         integer(kind = int_wp) :: ierr2                 ! error indicator
         integer(kind = int_wp) :: ierr3                 ! error indicator
         integer(kind = int_wp) :: ioerr                 ! IO - error indicator
-        integer(kind = int_wp) :: inovec                ! location of NOVEC
+        integer(kind = int_wp) :: inum_fast_solver_vectors                ! location of num_fast_solver_vectors
         integer(kind = int_wp) :: inothr                ! location of NOTHREADS
         integer(kind = int_wp) :: i                     ! loop counter
         integer(kind = int_wp) :: idata                 ! help variable
@@ -95,15 +95,15 @@ contains
         proc_pars%maxsize = 0
         proc_pars%current_size = 0
         ierr2 = substances%initialize()
-        ierr2 = substances%resize(notot)
-        substances%no_item = notot
-        substances%name(1:notot) = syname(1:notot)
+        ierr2 = substances%resize(num_substances_total)
+        substances%no_item = num_substances_total
+        substances%name(1:num_substances_total) = syname(1:num_substances_total)
         ierr2 = constants%initialize()
         ierr2 = parameters%initialize()
         ierr2 = functions%initialize()
         ierr2 = segfuncs%initialize()
 
-        nosss = noseg + nseg2
+        nosss = num_cells + num_cells_bottom
         ierr2 = segments%initialize()
         ierr2 = segments%resize(nosss)
         segments%no_item = nosss
@@ -112,7 +112,7 @@ contains
         enddo
 
         IERR2 = 0
-        nothrd = 1
+        num_threads = 1
         taupart = .false.
         vdfpart = .false.
 
@@ -139,28 +139,28 @@ contains
 
                 if (dlwqdata%subject == SUBJECT_CONSTANT) then
                     ch20 = 'NOVEC'
-                    inovec = index_in_array(ch20, dlwqdata%param_name(:dlwqdata%num_parameters))
-                    if (inovec > 0) then
-                        novec = nint(dlwqdata%values(inovec, 1, 1))
+                    inum_fast_solver_vectors = index_in_array(ch20, dlwqdata%param_name(:dlwqdata%num_spatial_parameters))
+                    if (inum_fast_solver_vectors > 0) then
+                        num_fast_solver_vectors = nint(dlwqdata%values(inum_fast_solver_vectors, 1, 1))
                         write(file_unit, 2240)
-                        write(file_unit, 2250) novec
+                        write(file_unit, 2250) num_fast_solver_vectors
                     endif
                     ch20 = 'NOTHREADS'
-                    inothr = index_in_array(ch20, dlwqdata%param_name(:dlwqdata%num_parameters))
+                    inothr = index_in_array(ch20, dlwqdata%param_name(:dlwqdata%num_spatial_parameters))
                     if (inothr > 0) then
-                        nothrd = nint(dlwqdata%values(inothr, 1, 1))
+                        num_threads = nint(dlwqdata%values(inothr, 1, 1))
                         write(file_unit, 2310)
-                        write(file_unit, 2320) nothrd
-                        if (nothrd > 0) call omp_set_num_threads(nothrd)
-                        nothrd = omp_get_max_threads()
+                        write(file_unit, 2320) num_threads
+                        if (num_threads > 0) call omp_set_num_threads(num_threads)
+                        num_threads = omp_get_max_threads()
                     endif
                 endif
                 ch20 = 'TAU'
-                inovec = index_in_array(ch20, dlwqdata%param_name(:dlwqdata%num_parameters))
-                if (inovec > 0) taupart = .true.
+                inum_fast_solver_vectors = index_in_array(ch20, dlwqdata%param_name(:dlwqdata%num_spatial_parameters))
+                if (inum_fast_solver_vectors > 0) taupart = .true.
                 ch20 = 'VERTDISPER'
-                inovec = index_in_array(ch20, dlwqdata%param_name(:dlwqdata%num_parameters))
-                if (inovec > 0) vdfpart = .true.
+                inum_fast_solver_vectors = index_in_array(ch20, dlwqdata%param_name(:dlwqdata%num_spatial_parameters))
+                if (inum_fast_solver_vectors > 0) vdfpart = .true.
 
                 ! add to the collection
                 idata = proc_pars%add(dlwqdata)
@@ -201,10 +201,10 @@ contains
         endif
 
         ! write to output and report files
-        nocons = constants%no_item
-        nopa = parameters%no_item
-        nofun = functions%no_item
-        nosfun = segfuncs%no_item
+        num_constants = constants%no_item
+        num_spatial_parameters = parameters%no_item
+        num_time_functions = functions%no_item
+        num_spatial_time_fuctions = segfuncs%no_item
 
         write (file_unit, 2050) constants%no_item
         write (file_unit, 2060) parameters%no_item

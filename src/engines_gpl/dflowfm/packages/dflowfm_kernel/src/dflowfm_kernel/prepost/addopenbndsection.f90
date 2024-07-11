@@ -37,7 +37,7 @@
  !! and consists of one or more netlink numbers.
  subroutine addopenbndsection(nbnd, netlinknrs, plifilename, ibndtype)
  use m_alloc
- use m_flowexternalforcings
+ use fm_external_forcings_data
  implicit none
     integer,          intent(in) :: nbnd             !< Nr. of net links in this open bnd section.
     integer,          intent(in) :: netlinknrs(nbnd) !< Net link nrs in this open bnd section (in any order)

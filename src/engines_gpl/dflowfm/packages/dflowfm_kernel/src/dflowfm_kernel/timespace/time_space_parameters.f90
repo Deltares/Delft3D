@@ -29,35 +29,36 @@
 
 ! 
 module timespace_parameters
-   use string_module, only: str_tolower
+  use string_module, only: str_tolower
 
-   implicit none
+  implicit none
 
+  integer, parameter :: NODE_ID                        = -1  ! for a reference to a node ID
+  integer, parameter :: LINK_ID                        = -1  ! for a reference to a link ID
   ! enumeration for filetypes van de providers
-  integer, parameter :: uniform                        =  1  ! kx values per tijdstap 1 dim arr       uni
-  integer, parameter :: unimagdir                      =  2  ! kx values per tijdstap 1 dim arr, mag/dir transf op index 1,2 u,v
-  integer, parameter :: svwp                           =  3  ! 3 velden per tijdstap 3 dim array      noint
-  integer, parameter :: arcinfo                        =  4  ! 1 veld per tijdstap 2 dim array        bilin/direct
-  integer, parameter :: spiderweb                      =  5  ! 3 veld per tijdstap 3 dim array        bilin/spw
-  integer, parameter :: curvi                          =  6  ! 1 veld per tijdstap 2 dim array        bilin/findnm
-  integer, parameter :: triangulation                  =  7  ! 1 veld per tijdstap                    triang
-  integer, parameter :: triangulationmagdir            =  8  ! 2 velden u,v per tijdstap 3 dim array  triang, vectormax = 2
+  integer, parameter :: FILE_TYPE_UNKNOWN              = -1
+  integer, parameter :: UNIFORM                        =  1  ! kx values per tijdstap 1 dim arr       uni
+  integer, parameter :: UNIMAGDIR                      =  2  ! kx values per tijdstap 1 dim arr, mag/dir transf op index 1,2 u,v
+  integer, parameter :: SVWP                           =  3  ! 3 velden per tijdstap 3 dim array      noint
+  integer, parameter :: ARCINFO                        =  4  ! 1 veld per tijdstap 2 dim array        bilin/direct
+  integer, parameter :: SPIDERWEB                      =  5  ! 3 veld per tijdstap 3 dim array        bilin/spw
+  integer, parameter :: CURVI                          =  6  ! 1 veld per tijdstap 2 dim array        bilin/findnm
+  integer, parameter :: TRIANGULATION                  =  7  ! 1 veld per tijdstap                    triang
+  integer, parameter :: TRIANGULATIONMAGDIR            =  8  ! 2 velden u,v per tijdstap 3 dim array  triang, vectormax = 2
                                                              ! op basis van windreeksen op stations mag/dir
-  integer, parameter :: node_id                        = -1  ! for a reference to a node ID
-  integer, parameter :: link_id                        = -1  ! for a reference to a link ID
-  integer, parameter :: poly_tim                       =  9  ! for line oriented bnd conditions, refs to uniform, fourier or harmonic
-  integer, parameter :: inside_polygon                 = 10  ! Constant value inside polygon, used for initial/parameter fields.
-  integer, parameter :: ncgrid                         = 11  ! NetCDF grid, rectangular type as arcinfo  
-  integer, parameter :: ncflow                         = 12  ! NetCDF flow, with arbitrary type of input
-  integer, parameter :: ncwave                         = 14  ! NetCDF com file, with arbitrary type of input
-  integer, parameter :: bcascii                        = 17  ! .bc format as ASCII file
-  integer, parameter :: field1d                        = 18  ! Scalar quantity on a 1D network, used for initial/parameter fields.
-  integer, parameter :: geotiff                        = 19  ! GeoTIFF, used for initial/parameter fields.
-  integer, parameter :: max_file_types                 = 103 !  max nr of supported types for end user in ext file.
+  integer, parameter :: POLY_TIM                       =  9  ! for line oriented bnd conditions, refs to uniform, fourier or harmonic
+  integer, parameter :: INSIDE_POLYGON                 = 10  ! Constant value inside polygon, used for initial/parameter fields.
+  integer, parameter :: NCGRID                         = 11  ! NetCDF grid, rectangular type as arcinfo  
+  integer, parameter :: NCFLOW                         = 12  ! NetCDF flow, with arbitrary type of input
+  integer, parameter :: NCWAVE                         = 14  ! NetCDF com file, with arbitrary type of input
+  integer, parameter :: BCASCII                        = 17  ! .bc format as ASCII file
+  integer, parameter :: FIELD1D                        = 18  ! Scalar quantity on a 1D network, used for initial/parameter fields.
+  integer, parameter :: GEOTIFF                        = 19  ! GeoTIFF, used for initial/parameter fields.
+  integer, parameter :: MAX_FILE_TYPES                 = 103 !  max nr of supported types for end user in ext file.
   ! Enumeration for file types of sub-providers (not directly in ext file)
-  integer, parameter :: fourier                        = 101 ! period(hrs), ampl(m), phas(deg) NOTE: not directly used in ext file by users.
-  integer, parameter :: multiple_uni                   = 102 ! multiple time series, no spatial relation 
-  integer, parameter :: qhtable                        = 103 ! used to link to dataprovider file
+  integer, parameter :: FOURIER                        = 101 ! period(hrs), ampl(m), phas(deg) NOTE: not directly used in ext file by users.
+  integer, parameter :: MULTIPLE_UNI                   = 102 ! multiple time series, no spatial relation 
+  integer, parameter :: QHTABLE                        = 103 ! used to link to dataprovider file
 
   ! het filetype legt vast  :  a) format file
   !                            b) vectormax van grootheid / heden in file
@@ -79,15 +80,20 @@ module timespace_parameters
   integer            :: mdia                           =  0 !  -1  ! -1 = write dia, 0 = do not write dia
 
   ! enumeration for interpolation methods of providers
-
-  integer, parameter :: justupdate                     =  0  ! provider just updates, another provider that
+  integer, parameter :: METHOD_UNKNOWN                 = -1
+  integer, parameter :: JUSTUPDATE                     =  0  ! provider just updates, another provider that
                                                              ! pointers to this one does the actual interpolation
-  integer, parameter :: spaceandtime                   =  1  ! intp space and time (getval)
+  integer, parameter :: SPACEANDTIME                   =  1  ! intp space and time (getval)
                                                              ! keep  2 meteofields in memory
-  integer, parameter :: spacefirst                     =  2  ! first intp space (update), next intp. time (getval)
+  integer, parameter :: SPACEFIRST                     =  2  ! first intp space (update), next intp. time (getval)
                                                              ! keep 2 flowfields in memory
-  integer, parameter :: weightfactors                  =  3  ! save weightfactors, intp space and time (getval)
+  integer, parameter :: WEIGHTFACTORS                  =  3  ! save weightfactors, intp space and time (getval)
                                                              ! keep 2 pointer- and weight sets in memory
+  integer, parameter :: METHOD_CONSTANT                =  4
+  integer, parameter :: METHOD_TRIANGULATION           =  5 
+  integer, parameter :: METHOD_AVERAGING               =  6 
+  integer, parameter :: WEIGHTFACTORS_EXTRAPOLATION    =  103
+
   contains
   
 !> Converts fileType string to an integer.
@@ -99,23 +105,29 @@ function convert_file_type_string_to_integer(string) result(file_type)
 
    select case (str_tolower(trim(string)))
       case ('1dfield')
-         file_type = field1D
-      case ('arcinfo')
-         file_type = arcinfo
+         file_type = FIELD1D
+      case ('aaigrid')
+         file_type = ARCINFO
       case ('bcascii')
-         file_type = bcascii
+         file_type = BCASCII
+      case ('curvigrid')
+         file_type = CURVI
       case ('geotiff')
-         file_type = geotiff
+         file_type = GEOTIFF
       case('netcdf')
-         file_type = ncgrid
+         file_type = NCGRID
       case ('polygon')
-         file_type = inside_polygon
+         file_type = INSIDE_POLYGON
       case ('sample')
-         file_type = triangulation
+         file_type = TRIANGULATION
+      case ('spiderweb')
+         file_type = SPIDERWEB
       case('uniform')
-         file_type = uniform
+         file_type = UNIFORM
+      case('unimagdir')
+         file_type = UNIMAGDIR
       case default
-         file_type = -1
+         file_type = FILE_TYPE_UNKNOWN
    end select
 
 end function convert_file_type_string_to_integer
@@ -130,15 +142,15 @@ function convert_method_string_to_integer(string) result(method)
 
    select case (str_tolower(trim(string)))
       case ('averaging')
-         method = 6
+         method = METHOD_AVERAGING
       case ('constant')
-         method = 4
+         method = METHOD_CONSTANT
+      case ('linearSpaceTime')
+         method = WEIGHTFACTORS
       case ('triangulation')
-         method = 5
-      case ('old_11')
-         method = 103
+         method = METHOD_TRIANGULATION
       case default
-         method = -1
+         method = METHOD_UNKNOWN
    end select
 
 end function convert_method_string_to_integer
@@ -152,18 +164,30 @@ function get_default_method_for_file_type(string) result(method)
 
    select case (str_tolower(trim(string)))
       case ('bcascii')
-         method = spaceandtime
+         method = SPACEANDTIME
       case ('netcdf')
-         method = weightfactors
+         method = WEIGHTFACTORS
       case ('sample')
-         method = 5
+         method = METHOD_TRIANGULATION
       case ('uniform')
-         method = spaceandtime
+         method = SPACEANDTIME
       case default
-         method = -1
+         method = METHOD_UNKNOWN
    end select
    
 end function get_default_method_for_file_type
 
+subroutine update_method_in_case_extrapolation(method, is_extrapolation_allowed)
+   implicit none
+   integer, intent(inout) :: method                    !< method integer
+   logical, intent(in   ) :: is_extrapolation_allowed  !< is extrapolation allowed
+   
+   if(.not. is_extrapolation_allowed) return
+   
+   if (method == WEIGHTFACTORS) then
+       method = WEIGHTFACTORS_EXTRAPOLATION
+   end if
+
+end subroutine update_method_in_case_extrapolation
 
 end module timespace_parameters

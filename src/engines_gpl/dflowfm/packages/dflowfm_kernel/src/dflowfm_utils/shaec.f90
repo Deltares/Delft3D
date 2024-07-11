@@ -372,89 +372,110 @@ subroutine shaec1(nlat,isym,nt,g,idgs,jdgs,a,b,mdab,ndab,imid,&
    imm1 = imid
    if(modl .ne. 0) imm1 = imid-1
    if(isym .ne. 0) go to 15
-   do 5 k=1,nt
-      do 5 i=1,imm1
-         do 5 j=1,nlon
+   do k=1,nt
+      do i=1,imm1
+         do j=1,nlon
             ge(i,j,k) = tsn*(g(i,j,k)+g(nlp1-i,j,k))
             go(i,j,k) = tsn*(g(i,j,k)-g(nlp1-i,j,k))
-5  continue
+         end do
+      end do
+   end do
    go to 30
-15 do 20 k=1,nt
-      do 20 i=1,imm1
-         do 20 j=1,nlon
+15 do K=1,nt
+      do i=1,imm1
+         do j=1,nlon
             ge(i,j,k) = fsn*g(i,j,k)
-20 continue
+         end do
+      end do
+   end do
    if(isym .eq. 1) go to 27
 30 if(modl .eq. 0) go to 27
-   do 25 k=1,nt
-      do 25 j=1,nlon
+   do k=1,nt
+      do j=1,nlon
          ge(imid,j,k) = tsn*g(imid,j,k)
-25 continue
-27 do 35 k=1,nt
+      end do
+   end do
+27 do k=1,nt
       call hrfftf(ls,nlon,ge(1,1,k),ls,whrfft,work)
-      if(mod(nlon,2) .ne. 0) go to 35
-      do 36 i=1,ls
+      if(mod(nlon,2) .ne. 0) cycle
+      do i=1,ls
          ge(i,nlon,k) = .5*ge(i,nlon,k)
-36    continue
-35 continue
-   do 40 k=1,nt
-      do 40 mp1=1,mmax
-         do 40 np1=mp1,nlat
+      end do
+   end do
+   do k=1,nt
+      do mp1=1,mmax
+         do np1=mp1,nlat
             a(mp1,np1,k) = 0.
             b(mp1,np1,k) = 0.
-40 continue
+         end do
+      end do
+   end do
    if(isym .eq. 1) go to 145
    call zfin (2,nlat,nlon,0,zb,i3,wzfin)
-   do 110 k=1,nt
-      do 110 i=1,imid
-         do 110 np1=1,nlat,2
+   do k=1,nt
+      do i=1,imid
+         do np1=1,nlat,2
             a(1,np1,k) = a(1,np1,k)+zb(i,np1,i3)*ge(i,1,k)
-110 continue
+         end do
+      end do
+   end do
    ndo = nlat
    if(mod(nlat,2) .eq. 0) ndo = nlat-1
-   do 120 mp1=2,mdo
+   do mp1=2,mdo
       m = mp1-1
       call zfin (2,nlat,nlon,m,zb,i3,wzfin)
-      do 120 k=1,nt
-         do 120 i=1,imid
-            do 120 np1=mp1,ndo,2
+      do k=1,nt
+         do i=1,imid
+            do np1=mp1,ndo,2
                a(mp1,np1,k) = a(mp1,np1,k)+zb(i,np1,i3)*ge(i,2*mp1-2,k)
                b(mp1,np1,k) = b(mp1,np1,k)+zb(i,np1,i3)*ge(i,2*mp1-1,k)
-120 continue
+            end do
+         end do
+      end do
+   end do
    if(mdo .eq. mmax .or. mmax .gt. ndo) go to 135
    call zfin (2,nlat,nlon,mdo,zb,i3,wzfin)
-   do 130 k=1,nt
-      do 130 i=1,imid
-         do 130 np1=mmax,ndo,2
+   do k=1,nt
+      do i=1,imid
+         do np1=mmax,ndo,2
             a(mmax,np1,k) = a(mmax,np1,k)+zb(i,np1,i3)*ge(i,2*mmax-2,k)
-130 continue
+end do
+end do
+end do
 135 if(isym .eq. 2) return
 145 call zfin (1,nlat,nlon,0,zb,i3,wzfin)
-   do 150 k=1,nt
-      do 150 i=1,imm1
-         do 150 np1=2,nlat,2
+   do k=1,nt
+      do i=1,imm1
+         do np1=2,nlat,2
             a(1,np1,k) = a(1,np1,k)+zb(i,np1,i3)*go(i,1,k)
-150 continue
+         end do
+      end do
+   end do
    ndo = nlat
    if(mod(nlat,2) .ne. 0) ndo = nlat-1
-   do 160 mp1=2,mdo
+   do mp1=2,mdo
       m = mp1-1
       mp2 = mp1+1
       call zfin (1,nlat,nlon,m,zb,i3,wzfin)
-      do 160 k=1,nt
-         do 160 i=1,imm1
-            do 160 np1=mp2,ndo,2
+      do k=1,nt
+         do i=1,imm1
+            do np1=mp2,ndo,2
                a(mp1,np1,k) = a(mp1,np1,k)+zb(i,np1,i3)*go(i,2*mp1-2,k)
                b(mp1,np1,k) = b(mp1,np1,k)+zb(i,np1,i3)*go(i,2*mp1-1,k)
-160 continue
+            end do
+         end do
+      end do
+   end do
    mp2 = mmax+1
    if(mdo .eq. mmax .or. mp2 .gt. ndo) return
    call zfin (1,nlat,nlon,mdo,zb,i3,wzfin)
-   do 170 k=1,nt
-      do 170 i=1,imm1
-         do 170 np1=mp2,ndo,2
+   do k=1,nt
+      do i=1,imm1
+         do np1=mp2,ndo,2
             a(mmax,np1,k) = a(mmax,np1,k)+zb(i,np1,i3)*go(i,2*mmax-2,k)
-170 continue
+         end do
+      end do
+   end do
    return
 end subroutine shaec1
 

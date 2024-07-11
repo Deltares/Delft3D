@@ -36,6 +36,8 @@
     <xs:element name="parameters" type="T_Parameters"/>
     <xs:element name="skipline" type="xs:string"/>
     <xs:element name="workingDirectory" type="xs:string"/>
+    <xs:element name="dependency" type="T_Dependency"/>
+    <xs:element name="processCount" type="xs:positiveInteger"/>
     <xs:complexType name="T_Path">
         <xs:simpleContent>
             <xs:extension base="xs:string">
@@ -51,16 +53,12 @@
         </xs:simpleContent>
     </xs:complexType>
     <xs:complexType name="T_File">
-        <xs:choice>
-            <xs:sequence minOccurs="0">
-                <xs:element ref="parameters" maxOccurs="unbounded"/>
-            </xs:sequence>
-            <xs:sequence minOccurs="0" maxOccurs="unbounded">
-                <xs:element ref="skipline"/>
-            </xs:sequence>
+        <xs:choice minOccurs="0"  maxOccurs="unbounded">
+            <xs:element ref="parameters"/>
+            <xs:element ref="skipline"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="type" type="xs:string" use="required"/>
+        <xs:attribute name="type" type="xs:string" use="optional"/>
         <xs:attribute name="ignore" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
     <xs:complexType name="T_Shell">
@@ -93,6 +91,7 @@
         <xs:attribute name="ignoreReturnValue" type="xs:boolean"/>
         <xs:attribute name="logOutputToFile" type="xs:boolean"/>
         <xs:attribute name="programStringRemoveQuotes" type="xs:boolean"/>
+        <xs:attribute name="excludeSearchPathsContaining" type="xs:string"/>
         <xs:attribute name="ignoreStandardError" type="xs:boolean"/>
         <xs:attribute name="addSearchPaths" type="xs:boolean"/>
         <xs:attribute name="shellStringRemoveQuotes" type="xs:boolean"/>
@@ -124,17 +123,8 @@
             <xs:element ref="location" minOccurs="0"/>
             <xs:element ref="maxRunTime" minOccurs="0"/>
             <xs:element ref="checks" minOccurs="0"/>
-            <xs:element name="processCount" type="xs:positiveInteger" default="1" minOccurs="0"/>
-            <xs:element name="dependency" minOccurs="0">
-                <xs:complexType>
-                    <xs:simpleContent>
-                        <xs:extension base="xs:string">
-                            <xs:attribute name="local_dir" type="xs:string"/>
-                            <xs:attribute name="version" type="xs:string" use="optional"/>
-                        </xs:extension>
-                    </xs:simpleContent>
-                </xs:complexType>
-            </xs:element>
+            <xs:element ref="dependency" minOccurs="0"/>
+            <xs:element ref="processCount" minOccurs="0"/>
         </xs:choice>
         <xs:attribute name="ref" use="optional">
             <xs:simpleType>
@@ -179,6 +169,15 @@
         <xs:attribute name="toleranceAbsolute" type="xs:double"/>
         <xs:attribute name="toleranceRelative" type="xs:double"/>
         <xs:attribute name="location" type="xs:string"/>
+        <xs:attribute name="ignore" type="xs:boolean"/>
+    </xs:complexType>
+    <xs:complexType name="T_Dependency">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="local_dir" type="xs:string"/>
+                <xs:attribute name="version" type="xs:string" use="optional"/>
+            </xs:extension>
+        </xs:simpleContent>
     </xs:complexType>
     <xs:complexType name="T_Locations">
         <xs:sequence>
@@ -216,11 +215,11 @@
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="T_DeltaresTestbench_v3">
-        <xs:all>
+        <xs:sequence minOccurs="1" maxOccurs="1">
             <xs:element ref="config"/>
             <xs:element ref="programs"/>
             <xs:element ref="defaultTestCases"/>
-            <xs:element ref="testCases"/>
-        </xs:all>
+            <xs:element ref="testCases" maxOccurs="2"/>
+        </xs:sequence>
     </xs:complexType>
 </xs:schema>

@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e03_f09_c01_river_with_load" ref="dwaq_default">
         <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c01_river_with_load</path>
         <checks>

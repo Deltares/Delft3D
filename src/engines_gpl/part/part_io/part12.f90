@@ -29,11 +29,11 @@ use openfl_mod
 
 contains
       subroutine part12 ( lun1     , lname    , lun2     , title    , subst    ,    &
-                          lgrid    , lgrid2   , lgrid3   , nmax     , mmax     ,    &
+                          lgrid    , lgrid2   , lgrid3   , num_rows     , num_columns     ,    &
                           conc     , volume   , npart    , mpart    , wpart    ,    &
                           nopart   , itime    , idelt    , icwsta   , icwsto   ,    &
                           icwste   , atotal   , npwndw   , kpart    , pblay    ,    &
-                          iptime   , npwndn   , modtyp   , nosubs   , nolay    ,    &
+                          iptime   , npwndn   , modtyp   , nosubs   , num_layers    ,    &
                           iyear    , imonth   , iofset   , pg       , rbuffr   ,    &
                           nosta    , mnmax2   , nosegl   , isfile   , mapsub   ,    &
                           layt     , area     , nfract   , use_settling   , mstick   ,    &
@@ -79,17 +79,17 @@ contains
       character( * ), intent(in   ) :: lname                   !< name of the .map file
       integer  ( int_wp ), intent(in   ) :: lun2                    !< unit nr of the output log file
       character( 40), intent(in   ) :: title (4)               !< model- and run titles
-      integer  ( int_wp ), intent(in   ) :: nmax                    !< first dimension of the grid
-      integer  ( int_wp ), intent(in   ) :: mmax                    !< second dimension of the grid
-      integer  ( int_wp ), intent(in   ) :: nolay                   !< number of layers of the grid
+      integer  ( int_wp ), intent(in   ) :: num_rows                    !< first dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: num_columns                    !< second dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: num_layers                   !< number of layers of the grid
       integer  ( int_wp ), intent(in   ) :: nosubs                  !< number of substances to plot
       integer  ( int_wp ), intent(in   ) :: nopart                  !< number of particles
       character( 20), intent(in   ) :: subst (nosubs+2)        !< substance names with layer extension
-      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)       !< active grid table
-      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)       !< total grid table
-      integer  ( int_wp ), intent(in   ) :: lgrid3(nmax,mmax)       !< plot grid either total or active condensed
+      integer  ( int_wp ), intent(in   ) :: lgrid (num_rows,num_columns)       !< active grid table
+      integer  ( int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns)       !< total grid table
+      integer  ( int_wp ), intent(in   ) :: lgrid3(num_rows,num_columns)       !< plot grid either total or active condensed
       integer  ( int_wp ), intent(in   ) :: nosub_max               !< maximum number of substances
-      real     ( real_wp), intent(  out) :: conc  (nosub_max,nmax*mmax*nolay) !< computed concentrations
+      real     ( real_wp), intent(  out) :: conc  (nosub_max,num_rows*num_columns*num_layers) !< computed concentrations
       real     ( sp), intent(in   ) :: volume( * )             !< volumes of the grid cells
       integer  ( int_wp ), intent(inout) :: npart ( nopart )        !< n-values of particles
       integer  ( int_wp ), intent(inout) :: mpart ( nopart )        !< m-values of particles
@@ -100,7 +100,7 @@ contains
       integer  ( int_wp ), intent(in   ) :: icwsta                  !< start time map-file
       integer  ( int_wp ), intent(in   ) :: icwsto                  !< stop  time map-file
       integer  ( int_wp ), intent(in   ) :: icwste                  !< time step map-file
-      real     ( real_wp), intent(  out) :: atotal(nolay,nosubs)    !< total mass per subst/per layer
+      real     ( real_wp), intent(  out) :: atotal(num_layers,nosubs)    !< total mass per subst/per layer
       integer  ( int_wp ), intent(inout) :: npwndw                  !< start of active particle number
       real     ( sp), intent(in   ) :: pblay                   !< relative thickness lower layer
       integer  ( int_wp ), intent(inout) :: iptime( nopart )        !< age of particles
@@ -126,11 +126,11 @@ contains
       character( * ), pointer       :: elt_types(:)            !<  NEFIS
       integer  ( int_wp ), pointer       :: elt_dims (:,:)          !<  NEFIS
       integer  ( int_wp ), pointer       :: elt_bytes(:)            !<  NEFIS
-      real     ( real_wp)                :: locdep (nmax*mmax,nolay)
+      real     ( real_wp)                :: locdep (num_rows*num_columns,num_layers)
 
 !     save values between invocations: specified precisely those needed!!
 !
-      save first, type, dname, itoff, noseg
+      save first, type, dname, itoff, num_cells
 !
 !     declarations
 !
@@ -170,7 +170,7 @@ contains
       integer(int_wp ) :: i1    , i2     , ic     , ilay   , ipos   , iseg
       integer(int_wp ) :: isub  , jsub   , layts  , m      , n
       integer(int_wp ) :: nelmax
-      integer(int_wp )    noseg                         !  number of computational volumes per layer
+      integer(int_wp )    num_cells                         !  number of computational volumes per layer
       real   (sp) :: ptlay  , pxlay  , vnorm
 
       integer(4) ithndl              ! handle to time this subroutine
@@ -212,12 +212,12 @@ contains
          elt_bytes(i + noparm) = 4
       enddo
 
-      noseg = nosegl*nolay
+      num_cells = nosegl*num_layers
       if (first1) then
 
 !     adapt dimensions
 
-         nelmax = noparm + (nosubs+2)*nolay
+         nelmax = noparm + (nosubs+2)*num_layers
 
 !     first inquire file name (via monitoring file)
 
@@ -270,7 +270,7 @@ contains
             write ( lun2, * ) ' Writing to new map file:', lname(1:len_trim(lname))
             call openfl ( lun1, lname, 1 )
             write( lun1 ) (title(i),i=1,4)
-            write( lun1 ) nosubs+2, noseg
+            write( lun1 ) nosubs+2, num_cells
             write( lun1 ) (subst(i), i = 1, nosubs+2)
 
             if (nefis) then
@@ -290,21 +290,21 @@ contains
                itoff(     6) = icwste
                itoff(itofmx) = 0
 !           initialize sizes; 1 - nosubt
-!                             2 - noseg
+!                             2 - num_cells
 !                             3 - nodmp (0 for .map)
-!                             4 - nolay
+!                             4 - num_layers
 !                             5 - nocol (.plo)
 !                             6 - norow (.plo)
 !..
 !.. check this later/ must this be nosubt and mnmax2
-!.. or must this be nosubs and noseg ?
+!.. or must this be nosubs and num_cells ?
 !.. decided on 26/7 to stick to delwaq mapfiles
 !.. i.e layers are segments and not substances
 !..
                nosize(1) = nosubs+2
-               nosize(2) = noseg
+               nosize(2) = num_cells
                nosize(3) = 0
-               nosize(4) = nolay
+               nosize(4) = num_layers
                nosize(5) = 0
                nosize(6) = 0
 !           set up the element dimensions
@@ -319,12 +319,12 @@ contains
 !           group 2
                call fill_element_dimensions( elt_dims, noparm, 1, 1, 0, 0, 0, 0 )
                do i = 1, nosubs
-                  call fill_element_dimensions( elt_dims, noparm+i, 1, noseg, 0, 0, 0, 0 )
+                  call fill_element_dimensions( elt_dims, noparm+i, 1, num_cells, 0, 0, 0, 0 )
                enddo
 !           local depths per layer
-               call fill_element_dimensions( elt_dims, noparm+nosubs+1, 1, noseg, 0, 0, 0, 0 )
+               call fill_element_dimensions( elt_dims, noparm+nosubs+1, 1, num_cells, 0, 0, 0, 0 )
 !           number or particles
-               call fill_element_dimensions( elt_dims, noparm+nosubs+2, 1, noseg, 0, 0, 0, 0 )
+               call fill_element_dimensions( elt_dims, noparm+nosubs+2, 1, num_cells, 0, 0, 0, 0 )
 !           now write nefis header
 !           write all elements to file; all definition and creation of files,
 !           data groups, cells and elements is handled by putget.
@@ -390,8 +390,8 @@ contains
          layts = layt
       endif
 
-      do m = 1, mmax
-         do n = 1, nmax
+      do m = 1, num_columns
+         do n = 1, num_rows
             iseg = lgrid3( n, m )
             if ( iseg .gt. 0 ) then
                do ilay = 1, layts
@@ -414,7 +414,7 @@ contains
          ic = lgrid3( npart(i), mpart(i) )
          if ( ic .gt.  0 ) then
             ilay = kpart(i)
-            if ( ilay .gt. nolay ) then
+            if ( ilay .gt. num_layers ) then
                write ( lun2, 1000 ) subnam
                call stop_exit(1)
             endif
@@ -424,7 +424,7 @@ contains
                      iseg            = (ilay-1)*nosegl + ic
                      conc(isub,iseg) = conc(isub,iseg) + wpart(isub,i)
                   else
-                     ipos  = (isub-1)*nolay  + ilay
+                     ipos  = (isub-1)*num_layers  + ilay
                      conc(ipos,ic  ) = conc(ipos,ic  ) + wpart(isub,i)
                   endif
                endif
@@ -438,8 +438,8 @@ contains
 
       if ( isfile(nosubs+1) .ne. 1 ) then
 !$OMP PARALLEL DO PRIVATE   ( m, ic, ilay, iseg, ipos )
-         do n = 1, nmax
-            do m = 1, mmax                             ! there was originally a wrong if statement
+         do n = 1, num_rows
+            do m = 1, num_columns                             ! there was originally a wrong if statement
                ic = lgrid3(n,m)                        ! deeper in this set of loops !!
                if ( ic .gt. 0 ) then
                   do ilay = 1, layt
@@ -447,7 +447,7 @@ contains
                         iseg                = (ilay-1)*nosegl + ic
                         conc(nosubs+1,iseg) = locdep(lgrid2(n,m),ilay)
                      else
-                        ipos          = nosubs*nolay  + ilay
+                        ipos          = nosubs*num_layers  + ilay
                         conc(ipos,ic) = locdep(lgrid2(n,m), ilay )
                      endif
                   enddo
@@ -463,7 +463,7 @@ contains
       if ( nopart - npwndw .gt. -1 ) then      !  at least one particle is active
          ptlay  = 1.0 - pblay
          do 350 isub = 1, nosubs
-            do 360  i1 = 1, nolay
+            do 360  i1 = 1, num_layers
                pxlay = 1.0                     !  set correct relative thickness layer
                if ( modtyp .eq. model_two_layer_temp ) then
                   if ( i1 .eq. 1 ) then        !  top layer
@@ -473,17 +473,17 @@ contains
                   endif
                endif
                if ( pxlay .gt. 0.0 ) then              !  don't divide by zero
-                  do 310 m = 1,mmax
-                     do 300 n = 1,nmax
+                  do 310 m = 1,num_columns
+                     do 300 n = 1,num_rows
                         i2 = lgrid3(n,m)
                         if ( i2 .le. 0 ) cycle
                         iseg  = i2 + (i1-1)*nosegl
-                        ipos  = i1 + (isub-1)*nolay
+                        ipos  = i1 + (isub-1)*num_layers
                         if ( modtyp .ne. model_two_layer_temp ) then
                            if ( conc(isub,iseg) .gt. 0.0 ) then !  mass found, determine concentration
                               if ( isfile(isub) .ne. 1 ) then
                                  atotal(i1,isub) = atotal(i1,isub) + conc(isub,iseg)
-                              elseif ( use_settling .and. i1 == nolay ) then
+                              elseif ( use_settling .and. i1 == num_layers ) then
                                  atotal(i1,isub) = atotal(i1,isub) + conc(isub,iseg)
                               else
                                  atotal(i1,isub) = atotal(i1,isub) + conc(isub,iseg) *                 &
@@ -497,7 +497,7 @@ contains
                                  jsub = mod(isub,3)
                                  if ( jsub .eq. 0 ) jsub = 3                !.. jsub is 1, 2 or 3 (2 is stick)
                                  if ( jsub .eq. 2 ) then                               !.. dispersed
-                                    if ( use_settling .and. i1 == nolay ) then
+                                    if ( use_settling .and. i1 == num_layers ) then
                                        vnorm = area  (lgrid2(n,m))
                                     else
                                        vnorm = volume(lgrid2(n,m)+(i1-1)*mnmax2)
@@ -507,7 +507,7 @@ contains
                                  else                                                  !.. floating
                                     vnorm = area(lgrid2(n,m))
                                  endif
-                              elseif ( use_settling .and. i1 == nolay ) then               !.. other cases
+                              elseif ( use_settling .and. i1 == num_layers ) then               !.. other cases
                                  vnorm = area  (lgrid2(n,m))
                               elseif ( mstick(isub) < 0 ) then
                                  vnorm = area  (lgrid2(n,m))
@@ -540,19 +540,19 @@ contains
 
 !     insert missing values
 
-      do m = 1, mmax
-         do n = 1, nmax
+      do m = 1, num_columns
+         do n = 1, num_rows
             ic = lgrid3( n, m)
             if ( ic .gt. 1 ) then                    ! this should probably be ".gt. 0"
                if ( lgrid( n, m) .le. 0 ) then
-                  do ilay = 1, nolay
+                  do ilay = 1, num_layers
                      iseg = (ilay-1)*nosegl + ic
                      do isub = 1, nosubs
                         if ( isfile(isub) .ne. 1 ) then
                            if ( modtyp .ne. model_two_layer_temp ) then
                               conc( isub, iseg) = -999.0
                            else
-                              ipos = ilay + (isub-1)*nolay
+                              ipos = ilay + (isub-1)*num_layers
                               conc( ipos, ic  ) = -999.0
                            endif
                         endif
@@ -582,7 +582,7 @@ contains
 !     check if mapfile must be produced
 
       if ( mapfil ) then
-         write( lun1 ) itime, ((conc(i, j),i=1,nosubs+2),j=1, noseg)
+         write( lun1 ) itime, ((conc(i, j),i=1,nosubs+2),j=1, num_cells)
          if ( nefis ) then
             if ( ierrem .eq. 0 ) then
                itoff(itofmx) = celid1
@@ -605,7 +605,7 @@ contains
                endif
                celid1 = celid1 + 1
                do i = 1, nosubs + 2
-                  do j = 1, noseg
+                  do j = 1, num_cells
                      rbuffr(j) = conc(i, j)
                   enddo
                   call putget( filnam              , grnam2               , (nosubs + 2) + 1    , &

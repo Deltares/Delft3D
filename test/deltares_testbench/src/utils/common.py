@@ -28,9 +28,6 @@ if platform.system() == "Windows":
 # add search path to environment
 # input: environment to add search path to, path
 def add_search_path(environment, sp, logger: ILogger):
-    # Return immediately when ".svn" is in the path
-    if str(sp).find(".svn") != -1:
-        return
     search_path = Paths().rebuildToLocalPath(sp)
     if platform.system() == "Windows":
         logger.debug(f"Adding windows search path {search_path}")

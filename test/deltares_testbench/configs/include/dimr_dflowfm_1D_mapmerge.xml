@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f114_c010_1Dnetwork-urban-slope1Ddrop_mapmerge" ref="dimr_trunk_2">
       <path version="2024-01-11T13:00:00">e02_dflowfm/f114_parallel_1D/c010_1Dnetwork-urban-slope1Ddrop</path>
       <programs>

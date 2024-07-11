@@ -41,7 +41,7 @@ end interface read_qndep
 contains
 
 subroutine read_qndep_single(lundia    ,error     ,fildep    ,fmttmp    ,array     , &
-                           & nmax      ,mmax      ,iocond    )
+                           & num_rows      ,num_columns      ,iocond    )
 !!--description----------------------------------------------------------------- 
 ! 
 !    Function: Reads the depth values from the attribute file in single precision
@@ -60,8 +60,8 @@ subroutine read_qndep_single(lundia    ,error     ,fildep    ,fmttmp    ,array  
 ! Global variables 
 ! 
     integer                                                                          :: lundia !  unit number for diagnostic file
-    integer                                                            , intent(in)  :: nmax   !  size of 1st dimension
-    integer                                                            , intent(in)  :: mmax   !  size of 2nd dimension
+    integer                                                            , intent(in)  :: num_rows   !  size of 1st dimension
+    integer                                                            , intent(in)  :: num_columns   !  size of 2nd dimension
     logical                                                            , intent(out) :: error  !  Flag=TRUE if an error is encountered 
     real(sp), dimension(:,:)                                           , intent(out) :: array  !  data array to fill
     character(*)                                                                     :: fildep !  Name of the relevant file 
@@ -88,8 +88,8 @@ subroutine read_qndep_single(lundia    ,error     ,fildep    ,fmttmp    ,array  
        ! read per N index, all M values in array array 
        ! end of error in file = not ok 
        ! 
-       do n = 1, nmax 
-          read (luntmp, iostat = iocond) (array(n, m), m = 1, mmax) 
+       do n = 1, num_rows
+          read (luntmp, iostat = iocond) (array(n, m), m = 1, num_columns)
           if (iocond /= 0) then 
              if (iocond < 0) then 
                 errmsg = PREMATURE_EOF // trim(fildep)
@@ -105,7 +105,7 @@ subroutine read_qndep_single(lundia    ,error     ,fildep    ,fmttmp    ,array  
           ! 
           ! If a NaN is read -> error
           ! 
-          do m = 1, mmax
+          do m = 1, num_columns
               if ( isnan(array(n, m)) ) then  
                  errmsg = 'NaN found in file ' // fildep 
                  error = .true. 
@@ -123,8 +123,8 @@ subroutine read_qndep_single(lundia    ,error     ,fildep    ,fmttmp    ,array  
        ! read per N index, all M values in array 
        ! End of error in file = not ok 
        ! 
-       do n = 1, nmax 
-          read (luntmp, *, iostat = iocond) (array(n, m), m = 1, mmax) 
+       do n = 1, num_rows
+          read (luntmp, *, iostat = iocond) (array(n, m), m = 1, num_columns)
           if (iocond /= 0) then 
              if (iocond < 0) then 
                 errmsg = PREMATURE_EOF // trim(fildep)
@@ -139,7 +139,7 @@ subroutine read_qndep_single(lundia    ,error     ,fildep    ,fmttmp    ,array  
           ! 
           ! If a NaN is read -> error
           ! 
-          do m = 1, mmax
+          do m = 1, num_columns
              if ( isnan(array(n, m)) ) then  
                 errmsg = 'NaN found in file ' // fildep 
                 error = .true. 
@@ -160,7 +160,7 @@ end subroutine read_qndep_single
 
 
 subroutine read_qndep_double(lundia    ,error     ,fildep    ,fmttmp    ,array     , &
-                           & nmax      ,mmax      ,iocond    )
+                           & num_rows      ,num_columns      ,iocond    )
 !!--description----------------------------------------------------------------- 
 ! 
 !    Function: Reads the depth values from the attribute file in single precision
@@ -179,8 +179,8 @@ subroutine read_qndep_double(lundia    ,error     ,fildep    ,fmttmp    ,array  
 ! Global variables 
 ! 
     integer                                                                          :: lundia !  unit number for diagnostic file
-    integer                                                            , intent(in)  :: nmax   !  size of 1st dimension
-    integer                                                            , intent(in)  :: mmax   !  size of 2nd dimension
+    integer                                                            , intent(in)  :: num_rows   !  size of 1st dimension
+    integer                                                            , intent(in)  :: num_columns   !  size of 2nd dimension
     logical                                                            , intent(out) :: error  !  Flag=TRUE if an error is encountered 
     real(hp), dimension(:,:)                                           , intent(out) :: array  !  data array to fill
     character(*)                                                                     :: fildep !  Name of the relevant file 
@@ -207,8 +207,8 @@ subroutine read_qndep_double(lundia    ,error     ,fildep    ,fmttmp    ,array  
        ! read per N index, all M values in array array 
        ! end of error in file = not ok 
        ! 
-       do n = 1, nmax 
-          read (luntmp, iostat = iocond) (array(n, m), m = 1, mmax) 
+       do n = 1, num_rows
+          read (luntmp, iostat = iocond) (array(n, m), m = 1, num_columns)
           if (iocond /= 0) then 
              if (iocond < 0) then 
                 errmsg = PREMATURE_EOF // trim(fildep)
@@ -224,7 +224,7 @@ subroutine read_qndep_double(lundia    ,error     ,fildep    ,fmttmp    ,array  
           ! 
           ! If a NaN is read -> error
           ! 
-          do m = 1, mmax
+          do m = 1, num_columns
               if ( isnan(array(n, m)) ) then  
                  errmsg = 'NaN found in file ' // fildep 
                  error = .true. 
@@ -242,8 +242,8 @@ subroutine read_qndep_double(lundia    ,error     ,fildep    ,fmttmp    ,array  
        ! read per N index, all M values in array 
        ! End of error in file = not ok 
        ! 
-       do n = 1, nmax 
-          read (luntmp, *, iostat = iocond) (array(n, m), m = 1, mmax) 
+       do n = 1, num_rows
+          read (luntmp, *, iostat = iocond) (array(n, m), m = 1, num_columns)
           if (iocond /= 0) then 
              if (iocond < 0) then 
                 errmsg = PREMATURE_EOF // trim(fildep)
@@ -258,7 +258,7 @@ subroutine read_qndep_double(lundia    ,error     ,fildep    ,fmttmp    ,array  
           ! 
           ! If a NaN is read -> error
           ! 
-          do m = 1, mmax
+          do m = 1, num_columns
              if ( isnan(array(n, m)) ) then  
                 errmsg = 'NaN found in file ' // fildep 
                 error = .true. 

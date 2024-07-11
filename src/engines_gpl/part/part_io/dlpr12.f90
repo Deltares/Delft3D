@@ -43,7 +43,7 @@ implicit none     ! force explicit typing
 contains
       subroutine dlpr12 ( iout   , lunout    , idump     , conc     , itime     ,   &
                           idt    , ihstrt    , ihstop    , ihstep   , dname     ,   &
-                          sname  , mname     , nodump    , nosubs   , nolay     ,   &
+                          sname  , mname     , num_monitoring_points    , nosubs   , num_layers     ,   &
                           ihflag , elt_names , elt_types , elt_dims , elt_bytes ,   &
                           rbuffr )
 !
@@ -72,18 +72,18 @@ contains
 !     lunout  integer     1       input   unit number monitoring file name
 !     filnam  char*(*)    1       input   output file name
 !                                         (without extension!!!)
-!     idump   integer  nodump     input   segment numbers for dump
-!     conc    real   notot*noseg  input   concentration values
+!     idump   integer  num_monitoring_points     input   segment numbers for dump
+!     conc    real   num_substances_total*num_cells  input   concentration values
 !     itime   integer     1       input   present time in clock units
 !     idt     integer     1       input   time step of simulation
 !     ihstrt  integer     1       input   start time of history
 !     ihstop  integer     1       input   stop time of history
 !     ihstep  integer     1       input   time step of history
-!     dname   char*20   nodump    input   names of monitoring stations
-!     sname   char*20   notot     input   names of substances
+!     dname   char*20   num_monitoring_points    input   names of monitoring stations
+!     sname   char*20   num_substances_total     input   names of substances
 !     mname   char*40     4       input   model identification
-!     nodump  integer     1       input   amount of dump segments
-!     notot   integer     1       input   total number of systems
+!     num_monitoring_points  integer     1       input   amount of dump segments
+!     num_substances_total   integer     1       input   total number of systems
 !     ihflag  logical     1       output  true if history took place
 !     elmnam  char*(*)    1       local   name of element, who's values
 !                                         must be written or read
@@ -143,7 +143,7 @@ contains
 !     local scalars
 !
       integer(int_wp ) :: idt      , ihstep , ihstop , ihstrt , iout   , itime
-      integer(int_wp ) :: lunout   , nodump , nosubs , nolay  , noparm , notot
+      integer(int_wp ) :: lunout   , num_monitoring_points , nosubs , num_layers  , noparm , num_substances_total
       integer(int_wp ) :: i        , ierr   , ierrem , indx   , j      , isub   , ilay
       integer(int_wp ) :: k        , nelmax , kk
 !
@@ -182,8 +182,8 @@ contains
       elt_bytes(7) =   4
       elt_bytes(8) =   4
 !
-      notot = nosubs * nolay
-      do 1, i = 1, notot
+      num_substances_total = nosubs * num_layers
+      do 1, i = 1, num_substances_total
          write (substance, '(a,i3.3)') 'SUBST_',i
          elt_names(i + noparm) = substance
          elt_types(i + noparm) = 'REAL'
@@ -195,7 +195,7 @@ contains
 !
 !       adapt dimensions
 !
-        nelmax = noparm + notot
+        nelmax = noparm + num_substances_total
 !
 !       first inquire file name (via monitoring file)
 !
@@ -234,17 +234,17 @@ contains
         itoff(     6) = ihstep
         itoff(itofmx) = 0
 !
-!       initialize sizes; 1 - notot
-!                         2 - noseg
+!       initialize sizes; 1 - num_substances_total
+!                         2 - num_cells
 !                         3 - nodmp (0 for .map)
-!                         4 - nolay
+!                         4 - num_layers
 !                         5 - nocol (.plo)
 !                         6 - norow (.plo)
 !
 !
-        nosize(1) = notot
+        nosize(1) = num_substances_total
         nosize(2) = 0
-        nosize(3) = nodump
+        nosize(3) = num_monitoring_points
         nosize(4) = 0
         nosize(5) = 0
         nosize(6) = 0
@@ -255,8 +255,8 @@ contains
 !
         call filldm (elt_dims,1   ,1   ,1     ,0    ,0     ,0     ,0    )
         call filldm (elt_dims,2   ,1   ,4     ,0    ,0     ,0     ,0    )
-        call filldm (elt_dims,3   ,1   ,notot ,0    ,0     ,0     ,0    )
-        call filldm (elt_dims,4   ,1   ,nodump,0    ,0     ,0     ,0    )
+        call filldm (elt_dims,3   ,1   ,num_substances_total ,0    ,0     ,0     ,0    )
+        call filldm (elt_dims,4   ,1   ,num_monitoring_points,0    ,0     ,0     ,0    )
         call filldm (elt_dims,5   ,1   ,6     ,0    ,0     ,0     ,0    )
         call filldm (elt_dims,6   ,1   ,4     ,0    ,0     ,0     ,0    )
         call filldm (elt_dims,7   ,1   ,itofmx,0    ,0     ,0     ,0    )
@@ -264,8 +264,8 @@ contains
 !       group 2
 !
         call filldm (elt_dims,noparm,1       ,1    ,0    ,0     ,0     ,  0    )
-        do 100, i = 1, notot
-          call filldm (elt_dims,noparm+i  ,1  ,nodump ,0  ,  0  ,0   ,0     )
+        do 100, i = 1, num_substances_total
+          call filldm (elt_dims,noparm+i  ,1  ,num_monitoring_points ,0  ,  0  ,0   ,0     )
   100   continue
       endif
 !
@@ -282,9 +282,9 @@ contains
       if ( itime-ihstrt  < idt ) then
 !
         write (iout) ( mname(k) , k = 1,4 )
-        write (iout) notot    , nodump
-        write (iout) ( sname(k) , k = 1,notot )
-        write (iout) ( idump(k),dname(k), k = 1,nodump )
+        write (iout) num_substances_total    , num_monitoring_points
+        write (iout) ( sname(k) , k = 1,num_substances_total )
+        write (iout) ( idump(k),dname(k), k = 1,num_monitoring_points )
 !
         if (nefis) then
 !
@@ -330,7 +330,7 @@ contains
 !
 !     dump a history
 !
-      write (iout) itime , (((conc(isub,ilay,j),isub=1,nosubs),ilay=1,nolay)  ,j=1,nodump)
+      write (iout) itime , (((conc(isub,ilay,j),isub=1,nosubs),ilay=1,num_layers)  ,j=1,num_monitoring_points)
 !
       if (nefis) then
 !
@@ -350,7 +350,7 @@ contains
 !         data groups, cells and elements is handled by putget.
 !
 
-          call putget     (filnam             , grnam2              , notot + 1         , &
+          call putget     (filnam             , grnam2              , num_substances_total + 1         , &
                            elt_names(noparm:) , elt_dims(:,noparm:) , elt_types(noparm:), &
                            elt_bytes(noparm:) , elt_names(noparm)   , celid1            , &
                            wrswch             , ierr                , itime     )
@@ -360,7 +360,7 @@ contains
 !         do for all layers
 !
           kk=1
-          do ilay=1,nolay
+          do ilay=1,num_layers
 
 !         do for all substances
 !
@@ -368,16 +368,16 @@ contains
 !
 !              do for all locations
 !
-                 do  j = 1, nodump
+                 do  j = 1, num_monitoring_points
                    rbuffr(j) = conc(isub,ilay,j)
                  end do
-                 call putget (filnam              , grnam2               , notot + 1  ,  &
+                 call putget (filnam              , grnam2               , num_substances_total + 1  ,  &
                               elt_names(noparm:)  , elt_dims(:,noparm:)  ,               &
                               elt_types(noparm:)  , elt_bytes(noparm:)   ,               &
                               elt_names(noparm+kk), celid2               , wrswch     ,  &
                               ierr                , rbuffr   )
 !                 write(lunout,'(a,i6,4x,a20/(8(1pe14.5)))') &
-!                   'dlpr12 : ',itime,  sname(kk) ,(rbuffr(j),j=1,nodump)
+!                   'dlpr12 : ',itime,  sname(kk) ,(rbuffr(j),j=1,num_monitoring_points)
                  kk = kk + 1
                  if (ierr  /=  0) go to 310
              end do

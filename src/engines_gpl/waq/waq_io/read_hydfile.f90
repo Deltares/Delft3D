@@ -30,7 +30,7 @@ contains
 
 
 
-    subroutine read_hydfile(lunout, hydfile, file_name_list, noseg, nexch, status)
+    subroutine read_hydfile(lunout, hydfile, file_name_list, num_cells, nexch, status)
         use waq_file_utils_external, only : get_filepath_and_pathlen
 
         !> Reads the hyd-file and extracts relevant information
@@ -38,7 +38,7 @@ contains
         integer(kind = int_wp), intent(in) :: lunout       !< unit number for reporting
         character(len = *), intent(in) :: hydfile      !< name of the hyd-file to read
         character(len = *), intent(inout) :: file_name_list(*)     !< filenames
-        integer(kind = int_wp), intent(out) :: noseg        !< number of segments
+        integer(kind = int_wp), intent(out) :: num_cells        !< number of segments
         integer(kind = int_wp), dimension(*), intent(out) :: nexch        !< number of exchanges
 
         type(error_status), intent(inout) :: status !< current error status
@@ -50,7 +50,7 @@ contains
         integer(kind = int_wp), dimension(10) :: fileno
         integer(kind = int_wp) :: i, ierr2, input_file, idxlga, idxgeom, pathlen
 
-        integer(kind = int_wp) :: nx, ny, nosegl, nolay, noq1, noq2, noq3
+        integer(kind = int_wp) :: num_cells_u_dir, num_cells_v_dir, nosegl, num_layers, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir
         character(len = 4) :: identifier
         character(len = len(file_name_list)) :: grid_file
 
@@ -119,14 +119,14 @@ contains
                 read(line, *) cdummy, nosegl
             endif
             if (index(line, 'number-water-quality-layers') > 0) then
-                read(line, *) cdummy, nolay
+                read(line, *) cdummy, num_layers
             endif
             if (index(line, 'grid-coordinates-file') > 0) then
                 read(line, *) cdummy, grid_file
             endif
         enddo
 
-        noseg = nosegl * nolay
+        num_cells = nosegl * num_layers
         close(input_file)
 
         ! Read the number of grid cells:
@@ -136,7 +136,7 @@ contains
             !
             ! Retrieved via keywords
             !
-            noseg = nosegl * nolay
+            num_cells = nosegl * num_layers
         elseif (idxlga > 0) then
             open(newunit = input_file, file = file_name_list(idxlga), access = 'stream', iostat = ierr2)
 
@@ -155,7 +155,7 @@ contains
                 file_name_list(idxgeom) = grid_file
             else
                 rewind(input_file)
-                read(input_file, iostat = ierr2) nx, ny, nosegl, nolay, nexch(1), nexch(2), nexch(3)
+                read(input_file, iostat = ierr2) num_cells_u_dir, num_cells_v_dir, nosegl, num_layers, nexch(1), nexch(2), nexch(3)
 
                 if (ierr2 /= 0) then
                     call status%increase_error_count()
@@ -164,7 +164,7 @@ contains
                 endif
             endif
 
-            noseg = nosegl * nolay
+            num_cells = nosegl * num_layers
             close(input_file)
         else
             close(input_file)

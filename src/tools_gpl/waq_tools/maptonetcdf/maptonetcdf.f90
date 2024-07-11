@@ -49,7 +49,7 @@ program maptonetcdf
     character(len=255)                            :: ugridfile
 
     integer                                       :: ncidmap, timeid, bndtimeid, mncrec, lunut
-    integer                                       :: i, k, ierr, nosys, noseg, time, nolayers
+    integer                                       :: i, k, ierr, num_substances_transported, num_cells, time, nolayers
 
     lunut = 20
     open( 20, file = 'maptonetcdf.out' )
@@ -102,24 +102,24 @@ program maptonetcdf
     endif
 
     read( 11 ) title
-    read( 11 ) nosys, noseg
+    read( 11 ) num_substances_transported, num_cells
 
     !
     ! Check the number of layers - simple check
     !
-    if ( mod(noseg,nolayers) /= 0 ) then
+    if ( mod(num_cells,nolayers) /= 0 ) then
         write(*,'(a)') 'Error: mistake in the number of layers!'
         write(*,'(a)') '       Number given: ', nolayers
-        write(*,'(a)') '       Should divide the number of segments in the file, being: ', noseg
+        write(*,'(a)') '       Should divide the number of segments in the file, being: ', num_cells
         write(*,'(a)') 'Please correct this'
         stop
     endif
 
-    allocate( syname(nosys), conc(nosys,noseg) )
-    allocate( volume(noseg), iknmrk(noseg) )
-    allocate( syunit(nosys), sydesc(nosys), systd(nosys) )
-    allocate( wqid1(nosys,3), wqid2(nosys,3) )
-    allocate( extreme(nosys,2) )
+    allocate( syname(num_substances_transported), conc(num_substances_transported,num_cells) )
+    allocate( volume(num_cells), iknmrk(num_cells) )
+    allocate( syunit(num_substances_transported), sydesc(num_substances_transported), systd(num_substances_transported) )
+    allocate( wqid1(num_substances_transported,3), wqid2(num_substances_transported,3) )
+    allocate( extreme(num_substances_transported,2) )
 
     read( 11 ) syname
 
@@ -152,7 +152,7 @@ program maptonetcdf
         mncrec = mncrec + 1
 
         call write_netcdf_map_output( ncidmap, mncfile, ugridfile, timeid, bndtimeid, mncrec, time, title,  &
-                      noseg, 0, conc, syname, systd, syunit, sydesc, wqid1, nosys, &
+                      num_cells, 0, conc, syname, systd, syunit, sydesc, wqid1, num_substances_transported, &
                       conc, syname, systd, syunit, sydesc, wqid2, volume, iknmrk, lunut)
 
         extreme(:,1) = min( extreme(:,1), minval( conc, dim = 1 ) )
@@ -160,7 +160,7 @@ program maptonetcdf
     enddo
 
     write( lunut, '(a20,2a12)' ) 'Parameter', 'Minimum', 'Maximum'
-    write( lunut, '(a,2g12.4)' ) (syname(i), extreme(i,1), extreme(i,2) ,i=1,nosys)
+    write( lunut, '(a,2g12.4)' ) (syname(i), extreme(i,1), extreme(i,2) ,i=1,num_substances_transported)
 
     write(*,'(a)') 'Done'
     write(*,'(a)') 'Output available in ', trim(mncfile)

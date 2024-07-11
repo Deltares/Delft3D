@@ -33,13 +33,13 @@ use m_boombounce
 !
 contains
       subroutine part10 ( lgrid  , volume , flow   , dx     , dy     ,      &
-                          area   , angle  , nmax   , mnmaxk , idelt  ,      &
+                          area   , angle  , num_rows   , mnmaxk , idelt  ,      &
                           nopart , npart  , mpart  , xpart  , ypart  ,      &
                           zpart  , iptime , rough  , drand  , lgrid2 ,      &
                           zmodel , laytop , laybot , &
                           wvelo  , wdir   , decays , wpart  , pblay  ,      &
                           npwndw , vdiff  , nosubs , dfact  , modtyp ,      &
-                          t0buoy , abuoy  , kpart  , mmax   , layt   ,      &
+                          t0buoy , abuoy  , kpart  , num_columns   , layt   ,      &
                           wsettl , depth  , ldiffz , ldiffh , &
                           acomp  , accur  , xcor   , ycor   , &
                           tcktot , lun2   , alpha  , mapsub , nfract ,      &
@@ -47,7 +47,7 @@ contains
                           mstick , nstick , ioptdv , cdisp  , dminim ,      &
                           fstick , defang , floil  , xpart0 , ypart0 ,      &
                           xa0    , ya0    , xa     , ya     , npart0 ,      &
-                          mpart0 , za     , locdep , dps    , nolay  ,      &
+                          mpart0 , za     , locdep , dps    , num_layers  ,      &
                           vrtdsp , stickdf, subst  , nbmax  , nconn  ,      &
                           conn   , tau    , caltau , nboomint , iboomset ,  &
                           tyboom , efboom , xpolboom , ypolboom , nrowsboom , &
@@ -85,9 +85,9 @@ contains
 !**   parameters used for dimensioning
 
       integer(int_wp ), intent(in)    :: layt                ! number of layers of hydr. database
-      integer(int_wp ), intent(in)    :: mmax                ! second grid dimension
+      integer(int_wp ), intent(in)    :: num_columns                ! second grid dimension
       integer(int_wp ), intent(in)    :: mnmaxk              ! total number of active grid cells
-      integer(int_wp ), intent(in)    :: nmax                ! first grid dimension
+      integer(int_wp ), intent(in)    :: num_rows                ! first grid dimension
       integer(int_wp ), intent(in)    :: nopart              ! total number of particles
       integer(int_wp ), intent(in)    :: nosubs              ! number of substances per particle
 
@@ -121,7 +121,7 @@ contains
       integer(int_wp ), pointer :: mstick( : )         ! which active substances can sticking (>0) and what is inactive partner?
                                                         ! j = mstick(i), j = inactive, i = active ; if j = 0 no sticking
                                                         ! if j is negative then i itself is sticking
-      integer(int_wp ), intent(inout) :: nolay               ! number of layers == layt
+      integer(int_wp ), intent(inout) :: num_layers               ! number of layers == layt
       integer(int_wp ), pointer :: npart ( : )         ! first  grid index of the particles
       integer(int_wp ), pointer :: npart0( : )         ! first  grid index particles for previous time step
       integer(int_wp ), pointer :: floil ( : )         ! contains values 1 or 0
@@ -549,7 +549,7 @@ contains
             a = rnd(rseed)                 !   compatibility
             goto 90                        !   next particle
          endif
-         n03d = n0 + (kpp-1)*nmax*mmax     !   3d
+         n03d = n0 + (kpp-1)*num_rows*num_columns     !   3d
          xp =       xpart (ipart)
          yp =       ypart (ipart)
          zp =       zpart (ipart)
@@ -678,9 +678,9 @@ contains
 
          if ( kpp .ne. kbotp ) then                  ! tau from file is only defined for bottom layer
             if (zmodel) then
-               idep   = (kbotp - 1) * nmax * mmax
+               idep   = (kbotp - 1) * num_rows * num_columns
             else
-               idep   = (layt - 1) * nmax * mmax
+               idep   = (layt - 1) * num_rows * num_columns
             endif
             if ( caltau ) then
                vol    = volume(n0 + idep  )
@@ -701,7 +701,7 @@ contains
          endif
 
 
-         idep   = (kpp - 1) * nmax * mmax
+         idep   = (kpp - 1) * num_rows * num_columns
          vol    = volume( n03d )
 
          ! Particles should not find themselves in a segment with zero volume, but it
@@ -821,7 +821,7 @@ contains
 
             if ( znew .gt. 1.0 ) then
                if ( .not. twolay .and. kp .ne. kbotp ) then
-                  n03d2 = n03d + nmax*mmax
+                  n03d2 = n03d + num_rows*num_columns
                   if ( ioptdv .eq. 2 ) then
                      disp2 = max( cdisp + alpha*vdiff(n03d2) , dminim )
                      pbounce = sqrt( disp2/disp )
@@ -867,7 +867,7 @@ contains
                endif
             elseif ( znew .lt. 0.0 ) then
                if ( .not. twolay .and. kp .ne. ktopp ) then
-                  n03d2 = n03d - nmax*mmax
+                  n03d2 = n03d - num_rows*num_columns
                   if ( ioptdv .eq. 2 ) then
                      disp2 = max( cdisp + alpha*vdiff(n03d2) , dminim )
                      pbounce = sqrt( disp2/disp )
@@ -961,7 +961,7 @@ contains
             write(*,*) ' program error part10: kpp out of range '
             call stop_exit(1)
          endif
-         idep = (kpp - 1) * nmax * mmax
+         idep = (kpp - 1) * num_rows * num_columns
          vol  = volume( n0 + idep          )
          vy0  = flow  ( n1 + idep          ) / vol
          vy1  = flow  ( n0 + idep          ) / vol
@@ -974,10 +974,10 @@ contains
             if     ( kpp .eq. ktopp  ) then  ! first layer
                vz1    = flow ( n0 + idep   + 2*mnmaxk) / vol
             elseif ( kpp .eq. kbotp ) then  ! last  layer
-               idepm1 = idep - nmax * mmax
+               idepm1 = idep - num_rows * num_columns
                vz0    = flow ( n0 + idepm1 + 2*mnmaxk) / vol
             else
-               idepm1 = idep - nmax * mmax
+               idepm1 = idep - num_rows * num_columns
                vz0    = flow ( n0 + idepm1 + 2*mnmaxk) / vol
                vz1    = flow ( n0 + idep   + 2*mnmaxk) / vol
             endif
@@ -1203,7 +1203,7 @@ contains
             if (zmodel .and. ddshift .gt. 0) then
                call update_k_near_top(lun2, kp, ktopp, laytop(np,mp), zp, locdep, n0old, n0, zsurf)
                kpp = min0 ( kp, laybot(np, mp) )           !   kpp is a pointer that won't reach the bed..
-               idep = (kpp - 1) * nmax * mmax
+               idep = (kpp - 1) * num_rows * num_columns
                ktopp = laytop(np,mp)
                kbotp = laybot(np,mp)
                if (kp .gt. kbotp) then
@@ -1226,7 +1226,7 @@ contains
 
             kpp = min0 ( kp, kbotp )           !   kpp is a pointer that won't reach the bed..
             if ( twolay ) kpp = 1
-            n03d = n0 + (kpp - 1)*nmax*mmax
+            n03d = n0 + (kpp - 1)*num_rows*num_columns
             if ( ivisit(icvis) .ne. n03d .and. icvist .lt. 10000 ) then
                ivisit(icvis) = n03d
                goto 10
@@ -1290,7 +1290,7 @@ contains
          n03d = n0
          do kd = 1, kpp - 1                     ! volume of layers above
             deppar = deppar + volume( n03d )    ! particle
-            n03d   = n03d + nmax*mmax
+            n03d   = n03d + num_rows*num_columns
          enddo
          deppar = deppar + volume(n03d)*znew    ! + volume above particle
          deppar = deppar / area(n0)             ! gives depth of particle
@@ -1316,7 +1316,7 @@ contains
                yy  = vy0
             endif
             if ( idy  .ne. 0  ) then
-               if (np+idy .gt. nmax) then
+               if (np+idy .gt. num_rows) then
                   write(lun2,*) 'particle is now outside grid'
                   write(lun2,*) 'ipart=',ipart
                   write(lun2,*) 'mp   =',mp
@@ -1360,7 +1360,7 @@ contains
                      if (zmodel) then
                         call update_k_near_top(lun2, kp, ktopp, laytop(np,mp), zp, locdep, n0old, n0, zsurf)
                         kpp = min0 ( kp, laybot(np, mp) )           !   kpp is a pointer that won't reach the bed..
-                        idep = (kpp - 1) * nmax * mmax
+                        idep = (kpp - 1) * num_rows * num_columns
                         ktopp = laytop(np,mp)
                         kbotp = laybot(np,mp)
                         if (kp .gt. kbotp) then
@@ -1444,7 +1444,7 @@ contains
                      if (zmodel) then
                         call update_k_near_top(lun2, kp, ktopp, laytop(np,mp), zp, locdep, n0old, n0, zsurf)
                         kpp = min0 ( kp, laybot(np, mp) )           !   kpp is a pointer that won't reach the bed..
-                        idep = (kpp - 1) * nmax * mmax
+                        idep = (kpp - 1) * num_rows * num_columns
                         ktopp = laytop(np,mp)
                         kbotp = laybot(np,mp)
                         if (kp .gt. kbotp) then
@@ -1507,12 +1507,12 @@ contains
          screensfirsttry=.true.
          if (screens) then
 !**      compute absolute x's and y's for a single particle end point
-            call part11sp ( lgrid , xcor  , ycor  , nmax   , np     , mp    ,    &
-                            xnew  , ynew  , xanew , yanew  , lgrid2 , mmax  )
+            call part11sp ( lgrid , xcor  , ycor  , num_rows   , np     , mp    ,    &
+                            xnew  , ynew  , xanew , yanew  , lgrid2 , num_columns  )
             if (iptime(ipart) .le. 0 .and. nscreenstry==1) then
 !      determine absolute location of starting point as well for new particles
-               call part11sp ( lgrid , xcor  , ycor  , nmax   , npart(ipart)     , mpart(ipart)    ,    &  !  new coordinates
-                               xpart(ipart)  , ypart(ipart)  , xaold , yaold  , lgrid2 , mmax  )
+               call part11sp ( lgrid , xcor  , ycor  , num_rows   , npart(ipart)     , mpart(ipart)    ,    &  !  new coordinates
+                               xpart(ipart)  , ypart(ipart)  , xaold , yaold  , lgrid2 , num_columns  )
             else
                xaold = xa(ipart)
                yaold = ya(ipart)
@@ -1536,7 +1536,7 @@ contains
                   mp = mpart(ipart)
                   kp = kpart(ipart)
                   znew = zpart(ipart)
-                  call part07nm ( lgrid  , lgrid2 , nmax   , mmax   , xcor  , & ! make relative
+                  call part07nm ( lgrid  , lgrid2 , num_rows   , num_columns   , xcor  , & ! make relative
                                   ycor   , xabounce , yabounce, np   , &        ! coordinates
                                   mp, xnew, ynew  , ierror )                    ! again
                   if (ierror/=0) then
@@ -1575,12 +1575,12 @@ contains
 
          if (boomseffective) then
 !**      compute absolute x's and y's for a single particle end point
-            call part11sp ( lgrid , xcor  , ycor  , nmax   , np     , mp    ,    &
-                            xnew  , ynew  , xanew , yanew  , lgrid2 , mmax  )
+            call part11sp ( lgrid , xcor  , ycor  , num_rows   , np     , mp    ,    &
+                            xnew  , ynew  , xanew , yanew  , lgrid2 , num_columns  )
             if (iptime(ipart) .le. 0 .and. nboomtry==1) then
 !      determine absolute location of starting point as well for new particles
-               call part11sp ( lgrid , xcor  , ycor  , nmax   , npart(ipart)     , mpart(ipart)    ,    &  !  new coordinates
-                               xpart(ipart)  , ypart(ipart)  , xaold , yaold  , lgrid2 , mmax  )
+               call part11sp ( lgrid , xcor  , ycor  , num_rows   , npart(ipart)     , mpart(ipart)    ,    &  !  new coordinates
+                               xpart(ipart)  , ypart(ipart)  , xaold , yaold  , lgrid2 , num_columns  )
             else
                xaold = xa(ipart)
                yaold = ya(ipart)
@@ -1597,7 +1597,7 @@ contains
                   mp = mpart(ipart)
                   kp = kpart(ipart)
                   znew = zpart(ipart)
-                  call part07nm ( lgrid  , lgrid2 , nmax   , mmax   , xcor  , & ! make relative
+                  call part07nm ( lgrid  , lgrid2 , num_rows   , num_columns   , xcor  , & ! make relative
                                   ycor   , xabounce , yabounce, np   , &        ! coordinates
                                   mp, xnew, ynew  , ierror )                    ! again
                   if (ierror/=0) then
@@ -1724,15 +1724,15 @@ contains
 
 !**      compute absolute x's and y's  ( z's are dummy )
 
-         call part11 ( lgrid , xcor  , ycor  , nmax  , npart0,    &  !  old coordinates
+         call part11 ( lgrid , xcor  , ycor  , num_rows  , npart0,    &  !  old coordinates
                        mpart0, xpart0, ypart0, xa0   , ya0   ,    &
                        nopart, npwndw, lgrid2, kpart , zpart ,    &
-                       za    , locdep, dps   , nolay , mmax  ,    &
+                       za    , locdep, dps   , num_layers , num_columns  ,    &
                        tcktot)
-         call part11 ( lgrid , xcor  , ycor  , nmax  , npart ,    &  !  new coordinates
+         call part11 ( lgrid , xcor  , ycor  , num_rows  , npart ,    &  !  new coordinates
                        mpart , xpart , ypart , xa    , ya    ,    &
                        nopart, npwndw, lgrid2, kpart , zpart ,    &
-                       za    , locdep, dps   , nolay , mmax  ,    &
+                       za    , locdep, dps   , num_layers , num_columns  ,    &
                        tcktot)
 
 !**      rotate vector by multiplication with rotation matrix
@@ -1748,7 +1748,7 @@ contains
                dyy = ya(ipart)-ya0(ipart)
                xx  = xa0(ipart) + dxx * codef - dyy * sidef
                yy  = ya0(ipart) + dxx * sidef + dyy * codef
-               call part07 ( lgrid  , lgrid2 , nmax   , mmax   , xcor  , &! make relative
+               call part07 ( lgrid  , lgrid2 , num_rows   , num_columns   , xcor  , &! make relative
                              ycor   , xx     , yy     , npart(ipart)   , &! coordinates
                              mpart(ipart), xpart(ipart), ypart(ipart)  , &! again
                              ierror )

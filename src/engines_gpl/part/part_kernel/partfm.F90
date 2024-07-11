@@ -86,7 +86,7 @@ use m_fm_write_unc
    ! initialize the allocation system
    call init_alloc( lunmem , lunpr )
 
-   if (hyd%nolay /= 1) then
+   if (hyd%num_layers /= 1) then
       write ( lunpr, * ) ' WARNING: 3D hydrodynamics is not yet supported for unstructured grids!'
       write (   *  , * ) ' WARNING: 3D hydrodynamics is not yet supported for unstructured grids!'
    endif
@@ -111,7 +111,7 @@ use m_fm_write_unc
    dts       = real(idelt, kind=kind(dts))
    noparttot = npmax + npmax/100
    nopart    = 0
-   allocate( nplay(hyd%nolay) )
+   allocate( nplay(hyd%num_layers) )
 
 !  part08 - calculates total released mass and mass/particle
 

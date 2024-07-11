@@ -58,9 +58,9 @@
       NUMFIL = MAXFIL
       NUMDIR = MAXFIL
       CALL INHIGHLIGHT('WHITE','BLUE')
-      DO 5 I = 1,MAXFIL
+      do I = 1,MAXFIL
          FILIST(I) = '                                          '
-    5 CONTINUE
+end do
       CALL IOUTMenuScroll(FILIST,80,IXP,IYP+10,' ',IH-7,0,1)
 
       CALL IOSDIRENTRYTYPE('D')
@@ -71,22 +71,22 @@
       ENDIF
 
       IF (NOPSYS .EQ. 4) THEN
-         DO 10 I = NUMDIR+1,2,-1
+         do I = NUMDIR+1,2,-1
             FILIST(I) = FILIST(I-1)
             IFDATE(I) = IFDATE(I-1)
             IFSIZE(I) = IFSIZE(I-1)
-   10    CONTINUE
+         end do
          FILIST(1) = '..                                        '
          NUMDIR = NUMDIR + 1
       ENDIF
 
       IF (FILIST(1)(1:3) .EQ. '.  ') THEN
          NUMDIR = NUMDIR - 1
-         DO 20 I = 1,NUMDIR
+         do i = 1,NUMDIR
             FILIST(I) = FILIST(I+1)
             IFDATE(I) = IFDATE(I+1)
             IFSIZE(I) = IFSIZE(I+1)
-   20    CONTINUE
+      end do
       ENDIF
 
       NUMFIL = NUMDIR ! current nr of 'files'
@@ -160,7 +160,7 @@
          CALL QNERROR('NOT ALL FILES ARE LISTED', ' ', ' ')
       ENDIF
 
-      DO 30 I = 1,NUMFIL
+      do I = 1,NUMFIL
          IF (I .LE. NUMDIR) THEN
             IF (NOPSYS .NE. 4) THEN
                CALL IUPPERCASE( FILIST(I)(1:44) )
@@ -183,7 +183,7 @@
          CALL IOsFileTime(IFDATE(I),IHOUR,MINUTE,ISECND)
          WRITE(FILIST(I)(82:86),'(I2,A1,I2)') IHOUR,':',MINUTE
          IF (MINUTE .LE. 9) WRITE(FILIST(I)(85:85),'(A1)') '0'
-   30 CONTINUE
+end do
       CALL ITEXTCOLOUR('WHITE','BLU')
       CALL IOUTMenuScroll(FILIST,NUMFIL,IXP,IYP+10,' ',IH-7,0,1)
       RETURN

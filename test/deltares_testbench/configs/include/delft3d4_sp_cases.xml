@@ -24,7 +24,7 @@
 						ignore="true" Don't bother when this file is in the reference dir but absent in the check dir
 				
 				-->
-	<testCases>
+	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e01_f01_c02-fff" ref="flow2d3d_default">
 			<path version="2024-02-22T14:40:00">e01_d3dflow/f01_general/c02-fff</path>
 			<maxRunTime>38.5610001087</maxRunTime>

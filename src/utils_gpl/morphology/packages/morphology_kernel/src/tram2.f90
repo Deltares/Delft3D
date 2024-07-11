@@ -1,5 +1,5 @@
 subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
-                & par       ,kmax      ,bed       ,dzduu     ,dzdvv     , &
+                & par       ,num_layers_grid      ,bed       ,dzduu     ,dzdvv     , &
                 & rksrs     ,tauadd    ,taucr0    ,aks       ,eps       , &
                 & camax     ,frac      ,sig       ,thick     ,ws        , &
                 & dicww     ,ltur      ,aks_ss3d  ,iform     , &
@@ -56,29 +56,29 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
     logical                         , intent(in)   :: wave
     integer                         , intent(in)   :: i2d3d
     integer                         , intent(in)   :: iform    ! transport formula number -2 for standard Van Rijn (2007), -4 for SANTOSS extended version
-    integer                         , intent(in)   :: kmax
+    integer                         , intent(in)   :: num_layers_grid
     integer                         , intent(in)   :: ltur     !  Description and declaration in iidim.f90
     integer                         , intent(in)   :: npar
     integer                         , intent(in)   :: numrealpar
     real(fp)                        , intent(in)   :: bed
     real(fp)                        , intent(in)   :: bedw
     real(fp)                        , intent(in)   :: camax
-    real(fp), dimension(0:kmax)     , intent(in)   :: dicww    !  Description and declaration in rjdim.f90
+    real(fp), dimension(0:num_layers_grid)     , intent(in)   :: dicww    !  Description and declaration in rjdim.f90
     real(fp)                        , intent(in)   :: dzduu    !  Description and declaration in rjdim.f90
     real(fp)                        , intent(in)   :: dzdvv    !  Description and declaration in rjdim.f90
     real(fp)                        , intent(in)   :: eps
     real(fp)                        , intent(in)   :: frac     !  Description and declaration in rjdim.f90
     real(fp)                        , intent(in)   :: rksrs    !  Description and declaration in rjdim.f90
-    real(fp), dimension(kmax)       , intent(in)   :: sig      !  Description and declaration in rjdim.f90
+    real(fp), dimension(num_layers_grid)       , intent(in)   :: sig      !  Description and declaration in rjdim.f90
     real(fp)                        , intent(in)   :: sigmol   !  Description and declaration in rjdim.f90
     real(fp)                        , intent(in)   :: susw
     real(fp)                        , intent(in)   :: tauadd
     real(fp)                        , intent(in)   :: taucr0
     real(fp)                        , intent(in)   :: tetacr
-    real(fp), dimension(kmax)       , intent(in)   :: thick    !  Description and declaration in rjdim.f90
-    real(fp), dimension(0:kmax)     , intent(in)   :: ws       !  Description and declaration in rjdim.f90
+    real(fp), dimension(num_layers_grid)       , intent(in)   :: thick    !  Description and declaration in rjdim.f90
+    real(fp), dimension(0:num_layers_grid)     , intent(in)   :: ws       !  Description and declaration in rjdim.f90
     !
-    real(fp), dimension(kmax)       , intent(inout):: concin   ! if (i2d3d==2 .or. epspar) then output else input
+    real(fp), dimension(num_layers_grid)       , intent(inout):: concin   ! if (i2d3d==2 .or. epspar) then output else input
     real(fp), dimension(npar)       , intent(inout):: par
     real(hp), dimension(numrealpar) , intent(inout):: realpar
     !
@@ -89,14 +89,14 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
     real(fp)                        , intent(out)  :: caks
     real(fp)                        , intent(out)  :: caks_ss3d
     real(fp)                        , intent(out)  :: conc2d
-    real(fp), dimension(kmax)       , intent(out)  :: rsedeq   ! undefined if (i2d3d==3 .and. .not. epspar .and. caks>1e-6)
+    real(fp), dimension(num_layers_grid)       , intent(out)  :: rsedeq   ! undefined if (i2d3d==3 .and. .not. epspar .and. caks>1e-6)
     real(fp)                        , intent(out)  :: sbcu
     real(fp)                        , intent(out)  :: sbcv
     real(fp)                        , intent(out)  :: sbwu
     real(fp)                        , intent(out)  :: sbwv
     real(fp)                        , intent(out)  :: sswu
     real(fp)                        , intent(out)  :: sswv
-    real(fp), dimension(0:kmax)     , intent(out)  :: seddif   !  Description and declaration in rjdim.f90
+    real(fp), dimension(0:num_layers_grid)     , intent(out)  :: seddif   !  Description and declaration in rjdim.f90
     real(fp)                        , intent(out)  :: taurat
     character(*)                    , intent(out)  :: message     ! Contains error message
 !
@@ -300,7 +300,7 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
     ! in DIFU and DIF_WS
     !
     kmaxsd = 1
-    do k = kmax - 1, 1, -1
+    do k = num_layers_grid - 1, 1, -1
        !
        ! Calculate level of lower cell interface
        !
@@ -322,14 +322,14 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
     aks_ss3d  = aks
     if (caks > 1.0e-6_fp) then
        call calseddf2004(ustarc    ,ws        ,tp        ,hrms      ,h1        , &
-                       & seddif    ,kmax      ,sig       ,thick     ,dicww     , &
+                       & seddif    ,num_layers_grid      ,sig       ,thick     ,dicww     , &
                        & tauwav    ,tauc      ,ltur      ,delw      ,rhowat    , &
                        & uwbih     ,aks       ,caks      ,caks_ss3d ,deltas    , &
                        & aks_ss3d  ,di50      ,salinity  ,ws0       ,psi       , &
                        & epspar    ,eps       ,vonkar    ,salmax    ,wave      , &
                        & epsmax    ,epsmxc    )
     else
-       do k = 1, kmax
+       do k = 1, num_layers_grid
           seddif(k) = dicww(k)
        enddo
        deltas = 0.05_fp
@@ -372,12 +372,12 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
           !
           ! And then work down
           !
-          if (kmax > kmaxsd+1) then
-             do k = kmaxsd + 2, kmax
+          if (num_layers_grid > kmaxsd+1) then
+             do k = kmaxsd + 2, num_layers_grid
                 rsedeq(k) = rsedeq(k-1)
              enddo
           endif
-          do k = 1,kmax
+          do k = 1,num_layers_grid
              rsedeq(k) = rsedeq(k) * rhosol
              concin(k) = rsedeq(k)
           enddo
@@ -385,7 +385,7 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
           !
           ! caks<=1.0e-6_fp
           !
-          do k = 1, kmax
+          do k = 1, num_layers_grid
              rsedeq(k) = 0.0_fp
              concin(k) = 0.0_fp
           enddo
@@ -395,7 +395,7 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
        ! use the r0 values copied into concin array by erosed
        !
        if (caks<=1.0e-6_fp) then
-          do k = 1, kmax
+          do k = 1, num_layers_grid
              rsedeq(k) = 0.0_fp
           enddo
        endif
@@ -411,7 +411,7 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
     avgu     = 0.0_fp
     avgcu    = 0.0_fp
     if (zumod > 0.0_fp) then
-       do k = 1, kmax
+       do k = 1, num_layers_grid
           z     = (1.0_fp + sig(k)) * h1
           u     = log(1.0_fp + z/z0rou)
           avgu  = avgu  + u*thick(k)
@@ -442,7 +442,7 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
                         & fw1       ,dstar     ,drho      ,phicur    ,sbcu      , &
                         & sbcv      ,sbwu      ,sbwv      ,sswu      ,sswv      , &
                         & tetacr    ,aks       ,fsilt     ,sig       ,thick     , &
-                        & concin    ,kmax      ,deltas    ,ws(1)     ,rksrs     , &
+                        & concin    ,num_layers_grid      ,deltas    ,ws(1)     ,rksrs     , &
                         & dzduu     ,dzdvv     ,rhowat    ,ag        ,bedw      , &
                         & pangle    ,fpco      ,susw      ,wave      ,eps       , &
                         & subiw     ,vcr       ,error     ,message   ,wform     , &

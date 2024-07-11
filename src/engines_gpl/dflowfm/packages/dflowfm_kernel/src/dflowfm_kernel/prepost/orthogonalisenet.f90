@@ -45,7 +45,7 @@ SUBROUTINE ORTHOGONALISENET(jarerun)
    use unstruc_colors,  only: ncolhl
    use m_ec_basic_interpolation, only: triinterp2
    use geometry_module, only: dbpinpol
-   use m_flowexternalforcings, only: transformcoef
+   use fm_external_forcings_data, only: transformcoef
    use gridoperations
 
    IMPLICIT NONE

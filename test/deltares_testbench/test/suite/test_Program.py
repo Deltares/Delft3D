@@ -53,12 +53,14 @@ class TestProgram:
         config.log_output_to_file = True
         program = Program(config, TestBenchSettings())
         logger = mocker.Mock(spec=ILogger)
+        log_folder = mocker.patch("src.suite.program.get_default_logging_folder_path")
+        log_folder.return_value = str(tmp_dir.absolute())
 
         # Act
         program.run(logger)
 
         # Assert
-        log_file, *other_files = tmp_dir.glob("foo=*.log")
+        log_file, *other_files = tmp_dir.glob("foo_seq0.log")
         assert not other_files
         assert "foo!" in log_file.read_text()
 

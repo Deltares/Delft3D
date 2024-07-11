@@ -40,7 +40,7 @@ subroutine update_dambreak_breach(startTime, deltaTime)
    use m_Dambreak
    use m_partitioninfo
    use m_meteo
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_flowtimes
 
    implicit none

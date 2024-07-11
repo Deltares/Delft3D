@@ -28,9 +28,9 @@ module m_ulfix
 contains
 
 
-    subroutine ulfix  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine ulfix  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_dhnoseg
         use m_dhnolay
         use m_extract_waq_attribute
@@ -42,20 +42,20 @@ contains
 
         !     arguments
 
-        real(kind = real_wp) :: pmsa(*)            !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)            !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)              ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(*)        ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(*)        ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(*)        ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg              ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells              ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux             ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *)        ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)          ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1               ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2               ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3               ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4               ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir               ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir               ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir               ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir               ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 
-        !     pmsa array
+        !     process_space_real array
 
         real(kind = real_wp) :: tau                ! I  total bottom shear stress                          (N/m2)
         real(kind = real_wp) :: taucrulva          ! I  critical shear stress for resuspension ULVA        (N/m2)
@@ -72,10 +72,10 @@ contains
 
         !     local variables
 
-        integer(kind = int_wp), parameter :: ntyp_m = 30        ! number of algae types expected in pmsa
-        integer(kind = int_wp), parameter :: nipfix = 7        ! first number of entries in pmsa independent of number of algae
-        integer(kind = int_wp), parameter :: nipvar = 2        ! number of input entries in pmsa dependent of number of algae
-        integer(kind = int_wp) :: ifix(ntyp_m)       ! fix flag >0 suspended <0 corresponding fixed, copied from pmsa
+        integer(kind = int_wp), parameter :: ntyp_m = 30        ! number of algae types expected in process_space_real
+        integer(kind = int_wp), parameter :: nipfix = 7        ! first number of entries in process_space_real independent of number of algae
+        integer(kind = int_wp), parameter :: nipvar = 2        ! number of input entries in process_space_real dependent of number of algae
+        integer(kind = int_wp) :: ifix(ntyp_m)       ! fix flag >0 suspended <0 corresponding fixed, copied from process_space_real
         integer(kind = int_wp) :: jfix               ! fix flag >0 suspended <0 corresponding fixed other algae
         integer(kind = int_wp) :: ialg_fixed(ntyp_m) ! if present number of corresponding fixed type
         integer(kind = int_wp) :: nosegw             ! number of segments in the water
@@ -83,7 +83,7 @@ contains
         integer(kind = int_wp) :: iseg               ! segment number
         integer(kind = int_wp) :: isegl              ! segment number top layer (=column number)
         integer(kind = int_wp) :: isegb              ! segment number of bottom segment of the column
-        integer(kind = int_wp) :: nolay              ! number of layers
+        integer(kind = int_wp) :: num_layers              ! number of layers
         integer(kind = int_wp) :: ilay               ! layer number
         integer(kind = int_wp) :: ilayb              ! layer number of bottom segment of the column
         integer(kind = int_wp) :: ialg               ! algae type (suspended)
@@ -94,13 +94,13 @@ contains
         real(kind = real_wp) :: mtot               ! total mass over the column (gC)
         real(kind = real_wp) :: frac               ! fraction of suspended mass in a layer (-)
         integer(kind = int_wp) :: ikmrk2             ! second segment attribute
-        integer(kind = int_wp) :: ip                 ! index pointer in pmsa
-        integer(kind = int_wp) :: ipp                ! index pointer in pmsa
-        integer(kind = int_wp) :: ip1, ip2, ip3, ip4, ip5! index pointers in pmsa
-        integer(kind = int_wp) :: ip6, ip7            ! index pointers in pmsa
-        integer(kind = int_wp) :: in1, in2, in3, in4, in5! increments in pmsa
-        integer(kind = int_wp) :: in6, in7            ! increments in pmsa
-        integer(kind = int_wp) :: io1                ! index pointers in pmsa first output parameter
+        integer(kind = int_wp) :: ip                 ! index pointer in process_space_real
+        integer(kind = int_wp) :: ipp                ! index pointer in process_space_real
+        integer(kind = int_wp) :: ip1, ip2, ip3, ip4, ip5! index pointers in process_space_real
+        integer(kind = int_wp) :: ip6, ip7            ! index pointers in process_space_real
+        integer(kind = int_wp) :: in1, in2, in3, in4, in5! increments in process_space_real
+        integer(kind = int_wp) :: in6, in7            ! increments in process_space_real
+        integer(kind = int_wp) :: io1                ! index pointers in process_space_real first output parameter
         integer(kind = int_wp) :: ino1               ! increment first output parameter
 
         ! some init
@@ -123,9 +123,9 @@ contains
         ino1 = increm(nipfix + 2 * ntyp_m + 1)
 
         call dhnoseg(nosegw)
-        call dhnolay(nolay)
-        nosegl = nosegw / nolay
-        delt = pmsa(ipoint(4))
+        call dhnolay(num_layers)
+        nosegl = nosegw / num_layers
+        delt = process_space_real(ipoint(4))
 
         ! set the ifix and ialg_fixed array (should be independent of the segment number)
 
@@ -133,14 +133,14 @@ contains
         ialg_fixed = 0
         do ialg = 1, ntyp_m
             ip = nipfix + ialg + ntyp_m
-            ifix(ialg) = nint(pmsa(ipoint(ip)))
+            ifix(ialg) = nint(process_space_real(ipoint(ip)))
             if (ifix(ialg) > 0) then
 
                 !find corresponding type in rest of the algae
 
                 do ialg2 = 1, ntyp_m
                     ip = nipfix + ialg2 + ntyp_m
-                    jfix = nint(pmsa(ipoint(ip)))
+                    jfix = nint(process_space_real(ipoint(ip)))
                     if (jfix == -1 * ifix(ialg)) then
                         ialg_fixed(ialg) = ialg2
                         exit
@@ -161,18 +161,18 @@ contains
                     ! calculate total suspended up till the bottom
 
                     msusp = 0.0
-                    do ilay = 1, nolay
+                    do ilay = 1, num_layers
                         iseg = isegl + (ilay - 1) * nosegl
-                        volume = pmsa(ip7 + (iseg - 1) * in7)
-                        depth = pmsa(ip5 + (iseg - 1) * in5)
+                        volume = process_space_real(ip7 + (iseg - 1) * in7)
+                        depth = process_space_real(ip5 + (iseg - 1) * in5)
                         ip = ipoint(nipfix + ialg) + (iseg - 1) * increm(nipfix + ialg)
-                        bloomalg = max(pmsa(ip), 0.0)
+                        bloomalg = max(process_space_real(ip), 0.0)
                         msusp = msusp + bloomalg * volume  ! total mass suspended type in g
                         call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                         if ((ikmrk2==0).or.(ikmrk2==3)) then
 
                             ip = ipoint(nipfix + jalg) + (iseg - 1) * increm(nipfix + jalg)
-                            bloomalg = max(pmsa(ip), 0.0)
+                            bloomalg = max(process_space_real(ip), 0.0)
                             mfix = bloomalg * volume / depth     ! biomass of attached (fixed) type (convert from g/m2 to g)
                             isegb = iseg
                             ilayb = ilay
@@ -186,15 +186,15 @@ contains
 
                     ! caluclate distribution according to tau at the bottom segment
 
-                    tau = pmsa(ip1 + (isegb - 1) * in1)
-                    taucrulva = pmsa(ip2 + (isegb - 1) * in2)
-                    fixgrad = pmsa(ip3 + (isegb - 1) * in3)
+                    tau = process_space_real(ip1 + (isegb - 1) * in1)
+                    taucrulva = process_space_real(ip2 + (isegb - 1) * in2)
+                    fixgrad = process_space_real(ip3 + (isegb - 1) * in3)
                     if (taucrulva > 0.) then
                         frfixedalg = min(1., max(0., fixgrad - tau / taucrulva))
                     else
                         frfixedalg = 0.
                     endif
-                    pmsa(io1 + (isegb - 1) * ino1) = frfixedalg
+                    process_space_real(io1 + (isegb - 1) * ino1) = frfixedalg
 
                     mtot = msusp + mfix
                     dsedresalg = frfixedalg * mtot - mfix
@@ -204,9 +204,9 @@ contains
 
                         do ilay = 1, ilayb
                             iseg = isegl + (ilay - 1) * nosegl
-                            volume = pmsa(ip7 + (iseg - 1) * in7)
+                            volume = process_space_real(ip7 + (iseg - 1) * in7)
                             ip = ipoint(nipfix + ialg) + (iseg - 1) * increm(nipfix + ialg)
-                            bloomalg = max(pmsa(ip), 0.0)
+                            bloomalg = max(process_space_real(ip), 0.0)
                             frac = bloomalg * volume / msusp
                             fl(ialg + (iseg - 1) * noflux) = -frac * dsedresalg / volume / delt
                         enddo
@@ -216,7 +216,7 @@ contains
 
                         ! de-rooting event, all material towards suspension in lowest layer
 
-                        volume = pmsa(ip7 + (isegb - 1) * in7)
+                        volume = process_space_real(ip7 + (isegb - 1) * in7)
                         fl(ialg + (isegb - 1) * noflux) = -dsedresalg / volume / delt
                         fl(jalg + (isegb - 1) * noflux) = dsedresalg / volume / delt
 
@@ -232,24 +232,24 @@ contains
 
         ip5 = ipoint(5)
         ip7 = ipoint(7)
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
             if (btest(iknmrk(iseg), 0)) then
 
-                depth = pmsa(ip5)
-                volume = pmsa(ip7)
+                depth = process_space_real(ip5)
+                volume = process_space_real(ip7)
 
                 do ialg = 1, ntyp_m
                     ip = nipfix + ialg
                     ipp = ipoint(ip) + (iseg - 1) * increm(ip)
                     if (ifix(ialg) < 0) then
-                        bloomalg = pmsa(ipp) / volume
+                        bloomalg = process_space_real(ipp) / volume
                     else
-                        bloomalg = pmsa(ipp)
+                        bloomalg = process_space_real(ipp)
                     endif
                     ip = nipfix + ialg + 2 * ntyp_m + 1
                     ipp = ipoint(ip) + (iseg - 1) * increm(ip)
-                    pmsa(ipp) = bloomalg * depth
+                    process_space_real(ipp) = bloomalg * depth
                 enddo
 
             endif

@@ -103,6 +103,9 @@ else
      if [ "$1" == "intel21" ]; then
           export CXX=mpiicpc
           export CC=mpiicc
+     elif [ "$1" == "intel23" ]; then
+          export CXX=mpicxx
+          export CC=mpiicc
      else 
           export CXX=mpiicpx
           export CC=mpiicx

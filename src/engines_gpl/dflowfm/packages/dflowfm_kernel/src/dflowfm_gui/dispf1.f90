@@ -42,9 +42,9 @@
       CALL SETCOL(NCOL)
       X = 0
       CALL MOVABS(X,Y(1))
-      DO 10 I = 2,N
+      do I = 2,N
          X = X + DX
          CALL LNABS(X,Y(I))
-   10 CONTINUE
+      end do
       RETURN
       END

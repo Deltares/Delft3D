@@ -40,7 +40,7 @@
   USE m_ec_interpolationsettings
   use m_sferic, only: jsferic, jasfer3D, dtol_pole
   use m_ec_basic_interpolation, only: triinterp2, bilin_interp, averaging2, TerrorInfo
-  use m_flowexternalforcings, only: transformcoef
+  use fm_external_forcings_data, only: transformcoef
   use gridoperations
 
   implicit none

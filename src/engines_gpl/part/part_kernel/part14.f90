@@ -30,11 +30,11 @@ module part14_mod
                           mpart  , xpart  , ypart  , zpart  , wpart  ,    &
                           iptime , nopart , pblay  , radius , nrowswaste, &
                           xpolwaste       , ypolwaste       , lgrid  ,    &
-                          lgrid2 , nmax   , mmax   , xp     , yp     ,    &
+                          lgrid2 , num_rows   , num_columns   , xp     , yp     ,    &
                           dx     , dy     , ftime  , tmassu , nosubs ,    &
                           ncheck , t0buoy , modtyp , abuoy  , t0cf   ,    &
                           acf    , lun2   , kpart  , layt   , tcktot ,    &
-                          zmodel , laytop , laybot , nplay  , kwaste , nolay  , linear , track  ,    &
+                          zmodel , laytop , laybot , nplay  , kwaste , num_layers  , linear , track  ,    &
                           nmconr , spart  , rhopart, noconsp, const)
 
 !       Deltares Software Centre
@@ -118,8 +118,8 @@ module part14_mod
       integer  ( int_wp ), pointer       :: nrowswaste(:)         !< length of waste polygon
       integer  ( int_wp ), pointer       :: lgrid  (:,:)          !< grid numbering active
       integer  ( int_wp ), pointer       :: lgrid2(:,:)           !< total grid layout of the area
-      integer  ( int_wp ), intent(in   ) :: nmax                  !< first dimension of the grid
-      integer  ( int_wp ), intent(in   ) :: mmax                  !< second dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: num_rows                  !< first dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: num_columns                  !< second dimension of the grid
       real     ( real_wp), pointer       :: xp     (:)            !< x of upper right corner grid point
       real     ( real_wp), pointer       :: yp     (:)            !< y of upper right corner grid point
       real     ( real_wp), pointer       :: dx     (:)            !< dx of the grid cells
@@ -140,7 +140,7 @@ module part14_mod
       integer  ( int_wp ), intent(in   ) :: laybot(:,:)           !< highest active layer in z-layer model
       integer  ( int_wp )                :: nplay  (layt)         !< work array that could as well remain inside
       integer  ( int_wp ), intent(in   ) :: kwaste (nodye+nocont) !< k-values of wasteload points
-      integer  ( int_wp ), intent(in   ) :: nolay                 !< number of comp. layer
+      integer  ( int_wp ), intent(in   ) :: num_layers                 !< number of comp. layer
       integer  ( int_wp ), intent(in   ) :: linear (nocont)       !< 1 = linear interpolated loads
       real     ( real_wp), intent(inout) :: track  (8,*)          !< track array for all particles
       character( 20), intent(in   ) :: nmconr (nocont)       !< names of the continuous loads
@@ -342,7 +342,7 @@ module part14_mod
                                  lgrid   , dx      , dy      , lcircl  )
             else
 !              spread the particles over a polygon
-               call findpoly   (nmax, mmax, lgrid, lgrid2, xp, yp, nrowswaste(ie), &
+               call findpoly   (num_rows, num_columns, lgrid, lgrid2, xp, yp, nrowswaste(ie), &
                                 xpolwaste(1:nrowswaste(ie), ie), ypolwaste(1:nrowswaste(ie), ie), &
                                 xpart(i), ypart(i), npart(i), mpart(i))
             end if
@@ -353,13 +353,13 @@ module part14_mod
             if ( ipart .gt. nplay(nulay) ) then         ! next layer
                ipart = 0
                nulay = nulay + 1
-               if ( nulay .gt. nolay ) then
-                  nulay = nolay
+               if ( nulay .gt. num_layers ) then
+                  nulay = num_layers
                   goto 80
                endif
                goto 70
             endif
-            if ( nulay .gt. nolay ) stop ' Nulay>nolay in part09 '
+            if ( nulay .gt. num_layers ) stop ' Nulay>num_layers in part09 '
     80      continue
             if (zmodel) then
                kpart(i) = min(laybot(npart(i), mpart(i)), max(nulay,laytop(npart(i), mpart(i))))
@@ -377,7 +377,7 @@ module part14_mod
                endif
             elseif ( (modtyp .eq. model_oil .or. leeway) .and. kpart(i) .eq. 1 ) then   !   for one layer models (2dh),
                zpart(i) = zwaste(ie)           !      the release will be in the user-defined location
-            elseif ( nolay .eq. 1 ) then
+            elseif ( num_layers .eq. 1 ) then
                zpart(i) = zwaste(ie)/100.0
             else                               !      release randomly distributed over the vertical
                zpart(i) = rnd(rseed)

@@ -28,9 +28,9 @@ module m_nutupt
 contains
 
 
-    subroutine nutupt (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine nutupt (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Uptake of nutrients by growth of algae (DYNAMO)
 
@@ -80,9 +80,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         integer(kind = int_wp) :: iseg
 
@@ -101,21 +101,21 @@ contains
         IP13 = IPOINT(13)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                PROD1 = PMSA(IP1)
-                NCRAT1 = PMSA(IP2)
-                PCRAT1 = PMSA(IP3)
-                PROD2 = PMSA(IP4)
-                NCRAT2 = PMSA(IP5)
-                PCRAT2 = PMSA(IP6)
-                SCRAT2 = PMSA(IP7)
-                DELT = PMSA(IP8)
-                NH4 = PMSA(IP9)
-                NO3 = PMSA(IP10)
-                NH4KR = PMSA(IP11)
+                PROD1 = process_space_real(IP1)
+                NCRAT1 = process_space_real(IP2)
+                PCRAT1 = process_space_real(IP3)
+                PROD2 = process_space_real(IP4)
+                NCRAT2 = process_space_real(IP5)
+                PCRAT2 = process_space_real(IP6)
+                SCRAT2 = process_space_real(IP7)
+                DELT = process_space_real(IP8)
+                NH4 = process_space_real(IP9)
+                NO3 = process_space_real(IP10)
+                NH4KR = process_space_real(IP11)
 
                 !***********************************************************************
                 !**** Processes connected to the ALGEA model
@@ -151,8 +151,8 @@ contains
                     ENDIF
                 ENDIF
                 !     uitvoer fraction adsorbed as NH4
-                PMSA (IP12) = NH4D
-                PMSA (IP13) = XNTOT
+                process_space_real (IP12) = NH4D
+                process_space_real (IP13) = XNTOT
 
                 !@    Uptake of NH4
                 FL (1 + IFLUX) = (NCRAT1 * PROD1 + &

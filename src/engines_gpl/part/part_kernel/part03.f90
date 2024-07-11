@@ -26,7 +26,7 @@ use m_stop_exit
 !
 contains
       subroutine part03 ( lgrid  , volume , flow   , dx     , dy     ,   &
-                          nmax   , mmax   , mnmaxk , lgrid2 , velo   ,   &
+                          num_rows   , num_columns   , mnmaxk , lgrid2 , velo   ,   &
                           layt   , area   , depth  , dps    , locdep ,   &
                           zlevel , zmodel , laytop , laytopp, laybot ,   &
                           pagrid , aagrid , tcktot , ltrack , flow2m ,   &
@@ -72,8 +72,8 @@ contains
 
 !     kind         function         name                     Description
 
-      integer(int_wp ), intent(in   ) :: nmax                   !< first dimension lgrid
-      integer(int_wp ), intent(in   ) :: mmax                   !< second dimension lgrid
+      integer(int_wp ), intent(in   ) :: num_rows                   !< first dimension lgrid
+      integer(int_wp ), intent(in   ) :: num_columns                   !< second dimension lgrid
       integer(int_wp ), intent(in   ) :: mnmaxk                 !< total size of 3D matrix
       integer(int_wp ), intent(in   ) :: layt                   !< number of layers
       integer(int_wp ), intent(in   ) :: lgrid (:,:)            !< active grid indices matrix
@@ -127,15 +127,15 @@ contains
 !     determine actually active segments in z-layer models
 !
       if (zmodel) then
-         do i2 = 2, mmax
-            do i1 = 2, nmax
+         do i2 = 2, num_columns
+            do i1 = 2, num_rows
                i0 = lgrid(i1, i2)
                if (i0  >  0) then
                   laytopp(i1, i2) = laytop(i1, i2)
                   laytop(i1, i2) = laybot(i1, i2)
                   do ilay = 1, laybot(i1, i2)
                      if (pagrid(i1, i2, ilay)==1) then
-                        i03d = i0 + (ilay-1)*nmax*mmax
+                        i03d = i0 + (ilay-1)*num_rows*num_columns
                         if (volume(i03d)>0.0) then
                            aagrid(i1, i2, ilay) = 1
                            if (laytop(i1, i2)==laybot(i1, i2)) then
@@ -157,8 +157,8 @@ contains
 !
 !     loop over the segments
 !
-      do i2 = 2, mmax
-         do i1 = 2, nmax
+      do i2 = 2, num_columns
+         do i1 = 2, num_rows
             i0 = lgrid(i1, i2)
             iseg = lgrid3(i1, i2)
             if (i0  >  0) then
@@ -170,7 +170,7 @@ contains
                   if (zmodel) then
                      if (aagrid(i1, i2, ilay)==0) cycle
                   end if
-                  i03d = i0 + (ilay-1)*nmax*mmax
+                  i03d = i0 + (ilay-1)*num_rows*num_columns
 
 !                 magnitude of the velocities
                   vy  = flow(i03d        ) / volume(i03d) * dy(i0)
@@ -179,13 +179,13 @@ contains
 !                 calculate sum; value >= 0
                   sum = vx**2 + vy**2
                   i3 = lgrid2(i1 - 1, i2    )
-                  i33d = i3 + (ilay-1)*nmax*mmax
+                  i33d = i3 + (ilay-1)*num_rows*num_columns
                   if (i3  >  0) then
                      vy  = flow(i33d        ) / volume(i03d) * dy(i0)
                      sum = sum + vy**2
                   endif
                   i4 = lgrid2(i1    , i2 - 1)
-                  i43d = i4 + (ilay-1)*nmax*mmax
+                  i43d = i4 + (ilay-1)*num_rows*num_columns
                   if (i4  >  0) then
                      vx  = flow(i43d+mnmaxk) / volume(i03d) * dx(i0)
                      sum = sum + vx**2
@@ -209,7 +209,7 @@ contains
                      sum = vx**2 + vy**2
 !
                      i3 = lgrid2(i1 - 1, i2    )
-                     i33d = i3 + (ilay-1)*nmax*mmax
+                     i33d = i3 + (ilay-1)*num_rows*num_columns
                      if (i3  >  0) then
                         if(vol2(iseg) .gt. 0.0001) then
                            vy  = flow2m(i33d        ) / vol2(iseg) * dy(i0)
@@ -220,7 +220,7 @@ contains
                      endif
 !
                      i4 = lgrid2(i1    , i2 - 1)
-                     i43d = i4 + (ilay-1)*nmax*mmax
+                     i43d = i4 + (ilay-1)*num_rows*num_columns
                      if (i4  >  0) then
                         if(vol2(iseg) .gt. 0.0001) then
                            vx  = flow2m(i43d+mnmaxk) / vol2(iseg) * dx(i0)
@@ -257,8 +257,8 @@ contains
 !     (itrack=1).
 !
       if (ltrack) then
-         do i2 = 1, mmax
-         do i1 = 1, nmax
+         do i2 = 1, num_columns
+         do i1 = 1, num_rows
             i0 = lgrid(i1, i2)
             if (i0  >  0) then
                zlevel(i0) = locdep(i0,layt) - dps(i0)

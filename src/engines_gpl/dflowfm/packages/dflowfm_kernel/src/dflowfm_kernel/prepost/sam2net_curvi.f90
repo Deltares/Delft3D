@@ -39,7 +39,7 @@ subroutine sam2net_curvi(numk, xk, yk, zk)
    use m_missing
    use m_polygon
    use m_ec_basic_interpolation, only: triintfast, bilin_interp_loc
-   use m_flowexternalforcings, only: transformcoef
+   use fm_external_forcings_data, only: transformcoef
    use m_sferic, only: jsferic, jasfer3D
 
    implicit none

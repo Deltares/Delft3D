@@ -27,9 +27,9 @@ implicit none
 contains
 
 
-      subroutine part11sp( lgrid  , xp     , yp     , nmax   , npart  ,        &
+      subroutine part11sp( lgrid  , xp     , yp     , num_rows   , npart  ,        &
                            mpart  , xpart  , ypart  , xa     , ya     ,        &
-                           lgrid2 , mmax)
+                           lgrid2 , num_columns)
 
 !       Deltares Software Centre
 
@@ -62,12 +62,12 @@ contains
 
 !     kind            function         name                      description
 
-      integer  ( int_wp ), intent(in   ) :: nmax                    !< first grid index
-      integer  ( int_wp ), intent(in   ) :: mmax                    !< second grid index
-      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)       !< active grid matrix
-      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)       !< total grid matrix
-      real     ( real_wp), intent(in   ) :: xp    (nmax*mmax)       !< x of the grid cell corner
-      real     ( real_wp), intent(in   ) :: yp    (nmax*mmax)       !< y of the grid cell corner
+      integer  ( int_wp ), intent(in   ) :: num_rows                    !< first grid index
+      integer  ( int_wp ), intent(in   ) :: num_columns                    !< second grid index
+      integer  ( int_wp ), intent(in   ) :: lgrid (num_rows,num_columns)       !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns)       !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xp    (num_rows*num_columns)       !< x of the grid cell corner
+      real     ( real_wp), intent(in   ) :: yp    (num_rows*num_columns)       !< y of the grid cell corner
       integer  ( int_wp ), intent(in   ) :: npart                   !< first grid cell index particles
       integer  ( int_wp ), intent(in   ) :: mpart                   !< second grid cell index particles
       real     ( real_wp), intent(in   ) :: xpart                   !< x-in the grid of particles

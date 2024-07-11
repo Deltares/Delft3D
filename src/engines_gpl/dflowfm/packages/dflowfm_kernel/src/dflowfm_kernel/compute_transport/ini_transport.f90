@@ -36,7 +36,7 @@ subroutine ini_transport()
    use m_flowparameters
    use m_sediment
    use m_physcoef
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use string_module
    use Messagehandling
    use m_flow, only: kmx
@@ -217,7 +217,7 @@ subroutine ini_transport()
 
    if ( jawaqproc > 0 ) then
 !     fill administration for WAQ substances with fall velocities, and thetavert
-      do isys=1,nosys
+      do isys=1,num_substances_transported
          i = itrac2const(isys2trac(isys))
          isys2const(isys) = i
          iconst2sys(i) = isys

@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
   <testCase name="e02_f014_c001_trench_EH_par_crs" ref="sif_dimr">    <!-- dflowfm multiple partitions -->
     <path version="2024-01-11T13:10:00">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
     <programs>

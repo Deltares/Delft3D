@@ -34,7 +34,7 @@
 ! =================================================================================================
    subroutine get_netlinks_of_dryarea()
       use network_data   , only: numl, lne
-      use m_flowexternalforcings, only: kdryarea, nDryLinks
+      use fm_external_forcings_data, only: kdryarea, nDryLinks
 
       implicit none
       integer :: L, k1, k2

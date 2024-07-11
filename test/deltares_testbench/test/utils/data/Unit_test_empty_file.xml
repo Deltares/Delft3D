@@ -53,9 +53,6 @@ xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://conte
 				<argument>/C</argument>
 			</arguments>
 		</program>
-		<program name="svn" addSearchPaths="false">
-			<path>thirdparty\svn\win64\svn.exe</path>
-		</program>
 		<program name="DFoundation" logOutputToFile="true">
 			<location ref="reference_engines" type="reference">
 				<from>./data/engines/bin/d-series/win64</from>

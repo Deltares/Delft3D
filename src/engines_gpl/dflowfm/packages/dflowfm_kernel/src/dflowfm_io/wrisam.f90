@@ -55,7 +55,7 @@
       end if
 
       KMOD = MAX(1,NS/100)
-      DO 10 I = 1,NS
+      do I = 1,NS
          IF (MOD(I,KMOD) == 0) THEN
             AF = dble(I) / dble(NS)
             CALL READYY('Writing Samples File',AF)
@@ -68,7 +68,7 @@
          else
             call qnerror('wrisam: format error', ' ', ' ')
          end if
-   10 CONTINUE
+end do
 
  1234 continue
       CALL DOCLOSE(MSAM)

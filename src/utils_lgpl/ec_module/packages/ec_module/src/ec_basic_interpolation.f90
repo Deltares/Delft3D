@@ -1396,11 +1396,11 @@
 
 
    !> bilinear interpolation between nodes
-   subroutine bilin_interp_loc(Nxmax, Nymax, Nx, Ny, NDIM, x, y, z, xp, yp, xi, eta, zp, ierror, dmiss, jsferic)
+   subroutine bilin_interp_loc(Nxmax, Nymax, grid_width, grid_depth, NDIM, x, y, z, xp, yp, xi, eta, zp, ierror, dmiss, jsferic)
    implicit none
 
    integer,                                    intent(in)    :: Nxmax, Nymax !< node array size
-   integer,                                    intent(in)    :: Nx, Ny   !< actual sizes
+   integer,                                    intent(in)    :: grid_width, grid_depth   !< actual sizes
    integer,                                    intent(in)    :: NDIM     !< sample vector dimension
    real(kind=hp)   , dimension(Nxmax,Nymax),   intent(in)    :: x, y     !< node coordinates
    real(kind=hp)   , dimension(NDIM,Nxmax,Nymax), intent(in) :: z        !< node values
@@ -1431,14 +1431,14 @@
    zp = DMISS
 
    !  set realistic start values
-   xi  = min(max(xi, 0d0),dble(Nx)-1d0)
-   eta = min(max(eta,0d0),dble(Ny)-1d0)
+   xi  = min(max(xi, 0d0),dble(grid_width)-1d0)
+   eta = min(max(eta,0d0),dble(grid_depth)-1d0)
 
    !  Newton iterations
    eps = 1d99
    epsprev = 2d0*eps
    do iter=1,MAXITER
-      call comp_x_DxDxi(Nxmax, Nymax, Nx, Ny, NDIM, x, y, z, xi, eta, x1, y1, z1, DxDxi, ierror_loc, dmiss, jsferic)
+      call comp_x_DxDxi(Nxmax, Nymax, grid_width, grid_depth, NDIM, x, y, z, xi, eta, x1, y1, z1, DxDxi, ierror_loc, dmiss, jsferic)
 
       if ( ierror_loc /= 0 ) goto 1234
 
@@ -1473,8 +1473,8 @@
       eta = eta + Deta
 
       !     set realistic values
-      xi  = min(max(xi, 0d0),dble(Nx)-1d0)
-      eta = min(max(eta,0d0),dble(Ny)-1d0)
+      xi  = min(max(xi, 0d0),dble(grid_width)-1d0)
+      eta = min(max(eta,0d0),dble(grid_depth)-1d0)
    end do
 
    if ( eps > dtol ) then
@@ -1494,11 +1494,11 @@
    end subroutine bilin_interp_loc
 
    !> bilinear interpolation of node coordinates and Jacobian matrix
-   subroutine comp_x_DxDxi(Ncx, Ncy, Nx, Ny, NDIM, x, y, z, xi, eta, x1, y1, z1, DxDxi, ierror, dmiss, jsferic)
+   subroutine comp_x_DxDxi(Ncx, Ncy, grid_width, grid_depth, NDIM, x, y, z, xi, eta, x1, y1, z1, DxDxi, ierror, dmiss, jsferic)
    implicit none
 
    integer,                                   intent(in)  :: Ncx, Ncy !< node array sizes
-   integer,                                   intent(in)  :: Nx, Ny   !< actual sizes
+   integer,                                   intent(in)  :: grid_width, grid_depth   !< actual sizes
    integer,                                   intent(in)  :: NDIM     !< sample vector dimension
    real(kind=hp)   , dimension(Ncx,Ncy),      intent(in)  :: x, y     !< node coordinates
    real(kind=hp)   , dimension(NDIM,Ncx,Ncy), intent(in)  :: z        !< node values
@@ -1516,12 +1516,12 @@
 
    ierror = 1
 
-   if ( Nx < 2 .or. Ny < 2 ) goto 1234
+   if ( grid_width < 2 .or. grid_depth < 2 ) goto 1234
 
    !  get the cell indices
-   i0 = max(min(int(xi)+1, Nx-1), 1)
+   i0 = max(min(int(xi)+1, grid_width-1), 1)
    i1 = i0+1
-   j0 = max(min(int(eta)+1, Ny-1), 1)
+   j0 = max(min(int(eta)+1, grid_depth-1), 1)
    j1 = j0+1
 
    !  compute local index coordinates
@@ -1575,7 +1575,7 @@
     !>         xs and ys are the sample coordinates, dim(ns)
     !>         zss contains a ndim-dimensional vector for each of the ns samples, dim(ndim,ns)
 
-    subroutine averaging2(ndim,ns,xs,ys,zss,ipsam,xc,yc,zc,nx,xx,yy,n6,nnn,jakdtree, &
+    subroutine averaging2(ndim,ns,xs,ys,zss,ipsam,xc,yc,zc,grid_width,xx,yy,n6,nnn,jakdtree, &
                           dmiss, jsferic, jasfer3D, jins, npl, xpl, ypl, zpl, errorInfo, kcc) ! Werkt alleen voor cell regions, die zitten in xx en yy
     use stdlib_sorting, only: radix_sort
     implicit none
@@ -1584,11 +1584,11 @@
     real(kind=hp)   , dimension(ns),          intent(in   ) :: xs, ys               !< sample coordinates
     real(kind=hp)   , dimension(ndim,ns),     intent(in   ) :: zss                  !< sample values
     integer,          dimension(ns),          intent(in   ) :: ipsam                !< sample permutation array (increasing x-coordinate)
-    integer,                                  intent(in   ) :: nx, n6               !< number of polygons and maximum polygon size
-    real(kind=hp)   ,                         intent(in   ) :: xc(nx), yc(nx)       !< polygon center coordinates
-    real(kind=hp)   ,                         intent(inout) :: zc(ndim,nx)          !< zc not initialized here
-    real(kind=hp)   ,                         intent(in   ) :: xx(n6,nx), yy(n6,nx) !< polygon coordinates
-    integer,                                  intent(in   ) :: nnn(nx)              !< polygon sizes
+    integer,                                  intent(in   ) :: grid_width, n6               !< number of polygons and maximum polygon size
+    real(kind=hp)   ,                         intent(in   ) :: xc(grid_width), yc(grid_width)       !< polygon center coordinates
+    real(kind=hp)   ,                         intent(inout) :: zc(ndim,grid_width)          !< zc not initialized here
+    real(kind=hp)   ,                         intent(in   ) :: xx(n6,grid_width), yy(n6,grid_width) !< polygon coordinates
+    integer,                                  intent(in   ) :: nnn(grid_width)              !< polygon sizes
     integer,                                  intent(in   ) :: jakdtree             !< use kdtree (1) or not (0)
     real(kind=hp)   ,                         intent(in   ) :: dmiss                !< missing value
     integer,                                  intent(in   ) :: jsferic              !< spherical or not
@@ -1629,18 +1629,18 @@
        allocate(zz(ns), kkin(ns) )
     endif
 
-    if ( jtekinterpolationprocess == 1 .or. nx < 100 ) then
+    if ( jtekinterpolationprocess == 1 .or. grid_width < 100 ) then
        japrogressbar = 0
     end if
 
     allocate (xh(n6), yh(n6) )
 
-    modin = max(1.0_hp, real(nx, hp)/100.0)
+    modin = max(1.0_hp, real(grid_width, hp)/100.0)
     in = -1
 
     errorInfo%cntNoSamples = 0
 
-    do n = 1, nx
+    do n = 1, grid_width
 
        if (jakc == 1) then
           if (kcc(N) /= 1) then
@@ -1864,7 +1864,7 @@
           endif
        end do
 
-    enddo ! n=1,nx
+    enddo ! n=1,grid_width
 
     deallocate (XH, YH)
 

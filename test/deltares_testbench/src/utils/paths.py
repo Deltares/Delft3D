@@ -161,14 +161,13 @@ class Paths(object):
         for subdir in self.findAllSubFolders(root, ""):
             prefix = subdir.replace(os.path.abspath(root), "")
             prefix = self.rebuildToLocalPath(prefix)
-            if subdir.find(".svn") == -1:
-                retval.extend(
-                    [
-                        os.path.join(prefix, f)
-                        for f in os.listdir(subdir)
-                        if os.path.isfile(os.path.join(subdir, f))
-                    ]
-                )
+            retval.extend(
+                [
+                    os.path.join(prefix, f)
+                    for f in os.listdir(subdir)
+                    if os.path.isfile(os.path.join(subdir, f))
+                ]
+            )
         # Remove leading/trailing slashes; they mess up the comparison
         for index, rv in enumerate(retval):
             retval[index] = rv.strip("/\\")

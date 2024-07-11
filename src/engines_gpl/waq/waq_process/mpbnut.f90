@@ -28,9 +28,9 @@ module m_mpbnut
 contains
 
 
-    SUBROUTINE MPBNUT (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
+    SUBROUTINE MPBNUT (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_zerome
         use m_extract_waq_attribute
 
@@ -78,9 +78,9 @@ contains
 
         !          IMPLICIT REAL(kind=real_wp) ::(A-H,J-Z)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
                 IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18, IP19, IP20, &
@@ -145,35 +145,35 @@ contains
         IN23 = INCREM(23)
         IN24 = INCREM(24)
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
             IF (IKMRK1==1) THEN
 
-                LEN = PMSA(IP1)
-                DIF = PMSA(IP2)
+                LEN = process_space_real(IP1)
+                DIF = process_space_real(IP2)
 
                 IF (DIF<1E-20) CALL ZEROME ('DIF in MFBNUT')
 
-                FNBM = PMSA(IP3)
-                FNSW = PMSA(IP4)
-                FNH4GS = PMSA(IP5)
-                FNO3GS = PMSA(IP6)
-                FPBM = PMSA(IP7)
-                FPSW = PMSA(IP8)
-                FPGS = PMSA(IP9)
-                FSiBM = PMSA(IP10)
-                FSiSW = PMSA(IP11)
-                NH4 = PMSA(IP12)
-                NO3 = PMSA(IP13)
-                PO4 = PMSA(IP14)
-                Si = PMSA(IP15)
-                TCNIT = PMSA(IP16)
-                FRNO3 = PMSA(IP17)
-                TEMP = PMSA(IP18)
-                DEPTH = PMSA(IP19)
-                SURF = PMSA(IP20)
+                FNBM = process_space_real(IP3)
+                FNSW = process_space_real(IP4)
+                FNH4GS = process_space_real(IP5)
+                FNO3GS = process_space_real(IP6)
+                FPBM = process_space_real(IP7)
+                FPSW = process_space_real(IP8)
+                FPGS = process_space_real(IP9)
+                FSiBM = process_space_real(IP10)
+                FSiSW = process_space_real(IP11)
+                NH4 = process_space_real(IP12)
+                NO3 = process_space_real(IP13)
+                PO4 = process_space_real(IP14)
+                Si = process_space_real(IP15)
+                TCNIT = process_space_real(IP16)
+                FRNO3 = process_space_real(IP17)
+                TEMP = process_space_real(IP18)
+                DEPTH = process_space_real(IP19)
+                SURF = process_space_real(IP20)
                 !                VOLWAT = DEPTH * SURF
 
                 IF ((FNBM + FNSW) <= 0.0) THEN
@@ -210,10 +210,10 @@ contains
                 !          10 gebruikt, bij wijze van correctie voor uitwisseling met de waterfase dd 16-08-01, A Blauw)
                 !      --------------------------------------------------------
 
-                PMSA(IP21) = NH4S1
-                PMSA(IP22) = NO3S1
-                PMSA(IP23) = PO4S1
-                PMSA(IP24) = SiS1
+                process_space_real(IP21) = NH4S1
+                process_space_real(IP22) = NO3S1
+                process_space_real(IP23) = PO4S1
+                process_space_real(IP24) = SiS1
 
             ENDIF
 

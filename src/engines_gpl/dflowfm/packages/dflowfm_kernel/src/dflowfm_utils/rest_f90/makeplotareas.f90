@@ -72,14 +72,15 @@
       DX = xz / NUMCOL
       XM = DX / 40
       YM = DY / 40
-      DO 10 J = 1,NUMROW
-         DO 10 I = 1,NUMCOL
+      do J = 1,NUMROW
+         do I = 1,NUMCOL
             NSC = NSC + 1
             X1SC(NSC) = xb + (I-1)*DX + XM
             X2SC(NSC) = xb + (I  )*DX - XM
             Y1SC(NSC) = 1d0-yb - (J  )*DY + YM
             Y2SC(NSC) = 1d0-yb - (J-1)*DY - YM
-   10 CONTINUE
+         end do
+      end do
       NUMSC = NSC
       RETURN
       END

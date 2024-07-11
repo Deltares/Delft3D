@@ -59,11 +59,11 @@
       XI2 = DXYMIS
       XJ2 = DXYMIS
 
-      DO 20 JN = 1,NC
+      do JN = 1,NC
          CALL GETIJ(X,XH1,MMAX,NMAX,MNMAX,1,MC,JN,JN)
          JALIN = 0
          K     = 0
-         DO 30 I = 1,MC
+         do I = 1,MC
             IF (XH1(I) .NE. DXYMIS) THEN
                IF (JALIN .EQ. 0) THEN
 !                 BEGIN LIJN BIJ I
@@ -85,14 +85,14 @@
                CALL PUTIJ(XJ2,XH21,MMAX,NMAX,MNMAX,IFF,IL,JN,JN)
                K     = 0
             ENDIF
-    30   CONTINUE
-    20 CONTINUE
+end do
+end do
 
-      DO 40 IN = 1,MC
+      do IN = 1,MC
          CALL GETIJ(X,XH1,MMAX,NMAX,MNMAX,IN,IN,1,NC)
          JALIN = 0
          K     = 0
-         DO 50 I = 1,NC
+         do I = 1,NC
             IF (XH1(I) .NE. DXYMIS) THEN
                IF (JALIN .EQ. 0) THEN
 !                 BEGIN LIJN BIJ I
@@ -114,8 +114,8 @@
                CALL PUTIJ(XI2,XH21,MMAX,NMAX,MNMAX,IN,IN,IFF,IL)
                K     = 0
             ENDIF
-    50   CONTINUE
-    40 CONTINUE
+end do
+end do
 
       DEALLOCATE ( XH1, XH21, XHH )
 

@@ -98,7 +98,7 @@ subroutine depfil_double(lundia    ,error     ,fildep    ,fmttmp    ,array     ,
        ! 
        ! allocate temporary array to store data of entire domain read from file 
        ! 
-       ! NOTE: nmaxus and mmax equal nmaxgl and mmaxgl, respectively (for entire domain) 
+       ! NOTE: nmaxus and num_columns equal nmaxgl and mmaxgl, respectively (for entire domain)
        !       in case of parallel runs. Moreover, array is associated with subdomain and 
        !       therefore, data for entire domain is stored in temporary array dtmp 
        !

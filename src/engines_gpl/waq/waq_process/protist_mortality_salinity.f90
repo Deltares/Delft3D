@@ -43,9 +43,9 @@ module m_protist_mortality_salinity
 
     contains
 
-    subroutine protist_mortality_salinity(pmsa, fl, ipoint, increm, segment_count, &
-                      noflux, iexpnt, iknmrk, noq1, noq2, &
-                      noq3, noq4)
+    subroutine protist_mortality_salinity(process_space_real, fl, ipoint, increm, segment_count, &
+                      noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                      num_exchanges_z_dir, num_exchanges_bottom_dir)
         !< Calculation of mortality for protists based on the salinity
         !<
         !< Remarks:
@@ -55,9 +55,9 @@ module m_protist_mortality_salinity
         implicit none
 
         ! arguments of the subroutine
-        real(kind=real_wp)    :: pmsa(*), fl(*)
+        real(kind=real_wp)    :: process_space_real(*), fl(*)
         integer(kind=int_wp)  :: ipoint(*), increm(*), segment_count, noflux, &
-                                 iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+                                 iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         ! process-specific variables
         type(input_protist_mortality_salinity)  :: input_vars  !< input for the protist_mortality_salinity process
@@ -73,9 +73,9 @@ module m_protist_mortality_salinity
 
         do isegment = 1, segment_count
             if(must_calculate_segment(iknmrk(isegment))) then
-                call assign_input_params(iparray, pmsa, input_vars)
+                call assign_input_params(iparray, process_space_real, input_vars)
                 output_vars = calculate_process_in_segment(input_vars)
-                call assign_output_params(iparray, pmsa, output_vars)
+                call assign_output_params(iparray, process_space_real, output_vars)
             end if
             call update_loop_vars(iflux, noflux, params_count, iparray, increm)
         end do
@@ -94,17 +94,17 @@ module m_protist_mortality_salinity
         iparray(:) = ipoint(1:params_count)
     end subroutine initialize_variables
 
-    subroutine assign_input_params(iparray, pmsa, iv)
+    subroutine assign_input_params(iparray, process_space_real, iv)
         !< Transfer values from generic array to process-specific input parameters.
         type(input_protist_mortality_salinity), intent(out) :: iv !< process specific input variables
-        real, intent(in)     :: pmsa(*)
+        real, intent(in)     :: process_space_real(*)
         integer, intent(in)  :: iparray(*)
 
-        iv%salinity = pmsa(iparray(1))
-        iv%b1       = pmsa(iparray(2))
-        iv%b2       = pmsa(iparray(3))
-        iv%m1       = pmsa(iparray(4))
-        iv%m2       = pmsa(iparray(5))
+        iv%salinity = process_space_real(iparray(1))
+        iv%b1       = process_space_real(iparray(2))
+        iv%b2       = process_space_real(iparray(3))
+        iv%m1       = process_space_real(iparray(4))
+        iv%m2       = process_space_real(iparray(5))
     end subroutine assign_input_params
 
     function calculate_process_in_segment(iv) result(ov)
@@ -126,13 +126,13 @@ module m_protist_mortality_salinity
         mortality = m1 + (m2 - m1)/(1 + exp(b1 * (salinity - b2)))
     end function
 
-    subroutine assign_output_params(iparray, pmsa, ov)
+    subroutine assign_output_params(iparray, process_space_real, ov)
         !< Transfer values from the process-specific output parameters to a generic array.
         integer(kind=int_wp), intent(in) :: iparray(*)
-        real, intent(out) :: pmsa(*)
+        real, intent(out) :: process_space_real(*)
         type(output_protist_mortality_salinity), intent(in) :: ov !< process specific output variables
 
-        pmsa(iparray(6)) = ov%mortality
+        process_space_real(iparray(6)) = ov%mortality
     end subroutine assign_output_params
 
     subroutine update_loop_vars(iflux, noflux, count_params, iparray, increm)

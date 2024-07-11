@@ -36,7 +36,7 @@
       use m_sferic, only: jsferic, jasfer3D
       use m_polygon, only: NPL, xpl, ypl, zpl
       use m_ec_basic_interpolation, only: triinterp2
-      use m_flowexternalforcings, only: transformcoef
+      use fm_external_forcings_data, only: transformcoef
 
       implicit none
       DOUBLE PRECISION :: XH(NPH), YH(NPH), DXS(NPH)

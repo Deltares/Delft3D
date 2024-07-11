@@ -29,9 +29,9 @@ module m_caltau
 
     contains
 
-    subroutine caltau(pmsa, fl, ipoint, increm, segment_count, &
-                      noflux, iexpnt, iknmrk, noq1, noq2, &
-                      noq3, noq4)
+    subroutine caltau(process_space_real, fl, ipoint, increm, segment_count, &
+                      noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                      num_exchanges_z_dir, num_exchanges_bottom_dir)
         !< Calculation of bottom friction
         !<
         !< Remarks:
@@ -46,9 +46,9 @@ module m_caltau
         implicit none
 
         ! arguments of the subroutine
-        real     :: pmsa(*), fl(*)
+        real     :: process_space_real(*), fl(*)
         integer  :: ipoint(*), increm(*), segment_count, noflux, &
-                  iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+                  iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         ! process-specific variable
         real     :: h           !< Significant wave height                              [m]
@@ -82,14 +82,14 @@ module m_caltau
         call initialize_variables(params_count, iparray, ipoint, iflux)
         do isegment = 1, segment_count
             if(must_calculate_segment(iknmrk(isegment))) then
-                call assign_input_params(iparray, pmsa, h, rl, t, tausch, iswtauveloc, tauflo, &
+                call assign_input_params(iparray, process_space_real, h, rl, t, tausch, iswtauveloc, tauflo, &
                                          veloc, chz, totdep, iswtau, depth, iswtaumax, max_nelson, &
                                          iswhrms)
                 call validate_switches(iswtau, iswtauveloc, iswhrms)
                 call calculate_process_in_segment(h, max_nelson, totdep, chz, depth, iknmrk(isegment), &
                                                   tauflo, veloc, tauwin, rl, t, tauvel, iswtau, &
                                                   iswtaumax, iswtauveloc, iswhrms, tau, tausch)
-                call assign_output_params(iparray, pmsa, tau, tauflo, tauwin, tauvel)
+                call assign_output_params(iparray, process_space_real, tau, tauflo, tauwin, tauvel)
             end if
             call update_loop_vars(iflux, noflux, params_count, iparray, increm)
         end do
@@ -107,29 +107,29 @@ module m_caltau
         iflux = 0
     end subroutine initialize_variables
 
-    subroutine assign_input_params(iparray, pmsa, h, rl, t, tausch, iswtauveloc, tauflo, &
+    subroutine assign_input_params(iparray, process_space_real, h, rl, t, tausch, iswtauveloc, tauflo, &
                                   veloc, chz, totdep, iswtau, depth, iswtaumax, max_nelson, &
                                   iswhrms)
         !< Transfer values from generic array to process-specific input parameters.
         real, intent(out)    :: h, rl, t, tausch,tauflo, veloc, chz, totdep, depth, max_nelson
         integer, intent(out) :: iswtauveloc, iswtau, iswtaumax, iswhrms
-        real, intent(in)     :: pmsa(*)
+        real, intent(in)     :: process_space_real(*)
         integer, intent(in)  :: iparray(*)
 
-        h           = pmsa(iparray(1))
-        rl          = pmsa(iparray(2))
-        t           = pmsa(iparray(3))
-        tausch      = pmsa(iparray(4))
-        iswtauveloc = nint(pmsa(iparray(5)))
-        tauflo      = pmsa(iparray(6))
-        veloc       = pmsa(iparray(7))
-        chz         = pmsa(iparray(8))
-        totdep      = pmsa(iparray(9))
-        iswtau      = nint(pmsa(iparray(10)))
-        depth       = pmsa(iparray(11))
-        iswtaumax   = nint(pmsa(iparray(12)))
-        max_nelson  = pmsa(iparray(13))
-        iswhrms     = pmsa(iparray(14))
+        h           = process_space_real(iparray(1))
+        rl          = process_space_real(iparray(2))
+        t           = process_space_real(iparray(3))
+        tausch      = process_space_real(iparray(4))
+        iswtauveloc = nint(process_space_real(iparray(5)))
+        tauflo      = process_space_real(iparray(6))
+        veloc       = process_space_real(iparray(7))
+        chz         = process_space_real(iparray(8))
+        totdep      = process_space_real(iparray(9))
+        iswtau      = nint(process_space_real(iparray(10)))
+        depth       = process_space_real(iparray(11))
+        iswtaumax   = nint(process_space_real(iparray(12)))
+        max_nelson  = process_space_real(iparray(13))
+        iswhrms     = process_space_real(iparray(14))
     end subroutine assign_input_params
 
     subroutine validate_switches(switch_tau, switch_tau_velocity, switch_hrms)
@@ -205,16 +205,16 @@ module m_caltau
 
    end subroutine calculate_process_in_segment
 
-    subroutine assign_output_params(iparray, pmsa, tau, tauflo, tauwin, tauvel)
+    subroutine assign_output_params(iparray, process_space_real, tau, tauflo, tauwin, tauvel)
         !< Transfer values from the process-specific output parameters to a generic array.
         integer, intent(in) :: iparray(*)
         real, intent(in) :: tau, tauflo, tauwin, tauvel
-        real, intent(out) :: pmsa(*)
+        real, intent(out) :: process_space_real(*)
 
-        pmsa(iparray(15)) = tau
-        pmsa(iparray(16)) = tauflo
-        pmsa(iparray(17)) = tauwin
-        pmsa(iparray(18)) = tauvel
+        process_space_real(iparray(15)) = tau
+        process_space_real(iparray(16)) = tauflo
+        process_space_real(iparray(17)) = tauwin
+        process_space_real(iparray(18)) = tauvel
     end subroutine assign_output_params
 
     subroutine update_loop_vars(iflux, noflux, count_params, iparray, increm)

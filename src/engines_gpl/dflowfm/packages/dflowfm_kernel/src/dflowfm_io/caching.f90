@@ -38,7 +38,7 @@
 !> Manages the caching file - store and retrieve the grid-based information.
 module unstruc_caching
     use precision
-    use m_observations, only: numobs, xobs, yobs, locTpObs, kobs
+    use m_observations, only: numobs, xobs, yobs, locTpObs, kobs, lobs
     use m_monitoring_crosssections, only: crs, tcrs, deallocCrossSections
     !use m_crspath, only: tcrspath
     use md5_checksum
@@ -65,6 +65,7 @@ module unstruc_caching
     double precision, dimension(:), allocatable, private :: cache_dsl_fixed
     integer, dimension(:), allocatable, private          :: cache_locTpObs
     integer, dimension(:), allocatable, private          :: cache_kobs
+    integer, dimension(:), allocatable, private          :: cache_lobs
     integer, dimension(:), allocatable, private          :: cache_ilink_fixed
     integer, dimension(:), allocatable, private          :: cache_ipol_fixed
     integer, dimension(:), allocatable, private          :: cache_linklist
@@ -100,6 +101,7 @@ subroutine default_caching()
    if (allocated(cache_dsl_fixed))      deallocate(cache_dsl_fixed)
    if (allocated(cache_locTpObs))       deallocate(cache_locTpObs)
    if (allocated(cache_kobs))           deallocate(cache_kobs)
+   if (allocated(cache_lobs))           deallocate(cache_lobs)
    if (allocated(cache_ilink_fixed))    deallocate(cache_ilink_fixed)
    if (allocated(cache_ipol_fixed))     deallocate(cache_ipol_fixed)
    if (allocated(cache_linklist))       deallocate(cache_linklist)
@@ -214,12 +216,14 @@ subroutine loadCachingFile( basename, netfile, usecaching )
     call realloc(cache_yobs,     number, keepExisting=.false.)
     call realloc(cache_locTpObs, number, keepExisting=.false.)
     call realloc(cache_kobs,     number, keepExisting=.false.)
+    call realloc(cache_lobs,     number, keepExisting=.false.)
 
     if ( number > 0 ) then
         read( lun, iostat = ierr ) cache_xobs      ; okay = ierr == 0
         read( lun, iostat = ierr ) cache_yobs      ; okay = okay .and. ierr == 0
         read( lun, iostat = ierr ) cache_locTpObs  ; okay = okay .and. ierr == 0
         read( lun, iostat = ierr ) cache_kobs      ; okay = okay .and. ierr == 0
+        read( lun, iostat = ierr ) cache_lobs      ; okay = okay .and. ierr == 0
     endif
 
     if ( .not. okay ) then
@@ -452,7 +456,7 @@ subroutine storeCachingFile( basename, usecaching )
     !
     write( lun ) section(key_obs), numobs
     if ( numobs > 0 ) then
-        write( lun ) xobs(1:numobs), yobs(1:numobs), locTpObs(1:numobs), kobs(1:numobs)
+        write( lun ) xobs(1:numobs), yobs(1:numobs), locTpObs(1:numobs), kobs(1:numobs), lobs(1:numobs)
     endif
 
     !
@@ -568,6 +572,7 @@ subroutine copyCachedObservations( success )
              all( cache_locTpObs == locTpObs(1:numobs) ) ) then
             success        = .true.
             kobs(1:numobs) = cache_kobs
+            lobs(1:numobs) = cache_lobs
         endif
     endif
 end subroutine copyCachedObservations

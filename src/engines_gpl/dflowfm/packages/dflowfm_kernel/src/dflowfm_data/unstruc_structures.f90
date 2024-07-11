@@ -265,7 +265,7 @@ integer :: jaoldstr !< tmp backwards comp: we cannot mix structures from EXT and
    !> Allocates and initializes all "valstruct"(:,:) arrays.
    !! Used for history output and/or restart file output for hydraulic structures.
    subroutine init_structure_hisvalues()
-      use m_flowexternalforcings , only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, ndambreaksignals
+      use fm_external_forcings_data , only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen, ndambreaksignals
       !use m_structures, only: NUMVALS_PUMP, NUMVALS_GATE, NUMVALS_CDAM, NUMVALS_CGEN, &
       !                        NUMVALS_GATEGEN, NUMVALS_WEIRGEN, NUMVALS_GENSTRU
       use m_alloc
@@ -796,7 +796,7 @@ end function get_discharge_under_gate
 !! Values are stored in the val*(:,:) arrays, shared with history output.
 subroutine structure_parameters_rst()
    use m_1d_structures
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    implicit none
    integer :: n, istru
    type(t_structure), pointer    :: pstru
@@ -979,7 +979,7 @@ end function get_total_number_of_geom_nodes
 !> Get the total number of structures of a certain type
 function get_number_of_structures(struc_type_id) result(number_of_structures)
    use m_GlobalParameters
-   use m_flowexternalforcings, only: ncdamsg, ndambreaksignals, ngatesg, npumpsg
+   use fm_external_forcings_data, only: ncdamsg, ndambreaksignals, ngatesg, npumpsg
    use unstruc_channel_flow, only: network
    
    integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
@@ -1154,7 +1154,7 @@ end subroutine get_geom_coordinates_of_structure
 !! and can be used in a polyline representation of the placement of structures on flow links.
 subroutine get_geom_coordinates_of_generalstructure_oldext(i, nNodes, x, y)
    use m_alloc
-   use m_flowexternalforcings, only: ncgensg, kcgen, L1cgensg, L2cgensg
+   use fm_external_forcings_data, only: ncgensg, kcgen, L1cgensg, L2cgensg
    use m_flowgeom, only: lncn
    use network_data, only: xk, yk
    implicit none
@@ -1700,7 +1700,7 @@ end subroutine get_input_coordinates_of_structure
 !! (used to determine the size of geometry variables in the his-file)
 integer function number_of_pump_nodes
    use m_flowparameters, only: jahispump
-   use m_flowexternalforcings, only: npumpsg, L1pumpsg, L2pumpsg
+   use fm_external_forcings_data, only: npumpsg, L1pumpsg, L2pumpsg
    use unstruc_channel_flow, only: network
    
    integer :: n, nlinks, nNodes
@@ -1771,7 +1771,7 @@ end subroutine retrieve_set_of_flowlinks_for_polyline_structure
 
 !> Retrieve the set of snapped flowlinks for a pump
 subroutine retrieve_set_of_flowlinks_pump(i_pump, links)
-   use m_flowexternalforcings, only: L1pumpsg, L2pumpsg, kpump
+   use fm_external_forcings_data, only: L1pumpsg, L2pumpsg, kpump
    
    integer,                            intent(in   ) :: i_pump      !< Index of the pump
    integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this pump has been snapped to
@@ -1792,7 +1792,7 @@ end subroutine retrieve_set_of_flowlinks_pump
 
 !> Retrieve the set of snapped flowlinks for a dam
 subroutine retrieve_set_of_flowlinks_dam(i_dam, links)
-   use m_flowexternalforcings, only: L1cdamsg, L2cdamsg, kcdam
+   use fm_external_forcings_data, only: L1cdamsg, L2cdamsg, kcdam
    
    integer,                            intent(in   ) :: i_dam       !< Index of the dam
    integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this dam has been snapped to
@@ -1813,7 +1813,7 @@ end subroutine retrieve_set_of_flowlinks_dam
 
 !> Retrieve the set of snapped flowlinks for a dambreak
 subroutine retrieve_set_of_flowlinks_dambreak(i_dambreak, links)
-   use m_flowexternalforcings, only: L1dambreaksg, L2dambreaksg, kdambreak
+   use fm_external_forcings_data, only: L1dambreaksg, L2dambreaksg, kdambreak
    
    integer,                            intent(in   ) :: i_dambreak  !< Index of the dambreak
    integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this dambreak has been snapped to
@@ -1834,7 +1834,7 @@ end subroutine retrieve_set_of_flowlinks_dambreak
 
 !> Retrieve the set of snapped flowlinks for a gate
 subroutine retrieve_set_of_flowlinks_gate(i_gate, links)
-   use m_flowexternalforcings, only: L1gatesg, L2gatesg, kgate
+   use fm_external_forcings_data, only: L1gatesg, L2gatesg, kgate
    
    integer,                            intent(in   ) :: i_gate      !< Index of the gate
    integer, dimension(:), allocatable, intent(  out) :: links       !< The set of flowlinks that this gate has been snapped to

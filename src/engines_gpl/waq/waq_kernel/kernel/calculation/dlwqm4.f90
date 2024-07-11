@@ -28,8 +28,8 @@ module m_dlwqm4
 contains
 
     !> Adjust mass balance for adjusting theta algorithm
-    subroutine dlwqm4(isys, nosys, notot, noseg, conc, &
-                      concvt, nobnd, bound, noq, ipoint, &
+    subroutine dlwqm4(isys, num_substances_transported, num_substances_total, num_cells, conc, &
+                      concvt, num_boundary_conditions, bound, num_exchanges, ipoint, &
                       theta, flowtot, disptot, amass2, ndmpq, &
                       iqdmp, dmpq, idt)
 
@@ -38,26 +38,26 @@ contains
         implicit none
 
         integer(kind=int_wp), intent(in   ) :: isys                  !< Current active substance
-        integer(kind=int_wp), intent(in   ) :: nosys                 !< Number of active substances
-        integer(kind=int_wp), intent(in   ) :: notot                 !< Total number of substances
-        integer(kind=int_wp), intent(in   ) :: noseg                 !< Number of segments
-        real(kind=real_wp),   intent(in   ) :: conc(notot, noseg)    !< Old concentrations
-        real(kind=dp),        intent(in   ) :: concvt(noseg)         !< First solution estimation by means of local theta method
-        integer(kind=int_wp), intent(in   ) :: nobnd                 !< Number of boundary segments
-        real(kind=real_wp),   intent(in   ) :: bound(nosys, nobnd)   !< Boundary concentrations
-        integer(kind=int_wp), intent(in   ) :: noq                   !< Number of exchanges
-        integer(kind=int_wp), intent(in   ) :: ipoint(4, noq)        !< Exchange pointers
-        real(kind=real_wp),   intent(in   ) :: theta(noq)            !< Local theta coefficients
-        real(kind=real_wp),   intent(in   ) :: flowtot(noq)          !< Flows plus additional velos.
-        real(kind=real_wp),   intent(in   ) :: disptot(noq)          !< Dispersion plus additional dipers.
-        real(kind=real_wp),   intent(inout) :: amass2(notot, 5)      !< amass2(*,1) masses
+        integer(kind=int_wp), intent(in   ) :: num_substances_transported                 !< Number of active substances
+        integer(kind=int_wp), intent(in   ) :: num_substances_total                 !< Total number of substances
+        integer(kind=int_wp), intent(in   ) :: num_cells                 !< Number of segments
+        real(kind=real_wp),   intent(in   ) :: conc(num_substances_total, num_cells)    !< Old concentrations
+        real(kind=dp),        intent(in   ) :: concvt(num_cells)         !< First solution estimation by means of local theta method
+        integer(kind=int_wp), intent(in   ) :: num_boundary_conditions                 !< Number of boundary segments
+        real(kind=real_wp),   intent(in   ) :: bound(num_substances_transported, num_boundary_conditions)   !< Boundary concentrations
+        integer(kind=int_wp), intent(in   ) :: num_exchanges                   !< Number of exchanges
+        integer(kind=int_wp), intent(in   ) :: ipoint(4, num_exchanges)        !< Exchange pointers
+        real(kind=real_wp),   intent(in   ) :: theta(num_exchanges)            !< Local theta coefficients
+        real(kind=real_wp),   intent(in   ) :: flowtot(num_exchanges)          !< Flows plus additional velos.
+        real(kind=real_wp),   intent(in   ) :: disptot(num_exchanges)          !< Dispersion plus additional dipers.
+        real(kind=real_wp),   intent(inout) :: amass2(num_substances_total, 5)      !< amass2(*,1) masses
                                                                      !< amass2(*,2) processes
                                                                      !< amass2(*,3) discharges
                                                                      !< amass2(*,4) incoming boundary transport
                                                                      !< amass2(*,5) outgoing boundary transport
         integer(kind=int_wp), intent(in   ) :: ndmpq                 !< Number of dumped exchanges
-        integer(kind=int_wp), intent(in   ) :: iqdmp(noq)            !< Indeces dumped exchages
-        real(kind=real_wp),   intent(inout) :: dmpq(nosys, ndmpq, 2) !< dmpq(*,*,1) incoming transport
+        integer(kind=int_wp), intent(in   ) :: iqdmp(num_exchanges)            !< Indeces dumped exchages
+        real(kind=real_wp),   intent(inout) :: dmpq(num_substances_transported, ndmpq, 2) !< dmpq(*,*,1) incoming transport
                                                                      !< dmpq(*,*,2) outgoing transport
         integer(kind=int_wp), intent(in   ) :: idt                   !< Time step
 
@@ -75,7 +75,7 @@ contains
         if (timon) call timstrt("dlwqm4", ithandl)
 
         ! flow and diffusion
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
 

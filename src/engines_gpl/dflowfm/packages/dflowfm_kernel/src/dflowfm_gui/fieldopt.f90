@@ -40,9 +40,9 @@
       EXP(1)    = 'MENU 10                                 '
       EXP(2)    = 'GRID EDIT OPTIONS                       '
       MAXOPT    = 22
-      DO 10 I = 1,MAXOPT
+      do I = 1,MAXOPT
          OPTION(I) =  FIELDOP(I)
-    10 CONTINUE
+      end do
       NWHAT2  = NFLD
       CALL MENUV2(NWHAT2,OPTION,MAXOPT,EXP,MAXEXP)
       IF (NWHAT2 .GE. 1) THEN

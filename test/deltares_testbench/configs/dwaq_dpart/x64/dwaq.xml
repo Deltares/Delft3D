@@ -11,6 +11,4 @@
 
     <!-- testCases -->
     <xi:include href="../include/test_configs/dwaq.xml"/>
-    <!-- testcases below need to be moved to their own TC project-->
-    <xi:include href="../include/test_configs/dwaq_dpart_combination.xml"/>
 </deltaresTestbench_v3>

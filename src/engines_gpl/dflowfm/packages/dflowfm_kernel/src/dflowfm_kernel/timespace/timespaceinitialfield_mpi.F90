@@ -35,7 +35,7 @@
    function timespaceinitialfield_mpi(x, y, z, N, filename, filetype, method, operand, transformcoef, iprimpos, kc) result(success)
       use m_partitioninfo
       use timespace, only : timespaceinitialfield
-      use m_flowexternalforcings, only: NTRANSFORMCOEF
+      use fm_external_forcings_data, only: NTRANSFORMCOEF
 #ifdef HAVE_MPI
       use mpi
 #endif

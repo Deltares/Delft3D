@@ -33,7 +33,7 @@
  subroutine belanger()
  use m_physcoef
 
- use m_flowexternalforcings
+ use fm_external_forcings_data
 
  use m_flowgeom, only : xz, bl, dxi, ln
  use m_flow    , only : s1, iadvec

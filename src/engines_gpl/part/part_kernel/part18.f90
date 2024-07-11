@@ -41,8 +41,8 @@ implicit none               ! force explicit typing
 contains
       subroutine part18 ( lgrid  , velo   , conc   , flres  , volume , &
                           area   , mnmaxk , npart  , mpart  , wpart  , &
-                          zpart  , nopart , idelt  , nolay  , npwndw , &
-                          vdiff  , pblay  , ptlay  , const  , nocons , &
+                          zpart  , nopart , idelt  , num_layers  , npwndw , &
+                          vdiff  , pblay  , ptlay  , const  , num_constants , &
                           lun2   , nosubs , layt   , kpart  , icvdf  , &
                           wvelo  , alpha  , nosubc , icvdf2    )
 !
@@ -54,11 +54,11 @@ contains
 !     note                  : kpart is used to indicate the layers
 !                             in the two layer model goes volume with dim. mnmax2
 !                             and is mnmaxk = mnmax2 (layt must be 1)
-!                             and goes conc with mnmaxk*nolay, with nolay=2
+!                             and goes conc with mnmaxk*num_layers, with num_layers=2
 !
 !                             only for the two-layer model (modtyp = model_two_layer_temp)
 !                             for the two layer model, one layer is used for storage
-!                             the total number of substances is nosubs*nolay
+!                             the total number of substances is nosubs*num_layers
 !
 !
 !     subroutines called    : partfl, stop_exit
@@ -73,8 +73,8 @@ contains
 !     ====    ====     ======     ======  ===========
 !     alpha   real        1       input   scaling factor vertical diffusivity
 !     area    real      mnmaxk    input   surface area of grid cells
-!     conc    real nosubs*mnmaxk*nolay input   concentration in two layers
-!     const   real      nocons    input   user-defined constants
+!     conc    real nosubs*mnmaxk*num_layers input   concentration in two layers
+!     const   real      num_constants    input   user-defined constants
 !     flres   real  nosubs*mnmaxk in/out  residue of mass to be exchanged
 !     icvdf   integer     1       input   subst that is excess temp. top layer
 !     icvdf2  integer     1       input   subst that is excess temp. bot layer
@@ -82,21 +82,21 @@ contains
 !     itime   integer     1       input   time in calculation
 !     kpart   integer   nopart    input   k-value of particles
 !     layt    integer     1       input   number of hydr. layers (must be 1)
-!     lgrid   integer  nmax*mmax  input   active grid layout of the area
+!     lgrid   integer  num_rows*num_columns  input   active grid layout of the area
 !     lun2    integer     1       input   unit number of report file
 !     mnmaxk  integer     1       input   dimension of volume
 !     mpart   integer   nopart    input   m-value of particles
-!     nmax    integer     1       input   dimension of lgrid
-!     nocons  integer     1       input   number of constants
-!     nolay   integer     1       input   number of layers (must be 2)
+!     num_rows    integer     1       input   dimension of lgrid
+!     num_constants  integer     1       input   number of constants
+!     num_layers   integer     1       input   number of layers (must be 2)
 !     nopam   integer     1       input   number of parameters
 !     nopart  integer     1       input   number of active particles
 !     nosubc  integer     1       input   leading dimension cocn. array
-!                                         (nosubc = nosubs*nolay for 2-layer model)
+!                                         (nosubc = nosubs*num_layers for 2-layer model)
 !     nosubs  integer     1       input   number of substances
 !     npart   integer   nopart    input   n-value of particles
 !     npwndw  integer     1       input   start of active nopart number
-!     param   real    nopa*mnmaxk input   user-defined parameters
+!     param   real    num_spatial_parameters*mnmaxk input   user-defined parameters
 !     pblay   real        1       input   relative thickness lower layer
 !     ptlay   real        1       input   relative thickness upper layer
 !     vdiff   real      mnmaxk    in/out  vertical diffusion - work array
@@ -141,7 +141,7 @@ contains
 !     local scalars
 !
       integer(int_wp ) ::  i     , ic    , icvdf  , icvdf2 , idelt , layt  , lun2
-      integer(int_wp ) ::  mnmaxk, nocons, nofl1  , nofl2  , nolay , nopart
+      integer(int_wp ) ::  mnmaxk, num_constants, nofl1  , nofl2  , num_layers , nopart
       integer(int_wp ) ::  nosubc, nosubs, npwndw
       real   (sp) ::  alpha , arand , flux   , pblay  , ptlay
       real   (sp) ::  tflux , vol1  , vol2
@@ -154,7 +154,7 @@ contains
 !     the exchange volume per square meter per second
 !     this is done on basis of substance no. 1 concentrations !!!!
 !
-      if(nolay /= 2) then
+      if(num_layers /= 2) then
          write(lun2,*) ' Illegal call to stratification model '
          write(lun2,*) ' Number of layers is not equal to 2 ! '
          call stop_exit(1)
@@ -169,8 +169,8 @@ contains
 !3d
 !
       call partfl ( mnmaxk , conc   , volume , area   , velo   ,     &
-                    vdiff  , const  , nocons , pblay  , nosubs ,     &
-                    icvdf  , nolay  , alpha  , wvelo  , lun2   ,     &
+                    vdiff  , const  , num_constants , pblay  , nosubs ,     &
+                    icvdf  , num_layers  , alpha  , wvelo  , lun2   ,     &
                     nosubc , icvdf2 , lgrid  )
 !
 !     if first initialise several values

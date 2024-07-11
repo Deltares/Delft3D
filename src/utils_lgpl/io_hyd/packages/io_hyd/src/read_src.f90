@@ -27,7 +27,7 @@
 !
 !
 
-      subroutine read_src(file_src, nolay, wasteload_coll, wasteload_data, time_in_seconds)
+      subroutine read_src(file_src, num_layers, wasteload_coll, wasteload_data, time_in_seconds)
 
       ! read a src file
       use m_logger_helper, only : stop_with_error, get_log_unit_number
@@ -40,7 +40,7 @@
       ! declaration of the arguments
 
       type(t_file)                       :: file_src               ! aggregation-file
-      integer                                :: nolay                  ! number of layers
+      integer                                :: num_layers                  ! number of layers
       type(t_wasteload_coll)                 :: wasteload_coll         ! the wasteloads
       type(t_data_block)      , intent(inout)  :: wasteload_data         ! wasteload_data
 
@@ -77,13 +77,13 @@
 
       call get_log_unit_number(lunrep)
 
-      ! count how many wasteload flows we expect in the file (uniform loads have nolay flows)
+      ! count how many wasteload flows we expect in the file (uniform loads have num_layers flows)
 
       no_flow  = 0
       no_waste = wasteload_coll%current_size
       do i = 1 , no_waste
          if ( wasteload_coll%wasteload_pnts(i)%k .eq. 0 ) then
-            no_flow = no_flow + nolay
+            no_flow = no_flow + num_layers
          else
             no_flow = no_flow + 1
          endif
@@ -180,7 +180,7 @@
 
       no_param = 1
       wasteload_data%num_locations   = no_waste
-      wasteload_data%num_parameters = no_param
+      wasteload_data%num_spatial_parameters = no_param
       allocate(wasteload_data%times(nobrk_waste), &
                wasteload_data%values(no_param,no_waste,nobrk_waste), &
                flow_data(no_param,no_flow,nobrk_waste), &
@@ -273,7 +273,7 @@
       wasteload_data%values = 0.0
       do ibrk = 1 , nobrk_waste
          i_flow = 0
-         do ilay = 1 , nolay
+         do ilay = 1 , num_layers
             do i_waste = 1 , no_waste
                if ( ilay .eq. 1 .or. wasteload_coll%wasteload_pnts(i_waste)%k .eq. 0 ) then
                   i_flow = i_flow + 1

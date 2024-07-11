@@ -1,63 +1,115 @@
 <!-- Test cases for WAQ/PART combined runs -->
-<testCases>
-    <testCase name="e03_f18_c01_f03sigma" ref="dwaq_default">
-        <path version="2024-04-08T17:00:00">e03_waq/f18_waq_part_combined_run/c01_f03sigma</path>
-        <programs>
-            <program ref="WAQ" seq="1">
-                <arguments>
-                        <argument>wq_prt01.inp</argument>
-                </arguments>
-            </program>
-        </programs>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <testCase name="e03_f18_c01_sigma_layers" ref="dwaq_default">
+        <path version="2024-06-27T00:00:00">e03_waq/f18_waq_part_combined_run/c01_sigma_layers</path>
+        <maxRunTime>3000.0</maxRunTime>
         <checks>
+            <!-- NOTE: no relative tolerance! The combination does not give the right insight at the moment -->
+            <!-- Absolute values are fairly small -->
+
             <file name="wq_prt01.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
-                    <parameter name="SUBST_001"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_007"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_008"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_010"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_011"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_012"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_013"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_014"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_015"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_016"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_010" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_011" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_012" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_013" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_014" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_015" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_016" toleranceAbsolute="1.0e-06"/>
                 </parameters>
             </file>
             <file name="map-prt01.dat" type="NEFIS">
                 <parameters name="DELPAR_RESULTS">
-                    <parameter name="SUBST_001"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_007"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_008"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-06"/>
+                    <parameter name="SUBST_009" toleranceAbsolute="5.0"/> <!-- Number of particles -->
                 </parameters>
             </file>
-            <!-- Something is going wrong with reading the history file by the vs utility, for now exclude the checks
+            <!-- Something is going wrong with reading the history file by the vs utility, for now exclude the checks: Nefis error 1011
             <file name="his-prt01.dat" type="NEFIS">
                 <parameters name="DELPAR_RESULTS">
-                    <parameter name="SUBST_001"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_002"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_003"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_004"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_005"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_006"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_007"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_008"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_009"  toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04"/>
+                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04"/>
+                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04"/>
+                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04"/>
+                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-04"/>
+                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-04"/>
+                    <parameter name="SUBST_009" toleranceAbsolute="1.0e-04"/>
                 </parameters>
             </file>
             -->
+        </checks>
+    </testCase>
+
+    <testCase name="e03_f18_c01a_sigma_layers_track_vs_alone" ref="dwaq_default">
+        <path version="2024-06-27T00:00:00">e03_waq/f18_waq_part_combined_run/c01a_sigma_layers_track_vs_alone</path>
+        <maxRunTime>3000.0</maxRunTime>
+        <checks>
+            <!-- NOTE: the reference here is a run with delpar alone, delwaq takeover time was increased beyond the time of the run -->
+            <file name="trk-prt01.dat" type="NEFIS">
+                <parameters name="trk-series">
+                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+
+    <testCase name="e03_f18_c02_z_layers" ref="dwaq_default">
+        <path version="2024-06-27T00:00:00">e03_waq/f18_waq_part_combined_run/c02_z_layers</path>
+        <maxRunTime>3000.0</maxRunTime>
+        <checks>
+            <!-- NOTE: no relative tolerance! The combination does not give the right insight at the moment -->
+            <!-- Absolute values are fairly small -->
+
+            <file name="c02z_wq.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04"/> <!-- Continuity -->
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-08"/> <!-- Dummy tracer, identical zero at this moment -->
+                    <parameter name="SUBST_003" toleranceRelative="1.0e-07"/> <!-- Tracer, from PART, very small values, very small relative differences -->
+                </parameters>
+            </file>
+            <file name="map-c02z_f33z.dat" type="NEFIS">
+                <parameters name="DELPAR_RESULTS">
+                    <parameter name="SUBST_001" toleranceRelative="1.0e-07"/>
+                </parameters>
+            </file>
+            <!-- Something is going wrong with reading the history file by the vs utility, for now exclude the checks: Nefis error 1011
+            <file name="his-prt01.dat" type="NEFIS">
+                <parameters name="DELPAR_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04"/>
+                </parameters>
+            </file>
+            -->
+        </checks>
+    </testCase>
+
+    <testCase name="e03_f18_c02a_z_layers_track_vs_alone" ref="dwaq_default">
+        <path version="2024-06-27T00:00:00">e03_waq/f18_waq_part_combined_run/c02a_z_layers_track_vs_alone</path>
+        <maxRunTime>3000.0</maxRunTime>
+        <checks>
+            <!-- NOTE: the reference here is a run with delpar alone, delwaq takeover time was increased beyond the time of the run -->
+            <file name="trk-c02z_f33z.dat" type="NEFIS">
+                <parameters name="trk-series">
+                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                </parameters>
+            </file>
         </checks>
     </testCase>
 </testCases>

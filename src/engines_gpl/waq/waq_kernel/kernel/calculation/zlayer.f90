@@ -29,10 +29,10 @@ module m_zlayer
 contains
 
 
-    subroutine zlayer(nosegw, noseg, nosys, notot, nolay, &
-            volume, noq12, noq, area, nocons, &
-            coname, cons, nopa, paname, param, &
-            nosfun, sfname, segfun, conc, mass, &
+    subroutine zlayer(nosegw, num_cells, num_substances_transported, num_substances_total, num_layers, &
+            volume, noq12, num_exchanges, area, num_constants, &
+            coname, cons, num_spatial_parameters, paname, param, &
+            num_spatial_time_fuctions, sfname, segfun, conc, mass, &
             iknmrk, iknmkv, ifrmto)
 
         !     Deltares Software Centre
@@ -82,28 +82,28 @@ contains
         !     kind           function         name                   description
 
         integer(kind = int_wp), intent(in) :: nosegw               !< number of computational volumes water
-        integer(kind = int_wp), intent(in) :: noseg                !< number of computational volumes total
-        integer(kind = int_wp), intent(in) :: nosys                !< number of transported substance
-        integer(kind = int_wp), intent(in) :: notot                !< total number of substance
-        integer(kind = int_wp), intent(in) :: nolay                !< number of layers
-        real(kind = real_wp), intent(in) :: volume(noseg)       !< volumes at start of time step
+        integer(kind = int_wp), intent(in) :: num_cells                !< number of computational volumes total
+        integer(kind = int_wp), intent(in) :: num_substances_transported                !< number of transported substance
+        integer(kind = int_wp), intent(in) :: num_substances_total                !< total number of substance
+        integer(kind = int_wp), intent(in) :: num_layers                !< number of layers
+        real(kind = real_wp), intent(in) :: volume(num_cells)       !< volumes at start of time step
         integer(kind = int_wp), intent(in) :: noq12                !< number of horizontal exchanges
-        integer(kind = int_wp), intent(in) :: noq                  !< total number of exchanges
+        integer(kind = int_wp), intent(in) :: num_exchanges                  !< total number of exchanges
         real(kind = real_wp), intent(inout) :: area  (noq12)       !< areas at start of time step
-        integer(kind = int_wp), intent(in) :: nocons               !< number of constants
-        character(20), intent(in) :: coname(nocons)       !< names of the constants
-        real(kind = real_wp), intent(in) :: cons  (nocons)       !< values of the constants
-        integer(kind = int_wp), intent(in) :: nopa                 !< number of parameters
-        character(20), intent(in) :: paname(nopa)       !< names of the parameters
-        real(kind = real_wp), intent(in) :: param (nopa, noseg) !< values of the parametrs
-        integer(kind = int_wp), intent(in) :: nosfun               !< number of segment functions
-        character(20), intent(in) :: sfname(nosfun)       !< names of the segment functions
-        real(kind = real_wp), intent(in) :: segfun(noseg, nosfun) !< values of the constants
-        real(kind = real_wp), intent(inout) :: conc  (notot, noseg) !< model concentrations
-        real(kind = real_wp), intent(inout) :: mass  (notot, noseg) !< model masses
-        integer(kind = int_wp), intent(inout) :: iknmrk(noseg)       !< constant feature array
-        integer(kind = int_wp), intent(out) :: iknmkv(noseg)       !< time varying feature array
-        integer(kind = int_wp), intent(inout) :: ifrmto(4, noq)       !< exchange pointer array
+        integer(kind = int_wp), intent(in) :: num_constants               !< number of constants
+        character(20), intent(in) :: coname(num_constants)       !< names of the constants
+        real(kind = real_wp), intent(in) :: cons  (num_constants)       !< values of the constants
+        integer(kind = int_wp), intent(in) :: num_spatial_parameters                 !< number of parameters
+        character(20), intent(in) :: paname(num_spatial_parameters)       !< names of the parameters
+        real(kind = real_wp), intent(in) :: param (num_spatial_parameters, num_cells) !< values of the parametrs
+        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions               !< number of segment functions
+        character(20), intent(in) :: sfname(num_spatial_time_fuctions)       !< names of the segment functions
+        real(kind = real_wp), intent(in) :: segfun(num_cells, num_spatial_time_fuctions) !< values of the constants
+        real(kind = real_wp), intent(inout) :: conc  (num_substances_total, num_cells) !< model concentrations
+        real(kind = real_wp), intent(inout) :: mass  (num_substances_total, num_cells) !< model masses
+        integer(kind = int_wp), intent(inout) :: iknmrk(num_cells)       !< constant feature array
+        integer(kind = int_wp), intent(out) :: iknmkv(num_cells)       !< time varying feature array
+        integer(kind = int_wp), intent(inout) :: ifrmto(4, num_exchanges)       !< exchange pointer array
 
         !     Locals
 
@@ -135,7 +135,7 @@ contains
         threshold = cons(idryfld)                                        ! apply the given value
         ! and proceed with z-layer
         if (timon) call timstrt ("zlayer", ithandl)                  ! correction
-        nosegl = nosegw / nolay
+        nosegl = nosegw / num_layers
         isurf = index_in_array('SURF      ', paname)
 
         !        SURF is a parameter
@@ -144,7 +144,7 @@ contains
             do iseg = 1, nosegl
                 call extract_waq_attribute(1, iknmrk(iseg), ikm)
                 if (ikm == 0) cycle                                    ! whole collumn is inactive
-                do ilay = nolay, 1, -1                                     ! from bottom to top
+                do ilay = num_layers, 1, -1                                     ! from bottom to top
                     ivol = iseg + (ilay - 1) * nosegl
                     if (volume(ivol) < param(isurf, ivol) * threshold) then
                         if (ilay > 1) then
@@ -156,7 +156,7 @@ contains
                             case (2)                                     ! the cell on top is middle cell
                                 call set_feature(2, iknmrk(ivol - nosegl), 3)     ! now it is the bed
                             end select
-                            do isub = nosys + 1, notot
+                            do isub = num_substances_transported + 1, num_substances_total
                                 conc(isub, ivol - nosegl) = conc(isub, ivol - nosegl) + conc(isub, ivol)
                                 mass(isub, ivol - nosegl) = mass(isub, ivol - nosegl) + mass(isub, ivol)
                                 conc(isub, ivol) = 0.0
@@ -177,7 +177,7 @@ contains
                 do iseg = 1, nosegl
                     call extract_waq_attribute(1, iknmrk(iseg), ikm)
                     if (ikm == 0) cycle
-                    do ilay = nolay, 1, -1                                  ! from bottom to top
+                    do ilay = num_layers, 1, -1                                  ! from bottom to top
                         ivol = iseg + (ilay - 1) * nosegl
                         if (volume(ivol) < segfun(ivol, isurf) * threshold) then
                             if (ilay > 1) then
@@ -189,7 +189,7 @@ contains
                                 case (2)                                  ! the cell on top is middle cell
                                     call set_feature(2, iknmrk(ivol - nosegl), 3)  ! now it is the bed
                                 end select
-                                do isub = nosys + 1, notot
+                                do isub = num_substances_transported + 1, num_substances_total
                                     conc(isub, ivol - nosegl) = conc(isub, ivol - nosegl) + conc(isub, ivol)
                                     mass(isub, ivol - nosegl) = mass(isub, ivol - nosegl) + mass(isub, ivol)
                                     conc(isub, ivol) = 0.0
@@ -208,7 +208,7 @@ contains
                 do iseg = 1, nosegl
                     call extract_waq_attribute(1, iknmrk(iseg), ikm)
                     if (ikm == 0) cycle
-                    do ilay = nolay, 1, -1                               ! from bottom to top
+                    do ilay = num_layers, 1, -1                               ! from bottom to top
                         ivol = iseg + (ilay - 1) * nosegl
                         if (volume(ivol) < threshold) then
                             if (ilay > 1) then
@@ -220,7 +220,7 @@ contains
                                 case (2)                                  ! the cell on top is middle cell
                                     call set_feature(2, iknmrk(ivol - nosegl), 3)  ! now it is the bed
                                 end select
-                                do isub = nosys + 1, notot
+                                do isub = num_substances_transported + 1, num_substances_total
                                     conc(isub, ivol - nosegl) = conc(isub, ivol - nosegl) + conc(isub, ivol)
                                     mass(isub, ivol - nosegl) = mass(isub, ivol - nosegl) + mass(isub, ivol)
                                     conc(isub, ivol) = 0.0
@@ -246,7 +246,7 @@ contains
         !          this needs more sophisticated approach when atmosphere and bed
         !          have been attached as open boundary conditions
 
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             do i = 1, 2
                 j = ifrmto(i, iq)
                 if (j > 0) then
@@ -265,19 +265,19 @@ contains
     !! This routine adjusts the horizontal flow pointer to point to 1 or 2 layers
     !! higher. In the above zlayer routine the vertical flow was already masked
     !! out.
-    subroutine zflows(noq, noq12, nolay, nocons, coname, &
+    subroutine zflows(num_exchanges, noq12, num_layers, num_constants, coname, &
             flow, ifrmto)
 
         use timers
         implicit none
 
-        integer(kind = int_wp), intent(in   ) :: noq            !< Number of exchanges between cells
+        integer(kind = int_wp), intent(in   ) :: num_exchanges            !< Number of exchanges between cells
         integer(kind = int_wp), intent(in   ) :: noq12          !< Number of horizontal exchanges
-        integer(kind = int_wp), intent(in   ) :: nolay          !< Number of Z-layers
-        integer(kind = int_wp), intent(in   ) :: nocons         !< Number of constants
-        character(20),          intent(in   ) :: coname(nocons) !< Names of the constants
-        real(kind = real_wp),   intent(in   ) :: flow(noq)      !< Flows between cells
-        integer(kind = int_wp), intent(inout) :: ifrmto(4, noq) !< Exchange index array
+        integer(kind = int_wp), intent(in   ) :: num_layers          !< Number of Z-layers
+        integer(kind = int_wp), intent(in   ) :: num_constants         !< Number of constants
+        character(20),          intent(in   ) :: coname(num_constants) !< Names of the constants
+        real(kind = real_wp),   intent(in   ) :: flow(num_exchanges)      !< Flows between cells
+        integer(kind = int_wp), intent(inout) :: ifrmto(4, num_exchanges) !< Exchange index array
 
         ! Local variables
         integer(kind = int_wp) :: iq    !< Loop variable exchanges
@@ -293,7 +293,7 @@ contains
 
         if (timon) call timstrt ("zflows", ithandl)
 
-        noqhl = noq12 / nolay
+        noqhl = noq12 / num_layers
 
         do iq = 1, noq12
             ifrom = ifrmto(1, iq)

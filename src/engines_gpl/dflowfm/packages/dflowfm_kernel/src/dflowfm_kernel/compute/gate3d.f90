@@ -33,7 +33,7 @@
  subroutine gate3D(jazerou1)
  use m_flow
  use m_flowgeom
- use m_flowexternalforcings
+ use fm_external_forcings_data
  implicit none
  integer          :: jazerou1 ! 1 set u1 zero above gate
  integer          :: L, LL, Lb, Lt, ng, n, k, kb, kt

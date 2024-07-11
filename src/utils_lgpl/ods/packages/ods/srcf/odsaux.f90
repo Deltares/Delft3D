@@ -104,13 +104,12 @@ SUBROUTINE ODS_CHECK_NEFIS&
 !           file name according to C!
 !
    LASTD  = LEN( DEFEXT )
-   DO 110 I = LEN(DEFEXT),1,-1
+   DO I = LEN(DEFEXT),1,-1
       IF ( DEFEXT(I:I) .NE. ' ' ) THEN
          LASTD  = I
-         GOTO 120
+         EXIT
       ENDIF
-110 CONTINUE
-120 CONTINUE
+   END DO
 !
    INQUIRE ( FILE = FILNEF , EXIST=EXIST1 )
 !
@@ -123,7 +122,7 @@ SUBROUTINE ODS_CHECK_NEFIS&
       ELSE
          IFOUND = 0
          FILNEF = FILNAM(1)(1:IND1-1)
-         DO 210 I = LENODS,1,-1
+         DO I = LENODS,1,-1
             IF ( FILNEF(I:I) .NE. ' ' ) THEN
                LAST   = I
             ENDIF
@@ -134,11 +133,9 @@ SUBROUTINE ODS_CHECK_NEFIS&
                   FILNEF(I+1:) = DEFEXT(1:LASTD) // CHAR(0)
                ENDIF
                IFOUND = 1
-               GOTO 220
+               EXIT
             ENDIF
-210      CONTINUE
-!
-220      CONTINUE
+         END DO
          IF ( IFOUND .EQ. 0 ) THEN
             FILNEF(LAST+1:) = DEFEXT(1:LASTD) // CHAR(0)
          ENDIF

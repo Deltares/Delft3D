@@ -46,10 +46,11 @@
 
       DOUBLE PRECISION :: X(MMAX,NMAX),XH(MNMAX)
       K = 0
-      DO 10 J  = J1,J2
-         DO 10 I  = I1,I2
+      do J  = J1,J2
+         do I  = I1,I2
             K      = K + 1
             X(I,J) = XH(K)
-    10 CONTINUE
+         end do
+      end do
       RETURN
       END SUBROUTINE PUTIJ

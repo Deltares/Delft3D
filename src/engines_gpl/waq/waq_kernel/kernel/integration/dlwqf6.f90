@@ -28,17 +28,17 @@ module m_dlwqf6
 contains
 
     !>  Tranfers solution from RHS into CONC, and makes RHS equal to zero
-    subroutine dlwqf6(noseg, notot, isys, nsys, rhs, conc, iknmrk)
+    subroutine dlwqf6(num_cells, num_substances_total, isys, nsys, rhs, conc, iknmrk)
 
         use timers
 
-        integer(kind=int_wp), intent(in   ) :: noseg              !< Number of computational volumes
-        integer(kind=int_wp), intent(in   ) :: notot              !< Total number of substances
+        integer(kind=int_wp), intent(in   ) :: num_cells              !< Number of computational volumes
+        integer(kind=int_wp), intent(in   ) :: num_substances_total              !< Total number of substances
         integer(kind=int_wp), intent(in   ) :: isys               !< First substance to update
         integer(kind=int_wp), intent(in   ) :: nsys               !< Total number of substances to update
-        real(kind=dp),        intent(inout) :: rhs(nsys, noseg)   !< RHS matrix for the nsys substances
-        real(kind=real_wp),   intent(inout) :: conc(notot, noseg) !< Target array for update
-        integer(kind=int_wp), intent(in   ) :: iknmrk(noseg)      !< feature array, bit zero indicates wet or not
+        real(kind=dp),        intent(inout) :: rhs(nsys, num_cells)   !< RHS matrix for the nsys substances
+        real(kind=real_wp),   intent(inout) :: conc(num_substances_total, num_cells) !< Target array for update
+        integer(kind=int_wp), intent(in   ) :: iknmrk(num_cells)      !< feature array, bit zero indicates wet or not
 
         ! Local variables
         integer(kind=int_wp) :: iseg, j       !< Loop variables
@@ -46,7 +46,7 @@ contains
 
         if (timon) call timstrt("dlwqf6", ithandl)
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             do j = 1, nsys
                 conc(isys + j - 1, iseg) = rhs(j, iseg)
                 rhs(j, iseg) = 0.0d00

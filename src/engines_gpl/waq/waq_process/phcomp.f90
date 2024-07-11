@@ -28,9 +28,9 @@ module m_phcomp
 contains
 
 
-    subroutine phcomp (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine phcomp (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Composition of phytoplankton by summing algae fractions - Dynamo - GEM
 
@@ -47,18 +47,18 @@ contains
 
         IMPLICIT REAL (A-H, J-Z)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: ITEL, ISEG
         INTEGER(kind = int_wp) :: NTYPE, ITYPE
         REAL(kind = real_wp) :: PHYT, ALGN, ALGP, ALGSI, ALGDM, CHLFA, BIOMAS, &
                 NCRAT, PCRAT, SICRAT, DMCF, CATOCL
 
-        NTYPE = PMSA(IPOINT(1))
+        NTYPE = process_space_real(IPOINT(1))
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
@@ -72,17 +72,17 @@ contains
                 DO ITYPE = 1, NTYPE
 
                     ITEL = 1 + ITYPE
-                    BIOMAS = PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+                    BIOMAS = process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
                     ITEL = 1 + ITYPE + NTYPE
-                    NCRAT = PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+                    NCRAT = process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
                     ITEL = 1 + ITYPE + NTYPE * 2
-                    PCRAT = PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+                    PCRAT = process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
                     ITEL = 1 + ITYPE + NTYPE * 3
-                    SICRAT = PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+                    SICRAT = process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
                     ITEL = 1 + ITYPE + NTYPE * 4
-                    DMCF = PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+                    DMCF = process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
                     ITEL = 1 + ITYPE + NTYPE * 5
-                    CATOCL = PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
+                    CATOCL = process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL))
 
                     !***********************************************************************
                     !**** Calculations connected to the status of the algae
@@ -115,17 +115,17 @@ contains
                 end do
 
                 ITEL = 1 + 6 * NTYPE + 1
-                PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = PHYT
+                process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = PHYT
                 ITEL = 1 + 6 * NTYPE + 2
-                PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGN
+                process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGN
                 ITEL = 1 + 6 * NTYPE + 3
-                PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGP
+                process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGP
                 ITEL = 1 + 6 * NTYPE + 4
-                PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGSI
+                process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGSI
                 ITEL = 1 + 6 * NTYPE + 5
-                PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGDM
+                process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = ALGDM
                 ITEL = 1 + 6 * NTYPE + 6
-                PMSA (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = CHLFA
+                process_space_real (IPOINT(ITEL) + (ISEG - 1) * INCREM(ITEL)) = CHLFA
 
             ENDIF
             !

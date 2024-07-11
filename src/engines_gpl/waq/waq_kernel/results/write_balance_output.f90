@@ -31,14 +31,14 @@ module m_write_balance_output
 
 contains
 
-    subroutine write_balance_text_output(notot, itime, nosys, noflux, ndmpar, &
+    subroutine write_balance_text_output(num_substances_total, itime, num_substances_transported, noflux, ndmpar, &
             ndmpq, ntdmpq, itstop, imstrt, imstop, &
             iqdmp, ipdmp, asmass, flxint, stochi, &
-            syname, danam, moname, dmpq, nobnd, &
-            nobtyp, bndtyp, inbtyp, nocons, coname, &
-            cons, noq, ipoint, flxnam, intopt, &
-            volume, surf, noseg, lunout, lchout, &
-            iniout, dmpbal, nowst, nowtyp, wsttyp, &
+            syname, danam, moname, dmpq, num_boundary_conditions, &
+            num_boundary_types, bndtyp, inbtyp, num_constants, coname, &
+            cons, num_exchanges, ipoint, flxnam, intopt, &
+            volume, surf, num_cells, lunout, lchout, &
+            iniout, dmpbal, num_waste_loads, num_waste_load_types, wsttyp, &
             iwaste, inwtyp, wstdmp, isegcol, imstep)
 
         !! Integrated emissions and processes balance
@@ -46,15 +46,15 @@ contains
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     NOTOT   INTEGER       1     INPUT   Total number of substances
+        !     num_substances_total   INTEGER       1     INPUT   Total number of substances
         !     ITIME   INTEGER       1     INPUT   Time in system clock units
         !     ITSTOP  INTEGER       1     INPUT   Stop time of the simulation
         !     IMSTRT  INTEGER       1     INPUT   Start time of the output
         !     IMSTOP  INTEGER       1     INPUT   Stop time of the output
         !     MONAME  CHAR*40       4     INPUT   Model and run names
-        !     SYNAME  CHAR*20    NOTOT    INPUT   names of substances
-        !     NOSYS   INTEGER       1     INPUT   Number of active substances
-        !     ASMASS  REAL       NOTOT,*  IN/OUT  Cummulative balance per dump area
+        !     SYNAME  CHAR*20    num_substances_total    INPUT   names of substances
+        !     num_substances_transported   INTEGER       1     INPUT   Number of active substances
+        !     ASMASS  REAL       num_substances_total,*  IN/OUT  Cummulative balance per dump area
         !                                         1   = mass
         !                                         2   = processes
         !                                         3/4 = loads in/out
@@ -67,57 +67,57 @@ contains
         !     NDMPQ   INTEGER     1       INPUT   Number of dumped exchanges
         !     IQDMP   INTEGER       *     INPUT   Exchange to dumped exchange pointer
         !     IPDMP   INTEGER       *     INPUT   pointer structure dump area's
-        !     STOCHI  REAL   NOTOT*NOFLUX INPUT   Proces stochiometry
-        !     DMPQ    REAL  NOSYS*NDMPQ*? INPUT   mass balance dumped exchange
-        !     NOBND   INTEGER     1       INPUT   number of boundaries
-        !     NOBTYP  INTEGER     1       INPUT   number of boundaries types
-        !     BNDTYP  CHAR*20  NOBTYP     INPUT   boundary types names
-        !     INBTYP  INTEGER  NOBND      INPUT   boundary type number (index in BNDTYP)
-        !     NOCONS  INTEGER     1       INPUT   number of constants
-        !     CONAME  CHAR*20  NOCONS     INPUT   constants names
-        !     CONS    REAL     NOCONS     INPUT   constants array
-        !     NOQ     INTEGER     1       INPUT   number of exchanges
-        !     IPOINT  INTEGER   4,NOQ     INPUT   pointer array
+        !     STOCHI  REAL   num_substances_total*NOFLUX INPUT   Proces stochiometry
+        !     DMPQ    REAL  num_substances_transported*NDMPQ*? INPUT   mass balance dumped exchange
+        !     num_boundary_conditions   INTEGER     1       INPUT   number of boundaries
+        !     num_boundary_types  INTEGER     1       INPUT   number of boundaries types
+        !     BNDTYP  CHAR*20  num_boundary_types     INPUT   boundary types names
+        !     INBTYP  INTEGER  num_boundary_conditions      INPUT   boundary type number (index in BNDTYP)
+        !     num_constants  INTEGER     1       INPUT   number of constants
+        !     CONAME  CHAR*20  num_constants     INPUT   constants names
+        !     CONS    REAL     num_constants     INPUT   constants array
+        !     num_exchanges     INTEGER     1       INPUT   number of exchanges
+        !     IPOINT  INTEGER   4,num_exchanges     INPUT   pointer array
         !     FLXNAM  INTEGER  NOFLUX     INPUT   flux names
         !     INTOPT  INTEGER     1       INPUT   Integration and balance suboptions
-        !     VOLUME  REAL     NOSEG      INPUT   Volume
-        !     SURF    REAL     NOSEG      INPUT   horizontal surface area
+        !     VOLUME  REAL     num_cells      INPUT   Volume
+        !     SURF    REAL     num_cells      INPUT   horizontal surface area
         !     DMPBAL  INTEGER  NDMPAR     INPUT   if dump area is included in balance
-        !     NOWST   INTEGER     1       INPUT   number of wasteloads
-        !     NOWTYP  INTEGER     1       INPUT   number of wasteload types
-        !     WSTTYP  CHAR*20  NOWTYP     INPUT   wasteload types names
-        !     IWASTE  INTEGER  NOWST      INPUT   segment number wasteloads
-        !     INWTYP  INTEGER  NOWST      INPUT   wasteload type number (index in WSTTYP)
-        !     WSTDMP  REAL     NOTOT,NOWST,2  I   accumulated wasteloads 1/2 in and out
+        !     num_waste_loads   INTEGER     1       INPUT   number of wasteloads
+        !     num_waste_load_types  INTEGER     1       INPUT   number of wasteload types
+        !     WSTTYP  CHAR*20  num_waste_load_types     INPUT   wasteload types names
+        !     IWASTE  INTEGER  num_waste_loads      INPUT   segment number wasteloads
+        !     INWTYP  INTEGER  num_waste_loads      INPUT   wasteload type number (index in WSTTYP)
+        !     WSTDMP  REAL     num_substances_total,num_waste_loads,2  I   accumulated wasteloads 1/2 in and out
         !     ==================================================================
-        use m_write_map_output, only: write_binary_history_output
+        use m_write_binary_output, only: write_binary_history_output
         use m_logger_helper, only: stop_with_error, get_log_unit_number
         use data_processing, only: extract_value_from_group
         use m_cli_utils, only: get_command_argument_by_name
         use m_open_waq_files
         use timers
-        INTEGER(kind = int_wp) :: NOTOT, ITIME, NOSYS, NOSEG, LUNOUT, &
+        INTEGER(kind = int_wp) :: num_substances_total, ITIME, num_substances_transported, num_cells, LUNOUT, &
                 NOFLUX, NDMPAR, NDMPQ, NTDMPQ, &
-                NOBND, ITSTOP, IMSTOP, IMSTRT, IMSTEP, &
-                NOBTYP, NOCONS, NOQ, INIOUT, INTOPT
+                num_boundary_conditions, ITSTOP, IMSTOP, IMSTRT, IMSTEP, &
+                num_boundary_types, num_constants, num_exchanges, INIOUT, INTOPT
         INTEGER(kind = int_wp) :: IQDMP(*), IPDMP(*), &
-                INBTYP(NOBND), IPOINT(4, NOQ)
-        REAL(kind = real_wp) :: DMPQ(NOSYS, NDMPQ, *), &
-                ASMASS(NOTOT, NDMPAR, *), FLXINT(NOFLUX, *), &
-                STOCHI(NOTOT, NOFLUX), CONS(NOCONS), &
+                INBTYP(num_boundary_conditions), IPOINT(4, num_exchanges)
+        REAL(kind = real_wp) :: DMPQ(num_substances_transported, NDMPQ, *), &
+                ASMASS(num_substances_total, NDMPAR, *), FLXINT(NOFLUX, *), &
+                STOCHI(num_substances_total, NOFLUX), CONS(num_constants), &
                 VOLUME(*), SURF(*)
         character(len = 20)  SYNAME(*), DANAM(*), &
-                BNDTYP(NOBTYP), CONAME(NOCONS), &
+                BNDTYP(num_boundary_types), CONAME(num_constants), &
                 FLXNAM(NOFLUX)
         character(len = 40)  MONAME(4)
         character(len = 255) LCHOUT
         integer(kind = int_wp) :: dmpbal(ndmpar)        ! indicates if dump area is included in the balance
-        integer(kind = int_wp) :: nowst                 ! number of wasteloads
-        integer(kind = int_wp) :: nowtyp                ! number of wasteload types
-        character(len = 20) :: wsttyp(nowtyp)        ! wasteload types names
-        integer(kind = int_wp) :: iwaste(nowst)         ! segment numbers of the wasteloads
-        integer(kind = int_wp) :: inwtyp(nowst)         ! wasteload type number (index in wsttyp)
-        real(kind = real_wp) :: wstdmp(notot, nowst, 2) ! accumulated wasteloads 1/2 in and out
+        integer(kind = int_wp) :: num_waste_loads                 ! number of wasteloads
+        integer(kind = int_wp) :: num_waste_load_types                ! number of wasteload types
+        character(len = 20) :: wsttyp(num_waste_load_types)        ! wasteload types names
+        integer(kind = int_wp) :: iwaste(num_waste_loads)         ! segment numbers of the wasteloads
+        integer(kind = int_wp) :: inwtyp(num_waste_loads)         ! wasteload type number (index in wsttyp)
+        real(kind = real_wp) :: wstdmp(num_substances_total, num_waste_loads, 2) ! accumulated wasteloads 1/2 in and out
         integer(kind = int_wp), intent(in) :: isegcol(*)            ! pointer from segment to top of column
 
         !     Local declarations
@@ -125,21 +125,21 @@ contains
         !     NAME    KIND     LENGTH     DESCRIPTION
         !     ----    -----    ------     ------- -----------
         !     NOSUM   INTEGER     1       Nr of sum parameters
-        !     SFACTO  REAL   NOSUM,NOTOT  Factor for substance in sum parameters
+        !     SFACTO  REAL   NOSUM,num_substances_total  Factor for substance in sum parameters
         !     STOCHL  REAL   NOSUM,NOFLUX Local STOCHI for sum parameters
         !     NOOUT   INTEGER     1       Nr of balance terms per dump segment
-        !     IMASSA  INTEGER NOTOT+NOSUM Pointer to accumulation term in balance
-        !     IEMISS  INTEGER NOTOT+NOSUM Pointer to boundary terms in balance
+        !     IMASSA  INTEGER num_substances_total+NOSUM Pointer to accumulation term in balance
+        !     IEMISS  INTEGER num_substances_total+NOSUM Pointer to boundary terms in balance
         !     NEMISS  INTEGER     1       Nr of boundary terms in balance
-        !     ITRANS  INTEGER NOTOT+NOSUM Pointer to int. transport terms in balance
-        !     IPROCS  INTEGER NOTOT+NOSUM Pointer to processes term(s) in balance
-        !     NPROCS  INTEGER NOTOT+NOSUM Nr of processes terms in balance
+        !     ITRANS  INTEGER num_substances_total+NOSUM Pointer to int. transport terms in balance
+        !     IPROCS  INTEGER num_substances_total+NOSUM Pointer to processes term(s) in balance
+        !     NPROCS  INTEGER num_substances_total+NOSUM Nr of processes terms in balance
         !     BALANS  REAL   NOOUT,*      Mass balances for current time
         !     BALTOT  REAL   NOOUT,*      Integrated mass balances
         !     OUNAME  C*20      NOOUT     Names of terms in balances
-        !     FL2BAL  INT   NOTOT+NOSUM,* Pointer to relevant fluxes per substance
+        !     FL2BAL  INT   num_substances_total+NOSUM,* Pointer to relevant fluxes per substance
         !     DANAMP  C*20     NDMPAR+1   Copy of DANAM including sum segment
-        !     SYNAMP  C*20  NOTOT+NOSUM   Copy of SYNAME including sum parameters
+        !     SYNAMP  C*20  num_substances_total+NOSUM   Copy of SYNAME including sum parameters
         !     IBSTRT  INTEGER     1       Proper start time of the balance period
         !     IBSTOP  INTEGER     1       Proper stop time of the balance period
 
@@ -250,18 +250,18 @@ contains
                         STOCHL, FL2BAL)
             endif
 
-            allocate (FLTRAN(2, NOSYS), &
+            allocate (FLTRAN(2, num_substances_transported), &
                     JDUMP(NDMPAR_OUT + 1), &
-                    SFACTO(NOSUM, NOTOT), &
+                    SFACTO(NOSUM, num_substances_total), &
                     DANAMP(NDMPAR_OUT + 1), &
-                    SYNAMP(NOTOT + NOSUM), &
-                    IMASSA(NOTOT + NOSUM), &
-                    IEMISS(NOTOT + NOSUM), &
-                    ITRANS(NOTOT + NOSUM), &
-                    IPROCS(NOTOT + NOSUM), &
-                    NPROCS(NOTOT + NOSUM), &
+                    SYNAMP(num_substances_total + NOSUM), &
+                    IMASSA(num_substances_total + NOSUM), &
+                    IEMISS(num_substances_total + NOSUM), &
+                    ITRANS(num_substances_total + NOSUM), &
+                    IPROCS(num_substances_total + NOSUM), &
+                    NPROCS(num_substances_total + NOSUM), &
                     STOCHL(NOSUM, NOFLUX), &
-                    FL2BAL(NOTOT + NOSUM, NOFLUX), &
+                    FL2BAL(num_substances_total + NOSUM, NOFLUX), &
                     STAT = IERR)
             IF (IERR > 0) GOTO 9000
             IF (.NOT. LUMPTR) THEN
@@ -270,7 +270,7 @@ contains
                 if (allocated(segdmp)) then
                     deallocate(segdmp)
                 endif
-                allocate (SEGDMP(NOSEG), &
+                allocate (SEGDMP(num_cells), &
                         STAT = IERR)
                 IF (IERR > 0) GOTO 9000
                 SEGDMP = 0
@@ -300,7 +300,7 @@ contains
                 if (allocated(iwdmp)) then
                     deallocate(iwdmp)
                 endif
-                allocate (iwdmp(nowst, ndmpar), stat = ierr)
+                allocate (iwdmp(num_waste_loads, ndmpar), stat = ierr)
                 if (ierr > 0) goto 9000
                 iwdmp = .false.
                 itel = 0
@@ -313,7 +313,7 @@ contains
                             itel = itel + 1
                             iseg = ipdmp(ndmpar + ntdmpq + ndmpar + itel)
                             if (iseg > 0) then
-                                do iw = 1, nowst
+                                do iw = 1, num_waste_loads
                                     if (iwaste(iw) == iseg) then
                                         iwdmp(iw, idump_out) = .true.
                                     endif
@@ -331,13 +331,13 @@ contains
             !         + total N + total P (IF RELEVANT!)
             !         Find which state variables contribute to what extent
 
-            call comsum (nosum, tfacto, notot, syname, sfacto, &
-                    nocons, coname, cons)
-            do isys = 1, notot
+            call comsum (nosum, tfacto, num_substances_total, syname, sfacto, &
+                    num_constants, coname, cons)
+            do isys = 1, num_substances_total
                 synamp(isys) = syname(isys)
             enddo
             do isum = 1, nosum
-                synamp(notot + isum) = synams(isum)
+                synamp(num_substances_total + isum) = synams(isum)
             enddo
 
             !         Count number of balance terms dep. on flags LUMPEM/LUMPPR
@@ -358,7 +358,7 @@ contains
             else
 
                 !             boundary types and loads as seperate term (all in and out)
-                nemiss = 2 * nobtyp + 2 * nowtyp
+                nemiss = 2 * num_boundary_types + 2 * num_waste_load_types
             endif
 
             if (lumptr) then
@@ -370,9 +370,9 @@ contains
             endif
 
             noout = 0
-            do isys = 1, notot + nosum
-                if (isys > notot) then
-                    if (tfacto(isys - notot) > 0.0001) then
+            do isys = 1, num_substances_total + nosum
+                if (isys > num_substances_total) then
+                    if (tfacto(isys - num_substances_total) > 0.0001) then
                         includ = .true.
                     else
                         includ = .false.
@@ -393,11 +393,11 @@ contains
                         nprocs(isys) = 1
                     else
                         ! find sum stochi coefficients for sum parameters
-                        if (isys > notot) then
-                            isum = isys - notot
+                        if (isys > num_substances_total) then
+                            isum = isys - num_substances_total
                             do iflux = 1, noflux
                                 stochl(isum, iflux) = 0.0
-                                do isys2 = 1, notot
+                                do isys2 = 1, num_substances_total
                                     stochl(isum, iflux) = &
                                             stochl(isum, iflux) &
                                                     + stochi(isys2, iflux) &
@@ -409,10 +409,10 @@ contains
                         ! Make sure that irrelevant fluxes are not included
                         nprocs(isys) = 0
                         do iflux = 1, noflux
-                            if (isys <= notot) then
+                            if (isys <= num_substances_total) then
                                 st = stochi(isys, iflux)
                             else
-                                st = stochl(isys - notot, iflux)
+                                st = stochl(isys - num_substances_total, iflux)
                             endif
                             if (abs(st) > 1.e-20) then
                                 nprocs(isys) = nprocs(isys) + 1
@@ -436,7 +436,7 @@ contains
             if (ierr > 0) goto 9000
 
             ! Set balance term names
-            do isys = 1, notot + nosum
+            do isys = 1, num_substances_total + nosum
                 if (imassa(isys) > 0) then
                     c20 = synamp(isys)
                     ouname(imassa(isys)) = c20(1:6) // '_Storage'
@@ -445,7 +445,7 @@ contains
                         ouname(iemiss(isys) + 1) = c20(1:6) // '_All Bo+Lo_Out'
                     else
                         itel2 = iemiss(isys) - 1
-                        do ifrac = 1, nobtyp
+                        do ifrac = 1, num_boundary_types
                             itel2 = itel2 + 1
                             ouname(itel2) = &
                                     c20(1:6) // '_' // bndtyp(ifrac)(1:9) // '_In'
@@ -453,7 +453,7 @@ contains
                             ouname(itel2) = &
                                     c20(1:6) // '_' // bndtyp(ifrac)(1:9) // '_Out'
                         enddo
-                        do ifrac = 1, nowtyp
+                        do ifrac = 1, num_waste_load_types
                             itel2 = itel2 + 1
                             ouname(itel2) = &
                                     c20(1:6) // '_' // wsttyp(ifrac)(1:9) // '_In'
@@ -535,9 +535,9 @@ contains
 
                     !            Mass / accumulation term, previous mass already here
                     !            Subtract current mass
-                    CALL UPDBAL (IDUMP_OUT, NOTOT, IMASSA, IMASSA, 0, &
+                    CALL UPDBAL (IDUMP_OUT, num_substances_total, IMASSA, IMASSA, 0, &
                             BALANS, NOSUM, ASMASS(1, IDUMP, 1), &
-                            -1.0, 1, SFACTO, NOOUT, NOTOT)
+                            -1.0, 1, SFACTO, NOOUT, num_substances_total)
 
                     !            Process INFLOW/OUTFLOW terms, both boundaries and internal
                     !            (the IPOINT array is used to distinguish the two)
@@ -580,13 +580,13 @@ contains
                         !                Find fluxes
                         IF (IQ > 0) THEN
                             IPQ = IQDMP(IQ)
-                            DO ISYS = 1, NOSYS
+                            DO ISYS = 1, num_substances_transported
                                 FLTRAN(1, ISYS) = DMPQ(ISYS, IPQ, 2)
                                 FLTRAN(2, ISYS) = -DMPQ(ISYS, IPQ, 1)
                             ENDDO
                         ELSE
                             IPQ = IQDMP(-IQ)
-                            DO ISYS = 1, NOSYS
+                            DO ISYS = 1, num_substances_transported
                                 FLTRAN(1, ISYS) = DMPQ(ISYS, IPQ, 1)
                                 FLTRAN(2, ISYS) = -DMPQ(ISYS, IPQ, 2)
                             ENDDO
@@ -595,45 +595,45 @@ contains
                         !                Update balances
                         IF (BOUNDA) THEN
                             IF (LUMPEM) THEN
-                                CALL UPDBAL (IDUMP_OUT, NOSYS, IMASSA, IEMISS, &
+                                CALL UPDBAL (IDUMP_OUT, num_substances_transported, IMASSA, IEMISS, &
                                         0, BALANS, NOSUM, FLTRAN, &
                                         1.0, 2, SFACTO, NOOUT, &
-                                        NOTOT)
+                                        num_substances_total)
                             ELSE
-                                CALL UPDBAL (IDUMP_OUT, NOSYS, IMASSA, IEMISS, &
+                                CALL UPDBAL (IDUMP_OUT, num_substances_transported, IMASSA, IEMISS, &
                                         (IFRAC - 1) * 2, BALANS, NOSUM, FLTRAN, &
                                         1.0, 2, SFACTO, NOOUT, &
-                                        NOTOT)
+                                        num_substances_total)
                             ENDIF
                         ELSE
-                            CALL UPDBAL (IDUMP_OUT, NOSYS, IMASSA, ITRANS, &
+                            CALL UPDBAL (IDUMP_OUT, num_substances_transported, IMASSA, ITRANS, &
                                     (IFRAC - 1) * 2, BALANS, NOSUM, FLTRAN, &
                                     1.0, 2, SFACTO, NOOUT, &
-                                    NOTOT)
+                                    num_substances_total)
                         ENDIF
                     ENDDO
 
                     !            Loads
 
                     IF (LUMPEM) THEN
-                        CALL UPDBAL (IDUMP_OUT, NOTOT, IMASSA, IEMISS, 0, &
+                        CALL UPDBAL (IDUMP_OUT, num_substances_total, IMASSA, IEMISS, 0, &
                                 BALANS, NOSUM, ASMASS(1, IDUMP, 3), 1.0, 1, &
-                                SFACTO, NOOUT, NOTOT)
-                        CALL UPDBAL (IDUMP_OUT, NOTOT, IMASSA, IEMISS, 1, &
+                                SFACTO, NOOUT, num_substances_total)
+                        CALL UPDBAL (IDUMP_OUT, num_substances_total, IMASSA, IEMISS, 1, &
                                 BALANS, NOSUM, ASMASS(1, IDUMP, 4), -1.0, 1, &
-                                SFACTO, NOOUT, NOTOT)
+                                SFACTO, NOOUT, num_substances_total)
                     ELSE
-                        DO IW = 1, NOWST
+                        DO IW = 1, num_waste_loads
                             IF (IWDMP(IW, IDUMP_OUT)) THEN
                                 IFRAC = INWTYP(IW)
-                                IBAL_OFF = (NOBTYP + IFRAC - 1) * 2
-                                CALL UPDBAL (IDUMP_OUT, NOTOT, IMASSA, IEMISS, IBAL_OFF, &
+                                IBAL_OFF = (num_boundary_types + IFRAC - 1) * 2
+                                CALL UPDBAL (IDUMP_OUT, num_substances_total, IMASSA, IEMISS, IBAL_OFF, &
                                         BALANS, NOSUM, WSTDMP(1, IW, 1), 1.0, 1, &
-                                        SFACTO, NOOUT, NOTOT)
-                                IBAL_OFF = (NOBTYP + IFRAC - 1) * 2 + 1
-                                CALL UPDBAL (IDUMP_OUT, NOTOT, IMASSA, IEMISS, IBAL_OFF, &
+                                        SFACTO, NOOUT, num_substances_total)
+                                IBAL_OFF = (num_boundary_types + IFRAC - 1) * 2 + 1
+                                CALL UPDBAL (IDUMP_OUT, num_substances_total, IMASSA, IEMISS, IBAL_OFF, &
                                         BALANS, NOSUM, WSTDMP(1, IW, 2), -1.0, 1, &
-                                        SFACTO, NOOUT, NOTOT)
+                                        SFACTO, NOOUT, num_substances_total)
                             ENDIF
                         ENDDO
                     ENDIF
@@ -642,13 +642,13 @@ contains
 
                     IF (LUMPPR) THEN
                         !                Copy term from ASMASS array
-                        CALL UPDBAL (IDUMP_OUT, NOTOT, IMASSA, IPROCS, 0, &
+                        CALL UPDBAL (IDUMP_OUT, num_substances_total, IMASSA, IPROCS, 0, &
                                 BALANS, NOSUM, ASMASS(1, IDUMP, 2), &
-                                1.0, 1, SFACTO, NOOUT, NOTOT)
+                                1.0, 1, SFACTO, NOOUT, num_substances_total)
                     ELSE
 
                         !                Loop over substances, including sum parameters
-                        DO ISYS = 1, NOTOT + NOSUM
+                        DO ISYS = 1, num_substances_total + NOSUM
                             IF (IMASSA(ISYS) > 0) THEN
                                 !                        Substance (sum parameter) is active
                                 !                        Loop over relevant processes
@@ -657,10 +657,10 @@ contains
                                     IOUT = IPROCS(ISYS) + ITEL - 1
                                     IFLUX = FL2BAL(ISYS, ITEL)
                                     !                            Find stoichiometry constant
-                                    IF (ISYS <= NOTOT) THEN
+                                    IF (ISYS <= num_substances_total) THEN
                                         ST = STOCHI(ISYS, IFLUX)
                                     ELSE
-                                        ST = STOCHL(ISYS - NOTOT, IFLUX)
+                                        ST = STOCHL(ISYS - num_substances_total, IFLUX)
                                     ENDIF
                                     !                            Update balance
                                     BALANS(IOUT, IDUMP_OUT) = FLXINT(IFLUX, IDUMP) * ST
@@ -684,7 +684,7 @@ contains
 
         !     Fill balance matrix for sum of areas
         !     zero accumulation term of sum segment first
-        DO ISYS = 1, NOTOT + NOSUM
+        DO ISYS = 1, num_substances_total + NOSUM
             IOUT = IMASSA(ISYS)
             IF (IOUT>0) &
                     BALANS(IOUT, NDMPAR_OUT + 1) = 0.0
@@ -698,7 +698,7 @@ contains
 
         !     Update integrated balance matrix FOR ALL TERMS EXCEPT ACCUMULATION
         DO IDUMP_OUT = 1, NDMPAR_OUT + 1
-            DO ISYS = 1, NOTOT + NOSUM
+            DO ISYS = 1, num_substances_total + NOSUM
                 IF (IMASSA(ISYS) > 0) THEN
                     ITEL1 = IMASSA(ISYS) + 1
                     ITEL2 = IPROCS(ISYS) + NPROCS(ISYS) - 1
@@ -716,7 +716,7 @@ contains
 
             ALLOCATE(DMP_SURF(NDMPAR), STAT = IERR)
             IF (IERR > 0) GOTO 9000
-            CALL sum_sub_areas_surfaces(NOSEG, NDMPAR, IPDMP(NDMPAR + NTDMPQ + 1), ISEGCOL, SURF, DMP_SURF)
+            CALL sum_sub_areas_surfaces(num_cells, NDMPAR, IPDMP(NDMPAR + NTDMPQ + 1), ISEGCOL, SURF, DMP_SURF)
             IDUMP_OUT = 0
             DO IDUMP = 1, NDMPAR
                 IF (DMPBAL(IDUMP) == 1) THEN
@@ -794,11 +794,11 @@ contains
         DO IDUMP = 1, NDMPAR
             IF (DMPBAL(IDUMP) == 1) THEN
                 IDUMP_OUT = IDUMP_OUT + 1
-                CALL UPDBAL (IDUMP_OUT, NOTOT, IMASSA, IMASSA, 0, &
+                CALL UPDBAL (IDUMP_OUT, num_substances_total, IMASSA, IMASSA, 0, &
                         BALANS, NOSUM, ASMASS(1, IDUMP, 1), &
-                        1.0, 1, SFACTO, NOOUT, NOTOT)
+                        1.0, 1, SFACTO, NOOUT, num_substances_total)
                 !           Sum segment (OBSOLETE??)
-                DO ISYS = 1, NOTOT + NOSUM
+                DO ISYS = 1, num_substances_total + NOSUM
                     IOUT = IMASSA(ISYS)
                     IF (IOUT > 0) THEN
                         BALANS(IOUT, NDMPAR_OUT + 1) = BALANS(IOUT, NDMPAR_OUT + 1) &
@@ -811,7 +811,7 @@ contains
         !     Update integrated balance matrix
         !     Mass/accumulation term only FIRST time
         IF (IFIRST) THEN
-            DO ISYS = 1, NOTOT + NOSUM
+            DO ISYS = 1, num_substances_total + NOSUM
                 IOUT = IMASSA(ISYS)
                 IF (IOUT > 0) THEN
                     DO IDUMP = 1, NDMPAR_OUT + 1
@@ -829,7 +829,7 @@ contains
             IBSTOP = MIN(ITIME, IMSTOP)
 
             IF (.NOT. SUPPFT) CLOSE (LUNOUT)
-            DO ISYS = 1, NOTOT + NOSUM
+            DO ISYS = 1, num_substances_total + NOSUM
                 IOUT = IMASSA(ISYS)
                 IF (IOUT > 0) THEN
                     DO IDUMP = 1, NDMPAR_OUT + 1
@@ -850,7 +850,7 @@ contains
 
             !         In mass
             CALL OUTBAI (IOBALI, MONAME, IBSTRT, IBSTOP, NOOUT, &
-                    NOTOT, NDMPAR_OUT + 1, DANAMP, OUNAME, SYNAMP, &
+                    num_substances_total, NDMPAR_OUT + 1, DANAMP, OUNAME, SYNAMP, &
                     IMASSA, IEMISS, NEMISS, ITRANS, NTRANS, &
                     IPROCS, NPROCS, BALTOT, ONLYSM, NOSUM, &
                     SFACTO, 0, 1)
@@ -858,7 +858,7 @@ contains
             !         In mass/m2
             ALLOCATE(DMP_SURF(NDMPAR), STAT = IERR)
             IF (IERR > 0) GOTO 9000
-            CALL sum_sub_areas_surfaces(NOSEG, NDMPAR, IPDMP(NDMPAR + NTDMPQ + 1), ISEGCOL, SURF, DMP_SURF)
+            CALL sum_sub_areas_surfaces(num_cells, NDMPAR, IPDMP(NDMPAR + NTDMPQ + 1), ISEGCOL, SURF, DMP_SURF)
             IDUMP_OUT = 0
             DO IDUMP = 1, NDMPAR
                 IF (DMPBAL(IDUMP) == 1) THEN
@@ -881,7 +881,7 @@ contains
                 END IF
             ENDDO
             CALL OUTBAI (IOBALI, MONAME, IBSTRT, IBSTOP, NOOUT, &
-                    NOTOT, NDMPAR_OUT + 1, DANAMP, OUNAME, SYNAMP, &
+                    num_substances_total, NDMPAR_OUT + 1, DANAMP, OUNAME, SYNAMP, &
                     IMASSA, IEMISS, NEMISS, ITRANS, NTRANS, &
                     IPROCS, NPROCS, BALTOT, ONLYSM, NOSUM, &
                     SFACTO, 1, 0)
@@ -904,7 +904,7 @@ contains
                 BALTOT(IOUT, NDMPAR_OUT + 1) = BALTOT(IOUT, NDMPAR_OUT + 1) * TOT_SURF / TOT_VOLU
             ENDDO
             CALL OUTBAI (IOBALI, MONAME, IBSTRT, IBSTOP, NOOUT, &
-                    NOTOT, NDMPAR_OUT + 1, DANAMP, OUNAME, SYNAMP, &
+                    num_substances_total, NDMPAR_OUT + 1, DANAMP, OUNAME, SYNAMP, &
                     IMASSA, IEMISS, NEMISS, ITRANS, NTRANS, &
                     IPROCS, NPROCS, BALTOT, ONLYSM, NOSUM, &
                     SFACTO, 2, 0)
@@ -924,13 +924,13 @@ contains
     end subroutine write_balance_text_output
 
     subroutine outbai(iobali, moname, ibstrt, ibstop, noout, &
-            notot, ndmpar, danamp, ouname, syname, &
+            num_substances_total, ndmpar, danamp, ouname, syname, &
             imassa, iemiss, nemiss, itrans, ntrans, &
             iprocs, nprocs, baltot, onlysm, nosum, &
             sfacto, iunit, init)
         use timers
 
-        INTEGER(kind = int_wp) :: IOBALI, IBSTRT, IBSTOP, NOOUT, NOTOT, NDMPAR, &
+        INTEGER(kind = int_wp) :: IOBALI, IBSTRT, IBSTOP, NOOUT, num_substances_total, NDMPAR, &
                 IMASSA(*), IEMISS(*), NEMISS, ITRANS(*), NTRANS, &
                 IPROCS(*), NPROCS(*), NOSUM, IUNIT, INIT
         character(len = 40) MONAME(4)
@@ -952,9 +952,9 @@ contains
 
             !         Write sum parameters
             DO ISUM = 1, NOSUM
-                IF (IMASSA(NOTOT + ISUM) > 0) THEN
-                    WRITE (IOBALI, 1020) SYNAME(NOTOT + ISUM)
-                    DO ISYS = 1, NOTOT
+                IF (IMASSA(num_substances_total + ISUM) > 0) THEN
+                    WRITE (IOBALI, 1020) SYNAME(num_substances_total + ISUM)
+                    DO ISYS = 1, num_substances_total
                         IF (SFACTO(ISUM, ISYS) >= 0.0001) THEN
                             WRITE (IOBALI, 1030) SYNAME(ISYS), SFACTO(ISUM, ISYS)
                         ENDIF
@@ -977,7 +977,7 @@ contains
         DO IDUMP = 1, NDMPAR
             IF (.NOT. ONLYSM .OR. IDUMP == NDMPAR) THEN
                 WRITE (IOBALI, 1100) DANAMP(IDUMP)
-                DO ISYS = 1, NOTOT + NOSUM
+                DO ISYS = 1, num_substances_total + NOSUM
                     ITEL = IMASSA(ISYS)
                     IF (ITEL > 0) THEN
                         WRITE (IOBALI, 1110) SYNAME(ISYS)
@@ -1090,7 +1090,7 @@ contains
         RETURN
     END
 
-    subroutine comsum(nosum, tfacto, notot, syname, sfacto, nocons, coname, cons)
+    subroutine comsum(nosum, tfacto, num_substances_total, syname, sfacto, num_constants, coname, cons)
 
         use m_logger_helper, only: stop_with_error, get_log_unit_number
         use timers
@@ -1098,9 +1098,9 @@ contains
 
         implicit none
 
-        integer(kind = int_wp) :: nosum, notot, nocons
-        character(len = 20)       syname(notot), coname(nocons)
-        real(kind = real_wp) :: tfacto(nosum), sfacto(nosum, notot), cons(nocons)
+        integer(kind = int_wp) :: nosum, num_substances_total, num_constants
+        character(len = 20)       syname(num_substances_total), coname(num_constants)
+        real(kind = real_wp) :: tfacto(nosum), sfacto(nosum, num_substances_total), cons(num_constants)
 
         !      INCLUDE 'cblbal.inc'
 
@@ -1181,12 +1181,12 @@ contains
 
         do isum = 1, nosum
             tfacto(isum) = 0.0
-            do isys = 1, notot
+            do isys = 1, num_substances_total
                 sfacto(isum, isys) = 0.0
             enddo
         enddo
 
-        do isys = 1, notot
+        do isys = 1, num_substances_total
 
             !         Reserved substance names, FIXED scale factor
             ires = index_in_array(syname(isys), resna1)
@@ -1234,12 +1234,12 @@ contains
         return
     end
 
-    subroutine updbal(IDUMP, NOTOT, IMASSA, ITERMS, IOFFSE, &
+    subroutine updbal(IDUMP, num_substances_total, IMASSA, ITERMS, IOFFSE, &
             BALANS, NOSUM, DMASSA, FACTOR, NTEL, &
             SFACTO, NOOUT, NOLAST)
 
         !     IDUMP               index of current monitoring area
-        !     NOTOT               nr of substances to be processed
+        !     num_substances_total               nr of substances to be processed
         !     IMASSA              position of accumulation term per substance
         !                         (used as indicator if substance has balance)
         !     ITERMS              position of (first) balance term to be updated
@@ -1255,7 +1255,7 @@ contains
         !
 
         use timers
-        INTEGER(kind = int_wp) :: IDUMP, NOTOT, NOSUM, NOOUT, IOFFSE, NTEL, &
+        INTEGER(kind = int_wp) :: IDUMP, num_substances_total, NOSUM, NOOUT, IOFFSE, NTEL, &
                 NOLAST
         INTEGER(kind = int_wp) :: IMASSA(*), ITERMS(*)
         REAL(kind = real_wp) :: BALANS(NOOUT, *), DMASSA(NTEL, *), &
@@ -1266,7 +1266,7 @@ contains
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("updbal", ithandl)
 
-        DO ISYS = 1, NOTOT
+        DO ISYS = 1, num_substances_total
             IOUT = ITERMS(ISYS) + IOFFSE
             DO ITEL = 1, NTEL
                 ITEL2 = IOUT + (ITEL - 1)
@@ -1275,7 +1275,7 @@ contains
             ENDDO
             DO ISUM = 1, NOSUM
                 !              Bug fix, 5-1-2002
-                !              ISYSS = NOTOT+ISUM
+                !              ISYSS = num_substances_total+ISUM
                 ISYSS = NOLAST + ISUM
                 ITEST = IMASSA(ISYSS)
                 IF (ITEST > 0) THEN

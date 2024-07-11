@@ -171,23 +171,23 @@ class Rewinder:
 
         self.__remove_local_files(local_dir, destination_file_paths)
 
-    def __remove_local_files(self, local_dir: Path, destination_file_paths: List[Path]):
+    def __remove_local_files(self, local_dir: Path, destination_file_paths: List[Path]) -> None:
         for file in list(local_dir.glob("**/*")):
             if file not in destination_file_paths and not file.is_dir():
-                self._logger.info(f"Removing local file that is not present in MinIO bucket: {file}")
+                self._logger.debug(f"Removing local file that is not present in MinIO bucket: {file}")
                 file.unlink()
-                if (not any(file.parent.iterdir())):
+                if not any(file.parent.iterdir()):
                     file.parent.rmdir()
 
     def __download_object(
         self, bucket: str, object_info: MinioObject, destination_file_path: Path, object_path: str
     ) -> None:
         if os.path.exists(destination_file_path) and object_info.etag == self.__etag(Path(destination_file_path)):
-            self._logger.info(f"Skipping download: {destination_file_path}, local and online are the same version.")
+            self._logger.debug(f"Skipping download: {destination_file_path}, local and online are the same version.")
             return
 
         try:
-            self._logger.debug(f"Downloading: {destination_file_path}")
+            self._logger.debug(f"Downloading: {destination_file_path} (version_id: {object_info.version_id})")
             self._client.fget_object(
                 bucket,
                 object_path,

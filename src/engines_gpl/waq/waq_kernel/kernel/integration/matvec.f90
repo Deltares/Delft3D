@@ -28,7 +28,7 @@ module m_matvec
 contains
 
 
-    subroutine matvec (ntrace, nomat, alpha, amat, imat, &
+    subroutine matvec (ntrace, fast_solver_arr_size, alpha, amat, imat, &
             &                    diag, idiag, xvec, beta, yvec)
 
         !     Deltares - Delft Software Department
@@ -49,10 +49,10 @@ contains
         !     Kind        Function         Name             Description
 
         integer(kind = int_wp), intent(in) :: ntrace           ! Dimension of the matrix
-        integer(kind = int_wp), intent(in) :: nomat            ! Dimension of the off-diagonal entries
+        integer(kind = int_wp), intent(in) :: fast_solver_arr_size            ! Dimension of the off-diagonal entries
         real(kind = dp), intent(in) :: alpha            ! Coefficient to multiply Ax with
-        real(kind = dp), intent(in) :: amat  (nomat)  ! Off diagonal entries of A in LP format
-        integer(kind = int_wp), intent(in) :: imat  (nomat)  ! Pointer table off-diagonal entries
+        real(kind = dp), intent(in) :: amat  (fast_solver_arr_size)  ! Off diagonal entries of A in LP format
+        integer(kind = int_wp), intent(in) :: imat  (fast_solver_arr_size)  ! Pointer table off-diagonal entries
         real(kind = dp), intent(in) :: diag  (ntrace) ! diagonal of the matrix
         integer(kind = int_wp), intent(in) :: idiag (0:ntrace) ! position of the diagonals in amat
         real(kind = dp), intent(in) :: xvec  (ntrace) ! vector to multiply amat with

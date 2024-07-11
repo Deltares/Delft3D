@@ -59,7 +59,7 @@ contains
         use timers       !   performance timers
         use waq_netcdf_utils
         use results, only: lncout       !   output settings
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
         use m_error_status
 
         integer(kind = int_wp), intent(inout) :: file_unit_list    (*)         !< array with unit numbers
@@ -145,7 +145,7 @@ contains
             write (file_unit, 2450)
             write (file_unit, 2460) trim(hydfile)
 
-            call read_hydfile(file_unit, hydfile, file_name_list, noseg, nexch, local_status)
+            call read_hydfile(file_unit, hydfile, file_name_list, num_cells, nexch, local_status)
             if (local_status%ierr /= 0) goto 240
             has_hydfile = .true.
             ugridfile = file_name_list(46)
@@ -228,33 +228,33 @@ contains
 
             ! Read number of computational volumes - if required
             if (.not. has_hydfile) then
-                if (gettoken(noseg, local_status%ierr) > 0) goto 240
+                if (gettoken(num_cells, local_status%ierr) > 0) goto 240
             endif
 
             ! TODO: check the number of segments with the information in the waqgeom-file
         else
             ! Or the number of computational volumes was already read
             if (.not. has_hydfile) then
-                noseg = idummy
+                num_cells = idummy
             endif
         end if
 
-        if (noseg > 0) then
-            write (file_unit, 2000) noseg
+        if (num_cells > 0) then
+            write (file_unit, 2000) num_cells
         else
-            write (file_unit, 2010) noseg
+            write (file_unit, 2010) num_cells
             call status%increase_error_count()
         endif
         if (.not. alone) then
-            if (noseg /= nosegp) then
+            if (num_cells /= nosegp) then
                 write (file_unit, 2015) nosegp
                 call status%increase_error_count()
             endif
         endif
 
         ! Read optional multiple grids
-        call read_multiple_grids(file_unit_list, noseg, notot, nototp, nolay, &
-                gridps, nseg2, nogrid, syname, local_status)
+        call read_multiple_grids(file_unit_list, num_cells, num_substances_total, num_substances_part, num_layers, &
+                gridps, num_cells_bottom, num_grids, syname, local_status)
         if (local_status%ierr > 0) goto 240
 
         ! Read grid-layout for visually printed output
@@ -262,8 +262,8 @@ contains
         if (itype == 1) then
             if (cdummy == 'NONE') then
                 write (file_unit, 2050)
-                nx = 0
-                ny = 0
+                num_cells_u_dir = 0
+                num_cells_v_dir = 0
             else
                 write (file_unit, 2045) cdummy
                 call status%increase_error_count()
@@ -277,23 +277,23 @@ contains
                 call status%increase_error_count()
             case (2)
                 write (file_unit, 2050)
-                nx = 0
-                ny = 0
+                num_cells_u_dir = 0
+                num_cells_v_dir = 0
             case default
                 ! call with record length 0 => IMOPT1 of -4 not allowed
                 call process_simulation_input_options (imopt1, file_unit_list, 6, file_name_list, filtype, &
                         is_date_format, is_yyddhh_format, 0, local_status%ierr, local_status, &
                         .false.)
                 if (local_status%ierr > 0) goto 240
-                if (gettoken(nx, local_status%ierr) > 0) goto 240
-                if (gettoken(ny, local_status%ierr) > 0) goto 240
-                write (file_unit, 2060) nx, ny
+                if (gettoken(num_cells_u_dir, local_status%ierr) > 0) goto 240
+                if (gettoken(num_cells_v_dir, local_status%ierr) > 0) goto 240
+                write (file_unit, 2060) num_cells_u_dir, num_cells_v_dir
                 if (imopt1 /= 0) then      !  else an adequate file was given
-                    allocate (pgrid(nx, ny))
-                    do j = 1, ny
-                        do i = 1, nx
+                    allocate (pgrid(num_cells_u_dir, num_cells_v_dir))
+                    do j = 1, num_cells_v_dir
+                        do i = 1, num_cells_u_dir
                             if (gettoken(pgrid(i, j), local_status%ierr) > 0) goto 240
-                            if (pgrid(i, j) > noseg + nseg2) then
+                            if (pgrid(i, j) > num_cells + num_cells_bottom) then
                                 write (file_unit, 2070) pgrid(i, j)
                                 call status%increase_error_count()
                             endif
@@ -302,14 +302,14 @@ contains
                     if (output_verbose_level < 2) then
                         write (file_unit, 2080)
                     else
-                        do i = 1, nx, 2 * iwidth
-                            write (file_unit, 2090) (k, k = i, min(nx, i + 2 * iwidth - 1))
-                            do j = 1, ny
+                        do i = 1, num_cells_u_dir, 2 * iwidth
+                            write (file_unit, 2090) (k, k = i, min(num_cells_u_dir, i + 2 * iwidth - 1))
+                            do j = 1, num_cells_v_dir
                                 write (file_unit, 2100) &
-                                        j, (pgrid(k, j), k = i, min(nx, i + 2 * iwidth - 1))
+                                        j, (pgrid(k, j), k = i, min(num_cells_u_dir, i + 2 * iwidth - 1))
                             enddo
                         enddo
-                        if (nx * ny > 0) then
+                        if (num_cells_u_dir * num_cells_v_dir > 0) then
                             call open_waq_files  (file_unit_list(6), file_name_list(6), 6, 1, local_status%ierr)
                             write (file_unit_list(6)) pgrid
                             close (file_unit_list(6))
@@ -326,9 +326,9 @@ contains
 
         ! Attribute array
         ikerr = 0
-        allocate (iamerge(noseg + nseg2))                        !   composite attribute array
+        allocate (iamerge(num_cells + num_cells_bottom))                        !   composite attribute array
         allocate (ikmerge(10))                        !   flags of filles attributes
-        allocate (iread  (noseg + nseg2))                        !   work array to read the attributes
+        allocate (iread  (num_cells + num_cells_bottom))                        !   work array to read the attributes
         iamerge = 0
         ikmerge = 0
 
@@ -357,7 +357,7 @@ contains
             if (local_status%ierr  > 0) goto 240
             if (ikopt1 == 0) then                             !   binary file
                 call open_waq_files  (file_unit_list(40), file_name_list(40), 40, 2, local_status%ierr)
-                read  (file_unit_list(40), end = 250, err = 260) (iread(j), j = 1, noseg)
+                read  (file_unit_list(40), end = 250, err = 260) (iread(j), j = 1, num_cells)
                 close (file_unit_list(40))
             else
                 if (gettoken(ikopt2, local_status%ierr) > 0) goto 240   !   second option
@@ -372,7 +372,7 @@ contains
                     else
                         write (file_unit, 2170)
                     endif
-                    do j = 1, noseg
+                    do j = 1, num_cells
                         if (gettoken(iread(j), local_status%ierr) > 0) goto 240
                         if (output_verbose_level >= 5) write (file_unit, 2180) j, iread(j)
                     enddo
@@ -383,7 +383,7 @@ contains
                     if (gettoken(nover, local_status%ierr) > 0) goto 240
                     write (file_unit, 2200)ikdef, nover
                     if (ikerr == 0) then                     !   only assign if no previous error
-                        do iseg = 1, noseg
+                        do iseg = 1, num_cells
                             iread(iseg) = ikdef
                         enddo
                     endif
@@ -396,7 +396,7 @@ contains
                         do j = 1, nover
                             if (gettoken(iover, local_status%ierr) > 0) goto 240
                             if (gettoken(idummy, local_status%ierr) > 0) goto 240
-                            if (iover < 1 .or. iover > noseg) then
+                            if (iover < 1 .or. iover > num_cells) then
                                 write (file_unit, 2230) j, iover
                                 call status%increase_error_count()
                             else
@@ -441,7 +441,7 @@ contains
                 write (file_unit, 2290) iknm2, iknm1
                 ikmerge(iknm1) = 1
                 iknmrk = 10**(iknm1 - 1)
-                do iseg = 1, noseg
+                do iseg = 1, num_cells
                     call extract_waq_attribute(iknm2, iread(iseg), ivalk)
                     iamerge(iseg) = iamerge(iseg) + iknmrk * ivalk
                 enddo
@@ -481,7 +481,7 @@ contains
                 endif
             enddo
 
-            ifiopk = 0
+            file_option_attributes = 0
             if (gettoken(ikopt1, local_status%ierr) > 0) goto 240
             write (file_unit, 2130) ikopt1
             call process_simulation_input_options(ikopt1, file_unit_list, 40, file_name_list, filtype, &
@@ -490,10 +490,10 @@ contains
             if (local_status%ierr > 0) goto 240
             if (ikopt1 == 0) then
                 write (file_unit, 2320)
-                ifiopk = 1
+                file_option_attributes = 1
             elseif(ikopt1 == -2) then
                 write (file_unit, 2330)
-                ifiopk = 2
+                file_option_attributes = 2
             else
                 write (file_unit, 2340)
                 call status%increase_error_count()
@@ -508,8 +508,8 @@ contains
             iamerge = iamerge + 1
         endif
         if (ikmerge(2) == 0) write (file_unit, 2370)
-        if (nseg2      > 0) write (file_unit, 2380) nseg2
-        do i = noseg + 1, noseg + nseg2      ! bottom segments are 3 - always active!
+        if (num_cells_bottom      > 0) write (file_unit, 2380) num_cells_bottom
+        do i = num_cells + 1, num_cells + num_cells_bottom      ! bottom segments are 3 - always active!
             iamerge(i) = (iamerge(i) / 10) * 10 + 3
         enddo
 
@@ -521,13 +521,13 @@ contains
         write (file_unit, 2390)
         local_status%ierr = 0
 
-        call read_constants_time_variables   (file_unit_list, 7, 0, 0, noseg, &
+        call read_constants_time_variables   (file_unit_list, 7, 0, 0, num_cells, &
                 1, 1, nrftot(2), nrharm(2), ifact, &
                 is_date_format, disper, volume, iwidth, file_name_list, &
                 filtype, is_yyddhh_format, output_verbose_level, local_status%ierr, &
                 local_status, has_hydfile)
 
-        call check_volume_time(file_unit, file_name_list(7), noseg, local_status%ierr)
+        call check_volume_time(file_unit, file_name_list(7), num_cells, local_status%ierr)
 
         if (.not. alone) then
             if (file_name_list(7) /= fnamep(6)) then
@@ -624,13 +624,13 @@ contains
 
     end subroutine read_block_3_grid_layout
 
-    subroutine check_volume_time(file_unit, filvol, noseg, ierr2)
+    subroutine check_volume_time(file_unit, filvol, num_cells, ierr2)
         !! Check the contents of the volumes file: id the time step compatible?
-        use m_sysi          ! Timer characteristics
+        use m_timer_variables          ! Timer characteristics
 
         integer(kind = int_wp), intent(in) :: file_unit       !< LU-number of the report file
         character(len = *), intent(in) :: filvol     !< Name of the volumes file to be checked
-        integer(kind = int_wp), intent(in) :: noseg       !< Number of segments
+        integer(kind = int_wp), intent(in) :: num_cells       !< Number of segments
         integer(kind = int_wp), intent(out) :: ierr2       !< Whether an error was found or not
 
         integer(kind = int_wp) :: i, ierr
@@ -659,18 +659,18 @@ contains
         endif
 
         ! Regular volume files
-        read(luvol, iostat = ierr, pos = 1) time1, (dummy, i = 1, noseg)
+        read(luvol, iostat = ierr, pos = 1) time1, (dummy, i = 1, num_cells)
         if (ierr /= 0) then
             ierr2 = ierr2 + 1
             write (file_unit, 110) ierr
             return
         endif
-        read(luvol, iostat = ierr) time2, (dummy, i = 1, noseg)
+        read(luvol, iostat = ierr) time2, (dummy, i = 1, num_cells)
         if (ierr /= 0) then
             write (file_unit, 120)
             return
         endif
-        read(luvol, iostat = ierr) time3, (dummy, i = 1, noseg)
+        read(luvol, iostat = ierr) time3, (dummy, i = 1, num_cells)
         if (ierr /= 0) then
             write (file_unit, 130)
             return

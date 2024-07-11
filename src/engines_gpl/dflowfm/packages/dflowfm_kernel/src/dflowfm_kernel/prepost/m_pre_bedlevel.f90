@@ -48,7 +48,7 @@ subroutine extrapolate_bedlevel_at_boundaries()
 
 use m_flowgeom, only: bl, dxi, csu, snu
  
-use m_flowexternalforcings, only: zbndu, zbndq, kbndz, kbndu, nbndz, nbndu
+use fm_external_forcings_data, only: zbndu, zbndq, kbndz, kbndu, nbndz, nbndu
 
 implicit none
 

@@ -1,4 +1,4 @@
-<programs>
+<programs xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <program name="command_prompt">
         <path>/bin/bash</path>
         <arguments>

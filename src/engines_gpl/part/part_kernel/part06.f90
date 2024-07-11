@@ -27,7 +27,7 @@ implicit none
 contains
 
 
-      subroutine part06 ( lun    , lgrid  , lgrid2 , nmax   , mmax   ,      &
+      subroutine part06 ( lun    , lgrid  , lgrid2 , num_rows   , num_columns   ,      &
                           xb     , yb     , nodye  , nocont , xwaste ,      &
                           ywaste , nwaste , mwaste )
 
@@ -61,12 +61,12 @@ contains
 !     kind            function         name                   description
 
       integer  ( int_wp ), intent(in   ) :: lun                  !< unit number output log file
-      integer  ( int_wp ), intent(in   ) :: nmax                 !< first index hydrodynamic grid
-      integer  ( int_wp ), intent(in   ) :: mmax                 !< second index hydrodynamic grid
-      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)    !< active grid matrix
-      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)    !< total grid matrix
-      real     ( real_wp), intent(in   ) :: xb    (nmax*mmax)    !< x of grid corner points
-      real     ( real_wp), intent(in   ) :: yb    (nmax*mmax)    !< y of grid corner points
+      integer  ( int_wp ), intent(in   ) :: num_rows                 !< first index hydrodynamic grid
+      integer  ( int_wp ), intent(in   ) :: num_columns                 !< second index hydrodynamic grid
+      integer  ( int_wp ), intent(in   ) :: lgrid (num_rows,num_columns)    !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns)    !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xb    (num_rows*num_columns)    !< x of grid corner points
+      real     ( real_wp), intent(in   ) :: yb    (num_rows*num_columns)    !< y of grid corner points
       integer  ( int_wp ), intent(in   ) :: nodye                !< number of dye releases
       integer  ( int_wp ), intent(in   ) :: nocont               !< number of continuous release
       real     ( real_wp), intent(inout) :: xwaste(nodye+nocont) !< x of wasteload location
@@ -96,7 +96,7 @@ contains
       do id = 1, nodye + nocont
          xnloc = xwaste(id)
          ynloc = ywaste(id)
-         call part07 ( lgrid   , lgrid2  , nmax    , mmax    , xb      ,    &
+         call part07 ( lgrid   , lgrid2  , num_rows    , num_columns    , xb      ,    &
                        yb      , xnloc   , ynloc   , nmloc   , mmloc   ,    &
                        xmloc   , ymloc   , ierror  )
          if ( ierror .eq. 0 ) then

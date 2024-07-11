@@ -294,7 +294,7 @@ end function OD_ExchItemCreate_WithIDs
 ! Create provided exchange item, 2d field (called by providing component)
 !
 !==============================================================================
-function OD_ExchItemCreate_WithSizes(quantID, elmsetID, mMax, nMax, role, startTime) result(success)
+function OD_ExchItemCreate_WithSizes(quantID, elmsetID, num_columns, num_rows, role, startTime) result(success)
     !
     ! return value
     logical :: success  ! .true.: all OK
@@ -302,8 +302,8 @@ function OD_ExchItemCreate_WithSizes(quantID, elmsetID, mMax, nMax, role, startT
     ! arguments
     character(Len=*)             , intent(in) :: quantID    ! Quantity Identifier
     character(Len=*)             , intent(in) :: elmsetID   ! ElementSet Identifier
-    integer                      , intent(in) :: mMax       ! # values m-dir.
-    integer                      , intent(in) :: nMax       ! # values n-dir.
+    integer                      , intent(in) :: num_columns       ! # values m-dir.
+    integer                      , intent(in) :: num_rows       ! # values n-dir.
     integer                      , intent(in) :: role       ! Providing / Accepting
     double precision             , intent(in) :: startTime  ! Start time for Dio PLT
     !
@@ -316,10 +316,10 @@ function OD_ExchItemCreate_WithSizes(quantID, elmsetID, mMax, nMax, role, startT
 
     !
     ! body
-    allocate(locIds(mMax*nMax))
-    do n = 1, nMax
-        do m = 1, mMax
-           mn = (n-1) * mMax + m
+    allocate(locIds(num_columns*num_rows))
+    do n = 1, num_rows
+        do m = 1, num_columns
+           mn = (n-1) * num_columns + m
            write(locIds(mn), '(A,I4.4,A,I4.4,A)') 'row,col[', n, ',', m, ']'
         enddo
     enddo

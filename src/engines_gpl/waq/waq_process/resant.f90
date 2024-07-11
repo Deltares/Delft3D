@@ -28,9 +28,9 @@ module m_resant
 contains
 
 
-    subroutine resant (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine resant (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
         !>\file
@@ -55,9 +55,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         integer(kind = int_wp) :: iseg
 
@@ -68,18 +68,18 @@ contains
         IP5 = IPOINT(5)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
                     !
 
-                    RFLS1 = PMSA(IP1)
-                    CNS1 = PMSA(IP2)
-                    CPS1 = PMSA(IP3)
-                    CSS1 = PMSA(IP4)
-                    DEPTH = PMSA(IP5)
+                    RFLS1 = process_space_real(IP1)
+                    CNS1 = process_space_real(IP2)
+                    CPS1 = process_space_real(IP3)
+                    CSS1 = process_space_real(IP4)
+                    DEPTH = process_space_real(IP5)
                     IF (DEPTH > 0.0) THEN
                         RFLS1 = RFLS1 / DEPTH
                     ELSE

@@ -27,12 +27,12 @@ use m_part11
 
 
    contains
-        subroutine oildsp ( lgrid   , nmax    , conc    , volume  , area    ,    &
+        subroutine oildsp ( lgrid   , num_rows    , conc    , volume  , area    ,    &
                             npart   , mpart   , wpart   , radius  , nodye   ,    &
                             npwndw  , nopart  , itime   , idelt   , wvelo   ,    &
-                            const   , lun2    , nosubs  , nolay   , lgrid2  ,    &
+                            const   , lun2    , nosubs  , num_layers   , lgrid2  ,    &
                             lgrid3,                                              &
-                            mmax    , xb      , yb      , kpart   , mapsub  ,    &
+                            num_columns    , xb      , yb      , kpart   , mapsub  ,    &
                             isfile  , nfract  , mstick  , nstick  , fstick  ,    &
                             xa      , ya      , pg      , use_settling  , xpart   ,    &
                             ypart   , zpart   , za      , locdep  , dps     ,    &
@@ -171,9 +171,9 @@ use m_part11
       integer  ( int_wp ), intent(in   ) :: npwndw                !< first active particle in the array
       integer  ( int_wp ), intent(in   ) :: nopart                !< current maximum of active particles
       integer  ( int_wp ), intent(in   ) :: nodye                 !< number of dye releases
-      integer  ( int_wp ), intent(in   ) :: nmax                  !< first dimension of the grid
-      integer  ( int_wp ), intent(in   ) :: mmax                  !< second dimension of the grid
-      integer  ( int_wp ), intent(in   ) :: nolay                 !< number of layers     (may be more is use_settling)
+      integer  ( int_wp ), intent(in   ) :: num_rows                  !< first dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: num_columns                  !< second dimension of the grid
+      integer  ( int_wp ), intent(in   ) :: num_layers                 !< number of layers     (may be more is use_settling)
       integer  ( int_wp ), intent(in   ) :: nosubs                !< number of substances (may be more than 3*fract)
       integer  ( int_wp ), intent(in   ) :: nstick                !< number of sticking substances
       integer(int_wp ), dimension(:)     :: iptime
@@ -574,10 +574,10 @@ use m_part11
 !           all not related to oil was removed from this loop
 !
       if ( lplgr ) then
-         call part11 ( lgrid  , xb     , yb     , nmax   , npart  ,   &
+         call part11 ( lgrid  , xb     , yb     , num_rows   , npart  ,   &
                        mpart  , xpart  , ypart  , xa     , ya     ,   &
                        nopart , npwndw , lgrid2 , kpart  , zpart  ,   &
-                       za     , locdep , dps    , nolay  , mmax   ,   &
+                       za     , locdep , dps    , num_layers  , num_columns   ,   &
                        tcktot )
          windw1 =  window(1)
          windw3 =  window(3)
@@ -593,10 +593,10 @@ use m_part11
             if ( i2 .le. 1 ) cycle                            ! NB this probably should be 0 lp
             if ( area(i2) .le. 0.0 ) cycle
             ilay = kpart(i1)
-            if ( use_settling .and. ilay == nolay ) then
-               iseg = (ilay-2)*nmax*mmax + i2
+            if ( use_settling .and. ilay == num_layers ) then
+               iseg = (ilay-2)*num_rows*num_columns + i2
             else
-               iseg = (ilay-1)*nmax*mmax + i2
+               iseg = (ilay-1)*num_rows*num_columns + i2
             endif
             fvolum = surf * (volume(iseg)/area(i2))           ! the volume of one plot grid cell
             if ( fvolum .le. 0.0 ) cycle
@@ -607,7 +607,7 @@ use m_part11
                if ( isub .lt. 3*nfract ) then
                   jsub = mod(isub-1,3) + 1
                   if ( jsub .eq. 2 ) then                     ! this is the submerged fraction
-                     if ( use_settling .and. ilay == nolay ) then
+                     if ( use_settling .and. ilay == num_layers ) then
                         ac = am/surf
                      endif
                   elseif ( mstick(isub) .lt. 0 ) then         ! this is the sticky part of this fraction (nr 3)
@@ -615,7 +615,7 @@ use m_part11
                   else
                      ac = am/surf                             ! is this wrong ?
                   endif
-               elseif ( use_settling .and. ilay == nolay ) then   ! substances above the three oil fractions
+               elseif ( use_settling .and. ilay == num_layers ) then   ! substances above the three oil fractions
                   ac = am/surf                                ! settled mass of this fraction
                elseif ( mstick(isub) .lt. 0 ) then            ! the sticky part of non-oil
                   ac = am/surf
@@ -715,7 +715,7 @@ use m_part11
             else
                wfact = 0.0
             endif
-            if ( kpart(i) .le. 0 .or. kpart(i) .gt. nolay ) then
+            if ( kpart(i) .le. 0 .or. kpart(i) .gt. num_layers ) then
                write( *, * ) ' ipart = ', i, ' k = ', kpart(i)
                write( *, * ) ' k is out of range in partwr '
                write( lun2, * ) ' ipart = ', i, ' k = ', kpart(i)

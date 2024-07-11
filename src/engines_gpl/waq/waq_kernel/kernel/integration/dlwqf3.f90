@@ -35,30 +35,30 @@ contains
     !! precomputed flowtot and disptot arrays./n
     !! The routine is very efficient because of the precomputed fmat
     !! and tmat arrays for the from and to locations in the matrix.
-    subroutine dlwqf3(idt, noseg, volnew, nobnd, noq, &
+    subroutine dlwqf3(idt, num_cells, volnew, num_boundary_conditions, num_exchanges, &
                       ipoint, flowtot, disptot, diag, iscale, &
-                      diagcc, nomat, amat, idiag, fmat, &
+                      diagcc, fast_solver_arr_size, amat, idiag, fmat, &
                       tmat)
 
         use timers
         implicit none
 
         integer(kind=int_wp), intent(in) :: idt                  !< Time step
-        integer(kind=int_wp), intent(in) :: noseg                !< Number of cells or computational volumes
-        real(kind=real_wp), intent(in) :: volnew(noseg)          !< Volumes of cells
-        integer(kind=int_wp), intent(in) :: nobnd                !< Number of open boundaries
-        integer(kind=int_wp), intent(in) :: noq                  !< Total number fluxes in the water phase
-        integer(kind=int_wp), intent(in) :: ipoint(4, noq)       !< From, to, from-1, to+1 volume numbers per flux
-        real(kind=real_wp), intent(in) :: flowtot(noq)           !< Flows plus additional velocities (dim: noq)
-        real(kind=real_wp), intent(in) :: disptot(noq)           !< Dispersion plus additional dipersion (dim: noq)
-        real(kind=dp), intent(inout) :: diag(noseg+nobnd)        !< Diagonal of the matrix
+        integer(kind=int_wp), intent(in) :: num_cells                !< Number of cells or computational volumes
+        real(kind=real_wp), intent(in) :: volnew(num_cells)          !< Volumes of cells
+        integer(kind=int_wp), intent(in) :: num_boundary_conditions                !< Number of open boundaries
+        integer(kind=int_wp), intent(in) :: num_exchanges                  !< Total number fluxes in the water phase
+        integer(kind=int_wp), intent(in) :: ipoint(4, num_exchanges)       !< From, to, from-1, to+1 volume numbers per flux
+        real(kind=real_wp), intent(in) :: flowtot(num_exchanges)           !< Flows plus additional velocities (dim: num_exchanges)
+        real(kind=real_wp), intent(in) :: disptot(num_exchanges)           !< Dispersion plus additional dipersion (dim: num_exchanges)
+        real(kind=dp), intent(inout) :: diag(num_cells+num_boundary_conditions)        !< Diagonal of the matrix
         integer(kind=int_wp), intent(in) :: iscale               !< = 1 row scaling with the diagonal
-        real(kind=dp), intent(inout) :: diagcc(noseg+nobnd)      !< Copy of (unscaled) diagonal of the matrix
-        integer(kind=int_wp), intent(in) :: nomat                !< Dimension of off-diagonal matrix amat
-        real(kind=dp), intent(out) :: amat(nomat)                !< Matrix with off-diagonal entries
-        integer(kind=int_wp), intent(in) :: idiag(0:noseg+nobnd) !< Position of the diagonals in amat
-        integer(kind=int_wp), intent(in) :: fmat(noq)            !< Location from(iq) in matrix
-        integer(kind=int_wp), intent(in) :: tmat(noq)            !< Location to  (iq) in matrix
+        real(kind=dp), intent(inout) :: diagcc(num_cells+num_boundary_conditions)      !< Copy of (unscaled) diagonal of the matrix
+        integer(kind=int_wp), intent(in) :: fast_solver_arr_size                !< Dimension of off-diagonal matrix amat
+        real(kind=dp), intent(out) :: amat(fast_solver_arr_size)                !< Matrix with off-diagonal entries
+        integer(kind=int_wp), intent(in) :: idiag(0:num_cells+num_boundary_conditions) !< Position of the diagonals in amat
+        integer(kind=int_wp), intent(in) :: fmat(num_exchanges)            !< Location from(iq) in matrix
+        integer(kind=int_wp), intent(in) :: tmat(num_exchanges)            !< Location to  (iq) in matrix
 
         ! Local variables
         integer(kind=int_wp) :: iseg  !< Index of current cell
@@ -79,16 +79,16 @@ contains
 
         ! set the diagonal
         dt = idt
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             diag(iseg) = volnew(iseg)/dt
         end do
-        do iseg = noseg + 1, noseg + nobnd
+        do iseg = num_cells + 1, num_cells + num_boundary_conditions
             diag(iseg) = 1.0
         end do
 
         ! reset the entire matrix
         amat = 0.0d0
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom == 0 .or. ito == 0) cycle
@@ -114,7 +114,7 @@ contains
         ! finally scale the matrix to avoid possible round-off errors in GMRES
         ! this scaling may need some adaption for future domain decomposition b.c.
         if (iscale == 1) then
-            do iq = 1, noseg + nobnd
+            do iq = 1, num_cells + num_boundary_conditions
                 ifrom = idiag(iq - 1) + 1
                 ito = idiag(iq)
 
@@ -130,7 +130,7 @@ contains
                 diag(iq) = 1.0d00
             end do
         else
-            do iq = 1, noseg + nobnd
+            do iq = 1, num_cells + num_boundary_conditions
                 diagcc(iq) = 1.0d00
             end do
         end if

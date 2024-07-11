@@ -28,9 +28,9 @@ module m_nutrel
 contains
 
 
-    subroutine nutrel (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine nutrel (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Release (nutrients/detritus) by of mortality algae DYNAMO
 
@@ -65,9 +65,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         integer(kind = int_wp) :: iseg
 
@@ -84,22 +84,22 @@ contains
         IP11 = IPOINT(11)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
 
-                MORT1 = PMSA(IP1)
-                NCRAT1 = PMSA(IP2)
-                PCRAT1 = PMSA(IP3)
-                FMRT1A = PMSA(IP4)
-                FMRT2A = PMSA(IP5)
-                MORT2 = PMSA(IP6)
-                NCRAT2 = PMSA(IP7)
-                PCRAT2 = PMSA(IP8)
-                SCRAT2 = PMSA(IP9)
-                FMRT1D = PMSA(IP10)
-                FMRT2D = PMSA(IP11)
+                MORT1 = process_space_real(IP1)
+                NCRAT1 = process_space_real(IP2)
+                PCRAT1 = process_space_real(IP3)
+                FMRT1A = process_space_real(IP4)
+                FMRT2A = process_space_real(IP5)
+                MORT2 = process_space_real(IP6)
+                NCRAT2 = process_space_real(IP7)
+                PCRAT2 = process_space_real(IP8)
+                SCRAT2 = process_space_real(IP9)
+                FMRT1D = process_space_real(IP10)
+                FMRT2D = process_space_real(IP11)
 
                 !***********************************************************************
                 !**** Processes connected to the ALGEA model

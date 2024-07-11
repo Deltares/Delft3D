@@ -27,7 +27,7 @@ implicit none
 contains
 
 
-      subroutine inipart_asc( lgrid   , lgrid2  , nmax    , mmax    , xcor,     &
+      subroutine inipart_asc( lgrid   , lgrid2  , num_rows    , num_columns    , xcor,     &
                           ycor    , nopart  , nosubs  , subst   , ini_file,     &
                           xpol    , ypol    , wpart   , xpart   ,     conc2,    &
                           ypart   , zpart   , npart   , mpart   , kpart   ,     &
@@ -49,14 +49,14 @@ contains
 
 !     kind           function         name                      description
 
-      integer  ( int_wp ), intent(in   ) :: nmax                    !< first dimension matrix
-      integer  ( int_wp ), intent(in   ) :: mmax                    !< second dimension matrix
+      integer  ( int_wp ), intent(in   ) :: num_rows                    !< first dimension matrix
+      integer  ( int_wp ), intent(in   ) :: num_columns                    !< second dimension matrix
       integer  ( int_wp ), intent(in   ) :: npmax                   !< maximum number of particles
       integer  ( int_wp ), intent(inout) :: nopart                  !< number of active particles
-      integer  ( int_wp ), intent(in   ) :: lgrid (nmax,mmax)       !< active grid matrix
-      integer  ( int_wp ), intent(in   ) :: lgrid2(nmax,mmax)       !< total grid matrix
-      real     ( real_wp), intent(in   ) :: xcor  (nmax*mmax)
-      real     ( real_wp), intent(in   ) :: ycor  (nmax*mmax)
+      integer  ( int_wp ), intent(in   ) :: lgrid (num_rows,num_columns)       !< active grid matrix
+      integer  ( int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns)       !< total grid matrix
+      real     ( real_wp), intent(in   ) :: xcor  (num_rows*num_columns)
+      real     ( real_wp), intent(in   ) :: ycor  (num_rows*num_columns)
       integer  ( int_wp ), intent(inout) :: nosubs                  !< number of substances
       character( * ), intent(in   ) :: subst (*)               !< substance names
       character( * ), intent(in   ) :: ini_file                !< polygon file
@@ -168,7 +168,7 @@ contains
             xx = rnd(rseed)*npart_size + xpol(np+1)-npart_size/2.
             yy = rnd(rseed)*npart_size + ypol(np+1)-npart_size/2.
             npsub=npsub+1
-                call part07 (lgrid  , lgrid2 , nmax   , mmax   , xcor  ,       &
+                call part07 (lgrid  , lgrid2 , num_rows   , num_columns   , xcor  ,       &
                              ycor   , xx     , yy     , nnpart , mmpart,       &
                              xxcel  , yycel  , ier )
 

@@ -38,7 +38,7 @@ subroutine alloc_transport(Keepexisting)
    use m_transport
    use m_alloc
    use m_meteo, only: numtracers, numfracs
-   use m_flowexternalforcings, only: numsrc, qcsrc, vcsrc, wstracers
+   use fm_external_forcings_data, only: numsrc, qcsrc, vcsrc, wstracers
    use m_sediment, only: stm_included
    implicit none
 
@@ -119,7 +119,7 @@ subroutine alloc_transport(Keepexisting)
 
    if ( jawaqproc > 0 ) then
 !     WAQ
-      call realloc(isys2const,  notot, keepExisting=.true., fill=0)
+      call realloc(isys2const,  num_substances_total, keepExisting=.true., fill=0)
    end if
    call realloc(iconst2sys,  NUMCONST, keepExisting=.true., fill=0)
    return

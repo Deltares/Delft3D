@@ -85,7 +85,7 @@
          if ( i_domain .eq. 1 ) then
             m_offset(i_domain) = 0
          else
-            m_offset(i_domain) = m_offset(i_domain-1) + hyd%domain_coll%domain_pnts(i_domain-1)%mmax
+            m_offset(i_domain) = m_offset(i_domain-1) + hyd%domain_coll%domain_pnts(i_domain-1)%num_columns
          endif
       enddo
 

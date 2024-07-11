@@ -1,4 +1,4 @@
-<config>
+<config xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <localPaths>
         <testCasesDir>./data/cases</testCasesDir>
         <enginesDir>./data/engines</enginesDir>

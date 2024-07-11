@@ -88,11 +88,11 @@
       BFE = 1 - BFAC
 
 !     DE HORIZONTALEN
-      DO 10 JR = 1,NC
+      do JR = 1,NC
          IN  = 0
          INT = 0
          J   = JR
-         DO 10 IR = 1,MC
+         do IR = 1,MC
             KC = ABS(IJC(IR,JR))
             IF (KC .EQ. 11 .OR. KC .EQ. 14) THEN
                IFR = IR + 1
@@ -113,7 +113,7 @@
                CALL GETIJ(YC,   YH,MMAX,NMAX,MNMAX,IFF,IL, J, J)
                CALL GETIJ(YJ2,YH2,MMAX,NMAX,MNMAX,IFF,IL, J, J)
 
-               DO 20 IRR = IFR,ILR
+               DO IRR = IFR,ILR
                   IF (IRR .GE. M1 .AND. IRR .LE. M2 .AND.   &
                        JR .GE. N1 .AND.  JR .LE. N2 .AND.   &
                        IJC(IRR,JR) .GT. 0) THEN
@@ -168,20 +168,22 @@
                      XR(IRR,JR) = XV
                      YR(IRR,JR) = YV
                   ENDIF
-    20         CONTINUE
+               end do
                IN  = 0
                INT = 0
             ENDIF
-    10 CONTINUE
+         end do
+      end do
+      
 
 !     CALL WAITESC()
 
 !     DE VERTICALEN
-      DO 30 IR = 1,MC
+      DO IR = 1,MC
          IN  = 0
          INT = 0
          I   = IR
-         DO 30 JR = 1,NC
+         DO JR = 1,NC
             KC = ABS(IJC(IR,JR))
             IF (KC .EQ. 11 .OR. KC .EQ. 12) THEN
                JFR = JR + 1
@@ -202,7 +204,7 @@
                CALL GETIJ(YC,   YH,MMAX,NMAX,MNMAX, I, I,JF,JL)
                CALL GETIJ(YI2,YH2,MMAX,NMAX,MNMAX, I, I,JF,JL)
 
-               DO 40 JRR = JFR,JLR
+               DO JRR = JFR,JLR
                   IF (JRR .GE. N1 .AND. JRR .LE. N2 .AND.    &
                        IR .GE. M1 .AND.  IR .LE. M2 .AND.    &
                        IJC(IR,JRR) .GT. 0) THEN
@@ -257,12 +259,14 @@
                      XR(IR,JRR) = XV
                      YR(IR,JRR) = YV
                   ENDIF
-    40         CONTINUE
+               end do
+
                IN  = 0
                INT = 0
             ENDIF
-    30 CONTINUE
-
+         end do
+      end do
+         
       DEALLOCATE ( XH, YH, XH2, YH2 )
 
 

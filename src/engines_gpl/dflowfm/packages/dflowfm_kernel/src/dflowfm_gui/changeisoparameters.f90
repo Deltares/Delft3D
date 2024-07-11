@@ -124,7 +124,7 @@
       HELPM (19)= 'INTEGER VALUE, ENDINDEX OF ISOCOLOURS (0-255)   DEFAULT 224 '
 
       IR = 0
-      DO 10 I = 1,NUMPAR
+      do I = 1,NUMPAR
          IL = IR + 1
          IR = IL + 1
          IX(IL) = 13
@@ -141,7 +141,7 @@
             ! Integer values:
             IT(IR) = 2
          ENDIF
-   10 CONTINUE
+      end do
       IT(2*8)  = 6
       IT(2*9)  = 6
       IT(2*11) = 6
@@ -187,14 +187,13 @@
       CALL IFORMHELP(13,IH,60)
 
       IR = 0
-      DO 20 I = 1,NUMPAR
+      do I = 1,NUMPAR
          IL = IR + 1
          IR = IL + 1
          CALL IFORMPUTSTRING (IL,OPTION(I))
          CALL IFORMPUTHELP   (IR,HELPM(I))
          CALL IFORMATTRIBUTEN(IR,0,0,7)
-   20 CONTINUE
-
+end do 
       CALL IFORMPUTINTEGER( 2,JAAUTO)
       CALL IFORMPUTINTEGER( 4,NV)
       CALL IFormPutDouble ( 6,VMIN ,'(F10.3)')

@@ -574,7 +574,7 @@ integer                            :: javau3onbnd = 0   !< vert. adv. u1 bnd Upw
  integer                           :: jamapTotalInflowLat       !< output total lateral inflow to map file, 0: no, 1: yes
  integer                           :: jamapS1Gradient           !< output water level gradient to map file, 0: no, 1: yes
  integer                           :: jatekcd                   !< tek output with wind cd coefficients, 0=no (default), 1=yes
- integer                           :: jafullgridoutput          !< 0:compact, 1:full time-varying grid data
+ integer                           :: jafullgridoutput          !< 0: static layer positions, 1: time- and space-varying grid layer data, 2: time- and space-varying grid layer data with CF-bounds
  integer                           :: jaeulervel                !< 0:GLM, 1:Euler velocities
  integer                           :: jamombal                  !< records some gradients of primitives 0:no, 1:yes
  integer                           :: jarstbnd                  !< Waterlevel, bedlevel and coordinates of boundaries, 0: no, 1: yes

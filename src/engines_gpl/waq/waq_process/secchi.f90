@@ -28,9 +28,9 @@ module m_secchi
 contains
 
 
-    subroutine secchi (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine secchi (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Calculation secchi depth for visible-light (370-680nm)
 
@@ -72,9 +72,9 @@ contains
         !
         IMPLICIT REAL (A-H, J-Z)
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(23), INCREM(23), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(23), INCREM(23), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP(23)
         INTEGER(kind = int_wp) :: IFLUX, ISEG
@@ -85,16 +85,16 @@ contains
         !
         IP = IPOINT
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                SW_UITZ = PMSA(IP(11))
+                SW_UITZ = process_space_real(IP(11))
                 IF (NINT(SW_UITZ) == 0) THEN
                     !
                     !  Calculate secchi depth without UITZICHT
                     !
-                    EXT = PMSA(IP(1))
-                    PAC = PMSA(IP(22))
+                    EXT = process_space_real(IP(1))
+                    PAC = process_space_real(IP(22))
                     IF (EXT > 0.0) THEN
                         SECCH = PAC / EXT
                     ELSE
@@ -105,25 +105,25 @@ contains
                     !
                     !  Calculate secchi depth with UITZICHT
                     !
-                    AIM1 = PMSA(IP(2))
-                    AIM2 = PMSA(IP(3))
-                    AIM3 = PMSA(IP(4))
-                    POC1 = PMSA(IP(5))
-                    POC2 = PMSA(IP(6))
-                    POC3 = PMSA(IP(7))
-                    POC4 = PMSA(IP(8))
-                    AH_380 = PMSA(IP(9))
-                    CHLORP = PMSA(IP(10))
-                    DIEP1 = PMSA(IP(12))
-                    DIEP2 = PMSA(IP(13))
-                    CORCHL = PMSA(IP(14))
-                    C_DET = PMSA(IP(15))
-                    C_GL1 = PMSA(IP(16))
-                    C_GL2 = PMSA(IP(17))
-                    HELHUM = PMSA(IP(18))
-                    TAU = PMSA(IP(19))
-                    ANGLE = PMSA(IP(20))
-                    DETCDM = PMSA(IP(21))
+                    AIM1 = process_space_real(IP(2))
+                    AIM2 = process_space_real(IP(3))
+                    AIM3 = process_space_real(IP(4))
+                    POC1 = process_space_real(IP(5))
+                    POC2 = process_space_real(IP(6))
+                    POC3 = process_space_real(IP(7))
+                    POC4 = process_space_real(IP(8))
+                    AH_380 = process_space_real(IP(9))
+                    CHLORP = process_space_real(IP(10))
+                    DIEP1 = process_space_real(IP(12))
+                    DIEP2 = process_space_real(IP(13))
+                    CORCHL = process_space_real(IP(14))
+                    C_DET = process_space_real(IP(15))
+                    C_GL1 = process_space_real(IP(16))
+                    C_GL2 = process_space_real(IP(17))
+                    HELHUM = process_space_real(IP(18))
+                    TAU = process_space_real(IP(19))
+                    ANGLE = process_space_real(IP(20))
+                    DETCDM = process_space_real(IP(21))
                     !
                     DETRIC = MAX (0.0, DETCDM * (POC1 + POC2 + POC3 + POC4))
                     GLOEIR = AIM1 + AIM2 + AIM3
@@ -137,7 +137,7 @@ contains
                     !
                 ENDIF
                 !
-                PMSA(IP(23)) = SECCH
+                process_space_real(IP(23)) = SECCH
                 !
             ENDIF
             !

@@ -446,58 +446,22 @@ subroutine fill_valobs()
                end if
             end do
             
-            if (iturbulencemodel >= 2) then
-               call getLbotLtop(link_id_nearest, Lb, Lt)
-               call getlayerindicesLmax(link_id_nearest, nlaybL, nrlayLx)
-               do L = Lb-1, Lt
-                  klay = L-Lb+nlaybL+1
-                  valobs(i, IPNT_VICWWU + klay - 1) = vicwwu(L)
-               end do
-            end if
-
-            call getlink1(k,LL)
-            call getLbotLtop(LL,Lb,Lt)
-            call getlayerindicesLmax(LL, nlaybL, nrlayLx)
+            call getLbotLtop(link_id_nearest, Lb, Lt)
+            call getlayerindicesLmax(link_id_nearest, nlaybL, nrlayLx)
             do L = Lb-1, Lt
                klay = L-Lb+nlaybL+1
-               if (layertype == 2) then
-                  valobs(i,IPNT_ZWU+klay-1) = min(bob(1,LL),bob(2,LL)) + hu(L)
-               else
-                  valobs(i,IPNT_ZWU+klay-1) = min(bob(1,LL),bob(2,LL)) + hu(L)
+               valobs(i, IPNT_ZWU + klay-1) = min(bob(1,link_id_nearest), bob(2,link_id_nearest)) + hu(L)
+               if (iturbulencemodel >= 2) then
+                   valobs(i, IPNT_VICWWU + klay-1) = vicwwu(L)
+               end if
+               if (iturbulencemodel >= 3) then
+                   valobs(i, IPNT_TKIN + klay-1) = turkin1(L)
+                   valobs(i, IPNT_TEPS + klay-1) = tureps1(L)
+               end if
+               if (idensform > 0 .and. jaRichardsononoutput > 0) then
+                   valobs(i, IPNT_RICH + klay-1) = rich(L)
                end if
             end do
-
-            if ( iturbulencemodel >= 3 ) then
-               valobs(i,IPNT_TKIN:IPNT_TKIN+kmx) = 0d0
-               valobs(i,IPNT_TEPS:IPNT_TEPS+kmx) = 0d0
-            endif
-            if (idensform > 0 .and. jaRichardsononoutput > 0) then
-               valobs(i,IPNT_RICH:IPNT_RICH+kmx) = 0d0
-            endif
-            do LL = 1,nd(k)%lnx
-               LLa = iabs(nd(k)%ln(LL))
-               call getLbotLtop(LLa,Lb,Lt)
-               k1 = ln0(1,LLa) ; k2 = ln0(2,LLa)
-               k3 = 1 ; if( nd(k)%ln(LL) > 0 ) k3 = 2
-               do L = Lb-1,Lt
-                  klay = L-Lb+2
-                  if ( iturbulencemodel >= 3 ) then
-                     valobs(i,IPNT_TKIN  + klay-1) = valobs(i,IPNT_TKIN  + klay-1) + turkin1(L) * wcL(k3,LLa)
-                     valobs(i,IPNT_TEPS  + klay-1) = valobs(i,IPNT_TEPS  + klay-1) + tureps1(L) * wcL(k3,LLa)
-                  endif
-                  if (idensform > 0 .and. jaRichardsononoutput > 0) then
-                     valobs(i,IPNT_RICH + klay-1) = valobs(i,IPNT_RICH + klay-1) + rich(L) * wcL(k3,LLa)
-                  endif
-               enddo
-            enddo
-
-            if (iturbulencemodel >= 3) then
-               call reorder_valobs_array(kmx+1, valobs(i,IPNT_TKIN:IPNT_TKIN+kmx), kb, kt, nlayb, dmiss)
-               call reorder_valobs_array(kmx+1, valobs(i,IPNT_TEPS:IPNT_TEPS+kmx), kb, kt, nlayb, dmiss)
-            end if
-            if (idensform > 0 .and. jaRichardsononoutput > 0) then
-               call reorder_valobs_array(kmx+1, valobs(i,IPNT_RICH:IPNT_RICH+kmx), kb, kt, nlayb, dmiss)
-            end if
          end if
 
 !        Rainfall

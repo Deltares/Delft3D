@@ -28,9 +28,9 @@ module m_wlcwoc
 contains
 
 
-    subroutine wlcwoc (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine wlcwoc (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
 
         !>\file
         !>       Heat Load Capacity (WLC) and Heat Extraction Capacity (WOC)
@@ -39,20 +39,20 @@ contains
 
         !     arguments
 
-        REAL(kind = real_wp) :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+        REAL(kind = real_wp) :: process_space_real(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
         REAL(kind = real_wp) :: FL(*)              ! in/out flux array
-        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-        INTEGER(kind = int_wp) :: NOSEG              ! in     number of segments
+        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+        INTEGER(kind = int_wp) :: num_cells              ! in     number of segments
         INTEGER(kind = int_wp) :: NOFLUX             ! in     total number of fluxes (increment in FL array)
         INTEGER(kind = int_wp) :: IEXPNT(4, *)        ! in     exchange pointer table
         INTEGER(kind = int_wp) :: IKNMRK(*)          ! in     segment features array
-        INTEGER(kind = int_wp) :: NOQ1               ! in     number of exchanges in first direction
-        INTEGER(kind = int_wp) :: NOQ2               ! in     number of exchanges in second direction
-        INTEGER(kind = int_wp) :: NOQ3               ! in     number of exchanges in third direction
-        INTEGER(kind = int_wp) :: NOQ4               ! in     number of exchanges in fourth direction
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir               ! in     number of exchanges in first direction
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir               ! in     number of exchanges in second direction
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir               ! in     number of exchanges in third direction
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
 
-        !     from PMSA array
+        !     from process_space_real array
 
         REAL(kind = real_wp) :: Temp               !1   in ambient water temperature                      (oC)
         REAL(kind = real_wp) :: Surtemp            !2  Surplus temperature                                (oC)
@@ -178,29 +178,29 @@ contains
 
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             !
-            Temp = PMSA(IP1)
-            Surtemp = PMSA(IP2)
-            Surf = PMSA(IP3)
-            Volume = PMSA(IP4)
-            RhoWater = PMSA(IP5)
-            CP = PMSA(IP6)
-            Depth = PMSA(IP7)
-            Width = PMSA(IP8)
-            Velocity = PMSA(IP9)
-            SWCalcVelo = PMSA(IP10)
-            flowseg = PMSA(IP11)
-            fSpeHeDis = PMSA(IP12)
-            WL_Tmax = PMSA(IP13)
-            WL_dTmax = PMSA(IP14)
-            WO_Tbgn = PMSA(IP15)
-            WO_Tend = PMSA(IP16)
-            WO_dTmax = PMSA(IP17)
-            KO_Tbgn = PMSA(IP18)
-            KO_Tend = PMSA(IP19)
-            KO_Tmin = PMSA(IP20)
-            KO_dTmax = PMSA(IP21)
+            Temp = process_space_real(IP1)
+            Surtemp = process_space_real(IP2)
+            Surf = process_space_real(IP3)
+            Volume = process_space_real(IP4)
+            RhoWater = process_space_real(IP5)
+            CP = process_space_real(IP6)
+            Depth = process_space_real(IP7)
+            Width = process_space_real(IP8)
+            Velocity = process_space_real(IP9)
+            SWCalcVelo = process_space_real(IP10)
+            flowseg = process_space_real(IP11)
+            fSpeHeDis = process_space_real(IP12)
+            WL_Tmax = process_space_real(IP13)
+            WL_dTmax = process_space_real(IP14)
+            WO_Tbgn = process_space_real(IP15)
+            WO_Tend = process_space_real(IP16)
+            WO_dTmax = process_space_real(IP17)
+            KO_Tbgn = process_space_real(IP18)
+            KO_Tend = process_space_real(IP19)
+            KO_Tmin = process_space_real(IP20)
+            KO_dTmax = process_space_real(IP21)
 
 
             !             Calculate FLOW from from Velocity, Width and Depth if possible (WIDTH required, not available in D3D)
@@ -318,35 +318,35 @@ contains
             !
             !        *****     End of your code       *****
             !
-            PMSA(IP22) = WLC_Q_s
-            PMSA(IP23) = WLC_A_s
-            PMSA(IP24) = WLC2_Q_s
-            PMSA(IP25) = WLC2_A_s
-            PMSA(IP26) = dTWLC
-            PMSA(IP27) = dTWLC2
-            PMSA(IP28) = WLC_m2
-            PMSA(IP29) = WLC2_m2
+            process_space_real(IP22) = WLC_Q_s
+            process_space_real(IP23) = WLC_A_s
+            process_space_real(IP24) = WLC2_Q_s
+            process_space_real(IP25) = WLC2_A_s
+            process_space_real(IP26) = dTWLC
+            process_space_real(IP27) = dTWLC2
+            process_space_real(IP28) = WLC_m2
+            process_space_real(IP29) = WLC2_m2
 
-            PMSA(IP30) = WOC_Q_s
-            PMSA(IP31) = WOC_A_s
-            PMSA(IP32) = WOC2_Q_s
-            PMSA(IP33) = WOC2_A_s
-            PMSA(IP34) = dTWOC
-            PMSA(IP35) = dTWOC2
-            PMSA(IP36) = WOC_m2
-            PMSA(IP37) = WOC2_m2
+            process_space_real(IP30) = WOC_Q_s
+            process_space_real(IP31) = WOC_A_s
+            process_space_real(IP32) = WOC2_Q_s
+            process_space_real(IP33) = WOC2_A_s
+            process_space_real(IP34) = dTWOC
+            process_space_real(IP35) = dTWOC2
+            process_space_real(IP36) = WOC_m2
+            process_space_real(IP37) = WOC2_m2
 
-            PMSA(IP38) = KOC_Q_s
-            PMSA(IP39) = KOC_A_s
-            PMSA(IP40) = KOC2_Q_s
-            PMSA(IP41) = KOC2_A_s
-            PMSA(IP42) = dTKOC
-            PMSA(IP43) = dTKOC2
-            PMSA(IP44) = KOC_m2
-            PMSA(IP45) = KOC2_m2
+            process_space_real(IP38) = KOC_Q_s
+            process_space_real(IP39) = KOC_A_s
+            process_space_real(IP40) = KOC2_Q_s
+            process_space_real(IP41) = KOC2_A_s
+            process_space_real(IP42) = dTKOC
+            process_space_real(IP43) = dTKOC2
+            process_space_real(IP44) = KOC_m2
+            process_space_real(IP45) = KOC2_m2
 
-            PMSA(IP46) = flowsegvel
-            PMSA(IP47) = flowabs
+            process_space_real(IP46) = flowsegvel
+            process_space_real(IP47) = flowabs
             !
             IFLUX = IFLUX + NOFLUX
             IP1 = IP1 + INCREM (1)

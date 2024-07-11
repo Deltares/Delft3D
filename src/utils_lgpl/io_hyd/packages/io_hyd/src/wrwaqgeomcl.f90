@@ -46,7 +46,7 @@ module m_write_waqgeom_curvilinear
         integer, dimension(2) :: element = missing_value !< an edge separates one or two elements
     end type
 contains    
-    subroutine wrwaqgeomcl ( meta     , lundia, nmax   , mmax   , kmax   , & 
+    subroutine wrwaqgeomcl ( meta     , lundia, num_rows   , num_columns   , num_layers_grid   , &
                              nlb      , nub   , mlb    , mub    ,          &
                              xcor     , ycor  , xz     , yz     , dep    , &
                              kcs      , kcu   , kcv    , sferic , aggre  , &
@@ -62,9 +62,9 @@ contains
 !
     type(t_ug_meta)                            , intent(in) :: meta       !! metadata for grid file
     integer                                    , intent(in) :: lundia     !! logical unit of diagnostic file
-    integer(4)                                 , intent(in) :: nmax       !! Dimension of first index in 2d arrays
-    integer(4)                                 , intent(in) :: mmax       !! Dimension of second index in 2d arrays
-    integer(4)                                 , intent(in) :: kmax       !! number of flow layers
+    integer(4)                                 , intent(in) :: num_rows       !! Dimension of first index in 2d arrays
+    integer(4)                                 , intent(in) :: num_columns       !! Dimension of second index in 2d arrays
+    integer(4)                                 , intent(in) :: num_layers_grid       !! number of flow layers
     integer(4)                                 , intent(in) :: nlb        !! Lower bound of all n dimensions
     integer(4)                                 , intent(in) :: nub        !! Upper bound of all n dimensions
     integer(4)                                 , intent(in) :: mlb        !! Lower bound of all m dimensions
@@ -80,7 +80,7 @@ contains
     integer        , dimension(nlb:nub,mlb:mub), intent(in) :: kcv        !! v-flowlink type (0=closed, 1=open)
     logical                                    , intent(in) :: sferic     !! sferic grid
     integer                                    , intent(in) :: aggre      !! aggregation type (0=no-aggregation, active cells only, 1=aggregation table)
-    integer        , dimension(nmax*mmax)      , intent(in) :: isaggrl    !! grid aggregation pointer (only top/bottom layer, depending on zmodel)
+    integer        , dimension(num_rows*num_columns)      , intent(in) :: isaggrl    !! grid aggregation pointer (only top/bottom layer, depending on zmodel)
     character(20)  , dimension(nto)            , intent(in) :: nambnd     !! names of the open boundaries
     integer        , dimension(7,nto)          , intent(in) :: mnbnd      !! indices of the open boundaries
 !
@@ -140,13 +140,13 @@ contains
     !
     ! Determine no-agregation segment pointer
     !
-    allocate(node_mask((nmax-1)*(mmax-1)))
-    allocate(flow_vol(mmax*nmax))
+    allocate(node_mask((num_rows-1)*(num_columns-1)))
+    allocate(flow_vol(num_columns*num_rows))
     flow_vol = 0 
     nr_elems = 0
-    do m = 1, mmax
-        do n = 1, nmax
-            cellindex = func(m, n, nmax)
+    do m = 1, num_columns
+        do n = 1, num_rows
+            cellindex = func(m, n, num_rows)
             if (kcs(n, m) == 1) then
                 ! Valid cell found
                 nr_elems = nr_elems + 1
@@ -161,13 +161,13 @@ contains
     !
     nr_nodes = 0
     node_mask = 0
-    do m = 1, mmax-1
-        do n = 1, nmax-1
+    do m = 1, num_columns-1
+        do n = 1, num_rows-1
             if (kcs(n,m  )==1 .or. kcs(n+1,m  )==1 .or. &
                 kcs(n,m+1)==1 .or. kcs(n+1,m+1)==1) then
                 ! Valid point found
                 nr_nodes = nr_nodes + 1
-                pointindex = func(m, n, nmax-1)
+                pointindex = func(m, n, num_rows-1)
                 node_mask(pointindex) = nr_nodes
             end if
         end do
@@ -177,16 +177,16 @@ contains
     !
     allocate(face_nodes(4, nr_elems))
     face_nodes = 0
-    do m = 2, mmax-1 ! outer columns have kcs==0
-        do n = 2, nmax-1 ! outer rows have kcs==0
-            cellindex = func(m, n, nmax)
+    do m = 2, num_columns-1 ! outer columns have kcs==0
+        do n = 2, num_rows-1 ! outer rows have kcs==0
+            cellindex = func(m, n, num_rows)
             elm = flow_vol(cellindex)
             if (elm .gt. 0) then
                 ! Active internal cell found
-                face_nodes(1, elm) = node_mask(func(m-1, n-1, nmax-1))
-                face_nodes(2, elm) = node_mask(func(m  , n-1, nmax-1))
-                face_nodes(3, elm) = node_mask(func(m  , n  , nmax-1))
-                face_nodes(4, elm) = node_mask(func(m-1, n  , nmax-1))
+                face_nodes(1, elm) = node_mask(func(m-1, n-1, num_rows-1))
+                face_nodes(2, elm) = node_mask(func(m  , n-1, num_rows-1))
+                face_nodes(3, elm) = node_mask(func(m  , n  , num_rows-1))
+                face_nodes(4, elm) = node_mask(func(m-1, n  , num_rows-1))
             end if
         end do
     end do        
@@ -197,8 +197,8 @@ contains
     allocate(nodey(nr_nodes))
     allocate(nodez(nr_nodes))
     nr_nodes = 0
-    do m = 1, mmax-1
-        do n = 1, nmax-1
+    do m = 1, num_columns-1
+        do n = 1, num_rows-1
             if (kcs(n,m  )==1 .or. kcs(n+1,m  )==1 .or. &
                 kcs(n,m+1)==1 .or. kcs(n+1,m+1)==1) then
                 nr_nodes = nr_nodes + 1
@@ -212,21 +212,21 @@ contains
     ! Find all edges
     !
     nr_edges = 0
-    allocate(edge(2*mmax*nmax))
+    allocate(edge(2*num_columns*num_rows))
     nr_flowlinks = 0
-    do m = 1, mmax-1
-        do n = 1, nmax-1
+    do m = 1, num_columns-1
+        do n = 1, num_rows-1
             ! u-flowlink
-            elm1 = func(m  ,n  , nmax)
-            elm2 = func(m+1,n  , nmax)
+            elm1 = func(m  ,n  , num_rows)
+            elm2 = func(m+1,n  , num_rows)
             elm1_vol = flow_vol(elm1)
             elm2_vol = flow_vol(elm2)
             if (elm1_vol /= elm2_vol .and. (elm1_vol.gt.0.or.elm2_vol.gt.0)) then
                 nr_edges = nr_edges + 1
                 edge(nr_edges)%edgex = 0.5*(xcor(n-1,m  ) + xcor(n  ,m  ))
                 edge(nr_edges)%edgey = 0.5*(ycor(n-1,m  ) + ycor(n  ,m  ))
-                edge(nr_edges)%vertex(1) = node_mask(func(m  , n-1, nmax-1))
-                edge(nr_edges)%vertex(2) = node_mask(func(m  , n  , nmax-1))
+                edge(nr_edges)%vertex(1) = node_mask(func(m  , n-1, num_rows-1))
+                edge(nr_edges)%vertex(2) = node_mask(func(m  , n  , num_rows-1))
                 if (elm1_vol .gt. 0 .and. elm2_vol .gt. 0) then
                    edge(nr_edges)%nmelm = 2
                    edge(nr_edges)%element(1) = elm1_vol
@@ -258,16 +258,16 @@ contains
                 endif
             endif
             ! v-flowlink
-            elm1 = func(m  ,n  , nmax)
-            elm2 = func(m  ,n+1, nmax)
+            elm1 = func(m  ,n  , num_rows)
+            elm2 = func(m  ,n+1, num_rows)
             elm1_vol = flow_vol(elm1)
             elm2_vol = flow_vol(elm2)
             if (elm1_vol /= elm2_vol .and. (elm1_vol.gt.0.or.elm2_vol.gt.0)) then
                 nr_edges = nr_edges + 1 
                 edge(nr_edges)%edgex = 0.5*(xcor(n  ,m-1) + xcor(n  ,m  ))
                 edge(nr_edges)%edgey = 0.5*(ycor(n  ,m-1) + ycor(n  ,m  ))
-                edge(nr_edges)%vertex(1) = node_mask(func(m-1, n  , nmax-1))
-                edge(nr_edges)%vertex(2) = node_mask(func(m  , n  , nmax-1))
+                edge(nr_edges)%vertex(1) = node_mask(func(m-1, n  , num_rows-1))
+                edge(nr_edges)%vertex(2) = node_mask(func(m  , n  , num_rows-1))
                 if (elm1_vol .gt. 0 .and. elm2_vol .gt. 0) then
                    edge(nr_edges)%nmelm = 2
                    edge(nr_edges)%element(1) = elm1_vol
@@ -330,8 +330,8 @@ contains
     allocate(facex(nr_elems))
     allocate(facey(nr_elems))
     elm = 0
-    do m = 2, mmax-1 ! outer columns have kcs==0
-        do n = 2, nmax-1 ! outer rows have kcs==0
+    do m = 2, num_columns-1 ! outer columns have kcs==0
+        do n = 2, num_rows-1 ! outer rows have kcs==0
             if (kcs(n, m) == 1) then
                 if (kcu(n  ,m-1)==0 .and. kcu(n  ,m  )==0 .and. &
                     kcv(n-1,m  )==0 .and. kcv(n  ,m  )==0) then ! do not count active cells defined with four thin dams
@@ -363,17 +363,17 @@ contains
     bnd_nr = 0
     open_bnd = 0
     nr_bnd_cells = 0
-    do m = 1,  mmax
-        do n = 1, nmax
+    do m = 1,  num_columns
+        do n = 1, num_rows
             if (kcs(n, m) == 2) then ! boundary element
                 found = .false.
                 nr_bnd_elm = nr_bnd_elm + 1
-                cellindex = func(m, n, nmax)
+                cellindex = func(m, n, num_rows)
                 flow_vol(cellindex) = -nr_bnd_elm
                 md = max(1   ,m-1)
                 nd = max(1   ,n-1)
-                mu = min(mmax,m+1)
-                nu = min(nmax,n+1)
+                mu = min(num_columns,m+1)
+                nu = min(num_rows,n+1)
                 if (kcs(nd,m) == 1) then
                    ! which boundary: upper boundary
           nto_loop1: do i = 1, nto
@@ -531,9 +531,9 @@ contains
     !
     if (aggre==1) then
         allocate(iapnt(nr_elems))
-        do m = 1, mmax
-            do n = 1, nmax
-                cellindex = func(m, n, nmax)
+        do m = 1, num_columns
+            do n = 1, num_rows
+                cellindex = func(m, n, num_rows)
                 elm = flow_vol(cellindex)
                 if (elm > 0) then
                     iapnt(elm) = isaggrl(cellindex)
@@ -579,9 +579,9 @@ contains
     
 end subroutine wrwaqgeomcl
 
-integer function func(i, j, nmax) 
-    integer i, j, nmax
-    func = j + (i-1)*nmax
+integer function func(i, j, num_rows)
+    integer i, j, num_rows
+    func = j + (i-1)*num_rows
 end function func
 
 end module m_write_waqgeom_curvilinear

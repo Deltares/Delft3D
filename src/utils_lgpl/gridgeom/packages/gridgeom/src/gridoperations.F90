@@ -42,7 +42,7 @@
    public :: FINDPENTAS
    public :: FINDHEXAS
    public :: iscounterclockwise
-   public :: RECHTSAF
+   public :: rechtsaf
    public :: CONNECTDBN
    public :: CONNECTDB
    public :: ADDLINKTONODES
@@ -1355,7 +1355,7 @@
                LL  = NOD(K2)%LIN(KKK)  ; IF (LL .EQ. L) CYCLE
                IF (LNN(LL) .GE. 2) CYCLE
                CALL OTHERNODECHK(K2,LL,K3) ; IF (K3 == 0) CYCLE
-               IF ( RECHTSAF(K1,K2,K3) ) CYCLE
+               IF ( rechtsaf(K1,K2,K3) ) CYCLE
                IF (K3 .NE. K1) THEN
 
                   kkkk = 1
@@ -1370,7 +1370,7 @@
                      LLL  = NOD(K3)%LIN(KKKK) ; IF (LLL .EQ. LL .OR. LLL .EQ. L) CYCLE
                      IF (LNN(LLL) .GE. 2) CYCLE
                      CALL OTHERNODECHK(K3,LLL,K4)  ; IF (K4 == 0) CYCLE
-                     IF ( RECHTSAF(K2,K3,K4) ) CYCLE
+                     IF ( rechtsaf(K2,K3,K4) ) CYCLE
                      IF (K4 .EQ. K1) THEN  ! TRI GEVONDEN
                         IF (LNN(L)>1 .OR. LNN(LL)>1 .OR. LNN(LLL)>1)  EXIT
                         !                    call setcol(31) ! red
@@ -1498,7 +1498,7 @@
                LL  = NOD(K2)%LIN(KKK)  ; IF (LL .EQ. L) CYCLE
                IF (LNN(LL) .GE. 2) CYCLE
                CALL OTHERNODECHK(K2,LL,K3); IF (K3 == 0) CYCLE
-               IF ( RECHTSAF(K1,K2,K3) ) CYCLE
+               IF ( rechtsaf(K1,K2,K3) ) CYCLE
                IF (K3 .NE. K1) THEN
 
                   kkkk = 1
@@ -1513,7 +1513,7 @@
                      LLL  = NOD(K3)%LIN(KKKK) ; IF (LLL .EQ. LL .OR. LLL .EQ. L) CYCLE
                      IF (LNN(LLL) .GE. 2) CYCLE
                      CALL OTHERNODECHK(K3,LLL,K4); IF (K4 == 0) CYCLE
-                     IF ( RECHTSAF(K2,K3,K4) ) CYCLE
+                     IF ( rechtsaf(K2,K3,K4) ) CYCLE
                      IF (K4 .NE. K2) THEN
 
                         kkkkk = 1
@@ -1529,7 +1529,7 @@
                            IF (LLLL .EQ. LLL .OR. LLLL .EQ. LL .OR. LLLL .EQ. L) CYCLE
                            IF (LNN(LLLL) .GE. 2) CYCLE
                            CALL OTHERNODECHK(K4,LLLL,K5) ; IF (K5 == 0) CYCLE
-                           IF ( RECHTSAF(K3,K4,K5) ) CYCLE
+                           IF ( rechtsaf(K3,K4,K5) ) CYCLE
                            IF (K5 .EQ. K1) THEN  ! PANEEL GEVONDEN
                               IF (LNN(L)>1 .OR. LNN(LL)>1 .OR. LNN(LLL)>1 .OR. LNN(LLLL)>1)  EXIT
 
@@ -1658,7 +1658,7 @@
                IF (LL .EQ. L) CYCLE
                IF (LNN(LL) .GE. 2) CYCLE
                CALL OTHERNODECHK(K2,LL,K3); IF (K3 == 0) CYCLE
-               IF ( RECHTSAF(K1,K2,K3) ) CYCLE
+               IF ( rechtsaf(K1,K2,K3) ) CYCLE
                IF (K3 .NE. K1) THEN
 
                   kkkk = 1
@@ -1674,7 +1674,7 @@
                      IF (LLL .EQ. LL .OR. LLL .EQ. L) CYCLE
                      IF (LNN(LLL) .GE. 2) CYCLE
                      CALL OTHERNODECHK(K3,LLL,K4); IF (K4 == 0) CYCLE
-                     IF ( RECHTSAF(K2,K3,K4) ) CYCLE
+                     IF ( rechtsaf(K2,K3,K4) ) CYCLE
                      IF (K4 .NE. K2 .AND. K4 .NE. K1) THEN
 
                         kkkkk = 1
@@ -1690,7 +1690,7 @@
                            IF (LLLL .EQ. LLL .OR. LLLL .EQ. LL .OR. LLLL .EQ. L) CYCLE
                            IF (LNN(LLLL) .GE. 2) CYCLE
                            CALL OTHERNODECHK(K4,LLLL,K5) ; IF (K5 == 0) CYCLE
-                           IF ( RECHTSAF(K3,K4,K5) ) CYCLE
+                           IF ( rechtsaf(K3,K4,K5) ) CYCLE
                            IF (K5 .NE. K3 .AND. K5 .NE. K2 .AND. K5 .NE. K1) THEN
 
                               kkkkkk = 1
@@ -1706,7 +1706,7 @@
                                  IF (LLLLL .EQ. LLLL .OR. LLLLL .EQ. LLL .OR. LLLLL .EQ. LL .OR. LLLLL .EQ. L) CYCLE
                                  IF (LNN(LLLLL) .GE. 2) CYCLE
                                  CALL OTHERNODECHK(K5,LLLLL,K6); IF (K6 == 0) CYCLE
-                                 IF ( RECHTSAF(K4,K5,K6) ) CYCLE
+                                 IF ( rechtsaf(K4,K5,K6) ) CYCLE
                                  IF (K6 .EQ. K1) THEN  ! PENTA GEVONDEN
                                     IF (LNN(L)>1 .OR. LNN(LL)>1 .OR. LNN(LLL)>1 .OR.     &
                                        LNN(LLLL)>1 .OR. LNN(LLLLL) > 1 )  EXIT
@@ -1821,7 +1821,7 @@
    integer :: kr(6), Lr(6)
    integer :: kkk_, kkkk_, kkkkk_, kkkkkk_, kkkkkkk_, nmkmax
 
-   !LC LOGICAL RECHTSAF
+   !LC LOGICAL rechtsaf
    !LC logical :: alreadycell
    !LC logical :: iscounterclockwise
 
@@ -1854,7 +1854,7 @@
                IF (LL .EQ. L) CYCLE
                IF (LNN(LL) .GE. 2) CYCLE
                CALL OTHERNODECHK(K2,LL,K3); IF (K3 ==0) CYCLE
-               IF ( RECHTSAF(K1,K2,K3) ) CYCLE
+               IF ( rechtsaf(K1,K2,K3) ) CYCLE
                IF (K3 .NE. K1) THEN
 
                   kkkk = 1
@@ -1871,7 +1871,7 @@
                      IF (LLL .EQ. LL .OR. LLL .EQ. L) CYCLE
                      IF (LNN(LLL) .GE. 2) CYCLE
                      CALL OTHERNODECHK(K3,LLL,K4); IF (K4 ==0) CYCLE
-                     IF ( RECHTSAF(K2,K3,K4) ) CYCLE
+                     IF ( rechtsaf(K2,K3,K4) ) CYCLE
                      IF (K4 .NE. K2 .AND. K4 .NE. K1) THEN
 
                         kkkkk = 1
@@ -1887,7 +1887,7 @@
                            IF (LLLL .EQ. LLL .OR. LLLL .EQ. LL .OR. LLLL .EQ. L) CYCLE
                            IF (LNN(LLLL) .GE. 2) CYCLE
                            CALL OTHERNODECHK(K4,LLLL,K5); IF (K5 ==0) CYCLE
-                           IF ( RECHTSAF(K3,K4,K5) ) CYCLE
+                           IF ( rechtsaf(K3,K4,K5) ) CYCLE
                            IF (K5 .NE. K3 .AND. K5 .NE. K2 .AND. K5 .NE. K1) THEN
 
                               kkkkkk = 1
@@ -1903,7 +1903,7 @@
                                  IF (LLLLL .EQ. LLLL .OR. LLLLL .EQ. LLL .OR. LLLLL .EQ. LL .OR. LLLLL .EQ. L) CYCLE
                                  IF (LNN(LLLLL) .GE. 2) CYCLE
                                  CALL OTHERNODECHK(K5,LLLLL,K6); IF (K6 ==0) CYCLE
-                                 IF ( RECHTSAF(K4,K5,K6) ) CYCLE
+                                 IF ( rechtsaf(K4,K5,K6) ) CYCLE
                                  IF (K6 .NE. K4 .AND. K6 .NE. K3 .AND. K6 .NE. K2 .AND. K6 .NE. K1) THEN
 
                                     kkkkkkk = 1
@@ -1920,7 +1920,7 @@
                                           LLLLLL .EQ. LLL .OR. LLLLLL .EQ. LL .OR. LLLLLL .EQ. L) CYCLE
                                        IF (LNN(LLLLLL) .GE. 2) CYCLE
                                        CALL OTHERNODECHK(K6,LLLLLL,K7); IF (K7 ==0) CYCLE
-                                       IF ( RECHTSAF(K5,K6,K7) ) CYCLE
+                                       IF ( rechtsaf(K5,K6,K7) ) CYCLE
                                        IF (K7 .EQ. K1) THEN  ! HEXA GEVONDEN
                                           IF (LNN(L)>1 .OR. LNN(LL)>1 .OR. LNN(LLL)>1 .OR.      &
                                              LNN(LLLL)>1 .OR. LNN(LLLLL)>1 .OR. LNN(LLLLLL)>1)  EXIT
@@ -2061,23 +2061,10 @@
    return
    end function iscounterclockwise
 
-   LOGICAL FUNCTION RECHTSAF(K1,K2,K3)
-   use network_data
-   implicit none
-   integer :: K1, K2, K3
-
-   logical, external :: rechtsaf_active
-
-   double precision :: sig
-
+   LOGICAL FUNCTION rechtsaf(K1,K2,K3)
+   integer, intent(in) :: K1, K2, K3
    rechtsaf = .false.
-   return
-
-   rechtsaf = RECHTSAF_active(K1,K2,K3)
-
-   return
-
-   end FUNCTION RECHTSAF
+   end FUNCTION rechtsaf
 
    SUBROUTINE CONNECTDBN(K1,K2,LNU)
    implicit none

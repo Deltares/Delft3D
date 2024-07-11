@@ -28,9 +28,9 @@ module m_prpagg
 contains
 
 
-    subroutine PRPAGG   (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine PRPAGG   (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_properties
         use m_extract_waq_attribute
 
@@ -61,13 +61,13 @@ contains
 
         implicit none
 
-        real(kind = real_wp) :: pmsa  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(*), increm(*), noseg, noflux, &
-                iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(*), increm(*), num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !   local declarations
         !
-        integer(kind = int_wp) :: iseg, ikmrk1, ikmrk2, itel, noq, iq, ifrom, ipp
+        integer(kind = int_wp) :: iseg, ikmrk1, ikmrk2, itel, num_exchanges, iq, ifrom, ipp
         real(kind = real_wp) :: diameter1, density1, diameter2, density2, biofilm_thk, biofilm_density
         real(kind = real_wp) :: combined_diameter, combined_density, new_shape_factor
         real(kind = real_wp) :: settle_vel, tcr_sedim
@@ -81,8 +81,8 @@ contains
 
         integer(kind = int_wp) :: ntrwp, itrwp, nsusp, isusp, nitem, offset
 
-        ntrwp = pmsa(ipoint(ip_ntrwp))
-        nsusp = pmsa(ipoint(ip_nim))
+        ntrwp = process_space_real(ipoint(ip_ntrwp))
+        nsusp = process_space_real(ipoint(ip_nim))
         nitem = 4 + 2 * ntrwp + 2 * nsusp + 3 * ntrwp * nsusp !
 
         !
@@ -91,15 +91,15 @@ contains
 
         ipnt(1:nitem) = ipoint(1:nitem)
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
                 call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if (ikmrk2<=4) then   ! surface water
 
                     ! input independentt of fractions
-                    biofilm_thk = pmsa(ipnt(ip_BioFilmThk))
-                    biofilm_density = pmsa(ipnt(ip_BioFilmDen))
+                    biofilm_thk = process_space_real(ipnt(ip_BioFilmThk))
+                    biofilm_density = process_space_real(ipnt(ip_BioFilmDen))
 
                     ! loop over active fractions, IM are inner loop
                     itel = 0
@@ -107,18 +107,18 @@ contains
                         do isusp = 1, nsusp
 
                             itel = itel + 1
-                            diameter1 = pmsa(ipnt(ip_lastsingle + itrwp))
-                            density1 = pmsa(ipnt(ip_lastsingle + ntrwp + itrwp))
-                            diameter2 = pmsa(ipnt(ip_lastsingle + 2 * ntrwp + isusp))
-                            density2 = pmsa(ipnt(ip_lastsingle + 2 * ntrwp + nsusp + isusp))
+                            diameter1 = process_space_real(ipnt(ip_lastsingle + itrwp))
+                            density1 = process_space_real(ipnt(ip_lastsingle + ntrwp + itrwp))
+                            diameter2 = process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + isusp))
+                            density2 = process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + nsusp + isusp))
 
                             call add_biofilm(diameter1, density1, biofilm_thk, biofilm_density)
                             call combine_particles(diameter1, diameter2, density1, density2, &
                                     combined_diameter, combined_density, new_shape_factor)
                             call calculate_sedim(combined_diameter, combined_density, new_shape_factor, settle_vel, tcr_sedim)
 
-                            pmsa(ipnt(ip_lastsingle + 2 * ntrwp + 2 * nsusp + itel)) = settle_vel
-                            pmsa(ipnt(ip_lastsingle + 2 * ntrwp + 2 * nsusp + ntrwp * nsusp + itel)) = tcr_sedim
+                            process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + 2 * nsusp + itel)) = settle_vel
+                            process_space_real(ipnt(ip_lastsingle + 2 * ntrwp + 2 * nsusp + ntrwp * nsusp + itel)) = tcr_sedim
                         enddo
                     enddo
 
@@ -130,20 +130,20 @@ contains
 
         ! addition for use in 3D
 
-        NOQ = NOQ1 + NOQ2 + NOQ3
+        num_exchanges = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
         offset = ip_lastsingle + 2 * ntrwp + 2 * nsusp + 2 * ntrwp * nsusp
         ipnt(1:nitem) = ipoint(1:nitem)
-        do IQ = 1, NOQ1 + NOQ2
+        do IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
             itel = 0
             do itrwp = 1, ntrwp
                 do isusp = 1, nsusp
                     itel = itel + 1
-                    pmsa(ipnt(offset + itel)) = 0.0
+                    process_space_real(ipnt(offset + itel)) = 0.0
                 enddo
             enddo
             ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
         enddo
-        do  IQ = NOQ1 + NOQ2 + 1, NOQ
+        do  IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges
             ifrom = IEXPNT(1, IQ)
             !
             !       Sedimentation velocity from segment to exchange-area
@@ -154,8 +154,8 @@ contains
                     do isusp = 1, nsusp
                         itel = itel + 1
                         ipp = ip_lastsingle + 2 * ntrwp + 2 * nsusp + itel
-                        settle_vel = PMSA(ipoint(ipp) + (ifrom - 1) * increm(ipp))
-                        pmsa(ipnt(offset + itel)) = settle_vel
+                        settle_vel = process_space_real(ipoint(ipp) + (ifrom - 1) * increm(ipp))
+                        process_space_real(ipnt(offset + itel)) = settle_vel
                     enddo
                 enddo
             ENDIF

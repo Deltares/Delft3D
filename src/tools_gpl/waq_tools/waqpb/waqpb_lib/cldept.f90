@@ -38,7 +38,7 @@
 
       do 10 ifort = 1,nfort
    10 fort_i(ifort) = 0
-      do 20 iproc = 1,nproc
+      do 20 iproc = 1,num_processes_activated
           ifort = index_in_array(procfo(iproc),fortid(:nfort))
           if ( ifort .le. 0 ) then
               write (*,*) procfo(iproc)
@@ -75,7 +75,7 @@
           endif
    70 continue
 !          Check R4
-      do 80 ioutp = 1,noutp
+      do 80 ioutp = 1,num_output_files
           iitem = index_in_array(outpit(ioutp),itemid(:nitem))
           if ( iitem .le. 0 ) stop ' ITEM table WRONG!!!'
           item_i(iitem) = 1

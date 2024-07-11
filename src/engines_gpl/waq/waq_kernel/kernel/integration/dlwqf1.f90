@@ -30,26 +30,26 @@ contains
 
     !> Create a zero based row pointer and direct mapping 
     !! from iq to the matrix with fmat and tmat for from and to
-    subroutine dlwqf1(noseg, nobnd, noq, noq1, noq2, &
-            nomat, ipoint, iwrk, imat, rowpnt, &
+    subroutine dlwqf1(num_cells, num_boundary_conditions, num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, &
+            fast_solver_arr_size, ipoint, iwrk, imat, rowpnt, &
             fmat, tmat)
 
         use m_logger_helper, only : stop_with_error
         use timers
         implicit none
 
-        integer(kind = int_wp), intent(in   ) :: noseg                   !< Number of volumes
-        integer(kind = int_wp), intent(in   ) :: nobnd                   !< Number of volumes
-        integer(kind = int_wp), intent(in   ) :: noq                     !< Number of exchanges
-        integer(kind = int_wp), intent(in   ) :: noq1                    !< Number of exchanges in first direction
-        integer(kind = int_wp), intent(in   ) :: noq2                    !< Number of exchanges in second direction
-        integer(kind = int_wp), intent(in   ) :: nomat                   !< Dimension of sparse matrix
-        integer(kind = int_wp), intent(in   ) :: ipoint(4, noq)          !< Exchange pointers (dim: 4 x noq)
-        integer(kind = int_wp), intent(inout) :: iwrk(noseg + nobnd)     !< Workspace
-        integer(kind = int_wp), intent(out  ) :: imat(nomat)             !< Column indeces per row of sparse matrix
-        integer(kind = int_wp), intent(out  ) :: rowpnt(0:noseg + nobnd) !< Row index, contains row lengths of mat (elsewhere: itrac)
-        integer(kind = int_wp), intent(out  ) :: fmat(noq)               !< Location from(iq) in matrix
-        integer(kind = int_wp), intent(out  ) :: tmat(noq)               !< Location to  (iq) in matrix
+        integer(kind = int_wp), intent(in   ) :: num_cells                   !< Number of volumes
+        integer(kind = int_wp), intent(in   ) :: num_boundary_conditions                   !< Number of volumes
+        integer(kind = int_wp), intent(in   ) :: num_exchanges                     !< Number of exchanges
+        integer(kind = int_wp), intent(in   ) :: num_exchanges_u_dir                    !< Number of exchanges in first direction
+        integer(kind = int_wp), intent(in   ) :: num_exchanges_v_dir                    !< Number of exchanges in second direction
+        integer(kind = int_wp), intent(in   ) :: fast_solver_arr_size                   !< Dimension of sparse matrix
+        integer(kind = int_wp), intent(in   ) :: ipoint(4, num_exchanges)          !< Exchange pointers (dim: 4 x num_exchanges)
+        integer(kind = int_wp), intent(inout) :: iwrk(num_cells + num_boundary_conditions)     !< Workspace
+        integer(kind = int_wp), intent(out  ) :: imat(fast_solver_arr_size)             !< Column indeces per row of sparse matrix
+        integer(kind = int_wp), intent(out  ) :: rowpnt(0:num_cells + num_boundary_conditions) !< Row index, contains row lengths of mat (elsewhere: itrac)
+        integer(kind = int_wp), intent(out  ) :: fmat(num_exchanges)               !< Location from(iq) in matrix
+        integer(kind = int_wp), intent(out  ) :: tmat(num_exchanges)               !< Location to  (iq) in matrix
 
         ! Local declarations
         integer(kind = int_wp) :: i    !< Index from cells
@@ -72,7 +72,7 @@ contains
         tmat = 0
 
         ! compute number of off-diagonals per row for first 2 directions
-        do iq = 1, noq1 + noq2
+        do iq = 1, num_exchanges_u_dir + num_exchanges_v_dir
             i = ipoint(1, iq)
             j = ipoint(2, iq)
             if (i == 0 .or. j == 0) cycle
@@ -82,31 +82,31 @@ contains
 
         ! see if there is a third direction
         iadd = 0
-        if (noq /= noq1 + noq2) iadd = 2  !  in 3D first 2 co diagonals are the vertical
+        if (num_exchanges /= num_exchanges_u_dir + num_exchanges_v_dir) iadd = 2  !  in 3D first 2 co diagonals are the vertical
 
         ! accumulate to pointer start of rows
         rowpnt(0) = 0
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             rowpnt(iseg) = rowpnt(iseg) + rowpnt(iseg - 1) + iadd
         enddo
-        do iseg = noseg + 1, noseg + nobnd
+        do iseg = num_cells + 1, num_cells + num_boundary_conditions
             rowpnt(iseg) = rowpnt(iseg - 1)
         enddo
-        if (rowpnt(noseg + nobnd) > nomat) then
+        if (rowpnt(num_cells + num_boundary_conditions) > fast_solver_arr_size) then
             write (*, *) ' System error in fast solvers matrix.'
-            write (*, *) ' NOMAT = ', nomat, ', Required = ', rowpnt(noseg + nobnd)
+            write (*, *) ' fast_solver_arr_size = ', fast_solver_arr_size, ', Required = ', rowpnt(num_cells + num_boundary_conditions)
             call stop_with_error()
         endif
 
         ! fill the (pointers in) matrix for the first 2 directions
-        do iq = 1, noq1 + noq2
+        do iq = 1, num_exchanges_u_dir + num_exchanges_v_dir
             i = ipoint(1, iq)
             j = ipoint(2, iq)
             if (i == 0 .or. j == 0) cycle
             i2 = i
-            if (i < 0) i2 = noseg - i
+            if (i < 0) i2 = num_cells - i
             j2 = j
-            if (j < 0) j2 = noseg - j
+            if (j < 0) j2 = num_cells - j
             if (i > 0) then
                 ip = iwrk(i) + 1 + iadd
                 if (i > 1) ip = ip + rowpnt(i - 1)
@@ -124,14 +124,14 @@ contains
         enddo
 
         ! fill the matrix for the last direction
-        do iq = noq1 + noq2 + 1, noq
+        do iq = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges
             i = ipoint(1, iq)
             j = ipoint(2, iq)
             if (i == 0 .or. j == 0) cycle
             i2 = i
-            if (i < 0) i2 = noseg - i
+            if (i < 0) i2 = num_cells - i
             j2 = j
-            if (j < 0) j2 = noseg - j
+            if (j < 0) j2 = num_cells - j
             if (i > 0) then
                 if (j < i) then        ! first  off-diagonal element -> previous layer
                     ip = 1

@@ -63,6 +63,14 @@ def branch(xml_tree: etree._ElementTree, prefix: str) -> Dict[str, Any]:
 
 # Parse the xml configuration file
 class XmlConfigParser(object):
+    def __init__(self, settings: Optional[TestBenchSettings] = None):
+        """initialize defaults"""
+        self.__testbench_settings: TestBenchSettings = settings
+        self.__credentials: List[Credentials] = []
+        self.__locations: List[Location] = []
+        self.__program_configs: List[ProgramConfig] = []
+        self.__default_cases: List[TestCaseConfig] = []
+
     def load(
         self, settings: TestBenchSettings, logger: IMainLogger
     ) -> Tuple[LocalPaths, List[ProgramConfig], List[TestCaseConfig]]:
@@ -77,7 +85,6 @@ class XmlConfigParser(object):
         """
         self.__testbench_settings = settings
         self.__validate__()
-        self.__initialize__()
         self.__credentials.append(settings.credentials)
 
         return self.__parse__(logger)
@@ -181,19 +188,21 @@ class XmlConfigParser(object):
             return config
         return None
 
+    def __remove_xml_base(self, xml_doc):
+        """Remove xml:base element added by xinclude"""
+        for elem in xml_doc.iter():
+            if "{http://www.w3.org/XML/1998/namespace}base" in elem.attrib:
+                del elem.attrib["{http://www.w3.org/XML/1998/namespace}base"]
+
     def __validate__(self):
         """validate Xml file format"""
-        # parser = make_parser()
-        # parser.setContentHandler(ContentHandler())
-        # parser.parse(self.__path)
-        pass
-
-    def __initialize__(self):
-        """initialize defaults"""
-        self.__credentials: List[Credentials] = []
-        self.__locations: List[Location] = []
-        self.__program_configs: List[ProgramConfig] = []
-        self.__default_cases: List[TestCaseConfig] = []
+        xmlschema_doc = etree.parse("configs/xsd/deltaresTestbench.xsd")
+        xmlschema = etree.XMLSchema(xmlschema_doc)
+        parser = etree.XMLParser(load_dtd=True)
+        xml_doc: etree._ElementTree = etree.parse(self.__testbench_settings.config_file, parser)
+        xml_doc.xinclude()
+        self.__remove_xml_base(xml_doc)
+        xmlschema.assertValid(xml_doc)
 
     # parse the xml file
     # output: loglevel, local paths, program configs and test case configs

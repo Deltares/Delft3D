@@ -56,7 +56,7 @@ subroutine unc_write_his(tim)            ! wrihis
     use m_partitioninfo
     use m_timer
     use m_sediment
-    use m_flowexternalforcings, only: numtracers, trnames
+    use fm_external_forcings_data, only: numtracers, trnames
     use m_transport, only: NUMCONST_MDU, ITRA1, ITRAN, ISED1, ISEDN, const_names, const_units, NUMCONST, itemp, isalt
     use m_structures
     use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user, jawaqproc
@@ -1315,7 +1315,7 @@ contains
             trim(statcoordstring) // ' zcoordinate_w', geometry = 'station_geom', fillVal = dmiss, extra_attributes = extra_attributes)
 
          call definencvar(ihisfile, id_zwu, nc_precision, [id_laydimw, id_statdim, id_timedim], &
-            'zcoordinate_wu', 'vertical coordinate at edge of flow element and at layer interface', 'm', &
+            'zcoordinate_wu', 'vertical coordinate at nearest edge of flow element and at layer interface', 'm', &
             trim(statcoordstring) // ' zcoordinate_wu', geometry = 'station_geom', fillVal = dmiss, extra_attributes = extra_attributes)
       end if
    end function unc_def_his_station_coord_vars_z

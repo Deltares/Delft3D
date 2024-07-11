@@ -36,8 +36,8 @@ contains
     !! The update makes use of the pre-computed flowtot and disptot arrays for this substance.
     !! They contain the flow and disp plus additional velocity and dispersion terms.
     !! This avoids to have that logics again in this routine.
-    subroutine dlwqf7(isys, nosys, notot, noseg, conc, &
-                      concvt, nobnd, bound, noq, ipoint, &
+    subroutine dlwqf7(isys, num_substances_transported, num_substances_total, num_cells, conc, &
+                      concvt, num_boundary_conditions, bound, num_exchanges, ipoint, &
                       flowtot, disptot, amass2, ndmpq, iqdmp, &
                       dmpq, iknmrk, idt)
 
@@ -47,22 +47,22 @@ contains
         implicit none
 
         integer(kind=int_wp), intent(in   ) :: isys                  !< current transported substance
-        integer(kind=int_wp), intent(in   ) :: nosys                 !< number of active substances
-        integer(kind=int_wp), intent(in   ) :: notot                 !< total number of substances
-        integer(kind=int_wp), intent(in   ) :: noseg                 !< number of cells or computational volumes
-        real(kind=real_wp),   intent(inout) :: conc(notot, noseg)    !< concentration vector to store results
-        real(kind=dp),        intent(in   ) :: concvt(noseg)         !< newly obtained concentration from the solver
-        integer(kind=int_wp), intent(in   ) :: nobnd                 !< number of volumes with open boundaries
-        real(kind=real_wp),   intent(in   ) :: bound(nosys, nobnd)   !< boundary concentrations
-        integer(kind=int_wp), intent(in   ) :: noq                   !< number of exchanges between volumes
-        integer(kind=int_wp), intent(in   ) :: ipoint(4, noq)        !< exchange pointers
-        real(kind=real_wp),   intent(in   ) :: flowtot(noq)          !< flows plus additional velos.
-        real(kind=real_wp),   intent(in   ) :: disptot(noq)          !< dispersion plus additional dipers.
-        real(kind=real_wp),   intent(inout) :: amass2(notot, 5)      !< mass balance array for the whole model area
+        integer(kind=int_wp), intent(in   ) :: num_substances_transported                 !< number of active substances
+        integer(kind=int_wp), intent(in   ) :: num_substances_total                 !< total number of substances
+        integer(kind=int_wp), intent(in   ) :: num_cells                 !< number of cells or computational volumes
+        real(kind=real_wp),   intent(inout) :: conc(num_substances_total, num_cells)    !< concentration vector to store results
+        real(kind=dp),        intent(in   ) :: concvt(num_cells)         !< newly obtained concentration from the solver
+        integer(kind=int_wp), intent(in   ) :: num_boundary_conditions                 !< number of volumes with open boundaries
+        real(kind=real_wp),   intent(in   ) :: bound(num_substances_transported, num_boundary_conditions)   !< boundary concentrations
+        integer(kind=int_wp), intent(in   ) :: num_exchanges                   !< number of exchanges between volumes
+        integer(kind=int_wp), intent(in   ) :: ipoint(4, num_exchanges)        !< exchange pointers
+        real(kind=real_wp),   intent(in   ) :: flowtot(num_exchanges)          !< flows plus additional velos.
+        real(kind=real_wp),   intent(in   ) :: disptot(num_exchanges)          !< dispersion plus additional dipers.
+        real(kind=real_wp),   intent(inout) :: amass2(num_substances_total, 5)      !< mass balance array for the whole model area
         integer(kind=int_wp), intent(in   ) :: ndmpq                 !< number of dumped exchanges
-        integer(kind=int_wp), intent(in   ) :: iqdmp(noq)            !< pointers dumped exchages
-        real(kind=real_wp),   intent(inout) :: dmpq(nosys, ndmpq, 2) !< flux accumulation array for monitoring areas
-        integer(kind=int_wp), intent(in   ) :: iknmrk(noseg)         !< feature array, bit zero indicates wet or not
+        integer(kind=int_wp), intent(in   ) :: iqdmp(num_exchanges)            !< pointers dumped exchages
+        real(kind=real_wp),   intent(inout) :: dmpq(num_substances_transported, ndmpq, 2) !< flux accumulation array for monitoring areas
+        integer(kind=int_wp), intent(in   ) :: iknmrk(num_cells)         !< feature array, bit zero indicates wet or not
         integer(kind=int_wp), intent(in   ) :: idt                   !< time step
 
         ! Local variables
@@ -76,7 +76,7 @@ contains
 
         if (timon) call timstrt("dlwqf7", ithandl)
         ! put result in the concentration array
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             if (btest(iknmrk(iseg), 0)) then
                 conc(isys, iseg) = concvt(iseg)
             else
@@ -85,7 +85,7 @@ contains
         end do
 
         ! flow and diffusion
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             ! only compute where needed

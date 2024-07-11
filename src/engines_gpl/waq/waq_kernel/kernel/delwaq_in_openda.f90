@@ -45,14 +45,14 @@ contains
 
 
     ! todo: implement this!
-    subroutine openda_quantities_initialize(notot, nobnd)
+    subroutine openda_quantities_initialize(num_substances_total, num_boundary_conditions)
 
         implicit none
 
-        integer(kind = int_wp) :: notot, nobnd
+        integer(kind = int_wp) :: num_substances_total, num_boundary_conditions
 
-        !  max_quantity_ids = notot
-        !  max_location_ids = nobnd
+        !  max_quantity_ids = num_substances_total
+        !  max_location_ids = num_boundary_conditions
 
     end subroutine openda_quantities_initialize
 
@@ -103,7 +103,7 @@ contains
     !> Retrieves the value of the OpenDA buffer
     !! in the variable qarray
     subroutine get_openda_buffer(quantity, loc_from_waq, dim1, dim2, qarray)
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
 
         implicit none
 
@@ -122,7 +122,7 @@ contains
         quantity_id = -1
 
         ! first check the substance
-        if (quantity <= notot) then
+        if (quantity <= num_substances_total) then
             quantity_id = quantity
         endif
         ! Now, assume that we only support the setting of boundary conditions!

@@ -30,7 +30,6 @@ class TestBenchSettings:
     config_file: str = ""
     credentials: Credentials = Credentials()
     filter: str = ""
-    autocommit: bool = False
     skip_run: bool = False
     skip_download: List[PathType] = []
     teamcity: bool = False

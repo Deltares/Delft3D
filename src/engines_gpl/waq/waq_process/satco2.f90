@@ -28,9 +28,9 @@ module m_satco2
 contains
 
 
-    subroutine satco2 (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine satco2 (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Saturation concentration carbon dioxide
 
@@ -60,9 +60,9 @@ contains
         USE PHYSICALCONSTS, ONLY : CtoKelvin
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declarations
         !
@@ -87,13 +87,13 @@ contains
         IP5 = IPOINT(5)
         IP6 = IPOINT(6)
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
-            CL2 = PMSA(IP1) / 1000.
-            TEMP = PMSA(IP2)
-            SWITCH = NINT(PMSA(IP3))
-            SAL = PMSA(IP4)
-            PAPCO2 = PMSA(IP5)
+            CL2 = process_space_real(IP1) / 1000.
+            TEMP = process_space_real(IP2)
+            SWITCH = NINT(process_space_real(IP3))
+            SAL = process_space_real(IP4)
+            PAPCO2 = process_space_real(IP5)
 
             IF (SWITCH == 1) THEN
 
@@ -140,7 +140,7 @@ contains
             !     Output of calculated saturation
 
             CO2SAT = PAPCO2 * RKCO2 * 1000. * 44.
-            PMSA (IP6) = CO2SAT
+            process_space_real (IP6) = CO2SAT
             !
             !jvb  ENDIF
             !

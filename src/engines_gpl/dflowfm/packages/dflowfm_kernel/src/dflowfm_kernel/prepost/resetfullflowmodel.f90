@@ -38,7 +38,7 @@
  use m_physcoef
  use m_turbulence
  use m_flow
- use m_flowexternalforcings
+ use fm_external_forcings_data
  use m_flowparameters
  use m_flowgeom
  use m_modelbounds
@@ -125,7 +125,7 @@
 
     call default_modelbounds()
 
-    call default_flowexternalforcings()
+    call default_fm_external_forcing_data()
 
     call default_channel_flow()
 

@@ -68,7 +68,7 @@ public :: fm_bott3d
    use sediment_basics_module
    use m_flowgeom , only: ndxi, ndx
    use m_flowparameters, only: eps10, jawave 
-   use m_flowexternalforcings, only: nopenbndsect
+   use fm_external_forcings_data, only: nopenbndsect
    use m_flowtimes, only: dts, tstart_user, time1, tfac, ti_sed, ti_seds, handle_extra
    use m_transport, only: ised1
    use unstruc_files, only: mdia
@@ -771,7 +771,7 @@ public :: fm_bott3d
    use table_handles , only: handletype, gettabledata
    use m_flowtimes, only: julrefdat, time1
    use m_partitioninfo, only: idomain, jampi, my_rank, reduce_sum
-   use m_flowexternalforcings, only: nopenbndsect
+   use fm_external_forcings_data, only: nopenbndsect
    
    implicit none
 
@@ -1777,7 +1777,7 @@ public :: fm_bott3d
    use m_dad, only: dad_included
    use m_fm_update_crosssections, only: fm_update_crosssections
    use morphology_data_module, only: bedbndtype
-   use m_flowexternalforcings, only: nopenbndsect
+   use fm_external_forcings_data, only: nopenbndsect
    use m_fm_dredge, only: fm_dredge
    
    implicit none

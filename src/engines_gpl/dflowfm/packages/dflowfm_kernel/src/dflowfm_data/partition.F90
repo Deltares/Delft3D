@@ -3450,7 +3450,7 @@ end subroutine partition_make_globalnumbers
    
 !> sum at_all for q-boundaries
    subroutine reduce_at_all()
-      use  m_flowexternalforcings
+      use  fm_external_forcings_data
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -3468,7 +3468,7 @@ end subroutine partition_make_globalnumbers
    
 !> sum wwssav_all for q-boundaries
    subroutine reduce_wwssav_all()
-      use  m_flowexternalforcings
+      use  fm_external_forcings_data
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -3486,7 +3486,7 @@ end subroutine partition_make_globalnumbers
    
 !> sum atqh_all for qh-boundaries
    subroutine reduce_atqh_all()
-      use  m_flowexternalforcings
+      use  fm_external_forcings_data
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -4651,7 +4651,7 @@ end subroutine partition_make_globalnumbers
       firstFilter, firstFilterValue, secondFilter, secondFilterValue ) result(ierr)
 
    use mpi
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_timer
 
    !inputs
@@ -6620,7 +6620,7 @@ end module m_partitioninfo
    
 !> see if a discharge boundary is partitioned and set japartqbnd
    subroutine set_japartqbnd()
-      use m_flowexternalforcings
+      use fm_external_forcings_data
       use m_partitioninfo
 #ifdef HAVE_MPI
       use mpi
@@ -6877,7 +6877,7 @@ end subroutine set_edge_weights_and_vsize_with_halo
     
 !> set idomain values for all open boundary cells
 subroutine set_idomain_for_all_open_boundaries()
-   use m_flowexternalforcings, only: nbndz, kez, nbndu, keu, ke1d2d
+   use fm_external_forcings_data, only: nbndz, kez, nbndu, keu, ke1d2d
    use m_sobekdfm            , only: nbnd1d2d
    use m_cell_geometry       , only: ndx 
    use m_partitioninfo       , only: idomain

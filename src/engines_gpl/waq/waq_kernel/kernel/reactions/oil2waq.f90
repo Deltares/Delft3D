@@ -29,11 +29,11 @@ module m_oil2waq
 contains
 
 
-    subroutine oil2waq (nopart, nosys, notot, nosubs, noseg, &
-            nolay, volume, surface, nmax, mmax, &
+    subroutine oil2waq (nopart, num_substances_transported, num_substances_total, nosubs, num_cells, &
+            num_layers, volume, surface, num_rows, num_columns, &
             lgrida, syname, itime, iddtim, npwndw, &
             iptime, npart, mpart, kpart, wpart, &
-            amass, conc, iaflag, intopt, ndmps, &
+            amass, conc, iaflag, intopt, num_monitoring_cells, &
             isdmp, dmps, amass2)
 
         !     Deltares Software Centre
@@ -66,17 +66,17 @@ contains
         !     kind           function         name                      description
 
         integer(kind = int_wp), intent(in) :: nopart                  !< total number of particles
-        integer(kind = int_wp), intent(in) :: nosys                   !< transported substances in delwaq
-        integer(kind = int_wp), intent(in) :: notot                   !< total substances in delwaq
+        integer(kind = int_wp), intent(in) :: num_substances_transported                   !< transported substances in delwaq
+        integer(kind = int_wp), intent(in) :: num_substances_total                   !< total substances in delwaq
         integer(kind = int_wp), intent(in) :: nosubs                  !< total substances in delpar
-        integer(kind = int_wp), intent(in) :: noseg                   !< total number of gridcells in delwaq
-        integer(kind = int_wp), intent(in) :: nolay                   !< number of layers in delwaq
-        real(kind = real_wp), intent(in) :: volume (noseg)          !< delwaq volumes
-        real(kind = real_wp), intent(in) :: surface(noseg)          !< delwaq horizontal surfaces
-        integer(kind = int_wp), intent(in) :: nmax                    !< first grid dimension
-        integer(kind = int_wp), intent(in) :: mmax                    !< second grid dimension
-        integer(kind = int_wp), intent(in) :: lgrida (nmax, mmax)      !< active computational grid
-        character(20), intent(in) :: syname (notot)          !< names of the substances
+        integer(kind = int_wp), intent(in) :: num_cells                   !< total number of gridcells in delwaq
+        integer(kind = int_wp), intent(in) :: num_layers                   !< number of layers in delwaq
+        real(kind = real_wp), intent(in) :: volume (num_cells)          !< delwaq volumes
+        real(kind = real_wp), intent(in) :: surface(num_cells)          !< delwaq horizontal surfaces
+        integer(kind = int_wp), intent(in) :: num_rows                    !< first grid dimension
+        integer(kind = int_wp), intent(in) :: num_columns                    !< second grid dimension
+        integer(kind = int_wp), intent(in) :: lgrida (num_rows, num_columns)      !< active computational grid
+        character(20), intent(in) :: syname (num_substances_total)          !< names of the substances
         integer(kind = int_wp), intent(in) :: itime                   !< current time
         integer(kind = int_wp), intent(in) :: iddtim                  !< delwaq take-over delay time
         integer(kind = int_wp), intent(inout) :: npwndw                  !< first active particle in array
@@ -85,14 +85,14 @@ contains
         integer(kind = int_wp), intent(inout) :: mpart  (nopart)         !< second grid index particles
         integer(kind = int_wp), intent(inout) :: kpart  (nopart)         !< third grid index particles
         real(kind = real_wp), intent(inout) :: wpart  (nosubs, nopart) !< weight of the particles
-        real(kind = real_wp), intent(inout) :: amass  (notot, noseg) !< delwaq masses per cell
-        real(kind = real_wp), intent(inout) :: conc   (notot, noseg) !< delwaq concentrations per cell
+        real(kind = real_wp), intent(inout) :: amass  (num_substances_total, num_cells) !< delwaq masses per cell
+        real(kind = real_wp), intent(inout) :: conc   (num_substances_total, num_cells) !< delwaq concentrations per cell
         integer(kind = int_wp), intent(in) :: iaflag                  !< if 1 then accumulation of balances
         integer(kind = int_wp), intent(in) :: intopt                  !< integration suboptions
-        integer(kind = int_wp), intent(in) :: ndmps                   !< number of dumped volumes for balances
-        integer(kind = int_wp), intent(in) :: isdmp  (noseg)         !< volume to dump-location pointer
-        real(kind = real_wp), intent(inout) :: dmps   (notot, ndmps, *) !< dumped segment fluxes if INTOPT > 7
-        real(kind = real_wp), intent(inout) :: amass2 (notot, 5)     !< mass balance array
+        integer(kind = int_wp), intent(in) :: num_monitoring_cells
+        integer(kind = int_wp), intent(in) :: isdmp  (num_cells)         !< volume to dump-location pointer
+        real(kind = real_wp), intent(inout) :: dmps   (num_substances_total, num_monitoring_cells, *) !< dumped segment fluxes if INTOPT > 7
+        real(kind = real_wp), intent(inout) :: amass2 (num_substances_total, 5)     !< mass balance array
 
         !     Local declarations
 
@@ -115,15 +115,15 @@ contains
 
         if (.not. allocated(iwaqsub)) then
             allocate (iwaqsub(nosubs))
-            ioff = notot - nosubs
+            ioff = num_substances_total - nosubs
             do isub = 1, nosubs
                 partsub = syname(ioff + isub) (1:len_trim(syname(ioff + isub)) - 1) ! cut the 'p' off
                 iwaqsub(isub) = index_in_array(partsub, syname(:ioff))
                 if (iwaqsub(isub) < 0) iwaqsub(isub) = 0 ! not found!
-                if (iwaqsub(isub) > nosys) iwaqsub(isub) = -iwaqsub(isub)      ! not dissolved
+                if (iwaqsub(isub) > num_substances_transported) iwaqsub(isub) = -iwaqsub(isub)      ! not dissolved
             enddo
         endif
-        nosegl = noseg / nolay
+        nosegl = num_cells / num_layers
 
         do ipart = npwndw, nopart
             ic = lgrida(npart(ipart), mpart(ipart))
@@ -135,15 +135,25 @@ contains
                     isys = iwaqsub(isub)
                     if (isys == 0) cycle
                     if (isub==2.and.wpart(isub, ipart)>0) then
-                        amass(isys, iseg) = amass(isys, iseg) + wpart(isub, ipart)
-                        conc (isys, iseg) = amass(isys, iseg) / volume (iseg)
-                        if (massbal) amass2(isys, 3) = amass2(isys, 3) + wpart(isub, ipart)
-                        if (ipb > 0 .and. fluxes) &
-                                dmps  (isys, ipb, 2) = dmps  (isys, ipb, 2) + wpart(isub, ipart)
+                        if (isys < 0) then
+                            isys = abs(isys)
+                            amass(isys, iseg) = amass(isys, iseg) + wpart(isub, ipart)
+                            conc (isys, iseg) = amass(isys, iseg) / surface(iseg)
+                        else
+                            amass(isys, iseg) = amass(isys, iseg) + wpart(isub, ipart)
+                            conc (isys, iseg) = amass(isys, iseg) / volume (iseg)
+                        endif
+                        if (massbal) then
+                            amass2(isys, 3) = amass2(isys, 3) + wpart(isub, ipart)
+                        end if
+                        if (ipb > 0 .and. fluxes) then
+                            dmps(isys, ipb, 2) = dmps(isys, ipb, 2) + wpart(isub, ipart)
+                        end if
                         npart (ipart) = 1
                         mpart (ipart) = 1
                         kpart (ipart) = 1
                         iptime(ipart) = 0
+                        wpart(isub, ipart) = 0.0
                     endif
                 enddo
             endif

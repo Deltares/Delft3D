@@ -728,12 +728,12 @@ type sedtra_type
     !
     real(fp)         , dimension(:)      , pointer :: bc_mor_array !(lsedtot*2)
     !
-    real(fp)         , dimension(:)      , pointer :: dcwwlc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: epsclc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: epswlc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: rsdqlc   !(1:kmax)
-    real(fp)         , dimension(:)      , pointer :: sddflc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: wslc     !(0:kmax)
+    real(fp)         , dimension(:)      , pointer :: dcwwlc   !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: epsclc   !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: epswlc   !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: rsdqlc   !(1:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: sddflc   !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: wslc     !(0:num_layers_grid)
     !
     real(fp)         , dimension(:)      , pointer :: e_dzdn   !(nu1:nu2)         dzduu in structured Delft3D-FLOW
     real(fp)         , dimension(:)      , pointer :: e_dzdt   !(nu1:nu2)         dzdvv in structured Delft3D-FLOW
@@ -901,14 +901,14 @@ end subroutine nullsedtra
 
 
 !> Allocate the arrays of sedtra_type data structure.
-subroutine allocsedtra(sedtra, moroutput, kmax, lsed, lsedtot, nc1, nc2, nu1, nu2, nxx, nstatqnt, iopt)
+subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, nc2, nu1, nu2, nxx, nstatqnt, iopt)
 !!--declarations----------------------------------------------------------------
     !
     ! Function/routine arguments
     !
     type (sedtra_type)                                       :: sedtra
     type (moroutputtype)                                     :: moroutput
-    integer                                    , intent(in)  :: kmax
+    integer                                    , intent(in)  :: num_layers_grid
     integer                                    , intent(in)  :: lsed
     integer                                    , intent(in)  :: lsedtot
     integer                                    , intent(in)  :: nc1
@@ -935,12 +935,12 @@ subroutine allocsedtra(sedtra, moroutput, kmax, lsed, lsedtot, nc1, nc2, nu1, nu
     !
     if (istat==0) allocate(sedtra%bc_mor_array (lsedtot*2), STAT = istat)
     !
-    if (istat==0) allocate(sedtra%dcwwlc  (0:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%epsclc  (0:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%epswlc  (0:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%rsdqlc  (1:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%sddflc  (0:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%wslc    (0:kmax), STAT = istat)
+    if (istat==0) allocate(sedtra%dcwwlc  (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%epsclc  (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%epswlc  (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%rsdqlc  (1:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%sddflc  (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%wslc    (0:num_layers_grid), STAT = istat)
     !
     if (istat==0) allocate(sedtra%e_dzdn  (nu1:nu2), STAT = istat)
     if (istat==0) allocate(sedtra%e_dzdt  (nu1:nu2), STAT = istat)

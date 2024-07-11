@@ -60,7 +60,7 @@
 !     call IGrCharSize(3.0,3.0)
 !     call IGrCharJustify ('C')
 
-      do 10 k = 1,ntxt
+      do k = 1,ntxt
          call SETCOL (coltxt(k))
 
 !        call IGRMOVETO    ( xtxt(k),ytxt(k) )
@@ -77,7 +77,7 @@
          ia = len_trim(xytexts(k))
          call IGrCharJustify ('L')
          call DRAWTEXT   ( real(xtxt(k)+1.1*rcir),real(ytxt(k)),xytexts(k)(1:ia))
-   10 continue
+      end do
 
       call IGrCharSize (0.5,0.5)
 

@@ -36,8 +36,8 @@ module inputs_block_5
 contains
 
     subroutine read_block_5_boundary_conditions(file_unit_list, file_name_list, filtype, char_arr, int_array, &
-            real_array, nrftot, nrharm, nobnd, nosys, &
-            notot, nobtyp, max_real_size, max_int_size, is_date_format, &
+            real_array, nrftot, nrharm, num_boundary_conditions, num_substances_transported, &
+            num_substances_total, num_boundary_types, max_real_size, max_int_size, is_date_format, &
             iwidth, intsrt, is_yyddhh_format, sname, &
             max_char_size, output_verbose_level, status)
         !! Reads all inputs associated with open boundaries
@@ -70,10 +70,10 @@ contains
         real(kind = real_wp), intent(inout) :: real_array(max_real_size)         !< real    workspace
         integer(kind = int_wp), intent(inout) :: nrftot(*)          !< number of function items
         integer(kind = int_wp), intent(inout) :: nrharm(*)          !< number of harmonic items
-        integer(kind = int_wp), intent(inout) :: nobnd              !< number of open model boundaries
-        integer(kind = int_wp), intent(in) :: notot              !< total number of substances
-        integer(kind = int_wp), intent(inout) :: nosys              !< number of transported substances
-        integer(kind = int_wp), intent(out) :: nobtyp             !< number of open model boundary types
+        integer(kind = int_wp), intent(inout) :: num_boundary_conditions              !< number of open model boundaries
+        integer(kind = int_wp), intent(in) :: num_substances_total              !< total number of substances
+        integer(kind = int_wp), intent(inout) :: num_substances_transported              !< number of transported substances
+        integer(kind = int_wp), intent(out) :: num_boundary_types             !< number of open model boundary types
         integer(kind = int_wp), intent(in) :: max_int_size              !< size of the integer workspace
         logical, intent(in) :: is_date_format             !< 'date'-format 1st timescale
         integer(kind = int_wp), intent(in) :: iwidth             !< width of the output file
@@ -120,7 +120,7 @@ contains
         ierr2 = 0
         iwar2 = 0
 
-        if (nobnd == 0) then
+        if (num_boundary_conditions == 0) then
             write (file_unit, 2000)
             ifound = gettoken (character_output, idummy, rdummy, itype, ierr2)
             if (ierr2 == 2) then
@@ -136,14 +136,14 @@ contains
 
         ! read boundary names, from version 4.9 on names are id's names are 40 characters
         ! types are 20 characters
-        allocate(bndid(nobnd), bndname(nobnd), bndtype(nobnd), bndid_long(nobnd), bndtype_long(nobnd), &
-                ibndtype(nobnd), stat = ierr_alloc)
+        allocate(bndid(num_boundary_conditions), bndname(num_boundary_conditions), bndtype(num_boundary_conditions), bndid_long(num_boundary_conditions), bndtype_long(num_boundary_conditions), &
+                ibndtype(num_boundary_conditions), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             write (file_unit, 2300) ierr_alloc
-            write (file_unit, 2310) nobnd
+            write (file_unit, 2310) num_boundary_conditions
             call stop_with_error()
         endif
-        nobtyp = 0
+        num_boundary_types = 0
         if (output_verbose_level < 3) then
             write (file_unit, 2005)
         else
@@ -155,7 +155,7 @@ contains
         endif
         ierr2 = 0
 
-        do i = 1, nobnd
+        do i = 1, num_boundary_conditions
             ibndtype(i) = 0
             bndid_long(i) = ' '
             bndname(i) = ' '
@@ -214,8 +214,8 @@ contains
             endif
 
             ! check if truncated type and non truncated type give the same number
-            itype = index_in_array(bndtype(i), bndtype(:nobtyp))
-            ityp2 = index_in_array(bndtype_long(i), bndtype_long(:nobtyp))
+            itype = index_in_array(bndtype(i), bndtype(:num_boundary_types))
+            ityp2 = index_in_array(bndtype_long(i), bndtype_long(:num_boundary_types))
             if (itype /= ityp2) then
                 write(file_unit, 2290) trim(bndtype_long(i))
                 call status%increase_error_count()
@@ -225,10 +225,10 @@ contains
             if (itype > 0) then
                 ibndtype(i) = itype
             else
-                nobtyp = nobtyp + 1
-                bndtype(nobtyp) = bndtype(i)
-                bndtype_long(nobtyp) = bndtype_long(i)
-                ibndtype(i) = nobtyp
+                num_boundary_types = num_boundary_types + 1
+                bndtype(num_boundary_types) = bndtype(i)
+                bndtype_long(num_boundary_types) = bndtype_long(i)
+                ibndtype(i) = num_boundary_types
             endif
 
             ! write id and name to system file
@@ -237,23 +237,23 @@ contains
         end do
 
         write (file_unit, *)
-        write (file_unit, 2060) nobtyp
+        write (file_unit, 2060) num_boundary_types
         if (output_verbose_level < 2) then
             write (file_unit, 2065)
         else
             write (file_unit, 2066)
-            do i = 1, nobtyp
+            do i = 1, num_boundary_types
                 write (file_unit, 2070) i, bndtype(i)
             end do
             write (file_unit, *)
         endif
-        write (binary_work_file)  (bndtype(i), i = 1, nobtyp)
-        write (binary_work_file)  (ibndtype(i), i = 1, nobnd)
+        write (binary_work_file)  (bndtype(i), i = 1, num_boundary_types)
+        write (binary_work_file)  (ibndtype(i), i = 1, num_boundary_conditions)
         deallocate(bndname, bndid_long, bndtype_long, ibndtype)
 
         ! dummy time lags
-        if (nosys == 0) then
-            write (binary_work_file) (0, i = 1, nobnd)
+        if (num_substances_transported == 0) then
+            write (binary_work_file) (0, i = 1, num_boundary_conditions)
             write (file_unit, 2090)
             goto 170
         endif
@@ -288,14 +288,14 @@ contains
 
         ! no time lags
         60 write (file_unit, 2120)
-        write (binary_work_file) (0, i = 1, nobnd)
+        write (binary_work_file) (0, i = 1, num_boundary_conditions)
         goto 160
 
         ! time lags constant without defaults
         70 write (file_unit, 2130)
-        if (max_int_size < nobnd) then
-            write (file_unit, 2140) nobnd, max_int_size, nobnd - max_int_size
-            do k = 1, nobnd
+        if (max_int_size < num_boundary_conditions) then
+            write (file_unit, 2140) num_boundary_conditions, max_int_size, num_boundary_conditions - max_int_size
+            do k = 1, num_boundary_conditions
                 itype = 2
                 call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                         iposr, npos, cdummy, idummy, real_output, &
@@ -305,7 +305,7 @@ contains
             call status%increase_error_count()
             goto 160
         endif
-        do k = 1, nobnd
+        do k = 1, num_boundary_conditions
             itype = 2
             call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                     iposr, npos, cdummy, int_array(k), real_output, &
@@ -318,22 +318,22 @@ contains
             write (file_unit, 2150)
         endif
         if (is_date_format) then
-            call convert_time_format (int_array, nobnd, ifact, is_date_format, is_yyddhh_format)
+            call convert_time_format (int_array, num_boundary_conditions, ifact, is_date_format, is_yyddhh_format)
             if (output_verbose_level >= 3) write (file_unit, 2160) &
                     (int_array(k) / 31536000, mod(int_array(k), 31536000) / 86400, &
                     mod(int_array(k), 86400) / 3600, mod(int_array(k), 3600) / 60, &
-                    mod(int_array(k), 60), k = 1, nobnd)
+                    mod(int_array(k), 60), k = 1, num_boundary_conditions)
         else
             if (output_verbose_level >= 3) write (file_unit, 2170) &
-                    (int_array(k), k = 1, nobnd)
+                    (int_array(k), k = 1, num_boundary_conditions)
         endif
-        do i = 1, nobnd
+        do i = 1, num_boundary_conditions
             if (int_array(i) < 0) then
                 write (file_unit, 2180) int_array(i)
                 call status%increase_error_count()
             endif
         end do
-        write (binary_work_file) (int_array(k), k = 1, nobnd)
+        write (binary_work_file) (int_array(k), k = 1, num_boundary_conditions)
         goto 160
 
         ! time lags constant with defaults
@@ -348,7 +348,7 @@ contains
             call status%increase_error_count()
         endif
         ! fill the array with the default
-        do i = 1, min(max_int_size, nobnd)
+        do i = 1, min(max_int_size, num_boundary_conditions)
             int_array(i) = idef
         end do
         ! nr of overridings
@@ -366,15 +366,15 @@ contains
         else
             write (file_unit, 2220) idef, nover
         endif
-        mxover = max_int_size - nobnd
+        mxover = max_int_size - num_boundary_conditions
         ! overridings
         do k = 1, min(nover, mxover)
             itype = 2
             call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
-                    iposr, npos, cdummy, int_array(k + nobnd), real_output, &
+                    iposr, npos, cdummy, int_array(k + num_boundary_conditions), real_output, &
                     itype, ierr2)
             if (ierr2 > 0) goto 170
-            ibnd = max(1, min(abs(int_array(k + nobnd)), nobnd))
+            ibnd = max(1, min(abs(int_array(k + num_boundary_conditions)), num_boundary_conditions))
             itype = 2
             call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                     iposr, npos, cdummy, int_array(ibnd), real_output, &
@@ -395,17 +395,17 @@ contains
             if (ierr2 > 0) goto 170
         end do
         if (nover > mxover) then
-            write (file_unit, 2200) nobnd, nover, max_int_size, nobnd + nover - max_int_size
+            write (file_unit, 2200) num_boundary_conditions, nover, max_int_size, num_boundary_conditions + nover - max_int_size
             call status%increase_error_count()
             goto 160
         endif
         if (is_date_format) &
-                call convert_time_format (int_array, nobnd, ifact, is_date_format, is_yyddhh_format)
+                call convert_time_format (int_array, num_boundary_conditions, ifact, is_date_format, is_yyddhh_format)
         if (nover > 0 .and. output_verbose_level >= 3) write (file_unit, 2230)
         do i = 1, nover
-            ibnd = abs(int_array(i + nobnd))
-            if (ibnd > nobnd .or. ibnd == 0) then
-                write (file_unit, 2180) int_array(i + nobnd)
+            ibnd = abs(int_array(i + num_boundary_conditions))
+            if (ibnd > num_boundary_conditions .or. ibnd == 0) then
+                write (file_unit, 2180) int_array(i + num_boundary_conditions)
                 call status%increase_error_count()
             elseif (output_verbose_level >= 3) then
                 it = int_array (ibnd)
@@ -419,18 +419,18 @@ contains
                 endif
             endif
         end do
-        write (binary_work_file) (int_array(k), k = 1, nobnd)
+        write (binary_work_file) (int_array(k), k = 1, num_boundary_conditions)
 
         ! read boundary concentrations
         ! this if block stands for the new input processing
         160 write (file_unit, 2260)
-        k = nobnd + 1
-        l = nobnd + nobtyp + 1
+        k = num_boundary_conditions + 1
+        l = num_boundary_conditions + num_boundary_types + 1
         allocate(dp_array(max_real_size))             ! this array is 100 mb lp
         call read_boundary_concentrations (file_unit_list, file_name_list, 14, iwidth, max_char_size, &
                 char_arr, max_int_size, int_array, max_real_size, real_array, &
-                sname, bndid, bndtype(1:nobtyp), nobnd, nosys, &
-                nobtyp, dp_array, is_date_format, is_yyddhh_format, &
+                sname, bndid, bndtype(1:num_boundary_types), num_boundary_conditions, num_substances_transported, &
+                num_boundary_types, dp_array, is_date_format, is_yyddhh_format, &
                 output_verbose_level, ierr2, status)
         deallocate(dp_array)
         deallocate(bndid, bndtype)
@@ -443,13 +443,13 @@ contains
         ENDIF
 
         IF (INTSRT == 6 .OR. INTSRT == 7) THEN
-            NOSUBS = NOTOT
+            NOSUBS = num_substances_total
         ELSE
-            NOSUBS = NOSYS
+            NOSUBS = num_substances_transported
         ENDIF
         ! IERRH = -1 signals read_constants_time_variables that it is boundaries to deal with
         IERRH = -1
-        call read_constants_time_variables   (file_unit_list, 14, 0, 0, nobnd, &
+        call read_constants_time_variables   (file_unit_list, 14, 0, 0, num_boundary_conditions, &
                 nosubs, nosubs, nrftot(8), nrharm(8), ifact, &
                 is_date_format, disper, volume, iwidth, file_name_list, &
                 filtype, is_yyddhh_format, output_verbose_level, ierrh, &

@@ -554,7 +554,7 @@ module m_1d2d_fixedweirs
   
       itu1  = 0
   
-  10  continue
+10    continue
   
       frL = cfuhi(L)*sqrt(u1L*u1L )      ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
       
@@ -567,7 +567,7 @@ module m_1d2d_fixedweirs
       if (huvli(L) > 1d0 .and. itu1 < 4 .and. abs( u1L-u1L0 ) > 1d-2 ) then  ! less than 1 m deep
          goto 10
       endif
-   enddo
+   end do
       
    end subroutine compfuru_1d2d_fixedweirs
 

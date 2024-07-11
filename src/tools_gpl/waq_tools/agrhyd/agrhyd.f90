@@ -319,12 +319,12 @@ program agrhyd
             write (*, '(a)') 'Reading patch administration ...'
             call read_hyd_init(input_patch_hyd(ipatch))
             ! some basic checks to see if the patch is for the same domain
-            if (input_hyd%noseg /= input_patch_hyd(ipatch)%noseg) then
+            if (input_hyd%num_cells /= input_patch_hyd(ipatch)%num_cells) then
                 write (lunrep, *) 'error: patch hyd file does not contain the same number of segments as the main hyd-file!'
                 write (*, *) 'error: patch hyd file does not contain the same number of segments as the main hyd-file!'
                 call stop_with_error()
             end if
-            if (input_hyd%noq /= input_patch_hyd(ipatch)%noq) then
+            if (input_hyd%num_exchanges /= input_patch_hyd(ipatch)%num_exchanges) then
                 write (lunrep, *) 'error: patch hyd file does not contain the same number of exchanges as the main hyd-file!'
                 write (*, *) 'error: patch hyd file does not contain the same number of exchanges as the main hyd-file!'
                 call stop_with_error()
@@ -338,20 +338,20 @@ program agrhyd
         if (.not. any(l_patch)) then
             inquire (file=input_hyd%file_src%name, exist=exist_src)
             if (exist_src) then
-                write (lunrep, *) 'reading src-file: '//trim(input_hyd%file_src%name)
-                write (*, *) 'reading src-file: '//trim(input_hyd%file_src%name)
-                call read_src(input_hyd%file_src, input_hyd%nolay, input_hyd%wasteload_coll, &
-                              input_hyd%wasteload_data, input_hyd%time_in_seconds)
+                write(lunrep, *) 'reading src-file: ' // trim(input_hyd%file_src%name)
+                write(*, *) 'reading src-file: ' // trim(input_hyd%file_src%name)
+                call read_src(input_hyd%file_src, input_hyd%num_layers, input_hyd%wasteload_coll, &
+                        input_hyd%wasteload_data, input_hyd%time_in_seconds)
             else
                 write (lunrep, *) 'warning: could not find file: '//trim(input_hyd%file_src%name)
                 write (*, *) 'warning: could not find file: '//trim(input_hyd%file_src%name)
                 input_hyd%file_src%name = 'TMP_'//trim(input_hyd%file_src%name)
                 inquire (file=input_hyd%file_src%name, exist=exist_src)
                 if (exist_src) then
-                    write (lunrep, *) 'reading TMP_src-file: '//trim(input_hyd%file_src%name)
-                    write (*, *) 'reading TMP_src-file: '//trim(input_hyd%file_src%name)
-                    call read_src_tmp(input_hyd%file_src, input_hyd%nolay, input_hyd%wasteload_coll, &
-                                      input_hyd%wasteload_data)
+                    write(lunrep, *) 'reading TMP_src-file: ' // trim(input_hyd%file_src%name)
+                    write(*, *) 'reading TMP_src-file: ' // trim(input_hyd%file_src%name)
+                    call read_src_tmp(input_hyd%file_src, input_hyd%num_layers, input_hyd%wasteload_coll, &
+                            input_hyd%wasteload_data)
                 else
                     write (lunrep, *) 'warning: could not find TMP_src-file: '//trim(input_hyd%file_src%name)
                     write (*, *) 'warning: could not find TMP_src-file: '//trim(input_hyd%file_src%name)
@@ -370,10 +370,10 @@ program agrhyd
             cpatch = ipatch
             inquire (file=input_patch_hyd(cpatch)%file_src%name, exist=exist_src)
             if (exist_src) then
-                write (lunrep, *) 'reading src-file: '//trim(input_patch_hyd(cpatch)%file_src%name)
-                write (*, *) 'reading src-file: '//trim(input_patch_hyd(cpatch)%file_src%name)
-                call read_src(input_patch_hyd(cpatch)%file_src, input_hyd%nolay, input_hyd%wasteload_coll, &
-                              input_hyd%wasteload_data, input_hyd%time_in_seconds)
+                write(lunrep, *) 'reading src-file: ' // trim(input_patch_hyd(cpatch)%file_src%name)
+                write(*, *) 'reading src-file: ' // trim(input_patch_hyd(cpatch)%file_src%name)
+                call read_src(input_patch_hyd(cpatch)%file_src, input_hyd%num_layers, input_hyd%wasteload_coll, &
+                        input_hyd%wasteload_data, input_hyd%time_in_seconds)
             else
                 write (lunrep, *) 'warning: could not find src-file: '//trim(input_patch_hyd(cpatch)%file_src%name)
                 write (*, *) 'warning: could not find src-file: '//trim(input_patch_hyd(cpatch)%file_src%name)
@@ -384,10 +384,10 @@ program agrhyd
                     input_patch_hyd(ipatch)%file_src%name = 'TMP_'//trim(input_patch_hyd(ipatch)%file_src%name)
                     inquire (file=input_patch_hyd(ipatch)%file_src%name, exist=exist_src)
                     if (exist_src) then
-                        write (lunrep, *) 'reading TMP_src-file: '//trim(input_patch_hyd(ipatch)%file_src%name)
-                        write (*, *) 'reading TMP_src-file: '//trim(input_patch_hyd(ipatch)%file_src%name)
-                        call read_src_tmp(input_patch_hyd(ipatch)%file_src, input_hyd%nolay, input_hyd%wasteload_coll, &
-                                          input_hyd%wasteload_data)
+                        write(lunrep, *) 'reading TMP_src-file: ' // trim(input_patch_hyd(ipatch)%file_src%name)
+                        write(*, *) 'reading TMP_src-file: ' // trim(input_patch_hyd(ipatch)%file_src%name)
+                        call read_src_tmp(input_patch_hyd(ipatch)%file_src, input_hyd%num_layers, input_hyd%wasteload_coll, &
+                                input_hyd%wasteload_data)
                     else
                         write (lunrep, *) 'warning: could not find TMP_src-file: '//trim(input_patch_hyd(cpatch)%file_src%name)
                         write (*, *) 'warning: could not find TMP_src-file: '//trim(input_patch_hyd(cpatch)%file_src%name)
@@ -399,8 +399,8 @@ program agrhyd
                 input_hyd%file_src%name = 'TMP_'//trim(input_hyd%file_src%name)
                 inquire (file=input_hyd%file_src%name, exist=exist_src)
                 if (exist_src) then
-                    write (lunrep, *) 'reading TMP_src-file: '//trim(input_hyd%file_src%name)
-                    call read_src_tmp(input_hyd%file_src, input_hyd%nolay, input_hyd%wasteload_coll, input_hyd%wasteload_data)
+                    write(lunrep, *) 'reading TMP_src-file: ' // trim(input_hyd%file_src%name)
+                    call read_src_tmp(input_hyd%file_src, input_hyd%num_layers, input_hyd%wasteload_coll, input_hyd%wasteload_data)
                 else
                     write (lunrep, *) 'warning: could not find TMP_src-file: '//trim(input_hyd%file_src%name)
                     write (*, *) 'warning: could not find TMP_src-file: '//trim(input_hyd%file_src%name)
@@ -417,12 +417,12 @@ program agrhyd
 
     ! allocate aggregation pointers
 
-    allocate (ipnt_h(input_hyd%nmax, input_hyd%mmax), stat=ierr_alloc)
-    if (ierr_alloc /= 0) then; write (*, *) ' error allocating memory'; call stop_with_error(); 
-    end if
-    allocate (ipnt_v(input_hyd%nolay), stat=ierr_alloc)
-    if (ierr_alloc /= 0) then; write (*, *) ' error allocating memory'; call stop_with_error(); 
-    end if
+    allocate(ipnt_h(input_hyd%num_rows, input_hyd%num_columns), stat = ierr_alloc)
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call stop_with_error() ;
+    endif
+    allocate(ipnt_v(input_hyd%num_layers), stat = ierr_alloc)
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call stop_with_error() ;
+    endif
 
     ! read or set horizontal aggregation
 
@@ -434,7 +434,7 @@ program agrhyd
     else
         if (output_hyd%file_dwq%name /= ' ') then
             output_hyd%file_dwq%type = FT_ASC
-            call read_dwq(output_hyd%file_dwq, input_hyd%mmax, input_hyd%nmax, ipnt_h)
+            call read_dwq(output_hyd%file_dwq, input_hyd%num_columns, input_hyd%num_rows, ipnt_h)
             ! Always calculate dispersion lenghts with unstructured grid and horizontal aggregation
             if (input_hyd%geometry == HYD_GEOM_UNSTRUC) then
                 l_lenlen = .false.
@@ -452,30 +452,28 @@ program agrhyd
 
     if (output_hyd%file_vag%name /= ' ') then
         output_hyd%file_vag%type = FT_ASC
-        call read_vag(output_hyd%file_vag, input_hyd%nolay, ipnt_v, lunrep)
+        call read_vag(output_hyd%file_vag, input_hyd%num_layers, ipnt_v, lunrep)
     else
-        do ilay = 1, input_hyd%nolay
+        do ilay = 1, input_hyd%num_layers
             ipnt_v(ilay) = ilay
         end do
     end if
 
     ! set aggregation pointers
 
-    allocate (ipnt(input_hyd%noseg), stat=ierr_alloc)
-    if (ierr_alloc /= 0) then; write (*, *) ' error allocating memory'; call stop_with_error(); 
-    end if
-    allocate (ipnt_vdf(input_hyd%noseg), stat=ierr_alloc)
-    if (ierr_alloc /= 0) then; write (*, *) ' error allocating memory'; call stop_with_error(); 
-    end if
-    allocate (ipnt_tau(input_hyd%noseg), stat=ierr_alloc)
-    if (ierr_alloc /= 0) then; write (*, *) ' error allocating memory'; call stop_with_error(); 
-    end if
-    !     nosegb     = -minval(ipnt_h)*input_hyd%nolay
-    !     nosegb     = -minval(input_hyd%lgrid)*input_hyd%nolay
+    allocate(ipnt(input_hyd%num_cells), stat = ierr_alloc)
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call stop_with_error() ;
+    endif
+    allocate(ipnt_vdf(input_hyd%num_cells), stat = ierr_alloc)
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call stop_with_error() ;
+    endif
+    allocate(ipnt_tau(input_hyd%num_cells), stat = ierr_alloc)
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call stop_with_error() ;
+    endif
     if (minval(input_hyd%ipoint) < 0) then
         nosegb = -minval(input_hyd%ipoint)
-        !         nosegb     = -minval(input_hyd%ipoint(1:2,1:input_hyd%nosegl))*input_hyd%nolay
-        allocate (ipnt_b(nosegb), stat=ierr_alloc)
+        !         nosegb     = -minval(input_hyd%ipoint(1:2,1:input_hyd%nosegl))*input_hyd%num_layers
+        allocate(ipnt_b(nosegb), stat = ierr_alloc)
     else
         nosegb = 0
         allocate (ipnt_b(1), stat=ierr_alloc)
@@ -490,10 +488,10 @@ program agrhyd
 
     ! aggregate time independent data
 
-    write (*, '(a)') 'Starting aggregation ...'
-    allocate (ipnt_q(input_hyd%noq), stat=ierr_alloc)
-    if (ierr_alloc /= 0) then; write (*, *) ' error allocating memory'; call stop_with_error(); 
-    end if
+    write(*, '(a)') 'Starting aggregation ...'
+    allocate(ipnt_q(input_hyd%num_exchanges), stat = ierr_alloc)
+    if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call stop_with_error() ;
+    endif
     call agr_hyd_init(input_hyd, ipnt, ipnt_h, ipnt_q, ipnt_vdf, ipnt_b, ipnt_v, output_hyd, l_regular, l_expand, l_lenlen)
 
     ! correct tau pointers for z model, the tau is only in the top layer, find the aggregated bottom segment
@@ -506,7 +504,7 @@ program agrhyd
             iseg2 = ipnt(iseg1)
             if (iseg2 > 0) then
                 isegb = 0
-                do ilay = 1, output_hyd%nolay
+                do ilay = 1, output_hyd%num_layers
                     iseg = (ilay - 1) * output_hyd%nosegl + iseg2
                     ik1 = mod(output_hyd%attributes(iseg), 10)
                     ik2 = mod(output_hyd%attributes(iseg), 100) / 10
@@ -586,21 +584,21 @@ program agrhyd
         if (l_regular) then
             new_lga%name = trim(name)//'_on_original_grid.lga'
             new_lga%type = ft_bin
-            call write_lga(new_lga, input_hyd%mmax, input_hyd%nmax, output_hyd%nolay, output_hyd%nosegl, &
-                           output_hyd%noq1, output_hyd%noq2, output_hyd%noq3, ipnt_h)
-            new_cco%name = trim(name)//'_on_original_grid.cco'
+            call write_lga (new_lga, input_hyd%num_columns, input_hyd%num_rows, output_hyd%num_layers, output_hyd%nosegl, &
+                    output_hyd%num_exchanges_u_dir, output_hyd%num_exchanges_v_dir, output_hyd%num_exchanges_z_dir, ipnt_h)
+            new_cco%name = trim(name) // '_on_original_grid.cco'
             new_cco%type = ft_bin
-            call write_cco(new_cco, input_hyd%mmax, input_hyd%nmax, input_hyd%xdepth, input_hyd%ydepth, &
-                           output_hyd%nolay)
-            new_grd%name = trim(name)//'.grd'
+            call write_cco (new_cco, input_hyd%num_columns, input_hyd%num_rows, input_hyd%xdepth, input_hyd%ydepth, &
+                    output_hyd%num_layers)
+            new_grd%name = trim(name) // '.grd'
             new_grd%type = ft_asc
-            call write_grd(new_grd, output_hyd%mmax, output_hyd%nmax, output_hyd%xdepth, output_hyd%ydepth)
+            call write_grd (new_grd, output_hyd%num_columns, output_hyd%num_rows, output_hyd%xdepth, output_hyd%ydepth)
         else
             new_grd%name = trim(name)//'.grd'
             new_grd%type = ft_asc
-            call write_grd(new_grd, input_hyd%mmax, input_hyd%nmax, input_hyd%xdepth, input_hyd%ydepth)
-        end if
-    end if
+            call write_grd (new_grd, input_hyd%num_columns, input_hyd%num_rows, input_hyd%xdepth, input_hyd%ydepth)
+        endif
+    endif
 
     itime_first_patch = 2000000000
     cpatch = -1

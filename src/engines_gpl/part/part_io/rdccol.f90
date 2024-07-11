@@ -29,7 +29,7 @@ implicit none
 contains
 
 
-      subroutine rdccol ( nmax   , mmax   , lun    , fnam   ,   &
+      subroutine rdccol ( num_rows   , num_columns   , lun    , fnam   ,   &
                           lgrid  , xbott  , ybott  , lun2   )
 
 !     READING CURVILINEAR CCO FILE
@@ -64,11 +64,11 @@ contains
 
 !     kind           function         name                Descriptipon
 
-      integer  (int_wp ), intent(in   ) :: nmax              !< first dimension of the grid
-      integer  (int_wp ), intent(in   ) :: mmax              !< second dimension of the grid
+      integer  (int_wp ), intent(in   ) :: num_rows              !< first dimension of the grid
+      integer  (int_wp ), intent(in   ) :: num_columns              !< second dimension of the grid
       integer  (int_wp ), intent(in   ) :: lun               !< unit number cco file
       character( *), intent(in   ) :: fnam              !< name of cco file
-      integer  (int_wp ), intent(in   ) :: lgrid(nmax,mmax)  !< grid table
+      integer  (int_wp ), intent(in   ) :: lgrid(num_rows,num_columns)  !< grid table
       real     (sp), intent(  out) :: xbott(*)          !< x-values in the grid
       real     (sp), intent(  out) :: ybott(*)          !< y-values in the grid
       integer  (int_wp ), intent(in   ) :: lun2              !< unit number log-file
@@ -76,8 +76,8 @@ contains
 !     local scalars
 
       integer(int_wp )   iocond    ! error indicator for file opening
-      integer(int_wp )   nmaxc     ! nmax in file
-      integer(int_wp )   mmaxc     ! mmax in file
+      integer(int_wp )   nmaxc     ! num_rows in file
+      integer(int_wp )   mmaxc     ! num_columns in file
       real   (real_wp)   x0, y0    ! coordinates of the zero
       real   (real_wp)   alpha     ! unknown
       integer(int_wp )   npart     ! unknown
@@ -98,11 +98,11 @@ contains
       
       read (lun)
       read (lun) mmaxc, nmaxc, x0, y0, alpha, npart, layt
-      if ( mmaxc .ne. mmax .or. nmaxc .ne. nmax ) then
+      if ( mmaxc .ne. num_columns .or. nmaxc .ne. num_rows ) then
           write (lun2, *)
           write (lun2, *) ' Error 4201. Dimensioning does not match!'
-          write (lun2, *) '             nmax,mmax,lgrid-table:   ', nmax , mmax
-          write (lun2, *) '             nmax,mmax,cco-file   :   ', nmaxc, mmaxc
+          write (lun2, *) '             num_rows,num_columns,lgrid-table:   ', num_rows , num_columns
+          write (lun2, *) '             num_rows,num_columns,cco-file   :   ', nmaxc, mmaxc
           call stop_exit(1)
       endif
       

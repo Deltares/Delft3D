@@ -28,9 +28,9 @@ module m_sulfpr
 contains
 
 
-    subroutine sulfpr (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine sulfpr (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Precipitation and dissolution of sulphide as first order process
 
@@ -73,9 +73,9 @@ contains
         !
         IMPLICIT NONE
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10
         INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8, IN9, IN10
@@ -109,20 +109,20 @@ contains
         IP10 = IPOINT(10)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                CSP = MAX (PMSA(IP1), 0.0)
-                CSD = MAX (PMSA(IP2), 0.0)
-                CSDE = MAX (PMSA(IP3), 0.0)
-                KDIS = PMSA(IP4)
-                KTDIS = PMSA(IP5)
-                KPRC = PMSA(IP6)
-                KTPRC = PMSA(IP7)
-                TEMP = PMSA(IP8)
-                POROS = PMSA(IP9)
-                DELT = PMSA(IP10)
+                CSP = MAX (process_space_real(IP1), 0.0)
+                CSD = MAX (process_space_real(IP2), 0.0)
+                CSDE = MAX (process_space_real(IP3), 0.0)
+                KDIS = process_space_real(IP4)
+                KTDIS = process_space_real(IP5)
+                KPRC = process_space_real(IP6)
+                KTPRC = process_space_real(IP7)
+                TEMP = process_space_real(IP8)
+                POROS = process_space_real(IP9)
+                DELT = process_space_real(IP10)
                 !
                 !           Calculate the precipitation and dissolution fluxes
                 !           The constant 32000 concerns conversion mole/l to gS/m3

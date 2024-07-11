@@ -61,9 +61,6 @@ class TestBenchParameterParser:
             path_type = cls.get_path_type(skip_string)
             settings.skip_download.extend(path_type)
 
-        # automatically commit reference run if succesfull
-        settings.autocommit = cls.__get_argument_value("autocommit", args) or False
-
         # Enables running the tests in parallel (multi-process)
         settings.parallel = cls.__get_argument_value("parallel", args) or False
 
@@ -224,12 +221,6 @@ class TestBenchParameterParser:
             action="store_true",
             help="Turns on running in parallel.",
             dest="parallel",
-        )
-        parser.add_argument(
-            "--autocommit",
-            action="store_true",
-            help="Turns on autocommit when doing a reference run.",
-            dest="autocommit",
         )
         parser.add_argument(
             "--teamcity",

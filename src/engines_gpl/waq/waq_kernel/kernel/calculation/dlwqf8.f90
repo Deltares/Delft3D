@@ -37,20 +37,20 @@ contains
     !! water quality model. Decent modellers should not use this option.
     !! Bert Jagers was dealing with the Selfe model that did not conserve.
     !! Guus Stelling is lobbying for non-conservative schemes.
-    subroutine dlwqf8(noseg, noq, ipnt, idt, iknmkv, &
+    subroutine dlwqf8(num_cells, num_exchanges, ipnt, idt, iknmkv, &
                         volume, flow, voll, vol2)
         use timers
         implicit none
 
-        integer(kind = int_wp), intent(in   ) :: noseg          !< Number of computational volumes
-        integer(kind = int_wp), intent(in   ) :: noq            !< Number of exchanges
-        integer(kind = int_wp), intent(in   ) :: ipnt  (4, noq) !< From-to pointer table
+        integer(kind = int_wp), intent(in   ) :: num_cells          !< Number of computational volumes
+        integer(kind = int_wp), intent(in   ) :: num_exchanges            !< Number of exchanges
+        integer(kind = int_wp), intent(in   ) :: ipnt  (4, num_exchanges) !< From-to pointer table
         integer(kind = int_wp), intent(in   ) :: idt            !< Time step size
-        integer(kind = int_wp), intent(in   ) :: iknmkv(noseg)  !< Dry indicator 1 is wet
-        real(kind = real_wp),   intent(in   ) :: volume(noseg)  !< Volume at start of time step
-        real(kind = real_wp),   intent(in   ) :: flow  (noq)    !< Flows accross the noq links
-        real(kind = real_wp),   intent(in   ) :: voll  (noseg)  !< New volume from file
-        real(kind = real_wp),   intent(  out) :: vol2  (noseg)  !< Volume at end of time step
+        integer(kind = int_wp), intent(in   ) :: iknmkv(num_cells)  !< Dry indicator 1 is wet
+        real(kind = real_wp),   intent(in   ) :: volume(num_cells)  !< Volume at start of time step
+        real(kind = real_wp),   intent(in   ) :: flow  (num_exchanges)    !< Flows accross the num_exchanges links
+        real(kind = real_wp),   intent(in   ) :: voll  (num_cells)  !< New volume from file
+        real(kind = real_wp),   intent(  out) :: vol2  (num_cells)  !< Volume at end of time step
 
         ! Local variables
         integer(kind = int_wp) :: iq       !< Loop counter for the flows
@@ -62,14 +62,14 @@ contains
         if (timon) call timstrt ("dlwqf8", ithandl)
 
         vol2 = volume               ! Initialize the new volume
-        do iq = 1, noq              ! Loop over the flows
+        do iq = 1, num_exchanges              ! Loop over the flows
             ifrom = ipnt(1, iq)
             ito = ipnt(2, iq)
             flux = flow(iq) * idt
             if (ifrom > 0) vol2(ifrom) = vol2(ifrom) - flux
             if (ito   > 0) vol2(ito) = vol2(ito) + flux
         enddo
-        do iq = 1, noseg
+        do iq = 1, num_cells
             if (iknmkv(iq) == 0) vol2(iq) = voll(iq)
             if (abs(vol2(iq)) < 1.0E-25) vol2(iq) = 1.0
         enddo

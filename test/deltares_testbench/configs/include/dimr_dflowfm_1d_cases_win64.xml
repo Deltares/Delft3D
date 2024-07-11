@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f150_c01_didact-sewer-system" ref="dimr_default">
         <path>e02_dflowfm/f150_1d2d_acceptance_urban/c01_didact-sewer-system</path>
         <checks>

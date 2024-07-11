@@ -40,10 +40,11 @@
 
       integer :: i, j
 
-      DO 10 I = MB(3),MB(4)
-         DO 10 J = NB(3),NB(4)
+      do I = MB(3),MB(4)
+         do J = NB(3),NB(4)
             X(I,J) = XYMIS
             Y(I,J) = 0d0
-    10 CONTINUE
+         end do
+      end do
       RETURN
       END subroutine nulfield

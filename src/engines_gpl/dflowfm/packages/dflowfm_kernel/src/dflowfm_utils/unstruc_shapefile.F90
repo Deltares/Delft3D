@@ -258,7 +258,7 @@ end subroutine unc_write_shp_obs
 
 !> Write a shape file for weirs
 subroutine unc_write_shp_weir()
-use m_flowexternalforcings
+use fm_external_forcings_data
 use network_data, only: kn, xk, yk
 use m_flowgeom, only: ln2lne
 implicit none
@@ -448,7 +448,7 @@ end subroutine unc_write_shp_thd
 
 !> Write a shape file for gates
 subroutine unc_write_shp_gate()
-use m_flowexternalforcings
+use fm_external_forcings_data
 use network_data, only: kn, xk, yk
 use m_flowgeom, only: ln2lne
 use m_strucs, only: generalstruc
@@ -665,7 +665,7 @@ end subroutine unc_write_shp_gate
 !> Write a shape file for embankments
 subroutine unc_write_shp_emb()
 use m_sobekdfm
-use m_flowexternalforcings
+use fm_external_forcings_data
 use network_data, only: kn, xk, yk
 implicit none
 
@@ -768,7 +768,7 @@ end subroutine unc_write_shp_emb
 
 !> Write a shape file for fixed weirs
 subroutine unc_write_shp_fxw()
-use m_flowexternalforcings
+use fm_external_forcings_data
 use network_data, only: kn, xk, yk
 use m_flowgeom, only: ln2lne, iadv, bob, wu
 use m_fixedweirs
@@ -1026,7 +1026,7 @@ end subroutine unc_write_shp_fxw
 
 !> Write a shape file for source-sinks
 subroutine unc_write_shp_src()
-use m_flowexternalforcings, only: ksrc, numsrc, xsrc, ysrc, nxsrc, srcname, arsrc, qstss
+use fm_external_forcings_data, only: ksrc, numsrc, xsrc, ysrc, nxsrc, srcname, arsrc, qstss
 use m_flowgeom, only: xz, yz
 use m_transportdata, only : NUMCONST
 implicit none
@@ -1191,7 +1191,7 @@ end subroutine unc_write_shp_src
 ! =================================================================================================
 ! =================================================================================================
 subroutine unc_write_shp_pump()
-use m_flowexternalforcings
+use fm_external_forcings_data
 use network_data, only: kn, xk, yk
 use m_flowgeom, only: ln2lne
 implicit none
@@ -1287,7 +1287,7 @@ end subroutine unc_write_shp_pump
 ! =================================================================================================
 ! =================================================================================================
 subroutine unc_write_shp_dry()
-use m_flowexternalforcings, only: nDryLinks, kdryarea
+use fm_external_forcings_data, only: nDryLinks, kdryarea
 use network_data, only: kn, xk, yk
 implicit none
 
@@ -1388,7 +1388,7 @@ end subroutine unc_write_shp_dry
 ! =================================================================================================
 ! =================================================================================================
 subroutine unc_write_shp_genstruc()
-use m_flowexternalforcings
+use fm_external_forcings_data
 use network_data, only: kn, xk, yk
 use m_flowgeom, only: ln2lne, wu
 use m_strucs, only: generalstruc
@@ -1592,7 +1592,7 @@ end subroutine unc_write_shp_genstruc
 
 !> Write a shape file for dam breaks
 subroutine unc_write_shp_dambreak()
-use m_flowexternalforcings, only: ndambreaksignals, dambreak_ids, L1dambreaksg, L2dambreaksg, kdambreak
+use fm_external_forcings_data, only: ndambreaksignals, dambreak_ids, L1dambreaksg, L2dambreaksg, kdambreak
 use network_data, only: kn, xk, yk
 use m_flowgeom, only: ln2lne
 implicit none

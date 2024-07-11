@@ -28,9 +28,9 @@ module m_restim
 contains
 
 
-    subroutine restim (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine restim (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
         !>\file
@@ -53,9 +53,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         integer(kind = int_wp) :: iq, iseg
 
         IP1 = IPOINT(1)
@@ -71,9 +71,9 @@ contains
         IN5 = INCREM(5)
 
         !.....Zero the workspace
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
-            PMSA(IP2) = 0.0
+            process_space_real(IP2) = 0.0
 
             IP2 = IP2 + IN2
 
@@ -86,22 +86,22 @@ contains
         IP5 = IPOINT(5)
 
         !.....Exchange loop
-        DO IQ = 1, NOQ1 + NOQ2 + NOQ3
+        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
             !........Bepaal het van- en naar- segment
             IFROM = IEXPNT(1, IQ)
             ITO = IEXPNT(2, IQ)
 
-            FLOW = PMSA(IP3)
+            FLOW = process_space_real(IP3)
 
             !........Absolute flows per segment sommeren in de workspace
             IF (IFROM > 0) THEN
-                PMSA (IP2 + (IFROM - 1) * IN2) = &
-                        PMSA (IP2 + (IFROM - 1) * IN2) + ABS(FLOW)
+                process_space_real (IP2 + (IFROM - 1) * IN2) = &
+                        process_space_real (IP2 + (IFROM - 1) * IN2) + ABS(FLOW)
             ENDIF
             IF (ITO  > 0)  THEN
-                PMSA (IP2 + (ITO - 1) * IN2) = &
-                        PMSA (IP2 + (ITO - 1) * IN2) + ABS(FLOW)
+                process_space_real (IP2 + (ITO - 1) * IN2) = &
+                        process_space_real (IP2 + (ITO - 1) * IN2) + ABS(FLOW)
             ENDIF
 
             !........Ophogen van de exchange-pointers
@@ -116,29 +116,29 @@ contains
         IP5 = IPOINT(5)
 
         !.....Segmentloop
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             !........Niet-actieve segmenten afhandelen
             CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK)
             IF (IKMRK == 0) THEN
-                PMSA(IP4) = -999.999
+                process_space_real(IP4) = -999.999
                 GOTO 100
             ENDIF
 
-            VOLUME = PMSA(IP1)
-            SOMFLW = PMSA(IP2)
+            VOLUME = process_space_real(IP1)
+            SOMFLW = process_space_real(IP2)
 
             !........Oneindige verblijftijden afhandelen
             IF (SOMFLW < 1.0E-20) THEN
-                PMSA(IP4) = 1.0E7
+                process_space_real(IP4) = 1.0E7
                 GOTO 100
             ENDIF
 
             !........Bereken de verblijftijd
             RTIME = VOLUME / (SOMFLW / 2)
 
-            !........Toekennen aan de PMSA
-            PMSA(IP4) = RTIME
+            !........Toekennen aan de process_space_real
+            process_space_real(IP4) = RTIME
 
             100    CONTINUE
 

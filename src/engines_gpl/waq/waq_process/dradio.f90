@@ -28,9 +28,9 @@ module m_dradio
 contains
 
 
-    subroutine dradio (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine dradio (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Radio-active decay and estimation of the radiation
         !!       Because the module produces both the radio-active decay (as a
@@ -68,9 +68,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IFLUX, ISEG
         REAL(kind = real_wp) :: CONC, HALFLIFE, ATOMMASS, RADIODC, RADIATION
@@ -89,8 +89,8 @@ contains
         !     Calculate the decay rate from the half-life as well
         !     as the conversion to Bq/m3
         !
-        HALFLIFE = PMSA(IP2)
-        ATOMMASS = PMSA(IP3)
+        HALFLIFE = process_space_real(IP2)
+        ATOMMASS = process_space_real(IP3)
         DRADDECAY = LOG(2.0) / HALFLIFE / 365.0 ! /day
         RADIATION_CONV = DRADDECAY      & ! /day
                 / 86400.0     & ! s/day -> /s
@@ -99,11 +99,11 @@ contains
                 / 1.0E3      ! g/mg  -> /mg
         ! number / mg / s = Bq/mg
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                CONC = PMSA(IP1)
+                CONC = process_space_real(IP1)
                 !
                 !     Calculate decay
                 !
@@ -111,7 +111,7 @@ contains
                 !
                 !     Output
                 !
-                PMSA(IP4) = RADIODC * RADIATION_CONV
+                process_space_real(IP4) = RADIODC * RADIATION_CONV
                 FL(1 + IFLUX) = RADIODC
                 !
             ENDIF

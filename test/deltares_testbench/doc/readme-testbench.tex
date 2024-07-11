@@ -343,17 +343,6 @@ This section will provide the available parameters and their function.
 \item[\texttt{-{}-teamcity}] Offers Teamcity-compatible logging.
 \end{guilist}
 
-\subsubsection{Credentials}
-\label{sssec:credentials}
-The introduction of MinIO changed the credentials that you need to supply to download cases/references to an access key system. Instructions on how to setup MinIO access keys can be found here: \autoref{sssec:miniokeys}.
-
-The testbench now uses the AWSConfigProvider to locate MinIO keys from a file under the user folder: \dir{C:/users/<user>/.aws/credentials}. This file can be automatically created and filled by running the testbench.py in interactive mode. Fill in the correct credentials to access MinIO. The testbench will then prompt you to create a credentials file if it doesn't exist on the specified location yet. It is possible to create the file at the correct location and filling it manually following this layout:
-\begin{Verbatim}
-[default]
-aws_access_key_id = <your_access_key>
-aws_secret_access_key = <your_secret_key>
-\end{Verbatim}
-
 \subsection{Testcase repository}
 The main use of the testbench is to compare results of branches to the latest references of a stable version. This comparison will either succeed or fail and helps to determine whether a change impacted the test models in an unforeseen way. A course of action for the result can then be determined.
 
@@ -448,6 +437,17 @@ When you press "Create," a popup will appear showing your access key and secret 
 \caption{The MinIO popup for creation of the key. \label{fig:minioaccesscreate}}
 \end{figure}
 Use the access key as your username and the secret key as your password to download cases from the MinIO api.
+
+\subsubsection{Credentials}
+\label{sssec:credentials}
+The introduction of MinIO changed the credentials that you need to supply to download cases/references to an access key system. Instructions on how to setup MinIO access keys can be found here: \autoref{sssec:miniokeys}.
+
+The testbench now uses the AWSConfigProvider to locate MinIO keys from a file called credentials (no extension) inside the .aws directory under the user folder: \dir{C:/users/<user>/.aws/}. This file can be automatically created and filled by running the testbench.py in interactive mode. Fill in the correct credentials to access MinIO. The testbench will then prompt you to create a credentials file if it doesn't exist on the specified location yet. It is possible to create the file at the correct location and filling it manually following this layout:
+\begin{Verbatim}
+[default]
+aws_access_key_id = <your_access_key>
+aws_secret_access_key = <your_secret_key>
+\end{Verbatim}
 
 \subsubsection{Updating or adding a case/reference}
 \label{sssec:uploadtominio}

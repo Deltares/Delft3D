@@ -40,10 +40,10 @@ implicit none
 
 contains
     subroutine behv_test ( btype    , hbtype  , v_swim , d_swim   , n        ,   &
-                             m        , nmax    , mmax   , mnmaxk , lgrid       ,   &
+                             m        , num_rows    , num_columns   , mnmaxk , lgrid       ,   &
                              lgrid2   , lgrid3  , nosegl , wpart  , ipart       ,   &
                              wsettl   , k       , kpart  , zpart  , xpart       ,   &
-                             ypart    , nolay   , idelt  , day    , phase_diurn ,   &
+                             ypart    , num_layers   , idelt  , day    , phase_diurn ,   &
                              ebb_flow , flow    , depth  , salin1 , temper1     ,   &
                              vol1     , vol2    , vel1   , vel2   , fstage      ,   &
                              ztop     , zlevel  , zdepth , zbot   , buoy        ,   &
@@ -58,9 +58,9 @@ contains
 
         integer(int_wp ), intent(in)     :: lunrep              ! report file
         integer(int_wp ), intent(in)     :: nosegl              ! number segments per layer
-        integer(int_wp ), intent(in)     :: nolay               ! number of layers in calculation
-        integer(int_wp ), intent(in)     :: nmax                ! first grid dimension
-        integer(int_wp ), intent(in)     :: mmax                ! second grid dimension
+        integer(int_wp ), intent(in)     :: num_layers               ! number of layers in calculation
+        integer(int_wp ), intent(in)     :: num_rows                ! first grid dimension
+        integer(int_wp ), intent(in)     :: num_columns                ! second grid dimension
         integer(int_wp ), intent(in)     :: mnmaxk              ! total number of active grid cells
         integer(int_wp ), pointer        :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
         integer(int_wp ), pointer        :: lgrid2( : , : )     ! total grid
@@ -192,12 +192,12 @@ contains
 
                case ( behaviour_bottom )                                                     !Behaviour 1
                   wsettl(ipart) = 0.0                                                        ! Setteling velocity is set to 0
-                  kpart(ipart) = nolay + 1                                                   ! Particle is placed in the storage layer (total layers +1)
+                  kpart(ipart) = num_layers + 1                                                   ! Particle is placed in the storage layer (total layers +1)
                   zpart(ipart) = 0.5                                                         ! Particle is positioned in the middle of the cell in the third dimension
 
                case ( behaviour_midlow )                                                     !Behaviour 2
                   wsettl(ipart) = 0.0                                                        ! Setteling velocity is set to 0
-                  kpart(ipart) = nolay                                                       ! Particle is placed in the layer above the bottom
+                  kpart(ipart) = num_layers                                                       ! Particle is placed in the layer above the bottom
                   zpart(ipart) = 0.5                                                         ! Particle is positioned in the middle of the cell in the third dimension
 
                case ( behaviour_midtop )                                                     !Behaviour 3
@@ -248,7 +248,7 @@ contains
                   ! Vertical positioning based on tide
                   !  return: wsettl, kpart, zpart, v_swim and d_swim
 
-                  call vert_swimm_tidal (   lunrep           , ebb_flow  , iseg    , k     , nolay,        &
+                  call vert_swimm_tidal (   lunrep           , ebb_flow  , iseg    , k     , num_layers,        &
                                             stick_to_bottom  , ipart     , wsettl  , kpart , zpart,        &
                                             buoy             , vzact     , v_swim  , d_swim  )
 
@@ -262,7 +262,7 @@ contains
                   ! Vertical positioning based on tide
                   !  return: wsettl, kpart, zpart, v_swim and d_swim
 
-                  call vert_swimm_tidal (   lunrep           , ebb_flow  , iseg    , k     , nolay,        &
+                  call vert_swimm_tidal (   lunrep           , ebb_flow  , iseg    , k     , num_layers,        &
                                             stick_to_bottom  , ipart     , wsettl  , kpart , zpart,        &
                                             buoy             , vzact     , v_swim  , d_swim  )
 
@@ -287,7 +287,7 @@ contains
 
                   ! Assemble salinity values of surrounding gridcells
                   !  return: v_swim and d_swim
-                  call orien_salinity ( n          , m           , nmax     , mmax        , mnmaxk  ,    &
+                  call orien_salinity ( n          , m           , num_rows     , num_columns        , mnmaxk  ,    &
                                         lgrid      , lgrid2      ,lgrid3    , salin1      , v_swim  ,    &
                                         d_swim     , angle       ,ipart     , xpart       , ypart   ,    &
                                         a          , b           ,flow      , local_angle , lb_sal  ,    &
@@ -300,7 +300,7 @@ contains
 
                   ! Set direction by lowest temperature value
                   !  return: v_swim and d_swim
-                  call orien_temperature ( n          , m           , nmax     , mmax        , mnmaxk   ,    &
+                  call orien_temperature ( n          , m           , num_rows     , num_columns        , mnmaxk   ,    &
                                            lgrid      , lgrid2      , lgrid3   , temper1     , v_swim   ,    &
                                            d_swim     , angle       , ipart    , xpart       , ypart    ,    &
                                            a          , b           , flow     , local_angle , lb_temp  ,    &
@@ -318,7 +318,7 @@ contains
 
                   ! Assemble salinity values of surrounding gridcells
                   !  return: sal_n0, sal_n1 , sal_n12 , sal_n2 , sal_n23 , sal_n3 , sal_n34, sal_n4 and sal_n41
-                  call orien_salinity ( n          , m           , nmax     , mmax        , mnmaxk  ,    &
+                  call orien_salinity ( n          , m           , num_rows     , num_columns        , mnmaxk  ,    &
                                         lgrid      , lgrid2      ,lgrid3    , salin1      , v_swim  ,    &
                                         d_swim     , angle       ,ipart     , xpart       , ypart   ,    &
                                         a          , b           ,flow      , local_angle , lb_sal  ,    &
@@ -327,7 +327,7 @@ contains
 
                   ! Assemble temperature values of surrounding gridcells
                   !  return: temp_n0, temp_n1 , temp_n12 , temp_n2 , temp_n23 , temp_n3 , temp_n34, temp_n4 and temp_n41
-                  call orien_temperature ( n          , m           , nmax     , mmax        , mnmaxk   ,    &
+                  call orien_temperature ( n          , m           , num_rows     , num_columns        , mnmaxk   ,    &
                                            lgrid      , lgrid2      , lgrid3   , temper1     , v_swim   ,    &
                                            d_swim     , angle       , ipart    , xpart       , ypart    ,    &
                                            a          , b           , flow     , local_angle , lb_temp  ,    &
@@ -336,7 +336,7 @@ contains
 
                   ! Move closest to lowest salinity based on temperature avoidance
                   !  return: v_swim and d_swim
-                  call re_orien_sal_temp ( n          , m        , nmax       , mmax       , mnmaxk     ,    &
+                  call re_orien_sal_temp ( n          , m        , num_rows       , num_columns       , mnmaxk     ,    &
                                            lgrid      , lgrid2   , lgrid3     , v_swim     , d_swim     ,    &
                                            angle      , ipart    , xpart      , ypart      , a          ,    &
                                            b          , flow     , local_angle, sal_n0     , sal_n1     ,    &

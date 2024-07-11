@@ -38,15 +38,15 @@ contains
 !>
 !>            - reads lgrid with active grid information from .lga file
 !>            - reads lgrid2 with total grid information from .lgt file
-!>            - determines pointer from nr of active gridcells noseg to matrix (nmax,mmax)
-!>            - reads from-to pointer from .poi for to determine pointer from noq to matrix
+!>            - determines pointer from nr of active gridcells num_cells to matrix (num_rows,num_columns)
+!>            - reads from-to pointer from .poi for to determine pointer from num_exchanges to matrix
 !>            - reads a volume record to determine layer thickness at the deepest point
 
 !     system administration : Antoon Koster
 
 !     created               : February 1990 by Leo Postma
 
-!     modified              : June     2011 by Leo Postma: pointers from noseg and noq added
+!     modified              : June     2011 by Leo Postma: pointers from num_cells and num_exchanges added
 !                                                          to support active only hydrodynamic files
 !                             Octobel  2011 by Leo Postma: support Domain Decomposition
 
@@ -85,7 +85,7 @@ contains
 
       integer, allocatable   :: frm_to (:,:)     !  Delwaq exchange pointer
       integer, allocatable   :: ibnd   ( : )     !  locations of boundaries in the grid
-      integer  ( int_wp ) noq1   , noq2   , noq3      !  dimensions of the active grid
+      integer  ( int_wp ) num_exchanges_u_dir   , num_exchanges_v_dir   , num_exchanges_z_dir      !  dimensions of the active grid
       integer  ( int_wp ) nmax2  , mmax2  , layt2     !  dimensions of the total grid
       integer  ( int_wp ) i      , j      , k         !  loop counters in the 3 dimensions
       integer  ( int_wp ) n, ne, m, me                !  help variables grid index
@@ -124,12 +124,12 @@ contains
       write ( lunit(2), * ) ' Opening the active grid file file:', fname(3)(1:len_trim(fname(3)))
       call openfl ( lunit(3), fname(3), 0 )
       
-      read ( lunit(3), end = 10, err = 10 ) nmaxp, mmaxp, noseglp, layt2, noq1 , noq2 , noq3
+      read ( lunit(3), end = 10, err = 10 ) nmaxp, mmaxp, noseglp, layt2, num_exchanges_u_dir , num_exchanges_v_dir , num_exchanges_z_dir
       write( lunit(2),*) '   '
       write( lunit(2),*) ' Exchanges read from active grid file (*.lga) '
-      write( lunit(2),*) '    No. of exchanges in first  direction  : ', noq1
-      write( lunit(2),*) '    No. of exchanges in second direction  : ', noq2
-      write( lunit(2),*) '    No. of exchanges in third  direction  : ', noq3
+      write( lunit(2),*) '    No. of exchanges in first  direction  : ', num_exchanges_u_dir
+      write( lunit(2),*) '    No. of exchanges in second direction  : ', num_exchanges_v_dir
+      write( lunit(2),*) '    No. of exchanges in third  direction  : ', num_exchanges_z_dir
       goto 20
 
 !     you were working with an old version of with the standard lgridact??
@@ -180,7 +180,7 @@ contains
                lgrid3 ( i, j ) = lgrid2 ( i, j )
             enddo
          enddo
-      else                                            ! map file on condensed noseg volumes
+      else                                            ! map file on condensed num_cells volumes
          do j = 1,mmaxp
             do i = 1,nmaxp
                lgrid3 ( i, j ) = lgrid ( i, j )
@@ -216,7 +216,7 @@ contains
       mnmaxk = mnmax2*layt
       nflow  = 2*mnmaxk + (layt-1)*nmaxp*mmaxp
       nosegp = noseglp*layt2
-      noqp   = noq1+noq2+noq3
+      noqp   = num_exchanges_u_dir+num_exchanges_v_dir+num_exchanges_z_dir
 
 !     make the pointers from volumes to grid locations
 
@@ -259,17 +259,17 @@ contains
          read  ( lunit(19) ) frm_to
          close ( lunit(19) )
          write ( lunit(2),'(a,a)') '  Succesful reading of the pointers file   : ',fname(19)(:len_trim(fname(19)))
-         do i = 1, noq1
+         do i = 1, num_exchanges_u_dir
             j = frm_to(1,i)
             if ( j .gt. 0 ) flowpntp(i,1) = cellpntp( j)
             if ( j .lt. 0 ) flowpntp(i,1) = ibnd    (-j)
          enddo
-         do i = noq1+1, noq1+noq2
+         do i = num_exchanges_u_dir+1, num_exchanges_u_dir+num_exchanges_v_dir
             j = frm_to(1,i)
             if ( j .gt. 0 ) flowpntp(i,1) = cellpntp( j) + mnmaxk
             if ( j .lt. 0 ) flowpntp(i,1) = ibnd    (-j) + mnmaxk
          enddo
-         do i = noq1+noq2+1, noqp
+         do i = num_exchanges_u_dir+num_exchanges_v_dir+1, noqp
             j = frm_to(1,i)
             if ( j .gt. 0 ) flowpntp(i,1) = cellpntp( j) + mnmaxk*2
          enddo
@@ -283,7 +283,7 @@ contains
                   if ( i1 .eq. 0 ) cycle
                   do k = 1, layt2
                      iseg = i1 + (k-1)*noseglp
-                     do j = noq1+1,noq1+noq2
+                     do j = num_exchanges_u_dir+1,num_exchanges_u_dir+num_exchanges_v_dir
                         if ( frm_to(2,j) .eq. iseg ) then
                            flowpntp(j,2) = (m-2)*nmaxp + n + (k-1)*mnmax2 + mnmaxk
                         endif
@@ -300,7 +300,7 @@ contains
                   if ( i1 .eq. 0 ) cycle
                   do k = 1, layt2
                      iseg = i1 + (k-1)*noseglp
-                     do j = 1,noq1
+                     do j = 1,num_exchanges_u_dir
                         if ( frm_to(2,j) .eq. iseg ) then
                            flowpntp(j,2) = (m-1)*nmaxp + n - 1 + (k-1)*mnmax2
                         endif

@@ -28,9 +28,9 @@ module m_staprc
 contains
 
 
-    subroutine staprc (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine staprc (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
         !>\file
@@ -66,9 +66,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, &
                 IP6, IP7, IP8, IP9, IP10, &
@@ -116,12 +116,12 @@ contains
         !
         !     (Use a safe margin)
         !
-        TSTART = PMSA(IP2)
-        TSTOP = PMSA(IP3)
-        TIME = PMSA(IP4)
-        DELT = PMSA(IP5)
-        CCRIT = PMSA(IP6)
-        IF (PMSA(IP7) == 1.0) THEN
+        TSTART = process_space_real(IP2)
+        TSTOP = process_space_real(IP3)
+        TIME = process_space_real(IP4)
+        DELT = process_space_real(IP5)
+        CCRIT = process_space_real(IP6)
+        IF (process_space_real(IP7) == 1.0) THEN
             ABOVE = DELT
             BELOW = 0.0
         ELSE
@@ -144,13 +144,13 @@ contains
         IF (TIME >= TSTART - 0.5 * DELT .AND. TIME <= TSTOP + 0.5 * DELT) THEN
             IACTION = 2
             IF (TIME <= TSTART + 0.5 * DELT) THEN
-                DO ISEG = 1, NOSEG
+                DO ISEG = 1, num_cells
                     IP8 = IPOINT(8) + (ISEG - 1) * INCREM(8)
                     IP9 = IPOINT(9) + (ISEG - 1) * INCREM(9)
                     IP10 = IPOINT(10) + (ISEG - 1) * INCREM(10)
-                    PMSA(IP8) = 0.0
-                    PMSA(IP9) = 0.0
-                    PMSA(IP10) = 0.0
+                    process_space_real(IP8) = 0.0
+                    process_space_real(IP9) = 0.0
+                    process_space_real(IP10) = 0.0
                 ENDDO
             ENDIF
         ENDIF
@@ -165,22 +165,22 @@ contains
         IP9 = IPOINT(9)
         IP10 = IPOINT(10)
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
                 !
                 !           Keep track of the time within the current exceedance specification
                 !           that each segment is active
                 !
-                TCOUNT = PMSA(IP8) + DELT
-                PMSA(IP8) = TCOUNT
+                TCOUNT = process_space_real(IP8) + DELT
+                process_space_real(IP8) = TCOUNT
 
-                IF (PMSA(IP1) >= CCRIT) THEN
-                    PMSA(IP9) = PMSA(IP9) + ABOVE
-                    PMSA(IP10) = PMSA(IP10) + ABOVE * PMSA(IP1)
+                IF (process_space_real(IP1) >= CCRIT) THEN
+                    process_space_real(IP9) = process_space_real(IP9) + ABOVE
+                    process_space_real(IP10) = process_space_real(IP10) + ABOVE * process_space_real(IP1)
                 ELSE
-                    PMSA(IP9) = PMSA(IP9) + BELOW
-                    PMSA(IP10) = PMSA(IP10) + BELOW * PMSA(IP1)
+                    process_space_real(IP9) = process_space_real(IP9) + BELOW
+                    process_space_real(IP10) = process_space_real(IP10) + BELOW * process_space_real(IP1)
                 ENDIF
             ENDIF
 
@@ -189,12 +189,12 @@ contains
             !
             IF (IACTION == 3) THEN
                 IF (TCOUNT > 0.0) THEN
-                    IF (PMSA(IP9) > 0) THEN
-                        PMSA(IP10) = PMSA(IP10) / PMSA(IP9)
+                    IF (process_space_real(IP9) > 0) THEN
+                        process_space_real(IP10) = process_space_real(IP10) / process_space_real(IP9)
                     ENDIF
-                    PMSA(IP9) = PMSA(IP9) / TCOUNT
+                    process_space_real(IP9) = process_space_real(IP9) / TCOUNT
                 ELSE
-                    PMSA(IP9) = 0.0
+                    process_space_real(IP9) = 0.0
 
                     IF (NOWARN < MAXWARN) THEN
                         CALL extract_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)

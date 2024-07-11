@@ -38,8 +38,8 @@
       integer :: mmax
 !     DE EERSTE IN DE TWEEDE
       DIMENSION IXR(MMAX) , IX(MMAX)
-      DO 10 I = 1,MMAX
+      do I = 1,MMAX
          IX(I) = IXR(I)
-   10 CONTINUE
+      end do
       RETURN
       END

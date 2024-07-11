@@ -35,7 +35,7 @@
  use m_flowgeom
  use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
  use m_flow
- use m_flowexternalforcings
+ use fm_external_forcings_data
  use geometry_module, only: pinpok
  use m_missing, only: jins, dmiss
 

@@ -15,8 +15,9 @@ from datetime import datetime
 from typing import Optional
 
 from src.config.program_config import ProgramConfig
+from src.config.types.mode_type import ModeType
 from src.suite.test_bench_settings import TestBenchSettings
-from src.utils.common import add_search_path, stripPassword
+from src.utils.common import add_search_path, stripPassword, get_default_logging_folder_path
 from src.utils.logging.file_logger import FileLogger
 from src.utils.logging.i_logger import ILogger
 from src.utils.logging.log_level import LogLevel
@@ -54,6 +55,9 @@ class Program:
             # overwrite name if one is given
             if program_config.name != "":
                 self.__program_config.name = program_config.name
+            # overwrite case name if one is given
+            if program_config.case_name != "":
+                self.__program_config.case_name = program_config.case_name
             # overwrite a shell if one is given
             if program_config.shell:
                 if program_config.shell.working_directory:
@@ -176,14 +180,18 @@ class Program:
             return
         file_logger: Optional[FileLogger] = None
 
-        time_str = datetime.now().strftime("%y%m%d_%H%M%S")
-        unique_name = f"{self.__program_config.name}={time_str}.log"
-        log_file = os.path.abspath(
-            os.path.join(
-                str(self.__program_config.working_directory),
-                unique_name,
+        if self.__settings.run_mode == ModeType.REFERENCE:
+            time_str = datetime.now().strftime("%y%m%d_%H%M%S")
+            unique_name = f"{self.__program_config.name}={time_str}.log"
+            log_file = os.path.abspath(
+                os.path.join(str(self.__program_config.working_directory), unique_name)
             )
-        )
+        else:
+            unique_name = f"{self.__program_config.name}_seq{self.__program_config.sequence}.log"
+            log_file = os.path.abspath(
+                os.path.join(get_default_logging_folder_path(), self.__program_config.case_name, unique_name)
+            )
+
         logger.debug(f"Program output will be written to: {log_file}")
         file_logger = FileLogger(LogLevel.DEBUG, unique_name, log_file)
         for line in completed_process.stdout.splitlines():

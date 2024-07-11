@@ -27,7 +27,7 @@
 !
 !
 
-      subroutine read_vag(file_vag, nolay, ipnt, lunrep )
+      subroutine read_vag(file_vag, num_layers, ipnt, lunrep )
 
       ! function : read a vag file (vertical aggregation) and check dimensions
       use m_logger_helper, only : stop_with_error
@@ -36,8 +36,8 @@
 
       ! declaration of the arguments
       type(t_file)                       :: file_vag               ! aggregation-file
-      integer                                :: nolay                  ! number of layers
-      integer                                :: ipnt(nolay)            ! aggregation pointer
+      integer                                :: num_layers                  ! number of layers
+      integer                                :: ipnt(num_layers)            ! aggregation pointer
       integer                                :: lunrep                 ! unit number report file
 
       ! local declarations
@@ -62,21 +62,21 @@
       endif
 
       if ( nolayd .eq. -1 ) then
-         write(lunrep,*) ' found nolay of -1 in vertical aggregation file'
+         write(lunrep,*) ' found num_layers of -1 in vertical aggregation file'
          write(lunrep,*) ' automatic aggregation of all layers (3D to 2D)'
-         write(*,*) ' found nolay of -1 in vertical aggregation file'
+         write(*,*) ' found num_layers of -1 in vertical aggregation file'
          write(*,*) ' automatic aggregation of all layers (3D to 2D)'
-         do i=1,nolay
+         do i=1,num_layers
             ipnt(i) = 1
          end do
       else
-         if ( nolayd .ne. nolay ) then
+         if ( nolayd .ne. num_layers ) then
             write(lunrep,*) ' dimensions grid on vertical aggregation file differ from input hydrodynamics'
             write(*,*) ' dimensions grid on vertical aggregation file differ from input hydrodynamics'
             call stop_with_error()
          endif
 
-         read(file_vag%unit,*,iostat=ioerr) (ipnt(i),i=1,nolay)
+         read(file_vag%unit,*,iostat=ioerr) (ipnt(i),i=1,num_layers)
          if ( ioerr .ne. 0 ) then
             write(lunrep,*) ' error reading vag file'
             write(*,*) ' error reading vag file'

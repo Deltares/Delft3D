@@ -63,20 +63,20 @@
       double precision :: X(3), Y(3), Z(3), DX(3),DY(3), DZ(3), XH(10),YH(10)
       COMMON /DEPMAX/ VMAX,VMIN,DV,VAL(256),NCOLS(256),NV,NIS,NIE,JAAUTO
 
-      DO 10 I = 1,3
+      do I = 1,3
          J = I + 1
          IF (I .EQ. 3) J = 1
          DX(I) = X(J) - X(I)
          DY(I) = Y(J) - Y(I)
          DZ(I) = Z(J) - Z(I)
-   10 CONTINUE
+end do
 
       ZMAX = Z(1)
       ZMIN = Z(1)
-      DO 15 I = 2,3
+      DO I = 2,3
          ZMAX = MAX(ZMAX,Z(I))
          ZMIN = MIN(ZMIN,Z(I))
-   15 CONTINUE
+      end do
 
       IF (ZMAX .LE. VAL(1)) THEN
          NCOL = NCOLS(1)
@@ -85,7 +85,7 @@
          NCOL = NCOLS(NV+1)
          CALL PFILLER(X,Y,3,NCOL,NCOL)
       ELSE
-       DO 20 I = 0,NV
+       DO I = 0,NV
          IF (I .EQ. 0) THEN
             ZNOW = -1E+30
          ELSE
@@ -100,7 +100,7 @@
          IF (ZMIN .LE. ZNOW .AND. ZMAX .GE. ZNOW .OR.         &
              ZMIN .LE. ZNEX .AND. ZMAX .GE. ZNEX    ) THEN
             IH    = 1
-            DO 30 J1 = 1,3
+            DO J1 = 1,3
                J2   = J1 + 1
                IF (J1 .EQ. 3) J2 = 1
                IF (Z(J1) .LT. ZNOW) THEN
@@ -163,7 +163,7 @@
                      ENDIF
                   ENDIF
                ENDIF
-   30       CONTINUE
+            end do
 
             NUM = IH - 1
             IF (NUM .GE. 3) THEN
@@ -174,7 +174,7 @@
          ELSE IF (ZMIN .GE. ZNOW .AND. ZMAX .LE. ZNEX) THEN
             CALL PFILLER(X,Y,3,NCOL,NCOL)
          ENDIF
-   20  CONTINUE
+      end do
       ENDIF
 
       CALL TOPIX(X(1),Y(1),NX1,NY1)

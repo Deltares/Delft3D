@@ -83,8 +83,6 @@ class ResolveHandler(ABC):
             logger.debug(f"Trying to urlopen {path}")
             response = url_lib.urlopen(path)
             data = response.read().decode("utf-8")
-            if "<!doctype svn" in data.lower():
-                return HandlerType.SVN
             if "<!doctype html" in data.lower():
                 return HandlerType.WEB
             else:

@@ -62,7 +62,7 @@ contains
         integer(kind = int_wp) :: extlen   ! length of file extension
         logical :: mapfil  ! true if map file extension
         integer(kind = int_wp) :: file_unit
-        integer(kind = int_wp) :: k, i1, i2, i3, notot, ierror, nodump, idummy
+        integer(kind = int_wp) :: k, i1, i2, i3, num_substances_total, ierror, num_monitoring_points, idummy
         integer(kind = int_wp) :: itype, itmdep, iprdep, nrlst, maxk, nbase
         integer(kind = int_wp) :: locnr, loctyp, maxdef, maxlst
 
@@ -82,16 +82,16 @@ contains
 
         ! read primary system characteristics
         read (file_unit, err = 100) file_name(3)(1:160)
-        read (file_unit, err = 110) notot, nodump
-        read (file_unit, err = 120) (file_name(3)(181:200), k = 1, notot)
+        read (file_unit, err = 110) num_substances_total, num_monitoring_points
+        read (file_unit, err = 120) (file_name(3)(181:200), k = 1, num_substances_total)
 
         ! read parameter names and try to find the wanted subset
         nrlst = 0
         setall = .false.
         if (locdef(1) == '*') setall = .true.
 
-        do i1 = 1, nodump, maxlst
-            maxk = min(nodump, i1 + maxlst - nrlst - 1) - i1 + 1
+        do i1 = 1, num_monitoring_points, maxlst
+            maxk = min(num_monitoring_points, i1 + maxlst - nrlst - 1) - i1 + 1
             if (.not. mapfil) then
                 read (file_unit, err = 130) (idummy, loclst(k), k = nrlst + 1, nrlst + maxk)
             else
@@ -105,7 +105,7 @@ contains
                     if (loclst(nbase + i2) == locdef(i3) .or. setall) then
                         nrlst = nrlst + 1
                         if (nrlst > maxlst) then
-                            ierror = -nodump
+                            ierror = -num_monitoring_points
                             goto 50
                         endif
                         loclst(nrlst) = loclst(nbase + i2)
@@ -167,8 +167,8 @@ contains
         integer(kind = int_wp) :: extlen   ! length of file extension
         logical :: mapfil  ! true if map file extension
         integer(kind = int_wp) :: file_unit
-        integer(kind = int_wp) :: nodump
-        integer(kind = int_wp) :: k, i, notot, ntt
+        integer(kind = int_wp) :: num_monitoring_points
+        integer(kind = int_wp) :: k, i, num_substances_total, ntt
         integer(kind = int_wp) :: ierror, nrlst, iprcod, iprtyp
         integer(kind = int_wp) :: itype, maxdef, itmdep, locdep, maxlst, lang
         integer(kind = int_wp) :: iyear, imonth, iday, ihour, iminut, isecnd
@@ -202,10 +202,10 @@ contains
         read (file_name(3)(139:140), '(i2)') iminut
         read (file_name(3)(142:143), '(i2)') isecnd
         read (file_name(3)(151:158), '(i8)') isfact
-        read (file_unit, err = 110)   notot, nodump
-        read (file_unit, err = 120) (file_name(3)(181:200), k = 1, notot)
+        read (file_unit, err = 110)   num_substances_total, num_monitoring_points
+        read (file_unit, err = 120) (file_name(3)(181:200), k = 1, num_substances_total)
         if (.not. mapfil) then
-            read (file_unit, err = 130) (idummy, file_name(3)(221:240), k = 1, nodump)
+            read (file_unit, err = 130) (idummy, file_name(3)(221:240), k = 1, num_monitoring_points)
         endif
         idate = iyear * 10000 + imonth * 100 + iday
         itime = ihour * 10000 + iminut * 100 + isecnd
@@ -213,7 +213,7 @@ contains
         second = 1 / 864.00d+02
 
         ! read the values at all times
-        ntt = nodump * notot
+        ntt = num_monitoring_points * num_substances_total
         allocate(rdata(ntt))
         nrlst = 0
         setall = .false.
@@ -281,7 +281,7 @@ contains
         integer(kind = int_wp) :: file_unit
         integer(kind = int_wp) :: maxk
         integer(kind = int_wp) :: k, i1, i2, i3
-        integer(kind = int_wp) :: ierror, notot, nodump, nrlst, iprcod, iprtyp
+        integer(kind = int_wp) :: ierror, num_substances_total, num_monitoring_points, nrlst, iprcod, iprtyp
         integer(kind = int_wp) :: itype, maxdef, itmdep, locdep, maxlst, lang
 
         ! open the delwaq .his file
@@ -291,21 +291,21 @@ contains
 
         ! read primary system characteristics
         read (file_unit, err = 100)   file_name(3)(1:160)
-        read (file_unit, err = 110)   notot, nodump
+        read (file_unit, err = 110)   num_substances_total, num_monitoring_points
 
         ! read parameter names and try to find the wanted subset
         nrlst = 0
         setall = .false.
         if (pardef(1) == '*') setall = .true.
-        do i1 = 1, notot, maxlst
-            maxk = min(notot, i1 + maxlst - 1) - i1 + 1
+        do i1 = 1, num_substances_total, maxlst
+            maxk = min(num_substances_total, i1 + maxlst - 1) - i1 + 1
             read (file_unit, err = 120) (paruni(k), k = 1, maxk)
             do i2 = 1, maxk
                 do i3 = 1, maxdef
                     if (paruni(i2) == pardef(i3) .or. setall) then
                         nrlst = nrlst + 1
                         if (nrlst > maxlst) then
-                            ierror = -notot
+                            ierror = -num_substances_total
                             goto 50
                         endif
                         parlst(nrlst) = paruni(i2)
@@ -362,7 +362,7 @@ contains
         logical :: mapfil  ! true if map file extension
         integer(kind = int_wp) :: file_unit
         integer(kind = int_wp) :: i1
-        integer(kind = int_wp) :: nodump, notot
+        integer(kind = int_wp) :: num_monitoring_points, num_substances_total
         integer(kind = int_wp) :: k, l, i2, i3, i4, ierror, iyear, imonth, iday
         integer(kind = int_wp) :: ihour, iminut, isecnd, isfact, idummy, idate
         integer(kind = int_wp) :: itime, ntt, iset, iprcod, maxdim
@@ -396,10 +396,10 @@ contains
         read (file_name(3)(139:140), '(i2)') iminut
         read (file_name(3)(142:143), '(i2)') isecnd
         read (file_name(3)(151:158), '(i8)') isfact
-        read (file_unit, err = 110)   notot, nodump
-        read (file_unit, err = 120) (file_name(3)(181:200), k = 1, notot)
+        read (file_unit, err = 110)   num_substances_total, num_monitoring_points
+        read (file_unit, err = 120) (file_name(3)(181:200), k = 1, num_substances_total)
         if (.not. mapfil) then
-            read (10, err = 130) (idummy, file_name(3)(221:240), k = 1, nodump)
+            read (10, err = 130) (idummy, file_name(3)(221:240), k = 1, num_monitoring_points)
         endif
         idate = iyear * 10000 + imonth * 100 + iday
         itime = ihour * 10000 + iminut * 100 + isecnd
@@ -407,11 +407,11 @@ contains
         second = isfact / 864.00d+02
 
         ! standard ods processing
-        ntt = nodump * notot
+        ntt = num_monitoring_points * num_substances_total
         iset = 0
-        10 i1 = (loc(1) - 1) * notot + iprcod - 1
+        10 i1 = (loc(1) - 1) * num_substances_total + iprcod - 1
         i2 = (loc(2) - loc(1)) / loc(3)
-        i3 = loc(3) * notot - 1
+        i3 = loc(3) * num_substances_total - 1
         i4 = ntt - i1 - (1 + i3) * i2 - 1
         if (iset + i2 + 1 > maxdim) goto 150
         read (file_unit, err = 150, end = 200) idummy, (adummy, k = 1, i1), &
@@ -467,7 +467,7 @@ contains
         integer(kind = int_wp) :: extpos   ! position of extension
         integer(kind = int_wp) :: extlen   ! length of file extension
         logical :: mapfil  ! true if map file extension
-        integer(kind = int_wp) :: file_unit, nodump, notot, k, ntt
+        integer(kind = int_wp) :: file_unit, num_monitoring_points, num_substances_total, k, ntt
         integer(kind = int_wp) :: ierror, iyear, imonth, iday
         integer(kind = int_wp) :: ihour, iminut, isecnd, isfact, idummy, idate
         integer :: itime, iset, iprcod(:), maxdim
@@ -501,10 +501,10 @@ contains
         read (file_name(3)(139:140), '(i2)') iminut
         read (file_name(3)(142:143), '(i2)') isecnd
         read (file_name(3)(151:158), '(i8)') isfact
-        read (file_unit, err = 110)   notot, nodump
-        read (file_unit, err = 120) (file_name(3)(181:200), k = 1, notot)
+        read (file_unit, err = 110)   num_substances_total, num_monitoring_points
+        read (file_unit, err = 120) (file_name(3)(181:200), k = 1, num_substances_total)
         if (.not. mapfil) then
-            read (file_unit, err = 130) (idummy, file_name(3)(221:240), k = 1, nodump)
+            read (file_unit, err = 130) (idummy, file_name(3)(221:240), k = 1, num_monitoring_points)
         endif
         idate = iyear * 10000 + imonth * 100 + iday
         itime = ihour * 10000 + iminut * 100 + isecnd
@@ -512,7 +512,7 @@ contains
         second = isfact / 864.00d+02
 
         ! standard ods processing
-        ntt = nodump * notot
+        ntt = num_monitoring_points * num_substances_total
         iset = 0
         do
             if (iset + ntt > maxdim) goto 150
@@ -568,7 +568,7 @@ contains
         integer(kind = int_wp) :: extlen   ! length of file extension
         logical :: mapfil  ! true if map file extension
         integer(kind = int_wp) :: file_unit
-        integer(kind = int_wp) :: nodump, notot
+        integer(kind = int_wp) :: num_monitoring_points, num_substances_total
         integer(kind = int_wp) :: k, ntt, ierror, idummy, notim, ndim, itype
         real(kind = real_wp) :: adummy
         integer(kind = int_wp) :: iprdep, itmdep, locdep
@@ -590,14 +590,14 @@ contains
 
         ! read primary system characteristics
         read (file_unit, err = 100)   file_name(3)(1:160)
-        read (file_unit, err = 110)   notot, nodump
-        read (file_unit, err = 120) (file_name(3)(181:200), k = 1, notot)
+        read (file_unit, err = 110)   num_substances_total, num_monitoring_points
+        read (file_unit, err = 120) (file_name(3)(181:200), k = 1, num_substances_total)
         if (.not. mapfil) then
-            read (file_unit, err = 130) (idummy, file_name(3)(221:240), k = 1, nodump)
+            read (file_unit, err = 130) (idummy, file_name(3)(221:240), k = 1, num_monitoring_points)
         endif
 
         ! read the values at all times
-        ntt = nodump * notot
+        ntt = num_monitoring_points * num_substances_total
         notim = 0
 
         10 read (file_unit, err = 140, end = 20)   idummy, (adummy, k = 1, ntt)
@@ -605,8 +605,8 @@ contains
         goto 10
 
         ! supply the desired statistics
-        20 ndim(1) = notot
-        ndim(2) = nodump
+        20 ndim(1) = num_substances_total
+        ndim(2) = num_monitoring_points
         ndim(3) = notim
         goto 200
 
@@ -630,7 +630,7 @@ contains
 
         use m_waq_data_structure   ! for definition and storage of data
         use timers          !   performance timers
-        use m_sysi          ! Timer characteristics
+        use m_timer_variables          ! Timer characteristics
         use time_module
         use m_string_utils
 
@@ -669,7 +669,7 @@ contains
         integer(kind = int_wp) :: nlocs         ! number of locations in file
         integer(kind = int_wp) :: ntims         ! number of times in file
         integer(kind = int_wp) :: nopar         ! number of parameters in file
-        integer(kind = int_wp) :: noloc         ! number of locations in file
+        integer(kind = int_wp) :: num_local_vars         ! number of locations in file
         integer(kind = int_wp) :: ndim1          ! first dimension
         integer(kind = int_wp) :: ndim2          ! second dimension
         integer(kind = int_wp) :: num_records         ! number of times in file
@@ -711,7 +711,7 @@ contains
         locdef(1) = '*'
         call get_loc (cfile, 0, locdef, 1, 0, &
                 0, nlocs, locnam, loctyp, locnr, &
-                noloc, ierror, cfile(3))
+                num_local_vars, ierror, cfile(3))
 
         ! Fill an array with wanted locations
 
@@ -719,7 +719,7 @@ contains
             if (data_loc%name(iloc) == '&$&$SYSTEM_NAME&$&$!') then
                 iloc_ods(iloc) = -1
             else
-                iloc_found = index_in_array(data_loc%name(iloc), locnam(:noloc))
+                iloc_found = index_in_array(data_loc%name(iloc), locnam(:num_local_vars))
                 if (iloc_found >= 1) then
                     iloc_ods(iloc) = iloc_found
                 else
@@ -833,7 +833,7 @@ contains
             ndim1 = data_loc%no_item
             ndim2 = data_param%no_item
         endif
-        data_block%num_parameters = data_param%no_item
+        data_block%num_spatial_parameters = data_param%no_item
         data_block%num_locations = data_loc%no_item
 
         allocate(data_block%values(ndim1, ndim2, num_records), buffer(num_records))
@@ -966,11 +966,11 @@ contains
         ! dimension according to order
 
         if (data_block%iorder == ORDER_PARAM_LOC) then
-            ndim1 = data_block%num_parameters
+            ndim1 = data_block%num_spatial_parameters
             ndim2 = data_block%num_locations
         else
             ndim1 = data_block%num_locations
-            ndim2 = data_block%num_parameters
+            ndim2 = data_block%num_spatial_parameters
         endif
 
         ! read dependent on type of function

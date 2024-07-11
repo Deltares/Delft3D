@@ -131,7 +131,7 @@ end subroutine syncom_init
 !
 !
 !==============================================================================
-subroutine syncom(mudlay, timnow, itstrt, itstop, kmax, u0, usus, v0, vsus, &
+subroutine syncom(mudlay, timnow, itstrt, itstop, num_layers_grid, u0, usus, v0, vsus, &
                 & cfurou, czusus, cfvrou, czvsus, r0, rsed, lstsci, lsal,   &
                 & ltem, wstau, wssus, entr, s0, sepsus, mlb, mub, nlb, nub)
     implicit none
@@ -148,7 +148,7 @@ subroutine syncom(mudlay, timnow, itstrt, itstop, kmax, u0, usus, v0, vsus, &
     integer                                            , intent (in)  :: nub
     integer                                            , intent (in)  :: itstop
     integer                                            , intent (in)  :: itstrt
-    integer                                            , intent (in)  :: kmax
+    integer                                            , intent (in)  :: num_layers_grid
     integer                                            , intent (in)  :: lsal
     integer                                            , intent (in)  :: lstsci
     integer                                            , intent (in)  :: ltem
@@ -164,11 +164,11 @@ subroutine syncom(mudlay, timnow, itstrt, itstop, kmax, u0, usus, v0, vsus, &
     real(fp), dimension(nlb:nub, mlb:mub)              , intent (out) :: sepsus
     real(fp), dimension(nlb:nub, mlb:mub)              , intent (out) :: wssus
     real(fp), dimension(nlb:nub, mlb:mub)              , intent (in)  :: wstau
-    real(fp), dimension(nlb:nub, mlb:mub, kmax, lstsci), intent (in)  :: r0
-    real(fp), dimension(nlb:nub, mlb:mub, kmax)        , intent (in)  :: u0
-    real(fp), dimension(nlb:nub, mlb:mub, kmax)        , intent (out) :: usus
-    real(fp), dimension(nlb:nub, mlb:mub, kmax)        , intent (in)  :: v0
-    real(fp), dimension(nlb:nub, mlb:mub, kmax)        , intent (out) :: vsus
+    real(fp), dimension(nlb:nub, mlb:mub, num_layers_grid, lstsci), intent (in)  :: r0
+    real(fp), dimension(nlb:nub, mlb:mub, num_layers_grid)        , intent (in)  :: u0
+    real(fp), dimension(nlb:nub, mlb:mub, num_layers_grid)        , intent (out) :: usus
+    real(fp), dimension(nlb:nub, mlb:mub, num_layers_grid)        , intent (in)  :: v0
+    real(fp), dimension(nlb:nub, mlb:mub, num_layers_grid)        , intent (out) :: vsus
 !
 ! Local variables
 !
@@ -261,13 +261,13 @@ subroutine syncom(mudlay, timnow, itstrt, itstop, kmax, u0, usus, v0, vsus, &
              call dio2dfput(comminfo%czuset, cfurou2)
              call dio2dfput(comminfo%czvset, cfvrou2)
           endif
-          u0kmax = u0(:, :, kmax)       ! Select flow field of bottom layer
-          v0kmax = v0(:, :, kmax)
+          u0kmax = u0(:, :, num_layers_grid)       ! Select flow field of bottom layer
+          v0kmax = v0(:, :, num_layers_grid)
           call dio2dfput(comminfo%uset, u0kmax)
           call dio2dfput(comminfo%vset, v0kmax)
           s0_dbl = s0
           call dio2dfput(comminfo%sset, s0_dbl)
-          r0_dbl = r0(:, :, kmax, max(lsal, ltem) + 1)
+          r0_dbl = r0(:, :, num_layers_grid, max(lsal, ltem) + 1)
           call dio2dfput(comminfo%rsedset, r0_dbl)
           ws_dbl = wstau(:, :)
           call dio2dfput(comminfo%wsset, ws_dbl)

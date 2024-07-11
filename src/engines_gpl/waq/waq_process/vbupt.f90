@@ -28,9 +28,9 @@ module m_vbupt
 contains
 
 
-    subroutine VBUPT      (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine VBUPT      (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper, only : write_error_message
 
         !
@@ -40,18 +40,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(25) ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(25) ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(25) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(25)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
         !
@@ -93,30 +93,30 @@ contains
         !
         ipnt = ipoint
         !
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             !
-            fVB = pmsa(ipnt(1))
-            SwVBGro = pmsa(ipnt(2))
-            F1VB = pmsa(ipnt(3))
-            F2VB = pmsa(ipnt(4))
-            F3VB = pmsa(ipnt(5))
-            F4VB = pmsa(ipnt(6))
-            F5VB = pmsa(ipnt(7))
-            CNf1VB = pmsa(ipnt(8))
-            CNf2VB = pmsa(ipnt(9))
-            CNf3VB = pmsa(ipnt(10))
-            CNf4VB = pmsa(ipnt(11))
-            CNf5VB = pmsa(ipnt(12))
-            CPf1VB = pmsa(ipnt(13))
-            CPf2VB = pmsa(ipnt(14))
-            CPf3VB = pmsa(ipnt(15))
-            CPf4VB = pmsa(ipnt(16))
-            CPf5VB = pmsa(ipnt(17))
-            CSf1VB = pmsa(ipnt(18))
-            CSf2VB = pmsa(ipnt(19))
-            CSf3VB = pmsa(ipnt(20))
-            CSf4VB = pmsa(ipnt(21))
-            CSf5VB = pmsa(ipnt(22))
+            fVB = process_space_real(ipnt(1))
+            SwVBGro = process_space_real(ipnt(2))
+            F1VB = process_space_real(ipnt(3))
+            F2VB = process_space_real(ipnt(4))
+            F3VB = process_space_real(ipnt(5))
+            F4VB = process_space_real(ipnt(6))
+            F5VB = process_space_real(ipnt(7))
+            CNf1VB = process_space_real(ipnt(8))
+            CNf2VB = process_space_real(ipnt(9))
+            CNf3VB = process_space_real(ipnt(10))
+            CNf4VB = process_space_real(ipnt(11))
+            CNf5VB = process_space_real(ipnt(12))
+            CPf1VB = process_space_real(ipnt(13))
+            CPf2VB = process_space_real(ipnt(14))
+            CPf3VB = process_space_real(ipnt(15))
+            CPf4VB = process_space_real(ipnt(16))
+            CPf5VB = process_space_real(ipnt(17))
+            CSf1VB = process_space_real(ipnt(18))
+            CSf2VB = process_space_real(ipnt(19))
+            CSf3VB = process_space_real(ipnt(20))
+            CSf4VB = process_space_real(ipnt(21))
+            CSf5VB = process_space_real(ipnt(22))
 
             !
             !   *****     Insert your code here  *****
@@ -149,9 +149,9 @@ contains
             !
             !   *****     End of your code       *****
             !
-            pmsa(ipnt(23)) = fNVB01up
-            pmsa(ipnt(24)) = fPVB01up
-            pmsa(ipnt(25)) = fSVB01up
+            process_space_real(ipnt(23)) = fNVB01up
+            process_space_real(ipnt(24)) = fPVB01up
+            process_space_real(ipnt(25)) = fSVB01up
             !
             ipnt = ipnt + increm
             !

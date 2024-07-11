@@ -30,21 +30,21 @@ contains
 
     !> Makes a closure error correction
     !! for steady state computations
-    subroutine dlwq65(amass, volume, idt, noseg)
+    subroutine dlwq65(amass, volume, idt, num_cells)
 
         use timers
 
         real(kind = real_wp),   intent(inout) :: amass (*) !< Closure error correction
         real(kind = real_wp),   intent(inout) :: volume(*) !< Volume
         integer(kind = int_wp), intent(in   ) :: idt       !< Time between amass and volume
-        integer(kind = int_wp), intent(in   ) :: noseg     !< Number of cells
+        integer(kind = int_wp), intent(in   ) :: num_cells     !< Number of cells
         
         ! Local variables
         integer(kind = int_wp) :: i
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwq65", ithandl)
 
-        do i = 1, noseg
+        do i = 1, num_cells
             amass(i) = (amass(i) - volume(i)) / idt
         end do
 

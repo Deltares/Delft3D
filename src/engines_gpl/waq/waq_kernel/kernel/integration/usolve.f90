@@ -28,7 +28,7 @@ module m_usolve
 contains
 
 
-    subroutine usolve (ntrace, nolay, nsegl, nomat, amat, &
+    subroutine usolve (ntrace, num_layers, nsegl, fast_solver_arr_size, amat, &
             imat, diag, idiag, x, rhs, &
             triwrk, iadd, iexseg)
 
@@ -53,16 +53,16 @@ contains
         !     Kind        Function         Name                  Description
 
         integer(kind = int_wp), intent(in) :: ntrace               ! dimension of matrix (length of diagonal)
-        integer(kind = int_wp), intent(in) :: nolay                ! number of layers in the vertical
+        integer(kind = int_wp), intent(in) :: num_layers                ! number of layers in the vertical
         integer(kind = int_wp), intent(in) :: nsegl                ! number of volumes per layer
-        integer(kind = int_wp), intent(in) :: nomat                ! number of off-diagonal entries matrix
-        real(kind = dp), intent(in) :: amat  (nomat)     ! off-diagonal entries matrix
-        integer(kind = int_wp), intent(in) :: imat  (nomat)     ! collumn nrs of off-diagonal entries matrix
+        integer(kind = int_wp), intent(in) :: fast_solver_arr_size                ! number of off-diagonal entries matrix
+        real(kind = dp), intent(in) :: amat  (fast_solver_arr_size)     ! off-diagonal entries matrix
+        integer(kind = int_wp), intent(in) :: imat  (fast_solver_arr_size)     ! collumn nrs of off-diagonal entries matrix
         real(kind = dp), intent(in) :: diag  (ntrace)     ! diagonal entries of matrix
         integer(kind = int_wp), intent(in) :: idiag (0:ntrace)     ! start of rows in amat
         real(kind = dp), intent(out) :: x     (ntrace)     ! x = M^{-1} y
         real(kind = dp), intent(in) :: rhs   (ntrace)     ! right hand side of this iteration only
-        real(kind = dp), intent(inout) :: triwrk(nolay)     ! work array for vertical double sweep
+        real(kind = dp), intent(inout) :: triwrk(num_layers)     ! work array for vertical double sweep
         integer(kind = int_wp), intent(in) :: iadd                 ! offset for vertical off-diagonals
         integer(kind = int_wp), intent(in) :: iexseg(ntrace)     ! = 0 if volume is fully explicit
 
@@ -86,7 +86,7 @@ contains
 
         do isegl = nsegl, 1, -1
 
-            do ilay = 1, nolay
+            do ilay = 1, num_layers
 
                 iseg = isegl + (ilay - 1) * nsegl
                 if (iexseg(iseg) == 0) cycle
@@ -97,7 +97,7 @@ contains
                 enddo
             enddo
 
-            if (nolay == 1) then
+            if (num_layers == 1) then
 
                 x(isegl) = x(isegl) / diag(isegl)
 
@@ -110,13 +110,13 @@ contains
                 ilow = idiag(isegl - 1) + 2
                 iseg = isegl
                 triwrk(1) = amat(ilow) / pivot
-                do ilay = 2, nolay
+                do ilay = 2, num_layers
                     iseg = iseg + nsegl
                     pivot = diag(iseg) - amat(idiag(iseg - 1) + 1) * triwrk(ilay - 1)
                     x(iseg) = (x   (iseg) - amat(idiag(iseg - 1) + 1) * x(iseg - nsegl)) / pivot
                     triwrk(ilay) = amat(idiag(iseg - 1) + 2) / pivot
                 enddo
-                do ilay = nolay - 1, 1, -1
+                do ilay = num_layers - 1, 1, -1
                     x(isegl + (ilay - 1) * nsegl) = x(isegl + (ilay - 1) * nsegl) - triwrk(ilay) * x(isegl + ilay * nsegl)
                 enddo
 

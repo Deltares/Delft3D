@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <!-- ======================================================================== -->
         <testCase name="e105_f01_c010_weir_timeseries" ref="dimr_trunk">
             <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f01_general/c010_weir_timeseries</path>

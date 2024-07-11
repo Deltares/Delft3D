@@ -31,9 +31,9 @@ contains
 
 
     ! 6 char name for process mathc with second line of PDF
-    subroutine PRODIA     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine PRODIA     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !
         !*******************************************************************************
         !
@@ -49,18 +49,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)      ! I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)      ! I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)        ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(*)    ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(*)    ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(*)    ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg        ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells        ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux       ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *)  ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)    ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1         ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2         ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3         ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4         ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir         ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir         ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir         ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir         ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         !
         !*******************************************************************************
         !
@@ -71,9 +71,9 @@ contains
         integer(kind = int_wp), parameter :: nrSpecInp = 37   !   nr of inputs per species
         integer(kind = int_wp), parameter :: nrSpecOut = 25   !   nr of outputs per species
         integer(kind = int_wp), parameter :: nrSpecFlux = 22  !   nr of fluxes per species
-        integer(kind = int_wp) :: nrInputItems     !   nr of input items need for output PMSA
-        integer(kind = int_wp) :: nrOutputItems    !   nr of output items need for output PMSA
-        integer(kind = int_wp) :: ipointLength     !   total length of the PMSA input and output pointer array
+        integer(kind = int_wp) :: nrInputItems     !   nr of input items need for output process_space_real
+        integer(kind = int_wp) :: nrOutputItems    !   nr of output items need for output process_space_real
+        integer(kind = int_wp) :: ipointLength     !   total length of the process_space_real input and output pointer array
         integer(kind = int_wp), allocatable :: ipnt(:)          !   Local work array for the pointering
 
         integer(kind = int_wp) :: iseg          ! Local loop counter for computational element loop
@@ -128,14 +128,14 @@ contains
         !
 
         ! segment and species independent items
-        nrSpec = nint(PMSA(ipoint(1)))   !   nr of species in the interface                                 (-)
+        nrSpec = nint(process_space_real(ipoint(1)))   !   nr of species in the interface                                 (-)
 
         !   nrInputItems  = nrIndInp + nrSpec * nrSpecInp = 8 + 2 * 37 = 82
         !   nrOutputItems = nrSpec * nrSpecOut = 2 * 25 = 50
         !   ipointLength = nrInputItems + nrOutputItems = 82 + 48 = 130
         !   nrFluxes  = nrSpec * (nrSpexFlx + nrPrey * nrLossFluxes) = 2 * 22 = 44
 
-        ! length of the PMSA input pointer array.
+        ! length of the process_space_real input pointer array.
         nrInputItems = nrIndInp + nrSpec * nrSpecInp
         nrOutputItems = nrSpec * nrSpecOut
         ipointLength = nrInputItems + nrOutputItems
@@ -145,18 +145,18 @@ contains
         iflux = 0
 
         ! segment loop
-        segmentLoop : do iseg = 1, noseg
+        segmentLoop : do iseg = 1, num_cells
             call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
 
                 ! species independent items
-                PO4 = PMSA(ipnt(2))  !    initial external DIP                                   (gP m-3)
-                NH4 = PMSA(ipnt(3))  !    initial external NH4                                   (gN m-3)
-                NO3 = PMSA(ipnt(4))  !    initial external NO3                                   (gN m-3)
-                Si = PMSA(ipnt(5))  !    initial external Si                                    (gSi m-3)
-                Temp = PMSA(ipnt(6))  !    ambient water temperature                              (oC)
-                PFD = PMSA(ipnt(7))  !    from rad to photon flux density                        (umol photon m-2)
-                atten = PMSA(ipnt(8))  !    attenuation of light by water + plankton Chl           (-)
+                PO4 = process_space_real(ipnt(2))  !    initial external DIP                                   (gP m-3)
+                NH4 = process_space_real(ipnt(3))  !    initial external NH4                                   (gN m-3)
+                NO3 = process_space_real(ipnt(4))  !    initial external NO3                                   (gN m-3)
+                Si = process_space_real(ipnt(5))  !    initial external Si                                    (gSi m-3)
+                Temp = process_space_real(ipnt(6))  !    ambient water temperature                              (oC)
+                PFD = process_space_real(ipnt(7))  !    from rad to photon flux density                        (umol photon m-2)
+                atten = process_space_real(ipnt(8))  !    attenuation of light by water + plankton Chl           (-)
                 exat = EXP(-atten)        !    -ve exponent of attenuation                            (-)
 
                 ! species loop
@@ -166,49 +166,49 @@ contains
 
                     ! species dependent items
                     ! (number of species independent items + location of input item in vector + species loop)
-                    protC = PMSA(ipnt(spInc + 1))   !      C-biomass                                              (gC m-3)
+                    protC = process_space_real(ipnt(spInc + 1))   !      C-biomass                                              (gC m-3)
 
                     ! skip if biomass is below threshold
                     if (protC <= threshCmass) then
                         cycle speciesLoop
                     end if
 
-                    protChl = PMSA(ipnt(spInc + 2))   !      Chl-biomass                                            (gChl m-3)
-                    protN = PMSA(ipnt(spInc + 3))   !      N-biomass                                              (gN m-3)
-                    protP = PMSA(ipnt(spInc + 4))   !      P-biomass                                              (gP m-3)
-                    protSi = PMSA(ipnt(spInc + 5))   !      Si-biomass                                             (gSi m-3)
-                    alpha = PMSA(ipnt(spInc + 6))   !      alpha for photosynthesis in protist                    (Figure this out!)
-                    ChlCm = PMSA(ipnt(spInc + 7))   !      maximum cellular Chl:C ratio                           (gChl gC-1)
-                    ChlCo = PMSA(ipnt(spInc + 8))   !      minimum cellular Chl:C ratio                           (gChl gC-1)
-                    CR = PMSA(ipnt(spInc + 9))   !      catabolic respiration quotient                         (-)
-                    FrAut = PMSA(ipnt(spInc + 10))   !      fraction of mortality to autolysis                     (-)
-                    FrDet = PMSA(ipnt(spInc + 11))   !      fraction of mortality to detritus                      (-)
-                    KtNH4 = PMSA(ipnt(spInc + 12))   !      Kt for NH4 transport                                   (gN m-3)
-                    KtNO3 = PMSA(ipnt(spInc + 13))   !      Kt for NO3 transport                                   (gN m-3)
-                    KtP = PMSA(ipnt(spInc + 14))   !      Kt for DIP transport                                   (gP m-3)
-                    KtSi = PMSA(ipnt(spInc + 15))   !      Kt for Si transport                                    (gSi m-3)
-                    MrtRT = PMSA(ipnt(spInc + 16))   !      mortality at reference temperature                     (-)
-                    NCm = PMSA(ipnt(spInc + 17))   !      N:C that totally represses NH4 transport               (gN gC-1)
-                    NCo = PMSA(ipnt(spInc + 18))   !      minimum N-quota                                        (gN gC-1)
-                    NCopt = PMSA(ipnt(spInc + 19))   !      N:C for growth under optimal conditions                (gN gC-1)
-                    NO3Cm = PMSA(ipnt(spInc + 20))   !      N:C that totally represses NO3 transport               (gN gC-1)
-                    NO3Copt = PMSA(ipnt(spInc + 21))   !      N:C for growth on NO3 under optimal conditions         (gN gC-1)
-                    PCm = PMSA(ipnt(spInc + 22))   !      PC maximum quota                                       (gP gC-1)
-                    PCo = PMSA(ipnt(spInc + 23))   !      PC minimum quota                                       (gP gC-1)
-                    PCoNCm = PMSA(ipnt(spInc + 24))   !      maximum NC when PC is minimum (PCu = 0)                (gN gC-1)
-                    PCoNCopt = PMSA(ipnt(spInc + 25))   !      optimum NC when PC is minimum (PCu = 0)                (gN gC-1)
-                    PCopt = PMSA(ipnt(spInc + 26))   !      PC optimum quota                                       (gP gC-1)
-                    PSDOC = PMSA(ipnt(spInc + 27))   !      proportion of current PS being leaked as DOC           (-)
-                    Q10 = PMSA(ipnt(spInc + 28))   !      Q10 for UmRT                                           (-)
-                    redco = PMSA(ipnt(spInc + 29))   !      C respired to support nitrate reduction for NH4        (gC gN-1)
-                    relPS = PMSA(ipnt(spInc + 30))   !      relative PSmax:Umax on phototrophy                     (-)
-                    ReUmNH4 = PMSA(ipnt(spInc + 31))   !      max. growth rate supported by NH4-N:Umax               (-)
-                    ReUmNO3 = PMSA(ipnt(spInc + 32))   !      max. growth rate supported by NO3-N:Umax               (-)
-                    RT = PMSA(ipnt(spInc + 33))   !      reference temperature for UmRT                         (deg C)
-                    SiCm = PMSA(ipnt(spInc + 34))   !      absolute maximum Si:C (diatom)                         (gSi gC-1)
-                    SiCo = PMSA(ipnt(spInc + 35))   !      optimum Si:C for (diatom) growth                       (gSi gC-1)
-                    SiCopt = PMSA(ipnt(spInc + 36))   !      minimum Si:C (diatom)                                  (gSi gC-1)
-                    UmRT = PMSA(ipnt(spInc + 37))   !      maximum growth rate at reference T                     (d-1)
+                    protChl = process_space_real(ipnt(spInc + 2))   !      Chl-biomass                                            (gChl m-3)
+                    protN = process_space_real(ipnt(spInc + 3))   !      N-biomass                                              (gN m-3)
+                    protP = process_space_real(ipnt(spInc + 4))   !      P-biomass                                              (gP m-3)
+                    protSi = process_space_real(ipnt(spInc + 5))   !      Si-biomass                                             (gSi m-3)
+                    alpha = process_space_real(ipnt(spInc + 6))   !      alpha for photosynthesis in protist                    (Figure this out!)
+                    ChlCm = process_space_real(ipnt(spInc + 7))   !      maximum cellular Chl:C ratio                           (gChl gC-1)
+                    ChlCo = process_space_real(ipnt(spInc + 8))   !      minimum cellular Chl:C ratio                           (gChl gC-1)
+                    CR = process_space_real(ipnt(spInc + 9))   !      catabolic respiration quotient                         (-)
+                    FrAut = process_space_real(ipnt(spInc + 10))   !      fraction of mortality to autolysis                     (-)
+                    FrDet = process_space_real(ipnt(spInc + 11))   !      fraction of mortality to detritus                      (-)
+                    KtNH4 = process_space_real(ipnt(spInc + 12))   !      Kt for NH4 transport                                   (gN m-3)
+                    KtNO3 = process_space_real(ipnt(spInc + 13))   !      Kt for NO3 transport                                   (gN m-3)
+                    KtP = process_space_real(ipnt(spInc + 14))   !      Kt for DIP transport                                   (gP m-3)
+                    KtSi = process_space_real(ipnt(spInc + 15))   !      Kt for Si transport                                    (gSi m-3)
+                    MrtRT = process_space_real(ipnt(spInc + 16))   !      mortality at reference temperature                     (-)
+                    NCm = process_space_real(ipnt(spInc + 17))   !      N:C that totally represses NH4 transport               (gN gC-1)
+                    NCo = process_space_real(ipnt(spInc + 18))   !      minimum N-quota                                        (gN gC-1)
+                    NCopt = process_space_real(ipnt(spInc + 19))   !      N:C for growth under optimal conditions                (gN gC-1)
+                    NO3Cm = process_space_real(ipnt(spInc + 20))   !      N:C that totally represses NO3 transport               (gN gC-1)
+                    NO3Copt = process_space_real(ipnt(spInc + 21))   !      N:C for growth on NO3 under optimal conditions         (gN gC-1)
+                    PCm = process_space_real(ipnt(spInc + 22))   !      PC maximum quota                                       (gP gC-1)
+                    PCo = process_space_real(ipnt(spInc + 23))   !      PC minimum quota                                       (gP gC-1)
+                    PCoNCm = process_space_real(ipnt(spInc + 24))   !      maximum NC when PC is minimum (PCu = 0)                (gN gC-1)
+                    PCoNCopt = process_space_real(ipnt(spInc + 25))   !      optimum NC when PC is minimum (PCu = 0)                (gN gC-1)
+                    PCopt = process_space_real(ipnt(spInc + 26))   !      PC optimum quota                                       (gP gC-1)
+                    PSDOC = process_space_real(ipnt(spInc + 27))   !      proportion of current PS being leaked as DOC           (-)
+                    Q10 = process_space_real(ipnt(spInc + 28))   !      Q10 for UmRT                                           (-)
+                    redco = process_space_real(ipnt(spInc + 29))   !      C respired to support nitrate reduction for NH4        (gC gN-1)
+                    relPS = process_space_real(ipnt(spInc + 30))   !      relative PSmax:Umax on phototrophy                     (-)
+                    ReUmNH4 = process_space_real(ipnt(spInc + 31))   !      max. growth rate supported by NH4-N:Umax               (-)
+                    ReUmNO3 = process_space_real(ipnt(spInc + 32))   !      max. growth rate supported by NO3-N:Umax               (-)
+                    RT = process_space_real(ipnt(spInc + 33))   !      reference temperature for UmRT                         (deg C)
+                    SiCm = process_space_real(ipnt(spInc + 34))   !      absolute maximum Si:C (diatom)                         (gSi gC-1)
+                    SiCo = process_space_real(ipnt(spInc + 35))   !      optimum Si:C for (diatom) growth                       (gSi gC-1)
+                    SiCopt = process_space_real(ipnt(spInc + 36))   !      minimum Si:C (diatom)                                  (gSi gC-1)
+                    UmRT = process_space_real(ipnt(spInc + 37))   !      maximum growth rate at reference T                     (d-1)
 
 
                     ! Calculate the nutrient quota of the cell-------------------------------------------------------------------------------
@@ -281,31 +281,31 @@ contains
                     ! (input items + position of specific output item in vector + species loop * total number of output)
                     spInc = nrInputItems + (iSpec - 1) * nrSpecOut
 
-                    PMSA(ipnt(spInc + 1)) = NC
-                    PMSA(ipnt(spInc + 2)) = PC
-                    PMSA(ipnt(spInc + 3)) = SC
-                    PMSA(ipnt(spInc + 4)) = ChlC
-                    PMSA(ipnt(spInc + 5)) = UmT
-                    PMSA(ipnt(spInc + 6)) = BR
-                    PMSA(ipnt(spInc + 7)) = NCu
-                    PMSA(ipnt(spInc + 8)) = PCu
-                    PMSA(ipnt(spInc + 9)) = SCu
-                    PMSA(ipnt(spInc + 10)) = NPSiCu
-                    PMSA(ipnt(spInc + 11)) = upP
-                    PMSA(ipnt(spInc + 12)) = upNH4
-                    PMSA(ipnt(spInc + 13)) = upNO3
-                    PMSA(ipnt(spInc + 14)) = upSi
-                    PMSA(ipnt(spInc + 15)) = PSqm
-                    PMSA(ipnt(spInc + 16)) = PS
-                    PMSA(ipnt(spInc + 17)) = Cfix
-                    PMSA(ipnt(spInc + 18)) = NPP
-                    PMSA(ipnt(spInc + 19)) = synChl
-                    PMSA(ipnt(spInc + 20)) = degChl
-                    PMSA(ipnt(spInc + 21)) = totR
-                    PMSA(ipnt(spInc + 22)) = Cu
-                    PMSA(ipnt(spInc + 23)) = mrt
-                    PMSA(ipnt(spInc + 24)) = mrtFrAut
-                    PMSA(ipnt(spInc + 25)) = mrtFrDet
+                    process_space_real(ipnt(spInc + 1)) = NC
+                    process_space_real(ipnt(spInc + 2)) = PC
+                    process_space_real(ipnt(spInc + 3)) = SC
+                    process_space_real(ipnt(spInc + 4)) = ChlC
+                    process_space_real(ipnt(spInc + 5)) = UmT
+                    process_space_real(ipnt(spInc + 6)) = BR
+                    process_space_real(ipnt(spInc + 7)) = NCu
+                    process_space_real(ipnt(spInc + 8)) = PCu
+                    process_space_real(ipnt(spInc + 9)) = SCu
+                    process_space_real(ipnt(spInc + 10)) = NPSiCu
+                    process_space_real(ipnt(spInc + 11)) = upP
+                    process_space_real(ipnt(spInc + 12)) = upNH4
+                    process_space_real(ipnt(spInc + 13)) = upNO3
+                    process_space_real(ipnt(spInc + 14)) = upSi
+                    process_space_real(ipnt(spInc + 15)) = PSqm
+                    process_space_real(ipnt(spInc + 16)) = PS
+                    process_space_real(ipnt(spInc + 17)) = Cfix
+                    process_space_real(ipnt(spInc + 18)) = NPP
+                    process_space_real(ipnt(spInc + 19)) = synChl
+                    process_space_real(ipnt(spInc + 20)) = degChl
+                    process_space_real(ipnt(spInc + 21)) = totR
+                    process_space_real(ipnt(spInc + 22)) = Cu
+                    process_space_real(ipnt(spInc + 23)) = mrt
+                    process_space_real(ipnt(spInc + 24)) = mrtFrAut
+                    process_space_real(ipnt(spInc + 25)) = mrtFrDet
 
                     ! FLUXES -------------------------------------------------------------------
                     ! Protist gains------------------------------------------------------------

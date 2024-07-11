@@ -43,10 +43,10 @@
       IF (ITYPE .EQ. 1) THEN
          CALL TEKLN2(X, Y, mmax, nmax, MB(1), NB(1), MB(2), NB(2), NCOL)
       ENDIF
-      DO 10 I = 1,6
+      do I = 1,6
          IF (MB(I) .NE. 0) THEN
              CALL CIRR(X(MB(I),NB(I)), Y(MB(I),NB(I)),NCOL)
          ENDIF
-    10 CONTINUE
+      end do
       RETURN
       END subroutine tekb

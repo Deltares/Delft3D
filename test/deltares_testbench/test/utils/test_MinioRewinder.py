@@ -154,7 +154,10 @@ class TestMinioRewinder:
         rewinder_instance.download("my-bucket", "prefix", Path("."), timestamp)
 
         # Assert
-        assert mocker.call(f"Removing local file that is not present in MinIO bucket: {file}") in logger.info.call_args_list
+        assert (
+            mocker.call(f"Removing local file that is not present in MinIO bucket: {file}")
+            in logger.debug.call_args_list
+        )
         assert not fs.exists(file)
 
     def test_rewind_download_after_rewind(self, mocker: MockerFixture, fs: FakeFilesystem):
@@ -318,9 +321,10 @@ class TestMinioRewinder:
     def create_file_side_effect(self, filename):
         def side_effect(*args, **kwargs):
             # Create the file (you can customize this logic)
-            with open(filename, 'w') as f:
-                f.write('File content')
+            with open(filename, "w") as f:
+                f.write("File content")
             return None  # Return None to mimic the function call
+
         return side_effect
 
     def test_download__same_key_multiple_versions__get_latest_versions(
@@ -481,9 +485,9 @@ class TestMinioRewinder:
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        info = [call.args[0] for call in logger.info.call_args_list]
+        debug = [call.args[0] for call in logger.debug.call_args_list]
         assert all(
-            f"Skipping download: {dest_path / name}, local and online are the same version." in info
+            f"Skipping download: {dest_path / name}, local and online are the same version." in debug
             for name in ["empty-file", "bar", "qux"]
         )
         assert sorted(minio_client.fget_object.call_args_list, key=lambda call: call.kwargs["version_id"]) == [
@@ -561,8 +565,8 @@ class TestMinioRewinder:
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        info = f'Skipping download: {Path("destination/path/foo")}, local and online are the same version.'
-        assert mocker.call(info) in logger.info.call_args_list
+        debug = f'Skipping download: {Path("destination/path/foo")}, local and online are the same version.'
+        assert mocker.call(debug) in logger.debug.call_args_list
         minio_client.fget_object.assert_not_called()
 
     @pytest.mark.parametrize("allow_create_and_delete", [False, True])
@@ -715,7 +719,9 @@ class TestMinioRewinder:
         ]
 
     @pytest.mark.parametrize("allow_create_and_delete", [False, True])
-    def test_build_plan__mixed_operations(self, allow_create_and_delete: bool, mocker: MockerFixture, fs: FakeFilesystem) -> None:
+    def test_build_plan__mixed_operations(
+        self, allow_create_and_delete: bool, mocker: MockerFixture, fs: FakeFilesystem
+    ) -> None:
         """It should include all different kind of operations in the computed plan.
 
         This test covers all of the branches in the big `if` statement in the `build_plan`

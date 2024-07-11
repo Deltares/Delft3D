@@ -151,7 +151,7 @@ subroutine calculate_hu_au_and_advection_for_dams_weirs(set_zws0,set_hu)
 
     !DIR$ INLINE
       call getblu_from_bob(link, upstream_cell_index, bed_level_at_u_point)
-      if (jafullgridoutput == 1) then ! is it possible to move to other subroutine?
+      if (jafullgridoutput > 0) then ! is it possible to move to other subroutine?
          blup(link) = bed_level_at_u_point
       end if
 

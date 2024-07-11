@@ -40,7 +40,7 @@ program test_read_boundary_concentrations
     integer :: iargc, getarg
 
     type :: bc_fixture
-        integer(kind = int_wp) :: nosys, nobnd, nobtyp, output_verbose_level, ierr2
+        integer(kind = int_wp) :: num_substances_transported, num_boundary_conditions, num_boundary_types, output_verbose_level, ierr2
         character(255) :: bc_file, wrk_file, file_name_list(50)
         character(20), dimension(:), allocatable :: bc_ids
         character(20), dimension(:), allocatable :: bc_types
@@ -121,12 +121,12 @@ contains
         character(200) :: data_path
         integer(kind = int_wp) :: j
 
-        ! global variables declared in m_sysn, loaded inside m_delwaq1_data
+        ! global variables declared in m_waq_memory_dimensions, loaded inside m_delwaq1_data
         call get_environment_variable("DATA_PATH", data_path)
         write(*, *) data_path
-        this%nosys = size(substance_names)
-        this%nobnd = size(bc_types)
-        this%nobtyp = size(remove_duplicates(bc_types))
+        this%num_substances_transported = size(substance_names)
+        this%num_boundary_conditions = size(bc_types)
+        this%num_boundary_types = size(remove_duplicates(bc_types))
 
         this%lun = (/14, 15, 16, 17, 18, 19, 20, 21, 22, 23, &
                 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, &
@@ -134,12 +134,12 @@ contains
                 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, &
                 54, 55, 56, 57, 58, -1, -1, -1, -1, -1/)
         !! Allocate variables
-        allocate(this%sname(this%nosys))
-        allocate(this%bc_ids(this%nobnd))
-        allocate(this%bc_types(this%nobtyp))
+        allocate(this%sname(this%num_substances_transported))
+        allocate(this%bc_ids(this%num_boundary_conditions))
+        allocate(this%bc_types(this%num_boundary_types))
 
         !! Assign fixture variables
-        do j = 1, this%nobnd
+        do j = 1, this%num_boundary_conditions
             write(this%bc_ids(j), '(I0)') j
         end do
         this%bc_types = remove_duplicates(bc_types)
@@ -207,8 +207,8 @@ contains
 
         call read_boundary_concentrations(fixture%lun, fixture%file_name_list, 14, fixture%iwidth, fixture%icmax, &
                 fixture%car, fixture%iimax, fixture%iar, fixture%irmax, fixture%rar, &
-                fixture%sname, fixture%bc_ids, fixture%bc_types(1:fixture%nobtyp), fixture%nobnd, fixture%nosys, &
-                fixture%nobtyp, fixture%drar, fixture%is_date_format, fixture%is_yyddhh_format, fixture%output_verbose_level, &
+                fixture%sname, fixture%bc_ids, fixture%bc_types(1:fixture%num_boundary_types), fixture%num_boundary_conditions, fixture%num_substances_transported, &
+                fixture%num_boundary_types, fixture%drar, fixture%is_date_format, fixture%is_yyddhh_format, fixture%output_verbose_level, &
                 fixture%ierr2, fixture%status)
     end subroutine parse_bc
 

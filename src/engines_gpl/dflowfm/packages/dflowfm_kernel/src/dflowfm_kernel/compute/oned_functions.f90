@@ -301,7 +301,7 @@ module m_oned_functions
    subroutine set_structure_grid_numbers()
       use unstruc_channel_flow
       use m_flowgeom
-      use m_flowexternalforcings
+      use fm_external_forcings_data
       use m_inquire_flowgeom
 
       implicit none

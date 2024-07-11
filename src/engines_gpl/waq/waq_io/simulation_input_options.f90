@@ -327,7 +327,7 @@ contains
 
         use waq_file_utils_external, only : get_filepath_and_pathlen
         use m_open_waq_files
-        use m_sysi          ! timer characteristics
+        use m_timer_variables          ! timer characteristics
         use m_waq_precision
         use time_module
 
@@ -656,7 +656,7 @@ contains
         use m_open_waq_files
         use timers       !   performance timers
         use rd_token
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
 
         integer(kind = int_wp), intent(inout) :: file_unit_list   (*)          !< array with unit numbers
         character(*), intent(in) :: file_name_list (*)         !< array with file names of the files
@@ -823,7 +823,7 @@ contains
                     ierr2 = -2                                    ! system file, for others
                 endif
                 call read_fourier_harmoic_func_values(iopt3, nvarnw, nval1, itemId(ntotal), nrec2, &
-                        nharms, ifact, dtflg, is_yyddhh_format, lunuit, &
+                        harmonics_arr_len, ifact, dtflg, is_yyddhh_format, lunuit, &
                         iwidth, output_verbose_level, ierr2)
                 ierr = ierr + ierr2
                 if (bound .or. waste .or. funcs) then
@@ -874,10 +874,10 @@ contains
             enddo
             close (file_unit_list(is))
             nlines = nlines + ntot * 2
-            npoins = npoins + nitem + 3
+            num_indices = num_indices + nitem + 3
             nrfunc = ntot
             nrharm = nrec
-            niharm = niharm + nrec
+            num_harmonics = num_harmonics + nrec
         endif
         ierr = ierr + ierr2
         if (associated (breaks)) deallocate (breaks, values)
@@ -931,7 +931,7 @@ contains
         use m_open_waq_files
         use timers       !   performance timers
         use rd_token
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
 
         integer(kind = int_wp), intent(inout) :: file_unit_list    (*)     !< array with unit numbers
         integer(kind = int_wp), intent(in) :: is             !< entry in file_unit_list for this call
@@ -1036,7 +1036,7 @@ contains
         ! everything is block function, except volume
         if (iopt1 == -2 .or. iopt1 == -4) then
             nlines = nlines + ndim1 * ndim2 * 2
-            npoins = npoins + ndim1 + 3
+            num_indices = num_indices + ndim1 + 3
             nrftot = ndim1 * ndim2
             nrharm = 0
             if (volume == 1) then
@@ -1047,7 +1047,7 @@ contains
             iopt1 = 0
         endif
 
-        ! Dispersion in three directions if DISPER, return if NODISP=0
+        ! Dispersion in three directions if DISPER, return if num_dispersion_arrays=0
         if (disper) then
             if (iopt1 == 0) then                            ! binary file, then
                 write (file_unit_list(2)) idummy, (adummy, k = 1, 3)     ! no fixed dispersions
@@ -1415,7 +1415,7 @@ contains
 
     end subroutine read_scale_block
 
-    subroutine read_item_num(nmax, integration_id, output_verbose_level, ipnt, npnt, ierr)
+    subroutine read_item_num(num_rows, integration_id, output_verbose_level, ipnt, npnt, ierr)
 
         !! Reads the item numbers of an input block
         !!
@@ -1427,10 +1427,10 @@ contains
         use timers       !   performance timers
         use rd_token       ! for the reading of tokens
 
-        integer(kind = int_wp), intent(in) :: nmax               !< maximum amount of items
+        integer(kind = int_wp), intent(in) :: num_rows               !< maximum amount of items
         integer(kind = int_wp), intent(in) :: integration_id               !< is 1 for block functions
         integer(kind = int_wp), intent(in) :: output_verbose_level             !< how extensive is output ?
-        integer(kind = int_wp), intent(out) :: ipnt  (nmax)       !< the item numbers of this block
+        integer(kind = int_wp), intent(out) :: ipnt  (num_rows)       !< the item numbers of this block
         integer(kind = int_wp), intent(out) :: npnt               !< amount of items of this block
         integer(kind = int_wp), intent(inout) :: ierr               !< cumulative error indicator
 
@@ -1447,8 +1447,8 @@ contains
         do i = 1, npnt
             if (gettoken(ipnt(i), ierr2) > 0) goto 10
             ipnt(i) = abs(ipnt(i))
-            if (ipnt(i) > nmax) then
-                write (file_unit, 2000) ipnt(i), nmax
+            if (ipnt(i) > num_rows) then
+                write (file_unit, 2000) ipnt(i), num_rows
                 ierr = ierr + 1
             endif
         enddo

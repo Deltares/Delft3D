@@ -28,9 +28,9 @@ module m_sednu2
 contains
 
 
-    subroutine sednu2 (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine sednu2 (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
 
@@ -42,18 +42,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(12)  ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(12)  ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(12)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         !
         !*******************************************************************************
         !>\file
@@ -84,18 +84,18 @@ contains
         ipnt = ipoint
         !
         iflux = 0
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
             if (btest(iknmrk(iseg), 0)) then
                 call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
                     !
-                    sfl = pmsa(ipnt(1))
-                    sfl2 = pmsa(ipnt(2))
-                    cn = pmsa(ipnt(3))
-                    cp = pmsa(ipnt(4))
-                    cs = pmsa(ipnt(5))
-                    depth = pmsa(ipnt(6))
+                    sfl = process_space_real(ipnt(1))
+                    sfl2 = process_space_real(ipnt(2))
+                    cn = process_space_real(ipnt(3))
+                    cp = process_space_real(ipnt(4))
+                    cs = process_space_real(ipnt(5))
+                    depth = process_space_real(ipnt(6))
 
                     !*******************************************************************************
                     !**** Processes connected to the SEDIMENTATION of nutrients in C-Matrix
@@ -118,12 +118,12 @@ contains
                     if (cp > 0.1) FSEDDP2 = sfl2 / cp
                     if (cs > 0.1) FSEDDS2 = sfl2 / cs
                     !
-                    pmsa (ipnt(7)) = FSEDDN
-                    pmsa (ipnt(8)) = FSEDDP
-                    pmsa (ipnt(9)) = FSEDDS
-                    pmsa (ipnt(10)) = FSEDDN2
-                    pmsa (ipnt(11)) = FSEDDP2
-                    PMSA (IPNT(12)) = FSEDDS2
+                    process_space_real (ipnt(7)) = FSEDDN
+                    process_space_real (ipnt(8)) = FSEDDP
+                    process_space_real (ipnt(9)) = FSEDDS
+                    process_space_real (ipnt(10)) = FSEDDN2
+                    process_space_real (ipnt(11)) = FSEDDP2
+                    process_space_real (IPNT(12)) = FSEDDS2
                     !
                     if (depth > 0.0) then
                         fl(1 + iflux) = FSEDDN / depth

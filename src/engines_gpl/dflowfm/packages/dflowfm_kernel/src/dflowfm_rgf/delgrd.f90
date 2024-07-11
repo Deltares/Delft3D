@@ -61,14 +61,16 @@
         RETURN
      ENDIF
 
-     DO 10 I = 1,MC
-        DO 10 J = 1,NC
+     do I = 1,MC
+        do J = 1,NC
            IF (Xc(I,J) .NE. DXYMIS) THEN
               CALL dbpinpol(Xc(i,j), yc(i,j), INHUL, dmiss, JINS, NPL, xpl, ypl, zpl)
               IF (INHUL .EQ. 1) Xc(I,J) = XYMIS
            ENDIF
-   10 CONTINUE
 
+        end do
+     end do
+     
 !      CALL ADJUST(X, Y, MC, NC, WW1, WW2)
      if (jadelpol == 1) call delpol()
      RETURN

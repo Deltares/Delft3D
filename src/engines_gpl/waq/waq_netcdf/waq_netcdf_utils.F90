@@ -1520,11 +1520,11 @@ contains
         create_layer_dimension = ierror
     end function create_layer_dimension
 
-    integer function create_dimension(nc_id, num_segments, num_layers, dimension_ids, dimension_sizes)
+    integer function create_dimension(nc_id, num_cells, num_layers, dimension_ids, dimension_sizes)
         !! Create the missing dimensions based on the selected mesh
         !! This is only necessary if the geometry file does not define an aggregation table
         integer, intent(in) :: nc_id          !! ID of the output NetCDF file
-        integer, intent(in) :: num_segments   !! Number of segments per layer according to DELWAQ
+        integer, intent(in) :: num_cells   !! Number of segments per layer according to DELWAQ
         integer, intent(in) :: num_layers     !! Number of layers according to DELWAQ
         integer, intent(inout), dimension(:) :: dimension_ids !!Array of dimension IDs for the corresponding DELWAQ mesh
         integer, intent(inout), dimension(:) :: dimension_sizes !! Array of dimensions (with new dimensions added)
@@ -1542,7 +1542,7 @@ contains
             return
         endif
 
-        inc_error = nf90_def_dim(nc_id, "nSegmentsPerLayerDlwq", num_segments, dimension_ids(1))
+        inc_error = nf90_def_dim(nc_id, "nSegmentsPerLayerDlwq", num_cells, dimension_ids(1))
 
         if (inc_error /= nf90_noerr) then
             create_dimension = inc_error

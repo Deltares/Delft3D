@@ -32,7 +32,7 @@
 
  module m_flow   ! flow arrays-999
  use    m_flowparameters
- use    m_flowexternalforcings
+ use    fm_external_forcings_data
  use    m_flowoutput
  use    m_physcoef
  use    m_turbulence

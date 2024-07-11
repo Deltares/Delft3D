@@ -27,7 +27,7 @@ implicit none
 contains
 
 
-      subroutine part15 ( lunpr  , itime  , spawnd , noseg  , nowind ,          &
+      subroutine part15 ( lunpr  , itime  , spawnd , num_cells  , nowind ,          &
                           iwndtm , wveloa , wdira  , wvelo  , wdir   )
 
 !       Deltares Software Centre
@@ -65,13 +65,13 @@ contains
       integer       , intent(in   ) :: lunpr                 !< unit nr output file
       integer       , intent(in   ) :: itime                 !< actual time
       logical       , intent(in   ) :: spawnd                !< if true space varying wind
-      integer       , intent(in   ) :: noseg                 !< size of the array with winds
+      integer       , intent(in   ) :: num_cells                 !< size of the array with winds
       integer       , intent(in   ) :: nowind                !< number of time breakpoints
       integer       , intent(in   ) :: iwndtm(nowind)        !< time breakpoint values
       real     ( 4 ), intent(in   ) :: wveloa(nowind)        !< time series of wind velocity
       real     ( 4 ), intent(in   ) :: wdira (nowind)        !< time series of wind direction
-      real     ( 8 ), intent(  out) :: wvelo (noseg )        !< wind velocity at this time
-      real     ( 8 ), intent(  out) :: wdir  (noseg )        !< wind direction at this time
+      real     ( 8 ), intent(  out) :: wvelo (num_cells )        !< wind velocity at this time
+      real     ( 8 ), intent(  out) :: wdir  (num_cells )        !< wind direction at this time
 
 !     locals
 
@@ -98,7 +98,7 @@ contains
             write (   *  , * ) " Error in meteomodule at time:", itime
             call stop_exit(1)
          endif
-         do id = 1, noseg
+         do id = 1, num_cells
             avelo = wvelo(id)*wvelo(id) + wdir(id)*wdir(id)
             if ( avelo .lt. 1.0d-30 ) then
                wvelo(id) = 0.0

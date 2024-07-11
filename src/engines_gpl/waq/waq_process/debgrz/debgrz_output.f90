@@ -61,36 +61,36 @@ module m_debgrz_output
 
     contains
 
-    !< Assign output variables to pmsa array
-    subroutine update_pmsa(this, pmsa, iparray, input_count)
+    !< Assign output variables to process_space_real array
+    subroutine update_pmsa(this, process_space_real, iparray, input_count)
         class(debgrz_output) :: this !< This instance of output_variables
 
-        real(kind=real_wp),   intent(inout)   :: pmsa(*)
+        real(kind=real_wp),   intent(inout)   :: process_space_real(*)
 
         integer(kind=int_wp), intent(in)    :: iparray(*)
         integer(kind=int_wp) :: input_count
 
-        pmsa(iparray(input_count+1))  = this%totbiomass
-        pmsa(iparray(input_count+2))  = this%biomass
-        pmsa(iparray(input_count+3))  = this%totafdw
-        pmsa(iparray(input_count+4))  = this%afdw
-        pmsa(iparray(input_count+5))  = this%totww
-        pmsa(iparray(input_count+6))  = this%ww
-        pmsa(iparray(input_count+7))  = this%ww_ind
-        pmsa(iparray(input_count+8))  = this%v
-        pmsa(iparray(input_count+9))  = this%e
-        pmsa(iparray(input_count+10)) = this%r
-        pmsa(iparray(input_count+11)) = this%length
-        pmsa(iparray(input_count+12)) = this%gsi
-        pmsa(iparray(input_count+13)) = this%e_scaled
-        pmsa(iparray(input_count+14)) = this%harvest
-        pmsa(iparray(input_count+15)) = this%spawn
-        pmsa(iparray(input_count+16)) = this%grossgr
-        pmsa(iparray(input_count+17)) = this%nettgr
-        pmsa(iparray(input_count+18)) = this%dens_out
-        pmsa(iparray(input_count+19)) = this%c_balance
-        pmsa(iparray(input_count+20)) = this%n_balance
-        pmsa(iparray(input_count+21)) = this%p_balance
+        process_space_real(iparray(input_count+1))  = this%totbiomass
+        process_space_real(iparray(input_count+2))  = this%biomass
+        process_space_real(iparray(input_count+3))  = this%totafdw
+        process_space_real(iparray(input_count+4))  = this%afdw
+        process_space_real(iparray(input_count+5))  = this%totww
+        process_space_real(iparray(input_count+6))  = this%ww
+        process_space_real(iparray(input_count+7))  = this%ww_ind
+        process_space_real(iparray(input_count+8))  = this%v
+        process_space_real(iparray(input_count+9))  = this%e
+        process_space_real(iparray(input_count+10)) = this%r
+        process_space_real(iparray(input_count+11)) = this%length
+        process_space_real(iparray(input_count+12)) = this%gsi
+        process_space_real(iparray(input_count+13)) = this%e_scaled
+        process_space_real(iparray(input_count+14)) = this%harvest
+        process_space_real(iparray(input_count+15)) = this%spawn
+        process_space_real(iparray(input_count+16)) = this%grossgr
+        process_space_real(iparray(input_count+17)) = this%nettgr
+        process_space_real(iparray(input_count+18)) = this%dens_out
+        process_space_real(iparray(input_count+19)) = this%c_balance
+        process_space_real(iparray(input_count+20)) = this%n_balance
+        process_space_real(iparray(input_count+21)) = this%p_balance
     end subroutine update_pmsa
 
 end module m_debgrz_output

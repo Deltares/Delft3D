@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<!-- =============================================================================== -->
         <testCase name="e105_f03_c01_114_TimeCntrl-1" ref="dflowfm_default">
             <path version="2024-01-12T07:20:00">e105_dflowfm-drtc/f03_1d-network/c01_114_TimeCntrl-1</path>

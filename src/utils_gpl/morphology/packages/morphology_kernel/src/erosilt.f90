@@ -1,11 +1,10 @@
-subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
+subroutine erosilt(thick    ,num_layers_grid      ,ws        ,lundia   , &
                  & thick0   ,thick1    ,fixfac    ,srcmax   , &
                  & frac     ,oldmudfrac,flmd2l    ,iform    , &
                  & npar     ,par       ,numintpar ,numrealpar, &
                  & numstrpar,dllfunc  ,dllhandle ,intpar    , &
                  & realpar  ,strpar   ,iflufflyr ,mflufftot , &
-                 & fracf    ,maxslope ,wetslope  , &
-! output:
+                 & fracf    ,maxslope ,wetslope  , & ! output:
                  & error    ,wstau     ,sinktot   ,sourse   , &
                  & sourf    )
 !----- GPL ---------------------------------------------------------------------
@@ -59,7 +58,7 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
     integer                             , intent(in)    :: numintpar
     integer                             , intent(in)    :: numrealpar
     integer                             , intent(in)    :: numstrpar
-    integer                             , intent(in)    :: kmax
+    integer                             , intent(in)    :: num_layers_grid
     integer                                             :: lundia     !> handle of diagnostics file
     integer                             , intent(in)    :: npar
     integer       , dimension(numintpar), intent(inout) :: intpar
@@ -75,11 +74,11 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
     real(fp)                            , intent(out)   :: sourf
     real(fp)                            , intent(out)   :: sourse
     real(fp)                            , intent(in)    :: srcmax
-    real(fp)       , dimension(kmax)    , intent(in)    :: thick
+    real(fp)       , dimension(num_layers_grid)    , intent(in)    :: thick
     real(fp)                            , intent(in)    :: thick0
     real(fp)                            , intent(in)    :: thick1
     real(fp)                            , intent(in)    :: wetslope
-    real(fp)       , dimension(0:kmax)  , intent(in)    :: ws
+    real(fp)       , dimension(0:num_layers_grid)  , intent(in)    :: ws
     real(fp)                            , intent(out)   :: wstau
     !
     real(hp)     , dimension(numrealpar), intent(inout) :: realpar
@@ -260,7 +259,7 @@ subroutine erosilt(thick    ,kmax      ,ws        ,lundia   , &
        endif
     endif
     !
-    wstau         = ws(kmax) * sink ! used for flmd2l
+    wstau         = ws(num_layers_grid) * sink ! used for flmd2l
     !
     sour    = min(sour, srcmax)
     !

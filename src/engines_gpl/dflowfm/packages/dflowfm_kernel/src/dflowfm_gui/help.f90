@@ -91,14 +91,14 @@
       LOOKUP = WRDKEY
 !
 !     Count the number of keywords in text and make cross references
-      DO 10 I = 1,NUMTXT
+      do I = 1,NUMTXT
          IF (HLPTXT(I)(1:3) .NE. '   ') THEN
             NUMKEY         = NUMKEY + 1
             KEYWRD(NUMKEY) = HLPTXT(I)
             NKTONH(NUMKEY) = I
          ENDIF
          NHTONK(I)      = NUMKEY
-   10 CONTINUE
+      end do
       NUMPGK = 1 + (NUMKEY-IH+1) / IH
 !
 !     Header of helpwindow

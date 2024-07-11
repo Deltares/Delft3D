@@ -72,9 +72,7 @@ class TestSetRunner(ABC):
         except Exception:
             if self.__settings.teamcity:
                 sys.stderr.write("##teamcity[testStarted name='Update programs']\n")
-                sys.stderr.write(
-                    "##teamcity[testFailed name='Update programs' message='Exception occurred']\n"
-                )
+                sys.stderr.write("##teamcity[testFailed name='Update programs' message='Exception occurred']\n")
 
         self.__download_dependencies()
         log_sub_header("Running tests", self.__logger)
@@ -134,7 +132,7 @@ class TestSetRunner(ABC):
             self.finished_tests = 0
 
             result_futures: List[AsyncResult] = []
-            in_use = process_manager.Value('i', 0)
+            in_use = process_manager.Value("i", 0)
             idle_process = process_manager.Condition()
 
             for i_testcase, config in enumerate(self.__settings.configs_to_run):
@@ -190,12 +188,12 @@ class TestSetRunner(ABC):
 
         log_header(
             f"Testcase {run_data.test_number} of {run_data.number_of_tests} "
-            + "(process id {run_data.process_id}): {config.name} ...",
+            + f"(process id {run_data.process_id}): {config.name} ...",
             logger,
         )
 
         try:
-            log_sub_header(f"Updating test case name = '{config.name}'", logger)
+            log_sub_header(f"Preparing test case name = '{config.name}'", logger)
             self.__prepare_test_case(config, logger)
             log_separator(logger, char="-")
 
@@ -220,15 +218,10 @@ class TestSetRunner(ABC):
 
             # Postprocessing
             if not skip_postprocessing:
-                log_sub_header(
-                    "Postprocessing testcase, checking directories...", logger
-                )
+                log_sub_header("Postprocessing testcase, checking directories...", logger)
 
                 if not os.path.exists(config.absolute_test_case_path):
-                    raise TestCaseFailure(
-                        "Could not locate case data at: "
-                        + str(config.absolute_test_case_path)
-                    )
+                    raise TestCaseFailure("Could not locate case data at: " + str(config.absolute_test_case_path))
 
                 # execute concrete method in subclass
                 test_result = self.post_process(config, logger, run_data)
@@ -268,9 +261,7 @@ class TestSetRunner(ABC):
         Returns:
             TestCaseResult: Result of the post processing
         """
-        logger.debug(
-            f"Reference directory:{test_case_config.absolute_test_case_reference_path}"
-        )
+        logger.debug(f"Reference directory:{test_case_config.absolute_test_case_reference_path}")
         logger.debug(f"Results   directory:{test_case_config.absolute_test_case_path}")
 
     @abstractmethod
@@ -283,9 +274,7 @@ class TestSetRunner(ABC):
         """
 
     @abstractmethod
-    def create_error_result(
-        self, test_case_config: TestCaseConfig, run_data: RunData
-    ) -> TestCaseResult:
+    def create_error_result(self, test_case_config: TestCaseConfig, run_data: RunData) -> TestCaseResult:
         """Creates an error result
 
         Args:
@@ -362,29 +351,18 @@ class TestSetRunner(ABC):
             if len(program_configuration.locations) > 0:
                 for loc in program_configuration.locations:
                     # check type of program
-                    if (
-                        self.__settings.run_mode == ModeType.REFERENCE
-                        and loc.type == PathType.CHECK
-                    ) or (
-                        self.__settings.run_mode == ModeType.COMPARE
-                        and loc.type == PathType.CHECK
+                    if (self.__settings.run_mode == ModeType.REFERENCE and loc.type == PathType.CHECK) or (
+                        self.__settings.run_mode == ModeType.COMPARE and loc.type == PathType.CHECK
                     ):
                         # if the program is local, use the existing location
                         sourceLocation = Paths().mergeFullPath(loc.root, loc.from_path)
                         if Paths().isPath(sourceLocation):
                             absLocation = os.path.abspath(
-                                Paths().mergeFullPath(
-                                    sourceLocation, program_configuration.path
-                                )
+                                Paths().mergeFullPath(sourceLocation, program_configuration.path)
                             )
-                            if (
-                                ResolveHandler.detect(absLocation, self.__logger, None)
-                                == HandlerType.PATH
-                            ):
+                            if ResolveHandler.detect(absLocation, self.__logger, None) == HandlerType.PATH:
                                 if not os.path.exists(absLocation):
-                                    self.__logger.warning(
-                                        f"could not yet detect specified program {absLocation}"
-                                    )
+                                    self.__logger.warning(f"could not yet detect specified program {absLocation}")
                                 #                                   raise SystemExit("Program does not exist")
                                 else:
                                     self.__logger.debug(
@@ -398,9 +376,7 @@ class TestSetRunner(ABC):
                             else:
                                 to = loc.to_path
                             program_local_path = Paths().rebuildToLocalPath(
-                                os.path.join(
-                                    self.__settings.local_paths.engines_path, to
-                                )
+                                os.path.join(self.__settings.local_paths.engines_path, to)
                             )
 
                             # if the program is remote (network or other) and it does not exist locally, download it
@@ -417,9 +393,7 @@ class TestSetRunner(ABC):
                                     loc.version,
                                 )
                             program_configuration.absolute_bin_path = os.path.abspath(
-                                Paths().mergeFullPath(
-                                    program_local_path, program_configuration.path
-                                )
+                                Paths().mergeFullPath(program_local_path, program_configuration.path)
                             )
 
             # If a program does not have a network path, and path is not a relative or absolute path, we assume the system can find it
@@ -428,18 +402,13 @@ class TestSetRunner(ABC):
             # Otherwise we need to construct the path from the given information
             else:
                 # Construct the absolute binary path for the program
-                absbinpath = os.path.abspath(
-                    Paths().rebuildToLocalPath(program_configuration.path)
-                )
+                absbinpath = os.path.abspath(Paths().rebuildToLocalPath(program_configuration.path))
                 if os.path.exists(absbinpath):
                     program_configuration.absolute_bin_path = absbinpath
                 # If the local program does not exist, and a network path is not given we are going to crash
                 else:
                     raise SystemExit(
-                        "Could not find "
-                        + program_configuration.name
-                        + " at given location "
-                        + absbinpath
+                        "Could not find " + program_configuration.name + " at given location " + absbinpath
                     )
             self.__logger.debug(
                 f"Binary path for program {program_configuration.name}: {program_configuration.absolute_bin_path}"
@@ -451,16 +420,11 @@ class TestSetRunner(ABC):
             # they will be replaced later on
             envparams = program_configuration.environment_variables
             for envparam in envparams:
-                if (
-                    envparams[envparam][0] == "path"
-                    and str(envparams[envparam][1]).find("[") == -1
-                ):
+                if envparams[envparam][0] == "path" and str(envparams[envparam][1]).find("[") == -1:
                     pp = Paths().rebuildToLocalPath(envparams[envparam][1])
                     if not Paths().isAbsolute(pp):
                         if program_local_path:
-                            pp = os.path.abspath(
-                                Paths().mergeFullPath(program_local_path, pp)
-                            )
+                            pp = os.path.abspath(Paths().mergeFullPath(program_local_path, pp))
                         envparams[envparam] = [envparams[envparam][0], pp]
                     else:
                         envparams[envparam] = [
@@ -484,9 +448,7 @@ class TestSetRunner(ABC):
                         program_configuration.absolute_bin_path[pltIndex:].find("\\"),
                         program_configuration.absolute_bin_path[pltIndex:].find("/"),
                     )
-                    pltPath = program_configuration.absolute_bin_path[
-                        : pltIndex + separatorIndex
-                    ]
+                    pltPath = program_configuration.absolute_bin_path[: pltIndex + separatorIndex]
                     self.__logger.debug("Path: " + pltPath)
                     searchPaths = Paths().findAllSubFolders(
                         pltPath, program_configuration.exclude_search_paths_containing
@@ -502,9 +464,7 @@ class TestSetRunner(ABC):
                 for aPath in program_configuration.search_paths:
                     aRebuildPath = Paths().rebuildToLocalPath(aPath)
                     if not Paths().isAbsolute(aRebuildPath) and program_local_path:
-                        aRebuildPath = Paths().mergeFullPath(
-                            program_local_path, aRebuildPath
-                        )
+                        aRebuildPath = Paths().mergeFullPath(program_local_path, aRebuildPath)
                     searchPaths.append(aRebuildPath)
                 program_configuration.search_paths = searchPaths
 
@@ -512,7 +472,7 @@ class TestSetRunner(ABC):
             yield Program(program_configuration, self.settings)
         log_separator(self.__logger, char="-", with_new_line=True)
 
-    def __prepare_test_case(self, config: TestCaseConfig, logger: ILogger):
+    def __prepare_test_case(self, config: TestCaseConfig, logger: ILogger) -> None:
         """Prepare test case based on provided config
         (download input & reference data)
 
@@ -522,15 +482,23 @@ class TestSetRunner(ABC):
         Raises:
              TestBenchError : if test can not be prepared
         """
-        logger.info(f"Updating case: {config.name}")
-
+        if self.__settings.local_paths is None:
+            raise TestBenchError("Local paths are missing from the testbench settings")
         if not config.locations:
             raise TestBenchError(f"Could not update case {config.name}, no network paths given")
+        if config.path is None:
+            raise TestBenchError(f"Could not update case {config.name}, path is missing")
+
+        logger.info(f"Preparing case: {config.name}")
+        if config.path.version is None:
+            logger.warning("The case path version timestamp is missing, downloading the 'latest' version")
+        else:
+            logger.info(f"Path version timestamp: {config.path.version}")
 
         for location in config.locations:
             if not location.root or not location.from_path:
                 error_message: str = (
-                    f"Could not update case {config.name}"
+                    f"Could not prepare case {config.name}"
                     + f", invalid network input path part (root:{location.root},"
                     + f" from:{location.from_path}) given"
                 )
@@ -542,15 +510,13 @@ class TestSetRunner(ABC):
             if Paths().isPath(remote_path):
                 remote_path = os.path.abspath(remote_path)
 
-            # Downloading the testcase input/refdata may fail when it is already present and have to be
-            # deleted first. This probably has to do with TortoiseSVNCache, accessing that directory.
-            # When trying a second time it normally works. Safe side: try 3 times.
+            # Downloading the testcase input/refdata may fail. Safe side: try 3 times.
             success = False
             attempts = 0
-            
+
             while attempts < 3 and not success:
                 attempts += 1
-                
+
                 try:
                     destination_dir = None
 
@@ -561,56 +527,41 @@ class TestSetRunner(ABC):
 
                     if destination_dir is not None:
                         # Build localPath to download to: To+testcasePath
-                        localPath = Paths().rebuildToLocalPath(
-                            Paths().mergeFullPath(
-                                destination_dir,
-                                location.to_path,
-                                config.name,
-                                #config.path,
-                            )
+                        local_path = Paths().rebuildToLocalPath(
+                            Paths().mergeFullPath(destination_dir, location.to_path, config.name)
                         )
 
-                        handler_type = ResolveHandler.detect(remote_path, logger, location.credentials)
-
-                        if handler_type == HandlerType.MINIO:
-                            self.__SetupVersionForDownload(location, config.path.version)
-
-                        self.__download_file(location, remote_path, localPath, location.type, logger)
+                        self.__download_files(
+                            location, remote_path, local_path, location.type, config.path.version, logger
+                        )
 
                         if location.type == PathType.INPUT:
-                            config.absolute_test_case_path = localPath
+                            config.absolute_test_case_path = local_path
                         elif location.type == PathType.REFERENCE:
-                            config.absolute_test_case_reference_path = localPath
+                            config.absolute_test_case_reference_path = local_path
 
                     success = True
 
                 except Exception as e:
-                    error_message = (
-                        f"Unable to download testcase (attempt {attempts + 1})"
-                    )
+                    error_message = f"Unable to download testcase (attempt {attempts + 1})"
 
                     if attempts < 3:
                         logger.warning(error_message)
                     else:
-                        if hasattr(e, "message"):
-                            error = e.message
-                        else:
-                            error = repr(e)
+                        error = getattr(e, "message", repr(e))
                         error_message = f"Unable to download testcase: {error}"
                         raise TestBenchError(error_message) from e
 
-    def __SetupVersionForDownload(self, location: Location, version: Optional[str]) -> None:
-        if location.version is None and version is not None:
-            location.version = version
-
-    def __download_file(
+    def __download_files(
         self,
-        location_data: Location,
+        location: Location,
         remote_path: str,
         local_path: str,
         location_type: PathType,
+        version: Optional[str],
         logger: ILogger,
-    ):
+    ) -> None:
+        version = location.version or version
         if location_type == PathType.INPUT:
             location_description = "input of case"
         elif location_type == PathType.REFERENCE:
@@ -622,9 +573,7 @@ class TestSetRunner(ABC):
             logger.info(f"Skipping {location_description} download (skip download argument)")
             return
         else:
-            logger.debug(
-                f"Downloading {location_description}, {local_path} from {remote_path}"
-            )
+            logger.debug(f"Downloading {location_description}, {local_path} from {remote_path}")
 
         # Download location on local system is always cleaned before start
         try:
@@ -633,22 +582,26 @@ class TestSetRunner(ABC):
                 local_path,
                 self.programs,
                 logger,
-                location_data.credentials,
-                location_data.version,
+                location.credentials,
+                version,
             )
         except Exception as exception:
             # We need always case input data
             logger.exception(f"Could not download from {remote_path}")
             raise exception
 
-    def __download_config_dependencies(self, config: TestCaseConfig, logger: ILogger):
+    def __download_config_dependencies(self, config: TestCaseConfig, logger: ILogger) -> None:
         if not config.dependency:
+            return
+
+        if self.__settings.local_paths is None:
+            logger.error("Could not download dependency: Local paths are missing from the testbench settings")
             return
 
         location = next(loc for loc in config.locations if loc.type == PathType.INPUT)
         destination_dir = self.__settings.local_paths.cases_path
 
-        localPath = Paths().rebuildToLocalPath(
+        local_path = Paths().rebuildToLocalPath(
             Paths().mergeFullPath(
                 destination_dir,
                 location.to_path,
@@ -656,16 +609,15 @@ class TestSetRunner(ABC):
             )
         )
 
-        if os.path.exists(localPath):
+        if os.path.exists(local_path):
+            logger.info("Dependency directory already exists: Skipping download")
             return
 
-        handler_type = ResolveHandler.detect(location.root, logger, location.credentials)
-        if handler_type == HandlerType.MINIO:
-            self.__SetupVersionForDownload(location, config.dependency.version)
+        remote_path = Paths().mergeFullPath(location.root, location.from_path, config.dependency.cases_path)
+        dependency_version = config.dependency.version
+        if dependency_version is None:
+            logger.warning("The dependency version timestamp is missing, downloading the 'latest' version")
+        else:
+            logger.info(f"Dependency version timestamp: {dependency_version}")
 
-        remote_path = Paths().mergeFullPath(
-            location.root, location.from_path, config.dependency.cases_path
-        )
-
-        input_location = PathType.DEPENDENCY
-        self.__download_file(location, remote_path, localPath, input_location, logger)
+        self.__download_files(location, remote_path, local_path, PathType.DEPENDENCY, dependency_version, logger)

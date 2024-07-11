@@ -1,4 +1,4 @@
-  <testCases>
+  <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <!-- TEST CASES FOR SOURCE SINK -->
 
     <testCase name="e02_f029_c010_sourcesink_2D" ref="dflowfm_default">

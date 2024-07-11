@@ -27,7 +27,7 @@ implicit none
 contains
 
 
-      subroutine partzp (lunpr, nopart, nmax, mmax, mnmax2, nolay, mpart, npart, kpart, zpart, &
+      subroutine partzp (lunpr, nopart, num_rows, num_columns, mnmax2, num_layers, mpart, npart, kpart, zpart, &
                          lgrid, laytopp, laytop, locdepp, locdep, itime, itstrtp)
 
       use m_waq_precision    ! single/double precision
@@ -39,19 +39,19 @@ contains
 !     kind                       name                     description
       integer(int_wp ), intent(in   ) :: lunpr                 !< unit number for log files
       integer(int_wp ), intent(in   ) :: nopart                !< total number of particles
-      integer(int_wp ), intent(in   ) :: nmax                  !< first dimension of the grid
-      integer(int_wp ), intent(in   ) :: mmax                  !< second dimension of the grid
-      integer(int_wp ), intent(in   ) :: mnmax2                !< nmax*mmax
-      integer(int_wp ), intent(in   ) :: nolay                 !< number of layers == layt
+      integer(int_wp ), intent(in   ) :: num_rows                  !< first dimension of the grid
+      integer(int_wp ), intent(in   ) :: num_columns                  !< second dimension of the grid
+      integer(int_wp ), intent(in   ) :: mnmax2                !< num_rows*num_columns
+      integer(int_wp ), intent(in   ) :: num_layers                 !< number of layers == layt
       integer(int_wp ), intent(in   ) :: npart(nopart)         !< first  grid index of the particles
       integer(int_wp ), intent(in   ) :: mpart(nopart)         !< second grid index of the particles
       integer(int_wp ), intent(inout) :: kpart(nopart)         !< third grid index of the particles
       real   (sp), intent(inout) :: zpart(nopart)         !< z-value (0.0-1.0) third  direction within grid cell
-      integer(int_wp ), intent(in   ) :: lgrid(nmax,mmax)      !< grid with active grid numbers, negatives for open boundaries
-      integer(int_wp ), intent(in   ) :: laytopp(nmax,mmax)    !< highest active layer in z-layer model of previous time step
-      integer(int_wp ), intent(in   ) :: laytop(nmax,mmax)     !< highest active layer in z-layer model
-      real   (sp), intent(inout) :: locdepp(mnmax2,nolay) !< depth per layer of previous time step
-      real   (sp), intent(in   ) :: locdep(mnmax2,nolay)  !< depth per layer
+      integer(int_wp ), intent(in   ) :: lgrid(num_rows,num_columns)      !< grid with active grid numbers, negatives for open boundaries
+      integer(int_wp ), intent(in   ) :: laytopp(num_rows,num_columns)    !< highest active layer in z-layer model of previous time step
+      integer(int_wp ), intent(in   ) :: laytop(num_rows,num_columns)     !< highest active layer in z-layer model
+      real   (sp), intent(inout) :: locdepp(mnmax2,num_layers) !< depth per layer of previous time step
+      real   (sp), intent(in   ) :: locdep(mnmax2,num_layers)  !< depth per layer
       integer(int_wp ), intent(in   ) :: itime                 !< current time
       integer(int_wp ), intent(in   ) :: itstrtp               !< start time
 
@@ -139,7 +139,7 @@ contains
       endif
 
 !     copy locdep to locdepp
-      do ilay = 1, nolay
+      do ilay = 1, num_layers
          do n0 = 1, mnmax2
             locdepp(n0, ilay) = locdep(n0, ilay)
          enddo

@@ -39,11 +39,11 @@ use grid_search_mod         ! explicit interface
 implicit none               ! force explicit typing
 !
 contains
-      subroutine partwq ( lgrid  , nmax   , conc   , volume , area   , &
+      subroutine partwq ( lgrid  , num_rows   , conc   , volume , area   , &
                           npart  , mpart  , wpart  , radius , nodye  , &
                           npwndw , nopart , idelt  , velo   , wvelo  , &
-                          const  , nocons , ptlay  , lun2   , nosubs , &
-                          nolay  , lgrid2 , mmax   , xb     , yb     , &
+                          const  , num_constants , ptlay  , lun2   , nosubs , &
+                          num_layers  , lgrid2 , num_columns   , xb     , yb     , &
                           t0cf   , acf    , nwaste , mwaste , kpart  , &
                           mapsub , layt   , mnmaxk       )
 !
@@ -90,7 +90,7 @@ contains
 !     angle   real      mnmax2    input   angle of the grid cells
 !     area    real      mnmax2    input   surface area of grid cells
 !     conc    real nosubs*mnmaxk  input   concentration in two layers
-!     const   real      nocons    input   user-defined constants
+!     const   real      num_constants    input   user-defined constants
 !     decays  real      nosubs    input   decay coefficient per substance
 !     dectmp  real      nosubs    input   decay coefficient temperature
 !     dx      real      mnmax2    input   dx of grid cells
@@ -98,20 +98,20 @@ contains
 !     idelt   integer     1       input   model time step
 !     kpart   integer   nopart    input   k-value of particles
 !     layt    integer     1       input   number of layers in the hydrodynamic database
-!     lgrid   integer  nmax*mmax  input   active grid layout of the area
-!     lgrid2  integer  nmax*mmax  input   total grid layout of the area
+!     lgrid   integer  num_rows*num_columns  input   active grid layout of the area
+!     lgrid2  integer  num_rows*num_columns  input   total grid layout of the area
 !     lun2    integer     1       input   unit number of report file
 !     mapsub  integer     1       input   index array substances
-!     mmax    integer     1       input   dimension of lgrid
+!     num_columns    integer     1       input   dimension of lgrid
 !     mnmax2  integer     1       input   dimension of one layer
 !     mnmaxk  integer     1       input   dimension of volume
 !     mpart   integer   nopart    input   m-value of particles
 !     mwaste  integer nocont+nodye input m-value of the waste location
-!     nmax    integer     1       input   dimension of lgrid
+!     num_rows    integer     1       input   dimension of lgrid
 !     nocont  integer     1       input   number of continuous releases
-!     nocons  integer     1       input   (max.) number of constants
+!     num_constants  integer     1       input   (max.) number of constants
 !     nodye  integer     1       input   number of dye releases
-!     nolay   integer     1       input   number of layers
+!     num_layers   integer     1       input   number of layers
 !     nopart  integer     1       input   number of active particles
 !     nosubc  integer     1       input   leading dimension of conc.array
 !     nosubs  integer     1       input   number of substances
@@ -219,8 +219,8 @@ contains
       integer(int_wp ) ::  i      , ic     , icount , idelt  , iposv  , k      , min
       integer(int_wp ) ::  icvdf  , il     , inocns , ipos   , ipos0  , layloc , layt
       integer(int_wp ) ::  lun2   , j      , ierror , il2    , iseg   , itime  , mmloc
-      integer(int_wp ) ::  nmloc  , nodye , mmax   , mnmax2 , mnmaxk , ncload
-      integer(int_wp ) ::  nloads , nocons , nolay  , nmax   , nosubs , nopart , noptk
+      integer(int_wp ) ::  nmloc  , nodye , num_columns   , mnmax2 , mnmaxk , ncload
+      integer(int_wp ) ::  nloads , num_constants , num_layers  , num_rows   , nosubs , nopart , noptk
       integer(int_wp ) ::  npwndw
 
       real   (sp) ::  a0     , aby    , drho   , hcapac , r0
@@ -263,8 +263,8 @@ contains
 !       check number of concentrations
 !
         inocns = 11
-        if (inocns  >  nocons) then
-          write(lun2, 99001) subnam, inocns, nocons
+        if (inocns  >  num_constants) then
+          write(lun2, 99001) subnam, inocns, num_constants
           call stop_exit(1)
         endif
 !
@@ -279,7 +279,7 @@ contains
         tpycn  = const( 7)
         gamma  = const( 8)
         pblay  = const( 9)
-        if (nolay  == 1 .and. pblay /= (0.0) ) then
+        if (num_layers  == 1 .and. pblay /= (0.0) ) then
           write(lun2, *)  ' Partwq for one layer requires pblay = 0.0 '
           call stop_exit(1)
         endif
@@ -309,17 +309,17 @@ contains
         if(layt*mnmax2 /= mnmaxk) then
            write(lun2, * ) ' Error in partwq: mnmax2*layt  /=  mnmaxk'
            call stop_exit(1)
-        elseif(mnmax2 /= mmax*nmax) then
-           write(lun2,*  ) ' Error in partwq: mnmax2  /=  mmax*nmax '
-           write(lun2,*  ) ' nmax = ',nmax,' mmax = ',mmax
+        elseif(mnmax2 /= num_columns*num_rows) then
+           write(lun2,*  ) ' Error in partwq: mnmax2  /=  num_columns*num_rows '
+           write(lun2,*  ) ' num_rows = ',num_rows,' num_columns = ',num_columns
            write(lun2,*  ) ' mnmax2=',mnmax2
            call stop_exit(1)
         endif
 !
         if(layt==1) then
-           if(nolay==1) then
+           if(num_layers==1) then
            write(lun2,*) ' You are using the 1 layer temperature model!'
-           elseif(nolay==2) then
+           elseif(num_layers==2) then
            write(lun2,*) ' You are using the 2 layer temperature model!'
            else
            write(lun2, * ) ' Error: only one or two layers allowed in 2d'
@@ -352,8 +352,8 @@ contains
         write(lun2, 99013) ' No. of intakes/outlets :',nloads
 !
         inocns = ipos0 + ncload*nloads
-        if (inocns  >  nocons) then
-          write(lun2, 99001) subnam, inocns, nocons
+        if (inocns  >  num_constants) then
+          write(lun2, 99001) subnam, inocns, num_constants
           call stop_exit(1)
         endif
 !
@@ -383,7 +383,7 @@ contains
 !
 !       calculate n,m value of the intake
 !
-           call  part07 ( lgrid  , lgrid2 , nmax   , mmax   , xb     ,   &
+           call  part07 ( lgrid  , lgrid2 , num_rows   , num_columns   , xb     ,   &
                           yb     , xnloc  , ynloc  , nmloc  , mmloc  ,   &
                           xmloc  , ymloc  , ierror )
            intake(il) = lgrid(nmloc, mmloc)

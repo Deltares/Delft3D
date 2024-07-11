@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <!--
         <testCase name="e02_f152_c01_DHydamo-DVB-initialisation" ref="dimr_trunk">
             <path>e02_dflowfm/f152_1d2d_projectmodels_rhu/c01_DHydamo-DVB-initialisation</path>

@@ -29,7 +29,7 @@ contains
 
 
     SUBROUTINE PROFLD (NOFLUX, NFLUX1, NFLUXP, IGRID, NOSEG2, &
-            NOSEG, NDT, ISDMP, GRDSEG, FLUX, &
+            num_cells, NDT, ISDMP, GRDSEG, FLUX, &
             VOLUME, FLXDMP)
         !
         !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
@@ -53,7 +53,7 @@ contains
         !     NFLUXP  INTEGER       1     INPUT   number of fluxes to be dumped
         !     IGRID   INTEGER       1     INPUT   Grid number for FLUX array
         !     NOSEG2  INTEGER       1     INPUT   number of segments in IGRID
-        !     NOSEG   INTEGER       1     INPUT   number of segments
+        !     num_cells   INTEGER       1     INPUT   number of segments
         !     NDT     INTEGER       1     INPUT   timestep multiplier in fractional step
         !     ISDMP   INTEGER       *     INPUT   Segment to dumped segment pointer
         !     GRDSEG  INTEGER       *     INPUT   Segment to sub-segment pointer for grids
@@ -66,9 +66,9 @@ contains
         use timers
 
         INTEGER(kind = int_wp) :: NOFLUX, NFLUX1, NFLUXP, IGRID, NOSEG2, &
-                NOSEG, NDT
-        INTEGER(kind = int_wp) :: ISDMP(NOSEG), GRDSEG(NOSEG, *)
-        REAL(kind = real_wp) :: FLUX(NOFLUX, NOSEG2), VOLUME(NOSEG), &
+                num_cells, NDT
+        INTEGER(kind = int_wp) :: ISDMP(num_cells), GRDSEG(num_cells, *)
+        REAL(kind = real_wp) :: FLUX(NOFLUX, NOSEG2), VOLUME(num_cells), &
                 FLXDMP(NOFLUX, *)
 
         !     local
@@ -79,7 +79,7 @@ contains
         !
         !     We construeren nu de FLUXDUMPEN
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             IF (ISDMP(ISEG) > 0) THEN
                 VOL = VOLUME(ISEG)
                 IPS = ISDMP(ISEG)

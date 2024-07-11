@@ -1267,29 +1267,29 @@ private
 
       ! Turbulence model
       call add_output_config(config_set_his, IDX_HIS_TKE,                                                                   &
-                     'Wrihis_turbulence', 'tke', 'turbulent kinetic energy', '',                                       &
+                     'Wrihis_turbulence', 'tke', 'turbulent kinetic energy at nearest velocity point', '',                                       &
                      'm2 s-2', UNC_LOC_STATION, nc_attributes = atts(1:1), description='Write k, eps and vicww to his-file', &
-                     nc_dim_ids = station_nc_dims_3D_interface_center)
+                     nc_dim_ids = station_nc_dims_3D_interface_edge)
       call add_output_config(config_set_his, IDX_HIS_VICWWS,                                       &
                      'Wrihis_turbulence', 'vicwws' , 'turbulent vertical eddy viscosity at pressure point', '', &
                      'm2 s-1''', UNC_LOC_STATION, nc_attributes = atts(1:1),                       &
                      nc_dim_ids = station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_VICWWU,                                       &
-                     'Wrihis_turbulence', 'vicwwu' , 'turbulent vertical eddy viscosity at closest velocity point', '', &
+                     'Wrihis_turbulence', 'vicwwu' , 'turbulent vertical eddy viscosity at nearest velocity point', '', &
                      'm2 s-1''', UNC_LOC_STATION, nc_attributes = atts(1:1),                       &
                      nc_dim_ids = station_nc_dims_3D_interface_edge)
       call add_output_config(config_set_his, IDX_HIS_EPS,                                 &
-                     'Wrihis_turbulence', 'eps', 'turbulent energy dissipation', '', &
+                     'Wrihis_turbulence', 'eps', 'turbulent energy dissipation at nearest velocity point', '', &
                      'm2 s-3', UNC_LOC_STATION, nc_attributes = atts(1:1),                 &
-                     nc_dim_ids = station_nc_dims_3D_interface_center)
+                     nc_dim_ids = station_nc_dims_3D_interface_edge)
       call add_output_config(config_set_his, IDX_HIS_TAU,                         &
-                     'Wrihis_turbulence', 'tau', 'turbulent time scale', '', &
+                     'Wrihis_turbulence', 'tau', 'turbulent time scale at nearest velocity point', '', &
                      's-1', UNC_LOC_STATION, nc_attributes = atts(1:1),            &
-                     nc_dim_ids = station_nc_dims_3D_interface_center)
+                     nc_dim_ids = station_nc_dims_3D_interface_edge)
       call add_output_config(config_set_his, IDX_HIS_RICH,               &
-                     'Richardsononoutput', 'rich', 'Richardson Nr', &
+                     'Richardsononoutput', 'rich', 'Richardson number at nearest velocity point', &
                      '', '-', UNC_LOC_STATION, nc_attributes = atts(1:1), &
-                     nc_dim_ids = station_nc_dims_3D_interface_center)
+                     nc_dim_ids = station_nc_dims_3D_interface_edge)
 
       ! Gravity + buoyancy
       call add_output_config(config_set_his, IDX_HIS_SALINITY,                                                    &
@@ -2148,7 +2148,7 @@ private
       use m_ug_nc_attribute
       use string_module, only: replace_char
       use m_flow
-      use m_flowexternalforcings
+      use fm_external_forcings_data
       use m_structures
       use m_observations
       use m_physcoef, only: density_is_pressure_dependent

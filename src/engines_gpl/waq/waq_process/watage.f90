@@ -28,9 +28,9 @@ module m_watage
 contains
 
 
-    subroutine watage (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine watage (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper
 
         !>\file
@@ -56,9 +56,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IFLUX, ISEG
         REAL(kind = real_wp) :: CONCWA, CONCTR, DECAYR, ARGUM, AGE, FDECAY
@@ -69,13 +69,13 @@ contains
         IP4 = IPOINT(4)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                CONCWA = PMSA(IP1)
-                CONCTR = PMSA(IP2)
-                DECAYR = PMSA(IP3)
+                CONCWA = process_space_real(IP1)
+                CONCTR = process_space_real(IP2)
+                DECAYR = process_space_real(IP3)
                 !
                 IF (DECAYR < 1E-20) CALL write_error_message ('RCDECTR in WATAGE zero')
 
@@ -104,7 +104,7 @@ contains
                 !
                 !     Output
                 !
-                PMSA(IP4) = AGE
+                process_space_real(IP4) = AGE
                 FL(1 + IFLUX) = FDECAY
                 !
             ENDIF

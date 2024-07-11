@@ -34,7 +34,7 @@ module m_setup_structures_and_weirs_list
    pure function build_structures_and_weirs_list() result(links_with_structures_or_weirs)
       use m_flowgeom, only: lnx, bob, bob0
       use m_flowparameters, only: ChangeVelocityAtStructures
-      use m_flowexternalforcings, only: ncdamsg, L1cdamsg, L2cdamsg, kcdam, ncgensg, L1cgensg, L2cgensg, kcgen, &
+      use fm_external_forcings_data, only: ncdamsg, L1cdamsg, L2cdamsg, kcdam, ncgensg, L1cgensg, L2cgensg, kcgen, &
          ndambreaklinks, ndambreaksignals, dambreaks, L1dambreaksg, L2dambreaksg, kdambreak
       use unstruc_channel_flow, only: network
       use m_GlobalParameters, only: ST_PUMP

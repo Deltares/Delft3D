@@ -69,45 +69,34 @@
       IF (NT .GE. 2) THEN
          CALL MAKESSQ(S,A,SR,SL,SSQ,NT,MNFAC,IMAX)
 
-!         DST  = REAL(NT-1) / REAL(KMAX-1)
-!         ST   = 0
-!C        Spline interpolatie in afstanden
-!         SPLFACORG = SPLFAC
-!         SPLFAC    = SPLFAC2
-!         DO 10 K = 1,KMAX
-!            CALL SPLINT(S,S2,NT,ST,SSQ(K))
-!            ST = ST + DST
-!    1    CONTINUE
-!         SPLFAC = SPLFACORG
-
 !        Check op positief en monotoon
-         DO 20 L = 1,NT-1
+         do L = 1,NT-1
             K1 = MNFAC*(L - 1) + 1
             K2 = K1 + MNFAC
 
             JADIP = 0
     23      IF (JADIP .EQ. 1) THEN
-               DO 24 K = K1+1,K2-1
+               do K = K1+1,K2-1
                   SSQ(K) = 0.5*( SSQ(K-1) + SSQ(K+1) )
-    24         CONTINUE
+               end do
             ENDIF
 
-            DO 25 K = K1,K2-1
+            do K = K1,K2-1
                IF ( SSQ(K+1) .LT. SSQ(K) ) THEN
                   JADIP = 1
                   GOTO 23
                ENDIF
-    25      CONTINUE
+            end do
 
-    20   CONTINUE
+      end do
       ELSE
          SSQ(1) = T(1)
       ENDIF
 
 !     Punten terug invullen in oorspronkelijke spline
-      DO 30 K = 1,KMAX
+      do K = 1,KMAX
          CALL GETXY(T,X,X2,Y,Y2,imax,N,NT,SSQ(K),XH(K),YH(K),TT(K),H)
-    30 CONTINUE
+      end do
 
       RETURN
       END subroutine makespl

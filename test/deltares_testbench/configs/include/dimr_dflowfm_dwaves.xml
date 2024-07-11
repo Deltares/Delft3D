@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <!-- ======================================================================== -->
     <testCase name="e100_f00_c00" ref="dimr_trunk">
         <path version="2024-01-12T07:30:00">e100_dflowfm-dwaves/f00_general/c00-FriesianInlet_schematic_nonstat</path>

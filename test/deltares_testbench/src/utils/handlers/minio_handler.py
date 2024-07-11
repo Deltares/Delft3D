@@ -20,12 +20,6 @@ from src.utils.minio_rewinder import Rewinder
 class MinIOHandler(IHandler):
     """MinIO wrapper, has handler interface"""
 
-    def prepare_upload(self, from_path: str, to_path: str, credentials: Credentials, logger: ILogger) -> None:
-        logger.debug("Preparing upload to MinIO not implemented yet")
-
-    def upload(self, from_path: str, to_path: str, credentials: Credentials, logger: ILogger) -> None:
-        logger.debug("Uploading to MinIO not implemented yet")
-
     def download(self, from_path: str, to_path: str, credentials: Credentials, version: Optional[str], logger: ILogger):
         """Sets up a Minio client connection. You can specify the download
         source and destination

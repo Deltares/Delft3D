@@ -72,7 +72,7 @@ module m_observations
 
 use m_alloc
 use m_missing
-use m_flowexternalforcings
+use fm_external_forcings_data
 use MessageHandling, only: IdLen
 
 implicit none

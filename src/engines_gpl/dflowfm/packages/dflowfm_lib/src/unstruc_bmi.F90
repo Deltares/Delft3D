@@ -44,7 +44,7 @@ module bmi
   use m_wind
   use m_flowgeom
   use network_data
-  use m_flowexternalforcings
+  use fm_external_forcings_data
   use m_partitioninfo
   use m_sobekdfm
   use m_transport
@@ -1910,7 +1910,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
    ! Return a pointer to the compound's field variable
    use iso_c_binding, only: c_double, c_char, c_loc
    use iso_c_utils
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_observations
    use m_monitoring_crosssections
    use m_strucs
@@ -2320,7 +2320,7 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
    !> Returns the c_ptr for a variable on a lateral location 
    function get_pointer_to_lateral_variable(item_name, field_name) result(c_lateral_pointer)
       use m_lateral, only : qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
-                            lateral_volume_per_layer
+                            lateral_volume_per_layer, lateral_center_position_per_layer
       use m_flow, only : s1
       use string_module, only : str_token
       
@@ -2356,6 +2356,14 @@ subroutine get_compound_field(c_var_name, c_item_name, c_field_name, x) bind(C, 
       case("water_volume")
          if (apply_transport(item_index)==1) then
             c_lateral_pointer = c_loc(lateral_volume_per_layer(:,item_index))
+         else
+            ! Not defined for apply__transport == 0
+            c_lateral_pointer = c_null_ptr
+         end if
+         return
+      case ("layer_position")
+         if (apply_transport(item_index)==1 .and. kmx > 0) then
+            c_lateral_pointer = c_loc(lateral_center_position_per_layer(:,item_index))
          else
             ! Not defined for apply__transport == 0
             c_lateral_pointer = c_null_ptr

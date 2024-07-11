@@ -62,8 +62,8 @@
       RSX = dbDISTANCE(X1,Y1,X2,Y2, jsferic, jasfer3D, dmiss)
       RSX = RSX/6
       JANU  = JA
-      DO 10 I = M1,M2
-         DO 10 J = N1,N2
+      do I = M1,M2
+         do J = N1,N2
             X0 = X(I,J)
             Y0 = Y(I,J)
             IF (X0 .NE. XYMIS) THEN
@@ -78,8 +78,8 @@
                   JJ1 = MAX(NB(3),J-NUMPJ*1000)
                   JJ2 = MIN(J+NUMPJ*1000,NB(4))
                ENDIF
-               DO 20 II = II1,II2
-                  DO 20 JJ = JJ1,JJ2
+               do Ii = II1,II2
+                  do Jj = JJ1,JJ2
                      XN = X(II,JJ)
                      IF (XN .NE. XYMIS .AND. .NOT. (II .EQ. I .AND. JJ .EQ. J) ) THEN
                         YN = Y(II,JJ)
@@ -125,8 +125,10 @@
                            YH(II,JJ) = YN + DY
                         ENDIF
                      ENDIF
-    20         CONTINUE
+                  end do
+               end do
             ENDIF
-    10 CONTINUE
+         end do
+      end do
       RETURN
       END subroutine attractrepulse

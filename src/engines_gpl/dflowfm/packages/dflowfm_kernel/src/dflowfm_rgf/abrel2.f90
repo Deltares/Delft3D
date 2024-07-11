@@ -42,13 +42,13 @@
       double precision :: X(NN), Y(NN), D(NN)
       DOUBLE PRECISION :: T
       D(1) = 0
-      DO 10 J = 2,NN
+      do J = 2,NN
          D(J) = D(J-1) + DBDISTANCE( X(J-1),Y(J-1), X(J), Y(J), jsferic, jasfer3D, dmiss)
-    10 CONTINUE
+      end do      
       T = D(NN)
 
-      DO 20 J = 1,NN
+      DO J = 1,NN
          D(J) = D(J)/T
-    20 CONTINUE
+      end do
       RETURN
       END SUBROUTINE ABREL2

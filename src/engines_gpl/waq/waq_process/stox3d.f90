@@ -28,9 +28,9 @@ module m_stox3d
 contains
 
 
-    subroutine stox3d (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine stox3d (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Vertical dispersion (segment -> exchange)
 
@@ -38,11 +38,11 @@ contains
         !
         !     declaration of arguments
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
-        !     i/o from PMSA array
+        !     i/o from process_space_real array
         !
         REAL(kind = real_wp) :: SPARAM                      ! process parameter on segment
         REAL(kind = real_wp) :: FACTOR                      ! scaling factor
@@ -50,8 +50,8 @@ contains
         !
         !     local declarations
         !
-        INTEGER(kind = int_wp) :: IP1, IP2, IP3               ! index pointers in PMSA array
-        INTEGER(kind = int_wp) :: IN1, IN2, IN3               ! increments in PMSA array
+        INTEGER(kind = int_wp) :: IP1, IP2, IP3               ! index pointers in process_space_real array
+        INTEGER(kind = int_wp) :: IN1, IN2, IN3               ! increments in process_space_real array
         INTEGER(kind = int_wp) :: IQ                          ! loop counter exchanges
         INTEGER(kind = int_wp) :: IFROM                       ! number from-segment
         !
@@ -65,11 +65,11 @@ contains
 
         !     Exchange-loop over de eerste twee richtingen
 
-        DO IQ = 1, NOQ1 + NOQ2
+        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
 
             !        Uitvoer op exchange niveau gelijk aan nul
 
-            PMSA(IP3) = 0.0
+            process_space_real(IP3) = 0.0
 
             IP3 = IP3 + IN3
 
@@ -77,7 +77,7 @@ contains
 
         !     Exchange-loop over de derde richting
 
-        DO IQ = NOQ1 + NOQ2 + 1, NOQ1 + NOQ2 + NOQ3
+        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
             IFROM = IEXPNT(1, IQ)
 
@@ -85,14 +85,14 @@ contains
 
                 !           Invoer op segment niveau naar uitvoer op exchange niveau
 
-                SPARAM = PMSA(IP1 + (IFROM - 1) * IN1)
-                FACTOR = PMSA(IP2 + (IFROM - 1) * IN2)
+                SPARAM = process_space_real(IP1 + (IFROM - 1) * IN1)
+                FACTOR = process_space_real(IP2 + (IFROM - 1) * IN2)
                 QPARAM = SPARAM * FACTOR
             ELSE
                 QPARAM = 0.0
             ENDIF
 
-            PMSA(IP3) = QPARAM
+            process_space_real(IP3) = QPARAM
 
             !        Ophogen pointering uitvoer op exchange niveau
 

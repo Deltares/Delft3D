@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <!-- ======================================================================== -->
         <testCase name="e121_f02_c01_sequential" ref="dimr_trunk">
             <path version="2024-01-11T14:00:00">e121_dflowfm_wanda/f02_turbines/c01_sequential</path>

@@ -32,7 +32,7 @@
 
  subroutine addsorsin(filename, area, ierr)
 
- use m_flowexternalforcings
+ use fm_external_forcings_data
  use m_polygon
  use m_flow
  use m_GlobalParameters, only: INDTP_ALL

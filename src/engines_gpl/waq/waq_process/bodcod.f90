@@ -28,9 +28,9 @@ module m_bodcod
 contains
 
 
-    subroutine bodcod (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine bodcod (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper, only : stop_with_error, get_log_unit_number
 
 
@@ -108,9 +108,9 @@ contains
         IMPLICIT REAL (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: LUNREP
 
@@ -213,10 +213,10 @@ contains
         !
 
         IF (IN14==0 .AND. IN15==0 .AND. IN16==0 .AND.IN17==0) THEN
-            TCBOD = PMSA(IP14)
-            TCCOD = PMSA(IP15)
-            TCBODN = PMSA(IP16)
-            TEMP = PMSA(IP17)
+            TCBOD = process_space_real(IP14)
+            TCCOD = process_space_real(IP15)
+            TCBODN = process_space_real(IP16)
+            TEMP = process_space_real(IP17)
 
             TFBOD = TCBOD ** (TEMP - 20.)
             TFCOD = TCCOD ** (TEMP - 20.)
@@ -228,8 +228,8 @@ contains
             TFACT = .TRUE.
         ENDIF
 
-        AGEFL = PMSA(IP23)
-        AGEFU = PMSA(IP24)
+        AGEFL = process_space_real(IP23)
+        AGEFU = process_space_real(IP24)
         IF (IN23==0 .AND.IN24==0 .AND.ABS(AGEFL - AGEFU)<1.0E-6) THEN
             AGEFUN = AGEFL
 
@@ -240,15 +240,15 @@ contains
         ENDIF
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
                 IF (TFACT) THEN
-                    TCBOD = PMSA(IP14)
-                    TCCOD = PMSA(IP15)
-                    TCBODN = PMSA(IP16)
-                    TEMP = PMSA(IP17)
+                    TCBOD = process_space_real(IP14)
+                    TCCOD = process_space_real(IP15)
+                    TCBODN = process_space_real(IP16)
+                    TEMP = process_space_real(IP17)
 
                     TFBOD = TCBOD ** (TEMP - 20.)
                     TFCOD = TCCOD ** (TEMP - 20.)
@@ -258,34 +258,34 @@ contains
 
                 !
 
-                ISW = NINT(PMSA(IP1))
-                CBOD5 = MAX(0., PMSA(IP2))
-                CBOD52 = MAX(0., PMSA(IP3))
-                CBODU = MAX(0., PMSA(IP4))
-                CBODU2 = MAX(0., PMSA(IP5))
-                CODCR = MAX(0., PMSA(IP6))
-                CODMN = MAX(0., PMSA(IP7))
-                CNBOD5 = MAX(0., PMSA(IP8))
-                CNBODU = MAX(0., PMSA(IP9))
-                RCBOD = PMSA(IP10)
-                RCBOD2 = PMSA(IP11)
-                RCCOD = PMSA(IP12)
-                RCBODN = PMSA(IP13)
-                OXY = MAX(0., PMSA(IP18))
-                COXBOD = PMSA(IP19)
-                OOXBOD = PMSA(IP20)
-                CFLBOD = PMSA(IP21)
-                CRVBOD = PMSA(IP22)
-                PHYT = PMSA(IP27)
-                PHYT5U = PMSA(IP28)
-                FPHBOD = PMSA(IP29)
-                OXCCF = PMSA(IP30)
-                POC = PMSA(IP31)
-                POC5U = PMSA(IP32)
-                FPCBOD = PMSA(IP33)
-                EFFCCR = PMSA(IP34)
-                EFFCMN = PMSA(IP35)
-                AMCCF = PMSA(IP36)
+                ISW = NINT(process_space_real(IP1))
+                CBOD5 = MAX(0., process_space_real(IP2))
+                CBOD52 = MAX(0., process_space_real(IP3))
+                CBODU = MAX(0., process_space_real(IP4))
+                CBODU2 = MAX(0., process_space_real(IP5))
+                CODCR = MAX(0., process_space_real(IP6))
+                CODMN = MAX(0., process_space_real(IP7))
+                CNBOD5 = MAX(0., process_space_real(IP8))
+                CNBODU = MAX(0., process_space_real(IP9))
+                RCBOD = process_space_real(IP10)
+                RCBOD2 = process_space_real(IP11)
+                RCCOD = process_space_real(IP12)
+                RCBODN = process_space_real(IP13)
+                OXY = MAX(0., process_space_real(IP18))
+                COXBOD = process_space_real(IP19)
+                OOXBOD = process_space_real(IP20)
+                CFLBOD = process_space_real(IP21)
+                CRVBOD = process_space_real(IP22)
+                PHYT = process_space_real(IP27)
+                PHYT5U = process_space_real(IP28)
+                FPHBOD = process_space_real(IP29)
+                OXCCF = process_space_real(IP30)
+                POC = process_space_real(IP31)
+                POC5U = process_space_real(IP32)
+                FPCBOD = process_space_real(IP33)
+                EFFCCR = process_space_real(IP34)
+                EFFCMN = process_space_real(IP35)
+                AMCCF = process_space_real(IP36)
 
                 !     CHECK IF RC'S ARE NON ZERO
                 IF (RCBOD < 1E-10) THEN
@@ -328,15 +328,15 @@ contains
 
                 IF (AFACT) THEN
 
-                    AGEFL = PMSA(IP23)
+                    AGEFL = process_space_real(IP23)
 
                     IF ((COD<1.0E-06).OR.(BOD5<1.0E-6)) THEN
                         AGEFUN = AGEFL
                     ELSE
 
-                        AGEFU = PMSA(IP24)
-                        AGEIL = PMSA(IP25)
-                        AGEIU = PMSA(IP26)
+                        AGEFU = process_space_real(IP24)
+                        AGEIL = process_space_real(IP25)
+                        AGEIU = process_space_real(IP26)
 
                         AGEIND = COD / BOD5
 
@@ -391,16 +391,16 @@ contains
                     CALL stop_with_error()
                 ENDIF
 
-                PMSA(IP37) = O2FBOD
-                PMSA(IP38) = AGEFUN
-                PMSA(IP39) = BOD5
-                PMSA(IP40) = BODU
-                PMSA(IP41) = COD
-                PMSA(IP42) = BD5POC
-                PMSA(IP43) = BDUPOC
-                PMSA(IP44) = BD5PHY
-                PMSA(IP45) = BDUPHY
-                PMSA(IP46) = BODN
+                process_space_real(IP37) = O2FBOD
+                process_space_real(IP38) = AGEFUN
+                process_space_real(IP39) = BOD5
+                process_space_real(IP40) = BODU
+                process_space_real(IP41) = COD
+                process_space_real(IP42) = BD5POC
+                process_space_real(IP43) = BDUPOC
+                process_space_real(IP44) = BD5PHY
+                process_space_real(IP45) = BDUPHY
+                process_space_real(IP46) = BODN
 
                 FL(1 + IFLUX) = DBOD5
                 FL(2 + IFLUX) = DBOD52

@@ -29,7 +29,7 @@ module m_write_nefis_output
 contains
 
 
-    subroutine write_nefis_map_output(iout, lchout, itime, moname, noseg, &
+    subroutine write_nefis_map_output(iout, lchout, itime, moname, num_cells, &
             notot1, conc1, synam1, notot2, conc2, &
             synam2, iostrt, iostop, iostep, rbuffr, &
             init)
@@ -43,16 +43,16 @@ contains
 
         integer(kind = int_wp), intent(in) :: iout                   ! unit number output file
         integer(kind = int_wp), intent(in) :: itime                  ! present time in clock units
-        integer(kind = int_wp), intent(in) :: noseg                  ! total number of segments
+        integer(kind = int_wp), intent(in) :: num_cells                  ! total number of segments
         integer(kind = int_wp), intent(in) :: notot1                 ! total number of systems
         integer(kind = int_wp), intent(in) :: notot2                 ! number of vars in conc2
         integer(kind = int_wp), intent(in) :: iostrt                 ! start time of output
         integer(kind = int_wp), intent(in) :: iostop                 ! stop time of output
         integer(kind = int_wp), intent(in) :: iostep                 ! time step of output
         integer(kind = int_wp), intent(inout) :: init                   ! init flag (1=yes,!1=no)
-        real(kind = real_wp), intent(in) :: conc1(notot1, noseg)    ! concentration values
-        real(kind = real_wp), intent(in) :: conc2(notot2, noseg)    ! concentration values array 2
-        real(kind = real_wp), intent(out) :: rbuffr(noseg)          ! output buffer
+        real(kind = real_wp), intent(in) :: conc1(notot1, num_cells)    ! concentration values
+        real(kind = real_wp), intent(in) :: conc2(notot2, num_cells)    ! concentration values array 2
+        real(kind = real_wp), intent(out) :: rbuffr(num_cells)          ! output buffer
         character(len = *), intent(in) :: lchout                 ! name output file
         character(len = 40), intent(in) :: moname(4)              ! model identhification
         character(len = *), intent(in) :: synam1(notot1)         ! names of substances in conc1
@@ -93,7 +93,7 @@ contains
         integer(kind = int_wp) :: isys2                  ! index in second conc array
         integer(kind = int_wp) :: iseg                   ! loop counter segments
         integer(kind = int_wp) :: neferr                 ! nefis error function
-        integer(kind = int_wp) :: notot                  ! total number of output variables
+        integer(kind = int_wp) :: num_substances_total                  ! total number of output variables
 
         integer(kind = int_wp), save :: fd_nef = -1            ! handle to NEFIS file
         integer(kind = int_wp), external :: FLSDAT, FLSDEF
@@ -104,8 +104,8 @@ contains
         if (timon) call timstrt ("write_nefis_map_output", ithandl)
 
         ! some init
-        notot = notot1 + notot2
-        noelm2 = notot + 1
+        num_substances_total = notot1 + notot2
+        noelm2 = num_substances_total + 1
         ierrem = 0
         call get_log_unit_number(lunout)
 
@@ -115,14 +115,14 @@ contains
 
             ! allocate arrays
 
-            nelmxx = noparm + notot
+            nelmxx = noparm + num_substances_total
             if (allocated(elmnms)) deallocate(elmnms)
             if (allocated(elmpts)) deallocate(elmpts)
             if (allocated(elmdms)) deallocate(elmdms)
             if (allocated(nbytsg)) deallocate(nbytsg)
             if (allocated(syname)) deallocate(syname)
 
-            allocate(elmnms(nelmxx), elmpts(nelmxx), elmdms(6, nelmxx), nbytsg(nelmxx), syname(notot), stat = ierr_alloc)
+            allocate(elmnms(nelmxx), elmpts(nelmxx), elmdms(6, nelmxx), nbytsg(nelmxx), syname(num_substances_total), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(lunout, *) 'ERROR : allocating nefis output structure'
                 write(*, *) 'ERROR : allocating nefis output structure'
@@ -142,7 +142,7 @@ contains
 
             ! initialize dependent element names always SUBST_nnn
 
-            do isys = 1, notot
+            do isys = 1, num_substances_total
                 elmnms(isys + noparm) = 'SUBST_'
                 write (elmnms(isys + noparm)(7:9), '(i3.3)') isys
                 elmpts(isys + noparm) = 'REAL'
@@ -195,15 +195,15 @@ contains
             itoff(6) = iostep
             itoff(7) = 0
 
-            ! initialize sizes; 1 - notot
-            !                   2 - noseg
+            ! initialize sizes; 1 - num_substances_total
+            !                   2 - num_cells
             !                   3 - nodmp (0 for .map)
-            !                   4 - nolay
+            !                   4 - num_layers
             !                   5 - nocol (.plo)
             !                   6 - norow (.plo)
 
-            nosize(1) = notot
-            nosize(2) = noseg
+            nosize(1) = num_substances_total
+            nosize(2) = num_cells
             nosize(3) = 0
             nosize(4) = 0
             nosize(5) = 0
@@ -214,7 +214,7 @@ contains
             ! group 1
             call fill_element_dimensions (elmdms, 1, 1, 1, 0, 0, 0, 0)
             call fill_element_dimensions (elmdms, 2, 1, 4, 0, 0, 0, 0)
-            call fill_element_dimensions (elmdms, 3, 1, notot, 0, 0, 0, 0)
+            call fill_element_dimensions (elmdms, 3, 1, num_substances_total, 0, 0, 0, 0)
             call fill_element_dimensions (elmdms, 4, 1, 1, 0, 0, 0, 0)
             call fill_element_dimensions (elmdms, 5, 1, 6, 0, 0, 0, 0)
             call fill_element_dimensions (elmdms, 6, 1, 4, 0, 0, 0, 0)
@@ -222,8 +222,8 @@ contains
 
             ! group 2
             call fill_element_dimensions (elmdms, noparm, 1, 1, 0, 0, 0, 0)
-            do isys = 1, notot
-                call fill_element_dimensions (elmdms, noparm + isys, 1, noseg, 0, 0, 0, 0)
+            do isys = 1, num_substances_total
+                call fill_element_dimensions (elmdms, noparm + isys, 1, num_cells, 0, 0, 0, 0)
             enddo
 
             ! write all elements to file; all definition and creation of files,
@@ -288,15 +288,15 @@ contains
             if  (ierr /= 0) goto 310
 
             ! fill and write output buffer for every output variable to cell
-            do isys = 1, notot
+            do isys = 1, num_substances_total
 
                 if (isys <= notot1) then
-                    do iseg = 1, noseg
+                    do iseg = 1, num_cells
                         rbuffr(iseg) = conc1(isys, iseg)
                     enddo
                 else
                     isys2 = isys - notot1
-                    do iseg = 1, noseg
+                    do iseg = 1, num_cells
                         rbuffr(iseg) = conc2(isys2, iseg)
                     enddo
                 endif
@@ -337,9 +337,9 @@ contains
 
     end subroutine write_nefis_map_output
 
-    subroutine write_nefis_history_output(iout, lchout, itime, moname, noseg, &
+    subroutine write_nefis_history_output(iout, lchout, itime, moname, num_cells, &
             notot1, conc1, syname, notot2, conc2, &
-            iostrt, iostop, iostep, nodump, idump, &
+            iostrt, iostop, iostep, num_monitoring_points, idump, &
             duname, rbuffr, init)
         !! gives his output to nefis files conc1 is map of tatal area conc2 is already mapped on monitor points
 
@@ -351,22 +351,22 @@ contains
 
         integer(kind = int_wp), intent(in) :: iout                   ! unit number output file
         integer(kind = int_wp), intent(in) :: itime                  ! present time in clock units
-        integer(kind = int_wp), intent(in) :: noseg                  ! total number of segments
+        integer(kind = int_wp), intent(in) :: num_cells                  ! total number of segments
         integer(kind = int_wp), intent(in) :: notot1                 ! total number of systems
         integer(kind = int_wp), intent(in) :: notot2                 ! number of vars in conc2
         integer(kind = int_wp), intent(in) :: iostrt                 ! start time of output
         integer(kind = int_wp), intent(in) :: iostop                 ! stop time of output
         integer(kind = int_wp), intent(in) :: iostep                 ! time step of output
-        integer(kind = int_wp), intent(in) :: nodump                 ! number of monitor points
+        integer(kind = int_wp), intent(in) :: num_monitoring_points                 ! number of monitor points
         integer(kind = int_wp), intent(inout) :: init                   ! init flag (1=yes,!1=no)
-        integer(kind = int_wp), intent(in) :: idump(nodump)          ! segment number of monitor points
-        real(kind = real_wp), intent(in) :: conc1(notot1, noseg)    ! concentration values
-        real(kind = real_wp), intent(in) :: conc2(notot2, nodump)   ! concentration values array 2
-        real(kind = real_wp), intent(out) :: rbuffr(nodump)         ! output buffer
+        integer(kind = int_wp), intent(in) :: idump(num_monitoring_points)          ! segment number of monitor points
+        real(kind = real_wp), intent(in) :: conc1(notot1, num_cells)    ! concentration values
+        real(kind = real_wp), intent(in) :: conc2(notot2, num_monitoring_points)   ! concentration values array 2
+        real(kind = real_wp), intent(out) :: rbuffr(num_monitoring_points)         ! output buffer
         character(len = *), intent(in) :: lchout                 ! name output file
         character(len = 40), intent(in) :: moname(4)              ! model identhification
         character(len = *), intent(in) :: syname(notot1 + notot2)  ! names of substances + extra
-        character(len = *), intent(in) :: duname(nodump)         ! name of monitor points
+        character(len = *), intent(in) :: duname(num_monitoring_points)         ! name of monitor points
 
         !     local variables
 
@@ -403,7 +403,7 @@ contains
         integer(kind = int_wp) :: isys2                  ! index in second conc array
         integer(kind = int_wp) :: iseg                   ! loop counter segments
         integer(kind = int_wp) :: neferr                 ! nefis error function
-        integer(kind = int_wp) :: notot                  ! total number of output variables
+        integer(kind = int_wp) :: num_substances_total                  ! total number of output variables
 
         integer(kind = int_wp), save :: fd_nef = -1            ! handle to NEFIS file
         integer(kind = int_wp), external :: FLSDAT, FLSDEF
@@ -413,8 +413,8 @@ contains
 
         !     some init
 
-        notot = notot1 + notot2
-        noelm2 = notot + 1
+        num_substances_total = notot1 + notot2
+        noelm2 = num_substances_total + 1
         ierrem = 0
         call get_log_unit_number(lunout)
 
@@ -425,7 +425,7 @@ contains
 
             ! allocate arrays
 
-            nelmxx = noparm + notot
+            nelmxx = noparm + num_substances_total
             if (allocated(elmnms)) deallocate(elmnms)
             if (allocated(elmpts)) deallocate(elmpts)
             if (allocated(elmdms)) deallocate(elmdms)
@@ -451,7 +451,7 @@ contains
 
             ! initialize dependent element names always SUBST_nnn
 
-            do isys = 1, notot
+            do isys = 1, num_substances_total
                 elmnms(isys + noparm) = 'SUBST_'
                 write (elmnms(isys + noparm)(7:9), '(i3.3)') isys
                 elmpts(isys + noparm) = 'REAL'
@@ -499,16 +499,16 @@ contains
             itoff(6) = iostep
             itoff(7) = 0
 
-            ! initialize sizes; 1 - notot
-            !                   2 - noseg
+            ! initialize sizes; 1 - num_substances_total
+            !                   2 - num_cells
             !                   3 - nodmp (0 for .map)
-            !                   4 - nolay
+            !                   4 - num_layers
             !                   5 - nocol (.plo)
             !                   6 - norow (.plo)
 
-            nosize(1) = notot
+            nosize(1) = num_substances_total
             nosize(2) = 0
-            nosize(3) = nodump
+            nosize(3) = num_monitoring_points
             nosize(4) = 0
             nosize(5) = 0
             nosize(6) = 0
@@ -519,8 +519,8 @@ contains
 
             call fill_element_dimensions (elmdms, 1, 1, 1, 0, 0, 0, 0)
             call fill_element_dimensions (elmdms, 2, 1, 4, 0, 0, 0, 0)
-            call fill_element_dimensions (elmdms, 3, 1, notot, 0, 0, 0, 0)
-            call fill_element_dimensions (elmdms, 4, 1, nodump, 0, 0, 0, 0)
+            call fill_element_dimensions (elmdms, 3, 1, num_substances_total, 0, 0, 0, 0)
+            call fill_element_dimensions (elmdms, 4, 1, num_monitoring_points, 0, 0, 0, 0)
             call fill_element_dimensions (elmdms, 5, 1, 6, 0, 0, 0, 0)
             call fill_element_dimensions (elmdms, 6, 1, 4, 0, 0, 0, 0)
             call fill_element_dimensions (elmdms, 7, 1, 7, 0, 0, 0, 0)
@@ -528,8 +528,8 @@ contains
             ! group 2
 
             call fill_element_dimensions (elmdms, noparm, 1, 1, 0, 0, 0, 0)
-            do isys = 1, notot
-                call fill_element_dimensions (elmdms, noparm + isys, 1, nodump, 0, 0, 0, 0)
+            do isys = 1, num_substances_total
+                call fill_element_dimensions (elmdms, noparm + isys, 1, num_monitoring_points, 0, 0, 0, 0)
             enddo
 
             ! write all elements to file; all definition and creation of files,
@@ -599,18 +599,18 @@ contains
 
             ! fill and write output buffer for every output variable to cell
 
-            do isys = 1, notot
+            do isys = 1, num_substances_total
 
                 if (isys <= notot1) then
 
-                    do iseg = 1, nodump
+                    do iseg = 1, num_monitoring_points
                         rbuffr(iseg) = conc1(isys, idump(iseg))
                     enddo
 
                 else
 
                     isys2 = isys - notot1
-                    do iseg = 1, nodump
+                    do iseg = 1, num_monitoring_points
                         rbuffr(iseg) = conc2(isys2, iseg)
                     enddo
 

@@ -36,6 +36,7 @@
       use m_hydmod
       use rd_token       ! tokenized reading
       use m_string_utils, only: index_in_array
+      use Ieee_arithmetic, only: ieee_value, ieee_quiet_nan, ieee_is_finite
 
       implicit none
 
@@ -216,20 +217,20 @@
       hyd%file_wlk=t_file(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
       hyd%file_atr=t_file(' ',' ',0,FT_ASC,FILE_STAT_UNOPENED)
       hyd%file_dps=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
-      hyd%mmax = 0
-      hyd%nmax = 0
-      hyd%kmax = 1
+      hyd%num_columns = 0
+      hyd%num_rows = 0
+      hyd%num_layers_grid = 1
       hyd%nosegl = 0
-      hyd%noseg = 0
-      hyd%nolay = 1
-      hyd%noq1 = 0
-      hyd%noq2 = 0
-      hyd%noq3 = 0
-      hyd%noq4 = 0
-      hyd%noq  = 0
-      hyd%zbot = -999.0
-      hyd%ztop = -999.0
-!
+      hyd%num_cells = 0
+      hyd%num_layers = 1
+      hyd%num_exchanges_u_dir = 0
+      hyd%num_exchanges_v_dir = 0
+      hyd%num_exchanges_z_dir = 0
+      hyd%num_exchanges_bottom_dir = 0
+      hyd%num_exchanges  = 0
+
+      hyd%zbot = ieee_value(hyd%zbot, ieee_quiet_nan)
+      hyd%ztop = ieee_value(hyd%ztop, ieee_quiet_nan)
 
       ! loop over all the tokens in the file
 
@@ -340,27 +341,27 @@
 
          elseif ( ikey .eq. 16) then
             ! grid cells first direction
-            if ( gettoken(hyd%mmax, ierr) .ne. 0 ) goto 900
+            if ( gettoken(hyd%num_columns, ierr) .ne. 0 ) goto 900
 
          elseif ( ikey .eq. 17) then
             ! grid cells second direction
-            if ( gettoken(hyd%nmax, ierr) .ne. 0 ) goto 900
+            if ( gettoken(hyd%num_rows, ierr) .ne. 0 ) goto 900
 
          elseif ( ikey .eq. 18) then
             ! number of hydrodynamic layers
-            if ( gettoken(hyd%kmax, ierr) .ne. 0 ) goto 900
+            if ( gettoken(hyd%num_layers_grid, ierr) .ne. 0 ) goto 900
 
          elseif ( ikey .eq. 19) then
             ! number of waq layers
-            if ( gettoken(hyd%nolay, ierr) .ne. 0 ) goto 900
+            if ( gettoken(hyd%num_layers, ierr) .ne. 0 ) goto 900
 
          elseif ( ikey .eq. 70) then
             ! number of horizontal exchanges
-            if ( gettoken(hyd%noq1, ierr) .ne. 0 ) goto 900
+            if ( gettoken(hyd%num_exchanges_u_dir, ierr) .ne. 0 ) goto 900
 
          elseif ( ikey .eq. 71) then
             ! number of vertical exchanges
-            if ( gettoken(hyd%noq3, ierr) .ne. 0 ) goto 900
+            if ( gettoken(hyd%num_exchanges_z_dir, ierr) .ne. 0 ) goto 900
 
          elseif ( ikey .eq. 72) then
             ! number of water quality segments per layer
@@ -515,8 +516,8 @@
 
          elseif ( ikey .eq. 48) then
             ! hydrodynamic-layers
-            allocate(hyd%hyd_layers(hyd%kmax))
-            do ilay = 1 , hyd%kmax
+            allocate(hyd%hyd_layers(hyd%num_layers_grid))
+            do ilay = 1 , hyd%num_layers_grid
                if ( gettoken(hyd%hyd_layers(ilay), ierr) .ne. 0 ) goto 900
             enddo
             ! end-hydrodynamic-layers
@@ -524,8 +525,8 @@
 
          elseif ( ikey .eq. 50) then
             ! water-quality-layers
-            allocate(hyd%waq_layers(hyd%nolay))
-            do ilay = 1 , hyd%nolay
+            allocate(hyd%waq_layers(hyd%num_layers))
+            do ilay = 1 , hyd%num_layers
                if ( gettoken(hyd%waq_layers(ilay), ierr) .ne. 0 ) goto 900
             enddo
             ! end-water-quality-layers
@@ -582,10 +583,10 @@
                ikey2 = index_in_array( ctoken(1:30), key )
                if ( ikey2 .eq. 55 ) exit
 
-               ! key is domain name , read mmax nmax and dido file do not store dido file
+               ! key is domain name , read num_columns num_rows and dido file do not store dido file
                domain%name = ctoken
-               if ( gettoken(domain%mmax, ierr) .ne. 0 ) goto 900
-               if ( gettoken(domain%nmax, ierr) .ne. 0 ) goto 900
+               if ( gettoken(domain%num_columns, ierr) .ne. 0 ) goto 900
+               if ( gettoken(domain%num_rows, ierr) .ne. 0 ) goto 900
                if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
 
                ! add to domains collection
@@ -662,10 +663,10 @@
                      ikey2 = index_in_array( ctoken(1:30), key )
                      if ( ikey2 .eq. 81 ) exit
                   endif
-!               ! key is domain name , read mmax nmax and dido file do not store dido file
+!               ! key is domain name , read num_columns num_rows and dido file do not store dido file
 !               domain%name = ctoken
-!               if ( gettoken(domain%mmax, ierr) .ne. 0 ) goto 900
-!               if ( gettoken(domain%nmax, ierr) .ne. 0 ) goto 900
+!               if ( gettoken(domain%num_columns, ierr) .ne. 0 ) goto 900
+!               if ( gettoken(domain%num_rows, ierr) .ne. 0 ) goto 900
 !               if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
 !
 !               ! add to domains collection
@@ -682,17 +683,31 @@
 
       ! 2d then no vdf file
 
-      if ( hyd%nolay .le. 1 ) then
+      if ( hyd%num_layers .le. 1 ) then
          hyd%file_vdf%name = ' '
          hyd%vdf_present = .false.
       endif
 
-      ! unstructured set nmax to 1
+      ! unstructured set num_rows to 1
 
       if ( hyd%geometry .eq. HYD_GEOM_UNSTRUC ) then
-         hyd%nmax = 1
+         hyd%num_rows = 1
+      endif
+
+      ! check for ztop and zbot keywords
+
+      if ( hyd%layer_type == HYD_LAYERS_Z ) then
+         if ( .not. ieee_is_finite(hyd%zbot) .or. .not. ieee_is_finite(hyd%ztop) ) then
+            call write_error_message('Error: hyd-file with z-layers should contain values for '// &
+                     'keywords "z-layers-ztop" and "z-layers-zbot"')
+         endif
+         if ( hyd%zbot >=  hyd%ztop ) then
+            call write_error_message('Error: the value for "z-layers-ztop" in the hyd-file ' // &
+                     'should be larger than the value for "z-layers-bot"')
+         endif
       endif
 
       return
- 900  call write_error_message('error reading hyd file ('//trim(key(ikey))//')')
+ 900  continue
+      call write_error_message('error reading hyd file ('//trim(key(ikey))//')')
       end subroutine read_hyd

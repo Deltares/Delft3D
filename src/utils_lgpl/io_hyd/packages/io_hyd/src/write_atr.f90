@@ -62,7 +62,7 @@
          write(lunatr,'(i6)') (i_atr,i_atr=1,hyd%no_atr)
          write(lunatr,'(a)') '    1    ; file option in this file'
          write(lunatr,'(a)') '    1    ; option without defaults'
-         do iseg = 1 , hyd%noseg
+         do iseg = 1 , hyd%num_cells
             write(lunatr,'(i10)') hyd%attributes(iseg)
          enddo
          write(lunatr,'(a)') '    0    ; no time dependent attributes'
@@ -74,7 +74,7 @@
          write ( lunatr , '(a)' )  '    1    ;  ''1'' is active ''0'' is not'
          write ( lunatr , '(a)' )  '    1    ; data follows in this file '
          write ( lunatr , '(a)' )  '    1    ; all data is given without defaults'
-         do il = 1,hyd%nolay
+         do il = 1,hyd%num_layers
              write ( lunatr , * ) '  ;    layer: ',il
              do is = 1, hyd%nosegl
                  kenout(is) = '  '
@@ -96,7 +96,7 @@
          write ( lunatr , '(a)' )  '         ;  ''0'' has both    ''2'' has none  '
          write ( lunatr , '(a)' )  '    1    ; data follows in this file '
          write ( lunatr , '(a)' )  '    1    ; all data is given without defaults'
-         do il = 1,hyd%nolay
+         do il = 1,hyd%num_layers
              write ( lunatr , * ) '  ;    layer: ',il
              do is = 1, hyd%nosegl
                  kenout(is) = '  '
@@ -122,14 +122,14 @@
 !         call extract_waq_attribute( 2, iknmrk(i1), ikmrk2 )
       else
          write(lunatr,'(a)') '    1    ; Input option without defaults'
-         if ( hyd%nolay .gt. 1 ) then
+         if ( hyd%num_layers .gt. 1 ) then
             write(lunatr,'(i12,a)') hyd%nosegl,'*1   ; top layer segments with water surface'
-            if ( hyd%nolay .gt. 2 ) then
-               write(lunatr,'(i12,a)') hyd%nosegl*(hyd%nolay-2),'*2   ; intermediate segments without surface or bottom'
+            if ( hyd%num_layers .gt. 2 ) then
+               write(lunatr,'(i12,a)') hyd%nosegl*(hyd%num_layers-2),'*2   ; intermediate segments without surface or bottom'
             endif
             write(lunatr,'(i12,a)') hyd%nosegl,'*3   ; segments with bottom attached'
          else
-            write(lunatr,'(i12,a)') hyd%noseg,'*0   ; all depth integrated segments'
+            write(lunatr,'(i12,a)') hyd%num_cells,'*0   ; all depth integrated segments'
          endif
       endif
       close(lunatr)

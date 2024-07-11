@@ -1,4 +1,4 @@
-<testCases>
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <!-- Combination of D-Water Quality and D-RTC: 1D cases -->
     <testCase name="e601_f01_c01_waq_rtc_oxy" ref="dwaq_default">
         <path version="2024-03-22T19:30:00">e601_waq-rtc/f01_wasteload/c01_waq_rtc_oxy</path>

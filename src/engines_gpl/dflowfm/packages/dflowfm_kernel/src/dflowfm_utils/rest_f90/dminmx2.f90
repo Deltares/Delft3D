@@ -51,14 +51,15 @@
       ENDIF
       XMIN =  10D20
       XMAX = -10D20
-      DO 10 I = 1,MC
-         DO 10 J = 1,NC
+      do I = 1,MC
+         do J = 1,NC
             XX   = X(I,J)
             IF (XX .NE. DXYMIS) THEN
                XMIN = MIN(XX,XMIN)
                XMAX = MAX(XX,XMAX)
             ENDIF
-   10 CONTINUE
+         end do
+      end do
       IF (XMIN .EQ. 10D20) XMIN = 0
       IF (XMAX .EQ.-10D20) XMAX = 0
       RETURN

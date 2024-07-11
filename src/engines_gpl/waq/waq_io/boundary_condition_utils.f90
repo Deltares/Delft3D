@@ -636,7 +636,7 @@ contains
         !
         use m_usefor, only : compact_usefor_list
         use open_data_structure, only : get_time, get_parameter, get_matrix_1, get_loc, get_dimension
-        use m_sysi          ! Timer characteristics
+        use m_timer_variables          ! Timer characteristics
         use time_module
         use m_string_utils
 
@@ -661,7 +661,7 @@ contains
         integer(kind = int_wp) :: num_dims              !! number of concentrations
         integer(kind = int_wp) :: input_order, ioffa, ioffb, ioffc, ioffd, nscle, file_unit
         integer(kind = int_wp) :: k1, ierror, nsubs, nlocs, ntims, j1, j2, j3, k2, k3
-        integer(kind = int_wp) :: ierr, noloc, noit2, noitv, j
+        integer(kind = int_wp) :: ierr, num_local_vars, noit2, noitv, j
         integer(kind = int_wp) :: nottt, itmnr, notim, idmnr, i, ishft, ltot
         integer(kind = int_wp) :: nshft, nopar, icnt, k5, nitm, k, k4, k6
         integer(kind = int_wp) :: iy1, im1, id1, ih1, in1, is1
@@ -721,7 +721,7 @@ contains
         char_arr(j1) = '*'
         call get_loc (cfile, 0, char_arr(j1), 1, 0, &
                 0, k3, char_arr(j2), int_array(k1:k1), int_array(k2:k2), &
-                noloc, ierror, cfile(3))
+                num_local_vars, ierror, cfile(3))
 
         ! fill an array with wanted locations
         noit2 = 0
@@ -738,7 +738,7 @@ contains
                 if (scale .and. input_order == 2) real_array(noit2) = real_array(j)
                 cycle
             end if
-            i = index_in_array(char_arr(ioffa + j)(:20), char_arr(j1 + 1:noloc))
+            i = index_in_array(char_arr(ioffa + j)(:20), char_arr(j1 + 1:num_local_vars))
             if (i >= 1) then
                 noit2 = noit2 + 1
                 char_arr(ioffa + noit2) = char_arr(ioffa + j)
@@ -976,7 +976,7 @@ contains
 
     subroutine read_time_series_table(file_unit, int_array, real_array, max_int_size, max_real_size, &
             input_file_start_position, num_significant_char, ilun, file_name_list, lstack, &
-            comment_character, character_output, notot, nototc, time_dependent, num_records, &
+            comment_character, character_output, num_substances_total, nototc, time_dependent, num_records, &
             time_function_type, is_date_format, is_yyddhh_format, itfact, itype, &
             int_output, real_output, ierr, ierr3)
         !! Boundary and waste data new style
@@ -990,7 +990,7 @@ contains
         !     ILUN    INTEGER   LSTACK     INPUT   unitnumb include stack
         !     LSTACK  INTEGER    1         INPUT   include file stack size
         !     character_output   CHAR*(*)   1         OUTPUT  space for limiting token
-        !     NOTOT   INTEGER    1         INPUT   size of the matrix to be read
+        !     num_substances_total   INTEGER    1         INPUT   size of the matrix to be read
         !     ITTIM   INTEGER    1         INPUT   0 if steady, 1 if time function
         !     ITFACT  INTEGER    1         INPUT   factor between clocks
         !     ITYPE   INTEGER    1         OUTPUT  type of info at end
@@ -1018,7 +1018,7 @@ contains
         integer(kind = int_wp) :: ilun, ierr, itfact
         integer(kind = int_wp), intent(inout) :: int_array(*)
         real(kind = real_wp), intent(inout) :: real_array(:)
-        integer(kind = int_wp), intent(in) :: notot
+        integer(kind = int_wp), intent(in) :: num_substances_total
         integer(kind = int_wp) :: nototc
         integer(kind = int_wp) :: lstack
         integer(kind = int_wp), intent(in) :: time_function_type        !! 3 is harmonics, 4 is fourier
@@ -1098,14 +1098,14 @@ contains
         endif
 
         if (.not. ignore) then
-            do i = 1, notot / nototc
+            do i = 1, num_substances_total / nototc
                 real_array(itel + (i - 1) * nototc) = real_output
             end do
         endif
         ! are we to expect a new record ?
         if (mod(itel2, nototc) == 0) then
             newrec = .true.
-            itel = itel + notot - nototc
+            itel = itel + num_substances_total - nototc
         end if
         !        it was a constant, so we can now return.
         if (newrec .and. (.not. time_dependent)) then

@@ -175,7 +175,7 @@ subroutine update_particles_in_cells(numremaining, ierror)
 !$OMP           SCHEDULE  ( DYNAMIC, max(Nopart/100,1)           )
    do ipart=1,Nopart
       ! check if this particle needs to be updated
-      if ( dtremaining(ipart) == 0.0_wp .or. mpart(ipart) < 1 .or. laypart(ipart) > hyd%nolay) cycle
+      if ( dtremaining(ipart) == 0.0_wp .or. mpart(ipart) < 1 .or. laypart(ipart) > hyd%num_layers) cycle
       ! get cell (flownode) particle in in
       k = mpart(ipart)
       kl = k + (laypart(ipart) - 1) * numcells
@@ -200,7 +200,7 @@ subroutine update_particles_in_cells(numremaining, ierror)
       endif
 
       uw0up = 0.0d0
-      if ( laypart(ipart) < hyd%nolay ) then
+      if ( laypart(ipart) < hyd%num_layers ) then
          uw0up = u0w(kl)
       endif
 
@@ -248,7 +248,7 @@ subroutine update_particles_in_cells(numremaining, ierror)
 
       if ( tex > time_up .and. time_up > 0.0_wp ) then
           tex = time_up
-          if ( laypart(ipart) < hyd%nolay ) then
+          if ( laypart(ipart) < hyd%num_layers ) then
               new_layer = +1
           endif
       endif
@@ -384,7 +384,7 @@ subroutine update_particles_in_cells(numremaining, ierror)
       endif
 
       ! handle spurious errors - they should not occur, of course
-      laypart(ipart) = min( max( laypart(ipart), 1 ), hyd%nolay )
+      laypart(ipart) = min( max( laypart(ipart), 1 ), hyd%num_layers )
 
       ! update the time that is left within this time step
       dtremaining(ipart) = max(dtremaining(ipart) - dt, 0.0_wp)

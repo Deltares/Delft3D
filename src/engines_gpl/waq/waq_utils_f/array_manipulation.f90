@@ -294,7 +294,7 @@ contains
         !!
         !! The routine scans the grid table to identify from-to entries./n
         !! If the active grid is 'active-only' contracted, then the pointer is.
-        !! This is checked by comparing the obtained exchanges_x, exchanges_y and noq3 with
+        !! This is checked by comparing the obtained exchanges_x, exchanges_y and num_exchanges_z_dir with
         !! those in the lga file./n
         !! A backpointer from num_volumes to mnmaxk is constructed, to fill in the
         !! volumes in the complete matrix for solvers 18, 19 and Delpar./n

@@ -83,9 +83,9 @@ end function openasciifile
 
 
 !> Write ASCII or binary pointer file for WAQ.
-subroutine wrwaqpoi(ifrmto, noq, filename, ascii)
+subroutine wrwaqpoi(ifrmto, num_exchanges, filename, ascii)
    implicit none
-   integer                , intent(in) :: noq      !< Nr. of linkages (pointers) between computational cells.
+   integer                , intent(in) :: num_exchanges      !< Nr. of linkages (pointers) between computational cells.
    integer, dimension(:,:), intent(in) :: ifrmto   !< Pointer table with all linkages.
                                                    !! ifrmto(1,:) = 'from'   cell number
                                                    !! ifrmto(2,:) = 'to'     cell number
@@ -107,7 +107,7 @@ subroutine wrwaqpoi(ifrmto, noq, filename, ascii)
       ! ascii output
       !
       lunout = openasciifile(filename)
-      do q = 1,noq
+      do q = 1,num_exchanges
          write(lunout,'(4i10)') ( ifrmto(i,q), i=1,4 )
       enddo
       close(lunout)
@@ -116,7 +116,7 @@ subroutine wrwaqpoi(ifrmto, noq, filename, ascii)
       ! binary output
       !
       lunout = openwaqbinfile(filename)
-      write(lunout) ( ( ifrmto(i,q), i=1,4 ), q=1,noq )
+      write(lunout) ( ( ifrmto(i,q), i=1,4 ), q=1,num_exchanges )
       close(lunout)
    endif
 end subroutine wrwaqpoi
@@ -125,15 +125,15 @@ end subroutine wrwaqpoi
 
 
 !> Write (binary) from/to length file for DelWAQ.
-subroutine wrwaqlen(noq, lenex, filename, ascii)
+subroutine wrwaqlen(num_exchanges, lenex, filename, ascii)
    use precision
    !
    implicit none
    !
    !           Global variables
    !
-   integer          , intent(in) :: noq           !< Nr. of linkages (pointers) between computational cells.
-   double precision , intent(in) :: lenex(2, noq) !< Dispersion half-lengths of computational cells, segment
+   integer          , intent(in) :: num_exchanges           !< Nr. of linkages (pointers) between computational cells.
+   double precision , intent(in) :: lenex(2, num_exchanges) !< Dispersion half-lengths of computational cells, segment
    !! centre to exchange point. (2 values: from/to direction)
    logical          , intent(in) :: ascii         !< Produce ascii file or not (then binary).
    character(*)     , intent(in) :: filename      !< Output filename.
@@ -151,7 +151,7 @@ subroutine wrwaqlen(noq, lenex, filename, ascii)
       ! ascii output
       !
       lunout = openasciifile(filename)
-      do q = 1,noq
+      do q = 1,num_exchanges
          write(lunout,'(i10,2f18.8)') q, ( lenex(i,q), i=1,2 )
       enddo
       close(lunout)
@@ -160,8 +160,8 @@ subroutine wrwaqlen(noq, lenex, filename, ascii)
       ! binary output
       !
       lunout = openwaqbinfile(filename)
-      write(lunout) noq
-      write(lunout) (( real(lenex(i,q),sp), i=1,2 ), q=1,noq )
+      write(lunout) num_exchanges
+      write(lunout) (( real(lenex(i,q),sp), i=1,2 ), q=1,num_exchanges )
       close(lunout)
    endif
 end subroutine wrwaqlen
@@ -170,14 +170,14 @@ end subroutine wrwaqlen
 
 
 !> Write (binary) horizontal surface file for DelWAQ.
-subroutine wrwaqsrf(srf, nosegl, nolay, filename, ascii)
+subroutine wrwaqsrf(srf, nosegl, num_layers, filename, ascii)
    use precision
    implicit none
    !
    !           Global variables
    !
    integer                        , intent(in) :: nosegl   !< Nr. of segment per layer.
-   integer                        , intent(in) :: nolay    !< Nr. of layers.
+   integer                        , intent(in) :: num_layers    !< Nr. of layers.
    double precision, dimension(:) , intent(in) :: srf      !< Horizontal surfaces of computational cells. (size nosegl)
    logical                        , intent(in) :: ascii    !< Produce ascii file or not (then binary).
    character(*)                   , intent(in) :: filename !< Output filename.
@@ -196,9 +196,9 @@ subroutine wrwaqsrf(srf, nosegl, nolay, filename, ascii)
       !
       lunout = openasciifile(filename)
       ! nmax, mmax, nosegl, nosegl, nosegl, 0.0
-      ! noseg in all places is a dummy: no aggr yet, and no three m-n-k dimensions
+      ! num_cells in all places is a dummy: no aggr yet, and no three m-n-k dimensions
       write (lunout, '(i10)') 0
-      do il = 1,nolay
+      do il = 1,num_layers
          do is = 1,nosegl
             write(lunout,'(i10,f18.8)') is + (il - 1) * nosegl , srf(is)
          enddo
@@ -211,7 +211,7 @@ subroutine wrwaqsrf(srf, nosegl, nolay, filename, ascii)
       ! new style surf file for NGHS WAQ UI
       lunout = openwaqbinfile(filename)
       write(lunout) 0
-      write(lunout) ((real(srf(is),sp), is=1,nosegl ), il=1,nolay)
+      write(lunout) ((real(srf(is),sp), is=1,nosegl ), il=1,num_layers)
       close(lunout)
 
       ! temporaraly keep writing then old style surf file for WAQ_GUI
@@ -227,10 +227,10 @@ end subroutine wrwaqsrf
 
 
 !> Write ASCII attributes file for WAQ.
-subroutine wrwaqatr(nosegl, nolay, kmk1, kmk2, filename)
+subroutine wrwaqatr(nosegl, num_layers, kmk1, kmk2, filename)
    implicit none
    integer              , intent(in) :: nosegl   !< Nr. of segments per layer
-   integer              , intent(in) :: nolay    !< Nr. of layers
+   integer              , intent(in) :: num_layers    !< Nr. of layers
    integer, dimension(:), intent(in) :: kmk1     !< First WAQ segment features at start of calculation
    integer, dimension(:), intent(in) :: kmk2     !< Second WAQ segment features at start of calculation
    character(*)         , intent(in) :: filename !< Name for output pointer file.
@@ -250,7 +250,7 @@ subroutine wrwaqatr(nosegl, nolay, kmk1, kmk2, filename)
    write ( lunatr , '(a)' )  '    1    ;  ''1'' is active ''0'' is not'
    write ( lunatr , '(a)' )  '    1    ; data follows in this file '
    write ( lunatr , '(a)' )  '    1    ; all data is given without defaults'
-   do il = 1,nolay
+   do il = 1,num_layers
       write ( lunatr , * ) '  ;    layer: ',il
       do is = 1, nosegl
          kenout(is) = '  '
@@ -263,7 +263,7 @@ subroutine wrwaqatr(nosegl, nolay, kmk1, kmk2, filename)
    write ( lunatr , '(a)' )  '         ;  ''0'' has both    ''2'' has none  '
    write ( lunatr , '(a)' )  '    1    ; data follows in this file '
    write ( lunatr , '(a)' )  '    1    ; all data is given without defaults'
-   do il = 1,nolay
+   do il = 1,num_layers
       write ( lunatr , * ) '  ;    layer: ',il
       do is = 1, nosegl
          kenout(is) = '  '
@@ -347,9 +347,9 @@ module waq
       integer                        :: luntem        !  file unit number to an output file
       integer                        :: lunvdf        !  file unit number to an output file
       integer                        :: luntau        !  file unit number to an output file
-      integer                        :: noseg         !  number of WAQ segments
+      integer                        :: num_cells         !  number of WAQ segments
       integer                        :: nosegl        !  number of WAQ segments per layer
-      integer                        :: noq           !  total number of WAQ exchanges
+      integer                        :: num_exchanges           !  total number of WAQ exchanges
       integer                        :: noql          !  number of horizontal WAQ exchanges per layer
       integer                        :: noq12         !  number of horizontal WAQ exchanges (excluding sink/sources and laterals)
       integer                        :: noq12s        !  number of horizontal WAQ exchanges (including sink/sources, excluding laterals)
@@ -434,7 +434,7 @@ subroutine waq_wri_hyd()
    use m_flowparameters
    use m_flowtimes
    use m_flow
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_flowgeom
    use unstruc_model
    use time_module, only: ymd2jul
@@ -513,7 +513,7 @@ subroutine waq_wri_hyd()
    write (lunhyd, '(a,i10)') 'number-water-quality-layers             ', waqpar%kmxnxa
    write (lunhyd, '(a,i10)') 'number-horizontal-exchanges             ', waqpar%noq12sl ! Including open boundaries and laterals
    if (waqpar%kmxnxa > 1) then
-      write (lunhyd, '(a,i10)') 'number-vertical-exchanges               ', waqpar%noq - waqpar%noq12sl
+      write (lunhyd, '(a,i10)') 'number-vertical-exchanges               ', waqpar%num_exchanges - waqpar%noq12sl
    else
       write (lunhyd, '(a,i10)') 'number-vertical-exchanges               ', 0
    end if
@@ -1581,7 +1581,7 @@ subroutine waq_wri_bnd()
    use m_flowgeom
    use network_data
    use m_partitioninfo, only: is_ghost_node
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_lateral, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat, lat_ids
    use unstruc_files
    use m_sferic, only: jsferic, jasfer3D
@@ -1771,7 +1771,7 @@ subroutine waq_wri_couple_files(time)
    use m_flowtimes
    use m_flowgeom
    use m_flow
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_waves
    use unstruc_files, only: defaultFilename
    implicit none
@@ -1880,7 +1880,7 @@ subroutine waq_prepare_aggr()
    use m_partitioninfo
    use unstruc_model
    use m_flow
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_alloc
    implicit none
 
@@ -2016,16 +2016,16 @@ subroutine waq_prepare_aggr()
       enddo
    endif
 
-   waqpar%noseg = waqpar%nosegl * waqpar%kmxnxa
-   call realloc(waqpar%nosega, waqpar%noseg, keepExisting=.false., fill=0)
-   call realloc(waqpar%vol, waqpar%noseg, keepExisting=.false., fill=0d0)
-   call realloc(waqpar%vel, waqpar%noseg, keepExisting=.false., fill=0d0)
-   call realloc(waqpar%sal, waqpar%noseg, keepExisting=.false., fill=0d0)
-   call realloc(waqpar%tem, waqpar%noseg, keepExisting=.false., fill=0d0)
-   call realloc(waqpar%tau, waqpar%noseg, keepExisting=.false., fill=0d0)
-   call realloc(waqpar%vdf, waqpar%noseg, keepExisting=.false., fill=0d0)
-   call realloc(waqpar%kmk1, waqpar%noseg, keepExisting=.false., fill=0)
-   call realloc(waqpar%kmk2, waqpar%noseg, keepExisting=.false., fill=0)
+   waqpar%num_cells = waqpar%nosegl * waqpar%kmxnxa
+   call realloc(waqpar%nosega, waqpar%num_cells, keepExisting=.false., fill=0)
+   call realloc(waqpar%vol, waqpar%num_cells, keepExisting=.false., fill=0d0)
+   call realloc(waqpar%vel, waqpar%num_cells, keepExisting=.false., fill=0d0)
+   call realloc(waqpar%sal, waqpar%num_cells, keepExisting=.false., fill=0d0)
+   call realloc(waqpar%tem, waqpar%num_cells, keepExisting=.false., fill=0d0)
+   call realloc(waqpar%tau, waqpar%num_cells, keepExisting=.false., fill=0d0)
+   call realloc(waqpar%vdf, waqpar%num_cells, keepExisting=.false., fill=0d0)
+   call realloc(waqpar%kmk1, waqpar%num_cells, keepExisting=.false., fill=0)
+   call realloc(waqpar%kmk2, waqpar%num_cells, keepExisting=.false., fill=0)
 
    call getkbotktopmax(ndxi,kb,kt,ktx)
    waqpar%ndkxi = ktx ! Maximum internal 3D node
@@ -2041,16 +2041,16 @@ subroutine waq_prepare_aggr()
    ! allocate maximum possible number of exchanges before aggregation
    waqpar%noq12 = lnx * waqpar%kmxnxa
    if (waqpar%kmxnxa > 1) then
-      waqpar%noq = waqpar%noq12 + waqpar%numsrcwaq + waqpar%numlatwaq + ndxi * waqpar%kmxnxa
+      waqpar%num_exchanges = waqpar%noq12 + waqpar%numsrcwaq + waqpar%numlatwaq + ndxi * waqpar%kmxnxa
    else
-      waqpar%noq = waqpar%noq12 + numsrc + waqpar%numlatwaq
+      waqpar%num_exchanges = waqpar%noq12 + numsrc + waqpar%numlatwaq
    end if
-   call realloc(waqpar%ifrmto, (/ 4, waqpar%noq /), keepExisting=.false., fill = 0)
+   call realloc(waqpar%ifrmto, (/ 4, waqpar%num_exchanges /), keepExisting=.false., fill = 0)
 
    call waq_make_aggr_lnk()
-   call realloc(waqpar%ifrmto, (/ 4, waqpar%noq /), keepExisting=.true., fill = 0)
-   call realloc(waqpar%qag, waqpar%noq, keepExisting=.false., fill = 0d0)
-   call realloc(waqpar%area, waqpar%noq, keepExisting=.false., fill = 0d0)
+   call realloc(waqpar%ifrmto, (/ 4, waqpar%num_exchanges /), keepExisting=.true., fill = 0)
+   call realloc(waqpar%qag, waqpar%num_exchanges, keepExisting=.false., fill = 0d0)
+   call realloc(waqpar%area, waqpar%num_exchanges, keepExisting=.false., fill = 0d0)
    waqpar%noql = waqpar%noq12 / waqpar%kmxnxa
 end subroutine waq_prepare_aggr
 !
@@ -2179,7 +2179,7 @@ subroutine waq_make_aggr_lnk()
          enddo
       endif
       waqpar%noq12sl = waqpar%noq12s + waqpar%numlatwaq
-      waqpar%noq = waqpar%noq12sl
+      waqpar%num_exchanges = waqpar%noq12sl
    else
       ! In 3D copy aggregated 2D exchanges to all layers
       do L=1,lnx
@@ -2215,7 +2215,7 @@ subroutine waq_make_aggr_lnk()
          endif
       end do
       waqpar%noq12 = waqpar%noq12 * waqpar%kmxnxa
-      waqpar%noq = waqpar%noq12
+      waqpar%num_exchanges = waqpar%noq12
       ! Add links from sink source
       if (waqpar%numsrcwaq > 0) then
          do isrc = 1, waqpar%numsrcwaq
@@ -2233,12 +2233,12 @@ subroutine waq_make_aggr_lnk()
          enddo
       endif
       waqpar%noq12sl = waqpar%noq12s + waqpar%numlatwaq
-      waqpar%noq = waqpar%noq12sl
+      waqpar%num_exchanges = waqpar%noq12sl
 
       ! And now the vertical exchanges and pointer (note: upward flow direction in FM is reversed for WAQ!)
       do k = 1, waqpar%nosegl
          do kk = 1, waqpar%kmxnxa - 1
-            iq = waqpar%noq + k + (kk - 1) * waqpar%nosegl
+            iq = waqpar%num_exchanges + k + (kk - 1) * waqpar%nosegl
             waqpar%ifrmto(1,iq) = k + (kk - 1) * waqpar%nosegl
             waqpar%ifrmto(2,iq) = k + kk * waqpar%nosegl
             waqpar%ifrmto(3,iq) = max(k + (kk - 2) * waqpar%nosegl, 0)
@@ -2246,7 +2246,7 @@ subroutine waq_make_aggr_lnk()
             if(kk < waqpar%kmxnxa - 1) waqpar%ifrmto(4,iq) = k + (kk + 1) * waqpar%nosegl
          end do
       end do
-      waqpar%noq = waqpar%noq + waqpar%nosegl * (waqpar%kmxnxa - 1)
+      waqpar%num_exchanges = waqpar%num_exchanges + waqpar%nosegl * (waqpar%kmxnxa - 1)
       do k = 1, ndxi
          call getkbotktopmax(k,kb,kt,ktx)
          do kk = ktx - 1, kb, -1
@@ -2267,7 +2267,7 @@ end subroutine waq_make_aggr_lnk
 subroutine waq_prepare_src()
    use m_flowgeom
    use m_flow
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_alloc
    implicit none
 
@@ -2358,7 +2358,7 @@ subroutine waq_prepare_lat()
    use m_partitioninfo, only: is_ghost_node
    use m_flowgeom
    use m_flow
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_lateral, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
    use m_alloc
    implicit none
@@ -2430,7 +2430,7 @@ subroutine waq_wri_poi(filename)
    !! executable statements -------------------------------------------------------
    !
    ! Call the waq-poi file writer
-   call wrwaqpoi(waqpar%ifrmto, waqpar%noq, filename, waq_format_ascii)
+   call wrwaqpoi(waqpar%ifrmto, waqpar%num_exchanges, filename, waq_format_ascii)
    end subroutine waq_wri_poi
    !
    !------------------------------------------------------------------------------
@@ -2460,7 +2460,7 @@ subroutine waq_wri_poi(filename)
    !
    !! executable statements -------------------------------------------------------
    !
-   call realloc(lenex, (/ 2, waqpar%noq /), keepExisting=.false., fill = 0d0)
+   call realloc(lenex, (/ 2, waqpar%num_exchanges /), keepExisting=.false., fill = 0d0)
    call realloc(noqa, waqpar%noql, keepExisting=.false., fill = 0)
 
    do L=1,lnx
@@ -2501,13 +2501,13 @@ subroutine waq_wri_poi(filename)
    enddo
 
    !   dummy lengthes in third direction for all layers (will be calculated by WAQ from volume and surface)
-   do ip = waqpar%noq12sl + 1, waqpar%noq
+   do ip = waqpar%noq12sl + 1, waqpar%num_exchanges
       lenex(1,ip) = 1d0
       lenex(2,ip) = 1d0
    end do
 
    ! Call the waq-len file writer
-   call wrwaqlen(waqpar%noq, lenex, filename, waq_format_ascii)
+   call wrwaqlen(waqpar%num_exchanges, lenex, filename, waq_format_ascii)
    deallocate(lenex)
 end subroutine waq_wri_len
 !
@@ -2535,7 +2535,7 @@ subroutine waq_wri_srf(ndx2D, ndxi, ndx, ba, filename)
    !
    !! executable statements -------------------------------------------------------
    !
-   call realloc(waqpar%horsurf, waqpar%noseg, keepExisting=.false., fill=0d0)
+   call realloc(waqpar%horsurf, waqpar%num_cells, keepExisting=.false., fill=0d0)
    !
    !! executable statements -------------------------------------------------------
    !
@@ -2677,7 +2677,7 @@ subroutine waq_wri_vol(itim, filenamevol, lunvol)
    end if
 
    ! Call the waq-vol file writer
-   call wrwaqbin(itim, waqpar%vol, waqpar%noseg, filenamevol, waq_format_ascii, lunvol)
+   call wrwaqbin(itim, waqpar%vol, waqpar%num_cells, filenamevol, waq_format_ascii, lunvol)
 end subroutine waq_wri_vol
 !
 !------------------------------------------------------------------------------
@@ -2737,7 +2737,7 @@ subroutine waq_wri_vel(itim, filenamevel, lunvel)
             waqpar%vel(waqpar%isaggr(kk)) = waqpar%vel(waqpar%isaggr(kk)) + ucmag(kk) * max(ba(k), 0d0)
          end do
       end do
-      do i = 1, waqpar%noseg
+      do i = 1, waqpar%num_cells
          if (waqpar%horsurf(i) > 1d-25) then
             waqpar%vel(i) = waqpar%vel(i) / waqpar%horsurf(i)
          endif
@@ -2745,7 +2745,7 @@ subroutine waq_wri_vel(itim, filenamevel, lunvel)
    end if
 
    ! Call the waq-vol file writer for vel
-   call wrwaqbin(itim, waqpar%vel, waqpar%noseg, filenamevel, waq_format_ascii, lunvel)
+   call wrwaqbin(itim, waqpar%vel, waqpar%num_cells, filenamevel, waq_format_ascii, lunvel)
 
 end subroutine waq_wri_vel
 !
@@ -2799,7 +2799,7 @@ subroutine waq_wri_sal(itim, filenamesal, lunsal)
             end if
          end do
       end do
-      do i = 1, waqpar%noseg
+      do i = 1, waqpar%num_cells
          if ( waqpar%vol(i) > 1d-25 ) then
             waqpar%sal(i) = waqpar%sal(i) / waqpar%vol(i)
          else
@@ -2809,7 +2809,7 @@ subroutine waq_wri_sal(itim, filenamesal, lunsal)
    end if
 
    ! Call the waq-vol file writer for salinity
-   call wrwaqbin(itim, waqpar%sal, waqpar%noseg, filenamesal, waq_format_ascii, lunsal)
+   call wrwaqbin(itim, waqpar%sal, waqpar%num_cells, filenamesal, waq_format_ascii, lunsal)
 end subroutine waq_wri_sal
 !
 !------------------------------------------------------------------------------
@@ -2862,7 +2862,7 @@ subroutine waq_wri_tem(itim, filenametem, luntem)
             end if
          end do
       end do
-      do i = 1, waqpar%noseg
+      do i = 1, waqpar%num_cells
          if ( waqpar%vol(i) > 1d-25 ) then
             waqpar%tem(i) = waqpar%tem(i) / waqpar%vol(i)
          else
@@ -2872,7 +2872,7 @@ subroutine waq_wri_tem(itim, filenametem, luntem)
    end if
 
    ! Call the waq-vol file writer for temperature
-   call wrwaqbin(itim, waqpar%tem, waqpar%noseg, filenametem, waq_format_ascii, luntem)
+   call wrwaqbin(itim, waqpar%tem, waqpar%num_cells, filenametem, waq_format_ascii, luntem)
 end subroutine waq_wri_tem
 !
 !------------------------------------------------------------------------------
@@ -2929,7 +2929,7 @@ subroutine waq_wri_tau(itim, filenametau, luntau)
    end if
 
    ! Call the waq-vol file writer for tau
-   call wrwaqbin(itim, waqpar%tau, waqpar%noseg, filenametau, waq_format_ascii, luntau)
+   call wrwaqbin(itim, waqpar%tau, waqpar%num_cells, filenametau, waq_format_ascii, luntau)
 
 end subroutine waq_wri_tau
 !
@@ -2991,7 +2991,7 @@ subroutine waq_wri_vdf(itim, filenamevdf, lunvdf)
          ! and add the last layer
          waqpar%vdf(waqpar%isaggr(ktx)) = waqpar%vdf(waqpar%isaggr(ktx)) + vdfmin * volsum
       end do
-      do i = 1, waqpar%noseg
+      do i = 1, waqpar%num_cells
          if ( waqpar%vol(i) > 1d-25 ) then
             waqpar%vdf(i) = waqpar%vdf(i) / waqpar%vol(i)
          else
@@ -3000,7 +3000,7 @@ subroutine waq_wri_vdf(itim, filenamevdf, lunvdf)
       end do
    end if
    ! Call the waq-vol file writer for vertical diffusion
-   call wrwaqbin(itim, waqpar%vdf, waqpar%noseg, filenamevdf, waq_format_ascii, lunvdf)
+   call wrwaqbin(itim, waqpar%vdf, waqpar%num_cells, filenamevdf, waq_format_ascii, lunvdf)
 end subroutine waq_wri_vdf
 !
 !------------------------------------------------------------------------------
@@ -3061,14 +3061,14 @@ subroutine waq_wri_are(itim, filename, lun)
 
    ! Add area of the vertical exchanges
    if (waqpar%kmxnxa > 1) then
-      do i = 1, waqpar%noseg - waqpar%nosegl
+      do i = 1, waqpar%num_cells - waqpar%nosegl
          waqpar%area(waqpar%noq12sl + i) = waqpar%horsurf(i)
       end do
    end if
 
 
    ! Call the waq-flo file writer
-   call wrwaqbin(itim, waqpar%area, waqpar%noq, filename, waq_format_ascii, lun)
+   call wrwaqbin(itim, waqpar%area, waqpar%num_exchanges, filename, waq_format_ascii, lun)
 end subroutine waq_wri_are
 !
 !------------------------------------------------------------------------------
@@ -3172,7 +3172,7 @@ subroutine waq_wri_flo(itim, ti_waq, filename, lun)
    end if
 
    ! Call the waq-flo file writer
-   call wrwaqbin(itim, waqpar%qag, waqpar%noq, filename, waq_format_ascii, lun)
+   call wrwaqbin(itim, waqpar%qag, waqpar%num_exchanges, filename, waq_format_ascii, lun)
 end subroutine waq_wri_flo
 !
 !------------------------------------------------------------------------------

@@ -28,9 +28,9 @@ module m_dectra
 contains
 
 
-    subroutine dectra (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine dectra (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
 
         !>\file
         !>       General decayable tracer proces
@@ -46,9 +46,9 @@ contains
 
         implicit none
 
-        real(kind = real_wp) :: pmsa  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(2), increm(2), noseg, noflux, &
-                iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(2), increm(2), num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         integer(kind = int_wp) :: ipnt(2), iflux, iseg
         real(kind = real_wp) :: conctr, decayr, fdecay
@@ -56,10 +56,10 @@ contains
         ipnt = ipoint
         iflux = 0
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             if (btest(iknmrk(iseg), 0)) then
-                conctr = pmsa(ipnt(1))
-                decayr = pmsa(ipnt(2))
+                conctr = process_space_real(ipnt(1))
+                decayr = process_space_real(ipnt(2))
 
                 !           Calculate decay
                 fdecay = decayr * conctr

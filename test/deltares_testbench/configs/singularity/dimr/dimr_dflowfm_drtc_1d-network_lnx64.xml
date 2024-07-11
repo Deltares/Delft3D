@@ -35,12 +35,6 @@
                 <argument>-c</argument>
             </arguments>
         </program>
-        <program name="svn">
-           <path>svn</path>
-            <environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
-        </program>
         <program name="execute_singularity" logOutputToFile="true" programStringRemoveQuotes="true">
             <location ref="engines_to_compare" type="check">
                 <from>teamcity_artifacts</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->

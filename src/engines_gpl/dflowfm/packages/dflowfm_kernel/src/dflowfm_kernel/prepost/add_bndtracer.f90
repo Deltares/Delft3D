@@ -32,7 +32,7 @@
 
 !> add tracer boundary
 subroutine add_bndtracer(tracnam, tracunit, itrac, janew)
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_alloc
    use m_missing
    use m_fm_wq_processes

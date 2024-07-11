@@ -38,12 +38,12 @@ use larvm2_mod              ! explicit interface
 implicit none
 
     contains
-      subroutine larvae ( lunrep   , itime    , idelt    , nmax     , mmax     ,    &
-                          layt     , nosegl   , nolay    , mnmaxk   , lgrid    ,    &
+      subroutine larvae ( lunrep   , itime    , idelt    , num_rows     , num_columns     ,    &
+                          layt     , nosegl   , num_layers    , mnmaxk   , lgrid    ,    &
                           lgrid2   , lgrid3   , nopart   , npwndw   , nosubs   ,    &
                           npart    , mpart    , kpart    , xpart    , ypart    ,    &
                           zpart    , wpart    , iptime   , wsettl   , locdep   ,    &
-                          nocons   , const    , conc     , xa       , ya       )
+                          num_constants   , const    , conc     , xa       , ya       )
 
       ! function  : calculates larval development and behaviour
 
@@ -52,11 +52,11 @@ implicit none
       integer(int_wp ), intent(in)    :: lunrep              ! report file
       integer(int_wp ), intent(in)    :: itime               ! time in seconds
       integer(int_wp ), intent(in)    :: idelt               ! time step size in seconds
-      integer(int_wp ), intent(in)    :: nmax                ! first grid dimension
-      integer(int_wp ), intent(in)    :: mmax                ! second grid dimension
+      integer(int_wp ), intent(in)    :: num_rows                ! first grid dimension
+      integer(int_wp ), intent(in)    :: num_columns                ! second grid dimension
       integer(int_wp ), intent(in)    :: layt                ! number of layers of hydr. database
       integer(int_wp ), intent(in)    :: nosegl              ! number segments per layer
-      integer(int_wp ), intent(in)    :: nolay               ! number of layers in calculation
+      integer(int_wp ), intent(in)    :: num_layers               ! number of layers in calculation
       integer(int_wp ), intent(in)    :: mnmaxk              ! total number of active grid cells
       integer(int_wp ), pointer       :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
       integer(int_wp ), pointer       :: lgrid2( : , : )     ! total grid
@@ -74,7 +74,7 @@ implicit none
       integer(int_wp ), pointer       :: iptime( : )         ! particle age in seconds
       real   (sp), pointer       :: wsettl( : )         ! settling per particle
       real   (sp), pointer       :: locdep( : , : )     ! depth per layer
-      integer(int_wp ), intent(in)    :: nocons              ! number of constants
+      integer(int_wp ), intent(in)    :: num_constants              ! number of constants
       real   (sp), pointer       :: const ( : )         ! user-defined constants
       real   (sp), pointer       :: conc  ( : , : )     ! concentration array in transport grid
       real   (sp), pointer       :: xa    ( : )         ! x-coordiante in real world
@@ -174,7 +174,7 @@ implicit none
 
       if ( ifirst .eq. 1 ) then
          ifirst = 0
-         if ( nocons .eq. 0 ) then
+         if ( num_constants .eq. 0 ) then
             write(lunrep,*) ' no constants, no larvae model activated'
             l_larvae = .false.
             return
@@ -185,7 +185,7 @@ implicit none
             l_larvae = .false.
             return
          endif
-         if ( nocons .ne. nfix+nstage*nvar ) then
+         if ( num_constants .ne. nfix+nstage*nvar ) then
             write(lunrep,*) ' no of constants inconsistent with stages, no larvae model activated'
             l_larvae = .false.
             return
@@ -261,7 +261,7 @@ implicit none
       ! output larvae per m2
 
       if ( itime .ge. it_start_m2 .and. itime .le. it_stop_m2 .and. mod(itime-it_start_m2,idt_m2) .lt. idelt ) then
-         call larvm2 ( lunrep   , itime    , nosegl   , nolay    , nosubs   ,    &
+         call larvm2 ( lunrep   , itime    , nosegl   , num_layers    , nosubs   ,    &
                        conc     )
       endif
 
@@ -284,17 +284,17 @@ implicit none
 
          m      = mpart(ipart)
          n      = npart(ipart)
-         k      = min(kpart(ipart),nolay)
+         k      = min(kpart(ipart),num_layers)
          z      = zpart(ipart)
          iseg   = lgrid3(n,m)
          if (iseg .gt. 0 ) then
          isegl  = iseg + (k-1)*nosegl
-         isegb  = iseg + (nolay-1)*nosegl
+         isegb  = iseg + (num_layers-1)*nosegl
 
          laydep = locdep(lgrid2(n,m),k)
          if( k .ne. 1 ) laydep = laydep - locdep(lgrid2(n,m),k-1)
-         totdep = locdep(lgrid2(n,m),nolay)
-         zlevel = locdep(lgrid2(n,m),nolay) - locdep(lgrid2(n,m),k) + (1.-z)*laydep
+         totdep = locdep(lgrid2(n,m),num_layers)
+         zlevel = locdep(lgrid2(n,m),num_layers) - locdep(lgrid2(n,m),k) + (1.-z)*laydep
          zdepth = locdep(lgrid2(n,m),k) - (1.-z)*laydep
 
          temp     = t_forcing(itime,isegl)
@@ -367,7 +367,7 @@ implicit none
          ! deactivate particles in nursery stage who have arrived in nursery area
 
          if ( istage .ge. istage_nursery .and. is_nursery ) then
-            kpart(ipart) = nolay +1
+            kpart(ipart) = num_layers +1
          elseif ( istage .gt. 0 ) then
 
             ! set layer and/or settling velocity according to stage and type of behaviour
@@ -378,11 +378,11 @@ implicit none
                   wsettl(ipart) = 0.0
                case ( behaviour_bottom )
                   wsettl(ipart) = 0.0
-                  kpart(ipart) = nolay + 1
+                  kpart(ipart) = num_layers + 1
                   zpart(ipart) = 0.5
                case ( behaviour_midlow )
                   wsettl(ipart) = 0.0
-                  kpart(ipart) = nolay
+                  kpart(ipart) = num_layers
                   zpart(ipart) = 0.5
                case ( behaviour_midtop )
                   wsettl(ipart) = 0.0

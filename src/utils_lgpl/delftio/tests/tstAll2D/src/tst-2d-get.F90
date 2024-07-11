@@ -49,11 +49,11 @@ subroutine write_his_long_2dget(synched, auto, resFileName)
     double precision,pointer, dimension(:,:) :: dValues ! received doubles
     integer,         pointer, dimension(:,:) :: iValues ! received integers
 
-    real*4,          dimension(MMAX,NMAX) :: checkRValues ! expected reals
-    double precision,dimension(MMAX,NMAX) :: checkDValues ! expected dbles
-    integer,         dimension(MMAX,NMAX) :: checkIValues ! expected ints
+    real*4,          dimension(num_columns,num_rows) :: checkRValues ! expected reals
+    double precision,dimension(num_columns,num_rows) :: checkDValues ! expected dbles
+    integer,         dimension(num_columns,num_rows) :: checkIValues ! expected ints
 
-    double precision,dimension(MMAX,NMAX) :: diffValues   ! diff in values
+    double precision,dimension(num_columns,num_rows) :: diffValues   ! diff in values
 
     integer                   :: i
     integer                   :: ds      ! dataset counter

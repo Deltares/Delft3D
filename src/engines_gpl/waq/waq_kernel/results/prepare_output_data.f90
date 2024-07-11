@@ -34,8 +34,8 @@ module m_prepare_output_data
 contains
 
 
-    subroutine write_concentrations_in_grid_layout(iout, lchout, itime, mname, nx, &
-            ny, lgrid, cgrid, notot, nosys, &
+    subroutine write_concentrations_in_grid_layout(iout, lchout, itime, mname, num_cells_u_dir, &
+            num_cells_v_dir, lgrid, cgrid, num_substances_total, num_substances_transported, &
             sname, conc, bound, notot2, synam2, &
             conc2, ip, isflag, iniout)
 
@@ -49,28 +49,28 @@ contains
         !     LCHOUT  CHAR*(*) 1           INPUT   name output file
         !     ITIME   INTEGER  1           INPUT   present time in clock units
         !     MNAME   CHAR*40  4           INPUT   model identhification
-        !     NX      INTEGER  1           INPUT   number of columns in grid
-        !     NY      INTEGER  1           INPUT   number of rows in grid
-        !     LGRID   INTEGER  NX*NY       INPUT   grid layout
-        !     CGRID   CHAR*6   20*NY       LOCAL   concentrations in grid layout
-        !     NOTOT   INTEGER  1           INPUT   total number of systems
-        !     NOSYS   INTEGER  1           INPUT   number of active systems
-        !     SNAME   CHAR*20  NOTOT       INPUT   names of substances
-        !     CONC    REAL     NOTOT*?     INPUT   concentration values
-        !     BOUND   REAL     NOTOT*?     INPUT   boundary      values
+        !     num_cells_u_dir      INTEGER  1           INPUT   number of columns in grid
+        !     num_cells_v_dir      INTEGER  1           INPUT   number of rows in grid
+        !     LGRID   INTEGER  num_cells_u_dir*num_cells_v_dir       INPUT   grid layout
+        !     CGRID   CHAR*6   20*num_cells_v_dir       LOCAL   concentrations in grid layout
+        !     num_substances_total   INTEGER  1           INPUT   total number of systems
+        !     num_substances_transported   INTEGER  1           INPUT   number of active systems
+        !     SNAME   CHAR*20  num_substances_total       INPUT   names of substances
+        !     CONC    REAL     num_substances_total*?     INPUT   concentration values
+        !     BOUND   REAL     num_substances_total*?     INPUT   boundary      values
         !     NOTOT2  INTEGER  1           INPUT   number of extra output vars
-        !     SYNAM2  CHAR*20  NOTOT       INPUT   names of extra vars
-        !     CONC2   REAL    NOTOT2,NX*NY INPUT   values for extra vars
+        !     SYNAM2  CHAR*20  num_substances_total       INPUT   names of extra vars
+        !     CONC2   REAL    NOTOT2,num_cells_u_dir*num_cells_v_dir INPUT   values for extra vars
         !     IP      INTEGER  6           IN/OUT  paging structure
         !     ISFLAG  INTEGER  1           INPUT   if 1 then dd-hh:mm'ss'
         !     INIOUT  INTEGER  1           IN/OUT  Initialize flag
 
         use date_time_utils, only: report_time
 
-        integer(kind = int_wp) :: iout, itime, nx, ny, notot, &
-                nosys, isflag, notot2, iniout
+        integer(kind = int_wp) :: iout, itime, num_cells_u_dir, num_cells_v_dir, num_substances_total, &
+                num_substances_transported, isflag, notot2, iniout
         integer(kind = int_wp) :: lgrid(*), ip(*)
-        real(kind = real_wp) :: conc(notot, *), bound(nosys, *), &
+        real(kind = real_wp) :: conc(num_substances_total, *), bound(num_substances_transported, *), &
                 conc2 (*)
         character(len = 6)   cgrid (20, *)
         character(len = 20)  sname (*), synam2(*)
@@ -86,24 +86,24 @@ contains
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("write_concentrations_in_grid_layout", ithandl)
 
-        if (nx * ny == 0) goto 9999  !   return
+        if (num_cells_u_dir * num_cells_v_dir == 0) goto 9999  !   return
 
         ! initialise the paging
         if (ip(3) == 0) then
-            ip(3) = max(1, ip(1) / (7 + (ny + 5) * ((nx + ip(2) - 1) / ip(2))))
+            ip(3) = max(1, ip(1) / (7 + (num_cells_v_dir + 5) * ((num_cells_u_dir + ip(2) - 1) / ip(2))))
             ip(4) = 0
         endif
 
         ! repeat output for every substance
-        do itot = 1, notot
+        do itot = 1, num_substances_total
 
             ! calculate maximum concentration of displayed segments
             cmax = 0.0
-            do i1 = 1, ny
-                do i2 = 1, nx
-                    i3 = lgrid ((i1 - 1) * nx + i2)
+            do i1 = 1, num_cells_v_dir
+                do i2 = 1, num_cells_u_dir
+                    i3 = lgrid ((i1 - 1) * num_cells_u_dir + i2)
                     if (i3 > 0) cmax = amax1 (cmax, conc (itot, i3))
-                    if (i3 < 0 .and. itot <= nosys) &
+                    if (i3 < 0 .and. itot <= num_substances_transported) &
                             cmax = amax1 (cmax, bound(itot, -i3))
                 end do
             end do
@@ -128,19 +128,19 @@ contains
 
             ! put concentration values in grid layout
             factor = 10.0**iscale
-            do i = 1, nx, ip(2)
-                do j = 1, ny
-                    nend = min (nx, i + ip(2) - 1)
+            do i = 1, num_cells_u_dir, ip(2)
+                do j = 1, num_cells_v_dir
+                    nend = min (num_cells_u_dir, i + ip(2) - 1)
                     do k = i, nend
                         cgrid (k - i + 1, j) = point
-                        i3 = lgrid ((j - 1) * nx + k)
+                        i3 = lgrid ((j - 1) * num_cells_u_dir + k)
 
                         if (i3 > 0) then
                             write (padder, '(f6.3)')   conc (itot, i3) / factor
                             cgrid(k - i + 1, j) = padder
                         endif
 
-                        if (i3 < 0 .and. itot <= nosys) then
+                        if (i3 < 0 .and. itot <= num_substances_transported) then
                             write (padder, '(f6.3)')   bound(itot, -i3) / factor
                             cgrid(k - i + 1, j) = padder
                         endif
@@ -156,8 +156,8 @@ contains
 
             ! calculate maximum concentration of displayed segments
             cmax = 0.0
-            do i1 = 1, ny
-                do i2 = 1, nx
+            do i1 = 1, num_cells_v_dir
+                do i2 = 1, num_cells_u_dir
                     cmax = amax1 (cmax, conc2(itot + (i2 * i1 - 1) * notot2))
                 end do
             end do
@@ -182,12 +182,12 @@ contains
 
             ! Put concentration values in grid layout
             factor = 10.0**iscale
-            do i = 1, nx, ip(2)
-                do j = 1, ny
-                    nend = min (nx, i + ip(2) - 1)
+            do i = 1, num_cells_u_dir, ip(2)
+                do j = 1, num_cells_v_dir
+                    nend = min (num_cells_u_dir, i + ip(2) - 1)
                     do k = i, nend
                         cgrid (k - i + 1, j) = point
-                        c = conc2(itot + ((j - 1) * nx + k - 1) * notot2)
+                        c = conc2(itot + ((j - 1) * num_cells_u_dir + k - 1) * notot2)
                         if (c /= rmiss) then
                             write (padder, '(f6.3)')   c / factor
                             cgrid(k - i + 1, j) = padder
@@ -209,12 +209,12 @@ contains
 
     end subroutine write_concentrations_in_grid_layout
 
-    subroutine fill_output_buffer_base_grid(outval, iopoin, nrvar, nocons, nopa, &
-            nofun, nosfun, notot, conc, segfun, &
+    subroutine fill_output_buffer_base_grid(outval, iopoin, nrvar, num_constants, num_spatial_parameters, &
+            num_time_functions, num_spatial_time_fuctions, num_substances_total, conc, segfun, &
             func, param, cons, idt, itime, &
-            volume, noseg, nosys, nodump, idump, &
-            nx, ny, lgrid, igrid, bound, &
-            noloc, proloc, nodef, defaul)
+            volume, num_cells, num_substances_transported, num_monitoring_points, idump, &
+            num_cells_u_dir, num_cells_v_dir, lgrid, igrid, bound, &
+            num_local_vars, proloc, num_defaults, defaul)
 
         ! Fills output buffer OUTVAL.
         !
@@ -223,41 +223,41 @@ contains
         !     OUTVAL  REAL    NRVAR,*     OUTPUT  Values for vars on output grid
         !     IOPOIN  INTEGER       *     INPUT   Pointers to arrays for vars
         !     NRVAR   INTEGER       1     INPUT   Number of output vars
-        !     NOCONS  INTEGER       1     INPUT   Number of constants used
-        !     NOPA    INTEGER       1     INPUT   Number of parameters
-        !     NOFUN   INTEGER       1     INPUT   Number of functions ( user )
-        !     NOSFUN  INTEGER       1     INPUT   Number of segment functions
-        !     NOTOT   INTEGER       1     INPUT   Total number of substances
-        !     CONC    REAL   NOTOT,NOSEG  INPUT   Model concentrations
-        !     SEGFUN  REAL   NOSEG,NOSFUN IN/OUT  Segment functions at ITIME
+        !     num_constants  INTEGER       1     INPUT   Number of constants used
+        !     num_spatial_parameters    INTEGER       1     INPUT   Number of parameters
+        !     num_time_functions   INTEGER       1     INPUT   Number of functions ( user )
+        !     num_spatial_time_fuctions  INTEGER       1     INPUT   Number of segment functions
+        !     num_substances_total   INTEGER       1     INPUT   Total number of substances
+        !     CONC    REAL   num_substances_total,num_cells  INPUT   Model concentrations
+        !     SEGFUN  REAL   num_cells,num_spatial_time_fuctions IN/OUT  Segment functions at ITIME
         !     FUNC    REAL          *     IN/OUT  Model functions at ITIME
-        !     PARAM   REAL    NOPA,NOSEG  IN/OUT  Model parameters
+        !     PARAM   REAL    num_spatial_parameters,num_cells  IN/OUT  Model parameters
         !     CONS    REAL          *     IN/OUT  Model constants
         !     IDT     INTEGER       1     INPUT   Simulation timestep
         !     ITIME   INTEGER       1     INPUT   Time in system clock units
-        !     VOLUME  REAL      NOSEG     INPUT   Segment volumes
-        !     NOSEG   INTEGER       1     INPUT   Nr. of computational elements
-        !     NOSYS   INTEGER       1     INPUT   Number of active substances
-        !     NODUMP  INTEGER       1     INPUT   number of dump locations
-        !     IDUMP   INTEGER    NODUMP   INPUT   dump segment numbers
-        !     NX      INTEGER       1     INPUT   Width of output grid
-        !     NY      INTEGER       1     INPUT   Depth of output grid
-        !     LGRID   INTEGER     NX*NY   INPUT   grid-layout
+        !     VOLUME  REAL      num_cells     INPUT   Segment volumes
+        !     num_cells   INTEGER       1     INPUT   Nr. of computational elements
+        !     num_substances_transported   INTEGER       1     INPUT   Number of active substances
+        !     num_monitoring_points  INTEGER       1     INPUT   number of dump locations
+        !     IDUMP   INTEGER    num_monitoring_points   INPUT   dump segment numbers
+        !     num_cells_u_dir      INTEGER       1     INPUT   Width of output grid
+        !     num_cells_v_dir      INTEGER       1     INPUT   Depth of output grid
+        !     LGRID   INTEGER     num_cells_u_dir*num_cells_v_dir   INPUT   grid-layout
         !     IGRID   INTEGER       1     INPUT   Output grid indication
-        !     BOUND   REAL     NOTOT*?    INPUT   boundary      values
-        !     NOLOC   INTEGER       1     INPUT   Number of variables in PROLOC
-        !     PARAM   REAL   NOLOC,NOSEG  INPUT   Parameters local in PROCES system
-        !     NODEF   INTEGER       1     INPUT   Number of used defaults
+        !     BOUND   REAL     num_substances_total*?    INPUT   boundary      values
+        !     num_local_vars   INTEGER       1     INPUT   Number of variables in PROLOC
+        !     PARAM   REAL   num_local_vars,num_cells  INPUT   Parameters local in PROCES system
+        !     num_defaults   INTEGER       1     INPUT   Number of used defaults
         !     DEFAUL  REAL          *     INPUT   Default proces parameters
 
-        integer(kind = int_wp) :: nrvar, nocons, nopa, nofun, nosfun, &
-                notot, idt, itime, noseg, nosys, &
-                nodump, nx, ny, igrid, noloc, &
-                nodef
+        integer(kind = int_wp) :: nrvar, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+                num_substances_total, idt, itime, num_cells, num_substances_transported, &
+                num_monitoring_points, num_cells_u_dir, num_cells_v_dir, igrid, num_local_vars, &
+                num_defaults
         integer(kind = int_wp) :: iopoin(*), idump(*), &
                 lgrid(*)
-        real(kind = real_wp) :: outval(*), conc(notot, *), &
-                segfun(noseg, *), func(*), &
+        real(kind = real_wp) :: outval(*), conc(num_substances_total, *), &
+                segfun(num_cells, *), func(*), &
                 param(*), cons(*), &
                 volume(*), bound(*), &
                 proloc(*), defaul(*)
@@ -275,21 +275,21 @@ contains
         !     pointer offsets
         !
         iocons = nopred + 1
-        iopa = iocons + nocons
-        iofunc = iopa + nopa
-        iosfun = iofunc + nofun
-        ioconc = iosfun + nosfun
-        ioloc = ioconc + notot
-        iodef = ioloc + noloc
+        iopa = iocons + num_constants
+        iofunc = iopa + num_spatial_parameters
+        iosfun = iofunc + num_time_functions
+        ioconc = iosfun + num_spatial_time_fuctions
+        ioloc = ioconc + num_substances_total
+        iodef = ioloc + num_local_vars
         !
         !     grid
         !
         if (igrid == igseg) then
-            nocel = noseg
+            nocel = num_cells
         elseif (igrid == igmon) then
-            nocel = nodump
+            nocel = num_monitoring_points
         elseif (igrid == iggrd) then
-            nocel = nx * ny
+            nocel = num_cells_u_dir * num_cells_v_dir
         endif
         !
         !     fill outval
@@ -313,8 +313,8 @@ contains
                 !           what value
                 !
                 if (iseg < 0) then
-                    if (ip >= ioconc .and. ip < ioconc + nosys) then
-                        iip = (-iseg - 1) * nosys + ip - ioconc + 1
+                    if (ip >= ioconc .and. ip < ioconc + num_substances_transported) then
+                        iip = (-iseg - 1) * num_substances_transported + ip - ioconc + 1
                         outval(iicel) = bound(iip)
                     else
                         outval(iicel) = rmiss
@@ -325,7 +325,7 @@ contains
                     if (ip >= iodef) then
                         outval(iicel) = defaul(ip - iodef + 1)
                     elseif (ip >= ioloc) then
-                        iip = (iseg - 1) * noloc + ip - ioloc + 1
+                        iip = (iseg - 1) * num_local_vars + ip - ioloc + 1
                         outval(iicel) = proloc(iip)
                     elseif (ip >= ioconc) then
                         outval(iicel) = conc(ip - ioconc + 1, iseg)
@@ -334,7 +334,7 @@ contains
                     elseif (ip >= iofunc) then
                         outval(iicel) = func(ip - iofunc + 1)
                     elseif (ip >= iopa) then
-                        iip = (iseg - 1) * nopa + ip - iopa + 1
+                        iip = (iseg - 1) * num_spatial_parameters + ip - iopa + 1
                         outval(iicel) = param(iip)
                     elseif (ip >= iocons) then
                         outval(iicel) = cons(ip - iocons + 1)
@@ -355,35 +355,35 @@ contains
 
     end subroutine fill_output_buffer_base_grid
 
-    subroutine fill_transport_terms_transects(nosys, ndmpq, noraai, ntraaq, ioraai, nqraai, iqraai, iqdmp, dmpq, trraai)
-        !! Fills transport terms for raaien
+    subroutine fill_transport_terms_transects(num_substances_transported, ndmpq, num_transects, num_transect_exchanges, ioraai, nqraai, iqraai, iqdmp, dmpq, trraai)
+        !! Fills transport terms for transects
 
 
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     NOSYS   INTEGER       1     INPUT   Total number of active substances
+        !     num_substances_transported   INTEGER       1     INPUT   Total number of active substances
         !     NDMPQ   INTEGER       1     INPUT   Number of dump exchanges
-        !     NORAAI  INTEGER       1     INPUT   Number of raaien
-        !     NTRAAQ  INTEGER       1     INPUT   Total number of exch. in raaien
-        !     IORAAI  INTEGER       *     INPUT   Output option for raai
-        !     NQRAAI  INTEGER       *     INPUT   Number of exchanges in raai
-        !     IQRAAI  INTEGER       *     INPUT   Exchanges in raai
+        !     num_transects  INTEGER       1     INPUT
+        !     num_transect_exchanges  INTEGER       1     INPUT
+        !     IORAAI  INTEGER       *     INPUT   Output option for transect
+        !     NQRAAI  INTEGER       *     INPUT   Number of exchanges in transect
+        !     IQRAAI  INTEGER       *     INPUT   Exchanges in transect
         !     IQDMP   INTEGER       *     INPUT   Exchange to dumped exchange pointer
-        !     DMPQ    REAL  NOSYS*NDMPQ*? INPUT   mass balance dumped exchange
-        !     TRRAAI  REAL NOTOT*NDMPAR*6 IN/OUT  Cummulative transport over raai
+        !     DMPQ    REAL  num_substances_transported*NDMPQ*? INPUT   mass balance dumped exchange
+        !     TRRAAI  REAL num_substances_total*NDMPAR*6 IN/OUT  Cummulative transport over transect
 
-        integer(kind = int_wp) :: nosys, ndmpq, noraai, ntraaq
+        integer(kind = int_wp) :: num_substances_transported, ndmpq, num_transects, num_transect_exchanges
         integer(kind = int_wp) :: ioraai(*), nqraai(*), iqraai(*), iqdmp(*)
-        real(kind = real_wp) :: dmpq(nosys, ndmpq, *), trraai(nosys, *)
+        real(kind = real_wp) :: dmpq(num_substances_transported, ndmpq, *), trraai(num_substances_transported, *)
 
         integer(kind = int_wp) :: itel1, isys, iraai, nqc, integration_id, iqc, iq, ipq
 
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("fill_transport_terms_transects", ithandl)
 
-        ! loop over the raaien
+        ! loop over the transects
         itel1 = 0
-        do iraai = 1, noraai
+        do iraai = 1, num_transects
 
             ! the exchange contributes
             nqc = nqraai(iraai)
@@ -393,7 +393,7 @@ contains
                 iq = iqraai(itel1)
                 if (iq > 0) then
                     ipq = iqdmp(iq)
-                    do isys = 1, nosys
+                    do isys = 1, num_substances_transported
                         if (integration_id == 1) then
                             trraai(isys, iraai) = trraai(isys, iraai) + dmpq(isys, ipq, 1) - dmpq(isys, ipq, 2)
                         elseif (integration_id == 2) then
@@ -404,7 +404,7 @@ contains
                     end do
                 else
                     ipq = iqdmp(-iq)
-                    do isys = 1, nosys
+                    do isys = 1, num_substances_transported
                         if (integration_id == 1) then
                             trraai(isys, iraai) = trraai(isys, iraai) - dmpq(isys, ipq, 1) + dmpq(isys, ipq, 2)
                         elseif (integration_id == 2) then
@@ -421,11 +421,11 @@ contains
     end subroutine fill_transport_terms_transects
 
 
-    subroutine fill_output_buffer_sub_grid(outval, iopoin, nrvar, nocons, nopa, &
-            nofun, nosfun, notot, conc, segfun, &
+    subroutine fill_output_buffer_sub_grid(outval, iopoin, nrvar, num_constants, num_spatial_parameters, &
+            num_time_functions, num_spatial_time_fuctions, num_substances_total, conc, segfun, &
             func, param, cons, idt, itime, &
-            volume, noseg, nosys, ndmpar, ipdmp, &
-            bound, noloc, proloc, nodef, defaul, &
+            volume, num_cells, num_substances_transported, ndmpar, ipdmp, &
+            bound, num_local_vars, proloc, num_defaults, defaul, &
             ncout, ntdmpq, paname, sfname, funame, &
             danam)
         use m_array_manipulation, only: initialize_real_array
@@ -440,37 +440,37 @@ contains
         !     OUTVAL  REAL  NCOUT+NRVAR,* OUTPUT  Values for vars on output grid
         !     IOPOIN  INTEGER       *     INPUT   Pointers to arrays for vars
         !     NRVAR   INTEGER       1     INPUT   Number of extra output vars
-        !     NOCONS  INTEGER       1     INPUT   Number of constants used
-        !     NOPA    INTEGER       1     INPUT   Number of parameters
-        !     NOFUN   INTEGER       1     INPUT   Number of functions ( user )
-        !     NOSFUN  INTEGER       1     INPUT   Number of segment functions
-        !     NOTOT   INTEGER       1     INPUT   Total number of substances
-        !     CONC    REAL   NOTOT,NOSEG  INPUT   Model concentrations
-        !     SEGFUN  REAL   NOSEG,NOSFUN INPUT   Segment functions at ITIME
+        !     num_constants  INTEGER       1     INPUT   Number of constants used
+        !     num_spatial_parameters    INTEGER       1     INPUT   Number of parameters
+        !     num_time_functions   INTEGER       1     INPUT   Number of functions ( user )
+        !     num_spatial_time_fuctions  INTEGER       1     INPUT   Number of segment functions
+        !     num_substances_total   INTEGER       1     INPUT   Total number of substances
+        !     CONC    REAL   num_substances_total,num_cells  INPUT   Model concentrations
+        !     SEGFUN  REAL   num_cells,num_spatial_time_fuctions INPUT   Segment functions at ITIME
         !     FUNC    REAL          *     INPUT   Model functions at ITIME
-        !     PARAM   REAL    NOPA,NOSEG  INPUT   Model parameters
+        !     PARAM   REAL    num_spatial_parameters,num_cells  INPUT   Model parameters
         !     CONS    REAL          *     INPUT   Model constants
         !     IDT     INTEGER       1     INPUT   Simulation timestep
         !     ITIME   INTEGER       1     INPUT   Time in system clock units
-        !     VOLUME  REAL      NOSEG     INPUT   Segment volumes
-        !     NOSEG   INTEGER       1     INPUT   Nr. of computational elements
-        !     NOSYS   INTEGER       1     INPUT   Number of active substances
+        !     VOLUME  REAL      num_cells     INPUT   Segment volumes
+        !     num_cells   INTEGER       1     INPUT   Nr. of computational elements
+        !     num_substances_transported   INTEGER       1     INPUT   Number of active substances
         !     NDMPAR  INTEGER       1     INPUT   number of dump locations
         !     IPDMP   INTEGER       *     INPUT   pointer structure dump area's
-        !     BOUND   REAL     NOTOT*?    INPUT   boundary      values
-        !     NOLOC   INTEGER       1     INPUT   Number of variables in PROLOC
-        !     PARAM   REAL   NOLOC,NOSEG  INPUT   Parameters local in PROCES system
-        !     NODEF   INTEGER       1     INPUT   Number of used defaults
+        !     BOUND   REAL     num_substances_total*?    INPUT   boundary      values
+        !     num_local_vars   INTEGER       1     INPUT   Number of variables in PROLOC
+        !     PARAM   REAL   num_local_vars,num_cells  INPUT   Parameters local in PROCES system
+        !     num_defaults   INTEGER       1     INPUT   Number of used defaults
         !     DEFAUL  REAL          *     INPUT   Default proces parameters
         !     NCOUT   INTEGER       1     INPUT   number of conc in output
         !     NTDMPQ  INTEGER       1     INPUT   total number exchanges in dump area
-        integer(kind = int_wp) :: nrvar, nocons, nopa, nofun, nosfun, &
-                notot, idt, itime, noseg, nosys, &
-                ndmpar, noloc, nodef, ncout, ntdmpq
+        integer(kind = int_wp) :: nrvar, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+                num_substances_total, idt, itime, num_cells, num_substances_transported, &
+                ndmpar, num_local_vars, num_defaults, ncout, ntdmpq
         integer(kind = int_wp) :: iopoin(*), ipdmp(*)
-        real(kind = real_wp) :: outval(*), conc(notot, *), &
-                segfun(noseg, nosfun), func(*), &
-                param (nopa, noseg), cons(*), &
+        real(kind = real_wp) :: outval(*), conc(num_substances_total, *), &
+                segfun(num_cells, num_spatial_time_fuctions), func(*), &
+                param (num_spatial_parameters, num_cells), cons(*), &
                 volume(*), bound(*), &
                 proloc(*), defaul(*)
         character(20) paname(*), sfname(*)
@@ -493,12 +493,12 @@ contains
         if (timon) call timstrt ("fill_output_buffer_sub_grid", ithandl)
         ! Pointer offsets
         iocons = nopred + 1
-        iopa = iocons + nocons
-        iofunc = iopa + nopa
-        iosfun = iofunc + nofun
-        ioconc = iosfun + nosfun
-        ioloc = ioconc + notot
-        iodef = ioloc + noloc
+        iopa = iocons + num_constants
+        iofunc = iopa + num_spatial_parameters
+        iosfun = iofunc + num_time_functions
+        ioconc = iosfun + num_spatial_time_fuctions
+        ioloc = ioconc + num_substances_total
+        iodef = ioloc + num_local_vars
         !
         !     Zero the output buffer for it is used as accumulation variable.
         !
@@ -524,7 +524,7 @@ contains
                 itel2 = itel2 + 1
                 iseg = ipdmp(itel2)
                 if (danam(idump)(1:6) == 'MOVING') then
-                    do ifun = 1, nofun
+                    do ifun = 1, num_time_functions
                         if (danam(idump) == funame(ifun)) then
                             iseg = nint(func(ifun))
                         endif
@@ -535,22 +535,22 @@ contains
                 !
                 if (ncout > 0) then
                     if (iseg < 0) then
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             iidump = iofdmp + isys
-                            iip = (-iseg - 1) * nosys + isys
+                            iip = (-iseg - 1) * num_substances_transported + isys
                             outval(iidump) = bound(iip)
                         enddo
-                        do isys = nosys + 1, notot
+                        do isys = num_substances_transported + 1, num_substances_total
                             iidump = iofdmp + isys
                             outval(iidump) = rmiss
                         enddo
                     elseif (iseg == 0) then
-                        do isys = 1, notot
+                        do isys = 1, num_substances_total
                             iidump = iofdmp + isys
                             outval(iidump) = rmiss
                         enddo
                     else
-                        do isys = 1, notot
+                        do isys = 1, num_substances_total
                             iidump = iofdmp + isys
                             outval(iidump) = conc(isys, iseg)
                         enddo
@@ -563,8 +563,8 @@ contains
                     ip = iopoin(ivar)
                     iidump = iofdmp + ncout + ivar
                     if (iseg < 0) then
-                        if (ip >= ioconc .and. ip < ioconc + nosys) then
-                            iip = (-iseg - 1) * nosys + ip - ioconc + 1
+                        if (ip >= ioconc .and. ip < ioconc + num_substances_transported) then
+                            iip = (-iseg - 1) * num_substances_transported + ip - ioconc + 1
                             outval(iidump) = bound(iip)
                         else
                             outval(iidump) = rmiss
@@ -575,7 +575,7 @@ contains
                         if (ip >= iodef) then
                             outval(iidump) = defaul(ip - iodef + 1)
                         elseif (ip >= ioloc) then
-                            iip = (iseg - 1) * noloc + ip - ioloc + 1
+                            iip = (iseg - 1) * num_local_vars + ip - ioloc + 1
                             outval(iidump) = proloc(iip)
                         elseif (ip >= ioconc) then
                             outval(iidump) = conc(ip - ioconc + 1, iseg)
@@ -610,14 +610,14 @@ contains
                     !
                     hlpcum = 0.0
                     cumsrf = 0.0
-                    if (nosys /= notot) then
+                    if (num_substances_transported /= num_substances_total) then
                         cumsrf = 1.0
-                        indx = index_in_array('SURF      ', paname(:nopa))
+                        indx = index_in_array('SURF      ', paname(:num_spatial_parameters))
                         if  (indx > 0) then
                             cumsrf = 0.0
                             parm = .true.
                         else
-                            indx = index_in_array('SURF      ', sfname(:nosfun))
+                            indx = index_in_array('SURF      ', sfname(:num_spatial_time_fuctions))
                             if  (indx > 0) then
                                 cumsrf = 0.0
                                 parm = .false.
@@ -636,7 +636,7 @@ contains
                             !
                             !                    All active substances weighted by volume
                             !
-                            do isys = 1, nosys
+                            do isys = 1, num_substances_transported
                                 iidump = iofdmp + isys
                                 outval(iidump) = outval(iidump) + &
                                         conc(isys, iseg) * hlpvar
@@ -644,7 +644,7 @@ contains
 
                             !       take care of mass/m2 for inactive substances if possible
 
-                            if (nosys /= notot) then
+                            if (num_substances_transported /= num_substances_total) then
                                 if  (indx > 0) then
                                     if (parm) then
                                         srf = param (indx, iseg)
@@ -652,12 +652,12 @@ contains
                                         srf = segfun(iseg, indx)
                                     endif
                                     cumsrf = cumsrf + srf
-                                    do isys = nosys + 1, notot
+                                    do isys = num_substances_transported + 1, num_substances_total
                                         iidump = iofdmp + isys
                                         outval(iidump) = outval(iidump) + conc(isys, iseg) * srf
                                     enddo
                                 else
-                                    do isys = nosys + 1, notot
+                                    do isys = num_substances_transported + 1, num_substances_total
                                         iidump = iofdmp + isys
                                         outval(iidump) = outval(iidump) + conc(isys, iseg)
                                     enddo
@@ -670,13 +670,13 @@ contains
                     !              Calculate mean for then active and inactive substances
                     !
                     if (abs(hlpcum) > 1.0e-20) then
-                        do isys = 1, nosys
+                        do isys = 1, num_substances_transported
                             iidump = iofdmp + isys
                             outval(iidump) = outval(iidump) / hlpcum
                         enddo
                     endif
                     if (abs(cumsrf) > 1.0e-20) then
-                        do isys = nosys + 1, notot
+                        do isys = num_substances_transported + 1, num_substances_total
                             iidump = iofdmp + isys
                             outval(iidump) = outval(iidump) / cumsrf
                         enddo
@@ -701,8 +701,8 @@ contains
                         if (iseg > 0) then
                             ip = iopoin(ivar)
                             if (iseg < 0) then
-                                if (ip>=ioconc .and. ip<ioconc + nosys) then
-                                    iip = (-iseg - 1) * nosys + ip - ioconc + 1
+                                if (ip>=ioconc .and. ip<ioconc + num_substances_transported) then
+                                    iip = (-iseg - 1) * num_substances_transported + ip - ioconc + 1
                                     valvar = bound(iip)
                                 else
                                     valvar = 0.0
@@ -713,7 +713,7 @@ contains
                                 if (ip >= iodef) then
                                     valvar = defaul(ip - iodef + 1)
                                 elseif (ip >= ioloc) then
-                                    iip = (iseg - 1) * noloc + ip - ioloc + 1
+                                    iip = (iseg - 1) * num_local_vars + ip - ioloc + 1
                                     valvar = proloc(iip)
                                 elseif (ip >= ioconc) then
                                     valvar = conc(ip - ioconc + 1, iseg)
@@ -744,7 +744,7 @@ contains
                                 if (ip2 >= iodef) then
                                     hlpvar = defaul(ip2 - iodef + 1)
                                 elseif (ip2 >= ioloc) then
-                                    iip = (iseg - 1) * noloc + ip2 - ioloc + 1
+                                    iip = (iseg - 1) * num_local_vars + ip2 - ioloc + 1
                                     hlpvar = proloc(iip)
                                 elseif (ip2 >= ioconc) then
                                     hlpvar = conc(ip2 - ioconc + 1, iseg)
@@ -801,8 +801,8 @@ contains
 
     end subroutine fill_output_buffer_sub_grid
 
-    subroutine fill_dump_areas_balances(NOTOT, NOSYS, NOFLUX, NDMPAR, NDMPQ, &
-            NDMPS, NTDMPQ, IQDMP, ISDMP, IPDMP, &
+    subroutine fill_dump_areas_balances(num_substances_total, num_substances_transported, NOFLUX, NDMPAR, NDMPQ, &
+            num_monitoring_cells, NTDMPQ, IQDMP, ISDMP, IPDMP, &
             DMPQ, MASS, DMPS, FLXDMP, ASMASS, &
             FLXINT)
 
@@ -811,31 +811,31 @@ contains
 
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     NOTOT   INTEGER       1     INPUT   Total number of substances
-        !     NOSYS   INTEGER       1     INPUT   Total number of active substances
+        !     num_substances_total   INTEGER       1     INPUT   Total number of substances
+        !     num_substances_transported   INTEGER       1     INPUT   Total number of active substances
         !     NOFLUX  INTEGER       1     INPUT   Nr. of fluxes
         !     NDMPAR  INTEGER       1     INPUT   Number of dump areas
         !     NDMPQ   INTEGER       1     INPUT   Number of dump exchanges
-        !     NDMPS   INTEGER       1     INPUT   Number of dump segments
+        !     num_monitoring_cells   INTEGER       1
         !     NTDMPQ  INTEGER       1     INPUT   total number exchanges in dump area
         !     IQDMP   INTEGER       *     INPUT   Exchange to dumped exchange pointer
         !     ISDMP   INTEGER       *     INPUT   Segment to dumped segment pointer
         !     IPDMP   INTEGER       *     INPUT   pointer structure dump area's
-        !     DMPQ    REAL  NOSYS*NDMPQ*? INPUT   mass balance dumped exchange
-        !     DMPS    REAL  NOTOT*NDMPS*? INPUT   mass balance dumped segments
-        !     FLXDMP  REAL  NOFLUX*NDMPS  INPUT   Integrated fluxes
-        !     ASMASS  REAL NOTOT*NDMPAR*6 OUTPUT  Mass balance terms
+        !     DMPQ    REAL  num_substances_transported*NDMPQ*? INPUT   mass balance dumped exchange
+        !     DMPS    REAL  num_substances_total*num_monitoring_cells*? INPUT   mass balance dumped segments
+        !     FLXDMP  REAL  NOFLUX*num_monitoring_cells  INPUT   Integrated fluxes
+        !     ASMASS  REAL num_substances_total*NDMPAR*6 OUTPUT  Mass balance terms
         !     FLXINT  REAL  NOFLUX*NDMPAR OUTPUT  Integrated fluxes
 
         use timers
 
-        INTEGER(kind = int_wp) :: NOTOT, NOSYS, NOFLUX, NDMPAR, NDMPQ, &
-                NDMPS, NTDMPQ
+        INTEGER(kind = int_wp) :: num_substances_total, num_substances_transported, NOFLUX, NDMPAR, NDMPQ, &
+                num_monitoring_cells, NTDMPQ
         INTEGER(kind = int_wp) :: IQDMP(*), ISDMP(*), &
                 IPDMP(*)
-        REAL(kind = real_wp) :: DMPQ(NOSYS, NDMPQ, *), MASS(NOTOT, *), &
-                DMPS(NOTOT, NDMPS, *), FLXDMP(NOFLUX, *), &
-                ASMASS(NOTOT, NDMPAR, *), FLXINT(NOFLUX, *)
+        REAL(kind = real_wp) :: DMPQ(num_substances_transported, NDMPQ, *), MASS(num_substances_total, *), &
+                DMPS(num_substances_total, num_monitoring_cells, *), FLXDMP(NOFLUX, *), &
+                ASMASS(num_substances_total, NDMPAR, *), FLXINT(NOFLUX, *)
 
         INTEGER(kind = int_wp) :: ITEL1, ITEL2, IP1, IDUMP, NQC, &
                 IQC, IQ, IPQ, ISYS, NSC, &
@@ -859,7 +859,7 @@ contains
                 IQ = IPDMP(ITEL1)
                 IF (IQ > 0) THEN
                     IPQ = IQDMP(IQ)
-                    DO ISYS = 1, NOSYS
+                    DO ISYS = 1, num_substances_transported
                         ASMASS(ISYS, IDUMP, 5) = ASMASS(ISYS, IDUMP, 5) + &
                                 DMPQ(ISYS, IPQ, 2)
                         ASMASS(ISYS, IDUMP, 6) = ASMASS(ISYS, IDUMP, 6) + &
@@ -867,7 +867,7 @@ contains
                     end do
                 ELSE
                     IPQ = IQDMP(-IQ)
-                    DO ISYS = 1, NOSYS
+                    DO ISYS = 1, num_substances_transported
                         ASMASS(ISYS, IDUMP, 5) = ASMASS(ISYS, IDUMP, 5) + &
                                 DMPQ(ISYS, IPQ, 1)
                         ASMASS(ISYS, IDUMP, 6) = ASMASS(ISYS, IDUMP, 6) + &
@@ -878,7 +878,7 @@ contains
             !
             !        the segment contributes
             !
-            DO ISYS = 1, NOTOT
+            DO ISYS = 1, num_substances_total
                 ASMASS(ISYS, IDUMP, 1) = 0.0
             ENDDO
             NSC = IPDMP(IP1 + IDUMP)
@@ -887,7 +887,7 @@ contains
                 ISEG = IPDMP(ITEL2)
                 IF (ISEG > 0) THEN
                     IPS = ISDMP(ISEG)
-                    DO ISYS = 1, NOTOT
+                    DO ISYS = 1, num_substances_total
                         ASMASS(ISYS, IDUMP, 1) = ASMASS(ISYS, IDUMP, 1) + &
                                 MASS(ISYS, ISEG)
                         ASMASS(ISYS, IDUMP, 2) = ASMASS(ISYS, IDUMP, 2) + &
@@ -907,23 +907,23 @@ contains
 
     end subroutine fill_dump_areas_balances
 
-    subroutine fill_transect_output_buffer(OUTVAL, NRVAR, TRRAAI, NORAAI, NOSYS)
+    subroutine fill_transect_output_buffer(OUTVAL, NRVAR, TRRAAI, num_transects, num_substances_transported)
 
-        !  Fills output buffer OUTVAL for raaien
+        !  Fills output buffer OUTVAL for transects
 
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
         !     OUTVAL  REAL    NRVAR,*     OUTPUT  Values for vars on output grid
         !     NRVAR   INTEGER       1     INPUT   Number of output vars
-        !     TRRAAI  REAL    NOSYS,*     INPUT   Tranport over raai for active substanc
-        !     NORAAI  INTEGER       1     INPUT   Number of raaien
-        !     NOSYS   INTEGER       1     INPUT   Number of parameters in TRRAAI
+        !     TRRAAI  REAL    num_substances_transported,*     INPUT   Tranport over transect for active substanc
+        !     num_transects  INTEGER       1     INPUT
+        !     num_substances_transported   INTEGER       1     INPUT   Number of parameters in TRRAAI
 
         use timers
 
-        INTEGER(kind = int_wp) :: NRVAR, NORAAI, NOSYS
-        REAL(kind = real_wp) :: OUTVAL(NRVAR, *), TRRAAI(NOSYS, *)
+        INTEGER(kind = int_wp) :: NRVAR, num_transects, num_substances_transported
+        REAL(kind = real_wp) :: OUTVAL(NRVAR, *), TRRAAI(num_substances_transported, *)
 
         integer(kind = int_wp) :: iraai, isys
         real(kind = real_wp), PARAMETER :: RMISS = -999.
@@ -931,11 +931,11 @@ contains
         if (timon) call timstrt ("fill_transect_output_buffer", ithandl)
 
         ! Copy values into output buffer
-        DO IRAAI = 1, NORAAI
-            DO ISYS = 1, NOSYS
+        DO IRAAI = 1, num_transects
+            DO ISYS = 1, num_substances_transported
                 OUTVAL(ISYS, IRAAI) = TRRAAI(ISYS, IRAAI)
             end do
-            DO ISYS = NOSYS + 1, NRVAR
+            DO ISYS = num_substances_transported + 1, NRVAR
                 OUTVAL(ISYS, IRAAI) = RMISS
             end do
         end do
@@ -944,9 +944,9 @@ contains
 
     END SUBROUTINE fill_transect_output_buffer
 
-    subroutine update_base_grid_local_array(IOPOIN, NRVAR, NOCONS, NOPA, NOFUN, &
-            nosfun, notot, noseg, noloc, nogrid, &
-            novar, vararr, varidx, vartda, vardag, &
+    subroutine update_base_grid_local_array(IOPOIN, NRVAR, num_constants, num_spatial_parameters, num_time_functions, &
+            num_spatial_time_fuctions, num_substances_total, num_cells, num_local_vars, num_grids, &
+            num_vars, vararr, varidx, vartda, vardag, &
             arrknd, arrpoi, arrdm1, arrdm2, vgrset, &
             grdnos, grdseg, a)
         ! Sets all variable from the LOCAL array used for output actual for the base grid.
@@ -958,26 +958,26 @@ contains
         !     ----    -----    ------     ------- -----------
         !     IOPOIN  INTEGER       *     INPUT   Pointers to arrays for vars
         !     NRVAR   INTEGER       1     INPUT   Number of output vars
-        !     NOCONS  INTEGER       1     INPUT   Number of constants used
-        !     NOPA    INTEGER       1     INPUT   Number of parameters
-        !     NOFUN   INTEGER       1     INPUT   Number of functions ( user )
-        !     NOSFUN  INTEGER       1     INPUT   Number of segment functions
-        !     NOTOT   INTEGER       1     INPUT   Total number of substances
-        !     NOSEG   INTEGER       1     INPUT   Nr. of computational elements
-        !     NOLOC   INTEGER       1     INPUT   Number of variables in PROLOC
-        !     NOGRID  INTEGER       1     INPUT   Number of grids
-        !     NOVAR   INTEGER       1     INPUT   Number of variables
-        !     VARARR  INTEGER   NOVAR     INPUT   Variable array number
-        !     VARIDX  INTEGER   NOVAR     INPUT   Variable index in array
-        !     VARTDA  INTEGER   NOVAR     INPUT   Type of disaggregation
-        !     VARDAG  INTEGER   NOVAR     INPUT   Variable disaggr. weight var.
-        !     ARRKND  INTEGER   NOARR     INPUT   Kind of array
-        !     ARRPOI  INTEGER   NOARR     INPUT   Array pointer in A
-        !     ARRDM1  INTEGER   NOARR     INPUT   First dimension
-        !     ARRDM2  INTEGER   NOARR     INPUT   Second dimension
-        !     VGRSET  INTEGER   NOVAR,*   IN/OUT  Actual indication
-        !     GRDNOS  INTEGER   NOGRID    INPUT   Number of segments in grid
-        !     GRDSEG  INTEGER   NOGRID    INPUT   Segment pointering
+        !     num_constants  INTEGER       1     INPUT   Number of constants used
+        !     num_spatial_parameters    INTEGER       1     INPUT   Number of parameters
+        !     num_time_functions   INTEGER       1     INPUT   Number of functions ( user )
+        !     num_spatial_time_fuctions  INTEGER       1     INPUT   Number of segment functions
+        !     num_substances_total   INTEGER       1     INPUT   Total number of substances
+        !     num_cells   INTEGER       1     INPUT   Nr. of computational elements
+        !     num_local_vars   INTEGER       1     INPUT   Number of variables in PROLOC
+        !     num_grids  INTEGER       1     INPUT   Number of grids
+        !     num_vars   INTEGER       1     INPUT   Number of variables
+        !     VARARR  INTEGER   num_vars     INPUT   Variable array number
+        !     VARIDX  INTEGER   num_vars     INPUT   Variable index in array
+        !     VARTDA  INTEGER   num_vars     INPUT   Type of disaggregation
+        !     VARDAG  INTEGER   num_vars     INPUT   Variable disaggr. weight var.
+        !     ARRKND  INTEGER   num_arrays     INPUT   Kind of array
+        !     ARRPOI  INTEGER   num_arrays     INPUT   Array pointer in A
+        !     ARRDM1  INTEGER   num_arrays     INPUT   First dimension
+        !     ARRDM2  INTEGER   num_arrays     INPUT   Second dimension
+        !     VGRSET  INTEGER   num_vars,*   IN/OUT  Actual indication
+        !     GRDNOS  INTEGER   num_grids    INPUT   Number of segments in grid
+        !     GRDSEG  INTEGER   num_grids    INPUT   Segment pointering
         !     A       REAL      *         IN/OUT  Real array work space
 
         use m_dhgvar
@@ -985,8 +985,8 @@ contains
         use timers
         use aggregation, only: resample_v2
 
-        integer(kind = int_wp) :: nrvar, nocons, nopa, nofun, nosfun, &
-                notot, noseg, noloc, nogrid, novar, &
+        integer(kind = int_wp) :: nrvar, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+                num_substances_total, num_cells, num_local_vars, num_grids, num_vars, &
                 nototo, nototi, noseg2, nopred, i, ix_hlp, &
                 iv_idx, iv_hlp, iv_da, ivar, isyso, isysi, &
                 nototw, ix_da, isysw, isysh, ip_hlp, ip_da, &
@@ -995,12 +995,12 @@ contains
                 ik_da, igrid, idim2, idim1, idatyp, id2_da, id2hlp, &
                 id1_da, id1hlp, ia_loc, ia_hlp, ia_da, iarr, iarknd
 
-        integer(kind = int_wp) :: iopoin(nrvar), vararr(novar), &
-                varidx(novar), vartda(novar), &
-                vardag(novar), arrknd(*), &
+        integer(kind = int_wp) :: iopoin(nrvar), vararr(num_vars), &
+                varidx(num_vars), vartda(num_vars), &
+                vardag(num_vars), arrknd(*), &
                 arrpoi(*), arrdm1(*), &
-                arrdm2(*), vgrset(novar, *), &
-                grdnos(nogrid), grdseg(noseg, nogrid)
+                arrdm2(*), vgrset(num_vars, *), &
+                grdnos(num_grids), grdseg(num_cells, num_grids)
         real(kind = real_wp) :: a(*)
         !
         !     local
@@ -1013,17 +1013,17 @@ contains
         !
         !     if no locals get out of here
         !
-        if (noloc == 0) return
+        if (num_local_vars == 0) return
         !
         !     pointer offsets
         !
         iocons = nopred + 1
-        iopa = iocons + nocons
-        iofunc = iopa + nopa
-        iosfun = iofunc + nofun
-        ioconc = iosfun + nosfun
-        ioloc = ioconc + notot
-        iodef = ioloc + noloc
+        iopa = iocons + num_constants
+        iofunc = iopa + num_spatial_parameters
+        iosfun = iofunc + num_time_functions
+        ioconc = iosfun + num_spatial_time_fuctions
+        ioloc = ioconc + num_substances_total
+        iodef = ioloc + num_local_vars
         !
         ia_loc = 33
         ix_hlp = 1
@@ -1059,7 +1059,7 @@ contains
                     !
                     !              set variable
                     !
-                    do igrid = 2, nogrid
+                    do igrid = 2, num_grids
                         if (vgrset(ivar, igrid) == 1) then
                             noseg2 = grdnos(igrid)
                             !
@@ -1146,7 +1146,7 @@ contains
                             endif
                             !
                             iswcum = 0
-                            call resample_v2(noseg, noseg2, &
+                            call resample_v2(num_cells, noseg2, &
                                     nototi, nototw, &
                                     nototh, nototo, &
                                     isysi, isysw, &
@@ -1169,28 +1169,28 @@ contains
 
     end subroutine update_base_grid_local_array
 
-    subroutine calculate_balance_terms(NOTOT, NOFLUX, NDMPAR, NOBALT, STOCHI, &
+    subroutine calculate_balance_terms(num_substances_total, NOFLUX, NDMPAR, NOBALT, STOCHI, &
             FLXINT, ASMASS, BALINT)
 
         ! Makes BALINT from FLXINT and STOCHI
 
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     NOTOT   INTEGER       1     INPUT   Total number of substances
+        !     num_substances_total   INTEGER       1     INPUT   Total number of substances
         !     NOFLUX  INTEGER       1     INPUT   Nr. of fluxes
         !     NDMPAR  INTEGER       1     INPUT   Nr. of dump areas
         !     NOBALT  INTEGER       1     INPUT   Nr. of balance terms total
-        !     STOCHI  REAL   NOTOT*NOFLUX INPUT   Proces stochiometry
+        !     STOCHI  REAL   num_substances_total*NOFLUX INPUT   Proces stochiometry
         !     FLXINT  REAL  NOFLUX*NDMPAR INPUT   Accumulated fluxes
-        !     ASMASS  REAL NOTOT*NDMPAR*6 INPUT   Mass balance terms
+        !     ASMASS  REAL num_substances_total*NDMPAR*6 INPUT   Mass balance terms
         !     BALINT  REAL  NOBALT*NDMPAR OUTPUT  Balance terms
 
         use m_logger_helper, only: stop_with_error, get_log_unit_number
         use timers
 
-        INTEGER(kind = int_wp) :: NOTOT, NOFLUX, NDMPAR, NOBALT
-        REAL(kind = real_wp) :: STOCHI(NOTOT, NOFLUX), FLXINT(NOFLUX, NDMPAR), &
-                ASMASS(NOTOT, NDMPAR, 6), BALINT(NOBALT, NDMPAR)
+        INTEGER(kind = int_wp) :: num_substances_total, NOFLUX, NDMPAR, NOBALT
+        REAL(kind = real_wp) :: STOCHI(num_substances_total, NOFLUX), FLXINT(NOFLUX, NDMPAR), &
+                ASMASS(num_substances_total, NDMPAR, 6), BALINT(NOBALT, NDMPAR)
 
         ! local
         integer(kind = int_wp) :: ibalt, isys, i, idmp, iflx, lurep
@@ -1201,7 +1201,7 @@ contains
         !     We construeren nu de BALINT's
         !
         IBALT = 0
-        DO ISYS = 1, NOTOT
+        DO ISYS = 1, num_substances_total
             DO I = 1, 4
                 IBALT = IBALT + 1
                 IF (I == 1 .OR. I == 3) THEN

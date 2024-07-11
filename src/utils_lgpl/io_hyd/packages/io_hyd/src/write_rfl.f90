@@ -45,7 +45,7 @@
       integer                                :: lunrfl                ! unit number sources file
       integer                                :: nowast                ! number of wasteloads
       integer                                :: noflow                ! number of flows
-      integer                                :: nolay                 ! number of layers
+      integer                                :: num_layers                 ! number of layers
       integer                                :: nolay_waste           ! number of layers for specific load
       integer                                :: iwaste_lay            ! follow number load
       integer                                :: nobrk                 ! number of breakpoints
@@ -79,7 +79,7 @@
 
       nowast = hyd%wasteload_coll%current_size
       if ( nowast .le. 0 ) return
-      nolay  = hyd%nolay
+      num_layers  = hyd%num_layers
       nobrk  = hyd%wasteload_data%num_breakpoints
 
       if ( nowast .ne. hyd%wasteload_data%num_locations ) then
@@ -90,11 +90,11 @@
          call stop_with_error()
       endif
 
-      if ( nolay .gt. 1 ) then
-         allocate(waq_layers_frac(nolay))
+      if ( num_layers .gt. 1 ) then
+         allocate(waq_layers_frac(num_layers))
          waq_layers_frac = 0.0
          koff = 0
-         do ilay = 1 , nolay
+         do ilay = 1 , num_layers
             nok = nint(hyd%waq_layers(ilay))
             do k = 1 , nok
                waq_layers_frac(ilay) = waq_layers_frac(ilay) + hyd%hyd_layers(koff+k)
@@ -104,7 +104,7 @@
          noflow = 0
          do i = 1, nowast
             if ( hyd%wasteload_coll%wasteload_pnts(i)%k .eq. 0 ) then
-               noflow = noflow + nolay
+               noflow = noflow + num_layers
             else
                noflow = noflow + 1
             endif
@@ -123,7 +123,7 @@
       iwaste_lay = 0
       do iwaste = 1 , nowast
          if ( hyd%wasteload_coll%wasteload_pnts(iwaste)%k .eq. 0 ) then
-            nolay_waste = nolay
+            nolay_waste = num_layers
          else
             nolay_waste = 1
          endif

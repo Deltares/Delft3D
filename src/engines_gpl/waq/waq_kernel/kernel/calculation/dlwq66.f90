@@ -29,16 +29,16 @@ contains
 
 
     !> Calculates masses form concentrations and volumes
-    subroutine dlwq66(amass, volume, conc, notot, noseg)
+    subroutine dlwq66(amass, volume, conc, num_substances_total, num_cells)
 
         use timers
 
-        real(kind = real_wp), intent(inout) :: amass(notot, *) !< Closure error correction (NOTOT x NOSEG)
-        real(kind = real_wp), intent(in   ) :: volume(*)       !< Volume  (NOSEG)
-        real(kind = real_wp), intent(in   ) :: conc(notot, *)  !< Concentrations  (NOTOT x NOSEG)
+        real(kind = real_wp), intent(inout) :: amass(num_substances_total, *) !< Closure error correction (num_substances_total x num_cells)
+        real(kind = real_wp), intent(in   ) :: volume(*)       !< Volume  (num_cells)
+        real(kind = real_wp), intent(in   ) :: conc(num_substances_total, *)  !< Concentrations  (num_substances_total x num_cells)
 
-        integer(kind = int_wp), intent(in) :: notot !< Number of systems
-        integer(kind = int_wp), intent(in) :: noseg !< Number of cells or segments
+        integer(kind = int_wp), intent(in) :: num_substances_total !< Number of systems
+        integer(kind = int_wp), intent(in) :: num_cells !< Number of cells or segments
 
         ! Local variables
         integer(kind = int_wp) :: isys, iseg
@@ -48,9 +48,9 @@ contains
         if (timon) call timstrt ("dlwq66", ithandl)
 
         ! loop over the number of segments and systems
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             V1 = VOLUME(ISEG)
-            DO ISYS = 1, NOTOT
+            DO ISYS = 1, num_substances_total
                 AMASS(ISYS, ISEG) = CONC(ISYS, ISEG) * V1
             end do
         end do

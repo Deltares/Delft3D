@@ -45,7 +45,7 @@ contains
       integer, save                :: ifirst = 1
       integer, save                :: lun_forcing, lun_binforcing
       integer                      :: notime
-      integer                      :: noseg
+      integer                      :: num_cells
       integer                      :: it
       integer, save                :: it1, it2
       integer, allocatable, save   :: t_time(:)
@@ -59,9 +59,9 @@ contains
          read(lun_forcing,*) notime
          if ( notime .eq. -2 ) then
             ! binary temperature file
-            read(lun_forcing,*) noseg
+            read(lun_forcing,*) num_cells
             read(lun_forcing,*) t_file
-            allocate(temperature(noseg))
+            allocate(temperature(num_cells))
             open(newunit=lun_binforcing,file=t_file,access='stream', form='unformatted')
             read(lun_binforcing) it1,temperature
             read(lun_binforcing) it2

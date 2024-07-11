@@ -81,7 +81,7 @@ contains
    use m_flowparameters, only : jambawritecsv, jambawritetxt, jambawritenetcdf
    use m_flowgeom, only : Lnxi, ln, lne2ln
    use unstruc_model, only : md_ident, md_ident_sequential
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use m_sediment, only : stm_included
    use m_fm_erosed, only : lsedtot, lsed, stmpar, iflufflyr
    use unstruc_files
@@ -115,7 +115,7 @@ contains
    call realloc(imbs2sed, nombs, keepExisting=.false., fill=0)
    do iconst = 1, numconst
       mbsname(iconst) = const_names(iconst)
-      if (nosys > 0) then
+      if (num_substances_transported > 0) then
          imbs2sys(iconst) = iconst2sys(iconst)
       end if
       if (iconst >= ised1 .and. iconst <= isedn) then
@@ -127,7 +127,7 @@ contains
    do iwqbot = 1, numwqbots
       imbs = numconst + iwqbot
       mbsname(imbs) = wqbotnames(iwqbot)
-      imbs2sys(imbs) = nosys + iwqbot
+      imbs2sys(imbs) = num_substances_transported + iwqbot
    end do
    if (stm_included) then
       do ised = lsed + 1, lsedtot
@@ -292,9 +292,9 @@ contains
       call reduce_int_array_sum(2 * numsrc, mbasorsinout)
    end if
 
-   call realloc(flxdmp, [2,nflux, nomba], keepExisting=.false., fill=0.0d0 )       !< Fluxes at dump segments
-   call realloc(flxdmpreduce, [2,nflux, nomba], keepExisting=.false., fill=0.0d0 )       !< Fluxes at dump segments
-   call realloc(flxdmptot, [2,nflux, nomba], keepExisting=.false., fill=0.0d0 )       !< Fluxes at dump segments
+   call realloc(flxdmp, [2,num_fluxes, nomba], keepExisting=.false., fill=0.0d0 )       !< Fluxes at dump segments
+   call realloc(flxdmpreduce, [2,num_fluxes, nomba], keepExisting=.false., fill=0.0d0 )       !< Fluxes at dump segments
+   call realloc(flxdmptot, [2,num_fluxes, nomba], keepExisting=.false., fill=0.0d0 )       !< Fluxes at dump segments
 
    call mba_sum_area(nomba, mbadefdomain, mbaarea)
    call mba_sum(nombs, nomba, mbadefdomain, mbavolumeend, mbamassend)
@@ -362,7 +362,7 @@ contains
       call mba_prepare_values(overall_balance)
       if (jambawritetxt == 1) then
          open(newunit=lunmbabal,file=defaultfilename('mba'))
-         call mba_write_bal_header(lunmbabal, numconst, const_names, iconst2sys, nosys, notot, isys2wqbot, syname_sub, nomba, mbaname, &
+         call mba_write_bal_header(lunmbabal, numconst, const_names, iconst2sys, num_substances_transported, num_substances_total, isys2wqbot, syname_sub, nomba, mbaname, &
                                    totfluxsys, stochi, fluxname, fluxprocname, nfluxsys, ipfluxsys, fluxsys)
       end if
       if (jambawritecsv == 1) then
@@ -408,7 +408,7 @@ contains
    use m_mass_balance_areas
    use m_fm_wq_processes
    use m_partitioninfo
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_flowparameters, only : jambawritetxt, jambawritecsv, jambawritenetcdf, jambawritecsv, jambawritetxt
    use m_flowtimes, only : refdate_mjd
    use m_transport, only : numconst
@@ -462,8 +462,8 @@ contains
       mbafluxsorsin(:,:,:,:) = mbafluxsorsinreduce(:,:,:,:)
       call reduce_double_sum(2 * nomba, mbafluxheat, mbafluxheatreduce)
       mbafluxheat(:,:) = mbafluxheatreduce(:,:)
-      if(nflux > 0) then
-         call reduce_double_sum(2 * nflux * nomba, flxdmp, flxdmpreduce)
+      if(num_fluxes > 0) then
+         call reduce_double_sum(2 * num_fluxes * nomba, flxdmp, flxdmpreduce)
          flxdmp(:,:,:) = flxdmpreduce(:,:,:)
       end if
    end if
@@ -484,7 +484,7 @@ contains
    mbafluxhortot(:,:,:,:) = mbafluxhortot(:,:,:,:) + mbafluxhor(:,:,:,:)
    mbafluxsorsintot(:,:,:,:) = mbafluxsorsintot(:,:,:,:) + mbafluxsorsin(:,:,:,:)
    mbafluxheattot(:,:) = mbafluxheattot(:,:) + mbafluxheat(:,:)
-   if (nflux > 0) then
+   if (num_fluxes > 0) then
       flxdmptot(:,:,:) = flxdmptot(:,:,:) + flxdmp(:,:,:)
    end if
    if (stm_included) then
@@ -716,7 +716,7 @@ contains
    subroutine comp_horflowmba()
    use m_flow, only : Lbot, Ltop, q1
    use m_flowtimes, only : dts
-   use m_flowexternalforcings, only : numsrc, ksrc, qsrc
+   use fm_external_forcings_data, only : numsrc, ksrc, qsrc
    use m_mass_balance_areas
    use m_partitioninfo, only : jampi, idomain, my_rank
    use timers
@@ -854,7 +854,7 @@ contains
    
    end subroutine comp_bedload_fluxmba
 
-   subroutine mba_write_bal_header(lunbal, numconst, const_names, iconst2sys, nosys, notot, isys2wqbot, syname_sub, nomba, mbaname, &
+   subroutine mba_write_bal_header(lunbal, numconst, const_names, iconst2sys, num_substances_transported, num_substances_total, isys2wqbot, syname_sub, nomba, mbaname, &
                                    totfluxsys, stochi, fluxname, fluxprocname, nfluxsys, ipfluxsys, fluxsys)
 
    use dflowfm_version_module, only : getfullversionstring_dflowfm
@@ -869,8 +869,8 @@ contains
    character(len=*)            :: const_names(numconst)     ! constituent names
 
    integer                     :: iconst2sys(numconst)      ! WAQ substance to D-Flow FM constituents
-   integer                     :: nosys                     ! Number of active systems
-   integer                     :: notot                     ! Number of systems
+   integer                     :: num_substances_transported                     ! Number of active systems
+   integer                     :: num_substances_total                     ! Number of systems
    integer, allocatable, dimension(:)       :: isys2wqbot        ! WAQ inactive system to D-FlowFM water quality bottom variable
    character(20), allocatable, dimension(:) :: syname_sub        ! substance names
 
@@ -920,9 +920,9 @@ contains
       write (lunbal, '(/"Overview of constituents and substances")')
       write (lunbal, '( "-------------------------------------------------------------")')
       write (lunbal, '(/"Total number of FM constituents                 :",I8)') numconst
-      write (lunbal, '( "Total number of WQ substances                   :",I8)') notot
-      write (lunbal, '( "Number of active (transported) substances       :",I8)') nosys
-      write (lunbal, '( "Number of inactive (not transported) substances :",I8)') notot - nosys
+      write (lunbal, '( "Total number of WQ substances                   :",I8)') num_substances_total
+      write (lunbal, '( "Number of active (transported) substances       :",I8)') num_substances_transported
+      write (lunbal, '( "Number of inactive (not transported) substances :",I8)') num_substances_total - num_substances_transported
       if (stm_included) then
          write (lunbal, '( "Total number of suspended sediment fractions    :",I8)') lsed
          write (lunbal, '( "Total number of bedload sediment fractions      :",I8)') lsedtot-lsed
@@ -941,10 +941,10 @@ contains
       end do
    end if
 
-   if (nosys < notot) then
+   if (num_substances_transported < num_substances_total) then
       write (lunbal, '(/"List of WQ bot variables/inactive WQ substances")')
       write (lunbal, '(/" FM number   WQ number   Sed fract  Name")')
-      do isys = nosys + 1, notot
+      do isys = num_substances_transported + 1, num_substances_total
          write (lunbal, '(2x,i8,4x,i8,11x,"-",2x,a)') isys2wqbot(isys), isys, syname_sub(isys)
       end do
    end if
@@ -966,7 +966,7 @@ contains
       write (lunbal, '(/"Substance      Process        Flux        Stochiometry factor")')
       write (lunbal, '( "-------------------------------------------------------------")')
       ifluxsys = 0
-      do isys = 1, notot
+      do isys = 1, num_substances_total
          ipfluxsys(isys) = ifluxsys
          if (nfluxsys(isys) > 0) then
             do iflux = ifluxsys + 1, ifluxsys + nfluxsys(isys)
@@ -1045,15 +1045,15 @@ contains
    integer             , intent(in)    :: nomba        !< number of mass balance areas
    
    integer                             :: imba         !< mass balance area number
-   integer                             :: nflux        !< number of flows/fluxes
+   integer                             :: num_fluxes        !< number of flows/fluxes
    
    allocate(bal_group%bal_error(nomba+1))
    allocate(bal_group%bal_cumerror(nomba+1))
    do imba = 1, nomba + 1
-      nflux =  bal_group%bal_area(imba)%n_entries
-      call realloc(bal_group%bal_area(imba)%group, nflux, keepExisting=.true.)
-      call realloc(bal_group%bal_area(imba)%name , nflux, keepExisting=.true.)
-      allocate(bal_group%bal_area(imba)%values(2,nflux))
+      num_fluxes =  bal_group%bal_area(imba)%n_entries
+      call realloc(bal_group%bal_area(imba)%group, num_fluxes, keepExisting=.true.)
+      call realloc(bal_group%bal_area(imba)%name , num_fluxes, keepExisting=.true.)
+      allocate(bal_group%bal_area(imba)%values(2,num_fluxes))
    end do
    
    bal_group%bal_cumerror = 0d0
@@ -1188,7 +1188,7 @@ contains
    subroutine mba_prepare_names_flows(imba)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc
    use m_wind, only : jarain, jaevap
-   use m_flowexternalforcings, only : numsrc, srcname
+   use fm_external_forcings_data, only : numsrc, srcname
    use m_mass_balance_areas
    
    integer, intent(in) :: imba                                     !< index mass balance area
@@ -1267,7 +1267,7 @@ contains
    subroutine mba_prepare_values_flows(imba, overall_balance)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc
    use m_wind, only : jarain, jaevap
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_mass_balance_areas
    
    integer, intent(in) :: imba                                     !< index mass balance area
@@ -1351,7 +1351,7 @@ contains
    subroutine mba_prepare_names_flows_whole_model()
    use m_flowparameters, only : jatem, jambalumpbnd, jambalumpsrc
    use m_wind, only : jarain, jaevap
-   use m_flowexternalforcings, only : numsrc, srcname
+   use fm_external_forcings_data, only : numsrc, srcname
    use m_mass_balance_areas
    
    integer :: jmba                                                 !< index of other mass balance area or open boundary
@@ -1407,7 +1407,7 @@ contains
    subroutine mba_prepare_values_flows_whole_model(overall_balance)
    use m_flowparameters, only : jatem, jambalumpbnd, jambalumpsrc
    use m_wind, only : jarain, jaevap
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_mass_balance_areas
    
    logical, intent(in) :: overall_balance                          !< balance period: use the total begin arrays, or just the last period
@@ -1481,7 +1481,7 @@ contains
 
    subroutine mba_prepare_names_fluxes(imbs, imba)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
-   use m_flowexternalforcings, only : numsrc, srcname
+   use fm_external_forcings_data, only : numsrc, srcname
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
@@ -1632,7 +1632,7 @@ contains
 
    subroutine mba_prepare_values_fluxes(imbs, imba, overall_balance)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
@@ -1806,7 +1806,7 @@ contains
 
    subroutine mba_prepare_names_fluxes_whole_model(imbs)
    use m_flowparameters, only : jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
-   use m_flowexternalforcings, only : numsrc, srcname
+   use fm_external_forcings_data, only : numsrc, srcname
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
@@ -1922,7 +1922,7 @@ contains
 
    subroutine mba_prepare_values_fluxes_whole_model(imbs, overall_balance)
    use m_flowparameters, only : jatem, jambalumpbnd, jambalumpsrc, jambalumpproc
-   use m_flowexternalforcings, only : numsrc
+   use fm_external_forcings_data, only : numsrc
    use m_flowparameters, only : jatem
    use m_transport, only : numconst, itemp
    use m_mass_balance_areas
@@ -2320,7 +2320,7 @@ contains
    integer :: imbs                                                 !< index mass balance substance/quantity
    integer :: ised                                                 !< index of sediment fraction (0 if not sediment)
 
-   integer :: nflux
+   integer :: num_fluxes
    double precision, dimension(:,:), pointer :: flux
    double precision, dimension(:), allocatable   :: var
    
@@ -2332,8 +2332,8 @@ contains
    
    do imba = 1, nomba+1
       flux => water_flow%bal_area(imba)%values
-      nflux = water_flow%bal_area(imba)%n_entries
-      ierr = nf90_put_var(ncid_bal_file, ncid_bal_water_flow_values(imba), flux, [1, 1, nc_bal_itime], [2, nflux, 1])
+      num_fluxes = water_flow%bal_area(imba)%n_entries
+      ierr = nf90_put_var(ncid_bal_file, ncid_bal_water_flow_values(imba), flux, [1, 1, nc_bal_itime], [2, num_fluxes, 1])
    end do
    
    allocate(var(nomba+1))
@@ -2354,8 +2354,8 @@ contains
       
       do imba = 1, nomba+1
          flux => const_flux(imbs)%bal_area(imba)%values
-         nflux = const_flux(imbs)%bal_area(imba)%n_entries
-         ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_flux_values(imbs,imba), flux, [1, 1, nc_bal_itime], [2, nflux, 1])
+         num_fluxes = const_flux(imbs)%bal_area(imba)%n_entries
+         ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_flux_values(imbs,imba), flux, [1, 1, nc_bal_itime], [2, num_fluxes, 1])
       end do
        
       if (imbs <= numconst + numwqbots) then ! not for bedload sediment

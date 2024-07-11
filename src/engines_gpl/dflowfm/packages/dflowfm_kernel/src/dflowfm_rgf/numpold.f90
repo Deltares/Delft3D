@@ -40,8 +40,8 @@
 
       integer :: j
       NUMPI = 0
-      DO 10 J = 1,NMAX
+      do J = 1,NMAX
          IF (X(MP,J) .NE. XYMIS) NUMPI = J
-    10 CONTINUE
+      end do
       RETURN
       END subroutine numpold

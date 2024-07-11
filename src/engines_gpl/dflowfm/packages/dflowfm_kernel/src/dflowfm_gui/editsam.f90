@@ -144,11 +144,11 @@
          ELSE IF ( NPUT .EQ. 26 .AND. MP .NE. 0) THEN
 !           punt deleten
             CALL CIRR(XP,YP,0)
-            DO 30 K = MP,NS
+            DO K = MP,NS
                XS(K) = XS(K+1)
                YS(K) = YS(K+1)
                ZS(K) = ZS(K+1)
-   30       CONTINUE
+            end do
             NS = NS - 1
 !           user is editing samples: mark samples as unstructured
             MXSAM = 0
