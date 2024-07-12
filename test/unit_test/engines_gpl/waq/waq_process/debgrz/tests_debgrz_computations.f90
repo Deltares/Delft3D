@@ -236,18 +236,18 @@ program tests_debgrz_computations
         real(kind = real_wp) :: kt1, kt2, kt3, kt4, kt5, kt6 !< temperature dependent rate values
 
         ! Arrange
-        temp1 = 5
-        temp2 = 25
-        ta1 = 5800
-        ta2 = 2000
-        tal1 = 45430
-        tal2 = 60000
-        tah1 = 31376
-        tah2 = 50000
-        th1 = 296
-        th2 = 300
-        tl1 = 275
-        tl2 = 280
+        temp1 = 5.0
+        temp2 = 25.0
+        ta1 = 5800.0
+        ta2 = 2000.0
+        tal1 = 45430.0
+        tal2 = 60000.0
+        tah1 = 31376.0
+        tah2 = 50000.0
+        th1 = 296.0
+        th2 = 300.0
+        tl1 = 275.0
+        tl2 = 280.0
 
         ! Act
         kt1 = temperature_dependent_rate(temp2, ta1, tal1, tah1, th1, tl1)
@@ -466,11 +466,11 @@ program tests_debgrz_computations
         shape = 10
         em_l3 = 0.25
         vd = 0.123
-        vtot = 100
-        etot1 = 200
-        rtot1 = 300
-        etot2 = -2
-        rtot2 = -3
+        vtot = 100.0
+        etot1 = 200.0
+        rtot1 = 300.0
+        etot2 = -2.0
+        rtot2 = -3.0
 
         !Act
         call rescale_non_food_vars(switchv1_0, depth_factor, dens1, conv_cm3_gc, conv_j_gc, shape, em_l3, &
@@ -544,14 +544,14 @@ program tests_debgrz_computations
         ! Arrange
         kappa_i = 0.4
         kappa_a = 0.8
-        tn = 2
+        tn = 2.0
         tp = 2.5
         conv_j_gc = 0.1
-        c_filtr1 = 20
-        c_filtr2 = -20
-        n_filtr = 2
-        p_filtr = 1
-        si_filtr = 12
+        c_filtr1 = 20.0
+        c_filtr2 = -20.0
+        n_filtr = 2.0
+        p_filtr = 1.0
+        si_filtr = 12.0
         faecal_fraction = 0.5
 
         ! Act
@@ -589,18 +589,18 @@ program tests_debgrz_computations
         real(kind=real_wp) :: pc1, pc2, pc3 !< Energy reserve dynamics per individual      [J/ind/d]
 
         ! Arrange
-        jxm_l2  = 1
-        kappa_a = 2
-        eg_l3   = 12
-        em_l3   = 4
+        jxm_l2  = 1.0
+        kappa_a = 2.0
+        eg_l3   = 12.0
+        em_l3   = 4.0
         pm_l3   = 0.123
         kappa   = 0.5
         delt1   = 0.1
         delt2   = 100000
         kT      = 0.1
         v       = 0.027
-        e1      = 2
-        e2      = -2
+        e1      = 2.0
+        e2      = -2.0
 
         ! Act
         call calculate_energy_reserve_dynamics(jxm_l2, kappa_a, eg_l3, em_l3, pm_l3, kappa, delt1, kT, v, e1, pc1)
@@ -647,16 +647,16 @@ program tests_debgrz_computations
 
         ! Arrange
         kappa       = 0.5
-        pc          = 10
+        pc          = 10.0
         conv_cm3_gc = 0.12
         conv_j_gc   = 0.3
-        eg_l3       = 2
+        eg_l3       = 2.0
         delt1       = 0.1
         delt2       = 0.01
         v           = 0.25
-        pm1          = 0.123
-        pm2          = 10
-        pm3          = 10
+        pm1         = 0.123
+        pm2         = 10.0
+        pm3         = 10.0
 
         ! Act
         call calculate_growth(kappa, pc, conv_cm3_gc, conv_j_gc, eg_l3, delt1, v, pm1, pv1, pg1, kappa_g)
@@ -690,9 +690,9 @@ program tests_debgrz_computations
         ! Arrange
         switchv1_0 = 0
         switchv1_1 = 1
-        v1 = 20
-        v2 = 90
-        vp = 80
+        v1 = 20.0
+        v2 = 90.0
+        vp = 80.0
 
         ! Act
         call get_maturity_fractions(switchv1_1, v1, vp, fjuv1, fadult1)
@@ -724,11 +724,11 @@ program tests_debgrz_computations
         ! Arrange
         switchv1_0 = 0
         switchv1_1 = 1
-        vp1 = 20
-        vp2 = 10
-        v = 15
-        e = 5
-        r = 12
+        vp1 = 20.0
+        vp2 = 10.0
+        v = 15.0
+        e = 5.0
+        r = 12.0
         fadult = 0.75
         conv_j_gc = 0.123e-3
         conv_cm3_gc = 0.456e-3
@@ -770,8 +770,8 @@ program tests_debgrz_computations
         pm_l3 = 0.123e-3
         kappar = 0.6
         delt = 0.01
-        v = 15
-        r  = 12
+        v = 15.0
+        r  = 12.0
         pc1 = 0.321
         pc2 = 0.321e-3
         kT = 0.456
@@ -816,21 +816,21 @@ program tests_debgrz_computations
         real(kind=real_wp) :: dpspw(3)               !< Delta energy for phosphorus for spawning [J/ind/d]
 
         ! Arrange
-        gsi = 15
-        gsi_upper1 = 10
-        gsi_upper2 = 20
-        gsi_lower1 = 5
-        gsi_lower2 = 17
-        temp = 12
-        minsptemp1 = 10
-        minsptemp2 = 15
+        gsi = 15.0
+        gsi_upper1 = 10.0
+        gsi_upper2 = 20.0
+        gsi_lower1 = 5.0
+        gsi_lower2 = 17.0
+        temp = 12.0
+        minsptemp1 = 10.0
+        minsptemp2 = 15.0
         r = 0.123
         rspawn = 0.456
         delt = 0.01
         tn = 0.3
         tp = 0.4
         pr = 0.321
-        dospawn = [0, 0, 1]
+        dospawn = [0.0, 0.0, 1.0]
 
         ! Act
         call calculate_spawning(gsi, gsi_lower1, gsi_upper1, temp, minsptemp1, r, rspawn, delt, tn, tp, &
@@ -876,15 +876,15 @@ program tests_debgrz_computations
         real(kind=real_wp) :: pomm           !< Energy flux ot organic shell matrix (ignored for now)
 
         ! Arrange
-        pm      = 1
-        pja     = 2
-        pjj     = 4
-        prj     = 8
+        pm      = 1.0
+        pja     = 2.0
+        pjj     = 4.0
+        prj     = 8.0
         kappa_g = 0.5
-        pg1     = 100
-        pra1    = 1000
-        pg2     = -100
-        pra2    = -1000
+        pg1     = 100.0
+        pra1    = 1000.0
+        pg2     = -100.0
+        pra2    = -1000.0
         kappar  = 0.25
         tn      = 0.11
         tp      = 0.33
@@ -922,10 +922,10 @@ program tests_debgrz_computations
         real(kind=real_wp) :: pm, pja, pjj, prj       !< Maintenance costs                              [J/ind/d]
 
         ! Arrange - with DELWAQ-843 the meaning of frsmosmi changes
-        pv        = 2
-        fpgrosmo1 = 3
-        ycacosmo1 = 1.0 / 5
-        fpgrosmo2 = -3
+        pv        = 2.0
+        fpgrosmo1 = 3.0
+        ycacosmo1 = 1.0 / 5.0
+        fpgrosmo2 = -3.0
         ycacosmo3 = 0.0   ! Should not lead to division by zero!
 
         ! pm, etc. chosen so that we retain the old values - before DELWAQ-843
