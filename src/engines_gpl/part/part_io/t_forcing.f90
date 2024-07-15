@@ -22,81 +22,81 @@
 !!  rights reserved.
 module m_t_forcing
 
-implicit none
+    implicit none
 
 contains
 
 
-      real function t_forcing(itime,iseg)
+    real function t_forcing(itime, iseg)
 
-!     read and evaluates temperatures forcing from file
+        !     read and evaluates temperatures forcing from file
 
-      implicit none
+        implicit none
 
-!     Arguments
+        !     Arguments
 
-      integer                      :: itime
-      integer                      :: iseg
+        integer :: itime
+        integer :: iseg
 
-      save
+        save
 
-!     Locals
+        !     Locals
 
-      integer, save                :: ifirst = 1
-      integer, save                :: lun_forcing, lun_binforcing
-      integer                      :: notime
-      integer                      :: num_cells
-      integer                      :: it
-      integer, save                :: it1, it2
-      integer, allocatable, save   :: t_time(:)
-      real   , allocatable, save   :: temperature(:)
-      character(len=256)           :: t_file
-      integer                      :: io_err
+        integer, save :: ifirst = 1
+        integer, save :: lun_forcing, lun_binforcing
+        integer :: notime
+        integer :: num_cells
+        integer :: it
+        integer, save :: it1, it2
+        integer, allocatable, save :: t_time(:)
+        real, allocatable, save :: temperature(:)
+        character(len = 256) :: t_file
+        integer :: io_err
 
-      if ( ifirst .eq. 1 ) then
-         ifirst = 0
-         open(newunit=lun_forcing,file='t_forcing.dat')
-         read(lun_forcing,*) notime
-         if ( notime .eq. -2 ) then
-            ! binary temperature file
-            read(lun_forcing,*) num_cells
-            read(lun_forcing,*) t_file
-            allocate(temperature(num_cells))
-            open(newunit=lun_binforcing,file=t_file,access='stream', form='unformatted')
-            read(lun_binforcing) it1,temperature
-            read(lun_binforcing) it2
-         else
-            allocate(t_time(notime))
-            allocate(temperature(notime))
-            do it = 1, notime
-               read(lun_forcing,*) t_time(it),temperature(it)
-            enddo
-            it = 1
-         endif
-      endif
-
-      if ( notime .eq. -2 ) then
-         do
-            if ( itime .ge. it2 ) then
-               it1 = it2
-               read(lun_binforcing) temperature
-               read(lun_binforcing,iostat=io_err) it2
+        if (ifirst == 1) then
+            ifirst = 0
+            open(newunit = lun_forcing, file = 't_forcing.dat')
+            read(lun_forcing, *) notime
+            if (notime == -2) then
+                ! binary temperature file
+                read(lun_forcing, *) num_cells
+                read(lun_forcing, *) t_file
+                allocate(temperature(num_cells))
+                open(newunit = lun_binforcing, file = t_file, access = 'stream', form = 'unformatted')
+                read(lun_binforcing) it1, temperature
+                read(lun_binforcing) it2
             else
-               exit
+                allocate(t_time(notime))
+                allocate(temperature(notime))
+                do it = 1, notime
+                    read(lun_forcing, *) t_time(it), temperature(it)
+                enddo
+                it = 1
             endif
-         enddo
-         t_forcing = temperature(iseg)
-      else
-         if ( it .ne. notime ) then
-            do
-               if ( itime .lt. t_time(it+1) ) exit
-               it = it + 1
-            enddo
-         endif
-         t_forcing = temperature(it)
-      endif
+        endif
 
-      return
-      end
+        if (notime == -2) then
+            do
+                if (itime >= it2) then
+                    it1 = it2
+                    read(lun_binforcing) temperature
+                    read(lun_binforcing, iostat = io_err) it2
+                else
+                    exit
+                endif
+            enddo
+            t_forcing = temperature(iseg)
+        else
+            if (it /= notime) then
+                do
+                    if (itime < t_time(it + 1)) exit
+                    it = it + 1
+                enddo
+            endif
+            t_forcing = temperature(it)
+        endif
+
+        return
+    end
 
 end module m_t_forcing

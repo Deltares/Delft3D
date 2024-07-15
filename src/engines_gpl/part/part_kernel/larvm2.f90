@@ -24,100 +24,100 @@
 module larvm2_mod
 
 contains
-      subroutine larvm2 ( lunrep   , itime    , nosegl   , num_layers    , nosubs   ,    &
-                          conc     )
+    subroutine larvm2 (lunrep, itime, nosegl, num_layers, nosubs, &
+            conc)
 
-      ! function            : calculate larvae per m2 over the water column, output to map file
+        ! function            : calculate larvae per m2 over the water column, output to map file
 
-      !
-      !  data definition module(s)
-      !
-      use m_waq_precision               ! single/double precision
-      use timers
-      implicit none
+        !
+        !  data definition module(s)
+        !
+        use m_waq_precision               ! single/double precision
+        use timers
+        implicit none
 
 
-      ! arguments :
+        ! arguments :
 
-      integer(int_wp ), intent(in)    :: lunrep              ! report file
-      integer(int_wp ), intent(in)    :: itime               ! time in seconds
-      integer(int_wp ), intent(in)    :: nosegl              ! number segments per layer
-      integer(int_wp ), intent(in)    :: num_layers               ! number of layers in calculation
-      integer(int_wp ), intent(in)    :: nosubs              ! number of substances per particle
-      real   (sp), pointer       :: conc  ( : , : )     ! concentration array in transport grid
+        integer(int_wp), intent(in) :: lunrep              ! report file
+        integer(int_wp), intent(in) :: itime               ! time in seconds
+        integer(int_wp), intent(in) :: nosegl              ! number segments per layer
+        integer(int_wp), intent(in) :: num_layers               ! number of layers in calculation
+        integer(int_wp), intent(in) :: nosubs              ! number of substances per particle
+        real   (sp), pointer :: conc  (:, :)     ! concentration array in transport grid
 
-      ! function            : calculate larvae per m2 over the water column
+        ! function            : calculate larvae per m2 over the water column
 
-      integer, save                     :: lunmm2
-      character(len=256)                :: filmm2
-      real   , allocatable, save        :: c_m2(:,:)
-      character(len=20), allocatable    :: syname(:)
-      character(len=40)                 :: moname(4)
-      integer, save                     :: num_substances_total
-      integer                           :: iseg
-      integer                           :: isegl
-      integer(int_wp )                       :: ilay
-      integer(int_wp )                       :: isys
-      integer(int_wp )                       :: istage
-      integer, save                     :: ifirst = 1
+        integer, save :: lunmm2
+        character(len = 256) :: filmm2
+        real, allocatable, save :: c_m2(:, :)
+        character(len = 20), allocatable :: syname(:)
+        character(len = 40) :: moname(4)
+        integer, save :: num_substances_total
+        integer :: iseg
+        integer :: isegl
+        integer(int_wp) :: ilay
+        integer(int_wp) :: isys
+        integer(int_wp) :: istage
+        integer, save :: ifirst = 1
 
-      if ( ifirst .eq. 1 ) then
-         ifirst = 0
-         filmm2    = 'larvae_m2.map'
-         moname(1) = 'larvae per m2'
-         moname(2) = ' '
-         moname(3) = ' '
-         moname(4) = ' '
-         num_substances_total     = nosubs + 1
-         allocate(syname(nosubs-3))
-         allocate(c_m2(nosubs-3,nosegl))
-         syname(1) = 'sole'
-         do isys = 2, nosubs-3
-            istage = isys - 1
-            write(syname(isys),'(''sole'',i2.2,''stage'')') istage
-         enddo
-         open (newunit=lunmm2, file=filmm2, access='stream', form='unformatted')
-         write(lunmm2) moname
-         write(lunmm2) nosubs-3,nosegl
-         write(lunmm2) syname
-      endif
-
-      do isegl = 1, nosegl
-
-         ! if seperate stages accumulate stages (thus skipping stage 0), also seperate per stage, num_substances_total = localdepth
-
-         if ( nosubs .gt. 4 ) then
-
-            c_m2(1,isegl) = 0.0
-            do istage = 1, nosubs-4
-               c_m2(1,isegl)        = c_m2(1,isegl) + conc(4+istage,isegl)*conc(num_substances_total,isegl)
-               c_m2(1+istage,isegl) = conc(4+istage,isegl)*conc(num_substances_total,isegl)
-               do ilay = 2, num_layers
-                  iseg = isegl + (ilay-1)*nosegl
-                  c_m2(1,isegl)        = c_m2(1,isegl) + conc(4+istage,iseg)*(conc(num_substances_total,iseg)-conc(num_substances_total,iseg-nosegl))
-                  c_m2(1+istage,isegl) = c_m2(1+istage,isegl) + conc(4+istage,iseg)*(conc(num_substances_total,iseg)-conc(num_substances_total,iseg-nosegl))
-               enddo
-               iseg = isegl + (num_layers-1) * nosegl
-               c_m2(1,isegl)        = c_m2(1,isegl) + conc(4+istage,iseg)
-               c_m2(1+istage,isegl) = c_m2(1+istage,isegl) + conc(4+istage,iseg)
+        if (ifirst == 1) then
+            ifirst = 0
+            filmm2 = 'larvae_m2.map'
+            moname(1) = 'larvae per m2'
+            moname(2) = ' '
+            moname(3) = ' '
+            moname(4) = ' '
+            num_substances_total = nosubs + 1
+            allocate(syname(nosubs - 3))
+            allocate(c_m2(nosubs - 3, nosegl))
+            syname(1) = 'sole'
+            do isys = 2, nosubs - 3
+                istage = isys - 1
+                write(syname(isys), '(''sole'',i2.2,''stage'')') istage
             enddo
+            open (newunit = lunmm2, file = filmm2, access = 'stream', form = 'unformatted')
+            write(lunmm2) moname
+            write(lunmm2) nosubs - 3, nosegl
+            write(lunmm2) syname
+        endif
 
-         else
+        do isegl = 1, nosegl
 
-            ! just cummulate substance 1 per layer
+            ! if seperate stages accumulate stages (thus skipping stage 0), also seperate per stage, num_substances_total = localdepth
 
-            c_m2(1,isegl) = conc(1,isegl)*conc(num_substances_total,isegl)
-            do ilay = 2, num_layers
-               iseg = isegl + (ilay-1)*nosegl
-               c_m2(1,isegl) = c_m2(1,isegl) + conc(1,iseg)*(conc(num_substances_total,iseg)-conc(num_substances_total,iseg-nosegl))
-            enddo
-            iseg = isegl + (num_layers-1) * nosegl
-            c_m2(1,isegl) = c_m2(1,isegl) + conc(1,iseg)
+            if (nosubs > 4) then
 
-         endif
-      enddo
-      write(lunmm2) itime, c_m2
+                c_m2(1, isegl) = 0.0
+                do istage = 1, nosubs - 4
+                    c_m2(1, isegl) = c_m2(1, isegl) + conc(4 + istage, isegl) * conc(num_substances_total, isegl)
+                    c_m2(1 + istage, isegl) = conc(4 + istage, isegl) * conc(num_substances_total, isegl)
+                    do ilay = 2, num_layers
+                        iseg = isegl + (ilay - 1) * nosegl
+                        c_m2(1, isegl) = c_m2(1, isegl) + conc(4 + istage, iseg) * (conc(num_substances_total, iseg) - conc(num_substances_total, iseg - nosegl))
+                        c_m2(1 + istage, isegl) = c_m2(1 + istage, isegl) + conc(4 + istage, iseg) * (conc(num_substances_total, iseg) - conc(num_substances_total, iseg - nosegl))
+                    enddo
+                    iseg = isegl + (num_layers - 1) * nosegl
+                    c_m2(1, isegl) = c_m2(1, isegl) + conc(4 + istage, iseg)
+                    c_m2(1 + istage, isegl) = c_m2(1 + istage, isegl) + conc(4 + istage, iseg)
+                enddo
 
-      return
-      end subroutine
+            else
+
+                ! just cummulate substance 1 per layer
+
+                c_m2(1, isegl) = conc(1, isegl) * conc(num_substances_total, isegl)
+                do ilay = 2, num_layers
+                    iseg = isegl + (ilay - 1) * nosegl
+                    c_m2(1, isegl) = c_m2(1, isegl) + conc(1, iseg) * (conc(num_substances_total, iseg) - conc(num_substances_total, iseg - nosegl))
+                enddo
+                iseg = isegl + (num_layers - 1) * nosegl
+                c_m2(1, isegl) = c_m2(1, isegl) + conc(1, iseg)
+
+            endif
+        enddo
+        write(lunmm2) itime, c_m2
+
+        return
+    end subroutine
 end module
