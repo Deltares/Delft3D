@@ -559,6 +559,10 @@ interface unc_put_var_map
    module procedure unc_put_var_map_dble3
 end interface unc_put_var_map
 
+interface unc_put_var_rst
+   module procedure unc_put_var_rst_dble
+end interface unc_put_var_rst
+
 interface unc_put_att
    module procedure unc_put_att_int
    module procedure unc_put_att_dble
@@ -4667,8 +4671,8 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
           endif !(jarstbnd > 0 .and. ndxbnd > 0)
           ! density (only necessary if morphodynamics and fractions in suspension and consider concentrations in density)
           if (stmpar%morpar%densin) then
-             call write_rho(irstfile,id_rho   ,id_rho_bnd   ,rho   ,itim)
-             call write_rho(irstfile,id_rhowat,id_rhowat_bnd,rhowat,itim)
+             ierr = unc_put_var_rst(irstfile, id_rho, id_rho_bnd, rho, itim)
+             ierr = unc_put_var_rst(irstfile, id_rhowat, id_rhowat_bnd, rhowat, itim)
           endif !(stmpar%morpar%densin)
        endif !(stmpar%lsedsus .gt. 0)
        ! morbl
@@ -18433,8 +18437,8 @@ enddo
 
 end subroutine read_sediment
 
-!> Write rho
-subroutine write_rho(irstfile,id_rho,id_rho_bnd,rho,itim)
+!> Write 2D/3D array on cell centres and for boundaries
+function unc_put_var_rst_dble(irstfile,id_var,id_var_bnd,var,itim) result(ierr)
 
 use m_flowgeom, only: ndxi, ndx
 use m_flow, only: kmx, work1
@@ -18444,8 +18448,8 @@ use fm_external_forcings_data, only: ndxbnd_own
 use m_partitioninfo, only: jampi
 
 !input/output
-integer, intent(in) :: irstfile,id_rho,id_rho_bnd, itim
-double precision, allocatable, intent(in) :: rho(:)
+integer, intent(in) :: irstfile,id_var,id_var_bnd, itim
+double precision, allocatable, intent(in) :: var(:)
 
 !local
 integer :: k, kk, kb, kt, nlayb, nrlay, ierr, ndxbnd
@@ -18457,28 +18461,29 @@ else
 endif
 
 if (kmx > 0) then !3D
-   call get_3d_data(rho,1,ndxi,work1) !output in `work1`
-   ierr = nf90_put_var(irstfile, id_rho, work1(1:kmx,1:ndxi), (/ 1, 1, itim /), (/ kmx, ndxi, 1 /))
+   call get_3d_data(var,1,ndxi,work1) !output in `work1`
+   ierr = nf90_put_var(irstfile, id_var, work1(1:kmx,1:ndxi), (/ 1, 1, itim /), (/ kmx, ndxi, 1 /))
 else !2D
-   ierr = nf90_put_var(irstfile, id_rho, rho(1:ndxi), (/ 1, itim /), (/ ndxi, 1 /))
+   ierr = nf90_put_var(irstfile, id_var, var(1:ndxi), (/ 1, itim /), (/ ndxi, 1 /))
 endif !(kmx > 0)
-!rho at boundaries
+!var at boundaries
 if (jarstbnd > 0 .and. ndxbnd > 0) then
    if (kmx > 0) then !3D
-      call get_3d_data(rho,ndxi+1,ndx,work1) !output in `work1`
-      ierr = nf90_put_var(irstfile, id_rho_bnd, work1(1:kmx,1:ndxbnd), (/ 1, 1, itim /), (/ kmx, ndxbnd, 1 /))
+      call get_3d_data(var,ndxi+1,ndx,work1) !output in `work1`
+      ierr = nf90_put_var(irstfile, id_var_bnd, work1(1:kmx,1:ndxbnd), (/ 1, 1, itim /), (/ kmx, ndxbnd, 1 /))
    else !2D
-      ierr = nf90_put_var(irstfile, id_rho_bnd, rho(ndxi+1:ndx), (/ 1, itim /), (/ ndxbnd, 1 /))
+      ierr = nf90_put_var(irstfile, id_var_bnd, var(ndxi+1:ndx), (/ 1, itim /), (/ ndxbnd, 1 /))
    endif !(kmx > 0)
 endif
 
-end subroutine write_rho
+end function unc_put_var_rst_dble
 
-subroutine get_3d_data(rho,idx1,idx2,work1)
+!> Get 3D array on cell centres
+subroutine get_3d_array_cc(var,idx1,idx2,work1)
 
 use m_missing, only: dmiss
 
-double precision, allocatable, intent(in) :: rho(:)
+double precision, allocatable, intent(in) :: var(:)
 integer, intent(in) :: idx1, idx2
 double precision, intent(out) :: work1(:,:)
 
@@ -18489,10 +18494,10 @@ do kk=idx1,idx2
    call getkbotktop(kk,kb,kt)
    call getlayerindices(kk, nlayb, nrlay)
    do k = kb,kt
-      work1(k-kb+nlayb,kk) = rho(k)
+      work1(k-kb+nlayb,kk) = var(k)
    enddo
 enddo
 
-end subroutine get_3d_data
+end subroutine get_3d_array_cc
 
 end module unstruc_netcdf
