@@ -28,7 +28,7 @@ teamcity_retrieve_engine_test_status.py --tbroot Delft3DSobek_DimrTestbench  # D
 TEST_RESULT_FOLDER = "TMPdownload_teamcity_retrieve"
 BASE_URL = "https://dpcbuild.deltares.nl"
 REST_API_URL = f"{BASE_URL}/httpAuth/app/rest"
-PROJECTS_URL = f"{REST_API_URL}/projects/id:%s"
+PROJECTS_URL = f"{REST_API_URL}/projects/id:"
 TEST_OCCURRENCES = "./testOccurrences"
 
 
@@ -274,7 +274,7 @@ def get_engine_cases_from_url(url: str, username: str, password: str, given_buil
     engine_name = xml_engine_root.attrib["name"]
     case_list = get_configuration_info(xml_engine_root, given_build_config)
     if len(case_list) != 0:
-        print(f"\tRetrieved {engine_name}")    
+        print(f"\tRetrieved {engine_name}")
     return EngineCaseList(engine_name, case_list)
 
 
@@ -309,7 +309,7 @@ def get_test_result_list(log_file: TextIOWrapper, engine_cases: EngineCaseList) 
             test_overview.append(create_configuration_test_result(build, case_info.name, status_text))
 
         if len(test_overview) == 0:
-            log_to_file(log_file, "ERROR: No data available for project %s" % identifier)
+            log_to_file(log_file, f"ERROR: No data available for project {identifier}")
             continue
 
         i = test_overview.__len__() - 1
@@ -461,12 +461,12 @@ def get_tree_entire_engine_test_results(
     -------
         TreeResult: entire tree test results.
     """
-    project_url = PROJECTS_URL % project_ids
+    project_url = f"{PROJECTS_URL}{project_ids}"
 
     try:
         project_response = get_request(project_url, username, password)
     except:
-        print("Given URL does not exist: %s" % project_url)
+        print(f"Given URL does not exist: {project_url}")
         return 1
 
     if not text_in_xml_message(project_response.text):
@@ -482,7 +482,7 @@ def get_tree_entire_engine_test_results(
     engine_results = []
     for engine in engines:
         print(f"Retrieving {engine.name}")
-        url = PROJECTS_URL % engine.identifier
+        url = f"{PROJECTS_URL}{engine.identifier}"
         engine_req = get_request(url, username, password)
         if not text_in_xml_message(engine_req.text):
             return 1
@@ -498,7 +498,7 @@ def get_tree_entire_engine_test_results(
         for projects_node in xml_engine_root.findall("projects"):
             for project in projects_node:
                 project_info = ConfigurationInfo(project.attrib["name"], project.attrib["id"])
-                url_3 = PROJECTS_URL % project_info.identifier
+                url_3 = f"{PROJECTS_URL}{project_info.identifier}"
                 level_req = get_request(url_3, username, password)
                 if not text_in_xml_message(level_req.text):
                     return 1
@@ -516,33 +516,33 @@ def get_tree_entire_engine_test_results(
 
 def log_executive_summary(log_file: TextIOWrapper, summarydata: ExecutiveSummary) -> None:
     """Log executive summary to a file."""
-    log_to_file(log_file, "\nTestbench root: %s" % summarydata.name)
+    log_to_file(log_file, f"\nTestbench root: {summarydata.name}")
     for summary in summarydata.summary:
         total = (
             summary.sum_passed + summary.sum_failed + summary.sum_exception + summary.sum_ignored + summary.sum_muted
         )
         not_passed = summary.sum_failed + summary.sum_exception + summary.sum_ignored + summary.sum_muted
-        a = 0.0
+        percentage = 0.0
         if total > 0:
-            a = float(summary.sum_passed) / float(total) * 100.0
+            percentage = float(summary.sum_passed) / float(total) * 100.0
 
-        log_to_file(log_file, "\nSummary: %s" % summary.name)
-        log_to_file(log_file, "Total tests   : %6d" % (total))
-        log_to_file(log_file, "    Passed    : %6d" % summary.sum_passed)
-        log_to_file(log_file, "    Not passed: %6d" % not_passed)
-        log_to_file(log_file, "    Failed    : %6d" % summary.sum_failed)
-        log_to_file(log_file, "    Exception : %6d" % summary.sum_exception)
-        log_to_file(log_file, "    Ignored   : %6d" % summary.sum_ignored)
-        log_to_file(log_file, "    Muted     : %6d" % summary.sum_muted)
-        log_to_file(log_file, "    Percentage: %6.2f" % float(a))
+        log_to_file(log_file, f"\nSummary: {summary.name}")
+        log_to_file(log_file, f"Total tests   : {total:6d}")
+        log_to_file(log_file, f"    Passed    : {summary.sum_passed:6d}")
+        log_to_file(log_file, f"    Not passed: {not_passed:6d}")
+        log_to_file(log_file, f"    Failed    : {summary.sum_failed:6d}")
+        log_to_file(log_file, f"    Exception : {summary.sum_exception:6d}")
+        log_to_file(log_file, f"    Ignored   : {summary.sum_ignored:6d}")
+        log_to_file(log_file, f"    Muted     : {summary.sum_muted:6d}")
+        log_to_file(log_file, f"    Percentage: {float(percentage):6.2f}")
 
 
 def log_tree(log_file: TextIOWrapper, tree_result: TreeResult) -> None:
     """Log project tree to a file."""
-    log_to_file(log_file, "%s" % tree_result.name)
+    log_to_file(log_file, f"{tree_result.name}")
 
     for engine_result in tree_result.engine_results:
-        log_to_file(log_file, "    %s" % engine_result.name)
+        log_to_file(log_file, f"    {engine_result.name}")
         if len(engine_result.sub_engine_results) != 0:
             for result in engine_result.sub_engine_results:
                 log_engine(log_file, result.name, result.engine_results)
@@ -552,7 +552,7 @@ def log_tree(log_file: TextIOWrapper, tree_result: TreeResult) -> None:
 
 def log_engine(log_file: TextIOWrapper, name: str, engines: List[ConfigurationTestResult]) -> None:
     """Log engine list to a file."""
-    log_to_file(log_file, "        %s" % name)
+    log_to_file(log_file, f"        {name}")
     log_to_file(
         log_file,
         "               total   passed   failed   except  ignored    muted        %  --- test case name            (# build)",
@@ -562,9 +562,9 @@ def log_engine(log_file: TextIOWrapper, name: str, engines: List[ConfigurationTe
     sum_test_result = get_sum_test_result(engines)
 
     configuration_summary = TestResultExecutiveSummary(sum_test_result.passed, sum_test_result.get_not_passed_total())
-    log_to_file(log_file, "            Total     : %6d" % configuration_summary.total)
-    log_to_file(log_file, "            Passed    : %6d" % configuration_summary.passed)
-    log_to_file(log_file, "            Percentage: %6.2f" % configuration_summary.percentage)
+    log_to_file(log_file, f"            Total     : {configuration_summary.total:6d}")
+    log_to_file(log_file, f"            Passed    : {configuration_summary.passed:6d}")
+    log_to_file(log_file, f"            Percentage: {configuration_summary.percentage:6.2f}")
 
 
 def log_coniguration_line(log_file: TextIOWrapper, line: ConfigurationTestResult) -> None:
@@ -577,36 +577,23 @@ def log_coniguration_line(log_file: TextIOWrapper, line: ConfigurationTestResult
     if total > 0:
         log_to_file(
             log_file,
-            "            %8d %8d %8d %8d %8d %8d %8.2f  ---  %-24s (#%s)"
-            % (
-                total,
-                line.test_result.passed,
-                line.test_result.failed,
-                line.test_result.exception,
-                line.test_result.ignored,
-                line.test_result.muted,
-                a,
-                line.name,
-                line.build_nr,
-            ),
+            f"            {total:8d} {line.test_result.passed:8d} {line.test_result.failed:8d} {line.test_result.exception:8d} {line.test_result.ignored:8d} {line.test_result.muted:8d} {a:8.2f}  ---  {line.name:<24s} (#{line.build_nr:s})",
         )
     else:
         log_to_file(
             log_file,
-            "                   x        x        x        x        x        x        x  ---  %-24s (#%s)"
-            % (line.name, line.build_nr),
+            f"                   x        x        x        x        x        x        x  ---  {line.name:<24s} (#{line.build_nr:s})",
         )
         log_to_file(
             log_file,
-            "                                                                            xxx  %s" % line.status_text,
+            f"                                                                            xxx  {line.status_text}",
         )
 
     if line.test_result.exception != 0:
         for exception in line.exceptions:
             log_to_file(
                 log_file,
-                "                                                                            xxx  Exception %s"
-                % exception,
+                f"                                                                            xxx  Exception {exception}",
             )
 
 
@@ -694,10 +681,10 @@ if __name__ == "__main__":
         os.remove(out_put)
     log_file = open(out_put, "a")
 
-    print("Start: %s\n" % start_time)
-    log_to_file(log_file, "Start: %s\n" % start_time)
+    print("Start: {start_time}\n")
+    log_to_file(log_file, f"Start: {start_time}\n")
 
-    print("Listing is written to: %s" % out_put)
+    print(f"Listing is written to: {out_put}")
 
     tree_result_overview = get_tree_entire_engine_test_results(log_file, tbroot, given_build_config, username, password)
     log_tree(log_file, tree_result_overview)
@@ -707,9 +694,9 @@ if __name__ == "__main__":
     if os.path.exists(TEST_RESULT_FOLDER):
         shutil.rmtree(TEST_RESULT_FOLDER)
 
-    log_to_file(log_file, "Start: %s" % start_time)
-    log_to_file(log_file, "End  : %s" % datetime.now())
+    log_to_file(log_file, f"Start: {start_time}")
+    log_to_file(log_file, f"End  : {datetime.now()}")
     log_to_file(log_file, "Ready")
-    print("\nStart: %s" % start_time)
-    print("End  : %s" % datetime.now())
+    print(f"\nStart: {start_time}")
+    print(f"End  : {datetime.now()}")
     print("Ready")
