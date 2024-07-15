@@ -54,7 +54,9 @@
 			<path>thirdparty/checkhydbal/lnx64/run_checkhydbal.sh</path>
 		</program>
         <program name="dimr" logOutputToFile="true">
-            <location ref="tools" type="check" />
+            <location ref="tools" type="check">
+                <from>.</from>
+            </location>
             <path>create_and_execute_run_docker.sh</path>
         </program>
     </programs>
