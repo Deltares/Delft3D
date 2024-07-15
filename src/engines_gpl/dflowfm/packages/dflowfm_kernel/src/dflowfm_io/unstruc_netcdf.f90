@@ -18461,7 +18461,7 @@ else
 endif
 
 if (kmx > 0) then !3D
-   call get_3d_data(var,1,ndxi,work1) !output in `work1`
+   call vector_to_matrix_3d_data(var,1,ndxi,work1) !output in `work1`
    ierr = nf90_put_var(irstfile, id_var, work1(1:kmx,1:ndxi), (/ 1, 1, itim /), (/ kmx, ndxi, 1 /))
 else !2D
    ierr = nf90_put_var(irstfile, id_var, var(1:ndxi), (/ 1, itim /), (/ ndxi, 1 /))
@@ -18469,7 +18469,7 @@ endif !(kmx > 0)
 !var at boundaries
 if (jarstbnd > 0 .and. ndxbnd > 0) then
    if (kmx > 0) then !3D
-      call get_3d_data(var,ndxi+1,ndx,work1) !output in `work1`
+      call vector_to_matrix_3d_data(var,ndxi+1,ndx,work1) !output in `work1`
       ierr = nf90_put_var(irstfile, id_var_bnd, work1(1:kmx,1:ndxbnd), (/ 1, 1, itim /), (/ kmx, ndxbnd, 1 /))
    else !2D
       ierr = nf90_put_var(irstfile, id_var_bnd, var(ndxi+1:ndx), (/ 1, itim /), (/ ndxbnd, 1 /))
@@ -18478,8 +18478,8 @@ endif
 
 end function unc_put_var_rst_dble
 
-!> Get 3D array on cell centres
-subroutine get_3d_data(var,idx1,idx2,work1)
+!> Transfrom vector information to matrix for 3D information on cell centres
+subroutine vector_to_matrix_3d_data(var,idx1,idx2,work1)
 
 use m_missing, only: dmiss
 
@@ -18498,6 +18498,29 @@ do kk=idx1,idx2
    enddo
 enddo
 
-end subroutine get_3d_data
+end subroutine vector_to_matrix_3d_data
+
+
+!> Transfrom matrix information to vector for 3D information on cell centres
+subroutine matrix_to_vector_3d_data(work1,idx1,idx2,var)
+
+use m_missing, only: dmiss
+
+double precision, intent(in) :: work1(:,:)
+integer, intent(in) :: idx1, idx2
+double precision, allocatable, intent(inout) :: var(:)
+
+integer :: k, kk, kb, kt, nlayb, nrlay
+
+do kk=idx1,idx2
+   call getkbotktop(kk,kb,kt)
+   call getlayerindices(kk, nlayb, nrlay)
+   do k = kb,kt
+      var(k) = work1(k-kb+nlayb,kk)
+   enddo
+enddo
+
+end subroutine matrix_to_vector_3d_data
+
 
 end module unstruc_netcdf
