@@ -1,0 +1,27 @@
+2024-07-04 16:04:20,324 [INFO   ] Skip e02_f029_c001_frisianinlet_schematized_2D due to filter.
+2024-07-04 16:04:20,325 [INFO   ] Skip e02_f029_c002_frisianinlet_schematized_3D_s due to filter.
+2024-07-04 16:04:20,325 [INFO   ] Skip e02_f029_c003_frisianinlet_schematized_3D_z due to filter.
+2024-07-04 16:04:20,325 [INFO   ] Skip e02_f029_c010_sourcesink_2D due to filter.
+2024-07-04 16:04:20,325 [INFO   ] Skip e02_f029_c011_sourcesink_3D_s due to filter.
+2024-07-04 16:04:20,326 [INFO   ] Skip e02_f029_c012_sourcesink_3D_z due to filter.
+2024-07-04 16:04:20,326 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:04:20,327 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:04:20,328 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:04:20,328 [INFO   ] Config   : configs/dimr/dimr_dflowfm_hyd_win64.xml
+2024-07-04 16:04:20,328 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:04:20,328 [INFO   ] LogLevel : 20
+2024-07-04 16:04:20,328 [INFO   ] Download : []
+2024-07-04 16:04:20,329 [INFO   ] Execute  : skip
+2024-07-04 16:04:20,329 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:04:20,329 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:04:20,329 [INFO   ] 
+2024-07-04 16:04:20,329 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:04:20,330 [INFO   ] Start of test-bench
+2024-07-04 16:04:20,330 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:04:20,330 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:04:20,330 [ERROR  ] 
+2024-07-04 16:04:20,330 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:04:20,331 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:04:20,331 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:04:20,331 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:04:20,331 [ERROR  ] 	startat    (test case name = substring is the first testcase)

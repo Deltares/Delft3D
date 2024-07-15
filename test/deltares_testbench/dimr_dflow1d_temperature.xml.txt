@@ -1,0 +1,26 @@
+2024-07-04 16:06:36,612 [INFO   ] Skip e106_f12_c01_excess_model due to filter.
+2024-07-04 16:06:36,612 [INFO   ] Skip e106_f12_c02_composite_model_constant_values due to filter.
+2024-07-04 16:06:36,612 [INFO   ] Skip e106_f12_c03_composite_model_1year due to filter.
+2024-07-04 16:06:36,613 [INFO   ] Skip e106_f12_c04_composite_model_1year_multiple_channels due to filter.
+2024-07-04 16:06:36,613 [INFO   ] Skip e106_f12_c05_space_varying_meteo due to filter.
+2024-07-04 16:06:36,613 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:06:36,613 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:06:36,615 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:06:36,615 [INFO   ] Config   : configs/dimr/dimr_dflow1d_temperature.xml
+2024-07-04 16:06:36,615 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:06:36,616 [INFO   ] LogLevel : 20
+2024-07-04 16:06:36,616 [INFO   ] Download : []
+2024-07-04 16:06:36,616 [INFO   ] Execute  : skip
+2024-07-04 16:06:36,616 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:06:36,616 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:06:36,616 [INFO   ] 
+2024-07-04 16:06:36,617 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:06:36,617 [INFO   ] Start of test-bench
+2024-07-04 16:06:36,617 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:06:36,617 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:06:36,617 [ERROR  ] 
+2024-07-04 16:06:36,618 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:06:36,618 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:06:36,618 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:06:36,618 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:06:36,619 [ERROR  ] 	startat    (test case name = substring is the first testcase)

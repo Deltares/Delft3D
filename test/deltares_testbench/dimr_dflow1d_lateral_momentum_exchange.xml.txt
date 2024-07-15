@@ -1,0 +1,33 @@
+2024-07-04 16:06:25,071 [INFO   ] Skip e106_f16_c01_constant-point-lateral-inflow_iadvec1d_1 due to filter.
+2024-07-04 16:06:25,071 [INFO   ] Skip e106_f16_c02_constant-point-lateral-inflow_iadvec1d_2 due to filter.
+2024-07-04 16:06:25,071 [INFO   ] Skip e106_f16_c03_constant-point-lateral-inflow_iadvec1d_5 due to filter.
+2024-07-04 16:06:25,072 [INFO   ] Skip e106_f16_c04_constant-point-lateral-outflow_iadvec1d_1 due to filter.
+2024-07-04 16:06:25,072 [INFO   ] Skip e106_f16_c05_constant-point-lateral-outflow_iadvec1d_2 due to filter.
+2024-07-04 16:06:25,072 [INFO   ] Skip e106_f16_c06_constant-point-lateral-outflow_iadvec1d_5 due to filter.
+2024-07-04 16:06:25,073 [INFO   ] Skip e106_f16_c07_no-lateral-inflow_storage-area_iadvec1d_1 due to filter.
+2024-07-04 16:06:25,074 [INFO   ] Skip e106_f16_c08_no-lateral-inflow_storage-area_iadvec1d_2 due to filter.
+2024-07-04 16:06:25,074 [INFO   ] Skip e106_f16_c09_no-lateral-inflow_storage-area_iadvec1d_5 due to filter.
+2024-07-04 16:06:25,074 [INFO   ] Skip e106_f16_c10_time-dependent-point-lateral-discharge_iadvec1d_1 due to filter.
+2024-07-04 16:06:25,075 [INFO   ] Skip e106_f16_c11_time-dependent-point-lateral-discharge_iadvec1d_2 due to filter.
+2024-07-04 16:06:25,075 [INFO   ] Skip e106_f16_c12_time-dependent-point-lateral-discharge_iadvec1d_5 due to filter.
+2024-07-04 16:06:25,075 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:06:25,075 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:06:25,075 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:06:25,076 [INFO   ] Config   : configs/dimr/dimr_dflow1d_lateral_momentum_exchange.xml
+2024-07-04 16:06:25,076 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:06:25,076 [INFO   ] LogLevel : 20
+2024-07-04 16:06:25,076 [INFO   ] Download : []
+2024-07-04 16:06:25,077 [INFO   ] Execute  : skip
+2024-07-04 16:06:25,077 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:06:25,077 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:06:25,077 [INFO   ] 
+2024-07-04 16:06:25,078 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:06:25,078 [INFO   ] Start of test-bench
+2024-07-04 16:06:25,078 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:06:25,078 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:06:25,078 [ERROR  ] 
+2024-07-04 16:06:25,079 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:06:25,079 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:06:25,079 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:06:25,079 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:06:25,079 [ERROR  ] 	startat    (test case name = substring is the first testcase)

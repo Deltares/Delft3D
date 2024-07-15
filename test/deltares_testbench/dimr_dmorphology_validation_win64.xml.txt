@@ -1,0 +1,34 @@
+2024-07-04 16:04:30,065 [INFO   ] Skip e02_f022_c02_trench_EH due to filter.
+2024-07-04 16:04:30,065 [INFO   ] Skip e02_f022_c06_spatiald50 due to filter.
+2024-07-04 16:04:30,066 [INFO   ] Skip e02_f022_c10_fixed_layer due to filter.
+2024-07-04 16:04:30,066 [INFO   ] Skip e02_f022_c17_bedslope_effect_slope022 due to filter.
+2024-07-04 16:04:30,066 [INFO   ] Skip e02_f022_c18_bedslope_effect_slope044 due to filter.
+2024-07-04 16:04:30,067 [INFO   ] Skip e02_f022_c21_boundary_condition_icond2 due to filter.
+2024-07-04 16:04:30,067 [INFO   ] Skip e02_f022_c29_curvebend_spiral due to filter.
+2024-07-04 16:04:30,067 [INFO   ] Skip e02_f022_c30_curvebend_spiral_mor due to filter.
+2024-07-04 16:04:30,068 [INFO   ] Skip e02_f022_c31_curvebend_spiral_mor_Bedup due to filter.
+2024-07-04 16:04:30,069 [INFO   ] Skip e02_f022_c47_mor_restart due to filter.
+2024-07-04 16:04:30,069 [INFO   ] Skip e02_f022_c61_curvebend_spiral_dhl due to filter.
+2024-07-04 16:04:30,069 [INFO   ] Skip e02_f023_c35_dad_inside_dumping due to filter.
+2024-07-04 16:04:30,069 [INFO   ] Skip e02_f090_c012_waal_mor_2d due to filter.
+2024-07-04 16:04:30,070 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:04:30,070 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:04:30,070 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:04:30,070 [INFO   ] Config   : configs/dimr/dimr_dmorphology_validation_win64.xml
+2024-07-04 16:04:30,071 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:04:30,071 [INFO   ] LogLevel : 20
+2024-07-04 16:04:30,071 [INFO   ] Download : []
+2024-07-04 16:04:30,071 [INFO   ] Execute  : skip
+2024-07-04 16:04:30,071 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:04:30,072 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:04:30,072 [INFO   ] 
+2024-07-04 16:04:30,072 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:04:30,072 [INFO   ] Start of test-bench
+2024-07-04 16:04:30,072 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:04:30,073 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:04:30,073 [ERROR  ] 
+2024-07-04 16:04:30,073 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:04:30,073 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:04:30,074 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:04:30,074 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:04:30,074 [ERROR  ] 	startat    (test case name = substring is the first testcase)

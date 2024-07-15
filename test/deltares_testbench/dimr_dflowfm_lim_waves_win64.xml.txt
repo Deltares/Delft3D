@@ -1,0 +1,26 @@
+2024-07-04 16:04:17,173 [INFO   ] Skip e02_f043_c01_WAQ_2D due to filter.
+2024-07-04 16:04:17,174 [INFO   ] Skip e02_f043_c02_WAQ_3D due to filter.
+2024-07-04 16:04:17,174 [INFO   ] Skip e02_f043_c03_WAQ_3D due to filter.
+2024-07-04 16:04:17,174 [INFO   ] Skip e02_f043_c04 due to filter.
+2024-07-04 16:04:17,174 [INFO   ] Skip e02_f043_c05 due to filter.
+2024-07-04 16:04:17,175 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:04:17,175 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:04:17,180 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:04:17,181 [INFO   ] Config   : configs/dimr/dimr_dflowfm_lim_waves_win64.xml
+2024-07-04 16:04:17,181 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:04:17,181 [INFO   ] LogLevel : 20
+2024-07-04 16:04:17,181 [INFO   ] Download : []
+2024-07-04 16:04:17,182 [INFO   ] Execute  : skip
+2024-07-04 16:04:17,182 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:04:17,182 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:04:17,182 [INFO   ] 
+2024-07-04 16:04:17,182 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:04:17,183 [INFO   ] Start of test-bench
+2024-07-04 16:04:17,183 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:04:17,183 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:04:17,183 [ERROR  ] 
+2024-07-04 16:04:17,184 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:04:17,184 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:04:17,184 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:04:17,184 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:04:17,185 [ERROR  ] 	startat    (test case name = substring is the first testcase)

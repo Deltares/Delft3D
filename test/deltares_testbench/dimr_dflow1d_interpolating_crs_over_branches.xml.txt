@@ -1,0 +1,24 @@
+2024-07-04 16:06:18,095 [INFO   ] Skip e106_f14_c01_264_flow-diversion_RWS_crs_profile due to filter.
+2024-07-04 16:06:18,096 [INFO   ] Skip e106_f14_c04_267_flow-diversion_YZ-table due to filter.
+2024-07-04 16:06:18,096 [INFO   ] Skip e106_f14_c05_268_flow-diversion_YZ-table due to filter.
+2024-07-04 16:06:18,096 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:06:18,097 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:06:18,097 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:06:18,098 [INFO   ] Config   : configs/dimr/dimr_dflow1d_interpolating_crs_over_branches.xml
+2024-07-04 16:06:18,099 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:06:18,099 [INFO   ] LogLevel : 20
+2024-07-04 16:06:18,099 [INFO   ] Download : []
+2024-07-04 16:06:18,099 [INFO   ] Execute  : skip
+2024-07-04 16:06:18,099 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:06:18,100 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:06:18,100 [INFO   ] 
+2024-07-04 16:06:18,100 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:06:18,100 [INFO   ] Start of test-bench
+2024-07-04 16:06:18,100 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:06:18,101 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:06:18,101 [ERROR  ] 
+2024-07-04 16:06:18,101 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:06:18,101 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:06:18,101 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:06:18,102 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:06:18,102 [ERROR  ] 	startat    (test case name = substring is the first testcase)

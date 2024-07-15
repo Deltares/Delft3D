@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "D:\checkouts\oss_trunk\test\deltares_testbench\Testbench.py", line 24, in <module>
+    ) = XmlConfigParser().load(settings, logger)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\checkouts\oss_trunk\test\deltares_testbench\src\utils\xml_config_parser.py", line 87, in load
+    self.__validate__()
+  File "D:\checkouts\oss_trunk\test\deltares_testbench\src\utils\xml_config_parser.py", line 202, in __validate__
+    xml_doc: etree._ElementTree = etree.parse(self.__testbench_settings.config_file, parser)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "src\\lxml\\etree.pyx", line 3547, in lxml.etree.parse
+  File "src\\lxml\\parser.pxi", line 1952, in lxml.etree._parseDocument
+  File "src\\lxml\\parser.pxi", line 1978, in lxml.etree._parseDocumentFromURL
+  File "src\\lxml\\parser.pxi", line 1881, in lxml.etree._parseDocFromFile
+  File "src\\lxml\\parser.pxi", line 1200, in lxml.etree._BaseParser._parseDocFromFile
+  File "src\\lxml\\parser.pxi", line 633, in lxml.etree._ParserContext._handleParseResultDoc
+  File "src\\lxml\\parser.pxi", line 743, in lxml.etree._handleParseResult
+  File "src\\lxml\\parser.pxi", line 670, in lxml.etree._raiseParseError
+OSError: Error reading file 'configs/dimr/dimr_dwaq_win64.xml': failed to load external entity "configs/dimr/dimr_dwaq_win64.xml"

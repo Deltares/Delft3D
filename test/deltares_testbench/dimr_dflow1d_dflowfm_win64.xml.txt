@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "D:\checkouts\oss_trunk\test\deltares_testbench\Testbench.py", line 24, in <module>
+    ) = XmlConfigParser().load(settings, logger)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\checkouts\oss_trunk\test\deltares_testbench\src\utils\xml_config_parser.py", line 87, in load
+    self.__validate__()
+  File "D:\checkouts\oss_trunk\test\deltares_testbench\src\utils\xml_config_parser.py", line 205, in __validate__
+    xmlschema.assertValid(xml_doc)
+  File "src\\lxml\\etree.pyx", line 3649, in lxml.etree._Validator.assertValid
+lxml.etree.DocumentInvalid: Element '{http://schemas.deltares.nl/deltaresTestbench_v3}testCases': Missing child element(s). Expected is ( {http://schemas.deltares.nl/deltaresTestbench_v3}testCase )., line 1

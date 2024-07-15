@@ -1,0 +1,107 @@
+2024-07-04 16:04:10,706 [INFO   ] Skip e02_f010_c100_dambreak_VerheijvdKnaap due to filter.
+2024-07-04 16:04:10,706 [INFO   ] Skip e02_f010_c102_T1_normal_noCustomPoints due to filter.
+2024-07-04 16:04:10,707 [INFO   ] Skip e02_f010_c102_T2_normal_customPoints due to filter.
+2024-07-04 16:04:10,707 [INFO   ] Skip e02_f010_c102_T3_refined_noCustomPoints due to filter.
+2024-07-04 16:04:10,707 [INFO   ] Skip e02_f010_c102_T4_refined_customPoints due to filter.
+2024-07-04 16:04:10,707 [INFO   ] Skip e02_f024_c03_Horton_test_Spatial_uniform_P+ET_no_runoff due to filter.
+2024-07-04 16:04:10,707 [INFO   ] Skip e02_f024_c04_Horton_test_Spatial_uniform_P+ET_with_runoff due to filter.
+2024-07-04 16:04:10,708 [INFO   ] Skip e02_f024_c05_Horton_test_Spatial_varying_P+ET_with_runoff due to filter.
+2024-07-04 16:04:10,710 [INFO   ] Skip e02_f024_c06_Evaporation due to filter.
+2024-07-04 16:04:10,710 [INFO   ] Skip e02_f024_c07_Interception due to filter.
+2024-07-04 16:04:10,710 [INFO   ] Skip e02_f101_c01_steady-state-flow due to filter.
+2024-07-04 16:04:10,710 [INFO   ] Skip e02_f102_c01_laterals_prescribed_Q due to filter.
+2024-07-04 16:04:10,710 [INFO   ] Skip e02_f102_c02_1d-precipitation due to filter.
+2024-07-04 16:04:10,711 [INFO   ] Skip e02_f102_c02a_1d-precipitation due to filter.
+2024-07-04 16:04:10,711 [INFO   ] Skip e02_f102_c02b_1d-precipitation due to filter.
+2024-07-04 16:04:10,711 [INFO   ] Skip e02_f102_c02c_1d-precipitation due to filter.
+2024-07-04 16:04:10,711 [INFO   ] Skip e02_f102_c02d_1d-precipitation due to filter.
+2024-07-04 16:04:10,711 [INFO   ] Skip e02_f102_c02e_1d-precipitation due to filter.
+2024-07-04 16:04:10,712 [INFO   ] Skip e02_f104_c01_junction-advection-acceleration-equidistant due to filter.
+2024-07-04 16:04:10,712 [INFO   ] Skip e02_f104_c02_junction-advection-deceleration-equidistant due to filter.
+2024-07-04 16:04:10,712 [INFO   ] Skip e02_f104_c03_junction-advection-acceleration-non-equidistant due to filter.
+2024-07-04 16:04:10,712 [INFO   ] Skip e02_f104_c04_junction-advection-deceleration-non-equidistant due to filter.
+2024-07-04 16:04:10,712 [INFO   ] Skip e02_f104_c05_junction-advection-flood-wave-divergence-equidistant-pos-flow-upstream due to filter.
+2024-07-04 16:04:10,712 [INFO   ] Skip e02_f104_c06_junction-advection-flood-wave-divergence-equidistant-neg-flow-upstream due to filter.
+2024-07-04 16:04:10,713 [INFO   ] Skip e02_f104_c07_junction-advection-flood-wave-confluence-equidistant-pos-flow-upstream due to filter.
+2024-07-04 16:04:10,713 [INFO   ] Skip e02_f104_c08_junction-advection-flood-wave-confluence-equidistant-neg-flow-upstream due to filter.
+2024-07-04 16:04:10,713 [INFO   ] Skip e02_f104_c16_curved-channel-junction-advection-reference due to filter.
+2024-07-04 16:04:10,713 [INFO   ] Skip e02_f104_c17_initial-conditions-water-level due to filter.
+2024-07-04 16:04:10,713 [INFO   ] Skip e02_f104_c18_initial-conditions-water-depth due to filter.
+2024-07-04 16:04:10,714 [INFO   ] Skip e02_f104_c19_1Dnetwork-length-noOpenBC due to filter.
+2024-07-04 16:04:10,714 [INFO   ] Skip e02_f104_c20_1Dnetwork-length-OpenBC due to filter.
+2024-07-04 16:04:10,714 [INFO   ] Skip e02_f104_c21_1Dnetwork_pipes_urban due to filter.
+2024-07-04 16:04:10,714 [INFO   ] Skip e02_f104_c22_1Dnetwork-urban-slope1Ddrop due to filter.
+2024-07-04 16:04:10,714 [INFO   ] Skip e02_f105_c01_YZ-profile due to filter.
+2024-07-04 16:04:10,715 [INFO   ] Skip e02_f105_c02_tabulated-profile due to filter.
+2024-07-04 16:04:10,715 [INFO   ] Skip e02_f105_c03_zw-closed-egg-profile due to filter.
+2024-07-04 16:04:10,715 [INFO   ] Skip e02_f105_c04_rectangular-profile due to filter.
+2024-07-04 16:04:10,715 [INFO   ] Skip e02_f105_c05_circle-profile due to filter.
+2024-07-04 16:04:10,716 [INFO   ] Skip e02_f105_c08_YZ-profile-storage due to filter.
+2024-07-04 16:04:10,716 [INFO   ] Skip e02_f105_c09_tabulated-profile-storage due to filter.
+2024-07-04 16:04:10,716 [INFO   ] Skip e02_f105_c10_zw-closed-egg-profile-storage due to filter.
+2024-07-04 16:04:10,716 [INFO   ] Skip e02_f105_c11_rectangular-profile-storage due to filter.
+2024-07-04 16:04:10,717 [INFO   ] Skip e02_f105_c12_circle-profile-storage due to filter.
+2024-07-04 16:04:10,717 [INFO   ] Skip e02_f105_c16_YZ-profile_lumped due to filter.
+2024-07-04 16:04:10,717 [INFO   ] Skip e02_f105_c17_YZ-profile_lumped_V-shaped due to filter.
+2024-07-04 16:04:10,717 [INFO   ] Skip e02_f105_c18_YZ_cross-section_interpolation due to filter.
+2024-07-04 16:04:10,718 [INFO   ] Skip e02_f105_c19_timedependent_roughness due to filter.
+2024-07-04 16:04:10,718 [INFO   ] Skip e02_f105_c41_YZ-profile-with-storage-nodes due to filter.
+2024-07-04 16:04:10,718 [INFO   ] Skip e02_f105_c42_YZ-profile-with-storage-nodes-storage due to filter.
+2024-07-04 16:04:10,718 [INFO   ] Skip e02_f105_c43_rectangular-profile-with-storage-nodes-storage due to filter.
+2024-07-04 16:04:10,718 [INFO   ] Skip e02_f105_c44_sewer-pipes-manholes due to filter.
+2024-07-04 16:04:10,719 [INFO   ] Skip e02_f106_c01_weir due to filter.
+2024-07-04 16:04:10,719 [INFO   ] Skip e02_f106_c02_orifice due to filter.
+2024-07-04 16:04:10,719 [INFO   ] Skip e02_f106_c03_culvert due to filter.
+2024-07-04 16:04:10,719 [INFO   ] Skip e02_f106_c04_pump due to filter.
+2024-07-04 16:04:10,719 [INFO   ] Skip e02_f106_c05_Bridge due to filter.
+2024-07-04 16:04:10,720 [INFO   ] Skip e02_f106_c06_Universal_Weir due to filter.
+2024-07-04 16:04:10,720 [INFO   ] Skip e02_f106_c07_Compound due to filter.
+2024-07-04 16:04:10,720 [INFO   ] Skip e02_f106_c08_Pump_without_stages due to filter.
+2024-07-04 16:04:10,720 [INFO   ] Skip e02_f106_c09_Inverted_siphon due to filter.
+2024-07-04 16:04:10,721 [INFO   ] Skip e02_f106_c20_sewer_overflow_urban due to filter.
+2024-07-04 16:04:10,721 [INFO   ] Skip e02_f106_c21_orifice_urban due to filter.
+2024-07-04 16:04:10,721 [INFO   ] Skip e02_f106_c22_pump_urban due to filter.
+2024-07-04 16:04:10,721 [INFO   ] Skip e02_f106_c23_AllowedFlowDir due to filter.
+2024-07-04 16:04:10,721 [INFO   ] Skip e02_f107_c01_1d-2d-urban_T1 due to filter.
+2024-07-04 16:04:10,722 [INFO   ] Skip e02_f107_c01_1d-2d-urban_T3 due to filter.
+2024-07-04 16:04:10,722 [INFO   ] Skip e02_f107_c01_1d-2d-urban_T4 due to filter.
+2024-07-04 16:04:10,722 [INFO   ] Skip e02_f107_c01_1d-2d-urban_T5 due to filter.
+2024-07-04 16:04:10,722 [INFO   ] Skip e02_f107_c01_1d-2d-urban_T6 due to filter.
+2024-07-04 16:04:10,723 [INFO   ] Skip e02_f107_c02_Fine1D_Coarse2D_Rural_Embedded_Links due to filter.
+2024-07-04 16:04:10,723 [INFO   ] Skip e02_f107_c03_Coarse1D_Fine2D_Rural_Embedded_Links due to filter.
+2024-07-04 16:04:10,723 [INFO   ] Skip e02_f107_c04_Equal1D_Equal2D_Rural_Embedded_Links due to filter.
+2024-07-04 16:04:10,723 [INFO   ] Skip e02_f107_c05_Fine1D_Coarse2D_Rural_Lateral_Links due to filter.
+2024-07-04 16:04:10,724 [INFO   ] Skip e02_f107_c06_Coarse1D_Fine2D_Rural_Lateral_Links due to filter.
+2024-07-04 16:04:10,724 [INFO   ] Skip e02_f107_c07_Equal1D_Equal2D_Rural_Lateral_Links due to filter.
+2024-07-04 16:04:10,724 [INFO   ] Skip e02_f107_c08_roof_T1 due to filter.
+2024-07-04 16:04:10,724 [INFO   ] Skip e02_f107_c08_roof_T2 due to filter.
+2024-07-04 16:04:10,724 [INFO   ] Skip e02_f107_c09_useStreetStorage_T1 due to filter.
+2024-07-04 16:04:10,725 [INFO   ] Skip e02_f107_c10_Equal1D_Equal2D_Rural_Lateral_Links_Dambreak due to filter.
+2024-07-04 16:04:10,725 [INFO   ] Skip e02_f115_c01_M1 due to filter.
+2024-07-04 16:04:10,725 [INFO   ] Skip e02_f115_c02_M2 due to filter.
+2024-07-04 16:04:10,725 [INFO   ] Skip e02_f151_c01_DarEsSalaam due to filter.
+2024-07-04 16:04:10,725 [INFO   ] Skip e02_f151_c02_DarEsSalaam_additional due to filter.
+2024-07-04 16:04:10,726 [INFO   ] Skip e02_f151_c03_DarEsSalaam_no_advection due to filter.
+2024-07-04 16:04:10,726 [INFO   ] Skip e02_f117_c01_volume_tabulated-profile due to filter.
+2024-07-04 16:04:10,726 [INFO   ] Skip e02_f190_c01_iniField_1dField due to filter.
+2024-07-04 16:04:10,726 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:04:10,727 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:04:10,727 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:04:10,727 [INFO   ] Config   : configs/dimr/dimr_dflowfm_1d_win64.xml
+2024-07-04 16:04:10,727 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:04:10,727 [INFO   ] LogLevel : 20
+2024-07-04 16:04:10,728 [INFO   ] Download : []
+2024-07-04 16:04:10,728 [INFO   ] Execute  : skip
+2024-07-04 16:04:10,728 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:04:10,728 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:04:10,729 [INFO   ] 
+2024-07-04 16:04:10,729 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:04:10,729 [INFO   ] Start of test-bench
+2024-07-04 16:04:10,729 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:04:10,730 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:04:10,730 [ERROR  ] 
+2024-07-04 16:04:10,730 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:04:10,730 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:04:10,730 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:04:10,731 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:04:10,731 [ERROR  ] 	startat    (test case name = substring is the first testcase)

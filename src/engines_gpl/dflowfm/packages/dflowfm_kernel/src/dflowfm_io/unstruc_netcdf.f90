@@ -18479,7 +18479,7 @@ endif
 end function unc_put_var_rst_dble
 
 !> Get 3D array on cell centres
-subroutine get_3d_array_cc(var,idx1,idx2,work1)
+subroutine get_3d_data(var,idx1,idx2,work1)
 
 use m_missing, only: dmiss
 
@@ -18498,6 +18498,6 @@ do kk=idx1,idx2
    enddo
 enddo
 
-end subroutine get_3d_array_cc
+end subroutine get_3d_data
 
 end module unstruc_netcdf

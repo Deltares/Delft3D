@@ -1,0 +1,32 @@
+2024-07-04 16:05:56,565 [INFO   ] Skip e106_f02_c01_034_nearest-h-pnt_point-lateral-on-connection-node due to filter.
+2024-07-04 16:05:56,566 [INFO   ] Skip e106_f02_c02_052_nearest-h-pnt_point-lateral-on-lateral-node due to filter.
+2024-07-04 16:05:56,566 [INFO   ] Skip e106_f02_c03_147_nearest-h-pnt_constant-diffusive-lateral due to filter.
+2024-07-04 16:05:56,566 [INFO   ] Skip e106_f02_c04_133_lowest-h-pnt_waterbalance-laterals due to filter.
+2024-07-04 16:05:56,567 [INFO   ] Skip e106_f02_c05_271_nearest-h-pnt_point-lateral-on-lateral-node due to filter.
+2024-07-04 16:05:56,567 [INFO   ] Skip e106_f02_c06_263_lowest-h_pnt_lateral-on-conn-node due to filter.
+2024-07-04 16:05:56,568 [INFO   ] Skip e106_f02_c07_272_nearest-h-pnt_diffusive-laterals due to filter.
+2024-07-04 16:05:56,569 [INFO   ] Skip e106_f02_c08_nearest-h-pnt_diffusive-laterals-f due to filter.
+2024-07-04 16:05:56,569 [INFO   ] Skip e106_f02_c09_lowest-h-pnt_diffusive-laterals-f due to filter.
+2024-07-04 16:05:56,569 [INFO   ] Skip e106_f02_c10_295_lowest-h-pnt_constant-diffusive-lateral due to filter.
+2024-07-04 16:05:56,570 [INFO   ] Skip e106_f02_c11_296_lowest-h-pnt_point-laterals-on-branch-1 due to filter.
+2024-07-04 16:05:56,570 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:05:56,570 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:05:56,570 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:05:56,570 [INFO   ] Config   : configs/dimr/dimr_dflow1d_lateral_flows_lnx64.xml
+2024-07-04 16:05:56,571 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:05:56,571 [INFO   ] LogLevel : 20
+2024-07-04 16:05:56,571 [INFO   ] Download : []
+2024-07-04 16:05:56,571 [INFO   ] Execute  : skip
+2024-07-04 16:05:56,572 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:05:56,572 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:05:56,572 [INFO   ] 
+2024-07-04 16:05:56,572 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:05:56,572 [INFO   ] Start of test-bench
+2024-07-04 16:05:56,573 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:05:56,573 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:05:56,573 [ERROR  ] 
+2024-07-04 16:05:56,573 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:05:56,573 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:05:56,574 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:05:56,574 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:05:56,574 [ERROR  ] 	startat    (test case name = substring is the first testcase)

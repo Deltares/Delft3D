@@ -1,0 +1,30 @@
+2024-07-04 16:05:17,253 [INFO   ] Skip e100_f00_c00 due to filter.
+2024-07-04 16:05:17,254 [INFO   ] Skip e100_f00_c01 due to filter.
+2024-07-04 16:05:17,254 [INFO   ] Skip e100_f02_c00 due to filter.
+2024-07-04 16:05:17,254 [INFO   ] Skip e100_f02_c01 due to filter.
+2024-07-04 16:05:17,254 [INFO   ] Skip e100_f02_c02 due to filter.
+2024-07-04 16:05:17,254 [INFO   ] Skip e100_f02_c03 due to filter.
+2024-07-04 16:05:17,254 [INFO   ] Skip e100_f02_c05 due to filter.
+2024-07-04 16:05:17,254 [INFO   ] Skip e100_f02_c06 due to filter.
+2024-07-04 16:05:17,254 [INFO   ] Skip e100_f02_c07 due to filter.
+2024-07-04 16:05:17,254 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:05:17,256 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:05:17,256 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:05:17,256 [INFO   ] Config   : configs/dimr/dimr_dflowfm_dwaves_win64.xml
+2024-07-04 16:05:17,256 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:05:17,256 [INFO   ] LogLevel : 20
+2024-07-04 16:05:17,257 [INFO   ] Download : []
+2024-07-04 16:05:17,257 [INFO   ] Execute  : skip
+2024-07-04 16:05:17,257 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:05:17,257 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:05:17,257 [INFO   ] 
+2024-07-04 16:05:17,258 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:05:17,258 [INFO   ] Start of test-bench
+2024-07-04 16:05:17,258 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:05:17,258 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:05:17,258 [ERROR  ] 
+2024-07-04 16:05:17,259 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:05:17,259 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:05:17,259 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:05:17,259 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:05:17,259 [ERROR  ] 	startat    (test case name = substring is the first testcase)

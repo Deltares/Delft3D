@@ -1,0 +1,35 @@
+2024-07-04 16:05:09,000 [INFO   ] Skip e02_f029_c201_hyd_file_westerschelde_3d_s_hag due to filter.
+2024-07-04 16:05:09,000 [INFO   ] Skip e02_f029_c202_hyd_file_westerschelde_3d_s_vag due to filter.
+2024-07-04 16:05:09,001 [INFO   ] Skip e02_f029_c203_hyd_file_westerschelde_3d_s_hvag due to filter.
+2024-07-04 16:05:09,001 [INFO   ] Skip e02_f029_c204_hyd_file_westerschelde_2d_hag due to filter.
+2024-07-04 16:05:09,001 [INFO   ] Skip e02_f029_c205_hyd_file_westerschelde_3d_z_hag due to filter.
+2024-07-04 16:05:09,001 [INFO   ] Skip e02_f029_c206_hyd_file_westerschelde_3d_z_vag due to filter.
+2024-07-04 16:05:09,002 [INFO   ] Skip e02_f029_c207_hyd_file_westerschelde_3d_z_hvag due to filter.
+2024-07-04 16:05:09,004 [INFO   ] Skip e02_f029_c301_hyd_file_westerschelde_3d_s_hag_3dom due to filter.
+2024-07-04 16:05:09,004 [INFO   ] Skip e02_f029_c302_hyd_file_westerschelde_3d_s_vag_3dom due to filter.
+2024-07-04 16:05:09,004 [INFO   ] Skip e02_f029_c303_hyd_file_westerschelde_3d_s_hvag_3dom due to filter.
+2024-07-04 16:05:09,005 [INFO   ] Skip e02_f029_c304_hyd_file_westerschelde_2d_hag_3dom due to filter.
+2024-07-04 16:05:09,005 [INFO   ] Skip e02_f029_c305_hyd_file_westerschelde_3d_z_hag_3dom due to filter.
+2024-07-04 16:05:09,005 [INFO   ] Skip e02_f029_c306_hyd_file_westerschelde_3d_z_vag_3dom due to filter.
+2024-07-04 16:05:09,005 [INFO   ] Skip e02_f029_c307_hyd_file_westerschelde_3d_z_hvag_3dom due to filter.
+2024-07-04 16:05:09,005 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:05:09,006 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:05:09,006 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:05:09,006 [INFO   ] Config   : configs/dimr/dimr_dflowfm_waq_coupling_aggregation_win64.xml
+2024-07-04 16:05:09,006 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:05:09,007 [INFO   ] LogLevel : 20
+2024-07-04 16:05:09,007 [INFO   ] Download : []
+2024-07-04 16:05:09,007 [INFO   ] Execute  : skip
+2024-07-04 16:05:09,007 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:05:09,007 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:05:09,008 [INFO   ] 
+2024-07-04 16:05:09,008 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:05:09,008 [INFO   ] Start of test-bench
+2024-07-04 16:05:09,008 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:05:09,009 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:05:09,009 [ERROR  ] 
+2024-07-04 16:05:09,009 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:05:09,009 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:05:09,010 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:05:09,010 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:05:09,010 [ERROR  ] 	startat    (test case name = substring is the first testcase)

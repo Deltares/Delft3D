@@ -1,0 +1,26 @@
+2024-07-04 16:04:21,910 [INFO   ] Skip c01_harlingen due to filter.
+2024-07-04 16:04:21,911 [INFO   ] Skip c08_exer_12_2d_bend_course_model due to filter.
+2024-07-04 16:04:21,911 [INFO   ] Skip c09_exer_12_3d_bend_course_model due to filter.
+2024-07-04 16:04:21,911 [INFO   ] Skip c10_exer_13_r01_vlissingen_course_model due to filter.
+2024-07-04 16:04:21,912 [INFO   ] Skip c11_exer_13_r02_vlissingen_course_model due to filter.
+2024-07-04 16:04:21,912 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:04:21,912 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:04:21,913 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:04:21,914 [INFO   ] Config   : configs/dimr/dimr_dflowfm_tutorials_win64.xml
+2024-07-04 16:04:21,914 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:04:21,914 [INFO   ] LogLevel : 20
+2024-07-04 16:04:21,914 [INFO   ] Download : []
+2024-07-04 16:04:21,915 [INFO   ] Execute  : skip
+2024-07-04 16:04:21,915 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:04:21,915 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:04:21,915 [INFO   ] 
+2024-07-04 16:04:21,916 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:04:21,916 [INFO   ] Start of test-bench
+2024-07-04 16:04:21,916 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:04:21,916 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:04:21,917 [ERROR  ] 
+2024-07-04 16:04:21,917 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:04:21,917 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:04:21,917 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:04:21,918 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:04:21,918 [ERROR  ] 	startat    (test case name = substring is the first testcase)

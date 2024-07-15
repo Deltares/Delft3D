@@ -1,0 +1,49 @@
+2024-07-04 16:05:46,884 [INFO   ] Skip e04_f01_c01_wave_boundary due to filter.
+2024-07-04 16:05:46,884 [INFO   ] Skip e04_f01_c02_wave_boundary due to filter.
+2024-07-04 16:05:46,885 [INFO   ] Skip e04_f01_c03_wave_boundary due to filter.
+2024-07-04 16:05:46,885 [INFO   ] Skip e04_f01_c04_wave_boundary due to filter.
+2024-07-04 16:05:46,885 [INFO   ] Skip e04_f01_c05_wave_boundary due to filter.
+2024-07-04 16:05:46,885 [INFO   ] Skip e04_f01_c06_wave_boundary due to filter.
+2024-07-04 16:05:46,886 [INFO   ] Skip e04_f01_c07_wave_boundary due to filter.
+2024-07-04 16:05:46,886 [INFO   ] Skip e04_f01_c08_wave_boundary due to filter.
+2024-07-04 16:05:46,886 [INFO   ] Skip e04_f02_c01_windfields due to filter.
+2024-07-04 16:05:46,888 [INFO   ] Skip e04_f02_c02_windfields due to filter.
+2024-07-04 16:05:46,888 [INFO   ] Skip e04_f02_c03_windfields due to filter.
+2024-07-04 16:05:46,888 [INFO   ] Skip e04_f02_c04_windfields due to filter.
+2024-07-04 16:05:46,888 [INFO   ] Skip e04_f02_c05_windfields due to filter.
+2024-07-04 16:05:46,889 [INFO   ] Skip e04_f03_c01_windoncurvi due to filter.
+2024-07-04 16:05:46,889 [INFO   ] Skip e04_f04_c01 due to filter.
+2024-07-04 16:05:46,889 [INFO   ] Skip e04_f04_c02 due to filter.
+2024-07-04 16:05:46,889 [INFO   ] Skip e04_f04_c03 due to filter.
+2024-07-04 16:05:46,889 [INFO   ] Skip e04_f04_c04 due to filter.
+2024-07-04 16:05:46,890 [INFO   ] Skip e04_f04_c05 due to filter.
+2024-07-04 16:05:46,890 [INFO   ] Skip e04_f04_c06 due to filter.
+2024-07-04 16:05:46,890 [INFO   ] Skip e04_f05_c01_nest due to filter.
+2024-07-04 16:05:46,890 [INFO   ] Skip e04_f05_c02_nest due to filter.
+2024-07-04 16:05:46,890 [INFO   ] Skip e04_f09_c01_SWANDCSM due to filter.
+2024-07-04 16:05:46,891 [INFO   ] Skip e04_f09_c02_SWANDCSM due to filter.
+2024-07-04 16:05:46,891 [INFO   ] Skip e04_f09_c03_SWANDCSM due to filter.
+2024-07-04 16:05:46,891 [INFO   ] Skip e04_f09_c04_SWANDCSM due to filter.
+2024-07-04 16:05:46,891 [INFO   ] Skip e04_f09_c05_SWANDCSM due to filter.
+2024-07-04 16:05:46,891 [INFO   ] Skip e04_f10_c01_HongKong due to filter.
+2024-07-04 16:05:46,892 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:05:46,892 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:05:46,892 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:05:46,892 [INFO   ] Config   : configs/dimr/dimr_dwaves_lnx64.xml
+2024-07-04 16:05:46,892 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:05:46,892 [INFO   ] LogLevel : 20
+2024-07-04 16:05:46,893 [INFO   ] Download : []
+2024-07-04 16:05:46,893 [INFO   ] Execute  : skip
+2024-07-04 16:05:46,893 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:05:46,893 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:05:46,894 [INFO   ] 
+2024-07-04 16:05:46,894 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:05:46,894 [INFO   ] Start of test-bench
+2024-07-04 16:05:46,894 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:05:46,894 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:05:46,895 [ERROR  ] 
+2024-07-04 16:05:46,895 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:05:46,895 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:05:46,895 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:05:46,896 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:05:46,896 [ERROR  ] 	startat    (test case name = substring is the first testcase)

@@ -1,0 +1,10 @@
+Interacter GUI/graphics library
+
+Directory contents:
+   * bin/ contains Windows (32- and 64-bit) and Linux (x86) static libraries (latter for older compilers only).
+   * src/ contains a STUB library, with all subroutine and function
+          interfaces, with empty bodies. This 'dummy' libraries allows
+          one to build an application with all GUI-parts switched off
+          by simply linking with libintstub.a (instead of libint.a).
+          NOTE: this src/ tree is a copy in the closed ds repository.
+          It should be kept in sync with the same stub in oss repository.

@@ -1,0 +1,32 @@
+2024-07-04 16:05:26,999 [INFO   ] Skip e108(drr)_f03(walrus)_c01_Regge-regression-test due to filter.
+2024-07-04 16:05:27,000 [INFO   ] Skip e108(drr)_f03(walrus)_c02_Aa-en-Maas-regression-test due to filter.
+2024-07-04 16:05:27,000 [INFO   ] Skip e108(drr)_f03(walrus)_c03_wetness-index due to filter.
+2024-07-04 16:05:27,000 [INFO   ] Skip e108(drr)_f03(walrus)_c04_transpiration-reduction-factor due to filter.
+2024-07-04 16:05:27,001 [INFO   ] Skip e108(drr)_f03(walrus)_c05_equilibrium-storage-deficit due to filter.
+2024-07-04 16:05:27,001 [INFO   ] Skip e108(drr)_f03(walrus)_c06_stage-discharge-relationship due to filter.
+2024-07-04 16:05:27,001 [INFO   ] Skip e108(drr)_f03(walrus)_c07_contiguous-simulation-part1and2 due to filter.
+2024-07-04 16:05:27,003 [INFO   ] Skip e108(drr)_f03(walrus)_c08_generate-restart-file-part1 due to filter.
+2024-07-04 16:05:27,003 [INFO   ] Skip e108(drr)_f03(walrus)_c09_start-from-restart-file-part2 due to filter.
+2024-07-04 16:05:27,003 [INFO   ] Skip e108(drr)_f03(walrus)_c10_crest-level-weir-surface-water-reservoir due to filter.
+2024-07-04 16:05:27,004 [INFO   ] Skip e108(drr)_f03(walrus)_c11_different-computational-time-steps due to filter.
+2024-07-04 16:05:27,004 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:05:27,004 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:05:27,004 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:05:27,004 [INFO   ] Config   : configs/dimr/dimr_drr_walrus_lnx64.xml
+2024-07-04 16:05:27,005 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:05:27,005 [INFO   ] LogLevel : 20
+2024-07-04 16:05:27,005 [INFO   ] Download : []
+2024-07-04 16:05:27,006 [INFO   ] Execute  : skip
+2024-07-04 16:05:27,006 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:05:27,006 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:05:27,006 [INFO   ] 
+2024-07-04 16:05:27,007 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:05:27,007 [INFO   ] Start of test-bench
+2024-07-04 16:05:27,007 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:05:27,007 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:05:27,007 [ERROR  ] 
+2024-07-04 16:05:27,008 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:05:27,008 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:05:27,008 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:05:27,008 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:05:27,008 [ERROR  ] 	startat    (test case name = substring is the first testcase)

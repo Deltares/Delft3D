@@ -1,0 +1,142 @@
+2024-07-04 16:03:49,535 [INFO   ] Skip e02_f001_c201_channel_flow_algebraic_sigma_equi_3d due to filter.
+2024-07-04 16:03:49,536 [INFO   ] Skip e02_f001_c202_channel_flow_algebraic_zmodel_equi_3d due to filter.
+2024-07-04 16:03:49,536 [INFO   ] Skip e02_f001_c203_channel_flow_kepsilon_sigma_equi_3d due to filter.
+2024-07-04 16:03:49,537 [INFO   ] Skip e02_f001_c204_channel_flow_kepsilon_zmodel_equi_3d due to filter.
+2024-07-04 16:03:49,537 [INFO   ] Skip e02_f001_c205_channel_flow_kepsilon_sigma_nonequi_3d due to filter.
+2024-07-04 16:03:49,537 [INFO   ] Skip e02_f001_c207_channel_flow_ktau_sigma_equi_3d due to filter.
+2024-07-04 16:03:49,537 [INFO   ] Skip e02_f001_c208_channel_flow_ktau_zmodel_equi_3d due to filter.
+2024-07-04 16:03:49,538 [INFO   ] Skip e02_f001_c209_channel_flow_ktau_sigma_nonequi_3d due to filter.
+2024-07-04 16:03:49,539 [INFO   ] Skip e02_f001_c212_trench_sigma_nonequi_3d due to filter.
+2024-07-04 16:03:49,539 [INFO   ] Skip e02_f001_c213_trench_zmodel_equi_3d due to filter.
+2024-07-04 16:03:49,539 [INFO   ] Skip e02_f011_c201_wind_algebraic_sigma_equi_3d due to filter.
+2024-07-04 16:03:49,539 [INFO   ] Skip e02_f011_c202_wind_algebraic_zmodel_equi_3d due to filter.
+2024-07-04 16:03:49,540 [INFO   ] Skip e02_f011_c203_wind_kepsilon_sigma_equi_3d due to filter.
+2024-07-04 16:03:49,540 [INFO   ] Skip e02_f011_c204_wind_kepsilon_zmodel_equi_3d due to filter.
+2024-07-04 16:03:49,540 [INFO   ] Skip e02_f011_c205_wind_kepsilon_sigma_nonequi_3d due to filter.
+2024-07-04 16:03:49,540 [INFO   ] Skip e02_f011_c207_wind_ktau_sigma_equi_3d due to filter.
+2024-07-04 16:03:49,541 [INFO   ] Skip e02_f011_c208_wind_ktau_zmodel_equi_3d due to filter.
+2024-07-04 16:03:49,541 [INFO   ] Skip e02_f011_c209_wind_ktau_sigma_nonequi_3d due to filter.
+2024-07-04 16:03:49,541 [INFO   ] Skip e02_f019_c013_tracer_channel3D due to filter.
+2024-07-04 16:03:49,541 [INFO   ] Skip e02_f019_c014_erosilt_density_effect_3d due to filter.
+2024-07-04 16:03:49,541 [INFO   ] Skip e02_f019_c021_thatcherharleman3D due to filter.
+2024-07-04 16:03:49,542 [INFO   ] Skip e02_f019_c030_lock_exchange_2m_3d due to filter.
+2024-07-04 16:03:49,542 [INFO   ] Skip e02_f019_c031_lock_exchange_300m_sigma_3d due to filter.
+2024-07-04 16:03:49,542 [INFO   ] Skip e02_f019_c032_lock_exchange_300m_zmodel_3d due to filter.
+2024-07-04 16:03:49,542 [INFO   ] Skip e02_f019_c040_vertical_mixing_layer_3d due to filter.
+2024-07-04 16:03:49,542 [INFO   ] Skip e02_f019_c041_tidal_flume_sigma_3d due to filter.
+2024-07-04 16:03:49,543 [INFO   ] Skip e02_f019_c042_tidal_flume_zmodel_3d due to filter.
+2024-07-04 16:03:49,543 [INFO   ] Skip e02_f019_c043_tidal_flume_zsigma_3d due to filter.
+2024-07-04 16:03:49,543 [INFO   ] Skip e02_f006_c202_3d_layers_percentage due to filter.
+2024-07-04 16:03:49,543 [INFO   ] Skip e02_f006_c203_3d_layers_fraction due to filter.
+2024-07-04 16:03:49,544 [INFO   ] Skip e02_f006_c204_3d_ugrid due to filter.
+2024-07-04 16:03:49,544 [INFO   ] Skip e02_f011_c100_wind3d_squares due to filter.
+2024-07-04 16:03:49,544 [INFO   ] Skip e02_f011_c101_wind3d_squaresrefined due to filter.
+2024-07-04 16:03:49,544 [INFO   ] Skip e02_f011_c102_wind3d_triangles due to filter.
+2024-07-04 16:03:49,545 [INFO   ] Skip e02_f012_c055_restartrst3d_bndconstant due to filter.
+2024-07-04 16:03:49,545 [INFO   ] Skip e02_f012_c056_restartrst3d_bndvariable due to filter.
+2024-07-04 16:03:49,545 [INFO   ] Skip e02_f012_c076_waqseries_3d_unaggregated due to filter.
+2024-07-04 16:03:49,545 [INFO   ] Skip e02_f012_c077_waqseries_3d_aggregated due to filter.
+2024-07-04 16:03:49,545 [INFO   ] Skip e02_f017_c020_sourcesink_3D due to filter.
+2024-07-04 16:03:49,546 [INFO   ] Skip e02_f018_c010_salinity_t3d_varying due to filter.
+2024-07-04 16:03:49,546 [INFO   ] Skip e02_f018_c011_salinity_bc_varying due to filter.
+2024-07-04 16:03:49,546 [INFO   ] Skip e02_f018_c020_uxuyadvectionvelocitybnd3d_bc due to filter.
+2024-07-04 16:03:49,546 [INFO   ] Skip e02_f018_c030_zlayers_sigmatemp due to filter.
+2024-07-04 16:03:49,547 [INFO   ] Skip e02_f019_c033_lock_exchange_300m_unst_3d due to filter.
+2024-07-04 16:03:49,547 [INFO   ] Skip e02_f020_c001_htc_read_uniform due to filter.
+2024-07-04 16:03:49,547 [INFO   ] Skip e02_f020_c031_heatmodel5_secchidepth2 due to filter.
+2024-07-04 16:03:49,547 [INFO   ] Skip e02_f021_c001_bedwithobstacle_anticreep due to filter.
+2024-07-04 16:03:49,547 [INFO   ] Skip e02_f021_c002_slopingbed_anticreep due to filter.
+2024-07-04 16:03:49,548 [INFO   ] Skip e02_f021_c101_bedwithobstacle_anticreep_nonequi_3d due to filter.
+2024-07-04 16:03:49,548 [INFO   ] Skip e02_f021_c102_slopingbed_anticreep_nonequi_3d due to filter.
+2024-07-04 16:03:49,548 [INFO   ] Skip e02_f025_c011_bendcase_structured_3d due to filter.
+2024-07-04 16:03:49,548 [INFO   ] Skip e02_f025_c012_bendcase_unstructured_3d due to filter.
+2024-07-04 16:03:49,548 [INFO   ] Skip e02_f026_c02_HKV_3D due to filter.
+2024-07-04 16:03:49,549 [INFO   ] Skip e02_f090_c011_san_francisco_bay_3d due to filter.
+2024-07-04 16:03:49,549 [INFO   ] Skip e02_f092_c09_exer_12_3d_bend_course_model due to filter.
+2024-07-04 16:03:49,549 [INFO   ] Skip e02_f202_c001_conservation_sigma due to filter.
+2024-07-04 16:03:49,549 [INFO   ] Skip e02_f202_c002_conservation_z due to filter.
+2024-07-04 16:03:49,550 [INFO   ] Skip e02_f202_c003_conservation_z-sigma_numtopsiguniform0 due to filter.
+2024-07-04 16:03:49,550 [INFO   ] Skip e02_f202_c004_conservation_z-sigma_numtopsiguniform1 due to filter.
+2024-07-04 16:03:49,550 [INFO   ] Skip e02_f202_c005_lake_veere_sigma due to filter.
+2024-07-04 16:03:49,550 [INFO   ] Skip e02_f202_c006_lake_veere_z due to filter.
+2024-07-04 16:03:49,551 [INFO   ] Skip e02_f202_c007_lake_veere_z-sigma_numtopsiguniform0 due to filter.
+2024-07-04 16:03:49,551 [INFO   ] Skip e02_f202_c008_lake_veere_z-sigma_numtopsiguniform1 due to filter.
+2024-07-04 16:03:49,551 [INFO   ] Skip e02_f203_c02_Waal_trachytopes_3D_sigma due to filter.
+2024-07-04 16:03:49,551 [INFO   ] Skip e02_f203_c04_Waal_trachytopes_3D_zsigma due to filter.
+2024-07-04 16:03:49,551 [INFO   ] Skip e02_f208_c010_gate_sub_3Dsigma due to filter.
+2024-07-04 16:03:49,551 [INFO   ] Skip e02_f208_c011_gate_sub_3Dz due to filter.
+2024-07-04 16:03:49,552 [INFO   ] Skip e02_f208_c012_gate_sub_3Dzsigma1 due to filter.
+2024-07-04 16:03:49,552 [INFO   ] Skip e02_f208_c013_gate_sub_3Dzsigma2 due to filter.
+2024-07-04 16:03:49,552 [INFO   ] Skip e02_f208_c014_gate_free_3Dsigma due to filter.
+2024-07-04 16:03:49,553 [INFO   ] Skip e02_f208_c015_gate_free_3Dz due to filter.
+2024-07-04 16:03:49,553 [INFO   ] Skip e02_f208_c016_gate_free_3Dzsigma1 due to filter.
+2024-07-04 16:03:49,553 [INFO   ] Skip e02_f208_c017_gate_free_3Dzsigma2 due to filter.
+2024-07-04 16:03:49,553 [INFO   ] Skip e02_f208_c018_sill_sub_3Dsigma due to filter.
+2024-07-04 16:03:49,553 [INFO   ] Skip e02_f208_c019_sill_sub_3Dz due to filter.
+2024-07-04 16:03:49,554 [INFO   ] Skip e02_f208_c020_sill_sub_3Dzsigma1 due to filter.
+2024-07-04 16:03:49,554 [INFO   ] Skip e02_f208_c021_sill_sub_3Dzsigma2 due to filter.
+2024-07-04 16:03:49,554 [INFO   ] Skip e02_f208_c022_sill_free_3Dsigma due to filter.
+2024-07-04 16:03:49,554 [INFO   ] Skip e02_f208_c023_sill_free_3Dz due to filter.
+2024-07-04 16:03:49,554 [INFO   ] Skip e02_f208_c024_sill_free_3Dzsigma1 due to filter.
+2024-07-04 16:03:49,555 [INFO   ] Skip e02_f208_c025_sill_free_3Dzsigma2 due to filter.
+2024-07-04 16:03:49,555 [INFO   ] Skip e02_f208_c026_generalstructure_door_closing_at_waterlevel_3Dsigma due to filter.
+2024-07-04 16:03:49,555 [INFO   ] Skip e02_f208_c027_generalstructure_door_closing_at_waterlevel_3Dz due to filter.
+2024-07-04 16:03:49,555 [INFO   ] Skip e02_f208_c028_generalstructure_door_closing_at_waterlevel_3Dzsigma1 due to filter.
+2024-07-04 16:03:49,555 [INFO   ] Skip e02_f208_c029_generalstructure_door_closing_at_waterlevel_3Dzsigma2 due to filter.
+2024-07-04 16:03:49,556 [INFO   ] Skip e02_f208_c030_generalstructure_door_closing_at_sill_3Dsigma due to filter.
+2024-07-04 16:03:49,556 [INFO   ] Skip e02_f208_c031_generalstructure_door_closing_at_sill_3Dz due to filter.
+2024-07-04 16:03:49,556 [INFO   ] Skip e02_f208_c032_generalstructure_door_closing_at_sill_3Dzsigma1 due to filter.
+2024-07-04 16:03:49,556 [INFO   ] Skip e02_f208_c033_generalstructure_door_closing_at_sill_3Dzsigma2 due to filter.
+2024-07-04 16:03:49,556 [INFO   ] Skip e02_f208_c034_generalstructure_lowering_open_door_3Dsigma due to filter.
+2024-07-04 16:03:49,557 [INFO   ] Skip e02_f208_c035_generalstructure_lowering_open_door_3Dz due to filter.
+2024-07-04 16:03:49,557 [INFO   ] Skip e02_f208_c036_generalstructure_lowering_open_door_3Dzsigma1 due to filter.
+2024-07-04 16:03:49,557 [INFO   ] Skip e02_f208_c037_generalstructure_lowering_open_door_3Dzsigma2 due to filter.
+2024-07-04 16:03:49,557 [INFO   ] Skip e02_f208_c038_generalstructure_lowering_closed_door_3Dsigma due to filter.
+2024-07-04 16:03:49,558 [INFO   ] Skip e02_f208_c039_generalstructure_lowering_closed_door_3Dz due to filter.
+2024-07-04 16:03:49,558 [INFO   ] Skip e02_f208_c040_generalstructure_lowering_closed_door_3Dzsigma1 due to filter.
+2024-07-04 16:03:49,558 [INFO   ] Skip e02_f208_c041_generalstructure_lowering_closed_door_3Dzsigma2 due to filter.
+2024-07-04 16:03:49,558 [INFO   ] Skip e02_f900_c201_Lock_exchange_kepsilon_sigma_equi_3d due to filter.
+2024-07-04 16:03:49,558 [INFO   ] Skip e02_f900_c201_Lock_exchange_ktau_sigma_equi_3d due to filter.
+2024-07-04 16:03:49,558 [INFO   ] Skip e02_fxxx_c010_nudgerate due to filter.
+2024-07-04 16:03:49,559 [INFO   ] Skip e02_f901_c201_tidal_flume_kepsilon_sigma_equi_3d due to filter.
+2024-07-04 16:03:49,559 [INFO   ] Skip e02_f901_c202_tidal_flume_kepsilon_zmodel_equi_3d due to filter.
+2024-07-04 16:03:49,559 [INFO   ] Skip e02_f901_c203_tidal_flume_kepsilon_sigma_nonequi_3d due to filter.
+2024-07-04 16:03:49,559 [INFO   ] Skip e02_f901_c205_tidal_flume_ktau_sigma_equi_3d due to filter.
+2024-07-04 16:03:49,560 [INFO   ] Skip e02_f901_c206_tidal_flume_ktau_zmodel_equi_3d due to filter.
+2024-07-04 16:03:49,560 [INFO   ] Skip e02_f901_c207_tidal_flume_ktau_sigma_nonequi_3d due to filter.
+2024-07-04 16:03:49,560 [INFO   ] Skip e02_f203_c081_chezy_uniform_trachytopes_3D due to filter.
+2024-07-04 16:03:49,560 [INFO   ] Skip e02_f203_c082_trachytopes_spatially_varying_1_3D due to filter.
+2024-07-04 16:03:49,560 [INFO   ] Skip e02_f203_c083_trachytopes_spatially_varying_25_3D due to filter.
+2024-07-04 16:03:49,561 [INFO   ] Skip e02_f203_c084_trachytopes_spatially_varying_50_3D due to filter.
+2024-07-04 16:03:49,561 [INFO   ] Skip e02_f203_c085_manning_trachytopes_3D due to filter.
+2024-07-04 16:03:49,561 [INFO   ] Skip e02_f203_c086_whitecolebrook_trachytopes_3D due to filter.
+2024-07-04 16:03:49,561 [INFO   ] Skip e02_f203_c087_whitecolebrook_trachytopes_waqua_3D due to filter.
+2024-07-04 16:03:49,562 [INFO   ] Skip e02_f203_c088_whitecolebrook_trachytopes_waqua_conv0_3D due to filter.
+2024-07-04 16:03:49,562 [INFO   ] Skip e02_f203_c089_trachytopes_spatially_varying_50_3D due to filter.
+2024-07-04 16:03:49,562 [INFO   ] Skip e02_f203_c090_trachytopes_spatially_varying_50_momsol_3D due to filter.
+2024-07-04 16:03:49,562 [INFO   ] Skip e02_f203_c091_chezy_trachytopes_discharge_dependent_3D due to filter.
+2024-07-04 16:03:49,562 [INFO   ] Skip e02_f203_c092_chezy_trachytopes_waterlevel_dependent_3D due to filter.
+2024-07-04 16:03:49,563 [INFO   ] Skip e02_f203_c093_chezy_trachytopes_ebb_flood_dependent_3D due to filter.
+2024-07-04 16:03:49,563 [INFO   ] Skip e02_f203_c094_trachytopes_trtmth2_3D due to filter.
+2024-07-04 16:03:49,563 [INFO   ] Skip e02_f203_c095_chezy_trachytopes_waterlevel_dependent_dt_3D due to filter.
+2024-07-04 16:03:49,563 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:03:49,564 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:03:49,564 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:03:49,564 [INFO   ] Config   : configs/dimr/dimr_dflowfm_3d_lnx64.xml
+2024-07-04 16:03:49,564 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:03:49,564 [INFO   ] LogLevel : 20
+2024-07-04 16:03:49,565 [INFO   ] Download : []
+2024-07-04 16:03:49,565 [INFO   ] Execute  : skip
+2024-07-04 16:03:49,565 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:03:49,565 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:03:49,565 [INFO   ] 
+2024-07-04 16:03:49,565 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:03:49,566 [INFO   ] Start of test-bench
+2024-07-04 16:03:49,566 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:03:49,566 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:03:49,566 [ERROR  ] 
+2024-07-04 16:03:49,567 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:03:49,567 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:03:49,567 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:03:49,567 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:03:49,567 [ERROR  ] 	startat    (test case name = substring is the first testcase)

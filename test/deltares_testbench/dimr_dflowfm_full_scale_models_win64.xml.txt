@@ -1,0 +1,36 @@
+2024-07-04 16:04:12,305 [INFO   ] Skip e02_f150_c11_korte-woerden-1d due to filter.
+2024-07-04 16:04:12,306 [INFO   ] Skip e02_f150_c12_korte-woerden-2d due to filter.
+2024-07-04 16:04:12,306 [INFO   ] Skip e02_f150_c13_korte-woerden-1d2d-ManholeStreetinlets due to filter.
+2024-07-04 16:04:12,306 [INFO   ] Skip e02_f150_c20_groesbeek_NN_T1 due to filter.
+2024-07-04 16:04:12,306 [INFO   ] Skip e02_f150_c20_groesbeek_NN_T2 due to filter.
+2024-07-04 16:04:12,307 [INFO   ] Skip e02_f150_c20_groesbeek_NN_T3 due to filter.
+2024-07-04 16:04:12,307 [INFO   ] Skip e02_f150_c20_groesbeek_NN_T4 due to filter.
+2024-07-04 16:04:12,307 [INFO   ] Skip e02_f150_c20_groesbeek_NN_T5 due to filter.
+2024-07-04 16:04:12,308 [INFO   ] Skip e02_f150_c20_groesbeek_NN_T6 due to filter.
+2024-07-04 16:04:12,309 [INFO   ] Skip e02_f150_c21_groesbeek-1d due to filter.
+2024-07-04 16:04:12,310 [INFO   ] Skip e02_f150_c31_pudong-1d due to filter.
+2024-07-04 16:04:12,310 [INFO   ] Skip e02_f150_c32_pudong_2D due to filter.
+2024-07-04 16:04:12,310 [INFO   ] Skip e02_f150_c34_additional_flow_analysis due to filter.
+2024-07-04 16:04:12,310 [INFO   ] Skip e02_f151_c11_dar-es-salaam due to filter.
+2024-07-04 16:04:12,311 [INFO   ] Skip e02_f152_c05_DHydamo-MGB-fullrun due to filter.
+2024-07-04 16:04:12,311 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:04:12,311 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:04:12,311 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:04:12,312 [INFO   ] Config   : configs/dimr/dimr_dflowfm_full_scale_models_win64.xml
+2024-07-04 16:04:12,312 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:04:12,312 [INFO   ] LogLevel : 20
+2024-07-04 16:04:12,312 [INFO   ] Download : []
+2024-07-04 16:04:12,312 [INFO   ] Execute  : skip
+2024-07-04 16:04:12,313 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:04:12,313 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:04:12,313 [INFO   ] 
+2024-07-04 16:04:12,313 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:04:12,313 [INFO   ] Start of test-bench
+2024-07-04 16:04:12,314 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:04:12,314 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:04:12,314 [ERROR  ] 
+2024-07-04 16:04:12,314 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:04:12,314 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:04:12,315 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:04:12,315 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:04:12,315 [ERROR  ] 	startat    (test case name = substring is the first testcase)

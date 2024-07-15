@@ -1,0 +1,22 @@
+2024-07-04 16:05:48,478 [INFO   ] Skip e106_f01_c01_030_h-boundary1d_one-connected-branch-only due to filter.
+2024-07-04 16:05:48,479 [INFO   ] -- Parsed arguments ----------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:05:48,479 [INFO   ] Version  : 3.12.2 (tags/v3.12.2:6abddd9, Feb  6 2024, 21:26:36) [MSC v.1937 64 bit (AMD64)]
+2024-07-04 16:05:48,479 [INFO   ] Mode     : ModeType.LIST
+2024-07-04 16:05:48,479 [INFO   ] Config   : configs/dimr/dimr_dflow1d_1D_boundaries_lnx64.xml
+2024-07-04 16:05:48,480 [INFO   ] Filter   : program=dflowfm:testcase=e02
+2024-07-04 16:05:48,480 [INFO   ] LogLevel : 20
+2024-07-04 16:05:48,481 [INFO   ] Download : []
+2024-07-04 16:05:48,482 [INFO   ] Execute  : skip
+2024-07-04 16:05:48,482 [INFO   ] Username : NHPlB8sBO8Iaqfo17Clp
+2024-07-04 16:05:48,482 [INFO   ] ------------------------------------------------------------------------------------------------------------------------------------------------------
+2024-07-04 16:05:48,482 [INFO   ] 
+2024-07-04 16:05:48,482 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:05:48,483 [INFO   ] Start of test-bench
+2024-07-04 16:05:48,483 [INFO   ] ======================================================================================================================================================
+2024-07-04 16:05:48,483 [ERROR  ] A filter pattern must be formatted as follows:
+2024-07-04 16:05:48,483 [ERROR  ] 
+2024-07-04 16:05:48,483 [ERROR  ] --filter "program=waq,dflowfm:testcase=aaa,bbb:maxruntime=<10:startat=ccc"
+2024-07-04 16:05:48,483 [ERROR  ] 	program    (program name   = at least one substring)
+2024-07-04 16:05:48,484 [ERROR  ] 	testcase   (test case name = at least one substring)
+2024-07-04 16:05:48,484 [ERROR  ] 	maxruntime (test run time  = float, larger, smaller, equals)
+2024-07-04 16:05:48,484 [ERROR  ] 	startat    (test case name = substring is the first testcase)
