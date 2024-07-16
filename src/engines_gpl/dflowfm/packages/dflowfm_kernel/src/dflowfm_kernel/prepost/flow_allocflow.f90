@@ -633,9 +633,6 @@
      call aerr('dtcell(ndx)', ierr , ndx) ; dtcell(:) = 0d0
  endif
 
- allocate ( cellidx  (ndkx) , stat=ierr )
- call aerr('cellidx  (ndkx)', ierr, ndkx )                ; cellidx = ([ 1:ndkx ]) 
-
  ! for 1D only
  if (network%loaded) then
     ndx1d = ndxi-ndx2d
