@@ -84,8 +84,7 @@
  use m_fm_erosed, only: taub
  use m_transport, only: numconst, constituents
  use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used, &
-                      get_lateral_volume_per_layer, lateral_volume_per_layer, get_lateral_layer_positions, &
-                      lateral_center_position_per_layer
+                      get_lateral_volume_per_layer, lateral_volume_per_layer
  use m_cell_geometry, only : ba
  use m_initialize_flow1d_implicit, only: initialize_flow1d_implicit
  !
@@ -515,9 +514,6 @@
     ! Use timestep 1 s to set outgoing_lat_concentration to the initial averaged concentrations at each lateral location.
     call average_concentrations_for_laterals(numconst, kmx, kmxn, vol1, constituents, 1._dp)
     call get_lateral_volume_per_layer(lateral_volume_per_layer)
-
-    call setzcs()
-    call get_lateral_layer_positions(lateral_center_position_per_layer, zcs)
  endif
 
  !Initialize flow1d_implicit
