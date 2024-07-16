@@ -376,6 +376,7 @@
  double precision, allocatable     :: q1waq (:)   !< Cumulative q1 within current waq-timestep
  double precision, allocatable     :: qwwaq (:)   !< Cumulative qw within current waq-timestep
 
+ double precision, allocatable     :: cellidx(:)  !< counter of 3D cell index in cell centre
 
  ! solving related, dim = ndx for 2D, otherwise ndx*kmxd
  double precision, allocatable     :: fu    (:)   !< main diag (lnx)

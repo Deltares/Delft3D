@@ -3032,7 +3032,8 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
         id_ucxqbnd, id_ucyqbnd, &
         id_fvcoro, &
         id_rho, id_rho_bnd, &
-        id_rhowat, id_rhowat_bnd
+        id_rhowat, id_rhowat_bnd, & 
+        id_cellidx, id_cellidx_bnd
 
     integer, allocatable, save :: id_tr1(:), id_rwqb(:), id_bndtradim(:), id_ttrabnd(:), id_ztrabnd(:)
     integer, allocatable, save :: id_sf1(:), id_bndsedfracdim(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
@@ -3575,6 +3576,19 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
     endif
 
     ndx1d = ndxi - ndx2d
+
+    ! 3D cell index
+    ierr = nf90_def_var(irstfile, 'cellidx',  nf90_double, id1 , id_cellidx)
+    ierr = nf90_put_att(irstfile, id_cellidx,   'coordinates'  , 'FlowElem_xcc FlowElem_ycc')
+    ierr = nf90_put_att(irstfile, id_cellidx,   'long_name'    , 'Cell index')
+    ierr = nf90_put_att(irstfile, id_cellidx,   'units'        , ' ')             
+    if (jarstbnd > 0 .and. ndxbnd > 0) then
+       ierr = nf90_def_var(irstfile, 'cellidx_bnd',  nf90_double, id1_bnd , id_cellidx_bnd) 
+       ierr = nf90_put_att(irstfile, id_cellidx_bnd,   'coordinates'  , 'FlowElem_xbnd FlowElem_ybnd')
+       ierr = nf90_put_att(irstfile, id_cellidx_bnd,   'long_name'    , 'Cell index at boundaries')
+       ierr = nf90_put_att(irstfile, id_cellidx_bnd,   'units'        , ' ')    
+    endif !(jarstbnd > 0 .and. ndxbnd > 0) then    
+    
     if (jased > 0 .and. stm_included) then
        ierr = nf90_def_dim(irstfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim)
        ierr = nf90_def_dim(irstfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim)
@@ -4669,6 +4683,8 @@ subroutine unc_write_rst_filepointer(irstfile, tim)
                  deallocate(dum)
               endif
           endif !(jarstbnd > 0 .and. ndxbnd > 0)
+          ! 
+          ierr = unc_put_var_rst(irstfile, id_cellidx, id_cellidx_bnd, cellidx, itim)
           ! density (only necessary if morphodynamics and fractions in suspension and consider concentrations in density)
           if (stmpar%morpar%densin) then
              ierr = unc_put_var_rst(irstfile, id_rho, id_rho_bnd, rho, itim)
@@ -13034,7 +13050,7 @@ use m_output_config
          goto 999
       endif
 
-      do i=target_shift_+1,target_shift_+loccount
+      do i=1,loccount
          if (jamergedmap /= 1) then
             is = i
          else
@@ -13096,7 +13112,7 @@ subroutine unc_read_map_or_rst(filename, ierr)
     use m_flowtimes
     use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, constituents, itrac2const, const_names,ifrac2const
     use m_fm_wq_processes
-    use fm_external_forcings_data, only: numtracers, trnames
+    use fm_external_forcings_data, only: numtracers, trnames, ibnd_own, ndxbnd_own
     use m_sediment
     use bedcomposition_module
     use m_flowgeom
@@ -13155,7 +13171,8 @@ subroutine unc_read_map_or_rst(filename, ierr)
                id_jmax, id_ncrs, id_flowelemcrsz, id_flowelemcrsn, &
                id_ucxqbnd, id_ucyqbnd, &
                id_fvcoro, &
-               id_rhobnd, id_rhowatbnd
+               id_rhobnd, id_rhowatbnd, & 
+               id_cellidxbnd
 
     integer :: id_tmp
     integer :: layerfrac, layerthk
@@ -13329,10 +13346,11 @@ subroutine unc_read_map_or_rst(filename, ierr)
        um%jafillghost = 0
     endif
 
-    ! allocate inode_merge and ilink_merge in all restart situations. When the partition is the same, these two arrays do not function,
+    ! allocate inode_merge, ilink_merge and ibnd_merge in all restart situations. When the partition is the same, these two arrays do not function,
     ! but they help to simplify the codes when calling "get_var_and_shift".
     call realloc(um%inode_merge,  1, keepExisting=.false., fill = -999)
     call realloc(um%ilink_merge,  1, keepExisting=.false., fill = -999)
+    call realloc(um%ibnd_merge,  1, keepExisting=.false., fill = -999)
 
     jamergedmap_same_bu = um%jamergedmap_same
     success = unc_read_merged_map(um, imapfile, filename, ierr)
@@ -13507,6 +13525,17 @@ subroutine unc_read_map_or_rst(filename, ierr)
         ucxyq_read_rst=.false.
     endif
 
+    cellidx = -999.0 
+    ierr = get_var_and_shift(imapfile, 'cellidx', cellidx, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
+                             um%inode_own, um%inode_merge)
+
+    ierr = nf90_inq_varid(imapfile, 'cellidx_bnd', id_cellidxbnd)
+    if (ierr==0) then
+        ierr = get_var_and_shift(imapfile, 'cellidx_bnd', cellidx, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
+                         um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
+        call check_error(ierr, 'cellidx_bnd')
+    endif
+    
     ! Read rho (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
     rho_read_rst=.true.
 
@@ -13591,14 +13620,16 @@ subroutine unc_read_map_or_rst(filename, ierr)
 
           ierr = nf90_inq_varid(imapfile, 'rho_bnd', id_rhobnd)
           if (ierr==0) then
-              ierr = nf90_get_var(imapfile, id_rhobnd, tmp_rho, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
+              ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
+                                   um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
               call check_error(ierr, 'rho_bnd')
           endif
 
           if (stm_included) then
               ierr = nf90_inq_varid(imapfile, 'rhowat_bnd', id_rhowatbnd)
               if (ierr==0) then
-                  ierr = nf90_get_var(imapfile, id_rhowatbnd, tmp_rhowat, start=(/ kstart_bnd, it_read/), count = (/ um%nbnd_read, 1 /))
+                  ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
+                                   um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
                   call check_error(ierr, 'rhowat_bnd')
               endif
           endif
@@ -13684,11 +13715,11 @@ subroutine unc_read_map_or_rst(filename, ierr)
           ierr = get_var_and_shift(imapfile, 'ucyq_bnd', tmp_ucyq, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                    um%jamergedmap, ibnd_own, um%ibnd_merge)
           call check_error(ierr, 'ucyq_bnd')
-          ierr = get_var_and_shift(imapfile, 'rho_bnd', tmp_rho, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
+          ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
                                    um%jamergedmap, ibnd_own, um%ibnd_merge)
           call check_error(ierr, 'rho_bnd')
           if (stm_included) then
-             ierr = get_var_and_shift(imapfile, 'rhowat_bnd', tmp_rhowat, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
+             ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
                                       um%jamergedmap, ibnd_own, um%ibnd_merge)
              call check_error(ierr, 'rhowat_bnd')
           endif
@@ -13705,10 +13736,10 @@ subroutine unc_read_map_or_rst(filename, ierr)
              sqi(kk) = tmp_sqi(j)
              ucxq(kk) = tmp_ucxq(j)
              ucyq(kk) = tmp_ucyq(j)
-             rho(kk)  = tmp_rho(j)
-             if (stm_included) then
-                rhowat(kk)  = tmp_rhowat(j)
-             endif
+             !rho(kk)  = tmp_rho(j)
+             !if (stm_included) then
+             !   rhowat(kk)  = tmp_rhowat(j)
+             !endif
           enddo
        endif
     endif
@@ -18470,7 +18501,7 @@ endif !(kmx > 0)
 if (jarstbnd > 0 .and. ndxbnd > 0) then
    if (kmx > 0) then !3D
       call vector_to_matrix_3d_data(var,ndxi+1,ndx,work1) !output in `work1`
-      ierr = nf90_put_var(irstfile, id_var_bnd, work1(1:kmx,1:ndxbnd), (/ 1, 1, itim /), (/ kmx, ndxbnd, 1 /))
+      ierr = nf90_put_var(irstfile, id_var_bnd, work1(1:kmx,ndxi+1:ndx), (/ 1, 1, itim /), (/ kmx, ndxbnd, 1 /))
    else !2D
       ierr = nf90_put_var(irstfile, id_var_bnd, var(ndxi+1:ndx), (/ 1, itim /), (/ ndxbnd, 1 /))
    endif !(kmx > 0)
@@ -18499,28 +18530,5 @@ do kk=idx1,idx2
 enddo
 
 end subroutine vector_to_matrix_3d_data
-
-
-!> Transfrom matrix information to vector for 3D information on cell centres
-subroutine matrix_to_vector_3d_data(work1,idx1,idx2,var)
-
-use m_missing, only: dmiss
-
-double precision, intent(in) :: work1(:,:)
-integer, intent(in) :: idx1, idx2
-double precision, allocatable, intent(inout) :: var(:)
-
-integer :: k, kk, kb, kt, nlayb, nrlay
-
-do kk=idx1,idx2
-   call getkbotktop(kk,kb,kt)
-   call getlayerindices(kk, nlayb, nrlay)
-   do k = kb,kt
-      var(k) = work1(k-kb+nlayb,kk)
-   enddo
-enddo
-
-end subroutine matrix_to_vector_3d_data
-
 
 end module unstruc_netcdf
