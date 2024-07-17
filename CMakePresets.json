@@ -14,7 +14,7 @@
       "generator": "Default generator",
       "binaryDir": "build_${presetName}",
       "cacheVariables": {
-        "CONFIGURATION_TYPE": "${presetName}",
+        "CONFIGURATION_TYPE": "default config",
         "CMAKE_INSTALL_PREFIX": "install_${presetName}",
         "ENABLE_CODE_COVERAGE": "OFF"
       }
@@ -57,67 +57,100 @@
       "name": "all",
       "inherits": "windows",
       "displayName": "D-Flow FM, D-WAQ, D-Waves, DIMR IFORT win64 Release",
-      "description": "Configure D-Flow FM, D-WAQ, D-Waves, DIMR using Visual Studio 17 2022 generator"
+      "description": "Configure D-Flow FM, D-WAQ, D-Waves, DIMR using Visual Studio 17 2022 generator",
+      "cacheVariables": {
+        "CONFIGURATION_TYPE": "all"
+      }
     },
     {
       "name": "delft3d4",
       "inherits": "windows",
       "displayName": "Delft3D-FLOW, D-WAQ, D-Waves IFORT win64 Release",
-      "description": "Configure Delft3D-FLOW, D-WAQ, D-Waves using Visual Studio 17 2022 generator"
+      "description": "Configure Delft3D-FLOW, D-WAQ, D-Waves using Visual Studio 17 2022 generator",
+      "cacheVariables": {
+        "CONFIGURATION_TYPE": "delft3d4"
+      }
     },
     {
       "name": "delft3dfm",
       "inherits": "windows",
       "displayName": "D-Flow FM, D-WAQ, D-Waves, DIMR IFORT win64 Release",
-      "description": "Configure D-Flow FM, D-WAQ, D-Waves, DIMR using Visual Studio 17 2022 generator"
+      "description": "Configure D-Flow FM, D-WAQ, D-Waves, DIMR using Visual Studio 17 2022 generator",
+      "cacheVariables": {
+        "CONFIGURATION_TYPE": "delft3dfm"
+      }
     },
     {
       "name": "dflowfm",
       "inherits": "windows",
       "displayName": "D-Flow FM IFORT win64 Release",
-      "description": "Configure D-Flow FM using Visual Studio 17 2022 generator"
+      "description": "Configure D-Flow FM using Visual Studio 17 2022 generator",
+      "cacheVariables": {
+        "CONFIGURATION_TYPE": "dflowfm"
+      }
     },
     {
       "name": "dflowfm_interacter",
       "inherits": "windows",
       "displayName": "D-Flow FM with Interacter IFORT win64 Release",
-      "description": "Configure D-Flow FM with Interacter using Visual Studio 17 2022 generator"
+      "description": "Configure D-Flow FM with Interacter using Visual Studio 17 2022 generator",
+      "cacheVariables": {
+        "CONFIGURATION_TYPE": "dflowfm_interactor"
+      }
     },
     {
       "name": "dimr",
       "inherits": "windows",
       "displayName": "DIMR IFORT win64 Release",
-      "description": "Configure DIMR using Visual Studio 17 2022 generator"
+      "description": "Configure DIMR using Visual Studio 17 2022 generator",
+      "cacheVariables": {
+        "CONFIGURATION_TYPE": "dimr"
+      }
     },
     {
       "name": "dwaq",
       "inherits": "windows",
       "displayName": "D-WAQ/D-PART IFORT win64 Release",
-      "description": "Configure D-WAQ/D-PART using Visual Studio 17 2022 generator"
+      "description": "Configure D-WAQ/D-PART using Visual Studio 17 2022 generator",
+      "cacheVariables": {
+        "CONFIGURATION_TYPE": "dwaq"
+      }
     },
     {
       "name": "dwaq2",
       "inherits": "linux",
       "displayName": "D-WAQ/D-PART IFORT linux",
-      "description": "Configure D-WAQ/D-PART using Ninja generator"
+      "description": "Configure D-WAQ/D-PART using Ninja generator",
+      "cacheVariables": {
+        "CONFIGURATION_TYPE": "dwaq"
+      }
     },
     {
       "name": "dwaves",
       "inherits": "windows",
       "displayName": "D-Waves IFORT win64 Release",
-      "description": "Configure D-Waves using Visual Studio 17 2022 generator"
+      "description": "Configure D-Waves using Visual Studio 17 2022 generator",
+      "cacheVariables": {
+        "CONFIGURATION_TYPE": "dwaves"
+      }
     },
     {
       "name": "flow2d3d",
       "inherits": "windows",
       "displayName": "Delft3D-FLOW IFORT win64 Release",
-      "description": "Configure Delft3D-FLOW using Visual Studio 17 2022 generator"
+      "description": "Configure Delft3D-FLOW using Visual Studio 17 2022 generator",
+      "cacheVariables": {
+        "CONFIGURATION_TYPE": "flow2d3d"
+      }
     },
     {
       "name": "swan",
       "inherits": "windows",
       "displayName": "SWAN IFORT win64 Release",
-      "description": "Configure SWAN using Visual Studio 17 2022 generator"
+      "description": "Configure SWAN using Visual Studio 17 2022 generator",
+      "cacheVariables": {
+        "CONFIGURATION_TYPE": "swan"
+      }
     }
   ],
   "buildPresets": [
