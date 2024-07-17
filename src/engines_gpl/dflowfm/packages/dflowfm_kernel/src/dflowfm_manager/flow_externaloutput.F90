@@ -129,6 +129,7 @@
            end if
         end if
 
+        if (jaeverydt == 0) then
            if (jamapFlowAnalysis > 0) then
               ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
               call updateFlowAnalysisParameters()
@@ -143,6 +144,7 @@
               limitingTimestepEstimation = 0
               flowCourantNumber = 0d0
            endif
+        endif
          if (comparereal(time_map, ti_mape, eps10) == 0) then
             time_map = tstop_user  + 1
          else
