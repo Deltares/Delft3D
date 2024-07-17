@@ -7,40 +7,22 @@ set(src_path src)
 # Gather source files
 get_fortran_source_files(${src_path} source_files)
 
-# Set version file variables
-#set(ini_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/version_number.ini)
-#set(rc_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/rtc_version.rc)
-set(fortran_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/rtc_version.F90)
-
 # Set default files to be included in distribution
 set(default_files ${CMAKE_CURRENT_SOURCE_DIR}/../../default/RTC.DAT
                   ${CMAKE_CURRENT_SOURCE_DIR}/../../default/RTC.FNM
                   ${CMAKE_CURRENT_SOURCE_DIR}/../../default/RTC.LNG
                   ${CMAKE_CURRENT_SOURCE_DIR}/../../default/RTC.RTN)
 
-# Generate the version files
-# generate_version_files(${rc_version_file} 
-                       # ${ini_version_file} 
-                       # ON)
-# generate_version_files(${fortran_version_file} 
-                       # ${ini_version_file} 
-                       # ON)
+set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
+set(rtc_version_header_path ${CMAKE_CURRENT_SOURCE_DIR}/../../version)
+set(rc_version_file ${rtc_version_header_path}/rtc_version.rc)
+set(fortran_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/rtc_version.F90)
 
+include_directories(${version_include_dir} ${rtc_version_header_path})
 
 add_executable(${executable_name} ${source_files}
                                 ${rc_version_file} 
                                 ${fortran_version_file})
-
-# Define prebuild events
-# prebuild_version_number(${executable_name} ${rc_version_file} 
-                                        # ${checkout_src_root}
-                                        # ${ini_version_file}
-                                        # ON)
-
-# prebuild_version_number(${executable_name} ${fortran_version_file} 
-                                        # ${checkout_src_root}
-                                        # ${ini_version_file}
-                                        # ON)
 
 set_source_files_properties(
                     src/rtc_main.F90

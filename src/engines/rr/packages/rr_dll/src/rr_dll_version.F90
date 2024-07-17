@@ -33,10 +33,10 @@
 
     implicit none
 
-    character(*),  public, parameter :: rr_dll_major        = '3'
-    character(*),  public, parameter :: rr_dll_minor        = '216'
-    character(*),  public, parameter :: rr_dll_revision     = '65'
-    character(*),  public, parameter :: rr_dll_build_number = '78867'
+    character(*),  public, parameter :: rr_dll_major        = MAJOR_STR
+    character(*),  public, parameter :: rr_dll_minor        = MINOR_STR
+    character(*),  public, parameter :: rr_dll_revision     = REVISION_STR
+    character(*),  public, parameter :: rr_dll_build_number = BUILD_NR
 
 #if defined(W32)
     character(*),  public, parameter :: rr_dll_architecture = '(Win32)'
@@ -55,7 +55,7 @@
     character(*),  public, parameter :: rr_dll_program      = PRODUCT_NAME
     character(*),  public, parameter :: rr_dll_programname  = PRODUCT_NAME  ! use in about box and window title
 
-    character(*),  public, parameter :: rr_dll_version      = trim(MAJOR_STR)//'.'//trim(MINOR_STR)//'.'//trim(REVISION_STR)//'.'//trim(BUILD_NR)
+    character(*),  public, parameter :: rr_dll_version      = trim(rr_dll_major)//'.'//trim(rr_dll_minor)//'.'//trim(rr_dll_revision)//'.'//trim(rr_dll_build_number)
     character(*),  public, parameter :: rr_dll_version_full = rr_dll_company//', '//rr_dll_program//' Version '//rr_dll_version//', '//__DATE__//', '//__TIME__
     character(*),  public, parameter :: rr_dll_version_id   = '@(#)'//rr_dll_version_full
     character(*),  public, parameter :: rr_dll_checkout     = '@(#) $HeadURL: https://repos.deltares.nl/repos/ds/trunk/src/engines/rr/packages/rr_dll/src/rr_dll_version.F90.svn $'

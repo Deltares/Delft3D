@@ -1,3 +1,4 @@
+#include "rtc_version.h"
 module rtc_version_module
 !----- LGPL --------------------------------------------------------------------
 !
@@ -31,10 +32,10 @@ module rtc_version_module
 
     implicit none
 
-    character(*),  public, parameter :: rtc_major        = '3'
-    character(*),  public, parameter :: rtc_minor        = '216'
-    character(*),  public, parameter :: rtc_revision     = '005'
-    character(*),  public, parameter :: rtc_build_number = '78867'
+    character(*),  public, parameter :: rtc_major        = MAJOR_STR
+    character(*),  public, parameter :: rtc_minor        = MINOR_STR
+    character(*),  public, parameter :: rtc_revision     = REVISION_STR
+    character(*),  public, parameter :: rtc_build_number = BUILD_NR
 
 #if defined(W32)
     character(*),  public, parameter :: rtc_architecture = '(Win32)'
@@ -48,10 +49,10 @@ module rtc_version_module
     character(*),  public, parameter :: rtc_architecture = '(Unknown)'
 #endif
 
-    character(*),  public, parameter :: rtc_company      = 'Deltares'
-    character(*),  public, parameter :: rtc_company_url  = 'http://www.deltares.nl'
-    character(*),  public, parameter :: rtc_program      = 'RTC'
-    character(*),  public, parameter :: rtc_programname  = 'RTC'  ! use in about box and window title
+    character(*),  public, parameter :: rtc_company      = COMPANY_NAME
+    character(*),  public, parameter :: rtc_company_url  = COMPANY_URL
+    character(*),  public, parameter :: rtc_program      = PRODUCT_NAME
+    character(*),  public, parameter :: rtc_programname  = PRODUCT_NAME  ! use in about box and window title
 
     character(*),  public, parameter :: rtc_version      = rtc_major//'.'//rtc_minor//'.'//rtc_revision//'.'//rtc_build_number//' '//rtc_architecture
     character(*),  public, parameter :: rtc_version_full = 'Deltares, '//rtc_program//' Version '//rtc_version//', '//__DATE__//', '//__TIME__
