@@ -31,20 +31,21 @@
 ! 
 
    subroutine setucxqucyq_mor (u1, ucxq, ucyq)
-   use m_fm_erosed, only: ucxq_mor, ucyq_mor, hs_mor, link1, link1sign
+   use m_fm_erosed, only: ucxq_mor, ucyq_mor, hs_mor, link1, link1sign, ndx_mor
    use m_flowgeom, only: ndx, lnx, lnxi, ln, nd, wcx1, wcx2, wcy1, wcy2, csu, snu, bl, ndxi, lnx1D, kcs
    use m_flow, only: hs, hu, zws, kmx, kmxL, au, q1, ucx_mor, ucy_mor, lnkx, ndkx
-   use m_flowparameters ,only: jacstbnd, epshs, eps10
+   use m_flowparameters ,only: jacstbnd, epshs, eps10, flow_solver, FLOW_SOLVER_FM
    use m_sediment, only: stmpar
    use m_turbulence, only:ln0
    use m_CrossSections, only: GetCSParsFlow
    use unstruc_channel_flow, only: network
-
+   use m_f1dimp, only: f1dimppar
+   
    implicit none
    double precision, dimension(lnkx), intent(in ) :: u1
    double precision, dimension(ndkx), intent(in ) :: ucxq
    double precision, dimension(ndkx), intent(in ) :: ucyq
-   integer          :: L, LL, k, k1, k2, Lt, Lb, kk, kb, kt
+   integer          :: L, LL, k, k1, k2, Lt, Lb, kk, kb, kt, idx_sre, kd
    double precision :: wcxu, wcyu, cs, sn, uin, huL
    logical, pointer :: maximumwaterdepth
    double precision, pointer :: maximumwaterdepthfrac
@@ -72,6 +73,12 @@
        endif
    enddo
 
+   !------------------------------------------
+   ! FM solver
+   !------------------------------------------
+   
+   if (flow_solver == FLOW_SOLVER_FM) then !FM solver
+       
    ! we define the node as the begin/end point of the first link connected to it
    if (stmpar%morpar%mornum%pure1d) then
       do L = 1,lnx1D
@@ -260,4 +267,22 @@
          enddo
       endif
    endif
-end subroutine setucxqucyq_mor
+   
+   !------------------------------------------
+   ! SRE solver
+   !------------------------------------------
+   
+   else !SRE solver
+       do kd=1,ndx_mor  !loop on FM nodes
+           
+          idx_sre=f1dimppar%grd_fm_sre(kd) 
+          
+          ucxq_mor(kd)=f1dimppar%qpack(idx_sre,3)/f1dimppar%waoft(idx_sre,3)
+          ucyq_mor(kd)=0
+          hs_mor(kd)=f1dimppar%hpack(idx_sre,3)-f1dimppar%bedlevel(idx_sre)              
+       
+       enddo !kd
+       
+    endif !flow_solver
+    
+   end subroutine setucxqucyq_mor

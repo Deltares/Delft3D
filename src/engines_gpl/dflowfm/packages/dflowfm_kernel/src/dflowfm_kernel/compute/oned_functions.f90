@@ -133,7 +133,7 @@ module m_oned_functions
          call set_structure_grid_numbers()
          call timstop(handle)
       
-         if (jased > 0 .and. stm_included) then
+         if ((jased > 0 .and. stm_included).or.(flow_solver == FLOW_SOLVER_SRE)) then !V: this test is also done in <set_cross_sections_to_gridpoints>. Isn't it redundant?
             ! 
             handle = 0
             call timstrt('Set cross sections to grid points', handle)
@@ -328,6 +328,7 @@ module m_oned_functions
       use m_flowgeom
       use m_sediment
       use messageHandling
+      use m_flowparameters, only: flow_solver, FLOW_SOLVER_SRE
 
       implicit none
 
@@ -347,7 +348,7 @@ module m_oned_functions
       ! cross sections (in case of sediment transport every gridpoint requires a unique
       ! cross section)
       line2cross => network%adm%line2cross
-      if (jased > 0 .and. stm_included) then
+      if ((jased > 0 .and. stm_included).or.(flow_solver == FLOW_SOLVER_SRE)) then
          if (allocated(gridpoint2cross)) deallocate(gridpoint2cross)
          allocate(gridpoint2cross(ndxi))
          do i = 1, ndxi

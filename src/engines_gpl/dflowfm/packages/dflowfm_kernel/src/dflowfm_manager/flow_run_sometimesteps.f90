@@ -40,8 +40,7 @@ subroutine flow_run_sometimesteps(dtrange, iresult)                   ! do compu
    use dfm_error
    use m_lateral, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used, &
                         qqlat, qplat, get_lateral_volume_per_layer,&
-                        lateral_volume_per_layer, distribute_lateral_discharge_per_layer_per_cell, &
-                        get_lateral_layer_positions, lateral_center_position_per_layer
+                        lateral_volume_per_layer, distribute_lateral_discharge_per_layer_per_cell
 
    implicit none
    double precision, intent(in)  :: dtrange
@@ -96,8 +95,6 @@ subroutine flow_run_sometimesteps(dtrange, iresult)                   ! do compu
    if (apply_transport_is_used) then
       call finish_outgoing_lat_concentration(dtrange)
       call get_lateral_volume_per_layer(lateral_volume_per_layer)
-      call setzcs()
-      call get_lateral_layer_positions(lateral_center_position_per_layer, zcs)
    end if
 
    iresult = DFM_NOERR

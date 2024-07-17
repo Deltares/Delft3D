@@ -47,7 +47,7 @@ subroutine flow_sedmorinit()
     use m_rdmorlyr, only: rdinimorlyr
     use fm_external_forcings_data, only: sfnames, numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
     use m_transport, only: ISED1, ISEDN, ifrac2const, const_names, constituents
-    use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, jatem, eps4
+    use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, jatem, eps4, flow_solver
     use m_bedform, only: bfmpar, bfm_included
     use unstruc_channel_flow
     use m_branch
@@ -58,6 +58,9 @@ subroutine flow_sedmorinit()
     use MessageHandling
     use dfm_error
     use m_mormerge
+    use m_fm_erosed, only: ndx_mor, ndxi_mor, lnx_mor, lnxi_mor, nd_mor, ln_mor, ndkx_mor
+    use m_f1dimp, only: f1dimp_initialized
+    
     use m_mormerge_mpi
     use m_partitioninfo, only: jampi, my_rank, ndomains, DFM_COMM_DFMWORLD
     use m_xbeach_data, only: gammaxxb
@@ -119,12 +122,27 @@ subroutine flow_sedmorinit()
        end select
     endif
 
+    !V: The sizes for morphodynamics are <~_mor>, which are equal to the flow
+    !sizes if not changed.
+    if (.not.f1dimp_initialized) then
+        ndx_mor=ndx 
+        ndxi_mor=ndxi
+        nd_mor=nd
+        lnx_mor=lnx
+        lnxi_mor=lnxi
+        ndkx_mor=ndkx
+        ln_mor=ln
+    endif
+    
     call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=jatem, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error)
     if (error) then
         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Error in subroutine rdstm.')
         return
     endif
     ! initialize sigsed based on values of tpsnumber read from .sed file
+    if (allocated(sigsed)) then
+       deallocate(sigsed)
+    endif
     allocate (sigsed (stmpar%lsedtot))
     do i = 1, stmpar%lsedtot
         sigsed(i) = stmpar%sedpar%tpsnumber(i)
@@ -155,7 +173,7 @@ subroutine flow_sedmorinit()
     endif
     !
     call nullsedtra(sedtra)
-    call allocsedtra(sedtra, stmpar%morpar%moroutput, max(kmx,1), stmpar%lsedsus, stmpar%lsedtot, 1, ndx, 1, lnx, stmpar%morpar%nxx, stmpar%morpar%moroutput%nstatqnt)
+    call allocsedtra(sedtra, stmpar%morpar%moroutput, max(kmx,1), stmpar%lsedsus, stmpar%lsedtot, 1, ndx_mor, 1, lnx_mor, stmpar%morpar%nxx, stmpar%morpar%moroutput%nstatqnt)
 
     morbnd              => stmpar%morpar%morbnd
     do k = 1,nopenbndsect
@@ -274,12 +292,12 @@ subroutine flow_sedmorinit()
     endif
 
     ! ad hoc allocation of dummy variables
-    allocate(mtd%dzbdt(ndx))
+    allocate(mtd%dzbdt(ndx_mor))
     allocate(mtd%uau(lnx))
-    allocate(mtd%seddif(stmpar%lsedsus,ndkx))
-    allocate(mtd%sed(stmpar%lsedsus,ndkx))
-    allocate(mtd%ws(ndkx,stmpar%lsedsus))
-    allocate(mtd%blchg(Ndx))
+    allocate(mtd%seddif(stmpar%lsedsus,ndkx_mor))
+    allocate(mtd%sed(stmpar%lsedsus,ndkx_mor))
+    allocate(mtd%ws(ndkx_mor,stmpar%lsedsus))
+    allocate(mtd%blchg(Ndx_mor))
     allocate(mtd%messages)
     call initstack     (mtd%messages)
     !
@@ -312,7 +330,7 @@ subroutine flow_sedmorinit()
     call inipointers_erosed()
     !    update d50 and bed composition if there is no restartfile (if a restartfile exists, this is done inside unc_read_map_or_rst instead)
     if (len_trim(md_restartfile) == 0 ) then
-        call initsedtra(sedtra, stmpar%sedpar, stmpar%trapar, stmpar%morpar, stmpar%morlyr, rhomean, ag, vismol, 1, ndx, ndx, stmpar%lsedsus, stmpar%lsedtot)
+        call initsedtra(sedtra, stmpar%sedpar, stmpar%trapar, stmpar%morpar, stmpar%morlyr, rhomean, ag, vismol, 1, ndx_mor, ndx_mor, stmpar%lsedsus, stmpar%lsedtot)
     endif
     !
     !   for boundary conditions: map suspended fractions index to total fraction index

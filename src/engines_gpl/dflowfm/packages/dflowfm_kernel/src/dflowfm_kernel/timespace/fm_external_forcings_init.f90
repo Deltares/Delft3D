@@ -526,12 +526,14 @@ contains
          integer, allocatable :: selected_nodes(:)
          integer :: number_of_selected_nodes, node
          logical :: invert_mask
+         logical :: is_data_on_p_points
          logical :: is_variable_name_available
-         logical :: is_target_mask_available
          logical :: is_extrapolation_allowed
          character(len=INI_KEY_LEN) :: variable_name
          character(len=INI_VALUE_LEN) :: interpolation_method
-         real(kind=hp) :: max_search_radius
+         real(hp) :: max_search_radius
+         real(hp), pointer, dimension(:) :: x_array
+         real(hp), pointer, dimension(:) :: y_array
 
          res = .false.
 
@@ -561,29 +563,10 @@ contains
          end if
 
          target_mask_file = ''
-         call prop_get(node_ptr, '', 'targetMaskFile ', target_mask_file, is_target_mask_available)
+         call prop_get(node_ptr, '', 'targetMaskFile ', target_mask_file)
 
          invert_mask = .false.
          call prop_get(node_ptr, '', 'targetMaskInvert ', invert_mask, is_successful)
-
-         allocate (mask(ndx), source=0)
-         if (len_trim(target_mask_file) > 0) then
-            ! Mask flow nodes based on inside polygon(s), or outside.
-            ! in: kcs, all flow nodes, out: mask: all masked flow nodes.
-            allocate (selected_nodes(ndx), source=0)
-            call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_nodes, number_of_selected_nodes, LOCTP_POLYGON_FILE, &
-                                            target_mask_file)
-            do node = 1, number_of_selected_nodes
-               mask(selected_nodes(node)) = 1
-            end do
-            if (invert_mask) then
-               mask = ieor(mask, 1)
-            end if
-
-         else
-            ! 100% masking: accept all flow nodes that were already active in kcs.
-            where (kcs /= 0) mask = 1
-         end if
 
          is_variable_name_available = .false.
          variable_name = ' '
@@ -627,15 +610,58 @@ contains
 
          select case (quantity)
          case ('airpressure', 'atmosphericpressure')
-            ierr = allocate_patm()
             kx = 1
+            is_data_on_p_points = .true. 
+            ierr = allocate_patm(0._hp)
+
+         case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
+            kx = 1
+            is_data_on_p_points = .true. 
+            call allocatewindarrays()
+
+            jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
+            jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
+
+            ierr = allocate_patm(100000._hp)
+
+            if (.not. allocated(ec_pwxwy_x)) then
+                allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0d0)
+                call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
+            end if
+
+            if (jaspacevarcharn == 1) then
+                if (.not. allocated(ec_pwxwy_c)) then
+                    allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr, source=0d0)
+                    call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
+                end if
+            end if
+  
+         case ('charnock')
+            kx = 1
+            is_data_on_p_points = .true. 
+            if (.not. allocated(ec_charnock)) then
+                allocate (ec_charnock(ndx), stat=ierr, source=0d0)
+                call aerr('ec_charnock(ndx)', ierr, ndx)
+            end if
+            if (.not. allocated(wcharnock)) then
+                allocate (wcharnock(lnx), stat=ierr)
+                call aerr('wcharnock(lnx)', ierr, lnx)
+            end if
+
+         case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
+            kx = 1
+            is_data_on_p_points = .false. 
+            call allocatewindarrays()
+
+            jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
 
          case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
+            kx = 1
+            is_data_on_p_points = .true. 
             if (.not. allocated(rain)) then
                allocate (rain(ndx), stat=ierr, source=0d0)
                call aerr('rain(ndx)', ierr, ndx)
             end if
-            kx = 1
 
          case ('qext')
             ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
@@ -676,17 +702,45 @@ contains
             return
          end select
 
+         if(is_data_on_p_points) then 
+            x_array => xz(1:ndx)
+            y_array => yz(1:ndx)
+            allocate (mask(ndx), source=0)
+         
+            if (len_trim(target_mask_file) > 0) then
+            ! Mask flow nodes based on inside polygon(s), or outside.
+            ! in: kcs, all flow nodes, out: mask: all masked flow nodes.
+               allocate (selected_nodes(ndx), source=0)
+               call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_nodes, number_of_selected_nodes, LOCTP_POLYGON_FILE, &
+                                            target_mask_file)
+               do node = 1, number_of_selected_nodes
+                  mask(selected_nodes(node)) = 1
+               end do
+               if (invert_mask) then
+                  mask = ieor(mask, 1)
+               end if
+
+            else
+            ! 100% masking: accept all flow nodes that were already active in kcs.
+               where (kcs /= 0) mask = 1
+            end if
+         else
+            x_array => xu(1:lnx)
+            y_array => yu(1:lnx)
+            allocate (mask(lnx), source=1)
+         end if
+         
          select case (trim(str_tolower(forcing_file_type)))
          case ('bcascii')
             ! NOTE: Currently, we only support name=global meteo in.bc files, later maybe station time series as well.
-            is_successful = ec_addtimespacerelation(quantity, xz(1:ndx), yz(1:ndx), mask, kx, 'global', filetype, &
+            is_successful = ec_addtimespacerelation(quantity, x_array, y_array, mask, kx, 'global', filetype, &
                                                     method, oper, forcingfile=forcing_file)
          case default
             if (is_variable_name_available) then
-               is_successful = ec_addtimespacerelation(quantity, xz(1:ndx), yz(1:ndx), mask, kx, forcing_file, filetype, &
+               is_successful = ec_addtimespacerelation(quantity, x_array, y_array, mask, kx, forcing_file, filetype, &
                                                        method, oper, varname=variable_name)
             else
-               is_successful = ec_addtimespacerelation(quantity, xz(1:ndx), yz(1:ndx), mask, kx, forcing_file, filetype, &
+               is_successful = ec_addtimespacerelation(quantity, x_array, y_array, mask, kx, forcing_file, filetype, &
                                                        method, oper)
             end if
          end select
@@ -695,14 +749,25 @@ contains
             select case (quantity)
             case ('airpressure', 'atmosphericpressure')
                japatm = 1
+               
+            case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock') 
+               jawind = 1
+               japatm = 1
+               
+            case ('charnock')
+               jaspacevarcharn = 1
+               
             case ('rainfall', 'rainfall_rate')
                jarain = 1
                jaqin = 1
-            case ('windxy')
+            
+            case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
                jawind = 1
             end select
+            
+            res = .true.
+
          end if
-         res = .true.
 
       end function init_meteo_forcings
 

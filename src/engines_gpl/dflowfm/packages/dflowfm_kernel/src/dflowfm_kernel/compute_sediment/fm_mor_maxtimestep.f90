@@ -31,12 +31,14 @@
 ! 
 
    subroutine fm_mor_maxtimestep()
-   use m_flowtimes
-   use m_flow
-   use m_flowgeom
-   use m_sediment
-   use m_partitioninfo
+   use m_flowtimes, only: dts
+   use m_flow, only: eps10, jamapflowanalysis, kkcflmx, limitingTimestepEstimation
+   use m_flowgeom, only: acl, ba, csu, snu, wu
+   use m_sediment, only: dzbdtmax, kcsmor
    use m_fm_erosed, only: sxtot, sytot, cdryb, morfac, lsedtot
+   use m_fm_erosed, only: ndx=>ndx_mor
+   use m_fm_erosed, only: nd=>nd_mor
+   use m_fm_erosed, only: ln=>ln_mor
 
    implicit none
 
@@ -54,12 +56,11 @@
       !
       dum = 0.d0
       do kk = 1, nd(k)%lnx
-         L = iabs(nd(k)%ln(kk))
-         k1 = ln(1,L)
-         k2 = ln(2,L)
-         ac1 = acl(L)
-         ac2 = 1d0-ac1
-
+            L = iabs(nd(k)%ln(kk))
+            k1 = ln(1,L)
+            k2 = ln(2,L)
+            ac1 = acl(L)
+            ac2 = 1d0-ac1
          do ised = 1, lsedtot
             sx = (ac1*sxtot(k1,ised) + ac2*sxtot(k2,ised))/cdryb(ised)*mf
             sy = (ac1*sytot(k1,ised) + ac2*sytot(k2,ised))/cdryb(ised)*mf

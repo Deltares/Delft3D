@@ -254,7 +254,7 @@ function initialize_initial_fields(inifilename) result(ierr)
             success = .false.
             exit ! Or, consider cycle instead, to try all remaining blocks and return with an error only at the very end.
          end if
-         if ((strcmpi(qid, 'waterlevel') .or. strcmpi(qid, 'waterdepth'))) then
+         if (strcmpi(qid, 'waterlevel') .or. strcmpi(qid, 'waterdepth') .or. strcmpi(qid, 'initialvelocity')) then
             specified_water_levels = specified_water_levels .or. specified_indices
             if (global_value_provided) then
                water_level_global_value_provided = .true.
@@ -284,6 +284,7 @@ function initialize_initial_fields(inifilename) result(ierr)
 
             success = timespaceinitialfield(xz, yz, hs, ndx, filename, filetype, method, operand, transformcoef, 2, kcsini)
             s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
+
          else if (strcmpi(qid, 'InfiltrationCapacity')) then
             if (infiltrationmodel /= DFM_HYD_INFILT_CONST) then
                write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(qid)//'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_CONST, ''' in the MDU file (constant).'
@@ -654,7 +655,8 @@ subroutine init_1d_field_read_global(field_ptr, ini_field_file_name, ini_file_na
       return
    end if
    if ((.not. strcmpi(quantity, 'bedlevel')) .and. (.not.strcmpi(quantity, 'waterlevel')) .and. &
-       (.not. strcmpi(quantity,'waterdepth')) .and. (.not. strcmpi(quantity, 'frictioncoefficient'))) then
+       (.not. strcmpi(quantity,'waterdepth')) .and. (.not. strcmpi(quantity, 'frictioncoefficient')) .and. &
+       (.not. strcmpi(quantity, 'initialvelocity'))) then
       num_errors = num_errors + 1
       write(msgbuf, '(5a)') 'Wrong block in file ''', trim(ini_file_name), ''': [Global]. Quantity ''', trim(quantity), ''' is unknown.'
       call err_flush()
@@ -766,7 +768,7 @@ function init1dField(filename, inifieldfilename, quant, specified_indices, globa
 
    call init_1d_field_read_global(field_ptr, inifieldfilename, filename, quant, global_value, global_value_provided, numerr)
 
-   if (strcmpi(quant, 'waterlevel') .or. strcmpi(quant, 'waterdepth') .or. strcmpi(quant, 'bedlevel')) then
+   if (strcmpi(quant, 'waterlevel') .or. strcmpi(quant, 'waterdepth') .or. strcmpi(quant, 'bedlevel') .or. strcmpi(quant, 'initialvelocity')) then
       call realloc(specified_indices, ndxi - ndx2D, fill = .false._c_bool, keepExisting = .false.)
    else if (strcmpi(quant, 'frictioncoefficient')) then
       call realloc(specified_indices, lnx1d, fill = .false._c_bool, keepExisting = .false.)
@@ -851,6 +853,8 @@ function init1dField(filename, inifieldfilename, quant, specified_indices, globa
          call set_water_level_from_depth(bl(ndx2D+1:ndxi), hs(ndx2D+1:ndxi), s1(ndx2D+1:ndxi), specified_indices)
       else if (strcmpi(quant, 'frictioncoefficient')) then
          call spaceInit1dfield(branchId, chainage, values, 1, frcu(1:lnx1d), specified_indices)
+      else if (strcmpi(quant, 'initialvelocity')) then
+         call spaceInit1dfield(branchId, chainage, values, 1, u1(1:lnx1d), specified_indices)
       else if (strcmpi(quant, 'bedlevel')) then
          !call spaceInit1dfield(branchId, chainage, values, 2, zk(ndx2D+1:ndxi), specified_indices)
          ! TODO: UNST-2694, Reading bedlevel from 1dField file type is not yet supported.

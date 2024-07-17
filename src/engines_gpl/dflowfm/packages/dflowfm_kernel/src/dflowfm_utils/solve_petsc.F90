@@ -33,7 +33,6 @@
 #include "config.h"
 #endif
 
-
 module m_petsc
 #include <petsc/finclude/petscksp.h>
 

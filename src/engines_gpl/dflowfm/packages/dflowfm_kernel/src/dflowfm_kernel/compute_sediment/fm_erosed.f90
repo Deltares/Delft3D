@@ -59,7 +59,7 @@
    use sediment_basics_module
    use m_physcoef, only: ag, vonkar, sag, ee, backgroundsalinity, backgroundwatertemperature, vismol
    use m_sediment, only: stmpar, sedtra, stm_included, mtd, jatranspvel, sbcx_raw,sbcy_raw,sswx_raw,sswy_raw,sbwx_raw,sbwy_raw
-   use m_flowgeom, only: bl, lnxi, lnx, ln, dxi, ndx, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, nd, csu, snu, wcl
+   use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
    use m_flow, only: s0, s1, u1, kmx, zws, hs, &
       iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, u_to_umain, frcu_mor, javeg,jabaptist,cfuhi, epshs, taubxu, epsz0
    use m_flowtimes, only: julrefdat, dts, time1
@@ -74,7 +74,21 @@
    use m_physcoef, only: frcuni, ifrctypuni
    use m_turbulence, only: vicwws, turkinepsws, rhowat
    use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
-   use m_fm_erosed
+   use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, kmxsed, taub, uuu, vvv
+   use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor
+   use m_fm_erosed, only: sourf, sourse, sour_im, sinkf, sinkse
+   use m_fm_erosed, only: hs_mor, mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, srcmax, sedtrcfac, sedd50, rhosol, nmudfrac, taucr, tetacr, dstar, iform
+   use m_fm_erosed, only: dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, nxx, sedd50fld, sedtyp, xx, dgsd, min_dxx_sedtyp, logsedsig
+   use m_fm_erosed, only: asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc
+   use m_fm_erosed, only: max_integers, max_strings, dll_integers, dll_strings, dll_function, dll_handle
+   use m_fm_erosed, only: mfluff, wetslope, oldmudfrac
+   use m_fm_erosed, only: i10, i15, i50, i90
+   use m_fm_erosed, only: bed, bedw, camax, cdryb, depfac, dss, dcwwlc, dss, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau
+   use m_fm_erosed, only: ndx=>ndx_mor
+   use m_fm_erosed, only: lnx=>lnx_mor
+   use m_fm_erosed, only: ln=>ln_mor
+   use m_fm_erosed, only: nd=>nd_mor
+   use m_fm_erosed, only: lnxi=>lnxi_mor
    use m_bedform
    use m_xbeach_data
    use m_waves
@@ -256,8 +270,15 @@
    ucxq_tmp = ucxq_mor
    ucyq_tmp = ucyq_mor
    call init_1dinfo()
-   call setucxqucyq_mor(u1_tmp, ucxq_tmp, ucyq_tmp)
+   !V: this function does several things and should be split. 
+   !<ucxq_tmp> is only used in 3D. It is a waste of time to compute also for 2D
+   !however, it cannot be switched off because <hs_mor> is also computed.
    !
+   !Furthermore, <ucxq_mor> is computed in <setucxucy_mor> and then overwritten here.
+   !I think that it should be removed from <setucxucy_mor>
+   call setucxqucyq_mor(u1_tmp, ucxq_tmp, ucyq_tmp) 
+   
+
    if (jawave>2) then
       if ((.not. (jawave==4 .or. jawave==3 .or. jawave==6)) .or. flowWithoutWaves) then
          ktb=0d0     ! no roller turbulence
@@ -363,7 +384,7 @@
    !
    javegczu = (javeg==1 .and. jabaptist>1 .and. kmx==0 )
    !
-   do k = 1,ndx                            ! This interpolation is done by considering constant waterdepth per each flow-cell
+   do k = 1,ndx                        ! This interpolation is done by considering constant waterdepth per each flow-cell
       h1 = s1(k) - bl(k)                   ! To ensure to get the same results from interpolation based on constant frcu and ifrcutp in the cell centre
                                            ! with considering hs
       if (nd(k)%lnx==0) then
@@ -402,10 +423,10 @@
    taub = 0d0
    do L=1,lnx
       k1=ln(1,L); k2=ln(2,L)
-      z0rouk(k1) = z0rouk(k1)+wcl(1,L)*z0urou(L)   
+      z0rouk(k1) = z0rouk(k1)+wcl(1,L)*z0urou(L)
       z0rouk(k2) = z0rouk(k2)+wcl(2,L)*z0urou(L)
-      taub(k1)   = taub(k1)+wcl(1,L)*taubxu(L)        
-      taub(k2)   = taub(k2)+wcl(2,L)*taubxu(L)        
+      taub(k1)   = taub(k1)+wcl(1,L)*taubxu(L)
+      taub(k2)   = taub(k2)+wcl(2,L)*taubxu(L)
    end do
    !
    if (kmx > 0) then            ! 3D
@@ -523,8 +544,8 @@
       ! calculate percentiles Dxx
       !
       call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
-         & logsedsig ,nseddia   ,logseddia ,ndx       ,1         , &
-         & ndx       ,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
+         & logsedsig ,nseddia   ,logseddia ,ndx   ,1         , &
+         & ndx   ,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
          & sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )
       !
       ! determine hiding & exposure factors
@@ -543,7 +564,7 @@
       call compsandfrac(frac, sedd50, ndx, lsedtot, sedtyp, &
                       & max_mud_sedtyp, sandfrac, sedd50fld, &
                       & 1, ndx)   
-   endif   
+   endif
    !
    ! compute normal component of bed slopes at edges    (e_xxx refers to edges)
 
@@ -581,7 +602,7 @@
       ! Interpolate back to links
       k1 = ln(1,L); k2 = ln(2,L)
       !       e_dzdn(L) = acl(L)*(csu(L)*dzdx(k1) + snu(L)*dzdy(k1)) + (1d0-acl(L))*(csu(L)*dzdx(k2) + snu(L)*dzdy(k2))
-      e_dzdn(L) = -dxi(L)*(bl(k2)-bl(k1))                                                              ! more accurate near boundaries
+      e_dzdn(L) = -dxi(L)*(bl(k2)-bl(k1))                                                      ! more accurate near boundaries
       e_dzdt(L) = acl(L)*(-snu(L)*dzdx(k1) + csu(L)*dzdy(k1))+(1d0-acl(L))*(-snu(L)*dzdx(k2) + csu(L)*dzdy(k2))  ! affected near boundaries due to interpolation
    end do
    !
@@ -1215,7 +1236,7 @@
    !
    ! Distribute velocity asymmetry to links
    !
-   do L = 1, lnxi
+   do L = 1, lnxi 
       k1 = ln(1,L); k2=ln(2,L)
       uau(L) = (acL(L)*ua(k1) + (1d0-acL(L))*ua(k2)) * csu(L) +   &
          (acL(L)*va(k1) + (1d0-acL(L))*va(k2)) * snu(L)
@@ -1239,6 +1260,8 @@
       endif
    enddo
    !
+   !2DO. V: When raw transports at cell centres are requested, these are reconstructed from the edge transports in <unstruc_netcdf>. Saving
+   ! <sbcx_raw> does not seem necessary. 
    if (stmpar%morpar%moroutput%rawtransports) then
       sbcx_raw = sbcx; sbcy_raw = sbcy;    ! save transports before upwinding and bed slope effects
       sbwx_raw = sbwx; sbwy_raw = sbwy;    ! to compare with analytical solutions

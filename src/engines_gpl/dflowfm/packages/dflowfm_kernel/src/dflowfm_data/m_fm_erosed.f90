@@ -38,11 +38,23 @@
    use sediment_basics_module
    use m_sediment, only: stmpar, sedtra, stm_included, mtd
    use m_ini_noderel
+   use m_flowgeom, only: tnode
 
    implicit none
-
+   
+   integer                                        :: ndx_mor  !< copy of <ndx> for morphodynamics
+   integer                                        :: ndxi_mor !< copy of <ndxi> for morphodynamics
+   integer                                        :: lnx_mor  !< copy of <lnx> for morphodynamics
+   integer                                        :: lnxi_mor !< copy of <lnxi> for morphodynamics
+   integer                                        :: ndkx_mor !< copy of <ndkx> for morpho. <ndkx> cannot be changed for preallocating because it is used for writing. 
+   integer, dimension(:,:),           allocatable :: ln_mor   !< copy of <ln> for morphodynamics. Kept allocatable rather than pointer for consistency with the original
+    
+   type(tnode), allocatable                       :: nd_mor(:) !< copy of <nd> for morphodynamics
+   
    integer, dimension(:),                 pointer :: link1 => NULL()
    integer, dimension(:),                 pointer :: link1sign => NULL()
+   integer, dimension(:),                 pointer :: link1sign2 => NULL() !sign of the link for FM1DIMP. It should converge with <link1sign>, but I am not sure of the use of <link1sign>. 
+                                                                          !<link1sign2> is 1 when a positive velocity is in the direction of increasing chainage and -1 when it has the opposite direction.
    logical                                        :: link1_initialized = .false.
 
    real(fp), dimension(:,:),              pointer :: seddif        !< Sediment diffusion

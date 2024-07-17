@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-   
+
 module fm_external_forcings
 
    implicit none
@@ -2671,16 +2671,18 @@ contains
    end subroutine finalize
 
    !> Allocate and initialized atmosperic pressure variable(s)
-   function allocate_patm() result(status)
+   function allocate_patm(default_value) result(status)
       use m_wind, only: patm
       use m_cell_geometry, only: ndx
       use m_alloc, only: aerr
+      use precision_basics, only: hp
 
+      real(kind=hp), intent(in) :: default_value !< default atmospheric pressure value
       integer :: status
 
       status = 0
       if (.not. allocated(patm)) then
-         allocate (patm(ndx), stat=status, source=0.d0)
+         allocate (patm(ndx), stat=status, source=default_value)
          call aerr('patm(ndx)', status, ndx)
       end if
 

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{769715C7-A3E0-48E1-B791-1B225AD6926B}">
+	<Platforms>
+		<Platform Name="x64"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|x64" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" PreprocessorDefinitions="USE_MSWINDOWS" DebugParameter="debugParameterAll" WarnDeclarations="true" WarnUnusedVariables="true" WarnInterfaces="true" Traceback="true" NullPointerCheck="true" BoundsCheck="true" UninitializedVariablesCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Release|x64" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" PreprocessorDefinitions="USE_MSWINDOWS" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<File RelativePath=".\src\CHBKSB.f"/>
+		<File RelativePath=".\src\CHDCMP.f"/>
+		<File RelativePath=".\src\KAABCD.f"/>
+		<File RelativePath=".\src\KAAW.f"/>
+		<File RelativePath=".\src\KAAWAR.f"/>
+		<File RelativePath=".\src\KAAWST.f"/>
+		<File RelativePath=".\src\KAAWWP.f"/>
+		<File RelativePath=".\src\KABOCH.f"/>
+		<File RelativePath=".\src\KABRAN.f"/>
+		<File RelativePath=".\src\KACVSM.f"/>
+		<File RelativePath=".\src\KADCDQ.f"/>
+		<File RelativePath=".\src\KADFST.f"/>
+		<File RelativePath=".\src\KADQLT.f"/>
+		<File RelativePath=".\src\KADSCO.f"/>
+		<File RelativePath=".\src\KAERES.f"/>
+		<File RelativePath=".\src\KAFCPR.f"/>
+		<File RelativePath=".\src\KAFGAR.f"/>
+		<File RelativePath=".\src\KAFHYH.f"/>
+		<File RelativePath=".\src\KAFHYR.f"/>
+		<File RelativePath=".\src\KAFLCP.f"/>
+		<File RelativePath=".\src\KAFLSP.f"/>
+		<File RelativePath=".\src\KAFPAH.f"/>
+		<File RelativePath=".\src\KAFPAR.f"/>
+		<File RelativePath=".\src\KAFREH.f"/>
+		<File RelativePath=".\src\KAFRER.f"/>
+		<File RelativePath=".\src\KAGS.f"/>
+		<File RelativePath=".\src\KAHYPA.f"/>
+		<File RelativePath=".\src\KAINI.f"/>
+		<File RelativePath=".\src\KAINS1.f"/>
+		<File RelativePath=".\src\KAINS2.f"/>
+		<File RelativePath=".\src\KAINS3.f"/>
+		<File RelativePath=".\src\KAINSN.f"/>
+		<File RelativePath=".\src\KALMAN.f"/>
+		<File RelativePath=".\src\KANORM.f"/>
+		<File RelativePath=".\src\KAPHYH.f"/>
+		<File RelativePath=".\src\KAPHYR.f"/>
+		<File RelativePath=".\src\KAPP.f"/>
+		<File RelativePath=".\src\KAPPAH.f"/>
+		<File RelativePath=".\src\KAPPAR.f"/>
+		<File RelativePath=".\src\KAPRED.f"/>
+		<File RelativePath=".\src\KAPRNT.f"/>
+		<File RelativePath=".\src\KAREST.f"/>
+		<File RelativePath=".\src\KARHCV.f"/>
+		<File RelativePath=".\src\KARHP1.f"/>
+		<File RelativePath=".\src\KARHSN.f"/>
+		<File RelativePath=".\src\KARSTA.f"/>
+		<File RelativePath=".\src\KASBCO.f"/>
+		<File RelativePath=".\src\KASBNC.f"/>
+		<File RelativePath=".\src\KASBNR.f"/>
+		<File RelativePath=".\src\KASMCV.f"/>
+		<File RelativePath=".\src\KASOEQ.f"/>
+		<File RelativePath=".\src\KASTRU.f"/>
+		<File RelativePath=".\src\KASW.f"/>
+		<File RelativePath=".\src\KASWPC.f"/>
+		<File RelativePath=".\src\KASWPR.f"/>
+		<File RelativePath=".\src\KAUPPR.f"/>
+		<File RelativePath=".\src\KAUPST.f"/>
+		<File RelativePath=".\src\KAWRES.f"/>
+		<File RelativePath=".\src\KAWRST.f"/>
+		<File RelativePath=".\src\LUBKSS.f"/>
+		<File RelativePath=".\src\LUDCMS.f"/>
+		<File RelativePath=".\src\MATRAN.f"/></Filter></Files>
+	<Globals/></VisualStudioProject>

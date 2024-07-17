@@ -40,6 +40,7 @@ use unstruc_netcdf
 use m_timer
 use unstruc_display, only : jaGUI
 use dfm_error
+
 implicit none
 
 integer :: key
@@ -51,7 +52,17 @@ integer :: N, L
 
  if (itstep >= 2) then
     call timstrt('step_reduce', handle_extra(51)) ! step_reduce
-    call step_reduce(key)                            ! set a computational timestep implicit, reduce, elim conj grad substi
+    select case (flow_solver)
+        case (FLOW_SOLVER_FM)
+            call step_reduce_hydro(key)                            ! set a computational timestep implicit, reduce, elim conj grad substi
+        case (FLOW_SOLVER_SRE)
+            !time step advanced in <flow_single_timestep>.
+            call flow_initialize_fm1dimp_timestep(iresult,time1) !in kernel, can access everything
+            call SOFLOW_wrap(time1) !in module, only accesses SRE variables
+            call flow_finalize_fm1dimp_timestep() !in kernel, can access everything
+    end select
+    call step_reduce_transport_morpho(key)
+    
     call timstop(handle_extra(51)) ! step_reduce
 
     if (dsetb > 0) then

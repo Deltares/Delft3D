@@ -35,16 +35,17 @@
    subroutine setucxucy_mor (u1_loc)
    use m_flowgeom
    use m_flow
-   use m_fm_erosed, only: ucxq_mor, ucyq_mor
+   use m_fm_erosed, only: ucxq_mor, ucyq_mor, ndx_mor
    use m_sobekdfm
    use m_sediment, only: jased, stm_included
    use m_missing
-   use m_flowparameters, only: jabarrieradvection
+   use m_flowparameters, only: jabarrieradvection, flow_solver
    use m_sferic
+   use m_f1dimp, only: f1dimppar
    implicit none
    double precision, dimension(lnkx), intent(in ) :: u1_loc
 
-   integer          :: L, KK, k1, k2, k, nw, Lb, Lt, LL, nn, n, kt,kb, kbk, k2k
+   integer          :: L, KK, k1, k2, k, nw, Lb, Lt, LL, nn, n, kt,kb, kbk, k2k, kndx, idx_sre
    integer          :: itpbn, newucxq=0
    double precision :: uu, vv, uucx, uucy, wcxu, wcyu, cs, sn, adx, ac1, ac2, wuw, hdx, hul, dzz, uin, duxdn, duydn
    double precision :: dischcorrection
@@ -55,7 +56,7 @@
 
    ucxq_mor = 0d0 ; ucyq_mor = 0d0           ! zero arrays
    ucx_mor  = 0d0 ; ucy_mor  = 0d0
-
+       
    if (kmx < 1) then                                   ! original 2D coding
       do L = 1,lnx1D
          if (u1_loc(L) .ne. 0d0 .and. kcu(L) .ne. 3) then  ! link flows ; in 2D, the loop is split to save kcu check in 2D
@@ -464,5 +465,5 @@
       else     ! 3D
       endif
    end do
-
+   
    end subroutine setucxucy_mor

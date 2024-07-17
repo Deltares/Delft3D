@@ -46,6 +46,9 @@
    use m_CrossSections, only: t_CSType, CS_TABULATED
    use m_flow, only: s1
    use MessageHandling
+   use m_fm_erosed, only: ndxi_mor, ndx_mor, e_sbn, nd_mor, lsedtot
+   use m_f1dimp, only: f1dimppar
+   use m_flowparameters, only: flow_solver, FLOW_SOLVER_SRE
 
    real(fp), dimension(:), intent(inout) :: blchg         !< Bed level change (> 0 = sedimentation, < 0 = erosion)
 
@@ -60,6 +63,9 @@
    integer :: c
    integer :: ctype
    integer :: LL
+   integer :: ncs
+   integer :: kd, kl
+   integer :: idx_l1, idx_l2, idx_ns
    double precision :: aref
    double precision :: blmin
    double precision :: da
@@ -68,12 +74,13 @@
    double precision :: fac
    double precision :: href
    double precision :: w_active
+   double precision :: e_sbn_tot_1, e_sbn_tot_2
    type(t_CSType), pointer :: cdef
    type(t_node), pointer :: pnod
    !
    ! upon entry blchg contains the bed level change averaged over the total cell area
    !
-   do nm = ndx2D + 1, ndxi ! only for internal 1D nodes
+   do nm = ndx2D + 1, ndxi_mor ! only for internal 1D nodes
          do j = 1, gridpoint2cross(nm)%num_cross_sections
             c = gridpoint2cross(nm)%cross(j)
             if (c == -999) cycle
@@ -176,7 +183,15 @@
       if (pnod%nodeType == nt_LinkNode) then  ! connection node
          nm = pnod%gridnumber ! TODO: Not safe in parallel models (check gridpointsseq as introduced in UNST-5013)
          blmin = 999999d0
-         do j = 1, gridpoint2cross(nm)%num_cross_sections
+         !V: When using FM1DIMP, we set `gridpoint2cross(nm)%num_cross_sections=0` such that
+         !we do not loop over the cross-sections for updating the bed level. This is 
+         !necessary because the bed level change in <gridpoint2cross(nm)%cross(j)> does not
+         !depend on <blchg(nm)> but on the value of the multivalued-ghost node. However, 
+         !we need to update the bed level at the junction flownode because it is used, at
+         !least, to update the <hu> of the junction multivalued node. By looping over the size
+         !of <gridpoint2cross(nm)%cross> we do both things. 
+         ncs=size(gridpoint2cross(nm)%cross)
+         do j = 1, ncs
             c = gridpoint2cross(nm)%cross(j)
             if (c == -999) cycle
             cdef => network%crs%cross(c)%tabdef
@@ -195,6 +210,28 @@
    !
    ! upon exit blchg contains the bed level change for deepest point
    !
+   
+   !
+   !junction node FM1DIMP
+   !
+   if (flow_solver == FLOW_SOLVER_SRE) then
+       do kd=ndx+1,ndx_mor !loop on multivalued-ghost nodes
+           !there can only be two links connected to the flownode
+           idx_l1=abs(nd_mor(kd)%ln(1))
+           idx_l2=abs(nd_mor(kd)%ln(2))
+           idx_ns=f1dimppar%grd_fmmv_fmsv(kd)
+           e_sbn_tot_1=0.0d0
+           e_sbn_tot_2=0.0d0
+           do kl=1,lsedtot
+               e_sbn_tot_1=e_sbn_tot_1+e_sbn(idx_l1,kl)
+               e_sbn_tot_2=e_sbn_tot_2+e_sbn(idx_l2,kl)
+           enddo !kl    
+           if (abs(e_sbn_tot_1-e_sbn_tot_2)<1e-10) then
+               blchg(kd)=blchg(idx_ns)
+           endif
+       enddo !kd    
+   endif !flow_solver
+   
    end subroutine fm_update_crosssections
 
    !> Returns local grid cell length at a 1D computational node.
@@ -207,6 +244,7 @@
    use precision
    use m_oned_functions, only:gridpoint2cross
    use m_flowgeom, only: acl, dx, ln, nd ! lnx, lnx1d, lnxi, lnx1Db, wu, wu_mor, LBND1D, bai, ba_mor, bai_mor, ndx, ndx2D, ndx1Db
+   use m_fm_erosed, only: nd_mor
 
    integer, intent(in) :: nm   !< flow node index
    integer, intent(in) :: j    !< local link (branch) index at flow node nm (only used on points with multiple branches)
@@ -221,8 +259,8 @@
       ! compute the total cell length
       !
       ds = 0d0
-      do i = 1,nd(nm)%lnx
-         LL = nd(nm)%ln(i)
+      do i = 1,nd_mor(nm)%lnx
+         LL = nd_mor(nm)%ln(i)
          L = iabs(LL)
          if (LL < 0) then
             ds = ds+dx(L)*acl(L)
@@ -231,7 +269,7 @@
          endif
       enddo
    else
-      LL = nd(nm)%ln(j)
+      LL = nd_mor(nm)%ln(j)
       L = iabs(LL)
       if (LL < 0) then
          ds = dx(L)*acl(L)

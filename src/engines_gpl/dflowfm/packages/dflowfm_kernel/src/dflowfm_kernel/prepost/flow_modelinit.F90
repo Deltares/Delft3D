@@ -48,7 +48,7 @@
  use unstruc_files, only: mdia
  use unstruc_netcdf
  use MessageHandling
- use m_flowparameters, only: jawave, jatrt, jacali, jacreep, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac
+ use m_flowparameters, only: jawave, jatrt, jacali, jacreep, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE
  use dfm_error
  use m_fm_wq_processes, only: jawaqproc
  use m_vegetation
@@ -84,9 +84,9 @@
  use m_fm_erosed, only: taub
  use m_transport, only: numconst, constituents
  use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used, &
-                      get_lateral_volume_per_layer, lateral_volume_per_layer, get_lateral_layer_positions, &
-                      lateral_center_position_per_layer
+                      get_lateral_volume_per_layer, lateral_volume_per_layer
  use m_cell_geometry, only : ba
+ use m_initialize_flow1d_implicit, only: initialize_flow1d_implicit
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
  ! Activate the following line (See also statements below)
@@ -514,9 +514,15 @@
     ! Use timestep 1 s to set outgoing_lat_concentration to the initial averaged concentrations at each lateral location.
     call average_concentrations_for_laterals(numconst, kmx, kmxn, vol1, constituents, 1._dp)
     call get_lateral_volume_per_layer(lateral_volume_per_layer)
+ endif
 
-    call setzcs()
-    call get_lateral_layer_positions(lateral_center_position_per_layer, zcs)
+ !Initialize flow1d_implicit
+ if (flow_solver == FLOW_SOLVER_SRE) then
+     call initialize_flow1d_implicit(iresult)
+     if (iresult /= DFM_NOERR) then
+       call mess(LEVEL_WARN,'Error initializing 1D implicit.')
+       goto 1234
+     end if
  endif
  
  ! Initialise sedtrails statistics

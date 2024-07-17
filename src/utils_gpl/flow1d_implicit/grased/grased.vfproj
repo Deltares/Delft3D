@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{0C132BC2-77CF-45EE-AA22-7F3F7782ACF2}">
+	<Platforms>
+		<Platform Name="x64"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|x64" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" PreprocessorDefinitions="USE_MSWINDOWS" DebugParameter="debugParameterAll" WarnDeclarations="true" WarnUnusedVariables="true" WarnInterfaces="true" Traceback="true" NullPointerCheck="true" BoundsCheck="true" UninitializedVariablesCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Release|x64" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" PreprocessorDefinitions="USE_MSWINDOWS" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<File RelativePath=".\src\DIMGRANOUT.f"/>
+		<File RelativePath=".\src\GMABND.f"/>
+		<File RelativePath=".\src\GMADCS.f"/>
+		<File RelativePath=".\src\GMAREA.f"/>
+		<File RelativePath=".\src\GMCROS.f"/>
+		<File RelativePath=".\src\GMDABP.f"/>
+		<File RelativePath=".\src\GMDACO.f"/>
+		<File RelativePath=".\src\GMDAEP.f"/>
+		<File RelativePath=".\src\GMDAIP.f"/>
+		<File RelativePath=".\src\GMDALI.f"/>
+		<File RelativePath=".\src\GMDAST.f"/>
+		<File RelativePath=".\src\GMIBOU.f"/>
+		<File RelativePath=".\src\GMIFLH.f"/>
+		<File RelativePath=".\src\GMIFLP.f"/>
+		<File RelativePath=".\src\GMINOD.f"/>
+		<File RelativePath=".\src\GMINTN.f"/>
+		<File RelativePath=".\src\GMORPH.f"/>
+		<File RelativePath=".\src\GMPRED.f"/>
+		<File RelativePath=".\src\GSACEL.f"/>
+		<File RelativePath=".\src\GSBOUN.f"/>
+		<File RelativePath=".\src\GSCBOU.f"/>
+		<File RelativePath=".\src\GSCBUF.f"/>
+		<File RelativePath=".\src\GSCHAD.f"/>
+		<File RelativePath=".\src\GSCHAR.f"/>
+		<File RelativePath=".\src\GSCHARUN.f"/>
+		<File RelativePath=".\src\GSCOM1.f"/>
+		<File RelativePath=".\src\GSCOM2.f"/>
+		<File RelativePath=".\src\GSCOM3.f"/>
+		<File RelativePath=".\src\GSCOMP.f"/>
+		<File RelativePath=".\src\GSCOND.f"/>
+		<File RelativePath=".\src\GSDDEF.f"/>
+		<File RelativePath=".\src\GSDELT.f"/>
+		<File RelativePath=".\src\GSDFST.f"/>
+		<File RelativePath=".\src\GSDHGI.f"/>
+		<File RelativePath=".\src\GSDMED.f"/>
+		<File RelativePath=".\src\GSDSCP.f"/>
+		<File RelativePath=".\src\GSDSD.f"/>
+		<File RelativePath=".\src\GSDSFR.f"/>
+		<File RelativePath=".\src\GSDUHD.f"/>
+		<File RelativePath=".\src\GSDULA.f"/>
+		<File RelativePath=".\src\GSDUNE.f"/>
+		<File RelativePath=".\src\GSDUNH.f"/>
+		<File RelativePath=".\src\GSDUNL.f"/>
+		<File RelativePath=".\src\GSEDIM.f"/>
+		<File RelativePath=".\src\GSEXSEDT.f"/>
+		<File RelativePath=".\src\GSFRRHI.f"/>
+		<File RelativePath=".\src\GSHIDEXP.f"/>
+		<File RelativePath=".\src\GSINBOT.f"/>
+		<File RelativePath=".\src\GSINI.f"/>
+		<File RelativePath=".\src\GSINMIX.f"/>
+		<File RelativePath=".\src\GSLARI.f"/>
+		<File RelativePath=".\src\GSLATI.f"/>
+		<File RelativePath=".\src\GSLSED.f"/>
+		<File RelativePath=".\src\GSNETW.f"/>
+		<File RelativePath=".\src\GSNODE.f"/>
+		<File RelativePath=".\src\GSNOML.f"/>
+		<File RelativePath=".\src\GSNORB.f"/>
+		<File RelativePath=".\src\GSREST.f"/>
+		<File RelativePath=".\src\GSRORY.f"/>
+		<File RelativePath=".\src\GSROUG.f"/>
+		<File RelativePath=".\src\GSRSTA.f"/>
+		<File RelativePath=".\src\GSSER.f"/>
+		<File RelativePath=".\src\GSSHDA.f"/>
+		<File RelativePath=".\src\GSTFASHIDA.f"/>
+		<File RelativePath=".\src\GSTFAW.f"/>
+		<File RelativePath=".\src\GSTFEH.f"/>
+		<File RelativePath=".\src\GSTFM1.f"/>
+		<File RelativePath=".\src\GSTFMM.f"/>
+		<File RelativePath=".\src\GSTFWB.f"/>
+		<File RelativePath=".\src\GSTOUT.f"/>
+		<File RelativePath=".\src\GSTRFO.f"/>
+		<File RelativePath=".\src\GSTWWJ.f"/>
+		<File RelativePath=".\src\GSWRES.f"/>
+		<File RelativePath=".\src\GSWRHI.f"/>
+		<File RelativePath=".\src\GSWRST.f"/>
+		<File RelativePath=".\src\NORMP.f"/></Filter></Files>
+	<Globals/></VisualStudioProject>

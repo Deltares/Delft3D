@@ -16,6 +16,7 @@ set(flow1d_module_path "${utils_gpl_path}/flow1d/packages")
 set(flow1d_core_module ${flow1d_module_path}/flow1d_core)
 set(flow1d_io_module ${flow1d_module_path}/flow1d_io)
 set(flow1d_module ${flow1d_module_path}/flow1d)
+set(flow1d_implicit ${utils_gpl_path}/flow1d_implicit/flow1d_implicit)
 
 # Morphology
 set(morphology_module_path "${utils_gpl_path}/morphology/packages")
