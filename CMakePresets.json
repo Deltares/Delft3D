@@ -20,7 +20,7 @@
       }
     },
     {
-      "name": "windows",
+      "name": "windows-base",
       "hidden": true,
       "inherits": "default",
       "displayName": "Windows-only configuration",
@@ -41,6 +41,20 @@
       }
     },
     {
+      "name": "windows-visual-studio",
+      "hidden": true,
+      "inherits": "windows-base",
+      "displayName": "Windows Visual Studio configuration",
+      "generator": "Visual Studio 17 2022"
+    },
+    {
+      "name": "windows-ninja",
+      "hidden": true,
+      "inherits": "windows-base",
+      "displayName": "Windows Ninja configuration",
+      "generator": "Ninja"
+    },
+    {
       "name": "linux",
       "hidden": true,
       "inherits": "default",
@@ -55,7 +69,7 @@
     },
     {
       "name": "all",
-      "inherits": "windows",
+      "inherits": "windows-visual-studio",
       "displayName": "D-Flow FM, D-WAQ, D-Waves, DIMR IFORT win64",
       "description": "Configure D-Flow FM, D-WAQ, D-Waves, DIMR using Visual Studio 17 2022 generator",
       "cacheVariables": {
@@ -64,7 +78,7 @@
     },
     {
       "name": "delft3d4",
-      "inherits": "windows",
+      "inherits": "windows-visual-studio",
       "displayName": "Delft3D-FLOW, D-WAQ, D-Waves IFORT win64",
       "description": "Configure Delft3D-FLOW, D-WAQ, D-Waves using Visual Studio 17 2022 generator",
       "cacheVariables": {
@@ -73,7 +87,7 @@
     },
     {
       "name": "delft3dfm",
-      "inherits": "windows",
+      "inherits": "windows-visual-studio",
       "displayName": "D-Flow FM, D-WAQ, D-Waves, DIMR IFORT win64",
       "description": "Configure D-Flow FM, D-WAQ, D-Waves, DIMR using Visual Studio 17 2022 generator",
       "cacheVariables": {
@@ -82,7 +96,7 @@
     },
     {
       "name": "dflowfm",
-      "inherits": "windows",
+      "inherits": "windows-visual-studio",
       "displayName": "D-Flow FM IFORT win64",
       "description": "Configure D-Flow FM using Visual Studio 17 2022 generator",
       "cacheVariables": {
@@ -91,7 +105,7 @@
     },
     {
       "name": "dflowfm_interacter",
-      "inherits": "windows",
+      "inherits": "windows-visual-studio",
       "displayName": "D-Flow FM with Interacter IFORT win64",
       "description": "Configure D-Flow FM with Interacter using Visual Studio 17 2022 generator",
       "cacheVariables": {
@@ -100,7 +114,7 @@
     },
     {
       "name": "dimr",
-      "inherits": "windows",
+      "inherits": "windows-visual-studio",
       "displayName": "DIMR IFORT win64",
       "description": "Configure DIMR using Visual Studio 17 2022 generator",
       "cacheVariables": {
@@ -109,7 +123,7 @@
     },
     {
       "name": "dwaq",
-      "inherits": "windows",
+      "inherits": "windows-visual-studio",
       "displayName": "D-WAQ/D-PART IFORT win64",
       "description": "Configure D-WAQ/D-PART using Visual Studio 17 2022 generator",
       "cacheVariables": {
@@ -127,7 +141,7 @@
     },
     {
       "name": "dwaves",
-      "inherits": "windows",
+      "inherits": "windows-visual-studio",
       "displayName": "D-Waves IFORT win64",
       "description": "Configure D-Waves using Visual Studio 17 2022 generator",
       "cacheVariables": {
@@ -136,7 +150,7 @@
     },
     {
       "name": "flow2d3d",
-      "inherits": "windows",
+      "inherits": "windows-visual-studio",
       "displayName": "Delft3D-FLOW IFORT win64",
       "description": "Configure Delft3D-FLOW using Visual Studio 17 2022 generator",
       "cacheVariables": {
@@ -145,7 +159,7 @@
     },
     {
       "name": "swan",
-      "inherits": "windows",
+      "inherits": "windows-visual-studio",
       "displayName": "SWAN IFORT win64",
       "description": "Configure SWAN using Visual Studio 17 2022 generator",
       "cacheVariables": {
