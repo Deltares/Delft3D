@@ -73,6 +73,20 @@ set(dflowfm_kernel_test_module ${tests_directory}/dflowfm/packages/dflowfm_kerne
 # WAQ
 set(delwaq_tests_module ${unit_tests_dir}/engines_gpl/waq)
 
+# RR Rainfall Runoff
+set(rr_module_path "${engines_gpl_path}/rr/packages")
+set(rr_dll_module "${rr_module_path}/rr_dll")
+set(rr_kernel_c_module "${rr_module_path}/rr_kernel_c")
+set(rr_kernel_f_module "${rr_module_path}/rr_kernel_f")
+set(rr_walrus_c_module "${rr_module_path}/rr_walrus_c")
+set(rr_module "${rr_module_path}/rr")
+
+# RTC Real Time Control
+set(rtc_module_path "${engines_gpl_path}/rtc/packages")
+set(rtc_module "${rtc_module_path}/rtc")
+set(rtc_plugin_c_module "${rtc_module_path}/plugin_rtc_c")
+set(rtc_kernel_module "${rtc_module_path}/rtc_kernel")
+
 # Install
 set(install_dflowfm_module cmake/install_fm)
 set(install_waq_module cmake/install_waq)
