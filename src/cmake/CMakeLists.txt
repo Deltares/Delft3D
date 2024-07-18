@@ -96,11 +96,13 @@ if (WIN32)
     set(tecplot_path ${checkout_src_root}/third_party_open/Tecplot/include)
     message(STATUS "Tecplot set to ${tecplot_path}")
 
-    if (CMAKE_Fortran_COMPILER_VERSION MATCHES "2021.2")
+    if(intel_version EQUAL 21)
         # Set the petsc path
         set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/include)
-    else()
+    elseif(intel_version EQUAL 23)
         set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
+    else()
+        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.21.3/include)
     endif()
 
     #also set PETSC library directory
