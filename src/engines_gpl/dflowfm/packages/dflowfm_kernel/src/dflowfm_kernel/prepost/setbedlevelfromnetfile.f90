@@ -1,34 +1,34 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 !> Reads and sets cell-centered bed levels directly from the net file (when present).
 !! _net.nc file should contain a variable with standard_name=altitude
@@ -52,7 +52,7 @@ subroutine setbedlevelfromnetfile()
    type(t_ug_meshgeom) :: meshgeom
    logical :: jawel
 
-   inquire(file = md_netfile, exist=jawel)
+   inquire (file=md_netfile, exist=jawel)
    jawel = jawel .and. (len_trim(md_netfile) > 0) ! strange behavior on some Linux systems if file name is empty, but reported exist=.true.
 
    if (.not. jawel) then ! only set tile depth data if bl data is present in net file
@@ -68,7 +68,7 @@ subroutine setbedlevelfromnetfile()
          !bl = dmiss
 
          ierr = ionc_get_mesh_count(ioncid, nmesh)
-         do im=1,nmesh
+         do im = 1, nmesh
             networkid = 0
             ierr = ionc_get_meshgeom(ioncid, im, networkid, meshgeom) !This call is only used to get the dimension (later on when we use UGrid format we might use other fields of the meshgeom structure)
             if (ierr /= ionc_noerr) then
@@ -97,7 +97,7 @@ subroutine setbedlevelfromnetfile()
                ierr = ionc_get_face_coordinates(ioncid, im, xs(1:nflownode), ys(1:nflownode))
             end if
 
-            ierr = nf90_get_var(ncid, id_bl, zs, count = (/ nflownode /))
+            ierr = nf90_get_var(ncid, id_bl, zs, count=(/nflownode/))
             if (ierr /= nf90_noerr) then
                cycle
             end if
@@ -107,11 +107,11 @@ subroutine setbedlevelfromnetfile()
                cycle
             end if
 
-            do k = 1,nflownode
-                if (zs(k) == bl_fillvalue) then
-                    zs(k) = dmiss
-                endif
-            enddo
+            do k = 1, nflownode
+               if (zs(k) == bl_fillvalue) then
+                  zs(k) = dmiss
+               end if
+            end do
 
             ! NOTE: associate cell bl's from file with our model's flowgeom cells via nearest neighbour matching.
             NS = nflownode

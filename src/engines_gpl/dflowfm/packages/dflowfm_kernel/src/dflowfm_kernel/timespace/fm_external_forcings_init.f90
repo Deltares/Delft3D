@@ -59,29 +59,29 @@ contains
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
 
-      character(len=*), intent(in) :: external_force_file_name   !< file name for new external forcing boundary blocks
+      character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
       logical :: res
 
       logical :: is_successful
-      type(tree_data), pointer :: bnd_ptr             !< tree of extForceBnd-file's [boundary] blocks
-      type(tree_data), pointer :: node_ptr            !
-      integer :: istat               !
+      type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      type(tree_data), pointer :: node_ptr !
+      integer :: istat !
       integer, parameter :: INI_KEY_LEN = 32 !
       integer, parameter :: INI_VALUE_LEN = 256 !
-      character(len=:), allocatable :: group_name          !
+      character(len=:), allocatable :: group_name !
       character(len=INI_VALUE_LEN) :: property_name
       character(len=INI_VALUE_LEN) :: property_value
       character(len=INI_VALUE_LEN) :: quantity
-      character(len=INI_VALUE_LEN) :: location_file       !
-      character(len=INI_VALUE_LEN) :: forcing_file        !
-      character(len=INI_VALUE_LEN) :: forcing_file_type   !
-      character(len=INI_VALUE_LEN) :: target_mask_file    !
-      integer :: i, j                !
+      character(len=INI_VALUE_LEN) :: location_file !
+      character(len=INI_VALUE_LEN) :: forcing_file !
+      character(len=INI_VALUE_LEN) :: forcing_file_type !
+      character(len=INI_VALUE_LEN) :: target_mask_file !
+      integer :: i, j !
       integer :: method
-      integer :: num_items_in_file   !
+      integer :: num_items_in_file !
       integer :: num_items_in_block
-      character(len=1) :: oper                !
+      character(len=1) :: oper !
       character(len=300) :: rec
       character(len=INI_VALUE_LEN) :: nodeid
       character(len=INI_VALUE_LEN) :: branchid
@@ -90,7 +90,7 @@ contains
       character(len=INI_VALUE_LEN) :: fnam
       character(len=INI_VALUE_LEN) :: base_dir
       double precision :: chainage
-      integer :: ierr               ! error number from allocate function
+      integer :: ierr ! error number from allocate function
       integer :: ilattype, nlat
       integer :: k, n, k1, nini
       integer, dimension(1) :: target_index
@@ -108,7 +108,7 @@ contains
          iresult = DFM_NOERR
          return
       end if
-         
+
       res = .true.
 
       call tree_create(file_name, bnd_ptr)
@@ -179,7 +179,7 @@ contains
          case ('meteo')
             res = init_meteo_forcings()
 
-         case default       ! Unrecognized item in a ext block
+         case default ! Unrecognized item in a ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
             write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_name, ''': [', group_name, ']. Ignoring this block.'
             call warn_flush()
@@ -231,7 +231,7 @@ contains
 
          logical :: res
 
-         type(tree_data), pointer :: block_ptr           !
+         type(tree_data), pointer :: block_ptr !
 
          res = .false.
          ! First check for required input:
@@ -287,10 +287,10 @@ contains
             if (is_successful) then
                if (property_name == 'quantity') then
                   quantity = property_value ! We already knew this
-               else if (strcmpi(property_name,'locationFile')) then
+               else if (strcmpi(property_name, 'locationFile')) then
                   location_file = property_value ! We already knew this
                   call resolvePath(location_file, base_dir)
-               else if (strcmpi(property_name,'forcingFile')) then
+               else if (strcmpi(property_name, 'forcingFile')) then
                   forcing_file = property_value
                   call resolvePath(forcing_file, base_dir)
                   if (oper /= 'O' .and. oper /= '+') then
@@ -344,9 +344,9 @@ contains
                else if (property_name == 'operand') then
                   continue
                else if (property_name == 'returntime' .or. property_name == 'return_time') then
-                  continue                   ! used elsewhere to set Thatcher-Harleman delay
+                  continue ! used elsewhere to set Thatcher-Harleman delay
                else if (property_name == 'openboundarytolerance') then
-                  continue                   ! used in findexternalboundarypoints/readlocationfiles... to set search distance. Not relevant here.
+                  continue ! used in findexternalboundarypoints/readlocationfiles... to set search distance. Not relevant here.
                else if (property_name == 'nodeid') then
                   continue
                else if (property_name == 'bndwidth1d') then
@@ -589,7 +589,7 @@ contains
             call warn_flush()
             return
          end if
-         
+
          is_extrapolation_allowed = .false.
          call prop_get(node_ptr, '', 'extrapolationAllowed ', is_extrapolation_allowed, is_successful)
          call update_method_in_case_extrapolation(method, is_extrapolation_allowed)
@@ -599,24 +599,24 @@ contains
 
          oper = 'O'
          call prop_get(node_ptr, '', 'operand ', oper, is_successful)
-         
+
          transformcoef = DMISS
          call prop_get(node_ptr, '', 'averagingType ', transformcoef(4), is_successful)
          call prop_get(node_ptr, '', 'averagingRelSize ', transformcoef(5), is_successful)
          call prop_get(node_ptr, '', 'averagingNumMin ', transformcoef(8), is_successful)
          call prop_get(node_ptr, '', 'averagingPercentile ', transformcoef(7), is_successful)
-         
+
          filetype = convert_file_type_string_to_integer(forcing_file_type)
 
          select case (quantity)
          case ('airpressure', 'atmosphericpressure')
             kx = 1
-            is_data_on_p_points = .true. 
+            is_data_on_p_points = .true.
             ierr = allocate_patm(0._hp)
 
          case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
             kx = 1
-            is_data_on_p_points = .true. 
+            is_data_on_p_points = .true.
             call allocatewindarrays()
 
             jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
@@ -625,39 +625,39 @@ contains
             ierr = allocate_patm(100000._hp)
 
             if (.not. allocated(ec_pwxwy_x)) then
-                allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0d0)
-                call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
+               allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0d0)
+               call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
             end if
 
             if (jaspacevarcharn == 1) then
-                if (.not. allocated(ec_pwxwy_c)) then
-                    allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr, source=0d0)
-                    call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
-                end if
+               if (.not. allocated(ec_pwxwy_c)) then
+                  allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr, source=0d0)
+                  call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
+               end if
             end if
-  
+
          case ('charnock')
             kx = 1
-            is_data_on_p_points = .true. 
+            is_data_on_p_points = .true.
             if (.not. allocated(ec_charnock)) then
-                allocate (ec_charnock(ndx), stat=ierr, source=0d0)
-                call aerr('ec_charnock(ndx)', ierr, ndx)
+               allocate (ec_charnock(ndx), stat=ierr, source=0d0)
+               call aerr('ec_charnock(ndx)', ierr, ndx)
             end if
             if (.not. allocated(wcharnock)) then
-                allocate (wcharnock(lnx), stat=ierr)
-                call aerr('wcharnock(lnx)', ierr, lnx)
+               allocate (wcharnock(lnx), stat=ierr)
+               call aerr('wcharnock(lnx)', ierr, lnx)
             end if
 
          case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
             kx = 1
-            is_data_on_p_points = .false. 
+            is_data_on_p_points = .false.
             call allocatewindarrays()
 
             jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
 
          case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
             kx = 1
-            is_data_on_p_points = .true. 
+            is_data_on_p_points = .true.
             if (.not. allocated(rain)) then
                allocate (rain(ndx), stat=ierr, source=0d0)
                call aerr('rain(ndx)', ierr, ndx)
@@ -702,17 +702,17 @@ contains
             return
          end select
 
-         if(is_data_on_p_points) then 
+         if (is_data_on_p_points) then
             x_array => xz(1:ndx)
             y_array => yz(1:ndx)
             allocate (mask(ndx), source=0)
-         
+
             if (len_trim(target_mask_file) > 0) then
-            ! Mask flow nodes based on inside polygon(s), or outside.
-            ! in: kcs, all flow nodes, out: mask: all masked flow nodes.
+               ! Mask flow nodes based on inside polygon(s), or outside.
+               ! in: kcs, all flow nodes, out: mask: all masked flow nodes.
                allocate (selected_nodes(ndx), source=0)
                call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_nodes, number_of_selected_nodes, LOCTP_POLYGON_FILE, &
-                                            target_mask_file)
+                                               target_mask_file)
                do node = 1, number_of_selected_nodes
                   mask(selected_nodes(node)) = 1
                end do
@@ -721,7 +721,7 @@ contains
                end if
 
             else
-            ! 100% masking: accept all flow nodes that were already active in kcs.
+               ! 100% masking: accept all flow nodes that were already active in kcs.
                where (kcs /= 0) mask = 1
             end if
          else
@@ -729,7 +729,7 @@ contains
             y_array => yu(1:lnx)
             allocate (mask(lnx), source=1)
          end if
-         
+
          select case (trim(str_tolower(forcing_file_type)))
          case ('bcascii')
             ! NOTE: Currently, we only support name=global meteo in.bc files, later maybe station time series as well.
@@ -749,22 +749,22 @@ contains
             select case (quantity)
             case ('airpressure', 'atmosphericpressure')
                japatm = 1
-               
-            case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock') 
+
+            case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
                jawind = 1
                japatm = 1
-               
+
             case ('charnock')
                jaspacevarcharn = 1
-               
+
             case ('rainfall', 'rainfall_rate')
                jarain = 1
                jaqin = 1
-            
+
             case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
                jawind = 1
             end select
-            
+
             res = .true.
 
          end if

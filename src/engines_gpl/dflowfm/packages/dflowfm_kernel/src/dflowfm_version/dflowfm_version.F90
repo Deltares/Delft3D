@@ -26,25 +26,25 @@
 !-------------------------------------------------------------------------------
 
 module dflowfm_version_module
-    use static_version_info
+   use static_version_info
 
-    implicit none
+   implicit none
 
-    character(*),  public, parameter :: dflowfm_version_full = version_prefix // ', ' // product_name // version_suffix
-    character(*),  public, parameter :: dflowfm_version_id   = version_prefix_id // ', ' // product_name // ' ' // version_suffix_full
+   character(*), public, parameter :: dflowfm_version_full = version_prefix//', '//product_name//version_suffix
+   character(*), public, parameter :: dflowfm_version_id = version_prefix_id//', '//product_name//' '//version_suffix_full
 
 contains
 
-    subroutine getfullversionstring_dflowfm(stringout)
-        character(*), intent(out) :: stringout
+   subroutine getfullversionstring_dflowfm(stringout)
+      character(*), intent(out) :: stringout
 
-        stringout = dflowfm_version_id(offset:)
-    end subroutine getfullversionstring_dflowfm
+      stringout = dflowfm_version_id(offset:)
+   end subroutine getfullversionstring_dflowfm
 
-    subroutine getbranch_dflowfm(stringout)
-        character(*), intent(out) :: stringout
+   subroutine getbranch_dflowfm(stringout)
+      character(*), intent(out) :: stringout
 
-        stringout = branch
-    end subroutine getbranch_dflowfm
+      stringout = branch
+   end subroutine getbranch_dflowfm
 
 end module dflowfm_version_module

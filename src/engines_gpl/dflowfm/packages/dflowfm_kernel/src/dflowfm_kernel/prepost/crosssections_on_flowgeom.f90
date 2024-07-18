@@ -1,34 +1,34 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 !!> Converts the current polylines to flux cross sections.
 !!! This means, finding shortest path of connected netlinks
@@ -251,200 +251,198 @@
 !!
 !! \see update_values_on_cross_sections, fixedweirs_on_flowgeom, thindams_on_netgeom
 subroutine crosssections_on_flowgeom()
-    use m_monitoring_crosssections
-    use m_flowgeom, only: Lnx
-    use m_missing
-    use kdtree2Factory
-    use unstruc_messages
-    use dfm_error
-    use unstruc_channel_flow
-    use m_inquire_flowgeom
-    use unstruc_caching, only: copyCachedCrossSections, saveLinkList
-    use m_partitioninfo, only: jampi
-    implicit none
+   use m_monitoring_crosssections
+   use m_flowgeom, only: Lnx
+   use m_missing
+   use kdtree2Factory
+   use unstruc_messages
+   use dfm_error
+   use unstruc_channel_flow
+   use m_inquire_flowgeom
+   use unstruc_caching, only: copyCachedCrossSections, saveLinkList
+   use m_partitioninfo, only: jampi
+   implicit none
 
-    integer                                       :: ic, icmod
+   integer :: ic, icmod
 
-    double precision, dimension(:),   allocatable :: xx, yy
-    double precision, dimension(:),   allocatable :: dSL
-    integer,          dimension(:),   allocatable :: iLink, ipol, istartcrs, numlist
-    integer,          dimension(:,:), allocatable :: linklist
-    integer,          dimension(:),   allocatable :: idum
+   double precision, dimension(:), allocatable :: xx, yy
+   double precision, dimension(:), allocatable :: dSL
+   integer, dimension(:), allocatable :: iLink, ipol, istartcrs, numlist
+   integer, dimension(:, :), allocatable :: linklist
+   integer, dimension(:), allocatable :: idum
 
-    integer                                       :: i, num, numcrossedlinks, ierror
-    integer                                       :: istart, iend
+   integer :: i, num, numcrossedlinks, ierror
+   integer :: istart, iend
 
-    integer                                       :: jakdtree=1
-    double precision                              :: t0, t1
-    character(len=128)                            :: mesg
-    integer                                       :: linknr, ii, branchIdx
-    type(t_observCrossSection), pointer           :: pCrs
-    logical                                       :: success
+   integer :: jakdtree = 1
+   double precision :: t0, t1
+   character(len=128) :: mesg
+   integer :: linknr, ii, branchIdx
+   type(t_observCrossSection), pointer :: pCrs
+   logical :: success
 
+   if (ncrs < 1) return
 
-    if ( ncrs.lt.1 ) return
-
-    numcrossedlinks = 0
+   numcrossedlinks = 0
 
 !   allocate
-    allocate(istartcrs(ncrs+1))
-    istartcrs = 1
+   allocate (istartcrs(ncrs + 1))
+   istartcrs = 1
 
-    allocate(idum(1))
-    idum = 0
+   allocate (idum(1))
+   idum = 0
 
-    if ( jakdtree.eq.1 ) then
-        call klok(t0)
+   if (jakdtree == 1) then
+      call klok(t0)
 
-        call copyCachedCrossSections( iLink, ipol, success )
+      call copyCachedCrossSections(iLink, ipol, success)
 
-        if ( success ) then
-            numcrossedlinks = size(iLink)
-            ierror          = 0
-        else
-            num = 0
+      if (success) then
+         numcrossedlinks = size(iLink)
+         ierror = 0
+      else
+         num = 0
 !           determine polyline size
-            do ic=1,ncrs
-               if (crs(ic)%loc2OC == 0) then  ! only for crs which are polyline-based
-                  num = num+crs(ic)%path%np+1 ! add space for missing value
-                  istartcrs(ic+1) = num+1
-               end if
-            end do
+         do ic = 1, ncrs
+            if (crs(ic)%loc2OC == 0) then ! only for crs which are polyline-based
+               num = num + crs(ic)%path%np + 1 ! add space for missing value
+               istartcrs(ic + 1) = num + 1
+            end if
+         end do
 
 !           allocate
-            allocate(xx(num), yy(num))
+         allocate (xx(num), yy(num))
 
 !           determine paths to single polyline map
-            num = 0
-            do ic=1,ncrs
-               if (crs(ic)%loc2OC == 0) then
-                  do i=1,crs(ic)%path%np
-                     num = num+1
-                     xx(num) = crs(ic)%path%xp(i)
-                     yy(num) = crs(ic)%path%yp(i)
-                  end do
+         num = 0
+         do ic = 1, ncrs
+            if (crs(ic)%loc2OC == 0) then
+               do i = 1, crs(ic)%path%np
+                  num = num + 1
+                  xx(num) = crs(ic)%path%xp(i)
+                  yy(num) = crs(ic)%path%yp(i)
+               end do
 !              add missing value
-                  num = num+1
-                  xx(num) = DMISS
-                  yy(num) = DMISS
-               end if
-            end do
+               num = num + 1
+               xx(num) = DMISS
+               yy(num) = DMISS
+            end if
+         end do
 
 !           allocate
-            allocate(iLink(Lnx))
-            iLink = 0
-            allocate(ipol(Lnx))
-            ipol = 0
-            allocate(dSL(Lnx))
-            dSL = 0d0
-            call find_crossed_links_kdtree2(treeglob,num,xx,yy,2,Lnx,1,numcrossedlinks, iLink, ipol, dSL, ierror)
+         allocate (iLink(Lnx))
+         iLink = 0
+         allocate (ipol(Lnx))
+         ipol = 0
+         allocate (dSL(Lnx))
+         dSL = 0d0
+         call find_crossed_links_kdtree2(treeglob, num, xx, yy, 2, Lnx, 1, numcrossedlinks, iLink, ipol, dSL, ierror)
 
-            call saveLinklist( numcrossedlinks, iLink, ipol )
-        endif
+         call saveLinklist(numcrossedlinks, iLink, ipol)
+      end if
 
-        if ( ierror.eq.0 .and. numcrossedlinks.gt.0 ) then
+      if (ierror == 0 .and. numcrossedlinks > 0) then
 
 !          determine crossed links per cross-section
-           allocate(numlist(ncrs))
-           numlist = 0
-           allocate(linklist(numcrossedlinks,ncrs))
-           linklist = 0
+         allocate (numlist(ncrs))
+         numlist = 0
+         allocate (linklist(numcrossedlinks, ncrs))
+         linklist = 0
 
-           do i=1,numcrossedlinks
-              do ic=1,ncrs
-                 if (crs(ic)%loc2OC == 0) then
-                    istart  = istartcrs(ic)
-                    iend    = istartcrs(ic+1)-1
-                    if ( ipol(i).ge.istart .and. ipol(i).le.iend ) then
-                       numlist(ic) = numlist(ic)+1
-                       linklist(numlist(ic),ic) = iLink(i)
-                    end if
-                 end if
-              end do
-           end do
+         do i = 1, numcrossedlinks
+            do ic = 1, ncrs
+               if (crs(ic)%loc2OC == 0) then
+                  istart = istartcrs(ic)
+                  iend = istartcrs(ic + 1) - 1
+                  if (ipol(i) >= istart .and. ipol(i) <= iend) then
+                     numlist(ic) = numlist(ic) + 1
+                     linklist(numlist(ic), ic) = iLink(i)
+                  end if
+               end if
+            end do
+         end do
 
-        else
+      else
 !          disable kdtree
-           jakdtree = 0
-           ! allocate(idum(1))
-           ! idum = 0
-
+         jakdtree = 0
+         ! allocate(idum(1))
+         ! idum = 0
 
 !          deallocate
-           if ( allocated(iLink) ) deallocate(iLink)
-           if ( allocated(ipol)  ) deallocate(ipol)
-           if ( allocated(dSL)   ) deallocate(dSL)
-        end if
+         if (allocated(iLink)) deallocate (iLink)
+         if (allocated(ipol)) deallocate (ipol)
+         if (allocated(dSL)) deallocate (dSL)
+      end if
 
 !       deallocate
-        if ( allocated(istartcrs) ) deallocate(istartcrs)
-        if ( allocated(xx)        ) deallocate(xx,yy)
+      if (allocated(istartcrs)) deallocate (istartcrs)
+      if (allocated(xx)) deallocate (xx, yy)
 
-        call klok(t1)
-        write(mesg,"('cross sections with kdtree2, elapsed time: ', G15.5, 's.')") t1-t0
-        call mess(LEVEL_INFO, trim(mesg))
-    end if
+      call klok(t1)
+      write (mesg, "('cross sections with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
+      call mess(LEVEL_INFO, trim(mesg))
+   end if
 
-    icMOD = MAX(1,ncrs/100)
+   icMOD = max(1, ncrs / 100)
 
-    call realloc(numlist, ncrs, keepExisting = .true., fill = 0) ! In case pli-based cross sections have not allocated this yet.
-    call realloc(linklist, (/ max(numcrossedlinks, 1), ncrs /), keepExisting = .true., fill = 0)  ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
+   call realloc(numlist, ncrs, keepExisting=.true., fill=0) ! In case pli-based cross sections have not allocated this yet.
+   call realloc(linklist, (/max(numcrossedlinks, 1), ncrs/), keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
 
-    call copyCachedCrossSections( iLink, ipol, success )
+   call copyCachedCrossSections(iLink, ipol, success)
 
-    CALL READYY('Enabling cross sections on grid', 0d0)
-    do ic=1,ncrs
-        if (mod(ic,icMOD) == 0) then
-            CALL READYY('Enabling cross sections on grid', dble(ic)/dble(ncrs))
-        end if
-        if (crs(ic)%loc2OC == 0) then
-          if ( .not. success ) then
-             if ( jakdtree.eq.0 ) then
-                call crspath_on_flowgeom(crs(ic)%path,0,0,1,idum, 0,1)
-             else
-                call crspath_on_flowgeom(crs(ic)%path,0,1,numlist(ic),linklist(1,ic), 0,1)
-             end if
-          end if
-        else  ! snap to only 1d flow link
-          ii = crs(ic)%loc2OC
-          pCrs => network%observcrs%observcross(ii)
-          branchIdx = pCrs%branchIdx
-          ierror = findlink(branchIdx, pCrs%chainage, linknr) ! find flow link given branchIdx and chainage
-          if (linknr == -1) then
-             if (ierror /= DFM_NOERR) then
-                call SetMessage(LEVEL_ERROR, 'Error occurs when snapping Observation cross section '''//trim(crs(ic)%name)//''' to a 1D flow link.')
-                call SetMessage(LEVEL_ERROR, 'Possibly wrong branchId? Given branchId is: '''//trim(pCrs%branchid)//'''.')
-             else if (jampi > 0) then
-                continue  ! Most probably on another domain
-             else
-                ! Sequential model with correct branchId, but still no link: possibly chainage outside length range of branch? Warning only.
-                call SetMessage(LEVEL_WARN, 'Error occurs when snapping Observation cross section '''//trim(crs(ic)%name)//''' to a 1D flow link.')
-                write(msgbuf, '(a,g10.3,a,g10.3,a)') 'Possibly wrong chainage? Given chainage is: ', pCrs%chainage, &
-                                                    ' on branchId '''//trim(pCrs%branchId)//''' (length = ', network%brs%branch(branchIdx)%length, ').'
-                call SetMessage(LEVEL_WARN, trim(msgbuf))
-             end if
-          else ! valid flowlink found
-             numlist(ic) = 1
-             linklist(1,ic) = linknr
-             call crspath_on_flowgeom(crs(ic)%path,0,1,numlist(ic),linklist(1,ic), 1,1)
-          end if
-       end if
-    end do
+   call READYY('Enabling cross sections on grid', 0d0)
+   do ic = 1, ncrs
+      if (mod(ic, icMOD) == 0) then
+         call READYY('Enabling cross sections on grid', dble(ic) / dble(ncrs))
+      end if
+      if (crs(ic)%loc2OC == 0) then
+         if (.not. success) then
+            if (jakdtree == 0) then
+               call crspath_on_flowgeom(crs(ic)%path, 0, 0, 1, idum, 0, 1)
+            else
+               call crspath_on_flowgeom(crs(ic)%path, 0, 1, numlist(ic), linklist(1, ic), 0, 1)
+            end if
+         end if
+      else ! snap to only 1d flow link
+         ii = crs(ic)%loc2OC
+         pCrs => network%observcrs%observcross(ii)
+         branchIdx = pCrs%branchIdx
+         ierror = findlink(branchIdx, pCrs%chainage, linknr) ! find flow link given branchIdx and chainage
+         if (linknr == -1) then
+            if (ierror /= DFM_NOERR) then
+               call SetMessage(LEVEL_ERROR, 'Error occurs when snapping Observation cross section '''//trim(crs(ic)%name)//''' to a 1D flow link.')
+               call SetMessage(LEVEL_ERROR, 'Possibly wrong branchId? Given branchId is: '''//trim(pCrs%branchid)//'''.')
+            else if (jampi > 0) then
+               continue ! Most probably on another domain
+            else
+               ! Sequential model with correct branchId, but still no link: possibly chainage outside length range of branch? Warning only.
+               call SetMessage(LEVEL_WARN, 'Error occurs when snapping Observation cross section '''//trim(crs(ic)%name)//''' to a 1D flow link.')
+               write (msgbuf, '(a,g10.3,a,g10.3,a)') 'Possibly wrong chainage? Given chainage is: ', pCrs%chainage, &
+                  ' on branchId '''//trim(pCrs%branchId)//''' (length = ', network%brs%branch(branchIdx)%length, ').'
+               call SetMessage(LEVEL_WARN, trim(msgbuf))
+            end if
+         else ! valid flowlink found
+            numlist(ic) = 1
+            linklist(1, ic) = linknr
+            call crspath_on_flowgeom(crs(ic)%path, 0, 1, numlist(ic), linklist(1, ic), 1, 1)
+         end if
+      end if
+   end do
 
-    CALL READYY('Enabling cross sections on grid', -1d0)
+   call READYY('Enabling cross sections on grid', -1d0)
 
 1234 continue
 
 !   deallocate
-    if ( jakdtree.eq.1 ) then
-       if ( allocated(iLink)    ) deallocate(iLink)
-       if ( allocated(iPol)     ) deallocate(iPol)
-       if ( allocated(dSL)      ) deallocate(dSL)
-       if ( allocated(numlist)  ) deallocate(numlist)
-       if ( allocated(linklist) ) deallocate(linklist)
-    endif
+   if (jakdtree == 1) then
+      if (allocated(iLink)) deallocate (iLink)
+      if (allocated(iPol)) deallocate (iPol)
+      if (allocated(dSL)) deallocate (dSL)
+      if (allocated(numlist)) deallocate (numlist)
+      if (allocated(linklist)) deallocate (linklist)
+   end if
 
-    if ( allocated(idum)     ) deallocate(idum)
+   if (allocated(idum)) deallocate (idum)
 
    return
 end subroutine crosssections_on_flowgeom

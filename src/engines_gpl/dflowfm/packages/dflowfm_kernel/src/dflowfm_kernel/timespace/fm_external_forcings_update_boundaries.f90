@@ -55,7 +55,7 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: time    !< Current simulation time (s)
+      double precision, intent(in) :: time !< Current simulation time (s)
       integer, intent(out) :: iresult !< Integer error status
 
       integer :: i, n, k, k2, kb, kt, ki, L, itrac, isf
@@ -66,8 +66,8 @@ contains
       iresult = DFM_EXTFORCERROR
       call timstrt('External forcings boundaries', handle_extbnd)
 
-      call setzminmax()                                   ! our side of preparation for 3D ec module
-      call setsigmabnds()                                 ! our side of preparation for 3D ec module
+      call setzminmax() ! our side of preparation for 3D ec module
+      call setsigmabnds() ! our side of preparation for 3D ec module
 
       if (nzbnd > nqhbnd) then
          success = ec_gettimespacevalue(ecInstancePtr, item_waterlevelbnd, irefdate, tzone, tunit, time)
@@ -86,11 +86,11 @@ contains
                k2 = kbndz(2, n)
                L = kbndz(3, n)
                if (jampi == 0) then
-                  atqh_all(i) = atqh_all(i) - q1(L)     ! flow link always directed inwards
+                  atqh_all(i) = atqh_all(i) - q1(L) ! flow link always directed inwards
                else
                   ! exclude ghost cells
                   if (idomain(k2) == my_rank) then
-                     atqh_all(i) = atqh_all(i) - q1(L)  ! flow link always directed inwards
+                     atqh_all(i) = atqh_all(i) - q1(L) ! flow link always directed inwards
                   end if
                end if
             end do
@@ -193,7 +193,7 @@ contains
       end do
 
       if (stm_included) then
-         do isf = 1, numfracs          ! numfracs okay, is number of fractions with bc
+         do isf = 1, numfracs ! numfracs okay, is number of fractions with bc
             if (nbndsf(isf) > 0) then
                success = ec_gettimespacevalue(ecInstancePtr, item_sedfracbnd(isf), irefdate, tzone, tunit, time)
                if (.not. success) then

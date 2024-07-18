@@ -27,153 +27,153 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 module m_mass_balance_areas
-   integer, parameter                        :: NAMMBALEN = 128              !< maximum length of mass balance area names
+   integer, parameter :: NAMMBALEN = 128 !< maximum length of mass balance area names
 
-   integer, parameter                        :: DIR_FROM = 1                 !< flux direction from this area
-   integer, parameter                        :: DIR_TO   = 2                 !< flux direction to this area
+   integer, parameter :: DIR_FROM = 1 !< flux direction from this area
+   integer, parameter :: DIR_TO = 2 !< flux direction to this area
 
-   integer                                   :: jamba = 0                    !< switch for mass balance areas being active
-   integer                                   :: nombs = 0                    !< number of mass balances
-   character(len=NAMMBALEN),allocatable      :: mbsname(:)                   !< mass balance substance names
-   integer                                   :: nomba = 0                    !< number of mass balance areas
-   integer                                   :: nombabnd                     !< number of mass balance areas and boundaries
-   character(len=NAMMBALEN),allocatable      :: mbaname(:)                   !< mass balance area names
-   character(len=NAMMBALEN),allocatable      :: mbabndname(:)                !< mass balance area horizontal transport names
-   integer, allocatable                      :: mbadef(:)                    !< mass balance area (mba) definition
-   integer, allocatable                      :: mbadefdomain(:)              !< mass balance area (mba) definition without ghost cells
-   integer                                   :: id_mba(3)                    !< mbd id's in map-file
-   integer, allocatable                      :: mbalnfromto(:,:)             !< from mba (1:lnxi) or bnd (lnxi+1:lnx) to mba for each link (2D)
-   integer, allocatable                      :: mbalnused(:,:)               !< number of links between mda and mbabnd that are actually active
-   integer, allocatable                      :: mbasorsin(:,:)               !< mba for each side of a source sink
-   integer, allocatable                      :: mbasorsinout(:,:)            !< (reduced) mba for each side of a source sink for output
-   integer                                   :: nombaln                      !< number of links needed for mass balance (2D)
-   integer, allocatable                      :: mbalnlist(:)                 !< list of links needed for the mass balance (2D)
-   logical                                   :: mbaremaining                 !< mass balance area for ramaining cells added?
-   
-   integer,  allocatable, dimension(:)       :: imbs2sed                     !< D-Flow FM mass balance number to sediment fraction (0=not a sediment fraction)
-   integer,  allocatable, dimension(:)       :: ised2mbs                     !< D-Flow FM sediment fraction to mass balance number
-   
-   character(len=255)                        :: nc_bal_name                  !< netCDF balance file name
-   integer                                   :: ncid_bal_file                !< id of the netCDF balances file
-   integer                                   :: ncid_bal_strlen              !< netCDF id of the string length for names in the balance file
-   
-   integer                                   :: nc_bal_itime                 !< netCDF balance file time index
-   integer                                   :: ncid_bal_time_dim            !< netCDF id of the time dimension on the balance file
-   integer                                   :: ncid_bal_time                !< netCDF id of the time variable on the balance file
-   
-   integer                                   :: ncid_nbalarea_dim            !< netCDF id of the balance areas dimension
-   integer                                   :: ncid_bal_area_names          !< netCDF id of the balance area names variable
-   integer                                   :: ncid_bal_area                !< netCDF id of the surface area of the balance areas
+   integer :: jamba = 0 !< switch for mass balance areas being active
+   integer :: nombs = 0 !< number of mass balances
+   character(len=NAMMBALEN), allocatable :: mbsname(:) !< mass balance substance names
+   integer :: nomba = 0 !< number of mass balance areas
+   integer :: nombabnd !< number of mass balance areas and boundaries
+   character(len=NAMMBALEN), allocatable :: mbaname(:) !< mass balance area names
+   character(len=NAMMBALEN), allocatable :: mbabndname(:) !< mass balance area horizontal transport names
+   integer, allocatable :: mbadef(:) !< mass balance area (mba) definition
+   integer, allocatable :: mbadefdomain(:) !< mass balance area (mba) definition without ghost cells
+   integer :: id_mba(3) !< mbd id's in map-file
+   integer, allocatable :: mbalnfromto(:, :) !< from mba (1:lnxi) or bnd (lnxi+1:lnx) to mba for each link (2D)
+   integer, allocatable :: mbalnused(:, :) !< number of links between mda and mbabnd that are actually active
+   integer, allocatable :: mbasorsin(:, :) !< mba for each side of a source sink
+   integer, allocatable :: mbasorsinout(:, :) !< (reduced) mba for each side of a source sink for output
+   integer :: nombaln !< number of links needed for mass balance (2D)
+   integer, allocatable :: mbalnlist(:) !< list of links needed for the mass balance (2D)
+   logical :: mbaremaining !< mass balance area for ramaining cells added?
 
-   integer                                   :: ncid_bal_water_balance_error !< netCDF id of the water balance error
-   integer                                   :: ncid_bal_water_balance_cumerror !< netCDF id of the water balance cumulative error
-   integer                                   :: ncid_bal_water_volume        !< netCDF id of the water volume
-   integer                                   :: ncid_bal_water_depth         !< netCDF id of the average water depth
+   integer, allocatable, dimension(:) :: imbs2sed !< D-Flow FM mass balance number to sediment fraction (0=not a sediment fraction)
+   integer, allocatable, dimension(:) :: ised2mbs !< D-Flow FM sediment fraction to mass balance number
 
-   integer                                   :: ncid_bal_flux_dir_dim        !< netCDF id of the flux direction (from/to) dimension
-   integer                                   :: ncid_bal_flux_dir            !< netCDF id of the flux direction (from/to) names
-   
-   integer, dimension(:), allocatable        :: ncid_bal_water_flow_dim      !< netCDF id of the water flow dimension
-   integer, dimension(:), allocatable        :: ncid_bal_water_flow_names    !< netCDF id of the water flow names
-   integer, dimension(:), allocatable        :: ncid_bal_water_flow_values   !< netCDF id of the water flow values
-   
-   integer, dimension(:), allocatable        :: ncid_bal_const_balance_error !< netCDF id of the constituent balance error
-   integer, dimension(:), allocatable        :: ncid_bal_const_balance_cumerror !< netCDF id of the constituent balance cumulative error
-   integer, dimension(:), allocatable        :: ncid_bal_const_mass          !< netCDF id of the constituent mass in water column
-   integer, dimension(:), allocatable        :: ncid_bal_const_fluff_mass    !< netCDF id of the constituent mass in fluff layer
-   integer, dimension(:), allocatable        :: ncid_bal_const_bed_mass      !< netCDF id of the constituent mass in bed stratigraphy
-   integer, dimension(:), allocatable        :: ncid_bal_const_bedshort_mass !< netCDF id of the constituent mass in bed shortage
-   integer, dimension(:), allocatable        :: ncid_bal_const_conc          !< netCDF id of the average constituent concentration in water column
+   character(len=255) :: nc_bal_name !< netCDF balance file name
+   integer :: ncid_bal_file !< id of the netCDF balances file
+   integer :: ncid_bal_strlen !< netCDF id of the string length for names in the balance file
 
-   integer, dimension(:,:), allocatable      :: ncid_bal_const_flux_dim      !< netCDF id of the constituent fluxes dimension
-   integer, dimension(:,:), allocatable      :: ncid_bal_const_flux_names    !< netCDF id of the constituent flux names
-   integer, dimension(:,:), allocatable      :: ncid_bal_const_flux_values   !< netCDF id of the constituent flux values
-   
-   integer                                   :: lunmbahis                    !< logical unit of mba his-file
-   integer                                   :: lunmbatothis                 !< logical unit of mba total his-file
-   integer                                   :: lunmbabal                    !< logical unit of mba bal-file
-   integer                                   :: lunmbacsvm                   !< logical unit of mba mass csv-file
-   integer                                   :: lunmbacsvmb                  !< logical unit of mba mass balance csv-file
-   integer                                   :: lunmbatotbal                 !< logical unit of mba total bal-file
-   integer                                   :: itimembastart                !< start time of balance period
-   integer                                   :: itimembastarttot             !< start time of balance period
-   integer                                   :: itimembaend                  !< end time of balance period
-   double precision                          :: timembastart                 !< start time of balance period
-   double precision                          :: timembastarttot              !< start time of balance period
-   double precision                          :: timembaend                   !< end time of balance period
+   integer :: nc_bal_itime !< netCDF balance file time index
+   integer :: ncid_bal_time_dim !< netCDF id of the time dimension on the balance file
+   integer :: ncid_bal_time !< netCDF id of the time variable on the balance file
 
-   double precision, allocatable             :: mbaarea(:)                   !< surface area of mass balance area
+   integer :: ncid_nbalarea_dim !< netCDF id of the balance areas dimension
+   integer :: ncid_bal_area_names !< netCDF id of the balance area names variable
+   integer :: ncid_bal_area !< netCDF id of the surface area of the balance areas
 
-   double precision, allocatable, target     :: mbavolumebegin(:)            !< begin volume in mass balance area
-   double precision, allocatable, target     :: mbavolumebegintot(:)         !< total begin volume in mass balance area
-   double precision, allocatable             :: mbavolumeend(:)              !< end volume in mass balance area
-                                                                             
-   double precision, allocatable, target     :: mbaflowhor(:,:,:)            !< periodical flow between balance areas and between boundaries and balance areas
-   double precision, allocatable, target     :: mbaflowhortot(:,:,:)         !< total flow between balance areas and between boundaries and balance areas
-   double precision, allocatable, target     :: mbaflowsorsin(:,:)           !< periodical flow from source sinks
-   double precision, allocatable, target     :: mbaflowsorsintot(:,:)        !< total flow from source sinks
-   double precision, allocatable, target     :: mbaflowraineva(:,:)          !< periodical flow from rain and prescribed evaporation
-   double precision, allocatable, target     :: mbaflowrainevatot(:,:)       !< total flow from rain and prescribed evaporation
-   double precision, allocatable, target     :: mbafloweva(:)                !< periodical flow from calculated evaporation
-   double precision, allocatable, target     :: mbaflowevatot(:)             !< total flow from calculated evaporation
-                                                                             
-   double precision, allocatable, target     :: mbamassbegin(:,:)            !< begin volume in mass balance area
-   double precision, allocatable, target     :: mbamassbegintot(:,:)         !< total begin volume in mass balance area
-   double precision, allocatable             :: mbamassend(:,:)              !< end volume in mass balance area
+   integer :: ncid_bal_water_balance_error !< netCDF id of the water balance error
+   integer :: ncid_bal_water_balance_cumerror !< netCDF id of the water balance cumulative error
+   integer :: ncid_bal_water_volume !< netCDF id of the water volume
+   integer :: ncid_bal_water_depth !< netCDF id of the average water depth
 
-   double precision             , target     :: mbamorfacbegin               !< begin morphological factor
-   double precision             , target     :: mbamorfacbegintot            !< total begin morphological factor
-   double precision                          :: mbamorfacend                 !< end morphological factor
-   
-   double precision, allocatable, target     :: mbabedmassbegin(:,:)         !< begin volume in bed stratigraphy of mass balance area
-   double precision, allocatable, target     :: mbabedmassbegintot(:,:)      !< total begin volume in bed stratigraphy of mass balance area
-   double precision, allocatable, target     :: mbabedshortmassbegin(:,:)    !< begin volume in bed shortage of mass balance area
-   double precision, allocatable, target     :: mbabedshortmassbegintot(:,:) !< total begin volume in bed shortage of mass balance area
-   double precision, allocatable, target     :: mbafluffmassbegin(:,:)       !< begin volume in fluff layer of mass balance area
-   double precision, allocatable, target     :: mbafluffmassbegintot(:,:)    !< total begin volume in fluff layer of mass balance area
-   double precision, allocatable             :: mbabedmassend(:,:)           !< end volume in bed stratigraphy of mass balance area
-   double precision, allocatable             :: mbabedshortmassend(:,:)      !< end volume in bed shortage of mass balance area
-   double precision, allocatable             :: mbafluffmassend(:,:)         !< end volume in fluff layer of mass balance area
-   
-   double precision, allocatable, target     :: mbasedflux(:,:,:,:)          !< periodical bedload sediment fluxes between balance areas and between boundaries and balance areas
-   double precision, allocatable, target     :: mbasedfluxtot(:,:,:,:)       !< total periodical bedload sediment fluxes between balance areas and between boundaries and balance areas
-   double precision, allocatable             :: mbasedfluxreduce(:,:,:,:)    !< periodical bedload sediment fluxes between balance areas and between boundaries and balance areas (for MPI reduce)
-   
-   double precision, allocatable, target     :: mbafluxhor(:,:,:,:)          !< periodical fluxes between balance areas and between boundaries and balance areas
-   double precision, allocatable, target     :: mbafluxhortot(:,:,:,:)       !< total fluxes between balance areas and between boundaries and balance areas
-   double precision, allocatable, target     :: mbafluxsorsin(:,:,:,:)       !< periodical fluxes from source sinks
-   double precision, allocatable, target     :: mbafluxsorsintot(:,:,:,:)    !< total fluxes from source sinks
-   double precision, allocatable, target     :: mbafluxheat(:,:)             !< temperature heat flux
-   double precision, allocatable, target     :: mbafluxheattot(:,:)          !< total temperature heat flux
-                                                                             
-   double precision, allocatable             :: mbavolumereduce    (:)       !< begin volume in mass balance area
-   double precision, allocatable             :: mbaflowhorreduce   (:,:,:)   !< periodical flow between balance areas and between boundaries and balance areas
-   double precision, allocatable             :: mbaflowsorsinreduce(:,:)     !< periodical flow from sources sinks
-   double precision, allocatable             :: mbaflowrainevareduce(:,:)    !< periodical flow from rainfal and prescribed evaporation
-   double precision, allocatable             :: mbaflowevareduce(:)          !< periodical flow from calculated evaporation
-   double precision, allocatable             :: mbamassreduce      (:,:)     !< begin volume in mass balance area
-   double precision, allocatable             :: mbafluxhorreduce   (:,:,:,:) !< periodical fluxes between balance areas and between boundaries and balance areas
-   double precision, allocatable             :: mbafluxsorsinreduce(:,:,:,:) !< periodical fluxes from source sinks
-   double precision, allocatable             :: mbafluxheatreduce(:,:)       !< temperature heat flux
-   
+   integer :: ncid_bal_flux_dir_dim !< netCDF id of the flux direction (from/to) dimension
+   integer :: ncid_bal_flux_dir !< netCDF id of the flux direction (from/to) names
+
+   integer, dimension(:), allocatable :: ncid_bal_water_flow_dim !< netCDF id of the water flow dimension
+   integer, dimension(:), allocatable :: ncid_bal_water_flow_names !< netCDF id of the water flow names
+   integer, dimension(:), allocatable :: ncid_bal_water_flow_values !< netCDF id of the water flow values
+
+   integer, dimension(:), allocatable :: ncid_bal_const_balance_error !< netCDF id of the constituent balance error
+   integer, dimension(:), allocatable :: ncid_bal_const_balance_cumerror !< netCDF id of the constituent balance cumulative error
+   integer, dimension(:), allocatable :: ncid_bal_const_mass !< netCDF id of the constituent mass in water column
+   integer, dimension(:), allocatable :: ncid_bal_const_fluff_mass !< netCDF id of the constituent mass in fluff layer
+   integer, dimension(:), allocatable :: ncid_bal_const_bed_mass !< netCDF id of the constituent mass in bed stratigraphy
+   integer, dimension(:), allocatable :: ncid_bal_const_bedshort_mass !< netCDF id of the constituent mass in bed shortage
+   integer, dimension(:), allocatable :: ncid_bal_const_conc !< netCDF id of the average constituent concentration in water column
+
+   integer, dimension(:, :), allocatable :: ncid_bal_const_flux_dim !< netCDF id of the constituent fluxes dimension
+   integer, dimension(:, :), allocatable :: ncid_bal_const_flux_names !< netCDF id of the constituent flux names
+   integer, dimension(:, :), allocatable :: ncid_bal_const_flux_values !< netCDF id of the constituent flux values
+
+   integer :: lunmbahis !< logical unit of mba his-file
+   integer :: lunmbatothis !< logical unit of mba total his-file
+   integer :: lunmbabal !< logical unit of mba bal-file
+   integer :: lunmbacsvm !< logical unit of mba mass csv-file
+   integer :: lunmbacsvmb !< logical unit of mba mass balance csv-file
+   integer :: lunmbatotbal !< logical unit of mba total bal-file
+   integer :: itimembastart !< start time of balance period
+   integer :: itimembastarttot !< start time of balance period
+   integer :: itimembaend !< end time of balance period
+   double precision :: timembastart !< start time of balance period
+   double precision :: timembastarttot !< start time of balance period
+   double precision :: timembaend !< end time of balance period
+
+   double precision, allocatable :: mbaarea(:) !< surface area of mass balance area
+
+   double precision, allocatable, target :: mbavolumebegin(:) !< begin volume in mass balance area
+   double precision, allocatable, target :: mbavolumebegintot(:) !< total begin volume in mass balance area
+   double precision, allocatable :: mbavolumeend(:) !< end volume in mass balance area
+
+   double precision, allocatable, target :: mbaflowhor(:, :, :) !< periodical flow between balance areas and between boundaries and balance areas
+   double precision, allocatable, target :: mbaflowhortot(:, :, :) !< total flow between balance areas and between boundaries and balance areas
+   double precision, allocatable, target :: mbaflowsorsin(:, :) !< periodical flow from source sinks
+   double precision, allocatable, target :: mbaflowsorsintot(:, :) !< total flow from source sinks
+   double precision, allocatable, target :: mbaflowraineva(:, :) !< periodical flow from rain and prescribed evaporation
+   double precision, allocatable, target :: mbaflowrainevatot(:, :) !< total flow from rain and prescribed evaporation
+   double precision, allocatable, target :: mbafloweva(:) !< periodical flow from calculated evaporation
+   double precision, allocatable, target :: mbaflowevatot(:) !< total flow from calculated evaporation
+
+   double precision, allocatable, target :: mbamassbegin(:, :) !< begin volume in mass balance area
+   double precision, allocatable, target :: mbamassbegintot(:, :) !< total begin volume in mass balance area
+   double precision, allocatable :: mbamassend(:, :) !< end volume in mass balance area
+
+   double precision, target :: mbamorfacbegin !< begin morphological factor
+   double precision, target :: mbamorfacbegintot !< total begin morphological factor
+   double precision :: mbamorfacend !< end morphological factor
+
+   double precision, allocatable, target :: mbabedmassbegin(:, :) !< begin volume in bed stratigraphy of mass balance area
+   double precision, allocatable, target :: mbabedmassbegintot(:, :) !< total begin volume in bed stratigraphy of mass balance area
+   double precision, allocatable, target :: mbabedshortmassbegin(:, :) !< begin volume in bed shortage of mass balance area
+   double precision, allocatable, target :: mbabedshortmassbegintot(:, :) !< total begin volume in bed shortage of mass balance area
+   double precision, allocatable, target :: mbafluffmassbegin(:, :) !< begin volume in fluff layer of mass balance area
+   double precision, allocatable, target :: mbafluffmassbegintot(:, :) !< total begin volume in fluff layer of mass balance area
+   double precision, allocatable :: mbabedmassend(:, :) !< end volume in bed stratigraphy of mass balance area
+   double precision, allocatable :: mbabedshortmassend(:, :) !< end volume in bed shortage of mass balance area
+   double precision, allocatable :: mbafluffmassend(:, :) !< end volume in fluff layer of mass balance area
+
+   double precision, allocatable, target :: mbasedflux(:, :, :, :) !< periodical bedload sediment fluxes between balance areas and between boundaries and balance areas
+   double precision, allocatable, target :: mbasedfluxtot(:, :, :, :) !< total periodical bedload sediment fluxes between balance areas and between boundaries and balance areas
+   double precision, allocatable :: mbasedfluxreduce(:, :, :, :) !< periodical bedload sediment fluxes between balance areas and between boundaries and balance areas (for MPI reduce)
+
+   double precision, allocatable, target :: mbafluxhor(:, :, :, :) !< periodical fluxes between balance areas and between boundaries and balance areas
+   double precision, allocatable, target :: mbafluxhortot(:, :, :, :) !< total fluxes between balance areas and between boundaries and balance areas
+   double precision, allocatable, target :: mbafluxsorsin(:, :, :, :) !< periodical fluxes from source sinks
+   double precision, allocatable, target :: mbafluxsorsintot(:, :, :, :) !< total fluxes from source sinks
+   double precision, allocatable, target :: mbafluxheat(:, :) !< temperature heat flux
+   double precision, allocatable, target :: mbafluxheattot(:, :) !< total temperature heat flux
+
+   double precision, allocatable :: mbavolumereduce(:) !< begin volume in mass balance area
+   double precision, allocatable :: mbaflowhorreduce(:, :, :) !< periodical flow between balance areas and between boundaries and balance areas
+   double precision, allocatable :: mbaflowsorsinreduce(:, :) !< periodical flow from sources sinks
+   double precision, allocatable :: mbaflowrainevareduce(:, :) !< periodical flow from rainfal and prescribed evaporation
+   double precision, allocatable :: mbaflowevareduce(:) !< periodical flow from calculated evaporation
+   double precision, allocatable :: mbamassreduce(:, :) !< begin volume in mass balance area
+   double precision, allocatable :: mbafluxhorreduce(:, :, :, :) !< periodical fluxes between balance areas and between boundaries and balance areas
+   double precision, allocatable :: mbafluxsorsinreduce(:, :, :, :) !< periodical fluxes from source sinks
+   double precision, allocatable :: mbafluxheatreduce(:, :) !< temperature heat flux
+
    type balance_type
-       integer                                               :: n_entries    !< number of flow/flux entries
-       character(len=NAMMBALEN), dimension(:)  , allocatable :: group        !< group to which balance flow/flux belongs
-       character(len=NAMMBALEN), dimension(:)  , allocatable :: name         !< name of balance flow/flux
-       double precision        , dimension(:,:), allocatable :: values       !< value of balance flow/flux (1,:) = from, (2,:) = to
+      integer :: n_entries !< number of flow/flux entries
+      character(len=NAMMBALEN), dimension(:), allocatable :: group !< group to which balance flow/flux belongs
+      character(len=NAMMBALEN), dimension(:), allocatable :: name !< name of balance flow/flux
+      double precision, dimension(:, :), allocatable :: values !< value of balance flow/flux (1,:) = from, (2,:) = to
    end type balance_type
-   
+
    type bal_group_type
-       type (balance_type), dimension(:), allocatable        :: bal_area      !< balance information: names and flows/fluxes per area
-       double precision, dimension(:), allocatable           :: bal_error     !< balance error per area
-       double precision, dimension(:), allocatable           :: bal_cumerror  !< balance cumulative error per area
+      type(balance_type), dimension(:), allocatable :: bal_area !< balance information: names and flows/fluxes per area
+      double precision, dimension(:), allocatable :: bal_error !< balance error per area
+      double precision, dimension(:), allocatable :: bal_cumerror !< balance cumulative error per area
    end type bal_group_type
 
-   type (bal_group_type), target                             :: water_flow    !< water balance
-   type (bal_group_type), dimension(:), allocatable, target  :: const_flux    !< constituent balances
+   type(bal_group_type), target :: water_flow !< water balance
+   type(bal_group_type), dimension(:), allocatable, target :: const_flux !< constituent balances
 
 end module m_mass_balance_areas
