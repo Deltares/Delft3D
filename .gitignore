@@ -46,6 +46,3 @@ src/**/FortranCInterface.h
 
 # ignore generated doxygen documentation
 /doxy_output
-/buildcmake.bat
-/ifx.bat
-/test/deltares_testbench/runtests.bat
