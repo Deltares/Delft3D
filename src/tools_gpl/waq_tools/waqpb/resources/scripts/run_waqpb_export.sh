@@ -2,92 +2,80 @@
 #$ -V
 #$ -j yes
 #$ -cwd
-    #
-    # This script runs waqpb_export on Linux
-    # Adapt and use it for your own purpose
-    #
+
+#
+# This script runs waqpb_export on Linux
+#
 
 function print_usage_info {
-    echo "Usage: ${0##*/} <input.mdu> [OPTION]..."
-    echo "Run waqpb_export on Linux."
+    echo "Purpose: Sets LD_LIBRARY_PATH and runs waqpb_export on Linux with all given command line arguments."
     echo
-    echo "version"
-    echo "       (Mandatory) delwaq version number"
-    echo "       (Mandatory) proc_def serial number"
-    echo "       (Mandatory) location of proc_def and csv files"
+    echo "Usage: ${0##*/} -version*.* -serial?????????? <proc_def folder> [OPTIONS]..."
     echo
-    echo "Options:"
-    echo "-h, --help"
-    echo "       print this help message and exit"
+    echo "-version*.*         delwaq version number (a real number, e.g. -version7.0, mandatory)."
+    echo "-serial??????????   proc_def serial number (10 digits, e.g. -serial2024071099, mandatory)."
+    echo "<proc_def folder>   location of proc_def and csv files subfolder (a folder named csvFiles is assumed,"
+    echo "                    e.g. . (for the current work dir), mandatory)."
+    echo "-h, --help, --usage print this help message and exit"
 }
-
 
 # ============
 # === MAIN ===
 # ============
 
-#
-## Defaults
+## Set number of open files to unlimited
 ulimit -s unlimited
 
-
-#
 ## Start processing command line options:
+case $1 in
+    -h|--help|--usage)
+    print_usage_info
+    exit 0
+    ;;
+esac
+
+## Check if there is a third argument given
+if [ -z $3 ]; then
+    echo "ERROR: not all mandatory arguments are given!"
+    echo
+    print_usage_info
+    exit 0
+fi
 
 version=$1
 serial=$2
-procDefLoc=$3
+proc_defloc=$3
+csvloc=$proc_defloc/csvFiles
+
+## Set the directories containing the binaries
+scriptdirname=`readlink \-f \$0`
+bindir=`dirname $scriptdirname`
+libdir=$bindir/../lib
+export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
+echo
+echo "    bin dir           : $bindir"
+echo "    lib dir           : $libdir"
+echo "    proc_def location : $proc_defloc"
+echo "    csv files location: $csvloc"
+echo
+
+## Run
 
 workdir=`pwd`
-
-
-
-if [ -z "${D3D_HOME}" ]; then
-    scriptdirname=`readlink \-f \$0`
-    scriptdir=`dirname $scriptdirname`
-    D3D_HOME=$scriptdir/..
-else
-    # D3D_HOME is passed through via argument --D3D_HOME
-    # Commonly its value is "/some/path/bin/.."
-    # Scriptdir: remove "/.." at the end of the string
-    scriptdir=${D3D_HOME%"/.."}
-fi
-if [ ! -d $D3D_HOME ]; then
-    echo "ERROR: directory $D3D_HOME does not exist"
-    print_usage_info
-fi
-export D3D_HOME
-
-
-echo "    D3D_HOME         : $D3D_HOME"
-echo "    Working directory: $workdir"
-echo 
-
-    #
-    # Set the directories containing the binaries
-    #
-
-bindir=$D3D_HOME/bin
-libdir=$D3D_HOME/lib
-
-
-    #
-    # No adaptions needed below
-    #
-
-    # Run
-export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
-
-export FI_PROVIDER=tcp
-
-
+cd $csvloc
 echo "executing:"
 echo "$bindir/waqpb_export $version $serial"
-echo 
+echo
 $bindir/waqpb_export $version $serial
+if [ $? == 0 ]; then
+    # move proc_def files
+    mv -f proc_def.dat $proc_defloc
+    mv -f proc_def.def $proc_defloc
+else
+    echo "waqpb_export did not run correctly"
+fi
+cd $workdir
 
-
-
-    # Wait until all child processes are finished
+## Wait until all child processes are finished
 wait
 

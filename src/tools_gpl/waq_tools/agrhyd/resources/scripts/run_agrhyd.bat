@@ -1,66 +1,50 @@
 @ echo off
 title run_agrhyd
-    rem
-    rem This script runs Agrhyd on Windows
-    rem Adapt and use it for your own purpose
-    rem
+rem
+rem this script runs Agrhyd on Windows
+rem
 setlocal enabledelayedexpansion
 
-    rem
-    rem Set the mdu file
-    rem
-set argfile= 
-if [%1] EQU [] (
-    goto usage
-) else (
-    if [%1] EQU [--help] (
-        goto usage
-    ) else (
-        set argfile=%1
-    )
-)
-echo Configfile:%argfile%
-if not exist %argfile% (
-    if not exist %argfile%.inp (
-        echo ERROR: input ini file "%argfile%" does not exist
-        goto usage
-    )
-)
+rem show usage?
+if [%1] EQU []        goto usage
+if [%1] EQU [-h]      goto usage
+if [%1] EQU [--help]  goto usage
+if [%1] EQU [--usage] goto usage
 
-set workdir=%CD%
-set argfile=%workdir%\%argfile%
-echo Working directory: %workdir%
-    rem
-    rem Set the directories containing the binaries
-    rem
-set D3D_HOME=%~dp0..
+rem Set the directories containing the binaries and set PATH
+set bindir=%~dp0
+set libdir=%bindir%\..\lib
+set PATH=%libdir%;%bindir%;%PATH%
 
-set waqdir=%D3D_HOME%\bin
+rem set the config file
+set configfile=%1
+echo agrhyd config file:%configfile%
 
-set sharedir=%D3D_HOME%\share\delft3d
-set libdir=%D3D_HOME%\lib
-set PATH=%sharedir%;%libdir%;%waqdir%
-
-
-    rem go to directory, run agrhyd, and return
-For %%A in ("%argfile%") do (
+rem go to directory, run agrhyd, and return
+set currentdir=%CD%
+For %%A in ("%configfile%") do (
     set argName=%%~nxA
     set argPath=%%~dpA
 )
+echo Working directory: %argPath%
+echo.
 cd /d "%argPath%"
-echo executing in this window: %waqdir%\"agrhyd.exe" "%argfile%"
-%waqdir%\"agrhyd.exe" "%argName%"
-cd /d "%workdir%"
-
-
+echo executing in this window: %bindir%agrhyd.exe "%argName%"
+echo.
+%bindir%\"agrhyd.exe" "%argName%"
+cd /d "%currentdir%"
 
 goto end
 
 :usage
+echo Purpose: Sets PATH and runs agrhyd on Windows.
+echo.
 echo Usage:
-echo run_agrhyd.bat [--help] agrhyd.ini
-echo     --help             : (Optional) show this usage
-echo     agrhyd.ini         : (Mandatory) agrhyd input file.
+echo run_agrhyd.bat [^<ini-file^> ^| -h ^| --help ^| --usage] 
+echo.
+echo     ^<ini-file^>              agrhyd ini-input file (mandatory)
+echo     -h ^| --help ^| --usage   show this usage (optional)
 :end
-    rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
+
+rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
 rem pause
