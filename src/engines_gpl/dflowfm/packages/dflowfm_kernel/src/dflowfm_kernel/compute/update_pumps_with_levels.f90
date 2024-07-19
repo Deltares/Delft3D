@@ -40,7 +40,7 @@ subroutine update_pumps_with_levels()
    use m_pump
    use m_partitioninfo
 
-   integer :: ierr, n, istru
+   integer :: ierr, n
 
    !Pump with levels, SOBEK style, outside OpenMP region
    ! TODO: merge water level calculations with dambreak

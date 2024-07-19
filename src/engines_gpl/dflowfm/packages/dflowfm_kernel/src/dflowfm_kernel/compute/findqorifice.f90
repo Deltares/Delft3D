@@ -41,9 +41,9 @@ subroutine findqorifice(gateheight, crestheight, h1, h3, q, h2, hg, regime, num,
    double precision :: hg ! vena contracta height above crest after gate (out)
    double precision :: qcrit ! critical discharge m2/s                      (out)
    character(len=*) :: regime !                                              (out)
-   double precision :: g, dh, qmax, hkmin, ha, hb, qa, qb, ha0, qa0, hb0, qb0, qc, hc, a, d, qda, qdb, qdc, hga, hgb, hgc
-   integer :: num, k, kk, nummin
-   double precision :: coeffs(5), ccx(4), cc, alfa = 0.02d0, qf, hgf, h2f, qer, qermin
+   double precision :: g, ha, hb, qa, qb, qc, hc, a, d, qda, qdb, qdc, hgc
+   integer :: num, k, nummin
+   double precision :: qf, hgf, h2f, qer, qermin
    g = 9.81 ! h1 = waterhoogte bovenstrooms
    h3 = min(h3, h1 - 0.0001) ! hg = gateheight * contractie = effectieve keeldoorsnee
    d = crestheight

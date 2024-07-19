@@ -35,8 +35,10 @@
          integer :: mmax, nmax, m1, n1, m2, n2, ncol, met, key, mc
          double precision :: XC(MMAX, NMAX), YC(MMAX, NMAX), xlist(nmax), ylist(nmax)
 
-         integer :: i, j, kmax, ja
+         integer :: i, j, kmax, ja, key_local
 
+         key_local = key
+         
          if (MET == 0 .or. MC == 0) return
          JA = 0
 

@@ -128,7 +128,6 @@ contains
       use m_dad
       use m_flowtimes, only: time1
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
-      integer :: num_dredges
       real(dp) :: cof0
 
       call allocate_and_associate(source_input, dadpar%dredge_dimension_length, time_dredged, time_ploughed)
@@ -453,7 +452,6 @@ contains
       integer :: num_tracers
       character(len=idlen) :: constituent_string
       character(len=idlen) :: unit_string
-      type(ug_nc_attribute) :: atts(5)
       integer :: tracer_index, constituent_index
 
       num_tracers = ITRAN - ITRA1 + 1
@@ -554,7 +552,7 @@ contains
    !! Return config indices for these variables such that they can be added to the output items for the same substances
    subroutine add_station_wqbot3D_configs(output_config_set, idx_wqbot3D_stations)
 
-      use m_fm_wq_processes, only: wqbot3D_output, numwqbots, wqbotnames, wqbotunits
+      use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits
       use netcdf_utils, only: ncu_sanitize_name
       use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils, only: ncu_set_att
@@ -613,7 +611,7 @@ contains
    !> Add output items for all 3D waq bottom substances on stations to output set.
    subroutine add_station_wqbot3D_output_items(output_set, output_config_set, idx_wqbot3D_stations)
 
-      use m_fm_wq_processes, only: numwqbots, wqbot3D_output
+      use m_fm_wq_processes, only: numwqbots
       use m_observations, only: valobs, IPNT_WQB3D1
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that item will be added to
@@ -635,7 +633,6 @@ contains
       use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils
       use m_missing
-      use m_sediment, only: stmpar
       use m_output_config, only: id_nc_byte, id_nc_char, id_nc_short, id_nc_int, id_nc_float, id_nc_double
 
       type(ug_nc_attribute) :: atts(4)
@@ -2170,7 +2167,6 @@ contains
       procedure(process_data_interface_double), pointer :: function_pointer => null()
 
       integer :: i, ntot, num_const_items, nlyrs, variable_index, start_index, num_layers
-      integer, allocatable, dimension(:) :: id_hwq
       integer, allocatable, dimension(:) :: idx_his_hwq
       integer, allocatable, dimension(:) :: idx_constituents_crs, idx_tracers_stations
       integer, allocatable, dimension(:) :: idx_wqbot_stations, idx_wqbot3D_stations

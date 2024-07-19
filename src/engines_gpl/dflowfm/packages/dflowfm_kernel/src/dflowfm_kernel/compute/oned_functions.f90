@@ -834,7 +834,7 @@ contains
    !! * the highest nearby cross section level ("embankment") for other nodes,
    !! * dmiss, i.e. not applicable, if no cross section is defined at the node.
    subroutine set_ground_level_for_1d_nodes(network)
-      use m_flowgeom, only: groundLevel, groundStorage, ndxi, ndx2d, nd, lnxi, kcu
+      use m_flowgeom, only: groundLevel, groundStorage, ndxi, ndx2d, nd, kcu
       use m_Storage
       use m_CrossSections
       use m_network

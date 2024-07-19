@@ -64,7 +64,7 @@
       integer :: midp
       integer :: mtek
       integer :: ndraw
-      integer :: i, k, ierror
+      integer :: i, ierror
       logical :: jawel
       logical, external :: read_samples_from_geotiff
 

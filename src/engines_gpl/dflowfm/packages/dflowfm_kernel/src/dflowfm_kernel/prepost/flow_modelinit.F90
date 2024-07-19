@@ -36,7 +36,7 @@
     use timers
     use m_flowgeom, only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln
     use waq, only: reset_waq
-    use m_flow, only: kmx, kmxn, jasecflow, iperot, hu, taubxu, ucxq, ucyq, fvcoro, zcs, vol1
+    use m_flow, only: kmx, kmxn, jasecflow, iperot, taubxu, ucxq, ucyq, fvcoro, vol1
     use m_flowtimes
     use m_lateral, only: numlatsg
     use network_data, only: NETSTAT_CELLS_DIRTY
@@ -48,7 +48,7 @@
     use unstruc_files, only: mdia
     use unstruc_netcdf
     use MessageHandling
-    use m_flowparameters, only: jawave, jatrt, jacali, jacreep, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE
+    use m_flowparameters, only: jawave, jatrt, jacali, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE
     use dfm_error
     use m_fm_wq_processes, only: jawaqproc
     use m_vegetation
@@ -74,7 +74,6 @@
     use m_flow_flowinit
     use m_pre_bedlevel, only: extrapolate_bedlevel_at_boundaries
     use m_fm_icecover, only: fm_ice_alloc, fm_ice_echo
-    use m_dad, only: dad_included
     use m_fixedweirs, only: weirdte, nfxw
     use mass_balance_areas_routines, only: mba_init
     use m_curvature, only: get_spirucm
@@ -85,7 +84,6 @@
     use m_transport, only: numconst, constituents
     use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used, &
                          get_lateral_volume_per_layer, lateral_volume_per_layer
-    use m_cell_geometry, only: ba
     use m_initialize_flow1d_implicit, only: initialize_flow1d_implicit
     !
     ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:

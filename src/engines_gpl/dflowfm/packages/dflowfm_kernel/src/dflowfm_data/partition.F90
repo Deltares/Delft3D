@@ -291,7 +291,7 @@ contains
    subroutine partition_pol_to_idomain(janet, jafindcells)
 
       use network_data
-      use m_flowgeom, only: Ndx, Ndxi, xz, yz
+      use m_flowgeom, only: Ndx, xz, yz
       use m_missing
       use m_alloc
       use gridoperations
@@ -521,9 +521,6 @@ contains
 
 !> initialize partitioning
    subroutine partition_init_1D2D(md_ident, ierror)
-!      use unstruc_model, only: md_ident  !<---- circular dependency
-      use network_data, only: nump1d2d
-      use m_flowgeom, only: Ndx, Ndxi
       use m_flowparameters, only: icgsolver
       use m_polygon
       use m_missing
@@ -536,7 +533,6 @@ contains
 
       integer :: idmn
       character(len=128) :: mesg
-      integer :: i
       ierror = 1
 
       call partition_setghost_params(icgsolver)
@@ -1944,7 +1940,7 @@ contains
       integer :: all_proc_recv(0:ndomains - 1, 0:ndomains - 1) ! number of cells/links/corners received from other domains
       integer :: nrequest, itag = 1, error
 
-      integer :: i, icount, k, num, other_domain
+      integer :: i, icount, num, other_domain
       integer :: from_send_list
 
       character(len=1024) :: str
@@ -5263,7 +5259,7 @@ contains
       logical :: res !< True if any instance of this type of structure lies across multiple partitions, false otherwise
 
       integer :: number_of_structures, i_struc, n_partitions_with_nodes, ierr
-      logical :: has_nodes_in_current_partition, structure_lies_across_partitions, any_structures_lie_across_partitions
+      logical :: has_nodes_in_current_partition, structure_lies_across_partitions
 
       res = .false. !Default return value
 
@@ -5392,7 +5388,7 @@ contains
       real(dp), allocatable :: geomYCrsMPI(:) ! [m] y coordinates of cross sections after mpi communication.
       integer, allocatable :: nodeCountCrsGat(:), nNodesCrsGat(:), displs(:)
       real(dp), allocatable :: geomX(:), geomY(:)
-      integer :: nlinks, i, j, j1, k, k1, ierror, is, ie, n, ii, nNodes, nNodesCrsMPI, L, L0, ks, ke, nPar, nNodesAdd, nn, jaexist, nb, nbLast, kk
+      integer :: nlinks, i, j, j1, k, k1, ierror, is, ie, n, ii, nNodes, nNodesCrsMPI, L, L0, ks, ke, nPar, nNodesAdd, jaexist, nb, nbLast, kk
       real(dp) :: xNew, yNew, xOld, yOld
       integer, allocatable :: maskBnd(:), maskBndAll(:), maskBndGat(:), indBndMPI(:), jaCoincide(:) ! Arrays for boundary nodes, only used in parallel run
 

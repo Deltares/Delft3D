@@ -47,7 +47,7 @@ contains
       logical, optional, intent(in) :: check_connected_input ! Do expensive connected check, default = .true.
 
 !locals
-      integer :: L2, L12, NN, K22, NM22, L2A, K22A, N1
+      integer :: L2, L12, NN, K22, NM22, L2A, K22A
       integer :: l
       integer :: n, nm, nm1, nm2
       integer :: NODLIN(200)

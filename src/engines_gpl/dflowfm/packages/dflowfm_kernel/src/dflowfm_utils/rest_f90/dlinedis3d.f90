@@ -33,7 +33,7 @@
       subroutine dlinedis3D(xx3, yy3, zz3, xx1, yy1, zz1, xx2, yy2, zz2, JA, DIS, xxn, yyn, zzn, rl)
          implicit none
          integer :: ja
-         double precision :: DIS, XN, YN, ZN, d2
+         double precision :: DIS
          double precision :: R2, RL, X21, Y21, Z21, X31, Y31, Z31
          double precision :: xx1, xx2, xx3, yy1, yy2, yy3, zz1, zz2, zz3, xxn, yyn, zzn
 

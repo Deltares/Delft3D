@@ -33,7 +33,7 @@
  subroutine step_reduce_transport_morpho(key)
     use m_flow
     use m_flowgeom
-    use m_sediment, only: stm_included, stmpar, mtd
+    use m_sediment, only: stm_included
     use Timers
     use m_flowtimes
     use m_sferic
@@ -59,16 +59,8 @@
     integer :: ndraw
     common / DRAWTHIS / ndraw(50)
 
-    integer :: key, jposhchk_sav, LL, L, k1, k2, itype
-    integer :: ja, k, ierror, n, kt, num, js1, noddifmaxlevm, nsiz
-    character(len=40) :: tex
-    logical :: firstnniteration
-    double precision :: wave_tnow, wave_tstop, t0, t1, dif, difmaxlevm
-    double precision :: hw, tw, uorbi, rkw, ustt, hh, cs, sn, thresh
+    integer :: key
 
-    character(len=128) :: msg
-
-!-----------------------------------------------------------------------------------------------
     numnodneg = 0
     if (wrwaqon .and. allocated(qsrcwaq)) then
        qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step

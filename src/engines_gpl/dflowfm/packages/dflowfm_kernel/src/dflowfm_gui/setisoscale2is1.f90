@@ -38,8 +38,6 @@
          double precision :: VMAX2, VMIN2, DV2, VAL2
          integer :: NCOLS2, NV2, NIS2, NIE2, JAAUTO2
 
-         integer :: i
-
          common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
          common / DEPMAX2 / VMAX2, VMIN2, DV2, VAL2(256), NCOLS2(256), NV2, NIS2, NIE2, JAAUTO2
 

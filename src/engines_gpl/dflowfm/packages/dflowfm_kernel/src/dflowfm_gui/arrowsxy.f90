@@ -32,16 +32,11 @@
 
       subroutine ARROWSxy(X0, Y0, UR, VR, VFAC)
          implicit none
-         double precision :: alfa
-         double precision :: csa
          integer :: i
-         double precision :: psi0
-         double precision :: sna
          double precision :: ur
          double precision :: vfac
          double precision :: vr
          double precision :: x0
-         double precision :: xlen
          double precision :: y0
          double precision :: X(3), Y(3), XR(3), YR(3)
          data X(1)/0.8d0/, X(2)/1d0/, X(3)/0.8d0/, &

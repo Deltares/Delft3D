@@ -37,39 +37,20 @@
     use m_partitioninfo
     use m_fixedweirs
     use m_sferic
-    use unstruc_channel_flow, only: network
 
     implicit none
 
     ! locals
-    double precision :: unormal ! function unormal
-    double precision :: dif ! averaged waterdepth at flow link (m)
     integer :: L, k1, k2 ! link, nd1, nd2
-    integer :: k12 ! nd1  or nd2
-    integer :: k34 ! nod1 or nod2
-    double precision :: ul1, ul2 ! just testing
-    double precision :: uup ! cell centered upwind u(L)
-    double precision :: vup ! cell centered upwind v(L) determines whether to use corner up or dwn in vdudy
-    double precision :: ucnup ! corner based  upwind u(L)
-    double precision :: vcn3, vcn4, vcnu, qx
-    double precision :: v12 ! Wenneker control volume (m3)
-    double precision :: v12t, v1t, v2t ! time derivative of control volume (m3/s)
-    double precision :: advil ! local advi
+    double precision :: v12t
     double precision :: advel ! local adve
 
     double precision :: qu1 ! Flux times advection velocity node 1 (m4/s2)
     double precision :: qu2 ! idem                          node 2
-    double precision :: qu1a ! Flux times advection velocity node 1 (m4/s2)
-    double precision :: qu2a ! idem                          node 2
-    double precision :: qu12a ! both a
-    double precision :: uqcxl !
-    double precision :: uqcyl !
-    double precision :: qu12, aa ! both
     double precision :: cs, sn
 
     double precision :: QucWen ! Sum over links of Flux times upwind cell centre velocity (m4/s2), do not include own link
     double precision :: QucPer ! idem, include own link
-    double precision :: QucPer3D ! idem, include own link
     double precision :: QucPerpure1D ! idem, include own link
     !double precision                  :: QucWeni        ! idem, only incoming
     double precision :: QucPeri ! idem, inly incoming         nb: QucPeripiaczek is a subroutine
@@ -81,26 +62,22 @@
 
     !double precision                  :: Qucnu          ! = original of QucPer
 
-    double precision :: visc ! eddy viscosity term
-
-    integer :: isg, jcheck, iadvL, ierr
-    integer :: m, mu, md, mdd, iad, n, kk, kb
-    double precision :: qxm, qxmu, uam, uamu, uamd, qxmd, du
-    double precision :: vv1, vv2, dv1, dv2, quk, que
-    double precision :: ucxku, ucyku, ai, ae, abh, vu1Di, volu, volui, hh, huvL, baik1, baik2
+    integer :: isg, iadvL
+    integer :: iad, n, kk, kb
+    double precision :: ucxku, ucyku, ai, ae, abh, volu, volui, hh, huvL, baik1, baik2
     double precision :: vol_k1 !< representative volume for node k1
     double precision :: vol_k2 !< representative volume for node k2
-    double precision :: ucin, fdx, ql, qucx, qucy, ac1, ac2, uqn, qn, rhoinsrc, dzss, qnn
-    integer :: LL, LLL, LLLL, Lb, Lt, Lay, i
+    double precision :: ucin, fdx, ql, ac1, ac2, uqn, qn, rhoinsrc, dzss, qnn
+    integer :: LL, Lb, Lt, i
 
-    integer :: ierror, ku, kd, k, nfw, kt
+    integer :: ku, kd, k, nfw, kt
     integer :: n12
 
     double precision :: quk1(3, kmxx), quk2(3, kmxx), volukk(kmxx) ! 3D for 1=u, 2=turkin, 3=tureps
 
     integer :: kt1, kt2, n1, n2, kb1, kb2, Ltx0, ktx01, ktx02, ktx1, ktx2, Ltx, L1, ksb, kst
-    double precision :: sigu, alf, bet1, bet2, hs1, hs2, vo1, vo2, zz1, zz2, econsfac
-    double precision :: tol = 1d-4, sl, dzu, dzk, du1, du2, dux, duy, expl
+    double precision :: hs1, hs2, vo1, vo2
+    double precision :: tol = 1d-4, sl, dzu, dzk, du1, du2, dux, duy
 
     double precision :: quuk1(0:kmxx), quuk2(0:kmxx), volk1(0:kmxx), volk2(0:kmxx), sqak1(0:kmxx), sqak2(0:kmxx)
     double precision :: quuL1(0:kmxx), quuL2(0:kmxx), volL1(0:kmxx), volL2(0:kmxx), sqaL1(0:kmxx), sqaL2(0:kmxx)

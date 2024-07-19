@@ -36,7 +36,7 @@ subroutine copynetwtopol()
    use network_data
    use unstruc_display
    implicit none
-   integer :: n, L, k1, k2, key
+   integer :: n, L, k1, k2
 
    call increasepol(3 * numl + 1000, 0)
 

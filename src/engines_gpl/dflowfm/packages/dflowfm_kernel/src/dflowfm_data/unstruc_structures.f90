@@ -381,7 +381,6 @@ contains
 !! All values are filled, both the generic ones, as well as the type-specific ones.
 !! Note: old-style structures may call this with istrtypein = ST_UNSET.
    subroutine fill_valstruct_perlink(valstruct, L, dir, istrtypein, istru, L0)
-      use m_missing, only: dmiss
       use m_flow, only: q1, s1, au, hu, hs
       use m_flowgeom, only: wu, ln, teta, bl
       use m_1d_structures, only: get_discharge_under_compound_struc
@@ -536,7 +535,6 @@ contains
 !! Note 2: if in parallel computing, MPI reduction must be done before calling this subroutine.
    subroutine average_valstruct(valstruct, istrtypein, istru, nlinks)
       use m_missing, only: dmiss
-      use m_partitioninfo, only: jampi
       use m_1d_structures
       use m_General_Structure, only: t_GeneralStructure
       use m_GlobalParameters
@@ -959,8 +957,7 @@ contains
       !< an orifice should be called with istrtypein = ST_ORIFICE, whereas its struct(istru)%type = ST_GENERAL_ST.
       integer, intent(in) :: nstru !< Total number of structures of this structure type
 
-      integer :: i, istru, nNodes, nLinks
-      type(t_structure), pointer :: pstru
+      integer :: i, nNodes, nLinks
 
       get_total_number_of_geom_nodes = 0
       do i = 1, nstru
@@ -973,7 +970,7 @@ contains
 !> Get the total number of structures of a certain type
    function get_number_of_structures(struc_type_id) result(number_of_structures)
       use m_GlobalParameters
-      use fm_external_forcings_data, only: ncdamsg, ndambreaksignals, ngatesg, npumpsg
+      use fm_external_forcings_data, only: ncdamsg, ndambreaksignals, ngatesg
       use unstruc_channel_flow, only: network
 
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
@@ -1147,7 +1144,7 @@ contains
 !! and can be used in a polyline representation of the placement of structures on flow links.
    subroutine get_geom_coordinates_of_generalstructure_oldext(i, nNodes, x, y)
       use m_alloc
-      use fm_external_forcings_data, only: ncgensg, kcgen, L1cgensg, L2cgensg
+      use fm_external_forcings_data, only: kcgen, L1cgensg, L2cgensg
       use m_flowgeom, only: lncn
       use network_data, only: xk, yk
       implicit none
@@ -1853,7 +1850,6 @@ contains
       integer, dimension(:), allocatable, intent(out) :: links !< The set of flowlinks that this compound structure has been snapped to
 
       integer :: n_links !< Total number of flowlinks in the set
-      integer :: i
 
       n_links = network%cmps%compound(i_cmpnd)%numlinks
       allocate (links(n_links), source=-999)
@@ -1874,7 +1870,7 @@ contains
       real(dp), intent(out) :: xmid !< x-coordinate of the midpoint
       real(dp), intent(out) :: ymid !< y-coordinate of the midpoint
 
-      integer :: number_of_flowlinks, i, Lf, k1, k2, k3, k4
+      integer :: number_of_flowlinks, i, Lf, k3, k4
       real(dp) :: total_length_of_flowlink_set, distance_along_flowlink_set, w1
 
       xmid = dmiss

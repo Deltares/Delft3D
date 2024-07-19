@@ -101,8 +101,6 @@ contains
    subroutine update_source_input(output_set)
       type(t_output_variable_set), intent(inout) :: output_set !< output set that we wish to update
 
-      type(t_output_variable_item), pointer :: item
-
       integer :: j
 
       do j = 1, output_set%count

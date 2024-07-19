@@ -1455,7 +1455,7 @@ contains
    !! write to file after last update
    subroutine postpr_fourier(time0, dts)
       use m_transport, only: constituents
-      use m_flowgeom, only: bl, lnx, bl_min, ndx
+      use m_flowgeom, only: bl, lnx, bl_min
       use m_flow
       implicit none
 
