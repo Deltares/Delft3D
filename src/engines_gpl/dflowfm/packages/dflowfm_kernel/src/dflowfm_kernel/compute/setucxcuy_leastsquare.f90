@@ -14,7 +14,7 @@ contains
       use m_netw
 
       implicit none
-      integer :: i, j, k, k1, k2, kk, L, L1, L2, L3, m, mm, n1, n2, nn, ierr
+      integer :: i, j, k1, k2, kk, L, L1, L2, L3, m, mm, n1, n2, ierr
       integer :: L1a, L2a, L3a, k3, nmax
       double precision :: cof0, xwall, ywall, scale, cs, sn, Deltxu, Deltyu
       integer, parameter :: mmax = 64
@@ -23,13 +23,8 @@ contains
       double precision, dimension(mmax, 9) :: Amat
       double precision, dimension(mmax) :: Wmat
       double precision, dimension(9) :: svec
-      double precision, dimension(9, 9) :: smat
       integer, dimension(lnx) :: LDone
       integer, dimension(mxwalls) :: LwDone
-      double precision :: condnr, sum
-      double precision, dimension(9) :: cvec, dvec
-      double precision, dimension(9, 9) :: Rmat, Rmati, Qmatt, RiQt
-      logical :: sing
 
       if (allocated(AtWAiAtW)) deallocate (AtWAiAtW)
       allocate (AtWAiAtW(9, mmax, lnx), stat=ierr); AtWAiAtW = 0d0
@@ -293,18 +288,14 @@ contains
       use m_netw
 
       implicit none
-      integer :: i, j, k, k1, k2, L, L1, L2, L3, m, n, n1, nn
-      integer :: L1a, L2a, L3a, L3b, L3t, k3, LL1, LL1a, nmax, LL, Lb, Lt, kk1, kk2, La
-      double precision :: cof0, cofx, cofy, xwall, ywall, scale, cs, sn, cof1, cof2, uu, vv
+      integer :: i, j, k1, k2, L, L1, L2, L3, m
+      integer :: L1a, L2a, L3a, L3b, L3t, k3, nmax, LL, Lb, Lt, kk1, kk2
       integer, parameter :: mmax = 64
       double precision, dimension(mmax) :: bvec
       double precision, dimension(9) :: xvec
       integer, dimension(lnx) :: LDone
       integer, dimension(mxwalls) :: LwDone
       double precision, dimension(:), allocatable :: uxu, uyu
-
-      double precision :: x1, x2, x3, y1, y2, y3
-      integer :: n2, L4
 
       if (.not. allocated(uxu)) then
          allocate (uxu(lnkx), uyu(lnkx)); uxu = 0d0; uyu = 0d0

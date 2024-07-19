@@ -55,9 +55,9 @@
          double precision :: y2
          double precision :: y2sc
 
-         character TITLE * (*), TEX * 8
+         character TITLE * (*)
          common / GSCREENS / X1SC(100), Y1SC(100), X2SC(100), Y2SC(100), NUMSC
-
+         
          INI = INI + 1
 
          call viewport(real(X1SC(NSC)), real(Y1SC(NSC)), real(X2SC(NSC)), real(Y2SC(NSC)))

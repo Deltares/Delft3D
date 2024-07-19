@@ -33,14 +33,14 @@
 subroutine findfn(cz, zn, fn)
 
    implicit none
-   integer :: i, j
+   integer :: i
    double precision :: acof, bcof
    double precision, intent(in) :: zn
    double precision, intent(in) :: cz
    double precision, intent(out) :: fn
    integer, parameter :: itab = 100, jtab = 1
    double precision, dimension(0:itab) :: fnarray
-   double precision :: znc, czc, dzn
+   double precision :: znc, dzn
 
    fnarray = (/0.0000000e+00, 0.0000000e+00, -3.2435628e+00, -4.8713274e+00, -5.8552221e+00, -6.4959081e+00, &
                -6.9255574e+00, -7.2137312e+00, -7.4013821e+00, -7.5145552e+00, -7.5707797e+00, &

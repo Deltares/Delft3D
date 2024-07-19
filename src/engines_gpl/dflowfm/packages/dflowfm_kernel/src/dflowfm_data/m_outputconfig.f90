@@ -578,7 +578,6 @@ contains
 
 !> Define an output configuration quantity. And set the IDX variable to the current entry
    subroutine add_output_config(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_dim_ids, id_nc_type, nc_attributes, description)
-      use m_map_his_precision, only: md_nc_his_precision
       use netcdf, only: nf90_double, nf90_float
 
       type(t_output_quantity_config_set), intent(inout) :: config_set !< Array containing all output quantity configs.
@@ -703,7 +702,6 @@ contains
       type(t_output_quantity_config_set), intent(inout) :: config_set !< Contains the keys and configuration information on the output variables.
 
       integer :: i
-      type(t_output_quantity_config), pointer :: config
 
       do i = 1, config_set%count
          associate (config => config_set%configs(i))

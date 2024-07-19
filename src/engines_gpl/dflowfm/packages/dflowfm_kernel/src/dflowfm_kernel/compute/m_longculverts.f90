@@ -812,9 +812,7 @@ contains
       use network_data
       use m_cell_geometry
       use m_samples
-      use m_sferic, only: jsferic, jasfer3D
       use gridoperations
-      use unstruc_channel_flow, only: network
       implicit none
 
       double precision, intent(in) :: xplCulv(:) !< x-coordinates of the polyline of one or more culverts.
@@ -823,7 +821,7 @@ contains
       integer, intent(in) :: nplCulv !< Number of points in the culvert polyline.
       integer, intent(out) :: linksCulv(:) !< Resulting netlink numbers of one or more culverts.
 
-      integer :: j, jpoint, jstart, jend, k1, k2, L, ipoly
+      integer :: j, jpoint, jstart, jend, k1, k2, ipoly
       double precision :: x1, y1, z1, x2, y2, z2
 
       ipoly = 0
@@ -901,7 +899,6 @@ contains
       use m_save_ugrid_state
       use m_sferic, only: jsferic, jasfer3D
       use gridoperations
-      use unstruc_channel_flow, only: network
       use m_cell_geometry, only: xz, yz
       use m_GlobalParameters, only: flow1d_eps10
 
@@ -913,8 +910,7 @@ contains
       integer, intent(in) :: nplCulv !< Number of points in the culvert polyline.
       integer, intent(out) :: linksCulv(:) !< Resulting netlink numbers of one or more culverts.
 
-      integer :: j, jpoint, jstart, jend, k1, k2, L, ipoly, numculvertpoints, currentbranchindex, newnodeindex, newedgeindex, newgeomindex, newnetnodeindex, node1d2d
-      integer, allocatable :: temp
+      integer :: j, jpoint, jstart, jend, k1, k2, ipoly, numculvertpoints, currentbranchindex, newnodeindex, newedgeindex, newgeomindex, newnetnodeindex, node1d2d
       double precision :: x1, y1, z1, x2, y2, z2, pathlength, pathdiff
       character(len=5) :: ipolychar, nodechar
 
@@ -1082,18 +1078,10 @@ contains
       double precision, allocatable, intent(in) :: zpl(:) !< (numlinks+1) Bed level on the long culvert support points
       integer, intent(out) :: iref !< Index of reference cross section definition (if csdefId was found)
 
-      integer :: istat
-      integer :: numstr
-      integer :: i, j, k
+      integer :: j, k
       integer :: inext
       integer :: indx
-      logical :: success
       type(t_CrossSection), pointer :: pCrs
-      type(t_CSType), pointer :: pCrsDef
-      ! character(len=Charln)          :: binfile
-      logical :: file_exist
-      integer :: pos, ibin
-      integer :: numcrs
       character(len=5) :: kchar
 
       indx = hashsearch(network%brs%hashlist, branchId)

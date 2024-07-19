@@ -33,7 +33,6 @@
  subroutine setupwslopes() ! set upwind slope pointers and weightfactors
     ! TODO: 1D upwind slope pointers (gewoon de vorige)
     use m_flowgeom
-    use m_flow, only: plotlin
     use m_flowparameters, only: jaupwindsrc
     use m_sferic
     use m_alloc
@@ -45,16 +44,13 @@
     implicit none
 
     integer :: L, k12, k2
-    double precision :: dxn, dyn, rmin, xc, yc, dxu, dyu, r, rli
+    double precision :: dxn, dyn, rmin, r
     integer :: k, kk, LL, ku, kd, ja, ku2, nn, jacros
     integer :: i, iup, ib, ng
 
-    double precision :: xzup, yzup, dxx, dyy, rfr, sum, slnupmax, dxk, dis, xn, yn, sl, sm, crp, xcr, ycr, dxl
+    double precision :: rfr, dxk, dis, xn, yn, sl, sm, crp, xcr, ycr, dxl
 
-    double precision, allocatable :: xzu(:), yzu(:) ! temparrs for triangulations
-    double precision, allocatable :: zz(:), zzu(:), wfn(:, :)
-    integer, allocatable :: indxn(:, :), kcz(:), kcuu(:)
-    integer :: jdla, ierr, n, NLNUPMAX
+    integer :: ierr, n
     double precision :: rn(6)
     integer :: kun(6), nri(6)
 

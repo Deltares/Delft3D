@@ -2986,7 +2986,7 @@ contains
          id_flowelemdomain, id_flowelemglobalnr, id_flowlink, id_netelemnode, id_netlink, &
          id_flowelemxzw, id_flowelemyzw, id_flowlinkxu, id_flowlinkyu, &
          id_flowelemxbnd, id_flowelemybnd, id_bl, id_s0bnd, id_s1bnd, id_blbnd, &
-         id_unorma, id_vicwwu, id_vicwws, id_tureps1, id_turkin1, id_qw, id_qa, id_squ, id_sqi, &
+         id_unorma, id_vicwwu, id_tureps1, id_turkin1, id_qw, id_qa, id_squ, id_sqi, &
          id_squbnd, id_sqibnd, &
          id_weirdte, &
          id_jmax, id_flowelemcrsz, id_ncrs, id_morft, id_morCrsName, id_strlendim, &
@@ -3021,7 +3021,6 @@ contains
       double precision, allocatable, dimension(:) :: tmp_x, tmp_y, tmp_s0, tmp_s1, tmp_bl, tmp_sa1, tmp_tem1
       double precision, allocatable, dimension(:) :: tmp_squ, tmp_sqi
       double precision, allocatable, dimension(:) :: tmp_ucxq, tmp_ucyq
-      double precision, allocatable, dimension(:) :: tmp_rho, tmp_rhowat
 
       character(len=8) :: numformat
       character(len=2) :: numtrastr, numsedfracstr
@@ -7999,7 +7998,6 @@ contains
       integer :: ierr
 
       integer :: nn
-      integer :: numl2d
       integer :: numk2d
       double precision, allocatable :: array_on_file(:)
 
@@ -12834,7 +12832,7 @@ contains
       integer, intent(in) :: jaWaqbot !< It is a waq bottom variable (1) or not(0)
       integer, intent(in) :: wqbot3D_output !< Read 3D waq bottom variable (1) or not(0)
       integer, optional, intent(in) :: target_shift !< shift of the index where the array is to be written (1:ndx), default = 0
-      integer :: kk, kloc, k, kb, kt, nlayb, nrlay, target_shift_
+      integer :: kk, kloc, k, kb, kt, target_shift_
 
       target_shift_ = 0
       if (present(target_shift)) then
@@ -13056,7 +13054,7 @@ contains
       integer, intent(out) :: ierr !< Return status (NetCDF operations)
 
       character(len=:), allocatable :: refdat_map !< Date time string read from map file.
-      real(kind=hp) :: trefdat_map, trefdat_rst, trefdat_mdu
+      real(kind=hp) :: trefdat_map, trefdat_rst
       character(len=:), allocatable :: convformat
 
       type(t_unc_merged) :: um !< struct holding all data for ugrid merged map/rst files
@@ -13087,21 +13085,19 @@ contains
                  id_bodsed, &
                  id_blbnd, id_s0bnd, id_s1bnd, &
                  id_squbnd, id_sqibnd, &
-                 id_czs, &
                  id_morft, &
                  id_jmax, id_ncrs, id_flowelemcrsz, id_flowelemcrsn, &
                  id_ucxqbnd, id_ucyqbnd, &
-                 id_fvcoro, &
                  id_rhobnd, id_rhowatbnd
 
       integer :: id_tmp
       integer :: layerfrac, layerthk
       integer, allocatable :: id_ttrabnd(:), id_ztrabnd(:)
-      integer, allocatable :: id_sf1(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
+      integer, allocatable :: id_tsedfracbnd(:), id_zsedfracbnd(:)
 
       integer :: it_read, nt_read, ndxi_read, lnx_read, L
       integer :: sedtot_read, sedsus_read, nlyr_read
-      integer :: kloc, kk, kb, kt, itmp, i, iconst, iwqbot, nm, Lf, j, k
+      integer :: kloc, kk, itmp, i, iconst, iwqbot, nm, Lf, j, k
       integer :: iostat
       logical :: fname_has_date, mdu_has_date
       integer, allocatable :: maptimes(:)
@@ -13124,7 +13120,7 @@ contains
       integer :: jamergedmap_same_bu
       integer :: tmp_loc
       integer :: numl1d
-      integer :: nlayb, nrlay
+      integer :: nrlay
 
       character(len=8) :: numformat
       character(len=2) :: numtrastr, numsedfracstr
@@ -18323,7 +18319,7 @@ contains
       type(t_unc_merged), intent(in) :: um !< struct holding all data for ugrid merged map/rst files
 
 !local
-      integer :: j, i
+      integer :: i
       integer :: ierr, tmp_loc
       double precision, allocatable :: tmpvar1(:), tmpvar1D(:)
       character(len=255) :: tmpstr
@@ -18361,7 +18357,6 @@ contains
       use m_flowgeom, only: ndxi, ndx
       use m_flow, only: kmx, work1
       use m_flowparameters, only: jarstbnd
-      use m_missing, only: dmiss
       use fm_external_forcings_data, only: ndxbnd_own
       use m_partitioninfo, only: jampi
 
@@ -18370,7 +18365,7 @@ contains
       double precision, allocatable, intent(in) :: rho(:)
 
 !local
-      integer :: k, kk, kb, kt, nlayb, nrlay, ierr, ndxbnd
+      integer :: kk, kt, nlayb, nrlay, ierr, ndxbnd
 
       if (jampi == 0) then
          ndxbnd = ndx - ndxi

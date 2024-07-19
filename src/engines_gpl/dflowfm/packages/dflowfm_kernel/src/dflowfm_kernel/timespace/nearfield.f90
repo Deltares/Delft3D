@@ -199,14 +199,8 @@ contains
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
       !
       ! Locals
-      integer :: i
-      integer :: j
       integer :: idif
-      integer :: isour
-      integer :: itrack
       integer :: istat
-      integer :: kbot
-      integer :: ktop
       integer :: jakdtree = 1 !< use kdtree (1) or not (other)
       integer :: jaoutside = 0 !< allow outside cells (for 1D) (1) or not (0)
       !
@@ -274,15 +268,7 @@ contains
       ! Locals
       integer :: i
       integer :: idif
-      integer :: isink
-      integer :: isour
-      integer :: istat
-      integer :: iconst
-      integer :: iconst_operator
       integer :: iintake
-      integer :: kbot
-      integer :: ktop
-      integer :: nk
       real(fp) :: sum_weight_intakes
       !
       ! Body
@@ -510,7 +496,6 @@ contains
       integer, intent(in) :: iLocTp
       !
       ! Locals
-      integer :: i
       integer :: istat
       integer :: isour
       integer :: itrack
@@ -520,7 +505,6 @@ contains
       integer, dimension(:), allocatable :: find_n !< array containing the result of a call to find_flownode
       integer :: nf_sour_track !< number of source cells for a diffuser
       !< if source points are in the same cell, nf_sour_track is not increased
-      integer :: nk
       real(hp) :: ang_end !< nf_numsour==1: angle of line connecting the last sink point with the only source point
       real(hp) :: dx !< nf_numsour==1: used to construct the source track
       real(hp) :: dy !< nf_numsour==1: used to construct the source track
@@ -731,8 +715,6 @@ contains
 !> For each source (track) point, no related sink point
    subroutine dischargeToSrc(idif, sum_weight_intakes)
       use m_alloc
-      use m_physcoef, only: NFEntrainmentMomentum
-      use m_flow, only: zws
       use mathconsts, only: degrad, eps_fp
       !
       ! Arguments

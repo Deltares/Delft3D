@@ -760,7 +760,7 @@ contains
 !> Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
    subroutine load_restart_file(file_exist, error)
       use m_flowparameters, only: jased, iperot
-      use m_flow, only: u1, u0, s0, hs, s1, ucxyq_read_rst
+      use m_flow, only: hs, s1, ucxyq_read_rst
       use m_flowgeom, only: bl
       use m_sediment, only: stm_included
       use unstruc_model, only: md_restartfile
@@ -777,7 +777,6 @@ contains
       character(len=255) :: rstfile
       integer :: mrst
       integer :: jw
-      double precision, allocatable :: u1_tmp(:)
 
       file_exist = .false.
 
@@ -942,7 +941,7 @@ contains
 !> set_implicit_for_pipes
    subroutine set_implicit_for_pipes()
       use m_flowparameters, only: nonlin1d, nonlin2D
-      use m_flowgeom, only: kcu, lbnd1d, lnx1D, ln, lnxi, lnx, prof1d, teta
+      use m_flowgeom, only: kcu, lbnd1d, lnx1D, lnxi, lnx, prof1d, teta
       use m_missing, only: dmiss
 
       implicit none
@@ -1138,7 +1137,6 @@ contains
       implicit none
 
       integer :: link
-      integer :: cell
       integer :: left_cell
       integer :: right_cell
       integer, allocatable :: mask(:)
@@ -1214,7 +1212,7 @@ contains
 !> set wave modelling
    subroutine set_wave_modelling()
       use m_flowparameters, only: jawave, flowWithoutWaves
-      use m_flow, only: hs, hu, kmx, kmxn
+      use m_flow, only: hs, hu, kmx
       use mathconsts, only: sqrt2_hp
       use m_waves, only: hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
       use m_flowgeom, only: lnx, ln, csu, snu
@@ -1431,10 +1429,9 @@ contains
 
 !> initialize salinity, temperature, sediment on boundary
    subroutine initialize_salinity_temperature_on_boundary()
-      use m_flowparameters, only: jasal, jased, jatem
+      use m_flowparameters, only: jasal, jatem
       use m_flowgeom, only: ln, lnx, lnxi
       use m_flow, only: sa1, q1, tem1
-      use m_sediment, only: mxgr, sed
 
       implicit none
 
@@ -1445,7 +1442,6 @@ contains
 
       integer :: boundary_cell
       integer :: internal_cell
-      integer :: grain
 
       do link = lnxi + 1, lnx ! copy on outflow
          call getLbotLtop(link, bottom_link, top_link)
@@ -1571,8 +1567,8 @@ contains
 
       double precision :: xzmin, xzmax, yzmin, yzmax
       double precision :: xx1, yy1, xx2, yy2, ux1, uy1, ux2, uy2, csl, snl
-      double precision :: fout, foutk, aa, dis, dmu, var, rho1, zi, zido, ziup, saldo, salup
-      double precision :: xx, yy, zz, ux, uy, pin, xli, slope, cs, cz, z00, cst
+      double precision :: fout, foutk, dis, dmu, var, rho1, zi, zido, ziup, saldo, salup
+      double precision :: xx, yy, zz, ux, uy, pin, xli, slope, cs, cz, z00
       double precision :: r, eer, r0, dep, Rossby, amp, csth, sqghi, snth
       double precision :: rr, rmx, x0, y0, dxx, dyy, ucmk, phi, dphi
       double precision :: xm, ym

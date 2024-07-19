@@ -44,7 +44,7 @@
 !
          double precision :: Y0(*), U, DUDY, TKE, EPS, NUT, GAMT
          double precision :: AU(50, 5), CMU, DY, KAP, ST, Y, uwall, uplate
-         integer :: J, NPOINTS, nupnts, ip
+         integer :: J, nupnts, ip
 !
          data AU(1, 1)/.00/, AU(1, 2)/.00/, AU(1, 3)/.1605e+03/, &
             AU(1, 4)/.0000e+00/, AU(1, 5)/-.2652e+02/

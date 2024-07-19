@@ -123,7 +123,6 @@ contains
       character(len=100) :: node_string !< string containing the keyword value
       integer :: temp_threshold !< backup variable for default abort threshold level (temporarily overruled)
       logical :: success !< flag indicating successful completion of a call
-      integer :: i !< loop variable
       integer :: num_obsolete !< count the number of obsolete (removed) keywords
       integer :: num_deprecated !< count the number of deprecated keywords
 

@@ -32,14 +32,14 @@
 
  subroutine checksuspended_transport()
     implicit none
-    double precision :: cfsk, cz, taucur, hsk
-    double precision :: ucr, ueff, Twav, Uwav, Ucur, Ucrc, Ucrw, Pmob, beta, D50h, sbeq, sster, wster, ws
-    double precision :: aref, Tmob, crefa, sseq, ustar, rouse, sqcf, dj1, dj2, z0k, dks, hdune, qssevr84h
-    double precision :: qsseq, garciaeinstein, effic, bav, caver, botsu, qsseqcheck, eincheck, eincheck2, qssevr84, vr84rel
-    double precision :: blmin, blmax, D50, D90, dstar, ag, sag, vonkar, ee, rhomean, rhosed, sqsgd50, temp, vismol, c1, c2
-    double precision :: Accr, D5085, Awcr, s095, rhodelta, wschk, ff, hf, df, qsseqrel, D50a, hska, g, deltaa
+    double precision :: hsk
+    double precision :: ucr, ueff, Ucur, Pmob, sster, wster, ws
+    double precision :: aref, Tmob, crefa, ustar, rouse, sqcf, z0k, dks, hdune, qssevr84
+    double precision :: qsseqcheck, eincheck, eincheck2
+    double precision :: D50, D90, dstar, ag, sag, vonkar, ee, rhomean, rhosed, sqsgd50, temp, vismol, c1, c2
+    double precision :: Accr, rhodelta, wschk, ff, hf, df, D50a, hska
 
-    integer :: k, j, kj, n, i, kk, mout, nx = 4
+    integer :: j, i, mout, nx = 4
 
     ag = 9.81d0
     sag = sqrt(ag)

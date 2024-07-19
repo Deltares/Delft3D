@@ -35,8 +35,8 @@ double precision function rho_Eckart(sal, temp)
 
    implicit none
    double precision :: sal, temp
-   double precision :: cp1, clam1, temp2, dum
-   double precision :: cp0, clam0, clam, alph0
+   double precision :: cp1, clam1, temp2
+   double precision :: cp0, clam0, clam
 
    temp2 = temp * temp
    cp0 = 5890.0d0 + 38.00d0 * temp - 0.3750d0 * temp2

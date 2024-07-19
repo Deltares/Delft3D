@@ -44,8 +44,7 @@
     integer :: k
 
     ! locals
-    integer :: n, nn, in, kb, L
-    double precision :: dxx, dyy, r
+    integer :: n, nn, in
 
     k = 0
     do n = 1, ndx2D

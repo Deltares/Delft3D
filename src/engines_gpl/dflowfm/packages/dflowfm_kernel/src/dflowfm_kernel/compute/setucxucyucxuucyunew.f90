@@ -35,21 +35,18 @@
     use precision_basics
     use m_flow
     use m_sobekdfm
-    use m_sediment, only: jased, stm_included
+    use m_sediment, only: jased
     use m_missing
     use m_flowparameters, only: jabarrieradvection
     use m_sferic
     implicit none
 
     logical :: make2dh
-    integer :: L, KK, k1, k2, k, nw, Lb, Lt, LL, nn, n, kt, kb, kbk, k2k, n1, n2, ip, i12, La, nx, i
-    integer :: itpbn, newucxq = 0
-    double precision :: uu, vv, uucx, uucy, wcxu, wcyu, cs, sn, adx, ac1, ac2, wuw, hdx, hul, hsk, uin, duxdn, duydn, uhu, htrs
-    double precision :: dischcorrection
+    integer :: L, KK, k1, k2, k, Lb, Lt, LL, nn, n, kt, kb, kbk, k2k, n1, n2, i
+    integer :: itpbn
+    double precision :: uu, vv, uucx, uucy, cs, sn, hul, hsk, uin, duxdn, duydn, uhu, htrs
     double precision :: u1correction
-    double precision :: uinx, uiny, ahu, uxy
-
-    double precision, allocatable :: husx, husy
+    double precision :: uinx, uiny
 
     double precision, external :: nod2linx, nod2liny
     double precision, external :: lin2nodx, lin2nody

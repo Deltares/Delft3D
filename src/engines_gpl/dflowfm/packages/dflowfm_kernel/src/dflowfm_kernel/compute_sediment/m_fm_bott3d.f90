@@ -70,7 +70,6 @@ contains
       use m_flowparameters, only: eps10, jawave
       use fm_external_forcings_data, only: nopenbndsect
       use m_flowtimes, only: dts, tstart_user, time1, tfac, ti_sed, ti_seds, handle_extra
-      use m_transport, only: ised1
       use unstruc_files, only: mdia
       use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt, hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy
       use m_sediment, only: kcsmor
@@ -98,15 +97,11 @@ contains
 
       logical :: error
 
-      integer :: ierror, nm, ll
+      integer :: ierror, ll
 
       double precision :: dtmor
       double precision :: timhr
-
-      double precision, dimension(:), allocatable :: bl_ave0
-
-      character(len=256) :: msg
-
+      
       logical, pointer :: cmpupd
 
    !!
@@ -519,7 +514,7 @@ contains
       use Messagehandling
       use message_module, only: writemessages, write_error
       use unstruc_channel_flow, only: network, t_branch, t_node, nt_LinkNode
-      use m_flowgeom, only: ndxi, nd, wu_mor
+      use m_flowgeom, only: nd, wu_mor
       use m_flow, only: u1, qa
       use m_flowparameters, only: flow_solver, FLOW_SOLVER_FM
       use m_fm_erosed, only: lsedtot, e_sbcn, e_sbct
@@ -783,7 +778,7 @@ contains
       use m_sediment, only: stmpar
       use morphology_data_module, only: bedbndtype
       use table_handles, only: handletype, gettabledata
-      use m_flowtimes, only: julrefdat, time1
+      use m_flowtimes, only: julrefdat
       use m_partitioninfo, only: idomain, jampi, my_rank, reduce_sum
       use fm_external_forcings_data, only: nopenbndsect
 
@@ -976,7 +971,7 @@ contains
       use sediment_basics_module
       use m_flowgeom, only: bai_mor, ndxi, bl, wu, wu_mor, xz, yz, ndx
       use m_flow, only: kmx, s1, vol1
-      use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, morfac, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor
+      use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor
       use m_fm_erosed, only: nd => nd_mor
       use m_sediment, only: avalflux, ssccum
       use m_flowtimes, only: dts, dnt
@@ -1318,7 +1313,7 @@ contains
    !! Declarations
    !!
 
-      use m_sediment, only: stmpar, mergebodsed, jamormergedtuser, kcsmor
+      use m_sediment, only: stmpar, mergebodsed, jamormergedtuser
       use m_flowtimes, only: time1, time_user
       use m_flowgeom, only: ndxi
       use m_flowparameters, only: eps10
@@ -1716,7 +1711,6 @@ contains
    !! exclude specific fractions if cmpupdfrac has been set.
    subroutine fm_exclude_cmpupdfrac()
 
-      use m_flowgeom, only: lnx
       use m_fm_erosed, only: lsedtot, cmpupdfrac, stmpar, dbodsd
 
       implicit none
@@ -1957,7 +1951,7 @@ contains
 
    subroutine fm_erosion_velocity(dtmor)
 
-      use m_flowgeom, only: ndx, bl
+      use m_flowgeom, only: ndx
       use m_fm_erosed, only: blchg, dzbdt
 
       implicit none

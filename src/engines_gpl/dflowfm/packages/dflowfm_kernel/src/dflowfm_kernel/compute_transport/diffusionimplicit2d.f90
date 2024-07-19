@@ -41,7 +41,7 @@ subroutine diffusionimplicit2D()
    implicit none
 
    double precision :: ddx, difcoeff, diuspL, diag
-   integer i, k1, k2, L, LL, n
+   integer i, k1, k2, L, n
 
    integer(4) ithndl / 0 /
    if (timon) call timstrt("diffusionimplicit2D", ithndl)

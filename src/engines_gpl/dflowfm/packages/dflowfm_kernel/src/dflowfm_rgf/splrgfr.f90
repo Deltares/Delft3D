@@ -53,13 +53,11 @@
        double precision, allocatable, dimension(:) :: tt
 ! x, y -> xc, yc (m_grid)
 ! ijc, ijyes in m_grid
-       character TEX * 6
        integer :: ierr, mspl
        integer :: imax, i1, ni1, nti1, l1max, jj, ii1, ii2, k, ii, i, j, L, ki, LJ, no, &
                   numspl, numpx, numi, &
                   ms, ns, &
-                  mcr, ncr, &
-                  mfa, nfa
+                  mcr, ncr
 
        if (MFAC > 1000) then
           call QNERROR('Please reduce MFAC and NFAC to about < 50 or so', ' ', ' ')

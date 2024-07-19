@@ -36,18 +36,17 @@
       use MessageHandling
       use m_flowparameters
       use m_flowgeom
-      use m_flow, only: hu, huvli, wavfu, wavfv, rhomean, kmx, rho
+      use m_flow, only: hu, huvli, wavfu, wavfv, rhomean, kmx
       use m_waves, m_waves_hminlw => hminlw
       use m_xbeach_data, xb_hminlw => hminlw
       use m_physcoef, only: sag
       implicit none
 
-      integer :: mout
       integer :: L, LL, Lb, Lt
       double precision :: wavfx, wavfy, wavfbx, wavfby
-      double precision :: wavfu_loc, wavfbu_loc, twavL, hwavL, wavfuL, wavfvL, cc
+      double precision :: wavfu_loc, wavfbu_loc, twavL, hwavL
       double precision :: wavfv_loc, wavfbv_loc, wavfmag, wavfbmag, wavfang, wavfbang
-      double precision :: fmax, ac1, ac2, hminlwi, rhoL, zw, hminlw, gammaloc, halfwav
+      double precision :: fmax, ac1, ac2, hminlwi, rhoL, hminlw, gammaloc
 
       integer :: k1, k2
 

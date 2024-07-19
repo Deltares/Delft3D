@@ -33,7 +33,7 @@
       subroutine GOLDDIS(AX, BX, CX, TOL, P, P2, Y, Y2, T, N, NT, XMIN, DIS, SSQ, H)
          implicit none
          !USE DIMENS
-         integer :: imax, n, nt
+         integer :: n, nt
          double precision :: P(N), P2(N), Y(N), Y2(N), T(N)
          double precision :: ax, bx, cx, tol, xmin, dis, ssq
          double precision, intent(in) :: H !< for curvature adapted meshing

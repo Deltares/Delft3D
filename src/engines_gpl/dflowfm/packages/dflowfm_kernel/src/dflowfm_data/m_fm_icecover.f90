@@ -295,7 +295,6 @@ contains
       use MessageHandling
       use m_flow ! test om tair(.) te gebruiken
       use m_flowgeom, only: nd
-      use m_flowtimes, only: dts
       use m_physcoef, only: vonkar
       use physicalconsts, only: CtoKelvin
       use m_heatfluxes, only: cpw

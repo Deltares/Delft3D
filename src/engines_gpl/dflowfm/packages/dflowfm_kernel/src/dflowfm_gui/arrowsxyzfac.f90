@@ -32,7 +32,6 @@
 
       subroutine ARROWSXYzfac(X0, Y0, UX, UY, VFAC, JW, zfac)
          implicit none
-         integer :: i
          integer :: jw
          double precision :: X0, Y0, UX, UY, VFAC, zfac
 

@@ -48,13 +48,12 @@ contains
 
       use m_flowgeom, only: bl, dxi, csu, snu
 
-      use fm_external_forcings_data, only: zbndu, zbndq, kbndz, kbndu, nbndz, nbndu
+      use fm_external_forcings_data, only: kbndz, kbndu, nbndz, nbndu
 
       implicit none
 
       integer :: L, k1, k2, kb
       double precision, allocatable :: dzdx(:), dzdy(:)
-      double precision :: bedslopex, bedslopey, dx, dy
 
       call bed_slope_at_z(dzdx, dzdy)
 

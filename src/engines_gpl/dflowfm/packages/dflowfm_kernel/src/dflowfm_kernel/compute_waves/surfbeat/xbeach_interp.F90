@@ -301,7 +301,7 @@ contains
             ! of function values in Np surrounding points of grid 1
             !
             if (iprint == 1 .and. i2 <= n2) &
-          & write (*, '(1X,A,I6,4(1X,E10.4))') ' i2 w ', i2, (w(ip, i2), ip=1,  &
+          & write (*, '(1X,A,I6,4(1X,E11.4))') ' i2 w ', i2, (w(ip, i2), ip=1,  &
           & np)
             do ip = 1, np
                i = iref(ip, i2)

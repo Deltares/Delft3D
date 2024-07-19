@@ -40,9 +40,11 @@ subroutine highlight_form_line(ifield, iexitk)
    integer, intent(in) :: iexitk !< 'Exit' key that was used to leave this form field.
 
    integer :: ifieldnext
+   integer :: iexitk_used
    integer, external :: InfoForm
 
    ifieldnext = InfoForm(3)
+   iexitk_used = iexitk
 
 ! Reset the 'current' field back to defaults (no highlights)
    if (ifield > 1) then

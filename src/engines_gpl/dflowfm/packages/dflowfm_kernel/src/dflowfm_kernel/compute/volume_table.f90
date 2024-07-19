@@ -159,7 +159,6 @@ contains
       integer :: index
       integer :: i
       double precision :: heightIncrement
-      double precision :: fraction
       index = min(int(max(0d0, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
       heightIncrement = max(0d0, ((level - this%bedLevel) - dble(index - 1) * tableIncrement))
@@ -280,32 +279,16 @@ contains
       logical, optional, intent(in) :: branchOutput !< Flag indicates whether the volumes on flow links are required.
       !< This option is used by the volume tool to aggregate volumes to branches.
 
-      integer :: nstor
       integer :: nod
       integer :: n
-      integer :: LL, L, Lindex, LLinternal
-      integer :: i, j
-      integer :: numlinks
-      integer :: index
-      integer :: jacustombnd1d, ibndsect
-      integer :: numberOfSummerDikes
+      integer :: LL, L
+      integer :: i
       integer :: summerDikeIndex
 
       logical :: generateVLTBOnLinks
-      double precision :: height
-      double precision :: level
-      double precision :: dxL
-      double precision :: area, areadecr
-      double precision :: sdarea
-      double precision :: width, widthdecr
-      double precision :: sdwidth
-      double precision :: topHeight
-      double precision :: bobAboveBedLevel
-      logical, dimension(2) :: inundationPhase
 
       type(t_chainage2cross), dimension(:, :), pointer :: line2cross
       type(t_CrossSection), pointer, dimension(:) :: cross
-      type(t_CrossSection), pointer :: cross1, cross2
       type(t_storage), dimension(:), pointer :: stors
 
       if (present(branchOutput)) then
@@ -572,7 +555,7 @@ contains
       type(t_voltable), dimension(:, :), intent(inout) :: vltbOnLinks !< Volume tables on links.
 
       integer :: n, nod, L, LL, numlinks
-      integer :: Lindex, dir
+      integer :: Lindex
 
       do n = 1, ndx1d
          nod = n + ndx2d
@@ -627,8 +610,8 @@ contains
       type(t_voltable), dimension(:, :), intent(inout), optional :: vltbOnLinks !< Volume tables on flow links.
 
       integer :: nod, nodintern
-      integer :: Lindex, L, LL
-      integer :: i, j
+      integer :: Lindex, L
+      integer :: j
       integer :: jacustombnd1d, ibndsect
 
       logical :: inundationPhase(2)
