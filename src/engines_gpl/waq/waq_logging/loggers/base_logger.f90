@@ -26,6 +26,7 @@ module m_base_logger
     use m_waq_precision
     use m_log_level
     use m_logger
+    use iso_c_binding
 
     implicit none
 
@@ -54,51 +55,51 @@ module m_base_logger
 
 contains
     !> Log an error message
-    subroutine log_error(this, message, new_line)
+    subroutine log_error(this, message, add_new_line)
         class(base_logger), intent(in) :: this    !< instance of this logger
         character(len=*), intent(in) :: message   !< message to log
-        logical, optional, intent(in) :: new_line !< add a new line before message
+        logical, optional, intent(in) :: add_new_line !< add a new line before message
 
-        call this%log_message(repeat("*", 150), ERROR_LEVEL, new_line)
-        call this%log_message("Error:"//message, ERROR_LEVEL)
-        call this%log_message(repeat("*", 150), ERROR_LEVEL)
+        call this%log_message(repeat("*", 150), error_level, add_new_line)
+        call this%log_message("Error:"//message, error_level)
+        call this%log_message(repeat("*", 150), error_level)
     end subroutine log_error
 
     !> Log a warning message
-    subroutine log_warning(this, message, new_line)
+    subroutine log_warning(this, message, add_new_line)
         class(base_logger), intent(in) :: this    !< instance of this logger
         character(len=*), intent(in) :: message   !< message to log
-        logical, optional, intent(in) :: new_line !< add a new line before message
+        logical, optional, intent(in) :: add_new_line !< add a new line before message
 
-        call this%log_message("Warning:"//message, WARNING_LEVEL)
+        call this%log_message("Warning:"//message, warning_level)
     end subroutine log_warning
 
     !> Log an info message
-    subroutine log_info(this, message, new_line)
+    subroutine log_info(this, message, add_new_line)
         class(base_logger), intent(in) :: this    !< instance of this logger
         character(len=*), intent(in) :: message   !< message to log
-        logical, optional, intent(in) :: new_line !< add a new line before message
+        logical, optional, intent(in) :: add_new_line !< add a new line before message
 
-        call this%log_message(message, INFO_LEVEL, new_line)
+        call this%log_message(message, info_level, add_new_line)
     end subroutine log_info
 
     !> Log an debug message
-    subroutine log_debug(this, message, new_line)
+    subroutine log_debug(this, message, add_new_line)
         class(base_logger), intent(in) :: this    !< instance of this logger
         character(len=*), intent(in) :: message   !< message to log
-        logical, optional, intent(in) :: new_line !< add a new line before message
+        logical, optional, intent(in) :: add_new_line !< add a new line before message
 
-        call this%log_message("Debug:"//message, DEBUG_LEVEL, new_line)
+        call this%log_message("Debug:"//message, debug_level, add_new_line)
     end subroutine log_debug
 
     !> Log a message to file (optionally with a new line above it)
-    subroutine log_message(this, message, max_log_level, new_line)
+    subroutine log_message(this, message, max_log_level, add_new_line)
         class(base_logger) :: this                        !< instance of this logger
         character(len=*), intent(in) :: message           !< message to log
         integer(kind=int_wp), intent(in) :: max_log_level !< log level
-        logical, optional :: new_line                     !< add a new line before message
+        logical, optional :: add_new_line                     !< add a new line before message
 
-        logical :: new_line_
+        logical :: add_new_line_
         character(:), allocatable :: message_
 
         if (this%log_level < max_log_level) then
@@ -107,9 +108,9 @@ contains
 
         message_ = message
 
-        if (present(new_line)) then
-            if (new_line) then
-                message_ = char(10)//message
+        if (present(add_new_line)) then
+            if (add_new_line) then
+                message_ = NEW_LINE('a')//message
             end if
         end if
 

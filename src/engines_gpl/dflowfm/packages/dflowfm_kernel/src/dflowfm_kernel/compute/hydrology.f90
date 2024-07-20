@@ -90,8 +90,6 @@ contains
    subroutine init_hydrology()
       use m_alloc
 
-      integer :: ierr
-
       !
       ! Infiltration
       !

@@ -40,11 +40,10 @@ contains
    !! Returns bed level change for lowest point in cross-section.
    subroutine fm_update_crosssections(blchg)
       use precision
-      use m_flowgeom, only: ndxi, kcs, dx, wu, nd, wu_mor, ba_mor, bai_mor, bl, ndx, acl, ndx2d
+      use m_flowgeom, only: bl, ndx, ndx2d
       use m_oned_functions, only: gridpoint2cross
       use unstruc_channel_flow, only: network, t_node, nt_LinkNode
       use m_CrossSections, only: t_CSType, CS_TABULATED
-      use m_flow, only: s1
       use MessageHandling
       use m_fm_erosed, only: ndxi_mor, ndx_mor, e_sbn, nd_mor, lsedtot
       use m_f1dimp, only: f1dimppar
@@ -56,13 +55,9 @@ contains
       integer :: inod
       integer :: iref
       integer :: j
-      integer :: l
       integer :: nm
-      integer :: nm2
-      integer :: nmm
       integer :: c
       integer :: ctype
-      integer :: LL
       integer :: ncs
       integer :: kd, kl
       integer :: idx_l1, idx_l2, idx_ns
@@ -243,7 +238,7 @@ contains
    function fm_get_ds(nm, j) result(ds)
       use precision
       use m_oned_functions, only: gridpoint2cross
-      use m_flowgeom, only: acl, dx, ln, nd ! lnx, lnx1d, lnxi, lnx1Db, wu, wu_mor, LBND1D, bai, ba_mor, bai_mor, ndx, ndx2D, ndx1Db
+      use m_flowgeom, only: acl, dx
       use m_fm_erosed, only: nd_mor
 
       integer, intent(in) :: nm !< flow node index
@@ -353,10 +348,9 @@ contains
    end subroutine fm_update_mor_width_area
 
    subroutine fm_update_mor_width_mean_bedlevel()
-      use m_flowgeom, only: ndxi, bl, bl_ave, ndx, kcs, ndx2d, ba_mor, ndx1Db
+      use m_flowgeom, only: ndxi, bl, bl_ave, ndx, ndx2d, ndx1Db
       use m_oned_functions, only: gridpoint2cross
       use m_CrossSections, only: t_CSType, CS_TABULATED
-      use m_flow, only: s1
       use precision
       use MessageHandling
       use unstruc_channel_flow, only: network
@@ -370,7 +364,6 @@ contains
       integer :: j
       integer :: nm
       double precision :: blref
-      double precision :: href
       double precision :: ba_mor_tot
       double precision :: href_tot
       double precision :: ds

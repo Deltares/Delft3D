@@ -113,7 +113,7 @@ contains
    !> Update the (time-)integral statistics for all flow nodes, typically after each time step.
    subroutine update_sedtrails_stats()
       use m_flowtimes, only: dts
-      use m_flow, only: hs, ucx, ucy, taus, kmx, ucxq, ucyq, hs, vol1
+      use m_flow, only: hs, ucx, ucy, taus, kmx, hs, vol1
       use m_flowgeom, only: ndx, bl, ba
       use m_fm_erosed
       use m_transport, only: constituents, ISED1

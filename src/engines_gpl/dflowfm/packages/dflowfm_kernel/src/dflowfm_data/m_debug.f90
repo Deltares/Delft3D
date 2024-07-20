@@ -52,7 +52,6 @@ contains
       integer, intent(in), optional :: dim2
       integer, intent(in), optional :: dim3
 
-      integer :: ierr
       integer :: dim2_
       integer :: dim3_
 

@@ -37,7 +37,6 @@ subroutine wrimap(tim)
    use unstruc_netcdf
    use unstruc_model
    use unstruc_files, only: defaultFilename
-   use m_dad, only: dad_included
    use m_fm_update_crosssections, only: fm_update_mor_width_mean_bedlevel
    use m_flowgeom, only: ndx2d, ndxi
    use Timers
@@ -47,11 +46,7 @@ subroutine wrimap(tim)
 
    ! locals
    integer :: ierr
-   integer :: i
-   integer :: len
-   integer, save :: mtecfil = 0
    character(len=256) :: filnam
-   logical :: unitused
    double precision, save :: curtime_split = 0d0 ! Current time-partition that the file writer has open.
    integer :: ndx1d, ndims
    integer :: jabndnd

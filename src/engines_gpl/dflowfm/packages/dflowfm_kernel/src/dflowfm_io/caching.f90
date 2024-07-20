@@ -135,7 +135,7 @@ contains
 
       integer :: lun
       integer :: ierr
-      integer :: number, number_links, number_sections, number_nodes, number_netcells
+      integer :: number, number_links, number_nodes, number_netcells
       character(len=30) :: version_file
       character(len=20) :: key
       character(len=md5length) :: md5checksum
@@ -353,7 +353,6 @@ contains
       integer, intent(out) :: ierr !< Error code
 
       integer :: i, np, nlink
-      logical :: okay
 
       ! If there is nothing to be cached, do not even try to read (D3DFMIQ-2193)
       if (size(linklist) == 0) then

@@ -32,12 +32,11 @@
 
 subroutine pipemin(hpr, dia, area, width) ! top minus part
    use m_sferic
-   use m_flow, only: slotw1D
    implicit none
    double precision, intent(in) :: dia, hpr
    double precision, intent(out) :: area, width
 
-   double precision :: are, dacos, dsqrt, fi, r, sq
+   double precision :: are, dsqrt, fi, r, sq
 
    r = 0.5 * dia
    if (hpr < r) then

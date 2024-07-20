@@ -69,9 +69,9 @@ contains
 
       use m_f1dimp
       use m_physcoef, only: ag, rhomean
-      use m_flowgeom, only: ndx, ndxi, wu, teta, lnx, tnode, lnx1D, ln, lnxi, nd, lnx1Db
+      use m_flowgeom, only: ndx, ndxi, lnx, tnode, lnx1D, ln, lnxi, nd, lnx1Db
       use fm_external_forcings_data, only: nzbnd, nqbnd
-      use m_fm_erosed, only: nd_mor, ln_mor, ndx_mor, lnx_mor
+      use m_fm_erosed, only: nd_mor, ln_mor
       use unstruc_channel_flow, only: network
       use unstruc_messages
       use m_sediment, only: stmpar, jased, stm_included
@@ -478,10 +478,10 @@ contains
    subroutine inifm1dimp_lob(iresult)
 
       use m_f1dimp
-      use m_flowgeom, only: ndx, ndxi, lnx, lnx1D, ln, nd, tnode, lnxi, lnx1Db
+      use m_flowgeom, only: ndx, lnx, lnx1D, ln, nd, tnode, lnxi, lnx1Db
       use unstruc_channel_flow, only: network
       use unstruc_messages
-      use m_fm_erosed, only: link1sign, link1sign2, ndx_mor, lnx_mor, lnxi_mor, ndxi_mor, ln_mor, nd_mor, ndkx_mor
+      use m_fm_erosed, only: link1sign2, ndx_mor, lnx_mor, lnxi_mor, ndxi_mor, ln_mor, nd_mor, ndkx_mor
       use m_oned_functions, only: gridpoint2cross
 
       implicit none
@@ -519,19 +519,16 @@ contains
 !local
 !
 
-      integer :: kbr, k1, kn, kl
+      integer :: kbr, kn, kl
       integer :: c_lnx, c_ndx !counters
       integer :: idx_sre, idx_fm !indices
       integer :: n1, n2, pointscount, jpos
       integer :: idx_i, idx_f, nl, L, L2, idx_l1, idx_l2, idx_n
-      integer :: j
       integer :: nint, nout
 
 !move to function
       integer :: idx_aux
       integer :: min_1, min_2, k2
-
-      double precision, allocatable, dimension(:, :, :) :: msed_o
 
 !----------------------------------------
 !BEGIN POINT
@@ -1250,7 +1247,7 @@ contains
 !local
 !
 
-      integer :: kbr, ksre, k2, idx_fm, idx_sre, idx_crs
+      integer :: kbr, ksre, k2, idx_fm, idx_crs
 
 !----------------------------------------
 !BEGIN POINT
@@ -1385,8 +1382,6 @@ contains
 
       integer :: k1
       integer :: table_number
-
-      integer, allocatable, dimension(:) :: kcol
 
 !----------------------------------------
 !BEGIN POINT

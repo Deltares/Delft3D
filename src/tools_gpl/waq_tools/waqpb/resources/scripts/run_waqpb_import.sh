@@ -2,82 +2,70 @@
 #$ -V
 #$ -j yes
 #$ -cwd
-    #
-    # This script runs waqpb_import on Linux
-    # Adapt and use it for your own purpose
-    #
+
+#
+# This script runs waqpb_import on Linux
+#
 
 function print_usage_info {
-    echo "Usage: ${0##*/} <input.mdu> [OPTION]..."
-    echo "Run waqpb_import on Linux."
+    echo "Purpose: Sets LD_LIBRARY_PATH and runs waqpb_import on Linux with all given command line arguments."
     echo
-    echo "Options:"
-    echo "-h, --help"
-    echo "       print this help message and exit"
+    echo "Usage:   ${0##*/} [OPTIONS]..."
+    echo
+    echo "Command line arguments:"
+    echo "<proc_def folder>   location of proc_def and csv files subfolder (a folder named csvFiles is assumed,"
+    echo "                    e.g. . (for the current work dir), mandatory)."
+    echo "-h, --help, --usage print this help message and exit"
 }
-
 
 # ============
 # === MAIN ===
 # ============
 
-#
-## Defaults
+## Set number of open files to unlimited
 ulimit -s unlimited
 
-
-#
 ## Start processing command line options:
-workdir=`pwd`
-
-
-
-if [ -z "${D3D_HOME}" ]; then
-    scriptdirname=`readlink \-f \$0`
-    scriptdir=`dirname $scriptdirname`
-    D3D_HOME=$scriptdir/..
-else
-    # D3D_HOME is passed through via argument --D3D_HOME
-    # Commonly its value is "/some/path/bin/.."
-    # Scriptdir: remove "/.." at the end of the string
-    scriptdir=${D3D_HOME%"/.."}
-fi
-if [ ! -d $D3D_HOME ]; then
-    echo "ERROR: directory $D3D_HOME does not exist"
+case $1 in
+    -h|--help|--usage)
     print_usage_info
+    exit 0
+    ;;
+esac
+
+## Check if there a first argument given
+if [ -z $1 ]; then
+    echo "ERROR: not all mandatory arguments are given!"
+    echo
+    print_usage_info
+    exit 0
 fi
-export D3D_HOME
 
+proc_defloc=$1
+csvloc=$proc_defloc/csvFiles
 
-echo "    D3D_HOME         : $D3D_HOME"
-echo "    Working directory: $workdir"
-echo 
-
-    #
-    # Set the directories containing the binaries
-    #
-
-bindir=$D3D_HOME/bin
-libdir=$D3D_HOME/lib
-
-
-    #
-    # No adaptions needed below
-    #
-
-    # Run
+## Set the directories containing the binaries
+scriptdirname=`readlink \-f \$0`
+bindir=`dirname $scriptdirname`
+libdir=$bindir/../lib
 export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
+echo
+echo "    bin dir          : $bindir"
+echo "    lib dir          : $libdir"
+echo "    proc_def location : $proc_defloc"
+echo "    csv files location: $csvloc"
+echo
 
-export FI_PROVIDER=tcp
-
-
+## Run
+workdir=`pwd`
+cd $csvloc
 echo "executing:"
 echo "$bindir/waqpb_import"
-echo 
+echo
 $bindir/waqpb_import
+cd $workdir
 
 
-
-    # Wait until all child processes are finished
+## Wait until all child processes are finished
 wait
 

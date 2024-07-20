@@ -34,7 +34,6 @@
     implicit none
     integer :: kk, nr
     character(len=132) :: a(100)
-    character(len=132) :: rec
     character * (*) fnam
     integer :: l, mout, k
 

@@ -2490,7 +2490,6 @@ subroutine pgmres(n, im, rhs, sol, vv, eps, maxits, iout, aa, ja, ia, alu, jlu, 
 ! arnoldi size should not exceed kmax=50 in this version..
 ! to reset modify paramter kmax accordingly.
 !-------------------------------------------------------------
-   data epsmac/1.d-16/
    n1 = n + 1
    its = 0
 !-------------------------------------------------------------
@@ -2707,7 +2706,7 @@ subroutine runrc2(n, rhs, sol, ipar, fpar, wk, a, ja, ia, au, jau, ju, its, eps,
 !-----------------------------------------------------------------------
 !     local variables
 !
-   integer i, iou, its
+   integer iou, its
    double precision :: res
 !     real dtime, dt(2), time
 !     external dtime
@@ -4724,11 +4723,11 @@ subroutine fom(n, rhs, sol, ipar, fpar, w)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hes points to the Hessenberg matrix,
-!     vc, vs point to the cosines and sines of the Givens rotations
+!     vs point to the sines of the Givens rotations
 !     vrn points to the vectors of residual norms, more precisely
 !     the right hand side of the least square problem solved.
 !
-   integer i, ii, idx, k, m, ptr, p2, prs, hes, vc, vs, vrn
+   integer i, ii, idx, k, m, ptr, p2, prs, hes, vs, vrn
    double precision :: alpha, c, s
    logical lp, rp
    save
@@ -5035,11 +5034,11 @@ subroutine gmres(n, rhs, sol, ipar, fpar, w)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hess points to the Hessenberg matrix,
-!     vc, vs point to the cosines and sines of the Givens rotations
+!     vs point to the sines of the Givens rotations
 !     vrn points to the vectors of residual norms, more precisely
 !     the right hand side of the least square problem solved.
 !
-   integer i, ii, idx, k, m, ptr, p2, hess, vc, vs, vrn
+   integer i, ii, idx, k, m, ptr, p2, hess, vs, vrn
    double precision :: alpha, c, s
    logical lp, rp
    save
@@ -5636,11 +5635,11 @@ subroutine fgmres(n, rhs, sol, ipar, fpar, w)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hess points to the Hessenberg matrix,
-!     vc, vs point to the cosines and sines of the Givens rotations
+!     vs point to the sines of the Givens rotations
 !     vrn points to the vectors of residual norms, more precisely
 !     the right hand side of the least square problem solved.
 !
-   integer i, ii, idx, iz, k, m, ptr, p2, hess, vc, vs, vrn
+   integer i, ii, idx, iz, k, m, ptr, p2, hess, vs, vrn
    double precision :: alpha, c, s
    logical lp, rp
    save
@@ -6415,7 +6414,7 @@ end
 !-----------------------------------------------------------------------
 subroutine tidycg(n, ipar, fpar, sol, delx)
    implicit none
-   integer i, n, ipar(16)
+   integer n, ipar(16)
    double precision :: fpar(16), sol(n), delx(n)
 !-----------------------------------------------------------------------
 !     Some common operations required before terminating the CG routines
@@ -7279,7 +7278,7 @@ subroutine bsten(nx, ny, nz, kx, ky, kz, nfree, stencil, h)
 !
    integer :: i, k, kx, ky, kz, nfree, nfree2, nx, ny, nz
    double precision :: stencil(7, *)
-   double precision :: cntr(225), coeff(225), h, h2, hhalf, x, y, z, xh, yh, zh
+   double precision :: cntr(225), coeff(225), h, h2, hhalf, x, y, z, xh
 !------------
    if (nfree > 15) then
       print *, ' ERROR ** nfree too large '

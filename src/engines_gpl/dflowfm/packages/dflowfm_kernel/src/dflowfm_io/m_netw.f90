@@ -82,14 +82,13 @@ contains
       character(*), intent(in) :: filename !< Name of file to be read (in current directory or with full path).
       integer, intent(out) :: istat !< Return status (0=success)
       integer, intent(in) :: jadoorladen
-      character(len=255) :: data_file_1d
 
       integer :: iDumk
       integer :: iDuml
 
       ! double precision, allocatable, save :: zkold(:)
 
-      integer :: minp, K0, L0, L, NUMKN, NUMLN
+      integer :: K0, L0, NUMKN, NUMLN
       logical :: jawel
 
       call CLEARFLOWMODELINPUTS() ! TODO: Zou eigenlijk verplaatst moeten worden [AvD]

@@ -32,7 +32,7 @@
 
       subroutine TIMLIN()
          implicit none
-         character TIME * 5
+!         character TIME * 5
 !     CALL IOsTime(IH,IM,IS)
 !     WRITE (TIME,'(I2,1A,I2)') IH,':',IM
 !     IF (IM .LE. 9) WRITE (TIME(4:4),'(1A)') '0'

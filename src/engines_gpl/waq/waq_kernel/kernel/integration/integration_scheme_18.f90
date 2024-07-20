@@ -35,7 +35,7 @@ module m_integration_scheme_18
     contains
 
 
-        
+
     !> Iterative stationary vertical central method (18)
     !! Performs substance by substance a stationairy solution.
     !! Uses the GMRES method with Krylov sub-spaces.
@@ -84,7 +84,7 @@ module m_integration_scheme_18
 
         ! Local variables
         logical          imflag, idflag, ihflag
-        logical          ldummy, lstrec, lrewin
+        logical          lstrec, lrewin
         logical, save :: litrep
         logical          update
         real(kind = dp) :: tol
@@ -181,13 +181,11 @@ module m_integration_scheme_18
                     j(iknmr:), iknmkv)
 
             ! user transport processes
-            call dlwqtr(num_substances_total, num_substances_transported, nosss, num_exchanges, num_exchanges_u_dir, &
-                    num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, num_spatial_time_fuctions, num_dispersion_arrays, &
-                    num_velocity_arrays, j(ixpnt:), a(ivol:), a(iarea:), a(iflow:), &
-                    a(ileng:), a(iconc:), a(idisp:), a(icons:), a(iparm:), &
-                    a(ifunc:), a(isfun:), a(idiff:), a(ivelo:), itime, &
-                    idt, c(isnam:), num_constants, num_time_functions, c(icnam:), &
-                    c(ipnam:), c(ifnam:), c(isfna:), ldummy, ilflag)
+            call dlwqtr(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
+                num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
+                j(ixpnt:), a(ivol:), &
+                a(ileng:), a(iparm:), &
+                c(ipnam:), ilflag)
 
             ! Temporary ? set the variables grid-setting for the DELWAQ variables
             call setset(file_unit_list(19), num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &

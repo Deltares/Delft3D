@@ -35,7 +35,6 @@
          integer :: i
          integer :: n
          integer :: ncol
-         integer :: nmax
 !     LAAT EENDIMENSIONALE FUNCTIE ZIEN met cirkels
          double precision :: X(N), Y(N), rcx, rcy
          call SETCOL(NCOL)

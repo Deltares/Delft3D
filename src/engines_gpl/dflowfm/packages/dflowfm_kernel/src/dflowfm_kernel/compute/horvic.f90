@@ -43,7 +43,7 @@
 
     ! locals
     integer :: LL, LLL, LLLL ! for links LL,
-    integer :: k12, k1, k2, k3, k4, isig ! relevant node, 1 or 2
+    integer :: k12, k1, k2, k3, k4 ! relevant node, 1 or 2
     double precision :: cs, sn, csL, snL
     double precision :: duxdn, duydn, duxdt, duydt, txx, tyy, c11, c12, c22, vicl
 

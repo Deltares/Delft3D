@@ -1,71 +1,46 @@
 @ echo off
 title run_waqmerge
-    rem
-    rem This script runs Waqmerge on Windows
-    rem Adapt and use it for your own purpose
-    rem
+rem
+rem this script runs waqmerge on Windows
+rem
 setlocal enabledelayedexpansion
 
-    rem
-    rem Set the mdu file
-    rem
-set argfile= 
-if [%1] EQU [] (
-    goto usage
-) else (
-    if [%1] EQU [--help] (
-        goto usage
-    ) else (
-        set argfile=%1
-    )
-)
-echo Configfile:%argfile%
-if not exist %argfile% (
-    if not exist %argfile%.inp (
-        echo ERROR: input mdu file "%argfile%" does not exist
-        goto usage
-    )
-)
+rem show usage?
+if [%1] EQU []        goto usage
+if [%1] EQU [-h]      goto usage
+if [%1] EQU [--help]  goto usage
+if [%1] EQU [--usage] goto usage
 
-set workdir=%CD%
-set argfile=%workdir%\%argfile%
-echo Working directory: %workdir%
-    rem
-    rem Set the directories containing the binaries
-    rem
-set D3D_HOME=%~dp0..
-echo D3D_HOME         : %D3D_HOME%
-set sharedir=%D3D_HOME%\share
-set libdir=%D3D_HOME%\lib
-set waqdir=%~dp0
-    rem Run
+rem Set the directories containing the binaries and set PATH
+set bindir=%~dp0
+set libdir=%bindir%\..\lib
+set PATH=%libdir%;%bindir%;%PATH%
 
-    rem
-    rem No adaptions needed below
-    rem
+rem set the hyd/ddb file
+set mdufile=%1
+echo waqmerge mdu-file:%mdufile%
 
-    rem Run
-set PATH=%libdir%;%sharedir%;%waqdir%
-
-    rem go to directory, run waqmerge, and return
-For %%A in ("%argfile%") do (
+rem go to directory, run waqmerge, and return
+set currentdir=%CD%
+For %%A in ("%mdufile%") do (
     set argName=%%~nxA
     set argPath=%%~dpA
 )
 cd /d "%argPath%"
-echo executing in this window: "%waqdir%\waqmerge.exe" "%argfile%"
-"%waqdir%\waqmerge.exe" "%argName%"
-cd /d "%workdir%"
-
-
-
+echo executing in this window: "%bindir%\waqmerge.exe" "%argName%" %2 %3 %4
+"%bindir%\waqmerge.exe" "%argName%" %2 %3 %4
+cd /d "%currentdir%"
 goto end
 
 :usage
+echo Purpose: Sets PATH and runs waqmerge on Windows.
+echo.
 echo Usage:
-echo run_waqmerge.bat [--help] input.mdu
-echo     --help             : (Optional) show this usage
-echo     input.mdu          : (Mandatory) Waqmerge input file.
+echo run_waqmerge.bat [^<mdu-file^> ^| -h ^| --help ^| --usage]
+echo.
+echo     ^<mdu-file^>              waqmerge input file (mandatory)
+echo     -h ^| --help ^| --usage   show this usage (optional)
 :end
-    rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
+
+rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
 rem pause

@@ -35,7 +35,6 @@
          double precision :: af
          double precision :: half
          integer :: i
-         integer :: i4
          integer :: j
          integer :: mc
          integer :: mmax

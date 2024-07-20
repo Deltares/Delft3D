@@ -156,11 +156,7 @@ contains
       integer, intent(in) :: iLocTp !< (0) not for obs, or obs with locationtype==0, (1) for obs with locationtype==1, (2) for obs with locationtype==2
       integer, intent(out) :: ierror !< error (>0), or not (0)
 
-      double precision, dimension(:), allocatable :: xx, yy !< unique station coordinates
-      integer, dimension(:), allocatable :: iperm !< permutation array
-      integer, dimension(:), allocatable :: invperm !< inverse array
-
-      character(len=128) :: mesg, FNAM
+      character(len=128) :: mesg
 
       integer, parameter :: Msize = 10
 
@@ -171,10 +167,7 @@ contains
       double precision :: dmaxsize, R2search, t0, t1, zz
 
       integer :: i, ip1, isam, in, k, N, NN
-      integer :: inum, num, jj
-      integer :: in3D, j, fid
       integer :: nstart, nend
-      logical :: jadouble
       double precision :: dist_old, dist_new
 
       ierror = 1

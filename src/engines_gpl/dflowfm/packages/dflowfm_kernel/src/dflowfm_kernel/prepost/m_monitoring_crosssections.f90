@@ -94,7 +94,6 @@ contains
 !> Allocates an array of cross sections, deallocating any existing memory.
    subroutine allocCrossSections(cs, n)
 
-      use m_transport, only: NUMCONST
       implicit none
 
       type(tcrs), allocatable, intent(inout) :: cs(:) !< Array of cross sections

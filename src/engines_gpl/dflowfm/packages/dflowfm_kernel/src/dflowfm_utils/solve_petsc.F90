@@ -129,7 +129,6 @@ subroutine ini_petsc(Ndx, Ndxi, ierror)
    use petsc
    use m_petsc
    use MessageHandling
-   use m_flowgeom, only: xz, yz, wu, nd
    use stdlib_sorting, only: sort_index
 
    implicit none
@@ -147,10 +146,6 @@ subroutine ini_petsc(Ndx, Ndxi, ierror)
    integer :: i, irow, j, n
    integer :: ndn_glob ! global cell number
    integer :: ndn_glob_first ! global cell number of first active cell
-
-   integer :: L
-
-   logical :: Lactive
 
    PetscInt, parameter :: singletonBlocks = 1
    PetscErrorCode :: ierr = PETSC_OK
@@ -443,17 +438,14 @@ subroutine setPETSCmatrixEntries()
    use m_partitioninfo
    use m_petsc
    use MessageHandling
-   use m_flowgeom, only: kfs, Ndx
+   use m_flowgeom, only: kfs
    implicit none
 
    integer :: i, n
-   integer :: ierr
 
-   integer :: irow, istart, iend, k, kk
+   integer :: irow, istart, iend
 
    logical :: Lstop
-
-   integer :: mout
 
 !     count zero rows
    numzerorows = 0
@@ -584,7 +576,7 @@ subroutine createPETSCPreconditioner(iprecnd)
 
    integer, intent(in) :: iprecnd !< preconditioner type, 0:default, 1: none, 2:incomplete Cholesky, 3:Cholesky, 4:GAMG (doesn't work)
 
-   integer :: i, n, jasucces
+   integer :: jasucces
 
    integer, save :: jafirst = 1
 
@@ -663,7 +655,7 @@ subroutine preparePETSCsolver(japipe)
 
    integer, intent(in) :: japipe !< use pipelined CG (1) or not (0)
 
-   integer :: i, n, jasucces
+   integer :: jasucces
 
    PetscErrorCode :: ierr = PETSC_OK
    PetscInt, parameter :: maxits = 4000
@@ -754,12 +746,11 @@ subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
 
    double precision :: rnorm ! residual norm
 
-   integer :: i, n, irank, jasucces
+   integer :: i, n, jasucces
 
    PetscScalar, dimension(1) :: dum
    PetscOffset :: idum
 
-   integer :: merr
    PetscErrorCode :: ierr = PETSC_OK
    KSPConvergedReason :: Reason
    character(len=100) :: message

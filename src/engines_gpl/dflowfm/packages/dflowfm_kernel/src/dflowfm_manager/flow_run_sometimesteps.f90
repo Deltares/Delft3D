@@ -33,10 +33,8 @@
 !> Runs flow steps for a certain period (do computational flowsteps for as long as timeinterval dtrange).
 subroutine flow_run_sometimesteps(dtrange, iresult) ! do computational flowsteps for as long as timeinterval dtrange
    use m_flowtimes
-   use m_flow, only: zcs
    use unstruc_messages
    use m_partitioninfo
-   use unstruc_display, only: jaGUI
    use dfm_error
    use m_lateral, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used, &
                         qqlat, qplat, get_lateral_volume_per_layer, &

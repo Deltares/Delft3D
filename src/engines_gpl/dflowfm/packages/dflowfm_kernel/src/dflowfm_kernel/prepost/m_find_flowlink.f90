@@ -91,7 +91,7 @@ contains
       use m_alloc, only: realloc
       use kdtree2Factory, only: kdtree_instance, find_nearest_sample_kdtree
       use geometry_module, only: dlinedis
-      use m_sferic, only: jsferic, jasfer3D
+      use m_sferic, only: jsferic
       use m_missing, only: dmiss
 
       real(dp), dimension(:), intent(in) :: xx !< x-coordinate of input points
@@ -171,7 +171,7 @@ contains
 
       integer :: number_of_points, i_point
       integer :: link_id
-      real(dp) :: dist_perp, dist_perp_min
+      real(dp) :: dist_perp
 
       link_nrs_nearest = 0
       distances = huge(distances)
@@ -221,7 +221,7 @@ contains
 
    !> Calculate the perpendicular distance from the point [x, y] to a flowlink
    subroutine perpendicular_distance_to_flowlink(x, y, link_id, perpendicular_distance, ja)
-      use m_flowgeom, only: lnx, ln, xz, yz
+      use m_flowgeom, only: ln, xz, yz
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: dlinedis
       use m_missing, only: dmiss

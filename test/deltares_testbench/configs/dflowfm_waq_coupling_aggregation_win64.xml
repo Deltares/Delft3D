@@ -77,8 +77,8 @@
     <program name="checkhydbal" addSearchPaths="false">
       <path>thirdparty/checkhydbal/win64/checkhydbal.exe</path>
     </program>
-    <program name="maptonetcdf" addSearchPaths="false" logOutputToFile="true" >
-      <path>thirdparty/maptonetcdf/win64/maptonetcdf.exe</path>
+    <program name="maptonetcdf" addSearchPaths="false" logOutputToFile="true">
+      <path>data/engines/teamcity_artifacts/x64/bin/run_maptonetcdf.bat</path>
     </program>
     <program name="ncdump" addSearchPaths="false" logOutputToFile="true" >
       <path>thirdparty/netcdf/win64/ncdump.exe</path>

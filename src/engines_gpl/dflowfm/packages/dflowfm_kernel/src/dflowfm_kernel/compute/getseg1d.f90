@@ -35,10 +35,10 @@ subroutine getseg1D(hpr, wu2, dz, ai, frcn, ifrctyp, wid, ar, conv, perim, jacon
    double precision, intent(in) :: hpr, wu2, dz, ai, frcn
    double precision, intent(out) :: wid, ar, conv, perim !
    integer, intent(in) :: ifrctyp, jaconv
-   double precision :: d83 = 2.666666d0, d16 = 0.166666d0, d23 = 0.666666d0, d43 = 1.333333d0
-   double precision :: tt, hp2, hrad, Cz, cman, per, hav
-   double precision :: d38 = 0.375d0, d113 = 3.666666d0, d311 = 0.27272727d0, hpr83, hp283, d14 = 0.25d0
-   integer :: jac, L
+   double precision :: d83 = 2.666666d0, d16 = 0.166666d0, d23 = 0.666666d0
+   double precision :: hp2, Cz, cman, hav
+   double precision :: d38 = 0.375d0, d14 = 0.25d0
+   integer :: L
 
    ! for jaconv >= 1, this routine gets 1D conveyance
    ! this constant value, (1+(dz/dy)**2)**0.25 is computed once and is volume cell based instead of link based
