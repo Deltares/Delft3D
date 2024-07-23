@@ -88,7 +88,7 @@ subroutine write_wave_map (sg, sof, sif, n_swan_grids, wavedata, casl, prevtime,
     integer                                     :: itlen
     !
     integer       , dimension(1)                :: idummy ! Help array to read/write Nefis files 
-    real                                        :: perfac
+    real(hp)                                    :: perfac
     real          , dimension(:,:), allocatable :: rbuf
     !
     !     Define data structure; element dimensions are required only
@@ -372,7 +372,7 @@ subroutine write_wave_map (sg, sof, sif, n_swan_grids, wavedata, casl, prevtime,
     endif
     do j = 1,size(sg%x,2)
        do i = 1,size(sg%x,1)
-          rbuf(i,j) = sof%period(i,j) * perfac
+          rbuf(i,j) = sof%period(i,j) * real(perfac,sp)
        enddo
     enddo
     call putgtr(filnam    ,grpnam(1) ,nelems    ,elmnms(1) ,elmdms(1, 1)         , &

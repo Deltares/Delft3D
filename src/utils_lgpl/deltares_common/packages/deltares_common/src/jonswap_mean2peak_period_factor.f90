@@ -68,7 +68,7 @@ subroutine jonswap_mean2peak_period_factor(gamma0, factor, ier)
     !
     integer, intent(out)     :: ier
     real(hp)   , intent(out) :: factor
-    real(hp)   , intent(in)  :: gamma0
+    real(sp)   , intent(in)  :: gamma0
     !
     ! Local variables
     !
@@ -91,7 +91,7 @@ subroutine jonswap_mean2peak_period_factor(gamma0, factor, ier)
     !! executable statements -----------------------------------------------
     !
     ier    = 0
-    factor = 0.0
+    factor = 0.0_hp
     if (gamma0 < gamlst(1)) then
         ier = -1
         return
