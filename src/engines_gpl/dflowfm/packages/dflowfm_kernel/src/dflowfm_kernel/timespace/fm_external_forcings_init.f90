@@ -832,7 +832,6 @@ contains
       use m_alloc, only: aerr, realloc
 
       character(len=*), intent(in) :: quantity !< Name of the data set.
-      integer, dimension(:), intent(inout) :: mask !< Mask array for the quantity.
       integer, intent(out) :: kx !< Number of individual quantities in the data set
       logical :: success !< Return value, indicates whether the quantity is supported in this subroutine.
 
