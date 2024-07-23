@@ -1,14 +1,13 @@
-"""
-Description: Enum for comparer type
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Enum for comparer type.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 from enum import Enum
 
 
 class FileType(Enum):
-    """Type of comparer"""
+    """Type of comparer."""
 
     NONE = 0
     ASCII = 1

@@ -1,7 +1,6 @@
-"""
-Description: logger interface
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Logger interface.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 from abc import ABC, abstractmethod
@@ -10,55 +9,70 @@ from src.utils.logging.log_level import LogLevel
 
 
 class ILogger(ABC):
-    """Interface for a logger"""
+    """Interface for a logger."""
 
     @abstractmethod
-    def error(self, message: str, exc_info: bool = False):
-        """Logs a error message
+    def error(self, message: str, exc_info: bool = False) -> None:
+        """Log a error message.
 
-        Args:
-            message (str): message to log
-            exc_info (bool): log stacktrace if available (`False` by default).
+        Parameters
+        ----------
+        message : str
+            Message to log.
+        exc_info : bool
+            Log stacktrace if available (`False` by default).
         """
 
     @abstractmethod
-    def exception(self, message: str):
-        """Logs an error message, with stacktrace if available.
+    def exception(self, message: str) -> None:
+        """Log an error message, with stacktrace if available.
 
-        Args:
-            message (str): message to log
+        Parameters
+        ----------
+        message : str
+            Message to log.
         """
 
     @abstractmethod
-    def warning(self, message: str):
-        """Logs a warning message
+    def warning(self, message: str) -> None:
+        """Log a warning message.
 
-        Args:
-            message (str): message to log
+        Parameters
+        ----------
+        message : str
+            Message to log.
         """
 
     @abstractmethod
-    def info(self, message: str):
-        """Logs a info message
+    def info(self, message: str) -> None:
+        """Log a info message.
 
-        Args:
-            message (str): message to log
+        Parameters
+        ----------
+        message : str
+            Message to log.
         """
 
     @abstractmethod
-    def debug(self, message: str):
-        """Logs a debug message
+    def debug(self, message: str) -> None:
+        """Log a debug message.
 
-        Args:
-            message (str): message to log
+        Parameters
+        ----------
+        message : str
+            Message to log.
         """
 
     @abstractmethod
-    def log(self, message: str, log_level: LogLevel, exc_info: bool = False):
-        """Logs a message with the provided log level
+    def log(self, message: str, log_level: LogLevel, exc_info: bool = False) -> None:
+        """Log a message with the provided log level.
 
-        Args:
-            message (str): message to log
-            log_level (LogLevel): log level.
-            exc_info (bool): log stacktrace if available (`False` by default).
+        Parameters
+        ----------
+        message : str
+            Message to log.
+        log_level : LogLevel
+            Log level.
+        exc_info : bool
+            Log stacktrace if available (`False` by default).
         """

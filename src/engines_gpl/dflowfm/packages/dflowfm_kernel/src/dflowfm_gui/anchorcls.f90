@@ -1,53 +1,53 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE ANCHORCLS()
-      use unstruc_colors
-      implicit none
-      integer :: jashow
-      integer :: jmouse
-      double precision :: xa
-      double precision :: xlc
-      double precision :: ya
-      double precision :: ylc
+      subroutine ANCHORCLS()
+         use unstruc_colors
+         implicit none
+         integer :: jashow
+         integer :: jmouse
+         double precision :: xa
+         double precision :: xlc
+         double precision :: ya
+         double precision :: ylc
 !     ZET ANCHOR NA CLEARSCREEN
-      COMMON /LOCATORA/  XLC,YLC,XA,YA,JMOUSE,JASHOW
+         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
 
-      CALL SETXOR(1)
-      CALL SETCOL(KLANK)
-      CALL IGrMARKER(real(XA),real(YA),2)
-      CALL SETXOR(0)
+         call SETXOR(1)
+         call SETCOL(KLANK)
+         call IGrMARKER(real(XA), real(YA), 2)
+         call SETXOR(0)
 
-      CALL DISDIS()
+         call DISDIS()
 
-      RETURN
-      END
+         return
+      end

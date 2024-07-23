@@ -1,7 +1,6 @@
-"""
-Description: Raw File Content comparer
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Raw File Content comparer.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import filecmp

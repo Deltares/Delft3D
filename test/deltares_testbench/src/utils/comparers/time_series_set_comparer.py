@@ -1,7 +1,7 @@
-#  Description: Base class for timeseries set comparer
-#  -----------------------------------------------------
-#  Copyright (C)  Stichting Deltares, 2013
+"""Base class for timeseries set comparer.
 
+Copyright (C)  Stichting Deltares, 2024
+"""
 
 import copy
 import os
@@ -25,7 +25,7 @@ def branch(xmltree):
     for child in xmltree.childNodes:
         tag = child.nodeName
         if tag == "#text":
-            if not "data" in newbranch:
+            if "data" not in newbranch:
                 newbranch["data"] = {}
             newbranch["data"]["nodeValue"] = child.nodeValue
         else:
@@ -34,7 +34,7 @@ def branch(xmltree):
             newsubbranch = branch(child)
             newbranch[tag].append(newsubbranch)
     if xmltree.attributes is not None:
-        if not "data" in newbranch:
+        if "data" not in newbranch:
             newbranch["data"] = {}
         for attrib in xmltree.attributes.items():
             newbranch["data"][attrib[0]] = attrib[1]
@@ -42,10 +42,11 @@ def branch(xmltree):
 
 
 class TimeseriesSetComparer(IComparer, ABC):
-    """
+    """Time series set comparer.
+
     Compare two Timeseries files, according to the configuration in file_check.
     input: left path (reference), right path (compare), file_check
-    output: list of (file_check, parameter, file_check, ResultComparison) tuples
+    output: list of (file_check, parameter, file_check, ResultComparison) tuples.
     """
 
     def compare(
@@ -115,15 +116,9 @@ class TimeseriesSetComparer(IComparer, ABC):
                                 left_timeseries = left_var[location]
                                 right_timeseries = right_var[location]
 
-                                if (
-                                    left_timeseries["dates"]
-                                    != right_timeseries["dates"]
-                                ):
+                                if left_timeseries["dates"] != right_timeseries["dates"]:
                                     pass  # todo: timing is off. Also a way of detecting that both series are not equal in size
-                                DiffSeries = (
-                                    left_timeseries["values"]
-                                    - right_timeseries["values"]
-                                )
+                                DiffSeries = left_timeseries["values"] - right_timeseries["values"]
                                 MaxDiffTime = np.argmax(abs(DiffSeries))
                                 MaxDiff = DiffSeries[MaxDiffTime]
                                 if abs(MaxDiff) > abs(result.maxAbsDiff):
@@ -153,9 +148,7 @@ class TimeseriesSetComparer(IComparer, ABC):
                             local_error = True
                             result.error = True
 
-                        result.maxAbsDiff = abs(
-                            result.maxAbsDiff
-                        )  # RL666: Lets make the error absolute
+                        result.maxAbsDiff = abs(result.maxAbsDiff)  # RL666: Lets make the error absolute
                         # Make the absolute difference in maxDiff relative, by dividing by (max_ref_value-min_ref_value).
                         if result.maxAbsDiff < 2 * sys.float_info.epsilon:
                             # No difference found, so relative difference is set to 0.
@@ -164,9 +157,7 @@ class TimeseriesSetComparer(IComparer, ABC):
                             # Very small difference found, so the denominator will be very small, so set relative difference to maximum.
                             result.maxRelDiff = 1.0
                         else:
-                            result.maxRelDiff = min(
-                                1.0, result.maxAbsDiff / (max_ref_value - min_ref_value)
-                            )
+                            result.maxRelDiff = min(1.0, result.maxAbsDiff / (max_ref_value - min_ref_value))
 
                         # Now we know the absolute and relative error, we can see whether the tolerance is exceeded (or test is in error).
                         result.isToleranceExceeded(

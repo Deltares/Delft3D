@@ -1,185 +1,185 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE EDITGRID(MODE,NFLD,KEY)
-      use unstruc_colors
-      use m_grid
-      implicit none
-      integer :: mode, nfld, key
+      subroutine EDITGRID(MODE, NFLD, KEY)
+         use unstruc_colors
+         use m_grid
+         implicit none
+         integer :: mode, nfld, key
 
-      integer :: L, NLEVEL, JA, NUM, NWHAT, NPUT, NUMB, MP, NP, MD, ND, &
-                 ML, NL, MH, NH, NUMP, NLOC, IN, JN, INSIDE, ndraw, NCOL
-      integer :: newmode
+         integer :: L, NLEVEL, JA, NUM, NWHAT, NPUT, NUMB, MP, NP, MD, ND, &
+                    ML, NL, MH, NH, NUMP, NLOC, IN, JN, INSIDE, ndraw, NCOL
+         integer :: newmode
 
-      COMMON /HELPNOW/ WRDKEY,NLEVEL
-      COMMON /DRAWTHIS/ ndraw(50)
+         common / HELPNOW / WRDKEY, NLEVEL
+         common / DRAWTHIS / ndraw(50)
 
-      CHARACTER TEX*20, WRDKEY*40, FIELDOP*40
+         character TEX * 20, WRDKEY * 40, FIELDOP * 40
 
-      double precision :: xp, yp, wf(4)
+         double precision :: xp, yp, wf(4)
 
-      TEX    =  ' '//FIELDOP(NFLD)
-      L      =  len_trim(TEX)
-      WRDKEY =  FIELDOP(NFLD)
-      NLEVEL =  3
-      JA     =  0
-      NUM    =  0
-      NWHAT  =  0
-      NPUT   =  0
-      NUMB   =  17
-      NCOL   =  NCOLDG
+         TEX = ' '//FIELDOP(NFLD)
+         L = len_trim(TEX)
+         WRDKEY = FIELDOP(NFLD)
+         NLEVEL = 3
+         JA = 0
+         NUM = 0
+         NWHAT = 0
+         NPUT = 0
+         NUMB = 17
+         NCOL = NCOLDG
 
-      MP     = 0
-      NP     = 0
-      CALL BOTLIN(0,NUMB,KEY)
+         MP = 0
+         NP = 0
+         call BOTLIN(0, NUMB, KEY)
 
-    10 CONTINUE
-      CALL DRAWNU(KEY)
-      CALL KTEXT(TEX,1,2,15)
-      CALL KTEXT(' Click Grid Points  ',1,3,15)
-      CALL putget_un(NUM,NWHAT,NPUT,NUMB,XP,YP,KEY)
+10       continue
+         call DRAWNU(KEY)
+         call KTEXT(TEX, 1, 2, 15)
+         call KTEXT(' Click Grid Points  ', 1, 3, 15)
+         call putget_un(NUM, NWHAT, NPUT, NUMB, XP, YP, KEY)
 
-      IF (NUM .NE. 0) THEN
+         if (NUM /= 0) then
 !        ER IS EEN KEUZE
-         IF (NUM .EQ. 4) THEN
-            MODE = NWHAT
-            RETURN
-         ELSE
-            CALL CHOICES(MODE,NUM,NWHAT,KEY)
-         ENDIF
-      ELSE IF (KEY >= 577) THEN ! Alt+letter switches edit mode.
-        call selecteditmode(newmode, key)
-        if (newmode > 0 .and. newmode /= mode) then
-            mode = newmode
-            return
-        end if
-      ELSE IF (KEY .EQ. 21) THEN
+            if (NUM == 4) then
+               MODE = NWHAT
+               return
+            else
+               call CHOICES(MODE, NUM, NWHAT, KEY)
+            end if
+         else if (KEY >= 577) then ! Alt+letter switches edit mode.
+            call selecteditmode(newmode, key)
+            if (newmode > 0 .and. newmode /= mode) then
+               mode = newmode
+               return
+            end if
+         else if (KEY == 21) then
 !        INS KEY
-         IF (NPUT .EQ. 0 .OR. NPUT .EQ. -2) THEN
+            if (NPUT == 0 .or. NPUT == -2) then
 !           kijken welk punt bij deleten en bij oppakken
-            CALL ISPOIN(     xc,     yc,     mmax, nmax, MC,     NC,   zc,    &
-                             XP,     YP,     MP,     NP)
-         ENDIF
-         IF ( NPUT .EQ. 0 .AND. MP .NE. 0) THEN
+               call ISPOIN(xc, yc, mmax, nmax, MC, NC, zc, &
+                           XP, YP, MP, NP)
+            end if
+            if (NPUT == 0 .and. MP /= 0) then
 !           punt oppakken
-            CALL TEKGRPT(     xc,     yc,     mmax, nmax, MC,     NC,           &
-                              MP,     NP,      0        )
-            NPUT = 1
-         ELSE IF (NPUT .EQ. 1 .AND. MP .NE. 0) THEN
+               call TEKGRPT(xc, yc, mmax, nmax, MC, NC, &
+                            MP, NP, 0)
+               NPUT = 1
+            else if (NPUT == 1 .and. MP /= 0) then
 !           punt neerzetten
-            IF (NFLD .EQ. 1) THEN
-               CALL SAVEGRD()
-               xc(MP,NP) = XP
-               yc(MP,NP) = YP
-               CALL TEKGRPT(     xc,     yc,     mmax, nmax, MC,     NC,  &
-                                 MP,     NP,   NCOL        )
-            ELSE IF (NFLD .EQ. 2) THEN
-               NUMP = 80
-               NLOC = 1
-               ML   = MAX(1,MP-NUMP)
-               MH   = MIN(MC,MP+NUMP)
-               NL   = MAX(1,NP-NUMP)
-               NH   = MIN(NC,NP+NUMP)
-               CALL TEKGRD(xc,yc,mmax, nmax, ML,NL,MH,NH,0,NDRAW(38),key,mc)
-               CALL TEKGRD(xch,ych,mmax, nmax, ML,NL,MH,NH,0,NDRAW(16),key,mch)
-               CALL SAVEGRD()
-               xc(MP,NP) = XP
-               yc(MP,NP) = YP
-               CALL MODFLD(     xc,     yc,    xch,    ych,   mmax, nmax, &
-                                MC,     NC,     MP,     NP,   &
-                              NUMP,   NLOC,      1,      1)
-               CALL TEKGRD(xc,yc,mmax, nmax, ML,NL,MH,NH,NCOL,NDRAW(38),key,mc)
-               CALL TEKGRD(xch, ych, mmax, nmax, ML, NL, MH, NH, NCOLRG, NDRAW(16),key,mch)
-            ENDIF
-            NPUT   = 0
-         ELSE IF (NPUT .EQ. -1) THEN
+               if (NFLD == 1) then
+                  call SAVEGRD()
+                  xc(MP, NP) = XP
+                  yc(MP, NP) = YP
+                  call TEKGRPT(xc, yc, mmax, nmax, MC, NC, &
+                               MP, NP, NCOL)
+               else if (NFLD == 2) then
+                  NUMP = 80
+                  NLOC = 1
+                  ML = max(1, MP - NUMP)
+                  MH = min(MC, MP + NUMP)
+                  NL = max(1, NP - NUMP)
+                  NH = min(NC, NP + NUMP)
+                  call TEKGRD(xc, yc, mmax, nmax, ML, NL, MH, NH, 0, NDRAW(38), key, mc)
+                  call TEKGRD(xch, ych, mmax, nmax, ML, NL, MH, NH, 0, NDRAW(16), key, mch)
+                  call SAVEGRD()
+                  xc(MP, NP) = XP
+                  yc(MP, NP) = YP
+                  call MODFLD(xc, yc, xch, ych, mmax, nmax, &
+                              MC, NC, MP, NP, &
+                              NUMP, NLOC, 1, 1)
+                  call TEKGRD(xc, yc, mmax, nmax, ML, NL, MH, NH, NCOL, NDRAW(38), key, mc)
+                  call TEKGRD(xch, ych, mmax, nmax, ML, NL, MH, NH, NCOLRG, NDRAW(16), key, mch)
+               end if
+               NPUT = 0
+            else if (NPUT == -1) then
 !           punt toevoegen
-            CALL FINDNM(     XP,     YP,     xc,     yc, mmax, nmax,     &
-                             MC,     NC, INSIDE,             &
-                             MP,     NP,     IN,     JN, wf)
-            IF (INSIDE .EQ. 1) THEN
-               CALL SAVEGRD()
-               CALL MODGR1(NPUT,             &! xc,  yc, mmax, nmax, MC, NC,
-                           MP, NP, IN, JN)!, NCOL)
-            ELSE
-               CALL OKAY(0)
-            ENDIF
-         ELSE IF ( NPUT .EQ. -2 .AND. MP .NE. 0) THEN
+               call FINDNM(XP, YP, xc, yc, mmax, nmax, &
+                           MC, NC, INSIDE, &
+                           MP, NP, IN, JN, wf)
+               if (INSIDE == 1) then
+                  call SAVEGRD()
+                  call MODGR1(NPUT, & ! xc,  yc, mmax, nmax, MC, NC,
+                              MP, NP, IN, JN) !, NCOL)
+               else
+                  call OKAY(0)
+               end if
+            else if (NPUT == -2 .and. MP /= 0) then
 !           punt deleten
-            CALL SAVEGRD()
-            CALL TEKGRPT(     xc,     yc,     mmax, nmax, MC,     NC,    &
-                              MP,     NP,      0        )
-            CALL MODGR1(NPUT,                &!xc, yc, mmax, nmax, MC, NC,
-                        MP, NP, IN, JN)!, NCOL)
-         ENDIF
-      ELSE IF (KEY .EQ. 22) THEN
+               call SAVEGRD()
+               call TEKGRPT(xc, yc, mmax, nmax, MC, NC, &
+                            MP, NP, 0)
+               call MODGR1(NPUT, & !xc, yc, mmax, nmax, MC, NC,
+                           MP, NP, IN, JN) !, NCOL)
+            end if
+         else if (KEY == 22) then
 !        ENTER KEY ENKEL DISPLAY
-         CALL ISPOIN(     xc,     yc,     mmax, nmax, MC,     NC,   zc, &
-                          XP,     YP,     MD,     ND)
-      ELSE IF (KEY .EQ. 23) THEN
+            call ISPOIN(xc, yc, mmax, nmax, MC, NC, zc, &
+                        XP, YP, MD, ND)
+         else if (KEY == 23) then
 !        ESCAPE KEY
-         CALL RESTOREGRD()
-         KEY   = 3
-      ELSE IF (KEY .EQ. 27) THEN
+            call RESTOREGRD()
+            KEY = 3
+         else if (KEY == 27) then
 !        TAB
-         !CALL SHWXYZ(xc, yc, zc,MC,NC,0,KEY,M,N)
-      ELSE IF (KEY .EQ. 73 .OR. KEY .EQ. 73+32) THEN
-         IF (NPUT .NE. 1) THEN
+            !CALL SHWXYZ(xc, yc, zc,MC,NC,0,KEY,M,N)
+         else if (KEY == 73 .or. KEY == 73 + 32) then
+            if (NPUT /= 1) then
 !           kijken welk punt dit is t.b.v insert mode
-            CALL ISPOIN(     xc,     yc,     mmax, nmax, MC,     NC,   zc,  &
-                             XP,     YP,     MP,     NP)
-         ENDIF
-         NPUT = -1
-      ELSE IF (KEY .EQ. 8) THEN    ! Backspace KEY
+               call ISPOIN(xc, yc, mmax, nmax, MC, NC, zc, &
+                           XP, YP, MP, NP)
+            end if
+            NPUT = -1
+         else if (KEY == 8) then ! Backspace KEY
 !        delete entire network (within polygon if any) and stay in previous mode.
-         call delgrd(KEY,1,1)
-         key = 3
-      ELSE IF (KEY .EQ. 68 .OR. KEY .EQ. 68+32) THEN
+            call delgrd(KEY, 1, 1)
+            key = 3
+         else if (KEY == 68 .or. KEY == 68 + 32) then
 !        delete mode
-         NPUT = -2
-      ELSE IF (KEY .EQ. 82 .OR. KEY .EQ. 82+32 .AND. NPUT .NE. 1) THEN
+            NPUT = -2
+         else if (KEY == 82 .or. KEY == 82 + 32 .and. NPUT /= 1) then
 !        replace mode, maar niet bij zetten
-         NPUT =  0
-      ELSE IF (KEY .EQ. 85 .OR. KEY .EQ. 85+32 ) THEN ! U-KEY, UPDATE PARTITIONING COUNT
-         CALL TEKnumnetcells(1)
-         KEY = 3
-      ELSE IF (KEY .EQ. 98) THEN
+            NPUT = 0
+         else if (KEY == 85 .or. KEY == 85 + 32) then ! U-KEY, UPDATE PARTITIONING COUNT
+            call TEKnumnetcells(1)
+            KEY = 3
+         else if (KEY == 98) then
 !        b RINGS BELL
-         CALL KTEXT(' B Rings Bell',2,6,11)
-         CALL OKAY(0)
-      ELSE IF (KEY .EQ. 76 .OR. KEY .EQ. 76+32) THEN
+            call KTEXT(' B Rings Bell', 2, 6, 11)
+            call OKAY(0)
+         else if (KEY == 76 .or. KEY == 76 + 32) then
 !        CALL TEKHOOK(XP,YP)
-      ENDIF
+         end if
 !
-      GOTO 10
+         goto 10
 !
-      END subroutine editgrid
+      end subroutine editgrid

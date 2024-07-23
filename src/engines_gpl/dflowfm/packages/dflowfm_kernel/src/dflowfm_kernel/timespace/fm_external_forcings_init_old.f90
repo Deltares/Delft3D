@@ -53,7 +53,7 @@ contains
       use dfm_error, only: dfm_noerr, dfm_extforcerror
       use m_sferic, only: jsferic
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
-      use m_lateral, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata, apply_transport
+      use m_lateral, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
       use unstruc_files, only: basename, resolvepath
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use unstruc_inifields, only: set_friction_type_values
@@ -64,12 +64,12 @@ contains
 
       integer :: ja, method, lenqidnam, ierr, ilattype, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
-      integer :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
+      integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
       double precision :: maxSearchRadius
       character(len=256) :: filename, sourcemask
       character(len=64) :: varname
       character(len=NAMTRACLEN) :: tracnam, qidnam
-      character(len=NAMSFLEN) :: sfnam, qidsfnam
+      character(len=NAMSFLEN) :: sfnam
       character(len=20) :: wqinput
       character(len=NAMMBALEN) :: mbainputname
       integer, external :: findname
@@ -94,8 +94,8 @@ contains
       call timstrt('Init ExtForceFile (old)', handle_extra(50)) ! extforcefile old
       ja = 1
 
-      do while (ja == 1)                                ! read *.ext file
-         call delpol()                                    ! ook jammer dan
+      do while (ja == 1) ! read *.ext file
+         call delpol() ! ook jammer dan
          maxSearchRadius = -1
          call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname, sourcemask, maxSearchRadius)
          if (ja == 1) then
@@ -113,10 +113,10 @@ contains
 
             lenqidnam = len_trim(qidnam)
             if (filetype == 7 .and. method == 4) then
-               method = 5                                   ! upward compatible fix
+               method = 5 ! upward compatible fix
             end if
 
-            kx = 1                                      ! voorlopig vectormax = 1
+            kx = 1 ! voorlopig vectormax = 1
 
             call init_spatial_extrapolation(maxSearchRadius, jsferic)
 
@@ -154,7 +154,7 @@ contains
                success = timespaceinitialfield(xu, yu, frculin, lnx, filename, filetype, method, operand, transformcoef, 1)
 
             else if (qid == 'internaltidesfrictioncoefficient') then
-               if (jaFrcInternalTides2D /= 1) then   ! not added yet
+               if (jaFrcInternalTides2D /= 1) then ! not added yet
                   if (allocated(frcInternalTides2D)) deallocate (frcInternalTides2D)
                   allocate (frcInternalTides2D(Ndx), stat=ierr)
                   call aerr('frcInternalTides2D(Ndx)', ierr, Ndx)
@@ -329,7 +329,7 @@ contains
             else if (qid == 'infiltrationcapacity') then
                if (infiltrationmodel == DFM_HYD_INFILT_CONST) then ! NOTE: old ext file: mm/day (iniFieldFile assumes mm/hr)
                   success = timespaceinitialfield(xz, yz, infiltcap, ndx, filename, filetype, method, operand, transformcoef, 1)
-                  infiltcap = infiltcap * 1d-3 / (24d0 * 3600d0)            ! mm/day => m/s
+                  infiltcap = infiltcap * 1d-3 / (24d0 * 3600d0) ! mm/day => m/s
                else
                   write (msgbuf, '(a,i0,a)') 'flow_initexternalforcings: quantity '//trim(qid)//' requires ''InfiltrationModel = ', DFM_HYD_INFILT_CONST, ''' in MDU. Skipping file '''//trim(filename)//'''.'
                   call warn_flush()
@@ -339,7 +339,7 @@ contains
 
                success = timespaceinitialfield(xk, yk, zk, numk, filename, filetype, method, operand, transformcoef, 3)
 
-            else if (index(qid, 'bedlevel') > 0) then  ! to suppress error message while actually doing this in geominit
+            else if (index(qid, 'bedlevel') > 0) then ! to suppress error message while actually doing this in geominit
 
                success = .true.
 
@@ -468,7 +468,7 @@ contains
                            sed(iconst - ISED1 + 1, kk) = viuh(kk)
                            call getkbotktop(kk, kb, kt)
                            do k = kb, kb + kmxn(kk) - 1
-                              sed(iconst - ISED1 + 1, k) = sed(iconst - ISED1 + 1, kk)     ! fill array with vertically uniform values
+                              sed(iconst - ISED1 + 1, k) = sed(iconst - ISED1 + 1, kk) ! fill array with vertically uniform values
                            end do
                         end if
                      end do
@@ -509,7 +509,7 @@ contains
 
             else if (qid(1:13) == 'initialtracer') then
                call get_tracername(qid, tracnam, qidnam)
-               call add_tracer(tracnam, iconst)  ! or just gets constituents number if tracer already exists
+               call add_tracer(tracnam, iconst) ! or just gets constituents number if tracer already exists
                itrac = findname(numtracers, trnames, tracnam)
 
                if (itrac == 0) then
@@ -709,7 +709,7 @@ contains
                if (allocated(mask)) deallocate (mask)
                allocate (mask(lnx), source=1)
 
-               jawindstressgiven = merge(1, 0, qid(1:6) == 'stress')    ! if (index(qid,'str') > 0) jawindstressgiven = 1
+               jawindstressgiven = merge(1, 0, qid(1:6) == 'stress') ! if (index(qid,'str') > 0) jawindstressgiven = 1
 
                if (len_trim(sourcemask) > 0) then
                   success = ec_addtimespacerelation(qid, xu(1:lnx), yu(1:lnx), mask, kx, filename, filetype, method, operand, srcmaskfile=sourcemask, varname=varname)
@@ -1351,7 +1351,7 @@ contains
 
    !> Initialization of all extra quantities not covered by initialize_ext_old, such as structures and laterals. Only called as part of fm_initexternalforcings
    module subroutine init_misc(iresult)
-      use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, ndx, lnx, csu, ndx, lnx
+      use m_flowgeom, only: ln, xz, yz, iadv, ba, wu
       use unstruc_model, only: md_extfile_dir
       use timespace, only: uniform, spaceandtime, readprovider
       use m_structures, only: jaoldstr, network
@@ -1361,16 +1361,16 @@ contains
       use dfm_error, only: dfm_extforcerror, dfm_noerr, dfm_strerror
       use m_sobekdfm, only: nbnd1d2d
       use m_partitioninfo, only: is_ghost_node, jampi, idomain, my_rank, reduce_sum
-      use m_lateral, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata, apply_transport
+      use m_lateral, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
       integer :: ierr
-      integer :: k, L, LF, KB, KBI, N, K2, ja, method, filetype0, num_layers
+      integer :: k, L, LF, KB, KBI, N, ja, method, filetype0, num_layers
       integer :: k1, l1, l2
-      character(len=256) :: filename, sourcemask, filename0
+      character(len=256) :: filename, filename0
       character(len=64) :: varname
       logical :: exist
       double precision, allocatable :: hulp(:, :)
@@ -1435,7 +1435,7 @@ contains
          end if
          kx = 1
          ngatesg = 0
-         do while (ja == 1)                             ! for gates again postponed read *.ext file
+         do while (ja == 1) ! for gates again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
             if (ja == 1 .and. qid == 'gateloweredgelevel') then
                call resolvePath(filename, md_extfile_dir)
@@ -1446,7 +1446,7 @@ contains
                gate_ids(ngatesg) = filename(1:L)
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
-                  filetype0 = uniform            ! uniform=single time series vectormax = 1
+                  filetype0 = uniform ! uniform=single time series vectormax = 1
                   success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ngatesg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity gateloweredgelevel and file ''', trim(filename), '''. Keeping fixed (open) gate level.'
@@ -1490,7 +1490,7 @@ contains
 
          ja = 1; rewind (mext); kx = 1
          ncdamsg = 0
-         do while (ja == 1)                             ! for cdams again postponed read *.ext file
+         do while (ja == 1) ! for cdams again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
             if (ja == 1 .and. qid == 'damlevel') then
                call resolvePath(filename, md_extfile_dir)
@@ -1501,7 +1501,7 @@ contains
                cdam_ids(ncdamsg) = filename(1:L)
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
-                  filetype0 = uniform            ! uniform=single time series vectormax = 1
+                  filetype0 = uniform ! uniform=single time series vectormax = 1
                   success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncdamsg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity damlevel and file ''', trim(filename), '''. Keeping fixed (closed) dam level.'
@@ -1515,7 +1515,7 @@ contains
       if (nvalv > 0) then
          ja = 1; rewind (mext); kx = 1; nvalv = 0
 
-         do while (ja == 1)                             ! for cdams again postponed read *.ext file
+         do while (ja == 1) ! for cdams again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
             if (ja == 1 .and. qid(1:7) == 'valve1D') then
                call resolvePath(filename, md_extfile_dir)
@@ -1551,7 +1551,7 @@ contains
          end if
          ja = 1; rewind (mext); kx = 1; numlatsg = 0
 
-         do while (ja == 1)                             ! for cdams again postponed read *.ext file
+         do while (ja == 1) ! for cdams again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
             if (ja == 1 .and. qid(1:16) == 'lateraldischarge') then
                call resolvePath(filename, md_extfile_dir)
@@ -1602,14 +1602,14 @@ contains
                   kcgen(2, k) = kb
                end if
                kcgen(3, k) = Lf
-               kcgen(4, k) = n              ! pointer to general structure signal nr n
+               kcgen(4, k) = n ! pointer to general structure signal nr n
 
                xcgen(n) = xz(kb)
                ycgen(n) = yz(kb)
                xy2cgen(1, n) = xz(kbi)
                xy2cgen(2, n) = yz(kbi)
 
-               iadv(Lf) = 22             ! iadv = general
+               iadv(Lf) = 22 ! iadv = general
                call setfixedweirscheme3onlink(Lf)
             end do
          end do
@@ -1620,7 +1620,7 @@ contains
          rewind (mext)
          kx = 3
          ncgensg = 0
-         do while (ja == 1)                             ! for cgens again postponed read *.ext file
+         do while (ja == 1) ! for cgens again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
             if (ja == 1 .and. qid == 'generalstructure') then
                call resolvePath(filename, md_extfile_dir)
@@ -1634,7 +1634,7 @@ contains
                cgen_ids(ncgensg) = filename(L1:L)
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
-                  filetype0 = uniform            ! uniform=single time series vectormax = kx = 3
+                  filetype0 = uniform ! uniform=single time series vectormax = kx = 3
                   success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncgensg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity generalstructure and file ''', trim(filename), '''. Keeping fixed (closed) general structure.'
@@ -1653,9 +1653,9 @@ contains
 
          do n = 1, ncgensg
             ! Set some zcgen values to their initial scalar values (for example, zcgen((n-1)*3+1) is quickly need for updating bobs.)
-            zcgen((n - 1) * 3 + 1) = hulp(idx_crestlevel, n)         ! CrestLevel
+            zcgen((n - 1) * 3 + 1) = hulp(idx_crestlevel, n) ! CrestLevel
             zcgen((n - 1) * 3 + 2) = hulp(idx_gateloweredgelevel, n) ! GateLowerEdgeLevel
-            zcgen((n - 1) * 3 + 3) = hulp(idx_gateopeningwidth, n)   ! GateOpeningWidth
+            zcgen((n - 1) * 3 + 3) = hulp(idx_gateopeningwidth, n) ! GateOpeningWidth
 
             call togeneral(n, hulp(:, n), L2cgensg(n) - L1cgensg(n) + 1, widths(L1cgensg(n):L2cgensg(n))) ! orgcode
          end do
@@ -1702,7 +1702,7 @@ contains
 
          ja = 1; rewind (mext); kx = 1
          npumpsg = 0
-         do while (ja == 1)                             ! for pumps again postponed read *.ext file
+         do while (ja == 1) ! for pumps again postponed read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
             if (ja == 1 .and. (qid == 'pump1D' .or. qid == 'pump')) then
                call resolvePath(filename, md_extfile_dir)
@@ -1724,7 +1724,7 @@ contains
          ! TODO: UNST-537/UNST-190: we now support timeseries, the constant values should come from new format ext file, not from transformcoef
          numsrc = 0
          success = .true.
-         do while (ja == 1)                                 ! for sorsin again read *.ext file
+         do while (ja == 1) ! for sorsin again read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
             if (ja == 1 .and. qid == 'discharge_salinity_temperature_sorsin') then
                call resolvePath(filename, md_extfile_dir)
@@ -1734,8 +1734,8 @@ contains
                filename0 = filename(1:L)//'.tim'
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
-                  filetype0 = uniform            ! uniform=single time series vectormax = ..
-                  method = min(1, method)        ! only method 0 and 1 are allowed, methods > 1 are set to 1 (no spatial interpolation possible here).
+                  filetype0 = uniform ! uniform=single time series vectormax = ..
+                  method = min(1, method) ! only method 0 and 1 are allowed, methods > 1 are set to 1 (no spatial interpolation possible here).
                   ! Converter will put 'qsrc, sasrc and tmsrc' values in array qstss on positions: (3*numsrc-2), (3*numsrc-1), and (3*numsrc), respectively.
                   call clearECMessage()
                   if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand='O', targetIndex=numsrc)) then

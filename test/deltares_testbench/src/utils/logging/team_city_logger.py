@@ -1,7 +1,6 @@
-"""
-Description: logger implementation for teamcity logging
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Logger implementation for teamcity logging.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import logging
@@ -16,7 +15,7 @@ class TeamCityLogger(ConsoleLogger):
     def create_test_case_logger(self, test_case_id: str) -> ITestLogger:
         return TeamcityTestLogger(test_case_id, self.log_level)
 
-    def __base_log_message(self, message: str, log_level: int):
+    def __base_log_message(self, message: str, log_level: int) -> None:
         message_to_log = escape_teamcity(message).strip()
         ConsoleLogger.__base_log_message(self, message_to_log, log_level)
 

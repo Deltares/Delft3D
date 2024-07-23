@@ -15,15 +15,23 @@ class IHandler(ABC):
         version: Optional[str],
         logger: ILogger,
     ):
-        """Download a file from the specified location
+        """Download a file from the specified location.
 
-        Args:
-            from_path (str): original path
-            to_path (str): destination path
-            credentials (Credentials): credentials needed for connection
-            version (str): version to use
-            logger (ILogger): logger to use
+        Parameters
+        ----------
+        from_path : str
+            Original path.
+        to_path : str
+            Destination path.
+        credentials : Credentials
+            Credentials needed for connection.
+        version : str
+            Version to use.
+        logger : ILogger
+            Logger to use.
 
-        Raises:
-            NotImplementedError: this method could be invalid for some handlers
+        Raises
+        ------
+        NotImplementedError
+            This method could be invalid for some handlers.
         """

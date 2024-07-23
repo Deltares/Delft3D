@@ -1,7 +1,6 @@
-"""
-Description: logger for console
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Logger for console.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import logging
@@ -23,33 +22,33 @@ class ConsoleLogger(IMainLogger):
     def log_level(self) -> LogLevel:
         return self.__log_level
 
-    def error(self, message: str, exc_info: bool = False):
+    def error(self, message: str, exc_info: bool = False) -> None:
         self.__base_log_message(message, logging.ERROR, exc_info=exc_info)
         sys.stderr.write(message + "\n")
         if exc_info:
             sys.stderr.write(traceback.format_exc())
-    
-    def exception(self, message: str):
+
+    def exception(self, message: str) -> None:
         self.__base_log_message(message, logging.ERROR, exc_info=True)
         sys.stderr.write(message + "\n")
         sys.stderr.write(traceback.format_exc())
 
-    def warning(self, message: str):
+    def warning(self, message: str) -> None:
         self.__base_log_message(message, logging.WARNING)
 
-    def info(self, message: str):
+    def info(self, message: str) -> None:
         self.__base_log_message(message, logging.INFO)
 
-    def debug(self, message: str):
+    def debug(self, message: str) -> None:
         self.__base_log_message(message, logging.DEBUG)
 
-    def log(self, message: str, log_level: LogLevel, exc_info: bool = False):
+    def log(self, message: str, log_level: LogLevel, exc_info: bool = False) -> None:
         self.__base_log_message(message, log_level.value, exc_info=exc_info)
 
     def create_test_case_logger(self, test_case_id: str) -> ITestLogger:
         return FileTestLogger(self.log_level, test_case_id)
 
-    def __base_log_message(self, message: str, log_level: int, exc_info: bool = False):
+    def __base_log_message(self, message: str, log_level: int, exc_info: bool = False) -> None:
         self.__logger.log(log_level, message, exc_info=exc_info)
 
     def __create_logger(self, log_level: LogLevel) -> logging.Logger:
@@ -63,9 +62,7 @@ class ConsoleLogger(IMainLogger):
 
     def __create_console_handler(self, log_level: int) -> logging.Handler:
         if log_level <= logging.DEBUG:
-            format_str = (
-                "%(asctime)s [%(levelname)-7s] : %(message)s (%(module)s.%(funcName)s)"
-            )
+            format_str = "%(asctime)s [%(levelname)-7s] : %(message)s (%(module)s.%(funcName)s)"
         else:
             format_str = "%(asctime)s [%(levelname)-7s] %(message)s"
 

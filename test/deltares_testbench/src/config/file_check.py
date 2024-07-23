@@ -1,7 +1,6 @@
-"""
-Description: File Check Data Class
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""File Check Data Class.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 from typing import Dict, List
@@ -13,9 +12,9 @@ from src.config.types.presence_type import PresenceType
 
 
 class FileCheck:
-    """Engine configuration"""
+    """Engine configuration."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__name = ""
         self.__type = FileType.NONE
         self.__parameters: Dict[str, List[Parameter]] = {}
@@ -28,7 +27,7 @@ class FileCheck:
         return self.__name
 
     @name.setter
-    def name(self, value: str):
+    def name(self, value: str) -> None:
         self.__name = value
 
     @property
@@ -36,7 +35,7 @@ class FileCheck:
         return self.__type
 
     @type.setter
-    def type(self, value: FileType):
+    def type(self, value: FileType) -> None:
         self.__type = value
 
     @property
@@ -44,7 +43,7 @@ class FileCheck:
         return self.__parameters
 
     @parameters.setter
-    def parameters(self, value: Dict[str, List[Parameter]]):
+    def parameters(self, value: Dict[str, List[Parameter]]) -> None:
         self.__parameters = value
 
     @property
@@ -52,7 +51,7 @@ class FileCheck:
         return self.__skip_lines
 
     @skip_lines.setter
-    def skip_lines(self, value: Dict[str, List[SkipLine]]):
+    def skip_lines(self, value: Dict[str, List[SkipLine]]) -> None:
         self.__skip_lines = value
 
     @property
@@ -60,7 +59,7 @@ class FileCheck:
         return self.__ignore
 
     @ignore.setter
-    def ignore(self, value: bool):
+    def ignore(self, value: bool) -> None:
         self.__ignore = value
 
     @property
@@ -68,5 +67,5 @@ class FileCheck:
         return self.__presence
 
     @presence.setter
-    def presence(self, value: PresenceType):
+    def presence(self, value: PresenceType) -> None:
         self.__presence = value

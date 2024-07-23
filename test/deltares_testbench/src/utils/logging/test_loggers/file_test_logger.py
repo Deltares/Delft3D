@@ -1,7 +1,6 @@
-"""
-Description: test case logger for logging to file
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Test case logger for logging to file.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import os
@@ -20,20 +19,20 @@ class FileTestLogger(FileLogger, ITestLogger):
         super().__init__(log_level, test_case_id, path)
         self.__test_case_id = test_case_id
 
-    def test_started(self):
+    def test_started(self) -> None:
         self.info(f"Started test {self.__test_case_id}")
 
-    def test_ignored(self):
+    def test_ignored(self) -> None:
         self.info(f"Ignored test {self.__test_case_id}")
 
-    def test_finished(self):
+    def test_finished(self) -> None:
         self.info(f"Finished test {self.__test_case_id}")
 
     def test_Result(
         self,
         result_type: TestResultType,
         error_message: Optional[str] = None,
-    ):
+    ) -> None:
         if result_type == TestResultType.Passed:
             self.info("Test passed = Comparison passed")
             return

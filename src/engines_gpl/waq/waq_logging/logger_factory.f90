@@ -48,16 +48,16 @@ contains
         type(file_logger), allocatable :: file_logger_instance
 
         select case (logger_type)
-        case (SCREEN)
+        case (screen)
             logger_instance = screen_logger(log_level=log_level)
             return
-        case (FILE)
+        case (file)
             if (present(file_name)) then
                 file_logger_instance = file_logger(log_file_path=file_name, log_level=log_level)
                 call move_alloc(file_logger_instance, logger_instance)
                 return
             end if
-        case (FILE_AND_SCREEN)
+        case (file_and_screen)
             logger_instance = create_file_screen_logger(log_level, file_name)
             return
         case default
@@ -78,8 +78,8 @@ contains
         composite_logger_instance = composite_logger()
 
         allocate (composite_logger_instance%sub_loggers(2))
-        composite_logger_instance%sub_loggers(1)%logger = create_logger(SCREEN, log_level)
-        composite_logger_instance%sub_loggers(2)%logger = create_logger(FILE, log_level, file_name)
+        composite_logger_instance%sub_loggers(1)%logger = create_logger(screen, log_level)
+        composite_logger_instance%sub_loggers(2)%logger = create_logger(file, log_level, file_name)
 
         call move_alloc(composite_logger_instance, logger_instance)
     end function

@@ -1,37 +1,33 @@
-"""
-Description: parser for handling supplied arguments
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Parser for handling supplied arguments.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import getpass
 import os
 from argparse import ArgumentParser, Namespace
-from typing import Any, Optional, List
+from typing import Any, List, Optional
 
 from src.config.credentials import Credentials
 from src.config.types.mode_type import ModeType
-from src.utils.handlers.credential_handler import CredentialHandler
+from src.config.types.path_type import PathType
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.common import get_log_level
+from src.utils.handlers.credential_handler import CredentialHandler
 from src.utils.logging.log_level import LogLevel
-from src.config.types.path_type import PathType
 
 
 class TestBenchParameterParser:
-    """Handles the parsing of the testbench parameters"""
+    """Handles the parsing of the testbench parameters."""
 
     @classmethod
     def parse_arguments_to_settings(cls) -> TestBenchSettings:
-        """Parses args (namespace) to a TestBenchSettings object
+        """Parse args (namespace) to a TestBenchSettings object.
 
-        Args:
-            args (Namespace): namespace containing the parameter data
-
-        Returns:
+        Returns
+        -------
             TestBenchSettings: Parsed settings
         """
-
         parser = cls.__create_argument_parser()
         args: Namespace = parser.parse_args()
 
@@ -44,9 +40,7 @@ class TestBenchParameterParser:
         settings.test_bench_script_name = script_name
         settings.test_bench_startup_dir = os.getcwd()
 
-        settings.server_base_url = (
-            cls.__get_argument_value("server_base_url", args) or ""
-        )
+        settings.server_base_url = cls.__get_argument_value("server_base_url", args) or ""
         settings.override_paths = args.__dict__["or_paths"]
 
         # Loglevel from config.xml can be overruled by loglevel from arguments
@@ -71,12 +65,8 @@ class TestBenchParameterParser:
 
         settings.filter = args.filter
         # Determine type of run
-        settings.run_mode = (
-            cls.__get_argument_value("run_mode", args) or ModeType.LIST
-        )
-        settings.config_file = (
-            cls.__get_argument_value("config", args) or "config.xml"
-        )
+        settings.run_mode = cls.__get_argument_value("run_mode", args) or ModeType.LIST
+        settings.config_file = cls.__get_argument_value("config", args) or "config.xml"
         settings.credentials = cls.__get_credentials(args, settings.teamcity, settings.log_level)
 
         return settings
@@ -110,13 +100,9 @@ class TestBenchParameterParser:
 
         is_interactive = cls.__get_argument_value("interactive", args) or False
         make_interactive = not credential_handler.credential_file_exists() and is_interactive
-        credentials.username = (
-            cls.__get_argument_value("username", args, make_interactive) or ""
-        )
+        credentials.username = cls.__get_argument_value("username", args, make_interactive) or ""
 
-        credentials.password = (
-            cls.__get_argument_value("password", args, make_interactive, True) or ""
-        )
+        credentials.password = cls.__get_argument_value("password", args, make_interactive, True) or ""
 
         if not is_active_directory_user:
             credential_handler.setup_credentials(is_interactive)

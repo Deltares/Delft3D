@@ -1,13 +1,12 @@
-"""
-Description: HTTP handler
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""HTTP handler.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import os
-from typing import Optional
 import urllib.parse as parse
 import urllib.request as url_lib
+from typing import Optional
 
 from src.config.credentials import Credentials
 from src.utils.handlers.i_handler import IHandler
@@ -25,7 +24,7 @@ class HTTPHandler(IHandler):
         credentials: Credentials,
         version: Optional[str],
         logger: ILogger,
-    ):
+    ) -> None:
         fn = from_path.split("/")[-1]
         if not os.path.exists(to_path):
             os.makedirs(to_path)

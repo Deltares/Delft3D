@@ -27,8 +27,8 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -58,11 +58,11 @@
 !! \li \b Hydrology \b (distributed): hydrology.f90
 
 !! \li \b More: see file list
-   PROGRAM unstruc
-   USE M_GRID
-   USE M_POLYGON
-   USE M_LANDBOUNDARY
-   USE M_BOAT
+program unstruc
+   use M_GRID
+   use M_POLYGON
+   use M_LANDBOUNDARY
+   use M_BOAT
    use m_netw
    use unstruc_startup
    use unstruc_model
@@ -71,15 +71,15 @@
    use m_observations
    use unstruc_netcdf
    use unstruc_messages
-   USE UNSTRUC_DISPLAY
-   USE M_WEARELT
+   use UNSTRUC_DISPLAY
+   use M_WEARELT
    use m_flowparameters
    use unstruc_api
    use dfm_error
    use gridoperations
    use m_commandline_option
    use unstruc_channel_flow, only: network
-   
+
    use m_partitioninfo
    use check_mpi_env
 #ifdef HAVE_MPI
@@ -88,32 +88,31 @@
 
    implicit none
 
-   integer :: MODE,NFLD, KEY
+   integer :: MODE, NFLD, KEY
    integer :: JQN
    integer :: JDEMO
 
-   COMMON /MODENOW/ MODE,NFLD
-   COMMON /QNRGF/ JQN
-   COMMON /DEMO/ JDEMO
+   common / MODENOW / MODE, NFLD
+   common / QNRGF / JQN
+   common / DEMO / JDEMO
    integer :: ierr, lastmode, IDUM
-   LOGICAL :: JAWEL
+   logical :: JAWEL
 
-   integer                   :: i, L, n12
-   integer                   :: Lrst = 0, Lmap = 0, L_merge = 0, jamergedrst = 0, Lmap1 = 0
-   integer, parameter        :: numlen=4        !< number of digits in domain number string/filename
-   integer, parameter        :: maxnamelen=256  !< number of digits in filename
-   character(len=numlen)     :: sdmn_loc        !< domain number string
-   character(len=maxnamelen) :: restartfile     !< storing the name of the restart files
+   integer :: i, L, n12
+   integer :: Lrst = 0, Lmap = 0, L_merge = 0, jamergedrst = 0, Lmap1 = 0
+   integer, parameter :: numlen = 4 !< number of digits in domain number string/filename
+   integer, parameter :: maxnamelen = 256 !< number of digits in filename
+   character(len=numlen) :: sdmn_loc !< domain number string
+   character(len=maxnamelen) :: restartfile !< storing the name of the restart files
    character(len=maxnamelen) :: md_mapfile_base !< storing the user-defined map file
    character(len=maxnamelen) :: md_flowgeomfile_base !< storing the user-defined flowgeom file
    character(len=maxnamelen) :: md_classmapfile_base !< storing the user-defined class map file
-    
-   integer, external         :: iget_jaopengl
-   integer, external         :: read_commandline
-   integer, external         :: flow_modelinit
 
-   integer                   :: mklok
-   double precision          :: tstartall , tstopall ! just checking...
+   integer, external :: iget_jaopengl
+   integer, external :: read_commandline
+   integer, external :: flow_modelinit
+
+   double precision :: tstartall, tstopall ! just checking...
 
    call klok(tstartall)
 
@@ -125,19 +124,18 @@
 ! All kernel code does not need to be recompiled, because there is only
 ! two places that preprocess HAVE_DISPLAY at *compiletime*, all the rest
 ! is done by `if (jaGUI .. )`
-    jaGUI = 0          !< GUI (1) or not (0)
+   jaGUI = 0 !< GUI (1) or not (0)
 #endif
 
-   jampi             = 0
-   numranks          = 1
-   my_rank           = 0
+   jampi = 0
+   numranks = 1
+   my_rank = 0
    ja_mpi_init_by_fm = 0
    !INTEGER*4 OLD_FPE_FLAGS, NEW_FPE_FLAGS                                ! nanrelease
    !NEW_FPE_FLAGS = FPE_M_TRAP_OVF + FPE_M_TRAP_DIV0 + FPE_M_TRAP_INV     ! nanrelease
    !OLD_FPE_FLAGS = FOR_SET_FPE (NEW_FPE_FLAGS)                           ! nanrelease
 
-
-    ! Only run in test mode
+   ! Only run in test mode
 !    call runtests_init
 !    call runtests( unstruc_test_all )
 !    call runtests_final
@@ -145,30 +143,30 @@
 !   WHATST       = '@(#)   | Kernkamp Herman  ,      NETWORK, Version 1.0000; 04-07-2001'//char(0)
 !   WHATST       = '@(#)WL | Deltares,               Unstruc, Version 1.0000; 20-03-2007'//char(0)   ! Starting date
 !   WHATST       = '@(#)WL | Deltares,               Unstruc, Version 1.0011; 01-06-2009'//char(0)
-   JDEMO        = 0
-   JQN          = 2
+   JDEMO = 0
+   JQN = 2
 
-   MMAX   = 0
-   NMAX   = MMAX
-   KMAX   = MMAX*NMAX
-   KNX    = 8
-   MXB    = 10
-   LMAX   = (MMAX-1)*NMAX + (NMAX-1)*MMAX + 2*(MMAX-1)*(NMAX-1)
+   MMAX = 0
+   NMAX = MMAX
+   KMAX = MMAX * NMAX
+   KNX = 8
+   MXB = 10
+   LMAX = (MMAX - 1) * NMAX + (NMAX - 1) * MMAX + 2 * (MMAX - 1) * (NMAX - 1)
    MAXLAN = 500
    MAXPOL = MAXLAN
    MAXBOAT = MAXLAN
 
-    md_jaopenGL = -1 ! no commandline option read for OpenGL (yet)
+   md_jaopenGL = -1 ! no commandline option read for OpenGL (yet)
 
-    ierr = read_commandline()
-    select case(ierr)
-    case (DFM_NOERR)
-       continue
-    case (DFM_EXIT) ! Harmless exit, no error (e.g. --help)
-       goto 1234
-    case default    ! Nonzero error code. Return.
-       goto 1234
-    end select
+   ierr = read_commandline()
+   select case (ierr)
+   case (DFM_NOERR)
+      continue
+   case (DFM_EXIT) ! Harmless exit, no error (e.g. --help)
+      goto 1234
+   case default ! Nonzero error code. Return.
+      goto 1234
+   end select
 
 #ifdef HAVE_MPI
 
@@ -179,278 +177,277 @@
    jampi = merge(1, 0, running_in_mpi_environment())
 
    if (jampi == 1) then
-       ja_mpi_init_by_fm = 1
-       call mpi_init(ierr)
-       if (ierr /= 0) then
-           jampi = 0
-       end if
+      ja_mpi_init_by_fm = 1
+      call mpi_init(ierr)
+      if (ierr /= 0) then
+         jampi = 0
+      end if
    end if
 
-   if ( jampi == 1 ) then
+   if (jampi == 1) then
       ! From calling C/C++ side, construct an MPI communicator, and call
       ! MPI_Fint MPI_Comm_c2f(MPI_Comm comm) to convert the C comm handle
       ! to a FORTRAN comm handle.
-       call set_mpi_environment_wwo_fetch_proc()
-   endif
+      call set_mpi_environment_wwo_fetch_proc()
+   end if
 
-   if ( numranks.le.1 ) then
+   if (numranks <= 1) then
       jampi = 0
    end if
-   write(*,*) ' my_rank, numranks ', my_rank, numranks
+   write (*, *) ' my_rank, numranks ', my_rank, numranks
 !  make domain number string as soon as possible
-   write(sdmn, '(I4.4)') my_rank
+   write (sdmn, '(I4.4)') my_rank
    !write(6,*) 'my_rank =', my_rank
 
 !   call pressakey()
 #else
-   numranks=1
+   numranks = 1
    !write(6,*) 'NO MPI'
    !call pressakey()
 #endif
 
-    if ( md_pressakey == 1 ) then
-       call pressakey()
-    end if
+   if (md_pressakey == 1) then
+      call pressakey()
+   end if
 
 !   set jaopengl from commandline option (if available)
-    call iset_jaopengl(md_jaopengl)
-    CALL START_PROGRAM()
-    call resetFullFlowModel()
-    CALL INIDAT()
-    CALL RESETB(0)
-
+   call iset_jaopengl(md_jaopengl)
+   call START_PROGRAM()
+   call resetFullFlowModel()
+   call INIDAT()
+   call RESETB(0)
 
 #ifdef HAVE_PETSC
-      call startpetsc()
+   call startpetsc()
 #endif
 
-    MODE = 1
-    lastmode = 1
-    NFLD = 1
-    KEY  = 3
+   MODE = 1
+   lastmode = 1
+   NFLD = 1
+   KEY = 3
 
-    if ( md_jatest.eq.1 ) then
-       call initimer()
-       do i=1,md_Nruns
-     !     call axpy(md_M, md_N)
-       end do
+   if (md_jatest == 1) then
+      call initimer()
+      do i = 1, md_Nruns
+         !     call axpy(md_M, md_N)
+      end do
 !      output timings
-       write(6,'(a,E8.2,a,E8.2)') ' WC-time Axpy test [s]: ' , gettimer(1,IAXPY), ' CPU-time Axpy test [s]: ' , gettimer(0,IAXPY)
+      write (6, '(a,E8.2,a,E8.2)') ' WC-time Axpy test [s]: ', gettimer(1, IAXPY), ' CPU-time Axpy test [s]: ', gettimer(0, IAXPY)
 
-       goto 1234
-    end if
+      goto 1234
+   end if
 
-    if ( md_soltest.eq.1 ) then
-       call soltest(md_CFL,md_icgsolver,md_maxmatvecs,md_epsdiff,md_epscg)
+   if (md_soltest == 1) then
+      call soltest(md_CFL, md_icgsolver, md_maxmatvecs, md_epsdiff, md_epscg)
 
-       goto 1234
-    end if
+      goto 1234
+   end if
 
-    if ( md_convnetcells.eq.1 ) then
-       ! call soltest(md_CFL,md_icgsolver,md_maxmatvecs,md_epsdiff,md_epscg)
-       ! read net, write net ... md_netfile
-       call findcells(0)
-       call find1dcells()
-       call unc_write_net(md_netfile, janetcell = 1, janetbnd = 0, jaidomain = 0)
-       goto 1234
-    end if
+   if (md_convnetcells == 1) then
+      ! call soltest(md_CFL,md_icgsolver,md_maxmatvecs,md_epsdiff,md_epscg)
+      ! read net, write net ... md_netfile
+      call findcells(0)
+      call find1dcells()
+      call unc_write_net(md_netfile, janetcell=1, janetbnd=0, jaidomain=0)
+      goto 1234
+   end if
 
-    if (md_jasavenet == 1) then
-       if (len_trim(iarg_outfile) == 0) then
-          ! Do not overwrite existing file
-          write (msgbuf, '(a)') 'Error, option --savenet given, but missing required option -o OUTPUTFILE.'
-          call warn_flush()
-          goto 1234
-       end if
-       call unc_write_net(iarg_outfile, janetcell = 1, janetbnd = 0, jaidomain = 0, iconventions = UNC_CONV_UGRID)
-       write (msgbuf, '(a)') 'Network was saved in latest format into '''//trim(iarg_outfile)//'''. Done.'
-       call msg_flush()
-       goto 1234
-    end if
+   if (md_jasavenet == 1) then
+      if (len_trim(iarg_outfile) == 0) then
+         ! Do not overwrite existing file
+         write (msgbuf, '(a)') 'Error, option --savenet given, but missing required option -o OUTPUTFILE.'
+         call warn_flush()
+         goto 1234
+      end if
+      call unc_write_net(iarg_outfile, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
+      write (msgbuf, '(a)') 'Network was saved in latest format into '''//trim(iarg_outfile)//'''. Done.'
+      call msg_flush()
+      goto 1234
+   end if
 
-    if ( md_jamake1d2dlinks .eq. 1 ) then
-       ! Make 1D2D links for already loaded net file.
-       imake1d2dtype = I1D2DTP_1TO1
-       ierr = make1D2Dinternalnetlinks() ! TODO: replace this by call to make1D2Dconnections, but check FILEMENU in batchmode.
-       if (ierr /= DFM_NOERR) then
-          write (msgbuf, '(a,a,a,i0,a)') 'Error, failed to create 1D2D links for file ''', trim(md_netfile), '''. Error code: ', ierr, '.'
-          call warn_flush()
-          goto 1234
-       end if
-       if (len_trim(iarg_outfile) == 0) then
-          iarg_outfile = md_netfile ! Overwrite existing file.
-       end if
-       call unc_write_net(iarg_outfile, janetcell = 1, janetbnd = 0, jaidomain = 0, iconventions = UNC_CONV_UGRID)
-       goto 1234
-    end if
+   if (md_jamake1d2dlinks == 1) then
+      ! Make 1D2D links for already loaded net file.
+      imake1d2dtype = I1D2DTP_1TO1
+      ierr = make1D2Dinternalnetlinks() ! TODO: replace this by call to make1D2Dconnections, but check FILEMENU in batchmode.
+      if (ierr /= DFM_NOERR) then
+         write (msgbuf, '(a,a,a,i0,a)') 'Error, failed to create 1D2D links for file ''', trim(md_netfile), '''. Error code: ', ierr, '.'
+         call warn_flush()
+         goto 1234
+      end if
+      if (len_trim(iarg_outfile) == 0) then
+         iarg_outfile = md_netfile ! Overwrite existing file.
+      end if
+      call unc_write_net(iarg_outfile, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
+      goto 1234
+   end if
 
-    if (iarg_dobatch == 1) then
-       call dobatch()
-    endif
+   if (iarg_dobatch == 1) then
+      call dobatch()
+   end if
 
-    if ( md_japartition.eq.1 ) then
-       if (network%loaded .and. md_partugrid /= 1) then
-          md_partugrid = 1
-          write (msgbuf, '(a,a,a)') 'Option --partition:ugrid=1 was automatically set, because network file ''', trim(md_netfile), ''' requires it for its 1D parts.'
-          call msg_flush()
-       end if
-       if (ibedlevtyp == 1) then
-          md_partugrid = 1
-          write (msgbuf, '(a)') 'Option --partition:ugrid=1 was automatically set, because BedlevType = 1 is used.'
-          call msg_flush()
-       end if
+   if (md_japartition == 1) then
+      if (network%loaded .and. md_partugrid /= 1) then
+         md_partugrid = 1
+         write (msgbuf, '(a,a,a)') 'Option --partition:ugrid=1 was automatically set, because network file ''', trim(md_netfile), ''' requires it for its 1D parts.'
+         call msg_flush()
+      end if
+      if (ibedlevtyp == 1) then
+         md_partugrid = 1
+         write (msgbuf, '(a)') 'Option --partition:ugrid=1 was automatically set, because BedlevType = 1 is used.'
+         call msg_flush()
+      end if
 
-       if ( len_trim(md_ident) > 0 ) then ! partitionmduparse
-          call partition_from_commandline(md_netfile, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_dryptsfile, md_encfile, md_genpolygon, md_partugrid, md_partseed)
-          L    = index(md_netfile, '_net')-1
-          md_mdu = md_ident
-          if (len_trim(md_restartfile) > 0) then ! If there is a restart file
-             L_merge = index(md_restartfile, '_merged')
-             if (L_merge > 0) then
-                jamergedrst = 1
-             else ! restart file is not a merged map file, then provide _rst or _map file of each subdomain
-                restartfile = md_restartfile
-                Lrst = index(restartfile, '_rst.nc')
-                Lmap = index(restartfile, '_map.nc')
-            endif
-          endif
+      if (len_trim(md_ident) > 0) then ! partitionmduparse
+         call partition_from_commandline(md_netfile, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_dryptsfile, md_encfile, md_genpolygon, md_partugrid, md_partseed)
+         L = index(md_netfile, '_net') - 1
+         md_mdu = md_ident
+         if (len_trim(md_restartfile) > 0) then ! If there is a restart file
+            L_merge = index(md_restartfile, '_merged')
+            if (L_merge > 0) then
+               jamergedrst = 1
+            else ! restart file is not a merged map file, then provide _rst or _map file of each subdomain
+               restartfile = md_restartfile
+               Lrst = index(restartfile, '_rst.nc')
+               Lmap = index(restartfile, '_map.nc')
+            end if
+         end if
 
-          md_mapfile_base = md_mapfile
-          md_flowgeomfile_base = md_flowgeomfile
-          md_classmapfile_base = md_classmap_file
+         md_mapfile_base = md_mapfile
+         md_flowgeomfile_base = md_flowgeomfile
+         md_classmapfile_base = md_classmap_file
 
-          do i = 0,  Ndomains - 1
-             write(sdmn_loc, '(I4.4)') i
-             md_netfile = trim(md_netfile(1:L)//'_'//sdmn_loc//'_net.nc')
-             if (md_genpolygon .eq. 1) then
-                md_partitionfile = trim(md_netfile(1:L))//'_part.pol'
-             endif
-             if (jamergedrst == 0) then ! restart file is not a merged map file, then provide _rst or _map file of each subdomain
-               if (Lrst > 0) then      ! If the restart file is a rst file
-                  md_restartfile = trim(restartfile(1:Lrst-16)//sdmn_loc//'_'//restartfile(Lrst-15: Lrst+7))
+         do i = 0, Ndomains - 1
+            write (sdmn_loc, '(I4.4)') i
+            md_netfile = trim(md_netfile(1:L)//'_'//sdmn_loc//'_net.nc')
+            if (md_genpolygon == 1) then
+               md_partitionfile = trim(md_netfile(1:L))//'_part.pol'
+            end if
+            if (jamergedrst == 0) then ! restart file is not a merged map file, then provide _rst or _map file of each subdomain
+               if (Lrst > 0) then ! If the restart file is a rst file
+                  md_restartfile = trim(restartfile(1:Lrst - 16)//sdmn_loc//'_'//restartfile(Lrst - 15:Lrst + 7))
                else if (Lmap > 0) then ! If the restart file is a map file
                   md_restartfile = trim(restartfile(1:Lmap)//sdmn_loc//'_map.nc')
-               endif
-             endif
-             if (len_trim(md_mapfile_base)>0) then
-                Lmap1 = index(md_mapfile_base, '_map.nc')
-                if (Lmap1 == 0) then    ! Customized map-file name
-                   md_mapfile = md_mapfile_base(1:index(trim(md_mapfile_base)//'.','.')-1)//'_'//sdmn_loc//".nc"
-                else
-                   md_mapfile = md_mapfile_base(1:index(trim(md_mapfile_base)//'.','_map')-1)//'_'//sdmn_loc//"_map.nc"
-                endif
-             endif
-             if (len_trim(md_flowgeomfile_base)>0) then
-                md_flowgeomfile = md_flowgeomfile_base(1:index(md_flowgeomfile_base,'.nc',back=.true.)-1)//'_'//sdmn_loc//".nc"
-             endif
-             if (len_trim(md_classmapfile_base)>0) then
-                md_classmap_file = md_classmapfile_base(1:index(md_classmapfile_base,'.nc',back=.true.)-1)//'_'//sdmn_loc//".nc"
-             endif
-             call generatePartitionMDUFile(trim(md_ident)//'.mdu', trim(md_mdu)//'_'//sdmn_loc//'.mdu')
-          enddo
-       else
-          call partition_from_commandline(md_netfile,md_ndomains,md_jacontiguous,md_icgsolver, md_pmethod, md_dryptsfile, md_encfile, md_genpolygon, md_partugrid, md_partseed)
-       end if
+               end if
+            end if
+            if (len_trim(md_mapfile_base) > 0) then
+               Lmap1 = index(md_mapfile_base, '_map.nc')
+               if (Lmap1 == 0) then ! Customized map-file name
+                  md_mapfile = md_mapfile_base(1:index(trim(md_mapfile_base)//'.', '.') - 1)//'_'//sdmn_loc//".nc"
+               else
+                  md_mapfile = md_mapfile_base(1:index(trim(md_mapfile_base)//'.', '_map') - 1)//'_'//sdmn_loc//"_map.nc"
+               end if
+            end if
+            if (len_trim(md_flowgeomfile_base) > 0) then
+               md_flowgeomfile = md_flowgeomfile_base(1:index(md_flowgeomfile_base, '.nc', back=.true.) - 1)//'_'//sdmn_loc//".nc"
+            end if
+            if (len_trim(md_classmapfile_base) > 0) then
+               md_classmap_file = md_classmapfile_base(1:index(md_classmapfile_base, '.nc', back=.true.) - 1)//'_'//sdmn_loc//".nc"
+            end if
+            call generatePartitionMDUFile(trim(md_ident)//'.mdu', trim(md_mdu)//'_'//sdmn_loc//'.mdu')
+         end do
+      else
+         call partition_from_commandline(md_netfile, md_ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_dryptsfile, md_encfile, md_genpolygon, md_partugrid, md_partseed)
+      end if
 
-       goto 1234  !      stop
-    end if
+      goto 1234 !      stop
+   end if
 
-    if ( md_jagridgen.eq.1 ) then
-       call makenet(0)
-       call gridtonet()
-       call unc_write_net('out_net.nc')
-       goto 1234
-    end if
+   if (md_jagridgen == 1) then
+      call makenet(0)
+      call gridtonet()
+      call unc_write_net('out_net.nc')
+      goto 1234
+   end if
 
-    if ( md_jarefine.eq.1 ) then
-       call refine_from_commandline()
-       goto 1234
-    end if
+   if (md_jarefine == 1) then
+      call refine_from_commandline()
+      goto 1234
+   end if
 
-    if ( md_cutcells.eq.1 ) then
-       n12 = 3
-       call findcells(0)
-       call cutcell_list(n12, '*.cut',5, 0)
-       call unc_write_net('out_net.nc')
-    end if
+   if (md_cutcells == 1) then
+      n12 = 3
+      call findcells(0)
+      call cutcell_list(n12, '*.cut', 5, 0)
+      call unc_write_net('out_net.nc')
+   end if
 
-    if ( jagui.eq.1 .and. len_trim(md_cfgfile).gt.0 ) then
-       call load_displaysettings(md_cfgfile)
-    end if
-    if(  md_convertlongculverts == 1) then
-       call findcells(0)
-       call makelongculverts_commandline()
-       goto 1234  !      stop
-    endif
+   if (jagui == 1 .and. len_trim(md_cfgfile) > 0) then
+      call load_displaysettings(md_cfgfile)
+   end if
+   if (md_convertlongculverts == 1) then
+      call findcells(0)
+      call makelongculverts_commandline()
+      goto 1234 !      stop
+   end if
 
-    if (len_trim(md_ident) > 0) then
-        ! An MDU file was read.
-        ierr = flow_modelinit()
-        if ( ierr /= DFM_NOERR ) goto 1234  ! error: finalize and stop
+   if (len_trim(md_ident) > 0) then
+      ! An MDU file was read.
+      ierr = flow_modelinit()
+      if (ierr /= DFM_NOERR) goto 1234 ! error: finalize and stop
 
-        if ( jaGUI.eq.1 .and. len_trim(md_cfgfile).eq.0 ) then
-           inquire (file = trim(md_ident)//'.cfg', exist = jawel)
-           if (jawel) then
-              call load_displaysettings(trim(md_ident)//'.cfg')
-           else
-               inquire (file = 'unstruc.cfg', exist = jawel)
-               if (jawel) then
-                   call load_displaysettings('unstruc.cfg')
-           endif
-           endif
+      if (jaGUI == 1 .and. len_trim(md_cfgfile) == 0) then
+         inquire (file=trim(md_ident)//'.cfg', exist=jawel)
+         if (jawel) then
+            call load_displaysettings(trim(md_ident)//'.cfg')
+         else
+            inquire (file='unstruc.cfg', exist=jawel)
+            if (jawel) then
+               call load_displaysettings('unstruc.cfg')
+            end if
+         end if
 
-           CALL DRAWNU(KEY) ! Draw model for the first time
-        end if
+         call DRAWNU(KEY) ! Draw model for the first time
+      end if
 
-        if (md_jaAutoStart == MD_AUTOSTART .or. md_jaAutoStart >= MD_AUTOSTARTSTOP) then
-           if (md_jaAutoStart > MD_AUTOSTARTSTOP) ntek = 0
-           idum = FLOW()
-           ! TODO: check whether all data (net/s1) is available before starting flow. [AvD]
-           if (idum == DFM_SIGINT .or. md_jaAutoStart >= MD_AUTOSTARTSTOP) then
-              goto 1234   ! finalize and stop
-           end if
-        else
-           if (jaGUI == 0) then
-              call mess(LEVEL_INFO, 'Model '''//trim(md_ident)//''' successfully initialized, but no run was started.')
-              call mess(LEVEL_INFO, 'Consider using commandline option --autostartstop.')
-           end if
-        end if
-    end if
+      if (md_jaAutoStart == MD_AUTOSTART .or. md_jaAutoStart >= MD_AUTOSTARTSTOP) then
+         if (md_jaAutoStart > MD_AUTOSTARTSTOP) ntek = 0
+         idum = FLOW()
+         ! TODO: check whether all data (net/s1) is available before starting flow. [AvD]
+         if (idum == DFM_SIGINT .or. md_jaAutoStart >= MD_AUTOSTARTSTOP) then
+            goto 1234 ! finalize and stop
+         end if
+      else
+         if (jaGUI == 0) then
+            call mess(LEVEL_INFO, 'Model '''//trim(md_ident)//''' successfully initialized, but no run was started.')
+            call mess(LEVEL_INFO, 'Consider using commandline option --autostartstop.')
+         end if
+      end if
+   end if
 
-   if ( jaGUI.eq.1 ) then
+   if (jaGUI == 1) then
 
-   10 CONTINUE
-      IF (MODE .EQ. 1) THEN
-         CALL EDITPOL(MODE,KEY,NETFLOW)
-      ELSE IF (MODE .EQ. 2) THEN
-         CALL EDITNETW(MODE,KEY)
-      ELSE IF (MODE .EQ. 3) THEN
-         CALL EDITSPLINES(MODE,KEY)
-      ELSE IF (MODE .EQ. 4) THEN
-         IF (NFLD .EQ. 1 .OR. NFLD .EQ. 2) THEN
-            CALL EDITGRID(MODE,NFLD,KEY)
-         ELSE IF (NFLD .GE. 4 .AND. NFLD .LE. 12) THEN
-            CALL EDITGRIDLINEBLOK(MODE,NFLD,KEY)
-         ELSE IF (NFLD .GE. 14 .AND. NFLD .LE. 17)  THEN
-            CALL EDITGRIDBLOK(MODE,NFLD,KEY)
-         ELSE
+10    continue
+      if (MODE == 1) then
+         call EDITPOL(MODE, KEY, NETFLOW)
+      else if (MODE == 2) then
+         call EDITNETW(MODE, KEY)
+      else if (MODE == 3) then
+         call EDITSPLINES(MODE, KEY)
+      else if (MODE == 4) then
+         if (NFLD == 1 .or. NFLD == 2) then
+            call EDITGRID(MODE, NFLD, KEY)
+         else if (NFLD >= 4 .and. NFLD <= 12) then
+            call EDITGRIDLINEBLOK(MODE, NFLD, KEY)
+         else if (NFLD >= 14 .and. NFLD <= 17) then
+            call EDITGRIDBLOK(MODE, NFLD, KEY)
+         else
             NFLD = 1
-         ENDIF
-      ELSE IF (MODE .EQ. 5) THEN
-         CALL EDITSAM(MODE,KEY)
-      ELSE IF (MODE .EQ. 6) THEN
-         CALL EDITFLOW(MODE,KEY,51)
-      ELSE IF (MODE .EQ. 7) THEN
-         CALL EDITFLOW(MODE,KEY,52)
-      ENDIF
+         end if
+      else if (MODE == 5) then
+         call EDITSAM(MODE, KEY)
+      else if (MODE == 6) then
+         call EDITFLOW(MODE, KEY, 51)
+      else if (MODE == 7) then
+         call EDITFLOW(MODE, KEY, 52)
+      end if
       ! Catch invalid modes return from edit*-routines.
       ! Set back to last valid mode if necessary.
       if (mode >= 1 .and. mode <= 7) then
-          lastmode = mode ! is a good mode
+         lastmode = mode ! is a good mode
       else
-          mode = lastmode ! return to last known good mode
+         mode = lastmode ! return to last known good mode
       end if
-      GOTO 10
+      goto 10
    end if
 
 1234 continue
@@ -464,5 +461,4 @@
    !call newfil(mklok, 'wallclock')
    !write(mklok,*) tstopall - tstartall, ' s'
 
-
-   end program unstruc
+end program unstruc

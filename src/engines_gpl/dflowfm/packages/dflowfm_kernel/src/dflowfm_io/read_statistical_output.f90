@@ -27,15 +27,15 @@ module m_read_statistical_output
    private
 
    ! Error/result state constants for several utility functions:
-   integer, parameter, public :: SO_NOERR          =  0 !< Function successful
+   integer, parameter, public :: SO_NOERR = 0 !< Function successful
    integer, parameter, public :: SO_INVALID_CONFIG = -1 !< Wrong value string provided in the MDU output configuration
-   integer, parameter, public :: SO_EOR            = -2 !< end-of-record reached while reading a value string provided in the MDU output configuration (= no error)
+   integer, parameter, public :: SO_EOR = -2 !< end-of-record reached while reading a value string provided in the MDU output configuration (= no error)
 
    public parse_next_stat_type_from_value_string
    public is_output_requested_in_value_string
    public read_output_parameter_toggle
 
-   contains
+contains
 
    !> Parse the a statistical operation type from the start of a value string.
    !! Example input: "Wrihis_waterlevel = Current, Max(10)"
@@ -46,10 +46,10 @@ module m_read_statistical_output
       use string_module, only: str_token
       use m_statistical_output_types, only: SO_UNKNOWN
 
-      character(len=*), intent(inout) :: value_string      !< value_string in which to read the first entry. After reading, that piece will be removed from the front of the string, to enable repeated calls.
-      integer,          intent(  out) :: operation_type    !< The parsed operation_type (one of SO_CURRENT/AVERAGE/MAX/MIN/ALL)
-      integer,          intent(  out) :: moving_average_window !< Optional value for number of timesteps in moving average (only for max and min), 0 when unspecified in input.
-      integer                         :: ierr              !< Result status: SO_NOERR on successful read, SO_INVALID_CONFIG for invalid value_string, SO_EOR if no further entries in string.
+      character(len=*), intent(inout) :: value_string !< value_string in which to read the first entry. After reading, that piece will be removed from the front of the string, to enable repeated calls.
+      integer, intent(out) :: operation_type !< The parsed operation_type (one of SO_CURRENT/AVERAGE/MAX/MIN/ALL)
+      integer, intent(out) :: moving_average_window !< Optional value for number of timesteps in moving average (only for max and min), 0 when unspecified in input.
+      integer :: ierr !< Result status: SO_NOERR on successful read, SO_INVALID_CONFIG for invalid value_string, SO_EOR if no further entries in string.
 
       character(len=16) :: operation_string
       integer :: len_token, iostat, i1, i2
@@ -70,7 +70,7 @@ module m_read_statistical_output
          if (i1 > 0) then
             i2 = index(operation_string, ')')
             if (i2 > i1) then
-               read(operation_string(i1+1:i2-1), *, iostat = iostat) moving_average_window
+               read (operation_string(i1 + 1:i2 - 1), *, iostat=iostat) moving_average_window
                if (iostat > 0) then
                   ierr = SO_INVALID_CONFIG
                   return
@@ -80,10 +80,10 @@ module m_read_statistical_output
                return
             end if
          else
-            i1 = len_token+1
+            i1 = len_token + 1
          end if
 
-         operation_type = get_operation_type(operation_string(1:i1-1))
+         operation_type = get_operation_type(operation_string(1:i1 - 1))
          if (operation_type == SO_UNKNOWN) then
             ierr = SO_INVALID_CONFIG
             return
@@ -98,7 +98,7 @@ module m_read_statistical_output
       use m_statistical_output_types, only: SO_UNKNOWN, SO_NONE, SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
 
       character(len=*) :: value_string !<The input value string, typically stored in an output_config item
-      integer          :: operation_type !< Corresponding operation type (one of: SO_CURRENT/AVERAGE/MAX/MIN/NONE/UNKNOWN).
+      integer :: operation_type !< Corresponding operation type (one of: SO_CURRENT/AVERAGE/MAX/MIN/NONE/UNKNOWN).
 
       operation_type = SO_UNKNOWN
 
@@ -113,7 +113,7 @@ module m_read_statistical_output
       else if (strcmpi(value_string, 'none') .or. strcmpi(value_string, '0')) then
          operation_type = SO_NONE
       else
-         write (msgbuf,'(a,i0,a,a,a)') 'invalid operation_type ', operation_type, '. Cannot parse input ', value_string, '.'
+         write (msgbuf, '(a,i0,a,a,a)') 'invalid operation_type ', operation_type, '. Cannot parse input ', value_string, '.'
          call err_flush()
       end if
    end function get_operation_type
@@ -122,7 +122,7 @@ module m_read_statistical_output
    function is_output_requested_in_value_string(value_string) result(res)
       use m_statistical_output_types, only: SO_UNKNOWN, SO_NONE
       character(*), value :: value_string !< The string provided as a value in the MDU file
-      logical             :: res
+      logical :: res
 
       integer :: ierr, operation_type, moving_average_window
       res = .false.
@@ -145,12 +145,12 @@ module m_read_statistical_output
       use tree_structures, only: tree_data
       use properties, only: prop_get_string, prop_set
       implicit none
-      type(tree_data), pointer, intent(in   ) :: tree            !< The property tree
-      character(*),             intent(in   ) :: chapter         !< Name of the chapter (case-insensitive) or "*" to get any key
-      character(*),             intent(in   ) :: key             !< Name of the key (case-insensitive)
-      integer,                  intent(inout) :: value           !< If key is found value will be read from tree. If not found value will be written to tree.
-      logical,                  intent(  out) :: success         !< Whether successful or not
-      character(*), optional,   intent(in   ) :: alternative_key !< Old alternative key name that can still be used
+      type(tree_data), pointer, intent(in) :: tree !< The property tree
+      character(*), intent(in) :: chapter !< Name of the chapter (case-insensitive) or "*" to get any key
+      character(*), intent(in) :: key !< Name of the key (case-insensitive)
+      integer, intent(inout) :: value !< If key is found value will be read from tree. If not found value will be written to tree.
+      logical, intent(out) :: success !< Whether successful or not
+      character(*), optional, intent(in) :: alternative_key !< Old alternative key name that can still be used
 
       character(len=255) :: value_string
 

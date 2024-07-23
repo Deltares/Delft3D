@@ -1,13 +1,12 @@
-"""
-Description: FTP handler
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""FTP handler.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import os
-from typing import Optional
 import urllib.parse as parse
 from ftplib import FTP, error_perm
+from typing import Optional
 
 from src.config.credentials import Credentials
 from src.utils.handlers.i_handler import IHandler
@@ -25,7 +24,7 @@ class FTPHandler(IHandler):
         credentials: Credentials,
         version: Optional[str],
         logger: ILogger,
-    ):
+    ) -> None:
         logger.debug(f"setting up connection to FTP: {from_path}")
         url = parse.urlparse(from_path)
         ftp = FTP(url.netloc)
@@ -48,9 +47,7 @@ class FTPHandler(IHandler):
     # frompath is relative dir of local system
     # destination is abs dir of ftp
     # topath is relative dir of ftp
-    def __traverseDirectoryUpload__(
-        self, ftp, cwd, frompath, destination, topath, logger: ILogger
-    ):
+    def __traverseDirectoryUpload__(self, ftp, cwd, frompath, destination, topath, logger: ILogger):
         try:
             ftp.cwd(destination)
             if topath:
@@ -110,9 +107,7 @@ class FTPHandler(IHandler):
                 # this will check if ftpfile is folder:
                 ftp.cwd(path + ftpfile + "/")
                 # if so, explore it:
-                self.__traverseDirectoryDownload__(
-                    ftp, path + ftpfile + "/", destination, logger
-                )
+                self.__traverseDirectoryDownload__(ftp, path + ftpfile + "/", destination, logger)
             except error_perm:
                 # possibly need a permission exception catch:
                 with open(os.path.join(topath, ftpfile), "wb") as ff:

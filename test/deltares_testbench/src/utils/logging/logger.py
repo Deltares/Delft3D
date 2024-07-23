@@ -1,9 +1,7 @@
-"""
-Description: default logger implementation
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
-"""
+"""Default logger implementation.
 
+Copyright (C)  Stichting Deltares, 2024
+"""
 
 import os
 

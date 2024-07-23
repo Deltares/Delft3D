@@ -31,60 +31,34 @@ module m_dlwqtr
 
     !> Reads SURFACE from coupling
     !! Sets dispersion length in vertical
-    subroutine dlwqtr(num_substances_total , num_substances_transported , num_cells , num_exchanges   , num_exchanges_u_dir  , &
-                      num_exchanges_v_dir  , num_exchanges_z_dir  , num_spatial_parameters  , num_spatial_time_fuctions, num_dispersion_arrays, &
-                      num_velocity_arrays, ipoint, volume, area  , flow  , &
-                      aleng , conc  , disp  , cons  , param , &
-                      func  , segfun, disper, velo  , itime , &
-                      idt   , syname, num_constants, num_time_functions , coname, &
-                      paname, funame, sfname, updatr, ilflag)
+    subroutine dlwqtr(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
+                      num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
+                      ipoint, volume, &
+                      aleng , param , &
+                      paname, ilflag)
+    
 
         use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         SAVE
+
         integer(kind=int_wp), intent(in) :: num_substances_total               !< Total number of substances
-        integer(kind=int_wp), intent(in) :: num_substances_transported               !< number of active substances
         integer(kind=int_wp), intent(in) :: num_cells               !< Nr. of computational elements
         integer(kind=int_wp), intent(in) :: num_exchanges                 !< Total number of exchanges
         integer(kind=int_wp), intent(in) :: num_exchanges_u_dir                !< Nr. of exchanges direction 1
         integer(kind=int_wp), intent(in) :: num_exchanges_v_dir                !< Nr. of exchanges direction 2
         integer(kind=int_wp), intent(in) :: num_exchanges_z_dir                !< Nr. of exchanges direction 3
-        integer(kind=int_wp), intent(in) :: num_spatial_parameters
-        integer(kind=int_wp), intent(in) :: num_spatial_time_fuctions
-        integer(kind=int_wp), intent(in) :: num_dispersion_arrays
-        integer(kind=int_wp), intent(in) :: num_velocity_arrays              !< Number of user-flows
+        integer(kind=int_wp), intent(in) :: num_spatial_parameters                !< Number of parameters
         integer(kind=int_wp), intent(in) :: ipoint(4, num_exchanges)      !< 1= "From"   segment pointers
                                                                 !< 2= "To"     segment pointers
                                                                 !< 3= "From-1" segment pointers
                                                                 !< 4= "To+1"   segment pointers
         real(kind=real_wp), intent(in) :: VOLUME(num_cells)         !< Segment volumes
-        real(kind=real_wp), intent(in) :: AREA(num_exchanges)             !< Exchange surfaces
-        real(kind=real_wp), intent(in) :: FLOW(num_exchanges)             !< Flows
         real(kind=real_wp), intent(inout) :: ALENG(2, num_exchanges)      !< 1= Length to "From" surface
                                                                 !< 2= Length to "To"   surface
                                                                 !< 3 lengths in the grid
-        real(kind=real_wp), intent(in) :: CONC(num_substances_total, num_cells)    !< Model concentrations
-        real(kind=real_wp), intent(inout) :: DISP(3)            !< Dispersion in 3 directions
-        real(kind=real_wp), intent(inout) :: CONS(*)            !< Model constants
         real(kind=real_wp), intent(inout) :: PARAM(num_spatial_parameters, num_cells) !< Model parameters
-        real(kind=real_wp), intent(inout) :: FUNC(*)            !< Model functions at ITIME
-        real(kind=real_wp), intent(inout) :: SEGFUN(num_cells, *)   !< Segment functions at ITIME
-        real(kind=real_wp), intent(out)   :: DISPER(*)          !< User defined dispersion
-        real(kind=real_wp), intent(out)   :: VELO(*)            !< User defined flows
-        integer(kind=int_wp), intent(in) :: ITIME               !< Time in system clock units
-        integer(kind=int_wp), intent(in) :: IDT                 !< Time step system clock units
-        character(len=20), intent(in) :: SYNAME(num_substances_total)          !< names of systems
-        integer(kind=int_wp), intent(in) :: num_constants              !< Number of constants used
-        integer(kind=int_wp), intent(in) :: num_time_functions               !< Number of functions ( user )
-        character(len=20), intent(in) :: CONAME(*)              !< Constant names
         character(len=20), intent(in) :: PANAME(*)              !< Parameter names
-        character(len=20), intent(in) :: FUNAME(*)              !< Function names
-        character(len=20), intent(in) :: SFNAME(*)              !< Segment function names
-        logical, intent(inout) :: UPDATR                        !< Flag indicating if the transport
-                                                                !< matrix is changed. The user should
-                                                                !< set this flag to .T. if he alters
-                                                                !< part of the matrix and uses integratio
-                                                                !< option 10.xx .
         integer(kind=int_wp), intent(in) :: ILFLAG              !< if 0 then 3 length values
 
         ! Local variables
@@ -179,7 +153,7 @@ module m_dlwqtr
 2000 format (' Extra functionality DLWQTR')
 2010 format (' ERROR: opening file <areachar.dat> !')
 2030 format (' Surface area''s will be read from file <areachar.dat>')
-2040 format (' Dispersion length in third dir. will be calculated')
+2040 format (' Dispersion length in third direction will be calculated')
 2050 format (' ERROR: File areachar.dat does not match.', &
              ' NMA = ',I8,' LAYT= ',I8,' NMT = ',I8,' num_cells=',I8)
 2070 format (' End extra functionality DLWQTR')

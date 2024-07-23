@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.30)
 
 project(CMake)
 enable_testing()
@@ -93,11 +93,10 @@ if (WIN32)
     set(tecplot_path ${CMAKE_SOURCE_DIR}/src/third_party_open/Tecplot/include)
     message(STATUS "Tecplot set to ${tecplot_path}")
 
-    if (CMAKE_Fortran_COMPILER_VERSION MATCHES "2021.2")
-        # Set the petsc path
-        set(petsc_path ${CMAKE_SOURCE_DIR}/src/third_party_open/petsc/petsc-3.10.2/include)
-    else()
+    if(intel_version EQUAL 23)
         set(petsc_path ${CMAKE_SOURCE_DIR}/src/third_party_open/petsc/petsc-3.19.4/include)
+    else()
+        set(petsc_path ${CMAKE_SOURCE_DIR}/src/third_party_open/petsc/petsc-3.21.3/include)
     endif()
 
     #also set PETSC library directory
@@ -189,6 +188,8 @@ set(swan_configuration "SWAN")
 set(flow2d3d_configuration "FLOW2D3D")
 set(tools_configuration "TOOLS")
 set(tools_gpl_configuration "TOOLS_GPL")
+set(drr_configuration "DRR")
+set(rtc_configuration "RTC")
 
 # Combined (multi-component) configurations
 set(delft3dfm_configuration "DELFT3DFM")
@@ -208,6 +209,8 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
      OR ${configuration_type} STREQUAL ${tools_gpl_configuration}
      OR ${configuration_type} STREQUAL ${delft3dfm_configuration}
      OR ${configuration_type} STREQUAL ${delft3d4_configuration}
+     OR ${configuration_type} STREQUAL ${drr_configuration}
+     OR ${configuration_type} STREQUAL ${rtc_configuration}
      OR ${configuration_type} STREQUAL ${all_configuration}))
    message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
 endif()
@@ -273,6 +276,18 @@ endif()
 if(${configuration_type} STREQUAL ${tools_gpl_configuration})
     message(STATUS "Generating solution for Tools_GPL ...")
     include(${CMAKE_SOURCE_DIR}/src/cmake/configurations/tools_gpl_configuration.cmake)
+endif()
+
+# RTC configuration
+if(${configuration_type} STREQUAL ${rtc_configuration})
+    message(STATUS "Generating solution for rtc ...")
+    include(configurations/rtc_configuration.cmake)
+endif()
+
+# D-RR configuration
+if(${configuration_type} STREQUAL ${drr_configuration})
+    message(STATUS "Generating solution for D-RR ...")
+    include(configurations/drr_configuration.cmake)
 endif()
 
 ### Composed configurations

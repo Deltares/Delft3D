@@ -1,7 +1,6 @@
-"""
-Description: Ascii file comparer
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Ascii file comparer.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import os
@@ -65,7 +64,7 @@ class AsciiComparer(IComparer):
         nCompared = 0
         for parameters in file_check.parameters.values():
             for parameter in parameters:
-                logger.debug("Checking parameter: " + str(parameter.name))
+                logger.debug(f"Checking parameter: {parameter.name}")
                 result = ComparisonResult(error=local_error)
 
                 min_ref_value = sys.float_info.max
@@ -83,14 +82,8 @@ class AsciiComparer(IComparer):
 
                                 if leftData is None and rightData is None:
                                     # Finished comparing the files
-                                    logger.debug(
-                                        "Absolute Tolerance: "
-                                        + str(parameter.tolerance_absolute)
-                                    )
-                                    logger.debug(
-                                        "Relative Tolerance: "
-                                        + str(parameter.tolerance_relative)
-                                    )
+                                    logger.debug(f"Absolute Tolerance: {parameter.tolerance_absolute}")
+                                    logger.debug(f"Relative Tolerance: {parameter.tolerance_relative}")
                                     logger.debug(f"Compared {nCompared} floats")
                                     break
                                 elif leftData is None and rightData is not None:
@@ -117,10 +110,7 @@ class AsciiComparer(IComparer):
                                 if (
                                     startColumn > 0
                                     and endColumn > 0
-                                    and (
-                                        leftData[2] < startColumn
-                                        or leftData[2] > endColumn
-                                    )
+                                    and (leftData[2] < startColumn or leftData[2] > endColumn)
                                 ):
                                     continue
                                 result.lineNumber = min(result.lineNumber, leftData[1])
@@ -131,10 +121,7 @@ class AsciiComparer(IComparer):
 
                                 nCompared += 1
                                 diff = abs(leftData[0] - rightData[0])
-                                if (
-                                    diff > 2 * float_info.epsilon
-                                    and diff > result.maxAbsDiff
-                                ):
+                                if diff > 2 * float_info.epsilon and diff > result.maxAbsDiff:
                                     result.maxAbsDiff = diff
                                     result.maxAbsDiffCoordinates = (nCompared,)
                                     result.maxAbsDiffValues = (
@@ -152,16 +139,12 @@ class AsciiComparer(IComparer):
                         result.maxRelDiff = 1.0
                     else:
                         # Difference found, make the difference relative. Maximise relative difference to 1.0.
-                        result.maxRelDiff = min(
-                            1.0, result.maxAbsDiff / (max_ref_value - min_ref_value)
-                        )
+                        result.maxRelDiff = min(1.0, result.maxAbsDiff / (max_ref_value - min_ref_value))
                 except Exception as e:
                     logger.error(e)
                     result.error = True
 
-                result.isToleranceExceeded(
-                    parameter.tolerance_absolute, parameter.tolerance_relative
-                )
+                result.isToleranceExceeded(parameter.tolerance_absolute, parameter.tolerance_relative)
 
                 # Even though only one result is generated, the caller expects a list of results.
                 results.append((testcase_name, file_check, parameter, result))

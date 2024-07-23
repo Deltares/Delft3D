@@ -1,103 +1,100 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-  SUBROUTINE REMZEROS()
-  use m_netw
-  use gridoperations
-  implicit none
+  subroutine REMZEROS()
+     use m_netw
+     use gridoperations
+     implicit none
 
-  integer :: k
-  integer :: k1
-  integer :: k2
-  integer :: l
-  integer :: ll
-  integer :: n
-  INTEGER, ALLOCATABLE :: NN(:)
+     integer :: k
+     integer :: k1
+     integer :: k2
+     integer :: l
+     integer :: ll
+     integer :: n
+     integer, allocatable :: NN(:)
 
-  ALLOCATE (NN(NUMK)); NN = 0
+     allocate (NN(NUMK)); NN = 0
 
+     KC = 0
+     do L = 1, NUML
+        K1 = KN(1, L); K2 = KN(2, L)
+        if (K1 /= 0 .and. K2 /= 0) then
+           KC(K1) = 1; KC(K2) = 1
+        end if
+     end do
 
-  KC = 0
-  DO L = 1,NUML
-     K1 = KN(1,L) ; K2 = KN(2,L)
-     IF (K1 .NE. 0 .AND. K2 .NE. 0) THEN
-         KC(K1) = 1 ; KC(K2) = 1
-     ENDIF
-  ENDDO
+     N = 0
+     do K = 1, NUMK
+        if (KC(K) /= 0) then
+           N = N + 1
+           XK(N) = XK(K)
+           YK(N) = YK(K)
+           ZK(N) = ZK(K)
+           KC(N) = KC(K)
+           KC(K) = 0
+           NN(K) = N
+        end if
+     end do
 
-  N = 0
-  DO K = 1,NUMK
-     IF (KC(K) .NE. 0) THEN
-        N = N + 1
-        XK(N) = XK(K)
-        YK(N) = YK(K)
-        ZK(N) = ZK(K)
-        KC(N) = KC(K)
-        KC(K) = 0
-        NN(K) = N
-     ENDIF
-  ENDDO
+     LL = 0
+     do L = 1, NUML
+        if (KN(1, L) /= 0 .and. KN(2, L) /= 0) then
+           LL = LL + 1
+           K1 = KN(1, L)
+           K2 = KN(2, L)
+           KN(1, LL) = NN(K1)
+           KN(2, LL) = NN(K2)
+        end if
+     end do
 
+     NUML = LL
 
-  LL = 0
-  DO L = 1,NUML
-     IF (KN(1,L) .NE. 0 .AND. KN(2,L) .NE. 0) THEN
-        LL = LL + 1
-        K1 = KN(1,L)
-        K2 = KN(2,L)
-        KN(1,LL) = NN(K1)
-        KN(2,LL) = NN(K2)
-     ENDIF
-  ENDDO
+     KC = 0
+     do L = 1, NUML
+        K1 = KN(1, L); K2 = KN(2, L)
+        if (K1 /= 0 .and. K2 /= 0) then
+           KC(K1) = 1; KC(K2) = 1
+        end if
+     end do
 
-  NUML = LL
+     do L = 1, NUML
+        if (KN(1, L) == 0 .or. KN(2, L) == 0) then
+           N = N
+        end if
+     end do
 
-  KC = 0
-  DO L = 1,NUML
-     K1 = KN(1,L) ; K2 = KN(2,L)
-     IF (K1 .NE. 0 .AND. K2 .NE. 0) THEN
-         KC(K1) = 1 ; KC(K2) = 1
-     ENDIF
-  ENDDO
+     call SETNODADM(0)
+     deallocate (NN)
 
-  DO L = 1,NUML
-     IF (KN(1,L) == 0 .OR. KN(2,L) == 0) THEN
-        N = N
-     ENDIF
-  ENDDO
-
-
-  CALL SETNODADM(0)
-  DEALLOCATE (NN)
-
-  RETURN
-  END SUBROUTINE REMZEROS
+     return
+  end subroutine REMZEROS

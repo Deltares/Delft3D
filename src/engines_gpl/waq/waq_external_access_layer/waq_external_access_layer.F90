@@ -463,7 +463,7 @@ contains
 
     subroutine init_logger()
         if (.not. allocated(log)) then
-            log = create_logger(FILE, INFO_LEVEL, "delwaq_coupling.log")
+            log = create_logger(file, info_level, "delwaq_coupling.log")
         end if
     end subroutine init_logger
 

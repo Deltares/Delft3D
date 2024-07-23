@@ -233,13 +233,12 @@ contains
 
             ! user transport processes
             update = updatr
-            call dlwqtr(num_substances_total, num_substances_transported, num_cells, num_exchanges, num_exchanges_u_dir, &
-                    num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, num_spatial_time_fuctions, num_dispersion_arrays, &
-                    num_velocity_arrays, j(ixpnt:), a(ivol:), a(iarea:), a(iflow:), &
-                    a(ileng:), a(iconc:), a(idisp:), a(icons:), a(iparm:), &
-                    a(ifunc:), a(isfun:), a(idiff:), a(ivelo:), itime, &
-                    idt, c(isnam:), num_constants, num_time_functions, c(icnam:), &
-                    c(ipnam:), c(ifnam:), c(isfna:), update, ilflag)
+            call dlwqtr(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
+                num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
+                j(ixpnt:), a(ivol:), &
+                a(ileng:), a(iparm:), &
+                c(ipnam:), ilflag)
+
             if (update) updatr = .true.
 
             ! Temporary ? set the variables grid-setting for the DELWAQ variables

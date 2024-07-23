@@ -1,7 +1,6 @@
-"""
-Description: Local and Network handler
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Local and Network handler.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import os
@@ -28,14 +27,12 @@ class LocalNetHandler(IHandler):
         credentials: Credentials,
         version: Optional[str],
         logger: ILogger,
-    ):
+    ) -> None:
         handler = ResolveHandler.detect(from_path, logger, credentials)
         rtp = Paths().rebuildToLocalPath(to_path)
         if handler == HandlerType.PATH:
             rfp = Paths().rebuildToLocalPath(from_path)
-            logger.debug(
-                f"copying locally from {os.path.abspath(rfp)} to {os.path.abspath(rfp)}"
-            )
+            logger.debug(f"copying locally from {os.path.abspath(rfp)} to {os.path.abspath(rfp)}")
             shutil.copytree(os.path.abspath(rfp), os.path.abspath(rtp))
         if handler == HandlerType.NET:
             server, folder, rest = Paths().splitNetworkPath(from_path)
@@ -44,9 +41,7 @@ class LocalNetHandler(IHandler):
             e = None
             try:
                 netpath = os.path.join(mp + os.sep, rest)
-                logger.debug(
-                    f"copying from net from {os.path.abspath(netpath)} to {os.path.abspath(rtp)}"
-                )
+                logger.debug(f"copying from net from {os.path.abspath(netpath)} to {os.path.abspath(rtp)}")
                 shutil.copytree(netpath, os.path.abspath(rtp))
             except Exception as e:
                 error_message = str(e).replace("'", "")
