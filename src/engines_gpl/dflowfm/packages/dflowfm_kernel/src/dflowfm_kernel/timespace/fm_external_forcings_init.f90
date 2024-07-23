@@ -835,8 +835,6 @@ contains
       kx = 1
       success = .true.
 
-      is_data_on_p_points
-
       select case (quantity)
 
       case ('airtemperature')
