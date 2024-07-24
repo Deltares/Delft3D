@@ -176,6 +176,8 @@ contains
                                   HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
                                   InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, ActEvap, InterceptHs
+      use fm_deprecated_keywords, only: deprecated_ext_keywords
+      use m_deprecation, only: check_file_tree_for_deprecated_keywords
 
       implicit none
       character(len=*), intent(in) :: inifilename !< name of initial field file
@@ -380,6 +382,9 @@ contains
 
 888   continue
       ! Return with whichever ierr status was set before.
+    
+      call check_file_tree_for_deprecated_keywords(inifield_ptr, deprecated_ext_keywords, istat, prefix='While reading ''' &
+                                                   //trim(inifilename)//'''')
 
    end function initialize_initial_fields
 
@@ -432,7 +437,7 @@ contains
       end if
 
       ! read quantity
-      call prop_get_string(node_ptr, '', 'quantity', quantity, retVal)
+      call prop_get(node_ptr, '', 'quantity', quantity, retVal)
       if (.not. retVal) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), ']. Field ''quantity'' is missing. Ignoring this block.'
          call warn_flush()
@@ -440,24 +445,27 @@ contains
       end if
 
       ! read datafile
-      call prop_get_string(node_ptr, '', 'dataFile', filename, retVal)
+      call prop_get(node_ptr, '', 'dataFile', filename, retVal)
       if (retVal) then
       else
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''dataFile'' is missing. Ignoring this block.'
+         write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)// &
+                            '. Field ''dataFile'' is missing. Ignoring this block.'
          call warn_flush()
          goto 888
       end if
 
       ! read dataFileType
-      call prop_get_string(node_ptr, '', 'dataFileType ', dataFileType, retVal)
+      call prop_get(node_ptr, '', 'dataFileType ', dataFileType , retVal)
       if (.not. retVal) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''dataFileType'' is missing. Ignoring this block.'
+         write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)// &
+                            '. Field ''dataFileType'' is missing. Ignoring this block.'
          call warn_flush()
          goto 888
       end if
       filetype = convert_file_type_string_to_integer(dataFileType)
       if (filetype < 0) then
-         write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''dataFileType'' has invalid value '''//trim(dataFileType)//'''. Ignoring this block.'
+         write(msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)// &
+                            '. Field ''dataFileType'' has invalid value '''//trim(dataFileType)//'''. Ignoring this block.'
          call warn_flush()
          goto 888
       end if
@@ -466,22 +474,24 @@ contains
       ! averagingRelSize, averagingNumMin, averagingPercentile, locationType, extrapolationMethod, value
       if (filetype /= field1D) then
          ! read interpolationMethod
-         call prop_get_string(node_ptr, '', 'interpolationMethod ', interpolationMethod, retVal)
+         call prop_get(node_ptr, '', 'interpolationMethod ', interpolationMethod , retVal)
          if (.not. retVal) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''interpolationMethod'' is missing. Ignoring this block.'
+            write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)// &
+                               '. Field ''interpolationMethod'' is missing. Ignoring this block.'
             call warn_flush()
             goto 888
          end if
          method = convert_method_string_to_integer(interpolationMethod)
          if (method < 0 .or. (method == 4 .and. filetype /= inside_polygon)) then
-            write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''interpolationMethod'' has invalid value '''//trim(interpolationMethod)//'''. Ignoring this block.'
+            write(msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)// &
+                               '. Field ''interpolationMethod'' has invalid value '''//trim(interpolationMethod)//'''. Ignoring this block.'
             call warn_flush()
             goto 888
          end if
 
          if (method == 6) then ! 'averaging'
             ! read averagingType
-            call prop_get_string(node_ptr, '', 'averagingType ', averagingType, retVal)
+            call prop_get(node_ptr, '', 'averagingType ', averagingType , retVal)
             if (.not. retVal) then
                averagingType = 'mean'
             end if
@@ -489,25 +499,28 @@ contains
             if (iav >= 0) then
                transformcoef(4) = dble(iav)
             else
-               write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''averagingType'' has invalid value '''//trim(averagingType)//'''. Ignoring this block.'
+               write(msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)// &
+                                  '. Field ''averagingType'' has invalid value '''//trim(averagingType)//'''. Ignoring this block.'
                call warn_flush()
                goto 888
             end if
 
             ! read averagingRelSize
-            call prop_get_double(node_ptr, '', 'averagingRelSize', transformcoef(5), retVal)
+            call prop_get(node_ptr,'','averagingRelSize', transformcoef(5), retVal)
             if (.not. retVal) then
                transformcoef(5) = RCEL_DEFAULT
             else
                if (transformcoef(5) <= 0d0) then
-                  write (msgbuf, '(5a,f10.3,a,f10.3,a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''averagingRelSize'' has invalid value ', transformcoef(5), '. Setting to default: ', RCEL_DEFAULT, '.'
+                  write(msgbuf, '(5a,f10.3,a,f10.3,a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
+                                                      //trim(quantity)//'. Field ''averagingRelSize'' has invalid value ', transformcoef(5), &
+                                                      '. Setting to default: ', RCEL_DEFAULT, '.'
                   call warn_flush()
                   transformcoef(5) = RCEL_DEFAULT
                end if
             end if
 
             ! read averagingNumMin
-            call prop_get_integer(node_ptr, '', 'averagingNumMin', averagingNumMin, retVal)
+            call prop_get(node_ptr,'','averagingNumMin', averagingNumMin, retVal)
             if (.not. retVal) then
                transformcoef(8) = 1d0
             else
@@ -521,7 +534,7 @@ contains
             end if
 
             ! read averagingPercentile
-            call prop_get_double(node_ptr, '', 'averagingPercentile', transformcoef(7), retVal)
+            call prop_get(node_ptr,'','averagingPercentile', transformcoef(7), retVal)
             if (.not. retVal) then
                transformcoef(7) = 0d0
             else
@@ -533,7 +546,7 @@ contains
             end if
          end if
 
-         call prop_get_string(node_ptr, '', 'locationType ', locationType, retVal)
+         call prop_get(node_ptr, '', 'locationType ', locationType , retVal)
          if (.not. retVal) then
             ilocType = ILATTP_ALL
          else
@@ -557,7 +570,7 @@ contains
          end if
 
          ! read extrapolationMethod
-         call prop_get_integer(node_ptr, '', 'extrapolationMethod', extrapolation, retVal)
+         call prop_get(node_ptr,'','extrapolationMethod', extrapolation, retVal)
          if (.not. retVal) then
             extrapolation = 0
          end if
@@ -565,7 +578,7 @@ contains
 
          ! read value
          if (filetype == inside_polygon) then
-            call prop_get_double(node_ptr, '', 'value', transformcoef(1), retVal)
+            call prop_get(node_ptr,'','value', transformcoef(1), retVal)
             if (.not. retVal) then
                write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''value'' is missing. Ignore this block.'
                call warn_flush()
@@ -575,7 +588,7 @@ contains
       end if ! .not. strcmpi(dataFileType, '1dField'))
 
       ! read operand, for any filetype
-      call prop_get_string(node_ptr, '', 'operand ', operand, retVal)
+      call prop_get(node_ptr, '', 'operand ', operand , retVal)
       if (.not. retVal) then
          operand = 'O'
       else
@@ -630,7 +643,7 @@ contains
          call warn_flush()
       end if
 
-      call prop_get_string(field_ptr, 'Global', 'quantity', quantity, success)
+      call prop_get(field_ptr, 'Global', 'quantity', quantity, success)
       if (.not. success) then
          num_errors = num_errors + 1
          write (msgbuf, '(3a)') 'Incomplete block in file ''', trim(ini_file_name), ''': [Global]. Field ''quantity'' is missing.'
@@ -653,13 +666,13 @@ contains
          return
       end if
       ! read unit
-      call prop_get_string(field_ptr, 'Global', 'unit', unit, success)
+      call prop_get(field_ptr, 'Global', 'unit', unit, success)
       if (.not. success) then
          write (msgbuf, '(3a)') 'Incomplete block in file ''', trim(ini_file_name), ''': [Global]. Field ''unit'' is missing.'
          call warn_flush()
       end if
 
-      call prop_get_double(field_ptr, 'Global', 'value', value, success)
+      call prop_get(field_ptr, 'Global', 'value', value, success)
       if (.not. success) then
          write (msgbuf, '(3a)') 'Incomplete block in file ''', trim(ini_file_name), ''': [Global]. Field ''value'' is missing.'
          call warn_flush()
@@ -710,6 +723,9 @@ contains
       use m_flowgeom
       use dfm_error
       use m_array_predicates, only: is_monotonically_increasing
+      use fm_deprecated_keywords, only: deprecated_ext_keywords
+      use m_deprecation, only: check_file_tree_for_deprecated_keywords
+
       implicit none
 
       character(len=*), intent(in) :: filename !< file name for 1dField file
@@ -778,7 +794,7 @@ contains
          if (strcmpi(groupname, 'General') .or. strcmpi(groupname, 'Global')) then
             cycle
          else if (strcmpi(groupname, 'Branch')) then
-            call prop_get_string(node_ptr, '', 'branchId', branchId, retVal)
+            call prop_get(node_ptr, '', 'branchId', branchId, retVal)
             if (.not. retVal) then
                numerr = numerr + 1
                write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''branchId'' is missing.'
@@ -786,14 +802,14 @@ contains
                cycle
             end if
 
-            call prop_get_integer(node_ptr, '', 'numLocations', numLocations, retVal)
+            call prop_get(node_ptr, '', 'numLocations', numLocations, retVal)
             if (.not. retVal) then
                numLocations = 0
             end if
 
             call realloc(chainage, numLocations, keepExisting=.false.)
             if (numLocations > 0) then
-               call prop_get_doubles(node_ptr, '', 'chainage', chainage, numLocations, retVal)
+               call prop_get(node_ptr, '', 'chainage', chainage, numLocations, retVal)
                if (.not. retVal) then
                   numerr = numerr + 1
                   write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''chainage'' could not be read.'
@@ -809,7 +825,7 @@ contains
                end if
 
                call realloc(values, numLocations, keepExisting=.false.)
-               call prop_get_doubles(node_ptr, '', 'values', values, numLocations, retVal)
+               call prop_get(node_ptr, '', 'values', values, numLocations, retVal)
                if (.not. retVal) then
                   numerr = numerr + 1
                   write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''values'' could not be read.'
@@ -818,7 +834,7 @@ contains
                end if
             else
                call realloc(values, 1, keepExisting=.false.)
-               call prop_get_double(node_ptr, '', 'values', values(1), retVal)
+               call prop_get(node_ptr, '', 'values', values(1),retVal)
                if (.not. retVal) then
                   numerr = numerr + 1
                   write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''values'' could not be read.'
@@ -858,6 +874,9 @@ contains
          goto 888
       end if
 
+       
+      call check_file_tree_for_deprecated_keywords(field_ptr, deprecated_ext_keywords, istat, prefix='While reading ''' &
+                                                   //trim(filename)//'''')
       ! No errors
       write (msgbuf, '(a, i10,a)') 'Finish initializing 1dField file '''//trim(filename)//''':', ib, ' [Branch] blocks have been read and handled.'
       call msg_flush()
