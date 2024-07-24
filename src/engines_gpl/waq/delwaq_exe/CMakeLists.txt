@@ -44,8 +44,8 @@ if(WIN32)
         target_link_directories(${executable_name}
                 PRIVATE
                 "${mpi_library_path}"
-                "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                "${checkout_src_root}/third_party_open/pthreads/bin/x64")
+                "${CMAKE_SOURCE_DIR}/src/third_party_open/netcdf/${netcdf_version}/lib"
+                "${CMAKE_SOURCE_DIR}/src/third_party_open/pthreads/bin/x64")
 
         target_link_libraries(${executable_name}
                 "comctl32.lib"

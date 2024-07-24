@@ -14,7 +14,7 @@ if(NOT TARGET wl_openmi_support)
     add_subdirectory(${CMAKE_SOURCE_DIR}/src/${wl_openmi_support_module} wl_openmi_support)
 endif()
 if(NOT TARGET control_lib)
-    add_subdirectory(${checkout_src_root}/${control_lib_module} control_lib)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/src/${control_lib_module} control_lib)
 endif()
 
 # Utils LGPL
@@ -40,27 +40,27 @@ endif()
 
 # esmfsm
 if(NOT TARGET esmfsm_version_number)
-    add_subdirectory(${checkout_src_root}/${esmfsm_version_number_module} esmfsm_version_number)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/src/${esmfsm_version_number_module} esmfsm_version_number)
 endif()
 if(NOT TARGET esmfsm_c)
-    add_subdirectory(${checkout_src_root}/${esmfsm_c_module} esmfsm_c)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/src/${esmfsm_c_module} esmfsm_c)
 endif()
 if(NOT TARGET esmfsm)
-    add_subdirectory(${checkout_src_root}/${esmfsm_module} esmfsm)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/src/${esmfsm_module} esmfsm)
 endif()
 if(NOT TARGET shp)
-    add_subdirectory(${checkout_src_root}/${shp_module} shp)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/src/${shp_module} shp)
 endif()
 
 # fortrangis
 if(NOT TARGET fortrangis)
-    add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/src/${fortrangis_module} fortrangis)
 endif()
 
 # proj
 if(WIN32)
     if(NOT TARGET proj)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/proj_configuration.cmake)
+        include(${CMAKE_SOURCE_DIR}/src/configurations/include/proj_configuration.cmake)
     endif()
 endif(WIN32)
 

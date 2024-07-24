@@ -281,13 +281,13 @@ endif()
 # RTC configuration
 if(${configuration_type} STREQUAL ${rtc_configuration})
     message(STATUS "Generating solution for rtc ...")
-    include(configurations/rtc_configuration.cmake)
+    include(${CMAKE_SOURCE_DIR}/src/cmake/configurations/rtc_configuration.cmake)
 endif()
 
 # D-RR configuration
 if(${configuration_type} STREQUAL ${drr_configuration})
     message(STATUS "Generating solution for D-RR ...")
-    include(configurations/drr_configuration.cmake)
+    include(${CMAKE_SOURCE_DIR}/src/cmake/configurations/drr_configuration.cmake)
 endif()
 
 ### Composed configurations

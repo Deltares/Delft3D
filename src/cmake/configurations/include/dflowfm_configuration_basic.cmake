@@ -43,7 +43,7 @@ if(NOT TARGET flow1d)
 endif()
 
 if(NOT TARGET flow1d_implicit)
-    add_subdirectory(${checkout_src_root}/${flow1d_implicit} flow1d_implicit)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/src/${flow1d_implicit} flow1d_implicit)
 endif()
 
 # Waq

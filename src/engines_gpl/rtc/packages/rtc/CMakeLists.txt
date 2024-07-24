@@ -44,8 +44,7 @@ set(oss_dependencies_general control_lib
                             wl_openmi_support
                             esmfsm
                             )
-                             
-                             
+
 # Add dependencies
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
