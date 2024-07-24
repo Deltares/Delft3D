@@ -22,21 +22,21 @@
 !!  rights reserved.
 
 module fileinfo
-!
-!     Unit numbers, file names and file types for the (20) input and output files
-!     See also file name : filename.dat
-!     The 18th file is the .hyd file.
-!     The 19th file is the .poi from-to pointer file
-!     The 20th file is the .vdf vertical diffusion file.
-!
-      use m_waq_precision                                       ! single and double precision
+    !
+    !     Unit numbers, file names and file types for the (20) input and output files
+    !     See also file name : filename.dat
+    !     The 18th file is the .hyd file.
+    !     The 19th file is the .poi from-to pointer file
+    !     The 20th file is the .vdf vertical diffusion file.
+    !
+    use m_waq_precision                                       ! single and double precision
 
-      integer(int_wp )  , parameter          :: nfiles =  100
-      integer(int_wp )                       :: lunit(nfiles) = 0    ! logical unit numbers for in-/output files
-      character(len=256)                :: fname(nfiles) = ' '  ! file names for in-/output files
-      character(len=255)                :: filebase             ! base for filenames
-      character(len=255)                :: partinifile          ! part FM initial particles file
-      character(len=255)                :: partrelfile          ! part FM particle release file
+    integer(int_wp), parameter :: nfiles = 100
+    integer(int_wp) :: lunit(nfiles) = 0    ! logical unit numbers for in-/output files
+    character(len = 256) :: fname(nfiles) = ' '  ! file names for in-/output files
+    character(len = 255) :: filebase             ! base for filenames
+    character(len = 255) :: partinifile          ! part FM initial particles file
+    character(len = 255) :: partrelfile          ! part FM particle release file
 
-      save
+    save
 end module

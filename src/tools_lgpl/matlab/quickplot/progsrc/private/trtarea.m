@@ -49,7 +49,7 @@ switch cmd
 end
 
 
-function Struct=Local_arearead(filename,grid)
+function Struct=Local_arearead(filename)
 if nargin==0
     error('Missing file name.')
 end
@@ -69,12 +69,13 @@ while ~feof(fid)
         maxRecords=maxRecords+10000;
         Record(maxRecords,1)=0;
     end
-    Temp=sscanf(fgetl(fid),'%f',[1 6]);
+    Line = fgetl(fid);
+    Temp = sscanf(Line,'%f',[1 6]);
     if length(Temp)==4
         if ~isequal(round(Temp(1:3)),Temp(1:3))
             fclose(fid);
             error('Floating point value read when integer was expected on line %i.',i)
-        elseif any(Temp<0) | any(Temp(1:3)==0)
+        elseif any(Temp<0) || any(Temp(1:3)==0)
             fclose(fid);
             error('Unexpected negative or zero value on line %i.',i)
         else
@@ -84,15 +85,18 @@ while ~feof(fid)
         if ~isequal(round(Temp(1:5)),Temp(1:5))
             fclose(fid);
             error('Floating point value read when integer was expected on line %i.',i)
-        elseif any(Temp<0) | any(Temp(1:3)==0)
+        elseif any(Temp<0) || any(Temp(1:3)==0)
             fclose(fid);
             error('Unexpected negative or zero value on line %i.',i)
         else
             Record(i,1:6)=Temp;
         end
     else
-        fclose(fid);
-        error('Invalid number of values on line %i.',i)
+        Start = strtok(Line);
+        if ~isempty(Start) && (Start(1) ~= '*' || Start(1) ~= '#')
+            fclose(fid);
+            error('Invalid number of values on line %i.',i)
+        end
     end
 end
 fclose(fid);

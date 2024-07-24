@@ -1,0 +1,48 @@
+Putting value(s) for  q1	(es:TestSet ID)
+	O=  0	i=  0	10
+	O=  0	i=  1	10
+	O=  0	i=  2	10
+Putting value(s) for  q1	(es:TestSet ID)
+	O=  0	i=  0	20
+	O=  0	i=  1	20
+	O=  0	i=  2	20
+Putting value(s) for q2 q2_1	(es:TestSet ID)
+	O=  0	i=  0	3
+	O=  0	i=  1	14
+	O=  0	i=  2	25
+Putting value(s) for q2 q2_1	(es:TestSet ID)
+	O=  0	i=  0	6
+	O=  0	i=  1	28
+	O=  0	i=  2	50
+Putting value(s) for q2 q2_2	(es:TestSet ID)
+	O=  3	i=  0	4
+	O=  3	i=  1	15
+	O=  3	i=  2	26
+Putting value(s) for q2 q2_2	(es:TestSet ID)
+	O=  3	i=  0	8
+	O=  3	i=  1	30
+	O=  3	i=  2	52
+Getting value(s) for  q1	(es:TestSet ID)
+	O=  0	i=  0	10
+	O=  0	i=  1	10
+	O=  0	i=  2	10
+Getting value(s) for  q1	(es:TestSet ID)
+	O=  0	i=  0	20
+	O=  0	i=  1	20
+	O=  0	i=  2	20
+Getting value(s) for q2 q2_1	(es:TestSet ID)
+	O=  0	i=  0	3
+	O=  0	i=  1	14
+	O=  0	i=  2	25
+Getting value(s) for q2 q2_1	(es:TestSet ID)
+	O=  0	i=  0	6
+	O=  0	i=  1	28
+	O=  0	i=  2	50
+Getting value(s) for q2 q2_2	(es:TestSet ID)
+	O=  3	i=  0	4
+	O=  3	i=  1	15
+	O=  3	i=  2	26
+Getting value(s) for q2 q2_2	(es:TestSet ID)
+	O=  3	i=  0	8
+	O=  3	i=  1	30
+	O=  3	i=  2	52

@@ -8,11 +8,6 @@ import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
 from s3_path_wrangler.paths import S3Path
-from tools.minio.config import (
-    TestBenchConfigLoader,
-    TestBenchConfigWriter,
-    TestCaseData,
-)
 
 from src.config.local_paths import LocalPaths
 from src.config.location import Location
@@ -20,6 +15,11 @@ from src.config.test_case_config import TestCaseConfig
 from src.config.test_case_path import TestCasePath
 from src.config.types.path_type import PathType
 from src.utils.xml_config_parser import XmlConfigParser
+from tools.minio.config import (
+    TestBenchConfigLoader,
+    TestBenchConfigWriter,
+    TestCaseData,
+)
 
 
 def make_location(
@@ -282,7 +282,6 @@ class TestTestBenchConfigLoader:
 
 def make_config_content(name_version_pairs: List[Tuple[str, Optional[datetime]]]) -> str:
     """Generate simple XML config with some test cases with versioned paths."""
-
     content_list = []
     for name, version in name_version_pairs:
         if version is None:
@@ -357,7 +356,8 @@ class TestTestBenchConfigWriter:
         )
         (added_line_nr, added_line), *other_added = added_lines
         (removed_line_nr, removed_line), *other_removed = removed_lines
-        assert not other_added and not other_removed
+        assert not other_added
+        assert not other_removed
         assert f'<path version="{now.isoformat().split("+")[0]}">foo</path>' in added_line
         assert "<path>foo</path>" in removed_line
         assert added_line_nr == removed_line_nr
@@ -384,7 +384,8 @@ class TestTestBenchConfigWriter:
         )
         (added_line_nr, added_line), *other_added = added_lines
         (removed_line_nr, removed_line), *other_removed = removed_lines
-        assert not other_added and not other_removed
+        assert not other_added
+        assert not other_removed
         assert f'<path version="{now.isoformat().split("+")[0]}">baz</path>' in added_line
         assert f'<path version="{(now - timedelta(days=3)).isoformat().split("+")[0]}">baz</path>' in removed_line
         assert added_line_nr == removed_line_nr
@@ -461,7 +462,8 @@ class TestTestBenchConfigWriter:
         )
         (added_line_nr, added_line), *other_added = added_lines
         (removed_line_nr, removed_line), *other_removed = removed_lines
-        assert not other_added and not other_removed
+        assert not other_added
+        assert not other_removed
         assert f'<path version="{now.isoformat().split("+")[0]}">foo</path>' in added_line
         assert f'<path version="{(now - timedelta(days=3)).isoformat().split("+")[0]}">foo</path>' in removed_line
         assert added_line_nr == removed_line_nr
@@ -471,4 +473,5 @@ class TestTestBenchConfigWriter:
             config_content.splitlines(keepends=True),
             updates[config_path].readlines(),
         )
-        assert not added_lines and not removed_lines
+        assert not added_lines
+        assert not removed_lines

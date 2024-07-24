@@ -1,7 +1,6 @@
-"""
-Description: HIS file comparer
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""HIS file comparer.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import os
@@ -22,7 +21,7 @@ from src.utils.logging.i_logger import ILogger
 
 
 class Dataset:
-    def __init__(self):
+    def __init__(self) -> None:
         self.data = []
         self.parameters: List[str] = []
         self.locations: List[str] = []
@@ -33,8 +32,7 @@ class Dataset:
 
 
 def files_iterator(file_a, file_b, ignore_blank=True, skip=0):
-    """
-    Generator which walks through two file synchronously.
+    """Walk through two files synchronously.
 
     Skips the first 'skip' lines.
     Skips all blank lines in the first file if ignore_blank.
@@ -61,11 +59,20 @@ class HisComparer(IComparer):
         testcase_name: str,
         logger: ILogger,
     ) -> List[Tuple[str, FileCheck, Parameter, ComparisonResult]]:
-        """
-        compare left and right file
-        input: left path, right path, FileCheck instance, name ot the test case
-        output: list of (file_check, parameter, ResultComparison) tuples
-        For each parameter for this file:
+        """Compare left and right file.
+
+        Parameters
+        ----------
+        left_path : str
+        right_path : str
+        file_check : FileCheck
+        testcase_name: str
+            Name ot the test case.
+
+        Returns
+        -------
+        list
+            List of (file_check, parameter, ResultComparison) tuples for each parameter for this file.
         """
         results = []
         local_error = False
@@ -73,7 +80,7 @@ class HisComparer(IComparer):
         for parameters in file_check.parameters.values():
             for parameter in parameters:
                 parameter_name = parameter.name
-                logger.debug("Checking parameter: " + str(parameter.name))
+                logger.debug(f"Checking parameter: {parameter.name}")
                 result = ComparisonResult(error=local_error)
 
                 try:
@@ -140,10 +147,7 @@ class HisComparer(IComparer):
                         diff_arr = []
                         for i in range(len_left):
                             diff_arr.append(
-                                np.abs(
-                                    left_results[i, loc_id, par_id]
-                                    - right_results[i, loc_id, par_id]
-                                )
+                                np.abs(left_results[i, loc_id, par_id] - right_results[i, loc_id, par_id])
                             )  # sizes: diff_arr[nr_times]
                         time_id = np.argmax(diff_arr)
                         result.maxAbsDiff = float(diff_arr[time_id])
@@ -181,9 +185,7 @@ class HisComparer(IComparer):
                         result.maxRelDiff = 1.0
                     else:
                         # Difference found, make the difference relative. Maximise relative difference to 1.0.
-                        result.maxRelDiff = min(
-                            1.0, result.maxAbsDiff / (max_ref_value - min_ref_value)
-                        )
+                        result.maxRelDiff = min(1.0, result.maxAbsDiff / (max_ref_value - min_ref_value))
 
                     result.isToleranceExceeded(
                         parameter.tolerance_absolute,
@@ -192,13 +194,8 @@ class HisComparer(IComparer):
 
                     if result.result == "NOK":
                         try:
-                            start_datetime, delta = interpret_time_unit(
-                                left_root.start_date, logger
-                            )
-                            datetime_series = [
-                                start_datetime + int(t_i) * delta
-                                for t_i in left_root.times[:]
-                            ]
+                            start_datetime, delta = interpret_time_unit(left_root.start_date, logger)
+                            datetime_series = [start_datetime + int(t_i) * delta for t_i in left_root.times[:]]
                             plot.PlotDifferencesTimeSeries(
                                 right_path,
                                 datetime_series,
@@ -210,11 +207,7 @@ class HisComparer(IComparer):
                                 "his",
                             )
                         except Exception as e:
-                            logger.error(
-                                "Time History plot of parameter "
-                                + str(parameter.name)
-                                + " failed"
-                            )
+                            logger.error(f"Time History plot of parameter {parameter.name} failed")
                             logger.error(e)
                             local_error = True
                             result.error = True
@@ -229,10 +222,17 @@ class HisComparer(IComparer):
         return results
 
     def read_his_file(self, path: str) -> Dataset:
-        """
-        Read 'his' file format
-        :param fname: input filename
-        :return: dataset, containing title, start_date, parameters, locations and the time-series
+        """Read 'his' file format.
+
+        Parameters
+        ----------
+        path : str
+            Input filename.
+
+        Returns
+        -------
+        Dataset
+            data set containing title, start_date, parameters, locations and the time-series.
         """
         dataset = Dataset()
 
@@ -318,10 +318,7 @@ class HisComparer(IComparer):
                             if i == 3:
                                 break
                             if j > 3:
-                                raise ValueError(
-                                    "Block [General] does not match definition, file: "
-                                    + path
-                                )
+                                raise ValueError(f"Block [General] does not match definition, file: {path}")
                     if rec.find("[DioCheck]") != -1:
                         i = 0
                         j = 0
@@ -346,10 +343,7 @@ class HisComparer(IComparer):
                             if i == 5:
                                 break
                             if j > 5:
-                                raise ValueError(
-                                    "Block [DioCheck] does not match definition, file: "
-                                    + path
-                                )
+                                raise ValueError(f"Block [DioCheck] does not match definition, file: {path}")
                     if rec.find("[Location Descriptions]") != -1:
                         nr = []
                         name = []
@@ -394,9 +388,10 @@ class HisComparer(IComparer):
 
 
 def interpret_time_unit(time_description, logger: ILogger):
-    """
-    Returns a (start_datetime, timedelta) tuple. For instance, 'T0: 2014.01.01 00:00:00  (scu=      60s)' yields the
-    following tuple: (datetime(1998, 8, 1, 0, 0, 0), timedelta(seconds=1)).
+    """Return a (start_datetime, timedelta) tuple.
+
+    For instance, `T0: 2014.01.01 00:00:00  (scu=      60s)` yields the
+    following tuple: `(datetime(1998, 8, 1, 0, 0, 0), timedelta(seconds=1))`.
     """
     try:
         # Fill spaces in the date-time format with a 0.
@@ -421,11 +416,11 @@ def interpret_time_unit(time_description, logger: ILogger):
         # Deduce start_datetime
         date_split = words[1].split(".")
         if len(date_split) != 3:
-            raise ValueError("Cannot infer date from: " + words[1])
+            raise ValueError(f"Cannot infer date from: {words[1]}")
 
         time_split = words[2].split(":")
         if len(time_split) != 3:
-            raise ValueError("Cannot infer time from: " + words[2])
+            raise ValueError(f"Cannot infer time from: {words[2]}")
 
         start_datetime = datetime(
             int(date_split[0]),

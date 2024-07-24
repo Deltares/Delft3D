@@ -22,67 +22,50 @@
 !!  rights reserved.
 module m_stop_exit
 
-implicit none
+    implicit none
 
 contains
 
 
+    subroutine stop_exit(iexit)
 
-      subroutine stop_exit( iexit )
-!
-!     function           : stops execution if possible with return value
-!
-!     logical units      : 13 - return file
-!
-!     parameters         : -
-!
-!     name    kind     length      funct.  description
-!     ---------------------------------------------------------
-!     iexit   integer    1         input   return value
-!     ---------------------------------------------------------
-!
+        ! stops execution if possible with return value
+        integer :: iexit    !! input   return value
+        integer :: lunfil
 
+        if (iexit == 0) then
+            write (*, *) 'Normal end'
+        else
+            write (*, *) 'Simulation stopped because of errors - check the report'
+        endif
 
-      implicit none
+        open  (newunit = lunfil, file = 'delpar.rtn') !     logical units      : 13 - return file
+        write (lunfil, *) iexit
+        close (lunfil)
 
-      integer           :: iexit
-      integer           :: lunfil
-!
-      if (iexit == 0) then
-         write (*,*) 'Normal end'
-      else
-         write (*,*) 'Simulation stopped because of errors - check the report'
-      endif
-
-      open  ( newunit = lunfil , file = 'delpar.rtn' )
-      write ( lunfil , * ) iexit
-      close ( lunfil )
-
-
-
-      select case ( iexit )
-         case ( :0 )
+        select case (iexit)
+        case (:0)
             stop 0
-         case (  1 )
+        case (1)
             stop 1
-         case (  2 )
+        case (2)
             stop 2
-         case (  3 )
+        case (3)
             stop 3
-         case (  4 )
+        case (4)
             stop 4
-         case (  5 )
+        case (5)
             stop 5
-         case (  6 )
+        case (6)
             stop 6
-         case (  7 )
+        case (7)
             stop 7
-         case (  8 )
+        case (8)
             stop 8
-         case default
+        case default
             stop 255
-      end select
-!
-      end subroutine
+        end select
+
+    end subroutine
 
 end module m_stop_exit

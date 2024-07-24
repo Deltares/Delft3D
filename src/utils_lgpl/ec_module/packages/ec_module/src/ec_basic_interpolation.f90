@@ -1753,7 +1753,7 @@
                 do ivar = 1, ndim
                    select case (iav)
                    case (AVGTP_MEAN)
-                      numxy  = numxy + 1 ! NOTE: numxy will be equal to #included samples TIMES ndim!
+                      numxy  = numxy + 1 ! NOTE: numxy will be equal to#included samples TIMES ndim!
                       hparr(ivar) = hparr(ivar) + zss(ivar,k)
                    case (AVGTP_NEARESTNB)
                       dis2 = dbdistance(xs(k), ys(k), xc(n), yc(n), jsferic, jasfer3D, dmiss)

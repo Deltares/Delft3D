@@ -245,10 +245,6 @@ contains
                     do ilay = 1, num_layers
                         !sedconc(ilay,isx,iseg) = sedconc(ilay,isx,iseg) + bmlayvb * dl(ilay) / bd(num_layers) * delt
                         sedconc(ilay, isx, iseg) = sedconc(ilay, isx, iseg) + vb * delt
-
-                        if (iseg == 4 .and. ilay == 1) then
-                            write(88, *) isx, sedconc(ilay, isx, iseg), vb
-                        endif
                     enddo
                 enddo
             endif

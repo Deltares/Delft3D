@@ -27,14 +27,14 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
- module m_flowoutput
+module m_flowoutput
 
- implicit none
+   implicit none
 
- double precision, allocatable, target :: taus (:) !< [kg s-2 m-1] cell centre tau N/m2 {"location": "face", "shape": ["ndx"]}
- double precision, allocatable     :: czs(:)      !< array for chezy friction at cell centers {"location": "face", "shape": ["ndxi"]}
+   double precision, allocatable, target :: taus(:) !< [kg s-2 m-1] cell centre tau N/m2 {"location": "face", "shape": ["ndx"]}
+   double precision, allocatable :: czs(:) !< array for chezy friction at cell centers {"location": "face", "shape": ["ndxi"]}
 
 end module m_flowoutput

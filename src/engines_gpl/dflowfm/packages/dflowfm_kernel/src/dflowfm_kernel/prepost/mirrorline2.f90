@@ -1,49 +1,49 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-   SUBROUTINE MIRRORLINE2(X0,Y0,X1,Y1,X2,Y2,JA,DIS,XN,YN)  ! 2*ZO VER
+   subroutine MIRRORLINE2(X0, Y0, X1, Y1, X2, Y2, JA, DIS, XN, YN) ! 2*ZO VER
 
-   use geometry_module, only: dlinedis
-   use m_missing,       only: dmiss
-   use m_sferic,        only: jsferic, jasfer3D
+      use geometry_module, only: dlinedis
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
 
-   implicit none
-   double precision :: X0,Y0,X1,Y1,X2,Y2,DIS,XN,YN
-   integer :: JA
+      implicit none
+      double precision :: X0, Y0, X1, Y1, X2, Y2, DIS, XN, YN
+      integer :: JA
 
-   CALL dLINEDIS(X0,Y0,X1,Y1,X2,Y2,JA,DIS,XN,YN,jsferic, jasfer3D, dmiss)
+      call dLINEDIS(X0, Y0, X1, Y1, X2, Y2, JA, DIS, XN, YN, jsferic, jasfer3D, dmiss)
 
-   XN  = 3*XN - 2*X0
-   YN  = 3*YN - 2*Y0
+      XN = 3 * XN - 2 * X0
+      YN = 3 * YN - 2 * Y0
 
-   RETURN
-   END SUBROUTINE MIRRORLINE2
+      return
+   end subroutine MIRRORLINE2

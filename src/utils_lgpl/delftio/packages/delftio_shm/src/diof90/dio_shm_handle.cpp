@@ -47,7 +47,7 @@
 // On Unix: ESM for shared mem blocks
 //
 
-#if (defined(HAVE_CONFIG_H))
+#ifdef HAVE_CONFIG_H
 
 #include "dio-sync-ux.h"
 #include "esm.h"

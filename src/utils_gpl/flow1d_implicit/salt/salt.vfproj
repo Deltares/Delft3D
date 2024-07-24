@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{05EFCF34-F6CE-4E15-B959-16F3E41E9BB4}">
+	<Platforms>
+		<Platform Name="x64"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|x64" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" PreprocessorDefinitions="USE_MSWINDOWS" DebugParameter="debugParameterAll" WarnDeclarations="true" WarnUnusedVariables="true" WarnInterfaces="true" Traceback="true" NullPointerCheck="true" BoundsCheck="true" UninitializedVariablesCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Release|x64" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" PreprocessorDefinitions="USE_MSWINDOWS" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<File RelativePath=".\src\SAABCD.f"/>
+		<File RelativePath=".\src\SABNCO.f"/>
+		<File RelativePath=".\src\SABOUN.f"/>
+		<File RelativePath=".\src\SABRAN.f"/>
+		<File RelativePath=".\src\SACCDA.f"/>
+		<File RelativePath=".\src\SADCDX.f"/>
+		<File RelativePath=".\src\SADENS.f"/>
+		<File RelativePath=".\src\SADFST.f"/>
+		<File RelativePath=".\src\SADSCO.f"/>
+		<File RelativePath=".\src\SADSLC.f"/>
+		<File RelativePath=".\src\SADSPC.f"/>
+		<File RelativePath=".\src\SADSST.f"/>
+		<File RelativePath=".\src\SADSTH.f"/>
+		<File RelativePath=".\src\SAFILT.f"/>
+		<File RelativePath=".\src\SAFORF.f"/>
+		<File RelativePath=".\src\SAFREZ.f"/>
+		<File RelativePath=".\src\SAINI.f"/>
+		<File RelativePath=".\src\SAINI1.f"/>
+		<File RelativePath=".\src\SAINTS.f"/>
+		<File RelativePath=".\src\SALATS.f"/>
+		<File RelativePath=".\src\SALOAD.f"/>
+		<File RelativePath=".\src\SALT.f"/>
+		<File RelativePath=".\src\SANORM.f"/>
+		<File RelativePath=".\src\SAREST.f"/>
+		<File RelativePath=".\src\SARLTI.f"/>
+		<File RelativePath=".\src\SARSTA.f"/>
+		<File RelativePath=".\src\SASAR.f"/>
+		<File RelativePath=".\src\SASBCO.f"/>
+		<File RelativePath=".\src\SASOEQ.f"/>
+		<File RelativePath=".\src\SASTRU.f"/>
+		<File RelativePath=".\src\SATBPA.f"/>
+		<File RelativePath=".\src\SATFVU.f"/>
+		<File RelativePath=".\src\SATFWD.f"/>
+		<File RelativePath=".\src\SATIDI.f"/>
+		<File RelativePath=".\src\SATNEG.f"/>
+		<File RelativePath=".\src\SATQPU.f"/>
+		<File RelativePath=".\src\SAWRES.f"/>
+		<File RelativePath=".\src\SAWRHI.f"/>
+		<File RelativePath=".\src\SAWRST.f"/>
+		<File RelativePath=".\src\SAZFVU.f"/>
+		<File RelativePath=".\src\SAZFWD.f"/>
+		<File RelativePath=".\src\SAZQPU.f"/></Filter></Files>
+	<Globals/></VisualStudioProject>

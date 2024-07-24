@@ -22,32 +22,32 @@
 !!  rights reserved.
 module m_report_date_time
 
-implicit none
+    implicit none
 
 contains
 
 
-      subroutine report_date_time(lun)
-!
-!     reports actual date and time in file (lun)
-!
-      use timers
+    subroutine report_date_time(lun)
+        !
+        !     reports actual date and time in file (lun)
+        !
+        use timers
 
-      implicit none
-      integer, intent(in) :: lun
-      character(len= 8)   :: datum
-      character(len=10)   :: tijd
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
-      if ( timon ) call timstrt( "report_date_time", ithndl )
+        implicit none
+        integer, intent(in) :: lun
+        character(len = 8) :: datum
+        character(len = 10) :: tijd
+        integer(4) ithndl              ! handle to time this subroutine
+        data       ithndl / 0 /
+        if (timon) call timstrt("report_date_time", ithndl)
 
-      call date_and_time (date=datum,time=tijd)
-!
-      write(lun,'(//20(a))')       &
-       '  Actual date/time = ',datum(1:4),'/',datum(5:6),'/',datum(7:8), &
-       '  ',tijd(1:2),':',tijd(3:4),':',tijd(5:6)
-!
-      if ( timon ) call timstop ( ithndl )
-      end subroutine report_date_time
+        call date_and_time (date = datum, time = tijd)
+        !
+        write(lun, '(//20(a))')       &
+                '  Actual date/time = ', datum(1:4), '/', datum(5:6), '/', datum(7:8), &
+                '  ', tijd(1:2), ':', tijd(3:4), ':', tijd(5:6)
+        !
+        if (timon) call timstop (ithndl)
+    end subroutine report_date_time
 
 end module m_report_date_time

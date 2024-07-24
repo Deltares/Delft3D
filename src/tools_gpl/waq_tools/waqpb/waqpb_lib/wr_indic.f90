@@ -31,7 +31,7 @@
                              R2_IIN      , NCNSB       , & 
                              INPUII      , NINPU       , & 
                              INPUPI      , OUTPII      , & 
-                             num_output_files       , OUTPPI      , &
+                             NOUTP       , OUTPPI      , & 
                              LUNREP      , IERROR      )
 !     
 !          Deltares
@@ -55,9 +55,9 @@
 !          INPUII       INT    NINPU   I       Table R3: index in ITEMS
 !          NINPU        INT    1       I       length R3
 !          INPUPI       INT    NINPU   I       Table R3: index in PROCS
-!          OUTPII       INT    num_output_files   I       Table R4: index in ITEMS
-!          num_output_files        INT    1       I       length R4
-!          OUTPPI       INT    num_output_files   I       Table R4: index in PROCS
+!          OUTPII       INT    NOUTP   I       Table R4: index in ITEMS
+!          NOUTP        INT    1       I       length R4
+!          OUTPPI       INT    NOUTP   I       Table R4: index in PROCS
 !          LUNREP       INT    1       I       Unit number report file
 !          IERROR       INT    1       O       Error
 !     
@@ -70,12 +70,12 @@
 !          declaration of arguments
 !     
       INTEGER       NCNSB        , NINPU        , & 
-                   num_output_files        , LUNREP       , &
+                   NOUTP        , LUNREP       , & 
                    IERROR
       INTEGER       DEFFDS
       INTEGER       R2_IIN(NCNSB), INPUII(NINPU), & 
-                   INPUPI(NINPU), OUTPII(num_output_files), &
-                   OUTPPI(num_output_files)
+                   INPUPI(NINPU), OUTPII(NOUTP), & 
+                   OUTPPI(NOUTP)
 !     
 !          Local variables
 !     
@@ -132,8 +132,8 @@
       ELMDMS(2,1) = NCNSB
       ELMDMS(2,2) = NINPU
       ELMDMS(2,3) = NINPU
-      ELMDMS(2,4) = num_output_files
-      ELMDMS(2,5) = num_output_files
+      ELMDMS(2,4) = NOUTP
+      ELMDMS(2,5) = NOUTP
 !     
 !          Define elements
 !     

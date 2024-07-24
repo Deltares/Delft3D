@@ -26,54 +26,54 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 module dll_api
-  use iso_c_binding
-  use unstruc_api
-  use unstruc_display, only: jaGUI ! this should be removed when jaGUI = 0 by default
+   use iso_c_binding
+   use unstruc_api
+   use unstruc_display, only: jaGUI ! this should be removed when jaGUI = 0 by default
 
-  implicit none
+   implicit none
 
 contains
 
 !!> generate the volume table with the given increment
-subroutine  dfm_generate_volume_tables(increment) bind(C, name="dfm_generate_volume_tables")
-   !DEC$ ATTRIBUTES DLLEXPORT :: dfm_generate_volume_tables
+   subroutine dfm_generate_volume_tables(increment) bind(C, name="dfm_generate_volume_tables")
+      !DEC$ ATTRIBUTES DLLEXPORT :: dfm_generate_volume_tables
 
-   use messageHandling
-   use unstruc_files
-   use unstruc_channel_flow
-   use m_VolumeTables   
-   use m_flowgeom
-   use m_flowparameters
+      use messageHandling
+      use unstruc_files
+      use unstruc_channel_flow
+      use m_VolumeTables
+      use m_flowgeom
+      use m_flowparameters
 
-   real(c_double), value,  intent(in)  :: increment  !< Desired increment for the volume tables
-   character(len=Idlen) :: filename
-   filename             = defaultFilename('volumeTables')
-   tableIncrement       = increment
-   useVolumeTableFile   = .false.
-   nonlin1d = 1
-   call makeVolumeTables(filename, .true.)
-   
-end subroutine dfm_generate_volume_tables
+      real(c_double), value, intent(in) :: increment !< Desired increment for the volume tables
+      character(len=Idlen) :: filename
+      filename = defaultFilename('volumeTables')
+      tableIncrement = increment
+      useVolumeTableFile = .false.
+      nonlin1d = 1
+      call makeVolumeTables(filename, .true.)
+
+   end subroutine dfm_generate_volume_tables
 
 !!> DLL handle to unc_write_1D_flowgeom_ugrid, used by volume tool to write 1D flowgeom
-subroutine write_1D_flowgeom_ugrid(ncid) bind(C, name="write_1D_flowgeom_ugrid")
-   !DEC$ ATTRIBUTES DLLEXPORT :: write_1D_flowgeom_ugrid
+   subroutine write_1D_flowgeom_ugrid(ncid) bind(C, name="write_1D_flowgeom_ugrid")
+      !DEC$ ATTRIBUTES DLLEXPORT :: write_1D_flowgeom_ugrid
 
-   use unstruc_netcdf, only: unc_write_1D_flowgeom_ugrid, t_unc_mapids      
-   use messageHandling, only: Idlen
-   use iso_c_utils
-   
-   integer, intent(in) :: ncid !< Handle to open Netcdf file to write the geometry to.
-   type(t_unc_mapids)  :: mapids
-   call unc_write_1D_flowgeom_ugrid(mapids%id_tsp,ncid)
+      use unstruc_netcdf, only: unc_write_1D_flowgeom_ugrid, t_unc_mapids
+      use messageHandling, only: Idlen
+      use iso_c_utils
 
-end subroutine write_1D_flowgeom_ugrid
+      integer, intent(in) :: ncid !< Handle to open Netcdf file to write the geometry to.
+      type(t_unc_mapids) :: mapids
+      call unc_write_1D_flowgeom_ugrid(mapids%id_tsp, ncid)
+
+   end subroutine write_1D_flowgeom_ugrid
 
 end module dll_api

@@ -1,22 +1,22 @@
 import os
 from typing import Optional
-from pytest_mock import MockerFixture
-from pyfakefs.fake_filesystem import FakeFilesystem
 
-from src.config.test_case_config import TestCaseConfig
-from src.config.types.path_type import PathType
+from pyfakefs.fake_filesystem import FakeFilesystem
+from pytest_mock import MockerFixture
+
 from src.config.location import Location
+from src.config.test_case_config import TestCaseConfig
 from src.config.test_case_path import TestCasePath
-from src.utils.logging.file_logger import FileLogger
-from src.utils.logging.i_main_logger import IMainLogger
+from src.config.types.path_type import PathType
 from src.suite.reference_runner import ReferenceRunner
 from src.suite.run_data import RunData
 from src.suite.test_bench_settings import TestBenchSettings
+from src.utils.logging.file_logger import FileLogger
+from src.utils.logging.i_main_logger import IMainLogger
 
 
-class TestReferenceRunner():
-    @staticmethod
-    def test_post_process__copy_case_content(mocker: MockerFixture, fs: FakeFilesystem):
+class TestReferenceRunner:
+    def test_post_process__copy_case_content(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         # Arrange
         test_name = "name_1"
         platform = "win64" if os.name == "nt" else "lnx64"
@@ -25,7 +25,7 @@ class TestReferenceRunner():
         case_logger = mocker.Mock(spec=FileLogger)
         main_logger = mocker.Mock(spec=IMainLogger)
         settings = mocker.Mock(spec=TestBenchSettings)
-        mocker.patch("src.suite.reference_runner.HandlerFactory")
+        mocker.patch("src.suite.test_set_runner.HandlerFactory")
         TestReferenceRunner.simulate_run(test_name, fs)
 
         # Act
@@ -36,8 +36,7 @@ class TestReferenceRunner():
         assert fs.exists(f"/reference/{platform}/name_1/output"), "Folder was not succesfully created."
         assert fs.exists(f"/reference/{platform}/name_1/output/out1"), "Folder content was not succesfully created"
 
-    @staticmethod
-    def test_post_process__overwrite_reference_content(mocker: MockerFixture, fs: FakeFilesystem):
+    def test_post_process__overwrite_reference_content(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         # Arrange
         test_name = "name_1"
         platform = "win64" if os.name == "nt" else "lnx64"
@@ -46,7 +45,7 @@ class TestReferenceRunner():
         case_logger = mocker.Mock(spec=FileLogger)
         main_logger = mocker.Mock(spec=IMainLogger)
         settings = mocker.Mock(spec=TestBenchSettings)
-        mocker.patch("src.suite.reference_runner.HandlerFactory")
+        mocker.patch("src.suite.test_set_runner.HandlerFactory")
         TestReferenceRunner.simulate_run(test_name, fs)
         TestReferenceRunner.simulate_run(test_name, fs, location=f"reference/{platform}")
 
@@ -59,8 +58,7 @@ class TestReferenceRunner():
             content = file.readlines()
             assert content[0] == "case simulated", "Reference was not overwritten with new case output data."
 
-    @staticmethod
-    def test_show_summary__after_post_process(mocker: MockerFixture, fs: FakeFilesystem):
+    def test_show_summary__after_post_process(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         # Arrange
         test_name = "name_1"
         platform = "win64" if os.name == "nt" else "lnx64"
@@ -69,7 +67,7 @@ class TestReferenceRunner():
         case_logger = mocker.Mock(spec=FileLogger)
         main_logger = mocker.Mock(spec=IMainLogger)
         settings = mocker.Mock(spec=TestBenchSettings)
-        mocker.patch("src.suite.reference_runner.HandlerFactory")
+        mocker.patch("src.suite.test_set_runner.HandlerFactory")
         TestReferenceRunner.simulate_run(test_name, fs)
         TestReferenceRunner.simulate_run(test_name, fs, location=f"reference/{platform}")
 
@@ -85,12 +83,8 @@ class TestReferenceRunner():
 
     @staticmethod
     def create_test_case_config(
-        name: str,
-        ignore: bool,
-        path_type: Optional[PathType] = PathType.REFERENCE,
-        platform: Optional[str] = "lnx64"
+        name: str, ignore: bool, path_type: Optional[PathType] = PathType.REFERENCE, platform: Optional[str] = "lnx64"
     ) -> TestCaseConfig:
-
         config = TestCaseConfig()
         config.name = name
         config.ignore = ignore
@@ -109,12 +103,12 @@ class TestReferenceRunner():
     def create_location(name: str, path_type: PathType) -> Location:
         location = Location()
         location.root = "https://deltares.nl/"
-        location.from_path = name.replace(' ', '')
+        location.from_path = name.replace(" ", "")
         location.type = path_type
         return location
 
     @staticmethod
-    def simulate_run(name: str, fs: FakeFilesystem, location: Optional[str] = "case"):
+    def simulate_run(name: str, fs: FakeFilesystem, location: Optional[str] = "case") -> None:
         case_path = f"/{location}/{name}"
         text = TestReferenceRunner.tb3_char_text()
         fs.create_dir(case_path)
@@ -130,23 +124,21 @@ class TestReferenceRunner():
     @staticmethod
     def tb3_char_text() -> str:
         return "\n".join(
-                [
-                    "Start_size:146335",
-                    "Runtime:6.851168632507324",
-                    "Output_added:output",
-                    "Output_added:result.txt",
-                    "Output_added:_tb3_char.run",
-                    "End_size:215861"
-                ]
-            )
+            [
+                "Start_size:146335",
+                "Runtime:6.851168632507324",
+                "Output_added:output",
+                "Output_added:result.txt",
+                "Output_added:_tb3_char.run",
+                "End_size:215861",
+            ]
+        )
 
     @staticmethod
     def result_log(name, run_time, ref_run_time, result) -> str:
-        return ("%-40s (%7.2f %7.2f) %-6s"
-                % (
-                    name[:40],
-                    run_time,
-                    run_time / ref_run_time,
-                    result,
-                )
-                )
+        return "%-40s (%7.2f %7.2f) %-6s" % (
+            name[:40],
+            run_time,
+            run_time / ref_run_time,
+            result,
+        )

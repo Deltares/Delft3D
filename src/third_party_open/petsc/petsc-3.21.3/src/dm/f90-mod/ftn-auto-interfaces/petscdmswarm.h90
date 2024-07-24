@@ -1,0 +1,133 @@
+      subroutine DMSwarmFinalizeFieldRegister(a,z)
+       import tDM
+       DM a ! DM
+       PetscErrorCode z
+       end subroutine DMSwarmFinalizeFieldRegister
+      subroutine DMSwarmSetLocalSizes(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMSwarmSetLocalSizes
+      subroutine DMSwarmSetCellDM(a,b,z)
+       import tDM
+       DM a ! DM
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine DMSwarmSetCellDM
+      subroutine DMSwarmGetCellDM(a,b,z)
+       import tDM
+       DM a ! DM
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine DMSwarmGetCellDM
+      subroutine DMSwarmGetLocalSize(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMSwarmGetLocalSize
+      subroutine DMSwarmGetSize(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMSwarmGetSize
+      subroutine DMSwarmAddPoint(a,z)
+       import tDM
+       DM a ! DM
+       PetscErrorCode z
+       end subroutine DMSwarmAddPoint
+      subroutine DMSwarmAddNPoints(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMSwarmAddNPoints
+      subroutine DMSwarmRemovePoint(a,z)
+       import tDM
+       DM a ! DM
+       PetscErrorCode z
+       end subroutine DMSwarmRemovePoint
+      subroutine DMSwarmRemovePointAtIndex(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMSwarmRemovePointAtIndex
+      subroutine DMSwarmCopyPoint(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMSwarmCopyPoint
+      subroutine DMSwarmMigrate(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine DMSwarmMigrate
+      subroutine DMSwarmCollectViewCreate(a,z)
+       import tDM
+       DM a ! DM
+       PetscErrorCode z
+       end subroutine DMSwarmCollectViewCreate
+      subroutine DMSwarmCollectViewDestroy(a,z)
+       import tDM
+       DM a ! DM
+       PetscErrorCode z
+       end subroutine DMSwarmCollectViewDestroy
+      subroutine DMSwarmSetPointCoordinatesRandom(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMSwarmSetPointCoordinatesRandom
+      subroutine DMSwarmSetType(a,b,z)
+       import tDM
+       DM a ! DM
+       DMSwarmType b ! DMSwarmType
+       PetscErrorCode z
+       end subroutine DMSwarmSetType
+      subroutine DMSwarmGetNumSpecies(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMSwarmGetNumSpecies
+      subroutine DMSwarmSetNumSpecies(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMSwarmSetNumSpecies
+      subroutine DMSwarmComputeLocalSizeFromOptions(a,z)
+       import tDM
+       DM a ! DM
+       PetscErrorCode z
+       end subroutine DMSwarmComputeLocalSizeFromOptions
+      subroutine DMSwarmInitializeCoordinates(a,z)
+       import tDM
+       DM a ! DM
+       PetscErrorCode z
+       end subroutine DMSwarmInitializeCoordinates
+      subroutine DMSwarmInitializeVelocitiesFromOptions(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscReal b (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine DMSwarmInitializeVelocitiesFromOptions
+      subroutine DMSwarmGetMigrateType(a,b,z)
+       import tDM
+       DM a ! DM
+       DMSwarmMigrateType b ! DMSwarmMigrateType
+       PetscErrorCode z
+       end subroutine DMSwarmGetMigrateType
+      subroutine DMSwarmSetMigrateType(a,b,z)
+       import tDM
+       DM a ! DM
+       DMSwarmMigrateType b ! DMSwarmMigrateType
+       PetscErrorCode z
+       end subroutine DMSwarmSetMigrateType

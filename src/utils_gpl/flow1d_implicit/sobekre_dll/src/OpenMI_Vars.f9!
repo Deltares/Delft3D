@@ -1,0 +1,33 @@
+!
+! Interface Module Sobek Flow <-> OpenMI module
+!
+!
+module OpenMI_Vars
+  logical,private :: bInitdone =.false.
+  logical,private :: bOpenMIActive  = .false.
+
+  contains
+
+  function SetInitDone(b) result(rv)
+    logical, intent(in) :: b
+    logical             :: rv
+    bInitDone = b
+    rv = bInitDone==b
+  end function SetInitDone
+
+  function SetOpenMiActive(b) result(rv)
+    logical, intent(in) :: b
+    logical             :: rv
+    bInitDone = b
+    rv = bInitDone==b
+  end function SetOpenMIActive
+
+  logical function IsInitDone()
+    IsInitDone = bInitDone
+  end function IsInitDone
+
+  logical function IsOpenMIActive()
+    IsOpenMIActive = bOpenMIActive
+  end function IsOpenMIActive
+  
+end module

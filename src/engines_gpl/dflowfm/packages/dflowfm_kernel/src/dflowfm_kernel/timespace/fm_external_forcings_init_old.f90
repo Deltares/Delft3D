@@ -53,7 +53,7 @@ contains
       use dfm_error, only: dfm_noerr, dfm_extforcerror
       use m_sferic, only: jsferic
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
-      use m_lateral, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata, apply_transport
+      use m_lateral, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
       use unstruc_files, only: basename, resolvepath
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use unstruc_inifields, only: set_friction_type_values
@@ -65,12 +65,12 @@ contains
 
       integer :: ja, method, lenqidnam, ierr, ilattype, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
-      integer :: numz, numu, numq, numg, numd, numgen, npum, numklep, numvalv, nlat, jaifrcutp
+      integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
       double precision :: maxSearchRadius
       character(len=256) :: filename, sourcemask
       character(len=64) :: varname
       character(len=NAMTRACLEN) :: tracnam, qidnam
-      character(len=NAMSFLEN) :: sfnam, qidsfnam
+      character(len=NAMSFLEN) :: sfnam
       character(len=20) :: wqinput
       character(len=NAMMBALEN) :: mbainputname
       integer, external :: findname
@@ -831,7 +831,7 @@ contains
                if (success) then
                   tair_available = .true.
                   solrad_available = .true.
-               end if
+              end if
 
             else if (qid == 'dewpoint_airtemperature_cloudiness_solarradiation') then
 
@@ -1352,7 +1352,7 @@ contains
 
    !> Initialization of all extra quantities not covered by initialize_ext_old, such as structures and laterals. Only called as part of fm_initexternalforcings
    module subroutine init_misc(iresult)
-      use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, ndx, lnx, csu, ndx, lnx
+      use m_flowgeom, only: ln, xz, yz, iadv, ba, wu
       use unstruc_model, only: md_extfile_dir
       use timespace, only: uniform, spaceandtime, readprovider
       use m_structures, only: jaoldstr, network
@@ -1362,16 +1362,16 @@ contains
       use dfm_error, only: dfm_extforcerror, dfm_noerr, dfm_strerror
       use m_sobekdfm, only: nbnd1d2d
       use m_partitioninfo, only: is_ghost_node, jampi, idomain, my_rank, reduce_sum
-      use m_lateral, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata, apply_transport
+      use m_lateral, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, initialize_lateraldata
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
       integer :: ierr
-      integer :: k, L, LF, KB, KBI, N, K2, ja, method, filetype0, num_layers
+      integer :: k, L, LF, KB, KBI, N, ja, method, filetype0, num_layers
       integer :: k1, l1, l2
-      character(len=256) :: filename, sourcemask, filename0
+      character(len=256) :: filename, filename0
       character(len=64) :: varname
       logical :: exist
       double precision, allocatable :: hulp(:, :)

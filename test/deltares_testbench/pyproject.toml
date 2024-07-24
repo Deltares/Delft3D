@@ -56,6 +56,9 @@ exclude = [
     ".vscode",
     "build",
     "dist",
+    "thirdparty",  # Contains python2 code.
+    "conversion",  # Contains python2 code.
+    "conversion-sobek",  # Contains python2 code.
 ]
 
 [tool.ruff.format]
@@ -69,6 +72,7 @@ line-ending = "lf"
 select = [
     "I",  # import ordering
     "E",  # pycodestyle errors
+    "W",  # Warnings
     "F",  # pyflakes errors
     "D",  # pydocstyle errors
     "B",  # flake8-bugbear common bugs

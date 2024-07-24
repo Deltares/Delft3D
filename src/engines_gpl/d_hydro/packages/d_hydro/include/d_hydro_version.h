@@ -21,7 +21,7 @@
 #define modname_company COMPANY_NAME
 #define modname_company_url COMPANY_URL
 
-#define modname_sourcecode_url "@(#)"BRANCH
+#define modname_sourcecode_url "@(#) BRANCH"
 
 #define modname_version modname_major "." modname_minor "." modname_build
 #define modname_version_short modname_major "." modname_minor

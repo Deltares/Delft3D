@@ -64,7 +64,7 @@ def minio_objects_equal(this: MinioObject, that: MinioObject) -> bool:
 
 
 class TestMinioRewinder:
-    def test_rewind_download_delete_marker(self, mocker: MockerFixture, fs: FakeFilesystem):
+    def test_rewind_download_delete_marker(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         # Arrange
         mock_minio_client = mocker.Mock(spec=Minio)
 
@@ -96,7 +96,7 @@ class TestMinioRewinder:
             "my-bucket", "object1_name", str(Path("./object1_name")), version_id=mocker.ANY
         )
 
-    def test_rewind_download_before_rewind(self, mocker: MockerFixture):
+    def test_rewind_download_before_rewind(self, mocker: MockerFixture) -> None:
         # Create a Mock for the Minio client
         mock_minio_client = mocker.Mock(spec=Minio)
 
@@ -123,7 +123,7 @@ class TestMinioRewinder:
 
         mock_minio_client.fget_object.assert_not_called()
 
-    def test_rewind_remove_file_not_in_download(self, mocker: MockerFixture, fs: FakeFilesystem):
+    def test_rewind_remove_file_not_in_download(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         # Create a Mock for the Minio client
         mock_minio_client = mocker.Mock(spec=Minio)
 
@@ -160,7 +160,7 @@ class TestMinioRewinder:
         )
         assert not fs.exists(file)
 
-    def test_rewind_download_after_rewind(self, mocker: MockerFixture, fs: FakeFilesystem):
+    def test_rewind_download_after_rewind(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         # Arrange
         mock_minio_client = mocker.Mock(spec=Minio)
 
@@ -194,7 +194,7 @@ class TestMinioRewinder:
             "my-bucket", "object2_name", str(Path("object2_name")), version_id=mocker.ANY
         )
 
-    def test_rewind_download_on_rewind(self, mocker: MockerFixture):
+    def test_rewind_download_on_rewind(self, mocker: MockerFixture) -> None:
         # Create a Mock for the Minio client
         mock_minio_client = mocker.Mock(spec=Minio)
 
@@ -319,7 +319,7 @@ class TestMinioRewinder:
         )
 
     def create_file_side_effect(self, filename):
-        def side_effect(*args, **kwargs):
+        def side_effect(*args, **kwargs) -> None:
             # Create the file (you can customize this logic)
             with open(filename, "w") as f:
                 f.write("File content")
@@ -867,7 +867,7 @@ class TestMinioRewinder:
         assert plan.multipart_upload_part_size == part_size
         assert not plan.items
 
-    @pytest.mark.parametrize("type_", (Operation.CREATE, Operation.UPDATE))
+    @pytest.mark.parametrize("type_", [Operation.CREATE, Operation.UPDATE])
     def test_execute_plan__create_or_update_operation__put_object(
         self, type_: Operation, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
@@ -897,7 +897,7 @@ class TestMinioRewinder:
             tags=None,
         )
 
-    @pytest.mark.parametrize("type_", (Operation.CREATE, Operation.UPDATE))
+    @pytest.mark.parametrize("type_", [Operation.CREATE, Operation.UPDATE])
     def test_execute_plan__create_or_update_operation_with_tags__put_object(
         self, type_: Operation, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
@@ -985,7 +985,7 @@ class TestMinioRewinder:
         )
         assert minio_client.put_object.call_args.kwargs["data"].read() == b""
 
-    @pytest.mark.parametrize("type_", (Operation.CREATE, Operation.UPDATE))
+    @pytest.mark.parametrize("type_", [Operation.CREATE, Operation.UPDATE])
     def test_execute_plan__create_or_update_non_existent_file__raise_error(
         self, type_: Operation, mocker: MockerFixture
     ) -> None:
@@ -1005,7 +1005,7 @@ class TestMinioRewinder:
         with pytest.raises(RuntimeError, match="non-existent local file"):
             rewinder.execute_plan(plan)
 
-    @pytest.mark.parametrize("type_", (Operation.CREATE, Operation.UPDATE))
+    @pytest.mark.parametrize("type_", [Operation.CREATE, Operation.UPDATE])
     def test_execute_plan__create_or_update_without_local_path__raise_error(
         self, type_: Operation, mocker: MockerFixture
     ) -> None:

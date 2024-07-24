@@ -55,7 +55,7 @@ if __name__ == "__main__":
     print("Convert to json")
     output_json = json.loads(output)
 
-    def delete_object(version):
+    def delete_object(version) -> None:
         last_modified_str = version["LastModified"]
         last_modified_obj = datetime.fromisoformat(last_modified_str)
 

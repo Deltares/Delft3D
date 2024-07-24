@@ -58,10 +58,8 @@ contains
       double precision, intent(in) :: time !< Current simulation time (s)
       integer, intent(out) :: iresult !< Integer error status
 
-      integer :: i, n, k, k2, kb, kt, ki, L, itrac, isf
-      double precision :: timmin
+      integer :: i, n, k2, kb, L, itrac, isf
       double precision :: dQ
-      character(maxMessageLen) :: message123
 
       iresult = DFM_EXTFORCERROR
       call timstrt('External forcings boundaries', handle_extbnd)

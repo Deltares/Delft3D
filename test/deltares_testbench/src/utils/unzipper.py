@@ -1,7 +1,6 @@
-"""
-Description: file unzipper
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""File unzipper.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import fnmatch
@@ -12,28 +11,28 @@ from src.utils.logging.i_logger import ILogger
 
 
 class Unzipper(object):
-    """compare files on ASCII content equality
+    """Compare files on ASCII content equality."""
 
-    Args:
-       object (_type_): _description_
-    """
+    def __unzip__(self, zip_file_path: str) -> None:
+        """Unzip file to path.
 
-    def __unzip__(self, zip_file_path: str):
-        """unzip file to path
-
-        Args:
-            zfp (str): full path to zip file name
+        Parameters
+        ----------
+        zfp : str
+            Full path to zip file name.
         """
         fh = open(zip_file_path, "rb")
         z = zipfile.ZipFile(fh)
         z.extractall(os.path.dirname(zip_file_path))
         fh.close()
 
-    def recursive(self, path: str, logger: ILogger):
-        """unzip all zip files in directory (recursive)
+    def recursive(self, path: str, logger: ILogger) -> None:
+        """Unzip all zip files in directory (recursive).
 
-        Args:
-            path (str): path to zip file
+        Parameters
+        ----------
+        path : str
+            Path to zip file
         """
         matches = []
         for dirpath, _, filenames in os.walk(path):

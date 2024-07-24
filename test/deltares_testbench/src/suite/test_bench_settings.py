@@ -1,7 +1,6 @@
-"""
-Description: TestBenchSettings data class
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""TestBenchSettings data class.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import sys
@@ -19,7 +18,7 @@ from src.utils.logging.logger import Logger
 
 
 class TestBenchSettings:
-    """Settings for a test bench run"""
+    """Settings for a test bench run."""
 
     log_level: LogLevel = LogLevel.INFO
     local_paths: Optional[LocalPaths] = None
@@ -40,11 +39,13 @@ class TestBenchSettings:
     server_base_url: str = ""
     override_paths: str = ""
 
-    def log_overview(self, logger: Logger):
-        """Logs overview of the parameters
+    def log_overview(self, logger: Logger) -> None:
+        """Log overview of the parameters.
 
-        Args:
-            logger (Logger): logger to log to
+        Parameters
+        ----------
+        logger: Logger
+            Logger to log to.
         """
         log_sub_header("Parsed arguments", logger)
 

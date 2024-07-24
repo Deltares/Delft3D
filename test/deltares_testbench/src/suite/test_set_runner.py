@@ -1,7 +1,6 @@
-"""
-Description: Manager for running test case sets
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Manager for running test case sets.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import multiprocessing
@@ -10,6 +9,7 @@ import sys
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from multiprocessing.pool import AsyncResult
+from multiprocessing.synchronize import Condition
 from typing import Iterable, List, Optional
 
 from src.config.location import Location
@@ -35,7 +35,7 @@ from src.utils.paths import Paths
 
 
 class TestSetRunner(ABC):
-    """Run test cases in reference or compare mode"""
+    """Run test cases in reference or compare mode."""
 
     def __init__(self, settings: TestBenchSettings, logger: IMainLogger) -> None:
         self.__settings = settings
@@ -47,24 +47,28 @@ class TestSetRunner(ABC):
 
     @property
     def settings(self) -> TestBenchSettings:
-        """Settings used for running tests
+        """Settings used for running tests.
 
-        Returns:
-            TestBenchSettings: Used test settings
+        Returns
+        -------
+        TestBenchSettings
+            Used test settings.
         """
         return self.__settings
 
     @property
     def duration(self) -> Optional[timedelta]:
-        """Time it took to run the testbench
+        """Time it took to run the testbench.
 
-        Returns:
-            Optional[timedelta]: elapsed time
+        Returns
+        -------
+        Optional[timedelta]
+            Elapsed time.
         """
         return self.__duration
 
-    def run(self):
-        """Run test cases to generate reference data"""
+    def run(self) -> None:
+        """Run test cases to generate reference data."""
         start_time = datetime.now()
 
         try:
@@ -91,11 +95,12 @@ class TestSetRunner(ABC):
         self.__duration = datetime.now() - start_time
 
     def run_tests_sequentially(self) -> List[TestCaseResult]:
-        """Runs the test configurations sequentially and
-        returns the results
+        """Run the test configurations sequentially and returns the results.
 
-        Returns:
-            List[TestCaseResult]: list of test results
+        Returns
+        -------
+        List[TestCaseResult]
+            List of test results.
         """
         n_testcases = len(self.__settings.configs_to_run)
         results: List[TestCaseResult] = []
@@ -115,11 +120,12 @@ class TestSetRunner(ABC):
         return results
 
     def run_tests_in_parallel(self) -> List[TestCaseResult]:
-        """Runs the test configurations in parallel and
-        returns the results
+        """Run the test configurations in parallel and returns the results.
 
-        Returns:
-            List[TestCaseResult]: list of test results
+        Returns
+        -------
+        List[TestCaseResult]
+            List of test results.
         """
         n_testcases = len(self.__settings.configs_to_run)
 
@@ -161,15 +167,24 @@ class TestSetRunner(ABC):
         return results
 
     def run_test_case(
-        self, config: TestCaseConfig, run_data: RunData, in_use=None, idle_process=None
+        self,
+        config: TestCaseConfig,
+        run_data: RunData,
+        in_use: Optional[int] = None,
+        idle_process: Optional[Condition] = None,
     ) -> TestCaseResult:
-        """Runs one test configuration (in a separate process)
+        """Run one test configuration (in a separate process).
 
-        Args:
-            config (TestCaseConfig): configuration to run
-            run_data (RunData): Data related to the test run
-            in_use (Integer): Amount of processes that are currently in use with testcases
-            idle_process (Condition): Sends a notification to evaluate available cores for new testcase
+        Parameters
+        ----------
+        config : TestCaseConfig
+            Configuration to run.
+        run_data : RunData
+            Data related to the test run.
+        in_use : Optional[int], default: None
+            Amount of processes that are currently in use with testcases.
+        idle_process : Optional[Condition], default: None
+            Sends a notification to evaluate available cores for new testcase.
         """
         logger = self.__logger.create_test_case_logger(config.name)
         run_data.start_time = datetime.now()
@@ -252,40 +267,53 @@ class TestSetRunner(ABC):
         logger: ITestLogger,
         run_data: RunData,
     ) -> TestCaseResult:
-        """Post process run results (files)
+        """Post process run results (files).
 
-        Args:
-            test_case_config (TestCaseConfig): configuration of the run
-            logger (ITestLogger): logger to log to
+        Parameters
+        ----------
+        test_case_config : TestCaseConfig
+            Configuration of the run.
+        logger : ITestLogger
+            Logger to log to.
 
-        Returns:
-            TestCaseResult: Result of the post processing
+        Returns
+        -------
+        TestCaseResult
+            Result of the post processing.
         """
         logger.debug(f"Reference directory:{test_case_config.absolute_test_case_reference_path}")
         logger.debug(f"Results   directory:{test_case_config.absolute_test_case_path}")
 
     @abstractmethod
     def show_summary(self, results: List[TestCaseResult], logger: ILogger):
-        """Shows a summery showing the results of all tests that were run
+        """Show a summery showing the results of all tests that were run.
 
-        Args:
-            results (List[TestCaseResult]): list of test results to summarize
-            logger (ILogger): logger to log to
+        Parameters
+        ----------
+        results : List[TestCaseResult]
+            List of test results to summarize.
+        logger : ILogger
+            Logger to log to.
         """
 
     @abstractmethod
     def create_error_result(self, test_case_config: TestCaseConfig, run_data: RunData) -> TestCaseResult:
-        """Creates an error result
+        """Create an error result.
 
-        Args:
-            testCaseConfig (TestCaseConfig): test case to use
-            run_data (RunData): Data related to the run
+        Parameters
+        ----------
+        test_case_config : TestCaseConfig
+            Test case to use.
+        run_data : (RunData)
+            Data related to the run.
 
-        Returns:
-            TestCaseResult: Error result
+        Returns
+        -------
+        TestCaseResult
+            Error result.
         """
 
-    def __log_successful_test(self, test_case_result: TestCaseResult):
+    def __log_successful_test(self, test_case_result: TestCaseResult) -> None:
         self.finished_tests += 1
         run_data = test_case_result.run_data
 
@@ -298,7 +326,7 @@ class TestSetRunner(ABC):
             + f"{run_data.timing_str()} -> process {run_data.process_id_str()}"
         )
 
-    def __log_failed_test(self, exception: BaseException):
+    def __log_failed_test(self, exception: BaseException) -> None:
         self.finished_tests += 1
         self.__logger.exception(
             f"Error running ({self.finished_tests}/{len(self.__settings.configs_to_run)}): {repr(exception)}"
@@ -324,7 +352,7 @@ class TestSetRunner(ABC):
 
         return skip_testcase, skip_postprocessing
 
-    def __download_dependencies(self):
+    def __download_dependencies(self) -> None:
         configs_to_handle = [c for c in self.__settings.configs_to_run if c.dependency]
         if len(configs_to_handle) == 0:
             return
@@ -337,8 +365,7 @@ class TestSetRunner(ABC):
         log_separator(self.__logger, char="-", with_new_line=True)
 
     def __update_programs(self) -> Iterable[Program]:
-        """Update network programs and initialize the stack"""
-
+        """Update network programs and initialize the stack."""
         log_sub_header("Updating programs", self.__logger)
 
         for program_configuration in self.__settings.programs:
@@ -473,14 +500,17 @@ class TestSetRunner(ABC):
         log_separator(self.__logger, char="-", with_new_line=True)
 
     def __prepare_test_case(self, config: TestCaseConfig, logger: ILogger) -> None:
-        """Prepare test case based on provided config
-        (download input & reference data)
+        """Prepare test case based on provided config (download input & reference data).
 
-        Args:
-            config (TestCaseConfig): test configuration to prepare
+        Parameters
+        ----------
+        config : TestCaseConfig
+            Test configuration to prepare.
 
-        Raises:
-             TestBenchError : if test can not be prepared
+        Raises
+        ------
+        TestBenchError
+            If test can not be prepared.
         """
         if self.__settings.local_paths is None:
             raise TestBenchError("Local paths are missing from the testbench settings")

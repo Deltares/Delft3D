@@ -1,13 +1,12 @@
-"""
-Description: Test Case Handler
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Test Case Handler.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import copy
 import os
 import time
-from typing import Dict, List, Tuple, ClassVar
+from typing import ClassVar, Dict, List, Tuple
 
 from src.config.test_case_config import TestCaseConfig
 from src.suite.program import Program
@@ -22,22 +21,16 @@ class TestCase(object):
 
     # constructor
     # input: test case configuration
-    def __init__(self, config: TestCaseConfig, logger: ILogger):
+    def __init__(self, config: TestCaseConfig, logger: ILogger) -> None:
         self.__config = config
         self.__logger = logger
         self.__maxRunTime: float = self.__config.max_run_time
         self.__programs: List[Tuple[int, Program]] = []
 
-        logger.debug(
-            f"Initializing test case ({self.__config.name}), max runtime : {str(self.__maxRunTime)}"
-        )
+        logger.debug(f"Initializing test case ({self.__config.name}), max runtime : {str(self.__maxRunTime)}")
 
-        self.__config.run_file_name = os.path.join(
-            self.__config.absolute_test_case_path, "_tb3_char.run"
-        )
-        refrunfile = os.path.join(
-            config.absolute_test_case_reference_path, "_tb3_char.run"
-        )
+        self.__config.run_file_name = os.path.join(self.__config.absolute_test_case_path, "_tb3_char.run")
+        refrunfile = os.path.join(config.absolute_test_case_reference_path, "_tb3_char.run")
 
         if os.path.exists(refrunfile):
             refruntime = self.__findCharacteristicsRunTime__(refrunfile)
@@ -47,23 +40,25 @@ class TestCase(object):
                     # set maxRunTime to 1.5 * reference runtime and add a few seconds (some systems start slow)
                     # The variation in runtimes vary a lot (different machines, other processes)
                     self.__maxRunTime = refruntime * 1.5 + 10.0
-                    logger.info(
-                        f"Overwriting max run time via reference _tb3_char.run ({str(self.__maxRunTime)})"
-                    )
+                    logger.info(f"Overwriting max run time via reference _tb3_char.run ({str(self.__maxRunTime)})")
 
         self.__maxRunTime = max(self.__maxRunTime, 120.0) * 5.0 + 300.0
         logger.debug(f"maxRunTime increased to {str(self.__maxRunTime)}")
 
-    def run(self, programs: List[Program]):
-        """execute a Test Case
-        [remark] execution does not throw errors, these can be retrieved from
-        getErrors()
+    def run(self, programs: List[Program]) -> None:
+        """Execute a Test Case.
 
-        Args:
-            programs (List[Program]): list of programs
+        Execution does not throw errors, these can be retrieved from `getErrors`.
 
-        Raises:
-            RuntimeError: On time out
+        Parameters
+        ----------
+        programs : List[Program]
+            List of programs.
+
+        Raises
+        ------
+        RuntimeError
+            On time out.
         """
         # prepare the programs for running
 
@@ -95,13 +90,9 @@ class TestCase(object):
                 # collect all added and changed files in the working directory (after running, compare to initial list)
                 if allfile not in {}.fromkeys(input_files, 0):
                     runfile.write("Output_added:" + str(allfile) + "\n")
-                    size = size + os.path.getsize(
-                        os.path.join(self.__config.absolute_test_case_path, allfile)
-                    )
+                    size = size + os.path.getsize(os.path.join(self.__config.absolute_test_case_path, allfile))
                 else:
-                    ftime = os.path.getmtime(
-                        os.path.join(self.__config.absolute_test_case_path, allfile)
-                    )
+                    ftime = os.path.getmtime(os.path.join(self.__config.absolute_test_case_path, allfile))
                     if ftime != input_files[allfile]:
                         runfile.write("Output_changed:" + str(allfile) + "\n")
             runfile.write("End_size:" + str(size) + "\n")
@@ -112,12 +103,8 @@ class TestCase(object):
 
         # collect all initial files in the working directory before running
         for infile in os.listdir(self.__config.absolute_test_case_path):
-            inputfiles[infile] = os.path.getmtime(
-                os.path.join(self.__config.absolute_test_case_path, infile)
-            )
-            size = size + os.path.getsize(
-                os.path.join(self.__config.absolute_test_case_path, infile)
-            )
+            inputfiles[infile] = os.path.getmtime(os.path.join(self.__config.absolute_test_case_path, infile))
+            size = size + os.path.getsize(os.path.join(self.__config.absolute_test_case_path, infile))
 
         return inputfiles, size
 
@@ -127,17 +114,14 @@ class TestCase(object):
         return self.__errors
 
     def __initializeProgramList__(self, programs: List[Program]):
-        """prepare programs from configuration"""
-
+        """Prepare programs from configuration."""
         # programs are loaded by the manager
         shell_arguments = " ".join(self.__config.shell_arguments)
         shell = self.__config.shell
 
         for program_config in self.__config.program_configs:
             # get the copy of the original program
-            program: Program = next(
-                p for p in programs if p.name == program_config.name
-            )
+            program: Program = next(p for p in programs if p.name == program_config.name)
             program_copy: Program = copy.deepcopy(program)
 
             # Combine the program workdir with the testcase workdir

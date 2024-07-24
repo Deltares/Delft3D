@@ -1,7 +1,6 @@
-"""
-Description: Process runner for test suite
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Process runner for test suite.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import copy
@@ -17,21 +16,20 @@ from typing import Optional
 from src.config.program_config import ProgramConfig
 from src.config.types.mode_type import ModeType
 from src.suite.test_bench_settings import TestBenchSettings
-from src.utils.common import add_search_path, stripPassword, get_default_logging_folder_path
+from src.utils.common import add_search_path, get_default_logging_folder_path, stripPassword
 from src.utils.logging.file_logger import FileLogger
 from src.utils.logging.i_logger import ILogger
-from src.utils.logging.log_level import LogLevel
 from src.utils.paths import Paths
 
 
 class Program:
-    """Process runner that runs a program (part of a test case)"""
+    """Process runner that runs a program (part of a test case)."""
 
     # global variables
     __error: Optional[Exception] = None
 
     # constructor
-    def __init__(self, program_config: ProgramConfig, settings: TestBenchSettings):
+    def __init__(self, program_config: ProgramConfig, settings: TestBenchSettings) -> None:
         if not program_config:
             raise RuntimeError("Cannot instantiate a program without a configuration")
         self.__program_config = program_config
@@ -39,17 +37,19 @@ class Program:
 
     @property
     def name(self) -> str:
-        """The name of the Program"""
+        """The name of the Program."""
         return self.__program_config.name
 
-    def run(self, logger: ILogger):
+    def run(self, logger: ILogger) -> None:
         self.__execute__(logger)
 
-    def overwriteConfiguration(self, program_config: ProgramConfig):
-        """overwrite program configuration settings
+    def overwriteConfiguration(self, program_config: ProgramConfig) -> None:
+        """Overwrite program configuration settings.
 
-        Args:
-            program_config (ProgramConfig): configuration to get parameters from
+        Parameters
+        ----------
+        program_config: ProgramConfig
+            Configuration to get parameters from.
         """
         if program_config:
             # overwrite name if one is given
@@ -65,9 +65,7 @@ class Program:
                         program_config.shell.working_directory
                     )
                 else:
-                    program_config.shell.working_directory = (
-                        self.__program_config.working_directory
-                    )
+                    program_config.shell.working_directory = self.__program_config.working_directory
 
                 self.__program_config.shell = program_config.shell
             # overwrite arguments if they are given
@@ -78,15 +76,11 @@ class Program:
                 self.__program_config.shell_arguments = program_config.shell_arguments
             # overwrite working directory if it is given
             if program_config.working_directory:
-                self.__program_config.working_directory = (
-                    program_config.working_directory
-                )
+                self.__program_config.working_directory = program_config.working_directory
             # add environment settings
             if len(program_config.environment_variables) > 0:
                 for ev in program_config.environment_variables:
-                    self.__program_config.environment_variables[
-                        ev
-                    ] = program_config.environment_variables[ev]
+                    self.__program_config.environment_variables[ev] = program_config.environment_variables[ev]
             if len(program_config.search_paths) > 0:
                 for sp in program_config.search_paths:
                     self.__program_config.search_paths.append(sp)
@@ -110,15 +104,15 @@ class Program:
                 self.__program_config.shell_remove_quotes = True
 
     def getError(self):
-        """return sub process errors if any"""
+        """Return sub process errors if any."""
         return self.__error
 
-    def terminate(self, logger: ILogger):
-        """terminate the run"""
+    def terminate(self, logger: ILogger) -> None:
+        """Terminate the run."""
         return
 
     def __execute__(self, logger: ILogger):
-        """run given configuration"""
+        """Run given configuration."""
         try:
             logger.debug(
                 f"Starting {self.__program_config.absolute_bin_path} with"
@@ -138,14 +132,9 @@ class Program:
                 prog_path = str(self.__program_config.path)
                 return_code = str(completed_process.returncode)
                 if self.__program_config.ignore_return_value:
-                    logger.debug(
-                        f"{prog_path} generated non-null "
-                        + f"error code {return_code}, but ignoring it"
-                    )
+                    logger.debug(f"{prog_path} generated non-null error code {return_code}, but ignoring it")
                 else:
-                    logger.warning(
-                        f"{prog_path} generated " + f"non-null error code {return_code}"
-                    )
+                    logger.warning(f"{prog_path} generated non-null error code {return_code}")
                     self.__error = subprocess.CalledProcessError(
                         completed_process.returncode,
                         self.__program_config.path,
@@ -154,28 +143,17 @@ class Program:
 
             if completed_process.stderr:
                 prog_path = str(self.__program_config.path)
-                error_message = (
-                    completed_process.stderr.decode().rstrip().replace("'", "")
-                )
+                error_message = completed_process.stderr.decode().rstrip().replace("'", "")
                 if self.__program_config.ignore_standard_error:
-                    logger.debug(
-                        f"{prog_path} contained error message -"
-                        + f" {error_message}, but ignoring it"
-                    )
+                    logger.debug(f"{prog_path} contained error message - {error_message}, but ignoring it")
                 else:
-                    logger.warning(
-                        f"{prog_path} contained error message - {error_message}"
-                    )
-                    self.__error = subprocess.CalledProcessError(
-                        -1, self.__program_config.path, error_message
-                    )
+                    logger.warning(f"{prog_path} contained error message - {error_message}")
+                    self.__error = subprocess.CalledProcessError(-1, self.__program_config.path, error_message)
         except Exception as e:
             logger.exception(f"Could not execute program: {repr(e)}")
             self.__error = e
 
-    def __handle_process_output(
-        self, logger: ILogger, completed_process: subprocess.CompletedProcess
-    ):
+    def __handle_process_output(self, logger: ILogger, completed_process: subprocess.CompletedProcess) -> None:
         if not self.__program_config.log_output_to_file:
             return
         file_logger: Optional[FileLogger] = None
@@ -183,9 +161,7 @@ class Program:
         if self.__settings.run_mode == ModeType.REFERENCE:
             time_str = datetime.now().strftime("%y%m%d_%H%M%S")
             unique_name = f"{self.__program_config.name}={time_str}.log"
-            log_file = os.path.abspath(
-                os.path.join(str(self.__program_config.working_directory), unique_name)
-            )
+            log_file = os.path.abspath(os.path.join(str(self.__program_config.working_directory), unique_name))
         else:
             unique_name = f"{self.__program_config.name}_seq{self.__program_config.sequence}.log"
             log_file = os.path.abspath(
@@ -193,7 +169,7 @@ class Program:
             )
 
         logger.debug(f"Program output will be written to: {log_file}")
-        file_logger = FileLogger(LogLevel.DEBUG, unique_name, log_file)
+        file_logger = FileLogger(self.__settings.log_level, unique_name, log_file)
         for line in completed_process.stdout.splitlines():
             file_logger.debug(line.decode())
 
@@ -212,8 +188,7 @@ class Program:
 
         logger.info(f"Executing :: {str(stripPassword(execmd))}")
         logger.debug(
-            f"Executing ::{str(stripPassword(execmd))}"
-            + f"::in directory::{self.__program_config.working_directory}"
+            f"Executing ::{str(stripPassword(execmd))}::in directory::{self.__program_config.working_directory}"
         )
 
         program_env = self.__program_config.environment
@@ -223,11 +198,7 @@ class Program:
             program_env["TestBenchRoot"] = tb_root
 
         logger.debug("Creating subprocess")
-        timeout = (
-            self.__program_config.max_run_time
-            if self.__program_config.max_run_time != 0
-            else None
-        )
+        timeout = self.__program_config.max_run_time if self.__program_config.max_run_time != 0 else None
         completed_process = subprocess.run(
             execmd,
             capture_output=True,
@@ -243,13 +214,10 @@ class Program:
         logger.debug("Building command to be executed")
         if platform.system() != "Windows":
             if len(self.__program_config.modules) > 0 or (
-                self.__program_config.shell
-                and len(self.__program_config.shell.modules) > 0
+                self.__program_config.shell and len(self.__program_config.shell.modules) > 0
             ):
-                logger.info(
-                    "found modules to load, and on a non-windows system, trying to load module shell"
-                )
-                if not "MODULEPATH" in os.environ:
+                logger.info("found modules to load, and on a non-windows system, trying to load module shell")
+                if "MODULEPATH" not in os.environ:
                     f = open(os.environ["MODULESHOME"] + "/init/.modulespath", "r")
                     path = []
                     for line in f.readlines():
@@ -257,7 +225,7 @@ class Program:
                         if line != "":
                             path.append(line)
                     os.environ["MODULEPATH"] = ":".join(path)
-                if not "LOADEDMODULES" in os.environ:
+                if "LOADEDMODULES" not in os.environ:
                     os.environ["LOADEDMODULES"] = ""
                 # initialize the modules environment
                 if self.__program_config.shell:
@@ -299,10 +267,7 @@ class Program:
         )
         # add environment variables
         for ev in self.__program_config.environment_variables:
-            logger.debug(
-                f"Adding environment variable {ev} : "
-                + f"{self.__program_config.environment_variables[ev][1]}"
-            )
+            logger.debug(f"Adding environment variable {ev} : {self.__program_config.environment_variables[ev][1]}")
             self.__program_config.environment[ev] = self.__insertOutputVariable__(
                 self.__program_config.environment_variables[ev][1], logger
             )
@@ -312,7 +277,7 @@ class Program:
         cmdAndArgs = str(self.__program_config.absolute_bin_path)
         if platform.system() == "Windows":
             # Needed when the path contains spaces
-            cmdAndArgs = '"' + cmdAndArgs + '"'
+            cmdAndArgs = f'"{cmdAndArgs}"'
         # add the given arguments
         for arg in self.__program_config.arguments:
             a = str(arg)
@@ -320,15 +285,11 @@ class Program:
             # unless a flag is used to switch this off
             if Paths().isPath(arg):
                 a = Paths().rebuildToLocalPath(a)
-                if (
-                    not self.__program_config.shell
-                    and not self.__program_config.program_remove_quotes
-                ) or (
-                    self.__program_config.shell
-                    and self.__program_config.shell.shell_remove_quotes
+                if (not self.__program_config.shell and not self.__program_config.program_remove_quotes) or (
+                    self.__program_config.shell and self.__program_config.shell.shell_remove_quotes
                 ):
-                    a = '"' + a + '"'
-            cmdAndArgs += " " + a
+                    a = f'"{a}"'
+            cmdAndArgs += f" {a}"
         # replace argument variables containing [output()] variable and others with actual value
         cmdAndArgs = self.__insertOutputVariable__(cmdAndArgs, logger)
         # if a shell has been specified we need to reformat the command string
@@ -350,21 +311,18 @@ class Program:
             if LocalShellArgument == "":
                 for arg in self.__program_config.shell.arguments:
                     a = str(arg)
-                    if (
-                        Paths().isPath(arg)
-                        and not self.__program_config.shell.shell_remove_quotes
-                    ):
-                        a = '"' + a + '"'
-                    shlAndArgs += " " + a
+                    if Paths().isPath(arg) and not self.__program_config.shell.shell_remove_quotes:
+                        a = f'"{a}"'
+                    shlAndArgs += f" {a}"
             else:
                 shlAndArgs += " " + LocalShellArgument
             shlAndArgs = self.__insertOutputVariable__(shlAndArgs, logger)
             if platform.system() == "Windows":
                 if self.__program_config.shell.shell_remove_quotes:
                     # Example: 'cmd \c vs <infile'
-                    return str(shlAndArgs + " " + cmdAndArgs)
+                    return f"{shlAndArgs} {cmdAndArgs}"
                 # Example: 'cmd \c "vs <infile"'
-                return str(shlAndArgs + ' "' + cmdAndArgs + '"')
+                return f'{shlAndArgs} "{cmdAndArgs}"'
             else:
                 execmd = shlAndArgs.strip().split()
                 if self.__program_config.shell.shell_remove_quotes:
@@ -389,9 +347,7 @@ class Program:
         # replace [output(some_name)] result from previous run some_name in command string
         retval = original
         if "[output(" in retval:
-            sr = re.search(
-                r"(?<=(\[output\())(.*?)(?=\)\])", retval, flags=re.IGNORECASE
-            )
+            sr = re.search(r"(?<=(\[output\())(.*?)(?=\)\])", retval, flags=re.IGNORECASE)
             if sr and len(sr.groups()) > 0:
                 k = retval.find("[output(")
                 outstr = RunTimeData().getOutputByName(sr.group(0))
@@ -406,17 +362,11 @@ class Program:
             else:
                 logger.warning(f"Could not match {original} as [output(var)]")
         if "[programpath(" in retval:
-            sr = re.search(
-                r"(?<=(\[programpath\())(.*?)(?=\)\])", retval, flags=re.IGNORECASE
-            )
+            sr = re.search(r"(?<=(\[programpath\())(.*?)(?=\)\])", retval, flags=re.IGNORECASE)
             if sr and len(sr.groups()) > 0:
                 k = retval.find("[programpath(")
 
-                absolute_path = next(
-                    p.absolute_bin_path
-                    for p in self.__settings.programs
-                    if p.name == sr.group(0)
-                )
+                absolute_path = next(p.absolute_bin_path for p in self.__settings.programs if p.name == sr.group(0))
 
                 outstr = os.path.dirname(absolute_path)
 

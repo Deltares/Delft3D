@@ -224,23 +224,6 @@
                 </file>
             </checks>
         </testCase>
-		<testCase name="e02_f150_c20_groesbeek_NN_T4" ref="dimr_default">
-            <path version="2024-01-11T16:30:00">e02_dflowfm/f150_1d2d_acceptance_urban/c20_groesbeek_NN/T4</path>
-            <checks>
-                <file name="DFM_OUTPUT_0_FlowFM_nonlin1/0_FlowFM_nonlin1_map.nc" type="netCDF">
-                    <parameters>
-                        <parameter name="mesh1d_s1" toleranceAbsolute="0.001" />
-                        <parameter name="mesh1d_u1" toleranceAbsolute="0.001" />
-                        <parameter name="mesh1d_q1" toleranceAbsolute="0.001" />
-                    </parameters>
-                </file>
-                <file name="DFM_OUTPUT_0_FlowFM_nonlin1/0_FlowFM_nonlin1_his.nc" type="netCDF">
-                    <parameters>
-                        <parameter name="water_balance_total_volume" toleranceAbsolute="0.001" />				
-                    </parameters>
-                </file>
-            </checks>
-        </testCase>
 		<testCase name="e02_f150_c20_groesbeek_NN_T5" ref="dimr_default">
             <path version="2024-01-11T16:30:00">e02_dflowfm/f150_1d2d_acceptance_urban/c20_groesbeek_NN/T5</path>
             <checks>
@@ -275,50 +258,6 @@
                 </file>
             </checks>
         </testCase>		
-        <testCase name="e02_f150_c21_groesbeek-1d" ref="dimr_default">
-            <path version="2024-01-11T16:30:00">e02_dflowfm/f150_1d2d_acceptance_urban/c21_groesbeek-1d</path>
-            <checks>
-                <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
-                    <parameters>
-                        <parameter name="mesh1d_s1" toleranceAbsolute="0.001" />
-                        <parameter name="mesh1d_u1" toleranceAbsolute="0.001" />
-                        <parameter name="mesh1d_q1" toleranceAbsolute="0.001" />
-                        <parameter name="mesh1d_current_total_net_inflow_lateral" toleranceAbsolute="0.001" />
-                        <parameter name="mesh1d_waterdepth" toleranceAbsolute="0.001" />
-                        <parameter name="mesh1d_volume_on_ground" toleranceAbsolute="0.001" />
-                    </parameters>
-                </file>
-                <file name="fm/DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
-                    <parameters>
-                        <parameter name="water_balance_boundaries_in" toleranceAbsolute="0.001" />
-                        <parameter name="water_balance_boundaries_out" toleranceAbsolute="0.001" />
-                        <parameter name="water_balance_laterals_in" toleranceAbsolute="0.001" />
-                        <parameter name="water_balance_laterals_out" toleranceAbsolute="0.001" />
-                        <parameter name="water_balance_storage" toleranceAbsolute="0.001" />
-                        <parameter name="water_balance_total_volume" toleranceAbsolute="0.001" />
-						<parameter name="pump_capacity" toleranceAbsolute="0.001" />
-						<parameter name="pump_head" toleranceAbsolute="0.001" />
-						<parameter name="pump_s1_suction_side" toleranceAbsolute="0.001" />
-						<parameter name="pump_s1_delivery_side" toleranceAbsolute="0.001" />
-						<parameter name="pump_s1up" toleranceAbsolute="0.001" />
-						<parameter name="pump_s1dn" toleranceAbsolute="0.001" />
-						<parameter name="pump_structure_discharge" toleranceAbsolute="0.001" />
-						<parameter name="pump_structure_head" toleranceAbsolute="0.001" />
-						<parameter name="orifice_discharge" toleranceAbsolute="0.001" />
-						<parameter name="orifice_s1up" toleranceAbsolute="0.001" />
-						<parameter name="orifice_s1dn" toleranceAbsolute="0.001" />
-						<parameter name="orifice_flow_area" toleranceAbsolute="0.001" />
-						<parameter name="orifice_s1_on_crest" toleranceAbsolute="0.001" />
-						<parameter name="weirgen_discharge" toleranceAbsolute="0.001" />
-						<parameter name="weirgen_s1up" toleranceAbsolute="0.001" />
-						<parameter name="weirgen_s1dn" toleranceAbsolute="0.001" />
-						<parameter name="weirgen_flow_area" toleranceAbsolute="0.001" />
-						<parameter name="weirgen_structure_head" toleranceAbsolute="0.001" />
-						<parameter name="weirgen_velocity" toleranceAbsolute="0.001" />						
-                    </parameters>
-                </file>
-            </checks>
-        </testCase>
         <testCase name="e02_f150_c31_pudong-1d" ref="dimr_default">
             <path version="2024-03-22T19:40:00">e02_dflowfm/f150_1d2d_acceptance_urban/c31_pudong-1d/dimr_model</path>
             <checks>

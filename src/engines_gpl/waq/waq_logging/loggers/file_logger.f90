@@ -83,7 +83,7 @@ contains
 
         open (newunit=this%file_unit_number, file=this%log_file_path, iostat=error_code)
 
-        if (this%file_unit_number == 0 .or. error_code > 0) then
+        if (this%file_unit_number == 0 .or. error_code /= 0) then
             write(*, *) "Could not open the file " // this%log_file_path // " for logging."
             call stop_with_error()
         end if

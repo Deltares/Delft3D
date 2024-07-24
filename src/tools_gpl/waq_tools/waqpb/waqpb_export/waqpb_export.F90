@@ -154,9 +154,9 @@ program waqpb_export
     num_decimals_version = obtain_num_decimals_version(version)
     write(num_decimals_version_char,'(I10)') num_decimals_version
 
-    write ( lunfil , '(i10,50x,f8.'//num_decimals_version_char//',2x, I10)') num_processes_activated,version,serial
+    write ( lunfil , '(i10,50x,f8.'//num_decimals_version_char//',2x, I10)') nproc,version,serial
 
-    do iproc=1,num_processes_activated
+    do iproc=1,nproc
 
         write (*,'(''+Process: '',a10)') procid(iproc)
 
@@ -242,7 +242,7 @@ program waqpb_export
 !         OUTPUT ITEMS ON SEGMENT LEVEL/EXCHANGE LEVEL
 
     !         scan output items table for FIRST occurence of proces
-            ioffse = index_in_array(procid(iproc), outppr(:num_output_files))
+            ioffse = index_in_array(procid(iproc), outppr(:noutp))
             naanta = 0
             if ( ioffse .gt. 0 ) then
 
@@ -338,7 +338,7 @@ program waqpb_export
     !             Back for next row in table OUTP,
     !             if it still matches current proces
 
-                    if ( (ioutp+1) .le. num_output_files ) then
+                    if ( (ioutp+1) .le. noutp ) then
                         if (string_equals( procid(iproc), outppr(ioutp+1))) goto 440
                     endif
                 endif

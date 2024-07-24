@@ -22,106 +22,106 @@
 !!  rights reserved.
 module m_part11sp
 
-implicit none
+    implicit none
 
 contains
 
 
-      subroutine part11sp( lgrid  , xp     , yp     , num_rows   , npart  ,        &
-                           mpart  , xpart  , ypart  , xa     , ya     ,        &
-                           lgrid2 , num_columns)
+    subroutine part11sp(lgrid, xp, yp, num_rows, npart, &
+            mpart, xpart, ypart, xa, ya, &
+            lgrid2, num_columns)
 
-!       Deltares Software Centre
+        !       Deltares Software Centre
 
-!>\file
-!>         Calculates real world x,y from the particles in-cell position for a single particle in 2D
-!>
-!>         Interpolates bi-linearly between the corner coordinates of the particle cell.
-!>         That is why both active grid (lgrid) and the total (lgrid2) are needed.\n
-!>         It seems that in part10 the n,m of non-floating particles is set to a negative
-!>         number to exclude them from this computation (needs to be checked).
+        !>\file
+        !>         Calculates real world x,y from the particles in-cell position for a single particle in 2D
+        !>
+        !>         Interpolates bi-linearly between the corner coordinates of the particle cell.
+        !>         That is why both active grid (lgrid) and the total (lgrid2) are needed.\n
+        !>         It seems that in part10 the n,m of non-floating particles is set to a negative
+        !>         number to exclude them from this computation (needs to be checked).
 
-!     System administration : Michelle Jeuken
+        !     System administration : Michelle Jeuken
 
-!     Created by            : Michelle Jeuken from part11
+        !     Created by            : Michelle Jeuken from part11
 
-!     Modified              : none
+        !     Modified              : none
 
-!     Logical unit numbers  : none
+        !     Logical unit numbers  : none
 
-!     Subroutines called    : none
+        !     Subroutines called    : none
 
-!     Functions   called    : none
+        !     Functions   called    : none
 
-      use m_waq_precision               ! single/double precision
-      use timers
+        use m_waq_precision               ! single/double precision
+        use timers
 
-      implicit none               ! force explicit typing
+        implicit none
 
-!     Arguments
+        !     Arguments
 
-!     kind            function         name                      description
+        !     kind            function         name                      description
 
-      integer  ( int_wp ), intent(in   ) :: num_rows                    !< first grid index
-      integer  ( int_wp ), intent(in   ) :: num_columns                    !< second grid index
-      integer  ( int_wp ), intent(in   ) :: lgrid (num_rows,num_columns)       !< active grid matrix
-      integer  ( int_wp ), intent(in   ) :: lgrid2(num_rows,num_columns)       !< total grid matrix
-      real     ( real_wp), intent(in   ) :: xp    (num_rows*num_columns)       !< x of the grid cell corner
-      real     ( real_wp), intent(in   ) :: yp    (num_rows*num_columns)       !< y of the grid cell corner
-      integer  ( int_wp ), intent(in   ) :: npart                   !< first grid cell index particles
-      integer  ( int_wp ), intent(in   ) :: mpart                   !< second grid cell index particles
-      real     ( real_wp), intent(in   ) :: xpart                   !< x-in the grid of particles
-      real     ( real_wp), intent(in   ) :: ypart                   !< y-in the grid of particles
-      real     ( real_wp), intent(  out) :: xa                      !< absolute x of particles
-      real     ( real_wp), intent(  out) :: ya                      !< absolute y of particles
+        integer  (int_wp), intent(in) :: num_rows                    !< first grid index
+        integer  (int_wp), intent(in) :: num_columns                    !< second grid index
+        integer  (int_wp), intent(in) :: lgrid (num_rows, num_columns)       !< active grid matrix
+        integer  (int_wp), intent(in) :: lgrid2(num_rows, num_columns)       !< total grid matrix
+        real     (real_wp), intent(in) :: xp    (num_rows * num_columns)       !< x of the grid cell corner
+        real     (real_wp), intent(in) :: yp    (num_rows * num_columns)       !< y of the grid cell corner
+        integer  (int_wp), intent(in) :: npart                   !< first grid cell index particles
+        integer  (int_wp), intent(in) :: mpart                   !< second grid cell index particles
+        real     (real_wp), intent(in) :: xpart                   !< x-in the grid of particles
+        real     (real_wp), intent(in) :: ypart                   !< y-in the grid of particles
+        real     (real_wp), intent(out) :: xa                      !< absolute x of particles
+        real     (real_wp), intent(out) :: ya                      !< absolute y of particles
 
-!     Locals:
+        !     Locals:
 
-      integer( int_wp ) n0      ! linear 2D grid cell number of the particle
-      integer( int_wp ) n1      ! first index minus 1 grid number
-      integer( int_wp ) n2      ! second index minus 1 grid number
-      integer( int_wp ) n3      ! both indices minus 1 grid number
+        integer(int_wp) n0      ! linear 2D grid cell number of the particle
+        integer(int_wp) n1      ! first index minus 1 grid number
+        integer(int_wp) n2      ! second index minus 1 grid number
+        integer(int_wp) n3      ! both indices minus 1 grid number
 
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
-      if ( timon ) call timstrt( "part11sp", ithndl )
+        integer(4) ithndl              ! handle to time this subroutine
+        data       ithndl / 0 /
+        if (timon) call timstrt("part11sp", ithndl)
 
-!     loop over the number of particles
+        !     loop over the number of particles
 
 
-!        only perform transformation particles with positive (n,m) indices
-!        works as a mask to exclude certain particles from transformation.
-!        in later delpar version used to exclude non-floating particles
-!        (see end of routine part10)
+        !        only perform transformation particles with positive (n,m) indices
+        !        works as a mask to exclude certain particles from transformation.
+        !        in later delpar version used to exclude non-floating particles
+        !        (see end of routine part10)
 
-      if ( npart .ge. 0 .and. mpart .ge. 0 ) then
-         n0 = lgrid(npart, mpart)
-         if ( n0 .gt. 0 ) then
-            n1        = lgrid2(npart - 1, mpart    )
-            n2        = lgrid2(npart    , mpart - 1)
-            n3        = lgrid2(npart - 1, mpart - 1)
+        if (npart >= 0 .and. mpart >= 0) then
+            n0 = lgrid(npart, mpart)
+            if (n0 > 0) then
+                n1 = lgrid2(npart - 1, mpart)
+                n2 = lgrid2(npart, mpart - 1)
+                n3 = lgrid2(npart - 1, mpart - 1)
 
-!              horizontal coordinates (x and y)
+                !              horizontal coordinates (x and y)
 
-            xa = xp(n3) +                                          &
-                     xpart * (xp(n1) - xp(n3)) + ypart * (xp(n2) - xp(n3)) +     &
-                     xpart * ypart * (xp(n0) - xp(n1) - xp(n2) + xp(n3))
-            ya = yp(n3) +                                          &
-                     xpart * (yp(n1) - yp(n3)) + ypart * (yp(n2) - yp(n3)) +     &
-                     xpart * ypart * (yp(n0) - yp(n1) - yp(n2) + yp(n3))
+                xa = xp(n3) + &
+                        xpart * (xp(n1) - xp(n3)) + ypart * (xp(n2) - xp(n3)) + &
+                        xpart * ypart * (xp(n0) - xp(n1) - xp(n2) + xp(n3))
+                ya = yp(n3) + &
+                        xpart * (yp(n1) - yp(n3)) + ypart * (yp(n2) - yp(n3)) + &
+                        xpart * ypart * (yp(n0) - yp(n1) - yp(n2) + yp(n3))
 
-         else
-!              particles outside model area
-            xa = 999.999
-            ya = 999.999
-         endif
-      endif
-!     end of subroutine
+            else
+                !              particles outside model area
+                xa = 999.999
+                ya = 999.999
+            endif
+        endif
+        !     end of subroutine
 
-      if ( timon ) call timstop ( ithndl )
-      return
-!
-      end subroutine part11sp
+        if (timon) call timstop (ithndl)
+        return
+        !
+    end subroutine part11sp
 
 
 end module m_part11sp

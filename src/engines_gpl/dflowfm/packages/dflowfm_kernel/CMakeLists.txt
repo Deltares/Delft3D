@@ -131,6 +131,7 @@ if (UNIX)
                             flow1d
                             flow1d_core
                             flow1d_io
+                            flow1d_implicit
                             gridgeom
                             ice_data
                             ice_io
@@ -178,6 +179,7 @@ set(oss_dependencies    deltares_common
                         flow1d
                         flow1d_core
                         flow1d_io
+                        flow1d_implicit
                         gridgeom
                         ice_data
                         ice_io

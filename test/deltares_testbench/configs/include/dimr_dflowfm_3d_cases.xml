@@ -595,7 +595,7 @@
     </testCase>
 
     <testCase name="e02_f020_c001_htc_read_uniform" ref="dflowfm_default">
-      <path version="2024-05-07T21:17:00">e02_dflowfm/f020_heat_flux/c001_htc_read_uniform</path>
+      <path version="2024-07-03T12:36:00">e02_dflowfm/f020_heat_flux/c001_htc_read_uniform</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/htccase_map.nc" type="netCDF">
@@ -624,7 +624,7 @@
     </testCase>
 
     <testCase name="e02_f020_c031_heatmodel5_secchidepth2" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f020_heat_flux/c031_heatmodel5_secchidepth2</path>
+      <path version="2024-07-02T14:22:00">e02_dflowfm/f020_heat_flux/c031_heatmodel5_secchidepth2</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/sech4_his.nc" type="netCDF">
@@ -741,7 +741,7 @@
     </testCase>
 
     <testCase name="e02_f090_c011_san_francisco_bay_3d" ref="dflowfm_default">
-      <path version="2024-06-13T13:53:00">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
+      <path version="2024-07-16T11:01:00">e02_dflowfm/f090_validation_realworld/c011_san_francisco_bay_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/historical_WY2011_map.nc" type="netCDF">

@@ -91,17 +91,17 @@ subroutine readdb(lu_inp, lu_mes)
     !Read Table P4
     open(newunit=lu_inp, file='proces.csv')
     read(lu_inp, *)
-    num_processes_activated = 0
- 20 if (num_processes_activated+1>nprocm) stop 'dimension NprocM'
+    nproc = 0
+ 20 if (nproc+1>nprocm) stop 'dimension NprocM'
     read(lu_inp, * , end = 21) &
-        procid(num_processes_activated+1), procco(num_processes_activated+1), procfo(num_processes_activated+1), &
-        procnm(num_processes_activated+1)
-    num_processes_activated = num_processes_activated + 1
-    proc_i(num_processes_activated) = num_processes_activated
+        procid(nproc+1), procco(nproc+1), procfo(nproc+1), &
+        procnm(nproc+1)
+    nproc = nproc + 1
+    proc_i(nproc) = nproc
     goto 20
  21 close(lu_inp)
-    write(lu_mes,'(i5,'' lines read from PROCES.CSV'')') num_processes_activated
-    call validate_names(procfo(1:num_processes_activated), lu_mes)
+    write(lu_mes,'(i5,'' lines read from PROCES.CSV'')') nproc
+    call validate_names(procfo(1:nproc), lu_mes)
 
 
     !Read table P5
@@ -201,19 +201,19 @@ subroutine readdb(lu_inp, lu_mes)
     !Read table R4
     open(newunit=lu_inp, file='outputs.csv')
     read(lu_inp, *)
-    num_output_files = 0
- 50 if (num_output_files+1>noutpm) stop 'dimension NoutpM'
+    noutp = 0
+ 50 if (noutp+1>noutpm) stop 'dimension NoutpM'
     read(lu_inp, * , end = 51) &
-        outppr(num_output_files+1), outpit(num_output_files+1), outpnm(num_output_files+1), &
-        outpdo(num_output_files+1), outpsx(num_output_files+1)
-    num_output_files = num_output_files + 1
-    outp_i(num_output_files) = num_output_files
+        outppr(noutp+1), outpit(noutp+1), outpnm(noutp+1), &
+        outpdo(noutp+1), outpsx(noutp+1)
+    noutp = noutp + 1
+    outp_i(noutp) = noutp
     goto 50
  51 close(lu_inp)
-    write(lu_mes,'(i5,'' lines read from OUTPUTS.CSV'')') num_output_files
+    write(lu_mes,'(i5,'' lines read from OUTPUTS.CSV'')') noutp
     !Sort table R4
     call sorts2 ( outppr, outpit, outpnm, c1dum , outpdo, &
-                  outpsx, num_output_files , .false., .true.)
+                  outpsx, noutp , .false., .true.)
     write(lu_mes,'('' OUTPUTS.CSV sorted'')')
 
 
@@ -363,9 +363,9 @@ subroutine writdb(lu)
     !Table P4
     open(newunit=lu, file='proces.csv')
     write(lu,'(''procid,procco,procfo,procnm'')')
-    if (num_processes_activated>0) then
+    if (nproc>0) then
         write(lu,'(''"''a10,''",'',i3,'',"'',a10,''","'',a50,''"'')') &
-            (procid(i),procco(i),procfo(i),procnm(i),i=1,num_processes_activated)
+            (procid(i),procco(i),procfo(i),procnm(i),i=1,nproc)
     end if
     close(lu)
 
@@ -385,7 +385,7 @@ subroutine writdb(lu)
     c10 = 'Config:'
     write(lu, '(''"'',a10,''"'',99('',"'',a10,''"''))') &
             c10,(confid(i),i=1,nconf)
-    do 300 iproc=1,num_processes_activated
+    do 300 iproc=1,nproc
         do 290 iconf = 1,nconf
             if (conpro(iconf,iproc)) then
                 swicnf(iconf) = 'A'
@@ -424,10 +424,10 @@ subroutine writdb(lu)
     !Table R4
     open(newunit=lu, file='outputs.csv')
     write(lu,'(''outppr,outpit,outpnm,outpdo,outpsx'')')
-    if (num_output_files>0) then
+    if (noutp>0) then
         write(lu,'(''"'',a10,''","'',a10,''",'',i4,'',"'',a1, &
                 ''",'',i1)') &
-                (outppr(i),outpit(i),outpnm(i),outpdo(i),outpsx(i),i=1,num_output_files)
+                (outppr(i),outpit(i),outpnm(i),outpdo(i),outpsx(i),i=1,noutp)
     end if
     close(lu)
 

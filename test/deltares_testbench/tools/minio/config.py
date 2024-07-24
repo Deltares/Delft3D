@@ -4,15 +4,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import (
-    ClassVar,
-    Dict,
-    Iterable,
-    Mapping,
-    Optional,
-    TextIO,
-    Tuple,
-)
+from typing import ClassVar, Dict, Iterable, Mapping, Optional, TextIO, Tuple
 
 from s3_path_wrangler.paths import S3Path
 
@@ -22,10 +14,10 @@ from src.config.location import Location
 from src.config.test_case_config import TestCaseConfig
 from src.config.types.path_type import PathType
 from src.suite.test_bench_settings import TestBenchSettings
-from src.utils.xml_config_parser import XmlConfigParser
-from tools.minio import utils
 from src.utils.logging.console_logger import ConsoleLogger
 from src.utils.logging.log_level import LogLevel
+from src.utils.xml_config_parser import XmlConfigParser
+from tools.minio import utils
 
 
 @dataclass
@@ -191,9 +183,9 @@ class TestBenchConfigWriter(TestCaseWriter):
 
     PATH_PATTERN: ClassVar[re.Pattern] = re.compile(
         r"""
-            (?P<space> \s* ) 
-            (?: <path (?: \s+ version=\"(?P<version>[-.+/:\w]+)\" \s* )? > ) 
-            (?P<path>[-/.()+\w]+) 
+            (?P<space> \s* )
+            (?: <path (?: \s+ version=\"(?P<version>[-.+/:\w]+)\" \s* )? > )
+            (?P<path>[-/.()+\w]+)
             </path>
         """,
         re.VERBOSE,

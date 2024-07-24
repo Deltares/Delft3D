@@ -7,7 +7,7 @@ module m_output_config
    use netcdf, only: nf90_double
    use fm_location_types
    implicit none
-private
+   private
 
    public scan_input_tree
    public set_properties
@@ -268,7 +268,7 @@ private
    integer, public :: IDX_HIS_HWQ_ABSTRACT
    integer, public :: IDX_HIS_WQBOT_ABSTRACT
    integer, public :: IDX_HIS_WQBOT3D_ABSTRACT
-   
+
    integer, public :: IDX_HIS_TRACERS_ABSTRACT
 
    integer, public :: IDX_HIS_OBSCRS_DISCHARGE
@@ -287,7 +287,7 @@ private
    integer, public :: IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE
    integer, public :: IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS
    integer, public :: IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE
-   
+
    integer, public :: IDX_HIS_TAUB
    integer, public :: IDX_HIS_SBCX
    integer, public :: IDX_HIS_SBCY
@@ -308,7 +308,6 @@ private
    integer, public :: IDX_HIS_HIDEXP
    integer, public :: IDX_HIS_MFLUFF
 
-   
    integer, public :: IDX_HIS_DRED_AREA_NAME
    integer, public :: IDX_HIS_DUMP_AREA_NAME
    integer, public :: IDX_HIS_DRED_LINK_DISCHARGE
@@ -316,7 +315,6 @@ private
    integer, public :: IDX_HIS_DUMP_DISCHARGE
    integer, public :: IDX_HIS_DRED_TIME_FRAC
    integer, public :: IDX_HIS_PLOUGH_TIME_FRAC
-
 
    integer, public :: IDX_MAP_S0
    integer, public :: IDX_MAP_S1
@@ -468,35 +466,35 @@ private
    integer, public :: IDX_CLS_UCMAG_EULER
    integer, public :: IDX_CLS_UCDIR
    integer, public :: IDX_CLS_UCDIR_EULER
-   
+
    integer, public, parameter :: id_nc_undefined = -50
-   integer, public, parameter :: id_nc_byte      = -51
-   integer, public, parameter :: id_nc_char      = -52
-   integer, public, parameter :: id_nc_short     = -53
-   integer, public, parameter :: id_nc_int       = -54
-   integer, public, parameter :: id_nc_float     = -55
-   integer, public, parameter :: id_nc_double    = -56
+   integer, public, parameter :: id_nc_byte = -51
+   integer, public, parameter :: id_nc_char = -52
+   integer, public, parameter :: id_nc_short = -53
+   integer, public, parameter :: id_nc_int = -54
+   integer, public, parameter :: id_nc_float = -55
+   integer, public, parameter :: id_nc_double = -56
 
    public t_output_quantity_config
    !> Derived type for the input items, defining one entry [output] section of the MDU file.
    type t_output_quantity_config
-      character(len=Idlen)             :: key                   !< Key of the input item in the MDU file (e.g. wrimap_s1).
-      character(len=Idlen)             :: name                  !< Name of the output item on the NETCDF file.
-      integer                          :: id_nc_type            !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc.
-      character(len=Idlen)             :: long_name             !< Long name of the output item on the NETCDF file.
-      character(len=Idlen)             :: unit                  !< unit of the output item on the NETCDF file.
-      character(len=Idlen)             :: standard_name         !< Standard name of the output item on the NETCDF file.
-      character(len=Idlen)             :: input_value = ''      !< Original user-provided input valuestring (unparsed) (<<key>> = <<input value>>.
-      character(len=Idlen)             :: description           !< Description of the input paragraph, key combination.
-      integer                          :: location_specifier    !< Specifies the location where the variable is specified (use parameters from fm_location_types)
-      type(nc_att_set)                 :: additional_attributes !< optional additional NetCDF attributes for this quantity
-      type(t_station_nc_dimensions), allocatable :: nc_dim_ids  !< optional detailed specification of NetCDF dim-ids for observation stations
+      character(len=Idlen) :: key !< Key of the input item in the MDU file (e.g. wrimap_s1).
+      character(len=Idlen) :: name !< Name of the output item on the NETCDF file.
+      integer :: id_nc_type !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc.
+      character(len=Idlen) :: long_name !< Long name of the output item on the NETCDF file.
+      character(len=Idlen) :: unit !< unit of the output item on the NETCDF file.
+      character(len=Idlen) :: standard_name !< Standard name of the output item on the NETCDF file.
+      character(len=Idlen) :: input_value = '' !< Original user-provided input valuestring (unparsed) (<<key>> = <<input value>>.
+      character(len=Idlen) :: description !< Description of the input paragraph, key combination.
+      integer :: location_specifier !< Specifies the location where the variable is specified (use parameters from fm_location_types)
+      type(nc_att_set) :: additional_attributes !< optional additional NetCDF attributes for this quantity
+      type(t_station_nc_dimensions), allocatable :: nc_dim_ids !< optional detailed specification of NetCDF dim-ids for observation stations
    end type t_output_quantity_config
 
    type, public :: t_output_quantity_config_set
-      integer                                                   :: count = 0      !< Number of configs in config set 
-      integer                                                   :: capacity  = 0  !< Allocated size of config set (size = count + # of empty configs)
-      type(t_output_quantity_config), allocatable, dimension(:) :: configs        !< array of output quantity configs in config set
+      integer :: count = 0 !< Number of configs in config set
+      integer :: capacity = 0 !< Allocated size of config set (size = count + # of empty configs)
+      type(t_output_quantity_config), allocatable, dimension(:) :: configs !< array of output quantity configs in config set
    end type t_output_quantity_config_set
 
    !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for observation stations, since they do are not uniform.
@@ -514,181 +512,177 @@ private
 contains
 
 !> Reallocate config set.
-subroutine reallocate_config_set(config_set)
-   use m_alloc
+   subroutine reallocate_config_set(config_set)
+      use m_alloc
 
-   type(t_output_quantity_config_set), intent(inout) :: config_set !< Output configuration set.
+      type(t_output_quantity_config_set), intent(inout) :: config_set !< Output configuration set.
 
-   type(t_output_quantity_config), dimension(:), allocatable :: new_configs
+      type(t_output_quantity_config), dimension(:), allocatable :: new_configs
 
-   if(allocated(config_set%configs) .and. config_set%capacity > 0) then
-      if (config_set%count > config_set%capacity) then !only increase capacity if necessary
-         config_set%capacity = config_set%capacity*2
-         allocate(new_configs(config_set%capacity))
-         new_configs(1:size(config_set%configs)) = config_set%configs
-         call move_alloc(new_configs,config_set%configs)
+      if (allocated(config_set%configs) .and. config_set%capacity > 0) then
+         if (config_set%count > config_set%capacity) then !only increase capacity if necessary
+            config_set%capacity = config_set%capacity * 2
+            allocate (new_configs(config_set%capacity))
+            new_configs(1:size(config_set%configs)) = config_set%configs
+            call move_alloc(new_configs, config_set%configs)
+         end if
+      else
+         config_set%capacity = 200 ! hardcoded default start size of 200
+         allocate (config_set%configs(config_set%capacity))
       end if
-   else
-      config_set%capacity = 200 ! hardcoded default start size of 200
-      allocate(config_set%configs(config_set%capacity)) 
-   end if
-   config_set%capacity = size(config_set%configs)
+      config_set%capacity = size(config_set%configs)
 
-end subroutine reallocate_config_set
+   end subroutine reallocate_config_set
 
 !> Deallocate config set.
-subroutine deallocate_config_set(config_set)
-   ! Input/output parameters
-   type(t_output_quantity_config_set), intent(inout) :: config_set !< Output configuration set.
+   subroutine deallocate_config_set(config_set)
+      ! Input/output parameters
+      type(t_output_quantity_config_set), intent(inout) :: config_set !< Output configuration set.
 
-   if (config_set%capacity > 0) then
-      deallocate(config_set%configs)
-   end if
-end subroutine deallocate_config_set
+      if (config_set%capacity > 0) then
+         deallocate (config_set%configs)
+      end if
+   end subroutine deallocate_config_set
 
 !> Define an output configuration quantity. And set the IDX variable to the current entry
-subroutine add_output_config(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_dim_ids, id_nc_type, nc_attributes, description)
-   use m_map_his_precision, only: md_nc_his_precision
-   use netcdf, only: nf90_double, nf90_float
-   
-   type(t_output_quantity_config_set),      intent(inout) :: config_set          !< Array containing all output quantity configs.
-   integer,                                 intent(  out) :: idx                 !< Index for the current variable.
-   character(len=*),                        intent(in   ) :: key                 !< Key in the MDU file.
-   character(len=*),                        intent(in   ) :: name                !< Name of the variable on the NETCDF file.
-   character(len=*),                        intent(in   ) :: long_name           !< Long name of the variable on the NETCDF file.
-   character(len=*),                        intent(in   ) :: standard_name       !< Standard name of the variable on the NETCDF file.
-   character(len=*),                        intent(in   ) :: unit                !< Unit of the variable on the NETCDF file.
-   integer,                                 intent(in   ) :: location_specifier  !< Location specifier of the variable.
-   type(t_station_nc_dimensions), optional, intent(in   ) :: nc_dim_ids          !< Included NetCDF dimensions
-   integer,                       optional, intent(in   ) :: id_nc_type          !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc. Default: id_nc_undefined.
-   type(nc_attribute),            optional, intent(in   ) :: nc_attributes(:)    !< (optional) list of additional NetCDF attributes to be stored for this output variable.
-   character(len=*),              optional, intent(in   ) :: description         !< Description of the MDU key, used when printing an MDU or .dia file.
+   subroutine add_output_config(config_set, idx, key, name, long_name, standard_name, unit, location_specifier, nc_dim_ids, id_nc_type, nc_attributes, description)
+      use netcdf, only: nf90_double, nf90_float
 
-   integer :: num_entries, id_nc_type_, num_attributes
+      type(t_output_quantity_config_set), intent(inout) :: config_set !< Array containing all output quantity configs.
+      integer, intent(out) :: idx !< Index for the current variable.
+      character(len=*), intent(in) :: key !< Key in the MDU file.
+      character(len=*), intent(in) :: name !< Name of the variable on the NETCDF file.
+      character(len=*), intent(in) :: long_name !< Long name of the variable on the NETCDF file.
+      character(len=*), intent(in) :: standard_name !< Standard name of the variable on the NETCDF file.
+      character(len=*), intent(in) :: unit !< Unit of the variable on the NETCDF file.
+      integer, intent(in) :: location_specifier !< Location specifier of the variable.
+      type(t_station_nc_dimensions), optional, intent(in) :: nc_dim_ids !< Included NetCDF dimensions
+      integer, optional, intent(in) :: id_nc_type !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc. Default: id_nc_undefined.
+      type(nc_attribute), optional, intent(in) :: nc_attributes(:) !< (optional) list of additional NetCDF attributes to be stored for this output variable.
+      character(len=*), optional, intent(in) :: description !< Description of the MDU key, used when printing an MDU or .dia file.
 
-   if (present(id_nc_type)) then
-      ! Safety
-      if (.not. (id_nc_type == id_nc_undefined .or. &
-                 id_nc_type == id_nc_byte .or. &
-                 id_nc_type == id_nc_char .or. &
-                 id_nc_type == id_nc_short .or. &
-                 id_nc_type == id_nc_int .or. &
-                 id_nc_type == id_nc_float .or. &
-                 id_nc_type == id_nc_double)) then
-         call mess(LEVEL_ERROR,'add_output_config - Internal error: id_nc_type must be one of the id_nc_[type]s!')
+      integer :: num_entries, id_nc_type_, num_attributes
+
+      if (present(id_nc_type)) then
+         ! Safety
+         if (.not. (id_nc_type == id_nc_undefined .or. &
+                    id_nc_type == id_nc_byte .or. &
+                    id_nc_type == id_nc_char .or. &
+                    id_nc_type == id_nc_short .or. &
+                    id_nc_type == id_nc_int .or. &
+                    id_nc_type == id_nc_float .or. &
+                    id_nc_type == id_nc_double)) then
+            call mess(LEVEL_ERROR, 'add_output_config - Internal error: id_nc_type must be one of the id_nc_[type]s!')
+         end if
+         id_nc_type_ = id_nc_type
+      else
+         ! By default, use the netcdf precision that is later read from the mdu
+         id_nc_type_ = id_nc_undefined
       end if
-      id_nc_type_ = id_nc_type
-   else
-      ! By default, use the netcdf precision that is later read from the mdu
-      id_nc_type_ = id_nc_undefined
-   end if
 
-   config_set%count = config_set%count+1
-   if (config_set%count > config_set%capacity) then
-      call realloc(config_set)
-   end if
-   num_entries = config_set%count
-   idx = num_entries
-   config_set%configs(num_entries)%key                = key
-   config_set%configs(num_entries)%name               = name
-   config_set%configs(num_entries)%id_nc_type         = id_nc_type_
-   config_set%configs(num_entries)%long_name          = long_name
-   config_set%configs(num_entries)%standard_name      = standard_name
-   config_set%configs(num_entries)%unit               = unit
-   config_set%configs(num_entries)%location_specifier = location_specifier
-   config_set%configs(num_entries)%input_value = ''
+      config_set%count = config_set%count + 1
+      if (config_set%count > config_set%capacity) then
+         call realloc(config_set)
+      end if
+      num_entries = config_set%count
+      idx = num_entries
+      config_set%configs(num_entries)%key = key
+      config_set%configs(num_entries)%name = name
+      config_set%configs(num_entries)%id_nc_type = id_nc_type_
+      config_set%configs(num_entries)%long_name = long_name
+      config_set%configs(num_entries)%standard_name = standard_name
+      config_set%configs(num_entries)%unit = unit
+      config_set%configs(num_entries)%location_specifier = location_specifier
+      config_set%configs(num_entries)%input_value = ''
 
-   if (present(nc_dim_ids)) then
-      config_set%configs(num_entries)%nc_dim_ids = nc_dim_ids
-   end if
+      if (present(nc_dim_ids)) then
+         config_set%configs(num_entries)%nc_dim_ids = nc_dim_ids
+      end if
 
-   if (present(nc_attributes)) then
-      num_attributes = size(nc_attributes)
-      call realloc(config_set%configs(num_entries)%additional_attributes, num_attributes, keepExisting=.false.)
-      config_set%configs(num_entries)%additional_attributes%count = num_attributes
-      config_set%configs(num_entries)%additional_attributes%atts = nc_attributes
-   end if
+      if (present(nc_attributes)) then
+         num_attributes = size(nc_attributes)
+         call realloc(config_set%configs(num_entries)%additional_attributes, num_attributes, keepExisting=.false.)
+         config_set%configs(num_entries)%additional_attributes%count = num_attributes
+         config_set%configs(num_entries)%additional_attributes%atts = nc_attributes
+      end if
 
-   if (present(description)) then
-      config_set%configs(num_entries)%description = description
-   else
-      config_set%configs(num_entries)%description = ''
-   end if
+      if (present(description)) then
+         config_set%configs(num_entries)%description = description
+      else
+         config_set%configs(num_entries)%description = ''
+      end if
 
-end subroutine add_output_config
+   end subroutine add_output_config
 
 !> convert id_nc_type to actual nc_type for his file variables
-function id_nc_type2nc_type_his( id_nc_type) result( nc_type)
-   use netcdf, only: nf90_byte, nf90_char, nf90_short, nf90_int, nf90_float, nf90_double
-   use m_map_his_precision, only: md_nc_his_precision, netcdf_data_type
-   implicit none
-   
-   integer, intent(in   ) :: id_nc_type   !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc.
-   integer                :: nc_type      !> Actual netcdf type, one of: nf90_double, nf90_int, etc.
-  
-   select case (id_nc_type)
-   case default
-      call mess(LEVEL_ERROR,'id_nc_type2nc_type_his - Internal error: id_nc_type must be one of the id_nc_[type]s!')
-   case (id_nc_undefined)
-      ! Use the netcdf precision for his files defined in the mdu
-      nc_type = netcdf_data_type(md_nc_his_precision)
-   case (id_nc_byte)
-      nc_type = nf90_byte
-   case (id_nc_char)
-      nc_type = nf90_char
-   case (id_nc_short)
-      nc_type = nf90_short
-   case (id_nc_int)
-      nc_type = nf90_int
-   case (id_nc_float)
-      nc_type = nf90_float
-   case (id_nc_double)
-      nc_type = nf90_double
-   end select
-  
-end function id_nc_type2nc_type_his
+   function id_nc_type2nc_type_his(id_nc_type) result(nc_type)
+      use netcdf, only: nf90_byte, nf90_char, nf90_short, nf90_int, nf90_float, nf90_double
+      use m_map_his_precision, only: md_nc_his_precision, netcdf_data_type
+      implicit none
 
+      integer, intent(in) :: id_nc_type !< ID indicating NetCDF variable type, one of: id_nc_double, id_nc_int, etc.
+      integer :: nc_type !> Actual netcdf type, one of: nf90_double, nf90_int, etc.
+
+      select case (id_nc_type)
+      case default
+         call mess(LEVEL_ERROR, 'id_nc_type2nc_type_his - Internal error: id_nc_type must be one of the id_nc_[type]s!')
+      case (id_nc_undefined)
+         ! Use the netcdf precision for his files defined in the mdu
+         nc_type = netcdf_data_type(md_nc_his_precision)
+      case (id_nc_byte)
+         nc_type = nf90_byte
+      case (id_nc_char)
+         nc_type = nf90_char
+      case (id_nc_short)
+         nc_type = nf90_short
+      case (id_nc_int)
+         nc_type = nf90_int
+      case (id_nc_float)
+         nc_type = nf90_float
+      case (id_nc_double)
+         nc_type = nf90_double
+      end select
+
+   end function id_nc_type2nc_type_his
 
 !> scan the input tree, using the keys in the config_set
-subroutine scan_input_tree(tree, paragraph, config_set)
-   use properties
+   subroutine scan_input_tree(tree, paragraph, config_set)
+      use properties
 
-   type(tree_data), pointer,                    intent(in   )     :: tree        !< Property tree
-   character(len=*),                            intent(in   )     :: paragraph   !< Paragraph of the location of the input data.
-   type(t_output_quantity_config_set),                   intent(inout)     :: config_set !< Contains the keys and configuration information on the output variables.
+      type(tree_data), pointer, intent(in) :: tree !< Property tree
+      character(len=*), intent(in) :: paragraph !< Paragraph of the location of the input data.
+      type(t_output_quantity_config_set), intent(inout) :: config_set !< Contains the keys and configuration information on the output variables.
 
-   integer :: i
+      integer :: i
 
-   do i = 1, config_set%count
-      call prop_get_string(tree, paragraph, config_set%configs(i)%key, config_set%configs(i)%input_value)
-   end do
+      do i = 1, config_set%count
+         call prop_get_string(tree, paragraph, config_set%configs(i)%key, config_set%configs(i)%input_value)
+      end do
 
-end subroutine scan_input_tree
+   end subroutine scan_input_tree
 
 !> Set the properties for the diagnostics file
-subroutine set_properties(tree, paragraph, config_set)
-   use properties
+   subroutine set_properties(tree, paragraph, config_set)
+      use properties
 
-   type(tree_data), pointer,           intent(in   )     :: tree        !< Property tree
-   character(len=*),                   intent(in   )     :: paragraph   !< Paragraph of the location of the input data.
-   type(t_output_quantity_config_set),          intent(inout)     :: config_set !< Contains the keys and configuration information on the output variables.
+      type(tree_data), pointer, intent(in) :: tree !< Property tree
+      character(len=*), intent(in) :: paragraph !< Paragraph of the location of the input data.
+      type(t_output_quantity_config_set), intent(inout) :: config_set !< Contains the keys and configuration information on the output variables.
 
-   integer :: i
-   type(t_output_quantity_config), pointer :: config
-   
-   do i = 1, config_set%count
-      associate(config => config_set%configs(i))
-         if (len_trim(config%description) > 0 .and. len_trim(config%input_value) > 0) then
-            if (trim(config%input_value)=='current') then
-               config%input_value = '1'   
+      integer :: i
+
+      do i = 1, config_set%count
+         associate (config => config_set%configs(i))
+            if (len_trim(config%description) > 0 .and. len_trim(config%input_value) > 0) then
+               if (trim(config%input_value) == 'current') then
+                  config%input_value = '1'
+               end if
+               call prop_set(tree, trim(paragraph), trim(config%key), trim(config%input_value), trim(config%description))
             end if
-            call prop_set(tree, trim(paragraph), trim(config%key), trim(config%input_value), trim(config%description))
-         end if
-      end associate
-   end do
+         end associate
+      end do
 
-
-end subroutine set_properties
+   end subroutine set_properties
 
 
 end module m_output_config

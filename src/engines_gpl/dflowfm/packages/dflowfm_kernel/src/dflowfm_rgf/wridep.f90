@@ -1,48 +1,48 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE WRIDEP(MMDD,ZC,M1,N1,MC,NC,mmax,nmax)
-      implicit none
-      integer          :: MMDD,M1,N1,MC,NC,mmax,nmax,n,m
-      double precision :: ZC(mmax,nmax)
-      double precision :: AF
+      subroutine WRIDEP(MMDD, ZC, M1, N1, MC, NC, mmax, nmax)
+         implicit none
+         integer :: MMDD, M1, N1, MC, NC, mmax, nmax, n, m
+         double precision :: ZC(mmax, nmax)
+         double precision :: AF
 
-      CALL READYY('Writing Depth File ',0d0)
-      do N = N1, NC
-         AF = dble(N) / dble(NC)
-         CALL READYY('Writing Dept File',AF)
-         WRITE(MMDD,'(12(1PE13.5))') (ZC(M,N),M = M1,MC)
-      end do
-      CALL READYY('writing Dept File',-1d0)
-      CALL DOCLOSE (MMDD)
-      RETURN
-      END
+         call READYY('Writing Depth File ', 0d0)
+         do N = N1, NC
+            AF = dble(N) / dble(NC)
+            call READYY('Writing Dept File', AF)
+            write (MMDD, '(12(1PE13.5))') (ZC(M, N), M=M1, MC)
+         end do
+         call READYY('writing Dept File', -1d0)
+         call DOCLOSE(MMDD)
+         return
+      end

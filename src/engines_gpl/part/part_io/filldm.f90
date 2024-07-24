@@ -22,37 +22,28 @@
 !!  rights reserved.
 
 module filldm_mod
-!
-!  module declarations
-!
-!
-!  data definition module(s)
-!
-use m_waq_precision  ! single and double precision
-      use timers
-!
-implicit none  ! force explicit typing
-!
+    use m_waq_precision  ! single and double precision
+    use timers
+
+    implicit none
+
 contains
-      subroutine filldm (elt_dims,ielem,dm1,dm2,dm3,dm4,dm5,dm6)
+    subroutine filldm (elt_dims, ielem, dm1, dm2, dm3, dm4, dm5, dm6)
 
-!
-!     local scalars
-!
-      integer(int_wp )             :: ielem
-      integer(int_wp )             :: dm1,dm2,dm3,dm4,dm5,dm6
-      integer, dimension(:,:) :: elt_dims
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
-      if ( timon ) call timstrt( "filldm", ithndl )
+        integer(int_wp) :: ielem
+        integer(int_wp) :: dm1, dm2, dm3, dm4, dm5, dm6
+        integer, dimension(:, :) :: elt_dims
+        integer(4) ithndl              ! handle to time this subroutine
+        data       ithndl / 0 /
+        if (timon) call timstrt("filldm", ithndl)
 
-      elt_dims(1,ielem) = dm1
-      elt_dims(2,ielem) = dm2
-      elt_dims(3,ielem) = dm3
-      elt_dims(4,ielem) = dm4
-      elt_dims(5,ielem) = dm5
-      elt_dims(6,ielem) = dm6
+        elt_dims(1, ielem) = dm1
+        elt_dims(2, ielem) = dm2
+        elt_dims(3, ielem) = dm3
+        elt_dims(4, ielem) = dm4
+        elt_dims(5, ielem) = dm5
+        elt_dims(6, ielem) = dm6
 
-      if ( timon ) call timstop ( ithndl )
-      end subroutine
+        if (timon) call timstop (ithndl)
+    end subroutine
 end module

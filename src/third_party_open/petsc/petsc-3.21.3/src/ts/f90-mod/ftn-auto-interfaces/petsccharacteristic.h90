@@ -1,0 +1,4 @@
+      subroutine CharacteristicSetUp(a,z)
+       Characteristic a ! Characteristic
+       PetscErrorCode z
+       end subroutine CharacteristicSetUp

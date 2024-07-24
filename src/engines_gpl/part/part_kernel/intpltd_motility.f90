@@ -22,53 +22,51 @@
 !!  rights reserved.
 
 module intpltd_motility_mod
-!
-!  data definition module(s)
-!
-use m_waq_precision          ! single/double precision
-use timers
-!
-!  module procedure(s)
-!
-!
-use intpltd_function_mod      ! explicit interface
+    !
+    !  data definition module(s)
+    !
+    use m_waq_precision          ! single/double precision
+    use timers
+    !
+    !  module procedure(s)
+    !
+    !
+    use intpltd_function_mod      ! explicit interface
 
-
-implicit none
+    implicit none
 
 contains
-    subroutine intpltd_motility ( lunrep, n , m , k, nosegl, lgrid , vzact, temper1 )
+    subroutine intpltd_motility (lunrep, n, m, k, nosegl, lgrid, vzact, temper1)
 
         ! function  : Based on the time of the day the particles will move upwards during the day and
         !             down during the night. With an interpolation fucntion the difference in daytime
         !             over the year has been incorperated.
 
         ! arguments :
-        integer(int_wp ), intent(in)    :: lunrep              ! report file
-        integer(int_wp ), intent(in)    :: nosegl              ! number segments per layer
-        integer(int_wp )                :: lgrid ( : , : )     ! grid with active grid numbers, negatives for open boundaries
-        integer                    :: m                   ! m
-        integer                    :: n                   ! n
-        integer                    :: k                   ! k
-        integer                    :: iseg                ! iseg
-        integer                    :: isegl               ! isegl
-        real   (sp), pointer       :: temper1( : )        ! temperature segment numbering
-        real                       :: temp_n0
-        real   (sp)                :: vzact               ! vzact
+        integer(int_wp), intent(in) :: lunrep              ! report file
+        integer(int_wp), intent(in) :: nosegl              ! number segments per layer
+        integer(int_wp) :: lgrid (:, :)     ! grid with active grid numbers, negatives for open boundaries
+        integer :: m                   ! m
+        integer :: n                   ! n
+        integer :: k                   ! k
+        integer :: iseg                ! iseg
+        integer :: isegl               ! isegl
+        real   (sp), pointer :: temper1(:)        ! temperature segment numbering
+        real :: temp_n0
+        real   (sp) :: vzact               ! vzact
 
-
-        real   (sp), pointer       :: mtxData(:), mtyData(:)
-        real   (sp)                :: motility
+        real   (sp), pointer :: mtxData(:), mtyData(:)
+        real   (sp) :: motility
 
 
         !Temperature of location gridcell
 
-        iseg  = lgrid (n,m)                                                      ! Get the gridnumbering from the active grid in the middle of particle position
-        if(iseg .le. 0) return                                                   ! Stop execution if particle has left the model
+        iseg = lgrid (n, m)                                                      ! Get the gridnumbering from the active grid in the middle of particle position
+        if(iseg <= 0) return                                                   ! Stop execution if particle has left the model
 
-        isegl  = iseg + (k-1)*nosegl     !Segment number 3d of the particle(segment number + current layer * segments per layer)
+        isegl = iseg + (k - 1) * nosegl     !Segment number 3d of the particle(segment number + current layer * segments per layer)
 
-        temp_n0     = temper1(isegl)     !Temperature of particle segment 3d numbering
+        temp_n0 = temper1(isegl)     !Temperature of particle segment 3d numbering
 
         !Setup the data for sunrise and subset
         allocate(mtxData(6))
@@ -82,6 +80,6 @@ contains
         !apply motility factor
         vzact = vzact * motility
 
-    return                                                                     	   !Return from the subroutine
+        return                                                                           !Return from the subroutine
     end subroutine
 end module

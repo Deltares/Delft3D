@@ -4,13 +4,7 @@ import shutil
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from pathlib import Path
-from typing import (
-    ClassVar,
-    List,
-    Mapping,
-    Optional,
-    TextIO,
-)
+from typing import ClassVar, List, Mapping, Optional, TextIO
 
 from minio.commonconfig import Tags
 from s3_path_wrangler.paths import S3Path
@@ -18,11 +12,7 @@ from s3_path_wrangler.paths import S3Path
 from src.config.types.path_type import PathType
 from src.utils.minio_rewinder import Operation, Plan, Rewinder, VersionPair
 from tools.minio import utils
-from tools.minio.config import (
-    TestCaseData,
-    TestCaseLoader,
-    TestCaseWriter,
-)
+from tools.minio.config import TestCaseData, TestCaseLoader, TestCaseWriter
 from tools.minio.prompt import Prompt
 
 
@@ -105,9 +95,10 @@ class MinioTool:
         local_dir : Optional[Path], optional
             Path to the local directory containing files to upload to MinIO.
             If not set, use the local path from the test bench config.
-        allow_create_and_delete
+        allow_create_and_delete: bool, optional
             This parameter can be used to not only update, but also allow the
             creation and removal of files in the MinIO object repository.
+            Defaults to `False`.
 
         Raises
         ------

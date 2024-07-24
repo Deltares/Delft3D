@@ -1181,14 +1181,14 @@ end subroutine expand
 !   Context:    preceeds processing an ini-files into a tree
 !   Summary:
 !            * (nested) file inclusion through include-directive
-!                  #include filename
-!                  #include <filename>
+!                 #include filename
+!                 #include <filename>
 !            * aliases, defined
 !                  #define aliasname content
 !              and invoked by placing $aliasname or ${aliasname} in the text
 !            * $_aliasname and ${_aliasname} refer to environment variables
-!            * conditionals #ifdef, #ifndef #endif
-!            * #include and #define work recursive, but preprocessing is 'single-pass' (begin to end of files)
+!            * conditionals#ifdef, #ifndef #endif
+!            *#include and #define work recursive, but preprocessing is 'single-pass' (begin to end of files)
 !            Resulting file (expanded) is written to filename_out
 !            Return error code: -5 -> file not found
 !                               -6 -> trying to open an already opened file

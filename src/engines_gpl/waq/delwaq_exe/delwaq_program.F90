@@ -61,7 +61,7 @@ program delwaq
 
     ! initialize logging
     log_file_path = 'delwaq.log'
-    log = create_logger(FILE, INFO_LEVEL, log_file_path)
+    log = create_logger(file_and_screen, info_level, log_file_path)
 
     argv = get_arguments()
     call log%log_info('Running: '//trim(id_str))
@@ -80,5 +80,4 @@ program delwaq
     end if
 
     call log%log_info('Normal end', .true.)
-    write (*, *) ' Normal end'
 end program delwaq

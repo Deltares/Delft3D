@@ -22,41 +22,41 @@
 !!  rights reserved.
 module m_skip_comments
 
-implicit none
+    implicit none
 
 contains
 
 
-      subroutine skip_comment_lines(lun,ios)
-!
-!     programmer : antoon koster
-!     function   : skip comment lines on ini-file
-!     date       : may 2004
-!
-      use timers
-      implicit none           !   force explicit typing
-      integer :: lun, ios
-      integer, parameter             :: max_len_line=200
-      logical                        :: comment_line
-      character(len=max_len_line)    :: line
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
-      if ( timon ) call timstrt( "skip_comment_lines", ithndl )
+    subroutine skip_comment_lines(lun, ios)
+        !
+        !     programmer : antoon koster
+        !     function   : skip comment lines on ini-file
+        !     date       : may 2004
+        !
+        use timers
+        implicit none           !   force explicit typing
+        integer :: lun, ios
+        integer, parameter :: max_len_line = 200
+        logical :: comment_line
+        character(len = max_len_line) :: line
+        integer(4) ithndl              ! handle to time this subroutine
+        data       ithndl / 0 /
+        if (timon) call timstrt("skip_comment_lines", ithndl)
 
-!     keep skipping comment lines
-      comment_line = .true.
-      do while (comment_line)
-         read(lun,'(a)',iostat=ios) line
-         comment_line= (line(1:1) == '*')
-      enddo
-!    correct for last non-comment line
-      if (.not. comment_line) then
-         backspace lun
-      endif
+        !     keep skipping comment lines
+        comment_line = .true.
+        do while (comment_line)
+            read(lun, '(a)', iostat = ios) line
+            comment_line = (line(1:1) == '*')
+        enddo
+        !    correct for last non-comment line
+        if (.not. comment_line) then
+            backspace lun
+        endif
 
-      if ( timon ) call timstop ( ithndl )
-      return
-      end subroutine skip_comment_lines
+        if (timon) call timstop (ithndl)
+        return
+    end subroutine skip_comment_lines
 
 
 end module m_skip_comments

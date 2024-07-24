@@ -1,7 +1,7 @@
-#  Description: FEWS PI Timeseries comparer
-#  -----------------------------------------------------
-#  Copyright (C)  Stichting Deltares, 2013
+"""FEWS PI Timeseries comparer.
 
+Copyright (C)  Stichting Deltares, 2024
+"""
 
 from datetime import datetime
 from xml.dom import minidom
@@ -32,14 +32,10 @@ def getPiTimeSeriesMeta(TSHeader):
     TSMeta = {}
     date_str = TSHeader[0]["pi:startDate"][0]["date"]
     time_str = TSHeader[0]["pi:startDate"][0]["time"]
-    TSMeta["startDate"] = datetime.strptime(
-        " ".join([date_str, time_str]), "%Y-%m-%d %H:%M:%S"
-    )
+    TSMeta["startDate"] = datetime.strptime(" ".join([date_str, time_str]), "%Y-%m-%d %H:%M:%S")
     date_str = TSHeader[0]["pi:endDate"][0]["date"]
     time_str = TSHeader[0]["pi:endDate"][0]["time"]
-    TSMeta["endDate"] = datetime.strptime(
-        " ".join([date_str, time_str]), "%Y-%m-%d %H:%M:%S"
-    )
+    TSMeta["endDate"] = datetime.strptime(" ".join([date_str, time_str]), "%Y-%m-%d %H:%M:%S")
     TSMeta["units"] = TSHeader[0]["pi:units"][0]["#text"]
     TSMeta["stationName"] = TSHeader[0]["pi:stationName"][0]["#text"]
     TSMeta["missVal"] = TSHeader[0]["pi:stationName"][0]["#text"]
@@ -54,9 +50,7 @@ def getDatesValues(TSEvent, TSMeta):
     for event in TSEvent:
         date_str = event["date"]
         time_str = event["time"]
-        TSDates.append(
-            datetime.strptime(" ".join([date_str, time_str]), "%Y-%m-%d %H:%M:%S")
-        )
+        TSDates.append(datetime.strptime(" ".join([date_str, time_str]), "%Y-%m-%d %H:%M:%S"))
         TSValues.append(float(event["value"]))
     #   return TSDates, TSValues
     return TSDates, np.array(TSValues)
@@ -75,22 +69,21 @@ def getPiTimeSeries(dictree):
         newSeries["values"] = TSValues
         locationId = TSMeta["locationId"]
         parameterId = TSMeta["parameterId"]
-        if not parameterId in TSSet:
+        if parameterId not in TSSet:
             TSSet[parameterId] = {}
         TSSet[parameterId][locationId] = newSeries  # group timeseries by PARAMETER_ID
     return TSSet
 
 
 class PiTimeseriesComparer(TimeseriesSetComparer.TimeseriesSetComparer):
-    """
+    """Pi time series comparer.
+
     Compare two Pi XML Timeseries files, according to the configuration in file_check.
     input: left path (reference), right path (compare), file_check
-    output: list of (file_check, parameter, file_check, ResultComparison) tuples
+    output: list of (file_check, parameter, file_check, ResultComparison) tuples.
     """
 
-    def getTimeseriesSet(
-        self, xmlpath
-    ):  # override base-class method, delivering a set of timeseries from pi-xml file
+    def getTimeseriesSet(self, xmlpath):  # override base-class method, delivering a set of timeseries from pi-xml file
         xmltree = minidom.parse(xmlpath)
         dictree = branch(xmltree)
         TSSet = getPiTimeSeries(dictree["pi:TimeSeries"][0]["pi:series"])

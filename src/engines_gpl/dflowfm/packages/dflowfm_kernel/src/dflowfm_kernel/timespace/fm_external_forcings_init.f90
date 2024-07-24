@@ -60,6 +60,7 @@ contains
       use fm_deprecated_keywords, only: deprecated_ext_keywords
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypH, btempforcingtypL, btempforcingtypS, itempforcingtyp
 
       character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
@@ -94,7 +95,7 @@ contains
       double precision :: chainage
       integer :: ierr ! error number from allocate function
       integer :: ilattype, nlat
-      integer :: k, n, k1, nini
+      integer :: k, n, k1
       integer, dimension(1) :: target_index
       integer :: ib, ibqh, ibt
       integer :: maxlatsg
@@ -141,13 +142,13 @@ contains
       itpenur(:) = 0
       do ibt = 1, nbndz
          ib = itpenz(ibt)
-         if (ib > 0) then
+         if (ib > 0 .and. ib <= num_items_in_file) then
             itpenzr(ib) = ibt
          end if
       end do
       do ibt = 1, nbndu
          ib = itpenu(ibt)
-         if (ib > 0) then
+         if (ib > 0 .and. ib <= num_items_in_file) then
             itpenur(ib) = ibt
          end if
       end do
@@ -527,8 +528,8 @@ contains
          integer, allocatable :: selected_nodes(:)
          integer :: number_of_selected_nodes, node
          logical :: invert_mask
+         logical :: is_data_on_p_points
          logical :: is_variable_name_available
-         logical :: is_target_mask_available
          logical :: is_extrapolation_allowed
          character(len=INI_KEY_LEN) :: variable_name
          character(len=INI_VALUE_LEN) :: interpolation_method
@@ -576,29 +577,10 @@ contains
          end if
 
          target_mask_file = ''
-         call prop_get(node_ptr, '', 'targetMaskFile ', target_mask_file, is_target_mask_available)
+         call prop_get(node_ptr, '', 'targetMaskFile ', target_mask_file)
 
          invert_mask = .false.
          call prop_get(node_ptr, '', 'targetMaskInvert ', invert_mask, is_successful)
-
-         allocate (mask(ndx), source=0)
-         if (len_trim(target_mask_file) > 0) then
-            ! Mask flow nodes based on inside polygon(s), or outside.
-            ! in: kcs, all flow nodes, out: mask: all masked flow nodes.
-            allocate (selected_nodes(ndx), source=0)
-            call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_nodes, number_of_selected_nodes, LOCTP_POLYGON_FILE, &
-                                            target_mask_file)
-            do node = 1, number_of_selected_nodes
-               mask(selected_nodes(node)) = 1
-            end do
-            if (invert_mask) then
-               mask = ieor(mask, 1)
-            end if
-
-         else
-            ! 100% masking: accept all flow nodes that were already active in kcs.
-            where (kcs /= 0) mask = 1
-         end if
 
          is_variable_name_available = .false.
          variable_name = ' '
@@ -642,57 +624,140 @@ contains
 
          ! Default location type: s-points. Only cases below that need u-points or different, will override.
          target_location_type = UNC_LOC_S
-         select case (quantity)
-         case ('airpressure', 'atmosphericpressure')
-            ierr = allocate_patm()
-            kx = 1
 
-         case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
-            if (.not. allocated(rain)) then
-               allocate (rain(ndx), stat=ierr, source=0d0)
-               call aerr('rain(ndx)', ierr, ndx)
-            end if
-            kx = 1
+         success = scan_for_heat_quantities(quantity, kx)
+         if (success) then
+            is_data_on_p_points = .true.
+         else
+            select case (quantity)
+            case ('airdensity')
+               kx = 1
+               if (.not. allocated(airdensity)) then
+                  allocate (airdensity(ndx), stat=ierr, source=0d0)
+                  call aerr('airdensity(ndx)', ierr, ndx)
+               end if
+            case ('airpressure', 'atmosphericpressure')
+               kx = 1
+               is_data_on_p_points = .true.
+               ierr = allocate_patm(0._hp)
 
-         case ('qext')
-            ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
-            if (jaQext == 0) then
-               write (msgbuf, '(a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
-                  '] is missing QExt=1 in MDU. Ignoring this block.'
-               call warn_flush()
-               return
-            end if
-            if (.not. strcmpi(forcing_file_type, 'sample')) then
-               write (msgbuf, '(a)') 'Unknown forcingFileType '''//trim(forcing_file_type)//' in file ''', file_name, &
-                  ''': [', group_name, '], quantity=', trim(quantity), '. Ignoring this block.'
-               call warn_flush()
-               return
-            end if
-            method = get_default_method_for_file_type(forcing_file_type)
-            call prop_get(node_ptr, '', 'locationType', item_type, is_successful)
-            select case (str_tolower(trim(item_type)))
-            case ('1d')
-               ilattype = ILATTP_1D
-            case ('2d')
-               ilattype = ILATTP_2D
-            case ('1d2d', 'all')
-               ilattype = ILATTP_ALL
+            case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
+               kx = 1
+               is_data_on_p_points = .true.
+               call allocatewindarrays()
+
+               jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
+               jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
+
+               ierr = allocate_patm(100000._hp)
+
+               if (.not. allocated(ec_pwxwy_x)) then
+                  allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0d0)
+                  call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
+               end if
+
+               if (jaspacevarcharn == 1) then
+                  if (.not. allocated(ec_pwxwy_c)) then
+                     allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr, source=0d0)
+                     call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
+                  end if
+               end if
+
+            case ('charnock')
+               kx = 1
+               is_data_on_p_points = .true.
+               if (.not. allocated(ec_charnock)) then
+                  allocate (ec_charnock(ndx), stat=ierr, source=0d0)
+                  call aerr('ec_charnock(ndx)', ierr, ndx)
+               end if
+               if (.not. allocated(wcharnock)) then
+                  allocate (wcharnock(lnx), stat=ierr)
+                  call aerr('wcharnock(lnx)', ierr, lnx)
+               end if
+
+            case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
+               kx = 1
+               is_data_on_p_points = .false.
+               call allocatewindarrays()
+
+               jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
+
+            case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
+               kx = 1
+               is_data_on_p_points = .true.
+               if (.not. allocated(rain)) then
+                  allocate (rain(ndx), stat=ierr, source=0d0)
+                  call aerr('rain(ndx)', ierr, ndx)
+               end if
+
+            case ('qext')
+               ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
+               if (jaQext == 0) then
+                  write (msgbuf, '(a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
+                     '] is missing QExt=1 in MDU. Ignoring this block.'
+                  call warn_flush()
+                  return
+               end if
+               if (.not. strcmpi(forcing_file_type, 'sample')) then
+                  write (msgbuf, '(a)') 'Unknown forcingFileType '''//trim(forcing_file_type)//' in file ''', file_name, &
+                     ''': [', group_name, '], quantity=', trim(quantity), '. Ignoring this block.'
+                  call warn_flush()
+                  return
+               end if
+               method = get_default_method_for_file_type(forcing_file_type)
+               call prop_get(node_ptr, '', 'locationType', item_type, is_successful)
+               select case (str_tolower(trim(item_type)))
+               case ('1d')
+                  ilattype = ILATTP_1D
+               case ('2d')
+                  ilattype = ILATTP_2D
+               case ('1d2d', 'all')
+                  ilattype = ILATTP_ALL
+               case default
+                  ilattype = ILATTP_ALL
+               end select
+
+               mask(:) = 0
+               call prepare_lateral_mask(mask, ilattype)
+
+               res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, 2, mask)
+               return ! This was a special case, don't continue with timespace processing below.
             case default
-               ilattype = ILATTP_ALL
+               write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
+                  ']. Ignoring this block.'
+               call warn_flush()
+               return
             end select
+         end if
 
-            mask(:) = 0
-            call prepare_lateral_mask(mask, ilattype)
+         if (is_data_on_p_points) then
+            x_array => xz(1:ndx)
+            y_array => yz(1:ndx)
+            allocate (mask(ndx), source=0)
 
-            res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, 2, mask)
-            return ! This was a special case, don't continue with timespace processing below.
-         case default
-            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
-               ']. Ignoring this block.'
-            call warn_flush()
-            return
-         end select
+            if (len_trim(target_mask_file) > 0) then
+               ! Mask flow nodes based on inside polygon(s), or outside.
+               ! in: kcs, all flow nodes, out: mask: all masked flow nodes.
+               allocate (selected_nodes(ndx), source=0)
+               call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_nodes, number_of_selected_nodes, LOCTP_POLYGON_FILE, &
+                                               target_mask_file)
+               do node = 1, number_of_selected_nodes
+                  mask(selected_nodes(node)) = 1
+               end do
+               if (invert_mask) then
+                  mask = ieor(mask, 1)
+               end if
 
+            else
+               ! 100% masking: accept all flow nodes that were already active in kcs.
+               where (kcs /= 0) mask = 1
+            end if
+         else
+            x_array => xu(1:lnx)
+            y_array => yu(1:lnx)
+            allocate (mask(lnx), source=1)
+         end if
+!!!
          ! Derive target element set properties from the quantity's topological location type
          ierr = get_location_target_properties(target_location_type, target_num_points, target_x, target_y, target_mask)
          if (ierr /= DFM_NOERR) then
@@ -702,7 +767,7 @@ contains
             return
          end if
 
-         ! The actual construction of the time-space relation
+
          select case (trim(str_tolower(forcing_file_type)))
          case ('bcascii')
             ! NOTE: Currently, we only support name=global meteo in.bc files, later maybe station time series as well.
@@ -720,16 +785,65 @@ contains
 
          if (is_successful) then
             select case (quantity)
+            case ('airdensity')
+               call mess(LEVEL_INFO, 'Enabled variable airdensity for windstress while reading external forcings.')
+               ja_airdensity = 1
+
             case ('airpressure', 'atmosphericpressure')
                japatm = 1
+
+            case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
+               jawind = 1
+               japatm = 1
+
+            case ('charnock')
+               jaspacevarcharn = 1
+
             case ('rainfall', 'rainfall_rate')
                jarain = 1
                jaqin = 1
-            case ('windxy')
+
+            case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
                jawind = 1
+            case ('airtemperature')
+               jatair = 1
+               btempforcingtypA = .true.
+               tair_available = .true.
+            case ('cloudiness')
+               jaclou = 1
+               btempforcingtypC = .true.
+            case ('humidity')
+               jarhum = 1
+               btempforcingtypH = .true.
+            case ('dewpoint') ! Relative humidity array used to store dewpoints
+               itempforcingtyp = 5
+               dewpoint_available = .true.
+            case ('solarradiation')
+               btempforcingtypS = .true.
+               solrad_available = .true.
+            case ('longwaveradiation')
+               btempforcingtypL = .true.
+               longwave_available = .true.
+            case ('humidity_airtemperature_cloudiness')
+               itempforcingtyp = 1
+            case ('dewpoint_airtemperature_cloudiness')
+               itempforcingtyp = 3
+               dewpoint_available = .true.
+               tair_available = .true.
+            case ('humidity_airtemperature_cloudiness_solarradiation')
+               itempforcingtyp = 2
+               tair_available = .true.
+               solrad_available = .true.
+            case ('dewpoint_airtemperature_cloudiness_solarradiation')
+               itempforcingtyp = 4
+               dewpoint_available = .true.
+               tair_available = .true.
+               solrad_available = .true.
             end select
+
+            res = .true.
+
          end if
-         res = .true.
 
       end function init_meteo_forcings
 
@@ -769,5 +883,56 @@ contains
          ierr = DFM_NOTIMPLEMENTED
       end select
    end function get_location_target_properties
+
+   !> Scan the quantity name for heat relatede quantities.
+   function scan_for_heat_quantities(quantity, kx) result(success)
+      use precision_basics, only: dp
+      use fm_external_forcings_data, only: tair_available, dewpoint_available, solrad_available, longwave_available
+      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypH, btempforcingtypL, btempforcingtypS, itempforcingtyp
+      use m_wind, only: tair, clou, rhum, qrad, longwave, jatair, jaclou, jarhum
+      use m_flowgeom, only: ndx, kcs
+      use m_alloc, only: aerr, realloc
+
+      character(len=*), intent(in) :: quantity !< Name of the data set.
+      integer, intent(out) :: kx !< Number of individual quantities in the data set
+      logical :: success !< Return value, indicates whether the quantity is supported in this subroutine.
+
+      integer :: ierr
+
+      kx = 1
+      success = .true.
+
+      select case (quantity)
+
+      case ('airtemperature')
+         call realloc(tair, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('tair(ndx)', ierr, ndx)
+      case ('cloudiness')
+         call realloc(clou, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('clou(ndx)', ierr, ndx)
+      case ('humidity')
+         call realloc(rhum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('rhum(ndx)', ierr, ndx)
+      case ('dewpoint') ! Relative humidity array used to store dewpoints
+         call realloc(rhum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('rhum(ndx)', ierr, ndx)
+      case ('solarradiation')
+         call realloc(qrad, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('qrad(ndx)', ierr, ndx)
+      case ('longwaveradiation')
+         call realloc(longwave, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('longwave(ndx)', ierr, ndx)
+      case ('humidity_airtemperature_cloudiness')
+         kx = 3
+      case ('dewpoint_airtemperature_cloudiness')
+         kx = 3
+      case ('humidity_airtemperature_cloudiness_solarradiation')
+         kx = 4
+      case ('dewpoint_airtemperature_cloudiness_solarradiation')
+         kx = 4
+      case default
+         success = .false.
+      end select
+   end function scan_for_heat_quantities
 
 end submodule fm_external_forcings_init

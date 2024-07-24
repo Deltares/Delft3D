@@ -6566,4 +6566,43 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f500_c01_hydro" ref="dflowfm_default">
+      <path version="2024-07-15T14:00:00">e02_dflowfm/f500_implicit1d/c01_hydro</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f500_c02_morpho" ref="dflowfm_default">
+      <path version="2024-07-15T14:00:00">e02_dflowfm/f500_implicit1d/c02_morpho</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f500_c03_morpho_junctions" ref="dflowfm_default">
+      <path version="2024-07-15T14:00:00">e02_dflowfm/f500_implicit1d/c03_morpho_junctions</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
   </testCases>
+

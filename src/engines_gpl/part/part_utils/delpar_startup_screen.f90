@@ -36,12 +36,12 @@ contains
         character(:), allocatable :: banner_text !< Produced banner text
         type(banner_information) :: info
 
-        info = banner_information(name="D-Particle Tracking (Delpar)", &
-                                  description="Water quality simulation based on particle tracking in 2D/3D models", &
-                                  suite_name="Delft3D / D-HYDRO", &
-                                  version_string=trim(major_minor_buildnr), &
-                                  built_on=trim(build_date_time), &
-                                  copyright=copyright)
+        info = banner_information(name = "D-Particle Tracking (Delpar)", &
+                description = "Water quality simulation based on particle tracking in 2D/3D models", &
+                suite_name = "Delft3D / D-HYDRO", &
+                version_string = trim(major_minor_buildnr), &
+                built_on = trim(build_date_time), &
+                copyright = copyright)
 
         banner_text = generate_banner(info)
     end function

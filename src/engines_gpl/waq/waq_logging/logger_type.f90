@@ -26,10 +26,9 @@ module m_logger_type
 
     !> logger types that are supported by the logger_factory
     enum, bind(c)
-        enumerator :: FILE = 0
-        enumerator :: SCREEN = 1
-        enumerator :: FILE_AND_SCREEN = 2
-
+        enumerator :: file = 1
+        enumerator :: screen = 2
+        enumerator :: file_and_screen = file + screen
     end enum
 
 end module m_logger_type
