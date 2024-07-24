@@ -25,12 +25,6 @@ if(UNIX)
     target_link_libraries(${library_name} ${oss_dependencies})
 endif()
 
-# # Define prebuild events
-# prebuild_version_number(${library_name} ${fortran_version_file} 
-                                        # ${checkout_src_root}
-                                        # ${ini_version_file}
-                                        # ON)
-
 set_source_files_properties(
                    src/wlopenmi_version.F90
                    src/WLOpenMISupport.F90

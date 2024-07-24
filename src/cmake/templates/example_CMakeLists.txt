@@ -94,12 +94,6 @@ set_source_files_properties(fileToSetPropertiesFor1.f90
                             fileToSetPropertiesFor2.f
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-# To define prebuild events
-# This command adds a prebuild event to generate the version number. Check the functions.cmake for documentation.
-prebuild_version_number(${library_name} ${fortran_version_file} 
-                                        ${CMAKE_SOURCE_DIR}/src 
-                                        ${ini_version_file})
-
 # Other explicit prebuild events can be set as follows:
 add_custom_command(TARGET ${library_name}
                    PRE_BUILD
