@@ -196,6 +196,8 @@ Dimr::~Dimr(void) {
 void Dimr::deleteControlBlock(dimr_control_block cb) {
     if (cb.numSubBlocks > 0) {
         for (int i = 0; i < cb.numSubBlocks; i++) {
+            if (cb.compTimesLen > 0)
+                delete[] cb.compTimes;
             // Recursively delete all subBlocks
             deleteControlBlock(cb.subBlocks[i]);
         }
@@ -1034,7 +1036,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                     for (int j = 0; j < cb->subBlocks[i].numSubBlocks; j++) {  // look for the WAVE component (wave-library)
                         if (j != cb->masterSubBlockId && cb->subBlocks[i].subBlocks[j].unit.component != nullptr && cb->subBlocks[i].subBlocks[j].unit.component->type == COMP_TYPE_WAVE) {
                             cb->subBlocks[i].tCur = *currentTime;
-    log->Write(INFO, my_rank, "Parallel Child: Current time: %15.5f -- %d", *currentTime, i);
+                            log->Write(INFO, my_rank, "Parallel Child: Current time: %15.5f -- %d", *currentTime, i);
                         }
                         else {
                             cb->subBlocks[i].tCur = *currentTime - masterComponent->tStart;
@@ -1046,6 +1048,12 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                         // This subBlock does not have to be executed anymore
                         // Force this by giving it a nextTime > simulationEndTime
                         cb->subBlocks[i].tNext = 2.0 * masterComponent->tEnd;
+                    if (cb->subBlocks[i].compTimesCurrent > 0) {
+                        cb->subBlocks[i].tStep = cb->subBlocks[i].compTimes[cb->subBlocks[i].compTimesCurrent] - cb->subBlocks[i].tNext;
+                        cb->subBlocks[i].compTimesCurrent++;
+                        if (cb->subBlocks[i].compTimesCurrent >= cb->subBlocks[i].compTimesLen)
+                            cb->subBlocks[i].compTimesCurrent = -1;
+                    }
                 }
             }
         }
@@ -1705,9 +1713,30 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
         XmlTree* timeElt = controlBlockXml->Lookup("time");
         if (timeElt == NULL)
             throw Exception(true, Exception::ERR_INVALID_INPUT, "The startGroup component \"%s\" does not contain a time element", controlBlockXml->name);
-        int intRead = sscanf(timeElt->charData, "%lf %lf %lf", &(controlBlock->tStart), &(controlBlock->tStep), &(controlBlock->tEnd));
-        if (intRead != 3)
-            throw Exception(true, Exception::ERR_INVALID_INPUT, "Cannot find tStart, tStep, tEnd");
+        std::ifstream compTimesFile(timeElt->charData);
+        if (compTimesFile.is_open()) {
+            std::string myline;
+            controlBlock->compTimesLen = 0;
+            while (std::getline(compTimesFile, myline))
+                ++controlBlock->compTimesLen;
+            compTimesFile.close(); compTimesFile.open(timeElt->charData);
+            controlBlock->compTimes = new double[controlBlock->compTimesLen];
+            for (int i = 0; i < controlBlock->compTimesLen; i++) {
+                std::getline(compTimesFile, myline);
+                int intRead = sscanf(myline.c_str(), "%lf", &(controlBlock->compTimes[i]));
+            }
+            compTimesFile.close();
+            controlBlock->tStart = controlBlock->compTimes[0];
+            controlBlock->tStep = controlBlock->compTimes[1] - controlBlock->tStart;
+            controlBlock->tEnd = 9.99e99;
+            controlBlock->compTimesCurrent = 2;
+        }
+        else {
+            int intRead = sscanf(timeElt->charData, "%lf %lf %lf", &(controlBlock->tStart), &(controlBlock->tStep), &(controlBlock->tEnd));
+            if (intRead != 3)
+                throw Exception(true, Exception::ERR_INVALID_INPUT, "Cannot find tStart, tStep, tEnd");
+            controlBlock->compTimesCurrent = -1;
+        }
     }
     else if (strcmp(controlBlockXml->name, "coupler") == 0) {
         controlBlock->type = CT_COUPLER;

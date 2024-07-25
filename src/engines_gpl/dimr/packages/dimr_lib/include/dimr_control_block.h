@@ -19,5 +19,8 @@ struct dimr_control_block {
 	double             tEnd;
 	double             tNext;
 	double             tCur;
+	double *           compTimes;
+	int                compTimesCurrent;
+	int                compTimesLen;
 }
 ;
