@@ -905,7 +905,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                             // This is not the overall tStep!
                             double tUpdate;
                             tUpdate = *currentTime - masterComponent->tStart - cb->subBlocks[i].tCur;
-    log->Write(INFO, my_rank, "Parallel Startgroup: Current time: %15.5f -- %15.5f", *currentTime, cb->subBlocks[i].tCur);
+                            log->Write(INFO, my_rank, "Parallel Startgroup: Current time: %15.5f -- %15.5f", *currentTime, cb->subBlocks[i].tCur);
                             // Hack: Always call RTCTools.Update with argument -1.0
                             if (cb->subBlocks[i].subBlocks[j].unit.component->type == COMP_TYPE_RTC) {
                                 tUpdate = -1.0;
@@ -1732,6 +1732,7 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
             // Use compTimesLen to allocate compTimes
             controlBlock->compTimes = new double[controlBlock->compTimesLen];
             // Read compTimes from the file
+            log->Write(INFO, my_rank, "Reading %d lines from file '%s'", controlBlock->compTimesLen, timeElt->charData);
             for (int i = 0; i < controlBlock->compTimesLen; i++) {
                 std::getline(compTimesFile, myline);
                 int intRead = sscanf(myline.c_str(), "%lf", &(controlBlock->compTimes[i]));
