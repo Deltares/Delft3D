@@ -3,9 +3,9 @@ from datetime import datetime, timezone
 from typing import List, Union
 
 import pytest
-from tools.minio.argument_parser import make_argument_parser
 
 from src.config.types.path_type import PathType
+from tools.minio.argument_parser import make_argument_parser
 
 
 @pytest.fixture(scope="session")
@@ -18,7 +18,7 @@ def assert_push_defaults(args: argparse.Namespace) -> None:
     assert args.interactive
     assert not args.force
     assert args.local_path is None
-    assert not args.update_only
+    assert not args.allow_create_and_delete
 
 
 def assert_pull_defaults(args: argparse.Namespace) -> None:
@@ -76,7 +76,7 @@ def test_missing_required__raise_system_exit(argv: List[str], arg_parser: argpar
 
 
 @pytest.mark.parametrize(
-    "path_type_flag, path_type",
+    ("path_type_flag", "path_type"),
     [("--case", PathType.INPUT), ("--reference", PathType.REFERENCE)],
 )
 def test_push__only_required(
@@ -97,7 +97,7 @@ def test_push__only_required(
 
 
 @pytest.mark.parametrize(
-    "path_type_flag, path_type",
+    ("path_type_flag", "path_type"),
     [("--case", PathType.INPUT), ("--reference", PathType.REFERENCE)],
 )
 def test_push__only_required_long_opts(
@@ -118,16 +118,15 @@ def test_push__only_required_long_opts(
 
 
 @pytest.mark.parametrize(
-    "flag, attr_name, attr_value",
-    ids=["no-color", "batch", "force", "local-path", "short-local-path", "update-only", "update-only-short"],
+    ("flag", "attr_name", "attr_value"),
+    ids=["no-color", "batch", "force", "local-path", "short-local-path", "allow-create-and-delete"],
     argvalues=[
         ("--no-color", "color_output", False),
         ("--batch", "interactive", False),
         ("--force", "force", True),
         ("--local-path=foo/bar", "local_path", "foo/bar"),
         ("-p=foo/bar", "local_path", "foo/bar"),
-        ("--update-only", "update_only", True),
-        ("-u", "update_only", True),
+        ("--allow-create-and-delete", "allow_create_and_delete", True),
     ],
 )
 def test_push__optional_arguments(
@@ -166,7 +165,7 @@ def test_update_refs__required_only__long_opts(arg_parser: argparse.ArgumentPars
 
 
 @pytest.mark.parametrize(
-    "flag, attr_name, attr_value",
+    ("flag", "attr_name", "attr_value"),
     ids=["no-color", "batch", "force", "local-path", "short-local-path"],
     argvalues=[
         ("--no-color", "color_output", False),
@@ -186,7 +185,7 @@ def test_update_references__optional_arguments(
 
 
 @pytest.mark.parametrize(
-    "path_type_flag, path_type",
+    ("path_type_flag", "path_type"),
     [("--case", PathType.INPUT), ("--reference", PathType.REFERENCE)],
 )
 def test_pull__only_required(
@@ -206,7 +205,7 @@ def test_pull__only_required(
 
 
 @pytest.mark.parametrize(
-    "path_type_flag, path_type",
+    ("path_type_flag", "path_type"),
     [("--case", PathType.INPUT), ("--reference", PathType.REFERENCE)],
 )
 def test_pull__only_required_long_opts(
@@ -245,7 +244,7 @@ def test_pull__latest(arg_parser: argparse.ArgumentParser) -> None:
 
 
 @pytest.mark.parametrize(
-    "flag, attr_name, attr_value",
+    ("flag", "attr_name", "attr_value"),
     ids=["no-color", "batch", "force", "local-path", "short-local-path", "timestamp", "timestamp-short", "latest"],
     argvalues=[
         ("--no-color", "color_output", False),

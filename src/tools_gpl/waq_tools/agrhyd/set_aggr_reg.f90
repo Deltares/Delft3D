@@ -29,7 +29,7 @@
 
       ! global declarations
 
-      use m_logger, only : terminate_execution
+      use m_logger_helper, only : stop_with_error
       use m_hydmod
       implicit none
 
@@ -37,10 +37,10 @@
 
       type(t_hydrodynamics)          :: input_hyd                             ! description of the input hydrodynamics
       type(t_hydrodynamics)          :: output_hyd                            ! description of the output hydrodynamics
-      integer              :: ipnt_h(input_hyd%nmax,input_hyd%mmax) ! horizontal aggregation
-      integer              :: ipnt_v(input_hyd%kmax)                ! vertical aggregation
-      integer              :: ipnt(input_hyd%noseg)                 ! aggregation pointer segments
-      integer              :: ipnt_vdf(input_hyd%noseg)             ! aggregation pointer used for minimum vertical diffusion
+      integer              :: ipnt_h(input_hyd%num_rows,input_hyd%num_columns) ! horizontal aggregation
+      integer              :: ipnt_v(input_hyd%num_layers_grid)                ! vertical aggregation
+      integer              :: ipnt(input_hyd%num_cells)                 ! aggregation pointer segments
+      integer              :: ipnt_vdf(input_hyd%num_cells)             ! aggregation pointer used for minimum vertical diffusion
       integer              :: nosegbt                               ! length aggregation pointer used for boundaries
       integer              :: ipnt_b(nosegbt)                       ! aggregation pointer used for boundaries
 
@@ -58,16 +58,16 @@
 
       nosegl_new = output_hyd%nosegl
       nosegb_new = -minval(ipnt_h)
-      nosegb     = nosegbt/input_hyd%nolay
-      do i = 1 , input_hyd%noseg
+      nosegb     = nosegbt/input_hyd%num_layers
+      do i = 1 , input_hyd%num_cells
          ipnt(i) = 0
       enddo
       do i = 1 , nosegbt
          ipnt_b(i) = 0
       enddo
 
-      do m = 1 , input_hyd%mmax
-         do n = 1 , input_hyd%nmax
+      do m = 1 , input_hyd%num_columns
+         do n = 1 , input_hyd%num_rows
             iseg = input_hyd%lgrid(n,m)
             if ( iseg .gt. 0 ) then
                if ( ipnt(iseg) .gt. 0 ) then
@@ -81,7 +81,7 @@
                      write(*,*) 'iseg=:',iseg
                      write(*,*) 'ipnt=:',ipnt(iseg)
                      write(*,*) 'ipnt_h=:',ipnt_h(n,m)
-                     call terminate_execution(1)
+                     call stop_with_error()
                   endif
 
                else
@@ -94,7 +94,7 @@
 
                      ! nieuwe boundary
 
-                     do ilay = 1 , input_hyd%nolay
+                     do ilay = 1 , input_hyd%num_layers
                         isegl = (ilay-1)*input_hyd%nosegl+iseg
                         iplay = (ipnt_v(ilay)-1)*nosegb_new - ipnt_h(n,m)
                         ipnt(isegl) = -iplay
@@ -104,7 +104,7 @@
 
                      ! eerste keer dat segment langskomt, zet pointers
 
-                     do ilay = 1 , input_hyd%nolay
+                     do ilay = 1 , input_hyd%num_layers
                         isegl = (ilay-1)*input_hyd%nosegl+iseg
                         iplay = (ipnt_v(ilay)-1)*nosegl_new + ipnt_h(n,m)
                         ipnt(isegl) = iplay
@@ -122,7 +122,7 @@
 
                   ! boundary blijft boundary
 
-                  do ilay = 1 , input_hyd%nolay
+                  do ilay = 1 , input_hyd%num_layers
                      isegl = (ilay-1)*nosegb-iseg
                      iplay = (ipnt_v(ilay)-1)*nosegb_new - ipnt_h(n,m)
                      ipnt_b(isegl) = iplay
@@ -137,14 +137,14 @@
                   write(*,*) 'n=:',n
                   write(*,*) 'iseg=:',iseg
                   write(*,*) 'ipnt_h=:',ipnt_h(n,m)
-                  call terminate_execution(1)
+                  call stop_with_error()
 
                endif
             endif
          enddo
       enddo
 
-      do ilay = 1 , input_hyd%nolay
+      do ilay = 1 , input_hyd%num_layers
          ilay_new = ipnt_v(ilay)
          do i = 1 , input_hyd%nosegl
             i1 = i + (ilay-1)*input_hyd%nosegl

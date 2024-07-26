@@ -29,18 +29,18 @@ module m_values
 contains
 
 
-    SUBROUTINE VALUES (NAME, NOSSS, VALUE, NOCONS, NOPA, &
-            NOFUN, NOSFUN, CONST, CONAME, PARAM, &
+    SUBROUTINE VALUES (NAME, NOSSS, VALUE, num_constants, num_spatial_parameters, &
+            num_time_functions, num_spatial_time_fuctions, CONST, CONAME, PARAM, &
             PANAME, FUNCS, FUNAME, SFUNCS, SFNAME, &
             LGET, IERR)
         use timers
 
         !
         character(len=20) NAME, CONAME(*), PANAME(*), FUNAME(*), SFNAME(*)
-        REAL(kind = real_wp) :: VALUE(NOSSS), CONST(NOCONS), PARAM (NOPA, NOSSS), &
-                FUNCS(NOFUN), SFUNCS(NOSSS, NOSFUN)
+        REAL(kind = real_wp) :: VALUE(NOSSS), CONST(num_constants), PARAM (num_spatial_parameters, NOSSS), &
+                FUNCS(num_time_functions), SFUNCS(NOSSS, num_spatial_time_fuctions)
         LOGICAL      LGET
-        integer(kind = int_wp) :: NOSSS, NOCONS, NOPA, NOFUN, NOSFUN, IERR
+        integer(kind = int_wp) :: NOSSS, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, IERR
 
         !     local
         integer(kind = int_wp) :: INDX
@@ -48,7 +48,7 @@ contains
         if (timon) call timstrt ("values", ithandl)
         !
         IERR = 1
-        INDX = index_in_array(NAME, SFNAME(:NOSFUN))
+        INDX = index_in_array(NAME, SFNAME(:num_spatial_time_fuctions))
         IF (INDX > 0) THEN
             if (lget) then
                 value(1:nosss) = sfuncs(1:nosss, INDX)
@@ -58,7 +58,7 @@ contains
             ierr = 0
             goto 100
         endif
-        INDX = index_in_array(NAME, PANAME (:NOPA))
+        INDX = index_in_array(NAME, PANAME (:num_spatial_parameters))
         IF (INDX > 0) THEN
             if (lget) then
                 value(1:nosss) = param(INDX, 1:nosss)
@@ -68,7 +68,7 @@ contains
             ierr = 0
             goto 100
         endif
-        INDX = index_in_array(NAME, FUNAME (:NOFUN))
+        INDX = index_in_array(NAME, FUNAME (:num_time_functions))
         IF (INDX > 0) THEN
             if (lget) then
                 value(1:nosss) = funcs(INDX)
@@ -76,7 +76,7 @@ contains
             endif
             goto 100
         endif
-        INDX = index_in_array(NAME, CONAME (:NOCONS))
+        INDX = index_in_array(NAME, CONAME (:num_constants))
         IF (INDX > 0) THEN
             if (lget) then
                 value(1:nosss) = const(INDX)

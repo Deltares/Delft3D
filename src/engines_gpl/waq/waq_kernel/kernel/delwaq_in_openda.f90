@@ -45,14 +45,14 @@ contains
 
 
     ! todo: implement this!
-    subroutine openda_quantities_initialize(notot, nobnd)
+    subroutine openda_quantities_initialize(num_substances_total, num_boundary_conditions)
 
         implicit none
 
-        integer(kind = int_wp) :: notot, nobnd
+        integer(kind = int_wp) :: num_substances_total, num_boundary_conditions
 
-        !  max_quantity_ids = notot
-        !  max_location_ids = nobnd
+        !  max_quantity_ids = num_substances_total
+        !  max_location_ids = num_boundary_conditions
 
     end subroutine openda_quantities_initialize
 
@@ -73,8 +73,6 @@ module m_waq_openda_exchange_items
 
 contains
 
-    !------------------------
-
     subroutine set_openda_buffer(val, location_id, quantity_id, operation)
         ! set the value of an exchange-item. This routine is typically called
         ! by an SE_setvalues routine (from OUTSIDE delft3D!) for a certain instance and exchange item (e.g. wind)
@@ -82,7 +80,6 @@ contains
         ! Note that the actual adjustment INSIDE delft3d is not yet performed here.
         ! for the wind example, this is done in incmeteo with a call to get_openda_buffer.
         ! The multiplication is performed in this routine get_openda_buffer.
-
         ! For a specific boundary, the location_id is used (can be found by counting in the BND-file)
         ! for other boundaries, the l_ei remains false so they do not change.
 
@@ -102,19 +99,22 @@ contains
         ei_oper(location_id, quantity_id) = operation
 
     end subroutine set_openda_buffer
-    !---------------------------------------------------
 
+    !> Retrieves the value of the OpenDA buffer
+    !! in the variable qarray
     subroutine get_openda_buffer(quantity, loc_from_waq, dim1, dim2, qarray)
-
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
 
         implicit none
 
-        integer(kind = int_wp), intent(in) :: dim1, dim2, loc_from_waq
-        integer(kind = int_wp), intent (in) :: quantity
-        real(kind = real_wp), dimension(dim1, dim2), target, intent(out) :: qarray
+        integer(kind = int_wp), intent(in) :: quantity     !< Index of the quantity / substance to retrieve buffer for.
+        integer(kind = int_wp), intent(in) :: loc_from_waq !< Location for which the data will be retrieved.
+        integer(kind = int_wp), intent(in) :: dim1         !< Size in direction 1 of the array to retrieve
+        integer(kind = int_wp), intent(in) :: dim2         !< Size in direction 2 of the array to retrieve
 
-        ! locals
+        real(kind = real_wp), dimension(dim1, dim2), target, intent(out) :: qarray !< Retrieved value for the OpenDA buffer
+
+        ! Local variables
         integer(kind = int_wp) :: location_id, quantity_id
         double precision :: org_value
 
@@ -122,16 +122,11 @@ contains
         quantity_id = -1
 
         ! first check the substance
-
-        if (quantity <= notot) then
+        if (quantity <= num_substances_total) then
             quantity_id = quantity
         endif
-
-
         ! Now, assume that we only support the setting of boundary conditions!
-
-        !! TODO: allow other variants of get_openda_buffer
-
+        ! TODO: allow other variants of get_openda_buffer
         if (location_id == -1 .or. quantity_id == -1) then
             write (*, *) 'EI get_openda_buffer, INVALID ITEM: loc-id=', location_id, ', q_id=', quantity_id
         else
@@ -153,11 +148,7 @@ contains
                 endif
             endif
         endif
-
     end subroutine get_openda_buffer
-
-    ! ------------------
-
 
     subroutine openda_buffer_initialize
 
@@ -166,6 +157,4 @@ contains
         l_ei = .false.
 
     end subroutine openda_buffer_initialize
-
-    !--------------------------
 end module m_waq_openda_exchange_items

@@ -25,9 +25,9 @@
 
       ! function : merge data_2 into data_1 not fully implemeted but ok for the discharges in ddcouple
 
-      use m_logger, only : terminate_execution, get_log_unit_number
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
       use m_waq_data_structure             ! module contains everything for the data
-      
+
       implicit none
 
       ! declaration of the arguments
@@ -60,19 +60,19 @@
       if ( data_1%num_locations .eq. 0 ) then
 
          data_1%num_locations   = data_2%num_locations
-         data_1%num_parameters = data_2%num_parameters
+         data_1%num_spatial_parameters = data_2%num_spatial_parameters
          data_1%num_breakpoints   = data_2%num_breakpoints
          data_1%function_type = data_2%function_type
          allocate(data_1%times(data_1%num_breakpoints), &
-                  data_1%values(data_1%num_parameters,data_1%num_locations,data_1%num_breakpoints), &
+                  data_1%values(data_1%num_spatial_parameters,data_1%num_locations,data_1%num_breakpoints), &
                   stat=ierr_alloc)
          if ( ierr_alloc .ne. 0 ) then
             write(lunrep,*) ' error allocating data arrays'
 
-            write(lunrep,*) ' number of parameters :',data_1%num_parameters
+            write(lunrep,*) ' number of parameters :',data_1%num_spatial_parameters
             write(lunrep,*) ' number of brakpoints :',data_1%num_breakpoints
             write(lunrep,*) ' number of locations  :',data_1%num_locations
-            call terminate_execution(1)
+            call stop_with_error()
          endif
          data_1%times  = data_2%times
          data_1%values = data_2%values
@@ -81,12 +81,12 @@
 
          ! for the moment assume parameters equal and 1
 
-         if ( data_1%num_parameters .gt. 1 .or. data_2%num_parameters .gt. 1 ) then
+         if ( data_1%num_spatial_parameters .gt. 1 .or. data_2%num_spatial_parameters .gt. 1 ) then
             write(*,*) 'merge for paramters not yet implemented'
          endif
 
          data_tmp%num_locations   = data_1%num_locations + data_2%num_locations
-         data_tmp%num_parameters = data_1%num_parameters
+         data_tmp%num_spatial_parameters = data_1%num_spatial_parameters
 
          ! count number of breakpoints,  loop till we have passed all breakpoints
 
@@ -114,14 +114,14 @@
          enddo
          data_tmp%num_breakpoints   = nobrkt
          allocate(data_tmp%times(data_tmp%num_breakpoints), &
-                  data_tmp%values(data_tmp%num_parameters,data_tmp%num_locations,data_tmp%num_breakpoints), &
+                  data_tmp%values(data_tmp%num_spatial_parameters,data_tmp%num_locations,data_tmp%num_breakpoints), &
                   stat=ierr_alloc)
          if ( ierr_alloc .ne. 0 ) then
             write(lunrep,*) ' error allocating data arrays'
-            write(lunrep,*) ' number of parameters :',data_tmp%num_parameters
+            write(lunrep,*) ' number of parameters :',data_tmp%num_spatial_parameters
             write(lunrep,*) ' number of brakpoints :',data_tmp%num_breakpoints
             write(lunrep,*) ' number of locations  :',data_tmp%num_locations
-            call terminate_execution(1)
+            call stop_with_error()
          endif
 
          ! set new timeseries
@@ -181,7 +181,7 @@
 
          ! move the temporary stuff to data_1
          data_1%num_locations   = data_tmp%num_locations
-         data_1%num_parameters = data_tmp%num_parameters
+         data_1%num_spatial_parameters = data_tmp%num_spatial_parameters
          data_1%num_breakpoints   = data_tmp%num_breakpoints
          deallocate(data_1%times,data_1%values)
          data_1%times    => data_tmp%times

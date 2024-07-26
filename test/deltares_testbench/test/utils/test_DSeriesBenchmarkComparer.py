@@ -2,20 +2,21 @@ import os
 import shutil
 import sys
 from os.path import abspath, dirname, isfile, join
-from test.utils.test_logger import TestLogger
 
 import pytest
 
-from src.config.credentials import Credentials
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.comparers.d_series_benchmark_comparer import DSeriesBenchmarkComparer
+from src.utils.logging.console_logger import ConsoleLogger
+from src.utils.logging.log_level import LogLevel
 from src.utils.xml_config_parser import XmlConfigParser
+from test.utils.test_logger import TestLogger
 
 sys.path.insert(0, abspath(join(dirname(__file__), "..")))
 
 
 class TestDSeriesBenchmarkComparer:
-    def setup_method(self):
+    def setup_method(self) -> None:
         self.path_to_file = ""
         # Setting up the unit testing
         # Defining settings that will be used commonly
@@ -26,24 +27,21 @@ class TestDSeriesBenchmarkComparer:
         self.rp = join(self.testdata, "right")
         self.comp = DSeriesBenchmarkComparer()
 
-        # Start parsing
-        c = Credentials()
-        c.name = "commandline"
-
         # Parse the xml file.
         # This is done to point to a specific file
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test.xml"), "", c, ""
-        )
-        file = settings.configs
+        settings.config_file = join(self.testdata, "Unit_test.xml")
+        settings.credentials.name = "commandline"
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
 
         # The first file that is going to be checked passed as attribute
         self.file_check = file[0].checks[0]
         pass
 
-    def test_compare_No_csv_file(self):
+    def test_compare_No_csv_file(self) -> None:
         # Testing if the correct exception is raised when no csv file is found
         # define the inputs for the function
         ref_path = self.lp
@@ -52,15 +50,11 @@ class TestDSeriesBenchmarkComparer:
 
         # Run the function
         with pytest.raises(Exception) as context:
-            DSeriesBenchmarkComparer.compare(
-                self.comp, ref_path, test_path, self.file_check, testcase_name
-            )
+            DSeriesBenchmarkComparer.compare(self.comp, ref_path, test_path, self.file_check, testcase_name)
             # Check if the correct exception is raised
-            assert "Cannot open csv-file " + join(self.rp, "Unit_test.csv") == str(
-                context.value
-            )
+            assert "Cannot open csv-file " + join(self.rp, "Unit_test.csv") == str(context.value)
 
-    def test_compare(self):
+    def test_compare(self) -> None:
         # Import the needed the packages
         # Delete files from directory so that they don't interfere with other tests
         lfile = join(self.lp, "Unit_test_empty.csv")
@@ -74,12 +68,8 @@ class TestDSeriesBenchmarkComparer:
         testcase_name = "Testing_all_the_fod_file"
 
         # Copy the Unit_test.csv files so that they can be read
-        shutil.copy2(
-            join(self.testdata, "Unit_test.csv"), join(self.lp, "Unit_test.csv")
-        )
-        shutil.copy2(
-            join(self.testdata, "Unit_test.csv"), join(self.rp, "Unit_test.csv")
-        )
+        shutil.copy2(join(self.testdata, "Unit_test.csv"), join(self.lp, "Unit_test.csv"))
+        shutil.copy2(join(self.testdata, "Unit_test.csv"), join(self.rp, "Unit_test.csv"))
 
         logger = TestLogger()
         # Run the function to be tested
@@ -137,7 +127,7 @@ class TestDSeriesBenchmarkComparer:
         assert output
         assert len(test) == len(param_results)
 
-    def test_compareBenchmark_OK(self):
+    def test_compareBenchmark_OK(self) -> None:
         # Set inputs in this case there should be no errors
         # Define the variable list as a dictionary
         varlist = [
@@ -191,9 +181,7 @@ class TestDSeriesBenchmarkComparer:
         self.comp.absTol_global = 0.0005
         self.comp.relTol_global = 0.0005
         # Call the function to be tested
-        results = DSeriesBenchmarkComparer.compareBenchmark(
-            self.comp, varlist, self.lp, testcase
-        )
+        results = DSeriesBenchmarkComparer.compareBenchmark(self.comp, varlist, self.lp, testcase)
 
         # The output
         testoutput = {
@@ -292,7 +280,7 @@ class TestDSeriesBenchmarkComparer:
         # Check if they are equal
         assert results == testoutput
 
-    def test_compareBenchmark_Exception1(self):
+    def test_compareBenchmark_Exception1(self) -> None:
         # Set inputs in this case there should be no errors
         # Define the variable list as a dictionary
         varlist = [
@@ -307,16 +295,12 @@ class TestDSeriesBenchmarkComparer:
 
         # Run function to get exception
         with pytest.raises(Exception) as context:
-            DSeriesBenchmarkComparer.compareBenchmark(
-                self.comp, varlist, self.rp, testcase
-            )
+            DSeriesBenchmarkComparer.compareBenchmark(self.comp, varlist, self.rp, testcase)
 
         # Check if the exception raised is what expected
-        assert "Cannot open tested file thisdoesnotexist.fod in " + self.rp == str(
-            context.value
-        )
+        assert "Cannot open tested file thisdoesnotexist.fod in " + self.rp == str(context.value)
 
-    def test_compareBenchmark_Exception2(self):
+    def test_compareBenchmark_Exception2(self) -> None:
         # Set inputs in this case there should be no errors
         # Define the variable list as a dictionary
         varlist = None
@@ -324,14 +308,12 @@ class TestDSeriesBenchmarkComparer:
         testcase = "comparebenchmarks.fod"
 
         # Run function
-        result = DSeriesBenchmarkComparer.compareBenchmark(
-            self.comp, varlist, self.lp, testcase
-        )
+        result = DSeriesBenchmarkComparer.compareBenchmark(self.comp, varlist, self.lp, testcase)
 
         # Check if the exception raised is what expected
         assert {} == result
 
-    def test_compareBenchmark_NOK(self):
+    def test_compareBenchmark_NOK(self) -> None:
         # Set inputs in this case there should be no errors
         # Define the variable list as a dictionary
         varlist = [
@@ -385,9 +367,7 @@ class TestDSeriesBenchmarkComparer:
         self.comp.absTol_global = 0.0005
         self.comp.relTol_global = 0.0005
         # Call the function to be tested
-        results = DSeriesBenchmarkComparer.compareBenchmark(
-            self.comp, varlist, self.lp, testcase
-        )
+        results = DSeriesBenchmarkComparer.compareBenchmark(self.comp, varlist, self.lp, testcase)
 
         # The output
         testoutput = {
@@ -486,22 +466,20 @@ class TestDSeriesBenchmarkComparer:
         # Check if they are equal
         assert results == testoutput
 
-    def test_compare_empty(self):
+    def test_compare_empty(self) -> None:
         # Import packages
         import os
         import shutil
 
         # Reading a different csv file a new xml file has to be imported
-        # Start parsing
-        c = Credentials()
-        c.name = "commandline"
         # Parse the xml file.
         xmlcp = XmlConfigParser()
+        logger = ConsoleLogger(LogLevel.DEBUG)
         settings = TestBenchSettings()
-        settings.local_paths, settings.programs, settings.configs = xmlcp.load(
-            join(self.testdata, "Unit_test_empty_file.xml"), "", c, ""
-        )
-        file = settings.configs
+        settings.config_file = join(self.testdata, "Unit_test_empty_file.xml")
+        settings.credentials.name = "commandline"
+        settings.local_paths, settings.programs, settings.configs_to_run = xmlcp.load(settings, logger)
+        file = settings.configs_to_run
         # The file to be checked
         file_check = file[0]._TestCaseConfig__checks[0]
 
@@ -522,9 +500,7 @@ class TestDSeriesBenchmarkComparer:
 
         # Run the file for catching the exceptions
         with pytest.raises(Exception) as context:
-            DSeriesBenchmarkComparer.compare(
-                self.comp, self.lp, self.rp, file_check, testcase_name, logger
-            )
+            DSeriesBenchmarkComparer.compare(self.comp, self.lp, self.rp, file_check, testcase_name, logger)
 
         # Check if the correct exception is raised
         assert "No variables in CSV-file to compare !" == str(context.value)
@@ -533,7 +509,7 @@ class TestDSeriesBenchmarkComparer:
         os.remove(join(self.lp, "Unit_test_empty.csv"))
         os.remove(join(self.rp, "Unit_test_empty.csv"))
 
-    def test_parse_params(self):
+    def test_parse_params(self) -> None:
         # Define the name of the csv file to be tested
         csvfilename = join(self.lp, "parse_params.csv")
 
@@ -555,7 +531,7 @@ class TestDSeriesBenchmarkComparer:
         # Check their equality
         assert varlist == vartest
 
-    def test_parse_params_no_file(self):
+    def test_parse_params_no_file(self) -> None:
         # Define the name of the csv file to be tested
         csvfilename = join(self.testdata, "filethatdoesnotexist.csv")
 
@@ -566,33 +542,23 @@ class TestDSeriesBenchmarkComparer:
         # Check if the correct exceprion is raised
         assert "Cannot open csv-file " + csvfilename == str(context.value)
 
-    def test_compute_abs_difference_between_strings(self):
+    def test_compute_abs_difference_between_strings(self) -> None:
         dsbc = DSeriesBenchmarkComparer()
         # only typo
-        assert 1 == DSeriesBenchmarkComparer.compute_abs_difference_between_strings(
-            dsbc, "Sand", "Pand"
-        )
+        assert 1 == DSeriesBenchmarkComparer.compute_abs_difference_between_strings(dsbc, "Sand", "Pand")
         # only length
-        assert 2 == DSeriesBenchmarkComparer.compute_abs_difference_between_strings(
-            dsbc, "Sand", "Sandaa"
-        )
+        assert 2 == DSeriesBenchmarkComparer.compute_abs_difference_between_strings(dsbc, "Sand", "Sandaa")
         # typo and length
-        assert 2, DSeriesBenchmarkComparer.compute_abs_difference_between_strings(
-            dsbc, "Sand", "Panda"
-        )
+        assert 2, DSeriesBenchmarkComparer.compute_abs_difference_between_strings(dsbc, "Sand", "Panda")
 
-    def test_split_lines_ignoring_quotes(self):
+    def test_split_lines_ignoring_quotes(self) -> None:
         dsbc = DSeriesBenchmarkComparer()
         assert [
             "Sand",
             "Clay",
             "Peat",
-        ] == DSeriesBenchmarkComparer.split_lines_ignoring_quotes(
-            dsbc, "Sand,Clay,Peat"
-        )
+        ] == DSeriesBenchmarkComparer.split_lines_ignoring_quotes(dsbc, "Sand,Clay,Peat")
         assert [
             "Sand",
             '"Clay,Peat"',
-        ] == DSeriesBenchmarkComparer.split_lines_ignoring_quotes(
-            dsbc, 'Sand,"Clay,Peat"'
-        )
+        ] == DSeriesBenchmarkComparer.split_lines_ignoring_quotes(dsbc, 'Sand,"Clay,Peat"')

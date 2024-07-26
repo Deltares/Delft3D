@@ -39,9 +39,6 @@
         <argument>/C</argument>
       </arguments>
     </program>
-    <program name="svn" addSearchPaths="false">
-      <path>thirdparty\svn\win64\svn.exe</path>
-    </program>
     <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
         <path>bin/run_dimr.bat</path>
         <shell ref="command_prompt"/>

@@ -28,10 +28,10 @@ module m_mac3du
 contains
 
 
-    subroutine mac3du     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine mac3du     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -40,18 +40,18 @@ contains
         !
         !     type    name         i/o description
         !
-        real(kind = real_wp) :: pmsa(*)     !i/o process manager system array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !i/o process manager system array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! o  array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(29) ! i  array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(29) ! i  array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(29) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! i  number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! i  number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! i  number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! i  nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(29)   !    local work array for the pointering
         integer(kind = int_wp) :: iseg        !    local loop counter for computational element loop
         !
@@ -119,25 +119,25 @@ contains
         idco2upsm01 = 4
         idoxyprsm01 = 5
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
-            depth = pmsa(ipnt(1))
-            totaldepth = pmsa(ipnt(2))
-            nh4s12 = pmsa(ipnt(3))
-            locseddept = pmsa(ipnt(4))
-            ibotseg = pmsa(ipnt(5))
-            FrBmLay = pmsa(ipnt(6))
-            rootdesm01 = pmsa(ipnt(7))
-            poros = pmsa(ipnt(8))
-            po4s12 = pmsa(ipnt(9))
-            nh4 = max(pmsa(ipnt(10)), 0.0)
-            no3 = max(pmsa(ipnt(11)), 0.0)
-            po4 = max(pmsa(ipnt(12)), 0.0)
-            disco2 = max(pmsa(ipnt(13)), 0.0)
-            dish2co3 = max(pmsa(ipnt(14)), 0.0)
-            dishco3 = max(pmsa(ipnt(15)), 0.0)
-            prfnh4sm01 = pmsa(ipnt(16))
-            nh4crsm01 = pmsa(ipnt(17))
+            depth = process_space_real(ipnt(1))
+            totaldepth = process_space_real(ipnt(2))
+            nh4s12 = process_space_real(ipnt(3))
+            locseddept = process_space_real(ipnt(4))
+            ibotseg = process_space_real(ipnt(5))
+            FrBmLay = process_space_real(ipnt(6))
+            rootdesm01 = process_space_real(ipnt(7))
+            poros = process_space_real(ipnt(8))
+            po4s12 = process_space_real(ipnt(9))
+            nh4 = max(process_space_real(ipnt(10)), 0.0)
+            no3 = max(process_space_real(ipnt(11)), 0.0)
+            po4 = max(process_space_real(ipnt(12)), 0.0)
+            disco2 = max(process_space_real(ipnt(13)), 0.0)
+            dish2co3 = max(process_space_real(ipnt(14)), 0.0)
+            dishco3 = max(process_space_real(ipnt(15)), 0.0)
+            prfnh4sm01 = process_space_real(ipnt(16))
+            nh4crsm01 = process_space_real(ipnt(17))
 
             ! convert co2 to carbon and add h2co3, calculated din with preference
             ! adjust for porosity
@@ -156,22 +156,22 @@ contains
 
             ! results of previous modeules are defined in the ibotseg were the plant resides
 
-            frootnsm01 = pmsa(ipoint(18) + (ibotseg - 1) * increm(18))
-            frootpsm01 = pmsa(ipoint(19) + (ibotseg - 1) * increm(19))
-            cdinsm01w = pmsa(ipoint(20) + (ibotseg - 1) * increm(20))
-            cpo4sm01w = pmsa(ipoint(21) + (ibotseg - 1) * increm(21))
-            cco2sm01 = pmsa(ipoint(22) + (ibotseg - 1) * increm(22))
-            chco3sm01 = pmsa(ipoint(23) + (ibotseg - 1) * increm(23))
-            cdinsm01b = pmsa(ipoint(24) + (ibotseg - 1) * increm(24))
-            cpo4sm01b = pmsa(ipoint(25) + (ibotseg - 1) * increm(25))
-            dnupsm01 = pmsa(ipoint(26) + (ibotseg - 1) * increm(26))
-            dpupsm01 = pmsa(ipoint(27) + (ibotseg - 1) * increm(27))
-            dsm01oxy = pmsa(ipoint(28) + (ibotseg - 1) * increm(28))
-            dsm01co2 = pmsa(ipoint(29) + (ibotseg - 1) * increm(29))
+            frootnsm01 = process_space_real(ipoint(18) + (ibotseg - 1) * increm(18))
+            frootpsm01 = process_space_real(ipoint(19) + (ibotseg - 1) * increm(19))
+            cdinsm01w = process_space_real(ipoint(20) + (ibotseg - 1) * increm(20))
+            cpo4sm01w = process_space_real(ipoint(21) + (ibotseg - 1) * increm(21))
+            cco2sm01 = process_space_real(ipoint(22) + (ibotseg - 1) * increm(22))
+            chco3sm01 = process_space_real(ipoint(23) + (ibotseg - 1) * increm(23))
+            cdinsm01b = process_space_real(ipoint(24) + (ibotseg - 1) * increm(24))
+            cpo4sm01b = process_space_real(ipoint(25) + (ibotseg - 1) * increm(25))
+            dnupsm01 = process_space_real(ipoint(26) + (ibotseg - 1) * increm(26))
+            dpupsm01 = process_space_real(ipoint(27) + (ibotseg - 1) * increm(27))
+            dsm01oxy = process_space_real(ipoint(28) + (ibotseg - 1) * increm(28))
+            dsm01co2 = process_space_real(ipoint(29) + (ibotseg - 1) * increm(29))
 
             ! scale input fluxes to g/m2/d
 
-            bdepth = pmsa(ipoint(1) + (ibotseg - 1) * increm(1))
+            bdepth = process_space_real(ipoint(1) + (ibotseg - 1) * increm(1))
             dnupsm01 = dnupsm01 * bdepth
             dpupsm01 = dpupsm01 * bdepth
             dsm01oxy = dsm01oxy * bdepth
@@ -185,7 +185,7 @@ contains
             dco2upsm01 = 0.0
             doxyprsm01 = 0.0
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1==1) then
 
                 ! active water segment
@@ -217,7 +217,7 @@ contains
 
                 ! S12 sediment uptake
 
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
                     if (nh4s12>0.0) dnh4upsm01 = dnh4upsm01 + frootnsm01 * dnupsm01
                     if (po4s12>0.0) dpo4upsm01 = dpo4upsm01 + frootpsm01 * dpupsm01

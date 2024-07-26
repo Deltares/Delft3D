@@ -28,10 +28,10 @@ module m_mpbnlm
 contains
 
 
-    SUBROUTINE MPBNLM (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
-        use m_evaluate_waq_attribute
+    SUBROUTINE MPBNLM (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !     ***********************************************************************
         !          +----------------------------------------+
@@ -47,20 +47,20 @@ contains
 
         !          arguments
 
-        REAL(kind = real_wp) :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+        REAL(kind = real_wp) :: process_space_real(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
         REAL(kind = real_wp) :: FL(*)              ! in/out flux array
-        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-        INTEGER(kind = int_wp) :: NOSEG              ! in     number of segments
+        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+        INTEGER(kind = int_wp) :: num_cells              ! in     number of segments
         INTEGER(kind = int_wp) :: NOFLUX             ! in     total number of fluxes (increment in FL array)
         INTEGER(kind = int_wp) :: IEXPNT(4, *)        ! in     exchange pointer table
         INTEGER(kind = int_wp) :: IKNMRK(*)          ! in     segment features array
-        INTEGER(kind = int_wp) :: NOQ1               ! in     number of exchanges in first direction
-        INTEGER(kind = int_wp) :: NOQ2               ! in     number of exchanges in second direction
-        INTEGER(kind = int_wp) :: NOQ3               ! in     number of exchanges in third direction
-        INTEGER(kind = int_wp) :: NOQ4               ! in     number of exchanges in fourth direction
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir               ! in     number of exchanges in first direction
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir               ! in     number of exchanges in second direction
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir               ! in     number of exchanges in third direction
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
 
-        !          from PMSA array
+        !          from process_space_real array
 
         REAL(kind = real_wp) :: CAM                !  1 in  Ammonium (NH4)                             (gN/m3)
         REAL(kind = real_wp) :: CNI                !  2 in  Nitrate (NO3)                              (gN/m3)
@@ -89,35 +89,35 @@ contains
         INTEGER(kind = int_wp) :: ISEG               ! loop counter segment loop
         INTEGER(kind = int_wp) :: IKMRK1             ! first feature inactive(0)-active(1)-bottom(2) segment
         INTEGER(kind = int_wp) :: IKMRK2             ! second feature 2D(0)-surface(1)-middle(2)-bottom(3) segment
-        INTEGER(kind = int_wp), parameter :: NO_POINTER = 21    ! number of input output variables in PMSA array
-        INTEGER(kind = int_wp) :: IP(NO_POINTER)     ! index pointer in PMSA array updated for each segment
+        INTEGER(kind = int_wp), parameter :: NO_POINTER = 21    ! number of input output variables in process_space_real array
+        INTEGER(kind = int_wp) :: IP(NO_POINTER)     ! index pointer in process_space_real array updated for each segment
         REAL(kind = real_wp) :: CNN                ! Weigthed nitrogen concentration (a la DYNAMO)     (gN/m3)
         REAL(kind = real_wp) :: CNNS1              ! Weigthed nitrogen concentration, bottom           (gN/m3)
 
-        !          initialise pointers for PMSA and FL array
+        !          initialise pointers for process_space_real and FL array
 
         IP = IPOINT(1:NO_POINTER)
 
         !          loop over the segments
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
-            CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
 
-            CAM = MAX(PMSA(IP(1)), 0.0)
-            CNI = MAX(PMSA(IP(2)), 0.0)
-            CPHO = MAX(PMSA(IP(3)), 0.0)
-            CSI = MAX(PMSA(IP(4)), 0.0)
-            KDIN = PMSA(IP(5))
-            KPHO = PMSA(IP(6))
-            KSI = PMSA(IP(7))
-            S1_BOTTOM = NINT(PMSA(IP(8))) == 1
-            CAMS1 = MAX(PMSA(IP(9)), 0.0)
-            CNIS1 = MAX(PMSA(IP(10)), 0.0)
-            CPHOS1 = MAX(PMSA(IP(11)), 0.0)
-            CSIS1 = MAX(PMSA(IP(12)), 0.0)
-            AMOPRF = PMSA(IP(13))
+            CAM = MAX(process_space_real(IP(1)), 0.0)
+            CNI = MAX(process_space_real(IP(2)), 0.0)
+            CPHO = MAX(process_space_real(IP(3)), 0.0)
+            CSI = MAX(process_space_real(IP(4)), 0.0)
+            KDIN = process_space_real(IP(5))
+            KPHO = process_space_real(IP(6))
+            KSI = process_space_real(IP(7))
+            S1_BOTTOM = NINT(process_space_real(IP(8))) == 1
+            CAMS1 = MAX(process_space_real(IP(9)), 0.0)
+            CNIS1 = MAX(process_space_real(IP(10)), 0.0)
+            CPHOS1 = MAX(process_space_real(IP(11)), 0.0)
+            CSIS1 = MAX(process_space_real(IP(12)), 0.0)
+            AMOPRF = process_space_real(IP(13))
 
             CNN = CAM + CNI / AMOPRF
             CNNS1 = CAMS1 + CNIS1 / AMOPRF
@@ -166,16 +166,16 @@ contains
 
             ENDIF
 
-            PMSA(IP(14)) = FN
-            PMSA(IP(15)) = FPHO
-            PMSA(IP(16)) = FSI
-            PMSA(IP(17)) = FNUT
-            PMSA(IP(18)) = FNS1
-            PMSA(IP(19)) = FPHOS1
-            PMSA(IP(20)) = FSIS1
-            PMSA(IP(21)) = FNUTS1
+            process_space_real(IP(14)) = FN
+            process_space_real(IP(15)) = FPHO
+            process_space_real(IP(16)) = FSI
+            process_space_real(IP(17)) = FNUT
+            process_space_real(IP(18)) = FNS1
+            process_space_real(IP(19)) = FPHOS1
+            process_space_real(IP(20)) = FSIS1
+            process_space_real(IP(21)) = FNUTS1
 
-            !             update pointering in PMSA
+            !             update pointering in process_space_real
 
             IP = IP + INCREM(1:NO_POINTER)
 

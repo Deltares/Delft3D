@@ -28,10 +28,10 @@ module m_trase2
 contains
 
 
-    subroutine trase2 (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine trase2 (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !>\file
         !>       Total of transport in sediment for 66 substances
@@ -53,11 +53,11 @@ contains
 
         IMPLICIT REAL (A-H, J-Z)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        !     from PMSA array
+        !     from process_space_real array
 
         INTEGER(kind = int_wp) :: SWEMERSION         ! 3  in  switch indicating submersion(0) or emersion (1)
         INTEGER(kind = int_wp) :: XTRDIF             ! 4  in  extra diffusion factor in sediment during emersion (-)
@@ -97,14 +97,14 @@ contains
         IN12 = INCREM(12)
 
         !.....Segmentloop om op nul te zetten
-        !      DO 9000 ISEG = 1,NOSEG
+        !      DO 9000 ISEG = 1,num_cells
         ! 9000 CONTINUE
 
         !.....Exchangeloop over de horizontale richtingen om 0 te zetten
         !.....en over de vertical richting om te initialiseren
-        DO IQ = 1, NOQ1 + NOQ2 + NOQ3
-            PMSA(IP11) = 0.0
-            PMSA(IP12) = 0.0
+        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
+            process_space_real(IP11) = 0.0
+            process_space_real(IP12) = 0.0
             IP5 = IP5 + IN5
             IP6 = IP6 + IN6
             IP7 = IP7 + IN7
@@ -117,19 +117,19 @@ contains
 
         !.....Exchangeloop over de verticale richting
 
-        DO IQ = NOQ1 + NOQ2 + NOQ3 + 1, NOQ1 + NOQ2 + NOQ3 + NOQ4
+        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
 
             IVAN = IEXPNT(1, IQ)
             INAAR = IEXPNT(2, IQ)
 
             !        Zoek eerste kenmerk van- en naar-segmenten
             IF (IVAN > 0) THEN
-                CALL evaluate_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
+                CALL extract_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
             ELSE
                 IKMRKV = -1
             ENDIF
             IF (INAAR > 0) THEN
-                CALL evaluate_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
+                CALL extract_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
             ELSE
                 IKMRKN = -1
             ENDIF
@@ -138,9 +138,9 @@ contains
 
             XTRDIF = 1.0
             IF (IVAN > 0) THEN
-                SWEMERSION = NINT(PMSA(IP3 + (IVAN - 1) * IN3))
+                SWEMERSION = NINT(process_space_real(IP3 + (IVAN - 1) * IN3))
                 IF (SWEMERSION == 1) THEN
-                    XTRDIF = PMSA(IP4 + (IVAN - 1) * IN4)
+                    XTRDIF = process_space_real(IP4 + (IVAN - 1) * IN4)
                 ENDIF
             ENDIF
 
@@ -151,10 +151,10 @@ contains
 
                 !.....WATER-SEDIMENT INTERFACE
 
-                FRDISD = PMSA(IP1 + (INAAR - 1) * IN1)
-                FRDISU = PMSA(IP1 + (IVAN - 1) * IN1)
-                FRDOCD = PMSA(IP2 + (INAAR - 1) * IN2)
-                FRDOCU = PMSA(IP2 + (IVAN - 1) * IN2)
+                FRDISD = process_space_real(IP1 + (INAAR - 1) * IN1)
+                FRDISU = process_space_real(IP1 + (IVAN - 1) * IN1)
+                FRDOCD = process_space_real(IP2 + (INAAR - 1) * IN2)
+                FRDOCU = process_space_real(IP2 + (IVAN - 1) * IN2)
 
                 NEWBOT = .TRUE.
 
@@ -164,10 +164,10 @@ contains
 
                 !.....SEDIMENT-SEDIMENT INTERFACE
 
-                FRDISU = PMSA(IP1 + (IVAN - 1) * IN1)
-                FRDISD = PMSA(IP1 + (INAAR - 1) * IN1)
-                FRDOCU = PMSA(IP2 + (IVAN - 1) * IN2)
-                FRDOCD = PMSA(IP2 + (INAAR - 1) * IN2)
+                FRDISU = process_space_real(IP1 + (IVAN - 1) * IN1)
+                FRDISD = process_space_real(IP1 + (INAAR - 1) * IN1)
+                FRDOCU = process_space_real(IP2 + (IVAN - 1) * IN2)
+                FRDOCD = process_space_real(IP2 + (INAAR - 1) * IN2)
 
                 NEWBOT = .TRUE.
 
@@ -177,9 +177,9 @@ contains
 
                 !.....DEEP SEDIMENT BOUNDARY
 
-                FRDISU = PMSA(IP1 + (IVAN - 1) * IN1)
+                FRDISU = process_space_real(IP1 + (IVAN - 1) * IN1)
                 FRDISD = FRDISU
-                FRDOCU = PMSA(IP2 + (IVAN - 1) * IN2)
+                FRDOCU = process_space_real(IP2 + (IVAN - 1) * IN2)
                 FRDOCD = FRDOCU
 
                 NEWBOT = .TRUE.
@@ -190,12 +190,12 @@ contains
 
             IF (NEWBOT) THEN
 
-                VRESU = PMSA(IP5)
-                VSEDI = PMSA(IP6)
-                VBURI = PMSA(IP7)
-                VBTUR = PMSA(IP8)
-                VBIRR = PMSA(IP9)
-                VSEEP = PMSA(IP10)
+                VRESU = process_space_real(IP5)
+                VSEDI = process_space_real(IP6)
+                VBURI = process_space_real(IP7)
+                VBTUR = process_space_real(IP8)
+                VBIRR = process_space_real(IP9)
+                VSEEP = process_space_real(IP10)
 
                 VBIRR = VBIRR * XTRDIF
 
@@ -203,14 +203,14 @@ contains
 
                 FRDIS = FRDISD + FRDOCD
                 FRPAR = 1.0 - FRDIS
-                PMSA(IP11) = (VRESU + MIN(VBTUR, 0.0)) * FRPAR &
+                process_space_real(IP11) = (VRESU + MIN(VBTUR, 0.0)) * FRPAR &
                         + (MIN(VBIRR, 0.0) + MIN(VSEEP, 0.0)) * FRDIS
 
                 !            Downward advection
 
                 FRDIS = FRDISU + FRDOCU
                 FRPAR = 1.0 - FRDIS
-                PMSA(IP12) = (VSEDI + VBURI + MAX(VBTUR, 0.0)) * FRPAR &
+                process_space_real(IP12) = (VSEDI + VBURI + MAX(VBTUR, 0.0)) * FRPAR &
                         + (MAX(VBIRR, 0.0) + MAX(VSEEP, 0.0)) * FRDIS
             ENDIF
 

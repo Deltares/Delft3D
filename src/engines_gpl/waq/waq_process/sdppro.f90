@@ -28,10 +28,10 @@ module m_sdppro
 contains
 
 
-    subroutine sdppro (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine sdppro (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !>\file
         !>       Traditional algal growth module (DYNAMO)
@@ -45,7 +45,7 @@ contains
         ! EFF     R*4 1 L average light efficiency green-algea                 [
         ! FNUT    R*4 1 L nutrient limitation function green-algea             [
         ! PPMAX1  R*4 1 I pot. max. pr. prod. rc. green-algea (st.temp)      [1/
-        ! PMSA    R*4 1 L Gross act. pr. prod. rc. green-algea               [1/
+        ! process_space_real    R*4 1 L Gross act. pr. prod. rc. green-algea               [1/
         ! TFUNG1  R*4 1 L temp. function for growth processes green            [
 
         !     Logical Units : -
@@ -58,9 +58,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         PARAMETER (DINI = 0.01)
 
@@ -102,42 +102,42 @@ contains
         IP36 = IPOINT(36)
 
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
 
-                    SURF = PMSA(IP26)
-                    DEPTH = PMSA(IP27)
-                    DIAT = PMSA(IP1)
-                    DL = PMSA(IP2)
-                    EFF = PMSA(IP3)
-                    TFUNG = PMSA(IP4)
-                    TFUNM = PMSA(IP5)
-                    PPMAX = PMSA(IP6)
-                    MRESP = PMSA(IP7)
-                    GRESP = PMSA(IP8)
-                    MORT0 = PMSA(IP9)
-                    CNH4 = PMSA(IP10)
-                    CNO3 = PMSA(IP11)
-                    CPO4 = PMSA(IP12)
-                    CSI = PMSA(IP13)
-                    SWMINN = PMSA(IP14) * DEPTH
-                    MINN = PMSA(IP15) * DEPTH
-                    SWMINP = PMSA(IP16) * DEPTH
-                    MINP = PMSA(IP17) * DEPTH
-                    SWMINS = PMSA(IP18) * DEPTH
-                    MINS = PMSA(IP19) * DEPTH
-                    KMDIN = PMSA(IP20)
-                    KMPO4 = PMSA(IP21)
-                    KMSIL = PMSA(IP22)
-                    NCRAT = PMSA(IP23)
-                    PCRAT = PMSA(IP24)
-                    SICRAT = PMSA(IP25)
-                    FRNBAC = PMSA(IP28)
-                    DELTAT = PMSA(IP29)
-                    NH4KR = PMSA(IP30)
+                    SURF = process_space_real(IP26)
+                    DEPTH = process_space_real(IP27)
+                    DIAT = process_space_real(IP1)
+                    DL = process_space_real(IP2)
+                    EFF = process_space_real(IP3)
+                    TFUNG = process_space_real(IP4)
+                    TFUNM = process_space_real(IP5)
+                    PPMAX = process_space_real(IP6)
+                    MRESP = process_space_real(IP7)
+                    GRESP = process_space_real(IP8)
+                    MORT0 = process_space_real(IP9)
+                    CNH4 = process_space_real(IP10)
+                    CNO3 = process_space_real(IP11)
+                    CPO4 = process_space_real(IP12)
+                    CSI = process_space_real(IP13)
+                    SWMINN = process_space_real(IP14) * DEPTH
+                    MINN = process_space_real(IP15) * DEPTH
+                    SWMINP = process_space_real(IP16) * DEPTH
+                    MINP = process_space_real(IP17) * DEPTH
+                    SWMINS = process_space_real(IP18) * DEPTH
+                    MINS = process_space_real(IP19) * DEPTH
+                    KMDIN = process_space_real(IP20)
+                    KMPO4 = process_space_real(IP21)
+                    KMSIL = process_space_real(IP22)
+                    NCRAT = process_space_real(IP23)
+                    PCRAT = process_space_real(IP24)
+                    SICRAT = process_space_real(IP25)
+                    FRNBAC = process_space_real(IP28)
+                    DELTAT = process_space_real(IP29)
+                    NH4KR = process_space_real(IP30)
 
                     !     DIATOMS IN SEDIMENT - IF PPMAX -1 ONLY MORTALITY
                     IF (PPMAX<0.0) THEN
@@ -308,12 +308,12 @@ contains
                     !     Mortality, including processes as autolysis and zooplankton 'graas
                     FL (2 + IFLUX) = MORT0 * TFUNM * DIAT / DEPTH
 
-                    PMSA (IP31) = PRODD
-                    PMSA (IP32) = MORT0 * TFUNM
-                    PMSA (IP33) = RESP
-                    PMSA (IP34) = MORT0 * TFUNM * DIAT
-                    PMSA (IP35) = EFNMFB
-                    PMSA (IP36) = EFF * DL
+                    process_space_real (IP31) = PRODD
+                    process_space_real (IP32) = MORT0 * TFUNM
+                    process_space_real (IP33) = RESP
+                    process_space_real (IP34) = MORT0 * TFUNM * DIAT
+                    process_space_real (IP35) = EFNMFB
+                    process_space_real (IP36) = EFF * DL
 
                 ENDIF
             ENDIF

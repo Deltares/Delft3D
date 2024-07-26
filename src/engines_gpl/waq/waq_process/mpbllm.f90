@@ -28,9 +28,9 @@ module m_mpbllm
 contains
 
 
-    SUBROUTINE MPBLLM (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
+    SUBROUTINE MPBLLM (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !     ***********************************************************************
         !          +----------------------------------------+
         !          |    D E L F T   H Y D R A U L I C S     |
@@ -59,27 +59,27 @@ contains
         !          111103  Jan van Beek    2003 implementation
         !     ***********************************************************************
 
-        use m_evaluate_waq_attribute
-        use m_logger, only : get_log_unit_number, write_error_message_with_values
+        use m_extract_waq_attribute
+        use m_logger_helper, only : get_log_unit_number, write_error_message_with_values
 
         IMPLICIT NONE
 
         !          arguments
 
-        REAL(kind = real_wp) :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+        REAL(kind = real_wp) :: process_space_real(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
         REAL(kind = real_wp) :: FL(*)              ! in/out flux array
-        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-        INTEGER(kind = int_wp) :: NOSEG              ! in     number of segments
+        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+        INTEGER(kind = int_wp) :: num_cells              ! in     number of segments
         INTEGER(kind = int_wp) :: NOFLUX             ! in     total number of fluxes (increment in FL array)
         INTEGER(kind = int_wp) :: IEXPNT(4, *)        ! in     exchange pointer table
         INTEGER(kind = int_wp) :: IKNMRK(*)          ! in     segment features array
-        INTEGER(kind = int_wp) :: NOQ1               ! in     number of exchanges in first direction
-        INTEGER(kind = int_wp) :: NOQ2               ! in     number of exchanges in second direction
-        INTEGER(kind = int_wp) :: NOQ3               ! in     number of exchanges in third direction
-        INTEGER(kind = int_wp) :: NOQ4               ! in     number of exchanges in fourth direction
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir               ! in     number of exchanges in first direction
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir               ! in     number of exchanges in second direction
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir               ! in     number of exchanges in third direction
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
 
-        !          from PMSA array
+        !          from process_space_real array
 
         REAL(kind = real_wp) :: RADSURF            !  1 in  , irradiation at the water surface            (W/m2)
         REAL(kind = real_wp) :: RADTOP             !  2 in  , irradiation at the segment upper-boundary   (W/m2)
@@ -116,8 +116,8 @@ contains
         INTEGER(kind = int_wp) :: IZ                 ! loop counter integration layers
         INTEGER(kind = int_wp) :: IKMRK1             ! first feature inactive(0)-active(1)-bottom(2) segment
         INTEGER(kind = int_wp) :: IKMRK2             ! second feature 2D(0)-surface(1)-middle(2)-bottom(3) segment
-        INTEGER(kind = int_wp), parameter :: NO_POINTER = 30    ! number of input output variables in PMSA array
-        INTEGER(kind = int_wp) :: IP(NO_POINTER)     ! index pointer in PMSA array updated for each segment
+        INTEGER(kind = int_wp), parameter :: NO_POINTER = 30    ! number of input output variables in process_space_real array
+        INTEGER(kind = int_wp) :: IP(NO_POINTER)     ! index pointer in process_space_real array updated for each segment
         REAL(kind = real_wp) :: ACTDEP             ! actual depth
         REAL(kind = real_wp) :: ACTLIM             ! limitation at actual radiance
         REAL(kind = real_wp) :: ACTRAD             ! radiance at actual depth
@@ -133,41 +133,41 @@ contains
         REAL(kind = real_wp) :: RDT
         REAL(kind = real_wp) :: RTSTRT
 
-        !          initialise pointers for PMSA and FL array
+        !          initialise pointers for process_space_real and FL array
 
         IP = IPOINT(1:NO_POINTER)
 
         !          loop over the segments
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
-            CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
 
-            RADSURF = PMSA(IP(1))
-            RADTOP = PMSA(IP(2))
-            EXTVL = PMSA(IP(3))
-            A_ENH = PMSA(IP(4))
-            FPAR = PMSA(IP(5))
-            RADSAT = PMSA(IP(6))
-            SWEMERSION = NINT(PMSA(IP(7)))
-            MIGRDEPTH1 = PMSA(IP(8))
-            MIGRDEPTH2 = PMSA(IP(9))
-            DEPTH = PMSA(IP(10))
-            LOCSEDDEPT = PMSA(IP(11))
-            I_NRDZ = NINT(PMSA(IP(12)))
-            RTIME = PMSA(IP(13))
-            RDT = PMSA(IP(14))
-            RTSTRT = PMSA(IP(15))
-            AUXSYS = NINT(PMSA(IP(16)))
-            S1_BOTTOM = NINT(PMSA(IP(17))) == 1
-            RADBOT = PMSA(IP(18))
-            EXTVLS1 = PMSA(IP(19))
-            ZSED = PMSA(IP(20))
-            WS1 = PMSA(IP(21))
-            WS2 = PMSA(IP(22))
-            WS3 = PMSA(IP(23))
-            WS4 = PMSA(IP(24))
+            RADSURF = process_space_real(IP(1))
+            RADTOP = process_space_real(IP(2))
+            EXTVL = process_space_real(IP(3))
+            A_ENH = process_space_real(IP(4))
+            FPAR = process_space_real(IP(5))
+            RADSAT = process_space_real(IP(6))
+            SWEMERSION = NINT(process_space_real(IP(7)))
+            MIGRDEPTH1 = process_space_real(IP(8))
+            MIGRDEPTH2 = process_space_real(IP(9))
+            DEPTH = process_space_real(IP(10))
+            LOCSEDDEPT = process_space_real(IP(11))
+            I_NRDZ = NINT(process_space_real(IP(12)))
+            RTIME = process_space_real(IP(13))
+            RDT = process_space_real(IP(14))
+            RTSTRT = process_space_real(IP(15))
+            AUXSYS = NINT(process_space_real(IP(16)))
+            S1_BOTTOM = NINT(process_space_real(IP(17))) == 1
+            RADBOT = process_space_real(IP(18))
+            EXTVLS1 = process_space_real(IP(19))
+            ZSED = process_space_real(IP(20))
+            WS1 = process_space_real(IP(21))
+            WS2 = process_space_real(IP(22))
+            WS3 = process_space_real(IP(23))
+            WS4 = process_space_real(IP(24))
 
             ISTEP = NINT((RTIME - RTSTRT) / RDT)
             IDT = NINT(RDT)
@@ -242,14 +242,14 @@ contains
                     WS2 = WS1 / AUXSYS
                 ENDIF
                 WS1 = 0.0
-                PMSA(IP(23)) = WS2
+                process_space_real(IP(23)) = WS2
             ENDIF
 
             FLT = WS2
             WS1 = WS1 + CUMLIM * IDT
 
-            PMSA(IP(21)) = WS1
-            PMSA(IP(25)) = FLT
+            process_space_real(IP(21)) = WS1
+            process_space_real(IP(25)) = FLT
 
             !              ENDIF
 
@@ -302,18 +302,18 @@ contains
                         WS4 = WS3 / AUXSYS
                     ENDIF
                     WS3 = 0.0
-                    PMSA(IP(24)) = WS4
+                    process_space_real(IP(24)) = WS4
                 ENDIF
 
                 FLTS1 = WS4
                 WS3 = WS3 + CUMLIM * IDT
 
-                PMSA(IP(23)) = WS3
-                PMSA(IP(26)) = FLTS1
+                process_space_real(IP(23)) = WS3
+                process_space_real(IP(26)) = FLTS1
 
             ENDIF
 
-            !             update pointering in PMSA array
+            !             update pointering in process_space_real array
 
             IP = IP + INCREM(1:NO_POINTER)
 

@@ -28,11 +28,11 @@ module m_calwav
 contains
 
 
-    subroutine calwav (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger, only : write_error_message
-        use m_evaluate_waq_attribute
+    subroutine calwav (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : write_error_message
+        use m_extract_waq_attribute
 
         !>\file
         !>       Wave characteristics
@@ -66,9 +66,9 @@ contains
         IMPLICIT REAL (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declarations, constants in source
         !
@@ -86,16 +86,16 @@ contains
         IP7 = IPOINT(7)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF (IKMRK2==0 .OR. IKMRK2==3) THEN
                     !
-                    VWIND = PMSA(IP1)
-                    FETCH = PMSA(IP2)
-                    DEPTH = PMSA(IP3)
-                    INIDEP = PMSA(IP4)
+                    VWIND = process_space_real(IP1)
+                    FETCH = process_space_real(IP2)
+                    DEPTH = process_space_real(IP3)
+                    INIDEP = process_space_real(IP4)
 
                     IF (FETCH < 1E-20)  CALL write_error_message ('FETCH in CALWAVE zero')
 
@@ -142,9 +142,9 @@ contains
 
                     150 CONTINUE
                     !
-                    PMSA (IP5) = H
-                    PMSA (IP6) = RL
-                    PMSA (IP7) = T
+                    process_space_real (IP5) = H
+                    process_space_real (IP6) = RL
+                    process_space_real (IP7) = T
                     !
                 ENDIF
             ENDIF

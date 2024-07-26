@@ -68,9 +68,8 @@ public :: fm_bott3d
    use sediment_basics_module
    use m_flowgeom , only: ndxi, ndx
    use m_flowparameters, only: eps10, jawave 
-   use m_flowexternalforcings, only: nopenbndsect
+      use fm_external_forcings_data, only: nopenbndsect
    use m_flowtimes, only: dts, tstart_user, time1, tfac, ti_sed, ti_seds, handle_extra
-   use m_transport, only: ised1
    use unstruc_files, only: mdia
    use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt, hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy
    use m_sediment, only: kcsmor
@@ -98,15 +97,11 @@ public :: fm_bott3d
    
    logical                                     :: error
    
-   integer                                     :: ierror, nm, ll
+      integer :: ierror, ll
    
    double precision                            :: dtmor
    double precision                            :: timhr
    
-   double precision, dimension(:), allocatable :: bl_ave0
-   
-   character(len=256)                             :: msg
-
    logical                              , pointer :: cmpupd
 
    !!
@@ -519,8 +514,9 @@ public :: fm_bott3d
    use Messagehandling
    use message_module, only: writemessages, write_error
    use unstruc_channel_flow, only: network, t_branch, t_node, nt_LinkNode
-   use m_flowgeom , only: ndxi, nd, wu_mor
+      use m_flowgeom, only: nd, wu_mor
    use m_flow, only: u1, qa
+      use m_flowparameters, only: flow_solver, FLOW_SOLVER_FM
    use m_fm_erosed, only: lsedtot, e_sbcn, e_sbct
    use m_sediment, only: stmpar
    use m_ini_noderel, only: get_noderel_idx
@@ -624,10 +620,24 @@ public :: fm_bott3d
             wb1d = wu_mor(L)
             do ised = 1, lsedtot
                sb1d = e_sbcn(L, ised) * Ldir  ! first compute all outgoing sed. transport.
+                  if (flow_solver == FLOW_SOLVER_FM .or. pnod%numberofconnections == 2) then !standard
+                     !V: In the standard scheme, at the <e_sbcn> of the outgoing links we have the upwind transport, i.e.,
+                     !part of the transport in the junction node. By summing over all of them we have the total transport at
+                     !the junction node, which we then redistribute.
+                     !We apply this to the standard scheme and to the nodes with only 2 connections, as in this second case
+                     !we have not modified the link direction and the same logic applies as for the standard scheme.
                ! this works for one incoming branch TO DO: WO
                if (sb_dir(inod, ised, j) == -1) then
                   sb_in(inod, ised) = sb_in(inod, ised) + max(-wb1d*sb1d, 0.0_fp)  ! outgoing transport is negative
                endif
+                  else !FM1DIMP
+                     !V: In the FM1DIMP scheme at <e_sbcn> of the incoming links we have the upwind transport, i.e., the transport
+                     !in the ghost cell for multivaluedness of each branch. By summing over all of them we have the total
+                     !transport incoming to the junction, which we want to redistribute.
+                     if (sb_dir(inod, ised, j) == 1) then
+                        sb_in(inod, ised) = sb_in(inod, ised) + wb1d * sb1d ! incoming transport is positive
+                     end if
+                  end if
             enddo
          enddo
       endif
@@ -769,9 +779,9 @@ public :: fm_bott3d
    use m_sediment, only: stmpar
    use morphology_data_module, only: bedbndtype
    use table_handles , only: handletype, gettabledata
-   use m_flowtimes, only: julrefdat, time1
+      use m_flowtimes, only: julrefdat
    use m_partitioninfo, only: idomain, jampi, my_rank, reduce_sum
-   use m_flowexternalforcings, only: nopenbndsect
+      use fm_external_forcings_data, only: nopenbndsect
    
    implicit none
 
@@ -960,9 +970,10 @@ public :: fm_bott3d
    !!
    
    use sediment_basics_module
-   use m_flowgeom , only: nd, bai_mor, ndxi, bl, wu, wu_mor, xz, yz
+      use m_flowgeom, only: bai_mor, ndxi, bl, wu, wu_mor, xz, yz, ndx
    use m_flow, only: kmx, s1, vol1
-   use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, morfac, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff
+      use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor
+      use m_fm_erosed, only: nd => nd_mor
    use m_sediment, only: avalflux, ssccum
    use m_flowtimes, only: dts, dnt
    use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
@@ -1020,10 +1031,16 @@ public :: fm_bott3d
       !
       ! loop over internal (ndxi) nodes - don't update the boundary nodes
       !
-      do nm=1,Ndxi
+         do nm = 1, Ndxi_mor
          trndiv  = 0d0
          sedflx  = 0d0
          eroflx  = 0d0
+            !FM1DIMP2DO: I do not like this, but I cannot think of a better way.
+            !The added flownodes at junctions are after the boundary ghost nodes.
+            !We have to skip the boundaries but loop over the added flownodes.
+            if ((nm > ndxi) .and. (nm < ndx + 1)) then
+               cycle
+            end if
          if (sus/=0d0 .and. .not. bedload) then
             if (neglectentrainment) then
                !
@@ -1041,7 +1058,7 @@ public :: fm_bott3d
                      do iL = Lb,Lt
                         flux = flux + fluxhortot(j,iL)
                      enddo
-                     !See: UNST-7371
+					 !See: UNST-7371
                      call fm_sumflux(LL,sumflux,flux)
                   end do
                else
@@ -1089,7 +1106,7 @@ public :: fm_bott3d
                   LL = nd(nm)%ln(ii)
                   Lf = iabs(LL)
                   flux = e_scrn(Lf,l)*wu(Lf)
-                  call fm_sumflux(LL,sumflux,flux)
+                  call fm_sumflux(LL,sumflux,flux)  
                end do
                trndiv = trndiv + sumflux * bai_mor(nm)
             endif
@@ -1158,10 +1175,13 @@ public :: fm_bott3d
    !! Declarations
    !!
    
-   use m_flowgeom , only: nd, bai_mor, ndxi, bl, wu_mor, ba, ln
+      use m_flowgeom, only: bai_mor, bl, wu_mor, ba
    use m_flow, only: s1, hs
    use m_flowparameters, only: epshs
    use m_fm_erosed, only: lsedtot, kfsed, dbodsd, fixfac, frac, hmaxth, sedthr, thetsd, e_sbn
+      use m_fm_erosed, only: ndxi => ndxi_mor
+      use m_fm_erosed, only: nd => nd_mor
+      use m_fm_erosed, only: ln => ln_mor
    
    implicit none
 
@@ -1296,7 +1316,7 @@ public :: fm_bott3d
    !! Declarations
    !!
    
-   use m_sediment , only: stmpar, mergebodsed, jamormergedtuser, kcsmor
+      use m_sediment, only: stmpar, mergebodsed, jamormergedtuser
    use m_flowtimes, only: time1, time_user
    use m_flowgeom , only: ndxi
    use m_flowparameters, only: eps10
@@ -1327,6 +1347,8 @@ public :: fm_bott3d
    !
    ! Modifications for running parallel conditions (mormerge)
    !
+      !FM1DIMP2DO: The 1D implicit solver does not yet support mormerge. This should be dealt with.
+      !
    if (stmpar%morpar%multi) then
       jamerge = .false.
       if (jamormergedtuser>0) then
@@ -1659,8 +1681,8 @@ public :: fm_bott3d
    subroutine sum_current_wave_transport_links()
 
    use sediment_basics_module
-   use m_flowgeom, only: lnx
    use m_fm_erosed, only: lsedtot, e_sbn, e_sbt, e_sbcn, e_sbwn, e_sswn, tratyp, e_sbct, e_sbwt, e_sswt
+      use m_fm_erosed, only: lnx => lnx_mor
    
    implicit none
    
@@ -1691,7 +1713,6 @@ public :: fm_bott3d
    !! exclude specific fractions if cmpupdfrac has been set.
    subroutine fm_exclude_cmpupdfrac()
    
-   use m_flowgeom, only: lnx
    use m_fm_erosed, only: lsedtot, cmpupdfrac, stmpar, dbodsd
    
    implicit none
@@ -1777,7 +1798,7 @@ public :: fm_bott3d
    use m_dad, only: dad_included
    use m_fm_update_crosssections, only: fm_update_crosssections
    use morphology_data_module, only: bedbndtype
-   use m_flowexternalforcings, only: nopenbndsect
+      use fm_external_forcings_data, only: nopenbndsect
    use m_fm_dredge, only: fm_dredge
    
    implicit none
@@ -1825,7 +1846,7 @@ public :: fm_bott3d
       !
       do jb = 1, nopenbndsect
          icond = morbnd(jb)%icond
-         if (icond .eq. 0) then
+            if (icond == 0) then
             do ib = 1, morbnd(jb)%npnt
                bl(morbnd(jb)%nm(ib))    = bl(morbnd(jb)%nxmx(ib))
                blchg(morbnd(jb)%nm(ib)) = blchg(morbnd(jb)%nxmx(ib))  ! needed below
@@ -1932,7 +1953,7 @@ public :: fm_bott3d
 
    subroutine fm_erosion_velocity(dtmor)
    
-   use m_flowgeom, only: ndx, bl
+      use m_flowgeom, only: ndx
    use m_fm_erosed, only: blchg, dzbdt
    
    implicit none

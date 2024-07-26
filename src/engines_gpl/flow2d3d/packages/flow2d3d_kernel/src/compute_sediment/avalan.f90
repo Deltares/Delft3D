@@ -127,7 +127,7 @@ subroutine avalan(dps       ,depchg    ,gvu       ,guv       , &
        ! traversed, whereas slumps in opposite direction will propagate not
        ! further than one grid cell.
        !
-       if (kcs(nm)>0 .and. kcs(nmu)>0) then
+       if (kcs(nm)/=0 .and. kcs(nmu)/=0) then
           depnm  = dps(nm)
           depnmu = dps(nmu)
           ddep   = real(depnmu - depnm,fp)
@@ -152,7 +152,7 @@ subroutine avalan(dps       ,depchg    ,gvu       ,guv       , &
        !
        ! Do the same thing as before but now in the other grid direction
        !
-       if (kcs(nm)>0 .and. kcs(num)>0) then
+       if (kcs(nm)/=0 .and. kcs(num)/=0) then
           depnm  = dps(nm)
           depnum = dps(num)
           ddep   = real(depnum - depnm,fp)

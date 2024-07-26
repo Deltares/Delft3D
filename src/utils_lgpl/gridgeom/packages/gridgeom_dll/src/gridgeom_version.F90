@@ -37,7 +37,7 @@ implicit none
 	                                                            
     character(*),  public, parameter :: gridgeom_company      = COMPANY_NAME
     character(*),  public, parameter :: gridgeom_company_url  = COMPANY_URL
-    character(*),  public, parameter :: gridgeom_program      = PROGRAM
+    character(*),  public, parameter :: gridgeom_program      = PROGRAM_NAME
 
 
 #if defined(WIN32)

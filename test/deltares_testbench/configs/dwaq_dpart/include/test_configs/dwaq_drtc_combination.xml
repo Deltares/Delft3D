@@ -1,0 +1,115 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <!-- Combination of D-Water Quality and D-RTC: 1D cases -->
+    <testCase name="e601_f01_c01_waq_rtc_oxy" ref="dwaq_default">
+        <path version="2024-03-22T19:30:00">e601_waq-rtc/f01_wasteload/c01_waq_rtc_oxy</path>
+        <programs>
+            <program ref="dimr" seq="1">
+               <arguments>
+                  <argument>-m</argument>
+                  <argument>dimr_waq_ref.xml</argument>
+               </arguments>
+           </program>
+            <program ref="dimr" seq="2">
+               <arguments>
+                  <argument>-m</argument>
+                  <argument>dimr_waq_rtc.xml</argument>
+               </arguments>
+           </program>
+        </programs>
+        <checks>
+            <file name="c01_waq_ref/delwaq/delwaq_his.nc" type="netCDF">
+                <parameters>
+                    <parameter name="CBOD5" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="OXY" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="c01_waq_ref/delwaq/delwaq_map.nc" type="netCDF">
+                <parameters>
+                    <parameter name="mesh1d_CBOD5" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh1d_OXY" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="c02_waq_rtc/delwaq/delwaq_his.nc" type="netCDF">
+                <parameters>
+                    <parameter name="CBOD5" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="OXY" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="c02_waq_rtc/delwaq/delwaq_map.nc" type="netCDF">
+                <parameters>
+                    <parameter name="mesh1d_CBOD5" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh1d_OXY" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+   </testCase>
+    <testCase name="e601_f01_c02_monitor" ref="dwaq_default">
+        <path version="2024-03-22T19:30:00">e601_waq-rtc/f01_wasteload/c02_monitor</path>
+        <programs>
+            <program ref="dimr" seq="1">
+               <arguments>
+                  <argument>-m</argument>
+                  <argument>dimr_config.xml</argument>
+               </arguments>
+           </program>
+        </programs>
+        <checks>
+            <file name="delwaq/delwaq_his.nc" type="netCDF">
+                <parameters>
+                    <parameter name="CBOD5" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="OXY" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="VWIND" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="delwaq/delwaq_map.nc" type="netCDF">
+                <parameters>
+                    <parameter name="mesh1d_CBOD5" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh1d_OXY" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+   </testCase>
+    <testCase name="e601_f02_c01_filter_wasteload" ref="dwaq_default">
+        <path version="2024-03-22T19:30:00">e601_waq-rtc/f02_filtering/c01_filter_wasteload</path>
+        <programs>
+            <program ref="dimr" seq="1">
+               <arguments>
+                  <argument>-m</argument>
+                  <argument>dimr_waq_ref.xml</argument>
+               </arguments>
+           </program>
+            <program ref="dimr" seq="2">
+               <arguments>
+                  <argument>-m</argument>
+                  <argument>dimr_waq_rtc.xml</argument>
+               </arguments>
+           </program>
+        </programs>
+        <checks>
+            <file name="c01_waq_ref/delwaq/delwaq_his.nc" type="netCDF">
+                <parameters>
+                    <parameter name="CBOD5" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="OXY" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="c01_waq_ref/delwaq/delwaq_map.nc" type="netCDF">
+                <parameters>
+                    <parameter name="mesh1d_CBOD5" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh1d_OXY" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="c02_waq_rtc/delwaq/delwaq_his.nc" type="netCDF">
+                <parameters>
+                    <parameter name="CBOD5" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="OXY" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="c02_waq_rtc/delwaq/delwaq_map.nc" type="netCDF">
+                <parameters>
+                    <parameter name="mesh1d_CBOD5" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="mesh1d_OXY" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+   </testCase>
+</testCases>

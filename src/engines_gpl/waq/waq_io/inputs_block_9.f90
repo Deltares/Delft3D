@@ -44,8 +44,8 @@ contains
         use rd_token     !   for the reading of tokens
         use results, only : OutputPointers, lncout
         use timers       !   performance timers
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
 
         integer(kind = int_wp), intent(inout) :: file_unit_list   (*)          !< array with unit numbers
         character(*), intent(inout) :: file_name_list (*)         !< array with file names of the files
@@ -56,17 +56,17 @@ contains
         integer(kind = int_wp), intent(in) :: max_int_size              !< size of the integer workspace
         integer(kind = int_wp), intent(in) :: iwidth             !< width of the output file
         integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
-        integer(kind = int_wp), intent(out) :: ioutps(7, noutp)    !< output administration array
+        integer(kind = int_wp), intent(out) :: ioutps(7, num_output_files)    !< output administration array
         type(OutputPointers)                Outputs           !< output collection
 
         type(error_status), intent(inout) :: status !< current error status
 
-        integer(kind = int_wp) :: nrvar (noutp)  ! Number of extra output vars
-        integer(kind = int_wp) :: iostrt(noutp)  ! Output start time (scu)
-        integer(kind = int_wp) :: iostop(noutp)  ! Output stop time (scu)
-        integer(kind = int_wp) :: iostep(noutp)  ! Output step time (scu)
-        integer(kind = int_wp) :: isrtou(noutp)  ! Sort output indication
-        integer(kind = int_wp) :: igrdou(noutp)  ! Output grid indication
+        integer(kind = int_wp) :: nrvar (num_output_files)  ! Number of extra output vars
+        integer(kind = int_wp) :: iostrt(num_output_files)  ! Output start time (scu)
+        integer(kind = int_wp) :: iostop(num_output_files)  ! Output stop time (scu)
+        integer(kind = int_wp) :: iostep(num_output_files)  ! Output step time (scu)
+        integer(kind = int_wp) :: isrtou(num_output_files)  ! Sort output indication
+        integer(kind = int_wp) :: igrdou(num_output_files)  ! Output grid indication
         character(40)                 modid (4)     ! Model and run-ID
         character(20), allocatable :: sysid (:)     ! Systems ID
         character(20), allocatable :: coname(:)     ! Constant names
@@ -95,8 +95,8 @@ contains
 
         ! Some init
         ibflag = (mod(intopt, 16) > 7)
-        NOQTT = NOQ + NOQ4
-        NOSSS = NOSEG + NSEG2 ! with or without bottom
+        NOQTT = num_exchanges + num_exchanges_bottom_dir
+        NOSSS = num_cells + num_cells_bottom ! with or without bottom
         file_unit = file_unit_list(29)
         IF (IMSTRT <= ITSTOP .AND. IMSTRT <= IMSTOP .AND. IMSTEP > 0) THEN
             LMOUTP = .TRUE.
@@ -131,13 +131,13 @@ contains
         ENDIF
 
         ! Determine local maximum
-        nrvarm = min(max_int_size, max_char_size) / noutp
-        allocate (sysid (notot), coname(nocons), paname(nopa))
-        allocate (funame(nofun), sfname(nosfun), diname(nodisp))
-        allocate (vename(novelo))
+        nrvarm = min(max_int_size, max_char_size) / num_output_files
+        allocate (sysid (num_substances_total), coname(num_constants), paname(num_spatial_parameters))
+        allocate (funame(num_time_functions), sfname(num_spatial_time_fuctions), diname(num_dispersion_arrays))
+        allocate (vename(num_velocity_arrays))
 
         ! Set default action
-        call set_default_output (noutp, nrvar, iostrt, iostop, iostep, isrtou, igrdou)
+        call set_default_output (num_output_files, nrvar, iostrt, iostop, iostep, isrtou, igrdou)
 
         ! Handle file option
         ierr2 = gettoken(lchloc, iopt1, itype, ierr2)          !  < -1 not
@@ -165,37 +165,37 @@ contains
         endif
 
         ! Read output definition block
-        call read_ascii_definition_file(noutp, nrvar, nrvarm, isrtou, char_arr, &
-                infile, nx, ny, nodump, ibflag, &
+        call read_ascii_definition_file(num_output_files, nrvar, nrvarm, isrtou, char_arr, &
+                infile, num_cells_u_dir, num_cells_v_dir, num_monitoring_points, ibflag, &
                 lmoutp, ldoutp, lhoutp, lncout, status, &
                 igrdou, ndmpar)
 
-        ! Calculate OUTPUT boot variables NVART, NBUFMX
-        call set_output_boot_variables (noutp, nrvar, igrdou, isrtou, nosss, &
-                nodump, nx, ny, nrvart, nbufmx, &
-                ndmpar, notot, ncbufm, noraai)
+        ! Calculate OUTPUT boot variables NVART, output_buffer_len
+        call set_output_boot_variables (num_output_files, nrvar, igrdou, isrtou, nosss, &
+                num_monitoring_points, num_cells_u_dir, num_cells_v_dir, num_output_variables_extra, output_buffer_len, &
+                ndmpar, num_substances_total, char_arr_buffer_len, num_transects)
 
         ! If extra ouptut parameters requested set the pointers
-        if (nrvart > 0) then
+        if (num_output_variables_extra > 0) then
 
             ! Only if no previous errors , otherwise the reading will fail
             if (status%ierr == 0) then
 
                 ! Read part of delwaq file
                 call open_waq_files(file_unit_list(2), file_name_list(2), 2, 2, ierr2)
-                call read_working_file_4(file_unit_list(2), file_unit, modid, sysid, notot, &
-                        nodump, nosys, nobnd, nowst, nocons, &
-                        nopa, noseg, nseg2, coname, paname, &
-                        funame, nofun, sfname, nosfun, nodisp, &
-                        novelo, diname, vename, int_array, int_array, &
-                        ndmpar, ntdmpq, ntdmps, noqtt, noraai, &
-                        ntraaq, nobtyp, nowtyp, nogrid, int_array, &
+                call read_working_file_4(file_unit_list(2), file_unit, modid, sysid, num_substances_total, &
+                        num_monitoring_points, num_substances_transported, num_boundary_conditions, num_waste_loads, num_constants, &
+                        num_spatial_parameters, num_cells, num_cells_bottom, coname, paname, &
+                        funame, num_time_functions, sfname, num_spatial_time_fuctions, num_dispersion_arrays, &
+                        num_velocity_arrays, diname, vename, int_array, int_array, &
+                        ndmpar, ntdmpq, ntdmps, noqtt, num_transects, &
+                        num_transect_exchanges, num_boundary_types, num_waste_load_types, num_grids, int_array, &
                         int_array, int_array)
                 close (file_unit_list(2))
 
                 ! Get output pointers
-                call get_output_pointers(noutp, nrvar, nrvarm, char_arr, int_array, nmis, notot, sysid, nocons, &
-                        coname, nopa, paname, nofun, funame, nosfun, sfname, file_unit)
+                call get_output_pointers(num_output_files, nrvar, nrvarm, char_arr, int_array, nmis, num_substances_total, sysid, num_constants, &
+                        coname, num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, sfname, file_unit)
 
                 ! If not all vars found, set error
                 if (nmis > 0) then
@@ -209,7 +209,7 @@ contains
         endif
 
         ! Write OUTPUT intermediate file
-        do i = 1, noutp
+        do i = 1, num_output_files
             ioutps(1, i) = iostrt(i)
             ioutps(2, i) = iostop(i)
             ioutps(3, i) = iostep(i)
@@ -218,12 +218,12 @@ contains
             ioutps(6, i) = igrdou(i)
         enddo
 
-        allocate(Outputs%names(nrvart), Outputs%pointers(nrvart), Outputs%std_var_name(nrvart), &
-                Outputs%units(nrvart), Outputs%description(nrvart))
-        Outputs%current_size = nrvart
+        allocate(Outputs%names(num_output_variables_extra), Outputs%pointers(num_output_variables_extra), Outputs%std_var_name(num_output_variables_extra), &
+                Outputs%units(num_output_variables_extra), Outputs%description(num_output_variables_extra))
+        Outputs%current_size = num_output_variables_extra
 
         ivar = 0
-        do i = 1, noutp
+        do i = 1, num_output_files
             do iv = 1, nrvar(i)
                 ivar = ivar + 1
                 ip = (i - 1) * nrvarm + iv
@@ -257,8 +257,8 @@ contains
 
     end subroutine read_block_9
 
-    subroutine read_ascii_definition_file(noutp, nrvar, nrvarm, isrtou, ounam, infile, nx, &
-            ny, nodump, ibflag, lmoutp, ldoutp, lhoutp, lncout, status, igrdou, ndmpar)
+    subroutine read_ascii_definition_file(num_output_files, nrvar, nrvarm, isrtou, ounam, infile, num_cells_u_dir, &
+            num_cells_v_dir, num_monitoring_points, ibflag, lmoutp, ldoutp, lhoutp, lncout, status, igrdou, ndmpar)
 
         !! Reads the ascii output definition file. Checks input
 
@@ -269,15 +269,15 @@ contains
                 ihnc, ihnc2, ihnc3, ihnc4, imnf, imn2, imo4, iba2, idmp, &
                 ibal, ncopt, imnc2, imnc, ima2, imap, ihn2, ihi3, ihn4
 
-        integer(kind = int_wp), intent(in) :: noutp                  !< Number of output files
-        integer(kind = int_wp), intent(out) :: nrvar (noutp)         !< Nr. of extra output variables
+        integer(kind = int_wp), intent(in) :: num_output_files                  !< Number of output files
+        integer(kind = int_wp), intent(out) :: nrvar (num_output_files)         !< Nr. of extra output variables
         integer(kind = int_wp), intent(in) :: nrvarm                 !< Max. nr. of extra output var.
-        integer(kind = int_wp), intent(inout) :: isrtou(noutp)         !< Sort of output
-        character(20), intent(out) :: ounam (nrvarm, noutp)  !< Name extra output variables
+        integer(kind = int_wp), intent(inout) :: isrtou(num_output_files)         !< Sort of output
+        character(20), intent(out) :: ounam (nrvarm, num_output_files)  !< Name extra output variables
         logical, intent(inout) :: infile                !< Flag if default(f) or in file(t)
-        integer(kind = int_wp), intent(in) :: nx                     !< Width of grid
-        integer(kind = int_wp), intent(in) :: ny                     !< Depth of grid
-        integer(kind = int_wp), intent(in) :: nodump                 !< Number of monitor points
+        integer(kind = int_wp), intent(in) :: num_cells_u_dir                     !< Width of grid
+        integer(kind = int_wp), intent(in) :: num_cells_v_dir                     !< Depth of grid
+        integer(kind = int_wp), intent(in) :: num_monitoring_points                 !< Number of monitor points
         logical, intent(in) :: ibflag                !< Mass balance option flag
         logical, intent(in) :: lmoutp                !< Monitor output active
         logical, intent(in) :: ldoutp                !< Dump output active
@@ -356,7 +356,7 @@ contains
                             call status%increase_error_count()
                             nrvar(io) = 0
                         else if (nrv > max2) then
-                            write (file_unit, 2110) nrv, max2, (nrv - max2) * noutp * 2
+                            write (file_unit, 2110) nrv, max2, (nrv - max2) * num_output_files * 2
                             call status%increase_error_count()
                             nrvar(io) = max2
                         else
@@ -379,7 +379,7 @@ contains
                             call status%increase_error_count()
                             nrvar(io) = 0
                         else if (nrv > nrvarm + 1) then
-                            write (file_unit, 2110) nrv, max2, (nrv - max2) * noutp * 2
+                            write (file_unit, 2110) nrv, max2, (nrv - max2) * num_output_files * 2
                             call status%increase_error_count()
                             nrvar(io) = nrvarm
                         else
@@ -549,16 +549,16 @@ contains
                 ounam(3, 5) = ' '
                 ounam(4, 5) = ' '
             else
-                write (file_unit, 2110) 4, nrvarm, (4 - nrvarm) * noutp
+                write (file_unit, 2110) 4, nrvarm, (4 - nrvarm) * num_output_files
                 call status%increase_error_count()
             endif
         endif
 
         ! Check if output is defined for each file
-        do io = 1, noutp
+        do io = 1, num_output_files
 
             if (isrtou(io) == idmp .or. isrtou(io) == idm2) then
-                if (nx * ny  == 0)  then
+                if (num_cells_u_dir * num_cells_v_dir  == 0)  then
                     isrtou(io) = 0
                     nrvar (io) = 0
                     write (file_unit, 2160)
@@ -570,7 +570,7 @@ contains
                 endif
             elseif (isrtou(io) == ihis .or. isrtou(io) == ihi2 .or.  &
                     isrtou(io) == ihnf .or. isrtou(io) == ihn2) then
-                if (nodump == 0)  then
+                if (num_monitoring_points == 0)  then
                     isrtou(io) = 0
                     nrvar (io) = 0
                     write (file_unit, 2180)
@@ -621,7 +621,7 @@ contains
                     write(file_unit, 3050)
                 endif
             elseif (isrtou(io) == imon .or. isrtou(io) == imo2) then
-                if (nodump == 0)  then
+                if (num_monitoring_points == 0)  then
                     nrvar (io) = 0
                     write (file_unit, 2240)
                 endif

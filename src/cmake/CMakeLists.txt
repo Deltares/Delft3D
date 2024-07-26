@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.30)
 
 project(CMake)
 enable_testing()
@@ -35,13 +35,14 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Set compiler flags
 enable_language(Fortran C CXX)
+
 if(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
     include(compiler_options/gnu.cmake)
 elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
+    get_intel_version()
     include(compiler_options/intel.cmake)
 else()
-    echo (CMAKE_FORTRAN_COMPILER_ID = ${CMAKE_Fortran_COMPILER_ID} does not match known compilers, configuring for Intel)
-    include(compiler_options/intel.cmake)
+    message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
 endif()
 
 # Set available build configurations for the .sln file
@@ -66,42 +67,28 @@ if (WIN32)
         message(STATUS "Intel MPI")
         list(APPEND CMAKE_MESSAGE_INDENT "  ")
 
-        if("$ENV{I_MPI_ONEAPI_ROOT}" STREQUAL "")
-            message(STATUS "Using Intel 2024 folder structure (I_MPI_ONEAPI_ROOT is not set or empty)")
-
-            # check if ONEAPI_ROOT environment variable is set
-            if ("$ENV{ONEAPI_ROOT}" STREQUAL "")
-                message(FATAL_ERROR "Can not find ONEAPI_ROOT environment variable.")
-            endif()
-
+        if(intel_version GREATER_EQUAL 24)
+            message(STATUS "Using Intel 2024 folder structure.")
             set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
-            set(mpi_library_path $ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/$<CONFIG>;$ENV{ONEAPI_ROOT}/mpi/latest/lib)
+            set(mpi_module_path ${mpi_include_path}/mpi)
+            set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/$<CONFIG>,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
         else()
             message(DEPRECATION "Using Intel 2023 folder structure (I_MPI_ONEAPI_ROOT is set to: $ENV{I_MPI_ONEAPI_ROOT})")
             set(mpi_include_path $ENV{I_MPI_ONEAPI_ROOT}/include)
+            set(mpi_module_path ${mpi_include_path})
             set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<CONFIG>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
         endif()
         set(mpi_fortran_library "impi.lib")
         set(mpi_c_library "impi.lib;impicxx.lib")
     else()
-        message(DEPRECATION "mpich2 MPI")
-        list(APPEND CMAKE_MESSAGE_INDENT "  ")
-
-        set(mpi_include_path ${checkout_src_root}/third_party_open/mpich2/x64/include)
-        set(mpi_library_path ${checkout_src_root}/third_party_open/mpich2/x64/lib)
-        set(mpi_fortran_library "fmpich2.lib mpi.lib")
-        set(mpi_c_library "mpi.lib")
+        message(WARNING "Did not recognize MPI library \"${OSS_MPI}\"")
     endif()
 
     message(STATUS "mpi include path \"${mpi_include_path}\"")
+    message(STATUS "mpi module path \"${mpi_module_path}\"")
     message(STATUS "mpi library path \"${mpi_library_path}\"")
     message(STATUS "mpi fortran library \"${mpi_fortran_library}\"")
     message(STATUS "mpi c library \"${mpi_c_library}\"")
-
-    # check if include path exists
-    if (EXISTS "${mpi_include_path}")
-        message(STATUS "found at \"${mpi_include_path}\"")
-    endif()
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
@@ -109,11 +96,10 @@ if (WIN32)
     set(tecplot_path ${checkout_src_root}/third_party_open/Tecplot/include)
     message(STATUS "Tecplot set to ${tecplot_path}")
 
-    if (CMAKE_Fortran_COMPILER_VERSION MATCHES "2021.2")
-        # Set the petsc path
-        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/include)
-    else()
+    if(intel_version EQUAL 23)
         set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
+    else()
+        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.21.3/include)
     endif()
 
     #also set PETSC library directory
@@ -145,6 +131,7 @@ if (UNIX)
     #MPI
     find_package(MPI REQUIRED)
     add_definitions(-DHAVE_MPI)
+    set(mpi_module_path ${mpi_include_path})
 
     #NetCDF
     pkg_check_modules(NETCDF     REQUIRED IMPORTED_TARGET netcdf)
@@ -199,12 +186,13 @@ set(dflowfm_interacter_configuration "DFLOWFM_INTERACTER")
 set(tests_configuration "TESTS")
 set(dimr_configuration "DIMR")
 set(dwaq_configuration "DWAQ")
-set(drr_configuration "DRR")
 set(dwaves_configuration "DWAVES")
 set(swan_configuration "SWAN")
 set(flow2d3d_configuration "FLOW2D3D")
 set(tools_configuration "TOOLS")
 set(tools_gpl_configuration "TOOLS_GPL")
+set(drr_configuration "DRR")
+set(rtc_configuration "RTC")
 
 # Combined (multi-component) configurations
 set(delft3dfm_configuration "DELFT3DFM")
@@ -217,7 +205,6 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
      OR ${configuration_type} STREQUAL ${dflowfm_interacter_configuration}
      OR ${configuration_type} STREQUAL ${dimr_configuration}
      OR ${configuration_type} STREQUAL ${dwaq_configuration}
-     OR ${configuration_type} STREQUAL ${drr_configuration}
      OR ${configuration_type} STREQUAL ${dwaves_configuration}
      OR ${configuration_type} STREQUAL ${swan_configuration}
      OR ${configuration_type} STREQUAL ${flow2d3d_configuration}
@@ -225,6 +212,8 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
      OR ${configuration_type} STREQUAL ${tools_gpl_configuration}
      OR ${configuration_type} STREQUAL ${delft3dfm_configuration}
      OR ${configuration_type} STREQUAL ${delft3d4_configuration}
+     OR ${configuration_type} STREQUAL ${drr_configuration}
+     OR ${configuration_type} STREQUAL ${rtc_configuration}
      OR ${configuration_type} STREQUAL ${all_configuration}))
    message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
 endif()
@@ -262,12 +251,6 @@ if(${configuration_type} STREQUAL ${dwaq_configuration})
     message(STATUS "Finished generating solution for D-Waq")
 endif()
 
-# D-RR configuration
-if(${configuration_type} STREQUAL ${drr_configuration})
-    message(STATUS "Generating solution for D-RR ...")
-    include(configurations/drr_configuration.cmake)
-endif()
-
 # D-Waves configuration
 if(${configuration_type} STREQUAL ${dwaves_configuration})
     message(STATUS "Generating solution for D-Waves ...")
@@ -296,6 +279,18 @@ endif()
 if(${configuration_type} STREQUAL ${tools_gpl_configuration})
     message(STATUS "Generating solution for Tools_GPL ...")
     include(configurations/tools_gpl_configuration.cmake)
+endif()
+
+# RTC configuration
+if(${configuration_type} STREQUAL ${rtc_configuration})
+    message(STATUS "Generating solution for rtc ...")
+    include(configurations/rtc_configuration.cmake)
+endif()
+
+# D-RR configuration
+if(${configuration_type} STREQUAL ${drr_configuration})
+    message(STATUS "Generating solution for D-RR ...")
+    include(configurations/drr_configuration.cmake)
 endif()
 
 ### Composed configurations

@@ -28,10 +28,10 @@ module m_satoxy
 contains
 
 
-    subroutine satoxy (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger, only : terminate_execution, get_log_unit_number
+    subroutine satoxy (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         !>\file
         !>       Saturation concentration of oxygen
@@ -60,9 +60,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declarations
         !
@@ -87,12 +87,12 @@ contains
         !
         !     Initial calculations
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
-            CL = PMSA(IP1)
-            TEMP = PMSA(IP2)
-            SWITCH = NINT(PMSA(IP3))
-            SAL = PMSA(IP4)
+            CL = process_space_real(IP1)
+            TEMP = process_space_real(IP2)
+            SWITCH = NINT(process_space_real(IP3))
+            SAL = process_space_real(IP4)
 
             IF (SWITCH == 1) THEN
                 !
@@ -121,12 +121,12 @@ contains
                 WRITE(*, *) ' ERROR in SATOXY'
                 WRITE(*, *) ' Illegal option for oxygen saturation formula'
                 WRITE(*, *) ' Option in input:', SWITCH
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
 
             !     Output of calculated oxygen saturation
 
-            PMSA (IP5) = OXSAT
+            process_space_real (IP5) = OXSAT
             !
             !jvb  ENDIF
             !

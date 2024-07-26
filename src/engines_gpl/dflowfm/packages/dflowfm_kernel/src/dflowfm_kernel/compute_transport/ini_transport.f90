@@ -36,7 +36,7 @@ subroutine ini_transport()
    use m_flowparameters
    use m_sediment
    use m_physcoef
-   use m_flowexternalforcings
+   use fm_external_forcings_data
    use string_module
    use Messagehandling
    use m_flow, only: kmx
@@ -51,7 +51,7 @@ subroutine ini_transport()
    character(len=8) :: str
    character(len=256) :: msg
 
-   integer            :: i, itrace, ised, isf, ifrac, isys, iconst
+   integer :: i, itrace, ised, isf, ifrac, isys
    integer, external  :: findname
 
    NUMCONST  = 0
@@ -63,18 +63,18 @@ subroutine ini_transport()
    ITRA1 = 0
    ITRAN = 0
 
-   if ( jasal.ne.0 ) then
+   if (jasal /= 0) then
       NUMCONST = NUMCONST+1
       ISALT = NUMCONST
    end if
 
-   if ( jatem.ne.0 ) then
+   if (jatem /= 0) then
       NUMCONST = NUMCONST+1
       ITEMP = NUMCONST
    end if
 
-   if ( jased.ne.0) then
-      if( mxgr.gt.0 ) then
+   if (jased /= 0) then
+      if (mxgr > 0) then
          NUMCONST  = NUMCONST+1
          ISED1 = NUMCONST
 
@@ -88,7 +88,7 @@ subroutine ini_transport()
       ISPIR     = NUMCONST
    endif
 
-   if ( numtracers.gt.0 ) then
+   if (numtracers > 0) then
       NUMCONST = NUMCONST+1
       ITRA1 = NUMCONST
       NUMCONST = NUMCONST+numtracers-1
@@ -119,7 +119,7 @@ subroutine ini_transport()
 
    if (numconst > 0 .or. bfmpar%lfbedfrm) call alloc_transport(.false.)
 
-   if ( ISALT.gt.0 ) then
+   if (ISALT > 0) then
       if ( javasal == 6) then
          thetavert(ISALT) = 0d0    ! Ho explicit
       else
@@ -128,7 +128,7 @@ subroutine ini_transport()
       const_names(ISALT) = 'salt'
    end if
 
-   if ( ITEMP.gt.0 ) then
+   if (ITEMP > 0) then
       if ( javatem == 6) then
          thetavert(ITEMP) = 0d0     ! Ho explicit
       else
@@ -137,7 +137,7 @@ subroutine ini_transport()
       const_names(ITEMP) = 'temperature'
    end if
 
-   if ( ISED1.gt.0 ) then
+   if (ISED1 > 0) then
       if ( javased == 6 ) then
          thetavert(ISED1:ISEDN) = 0d0
       else
@@ -165,7 +165,7 @@ subroutine ini_transport()
          if (numfracs > 0) then
             do isf = 1, stmpar%lsedsus        ! dimension of sed constituents
                ifrac = findname(numfracs,sfnames,trim(const_names(isf+ISED1-1)))
-               if ( ifrac.gt.0 ) then
+               if (ifrac > 0) then
                   ifrac2const(ifrac) = isf+ISED1-1
                else
                   call mess(LEVEL_WARN, 'ini_transport(): fraction '//trim(const_names(isf+ISED1-1))//' has a neumann bc assigned. If that is not what was intended, check fraction name in the sedfracbnd definition.')
@@ -179,12 +179,12 @@ subroutine ini_transport()
       const_names(ISPIR) = 'secondary_flow_intensity'
    end if
 
-   if ( ITRA1.gt.0 ) then
+   if (ITRA1 > 0) then
       do i=ITRA1,ITRAN
          itrace = i-ITRA1+1
 
 !        set name
-         if ( trim(trnames(itrace)).ne.'' ) then
+         if (trim(trnames(itrace)) /= '') then
             const_names(i) = trim(trnames(itrace))
             const_units(i) = trim(trunits(itrace))
          else
@@ -197,7 +197,7 @@ subroutine ini_transport()
       end do
    end if
 
-   if ( NUMCONST.gt.0 ) then
+   if (NUMCONST > 0) then
       call mess(LEVEL_INFO, 'List of constituents defined in the model')
       do i = 1, NUMCONST
          write(msg, '(I8,X,A)') i, const_names(i)
@@ -205,7 +205,7 @@ subroutine ini_transport()
       enddo
    endif
 
-   if ( numwqbots.gt.0 ) then
+   if (numwqbots > 0) then
       call mess(LEVEL_INFO, 'List of water quality bottom variables defined in the model')
       do i = 1, numwqbots
          write(msg, '(I8,X,A)') i, wqbotnames(i)
@@ -215,7 +215,7 @@ subroutine ini_transport()
 
    if ( jawaqproc > 0 ) then
 !     fill administration for WAQ substances with fall velocities, and thetavert
-      do isys=1,nosys
+      do isys = 1, num_substances_transported
          i = itrac2const(isys2trac(isys))
          isys2const(isys) = i
          iconst2sys(i) = isys

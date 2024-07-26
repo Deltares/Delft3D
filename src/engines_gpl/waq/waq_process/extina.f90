@@ -28,15 +28,15 @@ module m_extina
 contains
 
 
-    subroutine extina (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine extina (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Extinction of light by algae and POC
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declarations
         !
@@ -44,8 +44,8 @@ contains
                 IALG, IP, IFIX
         REAL(kind = dp) :: EXTALG, EXTCF, BIOMAS, DEPTH, SDMIX
         !
-        NALG = NINT(PMSA(IPOINT(1)))
-        ISWFIX = NINT(PMSA(IPOINT(2)))
+        NALG = NINT(process_space_real(IPOINT(1)))
+        ISWFIX = NINT(process_space_real(IPOINT(2)))
         IF (ISWFIX == 1) THEN
             NIPALG = 4
         ELSE
@@ -53,32 +53,32 @@ contains
         ENDIF
         IFLUX = 0
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
                 EXTALG = 0.0
-                DEPTH = PMSA (IPOINT(3) + (ISEG - 1) * INCREM(3))
+                DEPTH = process_space_real (IPOINT(3) + (ISEG - 1) * INCREM(3))
                 !
                 !     Loop over algae
 
                 DO IALG = 1, NALG
 
                     IP = 3 + IALG
-                    EXTCF = PMSA (IPOINT(IP) + (ISEG - 1) * INCREM(IP))
+                    EXTCF = process_space_real (IPOINT(IP) + (ISEG - 1) * INCREM(IP))
 
                     IP = 3 + NALG + IALG
-                    BIOMAS = PMSA (IPOINT(IP) + (ISEG - 1) * INCREM(IP))
+                    BIOMAS = process_space_real (IPOINT(IP) + (ISEG - 1) * INCREM(IP))
 
                     IF (ISWFIX == 1) THEN
                         IP = 3 + 2 * NALG + IALG
-                        IFIX = NINT(PMSA (IPOINT(IP) + (ISEG - 1) * INCREM(IP)))
+                        IFIX = NINT(process_space_real (IPOINT(IP) + (ISEG - 1) * INCREM(IP)))
                         IF (IFIX < 0) THEN
 
                             ! Rooted algae, inlclude only if sdmix positive
 
                             IP = 3 + 3 * NALG + IALG
-                            SDMIX = PMSA (IPOINT(IP) + (ISEG - 1) * INCREM(IP))
+                            SDMIX = process_space_real (IPOINT(IP) + (ISEG - 1) * INCREM(IP))
                             IF (SDMIX > 1E-10) THEN
                                 BIOMAS = BIOMAS / DEPTH
                             ELSE
@@ -93,7 +93,7 @@ contains
                 end do
 
                 IP = 3 + NIPALG * NALG + 1
-                PMSA (IPOINT(IP) + (ISEG - 1) * INCREM(IP)) = EXTALG
+                process_space_real (IPOINT(IP) + (ISEG - 1) * INCREM(IP)) = EXTALG
 
             ENDIF
             !

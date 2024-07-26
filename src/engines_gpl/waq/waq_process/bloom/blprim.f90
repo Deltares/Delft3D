@@ -43,7 +43,7 @@ contains
             flxcon, noutlim, outlim, nunucom, nuecogm, &
             con2out, swblsa, totnin, totpin, totsiin)
 
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use bloom_data_dim
         use bloom_data_size
         use bloom_data_caldynam
@@ -211,7 +211,7 @@ contains
                     if (ierror == merror) then
                         write (outdbg, *) 'Fatal ERROR in Bloom module: time step too big'
                         write (*, *) 'Fatal ERROR in Bloom module: time step too big'
-                        call terminate_execution(1)
+                        call stop_with_error()
                     end if
                 end if
                 1050    format (' Integration error number ', I3, /, &
@@ -414,7 +414,7 @@ contains
         !         2      PHOSPHOR
         !         3      SILICON
         !         4      KMIN         (light limitation)
-        !         5      KMAX         (photo-inhibition)
+        !         5      num_layers_grid         (photo-inhibition)
         !         6                   (to be neglected)
         !         7      Growth-DIATOMS
         !               ......

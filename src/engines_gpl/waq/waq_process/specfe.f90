@@ -28,9 +28,9 @@ module m_specfe
 contains
 
 
-    subroutine SPECFE     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine SPECFE     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !JVB$ ATTRIBUTES DLLEXPORT, ALIAS: 'SPECFE' :: SPECFE
         !
         !*******************************************************************************
@@ -39,18 +39,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(25) ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(25) ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(25) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(25)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
         !
@@ -100,25 +100,25 @@ contains
         real(kind = real_wp) :: cfe2d2      ! L  concentration of dissolved FeOH+ (mole.l-1)
         real(kind = real_wp) :: cfe2d3      ! L  concentration of dissolved Fe(OH)2 (mole.l-1)
 
-        ! initialise pointering in pmsa
+        ! initialise pointering in process_space_real
 
         ipnt = ipoint
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
-            feiiid = pmsa(ipnt(1))
-            feiid = pmsa(ipnt(2))
-            lkstfe3oh = pmsa(ipnt(3))
-            lkstfe3oh2 = pmsa(ipnt(4))
-            tckfe3oh = pmsa(ipnt(5))
-            tckfe3oh2 = pmsa(ipnt(6))
-            lkstfe2oh = pmsa(ipnt(7))
-            lkstfe2oh2 = pmsa(ipnt(8))
-            tckfe2oh = pmsa(ipnt(9))
-            tckfe2oh2 = pmsa(ipnt(10))
-            ph = pmsa(ipnt(11))
-            temp = pmsa(ipnt(12))
-            poros = pmsa(ipnt(13))
+            feiiid = process_space_real(ipnt(1))
+            feiid = process_space_real(ipnt(2))
+            lkstfe3oh = process_space_real(ipnt(3))
+            lkstfe3oh2 = process_space_real(ipnt(4))
+            tckfe3oh = process_space_real(ipnt(5))
+            tckfe3oh2 = process_space_real(ipnt(6))
+            lkstfe2oh = process_space_real(ipnt(7))
+            lkstfe2oh2 = process_space_real(ipnt(8))
+            tckfe2oh = process_space_real(ipnt(9))
+            tckfe2oh2 = process_space_real(ipnt(10))
+            ph = process_space_real(ipnt(11))
+            temp = process_space_real(ipnt(12))
+            poros = process_space_real(ipnt(13))
 
             ! fe(III)
 
@@ -202,20 +202,20 @@ contains
                 disfe2oh2 = cfe2dt * frfe2oh2d
             endif
 
-            ! store in pmsa array
+            ! store in process_space_real array
 
-            pmsa(ipnt(14)) = disfe3
-            pmsa(ipnt(15)) = disfe3oh
-            pmsa(ipnt(16)) = disfe3oh2
-            pmsa(ipnt(17)) = frfe3d
-            pmsa(ipnt(18)) = frfe3ohd
-            pmsa(ipnt(19)) = frfe3oh2d
-            pmsa(ipnt(20)) = disfe2
-            pmsa(ipnt(21)) = disfe2oh
-            pmsa(ipnt(22)) = disfe2oh2
-            pmsa(ipnt(23)) = frfe2d
-            pmsa(ipnt(24)) = frfe2ohd
-            pmsa(ipnt(25)) = frfe2oh2d
+            process_space_real(ipnt(14)) = disfe3
+            process_space_real(ipnt(15)) = disfe3oh
+            process_space_real(ipnt(16)) = disfe3oh2
+            process_space_real(ipnt(17)) = frfe3d
+            process_space_real(ipnt(18)) = frfe3ohd
+            process_space_real(ipnt(19)) = frfe3oh2d
+            process_space_real(ipnt(20)) = disfe2
+            process_space_real(ipnt(21)) = disfe2oh
+            process_space_real(ipnt(22)) = disfe2oh2
+            process_space_real(ipnt(23)) = frfe2d
+            process_space_real(ipnt(24)) = frfe2ohd
+            process_space_real(ipnt(25)) = frfe2oh2d
 
             ipnt = ipnt + increm
 

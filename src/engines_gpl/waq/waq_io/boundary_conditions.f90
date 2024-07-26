@@ -77,8 +77,8 @@ contains
         use m_open_waq_files
         use rd_token
         use m_waq_data_structure
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
         use m_string_utils, only : index_in_array
 
         integer(kind = int_wp), intent(inout) :: logical_unit(:)      !< array with unit numbers
@@ -803,7 +803,7 @@ contains
         integer(kind = int_wp) :: itel2, i1dum, i2dum, nodi2
         integer(kind = int_wp) :: k, ie, ie2, i1, i2
         integer(kind = int_wp) :: itels, itel, i3
-        integer(kind = int_wp) :: ioffb, ioffi, ioffs, iskip, iskp2, notot, iss
+        integer(kind = int_wp) :: ioffb, ioffi, ioffs, iskip, iskp2, num_substances_total, iss
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("write_data_blocks", ithndl)
 
@@ -846,8 +846,8 @@ contains
         ioffs = num_items
         iskip = 1
         iskp2 = nodi2
-        notot = num_items * nodi2
-        if (time_function_type == 3 .or. time_function_type == 4) notot = notot + 1
+        num_substances_total = num_items * nodi2
+        if (time_function_type == 3 .or. time_function_type == 4) num_substances_total = num_substances_total + 1
         if (iorder == 2) then
             ioffi = max(num_dims, 0)
             ioffs = 0
@@ -870,12 +870,12 @@ contains
                 end do
             endif
             do i1 = 1, num_blocks
-                do i2 = 0, notot - 1
+                do i2 = 0, num_substances_total - 1
                     if (iorder == 1) itel2 = mod(i2, num_dims) + 1
                     if (iorder == 2) itel2 = i2 / num_dims + 1
                     values_arr(iss + i2) = values_arr(iss + i2) * real_array(itel2)
                 end do
-                iss = iss + notot
+                iss = iss + num_substances_total
             end do
         endif
 
@@ -898,7 +898,7 @@ contains
             i1dum = 0
             i2dum = 0
             ! write table in binary format to wrk file.
-            call write_breakpoint_data_blocks(binary_work_file, num_blocks, notot, 1, integer_array(ioffb:), &
+            call write_breakpoint_data_blocks(binary_work_file, num_blocks, num_substances_total, 1, integer_array(ioffb:), &
                     values_arr, i1dum, i2dum)
             cum_items = cum_items + i1dum
             cum_dims = cum_dims + i2dum

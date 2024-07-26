@@ -28,11 +28,11 @@ module m_stageo
 contains
 
 
-    subroutine stageo (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger, only : terminate_execution, get_log_unit_number
-        use m_evaluate_waq_attribute
+    subroutine stageo (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_extract_waq_attribute
 
         !>\file
         !>       Geometric mean of a variable during a certian time span
@@ -72,9 +72,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, &
                 IP6, IP7, IP8, IP9, IP10, &
@@ -120,11 +120,11 @@ contains
         !
         !     (Use a safe margin)
         !
-        TSTART = PMSA(IP2)
-        TSTOP = PMSA(IP3)
-        TIME = PMSA(IP4)
-        DELT = PMSA(IP5)
-        THRESH = PMSA(IP6)
+        TSTART = process_space_real(IP2)
+        TSTOP = process_space_real(IP3)
+        TIME = process_space_real(IP4)
+        DELT = process_space_real(IP5)
+        THRESH = process_space_real(IP6)
 
         IF (THRESH <= 0.0) THEN
             CALL get_log_unit_number(LUNREP)
@@ -138,12 +138,12 @@ contains
                     'Threshold must be a positive value'
             WRITE(LUNREP, *) &
                     'Threshold: ', THRESH
-            CALL terminate_execution(1)
+            CALL stop_with_error()
         ENDIF
 
         THRLOG = LOG(THRESH) * DELT
 
-        TCOUNT = PMSA(IP7)
+        TCOUNT = process_space_real(IP7)
 
         !
         !      Start and stop criteria are somewhat involved. Be careful
@@ -160,15 +160,15 @@ contains
         IF (TIME >= TSTART - 0.5 * DELT .AND. TIME <= TSTOP + 0.5 * DELT) THEN
             IACTION = 2
             IF (TIME <= TSTART + 0.5 * DELT) THEN
-                DO ISEG = 1, NOSEG
+                DO ISEG = 1, num_cells
                     IP7 = IPOINT(7) + (ISEG - 1) * INCREM(7)
                     IP8 = IPOINT(8) + (ISEG - 1) * INCREM(8)
                     IP9 = IPOINT(9) + (ISEG - 1) * INCREM(9)
                     IP10 = IPOINT(10) + (ISEG - 1) * INCREM(10)
-                    PMSA(IP7) = 0.0
-                    PMSA(IP8) = 0.0
-                    PMSA(IP9) = 0.0
-                    PMSA(IP10) = 0.0
+                    process_space_real(IP7) = 0.0
+                    process_space_real(IP8) = 0.0
+                    process_space_real(IP9) = 0.0
+                    process_space_real(IP10) = 0.0
                 ENDDO
             ENDIF
         ENDIF
@@ -184,22 +184,22 @@ contains
         IP9 = IPOINT(9)
         IP10 = IPOINT(10)
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
                 !           Keep track of the time within the current geometric mean specification
                 !           that each segment is active
                 !
-                TCOUNT = PMSA(IP7) + DELT
-                PMSA(IP7) = TCOUNT
+                TCOUNT = process_space_real(IP7) + DELT
+                process_space_real(IP7) = TCOUNT
 
-                IF (PMSA(IP1) >= THRESH) THEN
-                    PMLOG = LOG(PMSA(IP1)) * DELT
-                    PMSA(IP8) = PMSA(IP8) + DELT
-                    PMSA(IP9) = PMSA(IP9) + PMLOG
-                    PMSA(IP10) = PMSA(IP10) + PMLOG
+                IF (process_space_real(IP1) >= THRESH) THEN
+                    PMLOG = LOG(process_space_real(IP1)) * DELT
+                    process_space_real(IP8) = process_space_real(IP8) + DELT
+                    process_space_real(IP9) = process_space_real(IP9) + PMLOG
+                    process_space_real(IP10) = process_space_real(IP10) + PMLOG
                 ELSE
-                    PMSA(IP10) = PMSA(IP10) + THRLOG
+                    process_space_real(IP10) = process_space_real(IP10) + THRLOG
                 ENDIF
             ENDIF
 
@@ -208,18 +208,18 @@ contains
             !
             IF (IACTION == 3) THEN
                 IF (TCOUNT > 0.0) THEN
-                    IF (PMSA(IP8) > 0.0) THEN
-                        PMSA(IP9) = EXP(PMSA(IP9) / PMSA(IP8))
+                    IF (process_space_real(IP8) > 0.0) THEN
+                        process_space_real(IP9) = EXP(process_space_real(IP9) / process_space_real(IP8))
                     ELSE
-                        PMSA(IP9) = 0.0
+                        process_space_real(IP9) = 0.0
                     ENDIF
-                    PMSA(IP10) = EXP(PMSA(IP10) / TCOUNT)
+                    process_space_real(IP10) = EXP(process_space_real(IP10) / TCOUNT)
                 ELSE
-                    PMSA(IP9) = 0.0
-                    PMSA(IP10) = 0.0
+                    process_space_real(IP9) = 0.0
+                    process_space_real(IP10) = 0.0
 
                     IF (NOWARN < MAXWARN) THEN
-                        CALL evaluate_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
+                        CALL extract_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
                         IF (ATTRIB /= 0) THEN
                             NOWARN = NOWARN + 1
                             WRITE(*, '(a,i0)') 'Geometric mean could not be determined for segment ', ISEG

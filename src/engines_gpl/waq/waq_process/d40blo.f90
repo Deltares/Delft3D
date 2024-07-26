@@ -29,9 +29,9 @@ module m_d40blo
 contains
 
 
-    subroutine d40blo (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine d40blo (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       BLOOM II algae module
 
@@ -58,19 +58,19 @@ contains
         use m_blinpu
         use m_blfile
         use m_blclmort
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use m_dhnoseg
         use m_dhnolay
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use      bloom_data_3dl
         use      bloom_data_vtrans
         ! END3DL
 
         implicit none
 
-        real(kind = real_wp) :: pmsa  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(*), increm(*), noseg, noflux
-        integer(kind = int_wp) :: iexpnt(4, *), iknmrk(*), iq, ifrom, ito, noq1, noq2, noq3, noq4
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(*), increm(*), num_cells, noflux
+        integer(kind = int_wp) :: iexpnt(4, *), iknmrk(*), iq, ifrom, ito, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         !
         !     Local (species groups arrays are now dimensioned as species/types arrays)
@@ -166,7 +166,7 @@ contains
                 ip19, ip20, ip21, ip22, ip23, ip24, ip25, ip26, ip27, &
                 ip28, ip29, ip30, ip31, ip32
         integer(kind = int_wp) :: io(nopfix)
-        integer(kind = int_wp) :: nosegw, nolay, nosegl, ikmrk1, ikmrk2
+        integer(kind = int_wp) :: nosegw, num_layers, nosegl, ikmrk1, ikmrk2
         integer(kind = int_wp) :: ipo17, ipo18, ipo19
         integer(kind = int_wp) :: ino17, ino18, ino19
         integer(kind = int_wp) :: init, iflux, iseg, ialg, ioff, ip, igro
@@ -208,34 +208,34 @@ contains
             call get_log_unit_number(lunrep)
             call blfile(lunrep)
 
-            timmul = pmsa(ipoint(1))
-            deltat = pmsa(ipoint(19))
+            timmul = process_space_real(ipoint(1))
+            deltat = process_space_real(ipoint(19))
             blstep = timmul * deltat
             rdcnt = - blstep
             id = 0
-            swclim = nint(pmsa(ipoint(28)))
+            swclim = nint(process_space_real(ipoint(28)))
             if (increm(28)/=0) call blstopinit(lunrep, 'SWCLim')
             lcarb = .false.
             if (swclim>0) lcarb = .true.
-            swblsa = pmsa(ipoint(29))
+            swblsa = process_space_real(ipoint(29))
             if (increm(29)/=0) call blstopinit(lunrep, 'SWBlSA')
 
             !        Former D09 input
-            SWBlSolInt = nint(pmsa(ipoint(33)))
+            SWBlSolInt = nint(process_space_real(ipoint(33)))
             if (increm(33)/=0) call blstopinit(lunrep, 'SWBlSolInt')
-            SWBlObject = nint(pmsa(ipoint(34)))
+            SWBlObject = nint(process_space_real(ipoint(34)))
             if (increm(34)/=0) call blstopinit(lunrep, 'SWBlObject')
-            BlTemLim = pmsa(ipoint(35))
+            BlTemLim = process_space_real(ipoint(35))
             if (increm(35)/=0) call blstopinit(lunrep, 'BlTemLim')
-            BlBasMor = pmsa(ipoint(36))
+            BlBasMor = process_space_real(ipoint(36))
             if (increm(36)/=0) call blstopinit(lunrep, 'BlBasMor')
-            SWBlGroChk = nint(pmsa(ipoint(37)))
+            SWBlGroChk = nint(process_space_real(ipoint(37)))
             if (increm(37)/=0) call blstopinit(lunrep, 'SWBlGroChk')
-            BlBioBas = pmsa(ipoint(38))
+            BlBioBas = process_space_real(ipoint(38))
             if (increm(38)/=0) call blstopinit(lunrep, 'BlBioBas')
-            SWBlMorChk = nint(pmsa(ipoint(39)))
+            SWBlMorChk = nint(process_space_real(ipoint(39)))
             if (increm(39)/=0) call blstopinit(lunrep, 'SWBlMorChk')
-            BlTopLev = pmsa(ipoint(40))
+            BlTopLev = process_space_real(ipoint(40))
             if (increm(40)/=0) call blstopinit(lunrep, 'BlTopLev')
 
             !        Copy algae type properties for input
@@ -247,111 +247,111 @@ contains
                 !          Hier ook voor ulva van (g) naar (g/m3) lijkt me niet wordt
                 !          hier alleen naar negatieve waarde gekeken
                 !
-                ALGTYP(0, IALG) = PMSA(IP)
+                ALGTYP(0, IALG) = process_space_real(IP)
                 !          SPECALG
                 IP = NIPFIX + 1 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('SpecAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(1, IALG) = NINT(PMSA(IP))
+                ALGTYP(1, IALG) = NINT(process_space_real(IP))
                 !          FAUTALG
                 IP = NIPFIX + 2 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('FrAutAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(15, IALG) = PMSA(IP)
+                ALGTYP(15, IALG) = process_space_real(IP)
                 !          EXTVLALG
                 IP = NIPFIX + 4 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('ExtVlAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(2, IALG) = PMSA(IP)
+                ALGTYP(2, IALG) = process_space_real(IP)
                 !          DMCFALG
                 IP = NIPFIX + 5 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('DMCFAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(3, IALG) = PMSA(IP)
+                ALGTYP(3, IALG) = process_space_real(IP)
                 !          NCRALG
                 IP = NIPFIX + 6 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('NCRAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(4, IALG) = PMSA(IP)
+                ALGTYP(4, IALG) = process_space_real(IP)
                 !          PCRALG
                 IP = NIPFIX + 7 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('PCRAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(5, IALG) = PMSA(IP)
+                ALGTYP(5, IALG) = process_space_real(IP)
                 !          SCRALG
                 IP = NIPFIX + 8 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('SCRAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(6, IALG) = PMSA(IP)
+                ALGTYP(6, IALG) = process_space_real(IP)
                 !          XNCRALG
                 IP = NIPFIX + 9 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('XNCRAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(16, IALG) = PMSA(IP)
+                ALGTYP(16, IALG) = process_space_real(IP)
                 !          XPCRALG
                 IP = NIPFIX + 10 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('XPCRAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(17, IALG) = PMSA(IP)
+                ALGTYP(17, IALG) = process_space_real(IP)
                 !          FNCRALG
                 IP = NIPFIX + 11 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('FNCRAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(18, IALG) = PMSA(IP)
+                ALGTYP(18, IALG) = process_space_real(IP)
                 !          CHLACALG
                 IP = NIPFIX + 12 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('ChlaCAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(7, IALG) = PMSA(IP)
+                ALGTYP(7, IALG) = process_space_real(IP)
                 !          PPMAXALG
                 IP = NIPFIX + 13 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('PPMaxAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(8, IALG) = PMSA(IP)
+                ALGTYP(8, IALG) = process_space_real(IP)
                 !          TCPMXALG
                 IP = NIPFIX + 14 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('TcPMxAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(9, IALG) = PMSA(IP)
+                ALGTYP(9, IALG) = process_space_real(IP)
                 !          TFPMXALG
                 IP = NIPFIX + 15 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('TFPMxAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(10, IALG) = PMSA(IP)
+                ALGTYP(10, IALG) = process_space_real(IP)
                 !          MORT0ALG
                 IP = NIPFIX + 16 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('Mort0Alg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(11, IALG) = PMSA(IP)
+                ALGTYP(11, IALG) = process_space_real(IP)
                 !          TCMRTALG
                 IP = NIPFIX + 17 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('TcMrtAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(12, IALG) = PMSA(IP)
+                ALGTYP(12, IALG) = process_space_real(IP)
                 !          MRESPALG
                 IP = NIPFIX + 18 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('MRespAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(13, IALG) = PMSA(IP)
+                ALGTYP(13, IALG) = process_space_real(IP)
                 !          TCRSPALG
                 IP = NIPFIX + 19 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('TcRspAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(14, IALG) = PMSA(IP)
+                ALGTYP(14, IALG) = process_space_real(IP)
                 !          SDMIXALG
                 IP = NIPFIX + 20 * NTYP_M + IALG
                 IP = IPOINT(IP)
-                ALGTYP(19, IALG) = PMSA(IP)
+                ALGTYP(19, IALG) = process_space_real(IP)
                 !          MRTEXALG
                 IP = NIPFIX + 21 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('MrtExAlg', IALG)
                 IP = IPOINT(IP)
-                ALGTYP(20, IALG) = PMSA(IP)
+                ALGTYP(20, IALG) = process_space_real(IP)
                 !          FIXALG
                 IP = NIPFIX + 25 * NTYP_M + IALG
                 IF (INCREM(IP)/=0) CALL BLSTOP('FixAlg', IALG)
                 IP = IPOINT(IP)
-                IFIX(IALG) = NINT(PMSA(IP))
+                IFIX(IALG) = NINT(process_space_real(IP))
             end do
 
             !     Read BLOOM-input and set some parameters
@@ -371,32 +371,32 @@ contains
             !     Check on availability of efficiency tracer
             IOFF = NIPFIX + 26 * NTYP_M
             IP = IPOINT(IOFF + 1) + (ISEG - 1) * INCREM(IOFF + 1)
-            EFFIN = PMSA(IP + 1)
+            EFFIN = process_space_real(IP + 1)
             ACTIVE_EFFT = EFFIN >= 0.0
 
             IF (ACTIVE_EFFT) THEN
                 ACTIVE_3DL = .FALSE.
             ELSE
-                IF (NOQ3 > 0) THEN
+                IF (num_exchanges_z_dir > 0) THEN
                     CALL DHNOSEG(NOSEGW)
-                    CALL DHNOLAY(NOLAY)
-                    NOLAY = MAX (1, NOLAY)
+                    CALL DHNOLAY(num_layers)
+                    num_layers = MAX (1, num_layers)
                     NOSEGW = MAX (1, NOSEGW)
-                    NOSEGL = NOSEGW / NOLAY
-                    IF (NOSEGL * NOLAY /= NOSEG .AND. .NOT. FM_VTRANS) THEN
+                    NOSEGL = NOSEGW / num_layers
+                    IF (NOSEGL * num_layers /= num_cells .AND. .NOT. FM_VTRANS) THEN
                         CALL get_log_unit_number(LUNREP)
                         WRITE(LUNREP, *) ' WARNING unstructured 3D application'
                         WRITE(LUNREP, *) ' BLOOM 3D light approach not possible'
                         ACTIVE_3DL = .FALSE.
-                        NOSEG_3DL = NOSEG            ! number of segments, copy of NOSEG
+                        NOSEG_3DL = num_cells            ! number of segments, copy of num_cells
                         NOSEGL_3DL = 1000000000       ! number of segments per layer
                         NOLAY_3DL = 1                ! number of layers
                         NGRO_3DL = NGRO_A           ! number of BLOOM algae groups, copy of NGRO_A
-                        NOLAY = 1
+                        num_layers = 1
                     ELSE
                         ACTIVE_3DL = .TRUE.
                         IF (.NOT. ACTIVE_3DL) THEN ! to trick something in the debugger, (don't) use the variables here
-                            NOSEG_3DL = 0                ! number of segments, copy of NOSEG
+                            NOSEG_3DL = 0                ! number of segments, copy of num_cells
                             NOSEGL_3DL = 0                ! number of segments per layer
                             NOLAY_3DL = 0                ! number of layers
                             NGRO_3DL = 0                ! number of BLOOM algae groups, copy of NGRO_A
@@ -407,12 +407,12 @@ contains
                         ENDIF
                     ENDIF
                 ELSE
-                    NOSEGW = NOSEG
-                    NOSEGL = NOSEG
+                    NOSEGW = num_cells
+                    NOSEGL = num_cells
                     ACTIVE_3DL = .FALSE.
-                    NOLAY = 1
+                    num_layers = 1
                 ENDIF
-                CALL INIT_3DL(NOSEG, NOSEGW, NOSEGL, NOLAY, NGRO_A, NTYP_A)
+                CALL INIT_3DL(num_cells, NOSEGW, NOSEGL, num_layers, NGRO_A, NTYP_A)
                 ALLOCATE(IFIX_3DL(NTYP_A))
                 IFIX_3DL = IFIX
             ENDIF
@@ -459,7 +459,7 @@ contains
             IO(IP) = IPOINT(NIPFIX + NIPVAR * NTYP_M + IP)
         ENDDO
         !
-        ISWVTR = NINT(PMSA(IPOINT(24)))
+        ISWVTR = NINT(process_space_real(IPOINT(24)))
         ! 3DL
         IF (ACTIVE_3DL .AND. ISWVTR == 0) THEN
             CALL get_log_unit_number(LUNREP)
@@ -469,8 +469,8 @@ contains
         ENDIF
         ! END3DL
 
-        TIMMUL = PMSA(IP1)
-        DELTAT = PMSA(IP19)
+        TIMMUL = process_space_real(IP1)
+        DELTAT = process_space_real(IP19)
         BLSTEP = TIMMUL * DELTAT
         RDCNT = RDCNT + BLSTEP
         IF ((AINT(RDCNT / 7.) + 1)/=ID) THEN
@@ -485,34 +485,34 @@ contains
         !     This loop is only needed for the 3DL Efficiencies, not in 2D or with the light tracer
         ! 3DL
         IF (.NOT.ACTIVE_EFFT) THEN
-            DO ISEG = 1, NOSEG
-                CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            DO ISEG = 1, num_cells
+                CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
                 IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                    CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                    CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                     ISEG_3DL = ISEG
                     ILAY_3DL = (ISEG - 1) / NOSEGL_3DL + 1
-                    EXTTOT = PMSA(IP2)
-                    EXTALG = PMSA(IP3)
-                    TEMPER = PMSA(IP4)
-                    RADIAT = PMSA(IP5) * 60.48
+                    EXTTOT = process_space_real(IP2)
+                    EXTALG = process_space_real(IP3)
+                    TEMPER = process_space_real(IP4)
+                    RADIAT = process_space_real(IP5) * 60.48
                     IF (IKMRK1 == 3) THEN
                         RADIAT = 0.0                    ! WAQ-G bodem geen groei
                         CALL BL_NO_AUTOLYSE(ORG_AVAILN) ! WAQ-G bodem geen autolyse
                     ENDIF
-                    DEPTH = PMSA(IP6)
-                    BLDEP = PMSA(IP7)
-                    DAYLEN = PMSA(IP8) * 24.
+                    DEPTH = process_space_real(IP6)
+                    BLDEP = process_space_real(IP7)
+                    DAYLEN = process_space_real(IP8) * 24.
                     DEPTHW = DEPTH
                     IF (BLDEP>0.) DEPTHW = BLDEP
-                    CL = PMSA(IP22)
+                    CL = process_space_real(IP22)
 
                     DO IALG = 1, NTYP_A
 
                         !jvb              set SDMIX for all types, time/space dependent
                         IOFF = NIPFIX + 20 * NTYP_M + IALG
                         IP = IPOINT(IOFF) + (ISEG - 1) * INCREM(IOFF)
-                        SDMIXN = PMSA(IP)
+                        SDMIXN = process_space_real(IP)
                         CALL BLSSDM(IALG, SDMIXN)
                         !jvb
                         IF (IFIX(IALG)<0) THEN
@@ -530,13 +530,13 @@ contains
 
                         IOFF = NIPFIX + NTYP_M * 22
                         IP = IPOINT(IOFF + IALG) + (ISEG - 1) * INCREM(IOFF + IALG)
-                        MRTM2 (IALG) = PMSA(IP)
+                        MRTM2 (IALG) = process_space_real(IP)
                         IOFF = NIPFIX + NTYP_M * 23
                         IP = IPOINT(IOFF + IALG) + (ISEG - 1) * INCREM(IOFF + IALG)
-                        MRTB1 (IALG) = PMSA(IP)
+                        MRTB1 (IALG) = process_space_real(IP)
                         IOFF = NIPFIX + NTYP_M * 24
                         IP = IPOINT(IOFF + IALG) + (ISEG - 1) * INCREM(IOFF + IALG)
-                        MRTB2 (IALG) = PMSA(IP)
+                        MRTB2 (IALG) = process_space_real(IP)
                     ENDDO
                     CALL BLCLST (MRTM1, MRTM2, MRTB1, MRTB2, NTYP_A, CL)
 
@@ -589,10 +589,10 @@ contains
         !     Second segment loop, actual bloom call
 
         IFLUX = 0
-        DO ISEG = 1, NOSEG
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+        DO ISEG = 1, num_cells
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1 .OR. IKMRK1==3) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 !
                 ! 3DL
                 IF (.NOT.ACTIVE_EFFT) THEN
@@ -601,48 +601,48 @@ contains
                 ENDIF
                 ! END3DL
                 !
-                TIMMUL = PMSA(IP1)
-                EXTTOT = PMSA(IP2)
-                EXTALG = PMSA(IP3)
-                TEMPER = PMSA(IP4)
+                TIMMUL = process_space_real(IP1)
+                EXTTOT = process_space_real(IP2)
+                EXTALG = process_space_real(IP3)
+                TEMPER = process_space_real(IP4)
 
                 !     Conversion from standard Delwaq 4.0 [W/m2] to [J/cm2/week] for Bloom
 
-                RADIAT = PMSA(IP5) * 60.48
+                RADIAT = process_space_real(IP5) * 60.48
                 IF (IKMRK1 == 3) THEN
                     RADIAT = 0.0                    ! WAQ-G bodem geen groei
                     CALL BL_NO_AUTOLYSE(ORG_AVAILN) ! WAQ-G bodem no autolyse
                 ENDIF
-                DEPTH = PMSA(IP6)
-                BLDEP = PMSA(IP7)
+                DEPTH = process_space_real(IP6)
+                BLDEP = process_space_real(IP7)
                 !     Replace DEPTHW with BLDEP if BLDEP > 0.0
                 DEPTHW = DEPTH
                 IF (BLDEP>0.) DEPTHW = BLDEP
 
                 !     Conversion from standard Delwaq 4.0 [d] to [h] for Bloom
 
-                DAYLEN = PMSA(IP8) * 24.
+                DAYLEN = process_space_real(IP8) * 24.
                 IF (DAYLEN>24.) GOTO 903
-                TotNin = PMSA(IP30)
-                TotPin = PMSA(IP31)
-                TotSIin = PMSA(IP32)
-                AMMONI = PMSA(IP9)
-                NITRAT = PMSA(IP10)
-                PHOSPH = PMSA(IP11)
-                SILICA = PMSA(IP12)
-                THRNH4 = PMSA(IP13)
-                THRNO3 = PMSA(IP14)
-                THRPO4 = PMSA(IP15)
-                THRSI = PMSA(IP16)
-                DETN = PMSA(IP17)
-                DETP = PMSA(IP18)
-                DELTAT = PMSA(IP19)
-                SWBLOOMOUT = NINT(PMSA(IP20))
+                TotNin = process_space_real(IP30)
+                TotPin = process_space_real(IP31)
+                TotSIin = process_space_real(IP32)
+                AMMONI = process_space_real(IP9)
+                NITRAT = process_space_real(IP10)
+                PHOSPH = process_space_real(IP11)
+                SILICA = process_space_real(IP12)
+                THRNH4 = process_space_real(IP13)
+                THRNO3 = process_space_real(IP14)
+                THRPO4 = process_space_real(IP15)
+                THRSI = process_space_real(IP16)
+                DETN = process_space_real(IP17)
+                DETP = process_space_real(IP18)
+                DELTAT = process_space_real(IP19)
+                SWBLOOMOUT = NINT(process_space_real(IP20))
                 CALL BLOUTC(SWBLOOMOUT)
-                CL = PMSA(IP22)
-                VOLUME = PMSA(IP23)
-                TIC = MAX(0.0, PMSA(IP25))
-                CO2 = MAX(0.0, PMSA(IP26))
+                CL = process_space_real(IP22)
+                VOLUME = process_space_real(IP23)
+                TIC = MAX(0.0, process_space_real(IP25))
+                CO2 = MAX(0.0, process_space_real(IP26))
 
                 !     SUBTRACT THRESHOLDS FROM DISSOLVED CONCENTRATION, NOT BELOW ZERO,
                 !     BUT BELOW ZERO IF ORIGINAL CONCENTRATION BELOW ZERO
@@ -657,7 +657,7 @@ contains
                     !        SDMIXALG
                     IOFF = NIPFIX + 20 * NTYP_M + IALG
                     IP = IPOINT(IOFF) + (ISEG - 1) * INCREM(IOFF)
-                    SDMIXN = PMSA(IP)
+                    SDMIXN = process_space_real(IP)
                     CALL BLSSDM(IALG, SDMIXN)
                     !jvb
                     !         scale ulva from (g/m2) to (g/m3)
@@ -665,7 +665,7 @@ contains
                     IOFF = NIPFIX
                     IP = IPOINT(IOFF + IALG) + (ISEG - 1) * INCREM(IOFF + IALG)
                     IF (IFIX(IALG)<0) THEN
-                        BIOMAS(IALG) = PMSA(IP) / DEPTH
+                        BIOMAS(IALG) = process_space_real(IP) / DEPTH
                         !
                         !            No PP for fixed ulva in non bottom segment, unless sdmix is set positive for this segment
                         !
@@ -677,24 +677,24 @@ contains
                             CALL BLSPPM(IALG, 0.0)
                         ENDIF
                     ELSE
-                        BIOMAS(IALG) = PMSA(IP)
+                        BIOMAS(IALG) = process_space_real(IP)
                     ENDIF
                     !jvb
                     IOFF = NIPFIX + NTYP_M * 2
                     IP = IPOINT(IOFF + IALG) + (ISEG - 1) * INCREM(IOFF + IALG)
-                    FAUT  (IALG) = PMSA(IP)
+                    FAUT  (IALG) = process_space_real(IP)
                     IOFF = NIPFIX + NTYP_M * 3
                     IP = IPOINT(IOFF + IALG) + (ISEG - 1) * INCREM(IOFF + IALG)
-                    FDET  (IALG) = PMSA(IP)
+                    FDET  (IALG) = process_space_real(IP)
                     IOFF = NIPFIX + NTYP_M * 22
                     IP = IPOINT(IOFF + IALG) + (ISEG - 1) * INCREM(IOFF + IALG)
-                    MRTM2 (IALG) = PMSA(IP)
+                    MRTM2 (IALG) = process_space_real(IP)
                     IOFF = NIPFIX + NTYP_M * 23
                     IP = IPOINT(IOFF + IALG) + (ISEG - 1) * INCREM(IOFF + IALG)
-                    MRTB1 (IALG) = PMSA(IP)
+                    MRTB1 (IALG) = process_space_real(IP)
                     IOFF = NIPFIX + NTYP_M * 24
                     IP = IPOINT(IOFF + IALG) + (ISEG - 1) * INCREM(IOFF + IALG)
-                    MRTB2 (IALG) = PMSA(IP)
+                    MRTB2 (IALG) = process_space_real(IP)
 
                     IF (IKMRK1 == 3) THEN ! WAQG bodem no autolyses
                         FDET(IALG) = FDET(IALG) + FAUT(IALG)
@@ -706,7 +706,7 @@ contains
                 IOFF = NIPFIX + 26 * NTYP_M
                 DO IGRO = 1, NGRO_A
                     IP = IPOINT(IOFF + IGRO) + (ISEG - 1) * INCREM(IOFF + IGRO)
-                    EFFIN = PMSA(IP)
+                    EFFIN = process_space_real(IP)
                     CALL BLSAEF(IGRO, EFFIN)
                 ENDDO
 
@@ -752,7 +752,7 @@ contains
 
                 !     Copy C-uptake flux to seperate flux for Oxygen
 
-                IF (NINT(PMSA(IP21))==0) &
+                IF (NINT(process_space_real(IP21))==0) &
                         FL(IFUPTA + 9) = FL(IFUPTA)
 
                 !     Salinity dependend mortality
@@ -769,73 +769,73 @@ contains
                     CALL BL_RESTORE_AUTOLYSE(ORG_AVAILN) ! WAQ-G restore autolyse
                 ENDIF
 
-                PMSA(IO(1)) = NUPTAK
-                PMSA(IO(2)) = FRAMMO
-                PMSA(IO(3)) = TOTNUT(1)
-                PMSA(IO(4)) = TOTNUT(2)
-                PMSA(IO(5)) = TOTNUT(3)
-                PMSA(IO(6)) = TOTNUT(4)
-                PMSA(IO(7)) = ALGDM
-                PMSA(IO(8)) = FBOD5
-                PMSA(IO(9)) = CHLORO
-                PMSA(IO(10)) = CHLORO
-                PMSA(IO(11)) = LIMFAC(1)
-                PMSA(IO(12)) = LIMFAC(2)
-                PMSA(IO(13)) = LIMFAC(3)
-                PMSA(IO(14)) = LIMFAC(4)
-                PMSA(IO(15)) = LIMFAC(5)
-                PMSA(IO(16)) = LIMFAC(6)
-                PMSA(IO(17)) = FL(IFUPTA) * DEPTHW
+                process_space_real(IO(1)) = NUPTAK
+                process_space_real(IO(2)) = FRAMMO
+                process_space_real(IO(3)) = TOTNUT(1)
+                process_space_real(IO(4)) = TOTNUT(2)
+                process_space_real(IO(5)) = TOTNUT(3)
+                process_space_real(IO(6)) = TOTNUT(4)
+                process_space_real(IO(7)) = ALGDM
+                process_space_real(IO(8)) = FBOD5
+                process_space_real(IO(9)) = CHLORO
+                process_space_real(IO(10)) = CHLORO
+                process_space_real(IO(11)) = LIMFAC(1)
+                process_space_real(IO(12)) = LIMFAC(2)
+                process_space_real(IO(13)) = LIMFAC(3)
+                process_space_real(IO(14)) = LIMFAC(4)
+                process_space_real(IO(15)) = LIMFAC(5)
+                process_space_real(IO(16)) = LIMFAC(6)
+                process_space_real(IO(17)) = FL(IFUPTA) * DEPTHW
 
                 !     RECONSTRUCT RESPIRATION FLUXES
-                PMSA(IO(18)) = 0.0
+                process_space_real(IO(18)) = 0.0
                 DO IGRO = 1, NTYP_A
                     RCRESP = ALGTYP(13, IGRO)
                     TCRESP = ALGTYP(14, IGRO)
-                    PMSA(IO(18)) = PMSA(IO(18)) &
+                    process_space_real(IO(18)) = process_space_real(IO(18)) &
                             + RCRESP * TCRESP**TEMPER * BIOMAS(IGRO)
                 ENDDO
-                PMSA(IO(18)) = PMSA(IO(18)) * DEPTHW
-                PMSA(IO(19)) = FL(IFUPTA + 7) * DEPTHW
+                process_space_real(IO(18)) = process_space_real(IO(18)) * DEPTHW
+                process_space_real(IO(19)) = FL(IFUPTA + 7) * DEPTHW
 
                 !     New limitation factors (nutrients + light)
                 DO IP = 1, NUNUCOM + 2
-                    PMSA(IO(19 + IP)) = OUTLIM(IP)
+                    process_space_real(IO(19 + IP)) = OUTLIM(IP)
                 ENDDO
 
                 !     Growth rate of all groups
                 IOFF = NIPFIX + NIPVAR * NTYP_M + NOPFIX
                 DO IGRO = 1, NTYP_A
                     IP = IPOINT(IOFF + IGRO) + (ISEG - 1) * INCREM(IOFF + IGRO)
-                    PMSA(IP) = RATGRO(IGRO)
+                    process_space_real(IP) = RATGRO(IGRO)
                 ENDDO
 
                 !     Mortality rate of all groups
                 IOFF = NIPFIX + NIPVAR * NTYP_M + NOPFIX + NTYP_M
                 DO IGRO = 1, NTYP_A
                     IP = IPOINT(IOFF + IGRO) + (ISEG - 1) * INCREM(IOFF + IGRO)
-                    PMSA(IP) = RATMOR(IGRO)
+                    process_space_real(IP) = RATMOR(IGRO)
                 ENDDO
 
                 !     Biomass of all groups
                 IOFF = NIPFIX + NIPVAR * NTYP_M + NOPFIX + 2 * NTYP_M
                 DO IGRO = 1, NTYP_A
                     IP = IPOINT(IOFF + IGRO) + (ISEG - 1) * INCREM(IOFF + IGRO)
-                    PMSA(IP) = CGROUP(IGRO)
+                    process_space_real(IP) = CGROUP(IGRO)
                 ENDDO
 
                 !     Growth limitation of all groups
                 IOFF = NIPFIX + NIPVAR * NTYP_M + NOPFIX + 3 * NTYP_M
                 DO IGRO = 1, NTYP_A
                     IP = IPOINT(IOFF + IGRO) + (ISEG - 1) * INCREM(IOFF + IGRO)
-                    PMSA(IP) = OUTLIM(NUNUCOM + 2 + IGRO)
+                    process_space_real(IP) = OUTLIM(NUNUCOM + 2 + IGRO)
                 ENDDO
 
                 !     Mort limitation of all groups
                 IOFF = NIPFIX + NIPVAR * NTYP_M + NOPFIX + 4 * NTYP_M
                 DO IGRO = 1, NTYP_A
                     IP = IPOINT(IOFF + IGRO) + (ISEG - 1) * INCREM(IOFF + IGRO)
-                    PMSA(IP) = OUTLIM(NUNUCOM + 2 + NTYP_M + IGRO)
+                    process_space_real(IP) = OUTLIM(NUNUCOM + 2 + NTYP_M + IGRO)
                 ENDDO
 
             ENDIF
@@ -889,25 +889,25 @@ contains
         ipo19 = ipoint(nipfix + nipvar * ntyp_m + 19)
         ino19 = increm(nipfix + nipvar * ntyp_m + 19)
 
-        do iq = noq1 + noq2 + 1, noq1 + noq2 + noq3
+        do iq = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
             ifrom = iexpnt(1, iq)
             ito = iexpnt(2, iq)
             if (ifrom>0 .and. ito>0) then
-                pmsa(ipo17 + (ito - 1) * ino17) = pmsa(ipo17 + (ifrom - 1) * ino17) + pmsa(ipo17 + (ito - 1) * ino17)
-                pmsa(ipo18 + (ito - 1) * ino18) = pmsa(ipo18 + (ifrom - 1) * ino18) + pmsa(ipo18 + (ito - 1) * ino18)
-                pmsa(ipo19 + (ito - 1) * ino19) = pmsa(ipo19 + (ifrom - 1) * ino19) + pmsa(ipo19 + (ito - 1) * ino19)
+                process_space_real(ipo17 + (ito - 1) * ino17) = process_space_real(ipo17 + (ifrom - 1) * ino17) + process_space_real(ipo17 + (ito - 1) * ino17)
+                process_space_real(ipo18 + (ito - 1) * ino18) = process_space_real(ipo18 + (ifrom - 1) * ino18) + process_space_real(ipo18 + (ito - 1) * ino18)
+                process_space_real(ipo19 + (ito - 1) * ino19) = process_space_real(ipo19 + (ifrom - 1) * ino19) + process_space_real(ipo19 + (ito - 1) * ino19)
             endif
         enddo
 
         ! set the accumulated value for every layer
 
-        do iq = noq1 + noq2 + noq3, noq1 + noq2 + 1, -1
+        do iq = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir, num_exchanges_u_dir + num_exchanges_v_dir + 1, -1
             ifrom = iexpnt(1, iq)
             ito = iexpnt(2, iq)
             if (ifrom>0 .and. ito>0) then
-                pmsa(ipo17 + (ifrom - 1) * ino17) = pmsa(ipo17 + (ito - 1) * ino17)
-                pmsa(ipo18 + (ifrom - 1) * ino18) = pmsa(ipo18 + (ito - 1) * ino18)
-                pmsa(ipo19 + (ifrom - 1) * ino19) = pmsa(ipo19 + (ito - 1) * ino19)
+                process_space_real(ipo17 + (ifrom - 1) * ino17) = process_space_real(ipo17 + (ito - 1) * ino17)
+                process_space_real(ipo18 + (ifrom - 1) * ino18) = process_space_real(ipo18 + (ito - 1) * ino18)
+                process_space_real(ipo19 + (ifrom - 1) * ino19) = process_space_real(ipo19 + (ito - 1) * ino19)
             endif
         enddo
 
@@ -916,16 +916,16 @@ contains
         901 call get_log_unit_number(lunrep)
         write (lunrep, *) 'ERROR D40BLO: DIMENSION NTYP_M TOO SMALL'
         write (*, *) 'ERROR D40BLO: DIMENSION NTYP_M TOO SMALL'
-        call terminate_execution (1)
+        call stop_with_error()
         ! 902 STOP 'ERROR D40BLO: DIMENSION NGRO_M TOO SMALL'
         903 call get_log_unit_number(lunrep)
         write (lunrep, *) 'ERROR D40BLO: DAYLEN > 1.0 DAY'
         write (*, *) 'ERROR D40BLO: DAYLEN > 1.0 DAY'
-        call terminate_execution (1)
+        call stop_with_error()
     end subroutine d40blo
 
     subroutine blstopinit(lunrep, inputname)
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
 
         integer(kind = int_wp) :: lunrep
         character(*) inputname
@@ -933,7 +933,7 @@ contains
         write(lunrep, *) 'ERROR in bloom: ', inputname, ' must be a constant!'
         write(*, *) 'ERROR in bloom: ', inputname, ' must be a constant!'
 
-        call terminate_execution(1)
+        call stop_with_error()
 
         return
 
@@ -941,7 +941,7 @@ contains
 
 
     subroutine blstop(mes, i)
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         character(*) mes
         integer(kind = int_wp) :: lunrep, i
@@ -953,7 +953,7 @@ contains
         write(*, *) 'ERROR in bloom: '
         write(*, *) 'Characteristic ', mes, ' for algae type ', i, ' must be a constant!'
 
-        call terminate_execution(1)
+        call stop_with_error()
 
         return
 

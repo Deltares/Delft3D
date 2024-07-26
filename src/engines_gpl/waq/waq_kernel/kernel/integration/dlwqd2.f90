@@ -28,143 +28,135 @@ module m_dlwqd2
 contains
 
 
-    SUBROUTINE DLWQD2 (LUNUT, NOSYS, NOTOT, NOSEG, NOQ3, &
-            KMAX, CONC, ALENG, NOWARN)
-        !
-        !
-        !       Forester filter for the vertical.
-        !
-        !       Then loops over the number of horizontal segments en over the
-        !       the number of active substances are made. All these verticals
-        !       are filtered at most MAXFIL times.
-        !
-        !       Everything starts with layer 2 (from the top in WAQ). IL is
-        !       the counter here with starting values ISEG+NOSEG. ILU points
-        !       to the layer upper (IL-NOSEG) en ILD points to the layer down-
-        !       wards (IL+NOSEG).
-        !
-        !       The from- and to- lengthes are in the ALENG array. The third
-        !       direction last. Than means that NOQT-NOQ3+ISEG is the pointer
-        !       for the exchange with the layer above and that value plus NOSEG
-        !       is the pointer to the exchange downward. The from- value is
-        !       the first one that is in the higher layer, The to- value is in
-        !       the lower layer. You can check that the to- value for the upper
-        !       exchange should equal the from- value for the downward exchange.
-        !
-        !       The filter starts action if the layer value is over DD larger
-        !       than or over DD smaller than both bordering values. If that
-        !       the IFIL flag signals a filter step.
-        !       The filter corrects the difference that is largest. It does so
-        !       by taking half of that difference, or the other difference
-        !       which one is smallest. It multiplies this with the smallest
-        !       thickness (and unknown A thus with the smallest volume). It
-        !       corrects with this mass and divides by the volume (the unknown
-        !       A and the thickness) to get a concentration again. This means
-        !       that per step at most 0.5 times the largest difference is
-        !       corrected.
-        !
-        !       Because WAQ has halflengthes, you must read "half the volume"
-        !       but that does not differ because 0.5/0.5 = 1.0. There is an
-        !       upperbound to the coorection that is at 1.0 m thickness in the
-        !       original code. Because we work with half distances, it is 0.5
-        !       here.
-        !
-        !       A maximum/minimum of DD remains. This value is a somewhat
-        !       strange construct. If you got 0.01 mg Cadmium per liter in
-        !       your water you better call on an environmental specialist.
-        !
-        use timers
-        !
-        INTEGER(kind = int_wp) :: LUNUT, NOSYS, NOTOT, NOSEG, NOQ3, NOWARN, KMAX
-        REAL(kind = real_wp) :: CONC(NOTOT, NOSEG), ALENG(2, NOQ3)
+    !> Forester filter for the vertical.
+    !! Then loops over the number of horizontal segments and over the
+    !! the number of active substances are made. All these verticals
+    !! are filtered at most MAXFIL times.
+    !!  Everything starts with layer 2 (from the top in WAQ). IL is
+    !! the counter here with starting values ISEG+num_cells. ILU points
+    !! to the layer upper (IL-num_cells) and ILD points to the layer down-
+    !! wards (IL+num_cells).
+    !!  The from- and to- lengths are in the ALENG array. The third
+    !! direction last. Than means that NOQT-num_exchanges_z_dir+ISEG is the pointer
+    !! for the exchange with the layer above and that value plus num_cells
+    !! is the pointer to the exchange downward. The from- value is
+    !! the first one that is in the higher layer, The to- value is in
+    !! the lower layer. You can check that the to- value for the upper
+    !! exchange should equal the from- value for the downward exchange.
+    !!  The filter starts action if the layer value is over DD larger
+    !! than or over DD smaller than both bordering values. If that
+    !! the IFIL flag signals a filter step.
+    !! The filter corrects the largest difference
+    !! by taking half of that difference, or the other difference
+    !! which one is smallest. It multiplies this by the smallest
+    !! thickness (and unknown A thus with the smallest volume). It
+    !! corrects with this mass and divides by the volume (the unknown
+    !! A and the thickness) to get a concentration again. This means
+    !! that per step at most 0.5 times the largest difference is
+    !! corrected.
+    !!  Because WAQ has halflengths, you must read "half the volume"
+    !! but that does not differ because 0.5/0.5 = 1.0. There is an
+    !! upperbound to the correction that is at 1.0 m thickness in the
+    !! original code. Because we work with half distances, it is 0.5
+    !! here.
+    !!  A maximum/minimum of DD remains.
+    subroutine dlwqd2(lunut, num_substances_transported, num_substances_total, num_cells, num_exchanges_z_dir, &
+            num_layers_grid, conc, aleng, nowarn)
 
+        use timers
+
+        integer(kind = int_wp), intent(in   ) :: lunut  !< Unit number of log file
+        integer(kind = int_wp), intent(in   ) :: num_substances_transported  !< Number of active substances
+        integer(kind = int_wp), intent(in   ) :: num_substances_total  !< Number of substances
+        integer(kind = int_wp), intent(in   ) :: num_cells  !< Number of cells or segments
+        integer(kind = int_wp), intent(in   ) :: num_exchanges_z_dir   !<  Number of exchanges in vertical direction
+        integer(kind = int_wp), intent(inout) :: nowarn !< Number of warnings sent to the log file
+        integer(kind = int_wp), intent(in   ) :: num_layers_grid   !< ????
+
+        real(kind = real_wp),   intent(inout) :: conc(num_substances_total, num_cells) !< Array with concentrations of all substances at all cells
+        real(kind = real_wp),   intent(in   ) :: aleng(2, num_exchanges_z_dir)     !< Mixing length
+
+        ! Local variables
         real(kind = real_wp) :: dd, dr, dr1, dr2, dz1, dz2, coef
 
         integer(kind = int_wp) :: iseg, isys, ifilt, il, is, ilu, ifil, ild, ilay
         integer(kind = int_wp) :: nhor, maxfil
-
         integer(kind = int_wp) :: ithandl = 0
+
         if (timon) call timstrt ("dlwqd2", ithandl)
-        !
-        DD = 1.0E-02
-        MAXFIL = 100
-        !
-        !     Only for structured 3D
-        !
-        IF (KMAX <= 1) goto 9999
-        !
-        NHOR = NOSEG / KMAX
-        !          for all horizontal segments
-        DO ISEG = 1, NHOR
-            !          for all active substances
-            DO ISYS = 1, NOSYS
-                !          do until maximum iteration or untill satisfied
-                DO IFILT = 1, MAXFIL
-                    IFIL = 0
-                    IL = ISEG
-                    ILU = IL - NHOR
-                    ILD = IL + NHOR
-                    DO ILAY = 2, KMAX - 1
-                        IL = IL + NHOR
-                        ILU = ILU + NHOR
-                        ILD = ILD + NHOR
-                        DR1 = CONC(ISYS, IL) - CONC(ISYS, ILU)
-                        DR2 = CONC(ISYS, IL) - CONC(ISYS, ILD)
-                        !                    test for local maximum
-                        IF (DR1 >  DD .AND. DR2 >  DD) THEN
-                            IFIL = 1
-                            IF (DR1 > DR2) THEN
-                                DR = MIN (0.5 * DR1, DR2)
-                                DZ1 = ALENG(1, ILU)
-                                DZ2 = ALENG(2, ILU)
-                                COEF = MIN (DZ1, DZ2, 0.5) * DR
-                                CONC(ISYS, ILU) = CONC(ISYS, ILU) + COEF / DZ1
-                                CONC(ISYS, IL) = CONC(ISYS, IL) - COEF / DZ2
-                            ELSE
-                                DR = MIN (DR1, 0.5 * DR2)
-                                DZ1 = ALENG(1, IL)
-                                DZ2 = ALENG(2, IL)
-                                COEF = MIN (DZ1, DZ2, 0.5) * DR
-                                CONC(ISYS, IL) = CONC(ISYS, IL) - COEF / DZ1
-                                CONC(ISYS, ILD) = CONC(ISYS, ILD) + COEF / DZ2
-                            ENDIF
-                        ENDIF
-                        !     test for local minimum
-                        IF (DR1 < -DD .AND. DR2 < -DD) THEN
-                            IFIL = 1
-                            IF (DR1 < DR2) THEN
-                                DR = MAX (0.5 * DR1, DR2)
-                                DZ1 = ALENG(1, ILU)
-                                DZ2 = ALENG(2, ILU)
-                                COEF = MIN (DZ1, DZ2, 0.5) * DR
-                                CONC(ISYS, ILU) = CONC(ISYS, ILU) + COEF / DZ1
-                                CONC(ISYS, IL) = CONC(ISYS, IL) - COEF / DZ2
-                            ELSE
-                                DR = MAX (DR1, 0.5 * DR2)
-                                DZ1 = ALENG(1, IL)
-                                DZ2 = ALENG(2, IL)
-                                COEF = MIN (DZ1, DZ2, 0.5) * DR
-                                CONC(ISYS, IL) = CONC(ISYS, IL) - COEF / DZ1
-                                CONC(ISYS, ILD) = CONC(ISYS, ILD) + COEF / DZ2
-                            ENDIF
-                        ENDIF
+
+        dd = 1.0e-02
+        maxfil = 100
+
+        ! only for structured 3d
+        if (num_layers_grid <= 1) goto 9999
+        nhor = num_cells / num_layers_grid
+        ! for all horizontal segments
+        do iseg = 1, nhor
+            ! for all active substances
+            do isys = 1, num_substances_transported
+                ! do until maximum iteration or untill satisfied
+                do ifilt = 1, maxfil
+                    ifil = 0
+                    il = iseg
+                    ilu = il - nhor
+                    ild = il + nhor
+                    do ilay = 2, num_layers_grid - 1
+                        il = il + nhor
+                        ilu = ilu + nhor
+                        ild = ild + nhor
+                        dr1 = conc(isys, il) - conc(isys, ilu)
+                        dr2 = conc(isys, il) - conc(isys, ild)
+                        ! test for local maximum
+                        if (dr1 >  dd .and. dr2 >  dd) then
+                            ifil = 1
+                            if (dr1 > dr2) then
+                                dr = min (0.5 * dr1, dr2)
+                                dz1 = aleng(1, ilu)
+                                dz2 = aleng(2, ilu)
+                                coef = min (dz1, dz2, 0.5) * dr
+                                conc(isys, ilu) = conc(isys, ilu) + coef / dz1
+                                conc(isys, il) = conc(isys, il) - coef / dz2
+                            else
+                                dr = min (dr1, 0.5 * dr2)
+                                dz1 = aleng(1, il)
+                                dz2 = aleng(2, il)
+                                coef = min (dz1, dz2, 0.5) * dr
+                                conc(isys, il) = conc(isys, il) - coef / dz1
+                                conc(isys, ild) = conc(isys, ild) + coef / dz2
+                            endif
+                        endif
+                        ! test for local minimum
+                        if (dr1 < -dd .and. dr2 < -dd) then
+                            ifil = 1
+                            if (dr1 < dr2) then
+                                dr = max (0.5 * dr1, dr2)
+                                dz1 = aleng(1, ilu)
+                                dz2 = aleng(2, ilu)
+                                coef = min (dz1, dz2, 0.5) * dr
+                                conc(isys, ilu) = conc(isys, ilu) + coef / dz1
+                                conc(isys, il) = conc(isys, il) - coef / dz2
+                            else
+                                dr = max (dr1, 0.5 * dr2)
+                                dz1 = aleng(1, il)
+                                dz2 = aleng(2, il)
+                                coef = min (dz1, dz2, 0.5) * dr
+                                conc(isys, il) = conc(isys, il) - coef / dz1
+                                conc(isys, ild) = conc(isys, ild) + coef / dz2
+                            endif
+                        endif
                     end do
-                    IF (IFIL == 0) GOTO 30
+                    if (ifil == 0) goto 30
                 end do
-                IF (IFIL == 1) THEN
-                    IF (NOWARN < 1000) WRITE (LUNUT, 1010) ISYS, ISEG, ILAY
-                    NOWARN = NOWARN + 1
-                ENDIF
-                30       CONTINUE
+                if (ifil == 1) then
+                    if (nowarn < 1000) write (lunut, 1010) isys, iseg, ilay
+                    nowarn = nowarn + 1
+                endif
+                30 continue
             end do
         end do
-        !
         9999 if (timon) call timstop (ithandl)
-        RETURN
-        !
         1010 FORMAT (' WARNING: Forester filter max. iterations reached for substance: ', &
                 I2, '; segment: ', I6, '; layer: ', I2, ' !')
-        !
-    END
-
+    end subroutine dlwqd2
 end module m_dlwqd2

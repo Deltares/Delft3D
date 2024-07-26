@@ -28,9 +28,9 @@ module m_bloom_3dl
 contains
 
 
-    subroutine init_3dl(noseg, nosegw, nosegl, nolay, ngro, ntyp)
+    subroutine init_3dl(num_cells, nosegw, nosegl, num_layers, ngro, ntyp)
 
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use bloom_data_3dl
 
         implicit none
@@ -40,13 +40,13 @@ contains
         !     subroutines called
 
         !     get_log_unit_number, get the untit number of the report file
-        !     terminate_execution, stops execution
+        !     stop_with_error, stops execution
 
         !     arguments
-        integer(kind = int_wp) :: noseg      ! input, total number of segments
+        integer(kind = int_wp) :: num_cells      ! input, total number of segments
         integer(kind = int_wp) :: nosegw     ! input, number of segments in the water phase
         integer(kind = int_wp) :: nosegl     ! input, number of segments per layer
-        integer(kind = int_wp) :: nolay      ! input, number of layers
+        integer(kind = int_wp) :: num_layers      ! input, number of layers
         integer(kind = int_wp) :: ngro       ! input, number of BLOOM algae groups
         integer(kind = int_wp) :: ntyp       ! input, number of BLOOM algae types
 
@@ -54,25 +54,25 @@ contains
         integer(kind = int_wp) :: ierr_alloc ! error number memory allocation
         integer(kind = int_wp) :: lunrep     ! unit number report file
 
-        noseg_3dl = noseg
+        noseg_3dl = num_cells
         nosegl_3dl = nosegl
-        nolay_3dl = nolay
+        nolay_3dl = num_layers
         ngro_3dl = ngro
         ntyp_3dl = ntyp
 
-        allocate (radsurf_3dl(noseg), effic_3dl(ntyp, noseg), stat = ierr_alloc)
+        allocate (radsurf_3dl(num_cells), effic_3dl(ntyp, num_cells), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             call get_log_unit_number(lunrep)
             write (lunrep, 1000) ierr_alloc
-            write (lunrep, 1001) noseg
+            write (lunrep, 1001) num_cells
             write (lunrep, 1002) ntyp
-            call terminate_execution(1)
+            call stop_with_error()
         endif
         effic_3dl = 0.0
 
         return
         1000 format(' ERROR: allocating memory in INIT_3DL:', I10)
-        1001 format(' NOSEG, number of segments           :', I10)
+        1001 format(' num_cells, number of segments           :', I10)
         1002 format(' NTYP , number of BLOOM  algae types :', I10)
     end subroutine init_3dl
 

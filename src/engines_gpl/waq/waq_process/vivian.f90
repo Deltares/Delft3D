@@ -28,9 +28,9 @@ module m_vivian
 contains
 
 
-    subroutine vivian (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine vivian (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Dissolution/precipitation of P in vivianite
 
@@ -71,10 +71,10 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        INTEGER(kind = int_wp) :: NOSEG, NOFLUX, NOQ1, NOQ2, NOQ3, NOQ4
+        INTEGER(kind = int_wp) :: num_cells, NOFLUX, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), &
                 IEXPNT(4, *), IKNMRK(*)
-        REAL(kind = real_wp) :: PMSA(*), FL(*)
+        REAL(kind = real_wp) :: process_space_real(*), FL(*)
 
         REAL(kind = real_wp) :: KSOL, KPRC, FSOL, FPRC, &
                 TEMP, TMPSOL, TMPPRC, TCSOL, TCPRC, &
@@ -96,21 +96,21 @@ contains
         !
         IFLUX = 0
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CPHD = MAX(PMSA(IP1), 0.0)
-                CPHPR = MAX(PMSA(IP2), 0.0)
-                CPHDE = PMSA(IP3)
-                KPRC = PMSA(IP4)
-                TCPRC = PMSA(IP5)
-                KSOL = PMSA(IP6)
-                TCSOL = PMSA(IP7)
-                OXY = PMSA(IP8)
-                CROXY = PMSA(IP9)
-                TEMP = PMSA(IP10)
-                POROS = PMSA(IP11)
-                DELT = PMSA(IP12)
+                CPHD = MAX(process_space_real(IP1), 0.0)
+                CPHPR = MAX(process_space_real(IP2), 0.0)
+                CPHDE = process_space_real(IP3)
+                KPRC = process_space_real(IP4)
+                TCPRC = process_space_real(IP5)
+                KSOL = process_space_real(IP6)
+                TCSOL = process_space_real(IP7)
+                OXY = process_space_real(IP8)
+                CROXY = process_space_real(IP9)
+                TEMP = process_space_real(IP10)
+                POROS = process_space_real(IP11)
+                DELT = process_space_real(IP12)
                 !
                 !     Calculation of the precipitation or dissolution flux
                 !     dependent on dissolved oxygen

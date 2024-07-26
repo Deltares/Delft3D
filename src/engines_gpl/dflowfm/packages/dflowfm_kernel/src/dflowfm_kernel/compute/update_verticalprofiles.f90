@@ -46,7 +46,7 @@ subroutine update_verticalprofiles()
 
  use m_flow
  use m_flowgeom
- use m_waves, only: hwav, dwcap, dsurf, gammax, ustokes, vstokes, fbreak, fwavpendep
+   use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
  use m_partitioninfo
  use m_flowtimes
  use m_ship
@@ -55,26 +55,19 @@ subroutine update_verticalprofiles()
 
  implicit none
 
- double precision :: tetm1, dz0, dzc1, dzc2, zb1, zb2, tkedisL, tkeproL
- double precision :: vicu, vicd, difu, difd, fac, dzdz1, dzdz2, s2, sourtu, sinktu, bet, ybot, rhom, drhodz
-
- double precision :: uave, ustar, zz, sqcf, frcn, cz,z00, uave2, ac1, ac2, dzLw, sqcf3, ustar3, tkebot, tkesur, epsbot, epssur, volu
-
- double precision :: hdzb, hdzs, dtiL, hdz, adv, omega1, omega2, omegu, drhodz1, drhodz2, rhomea, sousin
-
+   double precision :: tetm1, dzc1, dzc2, zb1, zb2, tkedisL
+   double precision :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu, drhodz
+   double precision :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur, volu
+   double precision :: hdzb, dtiL, adv, omega1, omega2, omegu, drhodz1, drhodz2
  double precision :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
 
  double precision :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax, zf 
 
  double precision :: wk,wke,vk,um,tauinv,tauinf,xlveg,rnv, diav,ap1,alf,c2esqcmukep,teps,tkin
-
- double precision :: cfuhi3D, vicwmax, tkewin, zint, z1, vicwww, alfaT, tke, eps, tttctot, c3t, c3e
-
- double precision :: rhoLL, pkwmag, hrmsLL, wdep, hbot, dzwav, dis1, dis2, surdisLL, dzz, zw, tkewav,epswv, prsappr
-
- integer          :: k, ku, kd, kb, kt, n, kbn, kbn1, kn, knu, kk, kbk, ktk, kku, LL, L, Lb, Lt, kxL, Lu, Lb0, kb0, whit
- integer          :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv 
-
+   double precision :: cfuhi3D, vicwmax, zint, z1, vicwww, alfaT, tke, eps, tttctot, c3t
+   double precision :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL, prsappr
+   integer :: k, ku, kb, kt, n, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
+   integer :: k1, k2, k1u, k2u, n1, n2, kup, ierror
 double precision, external :: setrhofixedp
 
 
@@ -223,7 +216,7 @@ double precision, external :: setrhofixedp
         ! call addkships()
       endif
 
-      if ( jampi.eq.1 ) then
+         if (jampi == 1) then
          call update_ghosts(ITYPE_Sall3D, 2, Ndkx, turkinepsws, ierror)
       end if
 
@@ -329,6 +322,7 @@ double precision, external :: setrhofixedp
         advi(Lb) = advi(Lb)  + cfuhi3D
      endif
 
+ 
      tkebot   = sqcmukepi * ustb(LL)**2                    ! this has stokes incorporated when jawave>0
      tkesur   = sqcmukepi * ustw(LL)**2                    ! only wind+ship contribution
      !ieps=3
@@ -344,23 +338,29 @@ double precision, external :: setrhofixedp
      ck(0:kxL) = 0.d0
      dk(0:kxL) = dtiL*turkin0(Lb0:Lt)
 
-     if (facLaxturb > 0) then 
-        if (jafacLaxturbtyp == 1) then 
+            if (turbulence_lax_factor > 0) then
+               if (turbulence_lax_vertical == 1) then
            do L  = Lb,Lt-1
               zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
               if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
                  k1 = ln(1,L) ; k2 = ln(2,L) 
                  if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
-                    faclax = facLaxturb*zf
+                           if (turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
+                              faclax = turbulence_lax_factor * zf
+                              faclax = faclax * min(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1)) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
                     dk(L-Lb+1) = dtiL*( (1d0-facLax)*turkin0(L) +  0.5d0*facLax*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
                  endif
               endif
+                     end if
            enddo
-        else if (jafacLaxturbtyp == 2) then 
+               else if (turbulence_lax_vertical == 2) then
            do L  = Lb,Lt-1
               k1 = ln(1,L) ; k2 = ln(2,L) 
               if (turkinepsws(1,k1) > eps20 .and. turkinepsws(1,k2) > eps20) then 
-                 dk(L-Lb+1) = dtiL*( (1d0-facLaxturb)*turkin0(L) +  0.5d0*facLaxturb*(turkinepsws(1,k1) + turkinepsws(1,k2) ) )
+                        if (turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
+                           faclax = turbulence_lax_factor * min(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1)) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
+                           dk(L - Lb + 1) = dtiL * ((1d0 - facLax) * turkin0(L) + 0.5d0 * facLax * (turkinepsws(1, k1) + turkinepsws(1, k2)))
+                        end if
               endif
            enddo
         endif
@@ -415,7 +415,7 @@ double precision, external :: setrhofixedp
         ak(k) = ak(k)  -  difd*tetavkeps
         bk(k) = bk(k)  + (difd + difu)*tetavkeps
         ck(k) = ck(k)  -  difu*tetavkeps
-        if (tetavkeps .ne. 1d0) then
+               if (tetavkeps /= 1d0) then
            dk(k) = dk(k) - difu*(turkin0(L  ) - turkin0(Lu))*tetm1   &
                          + difd*(turkin0(L-1) - turkin0(L ))*tetm1
         endif
@@ -532,7 +532,7 @@ double precision, external :: setrhofixedp
         if (jawave>0 .and. jawaveStokes>=3 .and. .not. flowWithoutWaves) then  ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
            dijdij(k) = ( ( u1(Lu)-ustokes(Lu) - u1(L)+ustokes(L) ) ** 2 + ( v(Lu)-vstokes(Lu) - v(L)+vstokes(L) ) ** 2 ) / dzw(k)**2
         else
-          dijdij(k) = ( ( u1(Lu) - u1(L) ) ** 2 + ( v(Lu) - v(L) ) ** 2 ) / dzw(k)**2
+           dijdij(k) = ( ( u1(Lu) - u1(L) ) ** 2 + ( v(Lu) - v(L) ) ** 2 ) / dzw(k)**2
         endif
 
         if (jarichardsononoutput > 0) then                ! save richardson nr to output
@@ -727,23 +727,29 @@ double precision, external :: setrhofixedp
                                                            ! Vertical diffusion; Neumann condition on surface;
                                                            ! Dirichlet condition on bed ; teta method:
 
-     if (facLaxturb > 0) then 
-        if (jafacLaxturbtyp == 1) then 
+            if (turbulence_lax_factor > 0) then
+               if (turbulence_lax_vertical == 1) then
            do L  = Lb,Lt-1
               zf = min(1d0, ( hu(L) - 0.5*hu(LL) ) / ( 0.25d0*hu(LL) ) )
               if (zf > 0d0) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1 
                  k1 = ln(1,L) ; k2 = ln(2,L) 
                  if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
-                    faclax = facLaxturb*zf
+                           if (turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
+                              faclax = turbulence_lax_factor * zf
+                              faclax = faclax * dzu(L - Lb + 1) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
                     dk(L-Lb+1) = dtiL*( (1d0-facLax)*tureps0(L) +  0.5d0*facLax*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
                  endif
               endif
+                     end if
            enddo
-        else if (jafacLaxturbtyp == 2) then 
+               else if (turbulence_lax_vertical == 2) then
            do L  = Lb,Lt-1
               k1 = ln(1,L) ; k2 = ln(2,L) 
               if (turkinepsws(2,k1) > eps20 .and. turkinepsws(2,k2) > eps20) then 
-                 dk(L-Lb+1) = dtiL*( (1d0-facLaxturb)*tureps0(L) +  0.5d0*facLaxturb*(turkinepsws(2,k1) + turkinepsws(2,k2) ) )
+                        if (turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
+                           faclax = turbulence_lax_factor * dzu(L - Lb + 1) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
+                           dk(L - Lb + 1) = dtiL * ((1d0 - facLax) * tureps0(L) + 0.5d0 * facLax * (turkinepsws(2, k1) + turkinepsws(2, k2)))
+                        end if
               endif
            enddo
         endif  
@@ -768,7 +774,7 @@ double precision, external :: setrhofixedp
         ak(k) = ak(k)  -  difd*tetavkeps
         bk(k) = bk(k)  + (difd + difu)*tetavkeps
         ck(k) = ck(k)  -  difu*tetavkeps
-        if (tetavkeps .ne. 1d0) then
+               if (tetavkeps /= 1d0) then
            dk(k) = dk(k) - difu*(tureps0(L  ) - tureps0(Lu))*tetm1   &
                          + difd*(tureps0(L-1) - tureps0(L ))*tetm1
         endif
@@ -997,7 +1003,7 @@ double precision, external :: setrhofixedp
            alfaT = 0d0
        endif
 
-       if (alfaT .ne. dmiss) then
+               if (alfaT /= dmiss) then
           do L    = Lb,Lt-1      ! TKE and epsilon at layer interfaces:
              zint   = hu(L) / hu(LL)
              z1     = 1d0 - zint
@@ -1039,7 +1045,7 @@ double precision, external :: setrhofixedp
     endif
 
     if (jawave==0) then  ! we don't do viscosity reduction at the surface for waves
-       vicwwu(Lt)  = min( vicwwu(Lt)  , vicwwu(Lt-1)*Eddyviscositysurfacmax )
+    vicwwu(Lt)  = min( vicwwu(Lt)  , vicwwu(Lt-1)*Eddyviscositysurfacmax )
     endif
     vicwwu(Lb0) = min( vicwwu(Lb0) , vicwwu(Lb)  *Eddyviscositybedfacmax )
 

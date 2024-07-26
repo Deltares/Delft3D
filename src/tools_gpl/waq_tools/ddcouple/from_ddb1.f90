@@ -67,16 +67,16 @@
          i_domain1 = hyd%domain_coll%find(dd_bound%name1)
          if ( i_domain1 .le. 0 ) then
             domain%name = dd_bound%name1
-            domain%mmax = -999
-            domain%nmax = -999
+            domain%num_columns = -999
+            domain%num_rows = -999
             domain%aggr = ' '
             i_domain1 = hyd%domain_coll%add(domain)
          endif
          i_domain2 = hyd%domain_coll%find(dd_bound%name2)
          if ( i_domain2 .le. 0 ) then
             domain%name = dd_bound%name2
-            domain%mmax = -999
-            domain%nmax = -999
+            domain%num_columns = -999
+            domain%num_rows = -999
             domain%aggr = ' '
             i_domain2 = hyd%domain_coll%add(domain)
          endif

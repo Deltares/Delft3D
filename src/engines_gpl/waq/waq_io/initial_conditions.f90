@@ -32,15 +32,15 @@ module initial_conditions
 contains
 
 
-    subroutine read_initial_conditions(file_unit_list, file_name_list, filtype, inpfil, notot, &
-            syname, iwidth, output_verbose_level, gridps, noseg, &
+    subroutine read_initial_conditions(file_unit_list, file_name_list, filtype, inpfil, num_substances_total, &
+            syname, iwidth, output_verbose_level, gridps, num_cells, &
             conc, ierr, status)
 
         !! read block 8 of input, initial condtions keyword type of input
 
         use m_read_block
         use error_handling, only : check_error
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_grid_utils_external          ! for the storage of contraction grids
         use m_waq_data_structure  ! for definition and storage of data
         use rd_token
@@ -50,13 +50,13 @@ contains
         character(len = *), intent(inout) :: file_name_list(*)     ! filenames
         integer(kind = int_wp), intent(inout) :: filtype(*)    !< type of binary file
         type(t_input_file), intent(inout) :: inpfil       ! input file structure with include stack and flags
-        integer(kind = int_wp), intent(in) :: notot         ! nr of substances
+        integer(kind = int_wp), intent(in) :: num_substances_total         ! nr of substances
         character(len = *), intent(in) :: syname(*)    ! substance names
         integer(kind = int_wp), intent(in) :: iwidth        ! width of output
         integer(kind = int_wp), intent(in) :: output_verbose_level        ! level of reporting to ascii output file
         type(gridpointercoll), intent(in) :: gridps       ! collection off all grid definitions
-        integer(kind = int_wp), intent(in) :: noseg         ! nr of segments
-        real(kind = real_wp), intent(inout) :: conc(notot, noseg)   ! initial conditions
+        integer(kind = int_wp), intent(in) :: num_cells         ! nr of segments
+        real(kind = real_wp), intent(inout) :: conc(num_substances_total, num_cells)   ! initial conditions
         integer(kind = int_wp), intent(inout) :: ierr          !< cummulative error count
 
         type(error_status), intent(inout) :: status !< current error status
@@ -91,17 +91,17 @@ contains
         initials%maxsize = 0
         initials%current_size = 0
         ierr2 = substances%initialize()
-        ierr2 = substances%resize(notot)
-        substances%no_item = notot
-        substances%name(1:notot) = syname(1:notot)
+        ierr2 = substances%resize(num_substances_total)
+        substances%no_item = num_substances_total
+        substances%name(1:num_substances_total) = syname(1:num_substances_total)
         ierr2 = constants%initialize()
         ierr2 = parameters%initialize()
         ierr2 = functions%initialize()
         ierr2 = segfuncs%initialize()
         ierr2 = segments%initialize()
-        ierr2 = segments%resize(noseg)
-        segments%no_item = noseg
-        do i = 1, noseg
+        ierr2 = segments%resize(num_cells)
+        segments%no_item = num_cells
+        do i = 1, num_cells
             write (segments%name(i), '(''segment '',i8)') i
         enddo
 
@@ -149,10 +149,10 @@ contains
         itime = 0
 
         do idata = 1, initials%current_size
-            ierr3 = initials%data_block(idata)%evaluate(gridps, itime, notot, noseg, conc)
+            ierr3 = initials%data_block(idata)%evaluate(gridps, itime, num_substances_total, num_cells, conc)
             if (ierr3 /= 0) then
                 write(file_unit, 2060)
-                call terminate_execution(1)
+                call stop_with_error()
             endif
         enddo
 
@@ -165,7 +165,7 @@ contains
 
         30 continue
         if (ierr2 > 0 .and. ierr2 /= 2) ierr = ierr + 1
-        if (ierr2 == 3) call terminate_execution(1)
+        if (ierr2 == 3) call stop_with_error()
         call check_error(ctoken, iwidth, 8, ierr2, status)
         if (timon) call timstop(ithndl)
         return

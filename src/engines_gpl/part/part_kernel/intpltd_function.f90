@@ -22,55 +22,55 @@
 !!  rights reserved.
 
 module intpltd_function_mod
-!
-!  data definition module(s)
-!
-use m_waq_precision          ! single/double precision
-use timers
-!
-!  module procedure(s)
-!
-!
-implicit none
+    !
+    !  data definition module(s)
+    !
+    use m_waq_precision          ! single/double precision
+    use timers
+    !
+    !  module procedure(s)
+    !
+    !
+    implicit none
 
 contains
-    subroutine intpltd_function( lunrep, xData, yData, xVal, yVal )
-    ! Inputs: xData = a vector of the x-values of the data to be interpolated
-    !         yData = a vector of the y-values of the data to be interpolated
-    !         xVal  = a vector of the x-values where interpolation should be performed
-    ! Output: yVal  = a vector of the resulting interpolated values
-    ! taken from: https://scicomp.stackexchange.com/questions/20960/linear-interpolation-in-fortran
+    subroutine intpltd_function(lunrep, xData, yData, xVal, yVal)
+        ! Inputs: xData = a vector of the x-values of the data to be interpolated
+        !         yData = a vector of the y-values of the data to be interpolated
+        !         xVal  = a vector of the x-values where interpolation should be performed
+        ! Output: yVal  = a vector of the resulting interpolated values
+        ! taken from: https://scicomp.stackexchange.com/questions/20960/linear-interpolation-in-fortran
 
-      implicit none
+        implicit none
 
-      integer(int_wp ), intent(in)    :: lunrep              ! report file
-      real, intent(in)           :: xData(:), yData(:), xVal
-      real, intent(out)          :: yVal
-      integer                    :: inputIndex, dataIndex
-      real                       :: minXData,maxXData, minYdata, xRange, weight
+        integer(int_wp), intent(in) :: lunrep              ! report file
+        real, intent(in) :: xData(:), yData(:), xVal
+        real, intent(out) :: yVal
+        integer :: inputIndex, dataIndex
+        real :: minXData, maxXData, minYdata, xRange, weight
 
-      ! Possible checks on inputs could go here
-      ! Things you may want to check:
-      ! monotonically increasing xData
-      IF(size(xData) .ne. size(yData)) THEN
-        write(lunrep,*) 'ERROR wrong X and Y data length for interpolation. Please check!'
-        write(*,*) 'ERROR wrong X and Y data length for interpolation. Please check!'
-      ENDIF
+        ! Possible checks on inputs could go here
+        ! Things you may want to check:
+        ! monotonically increasing xData
+        IF(size(xData) /= size(yData)) THEN
+            write(lunrep, *) 'ERROR wrong X and Y data length for interpolation. Please check!'
+            write(*, *) 'ERROR wrong X and Y data length for interpolation. Please check!'
+        ENDIF
 
-      minXData = xData(1)
-      maxXData = xData(size(xData))
-      xRange = maxXData - minXData
+        minXData = xData(1)
+        maxXData = xData(size(xData))
+        xRange = maxXData - minXData
 
-      ! possible checks for out of range xVal could go here
+        ! possible checks for out of range xVal could go here
 
-      ! this will work if x is incremental, otherwise function for uniformly spaced
-      dataIndex = 1
-      DO WHILE ((xData(dataIndex+1) < xVal) .and. (xData(dataIndex+1) .le. maxXData))
+        ! this will work if x is incremental, otherwise function for uniformly spaced
+        dataIndex = 1
+        DO WHILE ((xData(dataIndex + 1) < xVal) .and. (xData(dataIndex + 1) <= maxXData))
             dataIndex = dataIndex + 1
-      ENDDO
+        ENDDO
 
-      weight = (xVal - xData(dataIndex))/(xData(dataIndex+1)-xData(dataIndex));
-      yVal = (1.0-weight)*yData(dataIndex) + weight*yData(dataIndex+1);
+        weight = (xVal - xData(dataIndex)) / (xData(dataIndex + 1) - xData(dataIndex));
+        yVal = (1.0 - weight) * yData(dataIndex) + weight * yData(dataIndex + 1);
 
-end subroutine
+    end subroutine
 end module

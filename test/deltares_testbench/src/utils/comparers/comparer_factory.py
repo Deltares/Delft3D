@@ -1,7 +1,6 @@
-"""
-Description: Comparer Factory
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Comparer Factory.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 from abc import ABC
@@ -25,20 +24,23 @@ from src.utils.logging.i_logger import ILogger
 
 
 class ComparerFactory(ABC):
-    """Chooses which comparer should be used for the cases"""
+    """Chooses which comparer should be used for the cases."""
 
     @classmethod
-    def select_comparer(
-        cls, file_check: FileCheck, programs: List[Program], logger: ILogger
-    ) -> IComparer:
-        """Creates a comparer instance based on file_check type
+    def select_comparer(cls, file_check: FileCheck, programs: List[Program], logger: ILogger) -> IComparer:
+        """Create a comparer instance based on file_check type.
 
-        Args:
-            file_check (FileCheck): file check used
-            programs (List[Program]): list of all registered programs
+        Parameters
+        ----------
+        file_check : FileCheck
+            File check used.
+        programs : List[Program]
+            List of all registered programs.
 
-        Returns:
-            IComparer: comparer to use for the provided file check
+        Returns
+        -------
+        IComparer
+            Comparer to use for the provided file check.
         """
         file_type = file_check.type
 
@@ -71,7 +73,5 @@ class ComparerFactory(ABC):
             logger.debug("comparer selected for CSV Timeseries set")
             return CSVTimeseriesComparer()
 
-        logger.warning(
-            f"Unknown comparer specified for file: {file_check.name}; raw content comparer selected"
-        )
+        logger.warning(f"Unknown comparer specified for file: {file_check.name}; raw content comparer selected")
         return ContentComparer()

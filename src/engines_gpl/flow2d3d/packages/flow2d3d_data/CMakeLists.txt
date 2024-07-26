@@ -22,7 +22,7 @@ set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 set(include_path ${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${include_path}
-                    ${mpi_include_path}
+                    ${mpi_module_path}
                     ${deltares_common_include_path}
                     ${delftio_include_path}
                     ${esmfsm_module_include_path}

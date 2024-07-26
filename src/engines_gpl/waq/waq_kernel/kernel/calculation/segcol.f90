@@ -28,20 +28,20 @@ module m_segcol
 contains
 
 
-    subroutine segcol(nosss, noq1, noq2, noq3, noq4, &
+    subroutine segcol(nosss, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, &
             ipoint, iknmrk, isegcol)
 
         ! function : sets the top of the column for every segment
 
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use timers
         implicit none
 
         integer(kind = int_wp), intent(in) :: nosss          ! total number of segments
-        integer(kind = int_wp), intent(in) :: noq1           ! number of exchange pointers in first direction
-        integer(kind = int_wp), intent(in) :: noq2           ! number of exchange pointers in first direction
-        integer(kind = int_wp), intent(in) :: noq3           ! number of exchange pointers in first direction
-        integer(kind = int_wp), intent(in) :: noq4           ! number of exchange pointers in first direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_u_dir           ! number of exchange pointers in first direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_v_dir           ! number of exchange pointers in first direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_z_dir           ! number of exchange pointers in first direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_bottom_dir           ! number of exchange pointers in first direction
         integer(kind = int_wp), intent(in) :: ipoint(4, *)    ! exchange pointers
         integer(kind = int_wp), intent(in) :: iknmrk(*)      ! segment attributes
         integer(kind = int_wp), intent(out) :: isegcol(*)     ! pointer from segment to top of column
@@ -58,7 +58,7 @@ contains
             isegcol(iseg) = iseg
         enddo
 
-        do iq = noq1 + noq2 + 1, noq1 + noq2 + noq3
+        do iq = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom > 0 .and. ito > 0) then
@@ -66,7 +66,7 @@ contains
             endif
         enddo
 
-        do iq = noq1 + noq2 + noq3 + 1, noq1 + noq2 + noq3 + noq4
+        do iq = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
 
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
@@ -77,7 +77,7 @@ contains
 
             ! only if from segment is not a water segment
 
-            call evaluate_waq_attribute(1, iknmrk(ifrom), ikmrkv)
+            call extract_waq_attribute(1, iknmrk(ifrom), ikmrkv)
             if (ikmrkv/=3) cycle
 
             isegcol(ito) = isegcol(ifrom)

@@ -362,7 +362,7 @@ contains
     integer, allocatable             ::     iv(:), il(:), perm_vpos(:)
 
     integer                          ::     ipos, npos, posfs, ipos1, ipos2
-    integer                          ::     iq, iq_sel, idim, kmax
+    integer                          ::     iq, iq_sel, idim, num_layers_grid
     integer, parameter               ::     MAXDIM = 10    !< max number of vector quantities in one vector
     character(len=maxNameLen)        ::     vectorquantities(MAXDIM)
     character(len=maxNameLen)        ::     vectordefinition, vectorstr
@@ -632,10 +632,10 @@ contains
     enddo
 
     if (associated(bc%vp)) then
-       kmax = size(bc%vp)
+       num_layers_grid = size(bc%vp)
        if (perm_vpos(1) /= 1) then
-         allocate(vp_new(kmax))
-         do iq = 1, kmax
+         allocate(vp_new(num_layers_grid))
+         do iq = 1, num_layers_grid
             vp_new(iq) = bc%vp(perm_vpos(iq))
          enddo
          deallocate(bc%vp)
@@ -663,7 +663,7 @@ contains
 
      real(kind=hp)   :: minvp                      !< lowest vertical position
      real(kind=hp)   :: maxvp                      !< higest vertical position
-     integer         :: kmax                       !< number of layers
+     integer         :: num_layers_grid                       !< number of layers
      integer         :: k                          !< loop counter
      logical, save   :: warningPrinted = .false.   !< flag to avoid printing the same warning many times
 
@@ -671,7 +671,7 @@ contains
 
      minvp = minval(vp)
      maxvp = maxval(vp)
-     kmax = size(vp)
+     num_layers_grid = size(vp)
 
      if (minvp >= 0.0d0 .and. maxvp <= 1.0d0) then
         continue ! all layers oke
@@ -681,7 +681,7 @@ contains
         success = .false.
      else
         ! in range 0.0 - 100.0. probably percentages. extra check, increasing numbers?
-        do k = 2, kmax
+        do k = 2, num_layers_grid
            if (vp(k) < vp(k-1)) then
               success = .false.
               exit

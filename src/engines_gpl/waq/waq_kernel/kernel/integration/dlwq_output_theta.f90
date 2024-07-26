@@ -29,9 +29,9 @@ module m_dlwq_output_theta
 contains
 
 
-    subroutine dlwq_output_theta (nrvart, ounam, ipoint, nocons, nopa, &
-            nofun, nosfun, notot, noseg, noloc, &
-            proloc, nodef, theta)
+    subroutine dlwq_output_theta (num_output_variables_extra, ounam, ipoint, num_constants, num_spatial_parameters, &
+            num_time_functions, num_spatial_time_fuctions, num_substances_total, num_cells, num_local_vars, &
+            proloc, num_defaults, theta)
 
         !     Deltares - Delft Software Department
 
@@ -48,19 +48,19 @@ contains
 
         !     Kind           Function         Name                  Description
 
-        integer(kind = int_wp), intent(in) :: nrvart              ! number of output parameters
-        character(20), intent(in) :: ounam(nrvart)       ! output parameter names
-        integer(kind = int_wp), intent(in) :: ipoint(nrvart)      ! output parameter pointers
-        integer(kind = int_wp), intent(in) :: nocons              ! number of constants
-        integer(kind = int_wp), intent(in) :: nopa                ! number of parameters
-        integer(kind = int_wp), intent(in) :: nofun               ! number of functions
-        integer(kind = int_wp), intent(in) :: nosfun              ! number of segment functions
-        integer(kind = int_wp), intent(in) :: notot               ! number of substances
-        integer(kind = int_wp), intent(in) :: noseg               ! number of default values
-        integer(kind = int_wp), intent(in) :: noloc               ! number of default values
-        real(kind = real_wp), intent(out) :: proloc(noloc, noseg) ! process local array
-        integer(kind = int_wp), intent(in) :: nodef               ! number of default values
-        real(kind = real_wp), intent(in) :: theta(noseg)        ! theta array
+        integer(kind = int_wp), intent(in) :: num_output_variables_extra              ! number of output parameters
+        character(20), intent(in) :: ounam(num_output_variables_extra)       ! output parameter names
+        integer(kind = int_wp), intent(in) :: ipoint(num_output_variables_extra)      ! output parameter pointers
+        integer(kind = int_wp), intent(in) :: num_constants              ! number of constants
+        integer(kind = int_wp), intent(in) :: num_spatial_parameters                ! number of parameters
+        integer(kind = int_wp), intent(in) :: num_time_functions               ! number of functions
+        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions              ! number of segment functions
+        integer(kind = int_wp), intent(in) :: num_substances_total               ! number of substances
+        integer(kind = int_wp), intent(in) :: num_cells               ! number of default values
+        integer(kind = int_wp), intent(in) :: num_local_vars               ! number of default values
+        real(kind = real_wp), intent(out) :: proloc(num_local_vars, num_cells) ! process local array
+        integer(kind = int_wp), intent(in) :: num_defaults               ! number of default values
+        real(kind = real_wp), intent(in) :: theta(num_cells)        ! theta array
 
         ! local declarations
 
@@ -90,12 +90,12 @@ contains
             !        pointer offsets
 
             iocons = nopred + 1
-            iopa = iocons + nocons
-            iofunc = iopa + nopa
-            iosfun = iofunc + nofun
-            ioconc = iosfun + nosfun
-            ioloc = ioconc + notot
-            iodef = ioloc + noloc
+            iopa = iocons + num_constants
+            iofunc = iopa + num_spatial_parameters
+            iosfun = iofunc + num_time_functions
+            ioconc = iosfun + num_spatial_time_fuctions
+            ioloc = ioconc + num_substances_total
+            iodef = ioloc + num_local_vars
 
             !        look for parameter theta in output
 
@@ -115,7 +115,7 @@ contains
         !     fill output array
 
         if (ip_theta > 0) then
-            do iseg = 1, noseg
+            do iseg = 1, num_cells
                 proloc(ip_theta, iseg) = theta(iseg)
             enddo
         endif

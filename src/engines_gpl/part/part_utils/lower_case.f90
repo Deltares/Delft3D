@@ -22,31 +22,31 @@
 !!  rights reserved.
 module m_lower_case
 
-implicit none
+    implicit none
 
 contains
 
 
-      subroutine lower_case(string)
-      use timers
-      implicit none           !   force explicit typing
-      integer :: i, j, newlen
-      character(len=*) string
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
-      if ( timon ) call timstrt( "lower_case", ithndl )
-!
-      newlen = len(string)
-      do i=1,newlen
-         j = ichar (string(i:i))
-         if ( (j > 64) .and. (j <91) ) then
-            j = j + 32
-            string(i:i) = char (j)
-         endif
-      enddo
-!
-      if ( timon ) call timstop ( ithndl )
-      return
-      end subroutine lower_case
+    subroutine lower_case(string)
+        use timers
+        implicit none           !   force explicit typing
+        integer :: i, j, newlen
+        character(len = *) string
+        integer(4) ithndl              ! handle to time this subroutine
+        data       ithndl / 0 /
+        if (timon) call timstrt("lower_case", ithndl)
+        !
+        newlen = len(string)
+        do i = 1, newlen
+            j = ichar (string(i:i))
+            if ((j > 64) .and. (j <91)) then
+                j = j + 32
+                string(i:i) = char (j)
+            endif
+        enddo
+        !
+        if (timon) call timstop (ithndl)
+        return
+    end subroutine lower_case
 
 end module m_lower_case

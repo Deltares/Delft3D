@@ -1,0 +1,208 @@
+      subroutine DMIsForest(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine DMIsForest
+      subroutine DMForestTemplate(a,b,c,z)
+       import tDM
+       DM a ! DM
+       integer b ! MPI_Comm
+       DM c ! DM
+       PetscErrorCode z
+       end subroutine DMForestTemplate
+      subroutine DMForestSetBaseDM(a,b,z)
+       import tDM
+       DM a ! DM
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine DMForestSetBaseDM
+      subroutine DMForestGetBaseDM(a,b,z)
+       import tDM
+       DM a ! DM
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine DMForestGetBaseDM
+      subroutine DMForestSetAdaptivityForest(a,b,z)
+       import tDM
+       DM a ! DM
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine DMForestSetAdaptivityForest
+      subroutine DMForestGetAdaptivityForest(a,b,z)
+       import tDM
+       DM a ! DM
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine DMForestGetAdaptivityForest
+      subroutine DMForestSetAdaptivityPurpose(a,b,z)
+       import tDM
+       DM a ! DM
+       DMAdaptFlag b ! DMAdaptFlag
+       PetscErrorCode z
+       end subroutine DMForestSetAdaptivityPurpose
+      subroutine DMForestGetAdaptivityPurpose(a,b,z)
+       import tDM
+       DM a ! DM
+       DMAdaptFlag b ! DMAdaptFlag
+       PetscErrorCode z
+       end subroutine DMForestGetAdaptivityPurpose
+      subroutine DMForestSetAdjacencyDimension(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestSetAdjacencyDimension
+      subroutine DMForestSetAdjacencyCodimension(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestSetAdjacencyCodimension
+      subroutine DMForestGetAdjacencyDimension(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestGetAdjacencyDimension
+      subroutine DMForestGetAdjacencyCodimension(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestGetAdjacencyCodimension
+      subroutine DMForestSetPartitionOverlap(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestSetPartitionOverlap
+      subroutine DMForestGetPartitionOverlap(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestGetPartitionOverlap
+      subroutine DMForestSetMinimumRefinement(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestSetMinimumRefinement
+      subroutine DMForestGetMinimumRefinement(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestGetMinimumRefinement
+      subroutine DMForestSetInitialRefinement(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestSetInitialRefinement
+      subroutine DMForestGetInitialRefinement(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestGetInitialRefinement
+      subroutine DMForestSetMaximumRefinement(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestSetMaximumRefinement
+      subroutine DMForestGetMaximumRefinement(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestGetMaximumRefinement
+      subroutine DMForestGetAdaptivitySuccess(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine DMForestGetAdaptivitySuccess
+      subroutine DMForestSetComputeAdaptivitySF(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine DMForestSetComputeAdaptivitySF
+      subroutine DMForestGetComputeAdaptivitySF(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine DMForestGetComputeAdaptivitySF
+      subroutine DMForestGetAdaptivitySF(a,b,c,z)
+       import tPetscSF,tDM
+       DM a ! DM
+       PetscSF b ! PetscSF
+       PetscSF c ! PetscSF
+       PetscErrorCode z
+       end subroutine DMForestGetAdaptivitySF
+      subroutine DMForestSetGradeFactor(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestSetGradeFactor
+      subroutine DMForestGetGradeFactor(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestGetGradeFactor
+      subroutine DMForestSetCellWeightFactor(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine DMForestSetCellWeightFactor
+      subroutine DMForestGetCellWeightFactor(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine DMForestGetCellWeightFactor
+      subroutine DMForestGetCellChart(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMForestGetCellChart
+      subroutine DMForestGetCellSF(a,b,z)
+       import tPetscSF,tDM
+       DM a ! DM
+       PetscSF b ! PetscSF
+       PetscErrorCode z
+       end subroutine DMForestGetCellSF
+      subroutine DMForestSetCellWeights(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscReal b (*) ! PetscReal
+       PetscCopyMode c ! PetscCopyMode
+       PetscErrorCode z
+       end subroutine DMForestSetCellWeights
+      subroutine DMForestGetCellWeights(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine DMForestGetCellWeights
+      subroutine DMForestSetWeightCapacity(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine DMForestSetWeightCapacity
+      subroutine DMForestGetWeightCapacity(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine DMForestGetWeightCapacity

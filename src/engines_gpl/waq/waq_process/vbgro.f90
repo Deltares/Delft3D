@@ -28,11 +28,11 @@ module m_vbgro
 contains
 
 
-    subroutine VBGRO      (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger, only : write_error_message, get_log_unit_number
-        use m_evaluate_waq_attribute
+    subroutine VBGRO      (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : write_error_message, get_log_unit_number
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -41,18 +41,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(60) ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(60) ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(60) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(60)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
         !
@@ -148,66 +148,66 @@ contains
 
         CALL get_log_unit_number(ILUMON)
 
-        do  iseg = 1, noseg
+        do  iseg = 1, num_cells
 
             !        lowest water and 2d segments only (also when dry!)
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
             if (ikmrk1<3 .and. (ikmrk2==0).or.(ikmrk2==3)) then
                 !
 
-                VB1 = pmsa(ipnt(1))
-                maxVB1 = pmsa(ipnt(2))
-                minVB1 = pmsa(ipnt(3))
-                hlfAgeVB1 = pmsa(ipnt(4))
-                sfVB1 = pmsa(ipnt(5))
-                dmCfVB1 = pmsa(ipnt(6))
-                iniVB1 = pmsa(ipnt(7))
-                iniCovVB1 = pmsa(ipnt(8))
-                SWiniVB1 = pmsa(ipnt(9))
-                ageVB1 = pmsa(ipnt(10))
-                Surf = pmsa(ipnt(11))
-                DELT = pmsa(ipnt(12))
-                Volume = pmsa(ipnt(13))
-                SwGrowth = pmsa(ipnt(14))
-                SwMrt = pmsa(ipnt(15))
-                VBType = pmsa(ipnt(16))
-                Navail = pmsa(ipnt(17))
-                Pavail = pmsa(ipnt(18))
-                Savail = pmsa(ipnt(19))
-                FravailM = pmsa(ipnt(20))
-                F1VB = pmsa(ipnt(21))
-                F2VB = pmsa(ipnt(22))
-                F3VB = pmsa(ipnt(23))
-                F4VB = pmsa(ipnt(24))
-                F5VB = pmsa(ipnt(25))
-                CNf1VB = pmsa(ipnt(26))
-                CNf2VB = pmsa(ipnt(27))
-                CNf3VB = pmsa(ipnt(28))
-                CNf4VB = pmsa(ipnt(29))
-                CNf5VB = pmsa(ipnt(30))
-                CPf1VB = pmsa(ipnt(31))
-                CPf2VB = pmsa(ipnt(32))
-                CPf3VB = pmsa(ipnt(33))
-                CPf4VB = pmsa(ipnt(34))
-                CPf5VB = pmsa(ipnt(35))
-                CSf1VB = pmsa(ipnt(36))
-                CSf2VB = pmsa(ipnt(37))
-                CSf3VB = pmsa(ipnt(38))
-                CSf4VB = pmsa(ipnt(39))
-                CSf5VB = pmsa(ipnt(40))
-                SWRegro = pmsa(ipnt(41))
-                SWDying = pmsa(ipnt(42))
-                InitAge = pmsa(ipnt(43))
-                IniSWDying = pmsa(ipnt(44))
-                SwWV = pmsa(ipnt(45))
-                Rc0GWV = pmsa(ipnt(46))
-                TcGWV = pmsa(ipnt(47))
-                AcGWV = pmsa(ipnt(48))
-                MinRWV = pmsa(ipnt(49))
-                TBmWV = pmsa(ipnt(50))
-                TempAir = pmsa(ipnt(51))
-                MinVB = pmsa(ipnt(52))
+                VB1 = process_space_real(ipnt(1))
+                maxVB1 = process_space_real(ipnt(2))
+                minVB1 = process_space_real(ipnt(3))
+                hlfAgeVB1 = process_space_real(ipnt(4))
+                sfVB1 = process_space_real(ipnt(5))
+                dmCfVB1 = process_space_real(ipnt(6))
+                iniVB1 = process_space_real(ipnt(7))
+                iniCovVB1 = process_space_real(ipnt(8))
+                SWiniVB1 = process_space_real(ipnt(9))
+                ageVB1 = process_space_real(ipnt(10))
+                Surf = process_space_real(ipnt(11))
+                DELT = process_space_real(ipnt(12))
+                Volume = process_space_real(ipnt(13))
+                SwGrowth = process_space_real(ipnt(14))
+                SwMrt = process_space_real(ipnt(15))
+                VBType = process_space_real(ipnt(16))
+                Navail = process_space_real(ipnt(17))
+                Pavail = process_space_real(ipnt(18))
+                Savail = process_space_real(ipnt(19))
+                FravailM = process_space_real(ipnt(20))
+                F1VB = process_space_real(ipnt(21))
+                F2VB = process_space_real(ipnt(22))
+                F3VB = process_space_real(ipnt(23))
+                F4VB = process_space_real(ipnt(24))
+                F5VB = process_space_real(ipnt(25))
+                CNf1VB = process_space_real(ipnt(26))
+                CNf2VB = process_space_real(ipnt(27))
+                CNf3VB = process_space_real(ipnt(28))
+                CNf4VB = process_space_real(ipnt(29))
+                CNf5VB = process_space_real(ipnt(30))
+                CPf1VB = process_space_real(ipnt(31))
+                CPf2VB = process_space_real(ipnt(32))
+                CPf3VB = process_space_real(ipnt(33))
+                CPf4VB = process_space_real(ipnt(34))
+                CPf5VB = process_space_real(ipnt(35))
+                CSf1VB = process_space_real(ipnt(36))
+                CSf2VB = process_space_real(ipnt(37))
+                CSf3VB = process_space_real(ipnt(38))
+                CSf4VB = process_space_real(ipnt(39))
+                CSf5VB = process_space_real(ipnt(40))
+                SWRegro = process_space_real(ipnt(41))
+                SWDying = process_space_real(ipnt(42))
+                InitAge = process_space_real(ipnt(43))
+                IniSWDying = process_space_real(ipnt(44))
+                SwWV = process_space_real(ipnt(45))
+                Rc0GWV = process_space_real(ipnt(46))
+                TcGWV = process_space_real(ipnt(47))
+                AcGWV = process_space_real(ipnt(48))
+                MinRWV = process_space_real(ipnt(49))
+                TBmWV = process_space_real(ipnt(50))
+                TempAir = process_space_real(ipnt(51))
+                MinVB = process_space_real(ipnt(52))
                 nrofinputs = 52
 
                 if (ifirst (vbtype) == 0) then
@@ -450,14 +450,14 @@ contains
                     end if
                     !
                     fl  (IdVB1) = dVB1                              ! g/m3/d
-                    pmsa(ipnt(nrofinputs + 1)) = ageVB1
-                    pmsa(ipnt(nrofinputs + 2)) = VB1ha
-                    pmsa(ipnt(nrofinputs + 3)) = VBA1ha
-                    pmsa(ipnt(nrofinputs + 4)) = rGWV1
-                    pmsa(ipnt(nrofinputs + 5)) = fVB1
-                    pmsa(ipnt(nrofinputs + 6)) = VBAge0ha
-                    pmsa(ipnt(nrofinputs + 7)) = SWDying
-                    pmsa(ipnt(nrofinputs + 8)) = NutGroFac
+                    process_space_real(ipnt(nrofinputs + 1)) = ageVB1
+                    process_space_real(ipnt(nrofinputs + 2)) = VB1ha
+                    process_space_real(ipnt(nrofinputs + 3)) = VBA1ha
+                    process_space_real(ipnt(nrofinputs + 4)) = rGWV1
+                    process_space_real(ipnt(nrofinputs + 5)) = fVB1
+                    process_space_real(ipnt(nrofinputs + 6)) = VBAge0ha
+                    process_space_real(ipnt(nrofinputs + 7)) = SWDying
+                    process_space_real(ipnt(nrofinputs + 8)) = NutGroFac
 
                     ! ---          check iniCovVB1 - only significant vegetation
                 endif
@@ -472,7 +472,7 @@ contains
 
         !     no need to initialise this cohort in next timestep
         !     SWiniVB1 = 0
-        pmsa(ipoint(9)) = 0.0
+        process_space_real(ipoint(9)) = 0.0
         ifirst (vbtype) = 1
         ifirst (vbtype + 9) = 1
         !

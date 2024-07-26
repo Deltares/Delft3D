@@ -35,8 +35,8 @@ module inputs_block_6
 contains
 
     subroutine read_block_6_waste_loads_withdrawals (file_unit_list, file_name_list, filtype, max_char_size, char_arr, &
-            max_int_size, int_array, max_real_size, real_array, notot, &
-            noseg, sname, nowst, nowtyp, nrftot, &
+            max_int_size, int_array, max_real_size, real_array, num_substances_total, &
+            num_cells, sname, num_waste_loads, num_waste_load_types, nrftot, &
             nrharm, is_date_format, is_yyddhh_format, iwidth, &
             output_verbose_level, chkpar, status)
 
@@ -47,7 +47,7 @@ contains
         !!      - the wasteload concentration/mass values
         !! Subroutines called : read_constants_time_variables     : previous versions input processing (one matrix does all)
         !!                      gettoken : tokenized data input
-        !!                      terminate_execution   : stop after error with return code
+        !!                      stop_with_error   : stop after error with return code
         !!                      zoek     : search for presence of a string
         !!                      read_boundary_concentrations: modern context sensitive input data processing
         !!                      check    : check whether end of data block is encountred correctly
@@ -59,7 +59,7 @@ contains
         !!                 file_unit_list(15) = unit intermediate file (waste load)
 
         use error_handling, only : check_error
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use rd_token
         use timers       !   performance timers
 
@@ -72,11 +72,11 @@ contains
         integer(kind = int_wp), intent(inout) :: int_array   (max_int_size)   !< local integer   workspace
         integer(kind = int_wp), intent(in) :: max_real_size           !< size of the real      workspace
         real(kind = real_wp), intent(inout) :: real_array   (max_real_size)   !< local real      workspace
-        integer(kind = int_wp), intent(in) :: notot           !< total number of substances
-        integer(kind = int_wp), intent(in) :: noseg           !< number of computational volumes
-        character(20), intent(inout) :: sname (notot)  !< IDs of the substances
-        integer(kind = int_wp), intent(out) :: nowst           !< number of waste loads
-        integer(kind = int_wp), intent(out) :: nowtyp          !< number of waste load types
+        integer(kind = int_wp), intent(in) :: num_substances_total           !< total number of substances
+        integer(kind = int_wp), intent(in) :: num_cells           !< number of computational volumes
+        character(20), intent(inout) :: sname (num_substances_total)  !< IDs of the substances
+        integer(kind = int_wp), intent(out) :: num_waste_loads           !< number of waste loads
+        integer(kind = int_wp), intent(out) :: num_waste_load_types          !< number of waste load types
         integer(kind = int_wp), intent(inout) :: nrftot(11)    !< number of function items per kind
         integer(kind = int_wp), intent(inout) :: nrharm(11)    !< number of harmonic items per kind
         logical, intent(in) :: is_date_format         !< if true then 'date'-format for 2nd time scale
@@ -121,20 +121,20 @@ contains
         binary_work_file = file_unit_list(2)
         iposr = 0
         chkpar = .false.
-        nowtyp = 0
+        num_waste_load_types = 0
 
         !        Read number of waste loads
 
-        if (gettoken(nowst, ierr2) > 0) goto 20
-        if (nowst < 0) then       !   it says that info comes from auxiliary file
-            write (file_unit, 2000) nowst
+        if (gettoken(num_waste_loads, ierr2) > 0) goto 20
+        if (num_waste_loads < 0) then       !   it says that info comes from auxiliary file
+            write (file_unit, 2000) num_waste_loads
             call process_simulation_input_options   (-1, file_unit_list, 15, file_name_list, filtype, &
                     is_date_format, is_yyddhh_format, 0, ierr2, status, &
                     .false.)
             if (ierr2 > 0) goto 20
-            if (gettoken(nowst, ierr2) > 0) goto 20
+            if (gettoken(num_waste_loads, ierr2) > 0) goto 20
         endif
-        if (nowst == 0) then
+        if (num_waste_loads == 0) then
             write (file_unit, 2010)
             goto 20
         endif
@@ -142,15 +142,15 @@ contains
         !     read waste names, from version 4.9 on names are ID's
         !                                           names are 40 characters
         !                                           types are 20 characters
-        allocate (wstid     (nowst), wsttype     (nowst), wstname(nowst), &
-                wstid_long(nowst), wsttype_long(nowst), iwstseg(nowst), &
-                iwsttype  (nowst), iwstkind    (nowst), stat = ierr_alloc)
+        allocate (wstid     (num_waste_loads), wsttype     (num_waste_loads), wstname(num_waste_loads), &
+                wstid_long(num_waste_loads), wsttype_long(num_waste_loads), iwstseg(num_waste_loads), &
+                iwsttype  (num_waste_loads), iwstkind    (num_waste_loads), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             write (file_unit, 2160) ierr_alloc
-            write (file_unit, 2040) nowst
-            call terminate_execution(1)
+            write (file_unit, 2040) num_waste_loads
+            call stop_with_error()
         endif
-        write (file_unit, 2040) nowst
+        write (file_unit, 2040) num_waste_loads
         if (output_verbose_level < 3) then
             write (file_unit, 2045)
         else
@@ -163,7 +163,7 @@ contains
 
         !       read wasteload identification
 
-        do i = 1, nowst
+        do i = 1, num_waste_loads
 
             iwsttype(i) = 0
             iwstkind(i) = 0
@@ -249,8 +249,8 @@ contains
 
             !          check if truncated type and non truncated type give the same number
 
-            ifound = index_in_array(wsttype(i), wsttype(:nowtyp))
-            ifound2 = index_in_array(wsttype_long(i), wsttype_long(:nowtyp))
+            ifound = index_in_array(wsttype(i), wsttype(:num_waste_load_types))
+            ifound2 = index_in_array(wsttype_long(i), wsttype_long(:num_waste_load_types))
             if (ifound /= ifound2) then
                 write(file_unit, 2150) trim(wsttype_long(i))
                 call status%increase_error_count()
@@ -261,15 +261,15 @@ contains
             if (ifound > 0) then
                 iwsttype(i) = ifound
             else
-                nowtyp = nowtyp + 1
-                wsttype(nowtyp) = wsttype(i)
-                wsttype_long(nowtyp) = wsttype_long(i)
-                iwsttype(i) = nowtyp
+                num_waste_load_types = num_waste_load_types + 1
+                wsttype(num_waste_load_types) = wsttype(i)
+                wsttype_long(num_waste_load_types) = wsttype_long(i)
+                iwsttype(i) = num_waste_load_types
             endif
 
             !          check segment number
 
-            if (iwstseg(i) < -3 .or.  iwstseg(i) > noseg .or. &
+            if (iwstseg(i) < -3 .or.  iwstseg(i) > num_cells .or. &
                     iwstseg(i) ==  0) then
                 write (file_unit, 2090) iwstseg(i)
                 call status%increase_error_count()
@@ -294,18 +294,18 @@ contains
         !          give list of all identified wasteload types and write info to system file
 
         write (file_unit, *)
-        write (file_unit, 2110) nowtyp
+        write (file_unit, 2110) num_waste_load_types
         if (output_verbose_level < 2) then
             write (file_unit, 2115)
         else
             write (file_unit, 2112)
-            do i = 1, nowtyp
+            do i = 1, num_waste_load_types
                 write (file_unit, 2120) i, wsttype(i)
             enddo
             write (file_unit, *)
         endif
-        write (binary_work_file)  (wsttype(i), i = 1, nowtyp)
-        write (binary_work_file)  (iwsttype(i), i = 1, nowst)
+        write (binary_work_file)  (wsttype(i), i = 1, num_waste_load_types)
+        write (binary_work_file)  (iwsttype(i), i = 1, num_waste_loads)
 
         !          these arrays are not needed further
 
@@ -314,11 +314,11 @@ contains
         !          now get the values
 
         allocate(dp_array(max_real_size))             ! this array is 100 mb lp
-        idummy = notot + 1
+        idummy = num_substances_total + 1
         call read_boundary_concentrations (file_unit_list, file_name_list, 15, iwidth, max_char_size, &
                 char_arr, max_int_size, int_array, max_real_size, real_array, &
-                sname, wstid, wsttype, nowst, idummy, &
-                nowtyp, dp_array, is_date_format, is_yyddhh_format, &
+                sname, wstid, wsttype, num_waste_loads, idummy, &
+                num_waste_load_types, dp_array, is_date_format, is_yyddhh_format, &
                 output_verbose_level, ierr2, status)
         deallocate(dp_array)
         if (ierr2 ==  0) then
@@ -332,7 +332,7 @@ contains
         !     error processing
 
         20 if (ierr2 > 0) call status%increase_error_count()      !   if 2, end of block reached
-        if (ierr2 == 3) call terminate_execution(1)        !   end of file reached
+        if (ierr2 == 3) call stop_with_error()        !   end of file reached
         call check_error(cdummy, iwidth, 6, ierr2, status)
         30 if (timon) call timstop(ithndl)
         return

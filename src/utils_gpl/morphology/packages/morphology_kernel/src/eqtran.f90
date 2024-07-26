@@ -3,7 +3,7 @@
 !! The subroutine \em eqtran provides a standardized interface for calling
 !! any sediment transport in the library.
 
-subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
+subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur      , &
                 & frac      ,sigmol    ,dicww     ,lundia    ,taucr0    , &
                 & rksrs     ,i2d3d     ,lsecfl    ,spirint   ,suspfrac  , &
                 & tetacr    ,concin    , &
@@ -12,8 +12,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
                 & scour     ,ubot_from_com        ,camax     ,eps       , &
                 & iform     ,npar      ,par       ,numintpar ,numrealpar, &
                 & numstrpar ,dllfunc   ,dllhandle ,intpar    ,realpar   , &
-                & strpar    , &
-!output:
+                & strpar    , & !output:
                 & aks       ,caks      ,taurat    ,seddif    ,rsedeq    , &
                 & kmaxsd    ,conc2d    ,sbcu      ,sbcv      ,sbwu      , &
                 & sbwv      ,sswu      ,sswv      ,dss       ,caks_ss3d , &
@@ -66,7 +65,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
     integer(pntrsize)                   , intent(in)    :: dllhandle
     integer                             , intent(in)    :: i2d3d
     integer                             , intent(in)    :: iform
-    integer                             , intent(in)    :: kmax     !  Description and declaration in esm_alloc_int.f90
+    integer                             , intent(in)    :: num_layers_grid     !  Description and declaration in esm_alloc_int.f90
     integer                             , intent(in)    :: lsecfl   !  Description and declaration in esm_alloc_int.f90
     integer                             , intent(in)    :: ltur     !  Description and declaration in esm_alloc_int.f90
     integer                             , intent(in)    :: lundia   !  Description and declaration in inout.igs
@@ -78,8 +77,8 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
     real(fp)                            , intent(in)    :: bed
     real(fp)                            , intent(in)    :: bedw
     real(fp)                            , intent(in)    :: camax
-    real(fp)     , dimension(kmax)      , intent(inout) :: concin
-    real(fp)     , dimension(0:kmax)    , intent(in)    :: dicww    !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(num_layers_grid)      , intent(inout) :: concin
+    real(fp)     , dimension(0:num_layers_grid)    , intent(in)    :: dicww    !  Description and declaration in esm_alloc_real.f90
     real(fp)                            , intent(in)    :: dzduu     !  Description and declaration in esm_alloc_real.f90
     real(fp)                            , intent(in)    :: dzdvv     !  Description and declaration in esm_alloc_real.f90
     real(fp)                            , intent(in)    :: eps
@@ -87,7 +86,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
     real(fp)                            , intent(in)    :: frac     !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(npar)      , intent(inout) :: par
     real(fp)                            , intent(in)    :: rksrs    !  Description and declaration in esm_alloc_real.f90
-    real(fp)     , dimension(kmax)      , intent(in)    :: sig      !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(num_layers_grid)      , intent(in)    :: sig      !  Description and declaration in esm_alloc_real.f90
     real(fp)                            , intent(in)    :: sigmol   !  Description and declaration in esm_alloc_real.f90
     real(fp)                            , intent(in)    :: spirint  !  Spiral flow intensity
     real(fp)                            , intent(in)    :: sus
@@ -95,9 +94,9 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
     real(fp)                            , intent(in)    :: tauadd
     real(fp)                            , intent(in)    :: taucr0
     real(fp)                            , intent(in)    :: tetacr
-    real(fp)     , dimension(kmax)      , intent(in)    :: thick    !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(num_layers_grid)      , intent(in)    :: thick    !  Description and declaration in esm_alloc_real.f90
     real(fp)                            , intent(in)    :: ubot     !  Description and declaration in esm_alloc_real.f90
-    real(fp)     , dimension(0:kmax)    , intent(in)    :: ws       !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(0:num_layers_grid)    , intent(in)    :: ws       !  Description and declaration in esm_alloc_real.f90
     real(hp)     , dimension(numrealpar), intent(inout) :: realpar
     logical                             , intent(in)    :: scour
     logical                             , intent(in)    :: suspfrac !  suspended sediment fraction
@@ -114,12 +113,12 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
     real(fp)                        , intent(out)  :: caks_ss3d
     real(fp)                        , intent(out)  :: conc2d
     real(fp)                        , intent(out)  :: dss
-    real(fp), dimension(kmax)       , intent(out)  :: rsedeq
+    real(fp), dimension(num_layers_grid)       , intent(out)  :: rsedeq
     real(fp)                        , intent(out)  :: sbcu
     real(fp)                        , intent(out)  :: sbcv
     real(fp)                        , intent(out)  :: sbwu
     real(fp)                        , intent(out)  :: sbwv
-    real(fp), dimension(0:kmax)     , intent(out)  :: seddif
+    real(fp), dimension(0:num_layers_grid)     , intent(out)  :: seddif
     real(fp)                        , intent(out)  :: sswu
     real(fp)                        , intent(out)  :: sswv
     real(fp)                        , intent(out)  :: t_relax
@@ -286,16 +285,16 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
           ! By default entrainment and deposition (re)move sediment into/from
           ! the bottom-most layer.
           !
-          kmaxsd = kmax
+          kmaxsd = num_layers_grid
           !
           ! Use diffusivity of turbulence model as vertical sediment diffusion
           ! coefficient. In the future, we may OPTIONALLY enable Van Rijn's
           ! analytical 1984, 1993 or 2004 formulations here.
           !
-          do k = 0, kmax
+          do k = 0, num_layers_grid
               seddif(k) = dicww(k)
           enddo
-          ! seddif(kmax) = vonkar*z0rou*ustarc
+          ! seddif(num_layers_grid) = vonkar*z0rou*ustarc
        endif
     endif
     !
@@ -307,7 +306,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
        ! Van Rijn 1993
        !
        call tram1(numrealpar,realpar   ,wave      ,npar      ,par       , &
-                & kmax      ,bed       , &
+                & num_layers_grid      ,bed       , &
                 & tauadd    ,taucr0    ,aks       ,eps       ,camax     , &
                 & frac      ,sig       ,thick     ,ws        , &
                 & dicww     ,ltur      , &
@@ -332,7 +331,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
        ! Van Rijn 2004
        !
        call tram2(numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
-                & par       ,kmax      ,bed       ,dzduu     ,dzdvv     , &
+                & par       ,num_layers_grid      ,bed       ,dzduu     ,dzdvv     , &
                 & rksrs     ,tauadd    ,taucr0    ,aks       ,eps       , &
                 & camax     ,frac      ,sig       ,thick     ,ws        , &
                 & dicww     ,ltur      ,aks_ss3d  ,iform     , &
@@ -737,7 +736,7 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
     else
        caks     = sus * caks
        caks_ss3d= sus * caks_ss3d
-       do k = 1, kmax
+       do k = 1, num_layers_grid
           rsedeq(k) = sus * rsedeq(k)
        enddo
        conc2d   = sus * conc2d
@@ -780,8 +779,8 @@ subroutine eqtran(sig       ,thick     ,kmax      ,ws        ,ltur      , &
           ! Convert depth averaged concentration to reference concentration
           ! at distance aks from bed.
           !
-          kmaxsd    = kmax
-          call factor3d2d(kmax      ,aks       ,kmaxsd    ,sig       , &
+          kmaxsd    = num_layers_grid
+          call factor3d2d(num_layers_grid      ,aks       ,kmaxsd    ,sig       , &
                         & thick     ,seddif    ,ws        ,bakdif    , &
                         & z0rou     ,h1        ,fac3d2d   )
           caks      = conc2d / (fac3d2d+eps) / rhosol

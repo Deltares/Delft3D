@@ -29,10 +29,10 @@
       contains
 
    
-      subroutine HDISS      ( pmsa   , fl     , ipoint , increm, noseg ,                               & 
-                             noflux , iexpnt , iknmrk , noq1  , noq2  ,                               & 
-                             noq3   , noq4   )
-      use m_evaluate_waq_attribute
+      subroutine HDISS      ( process_space_real   , fl     , ipoint , increm, num_cells ,                               &
+                             noflux , iexpnt , iknmrk , num_exchanges_u_dir  , num_exchanges_v_dir  ,                               &
+                             num_exchanges_z_dir   , num_exchanges_bottom_dir   )
+      use m_extract_waq_attribute
                                    
 !>\file
 !>       Heat dissipation from heatbal & applied to excess heat                                                                                                          
@@ -40,20 +40,20 @@
       IMPLICIT NONE
 
 !     arguments
-      REAL(kind=real_wp) ::PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+      REAL(kind=real_wp) ::process_space_real(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
       REAL(kind=real_wp) ::FL(*)              ! in/out flux array
-      INTEGER(kind=int_wp) ::IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-      INTEGER(kind=int_wp) ::INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-      INTEGER(kind=int_wp) ::NOSEG              ! in     number of segments
+      INTEGER(kind=int_wp) ::IPOINT(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+      INTEGER(kind=int_wp) ::INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+      INTEGER(kind=int_wp) ::num_cells              ! in     number of segments
       INTEGER(kind=int_wp) ::NOFLUX             ! in     total number of fluxes (increment in FL array)
       INTEGER(kind=int_wp) ::IEXPNT(4,*)        ! in     exchange pointer table
       INTEGER(kind=int_wp) ::IKNMRK(*)          ! in     segment features array
-      INTEGER(kind=int_wp) ::NOQ1               ! in     number of exchanges in first direction
-      INTEGER(kind=int_wp) ::NOQ2               ! in     number of exchanges in second direction
-      INTEGER(kind=int_wp) ::NOQ3               ! in     number of exchanges in third direction
-      INTEGER(kind=int_wp) ::NOQ4               ! in     number of exchanges in fourth direction
+      INTEGER(kind=int_wp) ::num_exchanges_u_dir               ! in     number of exchanges in first direction
+      INTEGER(kind=int_wp) ::num_exchanges_v_dir               ! in     number of exchanges in second direction
+      INTEGER(kind=int_wp) ::num_exchanges_z_dir               ! in     number of exchanges in third direction
+      INTEGER(kind=int_wp) ::num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
 
-!     from PMSA array
+!     from process_space_real array
 !                                                                                                     
       REAL(kind=real_wp) ::SurTemp            ! I  natural temperature                                (oC)        1
       REAL(kind=real_wp) ::HtTot              ! I  Total heat flux                                    (W/m2)      2
@@ -82,16 +82,16 @@
       IP9  = IPOINT(9 )      
       IFLUX = 0
       !                                                                                                     
-      do iseg = 1 , noseg
+      do iseg = 1 , num_cells
 !                                                                                                     
-      SurTemp    = PMSA(IP1)
-      HtTot      = PMSA(IP2)
-      HtTot2     = PMSA(IP3)
-      DELT       = PMSA(IP4)
-      Cp         = PMSA(IP5)
-      Rho0       = PMSA(IP6)
-      Temp       = PMSA(IP7)
-      Depth      = PMSA(IP8)
+      SurTemp    = process_space_real(IP1)
+      HtTot      = process_space_real(IP2)
+      HtTot2     = process_space_real(IP3)
+      DELT       = process_space_real(IP4)
+      Cp         = process_space_real(IP5)
+      Rho0       = process_space_real(IP6)
+      Temp       = process_space_real(IP7)
+      Depth      = process_space_real(IP8)
       
       RhoWat = Rho0 * (1.0 - 7.17e-6 * (Temp - 4.0) ** 2.0)
       
@@ -102,7 +102,7 @@
 
 !     Calculate Self-Cooling only for top layer segments
 !
-          CALL evaluate_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
+          CALL extract_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
                 IF (IKMRK2==0 .OR. IKMRK2==1) THEN
                    SelfCool = -1. * (HtTot2 - HtTot) 
                     
@@ -120,7 +120,7 @@
 !                  
          FL(1+IFLUX) = HeatFlux 
                                                                                                    
-         PMSA(IP9) = SelfCool    
+         process_space_real(IP9) = SelfCool
 !
          IFLUX = IFLUX + NOFLUX
          IP1   = IP1   + INCREM ( 1  )

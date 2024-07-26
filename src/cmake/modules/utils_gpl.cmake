@@ -16,6 +16,7 @@ set(flow1d_module_path "${utils_gpl_path}/flow1d/packages")
 set(flow1d_core_module ${flow1d_module_path}/flow1d_core)
 set(flow1d_io_module ${flow1d_module_path}/flow1d_io)
 set(flow1d_module ${flow1d_module_path}/flow1d)
+set(flow1d_implicit ${utils_gpl_path}/flow1d_implicit/flow1d_implicit)
 
 # Morphology
 set(morphology_module_path "${utils_gpl_path}/morphology/packages")
@@ -29,3 +30,15 @@ set(morphology_waq_module "${morphology_module_path}/morphology_waq")
 set(hydrology_module_path "${utils_gpl_path}/dhydrology/packages")
 set(hydrology_kernel_module "${hydrology_module_path}/dhydrology_kernel")
 set(hydrology_kernel_io_module "${hydrology_module_path}/dhydrology_io")
+
+# Control Lib
+set(control_lib_path "${utils_gpl_path}/control_lib/packages")
+set(control_lib_module ${control_lib_path}/control_lib)
+
+# rr_rtc_tools
+set(rr_rtc_tools_module_path "${utils_gpl_path}/rr_rtc_tools/packages")
+set(rr_rtc_tools_module ${rr_rtc_tools_module_path}/rr_rtc_tools)
+
+# wl_openmi_support
+set(wl_openmi_support_module_path "${utils_gpl_path}/wl_openmi_support/packages")
+set(wl_openmi_support_module "${wl_openmi_support_module_path}/wl_openmi_support")

@@ -28,10 +28,10 @@ module m_makpoc
 contains
 
 
-    subroutine makpoc (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger, only : terminate_execution, get_log_unit_number
+    subroutine makpoc (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         !>\file
         !>       Derive OOC from IM-fractions and percentage POM in IMx
@@ -56,10 +56,10 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, ISEG
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, LUNREP, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, LUNREP, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local
         !
@@ -77,17 +77,17 @@ contains
         IP7 = IPOINT(7)
         IP8 = IPOINT(8)
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                IM1 = MAX(0.0, PMSA(IP1))
-                IM2 = MAX(0.0, PMSA(IP2))
-                IM3 = MAX(0.0, PMSA(IP3))
-                FRC1 = PMSA(IP4)
-                FRC2 = PMSA(IP5)
-                FRC3 = PMSA(IP6)
-                OCPOM = PMSA(IP7)
+                IM1 = MAX(0.0, process_space_real(IP1))
+                IM2 = MAX(0.0, process_space_real(IP2))
+                IM3 = MAX(0.0, process_space_real(IP3))
+                FRC1 = process_space_real(IP4)
+                FRC2 = process_space_real(IP5)
+                FRC3 = process_space_real(IP6)
+                OCPOM = process_space_real(IP7)
 
                 !***********************************************************************
                 !**** Calculations connected to the POC calculation
@@ -103,7 +103,7 @@ contains
                     WRITE(LUNREP, *) 'fctr   :', OCPOM
                     WRITE(LUNREP, *) 'fcsed1 :', FRC1
                     WRITE(LUNREP, *) 'fctr * fcsed1 must be less than 1.00'
-                    CALL terminate_execution(1)
+                    CALL stop_with_error()
                 END IF
 
                 IF (OCPOM * FRC2 < 1.0D0) THEN
@@ -115,7 +115,7 @@ contains
                     WRITE(LUNREP, *) 'fctr   :', OCPOM
                     WRITE(LUNREP, *) 'fcsed2 :', FRC2
                     WRITE(LUNREP, *) 'fctr * fcsed2 must be less than 1.00'
-                    CALL terminate_execution(1)
+                    CALL stop_with_error()
                 END IF
 
                 IF (OCPOM * FRC3 < 1.0D0) THEN
@@ -127,13 +127,13 @@ contains
                     WRITE(LUNREP, *) 'fctr   :', OCPOM
                     WRITE(LUNREP, *) 'fcsed3 :', FRC3
                     WRITE(LUNREP, *) 'fctr * fcsed3 must be less than 1'
-                    CALL terminate_execution(1)
+                    CALL stop_with_error()
                 END IF
 
                 !     Total POC
                 POC = POC1 + POC2 + POC3
 
-                PMSA (IP8) = POC
+                process_space_real (IP8) = POC
                 !
             ENDIF
             !

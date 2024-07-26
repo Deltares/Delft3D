@@ -28,10 +28,10 @@ module m_stadsc
 contains
 
 
-    subroutine stadsc (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine stadsc (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !>\file
         !>       Mean, min, max, stdev of a variable during a certain time
@@ -64,9 +64,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, &
                 IP6, IP7, IP8, IP9, IP10, &
@@ -113,10 +113,10 @@ contains
         !
         !     (Use a safe margin)
         !
-        TSTART = PMSA(IP2)
-        TSTOP = PMSA(IP3)
-        TIME = PMSA(IP4)
-        DELT = PMSA(IP5)
+        TSTART = process_space_real(IP2)
+        TSTOP = process_space_real(IP3)
+        TIME = process_space_real(IP4)
+        DELT = process_space_real(IP5)
 
         !
         !      Start and stop criteria are somewhat involved. Be careful
@@ -133,17 +133,17 @@ contains
         IF (TIME >= TSTART - 0.5 * DELT .AND. TIME <= TSTOP + 0.5 * DELT) THEN
             IACTION = 2
             IF (TIME <= TSTART + 0.5 * DELT) THEN
-                DO ISEG = 1, NOSEG
+                DO ISEG = 1, num_cells
                     IP6 = IPOINT(6) + (ISEG - 1) * INCREM(6)
                     IP7 = IPOINT(7) + (ISEG - 1) * INCREM(7)
                     IP8 = IPOINT(8) + (ISEG - 1) * INCREM(8)
                     IP9 = IPOINT(9) + (ISEG - 1) * INCREM(9)
                     IP10 = IPOINT(10) + (ISEG - 1) * INCREM(10)
-                    PMSA(IP6) = 0.0
-                    PMSA(IP7) = 0.0
-                    PMSA(IP8) = 0.0
-                    PMSA(IP9) = 0.0
-                    PMSA(IP10) = 0.0
+                    process_space_real(IP6) = 0.0
+                    process_space_real(IP7) = 0.0
+                    process_space_real(IP8) = 0.0
+                    process_space_real(IP9) = 0.0
+                    process_space_real(IP10) = 0.0
                 ENDDO
             ENDIF
         ENDIF
@@ -160,40 +160,40 @@ contains
         IP9 = IPOINT(9)
         IP10 = IPOINT(10)
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
                 !           Keep track of the time within the current descriptive statistics specification
                 !           that each segment is active
                 !
-                TCOUNT = PMSA(IP6) + 1.0
-                PMSA(IP6) = TCOUNT
+                TCOUNT = process_space_real(IP6) + 1.0
+                process_space_real(IP6) = TCOUNT
                 !
                 IF (TCOUNT == 1.0) THEN
-                    PMSA(IP7) = PMSA(IP1)
-                    PMSA(IP8) = PMSA(IP1)
+                    process_space_real(IP7) = process_space_real(IP1)
+                    process_space_real(IP8) = process_space_real(IP1)
                 ELSE
-                    PMSA(IP7) = MAX(PMSA(IP7), PMSA(IP1))
-                    PMSA(IP8) = MIN(PMSA(IP8), PMSA(IP1))
+                    process_space_real(IP7) = MAX(process_space_real(IP7), process_space_real(IP1))
+                    process_space_real(IP8) = MIN(process_space_real(IP8), process_space_real(IP1))
                 ENDIF
-                PMSA(IP9) = PMSA(IP9) + PMSA(IP1)
-                PMSA(IP10) = PMSA(IP10) + PMSA(IP1)**2
+                process_space_real(IP9) = process_space_real(IP9) + process_space_real(IP1)
+                process_space_real(IP10) = process_space_real(IP10) + process_space_real(IP1)**2
             ENDIF
 
             !
             !        Always do the final processing whether the segment is active at this moment or not
             !
             IF (IACTION == 3) THEN
-                TCOUNT = PMSA(IP6)
+                TCOUNT = process_space_real(IP6)
                 IF (TCOUNT > 0.0) THEN
-                    PMSA(IP9) = PMSA(IP9) / TCOUNT
+                    process_space_real(IP9) = process_space_real(IP9) / TCOUNT
                 ELSE
-                    PMSA(IP9) = 0.0
-                    PMSA(IP10) = 0.0
+                    process_space_real(IP9) = 0.0
+                    process_space_real(IP10) = 0.0
 
                     IF (NOWARN < MAXWARN) THEN
-                        CALL evaluate_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
+                        CALL extract_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
                         IF (ATTRIB /= 0) THEN
                             NOWARN = NOWARN + 1
                             WRITE(*, '(a,i0)') 'Average could not be determined for segment ', ISEG
@@ -215,14 +215,14 @@ contains
                     !              some roundoff errors!
                     !
                     IF (IN9 /= 0 .AND. IN10 /= 0) THEN
-                        CDIFF = (PMSA(IP10) - TCOUNT * PMSA(IP9)**2)
-                        PMSA(IP10) = SQRT(MAX(CDIFF, 0.0) / (TCOUNT - 1.0))
+                        CDIFF = (process_space_real(IP10) - TCOUNT * process_space_real(IP9)**2)
+                        process_space_real(IP10) = SQRT(MAX(CDIFF, 0.0) / (TCOUNT - 1.0))
                     ENDIF
                 ELSE
-                    PMSA(IP10) = 0.0
+                    process_space_real(IP10) = 0.0
 
                     IF (NOWARN < MAXWARN) THEN
-                        CALL evaluate_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
+                        CALL extract_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
                         IF (ATTRIB /= 0) THEN
                             NOWARN = NOWARN + 1
                             WRITE(*, '(a,i0)') 'Standard deviation could not be determined for segment ', ISEG

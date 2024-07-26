@@ -25,7 +25,7 @@
 				
 				-->
 
-	<testCases>
+	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e01_f01_c02-fff" ref="flow2d3d_default">
 			<path version="2024-02-22T14:40:00">e01_d3dflow/f01_general/c02-fff</path>
 			<maxRunTime>38.5610001087</maxRunTime>
@@ -815,6 +815,36 @@
 						<parameter name="R1"     toleranceAbsolute="0.0001"/>
 						<parameter name="EVAP"   toleranceAbsolute="0.0001"/>
 						<parameter name="PRECIP" toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+			</checks>
+		</testCase>
+		<testCase name="e01_f01_c43_erosilt_d3d_density_effect_3d" ref="flow2d3d_default">
+			<path version="2024-07-01T16:22:54">e01_d3dflow/f01_general/c43_erosilt_d3d_density_effect_3d</path>
+			<maxRunTime>60.0</maxRunTime>
+			<checks>
+				<file name="trih-flume_50x5.dat" type="NEFIS">
+					<parameters name="his-series">
+						<parameter name="ZWL"    toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURU"  toleranceAbsolute="0.0001"/>
+						<parameter name="ZCURV"  toleranceAbsolute="0.0001"/>
+						<parameter name="GRO"    toleranceAbsolute="0.0001"/>
+						<parameter name="ZVICWW" toleranceAbsolute="0.0001"/>
+						<parameter name="ZTAUKS" toleranceAbsolute="0.0001"/>
+						<parameter name="ZTAUET" toleranceAbsolute="0.0001"/>
+						<parameter name="ZRHO"   toleranceAbsolute="0.0001"/>
+					</parameters>
+				</file>
+				<file name="trim-flume_50x5.dat" type="NEFIS">
+					<parameters name="map-series">
+						<parameter name="S1"     toleranceAbsolute="0.0001"/>
+						<parameter name="U1"     toleranceAbsolute="0.0001"/>
+						<parameter name="V1"     toleranceAbsolute="0.0001"/>
+						<parameter name="R1"     toleranceAbsolute="0.0001"/>
+						<parameter name="RHO"    toleranceAbsolute="0.0001"/>
+						<parameter name="VICWW"  toleranceAbsolute="0.0001"/>
+						<parameter name="TAUKSI" toleranceAbsolute="0.0001"/>
+						<parameter name="TAUETA" toleranceAbsolute="0.0001"/>
 					</parameters>
 				</file>
 			</checks>

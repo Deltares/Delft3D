@@ -28,9 +28,9 @@ module m_totdep
 contains
 
 
-    subroutine totdep (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine totdep (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Total depth water column
 
@@ -52,14 +52,14 @@ contains
         !     ------   -----  ------------
 
         use m_advtra
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with definition of the waterbottom segments
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         REAL(kind = real_wp) :: DEPTH              ! 1  in  depth of segment                                     (m)
         REAL(kind = real_wp) :: SURF               ! 2  in horizontal surface area                              (m2)
@@ -85,8 +85,8 @@ contains
 
         !     initialise bottom if necessary
 
-        CALL MAKKO2 (IEXPNT, IKNMRK, NOQ1, NOQ2, NOQ3, &
-                NOQ4)
+        CALL MAKKO2 (IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+                num_exchanges_bottom_dir)
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -103,11 +103,11 @@ contains
         !.....Zet de totale en lokale diepte initieel op de diepte
         !.....voor actieve watersegmenten, anders 0
         !.....zet sediment dikte to onderkant segment op 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
-            PMSA(IP3) = PMSA(IP1)
-            PMSA(IP4) = PMSA(IP1)
-            PMSA(IP5) = PMSA(IP1)
+            process_space_real(IP3) = process_space_real(IP1)
+            process_space_real(IP4) = process_space_real(IP1)
+            process_space_real(IP5) = process_space_real(IP1)
 
             IP1 = IP1 + IN1
             IP3 = IP3 + IN3
@@ -122,42 +122,42 @@ contains
         IP5 = IPOINT(5)
 
         !.....Exchange-loop over de derde richting
-        DO IQ = NOQ1 + NOQ2 + 1, NOQ1 + NOQ2 + NOQ3
+        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
             IFROM = IEXPNT(1, IQ)
             ITO = IEXPNT(2, IQ)
 
             IF (IFROM>0 .AND. ITO>0) THEN
 
-                CALL evaluate_waq_attribute(2, IKNMRK(IFROM), IKMRK)
+                CALL extract_waq_attribute(2, IKNMRK(IFROM), IKMRK)
                 IF ((IKMRK==0).OR.(IKMRK==1)) THEN
 
-                    PMSA (IP3 + (IFROM - 1) * IN3) = &
-                            PMSA (IP1 + (IFROM - 1) * IN1)
-                    PMSA (IP4 + (IFROM - 1) * IN4) = &
-                            PMSA (IP1 + (IFROM - 1) * IN1)
-                    PMSA (IP5 + (IFROM - 1) * IN5) = &
-                            PMSA (IP4 + (IFROM - 1) * IN4)
+                    process_space_real (IP3 + (IFROM - 1) * IN3) = &
+                            process_space_real (IP1 + (IFROM - 1) * IN1)
+                    process_space_real (IP4 + (IFROM - 1) * IN4) = &
+                            process_space_real (IP1 + (IFROM - 1) * IN1)
+                    process_space_real (IP5 + (IFROM - 1) * IN5) = &
+                            process_space_real (IP4 + (IFROM - 1) * IN4)
 
-                    PMSA (IP3 + (ITO - 1) * IN3) = &
-                            PMSA (IP1 + (IFROM - 1) * IN1) + &
-                                    PMSA (IP1 + (ITO - 1) * IN1)
-                    PMSA (IP4 + (ITO - 1) * IN4) = &
-                            PMSA (IP1 + (IFROM - 1) * IN1) + &
-                                    PMSA (IP1 + (ITO - 1) * IN1)
-                    PMSA (IP5 + (ITO - 1) * IN5) = &
-                            PMSA (IP4 + (ITO - 1) * IN4)
+                    process_space_real (IP3 + (ITO - 1) * IN3) = &
+                            process_space_real (IP1 + (IFROM - 1) * IN1) + &
+                                    process_space_real (IP1 + (ITO - 1) * IN1)
+                    process_space_real (IP4 + (ITO - 1) * IN4) = &
+                            process_space_real (IP1 + (IFROM - 1) * IN1) + &
+                                    process_space_real (IP1 + (ITO - 1) * IN1)
+                    process_space_real (IP5 + (ITO - 1) * IN5) = &
+                            process_space_real (IP4 + (ITO - 1) * IN4)
 
                 ELSE
 
-                    PMSA (IP3 + (ITO - 1) * IN3) = &
-                            PMSA (IP3 + (IFROM - 1) * IN3) + &
-                                    PMSA (IP1 + (ITO - 1) * IN1)
-                    PMSA (IP4 + (ITO - 1) * IN4) = &
-                            PMSA (IP4 + (IFROM - 1) * IN4) + &
-                                    PMSA (IP1 + (ITO - 1) * IN1)
-                    PMSA (IP5 + (ITO - 1) * IN5) = &
-                            PMSA (IP4 + (ITO - 1) * IN4)
+                    process_space_real (IP3 + (ITO - 1) * IN3) = &
+                            process_space_real (IP3 + (IFROM - 1) * IN3) + &
+                                    process_space_real (IP1 + (ITO - 1) * IN1)
+                    process_space_real (IP4 + (ITO - 1) * IN4) = &
+                            process_space_real (IP4 + (IFROM - 1) * IN4) + &
+                                    process_space_real (IP1 + (ITO - 1) * IN1)
+                    process_space_real (IP5 + (ITO - 1) * IN5) = &
+                            process_space_real (IP4 + (ITO - 1) * IN4)
 
                 ENDIF
                 !           ENDIF
@@ -167,7 +167,7 @@ contains
 
 
         !.....Exchange-loop over de derde richting
-        DO IQ = NOQ1 + NOQ2 + NOQ3, NOQ1 + NOQ2 + 1, -1
+        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir, num_exchanges_u_dir + num_exchanges_v_dir + 1, -1
 
             IFROM = IEXPNT(1, IQ)
             ITO = IEXPNT(2, IQ)
@@ -176,11 +176,11 @@ contains
             !        toekennen aan de bovenliggende segmenten
 
             IF (IFROM>0 .AND. ITO>0) then
-                CALL evaluate_waq_attribute(1, IKNMRK(ITO), IKMRK)
+                CALL extract_waq_attribute(1, IKNMRK(ITO), IKMRK)
                 IF (IKMRK == 1) THEN
 
-                    PMSA (IP3 + (IFROM - 1) * IN3) = &
-                            PMSA (IP3 + (ITO - 1) * IN3)
+                    process_space_real (IP3 + (IFROM - 1) * IN3) = &
+                            process_space_real (IP3 + (ITO - 1) * IN3)
                 ENDIF
             ENDIF
         end do
@@ -206,8 +206,8 @@ contains
             TOTSURF = 0.0
             DO IQ = IWA1, IWA2
                 IWATER = IEXPNT(1, IQ)
-                TOTALDEPTH = PMSA(IP3 + (IWATER - 1) * IN3)
-                SURF = PMSA(IP2 + (IWATER - 1) * IN2)
+                TOTALDEPTH = process_space_real(IP3 + (IWATER - 1) * IN3)
+                SURF = process_space_real(IP2 + (IWATER - 1) * IN2)
                 CUMTOTDEPTH = CUMTOTDEPTH + TOTALDEPTH * SURF
                 TOTSURF = TOTSURF + SURF
             ENDDO
@@ -223,11 +223,11 @@ contains
             LOCSEDDEPT = 0.0
             DO IQ = ITOP, IBOT
                 IBODEM = IEXPNT(1, IQ)
-                DEPTH = PMSA(IP1 + (IBODEM - 1) * IN1)
+                DEPTH = process_space_real(IP1 + (IBODEM - 1) * IN1)
                 LOCALDEPTH = LOCALDEPTH + DEPTH
                 LOCSEDDEPT = LOCSEDDEPT + DEPTH
-                PMSA(IP4 + (IBODEM - 1) * IN4) = LOCALDEPTH
-                PMSA(IP5 + (IBODEM - 1) * IN5) = LOCSEDDEPT
+                process_space_real(IP4 + (IBODEM - 1) * IN4) = LOCALDEPTH
+                process_space_real(IP5 + (IBODEM - 1) * IN5) = LOCSEDDEPT
             ENDDO
 
             ! final is total copy back in the column
@@ -235,7 +235,7 @@ contains
             TOTSEDDEPT = LOCSEDDEPT
             DO IQ = ITOP, IBOT
                 IBODEM = IEXPNT(1, IQ)
-                PMSA(IP3 + (IBODEM - 1) * IN3) = TOTSEDDEPT
+                process_space_real(IP3 + (IBODEM - 1) * IN3) = TOTSEDDEPT
             ENDDO
 
         ENDDO

@@ -1,7 +1,6 @@
-"""
-Description: Ascii file comparer, compares numbers (with tolerance) and text
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Ascii file comparer, compares numbers (with tolerance) and text.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import os
@@ -75,44 +74,24 @@ class NumberTextComparer(IComparer):
                 with open(os.path.join(right_path, filename), "r") as rightFile:
                     while True:
                         skip_lines = file_check.skip_lines
-                        leftData = self.__parseText__(
-                            leftFile, skip_lines, self.__left, self.__is_number
-                        )
-                        rightData = self.__parseText__(
-                            rightFile, skip_lines, self.__right, self.__is_number
-                        )
+                        leftData = self.__parseText__(leftFile, skip_lines, self.__left, self.__is_number)
+                        rightData = self.__parseText__(rightFile, skip_lines, self.__right, self.__is_number)
 
                         if leftData is None and rightData is None:
                             # Finished comparing the files
-                            logger.debug(
-                                "Absolute Tolerance: "
-                                + str(parameter.tolerance_absolute)
-                            )
-                            logger.debug(
-                                "Relative Tolerance: "
-                                + str(parameter.tolerance_relative)
-                            )
+                            logger.debug(f"Absolute Tolerance: {parameter.tolerance_absolute}")
+                            logger.debug(f"Relative Tolerance: {parameter.tolerance_relative}")
                             logger.debug(f"Compared {nCompared} floats")
                             break
                         elif leftData is None and rightData is not None:
                             raise TestCaseFailure(
-                                "Current file does not match with reference file. Found in current file: %s; value=%s line=%s token=%s"
-                                % (
-                                    filename,
-                                    str(rightData[0]),
-                                    str(rightData[1]),
-                                    str(rightData[2]),
-                                )
+                                f"Current file does not match with reference file. Found in current file: {filename};"
+                                + f" value={rightData[0]} line={rightData[1]} token={rightData[2]}"
                             )
                         elif leftData is not None and rightData is None:
                             raise TestCaseFailure(
-                                "Reference file does not match with current file. Found in reference file: %s; value=%s line=%s token=%s"
-                                % (
-                                    filename,
-                                    str(leftData[0]),
-                                    str(leftData[2]),
-                                    str(leftData[3]),
-                                )
+                                f"Current file does not match with reference file. Found in current file: {filename};"
+                                + f" value={leftData[0]} line={leftData[2]} token={leftData[3]}"
                             )
 
                         if self.__is_number[0] == self.__is_number[1] == True:
@@ -123,10 +102,7 @@ class NumberTextComparer(IComparer):
 
                             nCompared += 1
                             diff = abs(leftData[0] - rightData[0])
-                            if (
-                                diff > 2 * float_info.epsilon
-                                and diff > result.maxAbsDiff
-                            ):
+                            if diff > 2 * float_info.epsilon and diff > result.maxAbsDiff:
                                 result.maxAbsDiff = diff
                                 result.maxAbsDiffCoordinates = (nCompared,)
                                 result.maxAbsDiffValues = (leftData[0], rightData[0])
@@ -159,17 +135,13 @@ class NumberTextComparer(IComparer):
                 result.maxRelDiff = 1.0
             else:
                 # Difference found, make the difference relative. Maximise relative difference to 1.0.
-                result.maxRelDiff = min(
-                    1.0, result.maxAbsDiff / (max_ref_value - min_ref_value)
-                )
+                result.maxRelDiff = min(1.0, result.maxAbsDiff / (max_ref_value - min_ref_value))
 
         except Exception as e:
             logger.error(e)
             result.error = True
         finally:
-            result.isToleranceExceeded(
-                parameter.tolerance_absolute, parameter.tolerance_relative
-            )
+            result.isToleranceExceeded(parameter.tolerance_absolute, parameter.tolerance_relative)
 
             # Even though only one result is generated, the caller expects a list of results.
         results = [(testcase_name, file_check, parameter, result)]
@@ -192,9 +164,7 @@ class NumberTextComparer(IComparer):
     #        - __parseText__ used to read a full file, returning a list of number/word (with their position indices).
     #          But this list can be that huge that Python runs out of memory.
     #          Therefore __parseText__ now returns only a single number/word (with its position indices).
-    def __parseText__(
-        self, fileHandle, skip_lines: Dict[str, List[SkipLine]], ilr, is_number
-    ):
+    def __parseText__(self, fileHandle, skip_lines: Dict[str, List[SkipLine]], ilr, is_number):
         result = None
         while True:
             if len(self.__words[ilr]) == 0:
@@ -215,7 +185,7 @@ class NumberTextComparer(IComparer):
                             break
                 if skip_this_line == 1:
                     continue
-                if self.__startTag[ilr] != None:
+                if self.__startTag[ilr] is not None:
                     if str(line).find(self.__startTag[ilr]) > -1:
                         # startTag found: start parsing, set startTag to None
                         self.__startTag[ilr] = None

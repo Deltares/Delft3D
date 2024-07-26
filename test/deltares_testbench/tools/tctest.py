@@ -1,14 +1,13 @@
 # Wrapping test to get teamcity messages ...
-def tctest(testfun,testname):    
-    print ("\n##teamcity[testStarted name='%s']\n"%testname) 
+def tctest(testfun, testname) -> None:
+    print(f"\n##teamcity[testStarted name='{testname}']\n")
     try:
         testfun()
-        print ("##teamcity[testFinished name='%s' message='Test passed']\n"%testname) 
+        print(f"##teamcity[testFinished name='{testname}' message='Test passed']\n")
     except:
-        print ("##teamcity[testFailed name='%s' message='Test failed']\n"%testname) 
-        print ("##teamcity[testFinished name='%s' message='Test failed']\n"%testname) 
+        print(f"##teamcity[testFailed name='{testname}' message='Test failed']\n")
+        print(f"##teamcity[testFinished name='{testname}' message='Test failed']\n")
+
+
 #    finally:
 #        print ("[END TEST]\n\n")
-    
-
-

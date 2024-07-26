@@ -29,9 +29,9 @@ module m_psolve
 contains
 
 
-    subroutine psolve (ntrace, x, rhs, nomat, amat, &
-            imat, diag, idiag, nolay, ioptpc, &
-            nobnd, triwrk, iexseg)
+    subroutine psolve (ntrace, x, rhs, fast_solver_arr_size, amat, &
+            imat, diag, idiag, num_layers, ioptpc, &
+            num_boundary_conditions, triwrk, iexseg)
 
         !     Deltares - Delft Software Department
 
@@ -47,7 +47,7 @@ contains
         !                 November 2009, Leo Postma  : streamlined for parallel computing
 
         use m_lsolve
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use timers
         implicit none
 
@@ -59,23 +59,23 @@ contains
         real(kind = dp), intent(out) :: x     (ntrace)     ! the solution of Mx = y
         real(kind = dp), intent(inout) :: rhs   (ntrace)     ! right hand side of P-solve only
         ! this vector may be changed on exit!!
-        integer(kind = int_wp), intent(in) :: nomat                ! number of off-diagonal entries matrix
-        real(kind = dp), intent(in) :: amat  (nomat)     ! off-diagonal entries matrix LP format
-        integer(kind = int_wp), intent(in) :: imat  (nomat)     ! collumn nrs of off-diagonal entries matrix
+        integer(kind = int_wp), intent(in) :: fast_solver_arr_size                ! number of off-diagonal entries matrix
+        real(kind = dp), intent(in) :: amat  (fast_solver_arr_size)     ! off-diagonal entries matrix LP format
+        integer(kind = int_wp), intent(in) :: imat  (fast_solver_arr_size)     ! collumn nrs of off-diagonal entries matrix
         real(kind = dp), intent(in) :: diag  (ntrace)     ! diagonal entries of matrix
         integer(kind = int_wp), intent(in) :: idiag (0:ntrace)     ! start of rows in amat
-        integer(kind = int_wp), intent(in) :: nolay                ! number of layers in the vertical
+        integer(kind = int_wp), intent(in) :: num_layers                ! number of layers in the vertical
         integer(kind = int_wp), intent(in) :: ioptpc               ! = 0 no preconditioning
         ! = 1 L-GS preconditioning
         ! = 2 U-GS preconditioning
         ! = 3 SSOR preconditioning
-        integer(kind = int_wp), intent(in) :: nobnd                ! number of open boundaries
-        real(kind = dp), intent(inout) :: triwrk(nolay)     ! work array for vertical double sweep
+        integer(kind = int_wp), intent(in) :: num_boundary_conditions                ! number of open boundaries
+        real(kind = dp), intent(inout) :: triwrk(num_layers)     ! work array for vertical double sweep
         integer(kind = int_wp), intent(in) :: iexseg(ntrace)     ! 0 for explicit volumes
 
         !        local variables
 
-        integer(kind = int_wp) :: noseg                ! nr of volumes
+        integer(kind = int_wp) :: num_cells                ! nr of volumes
         integer(kind = int_wp) :: nsegl                ! nr of volumes per layer
         integer(kind = int_wp) :: iadd                 ! 0 for 2DH, 2 for 3D
         integer(kind = int_wp) :: iseg                 ! this volume
@@ -85,17 +85,17 @@ contains
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("psolve", ithandl)
 
-        if (nolay == 1) then
+        if (num_layers == 1) then
             iadd = 0
         else
             iadd = 2
         endif
 
-        noseg = ntrace - nobnd
-        nsegl = noseg / nolay
-        if (nsegl * nolay /= noseg) then
+        num_cells = ntrace - num_boundary_conditions
+        nsegl = num_cells / num_layers
+        if (nsegl * num_layers /= num_cells) then
             write(*, *) 'ERROR in PSOLVE'
-            call terminate_execution(1)
+            call stop_with_error()
         endif
 
         if (ioptpc == 0) then
@@ -104,13 +104,13 @@ contains
 
         else if(ioptpc == 1) then
 
-            call lsolve (ntrace, noseg, nolay, nsegl, nomat, &
+            call lsolve (ntrace, num_cells, num_layers, nsegl, fast_solver_arr_size, &
                     amat, imat, diag, idiag, x, &
                     rhs, triwrk, iadd, iexseg)
 
         else if(ioptpc == 2) then
 
-            call usolve (ntrace, nolay, nsegl, nomat, amat, &
+            call usolve (ntrace, num_layers, nsegl, fast_solver_arr_size, amat, &
                     imat, diag, idiag, x, rhs, &
                     triwrk, iadd, iexseg)
 
@@ -120,14 +120,14 @@ contains
 
             !            M = (D - L) "D^-1" (D - U)
 
-            call lsolve (ntrace, noseg, nolay, nsegl, nomat, &
+            call lsolve (ntrace, num_cells, num_layers, nsegl, fast_solver_arr_size, &
                     amat, imat, diag, idiag, x, &
                     rhs, triwrk, iadd, iexseg)
 
             !        THe "D^{-1}" part, note that due to the b.c entries this is
             !        a rather peculiar piece of code
 
-            if (nolay == 1) then
+            if (num_layers == 1) then
 
                 !              diagonal element is scalar
 
@@ -140,7 +140,7 @@ contains
                     ilow = idiag(iseg - 1) + 1
                     ihigh = idiag(iseg)
                     do jcol = ilow + iadd, ihigh
-                        if (imat(jcol) > noseg) then
+                        if (imat(jcol) > num_cells) then
                             rhs(iseg) = rhs(iseg) + amat(jcol) * x(imat(jcol))
                         endif
                     enddo
@@ -150,12 +150,12 @@ contains
             else
 
                 !              diagonal element is tridiagonal K x K matrix
-                !              but we can simply loop over the NOSEG (=N-NOBND) segments
+                !              but we can simply loop over the num_cells (=N-num_boundary_conditions) segments
                 !              There has been a bug in this section already from the start.
                 !              the first layer has no layer above and the last layer has
                 !              no layer below.
 
-                do iseg = 1, noseg
+                do iseg = 1, num_cells
                     ilow = idiag(iseg - 1) + 1
                     rhs(iseg) = diag(iseg) * x(iseg)
                     if (imat(ilow) > 0) rhs(iseg) = rhs(iseg) + amat(ilow) * x(imat(ilow))
@@ -166,25 +166,25 @@ contains
                     if (iexseg(iseg) == 0) cycle
                     ihigh = idiag(iseg)
                     do jcol = ilow + iadd, ihigh
-                        if (imat(jcol) > noseg) then
+                        if (imat(jcol) > num_cells) then
                             rhs(iseg) = rhs(iseg) + amat(jcol) * x(imat(jcol))
                         endif
                     enddo
                 enddo
-                do iseg = noseg + 1, ntrace
+                do iseg = num_cells + 1, ntrace
                     rhs(iseg) = diag(iseg) * x(iseg)
                 enddo
 
             endif
 
-            call usolve (ntrace, nolay, nsegl, nomat, amat, &
+            call usolve (ntrace, num_layers, nsegl, fast_solver_arr_size, amat, &
                     imat, diag, idiag, x, rhs, &
                     triwrk, iadd, iexseg)
 
         else
             write(*, *) ' This option for Pre-Conditioning '
             write(*, *) ' is not implemented :   ABORT     '
-            call terminate_execution(1)
+            call stop_with_error()
         endif
 
         if (timon) call timstop (ithandl)

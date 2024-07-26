@@ -573,6 +573,8 @@ type sedpar_type
     real(fp) :: sc_flcf   !  fraction of ParFluff0/ParFluff1 when the fluff layer fully covers the bed for Soulsby & Clarke (2005)
     real(fp) :: tbreakup  !  relaxation time scale for break-up of flocs [s]
     real(fp) :: tfloc     !  relaxation time scale for flocculation [s]
+    real(fp) :: d_micro   !  characteristic diameter of micro flocs [m]
+    real(fp) :: ustar_macro   ! characteristic shear velocity of macro flocs [m/s]
     real(fp) :: version   !  interpreter version
     !
     ! reals
@@ -726,12 +728,12 @@ type sedtra_type
     !
     real(fp)         , dimension(:)      , pointer :: bc_mor_array !(lsedtot*2)
     !
-    real(fp)         , dimension(:)      , pointer :: dcwwlc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: epsclc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: epswlc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: rsdqlc   !(1:kmax)
-    real(fp)         , dimension(:)      , pointer :: sddflc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: wslc     !(0:kmax)
+    real(fp)         , dimension(:)      , pointer :: dcwwlc   !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: epsclc   !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: epswlc   !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: rsdqlc   !(1:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: sddflc   !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: wslc     !(0:num_layers_grid)
     !
     real(fp)         , dimension(:)      , pointer :: e_dzdn   !(nu1:nu2)         dzduu in structured Delft3D-FLOW
     real(fp)         , dimension(:)      , pointer :: e_dzdt   !(nu1:nu2)         dzdvv in structured Delft3D-FLOW
@@ -899,14 +901,14 @@ end subroutine nullsedtra
 
 
 !> Allocate the arrays of sedtra_type data structure.
-subroutine allocsedtra(sedtra, moroutput, kmax, lsed, lsedtot, nc1, nc2, nu1, nu2, nxx, nstatqnt, iopt)
+subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, nc2, nu1, nu2, nxx, nstatqnt, iopt)
 !!--declarations----------------------------------------------------------------
     !
     ! Function/routine arguments
     !
     type (sedtra_type)                                       :: sedtra
     type (moroutputtype)                                     :: moroutput
-    integer                                    , intent(in)  :: kmax
+    integer                                    , intent(in)  :: num_layers_grid
     integer                                    , intent(in)  :: lsed
     integer                                    , intent(in)  :: lsedtot
     integer                                    , intent(in)  :: nc1
@@ -933,12 +935,12 @@ subroutine allocsedtra(sedtra, moroutput, kmax, lsed, lsedtot, nc1, nc2, nu1, nu
     !
     if (istat==0) allocate(sedtra%bc_mor_array (lsedtot*2), STAT = istat)
     !
-    if (istat==0) allocate(sedtra%dcwwlc  (0:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%epsclc  (0:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%epswlc  (0:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%rsdqlc  (1:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%sddflc  (0:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%wslc    (0:kmax), STAT = istat)
+    if (istat==0) allocate(sedtra%dcwwlc  (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%epsclc  (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%epswlc  (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%rsdqlc  (1:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%sddflc  (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%wslc    (0:num_layers_grid), STAT = istat)
     !
     if (istat==0) allocate(sedtra%e_dzdn  (nu1:nu2), STAT = istat)
     if (istat==0) allocate(sedtra%e_dzdt  (nu1:nu2), STAT = istat)
@@ -1233,6 +1235,8 @@ subroutine nullsedpar(sedpar)
     sedpar%version  = 2.0_fp
     sedpar%tbreakup = 1e-10_fp
     sedpar%tfloc    = 1e-10_fp
+    sedpar%d_micro  = 1e-4_fp
+    sedpar%ustar_macro = 0.067_fp
     !
     sedpar%flocmod        = FLOC_NONE
     sedpar%nflocpop       = 1

@@ -28,44 +28,26 @@ module m_dlwq65
 contains
 
 
-    SUBROUTINE DLWQ65 (AMASS, VOLUME, IDT, NOSEG)
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED             : june 1988 by L.Postma
-        !
-        !     FUNCTION            : makes a closure error correction
-        !                           for steady state computations
-        !
-        !     LOGICAL UNITNUMBERS : none
-        !
-        !     SUBROUTINES CALLED  : none
-        !
-        !     PARAMETERS          :
-        !
-        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-        !     ----    -----    ------     ------- -----------
-        !     AMASS   REAL      NOSEG     IN/OUT  closure error correction
-        !     VOLUME  REAL      NOSEG     INPUT   volume
-        !     IDT     INTEGER     1       INPUT   Time between AMASS and VOLUME
-        !     NOSEG   INTEGER     1       INPUT   number of segments
-        !
+    !> Makes a closure error correction
+    !! for steady state computations
+    subroutine dlwq65(amass, volume, idt, num_cells)
+
         use timers
 
-        real(kind = real_wp) :: AMASS (*), VOLUME(*)
-        integer(kind = int_wp) :: idt, noseg
+        real(kind = real_wp),   intent(inout) :: amass (*) !< Closure error correction
+        real(kind = real_wp),   intent(inout) :: volume(*) !< Volume
+        integer(kind = int_wp), intent(in   ) :: idt       !< Time between amass and volume
+        integer(kind = int_wp), intent(in   ) :: num_cells     !< Number of cells
+        
+        ! Local variables
         integer(kind = int_wp) :: i
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwq65", ithandl)
-        !
-        !         loop oversehe number of segments
-        !
-        DO I = 1, NOSEG
-            AMASS(I) = (AMASS(I) - VOLUME(I)) / IDT
-        end do
-        !
-        if (timon) call timstop (ithandl)
-        RETURN
-    END
 
+        do i = 1, num_cells
+            amass(i) = (amass(i) - volume(i)) / idt
+        end do
+
+        if (timon) call timstop (ithandl)
+    end subroutine dlwq65
 end module m_dlwq65

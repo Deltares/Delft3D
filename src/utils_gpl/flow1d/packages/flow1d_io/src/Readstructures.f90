@@ -375,7 +375,7 @@ module m_readstructures
       integer :: ngate
       integer :: ngenstru
       integer :: nuniweir
-      integer :: ndambreak
+      integer :: ndambreaklinks
       integer :: npump
       integer,          dimension(:), pointer :: indices
       character(len=IdLen), dimension(:), pointer :: ids
@@ -416,7 +416,7 @@ module m_readstructures
       nbridge = 0
       ngate = 0
       nuniweir = 0
-      ndambreak = 0
+      ndambreaklinks = 0
       npump = 0
       do istru = 1, sts%Count
          select case (sts%struct(istru)%type)
@@ -460,8 +460,8 @@ module m_readstructures
             nuniweir = nuniweir + 1
             sts%uniWeirIndices(nuniweir) = istru
          case (ST_DAMBREAK)
-            ndambreak = ndambreak + 1
-            sts%dambreakIndices(ndambreak) = istru
+            ndambreaklinks = ndambreaklinks + 1
+            sts%dambreakIndices(ndambreaklinks) = istru
          case (ST_PUMP)
             npump = npump+1
             sts%pumpIndices(npump) = istru

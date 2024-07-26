@@ -112,7 +112,7 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: disinp
     integer(pntrsize), pointer :: dldeta
     integer(pntrsize), pointer :: dldksi
-    integer(pntrsize), pointer :: dp
+    integer(pntrsize), pointer :: dpd
     integer(pntrsize), pointer :: dpc
     integer(pntrsize), pointer :: dpdeta
     integer(pntrsize), pointer :: dpdksi
@@ -595,7 +595,7 @@ subroutine gtptrs(gdp)
     discum     => gdp%gdr_i_ch%discum
     dldeta     => gdp%gdr_i_ch%dldeta
     dldksi     => gdp%gdr_i_ch%dldksi
-    dp         => gdp%gdr_i_ch%dp
+    dpd        => gdp%gdr_i_ch%dpd
     dpc        => gdp%gdr_i_ch%dpc
     dpdeta     => gdp%gdr_i_ch%dpdeta
     dpdksi     => gdp%gdr_i_ch%dpdksi
@@ -1134,7 +1134,7 @@ subroutine gtptrs(gdp)
     disinp     = gtrpnt('disinp', gdp)
     dldeta     = gtrpnt('dldeta', gdp)
     dldksi     = gtrpnt('dldksi', gdp)
-    dp         = gtrpnt('dp'    , gdp)
+    dpd        = gtrpnt('dpd'   , gdp)
     dpc        = gtrpnt('dpc'   , gdp)
     dpdeta     = gtrpnt('dpdeta', gdp)
     dpdksi     = gtrpnt('dpdksi', gdp)

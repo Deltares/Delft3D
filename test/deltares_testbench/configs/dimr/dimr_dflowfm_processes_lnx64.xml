@@ -38,7 +38,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -46,12 +45,6 @@
             <arguments>
                 <argument>-c</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>svn</path>
-            <environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
             <location ref="reference_engines" type="reference">
@@ -83,7 +76,6 @@
         <program ref="dimr">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
     </programs>
@@ -105,13 +97,11 @@
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="dimr" seq="2">
           <arguments>
               <argument>-m dimr_restart.xml</argument>
-              <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
           </arguments>
       </program>
     </programs>
@@ -133,7 +123,6 @@
         <program ref="dimr">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
     </programs>
@@ -155,13 +144,11 @@
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="dimr" seq="2">
           <arguments>
               <argument>-m dimr_restart.xml</argument>
-              <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
           </arguments>
       </program>
     </programs>

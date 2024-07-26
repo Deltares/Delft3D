@@ -1,7 +1,6 @@
-"""
-Description: Network Path Data Class
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Network Path Data Class.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 from typing import Optional
@@ -11,9 +10,9 @@ from src.config.types.path_type import PathType
 
 
 class Location:
-    """Network path configuration"""
+    """Network path configuration."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__name: str = ""
         self.__type: PathType = PathType.NONE
         self.__credentials: Credentials = Credentials()
@@ -24,65 +23,65 @@ class Location:
 
     @property
     def name(self) -> str:
-        """name of path"""
+        """Name of path."""
         return self.__name
 
     @name.setter
-    def name(self, value: str):
+    def name(self, value: str) -> None:
         self.__name = value
 
     @property
     def type(self) -> PathType:
-        """type object definition for network (check, reference or input)"""
+        """Type object definition for network (check, reference or input)."""
         return self.__type
 
     @type.setter
-    def type(self, value: PathType):
+    def type(self, value: PathType) -> None:
         self.__type = value
 
     @property
     def credentials(self) -> Credentials:
-        """credentials object"""
+        """Credentials object."""
         return self.__credentials
 
     @credentials.setter
-    def credentials(self, value: Credentials):
+    def credentials(self, value: Credentials) -> None:
         self.__credentials = value
 
     @property
     def root(self) -> str:
-        """root of the network path (http(s), net, disk, svn)"""
+        """Root of the network path (http(s), net, disk)."""
         return self.__root
 
     @root.setter
-    def root(self, value: str):
+    def root(self, value: str) -> None:
         self.__root = value
 
     @property
     def from_path(self) -> str:
-        """from subpath including trailing escape character (e.g. /)"""
+        """From subpath including trailing escape character (e.g. /)."""
         return self.__from
 
     @from_path.setter
-    def from_path(self, value: str):
+    def from_path(self, value: str) -> None:
         self.__from = value
 
     @property
     def to_path(self) -> str:
-        """path the root + from is copied to, sub directory of specified local path"""
+        """Path the root + from is copied to, sub directory of specified local path."""
         if self.__to == "":
             return self.__from
         return self.__to
 
     @to_path.setter
-    def to_path(self, value: str):
+    def to_path(self, value: str) -> None:
         self.__to = value
 
     @property
     def version(self) -> Optional[str]:
-        """version of application (mainly used for subversion)"""
+        """Version of application (mainly used for subversion)."""
         return self.__version
 
     @version.setter
-    def version(self, value: Optional[str]):
+    def version(self, value: Optional[str]) -> None:
         self.__version = value

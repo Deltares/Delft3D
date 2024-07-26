@@ -28,10 +28,10 @@ module m_strear
 contains
 
 
-    subroutine strear (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger, only : terminate_execution, get_log_unit_number
+    subroutine strear (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         !>\file
         !>       Aeration at weirs (Gameson and Nakasone) (input is array of structures)
@@ -77,8 +77,8 @@ contains
         !     ------   -----  ------------
         !
         IMPLICIT NONE
-        REAL(kind = real_wp) :: PMSA  (*), FL  (*)
-        INTEGER(kind = int_wp) :: NOSEG, NOFLUX, NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL  (*)
+        INTEGER(kind = int_wp) :: num_cells, NOFLUX, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), &
                 IEXPNT(4, *), IKNMRK(*)
         !
@@ -109,13 +109,13 @@ contains
         IN7 = INCREM(7)
         IN8 = INCREM(8)
         !
-        NOSTR = NINT(PMSA(IP1))
+        NOSTR = NINT(process_space_real(IP1))
         !
         IF (NOSTR > 100.0) THEN
             CALL get_log_unit_number(lunrep)
             write(lunrep, *) 'Error: Number of structures', &
                     ' greater than 100'
-            CALL terminate_execution(1)
+            CALL stop_with_error()
         ENDIF
         !
         !     segment loop over structures-------------------------------
@@ -127,13 +127,13 @@ contains
             !
             !        read input structure---------------------------------------
             !
-            DISCH = PMSA(IPOINT(ITEL + 1))
-            WLL = PMSA(IPOINT(ITEL + 2))
-            WLR = PMSA(IPOINT(ITEL + 3))
-            SEGL = NINT(PMSA(IPOINT(ITEL + 4)))
-            SEGR = NINT(PMSA(IPOINT(ITEL + 5)))
-            b = PMSA(IPOINT(ITEL + 6))
-            WIDTH = PMSA(IPOINT(ITEL + 7))
+            DISCH = process_space_real(IPOINT(ITEL + 1))
+            WLL = process_space_real(IPOINT(ITEL + 2))
+            WLR = process_space_real(IPOINT(ITEL + 3))
+            SEGL = NINT(process_space_real(IPOINT(ITEL + 4)))
+            SEGR = NINT(process_space_real(IPOINT(ITEL + 5)))
+            b = process_space_real(IPOINT(ITEL + 6))
+            WIDTH = process_space_real(IPOINT(ITEL + 7))
             !
             !        Oxygen production if discharge over crest is larger than
             !        zero. Aeration takes place in downstream segment-----------
@@ -155,18 +155,18 @@ contains
             WLDIF = UPWL - DNWL
             !
             !        reading input of segment downstream of structure-----------
-            OXYDN = MAX(0.0, PMSA(IP2 + (DNSEG - 1) * IN2))
-            DELT = PMSA(IP3 + (DNSEG - 1) * IN3)
-            CSAT = PMSA(IP4 + (DNSEG - 1) * IN4)
-            BOD5 = MAX(0.0, PMSA(IP5 + (DNSEG - 1) * IN5))
-            TEMP = PMSA(IP6 + (DNSEG - 1) * IN6)
-            DEPTH = PMSA(IP7 + (DNSEG - 1) * IN7)
-            SWAER = PMSA(IP8 + (DNSEG - 1) * IN8)
+            OXYDN = MAX(0.0, process_space_real(IP2 + (DNSEG - 1) * IN2))
+            DELT = process_space_real(IP3 + (DNSEG - 1) * IN3)
+            CSAT = process_space_real(IP4 + (DNSEG - 1) * IN4)
+            BOD5 = MAX(0.0, process_space_real(IP5 + (DNSEG - 1) * IN5))
+            TEMP = process_space_real(IP6 + (DNSEG - 1) * IN6)
+            DEPTH = process_space_real(IP7 + (DNSEG - 1) * IN7)
+            SWAER = process_space_real(IP8 + (DNSEG - 1) * IN8)
             !
 
             !        reading input of segment upstream of structure-----------
             !
-            OXYUP = MAX(0.0, PMSA(IP2 + (UPSEG - 1) * IN2))
+            OXYUP = MAX(0.0, process_space_real(IP2 + (UPSEG - 1) * IN2))
             !
             !        calculation a, a factor for the contamination of the water-
             !

@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <!-- ======================================================================== -->
         <testCase name="e38_f01_c01_mod2_FM_D3D4_folders" ref="dimr_trunk">
             <path version="2024-02-02T15:30:00">e38_dflowfm-cosumo/f01_general/c01_mod2_FM_D3D4_folders</path>

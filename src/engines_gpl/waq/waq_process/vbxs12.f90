@@ -28,11 +28,11 @@ module m_vbxs12
 contains
 
 
-    subroutine VBXS12     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger, only : write_error_message, get_log_unit_number
-        use m_evaluate_waq_attribute
+    subroutine VBXS12     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : write_error_message, get_log_unit_number
+        use m_extract_waq_attribute
 
         !XXXDEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'VBXS12' :: VBXS12
         !
@@ -42,18 +42,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(*)  ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(*)  ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(*)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         !
         !*******************************************************************************
         !     This process replaces the 8 pre-existing VB processes for the S12 mode, in combination with DELWAQG
@@ -363,9 +363,9 @@ contains
         !     retrieve constants
 
         ipnt = ipoint(1:nin + nout)
-        VBType = NINT(pmsa(ipnt(ip_VBType)))
-        DELT = pmsa(ipnt(ip_Delt))
-        SwVegMod = NINT(pmsa(ipnt(ip_SwVegMod)))   ! check that this is indeed a constant
+        VBType = NINT(process_space_real(ipnt(ip_VBType)))
+        DELT = process_space_real(ipnt(ip_Delt))
+        SwVegMod = NINT(process_space_real(ipnt(ip_SwVegMod)))   ! check that this is indeed a constant
 
         ! set bottom segment number for all (water only in this approach) segments
         !$omp critical
@@ -373,15 +373,15 @@ contains
             first_handled = .true.
             CALL get_log_unit_number(ILUMON)
 
-            allocate(botseg(noseg))
-            allocate(work(NFlxWat, noseg))
+            allocate(botseg(num_cells))
+            allocate(work(NFlxWat, num_cells))
             botseg = -1
 
             ! set botseg equal to iseg for the segments which have a bottom
 
-            do iseg = 1, noseg
-                call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            do iseg = 1, num_cells
+                call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
 
                 if (ikmrk1<3 .and. (ikmrk2==0).or.(ikmrk2==3)) then
                     botseg(iseg) = iseg
@@ -390,7 +390,7 @@ contains
             enddo
 
             ! loop to find bottom segment in water columns
-            do iq = noq1 + noq2 + noq3, noq1 + noq2 + 1, -1
+            do iq = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir, num_exchanges_u_dir + num_exchanges_v_dir + 1, -1
                 ifrom = iexpnt(1, iq)
                 ito = iexpnt(2, iq)
                 if (ifrom > 0 .and. ito > 0) then
@@ -406,28 +406,28 @@ contains
 
         ! zero the available nutrients pools for all water segments
         ipnt = ipoint(1:nin + nout)
-        do iseg = 1, noseg
-            pmsa(ipnt(ip_VBNavail)) = 0.0
-            pmsa(ipnt(ip_VBPavail)) = 0.0
-            pmsa(ipnt(ip_VBSavail)) = 0.0
+        do iseg = 1, num_cells
+            process_space_real(ipnt(ip_VBNavail)) = 0.0
+            process_space_real(ipnt(ip_VBPavail)) = 0.0
+            process_space_real(ipnt(ip_VBSavail)) = 0.0
             ipnt = ipnt + increm(1:nin + nout)
         enddo
 
         ! accumulate available nutrients in the water column, to totals in the bottom segment
         ipnt = ipoint(1:nin + nout)
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
-            totaldepth = pmsa(ipnt(ip_totaldepth))
-            localdepth = pmsa(ipnt(ip_localdepth))
-            depth = pmsa(ipnt(ip_depth))
-            VegHeVB = pmsa(ipnt(ip_VegHeVB))
-            volume = pmsa(ipnt(ip_volume))
-            nh4 = max(0.0, pmsa(ipnt(ip_nh4)))
-            no3 = max(0.0, pmsa(ipnt(ip_no3)))
-            aap = max(0.0, pmsa(ipnt(ip_aap)))
-            po4 = max(0.0, pmsa(ipnt(ip_po4)))
-            so4 = max(0.0, pmsa(ipnt(ip_so4)))
-            sud = max(0.0, pmsa(ipnt(ip_sud)))
+            totaldepth = process_space_real(ipnt(ip_totaldepth))
+            localdepth = process_space_real(ipnt(ip_localdepth))
+            depth = process_space_real(ipnt(ip_depth))
+            VegHeVB = process_space_real(ipnt(ip_VegHeVB))
+            volume = process_space_real(ipnt(ip_volume))
+            nh4 = max(0.0, process_space_real(ipnt(ip_nh4)))
+            no3 = max(0.0, process_space_real(ipnt(ip_no3)))
+            aap = max(0.0, process_space_real(ipnt(ip_aap)))
+            po4 = max(0.0, process_space_real(ipnt(ip_po4)))
+            so4 = max(0.0, process_space_real(ipnt(ip_so4)))
+            sud = max(0.0, process_space_real(ipnt(ip_sud)))
 
             if (VegHeVB > 0.0) then
 
@@ -454,11 +454,11 @@ contains
 
                 if (frlay>0.0) then
                     ipb = ipoint(ip_VBNavail) + (botseg(iseg) - 1) * increm(ip_VBNavail)
-                    pmsa(ipb) = pmsa(ipb) + (nh4 + no3) * volume * frlay
+                    process_space_real(ipb) = process_space_real(ipb) + (nh4 + no3) * volume * frlay
                     ipb = ipoint(ip_VBPavail) + (botseg(iseg) - 1) * increm(ip_VBPavail)
-                    pmsa(ipb) = pmsa(ipb) + (aap + po4) * volume * frlay
+                    process_space_real(ipb) = process_space_real(ipb) + (aap + po4) * volume * frlay
                     ipb = ipoint(ip_VBSavail) + (botseg(iseg) - 1) * increm(ip_VBSavail)
-                    pmsa(ipb) = pmsa(ipb) + (so4 + sud) * volume * frlay
+                    process_space_real(ipb) = process_space_real(ipb) + (so4 + sud) * volume * frlay
                 endif
 
                 ! End Plant height check
@@ -471,24 +471,24 @@ contains
         ipnt = ipoint(1:nin + nout)
         work = 0.0
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
             !         lowest water and 2d segments only, also dry, ikmrk1 = 0
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
             if (ikmrk1<3 .and. (ikmrk2==0).or.(ikmrk2==3)) then
 
                 !*** VBSTAT ************************
 
-                SwEmersion = pmsa(ipnt(ip_SwEmersion))
-                nsfVB = pmsa(ipnt(ip_nsfVB))
-                CrnsfVB = pmsa(ipnt(ip_CrnsfVB))
-                Initnsfd = pmsa(ipnt(ip_Initnsfd))
-                CrdepVB = pmsa(ipnt(ip_CrdepVB))
-                nscdVB = pmsa(ipnt(ip_nscdVB))
-                InnscdVB = pmsa(ipnt(ip_InnscdVB))
-                TotalDepth = pmsa(ipnt(ip_TotalDepth))
-                depth = pmsa(ipnt(ip_Depth))
+                SwEmersion = process_space_real(ipnt(ip_SwEmersion))
+                nsfVB = process_space_real(ipnt(ip_nsfVB))
+                CrnsfVB = process_space_real(ipnt(ip_CrnsfVB))
+                Initnsfd = process_space_real(ipnt(ip_Initnsfd))
+                CrdepVB = process_space_real(ipnt(ip_CrdepVB))
+                nscdVB = process_space_real(ipnt(ip_nscdVB))
+                InnscdVB = process_space_real(ipnt(ip_InnscdVB))
+                TotalDepth = process_space_real(ipnt(ip_TotalDepth))
+                depth = process_space_real(ipnt(ip_Depth))
 
                 SWVBGro = 1.0
                 SWVBMrt = 0.0
@@ -518,40 +518,40 @@ contains
                         SWVBMrt = 1.0
                     endif
                 endif
-                pmsa(ipnt(ip_SWVBGro)) = SWVBGro
-                pmsa(ipnt(ip_SWVBMrt)) = SWVBMrt
-                pmsa(ipnt(ip_nsfVB)) = nsfVB
-                pmsa(ipnt(ip_nscdVB)) = nscdVB
+                process_space_real(ipnt(ip_SWVBGro)) = SWVBGro
+                process_space_real(ipnt(ip_SWVBMrt)) = SWVBMrt
+                process_space_real(ipnt(ip_nsfVB)) = nsfVB
+                process_space_real(ipnt(ip_nscdVB)) = nscdVB
 
                 !*** VEG2DN ************************ second part bottom layer only
 
                 ! add sediment pools
                 ! S12 assume well-mixed sediment layer, as the DELWAQG module does not export information on the profile
 
-                RootDeVB = pmsa(ipnt(ip_RootDeVB))
-                HSed = pmsa(ipnt(ip_HSed))
-                surf = pmsa(ipnt(ip_surf))
-                PorSed = max(0.0, pmsa(ipnt(ip_PorSed)))
-                s1_nh4 = max(0.0, pmsa(ipnt(ip_s1_nh4)))
-                s1_no3 = max(0.0, pmsa(ipnt(ip_s1_no3)))
-                s1_aap = max(0.0, pmsa(ipnt(ip_s1_aap)))
-                s1_po4 = max(0.0, pmsa(ipnt(ip_s1_po4)))
-                s1_so4 = max(0.0, pmsa(ipnt(ip_s1_so4)))
-                s1_sud = max(0.0, pmsa(ipnt(ip_s1_sud)))
-                SWRootVB = pmsa(ipnt(ip_SWRootVB))
-                VmaxVB = pmsa(ipnt(ip_VmaxVB))
-                KmVB = pmsa(ipnt(ip_KmVB))
-                ViniVB = pmsa(ipnt(ip_ViniVB))
+                RootDeVB = process_space_real(ipnt(ip_RootDeVB))
+                HSed = process_space_real(ipnt(ip_HSed))
+                surf = process_space_real(ipnt(ip_surf))
+                PorSed = max(0.0, process_space_real(ipnt(ip_PorSed)))
+                s1_nh4 = max(0.0, process_space_real(ipnt(ip_s1_nh4)))
+                s1_no3 = max(0.0, process_space_real(ipnt(ip_s1_no3)))
+                s1_aap = max(0.0, process_space_real(ipnt(ip_s1_aap)))
+                s1_po4 = max(0.0, process_space_real(ipnt(ip_s1_po4)))
+                s1_so4 = max(0.0, process_space_real(ipnt(ip_s1_so4)))
+                s1_sud = max(0.0, process_space_real(ipnt(ip_s1_sud)))
+                SWRootVB = process_space_real(ipnt(ip_SWRootVB))
+                VmaxVB = process_space_real(ipnt(ip_VmaxVB))
+                KmVB = process_space_real(ipnt(ip_KmVB))
+                ViniVB = process_space_real(ipnt(ip_ViniVB))
 
                 fbot = min(1.0, -RootDeVB / hsed)
 
                 ! add sediment nutrients and convert to g/m2
                 ipb = ipnt(ip_VBNavail)
-                pmsa(ipb) = (pmsa(ipb) + (s1_nh4 + s1_no3) * fbot * surf) / surf
+                process_space_real(ipb) = (process_space_real(ipb) + (s1_nh4 + s1_no3) * fbot * surf) / surf
                 ipb = ipnt(ip_VBPavail)
-                pmsa(ipb) = (pmsa(ipb) + (s1_aap + s1_po4) * fbot * surf) / surf
+                process_space_real(ipb) = (process_space_real(ipb) + (s1_aap + s1_po4) * fbot * surf) / surf
                 ipb = ipnt(ip_VBSavail)
-                pmsa(ipb) = (pmsa(ipb) + (s1_so4 + s1_sud) * fbot * surf) / surf
+                process_space_real(ipb) = (process_space_real(ipb) + (s1_so4 + s1_sud) * fbot * surf) / surf
 
                 ! RootShoot Model using the Michaelis-Menten eq.
                 if (Nint(SWRootVB) == 1) then
@@ -562,63 +562,63 @@ contains
                         TIN = 0.0
                     endif
                     F2VB = ViniVB + (VmaxVB * TIN) / (KmVB + TIN)  ! foliage
-                    pmsa(ipnt(ip_F1VB)) = 0.0
-                    pmsa(ipnt(ip_F2VB)) = F2VB
-                    pmsa(ipnt(ip_F3VB)) = 0.0
-                    pmsa(ipnt(ip_F4VB)) = 0.0
-                    pmsa(ipnt(ip_F5VB)) = 1.0 - F2VB  ! fineroot
+                    process_space_real(ipnt(ip_F1VB)) = 0.0
+                    process_space_real(ipnt(ip_F2VB)) = F2VB
+                    process_space_real(ipnt(ip_F3VB)) = 0.0
+                    process_space_real(ipnt(ip_F4VB)) = 0.0
+                    process_space_real(ipnt(ip_F5VB)) = 1.0 - F2VB  ! fineroot
                 else
                     ! these five factors are supposed to come from the input !  IS THIS INDEED WHAT WAS INTENDED?
                 endif
 
                 !*** VBGRO ************************
 
-                VB = pmsa(ipnt(ip_VB))
-                maxVB = pmsa(ipnt(ip_maxVB))
-                minVB = pmsa(ipnt(ip_minVB))
-                hlfAgeVB = pmsa(ipnt(ip_hlfAgeVB))
-                sfVB = pmsa(ipnt(ip_sfVB))
-                dmCfVB = pmsa(ipnt(ip_dmCfVB))
-                iniVB = pmsa(ipnt(ip_iniVB))
-                iniCovVB = pmsa(ipnt(ip_iniCovVB))
-                SWiniVB = nint(pmsa(ipnt(ip_SWiniVB)))
-                ageVB = pmsa(ipnt(ip_ageVB))
-                VBNavail = pmsa(ipnt(ip_VBNavail))
-                VBPavail = pmsa(ipnt(ip_VBPavail))
-                VBSavail = pmsa(ipnt(ip_VBSavail))
-                VBFrMaxU = pmsa(ipnt(ip_VBFrMaxU))
-                F1VB = pmsa(ipnt(ip_F1VB))
-                F2VB = pmsa(ipnt(ip_F2VB))
-                F3VB = pmsa(ipnt(ip_F3VB))
-                F4VB = pmsa(ipnt(ip_F4VB))
-                F5VB = pmsa(ipnt(ip_F5VB))
-                CNf1VB = pmsa(ipnt(ip_CNf1VB))
-                CNf2VB = pmsa(ipnt(ip_CNf2VB))
-                CNf3VB = pmsa(ipnt(ip_CNf3VB))
-                CNf4VB = pmsa(ipnt(ip_CNf4VB))
-                CNf5VB = pmsa(ipnt(ip_CNf5VB))
-                CPf1VB = pmsa(ipnt(ip_CPf1VB))
-                CPf2VB = pmsa(ipnt(ip_CPf2VB))
-                CPf3VB = pmsa(ipnt(ip_CPf3VB))
-                CPf4VB = pmsa(ipnt(ip_CPf4VB))
-                CPf5VB = pmsa(ipnt(ip_CPf5VB))
-                CSf1VB = pmsa(ipnt(ip_CSf1VB))
-                CSf2VB = pmsa(ipnt(ip_CSf2VB))
-                CSf3VB = pmsa(ipnt(ip_CSf3VB))
-                CSf4VB = pmsa(ipnt(ip_CSf4VB))
-                CSf5VB = pmsa(ipnt(ip_CSf5VB))
-                SWRegrVB = nint(pmsa(ipnt(ip_SWRegrVB)))
-                SWVBDec = nint(pmsa(ipnt(ip_SWVBDec)))
-                IniAgeVB = pmsa(ipnt(ip_IniAgeVB))
-                IniVBDec = pmsa(ipnt(ip_IniVBDec))
-                Rc0GWV = pmsa(ipnt(ip_Rc0GWV))
-                TcGWV = pmsa(ipnt(ip_TcGWV))
-                AcGWV = pmsa(ipnt(ip_AcGWV))
-                MinRWV = pmsa(ipnt(ip_MinRWV))
-                TBmWV = pmsa(ipnt(ip_TBmWV))
-                TempAir = pmsa(ipnt(ip_TempAir))
-                MinVBAll = pmsa(ipnt(ip_MinVBAll))
-                volume = pmsa(ipnt(ip_volume))
+                VB = process_space_real(ipnt(ip_VB))
+                maxVB = process_space_real(ipnt(ip_maxVB))
+                minVB = process_space_real(ipnt(ip_minVB))
+                hlfAgeVB = process_space_real(ipnt(ip_hlfAgeVB))
+                sfVB = process_space_real(ipnt(ip_sfVB))
+                dmCfVB = process_space_real(ipnt(ip_dmCfVB))
+                iniVB = process_space_real(ipnt(ip_iniVB))
+                iniCovVB = process_space_real(ipnt(ip_iniCovVB))
+                SWiniVB = nint(process_space_real(ipnt(ip_SWiniVB)))
+                ageVB = process_space_real(ipnt(ip_ageVB))
+                VBNavail = process_space_real(ipnt(ip_VBNavail))
+                VBPavail = process_space_real(ipnt(ip_VBPavail))
+                VBSavail = process_space_real(ipnt(ip_VBSavail))
+                VBFrMaxU = process_space_real(ipnt(ip_VBFrMaxU))
+                F1VB = process_space_real(ipnt(ip_F1VB))
+                F2VB = process_space_real(ipnt(ip_F2VB))
+                F3VB = process_space_real(ipnt(ip_F3VB))
+                F4VB = process_space_real(ipnt(ip_F4VB))
+                F5VB = process_space_real(ipnt(ip_F5VB))
+                CNf1VB = process_space_real(ipnt(ip_CNf1VB))
+                CNf2VB = process_space_real(ipnt(ip_CNf2VB))
+                CNf3VB = process_space_real(ipnt(ip_CNf3VB))
+                CNf4VB = process_space_real(ipnt(ip_CNf4VB))
+                CNf5VB = process_space_real(ipnt(ip_CNf5VB))
+                CPf1VB = process_space_real(ipnt(ip_CPf1VB))
+                CPf2VB = process_space_real(ipnt(ip_CPf2VB))
+                CPf3VB = process_space_real(ipnt(ip_CPf3VB))
+                CPf4VB = process_space_real(ipnt(ip_CPf4VB))
+                CPf5VB = process_space_real(ipnt(ip_CPf5VB))
+                CSf1VB = process_space_real(ipnt(ip_CSf1VB))
+                CSf2VB = process_space_real(ipnt(ip_CSf2VB))
+                CSf3VB = process_space_real(ipnt(ip_CSf3VB))
+                CSf4VB = process_space_real(ipnt(ip_CSf4VB))
+                CSf5VB = process_space_real(ipnt(ip_CSf5VB))
+                SWRegrVB = nint(process_space_real(ipnt(ip_SWRegrVB)))
+                SWVBDec = nint(process_space_real(ipnt(ip_SWVBDec)))
+                IniAgeVB = process_space_real(ipnt(ip_IniAgeVB))
+                IniVBDec = process_space_real(ipnt(ip_IniVBDec))
+                Rc0GWV = process_space_real(ipnt(ip_Rc0GWV))
+                TcGWV = process_space_real(ipnt(ip_TcGWV))
+                AcGWV = process_space_real(ipnt(ip_AcGWV))
+                MinRWV = process_space_real(ipnt(ip_MinRWV))
+                TBmWV = process_space_real(ipnt(ip_TBmWV))
+                TempAir = process_space_real(ipnt(ip_TempAir))
+                MinVBAll = process_space_real(ipnt(ip_MinVBAll))
+                volume = process_space_real(ipnt(ip_volume))
 
                 if (ifirst (vbtype) == 0) then
                     AgeVB = IniAgeVB
@@ -866,14 +866,14 @@ contains
                     end if
                     !
                     fl  (If_dVB + (iseg - 1) * noflux) = dVB                              ! g/m3/d
-                    pmsa(ipnt(ip_ageVB)) = ageVB
-                    pmsa(ipnt(ip_VBha)) = VBha
-                    pmsa(ipnt(ip_VBAha)) = VBAha
-                    pmsa(ipnt(ip_rGWV)) = rGWV
-                    pmsa(ipnt(ip_fVB)) = fVB
-                    pmsa(ipnt(ip_VBAge0ha)) = VBAge0ha
-                    pmsa(ipnt(ip_SWVBDec)) = real(SWVBDec)
-                    pmsa(ipnt(ip_NutLimVB)) = NutLimVB
+                    process_space_real(ipnt(ip_ageVB)) = ageVB
+                    process_space_real(ipnt(ip_VBha)) = VBha
+                    process_space_real(ipnt(ip_VBAha)) = VBAha
+                    process_space_real(ipnt(ip_rGWV)) = rGWV
+                    process_space_real(ipnt(ip_fVB)) = fVB
+                    process_space_real(ipnt(ip_VBAge0ha)) = VBAge0ha
+                    process_space_real(ipnt(ip_SWVBDec)) = real(SWVBDec)
+                    process_space_real(ipnt(ip_NutLimVB)) = NutLimVB
 
                     ! ---             end check iniCovVB - only significant vegetation
 
@@ -909,23 +909,23 @@ contains
 
                     !         evaluate SwVBGro
                 endif
-                pmsa(ipnt(ip_fNVBup)) = fNVBup
-                pmsa(ipnt(ip_fPVBup)) = fPVBup
-                pmsa(ipnt(ip_fSVBup)) = fSVBup
+                process_space_real(ipnt(ip_fNVBup)) = fNVBup
+                process_space_real(ipnt(ip_fPVBup)) = fPVBup
+                process_space_real(ipnt(ip_fSVBup)) = fSVBup
 
                 !*** VBMRT *************************
 
                 !Most input already defined
-                FfolPOC1 = pmsa(ipnt(ip_FfolPOC1))
-                FfolPOC2 = pmsa(ipnt(ip_FfolPOC2))
-                FfrootPOC1 = pmsa(ipnt(ip_FfrootPOC1))
-                FfrootPOC2 = pmsa(ipnt(ip_FfrootPOC2))
-                RcMrtVB = pmsa(ipnt(ip_RcMrtVB))
-                Rc0MSWV = pmsa(ipnt(ip_Rc0MSWV))
-                TcMSWV = pmsa(ipnt(ip_TcMSWV))
-                RcMGRWV = pmsa(ipnt(ip_RcMGRWV))
-                AcMWV = pmsa(ipnt(ip_AcMWV))
-                MaxRWV = pmsa(ipnt(ip_MaxRWV))
+                FfolPOC1 = process_space_real(ipnt(ip_FfolPOC1))
+                FfolPOC2 = process_space_real(ipnt(ip_FfolPOC2))
+                FfrootPOC1 = process_space_real(ipnt(ip_FfrootPOC1))
+                FfrootPOC2 = process_space_real(ipnt(ip_FfrootPOC2))
+                RcMrtVB = process_space_real(ipnt(ip_RcMrtVB))
+                Rc0MSWV = process_space_real(ipnt(ip_Rc0MSWV))
+                TcMSWV = process_space_real(ipnt(ip_TcMSWV))
+                RcMGRWV = process_space_real(ipnt(ip_RcMGRWV))
+                AcMWV = process_space_real(ipnt(ip_AcMWV))
+                MaxRWV = process_space_real(ipnt(ip_MaxRWV))
 
                 if ((NINT (SwVBMrt) == 1) .or. (SWVBDec == 1)) then
                     !             inundation mortality
@@ -1042,15 +1042,15 @@ contains
 
                 do itel = 1, NFlxSed
                     !                 fl  ( if_firstSed + itel + (iseg-1)*noflux ) = FlxSed(itel)
-                    pmsa(ipnt(ip_offsetrfl + itel)) = FlxSed(itel) * depth
+                    process_space_real(ipnt(ip_offsetrfl + itel)) = FlxSed(itel) * depth
                 enddo
-                pmsa(ipnt(ip_rMrtVB)) = rMrtVB
-                pmsa(ipnt(ip_fMrtVB)) = fMrtVB
+                process_space_real(ipnt(ip_rMrtVB)) = rMrtVB
+                process_space_real(ipnt(ip_fMrtVB)) = fMrtVB
 
                 !         end bottom and 2d segments only
             endif
 
-            ! update pmsa pointers
+            ! update process_space_real pointers
             ipnt = ipnt + increm(1:nin + nout)
             !
             !     end MAIN segment loop for BOTTOM SEGMENTS only
@@ -1059,19 +1059,19 @@ contains
         !**** LOOP TO ORGANISE DISTRIBUTION OF MORTALITY FLUXES OVER THE WATER COLUMN
 
         ipnt = ipoint(1:nin + nout)
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
             !*** VEG3DX ************************
 
-            depth = pmsa(ipnt(ip_depth))
-            totaldepth = pmsa(ipnt(ip_totaldepth))
-            localdepth = pmsa(ipnt(ip_localdepth))
-            SwDisVB = nint(pmsa(ipnt(ip_SwDisVB)))
-            VegHeVB = pmsa(ipnt(ip_VegHeVB))
-            FFacVB = pmsa(ipnt(ip_FFacVB))
+            depth = process_space_real(ipnt(ip_depth))
+            totaldepth = process_space_real(ipnt(ip_totaldepth))
+            localdepth = process_space_real(ipnt(ip_localdepth))
+            SwDisVB = nint(process_space_real(ipnt(ip_SwDisVB)))
+            VegHeVB = process_space_real(ipnt(ip_VegHeVB))
+            FFacVB = process_space_real(ipnt(ip_FFacVB))
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
             if (ikmrk1<3) then ! also when dry!
                 if (VegHeVB > 0.0) then
 
@@ -1126,7 +1126,7 @@ contains
         !*** VEG3DU ************************
 
         ipnt = ipoint(1:nin + nout)
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
             dN1VBupw = 0.0
             dN2VBupw = 0.0
@@ -1141,28 +1141,28 @@ contains
             dS1VBups = 0.0
             dS2VBups = 0.0
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
 
-            depth = pmsa(ipnt(ip_depth))
-            totaldepth = pmsa(ipnt(ip_totaldepth))
-            localdepth = pmsa(ipnt(ip_localdepth))
-            VegHeVB = pmsa(ipnt(ip_VegHeVB))
-            delt = pmsa(ipnt(ip_delt))
-            nh4 = max(0.0, pmsa(ipnt(ip_nh4)))
-            no3 = max(0.0, pmsa(ipnt(ip_no3)))
-            aap = max(0.0, pmsa(ipnt(ip_aap)))
-            po4 = max(0.0, pmsa(ipnt(ip_po4)))
-            so4 = max(0.0, pmsa(ipnt(ip_so4)))
-            sud = max(0.0, pmsa(ipnt(ip_sud)))
+            depth = process_space_real(ipnt(ip_depth))
+            totaldepth = process_space_real(ipnt(ip_totaldepth))
+            localdepth = process_space_real(ipnt(ip_localdepth))
+            VegHeVB = process_space_real(ipnt(ip_VegHeVB))
+            delt = process_space_real(ipnt(ip_delt))
+            nh4 = max(0.0, process_space_real(ipnt(ip_nh4)))
+            no3 = max(0.0, process_space_real(ipnt(ip_no3)))
+            aap = max(0.0, process_space_real(ipnt(ip_aap)))
+            po4 = max(0.0, process_space_real(ipnt(ip_po4)))
+            so4 = max(0.0, process_space_real(ipnt(ip_so4)))
+            sud = max(0.0, process_space_real(ipnt(ip_sud)))
 
             ibotseg = botseg(iseg)
-            VBNavail = pmsa(ipoint(ip_VBNavail) + (ibotseg - 1) * increm(ip_VBNavail))
-            VBPavail = pmsa(ipoint(ip_VBPavail) + (ibotseg - 1) * increm(ip_VBPavail))
-            VBSavail = pmsa(ipoint(ip_VBSavail) + (ibotseg - 1) * increm(ip_VBSavail))
-            fNVBup = pmsa(ipoint(ip_fNVBup) + (ibotseg - 1) * increm(ip_fNVBup))
-            fPVBup = pmsa(ipoint(ip_fPVBup) + (ibotseg - 1) * increm(ip_fPVBup))
-            fSVBup = pmsa(ipoint(ip_fSVBup) + (ibotseg - 1) * increm(ip_fSVBup))
+            VBNavail = process_space_real(ipoint(ip_VBNavail) + (ibotseg - 1) * increm(ip_VBNavail))
+            VBPavail = process_space_real(ipoint(ip_VBPavail) + (ibotseg - 1) * increm(ip_VBPavail))
+            VBSavail = process_space_real(ipoint(ip_VBSavail) + (ibotseg - 1) * increm(ip_VBSavail))
+            fNVBup = process_space_real(ipoint(ip_fNVBup) + (ibotseg - 1) * increm(ip_fNVBup))
+            fPVBup = process_space_real(ipoint(ip_fPVBup) + (ibotseg - 1) * increm(ip_fPVBup))
+            fSVBup = process_space_real(ipoint(ip_fSVBup) + (ibotseg - 1) * increm(ip_fSVBup))
 
             ! copy of earlier code used to derive available nutrients
             if (VegHeVB > 0.0) then
@@ -1203,15 +1203,15 @@ contains
             ! this segment has a bottom
             if ((ikmrk2==0).or.(ikmrk2==3)) then
 
-                s1_nh4 = max(0.0, pmsa(ipnt(ip_s1_nh4)))
-                s1_no3 = max(0.0, pmsa(ipnt(ip_s1_no3)))
-                s1_aap = max(0.0, pmsa(ipnt(ip_s1_aap)))
-                s1_po4 = max(0.0, pmsa(ipnt(ip_s1_po4)))
-                s1_so4 = max(0.0, pmsa(ipnt(ip_s1_so4)))
-                s1_sud = max(0.0, pmsa(ipnt(ip_s1_sud)))
-                RootDeVB = pmsa(ipnt(ip_RootDeVB))
-                hsed = pmsa(ipnt(ip_hsed))
-                surf = pmsa(ipnt(ip_surf))
+                s1_nh4 = max(0.0, process_space_real(ipnt(ip_s1_nh4)))
+                s1_no3 = max(0.0, process_space_real(ipnt(ip_s1_no3)))
+                s1_aap = max(0.0, process_space_real(ipnt(ip_s1_aap)))
+                s1_po4 = max(0.0, process_space_real(ipnt(ip_s1_po4)))
+                s1_so4 = max(0.0, process_space_real(ipnt(ip_s1_so4)))
+                s1_sud = max(0.0, process_space_real(ipnt(ip_s1_sud)))
+                RootDeVB = process_space_real(ipnt(ip_RootDeVB))
+                hsed = process_space_real(ipnt(ip_hsed))
+                surf = process_space_real(ipnt(ip_surf))
 
                 ! again copy availability calculation
 
@@ -1239,12 +1239,12 @@ contains
             !          fl(if_dP2VBups + (iseg-1)*noflux) = dP2VBups
             !          fl(if_dS1VBups + (iseg-1)*noflux) = dS1VBups
             !          fl(if_dS2VBups + (iseg-1)*noflux) = dS2VBups
-            pmsa(ipnt(ip_offsetufl + 1)) = dN1VBups * depth
-            pmsa(ipnt(ip_offsetufl + 2)) = dN2VBups * depth
-            pmsa(ipnt(ip_offsetufl + 3)) = dP1VBups * depth
-            pmsa(ipnt(ip_offsetufl + 4)) = dP2VBups * depth
-            pmsa(ipnt(ip_offsetufl + 5)) = dS1VBups * depth
-            pmsa(ipnt(ip_offsetufl + 6)) = dS2VBups * depth
+            process_space_real(ipnt(ip_offsetufl + 1)) = dN1VBups * depth
+            process_space_real(ipnt(ip_offsetufl + 2)) = dN2VBups * depth
+            process_space_real(ipnt(ip_offsetufl + 3)) = dP1VBups * depth
+            process_space_real(ipnt(ip_offsetufl + 4)) = dP2VBups * depth
+            process_space_real(ipnt(ip_offsetufl + 5)) = dS1VBups * depth
+            process_space_real(ipnt(ip_offsetufl + 6)) = dS2VBups * depth
 
             ipnt = ipnt + increm(1:nin + nout)
 
@@ -1265,7 +1265,7 @@ contains
         end if
 
         ! From GRO
-        pmsa(ipoint(ip_SWiniVB)) = 0.0 ! Dubious ...
+        process_space_real(ipoint(ip_SWiniVB)) = 0.0 ! Dubious ...
         ifirst (vbtype) = 1
         ifirst (vbtype + ncohort) = 1
 

@@ -2,10 +2,21 @@
 enable_language (Fortran)
 set(src_root_dir ${CMAKE_SOURCE_DIR}/..)
 
+add_library(strict_compiler_warnings INTERFACE)
+# Disable warning 5268, allow text longer than 132 characters
+set(windows_extra_warning_flags /warn:errors /warn:all /warn:stderrors /Qdiag-disable:5268)
+set(linux_extra_warning_flags "SHELL:-warn errors" "SHELL:-warn all" "SHELL:-warn stderrors" "SHELL:-diag-disable 5268")
+target_compile_options(strict_compiler_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_extra_warning_flags},${linux_extra_warning_flags}>>")
+
+add_library(no_warnings INTERFACE)
+set(windows_no_warning_flags /warn:none)
+set(linux_no_warning_flags "SHELL:-warn none")
+target_compile_options(no_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_no_warning_flags},${linux_no_warning_flags}>>")
+
 if (WIN32)
     # Set global Fortran compiler flags that apply for each Fortran project
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
-    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads  /MP")
+    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP")
 
     # Set global C/C++ compiler flags that apply for each C/C++ project
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
@@ -26,18 +37,23 @@ if (WIN32)
     set(check_pointers_flag                   /check:pointers)
     set(check_nopointers_flag                 /check:nopointers)
     set(check_uninit_flag                     /check:uninit)
-    set(check_stack_flag                      /check:stack)	
+    set(check_stack_flag                      /check:stack)
     set(openmp_flag                           /Qopenmp)
     set(generate_reentrancy_threaded_flag     /reentrancy:threaded)
     set(floating_point_exception_flag         /fpe:0)
     set(traceback_flag                        /traceback)
-    
+
     set(codecov_flag                          /Qcov-gen)
     set(profiling_flag                        /Qprof-gen:srcpos)
     set(srcrootdir_code_cov                   /Qprof-src-root ${src_root_dir})
-    
+
+    # Store debug info inside objects instead of pdbs when building, pbds are created by linker after.
+    # Since we build with /MP, multiple processes might write into the same PDB otherwise, causing corrupt PDB errors.
+    # CMAKE_Fortran_FLAGS_DEBUG contains /debug:full by default, which creates a PDB before linking, but specifying /Z7 after overrides this behavior.
+    set(debug_information_flag                /Z7)
+
     # Set debug flags:
-    set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
+    set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${debug_information_flag}")
 
     # To prevent Visual Studio compilation failures when trying to write the manifest file
     # to a blocked .exe
@@ -73,12 +89,12 @@ if (UNIX)
     set(check_pointers_flag                      -check pointers)
     set(check_nopointers_flag                    -check nopointers)
     set(check_uninit_flag                        "-check uninit")
-    set(check_stack_flag                         "-check stack")	
+    set(check_stack_flag                         "-check stack")
     set(openmp_flag                              "-qopenmp")
     set(generate_reentrancy_threaded_flag        -reentrancy threaded)
     set(floating_point_exception_flag            -fpe0)
     set(traceback_flag                           -traceback)
-    
+
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
     # Set debug flags:
@@ -87,7 +103,6 @@ endif(UNIX)
 
 set(qauto_threaded_flags ${automatic_local_variable_storage_flag} ${generate_reentrancy_threaded_flag})
 set(waq_default_flags ${file_preprocessor_flag} ${traceback_flag})
-
 
 # Define the custom flag about code coverage with a default value of OFF
 option(ENABLE_CODE_COVERAGE "Enable the code and profiling coverage" OFF)

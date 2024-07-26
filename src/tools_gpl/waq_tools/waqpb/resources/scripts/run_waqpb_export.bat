@@ -1,95 +1,61 @@
 @ echo off
 title run_waqpb_export
-    rem
-    rem This script runs waqpb_export on Windows
-    rem Adapt and use it for your own purpose
-    rem
+rem
+rem this script runs waqpb_export on Windows
+rem
 setlocal enabledelayedexpansion
 
-    rem
-    rem Set the input arguments
-    rem
-set version= 
-if [%1] EQU [] (
-    goto usage
-) else (
-    if [%1] EQU [--help] (
-        goto usage
-    ) else (
-        set version=%1
-    )
-)
-set serial= 
-if [%2] EQU [] (
-    goto usage
-) else (
-    if [%2] EQU [--help] (
-        goto usage
-    ) else (
-        set serial=%2
-    )
-)
-set procDefLoc= 
+rem show usage?
+if [%1] EQU []        goto usage
+if [%1] EQU [-h]      goto usage
+if [%1] EQU [--help]  goto usage
+if [%1] EQU [--usage] goto usage
+rem we need to see three arguments
 if [%3] EQU [] (
+    echo ERROR: not enough arguments given!
+    echo.
     goto usage
-) else (
-    if [%3] EQU [--help] (
-        goto usage
-    ) else (
-        set procDefLoc=%3
     )
-)
+
+rem Set the directories containing the binaries and set PATH
+set bindir=%~dp0
+set libdir=%bindir%\..\lib
+set PATH=%libdir%;%bindir%;%PATH%
+
+rem process arguments
+set version=%1
+set serial=%2
+set procDefLoc=%3
 set csvFilesLoc=%procDefLoc%\csvFiles
 
-echo Version: %version%
-echo Serial: %serial%
-echo Proc_def location: %procDefLoc%
-echo CSV files location: %csvFilesLoc%
+echo version            : %version%
+echo serial             : %serial%
+echo proc_def location  : %procDefLoc%
+echo csv-files location : %csvFilesLoc%
 
-
-set workdir=%CD%
-echo Working directory: %workdir%
-    rem
-    rem Set the directories containing the binaries
-    rem
-set D3D_HOME=%~dp0..\..\..
-
-rem Remove "\dwaq\scripts\..\..\.." from D3D_HOME
-set D3DT=%D3D_HOME:~0,-22%
-rem last directory will be the architecture directory
-for %%f in ("%D3DT%") do set ARCH=%%~nxf
-
-set waqdir=%D3D_HOME%\%ARCH%\dwaq\bin
-
-set sharedir=%D3D_HOME%\%ARCH%\share\bin
-set PATH=%waqdir%;%sharedir%
-
-    rem
-    rem No adaptions needed below
-    rem
-
-    rem Run
-set PATH=%waqdir%;%sharedir%;%~dp0
-
-    rem go to csv files directory, run waqpb_export, and return
+rem go to csv files directory, run waqpb_export, and return
+set currentdir=%CD%
+echo Working directory: %csvFilesLoc%
 cd /d %csvFilesLoc%
-
-echo executing in this window: "%waqdir%\waqpb_export.exe" "%version%" "%serial%"
-"%waqdir%\waqpb_export.exe" "%version%" "%serial%"
+echo executing in this window: "%bindir%\waqpb_export.exe" "%version%" "%serial%"
+"%bindir%\waqpb_export.exe" "%version%" "%serial%"
 move proc_def.dat ../
 move proc_def.def ../
-cd /d "%workdir%"
-
-
+cd /d "%currentdir%"
 goto end
 
 :usage
+echo Purpose: Sets PATH and runs waqpb_export on Windows with all given command line arguments.
+echo.
 echo Usage:
-echo run_waqpb_export.bat [--help] version serial
-echo     --help             : (Optional) show this usage
-echo     version            : (Mandatory) delwaq version
-echo     serial             : (Mandatory) proc_def serial number
-echo     procDefLoc         : (Mandatory) proc_def and csv files location
+echo run_waqpb_export.bat -version*.* -serial?????????? ^<proc_def folder^> [OPTIONS]...
+echo.
+echo -version*.*         delwaq version number (a real number, e.g. -version7.0, mandatory).
+echo -serial??????????   proc_def serial number (10 digits, e.g. -serial2024071099, mandatory).
+echo ^<proc_def folder^>   location of proc_def and csv files subfolder (a folder named csvFiles is assumed,
+echo                     e.g. . (for the current work dir), mandatory).
+echo -h, --help, --usage print this help message and exit
+
 :end
-    rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
+rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
 rem pause

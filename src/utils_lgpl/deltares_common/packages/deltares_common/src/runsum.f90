@@ -61,18 +61,18 @@ contains
 !   Purpose:    setup new buffer for running sum
 !   Arguments:  newvalue
 ! ------------------------------------------------------------------------------
-subroutine TRunSum_init(self, nx, nd, dataptr)
+subroutine TRunSum_init(self, grid_width, nd, dataptr)
    class(TRunSum), intent(inout)                :: self
-   integer, intent(in)                          :: nx
+   integer, intent(in)                          :: grid_width
    integer, intent(in)                          :: nd
    real(kind=hp), dimension(:), pointer, optional  :: dataPtr
 
    if (allocated(self%buffer)) deallocate(self%buffer)
-   allocate (self%buffer(nx,0:nd-1))
-   self%buffer(1:nx,0:nd-1) = 0_hp
+   allocate (self%buffer(grid_width,0:nd-1))
+   self%buffer(1:grid_width,0:nd-1) = 0_hp
    if (allocated(self%state)) deallocate(self%state)
-   allocate (self%state(nx))
-   self%state(1:nx) = 0.d0
+   allocate (self%state(grid_width))
+   self%state(1:grid_width) = 0.d0
    self%ndx = 0
    self%nstep = 0
    self%dataPtr => null()
@@ -93,30 +93,30 @@ subroutine TRunSum_update(self, newvalue)
    class(TRunSum), intent(inout)                :: self
    real(kind=hp), dimension(:), intent(in), optional, target :: newvalue
 
-   integer :: nx, nd
+   integer :: grid_width, nd
    real(kind=hp), dimension(:), pointer :: pnew
 
-   nx = size(self%state)
+   grid_width = size(self%state)
    nd = size(self%buffer,dim=2)
    if (present(newvalue)) then
        pnew => newvalue                  ! update value(s) explicit
    else
        pnew => self%dataPtr              ! update value(s) pointered to
    end if
-   call self%update_state(pnew,nx,nd)
+   call self%update_state(pnew,grid_width,nd)
    self%ndx = mod(self%ndx+1,nd)
    self%nstep = self%nstep + 1
 end subroutine TRunSum_update
 
 
-subroutine TRunSum_update_state(self, pnew, nx, nd)
+subroutine TRunSum_update_state(self, pnew, grid_width, nd)
    class(TRunSum), intent(inout)        :: self
    real(kind=hp), dimension(:), pointer :: pnew
-   integer, intent(in)                  :: nx
+   integer, intent(in)                  :: grid_width
    integer, intent(in)                  :: nd
 
-   self%state(1:nx) = self%state(1:nx) + pnew(1:nx) - self%buffer(1:nx, self%ndx)
-   self%buffer(1:nx, self%ndx) = pnew(1:nx)
+   self%state(1:grid_width) = self%state(1:grid_width) + pnew(1:grid_width) - self%buffer(1:grid_width, self%ndx)
+   self%buffer(1:grid_width, self%ndx) = pnew(1:grid_width)
 end subroutine TRunSum_update_state
 
 end module runsum
@@ -171,22 +171,22 @@ subroutine TAR1MA_setpar(self, pweights, a1, b1)
    end if
 end subroutine TAR1MA_setpar
 
-subroutine TAR1MA_update_state(self, pnew, nx, nd)
+subroutine TAR1MA_update_state(self, pnew, grid_width, nd)
    class(TAR1MA), intent(inout)            :: self
    real(kind=hp), dimension(:), pointer    :: pnew
-   integer, intent(in)                     :: nx
+   integer, intent(in)                     :: grid_width
    integer, intent(in)                     :: nd
 
    integer :: id, idm
 
-   self%buffer(1:nx, self%ndx) = pnew(1:nx)
-   self%state(1:nx) = self%a1 * self%state(1:nx)
+   self%buffer(1:grid_width, self%ndx) = pnew(1:grid_width)
+   self%state(1:grid_width) = self%a1 * self%state(1:grid_width)
    do id = 0, nd-1
       idm = mod(self%ndx - id + nd, nd)
       if (associated(self%weights)) then
-         self%state(1:nx) = self%state(1:nx) + self%b1 * self%weights(id)*self%buffer(1:nx, idm)   ! weighted sum
+         self%state(1:grid_width) = self%state(1:grid_width) + self%b1 * self%weights(id)*self%buffer(1:grid_width, idm)   ! weighted sum
       else
-         self%state(1:nx) = self%state(1:nx) + self%b1 * self%buffer(1:nx, idm)
+         self%state(1:grid_width) = self%state(1:grid_width) + self%b1 * self%buffer(1:grid_width, idm)
       end if
    end do
 end subroutine TAR1MA_update_state
@@ -255,20 +255,20 @@ subroutine TAR1smooth_update_state(self, newvalue)
    class(TAR1smooth), intent(inout)                          :: self
    real(kind=hp), dimension(:), intent(in), optional, target :: newvalue
 
-   integer :: nx
+   integer :: grid_width
    real(kind=hp), dimension(:), pointer :: pnew
 
-   nx = size(self%state)
+   grid_width = size(self%state)
    if (present(newvalue)) then
        pnew => newvalue                  ! update value(s) explicit
    else
        pnew => self%dataPtr              ! update value(s) pointered to
    end if
    if (self%isFirst) then
-      self%state(1:nx) = pnew(1:nx)
+      self%state(1:grid_width) = pnew(1:grid_width)
       self%isFirst = .False.
    else
-      self%state(1:nx) = self%a1 * self%state(1:nx) + self%b * pnew(1:nx)
+      self%state(1:grid_width) = self%a1 * self%state(1:grid_width) + self%b * pnew(1:grid_width)
    end if
 end subroutine TAR1smooth_update_state
 

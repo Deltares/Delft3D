@@ -39,20 +39,20 @@
    !              Fall velocity at layer interfaces.
    !!--declarations----------------------------------------------------------------
    use precision
-   use m_physcoef, only: ee, ag, sag, vonkar, frcuni, backgroundsalinity, backgroundwatertemperature, vismol
-   use m_sediment, only: stmpar, sedtra, stm_included, mtd
+      use m_physcoef, only: ee, ag, sag, vonkar, backgroundsalinity, backgroundwatertemperature, vismol
+   use m_sediment, only: stmpar, sedtra, stm_included, mtd, sed
    use m_flowtimes, only: time1
-   use m_flowgeom, only: ndx, ln, kfs,bl, wcl, lnx
-   use m_flow    , only: ifrctypuni, z0, hs, iturbulencemodel,kbot,ktop,kmx,zws,ucxq,ucyq,sa1,tem1,ucx,ucy,ucz,ndkx,s1,z0ucur,z0urou,ifrcutp,hu,frcu,ucx_mor,ucy_mor
-   use m_flowparameters, only: jasal, jatem, jawave, epshs, flowWithoutWaves, epsz0
-   use m_transport, only: constituents, ised1, isalt, itemp
+      use m_flowgeom, only: ndx, ln, bl, wcl, lnx
+      use m_flow, only: iturbulencemodel, kmx, zws, ucxq, ucyq, ucz, s1, z0urou, ucx_mor, ucy_mor
+      use m_flowparameters, only: jasal, jatem, epshs, epsz0
+      use m_transport, only: constituents, isalt, itemp
    use m_turbulence, only:turkinepsws, rhowat
    use sediment_basics_module, only: SEDTYP_CLAY
    use morphology_data_module
    use message_module, only: write_error
    use unstruc_files, only: mdia
    use m_alloc
-   use m_fm_erosed, only: ucxq_mor, ucyq_mor, taub, sedtyp
+      use m_fm_erosed, only: taub, sedtyp
    use flocculation, only: get_tshear_tdiss
    !
    implicit none
@@ -84,14 +84,12 @@
    !
    ! Local variables
    !
-   integer                             :: k, kk, k1, k2, L, ll, nm, i, istat, kb, kt
+      integer :: k, kk, k1, k2, L, ll, i, istat, kb, kt
    logical                             :: error
 
    double precision                    :: cclay
    double precision                    :: chezy
    double precision                    :: ctot
-   double precision                    :: cz
-   double precision                    :: cz_dum
    double precision                    :: h0
    double precision                    :: rhoint
    double precision                    :: salint
@@ -108,7 +106,6 @@
    double precision                    :: vm
    double precision                    :: w
    double precision                    :: wsloc
-   double precision                    :: z00
    double precision, dimension(:), allocatable    :: z0rou
    double precision                    :: thick
 
@@ -254,7 +251,7 @@
             if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + constituents(ISED1+ll-1, kk)
          end do
             !
-         do ll = 1, lsed
+         do ll = 1, lsed   
             !
             do i = 1, npar
                localpar(i) = par_settle(i,ll)

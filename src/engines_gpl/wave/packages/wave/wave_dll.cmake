@@ -93,7 +93,7 @@ if(UNIX)
 
 endif(UNIX)
 
-include_directories(${mpi_include_path} ${version_include_dir})
+include_directories(${mpi_module_path} ${version_include_dir})
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${library_files})

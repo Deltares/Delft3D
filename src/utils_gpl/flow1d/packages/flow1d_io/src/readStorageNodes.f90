@@ -36,7 +36,7 @@ module m_readStorageNodes
 
    use properties
    use m_hash_search
-   use string_module, only: str_lower, strcmpi
+   use string_module, only: str_tolower, strcmpi
 
 
    implicit none
@@ -484,8 +484,7 @@ module m_readStorageNodes
       character(len=*), intent(in   ) :: sinterpol        !< interpolate type string
       integer,          intent(  out) :: interpol         !< interpolate type integer
       
-      call str_lower(sinterpol)
-      select case (trim(sinterpol))
+      select case (trim(str_tolower(sinterpol)))
          case ('linear')
             interpol = 0
          case ('block')
@@ -504,8 +503,10 @@ module m_readStorageNodes
       character(len=*), intent(in   ) :: sStorgType        !< storage type string
       integer,          intent(  out) :: storgType         !< storage type integer
       
-      call str_lower(sStorgType)
-      select case (trim(sStorgType))
+      character(len=:), allocatable :: sStorgType_ 
+      sStorgType_ = sStorgType
+      call str_lower(sStorgType_)
+      select case (trim(sStorgType_))
          case ('reservoir')
             storgType = nt_Reservoir
          case ('closed')

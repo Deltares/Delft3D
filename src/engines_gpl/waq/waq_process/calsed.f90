@@ -28,10 +28,10 @@ module m_calsed
 contains
 
 
-    subroutine calsed (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger, only : write_error_message
+    subroutine calsed (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : write_error_message
 
         !>\file
         !>       Sedimentation velocity IMx, DetC OOC, BODC, all algea = f (Temp SS Sal)
@@ -69,14 +69,14 @@ contains
         IMPLICIT REAL (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL     PMSA  (*), FL    (*)
-        INTEGER  IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL     process_space_real  (*), FL    (*)
+        INTEGER  IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local
         !
         PARAMETER (PI = 3.14159265)
-        INTEGER(kind = int_wp) :: NOQ
+        INTEGER(kind = int_wp) :: num_exchanges
         !
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -92,18 +92,18 @@ contains
         IP12 = IPOINT(12)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
-                V0SED = PMSA(IP1)
-                SUSP = MAX (PMSA(IP2), 0.0)
-                CRSUSP = PMSA(IP3)
-                N = PMSA(IP4)
-                TEMP = PMSA(IP5)
-                SEDTC = PMSA(IP6)
-                SAL = MAX (PMSA(IP7), 0.0)
-                MAXSAL = PMSA(IP8)
-                ENHFAC = PMSA(IP9)
+                V0SED = process_space_real(IP1)
+                SUSP = MAX (process_space_real(IP2), 0.0)
+                CRSUSP = process_space_real(IP3)
+                N = process_space_real(IP4)
+                TEMP = process_space_real(IP5)
+                SEDTC = process_space_real(IP6)
+                SAL = MAX (process_space_real(IP7), 0.0)
+                MAXSAL = process_space_real(IP8)
+                ENHFAC = process_space_real(IP9)
 
                 IF (CRSUSP < 1E-20)  CALL write_error_message ('CRSUSP in CALSED zero')
 
@@ -143,9 +143,9 @@ contains
                 VSED = V0SED * TEMFUN * SALFUN * FLOFUN
 
                 !     Output of calculated sedimentation rate
-                PMSA (IP10) = VSED
-                PMSA (IP11) = SALFUN
-                PMSA (IP12) = FLOFUN
+                process_space_real (IP10) = VSED
+                process_space_real (IP11) = SALFUN
+                process_space_real (IP12) = FLOFUN
                 !
                 !     ENDIF
             ENDIF
@@ -167,29 +167,29 @@ contains
         end do
         !
 
-        NOQ = NOQ1 + NOQ2 + NOQ3
+        num_exchanges = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
         IP10 = IPOINT(10)
         IN10 = INCREM(10)
         IP13 = IPOINT(13)
         IN13 = INCREM(13)
 
-        DO IQ = 1, NOQ1 + NOQ2
+        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
 
-            PMSA(IP13) = 0.0
+            process_space_real(IP13) = 0.0
 
             IP13 = IP13 + IN13
 
         end do
 
-        DO IQ = NOQ1 + NOQ2 + 1, NOQ
+        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges
 
             IVAN = IEXPNT(1, IQ)
             !
             !        Sedimentation velocity from segment to exchange-area
             !
             IF (IVAN > 0) THEN
-                PMSA(IP13) = PMSA(IP10 + (IVAN - 1) * IN10)
+                process_space_real(IP13) = process_space_real(IP10 + (IVAN - 1) * IN10)
             ENDIF
 
             IP13 = IP13 + IN13

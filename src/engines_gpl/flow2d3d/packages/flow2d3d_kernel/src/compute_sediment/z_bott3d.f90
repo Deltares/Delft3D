@@ -2,7 +2,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                   & lsal      ,ltem      ,kfs       ,kfu       ,kfv       , &
                   & r1        ,s0        ,kcs       , &
                   & dps       ,gsqs      ,guu       , &
-                  & gvv       ,s1        ,thick     ,dp        , &
+                  & gvv       ,s1        ,thick     ,dpd       , &
                   & umean     ,vmean     ,sbuu      ,sbvv      , &
                   & depchg    ,nst       ,hu        , &
                   & hv        ,sig       ,u1        ,v1        , &
@@ -176,7 +176,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     real(fp)                                           , intent(in)  :: dt     !< (half) time step in seconds
     real(fp)                                                         :: timhr
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                       :: depchg !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                       :: dp     !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                       :: dpd    !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)                     :: dps    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: gsqs   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: guu    !  Description and declaration in esm_alloc_real.f90
@@ -471,7 +471,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                       ! a case, the suspended sediment transport vector must
                       ! also be reduced.
                       !
-                      if ((sucor(nm,l)>0.0_fp .and. kcs(nm)==1) .or. kcs(nmu)/=1) then
+                      if ((sucor(nm,l)>0.0_fp .and. abs(kcs(nm))==1) .or. abs(kcs(nmu))/=1) then
                          sucor(nm,l) = sucor(nm,l) * fixfac(nm,l)
                       else
                          sucor(nm,l) = sucor(nm,l) * fixfac(nmu,l)
@@ -1196,7 +1196,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     !
     if (bedupd) then
        !
-       ! note: dps and dp are positive downwards.
+       ! note: dps and dpd are positive downwards.
        !
        do nm = 1, nmmax
           !
@@ -1213,7 +1213,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
           ! -Check bottom slopes and apply an avalanche effect if needed
           ! -Depths at waterlevel points (dps) will be updated,
           !  to be used for dpu and dpv
-          ! -Depth changes will be added to depchg,to be used for dp
+          ! -Depth changes will be added to depchg,to be used for dpd
           !
           call avalan(dps       ,depchg    ,gvu       ,guv       , &
                     & icx       ,icy       ,gsqs      ,kcs       ,gdp       )
@@ -1238,7 +1238,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
              endif
           endif
           !
-          ! set flag for updating dp points below (note does not = 2 at
+          ! set flag for updating dpd points below (note does not = 2 at
           ! open boundaries)
           !
           if (kcs(nm) == 0) then
@@ -1263,7 +1263,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
        ! CALDPU is called after BOTT3D in TRISOL when BEDUPD = TRUE
        ! instead of updating dpu/dpv here
        !
-       ! Update dp points
+       ! Update dpd points
        !
        do nm = 1, nmmax
           nmu  = nm  + icx
@@ -1272,8 +1272,8 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
           fact =   kcsbot(nm) *gsqs(nm)  + kcsbot(num) *gsqs(num)  &
                & + kcsbot(nmu)*gsqs(nmu) + kcsbot(numu)*gsqs(numu)
           if (fact > 0.0_fp) then
-             dp(nm) = dp(nm) - (  depchg(nm) *gsqs(nm)  + depchg(num) *gsqs(num)     &
-                    &           + depchg(nmu)*gsqs(nmu) + depchg(numu)*gsqs(numu))/fact
+             dpd(nm) = dpd(nm) - (  depchg(nm) *gsqs(nm)  + depchg(num) *gsqs(num)     &
+                     &            + depchg(nmu)*gsqs(nmu) + depchg(numu)*gsqs(numu))/fact
           endif
        enddo
     endif

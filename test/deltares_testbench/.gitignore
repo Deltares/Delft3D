@@ -1,3 +1,14 @@
 /logs/**
 /data/**
-/**/__pycache__/**
+
+# python virtual environment and caches
+.venv
+__pycache__
+.mypy_cache
+.pytest_cache
+
+# pyenv version
+.python-version
+
+# dotenv
+.env

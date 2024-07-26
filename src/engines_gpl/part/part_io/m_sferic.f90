@@ -21,21 +21,21 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
- module m_sferic_part
- implicit none
- integer                           :: jsferic = 0       ! xy pair is in : 0=cart, 1=sferic coordinates
- integer                           :: jsfer_old         ! xy pair is in : 0=cart, 1=sferic coordinates, original model
- integer                           :: jsfertek= 0       ! drawn in 0=cart, 1=stereografisch
- integer                           :: jglobe  = 0       ! if (jsferic==1) do we need extra tests for 360-0 transgression
- double precision                  :: ptref             ! reference latitude (for testing)
- double precision                  :: pi                ! pi
- double precision                  :: twopi             ! 2pi
- double precision                  :: dg2rd             ! degrees to radians
- double precision                  :: rd2dg             ! and vice versa
- double precision                  :: ra = 6378137d0    ! earth radius (m)
- double precision                  :: omega             ! earth angular velocity (rad/s)
- double precision                  :: fcorio            ! 2omegasinfi
- double precision                  :: anglat = 0d0      ! 26.0     ! dubai 52.5     ! angle of latitude
- double precision                  :: dy2dg             ! from dy in m to lat in degrees
- double precision                  :: csphi             ! cosphi of latest requested
- end module m_sferic_part
+module m_sferic_part
+    implicit none
+    integer :: jsferic = 0       ! xy pair is in : 0=cart, 1=sferic coordinates
+    integer :: jsfer_old         ! xy pair is in : 0=cart, 1=sferic coordinates, original model
+    integer :: jsfertek = 0       ! drawn in 0=cart, 1=stereografisch
+    integer :: jglobe = 0       ! if (jsferic==1) do we need extra tests for 360-0 transgression
+    double precision :: ptref             ! reference latitude (for testing)
+    double precision :: pi                ! pi
+    double precision :: twopi             ! 2pi
+    double precision :: dg2rd             ! degrees to radians
+    double precision :: rd2dg             ! and vice versa
+    double precision :: ra = 6378137d0    ! earth radius (m)
+    double precision :: omega             ! earth angular velocity (rad/s)
+    double precision :: fcorio            ! 2omegasinfi
+    double precision :: anglat = 0d0      ! 26.0     ! dubai 52.5     ! angle of latitude
+    double precision :: dy2dg             ! from dy in m to lat in degrees
+    double precision :: csphi             ! cosphi of latest requested
+end module m_sferic_part

@@ -38,128 +38,127 @@
 !       - Dump structure to PROCES.ASC
 
 !     Include data structures for tables and PDF-file
+program waqpb_export
+    use m_obtain_number_decimals
+    use m_string_utils
 
-      use m_obtain_number_decimals
-      use m_string_utils
-
-      include 'data_ff.inc'
-      include 'pdf_ff.inc'
-      integer      jndex , iproc , iinpu , iitem , ioutp , idisp , &
-                   ioutf , isubs , naanta, ioffse, ioffs2, ivelo , &
-                   istoc , iconf , naant2, serial, &
-                   ierror, icnsb , imodv , i
-      logical      itmswi(nitemm)
-      logical      generate_latex_tables
-      character*10 c10, num_decimals_version_char
-      character*20 c20
-      character*50 adduni
-      character*255 argument
-      real         actdef, version
-      integer      lu_inp, lu_mes, status, lunfil, num_decimals_version
+    include 'data_ff.inc'
+    include 'pdf_ff.inc'
+    integer      jndex , iproc , iinpu , iitem , ioutp , idisp , &
+                ioutf , isubs , naanta, ioffse, ioffs2, ivelo , &
+                istoc , iconf , naant2, serial, &
+                ierror, icnsb , imodv , i
+    logical      itmswi(nitemm)
+    logical      generate_latex_tables
+    character*10 c10, num_decimals_version_char
+    character*20 c20
+    character*50 adduni
+    character*255 argument
+    real         actdef, version
+    integer      lu_inp, lu_mes, status, lunfil, num_decimals_version
 
 !     Defaults for command line arguments
 
-      version = 999
-      serial = 999
-      generate_latex_tables = .false.
+    version = 999
+    serial = 999
+    generate_latex_tables = .false.
 
-      do i=1,command_argument_count()
-            call get_command_argument(i,argument)
-            if (argument(:8) == '-version') then
-                read(argument(9:), '(f20.0)', iostat=status) version
-            endif
-            if (argument(:7)=='-serial') then
-                read(argument(8:), '(i20)',iostat=status) serial
-            endif
-            if (trim(argument) == '-latex') generate_latex_tables = .true.
-      enddo
+    do i=1,command_argument_count()
+        call get_command_argument(i,argument)
+        if (argument(:8) == '-version') then
+            read(argument(9:), '(f20.0)', iostat=status) version
+        endif
+        if (argument(:7)=='-serial') then
+            read(argument(8:), '(i20)',iostat=status) serial
+        endif
+        if (trim(argument) == '-latex') generate_latex_tables = .true.
+    enddo
 
 
-      itmswi = .false.
-      open ( newunit=lu_mes , file = 'waqpb_export.log' )
-      
-      write (*,'('' Reading data......'')')
+    itmswi = .false.
+    open ( newunit=lu_mes , file = 'waqpb_export.log' )
+
+    write (*,'('' Reading data......'')')
 
 !----------------------------------------------------------------------c
 !     READ DATABASE
 !----------------------------------------------------------------------c
 
-      call readdb ( lu_inp, lu_mes )
+    call readdb ( lu_inp, lu_mes )
 
 !     Check validity of table R9
 
-      do imodv = 1,nmodv
-          iconf = index_in_array(modvci(imodv),confid(:nconf))
-          if ( iconf .le. 0 ) then
-              write ( lu_mes , '(''Unknown config in TABLE5: '',a10,1x, a10)') modvci(imodv),modvit(imodv)
-          end if
-          iitem = index_in_array(modvit(imodv),itemid(:nitem))
-          if ( iitem .le. 0 ) then
-              write ( lu_mes , '(''Unknown item in TABLE5: '',a10,1x, a10)') modvci(imodv),modvit(imodv)
-          end if
-      end do
+    do imodv = 1,nmodv
+        iconf = index_in_array(modvci(imodv),confid(:nconf))
+        if ( iconf .le. 0 ) then
+            write ( lu_mes , '(''Unknown config in TABLE5: '',a10,1x, a10)') modvci(imodv),modvit(imodv)
+        end if
+        iitem = index_in_array(modvit(imodv),itemid(:nitem))
+        if ( iitem .le. 0 ) then
+            write ( lu_mes , '(''Unknown item in TABLE5: '',a10,1x, a10)') modvci(imodv),modvit(imodv)
+        end if
+    end do
 
 !     Create auxiliary table of substances
 
-      nsubs = 0
-      do icnsb = 1,ncnsb
-          c10 = r2_sid(icnsb)
+    nsubs = 0
+    do icnsb = 1,ncnsb
+        c10 = r2_sid(icnsb)
 
 !         Lookup substance in item array
-          iitem = index_in_array(c10,itemid(:nitem))
-          if ( iitem .le. 0 ) then
-              write (*,*) ' ITEM: ',c10
-              STOP 'Unknown substance in R2 table'
-          endif
+        iitem = index_in_array(c10,itemid(:nitem))
+        if ( iitem .le. 0 ) then
+            write (*,*) ' ITEM: ',c10
+            STOP 'Unknown substance in R2 table'
+        endif
 
 !         Add to substances array
-          isubs = index_in_array(c10(:10),subsid(:nsubs))
-          if ( isubs .le. 0 ) then
-              if ( nsubs+1 .gt. nsubsm ) STOP 'Dimension NSUBSM'
-              nsubs = nsubs+1
-              subsid(nsubs) = c10
-          endif
-      enddo
+        isubs = index_in_array(c10(:10),subsid(:nsubs))
+        if ( isubs .le. 0 ) then
+            if ( nsubs+1 .gt. nsubsm ) STOP 'Dimension NSUBSM'
+            nsubs = nsubs+1
+            subsid(nsubs) = c10
+        endif
+    enddo
 
 !     Dump TRM tables
 
 !      write (*,'('' Writing TRM tables......'')')
 !      call writrm
-      if (generate_latex_tables) then
-          write (*,'('' Writing TRM tables for LaTeX......'')')
-          call writex
-      end if
+    if (generate_latex_tables) then
+        write (*,'('' Writing TRM tables for LaTeX......'')')
+        call writex
+    end if
 
 !----------------------------------------------------------------------c
 !     SET VERSION, SERIAL AND WRITE NEFIS FILE
 !----------------------------------------------------------------------c
 
-      write (lu_mes,'(''Writing NEFIS process definition file'')')
-      call makind()
-      call pdfnef(lu_mes    , serial, version, ierror, generate_latex_tables)
-      if ( ierror .ne. 0 ) then
-         write (lu_mes,'(''ERROR writing NEFIS file'')')
-         write (*,'(''ERROR writing NEFIS file, see report file'')')
-      endif
+    write (lu_mes,'(''Writing NEFIS process definition file'')')
+    call makind()
+    call pdfnef(lu_mes    , serial, version, ierror, generate_latex_tables)
+    if ( ierror .ne. 0 ) then
+        write (lu_mes,'(''ERROR writing NEFIS file'')')
+        write (*,'(''ERROR writing NEFIS file, see report file'')')
+    endif
 
 !----------------------------------------------------------------------c
 !     LOOP OVER PROCESSES
 !----------------------------------------------------------------------c
 
-      write (*,'('' Making PROCES.ASC......'')')
-      write (*,*)
-      open ( newunit=lunfil , file = 'procesm.asc' )
-      write(*,*) "QQ"
+    write (*,'('' Making PROCES.ASC......'')')
+    write (*,*)
+    open ( newunit=lunfil , file = 'procesm.asc' )
 
-      ! obtain number of decimals of version number
-      num_decimals_version = obtain_num_decimals_version(version)
-      write(num_decimals_version_char,'(I10)') num_decimals_version
+    ! obtain number of decimals of version number
+    num_decimals_version = obtain_num_decimals_version(version)
+    write(num_decimals_version_char,'(I10)') num_decimals_version
 
-      write ( lunfil , '(i10,50x,f8.'//num_decimals_version_char//',2x, I10)') nproc,version,serial
+    write ( lunfil , '(i10,50x,f8.'//num_decimals_version_char//',2x, I10)') nproc,version,serial
 
-      do 800 iproc=1,nproc
+    do iproc=1,nproc
 
-          write (*,'(''+Process: '',a10)') procid(iproc)
+        write (*,'(''+Process: '',a10)') procid(iproc)
 
 !----------------------------------------------------------------------c
 !         CONSTRUCT PROCESS
@@ -167,263 +166,264 @@
 
 !         Clear PDF structure
 
-          ins = 0
-          ine = 0
-          ous = 0
-          oue = 0
-          flu = 0
-          sto = 0
-          dis = 0
-          vel = 0
+        ins = 0
+        ine = 0
+        ous = 0
+        oue = 0
+        flu = 0
+        sto = 0
+        dis = 0
+        vel = 0
 
 !         Fill PDF structure
 
 !         INPUT ITEMS ON SEGMENT LEVEL/EXCHANGE LEVEL
 
 !         scan input items table for FIRST occurence of proces
-          ioffse = index_in_array(procid(iproc), inpupr(:ninpu))
-          naanta = 0
-          if ( ioffse .gt. 0 ) then
+        ioffse = index_in_array(procid(iproc), inpupr(:ninpu))
+        naanta = 0
+        if ( ioffse .gt. 0 ) then
 
 !             loop over all INPU rows related to this process
 
-  410         continue
-              naanta = naanta + 1
+410         continue
+            naanta = naanta + 1
 
 !             Process current row
 
 !             Lookup item in items table
-              iinpu = ioffse + naanta-1
-              iitem = index_in_array(inpuit(iinpu), itemid(:nitem))
-              if ( iitem .le. 0 ) stop 'unknown ITEM'
+            iinpu = ioffse + naanta-1
+            iitem = index_in_array(inpuit(iinpu), itemid(:nitem))
+            if ( iitem .le. 0 ) stop 'unknown ITEM'
 
-!             Documented items are marked for COEFEDIT.DAT
-              if ( inpudo(iinpu) .eq. 'x' ) itmswi(iitem) = .true.
+    !             Documented items are marked for COEFEDIT.DAT
+                if ( inpudo(iinpu) .eq. 'x' ) itmswi(iitem) = .true.
 
-!             Find item properties and store in PDF structure
-              if ( inpude(iinpu) .eq. 'Y' ) then
-                  actdef = itemde(iitem)
-              elseif ( inpude(iinpu) .eq. 'G' ) then
-                  actdef = -888.
-              elseif ( inpude(iinpu) .eq. 'B' ) then
-                  actdef = -101.
-              elseif ( inpude(iinpu) .eq. 'M' ) then
-                  actdef = -11.
-              elseif ( inpude(iinpu) .eq. 'O' ) then
-                  actdef = -1.
-              else
-                  actdef = -999.
-              endif
-              if ( inpusx(iinpu) .eq. 1 ) then
-                  ins = ins + 1
-                  if ( ins .gt. insmax ) stop 'DIMENSION insmax'
-                  ins_id(ins) = itemid(iitem)
-                  ins_nm(ins) = itemnm(iitem)
-                  ins_un(ins) = itemun(iitem)
-                  ins_va(ins) = actdef
-                  ins_do(ins) = inpudo(iinpu)
-              else
-                  ine = ine + 1
-                  if ( ine .gt. inemax ) stop 'DIMENSION inemax'
-                  ine_id(ine) = itemid(iitem)
-                  ine_nm(ine) = itemnm(iitem)
-                  ine_un(ine) = itemun(iitem)
-                  ine_va(ine) = actdef
-                  ine_do(ine) = inpudo(iinpu)
-              endif
+    !             Find item properties and store in PDF structure
+                if ( inpude(iinpu) .eq. 'Y' ) then
+                    actdef = itemde(iitem)
+                elseif ( inpude(iinpu) .eq. 'G' ) then
+                    actdef = -888.
+                elseif ( inpude(iinpu) .eq. 'B' ) then
+                    actdef = -101.
+                elseif ( inpude(iinpu) .eq. 'M' ) then
+                    actdef = -11.
+                elseif ( inpude(iinpu) .eq. 'O' ) then
+                    actdef = -1.
+                else
+                    actdef = -999.
+                endif
+                if ( inpusx(iinpu) .eq. 1 ) then
+                    ins = ins + 1
+                    if ( ins .gt. insmax ) stop 'DIMENSION insmax'
+                    ins_id(ins) = itemid(iitem)
+                    ins_nm(ins) = itemnm(iitem)
+                    ins_un(ins) = itemun(iitem)
+                    ins_va(ins) = actdef
+                    ins_do(ins) = inpudo(iinpu)
+                else
+                    ine = ine + 1
+                    if ( ine .gt. inemax ) stop 'DIMENSION inemax'
+                    ine_id(ine) = itemid(iitem)
+                    ine_nm(ine) = itemnm(iitem)
+                    ine_un(ine) = itemun(iitem)
+                    ine_va(ine) = actdef
+                    ine_do(ine) = inpudo(iinpu)
+                endif
 
-!             Back for next row in table INPU,
-!             if it still matches current proces
+    !             Back for next row in table INPU,
+    !             if it still matches current proces
 
-              if ( (iinpu+1) .le. ninpu ) then
-                  if (string_equals(procid(iproc), inpupr(iinpu+1))) goto 410
-              endif
-          endif
+                if ( (iinpu+1) .le. ninpu ) then
+                    if (string_equals(procid(iproc), inpupr(iinpu+1))) goto 410
+                endif
+            endif
 
 !         OUTPUT ITEMS ON SEGMENT LEVEL/EXCHANGE LEVEL
 
-!         scan output items table for FIRST occurence of proces
-          ioffse = index_in_array(procid(iproc), outppr(:noutp))
-          naanta = 0
-          if ( ioffse .gt. 0 ) then
+    !         scan output items table for FIRST occurence of proces
+            ioffse = index_in_array(procid(iproc), outppr(:noutp))
+            naanta = 0
+            if ( ioffse .gt. 0 ) then
 
 !             loop over all OUTP rows related to this process
 
-  440         continue
-              naanta = naanta + 1
+    440         continue
+                naanta = naanta + 1
 
-!             Process current row
+    !             Process current row
 
-!             Lookup item in items table
-              ioutp = ioffse + naanta-1
-              iitem = index_in_array(outpit(ioutp), itemid(:nitem))
-              if ( iitem .le. 0 ) stop 'unknown ITEM'
+    !             Lookup item in items table
+                ioutp = ioffse + naanta-1
+                iitem = index_in_array(outpit(ioutp), itemid(:nitem))
+                if ( iitem .le. 0 ) stop 'unknown ITEM'
 
-!             Find item properties and store in PDF structure
-              if ( outpsx(ioutp) .eq. 1 ) then
-                  ous = ous + 1
-                  if ( ous .gt. ousmax ) stop 'DIMENSION ousmax'
-                  ous_id(ous) = itemid(iitem)
-                  ous_nm(ous) = itemnm(iitem)
-                  ous_un(ous) = itemun(iitem)
-                  ous_do(ous) = outpdo(ioutp)
-              else
-                  oue = oue + 1
-                  if ( oue .gt. ouemax ) stop 'DIMENSION ouemax'
-                  oue_id(oue) = itemid(iitem)
-                  oue_nm(oue) = itemnm(iitem)
-                  oue_un(oue) = itemun(iitem)
-                  oue_do(oue) = outpdo(ioutp)
+    !             Find item properties and store in PDF structure
+                if ( outpsx(ioutp) .eq. 1 ) then
+                    ous = ous + 1
+                    if ( ous .gt. ousmax ) stop 'DIMENSION ousmax'
+                    ous_id(ous) = itemid(iitem)
+                    ous_nm(ous) = itemnm(iitem)
+                    ous_un(ous) = itemun(iitem)
+                    ous_do(ous) = outpdo(ioutp)
+                else
+                    oue = oue + 1
+                    if ( oue .gt. ouemax ) stop 'DIMENSION ouemax'
+                    oue_id(oue) = itemid(iitem)
+                    oue_nm(oue) = itemnm(iitem)
+                    oue_un(oue) = itemun(iitem)
+                    oue_do(oue) = outpdo(ioutp)
 
 !                 SCAN VELO and DISP TABLES FOR LINES ASSOCIATED WITH
 !                 CURRENT OUTPUT ITEM ON EXCHANGE LEVEL
 
 !                 scan dispersion lines table for FIRST occurence of item
-                  ioffs2 = index_in_array(itemid(iitem), dispit(:ndisp))
-                  naant2 = 0
-                  if ( ioffs2 .gt. 0 ) then
+                    ioffs2 = index_in_array(itemid(iitem), dispit(:ndisp))
+                    naant2 = 0
+                    if ( ioffs2 .gt. 0 ) then
 
 !                     loop over all DISP rows related to this item
 
-  450                 continue
-                      naant2 = naant2+1
-                      dis = dis + 1
-                      if ( dis .gt. dismax ) stop 'dimension DISMAX'
+    450                 continue
+                        naant2 = naant2+1
+                        dis = dis + 1
+                        if ( dis .gt. dismax ) stop 'dimension DISMAX'
 
-!                     Process current row
+        !                     Process current row
 
-                      idisp = ioffs2 + naant2-1
-                      dis_su(dis) = dispsu(idisp)
-                      dis_it(dis) = dispit(idisp)
-                      dis_sc(dis) = dispsc(idisp)
+                            idisp = ioffs2 + naant2-1
+                            dis_su(dis) = dispsu(idisp)
+                            dis_it(dis) = dispit(idisp)
+                            dis_sc(dis) = dispsc(idisp)
 
-!                     Back for next row in table DISP,
-!                     if it still matches current item
+        !                     Back for next row in table DISP,
+        !                     if it still matches current item
 
-                      if ( (idisp+1) .le. ndisp ) then
-                          if (string_equals( itemid(iitem), dispit(idisp+1))) goto 450
-                      endif
-                  endif
+                            if ( (idisp+1) .le. ndisp ) then
+                                if (string_equals( itemid(iitem), dispit(idisp+1))) goto 450
+                            endif
+                        endif
 
-!                 scan velocity lines table for FIRST occurence of item
-                  ioffs2 = index_in_array( itemid(iitem), veloit(: nvelo))
-                  naant2 = 0
-                  if ( ioffs2 .gt. 0 ) then
+        !                 scan velocity lines table for FIRST occurence of item
+                        ioffs2 = index_in_array( itemid(iitem), veloit(: nvelo))
+                        naant2 = 0
+                        if ( ioffs2 .gt. 0 ) then
 
 !                     loop over all VELO rows related to this item
 
-  460                 continue
-                      naant2 = naant2+1
-                      vel = vel + 1
-                      if ( vel .gt. velmax ) stop 'dimension VELMAX'
+        460                 continue
+                            naant2 = naant2+1
+                            vel = vel + 1
+                            if ( vel .gt. velmax ) stop 'dimension VELMAX'
 
-!                     Process current row
+        !                     Process current row
 
-                      ivelo = ioffs2 + naant2-1
-                      vel_su(vel) = velosu(ivelo)
-                      vel_it(vel) = veloit(ivelo)
-                      vel_sc(vel) = velosc(ivelo)
+                            ivelo = ioffs2 + naant2-1
+                            vel_su(vel) = velosu(ivelo)
+                            vel_it(vel) = veloit(ivelo)
+                            vel_sc(vel) = velosc(ivelo)
 
-!                     Back for next row in table VELO,
-!                     if it still matches current item
+        !                     Back for next row in table VELO,
+        !                     if it still matches current item
 
-                      if ( (ivelo+1) .le. nvelo ) then
-                          if (string_equals( itemid(iitem), veloit(ivelo+1))) goto 460
-                      endif
-                  endif
+                            if ( (ivelo+1) .le. nvelo ) then
+                                if (string_equals( itemid(iitem), veloit(ivelo+1))) goto 460
+                            endif
+                        endif
 
-!                 END of processing output item on exchange level!
+    !                 END of processing output item on exchange level!
 
-              endif
+                    endif
 
-!             Back for next row in table OUTP,
-!             if it still matches current proces
+    !             Back for next row in table OUTP,
+    !             if it still matches current proces
 
-              if ( (ioutp+1) .le. noutp ) then
-                  if (string_equals( procid(iproc), outppr(ioutp+1))) goto 440
-              endif
-          endif
+                    if ( (ioutp+1) .le. noutp ) then
+                        if (string_equals( procid(iproc), outppr(ioutp+1))) goto 440
+                    endif
+                endif
 
-!         FLUXES
+    !         FLUXES
 
-!         scan output fluxes table for FIRST occurence of proces
-          ioffse = index_in_array( procid(iproc), outfpr(: noutf))
-          if ( ioffse .gt. 0 ) then
+    !         scan output fluxes table for FIRST occurence of proces
+            ioffse = index_in_array( procid(iproc), outfpr(: noutf))
+            if ( ioffse .gt. 0 ) then
 
 !             loop over all FLUX rows related to this process
 
-  470         continue
-              flu = flu + 1
-              if ( flu .gt. flumax ) stop 'dimension FLUMAX'
+    470         continue
+                flu = flu + 1
+                if ( flu .gt. flumax ) stop 'dimension FLUMAX'
 
-!             Process current row
+    !             Process current row
 
-!             Lookup flux in items table
-              ioutf = ioffse + flu-1
-!             write (lu_mes,*) ' flu ',flu,' ioutf ', ioutf
-              iitem = index_in_array(outffl(ioutf), itemid(:nitem))
-              if ( iitem .le. 0 ) stop 'unknown FLUX'
+    !             Lookup flux in items table
+                ioutf = ioffse + flu-1
+    !             write (lu_mes,*) ' flu ',flu,' ioutf ', ioutf
+                iitem = index_in_array(outffl(ioutf), itemid(:nitem))
+                if ( iitem .le. 0 ) stop 'unknown FLUX'
 
-!             Find and store flux properties
-              flu_id(flu) = itemid(iitem)
-              flu_nm(flu) = itemnm(iitem)
-              flu_un(flu) = itemun(iitem)
-              flu_do(flu) = outfdo(ioutf)
+    !             Find and store flux properties
+                flu_id(flu) = itemid(iitem)
+                flu_nm(flu) = itemnm(iitem)
+                flu_un(flu) = itemun(iitem)
+                flu_do(flu) = outfdo(ioutf)
 
-!             SCAN STOCHI TABLE FOR LINES ASSOCIATED WITH PRESENT FLUX
+    !             SCAN STOCHI TABLE FOR LINES ASSOCIATED WITH PRESENT FLUX
 
-!             scan stochi lines table for FIRST occurence of flux
-              ioffs2 = index_in_array(itemid(iitem), stocfl(:nstoc))
-              naant2 = 0
-              if ( ioffs2 .gt. 0 ) then
+    !             scan stochi lines table for FIRST occurence of flux
+                ioffs2 = index_in_array(itemid(iitem), stocfl(:nstoc))
+                naant2 = 0
+                if ( ioffs2 .gt. 0 ) then
 
-!                 loop over all STOC rows related to this flux
+    !                 loop over all STOC rows related to this flux
 
-  480             continue
-                  naant2 = naant2+1
-                  sto = sto + 1
-                  if ( sto .gt. stomax ) stop 'dimension STOMAX'
+    480             continue
+                    naant2 = naant2+1
+                    sto = sto + 1
+                    if ( sto .gt. stomax ) stop 'dimension STOMAX'
 
-!                 Process current row
+    !                 Process current row
 
-                  istoc = ioffs2 + naant2-1
-                  sto_su(sto) = stocsu(istoc)
-                  sto_fl(sto) = stocfl(istoc)
-                  sto_sc(sto) = stocsc(istoc)
+                    istoc = ioffs2 + naant2-1
+                    sto_su(sto) = stocsu(istoc)
+                    sto_fl(sto) = stocfl(istoc)
+                    sto_sc(sto) = stocsc(istoc)
 
-!                 Back for next row in table STOC,
-!                 if it still matches current flux
+    !                 Back for next row in table STOC,
+    !                 if it still matches current flux
 
-                  if ( (istoc+1) .le. nstoc ) then
-                      if (string_equals( itemid(iitem), stocfl(istoc+1))) goto 480
-                  endif
-              endif
+                    if ( (istoc+1) .le. nstoc ) then
+                        if (string_equals( itemid(iitem), stocfl(istoc+1))) goto 480
+                    endif
+                endif
 
-!             Back for next row in table OUTF,
-!             if it still matches current proces
+    !             Back for next row in table OUTF,
+    !             if it still matches current proces
 
-              if ( (ioutf+1) .le. noutf ) then
-                  if (string_equals( procid(iproc), outfpr(ioutf+1))) goto 470
-              endif
-          endif
+                if ( (ioutf+1) .le. noutf ) then
+                    if (string_equals( procid(iproc), outfpr(ioutf+1))) goto 470
+                endif
+            endif
 
 !----------------------------------------------------------------------c
 !         WRITE PROCESS
 !----------------------------------------------------------------------c
 
 !         Write PDF file (formats as in HARMONIZE to allow comparison)
-          call wripdn ( procid(iproc), procnm(iproc), procco(iproc), procfo(iproc), lunfil )
-  800 continue
-      close (lunfil)
+            call wripdn ( procid(iproc), procnm(iproc), procco(iproc), procfo(iproc), lunfil )
+    end do
+        close (lunfil)
 
-!     Write all active coefficients to COEFEDIT.DAT in the Sobek-format
-      call coefed(serial,itmswi)
+    !     Write all active coefficients to COEFEDIT.DAT in the Sobek-format
+        call coefed(serial,itmswi)
 
-  900 continue
-      close (lu_mes)
+    900 continue
+        close (lu_mes)
 
-      stop 'Normal end'
-      end
+        stop 'Normal end'
+end program waqpb_export
+
       function adduni(name,unit)
       character*50 adduni, name
       character*20 unit
@@ -474,4 +474,4 @@
       end if
 
       return
-  end
+    end function adduni

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{56C52187-2892-40CC-8C9D-4A32D1FA2CF6}">
+	<Platforms>
+		<Platform Name="x64"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|x64" OutputDirectory="$(ConfigurationName)" IntermediateDirectory="$(ConfigurationName)" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" PreprocessorDefinitions="USE_MSWINDOWS" DebugParameter="debugParameterAll" WarnDeclarations="true" WarnUnusedVariables="true" WarnInterfaces="true" Traceback="true" NullPointerCheck="true" BoundsCheck="true" UninitializedVariablesCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Release|x64" OutputDirectory="$(ConfigurationName)" IntermediateDirectory="$(ConfigurationName)" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" PreprocessorDefinitions="USE_MSWINDOWS" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<File RelativePath=".\src\MOADCS.f"/>
+		<File RelativePath=".\src\MOAREA.f"/>
+		<File RelativePath=".\src\MOCOUR.f"/>
+		<File RelativePath=".\src\MOCZIO.f"/>
+		<File RelativePath=".\src\MODABP.f"/>
+		<File RelativePath=".\src\MODAEP.f"/>
+		<File RelativePath=".\src\MODAIP.f"/>
+		<File RelativePath=".\src\MODALI.f"/>
+		<File RelativePath=".\src\MODAST.f"/>
+		<File RelativePath=".\src\MODFST.f"/>
+		<File RelativePath=".\src\MOEQDZ.f"/>
+		<File RelativePath=".\src\MOEQTW.f"/>
+		<File RelativePath=".\src\MOFDBR.f"/>
+		<File RelativePath=".\src\MOIBOU.f"/>
+		<File RelativePath=".\src\MOIEXT.f"/>
+		<File RelativePath=".\src\MOIFLH.f"/>
+		<File RelativePath=".\src\MOINI.f"/>
+		<File RelativePath=".\src\MOINOD.f"/>
+		<File RelativePath=".\src\MOINTN.f"/>
+		<File RelativePath=".\src\MOITBP.f"/>
+		<File RelativePath=".\src\MOITEP.f"/>
+		<File RelativePath=".\src\MOITIP.f"/>
+		<File RelativePath=".\src\MOITNO.f"/>
+		<File RelativePath=".\src\MOITST.f"/>
+		<File RelativePath=".\src\MOMLEV.f"/>
+		<File RelativePath=".\src\MOMOR.f"/>
+		<File RelativePath=".\src\MOPRDZ.f"/>
+		<File RelativePath=".\src\MOPRLD.f"/>
+		<File RelativePath=".\src\MOREST.f"/>
+		<File RelativePath=".\src\MORPH.f"/>
+		<File RelativePath=".\src\MORSTA.f"/>
+		<File RelativePath=".\src\MOSECI.f"/>
+		<File RelativePath=".\src\MOTRGP.f"/>
+		<File RelativePath=".\src\MOTRIN.f"/>
+		<File RelativePath=".\src\MOTROU.f"/>
+		<File RelativePath=".\src\MOWRES.f"/>
+		<File RelativePath=".\src\MOWRHH.f"/>
+		<File RelativePath=".\src\MOWRHM.f"/>
+		<File RelativePath=".\src\MOWRST.f"/>
+		<File RelativePath=".\src\SEALPH.f"/>
+		<File RelativePath=".\src\SEANAL.f"/>
+		<File RelativePath=".\src\SEBOUN.f"/>
+		<File RelativePath=".\src\SECBIO.f"/>
+		<File RelativePath=".\src\SECBUF.f"/>
+		<File RelativePath=".\src\SECSED.f"/>
+		<File RelativePath=".\src\SECYNB.f"/>
+		<File RelativePath=".\src\SECYSB.f"/>
+		<File RelativePath=".\src\SEDFL1.f"/>
+		<File RelativePath=".\src\SEDFL2.f"/>
+		<File RelativePath=".\src\SEDIM.f"/>
+		<File RelativePath=".\src\SEDISE.f"/>
+		<File RelativePath=".\src\SEDS1B.f"/>
+		<File RelativePath=".\src\SEDSLI.f"/>
+		<File RelativePath=".\src\SEDSPO.f"/>
+		<File RelativePath=".\src\SEDSPR.f"/>
+		<File RelativePath=".\src\SEDSRA.f"/>
+		<File RelativePath=".\src\SEINI.f"/>
+		<File RelativePath=".\src\SELSED.f"/>
+		<File RelativePath=".\src\SENETW.f"/>
+		<File RelativePath=".\src\SENLAY.f"/>
+		<File RelativePath=".\src\SENODE.f"/>
+		<File RelativePath=".\src\SENORB.f"/>
+		<File RelativePath=".\src\SESEDB.f"/>
+		<File RelativePath=".\src\SESER.f"/>
+		<File RelativePath=".\src\SETFAW.f"/>
+		<File RelativePath=".\src\SETFEH.f"/>
+		<File RelativePath=".\src\SETFMM.f"/>
+		<File RelativePath=".\src\SETFPK.f"/>
+		<File RelativePath=".\src\SETFUD.f"/>
+		<File RelativePath=".\src\SETFVR.f"/>
+		<File RelativePath=".\src\SETOST.f"/>
+		<File RelativePath=".\src\SETRFO.f"/>
+		<File RelativePath=".\src\SEWRES.f"/>
+		<File RelativePath=".\src\SEWRHI.f"/></Filter></Files>
+	<Globals/></VisualStudioProject>

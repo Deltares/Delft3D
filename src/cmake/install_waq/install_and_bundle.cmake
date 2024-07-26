@@ -24,8 +24,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../src/cmake/functions.cmake)
 
 set(BU_CHMOD_BUNDLE_ITEMS 1)
 
-fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/delwaq1" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
-fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/delwaq2" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
+fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/delwaq" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
 fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/waqmerge" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
 fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/ddcouple" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")
 fixup_bundle("${CMAKE_INSTALL_PREFIX}/bin/agrhyd" "${BUILD_LIBRARIES}" "${THIRDPARTY_x64_LIB_FOLDERS}")

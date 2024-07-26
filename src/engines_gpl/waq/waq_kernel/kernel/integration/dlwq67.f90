@@ -27,46 +27,27 @@ module m_dlwq67
 
 contains
 
-
-    SUBROUTINE DLWQ67 (AMAT, NOSEG, JTRACK)
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED: june 1988 by L.Postma
-        !
-        !     FUNCTION            : updates the diagonal if zero
-        !
-        !     LOGICAL UNITNUMBERS : none
-        !
-        !     SUBROUTINES CALLED  : none
-        !
-        !     PARAMETERS          :
-        !
-        !     NAME    KIND       LENGTH       FUNCT.  DESCRIPTION
-        !     ----    -----      ------       ------- -----------
-        !     AMAT    REAL (JTRACK*2+1)*NOSEG IN/OUT  matrix to invert
-        !     NOSEG   INTEGER       1         INPUT   number of segments
-        !     JTRACK  INTEGER       1         INPUT   number of codiagonals
-        !
+    !> updates the diagonal if zero
+    subroutine dlwq67(amat, num_cells, num_codiagonals)
         use timers
 
-        real(kind = real_wp) :: AMAT(*)
-        integer(kind = int_wp) :: noseg, jtrack
-        integer(kind = int_wp) :: ISEG, ISTEP, ISET
-        integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("dlwq67", ithandl)
-        !
-        !         set the diagonal
-        !
-        ISTEP = JTRACK * 2 + 1
-        ISET = JTRACK + 1
-        DO ISEG = 1, NOSEG
-            IF (ABS(AMAT(ISET)) < 1.0E-35) AMAT(ISET) = 1.0
-            ISET = ISET + ISTEP
-        end do
-        !
-        if (timon) call timstop (ithandl)
-        RETURN
-    END
+        real(kind = real_wp), intent(inout) :: amat(*) !< Matrix to invert
+        integer(kind = int_wp), intent(in)  :: num_cells   !< Number of cells or segments
+        integer(kind = int_wp), intent(in)  :: num_codiagonals  !< Number of codiagonals
 
+        ! Local variables
+        integer(kind = int_wp) :: iseg, istep, iset
+        integer(kind = int_wp) :: ithandl = 0
+
+        if (timon) call timstrt ("dlwq67", ithandl)
+        ! set the diagonal
+        istep = num_codiagonals * 2 + 1
+        iset = num_codiagonals + 1
+        do iseg = 1, num_cells
+            if (abs(amat(iset)) < 1.0e-35) amat(iset) = 1.0
+            iset = iset + istep
+        end do
+
+        if (timon) call timstop (ithandl)
+    end subroutine dlwq67
 end module m_dlwq67

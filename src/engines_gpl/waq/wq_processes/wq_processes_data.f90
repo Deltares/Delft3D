@@ -23,16 +23,16 @@
 module processes_input
     use m_waq_precision
 
-    integer  (KIND = int_wp) :: notot = 0       !< Number of systems
-    integer  (KIND = int_wp) :: nosys = 0       !< Number of active systems
-    integer  (KIND = int_wp) :: nocons          !< Number of constants used
+    integer  (KIND = int_wp) :: num_substances_total = 0       !< Number of systems
+    integer  (KIND = int_wp) :: num_substances_transported = 0       !< Number of active systems
+    integer  (KIND = int_wp) :: num_constants          !< Number of constants used
     integer  (KIND = int_wp) :: noconm          !< Maximum number of constants used
-    integer  (KIND = int_wp) :: nopa            !< Number of parameters
-    integer  (KIND = int_wp) :: nofun           !< Number of functions ( user )
-    integer  (KIND = int_wp) :: nosfun          !< Number of segment functions
+    integer  (KIND = int_wp) :: num_spatial_parameters            !< Number of parameters
+    integer  (KIND = int_wp) :: num_time_functions           !< Number of functions ( user )
+    integer  (KIND = int_wp) :: num_spatial_time_fuctions          !< Number of segment functions
     integer  (KIND = int_wp) :: nosfunext       !< Number of segment functions from the ext file
-    integer  (KIND = int_wp) :: nodisp          !< Number of dispersion arrays
-    integer  (KIND = int_wp) :: novelo          !< Number of velocity arrays
+    integer  (KIND = int_wp) :: num_dispersion_arrays          !< Number of dispersion arrays
+    integer  (KIND = int_wp) :: num_velocity_arrays          !< Number of velocity arrays
     integer  (KIND = int_wp) :: noout_map       !< Total number of map outputs
     integer  (KIND = int_wp) :: noout_user      !< Number of user outputs
     integer  (KIND = int_wp) :: noout_statt     !< Number of stat map time outputs
@@ -62,7 +62,7 @@ module processes_input
     ! Dispersion arrays, are used in advection/difusion, set through process library. Useable in FM?
     ! There might also be dispersion arrays from other input in Delwa itself...
 
-    integer(KIND = int_wp) :: ndspn           !< Number of new dispersion arrays
+    integer(KIND = int_wp) :: num_dispersion_arrays_new
     integer(KIND = int_wp), allocatable :: idpnew(:)      !< Pointer to new disp array
     real   (KIND = real_wp), allocatable :: dispnw(:, :)    !< New dispersion array
     integer(KIND = int_wp), allocatable :: idpnt (:)      !< Pointer to original dispersion
@@ -74,13 +74,13 @@ module processes_input
     ! Where to apply? Also instant explicitly calculate and apply fluxes?
     !
     ! There might also be velocity arrays from other input in Delwaq itself...
-    ! novelo is from block 4 (can be deleted?), nveln is from processes
+    ! num_velocity_arrays is from block 4 (can be deleted?), num_velocity_arrays_new is from processes
 
-    integer(KIND = int_wp) :: nveln           !< Nr. of new velocity array's
+    integer(KIND = int_wp) :: num_velocity_arrays_new
     real   (KIND = real_wp), allocatable :: velonw(:, :)     !< New velocity array
     integer(KIND = int_wp), allocatable :: ivpnt (:)      !< pointer to original velo
     real   (KIND = real_wp), allocatable :: velo  (:, :)     !< Original velocities
-    integer(KIND = int_wp) :: nvelx           !< Nr. of calculated velocities
+    integer(KIND = int_wp) :: num_velocity_arrays_extra           !< Nr. of calculated velocities
     real   (KIND = real_wp), allocatable :: velx  (:, :)     !< Calculated velocities
     real   (KIND = real_wp), allocatable :: vsto  (:)       !< Factor for velocitie
 
@@ -91,20 +91,20 @@ module processes_pointers
 
     integer(c_intptr_t), save :: dll_opb         !< open proces library dll handle
 
-    integer(kind = int_wp) :: nipmsa          !< Length IPMSA
-    integer(kind = int_wp) :: nproc           !< Number of called processes
-    integer(kind = int_wp) :: noloc           !< Number of local vars in the proces subsystem
-    integer(KIND = int_wp) :: novar           !< Number of variables
-    integer(KIND = int_wp) :: nflux = 0       !< total number of fluxes
-    integer(KIND = int_wp) :: nodef           !< Number of defaults in proces subsystem
-    integer(KIND = int_wp) :: noutp           !< Number of files in OUTPUT system
-    integer(KIND = int_wp) :: nrvart          !< Number of extra output variables
-    integer(KIND = int_wp) :: nbufmx          !< Length output buffer
-    integer(KIND = int_wp) :: ndspx           !< Number of extra dispersion array's
-    integer(KIND = int_wp) :: nlocx           !< Number of local variables on exch. level
+    integer(kind = int_wp) :: process_space_int_len          !< Length process_space_int
+    integer(kind = int_wp) :: num_processes_activated           !< Number of called processes
+    integer(kind = int_wp) :: num_local_vars           !< Number of local vars in the proces subsystem
+    integer(KIND = int_wp) :: num_vars           !< Number of variables
+    integer(KIND = int_wp) :: num_fluxes = 0       !< total number of fluxes
+    integer(KIND = int_wp) :: num_defaults           !< Number of defaults in proces subsystem
+    integer(KIND = int_wp) :: num_output_files           !< Number of files in OUTPUT system
+    integer(KIND = int_wp) :: num_output_variables_extra          !< Number of extra output variables
+    integer(KIND = int_wp) :: output_buffer_len
+    integer(KIND = int_wp) :: num_dispersion_arrays_extra           !< Number of extra dispersion array's
+    integer(KIND = int_wp) :: num_local_vars_exchange
     integer(KIND = int_wp) :: ndmpar          !< Number of dump area's for balance output
-    integer(KIND = int_wp) :: nogrid          !< Number of defined grids
-    integer(KIND = int_wp) :: nrref           !< Maximum nr of input references for processes
+    integer(KIND = int_wp) :: num_grids          !< Number of defined grids
+    integer(KIND = int_wp) :: num_input_ref           !< Maximum nr of input references for processes
 
     integer(kind = int_wp), allocatable :: prvnio(:)       !< Number of io pointers of process
     integer(kind = int_wp), allocatable :: prvpnt(:)       !< Entry in process io pointers prvvar/prvtyp (cummulative of prvnio)
@@ -132,8 +132,8 @@ module processes_pointers
     integer(kind = int_wp), allocatable :: outvar(:)       !< Variable index of outputs
 
     integer(KIND = int_wp) :: arrpoi(78)      !< starting point of the array
-    integer(KIND = int_wp) :: arrknd(78)      !< Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR), switch which type of increment should be used
-    integer(KIND = int_wp) :: arrtyp(78)      !< For type 1 the increment is 0, for type 2 it is nofun
+    integer(KIND = int_wp) :: arrknd(78)      !< Kind of array 1=(num_vars), 2=(num_vars,num_cells) or 3=(num_cells,num_vars), switch which type of increment should be used
+    integer(KIND = int_wp) :: arrtyp(78)      !< For type 1 the increment is 0, for type 2 it is num_time_functions
     integer(KIND = int_wp) :: arrbyt(78)      !< Byte size of this array
     integer(KIND = int_wp) :: arrlen(78)      !< Total length of this array
     integer(KIND = int_wp) :: arrdm1(78)      !< 'increment' in this array, is the same for all data in this array...
@@ -141,15 +141,15 @@ module processes_pointers
     integer(KIND = int_wp) :: arrdm3(78)      !< second dimension in this array
     character(20) :: arrnam(78)      !< array names
 
-    integer(kind = int_wp) :: ipbloo          !< Number of Bloom module  (if >0)
-    integer(kind = int_wp) :: ioffbl          !< Offset in IPMSA for Bloom
+    integer(kind = int_wp) :: bloom_status_ind          !< Number of Bloom module  (if >0)
+    integer(kind = int_wp) :: bloom_ind          !< Offset in process_space_int for Bloom
 
     integer(kind = int_wp), allocatable :: idpnw(:)        !< New dispersion pointers
     integer(kind = int_wp), allocatable :: ivpnw(:)        !< New velocity pointers
     real(kind = real_wp), allocatable :: defaul(:)       !< Values for default constants
 
-    integer(kind = int_wp), allocatable :: ipmsa(:)        !< Start index in PMSA array
-    integer(kind = int_wp), allocatable :: increm(:)       !< Increment in PMSA array
+    integer(kind = int_wp), allocatable :: process_space_int(:)        !< Start index in process_space_real array
+    integer(kind = int_wp), allocatable :: increm(:)       !< Increment in process_space_real array
 
     integer(kind = int_wp) :: no_flu          !< Number of fluxes
     real(kind = real_wp), allocatable :: stochi(:, :)     !< Stoichiometry factors
@@ -157,8 +157,8 @@ module processes_pointers
     character(10), allocatable :: fluxprocname(:) !< Process for each flux
 
     integer(kind = int_wp) :: totfluxsys      !< Total number of fluxes for all substances
-    integer(kind = int_wp), allocatable :: nfluxsys(:)     !< Number of fluxes per substances (dim=nosys)
-    integer(kind = int_wp), allocatable :: ipfluxsys(:)    !< Index pointer of fluxes per substances (dim=nosys)
+    integer(kind = int_wp), allocatable :: nfluxsys(:)     !< Number of fluxes per substances (dim=num_substances_transported)
+    integer(kind = int_wp), allocatable :: ipfluxsys(:)    !< Index pointer of fluxes per substances (dim=num_substances_transported)
     integer(kind = int_wp), allocatable :: fluxsys(:)      !< Index of flux for this substance (dim=totfluxsys)
 
     integer(kind = int_wp) :: iivol = 1, iiarea = 2, iiflow = 3, iileng = 4, &

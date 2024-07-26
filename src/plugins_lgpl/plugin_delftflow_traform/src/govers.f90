@@ -35,7 +35,7 @@ subroutine govers(dll_integers, max_integers, &
 !!--description-----------------------------------------------------------------
 !
 ! Computes sediment transport according to
-! Govers (1990) and Meyer-Peter & Müller (1948)
+! Govers (1990) and Meyer-Peter & MÃ¼ller (1948)
 !
 !!--pseudo code and references--------------------------------------------------
 ! NONE
@@ -153,7 +153,7 @@ vvv     = dll_reals( 6)    ! n component of characteristic velocity [m/s]
 umod    = dll_reals( 7)    ! magnitude of characteristic velocity [m/s]
 zumod   = dll_reals( 8)    ! height above bed of characteristic velocity [m]
 h       = dll_reals( 9)    ! water depth [m]
-chezy   = dll_reals(10)    ! local Chézy value [m1/2/s]
+chezy   = dll_reals(10)    ! local ChÃ©zy value [m1/2/s]
 hrms    = dll_reals(11)    ! wave height [m]
 tp      = dll_reals(12)    ! wave period [s]
 teta    = dll_reals(13)    ! angle between wave dir and local grid orientation [deg]

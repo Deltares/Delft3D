@@ -28,10 +28,10 @@ module m_calchz
 contains
 
 
-    subroutine calchz (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine calchz (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !>\file
         !>       Calculate chezy coefficient using roughness and depth
@@ -57,9 +57,9 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         !     Local declarations, constants in source
         !
@@ -78,19 +78,19 @@ contains
         ONESIX = 1.0 / 6.0
         ! you need this for maninng
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 ! 0-inactive cell  1-active cell
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
                     ! place in layers   0-depth integerated (2D) 1-top 2-between 3-bottom
                     !
 
-                    ROUGH = PMSA(IP1)
-                    MANCOF = PMSA(IP2)
-                    DEPTH = PMSA(IP3)
-                    TOTDEP = PMSA(IP4)
-                    ICHZTP = NINT(PMSA(IP5))
+                    ROUGH = process_space_real(IP1)
+                    MANCOF = process_space_real(IP2)
+                    DEPTH = process_space_real(IP3)
+                    TOTDEP = process_space_real(IP4)
+                    ICHZTP = NINT(process_space_real(IP5))
 
                     IF (ICHZTP==1) THEN
                         !       Shear stress by flow according to White/Colebrook - protect against very small depth
@@ -101,7 +101,7 @@ contains
                     END IF
                     CHZ = MAX(CHZ, 1.0)
 
-                    PMSA (IP6) = CHZ
+                    process_space_real (IP6) = CHZ
                     !
                 ENDIF
             ENDIF

@@ -1,13 +1,12 @@
-"""
-Description: FTP handler
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""FTP handler.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import os
-from typing import Optional
 import urllib.parse as parse
 from ftplib import FTP, error_perm
+from typing import Optional
 
 from src.config.credentials import Credentials
 from src.utils.handlers.i_handler import IHandler
@@ -16,29 +15,6 @@ from src.utils.logging.i_logger import ILogger
 
 # Upload and download for ftp paths
 class FTPHandler(IHandler):
-    def prepare_upload(
-        self, from_path: str, to_path: str, credentials: Credentials, logger: ILogger
-    ) -> None:
-        pass
-
-    # Upload data to location
-    # input: from, to and credentials
-    def upload(
-        self, from_path: str, to_path: str, credentials: Credentials, logger: ILogger
-    ) -> None:
-        logger.debug(f"setting up connection to FTP: {to_path}")
-        url = parse.urlparse(to_path)
-        ftp = FTP(url.netloc)
-        if credentials:
-            ftp.login(credentials.username, credentials.password)
-            logger.debug(f"connecting as: {credentials.username}")
-        else:
-            ftp.login()
-        ftp.cwd(url.path)
-        logger.debug(f"going to root: {url.path}")
-        self.__traverseDirectoryUpload__(ftp, from_path, "", url.path, "", logger)
-        ftp.close()
-
     # Download data from location
     # input: from, to and credentials
     def download(
@@ -48,7 +24,7 @@ class FTPHandler(IHandler):
         credentials: Credentials,
         version: Optional[str],
         logger: ILogger,
-    ):
+    ) -> None:
         logger.debug(f"setting up connection to FTP: {from_path}")
         url = parse.urlparse(from_path)
         ftp = FTP(url.netloc)
@@ -71,9 +47,7 @@ class FTPHandler(IHandler):
     # frompath is relative dir of local system
     # destination is abs dir of ftp
     # topath is relative dir of ftp
-    def __traverseDirectoryUpload__(
-        self, ftp, cwd, frompath, destination, topath, logger: ILogger
-    ):
+    def __traverseDirectoryUpload__(self, ftp, cwd, frompath, destination, topath, logger: ILogger):
         try:
             ftp.cwd(destination)
             if topath:
@@ -133,9 +107,7 @@ class FTPHandler(IHandler):
                 # this will check if ftpfile is folder:
                 ftp.cwd(path + ftpfile + "/")
                 # if so, explore it:
-                self.__traverseDirectoryDownload__(
-                    ftp, path + ftpfile + "/", destination, logger
-                )
+                self.__traverseDirectoryDownload__(ftp, path + ftpfile + "/", destination, logger)
             except error_perm:
                 # possibly need a permission exception catch:
                 with open(os.path.join(topath, ftpfile), "wb") as ff:

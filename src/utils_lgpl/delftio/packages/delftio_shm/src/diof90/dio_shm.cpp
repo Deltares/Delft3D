@@ -56,7 +56,7 @@
 // include esm and synch.support functions for unix platforms
 //
 
-#if (defined(HAVE_CONFIG_H))
+#ifdef HAVE_CONFIG_H
 #include "dio-sync-ux.h"
 #endif
 
@@ -322,7 +322,7 @@ void DioShmDs::InitInfo(
                 //                (On Ux, Getter should specify zero,
                 //                 to be able to attach to ESM dataset)
                 //
-#if (defined(HAVE_CONFIG_H))
+#ifdef HAVE_CONFIG_H
                 if (! this->putter) infoSize = 0;
 #endif
                 this->infoHandle = new DioShmHandle(infoSize , infoName);
@@ -415,7 +415,7 @@ void DioShmDs::InitData(
                 //                (On Ux, Getter should specify zero,
                 //                 to be able to attach to ESM dataset)
                 //
-#if (defined(HAVE_CONFIG_H))
+#ifdef HAVE_CONFIG_H
                 if (! putter) dataSize = 0; // ESM requires size 0 to attach
 #endif
                 this->dataHandle[part] = new DioShmHandle(dataSize, dataName);

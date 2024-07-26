@@ -36,7 +36,7 @@
  use timers
  use m_flowgeom,    only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln
  use waq,           only: reset_waq
- use m_flow,        only: kmx, jasecflow, iperot, hu, taubxu, ucxq, ucyq, fvcoro
+    use m_flow, only: kmx, kmxn, jasecflow, iperot, taubxu, ucxq, ucyq, fvcoro, vol1
  use m_flowtimes
  use m_lateral, only: numlatsg
  use network_data,  only: NETSTAT_CELLS_DIRTY
@@ -48,7 +48,7 @@
  use unstruc_files, only: mdia
  use unstruc_netcdf
  use MessageHandling
- use m_flowparameters, only: jawave, jatrt, jacali, jacreep, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac
+    use m_flowparameters, only: jawave, jatrt, jacali, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE
  use dfm_error
  use m_fm_wq_processes, only: jawaqproc
  use m_vegetation
@@ -62,18 +62,18 @@
  use m_fm_update_crosssections, only: fm_update_mor_width_area, fm_update_mor_width_mean_bedlevel
  use unstruc_netcdf_map_class
  use unstruc_caching
- use m_monitoring_crosssections, only: ncrs, fill_geometry_arrays_crs
+    use m_monitoring_crosssections, only: ncrs
  use m_setucxcuy_leastsquare, only: reconst2ndini
- use m_flowexternalforcings, only: nwbnd
+    use fm_external_forcings_data, only: nwbnd
  use m_sedtrails_network
  use m_sedtrails_netcdf, only: sedtrails_loadNetwork
  use m_sedtrails_stats, only: default_sedtrails_stats, alloc_sedtrails_stats
+    use fm_statistical_output
  use unstruc_display, only : ntek, jaGUI
  use m_debug
  use m_flow_flowinit
  use m_pre_bedlevel, only: extrapolate_bedlevel_at_boundaries
  use m_fm_icecover, only: fm_ice_alloc, fm_ice_echo
- use m_dad, only: dad_included
  use m_fixedweirs, only: weirdte, nfxw
  use mass_balance_areas_routines, only : mba_init
  use m_curvature, only: get_spirucm
@@ -82,8 +82,9 @@
  use system_utils, only: makedir
  use m_fm_erosed, only: taub
  use m_transport, only: numconst, constituents
- use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used
- use m_cell_geometry, only : ba
+    use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used, &
+                         get_lateral_volume_per_layer, lateral_volume_per_layer
+    use m_initialize_flow1d_implicit, only: initialize_flow1d_implicit
  !
  ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
  ! Activate the following line (See also statements below)
@@ -112,7 +113,7 @@
  call datum2(rundat2)
  L = len_trim(rundat2)
 
- IF (ti_waq > 0d0) then
+    if (ti_waq > 0d0) then
     call makedir(getoutputdir('waq'))  ! No problem if it exists already.
  end if
 
@@ -124,7 +125,7 @@
     call makedir(md_snapshotdir) ! No problem if it exists already.
  end if
 
- if ( jatimer.eq.1 ) then
+    if (jatimer == 1) then
     call initimer()
  end if
 
@@ -166,7 +167,7 @@
 
  call timstrt('Flow geometry       ', handle_extra(4)) ! Flow geometry
  call mess(LEVEL_INFO,'Initializing flow model geometry...')
- if ( jampi.eq.0 ) then
+    if (jampi == 0) then
     call flow_geominit(0)                                ! initialise flow geometry based upon present network, time independent
                                                          ! make directional wave grid for surfbeat model
 
@@ -180,16 +181,16 @@
  else
     call flow_geominit(1)  ! first phase only
 
-    if ( Ndx.gt.0 ) then
+       if (Ndx > 0) then
        call mess(LEVEL_INFO,'Start partitioning model...')
-       if ( jatimer.eq.1 ) call starttimer(IPARTINIT)
+          if (jatimer == 1) call starttimer(IPARTINIT)
 
        call partition_init_1D2D(md_ident, iresult)   ! 1D & 2D (hence the name, thanks to Herman for pointing this out)
 
-       if ( jatimer.eq.1 ) call stoptimer(IPARTINIT)
+          if (jatimer == 1) call stoptimer(IPARTINIT)
        call mess(LEVEL_INFO,'Done partitioning model.')
 
-       if ( iresult.eq.0 ) then
+          if (iresult == 0) then
           call update_geom(1)     ! update geometry in ghost area
 
           call flow_geominit(2)   ! second phase
@@ -283,9 +284,9 @@
     call update_vertadmin()
 
     !3D: partition_init needs kmxn and kmxL arrays for 3D send- and ghostlists
-    if ( jatimer.eq.1 ) call starttimer(IPARTINIT)
+       if (jatimer == 1) call starttimer(IPARTINIT)
     call partition_init_3D(iresult)
-    if ( jatimer.eq.1 ) call stoptimer(IPARTINIT)
+       if (jatimer == 1) call stoptimer(IPARTINIT)
 
     if (iresult /= DFM_NOERR) then
       call mess(LEVEL_WARN,'Error in 3D partitioning initialization.')
@@ -382,7 +383,7 @@
  ! initialize waq and add to tracer administration
  call timstrt('WAQ processes init  ', handle_extra(18)) ! waq processes init
  if (ti_waqproc /= 0d0) then
-    if ( jawaqproc .eq. 1 ) then
+       if (jawaqproc == 1) then
        call fm_wq_processes_ini_proc()
        jawaqproc = 2
        if (ti_waqproc > 0d0) then
@@ -417,7 +418,7 @@
  endif
  call timstop(handle_extra(26)) ! end dredging init
  
- if (jawave .eq. 4 .and. jajre .eq. 1) then
+    if (jawave == 4 .and. jajre == 1) then
     call timstrt('Surfbeat init         ', handle_extra(27)) ! Surfbeat init
     if (jampi==0) then
        if (nwbnd==0) then
@@ -435,6 +436,9 @@
  call timstrt('Structure parameters', handle_extra(29)) ! structure parameters
  call structure_parameters()                         ! initialize structure values, after flow_flowinit() so that initial water levels and discharges are already set.
  call timstop(handle_extra(29)) ! end structure parameters
+
+    ! Prepare for his/map/clm output via statistical_output module
+    call flow_init_statistical_output_his(config_set_his, out_variable_set_his)
 
  call timstrt('Trachy update       ', handle_extra(30)) ! trachy update
  if (jatrt == 1) then
@@ -504,8 +508,20 @@ endif
  call timstop(handle_extra(33)) ! end Fourier init
 
  if (numconst > 0.and. apply_transport_is_used) then
+       ! During initialisation, the lateral data must be initialized correctly
     call reset_outgoing_lat_concentration()
-    call average_concentrations_for_laterals(numconst, kmx, ba, constituents, 1d0)
+       ! Use timestep 1 s to set outgoing_lat_concentration to the initial averaged concentrations at each lateral location.
+       call average_concentrations_for_laterals(numconst, kmx, kmxn, vol1, constituents, 1._dp)
+       call get_lateral_volume_per_layer(lateral_volume_per_layer)
+    end if
+
+    !Initialize flow1d_implicit
+    if (flow_solver == FLOW_SOLVER_SRE) then
+       call initialize_flow1d_implicit(iresult)
+       if (iresult /= DFM_NOERR) then
+          call mess(LEVEL_WARN, 'Error initializing 1D implicit.')
+          goto 1234
+       end if
  endif
  
  ! Initialise sedtrails statistics

@@ -28,10 +28,10 @@ module m_nralgs
 contains
 
 
-    subroutine nralgs (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine nralgs (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !>\file
         !>       Nutrient release of algae in S1 and S2
@@ -65,9 +65,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         integer(kind = int_wp) :: ip1, ip2, ip3, ip4, ip5, ip6, ip7, ip8, &
                 ip9, ip10, ip11, ip12, ip13, &
                 iflux, iseg, ikmrk2
@@ -90,24 +90,24 @@ contains
         IP13 = IPOINT(13)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
                     !
-                    FALG1 = PMSA(IP1)
-                    NCRAT1 = PMSA(IP2)
-                    PCRAT1 = PMSA(IP3)
-                    AUT1 = PMSA(IP4)
-                    DET1 = PMSA(IP5)
-                    FALG2 = PMSA(IP6)
-                    NCRAT2 = PMSA(IP7)
-                    PCRAT2 = PMSA(IP8)
-                    SICRAT = PMSA(IP9)
-                    AUT2 = PMSA(IP10)
-                    DET2 = PMSA(IP11)
-                    DEPTH = PMSA(IP12)
-                    switch = PMSA(IP13)
+                    FALG1 = process_space_real(IP1)
+                    NCRAT1 = process_space_real(IP2)
+                    PCRAT1 = process_space_real(IP3)
+                    AUT1 = process_space_real(IP4)
+                    DET1 = process_space_real(IP5)
+                    FALG2 = process_space_real(IP6)
+                    NCRAT2 = process_space_real(IP7)
+                    PCRAT2 = process_space_real(IP8)
+                    SICRAT = process_space_real(IP9)
+                    AUT2 = process_space_real(IP10)
+                    DET2 = process_space_real(IP11)
+                    DEPTH = process_space_real(IP12)
+                    switch = process_space_real(IP13)
 
                     !***********************************************************************
                     !**** Processes connected to the ALGEA model

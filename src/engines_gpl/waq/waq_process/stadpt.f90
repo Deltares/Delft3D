@@ -28,10 +28,10 @@ module m_stadpt
 contains
 
 
-    subroutine stadpt (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine stadpt (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !>\file
         !>       Depth-averaged, max and min value per timestep
@@ -61,9 +61,9 @@ contains
 
         implicit none
 
-        real(kind = real_wp) :: pmsa  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(*), increm(*), noseg, noflux
-        integer(kind = int_wp) :: iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(*), increm(*), num_cells, noflux
+        integer(kind = int_wp) :: iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         integer(kind = int_wp) :: ip1, ip2, ip3, ip4, ip5
         integer(kind = int_wp) :: in1, in2, in3, in4, in5
@@ -109,11 +109,11 @@ contains
         !
 
         !     allocate and initialise work arrays
-        allocate (cdepsum(noseg))
-        allocate (vdepsum(noseg))
-        allocate (cdepavg(noseg))
-        allocate (cdepmax(noseg))
-        allocate (cdepmin(noseg))
+        allocate (cdepsum(num_cells))
+        allocate (vdepsum(num_cells))
+        allocate (cdepavg(num_cells))
+        allocate (cdepmax(num_cells))
+        allocate (cdepmin(num_cells))
         cdepsum = 0.0
         vdepsum = 0.0
         cdepavg = 0.0
@@ -121,26 +121,26 @@ contains
         cdepmin = 0.0
 
         !     default output is the value from the segment itself
-        do iseg = 1, noseg
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk)
+        do iseg = 1, num_cells
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk)
             if (ikmrk /= 0) then
-                cdepsum(iseg) = pmsa(ip1) * pmsa(ip2)
-                vdepsum(iseg) = pmsa(ip2)
-                cdepavg(iseg) = pmsa(ip1)
-                cdepmax(iseg) = pmsa(ip1)
-                cdepmin(iseg) = pmsa(ip1)
+                cdepsum(iseg) = process_space_real(ip1) * process_space_real(ip2)
+                vdepsum(iseg) = process_space_real(ip2)
+                cdepavg(iseg) = process_space_real(ip1)
+                cdepmax(iseg) = process_space_real(ip1)
+                cdepmin(iseg) = process_space_real(ip1)
             endif
             ip1 = ip1 + in1
             ip2 = ip2 + in2
         end do
 
         !     first loop forwards
-        do iq = noq1 + noq2 + 1, noq1 + noq2 + noq3
+        do iq = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
             ifrom = iexpnt(1, iq)
             ito = iexpnt(2, iq)
             if (ifrom > 0 .and. ito > 0) then
-                call evaluate_waq_attribute(1, iknmrk(ifrom), ik1from)
-                call evaluate_waq_attribute(1, iknmrk(ito), ik1to)
+                call extract_waq_attribute(1, iknmrk(ifrom), ik1from)
+                call extract_waq_attribute(1, iknmrk(ito), ik1to)
                 if (ik1from == 1 .and. ik1to == 1) then
                     cdepsum(ito) = cdepsum(ito) + cdepsum(ifrom)
                     vdepsum(ito) = vdepsum(ito) + vdepsum(ifrom)
@@ -154,12 +154,12 @@ contains
         enddo
 
         !     second loop backwards
-        do iq = noq1 + noq2 + noq3, noq1 + noq2 + 1, -1
+        do iq = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir, num_exchanges_u_dir + num_exchanges_v_dir + 1, -1
             ifrom = iexpnt(1, iq)
             ito = iexpnt(2, iq)
             if (ifrom > 0 .and. ito > 0) then
-                call evaluate_waq_attribute(1, iknmrk(ifrom), ik1from)
-                call evaluate_waq_attribute(1, iknmrk(ito), ik1to)
+                call extract_waq_attribute(1, iknmrk(ifrom), ik1from)
+                call extract_waq_attribute(1, iknmrk(ito), ik1to)
                 if (ik1from == 1 .and. ik1to == 1) then
                     cdepavg(ifrom) = cdepavg(ito)
                     cdepmax(ifrom) = cdepmax(ito)
@@ -168,13 +168,13 @@ contains
             endif
         enddo
 
-        !     copy final result back into pmsa array
-        do iseg = 1, noseg
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk)
+        !     copy final result back into process_space_real array
+        do iseg = 1, num_cells
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk)
             if (ikmrk /= 0) then
-                pmsa(ip3) = cdepavg(iseg)
-                pmsa(ip4) = cdepmax(iseg)
-                pmsa(ip5) = cdepmin(iseg)
+                process_space_real(ip3) = cdepavg(iseg)
+                process_space_real(ip4) = cdepmax(iseg)
+                process_space_real(ip5) = cdepmin(iseg)
             endif
             ip3 = ip3 + in3
             ip4 = ip4 + in4

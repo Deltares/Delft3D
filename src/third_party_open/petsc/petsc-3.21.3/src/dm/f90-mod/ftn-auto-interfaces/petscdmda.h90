@@ -1,0 +1,407 @@
+      subroutine DMDASetSizes(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetSizes
+      subroutine DMDASetNumProcs(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetNumProcs
+      subroutine DMDAGetBoundaryType(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       DMBoundaryType b ! DMBoundaryType
+       DMBoundaryType c ! DMBoundaryType
+       DMBoundaryType d ! DMBoundaryType
+       PetscErrorCode z
+       end subroutine DMDAGetBoundaryType
+      subroutine DMDASetBoundaryType(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       DMBoundaryType b ! DMBoundaryType
+       DMBoundaryType c ! DMBoundaryType
+       DMBoundaryType d ! DMBoundaryType
+       PetscErrorCode z
+       end subroutine DMDASetBoundaryType
+      subroutine DMDASetDof(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetDof
+      subroutine DMDAGetDof(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAGetDof
+      subroutine DMDAGetOverlap(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAGetOverlap
+      subroutine DMDASetOverlap(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetOverlap
+      subroutine DMDAGetNumLocalSubDomains(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAGetNumLocalSubDomains
+      subroutine DMDASetNumLocalSubDomains(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetNumLocalSubDomains
+      subroutine DMDASetOffset(a,b,c,d,e,f,g,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscInt g ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetOffset
+      subroutine DMDAGetOffset(a,b,c,d,e,f,g,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscInt g ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAGetOffset
+      subroutine DMDAGetNonOverlappingRegion(a,b,c,d,e,f,g,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscInt g ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAGetNonOverlappingRegion
+      subroutine DMDASetNonOverlappingRegion(a,b,c,d,e,f,g,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscInt g ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetNonOverlappingRegion
+      subroutine DMDASetStencilType(a,b,z)
+       import tDM
+       DM a ! DM
+       DMDAStencilType b ! DMDAStencilType
+       PetscErrorCode z
+       end subroutine DMDASetStencilType
+      subroutine DMDAGetStencilType(a,b,z)
+       import tDM
+       DM a ! DM
+       DMDAStencilType b ! DMDAStencilType
+       PetscErrorCode z
+       end subroutine DMDAGetStencilType
+      subroutine DMDASetStencilWidth(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetStencilWidth
+      subroutine DMDAGetStencilWidth(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAGetStencilWidth
+      subroutine DMDASetOwnershipRanges(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       PetscInt b (*) ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetOwnershipRanges
+      subroutine DMDASetInterpolationType(a,b,z)
+       import tDM
+       DM a ! DM
+       DMDAInterpolationType b ! DMDAInterpolationType
+       PetscErrorCode z
+       end subroutine DMDASetInterpolationType
+      subroutine DMDAGetInterpolationType(a,b,z)
+       import tDM
+       DM a ! DM
+       DMDAInterpolationType b ! DMDAInterpolationType
+       PetscErrorCode z
+       end subroutine DMDAGetInterpolationType
+      subroutine DMDASetRefinementFactor(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetRefinementFactor
+      subroutine DMDAMapMatStencilToGlobal(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       MatStencil c (*) ! MatStencil
+       PetscInt d (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAMapMatStencilToGlobal
+      subroutine DMDASetGLLCoordinates(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine DMDASetGLLCoordinates
+      subroutine DMDAGetReducedDMDA(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       DM c ! DM
+       PetscErrorCode z
+       end subroutine DMDAGetReducedDMDA
+      subroutine DMDACreateCompatibleDMDA(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       DM c ! DM
+       PetscErrorCode z
+       end subroutine DMDACreateCompatibleDMDA
+      subroutine DMDACreate(a,b,z)
+       import tDM
+       MPI_Comm a ! MPI_Comm
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine DMDACreate
+      subroutine DMDACreatePatchIS(a,b,c,d,e,z)
+       import tIS,tDM
+       DM a ! DM
+       MatStencil b ! MatStencil
+       MatStencil c ! MatStencil
+       IS d ! IS
+       PetscBool e ! PetscBool
+       PetscErrorCode z
+       end subroutine DMDACreatePatchIS
+      subroutine DMDACreateNaturalVector(a,b,z)
+       import tVec,tDM
+       DM a ! DM
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine DMDACreateNaturalVector
+      subroutine DMDAConvertToCell(a,b,c,z)
+       import tDM
+       DM a ! DM
+       MatStencil b ! MatStencil
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAConvertToCell
+      subroutine DMDAGetElementsCorners(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAGetElementsCorners
+      subroutine DMDAGetElementsSizes(a,b,c,d,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAGetElementsSizes
+      subroutine DMDASetElementType(a,b,z)
+       import tDM
+       DM a ! DM
+       DMDAElementType b ! DMDAElementType
+       PetscErrorCode z
+       end subroutine DMDASetElementType
+      subroutine DMDAGetElementType(a,b,z)
+       import tDM
+       DM a ! DM
+       DMDAElementType b ! DMDAElementType
+       PetscErrorCode z
+       end subroutine DMDAGetElementType
+      subroutine DMDAGetSubdomainCornersIS(a,b,z)
+       import tIS,tDM
+       DM a ! DM
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine DMDAGetSubdomainCornersIS
+      subroutine DMDARestoreSubdomainCornersIS(a,b,z)
+       import tIS,tDM
+       DM a ! DM
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine DMDARestoreSubdomainCornersIS
+      subroutine DMDAGlobalToNaturalBegin(a,b,c,d,z)
+       import tVec,tDM
+       DM a ! DM
+       Vec b ! Vec
+       InsertMode c ! InsertMode
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine DMDAGlobalToNaturalBegin
+      subroutine DMDAGlobalToNaturalEnd(a,b,c,d,z)
+       import tVec,tDM
+       DM a ! DM
+       Vec b ! Vec
+       InsertMode c ! InsertMode
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine DMDAGlobalToNaturalEnd
+      subroutine DMDANaturalToGlobalBegin(a,b,c,d,z)
+       import tVec,tDM
+       DM a ! DM
+       Vec b ! Vec
+       InsertMode c ! InsertMode
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine DMDANaturalToGlobalBegin
+      subroutine DMDANaturalToGlobalEnd(a,b,c,d,z)
+       import tVec,tDM
+       DM a ! DM
+       Vec b ! Vec
+       InsertMode c ! InsertMode
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine DMDANaturalToGlobalEnd
+      subroutine DMDAGlobalToNaturalAllCreate(a,b,z)
+       import tVecScatter,tDM
+       DM a ! DM
+       VecScatter b ! VecScatter
+       PetscErrorCode z
+       end subroutine DMDAGlobalToNaturalAllCreate
+      subroutine DMDANaturalAllToGlobalCreate(a,b,z)
+       import tVecScatter,tDM
+       DM a ! DM
+       VecScatter b ! VecScatter
+       PetscErrorCode z
+       end subroutine DMDANaturalAllToGlobalCreate
+      subroutine DMDAGetAO(a,b,z)
+       import tDM
+       DM a ! DM
+       AO b ! AO
+       PetscErrorCode z
+       end subroutine DMDAGetAO
+      subroutine DMCreateAggregates(a,b,c,z)
+       import tDM,tMat
+       DM a ! DM
+       DM b ! DM
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine DMCreateAggregates
+      subroutine DMDACreateAggregates(a,b,c,z)
+       import tDM,tMat
+       DM a ! DM
+       DM b ! DM
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine DMDACreateAggregates
+      subroutine DMDAGetNumCells(a,b,c,d,e,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAGetNumCells
+      subroutine DMDAGetCellPoint(a,b,c,d,e,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscInt e ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAGetCellPoint
+      subroutine DMDASetPreallocationCenterDimension(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetPreallocationCenterDimension
+      subroutine DMDAGetPreallocationCenterDimension(a,b,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDAGetPreallocationCenterDimension
+      subroutine DMDAGetLogicalCoordinate(a,b,c,d,e,f,g,h,i,j,z)
+       import tDM
+       DM a ! DM
+       PetscScalar b ! PetscScalar
+       PetscScalar c ! PetscScalar
+       PetscScalar d ! PetscScalar
+       PetscInt e ! PetscInt
+       PetscInt f ! PetscInt
+       PetscInt g ! PetscInt
+       PetscScalar h ! PetscScalar
+       PetscScalar i ! PetscScalar
+       PetscScalar j ! PetscScalar
+       PetscErrorCode z
+       end subroutine DMDAGetLogicalCoordinate
+      subroutine DMDAGetRay(a,b,c,d,e,z)
+       import tVec,tVecScatter,tDM
+       DM a ! DM
+       DMDirection b ! DMDirection
+       PetscInt c ! PetscInt
+       Vec d ! Vec
+       VecScatter e ! VecScatter
+       PetscErrorCode z
+       end subroutine DMDAGetRay
+      subroutine DMDASetBlockFills(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetBlockFills
+      subroutine DMDASetBlockFillsSparse(a,b,c,z)
+       import tDM
+       DM a ! DM
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine DMDASetBlockFillsSparse
+      subroutine DMDASetUniformCoordinates(a,b,c,d,e,f,g,z)
+       import tDM
+       DM a ! DM
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscReal f ! PetscReal
+       PetscReal g ! PetscReal
+       PetscErrorCode z
+       end subroutine DMDASetUniformCoordinates

@@ -28,9 +28,9 @@ module m_ironre
 contains
 
 
-    subroutine IRONRE     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine IRONRE     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !JVB$ ATTRIBUTES DLLEXPORT, ALIAS: 'IRONRE' :: IRONRE
         !
         !*******************************************************************************
@@ -39,18 +39,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(17) ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(17) ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(17) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(17)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
         !
@@ -89,7 +89,7 @@ contains
         real(kind = real_wp) :: kire3       ! L  rate of amorphous iron red. with FeS
         real(kind = real_wp) :: kire4       ! L  rate of crystalline iron red. with FeS
 
-        ! initialise pointering in pmsa
+        ! initialise pointering in process_space_real
 
         ipnt = ipoint
         idire1 = 1
@@ -97,21 +97,21 @@ contains
         idire3 = 3
         idire4 = 4
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
-            fes = max(pmsa(ipnt(1)), 0.0)
-            feiiipa = max(pmsa(ipnt(2)), 0.0)
-            feiiipc = max(pmsa(ipnt(3)), 0.0)
-            sud = max(pmsa(ipnt(4)), 0.0)
-            frh2sdis = pmsa(ipnt(5))
-            rcfeah2s20 = pmsa(ipnt(6))
-            rcfech2s20 = pmsa(ipnt(7))
-            rcfeafes20 = pmsa(ipnt(8))
-            rcfecfes20 = pmsa(ipnt(9))
-            tcfered = pmsa(ipnt(10))
-            temp = pmsa(ipnt(11))
-            delt = pmsa(ipnt(12))
-            poros = pmsa(ipnt(13))
+            fes = max(process_space_real(ipnt(1)), 0.0)
+            feiiipa = max(process_space_real(ipnt(2)), 0.0)
+            feiiipc = max(process_space_real(ipnt(3)), 0.0)
+            sud = max(process_space_real(ipnt(4)), 0.0)
+            frh2sdis = process_space_real(ipnt(5))
+            rcfeah2s20 = process_space_real(ipnt(6))
+            rcfech2s20 = process_space_real(ipnt(7))
+            rcfeafes20 = process_space_real(ipnt(8))
+            rcfecfes20 = process_space_real(ipnt(9))
+            tcfered = process_space_real(ipnt(10))
+            temp = process_space_real(ipnt(11))
+            delt = process_space_real(ipnt(12))
+            poros = process_space_real(ipnt(13))
 
             ! temperature function
 
@@ -155,16 +155,16 @@ contains
             fire3 = dire3
             fire4 = dire4
 
-            ! store flux and pmsa
+            ! store flux and process_space_real
 
             fl  (idire1) = dire1
             fl  (idire2) = dire2
             fl  (idire3) = dire3
             fl  (idire4) = dire4
-            pmsa(ipnt(14)) = fire1
-            pmsa(ipnt(15)) = fire2
-            pmsa(ipnt(16)) = fire3
-            pmsa(ipnt(17)) = fire4
+            process_space_real(ipnt(14)) = fire1
+            process_space_real(ipnt(15)) = fire2
+            process_space_real(ipnt(16)) = fire3
+            process_space_real(ipnt(17)) = fire4
 
             idire1 = idire1 + noflux
             idire2 = idire2 + noflux

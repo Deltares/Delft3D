@@ -22,43 +22,43 @@
 !!  rights reserved.
 module m_get_index
 
-implicit none
+    implicit none
 
 contains
 
 
-      integer function get_index(nosubs,subst,fract)
-!
-!     programmer : antoon koster
-!     function   : returns the index for substance fract in the
-!                  substance array subst(1:nosubs)
-!     date       : may 2004
-!
-      use timers
-      implicit  none
-      integer, intent(in)  :: nosubs
-      integer              :: lensub, lenfract
-      character(len=*)     :: fract
-      character(len=*)     :: subst(nosubs)
+    integer function get_index(nosubs, subst, fract)
+        !
+        !     programmer : antoon koster
+        !     function   : returns the index for substance fract in the
+        !                  substance array subst(1:nosubs)
+        !     date       : may 2004
+        !
+        use timers
+        implicit none
+        integer, intent(in) :: nosubs
+        integer :: lensub, lenfract
+        character(len = *) :: fract
+        character(len = *) :: subst(nosubs)
 
-      integer :: indx, is
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
-      if ( timon ) call timstrt( "get_index", ithndl )
+        integer :: indx, is
+        integer(4) ithndl              ! handle to time this subroutine
+        data       ithndl / 0 /
+        if (timon) call timstrt("get_index", ithndl)
 
-      indx = -1
-      do is=1,nosubs
-         lensub   = len_trim(subst(is))
-         lenfract = len_trim(fract)
-         if (subst(is)(:lensub) == fract(:lenfract)) then
-            indx = is
-            exit
-         endif
-      enddo
-      get_index = indx
-      if ( timon ) call timstop ( ithndl )
-      return
-      end function get_index
+        indx = -1
+        do is = 1, nosubs
+            lensub = len_trim(subst(is))
+            lenfract = len_trim(fract)
+            if (subst(is)(:lensub) == fract(:lenfract)) then
+                indx = is
+                exit
+            endif
+        enddo
+        get_index = indx
+        if (timon) call timstop (ithndl)
+        return
+    end function get_index
 
 
 end module m_get_index

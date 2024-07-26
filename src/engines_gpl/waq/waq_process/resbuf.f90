@@ -28,10 +28,10 @@ module m_resbuf
 contains
 
 
-    subroutine RESBUF     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine RESBUF     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -40,18 +40,18 @@ contains
         !
         !     Type         Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(45)  ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(45)  ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(45)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         !
         !*******************************************************************************
         !     This process replaces RESPUP and S12TIM
@@ -166,46 +166,46 @@ contains
         ipnt = ipoint
 
         iflux = 0
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             if (btest(iknmrk(iseg), 0)) then
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
 
-                    im1s2 = pmsa(ipnt(1))
-                    im2s2 = pmsa(ipnt(2))
-                    im3s2 = pmsa(ipnt(3))
-                    tau = pmsa(ipnt(4))
-                    tcrrs2 = pmsa(ipnt(5))
-                    grain50 = pmsa(ipnt(6))
-                    grav = pmsa(ipnt(7))
-                    kinviscos = pmsa(ipnt(8))
-                    rhosand = pmsa(ipnt(9))
-                    rhowater = pmsa(ipnt(10))
-                    pors2 = pmsa(ipnt(11))
-                    thicks2 = pmsa(ipnt(12))
-                    surf = pmsa(ipnt(13))
-                    depth = pmsa(ipnt(14))
-                    delt = pmsa(ipnt(15))
-                    mindep = pmsa(ipnt(16))
-                    maxrespup = pmsa(ipnt(17))
-                    factrespup = pmsa(ipnt(18))
+                    im1s2 = process_space_real(ipnt(1))
+                    im2s2 = process_space_real(ipnt(2))
+                    im3s2 = process_space_real(ipnt(3))
+                    tau = process_space_real(ipnt(4))
+                    tcrrs2 = process_space_real(ipnt(5))
+                    grain50 = process_space_real(ipnt(6))
+                    grav = process_space_real(ipnt(7))
+                    kinviscos = process_space_real(ipnt(8))
+                    rhosand = process_space_real(ipnt(9))
+                    rhowater = process_space_real(ipnt(10))
+                    pors2 = process_space_real(ipnt(11))
+                    thicks2 = process_space_real(ipnt(12))
+                    surf = process_space_real(ipnt(13))
+                    depth = process_space_real(ipnt(14))
+                    delt = process_space_real(ipnt(15))
+                    mindep = process_space_real(ipnt(16))
+                    maxrespup = process_space_real(ipnt(17))
+                    factrespup = process_space_real(ipnt(18))
 
-                    isw_zf = nint(pmsa(ipnt(19)))
-                    im1s1 = pmsa(ipnt(20))
-                    zresim1 = pmsa(ipnt(21))
-                    vresim1 = pmsa(ipnt(22))
-                    tcrrim1 = pmsa(ipnt(23))
-                    im2s1 = pmsa(ipnt(24))
-                    zresim2 = pmsa(ipnt(25))
-                    vresim2 = pmsa(ipnt(26))
-                    tcrrim2 = pmsa(ipnt(27))
-                    im3s1 = pmsa(ipnt(28))
-                    zresim3 = pmsa(ipnt(29))
-                    vresim3 = pmsa(ipnt(30))
-                    tcrrim3 = pmsa(ipnt(31))
+                    isw_zf = nint(process_space_real(ipnt(19)))
+                    im1s1 = process_space_real(ipnt(20))
+                    zresim1 = process_space_real(ipnt(21))
+                    vresim1 = process_space_real(ipnt(22))
+                    tcrrim1 = process_space_real(ipnt(23))
+                    im2s1 = process_space_real(ipnt(24))
+                    zresim2 = process_space_real(ipnt(25))
+                    vresim2 = process_space_real(ipnt(26))
+                    tcrrim2 = process_space_real(ipnt(27))
+                    im3s1 = process_space_real(ipnt(28))
+                    zresim3 = process_space_real(ipnt(29))
+                    vresim3 = process_space_real(ipnt(30))
+                    tcrrim3 = process_space_real(ipnt(31))
 
-                    dms1 = pmsa(ipnt(32))
-                    dms2 = pmsa(ipnt(33))
+                    dms1 = process_space_real(ipnt(32))
+                    dms2 = process_space_real(ipnt(33))
 
                     !**********************************************************************************
                     !**** Processes connected to the RESUSPENSION S1 fluff layer
@@ -342,18 +342,18 @@ contains
                     fl(5 + iflux) = flrim2s1 / depth
                     fl(6 + iflux) = flrim3s1 / depth
 
-                    pmsa (ipnt (34)) = flrim1s2
-                    pmsa (ipnt (35)) = flrim2s2
-                    pmsa (ipnt (36)) = flrim3s2
-                    pmsa (ipnt (37)) = flres2
-                    pmsa (ipnt (38)) = press2
-                    pmsa (ipnt (39)) = frtims2pup
-                    pmsa (ipnt (40)) = frpoms2pup
-                    pmsa (ipnt (41)) = flrim1s1
-                    pmsa (ipnt (42)) = flrim2s1
-                    pmsa (ipnt (43)) = flrim3s1
-                    pmsa (ipnt (44)) = flrdms1
-                    pmsa (ipnt (45)) = flrdms2
+                    process_space_real (ipnt (34)) = flrim1s2
+                    process_space_real (ipnt (35)) = flrim2s2
+                    process_space_real (ipnt (36)) = flrim3s2
+                    process_space_real (ipnt (37)) = flres2
+                    process_space_real (ipnt (38)) = press2
+                    process_space_real (ipnt (39)) = frtims2pup
+                    process_space_real (ipnt (40)) = frpoms2pup
+                    process_space_real (ipnt (41)) = flrim1s1
+                    process_space_real (ipnt (42)) = flrim2s1
+                    process_space_real (ipnt (43)) = flrim3s1
+                    process_space_real (ipnt (44)) = flrdms1
+                    process_space_real (ipnt (45)) = flrdms2
 
                 endif
             endif

@@ -34,10 +34,10 @@ contains
     !
     !
 
-    subroutine decdet (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger, only : write_error_message
+    subroutine decdet (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : write_error_message
 
         !>\file
         !>       Mineralisation & conversion of detritus POC1,POC2,POC3,POC4,DOC
@@ -125,9 +125,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         REAL(kind = real_wp) :: POC, PON, POP, POS, RC20LOC, &
                 RC20UPC, RC20LON, RC20UPN, RC20LOP, RC20UPP, &
@@ -213,7 +213,7 @@ contains
         !
         IFLUX = 0
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             !
             !       In all "active" segments
             !
@@ -221,45 +221,45 @@ contains
                 !
                 !          INPUT of subroutine
                 !
-                POC = MAX(PMSA(IP1), 0.0)
-                PON = MAX(PMSA(IP2), 0.0)
-                POP = MAX(PMSA(IP3), 0.0)
-                POS = MAX(PMSA(IP4), 0.0)
-                ID = PMSA(IP5)
+                POC = MAX(process_space_real(IP1), 0.0)
+                PON = MAX(process_space_real(IP2), 0.0)
+                POP = MAX(process_space_real(IP3), 0.0)
+                POS = MAX(process_space_real(IP4), 0.0)
+                ID = process_space_real(IP5)
                 !
                 !          all rates are equal for ID=2 (POC4 and DOC)
                 !
-                RC20UPC = PMSA(IP6)
+                RC20UPC = process_space_real(IP6)
                 IF (NINT(ID) == 2) THEN
-                    RC20LOC = PMSA(IP6)
-                    RC20UPN = PMSA(IP6)
-                    RC20LON = PMSA(IP6)
-                    RC20UPP = PMSA(IP6)
-                    RC20LOP = PMSA(IP6)
+                    RC20LOC = process_space_real(IP6)
+                    RC20UPN = process_space_real(IP6)
+                    RC20LON = process_space_real(IP6)
+                    RC20UPP = process_space_real(IP6)
+                    RC20LOP = process_space_real(IP6)
                 ELSE
-                    RC20LOC = PMSA(IP7)
-                    RC20UPN = PMSA(IP8)
-                    RC20LON = PMSA(IP9)
-                    RC20UPP = PMSA(IP10)
-                    RC20LOP = PMSA(IP11)
+                    RC20LOC = process_space_real(IP7)
+                    RC20UPN = process_space_real(IP8)
+                    RC20LON = process_space_real(IP9)
+                    RC20UPP = process_space_real(IP10)
+                    RC20LOP = process_space_real(IP11)
                 ENDIF
                 !
-                TC = PMSA(IP12)
-                TEMP = PMSA(IP13)
-                ANR = PMSA(IP14)
-                APR = PMSA(IP15)
-                ASR = PMSA(IP16)
-                ALN = PMSA(IP17)
-                ALP = PMSA(IP18)
-                AUN = PMSA(IP19)
-                AUP = PMSA(IP20)
-                OXY = PMSA(IP21)
-                NO3 = PMSA(IP22)
-                B_NO3 = PMSA(IP23)
-                B_SULF = PMSA(IP24)
-                B_DTP = PMSA(IP25)
-                B_DTD = PMSA(IP26)
-                SWOMDEC = PMSA(IP27)
+                TC = process_space_real(IP12)
+                TEMP = process_space_real(IP13)
+                ANR = process_space_real(IP14)
+                APR = process_space_real(IP15)
+                ASR = process_space_real(IP16)
+                ALN = process_space_real(IP17)
+                ALP = process_space_real(IP18)
+                AUN = process_space_real(IP19)
+                AUP = process_space_real(IP20)
+                OXY = process_space_real(IP21)
+                NO3 = process_space_real(IP22)
+                B_NO3 = process_space_real(IP23)
+                B_SULF = process_space_real(IP24)
+                B_DTP = process_space_real(IP25)
+                B_DTD = process_space_real(IP26)
+                SWOMDEC = process_space_real(IP27)
                 !
                 !          Errors if certain vars =< 0
                 !
@@ -412,13 +412,13 @@ contains
                 !
                 !          OUTPUT of subroutine
                 !
-                PMSA(IP28) = RC20C * TEMPC * ELFACT
-                PMSA(IP29) = RC20N * TEMPC * ELFACT
-                PMSA(IP30) = RC20P * TEMPC * ELFACT
-                PMSA(IP31) = N_FACT
-                PMSA(IP32) = P_FACT
-                PMSA(IP33) = S_FACT
-                PMSA(IP34) = DECOC
+                process_space_real(IP28) = RC20C * TEMPC * ELFACT
+                process_space_real(IP29) = RC20N * TEMPC * ELFACT
+                process_space_real(IP30) = RC20P * TEMPC * ELFACT
+                process_space_real(IP31) = N_FACT
+                process_space_real(IP32) = P_FACT
+                process_space_real(IP33) = S_FACT
+                process_space_real(IP34) = DECOC
                 !
                 FL(1 + IFLUX) = CNVPC
                 FL(2 + IFLUX) = CNVPN

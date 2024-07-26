@@ -29,10 +29,10 @@
       contains
 
 
-      subroutine HETAGG   (  pmsa  , fl    , ipoint, increm, noseg , & 
-                            noflux, iexpnt, iknmrk, noq1  , noq2  , & 
-                            noq3  , noq4  )
-      use m_evaluate_waq_attribute
+      subroutine HETAGG   (  process_space_real  , fl    , ipoint, increm, num_cells , &
+                            noflux, iexpnt, iknmrk, num_exchanges_u_dir  , num_exchanges_v_dir  , &
+                            num_exchanges_z_dir  , num_exchanges_bottom_dir  )
+      use m_extract_waq_attribute
 
 
 !>\file
@@ -79,9 +79,9 @@
 
       implicit none
 
-      real(kind=real_wp) ::pmsa  ( * ) , fl    (*)
-      integer(kind=int_wp) ::ipoint( * ) , increm(*) , noseg , noflux, & 
-              iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
+      real(kind=real_wp) ::process_space_real  ( * ) , fl    (*)
+      integer(kind=int_wp) ::ipoint( * ) , increm(*) , num_cells , noflux, &
+              iexpnt(4,*) , iknmrk(*) , num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 !
 !     local declarations
 !
@@ -114,8 +114,8 @@
 
       integer(kind=int_wp) ::ntrwp, itrwp, nspm, ispm, nitem
 
-      ntrwp = pmsa(ipoint(ip_ntrwp))
-      nspm = pmsa(ipoint(ip_nim  ))
+      ntrwp = process_space_real(ipoint(ip_ntrwp))
+      nspm = process_space_real(ipoint(ip_nim  ))
       nitem = ip_lastsingle + 4 * ntrwp + 4 * nspm
 !
 !  Note: we only need to do this once, no looping over the segments
@@ -124,19 +124,19 @@
       ipnt(1:nitem) = ipoint(1:nitem)
 !
       iflux = 1
-      do iseg = 1 , noseg
-          call evaluate_waq_attribute(1,iknmrk(iseg),ikmrk1)
+      do iseg = 1 , num_cells
+          call extract_waq_attribute(1,iknmrk(iseg),ikmrk1)
           if (ikmrk1==1) then
-          call evaluate_waq_attribute(2,iknmrk(iseg),ikmrk2)
+          call extract_waq_attribute(2,iknmrk(iseg),ikmrk2)
           if (ikmrk2<=4) then   ! surface water
               
               ! input independentt of fractions
-              efficiency     = pmsa(ipnt(ip_Efficiency) )
-              temperature    = pmsa(ipnt(ip_Temp) ) + 273.0  ! We need the temperature in kelvin
-              flow_velocity  = pmsa(ipnt(ip_Velocity))
-              chezy          = pmsa(ipnt(ip_Chezy))
-              delt           = pmsa(ipnt(ip_Delt))
-              depth          = pmsa(ipnt(ip_Depth))
+              efficiency     = process_space_real(ipnt(ip_Efficiency) )
+              temperature    = process_space_real(ipnt(ip_Temp) ) + 273.0  ! We need the temperature in kelvin
+              flow_velocity  = process_space_real(ipnt(ip_Velocity))
+              chezy          = process_space_real(ipnt(ip_Chezy))
+              delt           = process_space_real(ipnt(ip_Delt))
+              depth          = process_space_real(ipnt(ip_Depth))
               
               ! loop over active fractions, IM are inner loop
               itel = 0
@@ -145,14 +145,14 @@
                   
               itel = itel + 1
 
-              ctyre          = pmsa(ipnt(ip_lastsingle               +itrwp) )
-              csusp          = pmsa(ipnt(ip_lastsingle+4*ntrwp       +ispm ) )
-              diameter_tyre  = pmsa(ipnt(ip_lastsingle+1*ntrwp       +itrwp) )* 1.0e-6 ! From micrometer to meter
-              diameter_susp  = pmsa(ipnt(ip_lastsingle+4*ntrwp+1*nspm+ispm ) )* 1.0e-6
-              density_tyre   = pmsa(ipnt(ip_lastsingle+2*ntrwp       +itrwp) )* 1.0e6  ! From kg/m3 to mg/m3
-              density_susp   = pmsa(ipnt(ip_lastsingle+4*ntrwp+2*nspm+ispm ) )* 1.0e3  ! From kg/m3 to g/m3 (!)
-              settling_tyre  = pmsa(ipnt(ip_lastsingle+3*ntrwp       +itrwp) )/ perday ! From m/d to m/s
-              settling_susp  = pmsa(ipnt(ip_lastsingle+4*ntrwp+3*nspm+ispm ) )/ perday
+              ctyre          = process_space_real(ipnt(ip_lastsingle               +itrwp) )
+              csusp          = process_space_real(ipnt(ip_lastsingle+4*ntrwp       +ispm ) )
+              diameter_tyre  = process_space_real(ipnt(ip_lastsingle+1*ntrwp       +itrwp) )* 1.0e-6 ! From micrometer to meter
+              diameter_susp  = process_space_real(ipnt(ip_lastsingle+4*ntrwp+1*nspm+ispm ) )* 1.0e-6
+              density_tyre   = process_space_real(ipnt(ip_lastsingle+2*ntrwp       +itrwp) )* 1.0e6  ! From kg/m3 to mg/m3
+              density_susp   = process_space_real(ipnt(ip_lastsingle+4*ntrwp+2*nspm+ispm ) )* 1.0e3  ! From kg/m3 to g/m3 (!)
+              settling_tyre  = process_space_real(ipnt(ip_lastsingle+3*ntrwp       +itrwp) )/ perday ! From m/d to m/s
+              settling_susp  = process_space_real(ipnt(ip_lastsingle+4*ntrwp+3*nspm+ispm ) )/ perday
 
               !
               ! calculate the _number_ of particles

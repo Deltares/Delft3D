@@ -134,7 +134,7 @@ contains
         !! Designed for multithreaded context, avoids local, saved variables.
         !! Uses a type(memory_partition) argument for managing partitions.
         ! Function to make a pointer for a specific part of the memory partition.
-        use m_logger, only : terminate_execution  ! Error handling module.
+        use m_logger_helper, only : stop_with_error  ! Error handling module.
 
         type(memory_partition), intent(inout) :: partition
         integer, intent(in) :: var_type
@@ -152,7 +152,7 @@ contains
             partition%char_pointer = partition%char_pointer + max(num_elements, 1)
         case default
             write(*, *) 'Fatal error in make_pointer: Unimplemented variable type: ', var_type
-            call terminate_execution(1)
+            call stop_with_error()
         end select
     end function make_pointer
 
@@ -229,7 +229,7 @@ contains
             array_dims_2, array_pointer, grid_index, sys_index, total_elements, &
             pointer_var)
 
-        use m_logger, only : get_log_unit_number, terminate_execution
+        use m_logger_helper, only : get_log_unit_number, stop_with_error
 
         integer(kind = int_wp), intent(in) :: var_index
         integer(kind = int_wp), intent(in) :: array_kind                    !! kind of array (2 or 3)
@@ -257,7 +257,7 @@ contains
             ! error , undefined kind of array
             call get_log_unit_number(file_unit)
             write(file_unit, 2000) array_kind, array_index, var_index
-            call terminate_execution(1)
+            call stop_with_error()
         end select
 
         return
@@ -294,7 +294,7 @@ contains
         !!
         !! The routine scans the grid table to identify from-to entries./n
         !! If the active grid is 'active-only' contracted, then the pointer is.
-        !! This is checked by comparing the obtained exchanges_x, exchanges_y and noq3 with
+        !! This is checked by comparing the obtained exchanges_x, exchanges_y and num_exchanges_z_dir with
         !! those in the lga file./n
         !! A backpointer from num_volumes to mnmaxk is constructed, to fill in the
         !! volumes in the complete matrix for solvers 18, 19 and Delpar./n

@@ -27,137 +27,114 @@ module m_dlwqf7
 
 contains
 
+    !> Calculates mass balance of transport and copies solution in the concentration array
+    !! Iterative solver solves 1 substance at a time (per thread in parallel mode).
+    !! This routine saves the double precision solution in the single precision cons array.
+    !! The tricky part is that for dry cells 0.0 is taken. In previous versions the old
+    !! value remained untouched or if influenced by the iteration it got a strange value.
+    !! Furthermore with the concentration values the mass balance aarays are updated.
+    !! The update makes use of the pre-computed flowtot and disptot arrays for this substance.
+    !! They contain the flow and disp plus additional velocity and dispersion terms.
+    !! This avoids to have that logics again in this routine.
+    subroutine dlwqf7(isys, num_substances_transported, num_substances_total, num_cells, conc, &
+                      concvt, num_boundary_conditions, bound, num_exchanges, ipoint, &
+                      flowtot, disptot, amass2, ndmpq, iqdmp, &
+                      dmpq, iknmrk, idt)
 
-    subroutine dlwqf7(isys, nosys, notot, noseg, conc, &
-            concvt, nobnd, bound, noq, ipoint, &
-            flowtot, disptot, amass2, ndmpq, iqdmp, &
-            dmpq, iknmrk, idt)
 
-        !     Deltares Software Centre
-
-        !>/file
-        !>            mass balance of transport and copy of solution in the concentration array
-        !>
-        !>            Iterative solver solves 1 substance at a time (per thread in parallel mode)\n
-        !>            This routine saves the double precision solution in the single precision cons array\n
-        !>            The tricky part is that for dry cells 0.0 is taken. In previous versions the old
-        !>            value remained untouched or if influenced by the iteration it got a strange value.\n
-        !>            Furthermore with the concentration values the mass balance aarays are updated.\n
-        !>            The update makes use of the pre-computed flowtot and disptot arrays for this substance.
-        !>            They contain the flow and disp plus additional velocity and dispersion terms.
-        !>            This avoids to have the logics of additional velocities and dispersions again
-        !>            in this routine.
-
-        !     Created                 : June 2011 by Leo Postma
-
-        use timers                         ! WAQ performance timers
+        use timers
 
         implicit none
 
-        !     Arguments           :
+        integer(kind=int_wp), intent(in   ) :: isys                  !< current transported substance
+        integer(kind=int_wp), intent(in   ) :: num_substances_transported                 !< number of active substances
+        integer(kind=int_wp), intent(in   ) :: num_substances_total                 !< total number of substances
+        integer(kind=int_wp), intent(in   ) :: num_cells                 !< number of cells or computational volumes
+        real(kind=real_wp),   intent(inout) :: conc(num_substances_total, num_cells)    !< concentration vector to store results
+        real(kind=dp),        intent(in   ) :: concvt(num_cells)         !< newly obtained concentration from the solver
+        integer(kind=int_wp), intent(in   ) :: num_boundary_conditions                 !< number of volumes with open boundaries
+        real(kind=real_wp),   intent(in   ) :: bound(num_substances_transported, num_boundary_conditions)   !< boundary concentrations
+        integer(kind=int_wp), intent(in   ) :: num_exchanges                   !< number of exchanges between volumes
+        integer(kind=int_wp), intent(in   ) :: ipoint(4, num_exchanges)        !< exchange pointers
+        real(kind=real_wp),   intent(in   ) :: flowtot(num_exchanges)          !< flows plus additional velos.
+        real(kind=real_wp),   intent(in   ) :: disptot(num_exchanges)          !< dispersion plus additional dipers.
+        real(kind=real_wp),   intent(inout) :: amass2(num_substances_total, 5)      !< mass balance array for the whole model area
+        integer(kind=int_wp), intent(in   ) :: ndmpq                 !< number of dumped exchanges
+        integer(kind=int_wp), intent(in   ) :: iqdmp(num_exchanges)            !< pointers dumped exchages
+        real(kind=real_wp),   intent(inout) :: dmpq(num_substances_transported, ndmpq, 2) !< flux accumulation array for monitoring areas
+        integer(kind=int_wp), intent(in   ) :: iknmrk(num_cells)         !< feature array, bit zero indicates wet or not
+        integer(kind=int_wp), intent(in   ) :: idt                   !< time step
 
-        !     Kind        Function         Name                    Description
+        ! Local variables
+        real(kind=real_wp) :: cin, cjn     !< from- and to concentrations
+        real(kind=real_wp) :: fluxij       !< flux from i to j
+        integer(kind=int_wp) :: ifrom, ito !< from- and to volume indices
+        integer(kind=int_wp) :: iseg       !< current computational volume
+        integer(kind=int_wp) :: iq         !< current edge
 
-        integer(kind = int_wp), intent(in) :: isys                  !< current transported substance
-        integer(kind = int_wp), intent(in) :: nosys                 !< number of active substances
-        integer(kind = int_wp), intent(in) :: notot                 !< total number of substances
-        integer(kind = int_wp), intent(in) :: noseg                 !< number of computational volumes
-        real(kind = real_wp), intent(inout) :: conc   (notot, noseg) !< concentration vector to store results
-        real(kind = dp), intent(in) :: concvt (noseg) !< newly obtained concentration from the solver
-        integer(kind = int_wp), intent(in) :: nobnd                 !< number of volumes with open boundaries
-        real(kind = real_wp), intent(in) :: bound  (nosys, nobnd) !< boundary concentrations
-        integer(kind = int_wp), intent(in) :: noq                   !< number of exchanges between volumes
-        integer(kind = int_wp), intent(in) :: ipoint (4, noq) !< exchange pointers
-        real(kind = real_wp), intent(in) :: flowtot(noq)        !< flows plus additional velos.
-        real(kind = real_wp), intent(in) :: disptot(noq)        !< dispersion plus additional dipers.
-        real(kind = real_wp), intent(inout) :: amass2 (notot, 5) !< mass balance array for the whole model area
-        integer(kind = int_wp), intent(in) :: ndmpq                 !< number of dumped exchanges
-        integer(kind = int_wp), intent(in) :: iqdmp  (noq)        !< pointers dumped exchages
-        real(kind = real_wp), intent(inout) :: dmpq  (nosys, ndmpq, 2) !< flux accumulation array for monitoring areas
-        integer(kind = int_wp), intent(in) :: iknmrk(noseg)         !< feature array, bit zero indicates wet or not
-        integer(kind = int_wp), intent(in) :: idt                   !< time step
+        integer(kind=int_wp) :: ithandl = 0
 
-        !     Locals              :
-
-        real(kind = real_wp) :: cin, cjn              ! from- and to concentrations
-        real(kind = real_wp) :: fluxij                ! flux from i to j
-        integer(kind = int_wp) :: ifrom, ito           ! from- and to volume indices
-        integer(kind = int_wp) :: iseg                  ! current computational volume
-        integer(kind = int_wp) :: iq                    ! current edge
-
-        integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("dlwqf7", ithandl)
-
-        !         put result in the concentration array
-
-        do iseg = 1, noseg
+        if (timon) call timstrt("dlwqf7", ithandl)
+        ! put result in the concentration array
+        do iseg = 1, num_cells
             if (btest(iknmrk(iseg), 0)) then
                 conc(isys, iseg) = concvt(iseg)
             else
                 conc(isys, iseg) = 0.0
-            endif
-        enddo
+            end if
+        end do
 
-        !         flow and diffusion
-
-        do iq = 1, noq
-
+        ! flow and diffusion
+        do iq = 1, num_exchanges
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
-
-            !             only compute where needed
-
+            ! only compute where needed
             if (ifrom > 0 .and. ito > 0 .and. iqdmp(iq) == 0) cycle
-            if (ifrom == 0 .or.  ito == 0) cycle
+            if (ifrom == 0 .or. ito == 0) cycle
 
             if (ifrom > 0) then
                 cin = concvt(ifrom)
             else
-                cin = bound (isys, -ifrom)
-            endif
+                cin = bound(isys, -ifrom)
+            end if
 
-            if (ito   > 0) then
+            if (ito > 0) then
                 cjn = concvt(ito)
             else
-                cjn = bound (isys, -ito)
-            endif
+                cjn = bound(isys, -ito)
+            end if
 
-            if (flowtot(iq) > 0) then                      ! flow from i to j
-                fluxij = real(idt) * ((flowtot(iq) + disptot(iq)) * cin - disptot(iq) * cjn)
-            else                                                ! flow from j to i
-                fluxij = real(idt) * ((flowtot(iq) - disptot(iq)) * cjn + disptot(iq) * cin)
-            endif
+            if (flowtot(iq) > 0) then ! flow from i to j
+                fluxij = real(idt)*((flowtot(iq) + disptot(iq))*cin - disptot(iq)*cjn)
+            else ! flow from j to i
+                fluxij = real(idt)*((flowtot(iq) - disptot(iq))*cjn + disptot(iq)*cin)
+            end if
 
-            !             mass balance of the whole area
-
+            ! mass balance of the whole area
             if (ifrom < 0) then
                 if (fluxij > 0) then
                     amass2(isys, 4) = amass2(isys, 4) + fluxij
                 else                                             ! amass2(*,1) masses of the substances in the model
                     amass2(isys, 5) = amass2(isys, 5) - fluxij      ! amass2(*,2) change by processes
-                endif                                            ! amass2(*,3) change by discharges
-            endif                                               ! amass2(*,4) incoming boundary transport
-            if (ito   < 0) then                            ! amass2(*,5) outgoing boundary transport
+                end if                                            ! amass2(*,3) change by discharges
+            end if                                               ! amass2(*,4) incoming boundary transport
+            if (ito < 0) then                            ! amass2(*,5) outgoing boundary transport
                 if (fluxij > 0) then
                     amass2(isys, 5) = amass2(isys, 5) + fluxij
                 else
                     amass2(isys, 4) = amass2(isys, 4) - fluxij
-                endif
-            endif
+                end if
+            end if
 
-            !             mass balance of selected monitoring areas
-
-            if (iqdmp(iq) > 0) then                        ! dmpq(*,*,1) incoming transport in a monitoring area
-                if (fluxij > 0) then                        ! dmpq(*,*,2) outgoing transport from a monitoring area
+            ! mass balance of selected monitoring areas
+            if (iqdmp(iq) > 0) then ! dmpq(*,*,1) incoming transport in a monitoring area
+                if (fluxij > 0) then ! dmpq(*,*,2) outgoing transport from a monitoring area
                     dmpq(isys, iqdmp(iq), 1) = dmpq(isys, iqdmp(iq), 1) + fluxij
                 else
                     dmpq(isys, iqdmp(iq), 2) = dmpq(isys, iqdmp(iq), 2) - fluxij
-                endif
-            endif
-
-        enddo
-
-        if (timon) call timstop (ithandl)
+                end if
+            end if
+        end do
+        if (timon) call timstop(ithandl)
     end subroutine dlwqf7
-
 end module m_dlwqf7

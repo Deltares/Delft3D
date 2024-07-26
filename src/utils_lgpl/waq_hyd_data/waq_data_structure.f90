@@ -32,7 +32,7 @@ module m_waq_data_structure
     !!   t_data_column!
     !!       a collection of dlwqdata, for instance all wasteloads
 
-    use m_logger, only : terminate_execution, get_log_unit_number
+    use m_logger_helper, only : stop_with_error, get_log_unit_number
     use waq_file_utils_external, only : create_new_file_unit_number
     use m_open_waq_files
     use m_string_utils
@@ -82,7 +82,7 @@ module m_waq_data_structure
 
     type t_data_block
         integer :: subject           ! subject for this data
-        integer :: num_parameters    ! number of paramters in this block of data
+        integer :: num_spatial_parameters    ! number of paramters in this block of data
         integer :: num_locations     ! number of locations
         integer :: num_breakpoints   ! number of breakpoints or harmonics
         integer :: function_type     ! constant, block, linear, harmonics, fourier
@@ -207,7 +207,7 @@ contains
             allocate (dlwqdatas (self%maxsize + MAX_NUM), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             do i = 1, self%maxsize
                 dlwqdatas(i) = self%data_block(i)            ! copies the contents
@@ -228,19 +228,19 @@ contains
         integer :: ierror
 
         integer :: nopar        ! local copy number of parameters
-        integer :: noloc        ! local copy number of locations
+        integer :: num_local_vars        ! local copy number of locations
         integer :: nobrk        ! local copy number of breakpoints
         integer :: ipar         ! index paramaters
         integer :: iloc         ! index locations
         integer :: ibrk         ! index breakpoints
 
         ierror = 0
-        nopar = self%num_parameters
-        noloc = self%num_locations
+        nopar = self%num_spatial_parameters
+        num_local_vars = self%num_locations
         nobrk = self%num_breakpoints
 
         write(file_unit, err = 100) self%subject
-        write(file_unit, err = 100) self%num_parameters
+        write(file_unit, err = 100) self%num_spatial_parameters
         write(file_unit, err = 100) self%num_locations
         write(file_unit, err = 100) self%num_breakpoints
         write(file_unit, err = 100) self%function_type
@@ -255,7 +255,7 @@ contains
         endif
         write(file_unit, err = 100) self%are_location_named
         if (self%are_location_named) then
-            write(file_unit, err = 100) (self%loc_name(iloc), iloc = 1, noloc)
+            write(file_unit, err = 100) (self%loc_name(iloc), iloc = 1, num_local_vars)
         endif
         write(file_unit, err = 100) self%is_parameter_pointered
         if (self%is_parameter_pointered) then
@@ -264,7 +264,7 @@ contains
         write(file_unit, err = 100) self%are_locations_default
         write(file_unit, err = 100) self%are_locations_pointered
         if (self%are_locations_pointered) then
-            write(file_unit, err = 100) (self%location_pointers(iloc), iloc = 1, noloc)
+            write(file_unit, err = 100) (self%location_pointers(iloc), iloc = 1, num_local_vars)
         endif
         write(file_unit, err = 100) self%is_scaled
         write(file_unit, err = 100) self%scale_factor
@@ -274,7 +274,7 @@ contains
         endif
         write(file_unit, err = 100) self%need_location_scaling
         if (self%need_location_scaling) then
-            write(file_unit, err = 100) (self%location_scale_factor(iloc), iloc = 1, noloc)
+            write(file_unit, err = 100) (self%location_scale_factor(iloc), iloc = 1, num_local_vars)
         endif
         if (self%function_type /= FUNCTYPE_CONSTANT .and. self%num_breakpoints > 0) then
             write(file_unit, err = 100) (self%times(ibrk), ibrk = 1, nobrk)
@@ -283,10 +283,10 @@ contains
             write(file_unit, err = 100) (self%phase(ibrk), ibrk = 1, nobrk)
         endif
         if (self%iorder == ORDER_PARAM_LOC) then
-            write(file_unit, err = 100) (((self%values(ipar, iloc, ibrk), ipar = 1, nopar), iloc = 1, noloc), &
+            write(file_unit, err = 100) (((self%values(ipar, iloc, ibrk), ipar = 1, nopar), iloc = 1, num_local_vars), &
                     ibrk = 1, nobrk)
         else
-            write(file_unit, err = 100) (((self%values(iloc, ipar, ibrk), iloc = 1, noloc), ipar = 1, nopar), &
+            write(file_unit, err = 100) (((self%values(iloc, ipar, ibrk), iloc = 1, num_local_vars), ipar = 1, nopar), &
                     ibrk = 1, nobrk)
         endif
 
@@ -311,7 +311,7 @@ contains
         ierror = 0
 
         read(file_unit, err = 100) self%subject
-        read(file_unit, err = 100) self%num_parameters
+        read(file_unit, err = 100) self%num_spatial_parameters
         read(file_unit, err = 100) self%num_locations
         read(file_unit, err = 100) self%num_breakpoints
         read(file_unit, err = 100) self%function_type
@@ -322,7 +322,7 @@ contains
         read(file_unit, err = 100) self%iorder
         read(file_unit, err = 100) self%is_parameter_named
         if (self%is_parameter_named) then
-            allocate(self%param_name(self%num_parameters))
+            allocate(self%param_name(self%num_spatial_parameters))
             read(file_unit, err = 100) self%param_name
         endif
         read(file_unit, err = 100) self%are_location_named
@@ -332,7 +332,7 @@ contains
         endif
         read(file_unit, err = 100) self%is_parameter_pointered
         if (self%is_parameter_pointered) then
-            allocate(self%param_pointers(self%num_parameters))
+            allocate(self%param_pointers(self%num_spatial_parameters))
             read(file_unit, err = 100) self%param_pointers
         endif
         read(file_unit, err = 100) self%are_locations_default
@@ -345,7 +345,7 @@ contains
         read(file_unit, err = 100) self%scale_factor
         read(file_unit, err = 100) self%need_parameters_scaling
         if (self%need_parameters_scaling) then
-            allocate(self%parameter_scale_factor(self%num_parameters))
+            allocate(self%parameter_scale_factor(self%num_spatial_parameters))
             read(file_unit, err = 100) self%parameter_scale_factor
         endif
         read(file_unit, err = 100) self%need_location_scaling
@@ -362,9 +362,9 @@ contains
             read(file_unit, err = 100) self%phase
         endif
         if (self%iorder == ORDER_PARAM_LOC) then
-            allocate(self%values(self%num_parameters, self%num_locations, max(self%num_breakpoints, 1)))
+            allocate(self%values(self%num_spatial_parameters, self%num_locations, max(self%num_breakpoints, 1)))
         else
-            allocate(self%values(self%num_locations, self%num_parameters, max(self%num_breakpoints, 1)))
+            allocate(self%values(self%num_locations, self%num_spatial_parameters, max(self%num_breakpoints, 1)))
         endif
         if (.not. self%is_external) then
             read(file_unit, err = 100) self%values
@@ -402,8 +402,8 @@ contains
         real :: factor               ! overall scale factor
         real :: loc_factor           ! location scale factor
         real :: param_factor         ! parameter scale factor
-        integer :: notot                ! number of parameters in output array
-        integer :: noseg                ! number of segments in output array
+        integer :: num_substances_total                ! number of parameters in output array
+        integer :: num_cells                ! number of segments in output array
         integer :: iloc                 ! index locations
         integer :: ipar                 ! index parameters
         integer :: ibrk                 ! index breakpoints
@@ -427,11 +427,11 @@ contains
         amiss = -999.0
 
         if (self%subject == SUBJECT_SEGFUNC) then
-            notot = ndim2
-            noseg = ndim1
+            num_substances_total = ndim2
+            num_cells = ndim1
         else
-            notot = ndim1
-            noseg = ndim2
+            num_substances_total = ndim1
+            num_cells = ndim2
         endif
 
         ! Get the right time in the block
@@ -488,7 +488,7 @@ contains
             else
                 loc_factor = factor
             endif
-            do ipar = 1, self%num_parameters
+            do ipar = 1, self%num_spatial_parameters
 
                 if (self%is_parameter_pointered) then
                     isys = self%param_pointers(ipar)
@@ -542,7 +542,7 @@ contains
 
         else
             if (self%igrid > 1) then
-                allocate(tmp_conc(self%num_parameters, self%num_locations), iseg_set(self%num_locations))
+                allocate(tmp_conc(self%num_spatial_parameters, self%num_locations), iseg_set(self%num_locations))
                 iseg_set = .false.
             endif
             do iloc = 1, self%num_locations
@@ -560,7 +560,7 @@ contains
                     iseg = iloc
                 endif
 
-                do ipar = 1, self%num_parameters
+                do ipar = 1, self%num_spatial_parameters
 
                     if (self%is_parameter_pointered) then
                         isys = self%param_pointers(ipar)
@@ -618,11 +618,11 @@ contains
                 enddo
             enddo
             if (self%igrid > 1) then
-                do iseg2 = 1, noseg
+                do iseg2 = 1, num_cells
                     iseg = GridPs%Pointers(self%igrid)%finalpointer(iseg2)
                     if (iseg > 0) then
                         if (iseg_set(iseg)) then
-                            do ipar = 1, self%num_parameters
+                            do ipar = 1, self%num_spatial_parameters
                                 if (self%is_parameter_pointered) then
                                     isys = self%param_pointers(ipar)
                                     if (isys <= 0) cycle
@@ -788,7 +788,7 @@ contains
             allocate (data_item_used (self%maxsize + MAX_NUM), stat = ierr_alloc3)
             if (ierr_alloc1 /= 0 .or. ierr_alloc2 /= 0 .or. ierr_alloc3 /= 0) then
                 write(*, *) 'ERROR : ALLOCATING WORK ARRAY'
-                call terminate_execution(1)
+                call stop_with_error()
             endif
             do i = 1, self%maxsize
                 dlwq_foritems(i) = self%for_item(i)                ! copies the contents
@@ -819,15 +819,15 @@ contains
         integer :: lun                  ! unit number
         integer :: itime                ! time from file
         integer :: nopar                ! local copy number of parameters
-        integer :: noloc                ! local copy number of locations
+        integer :: num_local_vars                ! local copy number of locations
         integer :: nobrk                ! local copy number of breakpoints
         integer :: ipar                 ! index paramaters
         integer :: iloc                 ! index locations
         integer :: ibrk                 ! index breakpoints
         integer                                    ftype                ! the equivalent of the ftype array elsewhere
 
-        nopar = self%num_parameters
-        noloc = self%num_locations
+        nopar = self%num_spatial_parameters
+        num_local_vars = self%num_locations
         nobrk = max(self%num_breakpoints, 1)
 
         call create_new_file_unit_number(701, lun)
@@ -843,12 +843,12 @@ contains
             write(lunrep, 1010) ierror
         else
             if (self%iorder == ORDER_PARAM_LOC) then
-                if (.not. associated(self%values)) allocate(self%values(nopar, noloc, nobrk))
+                if (.not. associated(self%values)) allocate(self%values(nopar, num_local_vars, nobrk))
                 read(lun, iostat = ierror) itime, (((self%values(ipar, iloc, ibrk), ipar = 1, nopar), &
-                        iloc = 1, noloc), ibrk = 1, nobrk)
+                        iloc = 1, num_local_vars), ibrk = 1, nobrk)
             else
-                if (.not. associated(self%values)) allocate(self%values(noloc, nopar, nobrk))
-                read(lun, iostat = ierror) itime, (((self%values(iloc, ipar, ibrk), iloc = 1, noloc), &
+                if (.not. associated(self%values)) allocate(self%values(num_local_vars, nopar, nobrk))
+                read(lun, iostat = ierror) itime, (((self%values(iloc, ipar, ibrk), iloc = 1, num_local_vars), &
                         ipar = 1, nopar), ibrk = 1, nobrk)
             endif
             if (ierror /= 0) then
@@ -948,7 +948,7 @@ contains
 
         ! local decalaration
         integer :: nopar        ! local copy number of parameters
-        integer :: noloc        ! local copy number of locations
+        integer :: num_local_vars        ! local copy number of locations
         integer :: nobrk        ! local copy number of breakpoints
         integer :: ipar         ! index paramaters
         integer :: iloc         ! index locations
@@ -959,12 +959,12 @@ contains
         call get_log_unit_number(lunrep)
 
         ierror = 0
-        nopar = self%num_parameters
-        noloc = self%num_locations
+        nopar = self%num_spatial_parameters
+        num_local_vars = self%num_locations
         nobrk = self%num_breakpoints
 
         data2%subject = self%subject
-        data2%num_parameters = self%num_parameters
+        data2%num_spatial_parameters = self%num_spatial_parameters
         data2%num_locations = self%num_locations
         data2%num_breakpoints = self%num_breakpoints
         data2%function_type = self%function_type
@@ -982,7 +982,7 @@ contains
         endif
         data2%are_location_named = self%are_location_named
         if (data2%are_location_named) then
-            allocate(data2%loc_name(noloc), stat = ierr_alloc)
+            allocate(data2%loc_name(num_local_vars), stat = ierr_alloc)
             if (ierr_alloc /= 0) then ; write(lunrep, *) ' error allocating memory' ; ierror = 1 ; return ;
             endif
             data2%loc_name = self%loc_name
@@ -997,7 +997,7 @@ contains
         data2%are_locations_default = self%are_locations_default
         data2%are_locations_pointered = self%are_locations_pointered
         if (data2%are_locations_pointered) then
-            allocate(data2%location_pointers(noloc), stat = ierr_alloc)
+            allocate(data2%location_pointers(num_local_vars), stat = ierr_alloc)
             if (ierr_alloc /= 0) then ; write(lunrep, *) ' error allocating memory' ; ierror = 1 ; return ;
             endif
             data2%location_pointers = self%location_pointers
@@ -1013,7 +1013,7 @@ contains
         endif
         data2%need_location_scaling = self%need_location_scaling
         if (data2%need_location_scaling) then
-            allocate(data2%location_scale_factor(noloc), stat = ierr_alloc)
+            allocate(data2%location_scale_factor(num_local_vars), stat = ierr_alloc)
             if (ierr_alloc /= 0) then ; write(lunrep, *) ' error allocating memory' ; ierror = 1 ; return ;
             endif
             data2%location_scale_factor = self%location_scale_factor
@@ -1031,23 +1031,23 @@ contains
             data2%phase = self%phase
         endif
         if (data2%iorder == ORDER_PARAM_LOC) then
-            allocate(data2%values(nopar, noloc, nobrk), stat = ierr_alloc)
+            allocate(data2%values(nopar, num_local_vars, nobrk), stat = ierr_alloc)
             if (ierr_alloc /= 0) then ; write(lunrep, *) ' error allocating memory' ; ierror = 1 ; return ;
             endif
             do ibrk = 1, nobrk
-                do iloc = 1, noloc
+                do iloc = 1, num_local_vars
                     do ipar = 1, nopar
                         data2%values(ipar, iloc, ibrk) = self%values(ipar, iloc, ibrk)
                     enddo
                 enddo
             enddo
         else
-            allocate(data2%values(noloc, nopar, nobrk), stat = ierr_alloc)
+            allocate(data2%values(num_local_vars, nopar, nobrk), stat = ierr_alloc)
             if (ierr_alloc /= 0) then ; write(lunrep, *) ' error allocating memory' ; ierror = 1 ; return ;
             endif
             do ibrk = 1, nobrk
                 do ipar = 1, nopar
-                    do iloc = 1, noloc
+                    do iloc = 1, num_local_vars
                         data2%values(iloc, ipar, ibrk) = self%values(iloc, ipar, ibrk)
                     enddo
                 enddo

@@ -33,7 +33,7 @@
 subroutine flow_sedmorinit()
     use m_sediment
     use m_rdstm
-    use m_flow, only: kmx, ndkx, lnkx, iturbulencemodel
+   use m_flow, only: kmx, ndkx, iturbulencemodel
     use morphology_data_module !, only: nullsedtra, allocsedtra
     use sediment_basics_module
     use message_module, only: clearstack, initstack
@@ -42,11 +42,10 @@ subroutine flow_sedmorinit()
     use unstruc_files
     use m_flowgeom
     use m_flowtimes
-    use m_physcoef, only: rhomean, ag, backgroundwatertemperature, vismol
+   use m_physcoef, only: rhomean, ag, vismol
     use m_initsedtra, only: initsedtra
     use m_rdmorlyr, only: rdinimorlyr
-    use m_flowexternalforcings, only: sfnames, numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
-    use m_transport, only: ISED1, ISEDN, ifrac2const, const_names, constituents
+   use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
     use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, jatem, eps4
     use m_bedform, only: bfmpar, bfm_included
     use unstruc_channel_flow
@@ -58,6 +57,9 @@ subroutine flow_sedmorinit()
     use MessageHandling
     use dfm_error
     use m_mormerge
+   use m_fm_erosed, only: ndx_mor, ndxi_mor, lnx_mor, lnxi_mor, nd_mor, ln_mor, ndkx_mor
+   use m_f1dimp, only: f1dimp_initialized
+
     use m_mormerge_mpi
     use m_partitioninfo, only: jampi, my_rank, ndomains, DFM_COMM_DFMWORLD
     use m_xbeach_data, only: gammaxxb
@@ -68,11 +70,10 @@ subroutine flow_sedmorinit()
 
     logical :: error, have_mudbnd, have_sandbnd, ex, success
     character(20) , dimension(:), allocatable :: nambnd        ! nambnd: needed for morphological bc
-    character     , dimension(200)            :: mes
     character(12)                             :: chstr !< temporary string representation for chainage
     character(40)                             :: errstr
     type (bedbndtype), dimension(:) , pointer :: morbnd
-    integer                                   :: kk, k, kbot, ktop, i, j, isus, ifrac, isusmud, isussand, isf, ised, Lf, npnt, j0, ierr
+   integer :: k, i, j, isus, ifrac, isusmud, isussand, isf, Lf, npnt, j0, ierr
     integer                                   :: ic !< cross section index
     integer                                   :: icd !< cross section definition index
     integer                                   :: ibr, nbr, pointscount, k1, ltur_
@@ -119,12 +120,27 @@ subroutine flow_sedmorinit()
        end select
     endif
 
+   !V: The sizes for morphodynamics are <~_mor>, which are equal to the flow
+   !sizes if not changed.
+   if (.not. f1dimp_initialized) then
+      ndx_mor = ndx
+      ndxi_mor = ndxi
+      nd_mor = nd
+      lnx_mor = lnx
+      lnxi_mor = lnxi
+      ndkx_mor = ndkx
+      ln_mor = ln
+   end if
+
     call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=jatem, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error)
     if (error) then
         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Error in subroutine rdstm.')
         return
     endif
     ! initialize sigsed based on values of tpsnumber read from .sed file
+   if (allocated(sigsed)) then
+      deallocate (sigsed)
+   end if
     allocate (sigsed (stmpar%lsedtot))
     do i = 1, stmpar%lsedtot
         sigsed(i) = stmpar%sedpar%tpsnumber(i)
@@ -132,7 +148,7 @@ subroutine flow_sedmorinit()
         
     do i = 1, stmpar%lsedtot
        if (stmpar%trapar%iform(i) == 19 .or. stmpar%trapar%iform(i) == 20) then
-          if (jawave .ne. 4) then
+         if (jawave /= 4) then
              call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Sediment transport formula '//trim(stmpar%trapar%name(i))//' is not supported without the surfbeat model.')
              return
           endif
@@ -155,7 +171,7 @@ subroutine flow_sedmorinit()
     endif
     !
     call nullsedtra(sedtra)
-    call allocsedtra(sedtra, stmpar%morpar%moroutput, max(kmx,1), stmpar%lsedsus, stmpar%lsedtot, 1, ndx, 1, lnx, stmpar%morpar%nxx, stmpar%morpar%moroutput%nstatqnt)
+   call allocsedtra(sedtra, stmpar%morpar%moroutput, max(kmx, 1), stmpar%lsedsus, stmpar%lsedtot, 1, ndx_mor, 1, lnx_mor, stmpar%morpar%nxx, stmpar%morpar%moroutput%nstatqnt)
 
     morbnd              => stmpar%morpar%morbnd
     do k = 1,nopenbndsect
@@ -183,7 +199,7 @@ subroutine flow_sedmorinit()
        enddo
     enddo
 
-    if ( jased.eq.4 .and. ibedlevtyp .ne. 1 ) then
+   if (jased == 4 .and. ibedlevtyp /= 1) then
         if (stmpar%morpar%bedupd) then
            call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ')   ! setbobs call after fm_erosed resets the bed level for ibedlevtyp > 1, resulting in no bed level change
            return
@@ -193,7 +209,7 @@ subroutine flow_sedmorinit()
     endif
 
     nbr = network%brs%count
-    if ( jased.eq.4 .and. nbr > 0) then
+   if (jased == 4 .and. nbr > 0) then
        allocate(crossdef_used(network%csdefinitions%count), node_processed(ndx))
        crossdef_used(:) = 0
        node_processed(:) = 0
@@ -273,11 +289,11 @@ subroutine flow_sedmorinit()
     endif
 
     ! ad hoc allocation of dummy variables
-    allocate(mtd%dzbdt(ndx))
+   allocate (mtd%dzbdt(ndx_mor))
     allocate(mtd%uau(lnx))
-    allocate(mtd%seddif(stmpar%lsedsus,ndkx))
-    allocate(mtd%ws(ndkx,stmpar%lsedsus))
-    allocate(mtd%blchg(Ndx))
+   allocate (mtd%seddif(stmpar%lsedsus, ndkx_mor))
+   allocate (mtd%ws(ndkx_mor, stmpar%lsedsus))
+   allocate (mtd%blchg(Ndx_mor))
     allocate(mtd%messages)
     call initstack     (mtd%messages)
     !
@@ -290,7 +306,7 @@ subroutine flow_sedmorinit()
     ! Array for transport.f90
     mxgr = stmpar%lsedsus
     if ( allocated(ssccum) ) deallocate(ssccum)
-    if (stmpar%lsedsus .gt. 0) then
+   if (stmpar%lsedsus > 0) then
        allocate(ssccum(stmpar%lsedsus,Ndx))
        ssccum = 0d0
     endif
@@ -306,7 +322,7 @@ subroutine flow_sedmorinit()
     call inipointers_erosed()
     !    update d50 and bed composition if there is no restartfile (if a restartfile exists, this is done inside unc_read_map_or_rst instead)
     if (len_trim(md_restartfile) == 0 ) then
-        call initsedtra(sedtra, stmpar%sedpar, stmpar%trapar, stmpar%morpar, stmpar%morlyr, rhomean, ag, vismol, 1, ndx, ndx, stmpar%lsedsus, stmpar%lsedtot)
+      call initsedtra(sedtra, stmpar%sedpar, stmpar%trapar, stmpar%morpar, stmpar%morlyr, rhomean, ag, vismol, 1, ndx_mor, ndx_mor, stmpar%lsedsus, stmpar%lsedtot)
     endif
     !
     !   for boundary conditions: map suspended fractions index to total fraction index
@@ -416,7 +432,7 @@ subroutine flow_sedmorinit()
           call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Could not allocate bermslope arrays. Bermslope transport switched off.')
           stmpar%morpar%bermslopetransport=.false.
        endif
-       if (jawave>0 .and. jawave.ne.4) then
+      if (jawave > 0 .and. jawave /= 4) then
           if (comparereal(gammax, stmpar%morpar%bermslopegamma)== 0) then
              stmpar%morpar%bermslopegamma=stmpar%morpar%bermslopegamma+eps4               ! if they are exactly the same, rounding errors set index to false wrongly
           endif

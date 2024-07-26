@@ -42,6 +42,10 @@ if(NOT TARGET flow1d)
     add_subdirectory(${checkout_src_root}/${flow1d_module} flow1d)
 endif()
 
+if(NOT TARGET flow1d_implicit)
+    add_subdirectory(${checkout_src_root}/${flow1d_implicit} flow1d_implicit)
+endif()
+
 # Waq
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_base.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/dwaq/dwaq_dflowfm_online_coupling.cmake)

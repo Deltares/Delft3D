@@ -28,9 +28,9 @@ module m_spcarb
 contains
 
 
-    subroutine SPCARB     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine SPCARB     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !JVB$ ATTRIBUTES DLLEXPORT, ALIAS: 'SPCARB' :: SPCARB
         !
         !*******************************************************************************
@@ -40,22 +40,22 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(15) ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(15) ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(15) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(15)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
 
-        ! from pmsa
+        ! from process_space_real
 
         real(kind = dp) :: tic         ! I  total inorganic carbonate                          (gC/m3)
         real(kind = dp) :: co2         ! I  CO2                                                (g/m3)
@@ -88,19 +88,19 @@ contains
         real(kind = dp) :: ccd2        ! L  dissolved HC03                                     (mole/l)
         real(kind = dp) :: ccd3        ! L  dissolved CO3                                      (mole/l)
 
-        ! initialise pointering in pmsa
+        ! initialise pointering in process_space_real
 
         ipnt = ipoint
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
-            tic = pmsa(ipnt(1))
-            co2 = pmsa(ipnt(2)) * 12. / 44.
-            swticco2 = nint(pmsa(ipnt(3)))
-            ph = pmsa(ipnt(4))
-            salinity = max (pmsa(ipnt(5)), 0.0)
-            temp = pmsa(ipnt(6))
-            poros = pmsa(ipnt(7))
+            tic = process_space_real(ipnt(1))
+            co2 = process_space_real(ipnt(2)) * 12. / 44.
+            swticco2 = nint(process_space_real(ipnt(3)))
+            ph = process_space_real(ipnt(4))
+            salinity = max (process_space_real(ipnt(5)), 0.0)
+            temp = process_space_real(ipnt(6))
+            poros = process_space_real(ipnt(7))
 
             ! use tic or co2 depending on the switch
 
@@ -152,16 +152,16 @@ contains
                 frco3d = 0.0
             endif
 
-            ! store in pmsa array
+            ! store in process_space_real array
 
-            pmsa(ipnt(8)) = disco2
-            pmsa(ipnt(9)) = dish2co3
-            pmsa(ipnt(10)) = dishco3
-            pmsa(ipnt(11)) = disco3
-            pmsa(ipnt(12)) = frco2d
-            pmsa(ipnt(13)) = frh2co3d
-            pmsa(ipnt(14)) = frhco3d
-            pmsa(ipnt(15)) = frco3d
+            process_space_real(ipnt(8)) = disco2
+            process_space_real(ipnt(9)) = dish2co3
+            process_space_real(ipnt(10)) = dishco3
+            process_space_real(ipnt(11)) = disco3
+            process_space_real(ipnt(12)) = frco2d
+            process_space_real(ipnt(13)) = frh2co3d
+            process_space_real(ipnt(14)) = frhco3d
+            process_space_real(ipnt(15)) = frco3d
 
             ipnt = ipnt + increm
 

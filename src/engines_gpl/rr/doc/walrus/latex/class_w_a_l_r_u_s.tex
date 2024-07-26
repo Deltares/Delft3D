@@ -1,0 +1,845 @@
+\hypertarget{class_w_a_l_r_u_s}{}\section{W\+A\+L\+R\+US Class Reference}
+\label{class_w_a_l_r_u_s}\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+
+
+{\ttfamily \#include $<$W\+A\+L\+R\+U\+S.\+hh$>$}
+
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_w_a_l_r_u_s_1_1__object}{\+\_\+object}
+\item 
+class \hyperlink{class_w_a_l_r_u_s_1_1_swig_py_iterator}{Swig\+Py\+Iterator}
+\item 
+class \hyperlink{class_w_a_l_r_u_s_1_1_vector_double}{Vector\+Double}
+\item 
+class \hyperlink{class_w_a_l_r_u_s_1_1_w_a_l_r_u_s}{W\+A\+L\+R\+US}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void {\bfseries set} (unsigned int idnum, double newvalue)\hypertarget{class_w_a_l_r_u_s_aea9c81dcd820baa7b0d7bb10b403983e}{}\label{class_w_a_l_r_u_s_aea9c81dcd820baa7b0d7bb10b403983e}
+
+\item 
+double {\bfseries get} (unsigned int idnum)\hypertarget{class_w_a_l_r_u_s_a277f57772bf92511306c3ee3e64cf17d}{}\label{class_w_a_l_r_u_s_a277f57772bf92511306c3ee3e64cf17d}
+
+\item 
+void \hyperlink{class_w_a_l_r_u_s_ad8865cf924e0ed1b907a693d7132c7e0}{set} (enum \hyperlink{_w_a_l_r_u_s_8hh_a7e777e97a293acd537c4c6f5a4ca872a}{W\+A\+L\+R\+U\+S\+\_\+\+P\+AR} par, double newvalue)
+\begin{DoxyCompactList}\small\item\em set a parameter of the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} class \end{DoxyCompactList}\item 
+double \hyperlink{class_w_a_l_r_u_s_af8aeaa33d0549fd9a3d9046cdec8454b}{get} (enum \hyperlink{_w_a_l_r_u_s_8hh_a7e777e97a293acd537c4c6f5a4ca872a}{W\+A\+L\+R\+U\+S\+\_\+\+P\+AR} par)
+\begin{DoxyCompactList}\small\item\em get the value of a parameter of the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} class \end{DoxyCompactList}\item 
+void {\bfseries set\+\_\+st} (unsigned int idnum)\hypertarget{class_w_a_l_r_u_s_a9919601f52fd99042855fe7c2c239100}{}\label{class_w_a_l_r_u_s_a9919601f52fd99042855fe7c2c239100}
+
+\item 
+void \hyperlink{class_w_a_l_r_u_s_a965165c216a89f60126fc68e37b02b83}{set\+\_\+st} (enum \hyperlink{_w_a_l_r_u_s_8hh_a03b82e9550ee0c2976b3e3be35ebea80}{W\+A\+L\+R\+U\+S\+\_\+\+S\+O\+IL} soil)
+\begin{DoxyCompactList}\small\item\em sets the unsaturated parameters by predefined soil types \end{DoxyCompactList}\item 
+std\+::string \hyperlink{class_w_a_l_r_u_s_ab57de0f754bd2670021a4d1c1925cd58}{get\+\_\+st} ()
+\begin{DoxyCompactList}\small\item\em gets the name of the soil type (see W\+A\+L\+R\+U\+S\+\_\+\+S\+O\+IL) \end{DoxyCompactList}\item 
+void \hyperlink{class_w_a_l_r_u_s_add540d516515c10d96cbbd3c7f7d1b8c}{set} (enum \hyperlink{_w_a_l_r_u_s_8hh_a3f118f254cc80ce1a1b46e02f122fb96}{W\+A\+L\+R\+U\+S\+\_\+\+N\+UM} par, double newvalue)
+\begin{DoxyCompactList}\small\item\em set a numerical parameter of the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} class \end{DoxyCompactList}\item 
+double \hyperlink{class_w_a_l_r_u_s_a399e6337c5413a0028ecaca4e1d55436}{get} (enum \hyperlink{_w_a_l_r_u_s_8hh_a3f118f254cc80ce1a1b46e02f122fb96}{W\+A\+L\+R\+U\+S\+\_\+\+N\+UM} par)
+\begin{DoxyCompactList}\small\item\em get the value of a numerical parameter of the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} class \end{DoxyCompactList}\item 
+double \hyperlink{class_w_a_l_r_u_s_adbeabfeb82713ccbfc9612c690bdc72a}{W\+\_\+dV} (double dV)
+\begin{DoxyCompactList}\small\item\em the function that gives the wetness index W as function of dV ~\newline
+if the analytical form is chosen (defuault) this depends on the parameter cW \end{DoxyCompactList}\item 
+void \hyperlink{class_w_a_l_r_u_s_ab6db20d90daa3e5afa1b0fd216abbd5c}{set\+\_\+\+W\+\_\+d\+V\+\_\+bytable} (const vector$<$ double $>$ \&dV, const vector$<$ double $>$ \&W)
+\begin{DoxyCompactList}\small\item\em replaces the default analytically defined relation between the wetness index W and the deficit dV by a linearly interpolating in a table provided by the user \end{DoxyCompactList}\item 
+double \hyperlink{class_w_a_l_r_u_s_a15046fc8d8387187cee3c150addc2580}{d\+Veq\+\_\+dG} (double dG)
+\begin{DoxyCompactList}\small\item\em the function that gives the equilibrium storage deficit as function of dG ~\newline
+if the analytical form is chosen (defuault) this depends on the soil physical parameters \end{DoxyCompactList}\item 
+void {\bfseries set\+\_\+d\+Veq\+\_\+d\+G\+\_\+bytable} (const vector$<$ double $>$ \&dG, const vector$<$ double $>$ \&d\+Veq)\hypertarget{class_w_a_l_r_u_s_afcecfe6b71519163c7505227e542b48f}{}\label{class_w_a_l_r_u_s_afcecfe6b71519163c7505227e542b48f}
+
+\item 
+double {\bfseries beta\+\_\+dV} (double dV)\hypertarget{class_w_a_l_r_u_s_a9aaa16ecc31493b19c6141dcb71504f5}{}\label{class_w_a_l_r_u_s_a9aaa16ecc31493b19c6141dcb71504f5}
+
+\item 
+void {\bfseries set\+\_\+beta\+\_\+d\+V\+\_\+bytable} (const vector$<$ double $>$ \&dV, const vector$<$ double $>$ \&beta)\hypertarget{class_w_a_l_r_u_s_aae11d3fe9f4e008fd0d00d781e6e4298}{}\label{class_w_a_l_r_u_s_aae11d3fe9f4e008fd0d00d781e6e4298}
+
+\item 
+double {\bfseries Q\+\_\+hS} (double hS)\hypertarget{class_w_a_l_r_u_s_abcc8dc2d32da288fe83c62779a152fbc}{}\label{class_w_a_l_r_u_s_abcc8dc2d32da288fe83c62779a152fbc}
+
+\item 
+void {\bfseries set\+\_\+\+Q\+\_\+h\+S\+\_\+bytable} (const vector$<$ double $>$ \&hS, const vector$<$ double $>$ \&Q)\hypertarget{class_w_a_l_r_u_s_a8cec5373e28571484086d165079e55ac}{}\label{class_w_a_l_r_u_s_a8cec5373e28571484086d165079e55ac}
+
+\item 
+void {\bfseries set\+\_\+I} (unsigned int idnum, double intensity)\hypertarget{class_w_a_l_r_u_s_ab2a077e9a48866101ac4996a9845f4c1}{}\label{class_w_a_l_r_u_s_ab2a077e9a48866101ac4996a9845f4c1}
+
+\item 
+void \hyperlink{class_w_a_l_r_u_s_a221a1f987318976a3e7b469b9553bd31}{set\+\_\+I} (enum \hyperlink{_w_a_l_r_u_s_8hh_a99aa077336c60ec7f34ef54364d58de1}{W\+A\+L\+R\+U\+S\+\_\+\+F\+O\+R\+C\+I\+NG} fc, double intensity)
+\begin{DoxyCompactList}\small\item\em sets the intensity of the forcing ~\newline
+this constant intensity is used for all times until a new value has been set \end{DoxyCompactList}\item 
+void \hyperlink{class_w_a_l_r_u_s_a1c51f6014afbeea618b48148dd581492}{set\+\_\+seq\+\_\+C} (unsigned int idnum, const vector$<$ double $>$ times, const vector$<$ double $>$ fc\+\_\+vec)
+\begin{DoxyCompactList}\small\item\em sets an external forcing by a series of accumulated values ~\newline
+(linearly interpolated) values of this series are used until a new rainfall value is set \end{DoxyCompactList}\item 
+void {\bfseries set\+\_\+seq\+\_\+C} (enum \hyperlink{_w_a_l_r_u_s_8hh_a99aa077336c60ec7f34ef54364d58de1}{W\+A\+L\+R\+U\+S\+\_\+\+F\+O\+R\+C\+I\+NG} fc, const vector$<$ double $>$ times, const vector$<$ double $>$ fc\+\_\+vec)\hypertarget{class_w_a_l_r_u_s_af723b3371d05c6281645718da8d57078}{}\label{class_w_a_l_r_u_s_af723b3371d05c6281645718da8d57078}
+
+\item 
+void \hyperlink{class_w_a_l_r_u_s_a8ad4f65889d4b7e883844eba24aaa227}{set\+\_\+seq\+\_\+I} (unsigned int idnum, double tstart, double timestep, const vector$<$ double $>$ fc\+\_\+vec)
+\begin{DoxyCompactList}\small\item\em sets an external forcing flux by series of regularly measured intensities (linearly interpolated) values of this series are used until a new rainfall value is set \end{DoxyCompactList}\item 
+void {\bfseries set\+\_\+seq\+\_\+I} (enum \hyperlink{_w_a_l_r_u_s_8hh_a99aa077336c60ec7f34ef54364d58de1}{W\+A\+L\+R\+U\+S\+\_\+\+F\+O\+R\+C\+I\+NG} fc, double tstart, double timestep, const vector$<$ double $>$ fc\+\_\+vec)\hypertarget{class_w_a_l_r_u_s_a5345a57fd7300c07038fa4da9b003bb6}{}\label{class_w_a_l_r_u_s_a5345a57fd7300c07038fa4da9b003bb6}
+
+\item 
+double \hyperlink{class_w_a_l_r_u_s_aef8f7787cb5eadfabc45a08df5ed5ee3}{get\+\_\+cum} (unsigned int idnum, double from\+\_\+time, double to\+\_\+time)
+\begin{DoxyCompactList}\small\item\em gets the total external flxu between two times \end{DoxyCompactList}\item 
+double {\bfseries get\+\_\+cum} (enum \hyperlink{_w_a_l_r_u_s_8hh_a99aa077336c60ec7f34ef54364d58de1}{W\+A\+L\+R\+U\+S\+\_\+\+F\+O\+R\+C\+I\+NG} fc, double from\+\_\+time, double to\+\_\+time)\hypertarget{class_w_a_l_r_u_s_a370910afe591cdee286f9603a8ea47f4}{}\label{class_w_a_l_r_u_s_a370910afe591cdee286f9603a8ea47f4}
+
+\item 
+void {\bfseries set\+\_\+h\+Smin} (double value)\hypertarget{class_w_a_l_r_u_s_a308e890509bed8b989e930bd2e7f63b6}{}\label{class_w_a_l_r_u_s_a308e890509bed8b989e930bd2e7f63b6}
+
+\item 
+void {\bfseries set\+\_\+h\+Sminseries} (vector$<$ double $>$ times, vector$<$ double $>$ h\+Smin)\hypertarget{class_w_a_l_r_u_s_a18badf14bd5e0cce4705641606ba7443}{}\label{class_w_a_l_r_u_s_a18badf14bd5e0cce4705641606ba7443}
+
+\item 
+double {\bfseries get\+\_\+h\+Smin} (double attime)\hypertarget{class_w_a_l_r_u_s_a795486d38afbcd29ea303069921678c2}{}\label{class_w_a_l_r_u_s_a795486d38afbcd29ea303069921678c2}
+
+\item 
+void \hyperlink{class_w_a_l_r_u_s_aa508a0459a26876efffc3336c8f030c6}{set} (enum \hyperlink{_w_a_l_r_u_s_8hh_a9fc7a759bd7ada3049b2079642b247b5}{W\+A\+L\+R\+U\+S\+\_\+\+S\+T\+A\+TE} s, double value)
+\begin{DoxyCompactList}\small\item\em sets a state in the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} model \end{DoxyCompactList}\item 
+double \hyperlink{class_w_a_l_r_u_s_a7c25e1a60ab4fe5c163cf769f528e6fb}{get} (enum \hyperlink{_w_a_l_r_u_s_8hh_a9fc7a759bd7ada3049b2079642b247b5}{W\+A\+L\+R\+U\+S\+\_\+\+S\+T\+A\+TE} s)
+\begin{DoxyCompactList}\small\item\em gets a state in the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} model \end{DoxyCompactList}\item 
+double \hyperlink{class_w_a_l_r_u_s_aa534de1d992c70008d119771bf026abe}{get} (enum \hyperlink{_w_a_l_r_u_s_8hh_a63d143c23aa057da8211ae8b8ac88a4c}{W\+A\+L\+R\+U\+S\+\_\+\+D\+E\+PS} d)
+\begin{DoxyCompactList}\small\item\em gets a state in the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} model \end{DoxyCompactList}\item 
+double \hyperlink{class_w_a_l_r_u_s_a33c890dc1e040ce9d8ddd79165a1b9db}{get} (enum \hyperlink{_w_a_l_r_u_s_8hh_aa04c5e50f4e374258c5753bd34cdf867}{W\+A\+L\+R\+U\+S\+\_\+\+U\+S\+E\+D\+F\+L\+UX} f)
+\begin{DoxyCompactList}\small\item\em gets internal fluxes cumulative over last time step \end{DoxyCompactList}\item 
+void \hyperlink{class_w_a_l_r_u_s_a082faec92fb47af58ddc4d88d59be412}{init} (double Q0)
+\begin{DoxyCompactList}\small\item\em initializes states starting from a given open water flux avoiding by that (long) warm up period intial time is set to zero \end{DoxyCompactList}\item 
+void \hyperlink{class_w_a_l_r_u_s_a6a5c143dcfc22e11db74a5b9fa834240}{init} (double attime, double Q0)
+\begin{DoxyCompactList}\small\item\em initializes states starting from a given open water flux avoiding by that (long) warm up period \end{DoxyCompactList}\item 
+void \hyperlink{class_w_a_l_r_u_s_a67cdc6d8178b37ce0591866832cb4fd2}{init} (double Q0, double h\+S0, double d\+G0, double d\+V0, double h\+Q0)
+\begin{DoxyCompactList}\small\item\em initializes states avoiding by that (long) warm up period \end{DoxyCompactList}\item 
+void \hyperlink{class_w_a_l_r_u_s_a3dd71d9fbc36fe3fae9dfecb857d01af}{init} (double attime, double Q0, double h\+S0, double d\+G0, double d\+V0, double h\+Q0)
+\begin{DoxyCompactList}\small\item\em initializes states avoiding by that (long) warm up period \end{DoxyCompactList}\item 
+void \hyperlink{class_w_a_l_r_u_s_a43a6f8cccd071fa35b54a27cefeadfbb}{init} (double attime, double Q0, double h\+S0, double d\+G0, double d\+V0, double h\+Q0, double Gfrac)
+\begin{DoxyCompactList}\small\item\em initializes states avoiding by that (long) warm up period \end{DoxyCompactList}\item 
+void \hyperlink{class_w_a_l_r_u_s_a400c4f4e5caaef6131e905e1dc24e915}{dostep} (double deltime)
+\begin{DoxyCompactList}\small\item\em does a time step ~\newline
+Performs one stime step given by the argment. If considered needed performs smaller substeps \end{DoxyCompactList}\item 
+void \hyperlink{class_w_a_l_r_u_s_afb729e58d6f9016b644202ac9bd3d4f0}{dosteps} (double endtime, double deltime, const char $\ast$csvfilename, bool store\+\_\+states, bool store\+\_\+deps, bool store\+\_\+usedfluxes)
+\begin{DoxyCompactList}\small\item\em does a number of time steps ~\newline
+ Performs several time steps given by the argments. If considered needed performs smaller substeps \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries Swig\+Py\+Iterator\+\_\+swigregister} = \+\_\+\+W\+A\+L\+R\+U\+S.\+Swig\+Py\+Iterator\+\_\+swigregister\hypertarget{class_w_a_l_r_u_s_ade8d27402efd714c97873c52396556ac}{}\label{class_w_a_l_r_u_s_ade8d27402efd714c97873c52396556ac}
+
+\item 
+{\bfseries Vector\+Double\+\_\+swigregister} = \+\_\+\+W\+A\+L\+R\+U\+S.\+Vector\+Double\+\_\+swigregister\hypertarget{class_w_a_l_r_u_s_ae30d447750b7b47615a9ede7c2a38bed}{}\label{class_w_a_l_r_u_s_ae30d447750b7b47615a9ede7c2a38bed}
+
+\item 
+{\bfseries par\+\_\+cW} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+cW\hypertarget{class_w_a_l_r_u_s_aa696df175547da8631b5a933350fd897}{}\label{class_w_a_l_r_u_s_aa696df175547da8631b5a933350fd897}
+
+\item 
+{\bfseries par\+\_\+cV} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+cV\hypertarget{class_w_a_l_r_u_s_ae990dcec96ab8178b204d6c61580030b}{}\label{class_w_a_l_r_u_s_ae990dcec96ab8178b204d6c61580030b}
+
+\item 
+{\bfseries par\+\_\+cG} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+cG\hypertarget{class_w_a_l_r_u_s_a27f6a3c8935aeb0588c1f4b9756570f1}{}\label{class_w_a_l_r_u_s_a27f6a3c8935aeb0588c1f4b9756570f1}
+
+\item 
+{\bfseries par\+\_\+cQ} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+cQ\hypertarget{class_w_a_l_r_u_s_a8d03fc5d59bb43d074ad5639d77cb260}{}\label{class_w_a_l_r_u_s_a8d03fc5d59bb43d074ad5639d77cb260}
+
+\item 
+{\bfseries par\+\_\+cS} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+cS\hypertarget{class_w_a_l_r_u_s_a58fd11a1babf1925382f71b2b8ab8f79}{}\label{class_w_a_l_r_u_s_a58fd11a1babf1925382f71b2b8ab8f79}
+
+\item 
+{\bfseries par\+\_\+cexpS} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+cexpS\hypertarget{class_w_a_l_r_u_s_a0aa421a3a501500f4c9594c09ae487af}{}\label{class_w_a_l_r_u_s_a0aa421a3a501500f4c9594c09ae487af}
+
+\item 
+{\bfseries par\+\_\+cD} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+cD\hypertarget{class_w_a_l_r_u_s_a2858a91790716fc38c59e8a2654a2806}{}\label{class_w_a_l_r_u_s_a2858a91790716fc38c59e8a2654a2806}
+
+\item 
+{\bfseries par\+\_\+psi\+\_\+ae} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+psi\+\_\+ae\hypertarget{class_w_a_l_r_u_s_af7ca3759488766090c1dcf259d3cbbb1}{}\label{class_w_a_l_r_u_s_af7ca3759488766090c1dcf259d3cbbb1}
+
+\item 
+{\bfseries par\+\_\+b} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+b\hypertarget{class_w_a_l_r_u_s_a0ca6dffcb4e914698464a207cdaa5476}{}\label{class_w_a_l_r_u_s_a0ca6dffcb4e914698464a207cdaa5476}
+
+\item 
+{\bfseries par\+\_\+theta\+\_\+s} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+theta\+\_\+s\hypertarget{class_w_a_l_r_u_s_ac6b8f5f5f6d1134a58420d887f4fb3de}{}\label{class_w_a_l_r_u_s_ac6b8f5f5f6d1134a58420d887f4fb3de}
+
+\item 
+{\bfseries par\+\_\+aS} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+aS\hypertarget{class_w_a_l_r_u_s_ac12562a42e8dbef459635fadf1dc9ba5}{}\label{class_w_a_l_r_u_s_ac12562a42e8dbef459635fadf1dc9ba5}
+
+\item 
+{\bfseries par\+\_\+area} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+area\hypertarget{class_w_a_l_r_u_s_a0d22e7b0ba1005aa0174302afd75a8b0}{}\label{class_w_a_l_r_u_s_a0d22e7b0ba1005aa0174302afd75a8b0}
+
+\item 
+{\bfseries sand} = \+\_\+\+W\+A\+L\+R\+U\+S.\+sand\hypertarget{class_w_a_l_r_u_s_a8a9c0849cace9ab7cfbf4de61d109a8f}{}\label{class_w_a_l_r_u_s_a8a9c0849cace9ab7cfbf4de61d109a8f}
+
+\item 
+{\bfseries loamy\+\_\+sand} = \+\_\+\+W\+A\+L\+R\+U\+S.\+loamy\+\_\+sand\hypertarget{class_w_a_l_r_u_s_a3f20e604129e2d4028986f7052ad338a}{}\label{class_w_a_l_r_u_s_a3f20e604129e2d4028986f7052ad338a}
+
+\item 
+{\bfseries sandy\+\_\+loam} = \+\_\+\+W\+A\+L\+R\+U\+S.\+sandy\+\_\+loam\hypertarget{class_w_a_l_r_u_s_a1b252b90e242b719db3f22ec9b4f2dd9}{}\label{class_w_a_l_r_u_s_a1b252b90e242b719db3f22ec9b4f2dd9}
+
+\item 
+{\bfseries silt\+\_\+loam} = \+\_\+\+W\+A\+L\+R\+U\+S.\+silt\+\_\+loam\hypertarget{class_w_a_l_r_u_s_a94c6902e9a10fa5b0bb4a72772dbd3f7}{}\label{class_w_a_l_r_u_s_a94c6902e9a10fa5b0bb4a72772dbd3f7}
+
+\item 
+{\bfseries loam} = \+\_\+\+W\+A\+L\+R\+U\+S.\+loam\hypertarget{class_w_a_l_r_u_s_a29be39edca687a0a72c85c3379c99a97}{}\label{class_w_a_l_r_u_s_a29be39edca687a0a72c85c3379c99a97}
+
+\item 
+{\bfseries sandy\+\_\+clay\+\_\+loam} = \+\_\+\+W\+A\+L\+R\+U\+S.\+sandy\+\_\+clay\+\_\+loam\hypertarget{class_w_a_l_r_u_s_a32708c862131dd734f8cd493baabecd2}{}\label{class_w_a_l_r_u_s_a32708c862131dd734f8cd493baabecd2}
+
+\item 
+{\bfseries silt\+\_\+clay\+\_\+loam} = \+\_\+\+W\+A\+L\+R\+U\+S.\+silt\+\_\+clay\+\_\+loam\hypertarget{class_w_a_l_r_u_s_ae2a8fbf4fdce0f2891cfb87883b159f3}{}\label{class_w_a_l_r_u_s_ae2a8fbf4fdce0f2891cfb87883b159f3}
+
+\item 
+{\bfseries clay\+\_\+loam} = \+\_\+\+W\+A\+L\+R\+U\+S.\+clay\+\_\+loam\hypertarget{class_w_a_l_r_u_s_af25074e75237251ebd5550240466fb2f}{}\label{class_w_a_l_r_u_s_af25074e75237251ebd5550240466fb2f}
+
+\item 
+{\bfseries sandy\+\_\+clay} = \+\_\+\+W\+A\+L\+R\+U\+S.\+sandy\+\_\+clay\hypertarget{class_w_a_l_r_u_s_a0e3c1863ca79fb5b55a93f27f21e16ac}{}\label{class_w_a_l_r_u_s_a0e3c1863ca79fb5b55a93f27f21e16ac}
+
+\item 
+{\bfseries silty\+\_\+clay} = \+\_\+\+W\+A\+L\+R\+U\+S.\+silty\+\_\+clay\hypertarget{class_w_a_l_r_u_s_ae04bdda4e5aa39a524d9bac7dd5ace1a}{}\label{class_w_a_l_r_u_s_ae04bdda4e5aa39a524d9bac7dd5ace1a}
+
+\item 
+{\bfseries clay} = \+\_\+\+W\+A\+L\+R\+U\+S.\+clay\hypertarget{class_w_a_l_r_u_s_aebad9efd9b5cf6b7c62d496fedd411aa}{}\label{class_w_a_l_r_u_s_aebad9efd9b5cf6b7c62d496fedd411aa}
+
+\item 
+{\bfseries cal\+\_\+H} = \+\_\+\+W\+A\+L\+R\+U\+S.\+cal\+\_\+H\hypertarget{class_w_a_l_r_u_s_aa781867876dceabeeebbbd87c9a37bde}{}\label{class_w_a_l_r_u_s_aa781867876dceabeeebbbd87c9a37bde}
+
+\item 
+{\bfseries cal\+\_\+C} = \+\_\+\+W\+A\+L\+R\+U\+S.\+cal\+\_\+C\hypertarget{class_w_a_l_r_u_s_ab74fb232a5a3a9d9cb182e00004d7725}{}\label{class_w_a_l_r_u_s_ab74fb232a5a3a9d9cb182e00004d7725}
+
+\item 
+{\bfseries custom} = \+\_\+\+W\+A\+L\+R\+U\+S.\+custom\hypertarget{class_w_a_l_r_u_s_abc10ad95aa90770b16ac962fc9eb407f}{}\label{class_w_a_l_r_u_s_abc10ad95aa90770b16ac962fc9eb407f}
+
+\item 
+{\bfseries par\+\_\+min\+\_\+deltime} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+min\+\_\+deltime\hypertarget{class_w_a_l_r_u_s_a90c6da6117cdd37df5945e5e3078fcba}{}\label{class_w_a_l_r_u_s_a90c6da6117cdd37df5945e5e3078fcba}
+
+\item 
+{\bfseries par\+\_\+max\+\_\+h\+\_\+change} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+max\+\_\+h\+\_\+change\hypertarget{class_w_a_l_r_u_s_ab4e6e916cb4c9c3fb70f7aa0ef1c8e24}{}\label{class_w_a_l_r_u_s_ab4e6e916cb4c9c3fb70f7aa0ef1c8e24}
+
+\item 
+{\bfseries par\+\_\+min\+\_\+h} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+min\+\_\+h\hypertarget{class_w_a_l_r_u_s_abcf58ac7e7551b25c6265444ac447270}{}\label{class_w_a_l_r_u_s_abcf58ac7e7551b25c6265444ac447270}
+
+\item 
+{\bfseries par\+\_\+max\+\_\+\+Pstep} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+max\+\_\+\+Pstep\hypertarget{class_w_a_l_r_u_s_a71f4310481a545b52fbe4cbbb4e5ef2a}{}\label{class_w_a_l_r_u_s_a71f4310481a545b52fbe4cbbb4e5ef2a}
+
+\item 
+{\bfseries par\+\_\+max\+\_\+substeps} = \+\_\+\+W\+A\+L\+R\+U\+S.\+par\+\_\+max\+\_\+substeps\hypertarget{class_w_a_l_r_u_s_a449e4c1340eb62d660f522e0e53eca2f}{}\label{class_w_a_l_r_u_s_a449e4c1340eb62d660f522e0e53eca2f}
+
+\item 
+{\bfseries fc\+\_\+P} = \+\_\+\+W\+A\+L\+R\+U\+S.\+fc\+\_\+P\hypertarget{class_w_a_l_r_u_s_a2b1688e482715e43154228437c3818b1}{}\label{class_w_a_l_r_u_s_a2b1688e482715e43154228437c3818b1}
+
+\item 
+{\bfseries fc\+\_\+\+E\+Tpot} = \+\_\+\+W\+A\+L\+R\+U\+S.\+fc\+\_\+\+E\+Tpot\hypertarget{class_w_a_l_r_u_s_acce5068f3233cfd5114e6a23c0f8efd1}{}\label{class_w_a_l_r_u_s_acce5068f3233cfd5114e6a23c0f8efd1}
+
+\item 
+{\bfseries fc\+\_\+\+XS} = \+\_\+\+W\+A\+L\+R\+U\+S.\+fc\+\_\+\+XS\hypertarget{class_w_a_l_r_u_s_adda3908549840abc67132a74da21f14c}{}\label{class_w_a_l_r_u_s_adda3908549840abc67132a74da21f14c}
+
+\item 
+{\bfseries fc\+\_\+\+XG} = \+\_\+\+W\+A\+L\+R\+U\+S.\+fc\+\_\+\+XG\hypertarget{class_w_a_l_r_u_s_a0df869a04fd572eb241bde57f4f25262}{}\label{class_w_a_l_r_u_s_a0df869a04fd572eb241bde57f4f25262}
+
+\item 
+{\bfseries cur\+\_\+time} = \+\_\+\+W\+A\+L\+R\+U\+S.\+cur\+\_\+time\hypertarget{class_w_a_l_r_u_s_aca308f63ac89566186283c7d677ac691}{}\label{class_w_a_l_r_u_s_aca308f63ac89566186283c7d677ac691}
+
+\item 
+{\bfseries cur\+\_\+dV} = \+\_\+\+W\+A\+L\+R\+U\+S.\+cur\+\_\+dV\hypertarget{class_w_a_l_r_u_s_a33a3073dbe6e4dbcaf6feda49aa10f72}{}\label{class_w_a_l_r_u_s_a33a3073dbe6e4dbcaf6feda49aa10f72}
+
+\item 
+{\bfseries cur\+\_\+dG} = \+\_\+\+W\+A\+L\+R\+U\+S.\+cur\+\_\+dG\hypertarget{class_w_a_l_r_u_s_a31f68c6922f16301fe42e595d3ea9b4e}{}\label{class_w_a_l_r_u_s_a31f68c6922f16301fe42e595d3ea9b4e}
+
+\item 
+{\bfseries cur\+\_\+hQ} = \+\_\+\+W\+A\+L\+R\+U\+S.\+cur\+\_\+hQ\hypertarget{class_w_a_l_r_u_s_ad380b5521b29a73d7b82c78778a4d4e9}{}\label{class_w_a_l_r_u_s_ad380b5521b29a73d7b82c78778a4d4e9}
+
+\item 
+{\bfseries cur\+\_\+hS} = \+\_\+\+W\+A\+L\+R\+U\+S.\+cur\+\_\+hS\hypertarget{class_w_a_l_r_u_s_add741f5622d1e6508bdb0adbbb3b8502}{}\label{class_w_a_l_r_u_s_add741f5622d1e6508bdb0adbbb3b8502}
+
+\item 
+{\bfseries cur\+\_\+W} = \+\_\+\+W\+A\+L\+R\+U\+S.\+cur\+\_\+W\hypertarget{class_w_a_l_r_u_s_adba1e0fbcea6ed9de5c12875df43e29b}{}\label{class_w_a_l_r_u_s_adba1e0fbcea6ed9de5c12875df43e29b}
+
+\item 
+{\bfseries cur\+\_\+beta} = \+\_\+\+W\+A\+L\+R\+U\+S.\+cur\+\_\+beta\hypertarget{class_w_a_l_r_u_s_ab462e19f71dcaa0c98572bca181c6d4c}{}\label{class_w_a_l_r_u_s_ab462e19f71dcaa0c98572bca181c6d4c}
+
+\item 
+{\bfseries cur\+\_\+d\+Veq} = \+\_\+\+W\+A\+L\+R\+U\+S.\+cur\+\_\+d\+Veq\hypertarget{class_w_a_l_r_u_s_a3e3b2c9f9e64e436e226701d06ccac23}{}\label{class_w_a_l_r_u_s_a3e3b2c9f9e64e436e226701d06ccac23}
+
+\item 
+{\bfseries last\+\_\+deltime} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+deltime\hypertarget{class_w_a_l_r_u_s_a8517f9cd3060a4c4c0e674ad1c4d079b}{}\label{class_w_a_l_r_u_s_a8517f9cd3060a4c4c0e674ad1c4d079b}
+
+\item 
+{\bfseries last\+\_\+f\+XG} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+f\+XG\hypertarget{class_w_a_l_r_u_s_a5cec9edfb2d25945f17d8d2c4447244f}{}\label{class_w_a_l_r_u_s_a5cec9edfb2d25945f17d8d2c4447244f}
+
+\item 
+{\bfseries last\+\_\+f\+XS} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+f\+XS\hypertarget{class_w_a_l_r_u_s_a8461eae194a4b899b9823ccedc71ed77}{}\label{class_w_a_l_r_u_s_a8461eae194a4b899b9823ccedc71ed77}
+
+\item 
+{\bfseries last\+\_\+\+PQ} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+\+PQ\hypertarget{class_w_a_l_r_u_s_ae86ec6c32c2c52410423cec9c9128aeb}{}\label{class_w_a_l_r_u_s_ae86ec6c32c2c52410423cec9c9128aeb}
+
+\item 
+{\bfseries last\+\_\+\+PV} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+\+PV\hypertarget{class_w_a_l_r_u_s_acacc1aacf21211cb345afc6c0703f93a}{}\label{class_w_a_l_r_u_s_acacc1aacf21211cb345afc6c0703f93a}
+
+\item 
+{\bfseries last\+\_\+\+PS} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+\+PS\hypertarget{class_w_a_l_r_u_s_ac0bdf887c79f767a7570666f8c8a81a5}{}\label{class_w_a_l_r_u_s_ac0bdf887c79f767a7570666f8c8a81a5}
+
+\item 
+{\bfseries last\+\_\+\+E\+TV} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+\+E\+TV\hypertarget{class_w_a_l_r_u_s_a9674ee0949849c05206ad7304f03043e}{}\label{class_w_a_l_r_u_s_a9674ee0949849c05206ad7304f03043e}
+
+\item 
+{\bfseries last\+\_\+\+E\+TS} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+\+E\+TS\hypertarget{class_w_a_l_r_u_s_a36b46c03242ac7356b54b02049837e53}{}\label{class_w_a_l_r_u_s_a36b46c03242ac7356b54b02049837e53}
+
+\item 
+{\bfseries last\+\_\+\+E\+Tact} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+\+E\+Tact\hypertarget{class_w_a_l_r_u_s_ab48f17a2c6caa9c3291ee199a4758967}{}\label{class_w_a_l_r_u_s_ab48f17a2c6caa9c3291ee199a4758967}
+
+\item 
+{\bfseries last\+\_\+f\+QS} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+f\+QS\hypertarget{class_w_a_l_r_u_s_ada78741e4dbdc11d19401a0b562be578}{}\label{class_w_a_l_r_u_s_ada78741e4dbdc11d19401a0b562be578}
+
+\item 
+{\bfseries last\+\_\+f\+GS} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+f\+GS\hypertarget{class_w_a_l_r_u_s_acd0a41fc398d41e3877579059ba294fe}{}\label{class_w_a_l_r_u_s_acd0a41fc398d41e3877579059ba294fe}
+
+\item 
+{\bfseries last\+\_\+Q} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+Q\hypertarget{class_w_a_l_r_u_s_ad924e605cf58ca2a9aeb9af3e1ae9e47}{}\label{class_w_a_l_r_u_s_ad924e605cf58ca2a9aeb9af3e1ae9e47}
+
+\item 
+{\bfseries last\+\_\+\+Qdischarge} = \+\_\+\+W\+A\+L\+R\+U\+S.\+last\+\_\+\+Qdischarge\hypertarget{class_w_a_l_r_u_s_a79b6ceaa7c1c578811aa2d4c26568ff1}{}\label{class_w_a_l_r_u_s_a79b6ceaa7c1c578811aa2d4c26568ff1}
+
+\item 
+{\bfseries W\+A\+L\+R\+U\+S\+\_\+swigregister} = \+\_\+\+W\+A\+L\+R\+U\+S.\+W\+A\+L\+R\+U\+S\+\_\+swigregister\hypertarget{class_w_a_l_r_u_s_a81ccb15b83c136de1ec0b0aaa4c4610f}{}\label{class_w_a_l_r_u_s_a81ccb15b83c136de1ec0b0aaa4c4610f}
+
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+class {\bfseries d\+Gfinderclass}\hypertarget{class_w_a_l_r_u_s_adeca28bf760ff3d102ddb237c17b93e3}{}\label{class_w_a_l_r_u_s_adeca28bf760ff3d102ddb237c17b93e3}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} class contains all the data and methods of a \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} model 
+
+\subsection{Member Function Documentation}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!dostep@{dostep}}
+\index{dostep@{dostep}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{dostep(double deltime)}{dostep(double deltime)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::dostep (
+\begin{DoxyParamCaption}
+\item[{double}]{deltime}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a400c4f4e5caaef6131e905e1dc24e915}{}\label{class_w_a_l_r_u_s_a400c4f4e5caaef6131e905e1dc24e915}
+
+
+does a time step ~\newline
+Performs one stime step given by the argment. If considered needed performs smaller substeps 
+
+
+\begin{DoxyParams}{Parameters}
+{\em deltime} & the step to make (s) \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\hyperlink{class_w_a_l_r_u_s_afb729e58d6f9016b644202ac9bd3d4f0}{dosteps} 
+\end{DoxySeeAlso}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!dosteps@{dosteps}}
+\index{dosteps@{dosteps}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{dosteps(double endtime, double deltime, const char $\ast$csvfilename, bool store\+\_\+states, bool store\+\_\+deps, bool store\+\_\+usedfluxes)}{dosteps(double endtime, double deltime, const char *csvfilename, bool store_states, bool store_deps, bool store_usedfluxes)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::dosteps (
+\begin{DoxyParamCaption}
+\item[{double}]{endtime, }
+\item[{double}]{deltime, }
+\item[{const char $\ast$}]{csvfilename, }
+\item[{bool}]{store\+\_\+states = {\ttfamily true}, }
+\item[{bool}]{store\+\_\+deps = {\ttfamily true}, }
+\item[{bool}]{store\+\_\+usedfluxes = {\ttfamily true}}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_afb729e58d6f9016b644202ac9bd3d4f0}{}\label{class_w_a_l_r_u_s_afb729e58d6f9016b644202ac9bd3d4f0}
+
+
+does a number of time steps ~\newline
+ Performs several time steps given by the argments. If considered needed performs smaller substeps 
+
+
+\begin{DoxyParams}{Parameters}
+{\em endtime} & stepping stops whent this time is reached (s) \\
+\hline
+{\em deltime} & the step to make (s) \\
+\hline
+{\em csvfile} & filename in which results are stored in csv format \\
+\hline
+{\em store\+\_\+states} & boolean, if true (default) states are stored (see W\+A\+L\+R\+U\+S\+\_\+\+S\+T\+A\+TE) \\
+\hline
+{\em store\+\_\+deps} & boolean, if true (default) states dependents are stored (see W\+A\+L\+R\+U\+S\+\_\+\+D\+E\+PS) \\
+\hline
+{\em store\+\_\+usedfluxes} & boolean, if true (default) calculated fluxes are stored (see W\+A\+L\+R\+U\+S\+\_\+\+U\+S\+E\+D\+F\+L\+UX) \\
+\hline
+\end{DoxyParams}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!d\+Veq\+\_\+dG@{d\+Veq\+\_\+dG}}
+\index{d\+Veq\+\_\+dG@{d\+Veq\+\_\+dG}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{d\+Veq\+\_\+d\+G(double d\+G)}{dVeq_dG(double dG)}}]{\setlength{\rightskip}{0pt plus 5cm}double W\+A\+L\+R\+U\+S\+::d\+Veq\+\_\+dG (
+\begin{DoxyParamCaption}
+\item[{double}]{dG}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a15046fc8d8387187cee3c150addc2580}{}\label{class_w_a_l_r_u_s_a15046fc8d8387187cee3c150addc2580}
+
+
+the function that gives the equilibrium storage deficit as function of dG ~\newline
+if the analytical form is chosen (defuault) this depends on the soil physical parameters 
+
+
+\begin{DoxyParams}{Parameters}
+{\em dG} & groundwater depth in mm \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+d\+Veq deficit in mm 
+\end{DoxyReturn}
+\begin{DoxySeeAlso}{See also}
+set\+\_\+d\+Veq\+\_\+d\+G\+\_\+bytable 
+\end{DoxySeeAlso}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!get@{get}}
+\index{get@{get}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{get(enum W\+A\+L\+R\+U\+S\+\_\+\+P\+A\+R par)}{get(enum WALRUS_PAR par)}}]{\setlength{\rightskip}{0pt plus 5cm}double W\+A\+L\+R\+U\+S\+::get (
+\begin{DoxyParamCaption}
+\item[{enum {\bf W\+A\+L\+R\+U\+S\+\_\+\+P\+AR}}]{par}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_af8aeaa33d0549fd9a3d9046cdec8454b}{}\label{class_w_a_l_r_u_s_af8aeaa33d0549fd9a3d9046cdec8454b}
+
+
+get the value of a parameter of the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} class 
+
+\begin{DoxyParagraph}{the parameter of the W\+A\+L\+R\+U\+S\+\_\+\+P\+AR type}
+
+\end{DoxyParagraph}
+\begin{DoxyReturn}{Returns}
+the value of the parameter 
+\end{DoxyReturn}
+\begin{DoxySeeAlso}{See also}
+W\+A\+L\+R\+U\+S\+::set 
+
+enum \hyperlink{_w_a_l_r_u_s_8hh_a7e777e97a293acd537c4c6f5a4ca872a}{W\+A\+L\+R\+U\+S\+\_\+\+P\+AR} 
+\end{DoxySeeAlso}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!get@{get}}
+\index{get@{get}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{get(enum W\+A\+L\+R\+U\+S\+\_\+\+N\+U\+M par)}{get(enum WALRUS_NUM par)}}]{\setlength{\rightskip}{0pt plus 5cm}double W\+A\+L\+R\+U\+S\+::get (
+\begin{DoxyParamCaption}
+\item[{enum {\bf W\+A\+L\+R\+U\+S\+\_\+\+N\+UM}}]{par}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a399e6337c5413a0028ecaca4e1d55436}{}\label{class_w_a_l_r_u_s_a399e6337c5413a0028ecaca4e1d55436}
+
+
+get the value of a numerical parameter of the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} class 
+
+\begin{DoxyParagraph}{the parameter of the W\+A\+L\+R\+U\+S\+\_\+\+N\+UM type}
+
+\end{DoxyParagraph}
+\begin{DoxyReturn}{Returns}
+the value of the parameter 
+\end{DoxyReturn}
+\begin{DoxySeeAlso}{See also}
+W\+A\+L\+R\+U\+S\+::set 
+
+enum \hyperlink{_w_a_l_r_u_s_8hh_a3f118f254cc80ce1a1b46e02f122fb96}{W\+A\+L\+R\+U\+S\+\_\+\+N\+UM} 
+\end{DoxySeeAlso}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!get@{get}}
+\index{get@{get}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{get(enum W\+A\+L\+R\+U\+S\+\_\+\+S\+T\+A\+T\+E s)}{get(enum WALRUS_STATE s)}}]{\setlength{\rightskip}{0pt plus 5cm}double W\+A\+L\+R\+U\+S\+::get (
+\begin{DoxyParamCaption}
+\item[{enum {\bf W\+A\+L\+R\+U\+S\+\_\+\+S\+T\+A\+TE}}]{s}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a7c25e1a60ab4fe5c163cf769f528e6fb}{}\label{class_w_a_l_r_u_s_a7c25e1a60ab4fe5c163cf769f528e6fb}
+
+
+gets a state in the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} model 
+
+
+\begin{DoxyParams}{Parameters}
+{\em s} & a state of the enum W\+A\+L\+R\+U\+S\+\_\+\+S\+T\+A\+TE \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the current value of that state 
+\end{DoxyReturn}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!get@{get}}
+\index{get@{get}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{get(enum W\+A\+L\+R\+U\+S\+\_\+\+D\+E\+P\+S d)}{get(enum WALRUS_DEPS d)}}]{\setlength{\rightskip}{0pt plus 5cm}double W\+A\+L\+R\+U\+S\+::get (
+\begin{DoxyParamCaption}
+\item[{enum {\bf W\+A\+L\+R\+U\+S\+\_\+\+D\+E\+PS}}]{d}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_aa534de1d992c70008d119771bf026abe}{}\label{class_w_a_l_r_u_s_aa534de1d992c70008d119771bf026abe}
+
+
+gets a state in the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} model 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d} & a state dependent variable of the enum W\+A\+L\+R\+U\+S\+\_\+\+D\+E\+PS \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the current value of that dependent variable 
+\end{DoxyReturn}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!get@{get}}
+\index{get@{get}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{get(enum W\+A\+L\+R\+U\+S\+\_\+\+U\+S\+E\+D\+F\+L\+U\+X f)}{get(enum WALRUS_USEDFLUX f)}}]{\setlength{\rightskip}{0pt plus 5cm}double W\+A\+L\+R\+U\+S\+::get (
+\begin{DoxyParamCaption}
+\item[{enum {\bf W\+A\+L\+R\+U\+S\+\_\+\+U\+S\+E\+D\+F\+L\+UX}}]{f}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a33c890dc1e040ce9d8ddd79165a1b9db}{}\label{class_w_a_l_r_u_s_a33c890dc1e040ce9d8ddd79165a1b9db}
+
+
+gets internal fluxes cumulative over last time step 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d} & a state dependent variable of the enum W\+A\+L\+R\+U\+S\+\_\+\+U\+S\+E\+D\+F\+L\+UX \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the current value of that dependent variable 
+\end{DoxyReturn}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!get\+\_\+cum@{get\+\_\+cum}}
+\index{get\+\_\+cum@{get\+\_\+cum}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{get\+\_\+cum(unsigned int idnum, double from\+\_\+time, double to\+\_\+time)}{get_cum(unsigned int idnum, double from_time, double to_time)}}]{\setlength{\rightskip}{0pt plus 5cm}double W\+A\+L\+R\+U\+S\+::get\+\_\+cum (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{idnum, }
+\item[{double}]{from\+\_\+time, }
+\item[{double}]{to\+\_\+time}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_aef8f7787cb5eadfabc45a08df5ed5ee3}{}\label{class_w_a_l_r_u_s_aef8f7787cb5eadfabc45a08df5ed5ee3}
+
+
+gets the total external flxu between two times 
+
+
+\begin{DoxyParams}{Parameters}
+{\em from\+\_\+time} & starting time in sec \\
+\hline
+{\em to\+\_\+time} & ending time in sec \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+total external flux in mm during this interval 
+\end{DoxyReturn}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!get\+\_\+st@{get\+\_\+st}}
+\index{get\+\_\+st@{get\+\_\+st}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{get\+\_\+st()}{get_st()}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string W\+A\+L\+R\+U\+S\+::get\+\_\+st (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_ab57de0f754bd2670021a4d1c1925cd58}{}\label{class_w_a_l_r_u_s_ab57de0f754bd2670021a4d1c1925cd58}
+
+
+gets the name of the soil type (see W\+A\+L\+R\+U\+S\+\_\+\+S\+O\+IL) 
+
+\begin{DoxyReturn}{Returns}
+the name as string 
+\end{DoxyReturn}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!init@{init}}
+\index{init@{init}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{init(double Q0)}{init(double Q0)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::init (
+\begin{DoxyParamCaption}
+\item[{double}]{Q0}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a082faec92fb47af58ddc4d88d59be412}{}\label{class_w_a_l_r_u_s_a082faec92fb47af58ddc4d88d59be412}
+
+
+initializes states starting from a given open water flux avoiding by that (long) warm up period intial time is set to zero 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Q0} & the open water flux (mm/day) \\
+\hline
+\end{DoxyParams}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!init@{init}}
+\index{init@{init}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{init(double attime, double Q0)}{init(double attime, double Q0)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::init (
+\begin{DoxyParamCaption}
+\item[{double}]{attime, }
+\item[{double}]{Q0}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a6a5c143dcfc22e11db74a5b9fa834240}{}\label{class_w_a_l_r_u_s_a6a5c143dcfc22e11db74a5b9fa834240}
+
+
+initializes states starting from a given open water flux avoiding by that (long) warm up period 
+
+
+\begin{DoxyParams}{Parameters}
+{\em attime} & the initial time set in the model \\
+\hline
+{\em Q0} & the open water flux (mm/day) \\
+\hline
+\end{DoxyParams}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!init@{init}}
+\index{init@{init}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{init(double Q0, double h\+S0, double d\+G0, double d\+V0, double h\+Q0)}{init(double Q0, double hS0, double dG0, double dV0, double hQ0)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::init (
+\begin{DoxyParamCaption}
+\item[{double}]{Q0, }
+\item[{double}]{h\+S0, }
+\item[{double}]{d\+G0, }
+\item[{double}]{d\+V0, }
+\item[{double}]{h\+Q0}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a67cdc6d8178b37ce0591866832cb4fd2}{}\label{class_w_a_l_r_u_s_a67cdc6d8178b37ce0591866832cb4fd2}
+
+
+initializes states avoiding by that (long) warm up period 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Q0} & the open water flux (mm/day) \\
+\hline
+{\em h\+S0} & initial open water level (mm), N\+AN if not available \\
+\hline
+{\em d\+G0} & initial groundwater depth (mm), N\+AN if not available \\
+\hline
+{\em d\+V0} & initial soil moisture deficit (mm), N\+AN if not available \\
+\hline
+{\em h\+Q0} & initial level fast reservoir (mm), N\+AN if not available \\
+\hline
+\end{DoxyParams}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!init@{init}}
+\index{init@{init}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{init(double attime, double Q0, double h\+S0, double d\+G0, double d\+V0, double h\+Q0)}{init(double attime, double Q0, double hS0, double dG0, double dV0, double hQ0)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::init (
+\begin{DoxyParamCaption}
+\item[{double}]{attime, }
+\item[{double}]{Q0, }
+\item[{double}]{h\+S0, }
+\item[{double}]{d\+G0, }
+\item[{double}]{d\+V0, }
+\item[{double}]{h\+Q0}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a3dd71d9fbc36fe3fae9dfecb857d01af}{}\label{class_w_a_l_r_u_s_a3dd71d9fbc36fe3fae9dfecb857d01af}
+
+
+initializes states avoiding by that (long) warm up period 
+
+
+\begin{DoxyParams}{Parameters}
+{\em attime} & the initial time set in the model \\
+\hline
+{\em Q0} & the open water flux (mm/day) \\
+\hline
+{\em h\+S0} & initial open water level (mm), N\+AN if not available \\
+\hline
+{\em d\+G0} & initial groundwater depth (mm), N\+AN if not available \\
+\hline
+{\em d\+V0} & initial soil moisture deficit (mm), N\+AN if not available \\
+\hline
+{\em h\+Q0} & initial level fast reservoir (mm), N\+AN if not available \\
+\hline
+\end{DoxyParams}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!init@{init}}
+\index{init@{init}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{init(double attime, double Q0, double h\+S0, double d\+G0, double d\+V0, double h\+Q0, double Gfrac)}{init(double attime, double Q0, double hS0, double dG0, double dV0, double hQ0, double Gfrac)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::init (
+\begin{DoxyParamCaption}
+\item[{double}]{attime, }
+\item[{double}]{Q0, }
+\item[{double}]{h\+S0, }
+\item[{double}]{d\+G0, }
+\item[{double}]{d\+V0, }
+\item[{double}]{h\+Q0, }
+\item[{double}]{Gfrac}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a43a6f8cccd071fa35b54a27cefeadfbb}{}\label{class_w_a_l_r_u_s_a43a6f8cccd071fa35b54a27cefeadfbb}
+
+
+initializes states avoiding by that (long) warm up period 
+
+
+\begin{DoxyParams}{Parameters}
+{\em attime} & the initial time set in the model \\
+\hline
+{\em Q0} & the open water flux (mm/day) \\
+\hline
+{\em h\+S0} & initial open water level (mm), N\+AN if not available \\
+\hline
+{\em d\+G0} & initial groundwater depth (mm), N\+AN if not available \\
+\hline
+{\em d\+V0} & initial soil moisture deficit (mm), N\+AN if not available \\
+\hline
+{\em h\+Q0} & initial level fast reservoir (mm), N\+AN if not available \\
+\hline
+{\em Gfrac} & initial ratio slow/total outlow (default 1) \\
+\hline
+\end{DoxyParams}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!set@{set}}
+\index{set@{set}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{set(enum W\+A\+L\+R\+U\+S\+\_\+\+P\+A\+R par, double newvalue)}{set(enum WALRUS_PAR par, double newvalue)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::set (
+\begin{DoxyParamCaption}
+\item[{enum {\bf W\+A\+L\+R\+U\+S\+\_\+\+P\+AR}}]{par, }
+\item[{double}]{newvalue}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_ad8865cf924e0ed1b907a693d7132c7e0}{}\label{class_w_a_l_r_u_s_ad8865cf924e0ed1b907a693d7132c7e0}
+
+
+set a parameter of the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} class 
+
+\begin{DoxyParagraph}{the parameter of the W\+A\+L\+R\+U\+S\+\_\+\+P\+AR type}
+the new value for the parameter 
+\end{DoxyParagraph}
+\begin{DoxySeeAlso}{See also}
+W\+A\+L\+R\+U\+S\+::get 
+
+enum \hyperlink{_w_a_l_r_u_s_8hh_a7e777e97a293acd537c4c6f5a4ca872a}{W\+A\+L\+R\+U\+S\+\_\+\+P\+AR} 
+\end{DoxySeeAlso}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!set@{set}}
+\index{set@{set}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{set(enum W\+A\+L\+R\+U\+S\+\_\+\+N\+U\+M par, double newvalue)}{set(enum WALRUS_NUM par, double newvalue)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::set (
+\begin{DoxyParamCaption}
+\item[{enum {\bf W\+A\+L\+R\+U\+S\+\_\+\+N\+UM}}]{par, }
+\item[{double}]{newvalue}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_add540d516515c10d96cbbd3c7f7d1b8c}{}\label{class_w_a_l_r_u_s_add540d516515c10d96cbbd3c7f7d1b8c}
+
+
+set a numerical parameter of the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} class 
+
+\begin{DoxyParagraph}{the parameter of the W\+A\+L\+R\+U\+S\+\_\+\+N\+UM type}
+the new value for the parameter 
+\end{DoxyParagraph}
+\begin{DoxySeeAlso}{See also}
+W\+A\+L\+R\+U\+S\+::get 
+
+enum \hyperlink{_w_a_l_r_u_s_8hh_a3f118f254cc80ce1a1b46e02f122fb96}{W\+A\+L\+R\+U\+S\+\_\+\+N\+UM} 
+\end{DoxySeeAlso}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!set@{set}}
+\index{set@{set}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{set(enum W\+A\+L\+R\+U\+S\+\_\+\+S\+T\+A\+T\+E s, double value)}{set(enum WALRUS_STATE s, double value)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::set (
+\begin{DoxyParamCaption}
+\item[{enum {\bf W\+A\+L\+R\+U\+S\+\_\+\+S\+T\+A\+TE}}]{s, }
+\item[{double}]{value}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_aa508a0459a26876efffc3336c8f030c6}{}\label{class_w_a_l_r_u_s_aa508a0459a26876efffc3336c8f030c6}
+
+
+sets a state in the \hyperlink{class_w_a_l_r_u_s}{W\+A\+L\+R\+US} model 
+
+
+\begin{DoxyParams}{Parameters}
+{\em s} & a state of the enum W\+A\+L\+R\+U\+S\+\_\+\+S\+T\+A\+TE \\
+\hline
+{\em value} & the new value for the set\+\_\+beta\+\_\+d\+V\+\_\+bytable \\
+\hline
+\end{DoxyParams}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!set\+\_\+I@{set\+\_\+I}}
+\index{set\+\_\+I@{set\+\_\+I}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{set\+\_\+\+I(enum W\+A\+L\+R\+U\+S\+\_\+\+F\+O\+R\+C\+I\+N\+G fc, double intensity)}{set_I(enum WALRUS_FORCING fc, double intensity)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::set\+\_\+I (
+\begin{DoxyParamCaption}
+\item[{enum {\bf W\+A\+L\+R\+U\+S\+\_\+\+F\+O\+R\+C\+I\+NG}}]{fc, }
+\item[{double}]{intensity}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a221a1f987318976a3e7b469b9553bd31}{}\label{class_w_a_l_r_u_s_a221a1f987318976a3e7b469b9553bd31}
+
+
+sets the intensity of the forcing ~\newline
+this constant intensity is used for all times until a new value has been set 
+
+
+\begin{DoxyParams}{Parameters}
+{\em fc} & the forcing as in W\+A\+L\+R\+U\+S\+\_\+\+F\+O\+R\+C\+I\+NG \\
+\hline
+{\em intensity} & the intensity in mm/h \\
+\hline
+\end{DoxyParams}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!set\+\_\+seq\+\_\+C@{set\+\_\+seq\+\_\+C}}
+\index{set\+\_\+seq\+\_\+C@{set\+\_\+seq\+\_\+C}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{set\+\_\+seq\+\_\+\+C(unsigned int idnum, const vector$<$ double $>$ times, const vector$<$ double $>$ fc\+\_\+vec)}{set_seq_C(unsigned int idnum, const vector< double > times, const vector< double > fc_vec)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::set\+\_\+seq\+\_\+C (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{idnum, }
+\item[{const vector$<$ double $>$}]{times, }
+\item[{const vector$<$ double $>$}]{fc\+\_\+vec}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a1c51f6014afbeea618b48148dd581492}{}\label{class_w_a_l_r_u_s_a1c51f6014afbeea618b48148dd581492}
+
+
+sets an external forcing by a series of accumulated values ~\newline
+(linearly interpolated) values of this series are used until a new rainfall value is set 
+
+
+\begin{DoxyParams}{Parameters}
+{\em times} & an increasing series of times in sec \\
+\hline
+{\em fcvector$<$double$>$} & corresponding accumlated fc values in mm \\
+\hline
+\end{DoxyParams}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!set\+\_\+seq\+\_\+I@{set\+\_\+seq\+\_\+I}}
+\index{set\+\_\+seq\+\_\+I@{set\+\_\+seq\+\_\+I}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{set\+\_\+seq\+\_\+\+I(unsigned int idnum, double tstart, double timestep, const vector$<$ double $>$ fc\+\_\+vec)}{set_seq_I(unsigned int idnum, double tstart, double timestep, const vector< double > fc_vec)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::set\+\_\+seq\+\_\+I (
+\begin{DoxyParamCaption}
+\item[{unsigned int}]{idnum, }
+\item[{double}]{tstart, }
+\item[{double}]{timestep, }
+\item[{const vector$<$ double $>$}]{fc\+\_\+vec}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a8ad4f65889d4b7e883844eba24aaa227}{}\label{class_w_a_l_r_u_s_a8ad4f65889d4b7e883844eba24aaa227}
+
+
+sets an external forcing flux by series of regularly measured intensities (linearly interpolated) values of this series are used until a new rainfall value is set 
+
+
+\begin{DoxyParams}{Parameters}
+{\em tstart} & starting time (s) \\
+\hline
+{\em timestep} & constant time between two intensities (s) \\
+\hline
+{\em fcvector$<$double$>$} & rainfall intensities in mm/h \\
+\hline
+\end{DoxyParams}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!set\+\_\+st@{set\+\_\+st}}
+\index{set\+\_\+st@{set\+\_\+st}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{set\+\_\+st(enum W\+A\+L\+R\+U\+S\+\_\+\+S\+O\+I\+L soil)}{set_st(enum WALRUS_SOIL soil)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::set\+\_\+st (
+\begin{DoxyParamCaption}
+\item[{enum {\bf W\+A\+L\+R\+U\+S\+\_\+\+S\+O\+IL}}]{soil}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_a965165c216a89f60126fc68e37b02b83}{}\label{class_w_a_l_r_u_s_a965165c216a89f60126fc68e37b02b83}
+
+
+sets the unsaturated parameters by predefined soil types 
+
+\begin{DoxyParagraph}{the soil from the enum W\+A\+L\+R\+U\+S\+\_\+\+S\+O\+IL type}
+the new value for the parameter 
+\end{DoxyParagraph}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!set\+\_\+\+W\+\_\+d\+V\+\_\+bytable@{set\+\_\+\+W\+\_\+d\+V\+\_\+bytable}}
+\index{set\+\_\+\+W\+\_\+d\+V\+\_\+bytable@{set\+\_\+\+W\+\_\+d\+V\+\_\+bytable}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{set\+\_\+\+W\+\_\+d\+V\+\_\+bytable(const vector$<$ double $>$ \&d\+V, const vector$<$ double $>$ \&\+W)}{set_W_dV_bytable(const vector< double > &dV, const vector< double > &W)}}]{\setlength{\rightskip}{0pt plus 5cm}void W\+A\+L\+R\+U\+S\+::set\+\_\+\+W\+\_\+d\+V\+\_\+bytable (
+\begin{DoxyParamCaption}
+\item[{const vector$<$ double $>$ \&}]{dV, }
+\item[{const vector$<$ double $>$ \&}]{W}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_ab6db20d90daa3e5afa1b0fd216abbd5c}{}\label{class_w_a_l_r_u_s_ab6db20d90daa3e5afa1b0fd216abbd5c}
+
+
+replaces the default analytically defined relation between the wetness index W and the deficit dV by a linearly interpolating in a table provided by the user 
+
+
+\begin{DoxyParams}{Parameters}
+{\em dV,W} & \+: vector$<$double$>$tors defining the values between which will be interpolated \\
+\hline
+\end{DoxyParams}
+\begin{DoxySeeAlso}{See also}
+\hyperlink{class_w_a_l_r_u_s_adbeabfeb82713ccbfc9612c690bdc72a}{W\+\_\+dV} 
+\end{DoxySeeAlso}
+\index{W\+A\+L\+R\+US@{W\+A\+L\+R\+US}!W\+\_\+dV@{W\+\_\+dV}}
+\index{W\+\_\+dV@{W\+\_\+dV}!W\+A\+L\+R\+US@{W\+A\+L\+R\+US}}
+\subsubsection[{\texorpdfstring{W\+\_\+d\+V(double d\+V)}{W_dV(double dV)}}]{\setlength{\rightskip}{0pt plus 5cm}double W\+A\+L\+R\+U\+S\+::\+W\+\_\+dV (
+\begin{DoxyParamCaption}
+\item[{double}]{dV}
+\end{DoxyParamCaption}
+)}\hypertarget{class_w_a_l_r_u_s_adbeabfeb82713ccbfc9612c690bdc72a}{}\label{class_w_a_l_r_u_s_adbeabfeb82713ccbfc9612c690bdc72a}
+
+
+the function that gives the wetness index W as function of dV ~\newline
+if the analytical form is chosen (defuault) this depends on the parameter cW 
+
+
+\begin{DoxyParams}{Parameters}
+{\em dV} & deficit volume in mm \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+W value (dimensionless) 
+\end{DoxyReturn}
+\begin{DoxySeeAlso}{See also}
+\hyperlink{class_w_a_l_r_u_s_ab6db20d90daa3e5afa1b0fd216abbd5c}{set\+\_\+\+W\+\_\+d\+V\+\_\+bytable} 
+\end{DoxySeeAlso}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+\hyperlink{_w_a_l_r_u_s_8hh}{W\+A\+L\+R\+U\+S.\+hh}\item 
+W\+A\+L\+R\+U\+S.\+py\item 
+\hyperlink{_w_a_l_r_u_sdefaults_8cpp}{W\+A\+L\+R\+U\+Sdefaults.\+cpp}\item 
+\hyperlink{_w_a_l_r_u_sdostep_8cpp}{W\+A\+L\+R\+U\+Sdostep.\+cpp}\item 
+\hyperlink{_w_a_l_r_u_sforcings_8cpp}{W\+A\+L\+R\+U\+Sforcings.\+cpp}\item 
+W\+A\+L\+R\+U\+Sinit.\+cpp\item 
+\hyperlink{_w_a_l_r_u_sinternalflux_8cpp}{W\+A\+L\+R\+U\+Sinternalflux.\+cpp}\item 
+\hyperlink{_w_a_l_r_u_ssetget_8cpp}{W\+A\+L\+R\+U\+Ssetget.\+cpp}\item 
+\hyperlink{_w_a_l_r_u_ssysfuncs_8cpp}{W\+A\+L\+R\+U\+Ssysfuncs.\+cpp}\end{DoxyCompactItemize}

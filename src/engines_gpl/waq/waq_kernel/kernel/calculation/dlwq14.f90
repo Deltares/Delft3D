@@ -30,21 +30,21 @@ contains
 
     !> Uses numerically calculated derivatives for balance arrays
     !! after scaling them to same dt as the transport
-    subroutine scale_processes_derivs_and_update_balances(deriv, notot, noseg, itfact, amass2, &
+    subroutine scale_processes_derivs_and_update_balances(deriv, num_substances_total, num_cells, itfact, amass2, &
             idt, iaflag, dmps, intopt, isdmp)
 
         use timers
         implicit none
-        real(kind = real_wp),   intent(inout) :: deriv (notot, noseg)  !< Derivatives to be scaled
-        integer(kind = int_wp), intent(in   ) :: notot                 !< Total number of substances
-        integer(kind = int_wp), intent(in   ) :: noseg                 !< Number of computational volumes
-        integer(kind = int_wp), intent(in   ) :: itfact                !< Factor between process and transport clock
-        real(kind = real_wp),   intent(inout) :: amass2(notot, 5)      !< Mass balance array
+        real(kind = real_wp),   intent(inout) :: deriv (num_substances_total, num_cells)  !< Derivatives to be scaled
+        integer(kind = int_wp), intent(in   ) :: num_substances_total                 !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: num_cells                 !< Number of computational volumes
+        integer(kind = int_wp), intent(in   ) :: itfact                !< Ratio delta-t process to delta-t transport
+        real(kind = real_wp),   intent(inout) :: amass2(num_substances_total, 5)      !< Mass balance array
         integer(kind = int_wp), intent(in   ) :: idt                   !< Integration time step size
         integer(kind = int_wp), intent(in   ) :: iaflag                !< if 1 then accumulation
-        real(kind = real_wp),   intent(inout) :: dmps  (notot, *)      !< Integrated fluxes if intopt > 7
+        real(kind = real_wp),   intent(inout) :: dmps  (num_substances_total, *)      !< Integrated fluxes if intopt > 7
         integer(kind = int_wp), intent(in   ) :: intopt                !< Integration suboptions
-        integer(kind = int_wp), intent(in   ) :: isdmp (noseg)         !< Pointer dumped segments
+        integer(kind = int_wp), intent(in   ) :: isdmp (num_cells)         !< Pointer dumped segments
 
         !     Local variables
         real(kind = real_wp)   :: atfac     ! auxiliary variable 1.0/itfact
@@ -59,19 +59,19 @@ contains
         atfac = 1.0 / itfact
         dtfac = idt
         if (iaflag == 1) then
-            do iseg = 1, noseg
+            do iseg = 1, num_cells
                 deriv (:, iseg) = deriv(:, iseg) * atfac
                 amass2(:, 2) = amass2(:, 2) + deriv(:, iseg) * dtfac
             enddo
         else
-            do iseg = 1, noseg
+            do iseg = 1, num_cells
                 deriv (:, iseg) = deriv(:, iseg) * atfac
             enddo
         endif
 
         ! accumulate processes for dump segments
         if (mod(intopt, 16) >= 8) then
-            do iseg = 1, noseg
+            do iseg = 1, num_cells
                 ip = isdmp(iseg)
                 if (ip > 0) then
                     dmps(:, ip) = dmps(:, ip) + deriv(:, iseg) * dtfac

@@ -1,31 +1,31 @@
 !----- LGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This library is free software; you can redistribute it and/or                
-!  modify it under the terms of the GNU Lesser General Public                   
-!  License as published by the Free Software Foundation version 2.1.                 
-!                                                                               
-!  This library is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU            
-!  Lesser General Public License for more details.                              
-!                                                                               
-!  You should have received a copy of the GNU Lesser General Public             
-!  License along with this library; if not, see <http://www.gnu.org/licenses/>. 
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This library is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License as published by the Free Software Foundation version 2.1.
+!
+!  This library is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  You should have received a copy of the GNU Lesser General Public
+!  License along with this library; if not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!
 !!! Dio-2DF-Nefis: Nefis I/O for 2d-field datasets
@@ -61,13 +61,13 @@ function Dio2DFWriteHeaderNefis(f2D) result(retVal)
     type(DioDsType), pointer             :: ds
 
     character(len = DioMaxElmNameLen), &
-                            dimension(5) :: elms        
+                            dimension(5) :: elms
     character(len = DioMaxElmNameLen), &
                             dimension(1) :: celNames
     character(len = DioMaxElmNameLen)    :: grpName
     integer                              :: grpNumDim
     integer, dimension(1)                :: grpDimens
-    integer, dimension(1)                :: grpOrder 
+    integer, dimension(1)                :: grpOrder
     integer, dimension(3,1)              :: uindex
     integer                              :: ierror
     integer                              :: nTimes = 0
@@ -84,7 +84,7 @@ function Dio2DFWriteHeaderNefis(f2D) result(retVal)
     header => f2D % header
     ds     => f2D % ds
     stream => ds % outStream
-    
+
     if ( stream % opened ) then
 
         retVal = .true.
@@ -94,14 +94,14 @@ function Dio2DFWriteHeaderNefis(f2D) result(retVal)
         elms(3) = trim(ds % name) // '_numM'
         elms(4) = trim(ds % name) // '_numN'
         elms(5) = trim(ds % name) // '_NTimes'
- 
+
         celNames(1) = trim(ds % name) // DSHeaderExtension
         grpName     = celNames(1)
 
         grpNumDim    = 1
         grpDimens(1) = 1
         grpOrder (1) = 1
-  
+
         ierror  = DEFELM(stream % nefFileHandle , elms(1), &
                         'CHARACTER',DioMaxDsNameLen, &
                         ' ',' ', &
@@ -199,14 +199,14 @@ function Dio2DFReadHeaderNefis(f2D) result(retVal)
     ! externals
     integer, external :: getels, getelt
 
-    ! locals       
+    ! locals
     type(DioStreamType), pointer                    :: stream
     type(Dio2DFHeaderType), pointer                 :: header
     type(DioDsType), pointer                        :: ds
     integer                                         :: ierror
     integer, dimension(3,1)                         :: uindex
-    character(len = DioMaxElmNameLen),dimension(5)  :: elms        
-    integer, dimension(5)                           :: elmsNBytes        
+    character(len = DioMaxElmNameLen),dimension(5)  :: elms
+    integer, dimension(5)                           :: elmsNBytes
     character(DioMaxElmNameLen)                     :: grpName
     character(DioNefErrMsgLen)                      :: errorString
 
@@ -218,7 +218,7 @@ function Dio2DFReadHeaderNefis(f2D) result(retVal)
     header => f2D % header
     ds     => f2D % ds
     stream => ds % inStream
-    
+
     if ( stream % opened ) then
 
         retVal = .true.
@@ -240,7 +240,7 @@ function Dio2DFReadHeaderNefis(f2D) result(retVal)
         elmsNBytes(5) = 4
 
         grpName = trim(ds % name) // DSHeaderExtension
- 
+
         ierror = getels(stream % nefFileHandle, &
                             grpName, elms(1), uindex, 1, elmsNbytes(1), &
                             ds % name)
@@ -287,7 +287,7 @@ function Dio2DFNefisReadAllTimes(f2D) result(retVal)
     ! externals
     integer, external :: getelt, getels
 
-    ! locals       
+    ! locals
     type(DioStreamType), pointer      :: stream
     type(DioDsType), pointer          :: ds
     integer                           :: ierror
@@ -304,7 +304,7 @@ function Dio2DFNefisReadAllTimes(f2D) result(retVal)
 
     ds     => f2D % ds
     stream => ds % inStream
-    
+
     if ( stream % opened ) then
 
         retVal = .true.

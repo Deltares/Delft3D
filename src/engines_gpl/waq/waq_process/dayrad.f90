@@ -28,10 +28,10 @@ module m_dayrad
 contains
 
 
-    SUBROUTINE DAYRAD (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
-        use m_evaluate_waq_attribute
+    SUBROUTINE DAYRAD (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
 
         !***********************************************************************
@@ -46,20 +46,20 @@ contains
 
         !     arguments
 
-        REAL(kind = real_wp) :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+        REAL(kind = real_wp) :: process_space_real(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
         REAL(kind = real_wp) :: FL(*)              ! in/out flux array
-        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-        INTEGER(kind = int_wp) :: NOSEG              ! in     number of segments
+        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+        INTEGER(kind = int_wp) :: num_cells              ! in     number of segments
         INTEGER(kind = int_wp) :: NOFLUX             ! in     total number of fluxes (increment in FL array)
         INTEGER(kind = int_wp) :: IEXPNT(4, *)        ! in     exchange pointer table
         INTEGER(kind = int_wp) :: IKNMRK(*)          ! in     segment features array
-        INTEGER(kind = int_wp) :: NOQ1               ! in     number of exchanges in first direction
-        INTEGER(kind = int_wp) :: NOQ2               ! in     number of exchanges in second direction
-        INTEGER(kind = int_wp) :: NOQ3               ! in     number of exchanges in third direction
-        INTEGER(kind = int_wp) :: NOQ4               ! in     number of exchanges in fourth direction
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir               ! in     number of exchanges in first direction
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir               ! in     number of exchanges in second direction
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir               ! in     number of exchanges in third direction
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
 
-        !     from PMSA array
+        !     from process_space_real array
 
         REAL(kind = real_wp) :: RADSURF            ! 1  in  irradiation at the water surface            (W/m2)
         REAL(kind = real_wp) :: TIME               ! 2  in  DELWAQ time                                  (scu)
@@ -119,11 +119,11 @@ contains
             !
             VARFLG = .FALSE.
             !
-            TIME = PMSA(IP2)
+            TIME = process_space_real(IP2)
             !        Conversion Latitude to rads
-            LATITUDE = PMSA(IP3) / 360 * 2 * PI
-            REFDAY = PMSA(IP4)
-            AUXSYS = PMSA(IP5)
+            LATITUDE = process_space_real(IP3) / 360 * 2 * PI
+            REFDAY = process_space_real(IP4)
+            AUXSYS = process_space_real(IP5)
 
             !        Conversion time to daynumbers relative to refday
             DAYNR = MOD (TIME / AUXSYS + REFDAY, 365.)
@@ -153,18 +153,18 @@ contains
             RADDAY = I0 / PI * RDIST * (OMEGA0 * SIN_DECLIN * SIN_LATITU + COS_DECLIN * COS_LATITU * SIN_OMEGA0)
         ENDIF
         !
-        DO ISEG = 1, NOSEG
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+        DO ISEG = 1, num_cells
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
-            RADSURF = PMSA(IP1)
+            RADSURF = process_space_real(IP1)
 
             IF (VARFLG) THEN
                 !
-                TIME = PMSA(IP2)
+                TIME = process_space_real(IP2)
                 !              Conversion Latitude to rads
-                LATITUDE = PMSA(IP3) / 360 * 2 * PI
-                REFDAY = PMSA(IP4)
-                AUXSYS = PMSA(IP5)
+                LATITUDE = process_space_real(IP3) / 360 * 2 * PI
+                REFDAY = process_space_real(IP4)
+                AUXSYS = process_space_real(IP5)
 
                 !              Conversion time to daynumbers relative to refday
                 DAYNR = MOD (TIME / AUXSYS + REFDAY, 365.)
@@ -196,9 +196,9 @@ contains
             !
             DAYRADSURF = RADTIME * RADSURF / RADDAY
 
-            PMSA (IP6) = DAYRADSURF
-            PMSA (IP7) = RADTIME
-            PMSA (IP8) = RADDAY
+            process_space_real (IP6) = DAYRADSURF
+            process_space_real (IP7) = RADTIME
+            process_space_real (IP8) = RADDAY
             !
             !        ENDIF
             !

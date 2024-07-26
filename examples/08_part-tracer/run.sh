@@ -4,5 +4,5 @@
     # build.sh all
     # See README.md there for more information
 
-../../build_all/lnx64/bin/run_dpart.sh fti_tracer.inp
+../../build_all/lnx64/bin/run_delpar.sh fti_tracer.inp
 

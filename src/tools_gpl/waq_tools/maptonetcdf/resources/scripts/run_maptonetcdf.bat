@@ -1,82 +1,53 @@
 @ echo off
 title run_maptonetcdf
-    rem
-    rem This script runs maptonetcdf on Windows
-    rem Adapt and use it for your own purpose
-    rem
+rem
+rem this script runs maptonetcdf on Windows
+rem
 setlocal enabledelayedexpansion
 
-    rem
-    rem Set the input arguments
-    rem
-set mapfile= 
-if [%1] EQU [] (
-    goto usage
-) else (
-    if [%1] EQU [--help] (
-        goto usage
-    ) else (
-        set mapfile=%1
-    )
-)
-set ncfile= 
-if [%2] EQU [] (
-    goto usage
-) else (
-    if [%2] EQU [--help] (
-        goto usage
-    ) else (
-        set ncfile=%2
-    )
-)
-set numLayers= 
+rem show usage?
+if [%1] EQU []        goto usage
+if [%1] EQU [-h]      goto usage
+if [%1] EQU [--help]  goto usage
+if [%1] EQU [--usage] goto usage
+rem we need to see three arguments
 if [%3] EQU [] (
+    echo ERROR: not enough arguments given!
+    echo.
     goto usage
-) else (
-    if [%3] EQU [--help] (
-        goto usage
-    ) else (
-        set numLayers=%3
     )
-)
 
+rem Set the directories containing the binaries and set PATH
+set bindir=%~dp0
+set libdir=%bindir%\..\lib
+set PATH=%libdir%;%bindir%;%PATH%
 
-set workdir=%CD%
-set mapfile=%workdir%\%mapfile%
-set ncfile=%workdir%\%ncfile%
+rem set the map-file, hyd-file and number of layers
+set mapfile=%1
+set ncfile=%2
+set numLayers=%3
+echo     mapFile          : %mapfile%
+echo     ncFile           : %ncfile%
+echo     numLayers        : %numLayers%
 
-echo Working directory: %workdir%
-    rem
-    rem Set the directories containing the binaries
-    rem
-set D3D_HOME=%~dp0..
-
-set waqdir=%~dp0
-set sharedir=%D3D_HOME%\share
-set libdir=%D3D_HOME%\lib
-set PATH=%waqdir%;%sharedir%;%libdir%
-
-    rem go to directory, run maptonetcdf, and return
-For %%A in ("%mapfile%") do (
-    set mapName=%%~nxA
-    set mapPath=%%~dpA
-)
-cd /d "%mapPath%"
-echo executing in this window: "%waqdir%\maptonetcdf.exe" "%mapfile%" "%ncfile%" "%numLayers%"
-"%waqdir%\maptonetcdf.exe" "%mapfile%" "%ncfile%" "%numLayers%"
-cd /d "%workdir%"
-
-
-
+rem run
+echo executing in this window: %bindir%\maptonetcdf.exe %mapfile% %ncfile% %numLayers%
+%bindir%\maptonetcdf.exe  %mapfile% %ncfile% %numLayers%
 goto end
 
 :usage
-echo Usage:
-echo run_maptonetcdf.bat [--help] mapFile.map ncFile.nc numLayers
-echo     --help             : (Optional) show this usage
-echo     mapFile.map        : (Mandatory) maptonetcdf .map input file.
-echo     ncFile.nc          : (Mandatory) maptonetcdf .nc output file.
-echo     numLayers          : (Mandatory) number of layers.
+echo Purpose: Sets PATH and runs maptonetcdf on Windows.
+echo.
+echo Purpose: Sets PATH and runs maptonetcdf on Windows with all given command line arguments.
+echo.
+echo Usage: run_maptonetcdf ^<mapFile.map^> ^<ncFile.nc^> ^<numLayers^> [OPTIONS]
+echo.
+echo Command line arguments:
+echo ^<mapFile.map^>       maptonetcdf .map input file (mandatory).
+echo ^<ncFile.nc^>         maptonetcdf .nc output file (mandatory).
+echo ^<numLayers^>         number of layers (mandatory).
+echo -h, --help, --usage print this help message and exit
 :end
-    rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
+
+rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
 rem pause

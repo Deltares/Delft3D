@@ -1,15 +1,14 @@
 import re
 
-import comparers.dmp_comparer
 import numpy as np
 import Tkinter as tk
 
 
 class DSTreeException(BaseException):
-    def __init__(self, m):
+    def __init__(self, m) -> None:
         self.message = m
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.message
 
 
@@ -27,7 +26,7 @@ DEBUG = False
 
 
 class dsdmp(object):
-    def __init__(self):
+    def __init__(self) -> None:
         print("hello")
 
 
@@ -53,12 +52,12 @@ def trans(strin):
     return strout
 
 
-def dumptxt(hdr, txt, tktext, wintxt):
+def dumptxt(hdr, txt, tktext, wintxt) -> None:
     if tktext is None:
         print("\n\n\n")
-        print(hdr + "\n\n")
+        print(f"{hdr}\n\n")
         for line in txt:
-            print("    " + line)
+            print(f"    {line}")
     else:
         wintxt.wm_title(hdr)
         tktext.delete(1.0, tk.END)
@@ -66,24 +65,24 @@ def dumptxt(hdr, txt, tktext, wintxt):
             tktext.insert(tk.END, line + "\n")
 
 
-def dumptree(branch, lvl):
+def dumptree(branch, lvl) -> None:
     for key, vals in branch.iteritems():
         for val in vals:
             if type(val) == dict:
-                print("   " * lvl + "|--" + key)
+                print("   " * lvl + f"|--{key}")
                 dumptree(val, lvl + 1)
 
 
-def dumptreepaths(cls, branch, pad):
+def dumptreepaths(cls, branch, pad) -> None:
     for key, vals in branch.iteritems():
         for val in vals:
             if type(val) == dict:
-                print(pad + ">" + key)
-                dumptreepaths(val, pad + ">" + key)
+                print(f"{pad}>{key}")
+                dumptreepaths(val, f"{pad}>{key}")
 
 
 class DSeriesFile:
-    def __init__(self, sfdmp):
+    def __init__(self, sfdmp) -> None:
         self.filename = sfdmp
         dumpfile = open(self.filename, "r")
         self.tree_data = {}
@@ -109,9 +108,9 @@ class DSeriesFile:
                     ndx = 0
                 if element in br:
                     if int(ndx) > 0:
-                        foundpath = foundpath + ">" + element + "[" + ndx + "]"
+                        foundpath = f"{foundpath}>{element}[{ndx}]"
                     else:
-                        foundpath = foundpath + ">" + element
+                        foundpath = f"{foundpath}>{element}"
                     br = br[element][int(ndx)]
         return [foundpath, br]
 
@@ -128,17 +127,10 @@ class DSeriesFile:
                 fields = split_table_row_into_floats(row)
                 if len(fields) >= ncol:
                     for icol in range(ncol):
-                        tbldata[colnames[icol]] = np.append(
-                            tbldata[colnames[icol]], fields[icol]
-                        )
+                        tbldata[colnames[icol]] = np.append(tbldata[colnames[icol]], fields[icol])
                 else:
-                    print
-                    (
-                        "Expecting at least %d fields," % ncol
-                        + "but found %d ... skipping line ..." % len(fields)
-                    )
-                    print
-                    "Line says ...: '" + row + "'"
+                    print(f"Expecting at least {ncol} fields, but found {len(fields)} ... skipping line ...")
+                    print(f"Line says ...: '{row}'")
             return [foundpath, tbldata]
         else:
             return [foundpath, None]
@@ -152,7 +144,7 @@ class DSeriesFile:
             # dmp_comparer.compareTxt([foundpath, None],[foundpath, None])
             return [foundpath, None]
 
-    def list(self):
+    def list(self) -> None:
         dumptree(self.tree_data, 0)
 
     @classmethod
@@ -161,7 +153,7 @@ class DSeriesFile:
         newbranch = {}
         opened = line[0]
         if DEBUG:
-            print("%8d" % line[0] + "   " * lvl + "OPENING " + branchname)
+            print(f"{line[0]:8d}   " * lvl + f"OPENING {branchname}")
         while True:
             dmpline = dmp.readline()
             dmpline = trans(dmpline)
@@ -177,25 +169,12 @@ class DSeriesFile:
                         endtag = m_end.group(1).upper().rstrip().lstrip()
                         if endtag == branchname:  # non-matching, raise exception
                             if DEBUG:
-                                print(
-                                    "%8d" % line[0]
-                                    + "   " * lvl
-                                    + "CLOSING "
-                                    + branchname
-                                )
+                                print(f"{line[0]:8d}   " * lvl + f"CLOSING {branchname}")
                             return [newbranch, False]  # return newborn child to parent
                         else:  # return new born to parent
                             raise DSTreeException(
-                                "FILE ENDED in ["
-                                + branchname
-                                + "]-section, started on line "
-                                + "%d," % opened
-                                + "\n  but found ["
-                                + m_end.group(0)
-                                + "] on line  "
-                                + "%d," % line[0]
-                                + "\n  At tree level = "
-                                + "%d" % (lvl)
+                                f"FILE ENDED in [{branchname}]-section, started on line {opened},\n"
+                                + f"  but found [{m_end.group(0)}] on line  {line[0]},\n  At tree level = {lvl}"
                             )
                     elif m_nxt:
                         nxttag = m_nxt.group(1).upper().rstrip().lstrip()
@@ -203,24 +182,14 @@ class DSeriesFile:
                             return (newbranch, True)  # return newborn child to parent
                         else:  # return new born to parent
                             raise DSTreeException(
-                                "FILE ENTERED ["
-                                + branchname
-                                + "]-section on line "
-                                + "%d," % opened
-                                + "\n  but found ["
-                                + m_nxt.group(0)
-                                + "] on line  "
-                                + "%d," % line[0]
-                                + "\n  At tree level = "
-                                + "%d" % (lvl)
+                                f"FILE ENTERED [{branchname}]-section on line opened,\n"
+                                + f"but found [{m_nxt.group(0)}] on line  {line[0]},\n  At tree level = {lvl}"
                             )
                     else:  # a new child was born ...
                         try:
                             has_next = True
                             while has_next:
-                                newsubbranch, has_next = cls.__branch(
-                                    tag, dmp, lvl + 1, line
-                                )
+                                newsubbranch, has_next = cls.__branch(tag, dmp, lvl + 1, line)
                                 if tag not in newbranch:
                                     newbranch[tag] = []
                                 newbranch[tag].append(newsubbranch)
@@ -228,21 +197,14 @@ class DSeriesFile:
                             raise dse
                 else:
                     pass  # actions handling normal lines
-                    if not ("txt" in newbranch):
+                    if "txt" not in newbranch:
                         newbranch["txt"] = []  # stringlist
                     newbranch["txt"].append(dmpline.rstrip().lstrip())
             else:
                 if lvl > 0:
                     raise DSTreeException(
-                        "FILE ENDED in ["
-                        + branchname
-                        + "]-section, started on line "
-                        + "%d," % opened
-                        + "\n  because the expected [END OF "
-                        + branchname
-                        + "] was not found!"
-                        + "\n  At tree level = "
-                        + "%d" % (lvl)
+                        f"FILE ENDED in [{branchname}]-section, started on line {opened}\n"
+                        + f"  because the expected [END OF {branchname}] was not found!\n  At tree level = {lvl}"
                     )
                 else:
                     return (

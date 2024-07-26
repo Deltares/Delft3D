@@ -58,7 +58,6 @@ subroutine u_ppr(lundia    ,lunprt    ,error     ,versio    ,prsmap    , &
     integer(pntrsize)      , pointer :: ctr
     integer(pntrsize)      , pointer :: dicuv
     integer(pntrsize)      , pointer :: dicww
-    integer(pntrsize)      , pointer :: dp
     integer(pntrsize)      , pointer :: dps
     integer(pntrsize)      , pointer :: dpsed
     integer(pntrsize)      , pointer :: dtr
@@ -313,7 +312,6 @@ subroutine u_ppr(lundia    ,lunprt    ,error     ,versio    ,prsmap    , &
     ctr         => gdp%gdr_i_ch%ctr
     dicuv       => gdp%gdr_i_ch%dicuv
     dicww       => gdp%gdr_i_ch%dicww
-    dp          => gdp%gdr_i_ch%dp
     dps         => gdp%gdr_i_ch%dps
     dpsed       => gdp%gdr_i_ch%dpsed
     dtr         => gdp%gdr_i_ch%dtr

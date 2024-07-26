@@ -27,79 +27,51 @@ module m_dlwqb4
 
 contains
 
-
-    subroutine dlwqb4 (nosys, notot, nototp, noseg, volume, &
-            surface, amass, conc, deriv, idt)
-
-        !     Deltares Software Centre
-
-        !>\File
-        !>           makes masses from conc (coflowing subs) and sets explicit step (passive subs)
-
-        !     Created             :    May     1992 by Jos van Gils
-
-        !     Modified            : 13 Januari 2011 by Leo Postma
-        !                                           2D arrays, fortran 90 look and feel
-        !                                           conc of passive substances in mass/m2
-
-        !     Logical unitnumbers : none
-
-        !     Subroutines called  : none
+    !> Computes masses from conc for transported substances, sets explicit step for non transported ones
+    !! and resets derivatives to zero.
+    subroutine dlwqb4(num_substances_transported, num_substances_total, num_substances_part, num_cells, volume, &
+                      surface, amass, conc, deriv, idt)
 
         use timers
         implicit none
 
-        !     Parameters          :
-        !     type     kind  function         name                      description
+        integer(kind=int_wp), intent(in   ) :: num_substances_transported               !< number of transported substances
+        integer(kind=int_wp), intent(in   ) :: num_substances_total               !< total number of substances
+        integer(kind=int_wp), intent(in   ) :: num_substances_part              !< number of particle substances
+        integer(kind=int_wp), intent(in   ) :: num_cells               !< number of computational volumes
+        real(kind=real_wp),   intent(inout) :: volume(num_cells)       !< volumes of the segments
+        real(kind=real_wp),   intent(in   ) :: surface(num_cells)      !< horizontal surface area
+        real(kind=real_wp),   intent(inout) :: amass(num_substances_total, num_cells) !< masses per substance per volume
+        real(kind=real_wp),   intent(inout) :: conc(num_substances_total, num_cells)  !< concentrations per substance per volume
+        real(kind=real_wp),   intent(inout) :: deriv(num_substances_total, num_cells) !< derivatives per substance per volume
+        integer(kind=int_wp), intent(in   ) :: idt                 !< integration time step size
 
-        integer(kind = int_wp), intent(in) :: nosys                   !< number of transported substances
-        integer(kind = int_wp), intent(in) :: notot                   !< total number of substances
-        integer(kind = int_wp), intent(in) :: nototp                  !< number of particle substances
-        integer(kind = int_wp), intent(in) :: noseg                   !< number of computational volumes
-        real(kind = real_wp), intent(inout) :: volume(noseg)          !< volumes of the segments
-        real(kind = real_wp), intent(in) :: surface(noseg)          !< horizontal surface area
-        real(kind = real_wp), intent(inout) :: amass (notot, noseg)    !< masses per substance per volume
-        real(kind = real_wp), intent(inout) :: conc  (notot, noseg)    !< concentrations per substance per volume
-        real(kind = real_wp), intent(inout) :: deriv (notot, noseg)    !< derivatives per substance per volume
-        integer(kind = int_wp), intent(in) :: idt                     !< integration time step size
+        ! Local variables
+        integer(kind=int_wp) :: isys          !< Loop counter substances
+        integer(kind=int_wp) :: iseg          !< Loop counter computational volumes
+        real(kind=real_wp) :: surf            !< The horizontal surface area of the cell
+        real(kind=real_wp) :: vol             !< Auxiliary variable for this volume
+        integer(kind=int_wp), save :: ithandl !< Timer handle
+        data ithandl/0/
 
-        !     local variables
+        if (timon) call timstrt("dlwqb4", ithandl)
 
-        integer(kind = int_wp) :: isys            ! loopcounter substances
-        integer(kind = int_wp) :: iseg            ! loopcounter computational volumes
-        real(kind = real_wp) :: surf            ! the horizontal surface area of the cell
-        real(kind = real_wp) :: vol             ! helpvariable for this volume
-        integer(kind = int_wp), save :: ithandl         ! timer handle
-        data       ithandl  /0/
-
-        if (timon) call timstrt ("dlwqb4", ithandl)
-
-        !         loop accross the number of computational volumes for the concentrations
-
-        do iseg = 1, noseg
-
-            vol = volume (iseg)
+        ! loop accross the number of computational volumes for the concentrations
+        do iseg = 1, num_cells
+            vol = volume(iseg)
             surf = surface(iseg)
-
-            !         transported substances first
-
-            do isys = 1, nosys
-                amass(isys, iseg) = conc (isys, iseg) * vol
+            ! transported substances first
+            do isys = 1, num_substances_transported
+                amass(isys, iseg) = conc(isys, iseg)*vol
                 deriv(isys, iseg) = 0.0
-            enddo
-
-            !         then the passive substances
-
-            do isys = nosys + 1, notot - nototp
-                amass(isys, iseg) = amass(isys, iseg) + idt * deriv(isys, iseg)
-                conc (isys, iseg) = amass(isys, iseg) / surf
+            end do
+            ! then the passive substances
+            do isys = num_substances_transported + 1, num_substances_total - num_substances_part
+                amass(isys, iseg) = amass(isys, iseg) + idt*deriv(isys, iseg)
+                conc(isys, iseg) = amass(isys, iseg)/surf
                 deriv(isys, iseg) = 0.0
-            enddo
-
-        enddo
-
-        if (timon) call timstop (ithandl)
-        return
-    end
-
+            end do
+        end do
+        if (timon) call timstop(ithandl)
+    end subroutine dlwqb4
 end module m_dlwqb4

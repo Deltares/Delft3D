@@ -1,0 +1,31 @@
+[General]
+Version=1.00
+Date=June 1997
+
+[Options]
+3B=0
+Precipitation=0
+Extern=0
+Sobek=0
+Control=INI
+3Bformat=HIS
+Sbkformat=HIS
+Precipformat=HIS
+Extformat=HIS
+UseMatlab=0
+Debug=0
+ModePrecip=Actual         ! Actual=perfect knowledge
+ModeWind=Actual           ! Actual=perfect knowledge
+UsePrecip=0
+UseWind=0
+PrecipTimeHorizon=6
+WriteRTCHISFILES=0
+WindTimeHorizon=4
+WQ=0
+
+[Control]
+DeltaT=0.040000
+NumberOfEvents=1
+NumberOfStepsPerKeer=1
+TimeStart=19860101.00000
+LastTimeStep=60

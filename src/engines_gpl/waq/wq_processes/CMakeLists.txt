@@ -11,6 +11,7 @@ create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir . resource_fil
 set(oss_dependencies waq_definition
         deltares_common
         deltares_common_c
+        waq_proc_preprocess
         waq_process
         waq_hyd_data
         waq_utils_c

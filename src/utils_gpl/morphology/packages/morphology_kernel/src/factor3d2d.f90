@@ -1,4 +1,4 @@
-subroutine factor3d2d(kmax      ,aks       ,kmaxsd    ,sig       ,thick     , &
+subroutine factor3d2d(num_layers_grid      ,aks       ,kmaxsd    ,sig       ,thick     , &
                     & seddif    ,ws        ,bakdif    ,z0rou     ,h1        , &
                     & factor    )
 !----- GPL ---------------------------------------------------------------------
@@ -43,13 +43,13 @@ subroutine factor3d2d(kmax      ,aks       ,kmaxsd    ,sig       ,thick     , &
 !
 ! Arguments
 !
-    integer                         , intent(in)   :: kmax     ! number of layers
+    integer                         , intent(in)   :: num_layers_grid     ! number of layers
     integer                         , intent(out)  :: kmaxsd   ! layer above reference height
     real(fp)                        , intent(inout):: aks      ! reference height
-    real(fp), dimension(kmax)       , intent(in)   :: sig      ! sigma coordinate of layer centre
-    real(fp), dimension(kmax)       , intent(in)   :: thick    ! layer thickness
-    real(fp), dimension(0:kmax)     , intent(in)   :: seddif   ! diffusion coefficient at layer interfaces
-    real(fp), dimension(0:kmax)     , intent(in)   :: ws       ! settling velocity at layer interfaces
+    real(fp), dimension(num_layers_grid)       , intent(in)   :: sig      ! sigma coordinate of layer centre
+    real(fp), dimension(num_layers_grid)       , intent(in)   :: thick    ! layer thickness
+    real(fp), dimension(0:num_layers_grid)     , intent(in)   :: seddif   ! diffusion coefficient at layer interfaces
+    real(fp), dimension(0:num_layers_grid)     , intent(in)   :: ws       ! settling velocity at layer interfaces
     real(fp)                        , intent(in)   :: bakdif   ! background diffusivity
     real(fp)                        , intent(in)   :: z0rou    ! wave enhanced bed roughness
     real(fp)                        , intent(in)   :: h1       ! water depth
@@ -73,10 +73,10 @@ subroutine factor3d2d(kmax      ,aks       ,kmaxsd    ,sig       ,thick     , &
 !! executable statements -------------------------------------------------------
 !
     !
-    ! Determine first center cell above aks (at most kmax-1)
+    ! Determine first center cell above aks (at most num_layers_grid-1)
     !
     kmaxsd = 1
-    do k = kmax-1, 1, -1
+    do k = num_layers_grid-1, 1, -1
        !
        ! Calculate level of lower cell interface
        !
@@ -138,7 +138,7 @@ subroutine factor3d2d(kmax      ,aks       ,kmaxsd    ,sig       ,thick     , &
     ! And then work down
     !
     conc = conck
-    do k = kmaxsd + 1, kmax
+    do k = kmaxsd + 1, num_layers_grid
        !
        ! In the near-bed layers, the sediment concentration slowly increases.
        ! Since seddif will be set to approximately 10*dz*ws in EROSED, we

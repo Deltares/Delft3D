@@ -28,10 +28,10 @@ module m_veg2dn
 contains
 
 
-    subroutine veg2dn     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine veg2dn     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
 
         ! function determine nutrient availability for vegetation
@@ -40,20 +40,20 @@ contains
 
         ! arguments          i/o description
 
-        real(kind = real_wp) :: pmsa(*)      !i/o process manager system array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)      !i/o process manager system array, window of routine to process library
         real(kind = real_wp) :: fl(*)        ! o  array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(*)    ! i  array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(*)    ! i  array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(*)    ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg        ! i  number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells        ! i  number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux       ! i  number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *)  ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)    ! i  active-inactive, surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1         ! i  nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        integer(kind = int_wp) :: noq2         ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3         ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4         ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir         ! i  nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        integer(kind = int_wp) :: num_exchanges_v_dir         ! i  nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir         ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir         ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
 
-        ! from pmsa array
+        ! from process_space_real array
 
         real(kind = real_wp) :: depth        ! i  depth of segment                               (m)
         real(kind = real_wp) :: totaldepth   ! i  total depth water column                       (m)
@@ -116,54 +116,54 @@ contains
         ! zero the pool for all segments
 
         ipnt = ipoint(1:npnt)
-        do iseg = 1, noseg
-            pmsa(ipnt(ioffout + 1)) = 0.0
-            pmsa(ipnt(ioffout + 2)) = 0.0
-            pmsa(ipnt(ioffout + 3)) = 0.0
-            pmsa(ipnt(ioffout + 4)) = 0.0
-            pmsa(ipnt(ioffout + 5)) = 0.0
-            pmsa(ipnt(ioffout + 6)) = 0.0  ! constant value for no vegetation cells
-            pmsa(ipnt(ioffout + 7)) = 0.0
-            pmsa(ipnt(ioffout + 8)) = 0.0
-            pmsa(ipnt(ioffout + 9)) = 0.0  ! constant value for no vegetation cells
+        do iseg = 1, num_cells
+            process_space_real(ipnt(ioffout + 1)) = 0.0
+            process_space_real(ipnt(ioffout + 2)) = 0.0
+            process_space_real(ipnt(ioffout + 3)) = 0.0
+            process_space_real(ipnt(ioffout + 4)) = 0.0
+            process_space_real(ipnt(ioffout + 5)) = 0.0
+            process_space_real(ipnt(ioffout + 6)) = 0.0  ! constant value for no vegetation cells
+            process_space_real(ipnt(ioffout + 7)) = 0.0
+            process_space_real(ipnt(ioffout + 8)) = 0.0
+            process_space_real(ipnt(ioffout + 9)) = 0.0  ! constant value for no vegetation cells
             ipnt = ipnt + increm(1:npnt)
         enddo
 
         ! accumulate mass in the rooting zone in the pool of the bottom segment
 
-        !allocate(poreVol(noseg),stat=ierr_alloc)
+        !allocate(poreVol(num_cells),stat=ierr_alloc)
 
         ipnt = ipoint(1:npnt)
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
-            depth = pmsa(ipnt(1))
-            totaldepth = pmsa(ipnt(2))
-            localdepth = pmsa(ipnt(3))
-            volume = pmsa(ipnt(4))
-            surf = pmsa(ipnt(5))
-            ibotseg = NINT(pmsa(ipnt(6)))
-            hmax = pmsa(ipnt(7))
-            nh4 = pmsa(ipnt(8))
-            no3 = pmsa(ipnt(9))
-            aap = pmsa(ipnt(10))
-            po4 = pmsa(ipnt(11))
-            so4 = pmsa(ipnt(12))
-            sud = pmsa(ipnt(13))
-            SWRoot = pmsa(ipnt(14))
-            Vmax = pmsa(ipnt(15))
-            Km = pmsa(ipnt(16))
-            Vini = pmsa(ipnt(17))
-            Poros = pmsa(ipnt(18))
-            s1_nh4 = pmsa(ipnt(19))
-            s1_no3 = pmsa(ipnt(20))
-            s1_aap = pmsa(ipnt(21))
-            s1_po4 = pmsa(ipnt(22))
-            s1_so4 = pmsa(ipnt(23))
-            s1_sud = pmsa(ipnt(24))
-            hsed = pmsa(ipnt(25))
+            depth = process_space_real(ipnt(1))
+            totaldepth = process_space_real(ipnt(2))
+            localdepth = process_space_real(ipnt(3))
+            volume = process_space_real(ipnt(4))
+            surf = process_space_real(ipnt(5))
+            ibotseg = NINT(process_space_real(ipnt(6)))
+            hmax = process_space_real(ipnt(7))
+            nh4 = process_space_real(ipnt(8))
+            no3 = process_space_real(ipnt(9))
+            aap = process_space_real(ipnt(10))
+            po4 = process_space_real(ipnt(11))
+            so4 = process_space_real(ipnt(12))
+            sud = process_space_real(ipnt(13))
+            SWRoot = process_space_real(ipnt(14))
+            Vmax = process_space_real(ipnt(15))
+            Km = process_space_real(ipnt(16))
+            Vini = process_space_real(ipnt(17))
+            Poros = process_space_real(ipnt(18))
+            s1_nh4 = process_space_real(ipnt(19))
+            s1_no3 = process_space_real(ipnt(20))
+            s1_aap = process_space_real(ipnt(21))
+            s1_po4 = process_space_real(ipnt(22))
+            s1_so4 = process_space_real(ipnt(23))
+            s1_sud = process_space_real(ipnt(24))
+            hsed = process_space_real(ipnt(25))
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
             if (ikmrk1<3) then ! also when dry!
 
                 ! active water segment
@@ -184,29 +184,29 @@ contains
                         ! partialy in segment:
                         frlay = (z2 - zm) / depth
                         ipb = ipoint(ioffout + 1) + (ibotseg - 1) * increm(ioffout + 1)
-                        pmsa(ipb) = pmsa(ipb) + (nh4 + no3) * volume * frlay
+                        process_space_real(ipb) = process_space_real(ipb) + (nh4 + no3) * volume * frlay
 
                         ipb = ipoint(ioffout + 2) + (ibotseg - 1) * increm(ioffout + 2)
-                        pmsa(ipb) = pmsa(ipb) + (aap + po4) * volume * frlay
+                        process_space_real(ipb) = process_space_real(ipb) + (aap + po4) * volume * frlay
 
                         ipb = ipoint(ioffout + 3) + (ibotseg - 1) * increm(ioffout + 3)
-                        pmsa(ipb) = pmsa(ipb) + (so4 + sud) * volume * frlay
+                        process_space_real(ipb) = process_space_real(ipb) + (so4 + sud) * volume * frlay
 
                         ipb = ipoint(ioffout + 4) + (ibotseg - 1) * increm(ioffout + 4)
-                        pmsa(ipb) = pmsa(ipb) + volume * frlay * Poros
+                        process_space_real(ipb) = process_space_real(ipb) + volume * frlay * Poros
                     else
                         ! completely in segment:
                         ipb = ipoint(ioffout + 1) + (ibotseg - 1) * increm(ioffout + 1)
-                        pmsa(ipb) = pmsa(ipb) + (nh4 + no3) * volume
+                        process_space_real(ipb) = process_space_real(ipb) + (nh4 + no3) * volume
 
                         ipb = ipoint(ioffout + 2) + (ibotseg - 1) * increm(ioffout + 2)
-                        pmsa(ipb) = pmsa(ipb) + (aap + po4) * volume
+                        process_space_real(ipb) = process_space_real(ipb) + (aap + po4) * volume
 
                         ipb = ipoint(ioffout + 3) + (ibotseg - 1) * increm(ioffout + 3)
-                        pmsa(ipb) = pmsa(ipb) + (so4 + sud) * volume
+                        process_space_real(ipb) = process_space_real(ipb) + (so4 + sud) * volume
 
                         ipb = ipoint(ioffout + 4) + (ibotseg - 1) * increm(ioffout + 4)
-                        pmsa(ipb) = pmsa(ipb) + volume * Poros
+                        process_space_real(ipb) = process_space_real(ipb) + volume * Poros
                     endif
 
                 endif
@@ -219,16 +219,16 @@ contains
                     fsurf = min(1.0, -hmax / hsed) * surf
 
                     ipb = ipoint(ioffout + 1) + (iseg - 1) * increm(ioffout + 1)
-                    pmsa(ipb) = pmsa(ipb) + (s1_nh4 + s1_no3) * fsurf
+                    process_space_real(ipb) = process_space_real(ipb) + (s1_nh4 + s1_no3) * fsurf
 
                     ipb = ipoint(ioffout + 2) + (iseg - 1) * increm(ioffout + 2)
-                    pmsa(ipb) = pmsa(ipb) + (s1_aap + s1_po4) * fsurf
+                    process_space_real(ipb) = process_space_real(ipb) + (s1_aap + s1_po4) * fsurf
 
                     ipb = ipoint(ioffout + 3) + (iseg - 1) * increm(ioffout + 3)
-                    pmsa(ipb) = pmsa(ipb) + (s1_so4 + s1_sud) * fsurf
+                    process_space_real(ipb) = process_space_real(ipb) + (s1_so4 + s1_sud) * fsurf
 
                     ipb = ipoint(ioffout + 4) + (iseg - 1) * increm(ioffout + 4)
-                    pmsa(ipb) = pmsa(ipb) + volume * Poros
+                    process_space_real(ipb) = process_space_real(ipb) + volume * Poros
                 endif
 
             elseif (ikmrk1==3) then
@@ -246,31 +246,31 @@ contains
                     if (hmax > localdepth) then
                         ! completely in segment:
                         ipb = ipoint(ioffout + 1) + (iseg - 1) * increm(ioffout + 1)
-                        pmsa(ipb) = pmsa(ipb) + (nh4 + no3) * volume
+                        process_space_real(ipb) = process_space_real(ipb) + (nh4 + no3) * volume
 
                         ipb = ipoint(ioffout + 2) + (iseg - 1) * increm(ioffout + 2)
-                        pmsa(ipb) = pmsa(ipb) + (aap + po4) * volume
+                        process_space_real(ipb) = process_space_real(ipb) + (aap + po4) * volume
 
                         ipb = ipoint(ioffout + 3) + (iseg - 1) * increm(ioffout + 3)
-                        pmsa(ipb) = pmsa(ipb) + (so4 + sud) * volume
+                        process_space_real(ipb) = process_space_real(ipb) + (so4 + sud) * volume
 
                         ipb = ipoint(ioffout + 4) + (iseg - 1) * increm(ioffout + 4)
-                        pmsa(ipb) = pmsa(ipb) + volume * Poros
+                        process_space_real(ipb) = process_space_real(ipb) + volume * Poros
                     elseif (hmax > z1) then
                         ! partialy in segment:
                         frlay = (hmax - z1) / depth
 
                         ipb = ipoint(ioffout + 1) + (iseg - 1) * increm(ioffout + 1)
-                        pmsa(ipb) = pmsa(ipb) + (nh4 + no3) * volume * frlay
+                        process_space_real(ipb) = process_space_real(ipb) + (nh4 + no3) * volume * frlay
 
                         ipb = ipoint(ioffout + 2) + (iseg - 1) * increm(ioffout + 2)
-                        pmsa(ipb) = pmsa(ipb) + (aap + po4) * volume * frlay
+                        process_space_real(ipb) = process_space_real(ipb) + (aap + po4) * volume * frlay
 
                         ipb = ipoint(ioffout + 3) + (iseg - 1) * increm(ioffout + 3)
-                        pmsa(ipb) = pmsa(ipb) + (so4 + sud) * volume * frlay
+                        process_space_real(ipb) = process_space_real(ipb) + (so4 + sud) * volume * frlay
 
                         ipb = ipoint(ioffout + 4) + (iseg - 1) * increm(ioffout + 4)
-                        pmsa(ipb) = pmsa(ipb) + volume * frlay * Poros
+                        process_space_real(ipb) = process_space_real(ipb) + volume * frlay * Poros
                     else
                         ! not in segment:
                     endif
@@ -286,37 +286,37 @@ contains
         ! express the available pool as g/m2
 
         ipnt = ipoint(1:npnt)
-        do iseg = 1, noseg
-            ibotseg = NINT(pmsa(ipnt(6)))
+        do iseg = 1, num_cells
+            ibotseg = NINT(process_space_real(ipnt(6)))
             if (ibotseg == iseg) then
-                surf = pmsa(ipnt(5))
-                pmsa(ipnt(ioffout + 1)) = pmsa(ipnt(ioffout + 1)) / surf
-                pmsa(ipnt(ioffout + 2)) = pmsa(ipnt(ioffout + 2)) / surf
-                pmsa(ipnt(ioffout + 3)) = pmsa(ipnt(ioffout + 3)) / surf
+                surf = process_space_real(ipnt(5))
+                process_space_real(ipnt(ioffout + 1)) = process_space_real(ipnt(ioffout + 1)) / surf
+                process_space_real(ipnt(ioffout + 2)) = process_space_real(ipnt(ioffout + 2)) / surf
+                process_space_real(ipnt(ioffout + 3)) = process_space_real(ipnt(ioffout + 3)) / surf
                 ! RootShoot Model using the Michelis-Menten eq.
                 if (Nint(SWRoot) == 1) then
-                    porewater = pmsa(ipnt(ioffout + 4))
+                    porewater = process_space_real(ipnt(ioffout + 4))
                     ! express the availeble nitrogen conc in sediment as g/m3
                     if (porewater > 1.0e-10) then
-                        TIN = pmsa(ipnt(ioffout + 1)) * surf / porewater
+                        TIN = process_space_real(ipnt(ioffout + 1)) * surf / porewater
                     else
                         TIN = 0.0
                     endif
 
-                    pmsa(ipnt(ioffout + 5)) = 0.0
-                    pmsa(ipnt(ioffout + 6)) = Vini + (Vmax * TIN) / (Km + TIN)
-                    pmsa(ipnt(ioffout + 7)) = 0.0
-                    pmsa(ipnt(ioffout + 8)) = 0.0
-                    pmsa(ipnt(ioffout + 9)) = 1.0 - pmsa(ipnt(ioffout + 6))
+                    process_space_real(ipnt(ioffout + 5)) = 0.0
+                    process_space_real(ipnt(ioffout + 6)) = Vini + (Vmax * TIN) / (Km + TIN)
+                    process_space_real(ipnt(ioffout + 7)) = 0.0
+                    process_space_real(ipnt(ioffout + 8)) = 0.0
+                    process_space_real(ipnt(ioffout + 9)) = 1.0 - process_space_real(ipnt(ioffout + 6))
                 endif
             else
                 ! Fill all bottom sediment colume
                 if (Nint(SWRoot) == 1) then
-                    pmsa(ipnt(ioffout + 5)) = 0.0
-                    pmsa(ipnt(ioffout + 6)) = pmsa(ipoint(ioffout + 6) + (ibotseg - 1) * increm(ioffout + 6))
-                    pmsa(ipnt(ioffout + 7)) = 0.0
-                    pmsa(ipnt(ioffout + 8)) = 0.0
-                    pmsa(ipnt(ioffout + 9)) = pmsa(ipoint(ioffout + 9) + (ibotseg - 1) * increm(ioffout + 9))
+                    process_space_real(ipnt(ioffout + 5)) = 0.0
+                    process_space_real(ipnt(ioffout + 6)) = process_space_real(ipoint(ioffout + 6) + (ibotseg - 1) * increm(ioffout + 6))
+                    process_space_real(ipnt(ioffout + 7)) = 0.0
+                    process_space_real(ipnt(ioffout + 8)) = 0.0
+                    process_space_real(ipnt(ioffout + 9)) = process_space_real(ipoint(ioffout + 9) + (ibotseg - 1) * increm(ioffout + 9))
                 endif
             endif
             ipnt = ipnt + increm(1:npnt)
@@ -326,13 +326,13 @@ contains
         ! the switches should be checked
         if (Nint(SWRoot) == 1) then
             ipnt = ipoint(1:npnt)
-            do iseg = 1, noseg
-                if (pmsa(ipnt(ioffout + 6)) + pmsa(ipnt(ioffout + 9)) < 2.E-10) then
-                    pmsa(ipnt(ioffout + 5)) = 0.0
-                    pmsa(ipnt(ioffout + 6)) = 0.5
-                    pmsa(ipnt(ioffout + 7)) = 0.0
-                    pmsa(ipnt(ioffout + 8)) = 0.0
-                    pmsa(ipnt(ioffout + 9)) = 0.5
+            do iseg = 1, num_cells
+                if (process_space_real(ipnt(ioffout + 6)) + process_space_real(ipnt(ioffout + 9)) < 2.E-10) then
+                    process_space_real(ipnt(ioffout + 5)) = 0.0
+                    process_space_real(ipnt(ioffout + 6)) = 0.5
+                    process_space_real(ipnt(ioffout + 7)) = 0.0
+                    process_space_real(ipnt(ioffout + 8)) = 0.0
+                    process_space_real(ipnt(ioffout + 9)) = 0.5
                 endif
                 ipnt = ipnt + increm(1:npnt)
             enddo

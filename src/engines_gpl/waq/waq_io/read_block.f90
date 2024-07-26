@@ -44,7 +44,7 @@ contains
         use open_data_structure, only : read_time_dependant_data_matrix
         use simulation_input_options, only : process_simulation_input_options
         use matrix_utils, only : compute_matrix, print_matrix
-        use m_cli_utils, only : retrieve_command_argument
+        use m_cli_utils, only : is_command_arg_specified
         use m_grid_utils_external          ! for the storage of contraction grids
         use m_waq_data_structure  ! for definition and storage of data
         use rd_token
@@ -79,7 +79,7 @@ contains
         integer(kind = int_wp) :: ierr2         ! local error indicator (ierr2 = 2, end of block)
         integer(kind = int_wp) :: i_base_grid   ! index of base grid
         integer(kind = int_wp) :: igrid         ! index of input grid
-        integer(kind = int_wp) :: noseg         ! number of segments
+        integer(kind = int_wp) :: num_cells         ! number of segments
         integer(kind = int_wp) :: noseg_org     ! original number of segments
         integer(kind = int_wp) :: i             ! loop counter
         integer(kind = int_wp) :: noits         ! number of scale factors / columns sybstances
@@ -101,7 +101,6 @@ contains
         character(len = 10) :: strng2       ! kind of item
         character(len = 10) :: strng3       ! kind of item
 
-        logical :: lfound       ! Keyword found (or not)
         logical :: lsegfuncheck ! Do check if segmentfunctions are correct
         integer(kind = INT64) :: filesize      ! Reported size of the file
 
@@ -111,12 +110,11 @@ contains
         integer(kind = int_wp) :: ithndl = 0
         if (timon) call timstrt("read_block", ithndl)
 
-        call retrieve_command_argument ('-nosegfuncheck', 0, lfound, idummy, rdummy, adummy, ierr2)
-        lsegfuncheck = .not. lfound
+        lsegfuncheck = .not. is_command_arg_specified('-nosegfuncheck')
 
         ! defaults and initialisation
         data_block%subject = SUBJECT_UNKNOWN
-        data_block%num_parameters = 0
+        data_block%num_spatial_parameters = 0
         data_block%num_locations = 0
         data_block%num_breakpoints = 0
         data_block%function_type = FUNCTYPE_CONSTANT
@@ -150,7 +148,7 @@ contains
         ierr2 = types%initialize()
 
         i_base_grid = GridPs%base_grid
-        noseg = GridPs%Pointers(i_base_grid)%noseg
+        num_cells = GridPs%Pointers(i_base_grid)%num_cells
         noseg_org = get_original_noseg()
 
         ! initialise a number of variables
@@ -255,7 +253,7 @@ contains
 
                 ! handle file option, should we resolve the use of 17? = work file segment-functions
                 call process_simulation_input_options(-4, file_unit_list, 17, file_name_list, filtype, &
-                        is_date_format, is_yyddhh_format, noseg, ierr2, status, &
+                        is_date_format, is_yyddhh_format, num_cells, ierr2, status, &
                         .false.)
                 if (ierr2 /= 0) exit
 
@@ -377,7 +375,7 @@ contains
                     goto 100
                 endif
                 if (ctoken == 'ALL') then
-                    waq_loc%no_item = noseg
+                    waq_loc%no_item = num_cells
                     write (file_unit, 2020) waq_loc%no_item
                     ierr2 = waq_loc%resize(waq_loc%no_item)
                     do i = 1, waq_loc%no_item
@@ -390,7 +388,7 @@ contains
                     if (igrid >= 1) then
                         data_block%igrid = igrid
                         write (file_unit, 2290), trim(ctoken)
-                        waq_loc%no_item = gridps%pointers(igrid)%noseg
+                        waq_loc%no_item = gridps%pointers(igrid)%num_cells
                         write (file_unit, 2300) waq_loc%no_item
                         ierr2 = waq_loc%resize(waq_loc%no_item)
                         do i = 1, waq_loc%no_item
@@ -498,7 +496,7 @@ contains
                         data_loc%constant = waq_loc%constant
                     endif
 
-                    data_block%num_parameters = waq_param%no_item
+                    data_block%num_spatial_parameters = waq_param%no_item
                     data_block%num_locations = waq_loc%no_item
 
                     call read_data_ods(file_unit, ctoken, data_param, data_loc, missing_value, &
@@ -524,7 +522,7 @@ contains
                         elseif (ierr2 > 0) then
                             ierr2 = 0        ! It is a warning, proceed at your own peril
                             call status%increase_warning_count()
-                            write(file_unit, 2330) ctoken, filesize, 4 * (1 + noits * noseg_org), noits, noseg
+                            write(file_unit, 2330) ctoken, filesize, 4 * (1 + noits * noseg_org), noits, num_cells
                             write(file_unit, 2340)
                         endif
                     end if
@@ -551,10 +549,10 @@ contains
 
                     ! read the data
 
-                    data_block%num_parameters = waq_param%no_item
+                    data_block%num_spatial_parameters = waq_param%no_item
                     data_block%num_locations = waq_loc%no_item
 
-                    data_buffer%num_parameters = nocol
+                    data_buffer%num_spatial_parameters = nocol
                     data_buffer%num_locations = data_loc%no_item
                     data_buffer%iorder = data_block%iorder
                     data_buffer%function_type = data_block%function_type
@@ -573,7 +571,7 @@ contains
                     goto 100
                 endif
                 if (waq_loc%no_item == -1) write (file_unit, 1910)
-                data_block%num_parameters = waq_param%no_item
+                data_block%num_spatial_parameters = waq_param%no_item
                 data_block%is_parameter_named = .true.
                 data_block%param_name => waq_param%name
                 data_block%is_parameter_pointered = .true.
@@ -752,9 +750,9 @@ contains
 
     ! Function to get around the name clash - information in a COMMON block
     integer function get_original_noseg()
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
 
-        get_original_noseg = noseg
+        get_original_noseg = num_cells
     end function get_original_noseg
 
     subroutine read_header(waq_param, data_param, nocol, itfact, is_date_format, &

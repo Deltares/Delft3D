@@ -28,15 +28,15 @@ module m_dlwqta
 contains
 
 
-    subroutine dlwqta(file_unit_list, lch, lunrep, noseg, nocons, &
-            nopa, nofun, nosfun, const, param, &
+    subroutine dlwqta(file_unit_list, lch, lunrep, num_cells, num_constants, &
+            num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, const, param, &
             funcs, sfuncs, isflag, ifflag, itime, &
             GridPs, dlwqd, ierr)
 
         !! Makes values at time = itime for the process parameters
 
         use m_dlwqt4
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_open_waq_files
         use waq_file_utils_external, only : create_new_file_unit_number
         use timers
@@ -47,15 +47,15 @@ contains
         integer(kind = int_wp), intent(inout) :: file_unit_list                  !< unit number binary input file
         character(len = *), intent(in) :: lch                  !< name input file
         integer(kind = int_wp), intent(in) :: lunrep               !< unit number report file
-        integer(kind = int_wp), intent(in) :: noseg                !< number of segments
-        integer(kind = int_wp), intent(in) :: nocons               !< number of constants
-        integer(kind = int_wp), intent(in) :: nopa                 !< number of parameters
-        integer(kind = int_wp), intent(in) :: nofun                !< number of functions
-        integer(kind = int_wp), intent(in) :: nosfun               !< number of segment functions
-        real(kind = real_wp), intent(out) :: const(nocons)        !< constants array
-        real(kind = real_wp), intent(out) :: param(nopa, noseg)    !< parameters array
-        real(kind = real_wp), intent(out) :: funcs(nofun)         !< functions array
-        real(kind = real_wp), intent(out) :: sfuncs(noseg, nosfun) !< segment functions array
+        integer(kind = int_wp), intent(in) :: num_cells                !< number of segments
+        integer(kind = int_wp), intent(in) :: num_constants               !< number of constants
+        integer(kind = int_wp), intent(in) :: num_spatial_parameters                 !< number of parameters
+        integer(kind = int_wp), intent(in) :: num_time_functions                !< number of functions
+        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions               !< number of segment functions
+        real(kind = real_wp), intent(out) :: const(num_constants)        !< constants array
+        real(kind = real_wp), intent(out) :: param(num_spatial_parameters, num_cells)    !< parameters array
+        real(kind = real_wp), intent(out) :: funcs(num_time_functions)         !< functions array
+        real(kind = real_wp), intent(out) :: sfuncs(num_cells, num_spatial_time_fuctions) !< segment functions array
         integer(kind = int_wp), intent(in) :: isflag               !< = 1 then 'ddhhmmss' format
         integer(kind = int_wp), intent(in) :: ifflag               !< = 1 then first invocation
         integer(kind = int_wp), intent(in) :: itime                !< system timer
@@ -82,7 +82,7 @@ contains
 
         ! read the data from file
 
-        ntotal = nocons + nopa + nofun + nosfun
+        ntotal = num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions
         if (ntotal > 0) then
             if (ifflag == 1) then
                 call open_waq_files (file_unit_list, lch, 16, 2, ierr2)
@@ -90,18 +90,18 @@ contains
                     write(lunrep, *) 'error in dlwqta, opening file'
                     write(lunrep, *) 'file    :', lch
                     write(lunrep, *) 'unit    :', file_unit_list
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
                 read (file_unit_list, iostat = ierr2) chlp
                 if (ierr2/=0 .or. chlp(1:6) /= ' 5.000') then
                     write(lunrep, *) 'error in dlwqta, file not new'
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
 
                 read(file_unit_list, iostat = ierr2) no_proc_pars
                 if (ierr2 /= 0) then
                     write(lunrep, 1000) trim(lch)
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
                 allocate(dlwqd%proc_pars%data_block(no_proc_pars))
                 dlwqd%proc_pars%maxsize = no_proc_pars
@@ -111,17 +111,17 @@ contains
                     ierr2 = dlwqd%proc_pars%data_block(i)%read(lunrep, file_unit_list)
                     if (ierr2 /= 0) then
                         write(lunrep, 1000) trim(lch)
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                     proc_par => dlwqd%proc_pars%data_block(i)
                     if (proc_par%is_external .and. (mod(proc_par%filetype, 10) == FILE_BINARY .or. &
                             mod(proc_par%filetype, 10) == FILE_UNFORMATTED)) then
                         if (proc_par%iorder == ORDER_PARAM_LOC) then
-                            ndim1 = proc_par%num_parameters
+                            ndim1 = proc_par%num_spatial_parameters
                             ndim2 = proc_par%num_locations
                         else
                             ndim1 = proc_par%num_locations
-                            ndim2 = proc_par%num_parameters
+                            ndim2 = proc_par%num_spatial_parameters
                         endif
                         nobrk = 1
                         proc_par%num_breakpoints = nobrk
@@ -148,11 +148,11 @@ contains
                 if (proc_par%is_external .and. (mod(proc_par%filetype, 10) == FILE_BINARY .or. &
                         mod(proc_par%filetype, 10) == FILE_UNFORMATTED)) then
                     if (proc_par%iorder == ORDER_PARAM_LOC) then
-                        ndim1 = proc_par%num_parameters
+                        ndim1 = proc_par%num_spatial_parameters
                         ndim2 = proc_par%num_locations
                     else
                         ndim1 = proc_par%num_locations
-                        ndim2 = proc_par%num_parameters
+                        ndim2 = proc_par%num_spatial_parameters
                     endif
                     ntt = ndim1 * ndim2
                     allocate(ipntloc(ntt))
@@ -166,28 +166,28 @@ contains
                 endif
 
                 if (proc_par%subject == SUBJECT_CONSTANT .and. ifflag == 1) then
-                    ierr2 = proc_par%evaluate(GridPs, itime, nocons, 1, const)
+                    ierr2 = proc_par%evaluate(GridPs, itime, num_constants, 1, const)
                     if (ierr2 /= 0) then
                         write(lunrep, 1010)
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 elseif (proc_par%subject == SUBJECT_FUNCTION) then
-                    ierr2 = proc_par%evaluate(GridPs, itime, nofun, 1, funcs)
+                    ierr2 = proc_par%evaluate(GridPs, itime, num_time_functions, 1, funcs)
                     if (ierr2 /= 0) then
                         write(lunrep, 1010)
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 elseif (proc_par%subject == SUBJECT_PARAMETER .and. ifflag == 1) then
-                    ierr2 = proc_par%evaluate(GridPs, itime, nopa, noseg, param)
+                    ierr2 = proc_par%evaluate(GridPs, itime, num_spatial_parameters, num_cells, param)
                     if (ierr2 /= 0) then
                         write(lunrep, 1010)
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 elseif (proc_par%subject == SUBJECT_SEGFUNC) then
-                    ierr2 = proc_par%evaluate(GridPs, itime, noseg, nosfun, sfuncs)
+                    ierr2 = proc_par%evaluate(GridPs, itime, num_cells, num_spatial_time_fuctions, sfuncs)
                     if (ierr2 /= 0) then
                         write(lunrep, 1010)
-                        call terminate_execution(1)
+                        call stop_with_error()
                     endif
                 endif
             enddo

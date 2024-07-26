@@ -28,10 +28,10 @@ module m_dissi
 contains
 
 
-    subroutine dissi  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger
+    subroutine dissi  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper
 
         !>\file
         !>       Dissolution of Si in opal
@@ -64,9 +64,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         REAL(kind = real_wp) :: KSOL, FSOL, TEMP, TEMPC, TC, CSID, OPAL, &
                 CSIDE, POROS, SWDISSI
@@ -86,17 +86,17 @@ contains
         !
         IFLUX = 0
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             !
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CSID = MAX(PMSA(IP1), 0.0)
-                OPAL = MAX(PMSA(IP2), 0.0)
-                CSIDE = PMSA(IP3)
-                KSOL = PMSA(IP4)
-                TC = PMSA(IP5)
-                TEMP = PMSA(IP6)
-                POROS = PMSA(IP7)
-                SWDISSI = PMSA(IP8)
+                CSID = MAX(process_space_real(IP1), 0.0)
+                OPAL = MAX(process_space_real(IP2), 0.0)
+                CSIDE = process_space_real(IP3)
+                KSOL = process_space_real(IP4)
+                TC = process_space_real(IP5)
+                TEMP = process_space_real(IP6)
+                POROS = process_space_real(IP7)
+                SWDISSI = process_space_real(IP8)
                 !
                 !     Calculation of the dissolution flux
                 !
@@ -127,7 +127,7 @@ contains
                 !     Output of module
                 !
                 FL(1 + IFLUX) = FSOL
-                PMSA(IP9) = FSOL
+                process_space_real(IP9) = FSOL
                 !
                 !     End active cells block
                 !

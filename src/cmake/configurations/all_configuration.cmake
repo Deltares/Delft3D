@@ -12,5 +12,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/tools_configuration.c
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/include/windows_postbuild_configuration.cmake)
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/drr_configuration.cmake)
+
 # Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that
 project(all)

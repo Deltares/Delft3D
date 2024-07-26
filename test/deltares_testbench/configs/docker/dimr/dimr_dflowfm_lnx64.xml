@@ -41,7 +41,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -50,18 +49,14 @@
                 <argument>-c</argument>
             </arguments>
         </program>
-        <program name="svn">
-            <path>svn</path>
-            <environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
-        </program>
 		<program name="checkhydbal">
 			<shell ref="command_prompt"/>
 			<path>thirdparty/checkhydbal/lnx64/run_checkhydbal.sh</path>
 		</program>
         <program name="dimr" logOutputToFile="true">
-            <location ref="tools" type="check" />
+            <location ref="tools" type="check">
+                <from>.</from>
+            </location>
             <path>create_and_execute_run_docker.sh</path>
         </program>
     </programs>

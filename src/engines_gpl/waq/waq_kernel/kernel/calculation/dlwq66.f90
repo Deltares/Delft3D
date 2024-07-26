@@ -28,50 +28,33 @@ module m_dlwq66
 contains
 
 
-    SUBROUTINE DLWQ66 (AMASS, VOLUME, CONC, NOTOT, NOSEG)
-        !
-        !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
-        !
-        !     CREATED             : june 1988 by L.Postma
-        !
-        !     FUNCTION            : makes masses from conc and volumes
-        !
-        !     LOGICAL UNITNUMBERS : none
-        !
-        !     SUBROUTINES CALLED  : none
-        !
-        !     PARAMETERS          :
-        !
-        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-        !     ----    -----    ------     ------- -----------
-        !     AMASS   REAL   NOTOT*NOSEG  OUTPUT  closure error correction
-        !     VOLUME  REAL      NOSEG     INPUT   volume
-        !     CONC    REAL   NOTOT*NOSEG  INPUT   concentrations
-        !     NOTOT   INTEGER     1       INPUT   number of systems
-        !     NOSEG   INTEGER     1       INPUT   number of segments
-        !
+    !> Calculates masses form concentrations and volumes
+    subroutine dlwq66(amass, volume, conc, num_substances_total, num_cells)
+
         use timers
 
-        real(kind = real_wp) :: AMASS(NOTOT, *), VOLUME(*), CONC(NOTOT, *)
+        real(kind = real_wp), intent(inout) :: amass(num_substances_total, *) !< Closure error correction (num_substances_total x num_cells)
+        real(kind = real_wp), intent(in   ) :: volume(*)       !< Volume  (num_cells)
+        real(kind = real_wp), intent(in   ) :: conc(num_substances_total, *)  !< Concentrations  (num_substances_total x num_cells)
+
+        integer(kind = int_wp), intent(in) :: num_substances_total !< Number of systems
+        integer(kind = int_wp), intent(in) :: num_cells !< Number of cells or segments
+
+        ! Local variables
+        integer(kind = int_wp) :: isys, iseg
+        integer(kind = int_wp) :: ithandl = 0
         real(kind = real_wp) :: v1
 
-        integer(kind = int_wp) :: notot, noseg
-        integer(kind = int_wp) :: isys, iseg
-
-        integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwq66", ithandl)
-        !
-        !         loop over the number of segments and systems
-        !
-        DO ISEG = 1, NOSEG
+
+        ! loop over the number of segments and systems
+        DO ISEG = 1, num_cells
             V1 = VOLUME(ISEG)
-            DO ISYS = 1, NOTOT
+            DO ISYS = 1, num_substances_total
                 AMASS(ISYS, ISEG) = CONC(ISYS, ISEG) * V1
             end do
         end do
         !
         if (timon) call timstop (ithandl)
-        RETURN
-    END
-
+    end subroutine dlwq66
 end module m_dlwq66

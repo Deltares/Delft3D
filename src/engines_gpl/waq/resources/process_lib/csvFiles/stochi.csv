@@ -237,16 +237,17 @@ stocfl,stocsu,stocsc
 "dDumS1Comp","IM1S1     ",   0.00000
 "dDumS1Comp","IM2S1     ",   0.00000
 "dDumS1Comp","IM3S1     ",   0.00000
-"dDumS1Comp","DetCS1    ",   0.00000
-"dDumS1Comp","OOCS1     ",   0.00000
+"dDumS1Comp","S1_PC1    ",   0.00000
+"dDumS1Comp","S1_PC2    ",   0.00000
 "dDumS1Comp","DiatS1    ",   0.00000
 "dDumS1Comp","GreenS1   ",   0.00000
 "dDumS1Comp","AAPS1     ",   0.00000
-"dDumS1Comp","DetNS1    ",   0.00000
-"dDumS1Comp","DetPS1    ",   0.00000
-"dDumS1Comp","DetSiS1   ",   0.00000
-"dDumS1Comp","OONS1     ",   0.00000
-"dDumS1Comp","OOSiS1    ",   0.00000
+"dDumS1Comp","S1_PN1    ",   0.00000
+"dDumS1Comp","S1_PP1    ",   0.00000
+"dDumS1Comp","S1_Opal   ",   0.00000
+"dDumS1Comp","S1_PN2    ",   0.00000
+"dDumS1Comp","S1_PP2    ",   0.00000
+"dDumS1Comp","S1_PS2    ",   0.00000
 "dDumS2Comp","IM1S2     ",   0.00000
 "dDumS2Comp","IM2S2     ",   0.00000
 "dDumS2Comp","IM3S2     ",   0.00000
@@ -317,11 +318,11 @@ stocfl,stocsu,stocsc
 "dNITRIF   ","ALKA      ",  -8.71400
 "dREAROXY  ","OXY       ",   1.00000
 "dCUptVar  ","OXY       ",   2.67000
-"dMinDetCS1","DetCS1    ",  -1.00000
+"dMinDetCS1","S1_PC1    ",  -1.00000
 "dMinDetCS1","OXY       ",  -2.67000
 "dMinDetCS1","TIC       ",   1.00000
 "dMinDetCS1","H2O       ",   1.50000
-"dSWMinDCS1","DetCS1    ",  -1.00000
+"dSWMinDCS1","S1_PC1    ",  -1.00000
 "dSWMinDCS1","TIC       ",   1.00000
 "dSWMinDCS1","H2O       ",   1.50000
 "dMinDetCS2","DetCS2    ",  -1.00000
@@ -331,11 +332,11 @@ stocfl,stocsu,stocsc
 "dSWMinDCS2","DetCS2    ",  -1.00000
 "dSWMinDCS2","TIC       ",   1.00000
 "dSWMinDCS2","H2O       ",   1.50000
-"dMinDetNS1","DetNS1    ",  -1.00000
+"dMinDetNS1","S1_PN1    ",  -1.00000
 "dMinDetNS1","NH4       ",   1.00000
 "dMinDetNS1","H+        ",  -0.07100
 "dMinDetNS1","ALKA      ",   4.35700
-"dSWMinDNS1","DetNS1    ",  -1.00000
+"dSWMinDNS1","S1_PN1    ",  -1.00000
 "dSWMinDNS1","H+        ",  -0.07100
 "dSWMinDNS1","ALKA      ",   4.35700
 "dMinDetNS2","DetNS2    ",  -1.00000
@@ -345,11 +346,11 @@ stocfl,stocsu,stocsc
 "dSWMinDNS2","DetNS2    ",  -1.00000
 "dSWMinDNS2","H+        ",  -0.07100
 "dSWMinDNS2","ALKA      ",   4.35700
-"dMinDetPS1","DetPS1    ",  -1.00000
+"dMinDetPS1","S1_PP1    ",  -1.00000
 "dMinDetPS1","PO4       ",   1.00000
 "dMinDetPS1","H+        ",   0.03200
 "dMinDetPS1","ALKA      ",  -1.96800
-"dSWMinDPS1","DetPS1    ",  -1.00000
+"dSWMinDPS1","S1_PP1    ",  -1.00000
 "dSWMinDPS1","H+        ",   0.03200
 "dSWMinDPS1","ALKA      ",  -1.96800
 "dMinDetPS2","DetPS2    ",  -1.00000
@@ -359,17 +360,17 @@ stocfl,stocsu,stocsc
 "dSWMinDPS2","DetPS2    ",  -1.00000
 "dSWMinDPS2","H+        ",   0.03200
 "dSWMinDPS2","ALKA      ",  -1.96800
-"dMinDetSiS","DetSiS1   ",  -1.00000
+"dMinDetSiS","S1_Opal   ",  -1.00000
 "dMinDetSiS","Si        ",   1.00000
-"dSWMinDSS1","DetSiS1   ",  -1.00000
+"dSWMinDSS1","S1_Opal   ",  -1.00000
 "dMinDetSS2","DetSiS2   ",  -1.00000
 "dMinDetSS2","Si        ",   1.00000
 "dSWMinDSS2","DetSiS2   ",  -1.00000
-"dMinOOCS1 ","OOCS1     ",  -1.00000
+"dMinOOCS1 ","S1_PC2    ",  -1.00000
 "dMinOOCS1 ","OXY       ",  -2.67000
 "dMinOOCS1 ","TIC       ",   1.00000
 "dMinOOCS1 ","H2O       ",   1.50000
-"dSWMnOOCS1","OOCS1     ",  -1.00000
+"dSWMnOOCS1","S1_PC2    ",  -1.00000
 "dSWMnOOCS1","TIC       ",   1.00000
 "dSWMnOOCS1","H2O       ",   1.50000
 "dMinOOCS2 ","OOCS2     ",  -1.00000
@@ -379,11 +380,11 @@ stocfl,stocsu,stocsc
 "dSWMnOOCS2","OOCS2     ",  -1.00000
 "dSWMnOOCS2","TIC       ",   1.00000
 "dSWMnOOCS2","H2O       ",   1.50000
-"dMinOONS1 ","OONS1     ",  -1.00000
+"dMinOONS1 ","S1_PN2    ",  -1.00000
 "dMinOONS1 ","NH4       ",   1.00000
 "dMinOONS1 ","H+        ",  -0.07100
 "dMinOONS1 ","ALKA      ",   4.35700
-"dSWMnOONS1","OONS1     ",  -1.00000
+"dSWMnOONS1","S1_PN2    ",  -1.00000
 "dSWMnOONS1","H+        ",  -0.07100
 "dSWMnOONS1","ALKA      ",   4.35700
 "dMinOONS2 ","OONS2     ",  -1.00000
@@ -393,11 +394,11 @@ stocfl,stocsu,stocsc
 "dSWMnOONS2","OONS2     ",  -1.00000
 "dSWMnOONS2","H+        ",  -0.07100
 "dSWMnOONS2","ALKA      ",   4.35700
-"dMinOOPS1 ","OOPS1     ",  -1.00000
+"dMinOOPS1 ","S1_PP2    ",  -1.00000
 "dMinOOPS1 ","PO4       ",   1.00000
 "dMinOOPS1 ","H+        ",   0.03200
 "dMinOOPS1 ","ALKA      ",  -1.96800
-"dSWMnOOPS1","OOPS1     ",  -1.00000
+"dSWMnOOPS1","S1_PP2    ",  -1.00000
 "dSWMnOOPS1","H+        ",   0.03200
 "dSWMnOOPS1","ALKA      ",  -1.96800
 "dMinOOPS2 ","OOPS2     ",  -1.00000
@@ -407,9 +408,9 @@ stocfl,stocsu,stocsc
 "dSWMnOOPS2","OOPS2     ",  -1.00000
 "dSWMnOOPS2","H+        ",   0.03200
 "dSWMnOOPS2","ALKA      ",  -1.96800
-"dMinOOSiS1","OOSiS1    ",  -1.00000
+"dMinOOSiS1","S1_PS2    ",  -1.00000
 "dMinOOSiS1","Si        ",   1.00000
-"dSWMnOOSS1","OOSiS1    ",  -1.00000
+"dSWMnOOSS1","S1_PS2    ",  -1.00000
 "dMinOOSiS2","OOSiS2    ",  -1.00000
 "dMinOOSiS2","Si        ",   1.00000
 "dSWMnOOSS2","OOSiS2    ",  -1.00000
@@ -622,21 +623,21 @@ stocfl,stocsu,stocsc
 "dMortOOP  ","POP2      ",   1.00000
 "dMortDetSi","Opal      ",   1.00000
 "dMortOOSi ","Opal      ",   1.00000
-"dMrtDetCS1","DetCS1    ",   1.00000
-"dMrtOOCS1 ","OOCS1     ",   1.00000
+"dMrtDetCS1","S1_PC1    ",   1.00000
+"dMrtOOCS1 ","S1_PC2    ",   1.00000
 "dNH4AUTS1 ","NH4       ",   1.00000
 "dNH4AUTS1 ","H+        ",  -0.07100
 "dNH4AUTS1 ","ALKA      ",   4.35700
-"dMrtDetNS1","DetNS1    ",   1.00000
-"dMrtOONS1 ","OONS1     ",   1.00000
+"dMrtDetNS1","S1_PN1    ",   1.00000
+"dMrtOONS1 ","S1_PN2    ",   1.00000
 "dPO4AUTS1 ","PO4       ",   1.00000
 "dPO4AUTS1 ","H+        ",   0.03200
 "dPO4AUTS1 ","ALKA      ",  -1.96800
-"dMrtDetPS1","DetPS1    ",   1.00000
-"dMrtOOPS1 ","OOPS1     ",   1.00000
+"dMrtDetPS1","S1_PP1    ",   1.00000
+"dMrtOOPS1 ","S1_PP2    ",   1.00000
 "dSiAUTS1  ","Si        ",   1.00000
-"dMrtDetSS1","DetSiS1   ",   1.00000
-"dMrtOOSS1 ","OOSiS1    ",   1.00000
+"dMrtDetSS1","S1_Opal   ",   1.00000
+"dMrtOOSS1 ","S1_PS2    ",   1.00000
 "dDumOXYMin","OXY       ",   0.00000
 "dDumOXYMin","GREEN     ",   0.00000
 "dDumOXYMin","DIAT      ",   0.00000
@@ -828,44 +829,44 @@ stocfl,stocsu,stocsc
 "dSedNBOD5 ","NBOD5     ",  -1.00000
 "dSedNBODu ","NBODu     ",  -1.00000
 "dSedSOD   ","SOD       ",   1.00000
-"dSedPHYT  ","DetCS1    ",   1.00000
-"dSedAlgN  ","DetNS1    ",   1.00000
-"dSedAlgP  ","DetPS1    ",   1.00000
-"dSedAlgSi ","DetSiS1   ",   1.00000
+"dSedPHYT  ","S1_PC1    ",   1.00000
+"dSedAlgN  ","S1_PN1    ",   1.00000
+"dSedAlgP  ","S1_PP1    ",   1.00000
+"dSedAlgSi ","S1_Opal   ",   1.00000
 "dSedMPB1  ","MPB1peli  ",  -1.00000
 "dSedMPB1  ","MPB1peliS1",   1.00000
 "dSedMPB2  ","MPB2psam  ",  -1.00000
 "dSedMPB2  ","MPB2psamS1",   1.00000
 "dSedOpal  ","Opal      ",  -1.00000
-"dSedOpal  ","DetSiS1   ",   1.00000
+"dSedOpal  ","S1_Opal   ",   1.00000
 "dSedOpalS2","Opal      ",  -1.00000
 "dSedOpalS2","DetSiS2   ",   1.00000
 "dSedPOC1  ","POC1      ",  -1.00000
-"dSedPOC1  ","DetCS1    ",   1.00000
+"dSedPOC1  ","S1_PC1    ",   1.00000
 "dSedPOC1S2","POC1      ",  -1.00000
 "dSedPOC1S2","DetCS2    ",   1.00000
 "dSedPOC2  ","POC2      ",  -1.00000
-"dSedPOC2  ","OOCS1     ",   1.00000
+"dSedPOC2  ","S1_PC2    ",   1.00000
 "dSedPOC2S2","POC2      ",  -1.00000
 "dSedPOC2S2","OOCS2     ",   1.00000
 "dSedPOC3  ","POC3      ",  -1.00000
-"dSedPOC3  ","OOCS1     ",   1.00000
+"dSedPOC3  ","S1_PC2    ",   1.00000
 "dSedPOC3S2","POC3      ",  -1.00000
 "dSedPOC3S2","OOCS2     ",   1.00000
 "dSedPOC4  ","POC4      ",  -1.00000
-"dSedPOC4  ","OOCS1     ",   1.00000
+"dSedPOC4  ","S1_PC2    ",   1.00000
 "dSedPOC4S2","POC2      ",  -1.00000
 "dSedPOC4S2","OOCS2     ",   1.00000
 "dSedPOC5  ","POC5      ",  -1.00000
-"dSedPOC5  ","OOCS1     ",   1.00000
+"dSedPOC5  ","S1_PC2    ",   1.00000
 "dSedPOC5S2","POC2      ",  -1.00000
 "dSedPOC5S2","OOCS2     ",   1.00000
 "dSedVIVP  ","S1_VIVP   ",   1.00000
 "dSedAPATP ","S1_APATP  ",   1.00000
 "dSedPON1  ","PON1      ",  -1.00000
-"dSedPON1  ","DetNS1    ",   1.00000
+"dSedPON1  ","S1_PN1    ",   1.00000
 "dSedPOP1  ","POP1      ",  -1.00000
-"dSedPOP1  ","DetPS1    ",   1.00000
+"dSedPOP1  ","S1_PP1    ",   1.00000
 "dSedPOS1  ","POS1      ",  -1.00000
 "dSedPON1S2","PON1      ",  -1.00000
 "dSedPON1S2","DetNS2    ",   1.00000
@@ -873,9 +874,9 @@ stocfl,stocsu,stocsc
 "dSedPOP1S2","DetPS2    ",   1.00000
 "dSedPOS1S2","POS1      ",  -1.00000
 "dSedPON2  ","PON2      ",  -1.00000
-"dSedPON2  ","OONS1     ",   1.00000
+"dSedPON2  ","S1_PN2    ",   1.00000
 "dSedPOP2  ","POP2      ",  -1.00000
-"dSedPOP2  ","OOPS1     ",   1.00000
+"dSedPOP2  ","S1_PP2    ",   1.00000
 "dSedPOS2  ","POS2      ",  -1.00000
 "dSedPON2S2","PON2      ",  -1.00000
 "dSedPON2S2","OONS2     ",   1.00000
@@ -883,9 +884,9 @@ stocfl,stocsu,stocsc
 "dSedPOP2S2","OOPS2     ",   1.00000
 "dSedPOS2S2","POS2      ",  -1.00000
 "dSedPON3  ","PON3      ",  -1.00000
-"dSedPON3  ","OONS1     ",   1.00000
+"dSedPON3  ","S1_PN2    ",   1.00000
 "dSedPOP3  ","POP3      ",  -1.00000
-"dSedPOP3  ","OOPS1     ",   1.00000
+"dSedPOP3  ","S1_PP2    ",   1.00000
 "dSedPOS3  ","POS3      ",  -1.00000
 "dSedPON3S2","PON3      ",  -1.00000
 "dSedPON3S2","OONS3     ",   1.00000
@@ -893,9 +894,9 @@ stocfl,stocsu,stocsc
 "dSedPOP3S2","OOPS3     ",   1.00000
 "dSedPOS3S2","POS3      ",  -1.00000
 "dSedPON4  ","PON4      ",  -1.00000
-"dSedPON4  ","OONS1     ",   1.00000
+"dSedPON4  ","S1_PN2    ",   1.00000
 "dSedPOP4  ","POP4      ",  -1.00000
-"dSedPOP4  ","OOPS1     ",   1.00000
+"dSedPOP4  ","S1_PP2    ",   1.00000
 "dSedPOS4  ","POS4      ",  -1.00000
 "dSedPON4S2","PON4      ",  -1.00000
 "dSedPON4S2","OONS2     ",   1.00000
@@ -903,9 +904,9 @@ stocfl,stocsu,stocsc
 "dSedPOP4S2","OOPS2     ",   1.00000
 "dSedPOS4S2","POS4      ",  -1.00000
 "dSedPON5  ","PON5      ",  -1.00000
-"dSedPON5  ","OONS1     ",   1.00000
+"dSedPON5  ","S1_PN2    ",   1.00000
 "dSedPOP5  ","POP5      ",  -1.00000
-"dSedPOP5  ","OOPS1     ",   1.00000
+"dSedPOP5  ","S1_PP2    ",   1.00000
 "dSedPOS5  ","POS5      ",  -1.00000
 "dSedPON5S2","PON5      ",  -1.00000
 "dSedPON5S2","OONS2     ",   1.00000
@@ -920,91 +921,91 @@ stocfl,stocsu,stocsc
 "dSedCAAP  ","AAPS1     ",   1.00000
 "dSedCAAP  ","S1_AAP    ",   1.00000
 "dResS1DetC","POC1      ",   1.00000
-"dResS1DetC","DetCS1    ",  -1.00000
+"dResS1DetC","S1_PC1    ",  -1.00000
 "dResS2DetC","DetCS2    ",  -1.00000
 "dResS2DetC","POC1      ",   1.00000
-"dBurS1DetC","DetCS1    ",  -1.00000
+"dBurS1DetC","S1_PC1    ",  -1.00000
 "dBurS1DetC","DetCS2    ",   1.00000
-"dSWBuS1DtC","DetCS1    ",  -1.00000
+"dSWBuS1DtC","S1_PC1    ",  -1.00000
 "dBurS2DetC","DetCS2    ",  -1.00000
-"dDigS1DetC","DetCS1    ",   1.00000
+"dDigS1DetC","S1_PC1    ",   1.00000
 "dDigS1DetC","DetCS2    ",  -1.00000
 "dDigS2DetC","DetCS2    ",   1.00000
 "dResS1DetN","PON1      ",   1.00000
-"dResS1DetN","DetNS1    ",  -1.00000
+"dResS1DetN","S1_PN1    ",  -1.00000
 "dResS2DetN","DetNS2    ",  -1.00000
 "dResS2DetN","PON1      ",   1.00000
-"dBurS1DetN","DetNS1    ",  -1.00000
+"dBurS1DetN","S1_PN1    ",  -1.00000
 "dBurS1DetN","DetNS2    ",   1.00000
-"dSWBuS1DtN","DetNS1    ",  -1.00000
+"dSWBuS1DtN","S1_PN1    ",  -1.00000
 "dBurS2DetN","DetNS2    ",  -1.00000
-"dDigS1DetN","DetNS1    ",   1.00000
+"dDigS1DetN","S1_PN1    ",   1.00000
 "dDigS1DetN","DetNS2    ",  -1.00000
 "dDigS2DetN","DetNS2    ",   1.00000
 "dResS1DetP","POP1      ",   1.00000
-"dResS1DetP","DetPS1    ",  -1.00000
+"dResS1DetP","S1_PP1    ",  -1.00000
 "dResS2DetP","DetPS2    ",  -1.00000
 "dResS2DetP","POP1      ",   1.00000
-"dBurS1DetP","DetPS1    ",  -1.00000
+"dBurS1DetP","S1_PP1    ",  -1.00000
 "dBurS1DetP","DetPS2    ",   1.00000
-"dSWBuS1DtP","DetPS1    ",  -1.00000
+"dSWBuS1DtP","S1_PP1    ",  -1.00000
 "dBurS2DetP","DetPS2    ",  -1.00000
-"dDigS1DetP","DetPS1    ",   1.00000
+"dDigS1DetP","S1_PP1    ",   1.00000
 "dDigS1DetP","DetPS2    ",  -1.00000
 "dDigS2DetP","DetPS2    ",   1.00000
 "dResS1DetS","Opal      ",   1.00000
-"dResS1DetS","DetSiS1   ",  -1.00000
+"dResS1DetS","S1_Opal   ",  -1.00000
 "dResS2DetS","DetSiS2   ",  -1.00000
 "dResS2DetS","Opal      ",   1.00000
-"dBurS1DetS","DetSiS1   ",  -1.00000
+"dBurS1DetS","S1_Opal   ",  -1.00000
 "dBurS1DetS","DetSiS2   ",   1.00000
-"dSWBuS1DtS","DetSiS1   ",  -1.00000
+"dSWBuS1DtS","S1_Opal   ",  -1.00000
 "dBurS2DetS","DetSiS2   ",  -1.00000
-"dDigS1DetS","DetSiS1   ",   1.00000
+"dDigS1DetS","S1_Opal   ",   1.00000
 "dDigS1DetS","DetSiS2   ",  -1.00000
 "dDigS2DetS","DetSiS2   ",   1.00000
 "dResS1OOC ","POC2      ",   1.00000
-"dResS1OOC ","OOCS1     ",  -1.00000
+"dResS1OOC ","S1_PC2    ",  -1.00000
 "dResS2OOC ","OOCS2     ",  -1.00000
 "dResS2OOC ","POC2      ",   1.00000
-"dBurS1OOC ","OOCS1     ",  -1.00000
+"dBurS1OOC ","S1_PC2    ",  -1.00000
 "dBurS1OOC ","OOCS2     ",   1.00000
-"dSWBuS1OOC","OOCS1     ",  -1.00000
+"dSWBuS1OOC","S1_PC2    ",  -1.00000
 "dBurS2OOC ","OOCS2     ",  -1.00000
-"dDigS1OOC ","OOCS1     ",   1.00000
+"dDigS1OOC ","S1_PC2    ",   1.00000
 "dDigS1OOC ","OOCS2     ",  -1.00000
 "dDigS2OOC ","OOCS2     ",   1.00000
 "dResS1OON ","PON2      ",   1.00000
-"dResS1OON ","OONS1     ",  -1.00000
+"dResS1OON ","S1_PN2    ",  -1.00000
 "dResS2OON ","OONS2     ",  -1.00000
 "dResS2OON ","PON2      ",   1.00000
-"dBurS1OON ","OONS1     ",  -1.00000
+"dBurS1OON ","S1_PN2    ",  -1.00000
 "dBurS1OON ","OONS2     ",   1.00000
-"dSWBuS1OON","OONS1     ",  -1.00000
+"dSWBuS1OON","S1_PN2    ",  -1.00000
 "dBurS2OON ","OONS2     ",  -1.00000
-"dDigS1OON ","OONS1     ",   1.00000
+"dDigS1OON ","S1_PN2    ",   1.00000
 "dDigS1OON ","OONS2     ",  -1.00000
 "dDigS2OON ","OONS2     ",   1.00000
 "dResS1OOP ","POP2      ",   1.00000
-"dResS1OOP ","OOPS1     ",  -1.00000
+"dResS1OOP ","S1_PP2    ",  -1.00000
 "dResS2OOP ","OOPS2     ",  -1.00000
 "dResS2OOP ","POP2      ",   1.00000
-"dBurS1OOP ","OOPS1     ",  -1.00000
+"dBurS1OOP ","S1_PP2    ",  -1.00000
 "dBurS1OOP ","OOPS2     ",   1.00000
-"dSWBuS1OOP","OOPS1     ",  -1.00000
+"dSWBuS1OOP","S1_PP2    ",  -1.00000
 "dBurS2OOP ","OOPS2     ",  -1.00000
-"dDigS1OOP ","OOPS1     ",   1.00000
+"dDigS1OOP ","S1_PP2    ",   1.00000
 "dDigS1OOP ","OOPS2     ",  -1.00000
 "dDigS2OOP ","OOPS2     ",   1.00000
 "dResS1OOSi","Opal      ",   1.00000
-"dResS1OOSi","OOSiS1    ",  -1.00000
+"dResS1OOSi","S1_PS2    ",  -1.00000
 "dResS2OOSi","OOSiS2    ",  -1.00000
 "dResS2OOSi","Opal      ",   1.00000
-"dBurS1OOS ","OOSiS1    ",  -1.00000
+"dBurS1OOS ","S1_PS2    ",  -1.00000
 "dBurS1OOS ","OOSiS2    ",   1.00000
-"dSWBuS1OOS","OOSiS1    ",  -1.00000
+"dSWBuS1OOS","S1_PS2    ",  -1.00000
 "dBurS2OOS ","OOSiS2    ",  -1.00000
-"dDigS1OOS ","OOSiS1    ",   1.00000
+"dDigS1OOS ","S1_PS2    ",   1.00000
 "dDigS1OOS ","OOSiS2    ",  -1.00000
 "dDigS2OOS ","OOSiS2    ",   1.00000
 "dResS1Diat","POC1      ",   1.00000
@@ -1225,10 +1226,10 @@ stocfl,stocsu,stocsc
 "dGrzPON1  ","PON1      ",   1.00000
 "dGrzPOP1  ","POP1      ",   1.00000
 "dGrzPOSi1 ","Opal      ",   1.00000
-"dGrzDetCS1","DetCS1    ",   1.00000
-"dGrzDetNS1","DetNS1    ",   1.00000
-"dGrzDetPS1","DetPS1    ",   1.00000
-"dGrzDetSS1","DetSiS1   ",   1.00000
+"dGrzDetCS1","S1_PC1    ",   1.00000
+"dGrzDetNS1","S1_PN1    ",   1.00000
+"dGrzDetPS1","S1_PP1    ",   1.00000
+"dGrzDetSS1","S1_Opal   ",   1.00000
 "dGrzGreen ","Green     ",  -1.00000
 "dGrzDiat  ","Diat      ",  -1.00000
 "dGrzPeli  ","MPB1peli  ",  -1.00000
@@ -2373,9 +2374,9 @@ stocfl,stocsu,stocsc
 "dHrvRH05  ","RH05      ",  -1.00000
 "dHrvNRH05 ","NRH05     ",  -1.00000
 "dHrvPRH05 ","PRH05     ",  -1.00000
-"dM_MortS1 ","DetCS1    ",   1.00000
-"dM_NMrtS1 ","DetNS1    ",   1.00000
-"dM_PMrtS1 ","DetPS1    ",   1.00000
+"dM_MortS1 ","S1_PC1    ",   1.00000
+"dM_NMrtS1 ","S1_PN1    ",   1.00000
+"dM_PMrtS1 ","S1_PP1    ",   1.00000
 "dM_Mor    ","POC1      ",   1.00000
 "dM_NMrt   ","PON1      ",   1.00000
 "dM_PMrt   ","POP1      ",   1.00000
@@ -2408,16 +2409,16 @@ stocfl,stocsu,stocsc
 "dM_Pca    ","M_SMItot  ",   1.00000
 "dM_POC1   ","POC1      ",  -1.00000
 "dM_DetC   ","DetC      ",  -1.00000
-"dM_DCS1   ","DetCS1    ",  -1.00000
+"dM_DCS1   ","S1_PC1    ",  -1.00000
 "dM_PON1   ","PON1      ",  -1.00000
 "dM_DetN   ","DetN      ",  -1.00000
-"dM_DNS1   ","DetNS1    ",  -1.00000
+"dM_DNS1   ","S1_PN1    ",  -1.00000
 "dM_POP    ","POP1      ",  -1.00000
 "dM_DetP   ","DetP      ",  -1.00000
-"dM_DPS1   ","DetPS1    ",  -1.00000
+"dM_DPS1   ","S1_PP1    ",  -1.00000
 "dM_POSi   ","Opal      ",  -1.00000
 "dM_DSi    ","DetSi     ",  -1.00000
-"dM_DSiS   ","DetSiS1   ",  -1.00000
+"dM_DSiS   ","S1_Opal   ",  -1.00000
 "dM_Grn    ","GREEN     ",  -1.00000
 "dM_Diat   ","DIAT      ",  -1.00000
 "dM_ALG01  ","BLOOMALG01",  -1.00000
@@ -2458,9 +2459,9 @@ stocfl,stocsu,stocsc
 "dM_F6     ","F6        ",  -1.00000
 "dM_F7     ","F7        ",  -1.00000
 "dM_F8     ","F8        ",  -1.00000
-"dZ_MortS1 ","DetCS1    ",   1.00000
-"dZ_NMrtS1 ","DetNS1    ",   1.00000
-"dZ_PMrtS1 ","DetPS1    ",   1.00000
+"dZ_MortS1 ","S1_PC1    ",   1.00000
+"dZ_NMrtS1 ","S1_PN1    ",   1.00000
+"dZ_PMrtS1 ","S1_PP1    ",   1.00000
 "dZ_Mor    ","POC1      ",   1.00000
 "dZ_NMrt   ","PON1      ",   1.00000
 "dZ_PMrt   ","POP1      ",   1.00000
@@ -2493,16 +2494,16 @@ stocfl,stocsu,stocsc
 "dZ_Pca    ","Z_SMItot  ",   1.00000
 "dZ_POC1   ","POC1      ",  -1.00000
 "dZ_DetC   ","DetC      ",  -1.00000
-"dZ_DCS1   ","DetCS1    ",  -1.00000
+"dZ_DCS1   ","S1_PC1    ",  -1.00000
 "dZ_PON1   ","PON1      ",  -1.00000
 "dZ_DetN   ","DetN      ",  -1.00000
-"dZ_DNS1   ","DetNS1    ",  -1.00000
+"dZ_DNS1   ","S1_PN1    ",  -1.00000
 "dZ_POP    ","POP1      ",  -1.00000
 "dZ_DetP   ","DetP      ",  -1.00000
-"dZ_DPS1   ","DetPS1    ",  -1.00000
+"dZ_DPS1   ","S1_PP1    ",  -1.00000
 "dZ_POSi   ","Opal      ",  -1.00000
 "dZ_DSi    ","DetSi     ",  -1.00000
-"dZ_DSiS   ","DetSiS1   ",  -1.00000
+"dZ_DSiS   ","S1_Opal   ",  -1.00000
 "dZ_Grn    ","GREEN     ",  -1.00000
 "dZ_Diat   ","DIAT      ",  -1.00000
 "dZ_ALG01  ","BLOOMALG01",  -1.00000
@@ -2543,9 +2544,9 @@ stocfl,stocsu,stocsc
 "dZ_F6     ","F6        ",  -1.00000
 "dZ_F7     ","F7        ",  -1.00000
 "dZ_F8     ","F8        ",  -1.00000
-"dG3_MortS1","DetCS1    ",   1.00000
-"dG3_NMrtS1","DetNS1    ",   1.00000
-"dG3_PMrtS1","DetPS1    ",   1.00000
+"dG3_MortS1","S1_PC1    ",   1.00000
+"dG3_NMrtS1","S1_PN1    ",   1.00000
+"dG3_PMrtS1","S1_PP1    ",   1.00000
 "dG3_Mor   ","POC1      ",   1.00000
 "dG3_NMrt  ","PON1      ",   1.00000
 "dG3_PMrt  ","POP1      ",   1.00000
@@ -2578,16 +2579,16 @@ stocfl,stocsu,stocsc
 "dG3_Pca   ","G3_SMItot ",   1.00000
 "dG3_POC1  ","POC1      ",  -1.00000
 "dG3_DetC  ","DetC      ",  -1.00000
-"dG3_DCS1  ","DetCS1    ",  -1.00000
+"dG3_DCS1  ","S1_PC1    ",  -1.00000
 "dG3_PON1  ","PON1      ",  -1.00000
 "dG3_DetN  ","DetN      ",  -1.00000
-"dG3_DNS1  ","DetNS1    ",  -1.00000
+"dG3_DNS1  ","S1_PN1    ",  -1.00000
 "dG3_POP   ","POP1      ",  -1.00000
 "dG3_DetP  ","DetP      ",  -1.00000
-"dG3_DPS1  ","DetPS1    ",  -1.00000
+"dG3_DPS1  ","S1_PP1    ",  -1.00000
 "dG3_POSi  ","Opal      ",  -1.00000
 "dG3_DSi   ","DetSi     ",  -1.00000
-"dG3_DSiS  ","DetSiS1   ",  -1.00000
+"dG3_DSiS  ","S1_Opal   ",  -1.00000
 "dG3_Grn   ","GREEN     ",  -1.00000
 "dG3_Diat  ","DIAT      ",  -1.00000
 "dG3_ALG01 ","BLOOMALG01",  -1.00000
@@ -2628,9 +2629,9 @@ stocfl,stocsu,stocsc
 "dG3_F6    ","F6        ",  -1.00000
 "dG3_F7    ","F7        ",  -1.00000
 "dG3_F8    ","F8        ",  -1.00000
-"dG4_MortS1","DetCS1    ",   1.00000
-"dG4_NMrtS1","DetNS1    ",   1.00000
-"dG4_PMrtS1","DetPS1    ",   1.00000
+"dG4_MortS1","S1_PC1    ",   1.00000
+"dG4_NMrtS1","S1_PN1    ",   1.00000
+"dG4_PMrtS1","S1_PP1    ",   1.00000
 "dG4_Mor   ","POC1      ",   1.00000
 "dG4_NMrt  ","PON1      ",   1.00000
 "dG4_PMrt  ","POP1      ",   1.00000
@@ -2663,16 +2664,16 @@ stocfl,stocsu,stocsc
 "dG4_Pca   ","G4_SMItot ",   1.00000
 "dG4_POC1  ","POC1      ",  -1.00000
 "dG4_DetC  ","DetC      ",  -1.00000
-"dG4_DCS1  ","DetCS1    ",  -1.00000
+"dG4_DCS1  ","S1_PC1    ",  -1.00000
 "dG4_PON1  ","PON1      ",  -1.00000
 "dG4_DetN  ","DetN      ",  -1.00000
-"dG4_DNS1  ","DetNS1    ",  -1.00000
+"dG4_DNS1  ","S1_PN1    ",  -1.00000
 "dG4_POP   ","POP1      ",  -1.00000
 "dG4_DetP  ","DetP      ",  -1.00000
-"dG4_DPS1  ","DetPS1    ",  -1.00000
+"dG4_DPS1  ","S1_PP1    ",  -1.00000
 "dG4_POSi  ","Opal      ",  -1.00000
 "dG4_DSi   ","DetSi     ",  -1.00000
-"dG4_DSiS  ","DetSiS1   ",  -1.00000
+"dG4_DSiS  ","S1_Opal   ",  -1.00000
 "dG4_Grn   ","GREEN     ",  -1.00000
 "dG4_Diat  ","DIAT      ",  -1.00000
 "dG4_ALG01 ","BLOOMALG01",  -1.00000
@@ -2713,9 +2714,9 @@ stocfl,stocsu,stocsc
 "dG4_F6    ","F6        ",  -1.00000
 "dG4_F7    ","F7        ",  -1.00000
 "dG4_F8    ","F8        ",  -1.00000
-"dG5_MortS1","DetCS1    ",   1.00000
-"dG5_NMrtS1","DetNS1    ",   1.00000
-"dG5_PMrtS1","DetPS1    ",   1.00000
+"dG5_MortS1","S1_PC1    ",   1.00000
+"dG5_NMrtS1","S1_PN1    ",   1.00000
+"dG5_PMrtS1","S1_PP1    ",   1.00000
 "dG5_Mor   ","POC1      ",   1.00000
 "dG5_NMrt  ","PON1      ",   1.00000
 "dG5_PMrt  ","POP1      ",   1.00000
@@ -2748,16 +2749,16 @@ stocfl,stocsu,stocsc
 "dG5_Pca   ","G5_SMItot ",   1.00000
 "dG5_POC1  ","POC1      ",  -1.00000
 "dG5_DetC  ","DetC      ",  -1.00000
-"dG5_DCS1  ","DetCS1    ",  -1.00000
+"dG5_DCS1  ","S1_PC1    ",  -1.00000
 "dG5_PON1  ","PON1      ",  -1.00000
 "dG5_DetN  ","DetN      ",  -1.00000
-"dG5_DNS1  ","DetNS1    ",  -1.00000
+"dG5_DNS1  ","S1_PN1    ",  -1.00000
 "dG5_POP   ","POP1      ",  -1.00000
 "dG5_DetP  ","DetP      ",  -1.00000
-"dG5_DPS1  ","DetPS1    ",  -1.00000
+"dG5_DPS1  ","S1_PP1    ",  -1.00000
 "dG5_POSi  ","Opal      ",  -1.00000
 "dG5_DSi   ","DetSi     ",  -1.00000
-"dG5_DSiS  ","DetSiS1   ",  -1.00000
+"dG5_DSiS  ","S1_Opal   ",  -1.00000
 "dG5_Grn   ","GREEN     ",  -1.00000
 "dG5_Diat  ","DIAT      ",  -1.00000
 "dG5_ALG01 ","BLOOMALG01",  -1.00000
@@ -3105,10 +3106,10 @@ stocfl,stocsu,stocsc
 "dMPB2ResS1","MPB2psamS1",  -1.00000
 "dMPB1MorS1","MPB1peliS1",  -1.00000
 "dMPB2MorS1","MPB2psamS1",  -1.00000
-"dMPBDetCS ","DetCS1    ",   1.00000
-"dMPBDetNS ","DetNS1    ",   1.00000
-"dMPBDetPS ","DetPS1    ",   1.00000
-"dMPBDetSS ","DetSiS1   ",   1.00000
+"dMPBDetCS ","S1_PC1    ",   1.00000
+"dMPBDetNS ","S1_PN1    ",   1.00000
+"dMPBDetPS ","S1_PP1    ",   1.00000
+"dMPBDetSS ","S1_Opal   ",   1.00000
 "dN1VB01upw","NH4       ",  -1.00000
 "dN2VB01upw","NO3       ",  -1.00000
 "dP1VB01upw","AAP       ",  -1.00000

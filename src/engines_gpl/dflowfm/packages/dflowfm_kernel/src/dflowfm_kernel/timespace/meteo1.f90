@@ -27,80 +27,12 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
-! 
-! 
 module m_itdate
    character(len=8) :: refdat
    integer          :: itdate      !< should be user specified for (asc routines)
    integer          :: jul0, imonth0, iday0, iyear0
    double precision :: Tzone ! doubling with "use m_flowtimes, only : tzone"
    end module m_itdate
-
-module timespace_parameters
-  ! enumeration for filetypes van de providers
-  integer, parameter :: uniform                        =  1  ! kx values per tijdstap 1 dim arr       uni
-  integer, parameter :: unimagdir                      =  2  ! kx values per tijdstap 1 dim arr, mag/dir transf op index 1,2 u,v
-  integer, parameter :: svwp                           =  3  ! 3 velden per tijdstap 3 dim array      noint
-  integer, parameter :: arcinfo                        =  4  ! 1 veld per tijdstap 2 dim array        bilin/direct
-  integer, parameter :: spiderweb                      =  5  ! 3 veld per tijdstap 3 dim array        bilin/spw
-  integer, parameter :: curvi                          =  6  ! 1 veld per tijdstap 2 dim array        bilin/findnm
-  integer, parameter :: triangulation                  =  7  ! 1 veld per tijdstap                    triang
-  integer, parameter :: triangulationmagdir            =  8  ! 2 velden u,v per tijdstap 3 dim array  triang, vectormax = 2
-                                                             ! op basis van windreeksen op stations mag/dir
-  integer, parameter :: node_id                        = -1  ! for a reference to a node ID
-  integer, parameter :: link_id                        = -1  ! for a reference to a link ID
-  integer, parameter :: poly_tim                       =  9  ! for line oriented bnd conditions, refs to uniform, fourier or harmonic
-  integer, parameter :: inside_polygon                 = 10  ! Constant value inside polygon, used for initial/parameter fields.
-  integer, parameter :: ncgrid                         = 11  ! NetCDF grid, rectangular type as arcinfo  
-  integer, parameter :: ncflow                         = 12  ! NetCDF flow, with arbitrary type of input
-  integer, parameter :: ncwave                         = 14  ! NetCDF com file, with arbitrary type of input
-  integer, parameter :: bcascii                        = 17  ! .bc format as ASCII file
-  integer, parameter :: field1d                        = 18  ! Scalar quantity on a 1D network, used for initial/parameter fields.
-  integer, parameter :: geotiff                        = 19  ! GeoTIFF, used for initial/parameter fields.
-  integer, parameter :: max_file_types                 = 103 !  max nr of supported types for end user in ext file.
-  ! Enumeration for file types of sub-providers (not directly in ext file)
-  integer, parameter :: fourier                        = 101 ! period(hrs), ampl(m), phas(deg) NOTE: not directly used in ext file by users.
-  integer, parameter :: multiple_uni                   = 102 ! multiple time series, no spatial relation 
-  integer, parameter :: qhtable                        = 103 ! used to link to dataprovider file
-
-  ! het filetype legt vast  :  a) format file
-  !                            b) vectormax van grootheid / heden in file
-  !                            c) elementset waarop grootheid is gedefinieerd
-  !                            d) is daarmee bepalend voor de toepasbare interpolatiemethodes
-  !
-
-
-  ! Enumeration for location specification types (used in selectelset_internal_nodes).
-  integer, parameter :: LOCTP_UNKNOWN                  = -1 !< Undefined location specification type.
-  integer, parameter :: LOCTP_POLYGON_FILE             = 10 !< A polygon input file used for inside-polygon check.
-  integer, parameter :: LOCTP_POLYGON_XY               = 11 !< x/y arrays containing a polygon used for inside-polygon check.
-  integer, parameter :: LOCTP_POLYLINE_FILE            = 12 !< A polyline input file used for link-crosses-polyline check.
-  integer, parameter :: LOCTP_POLYLINE_XY              = 13 !< x/y arrays containing a polyline used for link-crosses-polyline check.
-  integer, parameter :: LOCTP_BRANCHID_CHAINAGE        = 14 !< branchid+chainage combination to select the 1D grid point closest to that network branch location.
-  integer, parameter :: LOCTP_NODEID                   = 15 !< nodeid to select the 1D grid point closest to the network point with that nodeId.
-  integer, parameter :: LOCTP_CONTACTID                = 16 !< contactid to select the 1D flow link corresponding with that contactId.
-
-  integer            :: mdia                           =  0 !  -1  ! -1 = write dia, 0 = do not write dia
-
-  ! enumeration for interpolation methods of providers
-
-  integer, parameter :: justupdate                     =  0  ! provider just updates, another provider that
-                                                             ! pointers to this one does the actual interpolation
-  integer, parameter :: spaceandtime                   =  1  ! intp space and time (getval)
-                                                             ! keep  2 meteofields in memory
-  integer, parameter :: spacefirst                     =  2  ! first intp space (update), next intp. time (getval)
-                                                             ! keep 2 flowfields in memory
-  integer, parameter :: weightfactors                  =  3  ! save weightfactors, intp space and time (getval)
-                                                             ! keep 2 pointer- and weight sets in memory
-
-end module timespace_parameters
-
-
-
-    
-    
-    
-
 
 ! ==========================================================================
 
@@ -243,7 +175,7 @@ contains
    !! The (external forcing) file is opened elsewhere and read block-by-block
    !! by consecutive calls to this routine.
    subroutine readprovider(minp,qid,filename,filetype,method,operand,transformcoef,ja,varname,smask, maxSearchRadius)
-     use m_flowexternalforcings, only: NTRANSFORMCOEF
+      use fm_external_forcings_data, only: NTRANSFORMCOEF
      use MessageHandling, only : LEVEL_WARN, LEVEL_INFO, mess
      ! globals
      integer,           intent(in)            :: minp             !< File handle to already opened input file.
@@ -300,7 +232,7 @@ contains
 
      keywrd = 'QUANTITY'
      call zoekja(minp,rec,keywrd, ja)
-     if (ja .eq. 1) then
+      if (ja == 1) then
         l1 = index(rec,'=') + 1
         call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
         read(rec(l2:),'(a)',err=990) qid
@@ -310,7 +242,7 @@ contains
    
      keywrd = 'FILENAME'
      call zoekja(minp,rec,keywrd, ja)
-     if (ja .eq. 1) then
+      if (ja == 1) then
         l1 = index(rec,'=') + 1
         call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
         read(rec(l2:),'(a)',err=990) filename
@@ -338,7 +270,7 @@ contains
    
      keywrd = 'FILETYPE'
      call zoekja(minp,rec,keywrd, ja)
-     if (ja .eq. 1) then
+      if (ja == 1) then
         l1 = index(rec,'=') + 1
         call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
         read(rec(l2:),*,    err=990) filetype
@@ -349,7 +281,7 @@ contains
      keywrd = 'METHOD'
      method = spaceandtime  ! default : spaceandtime
      call zoekja(minp,rec,keywrd, ja)
-     if (ja .eq. 1)      then
+      if (ja == 1) then
         l1 = index(rec,'=') + 1
         call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
         read(rec(l2:),*,    err=990) method
@@ -385,7 +317,7 @@ contains
      keywrd  = 'OPERAND'
      OPERAND = 'O'  ! hk : default =O
      call zoekja(minp,rec,keywrd, ja)
-     if (ja .eq. 1) then
+      if (ja == 1) then
         l1 = index(rec,'=') + 1
         call checkForSpacesInProvider(rec, l1, l2)               ! l2 = l1 + #spaces after the equal-sign
         read(rec(l2:l2),'(a1)',    err=990) operand
@@ -397,7 +329,7 @@ contains
 
      if (qid == 'generalstructure') then 
         call mess(LEVEL_WARN, 'Keyword [generalstructure] is not supported in the external forcing file. &
-                               Please use a structure file <*.ini> instead.')
+ &                               Please use a structure file <*.ini> instead.')
         if (NUMGENERALKEYWRD_OLD < NTRANSFORMCOEF) call mess(LEVEL_WARN,'Not all expected keywords are provided.')
         if (NUMGENERALKEYWRD_OLD > NTRANSFORMCOEF) call mess(LEVEL_WARN,'More keywords provided than expected.')
         do k = 1,NUMGENERALKEYWRD_OLD
@@ -503,7 +435,7 @@ contains
    
         eqsignsp = eqsign
         do i = 0, 256-eqsign
-            if (rec(eqsign+i:eqsign+i) .eq. ' ') then
+         if (rec(eqsign + i:eqsign + i) == ' ') then
                 eqsignsp = eqsignsp + 1
             else
                 exit
@@ -688,13 +620,13 @@ contains
    if (INI == 0 ) then 
        INI = 1  
    
-      XMN = 1D30 ; YMN = 1D30 ; XMX = -1D30 ; YMX = -1D30
-      DO I   = 1,ndx
+         XMN = 1d30; YMN = 1d30; XMX = -1d30; YMX = -1d30
+         do I = 1, ndx
          xmn = min(xz(i),xmn)
          xmx = max(xz(i),xmx)
          ymn = min(yz(i),ymn)
          ymx = max(yz(i),ymx)
-      ENDDO
+         end do
    
       i1  = floor(xmn); i2 = floor(xmx) + 1
       j1  = floor(ymn); j2 = floor(ymx) + 1
@@ -703,7 +635,7 @@ contains
          j1 = j1-1 ; j2 = j2+1
       endif
       
-      if ( jaselfal .eq.1 .and. jampi == 1) then
+         if (jaselfal == 1 .and. jampi == 1) then
 !        globally reduce i1, i2, j1, j2
          i1 = -i1
          j1 = -j1
@@ -712,8 +644,7 @@ contains
          j1 = -j1
       end if
       
-      
-      IF (ALLOCATED (XZ2) ) DEALLOCATE (XZ2,YZ2,TD2)
+         if (allocated(XZ2)) deallocate (XZ2, YZ2, TD2)
       allocate ( xz2(i1:i2,j1:j2), stat=ierr)   ! tot aerr 
       allocate ( yz2(i1:i2,j1:j2), stat=ierr)  
       allocate ( td2(i1:i2,j1:j2), stat=ierr)
@@ -786,7 +717,7 @@ contains
                       ( td2(m1,n2) + self(m1,n2) )*f12
                     
 !        for output only
-         if ( jamaptidep.gt.0 .and. Np.gt.1 ) then ! store SAL potential seperately
+            if (jamaptidep > 0 .and. Np > 1) then ! store SAL potential seperately
             tidep(2,n) = ( self(m1,n1) )*f11 +    &
                          ( self(m2,n1) )*f21 +    &
                          ( self(m2,n2) )*f22 +    &
@@ -847,6 +778,8 @@ contains
    use m_partitioninfo
    use kdtree2Factory
    use unstruc_messages
+      use m_find_flownode, only: find_nearest_flownodes_kdtree
+
    implicit none
    integer          :: i1, i2, j1, j2, k, k1, LL, i, j, iL, iR, ierr
    integer, save    :: ini = 0
@@ -879,7 +812,7 @@ contains
       
       allocate ( jasea(i1:i2,j1:j2), stat=ierr) 
       
-      if ( jakdtree.eq.1 ) then
+         if (jakdtree == 1) then
          call realloc(xx, (/ Ni, Nj /), keepExisting=.false., fill=0d0)
          call realloc(yy, (/ Ni, Nj /), keepExisting=.false., fill=0d0)
          call realloc(kk, (/ Ni, Nj /), keepExisting=.false., fill=0)
@@ -889,8 +822,8 @@ contains
                yy(i-i1+1,j-j1+1) = dble(j)
             end do
          end do
-         call find_flowcells_kdtree(treeglob,Ni*Nj,xx,yy,kk,jakdtree,INDTP_2D, ierror)
-         if ( ierror.ne.0 ) then
+            call find_nearest_flownodes_kdtree(treeglob, Ni * Nj, xx, yy, kk, jakdtree, INDTP_2D, ierror)
+            if (ierror /= 0) then
             jakdtree = 0
          end if
          
@@ -898,10 +831,10 @@ contains
          if ( allocated(yy) ) deallocate(yy)
       end if
       
-      if ( jampi.eq.0 ) then  ! sequential
+         if (jampi == 0) then ! sequential
          do j = j1,j2
              do i = i1,i2
-                if( jakdtree.eq.1 ) then
+                  if (jakdtree == 1) then
                    k = kk(i-i1+1,j-j1+1)
                 else
                    x = dble(i)
@@ -926,7 +859,7 @@ contains
          
          do j = j1,j2
              do i = i1,i2
-                if( jakdtree.eq.1 ) then
+                  if (jakdtree == 1) then
                    k = kk(i-i1+1,j-j1+1)
                 else
                    x = dble(i)
@@ -934,7 +867,7 @@ contains
                    call in_flowcell(x, y, K)
                 end if
                 
-                if ( k.le.Ndxi ) then
+                  if (k <= Ndxi) then
                    k1 = k
                 else  ! boundary nodes: take connected internal node for domain number (boundary nodes are always in own domain)
                    LL = iabs(nd(k)%ln(1))  !< only one link connected to boundary node
@@ -942,7 +875,7 @@ contains
                 end if
              
                 if ( k > 0 ) then
-                   if ( idomain(k1).eq.my_rank ) then
+                     if (idomain(k1) == my_rank) then
 !                   jasea(i,j) = 1
                       workin(1,i-i1+1,j-j1+1) = 1d0
                       workin(2,i-i1+1,j-j1+1) = 0d0 ! dummy
@@ -961,7 +894,7 @@ contains
          do j=j1,j2
             do i=i1,i2
                wo = workout(1,i-i1+1,j-j1+1)
-               if ( wo.eq.0 ) then
+                  if (wo == 0) then
                   jasea(i,j) = 0
                else
                   jasea(i,j) = 1
@@ -984,13 +917,13 @@ contains
    avhs = 0d0
    area = 0d0
    
-   if ( jampi.eq.0 ) then
+      if (jampi == 0) then
       do k = 1,ndx
          i = nint(xz(k))
          j = nint(yz(k))
          
          Ds = 0d0
-         if ( jaSELFALcorrectWLwithIni.eq.1 ) then
+            if (jaSELFALcorrectWLwithIni == 1) then
 !           water level rise
             Ds = s1init(k)
          end if
@@ -1008,7 +941,7 @@ contains
          i = nint(xz(k))
          j = nint(yz(k))
          
-         if ( k.le.Ndxi ) then   ! internal nodes
+            if (k <= Ndxi) then ! internal nodes
             k1 = k
          else  ! boundary nodes: take connected internal node for domain number (boundary nodes are always in own domain)
             LL = iabs(nd(k)%ln(1))  !< only one link connected to boundary node
@@ -1016,12 +949,12 @@ contains
          end if
          
          Ds = 0d0
-         if ( jaSELFALcorrectWLwithIni.eq.1 ) then
+            if (jaSELFALcorrectWLwithIni == 1) then
 !           water level rise
             Ds = s1init(k)
          end if
          
-         if (hs(k)>0.0 .and. idomain(k1).eq.my_rank ) then
+            if (hs(k) > 0.0 .and. idomain(k1) == my_rank) then
 !                    avhs(i,j) = avhs(i,j) + s1(k)*ba(k)
 !                    area(i,j) = area(i,j) + ba(k)
          
@@ -1243,7 +1176,7 @@ contains
         k1=0
        endif
        do j = j1,j2
-           if (j+90>=0 .AND. j-90<=180) then
+            if (j + 90 >= 0 .and. j - 90 <= 180) then
             self(i,j)=self1(j+90,k1)
            endif
        enddo
@@ -1294,2057 +1227,2057 @@ contains
    double precision, dimension(0:1024), intent(out) :: llnh, llnk
    
    !Fill arrays
-llnh( 0  )= 0.0000000000D+00
-llnh( 1  )= -0.1285877758D+01
-llnh( 2  )= -0.9915810331D+00
-llnh( 3  )= -0.1050767745D+01
-llnh( 4  )= -0.1053393012D+01
-llnh( 5  )= -0.1086317605D+01
-llnh( 6  )= -0.1143860336D+01
-llnh( 7  )= -0.1212408459D+01
-llnh( 8  )= -0.1283943275D+01
-llnh( 9  )= -0.1354734845D+01
-llnh( 10 )= -0.1423282851D+01
-llnh( 11 )= -0.1489094554D+01
-llnh( 12 )= -0.1552074997D+01
-llnh( 13 )= -0.1612273740D+01
-llnh( 14 )= -0.1669763369D+01
-llnh( 15 )= -0.1724635488D+01
-llnh( 16 )= -0.1776963521D+01
-llnh( 17 )= -0.1826825601D+01
-llnh( 18 )= -0.1874298467D+01
-llnh( 19 )= -0.1919461416D+01
-llnh( 20 )= -0.1962393632D+01
-llnh( 21 )= -0.2003182253D+01
-llnh( 22 )= -0.2041915786D+01
-llnh( 23 )= -0.2078680486D+01
-llnh( 24 )= -0.2113573061D+01
-llnh( 25 )= -0.2146680270D+01
-llnh( 26 )= -0.2178105661D+01
-llnh( 27 )= -0.2207927152D+01
-llnh( 28 )= -0.2236242846D+01
-llnh( 29 )= -0.2263132641D+01
-llnh( 30 )= -0.2288687940D+01
-llnh( 31 )= -0.2312991757D+01
-llnh( 32 )= -0.2336112443D+01
-llnh( 33 )= -0.2358128831D+01
-llnh( 34 )= -0.2379107893D+01
-llnh( 35 )= -0.2399120761D+01
-llnh( 36 )= -0.2418226351D+01
-llnh( 37 )= -0.2436482905D+01
-llnh( 38 )= -0.2453948379D+01
-llnh( 39 )= -0.2470670195D+01
-llnh( 40 )= -0.2486697757D+01
-llnh( 41 )= -0.2502076334D+01
-llnh( 42 )= -0.2516847401D+01
-llnh( 43 )= -0.2531050008D+01
-llnh( 44 )= -0.2544719530D+01
-llnh( 45 )= -0.2557890739D+01
-llnh( 46 )= -0.2570594319D+01
-llnh( 47 )= -0.2582859779D+01
-llnh( 48 )= -0.2594714216D+01
-llnh( 49 )= -0.2606182782D+01
-llnh( 50 )= -0.2617289738D+01
-llnh( 51 )= -0.2628056023D+01
-llnh( 52 )= -0.2638502978D+01
-llnh( 53 )= -0.2648649164D+01
-llnh( 54 )= -0.2658512061D+01
-llnh( 55 )= -0.2668109142D+01
-llnh( 56 )= -0.2677455130D+01
-llnh( 57 )= -0.2686564655D+01
-llnh( 58 )= -0.2695451439D+01
-llnh( 59 )= -0.2704127764D+01
-llnh( 60 )= -0.2712605707D+01
-llnh( 61 )= -0.2720896238D+01
-llnh( 62 )= -0.2729009765D+01
-llnh( 63 )= -0.2736955903D+01
-llnh( 64 )= -0.2744743969D+01
-llnh( 65 )= -0.2752382423D+01
-llnh( 66 )= -0.2759879282D+01
-llnh( 67 )= -0.2767242102D+01
-llnh( 68 )= -0.2774478021D+01
-llnh( 69 )= -0.2781593811D+01
-llnh( 70 )= -0.2788595709D+01
-llnh( 71 )= -0.2795489680D+01
-llnh( 72 )= -0.2802281343D+01
-llnh( 73 )= -0.2808976028D+01
-llnh( 74 )= -0.2815578704D+01
-llnh( 75 )= -0.2822094093D+01
-llnh( 76 )= -0.2828526669D+01
-llnh( 77 )= -0.2834880683D+01
-llnh( 78 )= -0.2841160150D+01
-llnh( 79 )= -0.2847368769D+01
-llnh( 80 )= -0.2853510163D+01
-llnh( 81 )= -0.2859587939D+01
-llnh( 82 )= -0.2865604931D+01
-llnh( 83 )= -0.2871564378D+01
-llnh( 84 )= -0.2877469169D+01
-llnh( 85 )= -0.2883322045D+01
-llnh( 86 )= -0.2889125648D+01
-llnh( 87 )= -0.2894882413D+01
-llnh( 88 )= -0.2900594702D+01
-llnh( 89 )= -0.2906264743D+01
-llnh( 90 )= -0.2911894687D+01
-llnh( 91 )= -0.2917486512D+01
-llnh( 92 )= -0.2923042145D+01
-llnh( 93 )= -0.2928563403D+01
-llnh( 94 )= -0.2934052041D+01
-llnh( 95 )= -0.2939509674D+01
-llnh( 96 )= -0.2944937877D+01
-llnh( 97 )= -0.2950338132D+01
-llnh( 98 )= -0.2955711880D+01
-llnh( 99 )= -0.2961060436D+01
-llnh( 100   )= -0.2966385090D+01
-llnh( 101   )= -0.2971687056D+01
-llnh( 102   )= -0.2976967512D+01
-llnh( 103   )= -0.2982227536D+01
-llnh( 104   )= -0.2987468183D+01
-llnh( 105   )= -0.2992690446D+01
-llnh( 106   )= -0.2997895290D+01
-llnh( 107   )= -0.3003083596D+01
-llnh( 108   )= -0.3008256228D+01
-llnh( 109   )= -0.3013413998D+01
-llnh( 110   )= -0.3018557697D+01
-llnh( 111   )= -0.3023688044D+01
-llnh( 112   )= -0.3028805745D+01
-llnh( 113   )= -0.3033911465D+01
-llnh( 114   )= -0.3039005849D+01
-llnh( 115   )= -0.3044089483D+01
-llnh( 116   )= -0.3049162947D+01
-llnh( 117   )= -0.3054226779D+01
-llnh( 118   )= -0.3059281508D+01
-llnh( 119   )= -0.3064327612D+01
-llnh( 120   )= -0.3069365560D+01
-llnh( 121   )= -0.3074395793D+01
-llnh( 122   )= -0.3079418737D+01
-llnh( 123   )= -0.3084434789D+01
-llnh( 124   )= -0.3089444323D+01
-llnh( 125   )= -0.3094447698D+01
-llnh( 126   )= -0.3099445739D+01
-llnh( 127   )= -0.3104437859D+01
-llnh( 128   )= -0.3109424785D+01
-llnh( 129   )= -0.3114406817D+01
-llnh( 130   )= -0.3119384228D+01
-llnh( 131   )= -0.3124357299D+01
-llnh( 132   )= -0.3129326253D+01
-llnh( 133   )= -0.3134291331D+01
-llnh( 134   )= -0.3139252753D+01
-llnh( 135   )= -0.3144210746D+01
-llnh( 136   )= -0.3149165487D+01
-llnh( 137   )= -0.3154117170D+01
-llnh( 138   )= -0.3159065971D+01
-llnh( 139   )= -0.3164012071D+01
-llnh( 140   )= -0.3168955611D+01
-llnh( 141   )= -0.3173896746D+01
-llnh( 142   )= -0.3178835615D+01
-llnh( 143   )= -0.3183772364D+01
-llnh( 144   )= -0.3188707103D+01
-llnh( 145   )= -0.3193639953D+01
-llnh( 146   )= -0.3198571025D+01
-llnh( 147   )= -0.3203500433D+01
-llnh( 148   )= -0.3208428262D+01
-llnh( 149   )= -0.3213354609D+01
-llnh( 150   )= -0.3218279559D+01
-llnh( 151   )= -0.3223203202D+01
-llnh( 152   )= -0.3228125600D+01
-llnh( 153   )= -0.3233046832D+01
-llnh( 154   )= -0.3237966958D+01
-llnh( 155   )= -0.3242886050D+01
-llnh( 156   )= -0.3247804156D+01
-llnh( 157   )= -0.3252721331D+01
-llnh( 158   )= -0.3257637624D+01
-llnh( 159   )= -0.3262553244D+01
-llnh( 160   )= -0.3267467917D+01
-llnh( 161   )= -0.3272381835D+01
-llnh( 162   )= -0.3277295035D+01
-llnh( 163   )= -0.3282207554D+01
-llnh( 164   )= -0.3287119415D+01
-llnh( 165   )= -0.3292030647D+01
-llnh( 166   )= -0.3296941273D+01
-llnh( 167   )= -0.3301851314D+01
-llnh( 168   )= -0.3306760804D+01
-llnh( 169   )= -0.3311669742D+01
-llnh( 170   )= -0.3316578148D+01
-llnh( 171   )= -0.3321486032D+01
-llnh( 172   )= -0.3326393422D+01
-llnh( 173   )= -0.3331300520D+01
-llnh( 174   )= -0.3336207644D+01
-llnh( 175   )= -0.3341113629D+01
-llnh( 176   )= -0.3346019149D+01
-llnh( 177   )= -0.3350924191D+01
-llnh( 178   )= -0.3355828764D+01
-llnh( 179   )= -0.3360732862D+01
-llnh( 180   )= -0.3365636499D+01
-llnh( 181   )= -0.3370539656D+01
-llnh( 182   )= -0.3375442336D+01
-llnh( 183   )= -0.3380344530D+01
-llnh( 184   )= -0.3385246241D+01
-llnh( 185   )= -0.3390147452D+01
-llnh( 186   )= -0.3395048158D+01
-llnh( 187   )= -0.3399948348D+01
-llnh( 188   )= -0.3404848021D+01
-llnh( 189   )= -0.3409747153D+01
-llnh( 190   )= -0.3414645740D+01
-llnh( 191   )= -0.3419543764D+01
-llnh( 192   )= -0.3424441221D+01
-llnh( 193   )= -0.3429338088D+01
-llnh( 194   )= -0.3434234352D+01
-llnh( 195   )= -0.3439129995D+01
-llnh( 196   )= -0.3444025009D+01
-llnh( 197   )= -0.3448919371D+01
-llnh( 198   )= -0.3453813064D+01
-llnh( 199   )= -0.3458706066D+01
-llnh( 200   )= -0.3463598369D+01
-llnh( 201   )= -0.3468489946D+01
-llnh( 202   )= -0.3473380779D+01
-llnh( 203   )= -0.3478270847D+01
-llnh( 204   )= -0.3483160133D+01
-llnh( 205   )= -0.3488048612D+01
-llnh( 206   )= -0.3492936263D+01
-llnh( 207   )= -0.3497823067D+01
-llnh( 208   )= -0.3502708995D+01
-llnh( 209   )= -0.3507594040D+01
-llnh( 210   )= -0.3512478162D+01
-llnh( 211   )= -0.3517361345D+01
-llnh( 212   )= -0.3522243562D+01
-llnh( 213   )= -0.3527124799D+01
-llnh( 214   )= -0.3532005020D+01
-llnh( 215   )= -0.3536884206D+01
-llnh( 216   )= -0.3541762329D+01
-llnh( 217   )= -0.3546639373D+01
-llnh( 218   )= -0.3551515301D+01
-llnh( 219   )= -0.3556390096D+01
-llnh( 220   )= -0.3561263723D+01
-llnh( 221   )= -0.3566136170D+01
-llnh( 222   )= -0.3571007398D+01
-llnh( 223   )= -0.3575877387D+01
-llnh( 224   )= -0.3580747513D+01
-llnh( 225   )= -0.3585615132D+01
-llnh( 226   )= -0.3590481365D+01
-llnh( 227   )= -0.3595346263D+01
-llnh( 228   )= -0.3600209792D+01
-llnh( 229   )= -0.3605071936D+01
-llnh( 230   )= -0.3609932657D+01
-llnh( 231   )= -0.3614791931D+01
-llnh( 232   )= -0.3619649732D+01
-llnh( 233   )= -0.3624506035D+01
-llnh( 234   )= -0.3629360805D+01
-llnh( 235   )= -0.3634214026D+01
-llnh( 236   )= -0.3639065656D+01
-llnh( 237   )= -0.3643915683D+01
-llnh( 238   )= -0.3648764066D+01
-llnh( 239   )= -0.3653610782D+01
-llnh( 240   )= -0.3658455800D+01
-llnh( 241   )= -0.3663299103D+01
-llnh( 242   )= -0.3668140651D+01
-llnh( 243   )= -0.3672980417D+01
-llnh( 244   )= -0.3677818461D+01
-llnh( 245   )= -0.3682654761D+01
-llnh( 246   )= -0.3687489030D+01
-llnh( 247   )= -0.3692321405D+01
-llnh( 248   )= -0.3697151858D+01
-llnh( 249   )= -0.3701980361D+01
-llnh( 250   )= -0.3706806936D+01
-llnh( 251   )= -0.3711631455D+01
-llnh( 252   )= -0.3716453939D+01
-llnh( 253   )= -0.3721274358D+01
-llnh( 254   )= -0.3726092689D+01
-llnh( 255   )= -0.3730908892D+01
-llnh( 256   )= -0.3735722950D+01
-llnh( 257   )= -0.3740534821D+01
-llnh( 258   )= -0.3745344490D+01
-llnh( 259   )= -0.3750151923D+01
-llnh( 260   )= -0.3754957088D+01
-llnh( 261   )= -0.3759759956D+01
-llnh( 262   )= -0.3764560505D+01
-llnh( 263   )= -0.3769358699D+01
-llnh( 264   )= -0.3774154515D+01
-llnh( 265   )= -0.3778947920D+01
-llnh( 266   )= -0.3783738888D+01
-llnh( 267   )= -0.3788527389D+01
-llnh( 268   )= -0.3793313390D+01
-llnh( 269   )= -0.3798096866D+01
-llnh( 270   )= -0.3802877791D+01
-llnh( 271   )= -0.3807656137D+01
-llnh( 272   )= -0.3812431870D+01
-llnh( 273   )= -0.3817204958D+01
-llnh( 274   )= -0.3821975383D+01
-llnh( 275   )= -0.3826743110D+01
-llnh( 276   )= -0.3831508110D+01
-llnh( 277   )= -0.3836271873D+01
-llnh( 278   )= -0.3841032150D+01
-llnh( 279   )= -0.3845788986D+01
-llnh( 280   )= -0.3850542997D+01
-llnh( 281   )= -0.3855294157D+01
-llnh( 282   )= -0.3860042438D+01
-llnh( 283   )= -0.3864787807D+01
-llnh( 284   )= -0.3869530239D+01
-llnh( 285   )= -0.3874269702D+01
-llnh( 286   )= -0.3879006179D+01
-llnh( 287   )= -0.3883739635D+01
-llnh( 288   )= -0.3888470049D+01
-llnh( 289   )= -0.3893197379D+01
-llnh( 290   )= -0.3897921616D+01
-llnh( 291   )= -0.3902642720D+01
-llnh( 292   )= -0.3907360668D+01
-llnh( 293   )= -0.3912075438D+01
-llnh( 294   )= -0.3916786993D+01
-llnh( 295   )= -0.3921495314D+01
-llnh( 296   )= -0.3926200363D+01
-llnh( 297   )= -0.3930902125D+01
-llnh( 298   )= -0.3935600573D+01
-llnh( 299   )= -0.3940295676D+01
-llnh( 300   )= -0.3944987404D+01
-llnh( 301   )= -0.3949675741D+01
-llnh( 302   )= -0.3954360653D+01
-llnh( 303   )= -0.3959042119D+01
-llnh( 304   )= -0.3963720107D+01
-llnh( 305   )= -0.3968394592D+01
-llnh( 306   )= -0.3973065547D+01
-llnh( 307   )= -0.3977732958D+01
-llnh( 308   )= -0.3982396782D+01
-llnh( 309   )= -0.3987056997D+01
-llnh( 310   )= -0.3991713583D+01
-llnh( 311   )= -0.3996366510D+01
-llnh( 312   )= -0.4001015766D+01
-llnh( 313   )= -0.4005661299D+01
-llnh( 314   )= -0.4010303104D+01
-llnh( 315   )= -0.4014941156D+01
-llnh( 316   )= -0.4019575415D+01
-llnh( 317   )= -0.4024205867D+01
-llnh( 318   )= -0.4028832484D+01
-llnh( 319   )= -0.4033455241D+01
-llnh( 320   )= -0.4038074113D+01
-llnh( 321   )= -0.4042689078D+01
-llnh( 322   )= -0.4047300107D+01
-llnh( 323   )= -0.4051907177D+01
-llnh( 324   )= -0.4056510264D+01
-llnh( 325   )= -0.4061109341D+01
-llnh( 326   )= -0.4065704388D+01
-llnh( 327   )= -0.4070295381D+01
-llnh( 328   )= -0.4074882284D+01
-llnh( 329   )= -0.4079465087D+01
-llnh( 330   )= -0.4084043760D+01
-llnh( 331   )= -0.4088618279D+01
-llnh( 332   )= -0.4093188619D+01
-llnh( 333   )= -0.4097757745D+01
-llnh( 334   )= -0.4102319954D+01
-llnh( 335   )= -0.4106878131D+01
-llnh( 336   )= -0.4111431810D+01
-llnh( 337   )= -0.4115981211D+01
-llnh( 338   )= -0.4120526303D+01
-llnh( 339   )= -0.4125067085D+01
-llnh( 340   )= -0.4129603517D+01
-llnh( 341   )= -0.4134135580D+01
-llnh( 342   )= -0.4138663260D+01
-llnh( 343   )= -0.4143186527D+01
-llnh( 344   )= -0.4147705363D+01
-llnh( 345   )= -0.4152219750D+01
-llnh( 346   )= -0.4156729818D+01
-llnh( 347   )= -0.4161235270D+01
-llnh( 348   )= -0.4165736154D+01
-llnh( 349   )= -0.4170232508D+01
-llnh( 350   )= -0.4174724295D+01
-llnh( 351   )= -0.4179211503D+01
-llnh( 352   )= -0.4183694105D+01
-llnh( 353   )= -0.4188172090D+01
-llnh( 354   )= -0.4192645419D+01
-llnh( 355   )= -0.4197114075D+01
-llnh( 356   )= -0.4201578059D+01
-llnh( 357   )= -0.4206037324D+01
-llnh( 358   )= -0.4210491862D+01
-llnh( 359   )= -0.4214941658D+01
-llnh( 360   )= -0.4219386679D+01
-llnh( 361   )= -0.4223826915D+01
-llnh( 362   )= -0.4228262339D+01
-llnh( 363   )= -0.4232692981D+01
-llnh( 364   )= -0.4237118729D+01
-llnh( 365   )= -0.4241539614D+01
-llnh( 366   )= -0.4245955590D+01
-llnh( 367   )= -0.4250366666D+01
-llnh( 368   )= -0.4254772819D+01
-llnh( 369   )= -0.4259174029D+01
-llnh( 370   )= -0.4263570269D+01
-llnh( 371   )= -0.4267961523D+01
-llnh( 372   )= -0.4272347781D+01
-llnh( 373   )= -0.4276728990D+01
-llnh( 374   )= -0.4281105174D+01
-llnh( 375   )= -0.4285476289D+01
-llnh( 376   )= -0.4289842325D+01
-llnh( 377   )= -0.4294203252D+01
-llnh( 378   )= -0.4298559055D+01
-llnh( 379   )= -0.4302909733D+01
-llnh( 380   )= -0.4307255251D+01
-llnh( 381   )= -0.4311595601D+01
-llnh( 382   )= -0.4315930729D+01
-llnh( 383   )= -0.4320260674D+01
-llnh( 384   )= -0.4324585375D+01
-llnh( 385   )= -0.4328909213D+01
-llnh( 386   )= -0.4333223786D+01
-llnh( 387   )= -0.4337533117D+01
-llnh( 388   )= -0.4341837175D+01
-llnh( 389   )= -0.4346135928D+01
-llnh( 390   )= -0.4350429387D+01
-llnh( 391   )= -0.4354717544D+01
-llnh( 392   )= -0.4359000351D+01
-llnh( 393   )= -0.4363277792D+01
-llnh( 394   )= -0.4367549884D+01
-llnh( 395   )= -0.4371816587D+01
-llnh( 396   )= -0.4376077888D+01
-llnh( 397   )= -0.4380333776D+01
-llnh( 398   )= -0.4384584234D+01
-llnh( 399   )= -0.4388829242D+01
-llnh( 400   )= -0.4393068797D+01
-llnh( 401   )= -0.4397302881D+01
-llnh( 402   )= -0.4401531470D+01
-llnh( 403   )= -0.4405754548D+01
-llnh( 404   )= -0.4409972120D+01
-llnh( 405   )= -0.4414184146D+01
-llnh( 406   )= -0.4418390628D+01
-llnh( 407   )= -0.4422591551D+01
-llnh( 408   )= -0.4426786883D+01
-llnh( 409   )= -0.4430976616D+01
-llnh( 410   )= -0.4435160749D+01
-llnh( 411   )= -0.4439339273D+01
-llnh( 412   )= -0.4443512157D+01
-llnh( 413   )= -0.4447679385D+01
-llnh( 414   )= -0.4451840955D+01
-llnh( 415   )= -0.4455997001D+01
-llnh( 416   )= -0.4460147471D+01
-llnh( 417   )= -0.4464291999D+01
-llnh( 418   )= -0.4468430796D+01
-llnh( 419   )= -0.4472563895D+01
-llnh( 420   )= -0.4476691221D+01
-llnh( 421   )= -0.4480812807D+01
-llnh( 422   )= -0.4484928622D+01
-llnh( 423   )= -0.4489038649D+01
-llnh( 424   )= -0.4493142872D+01
-llnh( 425   )= -0.4497241313D+01
-llnh( 426   )= -0.4501333913D+01
-llnh( 427   )= -0.4505420682D+01
-llnh( 428   )= -0.4509501609D+01
-llnh( 429   )= -0.4513576672D+01
-llnh( 430   )= -0.4517645867D+01
-llnh( 431   )= -0.4521709169D+01
-llnh( 432   )= -0.4525766592D+01
-llnh( 433   )= -0.4529818089D+01
-llnh( 434   )= -0.4533863683D+01
-llnh( 435   )= -0.4537903321D+01
-llnh( 436   )= -0.4541938182D+01
-llnh( 437   )= -0.4545970060D+01
-llnh( 438   )= -0.4549992311D+01
-llnh( 439   )= -0.4554008601D+01
-llnh( 440   )= -0.4558018930D+01
-llnh( 441   )= -0.4562023294D+01
-llnh( 442   )= -0.4566021693D+01
-llnh( 443   )= -0.4570014092D+01
-llnh( 444   )= -0.4574000505D+01
-llnh( 445   )= -0.4577980892D+01
-llnh( 446   )= -0.4581955270D+01
-llnh( 447   )= -0.4585923636D+01
-llnh( 448   )= -0.4589885948D+01
-llnh( 449   )= -0.4593842227D+01
-llnh( 450   )= -0.4597792434D+01
-llnh( 451   )= -0.4601736614D+01
-llnh( 452   )= -0.4605674684D+01
-llnh( 453   )= -0.4609606692D+01
-llnh( 454   )= -0.4613532603D+01
-llnh( 455   )= -0.4617452421D+01
-llnh( 456   )= -0.4621366116D+01
-llnh( 457   )= -0.4625273717D+01
-llnh( 458   )= -0.4629175176D+01
-llnh( 459   )= -0.4633070515D+01
-llnh( 460   )= -0.4636959727D+01
-llnh( 461   )= -0.4640842768D+01
-llnh( 462   )= -0.4644719655D+01
-llnh( 463   )= -0.4648590372D+01
-llnh( 464   )= -0.4652454903D+01
-llnh( 465   )= -0.4656313259D+01
-llnh( 466   )= -0.4660165448D+01
-llnh( 467   )= -0.4664011409D+01
-llnh( 468   )= -0.4667851182D+01
-llnh( 469   )= -0.4671684743D+01
-llnh( 470   )= -0.4675512056D+01
-llnh( 471   )= -0.4679333175D+01
-llnh( 472   )= -0.4683148017D+01
-llnh( 473   )= -0.4686956657D+01
-llnh( 474   )= -0.4690759028D+01
-llnh( 475   )= -0.4694555138D+01
-llnh( 476   )= -0.4698344998D+01
-llnh( 477   )= -0.4702128578D+01
-llnh( 478   )= -0.4705905867D+01
-llnh( 479   )= -0.4709676879D+01
-llnh( 480   )= -0.4713441602D+01
-llnh( 481   )= -0.4717200013D+01
-llnh( 482   )= -0.4720952106D+01
-llnh( 483   )= -0.4724697898D+01
-llnh( 484   )= -0.4728437390D+01
-llnh( 485   )= -0.4732170536D+01
-llnh( 486   )= -0.4735897325D+01
-llnh( 487   )= -0.4739617794D+01
-llnh( 488   )= -0.4743331898D+01
-llnh( 489   )= -0.4747041742D+01
-llnh( 490   )= -0.4750747006D+01
-llnh( 491   )= -0.4754442562D+01
-llnh( 492   )= -0.4758131783D+01
-llnh( 493   )= -0.4761815020D+01
-llnh( 494   )= -0.4765491574D+01
-llnh( 495   )= -0.4769161760D+01
-llnh( 496   )= -0.4772825594D+01
-llnh( 497   )= -0.4776483086D+01
-llnh( 498   )= -0.4780134175D+01
-llnh( 499   )= -0.4783778934D+01
-llnh( 500   )= -0.4787417346D+01
-llnh( 501   )= -0.4791049345D+01
-llnh( 502   )= -0.4794674951D+01
-llnh( 503   )= -0.4798294201D+01
-llnh( 504   )= -0.4801907068D+01
-llnh( 505   )= -0.4805513523D+01
-llnh( 506   )= -0.4809113591D+01
-llnh( 507   )= -0.4812707285D+01
-llnh( 508   )= -0.4816294557D+01
-llnh( 509   )= -0.4819875456D+01
-llnh( 510   )= -0.4823449917D+01
-llnh( 511   )= -0.4827017975D+01
-llnh( 512   )= -0.4830579617D+01
-llnh( 513   )= -0.4834134846D+01
-llnh( 514   )= -0.4837683664D+01
-llnh( 515   )= -0.4841226070D+01
-llnh( 516   )= -0.4844762004D+01
-llnh( 517   )= -0.4848291562D+01
-llnh( 518   )= -0.4851814662D+01
-llnh( 519   )= -0.4855331349D+01
-llnh( 520   )= -0.4858841570D+01
-llnh( 521   )= -0.4862345359D+01
-llnh( 522   )= -0.4865842727D+01
-llnh( 523   )= -0.4869333622D+01
-llnh( 524   )= -0.4872818085D+01
-llnh( 525   )= -0.4876296108D+01
-llnh( 526   )= -0.4879767676D+01
-llnh( 527   )= -0.4883232788D+01
-llnh( 528   )= -0.4886691441D+01
-llnh( 529   )= -0.4890143646D+01
-llnh( 530   )= -0.4893589383D+01
-llnh( 531   )= -0.4897028646D+01
-llnh( 532   )= -0.4900461459D+01
-llnh( 533   )= -0.4903887800D+01
-llnh( 534   )= -0.4907307694D+01
-llnh( 535   )= -0.4910721080D+01
-llnh( 536   )= -0.4914128000D+01
-llnh( 537   )= -0.4917528444D+01
-llnh( 538   )= -0.4920922416D+01
-llnh( 539   )= -0.4924309950D+01
-llnh( 540   )= -0.4927690936D+01
-llnh( 541   )= -0.4931065502D+01
-llnh( 542   )= -0.4934433516D+01
-llnh( 543   )= -0.4937797571D+01
-llnh( 544   )= -0.4941156429D+01
-llnh( 545   )= -0.4944505566D+01
-llnh( 546   )= -0.4947848246D+01
-llnh( 547   )= -0.4951184474D+01
-llnh( 548   )= -0.4954514217D+01
-llnh( 549   )= -0.4957837546D+01
-llnh( 550   )= -0.4961154421D+01
-llnh( 551   )= -0.4964464816D+01
-llnh( 552   )= -0.4967768764D+01
-llnh( 553   )= -0.4971066281D+01
-llnh( 554   )= -0.4974357343D+01
-llnh( 555   )= -0.4977641966D+01
-llnh( 556   )= -0.4980920106D+01
-llnh( 557   )= -0.4984191792D+01
-llnh( 558   )= -0.4987457081D+01
-llnh( 559   )= -0.4990715853D+01
-llnh( 560   )= -0.4993968216D+01
-llnh( 561   )= -0.4997214147D+01
-llnh( 562   )= -0.5000453623D+01
-llnh( 563   )= -0.5003686648D+01
-llnh( 564   )= -0.5006913204D+01
-llnh( 565   )= -0.5010133371D+01
-llnh( 566   )= -0.5013347076D+01
-llnh( 567   )= -0.5016554357D+01
-llnh( 568   )= -0.5019755183D+01
-llnh( 569   )= -0.5022949569D+01
-llnh( 570   )= -0.5026137554D+01
-llnh( 571   )= -0.5029319047D+01
-llnh( 572   )= -0.5032494140D+01
-llnh( 573   )= -0.5035663150D+01
-llnh( 574   )= -0.5038825376D+01
-llnh( 575   )= -0.5041981220D+01
-llnh( 576   )= -0.5045130584D+01
-llnh( 577   )= -0.5048273555D+01
-llnh( 578   )= -0.5051410090D+01
-llnh( 579   )= -0.5054540239D+01
-llnh( 580   )= -0.5057663933D+01
-llnh( 581   )= -0.5060781203D+01
-llnh( 582   )= -0.5063892095D+01
-llnh( 583   )= -0.5066996544D+01
-llnh( 584   )= -0.5070094560D+01
-llnh( 585   )= -0.5073186208D+01
-llnh( 586   )= -0.5076271426D+01
-llnh( 587   )= -0.5079350236D+01
-llnh( 588   )= -0.5082422642D+01
-llnh( 589   )= -0.5085488664D+01
-llnh( 590   )= -0.5088548256D+01
-llnh( 591   )= -0.5091601476D+01
-llnh( 592   )= -0.5094648290D+01
-llnh( 593   )= -0.5097688683D+01
-llnh( 594   )= -0.5100722685D+01
-llnh( 595   )= -0.5103750327D+01
-llnh( 596   )= -0.5106771540D+01
-llnh( 597   )= -0.5109786384D+01
-llnh( 598   )= -0.5112799670D+01
-llnh( 599   )= -0.5115803150D+01
-llnh( 600   )= -0.5118799395D+01
-llnh( 601   )= -0.5121789292D+01
-llnh( 602   )= -0.5124772858D+01
-llnh( 603   )= -0.5127750116D+01
-llnh( 604   )= -0.5130721005D+01
-llnh( 605   )= -0.5133685604D+01
-llnh( 606   )= -0.5136643859D+01
-llnh( 607   )= -0.5139595762D+01
-llnh( 608   )= -0.5142541391D+01
-llnh( 609   )= -0.5145480724D+01
-llnh( 610   )= -0.5148413704D+01
-llnh( 611   )= -0.5151340435D+01
-llnh( 612   )= -0.5154260814D+01
-llnh( 613   )= -0.5157174876D+01
-llnh( 614   )= -0.5160082667D+01
-llnh( 615   )= -0.5162984187D+01
-llnh( 616   )= -0.5165879425D+01
-llnh( 617   )= -0.5168768373D+01
-llnh( 618   )= -0.5171651043D+01
-llnh( 619   )= -0.5174527467D+01
-llnh( 620   )= -0.5177397602D+01
-llnh( 621   )= -0.5180261493D+01
-llnh( 622   )= -0.5183119109D+01
-llnh( 623   )= -0.5185970497D+01
-llnh( 624   )= -0.5188815635D+01
-llnh( 625   )= -0.5191654520D+01
-llnh( 626   )= -0.5194487149D+01
-llnh( 627   )= -0.5197313595D+01
-llnh( 628   )= -0.5200133751D+01
-llnh( 629   )= -0.5202947738D+01
-llnh( 630   )= -0.5205755473D+01
-llnh( 631   )= -0.5208556983D+01
-llnh( 632   )= -0.5211352324D+01
-llnh( 633   )= -0.5214141419D+01
-llnh( 634   )= -0.5216924343D+01
-llnh( 635   )= -0.5219701054D+01
-llnh( 636   )= -0.5222471563D+01
-llnh( 637   )= -0.5225235884D+01
-llnh( 638   )= -0.5227994025D+01
-llnh( 639   )= -0.5230746030D+01
-llnh( 640   )= -0.5233491832D+01
-llnh( 641   )= -0.5236231461D+01
-llnh( 642   )= -0.5238964942D+01
-llnh( 643   )= -0.5241692271D+01
-llnh( 644   )= -0.5244413412D+01
-llnh( 645   )= -0.5247128424D+01
-llnh( 646   )= -0.5249837269D+01
-llnh( 647   )= -0.5252540015D+01
-llnh( 648   )= -0.5255236616D+01
-llnh( 649   )= -0.5257927067D+01
-llnh( 650   )= -0.5260611388D+01
-llnh( 651   )= -0.5263289623D+01
-llnh( 652   )= -0.5265961712D+01
-llnh( 653   )= -0.5268633068D+01
-llnh( 654   )= -0.5271293569D+01
-llnh( 655   )= -0.5273947990D+01
-llnh( 656   )= -0.5276596206D+01
-llnh( 657   )= -0.5279238426D+01
-llnh( 658   )= -0.5281874571D+01
-llnh( 659   )= -0.5284504655D+01
-llnh( 660   )= -0.5287128701D+01
-llnh( 661   )= -0.5289746751D+01
-llnh( 662   )= -0.5292358757D+01
-llnh( 663   )= -0.5294964725D+01
-llnh( 664   )= -0.5297564727D+01
-llnh( 665   )= -0.5300158699D+01
-llnh( 666   )= -0.5302746668D+01
-llnh( 667   )= -0.5305328668D+01
-llnh( 668   )= -0.5307904687D+01
-llnh( 669   )= -0.5310474675D+01
-llnh( 670   )= -0.5313038743D+01
-llnh( 671   )= -0.5315596857D+01
-llnh( 672   )= -0.5318148939D+01
-llnh( 673   )= -0.5320695164D+01
-llnh( 674   )= -0.5323235360D+01
-llnh( 675   )= -0.5325769682D+01
-llnh( 676   )= -0.5328298064D+01
-llnh( 677   )= -0.5330820487D+01
-llnh( 678   )= -0.5333337033D+01
-llnh( 679   )= -0.5335847660D+01
-llnh( 680   )= -0.5338352356D+01
-llnh( 681   )= -0.5340851158D+01
-llnh( 682   )= -0.5343344088D+01
-llnh( 683   )= -0.5345831113D+01
-llnh( 684   )= -0.5348312329D+01
-llnh( 685   )= -0.5350787595D+01
-llnh( 686   )= -0.5353257028D+01
-llnh( 687   )= -0.5355720597D+01
-llnh( 688   )= -0.5358178333D+01
-llnh( 689   )= -0.5360630227D+01
-llnh( 690   )= -0.5363076250D+01
-llnh( 691   )= -0.5365516440D+01
-llnh( 692   )= -0.5367950847D+01
-llnh( 693   )= -0.5370379412D+01
-llnh( 694   )= -0.5372802182D+01
-llnh( 695   )= -0.5375219136D+01
-llnh( 696   )= -0.5377630301D+01
-llnh( 697   )= -0.5380035657D+01
-llnh( 698   )= -0.5382435244D+01
-llnh( 699   )= -0.5384829094D+01
-llnh( 700   )= -0.5387217124D+01
-llnh( 701   )= -0.5389599434D+01
-llnh( 702   )= -0.5391975954D+01
-llnh( 703   )= -0.5394346756D+01
-llnh( 704   )= -0.5396711759D+01
-llnh( 705   )= -0.5399071078D+01
-llnh( 706   )= -0.5401424638D+01
-llnh( 707   )= -0.5403772479D+01
-llnh( 708   )= -0.5406119229D+01
-llnh( 709   )= -0.5408456158D+01
-llnh( 710   )= -0.5410787342D+01
-llnh( 711   )= -0.5413112829D+01
-llnh( 712   )= -0.5415432725D+01
-llnh( 713   )= -0.5417746886D+01
-llnh( 714   )= -0.5420055451D+01
-llnh( 715   )= -0.5422358379D+01
-llnh( 716   )= -0.5424655695D+01
-llnh( 717   )= -0.5426947346D+01
-llnh( 718   )= -0.5429233415D+01
-llnh( 719   )= -0.5431513881D+01
-llnh( 720   )= -0.5433788773D+01
-llnh( 721   )= -0.5436058059D+01
-llnh( 722   )= -0.5438321777D+01
-llnh( 723   )= -0.5440579909D+01
-llnh( 724   )= -0.5442832493D+01
-llnh( 725   )= -0.5445079538D+01
-llnh( 726   )= -0.5447321025D+01
-llnh( 727   )= -0.5449556959D+01
-llnh( 728   )= -0.5451787383D+01
-llnh( 729   )= -0.5454012244D+01
-llnh( 730   )= -0.5456231645D+01
-llnh( 731   )= -0.5458445490D+01
-llnh( 732   )= -0.5460653885D+01
-llnh( 733   )= -0.5462856815D+01
-llnh( 734   )= -0.5465054208D+01
-llnh( 735   )= -0.5467246209D+01
-llnh( 736   )= -0.5469432635D+01
-llnh( 737   )= -0.5471613649D+01
-llnh( 738   )= -0.5473789425D+01
-llnh( 739   )= -0.5475959565D+01
-llnh( 740   )= -0.5478124308D+01
-llnh( 741   )= -0.5480283586D+01
-llnh( 742   )= -0.5482437461D+01
-llnh( 743   )= -0.5484585919D+01
-llnh( 744   )= -0.5486728976D+01
-llnh( 745   )= -0.5488866669D+01
-llnh( 746   )= -0.5490998937D+01
-llnh( 747   )= -0.5493125867D+01
-llnh( 748   )= -0.5495247398D+01
-llnh( 749   )= -0.5497363593D+01
-llnh( 750   )= -0.5499474396D+01
-llnh( 751   )= -0.5501579935D+01
-llnh( 752   )= -0.5503680091D+01
-llnh( 753   )= -0.5505774872D+01
-llnh( 754   )= -0.5507864419D+01
-llnh( 755   )= -0.5509948597D+01
-llnh( 756   )= -0.5512027498D+01
-llnh( 757   )= -0.5514101090D+01
-llnh( 758   )= -0.5516169407D+01
-llnh( 759   )= -0.5518232431D+01
-llnh( 760   )= -0.5520290171D+01
-llnh( 761   )= -0.5522342671D+01
-llnh( 762   )= -0.5524389920D+01
-llnh( 763   )= -0.5526435070D+01
-llnh( 764   )= -0.5528472978D+01
-llnh( 765   )= -0.5530504862D+01
-llnh( 766   )= -0.5532531569D+01
-llnh( 767   )= -0.5534553070D+01
-llnh( 768   )= -0.5536569379D+01
-llnh( 769   )= -0.5538580560D+01
-llnh( 770   )= -0.5540586509D+01
-llnh( 771   )= -0.5542587346D+01
-llnh( 772   )= -0.5544583018D+01
-llnh( 773   )= -0.5546573556D+01
-llnh( 774   )= -0.5548558957D+01
-llnh( 775   )= -0.5550539231D+01
-llnh( 776   )= -0.5552514398D+01
-llnh( 777   )= -0.5554484460D+01
-llnh( 778   )= -0.5556449473D+01
-llnh( 779   )= -0.5558409336D+01
-llnh( 780   )= -0.5560364185D+01
-llnh( 781   )= -0.5562313913D+01
-llnh( 782   )= -0.5564258612D+01
-llnh( 783   )= -0.5566198240D+01
-llnh( 784   )= -0.5568132825D+01
-llnh( 785   )= -0.5570062431D+01
-llnh( 786   )= -0.5571986955D+01
-llnh( 787   )= -0.5573906479D+01
-llnh( 788   )= -0.5575821017D+01
-llnh( 789   )= -0.5577730521D+01
-llnh( 790   )= -0.5579635046D+01
-llnh( 791   )= -0.5581534623D+01
-llnh( 792   )= -0.5583429246D+01
-llnh( 793   )= -0.5585318843D+01
-llnh( 794   )= -0.5587203534D+01
-llnh( 795   )= -0.5589083215D+01
-llnh( 796   )= -0.5590958026D+01
-llnh( 797   )= -0.5592827913D+01
-llnh( 798   )= -0.5594692837D+01
-llnh( 799   )= -0.5596552884D+01
-llnh( 800   )= -0.5598408013D+01
-llnh( 801   )= -0.5600258261D+01
-llnh( 802   )= -0.5602103603D+01
-llnh( 803   )= -0.5603944084D+01
-llnh( 804   )= -0.5605779692D+01
-llnh( 805   )= -0.5607610469D+01
-llnh( 806   )= -0.5609436368D+01
-llnh( 807   )= -0.5611257443D+01
-llnh( 808   )= -0.5613073624D+01
-llnh( 809   )= -0.5614885059D+01
-llnh( 810   )= -0.5616691617D+01
-llnh( 811   )= -0.5618493398D+01
-llnh( 812   )= -0.5620290369D+01
-llnh( 813   )= -0.5622082588D+01
-llnh( 814   )= -0.5623870004D+01
-llnh( 815   )= -0.5625652635D+01
-llnh( 816   )= -0.5627430515D+01
-llnh( 817   )= -0.5629203619D+01
-llnh( 818   )= -0.5630973564D+01
-llnh( 819   )= -0.5632739215D+01
-llnh( 820   )= -0.5634498385D+01
-llnh( 821   )= -0.5636252874D+01
-llnh( 822   )= -0.5638002692D+01
-llnh( 823   )= -0.5639747990D+01
-llnh( 824   )= -0.5641488433D+01
-llnh( 825   )= -0.5643224238D+01
-llnh( 826   )= -0.5644955371D+01
-llnh( 827   )= -0.5646681860D+01
-llnh( 828   )= -0.5648403688D+01
-llnh( 829   )= -0.5650120894D+01
-llnh( 830   )= -0.5651833499D+01
-llnh( 831   )= -0.5653541488D+01
-llnh( 832   )= -0.5655244889D+01
-llnh( 833   )= -0.5656943648D+01
-llnh( 834   )= -0.5658637872D+01
-llnh( 835   )= -0.5660327454D+01
-llnh( 836   )= -0.5662012541D+01
-llnh( 837   )= -0.5663693098D+01
-llnh( 838   )= -0.5665369003D+01
-llnh( 839   )= -0.5667040432D+01
-llnh( 840   )= -0.5668707291D+01
-llnh( 841   )= -0.5670369673D+01
-llnh( 842   )= -0.5672027532D+01
-llnh( 843   )= -0.5673680874D+01
-llnh( 844   )= -0.5675329711D+01
-llnh( 845   )= -0.5676974102D+01
-llnh( 846   )= -0.5678614009D+01
-llnh( 847   )= -0.5680249399D+01
-llnh( 848   )= -0.5681880401D+01
-llnh( 849   )= -0.5683506937D+01
-llnh( 850   )= -0.5685128983D+01
-llnh( 851   )= -0.5686746614D+01
-llnh( 852   )= -0.5688359836D+01
-llnh( 853   )= -0.5689968657D+01
-llnh( 854   )= -0.5691573040D+01
-llnh( 855   )= -0.5693173037D+01
-llnh( 856   )= -0.5694768667D+01
-llnh( 857   )= -0.5696359900D+01
-llnh( 858   )= -0.5697946740D+01
-llnh( 859   )= -0.5699529279D+01
-llnh( 860   )= -0.5701107407D+01
-llnh( 861   )= -0.5702681211D+01
-llnh( 862   )= -0.5704250662D+01
-llnh( 863   )= -0.5705815820D+01
-llnh( 864   )= -0.5707376645D+01
-llnh( 865   )= -0.5708933156D+01
-llnh( 866   )= -0.5710485372D+01
-llnh( 867   )= -0.5712033286D+01
-llnh( 868   )= -0.5713576887D+01
-llnh( 869   )= -0.5715116238D+01
-llnh( 870   )= -0.5716651343D+01
-llnh( 871   )= -0.5718182133D+01
-llnh( 872   )= -0.5719708718D+01
-llnh( 873   )= -0.5721231370D+01
-llnh( 874   )= -0.5722752079D+01
-llnh( 875   )= -0.5724266184D+01
-llnh( 876   )= -0.5725776091D+01
-llnh( 877   )= -0.5727281862D+01
-llnh( 878   )= -0.5728783383D+01
-llnh( 879   )= -0.5730280793D+01
-llnh( 880   )= -0.5731774031D+01
-llnh( 881   )= -0.5733263026D+01
-llnh( 882   )= -0.5734747963D+01
-llnh( 883   )= -0.5736228729D+01
-llnh( 884   )= -0.5737705360D+01
-llnh( 885   )= -0.5739177941D+01
-llnh( 886   )= -0.5740646299D+01
-llnh( 887   )= -0.5742110595D+01
-llnh( 888   )= -0.5743570865D+01
-llnh( 889   )= -0.5745026960D+01
-llnh( 890   )= -0.5746479033D+01
-llnh( 891   )= -0.5747927018D+01
-llnh( 892   )= -0.5749370943D+01
-llnh( 893   )= -0.5750810827D+01
-llnh( 894   )= -0.5752246701D+01
-llnh( 895   )= -0.5753678496D+01
-llnh( 896   )= -0.5755106289D+01
-llnh( 897   )= -0.5756530074D+01
-llnh( 898   )= -0.5757949836D+01
-llnh( 899   )= -0.5759365629D+01
-llnh( 900   )= -0.5760777429D+01
-llnh( 901   )= -0.5762185269D+01
-llnh( 902   )= -0.5763589050D+01
-llnh( 903   )= -0.5764989015D+01
-llnh( 904   )= -0.5766384906D+01
-llnh( 905   )= -0.5767776906D+01
-llnh( 906   )= -0.5769164942D+01
-llnh( 907   )= -0.5770549045D+01
-llnh( 908   )= -0.5771929251D+01
-llnh( 909   )= -0.5773305592D+01
-llnh( 910   )= -0.5774678021D+01
-llnh( 911   )= -0.5776046522D+01
-llnh( 912   )= -0.5777411181D+01
-llnh( 913   )= -0.5778771903D+01
-llnh( 914   )= -0.5780128791D+01
-llnh( 915   )= -0.5781481778D+01
-llnh( 916   )= -0.5782830973D+01
-llnh( 917   )= -0.5784176296D+01
-llnh( 918   )= -0.5785517731D+01
-llnh( 919   )= -0.5786855440D+01
-llnh( 920   )= -0.5788189236D+01
-llnh( 921   )= -0.5789519318D+01
-llnh( 922   )= -0.5790845543D+01
-llnh( 923   )= -0.5792167984D+01
-llnh( 924   )= -0.5793486673D+01
-llnh( 925   )= -0.5794801520D+01
-llnh( 926   )= -0.5796112641D+01
-llnh( 927   )= -0.5797420004D+01
-llnh( 928   )= -0.5798723616D+01
-llnh( 929   )= -0.5800025860D+01
-llnh( 930   )= -0.5801322181D+01
-llnh( 931   )= -0.5802614805D+01
-llnh( 932   )= -0.5803903742D+01
-llnh( 933   )= -0.5805188958D+01
-llnh( 934   )= -0.5806470481D+01
-llnh( 935   )= -0.5807748369D+01
-llnh( 936   )= -0.5809022517D+01
-llnh( 937   )= -0.5810293038D+01
-llnh( 938   )= -0.5811559908D+01
-llnh( 939   )= -0.5812823154D+01
-llnh( 940   )= -0.5814082757D+01
-llnh( 941   )= -0.5815338711D+01
-llnh( 942   )= -0.5816591047D+01
-llnh( 943   )= -0.5817839765D+01
-llnh( 944   )= -0.5819084925D+01
-llnh( 945   )= -0.5820326443D+01
-llnh( 946   )= -0.5821564407D+01
-llnh( 947   )= -0.5822798792D+01
-llnh( 948   )= -0.5824029580D+01
-llnh( 949   )= -0.5825256834D+01
-llnh( 950   )= -0.5826480495D+01
-llnh( 951   )= -0.5827700679D+01
-llnh( 952   )= -0.5828917318D+01
-llnh( 953   )= -0.5830130356D+01
-llnh( 954   )= -0.5831339955D+01
-llnh( 955   )= -0.5832546036D+01
-llnh( 956   )= -0.5833748572D+01
-llnh( 957   )= -0.5834947646D+01
-llnh( 958   )= -0.5836143208D+01
-llnh( 959   )= -0.5837335326D+01
-llnh( 960   )= -0.5838523975D+01
-llnh( 961   )= -0.5839709120D+01
-llnh( 962   )= -0.5840890822D+01
-llnh( 963   )= -0.5842069117D+01
-llnh( 964   )= -0.5843243948D+01
-llnh( 965   )= -0.5844415380D+01
-llnh( 966   )= -0.5845583345D+01
-llnh( 967   )= -0.5846747902D+01
-llnh( 968   )= -0.5847909107D+01
-llnh( 969   )= -0.5849066883D+01
-llnh( 970   )= -0.5850221245D+01
-llnh( 971   )= -0.5851372233D+01
-llnh( 972   )= -0.5852519933D+01
-llnh( 973   )= -0.5853664111D+01
-llnh( 974   )= -0.5854805079D+01
-llnh( 975   )= -0.5855942632D+01
-llnh( 976   )= -0.5857076840D+01
-llnh( 977   )= -0.5858207705D+01
-llnh( 978   )= -0.5859335263D+01
-llnh( 979   )= -0.5860459528D+01
-llnh( 980   )= -0.5861580446D+01
-llnh( 981   )= -0.5862698053D+01
-llnh( 982   )= -0.5863812452D+01
-llnh( 983   )= -0.5864923445D+01
-llnh( 984   )= -0.5866033059D+01
-llnh( 985   )= -0.5867137708D+01
-llnh( 986   )= -0.5868239098D+01
-llnh( 987   )= -0.5869337290D+01
-llnh( 988   )= -0.5870432164D+01
-llnh( 989   )= -0.5871523895D+01
-llnh( 990   )= -0.5872612338D+01
-llnh( 991   )= -0.5873697645D+01
-llnh( 992   )= -0.5874779683D+01
-llnh( 993   )= -0.5875858528D+01
-llnh( 994   )= -0.5876934214D+01
-llnh( 995   )= -0.5878006676D+01
-llnh( 996   )= -0.5879076002D+01
-llnh( 997   )= -0.5880142202D+01
-llnh( 998   )= -0.5881205128D+01
-llnh( 999   )= -0.5882264991D+01
-llnh( 1000  )= -0.5883321683D+01
-llnh( 1001  )= -0.5884375272D+01
-llnh( 1002  )= -0.5885425704D+01
-llnh( 1003  )= -0.5886473023D+01
-llnh( 1004  )= -0.5887517204D+01
-llnh( 1005  )= -0.5888558321D+01
-llnh( 1006  )= -0.5889596323D+01
-llnh( 1007  )= -0.5890631250D+01
-llnh( 1008  )= -0.5891663079D+01
-llnh( 1009  )= -0.5892691857D+01
-llnh( 1010  )= -0.5893717531D+01
-llnh( 1011  )= -0.5894740186D+01
-llnh( 1012  )= -0.5895759785D+01
-llnh( 1013  )= -0.5896776265D+01
-llnh( 1014  )= -0.5897789840D+01
-llnh( 1015  )= -0.5898800343D+01
-llnh( 1016  )= -0.5899807814D+01
-llnh( 1017  )= -0.5900812292D+01
-llnh( 1018  )= -0.5901813724D+01
-llnh( 1019  )= -0.5902812170D+01
-llnh( 1020  )= -0.5903807651D+01
-llnh( 1021  )= -0.5904800116D+01
-llnh( 1022  )= -0.5905789619D+01
-llnh( 1023  )= -0.5906776200D+01
-llnh( 1024  )= -0.5907759788D+01
+      llnh(0) = 0.0000000000d+00
+      llnh(1) = -0.1285877758d+01
+      llnh(2) = -0.9915810331d+00
+      llnh(3) = -0.1050767745d+01
+      llnh(4) = -0.1053393012d+01
+      llnh(5) = -0.1086317605d+01
+      llnh(6) = -0.1143860336d+01
+      llnh(7) = -0.1212408459d+01
+      llnh(8) = -0.1283943275d+01
+      llnh(9) = -0.1354734845d+01
+      llnh(10) = -0.1423282851d+01
+      llnh(11) = -0.1489094554d+01
+      llnh(12) = -0.1552074997d+01
+      llnh(13) = -0.1612273740d+01
+      llnh(14) = -0.1669763369d+01
+      llnh(15) = -0.1724635488d+01
+      llnh(16) = -0.1776963521d+01
+      llnh(17) = -0.1826825601d+01
+      llnh(18) = -0.1874298467d+01
+      llnh(19) = -0.1919461416d+01
+      llnh(20) = -0.1962393632d+01
+      llnh(21) = -0.2003182253d+01
+      llnh(22) = -0.2041915786d+01
+      llnh(23) = -0.2078680486d+01
+      llnh(24) = -0.2113573061d+01
+      llnh(25) = -0.2146680270d+01
+      llnh(26) = -0.2178105661d+01
+      llnh(27) = -0.2207927152d+01
+      llnh(28) = -0.2236242846d+01
+      llnh(29) = -0.2263132641d+01
+      llnh(30) = -0.2288687940d+01
+      llnh(31) = -0.2312991757d+01
+      llnh(32) = -0.2336112443d+01
+      llnh(33) = -0.2358128831d+01
+      llnh(34) = -0.2379107893d+01
+      llnh(35) = -0.2399120761d+01
+      llnh(36) = -0.2418226351d+01
+      llnh(37) = -0.2436482905d+01
+      llnh(38) = -0.2453948379d+01
+      llnh(39) = -0.2470670195d+01
+      llnh(40) = -0.2486697757d+01
+      llnh(41) = -0.2502076334d+01
+      llnh(42) = -0.2516847401d+01
+      llnh(43) = -0.2531050008d+01
+      llnh(44) = -0.2544719530d+01
+      llnh(45) = -0.2557890739d+01
+      llnh(46) = -0.2570594319d+01
+      llnh(47) = -0.2582859779d+01
+      llnh(48) = -0.2594714216d+01
+      llnh(49) = -0.2606182782d+01
+      llnh(50) = -0.2617289738d+01
+      llnh(51) = -0.2628056023d+01
+      llnh(52) = -0.2638502978d+01
+      llnh(53) = -0.2648649164d+01
+      llnh(54) = -0.2658512061d+01
+      llnh(55) = -0.2668109142d+01
+      llnh(56) = -0.2677455130d+01
+      llnh(57) = -0.2686564655d+01
+      llnh(58) = -0.2695451439d+01
+      llnh(59) = -0.2704127764d+01
+      llnh(60) = -0.2712605707d+01
+      llnh(61) = -0.2720896238d+01
+      llnh(62) = -0.2729009765d+01
+      llnh(63) = -0.2736955903d+01
+      llnh(64) = -0.2744743969d+01
+      llnh(65) = -0.2752382423d+01
+      llnh(66) = -0.2759879282d+01
+      llnh(67) = -0.2767242102d+01
+      llnh(68) = -0.2774478021d+01
+      llnh(69) = -0.2781593811d+01
+      llnh(70) = -0.2788595709d+01
+      llnh(71) = -0.2795489680d+01
+      llnh(72) = -0.2802281343d+01
+      llnh(73) = -0.2808976028d+01
+      llnh(74) = -0.2815578704d+01
+      llnh(75) = -0.2822094093d+01
+      llnh(76) = -0.2828526669d+01
+      llnh(77) = -0.2834880683d+01
+      llnh(78) = -0.2841160150d+01
+      llnh(79) = -0.2847368769d+01
+      llnh(80) = -0.2853510163d+01
+      llnh(81) = -0.2859587939d+01
+      llnh(82) = -0.2865604931d+01
+      llnh(83) = -0.2871564378d+01
+      llnh(84) = -0.2877469169d+01
+      llnh(85) = -0.2883322045d+01
+      llnh(86) = -0.2889125648d+01
+      llnh(87) = -0.2894882413d+01
+      llnh(88) = -0.2900594702d+01
+      llnh(89) = -0.2906264743d+01
+      llnh(90) = -0.2911894687d+01
+      llnh(91) = -0.2917486512d+01
+      llnh(92) = -0.2923042145d+01
+      llnh(93) = -0.2928563403d+01
+      llnh(94) = -0.2934052041d+01
+      llnh(95) = -0.2939509674d+01
+      llnh(96) = -0.2944937877d+01
+      llnh(97) = -0.2950338132d+01
+      llnh(98) = -0.2955711880d+01
+      llnh(99) = -0.2961060436d+01
+      llnh(100) = -0.2966385090d+01
+      llnh(101) = -0.2971687056d+01
+      llnh(102) = -0.2976967512d+01
+      llnh(103) = -0.2982227536d+01
+      llnh(104) = -0.2987468183d+01
+      llnh(105) = -0.2992690446d+01
+      llnh(106) = -0.2997895290d+01
+      llnh(107) = -0.3003083596d+01
+      llnh(108) = -0.3008256228d+01
+      llnh(109) = -0.3013413998d+01
+      llnh(110) = -0.3018557697d+01
+      llnh(111) = -0.3023688044d+01
+      llnh(112) = -0.3028805745d+01
+      llnh(113) = -0.3033911465d+01
+      llnh(114) = -0.3039005849d+01
+      llnh(115) = -0.3044089483d+01
+      llnh(116) = -0.3049162947d+01
+      llnh(117) = -0.3054226779d+01
+      llnh(118) = -0.3059281508d+01
+      llnh(119) = -0.3064327612d+01
+      llnh(120) = -0.3069365560d+01
+      llnh(121) = -0.3074395793d+01
+      llnh(122) = -0.3079418737d+01
+      llnh(123) = -0.3084434789d+01
+      llnh(124) = -0.3089444323d+01
+      llnh(125) = -0.3094447698d+01
+      llnh(126) = -0.3099445739d+01
+      llnh(127) = -0.3104437859d+01
+      llnh(128) = -0.3109424785d+01
+      llnh(129) = -0.3114406817d+01
+      llnh(130) = -0.3119384228d+01
+      llnh(131) = -0.3124357299d+01
+      llnh(132) = -0.3129326253d+01
+      llnh(133) = -0.3134291331d+01
+      llnh(134) = -0.3139252753d+01
+      llnh(135) = -0.3144210746d+01
+      llnh(136) = -0.3149165487d+01
+      llnh(137) = -0.3154117170d+01
+      llnh(138) = -0.3159065971d+01
+      llnh(139) = -0.3164012071d+01
+      llnh(140) = -0.3168955611d+01
+      llnh(141) = -0.3173896746d+01
+      llnh(142) = -0.3178835615d+01
+      llnh(143) = -0.3183772364d+01
+      llnh(144) = -0.3188707103d+01
+      llnh(145) = -0.3193639953d+01
+      llnh(146) = -0.3198571025d+01
+      llnh(147) = -0.3203500433d+01
+      llnh(148) = -0.3208428262d+01
+      llnh(149) = -0.3213354609d+01
+      llnh(150) = -0.3218279559d+01
+      llnh(151) = -0.3223203202d+01
+      llnh(152) = -0.3228125600d+01
+      llnh(153) = -0.3233046832d+01
+      llnh(154) = -0.3237966958d+01
+      llnh(155) = -0.3242886050d+01
+      llnh(156) = -0.3247804156d+01
+      llnh(157) = -0.3252721331d+01
+      llnh(158) = -0.3257637624d+01
+      llnh(159) = -0.3262553244d+01
+      llnh(160) = -0.3267467917d+01
+      llnh(161) = -0.3272381835d+01
+      llnh(162) = -0.3277295035d+01
+      llnh(163) = -0.3282207554d+01
+      llnh(164) = -0.3287119415d+01
+      llnh(165) = -0.3292030647d+01
+      llnh(166) = -0.3296941273d+01
+      llnh(167) = -0.3301851314d+01
+      llnh(168) = -0.3306760804d+01
+      llnh(169) = -0.3311669742d+01
+      llnh(170) = -0.3316578148d+01
+      llnh(171) = -0.3321486032d+01
+      llnh(172) = -0.3326393422d+01
+      llnh(173) = -0.3331300520d+01
+      llnh(174) = -0.3336207644d+01
+      llnh(175) = -0.3341113629d+01
+      llnh(176) = -0.3346019149d+01
+      llnh(177) = -0.3350924191d+01
+      llnh(178) = -0.3355828764d+01
+      llnh(179) = -0.3360732862d+01
+      llnh(180) = -0.3365636499d+01
+      llnh(181) = -0.3370539656d+01
+      llnh(182) = -0.3375442336d+01
+      llnh(183) = -0.3380344530d+01
+      llnh(184) = -0.3385246241d+01
+      llnh(185) = -0.3390147452d+01
+      llnh(186) = -0.3395048158d+01
+      llnh(187) = -0.3399948348d+01
+      llnh(188) = -0.3404848021d+01
+      llnh(189) = -0.3409747153d+01
+      llnh(190) = -0.3414645740d+01
+      llnh(191) = -0.3419543764d+01
+      llnh(192) = -0.3424441221d+01
+      llnh(193) = -0.3429338088d+01
+      llnh(194) = -0.3434234352d+01
+      llnh(195) = -0.3439129995d+01
+      llnh(196) = -0.3444025009d+01
+      llnh(197) = -0.3448919371d+01
+      llnh(198) = -0.3453813064d+01
+      llnh(199) = -0.3458706066d+01
+      llnh(200) = -0.3463598369d+01
+      llnh(201) = -0.3468489946d+01
+      llnh(202) = -0.3473380779d+01
+      llnh(203) = -0.3478270847d+01
+      llnh(204) = -0.3483160133d+01
+      llnh(205) = -0.3488048612d+01
+      llnh(206) = -0.3492936263d+01
+      llnh(207) = -0.3497823067d+01
+      llnh(208) = -0.3502708995d+01
+      llnh(209) = -0.3507594040d+01
+      llnh(210) = -0.3512478162d+01
+      llnh(211) = -0.3517361345d+01
+      llnh(212) = -0.3522243562d+01
+      llnh(213) = -0.3527124799d+01
+      llnh(214) = -0.3532005020d+01
+      llnh(215) = -0.3536884206d+01
+      llnh(216) = -0.3541762329d+01
+      llnh(217) = -0.3546639373d+01
+      llnh(218) = -0.3551515301d+01
+      llnh(219) = -0.3556390096d+01
+      llnh(220) = -0.3561263723d+01
+      llnh(221) = -0.3566136170d+01
+      llnh(222) = -0.3571007398d+01
+      llnh(223) = -0.3575877387d+01
+      llnh(224) = -0.3580747513d+01
+      llnh(225) = -0.3585615132d+01
+      llnh(226) = -0.3590481365d+01
+      llnh(227) = -0.3595346263d+01
+      llnh(228) = -0.3600209792d+01
+      llnh(229) = -0.3605071936d+01
+      llnh(230) = -0.3609932657d+01
+      llnh(231) = -0.3614791931d+01
+      llnh(232) = -0.3619649732d+01
+      llnh(233) = -0.3624506035d+01
+      llnh(234) = -0.3629360805d+01
+      llnh(235) = -0.3634214026d+01
+      llnh(236) = -0.3639065656d+01
+      llnh(237) = -0.3643915683d+01
+      llnh(238) = -0.3648764066d+01
+      llnh(239) = -0.3653610782d+01
+      llnh(240) = -0.3658455800d+01
+      llnh(241) = -0.3663299103d+01
+      llnh(242) = -0.3668140651d+01
+      llnh(243) = -0.3672980417d+01
+      llnh(244) = -0.3677818461d+01
+      llnh(245) = -0.3682654761d+01
+      llnh(246) = -0.3687489030d+01
+      llnh(247) = -0.3692321405d+01
+      llnh(248) = -0.3697151858d+01
+      llnh(249) = -0.3701980361d+01
+      llnh(250) = -0.3706806936d+01
+      llnh(251) = -0.3711631455d+01
+      llnh(252) = -0.3716453939d+01
+      llnh(253) = -0.3721274358d+01
+      llnh(254) = -0.3726092689d+01
+      llnh(255) = -0.3730908892d+01
+      llnh(256) = -0.3735722950d+01
+      llnh(257) = -0.3740534821d+01
+      llnh(258) = -0.3745344490d+01
+      llnh(259) = -0.3750151923d+01
+      llnh(260) = -0.3754957088d+01
+      llnh(261) = -0.3759759956d+01
+      llnh(262) = -0.3764560505d+01
+      llnh(263) = -0.3769358699d+01
+      llnh(264) = -0.3774154515d+01
+      llnh(265) = -0.3778947920d+01
+      llnh(266) = -0.3783738888d+01
+      llnh(267) = -0.3788527389d+01
+      llnh(268) = -0.3793313390d+01
+      llnh(269) = -0.3798096866d+01
+      llnh(270) = -0.3802877791d+01
+      llnh(271) = -0.3807656137d+01
+      llnh(272) = -0.3812431870d+01
+      llnh(273) = -0.3817204958d+01
+      llnh(274) = -0.3821975383d+01
+      llnh(275) = -0.3826743110d+01
+      llnh(276) = -0.3831508110d+01
+      llnh(277) = -0.3836271873d+01
+      llnh(278) = -0.3841032150d+01
+      llnh(279) = -0.3845788986d+01
+      llnh(280) = -0.3850542997d+01
+      llnh(281) = -0.3855294157d+01
+      llnh(282) = -0.3860042438d+01
+      llnh(283) = -0.3864787807d+01
+      llnh(284) = -0.3869530239d+01
+      llnh(285) = -0.3874269702d+01
+      llnh(286) = -0.3879006179d+01
+      llnh(287) = -0.3883739635d+01
+      llnh(288) = -0.3888470049d+01
+      llnh(289) = -0.3893197379d+01
+      llnh(290) = -0.3897921616d+01
+      llnh(291) = -0.3902642720d+01
+      llnh(292) = -0.3907360668d+01
+      llnh(293) = -0.3912075438d+01
+      llnh(294) = -0.3916786993d+01
+      llnh(295) = -0.3921495314d+01
+      llnh(296) = -0.3926200363d+01
+      llnh(297) = -0.3930902125d+01
+      llnh(298) = -0.3935600573d+01
+      llnh(299) = -0.3940295676d+01
+      llnh(300) = -0.3944987404d+01
+      llnh(301) = -0.3949675741d+01
+      llnh(302) = -0.3954360653d+01
+      llnh(303) = -0.3959042119d+01
+      llnh(304) = -0.3963720107d+01
+      llnh(305) = -0.3968394592d+01
+      llnh(306) = -0.3973065547d+01
+      llnh(307) = -0.3977732958d+01
+      llnh(308) = -0.3982396782d+01
+      llnh(309) = -0.3987056997d+01
+      llnh(310) = -0.3991713583d+01
+      llnh(311) = -0.3996366510d+01
+      llnh(312) = -0.4001015766d+01
+      llnh(313) = -0.4005661299d+01
+      llnh(314) = -0.4010303104d+01
+      llnh(315) = -0.4014941156d+01
+      llnh(316) = -0.4019575415d+01
+      llnh(317) = -0.4024205867d+01
+      llnh(318) = -0.4028832484d+01
+      llnh(319) = -0.4033455241d+01
+      llnh(320) = -0.4038074113d+01
+      llnh(321) = -0.4042689078d+01
+      llnh(322) = -0.4047300107d+01
+      llnh(323) = -0.4051907177d+01
+      llnh(324) = -0.4056510264d+01
+      llnh(325) = -0.4061109341d+01
+      llnh(326) = -0.4065704388d+01
+      llnh(327) = -0.4070295381d+01
+      llnh(328) = -0.4074882284d+01
+      llnh(329) = -0.4079465087d+01
+      llnh(330) = -0.4084043760d+01
+      llnh(331) = -0.4088618279d+01
+      llnh(332) = -0.4093188619d+01
+      llnh(333) = -0.4097757745d+01
+      llnh(334) = -0.4102319954d+01
+      llnh(335) = -0.4106878131d+01
+      llnh(336) = -0.4111431810d+01
+      llnh(337) = -0.4115981211d+01
+      llnh(338) = -0.4120526303d+01
+      llnh(339) = -0.4125067085d+01
+      llnh(340) = -0.4129603517d+01
+      llnh(341) = -0.4134135580d+01
+      llnh(342) = -0.4138663260d+01
+      llnh(343) = -0.4143186527d+01
+      llnh(344) = -0.4147705363d+01
+      llnh(345) = -0.4152219750d+01
+      llnh(346) = -0.4156729818d+01
+      llnh(347) = -0.4161235270d+01
+      llnh(348) = -0.4165736154d+01
+      llnh(349) = -0.4170232508d+01
+      llnh(350) = -0.4174724295d+01
+      llnh(351) = -0.4179211503d+01
+      llnh(352) = -0.4183694105d+01
+      llnh(353) = -0.4188172090d+01
+      llnh(354) = -0.4192645419d+01
+      llnh(355) = -0.4197114075d+01
+      llnh(356) = -0.4201578059d+01
+      llnh(357) = -0.4206037324d+01
+      llnh(358) = -0.4210491862d+01
+      llnh(359) = -0.4214941658d+01
+      llnh(360) = -0.4219386679d+01
+      llnh(361) = -0.4223826915d+01
+      llnh(362) = -0.4228262339d+01
+      llnh(363) = -0.4232692981d+01
+      llnh(364) = -0.4237118729d+01
+      llnh(365) = -0.4241539614d+01
+      llnh(366) = -0.4245955590d+01
+      llnh(367) = -0.4250366666d+01
+      llnh(368) = -0.4254772819d+01
+      llnh(369) = -0.4259174029d+01
+      llnh(370) = -0.4263570269d+01
+      llnh(371) = -0.4267961523d+01
+      llnh(372) = -0.4272347781d+01
+      llnh(373) = -0.4276728990d+01
+      llnh(374) = -0.4281105174d+01
+      llnh(375) = -0.4285476289d+01
+      llnh(376) = -0.4289842325d+01
+      llnh(377) = -0.4294203252d+01
+      llnh(378) = -0.4298559055d+01
+      llnh(379) = -0.4302909733d+01
+      llnh(380) = -0.4307255251d+01
+      llnh(381) = -0.4311595601d+01
+      llnh(382) = -0.4315930729d+01
+      llnh(383) = -0.4320260674d+01
+      llnh(384) = -0.4324585375d+01
+      llnh(385) = -0.4328909213d+01
+      llnh(386) = -0.4333223786d+01
+      llnh(387) = -0.4337533117d+01
+      llnh(388) = -0.4341837175d+01
+      llnh(389) = -0.4346135928d+01
+      llnh(390) = -0.4350429387d+01
+      llnh(391) = -0.4354717544d+01
+      llnh(392) = -0.4359000351d+01
+      llnh(393) = -0.4363277792d+01
+      llnh(394) = -0.4367549884d+01
+      llnh(395) = -0.4371816587d+01
+      llnh(396) = -0.4376077888d+01
+      llnh(397) = -0.4380333776d+01
+      llnh(398) = -0.4384584234d+01
+      llnh(399) = -0.4388829242d+01
+      llnh(400) = -0.4393068797d+01
+      llnh(401) = -0.4397302881d+01
+      llnh(402) = -0.4401531470d+01
+      llnh(403) = -0.4405754548d+01
+      llnh(404) = -0.4409972120d+01
+      llnh(405) = -0.4414184146d+01
+      llnh(406) = -0.4418390628d+01
+      llnh(407) = -0.4422591551d+01
+      llnh(408) = -0.4426786883d+01
+      llnh(409) = -0.4430976616d+01
+      llnh(410) = -0.4435160749d+01
+      llnh(411) = -0.4439339273d+01
+      llnh(412) = -0.4443512157d+01
+      llnh(413) = -0.4447679385d+01
+      llnh(414) = -0.4451840955d+01
+      llnh(415) = -0.4455997001d+01
+      llnh(416) = -0.4460147471d+01
+      llnh(417) = -0.4464291999d+01
+      llnh(418) = -0.4468430796d+01
+      llnh(419) = -0.4472563895d+01
+      llnh(420) = -0.4476691221d+01
+      llnh(421) = -0.4480812807d+01
+      llnh(422) = -0.4484928622d+01
+      llnh(423) = -0.4489038649d+01
+      llnh(424) = -0.4493142872d+01
+      llnh(425) = -0.4497241313d+01
+      llnh(426) = -0.4501333913d+01
+      llnh(427) = -0.4505420682d+01
+      llnh(428) = -0.4509501609d+01
+      llnh(429) = -0.4513576672d+01
+      llnh(430) = -0.4517645867d+01
+      llnh(431) = -0.4521709169d+01
+      llnh(432) = -0.4525766592d+01
+      llnh(433) = -0.4529818089d+01
+      llnh(434) = -0.4533863683d+01
+      llnh(435) = -0.4537903321d+01
+      llnh(436) = -0.4541938182d+01
+      llnh(437) = -0.4545970060d+01
+      llnh(438) = -0.4549992311d+01
+      llnh(439) = -0.4554008601d+01
+      llnh(440) = -0.4558018930d+01
+      llnh(441) = -0.4562023294d+01
+      llnh(442) = -0.4566021693d+01
+      llnh(443) = -0.4570014092d+01
+      llnh(444) = -0.4574000505d+01
+      llnh(445) = -0.4577980892d+01
+      llnh(446) = -0.4581955270d+01
+      llnh(447) = -0.4585923636d+01
+      llnh(448) = -0.4589885948d+01
+      llnh(449) = -0.4593842227d+01
+      llnh(450) = -0.4597792434d+01
+      llnh(451) = -0.4601736614d+01
+      llnh(452) = -0.4605674684d+01
+      llnh(453) = -0.4609606692d+01
+      llnh(454) = -0.4613532603d+01
+      llnh(455) = -0.4617452421d+01
+      llnh(456) = -0.4621366116d+01
+      llnh(457) = -0.4625273717d+01
+      llnh(458) = -0.4629175176d+01
+      llnh(459) = -0.4633070515d+01
+      llnh(460) = -0.4636959727d+01
+      llnh(461) = -0.4640842768d+01
+      llnh(462) = -0.4644719655d+01
+      llnh(463) = -0.4648590372d+01
+      llnh(464) = -0.4652454903d+01
+      llnh(465) = -0.4656313259d+01
+      llnh(466) = -0.4660165448d+01
+      llnh(467) = -0.4664011409d+01
+      llnh(468) = -0.4667851182d+01
+      llnh(469) = -0.4671684743d+01
+      llnh(470) = -0.4675512056d+01
+      llnh(471) = -0.4679333175d+01
+      llnh(472) = -0.4683148017d+01
+      llnh(473) = -0.4686956657d+01
+      llnh(474) = -0.4690759028d+01
+      llnh(475) = -0.4694555138d+01
+      llnh(476) = -0.4698344998d+01
+      llnh(477) = -0.4702128578d+01
+      llnh(478) = -0.4705905867d+01
+      llnh(479) = -0.4709676879d+01
+      llnh(480) = -0.4713441602d+01
+      llnh(481) = -0.4717200013d+01
+      llnh(482) = -0.4720952106d+01
+      llnh(483) = -0.4724697898d+01
+      llnh(484) = -0.4728437390d+01
+      llnh(485) = -0.4732170536d+01
+      llnh(486) = -0.4735897325d+01
+      llnh(487) = -0.4739617794d+01
+      llnh(488) = -0.4743331898d+01
+      llnh(489) = -0.4747041742d+01
+      llnh(490) = -0.4750747006d+01
+      llnh(491) = -0.4754442562d+01
+      llnh(492) = -0.4758131783d+01
+      llnh(493) = -0.4761815020d+01
+      llnh(494) = -0.4765491574d+01
+      llnh(495) = -0.4769161760d+01
+      llnh(496) = -0.4772825594d+01
+      llnh(497) = -0.4776483086d+01
+      llnh(498) = -0.4780134175d+01
+      llnh(499) = -0.4783778934d+01
+      llnh(500) = -0.4787417346d+01
+      llnh(501) = -0.4791049345d+01
+      llnh(502) = -0.4794674951d+01
+      llnh(503) = -0.4798294201d+01
+      llnh(504) = -0.4801907068d+01
+      llnh(505) = -0.4805513523d+01
+      llnh(506) = -0.4809113591d+01
+      llnh(507) = -0.4812707285d+01
+      llnh(508) = -0.4816294557d+01
+      llnh(509) = -0.4819875456d+01
+      llnh(510) = -0.4823449917d+01
+      llnh(511) = -0.4827017975d+01
+      llnh(512) = -0.4830579617d+01
+      llnh(513) = -0.4834134846d+01
+      llnh(514) = -0.4837683664d+01
+      llnh(515) = -0.4841226070d+01
+      llnh(516) = -0.4844762004d+01
+      llnh(517) = -0.4848291562d+01
+      llnh(518) = -0.4851814662d+01
+      llnh(519) = -0.4855331349d+01
+      llnh(520) = -0.4858841570d+01
+      llnh(521) = -0.4862345359d+01
+      llnh(522) = -0.4865842727d+01
+      llnh(523) = -0.4869333622d+01
+      llnh(524) = -0.4872818085d+01
+      llnh(525) = -0.4876296108d+01
+      llnh(526) = -0.4879767676d+01
+      llnh(527) = -0.4883232788d+01
+      llnh(528) = -0.4886691441d+01
+      llnh(529) = -0.4890143646d+01
+      llnh(530) = -0.4893589383d+01
+      llnh(531) = -0.4897028646d+01
+      llnh(532) = -0.4900461459d+01
+      llnh(533) = -0.4903887800d+01
+      llnh(534) = -0.4907307694d+01
+      llnh(535) = -0.4910721080d+01
+      llnh(536) = -0.4914128000d+01
+      llnh(537) = -0.4917528444d+01
+      llnh(538) = -0.4920922416d+01
+      llnh(539) = -0.4924309950d+01
+      llnh(540) = -0.4927690936d+01
+      llnh(541) = -0.4931065502d+01
+      llnh(542) = -0.4934433516d+01
+      llnh(543) = -0.4937797571d+01
+      llnh(544) = -0.4941156429d+01
+      llnh(545) = -0.4944505566d+01
+      llnh(546) = -0.4947848246d+01
+      llnh(547) = -0.4951184474d+01
+      llnh(548) = -0.4954514217d+01
+      llnh(549) = -0.4957837546d+01
+      llnh(550) = -0.4961154421d+01
+      llnh(551) = -0.4964464816d+01
+      llnh(552) = -0.4967768764d+01
+      llnh(553) = -0.4971066281d+01
+      llnh(554) = -0.4974357343d+01
+      llnh(555) = -0.4977641966d+01
+      llnh(556) = -0.4980920106d+01
+      llnh(557) = -0.4984191792d+01
+      llnh(558) = -0.4987457081d+01
+      llnh(559) = -0.4990715853d+01
+      llnh(560) = -0.4993968216d+01
+      llnh(561) = -0.4997214147d+01
+      llnh(562) = -0.5000453623d+01
+      llnh(563) = -0.5003686648d+01
+      llnh(564) = -0.5006913204d+01
+      llnh(565) = -0.5010133371d+01
+      llnh(566) = -0.5013347076d+01
+      llnh(567) = -0.5016554357d+01
+      llnh(568) = -0.5019755183d+01
+      llnh(569) = -0.5022949569d+01
+      llnh(570) = -0.5026137554d+01
+      llnh(571) = -0.5029319047d+01
+      llnh(572) = -0.5032494140d+01
+      llnh(573) = -0.5035663150d+01
+      llnh(574) = -0.5038825376d+01
+      llnh(575) = -0.5041981220d+01
+      llnh(576) = -0.5045130584d+01
+      llnh(577) = -0.5048273555d+01
+      llnh(578) = -0.5051410090d+01
+      llnh(579) = -0.5054540239d+01
+      llnh(580) = -0.5057663933d+01
+      llnh(581) = -0.5060781203d+01
+      llnh(582) = -0.5063892095d+01
+      llnh(583) = -0.5066996544d+01
+      llnh(584) = -0.5070094560d+01
+      llnh(585) = -0.5073186208d+01
+      llnh(586) = -0.5076271426d+01
+      llnh(587) = -0.5079350236d+01
+      llnh(588) = -0.5082422642d+01
+      llnh(589) = -0.5085488664d+01
+      llnh(590) = -0.5088548256d+01
+      llnh(591) = -0.5091601476d+01
+      llnh(592) = -0.5094648290d+01
+      llnh(593) = -0.5097688683d+01
+      llnh(594) = -0.5100722685d+01
+      llnh(595) = -0.5103750327d+01
+      llnh(596) = -0.5106771540d+01
+      llnh(597) = -0.5109786384d+01
+      llnh(598) = -0.5112799670d+01
+      llnh(599) = -0.5115803150d+01
+      llnh(600) = -0.5118799395d+01
+      llnh(601) = -0.5121789292d+01
+      llnh(602) = -0.5124772858d+01
+      llnh(603) = -0.5127750116d+01
+      llnh(604) = -0.5130721005d+01
+      llnh(605) = -0.5133685604d+01
+      llnh(606) = -0.5136643859d+01
+      llnh(607) = -0.5139595762d+01
+      llnh(608) = -0.5142541391d+01
+      llnh(609) = -0.5145480724d+01
+      llnh(610) = -0.5148413704d+01
+      llnh(611) = -0.5151340435d+01
+      llnh(612) = -0.5154260814d+01
+      llnh(613) = -0.5157174876d+01
+      llnh(614) = -0.5160082667d+01
+      llnh(615) = -0.5162984187d+01
+      llnh(616) = -0.5165879425d+01
+      llnh(617) = -0.5168768373d+01
+      llnh(618) = -0.5171651043d+01
+      llnh(619) = -0.5174527467d+01
+      llnh(620) = -0.5177397602d+01
+      llnh(621) = -0.5180261493d+01
+      llnh(622) = -0.5183119109d+01
+      llnh(623) = -0.5185970497d+01
+      llnh(624) = -0.5188815635d+01
+      llnh(625) = -0.5191654520d+01
+      llnh(626) = -0.5194487149d+01
+      llnh(627) = -0.5197313595d+01
+      llnh(628) = -0.5200133751d+01
+      llnh(629) = -0.5202947738d+01
+      llnh(630) = -0.5205755473d+01
+      llnh(631) = -0.5208556983d+01
+      llnh(632) = -0.5211352324d+01
+      llnh(633) = -0.5214141419d+01
+      llnh(634) = -0.5216924343d+01
+      llnh(635) = -0.5219701054d+01
+      llnh(636) = -0.5222471563d+01
+      llnh(637) = -0.5225235884d+01
+      llnh(638) = -0.5227994025d+01
+      llnh(639) = -0.5230746030d+01
+      llnh(640) = -0.5233491832d+01
+      llnh(641) = -0.5236231461d+01
+      llnh(642) = -0.5238964942d+01
+      llnh(643) = -0.5241692271d+01
+      llnh(644) = -0.5244413412d+01
+      llnh(645) = -0.5247128424d+01
+      llnh(646) = -0.5249837269d+01
+      llnh(647) = -0.5252540015d+01
+      llnh(648) = -0.5255236616d+01
+      llnh(649) = -0.5257927067d+01
+      llnh(650) = -0.5260611388d+01
+      llnh(651) = -0.5263289623d+01
+      llnh(652) = -0.5265961712d+01
+      llnh(653) = -0.5268633068d+01
+      llnh(654) = -0.5271293569d+01
+      llnh(655) = -0.5273947990d+01
+      llnh(656) = -0.5276596206d+01
+      llnh(657) = -0.5279238426d+01
+      llnh(658) = -0.5281874571d+01
+      llnh(659) = -0.5284504655d+01
+      llnh(660) = -0.5287128701d+01
+      llnh(661) = -0.5289746751d+01
+      llnh(662) = -0.5292358757d+01
+      llnh(663) = -0.5294964725d+01
+      llnh(664) = -0.5297564727d+01
+      llnh(665) = -0.5300158699d+01
+      llnh(666) = -0.5302746668d+01
+      llnh(667) = -0.5305328668d+01
+      llnh(668) = -0.5307904687d+01
+      llnh(669) = -0.5310474675d+01
+      llnh(670) = -0.5313038743d+01
+      llnh(671) = -0.5315596857d+01
+      llnh(672) = -0.5318148939d+01
+      llnh(673) = -0.5320695164d+01
+      llnh(674) = -0.5323235360d+01
+      llnh(675) = -0.5325769682d+01
+      llnh(676) = -0.5328298064d+01
+      llnh(677) = -0.5330820487d+01
+      llnh(678) = -0.5333337033d+01
+      llnh(679) = -0.5335847660d+01
+      llnh(680) = -0.5338352356d+01
+      llnh(681) = -0.5340851158d+01
+      llnh(682) = -0.5343344088d+01
+      llnh(683) = -0.5345831113d+01
+      llnh(684) = -0.5348312329d+01
+      llnh(685) = -0.5350787595d+01
+      llnh(686) = -0.5353257028d+01
+      llnh(687) = -0.5355720597d+01
+      llnh(688) = -0.5358178333d+01
+      llnh(689) = -0.5360630227d+01
+      llnh(690) = -0.5363076250d+01
+      llnh(691) = -0.5365516440d+01
+      llnh(692) = -0.5367950847d+01
+      llnh(693) = -0.5370379412d+01
+      llnh(694) = -0.5372802182d+01
+      llnh(695) = -0.5375219136d+01
+      llnh(696) = -0.5377630301d+01
+      llnh(697) = -0.5380035657d+01
+      llnh(698) = -0.5382435244d+01
+      llnh(699) = -0.5384829094d+01
+      llnh(700) = -0.5387217124d+01
+      llnh(701) = -0.5389599434d+01
+      llnh(702) = -0.5391975954d+01
+      llnh(703) = -0.5394346756d+01
+      llnh(704) = -0.5396711759d+01
+      llnh(705) = -0.5399071078d+01
+      llnh(706) = -0.5401424638d+01
+      llnh(707) = -0.5403772479d+01
+      llnh(708) = -0.5406119229d+01
+      llnh(709) = -0.5408456158d+01
+      llnh(710) = -0.5410787342d+01
+      llnh(711) = -0.5413112829d+01
+      llnh(712) = -0.5415432725d+01
+      llnh(713) = -0.5417746886d+01
+      llnh(714) = -0.5420055451d+01
+      llnh(715) = -0.5422358379d+01
+      llnh(716) = -0.5424655695d+01
+      llnh(717) = -0.5426947346d+01
+      llnh(718) = -0.5429233415d+01
+      llnh(719) = -0.5431513881d+01
+      llnh(720) = -0.5433788773d+01
+      llnh(721) = -0.5436058059d+01
+      llnh(722) = -0.5438321777d+01
+      llnh(723) = -0.5440579909d+01
+      llnh(724) = -0.5442832493d+01
+      llnh(725) = -0.5445079538d+01
+      llnh(726) = -0.5447321025d+01
+      llnh(727) = -0.5449556959d+01
+      llnh(728) = -0.5451787383d+01
+      llnh(729) = -0.5454012244d+01
+      llnh(730) = -0.5456231645d+01
+      llnh(731) = -0.5458445490d+01
+      llnh(732) = -0.5460653885d+01
+      llnh(733) = -0.5462856815d+01
+      llnh(734) = -0.5465054208d+01
+      llnh(735) = -0.5467246209d+01
+      llnh(736) = -0.5469432635d+01
+      llnh(737) = -0.5471613649d+01
+      llnh(738) = -0.5473789425d+01
+      llnh(739) = -0.5475959565d+01
+      llnh(740) = -0.5478124308d+01
+      llnh(741) = -0.5480283586d+01
+      llnh(742) = -0.5482437461d+01
+      llnh(743) = -0.5484585919d+01
+      llnh(744) = -0.5486728976d+01
+      llnh(745) = -0.5488866669d+01
+      llnh(746) = -0.5490998937d+01
+      llnh(747) = -0.5493125867d+01
+      llnh(748) = -0.5495247398d+01
+      llnh(749) = -0.5497363593d+01
+      llnh(750) = -0.5499474396d+01
+      llnh(751) = -0.5501579935d+01
+      llnh(752) = -0.5503680091d+01
+      llnh(753) = -0.5505774872d+01
+      llnh(754) = -0.5507864419d+01
+      llnh(755) = -0.5509948597d+01
+      llnh(756) = -0.5512027498d+01
+      llnh(757) = -0.5514101090d+01
+      llnh(758) = -0.5516169407d+01
+      llnh(759) = -0.5518232431d+01
+      llnh(760) = -0.5520290171d+01
+      llnh(761) = -0.5522342671d+01
+      llnh(762) = -0.5524389920d+01
+      llnh(763) = -0.5526435070d+01
+      llnh(764) = -0.5528472978d+01
+      llnh(765) = -0.5530504862d+01
+      llnh(766) = -0.5532531569d+01
+      llnh(767) = -0.5534553070d+01
+      llnh(768) = -0.5536569379d+01
+      llnh(769) = -0.5538580560d+01
+      llnh(770) = -0.5540586509d+01
+      llnh(771) = -0.5542587346d+01
+      llnh(772) = -0.5544583018d+01
+      llnh(773) = -0.5546573556d+01
+      llnh(774) = -0.5548558957d+01
+      llnh(775) = -0.5550539231d+01
+      llnh(776) = -0.5552514398d+01
+      llnh(777) = -0.5554484460d+01
+      llnh(778) = -0.5556449473d+01
+      llnh(779) = -0.5558409336d+01
+      llnh(780) = -0.5560364185d+01
+      llnh(781) = -0.5562313913d+01
+      llnh(782) = -0.5564258612d+01
+      llnh(783) = -0.5566198240d+01
+      llnh(784) = -0.5568132825d+01
+      llnh(785) = -0.5570062431d+01
+      llnh(786) = -0.5571986955d+01
+      llnh(787) = -0.5573906479d+01
+      llnh(788) = -0.5575821017d+01
+      llnh(789) = -0.5577730521d+01
+      llnh(790) = -0.5579635046d+01
+      llnh(791) = -0.5581534623d+01
+      llnh(792) = -0.5583429246d+01
+      llnh(793) = -0.5585318843d+01
+      llnh(794) = -0.5587203534d+01
+      llnh(795) = -0.5589083215d+01
+      llnh(796) = -0.5590958026d+01
+      llnh(797) = -0.5592827913d+01
+      llnh(798) = -0.5594692837d+01
+      llnh(799) = -0.5596552884d+01
+      llnh(800) = -0.5598408013d+01
+      llnh(801) = -0.5600258261d+01
+      llnh(802) = -0.5602103603d+01
+      llnh(803) = -0.5603944084d+01
+      llnh(804) = -0.5605779692d+01
+      llnh(805) = -0.5607610469d+01
+      llnh(806) = -0.5609436368d+01
+      llnh(807) = -0.5611257443d+01
+      llnh(808) = -0.5613073624d+01
+      llnh(809) = -0.5614885059d+01
+      llnh(810) = -0.5616691617d+01
+      llnh(811) = -0.5618493398d+01
+      llnh(812) = -0.5620290369d+01
+      llnh(813) = -0.5622082588d+01
+      llnh(814) = -0.5623870004d+01
+      llnh(815) = -0.5625652635d+01
+      llnh(816) = -0.5627430515d+01
+      llnh(817) = -0.5629203619d+01
+      llnh(818) = -0.5630973564d+01
+      llnh(819) = -0.5632739215d+01
+      llnh(820) = -0.5634498385d+01
+      llnh(821) = -0.5636252874d+01
+      llnh(822) = -0.5638002692d+01
+      llnh(823) = -0.5639747990d+01
+      llnh(824) = -0.5641488433d+01
+      llnh(825) = -0.5643224238d+01
+      llnh(826) = -0.5644955371d+01
+      llnh(827) = -0.5646681860d+01
+      llnh(828) = -0.5648403688d+01
+      llnh(829) = -0.5650120894d+01
+      llnh(830) = -0.5651833499d+01
+      llnh(831) = -0.5653541488d+01
+      llnh(832) = -0.5655244889d+01
+      llnh(833) = -0.5656943648d+01
+      llnh(834) = -0.5658637872d+01
+      llnh(835) = -0.5660327454d+01
+      llnh(836) = -0.5662012541d+01
+      llnh(837) = -0.5663693098d+01
+      llnh(838) = -0.5665369003d+01
+      llnh(839) = -0.5667040432d+01
+      llnh(840) = -0.5668707291d+01
+      llnh(841) = -0.5670369673d+01
+      llnh(842) = -0.5672027532d+01
+      llnh(843) = -0.5673680874d+01
+      llnh(844) = -0.5675329711d+01
+      llnh(845) = -0.5676974102d+01
+      llnh(846) = -0.5678614009d+01
+      llnh(847) = -0.5680249399d+01
+      llnh(848) = -0.5681880401d+01
+      llnh(849) = -0.5683506937d+01
+      llnh(850) = -0.5685128983d+01
+      llnh(851) = -0.5686746614d+01
+      llnh(852) = -0.5688359836d+01
+      llnh(853) = -0.5689968657d+01
+      llnh(854) = -0.5691573040d+01
+      llnh(855) = -0.5693173037d+01
+      llnh(856) = -0.5694768667d+01
+      llnh(857) = -0.5696359900d+01
+      llnh(858) = -0.5697946740d+01
+      llnh(859) = -0.5699529279d+01
+      llnh(860) = -0.5701107407d+01
+      llnh(861) = -0.5702681211d+01
+      llnh(862) = -0.5704250662d+01
+      llnh(863) = -0.5705815820d+01
+      llnh(864) = -0.5707376645d+01
+      llnh(865) = -0.5708933156d+01
+      llnh(866) = -0.5710485372d+01
+      llnh(867) = -0.5712033286d+01
+      llnh(868) = -0.5713576887d+01
+      llnh(869) = -0.5715116238d+01
+      llnh(870) = -0.5716651343d+01
+      llnh(871) = -0.5718182133d+01
+      llnh(872) = -0.5719708718d+01
+      llnh(873) = -0.5721231370d+01
+      llnh(874) = -0.5722752079d+01
+      llnh(875) = -0.5724266184d+01
+      llnh(876) = -0.5725776091d+01
+      llnh(877) = -0.5727281862d+01
+      llnh(878) = -0.5728783383d+01
+      llnh(879) = -0.5730280793d+01
+      llnh(880) = -0.5731774031d+01
+      llnh(881) = -0.5733263026d+01
+      llnh(882) = -0.5734747963d+01
+      llnh(883) = -0.5736228729d+01
+      llnh(884) = -0.5737705360d+01
+      llnh(885) = -0.5739177941d+01
+      llnh(886) = -0.5740646299d+01
+      llnh(887) = -0.5742110595d+01
+      llnh(888) = -0.5743570865d+01
+      llnh(889) = -0.5745026960d+01
+      llnh(890) = -0.5746479033d+01
+      llnh(891) = -0.5747927018d+01
+      llnh(892) = -0.5749370943d+01
+      llnh(893) = -0.5750810827d+01
+      llnh(894) = -0.5752246701d+01
+      llnh(895) = -0.5753678496d+01
+      llnh(896) = -0.5755106289d+01
+      llnh(897) = -0.5756530074d+01
+      llnh(898) = -0.5757949836d+01
+      llnh(899) = -0.5759365629d+01
+      llnh(900) = -0.5760777429d+01
+      llnh(901) = -0.5762185269d+01
+      llnh(902) = -0.5763589050d+01
+      llnh(903) = -0.5764989015d+01
+      llnh(904) = -0.5766384906d+01
+      llnh(905) = -0.5767776906d+01
+      llnh(906) = -0.5769164942d+01
+      llnh(907) = -0.5770549045d+01
+      llnh(908) = -0.5771929251d+01
+      llnh(909) = -0.5773305592d+01
+      llnh(910) = -0.5774678021d+01
+      llnh(911) = -0.5776046522d+01
+      llnh(912) = -0.5777411181d+01
+      llnh(913) = -0.5778771903d+01
+      llnh(914) = -0.5780128791d+01
+      llnh(915) = -0.5781481778d+01
+      llnh(916) = -0.5782830973d+01
+      llnh(917) = -0.5784176296d+01
+      llnh(918) = -0.5785517731d+01
+      llnh(919) = -0.5786855440d+01
+      llnh(920) = -0.5788189236d+01
+      llnh(921) = -0.5789519318d+01
+      llnh(922) = -0.5790845543d+01
+      llnh(923) = -0.5792167984d+01
+      llnh(924) = -0.5793486673d+01
+      llnh(925) = -0.5794801520d+01
+      llnh(926) = -0.5796112641d+01
+      llnh(927) = -0.5797420004d+01
+      llnh(928) = -0.5798723616d+01
+      llnh(929) = -0.5800025860d+01
+      llnh(930) = -0.5801322181d+01
+      llnh(931) = -0.5802614805d+01
+      llnh(932) = -0.5803903742d+01
+      llnh(933) = -0.5805188958d+01
+      llnh(934) = -0.5806470481d+01
+      llnh(935) = -0.5807748369d+01
+      llnh(936) = -0.5809022517d+01
+      llnh(937) = -0.5810293038d+01
+      llnh(938) = -0.5811559908d+01
+      llnh(939) = -0.5812823154d+01
+      llnh(940) = -0.5814082757d+01
+      llnh(941) = -0.5815338711d+01
+      llnh(942) = -0.5816591047d+01
+      llnh(943) = -0.5817839765d+01
+      llnh(944) = -0.5819084925d+01
+      llnh(945) = -0.5820326443d+01
+      llnh(946) = -0.5821564407d+01
+      llnh(947) = -0.5822798792d+01
+      llnh(948) = -0.5824029580d+01
+      llnh(949) = -0.5825256834d+01
+      llnh(950) = -0.5826480495d+01
+      llnh(951) = -0.5827700679d+01
+      llnh(952) = -0.5828917318d+01
+      llnh(953) = -0.5830130356d+01
+      llnh(954) = -0.5831339955d+01
+      llnh(955) = -0.5832546036d+01
+      llnh(956) = -0.5833748572d+01
+      llnh(957) = -0.5834947646d+01
+      llnh(958) = -0.5836143208d+01
+      llnh(959) = -0.5837335326d+01
+      llnh(960) = -0.5838523975d+01
+      llnh(961) = -0.5839709120d+01
+      llnh(962) = -0.5840890822d+01
+      llnh(963) = -0.5842069117d+01
+      llnh(964) = -0.5843243948d+01
+      llnh(965) = -0.5844415380d+01
+      llnh(966) = -0.5845583345d+01
+      llnh(967) = -0.5846747902d+01
+      llnh(968) = -0.5847909107d+01
+      llnh(969) = -0.5849066883d+01
+      llnh(970) = -0.5850221245d+01
+      llnh(971) = -0.5851372233d+01
+      llnh(972) = -0.5852519933d+01
+      llnh(973) = -0.5853664111d+01
+      llnh(974) = -0.5854805079d+01
+      llnh(975) = -0.5855942632d+01
+      llnh(976) = -0.5857076840d+01
+      llnh(977) = -0.5858207705d+01
+      llnh(978) = -0.5859335263d+01
+      llnh(979) = -0.5860459528d+01
+      llnh(980) = -0.5861580446d+01
+      llnh(981) = -0.5862698053d+01
+      llnh(982) = -0.5863812452d+01
+      llnh(983) = -0.5864923445d+01
+      llnh(984) = -0.5866033059d+01
+      llnh(985) = -0.5867137708d+01
+      llnh(986) = -0.5868239098d+01
+      llnh(987) = -0.5869337290d+01
+      llnh(988) = -0.5870432164d+01
+      llnh(989) = -0.5871523895d+01
+      llnh(990) = -0.5872612338d+01
+      llnh(991) = -0.5873697645d+01
+      llnh(992) = -0.5874779683d+01
+      llnh(993) = -0.5875858528d+01
+      llnh(994) = -0.5876934214d+01
+      llnh(995) = -0.5878006676d+01
+      llnh(996) = -0.5879076002d+01
+      llnh(997) = -0.5880142202d+01
+      llnh(998) = -0.5881205128d+01
+      llnh(999) = -0.5882264991d+01
+      llnh(1000) = -0.5883321683d+01
+      llnh(1001) = -0.5884375272d+01
+      llnh(1002) = -0.5885425704d+01
+      llnh(1003) = -0.5886473023d+01
+      llnh(1004) = -0.5887517204d+01
+      llnh(1005) = -0.5888558321d+01
+      llnh(1006) = -0.5889596323d+01
+      llnh(1007) = -0.5890631250d+01
+      llnh(1008) = -0.5891663079d+01
+      llnh(1009) = -0.5892691857d+01
+      llnh(1010) = -0.5893717531d+01
+      llnh(1011) = -0.5894740186d+01
+      llnh(1012) = -0.5895759785d+01
+      llnh(1013) = -0.5896776265d+01
+      llnh(1014) = -0.5897789840d+01
+      llnh(1015) = -0.5898800343d+01
+      llnh(1016) = -0.5899807814d+01
+      llnh(1017) = -0.5900812292d+01
+      llnh(1018) = -0.5901813724d+01
+      llnh(1019) = -0.5902812170d+01
+      llnh(1020) = -0.5903807651d+01
+      llnh(1021) = -0.5904800116d+01
+      llnh(1022) = -0.5905789619d+01
+      llnh(1023) = -0.5906776200d+01
+      llnh(1024) = -0.5907759788d+01
 
-llnk( 0  )= -1.0000000000D+00
-llnk( 1  )= -0.1000000000D+01
-llnk( 2  )= -0.3054020195D+00
-llnk( 3  )= -0.1960294041D+00
-llnk( 4  )= -0.1336652689D+00
-llnk( 5  )= -0.1047066267D+00
-llnk( 6  )= -0.9033564429D-01
-llnk( 7  )= -0.8206984804D-01
-llnk( 8  )= -0.7655494644D-01
-llnk( 9  )= -0.7243844815D-01
-llnk( 10 )= -0.6913401466D-01
-llnk( 11 )= -0.6635869819D-01
-llnk( 12 )= -0.6395689877D-01
-llnk( 13 )= -0.6183296641D-01
-llnk( 14 )= -0.5992172201D-01
-llnk( 15 )= -0.5817772516D-01
-llnk( 16 )= -0.5656704205D-01
-llnk( 17 )= -0.5506474110D-01
-llnk( 18 )= -0.5365205058D-01
-llnk( 19 )= -0.5231479422D-01
-llnk( 20 )= -0.5104204279D-01
-llnk( 21 )= -0.4982562670D-01
-llnk( 22 )= -0.4865919131D-01
-llnk( 23 )= -0.4753764652D-01
-llnk( 24 )= -0.4645728556D-01
-llnk( 25 )= -0.4541483359D-01
-llnk( 26 )= -0.4440818528D-01
-llnk( 27 )= -0.4343487603D-01
-llnk( 28 )= -0.4249347823D-01
-llnk( 29 )= -0.4158232061D-01
-llnk( 30 )= -0.4070034557D-01
-llnk( 31 )= -0.3984645832D-01
-llnk( 32 )= -0.3901937759D-01
-llnk( 33 )= -0.3821827509D-01
-llnk( 34 )= -0.3744217649D-01
-llnk( 35 )= -0.3669034206D-01
-llnk( 36 )= -0.3596186474D-01
-llnk( 37 )= -0.3525594412D-01
-llnk( 38 )= -0.3457187576D-01
-llnk( 39 )= -0.3390882631D-01
-llnk( 40 )= -0.3326609909D-01
-llnk( 41 )= -0.3264299923D-01
-llnk( 42 )= -0.3203883174D-01
-llnk( 43 )= -0.3145293280D-01
-llnk( 44 )= -0.3088463896D-01
-llnk( 45 )= -0.3033334191D-01
-llnk( 46 )= -0.2979842108D-01
-llnk( 47 )= -0.2927929373D-01
-llnk( 48 )= -0.2877539004D-01
-llnk( 49 )= -0.2828615868D-01
-llnk( 50 )= -0.2781108192D-01
-llnk( 51 )= -0.2734963353D-01
-llnk( 52 )= -0.2690133637D-01
-llnk( 53 )= -0.2646570945D-01
-llnk( 54 )= -0.2604229418D-01
-llnk( 55 )= -0.2563066630D-01
-llnk( 56 )= -0.2523039452D-01
-llnk( 57 )= -0.2484107774D-01
-llnk( 58 )= -0.2446233127D-01
-llnk( 59 )= -0.2409377795D-01
-llnk( 60 )= -0.2373506405D-01
-llnk( 61 )= -0.2338584530D-01
-llnk( 62 )= -0.2304579309D-01
-llnk( 63 )= -0.2271459030D-01
-llnk( 64 )= -0.2239193633D-01
-llnk( 65 )= -0.2207753919D-01
-llnk( 66 )= -0.2177111937D-01
-llnk( 67 )= -0.2147240908D-01
-llnk( 68 )= -0.2118115170D-01
-llnk( 69 )= -0.2089710139D-01
-llnk( 70 )= -0.2062002059D-01
-llnk( 71 )= -0.2034968220D-01
-llnk( 72 )= -0.2008586807D-01
-llnk( 73 )= -0.1982836895D-01
-llnk( 74 )= -0.1957698319D-01
-llnk( 75 )= -0.1933151728D-01
-llnk( 76 )= -0.1909178544D-01
-llnk( 77 )= -0.1885760922D-01
-llnk( 78 )= -0.1862881706D-01
-llnk( 79 )= -0.1840524275D-01
-llnk( 80 )= -0.1818672781D-01
-llnk( 81 )= -0.1797312161D-01
-llnk( 82 )= -0.1776427277D-01
-llnk( 83 )= -0.1756004164D-01
-llnk( 84 )= -0.1736029175D-01
-llnk( 85 )= -0.1716489163D-01
-llnk( 86 )= -0.1697371498D-01
-llnk( 87 )= -0.1678663942D-01
-llnk( 88 )= -0.1660354744D-01
-llnk( 89 )= -0.1642432560D-01
-llnk( 90 )= -0.1624886478D-01
-llnk( 91 )= -0.1607705911D-01
-llnk( 92 )= -0.1590880688D-01
-llnk( 93 )= -0.1574400976D-01
-llnk( 94 )= -0.1558257306D-01
-llnk( 95 )= -0.1542440486D-01
-llnk( 96 )= -0.1526941673D-01
-llnk( 97 )= -0.1511752309D-01
-llnk( 98 )= -0.1496864146D-01
-llnk( 99 )= -0.1482269168D-01
-llnk( 100   )= -0.1467959656D-01
-llnk( 101   )= -0.1453928135D-01
-llnk( 102   )= -0.1440167387D-01
-llnk( 103   )= -0.1426670401D-01
-llnk( 104   )= -0.1413430411D-01
-llnk( 105   )= -0.1400440861D-01
-llnk( 106   )= -0.1387695416D-01
-llnk( 107   )= -0.1375187918D-01
-llnk( 108   )= -0.1362912416D-01
-llnk( 109   )= -0.1350863142D-01
-llnk( 110   )= -0.1339034516D-01
-llnk( 111   )= -0.1327421107D-01
-llnk( 112   )= -0.1316017669D-01
-llnk( 113   )= -0.1304819106D-01
-llnk( 114   )= -0.1293820488D-01
-llnk( 115   )= -0.1283017014D-01
-llnk( 116   )= -0.1272404038D-01
-llnk( 117   )= -0.1261977050D-01
-llnk( 118   )= -0.1251731678D-01
-llnk( 119   )= -0.1241663664D-01
-llnk( 120   )= -0.1231768886D-01
-llnk( 121   )= -0.1222043336D-01
-llnk( 122   )= -0.1212483127D-01
-llnk( 123   )= -0.1203084476D-01
-llnk( 124   )= -0.1193843710D-01
-llnk( 125   )= -0.1184757260D-01
-llnk( 126   )= -0.1175821983D-01
-llnk( 127   )= -0.1167033892D-01
-llnk( 128   )= -0.1158389997D-01
-llnk( 129   )= -0.1149887118D-01
-llnk( 130   )= -0.1141522155D-01
-llnk( 131   )= -0.1133292103D-01
-llnk( 132   )= -0.1125194019D-01
-llnk( 133   )= -0.1117225053D-01
-llnk( 134   )= -0.1109382428D-01
-llnk( 135   )= -0.1101663454D-01
-llnk( 136   )= -0.1094065488D-01
-llnk( 137   )= -0.1086585976D-01
-llnk( 138   )= -0.1079222424D-01
-llnk( 139   )= -0.1071972412D-01
-llnk( 140   )= -0.1064833570D-01
-llnk( 141   )= -0.1057803597D-01
-llnk( 142   )= -0.1050880250D-01
-llnk( 143   )= -0.1044061352D-01
-llnk( 144   )= -0.1037344765D-01
-llnk( 145   )= -0.1030728418D-01
-llnk( 146   )= -0.1024210288D-01
-llnk( 147   )= -0.1017788410D-01
-llnk( 148   )= -0.1011460854D-01
-llnk( 149   )= -0.1005225749D-01
-llnk( 150   )= -0.9990812687D-02
-llnk( 151   )= -0.9930256346D-02
-llnk( 152   )= -0.9870571027D-02
-llnk( 153   )= -0.9811739803D-02
-llnk( 154   )= -0.9753746115D-02
-llnk( 155   )= -0.9696573861D-02
-llnk( 156   )= -0.9640207245D-02
-llnk( 157   )= -0.9584630905D-02
-llnk( 158   )= -0.9529829829D-02
-llnk( 159   )= -0.9475790189D-02
-llnk( 160   )= -0.9422496073D-02
-llnk( 161   )= -0.9369934305D-02
-llnk( 162   )= -0.9318091242D-02
-llnk( 163   )= -0.9266953580D-02
-llnk( 164   )= -0.9216508278D-02
-llnk( 165   )= -0.9166742633D-02
-llnk( 166   )= -0.9117644217D-02
-llnk( 167   )= -0.9069200890D-02
-llnk( 168   )= -0.9021400853D-02
-llnk( 169   )= -0.8974232435D-02
-llnk( 170   )= -0.8927684326D-02
-llnk( 171   )= -0.8881745447D-02
-llnk( 172   )= -0.8836405029D-02
-llnk( 173   )= -0.8791653407D-02
-llnk( 174   )= -0.8747481667D-02
-llnk( 175   )= -0.8703874181D-02
-llnk( 176   )= -0.8660824198D-02
-llnk( 177   )= -0.8618321971D-02
-llnk( 178   )= -0.8576358051D-02
-llnk( 179   )= -0.8534923154D-02
-llnk( 180   )= -0.8494008256D-02
-llnk( 181   )= -0.8453604422D-02
-llnk( 182   )= -0.8413702992D-02
-llnk( 183   )= -0.8374295452D-02
-llnk( 184   )= -0.8335373508D-02
-llnk( 185   )= -0.8296928978D-02
-llnk( 186   )= -0.8258953895D-02
-llnk( 187   )= -0.8221440446D-02
-llnk( 188   )= -0.8184381010D-02
-llnk( 189   )= -0.8147768058D-02
-llnk( 190   )= -0.8111594272D-02
-llnk( 191   )= -0.8075852456D-02
-llnk( 192   )= -0.8040535598D-02
-llnk( 193   )= -0.8005636771D-02
-llnk( 194   )= -0.7971149225D-02
-llnk( 195   )= -0.7937066335D-02
-llnk( 196   )= -0.7903381636D-02
-llnk( 197   )= -0.7870088750D-02
-llnk( 198   )= -0.7837181442D-02
-llnk( 199   )= -0.7804653597D-02
-llnk( 200   )= -0.7772499254D-02
-llnk( 201   )= -0.7740712516D-02
-llnk( 202   )= -0.7709287634D-02
-llnk( 203   )= -0.7678218959D-02
-llnk( 204   )= -0.7647500968D-02
-llnk( 205   )= -0.7617128214D-02
-llnk( 206   )= -0.7587095379D-02
-llnk( 207   )= -0.7557397242D-02
-llnk( 208   )= -0.7528028665D-02
-llnk( 209   )= -0.7498984668D-02
-llnk( 210   )= -0.7470260263D-02
-llnk( 211   )= -0.7441850636D-02
-llnk( 212   )= -0.7413751027D-02
-llnk( 213   )= -0.7385956807D-02
-llnk( 214   )= -0.7358463369D-02
-llnk( 215   )= -0.7331266234D-02
-llnk( 216   )= -0.7304360991D-02
-llnk( 217   )= -0.7277743343D-02
-llnk( 218   )= -0.7251409005D-02
-llnk( 219   )= -0.7225353835D-02
-llnk( 220   )= -0.7199573711D-02
-llnk( 221   )= -0.7174064656D-02
-llnk( 222   )= -0.7148822685D-02
-llnk( 223   )= -0.7123843938D-02
-llnk( 224   )= -0.7099129566D-02
-llnk( 225   )= -0.7074666551D-02
-llnk( 226   )= -0.7050455306D-02
-llnk( 227   )= -0.7026492490D-02
-llnk( 228   )= -0.7002774540D-02
-llnk( 229   )= -0.6979298005D-02
-llnk( 230   )= -0.6956059431D-02
-llnk( 231   )= -0.6933055469D-02
-llnk( 232   )= -0.6910282814D-02
-llnk( 233   )= -0.6887738228D-02
-llnk( 234   )= -0.6865418504D-02
-llnk( 235   )= -0.6843320529D-02
-llnk( 236   )= -0.6821441187D-02
-llnk( 237   )= -0.6799777491D-02
-llnk( 238   )= -0.6778326425D-02
-llnk( 239   )= -0.6757085071D-02
-llnk( 240   )= -0.6736050549D-02
-llnk( 241   )= -0.6715220049D-02
-llnk( 242   )= -0.6694590762D-02
-llnk( 243   )= -0.6674159952D-02
-llnk( 244   )= -0.6653925199D-02
-llnk( 245   )= -0.6633883871D-02
-llnk( 246   )= -0.6614032563D-02
-llnk( 247   )= -0.6594369232D-02
-llnk( 248   )= -0.6574891356D-02
-llnk( 249   )= -0.6555596461D-02
-llnk( 250   )= -0.6536482218D-02
-llnk( 251   )= -0.6517546015D-02
-llnk( 252   )= -0.6498785614D-02
-llnk( 253   )= -0.6480198683D-02
-llnk( 254   )= -0.6461782835D-02
-llnk( 255   )= -0.6443535971D-02
-llnk( 256   )= -0.6425455846D-02
-llnk( 257   )= -0.6407540263D-02
-llnk( 258   )= -0.6389786969D-02
-llnk( 259   )= -0.6372194033D-02
-llnk( 260   )= -0.6354759310D-02
-llnk( 261   )= -0.6337480778D-02
-llnk( 262   )= -0.6320356275D-02
-llnk( 263   )= -0.6303384010D-02
-llnk( 264   )= -0.6286561980D-02
-llnk( 265   )= -0.6269888285D-02
-llnk( 266   )= -0.6253360871D-02
-llnk( 267   )= -0.6236978078D-02
-llnk( 268   )= -0.6220737994D-02
-llnk( 269   )= -0.6204638851D-02
-llnk( 270   )= -0.6188678733D-02
-llnk( 271   )= -0.6172856062D-02
-llnk( 272   )= -0.6157169047D-02
-llnk( 273   )= -0.6141616004D-02
-llnk( 274   )= -0.6126195168D-02
-llnk( 275   )= -0.6110905001D-02
-llnk( 276   )= -0.6095743854D-02
-llnk( 277   )= -0.6080714363D-02
-llnk( 278   )= -0.6065808661D-02
-llnk( 279   )= -0.6051025499D-02
-llnk( 280   )= -0.6036365150D-02
-llnk( 281   )= -0.6021826113D-02
-llnk( 282   )= -0.6007406839D-02
-llnk( 283   )= -0.5993105878D-02
-llnk( 284   )= -0.5978921847D-02
-llnk( 285   )= -0.5964853301D-02
-llnk( 286   )= -0.5950898825D-02
-llnk( 287   )= -0.5937057006D-02
-llnk( 288   )= -0.5923326579D-02
-llnk( 289   )= -0.5909706151D-02
-llnk( 290   )= -0.5896194416D-02
-llnk( 291   )= -0.5882789995D-02
-llnk( 292   )= -0.5869491718D-02
-llnk( 293   )= -0.5856298304D-02
-llnk( 294   )= -0.5843208448D-02
-llnk( 295   )= -0.5830220904D-02
-llnk( 296   )= -0.5817334546D-02
-llnk( 297   )= -0.5804548161D-02
-llnk( 298   )= -0.5791860577D-02
-llnk( 299   )= -0.5779270522D-02
-llnk( 300   )= -0.5766776986D-02
-llnk( 301   )= -0.5754378816D-02
-llnk( 302   )= -0.5742074899D-02
-llnk( 303   )= -0.5729864025D-02
-llnk( 304   )= -0.5717745257D-02
-llnk( 305   )= -0.5705717481D-02
-llnk( 306   )= -0.5693779662D-02
-llnk( 307   )= -0.5681930652D-02
-llnk( 308   )= -0.5670169557D-02
-llnk( 309   )= -0.5658495321D-02
-llnk( 310   )= -0.5646906981D-02
-llnk( 311   )= -0.5635403426D-02
-llnk( 312   )= -0.5623983856D-02
-llnk( 313   )= -0.5612647214D-02
-llnk( 314   )= -0.5601392619D-02
-llnk( 315   )= -0.5590219039D-02
-llnk( 316   )= -0.5579125640D-02
-llnk( 317   )= -0.5568111507D-02
-llnk( 318   )= -0.5557175755D-02
-llnk( 319   )= -0.5546317422D-02
-llnk( 320   )= -0.5535535712D-02
-llnk( 321   )= -0.5524829768D-02
-llnk( 322   )= -0.5514198739D-02
-llnk( 323   )= -0.5503641734D-02
-llnk( 324   )= -0.5493157962D-02
-llnk( 325   )= -0.5482746632D-02
-llnk( 326   )= -0.5472406939D-02
-llnk( 327   )= -0.5462138054D-02
-llnk( 328   )= -0.5451939170D-02
-llnk( 329   )= -0.5441809594D-02
-llnk( 330   )= -0.5431748532D-02
-llnk( 331   )= -0.5421755212D-02
-llnk( 332   )= -0.5411828857D-02
-llnk( 333   )= -0.5401975569D-02
-llnk( 334   )= -0.5392181719D-02
-llnk( 335   )= -0.5382453176D-02
-llnk( 336   )= -0.5372788210D-02
-llnk( 337   )= -0.5363186748D-02
-llnk( 338   )= -0.5353648059D-02
-llnk( 339   )= -0.5344171504D-02
-llnk( 340   )= -0.5334756310D-02
-llnk( 341   )= -0.5325401926D-02
-llnk( 342   )= -0.5316107680D-02
-llnk( 343   )= -0.5306872920D-02
-llnk( 344   )= -0.5297696936D-02
-llnk( 345   )= -0.5288579215D-02
-llnk( 346   )= -0.5279519432D-02
-llnk( 347   )= -0.5270516389D-02
-llnk( 348   )= -0.5261569543D-02
-llnk( 349   )= -0.5252678535D-02
-llnk( 350   )= -0.5243842709D-02
-llnk( 351   )= -0.5235061516D-02
-llnk( 352   )= -0.5226334273D-02
-llnk( 353   )= -0.5217660524D-02
-llnk( 354   )= -0.5209039665D-02
-llnk( 355   )= -0.5200471169D-02
-llnk( 356   )= -0.5191954431D-02
-llnk( 357   )= -0.5183488963D-02
-llnk( 358   )= -0.5175074221D-02
-llnk( 359   )= -0.5166709698D-02
-llnk( 360   )= -0.5158394787D-02
-llnk( 361   )= -0.5150129056D-02
-llnk( 362   )= -0.5141911977D-02
-llnk( 363   )= -0.5133743148D-02
-llnk( 364   )= -0.5125621837D-02
-llnk( 365   )= -0.5117547698D-02
-llnk( 366   )= -0.5109520206D-02
-llnk( 367   )= -0.5101538932D-02
-llnk( 368   )= -0.5093603358D-02
-llnk( 369   )= -0.5085713032D-02
-llnk( 370   )= -0.5077867507D-02
-llnk( 371   )= -0.5070066320D-02
-llnk( 372   )= -0.5062309014D-02
-llnk( 373   )= -0.5054595077D-02
-llnk( 374   )= -0.5046924184D-02
-llnk( 375   )= -0.5039295844D-02
-llnk( 376   )= -0.5031709627D-02
-llnk( 377   )= -0.5024165063D-02
-llnk( 378   )= -0.5016661793D-02
-llnk( 379   )= -0.5009199414D-02
-llnk( 380   )= -0.5001777482D-02
-llnk( 381   )= -0.4994395567D-02
-llnk( 382   )= -0.4987053274D-02
-llnk( 383   )= -0.4979750283D-02
-llnk( 384   )= -0.4972486128D-02
-llnk( 385   )= -0.4965268840D-02
-llnk( 386   )= -0.4958081936D-02
-llnk( 387   )= -0.4950932817D-02
-llnk( 388   )= -0.4943821092D-02
-llnk( 389   )= -0.4936746301D-02
-llnk( 390   )= -0.4929708210D-02
-llnk( 391   )= -0.4922706445D-02
-llnk( 392   )= -0.4915740611D-02
-llnk( 393   )= -0.4908810284D-02
-llnk( 394   )= -0.4901915260D-02
-llnk( 395   )= -0.4895055124D-02
-llnk( 396   )= -0.4888229556D-02
-llnk( 397   )= -0.4881438160D-02
-llnk( 398   )= -0.4874680679D-02
-llnk( 399   )= -0.4867956758D-02
-llnk( 400   )= -0.4861266098D-02
-llnk( 401   )= -0.4854608317D-02
-llnk( 402   )= -0.4847983151D-02
-llnk( 403   )= -0.4841390266D-02
-llnk( 404   )= -0.4834829391D-02
-llnk( 405   )= -0.4828300135D-02
-llnk( 406   )= -0.4821802243D-02
-llnk( 407   )= -0.4815335427D-02
-llnk( 408   )= -0.4808899393D-02
-llnk( 409   )= -0.4802493803D-02
-llnk( 410   )= -0.4796118410D-02
-llnk( 411   )= -0.4789772949D-02
-llnk( 412   )= -0.4783457104D-02
-llnk( 413   )= -0.4777170573D-02
-llnk( 414   )= -0.4770913098D-02
-llnk( 415   )= -0.4764684685D-02
-llnk( 416   )= -0.4758484990D-02
-llnk( 417   )= -0.4752313124D-02
-llnk( 418   )= -0.4746169197D-02
-llnk( 419   )= -0.4740053059D-02
-llnk( 420   )= -0.4733964341D-02
-llnk( 421   )= -0.4727902849D-02
-llnk( 422   )= -0.4721868283D-02
-llnk( 423   )= -0.4715860425D-02
-llnk( 424   )= -0.4709879012D-02
-llnk( 425   )= -0.4703923846D-02
-llnk( 426   )= -0.4697994583D-02
-llnk( 427   )= -0.4692091066D-02
-llnk( 428   )= -0.4686213045D-02
-llnk( 429   )= -0.4680360271D-02
-llnk( 430   )= -0.4674532484D-02
-llnk( 431   )= -0.4668729492D-02
-llnk( 432   )= -0.4662951085D-02
-llnk( 433   )= -0.4657196996D-02
-llnk( 434   )= -0.4651467004D-02
-llnk( 435   )= -0.4645760890D-02
-llnk( 436   )= -0.4640080410D-02
-llnk( 437   )= -0.4634428369D-02
-llnk( 438   )= -0.4628793378D-02
-llnk( 439   )= -0.4623181470D-02
-llnk( 440   )= -0.4617592432D-02
-llnk( 441   )= -0.4612026079D-02
-llnk( 442   )= -0.4606482171D-02
-llnk( 443   )= -0.4600960531D-02
-llnk( 444   )= -0.4595460979D-02
-llnk( 445   )= -0.4589983282D-02
-llnk( 446   )= -0.4584527233D-02
-llnk( 447   )= -0.4579092710D-02
-llnk( 448   )= -0.4573679458D-02
-llnk( 449   )= -0.4568287340D-02
-llnk( 450   )= -0.4562916080D-02
-llnk( 451   )= -0.4557565629D-02
-llnk( 452   )= -0.4552235678D-02
-llnk( 453   )= -0.4546926139D-02
-llnk( 454   )= -0.4541636751D-02
-llnk( 455   )= -0.4536367408D-02
-llnk( 456   )= -0.4531117888D-02
-llnk( 457   )= -0.4525888082D-02
-llnk( 458   )= -0.4520677720D-02
-llnk( 459   )= -0.4515486721D-02
-llnk( 460   )= -0.4510314872D-02
-llnk( 461   )= -0.4505162010D-02
-llnk( 462   )= -0.4500027980D-02
-llnk( 463   )= -0.4494912622D-02
-llnk( 464   )= -0.4489815761D-02
-llnk( 465   )= -0.4484737267D-02
-llnk( 466   )= -0.4479676977D-02
-llnk( 467   )= -0.4474634684D-02
-llnk( 468   )= -0.4469610304D-02
-llnk( 469   )= -0.4464603661D-02
-llnk( 470   )= -0.4459614543D-02
-llnk( 471   )= -0.4454642899D-02
-llnk( 472   )= -0.4449688484D-02
-llnk( 473   )= -0.4444751266D-02
-llnk( 474   )= -0.4439830996D-02
-llnk( 475   )= -0.4434927562D-02
-llnk( 476   )= -0.4430040859D-02
-llnk( 477   )= -0.4425170710D-02
-llnk( 478   )= -0.4420316957D-02
-llnk( 479   )= -0.4415479491D-02
-llnk( 480   )= -0.4410658186D-02
-llnk( 481   )= -0.4405852880D-02
-llnk( 482   )= -0.4401063430D-02
-llnk( 483   )= -0.4396289728D-02
-llnk( 484   )= -0.4391531676D-02
-llnk( 485   )= -0.4386789086D-02
-llnk( 486   )= -0.4382061813D-02
-llnk( 487   )= -0.4377349779D-02
-llnk( 488   )= -0.4372652829D-02
-llnk( 489   )= -0.4367973960D-02
-llnk( 490   )= -0.4363312569D-02
-llnk( 491   )= -0.4358660920D-02
-llnk( 492   )= -0.4354023941D-02
-llnk( 493   )= -0.4349402011D-02
-llnk( 494   )= -0.4344794018D-02
-llnk( 495   )= -0.4340200286D-02
-llnk( 496   )= -0.4335620759D-02
-llnk( 497   )= -0.4331055332D-02
-llnk( 498   )= -0.4326503816D-02
-llnk( 499   )= -0.4321966182D-02
-llnk( 500   )= -0.4317442332D-02
-llnk( 501   )= -0.4312932067D-02
-llnk( 502   )= -0.4308435312D-02
-llnk( 503   )= -0.4303951987D-02
-llnk( 504   )= -0.4299481991D-02
-llnk( 505   )= -0.4295025176D-02
-llnk( 506   )= -0.4290581476D-02
-llnk( 507   )= -0.4286150784D-02
-llnk( 508   )= -0.4281732974D-02
-llnk( 509   )= -0.4277328005D-02
-llnk( 510   )= -0.4272935697D-02
-llnk( 511   )= -0.4268555976D-02
-llnk( 512   )= -0.4264188766D-02
-llnk( 513   )= -0.4259833966D-02
-llnk( 514   )= -0.4255491492D-02
-llnk( 515   )= -0.4251161154D-02
-llnk( 516   )= -0.4246842949D-02
-llnk( 517   )= -0.4242536837D-02
-llnk( 518   )= -0.4238242629D-02
-llnk( 519   )= -0.4233960267D-02
-llnk( 520   )= -0.4229689632D-02
-llnk( 521   )= -0.4225430669D-02
-llnk( 522   )= -0.4221183310D-02
-llnk( 523   )= -0.4216947377D-02
-llnk( 524   )= -0.4212722872D-02
-llnk( 525   )= -0.4208509690D-02
-llnk( 526   )= -0.4204307736D-02
-llnk( 527   )= -0.4200116898D-02
-llnk( 528   )= -0.4195937125D-02
-llnk( 529   )= -0.4191768337D-02
-llnk( 530   )= -0.4187610437D-02
-llnk( 531   )= -0.4183463316D-02
-llnk( 532   )= -0.4179326948D-02
-llnk( 533   )= -0.4175201222D-02
-llnk( 534   )= -0.4171086099D-02
-llnk( 535   )= -0.4166981404D-02
-llnk( 536   )= -0.4162887134D-02
-llnk( 537   )= -0.4158803202D-02
-llnk( 538   )= -0.4154729536D-02
-llnk( 539   )= -0.4150666091D-02
-llnk( 540   )= -0.4146612671D-02
-llnk( 541   )= -0.4142569363D-02
-llnk( 542   )= -0.4138535935D-02
-llnk( 543   )= -0.4134515728D-02
-llnk( 544   )= -0.4130507039D-02
-llnk( 545   )= -0.4126503797D-02
-llnk( 546   )= -0.4122510270D-02
-llnk( 547   )= -0.4118526386D-02
-llnk( 548   )= -0.4114552039D-02
-llnk( 549   )= -0.4110587257D-02
-llnk( 550   )= -0.4106631920D-02
-llnk( 551   )= -0.4102685926D-02
-llnk( 552   )= -0.4098749247D-02
-llnk( 553   )= -0.4094821847D-02
-llnk( 554   )= -0.4090903630D-02
-llnk( 555   )= -0.4086994545D-02
-llnk( 556   )= -0.4083094472D-02
-llnk( 557   )= -0.4079203396D-02
-llnk( 558   )= -0.4075321316D-02
-llnk( 559   )= -0.4071448028D-02
-llnk( 560   )= -0.4067583587D-02
-llnk( 561   )= -0.4063727921D-02
-llnk( 562   )= -0.4059880939D-02
-llnk( 563   )= -0.4056042583D-02
-llnk( 564   )= -0.4052212762D-02
-llnk( 565   )= -0.4048391527D-02
-llnk( 566   )= -0.4044578730D-02
-llnk( 567   )= -0.4040774354D-02
-llnk( 568   )= -0.4036978296D-02
-llnk( 569   )= -0.4033190534D-02
-llnk( 570   )= -0.4029410975D-02
-llnk( 571   )= -0.4025639600D-02
-llnk( 572   )= -0.4021876379D-02
-llnk( 573   )= -0.4018121658D-02
-llnk( 574   )= -0.4014374533D-02
-llnk( 575   )= -0.4010635431D-02
-llnk( 576   )= -0.4006904167D-02
-llnk( 577   )= -0.4003180813D-02
-llnk( 578   )= -0.3999465257D-02
-llnk( 579   )= -0.3995757506D-02
-llnk( 580   )= -0.3992057412D-02
-llnk( 581   )= -0.3988364979D-02
-llnk( 582   )= -0.3984680200D-02
-llnk( 583   )= -0.3981002957D-02
-llnk( 584   )= -0.3977333187D-02
-llnk( 585   )= -0.3973670940D-02
-llnk( 586   )= -0.3970016087D-02
-llnk( 587   )= -0.3966368605D-02
-llnk( 588   )= -0.3962728432D-02
-llnk( 589   )= -0.3959095565D-02
-llnk( 590   )= -0.3955469896D-02
-llnk( 591   )= -0.3951851444D-02
-llnk( 592   )= -0.3948240106D-02
-llnk( 593   )= -0.3944635840D-02
-llnk( 594   )= -0.3941038624D-02
-llnk( 595   )= -0.3937448450D-02
-llnk( 596   )= -0.3933865180D-02
-llnk( 597   )= -0.3930288852D-02
-llnk( 598   )= -0.3926725182D-02
-llnk( 599   )= -0.3923164225D-02
-llnk( 600   )= -0.3919609022D-02
-llnk( 601   )= -0.3916060603D-02
-llnk( 602   )= -0.3912518941D-02
-llnk( 603   )= -0.3908984017D-02
-llnk( 604   )= -0.3905455707D-02
-llnk( 605   )= -0.3901934071D-02
-llnk( 606   )= -0.3898419000D-02
-llnk( 607   )= -0.3894910446D-02
-llnk( 608   )= -0.3891408443D-02
-llnk( 609   )= -0.3887912933D-02
-llnk( 610   )= -0.3884423810D-02
-llnk( 611   )= -0.3880941150D-02
-llnk( 612   )= -0.3877464789D-02
-llnk( 613   )= -0.3873994730D-02
-llnk( 614   )= -0.3870530985D-02
-llnk( 615   )= -0.3867073514D-02
-llnk( 616   )= -0.3863622258D-02
-llnk( 617   )= -0.3860177173D-02
-llnk( 618   )= -0.3856738235D-02
-llnk( 619   )= -0.3853305441D-02
-llnk( 620   )= -0.3849878697D-02
-llnk( 621   )= -0.3846458016D-02
-llnk( 622   )= -0.3843043331D-02
-llnk( 623   )= -0.3839634656D-02
-llnk( 624   )= -0.3836231919D-02
-llnk( 625   )= -0.3832835028D-02
-llnk( 626   )= -0.3829444026D-02
-llnk( 627   )= -0.3826058954D-02
-llnk( 628   )= -0.3822679633D-02
-llnk( 629   )= -0.3819306152D-02
-llnk( 630   )= -0.3815938396D-02
-llnk( 631   )= -0.3812576353D-02
-llnk( 632   )= -0.3809220046D-02
-llnk( 633   )= -0.3805869353D-02
-llnk( 634   )= -0.3802524327D-02
-llnk( 635   )= -0.3799184885D-02
-llnk( 636   )= -0.3795851005D-02
-llnk( 637   )= -0.3792522658D-02
-llnk( 638   )= -0.3789199831D-02
-llnk( 639   )= -0.3785882531D-02
-llnk( 640   )= -0.3782570655D-02
-llnk( 641   )= -0.3779264191D-02
-llnk( 642   )= -0.3775963147D-02
-llnk( 643   )= -0.3772667476D-02
-llnk( 644   )= -0.3769377113D-02
-llnk( 645   )= -0.3766092076D-02
-llnk( 646   )= -0.3762812304D-02
-llnk( 647   )= -0.3759537833D-02
-llnk( 648   )= -0.3756268585D-02
-llnk( 649   )= -0.3753004510D-02
-llnk( 650   )= -0.3749745613D-02
-llnk( 651   )= -0.3746491901D-02
-llnk( 652   )= -0.3743243283D-02
-llnk( 653   )= -0.3740005626D-02
-llnk( 654   )= -0.3736767845D-02
-llnk( 655   )= -0.3733535132D-02
-llnk( 656   )= -0.3730307327D-02
-llnk( 657   )= -0.3727084607D-02
-llnk( 658   )= -0.3723866873D-02
-llnk( 659   )= -0.3720654107D-02
-llnk( 660   )= -0.3717446303D-02
-llnk( 661   )= -0.3714243463D-02
-llnk( 662   )= -0.3711045523D-02
-llnk( 663   )= -0.3707852455D-02
-llnk( 664   )= -0.3704664303D-02
-llnk( 665   )= -0.3701480968D-02
-llnk( 666   )= -0.3698302457D-02
-llnk( 667   )= -0.3695128771D-02
-llnk( 668   )= -0.3691959874D-02
-llnk( 669   )= -0.3688795678D-02
-llnk( 670   )= -0.3685636275D-02
-llnk( 671   )= -0.3682481602D-02
-llnk( 672   )= -0.3679331555D-02
-llnk( 673   )= -0.3676186270D-02
-llnk( 674   )= -0.3673045561D-02
-llnk( 675   )= -0.3669909551D-02
-llnk( 676   )= -0.3666778150D-02
-llnk( 677   )= -0.3663651302D-02
-llnk( 678   )= -0.3660529071D-02
-llnk( 679   )= -0.3657411389D-02
-llnk( 680   )= -0.3654298215D-02
-llnk( 681   )= -0.3651189465D-02
-llnk( 682   )= -0.3648085315D-02
-llnk( 683   )= -0.3644985621D-02
-llnk( 684   )= -0.3641890453D-02
-llnk( 685   )= -0.3638799641D-02
-llnk( 686   )= -0.3635713278D-02
-llnk( 687   )= -0.3632631311D-02
-llnk( 688   )= -0.3629553745D-02
-llnk( 689   )= -0.3626480539D-02
-llnk( 690   )= -0.3623411645D-02
-llnk( 691   )= -0.3620347077D-02
-llnk( 692   )= -0.3617286859D-02
-llnk( 693   )= -0.3614230904D-02
-llnk( 694   )= -0.3611179235D-02
-llnk( 695   )= -0.3608131812D-02
-llnk( 696   )= -0.3605088635D-02
-llnk( 697   )= -0.3602049657D-02
-llnk( 698   )= -0.3599014895D-02
-llnk( 699   )= -0.3595984357D-02
-llnk( 700   )= -0.3592957941D-02
-llnk( 701   )= -0.3589935718D-02
-llnk( 702   )= -0.3586917596D-02
-llnk( 703   )= -0.3583903622D-02
-llnk( 704   )= -0.3580893698D-02
-llnk( 705   )= -0.3577887909D-02
-llnk( 706   )= -0.3574886158D-02
-llnk( 707   )= -0.3571888466D-02
-llnk( 708   )= -0.3568899450D-02
-llnk( 709   )= -0.3565910323D-02
-llnk( 710   )= -0.3562925154D-02
-llnk( 711   )= -0.3559943972D-02
-llnk( 712   )= -0.3556966859D-02
-llnk( 713   )= -0.3553993656D-02
-llnk( 714   )= -0.3551024466D-02
-llnk( 715   )= -0.3548059237D-02
-llnk( 716   )= -0.3545097968D-02
-llnk( 717   )= -0.3542140587D-02
-llnk( 718   )= -0.3539187147D-02
-llnk( 719   )= -0.3536237614D-02
-llnk( 720   )= -0.3533291992D-02
-llnk( 721   )= -0.3530350229D-02
-llnk( 722   )= -0.3527412335D-02
-llnk( 723   )= -0.3524478279D-02
-llnk( 724   )= -0.3521548076D-02
-llnk( 725   )= -0.3518621713D-02
-llnk( 726   )= -0.3515699144D-02
-llnk( 727   )= -0.3512780363D-02
-llnk( 728   )= -0.3509865386D-02
-llnk( 729   )= -0.3506954146D-02
-llnk( 730   )= -0.3504046711D-02
-llnk( 731   )= -0.3501142980D-02
-llnk( 732   )= -0.3498243029D-02
-llnk( 733   )= -0.3495346825D-02
-llnk( 734   )= -0.3492454277D-02
-llnk( 735   )= -0.3489565504D-02
-llnk( 736   )= -0.3486680283D-02
-llnk( 737   )= -0.3483798748D-02
-llnk( 738   )= -0.3480921125D-02
-llnk( 739   )= -0.3478046974D-02
-llnk( 740   )= -0.3475176495D-02
-llnk( 741   )= -0.3472309608D-02
-llnk( 742   )= -0.3469446344D-02
-llnk( 743   )= -0.3466586679D-02
-llnk( 744   )= -0.3463730607D-02
-llnk( 745   )= -0.3460878143D-02
-llnk( 746   )= -0.3458029208D-02
-llnk( 747   )= -0.3455183869D-02
-llnk( 748   )= -0.3452342050D-02
-llnk( 749   )= -0.3449503792D-02
-llnk( 750   )= -0.3446669019D-02
-llnk( 751   )= -0.3443837835D-02
-llnk( 752   )= -0.3441010114D-02
-llnk( 753   )= -0.3438185843D-02
-llnk( 754   )= -0.3435365132D-02
-llnk( 755   )= -0.3432547840D-02
-llnk( 756   )= -0.3429734036D-02
-llnk( 757   )= -0.3426923672D-02
-llnk( 758   )= -0.3424116757D-02
-llnk( 759   )= -0.3421313262D-02
-llnk( 760   )= -0.3418513177D-02
-llnk( 761   )= -0.3415716524D-02
-llnk( 762   )= -0.3412923273D-02
-llnk( 763   )= -0.3410136336D-02
-llnk( 764   )= -0.3407350916D-02
-llnk( 765   )= -0.3404568130D-02
-llnk( 766   )= -0.3401788745D-02
-llnk( 767   )= -0.3399012718D-02
-llnk( 768   )= -0.3396240047D-02
-llnk( 769   )= -0.3393470771D-02
-llnk( 770   )= -0.3390704781D-02
-llnk( 771   )= -0.3387942162D-02
-llnk( 772   )= -0.3385182859D-02
-llnk( 773   )= -0.3382426879D-02
-llnk( 774   )= -0.3379674202D-02
-llnk( 775   )= -0.3376924820D-02
-llnk( 776   )= -0.3374178738D-02
-llnk( 777   )= -0.3371435939D-02
-llnk( 778   )= -0.3368696456D-02
-llnk( 779   )= -0.3365960182D-02
-llnk( 780   )= -0.3363227225D-02
-llnk( 781   )= -0.3360497473D-02
-llnk( 782   )= -0.3357770991D-02
-llnk( 783   )= -0.3355047725D-02
-llnk( 784   )= -0.3352327686D-02
-llnk( 785   )= -0.3349610914D-02
-llnk( 786   )= -0.3346897303D-02
-llnk( 787   )= -0.3344186906D-02
-llnk( 788   )= -0.3341479724D-02
-llnk( 789   )= -0.3338775700D-02
-llnk( 790   )= -0.3336074863D-02
-llnk( 791   )= -0.3333377225D-02
-llnk( 792   )= -0.3330682695D-02
-llnk( 793   )= -0.3327991302D-02
-llnk( 794   )= -0.3325303130D-02
-llnk( 795   )= -0.3322618041D-02
-llnk( 796   )= -0.3319936145D-02
-llnk( 797   )= -0.3317257379D-02
-llnk( 798   )= -0.3314581695D-02
-llnk( 799   )= -0.3311909149D-02
-llnk( 800   )= -0.3309239696D-02
-llnk( 801   )= -0.3306573350D-02
-llnk( 802   )= -0.3303910077D-02
-llnk( 803   )= -0.3301249895D-02
-llnk( 804   )= -0.3298592786D-02
-llnk( 805   )= -0.3295938770D-02
-llnk( 806   )= -0.3293287792D-02
-llnk( 807   )= -0.3290639881D-02
-llnk( 808   )= -0.3287994967D-02
-llnk( 809   )= -0.3285353159D-02
-llnk( 810   )= -0.3282714334D-02
-llnk( 811   )= -0.3280078559D-02
-llnk( 812   )= -0.3277445795D-02
-llnk( 813   )= -0.3274816076D-02
-llnk( 814   )= -0.3272189346D-02
-llnk( 815   )= -0.3269565604D-02
-llnk( 816   )= -0.3266944867D-02
-llnk( 817   )= -0.3264327100D-02
-llnk( 818   )= -0.3261713686D-02
-llnk( 819   )= -0.3259103619D-02
-llnk( 820   )= -0.3256495012D-02
-llnk( 821   )= -0.3253889400D-02
-llnk( 822   )= -0.3251286777D-02
-llnk( 823   )= -0.3248687255D-02
-llnk( 824   )= -0.3246090539D-02
-llnk( 825   )= -0.3243496801D-02
-llnk( 826   )= -0.3240905999D-02
-llnk( 827   )= -0.3238318138D-02
-llnk( 828   )= -0.3235733197D-02
-llnk( 829   )= -0.3233151191D-02
-llnk( 830   )= -0.3230572128D-02
-llnk( 831   )= -0.3227995977D-02
-llnk( 832   )= -0.3225422751D-02
-llnk( 833   )= -0.3222852394D-02
-llnk( 834   )= -0.3220284979D-02
-llnk( 835   )= -0.3217720406D-02
-llnk( 836   )= -0.3215158781D-02
-llnk( 837   )= -0.3212600066D-02
-llnk( 838   )= -0.3210044148D-02
-llnk( 839   )= -0.3207491153D-02
-llnk( 840   )= -0.3204940999D-02
-llnk( 841   )= -0.3202393742D-02
-llnk( 842   )= -0.3199849338D-02
-llnk( 843   )= -0.3197307775D-02
-llnk( 844   )= -0.3194769052D-02
-llnk( 845   )= -0.3192233205D-02
-llnk( 846   )= -0.3189700191D-02
-llnk( 847   )= -0.3187169971D-02
-llnk( 848   )= -0.3184642524D-02
-llnk( 849   )= -0.3182117988D-02
-llnk( 850   )= -0.3179596231D-02
-llnk( 851   )= -0.3177077300D-02
-llnk( 852   )= -0.3174561186D-02
-llnk( 853   )= -0.3172047887D-02
-llnk( 854   )= -0.3169537359D-02
-llnk( 855   )= -0.3167029632D-02
-llnk(   856 )= -0.3164524709D-02
-llnk( 857   )= -0.3162022553D-02
-llnk( 858   )= -0.3159523159D-02
-llnk( 859   )= -0.3157026583D-02
-llnk( 860   )= -0.3154532729D-02
-llnk( 861   )= -0.3152041656D-02
-llnk( 862   )= -0.3149553327D-02
-llnk( 863   )= -0.3147067778D-02
-llnk( 864   )= -0.3144584964D-02
-llnk( 865   )= -0.3142104892D-02
-llnk( 866   )= -0.3139627563D-02
-llnk( 867   )= -0.3137152962D-02
-llnk( 868   )= -0.3134681067D-02
-llnk( 869   )= -0.3132211915D-02
-llnk( 870   )= -0.3129745502D-02
-llnk( 871   )= -0.3127281759D-02
-llnk( 872   )= -0.3124820761D-02
-llnk( 873   )= -0.3122362718D-02
-llnk( 874   )= -0.3119909222D-02
-llnk( 875   )= -0.3117456503D-02
-llnk( 876   )= -0.3115006490D-02
-llnk( 877   )= -0.3112559221D-02
-llnk( 878   )= -0.3110114595D-02
-llnk( 879   )= -0.3107672711D-02
-llnk( 880   )= -0.3105233507D-02
-llnk( 881   )= -0.3102796921D-02
-llnk( 882   )= -0.3100363082D-02
-llnk( 883   )= -0.3097931893D-02
-llnk( 884   )= -0.3095503371D-02
-llnk( 885   )= -0.3093077570D-02
-llnk( 886   )= -0.3090654347D-02
-llnk( 887   )= -0.3088233816D-02
-llnk( 888   )= -0.3085815991D-02
-llnk( 889   )= -0.3083400748D-02
-llnk( 890   )= -0.3080988196D-02
-llnk( 891   )= -0.3078578271D-02
-llnk( 892   )= -0.3076170985D-02
-llnk( 893   )= -0.3073766340D-02
-llnk( 894   )= -0.3071364353D-02
-llnk( 895   )= -0.3068964958D-02
-llnk( 896   )= -0.3066568203D-02
-llnk( 897   )= -0.3064174074D-02
-llnk( 898   )= -0.3061782549D-02
-llnk( 899   )= -0.3059393659D-02
-llnk( 900   )= -0.3057007375D-02
-llnk( 901   )= -0.3054623711D-02
-llnk( 902   )= -0.3052242585D-02
-llnk( 903   )= -0.3049864141D-02
-llnk( 904   )= -0.3047488140D-02
-llnk( 905   )= -0.3045114846D-02
-llnk( 906   )= -0.3042744119D-02
-llnk( 907   )= -0.3040375970D-02
-llnk( 908   )= -0.3038010418D-02
-llnk( 909   )= -0.3035647475D-02
-llnk( 910   )= -0.3033287098D-02
-llnk( 911   )= -0.3030929263D-02
-llnk( 912   )= -0.3028574024D-02
-llnk( 913   )= -0.3026221302D-02
-llnk( 914   )= -0.3023871162D-02
-llnk( 915   )= -0.3021523546D-02
-llnk( 916   )= -0.3019178525D-02
-llnk( 917   )= -0.3016836027D-02
-llnk( 918   )= -0.3014496035D-02
-llnk( 919   )= -0.3012158656D-02
-llnk( 920   )= -0.3009823741D-02
-llnk( 921   )= -0.3007491429D-02
-llnk( 922   )= -0.3005161605D-02
-llnk( 923   )= -0.3002834314D-02
-llnk( 924   )= -0.3000509569D-02
-llnk( 925   )= -0.2998187291D-02
-llnk( 926   )= -0.2995867561D-02
-llnk( 927   )= -0.2993550344D-02
-llnk( 928   )= -0.2991235634D-02
-llnk( 929   )= -0.2988925225D-02
-llnk( 930   )= -0.2986615660D-02
-llnk( 931   )= -0.2984308615D-02
-llnk( 932   )= -0.2982004089D-02
-llnk( 933   )= -0.2979702045D-02
-llnk( 934   )= -0.2977402494D-02
-llnk( 935   )= -0.2975105470D-02
-llnk( 936   )= -0.2972810888D-02
-llnk( 937   )= -0.2970518821D-02
-llnk( 938   )= -0.2968229240D-02
-llnk( 939   )= -0.2965942158D-02
-llnk( 940   )= -0.2963657551D-02
-llnk( 941   )= -0.2961375403D-02
-llnk( 942   )= -0.2959095731D-02
-llnk( 943   )= -0.2956818525D-02
-llnk( 944   )= -0.2954543818D-02
-llnk( 945   )= -0.2952271541D-02
-llnk( 946   )= -0.2950001748D-02
-llnk( 947   )= -0.2947734412D-02
-llnk( 948   )= -0.2945469512D-02
-llnk( 949   )= -0.2943207084D-02
-llnk( 950   )= -0.2940947077D-02
-llnk( 951   )= -0.2938689563D-02
-llnk( 952   )= -0.2936434487D-02
-llnk( 953   )= -0.2934181799D-02
-llnk( 954   )= -0.2931931606D-02
-llnk( 955   )= -0.2929683842D-02
-llnk( 956   )= -0.2927438481D-02
-llnk( 957   )= -0.2925195572D-02
-llnk( 958   )= -0.2922955070D-02
-llnk( 959   )= -0.2920716941D-02
-llnk( 960   )= -0.2918481269D-02
-llnk( 961   )= -0.2916248012D-02
-llnk( 962   )= -0.2914017179D-02
-llnk( 963   )= -0.2911788782D-02
-llnk( 964   )= -0.2909562774D-02
-llnk( 965   )= -0.2907339192D-02
-llnk( 966   )= -0.2905117982D-02
-llnk( 967   )= -0.2902899173D-02
-llnk( 968   )= -0.2900682799D-02
-llnk( 969   )= -0.2898468796D-02
-llnk( 970   )= -0.2896257166D-02
-llnk( 971   )= -0.2894047930D-02
-llnk( 972   )= -0.2891841138D-02
-llnk( 973   )= -0.2889636618D-02
-llnk( 974   )= -0.2887434580D-02
-llnk( 975   )= -0.2885234873D-02
-llnk( 976   )= -0.2883037537D-02
-llnk( 977   )= -0.2880842566D-02
-llnk( 978   )= -0.2878649974D-02
-llnk( 979   )= -0.2876459766D-02
-llnk( 980   )= -0.2874271894D-02
-llnk( 981   )= -0.2872086376D-02
-llnk( 982   )= -0.2869903273D-02
-llnk( 983   )= -0.2867722443D-02
-llnk( 984   )= -0.2865545315D-02
-llnk( 985   )= -0.2863369328D-02
-llnk( 986   )= -0.2861195689D-02
-llnk( 987   )= -0.2859024433D-02
-llnk( 988   )= -0.2856855469D-02
-llnk( 989   )= -0.2854688909D-02
-llnk( 990   )= -0.2852524645D-02
-llnk( 991   )= -0.2850362774D-02
-llnk( 992   )= -0.2848203196D-02
-llnk( 993   )= -0.2846045956D-02
-llnk( 994   )= -0.2843891068D-02
-llnk( 995   )= -0.2841738481D-02
-llnk( 996   )= -0.2839588248D-02
-llnk( 997   )= -0.2837440365D-02
-llnk( 998   )= -0.2835294724D-02
-llnk( 999   )= -0.2833151463D-02
-llnk( 1000  )= -0.2831010498D-02
-llnk( 1001  )= -0.2828871870D-02
-llnk( 1002  )= -0.2826735533D-02
-llnk( 1003  )= -0.2824601509D-02
-llnk( 1004  )= -0.2822469774D-02
-llnk( 1005  )= -0.2820340370D-02
-llnk( 1006  )= -0.2818213253D-02
-llnk( 1007  )= -0.2816088447D-02
-llnk( 1008  )= -0.2813965924D-02
-llnk( 1009  )= -0.2811845711D-02
-llnk( 1010  )= -0.2809727762D-02
-llnk( 1011  )= -0.2807612130D-02
-llnk( 1012  )= -0.2805498780D-02
-llnk( 1013  )= -0.2803387663D-02
-llnk( 1014  )= -0.2801278909D-02
-llnk( 1015  )= -0.2799172307D-02
-llnk( 1016  )= -0.2797068067D-02
-llnk( 1017  )= -0.2794966114D-02
-llnk( 1018  )= -0.2792866401D-02
-llnk( 1019  )= -0.2790768970D-02
-llnk( 1020  )= -0.2788673820D-02
-llnk( 1021  )= -0.2786580911D-02
-llnk( 1022  )= -0.2784490270D-02
-llnk( 1023  )= -0.2782401919D-02
-llnk( 1024  )= -0.2780315803D-02
+      llnk(0) = -1.0000000000d+00
+      llnk(1) = -0.1000000000d+01
+      llnk(2) = -0.3054020195d+00
+      llnk(3) = -0.1960294041d+00
+      llnk(4) = -0.1336652689d+00
+      llnk(5) = -0.1047066267d+00
+      llnk(6) = -0.9033564429d-01
+      llnk(7) = -0.8206984804d-01
+      llnk(8) = -0.7655494644d-01
+      llnk(9) = -0.7243844815d-01
+      llnk(10) = -0.6913401466d-01
+      llnk(11) = -0.6635869819d-01
+      llnk(12) = -0.6395689877d-01
+      llnk(13) = -0.6183296641d-01
+      llnk(14) = -0.5992172201d-01
+      llnk(15) = -0.5817772516d-01
+      llnk(16) = -0.5656704205d-01
+      llnk(17) = -0.5506474110d-01
+      llnk(18) = -0.5365205058d-01
+      llnk(19) = -0.5231479422d-01
+      llnk(20) = -0.5104204279d-01
+      llnk(21) = -0.4982562670d-01
+      llnk(22) = -0.4865919131d-01
+      llnk(23) = -0.4753764652d-01
+      llnk(24) = -0.4645728556d-01
+      llnk(25) = -0.4541483359d-01
+      llnk(26) = -0.4440818528d-01
+      llnk(27) = -0.4343487603d-01
+      llnk(28) = -0.4249347823d-01
+      llnk(29) = -0.4158232061d-01
+      llnk(30) = -0.4070034557d-01
+      llnk(31) = -0.3984645832d-01
+      llnk(32) = -0.3901937759d-01
+      llnk(33) = -0.3821827509d-01
+      llnk(34) = -0.3744217649d-01
+      llnk(35) = -0.3669034206d-01
+      llnk(36) = -0.3596186474d-01
+      llnk(37) = -0.3525594412d-01
+      llnk(38) = -0.3457187576d-01
+      llnk(39) = -0.3390882631d-01
+      llnk(40) = -0.3326609909d-01
+      llnk(41) = -0.3264299923d-01
+      llnk(42) = -0.3203883174d-01
+      llnk(43) = -0.3145293280d-01
+      llnk(44) = -0.3088463896d-01
+      llnk(45) = -0.3033334191d-01
+      llnk(46) = -0.2979842108d-01
+      llnk(47) = -0.2927929373d-01
+      llnk(48) = -0.2877539004d-01
+      llnk(49) = -0.2828615868d-01
+      llnk(50) = -0.2781108192d-01
+      llnk(51) = -0.2734963353d-01
+      llnk(52) = -0.2690133637d-01
+      llnk(53) = -0.2646570945d-01
+      llnk(54) = -0.2604229418d-01
+      llnk(55) = -0.2563066630d-01
+      llnk(56) = -0.2523039452d-01
+      llnk(57) = -0.2484107774d-01
+      llnk(58) = -0.2446233127d-01
+      llnk(59) = -0.2409377795d-01
+      llnk(60) = -0.2373506405d-01
+      llnk(61) = -0.2338584530d-01
+      llnk(62) = -0.2304579309d-01
+      llnk(63) = -0.2271459030d-01
+      llnk(64) = -0.2239193633d-01
+      llnk(65) = -0.2207753919d-01
+      llnk(66) = -0.2177111937d-01
+      llnk(67) = -0.2147240908d-01
+      llnk(68) = -0.2118115170d-01
+      llnk(69) = -0.2089710139d-01
+      llnk(70) = -0.2062002059d-01
+      llnk(71) = -0.2034968220d-01
+      llnk(72) = -0.2008586807d-01
+      llnk(73) = -0.1982836895d-01
+      llnk(74) = -0.1957698319d-01
+      llnk(75) = -0.1933151728d-01
+      llnk(76) = -0.1909178544d-01
+      llnk(77) = -0.1885760922d-01
+      llnk(78) = -0.1862881706d-01
+      llnk(79) = -0.1840524275d-01
+      llnk(80) = -0.1818672781d-01
+      llnk(81) = -0.1797312161d-01
+      llnk(82) = -0.1776427277d-01
+      llnk(83) = -0.1756004164d-01
+      llnk(84) = -0.1736029175d-01
+      llnk(85) = -0.1716489163d-01
+      llnk(86) = -0.1697371498d-01
+      llnk(87) = -0.1678663942d-01
+      llnk(88) = -0.1660354744d-01
+      llnk(89) = -0.1642432560d-01
+      llnk(90) = -0.1624886478d-01
+      llnk(91) = -0.1607705911d-01
+      llnk(92) = -0.1590880688d-01
+      llnk(93) = -0.1574400976d-01
+      llnk(94) = -0.1558257306d-01
+      llnk(95) = -0.1542440486d-01
+      llnk(96) = -0.1526941673d-01
+      llnk(97) = -0.1511752309d-01
+      llnk(98) = -0.1496864146d-01
+      llnk(99) = -0.1482269168d-01
+      llnk(100) = -0.1467959656d-01
+      llnk(101) = -0.1453928135d-01
+      llnk(102) = -0.1440167387d-01
+      llnk(103) = -0.1426670401d-01
+      llnk(104) = -0.1413430411d-01
+      llnk(105) = -0.1400440861d-01
+      llnk(106) = -0.1387695416d-01
+      llnk(107) = -0.1375187918d-01
+      llnk(108) = -0.1362912416d-01
+      llnk(109) = -0.1350863142d-01
+      llnk(110) = -0.1339034516d-01
+      llnk(111) = -0.1327421107d-01
+      llnk(112) = -0.1316017669d-01
+      llnk(113) = -0.1304819106d-01
+      llnk(114) = -0.1293820488d-01
+      llnk(115) = -0.1283017014d-01
+      llnk(116) = -0.1272404038d-01
+      llnk(117) = -0.1261977050d-01
+      llnk(118) = -0.1251731678d-01
+      llnk(119) = -0.1241663664d-01
+      llnk(120) = -0.1231768886d-01
+      llnk(121) = -0.1222043336d-01
+      llnk(122) = -0.1212483127d-01
+      llnk(123) = -0.1203084476d-01
+      llnk(124) = -0.1193843710d-01
+      llnk(125) = -0.1184757260d-01
+      llnk(126) = -0.1175821983d-01
+      llnk(127) = -0.1167033892d-01
+      llnk(128) = -0.1158389997d-01
+      llnk(129) = -0.1149887118d-01
+      llnk(130) = -0.1141522155d-01
+      llnk(131) = -0.1133292103d-01
+      llnk(132) = -0.1125194019d-01
+      llnk(133) = -0.1117225053d-01
+      llnk(134) = -0.1109382428d-01
+      llnk(135) = -0.1101663454d-01
+      llnk(136) = -0.1094065488d-01
+      llnk(137) = -0.1086585976d-01
+      llnk(138) = -0.1079222424d-01
+      llnk(139) = -0.1071972412d-01
+      llnk(140) = -0.1064833570d-01
+      llnk(141) = -0.1057803597d-01
+      llnk(142) = -0.1050880250d-01
+      llnk(143) = -0.1044061352d-01
+      llnk(144) = -0.1037344765d-01
+      llnk(145) = -0.1030728418d-01
+      llnk(146) = -0.1024210288d-01
+      llnk(147) = -0.1017788410d-01
+      llnk(148) = -0.1011460854d-01
+      llnk(149) = -0.1005225749d-01
+      llnk(150) = -0.9990812687d-02
+      llnk(151) = -0.9930256346d-02
+      llnk(152) = -0.9870571027d-02
+      llnk(153) = -0.9811739803d-02
+      llnk(154) = -0.9753746115d-02
+      llnk(155) = -0.9696573861d-02
+      llnk(156) = -0.9640207245d-02
+      llnk(157) = -0.9584630905d-02
+      llnk(158) = -0.9529829829d-02
+      llnk(159) = -0.9475790189d-02
+      llnk(160) = -0.9422496073d-02
+      llnk(161) = -0.9369934305d-02
+      llnk(162) = -0.9318091242d-02
+      llnk(163) = -0.9266953580d-02
+      llnk(164) = -0.9216508278d-02
+      llnk(165) = -0.9166742633d-02
+      llnk(166) = -0.9117644217d-02
+      llnk(167) = -0.9069200890d-02
+      llnk(168) = -0.9021400853d-02
+      llnk(169) = -0.8974232435d-02
+      llnk(170) = -0.8927684326d-02
+      llnk(171) = -0.8881745447d-02
+      llnk(172) = -0.8836405029d-02
+      llnk(173) = -0.8791653407d-02
+      llnk(174) = -0.8747481667d-02
+      llnk(175) = -0.8703874181d-02
+      llnk(176) = -0.8660824198d-02
+      llnk(177) = -0.8618321971d-02
+      llnk(178) = -0.8576358051d-02
+      llnk(179) = -0.8534923154d-02
+      llnk(180) = -0.8494008256d-02
+      llnk(181) = -0.8453604422d-02
+      llnk(182) = -0.8413702992d-02
+      llnk(183) = -0.8374295452d-02
+      llnk(184) = -0.8335373508d-02
+      llnk(185) = -0.8296928978d-02
+      llnk(186) = -0.8258953895d-02
+      llnk(187) = -0.8221440446d-02
+      llnk(188) = -0.8184381010d-02
+      llnk(189) = -0.8147768058d-02
+      llnk(190) = -0.8111594272d-02
+      llnk(191) = -0.8075852456d-02
+      llnk(192) = -0.8040535598d-02
+      llnk(193) = -0.8005636771d-02
+      llnk(194) = -0.7971149225d-02
+      llnk(195) = -0.7937066335d-02
+      llnk(196) = -0.7903381636d-02
+      llnk(197) = -0.7870088750d-02
+      llnk(198) = -0.7837181442d-02
+      llnk(199) = -0.7804653597d-02
+      llnk(200) = -0.7772499254d-02
+      llnk(201) = -0.7740712516d-02
+      llnk(202) = -0.7709287634d-02
+      llnk(203) = -0.7678218959d-02
+      llnk(204) = -0.7647500968d-02
+      llnk(205) = -0.7617128214d-02
+      llnk(206) = -0.7587095379d-02
+      llnk(207) = -0.7557397242d-02
+      llnk(208) = -0.7528028665d-02
+      llnk(209) = -0.7498984668d-02
+      llnk(210) = -0.7470260263d-02
+      llnk(211) = -0.7441850636d-02
+      llnk(212) = -0.7413751027d-02
+      llnk(213) = -0.7385956807d-02
+      llnk(214) = -0.7358463369d-02
+      llnk(215) = -0.7331266234d-02
+      llnk(216) = -0.7304360991d-02
+      llnk(217) = -0.7277743343d-02
+      llnk(218) = -0.7251409005d-02
+      llnk(219) = -0.7225353835d-02
+      llnk(220) = -0.7199573711d-02
+      llnk(221) = -0.7174064656d-02
+      llnk(222) = -0.7148822685d-02
+      llnk(223) = -0.7123843938d-02
+      llnk(224) = -0.7099129566d-02
+      llnk(225) = -0.7074666551d-02
+      llnk(226) = -0.7050455306d-02
+      llnk(227) = -0.7026492490d-02
+      llnk(228) = -0.7002774540d-02
+      llnk(229) = -0.6979298005d-02
+      llnk(230) = -0.6956059431d-02
+      llnk(231) = -0.6933055469d-02
+      llnk(232) = -0.6910282814d-02
+      llnk(233) = -0.6887738228d-02
+      llnk(234) = -0.6865418504d-02
+      llnk(235) = -0.6843320529d-02
+      llnk(236) = -0.6821441187d-02
+      llnk(237) = -0.6799777491d-02
+      llnk(238) = -0.6778326425d-02
+      llnk(239) = -0.6757085071d-02
+      llnk(240) = -0.6736050549d-02
+      llnk(241) = -0.6715220049d-02
+      llnk(242) = -0.6694590762d-02
+      llnk(243) = -0.6674159952d-02
+      llnk(244) = -0.6653925199d-02
+      llnk(245) = -0.6633883871d-02
+      llnk(246) = -0.6614032563d-02
+      llnk(247) = -0.6594369232d-02
+      llnk(248) = -0.6574891356d-02
+      llnk(249) = -0.6555596461d-02
+      llnk(250) = -0.6536482218d-02
+      llnk(251) = -0.6517546015d-02
+      llnk(252) = -0.6498785614d-02
+      llnk(253) = -0.6480198683d-02
+      llnk(254) = -0.6461782835d-02
+      llnk(255) = -0.6443535971d-02
+      llnk(256) = -0.6425455846d-02
+      llnk(257) = -0.6407540263d-02
+      llnk(258) = -0.6389786969d-02
+      llnk(259) = -0.6372194033d-02
+      llnk(260) = -0.6354759310d-02
+      llnk(261) = -0.6337480778d-02
+      llnk(262) = -0.6320356275d-02
+      llnk(263) = -0.6303384010d-02
+      llnk(264) = -0.6286561980d-02
+      llnk(265) = -0.6269888285d-02
+      llnk(266) = -0.6253360871d-02
+      llnk(267) = -0.6236978078d-02
+      llnk(268) = -0.6220737994d-02
+      llnk(269) = -0.6204638851d-02
+      llnk(270) = -0.6188678733d-02
+      llnk(271) = -0.6172856062d-02
+      llnk(272) = -0.6157169047d-02
+      llnk(273) = -0.6141616004d-02
+      llnk(274) = -0.6126195168d-02
+      llnk(275) = -0.6110905001d-02
+      llnk(276) = -0.6095743854d-02
+      llnk(277) = -0.6080714363d-02
+      llnk(278) = -0.6065808661d-02
+      llnk(279) = -0.6051025499d-02
+      llnk(280) = -0.6036365150d-02
+      llnk(281) = -0.6021826113d-02
+      llnk(282) = -0.6007406839d-02
+      llnk(283) = -0.5993105878d-02
+      llnk(284) = -0.5978921847d-02
+      llnk(285) = -0.5964853301d-02
+      llnk(286) = -0.5950898825d-02
+      llnk(287) = -0.5937057006d-02
+      llnk(288) = -0.5923326579d-02
+      llnk(289) = -0.5909706151d-02
+      llnk(290) = -0.5896194416d-02
+      llnk(291) = -0.5882789995d-02
+      llnk(292) = -0.5869491718d-02
+      llnk(293) = -0.5856298304d-02
+      llnk(294) = -0.5843208448d-02
+      llnk(295) = -0.5830220904d-02
+      llnk(296) = -0.5817334546d-02
+      llnk(297) = -0.5804548161d-02
+      llnk(298) = -0.5791860577d-02
+      llnk(299) = -0.5779270522d-02
+      llnk(300) = -0.5766776986d-02
+      llnk(301) = -0.5754378816d-02
+      llnk(302) = -0.5742074899d-02
+      llnk(303) = -0.5729864025d-02
+      llnk(304) = -0.5717745257d-02
+      llnk(305) = -0.5705717481d-02
+      llnk(306) = -0.5693779662d-02
+      llnk(307) = -0.5681930652d-02
+      llnk(308) = -0.5670169557d-02
+      llnk(309) = -0.5658495321d-02
+      llnk(310) = -0.5646906981d-02
+      llnk(311) = -0.5635403426d-02
+      llnk(312) = -0.5623983856d-02
+      llnk(313) = -0.5612647214d-02
+      llnk(314) = -0.5601392619d-02
+      llnk(315) = -0.5590219039d-02
+      llnk(316) = -0.5579125640d-02
+      llnk(317) = -0.5568111507d-02
+      llnk(318) = -0.5557175755d-02
+      llnk(319) = -0.5546317422d-02
+      llnk(320) = -0.5535535712d-02
+      llnk(321) = -0.5524829768d-02
+      llnk(322) = -0.5514198739d-02
+      llnk(323) = -0.5503641734d-02
+      llnk(324) = -0.5493157962d-02
+      llnk(325) = -0.5482746632d-02
+      llnk(326) = -0.5472406939d-02
+      llnk(327) = -0.5462138054d-02
+      llnk(328) = -0.5451939170d-02
+      llnk(329) = -0.5441809594d-02
+      llnk(330) = -0.5431748532d-02
+      llnk(331) = -0.5421755212d-02
+      llnk(332) = -0.5411828857d-02
+      llnk(333) = -0.5401975569d-02
+      llnk(334) = -0.5392181719d-02
+      llnk(335) = -0.5382453176d-02
+      llnk(336) = -0.5372788210d-02
+      llnk(337) = -0.5363186748d-02
+      llnk(338) = -0.5353648059d-02
+      llnk(339) = -0.5344171504d-02
+      llnk(340) = -0.5334756310d-02
+      llnk(341) = -0.5325401926d-02
+      llnk(342) = -0.5316107680d-02
+      llnk(343) = -0.5306872920d-02
+      llnk(344) = -0.5297696936d-02
+      llnk(345) = -0.5288579215d-02
+      llnk(346) = -0.5279519432d-02
+      llnk(347) = -0.5270516389d-02
+      llnk(348) = -0.5261569543d-02
+      llnk(349) = -0.5252678535d-02
+      llnk(350) = -0.5243842709d-02
+      llnk(351) = -0.5235061516d-02
+      llnk(352) = -0.5226334273d-02
+      llnk(353) = -0.5217660524d-02
+      llnk(354) = -0.5209039665d-02
+      llnk(355) = -0.5200471169d-02
+      llnk(356) = -0.5191954431d-02
+      llnk(357) = -0.5183488963d-02
+      llnk(358) = -0.5175074221d-02
+      llnk(359) = -0.5166709698d-02
+      llnk(360) = -0.5158394787d-02
+      llnk(361) = -0.5150129056d-02
+      llnk(362) = -0.5141911977d-02
+      llnk(363) = -0.5133743148d-02
+      llnk(364) = -0.5125621837d-02
+      llnk(365) = -0.5117547698d-02
+      llnk(366) = -0.5109520206d-02
+      llnk(367) = -0.5101538932d-02
+      llnk(368) = -0.5093603358d-02
+      llnk(369) = -0.5085713032d-02
+      llnk(370) = -0.5077867507d-02
+      llnk(371) = -0.5070066320d-02
+      llnk(372) = -0.5062309014d-02
+      llnk(373) = -0.5054595077d-02
+      llnk(374) = -0.5046924184d-02
+      llnk(375) = -0.5039295844d-02
+      llnk(376) = -0.5031709627d-02
+      llnk(377) = -0.5024165063d-02
+      llnk(378) = -0.5016661793d-02
+      llnk(379) = -0.5009199414d-02
+      llnk(380) = -0.5001777482d-02
+      llnk(381) = -0.4994395567d-02
+      llnk(382) = -0.4987053274d-02
+      llnk(383) = -0.4979750283d-02
+      llnk(384) = -0.4972486128d-02
+      llnk(385) = -0.4965268840d-02
+      llnk(386) = -0.4958081936d-02
+      llnk(387) = -0.4950932817d-02
+      llnk(388) = -0.4943821092d-02
+      llnk(389) = -0.4936746301d-02
+      llnk(390) = -0.4929708210d-02
+      llnk(391) = -0.4922706445d-02
+      llnk(392) = -0.4915740611d-02
+      llnk(393) = -0.4908810284d-02
+      llnk(394) = -0.4901915260d-02
+      llnk(395) = -0.4895055124d-02
+      llnk(396) = -0.4888229556d-02
+      llnk(397) = -0.4881438160d-02
+      llnk(398) = -0.4874680679d-02
+      llnk(399) = -0.4867956758d-02
+      llnk(400) = -0.4861266098d-02
+      llnk(401) = -0.4854608317d-02
+      llnk(402) = -0.4847983151d-02
+      llnk(403) = -0.4841390266d-02
+      llnk(404) = -0.4834829391d-02
+      llnk(405) = -0.4828300135d-02
+      llnk(406) = -0.4821802243d-02
+      llnk(407) = -0.4815335427d-02
+      llnk(408) = -0.4808899393d-02
+      llnk(409) = -0.4802493803d-02
+      llnk(410) = -0.4796118410d-02
+      llnk(411) = -0.4789772949d-02
+      llnk(412) = -0.4783457104d-02
+      llnk(413) = -0.4777170573d-02
+      llnk(414) = -0.4770913098d-02
+      llnk(415) = -0.4764684685d-02
+      llnk(416) = -0.4758484990d-02
+      llnk(417) = -0.4752313124d-02
+      llnk(418) = -0.4746169197d-02
+      llnk(419) = -0.4740053059d-02
+      llnk(420) = -0.4733964341d-02
+      llnk(421) = -0.4727902849d-02
+      llnk(422) = -0.4721868283d-02
+      llnk(423) = -0.4715860425d-02
+      llnk(424) = -0.4709879012d-02
+      llnk(425) = -0.4703923846d-02
+      llnk(426) = -0.4697994583d-02
+      llnk(427) = -0.4692091066d-02
+      llnk(428) = -0.4686213045d-02
+      llnk(429) = -0.4680360271d-02
+      llnk(430) = -0.4674532484d-02
+      llnk(431) = -0.4668729492d-02
+      llnk(432) = -0.4662951085d-02
+      llnk(433) = -0.4657196996d-02
+      llnk(434) = -0.4651467004d-02
+      llnk(435) = -0.4645760890d-02
+      llnk(436) = -0.4640080410d-02
+      llnk(437) = -0.4634428369d-02
+      llnk(438) = -0.4628793378d-02
+      llnk(439) = -0.4623181470d-02
+      llnk(440) = -0.4617592432d-02
+      llnk(441) = -0.4612026079d-02
+      llnk(442) = -0.4606482171d-02
+      llnk(443) = -0.4600960531d-02
+      llnk(444) = -0.4595460979d-02
+      llnk(445) = -0.4589983282d-02
+      llnk(446) = -0.4584527233d-02
+      llnk(447) = -0.4579092710d-02
+      llnk(448) = -0.4573679458d-02
+      llnk(449) = -0.4568287340d-02
+      llnk(450) = -0.4562916080d-02
+      llnk(451) = -0.4557565629d-02
+      llnk(452) = -0.4552235678d-02
+      llnk(453) = -0.4546926139d-02
+      llnk(454) = -0.4541636751d-02
+      llnk(455) = -0.4536367408d-02
+      llnk(456) = -0.4531117888d-02
+      llnk(457) = -0.4525888082d-02
+      llnk(458) = -0.4520677720d-02
+      llnk(459) = -0.4515486721d-02
+      llnk(460) = -0.4510314872d-02
+      llnk(461) = -0.4505162010d-02
+      llnk(462) = -0.4500027980d-02
+      llnk(463) = -0.4494912622d-02
+      llnk(464) = -0.4489815761d-02
+      llnk(465) = -0.4484737267d-02
+      llnk(466) = -0.4479676977d-02
+      llnk(467) = -0.4474634684d-02
+      llnk(468) = -0.4469610304d-02
+      llnk(469) = -0.4464603661d-02
+      llnk(470) = -0.4459614543d-02
+      llnk(471) = -0.4454642899d-02
+      llnk(472) = -0.4449688484d-02
+      llnk(473) = -0.4444751266d-02
+      llnk(474) = -0.4439830996d-02
+      llnk(475) = -0.4434927562d-02
+      llnk(476) = -0.4430040859d-02
+      llnk(477) = -0.4425170710d-02
+      llnk(478) = -0.4420316957d-02
+      llnk(479) = -0.4415479491d-02
+      llnk(480) = -0.4410658186d-02
+      llnk(481) = -0.4405852880d-02
+      llnk(482) = -0.4401063430d-02
+      llnk(483) = -0.4396289728d-02
+      llnk(484) = -0.4391531676d-02
+      llnk(485) = -0.4386789086d-02
+      llnk(486) = -0.4382061813d-02
+      llnk(487) = -0.4377349779d-02
+      llnk(488) = -0.4372652829d-02
+      llnk(489) = -0.4367973960d-02
+      llnk(490) = -0.4363312569d-02
+      llnk(491) = -0.4358660920d-02
+      llnk(492) = -0.4354023941d-02
+      llnk(493) = -0.4349402011d-02
+      llnk(494) = -0.4344794018d-02
+      llnk(495) = -0.4340200286d-02
+      llnk(496) = -0.4335620759d-02
+      llnk(497) = -0.4331055332d-02
+      llnk(498) = -0.4326503816d-02
+      llnk(499) = -0.4321966182d-02
+      llnk(500) = -0.4317442332d-02
+      llnk(501) = -0.4312932067d-02
+      llnk(502) = -0.4308435312d-02
+      llnk(503) = -0.4303951987d-02
+      llnk(504) = -0.4299481991d-02
+      llnk(505) = -0.4295025176d-02
+      llnk(506) = -0.4290581476d-02
+      llnk(507) = -0.4286150784d-02
+      llnk(508) = -0.4281732974d-02
+      llnk(509) = -0.4277328005d-02
+      llnk(510) = -0.4272935697d-02
+      llnk(511) = -0.4268555976d-02
+      llnk(512) = -0.4264188766d-02
+      llnk(513) = -0.4259833966d-02
+      llnk(514) = -0.4255491492d-02
+      llnk(515) = -0.4251161154d-02
+      llnk(516) = -0.4246842949d-02
+      llnk(517) = -0.4242536837d-02
+      llnk(518) = -0.4238242629d-02
+      llnk(519) = -0.4233960267d-02
+      llnk(520) = -0.4229689632d-02
+      llnk(521) = -0.4225430669d-02
+      llnk(522) = -0.4221183310d-02
+      llnk(523) = -0.4216947377d-02
+      llnk(524) = -0.4212722872d-02
+      llnk(525) = -0.4208509690d-02
+      llnk(526) = -0.4204307736d-02
+      llnk(527) = -0.4200116898d-02
+      llnk(528) = -0.4195937125d-02
+      llnk(529) = -0.4191768337d-02
+      llnk(530) = -0.4187610437d-02
+      llnk(531) = -0.4183463316d-02
+      llnk(532) = -0.4179326948d-02
+      llnk(533) = -0.4175201222d-02
+      llnk(534) = -0.4171086099d-02
+      llnk(535) = -0.4166981404d-02
+      llnk(536) = -0.4162887134d-02
+      llnk(537) = -0.4158803202d-02
+      llnk(538) = -0.4154729536d-02
+      llnk(539) = -0.4150666091d-02
+      llnk(540) = -0.4146612671d-02
+      llnk(541) = -0.4142569363d-02
+      llnk(542) = -0.4138535935d-02
+      llnk(543) = -0.4134515728d-02
+      llnk(544) = -0.4130507039d-02
+      llnk(545) = -0.4126503797d-02
+      llnk(546) = -0.4122510270d-02
+      llnk(547) = -0.4118526386d-02
+      llnk(548) = -0.4114552039d-02
+      llnk(549) = -0.4110587257d-02
+      llnk(550) = -0.4106631920d-02
+      llnk(551) = -0.4102685926d-02
+      llnk(552) = -0.4098749247d-02
+      llnk(553) = -0.4094821847d-02
+      llnk(554) = -0.4090903630d-02
+      llnk(555) = -0.4086994545d-02
+      llnk(556) = -0.4083094472d-02
+      llnk(557) = -0.4079203396d-02
+      llnk(558) = -0.4075321316d-02
+      llnk(559) = -0.4071448028d-02
+      llnk(560) = -0.4067583587d-02
+      llnk(561) = -0.4063727921d-02
+      llnk(562) = -0.4059880939d-02
+      llnk(563) = -0.4056042583d-02
+      llnk(564) = -0.4052212762d-02
+      llnk(565) = -0.4048391527d-02
+      llnk(566) = -0.4044578730d-02
+      llnk(567) = -0.4040774354d-02
+      llnk(568) = -0.4036978296d-02
+      llnk(569) = -0.4033190534d-02
+      llnk(570) = -0.4029410975d-02
+      llnk(571) = -0.4025639600d-02
+      llnk(572) = -0.4021876379d-02
+      llnk(573) = -0.4018121658d-02
+      llnk(574) = -0.4014374533d-02
+      llnk(575) = -0.4010635431d-02
+      llnk(576) = -0.4006904167d-02
+      llnk(577) = -0.4003180813d-02
+      llnk(578) = -0.3999465257d-02
+      llnk(579) = -0.3995757506d-02
+      llnk(580) = -0.3992057412d-02
+      llnk(581) = -0.3988364979d-02
+      llnk(582) = -0.3984680200d-02
+      llnk(583) = -0.3981002957d-02
+      llnk(584) = -0.3977333187d-02
+      llnk(585) = -0.3973670940d-02
+      llnk(586) = -0.3970016087d-02
+      llnk(587) = -0.3966368605d-02
+      llnk(588) = -0.3962728432d-02
+      llnk(589) = -0.3959095565d-02
+      llnk(590) = -0.3955469896d-02
+      llnk(591) = -0.3951851444d-02
+      llnk(592) = -0.3948240106d-02
+      llnk(593) = -0.3944635840d-02
+      llnk(594) = -0.3941038624d-02
+      llnk(595) = -0.3937448450d-02
+      llnk(596) = -0.3933865180d-02
+      llnk(597) = -0.3930288852d-02
+      llnk(598) = -0.3926725182d-02
+      llnk(599) = -0.3923164225d-02
+      llnk(600) = -0.3919609022d-02
+      llnk(601) = -0.3916060603d-02
+      llnk(602) = -0.3912518941d-02
+      llnk(603) = -0.3908984017d-02
+      llnk(604) = -0.3905455707d-02
+      llnk(605) = -0.3901934071d-02
+      llnk(606) = -0.3898419000d-02
+      llnk(607) = -0.3894910446d-02
+      llnk(608) = -0.3891408443d-02
+      llnk(609) = -0.3887912933d-02
+      llnk(610) = -0.3884423810d-02
+      llnk(611) = -0.3880941150d-02
+      llnk(612) = -0.3877464789d-02
+      llnk(613) = -0.3873994730d-02
+      llnk(614) = -0.3870530985d-02
+      llnk(615) = -0.3867073514d-02
+      llnk(616) = -0.3863622258d-02
+      llnk(617) = -0.3860177173d-02
+      llnk(618) = -0.3856738235d-02
+      llnk(619) = -0.3853305441d-02
+      llnk(620) = -0.3849878697d-02
+      llnk(621) = -0.3846458016d-02
+      llnk(622) = -0.3843043331d-02
+      llnk(623) = -0.3839634656d-02
+      llnk(624) = -0.3836231919d-02
+      llnk(625) = -0.3832835028d-02
+      llnk(626) = -0.3829444026d-02
+      llnk(627) = -0.3826058954d-02
+      llnk(628) = -0.3822679633d-02
+      llnk(629) = -0.3819306152d-02
+      llnk(630) = -0.3815938396d-02
+      llnk(631) = -0.3812576353d-02
+      llnk(632) = -0.3809220046d-02
+      llnk(633) = -0.3805869353d-02
+      llnk(634) = -0.3802524327d-02
+      llnk(635) = -0.3799184885d-02
+      llnk(636) = -0.3795851005d-02
+      llnk(637) = -0.3792522658d-02
+      llnk(638) = -0.3789199831d-02
+      llnk(639) = -0.3785882531d-02
+      llnk(640) = -0.3782570655d-02
+      llnk(641) = -0.3779264191d-02
+      llnk(642) = -0.3775963147d-02
+      llnk(643) = -0.3772667476d-02
+      llnk(644) = -0.3769377113d-02
+      llnk(645) = -0.3766092076d-02
+      llnk(646) = -0.3762812304d-02
+      llnk(647) = -0.3759537833d-02
+      llnk(648) = -0.3756268585d-02
+      llnk(649) = -0.3753004510d-02
+      llnk(650) = -0.3749745613d-02
+      llnk(651) = -0.3746491901d-02
+      llnk(652) = -0.3743243283d-02
+      llnk(653) = -0.3740005626d-02
+      llnk(654) = -0.3736767845d-02
+      llnk(655) = -0.3733535132d-02
+      llnk(656) = -0.3730307327d-02
+      llnk(657) = -0.3727084607d-02
+      llnk(658) = -0.3723866873d-02
+      llnk(659) = -0.3720654107d-02
+      llnk(660) = -0.3717446303d-02
+      llnk(661) = -0.3714243463d-02
+      llnk(662) = -0.3711045523d-02
+      llnk(663) = -0.3707852455d-02
+      llnk(664) = -0.3704664303d-02
+      llnk(665) = -0.3701480968d-02
+      llnk(666) = -0.3698302457d-02
+      llnk(667) = -0.3695128771d-02
+      llnk(668) = -0.3691959874d-02
+      llnk(669) = -0.3688795678d-02
+      llnk(670) = -0.3685636275d-02
+      llnk(671) = -0.3682481602d-02
+      llnk(672) = -0.3679331555d-02
+      llnk(673) = -0.3676186270d-02
+      llnk(674) = -0.3673045561d-02
+      llnk(675) = -0.3669909551d-02
+      llnk(676) = -0.3666778150d-02
+      llnk(677) = -0.3663651302d-02
+      llnk(678) = -0.3660529071d-02
+      llnk(679) = -0.3657411389d-02
+      llnk(680) = -0.3654298215d-02
+      llnk(681) = -0.3651189465d-02
+      llnk(682) = -0.3648085315d-02
+      llnk(683) = -0.3644985621d-02
+      llnk(684) = -0.3641890453d-02
+      llnk(685) = -0.3638799641d-02
+      llnk(686) = -0.3635713278d-02
+      llnk(687) = -0.3632631311d-02
+      llnk(688) = -0.3629553745d-02
+      llnk(689) = -0.3626480539d-02
+      llnk(690) = -0.3623411645d-02
+      llnk(691) = -0.3620347077d-02
+      llnk(692) = -0.3617286859d-02
+      llnk(693) = -0.3614230904d-02
+      llnk(694) = -0.3611179235d-02
+      llnk(695) = -0.3608131812d-02
+      llnk(696) = -0.3605088635d-02
+      llnk(697) = -0.3602049657d-02
+      llnk(698) = -0.3599014895d-02
+      llnk(699) = -0.3595984357d-02
+      llnk(700) = -0.3592957941d-02
+      llnk(701) = -0.3589935718d-02
+      llnk(702) = -0.3586917596d-02
+      llnk(703) = -0.3583903622d-02
+      llnk(704) = -0.3580893698d-02
+      llnk(705) = -0.3577887909d-02
+      llnk(706) = -0.3574886158d-02
+      llnk(707) = -0.3571888466d-02
+      llnk(708) = -0.3568899450d-02
+      llnk(709) = -0.3565910323d-02
+      llnk(710) = -0.3562925154d-02
+      llnk(711) = -0.3559943972d-02
+      llnk(712) = -0.3556966859d-02
+      llnk(713) = -0.3553993656d-02
+      llnk(714) = -0.3551024466d-02
+      llnk(715) = -0.3548059237d-02
+      llnk(716) = -0.3545097968d-02
+      llnk(717) = -0.3542140587d-02
+      llnk(718) = -0.3539187147d-02
+      llnk(719) = -0.3536237614d-02
+      llnk(720) = -0.3533291992d-02
+      llnk(721) = -0.3530350229d-02
+      llnk(722) = -0.3527412335d-02
+      llnk(723) = -0.3524478279d-02
+      llnk(724) = -0.3521548076d-02
+      llnk(725) = -0.3518621713d-02
+      llnk(726) = -0.3515699144d-02
+      llnk(727) = -0.3512780363d-02
+      llnk(728) = -0.3509865386d-02
+      llnk(729) = -0.3506954146d-02
+      llnk(730) = -0.3504046711d-02
+      llnk(731) = -0.3501142980d-02
+      llnk(732) = -0.3498243029d-02
+      llnk(733) = -0.3495346825d-02
+      llnk(734) = -0.3492454277d-02
+      llnk(735) = -0.3489565504d-02
+      llnk(736) = -0.3486680283d-02
+      llnk(737) = -0.3483798748d-02
+      llnk(738) = -0.3480921125d-02
+      llnk(739) = -0.3478046974d-02
+      llnk(740) = -0.3475176495d-02
+      llnk(741) = -0.3472309608d-02
+      llnk(742) = -0.3469446344d-02
+      llnk(743) = -0.3466586679d-02
+      llnk(744) = -0.3463730607d-02
+      llnk(745) = -0.3460878143d-02
+      llnk(746) = -0.3458029208d-02
+      llnk(747) = -0.3455183869d-02
+      llnk(748) = -0.3452342050d-02
+      llnk(749) = -0.3449503792d-02
+      llnk(750) = -0.3446669019d-02
+      llnk(751) = -0.3443837835d-02
+      llnk(752) = -0.3441010114d-02
+      llnk(753) = -0.3438185843d-02
+      llnk(754) = -0.3435365132d-02
+      llnk(755) = -0.3432547840d-02
+      llnk(756) = -0.3429734036d-02
+      llnk(757) = -0.3426923672d-02
+      llnk(758) = -0.3424116757d-02
+      llnk(759) = -0.3421313262d-02
+      llnk(760) = -0.3418513177d-02
+      llnk(761) = -0.3415716524d-02
+      llnk(762) = -0.3412923273d-02
+      llnk(763) = -0.3410136336d-02
+      llnk(764) = -0.3407350916d-02
+      llnk(765) = -0.3404568130d-02
+      llnk(766) = -0.3401788745d-02
+      llnk(767) = -0.3399012718d-02
+      llnk(768) = -0.3396240047d-02
+      llnk(769) = -0.3393470771d-02
+      llnk(770) = -0.3390704781d-02
+      llnk(771) = -0.3387942162d-02
+      llnk(772) = -0.3385182859d-02
+      llnk(773) = -0.3382426879d-02
+      llnk(774) = -0.3379674202d-02
+      llnk(775) = -0.3376924820d-02
+      llnk(776) = -0.3374178738d-02
+      llnk(777) = -0.3371435939d-02
+      llnk(778) = -0.3368696456d-02
+      llnk(779) = -0.3365960182d-02
+      llnk(780) = -0.3363227225d-02
+      llnk(781) = -0.3360497473d-02
+      llnk(782) = -0.3357770991d-02
+      llnk(783) = -0.3355047725d-02
+      llnk(784) = -0.3352327686d-02
+      llnk(785) = -0.3349610914d-02
+      llnk(786) = -0.3346897303d-02
+      llnk(787) = -0.3344186906d-02
+      llnk(788) = -0.3341479724d-02
+      llnk(789) = -0.3338775700d-02
+      llnk(790) = -0.3336074863d-02
+      llnk(791) = -0.3333377225d-02
+      llnk(792) = -0.3330682695d-02
+      llnk(793) = -0.3327991302d-02
+      llnk(794) = -0.3325303130d-02
+      llnk(795) = -0.3322618041d-02
+      llnk(796) = -0.3319936145d-02
+      llnk(797) = -0.3317257379d-02
+      llnk(798) = -0.3314581695d-02
+      llnk(799) = -0.3311909149d-02
+      llnk(800) = -0.3309239696d-02
+      llnk(801) = -0.3306573350d-02
+      llnk(802) = -0.3303910077d-02
+      llnk(803) = -0.3301249895d-02
+      llnk(804) = -0.3298592786d-02
+      llnk(805) = -0.3295938770d-02
+      llnk(806) = -0.3293287792d-02
+      llnk(807) = -0.3290639881d-02
+      llnk(808) = -0.3287994967d-02
+      llnk(809) = -0.3285353159d-02
+      llnk(810) = -0.3282714334d-02
+      llnk(811) = -0.3280078559d-02
+      llnk(812) = -0.3277445795d-02
+      llnk(813) = -0.3274816076d-02
+      llnk(814) = -0.3272189346d-02
+      llnk(815) = -0.3269565604d-02
+      llnk(816) = -0.3266944867d-02
+      llnk(817) = -0.3264327100d-02
+      llnk(818) = -0.3261713686d-02
+      llnk(819) = -0.3259103619d-02
+      llnk(820) = -0.3256495012d-02
+      llnk(821) = -0.3253889400d-02
+      llnk(822) = -0.3251286777d-02
+      llnk(823) = -0.3248687255d-02
+      llnk(824) = -0.3246090539d-02
+      llnk(825) = -0.3243496801d-02
+      llnk(826) = -0.3240905999d-02
+      llnk(827) = -0.3238318138d-02
+      llnk(828) = -0.3235733197d-02
+      llnk(829) = -0.3233151191d-02
+      llnk(830) = -0.3230572128d-02
+      llnk(831) = -0.3227995977d-02
+      llnk(832) = -0.3225422751d-02
+      llnk(833) = -0.3222852394d-02
+      llnk(834) = -0.3220284979d-02
+      llnk(835) = -0.3217720406d-02
+      llnk(836) = -0.3215158781d-02
+      llnk(837) = -0.3212600066d-02
+      llnk(838) = -0.3210044148d-02
+      llnk(839) = -0.3207491153d-02
+      llnk(840) = -0.3204940999d-02
+      llnk(841) = -0.3202393742d-02
+      llnk(842) = -0.3199849338d-02
+      llnk(843) = -0.3197307775d-02
+      llnk(844) = -0.3194769052d-02
+      llnk(845) = -0.3192233205d-02
+      llnk(846) = -0.3189700191d-02
+      llnk(847) = -0.3187169971d-02
+      llnk(848) = -0.3184642524d-02
+      llnk(849) = -0.3182117988d-02
+      llnk(850) = -0.3179596231d-02
+      llnk(851) = -0.3177077300d-02
+      llnk(852) = -0.3174561186d-02
+      llnk(853) = -0.3172047887d-02
+      llnk(854) = -0.3169537359d-02
+      llnk(855) = -0.3167029632d-02
+      llnk(856) = -0.3164524709d-02
+      llnk(857) = -0.3162022553d-02
+      llnk(858) = -0.3159523159d-02
+      llnk(859) = -0.3157026583d-02
+      llnk(860) = -0.3154532729d-02
+      llnk(861) = -0.3152041656d-02
+      llnk(862) = -0.3149553327d-02
+      llnk(863) = -0.3147067778d-02
+      llnk(864) = -0.3144584964d-02
+      llnk(865) = -0.3142104892d-02
+      llnk(866) = -0.3139627563d-02
+      llnk(867) = -0.3137152962d-02
+      llnk(868) = -0.3134681067d-02
+      llnk(869) = -0.3132211915d-02
+      llnk(870) = -0.3129745502d-02
+      llnk(871) = -0.3127281759d-02
+      llnk(872) = -0.3124820761d-02
+      llnk(873) = -0.3122362718d-02
+      llnk(874) = -0.3119909222d-02
+      llnk(875) = -0.3117456503d-02
+      llnk(876) = -0.3115006490d-02
+      llnk(877) = -0.3112559221d-02
+      llnk(878) = -0.3110114595d-02
+      llnk(879) = -0.3107672711d-02
+      llnk(880) = -0.3105233507d-02
+      llnk(881) = -0.3102796921d-02
+      llnk(882) = -0.3100363082d-02
+      llnk(883) = -0.3097931893d-02
+      llnk(884) = -0.3095503371d-02
+      llnk(885) = -0.3093077570d-02
+      llnk(886) = -0.3090654347d-02
+      llnk(887) = -0.3088233816d-02
+      llnk(888) = -0.3085815991d-02
+      llnk(889) = -0.3083400748d-02
+      llnk(890) = -0.3080988196d-02
+      llnk(891) = -0.3078578271d-02
+      llnk(892) = -0.3076170985d-02
+      llnk(893) = -0.3073766340d-02
+      llnk(894) = -0.3071364353d-02
+      llnk(895) = -0.3068964958d-02
+      llnk(896) = -0.3066568203d-02
+      llnk(897) = -0.3064174074d-02
+      llnk(898) = -0.3061782549d-02
+      llnk(899) = -0.3059393659d-02
+      llnk(900) = -0.3057007375d-02
+      llnk(901) = -0.3054623711d-02
+      llnk(902) = -0.3052242585d-02
+      llnk(903) = -0.3049864141d-02
+      llnk(904) = -0.3047488140d-02
+      llnk(905) = -0.3045114846d-02
+      llnk(906) = -0.3042744119d-02
+      llnk(907) = -0.3040375970d-02
+      llnk(908) = -0.3038010418d-02
+      llnk(909) = -0.3035647475d-02
+      llnk(910) = -0.3033287098d-02
+      llnk(911) = -0.3030929263d-02
+      llnk(912) = -0.3028574024d-02
+      llnk(913) = -0.3026221302d-02
+      llnk(914) = -0.3023871162d-02
+      llnk(915) = -0.3021523546d-02
+      llnk(916) = -0.3019178525d-02
+      llnk(917) = -0.3016836027d-02
+      llnk(918) = -0.3014496035d-02
+      llnk(919) = -0.3012158656d-02
+      llnk(920) = -0.3009823741d-02
+      llnk(921) = -0.3007491429d-02
+      llnk(922) = -0.3005161605d-02
+      llnk(923) = -0.3002834314d-02
+      llnk(924) = -0.3000509569d-02
+      llnk(925) = -0.2998187291d-02
+      llnk(926) = -0.2995867561d-02
+      llnk(927) = -0.2993550344d-02
+      llnk(928) = -0.2991235634d-02
+      llnk(929) = -0.2988925225d-02
+      llnk(930) = -0.2986615660d-02
+      llnk(931) = -0.2984308615d-02
+      llnk(932) = -0.2982004089d-02
+      llnk(933) = -0.2979702045d-02
+      llnk(934) = -0.2977402494d-02
+      llnk(935) = -0.2975105470d-02
+      llnk(936) = -0.2972810888d-02
+      llnk(937) = -0.2970518821d-02
+      llnk(938) = -0.2968229240d-02
+      llnk(939) = -0.2965942158d-02
+      llnk(940) = -0.2963657551d-02
+      llnk(941) = -0.2961375403d-02
+      llnk(942) = -0.2959095731d-02
+      llnk(943) = -0.2956818525d-02
+      llnk(944) = -0.2954543818d-02
+      llnk(945) = -0.2952271541d-02
+      llnk(946) = -0.2950001748d-02
+      llnk(947) = -0.2947734412d-02
+      llnk(948) = -0.2945469512d-02
+      llnk(949) = -0.2943207084d-02
+      llnk(950) = -0.2940947077d-02
+      llnk(951) = -0.2938689563d-02
+      llnk(952) = -0.2936434487d-02
+      llnk(953) = -0.2934181799d-02
+      llnk(954) = -0.2931931606d-02
+      llnk(955) = -0.2929683842d-02
+      llnk(956) = -0.2927438481d-02
+      llnk(957) = -0.2925195572d-02
+      llnk(958) = -0.2922955070d-02
+      llnk(959) = -0.2920716941d-02
+      llnk(960) = -0.2918481269d-02
+      llnk(961) = -0.2916248012d-02
+      llnk(962) = -0.2914017179d-02
+      llnk(963) = -0.2911788782d-02
+      llnk(964) = -0.2909562774d-02
+      llnk(965) = -0.2907339192d-02
+      llnk(966) = -0.2905117982d-02
+      llnk(967) = -0.2902899173d-02
+      llnk(968) = -0.2900682799d-02
+      llnk(969) = -0.2898468796d-02
+      llnk(970) = -0.2896257166d-02
+      llnk(971) = -0.2894047930d-02
+      llnk(972) = -0.2891841138d-02
+      llnk(973) = -0.2889636618d-02
+      llnk(974) = -0.2887434580d-02
+      llnk(975) = -0.2885234873d-02
+      llnk(976) = -0.2883037537d-02
+      llnk(977) = -0.2880842566d-02
+      llnk(978) = -0.2878649974d-02
+      llnk(979) = -0.2876459766d-02
+      llnk(980) = -0.2874271894d-02
+      llnk(981) = -0.2872086376d-02
+      llnk(982) = -0.2869903273d-02
+      llnk(983) = -0.2867722443d-02
+      llnk(984) = -0.2865545315d-02
+      llnk(985) = -0.2863369328d-02
+      llnk(986) = -0.2861195689d-02
+      llnk(987) = -0.2859024433d-02
+      llnk(988) = -0.2856855469d-02
+      llnk(989) = -0.2854688909d-02
+      llnk(990) = -0.2852524645d-02
+      llnk(991) = -0.2850362774d-02
+      llnk(992) = -0.2848203196d-02
+      llnk(993) = -0.2846045956d-02
+      llnk(994) = -0.2843891068d-02
+      llnk(995) = -0.2841738481d-02
+      llnk(996) = -0.2839588248d-02
+      llnk(997) = -0.2837440365d-02
+      llnk(998) = -0.2835294724d-02
+      llnk(999) = -0.2833151463d-02
+      llnk(1000) = -0.2831010498d-02
+      llnk(1001) = -0.2828871870d-02
+      llnk(1002) = -0.2826735533d-02
+      llnk(1003) = -0.2824601509d-02
+      llnk(1004) = -0.2822469774d-02
+      llnk(1005) = -0.2820340370d-02
+      llnk(1006) = -0.2818213253d-02
+      llnk(1007) = -0.2816088447d-02
+      llnk(1008) = -0.2813965924d-02
+      llnk(1009) = -0.2811845711d-02
+      llnk(1010) = -0.2809727762d-02
+      llnk(1011) = -0.2807612130d-02
+      llnk(1012) = -0.2805498780d-02
+      llnk(1013) = -0.2803387663d-02
+      llnk(1014) = -0.2801278909d-02
+      llnk(1015) = -0.2799172307d-02
+      llnk(1016) = -0.2797068067d-02
+      llnk(1017) = -0.2794966114d-02
+      llnk(1018) = -0.2792866401d-02
+      llnk(1019) = -0.2790768970d-02
+      llnk(1020) = -0.2788673820d-02
+      llnk(1021) = -0.2786580911d-02
+      llnk(1022) = -0.2784490270d-02
+      llnk(1023) = -0.2782401919d-02
+      llnk(1024) = -0.2780315803d-02
 
    end subroutine loadlovenumber
    
@@ -3399,11 +3332,11 @@ llnk( 1024  )= -0.2780315803D-02
          double precision ::  rmjdat, dstart, dstop, eps, TIME
          double precision xzeta(idim1), yzeta(idim1), tidep(idim1)
          
-         DOUBLE PRECISION, allocatable,  SAVE :: tideuc(:,:,:), tideus(:,:,:)   !       (idim1, 0:3,2:3), 
+      double precision, allocatable, save :: tideuc(:, :, :), tideus(:, :, :) !       (idim1, 0:3,2:3),
    
-         INTEGER, SAVE :: IRC = 0
+      integer, save :: IRC = 0
    
-         CHARACTER(len=40), dimension(484) :: RECS  ! ZAT IN FILE 'HARMONICS' 
+      character(len=40), dimension(484) :: RECS ! ZAT IN FILE 'HARMONICS'
    
    !
    !     dstart   i    starting Doodson number
@@ -3454,7 +3387,7 @@ llnk( 1024  )= -0.2780315803D-02
          double precision :: cansum(0:3,2:3), sansum(0:3,2:3)
          character*80 record
          logical permnt
-         DOUBLE PRECISION, SAVE :: FACTORIAL(0:6)
+      double precision, save :: FACTORIAL(0:6)
    
    !
    !     amps           table with scaled amplitudes for selected tidal components
@@ -3614,29 +3547,25 @@ llnk( 1024  )= -0.2780315803D-02
              
          rmjdat = jul0 - 2400001.0 + time / (24 * 60) 
    
-   
-         if (irc.eq.0 ) then
-   
+      if (irc == 0) then
    
             IRC = 1
    
-   
-            FACTORIAL(0) =   1D0 
-            FACTORIAL(1) =   1D0 
-            FACTORIAL(2) =   2D0 
-            FACTORIAL(3) =   6D0 
-            FACTORIAL(4) =  24D0 
-            FACTORIAL(5) = 120D0 
-            FACTORIAL(6) = 720D0 
+         FACTORIAL(0) = 1d0
+         FACTORIAL(1) = 1d0
+         FACTORIAL(2) = 2d0
+         FACTORIAL(3) = 6d0
+         FACTORIAL(4) = 24d0
+         FACTORIAL(5) = 120d0
+         FACTORIAL(6) = 720d0
    
             if (allocated (tideuc) ) deallocate(tideuc, tideus) 
-            ALLOCATE ( tideuc(0:3,2:3,IDIM1), STAT = IERR); tideuc = 0d0 
-            ALLOCATE ( tideus(0:3,2:3,IDIM1), STAT = IERR); tideus = 0d0 
+         allocate (tideuc(0:3, 2:3, IDIM1), STAT=IERR); tideuc = 0d0
+         allocate (tideus(0:3, 2:3, IDIM1), STAT=IERR); tideus = 0d0
    
             call iniharmonics(recs)
    
-   
-            if (idebug.ge.10) then
+         if (idebug >= 10) then
                write(6,*) '*** Start reading the harmonics ' //  &
                          'table ***'
                write(6,*)
@@ -3660,20 +3589,20 @@ llnk( 1024  )= -0.2780315803D-02
             N = 0
     10      continue
             N = N + 1
-            IF (N > 484) GOTO 20
+         if (N > 484) goto 20
             RECORD = RECS(N)
             ! read(luhar,'(a)',end=20) record
-            if (idebug.ge.10) write(6,*) record
-            if (record(1:1).eq.'%') go to 10
+         if (idebug >= 10) write (6, *) record
+         if (record(1:1) == '%') go to 10
             read(record,*) (kk(i),i = 1, 7), har
    !
    !            in the CTE tables there is a null line for theoretic
    !        --- reasons, never use this line to compute the tidal
    !            potential.
    !
-            permnt =  kk(1).eq.0 .and. kk(2).eq.0 .and. &
-                      kk(3).eq.0 .and. kk(4).eq.0 .and. &
-                      kk(5).eq.0 .and. kk(6).eq.0
+         permnt = kk(1) == 0 .and. kk(2) == 0 .and. &
+                  kk(3) == 0 .and. kk(4) == 0 .and. &
+                  kk(5) == 0 .and. kk(6) == 0
    !
    !        --- dtab is the doodson number for a table entry,
    !            select the lines where dstart <= dtab <= dstop
@@ -3682,10 +3611,10 @@ llnk( 1024  )= -0.2780315803D-02
             dtab2 = (kk(4)+5d0)*100d0 + (kk(5)+5d0)*10d0 + (kk(6)+5d0)
             dtab  = dtab1 + dtab2 / 1000d0
    
-            if (.not.permnt .and. abs(har).ge.eps .and. dstart.le.dtab  .and. dtab.le.dstop  ) then
+         if (.not. permnt .and. abs(har) >= eps .and. dstart <= dtab .and. dtab <= dstop) then
    
                ntable = ntable + 1
-               if (ntable.gt.maxdat) then
+            if (ntable > maxdat) then
                   irc = -2
                   return
                end if
@@ -3707,13 +3636,13 @@ llnk( 1024  )= -0.2780315803D-02
             rlslat  = -9999d0
             rlslon  = -9999d0
    
-            if (idebug.ge.10) then
+         if (idebug >= 10) then
                write(6,*) 'ntable = ',ntable,'   nskip = ',nskip
             end if
    !
    !        --- storage of uc, us
    !
-               do 90 i1 = 1, idim1
+         do i1 = 1, idim1
    
                      rlat  = yzeta(i1)
                      rlong = xzeta(i1)
@@ -3722,7 +3651,7 @@ llnk( 1024  )= -0.2780315803D-02
    !                     (fnm) found in cartwright 1993, also compute the
    !                     astronomical elements
    !
-                     if (abs(rlat-rlslat).gt.reps) then
+            if (abs(rlat - rlslat) > reps) then
                         do nq = 2, 3
                            do mq = 0, nq
                               fnm = 2d0 / dble(2*nq+1) * factorial(nq+mq) /  factorial(nq-mq)
@@ -3733,7 +3662,7 @@ llnk( 1024  )= -0.2780315803D-02
                         enddo
                      end if
    
-                     if (abs(rlong-rlslon).gt.reps ) then
+            if (abs(rlong - rlslon) > reps) then
                         do mq = 0, 3
                            cm1(mq) = +cos(dble(mq) * rlong)
                            sm1(mq) = +sin(dble(mq) * rlong)
@@ -3745,7 +3674,7 @@ llnk( 1024  )= -0.2780315803D-02
    !
                      do nq = 2, 3
                         do mq = 0, nq
-                           if (mod(nq+mq, 2).eq.0) then
+                  if (mod(nq + mq, 2) == 0) then
                               tideuc(mq, nq, I1) = +cm1(mq) *                                          pol1(mq, nq)
                               tideus(mq, nq, I1) = -sm1(mq) *                                          pol1(mq, nq)
                            else
@@ -3753,7 +3682,7 @@ llnk( 1024  )= -0.2780315803D-02
                               tideus(mq, nq, I1) = +cm1(mq) *                                          pol1(mq, nq)
                            end if
    
-                           if (idebug.ge.2 .and. i1.eq.i1dbg) then
+                  if (idebug >= 2 .and. i1 == i1dbg) then
                               write(6,123) 'mq,nq=',mq,nq,                     &
                                 ': rlat=',rlat,', rlong=',rlong,               &
                                 ', pol1=',pol1(mq,nq),', cm1=',cm1(mq),',',    &
@@ -3771,7 +3700,7 @@ llnk( 1024  )= -0.2780315803D-02
                      rlslat = rlat
                      rlslon = rlong
    
-      90       continue
+         end do
    
          end if
    !
@@ -3810,7 +3739,7 @@ llnk( 1024  )= -0.2780315803D-02
                cansum(mq, nq) = 0d0
                sansum(mq, nq) = 0d0
                do i = 1, ntable
-                  if ( itable(i,7).eq.nq .and. itable(i,1).eq.mq) then
+               if (itable(i, 7) == nq .and. itable(i, 1) == mq) then
                      cansum(mq, nq) = cansum(mq, nq) + can(i)
                      sansum(mq, nq) = sansum(mq, nq) + san(i)
                   end if
@@ -3820,7 +3749,7 @@ llnk( 1024  )= -0.2780315803D-02
    !
    !     --- computation of the tidal potential at each grid-point:
    !
-            do 190 i1 = 1, idim1
+      do i1 = 1, idim1
    
                   potent = 0d0
                   do nq = 2, 3
@@ -3837,7 +3766,7 @@ llnk( 1024  )= -0.2780315803D-02
                      enddo
                   enddo
                   tidep(i1) = potent
-     190    continue
+      end do
    
          ! if (idebug.ge.1 .and. i1dbg.ge.1)    write(6,*) 'tidep=', tidep(i1dbg)
 
@@ -3902,7 +3831,7 @@ llnk( 1024  )= -0.2780315803D-02
    !     --- constant values:
    !
          double precision :: circle
-         parameter  (CIRCLE=360.0D0)
+      parameter(CIRCLE=360.0d0)
    !
    !     circle       number of degrees in a circle
    !
@@ -3920,7 +3849,7 @@ llnk( 1024  )= -0.2780315803D-02
    !     --- start of code
    !
          TIME = mjdate
-         T    = TIME - 51544.4993D0   ! reference to 2000/1/1 1200 o'clock
+      T = TIME - 51544.4993d0 ! reference to 2000/1/1 1200 o'clock
    !
    !     --- perform translations using translation table of symbols:
    !
@@ -3932,18 +3861,18 @@ llnk( 1024  )= -0.2780315803D-02
    !         5  N           -N'      \Omega
    !         6  p'          p_1      \overline{\omega}'
    !
-         six(2) = 218.3164D0 + 13.17639648D0 * T
-         six(3) = 280.4661D0 +  0.98564736D0 * T
-         six(4) =  83.3535D0 +  0.11140353D0 * T
-         six(5) = 125.0445D0 -  0.05295377D0 * T
-         six(6) = 282.9384D0 +  0.0000471d0  * T
+      six(2) = 218.3164d0 + 13.17639648d0 * T
+      six(3) = 280.4661d0 + 0.98564736d0 * T
+      six(4) = 83.3535d0 + 0.11140353d0 * T
+      six(5) = 125.0445d0 - 0.05295377d0 * T
+      six(6) = 282.9384d0 + 0.0000471d0 * T
    !
    !     --- get them in the right quadrant
    !
          do i = 2, 6
    
            six(i) = mod(six(i), circle)
-           if (six(i).lt.0d0) six(i) = six(i) + circle
+         if (six(i) < 0d0) six(i) = six(i) + circle
    
          end do
    !
@@ -4009,28 +3938,28 @@ llnk( 1024  )= -0.2780315803D-02
    !     --- I think this comes from (Lambeck,1988), what again are the rules for
    !         obtaining associated Legendre functions?
    !
-         if (n.eq.0 ) then
-           if (m.eq.0 ) pnm = 1d0
-         ELSE if (n.eq.1 ) then
-            if (m.eq.0 ) pnm = sp
-            if (m.eq.1 ) pnm = cp
-         ELSE if (n.eq.2 ) then
-            if (m.eq.0 ) pnm = 1.5d0*sp*sp - 0.5d0
-            if (m.eq.1 ) pnm = 3.0d0*sp*cp
-            if (m.eq.2 ) pnm = 3.0d0*cp*cp
-         ELSE IF (n.eq.3 ) then
-            if (m.eq.0 ) pnm = 2.5d0*sp*sp*sp - 1.5d0*sp
-            if (m.eq.1 ) pnm = cp * (7.5d0*sp*sp - 1.5d0)
-            if (m.eq.2 ) pnm = 15d0*cp*cp*sp
-            if (m.eq.3 ) pnm = 15d0*cp*cp*cp
+      if (n == 0) then
+         if (m == 0) pnm = 1d0
+      else if (n == 1) then
+         if (m == 0) pnm = sp
+         if (m == 1) pnm = cp
+      else if (n == 2) then
+         if (m == 0) pnm = 1.5d0 * sp * sp - 0.5d0
+         if (m == 1) pnm = 3.0d0 * sp * cp
+         if (m == 2) pnm = 3.0d0 * cp * cp
+      else if (n == 3) then
+         if (m == 0) pnm = 2.5d0 * sp * sp * sp - 1.5d0 * sp
+         if (m == 1) pnm = cp * (7.5d0 * sp * sp - 1.5d0)
+         if (m == 2) pnm = 15d0 * cp * cp * sp
+         if (m == 3) pnm = 15d0 * cp * cp * cp
          end if
    end subroutine legpol1
    !
    !
    ! ==========================================================================
    !> 
-   SUBROUTINE INIHARMONICS(RECS)
-      CHARACTER(len=40), dimension(484) :: RECS  ! ZAT IN FILE 'HARMONICS' 
+   subroutine INIHARMONICS(RECS)
+      character(len=40), dimension(484) :: RECS ! ZAT IN FILE 'HARMONICS'
    
    !%refsys 2000
    !%mjd0    47893.00000000
@@ -4523,7 +4452,7 @@ llnk( 1024  )= -0.2780315803D-02
    RECS(482) = ' 3  2  0  0  0  0  3      -.00100'
    RECS(483) = ' 3  2  0  0  1  0  3      -.00044'
    RECS(484) = ' 3  2  0  0  2  0  3      -.00005'
-   END SUBROUTINE INIHARMONICS
+   end subroutine INIHARMONICS
 end module timespace_data
 !
 !
@@ -4532,10 +4461,10 @@ end module timespace_data
 ! ==========================================================================
 ! ==========================================================================
 !> 
-Module M_arcuv                       ! plotbuitenbeentje
+module M_arcuv ! plotbuitenbeentje
   implicit none
   double precision, allocatable :: arcuv(:,:,:)
-End module M_arcuv
+end module M_arcuv
 !
 !
 !
@@ -4613,14 +4542,14 @@ contains
       integer  :: i, i1, i2, np, rechts
       double precision :: rl, rm, x1, x2, y1, y2
    
-      if (n .le. 2) then
+      if (n <= 2) then
          inside = 1
       else
          np = 0
     5    continue
          np = np + 1
-         if (np .le. n) then
-            if ( x(np) .ne. dmiss_default) goto 5
+         if (np <= n) then
+            if (x(np) /= dmiss_default) goto 5
          end if
          np = np - 1
          inside = 0
@@ -4633,22 +4562,22 @@ contains
          x2 = x(i2)
          y1 = y(i1)
          y2 = y(i2)
-         if (xl .ge. min(x1,x2) .and. xl .le. max(x1,x2) ) then
-            if (xl .eq. x1 .and. yl .eq. y1 .or. &                     ! tussen of op lijnstuk
-               (x1 .eq. x2 .and. &                                     ! op punt 1
-                yl .ge. min(y1,y2) .and. yl .le. max(y1,y2) ) .or. &   ! op verticale lijn
-               (yl .eq. y1 .and. y1 .eq. y2)  ) then                   ! op horizontale lijn    
+         if (xl >= min(x1, x2) .and. xl <= max(x1, x2)) then
+            if (xl == x1 .and. yl == y1 .or. & ! tussen of op lijnstuk
+                (x1 == x2 .and. & ! op punt 1
+                 yl >= min(y1, y2) .and. yl <= max(y1, y2)) .or. & ! op verticale lijn
+                (yl == y1 .and. y1 == y2)) then ! op horizontale lijn
                inside = 1
                return
-            else if (x1 .ne. x2) then                                  ! scheve lijn
+            else if (x1 /= x2) then ! scheve lijn
                rl = ( xl - x1 )  / ( x2 - x1 )
                rm = ( y1 - yl )  + rl * ( y2 - y1 )
-               if (rm .eq. 0) then                                     ! op scheve lijn
+               if (rm == 0) then ! op scheve lijn
                   inside = 1
                   return
-               else if (rm .gt. 0d0) then                              ! onder scheve lijn
-                  if (xl .eq. x1 .or. xl .eq. x2) then
-                     if (x1 .gt. xl .or. x2 .gt. xl) then
+               else if (rm > 0d0) then ! onder scheve lijn
+                  if (xl == x1 .or. xl == x2) then
+                     if (x1 > xl .or. x2 > xl) then
                         rechts = rechts + 1
                      end if
                   end if
@@ -4657,8 +4586,8 @@ contains
             end if
          end if
          i = i + 1
-         if (i .lt. np) goto 10
-         if (mod(rechts,2) .ne. 0) inside = 1 - inside
+         if (i < np) goto 10
+         if (mod(rechts, 2) /= 0) inside = 1 - inside
       end if
    end subroutine pinpok
    !
@@ -4831,21 +4760,21 @@ contains
        end if
    
        jgetw = 0                                            ! niets met gewichten, doe interpolatie
-       if ( present(indxn) .and. jdla .eq. 1) jgetw = 1     ! haal gewichten       doe interpolatie , gebruik gewichten
-       if ( present(indxn) .and. jdla .eq. 0) jgetw = 2     !                      doe interpolatie , gebruik gewichten
+      if (present(indxn) .and. jdla == 1) jgetw = 1 ! haal gewichten       doe interpolatie , gebruik gewichten
+      if (present(indxn) .and. jdla == 0) jgetw = 2 !                      doe interpolatie , gebruik gewichten
    
        do n = 1,mnx
-          if (kcs(n) .eq. 1) then
-              if (jgetw .le. 1) then
+         if (kcs(n) == 1) then
+            if (jgetw <= 1) then
                   call findtri_indices_weights (x(n),y( n), xs, ys, ns, zp, indxp)     ! zoeken bij 0 en 1
               end if
    
-              if (jgetw .eq. 1) then                                                   ! zetten bij 1
+            if (jgetw == 1) then ! zetten bij 1
                  do k = 1,3
                     indxn(k,n) = indxp(k)
                     wfn(k,n)   = zp(k)
                  enddo
-              else if (jgetw .eq. 2) then                                              ! halen bij 2, je hoeft niet te zoeken
+            else if (jgetw == 2) then ! halen bij 2, je hoeft niet te zoeken
                  do k = 1,3
                    indxp(k)    = indxn(k,n)
                    zp(k)       = wfn(k,n)
@@ -4986,7 +4915,7 @@ contains
        b2  = yp - yt(1)
    
        det = a11*a22 - a12*a21
-       if (abs(det)<1E-9) then
+      if (abs(det) < 1e-9) then
           return
        end if
        !
@@ -5062,7 +4991,7 @@ contains
        b2 = yp - y(1)
        !
        det = a11*a22 - a12*a21
-       if (abs(det)<1E-12) then
+      if (abs(det) < 1e-12) then
           return
        end if
        !
@@ -5109,8 +5038,8 @@ contains
    
        integer                            :: i
    
-       xmin = 1E30
-       xmax = -1E30
+      xmin = 1e30
+      xmax = -1e30
    
        do i = 1, n
           xmin = min(xmin, x(i))
@@ -5121,33 +5050,31 @@ contains
    !
    ! ==========================================================================
    !> 
-   subroutine get_extend2D(n, m, x, y, kcs, x_ext, y_ext)
-   
+   subroutine get_extend2D(n, m, x, y, kcs, x_dummy, y_dummy)
    
        double precision, dimension(:,:)  :: x
        double precision, dimension(:,:)  :: y
        integer , dimension(:,:)  :: kcs
        integer                 :: n
        integer                 :: m
-       double precision, dimension(:)  :: x_ext
-       double precision, dimension(:)  :: y_ext
+      double precision, dimension(:) :: x_dummy
+      double precision, dimension(:) :: y_dummy
    
-       call get_extend1D(n*m, x, y, kcs, x_ext, y_ext)
+      call get_extend1D(n * m, x, y, kcs, x_dummy, y_dummy)
    
    end subroutine get_extend2D
    !
    !
    ! ==========================================================================
    !> 
-   subroutine get_extend1D(n, x, y, kcs, x_ext, y_ext)
-   
+   subroutine get_extend1D(n, x, y, kcs, x_dummy, y_dummy)
    
        integer                 :: n
        double precision, dimension(n)  :: x
        double precision, dimension(n)  :: y
        integer , dimension(n)  :: kcs
-       double precision, dimension(4)  :: x_ext
-       double precision, dimension(4)  :: y_ext
+      double precision, dimension(4) :: x_dummy
+      double precision, dimension(4) :: y_dummy
        double precision                :: x_min
        double precision                :: x_max
        double precision                :: x_dist
@@ -5156,10 +5083,10 @@ contains
        double precision                :: y_dist
        integer                 :: index
    
-       x_min =  1E30
-       x_max = -1E30
-       y_min =  1E30
-       y_max = -1E30
+      x_min = 1e30
+      x_max = -1e30
+      y_min = 1e30
+      y_max = -1e30
    
        do index = 1, n
          if(kcs(index) == 1) then
@@ -5185,14 +5112,14 @@ contains
        y_min = y_min - 0.01d0*y_dist
        y_max = y_max + 0.01d0*y_dist
    
-       x_ext(1) = x_min
-       y_ext(1) = y_min
-       x_ext(2) = x_min
-       y_ext(2) = y_max
-       x_ext(3) = x_max
-       y_ext(3) = y_max
-       x_ext(4) = x_max
-       y_ext(4) = y_min
+      x_dummy(1) = x_min
+      y_dummy(1) = y_min
+      x_dummy(2) = x_min
+      y_dummy(2) = y_max
+      x_dummy(3) = x_max
+      y_dummy(3) = y_max
+      x_dummy(4) = x_max
+      y_dummy(4) = y_min
    
    end subroutine get_extend1D
    !
@@ -5218,7 +5145,7 @@ contains
        double precision, pointer          :: z_a
        double precision                   :: dist_min
    
-       dist_min = 1E30
+      dist_min = 1e30
        i_min = 0
    
        do i_extr = 1, n_extr
@@ -5304,7 +5231,7 @@ contains
        double precision                :: dist
        double precision                :: dist_min
    
-       dist_min = 1E30
+      dist_min = 1e30
        i_min = 0
    
        do i = 1, n
@@ -5340,7 +5267,7 @@ contains
        double precision                :: dist
        double precision                :: dist_min
    
-       dist_min = 1E30
+      dist_min = 1e30
        i_min = 0
    
        do i = 1, n
@@ -5391,22 +5318,22 @@ contains
        integer :: m, k, kL, kR, jgetw
    
        jgetw = 0                                            ! niets met gewichten, doe interpolatie
-       if ( present(indxn) .and. jintp .eq. 1) jgetw = 1    ! haal gewichten       doe interpolatie , gebruik gewichten
-       if ( present(indxn) .and. jintp .eq. 0) jgetw = 2    !                      doe interpolatie , gebruik gewichten
+      if (present(indxn) .and. jintp == 1) jgetw = 1 ! haal gewichten       doe interpolatie , gebruik gewichten
+      if (present(indxn) .and. jintp == 0) jgetw = 2 !                      doe interpolatie , gebruik gewichten
    
        do m = 1, mnx
    
-           if (jgetw .le. 1) then
+         if (jgetw <= 1) then
                !call polyindexweight( x(m), y(m), xs, ys, kcs, ns, xyen(:,m), k1, rl)    ! interpolate in a polyline like way
                call polyindexweight( x(m), y(m), xyen(1,m), xyen(2,m), xs, ys, kcs, ns, kL, wL, kR, wR)    ! interpolate in a polyline like way
                !call findtri_indices_weights (x(n),y( n), xs, ys, ns, zp, indxp)     ! zoeken bij 0 en 1
-               if (jgetw .eq. 1) then                                              ! zetten bij 1
+            if (jgetw == 1) then ! zetten bij 1
                    indxn(1,m) = kL
                    wfn(1,m)   = wL
                    indxn(2,m) = kR
                    wfn(2,m)   = wR
                end if
-           elseif (jgetw .eq. 2) then                                              ! halen bij 2, je hoeft niet te zoeken
+         elseif (jgetw == 2) then ! halen bij 2, je hoeft niet te zoeken
                kL = indxn(1,m)
                wL = wfn(1,m)
                kR = indxn(2,m)
@@ -5545,7 +5472,7 @@ contains
       
        call cross(xe, ye, xen, yen, xs(k), ys(k), xs(k+1), ys(k+1), JACROS,SL,SM,XCR,YCR,CRP,jsferic, dmiss)
        
-       if (SL >= 0d0 .AND. SL <= 1D0 .AND. SM > -DEPS .AND. SM < 1.0D0+DEPS) then ! instead of jacros==1, solves firmijn's problem  
+         if (SL >= 0d0 .and. SL <= 1d0 .and. SM > -DEPS .and. SM < 1.0d0 + DEPS) then ! instead of jacros==1, solves firmijn's problem
            DIS = DBDISTANCE(XE,YE, XCR, YCR, jsferic, jasfer3D, dmiss) 
            if (DIS < DISM) then ! Found a better intersection point
                DISM = DIS
@@ -5764,7 +5691,7 @@ contains
                        cycle
                     end if
                  end if
-                 if (usemask .and. kc(m) .eq. -1 ) then
+                  if (usemask .and. kc(m) == -1) then
                     write(errormessage,'(a,i8.8,a,f12.4,a,f12.4,a)') 'Boundary link ',m,' already claimed [',(x(m)+xyen(1,m))/2.,',',(y(m)+xyen(2,m))/2.,']'
                     call mess(LEVEL_WARN, errormessage)
                     cycle
@@ -5797,7 +5724,7 @@ contains
            call mess(LEVEL_WARN, errormessage)
            return
         else
-           if (usemask .and. kc(m) .eq. -1 ) then
+            if (usemask .and. kc(m) == -1) then
               errormessage = 'Boundary with nodeId '''//trim(filename)//''' already claimed; Overlap with other bnds?'
               call mess(LEVEL_WARN, errormessage)
               return
@@ -6116,7 +6043,7 @@ contains
       if (a == dmiss_default ) then 
           a = b  
       end if
-   else if (a .ne. dmiss_default) then   ! algebra only if not missing 
+      else if (a /= dmiss_default) then ! algebra only if not missing
       if (operand == '+') then 
          a = a + b
       else if (operand == '*' ) then 
@@ -6140,7 +6067,7 @@ contains
    use m_flowgeom, only : ln2lne, Ln, Lnx, Wu1Duni
    use m_partitioninfo
    use unstruc_netcdf
-   use m_flowexternalforcings, only: qid
+      use fm_external_forcings_data, only: qid
    use m_ec_interpolationsettings
    use m_flowparameters
    use m_missing
@@ -6217,7 +6144,7 @@ contains
    call aerr( 'zh(nx)', ierr, nx)
    zh = dmiss_default
 
-   if (filetype .ne. ncflow .and. filetype .ne. arcinfo .and. filetype /= geotiff) then
+      if (filetype /= ncflow .and. filetype /= arcinfo .and. filetype /= geotiff) then
        call oldfil(minp0, filename)
    end if
 
@@ -6465,7 +6392,7 @@ contains
    dn = (y - y0)/dya ; n = int(dn) ; an = dn - n ; n = n + 1
    z  = dmiss
    if (m < mca .and. n < nca .and. m >= 1 .and. n >= 1) then 
-      if (d(m,n) .ne. dmiss .and. d(m+1,n) .ne. dmiss .and. d(m,n+1) .ne. dmiss .and. d(m+1,n+1) .ne. dmiss) then  
+         if (d(m, n) /= dmiss .and. d(m + 1, n) /= dmiss .and. d(m, n + 1) /= dmiss .and. d(m + 1, n + 1) /= dmiss) then
          z  =        am  *        an    * d(m+1 , n+1) + &
               (1d0 - am) *        an    * d(m   , n+1) + &
               (1d0 - am) * (1d0 - an)   * d(m   , n  ) + &
@@ -6579,8 +6506,8 @@ module m_meteo
    use m_flow
    use m_waves
    use m_ship
-   use m_flowexternalforcings
-   use processes_input, only: nofun, funame, funinp, nosfunext, sfunname, sfuninp
+   use fm_external_forcings_data
+   use processes_input, only: num_time_functions, funame, funinp, nosfunext, sfunname, sfuninp
    use unstruc_messages
    use m_observations
    use string_module
@@ -6595,7 +6522,7 @@ module m_meteo
    !
    integer, dimension(:), allocatable, target :: item_tracerbnd              !< dim(numtracers)
    integer, dimension(:), allocatable, target :: item_sedfracbnd             !< dim(numfracs)
-   integer, dimension(:), allocatable, target :: item_waqfun                 !< dim(nofun)  
+   integer, dimension(:), allocatable, target :: item_waqfun !< dim(num_time_functions)
    integer, dimension(:), allocatable, target :: item_waqsfun                !< dim(nosfunext)
 
    integer, target :: item_windx                                             !< Unique Item id of the ext-file's 'windx' quantity's x-component.
@@ -6822,7 +6749,7 @@ module m_meteo
       item_sedfracbnd = ec_undef_int
       
       if ( allocated(item_waqfun) ) deallocate(item_waqfun)
-      allocate(item_waqfun(nofun))
+      allocate (item_waqfun(num_time_functions))
       item_waqfun = ec_undef_int
       
       if ( allocated(item_waqsfun) ) deallocate(item_waqsfun)
@@ -7274,7 +7201,7 @@ module m_meteo
             dataPtr1 => bndsf(isf)%z
          case ('waqfunction') 
             ! get sediment fraction (boundary) number
-            ifun = findname(nofun, funame, waqinput)
+         ifun = findname(num_time_functions, funame, waqinput)
             itemPtr1 => item_waqfun(ifun)
             dataPtr1 => funinp(ifun,:)
          case ('waqsegmentfunction') 
@@ -8107,10 +8034,10 @@ module m_meteo
             end if
             success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
             if (success) success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId_2)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_windxy_x)
-            if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_windxy_y)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_x, connectionId)
-            if (success) success = ecAddItemConnection(ecInstancePtr, item_windxy_y, connectionId)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_stressxy_x)
+         if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_stressxy_y)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_stressxy_x, connectionId)
+         if (success) success = ecAddItemConnection(ecInstancePtr, item_stressxy_y, connectionId)
         case ('charnock')
             if (ec_filetype == provFile_netcdf) then
                sourceItemId   = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'charnock')
@@ -8529,7 +8456,7 @@ module m_meteo
          write(txt3,"('relcol X relrow = ', F4.2, ' X ', F4.2, ' = ', F4.2)") relcol, relrow, relcol*relrow
          call mess(LEVEL_INFO, trim(txt1) // ' ' // trim(txt2) // ', ' // trim(txt3))
          
-         if ( issparse.eq.1 ) then
+         if (issparse == 1) then
             write(txt1,"('sparse: data size = ', I0, ', ncols X nrows = ', I0, ' X ', I0, ' = ', I0)") Ndatasize, ncols, nrows, ncols*nrows
             write(txt2,"('factor = ', F4.2)") dble(Ndatasize)/dble(Ncols*Nrows)
             call mess(LEVEL_INFO, trim(txt1) // ' ' // trim(txt2))

@@ -37,11 +37,11 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
                           difsed, sigdifi, vicwws, &
                           nsubsteps, jaupdate, ndeltasteps, sed,  &
                           a, b, c, d, e, sol, rhs)
-   use m_flowgeom,  only: Ndxi, Ndx, Lnx, Ln, ba, kfs, bl  ! static mesh information
+   use m_flowgeom, only: Ndxi, Ndx, Lnx, ba, kfs ! static mesh information
    use m_flowtimes, only: dts
-   use m_flow,      only: epshsdif, s1, kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity  ! do not use m_flow, please put this in the argument list
+   use m_flow, only: kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
    use m_flowparameters, only: epshu, testdryflood
-   use m_sediment,  only: mtd, jased, ws, sedtra, stmpar
+   use m_sediment, only: mtd, jased
    use m_fm_erosed, only: tpsnumber
    use sediment_basics_module
    use timers
@@ -79,12 +79,11 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
    double precision, dimension(kmx)                          :: sol, e      ! work array: solution and dummy array in tridag, respectively
    double precision, dimension(NUMCONST,Ndkx)                :: rhs         ! work array: right-hand side, dim(NUMCONST,Ndkx)
 
-   double precision                                          :: dvoli, fluxfac, dvol1i, dvol2i
-   double precision                                          :: dum, rhstot, dtbazi, dtba, ozmid, bruns
+   double precision :: fluxfac, dvol1i, dvol2i
+   double precision :: dtbazi, dtba, ozmid, bruns
 
-   integer                                                   :: LL, L, Lb, Lt
    integer                                                   :: kk, k, kb, kt, ktx
-   integer                                                   :: k1, k2, i, j, n, kkk
+   integer :: j, n
 
    double precision                                          :: dt_loc
    double precision                                          :: qw_loc
@@ -105,8 +104,8 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
    !$OMP PRIVATE(kk,kb,ktx,kt,a,b,c,sol,j,d,k,n,dvol1i,dvol2i,fluxfac,e,dtbazi,dtba,ozmid,bruns,qw_loc) &
    !$OMP FIRSTPRIVATE(dt_loc)
    do kk=1,Ndxi
-      if ( nsubsteps.gt.1 ) then
-         if ( jaupdate(kk).eq.0 ) then
+      if (nsubsteps > 1) then
+         if (jaupdate(kk) == 0) then
             cycle
          else
             dt_loc = dts * ndeltasteps(kk)
@@ -178,12 +177,12 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
             a(n+1,j) = a(n+1,j) - fluxfac*dvol2i
 
 !           advection
-            if ( thetavert(j).gt.0d0 ) then ! semi-implicit, use central scheme
+            if (thetavert(j) > 0d0) then ! semi-implicit, use central scheme
 
                 if (jased > 0 .and. jaimplicitfallvelocity == 0) then ! explicit fallvelocity
                    if (jased < 4) then
                       qw_loc = qw(k) - wsf(j)*a1(kk)
-                   else  if ( j.ge.ISED1 .and. j.le.ISEDN ) then
+                  else if (j >= ISED1 .and. j <= ISEDN) then
                       qw_loc = qw(k) - mtd%ws(k,j-ISED1+1)*a1(kk)
                    endif
                 else 
@@ -201,9 +200,9 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
 
             if (jased > 0 .and. jaimplicitfallvelocity == 1) then 
                fluxfac = 0d0
-               if (jased > 3) then
+               if (jased > 3) then 
                   !if (k<sedtra%kmxsed(kk,j-ISED1+1)) cycle     this would be consistent
-                  if ( j.ge.ISED1 .and. j.le.ISEDN ) then
+                  if (j >= ISED1 .and. j <= ISEDN) then
                      fluxfac = mtd%ws(k,j-ISED1+1)*a1(kk)*dt_loc
                   else
                      fluxfac = wsf(j)*a1(kk)*dt_loc

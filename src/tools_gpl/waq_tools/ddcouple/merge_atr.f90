@@ -52,7 +52,7 @@
       do i_domain = 1 , n_domain
 
          domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         do iseg_domain = 1 , domain_hyd%noseg
+         do iseg_domain = 1 , domain_hyd%num_cells
             iseg = ipnew(iseg_domain,i_domain)
             hyd%attributes(iseg) = domain_hyd%attributes(iseg_domain)
          enddo

@@ -28,15 +28,47 @@
 !
 module m_string_utils
 
-    use string_module
-
     implicit none
 
     private
     public :: join_strings, contains_any, contains_only_valid_chars, starts_with_valid_char
-    public :: starts_with, index_in_array, remove_duplicates, string_equals
+    public :: starts_with, index_in_array, remove_duplicates, string_equals, centre_text
 
 contains
+
+    !>  creates a string (of width length) with the provided text in the centre
+    function centre_text(text, width) result(centred_text)
+        character(*), intent(in) :: text !< Text to centre
+        integer, intent(in) :: width !< Width of the return string
+        character(:), allocatable :: centred_text !< Resulting text
+
+        character(:), allocatable :: text_to_print
+        integer :: half_text_length
+        integer :: half_max_width
+        integer :: offset
+        integer :: text_length
+
+        text_length = len(text)
+
+        if (text_length > width) then
+            centred_text = text(1:width)
+            return
+        end if
+
+        if (mod(text_length, 2) > 0) then
+            text_to_print = text//" "
+        else
+            text_to_print = text
+        end if
+
+        half_max_width = width / 2
+        half_text_length = len(text_to_print) / 2
+
+        offset = half_max_width - half_text_length
+
+        centred_text = repeat(' ', offset)//text_to_print//repeat(' ', width - (offset + len(text_to_print)))
+        text_length = len(centred_text)
+    end function
 
     function join_strings(strings, separator) result(concatenated_string)
         !<  Returns a single string by joining all the strings in the array <strings>, divided by the given separator.
@@ -46,32 +78,49 @@ contains
         integer :: i
 
         ! Allocate memory for the concatenated string
-        allocate(character(len = 0) :: concatenated_string)
+        allocate (character(len=0) :: concatenated_string)
 
         ! Concatenate the strings with the separator
         do i = 1, size(strings)
             if (i > 1) then
-                concatenated_string = trim(adjustl(concatenated_string)) // separator
+                concatenated_string = trim(adjustl(concatenated_string))//separator
             end if
-            concatenated_string = concatenated_string // trim(adjustl(strings(i)))
+            concatenated_string = concatenated_string//trim(adjustl(strings(i)))
         end do
     end function join_strings
 
-    logical function contains_any(whole_string, substring_array)
+    logical function contains_any(whole_string, substring_array, case_sensitive)
         !< Returns true if any of the substrings in <substring_array> is contained in <whole_string>.
         character(*), dimension(:), intent(in) :: substring_array !< Array containing multiple (sub)strings.
         character(*), intent(in) :: whole_string    !< String to check if any of the substrings in contained inside.
+        logical, intent(in), optional :: case_sensitive           !< check case sensitive (true by default)
 
+        character(:), allocatable :: string_to_check
+        character(:), allocatable :: string_to_compare
+        logical :: case_sensitive_
         integer :: i
+
+        contains_any = .false.
+        case_sensitive_ = .true.
+
+        if (present(case_sensitive)) then
+            case_sensitive_ = case_sensitive
+        end if
+
         do i = 1, size(substring_array)
-            if (index(trim(whole_string), trim(substring_array(i))) > 0) then
+            string_to_compare = trim(substring_array(i))
+            string_to_check = trim(whole_string)
+
+            if (.not. case_sensitive_) then
+                string_to_check = convert_to_lower_case(string_to_check)
+                string_to_compare = convert_to_lower_case(string_to_compare)
+            end if
+
+            if (index(string_to_check, string_to_compare) > 0) then
                 contains_any = .true.
                 return
             end if
         end do
-
-        contains_any = .false.
-
     end function contains_any
 
     logical function contains_only_valid_chars(names_array, valid_characters, logging_unit)
@@ -82,7 +131,7 @@ contains
         integer, intent(in) :: logging_unit !< Number of the logging unit to which messages are sent.
 
         integer :: i, j
-        character(len = len(names_array(1))) :: arrows_invalid_chars
+        character(len=len(names_array(1))) :: arrows_invalid_chars
         logical :: current_name_is_valid
 
         contains_only_valid_chars = .true.
@@ -90,16 +139,16 @@ contains
             arrows_invalid_chars = repeat(' ', len(names_array(1)))
             current_name_is_valid = .true.
             do j = 1, len_trim(names_array(i))
-                if (verify(names_array(i)(j:j), valid_characters)/=0) then
+                if (verify(names_array(i) (j:j), valid_characters) /= 0) then
                     arrows_invalid_chars(j:j) = '^'
                     current_name_is_valid = .false.
                 end if
             end do
-            if (.not.current_name_is_valid) then
+            if (.not. current_name_is_valid) then
                 contains_only_valid_chars = .false.
-                write(logging_unit, *) "Error: invalid characters found in the name:"
-                write(logging_unit, *) names_array(i)
-                write(logging_unit, *) arrows_invalid_chars
+                write (logging_unit, *) "Error: invalid characters found in the name:"
+                write (logging_unit, *) names_array(i)
+                write (logging_unit, *) arrows_invalid_chars
             end if
         end do
     end function contains_only_valid_chars
@@ -115,19 +164,19 @@ contains
 
         starts_with_valid_char = .true.
         do i = 1, size(names_array)
-            if (verify(names_array(i)(1:1), valid_start_characters)/=0) then
+            if (verify(names_array(i) (1:1), valid_start_characters) /= 0) then
                 starts_with_valid_char = .false.
-                write(logging_unit, *) "Error: invalid character found at the start of name:"
-                write(logging_unit, *) names_array(i)
-                write(logging_unit, *) '^'
+                write (logging_unit, *) "Error: invalid character found at the start of name:"
+                write (logging_unit, *) names_array(i)
+                write (logging_unit, *) '^'
             end if
         end do
     end function starts_with_valid_char
 
     function index_in_array(string_to_find, array_of_strings, exact_match, case_sensitive) result(location)
         !< Gives the index of the string_to_find in the array_of_strings (returns -1 if no match can be found)
-        character(len = *), intent(in) :: string_to_find   !< string to find in the array
-        character(len = *), dimension(:), intent(in) :: array_of_strings !< array of strings to check
+        character(len=*), intent(in) :: string_to_find   !< string to find in the array
+        character(len=*), dimension(:), intent(in) :: array_of_strings !< array of strings to check
 
         logical, intent(in), optional :: exact_match !< needs to be an exact match (not starts with) (default is false)
         logical, intent(in), optional :: case_sensitive !< check case sensitive (default is false)
@@ -158,14 +207,14 @@ contains
         if (size(array) > 0) then
             unique_array = [array(1), remove_duplicates(pack(array(2:), array(2:) /= array(1)))]
         else
-            allocate(unique_array(0))
-        endif
+            allocate (unique_array(0))
+        end if
     end function remove_duplicates
 
     logical function string_equals(source_string, target_string, exact_match, case_sensitive) result(found)
         !< Checks two strings to see if they are equal with the given conditions.
-        character(len = *), intent(in) :: source_string !< string to compare
-        character(len = *), intent(in) :: target_string !< string to compare with
+        character(len=*), intent(in) :: source_string !< string to compare
+        character(len=*), intent(in) :: target_string !< string to compare with
 
         logical, intent(in), optional :: exact_match     !< needs to be an exact match (not starts with)
         !! (default is false)
@@ -184,7 +233,7 @@ contains
             if (case_sensitive_) then
                 found = source_string == target_string
             else
-                found = str_tolower(source_string) == str_tolower(target_string)
+                found = convert_to_lower_case(source_string) == convert_to_lower_case(target_string)
             end if
         else
             found = starts_with(target_string, source_string, case_sensitive_)
@@ -196,20 +245,20 @@ contains
         !< Checks if the provided string_to_check starts with the string_to_search
         !< Optionally the case_sensitive can be used (default = false)
 
-        character(len = *), intent(in) :: string_to_check  !< string to check
-        character(len = *), intent(in) :: string_to_search !< string to search for
+        character(len=*), intent(in) :: string_to_check  !< string to check
+        character(len=*), intent(in) :: string_to_search !< string to search for
 
         logical, intent(in), optional :: case_sensitive   !< check case sensitive
 
         ! local variables
-        character(len = len(string_to_search)) :: string_to_compare
+        character(len=len(string_to_search)) :: string_to_compare
         logical :: exact_match_
         logical :: case_sensitive_
 
         case_sensitive_ = .false.
         if (present(case_sensitive)) case_sensitive_ = case_sensitive
 
-        if (len(string_to_check)<len(string_to_search)) then
+        if (len(string_to_check) < len(string_to_search)) then
             starts_with = .false.
             return
         end if
@@ -226,14 +275,14 @@ contains
 
     logical function check_case_insensitive(string_to_check, string_to_compare)
         !< Compares two strings (case insensative)
-        character(len = *), intent(in) :: string_to_check   !< string to check
-        character(len = *), intent(in) :: string_to_compare !< string to search for
+        character(len=*), intent(in) :: string_to_check   !< string to check
+        character(len=*), intent(in) :: string_to_compare !< string to search for
 
         integer :: i, i1, i2
 
         do i = 1, len(string_to_check)
-            i1 = ICHAR(string_to_check(i:i))
-            i2 = ICHAR(string_to_compare(i:i))
+            i1 = ichar(string_to_check(i:i))
+            i2 = ichar(string_to_compare(i:i))
 
             if (i1 == i2) then
                 cycle
@@ -263,5 +312,23 @@ contains
 
         check_case_insensitive = .true.
     end function check_case_insensitive
+
+    !> Return copy of input string with all uppercase characters changed
+    !! into lowercase.
+    function convert_to_lower_case(string) result(string_out)
+        character(len=*), intent(in) :: string !< String to be converted.
+        character(len=len(string))   :: string_out
+
+        integer                      :: i, j
+
+        string_out = string
+        do i = 1, len(string)
+           j = iachar(string(i:i))
+           if ( j > 64 .and. j < 91 ) then
+              j = j + 32
+              string_out(i:i) = achar(j)
+           endif
+        enddo
+    end function convert_to_lower_case
 
 end module m_string_utils

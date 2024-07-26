@@ -95,14 +95,14 @@
             hyd%cnv_step           = domain_hyd%cnv_step
             hyd%cnv_step_sec       = domain_hyd%cnv_step_sec
 
-            hyd%kmax               = domain_hyd%kmax
-            allocate(hyd%hyd_layers(hyd%kmax))
-            do ilay = 1 , hyd%kmax
+            hyd%num_layers_grid               = domain_hyd%num_layers_grid
+            allocate(hyd%hyd_layers(hyd%num_layers_grid))
+            do ilay = 1 , hyd%num_layers_grid
                hyd%hyd_layers(ilay) = domain_hyd%hyd_layers(ilay)
             enddo
-            hyd%nolay              = domain_hyd%nolay
-            allocate(hyd%waq_layers(hyd%nolay))
-            do ilay = 1 , hyd%nolay
+            hyd%num_layers              = domain_hyd%num_layers
+            allocate(hyd%waq_layers(hyd%num_layers))
+            do ilay = 1 , hyd%num_layers
                hyd%waq_layers(ilay) = domain_hyd%waq_layers(ilay)
             enddo
 
@@ -110,8 +110,8 @@
 
          ! fill in the domain specifics in the overall hyd
 
-         hyd%domain_coll%domain_pnts(i_domain)%mmax = domain_hyd%mmax
-         hyd%domain_coll%domain_pnts(i_domain)%nmax = domain_hyd%nmax
+         hyd%domain_coll%domain_pnts(i_domain)%num_columns = domain_hyd%num_columns
+         hyd%domain_coll%domain_pnts(i_domain)%num_rows = domain_hyd%num_rows
          hyd%domain_coll%domain_pnts(i_domain)%aggr = domain_hyd%file_dwq%name
 
          ! waste loads
@@ -131,15 +131,15 @@
 
          if ( n_mode ) then
             if ( parallel ) then
-               noffset = noffset + domain_hyd%nmax - 6
+               noffset = noffset + domain_hyd%num_rows - 6
             else
-               noffset = noffset + domain_hyd%nmax
+               noffset = noffset + domain_hyd%num_rows
             endif
          else
             if ( parallel ) then
-               moffset = moffset + domain_hyd%mmax - 6
+               moffset = moffset + domain_hyd%num_columns - 6
             else
-               moffset = moffset + domain_hyd%mmax
+               moffset = moffset + domain_hyd%num_columns
             endif
          endif
 

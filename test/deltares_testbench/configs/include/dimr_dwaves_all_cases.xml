@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <!-- ======================================================================== -->
         <testCase name="e04_f01_c01_wave_boundary" ref="dimr_trunk">
             <path version="2024-01-12T07:40:00">e04_wave/f01-wave_boundary/c01</path>

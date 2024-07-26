@@ -28,9 +28,9 @@ module m_caltem
 contains
 
 
-    subroutine caltem (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine caltem (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Calculation of temperature
 
@@ -58,26 +58,26 @@ contains
         IMPLICIT REAL (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
         IP3 = IPOINT(3)
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                TEMPF = PMSA(IP1)
-                DTEMP = PMSA(IP2)
+                TEMPF = process_space_real(IP1)
+                DTEMP = process_space_real(IP2)
 
                 TEMP = TEMPF + DTEMP
                 TEMP = MIN(TEMP, 100.)
                 TEMP = MAX(TEMP, 0.)
 
-                PMSA (IP3) = TEMP
+                process_space_real (IP3) = TEMP
                 !
             ENDIF
             !

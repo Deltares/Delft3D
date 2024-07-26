@@ -28,10 +28,10 @@ module m_adspo4
 contains
 
 
-    subroutine adspo4 (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger, only : write_error_message, get_log_unit_number
+    subroutine adspo4 (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : write_error_message, get_log_unit_number
 
         !>\file
         !>       P-ad/desorption to particulate inorganic matter. 3 options for sorption formulation.
@@ -52,7 +52,7 @@ contains
         ! TIM     R*4 1 I TIM   concentration                             [gDM/m3]
         ! KD      R*4 1 I partition coefficent PO4-AAP             [-] or [m3/gDM]
         ! MAXADS  R*4 1 I maximum adsorption (capacity)                   [gP/gDM]
-        ! PMSA(9) R*4 1 O calculated equlibrium AAP concentration          [gP/m3]
+        ! process_space_real(9) R*4 1 O calculated equlibrium AAP concentration          [gP/m3]
         ! PO4     R*4 1 I PO4 concentration                                [gP/m3]
         ! RCADS   R*4 1 I first order rate constatnt adsorption              [1/d]
         !
@@ -103,9 +103,9 @@ contains
         IMPLICIT REAL (A-H, J-Z)
         IMPLICIT INTEGER (i)
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IVERSN
         REAL(kind = real_wp) :: AAP, PO4, EQAAP, KDADS, KADS20, KADS, KSORP, &
@@ -156,11 +156,11 @@ contains
         !
         IFLUX = 0
         !
-        IVERSN = NINT(PMSA(IP23))
+        IVERSN = NINT(process_space_real(IP23))
         !
         !     Use the old version when IVERSN=0
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
@@ -171,16 +171,16 @@ contains
                     AtotP = 0.0
                     Kads = 0.0
                     !
-                    SWAdsP = PMSA(IP1)
-                    PO4 = MAX(PMSA(IP2), 0.0)
-                    AAP = MAX(PMSA(IP3), 0.0)
-                    IM1 = MAX(PMSA(IP4), 0.0)
-                    IM2 = MAX(PMSA(IP5), 0.0)
-                    IM3 = MAX(PMSA(IP6), 0.0)
-                    RCADS = PMSA(IP12)
-                    KD = PMSA(IP7)
-                    MAXADS = PMSA(IP8)
-                    DELT = PMSA(IP9)
+                    SWAdsP = process_space_real(IP1)
+                    PO4 = MAX(process_space_real(IP2), 0.0)
+                    AAP = MAX(process_space_real(IP3), 0.0)
+                    IM1 = MAX(process_space_real(IP4), 0.0)
+                    IM2 = MAX(process_space_real(IP5), 0.0)
+                    IM3 = MAX(process_space_real(IP6), 0.0)
+                    RCADS = process_space_real(IP12)
+                    KD = process_space_real(IP7)
+                    MAXADS = process_space_real(IP8)
+                    DELT = process_space_real(IP9)
                     !
                     TIM = IM1 + IM2 + IM3
                     QIM1 = 0.0
@@ -232,17 +232,17 @@ contains
                     !           SWAdsP = 2
                     !
                     IF (NINT(SWAdsP) == 2) THEN
-                        KAds20 = PMSA(IP10)
-                        TCKAds = PMSA(IP11)
-                        RCadsP = PMSA(IP25)
-                        aOHPO4 = PMSA(IP13)
-                        fr_Fe = PMSA(IP24)
-                        frFeox = PMSA(IP17)
-                        OXY = PMSA(IP18)
-                        CrOXY = PMSA(IP19)
-                        pH = PMSA(IP20)
-                        Temp = PMSA(IP21)
-                        poros = PMSA(IP22)
+                        KAds20 = process_space_real(IP10)
+                        TCKAds = process_space_real(IP11)
+                        RCadsP = process_space_real(IP25)
+                        aOHPO4 = process_space_real(IP13)
+                        fr_Fe = process_space_real(IP24)
+                        frFeox = process_space_real(IP17)
+                        OXY = process_space_real(IP18)
+                        CrOXY = process_space_real(IP19)
+                        pH = process_space_real(IP20)
+                        Temp = process_space_real(IP21)
+                        poros = process_space_real(IP22)
                         !
                         !--------- (3a) Eqs 6.38, 6.37 of GEM report
                         OH = 10.0**(pH - 14.0)
@@ -273,15 +273,15 @@ contains
                     !---- Output of module
                     !
                     FL(1 + IFLUX) = dPAds
-                    PMSA(IP26) = EQAAP
-                    PMSA(IP27) = AtotP
-                    PMSA(IP28) = Kads
-                    PMSA(IP29) = FIM1
-                    PMSA(IP30) = FIM2
-                    PMSA(IP31) = FIM3
-                    PMSA(IP32) = QIM1
-                    PMSA(IP33) = QIM2
-                    PMSA(IP34) = QIM3
+                    process_space_real(IP26) = EQAAP
+                    process_space_real(IP27) = AtotP
+                    process_space_real(IP28) = Kads
+                    process_space_real(IP29) = FIM1
+                    process_space_real(IP30) = FIM2
+                    process_space_real(IP31) = FIM3
+                    process_space_real(IP32) = QIM1
+                    process_space_real(IP33) = QIM2
+                    process_space_real(IP34) = QIM3
                     !
                     !---- End active cells block
                     !
@@ -289,19 +289,19 @@ contains
                     !
                     !     Use the new version when IVERSN=1
                     !
-                    SWADSP = PMSA(IP1)
-                    PO4 = MAX(PMSA(IP2), 0.0)
-                    AAP = MAX(PMSA(IP3), 0.0)
-                    IM1 = MAX(PMSA(IP4), 0.0)
-                    IM2 = MAX(PMSA(IP5), 0.0)
-                    IM3 = MAX(PMSA(IP6), 0.0)
-                    KDADS = PMSA(IP7)
-                    FCAP = PMSA(IP8)
-                    DELT = PMSA(IP9)
-                    KSORP = PMSA(IP12)
-                    FRFE1 = PMSA(IP14)
-                    FRFE2 = PMSA(IP15)
-                    FRFE3 = PMSA(IP16)
+                    SWADSP = process_space_real(IP1)
+                    PO4 = MAX(process_space_real(IP2), 0.0)
+                    AAP = MAX(process_space_real(IP3), 0.0)
+                    IM1 = MAX(process_space_real(IP4), 0.0)
+                    IM2 = MAX(process_space_real(IP5), 0.0)
+                    IM3 = MAX(process_space_real(IP6), 0.0)
+                    KDADS = process_space_real(IP7)
+                    FCAP = process_space_real(IP8)
+                    DELT = process_space_real(IP9)
+                    KSORP = process_space_real(IP12)
+                    FRFE1 = process_space_real(IP14)
+                    FRFE2 = process_space_real(IP15)
+                    FRFE3 = process_space_real(IP16)
                     !
                     !     Calculation of the total concentration of iron and
                     !     the fractions of adsorbed phosphate in the inorganic matter
@@ -364,15 +364,15 @@ contains
                     !     SWADSP = 2 : pH dependent Langmuir sorption
                     !
                     IF (NINT(SWADSP) == 2) THEN
-                        KADS20 = PMSA(IP10)
-                        TC = PMSA(IP11)
-                        AOH = PMSA(IP13)
-                        FRFEOX = PMSA(IP17)
-                        OXY = PMSA(IP18)
-                        CROXY = PMSA(IP19)
-                        PH = PMSA(IP20)
-                        TEMP = PMSA(IP21)
-                        POROS = PMSA(IP22)
+                        KADS20 = process_space_real(IP10)
+                        TC = process_space_real(IP11)
+                        AOH = process_space_real(IP13)
+                        FRFEOX = process_space_real(IP17)
+                        OXY = process_space_real(IP18)
+                        CROXY = process_space_real(IP19)
+                        PH = process_space_real(IP20)
+                        TEMP = process_space_real(IP21)
+                        POROS = process_space_real(IP22)
 
                         IF (POROS < 1E-10) CALL write_error_message &
                                 ('POROS in ADSPO4 equals zero')
@@ -436,15 +436,15 @@ contains
                     !     Output of module
                     !
                     FL(1 + IFLUX) = FADS
-                    PMSA(IP26) = EQAAP
-                    PMSA(IP27) = CADST
-                    PMSA(IP28) = KADS
-                    PMSA(IP29) = FIM1
-                    PMSA(IP30) = FIM2
-                    PMSA(IP31) = FIM3
-                    PMSA(IP32) = QIM1
-                    PMSA(IP33) = QIM2
-                    PMSA(IP34) = QIM3
+                    process_space_real(IP26) = EQAAP
+                    process_space_real(IP27) = CADST
+                    process_space_real(IP28) = KADS
+                    process_space_real(IP29) = FIM1
+                    process_space_real(IP30) = FIM2
+                    process_space_real(IP31) = FIM3
+                    process_space_real(IP32) = QIM1
+                    process_space_real(IP33) = QIM2
+                    process_space_real(IP34) = QIM3
                     !
                     !     End active cells block
                     !

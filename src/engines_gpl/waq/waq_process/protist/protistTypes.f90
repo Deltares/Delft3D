@@ -98,29 +98,29 @@ contains
 
 
     ! initialize arrays
-    subroutine initialize_prot_array(prot_array, nrPrey, PMSA, ipnt, nrIndInp, nrSpec, nrSpecInp, iSpec, nrPreyInp)
+    subroutine initialize_prot_array(prot_array, nrPrey, process_space_real, ipnt, nrIndInp, nrSpec, nrSpecInp, iSpec, nrPreyInp)
         type(protist_array), intent(inout) :: prot_array
         integer(kind = int_wp), intent(in) :: nrPrey
-        real(kind = real_wp) :: pmsa(*)
+        real(kind = real_wp) :: process_space_real(*)
         integer(kind = int_wp), intent(in) :: ipnt(:)
         integer(kind = int_wp), intent(in) :: nrIndInp, nrSpec, nrSpecInp, iSpec, nrPreyInp
         integer(kind = int_wp) :: iPrey         ! local prey number counter
-        integer(kind = int_wp) :: prInc         ! local pray PMSA number increment
+        integer(kind = int_wp) :: prInc         ! local pray process_space_real number increment
 
         do iPrey = 1, nrPrey
             !prey specific input
             ! independentItems + all input items of all zoo species + first prey item + current PreyNumber * total nr of prey specific items
             prInc = nrIndInp + nrSpec * nrSpecInp + (iPrey - 1) * (nrPreyInp + nrSpec)
 
-            prot_array%preyC(iPrey) = PMSA(ipnt(prInc + 1)) + 1.0E-20 ! C-biomass (+1.0E-20: protection against division by 0) (gC m-3)
-            prot_array%preyChl(iPrey) = PMSA(ipnt(prInc + 2))           ! Chl-biomass                                            (gC m-3)
-            prot_array%preyN(iPrey) = PMSA(ipnt(prInc + 3))           ! N-biomass                                              (gN m-3)
-            prot_array%preyP(iPrey) = PMSA(ipnt(prInc + 4))           ! P-biomass                                              (gP m-3)
-            prot_array%preySi(iPrey) = PMSA(ipnt(prInc + 5))           ! Si-biomass                                             (gP m-3)
-            prot_array%CcellPrey(iPrey) = PMSA(ipnt(prInc + 6))           ! C content of protist cell                              (pgC cell-1)
-            prot_array%rPrey(iPrey) = PMSA(ipnt(prInc + 7))           ! radius of nutrient repleted protist cell               (um)
-            prot_array%motPrey(iPrey) = PMSA(ipnt(prInc + 8))           ! swimming velocity                                      (m s-1)
-            prot_array%PR(iPrey) = PMSA(ipnt(prInc + 8 + iSpec))    !      handling index of prey 1 by pred 1             (-)
+            prot_array%preyC(iPrey) = process_space_real(ipnt(prInc + 1)) + 1.0E-20 ! C-biomass (+1.0E-20: protection against division by 0) (gC m-3)
+            prot_array%preyChl(iPrey) = process_space_real(ipnt(prInc + 2))           ! Chl-biomass                                            (gC m-3)
+            prot_array%preyN(iPrey) = process_space_real(ipnt(prInc + 3))           ! N-biomass                                              (gN m-3)
+            prot_array%preyP(iPrey) = process_space_real(ipnt(prInc + 4))           ! P-biomass                                              (gP m-3)
+            prot_array%preySi(iPrey) = process_space_real(ipnt(prInc + 5))           ! Si-biomass                                             (gP m-3)
+            prot_array%CcellPrey(iPrey) = process_space_real(ipnt(prInc + 6))           ! C content of protist cell                              (pgC cell-1)
+            prot_array%rPrey(iPrey) = process_space_real(ipnt(prInc + 7))           ! radius of nutrient repleted protist cell               (um)
+            prot_array%motPrey(iPrey) = process_space_real(ipnt(prInc + 8))           ! swimming velocity                                      (m s-1)
+            prot_array%PR(iPrey) = process_space_real(ipnt(prInc + 8 + iSpec))    !      handling index of prey 1 by pred 1             (-)
 
 
             ! if loop to protect against small preys (-)

@@ -35,9 +35,9 @@ module gdp
    !
    ! Grid
    !
-   integer                          , save :: kmax
-   integer                          , save :: mmax
-   integer                          , save :: nmax
+   integer                          , save :: num_layers_grid
+   integer                          , save :: num_columns
+   integer                          , save :: num_rows
    integer , dimension(:),   pointer, save :: kcs
    real(hp), dimension(:),   pointer, save :: x
    real(hp), dimension(:),   pointer, save :: y

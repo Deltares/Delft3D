@@ -28,10 +28,10 @@ module m_ssedph
 contains
 
 
-    subroutine ssedph (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine ssedph (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !>\file
         !>       Sum of sedimentation flux of algae Dynamo - Bloom - GEM
@@ -52,9 +52,9 @@ contains
 
         IMPLICIT REAL (A-H, J-Z)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: IFLUX, ISEG, IKMRK1, IKMRK2, IN, IP, IP2, &
                 IALG, IQ, IVAN, INAAR, IKMRKN, IKMRKV
@@ -65,18 +65,19 @@ contains
         !     Local
         !
         INTEGER(kind = int_wp) :: NALG
+        integer(kind = int_wp), parameter :: vx_index = 6 ! The one velocity array starts AFTER the segment-based output
         !
-        NALG = NINT(PMSA(IPOINT(1)))
+        NALG = NINT(process_space_real(IPOINT(1)))
         IFLUX = 0
         IP2 = IPOINT(2)
 
-        DO ISEG = 1, NOSEG
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+        DO ISEG = 1, num_cells
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
                     !
-                    DEPTH = PMSA(IP2)
+                    DEPTH = process_space_real(IP2)
                     SEDCAR = 0.0
                     SEDDM = 0.0
                     SEDNIT = 0.0
@@ -85,19 +86,19 @@ contains
                     DO IALG = 1, NALG
 
                         IN = 2 + 0 * NALG + IALG
-                        SEDSPE = PMSA(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
+                        SEDSPE = process_space_real(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
                         IN = 2 + 1 * NALG + IALG
-                        CTODRY = PMSA(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
+                        CTODRY = process_space_real(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
 
                         SEDCAR = SEDCAR + SEDSPE
                         SEDDM = SEDDM + SEDSPE * CTODRY
 
                         IN = 2 + 2 * NALG + IALG
-                        NCRAT = PMSA(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
+                        NCRAT = process_space_real(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
                         IN = 2 + 3 * NALG + IALG
-                        PCRAT = PMSA(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
+                        PCRAT = process_space_real(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
                         IN = 2 + 4 * NALG + IALG
-                        SCRAT = PMSA(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
+                        SCRAT = process_space_real(IPOINT(IN) + (ISEG - 1) * INCREM(IN))
 
                         SEDNIT = SEDNIT + SEDSPE * NCRAT
                         SEDPHO = SEDPHO + SEDSPE * PCRAT
@@ -108,9 +109,15 @@ contains
                     end do
 
                     IP = IPOINT(2 + 7 * NALG + 1) + (ISEG - 1) * INCREM(2 + 7 * NALG + 1)
-                    PMSA (IP) = SEDCAR
+                    process_space_real (IP) = SEDCAR
                     IP = IPOINT(2 + 7 * NALG + 2) + (ISEG - 1) * INCREM(2 + 7 * NALG + 2)
-                    PMSA (IP) = SEDDM
+                    process_space_real (IP) = SEDDM
+                    IP = IPOINT(2 + 7 * NALG + 3) + (ISEG - 1) * INCREM(2 + 7 * NALG + 3)
+                    process_space_real (IP) = SEDNIT
+                    IP = IPOINT(2 + 7 * NALG + 4) + (ISEG - 1) * INCREM(2 + 7 * NALG + 4)
+                    process_space_real (IP) = SEDPHO
+                    IP = IPOINT(2 + 7 * NALG + 5) + (ISEG - 1) * INCREM(2 + 7 * NALG + 5)
+                    process_space_real (IP) = SEDSIL
 
                     !         NO LONGER Define fluxes only for Bloom (NALG .GT. 6)
 
@@ -135,15 +142,15 @@ contains
         end do
         !
         !.....Exchangeloop over de horizontale richting ter initialisatie
-        DO IQ = 1, NOQ1 + NOQ2 + NOQ3
+        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
-            IP = IPOINT(2 + 7 * NALG + 3) + (IQ - 1) * INCREM(2 + 7 * NALG + 3)
-            PMSA (IP) = 0.0
+            IP = IPOINT(2 + 7 * NALG + vx_index) + (IQ - 1) * INCREM(2 + 7 * NALG + vx_index)
+            process_space_real (IP) = 0.0
 
         end do
 
         !.....Exchangeloop over de verticale richting
-        DO IQ = NOQ1 + NOQ2 + 1, NOQ1 + NOQ2 + NOQ3 + NOQ4
+        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
 
             IVAN = IEXPNT(1, IQ)
             INAAR = IEXPNT(2, IQ)
@@ -151,8 +158,8 @@ contains
             !        Zoek eerste kenmerk van- en naar-segmenten
 
             IF (IVAN>0 .AND. INAAR>0) THEN
-                CALL evaluate_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
-                CALL evaluate_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
+                CALL extract_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
+                CALL extract_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
                 IF (IKMRKV==1.AND.IKMRKN==1 .OR. &
                         IKMRKV==1.AND.IKMRKN==3) THEN
 
@@ -162,17 +169,17 @@ contains
                     TOTCON = 0.0
                     DO IALG = 1, NALG
                         IP = IPOINT(2 + 5 * NALG + IALG) + (IVAN - 1) * INCREM(2 + 5 * NALG + IALG)
-                        CONSPE = PMSA(IP)
+                        CONSPE = process_space_real(IP)
                         IP = IPOINT(2 + 6 * NALG + IALG) + (IQ - 1) * INCREM(2 + 6 * NALG + IALG)
-                        VELSPE = PMSA(IP)
+                        VELSPE = process_space_real(IP)
                         TOTFLX = TOTFLX + CONSPE * VELSPE
                         TOTCON = TOTCON + CONSPE
                     end do
-                    IP = IPOINT(2 + 7 * NALG + 3) + (IQ - 1) * INCREM(2 + 7 * NALG + 3)
+                    IP = IPOINT(2 + 7 * NALG + vx_index) + (IQ - 1) * INCREM(2 + 7 * NALG + vx_index)
                     IF (TOTCON > 0.0) THEN
-                        PMSA(IP) = TOTFLX / TOTCON
+                        process_space_real(IP) = TOTFLX / TOTCON
                     ELSE
-                        PMSA(IP) = 0.0
+                        process_space_real(IP) = 0.0
                     ENDIF
                 ENDIF
             ENDIF

@@ -1,5 +1,5 @@
 subroutine rwbotc_double(comfil    ,lundia    ,error     ,itima     , &
-                       & itcomi    ,mmax      ,nmax      ,nmaxus    ,dp        , &
+                       & itcomi    ,mmax      ,nmax      ,nmaxus    ,dpd       , &
                        & rbuff     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -31,7 +31,7 @@ subroutine rwbotc_double(comfil    ,lundia    ,error     ,itima     , &
 !  
 !!--description-----------------------------------------------------------------
 !
-!    Function: - Write dp array to communication file
+!    Function: - Write dpd array to communication file
 !
 !!--pseudo code and references--------------------------------------------------
 ! NONE
@@ -61,7 +61,7 @@ subroutine rwbotc_double(comfil    ,lundia    ,error     ,itima     , &
     integer                                                              :: nmax   !  Description and declaration in esm_alloc_int.f90
     integer                                                              :: nmaxus !  Description and declaration in esm_alloc_int.f90
     logical                                                , intent(out) :: error  !!  Flag=TRUE if an error is encountered
-    real(hp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)        :: dp     !  Description and declaration in esm_alloc_real.f90
+    real(hp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)        :: dpd    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(nmaxus, mmax)                                    :: rbuff  !  Description and declaration in r-i-ch.igs
     character(*)                                                         :: comfil !!  First part of file name
 !
@@ -108,7 +108,7 @@ subroutine rwbotc_double(comfil    ,lundia    ,error     ,itima     , &
        celidt = celidt + 1
     endif
     !
-    ! write nrcel, dp and itstrt to communication file for if itcomi > 0
+    ! write nrcel, dpd and itstrt to communication file for if itcomi > 0
     !
     if (itcomi>0) then
        ierror = open_datdef(comfil, fds, .false.)
@@ -140,7 +140,7 @@ subroutine rwbotc_double(comfil    ,lundia    ,error     ,itima     , &
        call sbuff_checksize(nmaxus*mmax)
        do m = 1, mmax
           do n = 1, nmaxus
-             sbuff(n + (m-1)*nmaxus) = real(dp(n, m),sp)
+             sbuff(n + (m-1)*nmaxus) = real(dpd(n, m),sp)
           enddo
        enddo
        ierror = putelt(fds, grnam2, 'DP', uindex, 1, sbuff)

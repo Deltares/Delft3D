@@ -27,7 +27,7 @@
 !  
 !  
 
-      subroutine write_poi ( file_poi , noq   , noq1  , noq2  , noq3  , ipoint   )
+      subroutine write_poi ( file_poi , num_exchanges   , num_exchanges_u_dir  , num_exchanges_v_dir  , num_exchanges_z_dir  , ipoint   )
 !
 !     created             : jan van beek
 !
@@ -40,9 +40,9 @@
 !     name    kind     length     funct.  description
 !     ----    -----    ------     ------- -----------
 !     filnr   integer  1          input   index file in file administr.
-!     noq1    integer  1          input   number of items 1 in file
-!     noq2    integer  1          input   number of items 2 in file
-!     noq3    integer  1          input   number of items 3 in file
+!     num_exchanges_u_dir    integer  1          input   number of items 1 in file
+!     num_exchanges_v_dir    integer  1          input   number of items 2 in file
+!     num_exchanges_z_dir    integer  1          input   number of items 3 in file
 !     ipoint  integer  *          input   pointer array
 !
       ! global declarations
@@ -53,7 +53,7 @@
 !     declaration of arguments
 !
       type(t_file)                       :: file_poi               ! pointer file
-      integer       noq   , noq1  , noq2  , noq3
+      integer       num_exchanges   , num_exchanges_u_dir  , num_exchanges_v_dir  , num_exchanges_z_dir
       integer       ipoint(*)
 !
 !     local declarations
@@ -76,17 +76,17 @@
 !
 !     write pointers
 !
-      noq12  = noq1  + noq2
-      noq123 = noq12 + noq3
+      noq12  = num_exchanges_u_dir  + num_exchanges_v_dir
+      noq123 = noq12 + num_exchanges_z_dir
 !
       if ( filtyp .eq. FT_UNF .or. filtyp .eq. FT_BIN) then
-         if ( noq1 .gt. 0 ) write (lun) (ipoint(k),k=1,4*noq1)
-         if ( noq2 .gt. 0 ) write (lun) (ipoint(k),k=4*noq1+1,4*noq12)
-         if ( noq3 .gt. 0 ) write (lun) (ipoint(k),k=4*noq12+1,4*noq123)
+         if ( num_exchanges_u_dir .gt. 0 ) write (lun) (ipoint(k),k=1,4*num_exchanges_u_dir)
+         if ( num_exchanges_v_dir .gt. 0 ) write (lun) (ipoint(k),k=4*num_exchanges_u_dir+1,4*noq12)
+         if ( num_exchanges_z_dir .gt. 0 ) write (lun) (ipoint(k),k=4*noq12+1,4*noq123)
       elseif ( filtyp .eq. FT_ASC ) then
-         if ( noq1 .gt. 0 ) write (lun,'(4(i7,1x))') (ipoint(k),k=1,4*noq1)
-         if ( noq2 .gt. 0 ) write (lun,'(4(i7,1x))') (ipoint(k),k=4*noq1+1,4*noq12)
-         if ( noq3 .gt. 0 ) write (lun,'(4(i7,1x))') (ipoint(k),k=4*noq12+1,4*noq123)
+         if ( num_exchanges_u_dir .gt. 0 ) write (lun,'(4(i7,1x))') (ipoint(k),k=1,4*num_exchanges_u_dir)
+         if ( num_exchanges_v_dir .gt. 0 ) write (lun,'(4(i7,1x))') (ipoint(k),k=4*num_exchanges_u_dir+1,4*noq12)
+         if ( num_exchanges_z_dir .gt. 0 ) write (lun,'(4(i7,1x))') (ipoint(k),k=4*noq12+1,4*noq123)
       endif
 
       close(file_poi%unit)

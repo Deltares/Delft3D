@@ -1,5 +1,5 @@
 subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
-                & kmax      ,bed       , &
+                & num_layers_grid      ,bed       , &
                 & tauadd    ,taucr0    ,aks       ,eps       ,camax     , &
                 & frac      ,sig       ,thick     ,ws        , &
                 & dicww     ,ltur      , &
@@ -53,23 +53,23 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
 !
     logical                         , intent(in)   :: scour
     logical                         , intent(in)   :: wave
-    integer                         , intent(in)   :: kmax
+    integer                         , intent(in)   :: num_layers_grid
     integer                         , intent(in)   :: ltur     !  Description and declaration in iidim.f90
     integer                         , intent(in)   :: npar
     integer                         , intent(in)   :: numrealpar
     real(fp)                        , intent(in)   :: bed
     real(fp)                        , intent(in)   :: bedw
     real(fp)                        , intent(in)   :: camax
-    real(fp), dimension(0:kmax)     , intent(in)   :: dicww    !  Description and declaration in rjdim.f90
+    real(fp), dimension(0:num_layers_grid)     , intent(in)   :: dicww    !  Description and declaration in rjdim.f90
     real(fp)                        , intent(in)   :: eps
     real(fp)                        , intent(in)   :: frac     !  Description and declaration in rjdim.f90
-    real(fp), dimension(kmax)       , intent(in)   :: sig      !  Description and declaration in rjdim.f90
+    real(fp), dimension(num_layers_grid)       , intent(in)   :: sig      !  Description and declaration in rjdim.f90
     real(fp)                        , intent(in)   :: sigmol   !  Description and declaration in rjdim.f90
     real(fp)                        , intent(in)   :: susw
     real(fp)                        , intent(in)   :: tauadd
     real(fp)                        , intent(in)   :: taucr0
-    real(fp), dimension(kmax)       , intent(in)   :: thick    !  Description and declaration in rjdim.f90
-    real(fp), dimension(0:kmax)     , intent(in)   :: ws       !  Description and declaration in rjdim.f90
+    real(fp), dimension(num_layers_grid)       , intent(in)   :: thick    !  Description and declaration in rjdim.f90
+    real(fp), dimension(0:num_layers_grid)     , intent(in)   :: ws       !  Description and declaration in rjdim.f90
     real(fp), dimension(npar)       , intent(inout):: par
     !
     real(hp), dimension(numrealpar) , intent(inout):: realpar
@@ -79,12 +79,12 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     real(fp)                        , intent(out)  :: aks
     real(fp)                        , intent(out)  :: caks
     real(fp)                        , intent(out)  :: conc2d
-    real(fp), dimension(kmax)       , intent(out)  :: rsedeq   !  Description and declaration in rjdim.f90
+    real(fp), dimension(num_layers_grid)       , intent(out)  :: rsedeq   !  Description and declaration in rjdim.f90
     real(fp)                        , intent(out)  :: sbcu
     real(fp)                        , intent(out)  :: sbcv
     real(fp)                        , intent(out)  :: sbwu
     real(fp)                        , intent(out)  :: sbwv
-    real(fp), dimension(0:kmax)     , intent(out)  :: seddif   !  Description and declaration in rjdim.f90
+    real(fp), dimension(0:num_layers_grid)     , intent(out)  :: seddif   !  Description and declaration in rjdim.f90
     real(fp)                        , intent(out)  :: sswu
     real(fp)                        , intent(out)  :: sswv
     real(fp)                        , intent(out)  :: taurat
@@ -225,7 +225,7 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     ! in DIFU and DIF_WS
     !
     kmaxsd = 1
-    do k = kmax - 1, 1, -1
+    do k = num_layers_grid - 1, 1, -1
        !
        ! Calculate level of lower cell interface
        !
@@ -257,7 +257,7 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
        epsmax = 0.0_fp
     endif
     difvr = epspar .and. wave
-    call calseddf1993(ustarc    ,ws        ,h1        ,kmax      ,sig       , &
+    call calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,sig       , &
                     & thick     ,dicww     ,tauwav    ,tauc      ,ltur      , &
                     & eps       ,vonkar    ,difvr     ,deltas    ,epsbed    , &
                     & epsmax    ,epsmxc    ,seddif    )
@@ -300,14 +300,14 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
        !
        ! And then work down
        !
-       do k = kmaxsd + 1, kmax
+       do k = kmaxsd + 1, num_layers_grid
           rsedeq(k) = rsedeq(k-1)
        enddo
     else
        !
        ! if caks <= 1.0e-6
        !
-       do k = 1, kmax
+       do k = 1, num_layers_grid
           rsedeq(k) = 0.0_fp
        enddo
     endif
@@ -322,7 +322,7 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     avgu     = 0.0_fp
     avgcu    = 0.0_fp
     if (zumod > 0.0_fp) then
-       do k = 1, kmax
+       do k = 1, num_layers_grid
           z     = (1.0_fp + sig(k)) * h1
           u     = log(1.0_fp + z/z0rou)
           avgu  = avgu  + u*thick(k)

@@ -73,8 +73,8 @@ program ectest
    read(reference_date, *) yyyymmdd
    reference_time = ymd2jul(yyyymmdd)
    !
-   mmax = 0
-   nmax = 0
+   num_columns = 0
+   num_rows = 0
    write(*,*) 'ECTEST start . . .'
    !
    ! Define the test grid
@@ -101,10 +101,10 @@ program ectest
       ! Done
       stop 'klaar met tables-test.'
    else if (testnr == 1) then
-      nmax   = 2
-      mmax   = 3
-      mnmax  = mmax*nmax
-      kmax   = 1
+      num_rows   = 2
+      num_columns   = 3
+      mnmax  = num_columns*num_rows
+      num_layers_grid   = 1
       sferic = .false.
                       allocate(kcs  (mnmax), STAT = istat)
       if (istat == 0) allocate(x    (mnmax), STAT = istat)
@@ -115,17 +115,17 @@ program ectest
          if (istat == 0) allocate(patm (mnmax), STAT = istat)
       endif
    else
-      mmax   = 201
-      nmax   = 173
-      mnmax  = mmax*nmax
-      kmax   = 1
+      num_columns   = 201
+      num_rows   = 173
+      mnmax  = num_columns*num_rows
+      num_layers_grid   = 1
       sferic = .true.
                       allocate(kcs  (mnmax), STAT = istat)
       if (istat == 0) allocate(x    (mnmax), STAT = istat)
       if (istat == 0) allocate(y    (mnmax), STAT = istat)
-      if (istat == 0) allocate(uwind2d(nmax,mmax), STAT = istat)
-      if (istat == 0) allocate(vwind2d(nmax,mmax), STAT = istat)
-      if (istat == 0) allocate(patm2d (nmax,mmax), STAT = istat)
+      if (istat == 0) allocate(uwind2d(num_rows,num_columns), STAT = istat)
+      if (istat == 0) allocate(vwind2d(num_rows,num_columns), STAT = istat)
+      if (istat == 0) allocate(patm2d (num_rows,num_columns), STAT = istat)
    endif
    
    ! ==========================================================================
@@ -136,9 +136,9 @@ program ectest
    endif
    !
    kcs = 1
-   do i=1, mmax
-      do j=1, nmax
-         ij = i + mmax*(j-1)
+   do i=1, num_columns
+      do j=1, num_rows
+         ij = i + num_columns*(j-1)
          x(ij) = real(i,fp) * real(j,fp)
          y(ij) = real(i,fp) * real(j,fp) * 10.0_fp
       enddo

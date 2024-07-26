@@ -28,9 +28,9 @@ contains
     !!  of Stichting Deltares remain the property of Stichting Deltares. All
     !!  rights reserved.
 
-    subroutine phprot (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine phprot (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Composition of phytoplankton by summing algae fractions and NPP - PROTIST
 
@@ -51,9 +51,9 @@ contains
         !
         implicit none
 
-        real(kind = real_wp) :: pmsa  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(*), increm(*), noseg, noflux, &
-                iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(*), increm(*), num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         integer(kind = int_wp), allocatable :: ipnt(:)          ! Local work array for the pointering
         integer(kind = int_wp) :: ioffset, ioffsetoutput        ! Offsets for input and start of output
@@ -65,13 +65,13 @@ contains
         real(kind = dp) :: total
         real(kind = dp), allocatable :: conversionfactor(:)
 
-        nrsums = nint(pmsa(ipoint(1)))
+        nrsums = nint(process_space_real(ipoint(1)))
         allocate(nrinputs(nrsums), conversionfactor(nrsums))
 
         ioffset = 1
         do isum = 1, nrsums
-            nrinputs(isum) = nint(pmsa(ipoint(ioffset + 1)))
-            conversionfactor(isum) = pmsa(ipoint(ioffset + 2))
+            nrinputs(isum) = nint(process_space_real(ipoint(ioffset + 1)))
+            conversionfactor(isum) = process_space_real(ipoint(ioffset + 2))
             ioffset = ioffset + 2 + nrinputs(isum)
         enddo
         ioffsetoutput = ioffset
@@ -79,14 +79,14 @@ contains
         allocate (ipnt(ipointLength))
         ipnt(1:ipointLength) = ipoint(1:ipointLength)
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             ioffset = 3
             do isum = 1, nrsums
                 total = 0.0d0
                 do iinpt = 1, nrinputs(isum)
-                    total = total + pmsa(ipnt(ioffset + iinpt))
+                    total = total + process_space_real(ipnt(ioffset + iinpt))
                 end do
-                pmsa(ipnt(ioffsetoutput + isum)) = conversionfactor(isum) * total
+                process_space_real(ipnt(ioffsetoutput + isum)) = conversionfactor(isum) * total
                 ioffset = ioffset + 2 + nrinputs(isum)
             enddo
             ipnt(1:ipointLength) = ipnt(1:ipointLength) + increm(1:ipointLength)

@@ -28,10 +28,10 @@ module m_diggin
 contains
 
 
-    subroutine diggin (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine diggin (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !>\file
         !>       Digging dry matter to sediment S1 and S2
@@ -69,9 +69,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         IN1 = INCREM(1)
         IN2 = INCREM(2)
@@ -107,26 +107,26 @@ contains
         IP15 = IPOINT(15)
         IP16 = IPOINT(16)
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
 
-                    SOMRES = PMSA(IP1)
-                    ZDIGS1 = PMSA(IP2)
-                    ZDIGS2 = PMSA(IP3)
-                    ACTHS1 = PMSA(IP4)
-                    ACTHS2 = PMSA(IP5)
-                    ISW = PMSA(IP6) + 0.5
-                    FIXS1 = PMSA(IP7)
-                    FIXS2 = PMSA(IP8)
-                    RHOS1 = PMSA(IP9)
-                    RHOS2 = PMSA(IP10)
-                    PORS1 = PMSA(IP11)
-                    PORS2 = PMSA(IP12)
-                    DELT = PMSA(IP13)
-                    SURF = PMSA(IP14)
+                    SOMRES = process_space_real(IP1)
+                    ZDIGS1 = process_space_real(IP2)
+                    ZDIGS2 = process_space_real(IP3)
+                    ACTHS1 = process_space_real(IP4)
+                    ACTHS2 = process_space_real(IP5)
+                    ISW = process_space_real(IP6) + 0.5
+                    FIXS1 = process_space_real(IP7)
+                    FIXS2 = process_space_real(IP8)
+                    RHOS1 = process_space_real(IP9)
+                    RHOS2 = process_space_real(IP10)
+                    PORS1 = process_space_real(IP11)
+                    PORS2 = process_space_real(IP12)
+                    DELT = process_space_real(IP13)
+                    SURF = process_space_real(IP14)
 
                     !*******************************************************************************
                     !**** Processes connected to the BURIAL of dry matter
@@ -167,8 +167,8 @@ contains
 
                     ENDIF
 
-                    PMSA (IP15) = DIGS1
-                    PMSA (IP16) = DIGS2
+                    process_space_real (IP15) = DIGS1
+                    process_space_real (IP16) = DIGS2
 
                 ENDIF
             ENDIF

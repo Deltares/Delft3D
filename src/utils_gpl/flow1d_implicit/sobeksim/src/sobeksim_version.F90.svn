@@ -1,0 +1,145 @@
+module sobeksim_version_module
+!----- LGPL --------------------------------------------------------------------
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2013.                                
+!                                                                               
+!  This library is free software; you can redistribute it and/or                
+!  modify it under the terms of the GNU Lesser General Public                   
+!  License as published by the Free Software Foundation version 2.1.                 
+!                                                                               
+!  This library is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU            
+!  Lesser General Public License for more details.                              
+!                                                                               
+!  You should have received a copy of the GNU Lesser General Public             
+!  License along with this library; if not, see <http://www.gnu.org/licenses/>. 
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
+!-------------------------------------------------------------------------------
+!  $Id: sobeksim_version.F90.svn 54527 2018-02-19 09:38:09Z zeekant $
+!  $HeadURL: https://repos.deltares.nl/repos/ds/trunk/src/tools/parsers/sobeksim/sobeksim/sobeksim_version.F90.svn $
+    use iso_c_binding
+
+    implicit none
+
+    character(*),  public, parameter :: sobeksim_major        = 'VN_MAJOR'
+    character(*),  public, parameter :: sobeksim_minor        = 'VN_MINOR'
+    character(*),  public, parameter :: sobeksim_revision     = 'VN_REVISION'
+    character(*),  public, parameter :: sobeksim_build_number = 'VN_BUILD_NUMBER'
+
+#if defined(W32) 
+    character(*),  public, parameter :: sobeksim_architecture = '(Win32)'
+#elif defined(X64) 
+    character(*),  public, parameter :: sobeksim_architecture = '(Win64)'
+#elif defined(LINUX32) 
+    character(*),  public, parameter :: sobeksim_architecture = '(Linux32)'
+#elif defined(LINUX64) 
+    character(*),  public, parameter :: sobeksim_architecture = '(Linux64)'
+#else
+    character(*),  public, parameter :: sobeksim_architecture = '(Unknown)'
+#endif
+
+    character(*),  public, parameter :: sobeksim_company      = 'Deltares'
+    character(*),  public, parameter :: sobeksim_company_url  = 'http://www.deltares.nl'
+    character(*),  public, parameter :: sobeksim_program      = 'SOBEKSIM'  
+    character(*),  public, parameter :: sobeksim_programname  = 'SOBEKSIM'  ! use in about box and window title
+
+    character(*),  public, parameter :: sobeksim_version      = sobeksim_major//'.'//sobeksim_minor//'.'//sobeksim_revision//'.'//sobeksim_build_number//' '//sobeksim_architecture
+    character(*),  public, parameter :: sobeksim_version_full = 'Deltares, '//sobeksim_program//' Version '//sobeksim_version//', '//__DATE__//', '//__TIME__
+    character(*),  public, parameter :: sobeksim_version_id   = '@(#)'//sobeksim_version_full
+    character(*),  public, parameter :: sobeksim_checkout     = '$HeadURL: https://repos.deltares.nl/repos/ds/trunk/src/tools/parsers/sobeksim/sobeksim/sobeksim_version.F90.svn $'
+
+contains
+
+    subroutine getfullversionstring_sobeksim(stringout)
+        character(*), intent(out) :: stringout
+        integer                   :: length
+
+        length = min(len_trim(sobeksim_version_full),len(stringout))
+        stringout = sobeksim_version_id(5:5+length-1)
+    end subroutine getfullversionstring_sobeksim
+
+    subroutine getprogramnamestring_sobeksim(stringout)
+        character(*), intent(out) :: stringout
+
+        stringout = trim(sobeksim_programname)
+    end subroutine getprogramnamestring_sobeksim
+    
+    subroutine getshortprogramnamestring_sobeksim(stringout)
+        character(*), intent(out) :: stringout
+
+        stringout = trim(sobeksim_program)
+    end subroutine getshortprogramnamestring_sobeksim
+    
+    subroutine getfeaturenumberstring_sobeksim(stringout)
+        character(*), intent(out) :: stringout
+
+        stringout = trim(sobeksim_version)
+    end subroutine getfeaturenumberstring_sobeksim
+    
+    subroutine getversionnumberstring_sobeksim(stringout)
+        character(*), intent(out) :: stringout
+
+        stringout = trim(sobeksim_version)
+    end subroutine getversionnumberstring_sobeksim
+    
+    subroutine getcompanystring_sobeksim(stringout)
+        character(*), intent(out) :: stringout
+
+        stringout = trim(sobeksim_company)
+    end subroutine getcompanystring_sobeksim
+    
+    subroutine getsvnrevisionstring_sobeksim(stringout)
+        character(*), intent(out) :: stringout
+
+        stringout = trim(sobeksim_build_number)
+    end subroutine getsvnrevisionstring_sobeksim
+
+    subroutine getbuildlocation(stringout)
+        character(*), intent(out) :: stringout
+
+        stringout = trim(sobeksim_checkout)
+    end subroutine getbuildlocation
+
+    subroutine getarchitecturestring_sobeksim(stringout)
+        character(*), intent(out) :: stringout
+        
+#if defined(WIN32) 
+        stringout = trim('Win32')
+#elif defined(WIN64) 
+        stringout = trim('Win64')
+#else
+        if (c_size_t == 4) then
+            stringout = trim('Linux32')
+        elseif (c_size_t == 8) then
+            stringout = trim('Linux64')
+        else
+            stringout = trim('Unknown')
+        end if
+#endif        
+
+    end subroutine getarchitecturestring_sobeksim
+
+subroutine get_sobeksim_sbkrel(sbkrel)
+
+   integer, intent(out)      :: sbkrel(3)
+
+   !
+   ! body
+   
+   sbkrel(1) = VN_MAJOR
+   sbkrel(2) = VN_MINOR
+   sbkrel(3) = VN_REVISION
+   
+end subroutine get_sobeksim_sbkrel
+
+end module sobeksim_version_module

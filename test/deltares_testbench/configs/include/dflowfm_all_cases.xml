@@ -1,4 +1,4 @@
-  <testCases>
+  <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f001_c010_Channel_with_refinement_squares" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c010_Channel_with_refinement_squares</path>
       <programs>
@@ -7357,7 +7357,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f012_c097_running_mean" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c097_running_mean</path>
+      <path version="2024-05-31T11:46:29">e02_dflowfm/f012_inout/c097_running_mean</path>
       <programs>
         <program ref="DFlowFM">
           <arguments>

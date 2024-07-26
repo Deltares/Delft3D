@@ -28,11 +28,11 @@ module m_grzmac
 contains
 
 
-    SUBROUTINE GRZMAC     (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
-        use m_logger
-        use m_evaluate_waq_attribute
+    SUBROUTINE GRZMAC     (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -41,18 +41,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        REAL(kind = real_wp) :: PMSA(*)     !I/O Process Manager System Array, window of routine to process library
+        REAL(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         REAL(kind = real_wp) :: FL(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        INTEGER(kind = int_wp) :: IPOINT(14) ! I  Array of pointers in PMSA to get and store the data
+        INTEGER(kind = int_wp) :: IPOINT(14) ! I  Array of pointers in process_space_real to get and store the data
         INTEGER(kind = int_wp) :: INCREM(14) ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-        INTEGER(kind = int_wp) :: NOSEG       ! I  Number of computational elements in the whole model schematisation
+        INTEGER(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         INTEGER(kind = int_wp) :: NOFLUX      ! I  Number of fluxes, increment in the FL array
         INTEGER(kind = int_wp) :: IEXPNT      ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         INTEGER(kind = int_wp) :: IKNMRK(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        INTEGER(kind = int_wp) :: NOQ1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        INTEGER(kind = int_wp) :: NOQ2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
-        INTEGER(kind = int_wp) :: NOQ3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        INTEGER(kind = int_wp) :: NOQ4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         INTEGER(kind = int_wp) :: IPNT(14)   !    Local work array for the pointering
         INTEGER(kind = int_wp) :: ISEG        !    Local loop counter for computational element loop
         !
@@ -99,26 +99,26 @@ contains
         IdGrzNRH = 4
         IdGrzPRH = 5
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1) THEN
 
                 !
-                EM = PMSA(IPNT(1))
-                SM = PMSA(IPNT(2))
-                RH = PMSA(IPNT(3))
-                NRH = PMSA(IPNT(4))
-                PRH = PMSA(IPNT(5))
-                K0GrzEM = PMSA(IPNT(6))
-                K1GrzEM = PMSA(IPNT(7))
-                K0GrzSM = PMSA(IPNT(8))
-                K1GrzSM = PMSA(IPNT(9))
-                K0GrzRH = PMSA(IPNT(10))
-                K1GrzRH = PMSA(IPNT(11))
-                Volume = PMSA(IPNT(12))
-                Depth = PMSA(IPNT(13))
-                DELT = PMSA(IPNT(14))
+                EM = process_space_real(IPNT(1))
+                SM = process_space_real(IPNT(2))
+                RH = process_space_real(IPNT(3))
+                NRH = process_space_real(IPNT(4))
+                PRH = process_space_real(IPNT(5))
+                K0GrzEM = process_space_real(IPNT(6))
+                K1GrzEM = process_space_real(IPNT(7))
+                K0GrzSM = process_space_real(IPNT(8))
+                K1GrzSM = process_space_real(IPNT(9))
+                K0GrzRH = process_space_real(IPNT(10))
+                K1GrzRH = process_space_real(IPNT(11))
+                Volume = process_space_real(IPNT(12))
+                Depth = process_space_real(IPNT(13))
+                DELT = process_space_real(IPNT(14))
                 !
                 !   *****     Insert your code here  *****
                 !

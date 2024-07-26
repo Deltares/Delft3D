@@ -28,10 +28,10 @@ module m_denwat
 contains
 
 
-    subroutine denwat (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger, only : write_error_message
+    subroutine denwat (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : write_error_message
 
         !>\file
         !>       Denitrification in water column
@@ -88,9 +88,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
                 IP11, IP12, IP13, IP14, IP15, IP16, IP17
@@ -149,8 +149,8 @@ contains
             !
             !        NO! Compute temperature effect and switch TMPOPT off
             !
-            TEMP = PMSA(IP8)
-            TC = PMSA(IP4)
+            TEMP = process_space_real(IP8)
+            TC = process_space_real(IP4)
             TEMP20 = TEMP - 20.0
             TEMPC = TC ** TEMP20
             TMPOPT = .FALSE.
@@ -164,7 +164,7 @@ contains
         !     Factors that determine oxygen effect space dependent?
         !     Only relevant for old version IVERSN=0
         !
-        IVERSN = NINT (PMSA(IP13))
+        IVERSN = NINT (process_space_real(IP13))
         IF (IVERSN == 0) THEN
 
             IF (IN5 == 0 .AND. IN15 == 0 .AND. IN11 == 0 .AND. &
@@ -172,10 +172,10 @@ contains
                 !
                 !        NO! Compute oxygen effect and switch OXYOPT off
                 !
-                OXY = PMSA(IP5)
-                POROS = PMSA(IP12)
-                OOXDEN = PMSA(IP15)
-                COXDEN = PMSA(IP11)
+                OXY = process_space_real(IP5)
+                POROS = process_space_real(IP12)
+                OOXDEN = process_space_real(IP15)
+                COXDEN = process_space_real(IP11)
                 DELTOX = (COXDEN - OOXDEN) * POROS
                 IF (DELTOX < 1E-20)  CALL write_error_message &
                         ('(COXDEN - OOXDEN) in DENWAT <= zero')
@@ -184,7 +184,7 @@ contains
                 ELSEIF (OXY < (OOXDEN * POROS)) THEN
                     O2FUNC = 1.0
                 ELSE
-                    CURVA = MAX(PMSA(IP16), 1.0)
+                    CURVA = MAX(process_space_real(IP16), 1.0)
                     CURVAQ = - LOG(1.) + EXP(CURVA)
                     O2FUNC = (COXDEN * POROS - OXY) / &
                             (DELTOX + CURVAQ * (OXY - OOXDEN * POROS))
@@ -202,7 +202,7 @@ contains
         !     Loop over segments
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
@@ -210,18 +210,18 @@ contains
                 !
                 IF (IVERSN == 1) THEN
                     !
-                    K0TEMP = PMSA(IP1)
-                    NO3 = MAX (0.0, PMSA(IP2))
-                    KDEN = PMSA(IP3)
-                    TC = PMSA(IP4)
-                    OXY = PMSA(IP5)
-                    KSNI = PMSA(IP6)
-                    KSOX = PMSA(IP7)
-                    TEMP = PMSA(IP8)
-                    CRTEMP = PMSA(IP9)
-                    K0OX = PMSA(IP10)
-                    CROXY = PMSA(IP11)
-                    POROS = PMSA(IP12)
+                    K0TEMP = process_space_real(IP1)
+                    NO3 = MAX (0.0, process_space_real(IP2))
+                    KDEN = process_space_real(IP3)
+                    TC = process_space_real(IP4)
+                    OXY = process_space_real(IP5)
+                    KSNI = process_space_real(IP6)
+                    KSOX = process_space_real(IP7)
+                    TEMP = process_space_real(IP8)
+                    CRTEMP = process_space_real(IP9)
+                    K0OX = process_space_real(IP10)
+                    CROXY = process_space_real(IP11)
+                    POROS = process_space_real(IP12)
                     !
                     !           Set the rates according to CRTEMP and CROXY
                     !
@@ -252,22 +252,22 @@ contains
                     !
                     !           Zuurstoffunctie als uitvoer
                     !
-                    PMSA(IP17) = OXFUNC
+                    process_space_real(IP17) = OXFUNC
                     !
                 ELSE
                     !
                     !     Use old version whem IVERSN=0
                     !
-                    NO3 = MAX (0.0, PMSA(IP2))
-                    DENR = PMSA(IP1)
-                    TEMP = PMSA(IP8)
-                    CRTEMP = PMSA(IP9)
-                    DENRC = PMSA(IP14)
+                    NO3 = MAX (0.0, process_space_real(IP2))
+                    DENR = process_space_real(IP1)
+                    TEMP = process_space_real(IP8)
+                    CRTEMP = process_space_real(IP9)
+                    DENRC = process_space_real(IP14)
                     !
                     !           Compute space dependent temperature effect if TMPOPT on
                     !
                     IF (TMPOPT) THEN
-                        TC = PMSA(IP4)
+                        TC = process_space_real(IP4)
                         TEMP20 = TEMP - 20.0
                         TEMPC = TC ** TEMP20
                     ENDIF
@@ -276,10 +276,10 @@ contains
                     !           Compute space dependent oxygen effect if OXYOPT on
                     !
                     IF (OXYOPT) THEN
-                        OXY = PMSA(IP5)
-                        POROS = PMSA(IP12)
-                        OOXDEN = PMSA(IP15)
-                        COXDEN = PMSA(IP11)
+                        OXY = process_space_real(IP5)
+                        POROS = process_space_real(IP12)
+                        OOXDEN = process_space_real(IP15)
+                        COXDEN = process_space_real(IP11)
                         DELTOX = (COXDEN - OOXDEN) * POROS
                         IF (DELTOX < 1E-20)  CALL write_error_message &
                                 ('(COXDEN - OOXDEN) in DENWAT <= zero')
@@ -288,7 +288,7 @@ contains
                         ELSEIF (OXY < OOXDEN * POROS) THEN
                             O2FUNC = 1.0
                         ELSE
-                            CURVA = MAX(PMSA(IP16), 1.0)
+                            CURVA = MAX(process_space_real(IP16), 1.0)
                             CURVAQ = - LOG(1.) + EXP(CURVA)
                             O2FUNC = (COXDEN * POROS - OXY) / &
                                     (DELTOX + CURVAQ * (OXY - OOXDEN * POROS))
@@ -311,7 +311,7 @@ contains
                     !
                     !           Zuurstoffunctie als uitvoer
                     !
-                    PMSA(IP17) = O2FUNC
+                    process_space_real(IP17) = O2FUNC
                     !
                 ENDIF
                 !

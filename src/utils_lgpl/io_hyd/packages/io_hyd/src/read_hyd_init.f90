@@ -31,7 +31,7 @@
 
       ! read the time independent data from a hydrodynamics
 
-      use m_logger, only : terminate_execution, get_log_unit_number, terminate_execution
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
       use m_hydmod
       use io_netcdf
       use m_read_waqgeom
@@ -62,10 +62,10 @@
       ! allocate and read or define grid table
 
       if(hyd%geometry .eq. HYD_GEOM_CURVI) then
-         allocate(hyd%lgrid(hyd%nmax,hyd%mmax),stat=ierr_alloc)
+         allocate(hyd%lgrid(hyd%num_rows,hyd%num_columns),stat=ierr_alloc)
          if ( ierr_alloc .ne. 0 ) goto 980
-         call read_lga(hyd%file_lga, hyd%mmax, hyd%nmax, hyd%nolay, hyd%nosegl, &
-                       hyd%noq1    , hyd%noq2, hyd%noq3, hyd%lgrid)
+         call read_lga(hyd%file_lga, hyd%num_columns, hyd%num_rows, hyd%num_layers, hyd%nosegl, &
+                       hyd%num_exchanges_u_dir    , hyd%num_exchanges_v_dir, hyd%num_exchanges_z_dir, hyd%lgrid)
       else
          allocate(hyd%lgrid(1,hyd%nosegl),stat=ierr_alloc)
          if ( ierr_alloc .ne. 0 ) goto 980
@@ -74,21 +74,21 @@
          enddo
       endif
 
-      hyd%noseg = hyd%nosegl*hyd%nolay
-      hyd%noq   = hyd%noq1 + hyd%noq2 + hyd%noq3
+      hyd%num_cells = hyd%nosegl*hyd%num_layers
+      hyd%num_exchanges   = hyd%num_exchanges_u_dir + hyd%num_exchanges_v_dir + hyd%num_exchanges_z_dir
 
-      allocate(hyd%depth(hyd%noseg),stat=ierr_alloc)
+      allocate(hyd%depth(hyd%num_cells),stat=ierr_alloc)
       if ( ierr_alloc .ne. 0 ) goto 970
       hyd%depth = 0.0
 
       if(hyd%geometry .eq. HYD_GEOM_CURVI) then
          ! allocate and read cco file
 
-         allocate(hyd%xdepth(hyd%nmax,hyd%mmax),stat=ierr_alloc)
+         allocate(hyd%xdepth(hyd%num_rows,hyd%num_columns),stat=ierr_alloc)
          if ( ierr_alloc .ne. 0 ) goto 980
-         allocate(hyd%ydepth(hyd%nmax,hyd%mmax),stat=ierr_alloc)
+         allocate(hyd%ydepth(hyd%num_rows,hyd%num_columns),stat=ierr_alloc)
          if ( ierr_alloc .ne. 0 ) goto 980
-         call read_cco(hyd%file_cco, hyd%mmax, hyd%nmax, hyd%xdepth, hyd%ydepth)
+         call read_cco(hyd%file_cco, hyd%num_columns, hyd%num_rows, hyd%xdepth, hyd%ydepth)
       elseif (hyd%geometry .eq. HYD_GEOM_UNSTRUC) then
          ! read the waqgeom and bnd-file
 
@@ -116,71 +116,71 @@
 
       ! allocate and read pointer table
 
-      allocate(hyd%ipoint(4,hyd%noq),stat=ierr_alloc)
+      allocate(hyd%ipoint(4,hyd%num_exchanges),stat=ierr_alloc)
       if ( ierr_alloc .ne. 0 ) goto 990
-      call read_poi(hyd%file_poi, hyd%noq, hyd%noq1, hyd%noq2, hyd%noq3, hyd%ipoint)
-      hyd%nobnd  = -minval(hyd%ipoint)
-      hyd%nobndl = hyd%nobnd/hyd%nolay
-      allocate(hyd%iglobal_bnd(hyd%nobnd))
+      call read_poi(hyd%file_poi, hyd%num_exchanges, hyd%num_exchanges_u_dir, hyd%num_exchanges_v_dir, hyd%num_exchanges_z_dir, hyd%ipoint)
+      hyd%num_boundary_conditions  = -minval(hyd%ipoint)
+      hyd%nobndl = hyd%num_boundary_conditions/hyd%num_layers
+      allocate(hyd%iglobal_bnd(hyd%num_boundary_conditions))
       hyd%iglobal_bnd = 0
 
-      allocate(hyd%surf(hyd%noseg),stat=ierr_alloc)
+      allocate(hyd%surf(hyd%num_cells),stat=ierr_alloc)
       if ( ierr_alloc .ne. 0 ) goto 970
       if(hyd%file_hsrf%name .eq. ' ') then
-         call read_srf(hyd%file_srf, hyd%mmax, hyd%nmax, hyd%nosegl, hyd%surf )
+         call read_srf(hyd%file_srf, hyd%num_columns, hyd%num_rows, hyd%nosegl, hyd%surf )
          do iseg = 1 , hyd%nosegl
-            do ilay = 2 , hyd%nolay
+            do ilay = 2 , hyd%num_layers
                isegl = (ilay-1)*hyd%nosegl + iseg
                hyd%surf(isegl) = hyd%surf(iseg)
             enddo
          enddo
       else
-         call read_hsrf(hyd%file_hsrf, hyd%noseg, hyd%surf )
+         call read_hsrf(hyd%file_hsrf, hyd%num_cells, hyd%surf )
       endif
 
       if ( hyd%file_dps%name .ne. ' ' ) then
-         call read_srf(hyd%file_dps, hyd%mmax, hyd%nmax, hyd%nosegl, hyd%depth )
+         call read_srf(hyd%file_dps, hyd%num_columns, hyd%num_rows, hyd%nosegl, hyd%depth )
       endif
 
       ! allocate arrays time dependent arrays
 
-      allocate(hyd%volume(hyd%noseg),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
-      allocate(hyd%area(hyd%noq),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 990
-      allocate(hyd%flow(hyd%noq),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 990
-      allocate(hyd%displen(2,hyd%noq),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 990
-      allocate(hyd%sal(hyd%noseg),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
-      allocate(hyd%tem(hyd%noseg),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
-      allocate(hyd%tau(hyd%noseg),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
-      allocate(hyd%vdf(hyd%noseg),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
-      allocate(hyd%attributes(hyd%noseg),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
+      allocate(hyd%volume(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
+      allocate(hyd%area(hyd%num_exchanges),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 990
+      allocate(hyd%flow(hyd%num_exchanges),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 990
+      allocate(hyd%displen(2,hyd%num_exchanges),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 990
+      allocate(hyd%sal(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
+      allocate(hyd%tem(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
+      allocate(hyd%tau(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
+      allocate(hyd%vdf(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
+      allocate(hyd%attributes(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
 !     allocate(hyd%wasteflow(hyd%wasteload_coll%actual_size))
 
       ! read dispersion length, assume time independent
 
       call hyd%file_len%open()
-      read(hyd%file_len%unit,iostat=ierr) itime,((hyd%displen(i,j),i=1,2),j=1,hyd%noq)
+      read(hyd%file_len%unit,iostat=ierr) itime,((hyd%displen(i,j),i=1,2),j=1,hyd%num_exchanges)
       if ( ierr .ne. 0 ) then
          write(*,*) 'ERROR: reading dispersion length file'
          write(lunrep,*) 'ERROR: reading dispersion length file'
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       ! read attributes
 
       if ( hyd%file_atr%name .ne. ' ' ) then
-         call read_atr(hyd%file_atr, hyd%atr_type, hyd%no_atr, hyd%noseg, hyd%attributes)
+         call read_atr(hyd%file_atr, hyd%atr_type, hyd%no_atr, hyd%num_cells, hyd%attributes)
       else if ( hyd%geometry .eq. HYD_GEOM_UNSTRUC ) then
           ! default atributes (sigma-layers assumed)
          hyd%atr_type = ATR_FM
-         if( hyd%nolay == 1) then
+         if( hyd%num_layers == 1) then
              hyd%attributes = 1
          else
             do iseg = 1 , hyd%nosegl
-               do ilay = 1 , hyd%nolay
+               do ilay = 1 , hyd%num_layers
                   isegl = (ilay-1)*hyd%nosegl + iseg
                   hyd%attributes(isegl) = 21
                   if (ilay == 1) hyd%attributes(isegl) = 11
-                  if (ilay == hyd%nolay) hyd%attributes(isegl) = 31
+                  if (ilay == hyd%num_layers) hyd%attributes(isegl) = 31
                enddo
             enddo
          endif
@@ -190,13 +190,13 @@
 
       return
   970 write(lunrep,*) 'error allocating memory:',ierr_alloc
-      write(lunrep,*) 'hyd%noseg:',hyd%noseg
-      call terminate_execution(1)
+      write(lunrep,*) 'hyd%num_cells:',hyd%num_cells
+      call stop_with_error()
   980 write(lunrep,*) 'error allocating memory:',ierr_alloc
-      write(lunrep,*) 'hyd%nmax:',hyd%nmax
-      write(lunrep,*) 'hyd%mmax:',hyd%mmax
-      call terminate_execution(1)
+      write(lunrep,*) 'hyd%num_rows:',hyd%num_rows
+      write(lunrep,*) 'hyd%num_columns:',hyd%num_columns
+      call stop_with_error()
   990 write(lunrep,*) 'error allocating memory:',ierr_alloc
-      write(lunrep,*) 'hyd%noq:',hyd%noq
-      call terminate_execution(1)
+      write(lunrep,*) 'hyd%num_exchanges:',hyd%num_exchanges
+      call stop_with_error()
       end

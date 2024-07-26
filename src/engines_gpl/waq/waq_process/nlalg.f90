@@ -28,10 +28,10 @@ module m_nlalg
 contains
 
 
-    subroutine nlalg  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger
+    subroutine nlalg  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper
 
         !>\file
         !>       Nutrient limiation function for DYNAMO algae
@@ -63,9 +63,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         integer(kind = int_wp) :: iseg
         !
         IP1 = IPOINT(1)
@@ -82,18 +82,18 @@ contains
         IP12 = IPOINT(12)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                AMOPRF = PMSA(IP1)
-                KMDIN = PMSA(IP2)
-                KMP = PMSA(IP3)
-                KMSI = PMSA(IP4)
-                NH4 = PMSA(IP5)
-                NO3 = PMSA(IP6)
-                PO4 = PMSA(IP7)
-                SI = PMSA(IP8)
+                AMOPRF = process_space_real(IP1)
+                KMDIN = process_space_real(IP2)
+                KMP = process_space_real(IP3)
+                KMSI = process_space_real(IP4)
+                NH4 = process_space_real(IP5)
+                NO3 = process_space_real(IP6)
+                PO4 = process_space_real(IP7)
+                SI = process_space_real(IP8)
 
                 IF (AMOPRF < 1E-20)  CALL write_error_message ('AMOPRF in NLALG zero')
 
@@ -121,10 +121,10 @@ contains
                 FNUT = MIN (FN, FP, FS)
 
                 !@    Uitvoer limiterende factoren
-                PMSA (IP9) = FN
-                PMSA (IP10) = FP
-                PMSA (IP11) = FS
-                PMSA (IP12) = FNUT
+                process_space_real (IP9) = FN
+                process_space_real (IP10) = FP
+                process_space_real (IP11) = FS
+                process_space_real (IP12) = FNUT
 
             ENDIF
             !

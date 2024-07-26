@@ -28,10 +28,10 @@ module m_maxmac
 contains
 
 
-    SUBROUTINE MAXMAC     (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
-        use m_evaluate_waq_attribute
+    SUBROUTINE MAXMAC     (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -40,18 +40,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        REAL(kind = real_wp) :: PMSA(*)     !I/O Process Manager System Array, window of routine to process library
+        REAL(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         REAL(kind = real_wp) :: FL(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        INTEGER(kind = int_wp) :: IPOINT(31) ! I  Array of pointers in PMSA to get and store the data
+        INTEGER(kind = int_wp) :: IPOINT(31) ! I  Array of pointers in process_space_real to get and store the data
         INTEGER(kind = int_wp) :: INCREM(31) ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-        INTEGER(kind = int_wp) :: NOSEG       ! I  Number of computational elements in the whole model schematisation
+        INTEGER(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         INTEGER(kind = int_wp) :: NOFLUX      ! I  Number of fluxes, increment in the FL array
         INTEGER(kind = int_wp) :: IEXPNT      ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         INTEGER(kind = int_wp) :: IKNMRK(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        INTEGER(kind = int_wp) :: NOQ1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        INTEGER(kind = int_wp) :: NOQ2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
-        INTEGER(kind = int_wp) :: NOQ3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        INTEGER(kind = int_wp) :: NOQ4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         INTEGER(kind = int_wp) :: IPNT(31)   !    Local work array for the pointering
         INTEGER(kind = int_wp) :: ISEG        !    Local loop counter for computational element loop
         !
@@ -99,32 +99,32 @@ contains
         !
         IPNT = IPOINT
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             !
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1) THEN
 
-                nMacrophyt = PMSA(IPNT(1))
-                HSIEM01 = PMSA(IPNT(2))
-                PotEM01 = PMSA(IPNT(3))
-                HSISM01 = PMSA(IPNT(4))
-                PotSM01 = PMSA(IPNT(5))
-                HSIEM02 = PMSA(IPNT(6))
-                PotEM02 = PMSA(IPNT(7))
-                HSISM02 = PMSA(IPNT(8))
-                PotSM02 = PMSA(IPNT(9))
-                HSIEM03 = PMSA(IPNT(10))
-                PotEM03 = PMSA(IPNT(11))
-                HSISM03 = PMSA(IPNT(12))
-                PotSM03 = PMSA(IPNT(13))
-                HSIEM04 = PMSA(IPNT(14))
-                PotEM04 = PMSA(IPNT(15))
-                HSISM04 = PMSA(IPNT(16))
-                PotSM04 = PMSA(IPNT(17))
-                HSIEM05 = PMSA(IPNT(18))
-                PotEM05 = PMSA(IPNT(19))
-                HSISM05 = PMSA(IPNT(20))
-                PotSM05 = PMSA(IPNT(21))
+                nMacrophyt = process_space_real(IPNT(1))
+                HSIEM01 = process_space_real(IPNT(2))
+                PotEM01 = process_space_real(IPNT(3))
+                HSISM01 = process_space_real(IPNT(4))
+                PotSM01 = process_space_real(IPNT(5))
+                HSIEM02 = process_space_real(IPNT(6))
+                PotEM02 = process_space_real(IPNT(7))
+                HSISM02 = process_space_real(IPNT(8))
+                PotSM02 = process_space_real(IPNT(9))
+                HSIEM03 = process_space_real(IPNT(10))
+                PotEM03 = process_space_real(IPNT(11))
+                HSISM03 = process_space_real(IPNT(12))
+                PotSM03 = process_space_real(IPNT(13))
+                HSIEM04 = process_space_real(IPNT(14))
+                PotEM04 = process_space_real(IPNT(15))
+                HSISM04 = process_space_real(IPNT(16))
+                PotSM04 = process_space_real(IPNT(17))
+                HSIEM05 = process_space_real(IPNT(18))
+                PotEM05 = process_space_real(IPNT(19))
+                HSISM05 = process_space_real(IPNT(20))
+                PotSM05 = process_space_real(IPNT(21))
                 !
                 !   *****     Insert your code here  *****
                 !
@@ -147,16 +147,16 @@ contains
                 !
                 !   *****     End of your code       *****
                 !
-                PMSA(IPNT(22)) = MaxEM01
-                PMSA(IPNT(23)) = MaxSM01
-                PMSA(IPNT(24)) = MaxEM02
-                PMSA(IPNT(25)) = MaxSM02
-                PMSA(IPNT(26)) = MaxEM03
-                PMSA(IPNT(27)) = MaxSM03
-                PMSA(IPNT(28)) = MaxEM04
-                PMSA(IPNT(29)) = MaxSM04
-                PMSA(IPNT(30)) = MaxEM05
-                PMSA(IPNT(31)) = MaxSM05
+                process_space_real(IPNT(22)) = MaxEM01
+                process_space_real(IPNT(23)) = MaxSM01
+                process_space_real(IPNT(24)) = MaxEM02
+                process_space_real(IPNT(25)) = MaxSM02
+                process_space_real(IPNT(26)) = MaxEM03
+                process_space_real(IPNT(27)) = MaxSM03
+                process_space_real(IPNT(28)) = MaxEM04
+                process_space_real(IPNT(29)) = MaxSM04
+                process_space_real(IPNT(30)) = MaxEM05
+                process_space_real(IPNT(31)) = MaxSM05
 
             ENDIF
             !

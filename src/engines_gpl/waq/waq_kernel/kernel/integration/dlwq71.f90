@@ -28,234 +28,214 @@ module m_dlwq71
 contains
 
 
-    SUBROUTINE DLWQ71 (DISP, DISPER, AREA, FLOW, ALENG, &
-            VELO, CONC, BOUND, IPOINT, NOSYS, &
-            NOTOT, NOQ1, NOQ2, NOQ, NODISP, &
-            NOVELO, IDPNT, IVPNT, integration_id, AMASS2, &
-            ILFLAG, DMPQ, NDMPQ, IQDMP)
+    !> Makes a mass balance with central differencing in space.
+    subroutine dlwq71(disp, disper, area, flow, aleng, &
+            velo, conc, bound, ipoint, num_substances_transported, &
+            num_substances_total, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges, num_dispersion_arrays, &
+            num_velocity_arrays, idpnt, ivpnt, integration_id, amass2, &
+            ilflag, dmpq, ndmpq, iqdmp)
 
-        ! Makes a mass balance with central differencing in space.
-
-        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
-        !     ----    -----    ------     ------- -----------
-        !     DISP    REAL        3       INPUT   dispersion in 3 directions
-        !     DISPER  REAL   NODISP*NOQ   INPUT   additional dispersion array
-        !     AREA    REAL       NOQ      INPUT   exchange surface area
-        !     FLOW    REAL       NOQ      INPUT   flows accross exchange surfs
-        !     ALENG   REAL      2*NOQ     INPUT   from- and to lengthes
-        !     VELO    REAL   NOVELO*NOQ   INPUT   additional velocity array
-        !     CONC    REAL   NOTOT*NOSEG  INPUT   concentrations
-        !     BOUND   REAL     NOTOT*?    INPUT   boundary concentrations
-        !     IPOINT  INTEGER   4*NOQ     INPUT   exchange pointers
-        !     NOSYS   INTEGER     1       INPUT   number of active substances
-        !     NOTOT   INTEGER     1       INPUT   total number of substances
-        !     NOQ1    INTEGER     1       INPUT   nr of exchanges in first dir.
-        !     NOQ2    INTEGER     1       INPUT   nr of exchanges in second dir.
-        !     NOQ3    INTEGER     1       INPUT   nr of exchanges in third dir.
-        !     NOQ     INTEGER     1       INPUT   total number of exchanges
-        !     NODISP  INTEGER     1       INPUT   number  of additional dispers.
-        !     NOVELO  INTEGER     1       INPUT   number  of additional velos.
-        !     IDPNT   INTEGER   NOSYS     INPUT   pointer systems to dispersions
-        !     IVPNT   INTEGER   NOSYS     INPUT   pointer systems to velocities
-        !     integration_id    INTEGER     1       INPUT   = 0 or 2 DISP at zero flow
-        !                                         = 1 or 3 no DISP at zero flow
-        !                                         = 0 or 1 DISP over boundary
-        !                                         = 2 or 3 no DISP over boundary
-        !     AMASS2  REAL     NOTOT*5    IN/OUT  mass balance array
-        !     ILFLAG  INTEGER     1       INPUT   if 0 then 3 length values
-        !     DMPQ    REAL  NOTOT*NDMPQ*? IN/OUT  mass balance dumped exchange
-        !                                         if INTOPT > 7
-        !     NDMPQ   INTEGER     1       INPUT   number of dumped exchanges
-        !     IQDMP   INTEGER     *       INPUT   pointer dumped exchanges
-        !
         use timers
 
-        INTEGER(kind = int_wp) :: NDMPQ
-        INTEGER(kind = int_wp) :: IQDMP   (*), ILFLAG
-        real(kind = real_wp) :: DISP  (3), DISPER(*), AREA (*), FLOW  (*), &
-                ALENG (*), VELO  (*), CONC (*), BOUND (*), &
-                AMASS2(*), DMPQ  (*)
-        integer(kind = int_wp) :: IPOINT(4, *), IDPNT(*), IVPNT(*)
+        real(kind = real_wp),   intent(in   ) :: disp(3)        !< Dispersion in 3 directions
+        real(kind = real_wp),   intent(in   ) :: disper(*)      !< Additional dispersion array (num_dispersion_arrays*num_exchanges)
+        real(kind = real_wp),   intent(in   ) :: area(*)        !< Exchange surface area (num_exchanges)
+        real(kind = real_wp),   intent(in   ) :: flow(*)        !< Flows accross exchange surfs (num_exchanges)
+        real(kind = real_wp),   intent(in   ) :: aleng(*)       !< From- and to lengths (2*num_exchanges)
+        real(kind = real_wp),   intent(in   ) :: velo(*)        !< Additional velocity array (num_velocity_arrays*num_exchanges)
+        real(kind = real_wp),   intent(in   ) :: conc (*)       !< Concentrations (num_substances_total*num_cells)
+        real(kind = real_wp),   intent(in   ) :: bound(*)       !< Boundary concentrations (num_substances_total*?)
+        integer(kind = int_wp), intent(in   ) :: ipoint(4, *)   !< Exchange pointers
+        integer(kind = int_wp), intent(in   ) :: num_substances_transported          !< Number of active substances
+        integer(kind = int_wp), intent(in   ) :: num_substances_total          !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: num_exchanges_u_dir           !< Nr of exchanges in first dir.
+        integer(kind = int_wp), intent(in   ) :: num_exchanges_v_dir           !< Nr of exchanges in second dir.
+        integer(kind = int_wp), intent(in   ) :: num_exchanges            !< Total number of exchanges
+        integer(kind = int_wp), intent(in   ) :: num_dispersion_arrays         !< Number  of additional dispers.
+        integer(kind = int_wp), intent(in   ) :: num_velocity_arrays         !< Number  of additional velos.
+        integer(kind = int_wp), intent(in   ) :: idpnt(*)       !< Pointer systems to dispersions (num_substances_transported)
+        integer(kind = int_wp), intent(in   ) :: ivpnt(*)       !< Pointer systems to velocities (num_substances_transported)
+        integer(kind = int_wp), intent(in   ) :: integration_id !< = 0, 2 DISP at zero flow
+                                                                !< = 1 or 3 no DISP at zero flow
+                                                                !< = 0 or 1 DISP over boundary
+                                                                !< = 2 or 3 no DISP over boundary
+        real(kind = real_wp), intent(inout)   :: amass2(*)      !< Mass balance array (num_substances_total*5)
+        integer(kind = int_wp), intent(in   ) :: ilflag         !< If 0 then 3 length values
+        real(kind = real_wp),   intent(inout) :: dmpq(*)        !< Mass balance dumped exchange (num_substances_total*NDMPQ*?)
+                                                                !< If INTOPT > 7
+        integer(kind = int_wp), intent(in   ) :: ndmpq          !< Number of dumped exchanges
+        integer(kind = int_wp), intent(in   ) :: iqdmp(*)       !< Pointer dumped exchanges
 
-        integer(kind = int_wp) :: i, i3, i4, i5, i6, is, iq, ibflag, ipb, ipq, integration_id
+        ! Local variables
+        integer(kind = int_wp) :: i, i3, i4, i5, i6, is, iq, ibflag, ipb, ipq
         integer(kind = int_wp) :: j, k1, k2
-        integer(kind = int_wp) :: notot, nosys, noq, noq1, noq2, novelo, nodisp
+        integer(kind = int_wp) :: ithandl = 0
 
         real(kind = real_wp) :: a, q, e, d, v, al, dl, dv, dq, f1, f2
 
-        integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("dlwq71", ithandl)
+
+        ! loop accross the number of exchanges
+        i4 = 3 * num_substances_total
+        i5 = 4 * num_substances_total
+        i6 = num_substances_transported * ndmpq
+        if (mod(integration_id, 16) >= 8) then
+            ibflag = 1
+        else
+            ibflag = 0
+        endif
         !
-        !         loop accross the number of exchanges
-        !
-        I4 = 3 * NOTOT
-        I5 = 4 * NOTOT
-        I6 = NOSYS * NDMPQ
-        IF (MOD(integration_id, 16) >= 8) THEN
-            IBFLAG = 1
-        ELSE
-            IBFLAG = 0
-        ENDIF
-        !
-        DO IQ = 1, NOQ
-            !
-            !         initialisations , check for transport anyhow
-            !
-            I = IPOINT(1, IQ)
-            J = IPOINT(2, IQ)
-            IF (I == 0 .OR. J == 0) GOTO 60
-            !
-            !     Check if exchange is dump exchange, set IPB
-            !
-            IF (IBFLAG == 1) THEN
-                IF (IQDMP(IQ) > 0) THEN
-                    IPB = IQDMP(IQ)
-                    IPQ = (IQDMP(IQ) - 1) * NOSYS
-                ELSE
-                    IPB = 0
-                ENDIF
-            ELSE
-                IPB = 0
-            ENDIF
-            IF (I > 0 .AND. J > 0 .AND. IPB == 0) GOTO 60
-            A = AREA(IQ)
-            Q = FLOW(IQ)
-            IF (MOD(integration_id, 2) == 1) THEN
-                IF (ABS(Q) < 10.0E-25)  GOTO 60
-            ENDIF
-            E = DISP(1)
-            AL = ALENG(1)
-            IF (IQ > NOQ1) THEN
-                E = DISP (2)
-                AL = ALENG(2)
-            ENDIF
-            IF (IQ > NOQ1 + NOQ2) THEN
-                E = DISP (3)
-                AL = ALENG(3)
-            ENDIF
-            IF (ILFLAG == 1) THEN
-                DL = A / (ALENG(2 * IQ - 1) + ALENG(2 * IQ))
-                F1 = ALENG(2 * IQ) * DL / A
-                F2 = ALENG(2 * IQ - 1) * DL / A
-            ELSE
-                DL = A / AL
-                F1 = 0.5
-                F2 = 0.5
-            ENDIF
-            E = E * DL
-            IF (I < 0) GOTO 20
-            IF (J < 0) GOTO 40
-            !
-            !         the regular case
-            !
-            K1 = (I - 1) * NOTOT
-            K2 = (J - 1) * NOTOT
-            DO I3 = 1, NOTOT
-                IS = MIN (I3, NOSYS)
-                D = E
-                V = Q
-                IF (IDPNT(IS) > 0) D = D + DISPER((IQ - 1) * NODISP + IDPNT(IS)) * DL
-                IF (IVPNT(IS) > 0) THEN
-                    DV = VELO((IQ - 1) * NOVELO + IVPNT(IS)) * A
-                    V = V + DV
-                ENDIF
-                DQ = (V * F1 + D) * CONC(K1 + I3) + (V * F2 - D) * CONC(K2 + I3)
-                !
-                !        mass balance
-                !
-                IF (DQ > 0.0) THEN
-                    DMPQ(IPQ + I3) = DMPQ(IPQ + I3) + DQ
-                ELSE
-                    DMPQ(IPQ + I3 + I6) = DMPQ(IPQ + I3 + I6) - DQ
-                ENDIF
+        do iq = 1, num_exchanges
+
+            ! initialisations , check for transport anyhow
+            i = ipoint(1, iq)
+            j = ipoint(2, iq)
+            if (i == 0 .or. j == 0) goto 60
+
+            ! Check if exchange is dump exchange, set IPB
+            if (ibflag == 1) then
+                if (iqdmp(iq) > 0) then
+                    ipb = iqdmp(iq)
+                    ipq = (iqdmp(iq) - 1) * num_substances_transported
+                else
+                    ipb = 0
+                endif
+            else
+                ipb = 0
+            endif
+            if (i > 0 .and. j > 0 .and. ipb == 0) goto 60
+            a = area(iq)
+            q = flow(iq)
+            if (mod(integration_id, 2) == 1) then
+                if (abs(q) < 10.0e-25)  goto 60
+            endif
+            e = disp(1)
+            al = aleng(1)
+            if (iq > num_exchanges_u_dir) then
+                e = disp (2)
+                al = aleng(2)
+            endif
+            if (iq > num_exchanges_u_dir + num_exchanges_v_dir) then
+                e = disp (3)
+                al = aleng(3)
+            endif
+            if (ilflag == 1) then
+                dl = a / (aleng(2 * iq - 1) + aleng(2 * iq))
+                f1 = aleng(2 * iq) * dl / a
+                f2 = aleng(2 * iq - 1) * dl / a
+            else
+                dl = a / al
+                f1 = 0.5
+                f2 = 0.5
+            endif
+            e = e * dl
+            if (i < 0) goto 20
+            if (j < 0) goto 40
+
+            ! the regular case
+            k1 = (i - 1) * num_substances_total
+            k2 = (j - 1) * num_substances_total
+            do i3 = 1, num_substances_total
+                is = min (i3, num_substances_transported)
+                d = e
+                v = q
+                if (idpnt(is) > 0) d = d + disper((iq - 1) * num_dispersion_arrays + idpnt(is)) * dl
+                if (ivpnt(is) > 0) then
+                    dv = velo((iq - 1) * num_velocity_arrays + ivpnt(is)) * a
+                    v = v + dv
+                endif
+                dq = (v * f1 + d) * conc(k1 + i3) + (v * f2 - d) * conc(k2 + i3)
+
+                ! mass balance
+                if (dq > 0.0) then
+                    dmpq(ipq + i3) = dmpq(ipq + i3) + dq
+                else
+                    dmpq(ipq + i3 + i6) = dmpq(ipq + i3 + i6) - dq
+                endif
                 !
             end do
-            GOTO 60
-            !
-            !        The 'from' element was a boundary. Note the 2 options.
-            !
-            20 IF (J < 0) GOTO 60
-            K1 = (-I - 1) * NOTOT
-            K2 = (J - 1) * NOTOT
-            DO I3 = 1, NOTOT
-                IS = MIN (I3, NOSYS)
-                V = Q
-                IF (IVPNT(IS) > 0) V = V + VELO  ((IQ - 1) * NOVELO + IVPNT(IS)) * A
-                D = 0.0
-                IF (MOD(integration_id, 4) <  2) THEN
-                    D = E
-                    IF (IDPNT(IS)>0) D = D + DISPER((IQ - 1) * NODISP + IDPNT(IS)) * DL
-                ENDIF
-                IF (MOD(integration_id, 8) >=  4) THEN
-                    IF (V > 0.0) THEN
-                        F1 = 1.0
-                        F2 = 0.0
-                    ELSE
-                        F1 = 0.0
-                        F2 = 1.0
-                    ENDIF
-                ENDIF
-                DQ = (V * F1 + D) * BOUND(K1 + I3) + (V * F2 - D) * CONC (K2 + I3)
-                IF (DQ > 0.0) THEN
-                    AMASS2(I3 + I4) = AMASS2(I3 + I4) + DQ
-                ELSE
-                    AMASS2(I3 + I5) = AMASS2(I3 + I5) - DQ
-                ENDIF
-                IF (IPB > 0) THEN
-                    IF (DQ > 0.0) THEN
-                        DMPQ(IPQ + I3) = DMPQ(IPQ + I3) + DQ
-                    ELSE
-                        DMPQ(IPQ + I3 + I6) = DMPQ(IPQ + I3 + I6) - DQ
-                    ENDIF
-                ENDIF
+            goto 60
+
+            ! The 'from' element was a boundary. Note the 2 options.
+            20 if (j < 0) goto 60
+            k1 = (-i - 1) * num_substances_total
+            k2 = (j - 1) * num_substances_total
+            do i3 = 1, num_substances_total
+                is = min (i3, num_substances_transported)
+                v = q
+                if (ivpnt(is) > 0) v = v + velo  ((iq - 1) * num_velocity_arrays + ivpnt(is)) * a
+                d = 0.0
+                if (mod(integration_id, 4) <  2) then
+                    d = e
+                    if (idpnt(is)>0) d = d + disper((iq - 1) * num_dispersion_arrays + idpnt(is)) * dl
+                endif
+                if (mod(integration_id, 8) >=  4) then
+                    if (v > 0.0) then
+                        f1 = 1.0
+                        f2 = 0.0
+                    else
+                        f1 = 0.0
+                        f2 = 1.0
+                    endif
+                endif
+                dq = (v * f1 + d) * bound(k1 + i3) + (v * f2 - d) * conc (k2 + i3)
+                if (dq > 0.0) then
+                    amass2(i3 + i4) = amass2(i3 + i4) + dq
+                else
+                    amass2(i3 + i5) = amass2(i3 + i5) - dq
+                endif
+                if (ipb > 0) then
+                    if (dq > 0.0) then
+                        dmpq(ipq + i3) = dmpq(ipq + i3) + dq
+                    else
+                        dmpq(ipq + i3 + i6) = dmpq(ipq + i3 + i6) - dq
+                    endif
+                endif
             end do
-            GOTO 60
-            !
-            !        The 'to' element was a boundary.
-            !
-            40 IF (I == 0) GOTO 60
-            K1 = (I - 1) * NOTOT
-            K2 = (-J - 1) * NOTOT
-            DO I3 = 1, NOTOT
-                IS = MIN (I3, NOSYS)
-                V = Q
-                IF (IVPNT(IS) > 0) V = V + VELO  ((IQ - 1) * NOVELO + IVPNT(IS)) * A
-                D = 0.0
-                IF (MOD(integration_id, 4)  <  2) THEN
-                    D = E
-                    IF (IDPNT(IS)>0) D = D + DISPER((IQ - 1) * NODISP + IDPNT(IS)) * DL
-                ENDIF
-                IF (MOD(integration_id, 8) >=  4) THEN
-                    IF (V > 0.0) THEN
-                        F1 = 1.0
-                        F2 = 0.0
-                    ELSE
-                        F1 = 0.0
-                        F2 = 1.0
-                    ENDIF
-                ENDIF
-                DQ = (V * F1 + D) * CONC (K1 + I3) + (V * F2 - D) * BOUND(K2 + I3)
-                IF (DQ > 0.0) THEN
-                    AMASS2(I3 + I5) = AMASS2(I3 + I5) + DQ
-                ELSE
-                    AMASS2(I3 + I4) = AMASS2(I3 + I4) - DQ
-                ENDIF
-                IF (IPB > 0) THEN
-                    IF (DQ > 0.0) THEN
-                        DMPQ(IPQ + I3) = DMPQ(IPQ + I3) + DQ
-                    ELSE
-                        DMPQ(IPQ + I3 + I6) = DMPQ(IPQ + I3 + I6) - DQ
-                    ENDIF
-                ENDIF
+            goto 60
+
+            ! The 'to' element was a boundary.
+            40 if (i == 0) goto 60
+            k1 = (i - 1) * num_substances_total
+            k2 = (-j - 1) * num_substances_total
+            do i3 = 1, num_substances_total
+                is = min (i3, num_substances_transported)
+                v = q
+                if (ivpnt(is) > 0) v = v + velo  ((iq - 1) * num_velocity_arrays + ivpnt(is)) * a
+                d = 0.0
+                if (mod(integration_id, 4)  <  2) then
+                    d = e
+                    if (idpnt(is)>0) d = d + disper((iq - 1) * num_dispersion_arrays + idpnt(is)) * dl
+                endif
+                if (mod(integration_id, 8) >=  4) then
+                    if (v > 0.0) then
+                        f1 = 1.0
+                        f2 = 0.0
+                    else
+                        f1 = 0.0
+                        f2 = 1.0
+                    endif
+                endif
+                dq = (v * f1 + d) * conc (k1 + i3) + (v * f2 - d) * bound(k2 + i3)
+                if (dq > 0.0) then
+                    amass2(i3 + i5) = amass2(i3 + i5) + dq
+                else
+                    amass2(i3 + i4) = amass2(i3 + i4) - dq
+                endif
+                if (ipb > 0) then
+                    if (dq > 0.0) then
+                        dmpq(ipq + i3) = dmpq(ipq + i3) + dq
+                    else
+                        dmpq(ipq + i3 + i6) = dmpq(ipq + i3 + i6) - dq
+                    endif
+                endif
             end do
-            !
-            !        end of the loop over exchanges
-            !
-            60 CONTINUE
+
+            ! end of the loop over exchanges
+            60 continue
         end do
         !
         if (timon) call timstop (ithandl)
-        RETURN
-    END
-
+        return
+    end subroutine dlwq71
 end module m_dlwq71

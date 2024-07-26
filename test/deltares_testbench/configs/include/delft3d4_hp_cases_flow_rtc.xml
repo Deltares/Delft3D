@@ -25,7 +25,7 @@
 				
 				-->
 
-	<testCases>
+	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e21_f01_c01-basic" ref="flow2d3d_rtc_default">
 			<path version="2024-01-12T07:40:00">e21_d3dflow-rtc/f01_general/c01-basic</path>
 			<maxRunTime>11.1540000439</maxRunTime>

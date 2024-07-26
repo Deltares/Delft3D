@@ -68,12 +68,13 @@ contains
    use m_longculverts
    use timers,           only : timstrt, timstop
    use m_sethu
-   use m_external_forcings
+      use fm_external_forcings
    use m_1d2d_fixedweirs, only : n_1d2d_fixedweirs, realloc_1d2d_fixedweirs, initialise_1d2d_fixedweirs
    use m_fm_icecover, only: ice_apply_pressure, ice_p, fm_ice_update_press
    use fm_manhole_losses, only: init_manhole_losses
    use unstruc_channel_flow, only: network
    use m_fixedweirs, only: weirdte, nfxw
+      use m_setup_structures_and_weirs_list, only: build_structures_and_weirs_list
    
    implicit none
 
@@ -82,8 +83,6 @@ contains
 
    double precision  :: upot, ukin, ueaa
    
-   integer, external :: flow_initexternalforcings
-
    double precision, allocatable :: weirdte_save(:)
       
    error = DFM_NOERR
@@ -174,11 +173,11 @@ contains
    ! First call to setexternalforcingsonboundaries, here only for the structure timeseries (prior to adjust_bobs_for_dams_and_structs())
    call setzminmax()                                 ! our side of preparation for 3D ec module
    call setsigmabnds()
-   call flow_setexternalforcingsonboundaries(tstart_user, error)  ! set structure (and bnd) external forcings. Error handling later in 2nd call for bnds. 
+      call set_external_forcings_boundaries(tstart_user, error) ! set structure (and bnd) external forcings. Error handling later in 2nd call for bnds.
    call initialize_structures_actual_params(network%sts)          ! After structure time series, and prior to adjust_bobs, to use proper crest levels.
 
    call adjust_bobs_for_dams_and_structs()
-   call setup_structures_and_weirs_list()
+      structuresAndWeirsList = build_structures_and_weirs_list()
    call set_floodfill_water_levels_based_on_sample_file()
 
    if (allocated(ibot)) then
@@ -231,7 +230,7 @@ contains
    end if
 
    ! Actual boundary forcing (now that initial water levels, etc. are also known):
-   call flow_setexternalforcingsonboundaries(tstart_user, error)         ! set bnd   oriented external forcings
+      call set_external_forcings_boundaries(tstart_user, error) ! set bnd   oriented external forcings
    if( is_error_at_any_processor(error) ) then
        call qnerror('Error occurred when setting external forcings on boundaries.',' ', ' ')
        return
@@ -732,7 +731,7 @@ end subroutine set_internal_tides_friction_coefficient
 subroutine remember_initial_water_levels_at_water_level_boundaries()
    use m_flow,                 only : s1
    use m_flowgeom,             only : bl
-   use m_flowexternalforcings, only : nbndz, kbndz, zbndz0
+      use fm_external_forcings_data, only: nbndz, kbndz, zbndz0
 
    implicit none
 
@@ -770,7 +769,7 @@ end subroutine make_volume_tables
 !> Load restart file (*_map.nc) assigned in the *.mdu file OR read a *.rst file
 subroutine load_restart_file(file_exist, error)
    use m_flowparameters,   only : jased, iperot
-   use m_flow,             only : u1, u0, s0, hs, s1, ucxyq_read_rst
+      use m_flow, only: hs, s1, ucxyq_read_rst
    use m_flowgeom,         only : bl
    use m_sediment,         only : stm_included
    use unstruc_model,      only : md_restartfile
@@ -787,7 +786,6 @@ subroutine load_restart_file(file_exist, error)
    character(len=255)            :: rstfile
    integer                       :: mrst
    integer                       :: jw
-   double precision, allocatable :: u1_tmp(:)
    
    file_exist = .false.
 
@@ -853,7 +851,7 @@ end subroutine initialize_morphological_start_time
  
 !> for normal velocity boundaries, also initialise velocity on link
 subroutine initialize_values_at_normal_velocity_boundaries()
-   use m_flowexternalforcings, only : nbndn, kbndn, zbndn
+      use fm_external_forcings_data, only: nbndn, kbndn, zbndn
    use m_flow,                 only : u1
 
    implicit none
@@ -877,7 +875,7 @@ end subroutine initialize_values_at_normal_velocity_boundaries
 !> initialize discharge boundaries
 subroutine initialize_values_at_discharge_boundaries()
    use m_flowparameters,       only : epshu
-   use m_flowexternalforcings, only : nqbnd, L1qbnd, L2qbnd, kbndu
+      use fm_external_forcings_data, only: nqbnd, L1qbnd, L2qbnd, kbndu
    use m_flowgeom,             only : bob
    use m_flow,                 only : s1
 
@@ -955,7 +953,7 @@ end subroutine set_boundaries_implicit
 !> set_implicit_for_pipes
 subroutine set_implicit_for_pipes()
    use m_flowparameters, only : nonlin1d, nonlin2D
-   use m_flowgeom,       only : kcu, lbnd1d, lnx1D, ln, lnxi, lnx, prof1d, teta
+      use m_flowgeom, only: kcu, lbnd1d, lnx1D, lnxi, lnx, prof1d, teta
    use m_missing,        only : dmiss
 
    implicit none
@@ -1066,7 +1064,7 @@ subroutine set_data_for_ship_modelling()
    use m_ship,                 only : nshiptxy
    use m_flowparameters,       only : jasal
    use m_flow,                 only : kmx, ndkx, sa1
-   use m_flowexternalforcings, only : success
+      use fm_external_forcings_data, only: success
    
    implicit none
 
@@ -1146,37 +1144,36 @@ end subroutine include_ground_water
 !> include_infiltration_model
 subroutine include_infiltration_model()
    use m_hydrology_data, only : infiltrationmodel, DFM_HYD_INFILT_CONST, DFM_HYD_INFILT_DARCY, infiltcap
-   use m_flowgeom,       only : kcsini, prof1D, lnx, ln, lnx1D
+      use m_flowgeom, only: prof1D, lnx, ln, lnx1D
    use m_cell_geometry,  only : ndx
    use m_alloc!,        only : realloc
 
    implicit none
 
    integer     :: link
-   integer     :: cell
    integer     :: left_cell
    integer     :: right_cell
+      integer, allocatable :: mask(:)
 
    if (infiltrationmodel == DFM_HYD_INFILT_CONST .or. &
        infiltrationmodel == DFM_HYD_INFILT_DARCY) then  ! set infiltcap=0 for closed links only
-       call realloc(kcsini, ndx, keepExisting=.false., fill = 0)
+         allocate (mask(ndx), source=0)
        do link = 1, lnx  ! only one connected open profile will open surface runoff
           left_cell  = ln(1,link)
           right_cell = ln(2,link)
           if (link <= lnx1D) then
              if (prof1D(3,link) < 0) then ! closed profile
              else
-                 kcsini(left_cell)  = 1
-                 kcsini(right_cell) = 1
+                  mask(left_cell) = 1
+                  mask(right_cell) = 1
              end if
           else
-             kcsini(left_cell)  = 1
-             kcsini(right_cell) = 1
+               mask(left_cell) = 1
+               mask(right_cell) = 1
           end if
        end do
-       infiltcap(:) = infiltcap(:)*kcsini(:)  ! 0 for all links closed
+         infiltcap(:) = infiltcap(:) * mask(:) ! 0 for all links closed
 
-       deallocate(kcsini) ! GM: why is it deallocated here?
    end if
  
 end subroutine include_infiltration_model
@@ -1231,7 +1228,7 @@ end subroutine set_initial_velocity_in_3D
 !> set wave modelling
 subroutine set_wave_modelling()
    use m_flowparameters,       only : jawave, flowWithoutWaves
-   use m_flow,                 only : hs, hu, kmx, kmxn
+      use m_flow, only: hs, hu, kmx
    use mathconsts,             only : sqrt2_hp
    use m_waves,                only : hwavcom, hwav, gammax, twav, phiwav, ustokes, vstokes
    use m_flowgeom,             only : lnx, ln, csu, snu
@@ -1450,7 +1447,7 @@ end subroutine initialize_sediment_3D
 
 !> initialize salinity, temperature, sediment on boundary
 subroutine initialize_salinity_temperature_on_boundary()
-   use m_flowparameters,       only : jasal, jased, jatem
+      use m_flowparameters, only: jasal, jatem
    use m_flowgeom,             only : ln, lnx, lnxi
    use m_flow,                 only : sa1, q1, tem1
 
@@ -1590,8 +1587,8 @@ subroutine apply_hardcoded_specific_input()
 
  double precision :: xzmin, xzmax, yzmin, yzmax
  double precision :: xx1, yy1, xx2, yy2, ux1, uy1, ux2, uy2, csl, snl
- double precision :: fout, foutk, aa, dis, dmu, var, rho1, zi, zido, ziup, saldo, salup
- double precision :: xx, yy, zz, ux, uy, pin, xli, slope, cs, cz, z00, cst
+      double precision :: fout, foutk, dis, dmu, var, rho1, zi, zido, ziup, saldo, salup
+      double precision :: xx, yy, zz, ux, uy, pin, xli, slope, cs, cz, z00
  double precision :: r, eer, r0, dep, Rossby, amp, csth, sqghi, snth
  double precision :: rr, rmx, x0, y0, dxx, dyy, ucmk, phi, dphi
  double precision :: xm, ym
@@ -1610,7 +1607,7 @@ subroutine apply_hardcoded_specific_input()
     endif
 
     do k = 1, ndx
-       if (xz(k) .le. 0.5d0*(xzmin+xzmax) ) then
+            if (xz(k) <= 0.5d0 * (xzmin + xzmax)) then
           s1(k)  = bl(k) + 2d0
        else if (jw == ON) then
           s1(k)  = bl(k) + hwetbed
@@ -1623,7 +1620,7 @@ subroutine apply_hardcoded_specific_input()
        call setkbotktop(1)  ! wetbed
        if (jasal /= OFF) then
           do k = 1,ndx
-             if (xz(k) .le. 0.5d0*(xzmin+xzmax) ) then
+                  if (xz(k) <= 0.5d0 * (xzmin + xzmax)) then
                 call getkbotktop(k,kb,kt)
                 do kk = kb,kt
                    sa1(kk) = 2d0
@@ -2226,8 +2223,8 @@ subroutine apply_hardcoded_specific_input()
           endif
       enddo
       ibedlevtyp    = 1 ; call setbobs()
- else if ( md_ident(1:3).eq.'lts' ) then
-    if ( md_ident(4:6).eq.'rot' ) then
+      else if (md_ident(1:3) == 'lts') then
+         if (md_ident(4:6) == 'rot') then
        xkmin =  huge(1d0)
        xkmax = -huge(1d0)
        ykmin =  huge(1d0)
@@ -2239,7 +2236,7 @@ subroutine apply_hardcoded_specific_input()
           ykmax = max(ykmax,yk(k))
        end do
 
-       if ( jampi.eq.1 ) then
+            if (jampi == 1) then
          call reduce_double_max(xkmax)
          call reduce_double_max(ykmax)
          call reduce_double_min(xkmin)
@@ -2249,7 +2246,7 @@ subroutine apply_hardcoded_specific_input()
        xm = 0.5d0*(xkmin+xkmax)
        ym = 0.5d0*(ykmin+ykmax)
        R  = 0.5d0*max(xkmax-xkmin, ykmax-ykmin)
-       if ( kmx.eq.0 ) then
+            if (kmx == 0) then
           do L=1,Lnx
              u1(L) = (-(yu(L)-ym)*csu(L) + (xu(L)-xm)*snu(L))/R
 !             u1(L) = (csu(L)+snu(L))
@@ -2264,7 +2261,7 @@ subroutine apply_hardcoded_specific_input()
        end if
 
     else
-       if ( kmx.eq.0 ) then
+            if (kmx == 0) then
           do L=1,Lnx
              u1(L) = csu(L)
           end do
@@ -2288,7 +2285,7 @@ end subroutine apply_hardcoded_specific_input
 !> restore au and q1 for 3D case for the first write into a history file    
 subroutine restore_au_q1_3D_for_1st_history_record()
    use m_flow,                 only : q1, LBot, kmx, kmxL   
-   use m_flowexternalforcings, only : fusav, rusav, ausav, ncgen
+      use fm_external_forcings_data, only: fusav, rusav, ausav, ncgen
    use m_flowgeom,             only : lnx
 
    implicit none

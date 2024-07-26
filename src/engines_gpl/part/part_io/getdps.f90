@@ -21,97 +21,96 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_getdps
-use m_stop_exit
+    use m_stop_exit
 
-
-implicit none
+    implicit none
 
 contains
 
 
-subroutine getdps ( lunpr  , lundp  , lnam   , nmax   , mmax   ,      &
-                    nosegl , dps    , cellpnt, ltrack )
-!
-!     programmer : antoon koster
-!     function   : read bathymetry from *.dps file,
-!                  as created by coup203
-!                  note that the bathymetry is defined
-!                  w.r.t. reference level
-!     date       : feb 2003
-!
-!     note:
-!       1. note that the depths in this routine refer to
-!          depths w.r.t. reference level, so called
-!          bathymetry.
-!
-!       2. as these depths are only required in case of
-!          particle tracking, this file may be missing
-!          in other cases (see itrack)
+    subroutine getdps (lunpr, lundp, lnam, num_rows, num_columns, &
+            nosegl, dps, cellpnt, ltrack)
+        !
+        !     programmer : antoon koster
+        !     function   : read bathymetry from *.dps file,
+        !                  as created by coup203
+        !                  note that the bathymetry is defined
+        !                  w.r.t. reference level
+        !     date       : feb 2003
+        !
+        !     note:
+        !       1. note that the depths in this routine refer to
+        !          depths w.r.t. reference level, so called
+        !          bathymetry.
+        !
+        !       2. as these depths are only required in case of
+        !          particle tracking, this file may be missing
+        !          in other cases (see itrack)
 
-      use m_waq_precision      ! single and double precision
-      use timers
-      use fileinfo       ! file information for all input/output files
-      use openfl_mod     ! explicit interface for subroutine calls
-      implicit none
+        use m_waq_precision      ! single and double precision
+        use timers
+        use fileinfo       ! file information for all input/output files
+        use openfl_mod     ! explicit interface for subroutine calls
+        implicit none
 
-!     Arguments
+        !     Arguments
 
-!     kind           function         name                  description
+        !     kind           function         name                  description
 
-      integer  ( int_wp ), intent(in   ) :: lunpr               !< unit nr of the diagnostics file
-      integer  ( int_wp ), intent(in   ) :: lundp               !< unit nr of the depth file
-      character( * ), intent(in   ) :: lnam                !< name of the depth file
-      integer  ( int_wp ), intent(in   ) :: nmax                !< first dimension of the grid
-      integer  ( int_wp ), intent(in   ) :: mmax                !< second dimension of the grid
-      integer  ( int_wp ), intent(in   ) :: nosegl              !< nr of active segments of a layer
-      real     ( real_wp), intent(  out) :: dps   (nmax*mmax)   !< array with depth values
-      integer  ( int_wp ), intent(in   ) :: cellpnt(nosegl)     !< backpointer of nosegl to mnmax
-      logical       , intent(in   ) :: ltrack              !< if .true. then particle tracing
+        integer  (int_wp), intent(in) :: lunpr               !< unit nr of the diagnostics file
+        integer  (int_wp), intent(in) :: lundp               !< unit nr of the depth file
+        character(*), intent(in) :: lnam                !< name of the depth file
+        integer  (int_wp), intent(in) :: num_rows                !< first dimension of the grid
+        integer  (int_wp), intent(in) :: num_columns                !< second dimension of the grid
+        integer  (int_wp), intent(in) :: nosegl              !< nr of active segments of a layer
+        real     (real_wp), intent(out) :: dps   (num_rows * num_columns)   !< array with depth values
+        integer  (int_wp), intent(in) :: cellpnt(nosegl)     !< backpointer of nosegl to mnmax
+        logical, intent(in) :: ltrack              !< if .true. then particle tracing
 
-!     local scalars
+        !     local scalars
 
-      integer :: idum, nmnw, iocond
-      real(sp), allocatable :: depwrk(:)          !  work array to read depth
-      logical :: ex
+        integer :: idum, nmnw, iocond
+        real(sp), allocatable :: depwrk(:)          !  work array to read depth
+        logical :: ex
 
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
-      if ( timon ) call timstrt( "getdps", ithndl )
+        integer(4) ithndl              ! handle to time this subroutine
+        data       ithndl / 0 /
+        if (timon) call timstrt("getdps", ithndl)
 
-      dps = 0.0
-      if ( ltrack ) then
+        dps = 0.0
+        if (ltrack) then
 
-!        for particle tracking, get depth
+            !        for particle tracking, get depth
 
-         inquire (file = trim(lnam), exist = ex)
-         if (ex) then
-            call openfl ( lundp, lnam, 0 )
-            read (lundp) idum,idum,nmnw,nmnw,nmnw,idum
-            if ( nmnw .ne. nosegl ) then
-               write ( lunpr, * ) 'ERROR, dimension in dps file does not match!',nmnw,nosegl
-               call stop_exit(1)
-            endif
-            allocate ( depwrk(nosegl) )
-            read (lundp, iostat = iocond) depwrk
-            close(lundp)
-            if (iocond == 0 ) then
-               dps(cellpnt(:)) = depwrk(:)
+            inquire (file = trim(lnam), exist = ex)
+            if (ex) then
+                call openfl (lundp, lnam, 0)
+                read (lundp) idum, idum, nmnw, nmnw, nmnw, idum
+                if (nmnw /= nosegl) then
+                    write (lunpr, *) 'ERROR, dimension in dps file does not match!', nmnw, nosegl
+                    call stop_exit(1)
+                endif
+                allocate (depwrk(nosegl))
+                read (lundp, iostat = iocond) depwrk
+                close(lundp)
+                if (iocond == 0) then
+                    dps(cellpnt(:)) = depwrk(:)
+                else
+                    write (lunpr, *) 'Error 4407. Reading the depth file :', lnam(:len_trim(lnam))
+                    write (lunpr, *) '            Depths not read correctly, the calculation is terminated'
+                    write (*, *) 'Error 4407. Reading the depth file :', lnam(:len_trim(lnam))
+                    write (*, *) '            Depths not read correctly, the calculation is terminated'
+                    call stop_exit(1)
+                endif
             else
-               write (lunpr, *) 'Error 4407. Reading the depth file :', lnam(:len_trim(lnam))
-               write (lunpr, *) '            Depths not read correctly, the calculation is terminated'
-               write (*,     *) 'Error 4407. Reading the depth file :', lnam(:len_trim(lnam))
-               write (*,     *) '            Depths not read correctly, the calculation is terminated'
-               call stop_exit(1)
+                write (lunpr, *) 'ERROR: Depth file does not exist. The calculation is terminated'
+                write (*, *) 'ERROR: Depth file does not exist. The calculation is terminated'
+                call stop_exit(1)
             endif
-         else
-            write ( lunpr, * ) 'ERROR: Depth file does not exist. The calculation is terminated'
-            write ( *,     * ) 'ERROR: Depth file does not exist. The calculation is terminated'
-            call stop_exit(1)
-         endif
-      endif
+        endif
 
-      if ( timon ) call timstop ( ithndl )
+        if (timon) call timstop (ithndl)
 
-end subroutine
+    end subroutine
 
 end module m_getdps

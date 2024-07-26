@@ -28,9 +28,9 @@ module m_wq_processes_pmsa_size
 contains
 
 
-    subroutine wq_processes_pmsa_size (lunrep, noseg, noq, isizea)
+    subroutine wq_processes_pmsa_size (lunrep, num_cells, num_exchanges, isizea)
 
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use m_array_manipulation, only : make_pointer, memory_partition, real_type
         use processes_input
         use processes_pointers
@@ -42,8 +42,8 @@ contains
         !     kind     function         name        description
 
         integer(kind = int_wp), intent(in) :: lunrep     ! logical unitnumber output file
-        integer(kind = int_wp), intent(in) :: noseg      ! number of segments
-        integer(kind = int_wp), intent(in) :: noq        ! number of exchanges
+        integer(kind = int_wp), intent(in) :: num_cells      ! number of segments
+        integer(kind = int_wp), intent(in) :: num_exchanges        ! number of exchanges
         integer(kind = int_wp), intent(inout) :: isizea     ! Required array space
 
         !     Local declarations
@@ -73,95 +73,95 @@ contains
         arrnam(iivol) = 'VOLUME'
         arrknd(iivol) = 2
         arrdm1(iivol) = 1
-        arrdm2(iivol) = noseg
+        arrdm2(iivol) = num_cells
         arrdm3(iivol) = 1
 
         arrnam(iiarea) = 'AREA  '
         arrknd(iiarea) = 2
         arrdm1(iiarea) = 1
-        arrdm2(iiarea) = noq
+        arrdm2(iiarea) = num_exchanges
         arrdm3(iiarea) = 1
 
         arrnam(iiflow) = 'FLOW  '
         arrknd(iiflow) = 2
         arrdm1(iiflow) = 1
-        arrdm2(iiflow) = noq
+        arrdm2(iiflow) = num_exchanges
         arrdm3(iiflow) = 1
 
         arrnam(iileng) = 'LENG  '
         arrknd(iileng) = 2
         arrdm1(iileng) = 2
-        arrdm2(iileng) = noq
+        arrdm2(iileng) = num_exchanges
         arrdm3(iileng) = 1
 
         arrnam(iiconc) = 'CONC  '
         arrknd(iiconc) = 2
-        arrdm1(iiconc) = notot
-        arrdm2(iiconc) = noseg
+        arrdm1(iiconc) = num_substances_total
+        arrdm2(iiconc) = num_cells
         arrdm3(iiconc) = 1
 
         arrnam(iicons) = 'CONS  '
         arrknd(iicons) = 1
-        arrdm1(iicons) = nocons
+        arrdm1(iicons) = num_constants
         arrdm2(iicons) = 1
         arrdm3(iicons) = 1
 
         arrnam(iiparm) = 'PARAM '
         arrknd(iiparm) = 2
-        arrdm1(iiparm) = nopa
-        arrdm2(iiparm) = noseg
+        arrdm1(iiparm) = num_spatial_parameters
+        arrdm2(iiparm) = num_cells
         arrdm3(iiparm) = 1
 
         arrnam(iifunc) = 'FUNC  '
         arrknd(iifunc) = 1
-        arrdm1(iifunc) = nofun
+        arrdm1(iifunc) = num_time_functions
         arrdm2(iifunc) = 1
         arrdm3(iifunc) = 1
 
         arrnam(iisfun) = 'SFUNC '
         arrknd(iisfun) = 3
-        arrdm1(iisfun) = noseg
-        arrdm2(iisfun) = nosfun
+        arrdm1(iisfun) = num_cells
+        arrdm2(iisfun) = num_spatial_time_fuctions
         arrdm3(iisfun) = 1
 
         arrnam(iiploc) = 'LOCAL '
         arrknd(iiploc) = 2
-        arrdm1(iiploc) = noloc
-        arrdm2(iiploc) = noseg
+        arrdm1(iiploc) = num_local_vars
+        arrdm2(iiploc) = num_cells
         arrdm3(iiploc) = 1
 
         arrnam(iidefa) = 'DEFAUL'
         arrknd(iidefa) = 1
-        arrdm1(iidefa) = nodef
+        arrdm1(iidefa) = num_defaults
         arrdm2(iidefa) = 1
         arrdm3(iidefa) = 1
 
         arrnam(iiflux) = 'FLUX  '
         arrknd(iiflux) = 2
-        arrdm1(iiflux) = nflux
-        arrdm2(iiflux) = noseg
+        arrdm1(iiflux) = num_fluxes
+        arrdm2(iiflux) = num_cells
         arrdm3(iiflux) = 1
 
         arrnam(iidspx) = 'DISPX '
         arrknd(iidspx) = 2
-        arrdm1(iidspx) = ndspx
-        arrdm2(iidspx) = noq
+        arrdm1(iidspx) = num_dispersion_arrays_extra
+        arrdm2(iidspx) = num_exchanges
         arrdm3(iidspx) = 1
 
         arrnam(iivelx) = 'VELX  '
         arrknd(iivelx) = 2
-        arrdm1(iivelx) = nvelx
-        arrdm2(iivelx) = noq
+        arrdm1(iivelx) = num_velocity_arrays_extra
+        arrdm2(iivelx) = num_exchanges
         arrdm3(iivelx) = 1
 
         arrnam(iilocx) = 'VLOCX '
         arrknd(iilocx) = 2
-        arrdm1(iilocx) = nlocx
-        arrdm2(iilocx) = noq
+        arrdm1(iilocx) = num_local_vars_exchange
+        arrdm2(iilocx) = num_exchanges
         arrdm3(iilocx) = 1
 
         isizea = 1 ! a(1) is 'dump' location
-        write (lunrep, '(/a/)') "  Size of PMSA arrays in 4-byte words"
+        write (lunrep, '(/a/)') "  Size of process_space_real arrays in 4-byte words"
         write (lunrep, '(a)') "  nr array name            array size"
         write (lunrep, '(a)') "  -----------------------------------"
         do i_rar = 1, nr_rar
@@ -172,7 +172,7 @@ contains
             endif
             if (isizea < 0) then
                 write(lunrep, 2005)
-                call terminate_execution(1)
+                call stop_with_error()
             endif
         enddo
 
@@ -186,7 +186,7 @@ contains
                 ip = make_pointer(part, iartyp, iarlen)
                 if (ip <= 0) then
                     write(lunrep, 2010) namarr
-                    call terminate_execution(1)
+                    call stop_with_error()
                 endif
             else
                 ip = 0

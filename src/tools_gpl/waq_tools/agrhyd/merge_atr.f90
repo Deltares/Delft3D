@@ -42,7 +42,7 @@
       type(t_hydrodynamics), pointer                   :: domain_hyd            ! description of one domain hydrodynamics
       integer                                :: n_domain              ! number of domains
       integer                                :: i_domain              ! domain index
-      integer                                :: nolay                 ! number of layers
+      integer                                :: num_layers                 ! number of layers
       integer                                :: ilay                  ! layer index
       integer                                :: iseg                  ! segment index
       integer                                :: isegl                 ! segment index
@@ -52,13 +52,13 @@
       ! copy to locals for convenience
 
       n_domain  = hyd%domain_coll%current_size
-      nolay     = hyd%nolay
+      num_layers     = hyd%num_layers
 
       isoff  = 0
       do i_domain = 1 , n_domain
 
          domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         do ilay = 1 , nolay
+         do ilay = 1 , num_layers
             do isegl = 1 , domain_hyd%nosegl
                iseg_domain = (ilay-1)*domain_hyd%nosegl + isegl
                iseg        = (ilay-1)*hyd%nosegl + isegl + isoff

@@ -1,34 +1,34 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -37,25 +37,22 @@
 !! If applicable, also the geospatial bounds as lat/lon values is set.
 !! The min/max variables are set in module m_modelbounds.
 function set_model_boundingbox() result(ierr)
-use m_flowgeom
-use m_modelbounds
-use m_sferic, only: jsferic
-use network_data, only: xk, yk
-use dfm_error
-use m_alloc
-use m_missing, only: dmiss
-use unstruc_netcdf, only: crs
-use unstruc_messages
+   use m_flowgeom
+   use m_modelbounds
+   use m_sferic, only: jsferic
+   use network_data, only: xk, yk
+   use dfm_error
+   use m_alloc
+   use m_missing, only: dmiss
+   use unstruc_netcdf, only: crs
+   use unstruc_messages
 #ifdef HAVE_PROJ
-use coordinate_reference_system, only: transform_coordinates, WGS84_PROJ_STRING
-use proj6
+   use coordinate_reference_system, only: transform_coordinates, WGS84_PROJ_STRING
+   use proj6
 #endif
-implicit none
+   implicit none
 
-   integer :: ierr          !< Result status (DFM_NOERR if successful)
-
-   integer :: jabndnd_      !< Flag specifying whether boundary nodes are to be written.
-   integer :: ndxndxi       !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
+   integer :: ierr !< Result status (DFM_NOERR if successful)
    integer :: n, k, kk, nv
 
    double precision, pointer :: lonn(:), latn(:)
@@ -90,20 +87,20 @@ implicit none
       end if
    end if
 
-   mb_xmin =  huge(1d0)
-   mb_ymin =  huge(1d0)
+   mb_xmin = huge(1d0)
+   mb_ymin = huge(1d0)
    mb_xmax = -huge(1d0)
    mb_ymax = -huge(1d0)
 
-   mb_lonmin =  huge(1d0)
-   mb_latmin =  huge(1d0)
+   mb_lonmin = huge(1d0)
+   mb_latmin = huge(1d0)
    mb_lonmax = -huge(1d0)
    mb_latmax = -huge(1d0)
 
    ! Compute model bounds based on *flowgeom*, intentionally not on network_data (which may include inactive points).
-   do n=1,ndxi
+   do n = 1, ndxi
       nv = size(nd(n)%nod)
-      do kk=1,nv ! Loop over cell vertices
+      do kk = 1, nv ! Loop over cell vertices
          k = nd(n)%nod(kk) ! net node
 
          mb_xmin = min(mb_xmin, XK(k))
@@ -163,4 +160,4 @@ implicit none
    return
 
 end function set_model_boundingbox
-   
+

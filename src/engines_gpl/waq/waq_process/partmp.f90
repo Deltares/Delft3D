@@ -28,11 +28,11 @@ module m_partmp
 contains
 
 
-    subroutine partmp (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger, only : terminate_execution, write_error_message, get_log_unit_number
-        use m_evaluate_waq_attribute
+    subroutine partmp (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper, only : stop_with_error, write_error_message, get_log_unit_number
+        use m_extract_waq_attribute
 
         !>\file
         !>       Partitioning of micropollutants
@@ -86,9 +86,9 @@ contains
 
         IMPLICIT REAL (A-H, J-Z)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         LOGICAL  IM1OPT, IM2OPT, IM3OPT, IM4OPT, IM5OPT, IM6OPT, &
                 FFFOPT, QQQOPT, WATOPT, HVTOPT, TWOFRC, QUALOPT
@@ -224,7 +224,7 @@ contains
         !     Check sediment switch for first segment
         !
         SEDIME = .FALSE.
-        IF (PMSA(IP30) > 0.5) SEDIME = .TRUE.
+        IF (process_space_real(IP30) > 0.5) SEDIME = .TRUE.
         !
         !     Find metal group for first segment
         !     1 = GENERAL (ZN, CU, CD, PB, HG, NI)
@@ -233,15 +233,15 @@ contains
         !     4 = OMP's
         !     5 = viruses (simple partitioning)
         !
-        IGROUP = NINT(PMSA(IP31))
+        IGROUP = NINT(process_space_real(IP31))
         !
         !     OPTIMALISATION PART OUTSIDE SEGMENT LOOP
         !
         !        inorganic matter 1
         !
         IF (IN4 == 0 .AND. IN11 == 0) THEN
-            AIM1 = PMSA(IP4)
-            KDIM1 = PMSA(IP11) / 1000.
+            AIM1 = process_space_real(IP4)
+            KDIM1 = process_space_real(IP11) / 1000.
             FAC1 = AIM1 * KDIM1
             IM1OPT = .TRUE.
         ELSE
@@ -249,8 +249,8 @@ contains
         ENDIF
         !        inorganic matter 2
         IF (IN5 == 0 .AND. IN12 == 0) THEN
-            AIM2 = PMSA(IP5)
-            KDIM2 = PMSA(IP12) / 1000.
+            AIM2 = process_space_real(IP5)
+            KDIM2 = process_space_real(IP12) / 1000.
             FAC2 = AIM2 * KDIM2
             IM2OPT = .TRUE.
         ELSE
@@ -258,8 +258,8 @@ contains
         ENDIF
         !        inorganic matter 3
         IF (IN6 == 0 .AND. IN13 == 0) THEN
-            AIM3 = PMSA(IP6)
-            KDIM3 = PMSA(IP13) / 1000.
+            AIM3 = process_space_real(IP6)
+            KDIM3 = process_space_real(IP13) / 1000.
             FAC3 = AIM3 * KDIM3
             IM3OPT = .TRUE.
         ELSE
@@ -267,11 +267,11 @@ contains
         ENDIF
         !        POC
         IF (IN9 == 0 .AND. IN14 == 0) THEN
-            POC = PMSA(IP9)
+            POC = process_space_real(IP9)
             IF (IGROUP == 4) THEN
-                KPOC = 10**PMSA(IP14) / 1.E+6
+                KPOC = 10**process_space_real(IP14) / 1.E+6
             ELSE
-                KPOC = PMSA(IP14) / 1000.
+                KPOC = process_space_real(IP14) / 1000.
             ENDIF
             FAC4 = POC * KPOC
             IM4OPT = .TRUE.
@@ -280,11 +280,11 @@ contains
         ENDIF
         !        Phytoplankton
         IF (IN10== 0 .AND. IN15 == 0) THEN
-            PHYT = PMSA(IP10)
+            PHYT = process_space_real(IP10)
             IF (IGROUP == 4) THEN
-                KPHYT = 10**PMSA(IP15) / 1.E+6
+                KPHYT = 10**process_space_real(IP15) / 1.E+6
             ELSE
-                KPHYT = PMSA(IP15) / 1000.
+                KPHYT = process_space_real(IP15) / 1000.
             ENDIF
             FAC5 = PHYT * KPHYT
             IM5OPT = .TRUE.
@@ -294,12 +294,12 @@ contains
         !        DOC and XDOC
         IF (IN7 == 0 .AND. IN8 == 0 .AND. &
                 IN14 == 0) THEN
-            DOC = PMSA(IP7)
-            XDOC = PMSA(IP8)
+            DOC = process_space_real(IP7)
+            XDOC = process_space_real(IP8)
             IF (IGROUP == 4) THEN
-                KDOC = 10**PMSA(IP14) / 1.E+6
+                KDOC = 10**process_space_real(IP14) / 1.E+6
             ELSE
-                KDOC = PMSA(IP14) / 1000.
+                KDOC = process_space_real(IP14) / 1000.
             ENDIF
             FAC6 = DOC * XDOC * KDOC
             IM6OPT = .TRUE.
@@ -310,8 +310,8 @@ contains
         !        Kinetic sorption
         !
         IF (IN20 == 0 .AND. IN21 == 0) THEN
-            HVTADS = PMSA(IP20)
-            HVTDES = PMSA(IP21)
+            HVTADS = process_space_real(IP20)
+            HVTDES = process_space_real(IP21)
             HVTOPT = .TRUE.
         ELSE
             HVTOPT = .FALSE.
@@ -332,21 +332,21 @@ contains
                         'PARTMP: MP with the combination MPDIS/MPPAR is invalid'
                 WRITE(*, *) &
                         'PARTMP: MP with the combination MPDIS/MPPAR is invalid'
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
             IF (IN2==0) THEN
                 CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: No value for MPDIS in dis/par modelling'
                 WRITE(*, *) 'PARTMP: No value for MPDIS in dis/par modelling'
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
             IF (IN3==0) THEN
                 CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: No value for MPPAR in dis/par modelling'
                 WRITE(*, *) 'PARTMP: No value for MPPAR in dis/par modelling'
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
         ELSE
             IF (IN2>0) THEN
@@ -354,14 +354,14 @@ contains
                 WRITE(LUNREP, *) &
                         'PARTMP: Values for MPDIS and MP!'
                 WRITE(*, *) 'PARTMP: Values for MPDIS and MP!'
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
             IF (IN3>0) THEN
                 CALL get_log_unit_number(LUNREP)
                 WRITE(LUNREP, *) &
                         'PARTMP: Values for MPPAR and MP!'
                 WRITE(*, *) 'PARTMP: Values for MPPAR and MP!'
-                CALL terminate_execution(1)
+                CALL stop_with_error()
             ENDIF
         ENDIF
         !        Compute F-values or not
@@ -395,7 +395,7 @@ contains
         ELSE
             QUALOPT = .FALSE.
         ENDIF
-        DELT = PMSA(IP22)
+        DELT = process_space_real(IP22)
         IF (DELT  < 1E-20)  CALL write_error_message ('DELT in PARTMP zero')
         !
         !----------------------------------------------------------------------C
@@ -403,16 +403,16 @@ contains
         !----------------------------------------------------------------------C
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0.OR.IKMRK2==3).OR..NOT.SEDIME) THEN
 
-                    MP = PMSA(IP1)
-                    MPDIS = PMSA(IP2)
-                    MPPAR = PMSA(IP3)
-                    ISWOX = NINT(PMSA(IP23))
+                    MP = process_space_real(IP1)
+                    MPDIS = process_space_real(IP2)
+                    MPPAR = process_space_real(IP3)
+                    ISWOX = NINT(process_space_real(IP23))
 
                     IF (TWOFRC) THEN
                         IF (IGROUP==2) THEN
@@ -422,16 +422,16 @@ contains
                                     'implemented!'
                             WRITE(*, *) 'PARTMP: Kinetic sorption for Chromium not ', &
                                     'implemented!'
-                            CALL terminate_execution(1)
+                            CALL stop_with_error()
                         ENDIF
                         MP = MPDIS + MPPAR
                     ENDIF
-                    PMSA(IP48) = MP
-                    POR = PMSA(IP16)
-                    THICK = PMSA(IP17)
-                    SURF = PMSA(IP18)
-                    DMS1 = PMSA(IP19)
-                    VOLUME = PMSA(IP32)
+                    process_space_real(IP48) = MP
+                    POR = process_space_real(IP16)
+                    THICK = process_space_real(IP17)
+                    SURF = process_space_real(IP18)
+                    DMS1 = process_space_real(IP19)
+                    VOLUME = process_space_real(IP32)
 
                     FL(1 + IFLUX) = 0.0
                     !
@@ -448,50 +448,50 @@ contains
 
                         !          inorganic matter 1
                         IF (.NOT. IM1OPT) THEN
-                            AIM1 = PMSA(IP4)
-                            KDIM1 = PMSA(IP11) / 1000.
+                            AIM1 = process_space_real(IP4)
+                            KDIM1 = process_space_real(IP11) / 1000.
                             FAC1 = AIM1 * KDIM1
                         ENDIF
                         !          inorganic matter 2
                         IF (.NOT. IM2OPT) THEN
-                            AIM2 = PMSA(IP5)
-                            KDIM2 = PMSA(IP12) / 1000.
+                            AIM2 = process_space_real(IP5)
+                            KDIM2 = process_space_real(IP12) / 1000.
                             FAC2 = AIM2 * KDIM2
                         ENDIF
                         !          inorganic matter 3
                         IF (.NOT. IM3OPT) THEN
-                            AIM3 = PMSA(IP6)
-                            KDIM3 = PMSA(IP13) / 1000.
+                            AIM3 = process_space_real(IP6)
+                            KDIM3 = process_space_real(IP13) / 1000.
                             FAC3 = AIM3 * KDIM3
                         ENDIF
                         !          POC
                         IF (.NOT. IM4OPT) THEN
-                            POC = PMSA(IP9)
+                            POC = process_space_real(IP9)
                             IF (IGROUP == 4) THEN
-                                KPOC = 10**PMSA(IP14) / 1.E+6
+                                KPOC = 10**process_space_real(IP14) / 1.E+6
                             ELSE
-                                KPOC = PMSA(IP14) / 1000.
+                                KPOC = process_space_real(IP14) / 1000.
                             ENDIF
                             FAC4 = POC * KPOC
                         ENDIF
                         !          Phytoplankton
                         IF (.NOT. IM5OPT) THEN
-                            PHYT = PMSA(IP10)
+                            PHYT = process_space_real(IP10)
                             IF (IGROUP == 4) THEN
-                                KPHYT = 10**PMSA(IP15) / 1.E+6
+                                KPHYT = 10**process_space_real(IP15) / 1.E+6
                             ELSE
-                                KPHYT = PMSA(IP15) / 1000.
+                                KPHYT = process_space_real(IP15) / 1000.
                             ENDIF
                             FAC5 = PHYT * KPHYT
                         ENDIF
                         !          DOC and XDOC
                         IF (.NOT. IM6OPT) THEN
-                            DOC = PMSA(IP7)
-                            XDOC = PMSA(IP8)
+                            DOC = process_space_real(IP7)
+                            XDOC = process_space_real(IP8)
                             IF (IGROUP == 4) THEN
-                                KDOC = 10**PMSA(IP14) / 1.E+6
+                                KDOC = 10**process_space_real(IP14) / 1.E+6
                             ELSE
-                                KDOC = PMSA(IP14) / 1000.
+                                KDOC = process_space_real(IP14) / 1000.
                             ENDIF
                             FAC6 = DOC * XDOC * KDOC
                         ENDIF
@@ -537,8 +537,8 @@ contains
                         !       Kinetic sorption
                         !
                         IF (.NOT. HVTOPT) THEN
-                            HVTADS = PMSA(IP20)
-                            HVTDES = PMSA(IP21)
+                            HVTADS = process_space_real(IP20)
+                            HVTDES = process_space_real(IP21)
                         ENDIF
                         IF (HVTADS > 1E-20 .OR. HVTDES > 1E-20) THEN
                             IF (.NOT.TWOFRC) THEN
@@ -554,7 +554,7 @@ contains
                                         'not possible!'
                                 WRITE(*, *) 'Create MP-Dis & MP-Part for kinetic sorption'
                                 WRITE(*, *) 'or set HLTAdsMP and HLTDesMP to zero'
-                                CALL terminate_execution(1)
+                                CALL stop_with_error()
                             ENDIF
                             !           Let op: PART is in dit verband POC + IMx + PHYT !!!
                             !           Actual fraction PART
@@ -600,12 +600,12 @@ contains
                         !       CHROMIUM
                         !
                         IF (IGROUP==2) THEN
-                            PH = PMSA(IP24)
-                            KCROHS = PMSA(IP25)
-                            MOLWT = PMSA(IP26)
-                            KCROH1 = PMSA(IP27)
-                            KCROH2 = PMSA(IP28)
-                            KCROH3 = PMSA(IP29)
+                            PH = process_space_real(IP24)
+                            KCROHS = process_space_real(IP25)
+                            MOLWT = process_space_real(IP26)
+                            KCROH1 = process_space_real(IP27)
+                            KCROH2 = process_space_real(IP28)
+                            KCROH3 = process_space_real(IP29)
 
                             OH = 10.0**(-(14 - PH))
                             !
@@ -672,7 +672,7 @@ contains
                             ENDIF
                         ENDIF
                         !
-                        PMSA(IP40) = FPREC
+                        process_space_real(IP40) = FPREC
 
                         IF (.NOT. FFFOPT) THEN
                             FIM1 = AFACT * FAC1 * FPCOR * (1. - FPREC)
@@ -681,12 +681,12 @@ contains
                             FPOC = AFACT * FAC4 * FPCOR * (1. - FPREC)
                             FPHYT = AFACT * FAC5 * FPCOR * (1. - FPREC)
                             FDOC = AFACT * FAC6C * FDCOR * (1. - FPREC)
-                            PMSA(IP34) = FDOC
-                            PMSA(IP35) = FIM1
-                            PMSA(IP36) = FIM2
-                            PMSA(IP37) = FIM3
-                            PMSA(IP38) = FPOC
-                            PMSA(IP39) = FPHYT
+                            process_space_real(IP34) = FDOC
+                            process_space_real(IP35) = FIM1
+                            process_space_real(IP36) = FIM2
+                            process_space_real(IP37) = FIM3
+                            process_space_real(IP38) = FPOC
+                            process_space_real(IP39) = FPHYT
                         ENDIF
                         !
                         IF (.NOT. QQQOPT) THEN
@@ -702,11 +702,11 @@ contains
                                 IF (POC >1E-20) QPOC = MPHUM * KPOC * FPCOR * (1. - FPREC)
                                 IF (PHYT>1E-20) QPHYT = MPHUM * KPHYT * FPCOR * (1. - FPREC)
                             ENDIF
-                            PMSA(IP43) = QIM1
-                            PMSA(IP44) = QIM2
-                            PMSA(IP45) = QIM3
-                            PMSA(IP46) = QPOC
-                            PMSA(IP47) = QPHYT
+                            process_space_real(IP43) = QIM1
+                            process_space_real(IP44) = QIM2
+                            process_space_real(IP45) = QIM3
+                            process_space_real(IP46) = QPOC
+                            process_space_real(IP47) = QPHYT
                         ENDIF
 
                         IF (.NOT. WATOPT) THEN
@@ -733,38 +733,38 @@ contains
                             ENDIF
                             !@      Quality of MP adsorbens waterphase
                             FDIS = FDIS2
-                            PMSA(IP33) = FDIS
-                            PMSA(IP41) = CDIS
-                            PMSA(IP42) = CDOC
+                            process_space_real(IP33) = FDIS
+                            process_space_real(IP41) = CDIS
+                            process_space_real(IP42) = CDOC
                         ENDIF
                         !
                         !     SULFIDIC PARTITIONING (ISWOX = 0) FOR GENERAL METALS
                         !
                     ELSEIF (ISWOX==0 .AND. IGROUP == 1) THEN
-                        PMSA(IP34) = 0.0
-                        PMSA(IP35) = 0.0
-                        PMSA(IP36) = 0.0
-                        PMSA(IP37) = 0.0
-                        PMSA(IP38) = 0.0
-                        PMSA(IP39) = 0.0
-                        PMSA(IP42) = 0.0
-                        PMSA(IP43) = 0.0
-                        PMSA(IP44) = 0.0
-                        PMSA(IP45) = 0.0
-                        PMSA(IP46) = 0.0
-                        PMSA(IP47) = 0.0
+                        process_space_real(IP34) = 0.0
+                        process_space_real(IP35) = 0.0
+                        process_space_real(IP36) = 0.0
+                        process_space_real(IP37) = 0.0
+                        process_space_real(IP38) = 0.0
+                        process_space_real(IP39) = 0.0
+                        process_space_real(IP42) = 0.0
+                        process_space_real(IP43) = 0.0
+                        process_space_real(IP44) = 0.0
+                        process_space_real(IP45) = 0.0
+                        process_space_real(IP46) = 0.0
+                        process_space_real(IP47) = 0.0
 
-                        DISS = PMSA(IP24)
-                        DISHS = PMSA(IP25)
+                        DISS = process_space_real(IP24)
+                        DISHS = process_space_real(IP25)
                         IF (DISS <= 1E-20) THEN
                             WRITE(*, *) 'SwPoreChWK = ', ISWOX, ' 1- oxic, 0 - sulfidic, or'
                             WRITE(*, *) 'DisSWK or DisSSx  = ', DISS, 'should not equal zero'
                             CALL write_error_message ('Fatal error in PARTMP')
                         ENDIF
-                        MOLWT = PMSA(IP26)
-                        LKSOL = PMSA(IP27)
-                        LKMES = PMSA(IP28)
-                        LKMEHS = PMSA(IP29)
+                        MOLWT = process_space_real(IP26)
+                        LKSOL = process_space_real(IP27)
+                        LKMES = process_space_real(IP28)
+                        LKMEHS = process_space_real(IP29)
 
                         IF (DMS1 < 1E-03)  THEN
                             FDIS = 1.0
@@ -796,9 +796,9 @@ contains
                         FDOC = 0.0
                         CDOC = 0.0
 
-                        PMSA(IP33) = FDIS
-                        PMSA(IP40) = FSULF
-                        PMSA(IP41) = CDIS
+                        process_space_real(IP33) = FDIS
+                        process_space_real(IP40) = FSULF
+                        process_space_real(IP41) = CDIS
 
                     ELSE
                         CALL get_log_unit_number(LUNREP)
@@ -812,7 +812,7 @@ contains
                         WRITE(*, *) 'SwOXIC= ', ISWOX, ' 1- oxic, 0 - anoxic'
                         WRITE(*, *) 'Group = ', IGROUP, ' 1- General, 2-Cr, 3-As/Va, 4-OMP, &
                                 5-virus'
-                        CALL terminate_execution(1)
+                        CALL stop_with_error()
                     ENDIF
                     !
                     !     Addition of former process MPQUAL
@@ -845,8 +845,8 @@ contains
                     !
                     !     Output
                     !
-                    PMSA (IP49) = QUAL
-                    PMSA (IP50) = KDALL
+                    process_space_real (IP49) = QUAL
+                    process_space_real (IP50) = KDALL
 
                 ENDIF
             ENDIF

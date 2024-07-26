@@ -32,7 +32,7 @@
 program calcage
     implicit none
 
-    integer                                      :: nosys, noseg, time, ierr
+    integer                                      :: num_substances_transported, num_cells, time, ierr
     integer                                      :: i, idxsrc, idxage
     integer                                      :: inputfile, outputfile
     character(len=40), dimension(4)              :: title
@@ -76,12 +76,12 @@ program calcage
 
 
     read( inputfile ) title
-    read( inputfile ) nosys, noseg
+    read( inputfile ) num_substances_transported, num_cells
 
-    allocate( syname(nosys), segno(noseg), segname(noseg), conc(nosys,noseg), age(noseg) )
+    allocate( syname(num_substances_transported), segno(num_cells), segname(num_cells), conc(num_substances_transported,num_cells), age(num_cells) )
 
     read( inputfile ) syname
-    read( inputfile ) ( segno(i), segname(i), i = 1,noseg )
+    read( inputfile ) ( segno(i), segname(i), i = 1,num_cells )
 
     !
     ! Search for the combination WaterSrc and WaterAge
@@ -98,11 +98,11 @@ program calcage
     open( newunit = outputfile , file = hisout, access =  'stream' )
 
     write( outputfile ) title
-    write( outputfile ) 1, noseg
+    write( outputfile ) 1, num_cells
 
     outname = 'Age (d)'
     write( outputfile ) outname
-    write( outputfile ) ( segno(i), segname(i), i = 1,noseg )
+    write( outputfile ) ( segno(i), segname(i), i = 1,num_cells )
 
     do
         read( inputfile, iostat = ierr ) time, conc

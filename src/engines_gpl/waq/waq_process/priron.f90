@@ -28,9 +28,9 @@ module m_priron
 contains
 
 
-    subroutine PRIRON     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine PRIRON     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !JVB$ ATTRIBUTES DLLEXPORT, ALIAS: 'PRIRON' :: PRIRON
         !
         !*******************************************************************************
@@ -39,18 +39,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(45) ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(45) ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(45) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(45)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
         !
@@ -132,7 +132,7 @@ contains
         real(kind = dp) :: kdfeco3     ! L  specific FeCO3 dissolution rate (d-1)
         real(kind = dp) :: kpyr        ! L  specific pyrite formation rate (gS-1.m3.d-1)
 
-        ! initialise pointering in pmsa array
+        ! initialise pointering in process_space_real array
 
         ipnt = ipoint
         idpfe3 = 1
@@ -144,45 +144,45 @@ contains
         iddfeco3 = 7
         idpyr = 8
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
-            feiiipa = pmsa(ipnt(1))
-            feiiid = pmsa(ipnt(2))
-            fes = pmsa(ipnt(3))
-            feiid = pmsa(ipnt(4))
-            feco3 = pmsa(ipnt(5))
-            sud = pmsa(ipnt(6))
-            tic = pmsa(ipnt(7))
-            co2 = pmsa(ipnt(8))
-            frfe3dis = pmsa(ipnt(9))
-            lkspfeoh3 = pmsa(ipnt(10))
-            rcagfe320 = pmsa(ipnt(11))
-            rcdisfe320 = pmsa(ipnt(12))
-            rcprcfe320 = pmsa(ipnt(13))
-            tcagfe3 = pmsa(ipnt(14))
-            tcdisfe3 = pmsa(ipnt(15))
-            tcprcfe3 = pmsa(ipnt(16))
-            frfe2dis = pmsa(ipnt(17))
-            frh2sdis = pmsa(ipnt(18))
-            frs2dis = pmsa(ipnt(19))
-            frco3dis = pmsa(ipnt(20))
-            lkspfes = pmsa(ipnt(21))
-            lkspfeco3 = pmsa(ipnt(22))
-            rcpyrite20 = pmsa(ipnt(23))
-            rcdisfes20 = pmsa(ipnt(24))
-            rcprcfes20 = pmsa(ipnt(25))
-            rcdisfec20 = pmsa(ipnt(26))
-            rcprcfec20 = pmsa(ipnt(27))
-            tcpyrite = pmsa(ipnt(28))
-            tcdisfes = pmsa(ipnt(29))
-            tcprcfes = pmsa(ipnt(30))
-            tcdisfeco3 = pmsa(ipnt(31))
-            tcprcfeco3 = pmsa(ipnt(32))
-            swticco2 = nint(pmsa(ipnt(33)))
-            ph = pmsa(ipnt(34))
-            temp = pmsa(ipnt(35))
-            delt = pmsa(ipnt(36))
-            poros = pmsa(ipnt(37))
+            feiiipa = process_space_real(ipnt(1))
+            feiiid = process_space_real(ipnt(2))
+            fes = process_space_real(ipnt(3))
+            feiid = process_space_real(ipnt(4))
+            feco3 = process_space_real(ipnt(5))
+            sud = process_space_real(ipnt(6))
+            tic = process_space_real(ipnt(7))
+            co2 = process_space_real(ipnt(8))
+            frfe3dis = process_space_real(ipnt(9))
+            lkspfeoh3 = process_space_real(ipnt(10))
+            rcagfe320 = process_space_real(ipnt(11))
+            rcdisfe320 = process_space_real(ipnt(12))
+            rcprcfe320 = process_space_real(ipnt(13))
+            tcagfe3 = process_space_real(ipnt(14))
+            tcdisfe3 = process_space_real(ipnt(15))
+            tcprcfe3 = process_space_real(ipnt(16))
+            frfe2dis = process_space_real(ipnt(17))
+            frh2sdis = process_space_real(ipnt(18))
+            frs2dis = process_space_real(ipnt(19))
+            frco3dis = process_space_real(ipnt(20))
+            lkspfes = process_space_real(ipnt(21))
+            lkspfeco3 = process_space_real(ipnt(22))
+            rcpyrite20 = process_space_real(ipnt(23))
+            rcdisfes20 = process_space_real(ipnt(24))
+            rcprcfes20 = process_space_real(ipnt(25))
+            rcdisfec20 = process_space_real(ipnt(26))
+            rcprcfec20 = process_space_real(ipnt(27))
+            tcpyrite = process_space_real(ipnt(28))
+            tcdisfes = process_space_real(ipnt(29))
+            tcprcfes = process_space_real(ipnt(30))
+            tcdisfeco3 = process_space_real(ipnt(31))
+            tcprcfeco3 = process_space_real(ipnt(32))
+            swticco2 = nint(process_space_real(ipnt(33)))
+            ph = process_space_real(ipnt(34))
+            temp = process_space_real(ipnt(35))
+            delt = process_space_real(ipnt(36))
+            poros = process_space_real(ipnt(37))
 
             ! use tic or co2 depending on the switch
 
@@ -282,7 +282,7 @@ contains
             kpyr = rcpyrite20 * tcpyrite**(temp - 20.)
             fpyr = kpyr * fes * frh2sdis * sud / poros
 
-            ! store result in flux and pmsa array
+            ! store result in flux and process_space_real array
 
             fl  (idpfe3) = fpfe3
             fl  (iddfe3) = fdfe3
@@ -292,14 +292,14 @@ contains
             fl  (idpfeco3) = fpfeco3
             fl  (iddfeco3) = fdfeco3
             fl  (idpyr) = fpyr
-            pmsa(ipnt(38)) = fpfe3
-            pmsa(ipnt(39)) = fdfe3
-            pmsa(ipnt(40)) = fafe3
-            pmsa(ipnt(41)) = fpfes
-            pmsa(ipnt(42)) = fdfes
-            pmsa(ipnt(43)) = fpfeco3
-            pmsa(ipnt(44)) = fdfeco3
-            pmsa(ipnt(45)) = fpyr
+            process_space_real(ipnt(38)) = fpfe3
+            process_space_real(ipnt(39)) = fdfe3
+            process_space_real(ipnt(40)) = fafe3
+            process_space_real(ipnt(41)) = fpfes
+            process_space_real(ipnt(42)) = fdfes
+            process_space_real(ipnt(43)) = fpfeco3
+            process_space_real(ipnt(44)) = fdfeco3
+            process_space_real(ipnt(45)) = fpyr
 
             idpfe3 = idpfe3 + noflux
             iddfe3 = iddfe3 + noflux

@@ -28,10 +28,10 @@ module m_botmin
 contains
 
 
-    subroutine botmin (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine botmin (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !>\file
         !>       Mineralisation of organic substances and desorption of AAP in the bed (S1,S2) for C, N, P and Si.
@@ -67,9 +67,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: IFLUX, ISEG, IKMRK2
         INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8, IN9, IN10
@@ -104,14 +104,14 @@ contains
         !
         IF (IN3 == 0 .AND. IN4 == 0 .AND. &
                 IN5 == 0 .AND. IN6 == 0) THEN
-            TEMP = PMSA(IP5)
-            CRTEMP = PMSA(IP6)
+            TEMP = process_space_real(IP5)
+            CRTEMP = process_space_real(IP6)
             IF (TEMP < CRTEMP) THEN
                 !        Only the zeroth order term
                 TEMFAK = 0.0
             ELSE
-                MINRC = PMSA(IP3)
-                MINTC = PMSA(IP4)
+                MINRC = process_space_real(IP3)
+                MINTC = process_space_real(IP4)
                 TEMP20 = TEMP - 20.0
                 TEMFAK = MINRC * MINTC ** TEMP20
             ENDIF
@@ -121,32 +121,32 @@ contains
         ENDIF
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
                     !
                     IF (TFACT) THEN
-                        TEMP = PMSA(IP5)
-                        CRTEMP = PMSA(IP6)
+                        TEMP = process_space_real(IP5)
+                        CRTEMP = process_space_real(IP6)
                         IF (TEMP < CRTEMP) THEN
                             !        Only the zeroth order term
                             TEMFAK = 0.0
                         ELSE
-                            MINRC = PMSA(IP3)
-                            MINTC = PMSA(IP4)
+                            MINRC = process_space_real(IP3)
+                            MINTC = process_space_real(IP4)
                             TEMP20 = TEMP - 20.0
                             TEMFAK = MINRC * MINTC ** TEMP20
                         ENDIF
                     ENDIF
                     !
 
-                    ZEMIN = PMSA(IP1)
-                    ORG = MAX (0.0, PMSA(IP2))
-                    VOLUME = PMSA(IP7)
-                    DEPTH = PMSA(IP8)
-                    SWITCH = PMSA(IP9)
+                    ZEMIN = process_space_real(IP1)
+                    ORG = MAX (0.0, process_space_real(IP2))
+                    VOLUME = process_space_real(IP7)
+                    DEPTH = process_space_real(IP8)
+                    SWITCH = process_space_real(IP9)
 
                     !***********************************************************************
                     !**** Processes connected to the MINERALISATION
@@ -155,7 +155,7 @@ contains
                     !
                     !        Calculation of mineralisation flux ( M.L-3.t-1)
                     !
-                    PMSA(IP10) = ZEMIN + TEMFAK * ORG
+                    process_space_real(IP10) = ZEMIN + TEMFAK * ORG
                     IF (ABS(SWITCH)<0.5) THEN
                         !       NO SWITCH
                         FL(1 + IFLUX) = ZEMIN / DEPTH + TEMFAK * ORG / DEPTH

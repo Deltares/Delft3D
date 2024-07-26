@@ -1,180 +1,179 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-   SUBROUTINE DRAWNU(KEY)
-   use m_netw
-   USE M_SAMPLES
-   use m_arcinfo
-   use unstruc_display
-   use unstruc_opengl
-   implicit none
+   subroutine DRAWNU(KEY)
+      use m_netw
+      use M_SAMPLES
+      use m_arcinfo
+      use unstruc_display
+      use unstruc_opengl
+      implicit none
 
-   double precision :: epsgs
-   integer :: itgs
-   integer :: maxitgs
-   integer :: metdraw
-   integer :: ndraw
+      double precision :: epsgs
+      integer :: itgs
+      integer :: maxitgs
+      integer :: metdraw
+      integer :: ndraw
 
-   integer :: KEY, ja, nsiz
+      integer :: KEY, ja, nsiz
 
-   COMMON /DRAWTHIS/  ndraw(50)
+      common / DRAWTHIS / ndraw(50)
 
-   COMMON /SOLVER/    EPSGS, MAXITGS, ITGS
+      common / SOLVER / EPSGS, MAXITGS, ITGS
 
 !
-   IF (KEY .NE. 3) RETURN
+      if (KEY /= 3) return
 
-   METDRAW = NDRAW(9)
+      METDRAW = NDRAW(9)
 
-   CALL IMouseCursorHIDE()
-   CALL PLOT(NDRAW(10))
-   IF (NDRAW(10) .EQ. -1) THEN
-      RETURN
-   ENDIF
-
-   if (jaOpengl == 0) then
-      IF (METDRAW .EQ. 1)   CALL FULLSCREEN()
-      IF (NDRAW(1) .EQ. 1 .and. jaOpenGL.eq.0 )  CALL CLS1()
-      IF (NDRAW(26) .EQ. 1) CALL SHOWBITMAP(0)
-      IF (METDRAW .EQ. 1)   CALL SMALLSCREEN()
-   else
-      CALL BEGINRENDER()
-   endif
-
-
-   METDRAW = NDRAW(9)
- ! ndraw(28)= show what on nodes   ndraw(19)=how to show on nodes , NDRAW(8) = SHOW WHAT ON NETNODES
- ! ndraw(29)= show what on links   ndraw(11)=how to show on links , NDRAW(7) = SHOW WHAT ON NETLINKS
-
-   if (ndraw(3) > 4) CALL TEKLAN(NCOLLN)
-
-   IF (NDRAW(7) .GE. 2) THEN
-       CALL NETLINKVALS(NDRAW(7),NCOLLN)
-       CALL MINMXNETLINS()
-   ENDIF
-
-   IF (NDRAW(8) .GE. 2) THEN
-       CALL NETNODEVALS(NDRAW(8))
-       CALL MINMXNETNODS()
-   ENDIF
-
-   IF (METDRAW .EQ. 1) THEN
-
-      CALL TEKNETSTUFF(key)
-
-      CALL TEKFLOWSTUFF(key)
-
-      call highlight_nodesnlinks()
-
-      if (ndrawpol == 3) then
-         call tekpolygon()
-      endif
-
-      call TEKgrid(key)
-
-      if (mca*nca > maxsamarc) then 
-         call TEKarc(ndraw(32))
-      else if (ns > 0) then 
-         call teksam(ndraw(32))
-      endif
-    
-      if (ndraw(2) == 6) then
-         CALL TEKNET(NCOLDN,key) ! network on top
+      call IMouseCursorHIDE()
+      call PLOT(NDRAW(10))
+      if (NDRAW(10) == -1) then
+         return
       end if
 
-      if (ndraw(3) <= 4)  CALL TEKLAN(NCOLLN)
+      if (jaOpengl == 0) then
+         if (METDRAW == 1) call FULLSCREEN()
+         if (NDRAW(1) == 1 .and. jaOpenGL == 0) call CLS1()
+         if (NDRAW(26) == 1) call SHOWBITMAP(0)
+         if (METDRAW == 1) call SMALLSCREEN()
+      else
+         call BEGINRENDER()
+      end if
 
-      call plotObservations()
+      METDRAW = NDRAW(9)
+      ! ndraw(28)= show what on nodes   ndraw(19)=how to show on nodes , NDRAW(8) = SHOW WHAT ON NETNODES
+      ! ndraw(29)= show what on links   ndraw(11)=how to show on links , NDRAW(7) = SHOW WHAT ON NETLINKS
 
-      call teksorsin()
+      if (ndraw(3) > 4) call TEKLAN(NCOLLN)
 
-      call plotSplines()
+      if (NDRAW(7) >= 2) then
+         call NETLINKVALS(NDRAW(7), NCOLLN)
+         call MINMXNETLINS()
+      end if
 
-     ! obs plotting used to be here [AvD]
-      if (NDRAW(18) > 1) then
-         nsiz = ndraw(18)-1
-         call tekrai(nsiz,ja)
-      endif
+      if (NDRAW(8) >= 2) then
+         call NETNODEVALS(NDRAW(8))
+         call MINMXNETNODS()
+      end if
 
-      call tekprofs()         ! and initialise some turb parstm.amp
+      if (METDRAW == 1) then
 
-      call plotCrossSections()
+         call TEKNETSTUFF(key)
 
-      call plotThinDams()
-      call plotFixedWeirs()
+         call TEKFLOWSTUFF(key)
 
-      call tekwindvector()
+         call highlight_nodesnlinks()
 
-      if (ndrawpol > 1 .and. ndrawpol .ne. 3) then
-         call tekpolygon()
-      endif
+         if (ndrawpol == 3) then
+            call tekpolygon()
+         end if
 
-      call plotdots()
+         call TEKgrid(key)
 
-      call plotStructures()
+         if (mca * nca > maxsamarc) then
+            call TEKarc(ndraw(32))
+         else if (ns > 0) then
+            call teksam(ndraw(32))
+         end if
 
-   ELSE IF (METDRAW .EQ. 2) THEN
+         if (ndraw(2) == 6) then
+            call TEKNET(NCOLDN, key) ! network on top
+         end if
 
-      ! CALL PERSPC()
+         if (ndraw(3) <= 4) call TEKLAN(NCOLLN)
 
-   ENDIF
+         call plotObservations()
 
-   ! WARNING: Anything drawn up to this point with something other than OpenGL, is overwritten!
-   ! So make sure you use OpenGL for any rendering up to this point, move EndRender up, or place
-   ! that graphics code after EndRender.
+         call teksorsin()
 
-   CALL ENDRENDER()
+         call plotSplines()
 
-   IF (METDRAW .EQ. 1) CALL FULLSCREEN()
-   CALL ISOSCALE()
-   CALL ISOSCALE2()
-   CALL TXTLINES()
+         ! obs plotting used to be here [AvD]
+         if (NDRAW(18) > 1) then
+            nsiz = ndraw(18) - 1
+            call tekrai(nsiz, ja)
+         end if
 
-   IF (METDRAW .EQ. 1) CALL SMALLSCREEN()
-   IF (METDRAW .EQ. 1) CALL AXES()
-   CALL ANCHORCLS()
-   CALL DISPOS()
+         call tekprofs() ! and initialise some turb parstm.amp
 
-   CALL TEXTFLOW()
-   if (idisLink /= 0) then ! Display info. screen for a 1D flowlink if it has been clicked
-      call disln(idisLink)
-      call dis_info_1d_link(idisLink)
-   end if
+         call plotCrossSections()
 
-   CALL IMouseCursorShow()
+         call plotThinDams()
+         call plotFixedWeirs()
 
-   IF (NDRAW(10) .EQ. 2) THEN
-      CALL PLOT(NDRAW(10))
-   ENDIF
+         call tekwindvector()
 
-   RETURN
-   END SUBROUTINE DRAWNU
+         if (ndrawpol > 1 .and. ndrawpol /= 3) then
+            call tekpolygon()
+         end if
+
+         call plotdots()
+
+         call plotStructures()
+
+      else if (METDRAW == 2) then
+
+         ! CALL PERSPC()
+
+      end if
+
+      ! WARNING: Anything drawn up to this point with something other than OpenGL, is overwritten!
+      ! So make sure you use OpenGL for any rendering up to this point, move EndRender up, or place
+      ! that graphics code after EndRender.
+
+      call ENDRENDER()
+
+      if (METDRAW == 1) call FULLSCREEN()
+      call ISOSCALE()
+      call ISOSCALE2()
+      call TXTLINES()
+
+      if (METDRAW == 1) call SMALLSCREEN()
+      if (METDRAW == 1) call AXES()
+      call ANCHORCLS()
+      call DISPOS()
+
+      call TEXTFLOW()
+      if (idisLink /= 0) then ! Display info. screen for a 1D flowlink if it has been clicked
+         call disln(idisLink)
+         call dis_info_1d_link(idisLink)
+      end if
+
+      call IMouseCursorShow()
+
+      if (NDRAW(10) == 2) then
+         call PLOT(NDRAW(10))
+      end if
+
+      return
+   end subroutine DRAWNU

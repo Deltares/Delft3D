@@ -76,14 +76,14 @@ class Plan:
     minio_prefix: S3Path
     items: List[PlanItem] = field(default_factory=list)
     tags: Optional[Tags] = None
-    update_only: bool = False
+    allow_create_and_delete: bool = False
     multipart_upload_part_size: int = DEFAULT_MULTIPART_UPLOAD_PART_SIZE
 
     def __str__(self) -> str:
         return "\n".join(str(op) for op in self.items)
 
 
-@dataclass(frozen=True)
+@dataclass
 class VersionPair:
     """A pair of 'object versions' in MinIO with the same 'key'.
 
@@ -110,7 +110,7 @@ class VersionPair:
 class Rewinder:
     """Implements the rewind feature of the Minio server."""
 
-    def __init__(self, client: Minio, logger: ILogger, part_size: int = DEFAULT_MULTIPART_UPLOAD_PART_SIZE):
+    def __init__(self, client: Minio, logger: ILogger, part_size: int = DEFAULT_MULTIPART_UPLOAD_PART_SIZE) -> None:
         self._client = client
         self._logger = logger
         self._part_size = part_size
@@ -122,18 +122,18 @@ class Rewinder:
 
         Parameters
         ----------
-            bucket : str
-                The minio bucket.
-            source_path : str
-                The key prefix of the objects in MinIO.
-            local_dir: Path
-                The local directory on this computer to save the MinIO objects to as files.
-            rewind_timestamp: datetime, optional
-                Get past versions of the objects in MinIO. Rewind time to this timestamp.
+        bucket : str
+            The minio bucket.
+        source_path : str
+            The key prefix of the objects in MinIO.
+        local_dir : Path
+            The local directory on this computer to save the MinIO objects to as files.
+        rewind_timestamp : datetime, optional
+            Get past versions of the objects in MinIO. Rewind time to this timestamp.
         """
         rewind_timestamp = rewind_timestamp or datetime.now(timezone.utc)
 
-        def rewind(versions: Iterable[MinioObject], timestamp) -> Optional[MinioObject]:
+        def rewind(versions: Iterable[MinioObject], timestamp: datetime) -> Optional[MinioObject]:
             return next((obj for obj in versions if timestamp >= obj.last_modified), None)
 
         object_map = self.__object_versions_grouped_by_key(S3Path.from_bucket(bucket) / source_path)
@@ -155,10 +155,12 @@ class Rewinder:
         source_path: str,
         local_dir: Path,
     ) -> None:
+        destination_file_paths = []
         for download in downloads:
             object_path = download.object_name or ""
             filename_and_sub__dir_with_extension = object_path.replace(f"{source_path.rstrip('/')}/", "")
             destination_file_path = local_dir / filename_and_sub__dir_with_extension
+            destination_file_paths.append(destination_file_path)
 
             self.__download_object(
                 bucket,
@@ -167,15 +169,25 @@ class Rewinder:
                 object_path,
             )
 
+        self.__remove_local_files(local_dir, destination_file_paths)
+
+    def __remove_local_files(self, local_dir: Path, destination_file_paths: List[Path]) -> None:
+        for file in list(local_dir.glob("**/*")):
+            if file not in destination_file_paths and not file.is_dir():
+                self._logger.debug(f"Removing local file that is not present in MinIO bucket: {file}")
+                file.unlink()
+                if not any(file.parent.iterdir()):
+                    file.parent.rmdir()
+
     def __download_object(
         self, bucket: str, object_info: MinioObject, destination_file_path: Path, object_path: str
     ) -> None:
         if os.path.exists(destination_file_path) and object_info.etag == self.__etag(Path(destination_file_path)):
-            self._logger.warning(f"Skipping download: {destination_file_path}, it already exists.")
+            self._logger.debug(f"Skipping download: {destination_file_path}, local and online are the same version.")
             return
 
         try:
-            self._logger.debug(f"Downloading: {destination_file_path}")
+            self._logger.debug(f"Downloading: {destination_file_path} (version_id: {object_info.version_id})")
             self._client.fget_object(
                 bucket,
                 object_path,
@@ -183,14 +195,14 @@ class Rewinder:
                 version_id=object_info.version_id,
             )
         except Exception as exception:
-            self._logger.error(f"Exception: {exception}.", exc_info=True)
+            self._logger.exception(f"Could not download object from MinIO: {repr(exception)}.")
 
     def build_plan(
         self,
         src_dir: Path,
         dst_prefix: S3Path,
         tags: Optional[Tags] = None,
-        update_only: bool = False,
+        allow_create_and_delete: bool = False,
         part_size: Optional[int] = None,
     ) -> Plan:
         """Build plan to synchronize a set of objects in MinIO with the contents of a local directory.
@@ -203,8 +215,9 @@ class Rewinder:
             S3 Prefix of a set of objects in MinIO.
         tags: Optional[tags], optional
             Key-value pairs to add to all of the MinIO objects.
-        update_only: bool, optional
-            By default: `False`. If set to `True`, only include 'updates' in the plan. Exclude 'create's and 'remove's.
+        allow_create_and_delete: bool, optional
+            By default: `False`. If set to `True`, the plan will include the creation and removal of files
+            in the MinIO object repository.
         part_size : Optional[int], optional
             Size in bytes of multipart uploads. If not set use the `multipart_upload_part_size` instance
             variable. The computation of the ETag depends on the value of the multipart upload part size.
@@ -232,7 +245,7 @@ class Rewinder:
             minio_path = dst_prefix / minio_key
             if local_key < minio_key:
                 # New local file: Upload local file to MinIO.
-                if not update_only:
+                if allow_create_and_delete:
                     steps.append(PlanItem.create(local_path, dst_prefix / local_key))
                 minio_sorted.append((minio_key, minio_hash))  # Push back minio object.
             elif local_key == minio_key and local_hash != minio_hash:
@@ -240,11 +253,11 @@ class Rewinder:
                 steps.append(PlanItem.update(local_path, minio_path))
             elif local_key > minio_key:
                 # Local file missing corresponding object in MinIO. Remove object from MinIO.
-                if not update_only:
+                if allow_create_and_delete:
                     steps.append(PlanItem.remove(minio_path))
                 local_sorted.append((local_key, local_hash))  # Push back local file.
 
-        if not update_only:
+        if allow_create_and_delete:
             for local_key, _ in local_sorted:
                 # New local file: Upload local file to MinIO.
                 steps.append(PlanItem.create(src_dir / local_key, dst_prefix / local_key))
@@ -258,7 +271,7 @@ class Rewinder:
             minio_prefix=dst_prefix,
             items=steps,
             tags=tags,
-            update_only=update_only,
+            allow_create_and_delete=allow_create_and_delete,
             multipart_upload_part_size=part_size,
         )
 
@@ -327,15 +340,19 @@ class Rewinder:
                     object_name=item.minio_path.key,
                 )
 
-    def detect_conflicts(self, prefix: S3Path, timestamp: datetime) -> List[VersionPair]:
+    def detect_conflicts(
+        self, prefix: S3Path, timestamp: datetime, add_tags_to_latest: bool = False
+    ) -> List[VersionPair]:
         """Detect conflicts in MinIO between now and the given timestamp.
 
         Parameters
         ----------
         prefix : S3Path
             S3 Prefix of a set of objects in MinIO.
-        timestamp: datetime
+        timestamp : datetime
             Compare the MinIO objects from this point in time to the current objects.
+        add_tags_to_latest : bool, optional
+            Request and attach the object tags to the latest minio object. Default: False.
 
         Returns
         -------
@@ -343,19 +360,27 @@ class Rewinder:
             Return list of conficts between `timestamp` and now.
         """
 
-        def get_rewinded_version(versions: Iterable[MinioObject], timestamp) -> Optional[MinioObject]:
+        def get_rewinded_version(versions: Iterable[MinioObject], timestamp: datetime) -> Optional[MinioObject]:
             return next((obj for obj in versions if timestamp >= obj.last_modified), None)
 
         object_map = self.__object_versions_grouped_by_key(prefix)
-        version_pairs = (
-            VersionPair(
-                rewinded_version=get_rewinded_version(versions, timestamp),
-                latest_version=versions[0],
+        version_pairs = [
+            pair
+            for pair in (
+                VersionPair(
+                    rewinded_version=get_rewinded_version(versions, timestamp),
+                    latest_version=versions[0],
+                )
+                for versions in object_map.values()
             )
-            for versions in object_map.values()
-        )
+            if pair.update_type != Operation.NONE
+        ]
 
-        return [pair for pair in version_pairs if pair.update_type != Operation.NONE]
+        if add_tags_to_latest:
+            for pair in version_pairs:
+                pair.latest_version = self.__add_object_tags(pair.latest_version)
+
+        return version_pairs
 
     def __object_versions_grouped_by_key(self, prefix: S3Path) -> Mapping[str, List[MinioObject]]:
         """List object versions in MinIO by `prefix` and group them by object key.
@@ -425,6 +450,22 @@ class Rewinder:
         else:
             digests = b"".join(h.digest() for h in hashes)  # Files split in multiple parts
             return hashlib.md5(digests).hexdigest() + f"-{len(hashes)}"
+
+    def __add_object_tags(self, obj: MinioObject) -> MinioObject:
+        if obj.is_delete_marker:
+            return obj  # Deleted object don't have tags for some reason.
+
+        tags = self._client.get_object_tags(obj.bucket_name, obj.object_name, obj.version_id)  # type: ignore
+        return MinioObject(
+            obj.bucket_name,
+            obj.object_name,
+            last_modified=obj.last_modified,
+            etag=obj.etag,
+            size=obj.size,
+            version_id=obj.version_id,
+            is_latest=obj.is_latest,
+            tags=tags,
+        )
 
     @staticmethod
     def __dir_is_empty(dir: Path) -> bool:

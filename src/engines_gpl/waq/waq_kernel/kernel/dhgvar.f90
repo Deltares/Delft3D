@@ -22,7 +22,7 @@
 !!  rights reserved.
 module m_dhgvar
     use m_waq_precision
-    use m_logger
+    use m_logger_helper
 
     implicit none
 
@@ -51,7 +51,7 @@ contains
         !
         !     Declaration of arguments
 
-        use m_sysn          ! System characteristics
+        use m_waq_memory_dimensions          ! System characteristics
         !
         INTEGER(kind = int_wp) :: IAR_NR, INDX, IVAR
 
@@ -239,20 +239,20 @@ contains
         IVFLO = IVARE + 1
         IVLEN = IVFLO + 1
         IVCNS = IVLEN + 2
-        IVPAR = IVCNS + NOCONS
-        IVFUN = IVPAR + NOPA
-        IVSFU = IVFUN + NOFUN
-        IVCNC = IVSFU + NOSFUN
-        IVMAS = IVCNC + NOTOT
-        IVDER = IVMAS + NOTOT
-        IVDSP = IVDER + NOTOT
-        IVVEL = IVDSP + NODISP
-        IVDEF = IVVEL + NOVELO
-        IVLOC = IVDEF + NODEF
-        IVDSX = IVLOC + NOLOC
-        IVVLX = IVDSX + NDSPX
-        IVLCX = IVVLX + NVELX
-        IVFLX = IVLCX + NLOCX
+        IVPAR = IVCNS + num_constants
+        IVFUN = IVPAR + num_spatial_parameters
+        IVSFU = IVFUN + num_time_functions
+        IVCNC = IVSFU + num_spatial_time_fuctions
+        IVMAS = IVCNC + num_substances_total
+        IVDER = IVMAS + num_substances_total
+        IVDSP = IVDER + num_substances_total
+        IVVEL = IVDSP + num_dispersion_arrays
+        IVDEF = IVVEL + num_velocity_arrays
+        IVLOC = IVDEF + num_defaults
+        IVDSX = IVLOC + num_local_vars
+        IVVLX = IVDSX + num_dispersion_arrays_extra
+        IVLCX = IVVLX + num_velocity_arrays_extra
+        IVFLX = IVLCX + num_local_vars_exchange
         !
         IVAR = -1
         !
@@ -277,77 +277,77 @@ contains
         ENDIF
         !
         IF (IAR_NR == IICONS) THEN
-            IF (INDX > NOCONS) GOTO 900
+            IF (INDX > num_constants) GOTO 900
             IVAR = IVCNS + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IIPARM) THEN
-            IF (INDX > NOPA) GOTO 900
+            IF (INDX > num_spatial_parameters) GOTO 900
             IVAR = IVPAR + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IIFUNC) THEN
-            IF (INDX > NOFUN) GOTO 900
+            IF (INDX > num_time_functions) GOTO 900
             IVAR = IVFUN + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IISFUN) THEN
-            IF (INDX > NOSFUN) GOTO 900
+            IF (INDX > num_spatial_time_fuctions) GOTO 900
             IVAR = IVSFU + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IICONC) THEN
-            IF (INDX > NOTOT) GOTO 900
+            IF (INDX > num_substances_total) GOTO 900
             IVAR = IVCNC + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IIMASS) THEN
-            IF (INDX > NOTOT) GOTO 900
+            IF (INDX > num_substances_total) GOTO 900
             IVAR = IVMAS + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IIDERV) THEN
-            IF (INDX > NOTOT) GOTO 900
+            IF (INDX > num_substances_total) GOTO 900
             IVAR = IVDER + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IIDISP) THEN
-            IF (INDX > NODISP) GOTO 900
+            IF (INDX > num_dispersion_arrays) GOTO 900
             IVAR = IVDSP + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IIVELO) THEN
-            IF (INDX > NOVELO) GOTO 900
+            IF (INDX > num_velocity_arrays) GOTO 900
             IVAR = IVVEL + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IIDEFA) THEN
-            IF (INDX > NODEF) GOTO 900
+            IF (INDX > num_defaults) GOTO 900
             IVAR = IVDEF + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IIPLOC) THEN
-            IF (INDX > NOLOC) GOTO 900
+            IF (INDX > num_local_vars) GOTO 900
             IVAR = IVLOC + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IIDSPX) THEN
-            IF (INDX > NDSPX) GOTO 900
+            IF (INDX > num_dispersion_arrays_extra) GOTO 900
             IVAR = IVDSX + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IIVELX) THEN
-            IF (INDX > NVELX) GOTO 900
+            IF (INDX > num_velocity_arrays_extra) GOTO 900
             IVAR = IVVLX + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IILOCX) THEN
-            IF (INDX > NLOCX) GOTO 900
+            IF (INDX > num_local_vars_exchange) GOTO 900
             IVAR = IVLCX + INDX - 1
         ENDIF
         !
         IF (IAR_NR == IIFLUX) THEN
-            IF (INDX > NFLUX) GOTO 900
+            IF (INDX > num_fluxes) GOTO 900
             IVAR = IVFLX + INDX - 1
         ENDIF
         !

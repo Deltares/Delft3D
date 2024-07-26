@@ -46,7 +46,7 @@
       logical           :: found
       integer, dimension(:), allocatable   :: iq1selectno, iq2selectno
       integer, dimension(:,:), allocatable :: iq1select, iq2select
-      integer           :: noseg, nobnd, ips, ip1, ip2, ip3, ip4, iq, iq1, iq2, iq_n, iq_o
+      integer           :: num_cells, num_boundary_conditions, ips, ip1, ip2, ip3, ip4, iq, iq1, iq2, iq_n, iq_o
       integer           :: maxexchanges, iqstop, iqstart
 
 
@@ -63,14 +63,14 @@
       !
       ip1   = maxval(ip_o)
       ip2   = -minval(ip_o)
-      noseg = maxval(ipnt(1:ip1))
+      num_cells = maxval(ipnt(1:ip1))
       if (ip2>0) then
-         nobnd = maxval(ipnt_b(1:ip2))
+         num_boundary_conditions = maxval(ipnt_b(1:ip2))
       else
-         nobnd = 0
+         num_boundary_conditions = 0
       endif
 
-      allocate( iq1selectno(-nobnd:noseg), iq2selectno(-nobnd:noseg) )
+      allocate( iq1selectno(-num_boundary_conditions:num_cells), iq2selectno(-num_boundary_conditions:num_cells) )
 
       iq1selectno = 0
       do iq = 1, noq_o
@@ -100,7 +100,7 @@
       maxexchanges = maxval( iq1selectno )
       iq1selectno  = 0
 
-      allocate( iq1select(maxexchanges,-nobnd:noseg) )
+      allocate( iq1select(maxexchanges,-num_boundary_conditions:num_cells) )
 
       do iq = 1, noq_o
          ip1 = ip_o(1,iq)
@@ -235,7 +235,7 @@
       iq1selectno  = 0
       iq2selectno  = 0
 
-      allocate( iq1select(maxexchanges,-nobnd:noseg), iq2select(maxexchanges,-nobnd:noseg) )
+      allocate( iq1select(maxexchanges,-num_boundary_conditions:num_cells), iq2select(maxexchanges,-num_boundary_conditions:num_cells) )
 
       do iq_n = 1,noq_n
          ip1 = ip_n(1,iq_n)

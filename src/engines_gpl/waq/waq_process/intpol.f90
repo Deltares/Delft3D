@@ -28,9 +28,9 @@ module m_intpol
 contains
 
 
-    subroutine intpol (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine intpol (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Depth where wave is created or wind fetch from wind direction
 
@@ -53,9 +53,9 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: MAXPAR, NUMPAR, i, iseg
         real(kind = real_wp) :: VALUE, RESULT
@@ -68,17 +68,17 @@ contains
             IP(I) = IPOINT(I)
         end do
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
                 !     fill and count the number of classes
 
-                VALUE = PMSA(IP(1))
+                VALUE = process_space_real(IP(1))
                 NUMPAR = 1
                 DO I = 1, MAXPAR
-                    Y(I) = PMSA(IP(2 * I))
-                    X(I) = PMSA(IP(2 * I + 1))
+                    Y(I) = process_space_real(IP(2 * I))
+                    X(I) = process_space_real(IP(2 * I + 1))
                     IF (X(I)< 0.0) EXIT
                     NUMPAR = I
                 ENDDO
@@ -96,7 +96,7 @@ contains
                     GOTO 30
                 ENDIF
 
-                PMSA(IP(2 * MAXPAR + 2)) = RESULT
+                process_space_real(IP(2 * MAXPAR + 2)) = RESULT
 
             ENDIF
             !

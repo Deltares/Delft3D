@@ -517,7 +517,7 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
           ! weir.
           ! Gates are excluded
           !
-          if (dpsopt == 'DP  ' .or. slplim) then
+          if (dpsopt == 'DP' .or. slplim) then
              if (kfu(nm)==1 .and. abs(u0(nm,kmin)) <= 1.0e-15 .and. kspu(nm, 0) /= 4 .and. kspu(nm, 0) /= 10) then
                 !
                 ! cfurou(nm,1) contains u/u*

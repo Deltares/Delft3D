@@ -2013,8 +2013,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "S1_Comp   ","IM1S1     ",   1,"Y","x",1
 "S1_Comp   ","IM2S1     ",   2,"Y","x",1
 "S1_Comp   ","IM3S1     ",   3,"Y","x",1
-"S1_Comp   ","DetCS1    ",   4,"Y","x",1
-"S1_Comp   ","OOCS1     ",   5,"Y","x",1
+"S1_Comp   ","S1_PC1    ",   4,"Y","x",1
+"S1_Comp   ","S1_PC2    ",   5,"Y","x",1
 "S1_Comp   ","DiatS1    ",   6,"Y","x",1
 "S1_Comp   ","GreenS1   ",   7,"Y","x",1
 "S1_Comp   ","AAPS1     ",   8,"Y","x",1
@@ -2034,12 +2034,12 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "S1_Comp   ","RHOGreen  ",  22,"Y","x",1
 "S1_Comp   ","PORS1     ",  23,"Y","x",1
 "S1_Comp   ","Surf      ",  24,"N","x",1
-"S1_Comp   ","DetNS1    ",  25,"Y","x",1
-"S1_Comp   ","DetPS1    ",  26,"Y","x",1
-"S1_Comp   ","DetSiS1   ",  27,"Y","x",1
-"S1_Comp   ","OONS1     ",  28,"Y","x",1
-"S1_Comp   ","OOPS1     ",  29,"Y","x",1
-"S1_Comp   ","OOSiS1    ",  30,"Y","x",1
+"S1_Comp   ","S1_PN1    ",  25,"Y","x",1
+"S1_Comp   ","S1_PP1    ",  26,"Y","x",1
+"S1_Comp   ","S1_Opal   ",  27,"Y","x",1
+"S1_Comp   ","S1_PN2    ",  28,"Y","x",1
+"S1_Comp   ","S1_PP2    ",  29,"Y","x",1
+"S1_Comp   ","S1_PS2    ",  30,"Y","x",1
 "S1_Comp   ","MPB1peliS1",  31,"Y","x",1
 "S1_Comp   ","MPB2psamS1",  32,"Y","x",1
 "S1_Comp   ","DmCfMPB1  ",  33,"Y","x",1
@@ -2312,7 +2312,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "VAROXY    ","Depth     ",  10,"N","x",1
 "VAROXY    ","SWOxyProd ",  11,"Y","x",1
 "BMS1_DetC ","ZMinDetCS1",   1,"Y","x",1
-"BMS1_DetC ","DetCS1    ",   2,"N","x",1
+"BMS1_DetC ","S1_PC1    ",   2,"N","x",1
 "BMS1_DetC ","RcDetCS1  ",   3,"Y","x",1
 "BMS1_DetC ","TcBMDetC  ",   4,"Y","x",1
 "BMS1_DetC ","Temp      ",   5,"Y","x",1
@@ -2330,7 +2330,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BMS2_DetC ","Depth     ",   8,"N","x",1
 "BMS2_DetC ","SedZoneSW ",   9,"Y"," ",1
 "BMS1_DetN ","ZMinDetNS1",   1,"Y","x",1
-"BMS1_DetN ","DetNS1    ",   2,"N","x",1
+"BMS1_DetN ","S1_PN1    ",   2,"N","x",1
 "BMS1_DetN ","RcDetNS1  ",   3,"Y","x",1
 "BMS1_DetN ","TcBMDetN  ",   4,"Y","x",1
 "BMS1_DetN ","Temp      ",   5,"Y","x",1
@@ -2348,7 +2348,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BMS2_DetN ","Depth     ",   8,"N","x",1
 "BMS2_DetN ","SedZoneSW ",   9,"Y"," ",1
 "BMS1_DetP ","ZMinDetPS1",   1,"Y","x",1
-"BMS1_DetP ","DetPS1    ",   2,"N","x",1
+"BMS1_DetP ","S1_PP1    ",   2,"N","x",1
 "BMS1_DetP ","RcDetPS1  ",   3,"Y","x",1
 "BMS1_DetP ","TcBMDetP  ",   4,"Y","x",1
 "BMS1_DetP ","Temp      ",   5,"Y","x",1
@@ -2366,7 +2366,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BMS2_DetP ","Depth     ",   8,"N","x",1
 "BMS2_DetP ","SedZoneSW ",   9,"Y"," ",1
 "BMS1_DetSi","ZMinDetSS1",   1,"Y","x",1
-"BMS1_DetSi","DetSiS1   ",   2,"N","x",1
+"BMS1_DetSi","S1_Opal   ",   2,"N","x",1
 "BMS1_DetSi","RcDetSiS1 ",   3,"Y","x",1
 "BMS1_DetSi","TcBMDetSi ",   4,"Y","x",1
 "BMS1_DetSi","Temp      ",   5,"Y","x",1
@@ -2384,7 +2384,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BMS2_DetSi","Depth     ",   8,"N","x",1
 "BMS2_DetSi","SedZoneSW ",   9,"Y"," ",1
 "BMS1_OOC  ","ZMinOOCS1 ",   1,"Y","x",1
-"BMS1_OOC  ","OOCS1     ",   2,"N","x",1
+"BMS1_OOC  ","S1_PC2    ",   2,"N","x",1
 "BMS1_OOC  ","RcOOCS1   ",   3,"Y","x",1
 "BMS1_OOC  ","TcBMOOC   ",   4,"Y","x",1
 "BMS1_OOC  ","Temp      ",   5,"Y","x",1
@@ -2402,7 +2402,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BMS2_OOC  ","Depth     ",   8,"N","x",1
 "BMS2_OOC  ","SedZoneSW ",   9,"Y"," ",1
 "BMS1_OON  ","ZMinOONS1 ",   1,"Y","x",1
-"BMS1_OON  ","OONS1     ",   2,"N","x",1
+"BMS1_OON  ","S1_PN2    ",   2,"N","x",1
 "BMS1_OON  ","RcOONS1   ",   3,"Y","x",1
 "BMS1_OON  ","TcBMOON   ",   4,"Y","x",1
 "BMS1_OON  ","Temp      ",   5,"Y","x",1
@@ -2420,7 +2420,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BMS2_OON  ","Depth     ",   8,"N","x",1
 "BMS2_OON  ","SedZoneSW ",   9,"Y"," ",1
 "BMS1_OOP  ","ZMinOOPS1 ",   1,"Y","x",1
-"BMS1_OOP  ","OOPS1     ",   2,"N","x",1
+"BMS1_OOP  ","S1_PP2    ",   2,"N","x",1
 "BMS1_OOP  ","RcOOPS1   ",   3,"Y","x",1
 "BMS1_OOP  ","TcBMOOP   ",   4,"Y","x",1
 "BMS1_OOP  ","Temp      ",   5,"Y","x",1
@@ -2438,7 +2438,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BMS2_OOP  ","Depth     ",   8,"N","x",1
 "BMS2_OOP  ","SedZoneSW ",   9,"Y"," ",1
 "BMS1_OOSi ","ZMinOOSS1 ",   1,"Y","x",1
-"BMS1_OOSi ","OOSiS1    ",   2,"N","x",1
+"BMS1_OOSi ","S1_PS2    ",   2,"N","x",1
 "BMS1_OOSi ","RcOOSiS1  ",   3,"Y","x",1
 "BMS1_OOSi ","TcBMOOSi  ",   4,"Y","x",1
 "BMS1_OOSi ","Temp      ",   5,"Y","x",1
@@ -13337,10 +13337,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_M  ","PON1      ",  72,"Y"," ",1
 "DEBGRZ_M  ","POP1      ",  73,"Y"," ",1
 "DEBGRZ_M  ","POSi1     ",  74,"Y"," ",1
-"DEBGRZ_M  ","DetCS1    ",  75,"Y","x",1
-"DEBGRZ_M  ","DetNS1    ",  76,"Y","x",1
-"DEBGRZ_M  ","DetPS1    ",  77,"Y","x",1
-"DEBGRZ_M  ","DetSiS1   ",  78,"Y","x",1
+"DEBGRZ_M  ","S1_PC1    ",  75,"Y","x",1
+"DEBGRZ_M  ","S1_PN1    ",  76,"Y","x",1
+"DEBGRZ_M  ","S1_PP1    ",  77,"Y","x",1
+"DEBGRZ_M  ","S1_Opal   ",  78,"Y","x",1
 "DEBGRZ_M  ","Green     ",  79,"Y","x",1
 "DEBGRZ_M  ","Diat      ",  80,"Y","x",1
 "DEBGRZ_M  ","BLOOMALG01",  81,"B"," ",1
@@ -13695,10 +13695,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_Z  ","PON1      ",  72,"Y"," ",1
 "DEBGRZ_Z  ","POP1      ",  73,"Y"," ",1
 "DEBGRZ_Z  ","Opal      ",  74,"Y"," ",1
-"DEBGRZ_Z  ","DetCS1    ",  75,"Y","x",1
-"DEBGRZ_Z  ","DetNS1    ",  76,"Y","x",1
-"DEBGRZ_Z  ","DetPS1    ",  77,"Y","x",1
-"DEBGRZ_Z  ","DetSiS1   ",  78,"Y","x",1
+"DEBGRZ_Z  ","S1_PC1    ",  75,"Y","x",1
+"DEBGRZ_Z  ","S1_PN1    ",  76,"Y","x",1
+"DEBGRZ_Z  ","S1_PP1    ",  77,"Y","x",1
+"DEBGRZ_Z  ","S1_Opal   ",  78,"Y","x",1
 "DEBGRZ_Z  ","Green     ",  79,"Y","x",1
 "DEBGRZ_Z  ","Diat      ",  80,"Y","x",1
 "DEBGRZ_Z  ","BLOOMALG01",  81,"B"," ",1
@@ -14053,10 +14053,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_G3 ","PON1      ",  72,"Y"," ",1
 "DEBGRZ_G3 ","POP1      ",  73,"Y"," ",1
 "DEBGRZ_G3 ","Opal      ",  74,"Y"," ",1
-"DEBGRZ_G3 ","DetCS1    ",  75,"Y","x",1
-"DEBGRZ_G3 ","DetNS1    ",  76,"Y","x",1
-"DEBGRZ_G3 ","DetPS1    ",  77,"Y","x",1
-"DEBGRZ_G3 ","DetSiS1   ",  78,"Y","x",1
+"DEBGRZ_G3 ","S1_PC1    ",  75,"Y","x",1
+"DEBGRZ_G3 ","S1_PN1    ",  76,"Y","x",1
+"DEBGRZ_G3 ","S1_PP1    ",  77,"Y","x",1
+"DEBGRZ_G3 ","S1_Opal   ",  78,"Y","x",1
 "DEBGRZ_G3 ","Green     ",  79,"Y","x",1
 "DEBGRZ_G3 ","Diat      ",  80,"Y","x",1
 "DEBGRZ_G3 ","BLOOMALG01",  81,"B"," ",1
@@ -14411,10 +14411,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_G4 ","PON1      ",  72,"Y"," ",1
 "DEBGRZ_G4 ","POP1      ",  73,"Y"," ",1
 "DEBGRZ_G4 ","Opal      ",  74,"Y"," ",1
-"DEBGRZ_G4 ","DetCS1    ",  75,"Y","x",1
-"DEBGRZ_G4 ","DetNS1    ",  76,"Y","x",1
-"DEBGRZ_G4 ","DetPS1    ",  77,"Y","x",1
-"DEBGRZ_G4 ","DetSiS1   ",  78,"Y","x",1
+"DEBGRZ_G4 ","S1_PC1    ",  75,"Y","x",1
+"DEBGRZ_G4 ","S1_PN1    ",  76,"Y","x",1
+"DEBGRZ_G4 ","S1_PP1    ",  77,"Y","x",1
+"DEBGRZ_G4 ","S1_Opal   ",  78,"Y","x",1
 "DEBGRZ_G4 ","Green     ",  79,"Y","x",1
 "DEBGRZ_G4 ","Diat      ",  80,"Y","x",1
 "DEBGRZ_G4 ","BLOOMALG01",  81,"B"," ",1
@@ -14769,10 +14769,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_G5 ","PON1      ",  72,"Y"," ",1
 "DEBGRZ_G5 ","POP1      ",  73,"Y"," ",1
 "DEBGRZ_G5 ","Opal      ",  74,"Y"," ",1
-"DEBGRZ_G5 ","DetCS1    ",  75,"Y","x",1
-"DEBGRZ_G5 ","DetNS1    ",  76,"Y","x",1
-"DEBGRZ_G5 ","DetPS1    ",  77,"Y","x",1
-"DEBGRZ_G5 ","DetSiS1   ",  78,"Y","x",1
+"DEBGRZ_G5 ","S1_PC1    ",  75,"Y","x",1
+"DEBGRZ_G5 ","S1_PN1    ",  76,"Y","x",1
+"DEBGRZ_G5 ","S1_PP1    ",  77,"Y","x",1
+"DEBGRZ_G5 ","S1_Opal   ",  78,"Y","x",1
 "DEBGRZ_G5 ","Green     ",  79,"Y","x",1
 "DEBGRZ_G5 ","Diat      ",  80,"Y","x",1
 "DEBGRZ_G5 ","BLOOMALG01",  81,"B"," ",1
@@ -15782,28 +15782,34 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DELWAQG   ","fSedPOS4  ", 208,"N"," ",1
 "DELWAQG   ","fSedSUP   ", 209,"Y"," ",1
 "DELWAQG   ","fSedVIVP  ", 210,"N"," ",1
-"DELWAQG   ","fN1VBups  ", 211,"Y"," ",1
-"DELWAQG   ","fN2VBups  ", 212,"Y"," ",1
-"DELWAQG   ","fP1VBups  ", 213,"Y"," ",1
-"DELWAQG   ","fP2VBups  ", 214,"Y"," ",1
-"DELWAQG   ","fS1VBups  ", 215,"Y"," ",1
-"DELWAQG   ","fS2VBups  ", 216,"Y"," ",1
-"DELWAQG   ","fC1VBrels ", 217,"Y"," ",1
-"DELWAQG   ","fC2VBrels ", 218,"Y"," ",1
-"DELWAQG   ","fC3VBrels ", 219,"Y"," ",1
-"DELWAQG   ","fC4VBrels ", 220,"Y"," ",1
-"DELWAQG   ","fN1VBrels ", 221,"Y"," ",1
-"DELWAQG   ","fN2VBrels ", 222,"Y"," ",1
-"DELWAQG   ","fN3VBrels ", 223,"Y"," ",1
-"DELWAQG   ","fN4VBrels ", 224,"Y"," ",1
-"DELWAQG   ","fP1VBrels ", 225,"Y"," ",1
-"DELWAQG   ","fP2VBrels ", 226,"Y"," ",1
-"DELWAQG   ","fP3VBrels ", 227,"Y"," ",1
-"DELWAQG   ","fP4VBrels ", 228,"Y"," ",1
-"DELWAQG   ","fS1VBrels ", 229,"Y"," ",1
-"DELWAQG   ","fS2VBrels ", 230,"Y"," ",1
-"DELWAQG   ","fS3VBrels ", 231,"Y"," ",1
-"DELWAQG   ","fS4VBrels ", 232,"Y"," ",1
+"DELWAQG   ","fSedPHYT  ", 211,"Y"," ",1
+"DELWAQG   ","fSedAlgN  ", 212,"Y"," ",1
+"DELWAQG   ","fSedAlgP  ", 213,"Y"," ",1
+"DELWAQG   ","fResS1DetC", 214,"Y"," ",1
+"DELWAQG   ","fResS1DetN", 215,"Y"," ",1
+"DELWAQG   ","fResS1DetP", 216,"Y"," ",1
+"DELWAQG   ","fN1VBups  ", 217,"Y"," ",1
+"DELWAQG   ","fN2VBups  ", 218,"Y"," ",1
+"DELWAQG   ","fP1VBups  ", 219,"Y"," ",1
+"DELWAQG   ","fP2VBups  ", 220,"Y"," ",1
+"DELWAQG   ","fS1VBups  ", 221,"Y"," ",1
+"DELWAQG   ","fS2VBups  ", 222,"Y"," ",1
+"DELWAQG   ","fC1VBrels ", 223,"Y"," ",1
+"DELWAQG   ","fC2VBrels ", 224,"Y"," ",1
+"DELWAQG   ","fC3VBrels ", 225,"Y"," ",1
+"DELWAQG   ","fC4VBrels ", 226,"Y"," ",1
+"DELWAQG   ","fN1VBrels ", 227,"Y"," ",1
+"DELWAQG   ","fN2VBrels ", 228,"Y"," ",1
+"DELWAQG   ","fN3VBrels ", 229,"Y"," ",1
+"DELWAQG   ","fN4VBrels ", 230,"Y"," ",1
+"DELWAQG   ","fP1VBrels ", 231,"Y"," ",1
+"DELWAQG   ","fP2VBrels ", 232,"Y"," ",1
+"DELWAQG   ","fP3VBrels ", 233,"Y"," ",1
+"DELWAQG   ","fP4VBrels ", 234,"Y"," ",1
+"DELWAQG   ","fS1VBrels ", 235,"Y"," ",1
+"DELWAQG   ","fS2VBrels ", 236,"Y"," ",1
+"DELWAQG   ","fS3VBrels ", 237,"Y"," ",1
+"DELWAQG   ","fS4VBrels ", 238,"Y"," ",1
 "MPBNUT    ","Nutlen    ",   1,"Y","x",1
 "MPBNUT    ","DIF       ",   2,"Y","x",1
 "MPBNUT    ","dMinDetNS1",   3,"Y"," ",1
@@ -17916,6 +17922,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "IM_Flocdyn","TotalDepth",  11,"N","x",1
 "IM_Flocdyn","LocalDepth",  12,"N","x",1
 "IM_Flocdyn","Depth     ",  13,"N","x",1
+"IM_Flocdyn","DiaMicro  ",  14,"Y","x",1
+"IM_Flocdyn","UstarMacro",  15,"Y","x",1
 "ProtMrt_C1","Salinity  ",   1,"N","x",1
 "ProtMrt_C1","b1_C1     ",   2,"N","x",1
 "ProtMrt_C1","b2_C1     ",   3,"N","x",1
@@ -18040,10 +18048,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_M  ","PON1      ",  72,"Y"," ",1
 "DEBGRP_M  ","POP1      ",  73,"Y"," ",1
 "DEBGRP_M  ","POSi1     ",  74,"Y"," ",1
-"DEBGRP_M  ","DetCS1    ",  75,"Y","x",1
-"DEBGRP_M  ","DetNS1    ",  76,"Y","x",1
-"DEBGRP_M  ","DetPS1    ",  77,"Y","x",1
-"DEBGRP_M  ","DetSiS1   ",  78,"Y","x",1
+"DEBGRP_M  ","S1_PC1    ",  75,"Y","x",1
+"DEBGRP_M  ","S1_PN1    ",  76,"Y","x",1
+"DEBGRP_M  ","S1_PP1    ",  77,"Y","x",1
+"DEBGRP_M  ","S1_Opal   ",  78,"Y","x",1
 "DEBGRP_M  ","diatC_1   ",  79,"Y","x",1
 "DEBGRP_M  ","diatChl_1 ",  80,"Y","x",1
 "DEBGRP_M  ","diatN_1   ",  81,"Y","x",1
@@ -18198,10 +18206,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_Z  ","PON1      ",  72,"Y"," ",1
 "DEBGRP_Z  ","POP1      ",  73,"Y"," ",1
 "DEBGRP_Z  ","Opal      ",  74,"Y"," ",1
-"DEBGRP_Z  ","DetCS1    ",  75,"Y","x",1
-"DEBGRP_Z  ","DetNS1    ",  76,"Y","x",1
-"DEBGRP_Z  ","DetPS1    ",  77,"Y","x",1
-"DEBGRP_Z  ","DetSiS1   ",  78,"Y","x",1
+"DEBGRP_Z  ","S1_PC1    ",  75,"Y","x",1
+"DEBGRP_Z  ","S1_PN1    ",  76,"Y","x",1
+"DEBGRP_Z  ","S1_PP1    ",  77,"Y","x",1
+"DEBGRP_Z  ","S1_Opal   ",  78,"Y","x",1
 "DEBGRP_Z  ","diatC_1   ",  79,"Y","x",1
 "DEBGRP_Z  ","diatChl_1 ",  80,"Y","x",1
 "DEBGRP_Z  ","diatN_1   ",  81,"Y","x",1
@@ -18356,10 +18364,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G3 ","PON1      ",  72,"Y"," ",1
 "DEBGRP_G3 ","POP1      ",  73,"Y"," ",1
 "DEBGRP_G3 ","Opal      ",  74,"Y"," ",1
-"DEBGRP_G3 ","DetCS1    ",  75,"Y","x",1
-"DEBGRP_G3 ","DetNS1    ",  76,"Y","x",1
-"DEBGRP_G3 ","DetPS1    ",  77,"Y","x",1
-"DEBGRP_G3 ","DetSiS1   ",  78,"Y","x",1
+"DEBGRP_G3 ","S1_PC1    ",  75,"Y","x",1
+"DEBGRP_G3 ","S1_PN1    ",  76,"Y","x",1
+"DEBGRP_G3 ","S1_PP1    ",  77,"Y","x",1
+"DEBGRP_G3 ","S1_Opal   ",  78,"Y","x",1
 "DEBGRP_G3 ","diatC_1   ",  79,"Y","x",1
 "DEBGRP_G3 ","diatChl_1 ",  80,"Y","x",1
 "DEBGRP_G3 ","diatN_1   ",  81,"Y","x",1
@@ -18514,10 +18522,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G4 ","PON1      ",  72,"Y"," ",1
 "DEBGRP_G4 ","POP1      ",  73,"Y"," ",1
 "DEBGRP_G4 ","Opal      ",  74,"Y"," ",1
-"DEBGRP_G4 ","DetCS1    ",  75,"Y","x",1
-"DEBGRP_G4 ","DetNS1    ",  76,"Y","x",1
-"DEBGRP_G4 ","DetPS1    ",  77,"Y","x",1
-"DEBGRP_G4 ","DetSiS1   ",  78,"Y","x",1
+"DEBGRP_G4 ","S1_PC1    ",  75,"Y","x",1
+"DEBGRP_G4 ","S1_PN1    ",  76,"Y","x",1
+"DEBGRP_G4 ","S1_PP1    ",  77,"Y","x",1
+"DEBGRP_G4 ","S1_Opal   ",  78,"Y","x",1
 "DEBGRP_G4 ","diatC_1   ",  79,"Y","x",1
 "DEBGRP_G4 ","diatChl_1 ",  80,"Y","x",1
 "DEBGRP_G4 ","diatN_1   ",  81,"Y","x",1
@@ -18672,10 +18680,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G5 ","PON1      ",  72,"Y"," ",1
 "DEBGRP_G5 ","POP1      ",  73,"Y"," ",1
 "DEBGRP_G5 ","Opal      ",  74,"Y"," ",1
-"DEBGRP_G5 ","DetCS1    ",  75,"Y","x",1
-"DEBGRP_G5 ","DetNS1    ",  76,"Y","x",1
-"DEBGRP_G5 ","DetPS1    ",  77,"Y","x",1
-"DEBGRP_G5 ","DetSiS1   ",  78,"Y","x",1
+"DEBGRP_G5 ","S1_PC1    ",  75,"Y","x",1
+"DEBGRP_G5 ","S1_PN1    ",  76,"Y","x",1
+"DEBGRP_G5 ","S1_PP1    ",  77,"Y","x",1
+"DEBGRP_G5 ","S1_Opal   ",  78,"Y","x",1
 "DEBGRP_G5 ","diatC_1   ",  79,"Y","x",1
 "DEBGRP_G5 ","diatChl_1 ",  80,"Y","x",1
 "DEBGRP_G5 ","diatN_1   ",  81,"Y","x",1

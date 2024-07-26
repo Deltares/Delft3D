@@ -152,7 +152,7 @@ contains
         ! the energy constraint. Compute the minimum extinction value that could
         ! make the problem feasible. This is the background extinction EXTB
         ! (which includes detritus) plus the extinction of all phytoplankton
-        ! species at their minimum level. If the old Kmax is high enough, the
+        ! species at their minimum level. If the old num_layers_grid is high enough, the
         ! violation must be due to a nutrient constraint afterall so drop the
         ! mortality constraint. Rerun.
         ! Note: we have assumed that the type whose objective function is the
@@ -184,7 +184,7 @@ contains
                 if (aroot(2 * k) < extrem) then
                     aroot(2 * k) = extrem
                     if (idump == 1) write (outdbg, 120) grname(index)
-                    120              format (' Mortality constraint of species ', A8, 'is violated.', /, ' KMAX NOW set above mortality constaint.')
+                    120              format (' Mortality constraint of species ', A8, 'is violated.', /, ' num_layers_grid NOW set above mortality constaint.')
                 else
                     b(irs(3)) = 0.0
                     if (idump == 1) write (outdbg, 110) grname(index)

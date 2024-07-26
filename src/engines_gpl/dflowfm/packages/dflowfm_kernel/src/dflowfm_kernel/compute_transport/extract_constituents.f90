@@ -32,7 +32,7 @@
 
 !> extract constituent array
 subroutine extract_constituents()
-   use precision, only: fp
+   use precision, only: dp
    use m_transport
    use m_flow
    use m_flowgeom
@@ -47,11 +47,9 @@ subroutine extract_constituents()
 
    implicit none
 
-   integer :: i, iconst, k, kk, limmin, limmax,  ll, kb, k1, kt, ii   
+   integer :: i, iconst, k, kk, limmin, limmax, ll, kb, k1, kt
    double precision :: dmin
    double precision :: t_freeze  !< freezing point temperature [degC]
-   integer, parameter :: dp = kind(t_freeze)
-
    integer(4) ithndl /0/
    if (timon) call timstrt ( "extract_constituents", ithndl )
    limmax = 0
@@ -63,7 +61,7 @@ subroutine extract_constituents()
          spirint(k) = constituents(ISPIR,k)
       endif
 
-      if ( ISED1.ne.0 ) then
+      if (ISED1 /= 0) then
          do i=1,mxgr
             iconst = ISED1+i-1
             if (constituents(iconst,k)<0d0) then
@@ -78,13 +76,13 @@ subroutine extract_constituents()
                constituents(iconst,k) = upperlimitssc
             endif
             if (.not. stm_included) then
-               sed(i,k) = constituents(iconst,k)
+            sed(i,k) = constituents(iconst,k)
             endif
          end do
       end if
    end do
    
-   if (ISED1.ne.0 .and. jalogtransportsolverlimiting>0) then
+   if (ISED1 /= 0 .and. jalogtransportsolverlimiting > 0) then
       if (limmin>0) then
          write(msgbuf , *) 'Negative ssc encountered and limited, number of cells = ' , limmin  ; call msg_flush()
       endif
@@ -94,8 +92,8 @@ subroutine extract_constituents()
       endif   
    endif
 
-   if (jatem .ne. 0) then
-      if (tempmax .ne. dmiss) then ! tem is now positive
+   if (jatem /= 0) then
+      if (tempmax /= dmiss) then ! tem is now positive
          limmax = 0
          do k = 1, Ndkx
             if (constituents(itemp,k) > tempmax) then
@@ -103,13 +101,13 @@ subroutine extract_constituents()
                 limmax   = limmax + 1
             endif
          enddo
-         if (limmax .ne. 0) then
+         if (limmax /= 0) then
             write(msgbuf , *) 'Max. temperature limited, number of cells Limmax = ' , limmax  ; call msg_flush()
          endif
       endif
          limmin = 0
      
-      if (tempmin .ne. dmiss) then 
+      if (tempmin /= dmiss) then
          k1 = 1 ; if (kmx > 0) k1 = Ndx + 1
          do k = k1, Ndkx
             if (constituents(itemp,k) < tempmin) then
@@ -127,16 +125,16 @@ subroutine extract_constituents()
             endif
          enddo
       endif
-      if (limmin .ne. 0 .and. tempmin > -0.001d0) then     !! no warnings when negative temperatures are allowed
+      if (limmin /= 0 .and. tempmin > -0.001d0) then !! no warnings when negative temperatures are allowed
          write(msgbuf , *) 'Min. temperature limited, number of cells Limmin = ' , limmin  ; call msg_flush()
       endif
    endif
 
-   if (jasal .ne. 0) then
+   if (jasal /= 0) then
       limmax = 0 ; limmin = 0 ; numdots = 0
       dmin = huge(1d0)
       do kk = 1, Ndxi
-         if (salimax .ne. dmiss) then
+         if (salimax /= dmiss) then
             do k = kbot(kk),ktop(kk)
                if (constituents(isalt,k) > salimax) then
                    constituents(isalt,k) = salimax
@@ -154,10 +152,10 @@ subroutine extract_constituents()
          enddo
       enddo
 
-      if (limmax .ne. 0) then
+      if (limmax /= 0) then
          write(msgbuf , *) 'Max. salinity limited, number of cells Limmax = ' , limmax  ; call msg_flush()
       endif
-      if (limmin .ne. 0) then
+      if (limmin /= 0) then
          write(msgbuf , *) 'Min. salinity limited, number of cells Limmin = ' , limmin  ; call msg_flush()
          write(msgbuf , *) 'Min. salinity limited, min = ' , dmin  ; call msg_flush()
       endif

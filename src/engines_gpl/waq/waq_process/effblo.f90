@@ -29,9 +29,9 @@ module m_effblo
 contains
 
 
-    subroutine effblo     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine effblo     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Light efficiency function BLOOM algae
         !>
@@ -41,18 +41,18 @@ contains
 
         !     Type    Name         I/O Description
 
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(37) ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(37) ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(37) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(37)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
 
@@ -76,23 +76,23 @@ contains
         !     we might not have the bloom parameters loaded yet. This could already be done here or in BLOOM? Only the first time step.
         !     this is in a module/include, so we might put a flag if it was read of not.
         !     this should be a 'proto-proces', and thus needs to be added to the BLOOM.SPE
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
             if (btest(iknmrk(iseg), 0)) then
 
-                SWEff = nint(pmsa(ipnt(1)))
-                Temper = pmsa(ipnt(2))
-                Radiat = pmsa(ipnt(3)) * 60.48  ! Conversion from W/m2 to J/cm2/7days
-                Ext = pmsa(ipnt(4))
-                Depthw = pmsa(ipnt(5))
-                DayLen = pmsa(ipnt(6)) * 24.   ! Conversion from days to hours
+                SWEff = nint(process_space_real(ipnt(1)))
+                Temper = process_space_real(ipnt(2))
+                Radiat = process_space_real(ipnt(3)) * 60.48  ! Conversion from W/m2 to J/cm2/7days
+                Ext = process_space_real(ipnt(4))
+                Depthw = process_space_real(ipnt(5))
+                DayLen = process_space_real(ipnt(6)) * 24.   ! Conversion from days to hours
                 !     test for extinction and depth to prevent diff by zero!!
                 effi = 0.0e0
                 if(ext>0.0e0 .and. depthw>0.0e0) then
                     call get_effi(SWEff, temper, radiat, ext, depthw, daylen, nspe, effi)
                 endif
                 do ispe = 1, nspe
-                    pmsa(ipnt(7 + ispe)) = effi(ispe)
+                    process_space_real(ipnt(7 + ispe)) = effi(ispe)
                 enddo
             endif
 

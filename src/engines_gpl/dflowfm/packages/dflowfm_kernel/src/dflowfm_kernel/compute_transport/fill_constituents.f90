@@ -39,26 +39,32 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
    use m_physcoef,             only: dicouv, dicoww, difmolsal, difmoltem, difmoltracer, Jaallowcoolingbelowzero, ag, vonkar
    use m_nudge,                only: nudge_rate, nudge_tem, nudge_sal
    use m_turbulence,           only: sigsal, sigtem, sigtracer, sigdifi, sigsed, wsf
-   use m_flowexternalforcings, only: wstracers, numsrc, ksrc, qsrc, ccsrc
+   use fm_external_forcings_data, only: wstracers, numsrc, ksrc, qsrc, ccsrc
    use m_sediment,             only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
    use m_mass_balance_areas,   only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
    use m_partitioninfo,        only: jampi, idomain, my_rank
    use m_sferic,               only: jsferic, fcorio
    use m_flowtimes ,           only : dts, time1, tstart_user, tfac
    use m_flowparameters,       only: janudge, jasecflow, jatem, jaequili, epshu, epshs, testdryflood, icorio
+   use m_lateral, only: numlatsg, get_lateral_discharge, add_lateral_load_and_sink, apply_transport_is_used
    use m_missing,              only: dmiss
    use timers,                 only: timon, timstrt, timstop
+   use m_alloc, only: aerr
 
    implicit none
 
    integer, intent(in)         :: jas
 
    double precision            :: dvoli
-   integer                     :: i, iconst, j, kk, kkk, k, kb, kt, n, kk2, L, imba, jamba_src
+   integer :: iconst, kk, kkk, k, kb, kt, n, kk2, imba, jamba_src, iostat
+   integer :: jsed ! counter for suspended sediment fractions
+   integer :: jtra ! counter for tracers
    double precision, parameter :: dtol=1d-8
    double precision            :: spir_ce, spir_be, spir_e, alength_a, time_a, alpha, fcoriocof, qsrck, qsrckk, dzss
 
    double precision            :: Trefi
+   double precision, allocatable, dimension(:, :) :: qin_over_laterals
+   double precision, allocatable, dimension(:, :) :: qout_over_laterals
 
    integer(4) ithndl /0/
    if (timon) call timstrt ( "fill_constituents", ithndl )
@@ -67,37 +73,38 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
    const_sink = 0d0
 
    do k=1,Ndkx
+ 
       if( jasecflow > 0 .and. jaequili == 0 .and. kmx == 0 ) then
          constituents(ISPIR,k) = spirint(k)
       endif
 
-      if ( ISED1.ne.0 .and. .not. stm_included) then
-         do i=1,mxgr
-            iconst = ISED1+i-1
-            constituents(iconst,k) = sed(i,k)
+      if ( ISED1 /= 0 .and. .not. stm_included) then
+         do jsed = 1, mxgr
+            iconst = ISED1 + jsed - 1
+            constituents(iconst, k) = sed(jsed, k)
          end do
       end if
    end do
-
+         
    difsedu = 0d0 ; difsedw = 0d0 ; sigdifi = 0d0
 
 !  diffusion coefficients
 
-   if ( ISALT.ne.0 ) then
-      if (dicouv .ge. 0d0) then
+   if (ISALT /= 0) then
+      if (dicouv >= 0d0) then
           difsedu(ISALT) =          difmolsal
       endif
-      if (dicoww .ge. 0d0) then
+      if (dicoww >= 0d0) then
           difsedw(ISALT) = dicoww + difmolsal
           sigdifi(ISALT) = 1d0/sigsal
       endif
    end if
 
-   if ( ITEMP.ne.0 ) then
-      if (dicouv .ge. 0d0) then
+   if (ITEMP /= 0) then
+      if (dicouv >= 0d0) then
           difsedu(ITEMP) =          difmoltem
       endif
-      if (dicoww .ge. 0d0) then
+      if (dicoww >= 0d0) then
           difsedw(ITEMP) = dicoww + difmoltem
           sigdifi(ITEMP) = 1d0/sigtem
       endif
@@ -109,27 +116,42 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
       sigdifi(ISPIR) = 0d0 !/sigspi
    endif
 
-   if ( ISED1.ne.0) then
-      do i=1,mxgr
-         iconst = ISED1+i-1
-         if (dicouv .ge. 0d0) difsedu(iconst) = 0d0
-         if (dicoww .ge. 0d0) then
+   if (ISED1 /= 0) then
+      do jsed = 1, mxgr
+         iconst = ISED1 + jsed - 1
+         if (dicouv >= 0d0) difsedu(iconst) = 0d0
+         if (dicoww >= 0d0) then
             difsedw(iconst) = dicoww
-            sigdifi(iconst) = 1d0/sigsed(iconst)
+            sigdifi(iconst) = 1d0 / sigsed(jsed)
          endif
-         if (jased < 4) wsf(iconst) = ws(i)
+         if (jased < 4) wsf(iconst) = ws(jsed)
       end do
    end if
 
-   if ( ITRA1.gt.0 ) then
-      do i=ITRA1,ITRAN
-         difsedu(i)   =            difmoltracer
-         if (dicoww .ge. 0d0) then
-             difsedw(i) = dicoww + difmoltracer
-             sigdifi(i) = 1d0/sigtracer
+   if (ITRA1 > 0) then
+      do jtra = ITRA1, ITRAN
+         difsedu(jtra) = difmoltracer
+         if (dicoww >= 0d0) then
+            difsedw(jtra) = dicoww + difmoltracer
+            sigdifi(jtra) = 1d0 / sigtracer
          endif
-         wsf(i) = wstracers(i - itra1 + 1)
+         wsf(jtra) = wstracers(jtra - ITRA1 + 1)
       end do
+   end if
+
+   ! add lateral in- and outflow of constituents as sources and sinks
+   if (apply_transport_is_used) then
+      allocate (qin_over_laterals(numlatsg, ndxi), stat=iostat)
+      call aerr('qin_over_laterals', iostat, numlatsg * ndxi, 'fill_constituents')
+      allocate (qout_over_laterals(numlatsg, ndxi), stat=iostat)
+      call aerr('qout_over_laterals', iostat, numlatsg * ndxi, 'fill_constituents')
+
+      call get_lateral_discharge(qin_over_laterals, qout_over_laterals, vol1)
+      call add_lateral_load_and_sink(const_sour, const_sink, qin_over_laterals, qout_over_laterals, vol1, dtol)
+
+      deallocate (qin_over_laterals)
+      deallocate (qout_over_laterals)
+
    end if
 
 !  sources
@@ -138,7 +160,7 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
  
 !     nudging
       Trefi = 0d0
-      if ( janudge.eq.1 .and. jas.eq.1 ) then
+      if (janudge == 1 .and. jas == 1) then
 !        get reference time
          Trefi = nudge_rate(kk)
       end if
@@ -163,13 +185,13 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
          endif
 
 !        nudging
-         if ( Trefi.gt.0d0 ) then
-            if ( ITEMP.gt.0 .and. nudge_tem(k).ne.DMISS ) then
+         if (Trefi > 0d0) then
+            if (ITEMP > 0 .and. nudge_tem(k) /= DMISS) then
                const_sour(ITEMP,k) = const_sour(ITEMP,k) + nudge_tem(k) * Trefi
                const_sink(ITEMP,k) = const_sink(ITEMP,k) + Trefi
             end if
 
-            if ( ISALT.gt.0 .and. nudge_sal(k).ne.DMISS ) then
+            if (ISALT > 0 .and. nudge_sal(k) /= DMISS) then
                const_sour(ISALT,k) = const_sour(ISALT,k) + nudge_sal(k) * Trefi
                const_sink(ISALT,k) = const_sink(ISALT,k) + Trefi
             end if
@@ -205,17 +227,17 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
 !     sediment (2D sources, also in 3D)
 !
       if ( stm_included ) then
-         if ( ISED1.gt.0 .and. kk.le.Ndxi ) then
-            do i=1,mxgr
-               kkk = sedtra%kmxsed(kk,i)
-               if ( kkk.gt.0 ) then
-                  iconst = i+ISED1-1
-                  const_sour(iconst,kkk) = const_sour(iconst,kkk)+sedtra%sourse(kk,i)
-                  const_sink(iconst,kkk) = const_sink(iconst,kkk)+sedtra%sinkse(kk,i)
-                  
-                  if (stmpar%morpar%flufflyr%iflufflyr .gt. 0) then
-                     const_sour(iconst,kkk) = const_sour(iconst,kkk) + stmpar%morpar%flufflyr%sourf(i,kk)
-                     const_sink(iconst,kkk) = const_sink(iconst,kkk) + stmpar%morpar%flufflyr%sinkf(i,kk)
+         if (ISED1 > 0 .and. kk <= Ndxi) then
+            do jsed = 1, mxgr
+               kkk = sedtra%kmxsed(kk, jsed)
+               if (kkk > 0) then
+                  iconst = jsed + ISED1 - 1
+                  const_sour(iconst, kkk) = const_sour(iconst, kkk) + sedtra%sourse(kk, jsed)
+                  const_sink(iconst, kkk) = const_sink(iconst, kkk) + sedtra%sinkse(kk, jsed)
+
+                  if (stmpar%morpar%flufflyr%iflufflyr > 0) then
+                     const_sour(iconst, kkk) = const_sour(iconst, kkk) + stmpar%morpar%flufflyr%sourf(jsed, kk)
+                     const_sink(iconst, kkk) = const_sink(iconst, kkk) + stmpar%morpar%flufflyr%sinkf(jsed, kk)
                   end if
 
                end if
@@ -256,7 +278,7 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
       qsrck  = qsrckk
 
       jamba_src = jamba
-      if (jampi.eq.1) then
+      if (jampi == 1) then
          if(kk > 0) then
             if ( idomain(kk) /= my_rank ) jamba_src = 0
          else

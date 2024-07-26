@@ -45,46 +45,26 @@ subroutine transport()                           ! transport for now, advect sal
  use m_partitioninfo
  use m_timer
  use m_missing
- use unstruc_display, only: jaGUI
  use unstruc_messages
- use m_transport, only: NUMCONST, constituents, ISALT, ITEMP, ISED1, ISEDN, ITRA1, itraN, itrac2const
+   use m_transport, only: NUMCONST, constituents, ISALT, ITEMP
  use m_lateral, only : average_concentrations_for_laterals, apply_transport_is_used
 
  implicit none
 
- integer :: L, k, ku, kd, k1, k2, kb, ierr, n, ntmx, it, jupwsal, jupq, itmax, jaimplorg, java
+   integer :: L, k, k1, k2, kb, n
 
- integer :: L1, L2, Li, ip, is, maxit = 100, limtyp, kl1, kl2, kl2s, kku
-
- integer :: jalim2D, nx, k3, k4
-
- double precision               :: ds1, ds2, ds, sak, saku, teku, half, cf, tetaj2i, vv, tetav1, cadv, difsalw, diftemw, difsedw
-
- double precision               :: qst, qstu, qstd, qds, ql, qh, epssa, sasum, sasum0=0, diff, baroc, barocup, dif, dift, difs, ho
-
- double precision               :: ucxku, ucyku, s1ku, sl1, sl2, sl3, fi, qb, wsemx, dgrlay, dtvi, hsk, xx,yy,dmorfax, dv, aa
+   double precision :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
 
  ! kuzmin 2D limiting 
 
  double precision, external     :: dslim, dlimitercentral
 
- integer                        :: j, kj, kdj, kuj, kl1j, kl2j, kbj, kij, ki, jastep, kk, kb1, kb2, n1, n2, kkua, kkub, ku2
-
- integer                        :: LL, Lb, Lt, kt, km, ivert, ja, m, LL1, LL2, jachange, jj
+   integer :: j, kj, ki, jastep, kk
+   integer :: LL, Lb, Lt, kt, km
 
  double precision               :: flx  (mxgr)           !< sed erosion flux (kg/s)                 , dimension = mxgr
  double precision               :: seq  (mxgr)           !< sed equilibrium transport rate (kg/m/s) , dimension = mxgr
  double precision               :: wse  (mxgr)           !< effective fall velocity (m/s)           , dimension = mxgr, ws*crefa=wse*seq
-
- double precision               :: cpuorg(3), cpunew(3), adv, adv1, hordif, qsk, qsa
-
- double precision               :: samiobnd, samerr2, dsadn
-
- double precision               :: dfac1, dfac2, src, viL, diuspL, qdsL
-
- integer                        :: ierror, k3D, noadvection = 0
-
- double precision, allocatable  :: skmx(:)
 
  double precision               :: valtop
 
@@ -124,7 +104,7 @@ subroutine transport()                           ! transport for now, advect sal
           endif
        enddo
 
-       if ( kb.gt.0 ) then
+         if (kb > 0) then
           valtop = constituents(isalt, kb)
           do L=Lt+1,Lb+kmxL(LL)-1
              kb      = ln(1,L)
@@ -150,7 +130,7 @@ subroutine transport()                           ! transport for now, advect sal
           endif
        enddo
 
-       if ( kb.gt.0 ) then
+         if (kb > 0) then
           valtop = constituents(itemp, kb)
           do L=Lt+1,Lb+kmxL(LL)-1
              kb                      = ln(1,L)
@@ -194,7 +174,7 @@ subroutine transport()                           ! transport for now, advect sal
        call update_constituents(0) ! do all constituents
     endif
     
-    if ( jasal.gt.0 ) then    !  compute salt error
+   if (jasal > 0) then !  compute salt error
 
        sam0tot = sam1tot
        sam1tot = 0d0
@@ -451,12 +431,12 @@ subroutine transport()                           ! transport for now, advect sal
  !         else
  !            constituents(isalt,kk) = 0d0
  !         endif
- !      enddo
- !   endif
- !enddo
+ !       end do
+ !     end if
+ !  end do
 
  if (numconst > 0 .and. apply_transport_is_used) then
-    call average_concentrations_for_laterals(numconst, kmx, ba, constituents, dts)
+      call average_concentrations_for_laterals(numconst, kmx, kmxn, vol1, constituents, dts)
  endif
  
 

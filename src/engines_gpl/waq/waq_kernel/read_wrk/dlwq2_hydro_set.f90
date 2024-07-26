@@ -23,7 +23,7 @@
 
 module HydroSet
     use m_waq_precision
-    use m_logger, only : terminate_execution
+    use m_logger_helper, only : stop_with_error
 
     !
     !          module contains everything for composition of hydrodynamics from multiple files
@@ -59,40 +59,35 @@ module HydroSet
     logical, dimension(1000), save :: file_locked
 
 
-    !
-    !          this is the properties of the file itself
-    !
+    ! Properties of the file itself
     type FileProp
-        character(len = FILE_NAME_SIZE) :: name            ! file path
-        integer(kind = int_wp) :: ilun            ! unit number
-        integer(kind = int_wp) :: istart          ! start time in file
-        integer(kind = int_wp) :: istop           ! stop time in file
-        integer(kind = int_wp) :: istep           ! step time in file
-        integer(kind = int_wp) :: ioffset         ! offset at rewind of this file
-        integer(kind = int_wp) :: itime1          ! time array1
-        integer(kind = int_wp) :: itime2          ! time array2
-        integer(kind = INT64) :: position = -1   ! position in the file
-        logical :: stream_access   ! Stream or sequential access?
-        real(kind = real_wp), pointer :: array1(:)       ! interpolation arrays
-        real(kind = real_wp), pointer :: array2(:)       ! interpolation arrays
+        character(len = FILE_NAME_SIZE) :: name    !< File path
+        integer(kind = int_wp) :: ilun             !< Unit number
+        integer(kind = int_wp) :: istart           !< Start time in file
+        integer(kind = int_wp) :: istop            !< Stop time in file
+        integer(kind = int_wp) :: istep            !< Step time in file
+        integer(kind = int_wp) :: ioffset          !< Offset at rewind of this file
+        integer(kind = int_wp) :: itime1           !< Time array1
+        integer(kind = int_wp) :: itime2           !< Time array2
+        integer(kind = INT64) :: position = -1     !< Position in the file
+        logical :: stream_access                   !< Stream or sequential access?
+        real(kind = real_wp), pointer :: array1(:) !< Interpolation arrays
+        real(kind = real_wp), pointer :: array2(:) !< Interpolation arrays
     end type FileProp
-    !
-    !          this is the pointer to properties of files
-    !
+
+    ! Index of properties of files
     type FilePropPnt
         type(FileProp), pointer :: pnt
     end type FilePropPnt
-    !
-    !          this is the collection of the files
-    !
+
+    ! Collection of the files
     type FilePropColl
-        type(FilePropPnt), pointer :: FilePropPnts(:) ! array with file properties
-        integer(kind = int_wp) :: maxsize         ! maximum size of the current array
-        integer(kind = int_wp) :: current_size         ! filled up to this size
+        type(FilePropPnt), pointer :: FilePropPnts(:) !< Array with file properties
+        integer(kind = int_wp) :: maxsize             !< Maximum size of the current array
+        integer(kind = int_wp) :: current_size        !< Filled up to this size
     end type FilePropColl
-    !
-    !          this is one entry of the table of files
-    !
+
+    ! One entry of the table of files
     type FileUseDef
         type(FilePropPnt) :: afilePnt        ! pointer to a file property
         real(kind = real_wp) :: weight          ! weight for interpolation
@@ -199,7 +194,7 @@ contains
             write(*, *) 'Error: times in two consecutive records are equal!'
             write(*, *) 'File in question: ', trim(aPropPnt%name)
             write(*, *) 'Stopping the program'
-            call terminate_execution(1)
+            call stop_with_error()
         endif
 
         return
@@ -537,11 +532,9 @@ contains
 
     end subroutine Flinterpol
 
-    !
-    !          subroutine to close all open hydrodynamic files
-    !
+    !> Close all open hydrodynamic files
     subroutine close_hydro_files(collection)
-        type(FileUseDefCollColl) :: collection
+        type(FileUseDefCollColl) :: collection !< Collection of open hydrodynamic files
 
         type(FileUseDefColl), pointer :: files
         integer(kind = int_wp) :: i, j

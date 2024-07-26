@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_debgrz
-    use m_logger, only : terminate_execution, get_log_unit_number
+    use m_logger_helper, only : stop_with_error, get_log_unit_number
     use m_waq_precision
     use m_debgrz_computations, &
       only: get_maximum_conversion_coeff, &
@@ -66,29 +66,29 @@ contains
 !! including dynamo and bloom algae and various detritus fractions
 !! (DetX, POX and DetXS1). The consumer has a specific preference
 !! for each food type.
-subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
-                      iexpnt, iknmrk, noq1, noq2, noq3, noq4)
+subroutine debgrz(process_space_real , fl , ipoint , increm , num_cells , noflux , &
+                      iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir)
 
        ! subroutine arguments
-        integer(kind=int_wp), dimension(*  ) :: ipoint !< Array of pointers in pmsa to get and store the data
+        integer(kind=int_wp), dimension(*  ) :: ipoint !< Array of pointers in process_space_real to get and store the data
         integer(kind=int_wp), dimension(*  ) :: increm !< Increments in ipoint for segment loop, 0=constant, 1=spatially varying
         integer(kind=int_wp), dimension(*  ) :: iknmrk !< Active-Inactive, Surface-water-bottom, see manual for use
         integer(kind=int_wp), dimension(4,*) :: iexpnt !< From, To, From-1 and To+1 segment numbers of the exchange surfaces
 
-        integer(kind=int_wp) :: noseg  !< Number of computational elements in the whole model schematisation
+        integer(kind=int_wp) :: num_cells  !< Number of computational elements in the whole model schematisation
         integer(kind=int_wp) :: noflux !< Number of fluxes, increment in the fl array
-        integer(kind=int_wp) :: noq1   !< Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind=int_wp) :: noq2   !< Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind=int_wp) :: noq3   !< Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind=int_wp) :: noq4   !< Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind=int_wp) :: num_exchanges_u_dir   !< Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind=int_wp) :: num_exchanges_v_dir   !< Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind=int_wp) :: num_exchanges_z_dir   !< Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind=int_wp) :: num_exchanges_bottom_dir   !< Nr of exchanges in the bottom (bottom layers, specialist use only)
 
-        real(kind=real_wp), dimension(*) :: pmsa !< Process Manager System Array, window of routine to process library
+        real(kind=real_wp), dimension(*) :: process_space_real !< Process Manager System Array, window of routine to process library
         real(kind=real_wp), dimension(*) :: fl   !< Array of fluxes made by this process in mass/volume/time
        ! subroutine arguments
 
        ! local variables
         logical, save :: first_run = .true.
-        integer(kind=int_wp), dimension(:), allocatable :: ip !< Index pointer in pmsa array updated for each segment
+        integer(kind=int_wp), dimension(:), allocatable :: ip !< Index pointer in process_space_real array updated for each segment
         integer(kind=int_wp) :: iflux
         integer(kind=int_wp) :: iseg
         integer(kind=int_wp) :: lunrep
@@ -96,26 +96,26 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
         type(process_variables) :: process_vars
        ! local variables
 
-        if (.not. process_may_be_run(pmsa, ipoint)) then
+        if (.not. process_may_be_run(process_space_real, ipoint)) then
             call get_log_unit_number(lunrep)
             write(lunrep,*) 'ERROR: DEB in combination with Protist AND Dynamo/Bloom is not allowed.'
-            call terminate_execution(1)
+            call stop_with_error()
         end if
-        call initialize_variables(ip, ipoint, iflux, process_vars, (pmsa(ipoint(1))/=0))
+        call initialize_variables(ip, ipoint, iflux, process_vars, (process_space_real(ipoint(1))/=0))
 
         if (first_run) then
-            call remove_floating_benthic_species(pmsa, ip, noseg, iknmrk, fl, iflux, noflux)
+            call remove_floating_benthic_species(process_space_real, ip, num_cells, iknmrk, fl, iflux, noflux)
             first_run = .false.
         end if
-        do iseg = 1, noseg
-            if (must_calculate_cell(iknmrk(iseg), pmsa, ip)) then
-                call process_vars%inp%initialize(ip, pmsa)
+        do iseg = 1, num_cells
+            if (must_calculate_cell(iknmrk(iseg), process_space_real, ip)) then
+                call process_vars%inp%initialize(ip, process_space_real)
 
-                call calculate_process_in_segment(process_vars, pmsa, ip, fl, iflux)
+                call calculate_process_in_segment(process_vars, process_space_real, ip, fl, iflux)
 
-                call process_vars%outp%update_pmsa(pmsa, ip, process_vars%input_count)
+                call process_vars%outp%update_pmsa(process_space_real, ip, process_vars%input_count)
             end if
-            call update_loop_vars(iflux, noflux, process_vars, pmsa, ip, increm)
+            call update_loop_vars(iflux, noflux, process_vars, process_space_real, ip, increm)
         end do
         return
     end subroutine debgrz
@@ -123,15 +123,15 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
     !> Make sure that the process may be run, stop simulation otherwise.
     !! Prevents that simulation uses both Protist AND Dynamo/Bloom in different "processes" (=instances of debgrz).
     !! This is not allowed due to biological reasons.
-    logical function process_may_be_run(pmsa, ipoint) result(res)
-        real(kind=real_wp), intent(in)   :: pmsa(*)   !< Process Manager System Array, window of routine to process library
-        integer(kind=int_wp), intent(in) :: ipoint(*) !< Index pointer in pmsa array updated for each segment
+    logical function process_may_be_run(process_space_real, ipoint) result(res)
+        real(kind=real_wp), intent(in)   :: process_space_real(*)   !< Process Manager System Array, window of routine to process library
+        integer(kind=int_wp), intent(in) :: ipoint(*) !< Index pointer in process_space_real array updated for each segment
 
         logical, save :: first_run_validation = .true.
         logical, save :: previous_process_uses_protist
         logical       :: current_process_uses_protist
 
-        current_process_uses_protist = (nint(pmsa(ipoint(1))) == 1 )
+        current_process_uses_protist = (nint(process_space_real(ipoint(1))) == 1 )
         if (first_run_validation) then
             previous_process_uses_protist = current_process_uses_protist
             first_run_validation = .false.
@@ -143,13 +143,13 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
 
     !> Boolean indicating whether the calculation for current cell (segment) should
     !! be carried out or not. If false, then the cell is skipped.
-    logical function must_calculate_cell(segment_attribute, pmsa, iparray) result(must_calculate)
+    logical function must_calculate_cell(segment_attribute, process_space_real, iparray) result(must_calculate)
 
-        use m_evaluate_waq_attribute, only : evaluate_waq_attribute
+        use m_extract_waq_attribute
 
-        real(kind=real_wp), intent(in)   :: pmsa(*)           !< Process Manager System Array, window of routine to process library
+        real(kind=real_wp), intent(in)   :: process_space_real(*)           !< Process Manager System Array, window of routine to process library
         integer(kind=int_wp), intent(in) :: segment_attribute !< The attributes value of this segment (from iknmrk)
-        integer(kind=int_wp), intent(in) :: iparray(*)        !< Index pointer in pmsa array updated for each segment
+        integer(kind=int_wp), intent(in) :: iparray(*)        !< Index pointer in process_space_real array updated for each segment
 
         ! local
         integer(kind=int_wp) :: benthic_species_index
@@ -157,13 +157,13 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
         integer(kind=int_wp) :: atrribute_active
 
         must_calculate = .false.
-        call evaluate_waq_attribute(1,segment_attribute,atrribute_active)
+        call extract_waq_attribute(1,segment_attribute,atrribute_active)
         if (atrribute_active==1) then
-            benthic_species_index = nint(pmsa(iparray(10)))
+            benthic_species_index = nint(process_space_real(iparray(10)))
             ! pelagics can occur everywhere, but benthic grazers can only exist in bottom layer
             must_calculate = (.not. is_floating_benthic_species(segment_attribute, benthic_species_index))
             if (must_calculate) then
-                vtot = pmsa( iparray(11))
+                vtot = process_space_real( iparray(11))
                 must_calculate = (vtot>tiny(vtot))
             end if
         end if
@@ -172,7 +172,7 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
     !> Boolean indicating if the species is benthic and the calculation is being done for a cell not in the bottom.
     !! Benthic species, by definition, may only be located in the bottom. So a floating bethic species is nonsensical.
     logical function is_floating_benthic_species(cell_attributes, is_benthic) result(res)
-        use m_evaluate_waq_attribute, only : evaluate_waq_attribute
+        use m_extract_waq_attribute
 
         integer(kind=int_wp), intent(in) ::   cell_attributes !< Attributes of the currernt cell
         integer(kind=int_wp), intent(in) ::   is_benthic      !< Indicates if a species is benthic (1) or not (0 = pelagic)
@@ -180,7 +180,7 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
         ! locals
         integer(kind=int_wp) :: attribute_location
 
-        call evaluate_waq_attribute(2, cell_attributes, attribute_location)
+        call extract_waq_attribute(2, cell_attributes, attribute_location)
         res = ( (attribute_location == 1 .OR. attribute_location == 2 ) .AND. is_benthic.eq.1 )
     end function is_floating_benthic_species
 
@@ -212,7 +212,7 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
             food_count = 40 + 2
         end if
 
-        ! number of input output variables in PMSA array
+        ! number of input output variables in process_space_real array
         ! 56 + 3 * ntotnut + 7 * (nfood - 2) + 21 output vars
         pointers_count = input_count + 22
     end subroutine set_counters
@@ -220,12 +220,12 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
     !> If benthic species are present in any non-bottom cell (floaters), then this subroutine removes them
     !! by setting the (out)flow exactly equal to the current amount.
     !! In the next time iteration, once the flux has been applied, they will be exactly equal to zero.
-    subroutine remove_floating_benthic_species(pmsa, ip, cell_count, iknmrk, fl, iflux, noflux)
-        use m_evaluate_waq_attribute, only : evaluate_waq_attribute
+    subroutine remove_floating_benthic_species(process_space_real, ip, cell_count, iknmrk, fl, iflux, noflux)
+        use m_extract_waq_attribute
 
-        real(kind=real_wp), dimension(*), intent(in) :: pmsa(*)    !< Process Manager System Array, window of routine to process library
+        real(kind=real_wp), dimension(*), intent(in) :: process_space_real(*)    !< Process Manager System Array, window of routine to process library
 
-        integer(kind=int_wp), dimension(:), intent(in) :: ip        !< Array of pointers in pmsa to get and store the data
+        integer(kind=int_wp), dimension(:), intent(in) :: ip        !< Array of pointers in process_space_real to get and store the data
         integer(kind=int_wp), dimension(*), intent(in) :: iknmrk(*) !< Attributes Active-Inactive, Surface-water-bottom, see manual for more info
 
         integer(kind=int_wp), intent(in   ) :: cell_count !< Number of cells/segments
@@ -239,12 +239,12 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
         integer(kind=int_wp)                :: benthic_species_index, i_cell
 
         do i_cell = 1, cell_count
-            benthic_species_index = nint(pmsa(ip(10)))
+            benthic_species_index = nint(process_space_real(ip(10)))
             if (is_floating_benthic_species(iknmrk(i_cell), benthic_species_index)) then
-                depth = pmsa(ip(5))
-                vtot = pmsa(ip(11))
-                etot = pmsa(ip(12))
-                rtot = pmsa(ip(13))
+                depth = process_space_real(ip(5))
+                vtot = process_space_real(ip(11))
+                etot = process_space_real(ip(12))
+                rtot = process_space_real(ip(13))
                 fl(18 + iflux) = vtot / real(depth)   ! mortality (Vtot [gC/m3/d])
                 fl(21 + iflux) = etot / real(depth)   ! mortality (Etot [gC/m3/d])
                 fl(23 + iflux) = rtot / real(depth)   ! mortality (Rtot [gC/m3/d])
@@ -258,9 +258,9 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
     subroutine initialize_variables(iparray, ipoint, iflux, p_vars, use_with_protist)
         logical, intent(in) :: use_with_protist !< Process is used with protist
 
-        integer(kind=int_wp), dimension(*), intent(in) :: ipoint     !< Array of pointers in pmsa to get and store the data
+        integer(kind=int_wp), dimension(*), intent(in) :: ipoint     !< Array of pointers in process_space_real to get and store the data
 
-        integer(kind=int_wp), dimension(:), allocatable, intent(out) :: iparray !< Index pointer in pmsa array updated for each segment
+        integer(kind=int_wp), dimension(:), allocatable, intent(out) :: iparray !< Index pointer in process_space_real array updated for each segment
         integer(kind=int_wp), intent(inout) :: iflux !< Start index of this process in flux array
 
         type(process_variables), intent(inout) :: p_vars !< Object containing all process variables
@@ -285,13 +285,13 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
     end subroutine initialize_variables
 
     !> Calculates the process for the current segment
-    subroutine calculate_process_in_segment(process_vars, pmsa, ip, fl, iflux)
-        integer(kind=int_wp), dimension(:), intent(in) :: ip !< Array of pointers in pmsa to get and store the data
+    subroutine calculate_process_in_segment(process_vars, process_space_real, ip, fl, iflux)
+        integer(kind=int_wp), dimension(:), intent(in) :: ip !< Array of pointers in process_space_real to get and store the data
         integer(kind=int_wp), intent(in) :: iflux            !< Start index of this process in flux array
 
         type(process_variables), intent(inout) :: process_vars !< Object containing all process variables
 
-        real(kind=real_wp), dimension(*), intent(inout) :: pmsa !< Process Manager System Array, window of routine to process library
+        real(kind=real_wp), dimension(*), intent(inout) :: process_space_real !< Process Manager System Array, window of routine to process library
         real(kind=real_wp), dimension(*), intent(inout) :: fl   !< Array of fluxes made by this process in mass/volume/time
 
        ! internal variables
@@ -355,7 +355,7 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
         ov = process_vars%outp
         av = process_vars%aux
 
-        call assign_food_arrays(pmsa, ip, av, iv%pref, iv%fffood, iv%detbio, process_vars%food_count, &
+        call assign_food_arrays(process_space_real, ip, av, iv%pref, iv%fffood, iv%detbio, process_vars%food_count, &
                                 iv%use_with_protist, nqfood, iv%dets1)
 
         iv%conv_cm3_gc = get_maximum_conversion_coeff(iv%conv_cm3_gc, iv%conv_j_gc, iv%eg_l3)
@@ -667,13 +667,13 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
         end if
     end subroutine calculate_output_vars
 
-    !> Assigns/calculates food array values based on pmsa values
-    subroutine assign_food_arrays(pmsa, ip, av, pref, fffood, detbio, food_count, use_with_protist, nqfood, dets1)
+    !> Assigns/calculates food array values based on process_space_real values
+    subroutine assign_food_arrays(process_space_real, ip, av, pref, fffood, detbio, food_count, use_with_protist, nqfood, dets1)
         real(kind=real_wp), dimension(4), intent(in) :: dets1  !< Detritus in layer S1 = benthic detritus
         real(kind=real_wp), dimension(4), intent(in) :: detbio !< Pelagic detritus
-        real(kind=real_wp), dimension(*), intent(in) :: pmsa   !< Process Manager System Array, window of routine to process library
+        real(kind=real_wp), dimension(*), intent(in) :: process_space_real   !< Process Manager System Array, window of routine to process library
 
-        integer(kind=int_wp), dimension(*), intent(in) :: ip !< Index pointer in pmsa array updated for each segment
+        integer(kind=int_wp), dimension(*), intent(in) :: ip !< Index pointer in process_space_real array updated for each segment
 
         integer(kind=int_wp), intent(in) :: food_count       !< Number of food types
         integer(kind=int_wp), intent(in) :: use_with_protist !< Process is used with protist
@@ -704,26 +704,26 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
             ! 8. Faecal fraction of grazers
             do ifood=3,food_count ! food_count==12 for protist
                 ipmsa_off          = 78 + (ifood - 3) * nqfood
-                av%cfood(ifood)    = max(0.,pmsa( ip(ipmsa_off + 1)))
+                av%cfood(ifood)    = max(0.,process_space_real( ip(ipmsa_off + 1)))
                 av%ccfood(ifood)   = 1.
-                av%chlcfood(ifood) =      pmsa( ip(ipmsa_off + 2)) / (small + av%cfood(ifood))  ! To avoid division by zero
-                av%ncfood(ifood)   =      pmsa( ip(ipmsa_off + 3)) / (small + av%cfood(ifood))
-                av%pcfood(ifood)   =      pmsa( ip(ipmsa_off + 4)) / (small + av%cfood(ifood))
-                av%sicfood(ifood)  =      pmsa( ip(ipmsa_off + 5)) / (small + av%cfood(ifood))
-                pref(ifood)        =      pmsa( ip(ipmsa_off + 6))
-                av%benfood(ifood)  = nint(pmsa( ip(ipmsa_off + 7)))
-                fffood(ifood)      =      pmsa( ip(ipmsa_off + 8))
+                av%chlcfood(ifood) =      process_space_real( ip(ipmsa_off + 2)) / (small + av%cfood(ifood))  ! To avoid division by zero
+                av%ncfood(ifood)   =      process_space_real( ip(ipmsa_off + 3)) / (small + av%cfood(ifood))
+                av%pcfood(ifood)   =      process_space_real( ip(ipmsa_off + 4)) / (small + av%cfood(ifood))
+                av%sicfood(ifood)  =      process_space_real( ip(ipmsa_off + 5)) / (small + av%cfood(ifood))
+                pref(ifood)        =      process_space_real( ip(ipmsa_off + 6))
+                av%benfood(ifood)  = nint(process_space_real( ip(ipmsa_off + 7)))
+                fffood(ifood)      =      process_space_real( ip(ipmsa_off + 8))
             end do
         else
             do ifood=3,food_count ! food_count==42 for non-protist
-                av%cfood(ifood)  = max(0.,pmsa( ip(76 + ifood)))
+                av%cfood(ifood)  = max(0.,process_space_real( ip(76 + ifood)))
                 av%ccfood(ifood) = 1.
-                av%ncfood(ifood) =      pmsa( ip(76 +   (food_count-2) + ifood))
-                av%pcfood(ifood) =      pmsa( ip(76 + 2*(food_count-2) + ifood))
-                av%sicfood(ifood)=      pmsa( ip(76 + 3*(food_count-2) + ifood))
-                pref(ifood)      =      pmsa( ip(76 + 4*(food_count-2) + ifood))
-                av%benfood(ifood)= nint(pmsa( ip(76 + 5*(food_count-2) + ifood)))
-                fffood(ifood)    =      pmsa( ip(76 + 6*(food_count-2) + ifood))
+                av%ncfood(ifood) =      process_space_real( ip(76 +   (food_count-2) + ifood))
+                av%pcfood(ifood) =      process_space_real( ip(76 + 2*(food_count-2) + ifood))
+                av%sicfood(ifood)=      process_space_real( ip(76 + 3*(food_count-2) + ifood))
+                pref(ifood)      =      process_space_real( ip(76 + 4*(food_count-2) + ifood))
+                av%benfood(ifood)= nint(process_space_real( ip(76 + 5*(food_count-2) + ifood)))
+                fffood(ifood)    =      process_space_real( ip(76 + 6*(food_count-2) + ifood))
             end do
         end if
 
@@ -758,7 +758,7 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
     end subroutine assign_food_arrays
 
     !> Update all variables for the next cell (segment) iteration.
-    subroutine update_loop_vars(iflux, noflux, pv, pmsa, iparray, increm)
+    subroutine update_loop_vars(iflux, noflux, pv, process_space_real, iparray, increm)
         type(process_variables), intent(in) :: pv !< Object containing all process variables
 
         integer(kind=int_wp), dimension(*), intent(in) :: increm !< Increments in ipoint for segment loop
@@ -766,15 +766,15 @@ subroutine debgrz(pmsa , fl , ipoint , increm , noseg , noflux , &
         integer(kind=int_wp), intent(in   ) :: noflux !< Number of fluxes, increment in the fl array
         integer(kind=int_wp), intent(inout) :: iflux  !< Start index of this process in flux array
 
-        integer(kind=int_wp), dimension(:), intent(inout) :: iparray !< Index pointer in pmsa array updated for each segment
+        integer(kind=int_wp), dimension(:), intent(inout) :: iparray !< Index pointer in process_space_real array updated for each segment
 
-        real(kind=real_wp), dimension(*), intent(inout) :: pmsa !< Process Manager System Array, window of routine to process library
+        real(kind=real_wp), dimension(*), intent(inout) :: process_space_real !< Process Manager System Array, window of routine to process library
 
         ! local variables
         integer(kind=int_wp) :: params_count
 
         params_count = pv%pointers_count
-        pmsa(iparray(34)) = pv%inp%dospawn
+        process_space_real(iparray(34)) = pv%inp%dospawn
         iflux = iflux + noflux
         iparray(1:params_count) = iparray(1:params_count) + increm(1:params_count)
     end subroutine update_loop_vars

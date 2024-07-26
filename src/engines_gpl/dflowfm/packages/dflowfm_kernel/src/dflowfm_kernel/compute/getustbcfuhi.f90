@@ -32,7 +32,7 @@
 
    subroutine getustbcfuhi( LL,Lb,ustbLL,cfuhiLL,hdzb, z00,cfuhi3D)                ! see Uittenbogaard's subroutine USTAR
    use m_flow
-   use m_flowgeom  , only : ln, dxi, csu, snu, acL, lnxi
+      use m_flowgeom, only: ln, dxi, csu, snu
    use m_flowtimes , only : dti
    use m_waves     , only : ustokes, vstokes, wblt, hwav, jawavevellogprof
    use m_sediment  , only : stm_included
@@ -52,18 +52,15 @@
    double precision :: csw, snw                                ! wave direction cosines
    double precision :: Dfu, Dfu0, Dfu1, htop, dzu              ! wave dissipation by bed friction, / (rhomean*c*deltau)
    double precision :: deltau                                  ! wave dissipation layer thickness
-   double precision :: hrmsLL                                  ! wave height on link
-   double precision :: zbot, ztop, u2dh, frac
-   double precision :: z0urouL, cf, ust, rz, umod1, rhoL, dzuu, uorbu
-   double precision :: cwall
+      double precision :: hrmsLL,u2dh
+      double precision :: z0urouL, rhoL, uorbu
    double precision :: umodeps
 
    integer          :: nit, nitm = 100
    double precision :: r, rv = 123.8d0, e = 8.84d0 , eps = 1d-2
-   double precision :: s, sd, er, ers, dzb, uu, vv, dzw, alin
+      double precision :: s, sd, er, ers, dzb, uu, vv, alin
    double precision :: cphi, sphi
    double precision :: fsqrtt = sqrt(2d0)
-   double precision :: hul1,hul0,hul
 
    cfuhi3D = 0d0
    ustbLL = 0d0;  cfuhiLL = 0d0;  hdzb = 0d0; z00 = 0d0; cz = 0d0; nit = 0
@@ -158,9 +155,9 @@
                !     & - hu(LL)))/log(1d0 + 0.5d0*(max(dzb,0.01d0))/z0urou(LL))
 
                ! use available depth-averaged u1, v (default)
-                  u2dh = sqrt((u1(LL)-ustokes(LL))**2 + &
+               u2dh = sqrt((u1(LL)-ustokes(LL))**2 + &
                            (v(LL)-vstokes(LL))**2)
-               endif
+            endif
             endif
             !
             if (cz > 0d0) then
@@ -191,7 +188,7 @@
                   taubxuLL = 0d0
                endif
             else if (modind==0) then    ! exception where you don't want wave influence on bed shear stress with jawave>0
-               if (sqcf>0d0) then
+               if (sqcf>0d0) then                  
                   z0urouL  = dzb*exp(-vonkar/sqcf - 1d0)            ! inverse of jaustarint == 1 above  
                   taubpuLL = ustbLL*ustbLL/umod                     ! use flow ustar
                   taubxuLL = rhoL*taubpuLL*umod
@@ -280,7 +277,7 @@
       r   = umod*hu(Lb)/viskin                                  ! Local re-number:
       r   = max(r,0.001d0)
       er  = e*r
-      if (r.lt.rv) then                                         ! Viscous sublayer:
+         if (r < rv) then ! Viscous sublayer:
          s   = sqrt(r)
       else
 
@@ -291,15 +288,14 @@
          ers = max(er/sd, 1.0001d0)
          s   = log(ers)/vonkar
 
-         if (nit.ge.nitm) then
+            if (nit >= nitm) then
             call error ('***ERROR in USTAR: no convergence.', ' ', ' ' )
          endif
-         if (s.gt.r) then
+            if (s > r) then
             call error ('***ERROR in USTAR: S too large.', ' ', ' ' )
          endif
 
-
-         if (abs(sd-s).gt.(eps*s)) then
+            if (abs(sd - s) > (eps * s)) then
             go to 100                                          ! Convergence criterium:
          endif
       endif

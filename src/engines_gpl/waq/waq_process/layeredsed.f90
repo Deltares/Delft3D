@@ -31,12 +31,12 @@ module layered_sediment
     integer, allocatable :: bottomsegments(:)
     real, allocatable :: sedconc(:, :, :)
 
-    integer, parameter :: nolay = 7
-    real :: dl(nolay) = [0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.037]   ! layer thickness
-    real :: bd(nolay) = [0.001, 0.003, 0.007, 0.015, 0.031, 0.063, 0.100]   ! bottomdepth (depth of lower surface of layer)
-    real :: sd(nolay) = [0.000, 0.001, 0.003, 0.007, 0.015, 0.031, 0.063]   ! depth of upper surface of layer
-    real :: tt(nolay)
-    real :: td(nolay)
+    integer, parameter :: num_layers = 7
+    real :: dl(num_layers) = [0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.037]   ! layer thickness
+    real :: bd(num_layers) = [0.001, 0.003, 0.007, 0.015, 0.031, 0.063, 0.100]   ! bottomdepth (depth of lower surface of layer)
+    real :: sd(num_layers) = [0.000, 0.001, 0.003, 0.007, 0.015, 0.031, 0.063]   ! depth of upper surface of layer
+    real :: tt(num_layers)
+    real :: td(num_layers)
 
     ! sediment substances definition - indices into sedconc
     integer, parameter :: nototsed = 34

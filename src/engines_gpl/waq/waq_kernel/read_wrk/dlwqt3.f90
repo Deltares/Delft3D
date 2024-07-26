@@ -42,7 +42,7 @@ contains
         !     LOGICAL UNITNUMBERS : input_file file for initialisation of harmonics
         !                           LUNOUT - monitor file
         !
-        !     SUBROUTINES CALLED  : terminate_execution, stops execution
+        !     SUBROUTINES CALLED  : stop_with_error, stops execution
         !
         !     PARAMETERS          :
         !
@@ -81,7 +81,7 @@ contains
         !
         !     DECLARATIONS        :
         !
-        use m_logger, only : terminate_execution
+        use m_logger_helper, only : stop_with_error
         use timers
 
         real(kind = real_wp), PARAMETER :: TWOPI = 6.28319
@@ -93,7 +93,7 @@ contains
         character(len=*) LUNTXT
         LOGICAL       UPDATE
 
-        integer(kind = int_wp) :: k, notot
+        integer(kind = int_wp) :: k, num_substances_total
         integer(kind = int_wp) :: irec, itel, ib, ih, ihstop, istart, i1, i2, iv
         real(kind = real_wp) :: func
 
@@ -119,16 +119,16 @@ contains
             !
             !         loop over the number of harmonics
             !
-            READ (input_file, END = 80, ERR = 80)   NOTOT, APHASE(IREC), &
-                    (AVALUE(K + NOSPAC), K = 1, NOTOT)
-            NOSPAC = NOSPAC + NOTOT
-            IPERIO(IREC) = NOTOT
+            READ (input_file, END = 80, ERR = 80)   num_substances_total, APHASE(IREC), &
+                    (AVALUE(K + NOSPAC), K = 1, num_substances_total)
+            NOSPAC = NOSPAC + num_substances_total
+            IPERIO(IREC) = num_substances_total
             IHSTOP = APHASE(IREC) + 0.5
             IREC = IREC + 1
             DO IH = 1, IHSTOP
                 READ (input_file, END = 80, ERR = 80) IPERIO(IREC), APHASE(IREC), &
-                        (AVALUE(K + NOSPAC), K = 1, NOTOT)
-                NOSPAC = NOSPAC + NOTOT
+                        (AVALUE(K + NOSPAC), K = 1, num_substances_total)
+                NOSPAC = NOSPAC + num_substances_total
                 IREC = IREC + 1
             end do
             !
@@ -147,10 +147,10 @@ contains
             !
             !         loop over the number of harmonics
             !
-            NOTOT = IPERIO(IREC)
+            num_substances_total = IPERIO(IREC)
             IHSTOP = APHASE(IREC) + 0.5
             ISTART = NPOINT + 1
-            NPOINT = NPOINT + NOTOT / NOSUB
+            NPOINT = NPOINT + num_substances_total / NOSUB
             DO IH = 1, IHSTOP + 1
                 !
                 !         harmonic function
@@ -174,7 +174,7 @@ contains
                 !         increase the record counter
                 !
                 IREC = IREC + 1
-                NOSPAC = NOSPAC + NOTOT
+                NOSPAC = NOSPAC + num_substances_total
             end do
             !
             !         return only by IREC > NRHARM
@@ -197,7 +197,7 @@ contains
         ELSE
             WRITE(LUNOUT, 2010) input_file, LUNTXT, ITIME
         ENDIF
-        CALL terminate_execution(1)
+        CALL stop_with_error()
         9999 if (timon) call timstop (ithandl)
         RETURN
         !

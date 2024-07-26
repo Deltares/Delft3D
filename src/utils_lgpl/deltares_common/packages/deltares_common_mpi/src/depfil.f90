@@ -70,7 +70,7 @@ subroutine depfil(lundia    ,error     ,fildep    ,fmttmp    ,array     , &
     integer                               :: luntmp ! Unit number for attribute file  
     integer                               :: m 
     integer                               :: n 
-    real(fp), dimension(:,:), allocatable :: dtmp   ! Temporary array containing dp of entire domain 
+    real(fp), dimension(:,:), allocatable :: dtmp   ! Temporary array containing values of entire domain 
     character(300)                        :: errmsg ! Character string containing the error message to be written to file. The message depends on the error.
     !
     integer                               :: i
@@ -98,7 +98,7 @@ subroutine depfil(lundia    ,error     ,fildep    ,fmttmp    ,array     , &
        ! 
        ! allocate temporary array to store data of entire domain read from file 
        ! 
-       ! NOTE: nmaxus and mmax equal nmaxgl and mmaxgl, respectively (for entire domain) 
+       ! NOTE: nmaxus and num_columns equal nmaxgl and mmaxgl, respectively (for entire domain)
        !       in case of parallel runs. Moreover, array is associated with subdomain and 
        !       therefore, data for entire domain is stored in temporary array dtmp 
        !

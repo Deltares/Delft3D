@@ -28,10 +28,10 @@ module m_degmp
 contains
 
 
-    subroutine degmp  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine degmp  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !>\file
         !>       Degradation of organic micropolutants (new, generic!)
@@ -91,9 +91,9 @@ contains
         !
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
                 IP11, IP12, IP13, IP14, IP15, IP16
@@ -125,29 +125,29 @@ contains
         !     Check sediment switch for first segment
         !
         SEDIME = .FALSE.
-        IF (PMSA(IP16) > 0.5) SEDIME = .TRUE.
+        IF (process_space_real(IP16) > 0.5) SEDIME = .TRUE.
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0.OR.IKMRK2==3).OR..NOT.SEDIME) THEN
-                    IVERSN = NINT(PMSA(IP10))
+                    IVERSN = NINT(process_space_real(IP10))
                     !
                     !     Use old version when IVERSN=0
                     !
                     IF (IVERSN == 0) THEN
                         !
-                        ZERMIN = PMSA(IP1)
-                        ORG = MAX (0.0, PMSA(IP2))
-                        FDIS = PMSA(IP3)
-                        MINRC = PMSA(IP4)
-                        MINTC = PMSA(IP5)
-                        TEMP = PMSA(IP6)
-                        CRTEMP = PMSA(IP7)
-                        VOLUME = PMSA(IP8)
-                        DEPTH = PMSA(IP9)
+                        ZERMIN = process_space_real(IP1)
+                        ORG = MAX (0.0, process_space_real(IP2))
+                        FDIS = process_space_real(IP3)
+                        MINRC = process_space_real(IP4)
+                        MINTC = process_space_real(IP5)
+                        TEMP = process_space_real(IP6)
+                        CRTEMP = process_space_real(IP7)
+                        VOLUME = process_space_real(IP8)
+                        DEPTH = process_space_real(IP9)
                         !
                         !        Calculate the degradation flux
                         !
@@ -181,19 +181,19 @@ contains
                         !
                     ELSE
                         !
-                        ZDEGMP = PMSA(IP1)
-                        ORGMP = MAX (0.0, PMSA(IP2))
-                        FDFREE = PMSA(IP3)
-                        KTDEG = PMSA(IP5)
-                        TEMP = PMSA(IP6)
-                        CRTEMP = PMSA(IP7)
-                        VOLUME = PMSA(IP8)
-                        DEPTH = PMSA(IP9)
-                        ISWOXY = NINT(PMSA(IP11))
-                        ISWDEG = NINT(PMSA(IP12))
-                        FDDOC = PMSA(IP13)
-                        KDEGO = PMSA(IP14)
-                        KDEGR = PMSA(IP15)
+                        ZDEGMP = process_space_real(IP1)
+                        ORGMP = MAX (0.0, process_space_real(IP2))
+                        FDFREE = process_space_real(IP3)
+                        KTDEG = process_space_real(IP5)
+                        TEMP = process_space_real(IP6)
+                        CRTEMP = process_space_real(IP7)
+                        VOLUME = process_space_real(IP8)
+                        DEPTH = process_space_real(IP9)
+                        ISWOXY = NINT(process_space_real(IP11))
+                        ISWDEG = NINT(process_space_real(IP12))
+                        FDDOC = process_space_real(IP13)
+                        KDEGO = process_space_real(IP14)
+                        KDEGR = process_space_real(IP15)
                         !
                         !        Calculate the degradation flux
                         !

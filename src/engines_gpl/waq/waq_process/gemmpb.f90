@@ -28,9 +28,9 @@ module m_gemmpb
 contains
 
 
-    SUBROUTINE GEMMPB (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
+    SUBROUTINE GEMMPB (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !     **********************************************************************
         !          +----------------------------------------+
         !          |    D E L F T   H Y D R A U L I C S     |
@@ -58,18 +58,18 @@ contains
         !          311003  Jan van Beek    process two types at once and a lot more
         !     ***********************************************************************
 
-        use m_evaluate_waq_attribute
-        use m_logger, only : write_error_message_with_values
+        use m_extract_waq_attribute
+        use m_logger_helper, only : write_error_message_with_values
 
         IMPLICIT NONE
 
         !          arguments
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        !          from PMSA array
+        !          from process_space_real array
 
         REAL(kind = real_wp) :: TEMP               ! 1  in
         REAL(kind = real_wp) :: BIOMAS_MPB1        ! 2  in
@@ -232,8 +232,8 @@ contains
         INTEGER(kind = int_wp) :: IFLUX              ! index pointer in FL (flux) array
         INTEGER(kind = int_wp) :: IKMRK1             ! first feature inactive(0)-active(1)-bottom(2) segment
         INTEGER(kind = int_wp) :: IKMRK2             ! second feature 2D(0)-surface(1)-middle(2)-bottom(3) segment
-        INTEGER(kind = int_wp), parameter :: NO_POINTER = 154   ! number of input output variables in PMSA array
-        INTEGER(kind = int_wp) :: IP(NO_POINTER)     ! index pointer in PMSA array updated for each segment
+        INTEGER(kind = int_wp), parameter :: NO_POINTER = 154   ! number of input output variables in process_space_real array
+        INTEGER(kind = int_wp) :: IP(NO_POINTER)     ! index pointer in process_space_real array updated for each segment
         REAL(kind = real_wp) :: C_UPTAKE
         REAL(kind = real_wp) :: DMINN
         REAL(kind = real_wp) :: DMINP
@@ -280,92 +280,92 @@ contains
 
         LOGICAL :: WATER_OVERHEAD     ! guard against "dry" segments - no exchange with the water
 
-        !          initialise pointers for PMSA and FL array
+        !          initialise pointers for process_space_real and FL array
 
         IP = IPOINT(1:NO_POINTER)
         IFLUX = 0
 
         !          loop over the segments
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
-            CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
 
-            TEMP = PMSA(IP(1))
-            BIOMAS_MPB1 = MAX(0.0, PMSA(IP(2)))
-            BIOMAS_MPB2 = MAX(0.0, PMSA(IP(3)))
-            BIOMAS_S1_MPB1 = MAX(0.0, PMSA(IP(4)))
-            BIOMAS_S1_MPB2 = MAX(0.0, PMSA(IP(5)))
-            PMCH20_MPB1 = PMSA(IP(6))
-            PMCH20_MPB2 = PMSA(IP(7))
-            FLT_MPB1 = PMSA(IP(8))
-            FLT_MPB2 = PMSA(IP(9))
-            FTMP_MPB1 = PMSA(IP(10))
-            FTMP_MPB2 = PMSA(IP(11))
-            FNUT_MPB1 = PMSA(IP(12))
-            FNUT_MPB2 = PMSA(IP(13))
-            R_PR_MPB1 = PMSA(IP(14))
-            R_PR_MPB2 = PMSA(IP(15))
-            R_MT20_MPB1 = PMSA(IP(16))
-            R_MT20_MPB2 = PMSA(IP(17))
-            RT_MPB1 = PMSA(IP(18))
-            RT_MPB2 = PMSA(IP(19))
-            B_EX_MPB1 = PMSA(IP(20))
-            B_EX_MPB2 = PMSA(IP(21))
-            M1_20_MPB1 = PMSA(IP(22))
-            M1_20_MPB2 = PMSA(IP(23))
-            M2_20_MPB1 = PMSA(IP(24))
-            M2_20_MPB2 = PMSA(IP(25))
-            MT_MPB1 = PMSA(IP(26))
-            MT_MPB2 = PMSA(IP(27))
-            NCRAT_MPB1 = PMSA(IP(28))
-            NCRAT_MPB2 = PMSA(IP(29))
-            PCRAT_MPB1 = PMSA(IP(30))
-            PCRAT_MPB2 = PMSA(IP(31))
-            SCRAT_MPB1 = PMSA(IP(32))
-            SCRAT_MPB2 = PMSA(IP(33))
-            !FAM_MPB1       = PMSA(IP(34))  -- no longer used: change in nutrient preference
-            !FAM_MPB2       = PMSA(IP(35))
-            !FNI_MPB1       = PMSA(IP(36))
-            !FNI_MPB2       = PMSA(IP(37))
-            TRESH_MPB1 = PMSA(IP(38))
-            TRESH_MPB2 = PMSA(IP(39))
-            S1_BOTTOM = NINT(PMSA(IP(40))) == 1
-            FLT_S1_MPB1 = PMSA(IP(41))
-            FLT_S1_MPB2 = PMSA(IP(42))
-            FTMP_S1_MPB1 = PMSA(IP(43))
-            FTMP_S1_MPB2 = PMSA(IP(44))
-            FNUT_S1_MPB1 = PMSA(IP(45))
-            FNUT_S1_MPB2 = PMSA(IP(46))
-            !FAM_S1_MPB1    = PMSA(IP(47))  -- no longer used
-            !FAM_S1_MPB2    = PMSA(IP(48))
-            !FNI_S1_MPB1    = PMSA(IP(49))
-            !FNI_S1_MPB2    = PMSA(IP(50))
-            NH4 = MAX(0.0, PMSA(IP(51)))
-            NO3 = MAX(0.0, PMSA(IP(52)))
-            PO4 = MAX(0.0, PMSA(IP(53)))
-            SI = MAX(0.0, PMSA(IP(54)))
-            ZSED = PMSA(IP(55))
-            SURF = PMSA(IP(56))
-            DEPTH = PMSA(IP(57))
-            DELT = PMSA(IP(58))
-            dBotN = PMSA(IP(59))
-            dSWN = PMSA(IP(60))
-            dGSNH = PMSA(IP(61))
-            dGSNO = PMSA(IP(62))
-            dBotP = PMSA(IP(63))
-            dSWP = PMSA(IP(64))
-            dGSP = PMSA(IP(65))
-            dBotSi = PMSA(IP(66))
-            dSWSi = PMSA(IP(67))
-            CCAP_MPB1 = PMSA(IP(68)) / ZSED
-            CCAP_MPB2 = PMSA(IP(69)) / ZSED
-            LOCSEDDEPT = PMSA(IP(70))
-            OXY = PMSA(IP(71))
-            MPBOXYCRIT = PMSA(IP(72))
-            MPB1MO_20 = PMSA(IP(73))
-            MPB2MO_20 = PMSA(IP(74))
+            TEMP = process_space_real(IP(1))
+            BIOMAS_MPB1 = MAX(0.0, process_space_real(IP(2)))
+            BIOMAS_MPB2 = MAX(0.0, process_space_real(IP(3)))
+            BIOMAS_S1_MPB1 = MAX(0.0, process_space_real(IP(4)))
+            BIOMAS_S1_MPB2 = MAX(0.0, process_space_real(IP(5)))
+            PMCH20_MPB1 = process_space_real(IP(6))
+            PMCH20_MPB2 = process_space_real(IP(7))
+            FLT_MPB1 = process_space_real(IP(8))
+            FLT_MPB2 = process_space_real(IP(9))
+            FTMP_MPB1 = process_space_real(IP(10))
+            FTMP_MPB2 = process_space_real(IP(11))
+            FNUT_MPB1 = process_space_real(IP(12))
+            FNUT_MPB2 = process_space_real(IP(13))
+            R_PR_MPB1 = process_space_real(IP(14))
+            R_PR_MPB2 = process_space_real(IP(15))
+            R_MT20_MPB1 = process_space_real(IP(16))
+            R_MT20_MPB2 = process_space_real(IP(17))
+            RT_MPB1 = process_space_real(IP(18))
+            RT_MPB2 = process_space_real(IP(19))
+            B_EX_MPB1 = process_space_real(IP(20))
+            B_EX_MPB2 = process_space_real(IP(21))
+            M1_20_MPB1 = process_space_real(IP(22))
+            M1_20_MPB2 = process_space_real(IP(23))
+            M2_20_MPB1 = process_space_real(IP(24))
+            M2_20_MPB2 = process_space_real(IP(25))
+            MT_MPB1 = process_space_real(IP(26))
+            MT_MPB2 = process_space_real(IP(27))
+            NCRAT_MPB1 = process_space_real(IP(28))
+            NCRAT_MPB2 = process_space_real(IP(29))
+            PCRAT_MPB1 = process_space_real(IP(30))
+            PCRAT_MPB2 = process_space_real(IP(31))
+            SCRAT_MPB1 = process_space_real(IP(32))
+            SCRAT_MPB2 = process_space_real(IP(33))
+            !FAM_MPB1       = process_space_real(IP(34))  -- no longer used: change in nutrient preference
+            !FAM_MPB2       = process_space_real(IP(35))
+            !FNI_MPB1       = process_space_real(IP(36))
+            !FNI_MPB2       = process_space_real(IP(37))
+            TRESH_MPB1 = process_space_real(IP(38))
+            TRESH_MPB2 = process_space_real(IP(39))
+            S1_BOTTOM = NINT(process_space_real(IP(40))) == 1
+            FLT_S1_MPB1 = process_space_real(IP(41))
+            FLT_S1_MPB2 = process_space_real(IP(42))
+            FTMP_S1_MPB1 = process_space_real(IP(43))
+            FTMP_S1_MPB2 = process_space_real(IP(44))
+            FNUT_S1_MPB1 = process_space_real(IP(45))
+            FNUT_S1_MPB2 = process_space_real(IP(46))
+            !FAM_S1_MPB1    = process_space_real(IP(47))  -- no longer used
+            !FAM_S1_MPB2    = process_space_real(IP(48))
+            !FNI_S1_MPB1    = process_space_real(IP(49))
+            !FNI_S1_MPB2    = process_space_real(IP(50))
+            NH4 = MAX(0.0, process_space_real(IP(51)))
+            NO3 = MAX(0.0, process_space_real(IP(52)))
+            PO4 = MAX(0.0, process_space_real(IP(53)))
+            SI = MAX(0.0, process_space_real(IP(54)))
+            ZSED = process_space_real(IP(55))
+            SURF = process_space_real(IP(56))
+            DEPTH = process_space_real(IP(57))
+            DELT = process_space_real(IP(58))
+            dBotN = process_space_real(IP(59))
+            dSWN = process_space_real(IP(60))
+            dGSNH = process_space_real(IP(61))
+            dGSNO = process_space_real(IP(62))
+            dBotP = process_space_real(IP(63))
+            dSWP = process_space_real(IP(64))
+            dGSP = process_space_real(IP(65))
+            dBotSi = process_space_real(IP(66))
+            dSWSi = process_space_real(IP(67))
+            CCAP_MPB1 = process_space_real(IP(68)) / ZSED
+            CCAP_MPB2 = process_space_real(IP(69)) / ZSED
+            LOCSEDDEPT = process_space_real(IP(70))
+            OXY = process_space_real(IP(71))
+            MPBOXYCRIT = process_space_real(IP(72))
+            MPB1MO_20 = process_space_real(IP(73))
+            MPB2MO_20 = process_space_real(IP(74))
 
             FAM_MPB1 = NH4
             FAM_MPB2 = NO3
@@ -642,49 +642,49 @@ contains
                 FL(15 + IFLUX) = POP_PROD
                 FL(16 + IFLUX) = OPAL_PROD
 
-                !                output parameters in PMSA
+                !                output parameters in process_space_real
 
-                PMSA(IP(75)) = BIOMAS_MPB1_M2
-                PMSA(IP(76)) = BIOMAS_MPB2_M2
-                PMSA(IP(79)) = MPB1FMC
-                PMSA(IP(80)) = MPB2FMC
-                PMSA(IP(81)) = MPB1FMN
-                PMSA(IP(82)) = MPB2FMN
-                PMSA(IP(83)) = MPB1FMP
-                PMSA(IP(84)) = MPB2FMP
-                PMSA(IP(85)) = MPB1FMS
-                PMSA(IP(86)) = MPB2FMS
+                process_space_real(IP(75)) = BIOMAS_MPB1_M2
+                process_space_real(IP(76)) = BIOMAS_MPB2_M2
+                process_space_real(IP(79)) = MPB1FMC
+                process_space_real(IP(80)) = MPB2FMC
+                process_space_real(IP(81)) = MPB1FMN
+                process_space_real(IP(82)) = MPB2FMN
+                process_space_real(IP(83)) = MPB1FMP
+                process_space_real(IP(84)) = MPB2FMP
+                process_space_real(IP(85)) = MPB1FMS
+                process_space_real(IP(86)) = MPB2FMS
 
-                PMSA(IP(95)) = FMPB1NH4UP
-                PMSA(IP(96)) = FMPB2NH4UP
-                PMSA(IP(97)) = FMPB1NO3UP
-                PMSA(IP(98)) = FMPB2NO3UP
-                PMSA(IP(99)) = FMPB1PO4UP
-                PMSA(IP(100)) = FMPB2PO4UP
-                PMSA(IP(101)) = FMPB1SIUP
-                PMSA(IP(102)) = FMPB2SIUP
-                PMSA(IP(103)) = FMPB1EXC
-                PMSA(IP(104)) = FMPB2EXC
-                PMSA(IP(105)) = FMPB1FGP
-                PMSA(IP(106)) = FMPB2FGP
-                PMSA(IP(107)) = FMPB1MOR
-                PMSA(IP(108)) = FMPB2MOR
-                PMSA(IP(109)) = FMPB1POC1
-                PMSA(IP(110)) = FMPB2POC1
-                PMSA(IP(111)) = FMPB1PON1
-                PMSA(IP(112)) = FMPB2PON1
-                PMSA(IP(113)) = FMPB1POP1
-                PMSA(IP(114)) = FMPB2POP1
-                PMSA(IP(115)) = FMPB1OPAL
-                PMSA(IP(116)) = FMPB2OPAL
-                PMSA(IP(117)) = FMPB1OXY
-                PMSA(IP(118)) = FMPB2OXY
-                PMSA(IP(119)) = FMPB1RES
-                PMSA(IP(120)) = FMPB2RES
-                PMSA(IP(121)) = FMPB1FGPM2
-                PMSA(IP(122)) = FMPB2FGPM2
-                PMSA(IP(123)) = FMPB1FGPD
-                PMSA(IP(124)) = FMPB2FGPD
+                process_space_real(IP(95)) = FMPB1NH4UP
+                process_space_real(IP(96)) = FMPB2NH4UP
+                process_space_real(IP(97)) = FMPB1NO3UP
+                process_space_real(IP(98)) = FMPB2NO3UP
+                process_space_real(IP(99)) = FMPB1PO4UP
+                process_space_real(IP(100)) = FMPB2PO4UP
+                process_space_real(IP(101)) = FMPB1SIUP
+                process_space_real(IP(102)) = FMPB2SIUP
+                process_space_real(IP(103)) = FMPB1EXC
+                process_space_real(IP(104)) = FMPB2EXC
+                process_space_real(IP(105)) = FMPB1FGP
+                process_space_real(IP(106)) = FMPB2FGP
+                process_space_real(IP(107)) = FMPB1MOR
+                process_space_real(IP(108)) = FMPB2MOR
+                process_space_real(IP(109)) = FMPB1POC1
+                process_space_real(IP(110)) = FMPB2POC1
+                process_space_real(IP(111)) = FMPB1PON1
+                process_space_real(IP(112)) = FMPB2PON1
+                process_space_real(IP(113)) = FMPB1POP1
+                process_space_real(IP(114)) = FMPB2POP1
+                process_space_real(IP(115)) = FMPB1OPAL
+                process_space_real(IP(116)) = FMPB2OPAL
+                process_space_real(IP(117)) = FMPB1OXY
+                process_space_real(IP(118)) = FMPB2OXY
+                process_space_real(IP(119)) = FMPB1RES
+                process_space_real(IP(120)) = FMPB2RES
+                process_space_real(IP(121)) = FMPB1FGPM2
+                process_space_real(IP(122)) = FMPB2FGPM2
+                process_space_real(IP(123)) = FMPB1FGPD
+                process_space_real(IP(124)) = FMPB2FGPD
 
             ENDIF
 
@@ -916,50 +916,50 @@ contains
                     FMPB2GPS1D = 0.0
                 ENDIF
 
-                PMSA(IP(75)) = BIOMAS_S1_MPB1
-                PMSA(IP(76)) = BIOMAS_S1_MPB2
-                PMSA(IP(87)) = MPB1FMCS1
-                PMSA(IP(88)) = MPB2FMCS1
-                PMSA(IP(89)) = MPB1FMNS1
-                PMSA(IP(90)) = MPB2FMNS1
-                PMSA(IP(91)) = MPB1FMPS1
-                PMSA(IP(92)) = MPB2FMPS1
-                PMSA(IP(93)) = MPB1FMSS1
-                PMSA(IP(94)) = MPB2FMSS1
-                PMSA(IP(125)) = FMPB1NH4S1
-                PMSA(IP(126)) = FMPB2NH4S1
-                PMSA(IP(127)) = FMPB1NO3S1
-                PMSA(IP(128)) = FMPB2NO3S1
-                PMSA(IP(129)) = FMPB1PO4S1
-                PMSA(IP(130)) = FMPB2PO4S1
-                PMSA(IP(131)) = FMPB1SIS1
-                PMSA(IP(132)) = FMPB2SIS1
-                PMSA(IP(133)) = FMPB1EXCS1
-                PMSA(IP(134)) = FMPB2EXCS1
-                PMSA(IP(135)) = FMPB1FGPS1
-                PMSA(IP(136)) = FMPB2FGPS1
-                PMSA(IP(137)) = FMPB1MORS1
-                PMSA(IP(138)) = FMPB2MORS1
-                PMSA(IP(139)) = FMPB1POC1S
-                PMSA(IP(140)) = FMPB2POC1S
-                PMSA(IP(141)) = FMPB1PON1S
-                PMSA(IP(142)) = FMPB2PON1S
-                PMSA(IP(143)) = FMPB1POP1S
-                PMSA(IP(144)) = FMPB2POP1S
-                PMSA(IP(145)) = FMPB1OPALS
-                PMSA(IP(146)) = FMPB2OPALS
-                PMSA(IP(147)) = FMPB1OXYS1
-                PMSA(IP(148)) = FMPB2OXYS1
-                PMSA(IP(149)) = FMPB1RESS1
-                PMSA(IP(150)) = FMPB2RESS1
-                PMSA(IP(151)) = FMPB1GPS1M
-                PMSA(IP(152)) = FMPB2GPS1M
-                PMSA(IP(153)) = FMPB1GPS1D
-                PMSA(IP(154)) = FMPB2GPS1D
+                process_space_real(IP(75)) = BIOMAS_S1_MPB1
+                process_space_real(IP(76)) = BIOMAS_S1_MPB2
+                process_space_real(IP(87)) = MPB1FMCS1
+                process_space_real(IP(88)) = MPB2FMCS1
+                process_space_real(IP(89)) = MPB1FMNS1
+                process_space_real(IP(90)) = MPB2FMNS1
+                process_space_real(IP(91)) = MPB1FMPS1
+                process_space_real(IP(92)) = MPB2FMPS1
+                process_space_real(IP(93)) = MPB1FMSS1
+                process_space_real(IP(94)) = MPB2FMSS1
+                process_space_real(IP(125)) = FMPB1NH4S1
+                process_space_real(IP(126)) = FMPB2NH4S1
+                process_space_real(IP(127)) = FMPB1NO3S1
+                process_space_real(IP(128)) = FMPB2NO3S1
+                process_space_real(IP(129)) = FMPB1PO4S1
+                process_space_real(IP(130)) = FMPB2PO4S1
+                process_space_real(IP(131)) = FMPB1SIS1
+                process_space_real(IP(132)) = FMPB2SIS1
+                process_space_real(IP(133)) = FMPB1EXCS1
+                process_space_real(IP(134)) = FMPB2EXCS1
+                process_space_real(IP(135)) = FMPB1FGPS1
+                process_space_real(IP(136)) = FMPB2FGPS1
+                process_space_real(IP(137)) = FMPB1MORS1
+                process_space_real(IP(138)) = FMPB2MORS1
+                process_space_real(IP(139)) = FMPB1POC1S
+                process_space_real(IP(140)) = FMPB2POC1S
+                process_space_real(IP(141)) = FMPB1PON1S
+                process_space_real(IP(142)) = FMPB2PON1S
+                process_space_real(IP(143)) = FMPB1POP1S
+                process_space_real(IP(144)) = FMPB2POP1S
+                process_space_real(IP(145)) = FMPB1OPALS
+                process_space_real(IP(146)) = FMPB2OPALS
+                process_space_real(IP(147)) = FMPB1OXYS1
+                process_space_real(IP(148)) = FMPB2OXYS1
+                process_space_real(IP(149)) = FMPB1RESS1
+                process_space_real(IP(150)) = FMPB2RESS1
+                process_space_real(IP(151)) = FMPB1GPS1M
+                process_space_real(IP(152)) = FMPB2GPS1M
+                process_space_real(IP(153)) = FMPB1GPS1D
+                process_space_real(IP(154)) = FMPB2GPS1D
 
             ENDIF
 
-            !             update pointering in PMSA and FL array
+            !             update pointering in process_space_real and FL array
 
             IFLUX = IFLUX + NOFLUX
             IP = IP + INCREM(1:NO_POINTER)

@@ -28,11 +28,11 @@ module m_veg3du
 contains
 
 
-    subroutine veg3du     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine veg3du     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
 
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         use layered_sediment
 
         ! function : vegetation module uptake of nutrients
@@ -41,20 +41,20 @@ contains
 
         ! arguments          i/o description
 
-        real(kind = real_wp) :: pmsa(*)      !i/o process manager system array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)      !i/o process manager system array, window of routine to process library
         real(kind = real_wp) :: fl(*)        ! o  array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(*)    ! i  array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(*)    ! i  array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(*)    ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg        ! i  number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells        ! i  number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux       ! i  number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *)  ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)    ! i  active-inactive, surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1         ! i  nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        integer(kind = int_wp) :: noq2         ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3         ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4         ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir         ! i  nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        integer(kind = int_wp) :: num_exchanges_v_dir         ! i  nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir         ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir         ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
 
-        ! from pmsa array
+        ! from process_space_real array
 
         real(kind = real_wp) :: depth        ! i  depth of segment                               (m)
         real(kind = real_wp) :: totaldepth   ! i  total depth water column                       (m)
@@ -124,19 +124,19 @@ contains
         integer(kind = int_wp) :: ibotseg              ! bottom segment for macrophyte
         integer(kind = int_wp) :: ilay                 ! index into layers
 
-        real(kind = real_wp) :: hcum(0:nolay)
+        real(kind = real_wp) :: hcum(0:num_layers)
 
         ! accumulate mass in the rooting zone in the pool of the bottom segment
 
         hsed = sum(dl)
         hcum(0) = 0.0
-        do ilay = 1, nolay
+        do ilay = 1, num_layers
             hcum(ilay) = hcum(ilay - 1) + dl(ilay)
         enddo
 
         ipnt = ipoint(1:npnt)
         iflux = 0
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
             fn1vbxxupy = 0.0
             fn2vbxxupy = 0.0
@@ -158,38 +158,38 @@ contains
             s1_fs1vbxxupy = 0.0
             s1_fs2vbxxupy = 0.0
 
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
-            call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
 
-            ibotseg = NINT(pmsa(ipnt(4)))
-            inicovvbxx = pmsa(ipoint(19) + (ibotseg - 1) * increm(19)) / 100.
+            ibotseg = NINT(process_space_real(ipnt(4)))
+            inicovvbxx = process_space_real(ipoint(19) + (ibotseg - 1) * increm(19)) / 100.
 
             if (inicovvbxx > 0.001) then
 
-                depth = pmsa(ipnt(1))
-                totaldepth = pmsa(ipnt(2))
-                localdepth = pmsa(ipnt(3))
-                hmax = pmsa(ipnt(5))
-                delt = pmsa(ipnt(6))
-                nh4 = pmsa(ipnt(7))
-                no3 = pmsa(ipnt(8))
-                aap = pmsa(ipnt(9))
-                po4 = pmsa(ipnt(10))
-                so4 = pmsa(ipnt(11))
-                sud = pmsa(ipnt(12))
-                s1_nh4 = pmsa(ipnt(13))
-                s1_no3 = pmsa(ipnt(14))
-                s1_aap = pmsa(ipnt(15))
-                s1_po4 = pmsa(ipnt(16))
-                s1_so4 = pmsa(ipnt(17))
-                s1_sud = pmsa(ipnt(18))
+                depth = process_space_real(ipnt(1))
+                totaldepth = process_space_real(ipnt(2))
+                localdepth = process_space_real(ipnt(3))
+                hmax = process_space_real(ipnt(5))
+                delt = process_space_real(ipnt(6))
+                nh4 = process_space_real(ipnt(7))
+                no3 = process_space_real(ipnt(8))
+                aap = process_space_real(ipnt(9))
+                po4 = process_space_real(ipnt(10))
+                so4 = process_space_real(ipnt(11))
+                sud = process_space_real(ipnt(12))
+                s1_nh4 = process_space_real(ipnt(13))
+                s1_no3 = process_space_real(ipnt(14))
+                s1_aap = process_space_real(ipnt(15))
+                s1_po4 = process_space_real(ipnt(16))
+                s1_so4 = process_space_real(ipnt(17))
+                s1_sud = process_space_real(ipnt(18))
 
-                vbxxnavail = pmsa(ipoint(20) + (ibotseg - 1) * increm(20))
-                vbxxpavail = pmsa(ipoint(21) + (ibotseg - 1) * increm(21))
-                vbxxsavail = pmsa(ipoint(22) + (ibotseg - 1) * increm(22))
-                fnvbxxup = pmsa(ipoint(23) + (ibotseg - 1) * increm(23))
-                fpvbxxup = pmsa(ipoint(24) + (ibotseg - 1) * increm(24))
-                fsvbxxup = pmsa(ipoint(25) + (ibotseg - 1) * increm(25))
+                vbxxnavail = process_space_real(ipoint(20) + (ibotseg - 1) * increm(20))
+                vbxxpavail = process_space_real(ipoint(21) + (ibotseg - 1) * increm(21))
+                vbxxsavail = process_space_real(ipoint(22) + (ibotseg - 1) * increm(22))
+                fnvbxxup = process_space_real(ipoint(23) + (ibotseg - 1) * increm(23))
+                fpvbxxup = process_space_real(ipoint(24) + (ibotseg - 1) * increm(24))
+                fsvbxxup = process_space_real(ipoint(25) + (ibotseg - 1) * increm(25))
 
                 ! percentage uptake = uptake/available/percentage coverage
 
@@ -259,7 +259,7 @@ contains
 
                     ! Take this from the nutrient pool in the sediment
 
-                    do ilay = 1, nolay
+                    do ilay = 1, num_layers
                         if (hcum(ilay) <= hroot) then
                             factor = delt
                         else
@@ -319,12 +319,12 @@ contains
             !       the nutrients are extracted directly from the storage in the bottom
             !       but we need to show the total amount in the output
             !
-            pmsa(ipnt(26)) = fn1vbxxupy + s1_fn1vbxxupy
-            pmsa(ipnt(27)) = fn2vbxxupy + s1_fn2vbxxupy
-            pmsa(ipnt(28)) = fp1vbxxupy + s1_fp1vbxxupy
-            pmsa(ipnt(29)) = fp2vbxxupy + s1_fp2vbxxupy
-            pmsa(ipnt(30)) = fs1vbxxupy + s1_fs1vbxxupy
-            pmsa(ipnt(31)) = fs2vbxxupy + s1_fs2vbxxupy
+            process_space_real(ipnt(26)) = fn1vbxxupy + s1_fn1vbxxupy
+            process_space_real(ipnt(27)) = fn2vbxxupy + s1_fn2vbxxupy
+            process_space_real(ipnt(28)) = fp1vbxxupy + s1_fp1vbxxupy
+            process_space_real(ipnt(29)) = fp2vbxxupy + s1_fp2vbxxupy
+            process_space_real(ipnt(30)) = fs1vbxxupy + s1_fs1vbxxupy
+            process_space_real(ipnt(31)) = fs2vbxxupy + s1_fs2vbxxupy
             fl(iflux + 1) = fl_fn1vbxxupy
             fl(iflux + 2) = fl_fn2vbxxupy
             fl(iflux + 3) = fl_fp1vbxxupy

@@ -28,10 +28,10 @@ module m_sedaap
 contains
 
 
-    subroutine sedaap (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine sedaap (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !>\file
         !>       Sedimentation flux and velocity for PAP and AAP (adsorbed PO4)
@@ -54,9 +54,9 @@ contains
 
         implicit none
 
-        real(kind = real_wp) :: pmsa  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(20), increm(20), noseg, noflux, &
-                iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(20), increm(20), num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         integer(kind = int_wp) :: ipnt(20)
 
         integer(kind = int_wp) :: iflux, iseg, ikmrk2, iq, ifrom
@@ -70,34 +70,34 @@ contains
         ipnt = ipoint
         iflux = 0
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             if (btest(iknmrk(iseg), 0)) then
-                call evaluate_waq_attribute(2, iknmrk(iseg), ikmrk2)
+                call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
                     !
 
-                    sfl1 = pmsa(ipnt (1))
-                    sfl2 = pmsa(ipnt (2))
-                    sfl3 = pmsa(ipnt (3))
-                    sfl1s2 = pmsa(ipnt (4))
-                    sfl2s2 = pmsa(ipnt (5))
-                    sfl3s2 = pmsa(ipnt (6))
-                    q1 = pmsa(ipnt (7))
-                    q2 = pmsa(ipnt (8))
-                    q3 = pmsa(ipnt (9))
-                    depth = pmsa(ipnt (13))
-                    !      switch = pmsa(ipnt (14) ) ignore SWITCH
+                    sfl1 = process_space_real(ipnt (1))
+                    sfl2 = process_space_real(ipnt (2))
+                    sfl3 = process_space_real(ipnt (3))
+                    sfl1s2 = process_space_real(ipnt (4))
+                    sfl2s2 = process_space_real(ipnt (5))
+                    sfl3s2 = process_space_real(ipnt (6))
+                    q1 = process_space_real(ipnt (7))
+                    q2 = process_space_real(ipnt (8))
+                    q3 = process_space_real(ipnt (9))
+                    depth = process_space_real(ipnt (13))
+                    !      switch = process_space_real(ipnt (14) ) ignore SWITCH
 
                     !***********************************************************************
                     !**** Processes connected to the SEDIMENTATION of AAP
                     !***********************************************************************
 
                     !     Sedimentation to S1/S2
-                    pmsa(ipnt(18)) = sfl1 * q1 + sfl2 * q2 + sfl3 * q3
-                    fl(1 + iflux) = pmsa(ipnt(18)) / depth
+                    process_space_real(ipnt(18)) = sfl1 * q1 + sfl2 * q2 + sfl3 * q3
+                    fl(1 + iflux) = process_space_real(ipnt(18)) / depth
 
-                    pmsa(ipnt(19)) = sfl1s2 * q1 + sfl2s2 * q2 + sfl3s2 * q3
-                    fl(2 + iflux) = pmsa(ipnt(19)) / depth
+                    process_space_real(ipnt(19)) = sfl1s2 * q1 + sfl2s2 * q2 + sfl3s2 * q3
+                    fl(2 + iflux) = process_space_real(ipnt(19)) / depth
 
                 endif
             endif
@@ -111,33 +111,33 @@ contains
         ipnt = ipoint
 
         !.....Exchangeloop over horizontal direction
-        do iq = 1, noq1 + noq2
+        do iq = 1, num_exchanges_u_dir + num_exchanges_v_dir
 
             !........Set VxSedAAP to zero
-            pmsa(ipnt(20)) = 0.0
+            process_space_real(ipnt(20)) = 0.0
             ipnt(20) = ipnt(20) + increm(20)
 
         end do
 
-        !.....Entery point in PMSA for VxSedIMX in the vertical direction
-        ipnt(15) = ipnt(15) + (noq1 + noq2) * increm(15)
-        ipnt(16) = ipnt(16) + (noq1 + noq2) * increm(16)
-        ipnt(17) = ipnt(17) + (noq1 + noq2) * increm(17)
+        !.....Entery point in process_space_real for VxSedIMX in the vertical direction
+        ipnt(15) = ipnt(15) + (num_exchanges_u_dir + num_exchanges_v_dir) * increm(15)
+        ipnt(16) = ipnt(16) + (num_exchanges_u_dir + num_exchanges_v_dir) * increm(16)
+        ipnt(17) = ipnt(17) + (num_exchanges_u_dir + num_exchanges_v_dir) * increm(17)
 
         !.....Exchange loop over the vertical direction
-        do iq = noq1 + noq2 + 1, noq1 + noq2 + noq3
+        do iq = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
             ifrom = iexpnt(1, iq)
 
             if (ifrom > 0) then
-                fpim1 = pmsa(ipnt(10) + (ifrom - 1) * increm(10))
-                fpim2 = pmsa(ipnt(11) + (ifrom - 1) * increm(11))
-                fpim3 = pmsa(ipnt(12) + (ifrom - 1) * increm(12))
-                vsim1 = pmsa(ipnt(15))
-                vsim2 = pmsa(ipnt(16))
-                vsim3 = pmsa(ipnt(17))
+                fpim1 = process_space_real(ipnt(10) + (ifrom - 1) * increm(10))
+                fpim2 = process_space_real(ipnt(11) + (ifrom - 1) * increm(11))
+                fpim3 = process_space_real(ipnt(12) + (ifrom - 1) * increm(12))
+                vsim1 = process_space_real(ipnt(15))
+                vsim2 = process_space_real(ipnt(16))
+                vsim3 = process_space_real(ipnt(17))
                 !...........calculate VxSedAAP
-                pmsa(ipnt(20)) = fpim1 * vsim1 + fpim2 * vsim2 + fpim3 * vsim3
+                process_space_real(ipnt(20)) = fpim1 * vsim1 + fpim2 * vsim2 + fpim3 * vsim3
             endif
 
             !........Exchangepointers increment

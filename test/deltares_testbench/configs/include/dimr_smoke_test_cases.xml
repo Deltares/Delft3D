@@ -1,0 +1,148 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+  <testCase name="e02_f014_c001_trench_EH_par_crs" ref="sif_dimr">    <!-- dflowfm multiple partitions -->
+    <path version="2024-01-11T13:10:00">e02_dflowfm/f014_parallel/c001_trench_EH_par_crs</path>
+    <programs>
+      <program ref="execute_singularity" seq="1">
+        <arguments>
+          <argument>run_dflowfm.sh</argument>
+          <argument>--partition:ndomains=4:icgsolver=6</argument>
+          <argument>t01.mdu</argument>
+        </arguments>
+      </program>
+      <program ref="execute_singularity" seq="2">
+        <arguments>
+          <argument>run_dimr.sh</argument>
+          <argument>-c</argument>
+          <argument>4</argument>
+          <argument>-m</argument>
+          <argument>dimr.xml</argument>
+        </arguments>
+      </program>
+    </programs>
+    <maxRunTime>120.0</maxRunTime>
+    <checks>
+      <file name="dflowfmoutput/t01_0000_his.nc" type="netCDF">
+         <parameters>
+             <parameter name="cross_section_discharge" toleranceAbsolute="0.001" />
+             <parameter name="cross_section_Sediment_sand" toleranceAbsolute="0.001" />
+       <parameter name="cross_section_Sediment_bedload" toleranceAbsolute="0.001" />
+         </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f012_c0323_mapmerge" ref="sif_postproc">    <!-- dflowfm mapmerge -->
+      <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0323_alloutrealistic_f12_e02_mapmerge</path>
+      <programs>
+        <program ref="execute_singularity">
+          <arguments>
+            <argument>run_dfmoutput.sh</argument>
+            <argument>--</argument>
+            <argument>-d</argument>
+            <argument>mapmerge</argument>
+            <argument>--infile</argument>
+            <argument>western_scheldt_3domains_0000_map.nc </argument>
+            <argument>western_scheldt_3domains_0001_map.nc </argument>
+            <argument>western_scheldt_3domains_0002_map.nc </argument>
+            <argument>--outfile</argument>
+            <argument>western_scheldt_3domains_map.nc </argument>
+          </arguments>
+        </program>
+      </programs>
+       <checks>
+          <file name="western_scheldt_3domains_map.nc" type="NETCDF">
+              <parameters>
+                  <parameter name="s1" toleranceAbsolute="0.0001" />
+              </parameters>
+          </file>
+      </checks>
+  </testCase>
+  <testCase name="e109_f01_c010_weir_timeseries" ref="dimr_trunk_lnx64">    <!-- dflowfm + drtc + dwaves -->
+    <path version="2024-01-11T14:00:00">e109_dflowfm-drtc-dwaves/f01_general/c010_weir_timeseries</path>
+    <checks>
+      <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+          <parameter name="mesh2d_u1" toleranceAbsolute="0.01" />
+        </parameters>
+      </file>
+      <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_com.nc" type="NETCDF">
+        <parameters>
+          <parameter name="hrms" toleranceAbsolute="0.1" />
+          <parameter name="tp" toleranceAbsolute="1.0" />
+          <parameter name="dir" toleranceAbsolute="400.0" />
+          <parameter name="distot" toleranceAbsolute="0.1" />
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e112_f01_c11_waardenburg" ref="dimr_trunk_win64">    <!-- dflowfm + drr -->
+    <path version="2024-04-12T16:05:53">e112_dflowfm-drr/f01_1d_rr/c11_waardenburg</path>
+    <checks>
+      <file name="fm/DFM_OUTPUT_flowfm/flowfm_his.nc" type="NETCDF">
+        <parameters>
+          <parameter name="pump_structure_head" toleranceAbsolute="0.0001" />
+          <parameter name="weirgen_structure_head" toleranceAbsolute="0.0001" />
+          <parameter name="orifice_head" toleranceAbsolute="0.0001" />
+          <parameter name="cmpstru_head" toleranceAbsolute="0.0001" />
+        </parameters>
+      </file>
+      <file name="fm/DFM_OUTPUT_flowfm/flowfm_map.nc" type="NETCDF">
+        <parameters>
+          <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+          <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+          <parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
+        </parameters>
+      </file>
+      <file name="rr/rrbalans.his" type="HIS">
+        <parameters>
+          <parameter name="RWF+DWF NWRW" location="Total RR system" toleranceAbsolute="0.0001" />
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+  <testCase name="e02_f029_c201_hyd_file_westerschelde_3d_s_hag" ref="dflowfm_default">    <!-- dflowfm + dwaq -->
+    <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c201_westerschelde_3d_s_hag</path>
+    <programs>
+      <program ref="dimr" seq="1">
+      </program>
+      <program ref="checkhydbal" seq="2">
+        <arguments>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt.hyd</argument>
+        </arguments>
+      </program>
+      <program ref="execute_singularity" seq="3">
+        <arguments>
+          <argument>run_maptonetcdf.sh</argument>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-sum.map</argument>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt_waqgeom.nc</argument>
+          <argument>1</argument>
+        </arguments>
+      </program>
+      <program ref="execute_singularity" seq="4">
+        <arguments>
+          <argument>run_maptonetcdf.sh</argument>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt-checkhydbal-err.map</argument>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt_waqgeom.nc</argument>
+          <argument>1</argument>
+        </arguments>
+      </program>
+      <program ref="poi2asc" seq="5">
+        <arguments>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt.poi</argument>
+          <argument>DFM_DELWAQ_westernscheldt/westernscheldt.table</argument>
+          <argument>1</argument>
+        </arguments>
+      </program>
+      <program ref="dimr_waq" seq="6">
+      </program>
+    </programs>
+    <maxRunTime>15000.0000000</maxRunTime>
+    <checks>
+      <file name="deltashell_map.nc" type="netCDF">
+        <parameters>
+          <parameter name="mesh2d_agg_continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+        </parameters>
+      </file>
+    </checks>
+  </testCase>
+</testCases>

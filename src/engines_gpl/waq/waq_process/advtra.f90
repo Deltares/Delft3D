@@ -28,9 +28,9 @@ module m_advtra
 contains
 
 
-    subroutine advtra (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine advtra (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Advective transport, velocities and fluxes, of solids in sediment
 
@@ -60,14 +60,14 @@ contains
         !    integer :: topsedsed  ! first within collumn exchange number
         !    integer :: botsedsed  ! last exchange of collumn to deeper bnd
         !
-        use m_evaluate_waq_attribute
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with derived types and add function
 
         !     type ( BotColmnColl ) :: Coll  <= is defined in the module
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         !     Locals
 
@@ -90,8 +90,8 @@ contains
         !     we define a double column structure, one for downward,
         !     and one for upward transport
 
-        CALL MAKKO2 (IEXPNT, IKNMRK, NOQ1, NOQ2, NOQ3, &
-                NOQ4)
+        CALL MAKKO2 (IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+                num_exchanges_bottom_dir)
         !
         IPDM = IPOINT(1)
         IPSFLX = IPOINT(2)
@@ -163,17 +163,17 @@ contains
         INBVOL = INCREM(31)
         INDVOL = INCREM(32)
         !
-        do ISEG = 1, NOSEG
+        do ISEG = 1, num_cells
 
             !     Zero output quantities on segment level
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==3) THEN
-                PMSA (IPCFLX) = 0.0
-                PMSA (IPRFLX) = 0.0
-                PMSA (IPPRES) = 0.0
-                PMSA (IPTFLX) = 0.0
-                PMSA (IPBFLX) = 0.0
+                process_space_real (IPCFLX) = 0.0
+                process_space_real (IPRFLX) = 0.0
+                process_space_real (IPPRES) = 0.0
+                process_space_real (IPTFLX) = 0.0
+                process_space_real (IPBFLX) = 0.0
             ENDIF
 
             IPCFLX = IPCFLX + INCFLX
@@ -185,15 +185,15 @@ contains
         enddo
         !
         !.....Zero output quantities on exchange level
-        do IQ = 1, NOQ1 + NOQ2 + NOQ3 + NOQ4
-            PMSA(IPRVEL) = 0.0
-            PMSA(IPSVEL) = 0.0
-            PMSA(IPBVEL) = 0.0
-            PMSA(IPDVEL) = 0.0
-            PMSA(IPRVOL) = 0.0
-            PMSA(IPSVOL) = 0.0
-            PMSA(IPBVOL) = 0.0
-            PMSA(IPDVOL) = 0.0
+        do IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
+            process_space_real(IPRVEL) = 0.0
+            process_space_real(IPSVEL) = 0.0
+            process_space_real(IPBVEL) = 0.0
+            process_space_real(IPDVEL) = 0.0
+            process_space_real(IPRVOL) = 0.0
+            process_space_real(IPSVOL) = 0.0
+            process_space_real(IPBVOL) = 0.0
+            process_space_real(IPDVOL) = 0.0
             IPRVEL = IPRVEL + INRVEL
             IPSVEL = IPSVEL + INSVEL
             IPBVEL = IPBVEL + INBVEL
@@ -232,14 +232,14 @@ contains
             !         Take uniform quantities from top sediment layer
 
             ISEG = IEXPNT(1, ITOP)
-            SW = PMSA(IPSW + (ISEG - 1) * INSW)
-            VBUR = PMSA(IPVBUR + (ISEG - 1) * INVBUR)
-            DELT = PMSA(IPDELT + (ISEG - 1) * INDELT)
-            SEEP = PMSA(IPSEEP + (ISEG - 1) * INSEEP)
+            SW = process_space_real(IPSW + (ISEG - 1) * INSW)
+            VBUR = process_space_real(IPVBUR + (ISEG - 1) * INVBUR)
+            DELT = process_space_real(IPDELT + (ISEG - 1) * INDELT)
+            SEEP = process_space_real(IPSEEP + (ISEG - 1) * INSEEP)
 
             !         Set sedimentation flux and associated volume velocities
 
-            CALL SEDKOL (IWA1, IWA2, IEXPNT, SW, PMSA, &
+            CALL SEDKOL (IWA1, IWA2, IEXPNT, SW, process_space_real, &
                     IPSFLX, INSFLX, IPDM, INDM, &
                     IPSVEL, INSVEL, IPSVOL, INSVOL, TOTSED)
 
@@ -247,7 +247,7 @@ contains
             !             fixed layers: equal to sedimentation
             !             variable layers: constant velocity if Th > MaxTh
 
-            CALL BURKOL (ITOP, IBOT, IEXPNT, SW, PMSA, &
+            CALL BURKOL (ITOP, IBOT, IEXPNT, SW, process_space_real, &
                     IPACTH, INACTH, IPMXTH, INMXTH, &
                     IPMNTH, INMNTH, &
                     IPDM, INDM, IPBFLX, INBFLX, DELT, &
@@ -258,7 +258,7 @@ contains
             !             porosity if layer is not dense enough
 
             CALL DIGKOL (ITOP, IBOT, IEXPNT, DELT, &
-                    PMSA, IPACTH, INACTH, IPDM, INDM, &
+                    process_space_real, IPACTH, INACTH, IPDM, INDM, &
                     IPBFLX, INBFLX, IPBVEL, INBVEL, IPPORA, &
                     INPORA, IPPORI, INPORI)
 
@@ -269,9 +269,9 @@ contains
                 IF (SEEP < 0.0) THEN
                     !                 Find upwind porosity!
                     ISEG = IEXPNT(1, IQ)
-                    PORACT = PMSA (IPPORA + (ISEG - 1) * INPORA)
-                    PMSA(IPDVEL + (iq - 1) * indvel) = -SEEP / 86400. / PORACT
-                    PMSA(IPDVOL + (iq - 1) * indvol) = -SEEP / 86400.
+                    PORACT = process_space_real (IPPORA + (ISEG - 1) * INPORA)
+                    process_space_real(IPDVEL + (iq - 1) * indvel) = -SEEP / 86400. / PORACT
+                    process_space_real(IPDVOL + (iq - 1) * indvol) = -SEEP / 86400.
                 ENDIF
             ENDDO
             !
@@ -283,7 +283,7 @@ contains
             IWA2 = Coll%set(IK)%lstwatsed + IOFFSE
             ITOP = Coll%set(IK)%topsedsed + IOFFSE
             IBOT = Coll%set(IK)%botsedsed + IOFFSE
-            CALL RESKOL (IWA1, IWA2, IEXPNT, SW, PMSA, &
+            CALL RESKOL (IWA1, IWA2, IEXPNT, SW, process_space_real, &
                     ITOP, IBOT, IPSURF, INSURF, &
                     IPACTH, INACTH, IPMNTH, INMNTH, &
                     IPDM, INDM, IPRFLX, INRFLX, DELT, &
@@ -305,9 +305,9 @@ contains
                     ELSE
                         ISEG = IEXPNT(2, IQ)
                     ENDIF
-                    PORACT = PMSA (IPPORA + (ISEG - 1) * INPORA)
-                    PMSA(IPDVEL + (iq - 1) * indvel) = -SEEP / 86400. / PORACT
-                    PMSA(IPDVOL + (iq - 1) * indvol) = -SEEP / 86400.
+                    PORACT = process_space_real (IPPORA + (ISEG - 1) * INPORA)
+                    process_space_real(IPDVEL + (iq - 1) * indvel) = -SEEP / 86400. / PORACT
+                    process_space_real(IPDVOL + (iq - 1) * indvol) = -SEEP / 86400.
                 ENDIF
             ENDDO
 
@@ -316,7 +316,7 @@ contains
         RETURN
         !
     END
-    SUBROUTINE BURKOL (ITOP, IBOT, IEXPNT, SW, PMSA, &
+    SUBROUTINE BURKOL (ITOP, IBOT, IEXPNT, SW, process_space_real, &
             IPACTH, INACTH, IPMXTH, INMXTH, &
             IPMNTH, INMNTH, &
             IPDM, INDM, IPBFLX, INBFLX, DELT, &
@@ -338,27 +338,27 @@ contains
         ! IBOT    I*4    1   I  last  exchange number sediment collumn
         ! IEXPNT  I*4 4,NOQT I  exchange pointers
         ! SW      R*4    1   I  Switch, > 0.5 then computation changes volume
-        ! PMSA    R*4    *  I/O real input output array whole process system
-        ! IPACTH  I*4    1   I  Pointer in PMSA where actual layer thickness
-        ! INACTH  I*4    1   I  Increment of IPACTH in the PMSA array
-        ! IPMXTH  I*4    1   I  Pointer in PMSA where maximum layer thickness
-        ! INMXTH  I*4    1   I  Increment of IPMXTH in the PMSA array
-        ! IPMNTH  I*4    1   I  Pointer in PMSA where minimum layer thickmess
-        ! INMNTH  I*4    1   I  Increment of IPMNTH in the PMSA array
-        ! IPDM    I*4    1   I  Pointer in PMSA where dry matter mass starts
-        ! INDM    I*4    1   I  Increment of IPDM   in the PMSA array
-        ! IPBFLX  I*4    1   I  Pointer in PMSA where burial flows
-        ! INBFLX  I*4    1   I  Increment of IPBFLX in the PMSA array
+        ! process_space_real    R*4    *  I/O real input output array whole process system
+        ! IPACTH  I*4    1   I  Pointer in process_space_real where actual layer thickness
+        ! INACTH  I*4    1   I  Increment of IPACTH in the process_space_real array
+        ! IPMXTH  I*4    1   I  Pointer in process_space_real where maximum layer thickness
+        ! INMXTH  I*4    1   I  Increment of IPMXTH in the process_space_real array
+        ! IPMNTH  I*4    1   I  Pointer in process_space_real where minimum layer thickmess
+        ! INMNTH  I*4    1   I  Increment of IPMNTH in the process_space_real array
+        ! IPDM    I*4    1   I  Pointer in process_space_real where dry matter mass starts
+        ! INDM    I*4    1   I  Increment of IPDM   in the process_space_real array
+        ! IPBFLX  I*4    1   I  Pointer in process_space_real where burial flows
+        ! INBFLX  I*4    1   I  Increment of IPBFLX in the process_space_real array
         ! DELT    R*4    1   O  Time step size
-        ! IPBVEL  I*4    1   I  Pointer in PMSA where burial velocity
-        ! INBVEL  I*4    1   I  Increment of IPBVEL in the PMSA array
-        ! IPBVOL  I*4    1   I  Pointer in PMSA where burial volume
-        ! INBVOL  I*4    1   I  Increment of IPBVOL in the PMSA array
+        ! IPBVEL  I*4    1   I  Pointer in process_space_real where burial velocity
+        ! INBVEL  I*4    1   I  Increment of IPBVEL in the process_space_real array
+        ! IPBVOL  I*4    1   I  Pointer in process_space_real where burial volume
+        ! INBVOL  I*4    1   I  Increment of IPBVOL in the process_space_real array
         ! VBUR    R*4    1   I  Burial velocity
-        ! IPPORA  I*4    1   I  Pointer in PMSA where actual porosity starts
-        ! INPORA  I*4    1   I  Increment of IPPORA in the PMSA array
-        ! IPPORI  I*4    1   I  Pointer in PMSA where given porosity starts
-        ! INPORI  I*4    1   I  Increment of IPPORI in the PMSA array
+        ! IPPORA  I*4    1   I  Pointer in process_space_real where actual porosity starts
+        ! INPORA  I*4    1   I  Increment of IPPORA in the process_space_real array
+        ! IPPORI  I*4    1   I  Pointer in process_space_real where given porosity starts
+        ! INPORI  I*4    1   I  Increment of IPPORI in the process_space_real array
         ! TOTSED  R*4    1   O  Summed sedimentation flux
         !
         !
@@ -367,7 +367,7 @@ contains
                 IPDM, INDM, IPBFLX, INBFLX, &
                 IPBVEL, INBVEL, IPBVOL, INBVOL, &
                 IPPORA, INPORA, IPPORI, INPORI
-        REAL(kind = real_wp) :: TOTSED, SW, VBUR, DELT, PMSA(*)
+        REAL(kind = real_wp) :: TOTSED, SW, VBUR, DELT, process_space_real(*)
         INTEGER(kind = int_wp) :: IEXPNT(4, *)
 
         !     Local variables
@@ -383,12 +383,12 @@ contains
 
             !         SW and VBUR are fixed per column
             IBODEM = IEXPNT(1, IQ)
-            ACTH = PMSA (IPACTH + (IBODEM - 1) * INACTH)
-            MAXTH = PMSA (IPMXTH + (IBODEM - 1) * INMXTH)
-            MINTH = PMSA (IPMNTH + (IBODEM - 1) * INMNTH)
-            DM = PMSA (IPDM + (IBODEM - 1) * INDM)
-            PORACT = PMSA (IPPORA + (IBODEM - 1) * INPORA)
-            PORINP = PMSA (IPPORI + (IBODEM - 1) * INPORI)
+            ACTH = process_space_real (IPACTH + (IBODEM - 1) * INACTH)
+            MAXTH = process_space_real (IPMXTH + (IBODEM - 1) * INMXTH)
+            MINTH = process_space_real (IPMNTH + (IBODEM - 1) * INMNTH)
+            DM = process_space_real (IPDM + (IBODEM - 1) * INDM)
+            PORACT = process_space_real (IPPORA + (IBODEM - 1) * INPORA)
+            PORINP = process_space_real (IPPORI + (IBODEM - 1) * INPORI)
 
             !         Compute burial
 
@@ -425,18 +425,18 @@ contains
 
             !         Flux from segment
 
-            PMSA(IPBFLX + (IBODEM - 1) * INBFLX) = TOTBUR + CORBUR
+            process_space_real(IPBFLX + (IBODEM - 1) * INBFLX) = TOTBUR + CORBUR
 
             !         Velocity for use in TRASE2
 
             IF (DM > 1E-20) &
-                    PMSA(IPBVEL + (IQ - 1) * INBVEL) = (TOTBUR + CORBUR) / DM / 86400.
+                    process_space_real(IPBVEL + (IQ - 1) * INBVEL) = (TOTBUR + CORBUR) / DM / 86400.
 
             !         Velocity for volume change, variable thickness ONLY,
             !         correction flux for porosity EXCLUDED
             IF (SW >= 0.5) THEN
                 IF (DM > 1E-20) &
-                        PMSA(IPBVOL + (IQ - 1) * INBVOL) = TOTBUR / DM / 86400.
+                        process_space_real(IPBVOL + (IQ - 1) * INBVOL) = TOTBUR / DM / 86400.
             ENDIF
 
         end do
@@ -444,7 +444,7 @@ contains
         RETURN
     END
 
-    SUBROUTINE RESKOL (IWA1, IWA2, IEXPNT, SW, PMSA, &
+    SUBROUTINE RESKOL (IWA1, IWA2, IEXPNT, SW, process_space_real, &
             ITOP, IBOT, IPSURF, INSURF, &
             IPACTH, INACTH, IPMNTH, INMNTH, &
             IPDM, INDM, IPRFLX, INRFLX, DELT, &
@@ -470,40 +470,40 @@ contains
         ! IWA2    I*4    1   I  first exchange number water bottom exchange
         ! IEXPNT  I*4 4,NOQT I  exchange pointers
         ! SW      R*4    1   I  Switch, > 0.5 then computation changes volume
-        ! PMSA    R*4    *  I/O real input output array whole process system
+        ! process_space_real    R*4    *  I/O real input output array whole process system
         ! ITOP    I*4    1   I  first exchange number sediment collumn
         ! IBOT    I*4    1   I  last  exchange number sediment collumn
-        ! IPSURF  I*4    1   I  Pointer in PMSA where
-        ! INSURF  I*4    1   I  Increment of IPSURF in the PMSA array
-        ! IPACTH  I*4    1   I  Pointer in PMSA where actual layer thickness
-        ! INACTH  I*4    1   I  Increment of IPACTH in the PMSA array
-        ! IPMNTH  I*4    1   I  Pointer in PMSA where minimum layer thickmess
-        ! INMNTH  I*4    1   I  Increment of IPMNTH in the PMSA array
-        ! IPDM    I*4    1   I  Pointer in PMSA where dry matter mass starts
-        ! INDM    I*4    1   I  Increment of IPDM   in the PMSA array
-        ! IPRFLX  I*4    1   I  Pointer in PMSA where burial flows
-        ! INRFLX  I*4    1   I  Increment of IPRFLX in the PMSA array
+        ! IPSURF  I*4    1   I  Pointer in process_space_real where
+        ! INSURF  I*4    1   I  Increment of IPSURF in the process_space_real array
+        ! IPACTH  I*4    1   I  Pointer in process_space_real where actual layer thickness
+        ! INACTH  I*4    1   I  Increment of IPACTH in the process_space_real array
+        ! IPMNTH  I*4    1   I  Pointer in process_space_real where minimum layer thickmess
+        ! INMNTH  I*4    1   I  Increment of IPMNTH in the process_space_real array
+        ! IPDM    I*4    1   I  Pointer in process_space_real where dry matter mass starts
+        ! INDM    I*4    1   I  Increment of IPDM   in the process_space_real array
+        ! IPRFLX  I*4    1   I  Pointer in process_space_real where burial flows
+        ! INRFLX  I*4    1   I  Increment of IPRFLX in the process_space_real array
         ! DELT    R*4    1   O  Time step size
-        ! IPRVEL  I*4    1   I  Pointer in PMSA where burial velocity
-        ! INRVEL  I*4    1   I  Increment of IPRVEL in the PMSA array
-        ! IPRVOL  I*4    1   I  Pointer in PMSA where burial volume
-        ! INRVOL  I*4    1   I  Increment of IPRVOL in the PMSA array
-        ! IPDEPT  I*4    1   I  Pointer in PMSA where
-        ! INDEPT  I*4    1   I  Increment of IPDEPT in the PMSA array
-        ! IPMDEP  I*4    1   I  Pointer in PMSA where
-        ! INMDEP  I*4    1   I  Increment of IPMDEP in the PMSA array
-        ! IPTCRR  I*4    1   I  Pointer in PMSA where
-        ! INTCRR  I*4    1   I  Increment of IPTCRR in the PMSA array
-        ! IPTFLX  I*4    1   I  Pointer in PMSA where
-        ! INTFLX  I*4    1   I  Increment of IPTFLX in the PMSA array
-        ! IPPREP  I*4    1   I  Pointer in PMSA where
-        ! INPRES  I*4    1   I  Increment of IPPRES in the PMSA array
-        ! IPSWRE  I*4    1   I  Pointer in PMSA for swith for resuspension
-        ! INSWRE  I*4    1   I  Increment of IPPRES in the PMSA array
-        ! IPALPH  I*4    1   I  Pointer in PMSA for alpha in Rayleigh distribution
-        ! INALPH  I*4    1   I  Increment of IPPRES in the PMSA array
-        ! IPCFLX  I*4    1   I  Pointer in PMSA for communication TDM flux
-        ! INCFLX  I*4    1   I  Increment of IPPRES in the PMSA array
+        ! IPRVEL  I*4    1   I  Pointer in process_space_real where burial velocity
+        ! INRVEL  I*4    1   I  Increment of IPRVEL in the process_space_real array
+        ! IPRVOL  I*4    1   I  Pointer in process_space_real where burial volume
+        ! INRVOL  I*4    1   I  Increment of IPRVOL in the process_space_real array
+        ! IPDEPT  I*4    1   I  Pointer in process_space_real where
+        ! INDEPT  I*4    1   I  Increment of IPDEPT in the process_space_real array
+        ! IPMDEP  I*4    1   I  Pointer in process_space_real where
+        ! INMDEP  I*4    1   I  Increment of IPMDEP in the process_space_real array
+        ! IPTCRR  I*4    1   I  Pointer in process_space_real where
+        ! INTCRR  I*4    1   I  Increment of IPTCRR in the process_space_real array
+        ! IPTFLX  I*4    1   I  Pointer in process_space_real where
+        ! INTFLX  I*4    1   I  Increment of IPTFLX in the process_space_real array
+        ! IPPREP  I*4    1   I  Pointer in process_space_real where
+        ! INPRES  I*4    1   I  Increment of IPPRES in the process_space_real array
+        ! IPSWRE  I*4    1   I  Pointer in process_space_real for swith for resuspension
+        ! INSWRE  I*4    1   I  Increment of IPPRES in the process_space_real array
+        ! IPALPH  I*4    1   I  Pointer in process_space_real for alpha in Rayleigh distribution
+        ! INALPH  I*4    1   I  Increment of IPPRES in the process_space_real array
+        ! IPCFLX  I*4    1   I  Pointer in process_space_real for communication TDM flux
+        ! INCFLX  I*4    1   I  Increment of IPPRES in the process_space_real array
         !
         !
         INTEGER(kind = int_wp) :: IWA1, IWA2, IPZRES, INZRES, IPTAU, INTAU, &
@@ -513,7 +513,7 @@ contains
                 IPRVEL, INRVEL, IPTFLX, INTFLX, IPRVOL, INRVOL, &
                 IPSWRE, INSWRE, IPALPH, INALPH, IPCFLX, INCFLX
         INTEGER(kind = int_wp) :: IEXPNT(4, *)
-        REAL(kind = real_wp) :: PMSA(*), DELT, SW
+        REAL(kind = real_wp) :: process_space_real(*), DELT, SW
 
         !     Local variables
 
@@ -538,14 +538,14 @@ contains
 
             IWATER = IEXPNT(1, IQ)
 
-            DEPTH = PMSA(IPDEPT + (IWATER - 1) * INDEPT)
-            MINDEP = PMSA(IPMDEP + (IWATER - 1) * INMDEP)
-            TAU = PMSA(IPTAU + (IWATER - 1) * INTAU)
-            SURFW = PMSA(IPSURF + (IWATER - 1) * INSURF)
+            DEPTH = process_space_real(IPDEPT + (IWATER - 1) * INDEPT)
+            MINDEP = process_space_real(IPMDEP + (IWATER - 1) * INMDEP)
+            TAU = process_space_real(IPTAU + (IWATER - 1) * INTAU)
+            SURFW = process_space_real(IPSURF + (IWATER - 1) * INSURF)
 
             IBODEM = IEXPNT(2, IQ)
 
-            DMTOP = PMSA(IPDM + (IBODEM - 1) * INDM)
+            DMTOP = process_space_real(IPDM + (IBODEM - 1) * INDM)
 
             !         No resuspensie if depth is below minimum value
             IF (DEPTH < MINDEP) GOTO 20
@@ -561,14 +561,14 @@ contains
             DO IQ2 = ITOP, IBOT
 
                 IBODEM = IEXPNT(1, IQ2)
-                DM = PMSA(IPDM + (IBODEM - 1) * INDM)
-                TCRR = PMSA(IPTCRR + (IBODEM - 1) * INTCRR)
-                SURFB = PMSA(IPSURF + (IBODEM - 1) * INSURF)
-                ACTH = PMSA(IPACTH + (IBODEM - 1) * INACTH)
-                MINTH = PMSA(IPMNTH + (IBODEM - 1) * INMNTH)
-                ZRES = PMSA(IPZRES + (IBODEM - 1) * INZRES)
-                SW_PARTHENIADES = NINT(PMSA(IPSWRE + (IBODEM - 1) * INSWRE)) == 0
-                ALPHA = PMSA(IPALPH + (IBODEM - 1) * INALPH)
+                DM = process_space_real(IPDM + (IBODEM - 1) * INDM)
+                TCRR = process_space_real(IPTCRR + (IBODEM - 1) * INTCRR)
+                SURFB = process_space_real(IPSURF + (IBODEM - 1) * INSURF)
+                ACTH = process_space_real(IPACTH + (IBODEM - 1) * INACTH)
+                MINTH = process_space_real(IPMNTH + (IBODEM - 1) * INMNTH)
+                ZRES = process_space_real(IPZRES + (IBODEM - 1) * INZRES)
+                SW_PARTHENIADES = NINT(process_space_real(IPSWRE + (IBODEM - 1) * INSWRE)) == 0
+                ALPHA = process_space_real(IPALPH + (IBODEM - 1) * INALPH)
 
                 IF (ACTH <= MINTH) THEN
                     !                 Layer was already gone
@@ -603,24 +603,24 @@ contains
                 ENDIF
 
                 !             Resuspension probability (average for sediment column)
-                PMSA(IPPRES + (IBODEM - 1) * INPRES) = &
-                        PMSA(IPPRES + (IBODEM - 1) * INPRES) + PRES * SURFW / SURFB
+                process_space_real(IPPRES + (IBODEM - 1) * INPRES) = &
+                        process_space_real(IPPRES + (IBODEM - 1) * INPRES) + PRES * SURFW / SURFB
 
                 IF (FLRES > 1E-20) THEN
 
                     !                 Net resuspension flux (average for sediment column)
-                    PMSA(IPRFLX + (IBODEM - 1) * INRFLX) = &
-                            PMSA(IPRFLX + (IBODEM - 1) * INRFLX) + FLRES * SURFW / SURFB
+                    process_space_real(IPRFLX + (IBODEM - 1) * INRFLX) = &
+                            process_space_real(IPRFLX + (IBODEM - 1) * INRFLX) + FLRES * SURFW / SURFB
 
                     !                 Resuspension velocity and volume change for
                     !                 sediment-water interface
 
                     VELRES = FLRES / DMTOP
-                    PMSA(IPRVEL + (IQ - 1) * INRVEL) = &
-                            PMSA(IPRVEL + (IQ - 1) * INRVEL) - VELRES / 86400.
+                    process_space_real(IPRVEL + (IQ - 1) * INRVEL) = &
+                            process_space_real(IPRVEL + (IQ - 1) * INRVEL) - VELRES / 86400.
                     IF (SW >= 0.5) THEN
-                        PMSA(IPRVOL + (IQ - 1) * INRVOL) = &
-                                PMSA(IPRVOL + (IQ - 1) * INRVOL) - VELRES / 86400.
+                        process_space_real(IPRVOL + (IQ - 1) * INRVOL) = &
+                                process_space_real(IPRVOL + (IQ - 1) * INRVOL) - VELRES / 86400.
                     ENDIF
 
                     !                 Set total resuspension fluxes
@@ -634,21 +634,21 @@ contains
                         !                     Total resuspension flux, and the communication flux which must be handled the same way
                         DO IQ3 = ITOP, IQ2
                             IBODE2 = IEXPNT(1, IQ3)
-                            PMSA(IPTFLX + (IBODE2 - 1) * INTFLX) = &
-                                    PMSA(IPTFLX + (IBODE2 - 1) * INTFLX) + FLRES
-                            PMSA(IPCFLX + (IBODE2 - 1) * INCFLX) = &
-                                    PMSA(IPCFLX + (IBODE2 - 1) * INCFLX) + FLRES
+                            process_space_real(IPTFLX + (IBODE2 - 1) * INTFLX) = &
+                                    process_space_real(IPTFLX + (IBODE2 - 1) * INTFLX) + FLRES
+                            process_space_real(IPCFLX + (IBODE2 - 1) * INCFLX) = &
+                                    process_space_real(IPCFLX + (IBODE2 - 1) * INCFLX) + FLRES
                         ENDDO
 
                         !                     Resuspension velocity and volume change
                         DO IQ3 = ITOP, IQ2 - 1
                             IBODE2 = IEXPNT(2, IQ3)
-                            DM = PMSA(IPDM + (IBODE2 - 1) * INDM)
+                            DM = process_space_real(IPDM + (IBODE2 - 1) * INDM)
                             VELRES = FLRES / DM
-                            PMSA(IPRVEL + (IQ3 - 1) * INRVEL) = &
-                                    PMSA(IPRVEL + (IQ3 - 1) * INRVEL) - VELRES / 86400.
-                            PMSA(IPRVOL + (IQ3 - 1) * INRVOL) = &
-                                    PMSA(IPRVOL + (IQ3 - 1) * INRVOL) - VELRES / 86400.
+                            process_space_real(IPRVEL + (IQ3 - 1) * INRVEL) = &
+                                    process_space_real(IPRVEL + (IQ3 - 1) * INRVEL) - VELRES / 86400.
+                            process_space_real(IPRVOL + (IQ3 - 1) * INRVOL) = &
+                                    process_space_real(IPRVOL + (IQ3 - 1) * INRVOL) - VELRES / 86400.
                         ENDDO
                     ELSE
 
@@ -657,10 +657,10 @@ contains
                         !                     Total resuspension flux, and the communication flux which must be handled the same way
                         DO IQ3 = ITOP, IBOT
                             IBODE2 = IEXPNT(1, IQ3)
-                            PMSA(IPTFLX + (IBODE2 - 1) * INTFLX) = &
-                                    PMSA(IPTFLX + (IBODE2 - 1) * INTFLX) + FLRES
-                            PMSA(IPCFLX + (IBODE2 - 1) * INCFLX) = &
-                                    PMSA(IPCFLX + (IBODE2 - 1) * INCFLX) + FLRES
+                            process_space_real(IPTFLX + (IBODE2 - 1) * INTFLX) = &
+                                    process_space_real(IPTFLX + (IBODE2 - 1) * INTFLX) + FLRES
+                            process_space_real(IPCFLX + (IBODE2 - 1) * INCFLX) = &
+                                    process_space_real(IPCFLX + (IBODE2 - 1) * INCFLX) + FLRES
                         ENDDO
 
                         !                     Resuspension velocity, relate to density of lower layer,
@@ -671,10 +671,10 @@ contains
                             ELSE
                                 IBODE2 = IEXPNT(2, IQ3)
                             ENDIF
-                            DM = PMSA(IPDM + (IBODE2 - 1) * INDM)
+                            DM = process_space_real(IPDM + (IBODE2 - 1) * INDM)
                             VELRES = FLRES / DM
-                            PMSA(IPRVEL + (IQ3 - 1) * INRVEL) = &
-                                    PMSA(IPRVEL + (IQ3 - 1) * INRVEL) - VELRES / 86400.
+                            process_space_real(IPRVEL + (IQ3 - 1) * INRVEL) = &
+                                    process_space_real(IPRVEL + (IQ3 - 1) * INRVEL) - VELRES / 86400.
                         ENDDO
                     ENDIF
 
@@ -690,7 +690,7 @@ contains
         RETURN
     END
 
-    SUBROUTINE SEDKOL (IQ1, IQ2, IEXPNT, SW, PMSA, &
+    SUBROUTINE SEDKOL (IQ1, IQ2, IEXPNT, SW, process_space_real, &
             IPSFLX, INSFLX, IPDM, INDM, &
             IPSVEL, INSVEL, IPSVOL, INSVOL, TOTSED)
         !***********************************************************************
@@ -706,15 +706,15 @@ contains
         ! IQ2     I*4    1   I  last  exchange number water bottom exchange
         ! IEXPNT  I*4 4,NOQT I  exchange pointers
         ! SW      R*4    1   I  Switch, > 0.5 then computation changed volume
-        ! PMSA    R*4    *  I/O real input output array whole process system
-        ! IPSFLX  I*4    1   I  Pointer in PMSA where flows start
-        ! INSFLX  I*4    1   I  Increment of IPSFLX in the PMSA array
-        ! IPDM    I*4    1   I  Pointer in PMSA where dry matter mass starts
-        ! INDM    I*4    1   I  Increment of IPDM   in the PMSA array
-        ! IPSVEL  I*4    1   I  Pointer in PMSA where sedimentation velocity
-        ! INSVEL  I*4    1   I  Increment of IPSVEL in the PMSA array
-        ! IPSVOL  I*4    1   I  Pointer in PMSA where sedimentation volume
-        ! INSVOL  I*4    1   I  Increment of IPSVOL in the PMSA array
+        ! process_space_real    R*4    *  I/O real input output array whole process system
+        ! IPSFLX  I*4    1   I  Pointer in process_space_real where flows start
+        ! INSFLX  I*4    1   I  Increment of IPSFLX in the process_space_real array
+        ! IPDM    I*4    1   I  Pointer in process_space_real where dry matter mass starts
+        ! INDM    I*4    1   I  Increment of IPDM   in the process_space_real array
+        ! IPSVEL  I*4    1   I  Pointer in process_space_real where sedimentation velocity
+        ! INSVEL  I*4    1   I  Increment of IPSVEL in the process_space_real array
+        ! IPSVOL  I*4    1   I  Pointer in process_space_real where sedimentation volume
+        ! INSVOL  I*4    1   I  Increment of IPSVOL in the process_space_real array
         ! TOTSED  R*4    1   O  Summed sedimentation flux
         !     NB IPSVEL and IPSVOL point in the EXCHANGE space
         !        IPSFLX and IPDM   point in the SEGMENT  space
@@ -724,7 +724,7 @@ contains
                 IPSFLX, INSFLX, IPDM, INDM, &
                 IPSVEL, INSVEL, IPSVOL, INSVOL
         INTEGER(kind = int_wp) :: IEXPNT(4, *)
-        REAL(kind = real_wp) :: SW, TOTSED, PMSA(*)
+        REAL(kind = real_wp) :: SW, TOTSED, process_space_real(*)
 
         !     Local variables
 
@@ -737,30 +737,30 @@ contains
             IVAN = IEXPNT(1, IQ)
             INAAR = IEXPNT(2, IQ)
             !         Totale sedimentatieflux
-            SEDFLX = PMSA(IPSFLX + (IVAN - 1) * INSFLX)
+            SEDFLX = process_space_real(IPSFLX + (IVAN - 1) * INSFLX)
             TOTSED = TOTSED + SEDFLX
             !         Sedimentation velocity
             !         Massa in upwind segment
-            DM = PMSA(IPDM + (IVAN - 1) * INDM)
+            DM = process_space_real(IPDM + (IVAN - 1) * INDM)
             DVOL = 0.0
             IF (DM > 0.0) DVOL = SEDFLX / DM / 86400.
-            PMSA (IPSVEL + (IQ - 1) * INSVEL) = DVOL
+            process_space_real (IPSVEL + (IQ - 1) * INSVEL) = DVOL
 
             IF (SW >= 0.5) THEN
                 !             Compute volume change velocity
                 !             Massa in DOWNwind segment!!!!!!!!!!!!!!!!!!!!!!
-                DM = PMSA(IPDM + (INAAR - 1) * INDM)
+                DM = process_space_real(IPDM + (INAAR - 1) * INDM)
                 DVOL = 0.0
                 IF (DM > 0.0) DVOL = SEDFLX / DM / 86400.
-                PMSA (IPSVOL + (IQ - 1) * INSVOL) = DVOL
+                process_space_real (IPSVOL + (IQ - 1) * INSVOL) = DVOL
             ENDIF
         enddo
 
         RETURN
     END
     !
-    SUBROUTINE MAKKO2 (IEXPNT, IKNMRK, NOQ1, NOQ2, NOQ3, &
-            NOQ4)
+    SUBROUTINE MAKKO2 (IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+            num_exchanges_bottom_dir)
         !***********************************************************************
         !
         !     Description of the module :
@@ -788,8 +788,8 @@ contains
         ! Name    T      L  I/O Description
         ! ----    ---    -   -  ------------
         ! IEXPNT  I*4 4,NOQT I  exchange pointers for flows
-        ! IKNMRK  I*4  NOSEG I  feature array
-        ! NOQ's   I*4    1   I  number of exchanges NOQ4 is within bottom
+        ! IKNMRK  I*4  num_cells I  feature array
+        ! num_exchanges's   I*4    1   I  number of exchanges num_exchanges_bottom_dir is within bottom
         ! Coll    Struct 1   O  Structure with collection of bottom collumn info
         !                  Contains:
         !    type(BotColmn), pointer :: set(:)  ! array with info for all bottom collumns
@@ -802,14 +802,14 @@ contains
         !    integer :: topsedsed  ! first within collumn exchange number
         !    integer :: botsedsed  ! last exchange of collumn to deeper bnd
         !
-        use m_logger, only : terminate_execution, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with derived types and add function
 
         !     type ( BotColmnColl ) :: Coll  <= is defined in the module
         type (BotColmn) :: set   !  makes code more readable
 
-        INTEGER(kind = int_wp) :: IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        INTEGER(kind = int_wp) :: IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         !     Local variables
 
@@ -824,7 +824,7 @@ contains
         errorcode = 0
 
         !     Check for bottom collumns anyway
-        if (NOQ4 == 0) return
+        if (num_exchanges_bottom_dir == 0) return
 
         !     Check for first call
         if (.NOT. FIRST) return
@@ -835,7 +835,7 @@ contains
         !.....Exchangeloop over de verticale richting
 
         KOLOM = .FALSE.
-        DO IQ = NOQ1 + NOQ2 + NOQ3 + 1, NOQ1 + NOQ2 + NOQ3 + NOQ4
+        DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
 
             IVAN = IEXPNT(1, IQ)
             INAAR = IEXPNT(2, IQ)
@@ -847,9 +847,9 @@ contains
             !        Zoek eerste kenmerk van- en naar-segmenten
 
             IKMRKV = -1
-            IF (IVAN  > 0) CALL evaluate_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
+            IF (IVAN  > 0) CALL extract_waq_attribute(1, IKNMRK(IVAN), IKMRKV)
             IKMRKN = -1
-            IF (INAAR > 0) CALL evaluate_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
+            IF (INAAR > 0) CALL extract_waq_attribute(1, IKNMRK(INAAR), IKMRKN)
 
             !        Bottom-water exchange, the collumn starts
 
@@ -913,12 +913,12 @@ contains
         9006 if (errorcode==0) errorcode = 9006
         write (lunrep, *)'Illegal structure of pointer table MAKKOL: ', errorcode
         write (*, *)'Illegal structure of pointer table MAKKOL: ', errorcode
-        call terminate_execution(1)
+        call stop_with_error()
         !
     END
 
     SUBROUTINE DIGKOL (ITOP, IBOT, IEXPNT, DELT, &
-            PMSA, IPACTH, INACTH, IPDM, INDM, &
+            process_space_real, IPACTH, INACTH, IPDM, INDM, &
             IPBFLX, INBFLX, IPBVEL, INBVEL, IPPORA, &
             INPORA, IPPORI, INPORI)
         !
@@ -926,7 +926,7 @@ contains
                 IPDM, INDM, IPBFLX, INBFLX, &
                 IPBVEL, INBVEL, IPPORA, INPORA, &
                 IPPORI, INPORI
-        REAL(kind = real_wp) :: DELT, PMSA(*)
+        REAL(kind = real_wp) :: DELT, process_space_real(*)
         INTEGER(kind = int_wp) :: IEXPNT(4, *)
 
         !     Local variables
@@ -941,10 +941,10 @@ contains
         DO IQ = ITOP, IBOT
 
             IBODEM = IEXPNT(1, IQ)
-            ACTH = PMSA (IPACTH + (IBODEM - 1) * INACTH)
-            DM = PMSA (IPDM + (IBODEM - 1) * INDM)
-            PORACT = PMSA (IPPORA + (IBODEM - 1) * INPORA)
-            PORINP = PMSA (IPPORI + (IBODEM - 1) * INPORI)
+            ACTH = process_space_real (IPACTH + (IBODEM - 1) * INACTH)
+            DM = process_space_real (IPDM + (IBODEM - 1) * INDM)
+            PORACT = process_space_real (IPPORA + (IBODEM - 1) * INPORA)
+            PORINP = process_space_real (IPPORI + (IBODEM - 1) * INPORI)
             PORACT = MIN(PORACT, 0.999)
 
             !         Correction for inhomogeneous porosity
@@ -960,11 +960,11 @@ contains
 
             !         Flux from segment
 
-            PMSA(IPBFLX + (IBODEM - 1) * INBFLX) = PMSA(IPBFLX + (IBODEM - 1) * INBFLX) + CORDIG
+            process_space_real(IPBFLX + (IBODEM - 1) * INBFLX) = process_space_real(IPBFLX + (IBODEM - 1) * INBFLX) + CORDIG
 
             !         Velocity for use in TRASE2
 
-            IF (DM > 1E-20) PMSA(IPBVEL + (IQ - 1) * INBVEL) = PMSA(IPBVEL + (IQ - 1) * INBVEL) + CORDIG / DM / 86400.
+            IF (DM > 1E-20) process_space_real(IPBVEL + (IQ - 1) * INBVEL) = process_space_real(IPBVEL + (IQ - 1) * INBVEL) + CORDIG / DM / 86400.
 
         ENDDO
 

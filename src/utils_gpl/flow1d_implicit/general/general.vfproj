@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{6DB9FD87-D55E-4E8B-983E-071867DA0057}">
+	<Platforms>
+		<Platform Name="x64"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|x64" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" DebugParameter="debugParameterAll" WarnDeclarations="true" WarnUnusedVariables="true" WarnInterfaces="true" Traceback="true" NullPointerCheck="true" BoundsCheck="true" UninitializedVariablesCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Release|x64" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<File RelativePath=".\src\ASNDMX.f"/>
+		<File RelativePath=".\src\BICGST.f"/>
+		<File RelativePath=".\src\CHLATA.f"/>
+		<File RelativePath=".\src\CQLATG.f"/>
+		<File RelativePath=".\src\CSINTG.f"/>
+		<File RelativePath=".\src\CSPERI.f"/>
+		<File RelativePath=".\src\CSPSLT.f"/>
+		<File RelativePath=".\src\CSSECI.f"/>
+		<File RelativePath=".\src\CSSECT.f"/>
+		<File RelativePath=".\src\CSTABL.f"/>
+		<File RelativePath=".\src\CSWSED.f"/>
+		<File RelativePath=".\src\CSZWFZ.f"/>
+		<File RelativePath=".\src\DATTIMDIFF.f"/>
+		<File RelativePath=".\src\DBLASK.f"/>
+		<File RelativePath=".\src\DEQUAL.f"/>
+		<File RelativePath=".\src\DLAPACK.f"/>
+		<File RelativePath=".\src\DPSEQU.f"/>
+		<File RelativePath=".\src\DSWEEP.f"/>
+		<File RelativePath=".\src\ENGRPR.f"/>
+		<File RelativePath=".\src\EPSEQU.f"/>
+		<File RelativePath=".\src\EQUAL.f"/>
+		<File RelativePath=".\src\ERROR.f"/>
+		<File RelativePath=".\src\GA1FILE.f"/>
+		<File RelativePath=".\src\GADATA.f"/>
+		<File RelativePath=".\src\GAEXTREM1.f"/>
+		<File RelativePath=".\src\GAEXTREM2.f"/>
+		<File RelativePath=".\src\GAEXTREM3.f"/>
+		<File RelativePath=".\src\GAFILLBUF.f"/>
+		<File RelativePath=".\src\GAGETPAR.f"/>
+		<File RelativePath=".\src\GAINIT.f"/>
+		<File RelativePath=".\src\GAINTERPOL.f"/>
+		<File RelativePath=".\src\GANALYSE.f"/>
+		<File RelativePath=".\src\GAPRINTRES.f"/>
+		<File RelativePath=".\src\GAREADHEAD.f"/>
+		<File RelativePath=".\src\GAREEKSHC.f"/>
+		<File RelativePath=".\src\GAREEKSQV.f"/>
+		<File RelativePath=".\src\GARESULTRQ.f"/>
+		<File RelativePath=".\src\GASERVICE.f"/>
+		<File RelativePath=".\src\GAVIEWRES.f"/>
+		<File RelativePath=".\src\GETBRK.f"/>
+		<File RelativePath=".\src\GETBRN.f"/>
+		<File RelativePath=".\src\GETCEL.f"/>
+		<File RelativePath=".\src\GETCONTR.f"/>
+		<File RelativePath=".\src\GETIEL.f"/>
+		<File RelativePath=".\src\GETLEL.f"/>
+		<File RelativePath=".\src\GETLOC.f"/>
+		<File RelativePath=".\src\GETREL.f"/>
+		<File RelativePath=".\src\GETSTR.f"/>
+		<File RelativePath=".\src\Ifreal.for"/>
+		<File RelativePath=".\src\INDWGH.f"/>
+		<File RelativePath=".\src\INTTAB.f"/>
+		<File RelativePath=".\src\LUBKSB.f"/>
+		<File RelativePath=".\src\LUDCMP.f"/>
+		<File RelativePath=".\src\MATVC1.f"/>
+		<File RelativePath=".\src\MATVC2.f"/>
+		<File RelativePath=".\src\MERERR.f"/>
+		<File RelativePath=".\src\PARSDT.f"/>
+		<File RelativePath=".\src\PSOLVE.f"/>
+		<File RelativePath=".\src\PUTCEL.f"/>
+		<File RelativePath=".\src\PUTIEL.f"/>
+		<File RelativePath=".\src\PUTLEL.f"/>
+		<File RelativePath=".\src\PUTREL.f"/>
+		<File RelativePath=".\src\RESADM.f"/>
+		<File RelativePath=".\src\RESDEF.f"/>
+		<File RelativePath=".\src\RESDES.f"/>
+		<File RelativePath=".\src\RESINI.f"/>
+		<File RelativePath=".\src\RESTIM.f"/>
+		<File RelativePath=".\src\SERIES.f"/>
+		<File RelativePath=".\src\SOTIME.f"/>
+		<File RelativePath=".\src\SPLINE.f"/>
+		<File RelativePath=".\src\STATIM.f"/>
+		<File RelativePath=".\src\YESMAP.f"/></Filter></Files>
+	<Globals/></VisualStudioProject>

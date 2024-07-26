@@ -21,8 +21,8 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-      subroutine set_aggr_pnts(input_hyd, ipnt_h , ipnt_v    , ipnt     , ipnt_vdf, & 
-                              ipnt_b   , nosegbt, output_hyd, l_regular, ipnt_tau, & 
+      subroutine set_aggr_pnts(input_hyd, ipnt_h , ipnt_v    , ipnt     , ipnt_vdf, &
+                              ipnt_b   , nosegbt, output_hyd, l_regular, ipnt_tau, &
                               l_expand , lunrep)
 
       ! function : set the aggregation pointer
@@ -31,22 +31,22 @@
 
       ! global declarations
 
-      use m_logger, only : terminate_execution
+      use m_logger_helper, only : stop_with_error
       use m_hydmod
       implicit none
 
       ! declaration of the arguments
 
       type(t_hydrodynamics)          :: input_hyd                             ! description of the input hydrodynamics
-      integer              :: ipnt_h(input_hyd%nmax,input_hyd%mmax) ! horizontal aggregation
-      integer              :: ipnt_v(input_hyd%kmax)                ! vertical aggregation
-      integer              :: ipnt(input_hyd%noseg)                 ! aggregation pointer segments
-      integer              :: ipnt_vdf(input_hyd%noseg)             ! aggregation pointer used for minimum vertical diffusion
+      integer              :: ipnt_h(input_hyd%num_rows,input_hyd%num_columns) ! horizontal aggregation
+      integer              :: ipnt_v(input_hyd%num_layers_grid)                ! vertical aggregation
+      integer              :: ipnt(input_hyd%num_cells)                 ! aggregation pointer segments
+      integer              :: ipnt_vdf(input_hyd%num_cells)             ! aggregation pointer used for minimum vertical diffusion
       integer              :: nosegbt                               ! length aggregation pointer used for boundaries
       integer              :: ipnt_b(nosegbt)                       ! aggregation pointer used for boundaries
       type(t_hydrodynamics)          :: output_hyd                            ! description of the output hydrodynamics
       logical              :: l_regular                             ! regular aggregartion option
-      integer              :: ipnt_tau(input_hyd%noseg)             ! aggregation pointer used for tau
+      integer              :: ipnt_tau(input_hyd%num_cells)             ! aggregation pointer used for tau
       logical              :: l_expand                              ! expand to full matrix
       integer              :: lunrep                                ! unit number report file
 
@@ -68,33 +68,33 @@
       if ( l_regular ) then
          nosegl_new = output_hyd%nosegl
       elseif ( l_expand ) then
-         nosegl_new = input_hyd%mmax*input_hyd%nmax
+         nosegl_new = input_hyd%num_columns*input_hyd%num_rows
       else
          nosegl_new = maxval(ipnt_h)
       endif
-      do i = 1 , input_hyd%noseg
+      do i = 1 , input_hyd%num_cells
          ipnt(i) = 0
       enddo
       if (input_hyd%geometry .eq. HYD_GEOM_CURVI) then
          nosegb_new = -minval(ipnt_h)
-         nosegb     = nosegbt/input_hyd%nolay
+         nosegb     = nosegbt/input_hyd%num_layers
          do i = 1 , nosegbt
             ipnt_b(i) = 0
          enddo
       else if (input_hyd%geometry .eq. HYD_GEOM_UNSTRUC) then
-         nosegb     = nosegbt/input_hyd%nolay
+         nosegb     = nosegbt/input_hyd%num_layers
          nosegb_new = nosegb
           do isegb = 1 , nosegb
-              do ilay = 1 , input_hyd%nolay
+              do ilay = 1 , input_hyd%num_layers
                   isegl = (ilay-1)*nosegb+isegb
                   iplay = (ipnt_v(ilay)-1)*nosegb_new+isegb
                   ipnt_b(isegl) = iplay
               enddo
           enddo
       endif
-      
-      do m = 1 , input_hyd%mmax
-         do n = 1 , input_hyd%nmax
+
+      do m = 1 , input_hyd%num_columns
+         do n = 1 , input_hyd%num_rows
             iseg = input_hyd%lgrid(n,m)
             if ( iseg .gt. 0 ) then
                if ( ipnt(iseg) .gt. 0 ) then
@@ -117,21 +117,21 @@
                      write(*,*) 'segment number before aggregation                 = ',iseg
                      write(*,*) 'segment number in aggregation                     = ',ipnt_h(n,m)
                      write(*,*) 'the same segment number was already aggregated to = ',ipnt(iseg)
-                     call terminate_execution(1)
+                     call stop_with_error()
                   endif
                else
                   if ( ipnt_h(n,m) .eq. 0 ) then
                      ! outside the active area, no action
                   elseif ( ipnt_h(n,m) .lt. 0 ) then
                      ! new boundary
-                     do ilay = 1 , input_hyd%nolay
+                     do ilay = 1 , input_hyd%num_layers
                         isegl = (ilay-1)*input_hyd%nosegl+iseg
                         iplay = (ipnt_v(ilay)-1)*nosegb_new - ipnt_h(n,m)
                         ipnt(isegl) = -iplay
                      enddo
                   else
                      ! first time that we see this segment, set pointers over all layers
-                     do ilay = 1 , input_hyd%nolay
+                     do ilay = 1 , input_hyd%num_layers
                         isegl = (ilay-1)*input_hyd%nosegl+iseg
                         iplay = (ipnt_v(ilay)-1)*nosegl_new + ipnt_h(n,m)
                         ipnt(isegl) = iplay
@@ -143,7 +143,7 @@
                   ! outside the active area, no action
                elseif ( ipnt_h(n,m) .lt. 0 ) then
                   ! boundary stays boundary
-                  do ilay = 1 , input_hyd%nolay
+                  do ilay = 1 , input_hyd%num_layers
                      isegl = (ilay-1)*nosegb-iseg
                      iplay = (ipnt_v(ilay)-1)*nosegb_new - ipnt_h(n,m)
                      ipnt_b(isegl) = iplay
@@ -162,7 +162,7 @@
                   write(*,*) 'n coordinate                                      = ',n
                   write(*,*) 'segment number before aggregation                 = ',iseg
                   write(*,*) 'segment number in aggregation                     = ',ipnt_h(n,m)
-                  call terminate_execution(1)
+                  call stop_with_error()
                endif
             else
                if ( ipnt_h(n,m) .eq. 0 ) then
@@ -181,15 +181,15 @@
                   write(*,*) 'n coordinate                                      = ',n
                   write(*,*) 'segment number before aggregation                 = ',iseg
                   write(*,*) 'segment number in aggregation                     = ',ipnt_h(n,m)
-                  call terminate_execution(1)
-               end if      
+                  call stop_with_error()
+               end if
             endif
          enddo
       enddo
 
       ! ipnt_vdf basically only layer aggregation to determine the minimum (nearest to exchange? not yet)
 
-      do ilay = 1 , input_hyd%nolay
+      do ilay = 1 , input_hyd%num_layers
          ilay_new = ipnt_v(ilay)
          do i = 1 , input_hyd%nosegl
             i1 = i + (ilay-1)*input_hyd%nosegl
@@ -200,7 +200,7 @@
 
       ! tau, only bottom segments count
 
-      do i = 1 , input_hyd%noseg
+      do i = 1 , input_hyd%num_cells
          ik2 = mod(input_hyd%attributes(i),100)/10
          bottom = .false.
          if ( ik2 .eq. 0 ) bottom = .true.

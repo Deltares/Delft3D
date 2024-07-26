@@ -1,36 +1,36 @@
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 
-      subroutine read_src_tmp(file_src_tmp, nolay, wasteload_coll, wasteload_data)
+      subroutine read_src_tmp(file_src_tmp, num_layers, wasteload_coll, wasteload_data)
 
       ! read a src file
-      use m_logger, only : terminate_execution, get_log_unit_number
+      use m_logger_helper, only : stop_with_error, get_log_unit_number
       use m_waq_file                   ! module contains everything for the files
       use m_hydmod                   ! module contains everything for the hydrodynamic description
       use rd_token       ! tokenized reading
@@ -40,7 +40,7 @@
       ! declaration of the arguments
 
       type(t_file)                       :: file_src_tmp           ! tmp sources file
-      integer                                :: nolay                  ! number of layers
+      integer                                :: num_layers                  ! number of layers
       type(t_wasteload_coll)                 :: wasteload_coll         ! the wasteloads
       type(t_data_block)      , intent(inout)  :: wasteload_data         ! wasteload_data
       type(t_data_block)                       :: wasteload_data_tmp     ! wasteload_data backup to append
@@ -73,17 +73,17 @@
 
       no_waste = wasteload_coll%current_size
       if(no_waste.eq.0) return
-      
+
       if(wasteload_data%num_breakpoints .gt. 0) then
          first_itime_current = wasteload_data%times(1)
       else
          first_itime_current = 2000000000
       endif
-      
+
       no_flow  = 0
       do i = 1 , no_waste
          if ( wasteload_coll%wasteload_pnts(i)%k .eq. 0 ) then
-            no_flow = no_flow + nolay
+            no_flow = no_flow + num_layers
          else
             no_flow = no_flow + 1
          endif
@@ -130,7 +130,7 @@
       wasteload_data_tmp%num_breakpoints = nobrk_waste
       no_param = 1
       wasteload_data_tmp%num_locations   = no_waste
-      wasteload_data_tmp%num_parameters = no_param
+      wasteload_data_tmp%num_spatial_parameters = no_param
 
       ! allocate arrays
       allocate(wasteload_data_tmp%times(nobrk_waste), &
@@ -188,7 +188,7 @@
          i_flow = 0
          do i_waste = 1 , no_waste
             if ( wasteload_coll%wasteload_pnts(i_waste)%k .eq. 0 ) then
-               do ilay = 1 , nolay
+               do ilay = 1 , num_layers
                   i_flow = i_flow + 1
                   wasteload_data_tmp%values(1,i_waste,ibrk) = wasteload_data_tmp%values(1,i_waste,ibrk) + flow_data(1,i_flow,ibrk)
                enddo
@@ -198,7 +198,7 @@
             endif
          enddo
       enddo
-      
+
       ! add the data that was already there into wasteload_data_tmp, and return it as wasteload_data
       do ibrk = 1 , wasteload_data%num_breakpoints
          wasteload_data_tmp%times(ibrk+nobrk_waste_tmp) = wasteload_data%times(ibrk)
@@ -206,18 +206,18 @@
             wasteload_data_tmp%values(1,i_waste,ibrk+nobrk_waste_tmp) = wasteload_data%values(1,i_waste,ibrk)
          end do
       enddo
-      
+
       ierr = wasteload_data_tmp%copy(wasteload_data)
       if ( ierr .ne. 0 ) then
          write(*,*) ' error copying wasteload data'
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       deallocate(flow_data)
 
   200 continue
       if ( ierr .ne. 0 ) then
-         call terminate_execution(1)
+         call stop_with_error()
       endif
 
       close(file_src_tmp%unit)

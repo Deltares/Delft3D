@@ -28,10 +28,10 @@ module m_rdbalg
 contains
 
 
-    subroutine rdbalg (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_logger
+    subroutine rdbalg (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_logger_helper
 
         !>\file
         !>       Light efficiency function DYNAMO algae
@@ -56,9 +56,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         LOGICAL  LGTOPT
         integer(kind = int_wp) :: iseg
@@ -78,9 +78,9 @@ contains
         IP6 = IPOINT(6)
         !
         IF (IN2 == 0 .AND. IN3 == 0 .AND. IN5 == 0) THEN
-            ACTRAD = PMSA(IP2)
-            SATRAD = PMSA(IP3)
-            TFGRO = PMSA(IP5)
+            ACTRAD = process_space_real(IP2)
+            SATRAD = process_space_real(IP3)
+            TFGRO = process_space_real(IP5)
             !
             !        Correct SATRAD for temperature using Temp function for growth
             !
@@ -94,14 +94,14 @@ contains
         ENDIF
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
                 IF (LGTOPT) THEN
-                    ACTRAD = PMSA(IP2)
-                    SATRAD = PMSA(IP3)
-                    TFGRO = PMSA(IP5)
+                    ACTRAD = process_space_real(IP2)
+                    SATRAD = process_space_real(IP3)
+                    TFGRO = process_space_real(IP5)
                     !
                     !        Correct SATRAD for temperature using Temp function for growth
                     !
@@ -111,7 +111,7 @@ contains
                     FRAD = ACTRAD / SATRAD
                 ENDIF
                 !
-                PMSA(IP6) = MAX(MIN(FRAD, 1.0), 0.0)
+                process_space_real(IP6) = MAX(MIN(FRAD, 1.0), 0.0)
                 !
                 IF (SATRAD < 1E-20)  CALL write_error_message ('SATRAD in RADALG zero')
 

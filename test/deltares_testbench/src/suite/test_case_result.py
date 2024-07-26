@@ -1,7 +1,6 @@
-"""
-Description: Result for test case run
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Result for test case run.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 from typing import List, Tuple
@@ -14,8 +13,9 @@ from src.utils.comparers.comparison_result import ComparisonResult
 
 
 class TestCaseResult:
+    """Contains the result for a TestCaseConfig."""
+
     __test__ = False
-    """Contains the result for a TestCaseConfig"""
 
     def __init__(self, config: TestCaseConfig, run_data: RunData) -> None:
         self.__config: TestCaseConfig = config
@@ -24,21 +24,19 @@ class TestCaseResult:
 
     @property
     def results(self) -> List[Tuple[str, FileCheck, Parameter, ComparisonResult]]:
-        """Result list for all file checks"""
+        """Result list for all file checks."""
         return self.__results
 
     @results.setter
-    def results(
-        self, results: List[Tuple[str, FileCheck, Parameter, ComparisonResult]]
-    ):
+    def results(self, results: List[Tuple[str, FileCheck, Parameter, ComparisonResult]]) -> None:
         self.__results = results
 
     @property
     def config(self) -> TestCaseConfig:
-        """Config that this result belongs to"""
+        """Config that this result belongs to."""
         return self.__config
 
     @property
     def run_data(self) -> RunData:
-        """Data related to the test run"""
+        """Data related to the test run."""
         return self.__run_data

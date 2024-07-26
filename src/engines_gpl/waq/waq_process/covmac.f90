@@ -28,30 +28,30 @@ module m_covmac
 contains
 
 
-    SUBROUTINE COVMAC     (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
+    SUBROUTINE COVMAC     (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !
         !*******************************************************************************
         !
-        use m_evaluate_waq_attribute
-        use m_logger, only : write_error_message_with_values
+        use m_extract_waq_attribute
+        use m_logger_helper, only : write_error_message_with_values
         IMPLICIT NONE
         !
         !     Type    Name         I/O Description
         !
-        REAL(kind = real_wp) :: PMSA(*)     !I/O Process Manager System Array, window of routine to process library
+        REAL(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         REAL(kind = real_wp) :: FL(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        INTEGER(kind = int_wp) :: IPOINT(22) ! I  Array of pointers in PMSA to get and store the data
+        INTEGER(kind = int_wp) :: IPOINT(22) ! I  Array of pointers in process_space_real to get and store the data
         INTEGER(kind = int_wp) :: INCREM(22) ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-        INTEGER(kind = int_wp) :: NOSEG       ! I  Number of computational elements in the whole model schematisation
+        INTEGER(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         INTEGER(kind = int_wp) :: NOFLUX      ! I  Number of fluxes, increment in the FL array
         INTEGER(kind = int_wp) :: IEXPNT(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         INTEGER(kind = int_wp) :: IKNMRK(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        INTEGER(kind = int_wp) :: NOQ1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        INTEGER(kind = int_wp) :: NOQ2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
-        INTEGER(kind = int_wp) :: NOQ3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        INTEGER(kind = int_wp) :: NOQ4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         INTEGER(kind = int_wp) :: IPNT(22)   !    Local work array for the pointering
         INTEGER(kind = int_wp) :: ISEG        !    Local loop counter for computational element loop
         !
@@ -94,33 +94,33 @@ contains
         IF (FIRST) THEN
 
             IPNT(21) = IPOINT(21)
-            DO ISEG = 1, NOSEG
-                PMSA(IPNT(21)) = -1
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+            DO ISEG = 1, num_cells
+                process_space_real(IPNT(21)) = -1
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==3)) THEN
-                    PMSA(IPNT(21)) = ISEG
+                    process_space_real(IPNT(21)) = ISEG
                 ENDIF
                 IPNT(21) = IPNT(21) + INCREM(21)
             ENDDO
             !     Loop to find bottom segment for water segments
-            DO IQ = NOQ1 + NOQ2 + NOQ3, NOQ1 + NOQ2 + 1, -1
+            DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir, num_exchanges_u_dir + num_exchanges_v_dir + 1, -1
                 Ifrom = IEXPNT(1, IQ)
                 Ito = IEXPNT(2, IQ)
                 if (ifrom>0.and.ito>0) then
-                    IBOTSEG = nint(PMSA(IPOINT(21) + (ITO - 1) * INCREM(21)))
+                    IBOTSEG = nint(process_space_real(IPOINT(21) + (ITO - 1) * INCREM(21)))
                     IF (IBOTSEG >0) THEN
-                        PMSA(IPOINT(21) + (IFROM - 1) * INCREM(21)) = real(IBOTSEG)
+                        process_space_real(IPOINT(21) + (IFROM - 1) * INCREM(21)) = real(IBOTSEG)
                     ENDIF
                 endif
             ENDDO
 
-            do iq = noq1 + noq2 + noq3 + 1, noq1 + noq2 + noq3 + noq4
+            do iq = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
                 ifrom = iexpnt(1, iq)
                 ito = iexpnt(2, iq)
                 if (ifrom>0.and.ito>0) then
-                    ibotseg = nint(pmsa(ipoint(21) + (ifrom - 1) * increm(21)))
+                    ibotseg = nint(process_space_real(ipoint(21) + (ifrom - 1) * increm(21)))
                     if (ibotseg >0) then
-                        pmsa(ipoint(21) + (ito - 1) * increm(21)) = real(ibotseg)
+                        process_space_real(ipoint(21) + (ito - 1) * increm(21)) = real(ibotseg)
                     endif
                 endif
             enddo
@@ -132,32 +132,32 @@ contains
         !
         IPNT = IPOINT
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
-            CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
             IF (IKMRK1==1) THEN
-                CALL evaluate_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
+                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                 IF ((IKMRK2==0).OR.(IKMRK2==1)) THEN
 
                     !           Calculation of fcover for top layer only
 
-                    nMacrophyt = PMSA(IPNT(1))
-                    MaxEM01 = PMSA(IPNT(4))
-                    MaxEM02 = PMSA(IPNT(6))
-                    MaxEM03 = PMSA(IPNT(8))
-                    MaxEM04 = PMSA(IPNT(10))
-                    MaxEM05 = PMSA(IPNT(12))
-                    IBotSeg = nint(PMSA(IPNT(13)))
+                    nMacrophyt = process_space_real(IPNT(1))
+                    MaxEM01 = process_space_real(IPNT(4))
+                    MaxEM02 = process_space_real(IPNT(6))
+                    MaxEM03 = process_space_real(IPNT(8))
+                    MaxEM04 = process_space_real(IPNT(10))
+                    MaxEM05 = process_space_real(IPNT(12))
+                    IBotSeg = nint(process_space_real(IPNT(13)))
                     IF (IBotSeg <= 0) &
-                            CALL write_error_message_with_values('IBotSeg', PMSA(IPNT(13)), ISEG, 'COVMAC')
+                            CALL write_error_message_with_values('IBotSeg', process_space_real(IPNT(13)), ISEG, 'COVMAC')
 
-                    RadIn = PMSA(IPNT(14))
-                    EM01 = PMSA(IPOINT(3) + (IBotSeg - 1) * INCREM(3))
-                    EM02 = PMSA(IPOINT(5) + (IBotSeg - 1) * INCREM(5))
-                    EM03 = PMSA(IPOINT(7) + (IBotSeg - 1) * INCREM(7))
-                    EM04 = PMSA(IPOINT(9) + (IBotSeg - 1) * INCREM(9))
-                    EM05 = PMSA(IPOINT(11) + (IBotSeg - 1) * INCREM(11))
+                    RadIn = process_space_real(IPNT(14))
+                    EM01 = process_space_real(IPOINT(3) + (IBotSeg - 1) * INCREM(3))
+                    EM02 = process_space_real(IPOINT(5) + (IBotSeg - 1) * INCREM(5))
+                    EM03 = process_space_real(IPOINT(7) + (IBotSeg - 1) * INCREM(7))
+                    EM04 = process_space_real(IPOINT(9) + (IBotSeg - 1) * INCREM(9))
+                    EM05 = process_space_real(IPOINT(11) + (IBotSeg - 1) * INCREM(11))
                     !
                     !   *****     Insert your code here  *****
                     !
@@ -215,13 +215,13 @@ contains
                 !
                 !   *****     End of your code       *****
                 !
-                PMSA(IPNT(15)) = fcover
-                PMSA(IPNT(16)) = CoverEM01
-                PMSA(IPNT(17)) = CoverEM02
-                PMSA(IPNT(18)) = CoverEM03
-                PMSA(IPNT(19)) = CoverEM04
-                PMSA(IPNT(20)) = CoverEM05
-                PMSA(IPNT(22)) = RadSurf
+                process_space_real(IPNT(15)) = fcover
+                process_space_real(IPNT(16)) = CoverEM01
+                process_space_real(IPNT(17)) = CoverEM02
+                process_space_real(IPNT(18)) = CoverEM03
+                process_space_real(IPNT(19)) = CoverEM04
+                process_space_real(IPNT(20)) = CoverEM05
+                process_space_real(IPNT(22)) = RadSurf
 
             ENDIF
             !

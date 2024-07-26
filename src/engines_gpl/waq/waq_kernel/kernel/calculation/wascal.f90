@@ -28,8 +28,8 @@ module m_wascal
 contains
 
 
-    subroutine wascal (nowst, notot, nosys, noseg, syname, &
-            conc, itime, nowtyp, wastid, wstnam, &
+    subroutine wascal (num_waste_loads, num_substances_total, num_substances_transported, num_cells, syname, &
+            conc, itime, num_waste_load_types, wastid, wstnam, &
             wsttyp, iwaste, iwtype, waste)
         !
         !     Deltares
@@ -41,7 +41,7 @@ contains
 
         ! global declarations
 
-        use m_logger, only : terminate_execution, get_log_unit_number
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
         use delwaq_loads, only : wasteloads
         use delwaq_user_wasteloads
         use timers
@@ -49,20 +49,20 @@ contains
 
         ! arguments declarations
 
-        integer(kind = int_wp) :: nowst
-        integer(kind = int_wp) :: notot
-        integer(kind = int_wp) :: nosys
-        integer(kind = int_wp) :: noseg
-        character(len = 20) :: syname(notot)
-        real(kind = real_wp) :: conc(notot, noseg)
+        integer(kind = int_wp) :: num_waste_loads
+        integer(kind = int_wp) :: num_substances_total
+        integer(kind = int_wp) :: num_substances_transported
+        integer(kind = int_wp) :: num_cells
+        character(len = 20) :: syname(num_substances_total)
+        real(kind = real_wp) :: conc(num_substances_total, num_cells)
         integer(kind = int_wp) :: itime
-        integer(kind = int_wp) :: nowtyp
-        character(len = 20) :: wastid(nowst)
-        character(len = 40) :: wstnam(nowst)
-        character(len = 20) :: wsttyp(nowtyp)
-        integer(kind = int_wp) :: iwaste(nowst)
-        integer(kind = int_wp) :: iwtype(nowst)
-        real(kind = real_wp) :: waste(0:notot, nowst)
+        integer(kind = int_wp) :: num_waste_load_types
+        character(len = 20) :: wastid(num_waste_loads)
+        character(len = 40) :: wstnam(num_waste_loads)
+        character(len = 20) :: wsttyp(num_waste_load_types)
+        integer(kind = int_wp) :: iwaste(num_waste_loads)
+        integer(kind = int_wp) :: iwtype(num_waste_loads)
+        real(kind = real_wp) :: waste(0:num_substances_total, num_waste_loads)
 
         ! local declarations
 
@@ -85,37 +85,37 @@ contains
         ! update the actual loads from the delwaq arrays to the wasteload structure
 
         if (ifirst == 1) then
-            allocate(wasteloads(nowst), stat = ierr_alloc)
+            allocate(wasteloads(num_waste_loads), stat = ierr_alloc)
             if (ierr_alloc /= 0) then
                 write(lunrep, *) 'ERROR : allocating wasteloads structure'
                 write(*, *) 'ERROR : allocating wasteloads structure'
-                call terminate_execution(1)
+                call stop_with_error()
             endif
-            do iwst = 1, nowst
-                allocate(wasteloads(iwst)%loads(notot + 1))
+            do iwst = 1, num_waste_loads
+                allocate(wasteloads(iwst)%loads(num_substances_total + 1))
                 wasteloads(iwst)%id%id = wastid(iwst)
                 wasteloads(iwst)%id%name = wstnam(iwst)
                 wasteloads(iwst)%id%type = wsttyp(iwtype(iwst))
                 wasteloads(iwst)%loc%segnr = iwaste(iwst)
             enddo
         endif
-        do iwst = 1, nowst
+        do iwst = 1, num_waste_loads
             wasteloads(iwst)%flow = waste(0, iwst)
-            do isys = 1, notot
+            do isys = 1, num_substances_total
                 wasteloads(iwst)%loads(isys) = waste(isys, iwst)
             enddo
         enddo
 
         ! call routine
 
-        call delwaq_user_wasteload (nowst, wasteloads, notot, nosys, noseg, &
+        call delwaq_user_wasteload (num_waste_loads, wasteloads, num_substances_total, num_substances_transported, num_cells, &
                 itime, conc, syname)
 
         ! updated wasteloads to old delwaq arrays
 
-        do iwst = 1, nowst
+        do iwst = 1, num_waste_loads
             waste(0, iwst) = wasteloads(iwst)%flow
-            do isys = 1, notot
+            do isys = 1, num_substances_total
                 waste(isys, iwst) = wasteloads(iwst)%loads(isys)
             enddo
         enddo

@@ -401,7 +401,6 @@ contains
        if (table%x(sa)<table%x(len)) then
           if (lt<table%x(si)) si = sa
           !
-          !         do 100 i = sa, len
           do i = si, len
              if (lt>=table%x(i)) then
                 ind = i
@@ -595,7 +594,6 @@ contains
        if (xarr(sa)<xarr(len)) then
           if (lt<xarr(si)) si = sa
           !
-          !         do 100 i = sa, len
           do i = si, len
              if (lt>=xarr(i)) then
                 ind = i

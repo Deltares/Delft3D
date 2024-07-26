@@ -64,7 +64,7 @@
       integer(kind=int_wp) ::IISP, IRSP, IERR, MODE, file_unit_list, LUNUT
 
       integer(kind=int_wp) ::i, ia, ij, k, time_function_type
-      integer(kind=int_wp) ::noitm, nosys, npnt, ndim, ntal, nobrk
+      integer(kind=int_wp) ::noitm, num_substances_transported, npnt, ndim, ntal, nobrk
       integer(kind=int_wp) ::ithandl = 0
       if ( timon ) call timstrt ( "dlwqib", ithandl )
 !
@@ -77,7 +77,7 @@
 !
       READ ( file_unit_list , END=40 , ERR=110 )  J(IJ), J(IJ+1)
       NOITM = J(IJ)
-      NOSYS = J(IJ+1)
+      num_substances_transported = J(IJ+1)
       IJ = 3
 !
 !       Read the pointers for this block of data

@@ -1,7 +1,7 @@
     <!--
     testCases
     -->
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <!-- ======================================================================== -->
         <testCase name="e100_f08_c01" ref="dimr_trunk">
             <path version="2024-01-12T07:30:00">e100_dflowfm-dwaves/f08_tutorial_course_models/c01_wad</path>

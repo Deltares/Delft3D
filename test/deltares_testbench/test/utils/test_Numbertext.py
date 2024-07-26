@@ -1,10 +1,9 @@
-#  Description: NUMBERTEXT file comparer
-#  -----------------------------------------------------
-#  Copyright (C)  Stichting Deltares, 2023
+#  NUMBERTEXT file comparer
+#
+#  Copyright (C)  Stichting Deltares, 2024
 
 
 import os
-from test.utils.test_logger import TestLogger
 
 import pytest
 
@@ -12,6 +11,7 @@ from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.config.types.file_type import FileType
 from src.utils.comparers.number_text_comparer import NumberTextComparer
+from test.utils.test_logger import TestLogger
 
 
 def is_Nan(number) -> bool:
@@ -19,14 +19,14 @@ def is_Nan(number) -> bool:
 
 
 class TestNumberTextComparer:
-    def setup_method(self):
+    def setup_method(self) -> None:
         self.testroot = os.path.abspath(os.path.dirname(__file__))
         self.testdata = os.path.join(self.testroot, "data")
         self.lp = os.path.join(self.testdata, "left")
         self.rp = os.path.join(self.testdata, "right")
         self.filename = "ComplexProjects01.txt"
 
-    def test_identical(self):
+    def test_identical(self) -> None:
         fc = FileCheck()
         pm = Parameter()
         pm.tolerance_absolute = 0.0001
@@ -45,7 +45,7 @@ class TestNumberTextComparer:
         assert result_structure.maxAbsDiffCoordinates == ()
         assert pytest.approx(result_structure.maxRelDiff) == 0.0
 
-    def test_number_differences(self):
+    def test_number_differences(self) -> None:
         fc = FileCheck()
         pm = Parameter()
         pm.tolerance_absolute = 0.0001
@@ -64,7 +64,7 @@ class TestNumberTextComparer:
         assert result_structure.maxAbsDiffCoordinates == (51,)
         assert pytest.approx(result_structure.maxRelDiff) == 0.004644202966531087
 
-    def test_comma_difference(self):
+    def test_comma_difference(self) -> None:
         fc = FileCheck()
         pm = Parameter()
         pm.tolerance_absolute = 0.0001

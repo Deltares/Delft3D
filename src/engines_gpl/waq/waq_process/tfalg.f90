@@ -28,9 +28,9 @@ module m_tfalg
 contains
 
 
-    subroutine tfalg  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine tfalg  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Temperature functions for algae growth and mortality
 
@@ -56,9 +56,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         LOGICAL  TMPOPT
         !
@@ -75,9 +75,9 @@ contains
         IP5 = IPOINT(5)
         !
         IF (IN1 == 0 .AND. IN2 == 0 .AND. IN3 == 0) THEN
-            TEMP = PMSA(IP1)
-            TCG = PMSA(IP2)
-            TCM = PMSA(IP3)
+            TEMP = process_space_real(IP1)
+            TCG = process_space_real(IP2)
+            TCM = process_space_real(IP3)
             TEMP20 = TEMP - 20.
             TFG = TCG**TEMP20
             TFM = TCM**TEMP20
@@ -86,14 +86,14 @@ contains
             TMPOPT = .TRUE.
         ENDIF
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
                 IF (TMPOPT) THEN
-                    TEMP = PMSA(IP1)
-                    TCG = PMSA(IP2)
-                    TCM = PMSA(IP3)
+                    TEMP = process_space_real(IP1)
+                    TCG = process_space_real(IP2)
+                    TCM = process_space_real(IP3)
                     TEMP20 = TEMP - 20.
                     !     Algal temp. functions for growth (G) and mortality (M) processes
                     TFG = TCG**TEMP20
@@ -101,8 +101,8 @@ contains
                 ENDIF
 
                 !     Uitvoer limiterende factoren
-                PMSA(IP4) = TFG
-                PMSA(IP5) = TFM
+                process_space_real(IP4) = TFG
+                process_space_real(IP5) = TFM
                 !
             ENDIF
             !

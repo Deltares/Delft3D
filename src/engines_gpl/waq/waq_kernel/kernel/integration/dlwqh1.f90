@@ -28,59 +28,40 @@ module m_dlwqh1
 contains
 
 
-    subroutine dlwqh1 (noseg, notot, nobnd, isys, diag, &
+    !> Sets the diagonal for the steady state option,
+    !! updates first order term on the diagonal
+    !! and compresses DERIV for use in SGMRES
+    subroutine dlwqh1(num_cells, num_substances_total, num_boundary_conditions, isys, diag, &
             delvol, conc)
 
-        !     Deltares Software Centre
-
-        !     Function: - sets the diagonal for the steady state option
-        !               - updates first order term on the diagonal
-        !               - compresses DERIV for use in SGMRES
-
-        !     Created : 10 February 1997 by RJ Vos
-        !     Modified:  7 June     2010 by Leo Postma  Double precision version
-        !                                               NSYS fixated at 1
-
-        !     File I/O: none
-
-        !     Subroutines called  : none
-
-        use timers                         ! WAQ performance timers
+        use timers
 
         implicit none
 
-        !     Arguments           :
+        integer(kind = int_wp), intent(in   ) :: num_cells               !< Number of computational volumes
+        integer(kind = int_wp), intent(in   ) :: num_substances_total               !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: num_boundary_conditions               !< Number of open boundaries
+        integer(kind = int_wp), intent(in   ) :: isys                !< This substance number
+        real(kind = dp),        intent(inout) :: diag(num_cells + num_boundary_conditions) !< Diagonal vector (1st order term)
+        real(kind = real_wp),   intent(in   ) :: delvol(num_cells)       !< Closure error correction
+        real(kind = real_wp),   intent(in   ) :: conc(num_substances_total, num_cells)  !< First order term
 
-        !     Kind        Function         Name                   Description
-
-        integer(kind = int_wp), intent(in) :: noseg                ! Number of computational volumes
-        integer(kind = int_wp), intent(in) :: notot                ! Total number of substances
-        integer(kind = int_wp), intent(in) :: nobnd                ! Number of open boundaries
-        integer(kind = int_wp), intent(in) :: isys                 ! This substance number
-        real(kind = dp), intent(out) :: diag  (noseg + nobnd)  ! Diagonal vector (1st order term)
-        real(kind = real_wp), intent(in) :: delvol(noseg)        ! Closure error correction
-        real(kind = real_wp), intent(in) :: conc  (notot, noseg)  ! First order term
-
-        !     local variables
-
-        integer(kind = int_wp) :: iseg               ! loop counter for computational volumes
+        ! Local variables
+        integer(kind = int_wp) :: iseg ! loop counter for computational volumes
 
         integer(kind = int_wp) :: ithandl = 0
-        if (timon) call timstrt ("dlwqh1", ithandl)
 
-        !         set the right hand side and
-        !         set the diagonal for steady state
-        !                          first order decay in conc
+        if (timon) call timstrt("dlwqh1", ithandl)
 
-        do iseg = 1, noseg
+        ! set the right hand side and
+        ! set the diagonal for steady state
+        ! first order decay in conc
+        do iseg = 1, num_cells
             diag(iseg) = -conc(isys, iseg) + delvol(iseg)
-        enddo
-        do iseg = noseg + 1, noseg + nobnd
+        end do
+        do iseg = num_cells + 1, num_cells + num_boundary_conditions
             diag(iseg) = 1.0
-        enddo
-
-        if (timon) call timstop (ithandl)
-        return
-    end
-
+        end do
+        if (timon) call timstop(ithandl)
+    end subroutine dlwqh1
 end module m_dlwqh1

@@ -1,6 +1,5 @@
-"""
-Description: Executes MinIO commands
------------------------------------------------------
+"""Executes MinIO commands.
+
 Copyright (C)  Stichting Deltares, 2024
 """
 
@@ -18,26 +17,28 @@ from src.utils.minio_rewinder import Rewinder
 
 
 class MinIOHandler(IHandler):
-    """MinIO wrapper, has handler interface"""
+    """MinIO wrapper, has handler interface."""
 
-    def prepare_upload(self, from_path: str, to_path: str, credentials: Credentials, logger: ILogger) -> None:
-        logger.debug("Preparing upload to MinIO not implemented yet")
+    def download(
+        self, from_path: str, to_path: str, credentials: Credentials, version: Optional[str], logger: ILogger
+    ) -> None:
+        """Set up a Minio client connection.
 
-    def upload(self, from_path: str, to_path: str, credentials: Credentials, logger: ILogger) -> None:
-        logger.debug("Uploading to MinIO not implemented yet")
+        You can specify the download source and destination.
 
-    def download(self, from_path: str, to_path: str, credentials: Credentials, version: Optional[str], logger: ILogger):
-        """Sets up a Minio client connection. You can specify the download
-        source and destination
-
-        Args:
-            from_path (str): minio URL
-            to_path (str): dowload location
-            credentials (Credentials): minio credentials
-            version (str): timestamp string e.g. "2023.10.20T12:00"
-            logger (ILogger): The logger that logs to a file
+        Parameters
+        ----------
+        from_path : str
+            Minio URL.
+        to_path : str
+            Dowload location.
+        credentials : Credentials
+            Minio credentials.
+        version : str
+            Timestamp string e.g. "2023.10.20T12:00".
+        logger : ILogger
+            The logger that logs to a file.
         """
-
         match = re.match(r"^https://(?P<hostname>[^/]*)/(?P<bucket>[^/]*)/(?P<path>.*)$", from_path)
         if match is None:
             raise ValueError("Invalid `from_path` value. Must match pattern `https://{hostname}/{bucket-name}/{path}`")

@@ -28,10 +28,10 @@ module m_floceq
 contains
 
 
-    subroutine floceq     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
-        use m_evaluate_waq_attribute
+    subroutine floceq     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
+        use m_extract_waq_attribute
 
         !
         !*******************************************************************************
@@ -40,18 +40,18 @@ contains
         !
         !     type    name         i/o description
         !
-        real(kind = real_wp) :: pmsa(*)     !i/o process manager system array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !i/o process manager system array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! o  array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(9) ! i  array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(9) ! i  array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(9) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! i  number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! i  number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! i  number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! i  nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! i  nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(9)   !    local work array for the pointering
         integer(kind = int_wp) :: iseg        !    local loop counter for computational element loop
         !
@@ -90,21 +90,21 @@ contains
         idflocim2 = 2
         idflocim3 = 3
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
-            im1 = pmsa(ipnt(1))
-            im2 = pmsa(ipnt(2))
-            im3 = pmsa(ipnt(3))
-            tpm = pmsa(ipnt(4))
-            swfloceq = pmsa(ipnt(5))
-            rcfloc = pmsa(ipnt(6))
-            rcbreakup = pmsa(ipnt(7))
-            delt = pmsa(ipnt(8))
+            im1 = process_space_real(ipnt(1))
+            im2 = process_space_real(ipnt(2))
+            im3 = process_space_real(ipnt(3))
+            tpm = process_space_real(ipnt(4))
+            swfloceq = process_space_real(ipnt(5))
+            rcfloc = process_space_real(ipnt(6))
+            rcbreakup = process_space_real(ipnt(7))
+            delt = process_space_real(ipnt(8))
 
             ! only for active water segments
 
             active = btest(iknmrk(iseg), 0)
-            call evaluate_waq_attribute(1, iknmrk(iseg), ikmrk1)
+            call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             bodem = ikmrk1==3
             if (active .and. .not. bodem) then
 
@@ -171,7 +171,7 @@ contains
             fl  (idflocim1) = dflocim1
             fl  (idflocim2) = dflocim2
             fl  (idflocim3) = dflocim3
-            pmsa(ipnt(9)) = spmratioem
+            process_space_real(ipnt(9)) = spmratioem
 
             idflocim1 = idflocim1 + noflux
             idflocim2 = idflocim2 + noflux

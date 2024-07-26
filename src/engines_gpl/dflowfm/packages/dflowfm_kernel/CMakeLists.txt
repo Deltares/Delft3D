@@ -131,6 +131,7 @@ if (UNIX)
                             flow1d
                             flow1d_core
                             flow1d_io
+                            flow1d_implicit
                             gridgeom
                             ice_data
                             ice_io
@@ -178,6 +179,7 @@ set(oss_dependencies    deltares_common
                         flow1d
                         flow1d_core
                         flow1d_io
+                        flow1d_implicit
                         gridgeom
                         ice_data
                         ice_io
@@ -222,7 +224,7 @@ include_directories(${petsc_path})
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
-                        ${mpi_include_path}
+                        ${mpi_module_path}
                         ${tecplot_path}
                         ${version_include_dir}
                         ${dflowfm_version_path}
@@ -281,7 +283,6 @@ if (WIN32)
 endif(WIN32)
 
 if (UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
     target_compile_definitions(${library_name} PRIVATE "HAVE_METIS;HAVE_POLYPACK;HAVE_MPI;HAVE_PETSC")
 endif(UNIX)
 

@@ -164,8 +164,8 @@ contains
 
             !  New section starts here.
             !  We now know the extinction roots all types of species J.
-            !  Replace them by the MAXIMUM, but only for types, whose KMAX is
-            !  positive. Do nothing if KMAX is negative.
+            !  Replace them by the MAXIMUM, but only for types, whose num_layers_grid is
+            !  positive. Do nothing if num_layers_grid is negative.
             do k = it2(j, 1), it2(j, 2)
                 if (k == iskmax) cycle
                 if (aroot(2 * k) <= 0.0) cycle
@@ -177,7 +177,7 @@ contains
             !  growth constraints of each species, if option "GROCHECK" is on.
             !  Copy the growth constraints to BGRO to deal with infeasible
             !  solutions, which are recomputed without mortality constraints.
-            !  Store the type number of each group with the highest KMAX value
+            !  Store the type number of each group with the highest num_layers_grid value
             !  in JKMAX.
             if (lgroch == 1 .or. lobfun == 1) then
                 call maxgro(xinit, groot, exttot, emin(iskmax), j, iskmax, dep)
@@ -186,12 +186,12 @@ contains
             jkmax(j) = iskmax
         end do
 
-        ! Print KMIN and KMAX roots of types if option "DUMP" is on.
+        ! Print KMIN and num_layers_grid roots of types if option "DUMP" is on.
         if (idump /= 0) then
             write (outdbg, 180) (aroot(i), i = 1, 2 * nuspec, 2)
             180    format (' KMIN: ', 20(f7.2, 1x))
             write (outdbg, 190) (aroot(i), i = 2, 2 * nuspec, 2)
-            190    format (' KMAX: ', 20(f7.2, 1x))
+            190    format (' num_layers_grid: ', 20(f7.2, 1x))
         end if
 
         !  Initialize RERUN flag to 0: do not rerun the problem.

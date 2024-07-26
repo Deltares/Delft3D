@@ -47,20 +47,20 @@ implicit none
 double precision, intent (in) :: timhr, qsno
 integer         , intent (in) :: n
 
-integer          :: i, k, kb, kt, k2, L, LL, j, j2, ncols, lunadh = 0 , jafree = 0 ! D3D
-double precision :: rlon, rlat, sc, qsn, qsun, qsnom, presn, tairn, twatn, twatK, rhumn, cloun, windn
-double precision :: ce, ch, qwmx, qahu, tl, Qcon, Qeva, Qlong, sg, pvtamx, pvtwmx, pvtahu, delvap
+integer          :: k, kb, kt, k2, L, LL, j, j2, ncols
+double precision :: qsn, qsun, qsnom, presn, tairn, twatn, twatK, rhumn, cloun, windn
+double precision :: ce, ch, qwmx, qahu, tl, Qcon, Qeva, Qlong, pvtamx, pvtwmx, pvtahu, delvap
 double precision :: dexp, zlo, zup, explo, expup, ratio, rcpiba, qheat, atot
 
-double precision :: w(20), Qtot, Qfree, b, gred, wfree, Qfrcon, Qfreva, rhoa0, rhoa10
+double precision :: w(20), Qfree, b, gred, wfree, Qfrcon, Qfreva, rhoa0, rhoa10
 
-double precision :: prair=0.7d0, pr2=.49d0, xnuair=16d-6, cfree=0.14d0
+double precision :: pr2=.49d0, xnuair=16d-6, cfree=0.14d0
 
 double precision :: rdry=287.05d-2 , rvap=461.495d-2 , evafac = 1d0
 
-double precision :: hlc, arn, wxL, wyL, uL, vL, uxL, uyL, bak2, twatb
+double precision :: hlc, arn, wxL, wyL, bak2, twatb
 
-double precision :: qsunsoil, qwatsoil, watsoiltransfer, rdtsdz, soiltemprev, pvtamxB, pvtwmxB
+double precision :: qsunsoil, qwatsoil, watsoiltransfer, rdtsdz
 
 double precision :: afrac                !< area fraction of ice cover (-)
 double precision :: Qlong_ice            !< coefficient for long wave radiation of ice (J m-2 s-1 K-4)

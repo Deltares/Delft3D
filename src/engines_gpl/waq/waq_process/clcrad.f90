@@ -28,37 +28,37 @@ module m_clcrad
 contains
 
 
-    SUBROUTINE CLCRAD (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
+    SUBROUTINE CLCRAD (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
 
         !
         !     Function : Calculates the radiation at the surface and at the bottom of the
         !                active water segments
         !
 
-        use m_logger, only : terminate_execution, get_log_unit_number
-        use m_evaluate_waq_attribute
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_extract_waq_attribute
         USE BottomSet     !  Module with definition of the waterbottom segments
 
         IMPLICIT NONE
 
         !     arguments
 
-        REAL(kind = real_wp) :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+        REAL(kind = real_wp) :: process_space_real(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
         REAL(kind = real_wp) :: FL(*)              ! in/out flux array
-        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-        INTEGER(kind = int_wp) :: NOSEG              ! in     number of segments
+        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+        INTEGER(kind = int_wp) :: num_cells              ! in     number of segments
         INTEGER(kind = int_wp) :: NOFLUX             ! in     total number of fluxes (increment in FL array)
         INTEGER(kind = int_wp) :: IEXPNT(4, *)        ! in     exchange pointer table
         INTEGER(kind = int_wp) :: IKNMRK(*)          ! in     segment features array
-        INTEGER(kind = int_wp) :: NOQ1               ! in     number of exchanges in first direction
-        INTEGER(kind = int_wp) :: NOQ2               ! in     number of exchanges in second direction
-        INTEGER(kind = int_wp) :: NOQ3               ! in     number of exchanges in third direction
-        INTEGER(kind = int_wp) :: NOQ4               ! in     number of exchanges in fourth direction
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir               ! in     number of exchanges in first direction
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir               ! in     number of exchanges in second direction
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir               ! in     number of exchanges in third direction
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
 
-        !     from PMSA array
+        !     from process_space_real array
 
         REAL(kind = real_wp) :: EXTVL              ! 1  in  total extinction coefficient visible light   (1/m)
         REAL(kind = real_wp) :: DEPTH              ! 2  in  depth of segment                               (m)
@@ -71,9 +71,9 @@ contains
         !     local decalrations
 
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10
-        INTEGER(kind = int_wp) :: IP11 ! index pointers in PMSA array
+        INTEGER(kind = int_wp) :: IP11 ! index pointers in process_space_real array
         INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5, IN6, IN7, IN8, IN9, IN10
-        INTEGER(kind = int_wp) :: IN11 ! increments in PMSA array
+        INTEGER(kind = int_wp) :: IN11 ! increments in process_space_real array
         INTEGER(kind = int_wp) :: LUNREP         ! report file
         INTEGER(kind = int_wp) :: ISEG           ! loop counter segment loop
         INTEGER(kind = int_wp) :: IKMRK1         ! first feature inactive(0)-active(1)-bottom(2) segment
@@ -113,7 +113,7 @@ contains
             WRITE(LUNREP, *) 'Use the correct proc_def!'
             WRITE(*, *) 'Error in CLCRAD: Rad/RadDay/Rad_uv should be an input too!'
             WRITE(*, *) 'Use the correct proc_def!'
-            CALL terminate_execution(1)
+            CALL stop_with_error()
         END IF
 
         IN1 = INCREM(1)
@@ -131,47 +131,47 @@ contains
 
         !.....2DH mode
 
-        IF (NOQ3==0) THEN
+        IF (num_exchanges_z_dir==0) THEN
 
-            DO ISEG = 1, NOSEG
+            DO ISEG = 1, num_cells
 
-                CALL evaluate_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
+                CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
                 !........Segment is inactief
                 IF      (IKMRK1 == 0) THEN
 
                     !          RadTop = RadSurf corrected for reflection
-                    PMSA(IP9) = PMSA(IP3) * (1. - PMSA(IP8))
+                    process_space_real(IP9) = process_space_real(IP3) * (1. - process_space_real(IP8))
 
                     !          RadBot    = RadSurf corrected for reflection
-                    PMSA(IP10) = PMSA(IP3) * (1. - PMSA(IP8))
+                    process_space_real(IP10) = process_space_real(IP3) * (1. - process_space_real(IP8))
 
                     !          atten
-                    PMSA(IP11) = 0.0
+                    process_space_real(IP11) = 0.0
 
                     !........Segment is actief watersegment
                 ELSE IF (IKMRK1 == 1) THEN
 
                     !          RadTop    = RadSurf corrected for reflection
-                    PMSA(IP9) = PMSA(IP3) * (1. - PMSA(IP8))
+                    process_space_real(IP9) = process_space_real(IP3) * (1. - process_space_real(IP8))
 
                     !          RadBot    = RadSurf   * (1 - reflection) * EXP( -ExtVl    *Depth     )
-                    PMSA(IP10) = PMSA(IP3) * (1. - PMSA(IP8)) * EXP(-PMSA(IP1) * PMSA(IP2))
+                    process_space_real(IP10) = process_space_real(IP3) * (1. - process_space_real(IP8)) * EXP(-process_space_real(IP1) * process_space_real(IP2))
 
                     !          atten    = ExtVl    *Depth
-                    PMSA(IP11) = PMSA(IP1) * PMSA(IP2)
+                    process_space_real(IP11) = process_space_real(IP1) * process_space_real(IP2)
 
                     !........Segment is actief bodemsegment
                 ELSE IF (IKMRK1 == 3) THEN
 
                     !          RadTop    = 0.0
-                    PMSA(IP9) = 0.0
+                    process_space_real(IP9) = 0.0
 
                     !          RadBot    = 0.0
-                    PMSA(IP10) = 0.0
+                    process_space_real(IP10) = 0.0
 
                     !          attenuation    = 0.0
-                    PMSA(IP11) = 0.0
+                    process_space_real(IP11) = 0.0
 
                 ENDIF
 
@@ -192,29 +192,29 @@ contains
 
             !.....3D MODE
 
-            DO IQ = NOQ1 + NOQ2 + 1, NOQ1 + NOQ2 + NOQ3
+            DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
                 IVAN = IEXPNT(1, IQ)
                 INAAR = IEXPNT(2, IQ)
 
                 IF (IVAN > 0 .AND. INAAR > 0) THEN
-                    CALL evaluate_waq_attribute(1, IKNMRK(IVAN), IK1VN)
-                    CALL evaluate_waq_attribute(1, IKNMRK(INAAR), IK1NR)
-                    CALL evaluate_waq_attribute(2, IKNMRK(IVAN), IK2VN)
-                    CALL evaluate_waq_attribute(2, IKNMRK(INAAR), IK2NR)
+                    CALL extract_waq_attribute(1, IKNMRK(IVAN), IK1VN)
+                    CALL extract_waq_attribute(1, IKNMRK(INAAR), IK1NR)
+                    CALL extract_waq_attribute(2, IKNMRK(IVAN), IK2VN)
+                    CALL extract_waq_attribute(2, IKNMRK(INAAR), IK2NR)
 
                     !...........Van segment = inactief
                     IF (IK1VN == 0) THEN
 
                         !              RadTop = RadSurf corrected for reflection
-                        RADTOP = PMSA(IP3 + (IVAN - 1) * IN3) &
-                                * (1. - PMSA(IP8 + (IVAN - 1) * IN8))
-                        PMSA(IP9 + (IVAN - 1) * IN9) = RADTOP
+                        RADTOP = process_space_real(IP3 + (IVAN - 1) * IN3) &
+                                * (1. - process_space_real(IP8 + (IVAN - 1) * IN8))
+                        process_space_real(IP9 + (IVAN - 1) * IN9) = RADTOP
                         !              RadBot = RadTOP
-                        PMSA(IP10 + (IVAN - 1) * IN10) = RADTOP
+                        process_space_real(IP10 + (IVAN - 1) * IN10) = RADTOP
 
                         !              atten
-                        PMSA(IP11 + (IVAN - 1) * IN11) = 0.0
+                        process_space_real(IP11 + (IVAN - 1) * IN11) = 0.0
 
                         !...........Van segment = actief water segment
                     ELSE IF (IK1VN == 1) THEN
@@ -222,33 +222,33 @@ contains
                         !..............Van segment = water segment met surface
                         IF (IK2VN == 1) THEN
 
-                            EXTVL = PMSA(IP1 + (IVAN - 1) * IN1)
-                            DEPTH = PMSA(IP2 + (IVAN - 1) * IN2)
-                            RADTOP = PMSA(IP3 + (IVAN - 1) * IN3)
-                            REFLEC = PMSA(IP8 + (IVAN - 1) * IN8)
+                            EXTVL = process_space_real(IP1 + (IVAN - 1) * IN1)
+                            DEPTH = process_space_real(IP2 + (IVAN - 1) * IN2)
+                            RADTOP = process_space_real(IP3 + (IVAN - 1) * IN3)
+                            REFLEC = process_space_real(IP8 + (IVAN - 1) * IN8)
 
                             RADTOP = RADTOP * (1. - REFLEC)
                             RADBOT = RADTOP * EXP(-EXTVL * DEPTH)
 
-                            PMSA(IP9 + (IVAN - 1) * IN9) = RADTOP
-                            PMSA(IP9 + (INAAR - 1) * IN9) = RADBOT
-                            PMSA(IP10 + (IVAN - 1) * IN10) = RADBOT
-                            PMSA(IP11 + (IVAN - 1) * IN11) = EXTVL * DEPTH
+                            process_space_real(IP9 + (IVAN - 1) * IN9) = RADTOP
+                            process_space_real(IP9 + (INAAR - 1) * IN9) = RADBOT
+                            process_space_real(IP10 + (IVAN - 1) * IN10) = RADBOT
+                            process_space_real(IP11 + (IVAN - 1) * IN11) = EXTVL * DEPTH
 
                         ENDIF
 
                         !..............Van segment = water segment zonder surface of bodem
                         IF (IK2VN == 2) THEN
 
-                            EXTVL = PMSA(IP1 + (IVAN - 1) * IN1)
-                            DEPTH = PMSA(IP2 + (IVAN - 1) * IN2)
-                            RADTOP = PMSA(IP9 + (IVAN - 1) * IN9)
+                            EXTVL = process_space_real(IP1 + (IVAN - 1) * IN1)
+                            DEPTH = process_space_real(IP2 + (IVAN - 1) * IN2)
+                            RADTOP = process_space_real(IP9 + (IVAN - 1) * IN9)
 
                             RADBOT = RADTOP * EXP(-EXTVL * DEPTH)
 
-                            PMSA(IP9 + (INAAR - 1) * IN9) = RADBOT
-                            PMSA(IP10 + (IVAN - 1) * IN10) = RADBOT
-                            PMSA(IP11 + (IVAN - 1) * IN11) = EXTVL * DEPTH
+                            process_space_real(IP9 + (INAAR - 1) * IN9) = RADBOT
+                            process_space_real(IP10 + (IVAN - 1) * IN10) = RADBOT
+                            process_space_real(IP11 + (IVAN - 1) * IN11) = EXTVL * DEPTH
 
                         ENDIF
 
@@ -258,12 +258,12 @@ contains
                     IF (IK1NR == 0) THEN
 
                         !              RadTop = RadSurf
-                        PMSA(IP9 + (INAAR - 1) * IN9) = PMSA(IP3 + (INAAR - 1) * IN3)
+                        process_space_real(IP9 + (INAAR - 1) * IN9) = process_space_real(IP3 + (INAAR - 1) * IN3)
 
                         !              RadBot = Radsurf
-                        PMSA(IP10 + (INAAR - 1) * IN10) = PMSA(IP3 + (INAAR - 1) * IN3)
+                        process_space_real(IP10 + (INAAR - 1) * IN10) = process_space_real(IP3 + (INAAR - 1) * IN3)
 
-                        PMSA(IP11 + (INAAR - 1) * IN11) = 0.0
+                        process_space_real(IP11 + (INAAR - 1) * IN11) = 0.0
 
                         !...........Naar segment = actief water segment
                     ELSE IF (IK1NR == 1) THEN
@@ -271,14 +271,14 @@ contains
                         !...........Naar segment = water segment met bodem
                         IF (IK2NR == 3) THEN
 
-                            EXTVL = PMSA(IP1 + (INAAR - 1) * IN1)
-                            DEPTH = PMSA(IP2 + (INAAR - 1) * IN2)
-                            RADTOP = PMSA(IP7 + (INAAR - 1) * IN7)
+                            EXTVL = process_space_real(IP1 + (INAAR - 1) * IN1)
+                            DEPTH = process_space_real(IP2 + (INAAR - 1) * IN2)
+                            RADTOP = process_space_real(IP7 + (INAAR - 1) * IN7)
 
                             RADBOT = RADTOP * EXP(-EXTVL * DEPTH)
 
-                            PMSA(IP10 + (INAAR - 1) * IN10) = RADBOT
-                            PMSA(IP11 + (INAAR - 1) * IN11) = EXTVL * DEPTH
+                            process_space_real(IP10 + (INAAR - 1) * IN10) = RADBOT
+                            process_space_real(IP11 + (INAAR - 1) * IN11) = EXTVL * DEPTH
 
                         ENDIF
 
@@ -316,10 +316,10 @@ contains
             DO IQ = IWA1, IWA2
                 IWATER = IEXPNT(1, IQ)
                 IBODEM = IEXPNT(2, IQ)
-                RADSURF = PMSA(IP3 + (IWATER - 1) * IN3)
-                SURF = PMSA(IP5 + (IWATER - 1) * IN5)
-                SWEMERSION = NINT(PMSA(IP6 + (IWATER - 1) * IN6))
-                RADBOT = PMSA(IP10 + (IWATER - 1) * IN10)
+                RADSURF = process_space_real(IP3 + (IWATER - 1) * IN3)
+                SURF = process_space_real(IP5 + (IWATER - 1) * IN5)
+                SWEMERSION = NINT(process_space_real(IP6 + (IWATER - 1) * IN6))
+                RADBOT = process_space_real(IP10 + (IWATER - 1) * IN10)
                 IF (SWEMERSION == 1) THEN
                     RADTOP = RADTOP + RADSURF * SURF
                 ELSE
@@ -327,22 +327,22 @@ contains
                 ENDIF
                 TOTSURF = TOTSURF + SURF
             ENDDO
-            A_ENH = PMSA(IP4 + (IWATER - 1) * IN4)
+            A_ENH = process_space_real(IP4 + (IWATER - 1) * IN4)
             RADTOP = RADTOP * A_ENH / TOTSURF
 
             !         extinction over the layers of the column
 
             DO IQ = ITOP, IBOT
                 IBODEM = IEXPNT(1, IQ)
-                EXTVL = PMSA(IP1 + (IBODEM - 1) * IN1)
-                DEPTH = PMSA(IP2 + (IBODEM - 1) * IN2)
+                EXTVL = process_space_real(IP1 + (IBODEM - 1) * IN1)
+                DEPTH = process_space_real(IP2 + (IBODEM - 1) * IN2)
                 IF (RADTOP < 1.E-10) THEN
                     RADBOT = 0.0
                 ELSE
                     RADBOT = RADTOP * EXP(-EXTVL * DEPTH)
                 ENDIF
-                PMSA(IP9 + (IBODEM - 1) * IN9) = RADTOP
-                PMSA(IP10 + (IBODEM - 1) * IN10) = RADBOT
+                process_space_real(IP9 + (IBODEM - 1) * IN9) = RADTOP
+                process_space_real(IP10 + (IBODEM - 1) * IN10) = RADBOT
                 RADTOP = RADBOT
             ENDDO
 
