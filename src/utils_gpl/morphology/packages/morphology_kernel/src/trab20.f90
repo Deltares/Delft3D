@@ -101,6 +101,7 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     real(fp)                       :: z0
     real(fp)                       :: cd
     real(fp)                       :: cmax2h
+    real(fp)                       :: alfad50
     !
     !
     !! executable statements -------------------------------------------------------
@@ -132,6 +133,7 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     reposeangle = par(22)
     cmax = par(23)
     z0 = par(24)
+    alfad50 = par(25)
     !
     ! limit input parameters to sensible values
     !
@@ -150,6 +152,7 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     reposeangle = max(min(reposeangle,45.0_fp),30.0_fp)
     cmax = max(min(cmax,1.0_fp),0.0_fp)
     z0 = max(min(z0,0.05_fp),0.0001_fp)
+    alfad50 = max(min(alfad50,1.5_fp),0.0_fp)
     !
     cf = ag / chezy / chezy
     !
@@ -190,6 +193,12 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
    if(term1>Ucrs .and. h>dtol) then
       ceqs=Ass*(term1-Ucrs)**2.4_fp
    end if
+   !
+   if (alfad50 > 0.0_fp) then
+      uamag =  uamag * (0.000225_fp/d50)**alfad50     ! hoe kan een snelheidsasymmetrie fie zijn van korrelgrootte?
+      ceqb =  ceqb * (0.000225_fp/d50)**alfad50
+      ceqs =  ceqs * (0.000225_fp/d50)**alfad50
+   endif
    !
    cmax2h = cmax*h/2.0_fp
    ceqb = min(ceqb,   cmax2h)         ! maximum equilibrium bed concentration

@@ -333,6 +333,7 @@ module m_flowparameters
    double precision :: chkdifd !< check diffusion, only for jatransportautotimestepdiff== 1
    double precision :: chkwndd !< check windstress for 'drying' below this waterdepth
    double precision :: chktempdep !< check heatfluxes for 'drying' below this waterdepth
+   double precision :: maxfacg !< check heatfluxes for 'drying' below this waterdepth
    double precision :: trsh_u1Lb = 0.0d0
    integer :: jposhchk !< check for positive waterdepth; 0 = no
                                                         !!                               -1 = 1.0*dts, only check for dry cells and report back, restart Nested Newton, not timestep.
@@ -903,6 +904,7 @@ contains
       chkdifd = 0.01d0 ! check diffusion only for jatransportautotimestepdiff == 1
       chkwndd = 0.1d0 ! check windstress              below this waterdepth
       chktempdep = 0.1d0 ! check heatfluxes              below this waterdepth
+      maxfacg = 10.d0 ! check adve for exceeding maxfacg*g
       testdryflood = 0 ! test different options for drying flooding:
       !                                0 = standard D-Flow FM
       !                                1 = Delft3D-FLOW check in water level points

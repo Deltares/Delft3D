@@ -32,7 +32,7 @@
 
  subroutine setextforcechkadvec()
     use m_flow
-    use m_flowparameters, only: trshcorio
+    use m_flowparameters, only: trshcorio, maxfacg
     use m_flowgeom
     use m_netw
     use MessageHandling
@@ -361,6 +361,7 @@
                       end if
                    end do
                 end if
+                adve(L) = max(abs(adve(L)),maxfacg*ag)*sign(1d0,adve(L))
              end if
           end do
 
