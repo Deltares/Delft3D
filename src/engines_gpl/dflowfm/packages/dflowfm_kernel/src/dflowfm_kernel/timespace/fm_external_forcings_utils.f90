@@ -27,18 +27,52 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
+!> Utilities module with functions for initializing and updating external forcings.
+module fm_external_forcings_utils
+   use precision_basics, only: hp
+   implicit none
 
-   !============================================================================================
-   ! SEDIMENT CONCENTRATION BOUNDARY SPUL VOOR STM_INCLUDED
-   ! Volgt werkwijze tracerranden, met aanpassingen (bv aantal fracties gekend op voorhand)
-   !============================================================================================
+contains
+
+   !> Convert quantity id (from .ext file) to tracer name (split in generic qidname and specific tracer name).
+   !! If the input qid is not tracer, then the same qid is returned (and no tracer name)
+   subroutine get_tracername(qid, trname, qidname)
+      use m_transport, only: DEFTRACER
+      implicit none
+
+      character(len=*), intent(in) :: qid      !< Original quantityid, e.g., 'tracerbndfluor'.
+      character(len=*), intent(out) :: trname  !< The trimmed tracer name, e.g., 'fluor'.
+      character(len=*), intent(out) :: qidname !< The base quantity name for further use in external forcing, e.g., 'tracerbnd'.
+
+      trname = ''
+      qidname = qid
+
+      if (qid(1:9) == 'tracerbnd') then
+         qidname = qid(1:9)
+         if (len_trim(qid) > 9) then
+            trname = trim(qid(10:))
+         else
+            trname = trim(DEFTRACER)
+         end if
+      else if (qid(1:13) == 'initialtracer') then
+         qidname = qid(1:13)
+         if (len_trim(qid) > 13) then
+            trname = trim(qid(14:))
+         else
+            trname = trim(DEFTRACER)
+         end if
+      end if
+
+      return
+   end subroutine get_tracername
+
+   !> Convert quantity id (from .ext file) to sediment fraction name (split in generic qidname and specific fraction name).
+   !! If the input qid is no sediment fraction, then the same qid is returned (and no fraction name)
    subroutine get_sedfracname(qid, sfname, qidname)
       implicit none
 
-      character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'sedfracbndsediment1'.
-      character(len=*), intent(out) :: sfname !< The trimmed tracer name, e.g., 'sediment1'.
+      character(len=*), intent(in) :: qid        !< Original quantityid, e.g., 'sedfracbndsediment1'.
+      character(len=*), intent(out) :: sfname    !< The trimmed tracer name, e.g., 'sediment1'.
       character(len=*), intent(inout) :: qidname !< The base quantity name for further use in external forcing, e.g., 'sedfracbnd'.
 
       sfname = ''
@@ -73,3 +107,5 @@
          end if
       end if
    end subroutine get_sedfracname
+
+end module fm_external_forcings_utils

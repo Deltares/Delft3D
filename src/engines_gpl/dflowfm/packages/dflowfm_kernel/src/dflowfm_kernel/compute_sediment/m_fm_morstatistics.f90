@@ -554,7 +554,7 @@ contains
       use m_flowtimes, only: Tudunitstr
       use m_sediment, only: stmpar
       use morphology_data_module, only: MOR_STAT_MIN, MOR_STAT_MAX, MOR_STAT_MEAN, MOR_STAT_STD, MOR_STAT_CUM, MOR_STAT_BODS
-      use m_output_config
+      use fm_location_types
 
       implicit none
 

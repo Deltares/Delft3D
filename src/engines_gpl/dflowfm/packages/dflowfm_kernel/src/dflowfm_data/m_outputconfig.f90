@@ -5,6 +5,7 @@ module m_output_config
    use netcdf_utils, only: realloc, nc_att_set
    use m_ug_nc_attribute, only: nc_attribute => ug_nc_attribute
    use netcdf, only: nf90_double
+   use fm_location_types
    implicit none
    private
 
@@ -14,7 +15,6 @@ module m_output_config
    public realloc
    public dealloc
    public id_nc_type2nc_type_his
-   public location_specifier_to_string
 
    interface realloc
       module procedure reallocate_config_set
@@ -22,37 +22,6 @@ module m_output_config
    interface dealloc
       module procedure deallocate_config_set
    end interface
-
-   integer, parameter, public :: UNC_LOC_CN = 1 !< Data location: corner point.
-   integer, parameter, public :: UNC_LOC_S = 2 !< Data location: pressure point.
-   integer, parameter, public :: UNC_LOC_U = 3 !< Data location: horizontal velocity point.
-   integer, parameter, public :: UNC_LOC_L = 13 !< Data location: horizontal net link.
-   integer, parameter, public :: UNC_LOC_S3D = 4 !< Data location: pressure point in all layers.
-   integer, parameter, public :: UNC_LOC_U3D = 5 !< Data location: horizontal velocity point in all layers.
-   integer, parameter, public :: UNC_LOC_W = 6 !< Data location: vertical velocity point on all layer interfaces.
-   integer, parameter, public :: UNC_LOC_WU = 16 !< Data location: vertical viscosity point on all layer interfaces.
-   integer, parameter, public :: UNC_LOC_GLOBAL = 21 !< Data location: his file global variables (e.g. water balance)
-   integer, parameter, public :: UNC_LOC_SOSI = 22 !< Data location: his file sources and sinks
-   integer, parameter, public :: UNC_LOC_GENSTRU = 23 !< Data location: his file general structure data
-   integer, parameter, public :: UNC_LOC_DAM = 24 !< Data location: his file controllable dam data
-   integer, parameter, public :: UNC_LOC_PUMP = 25 !< Data location: his file pump data
-   integer, parameter, public :: UNC_LOC_GATE = 26 !< Data location: his file old gate data
-   integer, parameter, public :: UNC_LOC_GATEGEN = 42 !< Data location: his file new gate data
-   integer, parameter, public :: UNC_LOC_WEIRGEN = 27 !< Data location: his file weir data
-   integer, parameter, public :: UNC_LOC_ORIFICE = 28 !< Data location: his file orifice data
-   integer, parameter, public :: UNC_LOC_BRIDGE = 29 !< Data location: his file bridge data
-   integer, parameter, public :: UNC_LOC_CULVERT = 30 !< Data location: his file culvert data
-   integer, parameter, public :: UNC_LOC_DAMBREAK = 31 !< Data location: his file dambreak data
-   integer, parameter, public :: UNC_LOC_UNIWEIR = 32 !< Data location: his file universal weir data
-   integer, parameter, public :: UNC_LOC_CMPSTRU = 33 !< Data location: his file compound structure data
-   integer, parameter, public :: UNC_LOC_LONGCULVERT = 34 !< Data location: his file long culvert data
-   integer, parameter, public :: UNC_LOC_STATION = 35 !< Data location: his file observation station data
-   integer, parameter, public :: UNC_LOC_OBSCRS = 36 !< Data location: his file observation cross section data
-   integer, parameter, public :: UNC_LOC_LATERAL = 37 !< Data location: his file lateral locations data
-   integer, parameter, public :: UNC_LOC_RUG = 38 !< Data location: his file run-up gauge data
-   integer, parameter, public :: UNC_LOC_DREDGE = 39 !< Data location: his file dredge data
-   integer, parameter, public :: UNC_LOC_DUMP = 40 !< Data location: his file dump data
-   integer, parameter, public :: UNC_LOC_DRED_LINK = 41 !< Data location: his file data on dredge links
 
    !> indices for output variables
    integer, public :: IDX_HIS_VOLTOT
@@ -517,8 +486,7 @@ module m_output_config
       character(len=Idlen) :: standard_name !< Standard name of the output item on the NETCDF file.
       character(len=Idlen) :: input_value = '' !< Original user-provided input valuestring (unparsed) (<<key>> = <<input value>>.
       character(len=Idlen) :: description !< Description of the input paragraph, key combination.
-      integer :: location_specifier !< Specifies the locationwhere the variable is specified (One of UNC_LOC_CN, UNC_LOC_S
-      !< UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3, DUNC_LOC_W, UNC_LOC_WU, ...)
+      integer :: location_specifier !< Specifies the location where the variable is specified (use parameters from fm_location_types)
       type(nc_att_set) :: additional_attributes !< optional additional NetCDF attributes for this quantity
       type(t_station_nc_dimensions), allocatable :: nc_dim_ids !< optional detailed specification of NetCDF dim-ids for observation stations
    end type t_output_quantity_config
@@ -716,76 +684,5 @@ contains
 
    end subroutine set_properties
 
-!> Convert a location specifier to a human-readable string
-   function location_specifier_to_string(location_specifier) result(string)
-      use MessageHandling, only: mess, LEVEL_ERROR
-
-      integer, intent(in) :: location_specifier !< The location specifier (UNC_LOC_XXX)
-
-      character(:), allocatable :: string
-
-      select case (location_specifier)
-      case default
-         call mess(LEVEL_ERROR, 'Programming error, please report: unrecognised location_specifier in m_output_config/location_specifier_to_string')
-      case (UNC_LOC_CN)
-         string = 'corner point'
-      case (UNC_LOC_S)
-         string = 'pressure point'
-      case (UNC_LOC_U)
-         string = 'horizontal velocity point'
-      case (UNC_LOC_L)
-         string = 'horizontal net link'
-      case (UNC_LOC_S3D)
-         string = 'pressure point in all layers'
-      case (UNC_LOC_U3D)
-         string = 'horizontal velocity point in all layers'
-      case (UNC_LOC_W)
-         string = 'vertical velocity point on all layer interfaces'
-      case (UNC_LOC_WU)
-         string = 'vertical viscosity point on all layer interface'
-      case (UNC_LOC_GLOBAL)
-         string = 'global variable'
-      case (UNC_LOC_SOSI)
-         string = 'source/sink'
-      case (UNC_LOC_GENSTRU)
-         string = 'general structure'
-      case (UNC_LOC_DAM)
-         string = 'controllable dam'
-      case (UNC_LOC_PUMP)
-         string = 'pump'
-      case (UNC_LOC_GATE)
-         string = 'gate'
-      case (UNC_LOC_WEIRGEN)
-         string = 'weir'
-      case (UNC_LOC_ORIFICE)
-         string = 'orifice'
-      case (UNC_LOC_BRIDGE)
-         string = 'bridge'
-      case (UNC_LOC_CULVERT)
-         string = 'culvert'
-      case (UNC_LOC_DAMBREAK)
-         string = 'dambreak'
-      case (UNC_LOC_UNIWEIR)
-         string = 'universal weir'
-      case (UNC_LOC_CMPSTRU)
-         string = 'compound structure'
-      case (UNC_LOC_LONGCULVERT)
-         string = 'long culvert'
-      case (UNC_LOC_STATION)
-         string = 'observation station'
-      case (UNC_LOC_OBSCRS)
-         string = 'observation cross section'
-      case (UNC_LOC_LATERAL)
-         string = 'lateral location'
-      case (UNC_LOC_RUG)
-         string = 'run-up gauge'
-      case (UNC_LOC_DREDGE)
-         string = 'dredge'
-      case (UNC_LOC_DUMP)
-         string = 'dump'
-      case (UNC_LOC_DRED_LINK)
-         string = 'dredge link'
-      end select
-   end function location_specifier_to_string
 
 end module m_output_config

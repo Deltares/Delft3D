@@ -30,6 +30,7 @@ module m_statistical_output
    use m_read_statistical_output
    use m_temporal_statistics
    use precision, only: dp
+   use fm_location_types
 
    implicit none
 
@@ -197,7 +198,7 @@ contains
             ! Disable statistics in time on structures of this type if any of them lie across multiple partitions
             if (model_has_structures_across_partitions(output_config%location_specifier) .and. item%operation_type /= SO_CURRENT) then
                call mess(LEVEL_WARN, 'Disabling output item "'//trim(output_config%name)//'('//trim(operation_type_to_string(item%operation_type))//')"'// &
-                         ' as at least one '//trim(location_specifier_to_string(output_config%location_specifier))// &
+                         ' as at least one '//trim(get_location_specifier_string(output_config%location_specifier))// &
                          ' lies across multiple partitions, which could produce invalid output')
                cycle
             end if

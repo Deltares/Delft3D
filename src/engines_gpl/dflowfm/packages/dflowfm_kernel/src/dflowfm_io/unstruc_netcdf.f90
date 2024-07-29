@@ -827,7 +827,7 @@ contains
       use network_data, only: numl, numl1d
       use dfm_error
       use m_missing
-      use m_output_config
+      use fm_location_types
 
       use string_module, only: strcmpi
       implicit none
@@ -1393,7 +1393,7 @@ contains
       use m_alloc
       use m_missing
       use m_save_ugrid_state
-      use m_output_config
+      use fm_location_types
 
       implicit none
 
@@ -1686,7 +1686,7 @@ contains
       use dfm_error
       use m_alloc
       use m_missing
-      use m_output_config
+      use fm_location_types
       implicit none
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
@@ -1974,7 +1974,7 @@ contains
       use dfm_error
       use m_alloc
       use m_missing
-      use m_output_config
+      use fm_location_types
       implicit none
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
@@ -2039,7 +2039,7 @@ contains
       use dfm_error
       use m_alloc
       use m_missing
-      use m_output_config
+      use fm_location_types
       implicit none
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
@@ -2200,7 +2200,7 @@ contains
       use dfm_error
       use m_alloc
       use m_missing
-      use m_output_config
+      use fm_location_types
       implicit none
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
@@ -5218,7 +5218,7 @@ contains
       use m_hydrology_data, only: jadhyd, ActEvap, PotEvap, interceptionmodel, DFM_HYD_NOINTERCEPT, InterceptHs
       use m_subsidence, only: jasubsupl, subsout, subsupl, subsupl_t0
       use Timers
-      use m_output_config
+      use fm_location_types
       use m_map_his_precision
       use m_fm_icecover, only: ice_mapout, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ja_icecover, ICECOVER_SEMTNER
 
@@ -7987,7 +7987,7 @@ contains
    function unc_put_var_map_nodes(ncid, id_tsp, id_var, values, jabndnd_) result(ierr)
       use network_data, only: kc, numk
       use m_missing, only: dmiss
-      use m_output_config, only: UNC_LOC_CN
+      use fm_location_types, only: UNC_LOC_CN
 
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
@@ -11492,7 +11492,7 @@ contains
       use geometry_module
       use m_save_ugrid_state
       use gridoperations
-      use m_output_config
+      use fm_location_types
 
       implicit none
 
@@ -12090,7 +12090,7 @@ contains
       use m_1d_networkreader
       use m_flow1d_reader
       use m_profiles
-      use m_output_config
+      use fm_location_types
 
       character(len=*), intent(in) :: filename !< Name of NetCDF file.
       integer, intent(inout) :: numk_keep !< Number of netnodes to keep in existing net (0 to replace all).
@@ -12874,7 +12874,7 @@ contains
 !! The calling routine should later call update_ghosts, such that ghost locations are filled as well.
    function get_var_and_shift(ncid, varname, targetarr, tmparr, loctype, kmx, locstart, loccount, it_read, jamergedmap, iloc_own, iloc_merge, target_shift) result(ierr)
       use dfm_error
-      use m_output_config
+      use fm_location_types
       integer, intent(in) :: ncid !< Open NetCDF data set
       character(len=*), intent(in) :: varname !< Variable name in file.
       double precision, intent(inout) :: targetarr(:) !< Data will be stored in this array.
@@ -13047,7 +13047,7 @@ contains
       use m_structures_saved_parameters
       use m_initsedtra, only: initsedtra
       use m_fixedweirs, only: weirdte, nfxwL
-      use m_output_config
+      use fm_location_types
 
       character(len=*), intent(in) :: filename !< Name of NetCDF file.
       integer, intent(out) :: ierr !< Return status (NetCDF operations)
@@ -15193,7 +15193,7 @@ contains
       use Timers
       use m_modelbounds
       use io_netcdf_acdd, only: ionc_add_geospatial_bounds
-      use m_output_config
+      use fm_location_types
       implicit none
 
       integer, intent(in) :: ncid
@@ -18309,7 +18309,7 @@ contains
       use unstruc_messages, only: mess, LEVEL_WARN
       use m_alloc, only: realloc
       use m_partitioninfo, only: um
-      use m_output_config, only: UNC_LOC_S3D, UNC_LOC_S
+      use fm_location_types, only: UNC_LOC_S3D, UNC_LOC_S
 
 !input/output
       integer, intent(in) :: imapfile, kstart, ndx_own, it_read, target_shift

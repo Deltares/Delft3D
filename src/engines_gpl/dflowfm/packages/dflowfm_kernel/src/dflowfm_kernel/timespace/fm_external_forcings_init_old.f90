@@ -59,6 +59,7 @@ contains
       use unstruc_inifields, only: set_friction_type_values
       use timers, only: timstop, timstrt
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use fm_external_forcings_utils, only: get_tracername, get_sedfracname
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
