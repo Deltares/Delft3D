@@ -1098,7 +1098,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
              ! entries in the morbnd structure. The sum of alfa_mag(ib)**2
              ! will be equal to 1.
              !
-             icond = morbnd(jb)%icond
+             ! icond = morbnd(jb)%icond
              if (nxmx == nmu) then
                 if (umean(nm)<0.0) icond = 0
              elseif (nxmx == nmd) then
