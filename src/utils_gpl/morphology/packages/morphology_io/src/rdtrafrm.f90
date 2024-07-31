@@ -1475,7 +1475,7 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        name       = 'Van Thiel / Van Rijn (2008)'
        nparopt    =  14
        parkeyw(1) = 'facua'
-       pardef(1)  = 0.1_fp
+       pardef(1)  = 0.0_fp
        parkeyw(2) = 'facAs'
        pardef(2)  = 0.2_fp
        parkeyw(3) = 'facSk'
@@ -1506,7 +1506,7 @@ subroutine traparams(iform     ,name      ,nparreq   ,nparopt   ,parkeyw   , &
        name       = 'Soulsby / Van Rijn, XBeach flavour'
        nparopt    =  15
        parkeyw(1) = 'facua'
-       pardef(1)  = 0.1_fp
+       pardef(1)  = 0.0_fp
        parkeyw(2) = 'facAs'
        pardef(2)  = 0.1_fp
        parkeyw(3) = 'facSk'

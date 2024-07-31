@@ -522,7 +522,7 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
        !
        sbc_total = .true.
        sus_total = .true.
-    elseif (iform == 18) then 
+    elseif (iform == 18) then
        !
        ! Gaeuman et al. (development of Wilcock & Crowe)
        !

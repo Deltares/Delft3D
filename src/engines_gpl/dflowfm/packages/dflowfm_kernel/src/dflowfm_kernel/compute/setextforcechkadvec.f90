@@ -338,8 +338,8 @@
                       adve(L) = adve(L) * hs(k2) / chkadvd ! ; nochkadv = nochkadv + 1
                    end if
                 end if
+                adve(L) = min(abs(adve(L)),maxfacg*ag)*sign(1d0,adve(L))
              end if
-
           end do
 
        else
@@ -361,7 +361,6 @@
                       end if
                    end do
                 end if
-                adve(L) = min(abs(adve(L)),maxfacg*ag)*sign(1d0,adve(L))
              end if
           end do
 
