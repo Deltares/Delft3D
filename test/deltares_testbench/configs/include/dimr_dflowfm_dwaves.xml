@@ -42,6 +42,18 @@
         </checks>              
     </testCase>
     <!-- ======================================================================== -->
+    <testCase name="e100_f00_c02" ref="dimr_trunk">
+        <path version="2024-08-01T15:50:00">e100_dflowfm-dwaves/f00_general/c02-DIMR_switch_with_time_series</path>
+        <maxRunTime>300.0</maxRunTime> <!-- seconds -->
+        <checks>
+            <file name="fm/dflowfmoutput/f34_his.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="hwav" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <!-- ======================================================================== -->
     <testCase name="e100_f02_c00" ref="dimr_trunk">
         <path version="2024-01-12T07:30:00">e100_dflowfm-dwaves/f02_delft3d_cases/c00-test0_smallclosedbasin/dfm</path>
         <maxRunTime>40.0</maxRunTime> <!-- seconds -->
