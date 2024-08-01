@@ -37,7 +37,7 @@ subroutine connecthangingnodes()
    use gridoperations
    implicit none
 
-   integer :: mout, np, ih, kk, k, kk3, kkx, k1, k2, lnu, km, kp, i
+   integer :: mout, np, kk, k, kk3, kkx, lnu, km, kp
 
    call findcells(0)
    call newfil(mout, 'hang.xyz')
@@ -104,7 +104,7 @@ subroutine makeZKbedlevels()
    implicit none
 
    integer :: k, k1, k2, ja
-   double precision :: X3, Y3, X1, Y1, X2, Y2, disn, dist, XN, YN, rl, hh, zt, zn, phase, bedwid2, bedrepose, gridsize
+   double precision :: X3, Y3, X1, Y1, X2, Y2, disn, dist, XN, YN, rl, hh, phase, bedwid2, bedrepose, gridsize
 
    x1 = 0d0
    y1 = 0d0

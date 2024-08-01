@@ -34,7 +34,6 @@
     use m_physcoef
     use m_flow
     implicit none
-    integer :: L
     double precision :: umod, h, sqcf
     double precision :: r, rv = 123.8d0, e = 8.84d0, eps = 1d-2, s, sd, er, ers
 

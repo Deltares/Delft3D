@@ -51,8 +51,6 @@
       !
       implicit none
       !
-      real(fp), dimension(kmx) :: thick
-      !
       ! Local parameters
       !
       integer, parameter :: reducmessmax = 50

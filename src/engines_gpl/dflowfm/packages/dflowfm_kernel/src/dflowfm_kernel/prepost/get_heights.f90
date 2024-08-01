@@ -39,17 +39,11 @@ subroutine get_heights()
 
    implicit none
 
-   integer :: is, j, js, k, kk, ks, kks, ncs, num, numj, NsubL, NsubR
+   integer :: is, j, js, k, kk, ks, kks, ncs, num, numj
    integer :: kL, kR ! left and right neighboring splines at the cross spline w.r.t. the center spline
-
    integer :: numnew
-
-   double precision, dimension(Nsubmax) :: hL, hR
-
    double precision, dimension(:), allocatable :: xlist, ylist
-
    logical :: Lorient
-
    double precision, external :: splinelength_int
 
 !  allocate

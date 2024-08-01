@@ -70,8 +70,6 @@
       integer :: nm
       integer :: nxmx
       real(fp) :: alfa_dist
-      real(fp) :: bndval
-      real(fp) :: sedtot
       real(fp), dimension(lsedtot) :: frac
       !
    !! executable statements -------------------------------------------------------

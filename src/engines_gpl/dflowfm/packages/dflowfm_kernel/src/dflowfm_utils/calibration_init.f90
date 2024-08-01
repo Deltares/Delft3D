@@ -36,7 +36,7 @@ subroutine calibration_init()
    use unstruc_messages
    use unstruc_model, only: md_cldfile, md_cllfile
    use m_flowgeom, only: lnx, lnx1d
-   use m_flow, only: ifrcutp, ifrctypuni, frcu, frcu_bkp
+   use m_flow, only: ifrcutp, ifrctypuni
    !
    implicit none
    !

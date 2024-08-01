@@ -38,7 +38,7 @@
       use geometry_module, only: pinpok, dbdistance
 
       implicit none
-      double precision :: xp, yp, dis
+      double precision :: xp, yp
       integer :: inn, k, kk, nn
 
       kk = 0

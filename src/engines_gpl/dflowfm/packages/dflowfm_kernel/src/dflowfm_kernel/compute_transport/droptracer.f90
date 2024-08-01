@@ -46,7 +46,7 @@ subroutine droptracer(xp, yp, dval)
    integer, dimension(:), allocatable :: icelllist
    integer :: Ncells
 
-   integer :: i, k, kk, kb, kt
+   integer :: i, k, kk
    integer :: N, in
    integer :: ja
    integer :: iconst

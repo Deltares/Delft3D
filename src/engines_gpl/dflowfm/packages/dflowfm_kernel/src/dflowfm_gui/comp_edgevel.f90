@@ -48,10 +48,10 @@ subroutine comp_edgevel(mc, edgevel, dgrow1, nfac1, ierror)
 
    double precision, allocatable :: eheight(:, :) ! edge-based grid height, for each subinterval of grid layers
 
-   double precision :: growfac, hmax, h_h0_maxL, h_h0_maxR
+   double precision :: hmax, h_h0_maxL, h_h0_maxR
 
    integer :: i, is, igL, igR, j, js, mfacmax, nfacmax, ncs, numtruecross
-   integer :: Ndum, NuniL, NuniR, NexpL, NexpR, NsubL, NsubR, ja
+   integer :: NuniL, NuniR, NexpL, NexpR, NsubL, NsubR, ja
    integer :: iother, iter
 
    integer, external :: comp_nfac

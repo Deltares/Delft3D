@@ -52,12 +52,10 @@ subroutine admin_landboundary_segments()
 
    integer :: jstart, jend
    integer :: jbreak ! used to break segment in two
-   integer :: i, j, jdum, ja, ja1, ja2, k, N, Nnew
+   integer :: i, j, ja, ja1, ja2, Nnew
 
    double precision :: x1, y1, x2, y2, x3, y3, x4, y4, xn, yn, rl3, rl4
    double precision :: dlanlength, dlinklength, dismin, dis3, dis4
-   double precision :: darea, dlength, dlenmx
-
    logical :: Lisclose
 
 !  allocate

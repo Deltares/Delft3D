@@ -33,8 +33,6 @@
       subroutine WEAREL()
          use m_wearelt
          implicit none
-         integer, save :: ini = 0
-         double precision :: X0, Y0, DY
 
          call MINMAXWORLD(XMIN, YMIN, XMAX, YMAX)
 

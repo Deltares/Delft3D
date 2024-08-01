@@ -47,7 +47,7 @@
 
          integer :: numpols, numpolsout ! number of tpoly-type polygons
          integer :: i
-         integer :: iter, j
+         integer :: j
          integer :: M, NPUT
 
          i1 = 1

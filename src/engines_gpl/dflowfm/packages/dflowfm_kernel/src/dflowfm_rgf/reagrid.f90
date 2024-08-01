@@ -55,12 +55,11 @@
          integer :: MRGF, JA
          double precision :: xymis
 
-         integer :: key
          integer :: Mbnd, mbca, mobs, mout
 
-         character NAME2 * 76, TEX * 3, REC * 132, REC1 * 132
+         character NAME2 * 76, REC * 132
 
-         integer :: IPNT, mdep, merr, npart, l, k, ja2, i, j, istat
+         integer :: IPNT, mdep, merr, ja2, i, j, istat
 
          logical :: jawel, kw_found
 

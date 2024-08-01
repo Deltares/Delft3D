@@ -45,7 +45,7 @@ subroutine preparecells(md_netfile, jaidomain, jaiglobal_s, ierr)
    integer, intent(in) :: jaidomain !< read subdomain numbers (1) or not (0)
    integer, intent(in) :: jaiglobal_s !< read global cell numbers (1) or not (0)
    integer, intent(out) :: ierr
-   integer :: k, L, Lcontact, nv, flag, c, i, k1, nc1, j
+   integer :: k, L, Lcontact, nv, c, i, k1, nc1, j
 
    ierr = DFM_NOERR
 

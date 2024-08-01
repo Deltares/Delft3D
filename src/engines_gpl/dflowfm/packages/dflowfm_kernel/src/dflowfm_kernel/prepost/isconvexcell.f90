@@ -43,7 +43,7 @@ integer function isconvexcell(k)
 
    integer, intent(in) :: k !< cell number
 
-   integer :: i, j, ip1, ip2, N
+   integer :: i, ip1, ip2, N
    integer :: k1, k2, k3
 !   integer                     :: L
 

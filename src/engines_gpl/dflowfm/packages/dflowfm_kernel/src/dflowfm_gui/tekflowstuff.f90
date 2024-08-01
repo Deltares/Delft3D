@@ -40,7 +40,6 @@
     use m_flow
     use m_wind
     use m_reduce
-    use m_sferic, only: jsferic
     use geometry_module, only: getdx, getdy, getdxdy
     use gridoperations
 
@@ -57,20 +56,15 @@
     !locals
     integer :: k, kk, L, LL, k1, k2, ncol, nn, k3, k4
     integer :: nodemode, linkmode ! how  to show on flow nodes and links
-    integer :: nodewhat, linkwhat ! what to show on flow nodes and links
-    double precision :: znod, zlin, zcorn ! what to show functions
+    integer :: nodewhat ! what to show on flow nodes and links
+    double precision :: znod, zcorn ! what to show functions
     double precision :: xx1, yy1, Zz1 ! help only
     double precision :: xx2, yy2, Zz2 ! help only
-    double precision :: x3, y3, x4, y4 ! help only
-
-    double precision :: xd, yd, zd, dxx, dy, rd, d ! only
-    double precision :: zn, x(4), y(4), z(4), zl
-    integer :: jview = 1 ! for now fix regular
+    double precision :: x3, y3 ! help only
+    double precision :: zn
     integer :: model24 = 0 ! colourmodel 0/1
-    double precision :: ux, uy ! x-y velocity components
-
-    double precision :: rt, rr0, dddx, dddy, uux, uuy
-    integer :: n, ja, ja2, nsiz
+    double precision :: uux, uuy
+    integer :: n, ja, ja2
     logical inview
 
     ! ndraw(28)= show what on nodes   ndraw(19)=how to show on nodes , NDRAW(8) = SHOW WHAT ON NETNODES

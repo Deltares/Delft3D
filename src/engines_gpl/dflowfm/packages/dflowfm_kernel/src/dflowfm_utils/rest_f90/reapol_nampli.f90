@@ -36,7 +36,7 @@
       !! A dmiss line starts a new polyline without a name. Multiple dmiss lines are skipped.
       subroutine REAPOL_NAMPLI(MPOL, jadoorladen, janampl, ipli)
          use M_POLYGON
-         use network_data, only: netstat, NETSTAT_CELLS_DIRTY
+         use network_data, only: NETSTAT_CELLS_DIRTY
          use M_MISSING
          use m_alloc
          use unstruc_messages
@@ -58,7 +58,6 @@
          double precision :: zcrest, sillup, silldown, crestl, taludl, taludr, veg
          character(len=1) :: weirtype
 
-         character(len=5) :: CHARMC
          character(len=64) :: MATR
          character(len=256) :: REC
 

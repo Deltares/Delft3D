@@ -33,7 +33,7 @@
   subroutine GAANWESTARTEN(L, K1, KN316, JASTART)
      use M_NETW
      implicit none
-     integer :: L, K1, K2, KN316, JASTART, J, JASTOP, J1, J2
+     integer :: L, K1, KN316, JASTART, J
 
      JASTART = 0
      if (KN(3, L) /= KN316) return

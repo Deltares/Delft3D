@@ -42,11 +42,8 @@
     implicit none
 
     double precision :: timmin
-
-    integer, save :: ini = 0
-    integer :: ierr, kk
-
-    double precision :: Omeg, tt
+    integer :: kk
+    double precision :: tt
 
     call meteo_tidepotential(julrefdat, TIMmin, doodsonstart, doodsonstop, doodsoneps)
 

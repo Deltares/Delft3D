@@ -41,7 +41,7 @@
 
       implicit none
       integer :: jaregrid
-      double precision :: dxa, dxb, xlb
+      double precision :: dxa, xlb
       double precision, allocatable :: xh(:), yh(:), zh(:)
       integer :: L, LL, k, n, nh, ibr, LA, k1, k2, ium
 

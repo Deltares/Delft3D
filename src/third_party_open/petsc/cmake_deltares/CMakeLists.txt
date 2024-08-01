@@ -1,3 +1,6 @@
+if(intel_version LESS 23)
+    message(FATAL_ERROR "PETSc was compiled with Intel OneAPI 2023 or 2024, not with older versions. Please update your compiler.")
+endif()
 # Set the path to the directory which contains all the source files and definitions
 set(library_path ${petsc_path}/..)
 

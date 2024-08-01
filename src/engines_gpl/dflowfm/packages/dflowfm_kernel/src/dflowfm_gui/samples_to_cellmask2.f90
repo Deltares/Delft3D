@@ -35,13 +35,12 @@ subroutine samples_to_cellmask2()
 
    use network_data
    use m_samples
-   use m_missing, only: jins, dmiss
+   use m_missing, only: dmiss
    use geometry_module ! , only: pinpok
 
    implicit none
 
    integer :: i, in, k, kk, n, nn, num
-   double precision :: xx(6), yy(6)
 
    if (allocated(cellmask)) deallocate (cellmask)
    allocate (cellmask(nump1d2d)); cellmask = 0

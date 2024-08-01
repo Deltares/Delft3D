@@ -37,7 +37,7 @@ subroutine fm1dimp_update_network(iresult)
    use m_f1dimp, only: f1dimppar, reallocate_fill
    use unstruc_channel_flow, only: network
    use m_CrossSections, only: createTablesForTabulatedProfile
-   use m_fm_erosed, only: ndx_mor, lnx_mor
+   use m_fm_erosed, only: lnx_mor
    use m_oned_functions, only: gridpoint2cross
    use m_flow, only: hu
    use m_flowgeom, only: lnx

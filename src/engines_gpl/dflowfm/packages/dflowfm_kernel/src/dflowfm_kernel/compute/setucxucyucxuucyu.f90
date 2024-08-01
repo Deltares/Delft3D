@@ -41,9 +41,9 @@
     implicit none
 
     logical :: make2dh
-    integer :: L, KK, k1, k2, k, nw, Lb, Lt, LL, nn, n, kt, kb, kbk, k2k
+    integer :: L, KK, k1, k2, k, Lb, Lt, LL, nn, n, kt, kb, kbk, k2k
     integer :: itpbn, newucxq = 0
-    double precision :: uu, vv, uucx, uucy, wcxu, wcyu, cs, sn, adx, ac1, ac2, wuw, hdx, hul, dzz, uin, duxdn, duydn
+    double precision :: uu, vv, uucx, uucy, wcxu, wcyu, cs, sn, hul, dzz, uin, duxdn, duydn
     double precision :: dischcorrection
     double precision :: uinx, uiny, u1L
 

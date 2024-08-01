@@ -41,9 +41,8 @@
      implicit none
      integer :: N12
      integer :: ja, KMOD
-     integer :: K, KM, K1, K2, K3, K4, L, LL, LNU, N, N1, N2, NN, LF, IC, LLU, IN
+     integer :: K, K1, K2, L, LL, N, NN, LF, IC, LLU, IN
      integer, allocatable :: KNP(:)
-     integer :: KK(4)
 
      double precision :: XM, YM, XXC(8), YYC(8), DAREA, DLENGTH, DLENMX
 

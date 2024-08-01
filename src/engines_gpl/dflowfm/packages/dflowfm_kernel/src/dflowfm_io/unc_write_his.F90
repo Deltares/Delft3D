@@ -74,6 +74,7 @@ subroutine unc_write_his(tim) ! wrihis
    use odugrid
    use m_statistical_output_types, only: SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
    use fm_statistical_output
+   use fm_location_types
    use m_output_config
    use MessageHandling, only: err
    use m_ug_nc_attribute, only: ug_nc_attribute

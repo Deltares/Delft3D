@@ -49,7 +49,7 @@
          integer :: isub, jsub
          integer, dimension(:), allocatable :: num
 
-         double precision :: af, dum
+         double precision :: af
 
          integer :: ierror
          character TEX * 16

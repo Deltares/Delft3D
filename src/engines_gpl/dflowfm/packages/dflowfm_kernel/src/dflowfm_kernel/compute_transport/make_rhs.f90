@@ -32,7 +32,7 @@
 
 !> compose right-hand side
 subroutine make_rhs(NUMCONST, thetavert, Ndkx, Lnkx, kmx, vol1, kbot, ktop, Lbot, Ltop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
-   use m_flowgeom, only: Ndxi, Ndx, Lnx, Ln, ba ! static mesh information
+   use m_flowgeom, only: Ndxi, Ndx, Lnx, ba ! static mesh information
    use m_flowtimes, only: dts
    use m_flowparameters, only: epshu, testdryflood
    use timers
@@ -62,9 +62,9 @@ subroutine make_rhs(NUMCONST, thetavert, Ndkx, Lnkx, kmx, vol1, kbot, ktop, Lbot
    double precision :: dvoli
    double precision :: dt_loc
 
-   integer :: LL, L, Lb, Lt
+   integer :: LL, L, Lb
    integer :: kk, k, kb, kt
-   integer :: k1, k2, j
+   integer :: j
 
    double precision, parameter :: dtol = 1d-8
 

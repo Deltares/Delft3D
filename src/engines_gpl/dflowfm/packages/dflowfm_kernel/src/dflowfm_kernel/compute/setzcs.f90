@@ -35,7 +35,7 @@
     use m_flowgeom
     implicit none
 
-    integer :: kk, k, kb, kt, nlayb, nrlay, ierr
+    integer :: kk, k, kb, kt, nlayb, nrlay
 
     if (.not. allocated(zcs)) then
        call realloc(zcs, Ndkx)

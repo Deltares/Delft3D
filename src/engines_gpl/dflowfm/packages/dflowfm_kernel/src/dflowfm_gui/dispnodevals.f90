@@ -36,10 +36,6 @@
      implicit none
      integer :: KP
 
-     double precision :: fff
-     double precision :: fxx
-     double precision :: fyy
-     double precision :: fzz
      integer :: l
      integer :: n
      character TEX * 23

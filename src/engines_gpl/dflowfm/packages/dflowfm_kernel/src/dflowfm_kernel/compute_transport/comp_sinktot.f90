@@ -32,7 +32,7 @@
 
 subroutine comp_sinktot()
    use m_transport
-   use m_flow, only: vol1, kmx, ndkx
+   use m_flow, only: vol1, kmx
    use m_flowgeom, only: ndx
    use m_flowtimes, only: dts
    use m_sediment
@@ -40,7 +40,7 @@ subroutine comp_sinktot()
 
    implicit none
 
-   integer :: k, j, kb, kt, ll
+   integer :: k, j, ll
 
    integer(4) ithndl / 0 /
    if (.not. stm_included) return

@@ -35,10 +35,8 @@ subroutine addbaroclinicpressure()
    use m_flow
    use m_flowtimes
 
-   use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents
-
    implicit none
-   integer :: L, LL, Lb, Lt, n, k, lnxbc
+   integer :: LL, Lb, Lt, n, lnxbc
 
    if (jabarocterm == 0) return
 

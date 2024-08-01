@@ -42,7 +42,7 @@
 
     ! locals
     integer :: n, nn, in, ncol, k, kb, kt
-    double precision :: dropstep, s10
+    double precision :: dropstep
 
     if (ndx == 0) return
 

@@ -35,7 +35,6 @@
 subroutine postgrid()
 
    use m_grid
-   use m_spline2curvi, only: maxaspect
    use m_missing
    use geometry_module, only: dbdistance, dcosphi
    use m_sferic, only: jsferic, jasfer3D
@@ -43,14 +42,8 @@ subroutine postgrid()
    implicit none
 
    integer, dimension(mc) :: ifront
-
-   double precision :: dh, daspect, dcos, dcosR, xn, yn
-
-   integer :: i, iL, iR, iRR, idum, iL0, iR0, i1, j, ja, iter, numchanged
-
-   integer :: istriangle ! 0: no, -1: left, 1: right, 2: two
-
-!   double precision, parameter                       :: dcosmax =  0.86603
+   double precision :: dcos, dcosR, xn, yn
+   integer :: i, iL, iR, iRR, idum, iL0, iR0, j, ja, iter, numchanged
    double precision, parameter :: dcosmax = 0.93969
    double precision, parameter :: dtol = 1d-2
    double precision, parameter :: dtolcos = 1d-2

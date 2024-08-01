@@ -43,7 +43,7 @@ subroutine wribal(tim)
 
    ! locals
    integer, save :: ibal = 0
-   integer :: ierr, ntbal
+   integer :: ntbal
    character(len=256) :: nam
 
    if (ibal /= 0 .and. dnt == 1) then ! volerr, volerrcum

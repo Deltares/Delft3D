@@ -40,7 +40,6 @@
          double precision, allocatable :: XI2(:, :), XJ2(:, :), YI2(:, :), YJ2(:, :), XR(:, :), YR(:, :), XRH(:, :), YRH(:, :)
 
          integer :: NRM, NRN, MCR, NCR
-         character * 4 TEX
 
          call mess(LEVEL_DEBUG, 'INTERPOLATION')
          call mess(LEVEL_DEBUG, 'DIMENSIONS OF GRID : ', MC, NC)

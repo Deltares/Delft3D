@@ -45,7 +45,7 @@
          character(len=*) :: filnam
 
          double precision :: xz2, yz2, dl, xn, yn, sl, sm, crp, xcr, ycr
-         integer :: k, L, n, kk, ja, k1, k2, k3, k4, jacros, lin
+         integer :: k, L, n, kk, ja, k1, k3, k4, jacros, lin
 
          call savepol()
          npl = 0

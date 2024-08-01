@@ -37,8 +37,6 @@
          use m_sferzoom
          implicit none
          double precision :: x, y, rcx, rcy, xx, yy, xa, ya, rpx, rpy
-         real :: xloc, yloc
-         integer :: nx, ny
          rcx = rcir; rcy = rcir
          if (jsfertek >= 1) then
             call dPROJECT(x, y, xa, ya, 2)

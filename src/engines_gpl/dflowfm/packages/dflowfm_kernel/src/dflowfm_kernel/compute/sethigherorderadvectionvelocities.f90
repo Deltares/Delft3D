@@ -41,10 +41,8 @@ subroutine sethigherorderadvectionvelocities()
 
    integer :: L, LL, k1, k2, k, ku, kd, kku, ku2, is, ip, Lb, Lt, kkua, kkub
    integer :: n12, ib
-   double precision :: half, sl1, sl2, sl3, cf, ucxku, ucyku, ds1, ds2, ds, ql, qds, ds1x, ds1y, ds2x, ds2y
+   double precision :: half, sl1, sl2, sl3, cf, ucxku, ucyku, ds, ql, qds, ds1x, ds1y, ds2x, ds2y
    double precision, external :: dslim
-
-   double precision :: ds1x_6, ds1y_6, ds_6
    double precision :: dsx, dsy
 
    double precision, external :: nod2linx, nod2liny

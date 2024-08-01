@@ -41,9 +41,9 @@
 
     ! locals
     integer :: LL, LLL, LLLL ! for links LL,
-    integer :: k12, k1, k2, k3, k4, isig ! relevant node, 1 or 2
+    integer :: k12, k1, k2, k3, k4 ! relevant node, 1 or 2
     double precision :: cs, sn, csL, snL, vicl
-    double precision :: duxdn, duydn, duxdt, duydt, txx, tyy, c, s, cs2
+    double precision :: txx, tyy
     double precision :: uuk1, vvk1, uuk2, vvk2, uuk3, uuk4, dux, duy, dvx, tuu, tvv
 
     double precision :: txx_k12, tyy_k12

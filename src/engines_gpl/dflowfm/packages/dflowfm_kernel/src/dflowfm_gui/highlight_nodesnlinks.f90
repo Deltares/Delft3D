@@ -38,10 +38,6 @@ subroutine highlight_nodesnlinks()
    use m_flowgeom
    implicit none
 
-   integer :: L
-
-   ! if (jaHighlight /= 1) return
-
    if (nhlNetNode > 0 .and. nhlNetNode <= numk) then
       call cirr(xk(nhlNetNode), yk(nhlNetNode), ncolhl)
    end if

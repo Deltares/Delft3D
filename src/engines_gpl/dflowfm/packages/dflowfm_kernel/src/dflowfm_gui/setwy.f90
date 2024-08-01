@@ -32,11 +32,10 @@
 
 !
       subroutine SETWY(X1, Y1, X2, Y2)
-         use unstruc_display, only: rcir, cr, dsix
          use m_sferic
          implicit none
          double precision :: x1, x2, y1, y2
-         double precision :: yw, asp, xw, x, y, dy
+         double precision :: asp, x, y, dy
 !     SET WORLD COORDINATES WITH Y2 AS 1.0 ASPECT RATIO VALUE
 !     AND RETURN Y2
          call INQASP(asp)

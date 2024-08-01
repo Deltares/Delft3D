@@ -33,10 +33,10 @@
 !> compute horizontal transport fluxes at flowlink
 subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, sed, difsed, sigdifi, &
                           viu, vicouv, nsubsteps, jaupdate, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu)
-   use m_flowgeom, only: Ndx, Lnx, Lnxi, ln, nd, klnup, slnup, dxi, acl, csu, snu, wcx1, wcx2, wcy1, wcy2, Dx ! static mesh information
-   use m_flowtimes, only: dts, dnt
+   use m_flowgeom, only: Ndx, Lnx, ln, nd, klnup, slnup, dxi, acl, csu, snu, wcx1, wcx2, wcy1, wcy2, Dx ! static mesh information
+   use m_flowtimes, only: dts
    use m_flowparameters, only: cflmx
-   use m_flow, only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, hu, epshu, &
+   use m_flow, only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, &
                      number_steps_limited_visc_flux_links, MAX_PRINTS_LIMITED_VISC_FLUX_LINKS
    use m_transport, only: ISALT, ITEMP
    use m_missing
@@ -78,15 +78,13 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
 
    double precision :: sl1L, sl2L, sl3L, sl1R, sl2R, sl3R
    double precision :: cf, sedkuL, sedkuR, ds1L, ds2L, ds1R, ds2R
-
-   double precision :: fluxL, fluxR
    double precision :: sedL, sedR
    double precision :: fluxfac, fluxfacMaxL, fluxfacMaxR
    double precision :: dfac1, dfac2
    double precision :: difcoeff, QL, QR, diuspL, ds1, ds2, dsedn, half
    double precision :: dt_loc
 
-   integer :: j, iswitchL, iswitchR, jahigherL, jahigherR
+   integer :: j, iswitchL, iswitchR
    integer :: k1, k2, LL, L, Lb, Lt, laydif, jaL, jaR
    integer :: kk1L, kk2L, kk1R, kk2R, k1L, k2L, k1R, k2R, is, ku
 

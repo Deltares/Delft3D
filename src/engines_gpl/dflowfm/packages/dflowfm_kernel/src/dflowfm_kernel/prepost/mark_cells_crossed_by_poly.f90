@@ -44,8 +44,6 @@
 
       integer :: k, kk, k1, k2, L, N, lnn_orig
 
-      logical :: Lcrossedcell
-
       !  allocate node mask arrays
       if (allocated(cellmask)) deallocate (cellmask)
       allocate (Lmask(numL), cellmask(nump))

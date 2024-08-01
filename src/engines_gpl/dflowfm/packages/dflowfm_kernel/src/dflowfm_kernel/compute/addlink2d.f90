@@ -40,12 +40,10 @@
 
     integer :: japerim, L
 
-    integer :: k1, k2, k3, k4, K, jaconv, jaconvu, ifrctyp
-    double precision :: hpr1, ar1, wid1, aconv1, hpr2, ar2, wid2, aconv2, aru, widu, aconvu
+    integer :: k1, k2, k3, k4, jaconv, ifrctyp
+    double precision :: hpr1, ar1, wid1, hpr2, ar2, wid2, aru, widu, aconvu
     double precision :: dx1, dx2, frcn, BL1, BL2, b21, wu2, ai
-    double precision :: beta, bt2, deltaa, hyr, uucn, ucna, bob1, bob2, bb1, hsmall
-    double precision :: ditcharea, ditchw, ditchconv, Cz, convu
-
+    double precision :: beta, bt2, deltaa, hyr, uucn, ucna, bob1, bob2, hsmall
     double precision, external :: cor2linx, cor2liny
     double precision, external :: get_hpr_nostruc
 

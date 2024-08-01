@@ -36,11 +36,11 @@
     use m_flowgeom
     use m_flowtimes
     use m_missing
-    use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ITRA1, constituents
+    use m_transport, only: NUMCONST, constituents
     use MessageHandling
     use m_partitioninfo
     implicit none
-    integer :: n, ierr, kk, k, kb, kt, k2, kk2, kb2, kkk, ku, numvals, L
+    integer :: n, kk, k, kb, kt, kk2, ku, numvals, L
     double precision :: qsrck, qsrckk, dzss
     double precision :: frac = 0.5d0 ! cell volume fraction that can at most be extracted in one step
 

@@ -38,10 +38,6 @@
     integer :: mout
     character(len=256) :: rec
 
-    integer :: K, L1
-    integer :: ndxr
-    double precision :: rd
-
     call reasam(mout, 0)
 
     bl = dmiss

@@ -39,7 +39,7 @@
     use gridoperations
 
     implicit none
-    integer :: in, k, n, L, k0, L0, numkn, numLn, ja
+    integer :: in, n, L, k0, L0, numkn, numLn, ja
 
     call savenet()
 

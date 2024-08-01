@@ -40,7 +40,7 @@ subroutine connect_hanging_nodes(linkbrother)
 
    integer :: ic, kk, kkm1, kkm2, kkp1, kkp2
    integer :: L, Lm1, Lp1, Lnew, N
-   integer :: num, num_eff
+   integer :: num
 
    integer, parameter :: MMAX = 6 ! maximum number of link per netcell
    integer, dimension(MMAX) :: knode ! counterclockwise end-node of link, excluding the hanging nodes

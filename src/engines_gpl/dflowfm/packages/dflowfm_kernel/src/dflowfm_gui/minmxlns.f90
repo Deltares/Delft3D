@@ -40,7 +40,7 @@
     double precision :: zlin
     double precision :: zn
     double precision :: rmin, rmax
-    integer :: i, l, n, k1, k2
+    integer :: i, l, k1, k2
     double precision :: VMAX, VMIN, DV, VAL(256)
     integer :: NCOLS(256), NIS, NIE, nv, JAAUTO
     common / depmax2 / vmax, vmin, dv, val, ncols, nv, nis, nie, jaauto

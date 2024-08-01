@@ -38,7 +38,7 @@
        implicit none
        double precision :: t, rms
        integer :: ini, k, L, k1, k2
-       double precision :: xzmin, xzmax, yzmin, yzmax, s1k, x0, y0, r0, xx, yy, r, dep, omeg, psi, samp, st, ct, ux, uy
+       double precision :: xzmin, xzmax, yzmin, yzmax, s1k, x0, y0, r0, xx, yy, r, omeg, st, ct
        double precision :: h0, zz0, a, a1c, a12, sa12, rr0, ur, ut, cs, sn
 
        call DMINMAX(xz, ndx, xzmin, xzmax, ndx)

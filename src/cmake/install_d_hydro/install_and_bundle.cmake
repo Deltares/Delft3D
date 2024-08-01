@@ -19,7 +19,7 @@ function(gp_item_default_embedded_path_override item default_embedded_path_var)
 endfunction(gp_item_default_embedded_path_override)
 
 include(BundleUtilities)
-include(${CMAKE_CURRENT_SOURCE_DIR}/../src/cmake/functions.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../functions.cmake)
 
 set(BU_CHMOD_BUNDLE_ITEMS 1)
 

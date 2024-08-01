@@ -31,20 +31,18 @@
 !
 
    subroutine wave_uorbrlabda()
-      use m_waves, only: uorb, wlenwav, uorbwav, twav, hwav, hwavcom, gammax, rlabda, jauorb, jauorbfromswan
+      use m_waves, only: uorb, wlenwav, uorbwav, twav, hwav, rlabda, jauorb, jauorbfromswan
       use m_flow, only: s1
       use m_flowgeom, only: ndx, bl
       use m_physcoef, only: ag
       use m_sferic, only: pi
-      use m_flowtimes, only: time1
 
       implicit none
 
       integer :: k
-      integer :: uorbwav_from_SWAN = 0
       integer :: wlenwav_from_SWAN = 0
 
-      double precision :: hss, per, omeg, k0, k0h, rk, uorb1
+      double precision :: hss, per, omeg, k0, k0h, rk
 
       do k = 1, ndx
          hss = max(1d-2, s1(k) - bl(k))

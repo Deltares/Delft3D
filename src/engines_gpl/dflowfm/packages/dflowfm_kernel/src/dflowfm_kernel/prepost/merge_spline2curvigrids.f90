@@ -44,7 +44,7 @@ subroutine merge_spline2curvigrids()
 
    integer, dimension(2) :: iupperold, ilowerold, iupper, ilower
 
-   integer :: i, j, iother, ipoint
+   integer :: i, iother, ipoint
    integer :: istart, iend, jstart, jend, jDj
    integer :: istartother, iendother, jstartother, jendother
    integer :: jmin, jmax, jminother, jmaxother

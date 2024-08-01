@@ -55,7 +55,7 @@
      double precision :: vv
      double precision :: xyz
 
-     double precision XD, YD, ZD, DX, DY, DZ, XX1, YY1, ZZ1, XX2, YY2, ZZ2, X3, Y3, Z3, H
+     double precision XD, YD, ZD, DX, DY, DZ, XX1, YY1, ZZ1, XX2, YY2, ZZ2, H
      double precision :: X(4), Y(4), Z(4)
      double precision :: getrcir
      logical INVNOD, inview

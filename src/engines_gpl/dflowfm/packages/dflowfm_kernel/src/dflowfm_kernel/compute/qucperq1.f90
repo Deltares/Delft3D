@@ -40,7 +40,7 @@
 
     ! locals
     integer :: LL, LLL, LLLL ! for links LL,
-    integer :: k12, kup ! relevant node, 1 or 2, L/R
+    integer :: k12 ! relevant node, 1 or 2, L/R
     double precision :: cs, sn, ucin, ucinx, uciny
     integer :: nn12
 

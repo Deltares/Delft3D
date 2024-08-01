@@ -44,7 +44,7 @@ subroutine regularise_spline2curvigrid()
    double precision :: xi
    double precision :: dhmax, dtolLR_bak
 
-   integer :: i, j, iL, iR, iter
+   integer :: i, j, iL, iR
    integer :: ih
 
    integer :: ierror

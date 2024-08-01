@@ -76,20 +76,10 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, maxaspect, j, edgevel, dt, xc, yc
    integer, allocatable, dimension(:, :) :: idxf !< (i,j)-indices of front points
 
    double precision :: dt_loc, dt_tot
-
-   double precision :: dh, daspect, dtolLR_bak, dhmax
-
-   integer :: i, ii, j2, jj, iprev, jprev, inext, jnext, iL, iR, ja3
-   integer :: numchanged
-
-   logical :: LL, LR
-
+   double precision :: dtolLR_bak, dhmax
+   integer :: i, ii, iL, iR, ja3
    double precision, parameter :: dtol = 1d-8
-
    double precision, parameter :: dclearance = 5d2
-
-   integer :: icheck = 3
-
    logical :: Lalllines = .false. ! all gridlines (.true.) or not (.false.)
 
    integer, save :: numgrow = 0

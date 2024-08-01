@@ -35,9 +35,7 @@ subroutine furusobekstructures()
    use m_flowgeom
    use m_strucs
    implicit none
-   integer :: ng, n, L, Ls, LL, Lb, Lt
-   double precision :: zup, bup, a, fac
-
+   integer :: ng, n, L, Ls
    logical :: firstiter = .true., jarea = .false.
 
    firstiter = .true.

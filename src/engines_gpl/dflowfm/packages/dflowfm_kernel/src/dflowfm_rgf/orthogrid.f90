@@ -59,8 +59,6 @@
 
          common / DRAWTHIS / ndraw(50)
 
-         character * 76 FILNAM
-
          if (MC == 0) then
             call QNERROR('First Create or Load a Grid', ' ', ' ')
             NUM = 0

@@ -33,7 +33,7 @@
 subroutine flow_sedmorinit()
    use m_sediment
    use m_rdstm
-   use m_flow, only: kmx, ndkx, lnkx, iturbulencemodel
+   use m_flow, only: kmx, ndkx, iturbulencemodel
    use morphology_data_module !, only: nullsedtra, allocsedtra
    use sediment_basics_module
    use message_module, only: clearstack, initstack
@@ -42,12 +42,11 @@ subroutine flow_sedmorinit()
    use unstruc_files
    use m_flowgeom
    use m_flowtimes
-   use m_physcoef, only: rhomean, ag, backgroundwatertemperature, vismol
+   use m_physcoef, only: rhomean, ag, vismol
    use m_initsedtra, only: initsedtra
    use m_rdmorlyr, only: rdinimorlyr
-   use fm_external_forcings_data, only: sfnames, numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
-   use m_transport, only: ISED1, ISEDN, ifrac2const, const_names, constituents
-   use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, jatem, eps4, flow_solver
+   use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
+   use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, jatem, eps4
    use m_bedform, only: bfmpar, bfm_included
    use unstruc_channel_flow
    use m_branch
@@ -71,11 +70,10 @@ subroutine flow_sedmorinit()
 
    logical :: error, have_mudbnd, have_sandbnd, ex, success
    character(20), dimension(:), allocatable :: nambnd ! nambnd: needed for morphological bc
-   character, dimension(200) :: mes
    character(12) :: chstr !< temporary string representation for chainage
    character(40) :: errstr
    type(bedbndtype), dimension(:), pointer :: morbnd
-   integer :: kk, k, kbot, ktop, i, j, isus, ifrac, isusmud, isussand, isf, ised, Lf, npnt, j0, ierr
+   integer :: k, i, j, isus, ifrac, isusmud, isussand, isf, Lf, npnt, j0, ierr
    integer :: ic !< cross section index
    integer :: icd !< cross section definition index
    integer :: ibr, nbr, pointscount, k1, ltur_

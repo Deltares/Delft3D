@@ -31,7 +31,7 @@
 !
 
    subroutine wave_makeplotvars
-      use m_waves, only: ustokes, vstokes, ust_mag, fwav_mag, ustx_cc, usty_cc
+      use m_waves, only: ustokes, ust_mag, fwav_mag, ustx_cc, usty_cc
       use m_flowparameters, only: jawave
       use m_flow
       use m_flowgeom
@@ -40,7 +40,6 @@
 
       integer :: ierror
       integer :: L, LL, Lb, Lt, k1, k2
-      double precision :: ust_mag_u
 
       ust_mag = 0d0
       fwav_mag = 0d0

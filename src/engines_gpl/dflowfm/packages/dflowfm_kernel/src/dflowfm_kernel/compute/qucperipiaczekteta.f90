@@ -41,7 +41,7 @@ subroutine QucPeripiaczekteta(n12, L, ai, ae, volu, iad) ! sum of (Q*uc cell IN 
 
    ! locals
    integer :: LL, LLL, LLLL ! for links LL,
-   integer :: k12, kup, ja ! relevant node, 1 or 2, L/R
+   integer :: k12, ja ! relevant node, 1 or 2, L/R
    double precision :: cs, sn, ucin, cfl, tet, ucinx, uciny
 
    integer :: nn12

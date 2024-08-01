@@ -41,9 +41,9 @@
 
     implicit none
 
-    integer :: n, nq, L, k1, k2, nlowest
-    integer :: ierror, ng, Lnu, LL, iup, k
-    double precision :: at, ssav, wwav, blowest, fac, zlu, zgaten, sup, bupmin, bup, openfact, afac, hh
+    integer :: n, nq, L, k2
+    integer :: ng, Lnu, LL, iup, k
+    double precision :: at, ssav, wwav, fac, zlu, zgaten, sup, bupmin, bup, openfact, afac, hh
 
     double precision, parameter :: FAC23 = 0.6666666666667d0
 

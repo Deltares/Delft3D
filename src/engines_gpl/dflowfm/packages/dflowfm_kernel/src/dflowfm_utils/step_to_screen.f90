@@ -181,8 +181,6 @@ function seconds_to_dhms(secs_long) result(timestr)
    integer :: mins !!  minutes remaining
    integer :: hours !!  hours remaining
    integer :: days !!  days remaining
-   character(len=20) :: timestr_
-
    !
    ! extract days, hours, minutes and seconds remaining
    !

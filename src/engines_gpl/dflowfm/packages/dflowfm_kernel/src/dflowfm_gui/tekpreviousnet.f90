@@ -35,7 +35,6 @@
          implicit none
          integer :: NCOL
 
-         integer :: k
          integer :: k1
          integer :: k2
          integer :: l

@@ -40,7 +40,6 @@
          integer :: nc
          double precision :: rmis
          real :: D(MC, NC)
-         double precision, dimension(MC) :: dline
          character TEX * 16
 
          do J = NC, 1, -1

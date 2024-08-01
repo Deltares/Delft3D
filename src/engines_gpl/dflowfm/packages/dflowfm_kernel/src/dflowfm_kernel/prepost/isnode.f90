@@ -42,9 +42,7 @@
 
      integer :: KP
      double precision :: XP, YP, ZP
-
-     integer :: ll
-     double precision :: xkk, ykk, zkk, rcx, rcy, dis
+     double precision :: rcy, dis
      integer :: K, KPREV
 
      if (KP < 0) then

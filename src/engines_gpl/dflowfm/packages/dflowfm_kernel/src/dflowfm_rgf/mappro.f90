@@ -42,12 +42,8 @@
          integer :: jsferic
          integer :: nzone
          integer :: ihem
-!      type(pjf90_proj), save :: proj_latlon, proj_magsirwest
-!      double precision, save,pointer :: xp(:), yp(:) ! AvD: temp
-         double precision :: A, E
          double precision :: XX, YY, XG, YG
 
-         save A, E
          data INI/0/
          if (INI == 0) then
             call SETELLIPS(3) ! WGS84

@@ -39,15 +39,14 @@
     use m_alloc
     use m_wind
     use m_sferic
-    use m_xbeach_data, only: Fx, Fy, swave, Lwave, hminlw
+    use m_xbeach_data, only: Lwave
     use m_fm_icecover, only: ice_p, fm_ice_update_press, ice_apply_pressure, ice_reduce_waves, ice_af, ice_apply_friction, ice_frctp, ice_frcuni, FRICT_AS_DRAG_COEFF
 
     implicit none
 
     integer :: L, LL, Lb, Lt, k1, k2, kt1, kt2
-    double precision :: dptot, tidp, trshcorioi, fmax, floc, dzt, dztm, alf
-    double precision :: GradHinUc
-    double precision :: p1, p2, wfac, Dzk
+    double precision :: dptot, tidp, trshcorioi, dzt, dztm, alf
+    double precision :: wfac, Dzk
     double precision :: uixL, uiyL, uL, vL, uxL, uyL, duxL, duyL, duL, cdi, ice_shear
 
     trshcorioi = 1d0 / trshcorio

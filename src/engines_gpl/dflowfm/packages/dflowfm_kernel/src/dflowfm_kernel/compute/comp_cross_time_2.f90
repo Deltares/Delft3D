@@ -48,7 +48,7 @@ double precision function comp_cross_time_2(x1, x3, x4, v1, v3, v4, dclear)
 
    double precision :: a, b, c, dnow, xc, yc, dteps, deps
 
-   double precision :: t1, t2, t3, DdDt
+   double precision :: t1, t2, DdDt
 
    integer :: i, ja
 

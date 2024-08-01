@@ -49,14 +49,13 @@ subroutine flow_initfloodfill()
 
    implicit none
 
-   integer :: i, inod, iL, Lf, k, k2, nx
+   integer :: i, iL, Lf, k, k2, nx
    integer, allocatable :: kcsfill(:)
-   integer, allocatable :: ndroot(:)
    integer, allocatable :: ndqueue(:)
    integer, dimension(:), allocatable :: inodes
    double precision, allocatable :: s1queue(:)
    integer :: iqcur, iqtail
-   integer :: ierror, knew
+   integer :: ierror
    integer :: jakdtree
 
    jakdtree = 1

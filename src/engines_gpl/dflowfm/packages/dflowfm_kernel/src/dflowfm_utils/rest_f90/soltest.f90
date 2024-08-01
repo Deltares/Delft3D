@@ -41,7 +41,6 @@
       use m_reduce
       use m_flow
       use m_alloc
-      use unstruc_model, only: md_findcells
       implicit none
 
       integer, intent(in) :: iCFL !< wave-based Courant number

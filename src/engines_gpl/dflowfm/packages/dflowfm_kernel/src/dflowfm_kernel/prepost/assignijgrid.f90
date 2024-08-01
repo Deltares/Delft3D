@@ -43,12 +43,12 @@ subroutine assignijgrid(k, ic, jc)
 
    integer, dimension(numk) :: ic, jc !< indices (i,j) of the nodes
 
-   integer :: kcell, kneighbor, kdir, kdirdum
+   integer :: kcell, kneighbor, kdir
    integer :: icount, iter, lowold(2), uppold(2)
    integer, parameter :: MAXITER = 1000000
 ! integer, parameter       :: IMISS   = -999999
 
-   integer :: i, numiter_guess
+   integer :: numiter_guess
 !---------------------------------------------------------
 ! cellmask
 !   -1 : inactive,     in curvi-grid

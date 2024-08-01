@@ -57,13 +57,12 @@
 
          double precision :: X(MMAX, NMAX), Y(MMAX, NMAX), ATP(MMAX, NMAX), &
             A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), &
-            D(MMAX, NMAX), E(MMAX, NMAX), XC(4), YC(4)
+            D(MMAX, NMAX), E(MMAX, NMAX)
 
          double precision :: X1, Y1, X2, Y2, D12, X3, Y3, X4, Y4, D34, D14, D23
 
          common / DRAWTHIS / ndraw(50)
 
-         logical JAWEL
          save NDRAW8
 
          A = DXYMIS; B = DXYMIS; C = DXYMIS; D = DXYMIS; E = DXYMIS; ATP = DXYMIS

@@ -38,7 +38,7 @@ subroutine compareanalytic(s, u, x, mmax)
    implicit none
    integer :: mmax
    double precision :: s(0:mmax), u(0:mmax), x(0:mmax)
-   double precision :: alf, dif, si, aa
+   double precision :: alf, dif, si
    integer :: n, i, ii
    logical inview
 

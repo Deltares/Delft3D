@@ -36,7 +36,6 @@
     use m_flow
     implicit none
     integer :: L, LL, k1, k2
-    double precision :: r1, r2
     do LL = 1, Lnx
        k1 = ln(1, LL); k2 = ln(2, LL)
        if (zsp(k1) /= 0d0 .or. zsp(k2) /= 0d0) then

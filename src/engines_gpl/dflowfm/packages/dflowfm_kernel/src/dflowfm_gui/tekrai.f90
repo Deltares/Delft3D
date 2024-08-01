@@ -50,9 +50,9 @@
 
     integer :: nsiz, ja
 
-    double precision :: xx1, xx2, zz
-    integer :: k1, k2, l1, l2, n1, n2
-    double precision :: uu, ww, z1, z2
+    double precision :: xx2, zz
+    integer :: k1, k2, n1, n2
+    double precision :: uu, ww
     double precision :: zfac, zgaten
     integer :: l, k, kk, j, kplotorg, n, ncol
 
@@ -64,7 +64,7 @@
     common / depmax / vmax, vmin, dv, val, ncols, nv, nis, nie, jaauto
     common / VFAC / VFAC, VFACFORCE, NVEC
     common / drawthis / ndraw(50)
-    integer :: ndraw, kts
+    integer :: ndraw
 
     double precision :: zz1, zz2, xz1, xz2
     double precision :: xmn, xmx, ymx, zmx, zmx2, bot, top, xx, yy, bup, xxu, zzu

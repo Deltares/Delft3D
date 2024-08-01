@@ -47,7 +47,6 @@
     use precision
     use m_waves
     use m_flowparameters, only: ispirparopt
-    use m_sferic, only: pi, rd2dg
     use m_wind, only: jawind
     use unstruc_display, only: grwhydopt
 
@@ -56,10 +55,9 @@
     common / drawthis / ndraw(50)
     integer :: ndraw
 
-    integer :: kk, k, nodval, N, L, k2
-    double precision :: uu, seq(mxgr), wse(mxgr), hsk, dum, czc, taucurc, ustw2, U10, FetchL, FetchD, rkk, shs
-    ! real(fp)       , dimension(:,:)   , pointer :: bedtmp
-    integer :: istat, jawaveswartdelwaq_local
+    integer :: kk, k, nodval, L
+    double precision :: seq(mxgr), wse(mxgr), hsk, dum, czc, taucurc, ustw2, U10, FetchL, FetchD, rkk, shs
+    integer :: jawaveswartdelwaq_local
     double precision, external :: sinhsafei
 
     nodval = ndraw(28)

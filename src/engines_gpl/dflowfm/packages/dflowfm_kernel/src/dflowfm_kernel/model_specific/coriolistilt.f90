@@ -38,8 +38,8 @@
        use unstruc_display
        implicit none
 
-       integer :: k, L, k1, k2
-       double precision :: s1k, xx, yy, samp, ux, uy, dif, alf, tim
+       integer :: k, L
+       double precision :: s1k, yy, samp, ux, uy, dif, alf, tim
 
        ux = 0.1d0; uy = 0d0; samp = ux * fcorio / ag
        if (tim == 0d0) then

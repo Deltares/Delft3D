@@ -44,7 +44,6 @@
 
     ! locals
     integer :: k1, k2, k3, k4
-    double precision :: rn, rt, rnl, rtl
 
     ! Check: no findcells done yet. Report 'all bad'.
     if (nump <= 0) then

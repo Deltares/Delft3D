@@ -37,7 +37,7 @@ subroutine ISflowlink(XP, YP, LL) ! IS THIS A flow NODE OR A flow LINK ?
    implicit none
    double precision :: XP, YP
    integer :: LL
-   integer n, l, k1, k2
+   integer :: l, k1, k2
    double precision :: xa, ya
 
    LL = 0

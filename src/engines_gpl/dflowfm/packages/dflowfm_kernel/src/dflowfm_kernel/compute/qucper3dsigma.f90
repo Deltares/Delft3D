@@ -43,7 +43,7 @@
     ! locals
     integer :: La, LLL, LLLL, Lb2, Lt2, Lk ! for links LL,
     integer :: k12, Lkin ! relevant node, 1 or 2, L/R
-    double precision :: ucin, tkein, epsin ! velocity surplus
+    double precision :: ucin ! velocity surplus
 
     double precision :: ucinx, uciny
     integer :: nn12

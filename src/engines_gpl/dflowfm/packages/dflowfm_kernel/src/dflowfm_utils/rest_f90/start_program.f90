@@ -42,10 +42,8 @@
          implicit none
 
          integer :: infofile
-         integer :: infohardware
          integer :: infoopsystem
          integer :: ja
-         integer :: jmouse
          integer :: jscreen
          integer :: key
          integer :: nlevel

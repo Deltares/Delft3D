@@ -34,6 +34,8 @@
 !
 !
 
+#define no_warning_unused_dummy_argument(x) associate( x => x ); end associate
+
 #include "blasfm.h"
 
 module GAMMAS
@@ -823,6 +825,8 @@ subroutine ilutp(n, a, ja, ia, lfil, droptol, permtol, mbloc, alu, jlu, ju, iwk,
    integer k, i, j, jrow, ju0, ii, j1, j2, jpos, len, imax, lenu, lenl, jj, mbloc, icut
    double precision :: s, tmp, tnorm, xmax, xmax0, fact, abs, t, permtol
 !
+   no_warning_unused_dummy_argument(mbloc)
+   
    if (lfil < 0) goto 998
 !-----------------------------------------------------------------------
 !     initialize ju0 (points to next element to be added to alu,jlu)
@@ -1567,6 +1571,8 @@ subroutine iludp(n, a, ja, ia, alph, droptol, permtol, mbloc, alu, jlu, ju, iwk,
 !     initialize ju0 (points to next element to be added to alu,jlu)
 !     and pointer array.
 !-----------------------------------------------------------------------
+   no_warning_unused_dummy_argument(mbloc)
+
    ju0 = n + 2
    jlu(1) = ju0
 !
@@ -2712,6 +2718,9 @@ subroutine runrc2(n, rhs, sol, ipar, fpar, wk, a, ja, ia, au, jau, ju, its, eps,
 !     external dtime
    EXTERNAL_DNRM2
    save res
+   
+   no_warning_unused_dummy_argument(eps)
+
 !
 !     ipar(2) can be 0, 1, 2, please don't use 3
 !
@@ -2944,18 +2953,27 @@ end
 !
 function afun(x, y, z)
    double precision :: afun, x, y, z
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    afun = -1.0d0
    return
 end
 
 function bfun(x, y, z)
    double precision :: bfun, x, y, z
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    bfun = -1.0d0
    return
 end
 
 function cfun(x, y, z)
    double precision :: cfun, x, y, z
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    cfun = -1.0d0
    return
 end
@@ -2963,6 +2981,7 @@ end
 function dfun(x, y, z)
    use GAMMAS
    double precision :: dfun, x, y, z
+   no_warning_unused_dummy_argument(z)
    dfun = gammax * exp(x * y)
    return
 end
@@ -2970,12 +2989,16 @@ end
 function efun(x, y, z)
    use GAMMAS
    double precision :: efun, x, y, z
+   no_warning_unused_dummy_argument(z)
    efun = gammay * exp(-x * y)
    return
 end
 
 function ffun(x, y, z)
    double precision :: ffun, x, y, z
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    ffun = 0.0d0
    return
 end
@@ -2984,6 +3007,9 @@ function gfun(x, y, z)
    use GAMMAS
 
    double precision :: gfun, x, y, z
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    gfun = alpha
    return
 end
@@ -2999,6 +3025,10 @@ end
 function betfun(side, x, y, z)
    double precision :: betfun, x, y, z
    character * 2 side
+   no_warning_unused_dummy_argument(side)
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    betfun = 1.0
    return
 end
@@ -3006,6 +3036,9 @@ end
 function gamfun(side, x, y, z)
    double precision :: gamfun, x, y, z
    character * 2 side
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    if (side == 'x2') then
       gamfun = 5.0
    else if (side == 'y1') then
@@ -6324,6 +6357,7 @@ subroutine givens(x, y, c, s)
    double precision :: t, one, zero
    parameter(zero=0.0d0, one=1.0d0)
 !
+   no_warning_unused_dummy_argument(c)
    if (x == zero .and. y == zero) then
 !        c = one
       s = zero
@@ -6493,6 +6527,7 @@ subroutine bisinit(ipar, fpar, wksize, dsc, lp, rp, wk)
 !-----------------------------------------------------------------------
    double precision :: zero, one
    parameter(zero=0.0d0, one=1.0d0)
+   no_warning_unused_dummy_argument(dsc)
 !
 !     ipar(1) = -2 inidcate that there are not enough space in the work
 !     array
@@ -6713,7 +6748,12 @@ end
 
 subroutine xyk(nel, xyke, x, y, ijk, node)
    implicit double precision(a - h, o - z)
-   dimension xyke(2, 2), x(*), y(*), ijk(node, *)
+   dimension xyke(2, 2), x(:), y(:), ijk(:, :)
+   no_warning_unused_dummy_argument(nel)
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(ijk)
+   no_warning_unused_dummy_argument(node)
 !
 !     this is the identity matrix.
 !
@@ -7002,6 +7042,7 @@ subroutine getsten(nx, ny, nz, mode, kx, ky, kz, stencil, h, rhs)
 !
    integer k
    double precision :: hhalf, cntr, x, y, z, coeff
+   no_warning_unused_dummy_argument(nx)
 !
 !     if mode < 0, we shouldn't have come here
 !
@@ -7279,6 +7320,7 @@ subroutine bsten(nx, ny, nz, kx, ky, kz, nfree, stencil, h)
    integer :: i, k, kx, ky, kz, nfree, nfree2, nx, ny, nz
    double precision :: stencil(7, *)
    double precision :: cntr(225), coeff(225), h, h2, hhalf, x, y, z, xh
+   no_warning_unused_dummy_argument(nx)
 !------------
    if (nfree > 15) then
       print *, ' ERROR ** nfree too large '
@@ -7963,8 +8005,9 @@ end
 !-----end of fdaddbc----------------------------------------------------
 !-----------------------------------------------------------------------
 subroutine clrow(i, a, ja, ia)
-   integer i, ja(*), ia(*), k
+   integer i, ja(:), ia(*), k
    real * 8 a(*)
+   no_warning_unused_dummy_argument(ja)
 !-----------------------------------------------------------------------
 !     clear the row i to all zero, but still keep the structure of the
 !     CSR matrix
@@ -8002,6 +8045,9 @@ end
 subroutine afunbl(nfree, x, y, z, coeff)
    integer :: nfree
    double precision :: x, y, z, coeff(225)
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    do j = 1, nfree
       do i = 1, nfree
          coeff((j - 1) * nfree + i) = 0.0d0
@@ -8014,6 +8060,9 @@ end
 subroutine bfunbl(nfree, x, y, z, coeff)
    integer :: nfree
    double precision :: x, y, z, coeff(225)
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    do j = 1, nfree
       do i = 1, nfree
          coeff((j - 1) * nfree + i) = 0.0d0
@@ -8026,6 +8075,9 @@ end
 subroutine cfunbl(nfree, x, y, z, coeff)
    integer :: nfree
    double precision :: x, y, z, coeff(225)
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    do j = 1, nfree
       do i = 1, nfree
          coeff((j - 1) * nfree + i) = 0.0d0
@@ -8038,6 +8090,9 @@ end
 subroutine dfunbl(nfree, x, y, z, coeff)
    integer :: nfree
    double precision :: x, y, z, coeff(225)
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    do j = 1, nfree
       do i = 1, nfree
          coeff((j - 1) * nfree + i) = 0.0d0
@@ -8049,6 +8104,9 @@ end
 subroutine efunbl(nfree, x, y, z, coeff)
    integer :: nfree
    double precision :: x, y, z, coeff(225)
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    do j = 1, nfree
       do i = 1, nfree
          coeff((j - 1) * nfree + i) = 0.0d0
@@ -8060,6 +8118,9 @@ end
 subroutine ffunbl(nfree, x, y, z, coeff)
    integer :: nfree
    double precision :: x, y, z, coeff(225)
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    do j = 1, nfree
       do i = 1, nfree
          coeff((j - 1) * nfree + i) = 0.0d0
@@ -8071,6 +8132,9 @@ end
 subroutine gfunbl(nfree, x, y, z, coeff)
    integer :: nfree
    double precision :: x, y, z, coeff(225)
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
    do j = 1, nfree
       do i = 1, nfree
          coeff((j - 1) * nfree + i) = 0.0d0

@@ -32,8 +32,8 @@
 
 !> get maximum timestep for water columns (see setdtorg)
 subroutine get_dtmax()
-   use m_flowgeom, only: Ndx, Ndxi, bl, nd, Dx, ln, lnx, ba
-   use m_flow, only: s1, epshu, squ, sqi, vol1, kmx, u1, hu, diusp, viu, Lbot, Ltop, jaimplicitfallvelocity
+   use m_flowgeom, only: Ndx, Ndxi, bl, ln, lnx, ba
+   use m_flow, only: s1, epshu, squ, sqi, vol1, kmx, diusp, viu, Lbot, Ltop, jaimplicitfallvelocity
    use m_flowparameters, only: eps10, cflmx, jadiusp
    use m_turbulence, only: sigdifi
    use m_flowtimes, only: time1

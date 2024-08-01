@@ -46,7 +46,7 @@ subroutine update_verticalprofiles()
 
    use m_flow
    use m_flowgeom
-   use m_waves, only: hwav, dwcap, dsurf, gammax, ustokes, vstokes, fbreak, fwavpendep
+   use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
    use m_partitioninfo
    use m_flowtimes
    use m_ship
@@ -55,26 +55,17 @@ subroutine update_verticalprofiles()
 
    implicit none
 
-   double precision :: tetm1, dz0, dzc1, dzc2, zb1, zb2, tkedisL, tkeproL
-   double precision :: vicu, vicd, difu, difd, fac, dzdz1, dzdz2, s2, sourtu, sinktu, bet, ybot, rhom, drhodz
-
-   double precision :: uave, ustar, zz, sqcf, frcn, cz, z00, uave2, ac1, ac2, dzLw, sqcf3, ustar3, tkebot, tkesur, epsbot, epssur, volu
-
-   double precision :: hdzb, hdzs, dtiL, hdz, adv, omega1, omega2, omegu, drhodz1, drhodz2, rhomea, sousin
-
+   double precision :: tetm1, dzc1, dzc2, zb1, zb2, tkedisL
+   double precision :: vicu, vicd, difu, difd, dzdz1, dzdz2, sourtu, sinktu, drhodz
+   double precision :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur, volu
+   double precision :: hdzb, dtiL, adv, omega1, omega2, omegu, drhodz1, drhodz2
    double precision :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
-
    double precision :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax, zf
-
    double precision :: wk, wke, vk, um, tauinv, tauinf, xlveg, rnv, diav, ap1, alf, c2esqcmukep, teps, tkin
-
-   double precision :: cfuhi3D, vicwmax, tkewin, zint, z1, vicwww, alfaT, tke, eps, tttctot, c3t, c3e
-
-   double precision :: rhoLL, pkwmag, hrmsLL, wdep, hbot, dzwav, dis1, dis2, surdisLL, dzz, zw, tkewav, epswv, prsappr
-
-   integer :: k, ku, kd, kb, kt, n, kbn, kbn1, kn, knu, kk, kbk, ktk, kku, LL, L, Lb, Lt, kxL, Lu, Lb0, kb0, whit
-   integer :: k1, k2, k1u, k2u, n1, n2, ifrctyp, ierr, kup, ierror, Ltv, ktv
-
+   double precision :: cfuhi3D, vicwmax, zint, z1, vicwww, alfaT, tke, eps, tttctot, c3t
+   double precision :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL, prsappr
+   integer :: k, ku, kb, kt, n, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
+   integer :: k1, k2, k1u, k2u, n1, n2, kup, ierror
    double precision, external :: setrhofixedp
 
    if (iturbulencemodel <= 0 .or. kmx == 0) return

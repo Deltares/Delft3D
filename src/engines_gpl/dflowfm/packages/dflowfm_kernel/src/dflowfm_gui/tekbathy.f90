@@ -36,7 +36,7 @@
     use m_flow
     use gridoperations
     implicit none
-    integer :: nodemode, nodewhat, ndraw
+    integer :: nodewhat, ndraw
     integer :: k, ja, nn, ncol
     double precision :: znod, zn
     common / drawthis / ndraw(50)

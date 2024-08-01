@@ -34,7 +34,6 @@ subroutine SETCOLTABFILE(FILNAM, JASECOND)
    use unstruc_colors
    implicit none
    double precision :: dv, dv2
-   integer :: i
    integer :: ierror
    integer :: iblue
    integer :: igreen
@@ -50,7 +49,6 @@ subroutine SETCOLTABFILE(FILNAM, JASECOND)
    integer :: ncols, ncols2
    integer :: nie, nie2
    integer :: nis, nis2
-   integer :: nisn
    integer :: nv, nv2
    double precision :: val, val2
    double precision :: vmax, vmax2

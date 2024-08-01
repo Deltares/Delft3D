@@ -50,16 +50,8 @@ subroutine fliplinks()
 
    integer :: k1, k2, kL, kR
    integer :: icellL, icellR
-   integer :: k, kk, LL
-
-   integer :: x1, x2, xL, xR ! deviation from optimal nmk
-
-   logical :: Lproceed
-
+   integer :: kk, LL
    integer :: ntopo ! change in topology functional
-
-!   integer,              dimension(4)   :: nmk_opt           ! optimal nmk for the for nodes involved
-
    integer :: numchanged ! number of linkes flipped
 
    integer :: iter ! iteration
@@ -67,10 +59,7 @@ subroutine fliplinks()
 
    integer :: L1L, L1R, L2L, L2R ! other links in triangles connected to link L
 
-   integer :: jacross ! check if two diagonals of a quadrilateral cross
-
-   integer :: irerun
-
+   integer :: jacross ! check if two diagonals of a quadrilateral cross 
    integer :: jatriangulate ! triangulate all cells prior to link flippingz
    integer :: jalandbound ! take land boundaries into account or not
 
@@ -83,12 +72,7 @@ subroutine fliplinks()
    logical :: Lflip
 
    integer, external :: nmk_opt
-
    double precision, external :: rand
-
-   integer :: ja
-
-   integer :: lunfil
 
    if (jaswan /= 1) then
 

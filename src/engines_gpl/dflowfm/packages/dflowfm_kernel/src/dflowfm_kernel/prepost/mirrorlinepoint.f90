@@ -36,7 +36,6 @@
       use m_missing
       implicit none
       double precision :: X0, Y0, X3, Y3, X1, Y1, X2, Y2, DIS, XN, YN, dx0, dy0
-      double precision :: getdx, getdy
       integer :: JA
 
       call DLINEDIS(X0, Y0, X1, Y1, X2, Y2, JA, DIS, XN, YN, jsferic, jasfer3D, dmiss)

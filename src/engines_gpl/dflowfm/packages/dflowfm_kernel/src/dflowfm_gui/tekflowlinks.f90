@@ -38,8 +38,8 @@
     use m_sferic
     use m_missing
     implicit none
-    integer :: nodemode, nodewhat, ndraw(50)
-    integer :: k, L, ja, ja2, k1, k2, nn, ncol, linkmode
+    integer :: ndraw(50)
+    integer :: k, L, ja, k1, k2, ncol, linkmode
     double precision :: zlin, zL
     double precision :: xcl, ycl, zcl ! help only
     double precision :: xx1, yy1, Zz1 ! help only

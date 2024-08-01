@@ -39,7 +39,7 @@
     use m_flow
     use m_flowgeom
     implicit none
-    integer :: minp, ja, n, nn, ic, i, j, ierr, L1
+    integer :: minp, ja, n, nn, i, j, ierr, L1
     logical jawel
     double precision, allocatable :: e(:, :)
 

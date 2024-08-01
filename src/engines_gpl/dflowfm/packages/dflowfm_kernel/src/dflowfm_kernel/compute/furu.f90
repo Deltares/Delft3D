@@ -37,7 +37,6 @@
     use m_flowtimes
     use m_alloc
     use m_partitioninfo
-    use m_xbeach_data, only: swave
     use m_waves, only: cfwavhi, cfhi_vanrijn, uorb
     use m_sediment
     use unstruc_channel_flow

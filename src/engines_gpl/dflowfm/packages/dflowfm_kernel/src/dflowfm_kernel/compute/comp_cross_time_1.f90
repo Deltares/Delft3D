@@ -39,22 +39,14 @@ double precision function comp_cross_time_1(x1, x3, x4, v1, v3, v4, dclear)
    double precision, dimension(2) :: x1, x3, x4 !< coordinates
    double precision, dimension(2) :: v1, v3, v4 !< velocities
    double precision :: dclear !< clearance
-
-   double precision, dimension(2) :: xs, dn
-
+   double precision, dimension(2) :: xs
    double precision, dimension(4) :: t, beta
-
    double precision, dimension(5) :: coeffs
-
    double precision, dimension(2) :: x13, x34, v13, v34
-
    double precision :: a, b, c, det, time, DdDt
    double precision :: e, f, g
-
    integer :: i
-
    double precision, external :: cross_prod
-
    double precision, parameter :: dtol = 1d-8
 
 !  a t^2 + b t + c = 0

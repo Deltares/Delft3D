@@ -50,7 +50,7 @@
     character(len=*), intent(in) :: filename
     double precision, intent(in) :: area
     integer, intent(out) :: ierr
-    integer :: minp, k, kk, kb, kt, kk2, n1, n2, i, jakdtree, kdum(1)
+    integer :: minp, kk, kk2, n1, n2, i, jakdtree, kdum(1)
     character(len=IdLen) :: tmpname(1)
 
     ierr = DFM_NOERR

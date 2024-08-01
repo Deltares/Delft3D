@@ -52,19 +52,16 @@ subroutine assignij(kcell, kdir, kneighbor, ic, jc)
 
    integer, dimension(*) :: ic, jc ! indices (i,j) of the nodes
 
-   integer :: i, j, L, k, kk
-   integer :: kself, kkneighbor, kkself, klink
-
-   integer :: Lneighbor1, Lneighbor2, Lneighbor3
-   integer :: inew1, inew2, inew3, jnew1, jnew2, jnew3
-
+   integer :: L
+   integer :: kself, kkneighbor, kkself
+   integer :: Lneighbor1, Lneighbor3
    integer :: k1, k2, icnew1, icnew2, jcnew1, jcnew2
 
    integer, dimension(4), parameter :: Di = (/-1, 0, 1, 0/)
    integer, dimension(4), parameter :: Dj = (/0, -1, 0, 1/)
 
    integer :: icell, jcell, nodes(4)
-   integer :: ilink, link
+   integer :: ilink
    integer :: node1, node2, othernode
 ! integer, parameter                :: IMISS = -999999
 

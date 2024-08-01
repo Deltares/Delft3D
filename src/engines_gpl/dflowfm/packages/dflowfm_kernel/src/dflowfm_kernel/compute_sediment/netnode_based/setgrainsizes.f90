@@ -32,13 +32,11 @@
 
  subroutine setgrainsizes() ! for all fractions:
     use M_SEDIMENT
-    use m_physcoef, only: ag, rhomean, vonkar, backgroundwatertemperature, vismol
+    use m_physcoef, only: ag, rhomean, backgroundwatertemperature, vismol
     use MessageHandling
     implicit none
     integer :: m, j
-    double precision :: Ucr, sster, c1, c2, wster, wschk, taucr, taucr1, thetcr, pclay = 0d0, fcr = 1d0
-
-    double precision :: a = 2.414d-5, b = 247.8d0, c = 140d0, TempK, s
+    double precision :: Ucr, sster, c1, c2, wster, wschk, taucr, thetcr, pclay = 0d0, fcr = 1d0
 
 ! where was this moved to or why was it removed?
 ! TempK         = 273d0 + backgroundwatertemperature

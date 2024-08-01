@@ -50,7 +50,6 @@
      double precision :: cfl
      double precision :: dv
      double precision :: e0
-     double precision :: eal
      double precision :: eps
      double precision :: fsp
      integer :: jaauto
@@ -63,12 +62,11 @@
      double precision :: rho
      double precision :: rhow
      double precision :: sp
-     double precision :: uu
      double precision :: v
      double precision :: val
      double precision :: vmax
      double precision :: vmin
-     double precision :: VV, WW, X3, Y3, X4, Y4
+     double precision :: X3, Y3, X4, Y4
      double precision :: xd, YD, ZD
      double precision :: areaL, areaR, xc, yc, aa
 

@@ -63,7 +63,6 @@
     use m_oned_functions
     use unstruc_channel_flow, only: network
     use m_sediment, only: stm_included
-    use m_dad, only: dad_included
     use m_flowtimes, only: handle_extra
     use Timers
     use m_structures

@@ -39,7 +39,6 @@
          integer :: mmdd, ja, m1, n1, m2, n2, MH, NH, NR2
 
          integer :: m, n, MOUT
-         double precision :: af, hu, hv, d
 
          character REC * 132
 

@@ -31,7 +31,7 @@
 !
 
  subroutine solve_jacobi(s1, ndx, itsol) ! uses both s0 and s1
-    use m_flowgeom, only: lnx, ln, kfs, kcs, nd
+    use m_flowgeom, only: ln, kfs, nd
     use m_flowtimes
     use m_jacobi
     use m_reduce
@@ -39,7 +39,7 @@
     implicit none
 
     double precision :: ds, rrn ! max error
-    integer :: L, n, k1, k2, ndx, itsol, nn, La, n1, n2, ni
+    integer :: L, n, ndx, itsol, nn, La, n1, n2, ni
     double precision :: s1(ndx)
 
     !$OMP PARALLEL DO                                          &

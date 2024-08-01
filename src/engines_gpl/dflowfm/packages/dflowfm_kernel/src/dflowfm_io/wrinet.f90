@@ -35,8 +35,6 @@
          implicit none
          integer :: MNET
 
-         integer :: i
-         integer :: j
          integer :: k
          integer :: l
          integer :: lcdum

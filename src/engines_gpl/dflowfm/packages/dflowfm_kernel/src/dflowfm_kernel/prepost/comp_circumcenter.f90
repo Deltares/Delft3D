@@ -47,12 +47,12 @@ subroutine comp_circumcenter(N, xp, yp, xf, yf, xc, yc)
    double precision, dimension(2, 2) :: T
    double precision, dimension(2) :: rhs
 
-   double precision :: dt, xhalf, yhalf, dfac, x0, y0, det
+   double precision :: xhalf, yhalf, dfac, x0, y0, det
 
    double precision :: xzw, yzw, SL, SM, XCR, YCR, CRP
    double precision :: xref, yref
 
-   integer :: i, in, ip1, j
+   integer :: i, in, ip1
 
    integer :: JACROS, m, m2
 

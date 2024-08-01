@@ -36,7 +36,7 @@
     use geometry_module, only: getdx, getdy
     implicit none
     double precision :: x1, y1, x2, y2, s, c, d
-    double precision :: dx1, dy1, dx2, dy2
+    double precision :: dx1, dy1
 
     dx1 = getdx(x1, y1, x2, y2, jsferic)
     dy1 = getdy(x1, y1, x2, y2, jsferic)

@@ -46,18 +46,13 @@
       double precision :: dscr
       double precision :: hrc
       integer :: i, KMOD
-      integer :: jastart
       integer :: key
       integer :: mcs
-      integer :: ncol
       integer :: ncs
-      integer :: ndraw
-      integer :: ns1, m, n
+      integer :: ns1
       double precision :: wpqr
       double precision :: x
-      double precision :: xold
       double precision :: y
-      double precision :: yold
       double precision :: z
       double precision :: zfac
       double precision :: zupw
@@ -65,8 +60,6 @@
 !     TEKEN SAMPLES
       common / PERSPX / WPQR, DELTX, DELTY, DELTZ, ZFAC, DSCR, ZUPW
       common / SAMPLESADM / MCS, NCS, NS1
-      double precision :: VS(4, 4)
-      logical inview
 
       if (MET == 0) return
 
@@ -146,8 +139,6 @@
 
    subroutine tek1sample(x, y, z, met, rc, hrc, m, n)
       use unstruc_colors
-
-      use unstruc_opengl, only: jaopengl
       use unstruc_display
       use m_arcinfo
 

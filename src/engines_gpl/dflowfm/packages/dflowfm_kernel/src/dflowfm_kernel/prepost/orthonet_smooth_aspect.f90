@@ -58,7 +58,7 @@ subroutine orthonet_smooth_aspect(aspect, iexit)
 
    double precision, parameter :: COSMIN = 0.5d0, COSMAX = 0.0d0, EPS = 1d-8
 
-   integer :: k, kk, num, iL, iR, k1, k2, k3, nn, kk1, L1, nummax
+   integer :: kk, num, k1, k2, k3, nn, kk1, L1, nummax
 
    integer, parameter :: ITAPSM = 2
 

@@ -42,7 +42,7 @@
     integer :: k1, k2, L, k
     integer :: ierr
     double precision :: z1, z2, h1, h2, dh, dQ, hunsat, hunsat1, hunsat2, fac, qgrw, h2Q
-    double precision :: fc, conduct, dum, h_upw, Qmx, hintercept
+    double precision :: fc, conduct, h_upw, Qmx
 
     qingrw = 0d0; qoutgrw = 0d0; Volgrw = 0d0
 

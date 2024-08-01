@@ -54,7 +54,7 @@
      integer :: k1
      integer :: k2
      integer :: ku
-     double precision :: XP1, YP1, XP2, YP2, SL, SM, XCR, YCR, CRP, dis, xcr1, ycr1
+     double precision :: XP1, YP1, XP2, YP2, SL, SM, XCR, YCR, CRP, dis
 
      double precision, parameter :: dtol = 1d-8
 

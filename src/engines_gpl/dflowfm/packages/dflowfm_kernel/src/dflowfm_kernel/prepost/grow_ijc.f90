@@ -46,11 +46,7 @@ subroutine grow_ijc(lowold, uppold, lowobj, uppobj, init)
 
    integer, dimension(2) :: lownew, uppnew
    integer :: i
-! integer, parameter                   :: IMISS = -999999
    integer, parameter :: IJCBLOCK = 100 ! block size in ijc
-
-   logical :: ldoit
-
    integer, dimension(2), save :: blocklow ! lower blocksizes in ijc
    integer, dimension(2), save :: blockupp ! upper blocksizes in ijc
    double precision, parameter :: FAC = 1.2 ! growfactor of blocksizes

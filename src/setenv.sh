@@ -28,7 +28,7 @@ if [[ "$1" == intel24* ]]; then
      module load tiff/4.5.0rc3_intel2024.0.0
      module load patchelf/0.17.2_intel2023.1.0_standalone
      module load ninja/1.11.1_native
-     module load petsc/3.19.0_intel2023.1.0_standalone
+     module load petsc/3.21.3_intel2024.2.0
 
 elif [ "$1" == "gnu" ]; then
      echo "Loading GNU compiled modules"

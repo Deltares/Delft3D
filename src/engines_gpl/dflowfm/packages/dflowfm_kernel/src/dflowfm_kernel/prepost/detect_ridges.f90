@@ -42,10 +42,10 @@ subroutine detect_ridges(jadeleteHessians)
 
    integer, intent(in) :: jadeleteHessians !< delete Hessians upon completion (1) or not (0)
 
-   integer :: i, j, ip, jacancelled
+   integer :: i, j, ip
    integer :: ierror, Nsamplesmooth_bak
 
-   double precision :: Dh, dum
+   double precision :: Dh
 
    double precision, external :: comp_sampleDh
 

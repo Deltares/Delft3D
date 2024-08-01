@@ -40,14 +40,10 @@
 
      implicit none
      double precision :: dv
-     double precision :: dx
-     double precision :: dxshow
-     double precision :: dy
      double precision :: hic
      integer :: i, j, ihcopts, jaauto, ncols, ndec, ndraw, nhcdev, nie, nis, numhcopts, nv, nvec
      integer :: INC
 
-     double precision :: rmiss
      double precision :: scalesize
      double precision :: val
      double precision :: vfac
@@ -56,14 +52,11 @@
      double precision :: vmin
      double precision :: wi
      double precision :: wic
-     double precision :: x0
-     double precision :: xd
      double precision :: xleg
      double precision :: xsc
      double precision :: xsc0
      double precision :: xsc1
      double precision :: xsc2
-     double precision :: y0
      double precision :: yleg
 
      double precision :: ysc
@@ -76,7 +69,6 @@
      common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
      common / VFAC / VFAC, VFACFORCE, NVEC
      character TEXT2 * 10, FMT * 7
-     character(LEN=8) :: TEX
      character(LEN=17) :: MINTEX, MAXTEX
      real INFOGRAPHICS
 

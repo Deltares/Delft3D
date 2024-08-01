@@ -44,10 +44,9 @@
 
     implicit none
 
-    integer :: K, KK, KM, K1, K2, KK1, KK2, KA, KB, kn3, L, LL, JA, JACROS
-    integer :: IBR, KP, N, JADUM
+    integer :: K, KK, KM, K1, K2, KA, KB, kn3, L, LL, JA
+    integer :: JADUM
     double precision :: DIST, DISMIN
-    double precision :: SL, SM, XCR, YCR, CRP, XB, YB
     integer :: kint, Lint, in
 
     double precision :: R2search ! squared search radius
@@ -63,7 +62,7 @@
 
     integer, dimension(:), allocatable :: iperm ! permutation array
 
-    double precision :: xboundmin, xboundmax, d
+    double precision :: xboundmin, xboundmax
 
     logical :: Lmerge
 

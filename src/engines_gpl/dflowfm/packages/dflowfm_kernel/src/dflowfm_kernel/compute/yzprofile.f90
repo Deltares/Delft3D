@@ -33,7 +33,6 @@
 subroutine yzprofile(hpr, ka, itp, area, width, japerim, frcn, ifrctyp, perim, cfhi)
    use m_profiles
    use m_physcoef, only: ag
-   use m_flow, only: slotw1D
    implicit none
    integer :: ka, japerim, itp
    double precision :: hpr ! hoogte in profiel
@@ -48,7 +47,7 @@ subroutine yzprofile(hpr, ka, itp, area, width, japerim, frcn, ifrctyp, perim, c
    double precision :: hpr2 ! height in segment under consideration
    double precision :: frcn ! user defined friction coefficient
    double precision :: bl1, bl2, b21 ! bottom levels segment, b21, diff of bl1,bl2, always > 0
-   double precision :: wu2, ai, aconv, per, hyr, Cz
+   double precision :: wu2, ai, aconv, per
    integer :: ifrctyp ! user defined frcition type
    integer :: k, numseg, jac
 

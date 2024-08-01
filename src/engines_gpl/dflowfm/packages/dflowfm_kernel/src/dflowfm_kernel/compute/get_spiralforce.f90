@@ -37,7 +37,7 @@ subroutine get_spiralforce ! Effect of secondary flow on momentum equations
 
    implicit none
    integer :: k, k1, k2, LL, L, n
-   double precision :: cofa, cofb, cofc, cofd, cofe, coff, cofg, cofw, cofx, cofy, coftxx, coftxy, coftyy, cof0
+   double precision :: cofa, cofb, cofc, cofd, cofe, coff, cofg, cofw, cofx, cofy, coftxx, coftxy, cof0
    double precision :: dtxxdx, dtxxdy, dtxydx, dtxydy
    double precision :: betas, beta, alfa
    double precision :: fx, fy, fxl

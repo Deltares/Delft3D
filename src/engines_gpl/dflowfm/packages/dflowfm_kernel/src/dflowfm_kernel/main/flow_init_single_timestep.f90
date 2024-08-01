@@ -43,10 +43,7 @@ subroutine flow_init_single_timestep(iresult)
    integer, parameter :: JAZWS0 = 0
    logical, parameter :: SET_HU = .true.
    logical, parameter :: USE_U1 = .true.
-   integer :: key
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
-
-   integer :: N, L
 
    iresult = DFM_GENERICERROR
 

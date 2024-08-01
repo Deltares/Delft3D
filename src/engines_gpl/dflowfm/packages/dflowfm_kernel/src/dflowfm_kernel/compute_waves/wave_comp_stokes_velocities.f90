@@ -33,14 +33,14 @@
    subroutine wave_comp_stokes_velocities()
       use m_flowparameters
       use m_flowgeom
-      use m_flow, only: hu, huvli, hs
+      use m_flow, only: hu, hs
       use m_physcoef, only: sag
       use m_waves
       use m_sferic
       use m_partitioninfo
       implicit none
 
-      double precision :: Mu, Mv, hminlwi, massflux_max, mnorm, mangle ! link-based and link-oriented wave-induced volume fluxes
+      double precision :: Mu, Mv, massflux_max, mnorm, mangle ! link-based and link-oriented wave-induced volume fluxes
       double precision :: gammal, hwavL, hstokes, huL, deltahmin
       double precision, allocatable :: mx(:), my(:)
 

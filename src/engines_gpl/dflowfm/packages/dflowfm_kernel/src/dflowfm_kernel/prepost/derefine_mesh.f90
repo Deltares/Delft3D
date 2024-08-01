@@ -56,8 +56,8 @@ subroutine derefine_mesh(xp, yp, Lconfirm)
    integer :: numfront, numfrontnew
    integer, dimension(:), allocatable :: ifront, ifrontnew, icellmask
 
-   integer :: i, ic, in, j, ja, k, k1, kk, kkk, L
-   integer :: kcell, kother, knew, newsize, iter, N
+   integer :: i, in, j, ja, k, k1, kk, L
+   integer :: kother, newsize, iter, N
 
    logical :: Liscell, Lplot
 

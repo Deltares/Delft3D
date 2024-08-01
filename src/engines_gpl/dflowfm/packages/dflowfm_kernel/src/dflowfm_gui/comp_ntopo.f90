@@ -44,14 +44,10 @@ subroutine comp_ntopo(L, jalandbound, k1, k2, kL, kR, icellL, icellR, ntopo)
    integer, intent(out) :: icellL, icellR !< cells involved
    integer, intent(out) :: ntopo !< change in topology functional
 
-   integer :: k, kk
+   integer :: k
    integer :: n1, n2, nL, nR
-   integer :: n1L, n1R, n2L, n2R, nL1, nL2, nR1, nR2
-   integer, dimension(4) :: nopt, nnow, naft !< optimal and before and after flip
-
+   integer :: n1L, n1R, n2L, n2R
    logical :: Lproceed
-
-!   integer, parameter    :: IMISS = -999
 
    integer, external :: nmk_opt
 

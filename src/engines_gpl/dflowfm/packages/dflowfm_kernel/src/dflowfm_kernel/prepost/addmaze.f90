@@ -36,7 +36,7 @@
 
       implicit none
       double precision :: X(N), Y(N), Z(N)
-      integer :: N, nn
+      integer :: N
       integer :: k
       integer :: k2
       integer :: lnu

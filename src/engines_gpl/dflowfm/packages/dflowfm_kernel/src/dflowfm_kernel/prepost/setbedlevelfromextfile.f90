@@ -52,9 +52,8 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
 
    logical, external :: timespaceinitialfield_mpi
 
-   logical :: jawel
    logical :: bl_set_from_zkuni = .false.
-   integer :: mxyb, ja, ja1, ja2, method, iprimpos
+   integer :: ja, ja1, ja2, method, iprimpos
    integer :: k, L, k1, k2, mx
    integer, allocatable :: kcc(:), kc1D(:), kc2D(:)
    integer :: ibathyfiletype

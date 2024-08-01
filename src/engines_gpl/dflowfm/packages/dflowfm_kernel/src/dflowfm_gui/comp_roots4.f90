@@ -42,13 +42,11 @@ subroutine comp_roots4(coeffs, x)
 
    double precision, dimension(4) :: re, im !< real and imaginairy parts of zeros
 
-   double precision :: rhs
-
    logical :: Lfail
 
    double precision :: dtol = 1d-12
 
-   integer :: i, j, ndegree
+   integer :: i, ndegree
 
    x = DMISS
 

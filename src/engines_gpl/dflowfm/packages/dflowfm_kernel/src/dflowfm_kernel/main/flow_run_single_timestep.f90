@@ -38,15 +38,12 @@ subroutine flow_run_single_timestep(key, iresult) ! do only 1 flow timestep
    use m_flowtimes
    use unstruc_netcdf
    use m_timer
-   use unstruc_display, only: jaGUI
    use dfm_error
 
    implicit none
 
    integer :: key
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful. DFM_TIMESETBACK if succesful, but with timestep setbacks.
-
-   integer :: N, L
 
    iresult = DFM_GENERICERROR
 

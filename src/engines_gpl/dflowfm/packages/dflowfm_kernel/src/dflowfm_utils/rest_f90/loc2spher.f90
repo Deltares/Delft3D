@@ -33,7 +33,6 @@
 !>    transform local spherical coordinates (xloc,yloc) around reference point (xref,yref) to global spherical coordinates (xglob,yglob)
       subroutine loc2spher(xref, yref, N, xloc, yloc, xglob, yglob)
          use m_sferic
-         use m_missing, only: dmiss
          use geometry_module, only: sphertocart3D, cart3Dtospher
          implicit none
 

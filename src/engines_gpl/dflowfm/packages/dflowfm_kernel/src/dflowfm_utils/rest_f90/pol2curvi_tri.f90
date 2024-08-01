@@ -56,8 +56,6 @@ subroutine pol2curvi_tri(i1, i2_, i3_)
    integer :: isum, itri, Nh
    integer :: ia, ib, ic, i, j
    integer :: ipoint, idir
-   integer :: key
-
    integer :: ierror
 
    ierror = 1

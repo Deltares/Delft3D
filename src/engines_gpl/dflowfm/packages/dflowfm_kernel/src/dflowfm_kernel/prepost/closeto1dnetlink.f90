@@ -34,7 +34,7 @@
 
          use m_netw
          use geometry_module, only: dbdistance, dlinedis
-         use m_missing, only: dmiss, imiss
+         use m_missing, only: dmiss
          use m_sferic, only: jsferic, jasfer3D
 
          implicit none

@@ -47,7 +47,7 @@ subroutine assign_icjc(xp, yp, ic, jc, iexit)
    integer, dimension(numk) :: ic, jc !< node indices (i,j)
    integer :: iexit !< 1 on success, 0 otherwise
 
-   integer :: ierr, k, kk, in
+   integer :: k, kk, in
    integer :: L1, L2, L3, L4
 
    double precision :: xh(4), yh(4)

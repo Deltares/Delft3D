@@ -31,15 +31,14 @@
 !
 
  subroutine tauwavehk(Hrms, Tsig, Depth, Uorbi, rlabd, ust)
-    use m_flow, only: plotlin, rhog, rhomean, jased
+    use m_flow, only: rhog
     use m_sferic
     use m_waves, only: gammax, jauorb
 
     implicit none
-    double precision :: Hrms, Tsig, Depth, uorbi, Tauw, hrm, ust
-    integer :: k
-    double precision :: hk, sh2hk, hksh2, rn, asg, ew, sxx, syy, sxy, syx, dtau, shs, h2k, cp, cg, omeg
-    double precision :: dsk2, rk, rkx, rky, astar, fw, cgcp, rk2cgcp, cgcp5, arms, rlabd
+    double precision :: Hrms, Tsig, Depth, uorbi, hrm, ust
+    double precision :: hk, sh2hk, hksh2, asg, ew, sxx, syy, sxy, syx, shs, cp, cg, omeg
+    double precision :: rk, rkx, rky, cgcp, rk2cgcp, cgcp5, arms, rlabd
 
     double precision, external :: tanhsafe, sinhsafe, sinhsafei
     integer :: ndraw

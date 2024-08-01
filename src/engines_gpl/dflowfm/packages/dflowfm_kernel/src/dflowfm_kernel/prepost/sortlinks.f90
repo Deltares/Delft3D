@@ -40,10 +40,9 @@ subroutine sortlinks()
 
    integer :: k0 ! node number
 
-   integer :: k, k1, k2, knext
-   integer :: kk
+   integer :: k1, k2, knext
    integer :: L1, L2
-   integer :: N, Ncell
+   integer :: N
    integer :: i1, i2
 
    integer :: numerror ! number of nodes with errors

@@ -42,9 +42,6 @@
 
       implicit none
       double precision :: dv
-      double precision :: dx
-      double precision :: dxshow
-      double precision :: dy
       integer :: i
       integer :: ifexit
       integer :: ifinit
@@ -75,12 +72,9 @@
       integer :: numparactual
       integer :: nv
       integer :: nvec
-      double precision :: rmiss, val, vfac, vfacforce, vmax, vmin
-      double precision :: x0
-      double precision :: xd
+      double precision :: val, vfac, vfacforce, vmax, vmin
       double precision :: xleft
       double precision :: xsc
-      double precision :: y0
       double precision :: ybot
       double precision :: ysc
       double precision :: scalesize
@@ -100,7 +94,6 @@
       common / VFAC / VFAC, VFACFORCE, NVEC
       common / DRAWTHIS / ndraw(50)
       common / QNRGF / JQN
-      double precision :: VS(4, 4)
       integer, external :: infoinput
       external :: highlight_form_line
 !

@@ -45,8 +45,8 @@ else()
     message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
 endif()
 
-# Set available build configurations for the .sln file
-set (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
+# Set available build configurations
+set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
 
 # Set Fortran module files location (needed for dependency bubbling on Linux)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)
@@ -71,12 +71,12 @@ if (WIN32)
             message(STATUS "Using Intel 2024 folder structure.")
             set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
             set(mpi_module_path ${mpi_include_path}/mpi)
-            set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/$<CONFIG>,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
+            set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/debug,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
         else()
             message(DEPRECATION "Using Intel 2023 folder structure (I_MPI_ONEAPI_ROOT is set to: $ENV{I_MPI_ONEAPI_ROOT})")
             set(mpi_include_path $ENV{I_MPI_ONEAPI_ROOT}/include)
             set(mpi_module_path ${mpi_include_path})
-            set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<CONFIG>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
+            set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<IF:$<CONFIG:Debug>,debug,release>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
         endif()
         set(mpi_fortran_library "impi.lib")
         set(mpi_c_library "impi.lib;impicxx.lib")
@@ -157,7 +157,7 @@ endif()
 #     Linux  : compile source code  using ".../expat/cmake_deltares/CMakeLists.txt"
 set(expat_include_path ${checkout_src_root}/third_party_open/expat/x64/include)
 if (WIN32)
-    set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64)
+    set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
 endif(WIN32)
 
 ### Configuration names

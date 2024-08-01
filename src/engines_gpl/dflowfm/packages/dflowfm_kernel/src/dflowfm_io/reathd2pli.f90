@@ -34,7 +34,6 @@
     use m_grid
     implicit none
     integer :: mthd, mout
-    double precision :: xce, yce
     character(len=132) :: rec
     character(len=1) :: uv
     integer :: m, n, m2, n2, mn, mx, nn, nx, i

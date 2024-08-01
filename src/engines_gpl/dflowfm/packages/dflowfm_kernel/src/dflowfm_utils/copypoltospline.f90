@@ -38,7 +38,6 @@
      use geometry_module, only: get_startend
      implicit none
 
-     integer :: k
      integer :: jstart, jend, jpoint
 
      jpoint = 1

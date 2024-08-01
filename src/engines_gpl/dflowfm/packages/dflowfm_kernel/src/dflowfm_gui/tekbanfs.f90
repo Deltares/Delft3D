@@ -37,10 +37,9 @@ subroutine tekbanfs()
    use m_sediment
    implicit none
    double precision :: x, y, z, v, hsk
-   integer :: kk, n, k, kj, ncol, ndraw
+   integer :: kk, n, k, ncol, ndraw
    common / DRAWTHIS / ndraw(50)
 
-   double precision :: flx(mxgr) !< sed erosion flux (kg/s)                 , dimension = mxgr
    double precision :: seq(mxgr) !< sed equilibrium transport rate (kg/m/s) , dimension = mxgr
    double precision :: wse(mxgr) !< effective fall velocity (m/s)           , dimension = mxgr, ws*crefa=wse*seq
 

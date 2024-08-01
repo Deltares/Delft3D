@@ -139,7 +139,7 @@ function svan(S4, T4, P04, SIGMA)
    real(hP), intent(IN) :: S4, T4, P04
    real(hP), intent(OUT) :: SIGMA
    real(hP) P4, SIG, SR, RR1, RR2, RR3, V350P, DK
-   real(hP) A4, B4, C4, D4, E4, AA1, BB1, AW, BW, KK, K0, KW, K35, SVA
+   real(hP) A4, B4, C4, D4, E4, AA1, BB1, AW, BW, K0, KW, K35, SVA
    real(hP) GAM, PK, DVAN, DR35P
 
    real(hP), parameter :: R3500 = 1028.1063_sp

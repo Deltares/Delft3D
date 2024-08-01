@@ -40,10 +40,10 @@
 
     integer :: japerim, L
 
-    integer :: k1, k2, k3, k4, K, jaconv, jaconvu, ifrctyp
-    double precision :: hpr1, ar1, wid1, aconv1, hpr2, ar2, wid2, aconv2, aru, widu, aconvu, cz
+    integer :: k1, k2, jaconv, ifrctyp
+    double precision :: hpr1, ar1, wid1, hpr2, ar2, wid2, aru, widu, aconvu, cz
     double precision :: dx1, dx2, frcn, BL1, BL2, b21, wu2, ai
-    double precision :: beta, bt2, deltaa, hyr, uucn, ucna
+    double precision :: beta, deltaa, hyr
 
     k1 = ln(1, L); k2 = ln(2, L)
     if (bob0(1, L) < bob0(2, L)) then

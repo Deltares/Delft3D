@@ -39,7 +39,7 @@
        implicit none
 
        integer :: k, L, k1, k2
-       double precision :: tim, s1k, xx, yy, samp, ux, uy, dif, alf, cs, sn, aer, dep, r0, x0, y0, Rossby, rr, sgh
+       double precision :: tim, s1k, xx, yy, samp, dif, cs, sn, aer, dep, r0, x0, y0, Rossby, rr, sgh
 
        if (tim == 0d0) then
           call inisferic()
@@ -95,7 +95,7 @@
        implicit none
 
        integer :: k, L, k1, k2, LL, i, j, imx, jmx
-       double precision :: tim, s1k, xx, yy, samp, ux, uy, dif, alf, cs, sn, aer, dep, rs
+       double precision :: tim, s1k, xx, yy, samp, cs, sn, dep, rs
        double precision :: x0, y0, Rossby, rr, sgh, uv, uvr, xff = 0.1d0, yff = 0.1d0
 
        if (tim == 0d0) then

@@ -32,8 +32,8 @@
 
    subroutine setucxqucyq_mor(u1, ucxq, ucyq)
       use m_fm_erosed, only: ucxq_mor, ucyq_mor, hs_mor, link1, link1sign, ndx_mor
-      use m_flowgeom, only: ndx, lnx, lnxi, ln, nd, wcx1, wcx2, wcy1, wcy2, csu, snu, bl, ndxi, lnx1D, kcs
-      use m_flow, only: hs, hu, zws, kmx, kmxL, au, q1, ucx_mor, ucy_mor, lnkx, ndkx
+      use m_flowgeom, only: ndx, lnx, lnxi, ln, nd, wcx1, wcx2, wcy1, wcy2, csu, snu, bl, lnx1D, kcs
+      use m_flow, only: hs, hu, zws, kmx, au, q1, lnkx, ndkx
       use m_flowparameters, only: jacstbnd, epshs, eps10, flow_solver, FLOW_SOLVER_FM
       use m_sediment, only: stmpar
       use m_turbulence, only: ln0

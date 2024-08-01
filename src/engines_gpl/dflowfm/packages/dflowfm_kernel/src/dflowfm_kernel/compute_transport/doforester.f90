@@ -31,8 +31,8 @@
 !
 
 subroutine doforester()
-   use m_flow, only: sa1, vol1, ndkx, kbot, ktop, kmxn, ndkx, maxitverticalforestersal, maxitverticalforestertem
-   use m_flowgeom, only: ndx, ndxi
+   use m_flow, only: vol1, ndkx, kbot, ktop, kmxn, ndkx, maxitverticalforestersal, maxitverticalforestertem
+   use m_flowgeom, only: ndxi
    use m_turbulence, only: kmxx
    use m_transportdata ! ,  only : constituents, numconst, itemp
    use timers

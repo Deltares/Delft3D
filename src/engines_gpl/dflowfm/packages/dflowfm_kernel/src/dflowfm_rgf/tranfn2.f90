@@ -37,49 +37,17 @@
          use M_GRIDSETTINGS
          use m_orthosettings, only: ITIN
          implicit none
-         double precision :: db
-         double precision :: dl
-         double precision :: don
-         double precision :: dr
-         double precision :: ds
-         double precision :: dx
-         double precision :: dx1
-         double precision :: dx2
-         double precision :: dx3
-         double precision :: dx4
-         double precision :: dy
-         double precision :: dy1
-         double precision :: dy2
-         double precision :: dy3
-         double precision :: dy4
-         double precision :: f1
-         double precision :: f2
-         double precision :: f3
-         double precision :: f4
          integer :: i
          integer :: ierr
          integer :: imx
          integer :: j
          integer :: k
-         integer :: key
-         integer :: mixelliptic
          integer :: mm
          integer :: mnx
          integer :: mx
          integer :: nn
          integer :: nx
-         double precision :: rb
-         double precision :: rl
-         double precision :: ro
-         double precision :: rr
-         double precision :: w
-         double precision :: w12
-         double precision :: w34
          double precision :: wa
-         double precision :: xh
-         double precision :: xy
-         double precision :: yh
-
          double precision, dimension(:, :), allocatable :: X1V, Y1V, X2V, Y2V, &
             X3V, Y3V, X4V, Y4V, &
             SI, SJ, W1, W2, W3, W4
@@ -88,18 +56,8 @@
          double precision :: XRH(MX, NX), YRH(MX, NX), &
             X1(IMX), X2(IMX), X3(IMX), X4(IMX), &
             Y1(IMX), Y2(IMX), Y3(IMX), Y4(IMX)
-         double precision :: DDX, DDY, RI, RJ, T1, T2, T3, T4
-!      double precision , DIMENSION(:,:), ALLOCATABLE  :: X1V,Y1V,X2V,Y2V,     &
-!                                                          X3V,Y3V,X4V,Y4V,     &
-!                                                          SI ,SJ, W1, W2, W3, W4
-!      double precision , DIMENSION (:), ALLOCATABLE   :: D1 ,D2, D3, D4, TI, TJ
-!
-!      double precision :: XRH(MX,NX),YRH(MX,NX),                    &
-!                          X1(IMX), X2(IMX), X3(IMX), X4(IMX),       &
-!                          Y1(IMX), Y2(IMX), Y3(IMX), Y4(IMX)
-!      DOUBLE PRECISION :: DDX, DDY, RI, RJ, T1, T2, T3, T4
+         double precision :: RI, RJ, T1, T2, T3, T4
 
-         character TEX * 4
 !     1,2    VERTICALEN
 !     3,4    HORIZONTALEN
 !     D1234  REL. LIJN COORDINAAT 0-1

@@ -81,4 +81,4 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/rtc)
 
 install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
-install(FILES ${default_files} DESTINATION share/delft3d)
+install(FILES ${default_files} DESTINATION share/rtc)

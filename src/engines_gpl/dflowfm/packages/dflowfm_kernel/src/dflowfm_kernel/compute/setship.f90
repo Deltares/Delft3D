@@ -43,18 +43,17 @@
     use geometry_module, only: dbdistance
 
     implicit none
-    integer :: L, k, k1, k2, k3, k4, kk, LL, n, num, ierr, nav, i0, i1, j0, j1, m, nn, ixx, incentreorcorner
-    integer :: mmx, nnx, mm, ndraw, Lt, k1t, k2t
-    double precision :: xu1, xu2, yu1, yu2, sx1, sx2, sy1, sy2, alf, alfy, eps
-    double precision :: rela, dpx, dpy, fxx, fyy, frac, yf, yf2, corr, dvL, dp
+    integer :: L, k, k1, k2, k3, k4, kk, n, ierr, i0, i1, j0, j1, m, nn
+    integer :: mmx, mm, ndraw, Lt, k1t, k2t
+    double precision :: alf, alfy
+    double precision :: rela, dpx, dpy, fxx, fyy, yf, yf2, dvL, dp
     double precision :: sxr, syr, sxr2, syr2, css, sns, dss, prp, prop, volprop, prptot, volu, frb, a
     double precision :: frc, uxsh, uysh, uxw, uyw, uxd, uyd, umods, uud, uush, uushd, friL, frix, friy, frim, phi
     double precision :: FX, FY, XM, YM, armx, army, shvol, roeri, stuwc, stuwn, frixi, friyi, frimi, frcL, dzz
 
-    double precision :: cb, chez, rman, s0shipav, xx, yy, dxx, dyy, dxsa, dysa, df, uk2, uk1, zspn, alfa, ai, bi, qz, az, qza, arm
+    double precision :: xx, yy, dxx, dyy, dxsa, dysa, df, ai, bi, qz, qza, arm
     double precision, allocatable :: zsp2(:)
-    double precision :: xxm, xf, delx, Clearance, Cf, Cf2, Rex, h1, h2, clear, vnu, Ar, aav, aa, fac, yyk, xxk, dxxx, zspk, exx, eyy
-    integer, save :: mout
+    double precision :: xxm, delx, Cf, Cf2, Rex, h1, h2, clear, vnu, Ar, aav, aa, fac, yyk, xxk, dxxx, zspk, exx, eyy
 
     common / DRAWTHIS / ndraw(50)
 

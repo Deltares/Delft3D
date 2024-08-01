@@ -143,7 +143,7 @@ contains
          method = METHOD_AVERAGING
       case ('constant')
          method = METHOD_CONSTANT
-      case ('linearSpaceTime')
+      case ('linearspacetime')
          method = WEIGHTFACTORS
       case ('triangulation')
          method = METHOD_TRIANGULATION

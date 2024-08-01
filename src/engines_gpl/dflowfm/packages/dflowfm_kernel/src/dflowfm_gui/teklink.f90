@@ -35,9 +35,6 @@
      use unstruc_colors
      implicit none
      integer :: L, NCOL
-     integer :: jaSmallCir
-     double precision :: dlength
-
      integer :: k1
      integer :: k2
 

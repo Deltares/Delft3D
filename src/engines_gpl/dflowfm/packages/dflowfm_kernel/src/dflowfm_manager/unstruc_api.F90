@@ -185,29 +185,6 @@ contains
 
    end subroutine batch
 
-   integer function boundary_timeseries(location, quantity, t0, t1, dt, target_array) result(iresult)
-      use m_meteo
-      use m_ec_module
-      use MessageHandling, only: LEVEL_ERROR
-      character(len=*), intent(in) :: location
-      character(len=*), intent(in) :: quantity
-      real(hp), intent(in) :: t0
-      real(hp), intent(in) :: t1
-      real(hp), intent(in) :: dt
-      real(hp), dimension(:), allocatable :: target_array
-
-      integer :: itemID
-      itemID = ecFindItemByQuantityLocation(ecInstancePtr, location, quantity)
-      if (itemID > 0) then
-         if (.not. ec_gettimeseries(ecInstancePtr, itemID, t0, t1, dt, target_array)) then
-            call mess(LEVEL_ERROR, 'Retrieving boundary signal (location="'//trim(location)//'", quantity="'//trim(quantity)//'") failed.')
-            return
-         end if
-      else
-         call mess(LEVEL_ERROR, 'No item found (location="'//trim(location)//'", quantity="'//trim(quantity)//'").')
-      end if
-   end function boundary_timeseries
-
    integer function flow() result(iresult)
       use dfm_error
       use unstruc_display

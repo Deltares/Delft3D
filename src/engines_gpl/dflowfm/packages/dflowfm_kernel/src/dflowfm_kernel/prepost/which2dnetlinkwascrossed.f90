@@ -44,7 +44,7 @@
     integer, intent(in) :: K1, K2 !< Start+end index of 1D2D netlink
     integer, intent(out) :: L !< Resulting 2D netlink (edge of 2D grid cell), intersected by input netlink. 0 if not found.
 
-    integer :: nn, kk, kku, jacros, k3, k4, LL
+    integer :: nn, kk, jacros, k3, k4, LL
     double precision :: SL, SM, XCR, YCR, CRP
 
     L = 0

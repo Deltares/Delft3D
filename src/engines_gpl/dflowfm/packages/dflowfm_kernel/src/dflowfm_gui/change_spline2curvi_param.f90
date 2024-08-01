@@ -53,7 +53,6 @@ subroutine change_spline2curvi_param(jacancelled)
    integer :: nlevel
    integer :: numfldactual
    integer :: numparactual
-   integer :: idum = 0
 
    integer, parameter :: NUMPAR = 14, NUMFLD = 2 * NUMPAR
    integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)

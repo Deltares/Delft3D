@@ -47,7 +47,7 @@
     integer :: L, k, k1, k2
     double precision :: dzLw, vstress, adv, adv1, tt, ustv, st2, agp, dzurho
 
-    double precision :: rhof, gdxi, gdxids, bui, du, cu, ac1, ac2, hup, twot = 0.666666666666d0, slopec
+    double precision :: gdxi, gdxids, du, cu, ac1, ac2, hup, twot = 0.666666666666d0, slopec
 
     double precision :: aa(kmxx), cc(kmxx) ! for five-diaginal matrix
     ! aa(i)*u(i-2)+a(i)*u(i-1)+b(i)*u(i)+c(i)*u(i+1)+cc(i)*u(i+2)=d(i)

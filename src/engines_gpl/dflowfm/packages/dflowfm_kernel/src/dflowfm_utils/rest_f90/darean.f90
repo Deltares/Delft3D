@@ -47,7 +47,7 @@
     integer, intent(in) :: n !< Nr. of polygon points.
 
     integer :: i, iu, nend, jstart, jend
-    double precision :: DX, DY, Y0, DLE, Y
+    double precision :: Y0, DLE
     double precision :: xcg, ycg
     integer :: jacounterclockwise
     DAREA = 0d0

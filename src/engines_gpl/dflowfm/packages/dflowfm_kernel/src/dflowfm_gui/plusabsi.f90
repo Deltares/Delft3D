@@ -33,7 +33,6 @@
       subroutine PLUSABSI(XK, YK, ZK, KN, NUMK, NUML, KEY, kndefault)
          use M_polygon
          use m_missing
-         use network_data, only: kn3typ
          use geometry_module, only: dpinpok
          use gridoperations
          implicit none
@@ -58,7 +57,7 @@
          double precision :: rd
 
          double precision, save :: A
-         integer, save :: INI = 0
+
          A = kndefault
 
          JA = 0

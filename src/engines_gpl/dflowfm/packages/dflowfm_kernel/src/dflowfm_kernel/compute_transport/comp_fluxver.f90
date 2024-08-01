@@ -34,12 +34,11 @@
 subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, kmx, zws, qw, kbot, ktop, sed, nsubsteps, jaupdate, ndeltasteps, flux, wsf)
    use m_flowgeom, only: Ndx, ba, kfs ! static mesh information
    use m_flowtimes, only: dts
-   use m_flowparameters, only: cflmx
-   use m_flow, only: hs, s1, epshsdif, cffacver, a1, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
+   use m_flow, only: s1, epshsdif, cffacver, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
    use m_transport, only: ISED1, ISEDN ! preferably in argument list
    use m_sediment, only: mtd
    use unstruc_messages
-   use m_sediment, only: jased, ws, sedtra, stmpar, stm_included
+   use m_sediment, only: jased, sedtra, stm_included
    use sediment_basics_module
    use timers
 
@@ -63,7 +62,7 @@ subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, kmx, zws, qw, kbot, k
 
    double precision, dimension(2049) :: dz
 
-   double precision :: sedL, sedR, ds1L, ds2L, ds1R, ds2R, sl3L, sl3R, cf, dum
+   double precision :: sedL, sedR, ds1L, ds2L, ds1R, ds2R, sl3L, sl3R, cf
    double precision :: dt_loc
    double precision :: qw_loc
 

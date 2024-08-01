@@ -41,10 +41,10 @@
 
       implicit none
 
-      integer :: k, k1, k2, k3, n, ja
+      integer :: k, k1, k2, k3, ja
       double precision :: uu1, vv1, uu2, vv2 ! not used here
-      double precision :: xdum, ydum, area, phimin, phimax
-      double precision :: xx1, yy1, zz1, xx2, yy2, zz2, xx3, yy3, zz3, xy, rn, R3, XN, YN, ZN, DEPTH, TSIG, SLOPE, RK
+      double precision :: phimin, phimax
+      double precision :: xx1, yy1, zz1, xx2, yy2, zz2, xx3, yy3, zz3, xy, R3, XN, YN, ZN, DEPTH, TSIG, SLOPE, RK
 
       common / DRAWTHIS / ndraw(50)
       integer :: ndraw

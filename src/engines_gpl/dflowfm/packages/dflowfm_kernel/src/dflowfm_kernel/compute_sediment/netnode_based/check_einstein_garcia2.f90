@@ -34,9 +34,9 @@ subroutine check_einstein_garcia2(aref, h, z0, rs, ein)
    use m_sediment, only: numintverticaleinstein
 
    implicit none
-   double precision :: aref, h, z0, rs, ein, ucrouse1, ucrouse2, dz, g, d1, di, d, z1, z2
+   double precision :: aref, h, z0, rs, ein, ucrouse1, ucrouse2, g, d1, di, z1, z2
 
-   double precision :: a, b, y1, y2, zl, zm, zlm, zlm2, alfa
+   double precision :: y1, zl, zlm
 
    integer :: n, k
 

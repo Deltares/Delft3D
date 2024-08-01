@@ -50,18 +50,13 @@
       integer :: k
       integer :: k0
       integer :: k1
-      integer :: k1l
       integer :: k2
-      integer :: k2l
       integer :: k3
       integer :: ksx
       integer :: l
       integer :: l0
       integer :: ll
       integer :: n
-      integer :: n1
-      integer :: n2
-      integer :: new
       integer :: nn
       integer :: nsdl
       integer :: nsin

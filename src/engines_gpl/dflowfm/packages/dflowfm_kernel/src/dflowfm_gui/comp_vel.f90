@@ -43,15 +43,10 @@ subroutine comp_vel(mc, xc, yc, edgevel, vel)
    double precision, dimension(mc), intent(in) :: xc, yc !< coordinates of grid points
    double precision, dimension(mc - 1), intent(in) :: edgevel !< edge normal-velocity (spherical: coordinates in meters)
    double precision, dimension(2, mc), intent(out) :: vel !< velocity vectors at grid points (spherical: spherical coordinates)
-
-   double precision, dimension(mc) :: curv !< curvature at grid points
-
+   
    double precision, dimension(2) :: nL, nR, vL, vR
-
    double precision :: cosphi, vR_vL, Rai
-
    integer :: i, iL, iR
-
    double precision, parameter :: dtolcos = 1d-8 ! not the module variable
 
    vel = DMISS

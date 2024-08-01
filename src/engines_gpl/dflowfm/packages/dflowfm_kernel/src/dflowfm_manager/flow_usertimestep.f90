@@ -36,7 +36,6 @@
     use timers
     use unstruc_messages
     use m_partitioninfo
-    use unstruc_display, only: jaGUI
     use m_timer
     use dfm_error
     implicit none

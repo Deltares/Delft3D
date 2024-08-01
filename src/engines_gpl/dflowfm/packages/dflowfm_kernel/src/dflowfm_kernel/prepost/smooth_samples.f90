@@ -50,7 +50,6 @@ subroutine smooth_samples(MXSAM, MYSAM, NS, NDIM, Nsamplesmooth, zs, zss)
    double precision, dimension(:, :), allocatable :: zsdum
 
    integer :: iter, i, j
-   integer :: ip0, ipiL, ipiR, ipjL, ipjR
    double precision :: c0, ciL, ciR, cjL, cjR, af
 
    integer :: ierror

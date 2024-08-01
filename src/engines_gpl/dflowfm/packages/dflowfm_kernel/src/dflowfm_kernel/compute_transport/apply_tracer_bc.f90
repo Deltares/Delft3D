@@ -39,8 +39,6 @@ subroutine apply_tracer_bc()
    use timers
    implicit none
 
-   character(len=NAMTRACLEN) :: tracnam
-
    double precision :: valtop
 
    integer :: itrac, iconst

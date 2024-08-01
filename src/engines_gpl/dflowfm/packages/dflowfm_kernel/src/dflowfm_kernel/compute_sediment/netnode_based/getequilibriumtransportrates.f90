@@ -47,14 +47,14 @@
     double precision, intent(out) :: wse(mx) ! effective fall velocity (m/s)
     double precision, intent(out) :: hsk ! waterdepth, flowcell or ban
 
-    double precision :: cfsk, cz, taucur, flx
-    double precision :: ucr, ueff, Twave, Uwave, Ucur, Ucrc, Ucrw, Pmob, beta, D50h, sbeq
-    double precision :: aref, Tmob, crefa, sseq, ustar, ustar2, rouse, sqcf, dj1, dj2, z0k, dks, hdune = 0
-    double precision :: qsseq, garciaeinstein, effic, bav, caver, botsu, qsseqcheck, eincheck, eincheck2
-    double precision :: qssevr84, vr84rel, deltaa, seqbed
-    double precision :: blmax, hpr, dzz, wu2, wid, ar, hyr, zbu
-    double precision :: erodable, sumlay, hseqb, aa, dmorfacL, dh, ustar2swart, ustw2, astar, fw, qeng, cf, wa, z00
-    integer :: j, kj, n, k, kg, nn, n1, L, LL, jabanhydrad = 0, kb
+    double precision :: cz, flx
+    double precision :: ucr, ueff, Twave, Uwave, Ucur, Ucrw, Pmob, beta, D50h, sbeq
+    double precision :: aref, Tmob, crefa, sseq, ustar, ustar2, rouse, sqcf, z0k, dks, hdune = 0
+    double precision :: qsseq, eincheck2
+    double precision :: seqbed
+    double precision :: hpr, dzz, wu2, wid, ar, hyr, zbu
+    double precision :: sumlay, dmorfacL, dh, ustar2swart, ustw2, fw, qeng, cf, wa, z00
+    integer :: j, n, k, kg, nn, n1, L, LL, jabanhydrad = 0
 
     integer :: ndraw
     common / DRAWTHIS / ndraw(50)

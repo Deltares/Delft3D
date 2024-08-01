@@ -40,7 +40,7 @@
          integer :: ndraw
          common / DRAWTHIS / ndraw(50)
 
-         integer :: i, j, is, istep
+         integer :: i, j, istep
          type(DEMInfo) :: dem_info
          integer, allocatable :: arr(:, :)
          double precision, allocatable :: xarr(:, :), yarr(:, :)

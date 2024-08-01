@@ -48,53 +48,29 @@ subroutine spline2curvi()
    integer :: ierror ! 0: no error, 1: error
 
    integer, allocatable, dimension(:) :: ifront ! active node in front (1) or not (0), dim(mc)
-
-   double precision, allocatable, dimension(:) :: xg, yg ! coordinates of first gridline, dim(mc)
-   double precision, allocatable, dimension(:) :: sc ! spline-coordinates of grid points or edges
-
-   double precision, allocatable, dimension(:) :: xt2 ! crossspline-related data in crossspline coordinates
-
    double precision, allocatable, dimension(:) :: edgevel ! grid layer segment normal-velocity, dim(mc-1)
-
-   integer :: numcrosssplines ! number of crosssplines
-
-   integer, allocatable, dimension(:) :: mfac1 ! number of cells along center spline, per center spline, dimension(mcs)
    integer, allocatable, dimension(:, :) :: nfac1 ! number of cells perpendicular to center spline, per edge on spline for each subinterval of grid layers, dimension(Nsubmax,mc-1)
    double precision, allocatable, dimension(:, :) :: dgrow1 ! grow factor, per edge on the spline for each subinterval of grid layers, dimension(Nsubmax,mc-1)
 
    integer, allocatable, dimension(:) :: nlist ! dummy array, dimension(Nsubmax)
-
    double precision :: dt ! time step
-
    integer :: jacancelled
-   integer :: ig ! pointer to last entry in first gridline
-
-   integer :: igL, igR, jmaxL, jmaxR
-
-   integer :: i, is, js, isnew, isubL, isubR, isum, j, jc, ispline, jspline, k, num, numj
-   integer :: iL, iR, Ndum, mcs_old, mcs_new, j_loc
-   integer :: istop, idum, numcro, jatopol, mfacmax, ncs
+   integer :: igL
+   integer :: i, is, js, isnew, isubL, isubR, j, jc
+   integer :: mcs_old, j_loc
+   integer :: istop, jatopol, mfacmax
    integer :: inhul
-
-   double precision :: ti, tj, xp, yp, crp, hL, hR, fac
-   double precision, allocatable, dimension(:) :: h ! for curvature adapted meshing
-   double precision :: dspllength, dmaxwidth, growfac, hmax
-   double precision :: t, tL, tR
-
+   double precision :: hmax
 !  grid edge-based cross splines
    double precision, dimension(2) :: xs1, ys1
    double precision :: xe, ye, nx, ny
    integer, dimension(3, mcs) :: iLRmfac
    integer, dimension(mcs) :: id
    logical :: Lnewsplines
-
-   logical :: Lset, jaAllPoints
-
+   logical :: jaAllPoints
    integer, external :: comp_nfac, get_isub
    double precision, external :: splinelength, comp_dgrow
-
    double precision, parameter :: dnu = -0.50d0
-
    integer :: nul, nul1(1), nul2(1, 1)
 
 !  Note: edge_vel is the grow velocity per front edge and in Cartesian coordinates

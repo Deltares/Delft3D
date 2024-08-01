@@ -45,7 +45,7 @@
 
          double precision, dimension(maxsplen) :: xspp, yspp, xlist, ylist
 
-         double precision :: dx, dy, dnx, dny, dsx, dsy, curv, alphan, alphas
+         double precision :: dnx, dny, dsx, dsy, curv, alphan, alphas
          double precision :: x0, y0, x1, y1, ds, t
 
          integer :: i, j, num

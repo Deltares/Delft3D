@@ -39,7 +39,7 @@
          double precision :: X(N), Y(N), rcir
          logical :: inview
 
-         integer :: i, istart, key, in
+         integer :: i, istart, in
 !     LAAT EEN TWEEDIMENSIONALE FUNCTIE ZIEN MET CIRKELS
 
          if (N <= 0) return

@@ -46,13 +46,11 @@
          integer :: k0, K1, K2, K3, kk, nn
          integer :: l
          integer :: l0
-         integer :: n1
          integer :: numkn
          integer :: numln
          integer :: NOPE, NETA, itmp, NBOU, NVEL, NVELL, IBTYPE, NBVV, IBCONN
          integer :: jamergeweirnodes
          double precision :: BARINHT, BARINCFSB, BARINCFSP
-         double precision :: x10
 
          character REC * 3320
 

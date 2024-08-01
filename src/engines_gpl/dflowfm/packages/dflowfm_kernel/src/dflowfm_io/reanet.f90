@@ -38,8 +38,8 @@
          character(len=*), intent(in) :: filename !< inderdaad, filename
          integer :: k0, L0, NUMKN, NUMLN, istat
 
-         integer :: JADOORLADEN, MNET, JA, LMOD, KMOD
-         integer :: i, mout, k, nr, knread, L, N1
+         integer :: MNET, JA, LMOD, KMOD
+         integer :: k, nr, knread, L, N1
          integer :: numbersonline
          double precision :: af
          character REC * 332

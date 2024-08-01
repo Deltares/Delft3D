@@ -38,7 +38,7 @@
     use m_sediment, only: stm_included
     implicit none
 
-    integer :: i, k, ki, kb, kt, itrac, isf
+    integer :: i, ki, kb, kt, itrac, isf
 
     if (kmx > 0) then ! 2D, set dummy values
        do i = 1, nbnds

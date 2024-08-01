@@ -37,7 +37,7 @@
       use network_data, only: TRIANGLEMINANGLE, TRIANGLEMAXANGLE
       use m_sferic
       use geometry_module, only: dcosphi
-      use m_missing, only: dmiss, dxymis
+      use m_missing, only: dxymis
 
       implicit none
       double precision :: phimin, phimax

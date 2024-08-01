@@ -44,18 +44,12 @@ subroutine get_splineprops(mcs_old, id, iLRmfac)
    integer, dimension(mcs_old), intent(in) :: id !< original settings
    integer, dimension(3, mcs_old), intent(in) :: iLRmfac !< original settings
 
-   integer, dimension(mcs) :: perm ! for sorting the cross splines
-   integer, dimension(mcs) :: ics
-   logical, dimension(mcs) :: Lorient
-!   double precision, dimension(mcs) :: t, hL, hR
-   double precision, dimension(mcs) :: t
-
    double precision, dimension(:), allocatable :: xlist, ylist
 
-   integer :: idx, i, j, is, js, imiddle, ismiddle
-   integer :: num, numj, numcro, ncs, numnew
+   integer :: i, j, is, js, imiddle, ismiddle
+   integer :: num, ncs, numnew
 
-   double precision :: crp, dslength, tj, xp, yp, hsumL, hsumR, hmax, cosphi
+   double precision :: dslength, hsumL, hsumR, hmax
 
    double precision, external :: splinelength
 

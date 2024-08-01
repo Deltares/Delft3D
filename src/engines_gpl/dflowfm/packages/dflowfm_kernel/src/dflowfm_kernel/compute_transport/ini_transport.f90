@@ -51,7 +51,7 @@ subroutine ini_transport()
    character(len=8) :: str
    character(len=256) :: msg
 
-   integer :: i, itrace, ised, isf, ifrac, isys, iconst
+   integer :: i, itrace, ised, isf, ifrac, isys
    integer, external :: findname
 
    NUMCONST = 0

@@ -56,8 +56,7 @@ subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
    double precision :: hydrad !< hydraulic radius
 
    double precision :: area2, width2, perim2, cf2, alfa ! second prof i.c. interpolation
-   double precision :: area_sbk, width_sbk ! second prof i.c. interpolation
-   double precision :: perimgr, perimgr2, alfg, czg, hpr
+   double precision :: alfg, czg, hpr
 
    double precision :: frcn, cz, cf, conv, af_sub(3), perim_sub(3), cz_sub(3)
    double precision :: q_sub(3) ! discharge per segment
@@ -65,7 +64,6 @@ subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
    integer :: k1, k2
    integer :: jacustombnd1d
    double precision :: u1L, q1L, s1L, dpt, factor, maxflowwidth
-   type(t_CrossSection), pointer :: cross1, cross2
 
    LL = L
    if (L > lnxi) then ! for 1D boundary links, refer to attached link

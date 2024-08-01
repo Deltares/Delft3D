@@ -35,9 +35,7 @@
 !---------------------------------------------------------------
 !> find links crossed by polyline with kdtree2
    subroutine find_crossed_links_kdtree2(treeinst, NPL, xpl, ypl, itype, nLinks, jaboundarylinks, numcrossedLinks, iLink, iPol, dSL, ierror)
-
-      !use m_polygon
-      use network_data, only: nump, numL, kn, xk, yk, lnn, lne
+      use network_data, only: numL, kn, xk, yk, lnn, lne
       use m_flowgeom
       use kdtree2Factory
       use m_sferic
@@ -66,16 +64,16 @@
       double precision, dimension(:), allocatable :: x, y
 
       integer, dimension(:), allocatable :: ipolsection
-      double precision :: dmaxpollen, dmaxLinlen, dlinlen, R2search
+      double precision :: dmaxpollen, dlinlen, R2search
       integer :: num
       integer, parameter :: jakdtree = 1
       integer, parameter :: MAXFIND = 100
       integer, parameter :: MINTREESIZE = 0
 
       double precision :: SL, SM, XCR, YCR, CRP
-      double precision :: xa, ya, xb, yb, af, d
+      double precision :: xa, ya, xb, yb, af
       double precision :: xc, yc, xd, yd
-      integer :: i, k, L, N1, N2, NN, numnew
+      integer :: i, k, L, N1, N2, NN
       integer :: jacros, kint
       integer :: LnxiORLnx
       integer :: isactive

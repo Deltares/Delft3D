@@ -28,7 +28,8 @@
 !-------------------------------------------------------------------------------
 
 module fm_external_forcings
-
+   use precision_basics, only: hp
+   use fm_external_forcings_utils, only: get_tracername, get_sedfracname
    implicit none
 
    private
@@ -496,7 +497,7 @@ contains
       !
       !nx = numl + mx1Dend
 
-! count number of 2D links and 1D endpoints
+      ! count number of 2D links and 1D endpoints
       call count_links(mx1Dend, Nx)
 
       allocate (xe(nx), stat=ierr); xe = 0 ! used in findexternalboundarypoints
@@ -659,11 +660,11 @@ contains
       double precision :: width1D ! Local, optional custom 1D boundary width
       double precision :: blDepth ! Local, optional custom boundary bed level depth below initial water level
 
-      integer :: i !
-      integer :: num_items_in_file !
-      logical :: file_ok !
-      logical :: group_ok !
-      logical :: property_ok !
+      integer :: i
+      integer :: num_items_in_file
+      logical :: file_ok
+      logical :: group_ok
+      logical :: property_ok
       character(len=256) :: basedir, fnam
       integer :: major, minor
 
@@ -805,11 +806,11 @@ contains
       thrtt(thrtlen) = rettime
    end subroutine appendrettime
 
-!> helper routine finding external boundary points, called for both old and new-type ext file.
-!! Also used for some none-boundary quantities that also need counting total nr of elements, *prior* to flow_initexternalforcings.
-!! Two stages: 1 = collect elsets for which data is provided         <-- findexternalboundarypoints + processexternalboundarypoints
-!!             2 = add relations between elsets and their providers  <-- flow_initexternalforcings
-!! This routine is based upon the network admin only, not on the flow admin.
+   !> helper routine finding external boundary points, called for both old and new-type ext file.
+   !! Also used for some none-boundary quantities that also need counting total nr of elements, *prior* to flow_initexternalforcings.
+   !! Two stages: 1 = collect elsets for which data is provided         <-- findexternalboundarypoints + processexternalboundarypoints
+   !!             2 = add relations between elsets and their providers  <-- flow_initexternalforcings
+   !! This routine is based upon the network admin only, not on the flow admin.
    subroutine processexternalboundarypoints(qid, filename, filetype, return_time, nx, kce, &
                                             numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, &
                                             numqh, numw, numtr, numsf, rrtolrel, tfc, &
@@ -2676,7 +2677,7 @@ contains
       use m_cell_geometry, only: ndx
       use m_alloc, only: aerr
       use precision_basics, only: hp
-
+      
       real(kind=hp), intent(in) :: default_value !< default atmospheric pressure value
       integer :: status
 

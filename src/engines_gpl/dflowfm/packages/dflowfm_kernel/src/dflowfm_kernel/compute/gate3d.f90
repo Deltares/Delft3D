@@ -36,7 +36,7 @@
     use fm_external_forcings_data
     implicit none
     integer :: jazerou1 ! 1 set u1 zero above gate
-    integer :: L, LL, Lb, Lt, ng, n, k, kb, kt
+    integer :: L, LL, Lb, Lt, ng, n
     double precision :: zga, bup, zLu, fac
 
     do ng = 1, ngatesg

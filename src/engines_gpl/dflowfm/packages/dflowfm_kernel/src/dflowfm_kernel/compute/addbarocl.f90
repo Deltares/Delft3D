@@ -39,8 +39,8 @@
     integer, intent(in) :: LL, Lb, Lt
 
     integer :: L, k1, k2, k1t, k2t, k, kt, kz, ktz, insigpart, morelayersleft
-    double precision :: gradpu(kmxx), rhovol(kmxx), gr3, barocL, ft, dum
-    double precision :: rv1, rv2, gr1, gr2, rvk, grk, saw0, saw1, tmw0, tmw1, fzu, fzd, dzz, rv0, rhow0, rhow1, pdb, p0d
+    double precision :: gradpu(kmxx), rhovol(kmxx), gr3
+    double precision :: rv1, rv2, gr1, gr2, rvk, grk, fzu, fzd, dzz, rhow0, rhow1
 
     gradpu(1:Lt - Lb + 1) = 0d0
 
@@ -147,15 +147,15 @@
     use m_flowgeom
     use m_flow
     use m_flowtimes
-    use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents
+    use m_transport, only: ISALT, ITEMP, constituents
     use m_physcoef, only: rhomean
 
     implicit none
     integer, intent(in) :: LL, Lb, Lt
 
     integer :: L, k1, k2, k1t, k2t, k, kt, kz, ktz, insigpart, morelayersleft, i
-    double precision :: gradpu(kmxx), rhovol(kmxx), gr3, barocL, ft, dum
-    double precision :: rv1, rv2, gr1, gr2, rvk, grk, saw0, saw1, tmw0, tmw1, fzu, fzd, dzz, rv0, rhow0, rhow1, pdb, p0d
+    double precision :: gradpu(kmxx), rhovol(kmxx), gr3
+    double precision :: rv1, rv2, gr1, gr2, rvk, grk, saw0, saw1, tmw0, tmw1, fzu, fzd, dzz, rhow0, rhow1, pdb, p0d
     double precision, external :: densfm
 
     gradpu(1:Lt - Lb + 1) = 0d0
@@ -317,7 +317,7 @@
     integer, intent(in) :: LL, Lb, Lt
 
     integer :: L, k1, k2, k1t, k2t
-    double precision :: gradpu(kmxx), rhovol(kmxx), gr3, barocL, ft
+    double precision :: gradpu(kmxx), rhovol(kmxx), gr3
 
     do L = Lb, Lt
        k1 = ln(1, L); k1t = k1

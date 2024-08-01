@@ -36,7 +36,7 @@
      implicit none
      integer, intent(in) :: N12
      integer :: ja, KMOD
-     integer :: K, KM, K1, K2, K3, K4, L, LL, LNU, N, N1, N2, NN, IN
+     integer :: K, KM, K1, K2, L, LL, LNU, N, NN
      integer, allocatable :: KNP(:), KNEW(:)
      integer :: KK(4)
 

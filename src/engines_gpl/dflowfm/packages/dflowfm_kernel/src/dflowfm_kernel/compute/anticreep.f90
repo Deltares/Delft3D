@@ -52,7 +52,7 @@ subroutine anticreep(L)
    integer :: kpoint, kf, k, j, Lb, Lt, LL, kfmax, kfmax1, kflux
    integer, intent(in) :: L
    double precision :: grad, grad1, grad2, cl, cr, flux, flux1
-   double precision :: zbot, ztop, zmid, zbed, farea, area
+   double precision :: zbot, ztop, zmid, zbed, farea
    double precision :: rhods, rhodt, temp, sal, dummy, dpbdx
 
    allocate (polal(0:kmx), pocol(0:kmx), polar(0:kmx), pocor(0:kmx))

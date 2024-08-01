@@ -47,8 +47,8 @@
 
     implicit none
 
-    integer L, k1, k2, n1, n2, LK, n, k, k3, LL, kk, Ls, mis, i, j, numcoords, sign
-    double precision :: bl1, bl2, blv, bln, zn1, zn2, zn3, wn, alf, banow, xnow, ynow, skewn, xt, yt, xn, yn
+    integer L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, mis, i, numcoords
+    double precision :: bl1, bl2, blv, bln, zn1, zn2, zn3, wn, alf, skewn, xt, yt, xn, yn
     ! double precision, external :: skewav
 
     ! First, prepare bed levels at pressure points:

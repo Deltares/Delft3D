@@ -55,9 +55,9 @@ subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
    integer, dimension(mcs) :: ics1
    logical, dimension(mcs) :: Lorient1
 
-   integer :: idum, idx, js, numj, numcro, numnew
+   integer :: idx, js, numj, numcro, numnew
 
-   double precision :: crp, tj, xp, yp, hsumL, hsumR, hmax, tt
+   double precision :: crp, tj, xp, yp, tt
 
 !  allocate
    allocate (xlist(1), ylist(1))

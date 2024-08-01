@@ -49,9 +49,6 @@ subroutine copy_vel_to_front(mc, nc, j, vel, ifront, nf, numf, xf, yf, velf, idx
    double precision, dimension(numf), intent(inout) :: xf, yf !< front point coordinates
    double precision, dimension(2, numf), intent(inout) :: velf !< front growth velocity vectors
    integer, dimension(2, numf), intent(inout) :: idxf !< (i,j)-indices of front points
-
-   double precision, dimension(mc) :: xc1, yc1 !  active grid layer coordinates
-
    integer :: i, ii, iprev, jprev, inext, jnext, num
 
    logical :: LL, LR

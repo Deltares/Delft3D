@@ -87,8 +87,8 @@
 
     ! locals
     integer :: LL, LLL, LLLL ! for links LL,
-    integer :: k12, kup, ja ! relevant node, 1 or 2, L/R
-    double precision :: cs, sn, ucin, cfl, tet, ucinx, uciny
+    integer :: k12, ja ! relevant node, 1 or 2, L/R
+    double precision :: cs, sn, ucin, ucinx, uciny
 
     integer :: nn12
 

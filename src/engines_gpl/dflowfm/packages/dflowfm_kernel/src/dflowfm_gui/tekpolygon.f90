@@ -37,8 +37,8 @@
 
       implicit none
 
-      integer :: k, ncol, kk, key, k2
-      double precision :: a, b, f, x, y, z, s, c, d, dx, dy, dz, dc, dl, dr, ds, dxL, dyL, dxR, dyR, sL, sR, dcxR, dcyR, dcxL, dcyL
+      integer :: k, kk, key, k2
+      double precision :: a, b, x, y, z, s, c, d, dx, dy, dc, dl, dr, dxL, dyL, dxR, dyR, sL, sR, dcxR, dcyR, dcxL, dcyL
       logical inview
 
       if (ndrawpol == 2) then

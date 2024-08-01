@@ -36,7 +36,7 @@
      use gridoperations
 
      implicit none
-     integer :: K1, K2, K, IBR, NRL, JASTOP, LX, KN316
+     integer :: K1, K2, IBR, NRL, JASTOP, KN316
 
      integer :: KK, L, KA
 

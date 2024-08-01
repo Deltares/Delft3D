@@ -35,7 +35,7 @@
         use M_FLOW
         use m_xbeach_data, only: itheta_view
         implicit none
-        integer :: IP, IPM, NRLAY
+        integer :: IP, IPM
 
         if (kmx >= 1) then
 

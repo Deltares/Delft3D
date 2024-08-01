@@ -51,8 +51,6 @@
      double precision :: r0
      double precision :: rho
      double precision :: rhow
-     double precision :: rmas
-
      double precision DLENGTH
      common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
 

@@ -221,7 +221,7 @@ contains
       use m_sferic, only: pi
       use m_flowtimes, only: Tudunitstr
       use m_flowparameters, only: jamombal
-      use m_output_config
+      use fm_location_types
 
       implicit none
 

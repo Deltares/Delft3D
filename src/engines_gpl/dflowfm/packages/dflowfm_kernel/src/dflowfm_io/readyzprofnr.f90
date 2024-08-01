@@ -41,7 +41,7 @@
     use m_missing
     implicit none
     integer :: myzprofs, iprofnr, nyz, mx
-    double precision :: yy(mx), zz(mx), width, height, zmin, yh(9999), zh(9999)
+    double precision :: yy(mx), zz(mx), width, height, zmin
 
     integer :: L, nr, n, ikp(9999), n0, n1, n2, nn
     character(len=256) :: rec, tex

@@ -37,7 +37,7 @@
          implicit none
          double precision :: dpx
          double precision, save :: f = 1d0
-         integer :: ini, jashow, jmouse, key, key_all, ixp, iyp
+         integer :: ini, jashow, jmouse, key, ixp, iyp
          integer, save :: keyold = 0
          real :: xloc, yloc
          double precision :: x, y

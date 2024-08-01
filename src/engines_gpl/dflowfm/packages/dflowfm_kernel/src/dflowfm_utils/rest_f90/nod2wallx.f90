@@ -39,8 +39,6 @@
          integer, intent(in) :: nw !< wall element number
          double precision, intent(in) :: ux, uy !< vector components in wall coordinate frame
 
-         integer :: L
-
          if (jsferic /= 1 .or. jasfer3D /= 1) then
             nod2wallx = ux
          else

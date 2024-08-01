@@ -41,7 +41,6 @@
         integer :: inhul, ja, i, j
         integer, intent(in) :: jasave, jadelpol
         integer, intent(inout) :: key
-        double precision :: xi, yi
 
         inhul = -1
 

@@ -39,7 +39,7 @@
      integer :: k2
      integer :: l1
      double precision :: r1
-     integer :: KK, L, NX
+     integer :: KK, NX
      double precision :: DLENGTH
 
      SHORTESTLINK = 1d9

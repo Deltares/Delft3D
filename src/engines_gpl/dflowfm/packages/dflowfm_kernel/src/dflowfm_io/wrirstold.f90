@@ -39,7 +39,7 @@
       use unstruc_netcdf, only: unc_write_net
       use m_transport
       implicit none
-      integer :: MOUT, k, kk, kb, kt, l
+      integer :: MOUT, k, kk, kb, kt
 
       ! WRITE(MOUT,'(a,2x,F25.14,2i10,a)') REFDAT, TIME1,  NDX, LNX, ' (refdat, timsec, ndx, lnx)'
 

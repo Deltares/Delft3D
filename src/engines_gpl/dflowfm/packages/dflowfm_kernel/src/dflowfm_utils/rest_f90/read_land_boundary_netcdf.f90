@@ -46,10 +46,10 @@ subroutine read_land_boundary_netcdf(filename)
    integer, dimension(:), allocatable :: k
    integer :: i
 
-   integer :: status, istart, istop
+   integer :: status
    integer :: id_nc, id_lon, id_lat, id_npts, id_sep, id_k
    integer :: npts, nsep
-   integer :: max_vertex, n_vertex
+   integer :: max_vertex
    logical :: succes
 
 !    write(msgtxt,'("Reading file: ",a)') trim(get_basename( get_filename(filename) ) )

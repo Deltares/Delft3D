@@ -39,7 +39,7 @@
     implicit none
     integer :: nodemode, nodewhat, ndraw(50)
     integer :: k, ja, ja2, nn, ncol
-    double precision :: znod, zn, x(8), y(8)
+    double precision :: znod, zn
     common / drawthis / ndraw
     logical inview
 

@@ -52,6 +52,9 @@
 !----------------------------------------------------------------------c
 ! Note: this module still incomplete.                                  c
 !----------------------------------------------------------------------c
+    
+#define no_warning_unused_dummy_argument(x) associate( x => x ); end associate
+
 subroutine amub(nrow, ncol, job, a, ja, ia, b, jb, ib,&
 &c, jc, ic, nzmax, iw, ierr)
    integer, intent(in) :: nrow, ncol, nzmax
@@ -294,6 +297,10 @@ subroutine aplb1(nrow, ncol, job, a, ja, ia, b, jb, ib, c, jc, ic, nzmax, ierr)
 !     this will not work if any of the two input matrices is not sorted
 !-----------------------------------------------------------------------
    logical values
+   
+   no_warning_unused_dummy_argument(ic)
+   no_warning_unused_dummy_argument(nzmax)
+   
    values = (job /= 0)
    ierr = 0
 !     kc = 1
@@ -397,6 +404,10 @@ subroutine aplsb(nrow, ncol, a, ja, ia, s, b, jb, ib, c, jc, ic,&
 !-------
 !     this will not work if any of the two input matrices is not sorted
 !-----------------------------------------------------------------------
+   
+   no_warning_unused_dummy_argument(ic)
+   no_warning_unused_dummy_argument(nzmax)
+   
    ierr = 0
 !     kc = 1
 !     ic(1) = kc
@@ -513,6 +524,10 @@ subroutine aplsb1(nrow, ncol, a, ja, ia, s, b, jb, ib, c, jc, ic,&
 !-------
 !     this will not work if any of the two input matrices is not sorted
 !-----------------------------------------------------------------------
+   
+   no_warning_unused_dummy_argument(ic)
+   no_warning_unused_dummy_argument(nzmax)
+   
    ierr = 0
 !     kc = 1
 !     ic(1) = kc
@@ -581,8 +596,8 @@ subroutine apmbt(nrow, ncol, job, a, ja, ia, b, jb, ib,&
 &c, jc, ic, nzmax, iw, ierr)
    integer, intent(in) :: nrow, ncol, nzmax, job
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(*), c(*)
-   integer, intent(inout) :: ja(*), jb(*), jc(*), ia(nrow + 1), ib(ncol + 1)&
+   real*8, intent(inout) :: a(*), b(:), c(*)
+   integer, intent(inout) :: ja(*), jb(:), jc(*), ia(nrow + 1), ib(ncol + 1)&
    &, ic(*), iw(*)
    integer :: j, nnza, nnzb, ljob, ipos, k, ii, jcol, jpos, i, len
    integer :: ka
@@ -641,6 +656,10 @@ subroutine apmbt(nrow, ncol, job, a, ja, ia, b, jb, ib,&
    logical values
    values = (job /= 0)
 !
+   
+   no_warning_unused_dummy_argument(b)
+   no_warning_unused_dummy_argument(jb)
+   
    ierr = 0
    do j = 1, ncol
       iw(j) = 0
@@ -722,8 +741,8 @@ subroutine aplsbt(nrow, ncol, a, ja, ia, s, b, jb, ib,&
 &c, jc, ic, nzmax, iw, ierr)
    integer, intent(in) :: nrow, ncol, nzmax
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(*), c(*), s
-   integer, intent(inout) :: ja(*), jb(*), jc(*), ia(nrow + 1), ib(ncol + 1)&
+   real*8, intent(inout) :: a(*), b(:), c(*), s
+   integer, intent(inout) :: ja(*), jb(:), jc(*), ia(nrow + 1), ib(ncol + 1)&
    &, ic(*), iw(*)
    integer :: j, nnza, nnzb, len, k, ii, ka, jcol, ljob, ipos, jpos
    integer :: i
@@ -776,6 +795,9 @@ subroutine aplsbt(nrow, ncol, a, ja, ia, s, b, jb, ib,&
 !
 !-----------------------------------------------------------------------
    ierr = 0
+   no_warning_unused_dummy_argument(b)
+   no_warning_unused_dummy_argument(jb)
+   
    do j = 1, ncol
       iw(j) = 0
    end do
@@ -1479,7 +1501,7 @@ end
 subroutine vbrmv(nr, nc, ia, ja, ka, a, kvstr, kvstc, x, b)
 !-----------------------------------------------------------------------
    integer, intent(in) :: nr, nc
-   integer, intent(inout) :: ia(nr + 1), ja(*), ka(*), kvstr(nr + 1)&
+   integer, intent(inout) :: ia(nr + 1), ja(*), ka(:), kvstr(nr + 1)&
    &, kvstc(*)
    real*8, intent(inout) :: a(*), x(*), b(*)
 !-----------------------------------------------------------------------
@@ -1504,6 +1526,8 @@ subroutine vbrmv(nr, nc, ia, ja, ka, a, kvstr, kvstc, x, b)
    integer n, i, j, ii, jj, k, istart, istop
    real * 8 xjj
 !---------------------------------
+   no_warning_unused_dummy_argument(ka)
+
    n = kvstc(nc + 1) - 1
    do i = 1, n
       b(i) = 0.d0
@@ -2449,6 +2473,8 @@ subroutine drotgXXX(da, db, c, s)
 !
    double precision da, db, c, s, roe, scale, r, z
 !
+   no_warning_unused_dummy_argument(c)
+   
    roe = db
    if (dabs(da) > dabs(db)) roe = da
    scale = dabs(da) + dabs(db)
@@ -3967,9 +3993,9 @@ subroutine csrcsc2(n, n2, job, ipos, a, ja, ia, ao, jao, iao)
 end
 !-----------------------------------------------------------------------
 subroutine csrlnk(n, a, ja, ia, link)
-   real*8, intent(inout) :: a(*)
+   real*8, intent(inout) :: a(:)
    integer, intent(in) :: n
-   integer, intent(inout) :: ja(*), ia(n + 1), link(*)
+   integer, intent(inout) :: ja(:), ia(n + 1), link(*)
 !-----------------------------------------------------------------------
 !      Compressed Sparse Row         to    Linked storage format.
 !-----------------------------------------------------------------------
@@ -4021,6 +4047,9 @@ subroutine csrlnk(n, a, ja, ia, link)
 !-----------------------------------------------------------------------
 ! local variables
    integer i, k, istart, iend
+   
+   no_warning_unused_dummy_argument(a)
+   no_warning_unused_dummy_argument(ja)
 !
 ! loop through all rows
 !
@@ -6155,6 +6184,8 @@ subroutine submat(n, job, i1, i2, j1, j2, a, ja, ia, nr, nc, ao, jao, iao)
 !----------------------------------------------------------------------c
 !           Y. Saad, Sep. 21 1989                                      c
 !----------------------------------------------------------------------c
+   no_warning_unused_dummy_argument(n)
+
    nr = i2 - i1 + 1
    nc = j2 - j1 + 1
 !
@@ -8187,7 +8218,7 @@ end
 !-----------------------------------------------------------------------
 subroutine getbwd(n, a, ja, ia, ml, mu)
    integer, intent(in) :: n
-   real*8, intent(inout) :: a(*)
+   real*8, intent(inout) :: a(:)
    integer, intent(inout) :: ja(*), ia(n + 1), ml, mu
    integer :: ldist, i, k
 !-----------------------------------------------------------------------
@@ -8216,6 +8247,8 @@ subroutine getbwd(n, a, ja, ia, ml, mu)
 !----------------------------------------------------------------------c
 ! Y. Saad, Sep. 21 1989                                                c
 !----------------------------------------------------------------------c
+   no_warning_unused_dummy_argument(a)
+
    ml = -n
    mu = -n
    do i = 1, n
@@ -8665,7 +8698,7 @@ end
 subroutine rnrms(nrow, nrm, a, ja, ia, diag)
    integer, intent(in) :: nrow, nrm
    real*8, intent(inout) :: a(*), diag(nrow)
-   integer, intent(inout) :: ja(*), ia(nrow + 1)
+   integer, intent(inout) :: ja(:), ia(nrow + 1)
    real*8 :: scal
    integer :: k, k1, k2, ii
 !-----------------------------------------------------------------------
@@ -8688,6 +8721,8 @@ subroutine rnrms(nrow, nrm, a, ja, ia, diag)
 ! diag = real vector of length nrow containing the norms
 !
 !-----------------------------------------------------------------
+   no_warning_unused_dummy_argument(ja)
+
    do ii = 1, nrow
 !
 !     compute the norm if each element.
@@ -10202,6 +10237,8 @@ subroutine rndperm(n, iord, iseed)
    integer i, j, itmp
    integer, external :: irand
 !----------------------------------------------------------------------
+   no_warning_unused_dummy_argument(iseed)
+
    do j = 1, n
       iord(j) = j
    end do
@@ -10220,7 +10257,7 @@ end
 subroutine amub_countonly(nrow, ncol, a, ja, ia, b, jb, ib, iw, len)
    integer, intent(in) :: nrow, ncol
    integer, intent(out) :: len
-   real*8, intent(inout) :: a(*), b(*)
+   real*8, intent(inout) :: a(:), b(:)
    integer, intent(inout) :: ja(*), jb(*), ia(nrow + 1), ib(*), iw(ncol)
    integer :: jj, k, kb, jcol, jpos, j, ii, ka
 !-----------------------------------------------------------------------
@@ -10253,6 +10290,9 @@ subroutine amub_countonly(nrow, ncol, a, ja, ia, b, jb, ib, iw, len)
 !   on the condition that ncol(A) = nrow(B).
 !
 !-----------------------------------------------------------------------
+   no_warning_unused_dummy_argument(a)
+   no_warning_unused_dummy_argument(b)
+
    len = 0
 !     initialize array iw.
    do j = 1, ncol

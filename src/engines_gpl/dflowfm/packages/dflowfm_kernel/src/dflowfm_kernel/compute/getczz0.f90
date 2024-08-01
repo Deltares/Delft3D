@@ -31,7 +31,7 @@
 !
 
 subroutine getczz0(h1, frcn, ifrctyp, cz, z0) ! basic get z0 (m),  this routine is not safe for frcn == 0
-   use m_physcoef, only: sag, vonkar, ee, ee9, c9of1
+   use m_physcoef, only: sag, vonkar, ee
    use m_flowparameters, only: epshu
    implicit none
 

@@ -32,9 +32,9 @@
 
    subroutine getustbcfuhi(LL, Lb, ustbLL, cfuhiLL, hdzb, z00, cfuhi3D) ! see Uittenbogaard's subroutine USTAR
       use m_flow
-      use m_flowgeom, only: ln, dxi, csu, snu, acL, lnxi
+      use m_flowgeom, only: ln, dxi, csu, snu
       use m_flowtimes, only: dti
-      use m_waves, only: ustokes, vstokes, wblt, hwav
+      use m_waves, only: ustokes, vstokes, wblt
       use m_sediment, only: stm_included
       use m_turbulence, only: tkepro
       use m_flowtimes, only: dts
@@ -52,18 +52,15 @@
       double precision :: csw, snw ! wave direction cosines
       double precision :: Dfu, Dfu0, Dfu1, htop, dzu ! wave dissipation by bed friction, / (rhomean*c*deltau)
       double precision :: deltau ! wave dissipation layer thickness
-      double precision :: hrmsLL ! wave height on link
-      double precision :: zbot, ztop, u2dh, frac
-      double precision :: z0urouL, cf, ust, rz, umod1, rhoL, dzuu, uorbu
-      double precision :: cwall
+      double precision :: u2dh
+      double precision :: z0urouL, rhoL, uorbu
       double precision :: umodeps
 
       integer :: nit, nitm = 100
       double precision :: r, rv = 123.8d0, e = 8.84d0, eps = 1d-2
-      double precision :: s, sd, er, ers, dzb, uu, vv, dzw, alin
+      double precision :: s, sd, er, ers, dzb, uu, vv, alin
       double precision :: cphi, sphi
       double precision :: fsqrtt = sqrt(2d0)
-      double precision :: hul1, hul0, hul
 
       cfuhi3D = 0d0
       ustbLL = 0d0; cfuhiLL = 0d0; hdzb = 0d0; z00 = 0d0; cz = 0d0; nit = 0

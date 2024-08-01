@@ -37,9 +37,9 @@
     use m_flowtimes
     implicit none
 
-    double precision :: h1, h0, stemcos, stemsin, stemh, PL, Pv, Pm, Pmi, Bp, dp
-    double precision :: rhodif, buoym, bendm, Fbe, Fbu, Ti, Tdti, phi, phit, C, Rm, ep, qsa, qds, ds2
-    integer :: kk, k, num, idum = 1, i, L, k1, k2
+    double precision :: h1, h0, stemcos, stemsin, stemh, PL, Pv, Pm, Pmi, Bp
+    double precision :: rhodif, buoym, bendm, Fbe, Fbu, Tdti, phi, phit, ep, qsa, qds, ds2
+    integer :: kk, k, num, i, L, k1, k2
 
     if (kmx == 0 .and. growthunidicouv > 0.0) then
 

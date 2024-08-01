@@ -64,9 +64,9 @@
      integer :: n
      integer :: nf
      integer :: numkorg
-     double precision :: XM, YM, ZM
+     double precision :: XM, YM
      integer, allocatable :: KNP(:)
-     integer KKI(5), LLI(5)
+     integer KKI(5)
 
      integer :: numk_old, jatolan ! for generating polygon
      integer, allocatable, dimension(:) :: kc_old ! for generating polygon

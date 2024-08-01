@@ -40,10 +40,10 @@
 
     implicit none
 
-    integer :: japerim, L, ja, calcConv
+    integer :: japerim, L, calcConv
 
-    integer :: k1, k2, K, LL
-    double precision :: ar1, wid1, cf1, ar2, wid2, cf2, dx1, dx2, widu, diam, perim
+    integer :: k1, k2, LL
+    double precision :: ar1, wid1, ar2, wid2, dx1, dx2, widu, perim
     double precision :: hpr
     double precision, external :: get_hpr_nostruc
 

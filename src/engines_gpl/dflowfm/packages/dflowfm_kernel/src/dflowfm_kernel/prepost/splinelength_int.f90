@@ -47,7 +47,7 @@ double precision function splinelength_int(num, xspl, yspl, s0, s1)
 
    double precision :: xL, yL, xR, yR, tL, tR, dt, fac
 
-   integer :: i, j, N
+   integer :: i, N
 
    integer, parameter :: NSAM = 100 ! sample factor
    integer, parameter :: Nmin = 10 ! minimum number of intervals

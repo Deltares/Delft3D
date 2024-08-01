@@ -42,7 +42,6 @@
     use dfm_error
     use MessageHandling
     use m_partitioninfo
-    use m_sediment, only: stm_included
     use m_sethu
     use fm_external_forcings, only: calculate_wind_stresses, set_external_forcings_boundaries
     use m_wind, only: update_wind_stress_each_time_step

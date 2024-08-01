@@ -32,8 +32,8 @@
 
 subroutine comp_horfluxtot()
    use m_flowgeom, only: Lnx
-   use m_flow, only: Lbot, Ltop, kmx, Lnkx
-   use m_transport, only: ISED1, ISEDN, fluxhor, fluxhortot, sinksetot, sinkftot
+   use m_flow, only: Lbot, Ltop, kmx
+   use m_transport, only: ISED1, ISEDN, fluxhor, fluxhortot
    use m_flowtimes, only: dts
    use timers
 

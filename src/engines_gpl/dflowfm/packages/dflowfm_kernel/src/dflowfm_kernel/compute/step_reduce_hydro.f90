@@ -53,14 +53,10 @@
     integer :: ndraw
     common / DRAWTHIS / ndraw(50)
 
-    integer :: key, jposhchk_sav, LL, L, k1, k2, itype
-    integer :: ja, k, ierror, n, kt, num, js1, noddifmaxlevm, nsiz
-    character(len=40) :: tex
+    integer :: key, jposhchk_sav, itype
+    integer :: k, ierror, noddifmaxlevm
     logical :: firstnniteration, last_iteration
-    double precision :: wave_tnow, wave_tstop, t0, t1, dif, difmaxlevm
-    double precision :: hw, tw, uorbi, rkw, ustt, hh, cs, sn, thresh
-
-    character(len=128) :: msg
+    double precision :: dif, difmaxlevm
 
 !-----------------------------------------------------------------------------------------------
     numnodneg = 0

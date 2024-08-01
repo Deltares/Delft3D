@@ -38,7 +38,6 @@
          double precision :: dx
          double precision :: dy
          integer :: jaxis
-         integer :: nunix
          double precision :: xleft
          double precision :: xright
          double precision :: ybot

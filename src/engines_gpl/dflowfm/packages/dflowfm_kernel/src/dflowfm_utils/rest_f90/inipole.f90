@@ -40,12 +40,9 @@ subroutine inipole(japole)
 
    integer, intent(in) :: japole !< pole (1) or equator (0)
 
-   double precision :: lambda, phi, u
+   double precision :: lambda, phi
 
    integer :: L
-
-   integer :: ierror
-
    integer, external :: flow_modelinit
 
 !  set velocity field

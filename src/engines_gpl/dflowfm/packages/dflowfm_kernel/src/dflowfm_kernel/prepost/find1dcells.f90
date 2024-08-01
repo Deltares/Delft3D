@@ -41,7 +41,7 @@
       use MessageHandling
       implicit none
 
-      integer :: K1, K2, K3, L, LNX1D, N, NC1, NC2
+      integer :: K1, K2, K3, L, N, NC1, NC2
       integer :: i, ierr, k, kcell
 
       logical :: Lisnew

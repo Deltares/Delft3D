@@ -33,7 +33,7 @@
 ! =================================================================================================
 ! =================================================================================================
    subroutine structure_parameters
-      use m_flowgeom, only: ln, wu, bob, bl
+      use m_flowgeom, only: ln, wu, bob
       use m_flow
       use m_structures
       use fm_external_forcings_data, only: ngenstru
@@ -46,7 +46,7 @@
       use m_GlobalParameters
       use m_longculverts, only: nlongculverts, longculverts, newculverts
       implicit none
-      integer :: i, n, L, Lf, La, ierr, ntmp, k, ku, kd, istru, nlinks
+      integer :: i, n, L, Lf, La, ierr, k, ku, kd, istru, nlinks
       double precision :: dir
       integer :: jaghost, idmn_ghost, jaghostexist
       double precision, save :: timprev = -1d0

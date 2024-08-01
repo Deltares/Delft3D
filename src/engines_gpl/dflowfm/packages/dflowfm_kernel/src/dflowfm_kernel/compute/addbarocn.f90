@@ -89,15 +89,15 @@
  subroutine addbarocnrho_w(n) ! rho at interfaces (w points)
     use m_flowgeom
     use m_flow
-    use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents
+    use m_transport, only: ISALT, ITEMP, constituents
     use m_physcoef, only: rhomean
 
     implicit none
     integer, intent(in) :: n
 
-    integer :: k, kb, kt, i, maxit
+    integer :: k, kb, kt, i
     double precision :: saw(0:kmxx), tmw(0:kmxx) ! rho at pressure point layer interfaces
-    double precision :: fzu, fzd, alf, pu, pd, gr, dzz, rvn, p0d, pdb, rhosk
+    double precision :: fzu, fzd, pu, pd, dzz, p0d, pdb, rhosk
     double precision, external :: densfm
 
     call getkbotktop(n, kb, kt)

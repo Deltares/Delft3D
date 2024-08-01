@@ -42,7 +42,7 @@ subroutine make_matrix(CFL, s1)
 
    double precision :: aufu
 
-   integer :: k1, k2, n, L
+   integer :: k1, k2, L
 
    bbr = 1 / CFL**2
    ccr = 0d0

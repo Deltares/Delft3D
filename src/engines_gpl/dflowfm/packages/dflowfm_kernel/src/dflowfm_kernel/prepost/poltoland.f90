@@ -38,7 +38,7 @@
          integer :: l1
          integer :: l2
 
-         integer :: in, jn
+         integer :: in
          integer :: l, j
          double precision :: xp, yp, xpn, ypn, dis, rL
 

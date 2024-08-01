@@ -37,11 +37,11 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
                           difsed, sigdifi, vicwws, &
                           nsubsteps, jaupdate, ndeltasteps, sed, &
                           a, b, c, d, e, sol, rhs)
-   use m_flowgeom, only: Ndxi, Ndx, Lnx, Ln, ba, kfs, bl ! static mesh information
+   use m_flowgeom, only: Ndxi, Ndx, Lnx, ba, kfs ! static mesh information
    use m_flowtimes, only: dts
-   use m_flow, only: epshsdif, s1, kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
+   use m_flow, only: kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
    use m_flowparameters, only: epshu, testdryflood
-   use m_sediment, only: mtd, jased, ws, sedtra, stmpar
+   use m_sediment, only: mtd, jased
    use m_fm_erosed, only: tpsnumber
    use sediment_basics_module
    use timers
@@ -79,12 +79,11 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
    double precision, dimension(kmx) :: sol, e ! work array: solution and dummy array in tridag, respectively
    double precision, dimension(NUMCONST, Ndkx) :: rhs ! work array: right-hand side, dim(NUMCONST,Ndkx)
 
-   double precision :: dvoli, fluxfac, dvol1i, dvol2i
-   double precision :: dum, rhstot, dtbazi, dtba, ozmid, bruns
+   double precision :: fluxfac, dvol1i, dvol2i
+   double precision :: dtbazi, dtba, ozmid, bruns
 
-   integer :: LL, L, Lb, Lt
    integer :: kk, k, kb, kt, ktx
-   integer :: k1, k2, i, j, n, kkk
+   integer :: j, n
 
    double precision :: dt_loc
    double precision :: qw_loc

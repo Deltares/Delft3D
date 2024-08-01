@@ -42,7 +42,6 @@
      integer :: istart
      integer :: k1
      integer :: k2
-     integer :: istat
      character FULNAM * 180
      logical JA
 

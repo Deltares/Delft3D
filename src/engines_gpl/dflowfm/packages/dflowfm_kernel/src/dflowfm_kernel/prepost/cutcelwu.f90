@@ -48,9 +48,8 @@ subroutine CUTCELWU(n12, jamasks, ipoly)
    integer, intent(in) :: ipoly ! polygon number for masks
 
    integer :: ja, KMOD
-   integer :: K, KM, K1, K2, K3, K4, L, LL, LNU, N, N1, N2, NN, LF, IC, LLU, IN, KL
+   integer :: K, K1, K2, L, LL, N, NN, LF, IC, LLU, IN, KL
    integer, allocatable :: KNP(:)
-   integer :: KK(4)
 
    double precision :: XM, YM, XXC(8), YYC(8), DAREA, DLENGTH, DLENMX
 
@@ -58,7 +57,7 @@ subroutine CUTCELWU(n12, jamasks, ipoly)
    integer, dimension(:), allocatable :: Lmask ! link mask
 
    double precision :: cx, cy, R2search, Area, cof0
-   integer :: i, ip1, num, k_start, k_end, numsam, ierror
+   integer :: i, ip1, num, k_start, k_end, numsam
    integer :: jadelete
    integer :: jakdtree
    integer :: jasplitpol, numpolies, ip

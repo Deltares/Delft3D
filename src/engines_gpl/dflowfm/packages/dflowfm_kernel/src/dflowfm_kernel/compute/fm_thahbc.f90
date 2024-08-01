@@ -54,12 +54,12 @@
 
       use fm_external_forcings_data
       use m_flowparameters
-      use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, itrac2const, ifrac2const
+      use m_transport, only: ISALT, ITEMP, ISED1, itrac2const, ifrac2const
       use m_sediment
 
       implicit none
 
-      integer :: i, iconst, ised
+      integer :: i, iconst
 
       if (jasal > 0 .and. nbnds > 0) then
          call thconst(ISALT, nbnds, zbnds, kbnds, thtbnds, thzbnds)

@@ -37,7 +37,7 @@
     !USE M_NETW
     use M_FLOW
     use M_FLOWTIMES
-    use m_reduce, only: nocg, nogauss, noexpl, nowet
+    use m_reduce, only: nocg, nogauss
     use M_RAAITEK
     use m_statistics
     use UNSTRUC_MODEL, only: md_ident
@@ -57,8 +57,6 @@
     character(len=4) :: c_nsubsteps
     character(len=7) :: c_numnonglobal
     character(len=15) :: c_lts
-    integer, save :: mout = 0
-    integer, save :: eeini = 0
 
     integer :: ndraw
     common / DRAWTHIS / ndraw(50)

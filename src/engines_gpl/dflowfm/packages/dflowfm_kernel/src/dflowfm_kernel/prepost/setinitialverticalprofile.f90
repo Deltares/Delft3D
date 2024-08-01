@@ -73,7 +73,7 @@
     use m_flow
     implicit none
 
-    integer :: n, k, kb, kt, nlayb, nrlay, Ltn
+    integer :: n, kb, kt, nlayb, nrlay, Ltn
 
     do n = 1, ndxi
        call getkbotktop(n, kb, kt)

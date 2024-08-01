@@ -36,7 +36,7 @@
          use m_polygon
          use m_missing
          implicit none
-         integer :: mpol, i
+         integer :: mpol
 
          call savepol()
          call copycrosssectionstopol()

@@ -37,7 +37,6 @@ subroutine fill_rho()
    use m_sediment
    use m_transport
    use m_sferic
-   use m_flowtimes, only: dnt
    use timers
 
    implicit none

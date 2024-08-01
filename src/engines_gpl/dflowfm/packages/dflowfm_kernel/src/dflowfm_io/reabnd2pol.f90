@@ -39,7 +39,7 @@
     character :: rec * 132, fnam * 20
     integer, allocatable :: ma(:), na(:), mb(:), nb(:)
     integer :: mmx = 1000, k = 0, mbnd, mbca
-    character(len=132) :: a(100), b(100)
+    character(len=132) :: a(100)
     integer :: i, j
     integer :: kx, nra, kd, ku, kk, nr
     double precision :: x1, x2, x3, x4

@@ -41,7 +41,7 @@
       use unstruc_files, only: defaultFilename
 
       implicit none
-      integer :: n, i, ntbal, k1, k2
+      integer :: n, ntbal, k1, k2
       double precision :: tim, ue, te
       double precision :: vv1, vv2, eh1, eh2, ee1, ee2, ft, dinch, wid, h1, h2, rr1, rr2, xl1, xl2, df1, df2, hb, AA1, AA2, QQ, s12, froude2
 

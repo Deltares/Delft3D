@@ -35,7 +35,7 @@ double precision function coarsening_info(k)
 
    use m_netw
    use m_missing
-   use m_sferic, only: jsferic, jasfer3D, dtol_pole
+   use m_sferic, only: dtol_pole
    use gridoperations
 
    implicit none

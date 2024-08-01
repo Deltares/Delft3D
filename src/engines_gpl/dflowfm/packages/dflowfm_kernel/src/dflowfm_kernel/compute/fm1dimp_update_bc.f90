@@ -52,7 +52,6 @@ subroutine fm1dimp_update_bc(iresult, time1)
 
 !local
    integer :: k, ktab, nq, n, L
-   integer :: idx_crs
    integer :: table_number
 
 !point

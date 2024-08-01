@@ -57,7 +57,6 @@
     integer :: L0
     integer :: mdown
     integer :: nstrucsg
-    integer :: state
     integer :: ncompound
 
     double precision :: as1

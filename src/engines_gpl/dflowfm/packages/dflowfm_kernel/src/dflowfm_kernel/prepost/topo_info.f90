@@ -42,12 +42,8 @@ double precision function topo_info(L)
 
    integer :: k1, k2, kL, kR
    integer :: icellL, icellR
-   integer :: k, n
-
+   integer :: n
    integer :: jalandbound ! take landboundary into account (1) or not (0)
-
-   logical :: Lproceed
-
    integer, external :: nmk_opt ! optimal nmk for the for nodes involved
 
 !  default

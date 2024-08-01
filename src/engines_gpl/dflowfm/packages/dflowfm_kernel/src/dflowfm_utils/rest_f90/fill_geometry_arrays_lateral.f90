@@ -39,7 +39,7 @@ subroutine fill_geometry_arrays_lateral()
    use m_cell_geometry, only: xz, yz
    implicit none
 
-   integer, allocatable :: nodeCountLatGat(:), nlatndGat(:), recvCount(:), displs(:)
+   integer, allocatable :: nodeCountLatGat(:), nlatndGat(:), displs(:)
    double precision, allocatable :: xGat(:), yGat(:) ! Coordinates that are gatherd data from all subdomains
    integer :: i, j, jprev, k, k1, ierror, is, ie, n, nnode, n1gat, n2gat
    integer :: nlatnd_noghosts, nlatndMPI

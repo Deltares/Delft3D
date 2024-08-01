@@ -37,7 +37,7 @@ integer function common_cell_for_two_net_links(L1, L2)
 
    integer, intent(in) :: L1, L2 !< net link numbers
 
-   integer :: icell, i, j, kk
+   integer :: i, j
 
    common_cell_for_two_net_links = 0
 

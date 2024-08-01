@@ -45,7 +45,6 @@ subroutine update_vertadmin()
    double precision, dimension(:, :), allocatable :: dum
 
    integer :: k, L
-   integer :: n3, n4
    integer :: ierror
 
    ierror = 0

@@ -41,7 +41,7 @@ subroutine orthonet_project_on_boundary(nmkx, kk1, k_bc, xkb, ykb)
    double precision, dimension(numk) :: xkb, ykb !< copy of the original net
    integer, dimension(nmkx, numk) :: kk1 !< link-connected neighboring nodes
 
-   double precision :: x0, y0, xl, yl, xr, yr
+   double precision :: x0, y0
    double precision :: x2, y2, x3, y3, xn2, yn2, xn3, yn3
    double precision :: dis2, dis3, r2, r3
 

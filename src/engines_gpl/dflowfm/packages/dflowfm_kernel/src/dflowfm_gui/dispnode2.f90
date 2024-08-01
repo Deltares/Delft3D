@@ -31,7 +31,6 @@
 !
 
       subroutine DISPNODE2(MP, NP)
-         use m_grid, only: zc
          use m_devices
          implicit none
          integer :: mp, np

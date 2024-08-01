@@ -50,8 +50,8 @@ subroutine getustwav(LL, z00, umod, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, cost
 
    double precision, external :: sinhsafei
    integer :: k1, k2, Lb, Lt, L, Lmin
-   double precision :: Tsig, Hrms, asg, rk, shs, astar, phiw, phi1, phi2, dks, aks, omeg, f1u, f2u, f3u, zu, sintu
-   double precision :: qsto, usto3Dav, usto2D, p1, p2, h, z, ustoktb, uusto, uwi, fac, tcw, dfcw, fcw, ka
+   double precision :: Tsig, Hrms, asg, rk, shs, phi1, phi2, dks, aks, omeg, f1u, f2u, f3u, sintu
+   double precision :: p1, p2, h, z, uusto, fac
    double precision :: rolthk, rmax, erol, crol, mass
 
    Dfu = 0d0; Dfuc = 0d0; deltau = 0d0; uorbu = 0d0; csw = 1d0; snw = 0d0; costu = 1d0; fw = 0d0

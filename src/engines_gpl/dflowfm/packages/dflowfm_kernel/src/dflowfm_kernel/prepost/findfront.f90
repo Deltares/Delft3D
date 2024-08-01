@@ -47,7 +47,7 @@ subroutine findfront(mc, nc, mmax, nmax, xc, yc, num, xf, yf, idxf, nf)
 
    integer, dimension(mc - 1) :: jhfrontedge ! j-index of i-front edges
 
-   integer :: i, j, iL, iR, icirc
+   integer :: i, j, iL, iR
 
    integer :: j1, j2
 

@@ -38,15 +38,9 @@
          use M_MISSING
          implicit none
 
-         integer :: Marc, JA, in
-         character NAME2 * 76, TEX * 3, REC * 132, REC1 * 132
-
-         logical jawel
-
-         integer :: i, j, k, k0, l0
-         integer :: jadoorladen, merr
-         double precision XX(8), YY(8), ZZ(8)
-         double precision :: af
+         integer :: Marc, JA
+         integer :: i, j
+         integer :: merr
 
          JSFERIC = 0
          JSFERTEK = 0

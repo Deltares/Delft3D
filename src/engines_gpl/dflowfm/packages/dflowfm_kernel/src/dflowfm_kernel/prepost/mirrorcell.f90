@@ -50,8 +50,7 @@
     double precision, intent(out) :: xmir, ymir !< 'Uitsteker' probe point, used for testing for open boundary in selectelset
     double precision, intent(out) :: xx(4), yy(4) !< Coordinates for mirrored cell contour (counter clockwise), contains x3,y3 and also x4,y4.
 
-    double precision :: rtol
-    double precision :: dis, dis2, diszw, edge, zci, rdot, rx, ry, xd, yd
+    double precision :: dis, dis2, rx, ry, xd, yd
     double precision :: x3, x4
     double precision, external :: dprodin
     integer :: ja, jadismxbnd = 0

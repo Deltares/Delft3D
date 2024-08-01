@@ -34,15 +34,15 @@
 subroutine updateValuesOnRunupGauges()
    use m_monitoring_runupgauges
    use m_missing
-   use m_flow, only: s1, hu, hs
+   use m_flow, only: s1, hs
    use m_cell_geometry, only: xz, yz
-   use m_flowgeom, only: ln, acl, xu, yu, bl
-   use m_flowparameters, only: epshs, epshu
+   use m_flowgeom, only: ln, bl
+   use m_flowparameters, only: epshu
 
    implicit none
 
    integer :: irug
-   integer :: k1, k2, k
+   integer :: k1, k2
    integer :: L, il
    double precision :: max_x, max_y, maxz, maxk
 

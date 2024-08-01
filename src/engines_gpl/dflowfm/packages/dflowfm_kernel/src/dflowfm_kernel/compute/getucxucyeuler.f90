@@ -44,8 +44,7 @@ subroutine getucxucyeuler(N, ucxeu, ucyeu)
    double precision, intent(out) :: ucxeu(N) !< Target array in which to store Eulerian x-velocities
    double precision, intent(out) :: ucyeu(N) !< Target array in which to store Eulerian y-velocities
 
-   integer :: i, Lb, Lt, L, LL, k, k1, k2
-   double precision :: u1l, wcxu, wcyu, ueul
+   integer :: Lb, Lt, L, LL, k1, k2
 
    ucxeu(1:ndkx) = ucx(1:ndkx); ucyeu(1:ndkx) = ucy(1:ndkx)
    if (jawave > 0 .and. .not. flowWithoutWaves) then

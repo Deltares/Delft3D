@@ -31,7 +31,7 @@
    !
 
    subroutine setdtmaxavalan(dts)
-      use m_fm_erosed, only: duneavalan, avaltime
+      use m_fm_erosed, only: avaltime
       implicit none
 
       double precision, intent(inout) :: dts !timestep to use

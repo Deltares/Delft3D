@@ -44,8 +44,6 @@
       integer, dimension(nmax), intent(out) :: kindirect !< indirectly connected cells
       integer, dimension(2, nmax), intent(out) :: kne !< two indirectly connected cells that are adjacent to a directly connected cell
 
-      integer :: nneighbors
-
       integer :: i, j, kk, kkk, kkkk, kcell1, kcell2, k1, L
 
       ndirect = 0

@@ -35,7 +35,7 @@ subroutine coarsen_mesh()
    use m_netw
    use unstruc_colors, only: ncolhl
    use stdlib_sorting, only: sort_index
-   use m_sferic, only: jsferic, jasfer3D, dtol_pole
+   use m_sferic, only: dtol_pole
    use gridoperations
 
    implicit none
@@ -49,7 +49,7 @@ subroutine coarsen_mesh()
 
    integer, dimension(:), allocatable :: kmask ! masking array
 
-   integer :: k, k_, kk, kkk, kkkk, k1, ja, N
+   integer :: k, k_, kk, kkk, k1, ja, N
 !   integer                                     :: i, j, indx, isgn   ! for sort_heap
    integer, dimension(:), allocatable :: perm ! for sorting
 !   integer                                     :: p1                 ! for sort_heap

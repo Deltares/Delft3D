@@ -35,7 +35,6 @@
          implicit none
          integer :: i
          integer :: istart
-         integer :: key
          integer :: n
          integer :: ncol
          double precision :: rcir

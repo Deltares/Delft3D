@@ -41,9 +41,9 @@
 
     implicit none
 
-    integer :: L0, L, k1, k2, k01, k02, LL, k, n, nn, km, n1, n2, Ld, kb, kt, ks, Lb, Lt, kmxLL, ng, istru
-    double precision :: qt, zws0k
-    double precision :: accur = 1e-30, wb, ac1, ac2, dsL, sqiuh, qwb, qsigma
+    integer :: L0, L, k1, k2, k01, k02, LL, k, n, nn, km, n1, n2, kb, kt, Lb, Lt, kmxLL, ng, istru
+    double precision :: zws0k
+    double precision :: wb, dsL, sqiuh, qwb, qsigma
     double precision :: qwave
     type(t_structure), pointer :: pstru
     integer :: ierror

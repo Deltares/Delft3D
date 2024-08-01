@@ -53,10 +53,9 @@
     integer, allocatable :: NNN(:)
 
     integer, intent(in) :: naar !< 1: To flow nodes, 2: to zk net nodes.
-    integer :: N, NN, L, LK, K, KK, N6, mnx, md, mu, n1, n2
+    integer :: N, NN, L, LK, K, N6, mnx
     integer :: i, ierror
     integer :: jdla, jakdtree = 1
-    double precision :: xn, yn, dist
     type(TerrorInfo) :: errorInfo
 
     if (NAAR == 1 .and. ndx == 0) then

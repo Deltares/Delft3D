@@ -38,7 +38,7 @@
     use m_sferic, only: jasfer3D
     implicit none
 
-    integer :: ku, LLL, LL, L, Ls, ischeme, n12
+    integer :: ku, LL, L, Ls, ischeme, n12
 
     double precision :: ucxku, ucyku, ww, ac1, huweir, hunoweir, wl, wlno, at, cs, sn, fac
 

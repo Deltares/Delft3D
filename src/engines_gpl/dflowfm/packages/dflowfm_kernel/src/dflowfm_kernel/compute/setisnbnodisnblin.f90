@@ -31,7 +31,7 @@
       use m_flowgeom
       use m_netw
       implicit none
-      integer :: L, LL, LLL, LLLa, La, L1, L2, L1a, L2a, n, nx, ip, i12, k2, ja1D
+      integer :: L, LL, LLL, LLLa, L1, L2, L1a, L2a, n, nx, ja1D
 
       if (allocated(isnbnod)) deallocate (isnbnod)
       if (allocated(isnblin)) deallocate (isnblin)

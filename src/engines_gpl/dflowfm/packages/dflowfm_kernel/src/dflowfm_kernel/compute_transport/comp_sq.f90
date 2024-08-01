@@ -44,8 +44,7 @@ subroutine comp_sq(Ndkx, Lnkx, kbot, ktop, Lbot, Ltop, q1, qw, sq)
    double precision, dimension(Ndkx), intent(in) :: qw !< flow-field vertical discharges
    double precision, dimension(Ndkx), intent(out) :: sq !< flux balance (inward positive)
 
-   double precision :: dum, sumsq
-
+   double precision :: sumsq
    integer :: k1, k2, k, kk, L, LL
 
    sq = 0d0

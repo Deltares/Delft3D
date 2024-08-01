@@ -41,8 +41,8 @@
     use m_polygon
 
     implicit none
-    integer :: nx, ncol, jaall, ITYP
-    integer :: r, L, k1, k2, kk, k, n
+    integer :: ncol, jaall, ITYP
+    integer :: L, k1, k2, kk, k, n
     double precision :: zz1, zz2, xx1, xx2, yy1, yy2
     integer :: ja, jg
 

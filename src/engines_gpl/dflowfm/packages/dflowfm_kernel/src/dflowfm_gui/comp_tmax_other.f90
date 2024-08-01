@@ -59,14 +59,14 @@ subroutine comp_tmax_other(mc, jlay, xc, yc, vel, mc1, xc1, yc1, vel1, idx1, tma
 
    double precision :: tmax1234
 
-   double precision :: d, d1, d2, d3, d4, dL1, dL2
-   double precision :: vv1, vv2, vv3, vv4, maxvv, dt
+   double precision :: d1, d2, d3, d4, dL1, dL2
+   double precision :: vv1, vv2, vv3, vv4, maxvv
 
    double precision :: t1, t2, t3, t4 ! cross times
    double precision :: hlow2
    double precision :: dclearance
 
-   integer :: i, j, i1, j1, i2, j2, ja, iL, iR, nummax, idum, imin, imax
+   integer :: i, j, i1, j1, i2, j2, iL, iR, nummax, idum, imin, imax
    integer :: iLL, iRR, jsferic_old
 
    double precision, external :: comp_cross_time_2

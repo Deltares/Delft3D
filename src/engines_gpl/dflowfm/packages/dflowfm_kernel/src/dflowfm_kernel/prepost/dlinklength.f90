@@ -34,7 +34,7 @@
       double precision function dLinklength(L)
 
          use m_netw
-         use m_missing, only: dmiss, JINS
+         use m_missing, only: dmiss
          use m_polygon, only: NPL, xpl, ypl, zpl
          use m_sferic, only: jsferic, jasfer3D
          use geometry_module, only: dbpinpol, dbdistance
@@ -43,7 +43,6 @@
          implicit none
 
          integer, intent(in) :: L !< link number
-         double precision :: dx, dy
          integer :: La, k1, k2
 
          La = iabs(L)

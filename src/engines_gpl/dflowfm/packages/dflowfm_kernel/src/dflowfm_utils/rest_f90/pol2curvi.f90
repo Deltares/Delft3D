@@ -59,7 +59,7 @@ subroutine pol2curvi(i1, i2, i3, ja4)
    integer :: istart, iend
    integer :: i, j, mcL, mcR, ncL, ncR
 
-   integer :: idum, idir, ipoint, num, numsubpol
+   integer :: idir, ipoint, num, numsubpol
 
    integer :: ierror ! error (1) or not (0)
 

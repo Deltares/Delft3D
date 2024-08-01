@@ -53,9 +53,9 @@ subroutine setfixedweirs()
 
    implicit none
 
-   integer :: np, k, kk, n1, n2, n12, n, nn, L, LL, ja, jacros, minp, kint, ierr, nt, nh, nhh, i, Lf
-   integer :: jaweir, Lastfoundk, kf, kL, jarestorepol, Lnt, k1, nna, nnb, nl1, nl2, k3, k4
-   integer, allocatable :: iwu(:), ihu(:)
+   integer :: k, kk, n1, n2, n, L, LL, jacros, minp, kint, ierr, nh, nhh, i, Lf
+   integer :: jaweir, Lastfoundk, kf, kL, Lnt, nna, nnb, k3, k4
+   integer, allocatable :: ihu(:)
    double precision :: SL, SM, XCR, YCR, CRP, Xa, Ya, Xb, Yb, zc, zh, zhu, zhd, af, dz1, dz2, xn, yn, adjacentbob, cosphi, sig, bobL
    double precision, allocatable :: csh(:), snh(:), zcrest(:), dzsillu(:), dzsilld(:), crestlen(:), taludu(:), taludd(:), vegetat(:), ztoeu(:), ztoed(:)
    integer, allocatable :: iweirtyp(:)
@@ -66,7 +66,7 @@ subroutine setfixedweirs()
    integer, dimension(:), allocatable :: iLcr ! link crossed yes no
    integer, dimension(:), allocatable :: iPol
 
-   integer :: iL, numLL, numcrossedLinks, ii, LLL, LLLa, nx
+   integer :: iL, numcrossedLinks, ii, LLL, LLLa, nx
    integer :: mout, jatabellenboekorvillemonte
    integer :: ierror
 

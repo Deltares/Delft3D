@@ -41,12 +41,7 @@
       integer :: i
       integer :: inhul
       integer :: ja
-      integer :: k
       integer :: key
-      integer :: nsol
-      double precision :: rd
-      double precision :: xi
-      double precision :: yi
 
       if (Npl <= 2) then
          call CONFRM('NO POLYGON, SO DELETE all Observation Points? ', JA)

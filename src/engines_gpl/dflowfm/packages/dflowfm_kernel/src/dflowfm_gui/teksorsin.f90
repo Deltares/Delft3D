@@ -38,9 +38,9 @@ subroutine teksorsin() ! teksrc
    implicit none
    common / DRAWTHIS / ndraw(50)
    integer :: ndraw
-   integer :: n, k, kb, kt, n2, ncol
+   integer :: n, k, n2, ncol
    character*40 :: tex
-   double precision :: znod, temb, temt, xp, yp
+   double precision :: xp, yp
    logical inview
 
    if (ndraw(41) <= 1 .or. numsrc == 0) return

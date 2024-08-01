@@ -7309,6 +7309,7 @@ contains
       use string_module, only: str_upper
       use timespace_parameters
       use timespace
+      use fm_external_forcings_utils, only: get_tracername, get_sedfracname
 
       character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
       real(hp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.

@@ -35,7 +35,6 @@
     use m_flow
     use unstruc_display
     implicit none
-    integer :: k, nn
     if (klprof > 0 .and. nplot > 0) then
        call cirr(xz(nplot), yz(nplot), ncolblack) !klprof)
 

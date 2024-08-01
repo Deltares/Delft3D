@@ -42,7 +42,7 @@ subroutine spline2poly()
 
    double precision, allocatable, dimension(:) :: sc !  spline-coordinates of grid points, not used
 
-   integer :: ispline, num, numpoints, kmax, mfacmax
+   integer :: ispline, num, numpoints, mfacmax
 
    double precision :: hmax
 

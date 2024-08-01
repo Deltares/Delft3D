@@ -45,7 +45,7 @@ subroutine update_land_nodes(node_index, new_zk)
    double precision, intent(in) :: new_zk
 
    ! locals
-   integer :: kk, k, n, nn, ncol, j, i
+   integer :: k, ncol, j
    double precision :: old_zk
 
    if (ndx == 0) return

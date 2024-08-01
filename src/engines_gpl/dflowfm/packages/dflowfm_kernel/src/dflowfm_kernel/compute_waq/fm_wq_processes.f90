@@ -1377,9 +1377,7 @@ subroutine copy_data_from_fm_to_wq_processes(time)
 
    double precision, intent(in) :: time !< time     for waq in seconds
 
-   double precision :: taucurc, czc
    double precision :: u10, dir, wdir, FetchL, FetchD
-
    integer :: isys, iconst, iwqbot
    integer :: ipoisurf, ipoitau, ipoivel
    integer :: ipoivol, ipoiconc, ipoisal, ipoitem

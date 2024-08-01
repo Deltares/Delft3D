@@ -58,7 +58,7 @@ subroutine textflowspecific()
    double precision, external :: znod
 
    character(len=140) :: tex
-   double precision :: solrest, eefrac, QCURV, QRECT
+   double precision :: QCURV, QRECT
    integer :: nn !< Which horizontal node to print
    nn = min(nplot, ndx)
 
@@ -193,7 +193,7 @@ subroutine update_turkin_modelspecific(Lf)
 
    double precision, save :: zw1(kmxx), uu(kmxx)
    double precision :: dummy
-   integer :: L, Lb, Lt, kxL, mout, j
+   integer :: L, Lb, Lt, kxL
 
    Lb = Lbot(Lf) ! bed layer index
    Lt = Ltop(Lf) ! surface layer index = surface interface index
@@ -430,10 +430,10 @@ subroutine weirtheo(j12)
    use unstruc_model, only: getoutputdir
    implicit none
    integer, intent(in) :: j12
-   integer :: k, L, LL, num, kk, k1, k2, Lweir, ncgentst
-   double precision :: slinks, srechts, eup, edo, dE, dH, foot, zg, z1, z2, z3, qg, a, cc, f1, f2, qglab, z2lab, qsimple, tim
+   integer :: k, L, num, Lweir, ncgentst
+   double precision :: slinks, srechts, eup, edo, dE, dH, foot, zg, z1, z2, z3, qg, qglab, z2lab, qsimple, tim
    double precision :: zupstream, zdownstream, crestheight, zcrestperfect, zminsub, zcrest, submer, qfree, g = 9.81d0, qg12, qgen, zg12
-   double precision :: qweirana, qweirc, uupstream, ucrest, udownstream, bedlev, crestlev, qsub, qsup, qcond, qthd, gateheight, qcrit
+   double precision :: qweirana, uupstream, ucrest, udownstream, bedlev, crestlev, qsub, qsup, qcond, qthd, gateheight, qcrit
    double precision :: qrajaratnam
    character(len=132) :: tex
    character(len=32) :: regime
@@ -636,7 +636,7 @@ subroutine gatetheo()
    use unstruc_colors
 
    implicit none
-   double precision :: agate, hup, hdown, qgate, hgate, z2, zg, qcrit
+   double precision :: agate, hup, hdown, qgate, z2, zg, qcrit
    integer :: num
 
    character(len=132) :: tex, regime
@@ -666,7 +666,6 @@ subroutine poiseuille(init)
    use unstruc_model
    use m_monitoring_crosssections
    use m_alloc
-   use unstruc_colors, only: ncolana
    use m_statistics, only: avedif
    use stdlib_sorting, only: sort_index
    use geometry_module, only: dbdistance
@@ -686,12 +685,12 @@ subroutine poiseuille(init)
 
    integer, allocatable, dimension(:) :: perm ! for sorting
 
-   double precision :: hev, c0, b, dy, hdy, dyy, aa, yw, ust, c2a, c2, xx0, yy, yf, uu, xx, botinc, fac
+   double precision :: hev, c0, b, dy, hdy, dyy, aa, yw, ust, c2a, c2, xx0, yy, yf, uu, xx, fac
    double precision :: x1, y1, xL, yL, xR, yR, alpha
-   double precision :: uxL, uyL, uxR, uyR, ux1, uy1, s01, yy0
+   double precision :: ux1, uy1, s01, yy0
 
    integer :: i, j, k, ki, L, num
-   integer :: icrs, np, nl, ip, ip1, kL, kR
+   integer :: icrs, np, nl, ip1, kL, kR
 
    integer, save :: icount
    double precision, save :: time2write = -1d99

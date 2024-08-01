@@ -57,7 +57,7 @@ subroutine comp_sampleHessian(ierror)
    double precision :: zxx, zxy, zyx, zyy ! second order partial derivatives
    double precision :: zx, zy ! first order partial derivatives
 
-   double precision :: af, dum, EPS, Dx, Dy, Dh
+   double precision :: af, dum, Dh
 
    integer :: i, j, k, nrot, ip, ihasridge
 

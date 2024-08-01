@@ -44,8 +44,7 @@
 
     character(len=IdLen) :: name, nams
     logical :: jawel
-    integer :: mlim, k, numlimdtk, kk, jakdtree = 1, jaoutside = 0
-    double precision :: xdum, ydum
+    integer :: mlim, k, kk, jakdtree = 1, jaoutside = 0
     integer, allocatable :: knum(:)
 
     if (jampi == 0) then

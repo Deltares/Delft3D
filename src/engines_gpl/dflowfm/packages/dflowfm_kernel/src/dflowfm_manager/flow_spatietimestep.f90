@@ -33,13 +33,11 @@
  subroutine flow_spatietimestep() ! do flowstep
     use m_flowtimes
     use m_flowgeom, only: ndx
-    use fm_external_forcings_data, only: nbndz, zbndz
     use m_flowparameters, only: janudge
     use fm_external_forcings
 
     implicit none
     integer :: key, ierr
-    integer :: i
     integer, external :: flow_modelinit
 
     if (ndx == 0) then

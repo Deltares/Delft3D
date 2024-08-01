@@ -42,7 +42,7 @@
          double precision :: XK(NUMK), YK(NUMK), ZK(NUMK), EA(NUMK)
          double precision :: XI, YI, ZI, DA, AF, RD
 
-         integer :: ichange, inhul, ja, k, maxexp, maxopt, nwhat, kk
+         integer :: ichange, inhul, ja, k, maxexp, maxopt, nwhat
          double precision, save :: A = 1d0
 
          JA = 0

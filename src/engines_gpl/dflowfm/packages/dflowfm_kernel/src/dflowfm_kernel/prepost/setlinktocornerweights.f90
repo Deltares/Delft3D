@@ -45,7 +45,6 @@
     double precision :: ax, ay, wuL, wud, csa, sna
     integer :: k, L, ierr, nx
     integer :: k1, k2, k3, k4
-    double precision :: ff = 5d0
     integer :: ka, kb, LL
 
     double precision, allocatable :: wcnxy(:, :) ! corner weight factors (2,numk) , only for normalising

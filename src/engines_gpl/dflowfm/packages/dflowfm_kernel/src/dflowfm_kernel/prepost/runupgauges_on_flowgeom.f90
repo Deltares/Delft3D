@@ -38,7 +38,6 @@ subroutine runupgauges_on_flowgeom()
    use unstruc_messages
    use dfm_error
    use m_inquire_flowgeom
-   use m_partitioninfo, only: jampi
    use m_alloc
    implicit none
 
@@ -56,8 +55,6 @@ subroutine runupgauges_on_flowgeom()
    integer :: jakdtree = 1
    double precision :: t0, t1
    character(len=128) :: mesg
-   integer :: linknr, ii
-   logical :: success
 
    if (num_rugs < 1) return
 

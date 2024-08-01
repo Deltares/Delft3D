@@ -50,7 +50,7 @@
       integer, external :: infoinput
       external :: highlight_form_line
 !
-      integer :: ir, il, iw, ixp, iyp, ih, i, iuvfieldorg, ifexit, ifinit, key, ierr
+      integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key, ierr
       integer :: nbut, imp, inp
       double precision :: frcuniorg
 

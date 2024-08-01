@@ -55,9 +55,9 @@ subroutine deletecell(k, ndirect, nindirect, kdirect, kindirect, kne, Lprompt_no
    double precision :: xc, yc, fac, factot
 
    integer :: k1, k2, kk, N, ja
-   integer :: i, iR, im1, in, j, jj, kcell, kcell1, kcell2, L, L1, L2
+   integer :: i, iR, im1, in, j, kcell, kcell1, L, L1, L2
    integer :: kcL, kcR, Ndum
-   integer :: klin, knod, num
+   integer :: klin, knod
 
    integer :: isconvexcell
 

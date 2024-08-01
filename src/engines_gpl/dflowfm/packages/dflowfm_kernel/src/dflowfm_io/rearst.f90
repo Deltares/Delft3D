@@ -45,7 +45,6 @@
       integer :: k
       integer :: l
       integer :: NDXR, LNXR ! alleen binnen deze subroutine
-      logical :: JAWEL
       double precision :: DUM
 
       ja = 0

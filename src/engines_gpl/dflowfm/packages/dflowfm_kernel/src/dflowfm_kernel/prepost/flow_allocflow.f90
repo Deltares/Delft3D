@@ -37,7 +37,7 @@
     use m_flowtimes
     use m_missing
     use unstruc_model
-    use m_netw, only: netcell, numk, numl
+    use m_netw, only: numk, numl
     use m_alloc
     use m_waves
     use fm_external_forcings_data, only: nbndw
@@ -45,7 +45,6 @@
     use m_ship
     use m_sferic
     use m_partitioninfo
-    use m_transport, only: NUMCONST
     use m_integralstats
     use unstruc_channel_flow
     use m_bedform
@@ -53,17 +52,15 @@
     use m_hydrology, only: jadhyd, alloc_hydrology, init_hydrology
 
     implicit none
-    integer :: ierr, n, k, mxn, j, kj, kk, LL, L, k1, k2, k3, k4, n1, n2, n3, n4, nL, kb1, kb2, numkmin, numkmax, kbc1, kbc2
-    integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Lt3, Ld1, Ld2, Ld3, Ldn
+    integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
+    integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
     integer :: laybed, laytop, nrlayL, Lf, kuni, kb
     integer :: nlayb1L, nrlay1L, nlayb2L, nrlay2L
     integer :: ndx1d
 
-    double precision :: zmn, zmx, dzm, zw, zkk ! for 3D
-    double precision :: xL, xR, dLR, alf, xfixed, xsigma, gf, d1, di, w1, w2, w3, zbt, zbb, dzb, gfi, gfk, sumcof
+    double precision :: zmn, zmx, dzm ! for 3D
+    double precision :: gf, w1, w2, w3, zbt, zbb, dzb, gfi, gfk, sumcof
     logical :: jawel
-
-    integer :: ierror
 
     if (ndx == 0) return
 

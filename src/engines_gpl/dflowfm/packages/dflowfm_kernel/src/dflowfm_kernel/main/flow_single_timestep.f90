@@ -38,15 +38,12 @@
     use unstruc_netcdf
     use m_xbeach_netcdf
     use m_timer
-    use unstruc_display, only: jaGUI
     use dfm_error
     use m_sedtrails_netcdf, only: sedtrails_write_stats
     implicit none
 
     integer :: key
     integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
-
-    integer :: N, L
 
     iresult = DFM_GENERICERROR
 

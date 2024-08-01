@@ -38,7 +38,6 @@ subroutine prepare_sampleHessian(ierror)
    implicit none
 
    integer, intent(out) :: ierror !< error (1) or not (0)
-   integer :: jacancelled
 
    ierror = 1
 

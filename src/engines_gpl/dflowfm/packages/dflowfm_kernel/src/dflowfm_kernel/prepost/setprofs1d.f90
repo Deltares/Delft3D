@@ -46,8 +46,8 @@
     use m_samples
 
     implicit none
-    integer :: ierr, MINP, LS, L, K, LF, IBR, LL, LA, K1, K2, KA, KB, NRL, NSK, KK, ja, ium
-    double precision :: XL, ZL, ALFA
+    integer :: ierr, MINP, LS, L, K, IBR, LL, LA, K1, K2, KA, KB, NRL, KK, ja, ium
+    double precision :: XL, ALFA
     logical :: jawel
     character(len=256) :: fnam
     integer, allocatable :: LSAM(:) ! sample K IS ON NET LINK LSAM
@@ -58,7 +58,6 @@
     integer, allocatable :: KLH(:), KLHH(:) ! INDEX  ARR, + SORTED BY IDX
     double precision, allocatable :: XLH(:) ! LENGTH ARR
     double precision, allocatable :: ZLH(:) ! VALUE  ARR
-    integer :: nyz
 
     type tKBSAM !< TEMP
        integer, allocatable :: KS(:) !< successive SAMPLE nrs ON BRANCH
@@ -74,8 +73,7 @@
     double precision, dimension(:), allocatable :: zkk, wkk ! help interpolate zk in profiles if dmiss
 
     double precision :: XLS, YLS, XLB, DXB, dum, ZA, ZB, wa, wb, zul, wul
-    double precision :: wn(100), zn(100)
-    integer :: np(100), nn, n1, kn3now
+    integer :: kn3now
 
     if (jampi /= 1) then
        if (lnx1D == 0) return

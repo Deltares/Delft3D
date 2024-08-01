@@ -36,7 +36,6 @@
          implicit none
          integer :: NCOL
          integer :: n
-         double precision :: bar
 
          do N = 1, NUMP
             call DCIRR(xz(n), yz(n), YZw(N), NCOL)

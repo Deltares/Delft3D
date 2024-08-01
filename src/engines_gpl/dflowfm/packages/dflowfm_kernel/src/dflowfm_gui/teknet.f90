@@ -41,18 +41,12 @@
          integer :: ncol, ja
 
          integer :: k, LMOD
-         integer :: k0
          integer :: k1
          integer :: k2
          integer :: k3
-         integer :: kk
          integer :: L, LL
-         integer :: n
          integer :: ndraw
          double precision :: d1, d2, x, y
-!      double precision :: t0, t1
-         integer :: is, ie, ip
-         integer :: iflip = 1
          logical inview
 
          common / DRAWTHIS / ndraw(50)

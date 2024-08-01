@@ -42,7 +42,7 @@ subroutine bermslopenudging(error)
 
    integer :: L, k1, k2
    integer :: lsd
-   double precision :: hwavu, slope, flx, frc, fixf, trmag_u, slpfac, trm
+   double precision :: hwavu, slope, flx, frc, fixf, trmag_u, slpfac
 
    error = .true.
    !

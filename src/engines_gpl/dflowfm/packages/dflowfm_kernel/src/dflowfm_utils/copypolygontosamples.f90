@@ -40,8 +40,8 @@
       use m_sferic, only: jsferic, jasfer3D
 
       implicit none
-      integer :: k, n, KD, KU, KUU, KKN, KK
-      double precision :: RX1, RY1, RX2, RY2, V, R, DDX, A, B, DL, DR, WIDL, WIDR
+      integer :: k, n, KU, KUU, KKN, KK
+      double precision :: RX1, RY1, RX2, RY2, V, R, A, B, DL, DR, WIDL, WIDR
 
 !  interpolate missing zpl values in polylines, if possible
       call interpolate_zpl_in_polylines()

@@ -43,7 +43,7 @@
       implicit none
 
       integer :: k, k1, k2, kk, L, ised, ac1, ac2
-      double precision :: dum, sx, sy, sL, dt, dtmaxmor, dhmax, kkcflmxloc, mf
+      double precision :: dum, sx, sy, sL, dt, dtmaxmor, kkcflmxloc, mf
 
       dtmaxmor = huge(0d0)
       kkcflmxloc = 0

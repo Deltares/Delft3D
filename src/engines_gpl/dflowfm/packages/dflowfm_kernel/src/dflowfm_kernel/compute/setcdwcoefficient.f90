@@ -42,7 +42,7 @@
     implicit none
     integer, intent(in) :: L
     integer :: k1, maxnit = 100, nit, jalightwind = 0
-    double precision :: uwi, cd10, rk, hsurf = 10d0, ust, ust2, ust0, z0w
+    double precision :: uwi, cd10, rk, hsurf = 10d0, ust, z0w
     double precision :: omw, cdL2, dkpz0, s, sold, eps = 1d-4, awin
     double precision :: p = -12d0, pinv = -0.083333d0, A, A10log, bvis, bfit, balf, r
 

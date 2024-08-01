@@ -50,7 +50,7 @@
          integer :: ierr
          integer :: ja
          integer :: kk
-         integer :: n, nmid
+         integer :: n
          integer :: nmn
          integer :: nmx
          integer :: no, nplo

@@ -48,7 +48,7 @@ subroutine fill_valobs()
 
    implicit none
 
-   integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, LLa, n, nlayb, nrlay, nlaybL, nrlayLx
+   integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx
    integer :: link_id_nearest
    integer :: kmx_const, kk_const, nlyrs
    double precision :: wavfac

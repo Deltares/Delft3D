@@ -46,7 +46,7 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
    use m_sferic, only: jsferic, fcorio
    use m_flowtimes, only: dts, time1, tstart_user, tfac
    use m_flowparameters, only: janudge, jasecflow, jatem, jaequili, epshu, epshs, testdryflood, icorio
-   use m_lateral, only: numlatsg, balat, get_lateral_discharge, add_lateral_load_and_sink, apply_transport_is_used
+   use m_lateral, only: numlatsg, get_lateral_discharge, add_lateral_load_and_sink, apply_transport_is_used
    use m_missing, only: dmiss
    use timers, only: timon, timstrt, timstop
    use m_alloc, only: aerr
@@ -56,7 +56,7 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
    integer, intent(in) :: jas
 
    double precision :: dvoli
-   integer :: iconst, j, kk, kkk, k, kb, kt, n, kk2, L, imba, jamba_src, iostat
+   integer :: iconst, kk, kkk, k, kb, kt, n, kk2, imba, jamba_src, iostat
    integer :: jsed ! counter for suspended sediment fractions
    integer :: jtra ! counter for tracers
    double precision, parameter :: dtol = 1d-8

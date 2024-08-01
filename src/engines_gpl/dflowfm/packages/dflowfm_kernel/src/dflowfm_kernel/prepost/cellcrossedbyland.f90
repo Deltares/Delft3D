@@ -45,8 +45,6 @@ subroutine cellcrossedbyland(k, jstart, jend, jland, jacross)
    integer, intent(inout) :: jland !< point in land boundary that is (in:) visited first (out:) found
    integer, intent(out) :: jacross !< crossed (1) or not (0)
 
-   double precision :: rL
-
    double precision :: x1, y1, x2, y2, x3, y3, x4, y4, sL, sm, xcr, ycr, crp
 
    integer :: j, kk, L, k1, k2

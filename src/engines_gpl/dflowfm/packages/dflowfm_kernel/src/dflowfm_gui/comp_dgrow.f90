@@ -43,7 +43,7 @@ double precision function comp_dgrow(height, dheight0, nfac, ierror)
 
    integer :: iter
 
-   double precision :: fkp1, fk, fkm1, gkp1, gk, gkm1, deltag
+   double precision :: fkp1, fk, fkm1, gkp1, gk, gkm1
 
    double precision, external :: comp_h
 

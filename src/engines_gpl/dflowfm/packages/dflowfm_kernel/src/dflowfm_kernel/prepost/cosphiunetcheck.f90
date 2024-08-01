@@ -45,7 +45,6 @@ subroutine cosphiunetcheck(jausererror)
    double precision, external :: cosphiunet
    double precision :: csph
    integer :: ndraw, L
-   integer :: k1, k2
    integer :: i
    common / DRAWTHIS / ndraw(50)
 

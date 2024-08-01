@@ -35,7 +35,6 @@
 !! is subject to the condition numl == 0 in flow_geominit.
 subroutine remove_unused_nodes_and_links()
    use network_data, only: numk, numl, nump, kc, kn, lne, lnn, netcell, nmk, nod, tnod, xk, yk
-   use m_missing, only: xymis
    use m_alloc
    implicit none
 

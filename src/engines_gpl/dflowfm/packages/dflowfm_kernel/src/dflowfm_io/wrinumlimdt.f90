@@ -51,7 +51,6 @@
  subroutine write_dp_data_over_cells(data_name, idata_begin, idata_end, idata1, idata2, data)
     use m_flowgeom, only: ndx, xz, yz
     use unstruc_model, only: md_ident, getoutputdir
-    use m_partitioninfo, only: sdmn
 
     implicit none
 

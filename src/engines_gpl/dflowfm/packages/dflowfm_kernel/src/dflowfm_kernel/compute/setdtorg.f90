@@ -35,24 +35,17 @@
     use m_flow
     use m_wind
     use m_flowtimes
-! use unstruc_model
     use m_partitioninfo
     use m_missing
-    use m_transport, only: time_dtmax, dtmax !, dtmin_transp, kk_dtmin
     implicit none
 
     integer, intent(out) :: jareduced ! maximum time-step is already globally reduced (1) or not (0)
 
     ! locals
-    integer :: L, LL, k, n1, n2, nsteps, kk, kb, kt, k1, k2, k3, k4, Lb, Lt
+    integer :: L, LL, k, n1, n2, kk, kb, kt, k1, k2, k3, k4, Lb, Lt
     integer :: kk1, kk2
     double precision :: rhomin, rhomax, cbaroc, drho
-    double precision :: hsx
-    double precision :: cuu ! flow velocity
-    double precision :: cuw ! wave velocity
-    double precision :: cudxi ! relevant courant velocity per length, mx
-    double precision :: cfltot, dtsw, dtsc2D
-    !integer , save                :: mout = 0
+    double precision :: dtsc2D
 
     double precision :: dxiAu !
     double precision :: huv

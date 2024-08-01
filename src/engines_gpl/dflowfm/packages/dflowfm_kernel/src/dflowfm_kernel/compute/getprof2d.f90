@@ -37,8 +37,8 @@
     double precision, intent(out) :: wid, ar, aconv ! aconv = (a/conv)**2
     integer, intent(in) :: ifrctyp, jaconv
     double precision :: d83 = 2.666666d0, d16 = 0.166666d0, d23 = 0.666666d0, d43 = 1.333333d0
-    double precision :: tt, hp2, hrad, Cz, cman, per, hyr, hav, conv, beta, deltaa
-    double precision :: d38 = 0.375d0, d113 = 3.666666d0, d311 = 0.27272727d0, hpr83, hp283
+    double precision :: hp2, Cz, cman, per, hyr, hav, conv, beta, deltaa
+    double precision :: d38 = 0.375d0, d311 = 0.27272727d0, hpr83, hp283
     integer :: jac, L
 
     ! for jaconv >= 1, this routine gets conveyance, but without friction surface to horizontal plane surface ratio influence on conveyance

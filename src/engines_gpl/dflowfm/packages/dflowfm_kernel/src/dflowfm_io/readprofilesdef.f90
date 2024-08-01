@@ -34,18 +34,17 @@ subroutine readprofilesdef(ja) ! in afwachting van een module die profieldefinit
    use UNSTRUC_MODEL
    use m_flowgeom
    use m_profiles
-   use m_physcoef, only: ifrctypuni, frcuni1D
    use m_missing
    use messagehandling
    use m_alloc
    implicit none
    integer :: ja
 
-   integer :: minp, n, nr, ierr, k, L, Lp, nyz, npfx, myzprofs, mxprof
+   integer :: minp, n, nr, ierr, k, L, Lp, nyz, myzprofs, mxprof
    logical :: jawel
    character(len=256) :: rec
    integer, allocatable :: npr2(:)
-   double precision :: yp, zp, base, talud, width, height, zmin
+   double precision :: base, talud, width, height, zmin
 
    integer, parameter :: mx = 2000
    double precision :: yyh(mx), zzh(mx)

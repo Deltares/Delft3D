@@ -41,7 +41,7 @@
     integer, intent(out) :: nlayb !< Layer number for the bottom layer (in 1:kmx)
     integer, intent(out) :: nrlay !< Nr. of active layers for this flow node.
 
-    integer :: j, j1, j3, k, Ltn, mx ! layerdistribution indexes
+    integer :: k, Ltn, mx ! layerdistribution indexes
 
     double precision :: fac, dzz
 

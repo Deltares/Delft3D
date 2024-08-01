@@ -36,9 +36,9 @@
          use M_GRID
          implicit none
 
-         integer :: mmdd, ja, m1, n1, m2, n2, L1, L2, L3, L4, L5
+         integer :: mmdd, ja
          integer :: m, n, MOUT
-         double precision :: af, hu, hv, Du1, Du2, Dv1, Dv2
+         double precision :: hu, hv, Du1, Du2, Dv1, Dv2
 
          character REC * 132
 

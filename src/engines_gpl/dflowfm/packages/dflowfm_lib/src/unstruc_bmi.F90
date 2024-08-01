@@ -181,10 +181,6 @@ contains
       integer :: inerr ! number of the initialisation error
       logical :: mpi_initd
 
-      integer(c_int), target, allocatable, save :: x(:, :)
-      type(c_ptr) :: xptr
-      integer :: i, j, k
-
       c_iresult = 0 ! TODO: is this return value BMI-compliant?
       jampi = 0
       numranks = 1
@@ -424,7 +420,7 @@ contains
       use iso_c_binding, only: c_double
       real(c_double), value, intent(in) :: dt
 
-      integer :: key, ierr
+      integer :: ierr
       ! The time loop seems to be located in unstruc->flow
       ! It is important that we can simulate up to a time set from the outside
       ! We might have to set time_user or dt_user
@@ -821,7 +817,6 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: get_var_rank
 
       use iso_c_binding, only: c_int, c_char
-      use m_lateral, only: kclat, qplatCum, qLatRealCum, qLatRealCumPre, n1latsg, n2latsg, qplat, balat, qLatRealAve, nnlat, qLatReal, qplatAve
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       integer(c_int), intent(out) :: rank
@@ -1000,7 +995,7 @@ contains
 
       integer(c_int), target, allocatable, save :: x(:, :)
 
-      integer :: i, j, k
+      integer :: i, k
       ! The fortran name of the attribute name
       character(len=strlen(c_var_name)) :: var_name
 
@@ -1065,8 +1060,7 @@ contains
       integer(c_int), target, allocatable, save :: xi(:, :)
       real(c_double), target, allocatable, save :: xd(:, :)
 
-      integer :: i, j, k, Lf, knb, kb, kt, n
-      double precision :: numvalues
+      integer :: i, k, Lf, knb, kb, kt
 
       ! The fortran name of the attribute name
       character(len=strlen(c_var_name)) :: var_name
@@ -1337,7 +1331,7 @@ contains
       character(kind=c_char), dimension(:), pointer :: c_value => null()
       character(len=:), allocatable :: levels
       character(len=10) :: threadsString = ' '
-      integer :: i, k, kb, kt, ipos, n, ierr
+      integer :: i, k, ipos, n, ierr
 
       ! Store the name
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
@@ -3085,7 +3079,7 @@ contains
 ! Make functions pure so they can be used as input arguments.
    integer(c_int) pure function strlen(char_array)
       character(c_char), intent(in) :: char_array(MAXSTRLEN)
-      integer :: inull, i
+      integer :: i
       strlen = 0
       do i = 1, size(char_array)
          if (char_array(i) == c_null_char) then
@@ -3380,7 +3374,7 @@ contains
 
       integer, pointer :: netElemNode(:)
       character(len=strlen(c_net_file)) :: net_file
-      integer :: numk_read, numl_read, istat
+      integer :: istat
       integer :: maxNodes, ci, ni, i
 
       call resetFullFlowModel()
@@ -3462,7 +3456,6 @@ contains
       double precision, dimension(:), target, allocatable :: xSnapped, ySnapped
       double precision, allocatable, dimension(:, :) :: xSnappedLinks, ySnappedLinks
       double precision :: start_location_x, start_location_y, x_breach, y_breach
-      integer :: feautureIncrement
 
       c_ierror = 1
 
@@ -3783,7 +3776,7 @@ contains
       !locals
       double precision :: xa, ya, xb, yb, xm, ym, crpm, distanceStartPolygon
       double precision, pointer :: xVerticesCoordinates(:), yVerticesCoordinates(:)
-      integer :: l, k1, k2, np, crossed, isec
+      integer :: l, k1, k2, crossed, isec
       integer, allocatable, target, save :: indexes(:) !as commented above, this is a memory leak of lnx integers
 
       ierr = 0

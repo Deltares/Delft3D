@@ -36,7 +36,7 @@ subroutine copyFixedWeirsToPol()
    use m_fixedweirs
    use m_polygon
    implicit none
-   integer :: i, ip
+   integer :: i
 
    npl = 0
    do i = 1, nfxw

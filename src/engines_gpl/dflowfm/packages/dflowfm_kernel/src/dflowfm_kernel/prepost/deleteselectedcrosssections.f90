@@ -39,12 +39,7 @@
       integer :: i, j
       integer :: inhul
       integer :: ja
-      integer :: k
       integer :: key
-      integer :: nsol
-      double precision :: rd
-      double precision :: xi
-      double precision :: yi
       logical :: jaAllPoints
 
       !IF (Npl .LE. 2) THEN

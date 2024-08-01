@@ -41,7 +41,7 @@ subroutine appendCRSPathToPol(path)
    implicit none
    type(tcrspath), intent(in) :: path
 
-   integer :: i, ip
+   integer :: ip
 
    call increasepol(npl + 1 + path%np, 1)
 

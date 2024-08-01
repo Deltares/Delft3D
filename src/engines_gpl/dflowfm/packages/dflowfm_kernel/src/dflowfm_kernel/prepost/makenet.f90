@@ -46,7 +46,7 @@
       implicit none
 
       integer, intent(in) :: japaramscreen !< Load parameter screen or not (1/0)
-      double precision :: ael, ag, cfl, cs, dx, dy, e0, eps, hs
+      double precision :: ael, cs, dx, dy, hs
       integer :: in, jn, k0, l0, m, mh, n, nh, nn, numkn, numln, jaklaar, jafive, L, k1, k2, n12, i, k, LL, mou2
       double precision :: siz
       double precision :: sn

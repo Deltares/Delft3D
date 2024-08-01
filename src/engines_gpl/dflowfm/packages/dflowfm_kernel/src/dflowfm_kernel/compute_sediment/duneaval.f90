@@ -41,7 +41,6 @@ subroutine duneaval(error)
 
    logical, intent(out) :: error
 
-   integer :: ierr
    integer :: k1, k2, L, lsd, ac1, ac2
    double precision :: slp, slpmax, avflux, maxflux
    double precision :: fixf, frc

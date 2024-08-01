@@ -46,8 +46,8 @@
 !C     ALS IK NOG EENS TIJD HEB, ZAL IK DE NUMMERING MOOIER MAKEN
 !C
 
-         double precision :: x1, x2, x3, x4, x5, x6, x7, x8, x9, y1
-         integer :: i, j, i1, i2, i3, i4, IJYES2, IJYES3, IJYES4, jaontop, jaunconnected
+         double precision :: x1, x2, x3, x4, x5, x6, x7, x8, x9
+         integer :: i, j, i1, i2, i3, i4, IJYES2, IJYES3, IJYES4, jaunconnected
 
          if (allocated(ijc)) deallocate (ijc)
          if (allocated(ijyes)) deallocate (ijyes)

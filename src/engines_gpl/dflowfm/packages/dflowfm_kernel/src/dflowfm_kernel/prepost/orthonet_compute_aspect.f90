@@ -46,15 +46,13 @@ subroutine orthonet_compute_aspect(aspect)
    double precision :: x0, y0, x1, y1, x0_bc, y0_bc
    double precision :: xL, yL, xR, yR
    double precision :: SLR, R01, dinRy
-   double precision :: xc, yc
-
    double precision, allocatable, dimension(:, :) :: R ! averaged netlink length at both sides of the netlink
    double precision, allocatable, dimension(:) :: S ! flowlink lengths
 
    integer :: k, kk, kkm1, kkp1, kkp2
    integer :: klink, klinkm1, klinkp1, klinkp2, N
 
-   integer :: k0, k1, kL, kR, L, ja
+   integer :: k0, k1, kL, kR, L
 
    logical, allocatable, dimension(:) :: Liscurvi ! node-based curvi-like indicator
 

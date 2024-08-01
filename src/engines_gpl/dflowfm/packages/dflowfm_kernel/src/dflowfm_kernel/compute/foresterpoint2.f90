@@ -38,7 +38,7 @@ subroutine foresterpoint2(constituents, numconst, ndkx, itemp, vol, a, d, km, km
    integer :: numconst, ndkx, itemp, km, kmxx, kb, maxit, ip
 
    double precision :: dif
-   integer :: k, m, n, ja
+   integer :: k, m, ja
 
    do k = 1, km
       a(k) = constituents(itemp, kb + k - 1)

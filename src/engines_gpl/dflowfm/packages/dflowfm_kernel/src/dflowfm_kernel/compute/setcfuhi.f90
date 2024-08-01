@@ -39,8 +39,8 @@
     implicit none
 
     ! locals
-    double precision :: h0, dzb, cz, sixth = 1d0 / 6d0, frcn, z00, sqcf
-    integer :: l, ll, n, kb, Lb, ifrctyp
+    double precision :: h0, cz, frcn
+    integer :: l
 
     ! NOTE: When frcuni==0, the initial friction fields in frcu also become noneffective:
     if (jatrt == 0 .and. (frcmax == 0d0 .or. ifrctypuni == -999)) then

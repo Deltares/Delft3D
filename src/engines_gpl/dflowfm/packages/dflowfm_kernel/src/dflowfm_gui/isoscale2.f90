@@ -37,9 +37,6 @@
      implicit none
 
      double precision :: dv
-     double precision :: dx
-     double precision :: dxshow
-     double precision :: dy
      double precision :: hic
      integer :: i, j
      integer :: INC
@@ -55,7 +52,6 @@
      integer :: nv
      integer :: nvec
 
-     double precision :: rmiss
      double precision :: scalesize
      double precision :: val
      double precision :: vfac
@@ -65,13 +61,10 @@
      double precision :: vmin
      double precision :: wi
      double precision :: wic
-     double precision :: x0
-     double precision :: xd
      double precision :: xleg
      double precision :: xsc
      double precision :: xsc1
      double precision :: xsc2
-     double precision :: y0
      double precision :: yleg
      double precision :: ysc
      double precision :: ysc1

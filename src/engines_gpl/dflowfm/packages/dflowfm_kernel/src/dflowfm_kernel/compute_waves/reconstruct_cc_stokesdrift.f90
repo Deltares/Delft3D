@@ -33,7 +33,7 @@
  subroutine reconstruct_cc_stokesdrift(ndkx, ust_x, ust_y)
     use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2
     use m_flow, only: kmx
-    use m_waves, only: ustokes, vstokes
+    use m_waves, only: ustokes
 
     implicit none
 

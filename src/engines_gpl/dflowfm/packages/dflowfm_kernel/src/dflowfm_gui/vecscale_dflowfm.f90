@@ -57,8 +57,6 @@
          common / DRAWTHIS / ndraw(50)
          common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
 
-         character TEXT2 * 9
-
          if (NDRAW(12) <= 2) return
 
          call IGRCHARSIZE(real(SCALESIZE), real(SCALESIZE))

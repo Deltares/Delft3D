@@ -43,7 +43,7 @@
       integer, intent(out) :: n1 ! 1D point found
 
       double precision :: dismin
-      integer :: ja, k, k1, k2, L
+      integer :: k, k1, k2, L
       double precision :: dis, dis1, dis2
 
       N1 = 0

@@ -44,9 +44,9 @@
 
     integer :: japerim
 
-    integer :: L, k1, k2, K, n, kk, kb, kt, nl1, nl2, i, nstor, n1d
+    integer :: L, k1, n, nl1, nl2, i, nstor, n1d
     integer :: loopcount
-    double precision :: hh, slotsav, sl1, sl2
+    double precision :: sl1, sl2
     type(t_storage), dimension(:), pointer :: stors
 
     nl1 = nonlin1D

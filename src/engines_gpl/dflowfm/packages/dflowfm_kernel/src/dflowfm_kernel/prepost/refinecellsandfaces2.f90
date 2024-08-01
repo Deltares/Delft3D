@@ -59,19 +59,15 @@ subroutine refinecellsandfaces2()
 
    integer :: ierror ! error (1) or not (0)
    integer :: ja, jaCourantnetwork
-   integer :: ic, k, kother, kk, kkm1, kkp1, kkk, L, Lm1, Lp1, N
+   integer :: ic, k, kk, kkm1, kkp1, L
    integer :: numL_old
    integer :: numrefine ! number of cells to be refined
    integer :: nump_virtual
-
    integer :: interpolationtype_old, IAV_old, jacancelled
-   integer :: JTEKINTERPOLATIONPROCESS_bak
-
    integer :: jakdtree = 1 ! use kdtree (1) or not (0)
 
    integer :: ilevel ! refinement level
-
-   integer :: k1, k2
+   integer :: k2
    integer :: num ! number of removed isolated hangning noded
 
    double precision, external :: getdy, dlinklength
@@ -434,10 +430,7 @@ contains
       use m_samples
       use m_ec_interpolationsettings
       use m_physcoef, only: ag
-      use m_flowtimes, only: dt_max
-      use m_flowgeom, only: ba
       use m_missing
-!      use m_plotdots
 
       implicit none
 
@@ -452,14 +445,9 @@ contains
       double precision, dimension(M) :: xloc, yloc ! node list
       integer, dimension(M) :: jarefinelink ! refine links (1) or not (0)
       integer, dimension(M) :: LnnL, Lorg ! not used
-
-      double precision :: aspect ! aspect ratio of netcell
-!      double precision, dimension(2)                :: u, v       ! orientation vectors of netcell
-
-      double precision :: xc, yc, area
       double precision :: zz ! not used
 
-      integer :: ic, ip, j, k, kk, kkm1, kkp1, N
+      integer :: ic, kk, N
       integer :: L, LL
 
       integer, parameter :: NDIM = 4 ! sample vector dimension
@@ -586,7 +574,7 @@ contains
 
       double precision, dimension(1) :: xc, yc !  polygon center coordinates
       double precision, dimension(NDIM) :: zc !  interpolated sample vector [zs, DzsDx, DzsDy]
-      double precision :: area, zsloc, DzsDx, DzsDy, diff
+      double precision :: zsloc, DzsDx, DzsDy
       double precision :: dsize, dcellsize_wanted, dcellsize, dmincellsize, dmaxcellsize
       double precision, dimension(N) :: dlinklength ! link lengths
 
@@ -595,7 +583,6 @@ contains
       double precision :: dval, C, Courant, dlinklengthnew, zmn, zmx
 
       integer :: ivar, k, kp1, num, ierror, jdla
-      integer :: jacounterclockwise ! counterclockwise (1) or not (0) (not used here)
       integer :: landsea ! cell: 0=sea, 1=landsea, 2=land
       integer :: linkcourant ! link oriented courant icw cell landsea
       double precision, parameter :: FAC = 1d0
@@ -964,25 +951,18 @@ contains
 
       double precision :: xnew, ynew
       double precision :: ymin, ymax
-      double precision :: dlength1, dlength2
-
       integer, parameter :: MMAX = 10 ! maximum number of links per netcell
-      integer, dimension(MMAX) :: LLnew ! list with refined links (in netcell numbering)
       integer, dimension(MMAX) :: nods ! list with new nodes
-      integer :: i, ip1, k, k2, k3, kk, kkm1, kkp1, kkk
-      integer :: knew, knew2, k0, k1, k0m1, k1p1, k0m2, k1p2
-      integer :: L, L1, L2, Lm1, Lp1, Lm2, Lp2, Lnew, N
-      integer :: num, numbrothers, numrefined
+      integer :: i, k, k2, k3, kk, kkm1, kkp1, kkk
+      integer :: knew, k1
+      integer :: L, Lm1, Lp1, Lnew, N
+      integer :: num, numbrothers
       integer :: Lsize
-      integer :: jahang_
       integer :: ierr
 
       logical :: Lparentcross ! original parent cell crossed by selecting polygon (.true.) or not (.false.)
       logical :: Lrefine ! refine cell (.true.) or not (.false.)
-
-      double precision :: xmn, xmx ! for spherical, periodic coordinates
-
-      integer :: Np, kp
+      integer :: Np
       integer, dimension(MMAX) :: ishanging
       double precision :: xz, yz
       double precision, dimension(MMAX) :: xp, yp
@@ -993,8 +973,6 @@ contains
       integer, dimension(MMAX) :: Lorg
       double precision :: zz
       integer :: nn
-
-      logical :: Lhanging
       logical :: Lpole1, Lpole2
 
       ierror = 1
@@ -1501,9 +1479,9 @@ contains
       integer, dimension(MMAX) :: numlink ! link identifier for quads
       integer, dimension(5) :: jaquadlink ! refine quad edge (<>0) or not (0)
       ! was 4
-      integer :: num, nump2, N_eff
+      integer :: num, N_eff
 
-      integer :: k, kk, kkm1, kkp1, L, N, k1, k2
+      integer :: k, kk, kkm1, kkp1, L, N
       integer :: numfirst, numnext
       integer :: jarepeat, ja_doall
 

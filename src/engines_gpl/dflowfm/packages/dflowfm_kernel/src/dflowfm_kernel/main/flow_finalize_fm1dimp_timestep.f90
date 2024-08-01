@@ -41,8 +41,7 @@ subroutine flow_finalize_fm1dimp_timestep()
 !MODULES
 !
 
-   use m_flow, only: s1, u1, s0, au, qa, q1
-   use m_flowgeom, only: lnx1d, ndxi, ln, lnx1Db, lnxi, ndx
+   use m_flow, only: s1, u1, s0, au, qa
    use m_fm_erosed, only: ndx_mor, lnx_mor, ln_mor
    use m_f1dimp, only: f1dimppar
 

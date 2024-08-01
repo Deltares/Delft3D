@@ -31,7 +31,6 @@
 !
 
 subroutine Swart(Tsig, uorbu, z00, fw, ustw2)
-   use m_flow, only: rhomean
 
    implicit none
    double precision :: Tsig, uorbu, z00, fw, ustw2

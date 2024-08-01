@@ -45,12 +45,11 @@ subroutine sort_flowlinks_ccw()
    double precision, dimension(:), allocatable :: arglin ! dummy array
    integer, dimension(:), allocatable :: linnrs, inn ! dummy arrays
 
-   integer :: k1, k2, L, LL
+   integer :: k1, k2, L
 
-   integer :: jDupLinks, jOverlapLinks, jSmallAng
-   double precision :: sl, sm, xcr, ycr, phi0
+   double precision :: phi0
 
-   double precision :: phi, dx, dy, dmaxcosp, dcosp, costriangleminangle
+   double precision :: phi, dx, dy
 
    integer :: lnxx
 

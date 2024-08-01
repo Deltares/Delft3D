@@ -56,9 +56,9 @@ subroutine linkcrossedbyland(L, jstart, jend, netboundonly, jland, jacross)
    double precision :: x1, y1, x2, y2 !  node coordinates
    double precision :: x3, y3, x4, y4 ! land boundary point coordinates
 
-   double precision :: sl, sm, xcr, ycr, crp, DL, Dm, Dtol, dismin
+   double precision :: sm, DL, Dm, Dtol, dismin
 
-   double precision :: dis, xn, yn, rL, rL1, rL2 ! for dlinedis3
+   double precision :: dis, xn, yn, rL1, rL2 ! for dlinedis3
 
    jacross = 0
 

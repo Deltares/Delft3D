@@ -44,16 +44,9 @@ subroutine orthonet_prescribe_aspect_net(smp_mu, idir, aspect)
    integer :: idir !< mesh adaptation direction
 
    double precision, dimension(numL) :: aspect !< aspect ratio at the links
+   double precision :: A, mu
 
-   double precision, dimension(2) :: orient ! prescribed orientation
-
-!   integer, parameter                 :: IMISS = -999999
-
-   double precision :: x1, y1, x2, y2, x3, y3
-   double precision :: R01, cosphi, cos2phi, sin2phi
-   double precision :: A, A2, fA2, mu
-
-   integer :: L, k1, k2, imin, jmin, mc, nc
+   integer :: L, k1, k2
 
    do L = 1, numL
 !     compute the angle of link L with the prescribed orientation

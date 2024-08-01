@@ -44,7 +44,6 @@ subroutine flow_finalize_usertimestep(iresult)
    use precision_basics, only: comparereal
    use unstruc_model, only: md_fou_step
    use m_partitioninfo, only: jampi, reduce_statistical_output
-   use unstruc_channel_flow, only: network
    use m_oned_functions, only: updateFreeboard, updateDepthOnGround, updateVolOnGround
    use m_update_fourier, only: update_fourier
    use mass_balance_areas_routines, only: mba_update
@@ -55,7 +54,7 @@ subroutine flow_finalize_usertimestep(iresult)
 
    integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
-   double precision :: tem_dif, ti_fou
+   double precision :: tem_dif
    logical :: do_fourier
    logical, external :: flow_trachy_needs_update
 

@@ -55,7 +55,6 @@ subroutine ORTHOGONALISENET(jarerun)
    double precision, dimension(:, :), allocatable :: ww, rhs ! weights and right-hand sides
    double precision, dimension(:), allocatable :: aspect ! aspect ratio of the links
    double precision, dimension(:), allocatable :: smp_mu ! coefficients in Laplacian smoother
-   double precision, dimension(:), allocatable :: smp_mu_smooth ! smoothed coefficients in Laplacian smoother
    double precision, dimension(:), allocatable :: xkb, ykb ! copy for original boundary nodes
 
    integer, dimension(:, :), allocatable :: kk1 ! neighboring nodes
@@ -65,14 +64,13 @@ subroutine ORTHOGONALISENET(jarerun)
    integer, dimension(2) :: ibounds
 
    double precision :: x0, y0, ATPF1, relaxin, relax1
-   double precision :: x0_bc, y0_bc, smpmin
 
 !  used for sferical
-   double precision :: x00, y00, x1, y1, DUM(2), w0(2), xadd, yadd
+   double precision :: x00, y00, y1, DUM(2), w0(2)
    double precision, dimension(2) :: righthandside
 
    integer :: i, k, kk, k1, L, n, no, npl_old
-   integer :: JSFERICold, ja, ja1, ja2, ja3, jac, iexit
+   integer :: JSFERICold, ja, ja1, ja3
 
    integer, save :: idir = -999 ! direction of mesh adaptation
 
@@ -92,33 +90,18 @@ subroutine ORTHOGONALISENET(jarerun)
    type(tops), allocatable, dimension(:) :: ops ! array of structure with operators of unique topologies
 
    double precision :: atpf_loc, atpf1_loc
-
-   double precision, dimension(2) :: res_sm, res_or ! residuals
    double precision, dimension(4) :: J ! Jacobian matrix
-
    logical :: Lcopymu ! copy initial-mesh data to smp_mu (.true.) or not (.false.)
-
    double precision, allocatable, dimension(:) :: zk_bak ! backup copy of zk
    double precision :: smpminn, smpmaxx
-
    double precision :: atpf_min
-   double precision, allocatable, dimension(:) :: atpf_nodes ! atpf at the nodes
-
    logical :: Ltemp
-
    double precision :: circormass_bak
-
    integer :: ik
 
-!   double precision                              :: xx0, yy0, zz0, xx1, yy1, zz1
    double precision :: Dx0, Dy0
-
    double precision, allocatable, dimension(:) :: xloc, yloc ! local coordinates
-
    integer, allocatable, dimension(:) :: iloc ! startpointers in local coordinate arrays, dim(numk+1)
-
-   integer :: NN
-
    double precision, dimension(1) :: dumx, dumy
 
    integer :: NDRAW
@@ -830,17 +813,14 @@ contains
       double precision :: r01, slr
       double precision :: mu
       double precision :: x0, y0, x1, y1, x3, y3, xn, yn
-      double precision :: zzz, dinry, x0_bc, y0_bc, atpf1
+      double precision :: atpf1
 
       double precision, external :: dprodin
 
-      integer :: k, kk, k0, k1l, k1r, kl, kr, l, ja
-      integer :: inode, node, nn
+      integer :: kk, k0, k1l, kl, l, ja
+      integer :: nn
 
       double precision :: dummy ! used for debug purposes only
-      double precision, dimension(2) :: eA ! aspect ratio unit vector
-
-      double precision :: cosphi
       double precision :: SfR ! SLR/R01
       double precision :: factor
       double precision, parameter :: EPS = 1d-4
@@ -950,8 +930,8 @@ contains
 
       double precision, allocatable, dimension(:, :) :: Vx, Vy ! D vol/Dx and D vol/Dy matrices
 
-      integer :: icell, ilink, inode
-      integer :: k0, k1, kL, kR
+      integer :: icell, ilink
+      integer :: k0, k1
       integer :: icL, icR
       integer :: kk0L, kk0R, kk1L, kk1R
       integer :: kdum
@@ -1189,10 +1169,7 @@ contains
 
       double precision, allocatable, dimension(:, :) :: J ! Jacobian matrices at the nodes
 
-      integer :: k, kk, knode, k0, k1
-      integer :: nmkx2_old
-      integer :: L, num
-
+      integer :: k, kk, k0
       double precision, dimension(2) :: a1, a2 ! contravariant base vectors
       double precision :: det
 
@@ -1203,24 +1180,15 @@ contains
 
       logical, save :: Lsavematlabfile = .false.
 
-      double precision :: dalpha, UU(2, 2), VV(2, 2), S(2), uu1, vv1, uu2, vv2
+      double precision :: UU(2, 2), VV(2, 2), S(2), uu1, vv1, uu2, vv2
       double precision :: aspect ! Jacobian at link positions
-      double precision :: dmudxi, dmudeta, mu2, mumax
-
       integer :: ierror_, kcheck
-
-      logical :: lisnew ! new topology (.true.) or not (.false.)
-
       type(tops) :: op ! structure with operators
       type(tadm) :: adm ! structure with administration
       double precision, allocatable, dimension(:) :: xi, eta ! node coordinates (xi,eta)
 
       double precision :: alpha ! used for monotonicity correction
-      double precision :: beta ! defines the mesh refinement concentration; 0<=beta<=1
-
       double precision :: dcosfac
-
-      double precision, dimension(4) :: Gdum
       double precision, dimension(4) :: DGinvDxi, DGinvDeta
       double precision, parameter :: EPS = 1e-8
 
@@ -1537,7 +1505,6 @@ contains
       double precision, allocatable, dimension(:) :: u_smooth ! smoothed solution
       double precision, allocatable, dimension(:, :) :: vdir ! refinement direction vector
       double precision, allocatable, dimension(:) :: Phi !
-      double precision, dimension(2) :: vper ! perpendicular refinement direction vector
       double precision, dimension(2) :: a1, a2 ! contravariant base vectors
 
       double precision, allocatable, dimension(:, :) :: G ! mesh monitor matrix at net-nodes
@@ -1545,7 +1512,7 @@ contains
 
       double precision :: det, dudxi, dudeta
       double precision :: alpha, lambda1, lambda2, lfac
-      double precision :: Phi_ave, vol, ww2
+      double precision :: Phi_ave, vol
 
       integer :: k0, imat
 
@@ -1687,8 +1654,8 @@ contains
       type(tops), allocatable, dimension(:), intent(out) :: ops !< per-topology operators
       integer, intent(out) :: ierror !< 0: no error, 1: error
 
-      integer :: k, kk, k0, knode, k1
-      integer :: nmk_loc, itopo
+      integer :: k0
+      integer :: itopo
 
       double precision, allocatable, dimension(:) :: xi, eta ! node coordinates (xi,eta)
 
@@ -1869,7 +1836,7 @@ contains
 
       type(tops), allocatable, dimension(:) :: ops !< operators for each unique topology
 
-      integer itopo, k
+      integer :: itopo
 
       if (.not. allocated(ops)) return
 
@@ -1898,7 +1865,7 @@ contains
 
       double precision :: theta_sav
 
-      integer :: ic, kcell, k
+      integer :: k
       integer :: itopo, idum
 
       integer, dimension(2) :: newbound
@@ -2000,11 +1967,8 @@ contains
       integer, optional :: ierror !< 0: no error, 1: error
 
       integer :: ierror_
-
-      integer, dimension(nmkx2) :: kknodesL, kknodesR
       integer :: kknode1, kknode0
-      integer :: knode1R
-      integer :: klink, L, kothercell
+      integer :: klink, L
       integer :: icellL, icellR
       integer :: kcellL, kcellR
       integer :: NL, NR
@@ -2021,10 +1985,10 @@ contains
       double precision :: volxi
 
       double precision, dimension(nmkx2) :: xinodes, etanodes
-      integer :: ic, N, klinkL, klinkR, kk
+      integer :: ic, N
 
       double precision, dimension(nmkx) :: xL, yL, xR, yR ! for Jacobian
-      double precision :: x_bc, y_bc, DxR, DyR, Dx1, Dy1
+      double precision :: x_bc, y_bc
 
       integer, dimension(2) :: kbound ! boundary links
       double precision, dimension(nmkx) :: xis, etas
@@ -2032,9 +1996,7 @@ contains
       integer :: kL, kR, linkL, linkR
 
       double precision :: RlinkL, RlinkR, cDPhi
-
-      double precision :: facww, ww0, ww1, wwL, wwR, volwwxi
-
+      double precision :: volwwxi
       double precision, external :: getdx, getdy
 
       ierror_ = 1
@@ -2347,31 +2309,24 @@ contains
       double precision, allocatable, dimension(:) :: xi, eta !< node coordinates (xi,eta)
       integer, optional :: ierror !< 0: no error, 1: error
 
-      double precision :: Phi0, DPhi0, DPhitot, Phi ! angles in the (xi,eta) frame
+      double precision :: Phi0, DPhi0, DPhitot ! angles in the (xi,eta) frame
       double precision :: theta, Dtheta ! angles in the (xi',eta') frame, attached to a cell
       double precision :: xip, etap ! coordinates in (xi', eta') frame, attached to a cell
-      double precision :: R0, R, dmu, aspect, Rdebug
+      double precision :: R0, dmu, aspect
 
       integer :: k, kk, ic, L, N, kL, kR, k1, kk1, L1, kcell
 
       double precision :: FAC = 1d0 ! part of the full circle that needs to be filled
 
-      integer :: Nnodes, Ntri, Ntri_square, Nquad, icL, icR, kcL, kcR
+      integer :: Nnodes, Ntri, Ntri_square, Nquad, icL, icR
       double precision :: DPhi, DPhitri, DPhitri_square, DPhiquad, DPhimin
-      double precision :: dmutri, dmutri_square, Phidebug
-
-      integer :: ilink_first_quad, i, linkL, linkR
-
+      double precision :: dmutri, dmutri_square
+      integer :: ilink_first_quad
       integer :: kp1, km1
-
       double precision, dimension(adm%Ncell) :: Philink
       double precision, dimension(adm%nmk2) :: theta_square ! 'square' angles
-      double precision, dimension(adm%nmk2) :: Rlink ! link lengths
       logical, dimension(adm%Ncell) :: L_is_square_cell
-      double precision :: Rloc, alpha, alphaL, alphaR
-
-      logical :: L_is_square, L_is_diagonal
-
+      logical :: L_is_square
       integer :: KCHECK, ierror_
       logical :: lblink ! boundary link (.true.) or not (.false.)
 
@@ -2709,12 +2664,7 @@ contains
 
       double precision, dimension(nmkx2) :: ww2
       double precision, dimension(numk) :: u_temp
-
-      double precision, dimension(4) :: J
-      double precision, dimension(2) :: a1, a2
-      double precision :: det
-
-      integer :: iter, k0, k
+      integer :: iter, k0
 
       double precision :: alpha, alpha1
 

@@ -33,7 +33,7 @@
 !> construct matrix for first-order upwind discretization of advection
    subroutine fillsystem_advec(ierror)
       use m_flowgeom
-      use m_flow, only: vol1, qa, Au
+      use m_flow, only: vol1, Au
       use m_advec
       use m_alloc
       implicit none
@@ -45,7 +45,7 @@
       double precision :: dfac
       double precision :: ux, uy
 
-      integer :: i, irow, irowother, idir, icolumn, ishift
+      integer :: i, irow, irowother, idir, ishift
       integer :: ipoint, ipointdiag
       integer :: k1, k2, kk, kkother, LL
 

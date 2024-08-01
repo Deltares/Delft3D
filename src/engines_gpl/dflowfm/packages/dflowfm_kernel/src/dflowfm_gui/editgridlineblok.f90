@@ -37,7 +37,7 @@
 
          integer :: mode, nfld, key
          integer :: newmode
-         integer :: ndraw, nlevel, bm, nb, mb2, nb2, npt, npt2, nputo, itype, NCOL
+         integer :: ndraw, nlevel, nb, mb2, nb2, npt, npt2, nputo, itype, NCOL
          integer :: jonce
 
          common / DRAWTHIS / ndraw(50)

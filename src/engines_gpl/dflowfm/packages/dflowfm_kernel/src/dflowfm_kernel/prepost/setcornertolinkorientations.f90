@@ -42,7 +42,7 @@
 
     double precision :: xL, yL
 
-    integer :: i, k, k3, k4
+    integer :: k3, k4
     integer :: L
 
     integer :: ierr

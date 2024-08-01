@@ -45,10 +45,10 @@
 
      implicit none
 
-     integer :: IERR, JA, KM, K1, K2, K, KP, L, L1, L2, LNU, N, NN, NR, KA, KB, JADOEN, N3, KK, JA2
-     integer :: JACOURANTNETWORK, JDLA, N1, N2, K2A, K2B, KKP, KKN, N6
+     integer :: IERR, JA, K1, K2, K, KP, L, L1, L2, LNU, N, NN, NR, KA, KB, JADOEN, KK, JA2
+     integer :: JACOURANTNETWORK, JDLA, N1, N2, N6
      integer :: ic1, ic2, numL_old, kkm1, kkp1, kkm2, kkp2, Lm2, Lp2, numtris, num, iter, MAXITER
-     double precision :: XL, YL, ZL, CELLSIZE, COURANT, CELLAREA, C, DIS, XN, YN, RS
+     double precision :: XL, YL, ZL, CELLSIZE, COURANT, C, DIS, XN, YN, RS
      integer, allocatable :: KPL(:, :), KP2(:), NA(:)
      double precision, allocatable :: XC(:), YC(:), ZC(:), AR(:)
 

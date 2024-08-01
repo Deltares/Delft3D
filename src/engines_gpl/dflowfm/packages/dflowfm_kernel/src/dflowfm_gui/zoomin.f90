@@ -40,7 +40,7 @@
          double precision :: xlc, ylc, xa, ya
          integer :: JMOUSE, JASHOW
 
-         double precision :: aspect, dx, dy, xln, yln, xl, yl, X1B, Y1B, X2B, Y2B, c, xl2, yl2
+         double precision :: aspect, dx, dy, xln, yln, xl, yl, X1B, Y1B, X2B, Y2B, xl2, yl2
          integer :: k, nlevel, jadraw, nput, nnn, ja, key
 
          character WRDKEY * 40

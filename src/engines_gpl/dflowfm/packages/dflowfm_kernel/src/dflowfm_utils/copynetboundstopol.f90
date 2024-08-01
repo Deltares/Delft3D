@@ -63,7 +63,7 @@ subroutine copynetboundstopol(inpol, needfindcells, makecounterclockwise, setnet
               jinside
    integer, allocatable :: jalinkvisited(:)
    integer, allocatable :: isegstart(:)
-   double precision :: xkb, ykb, zkb, SL, SL0, sl1, sl2, SM, XCR, YCR, CRP, xcg, ycg, area
+   double precision :: xkb, ykb, zkb, SL, SL0, sl1, sl2, SM, XCR, YCR, CRP, xcg, ycg
    double precision, allocatable :: xpn(:), ypn(:), zpn(:)
 
    if (numL < 1) return ! nothing to do

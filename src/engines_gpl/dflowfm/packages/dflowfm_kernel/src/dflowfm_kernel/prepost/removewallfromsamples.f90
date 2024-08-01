@@ -35,7 +35,7 @@
          use m_polygon
 
          implicit none
-         integer :: k, k2, k3, kk, mout
+         integer :: k, k3, kk, mout
 
          call newfil(mout, 'wall.xyz')
 

@@ -35,10 +35,9 @@ subroutine copynetcellstonetnodes() ! for smooth plotting only
    use m_flow
    use m_netw
    implicit none
-   integer :: k, kk, kkk, n, nn, nn4, ierr, ja
+   integer :: k, kk, kkk, n, nn4, ierr, ja
    real, allocatable, save :: rn(:)
    double precision :: znn
-   double precision :: znod
 
    ja = 0
    if (.not. allocated(rn)) then

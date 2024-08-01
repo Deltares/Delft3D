@@ -35,7 +35,6 @@
     use m_flowgeom
     use m_wind
     use m_sediment
-    use m_reduce, only: ccr, lv2
     use m_sferic
     use m_missing
     implicit none
@@ -44,8 +43,8 @@
     integer :: ndraw
 
     integer, intent(in) :: LL
-    integer :: L, L2, linval, ifrctyp, k1, k2, n1, n2, lll, ka, kb
-    double precision :: cosphiu, frcn, omega1, omega2, zb1, zb2, dum, alfa
+    integer :: L, linval, k1, k2, n1, n2, lll, ka, kb
+    double precision :: cosphiu, omega1, omega2, zb1, zb2, dum, alfa
 
     zlin = dmiss
     if (LL < 1) then

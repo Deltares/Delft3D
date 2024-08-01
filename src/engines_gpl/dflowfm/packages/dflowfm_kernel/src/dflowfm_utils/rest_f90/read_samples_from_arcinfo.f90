@@ -37,13 +37,12 @@ subroutine read_samples_from_arcinfo(filnam, jadoorladen, japrompt) ! reaasc
    use m_samples
    use m_samples_refine, only: iHesstat, iHesstat_DIRTY
    use m_arcinfo
-   use unstruc_display, only: jagui
    implicit none
    character(len=*), intent(in) :: filnam !< Name of *.asc file.
    integer, intent(in) :: jadoorladen !< Whether or not (1/0) to keep the existing samples in the global set.
    integer, intent(in) :: japrompt !< Whether or not (1/0) to prompt in the GUI for istep-jstep subsampled reading.
 
-   integer :: i, j, istep, marc, japrompt_
+   integer :: i, j, istep, marc
    character(len=10) :: TEX
 
    integer :: ndraw

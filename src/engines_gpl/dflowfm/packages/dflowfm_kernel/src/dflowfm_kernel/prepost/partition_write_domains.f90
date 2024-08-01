@@ -39,7 +39,7 @@
       use unstruc_model, only: md_ident
       use m_polygon, only: NPL
       use dfm_error
-      use network_data, only: lne, numl
+      use network_data, only: lne
       use m_flowparameters, only: japartdomain
       use gridoperations
       use system_utils, only: find_last_slash
@@ -59,7 +59,6 @@
       character(len=:), allocatable :: partfilename
       integer :: idmn ! domain number
       integer :: len_basename, mdep, i1, i2, iconv
-      integer, allocatable :: lned(:, :) ! lned(:,j) are the cells that are realated to link j, original numbering
       integer :: ierror
 
       ierror = 1

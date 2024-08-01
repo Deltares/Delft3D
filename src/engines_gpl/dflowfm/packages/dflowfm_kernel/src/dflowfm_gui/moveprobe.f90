@@ -46,9 +46,8 @@
          double precision :: csdir, sndir !< direction vector components
          double precision :: dum
          double precision :: dmaxinprod
-         double precision :: cs, sn
 
-         integer :: i, j, jj, k, k2, L, knext
+         integer :: i, L, knext
 
          if (kk == 0 .or. idir == 5) then
             call in_flowcell(xp, yp, KK)

@@ -39,8 +39,8 @@
     implicit none
     ! locals
     integer :: japerim
-    integer :: L, n, k1, k2, k
-    double precision :: ha, hh
+    integer :: L, n, k1, k2
+    double precision :: hh
     integer, save :: handle = 0
 
     call timstrt('Volume calculation', handle)

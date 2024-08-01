@@ -36,7 +36,6 @@ subroutine getucxucyeulmag(N, ucxeulg, ucyeulg, ucmago, jaeulervel, jaucmag)
    use m_flowgeom
    use m_flow, only: ndkx, ucx, ucy
    use m_flowparameters, only: jawave, flowWithoutWaves
-   use m_waves, only: ustokes ! available for all wave models
 
    implicit none
 

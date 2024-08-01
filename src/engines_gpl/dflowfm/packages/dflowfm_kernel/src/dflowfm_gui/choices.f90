@@ -82,7 +82,7 @@
       use unstruc_model, only: md_ident
 
       implicit none
-      integer :: ja, L, n12, ikey, mnx
+      integer :: ja, n12, ikey, mnx
       integer :: ndraw
       integer :: MODE, NUM, NWHAT, KEY, nwhat2
       integer :: JDEMO
