@@ -181,7 +181,6 @@ class Dimr {
         dimr_coupler *   getCoupler       (const char *);
 
         bool           IsCouplerItemTypePTR(int couplerItem);
-        bool           ReadComputeTimesFile(const char*, dimr_control_block*);
 
         void           char_to_ints       (char *, int **, int *);
 

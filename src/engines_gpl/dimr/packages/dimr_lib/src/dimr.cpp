@@ -128,6 +128,29 @@ Dimr::Dimr(void) {
     this->timerSumStamp = 0;
 }
 
+bool readComputeTimesFile(const char* fileName, dimr_control_block* controlBlock) {
+    std::ifstream computeTimesFile(fileName);
+    // Check if the file stream is valid (i.e., file was opened successfully)
+    if (!computeTimesFile.is_open()) {
+        return false;
+    }
+    double timeRead;
+    controlBlock->computeTimes = new vector<double>();
+    while (computeTimesFile >> timeRead)
+        controlBlock->computeTimes->push_back(timeRead);
+    // Close the file
+    computeTimesFile.close();
+    vector<double>& controlblock_timearray = *(controlBlock->computeTimes); // Shortcut to keep the code readable
+    // Enough data?
+    if (controlblock_timearray.size() < MINIMUM_TIME_POINTS)
+        throw Exception(true, Exception::ERR_INVALID_INPUT, "File '%s' must contain at least %d times", fileName, MINIMUM_TIME_POINTS);
+    // Update controlBlock with read times
+    controlBlock->tStart = controlblock_timearray[0];                       // First  timePoint to do a computation
+    controlBlock->tStep = controlblock_timearray[1] - controlBlock->tStart; // Second timePoint to do a computation
+    controlBlock->computeTimesCurrent = 1;                                  // Index to current timePoint
+    controlBlock->tEnd = std::numeric_limits<double>::infinity();
+    return true;
+}
 
 
 //------------------------------------------------------------------------------
@@ -1727,11 +1750,7 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
         // - tStart, tStep, tStop                             , e.g. <time>0.0 3.6e3 9.99e4</time>
         // - name of a file containing computation time points, e.g. <time>wave_computations.tim</time>
         // First check whether it's the name of a file:
-        if (ReadComputeTimesFile(timeElt->charData, controlBlock)) {
-            if (controlBlock->computeTimes->size() < 3)
-                throw Exception(true, Exception::ERR_INVALID_INPUT, "File '%s' must contain at least 3 times", timeElt->charData);
-        }
-        else {
+        if (!readComputeTimesFile(timeElt->charData, controlBlock)) {
             // No, it's not the name of a file. Assume that it contains tStart, tStep, tStop
             int intRead = sscanf(timeElt->charData, "%lf %lf %lf", &(controlBlock->tStart), &(controlBlock->tStep), &(controlBlock->tEnd));
             if (intRead != 3)
@@ -1800,25 +1819,6 @@ bool Dimr::IsCouplerItemTypePTR(int couplerItem) {
     return couplerItem == ITEM_TYPE_PTR;
 }
 
-bool Dimr::ReadComputeTimesFile(const char* fileName, dimr_control_block* controlBlock) {
-    std::ifstream computeTimesFile(fileName);
-    if (computeTimesFile.is_open()) {
-        // Yes, it's the name of a file. Count the number of lines
-        double timeRead;
-        controlBlock->computeTimes = new vector<double>();
-        while (computeTimesFile >> timeRead)
-            controlBlock->computeTimes->push_back(timeRead);
-        computeTimesFile.close();
-        vector<double>& controlblock_timearray = *(controlBlock->computeTimes); // Shortcut to keep the code readable
-        controlBlock->tStart = controlblock_timearray[0];                       // First  timePoint to do a computation
-        controlBlock->tStep = controlblock_timearray[1] - controlBlock->tStart; // Second timePoint to do a computation
-        controlBlock->computeTimesCurrent = 1;                                  // Index to current timePoint
-        controlBlock->tEnd = std::numeric_limits<double>::infinity();
-        return true;
-    } else {
-        return false;
-    }
-}
 
 //------------------------------------------------------------------------------
 void Dimr::connectLibs(void) {

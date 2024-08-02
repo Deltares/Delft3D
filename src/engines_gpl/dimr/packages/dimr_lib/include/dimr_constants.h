@@ -38,6 +38,10 @@ enum {
 	MAXSTRING = 1000    // max string length in bytes
 };
 
+enum {
+	MINIMUM_TIME_POINTS = 3 // minumum number of time points
+};
+
 // Store the exact name of the entry points in the dlls
 const char BmiDimrSetLogger[] = "set_dimr_logger";
 const char BmiInitializeEntryPoint[] = "initialize";
