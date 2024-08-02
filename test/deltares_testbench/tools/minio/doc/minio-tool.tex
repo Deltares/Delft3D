@@ -238,24 +238,41 @@ The pull command downloads either the case or reference data from MinIO and stor
 	# Print command line help
 	python -m tools.minio pull --help
 	
-	# Pull the 'case' data from test case 'e999_f42_c01_case1' in the config 'path/to/config.xml' to your computer.
-	# By default, the data will be stored in the directory configured in the 'config.xml' file.
-	# Usually this is'./data/cases'. The same location is used by the testbench to store case data.
-	python -m tools.minio pull --case --config path/to/config.xml --test-case-name e999_f42_c01
+	# Pull the 'case' data from test case 'e999_f42_c01_case1' in 
+	# the config 'path/to/config.xml' to your computer. By default, 
+	# the data will be stored in the directory configured in the 
+	# 'config.xml' file. Usually this is'./data/cases'. The same 
+	# location is used by the testbench to store case data. 
 	
-	# Similar to the last command, except this time the 'reference' data is downloaded instead.
-	# Also, where possible, the 'short-form' command line options are used.
-	python -m tools.minio pull --reference -c path/to/config.xml -n e999_f42_c02
+	python -m tools.minio pull --case --config path/to/config.xml \
+		--test-case-name e999_f42_c01
 	
-	# Pull the 'reference' data from MinIO as it was on April first 2024 at midnight (timezone UTC/GMT)
-	python -m tools.minio pull --reference -c path/to/config.xml -n e999_f42_c03 --timestamp 2024-04-01T00:00
+	# Similar to the last command, except this time the 'reference' 
+	# data is downloaded instead. Also, where possible, the
+	# 'short-form' command line options are used.
+
+	python -m tools.minio pull --reference -c path/to/config.xml
+	-n e999_f42_c02
 	
-	# Pull the 'latest' 'case' data from MinIO. By default, the timestamp in the config is used to get a snapshot of the data.
-	python -m tools.minio pull --case -c path/to/config.xml -n e999_f42_c04 --latest
+	# Pull the 'reference' data from MinIO as it was on April first
+	# 2024 at midnight (timezone UTC/GMT)
 	
-	# Pull the 'case' data to the directory './foo/bar' instead of the default location.
-	python -m tools.minio pull --case --config path/to/config.xml -n e999_f42_c02 --local-path ./foo/bar
+	python -m tools.minio pull --reference -c path/to/config.xml \
+		-n e999_f42_c03 --timestamp 2024-04-01T00:00
+	
+	# Pull the 'latest' 'case' data from MinIO. By default, the 
+	# timestamp in the config is used to get a snapshot of the data.
+
+	python -m tools.minio pull --case -c path/to/config.xml \
+	-n e999_f42_c04 --latest
+
+	# Pull the 'case' data to the directory './foo/bar' instead of
+	# the default location.
+
+	python -m tools.minio pull --case --config path/to/config.xml \
+		-n e999_f42_c02 --local-path ./foo/bar
 \end{verbatim}
+
 \textbf{Note:}
 \begin{itemize}
 	\item The 'config', 'test-case-name' and one of 'case' or 'reference' command line arguments are mandatory. All the other arguments are optional. Use the 'help' argument for a complete list.
@@ -291,20 +308,32 @@ Examples:
 	# Print command line help menu for the 'push' command.
 	python -m tools.minio push --help
 	
-	# Compare the local directory (configured in the config file, usually under './data/cases/') to the data in MinIO.
-	# Plan only 'updates' of files that already exist in MinIO (default behavior).
-	# If there are changed files, attach the JIRA issue id 'JIRA-123' to the updated files.
-	python -m tools.minio push --case --config path/to/config.xml --test-case-name e999_f42_c01 --issue-id JIRA-123
+	# Compare the local directory (configured in the config file, 
+	# usually under './data/cases/') to the data in MinIO. Plan 
+	# only 'updates' of files that already exist in MinIO (default 
+	# behavior). If there are changed files, attach the JIRA issue
+	# id 'JIRA-123' to the updated files.
+	python -m tools.minio push --case --config path/to/config.xml \
+		--test-case-name e999_f42_c01 --issue-id JIRA-123
 	
-	# Similar to the last command, except the 'reference' data is updated. Also, where possible, the 'short-form' command line options are used.
-	python -m tools.minio push --reference -c path/to/config.xml -n e999_f42_c02 --issue-id JIRA-123
+	# Similar to the last command, except the 'reference' data is
+	# updated. Also, where possible, the 'short-form' command line
+	# options are used.
+	python -m tools.minio push --reference -c path/to/config.xml \
+		-n e999_f42_c02 --issue-id JIRA-123
 	
-	# Override the configured 'default' local path (usually './data/cases/<test_case_name>') with './foo/bar'
-	python -m tools.minio push --reference -c path/to/config.xml -n e999_f42_c03 --local-path ./foo/bar --issue-id JIRA-123
+	# Override the configured 'default' local path (usually 
+	# './data/cases/<test_case_name>') with './foo/bar'
+	python -m tools.minio push --reference -c path/to/config.xml \
+		-n e999_f42_c03 --local-path ./foo/bar --issue-id JIRA-123
 	
-	# Explicitly allow 'create' and 'remove' operations in MinIO. Useful for adding new test cases, or cleaning up unnecessary files.
-	python -m tools.minio push --case -c path/to/config.xml -n e999_f42_c04 --allow-create-and-delete --issue-id JIRA-123
+	# Explicitly allow 'create' and 'remove' operations in MinIO. 
+	# Useful for adding new test cases, or cleaning up unnecessary 
+	# files.
+	python -m tools.minio push --case -c path/to/config.xml \ 
+		-n e999_f42_c04 --allow-create-and-delete --issue-id JIRA-123
 \end{verbatim}
+\newpage
 \textbf{Note:}
 \begin{itemize}
 	\item The 'config', 'test-case-name', one of 'case' or 'reference' and 'issue-id' command line arguments are mandatory. All the other arguments are optional. Use the 'help' argument for a complete list.
@@ -327,17 +356,23 @@ You may wonder why it is useful to compare the local 'case' data to the 'referen
 	\item The program produces output files in the same local directory where the case data is stored (perhaps in an 'output' directory). The local directory now contains a mix of the case data files and 'output' data files.
 	\item Some of the 'output' files are selected as the new 'reference' data.
 \end{itemize}
-The testbench can be used for the first three steps of the workflow above. The last step may require some manual steps to verify that the output files are suitable to be used as reference data. The idea of behind the 'update-references' command is that updating the references very often boils down to uploading new versions of the same output files. Files are rarely created and removed from the references. Use 'update-references' only when references for an existing test case need to be updated. If you need to create new files or remove existing files from the references in MinIO, use 'push' instead.
+The testbench can be used for the first three steps of the workflow above. The last step may require some manual steps to verify that the output files are suitable to be used as reference data. The idea behind the 'update-references' command is that updating the references very often boils down to uploading new versions of the same output files. Files are rarely created and removed from the references. Use 'update-references' only when references for an existing test case need to be updated. If you need to create new files or remove existing files from the references in MinIO, use 'push' instead.
 Examples:
 \begin{verbatim}
 	# Print help message for update-references command.
 	python -m tools.minio update-references --help
 	
-	# Compares the local 'case' directory to the 'references' in MinIO.
-	python -m tools.minio update-references --config path/to/config.xml --test-case-name e999_f42_c01 --issue-id JIRA-123
+	# Compares the local 'case' directory to the 'references' in 
+	# MinIO.
+	python -m tools.minio update-references \ 
+	--config path/to/config.xml \
+	--test-case-name e999_f42_c01 \
+	--issue-id JIRA-123
 	
-	# Override local directory to use './foo/bar' instead of the default 'case' data directory.
-	python -m tools.minio update-references -c path/to/config.xml -n e999_f42_c01 --local-path ./foo/bar --issue-id JIRA-123
+	# Override local directory to use './foo/bar' instead of the 
+	# default 'case' data directory.
+	python -m tools.minio update-references -c path/to/config.xml \
+	-n e999_f42_c01 --local-path ./foo/bar --issue-id JIRA-123
 \end{verbatim}
 
 \section{Dealing with conflicts}
@@ -370,7 +405,8 @@ At the time of writing, you can only pass a single config file and a single test
 	)
 	
 	for arg in "${TEST_CASES[@]}"; do
-	python -m tools.minio update-references -c path/to/config.xml -n "${arg}" --issue-id JIRA-123 --batch
+	python -m tools.minio update-references -c path/to/config.xml \
+	-n "${arg}" --issue-id JIRA-123 --batch
 	done
 \end{verbatim}
 When conflicts are detected in batch mode, the default option is to abort the operation. You can combine the \texttt{--batch} flag with the \texttt{--force} flag to force the MinIO tool to continue anyway after a conflict. But please make sure you're not interfering with another person's work when you're doing this.
