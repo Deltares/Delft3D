@@ -276,7 +276,7 @@ Because the data in MinIO is versioned, updates and removals of files is not des
 
 The MinIO tool will not only upload the changed files to MinIO. It will also update the version timestamp in the config for the affected test case. This will ensure that the next time the testbench runs, it will download the new data that you've just uploaded, instead of the old data. This is usually a one-line change to the config XML file, replacing the 'version' attribute of the 'path' element inside the test case. The MinIO tool will show you a diff of the changes to the config. It will prompt you to accept or discard the changes to the config file as well. Note that the config files are tracked by git, so changes made to the config files need to be staged, commited and pushed for them to become visible to others.
 
-The following figure shows a complete session of a 'push' command. Note that MinIO tool first shows users a plan of what it is about to, and prompts the user before it changes anything:
+The following figure shows a complete session of a 'push' command. Note that MinIO tool first shows users a plan of what it is about to do, and prompts the user before it changes anything:
 
 \newpage
 \begin{figure}[h]
@@ -357,7 +357,7 @@ The following figure shows an example of a situation where there are conflicts. 
 
 \section{Miscellaneous}
 \subsection{Updating multiple test cases}
-At the time of writing, you can only pass a single config file and a single test case name to the MinIO tool. Meaning the tool is limited to working on a single test case at a time. Unfortunately, there may be situations where case or reference data has to be updated for many different test cases. The current workaround is to collect all of the configs and test cases that need to be updated in a list and invoke the MinIO tool once for every test case in a script. The MinIO tool is in 'interactive mode' by default, meaning that it will show what it is about to do before prompting users to continue or abort. The MinIO tool also supports a 'batch mode' where it skips the user interaction and uses the 'default' prompt option every time. When using batch mode, please be careful that the data you're uploading is correct prepared so you don't have to clean it up later. Here's an example bash script that illustrates it:
+At the time of writing, you can only pass a single config file and a single test case name to the MinIO tool. Meaning the tool is limited to working on a single test case at a time. Unfortunately, there may be situations where case or reference data has to be updated for many different test cases. The current workaround is to collect all of the configs and test cases that need to be updated in a list and invoke the MinIO tool once for every test case in a script. The MinIO tool is in 'interactive mode' by default, meaning that it will show what it is about to do before prompting users to continue or abort. The MinIO tool also supports a 'batch mode' where it skips the user interaction and uses the 'default' prompt option every time. When using batch mode, please be careful that the data you're uploading is prepared correctly so you don't have to clean it up later. Here's an example bash script that illustrates it:
 \begin{verbatim}
 	#!/bin/bash
 	
