@@ -361,6 +361,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
 
    !! 0c. Prepare arrays and variables for the mesh number, mesh topology dimension.
    call realloc(nMesh, nfiles, keepExisting = .false., fill = 0)
+   call realloc(topodim,   (/nMaxMeshes,nfiles/), keepExisting = .false., fill = -1)  ! needed for if statement below when jaugrid=0
    if (jaugrid == 1) then ! UGRID format
       ! Compute nMesh and maximal mesh number.
       nMaxMeshes = 0
@@ -373,7 +374,6 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
       ! Gets mesh topology from each input file, 
       ! fill in the mapping array mesh2topo that is mapping from meshid to topology index
       ! and compute maximal and minimal topology dimensions.
-      call realloc(topodim,   (/nMaxMeshes,nfiles/), keepExisting = .false., fill = -1)
       call realloc(mesh2topo, (/nMaxMeshes,nfiles/), keepExisting = .false., fill = -1)
       maxTopodim = 0
       minTopodim = 999
@@ -742,7 +742,7 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
    allocate(var_timdimpos(maxnvars, maxTopodim));   var_timdimpos   = -1
    allocate(var_spacedimpos(maxnvars, maxTopodim)); var_spacedimpos = -1
    allocate(var_laydimpos(maxnvars, maxTopodim));   var_laydimpos   = -1
-   allocate(var_kxdimpos(4, maxnvars, maxTopodim)); var_kxdimpos    = -1
+   allocate(var_kxdimpos(MAX_VAR_DIMS, maxnvars, maxTopodim)); var_kxdimpos    = -1
    allocate(var_wdimpos(maxnvars, maxTopodim));     var_wdimpos     = -1
    allocate(var_seddimpos(maxnvars, maxTopodim));   var_seddimpos   = -1
    allocate(var_ndims(maxnvars, maxTopodim));       var_ndims       =  0
@@ -912,6 +912,13 @@ function dfm_merge_mapfiles(infiles, nfiles, outfile, force) result(ierr)
                var_loctype(ivarcandidate,itopo) = UNC_LOC_SBND
                var_spacedimpos(ivarcandidate,itopo) = ifirstdim
             else
+               if (numkx(ivarcandidate,itopo) == MAX_VAR_DIMS) then
+                  if (verbose_mode) then
+                     write (*,'(a)')           'Error: mapmerge: location type not found for `'//trim(varname)//''':'
+                  end if
+                  isfound = .false.
+                  exit ! Stop scanning any remaining dimensions for this var.                
+               endif 
                if (var_kxdimpos(numkx(ivarcandidate,itopo)+1,ivarcandidate,itopo) == -1) then
                   ifirstdim = ifirstdim-1
                   var_kxdimpos(numkx(ivarcandidate,itopo)+1,ivarcandidate,itopo) = ifirstdim
