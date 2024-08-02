@@ -1044,6 +1044,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                         }
                     }
                     cb->subBlocks[i].tNext = cb->subBlocks[i].tNext + cb->subBlocks[i].tStep;
+                    vector<double>& subblock_timearray = *(cb->subBlocks[i].computeTimes); // Shortcut to keep the code readable
                     if (cb->subBlocks[i].tNext > cb->subBlocks[i].tEnd)
                         // This subBlock does not have to be executed anymore
                         // Force this by giving it a nextTime > simulationEndTime
@@ -1052,13 +1053,14 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                         // Computation times specified in a time series:
                         // Use the next element from the computeTimes array
                         cb->subBlocks[i].computeTimesCurrent++;
+                        int subblock_timeindex = cb->subBlocks[i].computeTimesCurrent;  // Shortcut to keep the code readable
                         // If there are no valid timepoints in array computeTimes anymore:
                         //     Ensure that tStep is big enough to cover the interval from currentTime to tEnd
-                        if (cb->subBlocks[i].computeTimesCurrent >= cb->subBlocks[i].computeTimes->size())
+                        if (subblock_timeindex >= subblock_timearray.size())
                             cb->subBlocks[i].tStep = 2.0 * (masterComponent->tEnd - *currentTime);
                         else {
                             // Substract the previous computeTimes-entry to obtain the new tStep
-                            cb->subBlocks[i].tStep = cb->subBlocks[i].computeTimes->at(cb->subBlocks[i].computeTimesCurrent) - cb->subBlocks[i].computeTimes->at(cb->subBlocks[i].computeTimesCurrent - 1);
+                            cb->subBlocks[i].tStep = subblock_timearray[subblock_timeindex] - subblock_timearray[subblock_timeindex - 1];
                         }
                     }
                 }
