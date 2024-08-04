@@ -1357,7 +1357,7 @@ logical function initboundaryblocksforcings(filename)
           case ('qext')
              ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
              if (jaQext == 0) then
-                write(msgbuf, '(a)') 'quantity '''// trim(quantity) //' in file ''', trim(filename), ''': [', trim(groupname), '] is missing QExt=1 in MDU. Ignoring this block.'
+                write(msgbuf, '(7a)') 'quantity '''// trim(quantity) //' in file ''', trim(filename), ''': [', trim(groupname), '] is missing QExt=1 in MDU. Ignoring this block.'
                 call warn_flush()
                 cycle
              end if
@@ -1366,7 +1366,7 @@ logical function initboundaryblocksforcings(filename)
                 fmmethod = 5 ! triangulation
 !                transformcoef(4) = 2 ! Nearest-neighbour
              else
-                write(msgbuf, '(a)') 'Unknown forcingFileType '''// trim(forcingfiletype) //' in file ''', trim(filename), ''': [', trim(groupname), '], quantity=', trim(quantity), '. Ignoring this block.'
+                write(msgbuf, '(7a)') 'Unknown forcingFileType '''// trim(forcingfiletype) //' in file ''', trim(filename), ''': [', trim(groupname), '], quantity=', trim(quantity), '. Ignoring this block.'
                 call warn_flush()
                 cycle
              end if
@@ -1390,7 +1390,7 @@ logical function initboundaryblocksforcings(filename)
              success = timespaceinitialfield(xz, yz, qext, ndx, forcingFile, filetype, fmmethod, oper, transformcoef, 2, kcsini) ! zie meteo module
              cycle ! This was a special case, don't continue with timespace processing below.
           case default
-             write(msgbuf, '(a)') 'Unknown quantity '''// trim(quantity) //' in file ''', trim(filename), ''': [', trim(groupname), ']. Ignoring this block.'
+             write(msgbuf, '(5a)') 'Unknown quantity '''// trim(quantity) //' in file ''', trim(filename), ''': [', trim(groupname), ']. Ignoring this block.'
              call warn_flush()
              cycle
        end select
@@ -1409,7 +1409,7 @@ logical function initboundaryblocksforcings(filename)
           fmmethod = spaceandtime
           success = ec_addtimespacerelation(quantity, xz(1:ndx), yz(1:ndx), kcsini, kx, forcingfile, filetype=filetype, method=fmmethod, operand=oper)
        case default
-          write(msgbuf, '(a)') 'Unknown forcingFileType '''// trim(forcingfiletype) //' in file ''', trim(filename), ''': [', trim(groupname), ']. Ignoring this block.'
+          write(msgbuf, '(5a)') 'Unknown forcingFileType '''// trim(forcingfiletype) //' in file ''', trim(filename), ''': [', trim(groupname), ']. Ignoring this block.'
           call warn_flush()
           cycle
        end select

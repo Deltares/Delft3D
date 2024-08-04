@@ -341,7 +341,6 @@ if (jawind > 0) then
                 endif
              endif
           endif
-          adve(L) = max(abs(adve(L)),facmaxag*ag)*sign(1d0,adve(L))
        enddo
 
     else

@@ -6097,7 +6097,7 @@ subroutine xbeach_compute_stokesdrift()
    ! shortcut to switch off stokes drift
    if (jawavestokes==0) then
       ustokes = 0d0; vstokes = 0d0
-      ustx_cc(k) = 0d0; usty_cc(k) = 0d0 ! output
+      ustx_cc = 0d0; usty_cc = 0d0 ! output
       return
    endif
    
