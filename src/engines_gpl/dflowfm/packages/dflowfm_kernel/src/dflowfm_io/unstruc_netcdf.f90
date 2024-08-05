@@ -18323,16 +18323,20 @@ contains
       use m_output_config, only: UNC_LOC_S3D, UNC_LOC_S
 
 !input/output
-      integer, intent(in) :: imapfile, kstart, klength, it_read, target_shift
       double precision, allocatable, dimension(:, :), intent(inout) :: var
+      character(len=*), intent(in) :: stradd ! str for distinguishing between internal and boundary cells 
+      integer, intent(in) :: imapfile ! file handle for reading in netcdf file 
+      integer, intent(in) :: kstart ! 2D start position for reading in netcdf file 
+      integer, intent(in) :: klength ! 2D length of array for reading in netcdf file 
+      integer, intent(in) :: it_read ! time index for reading in netcdf file 
       type(t_unc_merged), intent(in) :: um !< struct holding all data for ugrid merged map/rst files
+      integer, intent(in) :: target_shift ! 2D shift of index for writnig 
 
 !local
       integer :: i
       integer :: ierr, tmp_loc
       double precision, allocatable :: tmpvar1(:), tmpvar1D(:)
       character(len=255) :: tmpstr
-      character(len=*), intent(in) :: stradd
 
       if (kmx > 0) then
          tmp_loc = UNC_LOC_S3D
