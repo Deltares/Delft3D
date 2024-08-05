@@ -864,7 +864,7 @@ contains
 
          if (allocated(pliname)) deallocate (pliname)
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kez(nbndz + 1:nx), numz, usemask=.true., pliname=pliname) !numz=number cells found, plname=pliname
-         write (msgbuf, '(a,x,a,i8,a)') trim(qid), trim(filename), numz, ' nr of open bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numz, ' nr of open bndcells'; call msg_flush()
          nzbnd = nzbnd + 1
 
          if (qidfm == 'waterlevelbnd') itpbn = 1
@@ -921,7 +921,7 @@ contains
       else if (qidfm == 'velocitybnd' .or. qidfm == 'dischargebnd' .or. qidfm == 'qhubnd' .or. &
                qidfm == 'criticaloutflowbnd' .or. qidfm == 'weiroutflowbnd' .or. qidfm == 'absgenbnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, keu(nbndu + 1:nx), numu, usemask=.true., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,x,a,i8,a)') trim(qid), trim(filename), numu, ' nr of open bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numu, ' nr of open bndcells'; call msg_flush()
          nubnd = nubnd + 1
 
          if (qidfm == 'velocitybnd') then
@@ -967,7 +967,7 @@ contains
 
       else if (qidfm == 'salinitybnd' .and. jasal > 0) then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kes(nbnds + 1:nx), nums, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,x,a,i8,a)') trim(qid), trim(filename), nums, ' nr of salinity bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), nums, ' nr of salinity bndcells'; call msg_flush()
          if (nums > 0) then
             call appendrettime(qidfm, nbnds + 1, return_time)
             nbnds = nbnds + nums
@@ -975,8 +975,7 @@ contains
 
       else if (qidfm == 'waveenergybnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kew(nbndw + 1:nx), numw, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,x,a,i8,a)') trim(qid), trim(filename), numw, ' nr of wave energy bndcells'; call msg_flush()
-
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numw, ' nr of wave energy bndcells'; call msg_flush()
          nwbnd = nwbnd + 1
 
          call realloc(L1wbnd, nwbnd); L1wbnd(nwbnd) = nbndw + 1
@@ -988,7 +987,7 @@ contains
 
       else if (qidfm == 'temperaturebnd' .and. jatem > 0) then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketm(nbndtm + 1:nx), numtm, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,x,a,i8,a)') trim(qid), trim(filename), numtm, ' nr of temperature bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtm, ' nr of temperature bndcells'; call msg_flush()
          if (numtm > 0) then
             call appendrettime(qidfm, nbndtm + 1, return_time)
             nbndtm = nbndtm + numtm
@@ -996,7 +995,7 @@ contains
 
       else if (qidfm == 'sedimentbnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kesd(nbndsd + 1:nx), numsd, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,x,a,i8,a)') trim(qid), trim(filename), numsd, ' nr of sediment bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numsd, ' nr of sediment bndcells'; call msg_flush()
          if (numsd > 0) then
             call appendrettime(qidfm, nbndsd + 1, return_time)
             nbndsd = nbndsd + numsd
@@ -1012,7 +1011,7 @@ contains
             call realloc(ketr, (/Nx, numtracers/), keepExisting=.true., fill=0)
          end if
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketr(nbndtr(itrac) + 1:, itrac), numtr, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,x,a,i8,a)') trim(qid), trim(filename), numtr, ' nr of tracer bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtr, ' nr of tracer bndcells'; call msg_flush()
          if (numtr > 0) then
             call appendrettime(qidfm, nbndtr(itrac) + 1, return_time)
             nbndtr(itrac) = nbndtr(itrac) + numtr
@@ -1056,25 +1055,25 @@ contains
 
       else if (qidfm == 'tangentialvelocitybnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ket(nbndt + 1:nx), numt, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,x,a,i8,a)') trim(qid), trim(filename), numt, ' nr of tangentialvelocity bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numt, ' nr of tangentialvelocity bndcells'; call msg_flush()
 
          nbndt = nbndt + numt
 
       else if (qidfm == 'uxuyadvectionvelocitybnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, keuxy(nbnduxy + 1:nx), numuxy, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,x,a,i8,a)') trim(qid), trim(filename), numuxy, ' nr of uxuyadvectionvelocity bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numuxy, ' nr of uxuyadvectionvelocity bndcells'; call msg_flush()
 
          nbnduxy = nbnduxy + numuxy
 
       else if (qidfm == 'normalvelocitybnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ken(nbndn + 1:nx), numn, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,x,a,i8,a)') trim(qid), trim(filename), numn, ' nr of normalvelocity bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numn, ' nr of normalvelocity bndcells'; call msg_flush()
 
          nbndn = nbndn + numn
 
       else if (qidfm == '1d2dbnd') then ! SOBEK1D-FM2D
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ke1d2d(nbnd1d2d + 1:nx), num1d2d, usemask=.true., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,x,a,i8,a)') trim(qid), trim(filename), num1d2d, ' nr of SOBEK1D-FM2D bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), num1d2d, ' nr of SOBEK1D-FM2D bndcells'; call msg_flush()
 
          call addopenbndsection(num1d2d, ke1d2d(nbnd1d2d + 1:nbnd1d2d + num1d2d), filename, IBNDTP_1D2D)
          nbnd1d2d = nbnd1d2d + num1d2d
