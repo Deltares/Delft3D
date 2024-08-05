@@ -1626,7 +1626,7 @@ subroutine xbeach_wave_dispersion(callType)
       !
       ! non-linear dispersion
       arg = min(100.0d0, km * hh)
-      arg = max(arg, 0.0001)
+      arg = max(arg, 0.0001d0)
       !
       fac = (1.d0 + ((km * H / 2.d0)**2))
       !
@@ -2275,7 +2275,7 @@ subroutine xbeach_wave_breaker_dissipation(dtmaxwav, break, deltaH, waveps, hhw,
 
       !H   = sqrt(8.d0/rhomean/ag*E)
       H = hwav
-      Hb = tanh(gam * kh / 0.88d0) * (0.88d0 / max(kwav, 1e-10))
+      Hb = tanh(gam * kh / 0.88d0) * (0.88d0 / max(kwav, 1d-10))
       R = Hb / max(H, 0.00001d0)
 
       Qb = exp(-R**2)
@@ -3634,7 +3634,7 @@ subroutine rollerturbulence(k)
    twothird = 2d0 / 3d0
    ktrb = (disrol / rhomean)**twothird ! See Battjes, 1975 / 1985
 
-   hloc = max(s1(k) - bl(k), 0.01)
+   hloc = max(s1(k) - bl(k), 0.01d0)
    ! compute mixing length
    ML = dsqrt(2 * rol * Tw / (rhomean * cw))
    ML = min(ML, hloc); 
@@ -6075,11 +6075,11 @@ subroutine xbeach_compute_stokesdrift()
 
    do k = 1, ndx
       if (hh(k) > m_xbeach_data_hminlw) then
-         ustw(k) = E(k) / max(cwav(k), 0.01) / rhomean / hstokes(k) ! waves
+         ustw(k) = E(k) / max(cwav(k), 0.01d0) / rhomean / hstokes(k) ! waves
          uwf(k) = ustw(k) * cos(thetamean(k))
          vwf(k) = ustw(k) * sin(thetamean(k))
          if (roller > 0) then
-            ustr(k) = 2d0 * R(k) / max(cwav(k), 0.01) / rhomean / hstokes(k) ! roller
+            ustr(k) = 2d0 * R(k) / max(cwav(k), 0.01d0) / rhomean / hstokes(k) ! roller
             urf(k) = ustr(k) * cos(thetamean(k))
             vrf(k) = ustr(k) * sin(thetamean(k))
          end if

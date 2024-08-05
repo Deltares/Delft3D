@@ -349,7 +349,7 @@ c      write ( io_mes , * ) h(gproom),alaros,' SVKO noflood at ',time
           endif
 
 c         Calculate maxlevel HvH
-          hmax_hvh = max(hmax_hvh,h(gpmamo))
+          hmax_hvh = max(hmax_hvh,real(h(gpmamo)))
 
 c----------------------------------------------------------------------c
 c         For kentering mode, not in first timestep

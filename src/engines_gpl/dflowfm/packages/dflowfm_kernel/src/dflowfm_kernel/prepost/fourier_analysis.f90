@@ -1125,12 +1125,12 @@ contains
             if (gdfourier%foumask(ifou)) then
                do n = 1, nmaxus
                   if (kfs(n) == 1 .and. initial_wet_mask(n) == 0) then
-                     fousmas(n) = max(fousmas(n), rarray(n))
+                     fousmas(n) = max(fousmas(n), real(rarray(n), kind=sp))
                   end if
                end do
             else
                do n = 1, nmaxus
-                  fousmas(n) = max(fousmas(n), rarray(n))
+                  fousmas(n) = max(fousmas(n), real(rarray(n), kind=sp))
                end do
             end if
             if (gdfourier%withTime(ifou)) then
@@ -1141,7 +1141,7 @@ contains
             else if (founam == 's1') then
                do n = 1, nmaxus
                   ! waterdepth (fousmb)
-                  fousmbs(n) = max(fousmbs(n), rarray(n) - real(bl(n), sp))
+                  fousmbs(n) = max(fousmbs(n), real(rarray(n) - bl(n), sp))
                end do
             else
             end if
@@ -1150,7 +1150,7 @@ contains
             ! Calculate MIN value
             !
             do n = 1, nmaxus
-               fousmas(n) = min(fousmas(n), rarray(n))
+               fousmas(n) = min(fousmas(n), real(rarray(n),sp))
             end do
             if (gdfourier%withTime(ifou)) then
                do n = 1, nmaxus
@@ -1161,7 +1161,7 @@ contains
                if (founam == 's1') then
                   do n = 1, nmaxus
                      ! waterdepth (fousmb)
-                     fousmbs(n) = min(fousmbs(n), rarray(n) - real(bl(n), sp))
+                     fousmbs(n) = min(fousmbs(n), real(rarray(n) - bl(n), sp))
                   end do
                end if
             end if

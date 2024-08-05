@@ -592,7 +592,7 @@ subroutine ConveyYZ(numyz,y,z,frictype,friction_value,level,flow_area,total_area
       y1 = y(k+1) - y(k)
       bb = dabs(y1 - y0)         ! breedte segment
 
-      cfrictval = max(friction_value(k),1.0e-10)
+      cfrictval = max(friction_value(k),1.0d-10)
       if(.NOT. (d0.le.1.0d-6.and.d1.le.1.0d-6)) then
          call ConveySeg (d0,d1,z0, z1, beta,bb,frictype(k),cfrictval,aa,ww,pp,cc) ! segment routine
          total_area = total_area + aa

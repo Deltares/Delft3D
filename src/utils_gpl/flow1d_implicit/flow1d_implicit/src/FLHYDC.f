@@ -343,8 +343,8 @@ c new JK ARS 3263
          call FLCNPA(get    ,isttyp ,strno ,icpnum, zs ,
      &               strpar ,juerd  ,kerd  )
      
-         hydvar = max((h(il) - zs)**2 * rho(il)*g/2.0 ,0.) - 
-     &            max((h(ir) - zs)**2 * rho(ir)*g/2.0 ,0.)
+         hydvar = max((h(il) - zs)**2 * rho(il)*g/2.0 ,0.0d0) - 
+     &            max((h(ir) - zs)**2 * rho(ir)*g/2.0 ,0.0d0)
 c old
 c        hydvar = abs( h(il) - h(ir) ) * rhow*g/2.0
       endif

@@ -201,7 +201,7 @@ contains
             call writelog('sl', '', 'Values calculated from interpolated spectrum:')
             call writelog('sl', '(a,f0.2,a)', 'Hm0       = ', specinterp(iloc)%hm0, ' m')
             call writelog('sl', '(a,f0.2,a)', 'Trep      = ', specinterp(iloc)%trep, ' s')
-            call writelog('sl', '(a,f0.2,a)', 'Mean dir  = ', mod(specinterp(iloc)%dirm, 360.), ' degN')
+            call writelog('sl', '(a,f0.2,a)', 'Mean dir  = ', mod(specinterp(iloc)%dirm, 360.d0), ' degN')
 
          end do
 

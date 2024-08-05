@@ -515,7 +515,7 @@ contains
             diff(i) = current(i) - previous(i)
             if (abs(diff(i)) > 1) then
                cnt = cnt + 1
-               diff(i) = max(-1, min(1, diff(i)))
+               diff(i) = max(-1_int8, min(1_int8, diff(i)))
             end if
          end do
       end if

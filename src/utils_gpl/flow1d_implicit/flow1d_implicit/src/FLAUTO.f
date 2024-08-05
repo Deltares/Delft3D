@@ -460,9 +460,9 @@ c
       do 84 i=1,5
          call flausm (nbran,ngrid,branch,hp(1,3),hp(1,2),0.5)
          do igr = 1, ngrid
-            hp(igr,3) = dble( max(adepth*.05 + 
-     +                      FLBOTT(igr,ngrid,maxlev,hlev),
-     +                      hp(igr,3)) )
+            hp(igr,3) = max(dble(adepth*.05 + 
+     +                      FLBOTT(igr,ngrid,maxlev,hlev)),
+     +                      hp(igr,3))
          enddo 
  84   continue
 

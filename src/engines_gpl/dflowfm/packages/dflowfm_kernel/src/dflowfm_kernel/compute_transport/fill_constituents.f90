@@ -192,7 +192,7 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
                if (heatsrc(k) > 0d0) then
                   const_sour(ITEMP, k) = heatsrc(k) * dvoli
                else if (heatsrc(k) < 0d0) then
-                  const_sink(ITEMP, k) = -heatsrc(k) * dvoli / max(constituents(itemp, k), 0.001)
+                  const_sink(ITEMP, k) = -heatsrc(k) * dvoli / max(constituents(itemp, k), 0.001d0)
                end if
             else ! allowing cooling below 0 degrees
                const_sour(ITEMP, k) = heatsrc(k) * dvoli

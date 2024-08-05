@@ -271,8 +271,8 @@ c
          call FLCNPA(get    ,isttyp ,istru ,icpnum, zs ,
      &               strpar ,juerd  ,kerd  )
 c     
-         hdiff = max((h(il) - zs),0.)**2 * rho(il)*g/2.0 - 
-     &           max((h(ir) - zs),0.)**2 * rho(ir)*g/2.0
+         hdiff = max((h(il) - zs),0.0d0)**2 * rho(il)*g/2.0 - 
+     &           max((h(ir) - zs),0.0d0)**2 * rho(ir)*g/2.0
 c
          if ( locat .lt. 0 ) then
             hydtrg = hdiff .lt. x

@@ -117,8 +117,7 @@ module interception
       
       ierr = DHYD_NOERR
       pt = 0.1 * CanopyGapFraction
-
-      P_sat = MAX(0.0,(-Cmax / EoverR) * LOG (1.0 - (EoverR/(1.0 - CanopyGapFraction - pt))))
+      P_sat = MAX(0.0d0,(-Cmax / EoverR) * LOG (1.0 - (EoverR/(1.0 - CanopyGapFraction - pt))))
 
       where(Precipitation > P_sat)
          Iwet = ((1 - CanopyGapFraction - pt) * P_sat) - Cmax

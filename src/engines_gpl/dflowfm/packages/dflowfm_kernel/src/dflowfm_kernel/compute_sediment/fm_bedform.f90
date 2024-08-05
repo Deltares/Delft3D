@@ -811,7 +811,7 @@ contains
                   if (arg > 50.0_fp) then
                      uw = 0.0_fp
                   else
-                     uw = 2.0_fp * pi * hh / (2.0_fp * sinh(arg) * max(twav(k), 0.1))
+                     uw = 2.0_fp * pi * hh / (2.0_fp * sinh(arg) * max(twav(k), 0.1d0))
                   end if
                   rr = -0.4_fp * hh / depth + 1.0_fp
                   umax = rr * 2.0_fp * uw

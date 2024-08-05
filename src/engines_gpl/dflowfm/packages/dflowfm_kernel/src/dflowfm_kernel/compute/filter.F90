@@ -532,7 +532,7 @@ subroutine comp_filter_predictor()
 !        compute sub time step
          dt = huge(1d0)
          do LL = 1, Lnx
-            dt = min(dt, dtmaxeps(LL) / max(eps(klay, LL), 1e-10))
+            dt = min(dt, dtmaxeps(LL) / max(eps(klay, LL), 1d-10))
          end do
 
          dt = facmax * dt
@@ -590,7 +590,7 @@ subroutine comp_filter_predictor()
 
 !               BEGIN DEBUG
                if (itype == 1) then
-                  plotlin(L) = dts / (dtmaxeps(LL) / max(eps(klay, LL), 1e-10))
+                  plotlin(L) = dts / (dtmaxeps(LL) / max(eps(klay, LL), 1d-10))
                else
                   plotlin(L) = 1d0
                end if
