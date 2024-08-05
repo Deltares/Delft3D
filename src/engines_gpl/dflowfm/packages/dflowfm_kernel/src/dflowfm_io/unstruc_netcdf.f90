@@ -559,9 +559,9 @@ module unstruc_netcdf
       module procedure unc_put_var_map_dble3
    end interface unc_put_var_map
 
-interface unc_put_var_rst
-   module procedure unc_put_var_rst_dble
-end interface unc_put_var_rst
+   interface unc_put_var_rst
+      module procedure unc_put_var_rst_dble
+   end interface unc_put_var_rst
 
    interface unc_put_att
       module procedure unc_put_att_int
@@ -3549,7 +3549,7 @@ contains
       end if
 
       ndx1d = ndxi - ndx2d
-   
+
       if (jased > 0 .and. stm_included) then
          ierr = nf90_def_dim(irstfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim)
          ierr = nf90_def_dim(irstfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim)
@@ -3668,7 +3668,7 @@ contains
             ierr = nf90_put_att(irstfile, id_sedshort, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
             ierr = nf90_put_att(irstfile, id_sedshort, 'long_name', 'Sediment shortage of transport layer in flow cell center')
             ierr = nf90_put_att(irstfile, id_sedshort, 'units', 'kg m-2')
-         end if 
+         end if
          ! Fluff layers
          if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0) then
             ierr = nf90_def_var(irstfile, 'mfluff', nf90_double, (/id_sedsusdim, id_flowelemdim, id_timedim/), id_mfluff)
@@ -4643,11 +4643,11 @@ contains
                   deallocate (dum)
                end if
             end if !(jarstbnd > 0 .and. ndxbnd > 0)
-          ! 
+            !
             ! density (only necessary if morphodynamics and fractions in suspension and consider concentrations in density)
             if (stmpar%morpar%densin) then
-             ierr = unc_put_var_rst(irstfile, id_rho, id_rho_bnd, rho, itim)
-             ierr = unc_put_var_rst(irstfile, id_rhowat, id_rhowat_bnd, rhowat, itim)
+               ierr = unc_put_var_rst(irstfile, id_rho, id_rho_bnd, rho, itim)
+               ierr = unc_put_var_rst(irstfile, id_rhowat, id_rhowat_bnd, rhowat, itim)
             end if !(stmpar%morpar%densin)
          end if !(stmpar%lsedsus .gt. 0)
          ! morbl
@@ -4699,7 +4699,7 @@ contains
          ! sedshort
          if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
             ierr = nf90_put_var(irstfile, id_sedshort, stmpar%morlyr%state%sedshort(:, 1:ndxi), (/1, 1, itim/), (/stmpar%lsedtot, ndxi, 1/))
-         end if    
+         end if
          ! mfluff
          if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0) then
             do l = 1, stmpar%lsedsus
@@ -6003,7 +6003,7 @@ contains
             end select
             if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedshort, nc_precision, UNC_LOC_S, 'sedshort', '', 'Sediment shortage of transport layer in flow cell center', 'kg m-2', dimids=(/mapids%id_tsp%id_sedtotdim, -2, -1/), jabndnd=jabndnd_)
-            end if 
+            end if
             !
             if (stmpar%morpar%moroutput%taub) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_taub, nc_precision, UNC_LOC_S, 'taub', '', 'Bed shear stress for morphology', 'N m-2', dimids=(/-2, -1/), jabndnd=jabndnd_)
@@ -12981,7 +12981,7 @@ contains
             goto 999
          end if
 
-      do i=target_shift_ + 1, target_shift_ + loccount
+         do i = target_shift_ + 1, target_shift_ + loccount
             if (jamergedmap /= 1) then
                is = i
             else
@@ -13042,7 +13042,7 @@ contains
       use m_flowtimes
       use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, constituents, itrac2const, const_names, ifrac2const
       use m_fm_wq_processes
-    use fm_external_forcings_data, only: numtracers, trnames, ibnd_own, ndxbnd_own
+      use fm_external_forcings_data, only: numtracers, trnames, ibnd_own, ndxbnd_own
       use m_sediment
       use bedcomposition_module
       use m_flowgeom
@@ -13272,11 +13272,11 @@ contains
          um%jafillghost = 0
       end if
 
-    ! allocate inode_merge, ilink_merge and ibnd_merge in all restart situations. When the partition is the same, these two arrays do not function,
+      ! allocate inode_merge, ilink_merge and ibnd_merge in all restart situations. When the partition is the same, these two arrays do not function,
       ! but they help to simplify the codes when calling "get_var_and_shift".
       call realloc(um%inode_merge, 1, keepExisting=.false., fill=-999)
       call realloc(um%ilink_merge, 1, keepExisting=.false., fill=-999)
-    call realloc(um%ibnd_merge,  1, keepExisting=.false., fill = -999)
+      call realloc(um%ibnd_merge, 1, keepExisting=.false., fill=-999)
 
       jamergedmap_same_bu = um%jamergedmap_same
       success = unc_read_merged_map(um, imapfile, filename, ierr)
@@ -13535,8 +13535,8 @@ contains
 
             ierr = nf90_inq_varid(imapfile, 'rho_bnd', id_rhobnd)
             if (ierr == 0) then
-              ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
-                                   um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
+               ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
+                                        um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
                call check_error(ierr, 'rho_bnd')
             end if
 
@@ -13544,7 +13544,7 @@ contains
                ierr = nf90_inq_varid(imapfile, 'rhowat_bnd', id_rhowatbnd)
                if (ierr == 0) then
                   ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
-                                   um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
+                                           um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
                   call check_error(ierr, 'rhowat_bnd')
                end if
             end if
@@ -13563,10 +13563,6 @@ contains
                   sqi(kk) = tmp_sqi(i)
                   ucxq(kk) = tmp_ucxq(i)
                   ucyq(kk) = tmp_ucyq(i)
-                  rho(kk) = tmp_rho(i)
-                  if (stm_included) then
-                     rhowat(kk) = tmp_rhowat(i)
-                  end if
                end do
             else
                do i = 1, um%nbnd_read ! u and z bnd
@@ -13581,10 +13577,6 @@ contains
                   sqi(kk) = tmp_sqi(i)
                   ucxq(kk) = tmp_ucxq(i)
                   ucyq(kk) = tmp_ucyq(i)
-                  rho(kk) = tmp_rho(i)
-                  if (stm_included) then
-                     rhowat(kk) = tmp_rhowat(i)
-                  end if
                end do
             end if
          end if
@@ -13630,11 +13622,11 @@ contains
             ierr = get_var_and_shift(imapfile, 'ucyq_bnd', tmp_ucyq, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                      um%jamergedmap, ibnd_own, um%ibnd_merge)
             call check_error(ierr, 'ucyq_bnd')
-          ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
+            ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
                                      um%jamergedmap, ibnd_own, um%ibnd_merge)
             call check_error(ierr, 'rho_bnd')
             if (stm_included) then
-             ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
+               ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
                                         um%jamergedmap, ibnd_own, um%ibnd_merge)
                call check_error(ierr, 'rhowat_bnd')
             end if
@@ -18324,13 +18316,13 @@ contains
 
 !input/output
       double precision, allocatable, dimension(:, :), intent(inout) :: var
-      character(len=*), intent(in) :: stradd ! str for distinguishing between internal and boundary cells 
-      integer, intent(in) :: imapfile ! file handle for reading in netcdf file 
-      integer, intent(in) :: kstart ! 2D start position for reading in netcdf file 
-      integer, intent(in) :: klength ! 2D length of array for reading in netcdf file 
-      integer, intent(in) :: it_read ! time index for reading in netcdf file 
+      character(len=*), intent(in) :: stradd ! str for distinguishing between internal and boundary cells
+      integer, intent(in) :: imapfile ! file handle for reading in netcdf file
+      integer, intent(in) :: kstart ! 2D start position for reading in netcdf file
+      integer, intent(in) :: klength ! 2D length of array for reading in netcdf file
+      integer, intent(in) :: it_read ! time index for reading in netcdf file
       type(t_unc_merged), intent(in) :: um !< struct holding all data for ugrid merged map/rst files
-      integer, intent(in) :: target_shift ! 2D shift of index for writnig 
+      integer, intent(in) :: target_shift ! 2D shift of index for writnig
 
 !local
       integer :: i
@@ -18365,7 +18357,7 @@ contains
    end subroutine read_sediment
 
 !> Write 2D/3D array on cell centres and for boundaries
-function unc_put_var_rst_dble(irstfile,id_flow_node_array,id_flow_node_bnd_array,flow_node_array,itim) result(ierr)
+   function unc_put_var_rst_dble(irstfile, id_flow_node_array, id_flow_node_bnd_array, flow_node_array, itim) result(ierr)
 
       use m_flowgeom, only: ndxi, ndx
       use m_flow, only: kmx, work1
@@ -18374,11 +18366,11 @@ function unc_put_var_rst_dble(irstfile,id_flow_node_array,id_flow_node_bnd_array
       use m_partitioninfo, only: jampi
 
 !input/output
-integer, intent(in) :: irstfile    ! file handle for restart file 
-integer, intent(in) :: id_flow_node_array      ! index of internal cells variable on netcdf file 
-integer, intent(in) :: id_flow_node_bnd_array  ! index of boundary cells variable on netcdf file 
-integer, intent(in) :: itim        ! time index on netcdf file 
-double precision, allocatable, intent(in) :: flow_node_array(:)  !< array for information at flow nodes {"location": "face", "shape": ["ndkx"]}
+      integer, intent(in) :: irstfile ! file handle for restart file
+      integer, intent(in) :: id_flow_node_array ! index of internal cells variable on netcdf file
+      integer, intent(in) :: id_flow_node_bnd_array ! index of boundary cells variable on netcdf file
+      integer, intent(in) :: itim ! time index on netcdf file
+      double precision, allocatable, intent(in) :: flow_node_array(:) !< array for information at flow nodes {"location": "face", "shape": ["ndkx"]}
 
 !local
       integer :: ierr, ndxbnd
@@ -18390,31 +18382,31 @@ double precision, allocatable, intent(in) :: flow_node_array(:)  !< array for in
       end if
 
       if (kmx > 0) then !3D
-   call flow_node_vector_to_matrix(flow_node_array,1,ndxi,work1) 
-   ierr = nf90_put_var(irstfile, id_flow_node_array, work1(1:kmx,1:ndxi), (/ 1, 1, itim /), (/ kmx, ndxi, 1 /))
+         call flow_node_vector_to_matrix(flow_node_array, 1, ndxi, work1)
+         ierr = nf90_put_var(irstfile, id_flow_node_array, work1(1:kmx, 1:ndxi), (/1, 1, itim/), (/kmx, ndxi, 1/))
       else !2D
-   ierr = nf90_put_var(irstfile, id_flow_node_array, flow_node_array(1:ndxi), (/ 1, itim /), (/ ndxi, 1 /))
+         ierr = nf90_put_var(irstfile, id_flow_node_array, flow_node_array(1:ndxi), (/1, itim/), (/ndxi, 1/))
       end if !(kmx > 0)
 !var at boundaries
       if (jarstbnd > 0 .and. ndxbnd > 0) then
          if (kmx > 0) then !3D
-      call flow_node_vector_to_matrix(flow_node_array,ndxi+1,ndx,work1) 
-      ierr = nf90_put_var(irstfile, id_flow_node_bnd_array, work1(1:kmx,ndxi+1:ndx), (/ 1, 1, itim /), (/ kmx, ndxbnd, 1 /))
+            call flow_node_vector_to_matrix(flow_node_array, ndxi + 1, ndx, work1)
+            ierr = nf90_put_var(irstfile, id_flow_node_bnd_array, work1(1:kmx, ndxi + 1:ndx), (/1, 1, itim/), (/kmx, ndxbnd, 1/))
          else !2D
-      ierr = nf90_put_var(irstfile, id_flow_node_bnd_array, flow_node_array(ndxi+1:ndx), (/ 1, itim /), (/ ndxbnd, 1 /))
+            ierr = nf90_put_var(irstfile, id_flow_node_bnd_array, flow_node_array(ndxi + 1:ndx), (/1, itim/), (/ndxbnd, 1/))
          end if !(kmx > 0)
       end if
 
-end function unc_put_var_rst_dble
+   end function unc_put_var_rst_dble
 
 !> Transfrom vector information to matrix for 3D information on cell centres
-subroutine flow_node_vector_to_matrix(flow_node_array,idx1,idx2,flow_node_matrix)
+   subroutine flow_node_vector_to_matrix(flow_node_array, idx1, idx2, flow_node_matrix)
 
       use m_missing, only: dmiss
 
-double precision, allocatable, intent(in) :: flow_node_array(:)   !< array for information at flow nodes {"location": "face", "shape": ["ndkx"]}
-      integer, intent(in) :: flow_node_index1  ! start index (1:ndx) for transfer of data from vector to matrix format 
-      integer, intent(in) :: flow_node_index2  ! end index (1:ndx) for transfer of data from vector to matrix format 
+      double precision, allocatable, intent(in) :: flow_node_array(:) !< array for information at flow nodes {"location": "face", "shape": ["ndkx"]}
+      integer, intent(in) :: flow_node_index1 ! start index (1:ndx) for transfer of data from vector to matrix format
+      integer, intent(in) :: flow_node_index2 ! end index (1:ndx) for transfer of data from vector to matrix format
       double precision, intent(out) :: flow_node_matrix(:, :) !< array for information at flow nodes as matrix {"location": "face", "shape": ["num_layers","ndx"]}
 
       integer :: k, kk, kb, kt, nlayb, nrlay
@@ -18424,10 +18416,10 @@ double precision, allocatable, intent(in) :: flow_node_array(:)   !< array for i
          call getkbotktop(kk, kb, kt)
          call getlayerindices(kk, nlayb, nrlay)
          do k = kb, kt
-            flow_node_matrix(k-kb+nlayb,kk) = flow_node_array(k)
+            flow_node_matrix(k - kb + nlayb, kk) = flow_node_array(k)
          end do
       end do
 
-end subroutine flow_node_vector_to_matrix
+   end subroutine flow_node_vector_to_matrix
 
 end module unstruc_netcdf
