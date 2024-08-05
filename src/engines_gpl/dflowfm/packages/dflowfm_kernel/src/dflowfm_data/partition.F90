@@ -6217,13 +6217,13 @@ subroutine writemesg(mesg)
 #ifdef HAVE_MPI
    call mpi_comm_rank(DFM_COMM_DFMWORLD, my_rank, ierr)
 #endif
-   call flush (6)
+   flush (6)
 
    if (my_rank == 0) then
       write (6, *) trim(mesg)
    end if
 
-   call flush (6)
+   flush (6)
 #ifdef HAVE_MPI
    call MPI_barrier(DFM_COMM_DFMWORLD, ierr)
 #endif

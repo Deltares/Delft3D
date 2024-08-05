@@ -34,6 +34,7 @@
          use M_MISSING
          use M_SAMPLES
          use m_alloc
+         use ieee_arithmetic, only: ieee_is_nan
          implicit none
          integer, intent(inout) :: msam !< already opened file pointer to sample file
          integer, intent(in) :: jadoorladen !< whether to append to global set (1) or start empty (0)
@@ -142,7 +143,7 @@
 
             if (K <= NSMAX - 1 .and. XX /= XYMIS .and. &
                 ZZ /= dmiss .and. ZZ /= 999.999d0 .and. &
-                .not. (isnan(XX) .or. isnan(YY) .or. isnan(ZZ))) then
+                .not. (ieee_is_nan(XX) .or. ieee_is_nan(YY) .or. ieee_is_nan(ZZ))) then
                K = K + 1
                NS = K
                XS(K) = XX

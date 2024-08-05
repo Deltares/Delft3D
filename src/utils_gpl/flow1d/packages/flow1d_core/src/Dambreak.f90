@@ -79,6 +79,7 @@
    contains
 
    subroutine prepareComputeDambreak(dambreak, s1m1, s1m2, u0, time1, dt, maximumWidth)
+   use ieee_arithmetic, only: ieee_is_nan
 
 
    type(t_dambreak), pointer, intent(inout) :: dambreak
@@ -150,7 +151,7 @@
          deltaLevel = (gravity*waterLevelJumpDambreak)**1.5d0
          timeFromFirstPhase = time1 - dambreak%endTimeFirstPhase
          
-         if (dambreak%width < maximumWidth .and. (.not.isnan(u0)) .and. dabs(u0) > dambreak%ucrit) then
+         if (dambreak%width < maximumWidth .and. (.not.ieee_is_nan(u0)) .and. dabs(u0) > dambreak%ucrit) then
             breachWidthDerivative = (dambreak%f1*dambreak%f2/dlog(10D0)) * &
                              (deltaLevel/(dambreak%ucrit*dambreak%ucrit)) * &
                              (1.0/(1.0 + (dambreak%f2*gravity*timeFromFirstPhase/(dambreak%ucrit*hoursToSeconds)))) 

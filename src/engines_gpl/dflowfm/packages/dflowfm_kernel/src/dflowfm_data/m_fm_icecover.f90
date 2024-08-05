@@ -298,6 +298,7 @@ contains
       use m_physcoef, only: vonkar
       use physicalconsts, only: CtoKelvin
       use m_heatfluxes, only: cpw
+      use ieee_arithmetic, only: ieee_is_nan
       implicit none
       !
       ! Function/routine arguments
@@ -460,7 +461,7 @@ contains
          !
         !! qh_ice2wat(n) = -2.4_fp
          !
-         if (isnan(qh_ice2wat(n))) then
+         if (ieee_is_nan(qh_ice2wat(n))) then
             write (msgbuf, '(a,i5,10f10.3)') 'NAN in PREPROCESS_ICECOVER', n, qh_ice2wat(n); call msg_flush()
          end if
          !

@@ -556,7 +556,8 @@ module geometry_module
       !! @param[out] sm lambda in [0,1] on line segment 3-4 (outside [0,1] if no intersection). Unchanged if no intersect!!
       !! @param[out] xcr,ycr x-coord. of intersection point.
       subroutine CROSS(x1, y1, x2, y2, x3, y3, x4, y4, JACROS,SL,SM,XCR,YCR,CRP, jsferic, dmiss)
-      
+      use ieee_arithmetic, only: ieee_is_nan
+
       implicit none
        
       double precision, intent(inout) :: crp !< crp (in)==-1234 will make crp (out) non-dimensional
@@ -572,7 +573,7 @@ module geometry_module
 
      
 !     safety check on crp (in)
-      if ( isnan(crp) ) then
+      if ( ieee_is_nan(crp) ) then
          crp = 0d0
       end if
 
@@ -2654,7 +2655,6 @@ module geometry_module
       double precision :: eps = 1d-3, xcc3, ycc3, xf, xmx, xmn
       double precision :: dfac
       integer          :: jacros, in, m2, nintlinks ! nr of internal links = connected edges
-      logical          :: isnan
 
       ! integer,          parameter     :: N6=6
       ! double precision, dimension(N6) :: xhalf, yhalf

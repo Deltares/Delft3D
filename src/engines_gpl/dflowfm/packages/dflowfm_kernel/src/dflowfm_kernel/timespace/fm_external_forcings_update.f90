@@ -325,6 +325,7 @@ contains
 
 !> set_wave_parameters
    subroutine set_wave_parameters(initialization)
+      use ieee_arithmetic, only: ieee_is_nan
 
       logical, intent(in) :: initialization !< initialization phase
 
@@ -382,16 +383,16 @@ contains
          ! as they cause saad errors as a result of NaNs in the turbulence model
          if (.not. flowwithoutwaves) then
             if (allocated(dsurf) .and. allocated(dwcap)) then
-               if (any(isnan(dsurf)) .or. any(isnan(dwcap))) then
+               if (any(ieee_is_nan(dsurf)) .or. any(ieee_is_nan(dwcap))) then
                   write (msgbuf, '(a)') 'Surface dissipation fields from SWAN contain NaN values, which have been converted to 0d0. &
                                        & Check the correctness of the wave results before running the coupling.'
                   call warn_flush() ! No error, just warning and continue
                   !
-                  where (isnan(dsurf))
+                  where (ieee_is_nan(dsurf))
                      dsurf = 0d0
                   end where
                   !
-                  where (isnan(dwcap))
+                  where (ieee_is_nan(dwcap))
                      dwcap = 0d0
                   end where
                end if

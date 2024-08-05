@@ -1455,6 +1455,8 @@ module m_ec_filereader_read
 
       !> Reads a sample file (*.xyz) given an already opened logical unit number, into allocatable arrays.
       function ecSampleReadAll_from_lun(msam, filename, xs, ys, zs, nSamples, kx) result(success)
+         use ieee_arithmetic, only: ieee_is_nan
+
          logical                                                         :: success       !< function status
          integer,                                          intent(inout) :: msam          !< logical unit number (to already opened file)
          character(len=*),                                 intent(in   ) :: filename      !< Name of the file (for messaging only)
@@ -1496,7 +1498,7 @@ module m_ec_filereader_read
 
          if (  xx .ne. xymis_dflt .and. yy .ne. xymis_dflt .and. &
                zz .ne. dmiss_dflt .and. zz .ne. 999.999d0 .and. &
-               .not.(isnan(xx) .or. isnan(yy) .or. isnan(zz)) ) then
+               .not.(ieee_is_nan(xx) .or. ieee_is_nan(yy) .or. ieee_is_nan(zz)) ) then
             nSamples = nSamples + 1
             xs(nSamples)    = xx
             ys(nSamples)    = yy

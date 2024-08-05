@@ -943,7 +943,7 @@ subroutine writesystem()
             end if
 
 !              close file
-            call flush (lunfil)
+            flush (lunfil)
             close (lunfil)
 
          end if

@@ -1408,19 +1408,19 @@ module time_module
              TEMP5 = DMOD ( myJULIAN, 1.0D0 )
              IF ( TEMP5 .LT. 0.5 ) THEN
                 TEMP3  = 0.5 + TEMP5
-                TEMP4  = DINT ( TEMP4 )
+                TEMP4  = aint ( TEMP4 )
              ELSE
                 TEMP3  = TEMP5 - 0.5
-                TEMP4  = DINT ( TEMP4 ) + 1.0
+                TEMP4  = aint ( TEMP4 ) + 1.0
              ENDIF
              TEMP1  = TEMP4 + 68569.0
-             TEMP2  = DINT  ( 4.0 * TEMP1 / 146097.0 )
-             TEMP1  = TEMP1 - DINT ( ( 146097.0 * TEMP2 + 3.0 ) / 4.0 )
+             TEMP2  = aint  ( 4.0 * TEMP1 / 146097.0 )
+             TEMP1  = TEMP1 - aint ( ( 146097.0 * TEMP2 + 3.0 ) / 4.0 )
              IYEAR  = INT   ( 4000.0 * ( TEMP1 + 1.0 ) / 1461001.0 )
-             TEMP1  = TEMP1 - DINT ( (1461.0D0 * IYEAR) / 4.0 ) + 31.0
+             TEMP1  = TEMP1 - aint ( (1461.0D0 * IYEAR) / 4.0 ) + 31.0
              IMONTH = INT   ( 80.0 * TEMP1 / 2447.0 )
              IDAY   = INT   ( TEMP1 - AINT ( 2447.0 * IMONTH / 80.0 ) )
-             TEMP1  = DINT  ( dble(IMONTH / 11.0D0) )
+             TEMP1  = aint  ( dble(IMONTH / 11.0D0) )
              IMONTH = INT   ( IMONTH + 2.0 - 12.0 * TEMP1 )
              IYEAR  = INT   ( 100.0 * ( TEMP2 - 49.0 ) + IYEAR + TEMP1 )
              IHOUR  = INT   ( TEMP3 * 24.0 )

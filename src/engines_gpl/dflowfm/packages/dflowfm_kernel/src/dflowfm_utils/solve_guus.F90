@@ -1196,13 +1196,13 @@
              end if
           end do
 
-          !if (isnan(bbr(ndn) ) ) then
+          !if (ieee_is_nan(bbr(ndn) ) ) then
           !   write(*,*) 'before ', ndn, bbr(ndn), zkr(ndn)
           !endif
 
           zkr(ndn) = zkr(ndn) / bbr(ndn)
 
-          !if (isnan(zkr(ndn) ) ) then
+          !if (ieee_is_nan(zkr(ndn) ) ) then
           !    write(*,*) 'after ', ndn, bbr(ndn), zkr(ndn)
           !endif
 
@@ -1358,13 +1358,13 @@
              end if
           end do
 
-          !if (isnan(bbr(ndn) ) ) then
+          !if (ieee_is_nan(bbr(ndn) ) ) then
           !   write(*,*) 'before ', ndn, bbr(ndn), zkr(ndn)
           !endif
 
           zkr(ndn) = zkr(ndn) / bbr(ndn)
 
-          !if (isnan(zkr(ndn) ) ) then
+          !if (ieee_is_nan(zkr(ndn) ) ) then
           !    write(*,*) 'after ', ndn, bbr(ndn), zkr(ndn)
           !endif
 

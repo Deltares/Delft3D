@@ -49,6 +49,7 @@ subroutine santoss(h, d50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
     use precision
     use morphology_data_module
     use mathconsts, only: sqrt2, degrad, raddeg
+    use ieee_arithmetic, only: ieee_is_nan
 
     implicit none
 !
@@ -491,9 +492,9 @@ subroutine santoss(h, d50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
     endif
 
     ! check if qsu and qsv have a value
-    if (isnan(qsu) .or. isnan(qsv)) then
+    if (ieee_is_nan(qsu) .or. ieee_is_nan(qsv)) then
         error = .true.
-        message = 'qsu or qsv isnan in SANTOSS formula'
+        message = 'qsu or qsv ieee_is_nan in SANTOSS formula'
     endif
 !
 !   set the transport rates

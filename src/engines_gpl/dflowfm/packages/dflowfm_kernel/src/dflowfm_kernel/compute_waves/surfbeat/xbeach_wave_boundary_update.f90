@@ -2778,7 +2778,7 @@ contains
          Comptemp = conjg(wp%CompFn(1, wp%Findex(1) + m:wp%Findex(1) + K - 1))
          Comptemp2 = conjg(wp%CompFn(1, wp%Findex(1):wp%Findex(1) + K - m - 1))
          !dphi3(m,1:K-m) = par_pi+imag(log(Comptemp))-imag(log(Comptemp2))
-         dphi3(m, 1:K - m) = imag(log(Comptemp)) - imag(log(Comptemp2))
+         dphi3(m, 1:K - m) = aimag(log(Comptemp)) - aimag(log(Comptemp2))
          deallocate (Comptemp, Comptemp2)
          !
          ! Determine angle of bound long wave according to Van Dongeren et al. 2003 eq. 22
@@ -2865,7 +2865,7 @@ contains
             ! increase and decrease in and out the wave time record using the earlier
             ! specified window
             Comptemp2 = Comptemp2 / sqrt(dble(wp%tslen))
-            q(j, :, iq) = dreal(Comptemp2 * wp%tslen) * wp%taperf
+            q(j, :, iq) = real(Comptemp2 * wp%tslen) * wp%taperf
          end do ! iq=1,3
       end do ! j=1,npb
       !

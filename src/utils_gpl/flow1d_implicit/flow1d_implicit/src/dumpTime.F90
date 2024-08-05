@@ -67,7 +67,7 @@ subroutine dumpTimeStep(text)
 
     write(fh, '('' '',A2,'':'',A2,'':'',A2,''.'',A3, '' - '', A, '' TS = '', I5)') &
             sysTime(1:2), sysTime(3:4), sysTime(5:6), sysTime(8:10), text, curTimeStep
-    call flush(fh)
+    flush(fh)
 #endif
 
 end subroutine dumpTimeStep
