@@ -13098,8 +13098,7 @@ contains
                  id_squbnd, id_sqibnd, &
                  id_morft, &
                  id_jmax, id_ncrs, id_flowelemcrsz, id_flowelemcrsn, &
-                 id_ucxqbnd, id_ucyqbnd, &
-                 id_rhobnd, id_rhowatbnd
+                 id_ucxqbnd, id_ucyqbnd
 
       integer :: id_tmp
       integer :: layerfrac, layerthk
@@ -13533,19 +13532,15 @@ contains
                call check_error(ierr, 'ucyq_bnd')
             end if
 
-            ierr = nf90_inq_varid(imapfile, 'rho_bnd', id_rhobnd)
             if (ierr == 0) then
+               ! Read rho (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
                ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
                                         um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
-               call check_error(ierr, 'rho_bnd')
-            end if
 
-            if (stm_included) then
-               ierr = nf90_inq_varid(imapfile, 'rhowat_bnd', id_rhowatbnd)
-               if (ierr == 0) then
+               if (stm_included) then
+                  ! Read rhowat (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
                   ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
                                            um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
-                  call check_error(ierr, 'rhowat_bnd')
                end if
             end if
 
@@ -13622,13 +13617,13 @@ contains
             ierr = get_var_and_shift(imapfile, 'ucyq_bnd', tmp_ucyq, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                      um%jamergedmap, ibnd_own, um%ibnd_merge)
             call check_error(ierr, 'ucyq_bnd')
+            ! Read rho_bnd (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
             ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
                                      um%jamergedmap, ibnd_own, um%ibnd_merge)
-            call check_error(ierr, 'rho_bnd')
             if (stm_included) then
+               ! Read rhowat_bnd (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
                ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
                                         um%jamergedmap, ibnd_own, um%ibnd_merge)
-               call check_error(ierr, 'rhowat_bnd')
             end if
             do i = 1, ndxbnd_own
                j = ibnd_own(i)
