@@ -2635,7 +2635,7 @@ contains
 
          if (jahissed > 0 .and. jased > 0 .and. stm_included) then
             if (stmpar%morpar%moroutput%taub) then
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAUB), valobs(IPNT_TAUB, :))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAUB), valobs(1:ntot,IPNT_TAUB))
             end if
             if (stmpar%lsedtot > 0) then
                if (stmpar%morpar%moroutput%sbcuv) then
