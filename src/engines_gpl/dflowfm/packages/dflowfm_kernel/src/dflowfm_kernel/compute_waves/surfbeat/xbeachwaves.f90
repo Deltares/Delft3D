@@ -5950,15 +5950,15 @@ subroutine xbeach_wave_stationary(callType)
    ! wave directions
    select case (callType)
    case (callTypeStationary)
-      forall (k=1:ndx, hhwlocal(k) > epshu)
+      do concurrent (k=1:ndx, hhwlocal(k) > epshu)
          thetamean(k) = (sum(ee_local(:, k) * thet(:, k)) / ntheta_local) / &
                         (max(sum(ee_local(:, k)), 0.00001d0) / ntheta_local)
-      end forall
+      end do
    case (callTypeDirections)
-      forall (k=1:ndx, hhwlocal(k) > epshu)
+      do concurrent (k=1:ndx, hhwlocal(k) > epshu)
          thetamean(k) = (sum(ee_local(:, k) * thet_s(:, k)) / ntheta_local) / &
                         (max(sum(ee_local(:, k)), 0.00001d0) / ntheta_local)
-      end forall
+      end do
    end select
    !
    ! Compute wave velocities

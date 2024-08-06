@@ -353,8 +353,7 @@ contains
 
       ntotal = product(shape)
       scale = sqrt(1.0_fftkind / product(shape(d(1:ndim))))
-      ! FORALL (i = 1: ntotal) array(i) = array(i) * scale
-      do i = 1, ntotal
+      do concurrent (i = 1: ntotal)
          array(i) = array(i) * scale
       end do
       do i = 1, ndim
