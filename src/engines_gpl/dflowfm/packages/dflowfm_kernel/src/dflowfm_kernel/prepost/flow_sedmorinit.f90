@@ -78,12 +78,11 @@ subroutine flow_sedmorinit()
    integer :: icd !< cross section definition index
    integer :: ibr, nbr, pointscount, k1, ltur_
    integer :: npnterror = 0 !< number of grid points without cross-section definition
+   integer, dimension(:), allocatable :: kp
    integer, dimension(:), allocatable :: crossdef_used !< count number of times a cross section definition is used
    integer, dimension(:), allocatable :: node_processed !< flag (connection) nodes processed while checking cross sections
    type(t_branch), pointer :: pbr
    integer :: outmorphopol !opposite of inmorphopol
-   integer :: mmorphopol ! file handle of morphopol
-   integer :: inp ! in polygon flag - in(-1): initialization, out(0): outside polygon, out(1): inside polygon
 
 !! executable statements -------------------------------------------------------
 !
@@ -483,16 +482,14 @@ subroutine flow_sedmorinit()
       ! do all cells
       kcsmor = 1
    else
+      if (allocated(kp)) deallocate (kp)
+      allocate (kp(1:ndx))
+      kp = 0
       ! find cells inside polygon
-      call oldfil(mmorphopol, trim(md_morphopol))
-      call reapol(mmorphopol, 0)
-      do k = 1, ndx
-          call inwhichpolygon(xz(k), yz(k), inp)
-          if (inp > 0) then 
-             kcsmor(k) = inmorphopol
-          end if
+      call selectelset_internal_nodes(xz, yz, kcs, ndx, kp, pointscount, LOC_FILE=md_morphopol, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE)
+      do k = 1, pointscount
+         kcsmor(kp(k)) = inmorphopol
       end do
-      call delpol()
    end if
 
    if (stmpar%morpar%multi) then
