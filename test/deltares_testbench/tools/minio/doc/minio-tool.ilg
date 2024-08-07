@@ -1,8 +1,0 @@
-This is makeindex, version 2.16 [MiKTeX 24.3.31].
-Scanning style file C:/Users/ottevan/AppData/Roaming/MiKTeX/makeindex/deltares/deltares_nomentbl.ist...............
-** Input style error (file = C:/Users/ottevan/AppData/Roaming/MiKTeX/makeindex/deltares/deltares_nomentbl.ist, line = 52):
-   -- Unknown specifier \endinput.
-done (15 attributes redefined, 1 ignored).
-Scanning input file minio-tool.nlo...done (0 entries accepted, 0 rejected).
-Nothing written in minio-tool.nls.
-Transcript written in minio-tool.ilg.
