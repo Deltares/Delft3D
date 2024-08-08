@@ -965,7 +965,15 @@ contains
             end if
          else if (iStrchType == STRCH_EXPONENT) then
             call realloc(laycof, 3)
-            call prop_get_doubles(md_ptr, 'geometry', 'StretchCoef', laycof, 3)
+            laycof(:)= dmiss
+            call prop_get_doubles(md_ptr, 'geometry', 'StretchCoef', laycof, 3, success)
+            if(.not.success) then
+                call mess(LEVEL_ERROR, '"StretchCoef" values are absent.')
+            else
+                if(any(laycof == dmiss) ) then
+                   call mess(LEVEL_ERROR, '"StretchCoef" values are not properly set.')
+                end if
+            end if
          end if
 
          call prop_get_integer(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success)
