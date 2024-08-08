@@ -292,13 +292,6 @@
        allocate (dzslay(0:mx, mxlaydefs), stat=ierr); dzslay = 0d0
 
        if (iStrchType == STRCH_USER) then
-          sumcof = abs(sum(laycof) - 100d0)
-          if (sumcof > 1d-8) then
-             call mess(LEVEL_ERROR, 'Error : The sum of sigma layer thicknesses must be equal to 100!')
-          end if
-       end if
-
-       if (iStrchType == STRCH_USER) then
           do j = 1, mxlaydefs
              mx = laymx(j)
              do k = 1, mx
