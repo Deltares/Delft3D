@@ -39,6 +39,7 @@ module wave_boundary_datastore
    !
    ! These derived types are accessed by wave_boundary_main, wave_boundary_init and
    ! wave_boundary_update
+   use precision_basics, only: dp
    implicit none
    !
    !
@@ -46,26 +47,26 @@ module wave_boundary_datastore
    type waveBoundaryParametersType
       character(1024) :: masterFileName
       integer :: np, ntheta
-      real*8 :: dtheta
-      real*8 :: x0, y0
-      real*8 :: hboundary
+      real(dp) :: dtheta
+      real(dp) :: x0, y0
+      real(dp) :: hboundary
       logical :: nonhspectrum
-      real*8 :: sprdthr, trepfac
+      real(dp) :: sprdthr, trepfac
       integer :: Tm01switch
-      real*8, dimension(:), allocatable :: xb, yb, theta ! Note, can these be changed to pointers?
-      real*8, dimension(:), allocatable :: theta_s
+      real(dp), dimension(:), allocatable :: xb, yb, theta ! Note, can these be changed to pointers?
+      real(dp), dimension(:), allocatable :: theta_s
       integer :: randomseed
       integer :: nspr
-      real*8 :: rho
-      real*8 :: nmax
-      real*8 :: fcutoff
-      real*8 :: swkhmin
+      real(dp) :: rho
+      real(dp) :: nmax
+      real(dp) :: fcutoff
+      real(dp) :: swkhmin
       integer :: singledir
       integer :: ntheta_s
       integer :: wbcScaleEnergy
       integer :: wbcRemoveStokes
-      real*8 :: wbcEvarreduce
-      real*8 :: wbcQvarreduce
+      real(dp) :: wbcEvarreduce
+      real(dp) :: wbcQvarreduce
    end type waveBoundaryParametersType
    !
    !
@@ -81,8 +82,8 @@ module wave_boundary_datastore
    ! Define derived type to store wave boundary administration information
    type waveBoundaryAdministrationType
       logical :: initialized = .false. ! Initialisation status
-      real*8 :: startComputeNewSeries ! Time at which to compute a boundary condition time series (s)
-      real*8 :: startCurrentSeries ! Time at which current boundary conditions started (s)
+      real(dp) :: startComputeNewSeries ! Time at which to compute a boundary condition time series (s)
+      real(dp) :: startCurrentSeries ! Time at which current boundary conditions started (s)
    end type waveBoundaryAdministrationType
    !
    !
@@ -93,24 +94,24 @@ module wave_boundary_datastore
       type(filenames), dimension(:), allocatable :: bcfiles ! input wave spectrum files
       logical :: repeatwbc ! switch to repeat all of the wave boundary conditions
       integer :: bccount ! number of times boundary conditions have been generated, set in init spectrum
-      real*8 :: spectrumendtime ! end time of boundary condition written to administration file
-      real*8, dimension(:, :), allocatable :: lastwaveelevation ! wave height at the end of the last spectrum
-      real*8, dimension(:), allocatable :: xspec, yspec ! x,y coordinates of input wave spectra
-      real*8 :: Hbc, Tbc, Dbc ! computed representative wave height, period and wave direction
-      real*8, dimension(:, :), allocatable :: ee_s ! single_dir: stationary wave energy distribution along boundary (ntheta_s,npb)
+      real(dp) :: spectrumendtime ! end time of boundary condition written to administration file
+      real(dp), dimension(:, :), allocatable :: lastwaveelevation ! wave height at the end of the last spectrum
+      real(dp), dimension(:), allocatable :: xspec, yspec ! x,y coordinates of input wave spectra
+      real(dp) :: Hbc, Tbc, Dbc ! computed representative wave height, period and wave direction
+      real(dp), dimension(:, :), allocatable :: ee_s ! single_dir: stationary wave energy distribution along boundary (ntheta_s,npb)
       integer, dimension(:), allocatable :: n_index_loc ! y-index locations of all input spectra, set in init spectrum
       integer :: ind_end_taper ! index of where the taper function equals rtbc
       integer, dimension(:), allocatable :: kL, kR
-      real*8, dimension(:), allocatable :: wL, wR
+      real(dp), dimension(:), allocatable :: wL, wR
    end type waveSpectrumAdministrationType
    !
    !
    ! Define derived type to store wave boundary time series information
    type waveBoundaryTimeSeriesType
-      real*8, dimension(:, :, :), allocatable :: eebct
-      real*8, dimension(:, :), allocatable :: qxbct, qybct
-      real*8, dimension(:, :), allocatable :: zsbct, ubct, vbct, wbct
-      real*8, dimension(:), allocatable :: tbc
+      real(dp), dimension(:, :, :), allocatable :: eebct
+      real(dp), dimension(:, :), allocatable :: qxbct, qybct
+      real(dp), dimension(:, :), allocatable :: zsbct, ubct, vbct, wbct
+      real(dp), dimension(:), allocatable :: tbc
    end type waveBoundaryTimeSeriesType
    !
    !

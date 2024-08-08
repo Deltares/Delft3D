@@ -6,7 +6,7 @@ subroutine dumpTimeInit(fileName)
     character*(*) :: fileName
 
     ! shared between routines
-    integer*4 :: curTimeStep
+    integer(4) :: curTimeStep
     integer   :: fh
     common / dumpInfo / curTimeStep, fh
 
@@ -22,7 +22,7 @@ end subroutine dumpTimeInit
 subroutine dumpTimeClose()
 
     ! shared between routines
-    integer*4 :: curTimeStep
+    integer(4) :: curTimeStep
     integer   :: fh,ios
     common / dumpInfo / curTimeStep, fh
 
@@ -36,7 +36,7 @@ end subroutine dumpTimeClose
 subroutine dumpTimeIncrement()
 
     ! shared between routines
-    integer*4 :: curTimeStep
+    integer(4):: curTimeStep
     integer   :: fh
     common / dumpInfo / curTimeStep, fh
 
@@ -54,7 +54,7 @@ subroutine dumpTimeStep(text)
     character*(*) :: text
 
     ! shared between routines
-    integer*4 :: curTimeStep
+    integer(4):: curTimeStep
     integer   :: fh
     common / dumpInfo / curTimeStep, fh
 

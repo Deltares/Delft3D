@@ -57,8 +57,9 @@
 
 subroutine amub(nrow, ncol, job, a, ja, ia, b, jb, ib,&
 &c, jc, ic, nzmax, iw, ierr)
+   use precision_basics, only: dp
    integer, intent(in) :: nrow, ncol, nzmax
-   real*8, intent(inout) :: a(*), b(*), c(*)
+   real(dp), intent(inout) :: a(*), b(*), c(*)
    integer, intent(inout) :: ja(*), jb(*), jc(*), ia(nrow + 1), ib(*), ic(*)&
    &, iw(ncol)
    integer :: len, ierr, j, ii, ka, jj, kb, jcol, jpos, job
@@ -108,7 +109,7 @@ subroutine amub(nrow, ncol, job, a, ja, ia, b, jb, ib,&
 !   on the condition that ncol(A) = nrow(B).
 !
 !-----------------------------------------------------------------------
-   real * 8 scal
+   real(dp) scal
    logical values
    values = (job /= 0)
    len = 0
@@ -153,8 +154,10 @@ end
 !-----------------------------------------------------------------------
 subroutine aplb(nrow, ncol, job, a, ja, ia, b, jb, ib,&
 &c, jc, ic, nzmax, iw, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, ncol, nzmax, job
-   real*8, intent(inout) :: a(*), b(*), c(*)
+   real(dp), intent(inout) :: a(*), b(*), c(*)
    integer, intent(inout) :: ja(*), jb(*), jc(*), ia(nrow + 1), ib(nrow + 1)&
    &, ic(nrow + 1), iw(ncol)
    integer, intent(out) :: ierr
@@ -246,9 +249,11 @@ subroutine aplb(nrow, ncol, job, a, ja, ia, b, jb, ib,&
 end
 !-----------------------------------------------------------------------
 subroutine aplb1(nrow, ncol, job, a, ja, ia, b, jb, ib, c, jc, ic, nzmax, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, ncol, nzmax, job
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(*), c(*)
+   real(dp), intent(inout) :: a(*), b(*), c(*)
    integer, intent(inout) :: ja(*), jb(*), jc(*), ia(nrow + 1), ib(nrow + 1)&
    &, ic(nrow + 1)
    integer :: i, ka, kb, kamax, kbmax, j2, kc, j1
@@ -355,9 +360,11 @@ end
 !-----------------------------------------------------------------------
 subroutine aplsb(nrow, ncol, a, ja, ia, s, b, jb, ib, c, jc, ic,&
 &nzmax, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, ncol, nzmax
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(*), c(*), s
+   real(dp), intent(inout) :: a(*), b(*), c(*), s
    integer, intent(inout) :: ja(*), jb(*), jc(*), ia(nrow + 1), ib(nrow + 1)&
    &, ic(nrow + 1)
    integer :: i, ka, kb, kamax, kbmax, j1, j2, kc
@@ -475,9 +482,11 @@ end
 !-----------------------------------------------------------------------
 subroutine aplsb1(nrow, ncol, a, ja, ia, s, b, jb, ib, c, jc, ic,&
 &nzmax, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, ncol, nzmax
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(*), c(*), s
+   real(dp), intent(inout) :: a(*), b(*), c(*), s
    integer, intent(inout) :: ja(*), jb(*), jc(*), ia(nrow + 1), ib(nrow + 1)&
    &, ic(nrow + 1)
    integer :: i, ka, kb, kamax, kbmax, j1, j2, kc
@@ -594,9 +603,11 @@ end
 !-----------------------------------------------------------------------
 subroutine apmbt(nrow, ncol, job, a, ja, ia, b, jb, ib,&
 &c, jc, ic, nzmax, iw, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, ncol, nzmax, job
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(:), c(*)
+   real(dp), intent(inout) :: a(*), b(:), c(*)
    integer, intent(inout) :: ja(*), jb(:), jc(*), ia(nrow + 1), ib(ncol + 1)&
    &, ic(*), iw(*)
    integer :: j, nnza, nnzb, ljob, ipos, k, ii, jcol, jpos, i, len
@@ -739,9 +750,11 @@ end
 !-----------------------------------------------------------------------
 subroutine aplsbt(nrow, ncol, a, ja, ia, s, b, jb, ib,&
 &c, jc, ic, nzmax, iw, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, ncol, nzmax
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(:), c(*), s
+   real(dp), intent(inout) :: a(*), b(:), c(*), s
    integer, intent(inout) :: ja(*), jb(:), jc(*), ia(nrow + 1), ib(ncol + 1)&
    &, ic(*), iw(*)
    integer :: j, nnza, nnzb, len, k, ii, ka, jcol, ljob, ipos, jpos
@@ -873,10 +886,12 @@ subroutine aplsbt(nrow, ncol, a, ja, ia, s, b, jb, ib,&
 end
 !-----------------------------------------------------------------------
 subroutine diamua(nrow, job, a, ja, ia, diag, b, jb, ib)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, job
-   real*8, intent(inout) :: a(*), b(*), diag(nrow)
+   real(dp), intent(inout) :: a(*), b(*), diag(nrow)
    integer, intent(inout) :: ja(*), jb(*), ia(nrow + 1), ib(nrow + 1)
-   real*8 :: scal
+   real(dp) :: scal
    integer :: ii, k1, k2, k
 !-----------------------------------------------------------------------
 ! performs the matrix by matrix product B = Diag * A  (in place)
@@ -933,8 +948,10 @@ subroutine diamua(nrow, job, a, ja, ia, diag, b, jb, ib)
 end
 !-----------------------------------------------------------------------
 subroutine amudia(nrow, job, a, ja, ia, diag, b, jb, ib)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, job
-   real*8, intent(inout) :: a(*), b(*), diag(nrow)
+   real(dp), intent(inout) :: a(*), b(*), diag(nrow)
    integer, intent(inout) :: ja(*), jb(*), ia(nrow + 1), ib(nrow + 1)
    integer :: ii, k1, k2, k
 !-----------------------------------------------------------------------
@@ -990,8 +1007,10 @@ subroutine amudia(nrow, job, a, ja, ia, diag, b, jb, ib)
 end
 !-----------------------------------------------------------------------
 subroutine aplsca(nrow, a, ja, ia, scal, iw)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow
-   real*8, intent(inout) :: a(*), scal
+   real(dp), intent(inout) :: a(*), scal
    integer, intent(inout) :: ja(*), ia(nrow + 1), iw(*)
    integer :: icount, j, ko, ii, k1, k2, k
 !-----------------------------------------------------------------------
@@ -1089,8 +1108,10 @@ subroutine aplsca(nrow, a, ja, ia, scal, iw)
 end
 !-----------------------------------------------------------------------
 subroutine apldia(nrow, job, a, ja, ia, diag, b, jb, ib, iw)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, job
-   real*8, intent(inout) :: a(*), b(*), diag(nrow)
+   real(dp), intent(inout) :: a(*), b(*), diag(nrow)
    integer, intent(inout) :: ja(*), jb(*), ia(nrow + 1), ib(nrow + 1), iw(*)
    integer :: nnz, k, icount, j, ko, ii, k1, k2
 !-----------------------------------------------------------------------
@@ -1251,7 +1272,9 @@ end
 
 !-----------------------------------------------------------------------
 subroutine amuxms(n, x, y, a, ja)
-   real * 8 x(*), y(*), a(*)
+   use precision, only: dp
+
+   real(dp) :: x(*), y(*), a(*)
    integer n, ja(*)
 !-----------------------------------------------------------------------
 !         A times a vector in MSR format
@@ -1296,7 +1319,9 @@ end
 
 !-----------------------------------------------------------------------
 subroutine atmuxr(m, n, x, y, a, ja, ia)
-   real * 8 x(*), y(*), a(*)
+   use precision, only: dp
+
+   real(dp) :: x(*), y(*), a(*)
    integer m, n, ia(*), ja(*)
 !-----------------------------------------------------------------------
 !         transp( A ) times a vector, A can be rectangular
@@ -1345,8 +1370,10 @@ subroutine atmuxr(m, n, x, y, a, ja, ia)
 end
 !-----------------------------------------------------------------------
 subroutine amuxe(n, x, y, na, ncol, a, ja)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, na, ncol
-   real*8, intent(inout) :: x(n), y(n), a(na, *)
+   real(dp), intent(inout) :: x(n), y(n), a(na, *)
    integer, intent(inout) :: ja(na, *)
 !-----------------------------------------------------------------------
 !        A times a vector in Ellpack Itpack format (ELL)
@@ -1393,8 +1420,10 @@ subroutine amuxe(n, x, y, na, ncol, a, ja)
 end
 !-----------------------------------------------------------------------
 subroutine amuxd(n, x, y, diag, ndiag, idiag, ioff)
+   use precision, only: dp
+
    integer n, ndiag, idiag, ioff(idiag)
-   real * 8 x(n), y(n), diag(ndiag, idiag)
+   real(dp) :: x(n), y(n), diag(ndiag, idiag)
 !-----------------------------------------------------------------------
 !        A times a vector in Diagonal storage format (DIA)
 !-----------------------------------------------------------------------
@@ -1445,8 +1474,10 @@ subroutine amuxd(n, x, y, diag, ndiag, idiag, ioff)
 end
 !-----------------------------------------------------------------------
 subroutine amuxj(n, x, y, jdiag, a, ja, ia)
+   use precision, only: dp
+
    integer n, jdiag, ja(*), ia(*)
-   real * 8 x(n), y(n), a(*)
+   real(dp) :: x(n), y(n), a(*)
 !-----------------------------------------------------------------------
 !        A times a vector in Jagged-Diagonal storage format (JAD)
 !-----------------------------------------------------------------------
@@ -1499,11 +1530,11 @@ subroutine amuxj(n, x, y, jdiag, a, ja, ia)
 end
 !-----------------------------------------------------------------------
 subroutine vbrmv(nr, nc, ia, ja, ka, a, kvstr, kvstc, x, b)
-!-----------------------------------------------------------------------
+   use precision_basics, only: dp
    integer, intent(in) :: nr, nc
    integer, intent(inout) :: ia(nr + 1), ja(*), ka(:), kvstr(nr + 1)&
    &, kvstc(*)
-   real*8, intent(inout) :: a(*), x(*), b(*)
+   real(dp), intent(inout) :: a(*), x(*), b(*)
 !-----------------------------------------------------------------------
 !     Sparse matrix-full vector product, in VBR format.
 !-----------------------------------------------------------------------
@@ -1524,7 +1555,7 @@ subroutine vbrmv(nr, nc, ia, ja, ka, a, kvstr, kvstc, x, b)
 !-----------------------------------------------------------------------
 !-----local variables
    integer n, i, j, ii, jj, k, istart, istop
-   real * 8 xjj
+   real(dp) :: xjj
 !---------------------------------
    no_warning_unused_dummy_argument(ka)
 
@@ -1557,8 +1588,10 @@ end
 ! 2)     T R I A N G U L A R    S Y S T E M    S O L U T I O N S       c
 !----------------------------------------------------------------------c
 subroutine lsol(n, x, y, al, jal, ial)
+   use precision, only: dp
+
    integer n, jal(*), ial(n + 1)
-   real * 8 x(n), y(n), al(*)
+   real(dp) :: x(n), y(n), al(*)
 !-----------------------------------------------------------------------
 !   solves    L x = y ; L = lower unit triang. /  CSR format
 !-----------------------------------------------------------------------
@@ -1583,7 +1616,7 @@ subroutine lsol(n, x, y, al, jal, ial)
 ! local variables
 !
    integer k, j
-   real * 8 t
+   real(dp) :: t
 !-----------------------------------------------------------------------
    x(1) = y(1)
    do k = 2, n
@@ -1600,8 +1633,10 @@ subroutine lsol(n, x, y, al, jal, ial)
 end
 !-----------------------------------------------------------------------
 subroutine ldsol(n, x, y, al, jal)
+   use precision, only: dp
+
    integer n, jal(*)
-   real * 8 x(n), y(n), al(*)
+   real(dp) :: x(n), y(n), al(*)
 !-----------------------------------------------------------------------
 !     Solves L x = y    L = triangular. MSR format
 !-----------------------------------------------------------------------
@@ -1627,7 +1662,7 @@ subroutine ldsol(n, x, y, al, jal)
 ! local variables
 !
    integer k, j
-   real * 8 t
+   real(dp) :: t
 !-----------------------------------------------------------------------
    x(1) = y(1) * al(1)
    do k = 2, n
@@ -1643,8 +1678,10 @@ subroutine ldsol(n, x, y, al, jal)
 end
 !-----------------------------------------------------------------------
 subroutine lsolc(n, x, y, al, jal, ial)
+   use precision, only: dp
+
    integer n, jal(*), ial(*)
-   real * 8 x(n), y(n), al(*)
+   real(dp) :: x(n), y(n), al(*)
 !-----------------------------------------------------------------------
 !       SOLVES     L x = y ;    where L = unit lower trang. CSC format
 !-----------------------------------------------------------------------
@@ -1655,7 +1692,7 @@ subroutine lsolc(n, x, y, al, jal, ial)
 ! On entry:
 !----------
 ! n      = integer. dimension of problem.
-! y      = real*8 array containg the right side.
+! y      = real(dp) array containg the right side.
 !
 ! al,
 ! jal,
@@ -1669,7 +1706,7 @@ subroutine lsolc(n, x, y, al, jal, ial)
 ! local variables
 !
    integer k, j
-   real * 8 t
+   real(dp) :: t
 !-----------------------------------------------------------------------
    do k = 1, n
       x(k) = y(k)
@@ -1687,8 +1724,10 @@ subroutine lsolc(n, x, y, al, jal, ial)
 end
 !-----------------------------------------------------------------------
 subroutine ldsolc(n, x, y, al, jal)
+   use precision, only: dp
+
    integer n, jal(*)
-   real * 8 x(n), y(n), al(*)
+   real(dp) :: x(n), y(n), al(*)
 !-----------------------------------------------------------------------
 !    Solves     L x = y ;    L = nonunit Low. Triang. MSC format
 !-----------------------------------------------------------------------
@@ -1715,7 +1754,7 @@ subroutine ldsolc(n, x, y, al, jal)
 ! local variables
 !
    integer k, j
-   real * 8 t
+   real(dp) :: t
 !-----------------------------------------------------------------------
    do k = 1, n
       x(k) = y(k)
@@ -1734,9 +1773,11 @@ subroutine ldsolc(n, x, y, al, jal)
 end
 !-----------------------------------------------------------------------
 subroutine ldsoll(n, x, y, al, jal, nlev, lev, ilev)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, nlev
    integer, intent(inout) :: jal(*), ilev(nlev + 1), lev(n)
-   real*8, intent(inout) :: x(n), y(n), al(*)
+   real(dp), intent(inout) :: x(n), y(n), al(*)
 !-----------------------------------------------------------------------
 !    Solves L x = y    L = triangular. Uses LEVEL SCHEDULING/MSR format
 !-----------------------------------------------------------------------
@@ -1762,7 +1803,7 @@ subroutine ldsoll(n, x, y, al, jal, nlev, lev, ilev)
 !  x = The solution of  L x = y .
 !--------------------------------------------------------------------
    integer :: ii, jrow, i, k
-   real*8 :: t
+   real(dp) :: t
 !
 !     outer loop goes through the levels. (SEQUENTIAL loop)
 !
@@ -1787,8 +1828,10 @@ subroutine ldsoll(n, x, y, al, jal, nlev, lev, ilev)
 end
 !-----------------------------------------------------------------------
 subroutine usol(n, x, y, au, jau, iau)
+   use precision, only: dp
+
    integer n, jau(*), iau(n + 1)
-   real * 8 x(n), y(n), au(*)
+   real(dp) :: x(n), y(n), au(*)
 !-----------------------------------------------------------------------
 !             Solves   U x = y    U = unit upper triangular.
 !-----------------------------------------------------------------------
@@ -1813,7 +1856,7 @@ subroutine usol(n, x, y, au, jau, iau)
 ! local variables
 !
    integer k, j
-   real * 8 t
+   real(dp) :: t
 !-----------------------------------------------------------------------
    x(n) = y(n)
    do k = n - 1, 1, -1
@@ -1830,8 +1873,10 @@ subroutine usol(n, x, y, au, jau, iau)
 end
 !-----------------------------------------------------------------------
 subroutine udsol(n, x, y, au, jau)
+   use precision, only: dp
+
    integer n, jau(*)
-   real * 8 x(n), y(n), au(*)
+   real(dp) :: x(n), y(n), au(*)
 !-----------------------------------------------------------------------
 !             Solves   U x = y  ;   U = upper triangular in MSR format
 !-----------------------------------------------------------------------
@@ -1857,7 +1902,7 @@ subroutine udsol(n, x, y, au, jau)
 ! local variables
 !
    integer k, j
-   real * 8 t
+   real(dp) :: t
 !-----------------------------------------------------------------------
    x(n) = y(n) * au(n)
    do k = n - 1, 1, -1
@@ -1874,7 +1919,9 @@ subroutine udsol(n, x, y, au, jau)
 end
 !-----------------------------------------------------------------------
 subroutine usolc(n, x, y, au, jau, iau)
-   real * 8 x(*), y(*), au(*)
+   use precision, only: dp
+
+   real(dp) :: x(*), y(*), au(*)
    integer n, jau(*), iau(*)
 !-----------------------------------------------------------------------
 !       SOUVES     U x = y ;    where U = unit upper trang. CSC format
@@ -1886,7 +1933,7 @@ subroutine usolc(n, x, y, au, jau, iau)
 ! On entry:
 !----------
 ! n      = integer. dimension of problem.
-! y      = real*8 array containg the right side.
+! y      = real(dp) array containg the right side.
 !
 ! au,
 ! jau,
@@ -1918,8 +1965,10 @@ subroutine usolc(n, x, y, au, jau, iau)
 end
 !-----------------------------------------------------------------------
 subroutine udsolc(n, x, y, au, jau)
+   use precision, only: dp
+
    integer n, jau(*)
-   real * 8 x(n), y(n), au(*)
+   real(dp) :: x(n), y(n), au(*)
 !-----------------------------------------------------------------------
 !    Solves     U x = y ;    U = nonunit Up. Triang. MSC format
 !-----------------------------------------------------------------------
@@ -1932,7 +1981,7 @@ subroutine udsolc(n, x, y, au, jau)
 ! On entry:
 !----------
 ! n      = integer. dimension of problem.
-! y      = real*8 array containg the right hand side.
+! y      = real(dp) array containg the right hand side.
 !
 ! au,
 ! jau,   = Upper triangular matrix stored in Modified Sparse Column
@@ -1945,7 +1994,7 @@ subroutine udsolc(n, x, y, au, jau)
 ! local variables
 !
    integer k, j
-   real * 8 t
+   real(dp) :: t
 !-----------------------------------------------------------------------
    do k = 1, n
       x(k) = y(k)
@@ -1965,11 +2014,13 @@ end
 
 !-----------------------------------------------------------------------
 subroutine errpr(n, y, y1, iout, msg)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, iout
-   real*8, intent(in) :: y(*), y1(*)
+   real(dp), intent(in) :: y(*), y1(*)
    character*6, intent(in) :: msg
 
-   real*8 :: t
+   real(dp) :: t
    integer :: k
 
    t = 0.0d0
@@ -2711,9 +2762,11 @@ end
 ! dcsort  : sorting routine used by crsjad                             c
 !----------------------------------------------------------------------c
 subroutine csrdns(nrow, ncol, a, ja, ia, dns, ndns, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, ncol, ndns
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: dns(ndns, *), a(*)
+   real(dp), intent(inout) :: dns(ndns, *), a(*)
    integer, intent(inout) :: ja(*), ia(*)
    integer :: i, j, k
 !-----------------------------------------------------------------------
@@ -2767,9 +2820,11 @@ subroutine csrdns(nrow, ncol, a, ja, ia, dns, ndns, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine dnscsr(nrow, ncol, nzmax, dns, ndns, a, ja, ia, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, ncol, ndns, nzmax
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: dns(ndns, *), a(*)
+   real(dp), intent(inout) :: dns(ndns, *), a(*)
    integer, intent(inout) :: ia(*), ja(*)
    integer :: next, i, j
 !-----------------------------------------------------------------------
@@ -2825,12 +2880,12 @@ subroutine dnscsr(nrow, ncol, nzmax, dns, ndns, a, ja, ia, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine coocsr(nrow, nnz, a, ir, jc, ao, jao, iao)
-!-----------------------------------------------------------------------
+   use precision_basics, only: dp
    integer, intent(in) :: nrow, nnz
-   real*8, intent(inout) :: a(*), ao(*)
+   real(dp), intent(inout) :: a(*), ao(*)
    integer, intent(inout) :: ir(*), jc(*), jao(*), iao(*)
    integer :: k, j, k0, iad, i
-   real*8 :: x
+   real(dp) :: x
 !-----------------------------------------------------------------------
 !  Coordinate     to   Compressed Sparse Row
 !-----------------------------------------------------------------------
@@ -2896,9 +2951,11 @@ subroutine coocsr(nrow, nnz, a, ir, jc, ao, jao, iao)
 end
 !-----------------------------------------------------------------------
 subroutine coicsr(n, nnz, job, a, ja, ia, iwk)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, nnz, job
    integer, intent(inout) :: ia(nnz), ja(nnz), iwk(n + 1)
-   real*8, intent(inout) :: a(*)
+   real(dp), intent(inout) :: a(*)
 !------------------------------------------------------------------------
 ! IN-PLACE coo-csr conversion routine.
 !------------------------------------------------------------------------
@@ -2934,7 +2991,7 @@ subroutine coicsr(n, nnz, job, a, ja, ia, iwk)
 !----------------------------------------------------------------------c
 !  Coded by Y. Saad, Sep. 26 1989                                      c
 !----------------------------------------------------------------------c
-   real*8 :: t, tnext
+   real(dp) :: t, tnext
    logical :: values
    integer :: i, j, k, init, ipos, inext, jnext
 !-----------------------------------------------------------------------
@@ -2997,10 +3054,10 @@ subroutine coicsr(n, nnz, job, a, ja, ia, iwk)
 end
 !-----------------------------------------------------------------------
 subroutine csrcoo(nrow, job, nzmax, a, ja, ia, nnz, ao, ir, jc, ierr)
-!-----------------------------------------------------------------------
+   use precision_basics, only: dp
    integer, intent(in) :: nrow, job, nzmax
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), ao(*)
+   real(dp), intent(inout) :: a(*), ao(*)
    integer, intent(inout) :: ir(*), jc(*), ja(*), ia(nrow + 1)
    integer :: nnz, k, i, k1, k2
 !-----------------------------------------------------------------------
@@ -3077,11 +3134,13 @@ subroutine csrcoo(nrow, job, nzmax, a, ja, ia, nnz, ao, ir, jc, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine csrssr(nrow, a, ja, ia, nzmax, ao, jao, iao, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, nzmax
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), ao(*)
+   real(dp), intent(inout) :: a(*), ao(*)
    integer, intent(inout) :: ia(*), ja(*), iao(*), jao(*)
-   real*8 :: t
+   real(dp) :: t
    integer :: ko, i, kold, kdiag, k
 !-----------------------------------------------------------------------
 ! Compressed Sparse Row     to     Symmetric Sparse Row
@@ -3155,13 +3214,15 @@ end
 !-----------------------------------------------------------------------
 subroutine ssrcsr(job, value2, nrow, a, ja, ia, nzmax,&
 &ao, jao, iao, indu, iwk, ierr)
+   use precision, only: dp
+
 !     .. Scalar Arguments ..
    integer ierr, job, nrow, nzmax, value2
 !     ..
 !     .. Array Arguments ..
    integer ia(nrow + 1), iao(nrow + 1), indu(nrow),&
    &iwk(nrow + 1), ja(*), jao(nzmax)
-   real * 8 a(*), ao(nzmax)
+   real(dp) :: a(*), ao(nzmax)
 !     ..
 !-----------------------------------------------------------------------
 !     Symmetric Sparse Row to Compressed Sparse Row format
@@ -3227,7 +3288,7 @@ subroutine ssrcsr(job, value2, nrow, a, ja, ia, nzmax,&
 !-----------------------------------------------------------------------
 !     .. Local Scalars ..
    integer i, ipos, j, k, kfirst, klast, ko, kosav, nnz
-   real * 8 tmp
+   real(dp) :: tmp
 !     ..
 !     .. Executable Statements ..
    ierr = 0
@@ -3423,11 +3484,13 @@ subroutine ssrcsr(job, value2, nrow, a, ja, ia, nzmax,&
 end
 !-----------------------------------------------------------------------
 subroutine xssrcsr(nrow, a, ja, ia, nzmax, ao, jao, iao, indu, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, nzmax
    integer, intent(out) :: ierr
    integer, intent(inout) :: ia(nrow + 1), iao(nrow + 1), ja(*), jao(nzmax)&
    &, indu(nrow + 1)
-   real*8, intent(inout) :: a(*), ao(nzmax)
+   real(dp), intent(inout) :: a(*), ao(nzmax)
    integer :: i, j, k, lenrow, nnz, ipos, kosav, klast, kfirst, ko
 !-----------------------------------------------------------------------
 ! Symmetric Sparse Row   to    (regular) Compressed Sparse Row
@@ -3541,10 +3604,12 @@ end
 !-----------------------------------------------------------------------
 subroutine csrell(nrow, a, ja, ia, maxcol, coef, jcoef, ncoef,&
 &ndiag, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, maxcol, ncoef
    integer, intent(out) :: ierr, ndiag
    integer, intent(inout) :: ia(nrow + 1), ja(*), jcoef(ncoef, 1)
-   real*8, intent(inout) :: a(*), coef(ncoef, 1)
+   real(dp), intent(inout) :: a(*), coef(ncoef, 1)
    integer :: i, j, k, k1, k2
 !-----------------------------------------------------------------------
 ! Compressed Sparse Row     to    Ellpack - Itpack format
@@ -3616,10 +3681,12 @@ subroutine csrell(nrow, a, ja, ia, maxcol, coef, jcoef, ncoef,&
 end
 !-----------------------------------------------------------------------
 subroutine ellcsr(nrow, coef, jcoef, ncoef, ndiag, a, ja, ia, nzmax, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, nzmax, ncoef, ndiag
    integer, intent(out) :: ierr
    integer, intent(inout) :: ia(nrow + 1), ja(*), jcoef(ncoef, 1)
-   real*8, intent(inout) :: a(*), coef(ncoef, 1)
+   real(dp), intent(inout) :: a(*), coef(ncoef, 1)
    integer :: kpos, i, k
 !-----------------------------------------------------------------------
 !  Ellpack - Itpack format  to  Compressed Sparse Row
@@ -3681,8 +3748,10 @@ subroutine ellcsr(nrow, coef, jcoef, ncoef, ndiag, a, ja, ia, nzmax, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine csrmsr(n, a, ja, ia, ao, jao, wk, iwk)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n
-   real*8, intent(inout) :: a(*), ao(*), wk(n)
+   real(dp), intent(inout) :: a(*), ao(*), wk(n)
    integer, intent(inout) :: ia(n + 1), ja(*), jao(*), iwk(n + 1)
    integer :: icount, i, k, iptr, ii, j
 !-----------------------------------------------------------------------
@@ -3790,8 +3859,10 @@ subroutine csrmsr(n, a, ja, ia, ao, jao, wk, iwk)
 end
 !-----------------------------------------------------------------------
 subroutine msrcsr(n, a, ja, ao, jao, iao, wk, iwk)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n
-   real*8, intent(inout) :: a(*), ao(*), wk(n)
+   real(dp), intent(inout) :: a(*), ao(*), wk(n)
    integer, intent(inout) :: ja(*), jao(*), iao(n + 1), iwk(n + 1)
    integer :: i, j, k, ii, idiag, iptr
 !-----------------------------------------------------------------------
@@ -3871,9 +3942,11 @@ subroutine msrcsr(n, a, ja, ao, jao, iao, wk, iwk)
 end
 !-----------------------------------------------------------------------
 subroutine csrcsc(n, job, ipos, a, ja, ia, ao, jao, iao)
+   use precision, only: dp
+
    integer, intent(in) :: n, job, ipos
    integer ia(n + 1), iao(n + 1), ja(*), jao(*)
-   real * 8 a(*), ao(*)
+   real(dp) :: a(*), ao(*)
 !-----------------------------------------------------------------------
 ! Compressed Sparse Row     to      Compressed Sparse Column
 !
@@ -3914,9 +3987,11 @@ subroutine csrcsc(n, job, ipos, a, ja, ia, ao, jao, iao)
 end
 !-----------------------------------------------------------------------
 subroutine csrcsc2(n, n2, job, ipos, a, ja, ia, ao, jao, iao)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, job, n2, ipos
    integer, intent(inout) :: ia(n + 1), iao(n2 + 1), ja(*), jao(*)
-   real*8, intent(inout) :: a(*), ao(*)
+   real(dp), intent(inout) :: a(*), ao(*)
    integer :: i, j, k, next
 !-----------------------------------------------------------------------
 ! Compressed Sparse Row     to      Compressed Sparse Column
@@ -3993,7 +4068,9 @@ subroutine csrcsc2(n, n2, job, ipos, a, ja, ia, ao, jao, iao)
 end
 !-----------------------------------------------------------------------
 subroutine csrlnk(n, a, ja, ia, link)
-   real*8, intent(inout) :: a(:)
+   use precision_basics, only: dp
+
+   real(dp), intent(inout) :: a(:)
    integer, intent(in) :: n
    integer, intent(inout) :: ja(:), ia(n + 1), link(*)
 !-----------------------------------------------------------------------
@@ -4072,7 +4149,9 @@ subroutine csrlnk(n, a, ja, ia, link)
 end
 !-----------------------------------------------------------------------
 subroutine lnkcsr(n, a, jcol, istart, link, ao, jao, iao)
-   real * 8 a(*), ao(*)
+   use precision, only: dp
+
+   real(dp) :: a(*), ao(*)
    integer n, jcol(*), istart(n), link(*), jao(*), iao(*)
 !-----------------------------------------------------------------------
 !     Linked list storage format   to      Compressed Sparse Row  format
@@ -4143,9 +4222,11 @@ end
 !-----------------------------------------------------------------------
 subroutine csrdia(n, idiag, job, a, ja, ia, ndiag,&
 &diag, ioff, ao, jao, iao, ind)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, ndiag
    integer, intent(inout) :: idiag
-   real*8, intent(inout) :: diag(ndiag, idiag), a(*), ao(*)
+   real(dp), intent(inout) :: diag(ndiag, idiag), a(*), ao(*)
    integer, intent(inout) :: ia(*), ind(*), ja(*), jao(*), iao(*)&
    &, ioff(*)
    integer :: i, j, k, l, jmax, ii, job, job1, job2, ko, n2, idum
@@ -4288,10 +4369,12 @@ subroutine csrdia(n, idiag, job, a, ja, ia, ndiag,&
 end
 !-----------------------------------------------------------------------
 subroutine diacsr(n, job, idiag, diag, ndiag, ioff, a, ja, ia)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, job, ndiag, idiag
-   real*8, intent(inout) :: diag(ndiag, idiag), a(*)
+   real(dp), intent(inout) :: diag(ndiag, idiag), a(*)
    integer ia(*), ja(*), ioff(*)
-   real*8 :: t
+   real(dp) :: t
    integer :: i, j, jj, ko
 !-----------------------------------------------------------------------
 !    diagonal format     to     compressed sparse row
@@ -4354,9 +4437,11 @@ subroutine diacsr(n, job, idiag, diag, ndiag, ioff, a, ja, ia)
 end
 !-----------------------------------------------------------------------
 subroutine bsrcsr(job, n, m, na, a, ja, ia, ao, jao, iao)
+   use precision, only: dp
+
    implicit none
    integer job, n, m, na, ia(*), ja(*), jao(*), iao(n + 1)
-   real * 8 a(na, *), ao(*)
+   real(dp) :: a(na, *), ao(*)
 !-----------------------------------------------------------------------
 !             Block Sparse Row  to Compressed Sparse Row.
 !-----------------------------------------------------------------------
@@ -4485,9 +4570,11 @@ subroutine bsrcsr(job, n, m, na, a, ja, ia, ao, jao, iao)
 end
 !-----------------------------------------------------------------------
 subroutine csrbsr(job, nrow, m, na, a, ja, ia, ao, jao, iao, iw, ierr)
+   use precision, only: dp
+
    implicit none
    integer job, ierr, nrow, m, na, ia(nrow + 1), ja(*), jao(na), iao(*), iw(*)
-   real * 8 a(*), ao(na, *)
+   real(dp) :: a(*), ao(na, *)
 !-----------------------------------------------------------------------
 !     Compressed Sparse Row  to    Block Sparse Row
 !-----------------------------------------------------------------------
@@ -4652,9 +4739,11 @@ subroutine csrbsr(job, nrow, m, na, a, ja, ia, ao, jao, iao, iw, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine csrbnd(n, a, ja, ia, job, abd, nabd, lowd, ml, mu, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, nabd, job
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), abd(nabd, n)
+   real(dp), intent(inout) :: a(*), abd(nabd, n)
    integer, intent(inout) :: ia(n + 1), ja(*), lowd
    integer :: i, j, k, m, ii, mdiag, ml, mu
 !-----------------------------------------------------------------------
@@ -4797,11 +4886,13 @@ subroutine csrbnd(n, a, ja, ia, job, abd, nabd, lowd, ml, mu, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine bndcsr(n, abd, nabd, lowd, ml, mu, a, ja, ia, len, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, nabd
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), abd(nabd, *)
+   real(dp), intent(inout) :: a(*), abd(nabd, *)
    integer, intent(inout) :: ia(n + 1), ja(*), len, lowd
-   real*8 :: t
+   real(dp) :: t
    integer :: i, j, irow, ml, mu, ko
 !-----------------------------------------------------------------------
 ! Banded (Linpack ) format   to    Compressed Sparse Row  format.
@@ -4892,9 +4983,11 @@ subroutine bndcsr(n, abd, nabd, lowd, ml, mu, a, ja, ia, len, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine csrssk(n, imod, a, ja, ia, asky, isky, nzmax, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, nzmax
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), asky(nzmax)
+   real(dp), intent(inout) :: a(*), asky(nzmax)
    integer, intent(inout) :: imod, ia(n + 1), isky(n + 1), ja(*)
    integer :: i, j, k, ml, nnz, kend
 !-----------------------------------------------------------------------
@@ -5008,9 +5101,11 @@ subroutine csrssk(n, imod, a, ja, ia, asky, isky, nzmax, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine sskssr(n, imod, asky, isky, ao, jao, iao, nzmax, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, nzmax
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: asky(*), ao(nzmax)
+   real(dp), intent(inout) :: asky(*), ao(nzmax)
    integer, intent(inout) :: imod, isky(n + 1), iao(n + 1), jao(nzmax)
 !-----------------------------------------------------------------------
 !     Symmetric Skyline Format  to  Symmetric Sparse Row format.
@@ -5123,11 +5218,13 @@ subroutine sskssr(n, imod, asky, isky, ao, jao, iao, nzmax, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine csrjad(nrow, a, ja, ia, idiag, iperm, ao, jao, iao)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow
    integer, intent(out) :: idiag
    integer, intent(inout) :: ja(*), jao(*), ia(nrow + 1), iperm(nrow)&
    &, iao(nrow)
-   real*8, intent(inout) :: a(*), ao(*)
+   real(dp), intent(inout) :: a(*), ao(*)
    integer :: i, j, k, k0, k1, jj, ilo, len
 !-----------------------------------------------------------------------
 !    Compressed Sparse Row  to   JAgged Diagonal storage.
@@ -5225,10 +5322,12 @@ subroutine csrjad(nrow, a, ja, ia, idiag, iperm, ao, jao, iao)
 end
 !-----------------------------------------------------------------------
 subroutine jadcsr(nrow, idiag, a, ja, ia, iperm, ao, jao, iao)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, idiag
    integer, intent(inout) :: ja(*), jao(*), ia(idiag + 1), iperm(nrow)&
    &, iao(nrow + 1)
-   real*8, intent(inout) :: a(*), ao(*)
+   real(dp), intent(inout) :: a(*), ao(*)
    integer :: k1, jj, kpos, i, j, k, len
 !-----------------------------------------------------------------------
 !     Jagged Diagonal Storage   to     Compressed Sparse Row
@@ -5407,10 +5506,12 @@ end
 !-------end-of-dcsort---------------------------------------------------
 !-----------------------------------------------------------------------
 subroutine cooell(job, n, nnz, a, ja, ia, ao, jao, lda, ncmax, nc, ierr)
+   use precision, only: dp
+
    implicit none
    integer job, n, nnz, lda, ncmax, nc, ierr
    integer ja(nnz), ia(nnz), jao(lda, ncmax)
-   real * 8 a(nnz), ao(lda, ncmax)
+   real(dp) :: a(nnz), ao(lda, ncmax)
 !-----------------------------------------------------------------------
 !     COOrdinate format to ELLpack format
 !-----------------------------------------------------------------------
@@ -5431,7 +5532,7 @@ subroutine cooell(job, n, nnz, a, ja, ia, ao, jao, lda, ncmax, nc, ierr)
 !     NOTE: the last column of JAO is used as work space!!
 !-----------------------------------------------------------------------
    integer i, j, k, ip
-   real * 8 zero
+   real(dp) :: zero
    logical copyval
    parameter(zero=0.0d0)
 !     .. first executable statement ..
@@ -5486,9 +5587,11 @@ end
 !-----end-of-cooell-----------------------------------------------------
 !-----------------------------------------------------------------------
 subroutine xcooell(n, nnz, a, ja, ia, ac, jac, nac, ner, ncmax, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, nnz, nac, ner
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(nnz), ac(nac, ner)
+   real(dp), intent(inout) :: a(nnz), ac(nac, ner)
    integer, intent(inout) :: ja(nnz), ia(nnz), jac(nac, ner)
    integer :: ncmax, icount, k, ii, in, inn, is, innz
 !-----------------------------------------------------------------------
@@ -5682,7 +5785,9 @@ subroutine xcooell(n, nnz, a, ja, ia, ac, jac, nac, ner, ncmax, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine csruss(nrow, a, ja, ia, diag, al, jal, ial, au, jau, iau)
-   real * 8 a(*), al(*), diag(*), au(*)
+   use precision, only: dp
+
+   real(dp) :: a(*), al(*), diag(*), au(*)
    integer nrow, ja(*), ia(nrow + 1), jal(*), ial(nrow + 1), jau(*),&
    &iau(nrow + 1)
 !-----------------------------------------------------------------------
@@ -5774,8 +5879,10 @@ subroutine csruss(nrow, a, ja, ia, diag, al, jal, ial, au, jau, iau)
 end
 !-----------------------------------------------------------------------
 subroutine usscsr(nrow, a, ja, ia, diag, al, jal, ial, au, jau, iau)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow
-   real*8, intent(inout) :: a(*), al(*), diag(*), au(*)
+   real(dp), intent(inout) :: a(*), al(*), diag(*), au(*)
    integer, intent(inout) :: ja(*), ia(nrow + 1), jal(*), ial(nrow + 1)&
    &, jau(*), iau(nrow + 1)
    integer :: i, j, k, ka, jak
@@ -5867,8 +5974,10 @@ subroutine usscsr(nrow, a, ja, ia, diag, al, jal, ial, au, jau, iau)
 end
 
 subroutine ssscsr(nrow, a, ja, ia, diag, al, jal, ial, au)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow
-   real*8, intent(inout) :: a(*), al(*), diag(*), au(*)
+   real(dp), intent(inout) :: a(*), al(*), diag(*), au(*)
    integer, intent(inout) :: ja(*), ia(nrow + 1), jal(*), ial(nrow + 1)
    integer :: i, j, k, ka, jak
 !-----------------------------------------------------------------------
@@ -5958,10 +6067,10 @@ end
 
 subroutine vbrcsr(ia, ja, a, nr, kvstr, kvstc, ib, jb, kb,&
 &b, nzmax, ierr)
-!-----------------------------------------------------------------------
+   use precision, only: dp
    integer ia(*), ja(*), nr, ib(nr + 1), jb(*), kb(*)
    integer kvstr(nr + 1), kvstc(*), nzmax, ierr
-   real * 8 a(*), b(nzmax)
+   real(dp) :: a(*), b(nzmax)
 !-----------------------------------------------------------------------
 !     Converts variable block row to compressed sparse row format.
 !-----------------------------------------------------------------------
@@ -6144,10 +6253,12 @@ end
 ! kvstmerge: Merges block partitionings, for conformal row/col pattern c
 !----------------------------------------------------------------------c
 subroutine submat(n, job, i1, i2, j1, j2, a, ja, ia, nr, nc, ao, jao, iao)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, job
    integer, intent(inout) :: i1, i2, j1, j2, nr, nc, ia(*), ja(*), jao(*)&
    &, iao(*)
-   real*8, intent(inout) :: a(*), ao(*)
+   real(dp), intent(inout) :: a(*), ao(*)
    integer :: i, j, k, ii, k1, k2, klen
 !-----------------------------------------------------------------------
 ! extracts the submatrix A(i1:i2,j1:j2) and puts the result in
@@ -6217,7 +6328,9 @@ subroutine submat(n, job, i1, i2, j1, j2, a, ja, ia, nr, nc, ao, jao, iao)
 end
 !-----------------------------------------------------------------------
 subroutine filter(n, job, drptol, a, ja, ia, b, jb, ib, len, ierr)
-   real * 8 a(*), b(*), drptol
+   use precision, only: dp
+
+   real(dp) :: a(*), b(*), drptol
    integer ja(*), jb(*), ia(*), ib(*), n, job, len, ierr
 !-----------------------------------------------------------------------
 !     This module removes any elements whose absolute value
@@ -6266,7 +6379,7 @@ subroutine filter(n, job, drptol, a, ja, ia, b, jb, ib, len, ierr)
 !           contributed by David Day,  Sep 19, 1989.                   c
 !----------------------------------------------------------------------c
 ! local variables
-   real * 8 norm, loctol
+   real(dp) :: norm, loctol
    integer index, row, k, k1, k2
 !
    index = 1
@@ -6309,7 +6422,9 @@ subroutine filter(n, job, drptol, a, ja, ia, b, jb, ib, len, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine filterm(n, job, drop, a, ja, b, jb, len, ierr)
-   real * 8 a(*), b(*), drop
+   use precision, only: dp
+
+   real(dp) :: a(*), b(*), drop
    integer ja(*), jb(*), n, job, len, ierr
 !-----------------------------------------------------------------------
 !     This subroutine removes any elements whose absolute value
@@ -6356,7 +6471,7 @@ subroutine filterm(n, job, drop, a, ja, b, jb, len, ierr)
 !----------------------------------------------------------------------c
 ! local variables
 !
-   real * 8 norm, loctol
+   real(dp) :: norm, loctol
    integer index, row, k, k1, k2
 !
    index = n + 2
@@ -6397,9 +6512,11 @@ subroutine filterm(n, job, drop, a, ja, b, jb, len, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine csort(n, a, ja, ia, iwork, values)
+   use precision, only: dp
+
    logical values
    integer n, ja(*), ia(n + 1), iwork(*)
-   real * 8 a(*)
+   real(dp) :: a(*)
 !-----------------------------------------------------------------------
 ! This routine sorts the elements of  a matrix (stored in Compressed
 ! Sparse Row Format) in increasing order of their column indices within
@@ -6503,12 +6620,14 @@ subroutine csort(n, a, ja, ia, iwork, values)
 end
 !-----------------------------------------------------------------------
 subroutine clncsr(job, value2, nrow, a, ja, ia, indu, iwk)
+   use precision, only: dp
+
 !     .. Scalar Arguments ..
    integer job, nrow, value2
 !     ..
 !     .. Array Arguments ..
    integer ia(nrow + 1), indu(nrow), iwk(nrow + 1), ja(*)
-   real * 8 a(*)
+   real(dp) :: a(*)
 !     ..
 !
 !     This routine performs two tasks to clean up a CSR matrix
@@ -6540,7 +6659,7 @@ subroutine clncsr(job, value2, nrow, a, ja, ia, indu, iwk)
 !
 !     .. Local Scalars ..
    integer i, j, k, ko, ipos, kfirst, klast
-   real * 8 tmp
+   real(dp) :: tmp
 !     ..
 !
    if (job <= 0) return
@@ -6668,7 +6787,9 @@ subroutine clncsr(job, value2, nrow, a, ja, ia, indu, iwk)
 end
 !-----------------------------------------------------------------------
 subroutine copmat(nrow, a, ja, ia, ao, jao, iao, ipos, job)
-   real * 8 a(*), ao(*)
+   use precision, only: dp
+
+   real(dp) :: a(*), ao(*)
    integer nrow, ia(*), ja(*), jao(*), iao(*), ipos, job
 !----------------------------------------------------------------------
 ! copies the matrix a, ja, ia, into the matrix ao, jao, iao.
@@ -6716,7 +6837,9 @@ subroutine copmat(nrow, a, ja, ia, ao, jao, iao, ipos, job)
 end
 !-----------------------------------------------------------------------
 subroutine msrcop(nrow, a, ja, ao, jao, job)
-   real * 8 a(*), ao(*)
+   use precision, only: dp
+
+   real(dp) :: a(*), ao(*)
    integer nrow, ja(*), jao(*), job
 !----------------------------------------------------------------------
 ! copies the MSR matrix a, ja, into the MSR matrix ao, jao
@@ -6861,7 +6984,9 @@ double precision function getelm(i, j, a, ja, ia, iadd, sorted)
 end
 !-----------------------------------------------------------------------
 subroutine getdia(nrow, ncol, job, a, ja, ia, len, diag, idiag, ioff)
-   real * 8 diag(*), a(*)
+   use precision, only: dp
+
+   real(dp) :: diag(*), a(*)
    integer nrow, ncol, job, len, ioff, ia(*), ja(*), idiag(*)
 !-----------------------------------------------------------------------
 ! this subroutine extracts a given diagonal from a matrix stored in csr
@@ -6903,7 +7028,7 @@ subroutine getdia(nrow, ncol, job, a, ja, ia, len, diag, idiag, ioff)
 ! len   = number of nonzero elements found in diag.
 !         (len .le. min(nrow,ncol-ioff)-max(1,1-ioff) + 1 )
 !
-! diag  = real*8 array of length nrow containing the wanted diagonal.
+! diag  = real(dp) array of length nrow containing the wanted diagonal.
 !       diag contains the diagonal (a(i,j),j-i = ioff ) as defined
 !         above.
 !
@@ -6972,10 +7097,12 @@ subroutine getdia(nrow, ncol, job, a, ja, ia, len, diag, idiag, ioff)
 end
 !-----------------------------------------------------------------------
 subroutine transp(nrow, ncol, a, ja, ia, iwk, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow
    integer, intent(out) :: ierr
    integer, intent(inout) :: ia(*), ja(*), iwk(*), ncol
-   real*8, intent(inout) :: a(*)
+   real(dp), intent(inout) :: a(*)
 !------------------------------------------------------------------------
 ! In-place transposition routine.
 !------------------------------------------------------------------------
@@ -7028,7 +7155,7 @@ subroutine transp(nrow, ncol, a, ja, ia, iwk, ierr)
 !  modified Oct. 11, 1989.                                             c
 !----------------------------------------------------------------------c
 ! local variables
-   real*8 :: t, t1
+   real(dp) :: t, t1
    integer :: i, j, k, l, init, inext, jcol, nnz
 
    ierr = 0
@@ -7113,8 +7240,10 @@ subroutine transp(nrow, ncol, a, ja, ia, iwk, ierr)
 end
 !------------------------------------------------------------------------
 subroutine getl(n, a, ja, ia, ao, jao, iao)
+   use precision, only: dp
+
    integer n, ia(*), ja(*), iao(*), jao(*)
-   real * 8 a(*), ao(*)
+   real(dp) :: a(*), ao(*)
 !------------------------------------------------------------------------
 ! this subroutine extracts the lower triangular part of a matrix
 ! and writes the result ao, jao, iao. The routine is in place in
@@ -7136,7 +7265,7 @@ subroutine getl(n, a, ja, ia, ao, jao, iao)
 !
 !------------------------------------------------------------------------
 ! local variables
-   real * 8 t
+   real(dp) :: t
    integer ko, kold, kdiag, k, i
 !
 ! inititialize ko (pointer for output matrix)
@@ -7173,8 +7302,10 @@ subroutine getl(n, a, ja, ia, ao, jao, iao)
 end
 !-----------------------------------------------------------------------
 subroutine getu(n, a, ja, ia, ao, jao, iao)
+   use precision, only: dp
+
    integer n, ia(*), ja(*), iao(*), jao(*)
-   real * 8 a(*), ao(*)
+   real(dp) :: a(*), ao(*)
 !------------------------------------------------------------------------
 ! this subroutine extracts the upper triangular part of a matrix
 ! and writes the result ao, jao, iao. The routine is in place in
@@ -7196,7 +7327,7 @@ subroutine getu(n, a, ja, ia, ao, jao, iao)
 !
 !------------------------------------------------------------------------
 ! local variables
-   real * 8 t
+   real(dp) :: t
    integer ko, k, i, kdiag, kfirst
    ko = 0
    do i = 1, n
@@ -7307,10 +7438,10 @@ end
 !-----------------------------------------------------------------------
 subroutine amask(nrow, ncol, a, ja, ia, jmask, imask,&
 &c, jc, ic, iw, nzmax, ierr)
-!---------------------------------------------------------------------
+   use precision_basics, only: dp
    integer, intent(in) :: nrow, ncol, nzmax
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), c(*)
+   real(dp), intent(inout) :: a(*), c(*)
    integer, intent(inout) :: ia(nrow + 1), ja(*), jc(*), ic(nrow + 1)&
    &, jmask(*), imask(nrow + 1)
    logical, intent(inout) :: iw(ncol)
@@ -7399,10 +7530,12 @@ subroutine amask(nrow, ncol, a, ja, ia, jmask, imask,&
 end
 !-----------------------------------------------------------------------
 subroutine rperm(nrow, a, ja, ia, ao, jao, iao, perm, job)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, job
    integer, intent(inout) :: ja(*), ia(nrow + 1), jao(*), iao(nrow + 1)&
    &, perm(nrow)
-   real*8, intent(inout) :: a(*), ao(*)
+   real(dp), intent(inout) :: a(*), ao(*)
 !-----------------------------------------------------------------------
 ! this subroutine permutes the rows of a matrix in CSR format.
 ! rperm  computes B = P A  where P is a permutation matrix.
@@ -7475,8 +7608,10 @@ subroutine rperm(nrow, a, ja, ia, ao, jao, iao, perm, job)
 end
 !-----------------------------------------------------------------------
 subroutine cperm(nrow, a, ja, ia, ao, jao, iao, perm, job)
+   use precision, only: dp
+
    integer nrow, ja(*), ia(nrow + 1), jao(*), iao(nrow + 1), perm(*), job
-   real * 8 a(*), ao(*)
+   real(dp) :: a(*), ao(*)
 !-----------------------------------------------------------------------
 ! this subroutine permutes the columns of a matrix a, ja, ia.
 ! the result is written in the output matrix  ao, jao, iao.
@@ -7543,9 +7678,11 @@ subroutine cperm(nrow, a, ja, ia, ao, jao, iao, perm, job)
 end
 !-----------------------------------------------------------------------
 subroutine dperm(nrow, a, ja, ia, ao, jao, iao, perm, qperm, job)
+   use precision, only: dp
+
    integer nrow, ja(*), ia(nrow + 1), jao(*), iao(nrow + 1), perm(nrow),&
    &qperm(*), job
-   real * 8 a(*), ao(*)
+   real(dp) :: a(*), ao(*)
 !-----------------------------------------------------------------------
 ! This routine permutes the rows and columns of a matrix stored in CSR
 ! format. i.e., it computes P A Q, where P, Q are permutation matrices.
@@ -7619,9 +7756,11 @@ subroutine dperm(nrow, a, ja, ia, ao, jao, iao, perm, qperm, job)
 end
 !-----------------------------------------------------------------------
 subroutine dperm1(i1, i2, a, ja, ia, b, jb, ib, perm, ipos, job)
+   use precision_basics, only: dp
+
    integer, intent(in) :: ipos, job
    integer, intent(inout) :: i1, i2, ja(*), ia(*), jb(*), ib(*), perm(*)
-   real*8, intent(inout) :: a(*), b(*)
+   real(dp), intent(inout) :: a(*), b(*)
 !-----------------------------------------------------------------------
 !     general submatrix extraction routine.
 !-----------------------------------------------------------------------
@@ -7680,10 +7819,12 @@ end
 !-----------------------------------------------------------------------
 subroutine dperm2(i1, i2, a, ja, ia, b, jb, ib, cperm, rperm, istart,&
 &ipos, job)
+   use precision_basics, only: dp
+
    integer, intent(in) :: ipos, job, istart
    integer, intent(inout) :: i1, i2, ja(*), ia(*), jb(*), ib(*), cperm(*)&
    &, rperm(*)
-   real*8, intent(inout) :: a(*), b(*)
+   real(dp), intent(inout) :: a(*), b(*)
 !-----------------------------------------------------------------------
 !     general submatrix permutation/ extraction routine.
 !-----------------------------------------------------------------------
@@ -7771,9 +7912,11 @@ subroutine dperm2(i1, i2, a, ja, ia, b, jb, ib, cperm, rperm, istart,&
 end
 !-----------------------------------------------------------------------
 subroutine dmperm(nrow, a, ja, ao, jao, perm, job)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow
    integer, intent(inout) :: ja(*), jao(*), perm(nrow), job
-   real*8, intent(inout) :: a(*), ao(*)
+   real(dp), intent(inout) :: a(*), ao(*)
 !-----------------------------------------------------------------------
 ! This routine performs a symmetric permutation of the rows and
 ! columns of a matrix stored in MSR format. i.e., it computes
@@ -7834,8 +7977,10 @@ end
 !-----------------------------------------------------------------------
 
 subroutine permsimple(n, x, XH, perm, permselect)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, perm(n), permselect
-   real*8, intent(inout) :: x(n), XH(N)
+   real(dp), intent(inout) :: x(n), XH(N)
    integer :: k
 
    if (permselect > 1) then
@@ -7847,8 +7992,10 @@ subroutine permsimple(n, x, XH, perm, permselect)
 end
 
 subroutine permsimpleINVERSE(n, x, XH, perm, permselect)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, perm(n), permselect
-   real*8, intent(inout) :: x(n), XH(N)
+   real(dp), intent(inout) :: x(n), XH(N)
    integer :: k
 
    if (permselect > 1) then
@@ -7860,9 +8007,11 @@ subroutine permsimpleINVERSE(n, x, XH, perm, permselect)
 end
 
 subroutine dvperm(n, x, perm)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n
    integer, intent(inout) :: perm(n)
-   real*8, intent(inout) :: x(n)
+   real(dp), intent(inout) :: x(n)
 !-----------------------------------------------------------------------
 ! this subroutine performs an in-place permutation of a real vector x
 ! according to the permutation array perm(*), i.e., on return,
@@ -7885,7 +8034,7 @@ subroutine dvperm(n, x, perm)
 !           Y. Saad, Sep. 21 1989                                      c
 !----------------------------------------------------------------------c
 ! local variables
-   real*8 :: tmp, tmp1
+   real(dp) :: tmp, tmp1
    integer :: init, next, j, k, ii
 !
    init = 1
@@ -8012,7 +8161,9 @@ subroutine ivperm(n, ix, perm)
 end
 !-----------------------------------------------------------------------
 subroutine retmx(n, a, ja, ia, dd)
-   real * 8 a(*), dd(*)
+   use precision, only: dp
+
+   real(dp) :: a(*), dd(*)
    integer n, ia(*), ja(*)
 !-----------------------------------------------------------------------
 ! returns in dd(*) the max absolute value of elements in row *.
@@ -8022,7 +8173,7 @@ subroutine retmx(n, a, ja, ia, dd)
 ! n   = dimension of A
 ! a,ja,ia
 !     = matrix stored in compressed sparse row format
-! dd  = real*8 array of length n. On output,entry dd(i) contains
+! dd  = real(dp) array of length n. On output,entry dd(i) contains
 !       the element of row i that has the largest absolute value.
 !       Moreover the sign of dd is modified such that it is the
 !       same as that of the diagonal element in row i.
@@ -8031,7 +8182,7 @@ subroutine retmx(n, a, ja, ia, dd)
 !----------------------------------------------------------------------c
 ! local variables
    integer k2, i, k1, k
-   real * 8 t, t1, t2
+   real(dp) :: t, t1, t2
 !
 ! initialize
 !
@@ -8100,11 +8251,13 @@ subroutine diapos(n, ja, ia, idiag)
 end
 !-----------------------------------------------------------------------
 subroutine dscaldg(n, a, ja, ia, diag, job)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, job
-   real*8, intent(inout) :: a(*), diag(*)
+   real(dp), intent(inout) :: a(*), diag(*)
    integer, intent(inout) :: ia(*), ja(*)
    integer :: i, j, k1, k2, k
-   real*8 :: t
+   real(dp) :: t
 !-----------------------------------------------------------------------
 ! scales rows by diag where diag is either given (job=0)
 ! or to be computed:
@@ -8149,8 +8302,10 @@ subroutine dscaldg(n, a, ja, ia, diag, job)
 end
 !-----------------------------------------------------------------------
 subroutine extbdg(n, a, ja, ia, bdiag, nblk, ao, jao, iao)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n, nblk
-   real*8, intent(inout) :: bdiag(*), a(*), ao(*)
+   real(dp), intent(inout) :: bdiag(*), a(*), ao(*)
    integer, intent(inout) :: ia(*), ja(*), jao(*), iao(*)
    integer :: j, k, jj, j1, j2, ko, kb, i, ltr, l, m
 !-----------------------------------------------------------------------
@@ -8171,7 +8326,7 @@ subroutine extbdg(n, a, ja, ia, bdiag, nblk, ao, jao, iao)
 !
 ! on return:
 !----------
-! bdiag = real*8 array of size (n x nblk) containing the diagonal
+! bdiag = real(dp) array of size (n x nblk) containing the diagonal
 !       blocks of A on return
 ! ao,
 ! jao,
@@ -8217,8 +8372,10 @@ subroutine extbdg(n, a, ja, ia, bdiag, nblk, ao, jao, iao)
 end
 !-----------------------------------------------------------------------
 subroutine getbwd(n, a, ja, ia, ml, mu)
+   use precision_basics, only: dp
+
    integer, intent(in) :: n
-   real*8, intent(inout) :: a(:)
+   real(dp), intent(inout) :: a(:)
    integer, intent(inout) :: ja(*), ia(n + 1), ml, mu
    integer :: ldist, i, k
 !-----------------------------------------------------------------------
@@ -8696,10 +8853,12 @@ subroutine aplbdg(nrow, ncol, ja, ia, jb, ib, ndegr, nnz, iw)
 end
 !-----------------------------------------------------------------------
 subroutine rnrms(nrow, nrm, a, ja, ia, diag)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, nrm
-   real*8, intent(inout) :: a(*), diag(nrow)
+   real(dp), intent(inout) :: a(*), diag(nrow)
    integer, intent(inout) :: ja(:), ia(nrow + 1)
-   real*8 :: scal
+   real(dp) :: scal
    integer :: k, k1, k2, ii
 !-----------------------------------------------------------------------
 ! gets the norms of each row of A. (choice of three norms)
@@ -8752,8 +8911,10 @@ subroutine rnrms(nrow, nrm, a, ja, ia, diag)
 end
 !-----------------------------------------------------------------------
 subroutine cnrms(nrow, nrm, a, ja, ia, diag)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, nrm
-   real*8, intent(inout) :: a(*), diag(nrow)
+   real(dp), intent(inout) :: a(*), diag(nrow)
    integer, intent(inout) :: ja(*), ia(nrow + 1)
    integer :: k, ii, k1, k2, j
 !-----------------------------------------------------------------------
@@ -8804,9 +8965,11 @@ subroutine cnrms(nrow, nrm, a, ja, ia, diag)
 end
 !-----------------------------------------------------------------------
 subroutine roscal(nrow, job, nrm, a, ja, ia, diag, b, jb, ib, ierr)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, job, nrm
    integer, intent(out) :: ierr
-   real*8, intent(out) :: a(*), b(*), diag(nrow)
+   real(dp), intent(out) :: a(*), b(*), diag(nrow)
    integer, intent(inout) :: ja(*), jb(*), ia(nrow + 1), ib(nrow + 1)
    integer :: j
 !-----------------------------------------------------------------------
@@ -8862,10 +9025,10 @@ subroutine roscal(nrow, job, nrm, a, ja, ia, diag, b, jb, ib, ierr)
 end
 !-----------------------------------------------------------------------
 subroutine coscal(nrow, job, nrm, a, ja, ia, diag, b, jb, ib, ierr)
-!-----------------------------------------------------------------------
+   use precision_basics, only: dp
    integer, intent(in) :: nrow, job
    integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(*), diag(nrow)
+   real(dp), intent(inout) :: a(*), b(*), diag(nrow)
    integer, intent(inout) :: ja(*), jb(*), ia(nrow + 1), ib(nrow + 1)
    integer :: j, nrm
 !-----------------------------------------------------------------------
@@ -8923,11 +9086,13 @@ end
 !-----------------------------------------------------------------------
 subroutine addblk(nrowa, ncola, a, ja, ia, ipos, jpos, job,&
 &nrowb, ncolb, b, jb, ib, nrowc, ncolc, c, jc, ic, nzmx, ierr)
+   use precision, only: dp
+
 !      implicit none
    integer nrowa, nrowb, nrowc, ncola, ncolb, ncolc, ipos, jpos
    integer nzmx, ierr, job
    integer ja(1:*), ia(1:*), jb(1:*), ib(1:*), jc(1:*), ic(1:*)
-   real * 8 a(1:*), b(1:*), c(1:*)
+   real(dp) :: a(1:*), b(1:*), c(1:*)
 !-----------------------------------------------------------------------
 !     This subroutine adds a matrix B into a submatrix of A whose
 !     (1,1) element is located in the starting position (ipos, jpos).
@@ -9085,8 +9250,10 @@ subroutine get1up(n, ja, ia, ju)
 end
 !----------------------------------------------------------------------
 subroutine xtrows(i1, i2, a, ja, ia, ao, jao, iao, iperm, job)
+   use precision, only: dp
+
    integer i1, i2, ja(*), ia(*), jao(*), iao(*), iperm(*), job
-   real * 8 a(*), ao(*)
+   real(dp) :: a(*), ao(*)
 !-----------------------------------------------------------------------
 ! this subroutine extracts given rows from a matrix in CSR format.
 ! Specifically, rows number iperm(i1), iperm(i1+1), ...., iperm(i2)
@@ -10255,9 +10422,11 @@ subroutine rndperm(n, iord, iseed)
 end
 
 subroutine amub_countonly(nrow, ncol, a, ja, ia, b, jb, ib, iw, len)
+   use precision_basics, only: dp
+
    integer, intent(in) :: nrow, ncol
    integer, intent(out) :: len
-   real*8, intent(inout) :: a(:), b(:)
+   real(dp), intent(inout) :: a(:), b(:)
    integer, intent(inout) :: ja(*), jb(*), ia(nrow + 1), ib(*), iw(ncol)
    integer :: jj, k, kb, jcol, jpos, j, ii, ka
 !-----------------------------------------------------------------------

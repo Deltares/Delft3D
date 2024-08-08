@@ -14,7 +14,7 @@ c
       character*120     cntrlnam, cmdline, ininam
       integer           nfm,istk,ipnt,nd,nh,nm,ns,nstmoz,nE,i
       integer           itim_new(2)
-      integer*2         istcnt
+      integer(2) ::     istcnt
       real              dtfm
       double precision  dattim, dattim_new  
       logical           FirstProc, Initmode, Crashed

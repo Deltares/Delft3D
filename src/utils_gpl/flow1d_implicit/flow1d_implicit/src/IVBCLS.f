@@ -1,5 +1,6 @@
       subroutine IVBCLS(time   ,timep  ,ngrid  ,nbran  ,branch ,
      +                  x      ,gridnm ,q      ,h      ,q1     )
+         use precision_basics, only: dp
 c=======================================================================
 c            Rijkswaterstaat/RIZA and DELFT HYDRAULICS
 c                One Dimensional Modelling System
@@ -91,7 +92,7 @@ c
      j             tsvkwt, tsvkwo, tsvkht, tsvkho, tsvkot, tsvkoo,
      j             tclosw, tclosh, tcloso, tendst, timtop, tstartdd,
      j             tendst_os
-      real*8       timediff
+      real(dp)       timediff
       save         active, first , ontere, kenter, flood , svkoflag
       save         rotter, dordre, hmax_hvh
       save         gpsvkw, gpsvkh, gpsvko, gprott, gpdord, gpmamo, 

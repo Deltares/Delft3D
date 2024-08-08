@@ -36,7 +36,7 @@
          integer :: j
          integer :: mmax
          integer :: nmax
-         integer * 2 X(MMAX, NMAX)
+         integer(2) :: X(MMAX, NMAX)
          do I = 1, MMAX
             do J = 1, NMAX
                X(I, J) = 0d0

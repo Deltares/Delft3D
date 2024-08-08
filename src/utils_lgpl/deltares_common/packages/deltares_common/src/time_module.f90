@@ -1151,8 +1151,8 @@ module time_module
 !
 !     Name   Type     Size   Description
 !     ------ -----    ------ ------------------------
-!     TEMP1  real*8   -      Temporary variable
-!     TEMP2  real*8   -      Temporary variable
+!     TEMP1  real(dp)   -      Temporary variable
+!     TEMP2  real(dp)   -      Temporary variable
 !     IYEAR  integer  -      Year   ( -4713-.. )
 !     IMONTH integer  -      Month  ( 1-12 )
 !     IDAY   integer  -      Day    ( 1-28,29,30 or 31 )
@@ -1265,8 +1265,8 @@ module time_module
 !
 !     Name   Type     Size   Description
 !     ------ -----    ------ ------------------------
-!     TEMP1  real*8   -      Temporary variable
-!     TEMP2  real*8   -      Temporary variable
+!     TEMP1  real(dp)   -      Temporary variable
+!     TEMP2  real(dp)   -      Temporary variable
 !     IYEAR  integer  -      Year   ( -4713-.. )
 !     IMONTH integer  -      Month  ( 1-12 )
 !     IDAY   integer  -      Day    ( 1-28,29,30 or 31 )
@@ -1362,24 +1362,24 @@ module time_module
 !
 !     Name   Type     In/Out Size            Description
 !     ------ -----    ------ -------         ---------------------------
-!     JULIAN real*8   in     -               Julian day
+!     JULIAN real(dp)   in     -               Julian day
 !     IYEAR  integer  out    -               Year   ( -4713-.. )
 !     IMONTH integer  out    -               Month  ( 1-12 )
 !     IDAY   integer  out    -               Day    ( 1-28,29,30 or 31 )
 !     IHOUR  integer  out    -               Hour   ( 0-23 )
 !     IMIN   integer  out    -               Minute ( 0-59 )
 !     ISEC   integer  out    -               Second ( 0-59 )
-!     DSEC   real*8   out    -               Second as double
+!     DSEC   real(dp)   out    -               Second as double
 !
 !     Local variables :
 !
 !     Name   Type     Size   Description
 !     ------ -----    ------ ------------------------
-!     TEMP1  real*8   -      Temporary variable
-!     TEMP2  real*8   -      Temporary variable
-!     TEMP3  real*8   -      Temporary variable
-!     TEMP4  real*8   -      Temporary variable, JULIAN
-!     TEMP5  real*8   -      Temporary variable, fractional part JULIAN
+!     TEMP1  real(dp)   -      Temporary variable
+!     TEMP2  real(dp)   -      Temporary variable
+!     TEMP3  real(dp)   -      Temporary variable
+!     TEMP4  real(dp)   -      Temporary variable, JULIAN
+!     TEMP5  real(dp)   -      Temporary variable, fractional part JULIAN
 !
 !     Calls to : none
 !

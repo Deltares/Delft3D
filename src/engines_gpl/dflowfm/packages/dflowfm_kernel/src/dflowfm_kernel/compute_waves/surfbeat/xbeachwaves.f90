@@ -3653,6 +3653,7 @@ subroutine borecharacter()
    use m_physcoef
    use m_waves, only: uorb
    use m_debug
+   use precision_basics, only: dp
 
    implicit none
 
@@ -4610,69 +4611,70 @@ subroutine solve_energy_balance2Dstat(x, y, mn, w, ds, inner, prev, seapts, nose
                                       H, Dw, Df, thetam, uorb, ee)
 
    use m_partitioninfo
+   use precision_basics, only: dp
 
    implicit none
 
    ! In/output variables and arrays
    integer, intent(in) :: mn, ntheta !< number of grid points, number of directions
-   real*8, dimension(mn), intent(in) :: x, y !< x,y coordinates of grid
-   real*8, dimension(2, ntheta, mn), intent(in) :: w !< weights of upwind grid points, 2 per grid point and per wave direction
-   real*8, dimension(ntheta, mn), intent(in) :: ds !< distance to interpolated upwind point, per grid point and direction
-   real*8, dimension(ntheta, mn), intent(in) :: ee0 !< distribution of wave energy density
-   real*8, intent(in) :: thetamean !< mean offshore wave direction (rad)
-   real*8, dimension(ntheta), intent(in) :: theta !< distribution of wave angles
+   real(dp), dimension(mn), intent(in) :: x, y !< x,y coordinates of grid
+   real(dp), dimension(2, ntheta, mn), intent(in) :: w !< weights of upwind grid points, 2 per grid point and per wave direction
+   real(dp), dimension(ntheta, mn), intent(in) :: ds !< distance to interpolated upwind point, per grid point and direction
+   real(dp), dimension(ntheta, mn), intent(in) :: ee0 !< distribution of wave energy density
+   real(dp), intent(in) :: thetamean !< mean offshore wave direction (rad)
+   real(dp), dimension(ntheta), intent(in) :: theta !< distribution of wave angles
    logical, dimension(mn), intent(in) :: inner !< mask of inner grid points (not on boundary)
    integer, dimension(2, ntheta, mn), intent(in) :: prev !< two upwind grid points per grid point and wave direction
    integer, intent(in) :: noseapts !< number of offshore wave boundary points
    integer, dimension(noseapts) :: seapts !< indices of offshore wave boundary points
    integer, dimension(mn), intent(in) :: neumannconnected !< number of neumann boundary point if connected to inner point
-   real*8, dimension(mn), intent(in) :: hh !< water depth
-   real*8, dimension(mn), intent(in) :: kwav !< wave number
-   real*8, dimension(mn), intent(in) :: cg !< group velocity
-   real*8, dimension(ntheta, mn), intent(in) :: ctheta !< refraction speed
-   real*8, dimension(mn), intent(in) :: fw !< wave friction factor
-   real*8, intent(in) :: T !< wave period
-   real*8, intent(in) :: dt !< time step (s)
-   real*8, intent(in) :: rho !< water density
-   real*8, intent(in) :: ag !< grav acceleration
-   real*8, intent(in) :: alfa, gamma !< coefficients in Baldock wave breaking dissipation
-   real*8, intent(in) :: hmin !< limiting depth for wet points in system
+   real(dp), dimension(mn), intent(in) :: hh !< water depth
+   real(dp), dimension(mn), intent(in) :: kwav !< wave number
+   real(dp), dimension(mn), intent(in) :: cg !< group velocity
+   real(dp), dimension(ntheta, mn), intent(in) :: ctheta !< refraction speed
+   real(dp), dimension(mn), intent(in) :: fw !< wave friction factor
+   real(dp), intent(in) :: T !< wave period
+   real(dp), intent(in) :: dt !< time step (s)
+   real(dp), intent(in) :: rho !< water density
+   real(dp), intent(in) :: ag !< grav acceleration
+   real(dp), intent(in) :: alfa, gamma !< coefficients in Baldock wave breaking dissipation
+   real(dp), intent(in) :: hmin !< limiting depth for wet points in system
    integer, intent(in) :: maxiter !< maximun no of iterations
-   real*8, dimension(mn), intent(in) :: Hmaxstat !< max wave height (Miche)
-   real*8, dimension(mn), intent(out) :: H !< wave height
-   real*8, dimension(mn), intent(out) :: Dw !< wave breaking dissipation
-   real*8, dimension(mn), intent(out) :: Df !< wave friction dissipation
-   real*8, dimension(mn), intent(out) :: thetam !< mean wave direction
-   real*8, dimension(mn), intent(out) :: uorb !< orbital velocity
-   real*8, dimension(ntheta, mn), intent(out) :: ee !< wave energy distribution
+   real(dp), dimension(mn), intent(in) :: Hmaxstat !< max wave height (Miche)
+   real(dp), dimension(mn), intent(out) :: H !< wave height
+   real(dp), dimension(mn), intent(out) :: Dw !< wave breaking dissipation
+   real(dp), dimension(mn), intent(out) :: Df !< wave friction dissipation
+   real(dp), dimension(mn), intent(out) :: thetam !< mean wave direction
+   real(dp), dimension(mn), intent(out) :: uorb !< orbital velocity
+   real(dp), dimension(ntheta, mn), intent(out) :: ee !< wave energy distribution
 
    ! Local variables and arrays
-   real*8, dimension(:), allocatable :: ok !< mask for fully iterated points
-   real*8 :: eemax, dtheta !< maximum wave energy density, directional resolution
+   real(dp), dimension(:), allocatable :: ok !< mask for fully iterated points
+   real(dp) :: eemax, dtheta !< maximum wave energy density, directional resolution
    integer :: sweep, niter !< sweep number, number of iterations
    integer :: k, k1, k2, i !< counters (k is grid index)
    integer, dimension(:, :), allocatable :: indx !< index for grid sorted per sweep direction
-   real*8, dimension(:, :), allocatable :: eeold !< wave energy density, energy density previous iteration
-   real*8, dimension(:, :), allocatable :: dee !< difference with energy previous iteration
-   real*8, dimension(:), allocatable :: eeprev, cgprev !< energy density and group velocity at upwind intersection point
-   real*8, dimension(:, :), allocatable :: A, B, C, R !< coefficients in the tridiagonal matrix solved per point
-   real*8, dimension(:), allocatable :: DoverE !< ratio of mean wave dissipation over mean wave energy
-   real*8, dimension(:), allocatable :: diff !< maximum difference of wave energy relative to previous iteration
-   real*8, dimension(:), allocatable :: ra !< coordinate in sweep direction
+   real(dp), dimension(:, :), allocatable :: eeold !< wave energy density, energy density previous iteration
+   real(dp), dimension(:, :), allocatable :: dee !< difference with energy previous iteration
+   real(dp), dimension(:), allocatable :: eeprev, cgprev !< energy density and group velocity at upwind intersection point
+   real(dp), dimension(:, :), allocatable :: A, B, C, R !< coefficients in the tridiagonal matrix solved per point
+   real(dp), dimension(:), allocatable :: DoverE !< ratio of mean wave dissipation over mean wave energy
+   real(dp), dimension(:), allocatable :: diff !< maximum difference of wave energy relative to previous iteration
+   real(dp), dimension(:), allocatable :: ra !< coordinate in sweep direction
    integer, dimension(4) :: shift
    integer :: iter
    integer :: count
    integer :: itheta
    integer :: ierr
-   real*8 :: percok
-   real*8 :: error
-   real*8 :: Ek
-   real*8 :: Hk
-   real*8 :: Dfk
-   real*8 :: Dwk
-   real*8 :: uorbk
-   real*8, parameter :: pi = 4.d0 * atan(1.d0)
-   real*8, parameter :: crit = 0.001 !< relative accuracy
+   real(dp) :: percok
+   real(dp) :: error
+   real(dp) :: Ek
+   real(dp) :: Hk
+   real(dp) :: Dfk
+   real(dp) :: Dwk
+   real(dp) :: uorbk
+   real(dp), parameter :: pi = 4.d0 * atan(1.d0)
+   real(dp), parameter :: crit = 0.001 !< relative accuracy
    integer, parameter :: solverNotConverged = 0
    integer, parameter :: solverConverged = 1
 
@@ -4838,42 +4840,43 @@ end subroutine solve_energy_balance2Dstat
 subroutine solve_roller_balance(x, y, mn, prev, hh, c, Dw, thetam, beta, ag, maxiter, seapts, noseapts, inner, neumannconnected, Er, Dr)
 
    use m_partitioninfo
+   use precision_basics, only: dp
 
    implicit none
 
    integer, intent(in) :: mn !< no nodes
-   real*8, dimension(mn), intent(in) :: x, y !< node coordinates
+   real(dp), dimension(mn), intent(in) :: x, y !< node coordinates
    integer, dimension(2, mn), intent(in) :: prev !< upwind indexes
-   real*8, dimension(mn), intent(in) :: hh !< water depth
-   real*8, dimension(mn), intent(in) :: c !< wave celerity
-   real*8, dimension(mn), intent(in) :: Dw !< wave breaker dissipation
-   real*8, dimension(mn), intent(in) :: thetam !< mean wave direction
-   real*8, intent(in) :: beta !< roller slope
-   real*8, intent(in) :: ag !< grav acceleration
+   real(dp), dimension(mn), intent(in) :: hh !< water depth
+   real(dp), dimension(mn), intent(in) :: c !< wave celerity
+   real(dp), dimension(mn), intent(in) :: Dw !< wave breaker dissipation
+   real(dp), dimension(mn), intent(in) :: thetam !< mean wave direction
+   real(dp), intent(in) :: beta !< roller slope
+   real(dp), intent(in) :: ag !< grav acceleration
    integer, intent(in) :: maxiter
    integer, intent(in) :: noseapts
    integer, dimension(noseapts), intent(in) :: seapts
 
    logical, dimension(mn), intent(in) :: inner
    integer, dimension(mn), intent(in) :: neumannconnected ! number of neumann boundary point if connected to inner point
-   real*8, dimension(mn), intent(out) :: Er
-   real*8, dimension(mn), intent(out) :: Dr
+   real(dp), dimension(mn), intent(out) :: Er
+   real(dp), dimension(mn), intent(out) :: Dr
 
 ! Local constants
-   real*8 :: hmin = 0.1d0
-   real*8 :: thetamean, sinthmean, costhmean
+   real(dp) :: hmin = 0.1d0
+   real(dp) :: thetamean, sinthmean, costhmean
    integer, dimension(4) :: shift
-   real*8, dimension(:), allocatable :: ok
-   real*8, dimension(:), allocatable :: ra
-   real*8, dimension(:), allocatable :: F
+   real(dp), dimension(:), allocatable :: ok
+   real(dp), dimension(:), allocatable :: ra
+   real(dp), dimension(:), allocatable :: F
    integer, dimension(:, :), allocatable :: indx
    integer :: niter
    integer :: sweep, k, iter, count, k1, k2, ierr
-   real*8 :: Afac, Bfac, Cfac, Drst, percok
-   real*8 :: x1, x2, xk, y1, y2, yk
-   real*8 :: costh1, costh2, costhk, sinth1, sinth2, sinthk
-   real*8 :: dtol
-   real*8 :: pi
+   real(dp) :: Afac, Bfac, Cfac, Drst, percok
+   real(dp) :: x1, x2, xk, y1, y2, yk
+   real(dp) :: costh1, costh2, costhk, sinth1, sinth2, sinthk
+   real(dp) :: dtol
+   real(dp) :: pi
    integer, parameter :: solverConverged = 1
    integer, parameter :: solverNotConverged = 0
 

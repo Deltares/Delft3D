@@ -8004,8 +8004,10 @@ end
 !-----end of fdaddbc----------------------------------------------------
 !-----------------------------------------------------------------------
 subroutine clrow(i, a, ja, ia)
+   use precision, only: dp
+
    integer i, ja(:), ia(*), k
-   real * 8 a(*)
+   real(dp) :: a(*)
    no_warning_unused_dummy_argument(ja)
 !-----------------------------------------------------------------------
 !     clear the row i to all zero, but still keep the structure of the
@@ -8145,10 +8147,11 @@ end
 ! NOT THREAD-SAFE
 subroutine amuxXXX(n, x, y, a, ja, ia)
    use m_saad, only: jasafe
+   use precision, only: dp
 
    implicit none
 
-   real * 8 x(n), y(n), a(*)
+   real(dp) :: x(n), y(n), a(*)
    integer n, ja(*), ia(*)
 !-----------------------------------------------------------------------
 !         A times a vector
@@ -8171,7 +8174,7 @@ subroutine amuxXXX(n, x, y, a, ja, ia)
 !-----------------------------------------------------------------------
 ! local variables
 !
-   real * 8 t
+   real(dp) :: t
    integer i, k
 !-----------------------------------------------------------------------
 
@@ -8216,10 +8219,11 @@ end
 ! NOT THREAD-SAFE
 subroutine atmux(n, x, y, a, ja, ia)
    use m_saad, only: jasafe
+   use precision, only: dp
 
    implicit none
 
-   real * 8 x(*), y(*), a(*)
+   real(dp) :: x(*), y(*), a(*)
    integer n, ia(*), ja(*)
 !-----------------------------------------------------------------------
 !         transp( A ) times a vector

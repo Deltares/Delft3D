@@ -165,33 +165,33 @@ contains
       !
       ! Input variables
       integer, intent(in) :: np, ibnd, ntheta, bctype
-      real*8, intent(in) :: t, x0, y0, hboundary, dtheta
+      real(dp), intent(in) :: t, x0, y0, hboundary, dtheta
       character(len=*), intent(in) :: bcfile
-      real*8, dimension(np), intent(in) :: xb, yb
-      real*8, dimension(ntheta), intent(in) :: theta
-      real*8, dimension(ntheta_s), intent(in) :: theta_s
+      real(dp), dimension(np), intent(in) :: xb, yb
+      real(dp), dimension(ntheta), intent(in) :: theta
+      real(dp), dimension(ntheta_s), intent(in) :: theta_s
       integer, intent(in) :: randomseed
       integer, intent(in) :: singledir
       integer, intent(in) :: ntheta_s
 
       ! output variables
-      real*8, intent(out) :: Hbc, Tbc, Dbc
+      real(dp), intent(out) :: Hbc, Tbc, Dbc
       logical, intent(out) :: isRecomputed
-      real*8, dimension(np), intent(out) :: qxbc, qybc
-      real*8, dimension(np, ntheta), intent(out) :: eebc
-      real*8, dimension(ntheta_s, np), intent(out) :: ee_s
+      real(dp), dimension(np), intent(out) :: qxbc, qybc
+      real(dp), dimension(np, ntheta), intent(out) :: eebc
+      real(dp), dimension(ntheta_s, np), intent(out) :: ee_s
 
       ! Optional variables
       logical, optional, intent(in) :: nonhspectrum
-      real*8, optional, intent(in) :: sprdthr, trepfac, nmax, rho, fcutoff, swkhmin
+      real(dp), optional, intent(in) :: sprdthr, trepfac, nmax, rho, fcutoff, swkhmin
       integer, optional, intent(in) :: Tm01switch, nspr
       integer, optional, intent(in) :: wbcScaleEnergy, wbcRemoveStokes
-      real*8, optional, intent(in) :: wbcEvarreduce, wbcQvarreduce
+      real(dp), optional, intent(in) :: wbcEvarreduce, wbcQvarreduce
 
       ! internal variables
       integer :: i, itheta, l, dummy
-      real*8 :: durationlength
-      real*8, dimension(:), allocatable :: inttemp
+      real(dp) :: durationlength
+      real(dp), dimension(:), allocatable :: inttemp
       !
       !
       ! Check function input arguments and set defaults

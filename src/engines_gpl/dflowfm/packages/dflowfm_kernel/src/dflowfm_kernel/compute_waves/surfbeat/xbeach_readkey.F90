@@ -74,17 +74,18 @@ module m_xbeach_readkey
 
 contains
 
-   real * 8 function readkey_dbl(fname, key, defval, mnval, mxval, bcast, required, silent, strict)
+   real(dp) function readkey_dbl(fname, key, defval, mnval, mxval, bcast, required, silent, strict)
       use m_xbeach_errorhandling
       use m_xbeach_filefunctions
+      use precision_basics, only: dp
       implicit none
       character(len=*) :: fname, key
       character(slen) :: printkey
-      real*8 :: defval, mnval, mxval
+      real(dp) :: defval, mnval, mxval
       logical, intent(in), optional :: bcast, required, strict, silent
 
       character(slen) :: value, tempout
-      real*8 :: value_dbl
+      real(dp) :: value_dbl
       logical :: lbcast, lrequired, lstrict, lsilent
       character(slen) :: fmt
       integer :: ier
@@ -161,8 +162,8 @@ contains
       character*(*) :: fname, key
       character(slen) :: printkey
       character(slen) :: value
-      integer*4 :: value_int
-      integer*4 :: defval, mnval, mxval, ier
+      integer(4) :: value_int
+      integer(4) :: defval, mnval, mxval, ier
       logical, intent(in), optional :: bcast, required, strict, silent
       logical :: lbcast, lrequired, lstrict, lsilent
       character(slen) :: fmt, tempout
@@ -310,7 +311,7 @@ contains
       character*(*) :: fname, key, defval
       character(slen) :: value_str
       character(slen) :: value
-      integer*4 :: nv, nov, i, j
+      integer(4) :: nv, nov, i, j
       character(slen), dimension(nv) :: allowed
       character(slen), dimension(nov) :: old
       logical, intent(in), optional :: bcast, required, silent
@@ -434,11 +435,12 @@ contains
    function readkey_dblvec(fname, key, vlength, tlength, defval, mnval, mxval, bcast, required) result(value_vec)
       use m_xbeach_filefunctions
       use m_xbeach_errorhandling
+      use precision_basics, only: dp
       implicit none
       character*(*) :: fname, key
       integer, intent(in) :: vlength, tlength
-      real*8, dimension(tlength) :: value_vec
-      real*8 :: defval, mnval, mxval
+      real(dp), dimension(tlength) :: value_vec
+      real(dp) :: defval, mnval, mxval
       logical, intent(in), optional :: bcast, required
       logical :: lbcast, lrequired
 
