@@ -408,7 +408,7 @@ contains
          nMesh(1:nfiles) = nMaxMeshes
          maxTopodim = nMeshOld
          minTopodim = nMeshOld
-         call realloc(topodim, (/nMaxMeshes, nfiles/), keepExisting=.false., fill=-1) ! needed for if statement below when jaugrid=0
+         call realloc(topodim, (/nMaxMeshes, nfiles/), keepExisting=.false., fill=-1) ! needed for if statement in line 2492
       end if
 
    !! 0d. Allocate arrays based on maxTopodim
@@ -645,6 +645,7 @@ contains
                   end do
                end if
             else ! old format
+               imesh = 1 ! needed for if condition in line 2492
                do id = 1, file_ndims(ii)
                   ierr = nf90_inquire_dimension(ncids(ii), id, name=dimname, len=nlen) ! NetCDF-F90 allows us to assume that the dim IDs are 1:ndims
                   if (ierr /= nf90_noerr) then
