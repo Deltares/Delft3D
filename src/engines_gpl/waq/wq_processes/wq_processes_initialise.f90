@@ -845,6 +845,9 @@ contains
                     fluxsys(ifluxsys) = iflx
                 endif
             enddo
+            if (isys < num_substances_total) then
+                ipfluxsys(isys+1) = ipfluxsys(isys) + nfluxsys(isys)
+            endif
         enddo
 
         ! num_output_variables_extra is in the boot sysn common
