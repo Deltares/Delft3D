@@ -13098,7 +13098,8 @@ contains
                  id_squbnd, id_sqibnd, &
                  id_morft, &
                  id_jmax, id_ncrs, id_flowelemcrsz, id_flowelemcrsn, &
-                 id_ucxqbnd, id_ucyqbnd
+                 id_ucxqbnd, id_ucyqbnd, & 
+                 id_flowelemdim
 
       integer :: id_tmp
       integer :: layerfrac, layerthk
@@ -13129,6 +13130,7 @@ contains
       integer :: jamergedmap_same_bu
       integer :: tmp_loc
       integer :: numl1d
+      integer :: ndxi_merge
 
       character(len=8) :: numformat
       character(len=2) :: numtrastr, numsedfracstr
@@ -13828,6 +13830,10 @@ contains
          !
          ! Check dimensions for consistency
          !
+         ierr = nf90_inq_dimid(imapfile, 'nFlowElem', id_flowelemdim)
+         call check_error(ierr, 'nFlowElem')
+         ierr = nf90_inquire_dimension(imapfile, id_flowelemdim, len=ndxi_merge)
+
          ierr = nf90_inq_dimid(imapfile, 'nSedTot', id_sedtotdim) ! Accept any errors, we may have a hydrodynamic restart only. Is allowed.
          ierr = nf90_inq_dimid(imapfile, 'nSedSus', id_sedsusdim)
          ierr = nf90_inq_dimid(imapfile, 'nBedLayers', id_nlyrdim)
@@ -13905,15 +13911,15 @@ contains
                   deallocate (rst_mfluff)
                end if
                allocate (tmpvar(sedsus_read, ndxi))
-               allocate (rst_mfluff(stmpar%lsedsus, ndxi))
-               ierr = nf90_get_var(imapfile, id_mfluff, tmpvar(1:sedsus_read, 1:um%ndxi_own), start=(/1, kstart, it_read/), count=(/sedsus_read, ndxi, 1/))
-               do kk = 1, ndxi
+               allocate (rst_mfluff(stmpar%lsedsus, ndxi_merge))
+               ierr = nf90_get_var(imapfile, id_mfluff, tmpvar(1:sedsus_read, 1:ndxi_merge), start=(/1, 1, it_read/), count=(/sedsus_read, ndxi_merge, 1/))
+               do kk = 1, um%ndxi_own
                   if (um%jamergedmap == 1) then
                      kloc = um%inode_own(kk)
                      rst_mfluff(:, kloc) = tmpvar(:, um%inode_merge(kk))
                   else
                      kloc = kk
-                     rst_mfluff(:, kloc) = tmpvar(:, kk)
+                     rst_mfluff(:, kloc) = tmpvar(:, kstart + kk)
                   end if
                end do
                call check_error(ierr, 'mfluff')
@@ -13932,17 +13938,17 @@ contains
                if (allocated(rst_bodsed)) then
                   deallocate (rst_bodsed)
                end if
-               allocate (tmpvar(sedtot_read, ndxi))
+               allocate (tmpvar(sedtot_read, ndxi_merge))
                allocate (rst_bodsed(sedtot_read, ndxi))
                ierr = nf90_inq_varid(imapfile, 'bodsed', id_bodsed)
-               ierr = nf90_get_var(imapfile, id_bodsed, tmpvar(1:sedtot_read, 1:um%ndxi_own), start=(/1, kstart, it_read/), count=(/sedtot_read, ndxi, 1/))
-               do kk = 1, ndxi
+               ierr = nf90_get_var(imapfile, id_bodsed, tmpvar(1:sedtot_read, 1:ndxi_merge), start=(/1, 1, it_read/), count=(/sedtot_read, ndxi_merge, 1/))
+               do kk = 1, um%ndxi_own
                   if (um%jamergedmap == 1) then
                      kloc = um%inode_own(kk)
                      rst_bodsed(:, kloc) = tmpvar(:, um%inode_merge(kk))
                   else
                      kloc = kk
-                     rst_bodsed(:, kloc) = tmpvar(:, kk)
+                     rst_bodsed(:, kloc) = tmpvar(:, kstart + kk)
                   end if
                end do
                call check_error(ierr, 'bodsed')
@@ -13957,28 +13963,28 @@ contains
                if (allocated(rst_msed)) then
                   deallocate (rst_msed)
                end if
-               call realloc(tmpvar2, (/sedtot_read, nlyr_read, ndxi/), keepExisting=.false.)
                call realloc(rst_msed, (/sedtot_read, nlyr_read, ndxi/), keepExisting=.false.)
+               call realloc(tmpvar2, (/sedtot_read, nlyr_read, ndxi_merge/), keepExisting=.false.)
                !
                ierr = nf90_inq_varid(imapfile, 'msed', id_msed)
                if (ierr == nf90_noerr) then
+                  ierr = nf90_inquire_variable(imapfile, id_msed, ndims=numDims, dimids=rhdims)
+                  do i = 1, numDims - 1
+                     ierr = nf90_inquire_dimension(imapfile, rhdims(i), len=tmpdims(i))
+                     if (ierr /= nf90_noerr) goto 999
+                  end do                     
                   layerfrac = 0
                   do l = 1, sedtot_read
-                     ierr = nf90_inquire_variable(imapfile, id_msed, ndims=numDims, dimids=rhdims)
-                     do i = 1, numDims - 1
-                        ierr = nf90_inquire_dimension(imapfile, rhdims(i), len=tmpdims(i))
-                        if (ierr /= nf90_noerr) goto 999
-                     end do                     
-                     ierr = nf90_get_var(imapfile, id_msed, tmpvar2(l, 1:nlyr_read, 1:ndxi), start=(/l, 1, 1, it_read/), count=(/1, nlyr_read, ndxi, 1/))
+                     ierr = nf90_get_var(imapfile, id_msed, tmpvar2(l, 1:nlyr_read, 1:ndxi_merge), start=(/l, 1, 1, it_read/), count=(/1, nlyr_read, ndxi_merge, 1/))
                   end do
                   !
                   do kk = 1, um%ndxi_own
                      if (um%jamergedmap == 1) then
                         kloc = um%inode_own(kk)
-                        rst_msed(:, :, kloc) = tmpvar2(:, :, um%inode_merge(kk) - kstart + 1)
+                        rst_msed(:, :, kloc) = tmpvar2(:, :, um%inode_merge(kk))
                      else
                         kloc = kk
-                        rst_msed(:, :, kloc) = tmpvar2(:, :, kk)
+                        rst_msed(:, :, kloc) = tmpvar2(:, :, kstart + kk)
                      end if
                   end do
                   call check_error(ierr, 'msed')
@@ -13991,18 +13997,18 @@ contains
                      if (allocated(tmpvar2)) then
                         deallocate (tmpvar2)
                      end if
-                     call realloc(tmpvar2, (/sedtot_read, nlyr_read, ndxi/), keepExisting=.false.)
+                     call realloc(tmpvar2, (/sedtot_read, nlyr_read, ndxi_merge/), keepExisting=.false.)
                      !
                      do l = 1, sedtot_read
-                        ierr = nf90_get_var(imapfile, id_lyrfrac, tmpvar2(l, 1:nlyr_read, 1:um%ndxi_own), start=(/l, 1, kstart, it_read/), count=(/1, nlyr_read, ndxi, 1/))
+                        ierr = nf90_get_var(imapfile, id_lyrfrac, tmpvar2(l, 1:nlyr_read, 1:ndxi_merge), start=(/l, 1, 1, it_read/), count=(/1, nlyr_read, ndxi_merge, 1/))
                      end do
-                     do kk = 1, ndxi
+                     do kk = 1, um%ndxi_own
                         if (um%jamergedmap == 1) then
                            kloc = um%inode_own(kk)
                            rst_msed(:, :, kloc) = tmpvar2(:, :, um%inode_merge(kk))
                         else
                            kloc = kk
-                           rst_msed(:, :, kloc) = tmpvar2(:, :, kk) ! no typo, see restart_lyrs.f90
+                           rst_msed(:, :, kloc) = tmpvar2(:, :, kstart + kk) ! no typo, see restart_lyrs.f90
                         end if
                      end do
                      layerfrac = 1
@@ -14021,17 +14027,17 @@ contains
                   if (allocated(rst_thlyr)) then
                      deallocate (rst_thlyr)
                   end if
-                  call realloc(tmpvar, (/nlyr_read, ndxi/), keepExisting=.false.)
+                  call realloc(tmpvar, (/nlyr_read, ndxi_merge/), keepExisting=.false.)
                   call realloc(rst_thlyr, (/nlyr_read, ndxi/), keepExisting=.false.)
                   !
-                  ierr = nf90_get_var(imapfile, id_thlyr, tmpvar(1:nlyr_read, 1:um%ndxi_own), start=(/1, kstart, it_read/), count=(/nlyr_read, ndxi, 1/))
-                  do kk = 1, ndxi
+                  ierr = nf90_get_var(imapfile, id_thlyr, tmpvar(1:nlyr_read, 1:ndxi_merge), start=(/1, 1, it_read/), count=(/nlyr_read, ndxi_merge, 1/))
+                  do kk = 1, um%ndxi_own
                      if (um%jamergedmap == 1) then
                         kloc = um%inode_own(kk)
                         rst_thlyr(:, kloc) = tmpvar(:, um%inode_merge(kk))
                      else
                         kloc = kk
-                        rst_thlyr(:, kloc) = tmpvar(:, kk)
+                        rst_thlyr(:, kloc) = tmpvar(:, kstart+kk)
                      end if
                   end do
                end if
