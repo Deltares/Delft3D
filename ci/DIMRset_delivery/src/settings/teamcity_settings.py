@@ -21,7 +21,6 @@ TOOLS = [
 TESTCASE_GROUPS = [
     "D-Flow FM",
     "D-Flow FM, D-RR",
-    "D-Flow FM, D-RR, D-RTC",
     "D-Flow FM, D-RTC",
     "D-Flow FM, D-RTC, D-Waves",
     "D-Flow FM, D-Waves",
