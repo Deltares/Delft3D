@@ -76,8 +76,12 @@ manually every time. Here's an example using vscode:
 ### Installing the dependencies using `pip`
 After activating your virtual environment, you're ready to install the dependencies of the
 testbench:
+```powershell
+pip install -r pip/win-requirements.txt
+```
+
 ```bash
-pip install -r requirements.txt
+pip install -r pip/lnx-requirements.txt  # Linux
 ```
 
 Currently, the `requirements.txt` contains the dependencies needed for running the testbench,
