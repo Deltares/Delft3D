@@ -981,6 +981,9 @@ endif
  if (allocated(plotlin))  deallocate(plotlin)
  if (allocated(frcu_bkp)) deallocate(frcu_bkp)
  if (allocated(frcu_mor)) deallocate(frcu_mor)
+ if (allocated(frcu0))    deallocate(frcu0)
+ if (allocated(dynveg))   deallocate(dynveg)
+ if (allocated(kcsveg))   deallocate(kcsveg)
 
  allocate ( cfuhi(lnx)   , stat=ierr)            ! hk: hier stond + 1, heb ik weggehaald
  call aerr('cfuhi(lnx)'  , ierr, lnx)   ; cfuhi   = 0
@@ -1069,6 +1072,13 @@ endif
     if (allocated (czu) ) deallocate(czu)
     allocate ( czu(lnx)    , stat=ierr)
     call aerr('czu(lnx)'   , ierr, lnx)   ; czu   = 0
+ endif
+ 
+ if (dynroughveg > 0) then
+    allocate ( frcu0(lnx)    , stat=ierr)
+    call aerr('frcu0(lnx)'   , ierr, lnx)   ; frcu0   = frcuni
+    allocate ( dynveg(lnx)    , stat=ierr)
+    call aerr('dynveg(lnx)'   , ierr, lnx)   ; dynveg=.false.
  endif
 
  if (jarhoxu > 0 .or. jased > 0) then

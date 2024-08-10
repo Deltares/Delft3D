@@ -98,6 +98,10 @@
  integer                           :: ifrctypuni !< 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D)
  double precision                  :: frcunilin  !<60.    ! 6      ! 66     ! uniform friction coeff
  double precision                  :: umodlin    !< linear friction umod , ifrctyp 4,5,6
+ integer                           :: dynroughveg
+ double precision                  :: frcumin
+ double precision                  :: droot
+ double precision                  :: dstem
 
  double precision                  :: wall_ks !< vertical wall nIKURADSE ROUGHNESSs (m)
  double precision                  :: wall_z0 !< z0 for vertical walls, ~= Ks/30    (m)
@@ -198,6 +202,10 @@ umodlin     = 1.d0      ! linear friction umod , ifrctyp 4,5,6
 wall_ks     = 0.0d0     ! vertical wall nIKURADSE ROUGHNESSs (m)
 vicouv      = 0.1d0     ! constant horizontal eddy viscosity (m2/s) mom
 dicouv      = 0.1d0     ! constant horizontal eddy diffusivity (m2/s) sal, sed
+dynroughveg = 0
+droot = 0.5d0
+dstem = 0.5d0
+frcumin = 2.3d-2
 
 Elder       = 0d0       ! add Elder viscosity
 Smagorinsky = 0.2d0     ! add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S

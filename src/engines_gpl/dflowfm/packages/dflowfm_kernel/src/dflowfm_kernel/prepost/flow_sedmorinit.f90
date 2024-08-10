@@ -42,7 +42,7 @@ subroutine flow_sedmorinit()
     use unstruc_files
     use m_flowgeom
     use m_flowtimes
-    use m_physcoef, only: rhomean, ag, backgroundwatertemperature, vismol
+    use m_physcoef, only: rhomean, ag, backgroundwatertemperature, vismol, dynroughveg
     use m_initsedtra, only: initsedtra
     use m_rdmorlyr, only: rdinimorlyr
     use m_flowexternalforcings, only: sfnames, numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
@@ -474,6 +474,7 @@ subroutine flow_sedmorinit()
        do k=1,pointscount
           kcsmor(kp(k)) = inmorphopol
        enddo
+       call delpol()
     endif
 
     if (stmpar%morpar%multi) then
@@ -495,6 +496,11 @@ subroutine flow_sedmorinit()
           call put_get_time_step(stmpar%morpar%mergehandle, dt_user)
        endif
     endif
+    
+    if (dynroughveg > 0) then
+       if (allocated(cumes)) deallocate(cumes)
+       call realloc(cumes, lnx,stat=ierr,fill=0d0, keepExisting=.false.)
+    end if
 
 1234 return
 end subroutine flow_sedmorinit

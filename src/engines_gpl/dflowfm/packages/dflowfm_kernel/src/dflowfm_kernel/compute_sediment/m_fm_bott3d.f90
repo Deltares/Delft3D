@@ -78,6 +78,7 @@ public :: fm_bott3d
    use m_fm_morstatistics, only: morstats, morstatt0
    use m_tables, only: interpolate
    use Timers
+   use m_physcoef, only: dynroughveg
 
    implicit none
 
@@ -255,7 +256,11 @@ public :: fm_bott3d
       call fm_blchg_no_cmpupd() !Compute bed level changes without actually updating the bed composition
       !      
       call fm_apply_bed_boundary_condition(dtmor,timhr)
-      
+      !
+      if (dynroughveg > 0) then
+         call determine_linkbased_cumblchg()
+      end if
+      !
    else
       !
       ! if morphological computations haven't started yet
@@ -1928,7 +1933,7 @@ public :: fm_bott3d
       bl(nm) = bl(nm) + blchg(nm)
    enddo
    
-   end subroutine fm_update_bl  
+   end subroutine fm_update_bl
 
    subroutine fm_erosion_velocity(dtmor)
    
@@ -1991,5 +1996,24 @@ public :: fm_bott3d
    end if
    
    end subroutine fm_sumflux
+   
+   subroutine determine_linkbased_cumblchg()
+      use m_sediment, only: cumes
+      use m_fm_erosed, only: blchg
+      use m_flowgeom, only: lnx, ln, acl
+      
+      implicit none
+      
+      integer :: L, k1, k2
+      double precision :: ac1, ac2
+      
+      do L = 1, lnx
+         k1 = ln(1,L)
+         k2 = ln(2,L)
+         ac1 = acl(L); ac2 = 1d0-ac1
+         cumes(L) = cumes(L) + ac1*(blchg(k1)) + ac2*(blchg(k2))
+      end do
+   
+   end subroutine determine_linkbased_cumblchg
       
 end module m_fm_bott3d
