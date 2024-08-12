@@ -11,7 +11,6 @@ from lib.Atlassian import Atlassian
 from lib.TeamCity import TeamCity
 from settings.general_settings import *
 from settings.teamcity_settings import *
-from lib.ConfigHelper import ConfigReader
 
 class DimrAutomation(object):
     """
