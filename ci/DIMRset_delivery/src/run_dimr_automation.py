@@ -8,11 +8,6 @@ This script makes some assumptions:
 - The latest successful DIMR build, is the build that we are going to release.
 - The second latest successful build, is the build that was released last week.
 """
-# Don't touch this.
-# This is magic to have a common library between
-# dimr_automation and releasebranch_switch
-import sys
-sys.path.append("../..")
 
 from getpass import getpass
 
