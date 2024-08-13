@@ -46,6 +46,7 @@ contains
         use protist_food_functions
         use protist_constants
         use ieee_arithmetic
+        use m_protistlog
 
         IMPLICIT NONE
         !
@@ -528,14 +529,14 @@ contains
                         fl (prInc + 5) = prot_array%dPreySi(iPrey)
                     end do
 
-                    if (ieee_is_nan(protC)) write (*, *) 'ERROR: in ProtistCM, NaN in protC in segment:', iseg
-                    if (ieee_is_nan(Cfix))  write (*, *) 'ERROR: in ProtistCM, NaN in Cfix in segment:', iseg
-                    if (ieee_is_nan(totR))  write (*, *) 'ERROR: in ProtistCM, NaN in totR in segment:', iseg
-                    if (ieee_is_nan(mrt))   write (*, *) 'ERROR: in ProtistCM, NaN in mrt in segment:', iseg
-                    if (ieee_is_nan(NC))    write (*, *) 'ERROR: in ProtistCM, NaN in NC in segment:', iseg
-                    if (ieee_is_nan(PC))    write (*, *) 'ERROR: in ProtistCM, NaN in PC in segment:', iseg
-                    if (ieee_is_nan(ChlC))  write (*, *) 'ERROR: in ProtistCM, NaN in ChlC in segment:', iseg
-                    if (ieee_is_nan(ingC))  write (*, *) 'ERROR: in ProtistCM, NaN in ingC in segment:', iseg
+                    if (ieee_is_nan(protC)) call write_warning( 'ERROR: in ProtistCM, NaN in protC in segment:', iseg )
+                    if (ieee_is_nan(Cfix))  call write_warning( 'ERROR: in ProtistCM, NaN in Cfix in segment:', iseg )
+                    if (ieee_is_nan(totR))  call write_warning( 'ERROR: in ProtistCM, NaN in totR in segment:', iseg )
+                    if (ieee_is_nan(mrt))   call write_warning( 'ERROR: in ProtistCM, NaN in mrt in segment:', iseg )
+                    if (ieee_is_nan(NC))    call write_warning( 'ERROR: in ProtistCM, NaN in NC in segment:', iseg )
+                    if (ieee_is_nan(PC))    call write_warning( 'ERROR: in ProtistCM, NaN in PC in segment:', iseg )
+                    if (ieee_is_nan(ChlC))  call write_warning( 'ERROR: in ProtistCM, NaN in ChlC in segment:', iseg )
+                    if (ieee_is_nan(ingC))  call write_warning( 'ERROR: in ProtistCM, NaN in ingC in segment:', iseg )
 
                 enddo speciesLoop ! end loop over species
 
