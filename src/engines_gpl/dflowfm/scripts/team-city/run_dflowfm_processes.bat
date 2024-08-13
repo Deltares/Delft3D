@@ -12,5 +12,5 @@ title %cd%
     rem
 set D3D_HOME=%~dp0..
 set exedir=%D3D_HOME%\bin
-call "%exedir%\run_dflowfm.bat %*
+call "%exedir%\run_dflowfm.bat" %*
 
