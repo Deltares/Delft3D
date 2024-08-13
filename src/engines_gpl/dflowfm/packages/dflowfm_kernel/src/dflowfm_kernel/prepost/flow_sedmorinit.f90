@@ -486,13 +486,10 @@ subroutine flow_sedmorinit()
       allocate (kp(1:ndx))
       kp = 0
       ! find cells inside polygon
-      call savepol() ! save state before morphopol
-      call delpol() ! clear state polygons
       call selectelset_internal_nodes(xz, yz, kcs, ndx, kp, pointscount, LOC_FILE=md_morphopol, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE)
       do k = 1, pointscount
          kcsmor(kp(k)) = inmorphopol
       end do
-      call restorepol() ! restore state after morphopol polygon - interferes with inifieldfile reader
    end if
 
    if (stmpar%morpar%multi) then
