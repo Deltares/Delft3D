@@ -251,55 +251,32 @@ class NetcdfComparer(IComparer):
                                             + "'."
                                         )
 
-                                    unit_txt = "".join(time_var.units).strip()
-                                    start_datetime, delta = interpret_time_unit(unit_txt)
-
-                                    if cf_role_time_series_var is not None:  # Create time-series plot.
-                                        unit_txt = "".join(time_var.units).strip()
-                                        start_datetime, delta = interpret_time_unit(unit_txt)
-                                        datetime_series = [start_datetime + int(t_i) * delta for t_i in time_var[:]]
-
-                                        # determine location name, needed when no location is specified otherwise it is equal to parameter_location
-                                        plot_location = left_nc_root.variables[observation_type][column_id][:]
-                                        plot_location = b"".join(filter(None, plot_location)).decode("utf-8").strip()
-                                        if plot_location == "":
-                                            plot_location = "model_wide"
-
-                                        plot.PlotDifferencesTimeSeries(
+                                    if cf_role_time_series_var is not None:
+                                        plot_location = self.determine_plot_location(
+                                            left_nc_root, observation_type, column_id
+                                        )
+                                        self.create_time_series_plot(
                                             right_path,
-                                            datetime_series,
+                                            testcase_name,
                                             plot_ref_val,
                                             plot_cmp_val,
-                                            testcase_name,
                                             variable_name,
+                                            time_var,
                                             plot_location,
-                                            "netcdf",
                                         )
-                                    elif cf_role_time_series_var is None:  # Create 2D plot.
-                                        # Compute datetime for which we are making a plot / scalar field.
-                                        plot_datetime = start_datetime + delta * int(time_var[row_id])
-
-                                        plot_ref_val = left_nc_var[row_id, :]
-                                        plot_cmp_val = right_nc_var[row_id, :]
-
-                                        # search coordinates
-                                        coords = left_nc_var.coordinates.split()
-                                        x_coords = left_nc_root.variables[coords[0]][:]
-                                        y_coords = left_nc_root.variables[coords[1]][:]
-
-                                        subtitle = datetime.strftime(plot_datetime, "%Y%m%d_%H%M%S")
-                                        plot.PlotDifferencesMap(
+                                    elif cf_role_time_series_var is None:
+                                        self.create_2d_plot(
+                                            time_var,
+                                            row_id,
+                                            left_nc_var,
+                                            right_nc_var,
+                                            left_nc_root,
                                             right_path,
-                                            x_coords,
-                                            y_coords,
-                                            plot_ref_val,
-                                            plot_cmp_val,
-                                            param_new.tolerance_absolute,
+                                            param_new,
                                             testcase_name,
                                             variable_name,
-                                            subtitle,
-                                            "netcdf",
                                         )
+
                                 except Exception as e:
                                     logger.error(f"Plotting of parameter {variable_name} failed")
                                     logger.error(str(e))
@@ -315,6 +292,86 @@ class NetcdfComparer(IComparer):
                     )
                     raise Exception(error_msg)
         return results
+
+    def create_time_series_plot(
+        self,
+        right_path: str,
+        testcase_name: str,
+        plot_ref_val,
+        plot_cmp_val,
+        variable_name: str,
+        time_var: nc.Dataset,
+        plot_location,
+    ):
+        """Plot a time series graph."""
+        unit_txt = "".join(time_var.units).strip()
+        start_datetime, delta = interpret_time_unit(unit_txt)
+        datetime_series = [start_datetime + int(t_i) * delta for t_i in time_var[:]]
+
+        plot.PlotDifferencesTimeSeries(
+            right_path,
+            datetime_series,
+            plot_ref_val,
+            plot_cmp_val,
+            testcase_name,
+            variable_name,
+            plot_location,
+            "netcdf",
+        )
+
+    def determine_plot_location(self, left_nc_root, observation_type, column_id: int):
+        """Determine location name, needed when no location is specified otherwise it is equal to parameter_location."""
+        plot_location = left_nc_root.variables[observation_type][column_id][:]
+        plot_location = b"".join(filter(None, plot_location)).decode("utf-8").strip()
+        if plot_location == "":
+            plot_location = "model_wide"
+        return plot_location
+
+    def create_2d_plot(
+        self,
+        time_var: nc.Dataset,
+        row_id,
+        left_nc_var,
+        right_nc_var,
+        left_nc_root,
+        right_path: str,
+        param_new,
+        testcase_name: str,
+        variable_name: str,
+    ):
+        """Plot a 2D graph."""
+        subtitle = self.get_plot_subtitle(time_var, row_id)
+
+        plot_ref_val = left_nc_var[row_id, :]
+        plot_cmp_val = right_nc_var[row_id, :]
+
+        # search coordinates
+        coords = left_nc_var.coordinates.split()
+        x_coords = left_nc_root.variables[coords[0]][:]
+        y_coords = left_nc_root.variables[coords[1]][:]
+
+        plot.PlotDifferencesMap(
+            right_path,
+            x_coords,
+            y_coords,
+            plot_ref_val,
+            plot_cmp_val,
+            param_new.tolerance_absolute,
+            testcase_name,
+            variable_name,
+            subtitle,
+            "netcdf",
+        )
+
+    def get_plot_subtitle(self, time_var, row_id) -> str:
+        """Compute datetime for which we are making a plot / scalar field."""
+        unit_txt = "".join(time_var.units).strip()
+        start_datetime, delta = interpret_time_unit(unit_txt)
+
+        plot_datetime = start_datetime + delta * int(time_var[row_id])
+
+        subtitle = datetime.strftime(plot_datetime, "%Y%m%d_%H%M%S")
+        return subtitle
 
     def open_netcdf_file(self, path: str, filename: str) -> nc.Dataset:
         """Open NetCDF file and return netCDF dataset."""
