@@ -203,13 +203,13 @@ class NetcdfComparer(IComparer):
                                 )
 
                         except RuntimeError as e:
-                            logger.error(e)
+                            logger.error(str(e))
                             local_error = True
                             result.error = True
 
                         except Exception as e:
                             logger.error(f"Could not find parameter: {variable_name}, in file: {filename}")
-                            logger.error(e)
+                            logger.error(str(e))
                             local_error = True
                             result.error = True
 
@@ -302,7 +302,7 @@ class NetcdfComparer(IComparer):
                                         )
                                 except Exception as e:
                                     logger.error(f"Plotting of parameter {variable_name} failed")
-                                    logger.error(e)
+                                    logger.error(str(e))
                                     local_error = True
                                     result.error = True
                         results.append((testcase_name, file_check, param_new, result))
