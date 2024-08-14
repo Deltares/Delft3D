@@ -5626,6 +5626,18 @@
         </file>        
       </checks>
     </testCase>
+    <testCase name="e02_f022_c100_inifieldfile_morphopol" ref="dflowfm_default"> 
+      <path version="2024-08-07T17:00:00">e02_dflowfm/f022_morphology_2D/c100_inifieldfile_morphopol</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/r_map.nc" type="netCDF">
+          <parameters>
+      			<parameter name="mesh2d_waterdepth" toleranceAbsolute="0.01" />
+          </parameters>
+        </file>
+        <file name="depthgr.xyz" ignore="true" />
+      </checks>
+    </testCase>
     <testCase name="e02_f022_c300_sedimentmodelnr1_1PK" ref="dflowfm_default">
       <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c300_sedimentmodelnr1_1PK</path>
       <maxRunTime>20.0</maxRunTime>
@@ -6605,4 +6617,3 @@
       </checks>
     </testCase>
   </testCases>
-
