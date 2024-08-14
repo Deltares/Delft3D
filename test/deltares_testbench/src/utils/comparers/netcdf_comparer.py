@@ -48,20 +48,8 @@ class NetcdfComparer(IComparer):
                 plot_cmp_val = None
 
                 filename = file_check.name
-                try:
-                    left_nc_root = nc.Dataset(os.path.join(left_path, filename), "r", format="NETCDF4_CLASSIC")
-                except Exception as e:
-                    error_msg = f"Cannot open reference file {os.path.join(left_path, filename)}"
-                    raise RuntimeError(error_msg, e)
-                try:
-                    right_nc_root = nc.Dataset(
-                        os.path.join(right_path, filename),
-                        "r",
-                        format="NETCDF4_CLASSIC",
-                    )
-                except Exception as e:
-                    error_msg = f"Cannot open tested file {os.path.join(right_path, filename)}"
-                    raise RuntimeError(error_msg, e)
+                left_nc_root = self.open_netcdf_file(left_path, filename)
+                right_nc_root = self.open_netcdf_file(right_path, filename)
 
                 matchnumber = 0
                 for variable_name in left_nc_root.variables.keys():
@@ -327,6 +315,15 @@ class NetcdfComparer(IComparer):
                     )
                     raise Exception(error_msg)
         return results
+
+    def open_netcdf_file(self, path: str, filename: str) -> nc.Dataset:
+        """Open NetCDF file and return netCDF dataset."""
+        try:
+            nc_root = nc.Dataset(os.path.join(path, filename), "r", format="NETCDF4_CLASSIC")
+        except Exception as e:
+            error_msg = f"Cannot open netcdf file {os.path.join(path, filename)}"
+            raise RuntimeError(error_msg, e) from e
+        return nc_root
 
 
 def search_time_variable(nc_root, var_name):
