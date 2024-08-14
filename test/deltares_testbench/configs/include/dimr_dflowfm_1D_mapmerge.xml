@@ -92,6 +92,7 @@
           <arguments>
             <argument>-- --partition:ugrid=1:icgsolver=6</argument>
             <argument>manual_part_np3_multipleholes.pol</argument>
+            <argument>dflow1d.mdu</argument>
           </arguments>
         </program>
         <program ref="dimr" seq="2">
