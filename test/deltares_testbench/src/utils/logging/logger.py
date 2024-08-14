@@ -1,9 +1,7 @@
-"""
-Description: default logger implementation
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
-"""
+"""Default logger implementation.
 
+Copyright (C)  Stichting Deltares, 2024
+"""
 
 import os
 
@@ -23,7 +21,7 @@ class Logger(CompositeLogger):
             console_logger = ConsoleLogger(log_level)
 
         log_path = self.__get_log_file_path()
-        file_logger = FileLogger(LogLevel.DEBUG, "main_log", log_path)
+        file_logger = FileLogger(log_level, "main_log", log_path)
 
         super().__init__([console_logger, file_logger])
 

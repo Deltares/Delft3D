@@ -12,15 +12,20 @@ from src.utils.minio_rewinder import Rewinder
 
 class TestMinioHandler:
     @pytest.mark.parametrize(
-        "from_path, expected_host_name, expected_src_path, expected_bucket_name",
+        ("from_path", "expected_host_name", "expected_src_path", "expected_bucket_name"),
         [
             ("https://s3.deltares.nl/bucket_name/path/to/object", "s3.deltares.nl", "path/to/object", "bucket_name"),
             ("https://minio.com/bucket_name/path/to/object", "minio.com", "path/to/object", "bucket_name"),
         ],
     )
     def test_download_from_bucket(
-        self, from_path, expected_host_name, expected_src_path, expected_bucket_name, mocker: MockerFixture
-    ):
+        self,
+        from_path: str,
+        expected_host_name: str,
+        expected_src_path: str,
+        expected_bucket_name: str,
+        mocker: MockerFixture,
+    ) -> None:
         # Arrange
         minio_instance = mocker.Mock(spec=Minio)
         rewinder_instance = mocker.Mock(spec=Rewinder)
@@ -64,7 +69,9 @@ class TestMinioHandler:
             "https://minio.com",  # Path to bucket name missing
         ],
     )
-    def test_download_from_bucket__invalid_from_path__raise_value_error(self, from_path: str, mocker: MockerFixture):
+    def test_download_from_bucket__invalid_from_path__raise_value_error(
+        self, from_path: str, mocker: MockerFixture
+    ) -> None:
         # Arrange
         minio_instance = mocker.Mock(spec=Minio)
         rewinder_instance = mocker.Mock(spec=Rewinder)

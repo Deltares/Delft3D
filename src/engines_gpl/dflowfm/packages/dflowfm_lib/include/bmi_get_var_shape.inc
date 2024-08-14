@@ -38,7 +38,7 @@
        shape(1) = ndx
     case("twav")
        shape(1) = ndx
-    case("Uorb")
+    case("uorb")
        shape(1) = ndx
     case("bodsed")
        shape(2) = stmpar%morlyr%settings%nfrac
@@ -155,11 +155,22 @@
        shape(1) = ndx
     case("evap")
        shape(1) = ndx
+    case("qext")
+       shape(1) = ndkx
+    case("qextreal")
+       shape(1) = ndkx
+    case("vextcum")
+       shape(1) = ndkx
+    case("rainuni")
+       shape(1) = 0
     case("numlatsg")
        shape(1) = 0
     case("qplat")
+       shape(2) = num_layers
        shape(1) = numlatsg
     case("qqlat")
+       shape(3) = num_layers
+       shape(2) = numlatsg
        shape(1) = ndx
     case("balat")
        shape(1) = numlatsg
@@ -185,14 +196,6 @@
        shape(1) = nlatnd
     case("kclat")
        shape(1) = ndx
-    case("qext")
-       shape(1) = ndkx
-    case("qextreal")
-       shape(1) = ndkx
-    case("vextcum")
-       shape(1) = ndkx
-    case("rainuni")
-       shape(1) = 0
     case("Qsunmap")
        shape(1) = ndx
     case("zbndz")
@@ -293,8 +296,6 @@
        shape(1) = lnx
     case("diusp")
        shape(1) = lnx
-    case("taus")
-       shape(1) = ndx
     case("ndxi")
        shape(1) = 0
     case("ndx1db")

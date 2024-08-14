@@ -47,10 +47,10 @@
 !              Loop over output items
 
           last_process = 'notyetdone'
-          do ioutp=1,num_output_files
+          do ioutp=1,noutp
               if ( outppr(ioutp) .ne. last_process ) then
                   last_process = outppr(ioutp)
-                  iproc = index_in_array(last_process,procid(:num_processes_activated))
+                  iproc = index_in_array(last_process,procid(:nproc))
                   if ( iproc .le. 0 ) then
                      stop 'CH1TO1 BUG 01'
                   endif

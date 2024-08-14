@@ -21,10 +21,15 @@ class CredentialStatus(Enum):
 class CredentialHandler:
     """Handle credential file and setup of credential file for local use."""
 
-    def __init__(self, credentials: Optional[Credentials] = None, profile: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        credentials: Optional[Credentials] = None,
+        log_level: Optional[LogLevel] = LogLevel.INFO,
+        profile: Optional[str] = None,
+    ) -> None:
         self.cred_path: Path = (Path("~") / ".aws" / "credentials").expanduser()
         self.credentials: Optional[Credentials] = credentials
-        self.logger: ConsoleLogger = ConsoleLogger(log_level=LogLevel.INFO)
+        self.logger: ConsoleLogger = ConsoleLogger(log_level=log_level)
         self.profile: Optional[str] = profile
 
     def setup_credentials(self, is_interactive: bool) -> None:

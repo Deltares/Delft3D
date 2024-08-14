@@ -2690,7 +2690,7 @@ module m_ec_converter
          integer, dimension(2)          :: idx
 
          !
-         PI = datan(1.d0)*4.d0
+         PI = atan(1.d0)*4.d0
          success = .false.
          targetField => null()
          sourceT0Field => null()
@@ -2832,7 +2832,7 @@ module m_ec_converter
                                             comparereal(phase0, sourceMissing, .true.)==0 ) then
                                             sourceT0Field%arr1d(ipt) = sourceMissing
                                         else
-                                            sourceT0Field%arr1d(ipt) = amplitude * dcos(omega * delta_t - phase0 * PI/180.0_hp)
+                                            sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI/180.0_hp)
                                         end if
                                     end do
                                 end if
@@ -2851,7 +2851,7 @@ module m_ec_converter
                                                 comparereal(phase0, sourceMissing, .true.)==0 ) then
                                                 sourceT0Field%arr1d(ipt) = sourceMissing
                                             else
-                                                sourceT0Field%arr1d(ipt) = amplitude * dcos(omega * delta_t - phase0 * PI/180.0_hp)
+                                                sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI/180.0_hp)
                                             end if
                                         end do
                                     end do
@@ -3309,6 +3309,8 @@ module m_ec_converter
       !! @param[out] sm lambda in [0,1] on line segment 3-4 (outside [0,1] if no intersection). Unchanged if no intersect!!
       !! @param[out] xcr,ycr x-coord. of intersection point.
       SUBROUTINE CROSS(x1, y1, x2, y2, x3, y3, x4, y4, JACROS,SL,SM,XCR,YCR,CRP)
+         use ieee_arithmetic, only: ieee_is_nan
+
          double precision, intent(inout) :: crp !< crp (in)==-1234 will make crp (out) non-dimensional
          double precision :: det
          double precision :: eps
@@ -3320,7 +3322,7 @@ module m_ec_converter
          double precision                  :: dmiss    = -999d0
 
    !     safety check on crp (in)
-         if ( isnan(crp) ) then
+         if ( ieee_is_nan(crp) ) then
             crp = 0.0_hp
          end if
 

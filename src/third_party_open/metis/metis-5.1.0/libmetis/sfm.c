@@ -85,7 +85,7 @@ void FM_2WayNodeRefine2Sided(ctrl_t *ctrl, graph_t *graph, idx_t niter)
     * Get into the FM loop
     *******************************************************/
     mptr[0] = nmind = 0;
-    mindiff = iabs(pwgts[0]-pwgts[1]);
+    mindiff = abs(pwgts[0]-pwgts[1]);
     to = (pwgts[0] < pwgts[1] ? 0 : 1);
     for (nswaps=0; nswaps<nvtxs; nswaps++) {
       u[0] = rpqSeeTopVal(queues[0]);  
@@ -126,7 +126,7 @@ void FM_2WayNodeRefine2Sided(ctrl_t *ctrl, graph_t *graph, idx_t niter)
 
       pwgts[2] -= (vwgt[higain]-rinfo[higain].edegrees[other]);
 
-      newdiff = iabs(pwgts[to]+vwgt[higain] - (pwgts[other]-rinfo[higain].edegrees[other]));
+      newdiff = abs(pwgts[to]+vwgt[higain] - (pwgts[other]-rinfo[higain].edegrees[other]));
       if (pwgts[2] < mincut || (pwgts[2] == mincut && newdiff < mindiff)) {
         mincut = pwgts[2];
         mincutorder = nswaps;
@@ -326,7 +326,7 @@ void FM_2WayNodeRefine1Sided(ctrl_t *ctrl, graph_t *graph, idx_t niter)
     *******************************************************/
     IFSET(ctrl->dbglvl, METIS_DBG_TIME, gk_startcputimer(ctrl->Aux3Tmr));
     mptr[0] = nmind = 0;
-    mindiff = iabs(pwgts[0]-pwgts[1]);
+    mindiff = abs(pwgts[0]-pwgts[1]);
     for (nswaps=0; nswaps<nvtxs; nswaps++) {
       if ((higain = rpqGetTop(queue)) == -1)
         break;
@@ -343,7 +343,7 @@ void FM_2WayNodeRefine1Sided(ctrl_t *ctrl, graph_t *graph, idx_t niter)
 
       pwgts[2] -= (vwgt[higain]-rinfo[higain].edegrees[other]);
 
-      newdiff = iabs(pwgts[to]+vwgt[higain] - (pwgts[other]-rinfo[higain].edegrees[other]));
+      newdiff = abs(pwgts[to]+vwgt[higain] - (pwgts[other]-rinfo[higain].edegrees[other]));
       if (pwgts[2] < mincut || (pwgts[2] == mincut && newdiff < mindiff)) {
         mincut      = pwgts[2];
         mincutorder = nswaps;
@@ -499,7 +499,7 @@ void FM_2WayNodeBalance(ctrl_t *ctrl, graph_t *graph)
   badmaxpwgt = (idx_t)(mult*(pwgts[0]+pwgts[1]));
   if (gk_max(pwgts[0], pwgts[1]) < badmaxpwgt)
     return;
-  if (iabs(pwgts[0]-pwgts[1]) < 3*graph->tvwgt[0]/nvtxs)
+  if (abs(pwgts[0]-pwgts[1]) < 3*graph->tvwgt[0]/nvtxs)
     return;
 
   WCOREPUSH;

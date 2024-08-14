@@ -736,7 +736,6 @@ contains
             n = size(wls(i)%loads) - 1 ! Compensate error in wascal
 
             if (allocated(wls(i)%set_factor)) then
-                write(88, *) 'Waste: ', i, wls(i)%set_factor
                 if (wls(i)%set_factor(1) /= 0.0) then
                     wls(i)%flow = wls(i)%flow * wls(i)%set_factor(1)
                     wls(i)%loads(1:n) = wls(i)%loads(1:n) * wls(i)%set_factor(2:n + 1)

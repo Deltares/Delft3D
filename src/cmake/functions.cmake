@@ -101,18 +101,17 @@ function(create_vs_user_files)
 <VisualStudioUserFile>
 	<Configurations>
 		<Configuration Name=\"Debug|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
-		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/></Configurations></VisualStudioUserFile>"
+		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
+		<Configuration Name=\"RelWithDebInfo|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
+    </Configurations>
+</VisualStudioUserFile>"
 )
 	set (userfilename "${CMAKE_BINARY_DIR}/template.vcxproj.user")
     file(
         WRITE "${userfilename}"
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <Project ToolsVersion=\"15.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">
-    <PropertyGroup Condition=\"'\$(Configuration)'=='Release'\">
-        <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
-        <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
-    </PropertyGroup>
-    <PropertyGroup Condition=\"'\$(Configuration)'=='Debug'\">
+    <PropertyGroup>
         <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
         <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
     </PropertyGroup>
@@ -336,11 +335,11 @@ function(create_test test_name)
     if (DEFINED op_test_list)
         foreach(test_i IN LISTS op_test_list)
             add_test(NAME ${test_i} COMMAND ${test_name} ${test_i})
-            set_property (TEST ${test_i} PROPERTY FAIL_REGULAR_EXPRESSION "Condition.*failed;Values not comparable.*assertion failed")            
+            set_property (TEST ${test_i} PROPERTY FAIL_REGULAR_EXPRESSION "Condition.*failed;Values not comparable.*assertion failed")
         endforeach()
     else()
         add_test(NAME ${test_name} COMMAND ${test_name})
-        set_property (TEST ${test_name} PROPERTY FAIL_REGULAR_EXPRESSION "Condition.*failed;Values not comparable.*assertion failed")        
+        set_property (TEST ${test_name} PROPERTY FAIL_REGULAR_EXPRESSION "Condition.*failed;Values not comparable.*assertion failed")
     endif()
 
 
@@ -422,14 +421,16 @@ endfunction()
 
 # Function to return ifort version number
 function(get_intel_version)
-    if (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\.(1|2|3|4)[\.0-9]*")
+    if (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\\.(1|2|3|4)\\.[\\.0-9]*")
         set(intel_version 21 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\.(5|6|7)[\.0-9]*")
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\\.(5|6|7)\\.[\\.0-9]*|2022[\\.0-9]*")
         set(intel_version 22 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\.(8|9|10)[\.0-9]*")
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\\.(8|9|10)\\.[\\.0-9]*|2023[\\.0-9]*")
         set(intel_version 23 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "(2021\.0\.0\.20231010|2021\.0\.0\.20240222|2024[\.0-9]*)")
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\\.0\\.0\\.(20231010|20240222|20240602)|2024[\\.0-9]*")
         set(intel_version 24 PARENT_SCOPE)
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "20([0-9][0-9])[\\.0-9]*")
+        set(intel_version ${CMAKE_MATCH_1} PARENT_SCOPE) # Set to the result of the first capture group in parentheses (the last two year numbers, for example 25)
     else()
         message(FATAL_ERROR "Intel version ${CMAKE_Fortran_COMPILER_VERSION} is not recognized.")
     endif()

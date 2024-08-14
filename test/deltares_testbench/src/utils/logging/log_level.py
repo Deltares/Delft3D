@@ -1,14 +1,13 @@
-"""
-Description: logger level
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Logger level.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 from enum import IntEnum
 
 
 class LogLevel(IntEnum):
-    """Level of logging"""
+    """Level of logging."""
 
     CRITICAL = 50
     FATAL = CRITICAL

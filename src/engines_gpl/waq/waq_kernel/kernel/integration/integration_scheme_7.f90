@@ -39,7 +39,7 @@ contains
     !! the method can be used. In 1D the method outperforms the
     !! iterative methods.
     subroutine integration_scheme_7(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
-        
+
         use m_dlwq71
         use m_dlwq70
         use m_dlwq67
@@ -153,13 +153,11 @@ contains
 
                 ! do the user transport processes
                 ICSYS = ISYS
-                CALL DLWQTR(num_substances_total, num_substances_transported, num_cells, num_exchanges, num_exchanges_u_dir, &
-                        num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, num_spatial_time_fuctions, num_dispersion_arrays, &
-                        num_velocity_arrays, J(IXPNT:), A(IVOL:), A(IAREA:), A(IFLOW:), &
-                        A(ILENG:), A(ICONC:), A(IDISP:), A(ICONS:), A(IPARM:), &
-                        A(IFUNC:), A(ISFUN:), A(IDIFF:), A(IVELO:), ICSYS, &
-                        IDT, C(ISNAM:), num_constants, num_time_functions, C(ICNAM:), &
-                        C(IPNAM:), C(IFNAM:), C(ISFNA:), LDUMMY, ILFLAG)
+                call dlwqtr(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
+                            num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
+                            j(ixpnt:), a(ivol:), &
+                            a(ileng:), a(iparm:), &
+                            c(ipnam:), ilflag)
 
                 ! do the user water quality processes
                 CALL DLWQ60(A(IDERV:), A(ICONC:), num_substances_total, num_cells, ITFACT, &

@@ -1,7 +1,6 @@
-"""
-Description: Main Application for running Tests
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Main Application for running Tests.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import logging

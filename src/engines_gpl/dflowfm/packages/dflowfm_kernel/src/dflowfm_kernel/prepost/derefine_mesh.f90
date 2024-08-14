@@ -1,37 +1,37 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 !> derefine mesh
-subroutine derefine_mesh(xp,yp,Lconfirm)
+subroutine derefine_mesh(xp, yp, Lconfirm)
 
    use m_netw
    use m_alloc
@@ -41,43 +41,42 @@ subroutine derefine_mesh(xp,yp,Lconfirm)
 
    implicit none
 
-   double precision,                intent(in) :: xp, yp             !< coordinates of input point ( not used with Lconfirm .eq. .true. )
-   logical,                         intent(in) :: Lconfirm           !< prompt for cell deletion (.true.) or not (.false.)
+   double precision, intent(in) :: xp, yp !< coordinates of input point ( not used with Lconfirm .eq. .true. )
+   logical, intent(in) :: Lconfirm !< prompt for cell deletion (.true.) or not (.false.)
 
-   integer, parameter                          :: NMAX=100           !< array size
-   integer                                     :: ndirect            !< number of directly connected cells
-   integer                                     :: nindirect          !< number of indirectly connected cells
-   integer, dimension(NMAX)                    :: kdirect            !< directly connected cells, i.e. cells sharing a link with cell k
-   integer, dimension(NMAX)                    :: kindirect          !< indirectly connected cells, i.e. cells sharing a node, but not a link, with cell k
-   integer, dimension(2,NMAX)                  :: kne                !< left and right neighboring (in)direct cell that neighbors the directly connected cells
+   integer, parameter :: NMAX = 100 !< array size
+   integer :: ndirect !< number of directly connected cells
+   integer :: nindirect !< number of indirectly connected cells
+   integer, dimension(NMAX) :: kdirect !< directly connected cells, i.e. cells sharing a link with cell k
+   integer, dimension(NMAX) :: kindirect !< indirectly connected cells, i.e. cells sharing a node, but not a link, with cell k
+   integer, dimension(2, NMAX) :: kne !< left and right neighboring (in)direct cell that neighbors the directly connected cells
 
-   double precision                            :: xx, yy
+   double precision :: xx, yy
 
-   integer                                     :: numfront, numfrontnew
-   integer, dimension(:), allocatable          :: ifront, ifrontnew, icellmask
+   integer :: numfront, numfrontnew
+   integer, dimension(:), allocatable :: ifront, ifrontnew, icellmask
 
-   integer                                     :: i, ic, in, j, ja, k, k1, kk, kkk, L
-   integer                                     :: kcell, kother, knew, newsize, iter, N
+   integer :: i, in, j, ja, k, k1, kk, L
+   integer :: kother, newsize, iter, N
 
-   logical                                     :: Liscell, Lplot
+   logical :: Liscell, Lplot
 
-   integer, parameter                          :: MAXNUMFRONT = 1000, MAXITER = 1000
-
+   integer, parameter :: MAXNUMFRONT = 1000, MAXITER = 1000
 
    call findcells(100)
    call makenetnodescoding()
 
-   if ( Lconfirm ) then
+   if (Lconfirm) then
       Lplot = .true.
 !     find the cell
       in = -1
-      do k = 1,nump
-         if ( netcell(k)%N.lt.1 ) cycle
+      do k = 1, nump
+         if (netcell(k)%N < 1) cycle
          call pinpok(xp, yp, netcell(k)%N, xk(netcell(k)%nod), yk(netcell(k)%nod), in, jins, dmiss)
-         if ( in.gt.0 ) exit
+         if (in > 0) exit
       end do
 
-      if ( in.eq.0 ) then  ! no cell found
+      if (in == 0) then ! no cell found
          call qnerror('derefine_mesh: no cell found', ' ', ' ')
          return
       end if
@@ -85,43 +84,43 @@ subroutine derefine_mesh(xp,yp,Lconfirm)
       Lplot = .false.
 !     give preference to a cell near a boundary
       in = -1
-      k  = 0   ! default
-      do L=1,numL
-         if ( lnn(L).ne.1 ) cycle
+      k = 0 ! default
+      do L = 1, numL
+         if (lnn(L) /= 1) cycle
 !        check if this link is a true boundary link, or a link near the selecting polygon
-         if ( nb(kn(1,L)).ne.2 .or. nb(kn(2,L)).ne.2 ) cycle
+         if (nb(kn(1, L)) /= 2 .or. nb(kn(2, L)) /= 2) cycle
 !        get the adjacent cell
-         k1 = lne(1,L)
+         k1 = lne(1, L)
 !        check if the adjacent cell is a quad
-         if ( netcell(k1)%N.ne.4 ) cycle
+         if (netcell(k1)%N /= 4) cycle
 !        check if all nodes are inside the selecting polygon
          Liscell = .true.
-         do i=1,netcell(k1)%N
-            if ( nb(netcell(k1)%nod(i)).eq.0 ) then
+         do i = 1, netcell(k1)%N
+            if (nb(netcell(k1)%nod(i)) == 0) then
                Liscell = .false.
                exit
             end if
          end do
-         if ( .not.Liscell ) cycle
+         if (.not. Liscell) cycle
 
 !        link found: get the adjacent cell and exit
          k = k1
          exit
       end do
 
-      if ( k.lt.1 ) then   ! no cell found: take the first quad inside the selecting polygon
-         do k1=1,nump
+      if (k < 1) then ! no cell found: take the first quad inside the selecting polygon
+         do k1 = 1, nump
 !           check if the cell is a quad
-            if ( netcell(k1)%N.ne.4 ) cycle
+            if (netcell(k1)%N /= 4) cycle
 !           check if all nodes are inside the selecting polygon
             Liscell = .true.
-            do i=1,netcell(k1)%N
-               if ( nb(netcell(k1)%nod(i)).eq.0 ) then
+            do i = 1, netcell(k1)%N
+               if (nb(netcell(k1)%nod(i)) == 0) then
                   Liscell = .false.
                   exit
                end if
             end do
-            if ( .not.Liscell ) cycle
+            if (.not. Liscell) cycle
 
 !           cell found: get the cell and exit
             k = k1
@@ -130,11 +129,11 @@ subroutine derefine_mesh(xp,yp,Lconfirm)
       end if
 
 !     still no cell found: take the first
-      if ( k.lt.1 ) k = 1
+      if (k < 1) k = 1
    end if
 
 !  allocate
-   allocate(ifront(MAXNUMFRONT), ifrontnew(MAXNUMFRONT), icellmask(nump))
+   allocate (ifront(MAXNUMFRONT), ifrontnew(MAXNUMFRONT), icellmask(nump))
 
    icellmask = 0
 
@@ -153,46 +152,46 @@ subroutine derefine_mesh(xp,yp,Lconfirm)
 
    iter = 0
 
-   do while ( numfront.gt.0 .and. iter.lt.MAXITER)
-      iter = iter+1
+   do while (numfront > 0 .and. iter < MAXITER)
+      iter = iter + 1
       numfrontnew = 0
 
-      do i=1,numfront
+      do i = 1, numfront
          k = ifront(i)
 
 !        get the connected cells
          call find_surrounding_cells(k, NMAX, ndirect, nindirect, kdirect, kindirect, kne)
 
-         if ( icellmask(k).eq.1 ) then ! 'A' cell
-            do j=1,ndirect
+         if (icellmask(k) == 1) then ! 'A' cell
+            do j = 1, ndirect
                kother = kdirect(j)
-               if ( netcell(kother)%N.ne.4 ) cycle   ! quads only
-               if ( abs(icellmask(kother)).ne.1 .and. abs(icellmask(kother)) .ne.2  ) then
+               if (netcell(kother)%N /= 4) cycle ! quads only
+               if (abs(icellmask(kother)) /= 1 .and. abs(icellmask(kother)) /= 2) then
                   icellmask(kother) = 2
                   call update_frontlist(kother)
                end if
             end do
-            do j=1,nindirect
+            do j = 1, nindirect
                kother = kindirect(j)
-               if ( netcell(kother)%N.ne.4 ) cycle   ! quads only
-               if ( icellmask(kother).ne.3 ) then
+               if (netcell(kother)%N /= 4) cycle ! quads only
+               if (icellmask(kother) /= 3) then
                   icellmask(kother) = 3
                end if
             end do
             icellmask(k) = -1
-         else if ( icellmask(k).eq.2 ) then  ! 'B' cell
-            do j=1,ndirect
+         else if (icellmask(k) == 2) then ! 'B' cell
+            do j = 1, ndirect
                kother = kdirect(j)
-               if ( netcell(kother)%N.ne.4 ) cycle   ! quads only
-               if ( icellmask(kother).ne.3 .and. abs(icellmask(kother)).ne.1 .and. abs(icellmask(kother)).ne.2 ) then
+               if (netcell(kother)%N /= 4) cycle ! quads only
+               if (icellmask(kother) /= 3 .and. abs(icellmask(kother)) /= 1 .and. abs(icellmask(kother)) /= 2) then
                   icellmask(kother) = 1
                   call update_frontlist(kother)
                end if
             end do
-            do j=1,nindirect
+            do j = 1, nindirect
                kother = kindirect(j)
-               if ( netcell(kother)%N.ne.4 ) cycle   ! quads only
-               if ( abs(icellmask(kother)).ne.2 .and. abs(icellmask(kother)).ne.1 .and. icellmask(kother).ne.3 ) then
+               if (netcell(kother)%N /= 4) cycle ! quads only
+               if (abs(icellmask(kother)) /= 2 .and. abs(icellmask(kother)) /= 1 .and. icellmask(kother) /= 3) then
                   icellmask(kother) = 2
                   call update_frontlist(kother)
                end if
@@ -200,28 +199,27 @@ subroutine derefine_mesh(xp,yp,Lconfirm)
             icellmask(k) = -2
          end if
 
-      end do   ! do i=1,numfront
+      end do ! do i=1,numfront
 
       numfront = numfrontnew
-      ifront   = ifrontnew
+      ifront = ifrontnew
 
-   end do   ! do while ( numfront.gt.0 )
+   end do ! do while ( numfront.gt.0 )
 
-
-   if ( Lconfirm .or. .not.Lconfirm) then
+   if (Lconfirm .or. .not. Lconfirm) then
 !     plot
-      do k=1,nump
+      do k = 1, nump
          N = netcell(k)%N
-         if ( N.lt.1 ) cycle
-         xx = sum(xk(netcell(k)%nod(1:N)))/dble(N)
-         yy = sum(yk(netcell(k)%nod(1:N)))/dble(N)
-         if ( abs(icellmask(k)).eq.1 ) then
+         if (N < 1) cycle
+         xx = sum(xk(netcell(k)%nod(1:N))) / dble(N)
+         yy = sum(yk(netcell(k)%nod(1:N))) / dble(N)
+         if (abs(icellmask(k)) == 1) then
             call cirr(xx, yy, 31)
-         else if ( abs(icellmask(k)).eq.2 ) then
+         else if (abs(icellmask(k)) == 2) then
 !           call cirr(xx, yy, 211)
-         else if ( icellmask(k).eq.3  ) then
+         else if (icellmask(k) == 3) then
 !           call cirr(xx, yy, 204)
-         else if ( icellmask(k).eq.0  ) then
+         else if (icellmask(k) == 0) then
 !           call cirr(xx, yy, 0)
          else
             continue
@@ -232,16 +230,16 @@ subroutine derefine_mesh(xp,yp,Lconfirm)
       ja = 1
    end if
 
-   if ( ja.eq.1 ) then
+   if (ja == 1) then
 !     delete the appropriate cells
-      do k=1,nump
-         if ( icellmask(k).eq.-1 .and. netcell(k)%N.gt.0 ) then
+      do k = 1, nump
+         if (icellmask(k) == -1 .and. netcell(k)%N > 0) then
             call find_surrounding_cells(k, NMAX, ndirect, nindirect, kdirect, kindirect, kne)
 
-            if ( Lplot ) then
+            if (Lplot) then
 !              plot
-               do kk=1,netcell(k)%N
-                  call teknode(netcell(k)%nod(kk),0)
+               do kk = 1, netcell(k)%N
+                  call teknode(netcell(k)%nod(kk), 0)
                end do
             end if
 
@@ -249,12 +247,12 @@ subroutine derefine_mesh(xp,yp,Lconfirm)
 !           delete cell and update administration
             call deletecell(k, ndirect, nindirect, kdirect, kindirect, kne, .false., ja)
 
-            if ( Lplot ) then
-               if ( netcell(k)%N.eq.0 ) then ! cell removed: draw remaining node and links connected to it
-                  call teknode(k1,1)
-               else                          ! cell not removed: draw whole cell and links connected to it
-                  do kk=1,netcell(k)%N
-                     call teknode(netcell(k)%nod(kk),1)
+            if (Lplot) then
+               if (netcell(k)%N == 0) then ! cell removed: draw remaining node and links connected to it
+                  call teknode(k1, 1)
+               else ! cell not removed: draw whole cell and links connected to it
+                  do kk = 1, netcell(k)%N
+                     call teknode(netcell(k)%nod(kk), 1)
                   end do
                end if
             end if
@@ -264,37 +262,37 @@ subroutine derefine_mesh(xp,yp,Lconfirm)
    end if
 
 !  deallocate
-   deallocate(ifront, ifrontnew, icellmask)
+   deallocate (ifront, ifrontnew, icellmask)
 
 !  set network status
    netstat = NETSTAT_CELLS_DIRTY
 
    return
 
-   contains
+contains
 
    subroutine update_frontlist(knew)
       implicit none
 
-      integer, intent(in) :: knew   !< number of cell to be added to frontlist
+      integer, intent(in) :: knew !< number of cell to be added to frontlist
 
-      integer             :: i
+      integer :: i
 
 !     add to new front list
-      if ( knew.gt.0 ) then
+      if (knew > 0) then
 
 !        check number of nodes
-         if ( netcell(knew)%N.ne.4 ) return  ! quads only
+         if (netcell(knew)%N /= 4) return ! quads only
 
 !        check if cell is already in frontlist
-         do i=1,numfront
-            if ( ifrontnew(i).eq.knew ) return
+         do i = 1, numfront
+            if (ifrontnew(i) == knew) return
          end do
-         numfrontnew = numfrontnew+1
+         numfrontnew = numfrontnew + 1
 
 !        realloc if necessary
-         if ( numfrontnew.gt.ubound(ifrontnew,1) ) then
-            newsize = ceiling(1.2*ubound(ifrontnew,1))
+         if (numfrontnew > ubound(ifrontnew, 1)) then
+            newsize = ceiling(1.2 * ubound(ifrontnew, 1))
             call realloc(ifrontnew, newsize)
             call realloc(ifront, newsize)
          end if

@@ -157,7 +157,8 @@ contains
         save    istep
         data    istep  / 0 /
 
-        integer(4) ithndl /0/
+        integer(4) :: ithndl =  0
+        
         if (timon) call timstrt ("wq_processes_proces", ithndl)
 
         IFRACS = 1
@@ -366,7 +367,8 @@ contains
         integer(kind = int_wp) :: idim2
         integer(kind = int_wp) :: ipflux
 
-        integer(4) ithndl /0/
+        integer(4) :: ithndl =  0
+        
         if (timon) call timstrt ("onepro_wqp", ithndl)
 
         !     Set the variables
@@ -448,7 +450,8 @@ contains
         real(kind = dp) :: vol                              ! Help variable volume
         real(kind = dp) :: ndt                              ! Help variable time step multiplier
 
-        integer(4) ithndl /0/
+        integer(4) :: ithndl =  0
+        
         if (timon) call timstrt ("twopro_wqm", ithndl)
 
         do iproc = 1, num_processes_activated

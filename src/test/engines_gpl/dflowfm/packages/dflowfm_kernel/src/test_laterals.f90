@@ -47,8 +47,8 @@ subroutine tests_lateral()
    call finish_testcase()
 
    call test(test_get_lateral_volume_per_layer, 'Test computation of water volume per layer in laterals.')
-   call test(test_distribute_lateral_discharge_per_layer_per_cell, 'Test the distribution of lateral discharge per layer,' // &
-                                                                   ' which is retrieved from BMI, to per layer per cell.')
+   call test(test_distribute_lateral_discharge, 'Test the distribution of lateral discharge per layer per lateral,' // &
+                                                ' which is retrieved from BMI, to per layer per lateral per cell.')
 end subroutine tests_lateral
 !
 !==============================================================================
@@ -58,8 +58,8 @@ subroutine test_get_lateral_discharge()
    use m_transportdata, only: numconst
    use m_flowgeom, only: ndxi
    
-   real(kind=dp), allocatable, dimension(:,:)   :: lateral_discharge_in                !< Lateral discharge going into the model (source)
-   real(kind=dp), allocatable, dimension(:,:)   :: lateral_discharge_out               !< Lateral discharge extracted out of the model (sink)
+   real(kind=dp), allocatable, dimension(:,:,:)   :: lateral_discharge_in                !< Lateral discharge going into the model (source)
+   real(kind=dp), allocatable, dimension(:,:,:)   :: lateral_discharge_out               !< Lateral discharge extracted out of the model (sink)
    real(kind=dp), allocatable, dimension(:,:)   :: reference_lateral_discharge_in      !< Reference lateral discharge going into the model (source)
    real(kind=dp), allocatable, dimension(:,:)   :: reference_lateral_discharge_out     !< Reference lateral discharge extracted out of the model (sink)
    real(kind=dp), allocatable, dimension(:,:)   :: transport_load                      !< Load being transported into domain
@@ -68,9 +68,9 @@ subroutine test_get_lateral_discharge()
    integer :: iostat
    integer :: i_cell, i_const, i_lateral      ! loop counters
 
-   allocate(lateral_discharge_in(numlatsg,ndxi),stat=iostat)
+   allocate(lateral_discharge_in(1,numlatsg,ndxi),stat=iostat)
    call aerr('lateral_discharge_in',iostat,numlatsg*ndxi,'test_get_lateral_discharge' )
-   allocate(lateral_discharge_out(numlatsg,ndxi),stat=iostat)
+   allocate(lateral_discharge_out(1,numlatsg,ndxi),stat=iostat)
    call aerr('lateral_discharge_out',iostat,numlatsg*ndxi,'test_get_lateral_discharge' )
    allocate(reference_lateral_discharge_in(numlatsg,ndxi),stat=iostat)
    call aerr('reference_lateral_discharge_in',iostat,numlatsg*ndxi,'test_get_lateral_discharge' )
@@ -91,8 +91,8 @@ subroutine test_get_lateral_discharge()
    
    do i_lateral = 1,numlatsg
       do i_cell=1,ndxi
-         call assert_comparable(lateral_discharge_in(i_lateral,i_cell), reference_lateral_discharge_in(i_lateral,i_cell), tolerance, "get_lateral_discharge(): lateral_discharge_in is not correct" )
-         call assert_comparable(lateral_discharge_out(i_lateral,i_cell), reference_lateral_discharge_out(i_lateral,i_cell), tolerance, "get_lateral_discharge(): lateral_discharge_out is not correct" )         
+         call assert_comparable(lateral_discharge_in(1,i_lateral,i_cell), reference_lateral_discharge_in(i_lateral,i_cell), tolerance, "get_lateral_discharge(): lateral_discharge_in is not correct" )
+         call assert_comparable(lateral_discharge_out(1,i_lateral,i_cell), reference_lateral_discharge_out(i_lateral,i_cell), tolerance, "get_lateral_discharge(): lateral_discharge_out is not correct" )         
       end do
    end do
       
@@ -110,8 +110,8 @@ subroutine test_add_lateral_load_and_sink()
    use m_transportdata, only: numconst
    use m_flowgeom, only: ndxi
    
-   real(kind=dp), allocatable, dimension(:,:)   :: discharge_in                !< Lateral discharge going into the model (source)
-   real(kind=dp), allocatable, dimension(:,:)   :: discharge_out               !< Lateral discharge extracted out of the model (sink)
+   real(kind=dp), allocatable, dimension(:,:,:)   :: discharge_in                !< Lateral discharge going into the model (source)
+   real(kind=dp), allocatable, dimension(:,:,:)   :: discharge_out               !< Lateral discharge extracted out of the model (sink)
    real(kind=dp), allocatable, dimension(:,:)   :: transport_load              !< Load being transported into domain
    real(kind=dp), allocatable, dimension(:,:)   :: transport_sink              !< sink term due to transport into domain
 
@@ -121,9 +121,9 @@ subroutine test_add_lateral_load_and_sink()
    integer :: iostat                      ! allocation status
    integer :: i_cell, i_const, i_lateral  ! loop counters
 
-   allocate(discharge_in(numlatsg,ndxi),stat=iostat)
+   allocate(discharge_in(1,numlatsg,ndxi),stat=iostat)
    call aerr('discharge_in',iostat,numlatsg*ndxi,'test_add_lateral_load_and_sink')
-   allocate(discharge_out(numlatsg,ndxi),stat=iostat)
+   allocate(discharge_out(1,numlatsg,ndxi),stat=iostat)
    call aerr('discharge_out',iostat,numlatsg*ndxi,'test_add_lateral_load_and_sink')
    allocate(transport_load(numconst,ndxi),stat=iostat)
    call aerr('transport_load',iostat,numconst*ndxi,'test_add_lateral_load_and_sink')
@@ -146,15 +146,15 @@ subroutine test_add_lateral_load_and_sink()
 
    ! check transport into the domain
    i_lateral = 1 ! only the first lateral is a source
-   discharge_in(i_lateral,nnlat(1)) = 5._dp
-   discharge_in(i_lateral,nnlat(2)) = 5._dp
-   discharge_in(i_lateral,nnlat(3)) = 5._dp
+   discharge_in(1,i_lateral,nnlat(1)) = 5._dp
+   discharge_in(1,i_lateral,nnlat(2)) = 5._dp
+   discharge_in(1,i_lateral,nnlat(3)) = 5._dp
    call add_lateral_load_and_sink(transport_load,transport_sink,discharge_in,discharge_out,vol1,tolerance)
 
    do i_const = 1,numconst
       do i_cell=1,ndxi
          dvoli = 1/(vol1(i_cell))
-         refval = dvoli*incoming_lat_concentration(1,i_const,i_lateral)*discharge_in(i_lateral,i_cell)
+         refval = dvoli*incoming_lat_concentration(1,i_const,i_lateral)*discharge_in(1,i_lateral,i_cell)
          call assert_comparable(transport_load(i_const,i_cell),refval,tolerance,"lateral_load value is not correct" )
       end do
    end do
@@ -162,9 +162,9 @@ subroutine test_add_lateral_load_and_sink()
 
    ! check transport out of the domain
    i_lateral = 2 ! only the second lateral is a sink
-   discharge_in(:,:) = 0._dp
-   discharge_out(i_lateral,nnlat(4)) = -5._dp
-   discharge_out(i_lateral,nnlat(5)) = -5._dp
+   discharge_in(1,:,:) = 0._dp
+   discharge_out(1,i_lateral,nnlat(4)) = -5._dp
+   discharge_out(1,i_lateral,nnlat(5)) = -5._dp
    ! copy values of transport_load
    ref_load(:,:) = transport_load(:,:)
    call add_lateral_load_and_sink(transport_load,transport_sink,discharge_in,discharge_out,vol1,tolerance)
@@ -173,7 +173,7 @@ subroutine test_add_lateral_load_and_sink()
    do i_const = 1,numconst
       do i_cell=1,ndxi
          dvoli = 1/(vol1(i_cell))
-         refval = dvoli*discharge_out(i_lateral,i_cell)
+         refval = dvoli*discharge_out(1,i_lateral,i_cell)
          call assert_comparable(transport_sink(i_const,i_cell), refval, tolerance, "lateral_sink value is not correct" )
       end do
    end do
@@ -346,18 +346,18 @@ end subroutine test_get_lateral_volume_per_layer
 !! in y-direction, so that ndx = 8.
 !! There are 3 layers on all nodes, except for the 8th node which has only 2 active layers. So ndkx = (3+1)*8-1 = 31.
 !! The model contains 2 lateralsL: the 1st lateral is on nodes 1 and 2, the 2nd lateral is on nodes 7 and 8.
-subroutine test_distribute_lateral_discharge_per_layer_per_cell
+subroutine test_distribute_lateral_discharge
    use m_flow,          only: vol1, kbot, ktop, kmxn, kmx
    use m_alloc,         only: realloc
 
-   real(kind=dp), allocatable, dimension(:,:) :: lateral_discharge_per_layer_per_cell !< Discharge per layer per cell,
-                                                                                      !! dimension=(number_of_layer,number_of_node)
-                                                                                      !!          =(kmx,ndkx)
+   real(kind=dp), allocatable, dimension(:,:,:) :: lateral_discharge_per_layer_lateral_cell !< Discharge per layer per lateral per cell,
+                                                                                        !! dimension=(number_of_layer,numlatsg,number_of_node)
+                                                                                        !!          =(kmx,numlatsg,ndkx)
 
    integer :: ierr !< error flag
    integer :: ndx, ndkx
    integer :: i_node, i_layer
-   real(kind=dp), allocatable, dimension(:,:) :: provided_lateral_discharge_per_layer
+   real(kind=dp), allocatable, dimension(:,:) :: provided_lateral_discharge
 
    ! Specify number of computational cells, ndx
    ndx = 8
@@ -396,6 +396,9 @@ subroutine test_distribute_lateral_discharge_per_layer_per_cell
 
    ! Initialize laterals administration
    numlatsg = 2
+   call realloc(apply_transport, numlatsg, stat=ierr, keepExisting=.false., fill=1)
+   call aerr('apply_transport', ierr, numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
+
    call realloc(n1latsg, numlatsg, stat=ierr, keepExisting=.false., fill=0)
    call aerr('n1latsg', ierr, numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
 
@@ -413,18 +416,18 @@ subroutine test_distribute_lateral_discharge_per_layer_per_cell
    ! Initialize lateral volume per layer and discharge per layer.
    call realloc(lateral_volume_per_layer, [kmx, numlatsg], stat=ierr, keepExisting=.false., fill=0d0)
    call aerr('lateral_volume_per_layer', ierr, kmx*numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
-   call realloc(provided_lateral_discharge_per_layer, [kmx, numlatsg], stat=ierr, keepExisting=.false., fill=0d0)
+   call realloc(provided_lateral_discharge, [kmx, numlatsg], stat=ierr, keepExisting=.false., fill=0d0)
    call aerr('provided_lateral_discharge_per_layer', ierr, kmx*numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
-   call realloc(lateral_discharge_per_layer_per_cell, [kmx, ndkx], stat=ierr, keepExisting=.false., fill=0d0)
-   call aerr('lateral_discharge_per_layer_per_cell', ierr, kmx*ndkx, 'test_distribute_lateral_discharge_per_layer_per_cell')
+   call realloc(lateral_discharge_per_layer_lateral_cell, [kmx, numlatsg, ndkx], stat=ierr, keepExisting=.false., fill=0d0)
+   call aerr('lateral_discharge_per_layer_per_cell', ierr, kmx*numlatsg*ndkx, 'test_distribute_lateral_discharge_per_layer_per_cell')
 
    lateral_volume_per_layer(1:kmx,1) = [100, 300, 250] ! Volume for the 1st lateral per layer
    lateral_volume_per_layer(1:kmx,2) = [200, 250, 330] ! Volume for the 2nd lateral per layer
-   provided_lateral_discharge_per_layer(1:kmx,1) = [1000, 1500, 2800] ! Discharge for the 1st lateral per layer
-   provided_lateral_discharge_per_layer(1:kmx,2) = [2000, 3000, 2500] ! Discharge for the 2nd lateral per layer
+   provided_lateral_discharge(1:kmx,1) = [1000, 1500, 2800] ! Discharge for the 1st lateral per layer
+   provided_lateral_discharge(1:kmx,2) = [2000, 3000, 2500] ! Discharge for the 2nd lateral per layer
 
    ! Distribute the lateral discharge
-   call distribute_lateral_discharge_per_layer_per_cell(provided_lateral_discharge_per_layer, lateral_discharge_per_layer_per_cell)
+   call distribute_lateral_discharge(provided_lateral_discharge, lateral_discharge_per_layer_lateral_cell)
 
    ! Compare results with reference results.
    ! The 2 laterals are applied on 4 nodes, i.e. 1, 2, 7 and 8. Considering the layers, in total 4*3-1=11 cells are involved,
@@ -438,37 +441,37 @@ subroutine test_distribute_lateral_discharge_per_layer_per_cell
    !  c. provided_lateral_discharge_per_layer(1,1) = 1000, which is the discharge of lateral 1 at layer 1.
    ! With a, b. and c, we can compute the target:
    !   lateral_discharge_per_layer_per_cell(1,9) = 19/100*1000 = 190.
-   call assert_comparable(lateral_discharge_per_layer_per_cell(1,9),  190.0d0, tolerance, &
+   call assert_comparable(lateral_discharge_per_layer_lateral_cell(1,1,9),  190.0d0, tolerance, &
                           "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,9)" // &
                           " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_per_cell(2,10), 100.0d0, tolerance, &
+   call assert_comparable(lateral_discharge_per_layer_lateral_cell(2,1,10), 100.0d0, tolerance, &
                           "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,10)" // &
                           " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_per_cell(3,11), 235.2d0, tolerance, &
+   call assert_comparable(lateral_discharge_per_layer_lateral_cell(3,1,11), 235.2d0, tolerance, &
                           "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,11)" // &
                           " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_per_cell(1,12), 220.0d0, tolerance, &
+   call assert_comparable(lateral_discharge_per_layer_lateral_cell(1,1,12), 220.0d0, tolerance, &
                           "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,12)" // &
                           " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_per_cell(2,13), 115.0d0, tolerance, &
+   call assert_comparable(lateral_discharge_per_layer_lateral_cell(2,1,13), 115.0d0, tolerance, &
                           "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,13)" // &
                           " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_per_cell(3,14), 268.8d0, tolerance, &
+   call assert_comparable(lateral_discharge_per_layer_lateral_cell(3,1,14), 268.8d0, tolerance, &
                           "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,14)" // &
                           " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_per_cell(1,27), 370.0d0, tolerance, &
-                          "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,27)" // &
+   call assert_comparable(lateral_discharge_per_layer_lateral_cell(1,2,27), 370.0d0, tolerance, &
+                         "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,27)" // &
                           " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_per_cell(2,28), 456.0d0, tolerance, &
+   call assert_comparable(lateral_discharge_per_layer_lateral_cell(2,2,28), 456.0d0, tolerance, &
                           "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,13)" // &
                           " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_per_cell(3,29), 295.454545454545d0, tolerance, &
+   call assert_comparable(lateral_discharge_per_layer_lateral_cell(3,2,29), 295.454545454545d0, tolerance, &
                           "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,29)" // &
                           " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_per_cell(2,30), 480.0d0, tolerance, &
+   call assert_comparable(lateral_discharge_per_layer_lateral_cell(2,2,30), 480.0d0, tolerance, &
                           "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,30)" // &
                           " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_per_cell(3,31), 310.606060606061d0, tolerance, &
+   call assert_comparable(lateral_discharge_per_layer_lateral_cell(3,2,31), 310.606060606061d0, tolerance, &
                           "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,31)" // &
                           " is not correct.")
 
@@ -485,6 +488,9 @@ subroutine test_distribute_lateral_discharge_per_layer_per_cell
    if (allocated(ktop)) then
       deallocate(ktop)
    end if
+   if (allocated(apply_transport)) then
+      deallocate(apply_transport)
+   end if
    if (allocated(n1latsg)) then
       deallocate(n1latsg)
    end if
@@ -497,13 +503,13 @@ subroutine test_distribute_lateral_discharge_per_layer_per_cell
    if (allocated(lateral_volume_per_layer)) then
       deallocate(lateral_volume_per_layer)
    end if
-   if (allocated(provided_lateral_discharge_per_layer)) then
-      deallocate(provided_lateral_discharge_per_layer)
+   if (allocated(provided_lateral_discharge)) then
+      deallocate(provided_lateral_discharge)
    end if
-   if (allocated(lateral_discharge_per_layer_per_cell)) then
-      deallocate(lateral_discharge_per_layer_per_cell)
+   if (allocated(lateral_discharge_per_layer_lateral_cell)) then
+      deallocate(lateral_discharge_per_layer_lateral_cell)
    end if
 
-end subroutine test_distribute_lateral_discharge_per_layer_per_cell
+end subroutine test_distribute_lateral_discharge
 
 end module test_lateral

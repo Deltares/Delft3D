@@ -1,7 +1,6 @@
-"""
-Description: Nefis file comparer
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Nefis file comparer.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import copy
@@ -20,7 +19,7 @@ from src.utils.logging.i_logger import ILogger
 
 
 class NefisComparer(IComparer):
-    """Compare nefis content equality"""
+    """Compare nefis content equality."""
 
     def __init__(self, vs_program: Program) -> None:
         self.__vs_program = vs_program
@@ -35,15 +34,13 @@ class NefisComparer(IComparer):
     ) -> List[Tuple[str, FileCheck, Parameter, ComparisonResult]]:
         # need to generate instruction file for vs.exe
         str_time = str(time.time())
-        tmp_filename = "vs_" + str_time + ".tmp"
-        vs_stdout = "vs_" + str_time + ".out"
-        dict_quantity_filename = self.__createVsInput__(
-            left_path, file_check, tmp_filename, logger
-        )
+        tmp_filename = f"vs_{str_time}.tmp"
+        vs_stdout = f"vs_{str_time}.out"
+        dict_quantity_filename = self.__createVsInput__(left_path, file_check, tmp_filename, logger)
         self.__createVsInput__(right_path, file_check, tmp_filename, logger)
 
         # run vs for all filenames
-        in_file = "<%s >%s 2>&1" % (tmp_filename, vs_stdout)
+        in_file = f"<{tmp_filename} >{vs_stdout} 2>&1"
         self.__runVs__(left_path, in_file, self.__vs_program, logger)
         self.__runVs__(right_path, in_file, self.__vs_program, logger)
 
@@ -52,7 +49,7 @@ class NefisComparer(IComparer):
         results = []
         for parameters in file_check.parameters.values():
             for parameter in parameters:
-                logger.debug("Checking parameter: " + str(parameter.name))
+                logger.debug(f"Checking parameter:  {parameter.name}")
                 file_check_ascii = FileCheck()
                 file_check_ascii.name = dict_quantity_filename[parameter.name]
                 # file_check_ascii.setParameters({'1':parameters})
@@ -79,9 +76,7 @@ class NefisComparer(IComparer):
     # create a vs config file
     # input: path, filecheck, filename
     # output: array of filenames that will be created by vs
-    def __createVsInput__(
-        self, path: str, filecheck: FileCheck, uf: str, logger: ILogger
-    ):
+    def __createVsInput__(self, path: str, filecheck: FileCheck, uf: str, logger: ILogger):
         defextension = ".def"
         if os.path.splitext(filecheck.name)[1] == ".hda":
             defextension = ".hdf"
@@ -94,25 +89,16 @@ class NefisComparer(IComparer):
         logger.debug(f"Creating temporary file {os.path.join(path, uf)}")
         result = {}  # Maps quantityNames to filenames.
         with open(os.path.join(path, uf), "w") as tmpinfile:
-            tmpinfile.write(
-                "use "
-                + filecheck.name
-                + " def "
-                + os.path.splitext(filecheck.name)[0]
-                + defextension
-                + "\n"
-            )
+            tmpinfile.write(f"use {filecheck.name} def {os.path.splitext(filecheck.name)[0]}{defextension}\n")
             for grp in filecheck.parameters.keys():
                 for i in range(0, len(filecheck.parameters[grp])):
                     quantityName = filecheck.parameters[grp][i].name
                     # WARNING: v/fn are not allowed to be "too long" (16 is the limit)
-                    v = quantityName[:11] + "_" + str(i)
-                    tmpinfile.write(
-                        "let " + v + " = " + quantityName + " from " + str(grp) + "\n"
-                    )
-                    filename = filecheck.name[:8] + "-" + v + ".tkl"
+                    v = f"{quantityName[:11]}_{i}"
+                    tmpinfile.write(f"let {v} = {quantityName} from {grp}\n")
+                    filename = f"{filecheck.name[:8]}-{v}.tkl"
                     result[quantityName] = filename
-                    tmpinfile.write("write " + v + " to " + filename + "\n")
+                    tmpinfile.write(f"write {v} to {filename}\n")
             tmpinfile.write("quit\n")
         tmpinfile.closed
         return result
@@ -130,6 +116,4 @@ class NefisComparer(IComparer):
             prgm.run(logger)
             logger.debug("finished vs")
         except SystemError:
-            logger.warning(
-                "vs executable can give errors while functioning, continuing"
-            )
+            logger.warning("vs executable can give errors while functioning, continuing")

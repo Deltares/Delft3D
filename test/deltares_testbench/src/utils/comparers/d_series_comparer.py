@@ -6,7 +6,7 @@ import src.utils.comparers.tree_comparer as TreeComparer
 
 
 class DSeriesComparer(TreeComparer.TreeComparer):
-    def __init__(self):
+    def __init__(self) -> None:
         # call base class constructor
         TreeComparer.TreeComparer.__init__(self)
         self.skipped_keys.append("txt")
@@ -17,12 +17,12 @@ class DSeriesComparer(TreeComparer.TreeComparer):
         # Stop descending the tree!
 
     def parseNode(self, text):
-        """Parses node as a dictionary"""
+        """Parses node as a dictionary."""
         try:
             lines = []
             for line in text:
                 lines.append(line)
-        except Exception as e:
+        except Exception:
             raise TreeComparer.TreeException("Could not parse block\n ")
         dictionary = {}
         keys = []
@@ -134,9 +134,7 @@ class DSeriesComparer(TreeComparer.TreeComparer):
                         try:
                             has_next = True
                             while has_next:
-                                newsubbranch, has_next = cls.branch(
-                                    tag, dmp, lvl + 1, line
-                                )
+                                newsubbranch, has_next = cls.branch(tag, dmp, lvl + 1, line)
                                 if tag not in newbranch:
                                     newbranch[tag] = []
                                 newbranch[tag].append(newsubbranch)
@@ -144,7 +142,7 @@ class DSeriesComparer(TreeComparer.TreeComparer):
                             raise dse
                 else:
                     pass  # actions handling normal lines
-                    if not ("txt" in newbranch):
+                    if "txt" not in newbranch:
                         newbranch["txt"] = []  # stringlist
                     newbranch["txt"].append(dmpline.rstrip().lstrip())
             else:

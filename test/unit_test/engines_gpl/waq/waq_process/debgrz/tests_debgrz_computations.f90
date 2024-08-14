@@ -44,7 +44,7 @@ program tests_debgrz_computations
                                      calculate_respiration, &
                                      calculate_shell_formation_fluxes, &
                                      calculate_mortality
-                       
+
 
     implicit none
     character(len=200) :: cmd_arg
@@ -212,7 +212,7 @@ program tests_debgrz_computations
     subroutine run_test_debgrz_calculate_spawning()
         call test(test_debgrz_calculate_spawning, 'Calculation of spawning')
     end subroutine run_test_debgrz_calculate_spawning
- 
+
     subroutine run_test_debgrz_calculate_respiration()
         call test(test_debgrz_calculate_respiration, 'Calculation of Respiration')
     end subroutine run_test_debgrz_calculate_respiration
@@ -236,18 +236,18 @@ program tests_debgrz_computations
         real(kind = real_wp) :: kt1, kt2, kt3, kt4, kt5, kt6 !< temperature dependent rate values
 
         ! Arrange
-        temp1 = 5
-        temp2 = 25
-        ta1 = 5800
-        ta2 = 2000
-        tal1 = 45430
-        tal2 = 60000
-        tah1 = 31376
-        tah2 = 50000
-        th1 = 296
-        th2 = 300
-        tl1 = 275
-        tl2 = 280
+        temp1 = 5.0
+        temp2 = 25.0
+        ta1 = 5800.0
+        ta2 = 2000.0
+        tal1 = 45430.0
+        tal2 = 60000.0
+        tah1 = 31376.0
+        tah2 = 50000.0
+        th1 = 296.0
+        th2 = 300.0
+        tl1 = 275.0
+        tl2 = 280.0
 
         ! Act
         kt1 = temperature_dependent_rate(temp2, ta1, tal1, tah1, th1, tl1)
@@ -433,9 +433,9 @@ program tests_debgrz_computations
     end subroutine test_debgrz_calculate_rescale_factors
 
     subroutine test_debgrz_rescale_non_food_vars()
-        integer(kind=int_wp) :: switchv1_0, switchv1_1 !< 
+        integer(kind=int_wp) :: switchv1_0, switchv1_1 !<
 
-        real(kind=real_wp)   :: depth_factor !< 
+        real(kind=real_wp)   :: depth_factor !<
         real(kind=real_wp)   :: dens1, dens2 !< Density derived from Vtot(unit dep on BENTHS)
         real(kind=real_wp)   :: conv_cm3_gc  !< Conversion factor from cm3 into gC        [gC/cm3]
         real(kind=real_wp)   :: conv_j_gc    !< Conversion factor from energy into mass     [gC/J]
@@ -466,11 +466,11 @@ program tests_debgrz_computations
         shape = 10
         em_l3 = 0.25
         vd = 0.123
-        vtot = 100
-        etot1 = 200
-        rtot1 = 300
-        etot2 = -2
-        rtot2 = -3
+        vtot = 100.0
+        etot1 = 200.0
+        rtot1 = 300.0
+        etot2 = -2.0
+        rtot2 = -3.0
 
         !Act
         call rescale_non_food_vars(switchv1_0, depth_factor, dens1, conv_cm3_gc, conv_j_gc, shape, em_l3, &
@@ -487,7 +487,7 @@ program tests_debgrz_computations
         call assert_comparable(e_m2,  2000.0, tolerance, 'Validate e_m2')
         call assert_comparable(r_m2,  3000.0, tolerance, 'Validate r_m2')
         call assert_comparable(dens_m2, 50.0, tolerance, 'Validate dens_m2')
-        
+
         call assert_comparable(v1,      10.0, tolerance, 'Validate v')
         call assert_comparable(v2,  tiny(v2), tolerance, 'Validate v tiny')
         call assert_comparable(e1,      10.0, tolerance, 'Validate e')
@@ -544,14 +544,14 @@ program tests_debgrz_computations
         ! Arrange
         kappa_i = 0.4
         kappa_a = 0.8
-        tn = 2
+        tn = 2.0
         tp = 2.5
         conv_j_gc = 0.1
-        c_filtr1 = 20
-        c_filtr2 = -20
-        n_filtr = 2
-        p_filtr = 1
-        si_filtr = 12
+        c_filtr1 = 20.0
+        c_filtr2 = -20.0
+        n_filtr = 2.0
+        p_filtr = 1.0
+        si_filtr = 12.0
         faecal_fraction = 0.5
 
         ! Act
@@ -589,18 +589,18 @@ program tests_debgrz_computations
         real(kind=real_wp) :: pc1, pc2, pc3 !< Energy reserve dynamics per individual      [J/ind/d]
 
         ! Arrange
-        jxm_l2  = 1
-        kappa_a = 2
-        eg_l3   = 12
-        em_l3   = 4
+        jxm_l2  = 1.0
+        kappa_a = 2.0
+        eg_l3   = 12.0
+        em_l3   = 4.0
         pm_l3   = 0.123
         kappa   = 0.5
         delt1   = 0.1
         delt2   = 100000
         kT      = 0.1
         v       = 0.027
-        e1      = 2
-        e2      = -2
+        e1      = 2.0
+        e2      = -2.0
 
         ! Act
         call calculate_energy_reserve_dynamics(jxm_l2, kappa_a, eg_l3, em_l3, pm_l3, kappa, delt1, kT, v, e1, pc1)
@@ -647,16 +647,16 @@ program tests_debgrz_computations
 
         ! Arrange
         kappa       = 0.5
-        pc          = 10
+        pc          = 10.0
         conv_cm3_gc = 0.12
         conv_j_gc   = 0.3
-        eg_l3       = 2
+        eg_l3       = 2.0
         delt1       = 0.1
         delt2       = 0.01
         v           = 0.25
-        pm1          = 0.123
-        pm2          = 10
-        pm3          = 10
+        pm1         = 0.123
+        pm2         = 10.0
+        pm3         = 10.0
 
         ! Act
         call calculate_growth(kappa, pc, conv_cm3_gc, conv_j_gc, eg_l3, delt1, v, pm1, pv1, pg1, kappa_g)
@@ -690,9 +690,9 @@ program tests_debgrz_computations
         ! Arrange
         switchv1_0 = 0
         switchv1_1 = 1
-        v1 = 20
-        v2 = 90
-        vp = 80
+        v1 = 20.0
+        v2 = 90.0
+        vp = 80.0
 
         ! Act
         call get_maturity_fractions(switchv1_1, v1, vp, fjuv1, fadult1)
@@ -724,11 +724,11 @@ program tests_debgrz_computations
         ! Arrange
         switchv1_0 = 0
         switchv1_1 = 1
-        vp1 = 20
-        vp2 = 10
-        v = 15
-        e = 5
-        r = 12
+        vp1 = 20.0
+        vp2 = 10.0
+        v = 15.0
+        e = 5.0
+        r = 12.0
         fadult = 0.75
         conv_j_gc = 0.123e-3
         conv_cm3_gc = 0.456e-3
@@ -766,12 +766,12 @@ program tests_debgrz_computations
 
         ! Arrange
         vp = 10
-        kappa = 0.8 
+        kappa = 0.8
         pm_l3 = 0.123e-3
         kappar = 0.6
         delt = 0.01
-        v = 15
-        r  = 12
+        v = 15.0
+        r  = 12.0
         pc1 = 0.321
         pc2 = 0.321e-3
         kT = 0.456
@@ -816,21 +816,21 @@ program tests_debgrz_computations
         real(kind=real_wp) :: dpspw(3)               !< Delta energy for phosphorus for spawning [J/ind/d]
 
         ! Arrange
-        gsi = 15
-        gsi_upper1 = 10
-        gsi_upper2 = 20
-        gsi_lower1 = 5
-        gsi_lower2 = 17
-        temp = 12
-        minsptemp1 = 10
-        minsptemp2 = 15
+        gsi = 15.0
+        gsi_upper1 = 10.0
+        gsi_upper2 = 20.0
+        gsi_lower1 = 5.0
+        gsi_lower2 = 17.0
+        temp = 12.0
+        minsptemp1 = 10.0
+        minsptemp2 = 15.0
         r = 0.123
         rspawn = 0.456
         delt = 0.01
         tn = 0.3
         tp = 0.4
         pr = 0.321
-        dospawn = [0, 0, 1]
+        dospawn = [0.0, 0.0, 1.0]
 
         ! Act
         call calculate_spawning(gsi, gsi_lower1, gsi_upper1, temp, minsptemp1, r, rspawn, delt, tn, tp, &
@@ -872,24 +872,29 @@ program tests_debgrz_computations
         real(kind=real_wp) :: dres1, dres2   !< Respiration per individual (carbon)
         real(kind=real_wp) :: dnres1, dnres2 !< Respiration per individual (nitrogen)
         real(kind=real_wp) :: dpres1, dpres2 !< Respiration per individual (phosphorus)
+        real(kind=real_wp) :: ddis           !< Total maintenance cost (see calculate_shell_formation_fluxes)
+        real(kind=real_wp) :: pomm           !< Energy flux ot organic shell matrix (ignored for now)
 
         ! Arrange
-        pm      = 1
-        pja     = 2
-        pjj     = 4
-        prj     = 8
+        pm      = 1.0
+        pja     = 2.0
+        pjj     = 4.0
+        prj     = 8.0
         kappa_g = 0.5
-        pg1     = 100
-        pra1    = 1000
-        pg2     = -100
-        pra2    = -1000
+        pg1     = 100.0
+        pra1    = 1000.0
+        pg2     = -100.0
+        pra2    = -1000.0
         kappar  = 0.25
         tn      = 0.11
         tp      = 0.33
 
+        ddis    = pm  + pja + pjj + prj
+        pomm    = 0.0
+
         ! Act
-        call calculate_respiration(pm, pja, pjj, prj, kappa_g, pg1, pra1, kappar, tn, tp, dres1, dnres1, dpres1)
-        call calculate_respiration(pm, pja, pjj, prj, kappa_g, pg2, pra2, kappar, tn, tp, dres2, dnres2, dpres2)
+        call calculate_respiration(ddis, pomm, kappa_g, pg1, pra1, kappar, tn, tp, dres1, dnres1, dpres1)
+        call calculate_respiration(ddis, pomm, kappa_g, pg2, pra2, kappar, tn, tp, dres2, dnres2, dpres2)
 
         ! Assert
         call assert_comparable(dres1,  815.00, tolerance, 'Validate dres: Respiration per individual (carbon), pg > 0, pra > 0')
@@ -902,31 +907,72 @@ program tests_debgrz_computations
     end subroutine test_debgrz_calculate_respiration
 
     subroutine test_debgrz_calculate_shell_formation_fluxes()
-        real(kind=real_wp) :: pv                   !< Overhead costs per volume                      [J/ind/d]
-        real(kind=real_wp) :: frgsmo1, frgsmo2     !< Fraction of growth flux to shell matrix              [-]
-        real(kind=real_wp) :: frsmosmi1, frsmosmi2 !< Fraction of shell matrix flux to calcification       [-]
-        real(kind=real_wp) :: pomm1, pomm2, pomm3  !< Energy flux to organic shell matrix            [J/ind/d]
-        real(kind=real_wp) :: pca1, pca2, pca3     !< Energy flux to calcification of shell matrix   [J/ind/d]
+        real(kind=real_wp) :: pv                      !< Overhead costs per volume                      [J/ind/d]
+        real(kind=real_wp) :: fpgrosmo1, fpgrosmo2    !< Growth-based contribution to shell matrix            [-]
+        real(kind=real_wp) :: fpdissmo1, fpdissmo2,   &
+                              fpdissmo3               !< Dissipation-based contribution to shell matrix       [-]
+        real(kind=real_wp) :: pomm1, pomm2, pomm3,    &
+                              pomm4, pomm5            !< Energy flux to organic shell matrix            [J/ind/d]
+        real(kind=real_wp) :: pca1, pca2, pca3,       &
+                              pca4, pca5              !< Energy flux to calcification of shell matrix   [J/ind/d]
+        real(kind=real_wp) :: ycacosmo1,              &
+                              ycacosmo2, ycacosmo3    !< Yield coefficient CaCO3 deposition on matrix         [-]
+        real(kind=real_wp) :: ddis1, ddis2, ddis3,    &
+                              ddis4, ddis5            !< Dissipation flux (not the same as respiration!)[J/ind/d]
+        real(kind=real_wp) :: pm, pja, pjj, prj       !< Maintenance costs                              [J/ind/d]
 
-        ! Arrange
-        pv        = 2
-        frgsmo1   = 3
-        frsmosmi1 = 5
-        frgsmo2   = -3
-        frsmosmi2 = -5
+        ! Arrange - with DELWAQ-843 the meaning of frsmosmi changes
+        pv        = 2.0
+        fpgrosmo1 = 3.0
+        ycacosmo1 = 1.0 / 5.0
+        fpgrosmo2 = -3.0
+        ycacosmo3 = 0.0   ! Should not lead to division by zero!
+
+        ! pm, etc. chosen so that we retain the old values - before DELWAQ-843
+        pm        = 0.0
+        pja       = 0.0
+        pjj       = 0.0
+        prj       = 0.0
+
+        fpdissmo1 = 1.0
+        fpdissmo2 = 1.0
+        fpdissmo3 = 1.0
 
         ! Act
-        call calculate_shell_formation_fluxes(pv, frgsmo1, frsmosmi1, pomm1, pca1)
-        call calculate_shell_formation_fluxes(pv, frgsmo1, frsmosmi2, pomm2, pca2)
-        call calculate_shell_formation_fluxes(pv, frgsmo2, frsmosmi1, pomm3, pca3)
+        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv, fpgrosmo1, fpdissmo1, ycacosmo1, ddis1, pomm1, pca1)
+        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv, fpgrosmo1, fpdissmo2, ycacosmo2, ddis2, pomm2, pca2)
+        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv, fpgrosmo2, fpdissmo3, ycacosmo1, ddis3, pomm3, pca3)
+
+        pm        = 1.0
+        pja       = 1.0
+        pjj       = 1.0
+        prj       = 1.0
+
+        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv, fpgrosmo1, fpdissmo3, ycacosmo3, ddis4, pomm4, pca4)
+        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv, fpgrosmo1, fpdissmo3, ycacosmo1, ddis5, pomm5, pca5)
+
 
         ! Assert
+        call assert_comparable(ddis1,  0.0, tolerance, 'Validate ddis: Energy flux to organic shell matrix, pomm > 0, pca > 0')
         call assert_comparable(pomm1,  6.0, tolerance, 'Validate pomm: Energy flux to organic shell matrix, pomm > 0, pca > 0')
         call assert_comparable(pca1,  30.0, tolerance, 'Validate pca:  Energy flux to calcification of shell matrix, pomm > 0, pca >0')
+
+        call assert_comparable(ddis2,  0.0, tolerance, 'Validate ddis: Energy flux to organic shell matrix, pomm > 0, pca > 0')
         call assert_comparable(pomm2,  6.0, tolerance, 'Validate pomm: Energy flux to organic shell matrix, pomm > 0, pca == 0')
         call assert_comparable(pca2,   0.0, tolerance, 'Validate pca:  Energy flux to calcification of shell matrix, pomm > 0, pca == 0')
+
+        call assert_comparable(ddis3,  0.0, tolerance, 'Validate ddis: Energy flux to organic shell matrix, pomm > 0, pca > 0')
         call assert_comparable(pomm3,  0.0, tolerance, 'Validate pomm: Energy flux to organic shell matrix, pomm == 0')
         call assert_comparable(pca3,   0.0, tolerance, 'Validate pca:  Energy flux to calcification of shell matrix, pomm == 0')
+
+        call assert_comparable(ddis4,  4.0, tolerance, 'Validate ddis: Energy flux to organic shell matrix, diss > 0, pomm > 0, pca == 0')
+        call assert_comparable(pomm4, 10.0, tolerance, 'Validate pomm: Energy flux to organic shell matrix, diss > 0, pomm > 0, pca == 0')
+        call assert_comparable(pca4,   0.0, tolerance, 'Validate pca:  Energy flux to calcification of shell matrix, diss > 0, pomm > 0, pca == 0')
+
+        call assert_comparable(ddis5,  4.0, tolerance, 'Validate ddis: Energy flux to organic shell matrix, diss > 0, pomm > 0, pca > 0')
+        call assert_comparable(pomm5, 10.0, tolerance, 'Validate pomm: Energy flux to organic shell matrix, diss > 0, pomm > 0, pca > 0')
+        call assert_comparable(pca5,  50.0, tolerance, 'Validate pca:  Energy flux to calcification of shell matrix, diss > 0, pomm > 0, pca > 0')
+
     end subroutine test_debgrz_calculate_shell_formation_fluxes
 
     subroutine test_debgrz_calculate_mortality()
@@ -976,7 +1022,7 @@ program tests_debgrz_computations
         length, v, e, r, rmor2, rhrv2, dmor2, dnmor2, dpmor2, kt, pv2)
         call calculate_mortality(rmor_ref2, cmor, conv_j_gc, conv_cm3_gc, rhrv_ref2, chrv, tn, tp, &
         length, v, e, r, rmor3, rhrv3, dmor3, dnmor3, dpmor3, kt, pv2)
-        
+
 
         ! Assert
         call assert_comparable(rmor1,    0.4763139E-02, tolerance, 'Validate rmor: Mortality rate, pv > 0')
@@ -984,13 +1030,13 @@ program tests_debgrz_computations
         call assert_comparable(dmor1,    0.1571836E-01, tolerance, 'Validate dmor: Mortality difference for carbon, pv > 0')
         call assert_comparable(dnmor1,   0.3143672E-02, tolerance, 'Validate dnmor: Mortality difference for nitrogen, pv > 0')
         call assert_comparable(dpmor1,   0.1571836E-02, tolerance, 'Validate dpmor: Mortality difference for phosphorus, pv > 0')
-        
+
         call assert_comparable(rmor2,    0.4763139E-02, tolerance, 'Validate rmor: Mortality rate, pv < 0, rmor and rhrv not modified with min function')
         call assert_comparable(rhrv2,    0.2700000E-01, tolerance, 'Validate rhrv: Overhead costs per volume, pv < 0, rmor and rhrv not modified with min function')
         call assert_comparable(dmor2,    0.1571836E-01, tolerance, 'Validate dmor: Mortality difference for carbon, pv < 0, rmor and rhrv not modified with min function')
         call assert_comparable(dnmor2,   0.3143672E-02, tolerance, 'Validate dnmor: Mortality difference for nitrogen, pv < 0, rmor and rhrv not modified with min function')
         call assert_comparable(dpmor2,   0.1571836E-02, tolerance, 'Validate dpmor: Mortality difference for phosphorus, pv < 0, rmor and rhrv not modified with min function')
-        
+
         call assert_comparable(rmor3,    0.333333, tolerance, 'Validate rmor: Mortality rate, pv < 0, rmor and rhrv modified with min function')
         call assert_comparable(rhrv3,         0.0, tolerance, 'Validate rhrv: Overhead costs per volume, pv < 0, rmor and rhrv modified with min function')
         call assert_comparable(dmor3,         1.1, tolerance, 'Validate dmor: Mortality difference for carbon, pv < 0, rmor and rhrv modified with min function')

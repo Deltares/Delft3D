@@ -73,7 +73,7 @@ C If there is only one point in the polyline, that's a special case ...
 C
       IF (.NOT.(NCPL.EQ.1)) GO TO 10003
 C
-        NPOW=IFIX(3.*(SIGN(.51,XCPL(1)-XMIN)+SIGN(.51,XCPL(1)-XMAX))+
+        NPOW=int(3.*(SIGN(.51,XCPL(1)-XMIN)+SIGN(.51,XCPL(1)-XMAX))+
      +               (SIGN(.51,YCPL(1)-YMIN)+SIGN(.51,YCPL(1)-YMAX)))
         IF (.NOT.(NPOW.EQ.0)) GO TO 10004
           NPIF=1
@@ -112,7 +112,7 @@ C Ultimately, we combine the values of this flag for two consecutive
 C points in such a way as to get an integer between 1 and 81, telling
 C us what combination of inside/outside we have to deal with.
 C
-        NPOW=IFIX(3.*(SIGN(.51,XNXT-XMIN)+SIGN(.51,XNXT-XMAX))+
+        NPOW=init(3.*(SIGN(.51,XNXT-XMIN)+SIGN(.51,XNXT-XMAX))+
      +               (SIGN(.51,YNXT-YMIN)+SIGN(.51,YNXT-YMAX)))
 C
 C If the next point is not the first point of a line, there is work to

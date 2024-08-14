@@ -59,7 +59,9 @@ def make_argument_parser() -> argparse.ArgumentParser:
     push_path_type_group = push_parser.add_mutually_exclusive_group(required=True)
     push_path_type_group.add_argument("--case", dest="path_type", action="store_const", const=PathType.INPUT)
     push_path_type_group.add_argument("--reference", dest="path_type", action="store_const", const=PathType.REFERENCE)
-    push_parser.add_argument("--allow-create-and-delete", action="store_true", default=False, help=HELP_ALLOW_CREATE_AND_DELETE)
+    push_parser.add_argument(
+        "--allow-create-and-delete", action="store_true", default=False, help=HELP_ALLOW_CREATE_AND_DELETE
+    )
     push_parser.add_argument("--issue-id", required=True, help=HELP_ISSUE_ID)
     push_parser.set_defaults(tool=push_tool)
 
@@ -128,7 +130,7 @@ def push_tool(args: argparse.Namespace) -> None:
         raise MinioToolError(f"MinioException: {exc.args}") from exc
 
 
-def pull_tool(args: argparse.Namespace):
+def pull_tool(args: argparse.Namespace) -> None:
     """Parse command line arguments and call the pull command on the MinioTool."""
     path_type: PathType = args.path_type
     local_path = Path(args.local_path) if args.local_path else None
@@ -146,7 +148,7 @@ def pull_tool(args: argparse.Namespace):
         raise MinioToolError(f"MinIO error: {exc.args}") from exc
 
 
-def update_references_tool(args: argparse.Namespace):
+def update_references_tool(args: argparse.Namespace) -> None:
     """Parse command line arguments and call the update_references command on the MinioTool."""
     tool = make_minio_tool(args)
     test_case_name: str = args.test_case_name

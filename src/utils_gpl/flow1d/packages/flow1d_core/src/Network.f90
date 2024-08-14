@@ -423,7 +423,7 @@ contains
                      call SetMessage(LEVEL_WARN, 'Incorrect CrossSection input for CrossSections '''//trim(c1%csid)//''', '''//trim(c2%csid)//''' on branch '''//trim(pbran%id)// &
                         '''. CrossSections must be of the same type!')
                   endif
-                  if (c1%closed /= c2%closed) then
+                  if (c1%closed .neqv. c2%closed) then
                      call SetMessage(LEVEL_WARN, 'Incorrect CrossSection input for CrossSections '''//trim(c1%csid)//''', '''//trim(c2%csid)//''' on branch '''//trim(pbran%id)// &
                         '''. CrossSections must have same closed state!')
                   endif
@@ -791,7 +791,7 @@ use m_tablematrices
       rgh_type  => rgh%rgh_type_pos 
       fun_type  => rgh%fun_type_pos 
        if (fun_type(ibranch) == R_FunctionDischarge) then
-          cpar = interpolate(values%tables%tb(values%tblIndex(igrid))%table,  dabs(q))
+          cpar = interpolate(values%tables%tb(values%tblIndex(igrid))%table,  abs(q))
        !
        !        Roughness function of water level depending on flow direction
        !
@@ -958,7 +958,7 @@ use m_tablematrices
       rgh_type  => rgh%rgh_type_pos 
       fun_type  => rgh%fun_type_pos 
        if (fun_type(ibranch) == R_FunctionDischarge) then
-          cpar = interpolate(values%tables%tb(values%tblIndex(igrid))%table,  dabs(q))
+          cpar = interpolate(values%tables%tb(values%tblIndex(igrid))%table,  abs(q))
        !
        !        Roughness function of water level depending on flow direction
        !

@@ -118,9 +118,9 @@ contains
                     surf_typ = tcorr * dsol * dexp (- exttot * sdmixn(itype) * dep)
                     surf_typ = surf_typ / day
                     if (surf_typ > 1.0 .and. exttot * dep > 1.0d-10) then
-                        phi_s = - dlog(surf_typ)
+                        phi_s = - log(surf_typ)
                         call ebcalc(phi_s, fun_s, der_s, igroup)
-                        phi_d = exttot * dep - dlog(surf_typ)
+                        phi_d = exttot * dep - log(surf_typ)
                         call ebcalc(phi_d, fun_d, der_d, igroup)
                         effi(igroup) = max(effi(igroup), (fun_d - fun_s) / exttot / dep)
                     else

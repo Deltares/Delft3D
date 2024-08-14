@@ -262,6 +262,8 @@ function read_equidistant_block(minp, meteoitem, d, mx, grid_width) result(succe
    !
    ! read datablock in meteo_on_equidistant_grid file
    !
+   use ieee_arithmetic, only: ieee_is_nan
+
    implicit none
    !
    integer                      :: minp
@@ -283,7 +285,7 @@ function read_equidistant_block(minp, meteoitem, d, mx, grid_width) result(succe
    do j = meteoitem%numn, 1, -1
       read(minp,*,end = 100, err=101) (d(i,j), i = 1, meteoitem%numm)
       do i = 1, meteoitem%numm
-         if (isnan(d(i,j))) goto 201
+         if (ieee_is_nan(d(i,j))) goto 201
       enddo
    enddo
    !
@@ -325,6 +327,8 @@ function read_curvilinear_block(minp, d, meteoitem) result(success)
    !
    ! read field in meteo_on_curvilinear_grid file
    !
+   use ieee_arithmetic, only: ieee_is_nan
+
    implicit none
    !
    integer                 , intent(in)  :: minp
@@ -350,14 +354,14 @@ function read_curvilinear_block(minp, d, meteoitem) result(success)
       do i = meteoitem%mfirst, meteoitem%mlast, mincr
          read(minp,*,end = 100, err=101) (d(i,j), j = meteoitem%nfirst, meteoitem%nlast, nincr)
          do j = meteoitem%nfirst, meteoitem%nlast, nincr
-            if (isnan(d(i,j))) goto 201
+            if (ieee_is_nan(d(i,j))) goto 201
          enddo
       enddo
    else
       do j = meteoitem%nfirst, meteoitem%nlast, nincr
          read(minp,*,end = 100, err=101) (d(i,j), i = meteoitem%mfirst, meteoitem%mlast, mincr)
          do i = meteoitem%mfirst, meteoitem%mlast, mincr
-            if (isnan(d(i,j))) goto 201
+            if (ieee_is_nan(d(i,j))) goto 201
          enddo
       enddo
    endif
@@ -403,6 +407,8 @@ function readseries(minp,d,kx,tread) result(success)
    !  Read uniform time serie
    !  number of columns is number of dimensions
    !
+   use ieee_arithmetic, only: ieee_is_nan
+
    implicit none
    !
    integer                       :: kx
@@ -426,7 +432,7 @@ function readseries(minp,d,kx,tread) result(success)
    if (rec(1:1) .eq. '*') goto 10
    read(rec,*,err = 101) tread, ( d(k), k = 1, kx )
    do k = 1, kx
-      if (isnan(d(k))) goto 201
+      if (ieee_is_nan(d(k))) goto 201
    enddo
    success = .true.
    return
@@ -449,6 +455,8 @@ function read_spv_block(minp, meteoitem, d, mx, grid_width, kx) result(success)
    !
    ! Read block in meteo_on_computational_grid file
    !
+   use ieee_arithmetic, only: ieee_is_nan
+
    implicit none
    !
    integer                    :: minp
@@ -475,7 +483,7 @@ function read_spv_block(minp, meteoitem, d, mx, grid_width, kx) result(success)
       do j = 1, mx
          read(minp,*,end = 100, err=101) ( d(j,i,k), i = 1, grid_width )
          do i = 1, grid_width
-            if (isnan(d(j,i,k))) goto 201
+            if (ieee_is_nan(d(j,i,k))) goto 201
          enddo
       enddo
    enddo
@@ -501,6 +509,8 @@ function read_spiderweb_block(minp, d, mx, grid_width, meteoitem, x_spw_eye, y_s
    !
    ! Read spiderweb field including the location of the cyclone/spiderweb eye and the pressure drop there
    !
+   use ieee_arithmetic, only: ieee_is_nan
+
    implicit none
    !
    integer                    :: minp
@@ -552,7 +562,7 @@ function read_spiderweb_block(minp, d, mx, grid_width, meteoitem, x_spw_eye, y_s
    do j = 2, grid_width
       read(minp,*,end = 100, err=201) ( d(i,j,1), i = 1, mx-1 )
       do i = 1, mx-1
-        if (isnan(d(i,j,1))) goto 301
+        if (ieee_is_nan(d(i,j,1))) goto 301
       enddo
    enddo
    !
@@ -561,7 +571,7 @@ function read_spiderweb_block(minp, d, mx, grid_width, meteoitem, x_spw_eye, y_s
    do j = 2, grid_width
       read(minp,*,end = 100, err=202) ( d(i,j,2), i = 1, mx-1 )
       do i = 1, mx-1
-        if (isnan(d(i,j,2))) goto 302
+        if (ieee_is_nan(d(i,j,2))) goto 302
       enddo
    enddo
    !
@@ -570,7 +580,7 @@ function read_spiderweb_block(minp, d, mx, grid_width, meteoitem, x_spw_eye, y_s
    do j = 2, grid_width
       read(minp,*,end = 100, err=203) ( d(i,j,3), i = 1, mx-1 )
       do i = 1, mx-1
-        if (isnan(d(i,j,3))) goto 303
+        if (ieee_is_nan(d(i,j,3))) goto 303
       enddo
    enddo
    do i = 1, mx-1

@@ -1,7 +1,7 @@
-#  Description: NetCDF file comparer
-#  -----------------------------------------------------
-#  Copyright (C)  Stichting Deltares, 2013
+"""NetCDF file comparer.
 
+Copyright (C)  Stichting Deltares, 2024
+"""
 
 import copy
 import os
@@ -49,13 +49,9 @@ class NetcdfComparer(IComparer):
 
                 filename = file_check.name
                 try:
-                    left_nc_root = nc.Dataset(
-                        os.path.join(left_path, filename), "r", format="NETCDF4_CLASSIC"
-                    )
+                    left_nc_root = nc.Dataset(os.path.join(left_path, filename), "r", format="NETCDF4_CLASSIC")
                 except Exception as e:
-                    error_msg = "Cannot open reference file " + os.path.join(
-                        left_path, filename
-                    )
+                    error_msg = f"Cannot open reference file {os.path.join(left_path, filename)}"
                     raise RuntimeError(error_msg, e)
                 try:
                     right_nc_root = nc.Dataset(
@@ -64,18 +60,16 @@ class NetcdfComparer(IComparer):
                         format="NETCDF4_CLASSIC",
                     )
                 except Exception as e:
-                    error_msg = "Cannot open tested file " + os.path.join(
-                        right_path, filename
-                    )
+                    error_msg = f"Cannot open tested file {os.path.join(right_path, filename)}"
                     raise RuntimeError(error_msg, e)
 
                 matchnumber = 0
                 for variable_name in left_nc_root.variables.keys():
-                    if re.match("^" + parameter_name + "$", variable_name) is not None:
+                    if re.match(f"^{parameter_name}$", variable_name) is not None:
                         try:
                             param_new: Parameter = copy.deepcopy(parameter)
                             param_new.name = variable_name
-                            logger.debug("Checking parameter: " + str(variable_name))
+                            logger.debug(f"Checking parameter: {variable_name}")
                             matchnumber = matchnumber + 1
                             left_nc_var = left_nc_root.variables[variable_name]
                             right_nc_var = right_nc_root.variables[variable_name]
@@ -83,12 +77,8 @@ class NetcdfComparer(IComparer):
                             # Check for dimension equality.
                             if left_nc_var.shape != right_nc_var.shape:
                                 raise Exception(
-                                    "Shapes of parameter %s not compatible. Shape of reference: %s. Shape of run data: %s"
-                                    % (
-                                        variable_name,
-                                        str(left_nc_var.shape),
-                                        str(right_nc_var.shape),
-                                    )
+                                    f"Shapes of parameter {variable_name} not compatible. Shape of reference: "
+                                    + f"{left_nc_var.shape}. Shape of run data: {right_nc_var.shape}"
                                 )
 
                             min_ref_value = float(np.min(left_nc_var[:]))
@@ -118,9 +108,7 @@ class NetcdfComparer(IComparer):
                                 # Search for the variable name which has cf_role 'timeseries_id'.
                                 # - If it can be found: it is more like a history file, with stations. Plot the time series for the station with the largest deviation.
                                 # - If it cannot be found: it is more like a map-file. Create a 2D plot of the point in time with
-                                cf_role_time_series_vars = search_times_series_id(
-                                    left_nc_root
-                                )
+                                cf_role_time_series_vars = search_times_series_id(left_nc_root)
                                 location_types = "empty"
                                 if cf_role_time_series_vars.__len__() > 0:
                                     observation_type = cf_role_time_series_vars[0]
@@ -129,38 +117,26 @@ class NetcdfComparer(IComparer):
 
                                 if hasattr(left_nc_var, "coordinates"):
                                     location_types = left_nc_var.coordinates.split(" ")
-                                    for (
-                                        cf_role_time_series_var
-                                    ) in cf_role_time_series_vars:
+                                    for cf_role_time_series_var in cf_role_time_series_vars:
                                         for location_type in location_types:
                                             if location_type == cf_role_time_series_var:
-                                                observation_type = location_type  # observation point, cross-section, source_sink, etc
+                                                observation_type = (
+                                                    location_type  # observation point, cross-section, source_sink, etc
+                                                )
                                                 break
 
                                 parameter_location_found = False
                                 if parameter_location is not None:
-                                    for (
-                                        cf_role_time_series_var
-                                    ) in cf_role_time_series_vars:
+                                    for cf_role_time_series_var in cf_role_time_series_vars:
                                         if cf_role_time_series_var is not None:
-                                            location_var = left_nc_root.variables[
-                                                cf_role_time_series_var
-                                            ]
+                                            location_var = left_nc_root.variables[cf_role_time_series_var]
                                             location_var_values = [
-                                                b"".join(x)
-                                                .strip()
-                                                .decode("utf-8")
-                                                .strip("\x00")
+                                                b"".join(x).strip().decode("utf-8").strip("\x00")
                                                 for x in location_var[:]
                                             ]
-                                            if (
-                                                parameter_location
-                                                in location_var_values
-                                            ):
+                                            if parameter_location in location_var_values:
                                                 parameter_location_found = True
-                                                column_id = location_var_values.index(
-                                                    parameter_location
-                                                )
+                                                column_id = location_var_values.index(parameter_location)
                                         else:
                                             parameter_location_found = True
                                             column_id = 0
@@ -180,9 +156,7 @@ class NetcdfComparer(IComparer):
                                         cf_role_time_series_var = "not None"
                                     i_max = np.argmax(diff_arr)
                                     column_id = i_max % diff_arr.shape[1]
-                                    row_id = int(
-                                        i_max / diff_arr.shape[1]
-                                    )  # diff_arr.shape = (nrows, ncolumns)
+                                    row_id = int(i_max / diff_arr.shape[1])  # diff_arr.shape = (nrows, ncolumns)
 
                                 # This overrides the default min/max of all ref values.
                                 min_ref_value = np.min(left_nc_var[:, column_id])
@@ -246,12 +220,7 @@ class NetcdfComparer(IComparer):
                             result.error = True
 
                         except Exception as e:
-                            logger.error(
-                                "Could not find parameter: "
-                                + variable_name
-                                + ", in file: "
-                                + filename
-                            )
+                            logger.error(f"Could not find parameter: {variable_name}, in file: {filename}")
                             logger.error(e)
                             local_error = True
                             result.error = True
@@ -272,9 +241,7 @@ class NetcdfComparer(IComparer):
                             # Very small difference found, so the denominator will be very small, so set relative difference to maximum.
                             result.maxRelDiff = 1.0
                         else:
-                            result.maxRelDiff = min(
-                                1.0, result.maxAbsDiff / (max_ref_value - min_ref_value)
-                            )
+                            result.maxRelDiff = min(1.0, result.maxAbsDiff / (max_ref_value - min_ref_value))
 
                         # Now we know the absolute and relative error, we can see whether the tolerance is exceeded (or test is in error).
                         result.isToleranceExceeded(
@@ -284,16 +251,11 @@ class NetcdfComparer(IComparer):
 
                         if result.result == "NOK":
                             if left_nc_var.ndim == 1:
-                                logger.info(
-                                    "Plotting of 1d-array not yet supported, variable name: "
-                                    + variable_name
-                                )
+                                logger.info(f"Plotting of 1d-array not yet supported, variable name: {variable_name}")
                             if left_nc_var.ndim == 2:
                                 try:
                                     # Search for the time variable of this parameter.
-                                    time_var = search_time_variable(
-                                        left_nc_root, variable_name
-                                    )
+                                    time_var = search_time_variable(left_nc_root, variable_name)
                                     if time_var is None:
                                         raise ValueError(
                                             "Can not find the time variable. Plotting of non-time dependent parameters is not supported. Parameter name: '"
@@ -302,31 +264,16 @@ class NetcdfComparer(IComparer):
                                         )
 
                                     unit_txt = "".join(time_var.units).strip()
-                                    start_datetime, delta = interpret_time_unit(
-                                        unit_txt
-                                    )
+                                    start_datetime, delta = interpret_time_unit(unit_txt)
 
-                                    if (
-                                        cf_role_time_series_var is not None
-                                    ):  # Create time-series plot.
+                                    if cf_role_time_series_var is not None:  # Create time-series plot.
                                         unit_txt = "".join(time_var.units).strip()
-                                        start_datetime, delta = interpret_time_unit(
-                                            unit_txt
-                                        )
-                                        datetime_series = [
-                                            start_datetime + int(t_i) * delta
-                                            for t_i in time_var[:]
-                                        ]
+                                        start_datetime, delta = interpret_time_unit(unit_txt)
+                                        datetime_series = [start_datetime + int(t_i) * delta for t_i in time_var[:]]
 
                                         # determine location name, needed when no location is specified otherwise it is equal to parameter_location
-                                        plot_location = left_nc_root.variables[
-                                            observation_type
-                                        ][column_id][:]
-                                        plot_location = (
-                                            b"".join(filter(None, plot_location))
-                                            .decode("utf-8")
-                                            .strip()
-                                        )
+                                        plot_location = left_nc_root.variables[observation_type][column_id][:]
+                                        plot_location = b"".join(filter(None, plot_location)).decode("utf-8").strip()
                                         if plot_location == "":
                                             plot_location = "model_wide"
 
@@ -340,13 +287,9 @@ class NetcdfComparer(IComparer):
                                             plot_location,
                                             "netcdf",
                                         )
-                                    elif (
-                                        cf_role_time_series_var is None
-                                    ):  # Create 2D plot.
+                                    elif cf_role_time_series_var is None:  # Create 2D plot.
                                         # Compute datetime for which we are making a plot / scalar field.
-                                        plot_datetime = start_datetime + delta * int(
-                                            time_var[row_id]
-                                        )
+                                        plot_datetime = start_datetime + delta * int(time_var[row_id])
 
                                         plot_ref_val = left_nc_var[row_id, :]
                                         plot_cmp_val = right_nc_var[row_id, :]
@@ -356,9 +299,7 @@ class NetcdfComparer(IComparer):
                                         x_coords = left_nc_root.variables[coords[0]][:]
                                         y_coords = left_nc_root.variables[coords[1]][:]
 
-                                        subtitle = datetime.strftime(
-                                            plot_datetime, "%Y%m%d_%H%M%S"
-                                        )
+                                        subtitle = datetime.strftime(plot_datetime, "%Y%m%d_%H%M%S")
                                         plot.PlotDifferencesMap(
                                             right_path,
                                             x_coords,
@@ -372,11 +313,7 @@ class NetcdfComparer(IComparer):
                                             "netcdf",
                                         )
                                 except Exception as e:
-                                    logger.error(
-                                        "Plotting of parameter "
-                                        + str(variable_name)
-                                        + " failed"
-                                    )
+                                    logger.error(f"Plotting of parameter {variable_name} failed")
                                     logger.error(e)
                                     local_error = True
                                     result.error = True
@@ -393,7 +330,7 @@ class NetcdfComparer(IComparer):
 
 
 def search_time_variable(nc_root, var_name):
-    """Return time dimension or None."""
+    """Return time dimension or `None`."""
     keywords = ("seconds", "minute", "hour", "days")
     for dim in nc_root.variables[var_name].dimensions:
         if dim in nc_root.variables:
@@ -403,23 +340,23 @@ def search_time_variable(nc_root, var_name):
 
 
 def search_times_series_id(nc_root):
-    """Return variable key if cf_role == timeseries_id, otherwise None."""
+    """Return variable key if `cf_role == timeseries_id`, otherwise `None`."""
     keys = []
     for key, value in nc_root.variables.items():
         try:
             if value.cf_role == "timeseries_id":
                 keys.append(key)
-        except Exception as e:
+        except Exception:
             pass
     return keys
 
 
 def interpret_time_unit(time_description):
-    """
-    Returns a (start_datetime, timedelta) tuple. For instance, 'seconds since 1998-08-01 00:00:00' yields the
-    following tuple: (datetime(1998, 8, 1, 0, 0, 0), timedelta(seconds=1)).
-    """
+    """Return a `(start_datetime, timedelta)` tuple.
 
+    For instance, `'seconds since 1998-08-01 00:00:00'` yields the
+    following tuple: `(datetime(1998, 8, 1, 0, 0, 0), timedelta(seconds=1))`.
+    """
     try:
         words = time_description.lower().strip().split(" ")
 
@@ -437,16 +374,16 @@ def interpret_time_unit(time_description):
         elif "week" in words[0]:
             delta = timedelta(weeks=1)
         else:
-            raise ValueError("Can not infer timedelta from: " + words[0])
+            raise ValueError(f"Can not infer timedelta from: {words[0]}")
 
         # Deduce start_datetime
         date_split = words[2].split("-")
         if len(date_split) != 3:
-            raise ValueError("Cannot infer date from: " + words[2])
+            raise ValueError(f"Cannot infer date from: {words[2]}")
 
         time_split = words[3].split(":")
         if len(time_split) != 3:
-            raise ValueError("Cannot infer time from: " + words[3])
+            raise ValueError(f"Cannot infer time from: {words[3]}")
 
         start_datetime = datetime(
             int(date_split[0]),
@@ -457,7 +394,7 @@ def interpret_time_unit(time_description):
             int(time_split[2]),
         )
 
-    except Exception as e:
+    except Exception:
         raise ValueError(
             "Can not interpret the following unit: "
             + str(time_description)

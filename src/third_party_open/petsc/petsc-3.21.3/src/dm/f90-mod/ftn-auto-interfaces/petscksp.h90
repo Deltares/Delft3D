@@ -1,0 +1,7 @@
+      subroutine DMGlobalToLocalSolve(a,b,c,z)
+       import tVec,tDM
+       DM a ! DM
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine DMGlobalToLocalSolve

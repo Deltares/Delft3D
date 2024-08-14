@@ -40,9 +40,9 @@
   case("twav")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(twav))
      twav(:) = x_1d_double_ptr
-  case("Uorb")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(Uorb))
-     Uorb(:) = x_1d_double_ptr
+  case("uorb")
+     call c_f_pointer(xptr, x_1d_double_ptr, shape(uorb))
+     uorb(:) = x_1d_double_ptr
   case("InterceptThickness")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(InterceptThickness))
      InterceptThickness(:) = x_1d_double_ptr
@@ -151,6 +151,18 @@
   case("evap")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(evap))
      evap(:) = x_1d_double_ptr
+  case("qext")
+     call c_f_pointer(xptr, x_1d_double_ptr, shape(qext))
+     qext(:) = x_1d_double_ptr
+  case("qextreal")
+     call c_f_pointer(xptr, x_1d_double_ptr, shape(qextreal))
+     qextreal(:) = x_1d_double_ptr
+  case("vextcum")
+     call c_f_pointer(xptr, x_1d_double_ptr, shape(vextcum))
+     vextcum(:) = x_1d_double_ptr
+  case("rainuni")
+     call c_f_pointer(xptr, x_0d_double_ptr)
+     rainuni = x_0d_double_ptr
   case("numlatsg")
      call c_f_pointer(xptr, x_0d_int_ptr)
      numlatsg = x_0d_int_ptr
@@ -158,8 +170,8 @@
      call c_f_pointer(xptr, x_2d_double_ptr, shape(qplat))
      qplat(:,:) = x_2d_double_ptr
   case("qqlat")
-     call c_f_pointer(xptr, x_2d_double_ptr, shape(qqlat))
-     qqlat(:,:) = x_2d_double_ptr
+     call c_f_pointer(xptr, x_3d_double_ptr, shape(qqlat))
+     qqlat(:,:,:) = x_3d_double_ptr
   case("balat")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(balat))
      balat(:) = x_1d_double_ptr
@@ -196,18 +208,6 @@
   case("kclat")
      call c_f_pointer(xptr, x_1d_int_ptr, shape(kclat))
      kclat(:) = x_1d_int_ptr
-  case("qext")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(qext))
-     qext(:) = x_1d_double_ptr
-  case("qextreal")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(qextreal))
-     qextreal(:) = x_1d_double_ptr
-  case("vextcum")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(vextcum))
-     vextcum(:) = x_1d_double_ptr
-  case("rainuni")
-     call c_f_pointer(xptr, x_0d_double_ptr)
-     rainuni = x_0d_double_ptr
   case("Qsunmap")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(Qsunmap))
      Qsunmap(:) = x_1d_double_ptr
@@ -358,9 +358,6 @@
   case("diusp")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(diusp))
      diusp(:) = x_1d_double_ptr
-  case("taus")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(taus))
-     taus(:) = x_1d_double_ptr
   case("ndxi")
      call c_f_pointer(xptr, x_0d_int_ptr)
      ndxi = x_0d_int_ptr

@@ -24,7 +24,7 @@
 !  All indications and logos of, and references to, "Delft3D",                  
 !  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
 ! 
@@ -107,7 +107,6 @@ contains
 !> Sets ALL (scalar) variables in this module to their default values.
 !! For a reinit prior to flow computation, only call reset_wind() instead.
 subroutine default_wind()
-use m_physcoef, only : rhomean
     windsp  = 0
     winddir = 90d0        !< deg from north sailor
     rainuni = 0d0

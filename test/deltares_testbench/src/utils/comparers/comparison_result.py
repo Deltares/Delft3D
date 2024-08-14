@@ -1,5 +1,6 @@
 class ComparisonResult:
-    """
+    """Comparison result class.
+
     Two types of results are distinguished: maxAbsDiff and maxRelDiff.
     For both results, the following are administrated:
     - The maxDiff itself,
@@ -7,7 +8,7 @@ class ComparisonResult:
     - The coordinates in the table where the values were found.
     """
 
-    def __init__(self, error=False):
+    def __init__(self, error=False) -> None:
         self.passed = None
         self.error = error
         self.result = ""
@@ -23,25 +24,22 @@ class ComparisonResult:
 
     # No getters and setters: use this object as if it were a struct.
 
-    def isToleranceExceeded(self, maxAbsDiffTolerance=None, maxRelDiffTolerance=None):
+    def isToleranceExceeded(self, maxAbsDiffTolerance=None, maxRelDiffTolerance=None) -> None:
         if self.error:
             self.passed = False
             self.result = "ERROR"
-        elif maxAbsDiffTolerance != None and maxRelDiffTolerance != None:
+        elif maxAbsDiffTolerance is not None and maxRelDiffTolerance is not None:
             # The line below used to contain "and" instead of "or". "or" seems more useful
-            if (
-                self.maxAbsDiff <= maxAbsDiffTolerance
-                or self.maxRelDiff <= maxRelDiffTolerance
-            ):
+            if self.maxAbsDiff <= maxAbsDiffTolerance or self.maxRelDiff <= maxRelDiffTolerance:
                 self.passed = True
                 self.result = "OK"
             else:
                 self.passed = False
                 self.result = "NOK"
-        elif maxAbsDiffTolerance != None and self.maxAbsDiff <= maxAbsDiffTolerance:
+        elif maxAbsDiffTolerance is not None and self.maxAbsDiff <= maxAbsDiffTolerance:
             self.passed = True
             self.result = "OK"
-        elif maxRelDiffTolerance != None and self.maxRelDiff <= maxRelDiffTolerance:
+        elif maxRelDiffTolerance is not None and self.maxRelDiff <= maxRelDiffTolerance:
             self.passed = True
             self.result = "OK"
         elif (self.maxAbsDiff == 0.0) or (self.maxRelDiff == 0.0):

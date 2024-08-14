@@ -1,7 +1,6 @@
-"""
-Description: interface for test case logger
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Interface for test case logger.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 from abc import abstractmethod
@@ -12,19 +11,19 @@ from src.utils.logging.test_loggers.test_result_type import TestResultType
 
 
 class ITestLogger(ILogger):
-    """interface for test case logger"""
+    """interface for test case logger."""
 
     @abstractmethod
     def test_started(self):
-        """Logs that a test has started"""
+        """Logs that a test has started."""
 
     @abstractmethod
     def test_ignored(self):
-        """Logs that a test is ignored"""
+        """Logs that a test is ignored."""
 
     @abstractmethod
     def test_finished(self):
-        """Logs that a test has finished"""
+        """Logs that a test has finished."""
 
     @abstractmethod
     def test_Result(
@@ -32,4 +31,4 @@ class ITestLogger(ILogger):
         result_type: TestResultType,
         error_message: Optional[str] = None,
     ):
-        """Logs the result of a test"""
+        """Logs the result of a test."""

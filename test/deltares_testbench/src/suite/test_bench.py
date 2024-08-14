@@ -1,8 +1,8 @@
+"""Main testbench class for running Tests.
+
+Copyright (C)  Stichting Deltares, 2024
 """
-Description: Main testbench class for running Tests
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
-"""
+
 from typing import Optional
 
 from src.config.types.mode_type import ModeType
@@ -15,15 +15,14 @@ from src.utils.logging.i_main_logger import IMainLogger
 
 
 class TestBench:
-    """Testbench instance"""
+    """Testbench instance."""
 
     def __init__(self, run_settings: TestBenchSettings, logger: IMainLogger) -> None:
         self.settings = run_settings
         self.logger = logger
 
-    def run(self):
-        """runs the testbench"""
-
+    def run(self) -> None:
+        """Run the testbench."""
         log_header("Start of test-bench", self.logger)
         if self.settings.run_mode == ModeType.LIST:
             self.__print_filter_usage()
@@ -39,9 +38,7 @@ class TestBench:
         elif self.settings.run_mode == ModeType.REFERENCE:
             runner = ReferenceRunner(self.settings, self.logger)
         else:
-            self.logger.error(
-                f"Run mode {self.settings.run_mode} is currently unsupported"
-            )
+            self.logger.error(f"Run mode {self.settings.run_mode} is currently unsupported")
 
         try:
             if runner:
@@ -55,7 +52,7 @@ class TestBench:
         except Exception as e:
             self.logger.exception(f"Could not run testbench: {repr(e)}")
 
-    def __print_filter_usage(self):
+    def __print_filter_usage(self) -> None:
         """Only return the list of test cases to be run."""
         message_lines = [
             "A filter pattern must be formatted as follows:",
@@ -70,6 +67,6 @@ class TestBench:
         for line in message_lines:
             self.logger.error(line)
 
-    def __print_test_case_list(self):
+    def __print_test_case_list(self) -> None:
         for testcase_config in self.settings.configs_to_run:
             self.logger.info(testcase_config.name + "\n")

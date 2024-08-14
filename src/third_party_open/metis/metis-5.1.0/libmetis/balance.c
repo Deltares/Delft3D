@@ -20,7 +20,7 @@ void Balance2Way(ctrl_t *ctrl, graph_t *graph, real_t *ntpwgts)
 
   if (graph->ncon == 1) {
     /* return right away if the balance is OK */
-    if (iabs(ntpwgts[0]*graph->tvwgt[0]-graph->pwgts[0]) < 3*graph->tvwgt[0]/graph->nvtxs)
+    if (abs(ntpwgts[0]*graph->tvwgt[0]-graph->pwgts[0]) < 3*graph->tvwgt[0]/graph->nvtxs)
       return;
 
     if (graph->nbnd > 0)
@@ -67,7 +67,7 @@ void Bnd2WayBalance(ctrl_t *ctrl, graph_t *graph, real_t *ntpwgts)
   /* Determine from which domain you will be moving data */
   tpwgts[0] = graph->tvwgt[0]*ntpwgts[0];
   tpwgts[1] = graph->tvwgt[0] - tpwgts[0];
-  mindiff   = iabs(tpwgts[0]-pwgts[0]);
+  mindiff   = abs(tpwgts[0]-pwgts[0]);
   from      = (pwgts[0] < tpwgts[0] ? 1 : 0);
   to        = (from+1)%2;
 
@@ -195,7 +195,7 @@ void General2WayBalance(ctrl_t *ctrl, graph_t *graph, real_t *ntpwgts)
   /* Determine from which domain you will be moving data */
   tpwgts[0] = graph->tvwgt[0]*ntpwgts[0];
   tpwgts[1] = graph->tvwgt[0] - tpwgts[0];
-  mindiff   = iabs(tpwgts[0]-pwgts[0]);
+  mindiff   = abs(tpwgts[0]-pwgts[0]);
   from      = (pwgts[0] < tpwgts[0] ? 1 : 0);
   to        = (from+1)%2;
 

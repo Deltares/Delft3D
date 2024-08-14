@@ -22,73 +22,56 @@
 !!  rights reserved.
 
 module genfil_mod
-!
-!  module declarations
-!
-!
-!  data definition module(s)
-!
-use m_waq_precision    ! single and double precision
-      use timers
-!
-implicit none    ! force explicit typing
-!
+
+    use m_waq_precision    ! single and double precision
+    use timers
+
 contains
-      subroutine genfil(filnam,ftype,lnpath)
-!
-!     auteur   : antoon koster
-!     date     : 4 feb.r 2003
-!     function : generate part file names
-!                starting from a full path of the fikle name on input,
-!                this function adds a prefix at the start (file type)
-!                e.g.  ../model/data/p04.inp the new file name
-!                      ../model/data/map-p04
-!     note     : code was extracted from part12, part13, etc routines
-!
+    ! generate part file names starting from a full path of the fikle name on input,
+    ! this function adds a prefix at the start (file type)
+    ! e.g.  ../model/data/p04.inp the new file name
+    !       ../model/data/map-p04
+    ! note     : code was extracted from part12, part13, etc routines
+    subroutine genfil(filnam, ftype, lnpath)
 
+        character(len = *) :: filnam
+        character(len = 4) :: ftype
+        logical :: search_back
 
-      implicit none
+        ! local scalars
+        integer(int_wp) :: iext, ipath, k, lenfil, lnpath
+        integer(4) ithndl              ! handle to time this subroutine
+        data       ithndl / 0 /
+        if (timon) call timstrt("genfil", ithndl)
 
-      character(len=*) :: filnam
-      character(len=4) :: ftype
-      logical          :: search_back
-!
-!     local scalars
-!
-      integer(int_wp )      :: iext , ipath , k , lenfil , lnpath
-      integer(4) ithndl              ! handle to time this subroutine
-      data       ithndl / 0 /
-      if ( timon ) call timstrt( "genfil", ithndl )
+        search_back = .true.
 
-      search_back = .true.
+        ipath = 0
+        lenfil = len_trim(filnam)
+        !
+        !     backward search for directory separator
+        !     note: one directory path may include forward as well as backward separators
+        !           e.g. c:\my projects/test cases
+        !           scan function searches for both separators !
+        !
+        ipath = scan(filnam, '\/', search_back)
+        !
+        !     backward search for file extension
+        !
+        iext = index(filnam, '.', search_back)
 
-      ipath = 0
-      lenfil= len_trim(filnam)
-!
-!     backward search for directory separator
-!     note: one directory path may include forward as well as backward separators
-!           e.g. c:\my projects/test cases
-!           scan function searches for both separators !
-!
-      ipath  = scan(filnam,'\/',search_back)
-!
-!     backward search for file extension
-!
-      iext = index(filnam,'.',search_back)
-!
-!     remove file-extension
-!
-      write(filnam(iext:iext+3), '(a4)') '    '
-!
-      do k=lenfil,ipath+1,-1
-          filnam(k+4:k+4)=filnam(k:k)
-      enddo
-      write(filnam(ipath+1:ipath+4),'(a4)') ftype
+        ! remove file-extension
+        write(filnam(iext:iext + 3), '(a4)') '    '
 
-      lnpath = lenfil
-      if ( timon ) call timstop ( ithndl )
-      return
-      end subroutine
+        do k = lenfil, ipath + 1, -1
+            filnam(k + 4:k + 4) = filnam(k:k)
+        enddo
+        write(filnam(ipath + 1:ipath + 4), '(a4)') ftype
+
+        lnpath = lenfil
+        if (timon) call timstop (ithndl)
+
+    end subroutine
 end module
 
 

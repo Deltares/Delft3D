@@ -227,11 +227,11 @@ subroutine generateConvtab(convtab, levelscount_csdef, crosssection_id, &
    K_1 = convTab%conveyance(i1)
    K_2 = convTab%conveyance(i2)
    !
-   ! dlog (h1/h2) is almost zero, however, h1 and h2 
+   ! log (h1/h2) is almost zero, however, h1 and h2 
    ! always differ enough (h2-h1 ~> 1e-5) s.t. the operation is stable and
    ! accurate
    !
-   convTab%b_extr = dlog(K_1/K_2) / (dlog(h_1/h_2))
+   convTab%b_extr = log(K_1/K_2) / (log(h_1/h_2))
    convTab%a_extr = K_1*(h_1**(-convTab%b_extr))
    !
 
@@ -590,9 +590,9 @@ subroutine ConveyYZ(numyz,y,z,frictype,friction_value,level,flow_area,total_area
 
       y0 = y(k)   - y(k)
       y1 = y(k+1) - y(k)
-      bb = dabs(y1 - y0)         ! breedte segment
+      bb = abs(y1 - y0)         ! breedte segment
 
-      cfrictval = max(friction_value(k),1.0e-10)
+      cfrictval = max(friction_value(k),1.0d-10)
       if(.NOT. (d0.le.1.0d-6.and.d1.le.1.0d-6)) then
          call ConveySeg (d0,d1,z0, z1, beta,bb,frictype(k),cfrictval,aa,ww,pp,cc) ! segment routine
          total_area = total_area + aa
@@ -636,12 +636,12 @@ subroutine ConveySeg(d0, d1, z0, z1, beta,segwidth,friction_type,friction_value,
 
    beta = 0.0d0
    if(segwidth.ne.0.d0) beta = (z1-z0)/segwidth ! beta = tan(phi)
-   dz = dabs(z1 - z0)
+   dz = abs(z1 - z0)
 
    conveyance = 0.0d0
    dcf = friction_value
    if(friction_type.eq.3) then
-      c1 = (1.0d0+beta**2)**s14*dlog(10.0d0)
+      c1 = (1.0d0+beta**2)**s14*log(10.0d0)
       c2 = dcf/12.0d0
    endif
    !
@@ -649,22 +649,22 @@ subroutine ConveySeg(d0, d1, z0, z1, beta,segwidth,friction_type,friction_value,
       if(beta.lt.-0.01d0) then
          select case (friction_type)
          case (0)                   ! Chezy
-            conveyance = 2.0d0*dcf/(5.0d0*dabs(beta)*(1.0d0+beta**2)**s14)*d1**s52
+            conveyance = 2.0d0*dcf/(5.0d0*abs(beta)*(1.0d0+beta**2)**s14)*d1**s52
          case (1)                   ! Manning (n)
-            conveyance = 3.0d0/(8.0d0*dcf*dabs(beta)*(1.0d0+beta**2)**s14)*d1**s83
+            conveyance = 3.0d0/(8.0d0*dcf*abs(beta)*(1.0d0+beta**2)**s14)*d1**s83
          case (7)                   ! Strickler (kn)
-            conveyance = 75.0d0*dcf**sixth/(8.0d0*dabs(beta)*(1.0d0+beta**2)**s14)*d1**s83
+            conveyance = 75.0d0*dcf**sixth/(8.0d0*abs(beta)*(1.0d0+beta**2)**s14)*d1**s83
          case (8)                   ! Strickler (ks)
-            conveyance = 3.0d0*dcf/(8.0d0*dabs(beta)*(1.0d0+beta**2)**s14)*d1**s83
+            conveyance = 3.0d0*dcf/(8.0d0*abs(beta)*(1.0d0+beta**2)**s14)*d1**s83
          case (3)                   ! White-Colebrook (kn)
             if(d1/c2.le.1.495d0) then 
                f1 = 2.13d-3
             else
-               f1 = dlog(d1/c2)-s25
+               f1 = log(d1/c2)-s25
             endif
-            conveyance = 36.0d0/(5.0d0*dabs(beta)*c1)*d1**s52*f1
+            conveyance = 36.0d0/(5.0d0*abs(beta)*c1)*d1**s52*f1
          case (9)                   ! Bos&Bijkerk 
-            conveyance = dcf/(3.0d0*dabs(beta)*(1.0d0+beta**2)**s14)*d1**3
+            conveyance = dcf/(3.0d0*abs(beta)*(1.0d0+beta**2)**s14)*d1**3
          end select
       else if(beta.ge.-0.01.and.beta.lt.0) then
          select case (friction_type)
@@ -680,7 +680,7 @@ subroutine ConveySeg(d0, d1, z0, z1, beta,segwidth,friction_type,friction_value,
             if(6.0d0*d1/dcf.le.1.0005d0) then
                f1 = 2.2d-4
             else
-               f1 = dlog10(6.0d0*d1/dcf)
+               f1 = log10(6.0d0*d1/dcf)
             endif
             conveyance = 18.0d0/((1.0d0+beta**2)**s14)*f1*(-d1/beta)*(d1/2.0d0)**s32
          case (9)                   ! Bos&Bijkerk 
@@ -700,7 +700,7 @@ subroutine ConveySeg(d0, d1, z0, z1, beta,segwidth,friction_type,friction_value,
             if(6.0d0*d0/dcf.le.1.0005d0) then
                f1 = 2.2d-4
             else
-               f1 = dlog10(6.0d0*d0/dcf)
+               f1 = log10(6.0d0*d0/dcf)
             endif
             conveyance = 18.0d0/((1.0d0+beta**2)**s14)*f1*(d0/beta)*(d0/2.0d0)**s32
          case (9)                   ! Bos&Bijkerk 
@@ -709,22 +709,22 @@ subroutine ConveySeg(d0, d1, z0, z1, beta,segwidth,friction_type,friction_value,
      else if(beta.gt.0.01) then
          select case (friction_type)
          case (0)                   ! Chezy
-            conveyance = 2.0d0*dcf/(5.0d0*dabs(beta)*(1.0d0+beta**2)**s14)*d0**s52
+            conveyance = 2.0d0*dcf/(5.0d0*abs(beta)*(1.0d0+beta**2)**s14)*d0**s52
          case (1)                   ! Manning (n)
-            conveyance = 3.0d0/(8.0d0*dcf*dabs(beta)*(1.0d0+beta**2)**s14)*d0**s83
+            conveyance = 3.0d0/(8.0d0*dcf*abs(beta)*(1.0d0+beta**2)**s14)*d0**s83
          case (7)                   ! Strickler (kn)
-            conveyance = 75.0d0*dcf**sixth/(8.0d0*dabs(beta)*(1.0d0+beta**2)**s14)*d0**s83
+            conveyance = 75.0d0*dcf**sixth/(8.0d0*abs(beta)*(1.0d0+beta**2)**s14)*d0**s83
          case (8)                   ! Strickler (ks)
-            conveyance = 3.0d0*dcf/(8.0d0*dabs(beta)*(1.0d0+beta**2)**s14)*d0**s83
+            conveyance = 3.0d0*dcf/(8.0d0*abs(beta)*(1.0d0+beta**2)**s14)*d0**s83
          case (3)                   ! White-Colebrook (kn)
             if(d0/c2.le.1.495d0) then 
                f1 = 2.13d-3
             else
-               f1 = dlog(d0/c2)-s25
+               f1 = log(d0/c2)-s25
             endif
-            conveyance = 36.0d0/(5.0d0*dabs(beta)*c1)*d0**s52*f1
+            conveyance = 36.0d0/(5.0d0*abs(beta)*c1)*d0**s52*f1
          case (9)                   ! Bos&Bijkerk 
-            conveyance = dcf/(3.0d0*dabs(beta)*(1.0d0+beta**2)**s14)*d0**3
+            conveyance = dcf/(3.0d0*abs(beta)*(1.0d0+beta**2)**s14)*d0**3
          end select
      endif
    endif
@@ -743,36 +743,36 @@ subroutine ConveySeg(d0, d1, z0, z1, beta,segwidth,friction_type,friction_value,
             if(6.0d0*(d0+d1)/dcf.le.1.0005d0) then
                f1 = 2.2d-4
             else
-               f1 = dlog10(6.0d0*(d0+d1)/dcf)
+               f1 = log10(6.0d0*(d0+d1)/dcf)
             endif
             conveyance = 18.0d0/((1.0d0+beta**2)**s14)*f1*segwidth*((d0+d1)/2.0d0)**s32
          case (9)                   ! Bos&Bijkerk 
             conveyance = dcf/((1.0d0+beta**2)**s14)*((d0+d1)/2.0d0)**2*segwidth
          end select
-     elseif (dabs(beta) .gt. 0.01d0) then
+     elseif (abs(beta) .gt. 0.01d0) then
          select case (friction_type)
          case (0)                   ! Chezy
-            conveyance = 2.0d0*dcf/(5.0d0*dabs(beta)*(1.0d0+beta**2)**s14)*dabs(d0**s52-d1**s52)
+            conveyance = 2.0d0*dcf/(5.0d0*abs(beta)*(1.0d0+beta**2)**s14)*abs(d0**s52-d1**s52)
          case (1)                   ! Manning (n)
-            conveyance = 3.0d0/(8.0d0*dcf*dabs(beta)*(1.0d0+beta**2)**s14)*dabs(d0**s83-d1**s83)
+            conveyance = 3.0d0/(8.0d0*dcf*abs(beta)*(1.0d0+beta**2)**s14)*abs(d0**s83-d1**s83)
          case (7)                   ! Strickler (kn)
-            conveyance = 75.0d0*dcf**sixth/(8.0d0*dabs(beta)*(1.0d0+beta**2)**s14)*dabs(d0**s83-d1**s83)
+            conveyance = 75.0d0*dcf**sixth/(8.0d0*abs(beta)*(1.0d0+beta**2)**s14)*abs(d0**s83-d1**s83)
          case (8)                   ! Strickler (ks)
-            conveyance = 3.0d0*dcf/(8.0d0*dabs(beta)*(1.0d0+beta**2)**s14)*dabs(d0**s83-d1**s83)
+            conveyance = 3.0d0*dcf/(8.0d0*abs(beta)*(1.0d0+beta**2)**s14)*abs(d0**s83-d1**s83)
          case (3)                   ! White-Colebrook (kn)
             if(d0/c2.le.1.495d0) then 
                f1 = 2.13d-3
             else
-               f1 = dlog(d0/c2)-s25
+               f1 = log(d0/c2)-s25
             endif
             if(d1/c2.le.1.495d0) then 
                f2 = 2.13d-3
             else
-               f2= dlog(d1/c2)-s25
+               f2= log(d1/c2)-s25
             endif
-            conveyance = 36.0d0/(5.0d0*dabs(beta)*c1)*dabs(d0**s52*f1-(d1**s52*f2))
+            conveyance = 36.0d0/(5.0d0*abs(beta)*c1)*abs(d0**s52*f1-(d1**s52*f2))
          case (9)                   ! Bos&Bijkerk 
-            conveyance = dcf/(3.0d0*dabs(beta)*(1.0d0+beta**2)**s14)*dabs(d0**3-d1**3)
+            conveyance = dcf/(3.0d0*abs(beta)*(1.0d0+beta**2)**s14)*abs(d0**3-d1**3)
          end select
      endif
    endif
@@ -822,7 +822,7 @@ subroutine compwap(segwidth,d0,d1,dz,area,width, perimeter)
    dh = h1 - h2
    
    area  = 0.5d0*( h1 + h2 )*width
-   perimeter  = dsqrt ( width*width + dh*dh )
+   perimeter  = sqrt ( width*width + dh*dh )
 end subroutine compwap
 
 end module M_newcross           ! new type conveyance table crossections

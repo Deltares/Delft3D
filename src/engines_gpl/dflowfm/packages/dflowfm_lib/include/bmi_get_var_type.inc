@@ -36,7 +36,7 @@ select case(var_name)
     type_name = "double"
   case("twav")
     type_name = "double"
-  case("Uorb")
+  case("uorb")
     type_name = "double"
   case("bodsed")
     type_name = "double"
@@ -140,6 +140,14 @@ select case(var_name)
     type_name = "double"
   case("evap")
     type_name = "double"
+  case("qext")
+    type_name = "double"
+  case("qextreal")
+    type_name = "double"
+  case("vextcum")
+    type_name = "double"
+  case("rainuni")
+    type_name = "double"
   case("numlatsg")
     type_name = "int"
   case("qplat")
@@ -170,14 +178,6 @@ select case(var_name)
     type_name = "int"
   case("kclat")
     type_name = "int"
-  case("qext")
-    type_name = "double"
-  case("qextreal")
-    type_name = "double"
-  case("vextcum")
-    type_name = "double"
-  case("rainuni")
-    type_name = "double"
   case("Qsunmap")
     type_name = "double"
   case("zbndz")
@@ -277,8 +277,6 @@ select case(var_name)
   case("viusp")
     type_name = "double"
   case("diusp")
-    type_name = "double"
-  case("taus")
     type_name = "double"
   case("ndxi")
     type_name = "int"

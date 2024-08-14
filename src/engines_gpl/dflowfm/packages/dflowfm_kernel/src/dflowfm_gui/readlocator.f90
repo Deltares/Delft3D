@@ -1,127 +1,125 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE READLOCATOR(X,Y,KEY)
-      use m_wearelt
-      use m_devices
-      use m_partitioninfo
-      implicit none
-      double precision :: dpx
-      double precision, save :: f = 1d0
-      integer :: ini, jashow, jmouse, key, key_all, ixp, iyp
-      integer, save :: keyold = 0
-      real :: xloc, yloc
-      double precision :: x, y
-      double precision :: xa, ya, xlc, ylc
-      COMMON /LOCATORA/  XLC,YLC,XA,YA,JMOUSE,JASHOW
+      subroutine READLOCATOR(X, Y, KEY)
+         use m_wearelt
+         use m_devices
+         use m_partitioninfo
+         implicit none
+         double precision :: dpx
+         double precision, save :: f = 1d0
+         integer :: ini, jashow, jmouse, key, ixp, iyp
+         integer, save :: keyold = 0
+         real :: xloc, yloc
+         double precision :: x, y
+         double precision :: xa, ya, xlc, ylc
+         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
 
-      REAL, external :: INFOGRAPHICS
+         real, external :: INFOGRAPHICS
 
-      DPX   = (X2-X1)/NPX
-      CALL IMOUSECURSORSHAPE(1,'G')
-      CALL IMouseCursorShow()
-      INI = KEY
+         DPX = (X2 - X1) / NPX
+         call IMOUSECURSORSHAPE(1, 'G')
+         call IMouseCursorShow()
+         INI = KEY
 
-   10 CONTINUE
+10       continue
 
-      IF (NOPSYS .EQ. 1) THEN
+         if (NOPSYS == 1) then
 !        CALL InKeyEventIMM(KEY)
-         CALL InKeyEvent(KEY)
-      ELSE
-         if ( jampi.eq.0 ) then
-            CALL InKeyEvent(KEY)
+            call InKeyEvent(KEY)
          else
-            CALL InKeyEventIMM(KEY)
+            if (jampi == 0) then
+               call InKeyEvent(KEY)
+            else
+               call InKeyEventIMM(KEY)
 !           reduce key
 !            call reduce_key(key)
+            end if
          end if
-      ENDIF
 
-      IF (KEY .EQ. -999) THEN
+         if (KEY == -999) then
 !        er gebeurt helemaal niets
-         GOTO 10
+            goto 10
 !      ELSE IF (KEY .GE. 128 .AND. KEY .LE. 131) THEN
 !        pijltjesbeweging
-         IF (KEYOLD .NE. KEY) THEN
-            F   = 1
-         ENDIF
-         KEYOLD = KEY
-         F      = F*1.08d0
-         F      = MIN(F,10d0)
-         IF (KEY .EQ. 128) THEN
-            YLC = YLC + DPX*F
-         ELSE IF (KEY .EQ. 129) THEN
-            YLC = YLC - DPX*F
-         ELSE IF (KEY .EQ. 130) THEN
-            XLC = XLC + DPX*F
-         ELSE IF (KEY .EQ. 131) THEN
-            XLC = XLC - DPX*F
-         ENDIF
-         CALL IMOUSECURSORXYG(real(XLC),real(YLC))
-         X = XLC
-         Y = YLC
-         IF (INI .EQ. 999) THEN
-            KEY = -10
-            CALL IMOUSECURSORHIDE()
-            CALL GIVEKEY(KEY)
-            RETURN
-         ENDIF
-      ENDIF
+            if (KEYOLD /= KEY) then
+               F = 1
+            end if
+            KEYOLD = KEY
+            F = F * 1.08d0
+            F = min(F, 10d0)
+            if (KEY == 128) then
+               YLC = YLC + DPX * F
+            else if (KEY == 129) then
+               YLC = YLC - DPX * F
+            else if (KEY == 130) then
+               XLC = XLC + DPX * F
+            else if (KEY == 131) then
+               XLC = XLC - DPX * F
+            end if
+            call IMOUSECURSORXYG(real(XLC), real(YLC))
+            X = XLC
+            Y = YLC
+            if (INI == 999) then
+               KEY = -10
+               call IMOUSECURSORHIDE()
+               call GIVEKEY(KEY)
+               return
+            end if
+         end if
 
 !     muisbeweging
-      Xloc   = InfoGraphics(5)
-      Yloc   = InfoGraphics(6)
-      X=dble(xloc)
-      y=dble(yloc)
+         Xloc = InfoGraphics(5)
+         Yloc = InfoGraphics(6)
+         X = dble(xloc)
+         y = dble(yloc)
 
-      CALL IGRUNITSTOPIXELS(Xloc,Yloc,IXP,IYP)
-      CALL dPROJECT(X,Y,XLC,YLC,2)
-      X = XLC
-      Y = YLC
+         call IGRUNITSTOPIXELS(Xloc, Yloc, IXP, IYP)
+         call dPROJECT(X, Y, XLC, YLC, 2)
+         X = XLC
+         Y = YLC
 
 !     buiten veld?
-      IF (INI .NE. 999) THEN
-         IF (IYP .GT. NPY-15) THEN
-            KEY = 1
-            CALL IMOUSECURSORSHAPE(0,'G')
-            RETURN
-         ELSE IF (IYP .LT. 15) THEN
-            KEY = 2
-            CALL IMOUSECURSORSHAPE(0,'G')
-            RETURN
-         ENDIF
-      ENDIF
-
-
+         if (INI /= 999) then
+            if (IYP > NPY - 15) then
+               KEY = 1
+               call IMOUSECURSORSHAPE(0, 'G')
+               return
+            else if (IYP < 15) then
+               KEY = 2
+               call IMOUSECURSORSHAPE(0, 'G')
+               return
+            end if
+         end if
 
 !     muisbeweging
 !      Xloc   = InfoGraphics(5)
@@ -150,33 +148,33 @@
 !      XLC = X
 !      YLC = Y
 
-      IF (INI .EQ. 999) THEN
-         IF (KEY .GE. 254 .AND. KEY .LE. 257) THEN
+         if (INI == 999) then
+            if (KEY >= 254 .and. KEY <= 257) then
 !           zo snel mogelijk lopen, geen keys of display
-            KEY = -10
-            RETURN
-         ELSE
-            CALL DISPOS()
-            CALL DISDIS()
-            CALL GETKEY2(KEY)
-            CALL GIVEKEY(KEY)
-            CALL IMOUSECURSORHIDE()
-            RETURN
-         ENDIF
-      ELSE
-         CALL DISPOS()
-         CALL DISDIS()
-         IF ( (KEY .GE. 254 .AND. KEY .LE. 257) .OR.      &
-              (KEY .GE. 128 .AND. KEY .LE. 131) ) THEN
+               KEY = -10
+               return
+            else
+               call DISPOS()
+               call DISDIS()
+               call GETKEY2(KEY)
+               call GIVEKEY(KEY)
+               call IMOUSECURSORHIDE()
+               return
+            end if
+         else
+            call DISPOS()
+            call DISDIS()
+            if ((KEY >= 254 .and. KEY <= 257) .or. &
+                (KEY >= 128 .and. KEY <= 131)) then
 !        IF (KEY .EQ. 257 .OR. KEY .GE. 128 .AND. KEY .LE. 131) THEN
 !           zo snel mogelijk lopen
-            GOTO 10
-         ELSE
-            CALL GETKEY2(KEY)
-            CALL GIVEKEY(KEY)
-            CALL TIMLIN()
-            CALL IMOUSECURSORHIDE()
-         ENDIF
-      ENDIF
-      RETURN
-      END
+               goto 10
+            else
+               call GETKEY2(KEY)
+               call GIVEKEY(KEY)
+               call TIMLIN()
+               call IMOUSECURSORHIDE()
+            end if
+         end if
+         return
+      end

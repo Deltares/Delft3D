@@ -1,11 +1,12 @@
-#  (dump files, xml,json)
-#  -----------------------------------------------------
-#  Copyright (C)  Stichting Deltares, 2017
+"""Dump files, xml, json.
+
+Copyright (C)  Stichting Deltares, 2024
+"""
 
 import os
 import re
 import sys
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 import numpy as np
 
@@ -19,12 +20,12 @@ from src.utils.logging.i_logger import ILogger
 
 
 class TreeException(Exception):
-    def __init__(self, m):
-        sys.stderr.write("TreeComparer: " + m + "\n")
+    def __init__(self, m: str) -> None:
+        sys.stderr.write(f"TreeComparer: {m}\n")
         self.message = m
         return
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.message
 
 
@@ -32,31 +33,41 @@ class TreeException(Exception):
 
 
 class TreeComparer(IComparer):
-    """
-    Compare two files with a data tree recursively,
-       according to the configuration in file_check.
+    """Tree comparer.
+
+    Compare two files with a data tree recursively, according to the configuration in file_check.
     input: left path (reference), right path (compare), file_check
-    output: list of (file_check, parameter, file_check, ResultComparison) tuples
+    output: list of (file_check, parameter, file_check, ResultComparison) tuples.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.skipped_keys = ["block_end", "block_start"]
         return
 
     # ------------------------Tree-comparison-methods------------------------ #
 
-    def dumpRefTree(self, funit, janummer):
+    def dumpRefTree(self, funit, janummer) -> None:
         dumpTreePaths(funit, self.reftree[0], "-", janummer)
 
-    def dumpTestTree(self, funit, janummer):
+    def dumpTestTree(self, funit, janummer) -> None:
         dumpTreePaths(funit, self.testtree[0], "-", janummer)
 
     def getBranchFromPath(self, br, path):
-        """
+        """Get branch from path.
+
         When given a full dictionary retrieve only the branch that refers to the path entered.
-        :param br: full tree
-        :param path: path to the branch that should be retrieved
-        :return: the path found and the branch
+
+        Parameters
+        ----------
+        br
+            Full tree
+        path
+            Path to the branch that should be retrieved
+
+        Returns
+        -------
+        list
+            the path found and the branch.
         """
         elements = path.split(">")
         foundpath = ""
@@ -68,12 +79,12 @@ class TreeComparer(IComparer):
                     ndx = 0
                 if element in br:
                     if int(ndx) > 0:
-                        foundpath = foundpath + ">" + element + "!" + ndx
+                        foundpath = f"{foundpath}>{element}!{ndx}"
                     else:
-                        foundpath = foundpath + ">" + element
+                        foundpath = f"{foundpath}>{element}"
                     br = br[element][int(ndx)]
                 else:
-                    raise TreeException("Wrong path : " + path)
+                    raise TreeException(f"Wrong path : {path}")
         return [foundpath, br]
 
     def compareTreePaths(
@@ -95,26 +106,18 @@ class TreeComparer(IComparer):
             if refbranch.get("txt") is not None:
                 if not (list(filter(None, refbranch.get("txt")))):
                     refbranch.pop("txt", None)
-            notInRef = set(testbranch.keys()) - set(
-                refbranch.keys()
-            )  # keys extra, added
-            notInTest = set(refbranch.keys()) - set(
-                testbranch.keys()
-            )  # keys missing, removed
+            notInRef = set(testbranch.keys()) - set(refbranch.keys())  # keys extra, added
+            notInTest = set(refbranch.keys()) - set(testbranch.keys())  # keys missing, removed
         else:
             notInRef = {}
             notInTest = {}
 
         if len(notInRef) > 0:
             missingblocksstring = " , ".join(list(notInRef))
-            raise TreeException(
-                "The reference file is missing blocks: " + missingblocksstring
-            )
+            raise TreeException(f"The reference file is missing blocks: {missingblocksstring}")
         elif len(notInTest) > 0:
             missingblocksstring = " , ".join(list(notInTest))
-            raise TreeException(
-                "The test file is missing blocks: " + missingblocksstring
-            )
+            raise TreeException(f"The test file is missing blocks: {missingblocksstring}")
         else:
             try:
                 results = self.compareThisNode(
@@ -131,21 +134,10 @@ class TreeComparer(IComparer):
                     refvals,
                 ) in refbranch.items():  # check from REFERENCE, key key->values
                     if key not in self.skipped_keys:
-                        if (
-                            key in testbranch
-                        ):  # if this key is not in the TEST ... test fails
-                            testvals = testbranch[
-                                key
-                            ]  # get values (which also can be branches)
-                            if len(testvals) != len(
-                                refvals
-                            ):  # value list must have same length in test
-                                raise TreeException(
-                                    pathstr
-                                    + "/"
-                                    + key
-                                    + ": Not the same size in ref and test"
-                                )
+                        if key in testbranch:  # if this key is not in the TEST ... test fails
+                            testvals = testbranch[key]  # get values (which also can be branches)
+                            if len(testvals) != len(refvals):  # value list must have same length in test
+                                raise TreeException(f"{pathstr}/{key}: Not the same size in ref and test")
                             else:
                                 for testval, refval in zip(testvals, refvals):
                                     if key != "DATA" and key != "COLUMN INDICATION":
@@ -153,29 +145,39 @@ class TreeComparer(IComparer):
                                             testval,
                                             refval,
                                             parameter,
-                                            pathstr + ">" + key,
+                                            f"{pathstr}>{key}",
                                             results,
                                             ignored_parameters,
                                             logger,
                                         )
-            except TreeException as e:
+            except TreeException:
                 raise
         return results
 
     def getVarData(self, tree, path, varName):
-        """
+        """Get variable data.
+
         From the full tree input this function first retrieves a branch according to the path specified as input.
-        Then see if the branch is a table or a value.
-        Return a value from that
-        :param tree: full tree of dumpfile
-        :param path: path to the branch
-        :param varName: what is the name of the variable that we want to retrieve
-        :return: value to be checked
+        Then see if the branch is a table or a value. Return a value from that.
+
+        Parameters
+        ----------
+        tree
+            full tree of dumpfile
+        path
+            path to the branch
+        varName
+            what is the name of the variable that we want to retrieve
+
+        Returns
+        -------
+        list
+            Value to be checked.
         """
         # Retrieve branch
         try:
             pad, branch = self.getBranchFromPath(tree[0], path)
-        except Exception as e:
+        except Exception:
             raise
         # Check if the value refers to a table
         if "::" not in varName:
@@ -204,12 +206,22 @@ class TreeComparer(IComparer):
         testcase_name,
         logger: ILogger,
     ) -> List[Tuple[str, FileCheck, Parameter, ComparisonResult]]:
-        """
+        """Compare left and right path.
+
         This function will be called for all the values entered in the xml file.
-        for them the trees will be compared and finally the parameters and end results will be output
-        :param left_path: path to reference file
-        :param right_path: path to test file
-        :return: a list were it is shown if all the values were OK
+        for them the trees will be compared and finally the parameters and end results will be output.
+
+        Parameters
+        ----------
+        left_path
+            Path to reference file.
+        right_path
+            Path to test file.
+
+        Returns
+        -------
+        list
+            A list were it is shown if all the values were OK.
         """
         filename = file_check.name
         self.test_path = right_path
@@ -221,14 +233,14 @@ class TreeComparer(IComparer):
         try:
             with open(test_file, "r") as ftest:
                 self.testtree = self.buildTrees(ftest)
-        except Exception as e:
-            raise Exception("Cannot open tested file " + filename + " in " + right_path)
+        except Exception:
+            raise Exception(f"Cannot open tested file {filename} in {right_path}")
 
         try:
             with open(ref_file, "r") as fref:
                 self.reftree = self.buildTrees(fref)
         except Exception:
-            raise Exception("Cannot open reference file " + filename + " in " + left_path)
+            raise Exception(f"Cannot open reference file {filename} in {left_path}")
 
         parameters = file_check.parameters["parameters"]
         paramResults = []
@@ -245,23 +257,15 @@ class TreeComparer(IComparer):
                 if (branchpath + ":") not in ignored_parameters:
                     # Get the branch of the test file
                     try:
-                        pad, self.testbranch = self.getBranchFromPath(
-                            self.testtree[0], branchpath
-                        )
+                        pad, self.testbranch = self.getBranchFromPath(self.testtree[0], branchpath)
                     except:
-                        raise Exception(
-                            "Path " + branchpath + " not found in result !!"
-                        )
+                        raise Exception(f"Path {branchpath} not found in result !!")
 
                     # Get the branch of the reference file
                     try:
-                        pad, self.refbranch = self.getBranchFromPath(
-                            self.reftree[0], branchpath
-                        )
+                        pad, self.refbranch = self.getBranchFromPath(self.reftree[0], branchpath)
                     except:
-                        raise Exception(
-                            "Path " + branchpath + " not found in reference !!"
-                        )
+                        raise Exception(f"Path {branchpath} not found in reference !!")
 
                     # Compare the TreePaths with each other
                     newResults = self.compareTreePaths(
@@ -275,7 +279,7 @@ class TreeComparer(IComparer):
                     )
                     # Append the results this contains every possible path in the Tree
                     results.extend(newResults)
-            except Exception as e:
+            except Exception:
                 raise
             # Return one result per entry in config file
             local_error = False
@@ -289,15 +293,10 @@ class TreeComparer(IComparer):
             for result in results:
                 if result.result == "NOK":
                     end_result.result = "NOK"
-                    if (
-                        result.maxAbsDiffCoordinates
-                        not in end_result.maxAbsDiffCoordinates
-                    ):
+                    if result.maxAbsDiffCoordinates not in end_result.maxAbsDiffCoordinates:
                         end_result.maxAbsDiffCoordinates = result.maxAbsDiffCoordinates
                     if result.lineNumber != 0:
-                        result.path = (
-                            result.path + " (row: " + str(result.lineNumber) + ")"
-                        )
+                        result.path = f"{result.path} (row: {result.lineNumber})"
                     if result.path not in end_result.path:
                         end_result.path.append(result.path)
                         parameter.location = result.path
@@ -305,9 +304,7 @@ class TreeComparer(IComparer):
                     end_result.error = True
                     end_result.result = "ERROR"
                     if result.lineNumber != 0:
-                        result.path = (
-                            result.path + " (row: " + str(result.lineNumber) + ")"
-                        )
+                        result.path = f"{result.path} (row: {result.lineNumber})"
                     if result.path not in end_result.path:
                         end_result.path.append(result.path)
             paramResults.append((testcase_name, file_check, parameter, end_result))
@@ -318,10 +315,17 @@ class TreeComparer(IComparer):
     #     pass
 
     def pullIgnored(self, parameters: List[Parameter]):
-        """
-         Pulls the ignored parameters and appends them in a list according to their name
-        :param parameters: all parameters read from xml
-        :return: a list of the ignored parameters names
+        """Pull the ignored parameters and appends them in a list according to their name.
+
+        Parameters
+        ----------
+        parameters : List[Parameter]
+            All parameters read from xml.
+
+        Returns
+        -------
+        list
+            A list of the ignored parameters names.
         """
         # loop through all the parameters
         ignoredparameters = []
@@ -332,16 +336,24 @@ class TreeComparer(IComparer):
 
     # -----------------------Node-comparison-methods----------------------- #
 
-    def compareTableWithMissingColumn(
-        self, resultslist, reftable, testtable, testbranch, refbranch, logger: ILogger
-    ):
-        """
-        Finds missing column and returns updated list of results
-        Log message of the tables were the column is added is also included
-        :arg resultslist, reftable, testtable, testbranch, refbranch
-        :return resultlist - a dictionary of ComparisonResult lists
-        """
+    def compareTableWithMissingColumn(self, resultslist, reftable, testtable, testbranch, refbranch, logger: ILogger):
+        """Find missing column and returns updated list of results.
 
+        Log message of the tables were the column is added is also included.
+
+        Parameters
+        ----------
+        resultslist
+        reftable
+        testtable
+        testbranch
+        refbranch
+
+        Returns
+        -------
+        list
+            A dictionary of ComparisonResult lists.
+        """
         # Create a container of result to store the error
         local_error = False
         columnresults = ComparisonResult(error=local_error)
@@ -356,8 +368,8 @@ class TreeComparer(IComparer):
                 testbranch["block_end"][0],
             )
             logger.info(
-                "\nColumn [%s] missing in reference. Block starts in line [%s] of the dumpfile"
-                % (",".join(missingcolumns), testbranch["block_start"][0])
+                f"\nColumn [{','.join(missingcolumns)}] missing in reference."
+                + f"Block starts in line [{testbranch['block_start'][0]}] of the dumpfile"
             )
         else:
             # Column was removed from the table
@@ -367,8 +379,8 @@ class TreeComparer(IComparer):
                 refbranch["block_end"][0],
             )
             logger.info(
-                "\nColumn [%s] missing in test. Block starts in line [%s] of the dumpfile"
-                % (",".join(missingcolumns), refbranch["block_start"][0])
+                f"\nColumn [{','.join(missingcolumns)}] missing in test."
+                + f"Block starts in line [{refbranch['block_start'][0]}] of the dumpfile"
             )
         # Path is updated
         columnresults.path = missingcolumns
@@ -385,10 +397,18 @@ class TreeComparer(IComparer):
         ignored_parameters,
         logger: ILogger,
     ):
-        """
-        Specific comparison of this node : floats, txt and tables
-        :arg DSeriesComparer, testbranch, refbranch, parameter
-        :return resultlist - a dictionary of ComparisonResult lists
+        """Specific comparison of this node : floats, txt and tables.
+
+        Parameters
+        ----------
+        testbranch
+        refbranch
+        parameter
+
+        Returns
+        -------
+        list
+            A dictionary of ComparisonResult lists.
         """
         # get the branch and the name
         branchpath, varname = parameter.name.split(":")
@@ -406,9 +426,7 @@ class TreeComparer(IComparer):
             # Check if their lengths are the same
             if reftable.__len__() == testtable.__len__():
                 # Compare them as tables
-                newresults = self.compareDataTables(
-                    reftable, testtable, pathstr, parameter, logger
-                )
+                newresults = self.compareDataTables(reftable, testtable, pathstr, parameter, logger)
                 resultlist.extend(newresults)
             else:
                 # Comparing tables where the length of the columns is not the same
@@ -433,67 +451,58 @@ class TreeComparer(IComparer):
 
             # Check if the dictionaries are the same. The first step is to check that they have the same keys.
             # raise an exception when the two dictionaries do not have the same composition
-            settest = set(testdictionary.keys()) - set(
-                refdictionary.keys()
-            )  # test - ref
-            setref = set(refdictionary.keys()) - set(
-                testdictionary.keys()
-            )  # ref - test
+            settest = set(testdictionary.keys()) - set(refdictionary.keys())  # test - ref
+            setref = set(refdictionary.keys()) - set(testdictionary.keys())  # ref - test
             setCompareMessage = ""
 
             # If the parameters should be ignored do not call the function
             if (pathstr + ":") not in ignored_parameters:
                 if settest > set():
-                    setCompareMessage += "\nKeys [%s] missing in reference." % (
-                        ",".join(settest)
-                    )
+                    setCompareMessage += f"\nKeys [{','.join(settest)}] missing in reference."
                 if setref > set():
-                    setCompareMessage += "\nKeys [%s] missing in test." % (
-                        ",".join(setref)
-                    )
+                    setCompareMessage += f"\nKeys [{','.join(setref)}] missing in test."
                 if setCompareMessage:  # Make sure dictionaries have the same size
-                    raise TreeException(
-                        "Set of variables not equal in path:\n %s.%s"
-                        % (pathstr, setCompareMessage)
-                    )
+                    raise TreeException(f"Set of variables not equal in path:\n {pathstr}.{setCompareMessage}")
                 # Compare the dictionaries creates and append them to the results
-                result = self.compareDictionary(
-                    testdictionary, refdictionary, pathstr, parameter, logger
-                )
+                result = self.compareDictionary(testdictionary, refdictionary, pathstr, parameter, logger)
                 if result > []:
                     resultlist.extend(result)
 
-        except Exception as e:
-            raise TreeException("Could not compare values in path\n %s." % pathstr)
+        except Exception:
+            raise TreeException(f"Could not compare values in path\n {pathstr}.")
 
         return resultlist
 
     def createKeyValuePair(self, str1, str2, dict1):
-        """
-        Creates key-value pair to put into dictionary
-        """
+        """Create key-value pair to put into dictionary."""
         i = 1
         j = 1
         try:
             float(str2)
             if str1 not in dict1:
                 return [str1, str2]
-            while str1 in dict1 and str1 + "_" + str(i) in dict1:
+            while str1 in dict1 and f"{str1}_{i}" in dict1:
                 i += 1
-            return [str1 + "_" + str(i), str2]
+            return [f"{str1}_{i}", str2]
         except:
             if str2 not in dict1:
                 return [str2, str1]
-            while str2 in dict1 and str2 + "_" + str(j) in dict1:
+            while str2 in dict1 and f"{str2}_{j}" in dict1:
                 j += 1
-            return [str2 + "_" + str(j), str1]
+            return [f"{str2}_{j}", str1]
 
     def getTable(self, br):
-        """
-        Check if current node contains a table
-        if it does return it to the correct format
-        :param br: The table in generic form
-        :return: a dictionary of a table or None if there is no table
+        """Check if current node contains a table if it does return it to the correct format.
+
+        Parameters
+        ----------
+        br
+            The table in generic form.
+
+        Returns
+        -------
+        Optional[dict]
+            Dictionary of a table or None if there is no table.
         """
         try:
             if ("COLUMN INDICATION" in br) and ("DATA" in br):
@@ -509,9 +518,7 @@ class TreeComparer(IComparer):
                     fields = self.rowToArray(row)
                     if len(fields) >= ncol:
                         for icol in range(ncol):
-                            tbldata[colnames[icol]] = np.append(
-                                tbldata[colnames[icol]], fields[icol]
-                            )
+                            tbldata[colnames[icol]] = np.append(tbldata[colnames[icol]], fields[icol])
                     elif (
                         row.split("  ")[-1].strip() == "Number of stages"
                         or row.split("  ")[-1].strip() == "Number of Layers"
@@ -519,8 +526,7 @@ class TreeComparer(IComparer):
                         pass
                     else:
                         raise TreeException(
-                            "Expecting at least %d fields," % ncol
-                            + ", but found %d ... skipping line ..." % len(fields)
+                            f"Expecting at least {ncol} fields, but found {len(fields)} ... skipping line ..."
                         )
                 return tbldata
             else:
@@ -529,10 +535,17 @@ class TreeComparer(IComparer):
             raise TreeException("Table not parseable")
 
     def rowToArray(self, ss):
-        """
-        Split a row into an array of values
-        :param ss: strings
-        :return: list of strings
+        """Split a row into an array of values.
+
+        Parameters
+        ----------
+        ss
+            Strings.
+
+        Returns
+        -------
+        list
+            List of strings.
         """
         a = []
         # In the case of multiple strings the list a will be empty
@@ -577,11 +590,19 @@ class TreeComparer(IComparer):
                 raise TreeException("Row of table is not parseable")
         return a
 
-    def isFloat(value):
-        """
-        Test if value is float
-        :param value: strings
-        :return: boolean which is true if the input value is a float
+    @staticmethod
+    def isFloat(value: Any) -> bool:
+        """Test if value is float.
+
+        Parameters
+        ----------
+        value
+            Strings.
+
+        Returns
+        -------
+        bool
+            Boolean which is true if the input value is a float.
         """
         try:
             float(value)
@@ -589,16 +610,19 @@ class TreeComparer(IComparer):
         except ValueError:
             return False
 
-    def compareDictionary(
-        self, testdictionary, refdictionary, pathstr, parameter, logger: ILogger
-    ):
-        """
-        Compares the values form the dictionary made with the information held within a node
-        :param testdictionary: input of test dictionary
-        :param refdictionary: input of reference dictionary
-        :param pathstr: The path refered in the dictionary but the top part of the path
-        :param parameter: the general parameter as inputted from xml
-        :return:
+    def compareDictionary(self, testdictionary, refdictionary, pathstr, parameter, logger: ILogger):
+        """Compare the values form the dictionary made with the information held within a node.
+
+        Parameters
+        ----------
+        testdictionary
+            Input of test dictionary.
+        refdictionary
+            Input of reference dictionary.
+        pathstr
+            The path refered in the dictionary but the top part of the path.
+        parameter
+            The general parameter as inputted from xml.
         """
         branchpath, varname = parameter.name.split(":")
         local_error = False
@@ -611,7 +635,7 @@ class TreeComparer(IComparer):
                 testvalue = testdictionary[key]
                 # Make a container of results
                 result = ComparisonResult(error=local_error)
-                result.path = pathstr + ">" + key
+                result.path = f"{pathstr}>{key}"
                 try:
                     if type(refvalue) is str and type(testvalue) is str:
                         # if they are floats
@@ -623,22 +647,19 @@ class TreeComparer(IComparer):
                     # The values are not the same but they are within the Tolerances
                     elif abs(testvalue - refvalue) <= self.SetPythonCompatibility(
                         parameter.getToleranceAbsolute()
-                    ) and abs(
-                        (testvalue - refvalue) / refvalue
-                    ) <= self.SetPythonCompatibility(
+                    ) and abs((testvalue - refvalue) / refvalue) <= self.SetPythonCompatibility(
                         parameter.getToleranceRelative()
                     ):
                         result.result = "OK"
                     # The value is not the same and is above absolute Tolerances
-                    elif abs(testvalue - refvalue) >= self.SetPythonCompatibility(
-                        parameter.getToleranceAbsolute()
-                    ):
+                    elif abs(testvalue - refvalue) >= self.SetPythonCompatibility(parameter.getToleranceAbsolute()):
                         result.maxAbsDiff = abs(testvalue - refvalue)
                         result.maxAbsDiffValues = (testvalue, refvalue)
-                        message = (
-                            "Absolute Error:   "
-                            + "test = %12.6e     ref = %12.6e (%12.6e): %s"
-                            % (testvalue, refvalue, result.maxAbsDiff, result.path)
+                        message = "Absolute Error:   test = %12.6e     ref = %12.6e (%12.6e): %s" % (
+                            testvalue,
+                            refvalue,
+                            result.maxAbsDiff,
+                            result.path,
                         )
                         logger.info(message)
                         result.result = "NOK"
@@ -646,15 +667,11 @@ class TreeComparer(IComparer):
                     else:
                         result.maxRelDiff = abs((testvalue - refvalue) / refvalue)
                         result.maxRelDiffValues = (testvalue, refvalue)
-                        message = (
-                            "Relative Error:   "
-                            + "test = %12.6e     ref = %12.6e (%10.2f %%): %s"
-                            % (
-                                testvalue,
-                                refvalue,
-                                result.maxRelDiff * 100,
-                                result.path,
-                            )
+                        message = "Relative Error:   test = %12.6e     ref = %12.6e (%10.2f %%): %s" % (
+                            testvalue,
+                            refvalue,
+                            result.maxRelDiff * 100,
+                            result.path,
                         )
                         logger.info(message)
                         result.result = "NOK"
@@ -673,16 +690,15 @@ class TreeComparer(IComparer):
                         results.append(result)
         return results
 
-    def compareDataTables(
-        self, reftable, testtable, pathstr, parameter: Parameter, logger: ILogger
-    ):
-        """
-        Compares the values held within a table
-        :param reftable:
-        :param testtable:
-        :param pathstr:
-        :param parameter:
-        :return:
+    def compareDataTables(self, reftable, testtable, pathstr, parameter: Parameter, logger: ILogger):
+        """Compare the values held within a table.
+
+        Parameters
+        ----------
+        reftable
+        testtable
+        pathstr
+        parameter
         """
         branchpath, varname = parameter.name.split(":")
         results = []
@@ -700,7 +716,7 @@ class TreeComparer(IComparer):
                     result = ComparisonResult(error=local_error)
                     result.lineNumber = i + 1
                     result.columnNumber = columnNumber
-                    result.path = pathstr + ">" + key
+                    result.path = f"{pathstr}>{key}"
                     # values equal
                     if ref_val == testvalue[i]:
                         result.result = "OK"
@@ -713,18 +729,14 @@ class TreeComparer(IComparer):
                             )
                             logger.info(message)
                             result.result = "NOK"
-                        elif abs(testvalue[i] - ref_val) <= self.SetPythonCompatibility(
-                            parameter.tolerance_absolute
-                        ):
+                        elif abs(testvalue[i] - ref_val) <= self.SetPythonCompatibility(parameter.tolerance_absolute):
                             result.result = "OK"
-                        elif abs(
-                            (testvalue[i] - ref_val) / ref_val
-                        ) <= self.SetPythonCompatibility(parameter.tolerance_relative):
+                        elif abs((testvalue[i] - ref_val) / ref_val) <= self.SetPythonCompatibility(
+                            parameter.tolerance_relative
+                        ):
                             result.result = "OK"
                         # absolute tolerance exceeded
-                        elif abs(testvalue[i] - ref_val) > self.SetPythonCompatibility(
-                            parameter.tolerance_absolute
-                        ):
+                        elif abs(testvalue[i] - ref_val) > self.SetPythonCompatibility(parameter.tolerance_absolute):
                             result.maxAbsDiff = abs(testvalue[i] - ref_val)
                             result.maxAbsDiffValues = (testvalue[i], ref_val)
                             message = (
@@ -734,9 +746,9 @@ class TreeComparer(IComparer):
                             logger.info(message)
                             result.result = "NOK"
                         # relative tolerance exceeded
-                        elif abs(
-                            (testvalue[i] - ref_val) / ref_val
-                        ) > self.SetPythonCompatibility(parameter.tolerance_relative):
+                        elif abs((testvalue[i] - ref_val) / ref_val) > self.SetPythonCompatibility(
+                            parameter.tolerance_relative
+                        ):
                             result.maxRelDiff = abs((testvalue[i] - ref_val) / ref_val)
                             result.maxRelDiffValues = (testvalue[i], ref_val)
 
@@ -750,11 +762,17 @@ class TreeComparer(IComparer):
         return results
 
     def SetPythonCompatibility(self, value):
-        """
-        Depending on the version of python either accept None
-        or choose a low value of Tolerance.
-        :param value: the Tolerance
-        :return: changed Tolerance
+        """Depending on the version of python either accept None or choose a low value of Tolerance.
+
+        Parameters
+        ----------
+        value
+            The tolerance.
+
+        Returns
+        -------
+        float
+            Changed tolerance.
         """
         if value is None:
             value = -1
@@ -763,20 +781,14 @@ class TreeComparer(IComparer):
     # ------------------------End-Class-TreeComparer------------------------ #
 
 
-def dumpTreePaths(funit, branch, pad, janummer):
-    """
-    Debugging, show me the full paths in the tree down from the specified branch.
-
-    """
+def dumpTreePaths(funit, branch, pad, janummer) -> None:
+    """Debugging, show me the full paths in the tree down from the specified branch."""
     for key, vals in branch.items():
         for val in vals:
             if type(val) == dict:
                 linenrs = ""
                 if janummer:
                     if ("block_start" in val) and ("block_end" in val):
-                        linenrs = "(%d,%d)" % (
-                            val["block_start"][0],
-                            val["block_end"][0],
-                        )
-                funit.write(pad + ">" + key + "   " + linenrs + "\n")
-                dumpTreePaths(funit, val, pad + ">" + key, janummer)
+                        linenrs = f"({val['block_start'][0]},{val['block_end'][0]})"
+                funit.write(f"{pad}>{key}   {linenrs}\n")
+                dumpTreePaths(funit, val, f"{pad}>{key}", janummer)

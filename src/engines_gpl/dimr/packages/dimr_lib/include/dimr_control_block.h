@@ -7,7 +7,6 @@
 // <start>      : 0         subBlocks, unit.component=defined, unit.coupler=NULL, timeVars=NULL   , type=CT_START
 // <startGroup> : 1 or more subBlocks, unit=NULL,                                 timeVars=defined, type=CT_STARTGROUP
 // <coupler>    : 0         subBlocks, unit.component=NULL, unit.coupler=defined, timeVars=NULL   , type=CT_COUPLER
-typedef struct dimr_control_block dimr_control_block;
 struct dimr_control_block {
 	int                numSubBlocks;     // total number of sub blocks
 	dimr_control_block * subBlocks;
@@ -19,5 +18,7 @@ struct dimr_control_block {
 	double             tEnd;
 	double             tNext;
 	double             tCur;
+	vector<double>*    computeTimes;      // Ideally this should not be a pointer. But dimr_control_block is allocated using malloc.
+	int                computeTimesCurrent;
 }
 ;

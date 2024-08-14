@@ -68,7 +68,7 @@ subroutine gen_filter(filename, filename_out, field_name, intval, coefimpl, coef
       allocate(ySmooth(nTimes))
       do i = 1, nStations
          call fourthOrderMono(hisdata(:,i), intval, coefimpl, coefexpl, ySmooth)
-         write(iunout,'(f8.3,x,a)') maxval(ySmooth), trim(stations(i))
+         write(iunout,'(f8.3,1x,a)') maxval(ySmooth), trim(stations(i))
       enddo
       close(iunout)
    endif
@@ -89,7 +89,7 @@ subroutine matlab_test()
    enddo
    call fourthOrderMono(y, 6.0_hp, 0.3_hp, 0.3_hp, ySmooth)
    do i = 1, ntimes
-      write(*,'(4(f14.10,x))') y(i), ySmooth(i), matlab_test_result(i), ySmooth(i) - matlab_test_result(i)
+      write(*,'(4(f14.10,1x))') y(i), ySmooth(i), matlab_test_result(i), ySmooth(i) - matlab_test_result(i)
    enddo
 
 end subroutine matlab_test

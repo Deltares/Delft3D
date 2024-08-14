@@ -56,14 +56,14 @@
 	    endif
 	    enddo
 
-	    do i = 1,num_output_files
+	    do i = 1,noutp
 	        iitem = index_in_array(outpit(i), itemid(:nitem))
               if (iitem.le.0) stop 'Bug 17-01-2011'
 	        write (lu,1030) trim(outpit(i)), trim(itemnm(iitem))
 	    enddo
 
 	    write (lu,1040)
-	    write (lu,1041) (trim(procid(i)),trim(procnm(i)),i=1,num_processes_activated)
+	    write (lu,1041) (trim(procid(i)),trim(procnm(i)),i=1,nproc)
 	    write (lu,1043)
 
 

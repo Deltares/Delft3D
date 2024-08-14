@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.30)
 
 project(CMake)
 enable_testing()
@@ -45,8 +45,8 @@ else()
     message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
 endif()
 
-# Set available build configurations for the .sln file
-set (CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
+# Set available build configurations
+set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
 
 # Set Fortran module files location (needed for dependency bubbling on Linux)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)
@@ -71,12 +71,12 @@ if (WIN32)
             message(STATUS "Using Intel 2024 folder structure.")
             set(mpi_include_path $ENV{ONEAPI_ROOT}/mpi/latest/include)
             set(mpi_module_path ${mpi_include_path}/mpi)
-            set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/$<CONFIG>,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
+            set(mpi_library_path $<IF:$<CONFIG:Debug>,$ENV{ONEAPI_ROOT}/mpi/latest/lib/mpi/debug,$ENV{ONEAPI_ROOT}/mpi/latest/lib>)
         else()
             message(DEPRECATION "Using Intel 2023 folder structure (I_MPI_ONEAPI_ROOT is set to: $ENV{I_MPI_ONEAPI_ROOT})")
             set(mpi_include_path $ENV{I_MPI_ONEAPI_ROOT}/include)
             set(mpi_module_path ${mpi_include_path})
-            set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<CONFIG>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
+            set(mpi_library_path $ENV{I_MPI_ONEAPI_ROOT}/lib/$<IF:$<CONFIG:Debug>,debug,release>;$ENV{I_MPI_ONEAPI_ROOT}/lib)
         endif()
         set(mpi_fortran_library "impi.lib")
         set(mpi_c_library "impi.lib;impicxx.lib")
@@ -96,11 +96,10 @@ if (WIN32)
     set(tecplot_path ${checkout_src_root}/third_party_open/Tecplot/include)
     message(STATUS "Tecplot set to ${tecplot_path}")
 
-    if (CMAKE_Fortran_COMPILER_VERSION MATCHES "2021.2")
-        # Set the petsc path
-        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.10.2/include)
-    else()
+    if(intel_version EQUAL 23)
         set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
+    else()
+        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.21.3/include)
     endif()
 
     #also set PETSC library directory
@@ -158,7 +157,7 @@ endif()
 #     Linux  : compile source code  using ".../expat/cmake_deltares/CMakeLists.txt"
 set(expat_include_path ${checkout_src_root}/third_party_open/expat/x64/include)
 if (WIN32)
-    set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64)
+    set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
 endif(WIN32)
 
 ### Configuration names
@@ -192,6 +191,8 @@ set(swan_configuration "SWAN")
 set(flow2d3d_configuration "FLOW2D3D")
 set(tools_configuration "TOOLS")
 set(tools_gpl_configuration "TOOLS_GPL")
+set(drr_configuration "DRR")
+set(rtc_configuration "RTC")
 
 # Combined (multi-component) configurations
 set(delft3dfm_configuration "DELFT3DFM")
@@ -211,6 +212,8 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
      OR ${configuration_type} STREQUAL ${tools_gpl_configuration}
      OR ${configuration_type} STREQUAL ${delft3dfm_configuration}
      OR ${configuration_type} STREQUAL ${delft3d4_configuration}
+     OR ${configuration_type} STREQUAL ${drr_configuration}
+     OR ${configuration_type} STREQUAL ${rtc_configuration}
      OR ${configuration_type} STREQUAL ${all_configuration}))
    message(FATAL_ERROR "${configuration_type} not recognized. CMake will abort solution generation now.")
 endif()
@@ -276,6 +279,18 @@ endif()
 if(${configuration_type} STREQUAL ${tools_gpl_configuration})
     message(STATUS "Generating solution for Tools_GPL ...")
     include(configurations/tools_gpl_configuration.cmake)
+endif()
+
+# RTC configuration
+if(${configuration_type} STREQUAL ${rtc_configuration})
+    message(STATUS "Generating solution for rtc ...")
+    include(configurations/rtc_configuration.cmake)
+endif()
+
+# D-RR configuration
+if(${configuration_type} STREQUAL ${drr_configuration})
+    message(STATUS "Generating solution for D-RR ...")
+    include(configurations/drr_configuration.cmake)
 endif()
 
 ### Composed configurations

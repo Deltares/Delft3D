@@ -54,17 +54,17 @@
           if ( iitem .le. 0 ) stop 'MAKIND: BUG 002'
           inpuii(iinpu) = iitem-1
 
-          iproc = index_in_array(inpupr(iinpu),procid(:num_processes_activated))
+          iproc = index_in_array(inpupr(iinpu),procid(:nproc))
           if ( iproc .le. 0 ) stop 'MAKIND: BUG 003'
           inpupi(iinpu) = iproc-1
    20 continue
 
-      do 30 ioutp = 1,num_output_files
+      do 30 ioutp = 1,noutp
           iitem = index_in_array(outpit(ioutp),itemid(:nitem))
           if ( iitem .le. 0 ) stop 'MAKIND: BUG 004'
           outpii(ioutp) = iitem-1
 
-          iproc = index_in_array(outppr(ioutp),procid(:num_processes_activated))
+          iproc = index_in_array(outppr(ioutp),procid(:nproc))
           if ( iproc .le. 0 ) stop 'MAKIND: BUG 005'
           outppi(ioutp) = iproc-1
    30 continue

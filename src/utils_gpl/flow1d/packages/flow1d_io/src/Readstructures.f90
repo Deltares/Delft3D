@@ -984,14 +984,14 @@ module m_readstructures
 
          pump%direction = pump%direction * iside  ! (+/-1 * 1 or 2 or 3)
 
-         if (iabs(pump%direction) == 1 .or. iabs(pump%direction) == 3) then
+         if (abs(pump%direction) == 1 .or. abs(pump%direction) == 3) then
             call prop_get_doubles(md_ptr, '', 'startLevelSuctionSide', pump%ss_onlevel, pump%nrstages, success1)
             success = success .and. check_input_result(success1, st_id, 'startLevelSuctionSide')
             call prop_get_doubles(md_ptr, '', 'stopLevelSuctionSide', pump%ss_offlevel, pump%nrstages, success1)
             success = success .and. check_input_result(success1, st_id, 'stopLevelSuctionSide')
          end if
       
-         if (iabs(pump%direction) == 2 .or. iabs(pump%direction) == 3) then
+         if (abs(pump%direction) == 2 .or. abs(pump%direction) == 3) then
             call prop_get_doubles(md_ptr, '', 'startLevelDeliverySide', pump%ds_onlevel, pump%nrstages, success1)
             success = success .and. check_input_result(success1, st_id, 'startLevelDeliverySide')
             call prop_get_doubles(md_ptr, '', 'stopLevelDeliverySide', pump%ds_offlevel, pump%nrstages, success1)

@@ -844,7 +844,7 @@ subroutine IFormBox(IBOX,IFTYPE,FORCOL,BACCOL,INCOL)
   integer IFTYPE ! Frame type :
   ! 0 : None (clear inside only)
   ! 1 to 10 : As for IFrameType(IFTYPE)
-  ! -1 to -10 : As for IFrameType(IABS(IFTYPE))
+  ! -1 to -10 : As for IFrameType(abs(IFTYPE))
   ! but only when graphical frames available
   ! other : Use current frame style (default)
   character(len=*) FORCOL ! Foreground colour name ) As for ITextColour, or
@@ -899,7 +899,7 @@ subroutine IFormFrame(IFIELD,IFTYPE,FORCOL,BACCOL)
   integer IFTYPE ! Frame type :
   ! 0 : none (default if value out of range)
   ! 1 to 10 : as for IFrameType(IFTYPE)
-  ! -1 to -10 : as for IFrameType(IABS(IFTYPE))
+  ! -1 to -10 : as for IFrameType(abs(IFTYPE))
   ! but only when graphical frames available
   character(len=*) FORCOL ! Foreground colour name ) As for ITextColour
   character(len=*) BACCOL ! Background colour name ) or blank to use default
@@ -940,7 +940,7 @@ subroutine IFormFrameN(IFIELD,IFTYPE,NFCOL,NBCOL)
   integer IFTYPE ! Frame type :
   ! 0 : none (default if value out of range)
   ! 1 to 10 : as for IFrameType(IFTYPE)
-  ! -1 to -10 : as for IFrameType(IABS(IFTYPE))
+  ! -1 to -10 : as for IFrameType(abs(IFTYPE))
   ! but only when graphical frames available
   integer NFCOL ! Foreground colour name ) As for ITextColourN
   integer NBCOL ! Background colour name ) or -1 to use default

@@ -16,7 +16,7 @@ if (UNIX)
     set(CMAKE_CXX_FLAGS_DEBUG        "-g -O0 -fPIC -fopenmp")
     set(CMAKE_C_FLAGS_DEBUG          "-g -O0 -fPIC -fopenmp")
     
-    set(cpp_compiler_flags           "-std=c++11")
+    set(cpp_compiler_flags           "-std=c++17")
     set(dialect                      "-std=f2008")
     set(bounds                       "-fbounds-check")
 

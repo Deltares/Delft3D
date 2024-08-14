@@ -1,43 +1,43 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE PTABS(X,Y)
-      use unstruc_opengl
-      implicit none
-      double precision :: x,y,xx,yy
-      CALL DPROJECT(X,Y,XX,YY,1)
-      if (InOpenGLRendering) THEN
-          CALL DrawPoint(real(Xx),real(Yy))
-      ELSE
-          CALL IGRPOINT(real(XX),real(YY))
-      ENDIF
-      END
+      subroutine PTABS(X, Y)
+         use unstruc_opengl
+         implicit none
+         double precision :: x, y, xx, yy
+         call DPROJECT(X, Y, XX, YY, 1)
+         if (InOpenGLRendering) then
+            call DrawPoint(real(Xx), real(Yy))
+         else
+            call IGRPOINT(real(XX), real(YY))
+         end if
+      end

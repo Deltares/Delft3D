@@ -48,7 +48,7 @@
       open ( newunit = lu(1) , file = 'tabel301.prn' )
       write ( lu(1) , 1000 )
       write ( lu(1) , 1010 ) & 
-      (procid(i),procnm(i),procfo(i),i=1,num_processes_activated)
+      (procid(i),procnm(i),procfo(i),i=1,nproc)
       close ( lu(1) )
 
 !          Table 3.2
@@ -77,7 +77,7 @@
       do 120 isubs = 1,nsubs
           do 110 ivelo = 1,nvelo
               if (string_equals(velosu(ivelo),subsid(isubs))) then
-                  ioutp = index_in_array(veloit(ivelo),outpit(:num_output_files))
+                  ioutp = index_in_array(veloit(ivelo),outpit(:noutp))
                   if ( ioutp .le. 0 ) goto 999
                   iitem = index_in_array(veloit(ivelo),itemid(:nitem))
                   if ( iitem .le. 0 ) goto 999
@@ -95,7 +95,7 @@
       do 140 isubs = 1,nsubs
           do 130 idisp = 1,ndisp
               if (string_equals(dispsu(idisp),subsid(isubs))) then
-                  ioutp = index_in_array(dispit(idisp),outpit(:num_output_files))
+                  ioutp = index_in_array(dispit(idisp),outpit(:noutp))
                   if ( ioutp .le. 0 ) goto 999
                   iitem = index_in_array(dispit(idisp),itemid(:nitem))
                   if ( iitem .le. 0 ) goto 999
@@ -126,7 +126,7 @@
       open ( newunit = lu(6) , file = 'tabel306.prn' )
       write ( lu(6) , 1080 )
       do 210 ivelo = 1,nvelo
-          ioutp = index_in_array(veloit(ivelo),outpit(:num_output_files))
+          ioutp = index_in_array(veloit(ivelo),outpit(:noutp))
           if ( ioutp .le. 0 ) goto 999
           iitem = index_in_array(veloit(ivelo),itemid(:nitem))
           if ( iitem .le. 0 ) goto 999
@@ -141,7 +141,7 @@
       open ( newunit = lu(7) , file = 'tabel307.prn' )
       write ( lu(7) , 1090 )
       do 220 idisp = 1,ndisp
-          ioutp = index_in_array(dispit(idisp),outpit(:num_output_files))
+          ioutp = index_in_array(dispit(idisp),outpit(:noutp))
           if ( ioutp .le. 0 ) goto 999
           iitem = index_in_array(dispit(idisp),itemid(:nitem))
           if ( iitem .le. 0 ) goto 999
@@ -197,7 +197,7 @@
 
 !                  Can it be made by another process?
               makflg = .false.
-              ioutp = index_in_array(itemid(iitem),outpit(:num_output_files))
+              ioutp = index_in_array(itemid(iitem),outpit(:noutp))
               if ( ioutp .gt. 0 ) then
                   makflg = .true.
 
@@ -208,7 +208,7 @@
                   done = .false.
 !                      scan for other processes!
   230             continue
-                  jndex = index_in_array(itemid(iitem), outpit(ioutp+1:num_output_files-ioutp))
+                  jndex = index_in_array(itemid(iitem), outpit(ioutp+1:noutp-ioutp))
                   if ( jndex .le. 0 ) then
                       done = .true.
                   else
@@ -229,7 +229,7 @@
               endif
           else
 !                  No input item
-              ioutp = index_in_array(itemid(iitem),outpit(:num_output_files))
+              ioutp = index_in_array(itemid(iitem),outpit(:noutp))
               if ( ioutp .gt. 0 ) then
                   ivelo = index_in_array(itemid(iitem),veloit(:nvelo))
                   idisp = index_in_array(itemid(iitem),dispit(:ndisp))

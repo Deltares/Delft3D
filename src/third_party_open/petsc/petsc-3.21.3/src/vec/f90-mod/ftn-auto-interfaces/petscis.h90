@@ -1,0 +1,609 @@
+      subroutine ISBlockSetIndices(a,b,c,d,e,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscCopyMode e ! PetscCopyMode
+       PetscErrorCode z
+       end subroutine ISBlockSetIndices
+      subroutine ISCreateBlock(a,b,c,d,e,f,z)
+       import tIS
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscCopyMode e ! PetscCopyMode
+       IS f ! IS
+       PetscErrorCode z
+       end subroutine ISCreateBlock
+      subroutine ISBlockGetLocalSize(a,b,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine ISBlockGetLocalSize
+      subroutine ISBlockGetSize(a,b,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine ISBlockGetSize
+      subroutine ISCreateGeneral(a,b,c,d,e,z)
+       import tIS
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscCopyMode d ! PetscCopyMode
+       IS e ! IS
+       PetscErrorCode z
+       end subroutine ISCreateGeneral
+      subroutine ISGeneralSetIndices(a,b,c,d,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscCopyMode d ! PetscCopyMode
+       PetscErrorCode z
+       end subroutine ISGeneralSetIndices
+      subroutine ISGeneralSetIndicesFromMask(a,b,c,d,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscBool d (*) ! PetscBool
+       PetscErrorCode z
+       end subroutine ISGeneralSetIndicesFromMask
+      subroutine ISGeneralFilter(a,b,c,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine ISGeneralFilter
+      subroutine ISStrideGetInfo(a,b,c,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine ISStrideGetInfo
+      subroutine ISStrideSetStride(a,b,c,d,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine ISStrideSetStride
+      subroutine ISCreateStride(a,b,c,d,e,z)
+       import tIS
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       IS e ! IS
+       PetscErrorCode z
+       end subroutine ISCreateStride
+      subroutine ISRenumber(a,b,c,d,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       PetscInt c ! PetscInt
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine ISRenumber
+      subroutine ISCreateSubIS(a,b,c,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine ISCreateSubIS
+      subroutine ISClearInfoCache(a,b,z)
+       import tIS
+       IS a ! IS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine ISClearInfoCache
+      subroutine ISSetInfo(a,b,c,d,e,z)
+       import tIS
+       IS a ! IS
+       ISInfo b ! ISInfo
+       ISInfoType c ! ISInfoType
+       PetscBool d ! PetscBool
+       PetscBool e ! PetscBool
+       PetscErrorCode z
+       end subroutine ISSetInfo
+      subroutine ISGetInfo(a,b,c,d,e,z)
+       import tIS
+       IS a ! IS
+       ISInfo b ! ISInfo
+       ISInfoType c ! ISInfoType
+       PetscBool d ! PetscBool
+       PetscBool e ! PetscBool
+       PetscErrorCode z
+       end subroutine ISGetInfo
+      subroutine ISIdentity(a,b,z)
+       import tIS
+       IS a ! IS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine ISIdentity
+      subroutine ISSetIdentity(a,z)
+       import tIS
+       IS a ! IS
+       PetscErrorCode z
+       end subroutine ISSetIdentity
+      subroutine ISContiguousLocal(a,b,c,d,e,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscBool e ! PetscBool
+       PetscErrorCode z
+       end subroutine ISContiguousLocal
+      subroutine ISPermutation(a,b,z)
+       import tIS
+       IS a ! IS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine ISPermutation
+      subroutine ISSetPermutation(a,z)
+       import tIS
+       IS a ! IS
+       PetscErrorCode z
+       end subroutine ISSetPermutation
+      subroutine ISInvertPermutation(a,b,c,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine ISInvertPermutation
+      subroutine ISGetSize(a,b,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine ISGetSize
+      subroutine ISGetLocalSize(a,b,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine ISGetLocalSize
+      subroutine ISGetLayout(a,b,z)
+       import tIS
+       IS a ! IS
+       PetscLayout b ! PetscLayout
+       PetscErrorCode z
+       end subroutine ISGetLayout
+      subroutine ISSetLayout(a,b,z)
+       import tIS
+       IS a ! IS
+       PetscLayout b ! PetscLayout
+       PetscErrorCode z
+       end subroutine ISSetLayout
+      subroutine ISLocate(a,b,c,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine ISLocate
+      subroutine ISGetNonlocalIS(a,b,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine ISGetNonlocalIS
+      subroutine ISRestoreNonlocalIS(a,b,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine ISRestoreNonlocalIS
+      subroutine ISLoad(a,b,z)
+       import tIS,tPetscViewer
+       IS a ! IS
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+       end subroutine ISLoad
+      subroutine ISSort(a,z)
+       import tIS
+       IS a ! IS
+       PetscErrorCode z
+       end subroutine ISSort
+      subroutine ISSortRemoveDups(a,z)
+       import tIS
+       IS a ! IS
+       PetscErrorCode z
+       end subroutine ISSortRemoveDups
+      subroutine ISToGeneral(a,z)
+       import tIS
+       IS a ! IS
+       PetscErrorCode z
+       end subroutine ISToGeneral
+      subroutine ISSorted(a,b,z)
+       import tIS
+       IS a ! IS
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine ISSorted
+      subroutine ISDuplicate(a,b,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine ISDuplicate
+      subroutine ISCopy(a,b,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine ISCopy
+      subroutine ISShift(a,b,c,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine ISShift
+      subroutine ISOnComm(a,b,c,d,z)
+       import tIS
+       IS a ! IS
+       integer b ! MPI_Comm
+       PetscCopyMode c ! PetscCopyMode
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine ISOnComm
+      subroutine ISSetBlockSize(a,b,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine ISSetBlockSize
+      subroutine ISGetBlockSize(a,b,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine ISGetBlockSize
+      subroutine ISCreate(a,b,z)
+       import tIS
+       MPI_Comm a ! MPI_Comm
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine ISCreate
+      subroutine ISCompressIndicesGeneral(a,b,c,d,e,f,z)
+       import tIS
+       PetscInt a ! PetscInt
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       IS e (*) ! IS
+       IS f (*) ! IS
+       PetscErrorCode z
+       end subroutine ISCompressIndicesGeneral
+      subroutine ISColoringDestroy(a,z)
+       import tISColoring
+       ISColoring a ! ISColoring
+       PetscErrorCode z
+       end subroutine ISColoringDestroy
+      subroutine ISColoringCreate(a,b,c,d,e,f,z)
+       import tISColoring
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       ISColoringValue d (*) ! ISColoringValue
+       PetscCopyMode e ! PetscCopyMode
+       ISColoring f ! ISColoring
+       PetscErrorCode z
+       end subroutine ISColoringCreate
+      subroutine ISBuildTwoSided(a,b,c,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine ISBuildTwoSided
+      subroutine ISPartitioningToNumbering(a,b,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine ISPartitioningToNumbering
+      subroutine ISPartitioningCount(a,b,c,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine ISPartitioningCount
+      subroutine ISAllGather(a,b,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine ISAllGather
+      subroutine ISComplement(a,b,c,d,z)
+       import tIS
+       IS a ! IS
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine ISComplement
+      subroutine ISEqual(a,b,c,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine ISEqual
+      subroutine ISEqualUnsorted(a,b,c,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine ISEqualUnsorted
+      subroutine ISDifference(a,b,c,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine ISDifference
+      subroutine ISSum(a,b,c,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine ISSum
+      subroutine ISExpand(a,b,c,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine ISExpand
+      subroutine ISIntersect(a,b,c,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine ISIntersect
+      subroutine ISConcatenate(a,b,c,d,z)
+       import tIS
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       IS c (*) ! IS
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine ISConcatenate
+      subroutine ISListToPair(a,b,c,d,e,z)
+       import tIS
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       IS c (*) ! IS
+       IS d ! IS
+       IS e ! IS
+       PetscErrorCode z
+       end subroutine ISListToPair
+      subroutine ISPairToList(a,b,c,d,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       PetscInt c ! PetscInt
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine ISPairToList
+      subroutine ISEmbed(a,b,c,d,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       PetscBool c ! PetscBool
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine ISEmbed
+      subroutine ISSortPermutation(a,b,c,z)
+       import tIS
+       IS a ! IS
+       PetscBool b ! PetscBool
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine ISSortPermutation
+      subroutine ISLocalToGlobalMappingDuplicate(a,b,z)
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       ISLocalToGlobalMapping b ! ISLocalToGlobalMapping
+       PetscErrorCode z
+       end subroutine ISLocalToGlobalMappingDuplicate
+      subroutine ISLocalToGlobalMappingGetSize(a,b,z)
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine ISLocalToGlobalMappingGetSize
+      subroutine ISLocalToGlobalMappingLoad(a,b,z)
+       import tPetscViewer
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       PetscViewer b ! PetscViewer
+       PetscErrorCode z
+       end subroutine ISLocalToGlobalMappingLoad
+      subroutine ISLocalToGlobalMappingCreateIS(a,b,z)
+       import tIS
+       IS a ! IS
+       ISLocalToGlobalMapping b ! ISLocalToGlobalMapping
+       PetscErrorCode z
+       end subroutine ISLocalToGlobalMappingCreateIS
+      subroutine ISLocalToGlobalMappingSetBlockSize(a,b,z)
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine ISLocalToGlobalMappingSetBlockSize
+      subroutine ISLocalToGlobalMappingGetBlockSize(a,b,z)
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine ISLocalToGlobalMappingGetBlockSize
+      subroutine ISLocalToGlobalMappingCreate(a,b,c,d,e,f,z)
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscCopyMode e ! PetscCopyMode
+       ISLocalToGlobalMapping f ! ISLocalToGlobalMapping
+       PetscErrorCode z
+       end subroutine ISLocalToGlobalMappingCreate
+      subroutine ISLocalToGlobalMappingSetFromOptions(a,z)
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       PetscErrorCode z
+       end subroutine ISLocalToGlobalMappingSetFromOptions
+      subroutine ISLocalToGlobalMappingDestroy(a,z)
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       PetscErrorCode z
+       end subroutine ISLocalToGlobalMappingDestroy
+      subroutine ISLocalToGlobalMappingApplyIS(a,b,c,z)
+       import tIS
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       IS b ! IS
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine ISLocalToGlobalMappingApplyIS
+      subroutine ISLocalToGlobalMappingApply(a,b,c,d,z)
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine ISLocalToGlobalMappingApply
+      subroutine ISLocalToGlobalMappingApplyBlock(a,b,c,d,z)
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine ISLocalToGlobalMappingApplyBlock
+      subroutine ISGlobalToLocalMappingApply(a,b,c,d,e,f,z)
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       ISGlobalToLocalMappingMode b ! ISGlobalToLocalMappingMode
+       PetscInt c ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscInt e ! PetscInt
+       PetscInt f (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine ISGlobalToLocalMappingApply
+      subroutine ISGlobalToLocalMappingApplyIS(a,b,c,d,z)
+       import tIS
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       ISGlobalToLocalMappingMode b ! ISGlobalToLocalMappingMode
+       IS c ! IS
+       IS d ! IS
+       PetscErrorCode z
+       end subroutine ISGlobalToLocalMappingApplyIS
+      subroutine ISGlobalToLocalMappingApplyBlock(a,b,c,d,e,f,z)
+       ISLocalToGlobalMapping a ! ISLocalToGlobalMapping
+       ISGlobalToLocalMappingMode b ! ISGlobalToLocalMappingMode
+       PetscInt c ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscInt e ! PetscInt
+       PetscInt f (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine ISGlobalToLocalMappingApplyBlock
+      subroutine PetscLayoutCreate(a,b,z)
+       MPI_Comm a ! MPI_Comm
+       PetscLayout b ! PetscLayout
+       PetscErrorCode z
+       end subroutine PetscLayoutCreate
+      subroutine PetscLayoutCreateFromSizes(a,b,c,d,e,z)
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscLayout e ! PetscLayout
+       PetscErrorCode z
+       end subroutine PetscLayoutCreateFromSizes
+      subroutine PetscLayoutDestroy(a,z)
+       PetscLayout a ! PetscLayout
+       PetscErrorCode z
+       end subroutine PetscLayoutDestroy
+      subroutine PetscLayoutCreateFromRanges(a,b,c,d,e,z)
+       MPI_Comm a ! MPI_Comm
+       PetscInt b (*) ! PetscInt
+       PetscCopyMode c ! PetscCopyMode
+       PetscInt d ! PetscInt
+       PetscLayout e ! PetscLayout
+       PetscErrorCode z
+       end subroutine PetscLayoutCreateFromRanges
+      subroutine PetscLayoutSetUp(a,z)
+       PetscLayout a ! PetscLayout
+       PetscErrorCode z
+       end subroutine PetscLayoutSetUp
+      subroutine PetscLayoutDuplicate(a,b,z)
+       PetscLayout a ! PetscLayout
+       PetscLayout b ! PetscLayout
+       PetscErrorCode z
+       end subroutine PetscLayoutDuplicate
+      subroutine PetscLayoutReference(a,b,z)
+       PetscLayout a ! PetscLayout
+       PetscLayout b ! PetscLayout
+       PetscErrorCode z
+       end subroutine PetscLayoutReference
+      subroutine PetscLayoutSetISLocalToGlobalMapping(a,b,z)
+       PetscLayout a ! PetscLayout
+       ISLocalToGlobalMapping b ! ISLocalToGlobalMapping
+       PetscErrorCode z
+       end subroutine PetscLayoutSetISLocalToGlobalMapping
+      subroutine PetscLayoutSetLocalSize(a,b,z)
+       PetscLayout a ! PetscLayout
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscLayoutSetLocalSize
+      subroutine PetscLayoutGetLocalSize(a,b,z)
+       PetscLayout a ! PetscLayout
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscLayoutGetLocalSize
+      subroutine PetscLayoutSetSize(a,b,z)
+       PetscLayout a ! PetscLayout
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscLayoutSetSize
+      subroutine PetscLayoutGetSize(a,b,z)
+       PetscLayout a ! PetscLayout
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscLayoutGetSize
+      subroutine PetscLayoutSetBlockSize(a,b,z)
+       PetscLayout a ! PetscLayout
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscLayoutSetBlockSize
+      subroutine PetscLayoutGetBlockSize(a,b,z)
+       PetscLayout a ! PetscLayout
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscLayoutGetBlockSize
+      subroutine PetscLayoutGetRange(a,b,c,z)
+       PetscLayout a ! PetscLayout
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscLayoutGetRange
+      subroutine PetscLayoutCompare(a,b,c,z)
+       PetscLayout a ! PetscLayout
+       PetscLayout b ! PetscLayout
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine PetscLayoutCompare
+      subroutine PetscParallelSortInt(a,b,c,d,z)
+       PetscLayout a ! PetscLayout
+       PetscLayout b ! PetscLayout
+       PetscInt c (*) ! PetscInt
+       PetscInt d (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine PetscParallelSortInt

@@ -5,183 +5,181 @@
 ! subroutines  for working  with  sparse matrices.  It includes  general
 ! sparse  matrix  manipulation  routines  as  well as  a  few  iterative
 ! solvers, see detailed description of contents below.
-! 
-!  Copyright (C) 2005-2024, the Regents of the University of Minnesota 
-! 
+!
+!  Copyright (C) 2005-2024, the Regents of the University of Minnesota
+!
 ! SPARSKIT is  free software; you  can redistribute it and/or  modify it
 ! under the terms of the  GNU Lesser General Public License as published
 ! by the  Free Software Foundation [version  2.1 of the  License, or any
 ! later version.]
-! 
-! 
+!
+!
 ! A copy of  the licencing agreement is attached in  the file LGPL.  For
 ! additional information  contact the Free Software  Foundation Inc., 59
 ! Temple Place - Suite 330, Boston, MA 02111, USA or visit the web-site
-!  
+!
 !  http://www.gnu.org/copyleft/lesser.html
-! 
-! 
+!
+!
 ! DISCLAIMER
 ! ----------
-! 
+!
 ! SPARSKIT  is distributed  in  the hope  that  it will  be useful,  but
 ! WITHOUT   ANY  WARRANTY;   without  even   the  implied   warranty  of
 ! MERCHANTABILITY  or FITNESS  FOR A  PARTICULAR PURPOSE.   See  the GNU
 ! Lesser General Public License for more details.
-! 
+!
 ! For more information contact saad@cs.umn.edu
 
-! 
-! 
+!
+!
+
+#define no_warning_unused_dummy_argument(x) associate( x => x ); end associate
 
 #include "blasfm.h"
 
-    MODULE GAMMAS
-    double precision ::   gammax,gammay,alpha
-    END MODULE GAMMAS
+module GAMMAS
+   double precision :: gammax, gammay, alpha
+end module GAMMAS
 
+module m_saad
 
-     module m_saad
+   use GAMMAS
 
-     USE GAMMAS
- 
-      integer , allocatable ::  &
-        iao(:), jao(:),         &       ! original matrix in CSR format (iao - row_ptr, jao - col_ind)
-        ia(:), ja(:),           &       ! permuted matrix in CSR format
-        perm(:), perminv(:),    &       ! permutation matrix, its reverse
-        kolrs(:),               &       ! color number per node
-        jlu(:), ju(:),          &       ! ILU preconditioner in MSR format
-        iw(:), ngs(:)
+   integer, allocatable :: &
+      iao(:), jao(:), & ! original matrix in CSR format (iao - row_ptr, jao - col_ind)
+      ia(:), ja(:), & ! permuted matrix in CSR format
+      perm(:), perminv(:), & ! permutation matrix, its reverse
+      kolrs(:), & ! color number per node
+      jlu(:), ju(:), & ! ILU preconditioner in MSR format
+      iw(:), ngs(:)
 
-      integer :: ipar(16),nx,ny,nz,i,lfil,nrow,ierr, il(11), nn, mm, NWK
+   integer :: ipar(16), nx, ny, nz, i, lfil, nrow, ierr, il(11), nn, mm, NWK
 
-      integer :: permselect             ! permutation method selector
-      integer :: JAPERM                 ! PERM ARRAY INITIALISED YES NO
-      integer :: nax                    ! initial max nrow dim
+   integer :: permselect ! permutation method selector
+   integer :: JAPERM ! PERM ARRAY INITIALISED YES NO
+   integer :: nax ! initial max nrow dim
 
-      logical, parameter :: sym = .TRUE.! indicates that matrix is symmetric
+   logical, parameter :: sym = .true. ! indicates that matrix is symmetric
 
-      double precision, allocatable ::  &
-        ao(:),                  &       ! original matrix in CSR format
-        a(:),                   &       ! permuted matrix in CSR format
-        solo(:), rhso(:),       &       ! original solution and right-hand side
-        sol(:), sol0(:), rhs(:),&       ! permuted solution and right-hand side
-        alu(:),                 &       ! ILU preconditioner in MSR format
-        wk(:)                           ! work array
+   double precision, allocatable :: &
+      ao(:), & ! original matrix in CSR format
+      a(:), & ! permuted matrix in CSR format
+      solo(:), rhso(:), & ! original solution and right-hand side
+      sol(:), sol0(:), rhs(:), & ! permuted solution and right-hand side
+      alu(:), & ! ILU preconditioner in MSR format
+      wk(:) ! work array
 
-      double precision :: al(6), epssaad
+   double precision :: al(6), epssaad
 
-      character :: qbc*3
+   character :: qbc * 3
 
-      double precision ::   tol, fpar(16), cp0, cp1, cfl
-      external gen57pt,cg,bcg,dbcg,bcgstab,tfqmr,gmres,fgmres,dqgmres
-      external cgnr, fom, runrc, ilut
-      
-      integer          :: jasafe=0     ! thread-safe (1) or not (0)
+   double precision :: tol, fpar(16), cp0, cp1, cfl
+   external gen57pt, cg, bcg, dbcg, bcgstab, tfqmr, gmres, fgmres, dqgmres
+   external cgnr, fom, runrc, ilut
+
+   integer :: jasafe = 0 ! thread-safe (1) or not (0)
 !
-     end module m_saad
+end module m_saad
 
-     
- subroutine inisaad(epscg_loc,maxmatvecs_loc,alpha_loc)
- use m_reduce
- use m_saad
- use m_flowparameters, only: Noderivedtypes
- 
- implicit none
- 
- double precision, intent(in) :: epscg_loc   !< threshold in termination criterium
- integer,          intent(in) :: maxmatvecs_loc   !< maximum number of matrix-vector multiplications
- double precision, intent(in) :: alpha_loc   !< ILU (0.0) to MILU (1.0) preconditioning
+subroutine inisaad(epscg_loc, maxmatvecs_loc, alpha_loc)
+   use m_reduce
+   use m_saad
+   use m_flowparameters, only: Noderivedtypes
 
- integer :: na, n, ntot, j
+   implicit none
 
- if (allocated (ngs) ) deallocate(ngs)  ! Guus to Saad
- ! allocate(ngs(nogauss0+nocg0) )
- allocate(ngs(nodtot) ); ngs = 0
- 
- na = 0                ! matrix counter
- if (Noderivedtypes < 5) then 
-    
-    do n=nogauss0+1,nogauss0+nocg0
-       na   = na + 1
-       ndn  = noel(n)     ! guus index
-       ntot = row(ndn)%l 
-       do j=1,ntot        ! init at maxdim
-          na = na + 1
-       enddo
-    enddo
-    
- else   
- 
-    do n=nogauss0+1,nogauss0+nocg0
-       na   = na + 1
-       ndn  = noel(n)     ! guus index
-       ntot = L2row(ndn) - L1row(ndn) + 1 
-       do j=1,ntot        ! init at maxdim
-          na = na + 1
-       enddo
-    enddo
-    
- endif   
- 
- call initsaad(nocg0,na,epscg_loc,maxmatvecs_loc,alpha_loc)
- end subroutine inisaad
+   double precision, intent(in) :: epscg_loc !< threshold in termination criterium
+   integer, intent(in) :: maxmatvecs_loc !< maximum number of matrix-vector multiplications
+   double precision, intent(in) :: alpha_loc !< ILU (0.0) to MILU (1.0) preconditioning
 
+   integer :: na, n, ntot, j
 
- subroutine initsaad(NOCG0,NA,epscg,maxmatvecs,alpha_loc)
+   if (allocated(ngs)) deallocate (ngs) ! Guus to Saad
+   ! allocate(ngs(nogauss0+nocg0) )
+   allocate (ngs(nodtot)); ngs = 0
 
-      USE M_SAAD
-      use m_alloc
-      implicit none
-      
-      INTEGER          :: NOCG0, NA
-      double precision ::  epscg
-      integer          :: maxmatvecs, n30       
-      double precision, intent(in) :: alpha_loc !< ILU (0.0) to MILU (1.0) preconditioning
+   na = 0 ! matrix counter
+   if (Noderivedtypes < 5) then
 
-      NROW = NOCG0 ; nax = na
-      ! n30  = 30
-      n30  = 30
+      do n = nogauss0 + 1, nogauss0 + nocg0
+         na = na + 1
+         ndn = noel(n) ! guus index
+         ntot = row(ndn)%l
+         do j = 1, ntot ! init at maxdim
+            na = na + 1
+         end do
+      end do
 
-      NN   = NROW ; mm = n30*nn ; nwk = 2*mm
+   else
 
-      IF (ALLOCATED(IA) ) THEN 
-         deallocate ( iao, jao, ia , ja, perm, kolrs, jlu, ju, iw )
-         deallocate ( ao, a, solo, rhso, sol, sol0, rhs, alu, wk )
-      ENDIF
-      
-      allocate ( iao(nn+1),   jao(na),     &
-                 ia (nn+1),    ja(na),     &
-                 perm(nn) , kolrs(nn),     &
-                 jlu(mm), ju(nn), iw(nn*3), stat = ierr )
-      call aerr('iao(nn+1)',IERR, mm+7*nn+2*na)
-      iao = 0 ; jao = 0 ; ia = 0; ja  = 0
-      jlu = 0 ; ju = 0  ; iw = 0; perm = 0 
+      do n = nogauss0 + 1, nogauss0 + nocg0
+         na = na + 1
+         ndn = noel(n) ! guus index
+         ntot = L2row(ndn) - L1row(ndn) + 1
+         do j = 1, ntot ! init at maxdim
+            na = na + 1
+         end do
+      end do
 
-      allocate ( ao(na), a(na), solo(nn), rhso(nn), sol(nn),  &
-                 sol0(nn), rhs(nn), alu(mm), stat = ierr ) 
-      call aerr('ao(na)',IERR, 2*na+5*nn)
-      
-      ierr = -1
-      do while (ierr .ne. 0) 
-         allocate ( wk(nwk) , stat = ierr )
-         if (ierr .ne. 0) then
-            nwk = 0.7*nwk
-         endif 
-      enddo   
-      call aerr ('wk(nwk)', IERR, nwk)
-      
-      ao = 0.D0 ; a = 0.D0
-      solo = 0.D0 ; rhs = 0.D0 ; alu = 0.D0 ; wk = 0.D0
-      sol  = 0d0  
+   end if
 
+   call initsaad(nocg0, na, epscg_loc, maxmatvecs_loc, alpha_loc)
+end subroutine inisaad
 
-      ipar = 0 ! initialize all params to 0
-      ipar(2) = 1               ! no (0), left (1), right (2), both (3) precond
-      ipar(3) = 1               ! stopping criteria
-      ipar(4) = nwk             ! number of elems in array 'wk'
-      ipar(5) = 10              ! size of Krylov subspace in GMRES and variants
-      ipar(6) = maxmatvecs      ! max number of mat-vec multiplies
+subroutine initsaad(NOCG0, NA, epscg, maxmatvecs, alpha_loc)
+
+   use M_SAAD
+   use m_alloc
+   implicit none
+
+   integer :: NOCG0, NA
+   double precision :: epscg
+   integer :: maxmatvecs, n30
+   double precision, intent(in) :: alpha_loc !< ILU (0.0) to MILU (1.0) preconditioning
+
+   NROW = NOCG0; nax = na
+   ! n30  = 30
+   n30 = 30
+
+   NN = NROW; mm = n30 * nn; nwk = 2 * mm
+
+   if (allocated(IA)) then
+      deallocate (iao, jao, ia, ja, perm, kolrs, jlu, ju, iw)
+      deallocate (ao, a, solo, rhso, sol, sol0, rhs, alu, wk)
+   end if
+
+   allocate (iao(nn + 1), jao(na), &
+             ia(nn + 1), ja(na), &
+             perm(nn), kolrs(nn), &
+             jlu(mm), ju(nn), iw(nn * 3), stat=ierr)
+   call aerr('iao(nn+1)', IERR, mm + 7 * nn + 2 * na)
+   iao = 0; jao = 0; ia = 0; ja = 0
+   jlu = 0; ju = 0; iw = 0; perm = 0
+
+   allocate (ao(na), a(na), solo(nn), rhso(nn), sol(nn), &
+             sol0(nn), rhs(nn), alu(mm), stat=ierr)
+   call aerr('ao(na)', IERR, 2 * na + 5 * nn)
+
+   ierr = -1
+   do while (ierr /= 0)
+      allocate (wk(nwk), stat=ierr)
+      if (ierr /= 0) then
+         nwk = 0.7 * nwk
+      end if
+   end do
+   call aerr('wk(nwk)', IERR, nwk)
+
+   ao = 0.d0; a = 0.d0
+   solo = 0.d0; rhs = 0.d0; alu = 0.d0; wk = 0.d0
+   sol = 0d0
+
+   ipar = 0 ! initialize all params to 0
+   ipar(2) = 1 ! no (0), left (1), right (2), both (3) precond
+   ipar(3) = 1 ! stopping criteria
+   ipar(4) = nwk ! number of elems in array 'wk'
+   ipar(5) = 10 ! size of Krylov subspace in GMRES and variants
+   ipar(6) = maxmatvecs ! max number of mat-vec multiplies
 
 !---MB: old setting
 !     fpar(1) = 1.0D-16         ! relative tolerance ('exact' solve, except
@@ -195,24 +193,22 @@
 !   SPARSKIT SQRT(DDOT(residualvector,residualvector)) is considered, which is
 !   weighing of residualvector in L2 norm *times* the number of unknowns per
 !   direction
-      fpar = 0d0 ! initialize all params to 0
-      fpar(1) = 0.0D-16         ! relative tolerance ('exact' solve, except
+   fpar = 0d0 ! initialize all params to 0
+   fpar(1) = 0.0d-16 ! relative tolerance ('exact' solve, except
 !     fpar(2) = 1.0D-14 * 1.0D2 ! absolute tolerance  for round-off errors)
 !             = 1.0D-14 as in method GS * underestimation of number of unknowns
 !     fpar(2) = 1.0D-8  * 1.0D0 ! MB: set lower tolerance
-      fpar(2) = epscg
-
+   fpar(2) = epscg
 
 !      WRITE(*,*) 'REL, ABS '
 !      READ(*,*) FPAR(1), FPAR(2)
 
-      lfil  = 3
+   lfil = 3
 !     alpha = 1.00000D0
 !     alpha = 0.00000D0 ! SPvdP: set it to 0 for ILU preconditioning
-      alpha = alpha_loc
+   alpha = alpha_loc
 
-      tol   = 0.50D-2
-
+   tol = 0.50d-2
 
 !                       ***** PERMUTATIONS *****
 !     permselect = 1    ! MB: no permutation
@@ -220,133 +216,129 @@
 !     permselect = 3    ! MB: multicolor ordering (works rather well)
 !     permselect = 4    ! MB: local min ordering
 
-
 !     comparison with Mart:
 !      permselect = 3    ! Check if 3 still possible
 
-      permselect = 1    ! Check if 3 still possible
-      JAPERM     = 0
+   permselect = 1 ! Check if 3 still possible
+   JAPERM = 0
 
-      end subroutine initsaad
+end subroutine initsaad
 
+subroutine cgsaad(its, na, nocg, jaini, jabcgstab, ierror, res)
+   use m_saad
+   
+   implicit none
+   
+   integer :: its, na, nocg
+   integer, intent(in) :: jaini !< compute preconditioner and permutation (1) or not (0), or initialization only (-1), or ILU solve only (2)
+   integer, intent(in) :: jabcgstab !< use bcgstab (1) or cg (other)
+   integer, intent(out) :: ierror !< error (1) or not (0)
+   double precision, intent(out) :: res !< || residual ||
+   
+   integer :: n, m, maxcol, ncol, nset, job
 
-      subroutine cgsaad(its,na,nocg,jaini, jabcgstab, ierror, res)
-      use m_saad
-      integer :: its,na,nocg
-      integer,          intent(in)  :: jaini       !< compute preconditioner and permutation (1) or not (0), or initialization only (-1), or ILU solve only (2)
-      integer,          intent(in)  :: jabcgstab   !< use bcgstab (1) or cg (other)
-      integer,          intent(out) :: ierror      !< error (1) or not (0)
-      double precision, intent(out) :: res         !< || residual ||
+   ierror = 0
 
-      ierror = 0
-      
-      nrow = nocg
-      
-      if ( jaini.eq.-1 .or. jaini.eq.1 ) then
+   nrow = nocg
 
-         IF (JAPERM == 0) THEN
+   if (jaini == -1 .or. jaini == 1) then
 
-        
-            SELECT CASE( permselect )
+      if (JAPERM == 0) then
 
-            CASE( 1 )  ! NO
+         select case (permselect)
 
-              DO n = 1, nrow
-                perm(n) = n
-              ENDDO
+         case (1) ! NO
 
-            CASE( 2 )       ! *** zig-zag permutation
+            do n = 1, nrow
+               perm(n) = n
+            end do
 
-              print *, ' '
-              print *, '        *** ZIG-ZAG reordering ***'
+         case (2) ! *** zig-zag permutation
 
-              DO n = 1, nrow
-                m = MOD( n-1, 2*(nx-2) ) + 1
-                IF( m .LE. nx-2 ) THEN
-                  perm(n) = n                     ! forward sweep of hor grid line
-                ELSE
-                  perm(n) = n+1 + 3*(nx-2) - 2*m  ! backward sweep of hor grid line
-                ENDIF
-              ENDDO
+            print *, ' '
+            print *, '        *** ZIG-ZAG reordering ***'
 
-            case(3)        ! *** multicoloring ordering
+            do n = 1, nrow
+               m = mod(n - 1, 2 * (nx - 2)) + 1
+               if (m <= nx - 2) then
+                  perm(n) = n ! forward sweep of hor grid line
+               else
+                  perm(n) = n + 1 + 3 * (nx - 2) - 2 * m ! backward sweep of hor grid line
+               end if
+            end do
 
-              maxcol = 4              ! maximum number of colors
-              DO n = 1, nrow
-                perm(n) = n           ! initialize permutation array
-              ENDDO
+         case (3) ! *** multicoloring ordering
 
-              ! print *, ' '
-              ! print *, '        *** MULTICOLOR reordering ***'
+            maxcol = 4 ! maximum number of colors
+            do n = 1, nrow
+               perm(n) = n ! initialize permutation array
+            end do
 
-               CALL multic (nrow,jao,iao,ncol,kolrs,il,perm,maxcol,ierr)
+            ! print *, ' '
+            ! print *, '        *** MULTICOLOR reordering ***'
 
-              ! WRITE( *, '(A,I3)' ) ' MULTICOLOR, ierr =', ierr
-              ! WRITE( *, '(A,I4)' ) ' Number of colors found:', ncol
+            call multic(nrow, jao, iao, ncol, kolrs, il, perm, maxcol, ierr)
 
+            ! WRITE( *, '(A,I3)' ) ' MULTICOLOR, ierr =', ierr
+            ! WRITE( *, '(A,I4)' ) ' Number of colors found:', ncol
 
-            CASE( 4 )
-              ! *** independent set ordering with local minimization
+         case (4)
+            ! *** independent set ordering with local minimization
 
-              ! print *, ' '
-              ! print *, '        *** LOCAL MIN reordering ***'
+            ! print *, ' '
+            ! print *, '        *** LOCAL MIN reordering ***'
 
-               CALL indset2 (nrow,jao,iao,nset,perm,perminv,kolrs,sym,1)
+            call indset2(nrow, jao, iao, nset, perm, perminv, kolrs, sym, 1)
 
-              ! WRITE( *, '(A,I8)' ) ' Number of unknowns in indep.set:', nset
+            ! WRITE( *, '(A,I8)' ) ' Number of unknowns in indep.set:', nset
 
-            END SELECT
+         end select
 
-            ! JAPERM = 1 ! no switch off for now
-         ENDIF
+         ! JAPERM = 1 ! no switch off for now
+      end if
 
+      ! permutation of matrix
+      job = 1
 
-         ! permutation of matrix
-         job = 1
-     
-         if (permselect > 1) then 
-      
-            CALL dperm( nrow, ao, jao, iao, a, ja, ia, perm, perm, job )
+      if (permselect > 1) then
 
-         else 
-      
-            a(1:na)  = ao(1:na)
-            ja(1:na) = jao(1:na)
-            ia(1:nrow+1) = iao(1:nrow+1)
-      
-         endif    
+         call dperm(nrow, ao, jao, iao, a, ja, ia, perm, perm, job)
 
+      else
 
-         ! *** preconditioner
-         call ilud (nrow,a,ja,ia,alpha,tol,alu,jlu,ju,mm,wk,iw,ierr,na)
-         
+         a(1:na) = ao(1:na)
+         ja(1:na) = jao(1:na)
+         ia(1:nrow + 1) = iao(1:nrow + 1)
+
+      end if
+
+      ! *** preconditioner
+      call ilud(nrow, a, ja, ia, alpha, tol, alu, jlu, ju, mm, wk, iw, ierr, na)
+
 !         write(6,*) 'elements in ILU, check, rel.mem.use:',  &
 !                    ju(nrow), ierr, real(ju(nrow)/real(nrow))
-         
+
+   end if
+
+   if (jaini /= -1) then
+
+      ! permutation of rhs
+      call permsimple(nrow, rhs, wk, perm, permselect)
+
+      ! permutation of sol
+      call permsimple(nrow, sol, wk, perm, permselect)
+
+      if (jaini == 2) then ! ILU solve only
+         call lusol(nrow, rhs, sol, alu, jlu, ju, 30 * nrow)
+         its = 0
+      else
+         call runrc2(nrow, rhs, sol, ipar, fpar, wk, a, ja, ia, alu, jlu, ju, its, epssaad, jabcgstab, ierror, 30 * nrow)
+         res = fpar(5)
       end if
+      call permsimpleINVERSE(nrow, sol, wk, perm, permselect)
+   end if
 
-      if ( jaini.ne.-1 ) then
-
-         ! permutation of rhs
-         CALL permsimple( nrow, rhs, wk, perm, permselect )
-
-         ! permutation of sol
-         CALL permsimple( nrow, sol, wk, perm, permselect )
-      
-         if ( jaini.eq.2 ) then   ! ILU solve only
-            call lusol(nrow,rhs,sol,alu,jlu,ju,30*nrow)
-            its = 0
-         else
-            call runrc2(nrow,rhs,sol,ipar,fpar,wk,a,ja,ia,alu,jlu,ju,its,epssaad,jabcgstab,ierror,30*nrow)
-            res = fpar(5)
-         end if
-         call permsimpleINVERSE (nrow, sol, wk, perm, permselect)
-      end if
-
-   end subroutine cgsaad
-
-
-
+end subroutine cgsaad
 
 !----------------------------------------------------------------------c
 !                          S P A R S K I T                             c
@@ -385,12 +377,12 @@
 ! usage: call preconditioner then call pgmres                          c
 !                                                                      c
 !----------------------------------------------------------------------c
-      subroutine ilut(n,a,ja,ia,lfil,droptol,alu,jlu,ju,iwk,w,jw,ierr)
+subroutine ilut(n, a, ja, ia, lfil, droptol, alu, jlu, ju, iwk, w, jw, ierr)
 !-----------------------------------------------------------------------
-      implicit none
-      integer n
-      double precision ::  a(*),alu(*),w(n+1),droptol
-      integer ja(*),ia(n+1),jlu(*),ju(n),jw(2*n),lfil,iwk,ierr
+   implicit none
+   integer n
+   double precision :: a(*), alu(*), w(n + 1), droptol
+   integer ja(*), ia(n + 1), jlu(*), ju(n), jw(2 * n), lfil, iwk, ierr
 !----------------------------------------------------------------------*
 !                      *** ILUT preconditioner ***                     *
 !      incomplete LU factorization with dual truncation mechanism      *
@@ -474,276 +466,273 @@
 ! (however, fill-in is then mpredictible).                             *
 !----------------------------------------------------------------------*
 !     locals
-      integer ju0,k,j1,j2,j,ii,i,lenl,lenu,jj,jrow,jpos,len
-      double precision ::  tnorm, t, abs, s, fact
-      if (lfil .lt. 0) goto 998
+   integer ju0, k, j1, j2, j, ii, i, lenl, lenu, jj, jrow, jpos, len
+   double precision :: tnorm, t, abs, s, fact
+   if (lfil < 0) goto 998
 !-----------------------------------------------------------------------
 !     initialize ju0 (points to next element to be added to alu,jlu)
 !     and pointer array.
 !-----------------------------------------------------------------------
-      ju0 = n+2
-      jlu(1) = ju0
+   ju0 = n + 2
+   jlu(1) = ju0
 !
 !     initialize nonzero indicator array.
 !
-      do j=1,n
-         jw(n+j)  = 0
-      end do
+   do j = 1, n
+      jw(n + j) = 0
+   end do
 
 !-----------------------------------------------------------------------
 !     beginning of main loop.
 !-----------------------------------------------------------------------
-      do ii = 1, n
-         j1 = ia(ii)
-         j2 = ia(ii+1) - 1
-         tnorm = 0.0d0
-         do k=j1,j2
-            tnorm = tnorm+abs(a(k))
-         end do
+   do ii = 1, n
+      j1 = ia(ii)
+      j2 = ia(ii + 1) - 1
+      tnorm = 0.0d0
+      do k = j1, j2
+         tnorm = tnorm + abs(a(k))
+      end do
 
-         if (tnorm .eq. 0.0) goto 999
-         tnorm = tnorm/real(j2-j1+1)
+      if (tnorm == 0.0) goto 999
+      tnorm = tnorm / real(j2 - j1 + 1)
 !
 !     unpack L-part and U-part of row of A in arrays w
 !
-         lenu = 1
-         lenl = 0
-         jw(ii) = ii
-         w(ii) = 0.0
-         jw(n+ii) = ii
+      lenu = 1
+      lenl = 0
+      jw(ii) = ii
+      w(ii) = 0.0
+      jw(n + ii) = ii
 !
-         do  j = j1, j2
-            k = ja(j)
-            t = a(j)
-            if (k .lt. ii) then
-               lenl = lenl+1
-               jw(lenl) = k
-               w(lenl) = t
-               jw(n+k) = lenl
-            else if (k .eq. ii) then
-               w(ii) = t
-            else
-               lenu = lenu+1
-               jpos = ii+lenu-1
-               jw(jpos) = k
-               w(jpos) = t
-               jw(n+k) = jpos
-            endif
-         end do
+      do j = j1, j2
+         k = ja(j)
+         t = a(j)
+         if (k < ii) then
+            lenl = lenl + 1
+            jw(lenl) = k
+            w(lenl) = t
+            jw(n + k) = lenl
+         else if (k == ii) then
+            w(ii) = t
+         else
+            lenu = lenu + 1
+            jpos = ii + lenu - 1
+            jw(jpos) = k
+            w(jpos) = t
+            jw(n + k) = jpos
+         end if
+      end do
 
-         jj = 0
-         len = 0
+      jj = 0
+      len = 0
 !
 !     eliminate previous rows
 !
- 150     jj = jj+1
-         if (jj .gt. lenl) goto 160
+150   jj = jj + 1
+      if (jj > lenl) goto 160
 !-----------------------------------------------------------------------
 !     in order to do the elimination in the correct order we must select
 !     the smallest column index among jw(k), k=jj+1, ..., lenl.
 !-----------------------------------------------------------------------
-         jrow = jw(jj)
-         k = jj
+      jrow = jw(jj)
+      k = jj
 !
 !     determine smallest column index
 !
-         do j=jj+1,lenl
-            if (jw(j) .lt. jrow) then
-               jrow = jw(j)
-               k = j
-            endif
-         end do
+      do j = jj + 1, lenl
+         if (jw(j) < jrow) then
+            jrow = jw(j)
+            k = j
+         end if
+      end do
 
 !
-         if (k .ne. jj) then
+      if (k /= jj) then
 !     exchange in jw
-            j = jw(jj)
-            jw(jj) = jw(k)
-            jw(k) = j
+         j = jw(jj)
+         jw(jj) = jw(k)
+         jw(k) = j
 !     exchange in jr
-            jw(n+jrow) = jj
-            jw(n+j) = k
+         jw(n + jrow) = jj
+         jw(n + j) = k
 !     exchange in w
-            s = w(jj)
-            w(jj) = w(k)
-            w(k) = s
-         endif
+         s = w(jj)
+         w(jj) = w(k)
+         w(k) = s
+      end if
 !
 !     zero out element in row by setting jw(n+jrow) to zero.
 !
-         jw(n+jrow) = 0
+      jw(n + jrow) = 0
 !
 !     get the multiplier for row to be eliminated (jrow).
 !
-         fact = w(jj)*alu(jrow)
-         if (abs(fact) .le. droptol) goto 150
+      fact = w(jj) * alu(jrow)
+      if (abs(fact) <= droptol) goto 150
 !
 !     combine current row and row jrow
 !
-         do k = ju(jrow), jlu(jrow+1)-1
-            s = fact*alu(k)
-            j = jlu(k)
-            jpos = jw(n+j)
-            if (j .ge. ii) then
+      do k = ju(jrow), jlu(jrow + 1) - 1
+         s = fact * alu(k)
+         j = jlu(k)
+         jpos = jw(n + j)
+         if (j >= ii) then
 !
 !     dealing with upper part.
 !
-               if (jpos .eq. 0) then
+            if (jpos == 0) then
 !
 !     this is a fill-in element
 !
-                  lenu = lenu+1
-                  if (lenu .gt. n) goto 995
-                  i = ii+lenu-1
-                  jw(i) = j
-                  jw(n+j) = i
-                  w(i) = - s
-               else
+               lenu = lenu + 1
+               if (lenu > n) goto 995
+               i = ii + lenu - 1
+               jw(i) = j
+               jw(n + j) = i
+               w(i) = -s
+            else
 !
 !     this is not a fill-in element
 !
-                  w(jpos) = w(jpos) - s
+               w(jpos) = w(jpos) - s
 
-               endif
-            else
+            end if
+         else
 !
 !     dealing  with lower part.
 !
-               if (jpos .eq. 0) then
+            if (jpos == 0) then
 !
 !     this is a fill-in element
 !
-                  lenl = lenl+1
-                  if (lenl .gt. n) goto 995
-                  jw(lenl) = j
-                  jw(n+j) = lenl
-                  w(lenl) = - s
-               else
+               lenl = lenl + 1
+               if (lenl > n) goto 995
+               jw(lenl) = j
+               jw(n + j) = lenl
+               w(lenl) = -s
+            else
 !
 !     this is not a fill-in element
 !
-                  w(jpos) = w(jpos) - s
-               endif
-            endif
-         end do
+               w(jpos) = w(jpos) - s
+            end if
+         end if
+      end do
 
 !
 !     store this pivot element -- (from left to right -- no danger of
 !     overlap with the working elements in L (pivots).
 !
-         len = len+1
-         w(len) = fact
-         jw(len)  = jrow
-         goto 150
- 160     continue
+      len = len + 1
+      w(len) = fact
+      jw(len) = jrow
+      goto 150
+160   continue
 !
 !     reset double-pointer to zero (U-part)
 !
-         do k=1, lenu
-            jw(n+jw(ii+k-1)) = 0
-         end do
+      do k = 1, lenu
+         jw(n + jw(ii + k - 1)) = 0
+      end do
 
 !
 !     update L-matrix
 !
-         lenl = len
-         len = min0(lenl,lfil)
+      lenl = len
+      len = min(lenl, lfil)
 !
 !     sort by quick-split
 !
-         call qsplit (w,jw,lenl,len)
+      call qsplit(w, jw, lenl, len)
 !
 !     store L-part
 !
-         do k=1, len
-            if (ju0 .gt. iwk) goto 996
-            alu(ju0) =  w(k)
-            jlu(ju0) =  jw(k)
-            ju0 = ju0+1
-         end do
+      do k = 1, len
+         if (ju0 > iwk) goto 996
+         alu(ju0) = w(k)
+         jlu(ju0) = jw(k)
+         ju0 = ju0 + 1
+      end do
 
 !
 !     save pointer to beginning of row ii of U
 !
-         ju(ii) = ju0
+      ju(ii) = ju0
 !
 !     update U-matrix -- first apply dropping strategy
 !
-         len = 0
-         do k=1, lenu-1
-            if (abs(w(ii+k)) .gt. droptol*tnorm) then
-               len = len+1
-               w(ii+len) = w(ii+k)
-               jw(ii+len) = jw(ii+k)
-            endif
-         enddo
-         lenu = len+1
-         len = min0(lenu,lfil)
+      len = 0
+      do k = 1, lenu - 1
+         if (abs(w(ii + k)) > droptol * tnorm) then
+            len = len + 1
+            w(ii + len) = w(ii + k)
+            jw(ii + len) = jw(ii + k)
+         end if
+      end do
+      lenu = len + 1
+      len = min(lenu, lfil)
 !
-         call qsplit (w(ii+1), jw(ii+1), lenu-1,len)
+      call qsplit(w(ii + 1), jw(ii + 1), lenu - 1, len)
 !
 !     copy
 !
-         t = abs(w(ii))
-         if (len + ju0 .gt. iwk) goto 997
-         do k=ii+1,ii+len-1
-            jlu(ju0) = jw(k)
-            alu(ju0) = w(k)
-            t = t + abs(w(k) )
-            ju0 = ju0+1
-         end do
+      t = abs(w(ii))
+      if (len + ju0 > iwk) goto 997
+      do k = ii + 1, ii + len - 1
+         jlu(ju0) = jw(k)
+         alu(ju0) = w(k)
+         t = t + abs(w(k))
+         ju0 = ju0 + 1
+      end do
 
 !
 !     store inverse of diagonal element of u
 !
-         if (w(ii) .eq. 0.0) w(ii) = (0.0001 + droptol)*tnorm
+      if (w(ii) == 0.0) w(ii) = (0.0001 + droptol) * tnorm
 !
-         alu(ii) = 1.0d0/ w(ii)
+      alu(ii) = 1.0d0 / w(ii)
 !
 !     update pointer to beginning of next row of U.
 !
-         jlu(ii+1) = ju0
+      jlu(ii + 1) = ju0
 !-----------------------------------------------------------------------
 !     end main loop
 !-----------------------------------------------------------------------
-      end do
+   end do
 
-      ierr = 0
-      return
+   ierr = 0
+   return
 !
 !     incomprehensible error. Matrix must be wrong.
 !
- 995  ierr = -1
-      return
+995 ierr = -1
+   return
 !
 !     insufficient storage in L.
 !
- 996  ierr = -2
-      return
+996 ierr = -2
+   return
 !
 !     insufficient storage in U.
 !
- 997  ierr = -3
-      return
+997 ierr = -3
+   return
 !
 !     illegal lfil entered.
 !
- 998  ierr = -4
-      return
+998 ierr = -4
+   return
 !
 !     zero row encountered
 !
- 999  ierr = -5
-      return
-!----------------end-of-ilut--------------------------------------------
-!-----------------------------------------------------------------------
-      end
-!----------------------------------------------------------------------
-      subroutine ilutp(n,a,ja,ia,lfil,droptol,permtol,mbloc,alu,jlu,ju,iwk,w,jw,iperm,ierr)
-!-----------------------------------------------------------------------
-!     implicit none
-      integer n,ja(*),ia(n+1),lfil,jlu(*),ju(n),jw(2*n),iwk,iperm(2*n),ierr
-      double precision ::  a(*), alu(*), w(n+1), droptol
+999 ierr = -5
+   return
+end subroutine ilut
+    
+subroutine ilutp(n, a, ja, ia, lfil, droptol, permtol, mbloc, alu, jlu, ju, iwk, w, jw, iperm, ierr)
+   implicit none
+   integer n, ja(*), ia(n + 1), lfil, jlu(*), ju(n), jw(2 * n), iwk, iperm(2 * n), ierr
+   double precision :: a(*), alu(*), w(n + 1), droptol
 !----------------------------------------------------------------------*
 !       *** ILUTP preconditioner -- ILUT with pivoting  ***            *
 !      incomplete LU factorization with dual truncation mechanism      *
@@ -835,325 +824,324 @@
 !-----------------------------------------------------------------------
 !     local variables
 !
-      integer k,i,j,jrow,ju0,ii,j1,j2,jpos,len,imax,lenu,lenl,jj,mbloc,icut
-      double precision ::  s, tmp, tnorm,xmax,xmax0, fact, abs, t, permtol
+   integer k, i, j, jrow, ju0, ii, j1, j2, jpos, len, imax, lenu, lenl, jj, mbloc, icut
+   double precision :: s, tmp, tnorm, xmax, xmax0, fact, abs, t, permtol
 !
-      if (lfil .lt. 0) goto 998
+   no_warning_unused_dummy_argument(mbloc)
+   
+   if (lfil < 0) goto 998
 !-----------------------------------------------------------------------
 !     initialize ju0 (points to next element to be added to alu,jlu)
 !     and pointer array.
 !-----------------------------------------------------------------------
-      ju0 = n+2
-      jlu(1) = ju0
+   ju0 = n + 2
+   jlu(1) = ju0
 !
 !  integer double pointer array.
 !
-      do j=1, n
-         jw(n+j)  = 0
-         iperm(j) = j
-         iperm(n+j) = j
-      end do
+   do j = 1, n
+      jw(n + j) = 0
+      iperm(j) = j
+      iperm(n + j) = j
+   end do
 
 !-----------------------------------------------------------------------
 !     beginning of main loop.
 !-----------------------------------------------------------------------
-      do ii = 1, n
-         j1 = ia(ii)
-         j2 = ia(ii+1) - 1
-         tnorm = 0.0d0
-         do k=j1,j2
-            tnorm = tnorm+abs(a(k))
-         end do
+   do ii = 1, n
+      j1 = ia(ii)
+      j2 = ia(ii + 1) - 1
+      tnorm = 0.0d0
+      do k = j1, j2
+         tnorm = tnorm + abs(a(k))
+      end do
 
-         if (tnorm .eq. 0.0) goto 999
-         tnorm = tnorm/(j2-j1+1)
+      if (tnorm == 0.0) goto 999
+      tnorm = tnorm / (j2 - j1 + 1)
 !
 !     unpack L-part and U-part of row of A in arrays  w  --
 !
-         lenu = 1
-         lenl = 0
-         jw(ii) = ii
-         w(ii) = 0.0
-         jw(n+ii) = ii
+      lenu = 1
+      lenl = 0
+      jw(ii) = ii
+      w(ii) = 0.0
+      jw(n + ii) = ii
 !
-         do  j = j1, j2
-            k = iperm(n+ja(j))
-            t = a(j)
-            if (k .lt. ii) then
-               lenl = lenl+1
-               jw(lenl) = k
-               w(lenl) = t
-               jw(n+k) = lenl
-            else if (k .eq. ii) then
-               w(ii) = t
-            else
-               lenu = lenu+1
-               jpos = ii+lenu-1
-               jw(jpos) = k
-               w(jpos) = t
-               jw(n+k) = jpos
-            endif
-         end do
+      do j = j1, j2
+         k = iperm(n + ja(j))
+         t = a(j)
+         if (k < ii) then
+            lenl = lenl + 1
+            jw(lenl) = k
+            w(lenl) = t
+            jw(n + k) = lenl
+         else if (k == ii) then
+            w(ii) = t
+         else
+            lenu = lenu + 1
+            jpos = ii + lenu - 1
+            jw(jpos) = k
+            w(jpos) = t
+            jw(n + k) = jpos
+         end if
+      end do
 
-         jj = 0
-         len = 0
+      jj = 0
+      len = 0
 !
 !     eliminate previous rows
 !
- 150     jj = jj+1
-         if (jj .gt. lenl) goto 160
+150   jj = jj + 1
+      if (jj > lenl) goto 160
 !-----------------------------------------------------------------------
 !     in order to do the elimination in the correct order we must select
 !     the smallest column index among jw(k), k=jj+1, ..., lenl.
 !-----------------------------------------------------------------------
-         jrow = jw(jj)
-         k = jj
+      jrow = jw(jj)
+      k = jj
 !
 !     determine smallest column index
 !
-         do j=jj+1,lenl
-            if (jw(j) .lt. jrow) then
-               jrow = jw(j)
-               k = j
-            endif
-         end do
+      do j = jj + 1, lenl
+         if (jw(j) < jrow) then
+            jrow = jw(j)
+            k = j
+         end if
+      end do
 
 !
-         if (k .ne. jj) then
+      if (k /= jj) then
 !     exchange in jw
-            j = jw(jj)
-            jw(jj) = jw(k)
-            jw(k) = j
+         j = jw(jj)
+         jw(jj) = jw(k)
+         jw(k) = j
 !     exchange in jr
-            jw(n+jrow) = jj
-            jw(n+j) = k
+         jw(n + jrow) = jj
+         jw(n + j) = k
 !     exchange in w
-            s = w(jj)
-            w(jj) = w(k)
-            w(k) = s
-         endif
+         s = w(jj)
+         w(jj) = w(k)
+         w(k) = s
+      end if
 !
 !     zero out element in row by resetting jw(n+jrow) to zero.
 !
-         jw(n+jrow) = 0
+      jw(n + jrow) = 0
 !
 !     get the multiplier for row to be eliminated: jrow
 !
-         fact = w(jj)*alu(jrow)
+      fact = w(jj) * alu(jrow)
 !
 !     drop term if small
 !
-         if (abs(fact) .le. droptol) goto 150
+      if (abs(fact) <= droptol) goto 150
 !
 !     combine current row and row jrow
 !
-         do k = ju(jrow), jlu(jrow+1)-1
-            s = fact*alu(k)
+      do k = ju(jrow), jlu(jrow + 1) - 1
+         s = fact * alu(k)
 !     new column number
-            j = iperm(n+jlu(k))
-            jpos = jw(n+j)
-            if (j .ge. ii) then
+         j = iperm(n + jlu(k))
+         jpos = jw(n + j)
+         if (j >= ii) then
 !
 !     dealing with upper part.
 !
-               if (jpos .eq. 0) then
+            if (jpos == 0) then
 !
 !     this is a fill-in element
 !
-                  lenu = lenu+1
-                  i = ii+lenu-1
-                  if (lenu .gt. n) goto 995
-                  jw(i) = j
-                  jw(n+j) = i
-                  w(i) = - s
-               else
-!     no fill-in element --
-                  w(jpos) = w(jpos) - s
-               endif
+               lenu = lenu + 1
+               i = ii + lenu - 1
+               if (lenu > n) goto 995
+               jw(i) = j
+               jw(n + j) = i
+               w(i) = -s
             else
+!     no fill-in element --
+               w(jpos) = w(jpos) - s
+            end if
+         else
 !
 !     dealing with lower part.
 !
-               if (jpos .eq. 0) then
+            if (jpos == 0) then
 !
 !     this is a fill-in element
 !
-                 lenl = lenl+1
-                 if (lenl .gt. n) goto 995
-                 jw(lenl) = j
-                 jw(n+j) = lenl
-                 w(lenl) = - s
-              else
+               lenl = lenl + 1
+               if (lenl > n) goto 995
+               jw(lenl) = j
+               jw(n + j) = lenl
+               w(lenl) = -s
+            else
 !
 !     this is not a fill-in element
 !
-                 w(jpos) = w(jpos) - s
-              endif
-           endif
-         end do
+               w(jpos) = w(jpos) - s
+            end if
+         end if
+      end do
 
 !
 !     store this pivot element -- (from left to right -- no danger of
 !     overlap with the working elements in L (pivots).
 !
-        len = len+1
-        w(len) = fact
-        jw(len)  = jrow
-   goto 150
- 160    continue
+      len = len + 1
+      w(len) = fact
+      jw(len) = jrow
+      goto 150
+160   continue
 !
 !     reset double-pointer to zero (U-part)
 !
-        do k=1, lenu
-           jw(n+jw(ii+k-1)) = 0
-         end do
+      do k = 1, lenu
+         jw(n + jw(ii + k - 1)) = 0
+      end do
 
 !
 !     update L-matrix
 !
-        lenl = len
-        len = min0(lenl,lfil)
+      lenl = len
+      len = min(lenl, lfil)
 !
 !     sort by quick-split
 !
-        call qsplit (w,jw,lenl,len)
+      call qsplit(w, jw, lenl, len)
 !
 !     store L-part -- in original coordinates ..
 !
-        do k=1, len
-           if (ju0 .gt. iwk) THEN
-           goto 996
-           ENDIF
-           alu(ju0) =  w(k)
-           jlu(ju0) = iperm(jw(k))
-           ju0 = ju0+1
-         end do
+      do k = 1, len
+         if (ju0 > iwk) then
+            goto 996
+         end if
+         alu(ju0) = w(k)
+         jlu(ju0) = iperm(jw(k))
+         ju0 = ju0 + 1
+      end do
 
 !
 !     save pointer to beginning of row ii of U
 !
-        ju(ii) = ju0
+      ju(ii) = ju0
 !
 !     update U-matrix -- first apply dropping strategy
 !
-         len = 0
-         do k=1, lenu-1
-            if (abs(w(ii+k)) .gt. droptol*tnorm) then
-               len = len+1
-               w(ii+len) = w(ii+k)
-               jw(ii+len) = jw(ii+k)
-            endif
-         enddo
-         lenu = len+1
-         len = min0(lenu,lfil)
-         call qsplit (w(ii+1), jw(ii+1), lenu-1,len)
+      len = 0
+      do k = 1, lenu - 1
+         if (abs(w(ii + k)) > droptol * tnorm) then
+            len = len + 1
+            w(ii + len) = w(ii + k)
+            jw(ii + len) = jw(ii + k)
+         end if
+      end do
+      lenu = len + 1
+      len = min(lenu, lfil)
+      call qsplit(w(ii + 1), jw(ii + 1), lenu - 1, len)
 !
 !     determine next pivot --
 !
-        imax = ii
-        xmax = abs(w(imax))
-        xmax0 = xmax
+      imax = ii
+      xmax = abs(w(imax))
+      xmax0 = xmax
 !       icut = ii - 1 + mbloc - mod(ii-1,mbloc)
-        do k=ii+1,ii+len-1
-           t = abs(w(k))
-           if (t .gt. xmax .and. t*permtol .gt. xmax0 .and. jw(k) .le. icut) then
-              imax = k
-              xmax = t
-           endif
-        enddo
+      do k = ii + 1, ii + len - 1
+         t = abs(w(k))
+         if (t > xmax .and. t * permtol > xmax0 .and. jw(k) <= icut) then
+            imax = k
+            xmax = t
+         end if
+      end do
 !
 !     exchange w's
 !
-        tmp = w(ii)
-        w(ii) = w(imax)
-        w(imax) = tmp
+      tmp = w(ii)
+      w(ii) = w(imax)
+      w(imax) = tmp
 !
 !     update iperm and reverse iperm
 !
-        j = jw(imax)
-        i = iperm(ii)
-        iperm(ii) = iperm(j)
-        iperm(j) = i
+      j = jw(imax)
+      i = iperm(ii)
+      iperm(ii) = iperm(j)
+      iperm(j) = i
 !
 !     reverse iperm
 !
-        iperm(n+iperm(ii)) = ii
-        iperm(n+iperm(j)) = j
+      iperm(n + iperm(ii)) = ii
+      iperm(n + iperm(j)) = j
 !-----------------------------------------------------------------------
 !
-        if (len + ju0 .gt. iwk) goto 997
+      if (len + ju0 > iwk) goto 997
 !
 !     copy U-part in original coordinates
 !
-        do k=ii+1,ii+len-1
-           jlu(ju0) = iperm(jw(k))
-           alu(ju0) = w(k)
-           ju0 = ju0+1
-         end do
+      do k = ii + 1, ii + len - 1
+         jlu(ju0) = iperm(jw(k))
+         alu(ju0) = w(k)
+         ju0 = ju0 + 1
+      end do
 
 !
 !     store inverse of diagonal element of u
 !
-        if (w(ii) .eq. 0.0) w(ii) = (1.0D-4 + droptol)*tnorm
-        alu(ii) = 1.0d0/ w(ii)
+      if (w(ii) == 0.0) w(ii) = (1.0d-4 + droptol) * tnorm
+      alu(ii) = 1.0d0 / w(ii)
 !
 !     update pointer to beginning of next row of U.
 !
-   jlu(ii+1) = ju0
+      jlu(ii + 1) = ju0
 !-----------------------------------------------------------------------
 !     end main loop
 !-----------------------------------------------------------------------
-      end do
+   end do
 !
 !     permute all column indices of LU ...
 !
-      do k = jlu(1),jlu(n+1)-1
-         jlu(k) = iperm(n+jlu(k))
-      enddo
+   do k = jlu(1), jlu(n + 1) - 1
+      jlu(k) = iperm(n + jlu(k))
+   end do
 !
 !     ...and of A
 !
-      do k=ia(1), ia(n+1)-1
-         ja(k) = iperm(n+ja(k))
-      enddo
+   do k = ia(1), ia(n + 1) - 1
+      ja(k) = iperm(n + ja(k))
+   end do
 !
-      ierr = 0
-      return
+   ierr = 0
+   return
 !
 !     incomprehensible error. Matrix must be wrong.
 !
- 995  ierr = -1
-      return
+995 ierr = -1
+   return
 !
 !     insufficient storage in L.
 !
- 996  ierr = -2
-      return
+996 ierr = -2
+   return
 !
 !     insufficient storage in U.
 !
- 997  ierr = -3
-      return
+997 ierr = -3
+   return
 !
 !     illegal lfil entered.
 !
- 998  ierr = -4
-      return
+998 ierr = -4
+   return
 !
 !     zero row encountered
 !
- 999  ierr = -5
-      return
-!----------------end-of-ilutp-------------------------------------------
-!-----------------------------------------------------------------------
-      end
-!-----------------------------------------------------------------------
-      subroutine ilud(n,a,ja,ia,alph,tol,alu,jlu,ju,iwk,w,jw,ierr,na)
-!-----------------------------------------------------------------------
-      implicit none
-      integer n, na
-      double precision ::  a(na),alu(*),w(2*n),tol, alph
-      integer ja(na),ia(n+1),jlu(*),ju(n),jw(2*n),iwk,ierr
+999 ierr = -5
+   return
+end subroutine ilutp
+
+subroutine ilud(n, a, ja, ia, alph, tol, alu, jlu, ju, iwk, w, jw, ierr, na)
+   implicit none
+   integer n, na
+   double precision :: a(na), alu(*), w(2 * n), tol, alph
+   integer ja(na), ia(n + 1), jlu(*), ju(n), jw(2 * n), iwk, ierr
 !----------------------------------------------------------------------*
 !                     *** ILUD preconditioner ***                      *
 !    incomplete LU factorization with standard droppoing strategy      *
@@ -1231,104 +1219,104 @@
 !
 !-----------------------------------------------------------------------
 !     locals
-      integer ju0,k,j1,j2,j,ii,i,lenl,lenu,jj,jrow,jpos,len
-      double precision ::  tnorm, t, abs, s, fact, dropsum
+   integer ju0, k, j1, j2, j, ii, i, lenl, lenu, jj, jrow, jpos, len
+   double precision :: tnorm, t, abs, s, fact, dropsum
 !-----------------------------------------------------------------------
 !     initialize ju0 (points to next element to be added to alu,jlu)
 !     and pointer array.
 !-----------------------------------------------------------------------
-      ju0 = n+2
-      jlu(1) = ju0
+   ju0 = n + 2
+   jlu(1) = ju0
 !
 !     initialize nonzero indicator array.
 !
-      do j=1,n
-         jw(n+j)  = 0
-      end do
+   do j = 1, n
+      jw(n + j) = 0
+   end do
 
 !-----------------------------------------------------------------------
 !     beginning of main loop.
 !-----------------------------------------------------------------------
-      do ii = 1, n
-         j1 = ia(ii)
-         j2 = ia(ii+1) - 1
-         dropsum = 0.0d0
-         tnorm = 0.0d0
-         do k=j1,j2
-            tnorm = tnorm + abs(a(k))
-         end do
+   do ii = 1, n
+      j1 = ia(ii)
+      j2 = ia(ii + 1) - 1
+      dropsum = 0.0d0
+      tnorm = 0.0d0
+      do k = j1, j2
+         tnorm = tnorm + abs(a(k))
+      end do
 
-         if (tnorm .eq. 0.0) goto 997
-         tnorm = tnorm / real(j2-j1+1)
+      if (tnorm == 0.0) goto 997
+      tnorm = tnorm / real(j2 - j1 + 1)
 !
 !     unpack L-part and U-part of row of A in arrays w
 !
-         lenu = 1
-         lenl = 0
-         jw(ii) = ii
-         w(ii) = 0.0
-         jw(n+ii) = ii
+      lenu = 1
+      lenl = 0
+      jw(ii) = ii
+      w(ii) = 0.0
+      jw(n + ii) = ii
 !
-         do  j = j1, j2
-            k = ja(j)
-            t = a(j)
-            if (k .lt. ii) then
-               lenl = lenl+1
-               jw(lenl) = k
-               w(lenl) = t
-               jw(n+k) = lenl
-            else if (k .eq. ii) then
-               w(ii) = t
-            else
-               lenu = lenu+1
-               jpos = ii+lenu-1
-               jw(jpos) = k
-               w(jpos) = t
-               jw(n+k) = jpos
-            endif
-         end do
+      do j = j1, j2
+         k = ja(j)
+         t = a(j)
+         if (k < ii) then
+            lenl = lenl + 1
+            jw(lenl) = k
+            w(lenl) = t
+            jw(n + k) = lenl
+         else if (k == ii) then
+            w(ii) = t
+         else
+            lenu = lenu + 1
+            jpos = ii + lenu - 1
+            jw(jpos) = k
+            w(jpos) = t
+            jw(n + k) = jpos
+         end if
+      end do
 
-         jj = 0
-         len = 0
+      jj = 0
+      len = 0
 !
 !     eliminate previous rows
 !
- 150     jj = jj+1
-         if (jj .gt. lenl) goto 160
+150   jj = jj + 1
+      if (jj > lenl) goto 160
 !-----------------------------------------------------------------------
 !     in order to do the elimination in the correct order we must select
 !     the smallest column index among jw(k), k=jj+1, ..., lenl.
 !-----------------------------------------------------------------------
-         jrow = jw(jj)
-         k = jj
+      jrow = jw(jj)
+      k = jj
 !
 !     determine smallest column index
 !
-         do j=jj+1,lenl
-            if (jw(j) .lt. jrow) then
-               jrow = jw(j)
-               k = j
-            endif
-         end do
+      do j = jj + 1, lenl
+         if (jw(j) < jrow) then
+            jrow = jw(j)
+            k = j
+         end if
+      end do
 
 !
-         if (k .ne. jj) then
+      if (k /= jj) then
 !     exchange in jw
-            j = jw(jj)
-            jw(jj) = jw(k)
-            jw(k) = j
+         j = jw(jj)
+         jw(jj) = jw(k)
+         jw(k) = j
 !     exchange in jr
-            jw(n+jrow) = jj
-            jw(n+j) = k
+         jw(n + jrow) = jj
+         jw(n + j) = k
 !     exchange in w
-            s = w(jj)
-            w(jj) = w(k)
-            w(k) = s
-         endif
+         s = w(jj)
+         w(jj) = w(k)
+         w(k) = s
+      end if
 !
 !     zero out element in row by setting resetting jw(n+jrow) to zero.
 !
-         jw(n+jrow) = 0
+      jw(n + jrow) = 0
 !
 !     drop term if small
 !
@@ -1339,161 +1327,158 @@
 !
 !     get the multiplier for row to be eliminated (jrow).
 !
-         fact = w(jj)*alu(jrow)
+      fact = w(jj) * alu(jrow)
 !
 !     drop term if small
 !
-         if (abs(fact) .le. tol) then
-            dropsum = dropsum + w(jj)
-            goto 150
-         endif
+      if (abs(fact) <= tol) then
+         dropsum = dropsum + w(jj)
+         goto 150
+      end if
 !
 !     combine current row and row jrow
 !
-         do k = ju(jrow), jlu(jrow+1)-1
-            s = fact*alu(k)
-            j = jlu(k)
-            jpos = jw(n+j)
-            if (j .ge. ii) then
+      do k = ju(jrow), jlu(jrow + 1) - 1
+         s = fact * alu(k)
+         j = jlu(k)
+         jpos = jw(n + j)
+         if (j >= ii) then
 !
 !     dealing with upper part.
 !
-               if (jpos .eq. 0) then
+            if (jpos == 0) then
 !
 !     this is a fill-in element
 !
-                  lenu = lenu+1
-                  if (lenu .gt. n) goto 995
-                  i = ii+lenu-1
-                  jw(i) = j
-                  jw(n+j) = i
-                  w(i) = - s
-               else
+               lenu = lenu + 1
+               if (lenu > n) goto 995
+               i = ii + lenu - 1
+               jw(i) = j
+               jw(n + j) = i
+               w(i) = -s
+            else
 !
 !     this is not a fill-in element
 !
-                  w(jpos) = w(jpos) - s
-               endif
-            else
+               w(jpos) = w(jpos) - s
+            end if
+         else
 !
 !     dealing with lower part.
 !
-               if (jpos .eq. 0) then
+            if (jpos == 0) then
 !
 !     this is a fill-in element
 !
-                  lenl = lenl+1
-                  if (lenl .gt. n) goto 995
-                  jw(lenl) = j
-                  jw(n+j) = lenl
-                  w(lenl) = - s
-               else
+               lenl = lenl + 1
+               if (lenl > n) goto 995
+               jw(lenl) = j
+               jw(n + j) = lenl
+               w(lenl) = -s
+            else
 !
 !     this is not a fill-in element
 !
-                  w(jpos) = w(jpos) - s
-               endif
-            endif
-         end do
+               w(jpos) = w(jpos) - s
+            end if
+         end if
+      end do
 
-         len = len+1
-         w(len) = fact
-         jw(len)  = jrow
-         goto 150
- 160     continue
+      len = len + 1
+      w(len) = fact
+      jw(len) = jrow
+      goto 150
+160   continue
 !
 !     reset double-pointer to zero (For U-part only)
 !
-         do k=1, lenu
-            jw(n+jw(ii+k-1)) = 0
-         end do
+      do k = 1, lenu
+         jw(n + jw(ii + k - 1)) = 0
+      end do
 
 !
 !     update l-matrix
 !
-         do k=1, len
-            if (ju0 .gt. iwk) THEN
+      do k = 1, len
+         if (ju0 > iwk) then
             goto 996
-            ENDIF
-            alu(ju0) =  w(k)
-            jlu(ju0) =  jw(k)
-            ju0 = ju0+1
-         end do
+         end if
+         alu(ju0) = w(k)
+         jlu(ju0) = jw(k)
+         ju0 = ju0 + 1
+      end do
 
 !
 !     save pointer to beginning of row ii of U
 !
-         ju(ii) = ju0
+      ju(ii) = ju0
 !
 !     go through elements in U-part of w to determine elements to keep
 !
-         len = 0
-         do k=1, lenu-1
+      len = 0
+      do k = 1, lenu - 1
 !            if (abs(w(ii+k)) .gt. tnorm*tol) then
-            if (abs(w(ii+k)) .gt. abs(w(ii))*tol) then
-               len = len+1
-               w(ii+len) = w(ii+k)
-               jw(ii+len) = jw(ii+k)
-            else
-               dropsum = dropsum + w(ii+k)
-            endif
-         enddo
+         if (abs(w(ii + k)) > abs(w(ii)) * tol) then
+            len = len + 1
+            w(ii + len) = w(ii + k)
+            jw(ii + len) = jw(ii + k)
+         else
+            dropsum = dropsum + w(ii + k)
+         end if
+      end do
 !
 !     now update u-matrix
 !
-         if (ju0 + len-1 .gt. iwk) THEN
+      if (ju0 + len - 1 > iwk) then
          goto 996
-         ENDIF
-         do k=ii+1,ii+len
-            jlu(ju0) = jw(k)
-            alu(ju0) = w(k)
-            ju0 = ju0+1
-         end do
+      end if
+      do k = ii + 1, ii + len
+         jlu(ju0) = jw(k)
+         alu(ju0) = w(k)
+         ju0 = ju0 + 1
+      end do
 
 !
 !     define diagonal element
 !
-         w(ii) = w(ii) + alph*dropsum
+      w(ii) = w(ii) + alph * dropsum
 !
 !     store inverse of diagonal element of u
 !
-         if (w(ii) .eq. 0.0) w(ii) = (0.0001 + tol)*tnorm
+      if (w(ii) == 0.0) w(ii) = (0.0001 + tol) * tnorm
 !
-         alu(ii) = 1.0d0/ w(ii)
+      alu(ii) = 1.0d0 / w(ii)
 !
 !     update pointer to beginning of next row of U.
 !
-         jlu(ii+1) = ju0
+      jlu(ii + 1) = ju0
 !-----------------------------------------------------------------------
 !     end main loop
 !-----------------------------------------------------------------------
-      end do
-      ierr = 0
-      return
+   end do
+   ierr = 0
+   return
 !
 !     incomprehensible error. Matrix must be wrong.
 !
- 995  ierr = -1
-      return
+995 ierr = -1
+   return
 !
 !     insufficient storage in alu/ jlu arrays for  L / U factors
 !
- 996  ierr = -2
-      return
+996 ierr = -2
+   return
 !
 !     zero row encountered
 !
- 997  ierr = -3
-      return
-!----------------end-of-ilud  ------------------------------------------
-!-----------------------------------------------------------------------
-      end
-!----------------------------------------------------------------------
-      subroutine iludp(n,a,ja,ia,alph,droptol,permtol,mbloc,alu,jlu,ju,iwk,w,jw,iperm,ierr)
-!-----------------------------------------------------------------------
-      implicit none
-      integer n,ja(*),ia(n+1),mbloc,jlu(*),ju(n),jw(2*n),iwk,iperm(2*n),ierr
-      double precision ::  a(*), alu(*), w(2*n), alph, droptol, permtol
+997 ierr = -3
+   return
+end subroutine ilud
+
+subroutine iludp(n, a, ja, ia, alph, droptol, permtol, mbloc, alu, jlu, ju, iwk, w, jw, iperm, ierr)
+   implicit none
+   integer n, ja(*), ia(n + 1), mbloc, jlu(*), ju(n), jw(2 * n), iwk, iperm(2 * n), ierr
+   double precision :: a(*), alu(*), w(2 * n), alph, droptol, permtol
 !----------------------------------------------------------------------*
 !                     *** ILUDP preconditioner ***                     *
 !    incomplete LU factorization with standard droppoing strategy      *
@@ -1576,299 +1561,299 @@
 !-----------------------------------------------------------------------
 !     local variables
 !
-      integer k,i,j,jrow,ju0,ii,j1,j2,jpos,len,imax,lenu,lenl,jj,icut
-      double precision ::  s,tmp,tnorm,xmax,xmax0,fact,abs,t,dropsum
+   integer k, i, j, jrow, ju0, ii, j1, j2, jpos, len, imax, lenu, lenl, jj, icut
+   double precision :: s, tmp, tnorm, xmax, xmax0, fact, abs, t, dropsum
 !-----------------------------------------------------------------------
 !     initialize ju0 (points to next element to be added to alu,jlu)
 !     and pointer array.
 !-----------------------------------------------------------------------
-      ju0 = n+2
-      jlu(1) = ju0
+   no_warning_unused_dummy_argument(mbloc)
+
+   ju0 = n + 2
+   jlu(1) = ju0
 !
 !  integer double pointer array.
 !
-      do j=1,n
-         jw(n+j)  = 0
-         iperm(j) = j
-         iperm(n+j) = j
-      end do
+   do j = 1, n
+      jw(n + j) = 0
+      iperm(j) = j
+      iperm(n + j) = j
+   end do
 
 !-----------------------------------------------------------------------
 !     beginning of main loop.
 !-----------------------------------------------------------------------
-      do ii = 1, n
-         j1 = ia(ii)
-         j2 = ia(ii+1) - 1
-         dropsum = 0.0d0
-         tnorm = 0.0d0
-         do k=j1,j2
-            tnorm = tnorm+abs(a(k))
-         end do
+   do ii = 1, n
+      j1 = ia(ii)
+      j2 = ia(ii + 1) - 1
+      dropsum = 0.0d0
+      tnorm = 0.0d0
+      do k = j1, j2
+         tnorm = tnorm + abs(a(k))
+      end do
 
-         if (tnorm .eq. 0.0) goto 997
-         tnorm = tnorm/(j2-j1+1)
+      if (tnorm == 0.0) goto 997
+      tnorm = tnorm / (j2 - j1 + 1)
 !
 !     unpack L-part and U-part of row of A in arrays  w  --
 !
-         lenu = 1
-         lenl = 0
-         jw(ii) = ii
-         w(ii) = 0.0
-         jw(n+ii) = ii
+      lenu = 1
+      lenl = 0
+      jw(ii) = ii
+      w(ii) = 0.0
+      jw(n + ii) = ii
 !
-         do  j = j1, j2
-            k = iperm(n+ja(j))
-            t = a(j)
-            if (k .lt. ii) then
-               lenl = lenl+1
-               jw(lenl) = k
-               w(lenl) = t
-               jw(n+k) = lenl
-            else if (k .eq. ii) then
-               w(ii) = t
-            else
-               lenu = lenu+1
-               jpos = ii+lenu-1
-               jw(jpos) = k
-               w(jpos) = t
-               jw(n+k) = jpos
-            endif
-         end do
+      do j = j1, j2
+         k = iperm(n + ja(j))
+         t = a(j)
+         if (k < ii) then
+            lenl = lenl + 1
+            jw(lenl) = k
+            w(lenl) = t
+            jw(n + k) = lenl
+         else if (k == ii) then
+            w(ii) = t
+         else
+            lenu = lenu + 1
+            jpos = ii + lenu - 1
+            jw(jpos) = k
+            w(jpos) = t
+            jw(n + k) = jpos
+         end if
+      end do
 
-         jj = 0
-         len = 0
+      jj = 0
+      len = 0
 !
 !     eliminate previous rows
 !
- 150     jj = jj+1
-         if (jj .gt. lenl) goto 160
+150   jj = jj + 1
+      if (jj > lenl) goto 160
 !-----------------------------------------------------------------------
 !     in order to do the elimination in the correct order we must select
 !     the smallest column index among jw(k), k=jj+1, ..., lenl.
 !-----------------------------------------------------------------------
-         jrow = jw(jj)
-         k = jj
+      jrow = jw(jj)
+      k = jj
 !
 !     determine smallest column index
 !
-         do j=jj+1,lenl
-            if (jw(j) .lt. jrow) then
-               jrow = jw(j)
-               k = j
-            endif
-         end do
+      do j = jj + 1, lenl
+         if (jw(j) < jrow) then
+            jrow = jw(j)
+            k = j
+         end if
+      end do
 
 !
-         if (k .ne. jj) then
+      if (k /= jj) then
 !     exchange in jw
-            j = jw(jj)
-            jw(jj) = jw(k)
-            jw(k) = j
+         j = jw(jj)
+         jw(jj) = jw(k)
+         jw(k) = j
 !     exchange in jr
-            jw(n+jrow) = jj
-            jw(n+j) = k
+         jw(n + jrow) = jj
+         jw(n + j) = k
 !     exchange in w
-            s = w(jj)
-            w(jj) = w(k)
-            w(k) = s
-         endif
+         s = w(jj)
+         w(jj) = w(k)
+         w(k) = s
+      end if
 !
 !     zero out element in row by resetting jw(n+jrow) to zero.
 !
-         jw(n+jrow) = 0
+      jw(n + jrow) = 0
 !
 !     drop term if small
 !
-         if (abs(w(jj)) .le. droptol*tnorm) then
-            dropsum = dropsum + w(jj)
-            goto 150
-         endif
+      if (abs(w(jj)) <= droptol * tnorm) then
+         dropsum = dropsum + w(jj)
+         goto 150
+      end if
 !
 !     get the multiplier for row to be eliminated: jrow
 !
-         fact = w(jj)*alu(jrow)
+      fact = w(jj) * alu(jrow)
 !
 !     combine current row and row jrow
 !
-         do k = ju(jrow), jlu(jrow+1)-1
-            s = fact*alu(k)
+      do k = ju(jrow), jlu(jrow + 1) - 1
+         s = fact * alu(k)
 !     new column number
-            j = iperm(n+jlu(k))
-            jpos = jw(n+j)
+         j = iperm(n + jlu(k))
+         jpos = jw(n + j)
 !
 !     if fill-in element is small then disregard:
 !
-            if (j .ge. ii) then
+         if (j >= ii) then
 !
 !     dealing with upper part.
 !
-               if (jpos .eq. 0) then
+            if (jpos == 0) then
 !     this is a fill-in element
-                  lenu = lenu+1
-                  i = ii+lenu-1
-                  if (lenu .gt. n) goto 995
-                  jw(i) = j
-                  jw(n+j) = i
-                  w(i) = - s
-               else
-!     no fill-in element --
-                  w(jpos) = w(jpos) - s
-               endif
+               lenu = lenu + 1
+               i = ii + lenu - 1
+               if (lenu > n) goto 995
+               jw(i) = j
+               jw(n + j) = i
+               w(i) = -s
             else
+!     no fill-in element --
+               w(jpos) = w(jpos) - s
+            end if
+         else
 !
 !     dealing with lower part.
 !
-               if (jpos .eq. 0) then
+            if (jpos == 0) then
 !     this is a fill-in element
-                 lenl = lenl+1
-                 if (lenl .gt. n) goto 995
-                 jw(lenl) = j
-                 jw(n+j) = lenl
-                 w(lenl) = - s
-              else
+               lenl = lenl + 1
+               if (lenl > n) goto 995
+               jw(lenl) = j
+               jw(n + j) = lenl
+               w(lenl) = -s
+            else
 !     no fill-in element --
-                 w(jpos) = w(jpos) - s
-              endif
-           endif
-         end do
+               w(jpos) = w(jpos) - s
+            end if
+         end if
+      end do
 
-        len = len+1
-        w(len) = fact
-        jw(len)  = jrow
-   goto 150
- 160    continue
+      len = len + 1
+      w(len) = fact
+      jw(len) = jrow
+      goto 150
+160   continue
 !
 !     reset double-pointer to zero (U-part)
 !
-        do k=1, lenu
-           jw(n+jw(ii+k-1)) = 0
-        end do
+      do k = 1, lenu
+         jw(n + jw(ii + k - 1)) = 0
+      end do
 !
 !     update L-matrix
 !
-        do k=1, len
-           if (ju0 .gt. iwk) goto 996
-           alu(ju0) =  w(k)
-           jlu(ju0) = iperm(jw(k))
-           ju0 = ju0+1
-         end do
+      do k = 1, len
+         if (ju0 > iwk) goto 996
+         alu(ju0) = w(k)
+         jlu(ju0) = iperm(jw(k))
+         ju0 = ju0 + 1
+      end do
 !
 !     save pointer to beginning of row ii of U
 !
-        ju(ii) = ju0
+      ju(ii) = ju0
 !
 !     update u-matrix -- first apply dropping strategy
 !
-         len = 0
-         do k=1, lenu-1
-            if (abs(w(ii+k)) .gt. tnorm*droptol) then
-               len = len+1
-               w(ii+len) = w(ii+k)
-               jw(ii+len) = jw(ii+k)
-            else
-               dropsum = dropsum + w(ii+k)
-            endif
-         enddo
+      len = 0
+      do k = 1, lenu - 1
+         if (abs(w(ii + k)) > tnorm * droptol) then
+            len = len + 1
+            w(ii + len) = w(ii + k)
+            jw(ii + len) = jw(ii + k)
+         else
+            dropsum = dropsum + w(ii + k)
+         end if
+      end do
 !
-        imax = ii
-        xmax = abs(w(imax))
-        xmax0 = xmax
+      imax = ii
+      xmax = abs(w(imax))
+      xmax0 = xmax
 !       icut = ii - 1 + mbloc - mod(ii-1,mbloc)
 !
 !     determine next pivot --
 !
-        do k=ii+1,ii+len
-           t = abs(w(k))
-           if (t .gt. xmax .and. t*permtol .gt. xmax0 .and. jw(k) .le. icut) then
-              imax = k
-              xmax = t
-           endif
-        enddo
+      do k = ii + 1, ii + len
+         t = abs(w(k))
+         if (t > xmax .and. t * permtol > xmax0 .and. jw(k) <= icut) then
+            imax = k
+            xmax = t
+         end if
+      end do
 !
 !     exchange w's
 !
-        tmp = w(ii)
-        w(ii) = w(imax)
-        w(imax) = tmp
+      tmp = w(ii)
+      w(ii) = w(imax)
+      w(imax) = tmp
 !
 !     update iperm and reverse iperm
 !
-        j = jw(imax)
-        i = iperm(ii)
-        iperm(ii) = iperm(j)
-        iperm(j) = i
+      j = jw(imax)
+      i = iperm(ii)
+      iperm(ii) = iperm(j)
+      iperm(j) = i
 !     reverse iperm
-        iperm(n+iperm(ii)) = ii
-        iperm(n+iperm(j)) = j
+      iperm(n + iperm(ii)) = ii
+      iperm(n + iperm(j)) = j
 !-----------------------------------------------------------------------
-        if (len + ju0-1 .gt. iwk) THEN
-        goto 996
-        ENDIF
+      if (len + ju0 - 1 > iwk) then
+         goto 996
+      end if
 !
 !     copy U-part in original coordinates
 !
-        do k=ii+1,ii+len
-           jlu(ju0) = iperm(jw(k))
-           alu(ju0) = w(k)
-           ju0 = ju0+1
-         end do
+      do k = ii + 1, ii + len
+         jlu(ju0) = iperm(jw(k))
+         alu(ju0) = w(k)
+         ju0 = ju0 + 1
+      end do
 !
 !     define diagonal element
 !
-         w(ii) = w(ii) + alph*dropsum
+      w(ii) = w(ii) + alph * dropsum
 !
 !     store inverse of diagonal element of u
 !
-        if (w(ii) .eq. 0.0) w(ii) = (1.0D-4 + droptol)*tnorm
+      if (w(ii) == 0.0) w(ii) = (1.0d-4 + droptol) * tnorm
 !
-        alu(ii) = 1.0d0/ w(ii)
+      alu(ii) = 1.0d0 / w(ii)
 !
 !     update pointer to beginning of next row of U.
 !
-   jlu(ii+1) = ju0
+      jlu(ii + 1) = ju0
 !-----------------------------------------------------------------------
 !     end main loop
 !-----------------------------------------------------------------------
- end do
+   end do
 !
 !     permute all column indices of LU ...
 !
-      do k = jlu(1),jlu(n+1)-1
-         jlu(k) = iperm(n+jlu(k))
-      enddo
+   do k = jlu(1), jlu(n + 1) - 1
+      jlu(k) = iperm(n + jlu(k))
+   end do
 !
 !     ...and of A
 !
-      do k=ia(1), ia(n+1)-1
-         ja(k) = iperm(n+ja(k))
-      enddo
+   do k = ia(1), ia(n + 1) - 1
+      ja(k) = iperm(n + ja(k))
+   end do
 !
-      ierr = 0
-      return
+   ierr = 0
+   return
 !
 !     incomprehensible error. Matrix must be wrong.
 !
- 995  ierr = -1
-      return
+995 ierr = -1
+   return
 !
 !     insufficient storage in arrays alu, jlu to store factors
 !
- 996  ierr = -2
-      return
+996 ierr = -2
+   return
 !
 !     zero row encountered
 !
- 997  ierr = -3
-      return
-!----------------end-of-iludp---------------------------!----------------
-!-----------------------------------------------------------------------
-      end
-!-----------------------------------------------------------------------
-      subroutine iluk(n,a,ja,ia,lfil,alu,jlu,ju,levs,iwk,w,jw,ierr)
-      implicit none
-      integer n
-      double precision ::  a(*),alu(*),w(n)
-      integer ja(*),ia(n+1),jlu(*),ju(n),levs(*),jw(3*n),lfil,iwk,ierr
+997 ierr = -3
+   return
+end subroutine iludp
+    
+subroutine iluk(n, a, ja, ia, lfil, alu, jlu, ju, levs, iwk, w, jw, ierr)
+   implicit none
+   integer n
+   double precision :: a(*), alu(*), w(n)
+   integer ja(*), ia(n + 1), jlu(*), ju(n), levs(*), jw(3 * n), lfil, iwk, ierr
 !----------------------------------------------------------------------*
 !     SPARSKIT ROUTINE ILUK -- ILU WITH LEVEL OF FILL-IN OF K (ILU(k)) *
 !----------------------------------------------------------------------*
@@ -1935,244 +1920,246 @@
 !
 !----------------------------------------------------------------------*
 !     locals
-      integer ju0,k,j1,j2,j,ii,i,lenl,lenu,jj,jrow,jpos,n2, jlev, min
-      double precision ::  t, s, fact
-      if (lfil .lt. 0) goto 998
+   integer ju0, k, j1, j2, j, ii, i, lenl, lenu, jj, jrow, jpos, n2, jlev, min
+   double precision :: t, s, fact
+   if (lfil < 0) goto 998
 !-----------------------------------------------------------------------
 !     initialize ju0 (points to next element to be added to alu,jlu)
 !     and pointer array.
 !-----------------------------------------------------------------------
-      n2 = n+n
-      ju0 = n+2
-      jlu(1) = ju0
+   n2 = n + n
+   ju0 = n + 2
+   jlu(1) = ju0
 !
 !     initialize nonzero indicator array + levs array --
 !
-      do j=1,2*n
-         jw(j)  = 0
-      end do
+   do j = 1, 2 * n
+      jw(j) = 0
+   end do
 !-----------------------------------------------------------------------
 !     beginning of main loop.
 !-----------------------------------------------------------------------
-      do ii = 1, n
-         j1 = ia(ii)
-         j2 = ia(ii+1) - 1
+   do ii = 1, n
+      j1 = ia(ii)
+      j2 = ia(ii + 1) - 1
 !
 !     unpack L-part and U-part of row of A in arrays w
 !
-         lenu = 1
-         lenl = 0
-         jw(ii) = ii
-         w(ii) = 0.0
-         jw(n+ii) = ii
+      lenu = 1
+      lenl = 0
+      jw(ii) = ii
+      w(ii) = 0.0
+      jw(n + ii) = ii
 !
-         do  j = j1, j2
-            k = ja(j)
-            t = a(j)
-            if (t .eq. 0.0) cycle
-            if (k .lt. ii) then
-               lenl = lenl+1
-               jw(lenl) = k
-               w(lenl) = t
-               jw(n2+lenl) = 0
-               jw(n+k) = lenl
-            else if (k .eq. ii) then
-               w(ii) = t
-               jw(n2+ii) = 0
-            else
-               lenu = lenu+1
-               jpos = ii+lenu-1
-               jw(jpos) = k
-               w(jpos) = t
-               jw(n2+jpos) = 0
-               jw(n+k) = jpos
-            endif
-         end do
+      do j = j1, j2
+         k = ja(j)
+         t = a(j)
+         if (t == 0.0) cycle
+         if (k < ii) then
+            lenl = lenl + 1
+            jw(lenl) = k
+            w(lenl) = t
+            jw(n2 + lenl) = 0
+            jw(n + k) = lenl
+         else if (k == ii) then
+            w(ii) = t
+            jw(n2 + ii) = 0
+         else
+            lenu = lenu + 1
+            jpos = ii + lenu - 1
+            jw(jpos) = k
+            w(jpos) = t
+            jw(n2 + jpos) = 0
+            jw(n + k) = jpos
+         end if
+      end do
 !
-         jj = 0
+      jj = 0
 !
 !     eliminate previous rows
 !
- 150     jj = jj+1
-         if (jj .gt. lenl) goto 160
+150   jj = jj + 1
+      if (jj > lenl) goto 160
 !-----------------------------------------------------------------------
 !     in order to do the elimination in the correct order we must select
 !     the smallest column index among jw(k), k=jj+1, ..., lenl.
 !-----------------------------------------------------------------------
-         jrow = jw(jj)
-         k = jj
+      jrow = jw(jj)
+      k = jj
 !
 !     determine smallest column index
 !
-         do j=jj+1,lenl
-            if (jw(j) .lt. jrow) then
-               jrow = jw(j)
-               k = j
-            endif
-         end do
+      do j = jj + 1, lenl
+         if (jw(j) < jrow) then
+            jrow = jw(j)
+            k = j
+         end if
+      end do
 !
-         if (k .ne. jj) then
+      if (k /= jj) then
 !     exchange in jw
-            j = jw(jj)
-            jw(jj) = jw(k)
-            jw(k) = j
+         j = jw(jj)
+         jw(jj) = jw(k)
+         jw(k) = j
 !     exchange in jw(n+  (pointers/ nonzero indicator).
-            jw(n+jrow) = jj
-            jw(n+j) = k
+         jw(n + jrow) = jj
+         jw(n + j) = k
 !     exchange in jw(n2+  (levels)
-            j = jw(n2+jj)
-            jw(n2+jj)  = jw(n2+k)
-            jw(n2+k) = j
+         j = jw(n2 + jj)
+         jw(n2 + jj) = jw(n2 + k)
+         jw(n2 + k) = j
 !     exchange in w
-            s = w(jj)
-            w(jj) = w(k)
-            w(k) = s
-         endif
+         s = w(jj)
+         w(jj) = w(k)
+         w(k) = s
+      end if
 !
 !     zero out element in row by resetting jw(n+jrow) to zero.
 !
-         jw(n+jrow) = 0
+      jw(n + jrow) = 0
 !
 !     get the multiplier for row to be eliminated (jrow) + its level
 !
-         fact = w(jj)*alu(jrow)
-         jlev = jw(n2+jj)
-         if (jlev .gt. lfil) goto 150
+      fact = w(jj) * alu(jrow)
+      jlev = jw(n2 + jj)
+      if (jlev > lfil) goto 150
 !
 !     combine current row and row jrow
 !
-         do k = ju(jrow), jlu(jrow+1)-1
-            s = fact*alu(k)
-            j = jlu(k)
-            jpos = jw(n+j)
-            if (j .ge. ii) then
+      do k = ju(jrow), jlu(jrow + 1) - 1
+         s = fact * alu(k)
+         j = jlu(k)
+         jpos = jw(n + j)
+         if (j >= ii) then
 !
 !     dealing with upper part.
 !
-               if (jpos .eq. 0) then
+            if (jpos == 0) then
 !
 !     this is a fill-in element
 !
-                  lenu = lenu+1
-                  if (lenu .gt. n) goto 995
-                  i = ii+lenu-1
-                  jw(i) = j
-                  jw(n+j) = i
-                  w(i) = - s
-                  jw(n2+i) = jlev+levs(k)+1
-               else
+               lenu = lenu + 1
+               if (lenu > n) goto 995
+               i = ii + lenu - 1
+               jw(i) = j
+               jw(n + j) = i
+               w(i) = -s
+               jw(n2 + i) = jlev + levs(k) + 1
+            else
 !
 !     this is not a fill-in element
 !
-                  w(jpos) = w(jpos) - s
-                  jw(n2+jpos) = min(jw(n2+jpos),jlev+levs(k)+1)
-               endif
-            else
+               w(jpos) = w(jpos) - s
+               jw(n2 + jpos) = min(jw(n2 + jpos), jlev + levs(k) + 1)
+            end if
+         else
 !
 !     dealing with lower part.
 !
-               if (jpos .eq. 0) then
+            if (jpos == 0) then
 !
 !     this is a fill-in element
 !
-                  lenl = lenl+1
-                  if (lenl .gt. n) goto 995
-                  jw(lenl) = j
-                  jw(n+j) = lenl
-                  w(lenl) = - s
-                  jw(n2+lenl) = jlev+levs(k)+1
-               else
+               lenl = lenl + 1
+               if (lenl > n) goto 995
+               jw(lenl) = j
+               jw(n + j) = lenl
+               w(lenl) = -s
+               jw(n2 + lenl) = jlev + levs(k) + 1
+            else
 !
 !     this is not a fill-in element
 !
-                  w(jpos) = w(jpos) - s
-                  jw(n2+jpos) = min(jw(n2+jpos),jlev+levs(k)+1)
-               endif
-            endif
-         end do
-         w(jj) = fact
-         jw(jj)  = jrow
-         goto 150
- 160     continue
+               w(jpos) = w(jpos) - s
+               jw(n2 + jpos) = min(jw(n2 + jpos), jlev + levs(k) + 1)
+            end if
+         end if
+      end do
+      w(jj) = fact
+      jw(jj) = jrow
+      goto 150
+160   continue
 !
 !     reset double-pointer to zero (U-part)
 !
-         do k=1, lenu
-            jw(n+jw(ii+k-1)) = 0
-         end do
+      do k = 1, lenu
+         jw(n + jw(ii + k - 1)) = 0
+      end do
 !
 !     update l-matrix
 !
-         do k=1, lenl
-            if (ju0 .gt. iwk) goto 996
-            if (jw(n2+k) .le. lfil) then
-               alu(ju0) =  w(k)
-               jlu(ju0) =  jw(k)
-               ju0 = ju0+1
-            endif
-         end do
+      do k = 1, lenl
+         if (ju0 > iwk) goto 996
+         if (jw(n2 + k) <= lfil) then
+            alu(ju0) = w(k)
+            jlu(ju0) = jw(k)
+            ju0 = ju0 + 1
+         end if
+      end do
 !
 !     save pointer to beginning of row ii of U
 !
-         ju(ii) = ju0
+      ju(ii) = ju0
 !
 !     update u-matrix
 !
-         do k=ii+1,ii+lenu-1
-            if (jw(n2+k) .le. lfil) then
-               jlu(ju0) = jw(k)
-               alu(ju0) = w(k)
-               levs(ju0) = jw(n2+k)
-               ju0 = ju0+1
-            endif
-         end do
+      do k = ii + 1, ii + lenu - 1
+         if (jw(n2 + k) <= lfil) then
+            jlu(ju0) = jw(k)
+            alu(ju0) = w(k)
+            levs(ju0) = jw(n2 + k)
+            ju0 = ju0 + 1
+         end if
+      end do
 
-         if (w(ii) .eq. 0.0) goto 999
+      if (w(ii) == 0.0) goto 999
 !
-         alu(ii) = 1.0d0/ w(ii)
+      alu(ii) = 1.0d0 / w(ii)
 !
 !     update pointer to beginning of next row of U.
 !
-         jlu(ii+1) = ju0
+      jlu(ii + 1) = ju0
 !-----------------------------------------------------------------------
 !     end main loop
 !-----------------------------------------------------------------------
-      end do
-      ierr = 0
-      return
+   end do
+   ierr = 0
+   return
 !
 !     incomprehensible error. Matrix must be wrong.
 !
- 995  ierr = -1
-      return
+995 ierr = -1
+   return
 !
 !     insufficient storage in L.
 !
- 996  ierr = -2
-      return
+996 ierr = -2
+   return
 !
 !     insufficient storage in U.
 !
- 997  ierr = -3
-      return
+997 ierr = -3
+   return
 !
 !     illegal lfil entered.
 !
- 998  ierr = -4
-      return
+998 ierr = -4
+   return
 !
 !     zero row encountered in A or U.
 !
- 999  ierr = -5
-      return
-!----------------end-of-iluk--------------------------------------------
-!-----------------------------------------------------------------------
-      end
-!----------------------------------------------------------------------
-   subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
-   implicit double precision  (a-h,o-z)
-   double precision ::  a(*), alu(*)
-        integer ja(*), ia(*), ju(*), jlu(*), iw(*)
+999 ierr = -5
+   return
+end subroutine iluk
+    
+subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer :: n, ierr
+   integer :: ja(*), ia(*), ju(*), jlu(*), iw(*)
+   real(dp) :: a(*), alu(*)
 !------------------ right preconditioner ------------------------------*
 !                    ***   ilu(0) preconditioner.   ***                *
 !----------------------------------------------------------------------*
@@ -2219,85 +2206,90 @@
 !    achieved by transposing the matrix twice using csrcsc.
 !
 !-----------------------------------------------------------------------
-        ju0 = n+2
-        jlu(1) = ju0
+   integer :: ju0, i, ii, js, j, jcol, jf, jm, jrow, jj, jw
+   real(dp) :: tl
+   
+   ju0 = n + 2
+   jlu(1) = ju0
 !
 ! initialize work vector to zero's
 !
-   do i=1, n
-           iw(i) = 0
-         end do
+   do i = 1, n
+      iw(i) = 0
+   end do
 !
 ! main loop
 !
    do ii = 1, n
-           js = ju0
+      js = ju0
 !
 ! generating row number ii of L and U.
 !
-           do j=ia(ii),ia(ii+1)-1
+      do j = ia(ii), ia(ii + 1) - 1
 !
 !     copy row ii of a, ja, ia into row ii of alu, jlu (L/U) matrix.
 !
-              jcol = ja(j)
-              if (jcol .eq. ii) then
-                 alu(ii) = a(j)
-                 iw(jcol) = ii
-                 ju(ii)  = ju0
-              else
-                 alu(ju0) = a(j)
-                 jlu(ju0) = ja(j)
-                 iw(jcol) = ju0
-                 ju0 = ju0+1
-              endif
-            end do
-           jlu(ii+1) = ju0
-           jf = ju0-1
-           jm = ju(ii)-1
+         jcol = ja(j)
+         if (jcol == ii) then
+            alu(ii) = a(j)
+            iw(jcol) = ii
+            ju(ii) = ju0
+         else
+            alu(ju0) = a(j)
+            jlu(ju0) = ja(j)
+            iw(jcol) = ju0
+            ju0 = ju0 + 1
+         end if
+      end do
+      jlu(ii + 1) = ju0
+      jf = ju0 - 1
+      jm = ju(ii) - 1
 !
 !     exit if diagonal element is reached.
 !
-           do j=js, jm
-              jrow = jlu(j)
-              tl = alu(j)*alu(jrow)
-              alu(j) = tl
+      do j = js, jm
+         jrow = jlu(j)
+         tl = alu(j) * alu(jrow)
+         alu(j) = tl
 !
 !     perform  linear combination
 !
-              do jj = ju(jrow), jlu(jrow+1)-1
-                 jw = iw(jlu(jj))
-                 if (jw .ne. 0) alu(jw) = alu(jw) - tl*alu(jj)
-               end do
-            end do
+         do jj = ju(jrow), jlu(jrow + 1) - 1
+            jw = iw(jlu(jj))
+            if (jw /= 0) alu(jw) = alu(jw) - tl * alu(jj)
+         end do
+      end do
 !
 !     invert  and store diagonal element.
 !
-           if (alu(ii) .eq. 0.0d0) goto 600
-           alu(ii) = 1.0d0/alu(ii)
+      if (alu(ii) == 0.0d0) goto 600
+      alu(ii) = 1.0d0 / alu(ii)
 !
 !     reset pointer iw to zero
 !
-           iw(ii) = 0
-           do i = js, jf
-             iw(jlu(i)) = 0
-            end do
-end do
-           ierr = 0
-           return
+      iw(ii) = 0
+      do i = js, jf
+         iw(jlu(i)) = 0
+      end do
+   end do
+   ierr = 0
+   return
 !
 !     zero pivot :
 !
- 600       ierr = ii
+600 ierr = ii
 !
-           return
-!------- end-of-ilu0 ---------------------------------------------------
-!-----------------------------------------------------------------------
-           end
-!----------------------------------------------------------------------
-   subroutine milu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
-   implicit double precision  (a-h,o-z)
-   double precision ::  a(*), alu(*)
-   integer ja(*), ia(*), ju(*), jlu(*), iw(*)
+   return
+end subroutine ilu0
+    
+subroutine milu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
+   use precision_basics, only: dp
+
+   implicit none
+   
+   integer :: n, ierr
+   real(dp) :: a(*), alu(*)
+   integer :: ja(*), ia(*), ju(*), jlu(*), iw(*)
 !----------------------------------------------------------------------*
 !                *** simple milu(0) preconditioner. ***                *
 !----------------------------------------------------------------------*
@@ -2343,79 +2335,82 @@ end do
 !    elements of a, ja, ia prior to calling milu0. This can be
 !    achieved by transposing the matrix twice using csrcsc.
 !-----------------------------------------------------------
-          ju0 = n+2
-          jlu(1) = ju0
+   integer :: ju0, i, ii, js, j, jcol, jf, jm, jrow, jj, jw
+   real(dp) :: s, tl
+   
+   ju0 = n + 2
+   jlu(1) = ju0
 ! initialize work vector to zero's
-          do i=1, n
-            iw(i) = 0
-          end do
-!           
+   do i = 1, n
+      iw(i) = 0
+   end do
+!
 !-------------- MAIN LOOP ----------------------------------
 !
- do ii = 1, n
-           js = ju0
+   do ii = 1, n
+      js = ju0
 !
 ! generating row number ii or L and U.
 !
-           do j=ia(ii),ia(ii+1)-1
+      do j = ia(ii), ia(ii + 1) - 1
 !
 !     copy row ii of a, ja, ia into row ii of alu, jlu (L/U) matrix.
 !
-              jcol = ja(j)
-              if (jcol .eq. ii) then
-                 alu(ii) = a(j)
-                 iw(jcol) = ii
-                 ju(ii)  = ju0
-              else
-                 alu(ju0) = a(j)
-                 jlu(ju0) = ja(j)
-                 iw(jcol) = ju0
-                 ju0 = ju0+1
-              endif
-            end do
-           jlu(ii+1) = ju0
-           jf = ju0-1
-           jm = ju(ii)-1
+         jcol = ja(j)
+         if (jcol == ii) then
+            alu(ii) = a(j)
+            iw(jcol) = ii
+            ju(ii) = ju0
+         else
+            alu(ju0) = a(j)
+            jlu(ju0) = ja(j)
+            iw(jcol) = ju0
+            ju0 = ju0 + 1
+         end if
+      end do
+      jlu(ii + 1) = ju0
+      jf = ju0 - 1
+      jm = ju(ii) - 1
 !     s accumulates fill-in values
-           s = 0.0d0
-           do j=js, jm
-              jrow = jlu(j)
-              tl = alu(j)*alu(jrow)
-              alu(j) = tl
+      s = 0.0d0
+      do j = js, jm
+         jrow = jlu(j)
+         tl = alu(j) * alu(jrow)
+         alu(j) = tl
 !-----------------------perform linear combination --------
-              do jj = ju(jrow), jlu(jrow+1)-1
-                 jw = iw(jlu(jj))
-                 if (jw .ne. 0) then
-                       alu(jw) = alu(jw) - tl*alu(jj)
-                    else
-                       s = s + tl*alu(jj)
-                    endif
-                  end do
-               end do
+         do jj = ju(jrow), jlu(jrow + 1) - 1
+            jw = iw(jlu(jj))
+            if (jw /= 0) then
+               alu(jw) = alu(jw) - tl * alu(jj)
+            else
+               s = s + tl * alu(jj)
+            end if
+         end do
+      end do
 !----------------------- invert and store diagonal element.
-           alu(ii) = alu(ii)-s
-           if (alu(ii) .eq. 0.0d0) goto 600
-           alu(ii) = 1.0d0/alu(ii)
+      alu(ii) = alu(ii) - s
+      if (alu(ii) == 0.0d0) goto 600
+      alu(ii) = 1.0d0 / alu(ii)
 !----------------------- reset pointer iw to zero
-           iw(ii) = 0
-           do i = js, jf
-              iw(jlu(i)) = 0
-           end do
-end do
-           ierr = 0
-           return
+      iw(ii) = 0
+      do i = js, jf
+         iw(jlu(i)) = 0
+      end do
+   end do
+   ierr = 0
+   return
 !     zero pivot :
- 600       ierr = ii
-           return
-!------- end-of-milu0 --------------------------------------------------
-!-----------------------------------------------------------------------
-           end
-!-----------------------------------------------------------------------
-       subroutine pgmres(n, im, rhs, sol, vv, eps, maxits, iout,  aa, ja, ia, alu, jlu, ju, ierr)
-!-----------------------------------------------------------------------
-       implicit double precision   (a-h,o-z)
-       integer n, im, maxits, iout, ierr, ja(*), ia(n+1), jlu(*), ju(n)
-       double precision ::  vv(n,*), rhs(n), sol(n), aa(*), alu(*), eps
+600 ierr = ii
+   return
+ end subroutine milu0
+
+subroutine pgmres(n, im, rhs, sol, vv, eps, maxits, iout, aa, ja, ia, alu, jlu, ju, ierr)
+   use precision_basics, only: dp
+
+   implicit none
+   
+   integer :: n, im, maxits, iout, ierr, ja(*), ia(n + 1), jlu(*), ju(n)
+   real(dp) :: vv(n, *), rhs(n), sol(n), aa(*), alu(*), eps
 !----------------------------------------------------------------------*
 !                                                                      *
 !                 *** ILUT - Preconditioned GMRES ***                  *
@@ -2499,67 +2494,70 @@ end do
 ! lusol : combined forward and backward solves (Preconditioning ope.) *
 ! BLAS1  routines.                                                     *
 !----------------------------------------------------------------------*
-       parameter (kmax=50)
-       double precision ::  hh(kmax+1,kmax), c(kmax), s(kmax), rs(kmax+1),t
+   integer :: n1, its, j, i, i1, ii, jj, k, k1
+   integer, parameter :: KMAX=50
+   real(dp) :: hh(KMAX + 1, KMAX), c(KMAX), s(KMAX), rs(KMAX + 1), t, ro, eps1, gam
+   
+   EXTERNAL_DNRM2
+   EXTERNAL_DDOT
 !-------------------------------------------------------------
 ! arnoldi size should not exceed kmax=50 in this version..
 ! to reset modify paramter kmax accordingly.
 !-------------------------------------------------------------
-       data epsmac/1.d-16/
-       n1 = n + 1
-       its = 0
+   n1 = n + 1
+   its = 0
 !-------------------------------------------------------------
 ! outer loop starts here..
 !-------------- compute initial residual vector --------------
-       call amux (n, sol, vv, aa, ja, ia)
-       do j=1,n
-          vv(j,1) = rhs(j) - vv(j,1)
-         end do
+   call amux(n, sol, vv, aa, ja, ia)
+   do j = 1, n
+      vv(j, 1) = rhs(j) - vv(j, 1)
+   end do
 !-------------------------------------------------------------
- 20    ro = dnrm2(n, vv, 1)
-       if (iout .gt. 0 .and. its .eq. 0)   write(iout, 199) its, ro
-       if (ro .eq. 0.0d0) goto 999
-       t = 1.0d0/ ro
-       do j=1, n
-          vv(j,1) = vv(j,1)*t
-         end do
-       if (its .eq. 0) eps1=eps*ro
+20 ro = dnrm2(n, vv, 1)
+   if (iout > 0 .and. its == 0) write (iout, 199) its, ro
+   if (ro == 0.0d0) goto 999
+   t = 1.0d0 / ro
+   do j = 1, n
+      vv(j, 1) = vv(j, 1) * t
+   end do
+   if (its == 0) eps1 = eps * ro
 !     ** initialize 1-st term  of rhs of hessenberg system..
-       rs(1) = ro
-       i = 0
- 4     i=i+1
-       its = its + 1
-       i1 = i + 1
-       call lusol (n, vv(1,i), rhs, alu, jlu, ju, 30*n)
-       call amux (n, rhs, vv(1,i1), aa, ja, ia)
+   rs(1) = ro
+   i = 0
+4  i = i + 1
+   its = its + 1
+   i1 = i + 1
+   call lusol(n, vv(1, i), rhs, alu, jlu, ju, 30 * n)
+   call amux(n, rhs, vv(1, i1), aa, ja, ia)
 !-----------------------------------------
 !     modified gram - schmidt...
 !-----------------------------------------
-       do j=1, i
-          t = ddot(n, vv(1,j),1,vv(1,i1),1)
-          hh(j,i) = t
-          call daxpy(n, -t, vv(1,j), 1, vv(1,i1), 1)
-         end do
-       t = dnrm2(n, vv(1,i1), 1)
-       hh(i1,i) = t
-       if ( t .eq. 0.0d0) goto 58
-       t = 1.0d0/t
-       do  k=1,n
-          vv(k,i1) = vv(k,i1)*t
-         end do
+   do j = 1, i
+      t = ddot(n, vv(1, j), 1, vv(1, i1), 1)
+      hh(j, i) = t
+      call daxpy(n, -t, vv(1, j), 1, vv(1, i1), 1)
+   end do
+   t = dnrm2(n, vv(1, i1), 1)
+   hh(i1, i) = t
+   if (t == 0.0d0) goto 58
+   t = 1.0d0 / t
+   do k = 1, n
+      vv(k, i1) = vv(k, i1) * t
+   end do
 !
 !     done with modified gram schimd and arnoldi step..
 !     now  update factorization of hh
 !
- 58    if (i .eq. 1) goto 121
-!--------perfrom previous transformations  on i-th column of h
-       do k=2,i
-          k1 = k-1
-          t = hh(k1,i)
-          hh(k1,i) = c(k1)*t + s(k1)*hh(k,i)
-          hh(k,i) = -s(k1)*t + c(k1)*hh(k,i)
-         end do
- 121   gam = sqrt(hh(i,i)**2 + hh(i1,i)**2)
+58 if (i == 1) goto 121
+!--------perform previous transformations  on i-th column of h
+   do k = 2, i
+      k1 = k - 1
+      t = hh(k1, i)
+      hh(k1, i) = c(k1) * t + s(k1) * hh(k, i)
+      hh(k, i) = -s(k1) * t + c(k1) * hh(k, i)
+   end do
+121 gam = sqrt(hh(i, i)**2 + hh(i1, i)**2)
 !
 !     if gamma is zero then any small value will do...
 !     will affect only residual estimate
@@ -2568,87 +2566,87 @@ end do
 !
 !     get  next plane rotation
 !
-       c(i) = hh(i,i)/gam
-       s(i) = hh(i1,i)/gam
-       rs(i1) = -s(i)*rs(i)
-       rs(i) =  c(i)*rs(i)
+   c(i) = hh(i, i) / gam
+   s(i) = hh(i1, i) / gam
+   rs(i1) = -s(i) * rs(i)
+   rs(i) = c(i) * rs(i)
 !
 !     detrermine residual norm and test for convergence-
 !
-       hh(i,i) = c(i)*hh(i,i) + s(i)*hh(i1,i)
-       ro = abs(rs(i1))
- 131   format(1h ,2e14.4)
-       if (iout .gt. 0)  write(iout, 199) its, ro
-       if (i .lt. im .and. (ro .gt. eps1))  goto 4
+   hh(i, i) = c(i) * hh(i, i) + s(i) * hh(i1, i)
+   ro = abs(rs(i1))
+   if (iout > 0) write (iout, 199) its, ro
+   if (i < im .and. (ro > eps1)) goto 4
 !
 !     now compute solution. first solve upper triangular system.
 !
-       rs(i) = rs(i)/hh(i,i)
-       do ii=2,i
-          k=i-ii+1
-          k1 = k+1
-          t=rs(k)
-          do j=k1,i
-             t = t-hh(k,j)*rs(j)
-            end do
-          rs(k) = t/hh(k,k)
-         end do
+   rs(i) = rs(i) / hh(i, i)
+   do ii = 2, i
+      k = i - ii + 1
+      k1 = k + 1
+      t = rs(k)
+      do j = k1, i
+         t = t - hh(k, j) * rs(j)
+      end do
+      rs(k) = t / hh(k, k)
+   end do
 !
 !     form linear combination of v(*,i)'s to get solution
 !
-       t = rs(1)
-       do k=1, n
-          rhs(k) = vv(k,1)*t
-         end do
-       do j=2, i
-          t = rs(j)
-          do k=1, n
-             rhs(k) = rhs(k)+t*vv(k,j)
-            end do
-         end do
+   t = rs(1)
+   do k = 1, n
+      rhs(k) = vv(k, 1) * t
+   end do
+   do j = 2, i
+      t = rs(j)
+      do k = 1, n
+         rhs(k) = rhs(k) + t * vv(k, j)
+      end do
+   end do
 !
 !     call preconditioner.
 !
-       call lusol (n, rhs, rhs, alu, jlu, ju, 30*n)
-       do k=1, n
-          sol(k) = sol(k) + rhs(k)
-         end do
+   call lusol(n, rhs, rhs, alu, jlu, ju, 30 * n)
+   do k = 1, n
+      sol(k) = sol(k) + rhs(k)
+   end do
 !
 !     restart outer loop  when necessary
 !
-       if (ro .le. eps1) goto 990
-       if (its .ge. maxits) goto 991
+   if (ro <= eps1) goto 990
+   if (its >= maxits) goto 991
 !
 !     else compute residual vector and continue..
 !
-       do j=1,i
-          jj = i1-j+1
-          rs(jj-1) = -s(jj-1)*rs(jj)
-          rs(jj) = c(jj-1)*rs(jj)
-         end do
-       do  j=1,i1
-          t = rs(j)
-          if (j .eq. 1)  t = t-1.0d0
-          call daxpy (n, t, vv(1,j), 1,  vv, 1)
-         end do
- 199   format('   its =', i4, ' res. norm =', d20.6)
+   do j = 1, i
+      jj = i1 - j + 1
+      rs(jj - 1) = -s(jj - 1) * rs(jj)
+      rs(jj) = c(jj - 1) * rs(jj)
+   end do
+   do j = 1, i1
+      t = rs(j)
+      if (j == 1) t = t - 1.0d0
+      call daxpy(n, t, vv(1, j), 1, vv, 1)
+   end do
+199 format('   its =', i4, ' res. norm =', d20.6)
 !     restart outer loop.
-       goto 20
- 990   ierr = 0
-       return
- 991   ierr = 1
-       return
- 999   continue
-       ierr = -1
-       return
-!-----------------end of pgmres ---------------------------------------
-!-----------------------------------------------------------------------
-       end
-!-----------------------------------------------------------------------
+   goto 20
+990 ierr = 0
+   return
+991 ierr = 1
+   return
+999 continue
+   ierr = -1
+   return
+end subroutine pgmres
 
-        subroutine qsplit(a,ind,n,ncut)
-        double precision ::  a(n)
-        integer ind(n), n, ncut
+subroutine qsplit(a, ind, n, ncut)
+   use precision_basics, only: dp
+
+   implicit none
+
+   real(dp) :: a(n)
+   integer :: ind(n), n, ncut
 !-----------------------------------------------------------------------
 !     does a quick-sort split of a real array.
 !     on input a(1:n). is a real array
@@ -2659,58 +2657,56 @@ end do
 !
 !     ind(1:n) is an integer array which permuted in the same way as a(*).
 !-----------------------------------------------------------------------
-        double precision ::  tmp, abskey
-        integer itmp, first, last
-!-----
-        first = 1
-        last = n
-        if (ncut .lt. first .or. ncut .gt. last) return
+   real(dp) :: tmp, abskey
+   integer itmp, first, last, mid, j
+
+   first = 1
+   last = n
+   if (ncut < first .or. ncut > last) return
 !
 !     outer loop -- while mid .ne. ncut do
 !
- 1      mid = first
-        abskey = abs(a(mid))
-        do j=first+1, last
-           if (abs(a(j)) .gt. abskey) then
-              mid = mid+1
+1  mid = first
+   abskey = abs(a(mid))
+   do j = first + 1, last
+      if (abs(a(j)) > abskey) then
+         mid = mid + 1
 !     interchange
-              tmp = a(mid)
-              itmp = ind(mid)
-              a(mid) = a(j)
-              ind(mid) = ind(j)
-              a(j)  = tmp
-              ind(j) = itmp
-           endif
-         end do
+         tmp = a(mid)
+         itmp = ind(mid)
+         a(mid) = a(j)
+         ind(mid) = ind(j)
+         a(j) = tmp
+         ind(j) = itmp
+      end if
+   end do
 !
 !     interchange
 !
-        tmp = a(mid)
-        a(mid) = a(first)
-        a(first)  = tmp
+   tmp = a(mid)
+   a(mid) = a(first)
+   a(first) = tmp
 !
-        itmp = ind(mid)
-        ind(mid) = ind(first)
-        ind(first) = itmp
+   itmp = ind(mid)
+   ind(mid) = ind(first)
+   ind(first) = itmp
 !
 !     test for while loop
 !
-        if (mid .eq. ncut) return
-        if (mid .gt. ncut) then
-           last = mid-1
-        else
-           first = mid+1
-        endif
-        goto 1
-!----------------end-of-qsplit------------------------------------------
-!-----------------------------------------------------------------------
-        end
+   if (mid == ncut) return
+   if (mid > ncut) then
+      last = mid - 1
+   else
+      first = mid + 1
+   end if
+   goto 1
+end subroutine qsplit
 
-      subroutine runrc2(n,rhs,sol,ipar,fpar,wk,a,ja,ia,au, jau,ju,its,eps,jabcgstab,ierror,nau)
-      implicit none
-      integer n,ipar(16),ia(n+1),ja(5*n),ju(n),jau(nau),jabcgstab, nau
-      double precision ::  fpar(16),rhs(n),sol(n),wk(2*nau),a(5*n),au(nau), eps
-      integer          :: ierror !< error (1) or not (0)
+subroutine runrc2(n, rhs, sol, ipar, fpar, wk, a, ja, ia, au, jau, ju, its, eps, jabcgstab, ierror, nau)
+   implicit none
+   integer n, ipar(16), ia(n + 1), ja(5 * n), ju(n), jau(nau), jabcgstab, nau
+   double precision :: fpar(16), rhs(n), sol(n), wk(2 * nau), a(5 * n), au(nau), eps
+   integer :: ierror !< error (1) or not (0)
 
 !-----------------------------------------------------------------------
 !     the actual tester. It starts the iterative linear system solvers
@@ -2722,119 +2718,117 @@ end do
 !-----------------------------------------------------------------------
 !     local variables
 !
-      integer i, iou, its
-      double precision ::  res
+   integer iou, its
+   double precision :: res
 !     real dtime, dt(2), time
 !     external dtime
-      EXTERNAL_DNRM2
-      save res
+   EXTERNAL_DNRM2
+   save res
+   
+   no_warning_unused_dummy_argument(eps)
+
 !
 !     ipar(2) can be 0, 1, 2, please don't use 3
 !
-      if (ipar(2).gt.2) then
-         print *, 'I can not do both left and right preconditioning.'
-         return
-      endif
-!
-!     normal execution
-!
-      its = 0
-      res = 0.0D0
-!
-      ! do i = 1, n
-      !   sol(i) = guess(i)
-      ! enddo
-!
-      iou = 6
-      ipar(1) = 0
-
-     ! time = dtime(dt)
-     ! call klok(cp0)
-
- 10   if ( jabcgstab.eq.1 ) then
-         call BCGSTAB(n,rhs,sol,ipar,fpar,wk)
-      else
-         call CG(n,rhs,sol,ipar,fpar,wk)
-      end if
-
-!
-!     output the residuals
-!
-      if (ipar(7).ne.its) then
- !        write (iou, *) its, real(res)
-         its = ipar(7)
-      endif
-      res = fpar(5)
-!
-      if (ipar(1).eq.1) then
-         call amux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
-         goto 10
-      else if (ipar(1).eq.2) then
-         call atmux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
-         goto 10
-      else if (ipar(1).eq.3 .or. ipar(1).eq.5) then
-         call lusol(n,wk(ipar(8)),wk(ipar(9)),au,jau,ju,nau)
-         goto 10
-      else if (ipar(1).eq.4 .or. ipar(1).eq.6) then
-         call lutsol(n,wk(ipar(8)),wk(ipar(9)),au,jau,ju)
-         goto 10
-      else if (ipar(1).le.0) then
-         if (ipar(1).eq.0) then
-   !         print *, 'Iterative sovler has satisfied convergence test.'
-         else if (ipar(1).eq.-1) then
-             print *, 'Iterative solver has iterated too many times.'
-         else if (ipar(1).eq.-2) then
-             print *, 'Iterative solver was not given enough work space.'
-             print *, 'The work space should at least have ', ipar(4),  ' elements.'
-         else if (ipar(1).eq.-3) then
-             print *, 'Iterative sovler is facing a break-down. a'
-         else
-             print *, 'Iterative solver terminated. code =', ipar(1)
-         endif
-      endif
-
-
-      ! time = dtime(dt)
-      ! write (iou, *) ipar(7), real(fpar(6))
-
-      if (ipar(1) .ne. 0) then
-!         write (iou, *) '# return code =', ipar(1),    '   convergence rate =', fpar(7)
-         ierror = 1
-      else
-         ierror = 0
-      endif
-      ! write (iou, *) '# total execution time (sec)', time
-     
-      ! check the error 
-     
-
-      ! call amux(n,sol,wk,a,ja,ia)
-
-      ! eps = 0d0
-      ! do i = 1, n
-      !    wk(n+i) = sol(i) -1.0D0
-      !    wk(i) = wk(i) - rhs(i)
-      !    eps   = max(eps, abs(wk(i)) )
-      ! enddo
-       
-      ! write (iou, *) '# the actual residual norm is', dnrm2(n,wk,1)
-      ! write (iou, *) '# the error norm is', dnrm2(n,wk(1+n),1)
-      
- !     WRITE (*,'(A,I4)') 'nbr of iterations =', its
-
-      if (iou.ne.6) close(iou)
+   if (ipar(2) > 2) then
+      print *, 'I can not do both left and right preconditioning.'
       return
-      end SUBROUTINE RUNRC2
-!-----end-of-runrc
+   end if
+!
+!     normal execution
+!
+   its = 0
+   res = 0.0d0
+!
+   ! do i = 1, n
+   !   sol(i) = guess(i)
+   ! enddo
+!
+   iou = 6
+   ipar(1) = 0
 
+   ! time = dtime(dt)
+   ! call klok(cp0)
 
-                  !(nrow,rhs,sol,sol0,ipar,fpar,wk,xran,a,ja,ia, alu,jlu,ju,bcg)
-      subroutine runrc(n,rhs,sol,sol0,ipar,fpar,wk,guess,a,ja,ia,au, jau,ju,solver)
-      implicit none
-      integer n,ipar(16),ia(n+1),ja(5*n),ju(n),jau(30*n)
-      double precision ::  fpar(16),rhs(n),sol(n),sol0(n),guess(n),wk(2*30*n),a(5*n),au(30*n), cp0, cp1
+10 if (jabcgstab == 1) then
+      call BCGSTAB(n, rhs, sol, ipar, fpar, wk)
+   else
+      call CG(n, rhs, sol, ipar, fpar, wk)
+   end if
 
-      external solver
+!
+!     output the residuals
+!
+   if (ipar(7) /= its) then
+      !        write (iou, *) its, real(res)
+      its = ipar(7)
+   end if
+   res = fpar(5)
+!
+   if (ipar(1) == 1) then
+      call amux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
+      goto 10
+   else if (ipar(1) == 2) then
+      call atmux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
+      goto 10
+   else if (ipar(1) == 3 .or. ipar(1) == 5) then
+      call lusol(n, wk(ipar(8)), wk(ipar(9)), au, jau, ju, nau)
+      goto 10
+   else if (ipar(1) == 4 .or. ipar(1) == 6) then
+      call lutsol(n, wk(ipar(8)), wk(ipar(9)), au, jau, ju)
+      goto 10
+   else if (ipar(1) <= 0) then
+      if (ipar(1) == 0) then
+         !         print *, 'Iterative sovler has satisfied convergence test.'
+      else if (ipar(1) == -1) then
+         print *, 'Iterative solver has iterated too many times.'
+      else if (ipar(1) == -2) then
+         print *, 'Iterative solver was not given enough work space.'
+         print *, 'The work space should at least have ', ipar(4), ' elements.'
+      else if (ipar(1) == -3) then
+         print *, 'Iterative sovler is facing a break-down. a'
+      else
+         print *, 'Iterative solver terminated. code =', ipar(1)
+      end if
+   end if
+
+   ! time = dtime(dt)
+   ! write (iou, *) ipar(7), real(fpar(6))
+
+   if (ipar(1) /= 0) then
+!         write (iou, *) '# return code =', ipar(1),    '   convergence rate =', fpar(7)
+      ierror = 1
+   else
+      ierror = 0
+   end if
+   ! write (iou, *) '# total execution time (sec)', time
+
+   ! check the error
+
+   ! call amux(n,sol,wk,a,ja,ia)
+
+   ! eps = 0d0
+   ! do i = 1, n
+   !    wk(n+i) = sol(i) -1.0D0
+   !    wk(i) = wk(i) - rhs(i)
+   !    eps   = max(eps, abs(wk(i)) )
+   ! enddo
+
+   ! write (iou, *) '# the actual residual norm is', dnrm2(n,wk,1)
+   ! write (iou, *) '# the error norm is', dnrm2(n,wk(1+n),1)
+
+   !     WRITE (*,'(A,I4)') 'nbr of iterations =', its
+
+   if (iou /= 6) close (iou)
+   return
+end subroutine runrc2
+
+subroutine runrc(n, rhs, sol, sol0, ipar, fpar, wk, guess, a, ja, ia, au, jau, ju, solver)
+   implicit none
+   integer n, ipar(16), ia(n + 1), ja(5 * n), ju(n), jau(30 * n)
+   double precision :: fpar(16), rhs(n), sol(n), sol0(n), guess(n), wk(2 * 30 * n), a(5 * n), au(30 * n), cp0, cp1
+
+   external solver
 !-----------------------------------------------------------------------
 !     the actual tester. It starts the iterative linear system solvers
 !     with a initial guess suppied by the user.
@@ -2845,203 +2839,222 @@ end do
 !-----------------------------------------------------------------------
 !     local variables
 !
-      integer i, iou, its
-      double precision ::  res
+   integer i, iou, its
+   double precision :: res
 !     real dtime, dt(2), time
 !     external dtime
-      EXTERNAL_DNRM2
-      save its,res
+   EXTERNAL_DNRM2
+   save its, res
 !
 !     ipar(2) can be 0, 1, 2, please don't use 3
 !
-      if (ipar(2).gt.2) then
-         print *, 'I can not do both left and right preconditioning.'
-         return
-      endif
+   if (ipar(2) > 2) then
+      print *, 'I can not do both left and right preconditioning.'
+      return
+   end if
 !
 !     normal execution
 !
-      its = 0
-      res = 0.0D0
+   its = 0
+   res = 0.0d0
 !
-      do i = 1, n
-         sol(i) = guess(i)
-      enddo
-      SOL = 0
+   do i = 1, n
+      sol(i) = guess(i)
+   end do
+   SOL = 0
 
 !
-      iou = 6
-      ipar(1) = 0
+   iou = 6
+   ipar(1) = 0
 !      time = dtime(dt)
-      call klok(cp0)
- 10   call solver(n,rhs,sol,ipar,fpar,wk)
+   call klok(cp0)
+10 call solver(n, rhs, sol, ipar, fpar, wk)
 
 !
 !     output the residuals
 !
-      if (ipar(7).ne.its) then
- !        write (iou, *) its, real(res)
-         its = ipar(7)
-      endif
-      res = fpar(5)
+   if (ipar(7) /= its) then
+      !        write (iou, *) its, real(res)
+      its = ipar(7)
+   end if
+   res = fpar(5)
 !
-      if (ipar(1).eq.1) then
-         call amux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
-         goto 10
-      else if (ipar(1).eq.2) then
-         call atmux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
-         goto 10
-      else if (ipar(1).eq.3 .or. ipar(1).eq.5) then
-         call lusol(n,wk(ipar(8)),wk(ipar(9)),au,jau,ju,30*n)
-         goto 10
-      else if (ipar(1).eq.4 .or. ipar(1).eq.6) then
-         call lutsol(n,wk(ipar(8)),wk(ipar(9)),au,jau,ju)
-         goto 10
-      else if (ipar(1).le.0) then
-         if (ipar(1).eq.0) then
-   !         print *, 'Iterative sovler has satisfied convergence test.'
-         else if (ipar(1).eq.-1) then
-             print *, 'Iterative solver has iterated too many times.'
-         else if (ipar(1).eq.-2) then
-             print *, 'Iterative solver was not given enough work space.'
-            print *, 'The work space should at least have ', ipar(4),  ' elements.'
-         else if (ipar(1).eq.-3) then
-            print *, 'Iterative sovler is facing a break-down. b'
-         else
-            print *, 'Iterative solver terminated. code =', ipar(1)
-         endif
-      endif
+   if (ipar(1) == 1) then
+      call amux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
+      goto 10
+   else if (ipar(1) == 2) then
+      call atmux(n, wk(ipar(8)), wk(ipar(9)), a, ja, ia)
+      goto 10
+   else if (ipar(1) == 3 .or. ipar(1) == 5) then
+      call lusol(n, wk(ipar(8)), wk(ipar(9)), au, jau, ju, 30 * n)
+      goto 10
+   else if (ipar(1) == 4 .or. ipar(1) == 6) then
+      call lutsol(n, wk(ipar(8)), wk(ipar(9)), au, jau, ju)
+      goto 10
+   else if (ipar(1) <= 0) then
+      if (ipar(1) == 0) then
+         !         print *, 'Iterative sovler has satisfied convergence test.'
+      else if (ipar(1) == -1) then
+         print *, 'Iterative solver has iterated too many times.'
+      else if (ipar(1) == -2) then
+         print *, 'Iterative solver was not given enough work space.'
+         print *, 'The work space should at least have ', ipar(4), ' elements.'
+      else if (ipar(1) == -3) then
+         print *, 'Iterative sovler is facing a break-down. b'
+      else
+         print *, 'Iterative solver terminated. code =', ipar(1)
+      end if
+   end if
 !     time = dtime(dt)
 !      write (iou, *) ipar(7), real(fpar(6))
 
-      if (ipar(1) .ne. 0) then
-         write (iou, *) '# retrun code =', ipar(1),    ' convergence rate =', fpar(7)
-      endif
+   if (ipar(1) /= 0) then
+      write (iou, *) '# retrun code =', ipar(1), ' convergence rate =', fpar(7)
+   end if
    !   write (iou, *) '# total execution time (sec)', time
 !
 !     check the error
 !
 
-      call amux(n,sol,wk,a,ja,ia)
-      do i = 1, n
-         wk(n+i) = sol(i) -1.0D0
-         wk(i) = wk(i) - rhs(i)
-      enddo
+   call amux(n, sol, wk, a, ja, ia)
+   do i = 1, n
+      wk(n + i) = sol(i) - 1.0d0
+      wk(i) = wk(i) - rhs(i)
+   end do
 !      write (iou, *) '# the actual residual norm is', dnrm2(n,wk,1)
 !      write (iou, *) '# the error norm is', dnrm2(n,wk(1+n),1)
 !
 
-      CALL KLOK(CP1)
-      WRITE (*,'(A,F8.4,A,I4)') ' CPU time =', cp1 - cp0,       &
-                             '   nbr of iterations =', its
-      call watisdefout(n,sol,sol0)
+   call KLOK(CP1)
+   write (*, '(A,F8.4,A,I4)') ' CPU time =', cp1 - cp0, &
+      '   nbr of iterations =', its
+   call watisdefout(n, sol, sol0)
+
+   if (iou /= 6) close (iou)
+   return
+end subroutine runrc
 
 
+subroutine watisdefout(n, sol, sol0)
+   implicit none
+   
+   integer :: n
+   double precision :: sol(n), sol0(n)
+   
+   double precision :: errmx, errav
+   errmx = maxval(abs(sol - sol0))
+   errav = sum(abs(sol - sol0))
+   errav = errav / n
+   write (*, *) 'ermx, errav ', errmx, errav
+end subroutine watisdefout
 
+function distdot(n, x, ix, y, iy)
+   integer n, ix, iy
+   double precision :: distdot, x(*), y(*)
+   EXTERNAL_DDOT
+   distdot = ddot(n, x, ix, y, iy)
+   return
+end function distdot
 
-      if (iou.ne.6) close(iou)
-      return
-      end
-!-----end-of-runrc
-!-----------------------------------------------------------------------
+function afun(x, y, z)
+   double precision :: afun, x, y, z
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   afun = -1.0d0
+   return
+end function afun
 
-      subroutine watisdefout(n,sol,sol0)
-      double precision :: sol(n), sol0(n)
-      double precision :: errmx , errav
-      errmx = maxval(abs (sol-sol0) )
-      errav  = sum   (abs(sol-sol0) )
-      errav  = errav/n
-      write (*,*) 'ermx, errav ', errmx, errav
-      end subroutine watisdefout
+function bfun(x, y, z)
+   double precision :: bfun, x, y, z
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   bfun = -1.0d0
+   return
+end function bfun
 
+function cfun(x, y, z)
+   double precision :: cfun, x, y, z
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   cfun = -1.0d0
+   return
+end function cfun
 
-      function distdot(n,x,ix,y,iy)
-      integer n, ix, iy
-      double precision ::  distdot, x(*), y(*)
-      EXTERNAL_DDOT
-      distdot = ddot(n,x,ix,y,iy)
-      return
-      end
-!-----end-of-distdot
-!-----------------------------------------------------------------------
-!
-      function afun (x,y,z)
-      double precision ::  afun, x,y, z
-      afun = -1.0D0
-      return
-      end
+function dfun(x, y, z)
+   use GAMMAS
+   double precision :: dfun, x, y, z
+   no_warning_unused_dummy_argument(z)
+   dfun = gammax * exp(x * y)
+   return
+end function dfun
 
-      function bfun (x,y,z)
-      double precision ::  bfun, x,y, z
-      bfun = -1.0D0
-      return
-      end
+function efun(x, y, z)
+   use GAMMAS
+   double precision :: efun, x, y, z
+   no_warning_unused_dummy_argument(z)
+   efun = gammay * exp(-x * y)
+   return
+end function efun
 
-      function cfun (x,y,z)
-      double precision ::  cfun, x,y, z
-      cfun = -1.0D0
-      return
-      end
+function ffun(x, y, z)
+   double precision :: ffun, x, y, z
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   ffun = 0.0d0
+   return
+end function ffun
 
-      function dfun (x,y,z)
-      USE GAMMAS
-      double precision ::  dfun, x,y, z
-      dfun = gammax*exp(x*y)
-      return
-      end
+function gfun(x, y, z)
+   use GAMMAS
 
-      function efun (x,y,z)
-      USE GAMMAS
-      double precision ::  efun, x,y, z
-      efun = gammay*exp(-x*y)
-      return
-      end
+   double precision :: gfun, x, y, z
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   gfun = alpha
+   return
+end function gfun
 
-      function ffun (x,y,z)
-      double precision ::  ffun, x,y, z
-      ffun = 0.0D0
-      return
-      end
+function hfun(x, y, z)
+   use GAMMAS
 
-      function gfun (x,y,z)
-      USE GAMMAS
+   double precision :: hfun, x, y, z
+   hfun = alpha * sin(gammax * x + gammay * y - z)
+   return
+end function hfun
 
-      double precision ::  gfun, x,y, z
-      gfun = alpha
-      return
-      end
+function betfun(side, x, y, z)
+   double precision :: betfun, x, y, z
+   character * 2 side
+   no_warning_unused_dummy_argument(side)
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   betfun = 1.0
+   return
+end function betfun
 
-      function hfun (x,y,z)
-      USE GAMMAS
-
-      double precision ::  hfun, x,y, z
-      hfun = alpha * sin(gammax*x+gammay*y-z)
-      return
-      end
-
-
-      function betfun(side, x, y, z)
-      double precision ::  betfun, x, y, z
-      character*2 side
-      betfun = 1.0
-      return
-      end
-
-      function gamfun(side, x, y, z)
-      double precision ::  gamfun, x, y, z
-      character*2 side
-      if (side.eq.'x2') then
-         gamfun = 5.0
-      else if (side.eq.'y1') then
-         gamfun = 2.0
-      else if (side.eq.'y2') then
-         gamfun = 7.0
-      else
-         gamfun = 0.0
-      endif
-      return
-      end
-
+function gamfun(side, x, y, z)
+   double precision :: gamfun, x, y, z
+   character * 2 side
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   if (side == 'x2') then
+      gamfun = 5.0
+   else if (side == 'y1') then
+      gamfun = 2.0
+   else if (side == 'y2') then
+      gamfun = 7.0
+   else
+      gamfun = 0.0
+   end if
+   return
+end function gamfun
 
 !----------------------------------------------------------------------c
 !                          S P A R S K I T                             c
@@ -3410,10 +3423,10 @@ end do
 !     the routine that performs the preconditioning operations or the
 !     convergence tests.
 !-----------------------------------------------------------------------
-      subroutine cg(n, rhs, sol, ipar, fpar, w)
-      implicit none
-      integer n, ipar(16)
-      double precision ::  rhs(n), sol(n), fpar(16), w(n,*)
+subroutine cg(n, rhs, sol, ipar, fpar, w)
+   implicit none
+   integer n, ipar(16)
+   double precision :: rhs(n), sol(n), fpar(16), w(n, *)
 !-----------------------------------------------------------------------
 !     This is a implementation of the Conjugate Gradient (CG) method
 !     for solving linear system.
@@ -3433,173 +3446,172 @@ end do
 !-----------------------------------------------------------------------
 !     external functions used
 !
-      logical stopbis, brkdn
-      external stopbis, brkdn, bisinit
-      EXTERNAL_DDOT
+   logical stopbis, brkdn
+   external stopbis, brkdn, bisinit
+   EXTERNAL_DDOT
 !
 !     local variables
 !
-      integer i
-      double precision ::  alpha
-      logical lp,rp
-      save
+   integer i
+   double precision :: alpha
+   logical lp, rp
+   save
 !
 !     check the status of the call
 !
-      if (ipar(1).le.0) ipar(10) = 0
-      goto (10, 20, 40, 50, 60, 70, 80), ipar(10)
+   if (ipar(1) <= 0) ipar(10) = 0
+   goto(10, 20, 40, 50, 60, 70, 80), ipar(10)
 !
 !     initialization
 !
-      call bisinit(ipar,fpar,5*n,1,lp,rp,w)
-      if (ipar(1).lt.0) return
+   call bisinit(ipar, fpar, 5 * n, 1, lp, rp, w)
+   if (ipar(1) < 0) return
 !
 !     request for matrix vector multiplication A*x in the initialization
 !
-      ipar(1) = 1
-      ipar(8) = n+1
-      ipar(9) = ipar(8) + n
-      ipar(10) = 1
-      do i = 1, n
-         w(i,2) = sol(i)
-      enddo
-      return
- 10   ipar(7) = ipar(7) + 1
-      ipar(13) = 1
-      do i = 1, n
-         w(i,2) = rhs(i) - w(i,3)
-      enddo
-      fpar(11) = fpar(11) + n
+   ipar(1) = 1
+   ipar(8) = n + 1
+   ipar(9) = ipar(8) + n
+   ipar(10) = 1
+   do i = 1, n
+      w(i, 2) = sol(i)
+   end do
+   return
+10 ipar(7) = ipar(7) + 1
+   ipar(13) = 1
+   do i = 1, n
+      w(i, 2) = rhs(i) - w(i, 3)
+   end do
+   fpar(11) = fpar(11) + n
 !
 !     if left preconditioned
 !
-      if (lp) then
-         ipar(1) = 3
-         ipar(9) = 1
-         ipar(10) = 2
-         return
-      endif
+   if (lp) then
+      ipar(1) = 3
+      ipar(9) = 1
+      ipar(10) = 2
+      return
+   end if
 !
- 20   if (lp) then
-         do i = 1, n
-            w(i,2) = w(i,1)
-         enddo
-      else
-         do i = 1, n
-            w(i,1) = w(i,2)
-         enddo
-      endif
+20 if (lp) then
+      do i = 1, n
+         w(i, 2) = w(i, 1)
+      end do
+   else
+      do i = 1, n
+         w(i, 1) = w(i, 2)
+      end do
+   end if
 !
-      fpar(7) = ddot(n,w,1,w,1)
+   fpar(7) = ddot(n, w, 1, w, 1)
+   fpar(11) = fpar(11) + 2 * n
+   fpar(3) = sqrt(fpar(7))
+   fpar(5) = fpar(3)
+   if (abs(ipar(3)) == 2) then
+      fpar(4) = fpar(1) * sqrt(ddot(n, rhs, 1, rhs, 1)) + fpar(2)
       fpar(11) = fpar(11) + 2 * n
-      fpar(3) = sqrt(fpar(7))
-      fpar(5) = fpar(3)
-      if (abs(ipar(3)).eq.2) then
-         fpar(4) = fpar(1) * sqrt(ddot(n,rhs,1,rhs,1)) + fpar(2)
-         fpar(11) = fpar(11) + 2 * n
-      else if (ipar(3).ne.999) then
-         fpar(4) = fpar(1) * fpar(3) + fpar(2)
-      endif
+   else if (ipar(3) /= 999) then
+      fpar(4) = fpar(1) * fpar(3) + fpar(2)
+   end if
 !
 !     before iteration can continue, we need to compute A * p, which
 !     includes the preconditioning operations
 !
- 30   if (rp) then
-         ipar(1) = 5
-         ipar(8) = n + 1
-         if (lp) then
-            ipar(9) = ipar(8) + n
-         else
-            ipar(9) = 3*n + 1
-         endif
-         ipar(10) = 3
-         return
-      endif
-!
- 40   ipar(1) = 1
-      if (rp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = n + 1
-      endif
+30 if (rp) then
+      ipar(1) = 5
+      ipar(8) = n + 1
       if (lp) then
-         ipar(9) = 3*n+1
+         ipar(9) = ipar(8) + n
       else
-         ipar(9) = n+n+1
-      endif
-      ipar(10) = 4
+         ipar(9) = 3 * n + 1
+      end if
+      ipar(10) = 3
       return
+   end if
 !
- 50   if (lp) then
-         ipar(1) = 3
-         ipar(8) = ipar(9)
-         ipar(9) = n+n+1
-         ipar(10) = 5
-         return
-      endif
+40 ipar(1) = 1
+   if (rp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = n + 1
+   end if
+   if (lp) then
+      ipar(9) = 3 * n + 1
+   else
+      ipar(9) = n + n + 1
+   end if
+   ipar(10) = 4
+   return
+!
+50 if (lp) then
+      ipar(1) = 3
+      ipar(8) = ipar(9)
+      ipar(9) = n + n + 1
+      ipar(10) = 5
+      return
+   end if
 !
 !     continuing with the iterations
 !
- 60   ipar(7) = ipar(7) + 1
-      alpha = ddot(n,w(1,2),1,w(1,3),1)
-      fpar(11) = fpar(11) + 2*n
-      if (brkdn(alpha,ipar)) goto 900
-      alpha = fpar(7) / alpha
-      do i = 1, n
-         w(i,5) = w(i,5) + alpha * w(i,2)
-         w(i,1) = w(i,1) - alpha * w(i,3)
-      enddo
-      fpar(11) = fpar(11) + 4*n
+60 ipar(7) = ipar(7) + 1
+   alpha = ddot(n, w(1, 2), 1, w(1, 3), 1)
+   fpar(11) = fpar(11) + 2 * n
+   if (brkdn(alpha, ipar)) goto 900
+   alpha = fpar(7) / alpha
+   do i = 1, n
+      w(i, 5) = w(i, 5) + alpha * w(i, 2)
+      w(i, 1) = w(i, 1) - alpha * w(i, 3)
+   end do
+   fpar(11) = fpar(11) + 4 * n
 !
 !     are we ready to terminate ?
 !
-      if (ipar(3).eq.999) then
-         ipar(1) = 10
-         ipar(8) = 4*n + 1
-         ipar(9) = 3*n + 1
-         ipar(10) = 6
-         return
-      endif
- 70   if (ipar(3).eq.999) then
-         if (ipar(11).eq.1) goto 900
-      else if (stopbis(n,ipar,1,fpar,w,w(1,2),alpha)) then
-         goto 900
-      endif
+   if (ipar(3) == 999) then
+      ipar(1) = 10
+      ipar(8) = 4 * n + 1
+      ipar(9) = 3 * n + 1
+      ipar(10) = 6
+      return
+   end if
+70 if (ipar(3) == 999) then
+      if (ipar(11) == 1) goto 900
+   else if (stopbis(n, ipar, 1, fpar, w, w(1, 2), alpha)) then
+      goto 900
+   end if
 !
 !     continue the iterations
 !
-      alpha = fpar(5)*fpar(5) / fpar(7)
-      fpar(7) = fpar(5)*fpar(5)
-      do i = 1, n
-         w(i,2) = w(i,1) + alpha * w(i,2)
-      enddo
-      fpar(11) = fpar(11) + 2*n
-      goto 30
+   alpha = fpar(5) * fpar(5) / fpar(7)
+   fpar(7) = fpar(5) * fpar(5)
+   do i = 1, n
+      w(i, 2) = w(i, 1) + alpha * w(i, 2)
+   end do
+   fpar(11) = fpar(11) + 2 * n
+   goto 30
 !
 !     clean up -- necessary to accommodate the right-preconditioning
 !
- 900  if (rp) then
-         if (ipar(1).lt.0) ipar(12) = ipar(1)
-         ipar(1) = 5
-         ipar(8) = 4*n + 1
-         ipar(9) = ipar(8) - n
-         ipar(10) = 7
-         return
-      endif
- 80   if (rp) then
-         call tidycg(n,ipar,fpar,sol,w(1,4))
-      else
-         call tidycg(n,ipar,fpar,sol,w(1,5))
-      endif
-!
+900 if (rp) then
+      if (ipar(1) < 0) ipar(12) = ipar(1)
+      ipar(1) = 5
+      ipar(8) = 4 * n + 1
+      ipar(9) = ipar(8) - n
+      ipar(10) = 7
       return
-      end
-!-----end-of-cg
-!-----------------------------------------------------------------------
-      subroutine cgnr(n,rhs,sol,ipar,fpar,wk)
-      implicit none
-      integer n, ipar(16)
-      double precision ::  rhs(n),sol(n),fpar(16),wk(n,*)
+   end if
+80 if (rp) then
+      call tidycg(n, ipar, fpar, sol, w(1, 4))
+   else
+      call tidycg(n, ipar, fpar, sol, w(1, 5))
+   end if
+!
+   return
+end subroutine cg
+
+subroutine cgnr(n, rhs, sol, ipar, fpar, wk)
+   implicit none
+   integer n, ipar(16)
+   double precision :: rhs(n), sol(n), fpar(16), wk(n, *)
 !-----------------------------------------------------------------------
 !     CGNR -- Using CG algorithm solving A x = b by solving
 !     Normal Residual equation: A^T A x = A^T b
@@ -3618,218 +3630,217 @@ end do
 !-----------------------------------------------------------------------
 !     external functions used
 !
-      logical stopbis, brkdn
-      external stopbis, brkdn, bisinit
-      EXTERNAL_DDOT
+   logical stopbis, brkdn
+   external stopbis, brkdn, bisinit
+   EXTERNAL_DDOT
 !
 !     local variables
 !
-      integer i
-      double precision ::  alpha, zz, zzm1
-      logical lp, rp
-      save
+   integer i
+   double precision :: alpha, zz, zzm1
+   logical lp, rp
+   save
 !
 !     check the status of the call
 !
-      if (ipar(1).le.0) ipar(10) = 0
-      goto (10, 20, 40, 50, 60, 70, 80, 90, 100, 110), ipar(10)
+   if (ipar(1) <= 0) ipar(10) = 0
+   goto(10, 20, 40, 50, 60, 70, 80, 90, 100, 110), ipar(10)
 !
 !     initialization
 !
-      call bisinit(ipar,fpar,5*n,1,lp,rp,wk)
-      if (ipar(1).lt.0) return
+   call bisinit(ipar, fpar, 5 * n, 1, lp, rp, wk)
+   if (ipar(1) < 0) return
 !
 !     request for matrix vector multiplication A*x in the initialization
 !
-      ipar(1) = 1
-      ipar(8) = 1
-      ipar(9) = 1 + n
-      ipar(10) = 1
-      do i = 1, n
-         wk(i,1) = sol(i)
-      enddo
-      return
- 10   ipar(7) = ipar(7) + 1
-      ipar(13) = ipar(13) + 1
-      do i = 1, n
-         wk(i,1) = rhs(i) - wk(i,2)
-      enddo
-      fpar(11) = fpar(11) + n
+   ipar(1) = 1
+   ipar(8) = 1
+   ipar(9) = 1 + n
+   ipar(10) = 1
+   do i = 1, n
+      wk(i, 1) = sol(i)
+   end do
+   return
+10 ipar(7) = ipar(7) + 1
+   ipar(13) = ipar(13) + 1
+   do i = 1, n
+      wk(i, 1) = rhs(i) - wk(i, 2)
+   end do
+   fpar(11) = fpar(11) + n
 !
 !     if left preconditioned, precondition the initial residual
 !
-      if (lp) then
-         ipar(1) = 3
-         ipar(10) = 2
-         return
-      endif
+   if (lp) then
+      ipar(1) = 3
+      ipar(10) = 2
+      return
+   end if
 !
- 20   if (lp) then
-         do i = 1, n
-            wk(i,1) = wk(i,2)
-         enddo
-      endif
+20 if (lp) then
+      do i = 1, n
+         wk(i, 1) = wk(i, 2)
+      end do
+   end if
 !
-      zz = ddot(n,wk,1,wk,1)
+   zz = ddot(n, wk, 1, wk, 1)
+   fpar(11) = fpar(11) + 2 * n
+   fpar(3) = sqrt(zz)
+   fpar(5) = fpar(3)
+   if (abs(ipar(3)) == 2) then
+      fpar(4) = fpar(1) * sqrt(ddot(n, rhs, 1, rhs, 1)) + fpar(2)
       fpar(11) = fpar(11) + 2 * n
-      fpar(3) = sqrt(zz)
-      fpar(5) = fpar(3)
-      if (abs(ipar(3)).eq.2) then
-         fpar(4) = fpar(1) * sqrt(ddot(n,rhs,1,rhs,1)) + fpar(2)
-         fpar(11) = fpar(11) + 2 * n
-      else if (ipar(3).ne.999) then
-         fpar(4) = fpar(1) * fpar(3) + fpar(2)
-      endif
+   else if (ipar(3) /= 999) then
+      fpar(4) = fpar(1) * fpar(3) + fpar(2)
+   end if
 !
 !     normal iteration begins here, first half of the iteration
 !     computes the conjugate direction
 !
- 30   continue
+30 continue
 !
 !     request the caller to perform a A^T r --> wk(:,3)
 !
-      if (lp) then
-         ipar(1) = 4
-         ipar(8) = 1
-         if (rp) then
-            ipar(9) = n + n + 1
-         else
-            ipar(9) = 3*n + 1
-         endif
-         ipar(10) = 3
-         return
-      endif
-!
- 40   ipar(1) = 2
-      if (lp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = 1
-      endif
+   if (lp) then
+      ipar(1) = 4
+      ipar(8) = 1
       if (rp) then
-         ipar(9) = 3*n + 1
-      else
          ipar(9) = n + n + 1
-      endif
-      ipar(10) = 4
+      else
+         ipar(9) = 3 * n + 1
+      end if
+      ipar(10) = 3
       return
+   end if
 !
- 50   if (rp) then
-         ipar(1) = 6
-         ipar(8) = ipar(9)
-         ipar(9) = n + n + 1
-         ipar(10) = 5
-         return
-      endif
+40 ipar(1) = 2
+   if (lp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = 1
+   end if
+   if (rp) then
+      ipar(9) = 3 * n + 1
+   else
+      ipar(9) = n + n + 1
+   end if
+   ipar(10) = 4
+   return
 !
- 60   ipar(7) = ipar(7) + 1
-      zzm1 = zz
-      zz = ddot(n,wk(1,3),1,wk(1,3),1)
+50 if (rp) then
+      ipar(1) = 6
+      ipar(8) = ipar(9)
+      ipar(9) = n + n + 1
+      ipar(10) = 5
+      return
+   end if
+!
+60 ipar(7) = ipar(7) + 1
+   zzm1 = zz
+   zz = ddot(n, wk(1, 3), 1, wk(1, 3), 1)
+   fpar(11) = fpar(11) + 2 * n
+   if (brkdn(zz, ipar)) goto 900
+   if (ipar(7) > 3) then
+      alpha = zz / zzm1
+      do i = 1, n
+         wk(i, 2) = wk(i, 3) + alpha * wk(i, 2)
+      end do
       fpar(11) = fpar(11) + 2 * n
-      if (brkdn(zz,ipar)) goto 900
-      if (ipar(7).gt.3) then
-         alpha = zz / zzm1
-         do i = 1, n
-            wk(i,2) = wk(i,3) + alpha * wk(i,2)
-         enddo
-         fpar(11) = fpar(11) + 2 * n
-      else
-         do i = 1, n
-            wk(i,2) = wk(i,3)
-         enddo
-      endif
+   else
+      do i = 1, n
+         wk(i, 2) = wk(i, 3)
+      end do
+   end if
 !
 !     before iteration can continue, we need to compute A * p
 !
-      if (rp) then
-         ipar(1) = 5
-         ipar(8) = n + 1
-         if (lp) then
-            ipar(9) = ipar(8) + n
-         else
-            ipar(9) = 3*n + 1
-         endif
-         ipar(10) = 6
-         return
-      endif
-!
- 70   ipar(1) = 1
-      if (rp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = n + 1
-      endif
+   if (rp) then
+      ipar(1) = 5
+      ipar(8) = n + 1
       if (lp) then
-        ipar(9) = 3*n+1
+         ipar(9) = ipar(8) + n
       else
-         ipar(9) = n+n+1
-      endif
-      ipar(10) = 7
+         ipar(9) = 3 * n + 1
+      end if
+      ipar(10) = 6
       return
+   end if
 !
- 80   if (lp) then
-         ipar(1) = 3
-         ipar(8) = ipar(9)
-         ipar(9) = n+n+1
-         ipar(10) = 8
-         return
-      endif
+70 ipar(1) = 1
+   if (rp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = n + 1
+   end if
+   if (lp) then
+      ipar(9) = 3 * n + 1
+   else
+      ipar(9) = n + n + 1
+   end if
+   ipar(10) = 7
+   return
+!
+80 if (lp) then
+      ipar(1) = 3
+      ipar(8) = ipar(9)
+      ipar(9) = n + n + 1
+      ipar(10) = 8
+      return
+   end if
 !
 !     update the solution -- accumulate the changes in w(:,5)
 !
- 90   ipar(7) = ipar(7) + 1
-      alpha = ddot(n,wk(1,3),1,wk(1,3),1)
-      fpar(11) = fpar(11) + 2 * n
-      if (brkdn(alpha,ipar)) goto 900
-      alpha = zz / alpha
-      do i = 1, n
-         wk(i,5) = wk(i,5) + alpha * wk(i,2)
-         wk(i,1) = wk(i,1) - alpha * wk(i,3)
-      enddo
-      fpar(11) = fpar(11) + 4 * n
+90 ipar(7) = ipar(7) + 1
+   alpha = ddot(n, wk(1, 3), 1, wk(1, 3), 1)
+   fpar(11) = fpar(11) + 2 * n
+   if (brkdn(alpha, ipar)) goto 900
+   alpha = zz / alpha
+   do i = 1, n
+      wk(i, 5) = wk(i, 5) + alpha * wk(i, 2)
+      wk(i, 1) = wk(i, 1) - alpha * wk(i, 3)
+   end do
+   fpar(11) = fpar(11) + 4 * n
 !
 !     are we ready to terminate ?
 !
-      if (ipar(3).eq.999) then
-         ipar(1) = 10
-         ipar(8) = 4*n + 1
-         ipar(9) = 3*n + 1
-         ipar(10) = 9
-         return
-      endif
- 100  if (ipar(3).eq.999) then
-         if (ipar(11).eq.1) goto 900
-      else if (stopbis(n,ipar,1,fpar,wk,wk(1,2),alpha)) then
-         goto 900
-      endif
+   if (ipar(3) == 999) then
+      ipar(1) = 10
+      ipar(8) = 4 * n + 1
+      ipar(9) = 3 * n + 1
+      ipar(10) = 9
+      return
+   end if
+100 if (ipar(3) == 999) then
+      if (ipar(11) == 1) goto 900
+   else if (stopbis(n, ipar, 1, fpar, wk, wk(1, 2), alpha)) then
+      goto 900
+   end if
 !
 !     continue the iterations
 !
-      goto 30
+   goto 30
 !
 !     clean up -- necessary to accommodate the right-preconditioning
 !
- 900  if (rp) then
-         if (ipar(1).lt.0) ipar(12) = ipar(1)
-         ipar(1) = 5
-         ipar(8) = 4*n + 1
-         ipar(9) = ipar(8) - n
-         ipar(10) = 10
-         return
-      endif
- 110  if (rp) then
-         call tidycg(n,ipar,fpar,sol,wk(1,4))
-      else
-         call tidycg(n,ipar,fpar,sol,wk(1,5))
-      endif
+900 if (rp) then
+      if (ipar(1) < 0) ipar(12) = ipar(1)
+      ipar(1) = 5
+      ipar(8) = 4 * n + 1
+      ipar(9) = ipar(8) - n
+      ipar(10) = 10
       return
-      end
-!-----end-of-cgnr
-!-----------------------------------------------------------------------
-      subroutine bcg(n,rhs,sol,ipar,fpar,w)
-      implicit none
-      integer n, ipar(16)
-      double precision ::   fpar(16), rhs(n), sol(n), w(n,*)
+   end if
+110 if (rp) then
+      call tidycg(n, ipar, fpar, sol, wk(1, 4))
+   else
+      call tidycg(n, ipar, fpar, sol, wk(1, 5))
+   end if
+   return
+end subroutine cgnr
+
+subroutine bcg(n, rhs, sol, ipar, fpar, w)
+   implicit none
+   integer n, ipar(16)
+   double precision :: fpar(16), rhs(n), sol(n), w(n, *)
 !-----------------------------------------------------------------------
 !     BCG: Bi Conjugate Gradient method. Programmed with reverse
 !     communication, see the header for detailed specifications
@@ -3852,221 +3863,220 @@ end do
 !-----------------------------------------------------------------------
 !     external routines used
 !
-      logical stopbis,brkdn
-      external stopbis, brkdn
-      EXTERNAL_DDOT
+   logical stopbis, brkdn
+   external stopbis, brkdn
+   EXTERNAL_DDOT
 !
-      double precision ::  one
-      parameter(one=1.0D0)
+   double precision :: one
+   parameter(one=1.0d0)
 !
 !     local variables
 !
-      integer i
-      double precision ::  alpha
-      logical rp, lp
-      save
+   integer i
+   double precision :: alpha
+   logical rp, lp
+   save
 !
 !     status of the program
 !
-      if (ipar(1).le.0) ipar(10) = 0
-      goto (10, 20, 40, 50, 60, 70, 80, 90, 100, 110), ipar(10)
+   if (ipar(1) <= 0) ipar(10) = 0
+   goto(10, 20, 40, 50, 60, 70, 80, 90, 100, 110), ipar(10)
 !
 !     initialization, initial residual
 !
-      call bisinit(ipar,fpar,7*n,1,lp,rp,w)
-      if (ipar(1).lt.0) return
+   call bisinit(ipar, fpar, 7 * n, 1, lp, rp, w)
+   if (ipar(1) < 0) return
 !
 !     compute initial residual, request a matvecc
 !
-      ipar(1) = 1
-      ipar(8) = 3*n+1
-      ipar(9) = ipar(8) + n
-      do i = 1, n
-         w(i,4) = sol(i)
-      enddo
-      ipar(10) = 1
+   ipar(1) = 1
+   ipar(8) = 3 * n + 1
+   ipar(9) = ipar(8) + n
+   do i = 1, n
+      w(i, 4) = sol(i)
+   end do
+   ipar(10) = 1
+   return
+10 ipar(7) = ipar(7) + 1
+   ipar(13) = ipar(13) + 1
+   do i = 1, n
+      w(i, 1) = rhs(i) - w(i, 5)
+   end do
+   fpar(11) = fpar(11) + n
+   if (lp) then
+      ipar(1) = 3
+      ipar(8) = 1
+      ipar(9) = n + 1
+      ipar(10) = 2
       return
- 10   ipar(7) = ipar(7) + 1
-      ipar(13) = ipar(13) + 1
+   end if
+!
+20 if (lp) then
       do i = 1, n
-         w(i,1) = rhs(i) - w(i,5)
-      enddo
-      fpar(11) = fpar(11) + n
-      if (lp) then
-         ipar(1) = 3
-         ipar(8) = 1
-         ipar(9) = n+1
-         ipar(10) = 2
-         return
-      endif
+         w(i, 1) = w(i, 2)
+         w(i, 3) = w(i, 2)
+         w(i, 4) = w(i, 2)
+      end do
+   else
+      do i = 1, n
+         w(i, 2) = w(i, 1)
+         w(i, 3) = w(i, 1)
+         w(i, 4) = w(i, 1)
+      end do
+   end if
 !
- 20   if (lp) then
-         do i = 1, n
-            w(i,1) = w(i,2)
-            w(i,3) = w(i,2)
-            w(i,4) = w(i,2)
-         enddo
-      else
-         do i = 1, n
-            w(i,2) = w(i,1)
-            w(i,3) = w(i,1)
-            w(i,4) = w(i,1)
-         enddo
-      endif
-!
-      fpar(7) = ddot(n,w,1,w,1)
+   fpar(7) = ddot(n, w, 1, w, 1)
+   fpar(11) = fpar(11) + 2 * n
+   fpar(3) = sqrt(fpar(7))
+   fpar(5) = fpar(3)
+   fpar(8) = one
+   if (abs(ipar(3)) == 2) then
+      fpar(4) = fpar(1) * sqrt(ddot(n, rhs, 1, rhs, 1)) + fpar(2)
       fpar(11) = fpar(11) + 2 * n
-      fpar(3) = sqrt(fpar(7))
-      fpar(5) = fpar(3)
-      fpar(8) = one
-      if (abs(ipar(3)).eq.2) then
-         fpar(4) = fpar(1) * sqrt(ddot(n,rhs,1,rhs,1)) + fpar(2)
-         fpar(11) = fpar(11) + 2 * n
-      else if (ipar(3).ne.999) then
-         fpar(4) = fpar(1) * fpar(3) + fpar(2)
-      endif
-      if (ipar(3).ge.0.and.fpar(5).le.fpar(4)) then
-         fpar(6) = fpar(5)
-         goto 900
-      endif
+   else if (ipar(3) /= 999) then
+      fpar(4) = fpar(1) * fpar(3) + fpar(2)
+   end if
+   if (ipar(3) >= 0 .and. fpar(5) <= fpar(4)) then
+      fpar(6) = fpar(5)
+      goto 900
+   end if
 !
 !     end of initialization, begin iteration, v = A p
 !
- 30   if (rp) then
-         ipar(1) = 5
-         ipar(8) = n + n + 1
-         if (lp) then
-            ipar(9) = 4*n + 1
-         else
-            ipar(9) = 5*n + 1
-         endif
-         ipar(10) = 3
-         return
-      endif
-!
- 40   ipar(1) = 1
-      if (rp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = n + n + 1
-      endif
+30 if (rp) then
+      ipar(1) = 5
+      ipar(8) = n + n + 1
       if (lp) then
-         ipar(9) = 5*n + 1
+         ipar(9) = 4 * n + 1
       else
-         ipar(9) = 4*n + 1
-      endif
-      ipar(10) = 4
+         ipar(9) = 5 * n + 1
+      end if
+      ipar(10) = 3
       return
+   end if
 !
- 50   if (lp) then
-         ipar(1) = 3
-         ipar(8) = ipar(9)
-         ipar(9) = 4*n + 1
-         ipar(10) = 5
-         return
-      endif
+40 ipar(1) = 1
+   if (rp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = n + n + 1
+   end if
+   if (lp) then
+      ipar(9) = 5 * n + 1
+   else
+      ipar(9) = 4 * n + 1
+   end if
+   ipar(10) = 4
+   return
 !
- 60   ipar(7) = ipar(7) + 1
-      alpha = ddot(n,w(1,4),1,w(1,5),1)
-      fpar(11) = fpar(11) + 2 * n
-      if (brkdn(alpha,ipar)) goto 900
-      alpha = fpar(7) / alpha
-      do i = 1, n
-         w(i,7) = w(i,7) + alpha * w(i,3)
-         w(i,1) = w(i,1) - alpha * w(i,5)
-      enddo
-      fpar(11) = fpar(11) + 4 * n
-      if (ipar(3).eq.999) then
-         ipar(1) = 10
-         ipar(8) = 6*n + 1
-         ipar(9) = 5*n + 1
-         ipar(10) = 6
-         return
-      endif
- 70   if (ipar(3).eq.999) then
-         if (ipar(11).eq.1) goto 900
-      else if (stopbis(n,ipar,1,fpar,w,w(1,3),alpha)) then
-         goto 900
-      endif
+50 if (lp) then
+      ipar(1) = 3
+      ipar(8) = ipar(9)
+      ipar(9) = 4 * n + 1
+      ipar(10) = 5
+      return
+   end if
+!
+60 ipar(7) = ipar(7) + 1
+   alpha = ddot(n, w(1, 4), 1, w(1, 5), 1)
+   fpar(11) = fpar(11) + 2 * n
+   if (brkdn(alpha, ipar)) goto 900
+   alpha = fpar(7) / alpha
+   do i = 1, n
+      w(i, 7) = w(i, 7) + alpha * w(i, 3)
+      w(i, 1) = w(i, 1) - alpha * w(i, 5)
+   end do
+   fpar(11) = fpar(11) + 4 * n
+   if (ipar(3) == 999) then
+      ipar(1) = 10
+      ipar(8) = 6 * n + 1
+      ipar(9) = 5 * n + 1
+      ipar(10) = 6
+      return
+   end if
+70 if (ipar(3) == 999) then
+      if (ipar(11) == 1) goto 900
+   else if (stopbis(n, ipar, 1, fpar, w, w(1, 3), alpha)) then
+      goto 900
+   end if
 !
 !     A^t * x
 !
-      if (lp) then
-         ipar(1) = 4
-         ipar(8) = 3*n + 1
-         if (rp) then
-            ipar(9) = 4*n + 1
-         else
-            ipar(9) = 5*n + 1
-         endif
-         ipar(10) = 7
-         return
-      endif
-!
- 80   ipar(1) = 2
-      if (lp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = 3*n + 1
-      endif
+   if (lp) then
+      ipar(1) = 4
+      ipar(8) = 3 * n + 1
       if (rp) then
-         ipar(9) = 5*n + 1
+         ipar(9) = 4 * n + 1
       else
-         ipar(9) = 4*n + 1
-      endif
-      ipar(10) = 8
+         ipar(9) = 5 * n + 1
+      end if
+      ipar(10) = 7
       return
+   end if
 !
- 90   if (rp) then
-         ipar(1) = 6
-         ipar(8) = ipar(9)
-         ipar(9) = 4*n + 1
-         ipar(10) = 9
-         return
-      endif
+80 ipar(1) = 2
+   if (lp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = 3 * n + 1
+   end if
+   if (rp) then
+      ipar(9) = 5 * n + 1
+   else
+      ipar(9) = 4 * n + 1
+   end if
+   ipar(10) = 8
+   return
 !
- 100  ipar(7) = ipar(7) + 1
-      do i = 1, n
-         w(i,2) = w(i,2) - alpha * w(i,5)
-      enddo
-      fpar(8) = fpar(7)
-      fpar(7) = ddot(n,w,1,w(1,2),1)
-      fpar(11) = fpar(11) + 4 * n
-      if (brkdn(fpar(7), ipar)) return
-      alpha = fpar(7) / fpar(8)
-      do i = 1, n
-         w(i,3) = w(i,1) + alpha * w(i,3)
-         w(i,4) = w(i,2) + alpha * w(i,4)
-      enddo
-      fpar(11) = fpar(11) + 4 * n
+90 if (rp) then
+      ipar(1) = 6
+      ipar(8) = ipar(9)
+      ipar(9) = 4 * n + 1
+      ipar(10) = 9
+      return
+   end if
+!
+100 ipar(7) = ipar(7) + 1
+   do i = 1, n
+      w(i, 2) = w(i, 2) - alpha * w(i, 5)
+   end do
+   fpar(8) = fpar(7)
+   fpar(7) = ddot(n, w, 1, w(1, 2), 1)
+   fpar(11) = fpar(11) + 4 * n
+   if (brkdn(fpar(7), ipar)) return
+   alpha = fpar(7) / fpar(8)
+   do i = 1, n
+      w(i, 3) = w(i, 1) + alpha * w(i, 3)
+      w(i, 4) = w(i, 2) + alpha * w(i, 4)
+   end do
+   fpar(11) = fpar(11) + 4 * n
 !
 !     end of the iterations
 !
-      goto 30
+   goto 30
 !
 !     some clean up job to do
 !
- 900  if (rp) then
-         if (ipar(1).lt.0) ipar(12) = ipar(1)
-         ipar(1) = 5
-         ipar(8) = 6*n + 1
-         ipar(9) = ipar(8) - n
-         ipar(10) = 10
-         return
-      endif
- 110  if (rp) then
-         call tidycg(n,ipar,fpar,sol,w(1,6))
-      else
-         call tidycg(n,ipar,fpar,sol,w(1,7))
-      endif
+900 if (rp) then
+      if (ipar(1) < 0) ipar(12) = ipar(1)
+      ipar(1) = 5
+      ipar(8) = 6 * n + 1
+      ipar(9) = ipar(8) - n
+      ipar(10) = 10
       return
-!-----end-of-bcg
-      end
-!-----------------------------------------------------------------------
-      subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
-      implicit none
-      integer n, ipar(16)
-      double precision ::  rhs(n), sol(n), fpar(16), w(n,8)
+   end if
+110 if (rp) then
+      call tidycg(n, ipar, fpar, sol, w(1, 6))
+   else
+      call tidycg(n, ipar, fpar, sol, w(1, 7))
+   end if
+   return
+end subroutine bcg
+
+subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
+   implicit none
+   integer n, ipar(16)
+   double precision :: rhs(n), sol(n), fpar(16), w(n, 8)
 !-----------------------------------------------------------------------
 !     BCGSTAB --- Bi Conjugate Gradient stabilized (BCGSTAB)
 !     This is an improved BCG routine. (1) no matrix transpose is
@@ -4110,336 +4120,325 @@ end do
 !-----------------------------------------------------------------------
 !     external routines used
 !
-      logical stopbis, brkdn
-      external stopbis, brkdn
-      EXTERNAL_DDOT
+   logical stopbis, brkdn
+   external stopbis, brkdn
+   EXTERNAL_DDOT
 !
-      double precision ::  one
-      parameter(one=1.0D0)
+   double precision :: one
+   parameter(one=1.0d0)
 !
 !     local variables
 !
-      integer i
-      double precision ::  alpha,beta,rho,omega
-      logical lp, rp
-      save lp, rp
+   integer i
+   double precision :: alpha, beta, rho, omega
+   logical lp, rp
+   save lp, rp
 !
 !     where to go
 !
-      if (ipar(1).gt.0) then
-         goto (10, 20, 40, 50, 60, 70, 80, 90, 100, 110) ipar(10)
-      else if (ipar(1).lt.0) then
-         goto 900
-      endif
+   if (ipar(1) > 0) then
+      goto(10, 20, 40, 50, 60, 70, 80, 90, 100, 110) ipar(10)
+   else if (ipar(1) < 0) then
+      goto 900
+   end if
 !
 !     call the initialization routine
 !
-      call bisinit(ipar,fpar,8*n,1,lp,rp,w)
-      if (ipar(1).lt.0) return
+   call bisinit(ipar, fpar, 8 * n, 1, lp, rp, w)
+   if (ipar(1) < 0) return
 !
 !     perform a matvec to compute the initial residual
 !
-      ipar(1) = 1
-      ipar(8) = 1
-      ipar(9) = 1 + n
-    
-      !do i = 1, n
-      !   w(i,1) = sol(i)
-      !enddo
-      
-      W(1:N,1) = SOL(1:N)
-      
-      ipar(10) = 1
+   ipar(1) = 1
+   ipar(8) = 1
+   ipar(9) = 1 + n
+
+   !do i = 1, n
+   !   w(i,1) = sol(i)
+   !enddo
+
+   W(1:N, 1) = SOL(1:N)
+
+   ipar(10) = 1
+   return
+10 ipar(7) = ipar(7) + 1
+   ipar(13) = ipar(13) + 1
+
+   !$OMP PARALLEL DO                                     &
+   !$OMP PRIVATE(i)
+   do i = 1, n
+      w(i, 1) = rhs(i) - w(i, 2)
+   end do
+   !$OMP END PARALLEL DO
+
+   ! W(1:N,1) = RHS(1:N) - W(1:N,2)
+
+   fpar(11) = fpar(11) + n
+   if (lp) then
+      ipar(1) = 3
+      ipar(10) = 2
       return
- 10   ipar(7) = ipar(7) + 1
-      ipar(13) = ipar(13) + 1
-      
-      
-      !$OMP PARALLEL DO                                     &
-      !$OMP PRIVATE(i)                                      
-       do i = 1, n
-          w(i,1) = rhs(i) - w(i,2)
-       enddo
-      !$OMP END PARALLEL DO  
-      
-      
-     ! W(1:N,1) = RHS(1:N) - W(1:N,2)
-     
-      fpar(11) = fpar(11) + n
-      if (lp) then
-         ipar(1) = 3
-         ipar(10) = 2
-         return
-      endif
+   end if
 !
- 20   if (lp) then
-         do i = 1, n
-            w(i,1) = w(i,2)
-            w(i,6) = w(i,2)
-         enddo
-      else
-         do i = 1, n
-            w(i,2) = w(i,1)
-            w(i,6) = w(i,1)
-         enddo
-      endif
+20 if (lp) then
+      do i = 1, n
+         w(i, 1) = w(i, 2)
+         w(i, 6) = w(i, 2)
+      end do
+   else
+      do i = 1, n
+         w(i, 2) = w(i, 1)
+         w(i, 6) = w(i, 1)
+      end do
+   end if
 !
-      fpar(7) = ddot(n,w,1,w,1)
+   fpar(7) = ddot(n, w, 1, w, 1)
+   fpar(11) = fpar(11) + 2 * n
+   fpar(5) = sqrt(fpar(7))
+   fpar(3) = fpar(5)
+   if (abs(ipar(3)) == 2) then
+      fpar(4) = fpar(1) * sqrt(ddot(n, rhs, 1, rhs, 1)) + fpar(2)
       fpar(11) = fpar(11) + 2 * n
-      fpar(5) = sqrt(fpar(7))
-      fpar(3) = fpar(5)
-      if (abs(ipar(3)).eq.2) then
-         fpar(4) = fpar(1) * sqrt(ddot(n,rhs,1,rhs,1)) + fpar(2)
-         fpar(11) = fpar(11) + 2 * n
-      else if (ipar(3).ne.999) then
-         fpar(4) = fpar(1) * fpar(3) + fpar(2)
-      endif
-      if (ipar(3).ge.0) fpar(6) = fpar(5)
-      if (ipar(3).ge.0 .and. fpar(5).le.fpar(4) .and.    ipar(3).ne.999) then
-         goto 900
-      endif
+   else if (ipar(3) /= 999) then
+      fpar(4) = fpar(1) * fpar(3) + fpar(2)
+   end if
+   if (ipar(3) >= 0) fpar(6) = fpar(5)
+   if (ipar(3) >= 0 .and. fpar(5) <= fpar(4) .and. ipar(3) /= 999) then
+      goto 900
+   end if
 !
 !     beginning of the iterations
 !
 !     Step (1), v = A p
- 30   if (rp) then
-         ipar(1) = 5
-         ipar(8) = 5*n+1
-         if (lp) then
-            ipar(9) = 4*n + 1
-         else
-            ipar(9) = 6*n + 1
-         endif
-         ipar(10) = 3
-         return
-      endif
-!
- 40   ipar(1) = 1
-      if (rp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = 5*n+1
-      endif
+30 if (rp) then
+      ipar(1) = 5
+      ipar(8) = 5 * n + 1
       if (lp) then
-         ipar(9) = 6*n + 1
+         ipar(9) = 4 * n + 1
       else
-         ipar(9) = 4*n + 1
-      endif
-      ipar(10) = 4
+         ipar(9) = 6 * n + 1
+      end if
+      ipar(10) = 3
       return
- 50   if (lp) then
-         ipar(1) = 3
-         ipar(8) = ipar(9)
-         ipar(9) = 4*n + 1
-         ipar(10) = 5
-         return
-      endif
+   end if
 !
- 60   ipar(7) = ipar(7) + 1
+40 ipar(1) = 1
+   if (rp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = 5 * n + 1
+   end if
+   if (lp) then
+      ipar(9) = 6 * n + 1
+   else
+      ipar(9) = 4 * n + 1
+   end if
+   ipar(10) = 4
+   return
+50 if (lp) then
+      ipar(1) = 3
+      ipar(8) = ipar(9)
+      ipar(9) = 4 * n + 1
+      ipar(10) = 5
+      return
+   end if
+!
+60 ipar(7) = ipar(7) + 1
 !
 !     step (2)
-      alpha = ddot(n,w(1,1),1,w(1,5),1)  
-      fpar(11) = fpar(11) + 2 * n
-      if (brkdn(alpha, ipar)) goto 900
-      alpha = fpar(7) / alpha
-      fpar(8) = alpha
+   alpha = ddot(n, w(1, 1), 1, w(1, 5), 1)
+   fpar(11) = fpar(11) + 2 * n
+   if (brkdn(alpha, ipar)) goto 900
+   alpha = fpar(7) / alpha
+   fpar(8) = alpha
 !
 !     step (3)
 
-      !$OMP PARALLEL DO                                     &
-      !$OMP PRIVATE(i)                                    
-      do i = 1, n
-         w(i,3) = w(i,2) - alpha * w(i,5)
-      enddo
-      !$OMP END PARALLEL DO                     
-     
-     
-     ! w(1:N,3) = w(1:N,2) - alpha * w(1:N,5)
-          
-     
-      fpar(11) = fpar(11) + 2 * n
+   !$OMP PARALLEL DO                                     &
+   !$OMP PRIVATE(i)
+   do i = 1, n
+      w(i, 3) = w(i, 2) - alpha * w(i, 5)
+   end do
+   !$OMP END PARALLEL DO
+
+   ! w(1:N,3) = w(1:N,2) - alpha * w(1:N,5)
+
+   fpar(11) = fpar(11) + 2 * n
 !
 !     Step (4): the second matvec -- t = A s
 !
-      if (rp) then
-         ipar(1) = 5
-         ipar(8) = n+n+1
-         if (lp) then
-            ipar(9) = ipar(8)+n
-         else
-            ipar(9) = 6*n + 1
-         endif
-         ipar(10) = 6
-         return
-      endif
-!
- 70   ipar(1) = 1
-      if (rp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = n+n+1
-      endif
+   if (rp) then
+      ipar(1) = 5
+      ipar(8) = n + n + 1
       if (lp) then
-         ipar(9) = 6*n + 1
+         ipar(9) = ipar(8) + n
       else
-         ipar(9) = 3*n + 1
-      endif
-      ipar(10) = 7
+         ipar(9) = 6 * n + 1
+      end if
+      ipar(10) = 6
       return
- 80   if (lp) then
-         ipar(1) = 3
-         ipar(8) = ipar(9)
-         ipar(9) = 3*n + 1
-         ipar(10) = 8
-         return
-      endif
- 90   ipar(7) = ipar(7) + 1
+   end if
+!
+70 ipar(1) = 1
+   if (rp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = n + n + 1
+   end if
+   if (lp) then
+      ipar(9) = 6 * n + 1
+   else
+      ipar(9) = 3 * n + 1
+   end if
+   ipar(10) = 7
+   return
+80 if (lp) then
+      ipar(1) = 3
+      ipar(8) = ipar(9)
+      ipar(9) = 3 * n + 1
+      ipar(10) = 8
+      return
+   end if
+90 ipar(7) = ipar(7) + 1
 !
 !     step (5)
-      omega = ddot(n,w(1,4),1,w(1,4),1)
-      if (omega .ne. 0d0) then 
-         fpar(11) = fpar(11) + n + n
-         if (brkdn(omega,ipar)) goto 900
-         omega = ddot(n,w(1,4),1,w(1,3),1) / omega
-         fpar(11) = fpar(11) + n + n
-         if (brkdn(omega,ipar)) goto 900
-      endif
+   omega = ddot(n, w(1, 4), 1, w(1, 4), 1)
+   if (omega /= 0d0) then
+      fpar(11) = fpar(11) + n + n
+      if (brkdn(omega, ipar)) goto 900
+      omega = ddot(n, w(1, 4), 1, w(1, 3), 1) / omega
+      fpar(11) = fpar(11) + n + n
+      if (brkdn(omega, ipar)) goto 900
+   end if
 
-      fpar(9) = omega
-      alpha = fpar(8)
+   fpar(9) = omega
+   alpha = fpar(8)
 !
 !     step (6) and (7)
-      
-      
+
 !      do i = 1, n
 !         w(i,7) = alpha * w(i,6) + omega * w(i,3)
 !         w(i,8) = w(i,8) + w(i,7)
 !         w(i,2) = w(i,3) - omega * w(i,4)
 !      enddo
-      
-      !$OMP PARALLEL DO                                     &
-      !$OMP PRIVATE(i)                                      
-      do i = 1, n
-         w(i,7) = alpha * w(i,6) + omega * w(i,3)
-         w(i,8) = w(i,8) + w(i,7)
-      enddo
-      !$OMP END PARALLEL DO                                  
 
-      !$OMP PARALLEL DO                                     &
-      !$OMP PRIVATE(i)                                      
-      do i = 1, n
-         w(i,2) = w(i,3) - omega * w(i,4)
-      enddo
-      !$OMP END PARALLEL DO                                  
-      
-      fpar(11) = fpar(11) + 6 * n + 1
+   !$OMP PARALLEL DO                                     &
+   !$OMP PRIVATE(i)
+   do i = 1, n
+      w(i, 7) = alpha * w(i, 6) + omega * w(i, 3)
+      w(i, 8) = w(i, 8) + w(i, 7)
+   end do
+   !$OMP END PARALLEL DO
+
+   !$OMP PARALLEL DO                                     &
+   !$OMP PRIVATE(i)
+   do i = 1, n
+      w(i, 2) = w(i, 3) - omega * w(i, 4)
+   end do
+   !$OMP END PARALLEL DO
+
+   fpar(11) = fpar(11) + 6 * n + 1
 !
 !     convergence test
-      if (ipar(3).eq.999) then
-         ipar(1) = 10
-         ipar(8) = 7*n + 1
-         ipar(9) = 6*n + 1
-         ipar(10) = 9
-         return
-      endif
-      if (stopbis(n,ipar,2,fpar,w(1,2),w(1,7),one))  goto 900
- 100  if (ipar(3).eq.999.and.ipar(11).eq.1) goto 900
+   if (ipar(3) == 999) then
+      ipar(1) = 10
+      ipar(8) = 7 * n + 1
+      ipar(9) = 6 * n + 1
+      ipar(10) = 9
+      return
+   end if
+   if (stopbis(n, ipar, 2, fpar, w(1, 2), w(1, 7), one)) goto 900
+100 if (ipar(3) == 999 .and. ipar(11) == 1) goto 900
 !
 !     step (8): computing new p and rho
-      rho = fpar(7)
-      fpar(7) = ddot(n,w(1,2),1,w(1,1),1)
-      omega = fpar(9)
-      beta = fpar(7) * fpar(8) / (fpar(9) * rho)
-   
-      !$OMP PARALLEL DO                                     &
-      !$OMP PRIVATE(i)                                      
-       do i = 1, n
-          w(i,6) = w(i,2) + beta * (w(i,6) - omega * w(i,5))
-       enddo
-      !$OMP END PARALLEL DO   
-     
-      ! w(1:N,6) = w(1:N,2) + beta * (w(1:N,6) - omega * w(1:N,5))
-     
-     
-      fpar(11) = fpar(11) + 6 * n + 3
-      if (brkdn(fpar(7),ipar)) goto 900
+   rho = fpar(7)
+   fpar(7) = ddot(n, w(1, 2), 1, w(1, 1), 1)
+   omega = fpar(9)
+   beta = fpar(7) * fpar(8) / (fpar(9) * rho)
+
+   !$OMP PARALLEL DO                                     &
+   !$OMP PRIVATE(i)
+   do i = 1, n
+      w(i, 6) = w(i, 2) + beta * (w(i, 6) - omega * w(i, 5))
+   end do
+   !$OMP END PARALLEL DO
+
+   ! w(1:N,6) = w(1:N,2) + beta * (w(1:N,6) - omega * w(1:N,5))
+
+   fpar(11) = fpar(11) + 6 * n + 3
+   if (brkdn(fpar(7), ipar)) goto 900
 !
 !     end of an iteration
 !
-      goto 30
+   goto 30
 !
 !     some clean up job to do
 !
- 900  if (rp) then
-         if (ipar(1).lt.0) ipar(12) = ipar(1)
-         ipar(1) = 5
-         ipar(8) = 7*n + 1
-         ipar(9) = ipar(8) - n
-         ipar(10) = 10
-         return
-      endif
- 110  if (rp) then
-         call tidycg(n,ipar,fpar,sol,w(1,7))
-      else
-         call tidycg(n,ipar,fpar,sol,w(1,8))
-      endif
-!
+900 if (rp) then
+      if (ipar(1) < 0) ipar(12) = ipar(1)
+      ipar(1) = 5
+      ipar(8) = 7 * n + 1
+      ipar(9) = ipar(8) - n
+      ipar(10) = 10
       return
-!-----end-of-bcgstab
-      end
-      
-      
-! NOT THREAD-SAFE
-      double precision function ddotXXX(n,dx,incx,dy,incy)
-      use m_saad, only: jasafe
-      
-      implicit none
-      
-      INTEGER                    :: N, INCX, INCY
-      DOUBLE PRECISION           :: dx(N), dy(N)
-      DOUBLE PRECISION           :: dots
-      INTEGER                    :: i
- 
-      DOUBLE PRECISION, EXTERNAL :: DDOTORG
- 
-  
-     ! DDOT  = ddotORG(n,dx,incx,dy,incy)
-     ! return
-  
-      IF (INCX == 1 .AND. INCY == 1) THEN 
-  
-        !DDOT  = SUM( DX(1:N)*DY(1:N) )
-        !return
-      
-        DOTs = 0d0
+   end if
+110 if (rp) then
+      call tidycg(n, ipar, fpar, sol, w(1, 7))
+   else
+      call tidycg(n, ipar, fpar, sol, w(1, 8))
+   end if
+!
+   return
+end subroutine bcgstab
 
-        if ( jasafe.ne.1 ) then
-           !$OMP PARALLEL DO                                     &
-           !$OMP PRIVATE(i)                                      &
-           !$OMP REDUCTION(+:DOTs)                                    
-           DO I = 1,N    
-              DOTs = DOTs + DX(I)*DY(I)
-           ENDDO
-           !$OMP END PARALLEL DO                                 
-            ddotXXX = dots
-         else                               
-           DO I = 1,N    
-              DOTs = DOTs + DX(I)*DY(I)
-           ENDDO                            
-           ddotXXX = dots
-         end if
-  
-      ELSE 
-         DDOTXXX  = ddotORG(n,dx,incx,dy,incy)
-      ENDIF
-      END 
-      
-      
-!-----------------------------------------------------------------------
-      subroutine tfqmr(n, rhs, sol, ipar, fpar, w)
-      implicit none
-      integer n, ipar(16)
-      double precision ::  rhs(n), sol(n), fpar(16), w(n,*)
+! NOT THREAD-SAFE
+double precision function ddotXXX(n, dx, incx, dy, incy)
+   use m_saad, only: jasafe
+
+   implicit none
+
+   integer :: N, INCX, INCY
+   double precision :: dx(N), dy(N)
+   double precision :: dots
+   integer :: i
+
+   double precision, external :: DDOTORG
+
+   ! DDOT  = ddotORG(n,dx,incx,dy,incy)
+   ! return
+
+   if (INCX == 1 .and. INCY == 1) then
+
+      !DDOT  = SUM( DX(1:N)*DY(1:N) )
+      !return
+
+      DOTs = 0d0
+
+      if (jasafe /= 1) then
+         !$OMP PARALLEL DO                                     &
+         !$OMP PRIVATE(i)                                      &
+         !$OMP REDUCTION(+:DOTs)
+         do I = 1, N
+            DOTs = DOTs + DX(I) * DY(I)
+         end do
+         !$OMP END PARALLEL DO
+         ddotXXX = dots
+      else
+         do I = 1, N
+            DOTs = DOTs + DX(I) * DY(I)
+         end do
+         ddotXXX = dots
+      end if
+
+   else
+      DDOTXXX = ddotORG(n, dx, incx, dy, incy)
+   end if
+end function ddotXXX
+
+subroutine tfqmr(n, rhs, sol, ipar, fpar, w)
+   implicit none
+   integer n, ipar(16)
+   double precision :: rhs(n), sol(n), fpar(16), w(n, *)
 !-----------------------------------------------------------------------
 !     TFQMR --- transpose-free Quasi-Minimum Residual method
 !     This is developed from BCG based on the principle of Quasi-Minimum
@@ -4466,264 +4465,263 @@ end do
 !-----------------------------------------------------------------------
 !     external functions
 !
-      logical brkdn
-      external brkdn
-      EXTERNAL_DDOT
+   logical brkdn
+   external brkdn
+   EXTERNAL_DDOT
 !
-      double precision ::  one,zero
-      parameter(one=1.0D0,zero=0.0D0)
+   double precision :: one, zero
+   parameter(one=1.0d0, zero=0.0d0)
 !
 !     local variables
 !
-      integer i
-      logical lp, rp
-      double precision ::  eta,sigma,theta,te,alpha,rho,tao
-      save
+   integer i
+   logical lp, rp
+   double precision :: eta, sigma, theta, te, alpha, rho, tao
+   save
 !
 !     status of the call (where to go)
 !
-      if (ipar(1).le.0) ipar(10) = 0
-      goto (10,20,40,50,60,70,80,90,100,110), ipar(10)
+   if (ipar(1) <= 0) ipar(10) = 0
+   goto(10, 20, 40, 50, 60, 70, 80, 90, 100, 110), ipar(10)
 !
 !     initializations
 !
-      call bisinit(ipar,fpar,11*n,2,lp,rp,w)
-      if (ipar(1).lt.0) return
-      ipar(1) = 1
-      ipar(8) = 1
-      ipar(9) = 1 + 6*n
-      do i = 1, n
-         w(i,1) = sol(i)
-      enddo
-      ipar(10) = 1
+   call bisinit(ipar, fpar, 11 * n, 2, lp, rp, w)
+   if (ipar(1) < 0) return
+   ipar(1) = 1
+   ipar(8) = 1
+   ipar(9) = 1 + 6 * n
+   do i = 1, n
+      w(i, 1) = sol(i)
+   end do
+   ipar(10) = 1
+   return
+10 ipar(7) = ipar(7) + 1
+   ipar(13) = ipar(13) + 1
+   do i = 1, n
+      w(i, 1) = rhs(i) - w(i, 7)
+      w(i, 9) = zero
+   end do
+   fpar(11) = fpar(11) + n
+!
+   if (lp) then
+      ipar(1) = 3
+      ipar(9) = n + 1
+      ipar(10) = 2
       return
- 10   ipar(7) = ipar(7) + 1
-      ipar(13) = ipar(13) + 1
+   end if
+20 continue
+   if (lp) then
       do i = 1, n
-         w(i,1) = rhs(i) - w(i,7)
-         w(i,9) = zero
-      enddo
-      fpar(11) = fpar(11) + n
+         w(i, 1) = w(i, 2)
+         w(i, 3) = w(i, 2)
+      end do
+   else
+      do i = 1, n
+         w(i, 2) = w(i, 1)
+         w(i, 3) = w(i, 1)
+      end do
+   end if
 !
-      if (lp) then
-         ipar(1) = 3
-         ipar(9) = n+1
-         ipar(10) = 2
-         return
-      endif
- 20   continue
-      if (lp) then
-         do i = 1, n
-            w(i,1) = w(i,2)
-            w(i,3) = w(i,2)
-         enddo
-      else
-         do i = 1, n
-            w(i,2) = w(i,1)
-            w(i,3) = w(i,1)
-         enddo
-      endif
-!
-      fpar(5) = sqrt(ddot(n,w,1,w,1))
-      fpar(3) = fpar(5)
-      tao = fpar(5)
+   fpar(5) = sqrt(ddot(n, w, 1, w, 1))
+   fpar(3) = fpar(5)
+   tao = fpar(5)
+   fpar(11) = fpar(11) + n + n
+   if (abs(ipar(3)) == 2) then
+      fpar(4) = fpar(1) * sqrt(ddot(n, rhs, 1, rhs, 1)) + fpar(2)
       fpar(11) = fpar(11) + n + n
-      if (abs(ipar(3)).eq.2) then
-         fpar(4) = fpar(1) * sqrt(ddot(n,rhs,1,rhs,1)) + fpar(2)
-         fpar(11) = fpar(11) + n + n
-      else if (ipar(3).ne.999) then
-         fpar(4) = fpar(1) * tao + fpar(2)
-      endif
-      te = zero
-      rho = zero
+   else if (ipar(3) /= 999) then
+      fpar(4) = fpar(1) * tao + fpar(2)
+   end if
+   te = zero
+   rho = zero
 !
 !     begin iteration
 !
- 30   sigma = rho
-      rho = ddot(n,w(1,2),1,w(1,3),1)
-      fpar(11) = fpar(11) + n + n
-      if (brkdn(rho,ipar)) goto 900
-      if (ipar(7).eq.1) then
-         alpha = zero
-      else
-         alpha = rho / sigma
-      endif
-      do i = 1, n
-         w(i,4) = w(i,3) + alpha * w(i,5)
-      enddo
-      fpar(11) = fpar(11) + n + n
+30 sigma = rho
+   rho = ddot(n, w(1, 2), 1, w(1, 3), 1)
+   fpar(11) = fpar(11) + n + n
+   if (brkdn(rho, ipar)) goto 900
+   if (ipar(7) == 1) then
+      alpha = zero
+   else
+      alpha = rho / sigma
+   end if
+   do i = 1, n
+      w(i, 4) = w(i, 3) + alpha * w(i, 5)
+   end do
+   fpar(11) = fpar(11) + n + n
 !
 !     A * x -- with preconditioning
 !
-      if (rp) then
-         ipar(1) = 5
-         ipar(8) = 3*n + 1
-         if (lp) then
-            ipar(9) = 5*n + 1
-         else
-            ipar(9) = 9*n + 1
-         endif
-         ipar(10) = 3
-         return
-      endif
-!
- 40   ipar(1) = 1
-      if (rp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = 3*n + 1
-      endif
+   if (rp) then
+      ipar(1) = 5
+      ipar(8) = 3 * n + 1
       if (lp) then
-         ipar(9) = 9*n + 1
+         ipar(9) = 5 * n + 1
       else
-         ipar(9) = 5*n + 1
-      endif
-      ipar(10) = 4
+         ipar(9) = 9 * n + 1
+      end if
+      ipar(10) = 3
       return
+   end if
 !
- 50   if (lp) then
-         ipar(1) = 3
-         ipar(8) = ipar(9)
-         ipar(9) = 5*n + 1
-         ipar(10) = 5
-         return
-      endif
- 60   ipar(7) = ipar(7) + 1
-      do i = 1, n
-         w(i,8) = w(i,6) + alpha * (w(i,7) + alpha * w(i,8))
-      enddo
-      sigma = ddot(n,w(1,2),1,w(1,8),1)
-      fpar(11) = fpar(11) + 6 * n
-      if (brkdn(sigma,ipar)) goto 900
-      alpha = rho / sigma
-      do i = 1, n
-         w(i,5) = w(i,4) - alpha * w(i,8)
-      enddo
-      fpar(11) = fpar(11) + 2*n
+40 ipar(1) = 1
+   if (rp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = 3 * n + 1
+   end if
+   if (lp) then
+      ipar(9) = 9 * n + 1
+   else
+      ipar(9) = 5 * n + 1
+   end if
+   ipar(10) = 4
+   return
+!
+50 if (lp) then
+      ipar(1) = 3
+      ipar(8) = ipar(9)
+      ipar(9) = 5 * n + 1
+      ipar(10) = 5
+      return
+   end if
+60 ipar(7) = ipar(7) + 1
+   do i = 1, n
+      w(i, 8) = w(i, 6) + alpha * (w(i, 7) + alpha * w(i, 8))
+   end do
+   sigma = ddot(n, w(1, 2), 1, w(1, 8), 1)
+   fpar(11) = fpar(11) + 6 * n
+   if (brkdn(sigma, ipar)) goto 900
+   alpha = rho / sigma
+   do i = 1, n
+      w(i, 5) = w(i, 4) - alpha * w(i, 8)
+   end do
+   fpar(11) = fpar(11) + 2 * n
 !
 !     the second A * x
 !
-      if (rp) then
-         ipar(1) = 5
-         ipar(8) = 4*n + 1
-         if (lp) then
-            ipar(9) = 6*n + 1
-         else
-            ipar(9) = 9*n + 1
-         endif
-         ipar(10) = 6
-         return
-      endif
-!
- 70   ipar(1) = 1
-      if (rp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = 4*n + 1
-      endif
+   if (rp) then
+      ipar(1) = 5
+      ipar(8) = 4 * n + 1
       if (lp) then
-         ipar(9) = 9*n + 1
+         ipar(9) = 6 * n + 1
       else
-         ipar(9) = 6*n + 1
-      endif
-      ipar(10) = 7
+         ipar(9) = 9 * n + 1
+      end if
+      ipar(10) = 6
       return
+   end if
 !
- 80   if (lp) then
-         ipar(1) = 3
-         ipar(8) = ipar(9)
-         ipar(9) = 6*n + 1
-         ipar(10) = 8
-         return
-      endif
- 90   ipar(7) = ipar(7) + 1
-      do i = 1, n
-         w(i,3) = w(i,3) - alpha * w(i,6)
-      enddo
+70 ipar(1) = 1
+   if (rp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = 4 * n + 1
+   end if
+   if (lp) then
+      ipar(9) = 9 * n + 1
+   else
+      ipar(9) = 6 * n + 1
+   end if
+   ipar(10) = 7
+   return
+!
+80 if (lp) then
+      ipar(1) = 3
+      ipar(8) = ipar(9)
+      ipar(9) = 6 * n + 1
+      ipar(10) = 8
+      return
+   end if
+90 ipar(7) = ipar(7) + 1
+   do i = 1, n
+      w(i, 3) = w(i, 3) - alpha * w(i, 6)
+   end do
 !
 !     update I
 !
-      theta = ddot(n,w(1,3),1,w(1,3),1) / (tao*tao)
-      sigma = one / (one + theta)
-      tao = tao * sqrt(sigma * theta)
-      fpar(11) = fpar(11) + 4*n + 6
-      if (brkdn(tao,ipar)) goto 900
-      eta = sigma * alpha
-      sigma = te / alpha
-      te = theta * eta
-      do i = 1, n
-         w(i,9) = w(i,4) + sigma * w(i,9)
-         w(i,11) = w(i,11) + eta * w(i,9)
-         w(i,3) = w(i,3) - alpha * w(i,7)
-      enddo
-      fpar(11) = fpar(11) + 6 * n + 6
-      if (ipar(7).eq.1) then
-         if (ipar(3).eq.-1) then
-            fpar(3) = eta * sqrt(ddot(n,w(1,9),1,w(1,9),1))
-            fpar(4) = fpar(1)*fpar(3) + fpar(2)
-            fpar(11) = fpar(11) + n + n + 4
-         endif
-      endif
+   theta = ddot(n, w(1, 3), 1, w(1, 3), 1) / (tao * tao)
+   sigma = one / (one + theta)
+   tao = tao * sqrt(sigma * theta)
+   fpar(11) = fpar(11) + 4 * n + 6
+   if (brkdn(tao, ipar)) goto 900
+   eta = sigma * alpha
+   sigma = te / alpha
+   te = theta * eta
+   do i = 1, n
+      w(i, 9) = w(i, 4) + sigma * w(i, 9)
+      w(i, 11) = w(i, 11) + eta * w(i, 9)
+      w(i, 3) = w(i, 3) - alpha * w(i, 7)
+   end do
+   fpar(11) = fpar(11) + 6 * n + 6
+   if (ipar(7) == 1) then
+      if (ipar(3) == -1) then
+         fpar(3) = eta * sqrt(ddot(n, w(1, 9), 1, w(1, 9), 1))
+         fpar(4) = fpar(1) * fpar(3) + fpar(2)
+         fpar(11) = fpar(11) + n + n + 4
+      end if
+   end if
 !
 !     update II
 !
-      theta = ddot(n,w(1,3),1,w(1,3),1) / (tao*tao)
-      sigma = one / (one + theta)
-      tao = tao * sqrt(sigma * theta)
-      fpar(11) = fpar(11) + 8 + 2*n
-      if (brkdn(tao,ipar)) goto 900
-      eta = sigma * alpha
-      sigma = te / alpha
-      te = theta * eta
-      do i = 1, n
-         w(i,9) = w(i,5) + sigma * w(i,9)
-         w(i,11) = w(i,11) + eta * w(i,9)
-      enddo
-      fpar(11) = fpar(11) + 4*n + 3
+   theta = ddot(n, w(1, 3), 1, w(1, 3), 1) / (tao * tao)
+   sigma = one / (one + theta)
+   tao = tao * sqrt(sigma * theta)
+   fpar(11) = fpar(11) + 8 + 2 * n
+   if (brkdn(tao, ipar)) goto 900
+   eta = sigma * alpha
+   sigma = te / alpha
+   te = theta * eta
+   do i = 1, n
+      w(i, 9) = w(i, 5) + sigma * w(i, 9)
+      w(i, 11) = w(i, 11) + eta * w(i, 9)
+   end do
+   fpar(11) = fpar(11) + 4 * n + 3
 !
 !     this is the correct over-estimate
 !      fpar(5) = sqrt(real(ipar(7)+1)) * tao
 !     this is an approximation
-      fpar(5) = tao
-      if (ipar(3).eq.999) then
-         ipar(1) = 10
-         ipar(8) = 10*n + 1
-         ipar(9) = 9*n + 1
-         ipar(10) = 9
-         return
-      else if (ipar(3).lt.0) then
-         fpar(6) = eta * sqrt(ddot(n,w(1,9),1,w(1,9),1))
-         fpar(11) = fpar(11) + n + n + 2
-      else
-         fpar(6) = fpar(5)
-      endif
-      if (fpar(6).gt.fpar(4) .and. (ipar(7).lt.ipar(6)  .or. ipar(6).le.0)) goto 30
- 100  if (ipar(3).eq.999.and.ipar(11).eq.0) goto 30
+   fpar(5) = tao
+   if (ipar(3) == 999) then
+      ipar(1) = 10
+      ipar(8) = 10 * n + 1
+      ipar(9) = 9 * n + 1
+      ipar(10) = 9
+      return
+   else if (ipar(3) < 0) then
+      fpar(6) = eta * sqrt(ddot(n, w(1, 9), 1, w(1, 9), 1))
+      fpar(11) = fpar(11) + n + n + 2
+   else
+      fpar(6) = fpar(5)
+   end if
+   if (fpar(6) > fpar(4) .and. (ipar(7) < ipar(6) .or. ipar(6) <= 0)) goto 30
+100 if (ipar(3) == 999 .and. ipar(11) == 0) goto 30
 !
 !     clean up
 !
- 900  if (rp) then
-         if (ipar(1).lt.0) ipar(12) = ipar(1)
-         ipar(1) = 5
-         ipar(8) = 10*n + 1
-         ipar(9) = ipar(8) - n
-         ipar(10) = 10
-         return
-      endif
- 110  if (rp) then
-         call tidycg(n,ipar,fpar,sol,w(1,10))
-      else
-         call tidycg(n,ipar,fpar,sol,w(1,11))
-      endif
-!
+900 if (rp) then
+      if (ipar(1) < 0) ipar(12) = ipar(1)
+      ipar(1) = 5
+      ipar(8) = 10 * n + 1
+      ipar(9) = ipar(8) - n
+      ipar(10) = 10
       return
-      end
-!-----end-of-tfqmr
-!-----------------------------------------------------------------------
-      subroutine fom(n, rhs, sol, ipar, fpar, w)
-      implicit none
-      integer n, ipar(16)
-      double precision ::  rhs(n), sol(n), fpar(16), w(*)
+   end if
+110 if (rp) then
+      call tidycg(n, ipar, fpar, sol, w(1, 10))
+   else
+      call tidycg(n, ipar, fpar, sol, w(1, 11))
+   end if
+!
+   return
+end subroutine tfqmr
+
+subroutine fom(n, rhs, sol, ipar, fpar, w)
+   implicit none
+   integer n, ipar(16)
+   double precision :: rhs(n), sol(n), fpar(16), w(*)
 !-----------------------------------------------------------------------
 !     This a version of The Full Orthogonalization Method (FOM)
 !     implemented with reverse communication. It is a simple restart
@@ -4750,295 +4748,294 @@ end do
 !-----------------------------------------------------------------------
 !     external functions used
 !
-      EXTERNAL_DDOT
+   EXTERNAL_DDOT
 !
-      double precision ::  one, zero
-      parameter(one=1.0D0, zero=0.0D0)
+   double precision :: one, zero
+   parameter(one=1.0d0, zero=0.0d0)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hes points to the Hessenberg matrix,
-!     vc, vs point to the cosines and sines of the Givens rotations
+!     vs point to the sines of the Givens rotations
 !     vrn points to the vectors of residual norms, more precisely
 !     the right hand side of the least square problem solved.
 !
-      integer i,ii,idx,k,m,ptr,p2,prs,hes,vc,vs,vrn
-      double precision ::  alpha, c, s
-      logical lp, rp
-      save
+   integer i, ii, idx, k, m, ptr, p2, prs, hes, vs, vrn
+   double precision :: alpha, c, s
+   logical lp, rp
+   save
 !
 !     check the status of the call
 !
-      if (ipar(1).le.0) ipar(10) = 0
-      goto (10, 20, 30, 40, 50, 60, 70) ipar(10)
+   if (ipar(1) <= 0) ipar(10) = 0
+   goto(10, 20, 30, 40, 50, 60, 70) ipar(10)
 !
 !     initialization
 !
-      if (ipar(5).le.1) then
-         m = 15
-      else
-         m = ipar(5)
-      endif
-      idx = n * (m+1)
-      hes = idx + n
+   if (ipar(5) <= 1) then
+      m = 15
+   else
+      m = ipar(5)
+   end if
+   idx = n * (m + 1)
+   hes = idx + n
 !     vc = hes + (m+1) * m / 2 + 1
 !     vs = vc + m
-      vrn = vs + m
-      i = vrn + m + 1
-      call bisinit(ipar,fpar,i,1,lp,rp,w)
-      if (ipar(1).lt.0) return
+   vrn = vs + m
+   i = vrn + m + 1
+   call bisinit(ipar, fpar, i, 1, lp, rp, w)
+   if (ipar(1) < 0) return
 !
 !     request for matrix vector multiplication A*x in the initialization
 !
- 100  ipar(1) = 1
-      ipar(8) = n+1
-      ipar(9) = 1
-      ipar(10) = 1
-      k = 0
+100 ipar(1) = 1
+   ipar(8) = n + 1
+   ipar(9) = 1
+   ipar(10) = 1
+   k = 0
+   do i = 1, n
+      w(n + i) = sol(i)
+   end do
+   return
+10 ipar(7) = ipar(7) + 1
+   ipar(13) = ipar(13) + 1
+   if (lp) then
       do i = 1, n
-         w(n+i) = sol(i)
-      enddo
+         w(n + i) = rhs(i) - w(i)
+      end do
+      ipar(1) = 3
+      ipar(10) = 2
       return
- 10   ipar(7) = ipar(7) + 1
-      ipar(13) = ipar(13) + 1
-      if (lp) then
-         do i = 1, n
-            w(n+i) = rhs(i) - w(i)
-         enddo
-         ipar(1) = 3
-         ipar(10) = 2
-         return
-      else
-         do i = 1, n
-            w(i) = rhs(i) - w(i)
-         enddo
-      endif
-      fpar(11) = fpar(11) + n
+   else
+      do i = 1, n
+         w(i) = rhs(i) - w(i)
+      end do
+   end if
+   fpar(11) = fpar(11) + n
 !
- 20   alpha = sqrt(ddot(n,w,1,w,1))
-      fpar(11) = fpar(11) + 2*n + 1
-      if (ipar(7).eq.1 .and. ipar(3).ne.999) then
-         if (abs(ipar(3)).eq.2) then
-            fpar(4) = fpar(1) * sqrt(ddot(n,rhs,1,rhs,1)) + fpar(2)
-            fpar(11) = fpar(11) + 2*n
-         else
-            fpar(4) = fpar(1) * alpha + fpar(2)
-         endif
-         fpar(3) = alpha
-      endif
-      fpar(5) = alpha
-      w(vrn+1) = alpha
-      if (alpha.le.fpar(4) .and. ipar(3).ge.0 .and. ipar(3).ne.999) then
-         ipar(1) = 0
-         fpar(6) = alpha
-         goto 300
-      endif
-      alpha = one / alpha
-      do ii = 1, n
-         w(ii) = alpha * w(ii)
-      enddo
-      fpar(11) = fpar(11) + n
+20 alpha = sqrt(ddot(n, w, 1, w, 1))
+   fpar(11) = fpar(11) + 2 * n + 1
+   if (ipar(7) == 1 .and. ipar(3) /= 999) then
+      if (abs(ipar(3)) == 2) then
+         fpar(4) = fpar(1) * sqrt(ddot(n, rhs, 1, rhs, 1)) + fpar(2)
+         fpar(11) = fpar(11) + 2 * n
+      else
+         fpar(4) = fpar(1) * alpha + fpar(2)
+      end if
+      fpar(3) = alpha
+   end if
+   fpar(5) = alpha
+   w(vrn + 1) = alpha
+   if (alpha <= fpar(4) .and. ipar(3) >= 0 .and. ipar(3) /= 999) then
+      ipar(1) = 0
+      fpar(6) = alpha
+      goto 300
+   end if
+   alpha = one / alpha
+   do ii = 1, n
+      w(ii) = alpha * w(ii)
+   end do
+   fpar(11) = fpar(11) + n
 !
 !     request for (1) right preconditioning
 !     (2) matrix vector multiplication
 !     (3) left preconditioning
 !
- 110  k = k + 1
-      if (rp) then
-         ipar(1) = 5
-         ipar(8) = k*n - n + 1
-         if (lp) then
-            ipar(9) = k*n + 1
-         else
-            ipar(9) = idx + 1
-         endif
-         ipar(10) = 3
-         return
-      endif
-!
- 30   ipar(1) = 1
-      if (rp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = (k-1)*n + 1
-      endif
+110 k = k + 1
+   if (rp) then
+      ipar(1) = 5
+      ipar(8) = k * n - n + 1
       if (lp) then
-         ipar(9) = idx + 1
+         ipar(9) = k * n + 1
       else
-         ipar(9) = 1 + k*n
-      endif
-      ipar(10) = 4
+         ipar(9) = idx + 1
+      end if
+      ipar(10) = 3
       return
+   end if
 !
- 40   if (lp) then
-         ipar(1) = 3
-         ipar(8) = ipar(9)
-         ipar(9) = k*n + 1
-         ipar(10) = 5
-         return
-      endif
+30 ipar(1) = 1
+   if (rp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = (k - 1) * n + 1
+   end if
+   if (lp) then
+      ipar(9) = idx + 1
+   else
+      ipar(9) = 1 + k * n
+   end if
+   ipar(10) = 4
+   return
+!
+40 if (lp) then
+      ipar(1) = 3
+      ipar(8) = ipar(9)
+      ipar(9) = k * n + 1
+      ipar(10) = 5
+      return
+   end if
 !
 !     Modified Gram-Schmidt orthogonalization procedure
 !     temporary pointer 'ptr' is pointing to the current column of the
 !     Hessenberg matrix. 'p2' points to the new basis vector
 !
- 50   ipar(7) = ipar(7) + 1
-      ptr = k * (k - 1) / 2 + hes
-      p2 = ipar(9)
-      call mgsro(.false.,n,n,k+1,k+1,fpar(11),w,w(ptr+1),   ipar(12))
-      if (ipar(12).lt.0) goto 200
+50 ipar(7) = ipar(7) + 1
+   ptr = k * (k - 1) / 2 + hes
+   p2 = ipar(9)
+   call mgsro(.false., n, n, k + 1, k + 1, fpar(11), w, w(ptr + 1), ipar(12))
+   if (ipar(12) < 0) goto 200
 !
 !     apply previous Givens rotations to column.
 !
-      p2 = ptr + 1
-      do i = 1, k-1
-         ptr = p2
-         p2 = p2 + 1
-         alpha = w(ptr)
+   p2 = ptr + 1
+   do i = 1, k - 1
+      ptr = p2
+      p2 = p2 + 1
+      alpha = w(ptr)
 !        c = w(vc+i)
-         s = w(vs+i)
+      s = w(vs + i)
 !        w(ptr) = c * alpha + s * w(p2)
 !        w(p2) = c * w(p2) - s * alpha
-      enddo
+   end do
 !
 !     end of one Arnoldi iteration, alpha will store the estimated
 !     residual norm at current stage
 !
-      fpar(11) = fpar(11) + 6*k
+   fpar(11) = fpar(11) + 6 * k
 
-      prs = vrn+k
-      alpha = fpar(5)
-      if (w(p2) .ne. zero) alpha = abs(w(p2+1)*w(prs)/w(p2))
-      fpar(5) = alpha
+   prs = vrn + k
+   alpha = fpar(5)
+   if (w(p2) /= zero) alpha = abs(w(p2 + 1) * w(prs) / w(p2))
+   fpar(5) = alpha
 !
-      if (k.ge.m .or. (ipar(3).ge.0 .and. alpha.le.fpar(4))  .or. (ipar(6).gt.0 .and. ipar(7).ge.ipar(6)))   goto 200
+   if (k >= m .or. (ipar(3) >= 0 .and. alpha <= fpar(4)) .or. (ipar(6) > 0 .and. ipar(7) >= ipar(6))) goto 200
 !
-      call givens(w(p2), w(p2+1), c, s)
+   call givens(w(p2), w(p2 + 1), c, s)
 !     w(vc+k) = c
-      w(vs+k) = s
-      alpha = - s * w(prs)
+   w(vs + k) = s
+   alpha = -s * w(prs)
 !     w(prs) = c * w(prs)
-      w(prs+1) = alpha
+   w(prs + 1) = alpha
 !
-      if (w(p2).ne.zero) goto 110
+   if (w(p2) /= zero) goto 110
 !
 !     update the approximate solution, first solve the upper triangular
 !     system, temporary pointer ptr points to the Hessenberg matrix,
 !     prs points to the right-hand-side (also the solution) of the system.
 !
- 200  ptr = hes + k * (k + 1) / 2
-      prs = vrn + k
-      if (w(ptr).eq.zero) then
+200 ptr = hes + k * (k + 1) / 2
+   prs = vrn + k
+   if (w(ptr) == zero) then
 !
 !     if the diagonal elements of the last column is zero, reduce k by 1
 !     so that a smaller trianguler system is solved
 !
-         k = k - 1
-         if (k.gt.0) then
-            goto 200
-         else
-            ipar(1) = -3
-            ipar(12) = -4
-            goto 300
-         endif
-      endif
-      w(prs) = w(prs) / w(ptr)
-      do i = k-1, 1, -1
-         ptr = ptr - i - 1
-         do ii = 1, i
-            w(vrn+ii) = w(vrn+ii) - w(prs) * w(ptr+ii)
-         enddo
-         prs = prs - 1
-         w(prs) = w(prs) / w(ptr)
-      enddo
-!
-      do ii = 1, n
-         w(ii) = w(ii) * w(prs)
-      enddo
-      do i = 1, k-1
-         prs = prs + 1
-         ptr = i*n
-         do ii = 1, n
-            w(ii) = w(ii) + w(prs) * w(ptr+ii)
-         enddo
-      enddo
-      fpar(11) = fpar(11) + 2*(k-1)*n + n + k*(k+1)
-!
-      if (rp) then
-         ipar(1) = 5
-         ipar(8) = 1
-         ipar(9) = idx + 1
-         ipar(10) = 6
-         return
-      endif
-!
- 60   if (rp) then
-         do i = 1, n
-            sol(i) = sol(i) + w(idx+i)
-         enddo
+      k = k - 1
+      if (k > 0) then
+         goto 200
       else
-         do i = 1, n
-            sol(i) = sol(i) + w(i)
-         enddo
-      endif
-      fpar(11) = fpar(11) + n
+         ipar(1) = -3
+         ipar(12) = -4
+         goto 300
+      end if
+   end if
+   w(prs) = w(prs) / w(ptr)
+   do i = k - 1, 1, -1
+      ptr = ptr - i - 1
+      do ii = 1, i
+         w(vrn + ii) = w(vrn + ii) - w(prs) * w(ptr + ii)
+      end do
+      prs = prs - 1
+      w(prs) = w(prs) / w(ptr)
+   end do
+!
+   do ii = 1, n
+      w(ii) = w(ii) * w(prs)
+   end do
+   do i = 1, k - 1
+      prs = prs + 1
+      ptr = i * n
+      do ii = 1, n
+         w(ii) = w(ii) + w(prs) * w(ptr + ii)
+      end do
+   end do
+   fpar(11) = fpar(11) + 2 * (k - 1) * n + n + k * (k + 1)
+!
+   if (rp) then
+      ipar(1) = 5
+      ipar(8) = 1
+      ipar(9) = idx + 1
+      ipar(10) = 6
+      return
+   end if
+!
+60 if (rp) then
+      do i = 1, n
+         sol(i) = sol(i) + w(idx + i)
+      end do
+   else
+      do i = 1, n
+         sol(i) = sol(i) + w(i)
+      end do
+   end if
+   fpar(11) = fpar(11) + n
 !
 !     process the complete stopping criteria
 !
-      if (ipar(3).eq.999) then
-         ipar(1) = 10
-         ipar(8) = -1
-         ipar(9) = idx + 1
-         ipar(10) = 7
-         return
-      else if (ipar(3).lt.0) then
-         if (ipar(7).le.m+1) then
-            fpar(3) = abs(w(vrn+1))
-            if (ipar(3).eq.-1) fpar(4) = fpar(1)*fpar(3)+fpar(2)
-         endif
-         alpha = abs(w(vrn+k))
-      endif
-      fpar(6) = alpha
+   if (ipar(3) == 999) then
+      ipar(1) = 10
+      ipar(8) = -1
+      ipar(9) = idx + 1
+      ipar(10) = 7
+      return
+   else if (ipar(3) < 0) then
+      if (ipar(7) <= m + 1) then
+         fpar(3) = abs(w(vrn + 1))
+         if (ipar(3) == -1) fpar(4) = fpar(1) * fpar(3) + fpar(2)
+      end if
+      alpha = abs(w(vrn + k))
+   end if
+   fpar(6) = alpha
 !
 !     do we need to restart ?
 !
- 70   if (ipar(12).ne.0) then
-         ipar(1) = -3
-         goto 300
-      endif
-      if (ipar(7).lt.ipar(6) .or. ipar(6).le.0) then
-         if (ipar(3).ne.999) then
-            if (fpar(6).gt.fpar(4)) goto 100
-         else
-            if (ipar(11).eq.0) goto 100
-         endif
-      endif
+70 if (ipar(12) /= 0) then
+      ipar(1) = -3
+      goto 300
+   end if
+   if (ipar(7) < ipar(6) .or. ipar(6) <= 0) then
+      if (ipar(3) /= 999) then
+         if (fpar(6) > fpar(4)) goto 100
+      else
+         if (ipar(11) == 0) goto 100
+      end if
+   end if
 !
 !     termination, set error code, compute convergence rate
 !
-      if (ipar(1).gt.0) then
-         if (ipar(3).eq.999 .and. ipar(11).eq.1) then
-            ipar(1) = 0
-         else if (ipar(3).ne.999 .and. fpar(6).le.fpar(4)) then
-            ipar(1) = 0
-         else if (ipar(7).ge.ipar(6) .and. ipar(6).gt.0) then
-            ipar(1) = -1
-         else
-            ipar(1) = -10
-         endif
-      endif
- 300  if (fpar(3).ne.zero .and. fpar(6).ne.zero .and.    ipar(7).gt.ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7)-ipar(13))
+   if (ipar(1) > 0) then
+      if (ipar(3) == 999 .and. ipar(11) == 1) then
+         ipar(1) = 0
+      else if (ipar(3) /= 999 .and. fpar(6) <= fpar(4)) then
+         ipar(1) = 0
+      else if (ipar(7) >= ipar(6) .and. ipar(6) > 0) then
+         ipar(1) = -1
       else
-         fpar(7) = zero
-      endif
-      return
-      end
-!-----end-of-fom--------------------------------------------------------
-!-----------------------------------------------------------------------
-      subroutine gmres(n, rhs, sol, ipar, fpar, w)
-      implicit none
-      integer n, ipar(16)
-      double precision ::  rhs(n), sol(n), fpar(16), w(*)
+         ipar(1) = -10
+      end if
+   end if
+300 if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) then
+      fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+   else
+      fpar(7) = zero
+   end if
+   return
+end subroutine fom
+
+subroutine gmres(n, rhs, sol, ipar, fpar, w)
+   implicit none
+   integer n, ipar(16)
+   double precision :: rhs(n), sol(n), fpar(16), w(*)
 !-----------------------------------------------------------------------
 !     This a version of GMRES implemented with reverse communication.
 !     It is a simple restart version of the GMRES algorithm.
@@ -5061,286 +5058,285 @@ end do
 !-----------------------------------------------------------------------
 !     external functions used
 !
-      EXTERNAL_DDOT
+   EXTERNAL_DDOT
 !
-      double precision ::  one, zero
-      parameter(one=1.0D0, zero=0.0D0)
+   double precision :: one, zero
+   parameter(one=1.0d0, zero=0.0d0)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hess points to the Hessenberg matrix,
-!     vc, vs point to the cosines and sines of the Givens rotations
+!     vs point to the sines of the Givens rotations
 !     vrn points to the vectors of residual norms, more precisely
 !     the right hand side of the least square problem solved.
 !
-      integer i,ii,idx,k,m,ptr,p2,hess,vc,vs,vrn
-      double precision ::  alpha, c, s
-      logical lp, rp
-      save
+   integer i, ii, idx, k, m, ptr, p2, hess, vs, vrn
+   double precision :: alpha, c, s
+   logical lp, rp
+   save
 !
 !     check the status of the call
 !
-      if (ipar(1).le.0) ipar(10) = 0
-      goto (10, 20, 30, 40, 50, 60, 70) ipar(10)
+   if (ipar(1) <= 0) ipar(10) = 0
+   goto(10, 20, 30, 40, 50, 60, 70) ipar(10)
 !
 !     initialization
 !
-      if (ipar(5).le.1) then
-         m = 15
-      else
-         m = ipar(5)
-      endif
-      idx = n * (m+1)
-      hess = idx + n
+   if (ipar(5) <= 1) then
+      m = 15
+   else
+      m = ipar(5)
+   end if
+   idx = n * (m + 1)
+   hess = idx + n
 !     vc = hess + (m+1) * m / 2 + 1
 !     vs = vc + m
-      vrn = vs + m
-      i = vrn + m + 1
-      call bisinit(ipar,fpar,i,1,lp,rp,w)
-      if (ipar(1).lt.0) return
+   vrn = vs + m
+   i = vrn + m + 1
+   call bisinit(ipar, fpar, i, 1, lp, rp, w)
+   if (ipar(1) < 0) return
 !
 !     request for matrix vector multiplication A*x in the initialization
 !
- 100  ipar(1) = 1
-      ipar(8) = n+1
-      ipar(9) = 1
-      ipar(10) = 1
-      k = 0
+100 ipar(1) = 1
+   ipar(8) = n + 1
+   ipar(9) = 1
+   ipar(10) = 1
+   k = 0
+   do i = 1, n
+      w(n + i) = sol(i)
+   end do
+   return
+10 ipar(7) = ipar(7) + 1
+   ipar(13) = ipar(13) + 1
+   if (lp) then
       do i = 1, n
-         w(n+i) = sol(i)
-      enddo
+         w(n + i) = rhs(i) - w(i)
+      end do
+      ipar(1) = 3
+      ipar(10) = 2
       return
- 10   ipar(7) = ipar(7) + 1
-      ipar(13) = ipar(13) + 1
-      if (lp) then
-         do i = 1, n
-            w(n+i) = rhs(i) - w(i)
-         enddo
-         ipar(1) = 3
-         ipar(10) = 2
-         return
-      else
-         do i = 1, n
-            w(i) = rhs(i) - w(i)
-         enddo
-      endif
-      fpar(11) = fpar(11) + n
+   else
+      do i = 1, n
+         w(i) = rhs(i) - w(i)
+      end do
+   end if
+   fpar(11) = fpar(11) + n
 !
- 20   alpha = sqrt(ddot(n,w,1,w,1))
-      fpar(11) = fpar(11) + 2*n
-      if (ipar(7).eq.1 .and. ipar(3).ne.999) then
-         if (abs(ipar(3)).eq.2) then
-            fpar(4) = fpar(1) * sqrt(ddot(n,rhs,1,rhs,1)) + fpar(2)
-            fpar(11) = fpar(11) + 2*n
-         else
-            fpar(4) = fpar(1) * alpha + fpar(2)
-         endif
-         fpar(3) = alpha
-      endif
-      fpar(5) = alpha
-      w(vrn+1) = alpha
-      if (alpha.le.fpar(4) .and. ipar(3).ge.0 .and. ipar(3).ne.999) then
-         ipar(1) = 0
-         fpar(6) = alpha
-         goto 300
-      endif
-      alpha = one / alpha
-      do ii = 1, n
-         w(ii) = alpha * w(ii)
-      enddo
-      fpar(11) = fpar(11) + n
+20 alpha = sqrt(ddot(n, w, 1, w, 1))
+   fpar(11) = fpar(11) + 2 * n
+   if (ipar(7) == 1 .and. ipar(3) /= 999) then
+      if (abs(ipar(3)) == 2) then
+         fpar(4) = fpar(1) * sqrt(ddot(n, rhs, 1, rhs, 1)) + fpar(2)
+         fpar(11) = fpar(11) + 2 * n
+      else
+         fpar(4) = fpar(1) * alpha + fpar(2)
+      end if
+      fpar(3) = alpha
+   end if
+   fpar(5) = alpha
+   w(vrn + 1) = alpha
+   if (alpha <= fpar(4) .and. ipar(3) >= 0 .and. ipar(3) /= 999) then
+      ipar(1) = 0
+      fpar(6) = alpha
+      goto 300
+   end if
+   alpha = one / alpha
+   do ii = 1, n
+      w(ii) = alpha * w(ii)
+   end do
+   fpar(11) = fpar(11) + n
 !
 !     request for (1) right preconditioning
 !     (2) matrix vector multiplication
 !     (3) left preconditioning
 !
- 110  k = k + 1
-      if (rp) then
-         ipar(1) = 5
-         ipar(8) = k*n - n + 1
-         if (lp) then
-            ipar(9) = k*n + 1
-         else
-            ipar(9) = idx + 1
-         endif
-         ipar(10) = 3
-         return
-      endif
-!
- 30   ipar(1) = 1
-      if (rp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = (k-1)*n + 1
-      endif
+110 k = k + 1
+   if (rp) then
+      ipar(1) = 5
+      ipar(8) = k * n - n + 1
       if (lp) then
-         ipar(9) = idx + 1
+         ipar(9) = k * n + 1
       else
-         ipar(9) = 1 + k*n
-      endif
-      ipar(10) = 4
+         ipar(9) = idx + 1
+      end if
+      ipar(10) = 3
       return
+   end if
 !
- 40   if (lp) then
-         ipar(1) = 3
-         ipar(8) = ipar(9)
-         ipar(9) = k*n + 1
-         ipar(10) = 5
-         return
-      endif
+30 ipar(1) = 1
+   if (rp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = (k - 1) * n + 1
+   end if
+   if (lp) then
+      ipar(9) = idx + 1
+   else
+      ipar(9) = 1 + k * n
+   end if
+   ipar(10) = 4
+   return
+!
+40 if (lp) then
+      ipar(1) = 3
+      ipar(8) = ipar(9)
+      ipar(9) = k * n + 1
+      ipar(10) = 5
+      return
+   end if
 !
 !     Modified Gram-Schmidt orthogonalization procedure
 !     temporary pointer 'ptr' is pointing to the current column of the
 !     Hessenberg matrix. 'p2' points to the new basis vector
 !
- 50   ipar(7) = ipar(7) + 1
-      ptr = k * (k - 1) / 2 + hess
-      p2 = ipar(9)
-      call mgsro(.false.,n,n,k+1,k+1,fpar(11),w,w(ptr+1),   ipar(12))
-      if (ipar(12).lt.0) goto 200
+50 ipar(7) = ipar(7) + 1
+   ptr = k * (k - 1) / 2 + hess
+   p2 = ipar(9)
+   call mgsro(.false., n, n, k + 1, k + 1, fpar(11), w, w(ptr + 1), ipar(12))
+   if (ipar(12) < 0) goto 200
 !
 !     apply previous Givens rotations and generate a new one to eliminate
 !     the subdiagonal element.
 !
-      p2 = ptr + 1
-      do i = 1, k-1
-         ptr = p2
-         p2 = p2 + 1
-         alpha = w(ptr)
+   p2 = ptr + 1
+   do i = 1, k - 1
+      ptr = p2
+      p2 = p2 + 1
+      alpha = w(ptr)
 !        c = w(vc+i)
-         s = w(vs+i)
+      s = w(vs + i)
 !        w(ptr) = c * alpha + s * w(p2)
 !        w(p2) = c * w(p2) - s * alpha
-      enddo
-      call givens(w(p2), w(p2+1), c, s)
+   end do
+   call givens(w(p2), w(p2 + 1), c, s)
 !     w(vc+k) = c
-      w(vs+k) = s
-      p2 = vrn + k
-      alpha = - s * w(p2)
+   w(vs + k) = s
+   p2 = vrn + k
+   alpha = -s * w(p2)
 !     w(p2) = c * w(p2)
-      w(p2+1) = alpha
+   w(p2 + 1) = alpha
 !
 !     end of one Arnoldi iteration, alpha will store the estimated
 !     residual norm at current stage
 !
-      fpar(11) = fpar(11) + 6*k + 2
-      alpha = abs(alpha)
-      fpar(5) = alpha
-      if (k.lt.m .and. .not.(ipar(3).ge.0 .and. alpha.le.fpar(4))   .and. (ipar(6).le.0 .or. ipar(7).lt.ipar(6))) goto 110
+   fpar(11) = fpar(11) + 6 * k + 2
+   alpha = abs(alpha)
+   fpar(5) = alpha
+   if (k < m .and. .not. (ipar(3) >= 0 .and. alpha <= fpar(4)) .and. (ipar(6) <= 0 .or. ipar(7) < ipar(6))) goto 110
 !
 !     update the approximate solution, first solve the upper triangular
 !     system, temporary pointer ptr points to the Hessenberg matrix,
 !     p2 points to the right-hand-side (also the solution) of the system.
 !
- 200  ptr = hess + k * (k + 1) / 2
-      p2 = vrn + k
-      if (w(ptr).eq.zero) then
+200 ptr = hess + k * (k + 1) / 2
+   p2 = vrn + k
+   if (w(ptr) == zero) then
 !
 !     if the diagonal elements of the last column is zero, reduce k by 1
 !     so that a smaller trianguler system is solved [It should only
 !     happen when the matrix is singular, and at most once!]
 !
-         k = k - 1
-         if (k.gt.0) then
-            goto 200
-         else
-            ipar(1) = -3
-            ipar(12) = -4
-            goto 300
-         endif
-      endif
-      w(p2) = w(p2) / w(ptr)
-      do i = k-1, 1, -1
-         ptr = ptr - i - 1
-         do ii = 1, i
-            w(vrn+ii) = w(vrn+ii) - w(p2) * w(ptr+ii)
-         enddo
-         p2 = p2 - 1
-         w(p2) = w(p2) / w(ptr)
-      enddo
-!
-      do ii = 1, n
-         w(ii) = w(ii) * w(p2)
-      enddo
-      do i = 1, k-1
-         ptr = i*n
-         p2 = p2 + 1
-         do ii = 1, n
-            w(ii) = w(ii) + w(p2) * w(ptr+ii)
-         enddo
-      enddo
-      fpar(11) = fpar(11) + 2*k*n - n + k*(k+1)
-!
-      if (rp) then
-         ipar(1) = 5
-         ipar(8) = 1
-         ipar(9) = idx + 1
-         ipar(10) = 6
-         return
-      endif
-!
- 60   if (rp) then
-         do i = 1, n
-            sol(i) = sol(i) + w(idx+i)
-         enddo
+      k = k - 1
+      if (k > 0) then
+         goto 200
       else
-         do i = 1, n
-            sol(i) = sol(i) + w(i)
-         enddo
-      endif
-      fpar(11) = fpar(11) + n
+         ipar(1) = -3
+         ipar(12) = -4
+         goto 300
+      end if
+   end if
+   w(p2) = w(p2) / w(ptr)
+   do i = k - 1, 1, -1
+      ptr = ptr - i - 1
+      do ii = 1, i
+         w(vrn + ii) = w(vrn + ii) - w(p2) * w(ptr + ii)
+      end do
+      p2 = p2 - 1
+      w(p2) = w(p2) / w(ptr)
+   end do
+!
+   do ii = 1, n
+      w(ii) = w(ii) * w(p2)
+   end do
+   do i = 1, k - 1
+      ptr = i * n
+      p2 = p2 + 1
+      do ii = 1, n
+         w(ii) = w(ii) + w(p2) * w(ptr + ii)
+      end do
+   end do
+   fpar(11) = fpar(11) + 2 * k * n - n + k * (k + 1)
+!
+   if (rp) then
+      ipar(1) = 5
+      ipar(8) = 1
+      ipar(9) = idx + 1
+      ipar(10) = 6
+      return
+   end if
+!
+60 if (rp) then
+      do i = 1, n
+         sol(i) = sol(i) + w(idx + i)
+      end do
+   else
+      do i = 1, n
+         sol(i) = sol(i) + w(i)
+      end do
+   end if
+   fpar(11) = fpar(11) + n
 !
 !     process the complete stopping criteria
 !
-      if (ipar(3).eq.999) then
-         ipar(1) = 10
-         ipar(8) = -1
-         ipar(9) = idx + 1
-         ipar(10) = 7
-         return
-      else if (ipar(3).lt.0) then
-         if (ipar(7).le.m+1) then
-            fpar(3) = abs(w(vrn+1))
-            if (ipar(3).eq.-1) fpar(4) = fpar(1)*fpar(3)+fpar(2)
-         endif
-         fpar(6) = abs(w(vrn+k))
-      else
-         fpar(6) = fpar(5)
-      endif
+   if (ipar(3) == 999) then
+      ipar(1) = 10
+      ipar(8) = -1
+      ipar(9) = idx + 1
+      ipar(10) = 7
+      return
+   else if (ipar(3) < 0) then
+      if (ipar(7) <= m + 1) then
+         fpar(3) = abs(w(vrn + 1))
+         if (ipar(3) == -1) fpar(4) = fpar(1) * fpar(3) + fpar(2)
+      end if
+      fpar(6) = abs(w(vrn + k))
+   else
+      fpar(6) = fpar(5)
+   end if
 !
 !     do we need to restart ?
 !
- 70   if (ipar(12).ne.0) then
-         ipar(1) = -3
-         goto 300
-      endif
-      if ((ipar(7).lt.ipar(6) .or. ipar(6).le.0) .and.    ((ipar(3).eq.999.and.ipar(11).eq.0) .or.  (ipar(3).ne.999.and.fpar(6).gt.fpar(4)))) goto 100
+70 if (ipar(12) /= 0) then
+      ipar(1) = -3
+      goto 300
+   end if
+   if ((ipar(7) < ipar(6) .or. ipar(6) <= 0) .and. ((ipar(3) == 999 .and. ipar(11) == 0) .or. (ipar(3) /= 999 .and. fpar(6) > fpar(4)))) goto 100
 !
 !     termination, set error code, compute convergence rate
 !
-      if (ipar(1).gt.0) then
-         if (ipar(3).eq.999 .and. ipar(11).eq.1) then
-            ipar(1) = 0
-         else if (ipar(3).ne.999 .and. fpar(6).le.fpar(4)) then
-            ipar(1) = 0
-         else if (ipar(7).ge.ipar(6) .and. ipar(6).gt.0) then
-            ipar(1) = -1
-         else
-            ipar(1) = -10
-         endif
-      endif
- 300  if (fpar(3).ne.zero .and. fpar(6).ne.zero .and. ipar(7).gt.ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7)-ipar(13))
+   if (ipar(1) > 0) then
+      if (ipar(3) == 999 .and. ipar(11) == 1) then
+         ipar(1) = 0
+      else if (ipar(3) /= 999 .and. fpar(6) <= fpar(4)) then
+         ipar(1) = 0
+      else if (ipar(7) >= ipar(6) .and. ipar(6) > 0) then
+         ipar(1) = -1
       else
-         fpar(7) = zero
-      endif
-      return
-      end
-!-----end-of-gmres
-!-----------------------------------------------------------------------
-      subroutine dqgmres(n, rhs, sol, ipar, fpar, w)
-      implicit none
-      integer n, ipar(16)
-      double precision ::  rhs(n), sol(n), fpar(16), w(*)
+         ipar(1) = -10
+      end if
+   end if
+300 if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) then
+      fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+   else
+      fpar(7) = zero
+   end if
+   return
+end subroutine gmres
+
+subroutine dqgmres(n, rhs, sol, ipar, fpar, w)
+   implicit none
+   integer n, ipar(16)
+   double precision :: rhs(n), sol(n), fpar(16), w(*)
 !-----------------------------------------------------------------------
 !     DQGMRES -- Flexible Direct version of Quasi-General Minimum
 !     Residual method. The right preconditioning can be varied from
@@ -5351,21 +5347,21 @@ end do
 !-----------------------------------------------------------------------
 !     local variables
 !
-      double precision ::  one,zero,deps
-      parameter(one=1.0D0,zero=0.0D0)
-      parameter(deps=1.0D-33)
+   double precision :: one, zero, deps
+   parameter(one=1.0d0, zero=0.0d0)
+   parameter(deps=1.0d-33)
 !
-      integer i,ii,j,jp1,j0,k,ptrw,ptrv,iv,iw,ic,is,ihm,ihd,lb,ptr
-      double precision ::  alpha,beta,psi,c,s
-      logical lp,rp,full
-      external bisinit
-      EXTERNAL_DDOT
-      save
+   integer i, ii, j, jp1, j0, k, ptrw, ptrv, iv, iw, ic, is, ihm, ihd, lb, ptr
+   double precision :: alpha, beta, psi, c, s
+   logical lp, rp, full
+   external bisinit
+   EXTERNAL_DDOT
+   save
 !
 !     where to go
 !
-      if (ipar(1).le.0) ipar(10) = 0
-      goto (10, 20, 40, 50, 60, 70) ipar(10)
+   if (ipar(1) <= 0) ipar(10) = 0
+   goto(10, 20, 40, 50, 60, 70) ipar(10)
 !
 !     locations of the work arrays. The arrangement is as follows:
 !     w(1:n) -- temporary storage for the results of the preconditioning
@@ -5376,270 +5372,269 @@ end do
 !     w(ihm+1:ihd) -- the last column of the Hessenberg matrix
 !     w(ihd+1:i) -- the inverse of the diagonals of the Hessenberg matrix
 !
-      if (ipar(5).le.1) then
-         lb = 16
-      else
-         lb = ipar(5) + 1
-      endif
-      iv = n
-      iw = iv + lb * n
+   if (ipar(5) <= 1) then
+      lb = 16
+   else
+      lb = ipar(5) + 1
+   end if
+   iv = n
+   iw = iv + lb * n
 !     ic = iw + lb * n
 !     is = ic + lb
-      ihm = is + lb
-      ihd = ihm + lb
-      i = ihd + lb
+   ihm = is + lb
+   ihd = ihm + lb
+   i = ihd + lb
 !
 !     parameter check, initializations
 !
-      full = .false.
-      call bisinit(ipar,fpar,i,1,lp,rp,w)
-      if (ipar(1).lt.0) return
-      ipar(1) = 1
-      if (lp) then
-         do ii = 1, n
-            w(iv+ii) = sol(ii)
-         enddo
-         ipar(8) = iv+1
-         ipar(9) = 1
-      else
-         do ii = 1, n
-            w(ii) = sol(ii)
-         enddo
-         ipar(8) = 1
-         ipar(9) = iv+1
-      endif
-      ipar(10) = 1
-      return
+   full = .false.
+   call bisinit(ipar, fpar, i, 1, lp, rp, w)
+   if (ipar(1) < 0) return
+   ipar(1) = 1
+   if (lp) then
+      do ii = 1, n
+         w(iv + ii) = sol(ii)
+      end do
+      ipar(8) = iv + 1
+      ipar(9) = 1
+   else
+      do ii = 1, n
+         w(ii) = sol(ii)
+      end do
+      ipar(8) = 1
+      ipar(9) = iv + 1
+   end if
+   ipar(10) = 1
+   return
 !
- 10   ipar(7) = ipar(7) + 1
-      ipar(13) = ipar(13) + 1
-      if (lp) then
-         do i = 1, n
-            w(i) = rhs(i) - w(i)
-         enddo
-         ipar(1) = 3
-         ipar(8) = 1
-         ipar(9) = iv+1
-         ipar(10) = 2
-         return
-      else
-         do i = 1, n
-            w(iv+i) = rhs(i) - w(iv+i)
-         enddo
-      endif
-      fpar(11) = fpar(11) + n
-!
- 20   alpha = sqrt(ddot(n, w(iv+1), 1, w(iv+1), 1))
-      fpar(11) = fpar(11) + (n + n)
-      if (abs(ipar(3)).eq.2) then
-         fpar(4) = fpar(1) * sqrt(ddot(n,rhs,1,rhs,1)) + fpar(2)
-         fpar(11) = fpar(11) + 2*n
-      else if (ipar(3).ne.999) then
-         fpar(4) = fpar(1) * alpha + fpar(2)
-      endif
-      fpar(3) = alpha
-      fpar(5) = alpha
-      psi = alpha
-      if (alpha.le.fpar(4)) then
-         ipar(1) = 0
-         fpar(6) = alpha
-         goto 80
-      endif
-      alpha = one / alpha
+10 ipar(7) = ipar(7) + 1
+   ipar(13) = ipar(13) + 1
+   if (lp) then
       do i = 1, n
-         w(iv+i) = w(iv+i) * alpha
-      enddo
-      fpar(11) = fpar(11) + n
-      j = 0
+         w(i) = rhs(i) - w(i)
+      end do
+      ipar(1) = 3
+      ipar(8) = 1
+      ipar(9) = iv + 1
+      ipar(10) = 2
+      return
+   else
+      do i = 1, n
+         w(iv + i) = rhs(i) - w(iv + i)
+      end do
+   end if
+   fpar(11) = fpar(11) + n
+!
+20 alpha = sqrt(ddot(n, w(iv + 1), 1, w(iv + 1), 1))
+   fpar(11) = fpar(11) + (n + n)
+   if (abs(ipar(3)) == 2) then
+      fpar(4) = fpar(1) * sqrt(ddot(n, rhs, 1, rhs, 1)) + fpar(2)
+      fpar(11) = fpar(11) + 2 * n
+   else if (ipar(3) /= 999) then
+      fpar(4) = fpar(1) * alpha + fpar(2)
+   end if
+   fpar(3) = alpha
+   fpar(5) = alpha
+   psi = alpha
+   if (alpha <= fpar(4)) then
+      ipar(1) = 0
+      fpar(6) = alpha
+      goto 80
+   end if
+   alpha = one / alpha
+   do i = 1, n
+      w(iv + i) = w(iv + i) * alpha
+   end do
+   fpar(11) = fpar(11) + n
+   j = 0
 !
 !     iterations start here
 !
- 30   j = j + 1
-      if (j.gt.lb) j = j - lb
-      jp1 = j + 1
-      if (jp1.gt.lb) jp1 = jp1 - lb
-      ptrv = iv + (j-1)*n + 1
-      ptrw = iv + (jp1-1)*n + 1
-      if (.not.full) then
-         if (j.gt.jp1) full = .true.
-      endif
-      if (full) then
-         j0 = jp1+1
-         if (j0.gt.lb) j0 = j0 - lb
-      else
-         j0 = 1
-      endif
+30 j = j + 1
+   if (j > lb) j = j - lb
+   jp1 = j + 1
+   if (jp1 > lb) jp1 = jp1 - lb
+   ptrv = iv + (j - 1) * n + 1
+   ptrw = iv + (jp1 - 1) * n + 1
+   if (.not. full) then
+      if (j > jp1) full = .true.
+   end if
+   if (full) then
+      j0 = jp1 + 1
+      if (j0 > lb) j0 = j0 - lb
+   else
+      j0 = 1
+   end if
 !
 !     request the caller to perform matrix-vector multiplication and
 !     preconditioning
 !
-      if (rp) then
-         ipar(1) = 5
-         ipar(8) = ptrv
-         ipar(9) = ptrv + iw - iv
-         ipar(10) = 3
-         return
-      else
-         do i = 0, n-1
-            w(ptrv+iw-iv+i) = w(ptrv+i)
-         enddo
-      endif
-!
- 40   ipar(1) = 1
-      if (rp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = ptrv
-      endif
-      if (lp) then
-         ipar(9) = 1
-      else
-         ipar(9) = ptrw
-      endif
-      ipar(10) = 4
+   if (rp) then
+      ipar(1) = 5
+      ipar(8) = ptrv
+      ipar(9) = ptrv + iw - iv
+      ipar(10) = 3
       return
+   else
+      do i = 0, n - 1
+         w(ptrv + iw - iv + i) = w(ptrv + i)
+      end do
+   end if
 !
- 50   if (lp) then
-         ipar(1) = 3
-         ipar(8) = ipar(9)
-         ipar(9) = ptrw
-         ipar(10) = 5
-         return
-      endif
+40 ipar(1) = 1
+   if (rp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = ptrv
+   end if
+   if (lp) then
+      ipar(9) = 1
+   else
+      ipar(9) = ptrw
+   end if
+   ipar(10) = 4
+   return
+!
+50 if (lp) then
+      ipar(1) = 3
+      ipar(8) = ipar(9)
+      ipar(9) = ptrw
+      ipar(10) = 5
+      return
+   end if
 !
 !     compute the last column of the Hessenberg matrix
 !     modified Gram-schmidt procedure, orthogonalize against (lb-1)
 !     previous vectors
 !
- 60   continue
-      call mgsro(full,n,n,lb,jp1,fpar(11),w(iv+1),w(ihm+1),  ipar(12))
-      if (ipar(12).lt.0) then
-         ipar(1) = -3
-         goto 80
-      endif
-      beta = w(ihm+jp1)
+60 continue
+   call mgsro(full, n, n, lb, jp1, fpar(11), w(iv + 1), w(ihm + 1), ipar(12))
+   if (ipar(12) < 0) then
+      ipar(1) = -3
+      goto 80
+   end if
+   beta = w(ihm + jp1)
 !
 !     incomplete factorization (QR factorization through Givens rotations)
 !     (1) apply previous rotations [(lb-1) of them]
 !     (2) generate a new rotation
 !
-      if (full) then
-         w(ihm+jp1) = w(ihm+j0) * w(is+jp1)
-         w(ihm+j0) = w(ihm+j0) * w(ic+jp1)
-      endif
-      i = j0
-      do while (i.ne.j)
-         k = i+1
-         if (k.gt.lb) k = k - lb
+   if (full) then
+      w(ihm + jp1) = w(ihm + j0) * w(is + jp1)
+      w(ihm + j0) = w(ihm + j0) * w(ic + jp1)
+   end if
+   i = j0
+   do while (i /= j)
+      k = i + 1
+      if (k > lb) k = k - lb
 !        c = w(ic+i)
-         s = w(is+i)
-         alpha = w(ihm+i)
+      s = w(is + i)
+      alpha = w(ihm + i)
 !        w(ihm+i) = c * alpha + s * w(ihm+k)
 !        w(ihm+k) = c * w(ihm+k) - s * alpha
-         i = k
-      enddo
-      call givens(w(ihm+j), beta, c, s)
-      if (full) then
-         fpar(11) = fpar(11) + 6 * lb
-      else
-         fpar(11) = fpar(11) + 6 * j
-      endif
+      i = k
+   end do
+   call givens(w(ihm + j), beta, c, s)
+   if (full) then
+      fpar(11) = fpar(11) + 6 * lb
+   else
+      fpar(11) = fpar(11) + 6 * j
+   end if
 !
 !     detect whether diagonal element of this column is zero
 !
-      if (abs(w(ihm+j)).lt.deps) then
-         ipar(1) = -3
-         goto 80
-      endif
-      w(ihd+j) = one / w(ihm+j)
+   if (abs(w(ihm + j)) < deps) then
+      ipar(1) = -3
+      goto 80
+   end if
+   w(ihd + j) = one / w(ihm + j)
 !     w(ic+j) = c
-      w(is+j) = s
+   w(is + j) = s
 !
 !     update the W's (the conjugate directions) -- essentially this is one
 !     step of triangular solve.
 !
-      ptrw = iw+(j-1)*n + 1
-      if (full) then
-         do i = j+1, lb
-            alpha = -w(ihm+i)*w(ihd+i)
-            ptr = iw+(i-1)*n+1
-            do ii = 0, n-1
-               w(ptrw+ii) = w(ptrw+ii) + alpha * w(ptr+ii)
-            enddo
-         enddo
-      endif
-      do i = 1, j-1
-         alpha = -w(ihm+i)*w(ihd+i)
-         ptr = iw+(i-1)*n+1
-         do ii = 0, n-1
-            w(ptrw+ii) = w(ptrw+ii) + alpha * w(ptr+ii)
-         enddo
-      enddo
+   ptrw = iw + (j - 1) * n + 1
+   if (full) then
+      do i = j + 1, lb
+         alpha = -w(ihm + i) * w(ihd + i)
+         ptr = iw + (i - 1) * n + 1
+         do ii = 0, n - 1
+            w(ptrw + ii) = w(ptrw + ii) + alpha * w(ptr + ii)
+         end do
+      end do
+   end if
+   do i = 1, j - 1
+      alpha = -w(ihm + i) * w(ihd + i)
+      ptr = iw + (i - 1) * n + 1
+      do ii = 0, n - 1
+         w(ptrw + ii) = w(ptrw + ii) + alpha * w(ptr + ii)
+      end do
+   end do
 !
 !     update the solution to the linear system
 !
 !     alpha = psi * c * w(ihd+j)
-      psi = - s * psi
-      do i = 1, n
-         sol(i) = sol(i) + alpha * w(ptrw-1+i)
-      enddo
-      if (full) then
-         fpar(11) = fpar(11) + lb * (n+n)
-      else
-         fpar(11) = fpar(11) + j * (n+n)
-      endif
+   psi = -s * psi
+   do i = 1, n
+      sol(i) = sol(i) + alpha * w(ptrw - 1 + i)
+   end do
+   if (full) then
+      fpar(11) = fpar(11) + lb * (n + n)
+   else
+      fpar(11) = fpar(11) + j * (n + n)
+   end if
 !
 !     determine whether to continue,
 !     compute the desired error/residual norm
 !
-      ipar(7) = ipar(7) + 1
-      fpar(5) = abs(psi)
-      if (ipar(3).eq.999) then
-         ipar(1) = 10
-         ipar(8) = -1
-         ipar(9) = 1
-         ipar(10) = 6
-         return
-      endif
-      if (ipar(3).lt.0) then
-         alpha = abs(alpha)
-         if (ipar(7).eq.2 .and. ipar(3).eq.-1) then
-            fpar(3) = alpha*sqrt(ddot(n, w(ptrw), 1, w(ptrw), 1))
-            fpar(4) = fpar(1) * fpar(3) + fpar(2)
-            fpar(6) = fpar(3)
-         else
-            fpar(6) = alpha*sqrt(ddot(n, w(ptrw), 1, w(ptrw), 1))
-         endif
-         fpar(11) = fpar(11) + 2 * n
+   ipar(7) = ipar(7) + 1
+   fpar(5) = abs(psi)
+   if (ipar(3) == 999) then
+      ipar(1) = 10
+      ipar(8) = -1
+      ipar(9) = 1
+      ipar(10) = 6
+      return
+   end if
+   if (ipar(3) < 0) then
+      alpha = abs(alpha)
+      if (ipar(7) == 2 .and. ipar(3) == -1) then
+         fpar(3) = alpha * sqrt(ddot(n, w(ptrw), 1, w(ptrw), 1))
+         fpar(4) = fpar(1) * fpar(3) + fpar(2)
+         fpar(6) = fpar(3)
       else
-         fpar(6) = fpar(5)
-      endif
-      if (ipar(1).ge.0 .and. fpar(6).gt.fpar(4) .and. (ipar(6).le.0 .or. ipar(7).lt.ipar(6))) goto 30
- 70   if (ipar(3).eq.999 .and. ipar(11).eq.0) goto 30
+         fpar(6) = alpha * sqrt(ddot(n, w(ptrw), 1, w(ptrw), 1))
+      end if
+      fpar(11) = fpar(11) + 2 * n
+   else
+      fpar(6) = fpar(5)
+   end if
+   if (ipar(1) >= 0 .and. fpar(6) > fpar(4) .and. (ipar(6) <= 0 .or. ipar(7) < ipar(6))) goto 30
+70 if (ipar(3) == 999 .and. ipar(11) == 0) goto 30
 !
 !     clean up the iterative solver
 !
- 80   fpar(7) = zero
-      if (fpar(3).ne.zero .and. fpar(6).ne.zero .and.     ipar(7).gt.ipar(13))   fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7)-ipar(13))
-      if (ipar(1).gt.0) then
-         if (ipar(3).eq.999 .and. ipar(11).ne.0) then
-            ipar(1) = 0
-         else if (fpar(6).le.fpar(4)) then
-            ipar(1) = 0
-         else if (ipar(6).gt.0 .and. ipar(7).ge.ipar(6)) then
-            ipar(1) = -1
-         else
-            ipar(1) = -10
-         endif
-      endif
-      return
-      end
-!-----end-of-dqgmres
-!-----------------------------------------------------------------------
-      subroutine fgmres(n, rhs, sol, ipar, fpar, w)
-      implicit none
-      integer n, ipar(16)
-      double precision ::  rhs(n), sol(n), fpar(16), w(*)
+80 fpar(7) = zero
+   if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+   if (ipar(1) > 0) then
+      if (ipar(3) == 999 .and. ipar(11) /= 0) then
+         ipar(1) = 0
+      else if (fpar(6) <= fpar(4)) then
+         ipar(1) = 0
+      else if (ipar(6) > 0 .and. ipar(7) >= ipar(6)) then
+         ipar(1) = -1
+      else
+         ipar(1) = -10
+      end if
+   end if
+   return
+end subroutine dqgmres
+
+subroutine fgmres(n, rhs, sol, ipar, fpar, w)
+   implicit none
+   integer n, ipar(16)
+   double precision :: rhs(n), sol(n), fpar(16), w(*)
 !-----------------------------------------------------------------------
 !     This a version of FGMRES implemented with reverse communication.
 !
@@ -5662,269 +5657,268 @@ end do
 !-----------------------------------------------------------------------
 !     external functions used
 !
-      EXTERNAL_DDOT
+   EXTERNAL_DDOT
 !
-      double precision ::  one, zero
-      parameter(one=1.0D0, zero=0.0D0)
+   double precision :: one, zero
+   parameter(one=1.0d0, zero=0.0d0)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hess points to the Hessenberg matrix,
-!     vc, vs point to the cosines and sines of the Givens rotations
+!     vs point to the sines of the Givens rotations
 !     vrn points to the vectors of residual norms, more precisely
 !     the right hand side of the least square problem solved.
 !
-      integer i,ii,idx,iz,k,m,ptr,p2,hess,vc,vs,vrn
-      double precision ::  alpha, c, s
-      logical lp, rp
-      save
+   integer i, ii, idx, iz, k, m, ptr, p2, hess, vs, vrn
+   double precision :: alpha, c, s
+   logical lp, rp
+   save
 !
 !     check the status of the call
 !
-      if (ipar(1).le.0) ipar(10) = 0
-      goto (10, 20, 30, 40, 50, 60) ipar(10)
+   if (ipar(1) <= 0) ipar(10) = 0
+   goto(10, 20, 30, 40, 50, 60) ipar(10)
 !
 !     initialization
 !
-      if (ipar(5).le.1) then
-         m = 15
-      else
-         m = ipar(5)
-      endif
-      idx = n * (m+1)
-      iz = idx + n
-      hess = iz + n*m
+   if (ipar(5) <= 1) then
+      m = 15
+   else
+      m = ipar(5)
+   end if
+   idx = n * (m + 1)
+   iz = idx + n
+   hess = iz + n * m
 !     vc = hess + (m+1) * m / 2 + 1
 !     vs = vc + m
-      vrn = vs + m
-      i = vrn + m + 1
-      call bisinit(ipar,fpar,i,1,lp,rp,w)
-      if (ipar(1).lt.0) return
+   vrn = vs + m
+   i = vrn + m + 1
+   call bisinit(ipar, fpar, i, 1, lp, rp, w)
+   if (ipar(1) < 0) return
 !
 !     request for matrix vector multiplication A*x in the initialization
 !
- 100  ipar(1) = 1
-      ipar(8) = n+1
-      ipar(9) = 1
-      ipar(10) = 1
-      k = 0
-      do ii = 1, n
-         w(ii+n) = sol(ii)
-      enddo
+100 ipar(1) = 1
+   ipar(8) = n + 1
+   ipar(9) = 1
+   ipar(10) = 1
+   k = 0
+   do ii = 1, n
+      w(ii + n) = sol(ii)
+   end do
+   return
+10 ipar(7) = ipar(7) + 1
+   ipar(13) = ipar(13) + 1
+   fpar(11) = fpar(11) + n
+   if (lp) then
+      do i = 1, n
+         w(n + i) = rhs(i) - w(i)
+      end do
+      ipar(1) = 3
+      ipar(10) = 2
       return
- 10   ipar(7) = ipar(7) + 1
-      ipar(13) = ipar(13) + 1
-      fpar(11) = fpar(11) + n
-      if (lp) then
-         do i = 1, n
-            w(n+i) = rhs(i) - w(i)
-         enddo
-         ipar(1) = 3
-         ipar(10) = 2
-         return
-      else
-         do i = 1, n
-            w(i) = rhs(i) - w(i)
-         enddo
-      endif
+   else
+      do i = 1, n
+         w(i) = rhs(i) - w(i)
+      end do
+   end if
 !
- 20   alpha = sqrt(ddot(n,w,1,w,1))
-      fpar(11) = fpar(11) + n + n
-      if (ipar(7).eq.1 .and. ipar(3).ne.999) then
-         if (abs(ipar(3)).eq.2) then
-            fpar(4) = fpar(1) * sqrt(ddot(n,rhs,1,rhs,1)) + fpar(2)
-            fpar(11) = fpar(11) + 2*n
-         else
-            fpar(4) = fpar(1) * alpha + fpar(2)
-         endif
-         fpar(3) = alpha
-      endif
-      fpar(5) = alpha
-      w(vrn+1) = alpha
-      if (alpha.le.fpar(4) .and. ipar(3).ge.0 .and. ipar(3).ne.999) then
-         ipar(1) = 0
-         fpar(6) = alpha
-         goto 300
-      endif
-      alpha = one / alpha
-      do ii = 1, n
-         w(ii) = w(ii) * alpha
-      enddo
-      fpar(11) = fpar(11) + n
+20 alpha = sqrt(ddot(n, w, 1, w, 1))
+   fpar(11) = fpar(11) + n + n
+   if (ipar(7) == 1 .and. ipar(3) /= 999) then
+      if (abs(ipar(3)) == 2) then
+         fpar(4) = fpar(1) * sqrt(ddot(n, rhs, 1, rhs, 1)) + fpar(2)
+         fpar(11) = fpar(11) + 2 * n
+      else
+         fpar(4) = fpar(1) * alpha + fpar(2)
+      end if
+      fpar(3) = alpha
+   end if
+   fpar(5) = alpha
+   w(vrn + 1) = alpha
+   if (alpha <= fpar(4) .and. ipar(3) >= 0 .and. ipar(3) /= 999) then
+      ipar(1) = 0
+      fpar(6) = alpha
+      goto 300
+   end if
+   alpha = one / alpha
+   do ii = 1, n
+      w(ii) = w(ii) * alpha
+   end do
+   fpar(11) = fpar(11) + n
 !
 !     request for (1) right preconditioning
 !     (2) matrix vector multiplication
 !     (3) left preconditioning
 !
- 110  k = k + 1
-      if (rp) then
-         ipar(1) = 5
-         ipar(8) = k*n - n + 1
-         ipar(9) = iz + ipar(8)
-         ipar(10) = 3
-         return
-      else
-         do ii = 0, n-1
-            w(iz+k*n-ii) = w(k*n-ii)
-         enddo
-      endif
-!
- 30   ipar(1) = 1
-      if (rp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = (k-1)*n + 1
-      endif
-      if (lp) then
-         ipar(9) = idx + 1
-      else
-         ipar(9) = 1 + k*n
-      endif
-      ipar(10) = 4
+110 k = k + 1
+   if (rp) then
+      ipar(1) = 5
+      ipar(8) = k * n - n + 1
+      ipar(9) = iz + ipar(8)
+      ipar(10) = 3
       return
+   else
+      do ii = 0, n - 1
+         w(iz + k * n - ii) = w(k * n - ii)
+      end do
+   end if
 !
- 40   if (lp) then
-         ipar(1) = 3
-         ipar(8) = ipar(9)
-         ipar(9) = k*n + 1
-         ipar(10) = 5
-         return
-      endif
+30 ipar(1) = 1
+   if (rp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = (k - 1) * n + 1
+   end if
+   if (lp) then
+      ipar(9) = idx + 1
+   else
+      ipar(9) = 1 + k * n
+   end if
+   ipar(10) = 4
+   return
+!
+40 if (lp) then
+      ipar(1) = 3
+      ipar(8) = ipar(9)
+      ipar(9) = k * n + 1
+      ipar(10) = 5
+      return
+   end if
 !
 !     Modified Gram-Schmidt orthogonalization procedure
 !     temporary pointer 'ptr' is pointing to the current column of the
 !     Hessenberg matrix. 'p2' points to the new basis vector
 !
- 50   ptr = k * (k - 1) / 2 + hess
-      p2 = ipar(9)
-      ipar(7) = ipar(7) + 1
-      call mgsro(.false.,n,n,k+1,k+1,fpar(11),w,w(ptr+1), ipar(12))
-      if (ipar(12).lt.0) goto 200
+50 ptr = k * (k - 1) / 2 + hess
+   p2 = ipar(9)
+   ipar(7) = ipar(7) + 1
+   call mgsro(.false., n, n, k + 1, k + 1, fpar(11), w, w(ptr + 1), ipar(12))
+   if (ipar(12) < 0) goto 200
 !
 !     apply previous Givens rotations and generate a new one to eliminate
 !     the subdiagonal element.
 !
-      p2 = ptr + 1
-      do i = 1, k-1
-         ptr = p2
-         p2 = p2 + 1
-         alpha = w(ptr)
+   p2 = ptr + 1
+   do i = 1, k - 1
+      ptr = p2
+      p2 = p2 + 1
+      alpha = w(ptr)
 !        c = w(vc+i)
-         s = w(vs+i)
+      s = w(vs + i)
 !        w(ptr) = c * alpha + s * w(p2)
 !        w(p2) = c * w(p2) - s * alpha
-      enddo
-      call givens(w(p2), w(p2+1), c, s)
+   end do
+   call givens(w(p2), w(p2 + 1), c, s)
 !     w(vc+k) = c
-      w(vs+k) = s
-      p2 = vrn + k
-      alpha = - s * w(p2)
+   w(vs + k) = s
+   p2 = vrn + k
+   alpha = -s * w(p2)
 !     w(p2) = c * w(p2)
-      w(p2+1) = alpha
-      fpar(11) = fpar(11) + 6 * k
+   w(p2 + 1) = alpha
+   fpar(11) = fpar(11) + 6 * k
 !
 !     end of one Arnoldi iteration, alpha will store the estimated
 !     residual norm at current stage
 !
-      alpha = abs(alpha)
-      fpar(5) = alpha
-      if (k.lt.m .and. .not.(ipar(3).ge.0 .and. alpha.le.fpar(4))  &
-          .and. (ipar(6).le.0 .or. ipar(7).lt.ipar(6))) goto 110
+   alpha = abs(alpha)
+   fpar(5) = alpha
+   if (k < m .and. .not. (ipar(3) >= 0 .and. alpha <= fpar(4)) &
+       .and. (ipar(6) <= 0 .or. ipar(7) < ipar(6))) goto 110
 !
 !     update the approximate solution, first solve the upper triangular
 !     system, temporary pointer ptr points to the Hessenberg matrix,
 !     p2 points to the right-hand-side (also the solution) of the system.
 !
- 200  ptr = hess + k * (k + 1 ) / 2
-      p2 = vrn + k
-      if (w(ptr).eq.zero) then
+200 ptr = hess + k * (k + 1) / 2
+   p2 = vrn + k
+   if (w(ptr) == zero) then
 !
 !     if the diagonal elements of the last column is zero, reduce k by 1
 !     so that a smaller trianguler system is solved [It should only
 !     happen when the matrix is singular!]
 !
-         k = k - 1
-         if (k.gt.0) then
-            goto 200
-         else
-            ipar(1) = -3
-            ipar(12) = -4
-            goto 300
-         endif
-      endif
+      k = k - 1
+      if (k > 0) then
+         goto 200
+      else
+         ipar(1) = -3
+         ipar(12) = -4
+         goto 300
+      end if
+   end if
+   w(p2) = w(p2) / w(ptr)
+   do i = k - 1, 1, -1
+      ptr = ptr - i - 1
+      do ii = 1, i
+         w(vrn + ii) = w(vrn + ii) - w(p2) * w(ptr + ii)
+      end do
+      p2 = p2 - 1
       w(p2) = w(p2) / w(ptr)
-      do i = k-1, 1, -1
-         ptr = ptr - i - 1
-         do ii = 1, i
-            w(vrn+ii) = w(vrn+ii) - w(p2) * w(ptr+ii)
-         enddo
-         p2 = p2 - 1
-         w(p2) = w(p2) / w(ptr)
-      enddo
+   end do
 !
-      do i = 0, k-1
-         ptr = iz+i*n
-         do ii = 1, n
-            sol(ii) = sol(ii) + w(p2)*w(ptr+ii)
-         enddo
-         p2 = p2 + 1
-      enddo
-      fpar(11) = fpar(11) + 2*k*n + k*(k+1)
+   do i = 0, k - 1
+      ptr = iz + i * n
+      do ii = 1, n
+         sol(ii) = sol(ii) + w(p2) * w(ptr + ii)
+      end do
+      p2 = p2 + 1
+   end do
+   fpar(11) = fpar(11) + 2 * k * n + k * (k + 1)
 !
 !     process the complete stopping criteria
 !
-      if (ipar(3).eq.999) then
-         ipar(1) = 10
-         ipar(8) = -1
-         ipar(9) = idx + 1
-         ipar(10) = 6
-         return
-      else if (ipar(3).lt.0) then
-         if (ipar(7).le.m+1) then
-            fpar(3) = abs(w(vrn+1))
-            if (ipar(3).eq.-1) fpar(4) = fpar(1)*fpar(3)+fpar(2)
-         endif
-         fpar(6) = abs(w(vrn+k))
-      else if (ipar(3).ne.999) then
-         fpar(6) = fpar(5)
-      endif
+   if (ipar(3) == 999) then
+      ipar(1) = 10
+      ipar(8) = -1
+      ipar(9) = idx + 1
+      ipar(10) = 6
+      return
+   else if (ipar(3) < 0) then
+      if (ipar(7) <= m + 1) then
+         fpar(3) = abs(w(vrn + 1))
+         if (ipar(3) == -1) fpar(4) = fpar(1) * fpar(3) + fpar(2)
+      end if
+      fpar(6) = abs(w(vrn + k))
+   else if (ipar(3) /= 999) then
+      fpar(6) = fpar(5)
+   end if
 !
 !     do we need to restart ?
 !
- 60   if (ipar(12).ne.0) then
-         ipar(1) = -3
-         goto 300
-      endif
-      if ((ipar(7).lt.ipar(6) .or. ipar(6).le.0).and.   &
-          ((ipar(3).eq.999.and.ipar(11).eq.0) .or.      &
-          (ipar(3).ne.999.and.fpar(6).gt.fpar(4)))) goto 100
+60 if (ipar(12) /= 0) then
+      ipar(1) = -3
+      goto 300
+   end if
+   if ((ipar(7) < ipar(6) .or. ipar(6) <= 0) .and. &
+       ((ipar(3) == 999 .and. ipar(11) == 0) .or. &
+        (ipar(3) /= 999 .and. fpar(6) > fpar(4)))) goto 100
 !
 !     termination, set error code, compute convergence rate
 !
-      if (ipar(1).gt.0) then
-         if (ipar(3).eq.999 .and. ipar(11).eq.1) then
-            ipar(1) = 0
-         else if (ipar(3).ne.999 .and. fpar(6).le.fpar(4)) then
-            ipar(1) = 0
-         else if (ipar(7).ge.ipar(6) .and. ipar(6).gt.0) then
-            ipar(1) = -1
-         else
-            ipar(1) = -10
-         endif
-      endif
- 300  if (fpar(3).ne.zero .and. fpar(6).ne.zero .and. &
-          ipar(7).gt.ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7)-ipar(13))
+   if (ipar(1) > 0) then
+      if (ipar(3) == 999 .and. ipar(11) == 1) then
+         ipar(1) = 0
+      else if (ipar(3) /= 999 .and. fpar(6) <= fpar(4)) then
+         ipar(1) = 0
+      else if (ipar(7) >= ipar(6) .and. ipar(6) > 0) then
+         ipar(1) = -1
       else
-         fpar(7) = zero
-      endif
-      return
-      end
-!-----end-of-fgmres
-!-----------------------------------------------------------------------
-      subroutine dbcg (n,rhs,sol,ipar,fpar,w)
-      implicit none
-      integer n,ipar(16)
-      double precision ::  rhs(n), sol(n), fpar(16), w(n,*)
+         ipar(1) = -10
+      end if
+   end if
+300 if (fpar(3) /= zero .and. fpar(6) /= zero .and. &
+       ipar(7) > ipar(13)) then
+      fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+   else
+      fpar(7) = zero
+   end if
+   return
+end subroutine fgmres
+
+subroutine dbcg(n, rhs, sol, ipar, fpar, w)
+   implicit none
+   integer n, ipar(16)
+   double precision :: rhs(n), sol(n), fpar(16), w(n, *)
 !-----------------------------------------------------------------------
 ! Quasi GMRES method for solving a linear
 ! system of equations a * sol = y.  double precision version.
@@ -5959,533 +5953,534 @@ end do
 !-----------------------------------------------------------------------
 !     local variables
 !
-      double precision ::  one,zero
-      parameter(one=1.0D0,zero=0.0D0)
+   double precision :: one, zero
+   parameter(one=1.0d0, zero=0.0d0)
 !
-      double precision ::  t,sqrt,ss,res,beta,ss1,delta,x,zeta,umm
-      integer k,j,i,i2,ip2,ju,lb,lbm1,np,indp
-      logical lp,rp,full, perm(3)
-      double precision ::  ypiv(3),u(3),usav(3)
-      external tidycg
-      EXTERNAL_DDOT
-      save
+   double precision :: t, sqrt, ss, res, beta, ss1, delta, x, zeta, umm
+   integer k, j, i, i2, ip2, ju, lb, lbm1, np, indp
+   logical lp, rp, full, perm(3)
+   double precision :: ypiv(3), u(3), usav(3)
+   external tidycg
+   EXTERNAL_DDOT
+   save
 !
 !     where to go
 !
-      if (ipar(1).le.0) ipar(10) = 0
-      goto (110, 120, 130, 140, 150, 160, 170, 180, 190, 200) ipar(10)
+   if (ipar(1) <= 0) ipar(10) = 0
+   goto(110, 120, 130, 140, 150, 160, 170, 180, 190, 200) ipar(10)
 !
 !     initialization, parameter checking, clear the work arrays
 !
-      call bisinit(ipar,fpar,11*n,1,lp,rp,w)
-      if (ipar(1).lt.0) return
-      perm(1) = .false.
-      perm(2) = .false.
-      perm(3) = .false.
-      usav(1) = zero
-      usav(2) = zero
-      usav(3) = zero
-      ypiv(1) = zero
-      ypiv(2) = zero
-      ypiv(3) = zero
+   call bisinit(ipar, fpar, 11 * n, 1, lp, rp, w)
+   if (ipar(1) < 0) return
+   perm(1) = .false.
+   perm(2) = .false.
+   perm(3) = .false.
+   usav(1) = zero
+   usav(2) = zero
+   usav(3) = zero
+   ypiv(1) = zero
+   ypiv(2) = zero
+   ypiv(3) = zero
 !-----------------------------------------------------------------------
 !     initialize constants for outer loop :
 !-----------------------------------------------------------------------
-      lb = 3
-      lbm1 = 2
+   lb = 3
+   lbm1 = 2
 !
 !     get initial residual vector and norm
 !
-      ipar(1) = 1
-      ipar(8) = 1
-      ipar(9) = 1 + n
+   ipar(1) = 1
+   ipar(8) = 1
+   ipar(9) = 1 + n
+   do i = 1, n
+      w(i, 1) = sol(i)
+   end do
+   ipar(10) = 1
+   return
+110 ipar(7) = ipar(7) + 1
+   ipar(13) = ipar(13) + 1
+   if (lp) then
       do i = 1, n
-         w(i,1) = sol(i)
-      enddo
-      ipar(10) = 1
+         w(i, 1) = rhs(i) - w(i, 2)
+      end do
+      ipar(1) = 3
+      ipar(8) = 1
+      ipar(9) = n + n + 1
+      ipar(10) = 2
       return
- 110  ipar(7) = ipar(7) + 1
-      ipar(13) = ipar(13) + 1
-      if (lp) then
-         do i = 1, n
-            w(i,1) = rhs(i) - w(i,2)
-         enddo
-         ipar(1) = 3
-         ipar(8) = 1
-         ipar(9) = n+n+1
-         ipar(10) = 2
-         return
-      else
-         do i = 1, n
-            w(i,3) = rhs(i) - w(i,2)
-         enddo
-      endif
-      fpar(11) = fpar(11) + n
+   else
+      do i = 1, n
+         w(i, 3) = rhs(i) - w(i, 2)
+      end do
+   end if
+   fpar(11) = fpar(11) + n
 !
- 120  fpar(3) = sqrt(ddot(n,w(1,3),1,w(1,3),1))
-      fpar(11) = fpar(11) + n + n
-      fpar(5) = fpar(3)
-      fpar(7) = fpar(3)
-      zeta = fpar(3)
-      if (abs(ipar(3)).eq.2) then
-         fpar(4) = fpar(1) * sqrt(ddot(n,rhs,1,rhs,1)) + fpar(2)
-         fpar(11) = fpar(11) + 2*n
-      else if (ipar(3).ne.999) then
-         fpar(4) = fpar(1) * zeta + fpar(2)
-      endif
-      if (ipar(3).ge.0.and.fpar(5).le.fpar(4)) then
-         fpar(6) = fpar(5)
-         goto 900
-      endif
+120 fpar(3) = sqrt(ddot(n, w(1, 3), 1, w(1, 3), 1))
+   fpar(11) = fpar(11) + n + n
+   fpar(5) = fpar(3)
+   fpar(7) = fpar(3)
+   zeta = fpar(3)
+   if (abs(ipar(3)) == 2) then
+      fpar(4) = fpar(1) * sqrt(ddot(n, rhs, 1, rhs, 1)) + fpar(2)
+      fpar(11) = fpar(11) + 2 * n
+   else if (ipar(3) /= 999) then
+      fpar(4) = fpar(1) * zeta + fpar(2)
+   end if
+   if (ipar(3) >= 0 .and. fpar(5) <= fpar(4)) then
+      fpar(6) = fpar(5)
+      goto 900
+   end if
 !
 !     normalize first arnoldi vector
 !
-      t = one/zeta
-      do k=1,n
-         w(k,3) = w(k,3)*t
-         w(k,5) = w(k,3)
-      end do
-      fpar(11) = fpar(11) + n
+   t = one / zeta
+   do k = 1, n
+      w(k, 3) = w(k, 3) * t
+      w(k, 5) = w(k, 3)
+   end do
+   fpar(11) = fpar(11) + n
 !
 !     initialize constants for main loop
 !
-      beta = zero
-      delta = zero
-      i2 = 1
-      indp = 0
-      i = 0
+   beta = zero
+   delta = zero
+   i2 = 1
+   indp = 0
+   i = 0
 !
 !     main loop: i = index of the loop.
 !
 !-----------------------------------------------------------------------
- 30   i = i + 1
+30 i = i + 1
 !
-      if (rp) then
-         ipar(1) = 5
-         ipar(8) = (1+i2)*n+1
-         if (lp) then
-            ipar(9) = 1
-         else
-            ipar(9) = 10*n + 1
-         endif
-         ipar(10) = 3
-         return
-      endif
-!
- 130  ipar(1) = 1
-      if (rp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = (1+i2)*n + 1
-      endif
+   if (rp) then
+      ipar(1) = 5
+      ipar(8) = (1 + i2) * n + 1
       if (lp) then
-         ipar(9) = 10*n + 1
+         ipar(9) = 1
       else
-         ipar(9) = 1
-      endif
-      ipar(10) = 4
+         ipar(9) = 10 * n + 1
+      end if
+      ipar(10) = 3
       return
+   end if
 !
- 140  if (lp) then
-         ipar(1) = 3
-         ipar(8) = ipar(9)
-         ipar(9) = 1
-         ipar(10) = 5
-         return
-      endif
+130 ipar(1) = 1
+   if (rp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = (1 + i2) * n + 1
+   end if
+   if (lp) then
+      ipar(9) = 10 * n + 1
+   else
+      ipar(9) = 1
+   end if
+   ipar(10) = 4
+   return
+!
+140 if (lp) then
+      ipar(1) = 3
+      ipar(8) = ipar(9)
+      ipar(9) = 1
+      ipar(10) = 5
+      return
+   end if
 !
 !     A^t * x
 !
- 150  ipar(7) = ipar(7) + 1
-      if (lp) then
-         ipar(1) = 4
-         ipar(8) = (3+i2)*n + 1
-         if (rp) then
-            ipar(9) = n + 1
-         else
-            ipar(9) = 10*n + 1
-         endif
-         ipar(10) = 6
-         return
-      endif
-!
- 160  ipar(1) = 2
-      if (lp) then
-         ipar(8) = ipar(9)
-      else
-         ipar(8) = (3+i2)*n + 1
-      endif
+150 ipar(7) = ipar(7) + 1
+   if (lp) then
+      ipar(1) = 4
+      ipar(8) = (3 + i2) * n + 1
       if (rp) then
-         ipar(9) = 10*n + 1
+         ipar(9) = n + 1
       else
-         ipar(9) = n + 1
-      endif
-      ipar(10) = 7
+         ipar(9) = 10 * n + 1
+      end if
+      ipar(10) = 6
       return
+   end if
 !
- 170  if (rp) then
-         ipar(1) = 6
-         ipar(8) = ipar(9)
-         ipar(9) = n + 1
-         ipar(10) = 8
-         return
-      endif
+160 ipar(1) = 2
+   if (lp) then
+      ipar(8) = ipar(9)
+   else
+      ipar(8) = (3 + i2) * n + 1
+   end if
+   if (rp) then
+      ipar(9) = 10 * n + 1
+   else
+      ipar(9) = n + 1
+   end if
+   ipar(10) = 7
+   return
+!
+170 if (rp) then
+      ipar(1) = 6
+      ipar(8) = ipar(9)
+      ipar(9) = n + 1
+      ipar(10) = 8
+      return
+   end if
 !-----------------------------------------------------------------------
 !     orthogonalize current v against previous v's and
 !     determine relevant part of i-th column of u(.,.) the
 !     upper triangular matrix --
 !-----------------------------------------------------------------------
- 180  ipar(7) = ipar(7) + 1
-      u(1) = zero
-      ju = 1
-      k = i2
-      if (i .le. lbm1) ju = 0
-      if (i .lt. lb) k = 0
- 31   if (k .eq. lbm1) k=0
-      k=k+1
+180 ipar(7) = ipar(7) + 1
+   u(1) = zero
+   ju = 1
+   k = i2
+   if (i <= lbm1) ju = 0
+   if (i < lb) k = 0
+31 if (k == lbm1) k = 0
+   k = k + 1
 !
-      if (k .ne. i2) then
-         ss  = delta
-         ss1 = beta
-         ju = ju + 1
-         u(ju) = ss
-      else
-         ss = ddot(n,w(1,1),1,w(1,4+k),1)
-         fpar(11) = fpar(11) + 2*n
-         ss1= ss
-         ju = ju + 1
-         u(ju) = ss
-      endif
+   if (k /= i2) then
+      ss = delta
+      ss1 = beta
+      ju = ju + 1
+      u(ju) = ss
+   else
+      ss = ddot(n, w(1, 1), 1, w(1, 4 + k), 1)
+      fpar(11) = fpar(11) + 2 * n
+      ss1 = ss
+      ju = ju + 1
+      u(ju) = ss
+   end if
 !
-      do  j=1,n
-         w(j,1) = w(j,1) - ss*w(j,k+2)
-         w(j,2) = w(j,2) - ss1*w(j,k+4)
-      end do
-      fpar(11) = fpar(11) + 4*n
+   do j = 1, n
+      w(j, 1) = w(j, 1) - ss * w(j, k + 2)
+      w(j, 2) = w(j, 2) - ss1 * w(j, k + 4)
+   end do
+   fpar(11) = fpar(11) + 4 * n
 !
-      if (k .ne. i2) goto 31
+   if (k /= i2) goto 31
 !
 !     end of Mod. Gram. Schmidt loop
 !
-      t = ddot(n,w(1,2),1,w(1,1),1)
+   t = ddot(n, w(1, 2), 1, w(1, 1), 1)
 !
-      beta   = sqrt(abs(t))
-      delta  = t/beta
+   beta = sqrt(abs(t))
+   delta = t / beta
 !
-      ss = one/beta
-      ss1 = one/ delta
+   ss = one / beta
+   ss1 = one / delta
 !
 !     normalize and insert new vectors
 !
-      ip2 = i2
-      if (i2 .eq. lbm1) i2=0
-      i2=i2+1
+   ip2 = i2
+   if (i2 == lbm1) i2 = 0
+   i2 = i2 + 1
 !
-      do j=1,n
-         w(j,i2+2)=w(j,1)*ss
-         w(j,i2+4)=w(j,2)*ss1
-      end do
-      fpar(11) = fpar(11) + 4*n
+   do j = 1, n
+      w(j, i2 + 2) = w(j, 1) * ss
+      w(j, i2 + 4) = w(j, 2) * ss1
+   end do
+   fpar(11) = fpar(11) + 4 * n
 !-----------------------------------------------------------------------
 !     end of orthogonalization.
 !     now compute the coefficients u(k) of the last
 !     column of the  l . u  factorization of h .
 !-----------------------------------------------------------------------
-      np = min0(i,lb)
-      full = (i .ge. lb)
-      call implu(np, umm, beta, ypiv, u, perm, full)
+   np = min(i, lb)
+   full = (i >= lb)
+   call implu(np, umm, beta, ypiv, u, perm, full)
 !-----------------------------------------------------------------------
 !     update conjugate directions and solution
 !-----------------------------------------------------------------------
-      do k=1,n
-         w(k,1) = w(k,ip2+2)
-      end do
-      call uppdir(n, w(1,7), np, lb, indp, w, u, usav, fpar(11))
+   do k = 1, n
+      w(k, 1) = w(k, ip2 + 2)
+   end do
+   call uppdir(n, w(1, 7), np, lb, indp, w, u, usav, fpar(11))
 !-----------------------------------------------------------------------
-      if (i .eq. 1) goto 34
-      j = np - 1
-      if (full) j = j-1
-      if (.not.perm(j)) zeta = -zeta*ypiv(j)
- 34   x = zeta/u(np)
-      if (perm(np))goto 36
-      do k=1,n
-         w(k,10) = w(k,10) + x*w(k,1)
-      end do
-      fpar(11) = fpar(11) + 2 * n
+   if (i == 1) goto 34
+   j = np - 1
+   if (full) j = j - 1
+   if (.not. perm(j)) zeta = -zeta * ypiv(j)
+34 x = zeta / u(np)
+   if (perm(np)) goto 36
+   do k = 1, n
+      w(k, 10) = w(k, 10) + x * w(k, 1)
+   end do
+   fpar(11) = fpar(11) + 2 * n
 !-----------------------------------------------------------------------
- 36   if (ipar(3).eq.999) then
-         ipar(1) = 10
-         ipar(8) = 9*n + 1
-         ipar(9) = 10*n + 1
-         ipar(10) = 9
-         return
-      endif
-      res = abs(beta*zeta/umm)
-      fpar(5) = res * sqrt(ddot(n, w(1,i2+2), 1, w(1,i2+2), 1))
+36 if (ipar(3) == 999) then
+      ipar(1) = 10
+      ipar(8) = 9 * n + 1
+      ipar(9) = 10 * n + 1
+      ipar(10) = 9
+      return
+   end if
+   res = abs(beta * zeta / umm)
+   fpar(5) = res * sqrt(ddot(n, w(1, i2 + 2), 1, w(1, i2 + 2), 1))
+   fpar(11) = fpar(11) + 2 * n
+   if (ipar(3) < 0) then
+      fpar(6) = x * sqrt(ddot(n, w, 1, w, 1))
       fpar(11) = fpar(11) + 2 * n
-      if (ipar(3).lt.0) then
-         fpar(6) = x * sqrt(ddot(n,w,1,w,1))
-         fpar(11) = fpar(11) + 2 * n
-         if (ipar(7).le.3) then
-            fpar(3) = fpar(6)
-            if (ipar(3).eq.-1) then
-               fpar(4) = fpar(1) * sqrt(fpar(3)) + fpar(2)
-            endif
-         endif
-      else
-         fpar(6) = fpar(5)
-      endif
+      if (ipar(7) <= 3) then
+         fpar(3) = fpar(6)
+         if (ipar(3) == -1) then
+            fpar(4) = fpar(1) * sqrt(fpar(3)) + fpar(2)
+         end if
+      end if
+   else
+      fpar(6) = fpar(5)
+   end if
 !---- convergence test -----------------------------------------------
- 190  if (ipar(3).eq.999.and.ipar(11).eq.0) then
-         goto 30
-      else if (fpar(6).gt.fpar(4) .and. (ipar(6).gt.ipar(7) .or.&
-             ipar(6).le.0)) then
-         goto 30
-      endif
+190 if (ipar(3) == 999 .and. ipar(11) == 0) then
+      goto 30
+   else if (fpar(6) > fpar(4) .and. (ipar(6) > ipar(7) .or. &
+                                     ipar(6) <= 0)) then
+      goto 30
+   end if
 !-----------------------------------------------------------------------
 !     here the fact that the last step is different is accounted for.
 !-----------------------------------------------------------------------
-      if (.not. perm(np)) goto 900
-      x = zeta/umm
-      do k = 1,n
-         w(k,10) = w(k,10) + x*w(k,1)
-      end do
-      fpar(11) = fpar(11) + 2 * n
+   if (.not. perm(np)) goto 900
+   x = zeta / umm
+   do k = 1, n
+      w(k, 10) = w(k, 10) + x * w(k, 1)
+   end do
+   fpar(11) = fpar(11) + 2 * n
 !
 !     right preconditioning and clean-up jobs
 !
- 900  if (rp) then
-         if (ipar(1).lt.0) ipar(12) = ipar(1)
-         ipar(1) = 5
-         ipar(8) = 9*n + 1
-         ipar(9) = ipar(8) + n
-         ipar(10) = 10
-         return
-      endif
- 200  if (rp) then
-         call tidycg(n,ipar,fpar,sol,w(1,11))
-      else
-         call tidycg(n,ipar,fpar,sol,w(1,10))
-      endif
+900 if (rp) then
+      if (ipar(1) < 0) ipar(12) = ipar(1)
+      ipar(1) = 5
+      ipar(8) = 9 * n + 1
+      ipar(9) = ipar(8) + n
+      ipar(10) = 10
       return
-      end
-!-----end-of-dbcg-------------------------------------------------------
-!-----------------------------------------------------------------------
-      subroutine implu(np,umm,beta,ypiv,u,permut,full)
-      double precision ::  umm,beta,ypiv(*),u(*),x, xpiv
-      logical full, perm, permut(*)
-      integer np,k,npm1
+   end if
+200 if (rp) then
+      call tidycg(n, ipar, fpar, sol, w(1, 11))
+   else
+      call tidycg(n, ipar, fpar, sol, w(1, 10))
+   end if
+   return
+end subroutine dbcg
+
+subroutine implu(np, umm, beta, ypiv, u, permut, full)
+   implicit none
+
+   double precision :: umm, beta, ypiv(*), u(*), x, xpiv
+   logical full, perm, permut(*)
+   integer np, k, npm1
 !-----------------------------------------------------------------------
 !     performs implicitly one step of the lu factorization of a
 !     banded hessenberg matrix.
 !-----------------------------------------------------------------------
-      if (np .le. 1) goto 12
-      npm1 = np - 1
+   if (np <= 1) goto 12
+   npm1 = np - 1
 !
 !     -- perform  previous step of the factorization-
 !
-      do k=1,npm1
-         if (.not. permut(k)) goto 5
-         x=u(k)
-         u(k) = u(k+1)
-         u(k+1) = x
- 5       u(k+1) = u(k+1) - ypiv(k)*u(k)
-end do
+   do k = 1, npm1
+      if (.not. permut(k)) goto 5
+      x = u(k)
+      u(k) = u(k + 1)
+      u(k + 1) = x
+5     u(k + 1) = u(k + 1) - ypiv(k) * u(k)
+   end do
 !-----------------------------------------------------------------------
 !     now determine pivotal information to be used in the next call
 !-----------------------------------------------------------------------
- 12   umm = u(np)
-      perm = (beta .gt. abs(umm))
-      if (.not. perm) goto 4
-      xpiv = umm / beta
-      u(np) = beta
-      goto 8
- 4    xpiv = beta/umm
- 8    permut(np) = perm
-      ypiv(np) = xpiv
-      if (.not. full) return
+12 umm = u(np)
+   perm = (beta > abs(umm))
+   if (.not. perm) goto 4
+   xpiv = umm / beta
+   u(np) = beta
+   goto 8
+4  xpiv = beta / umm
+8  permut(np) = perm
+   ypiv(np) = xpiv
+   if (.not. full) return
 !     shift everything up if full...
-      do k=1,npm1
-         ypiv(k) = ypiv(k+1)
-         permut(k) = permut(k+1)
-      end do
-      return
-!-----end-of-implu
-      end
-!-----------------------------------------------------------------------
-      subroutine uppdir(n,p,np,lbp,indp,y,u,usav,flops)
-      double precision ::  p(n,lbp), y(*), u(*), usav(*), x, flops
-      integer k,np,n,npm1,j,ju,indp,lbp
+   do k = 1, npm1
+      ypiv(k) = ypiv(k + 1)
+      permut(k) = permut(k + 1)
+   end do
+   return
+end subroutine implu
+
+subroutine uppdir(n, p, np, lbp, indp, y, u, usav, flops)
+   implicit none
+
+   double precision :: p(n, lbp), y(*), u(*), usav(*), x, flops
+   integer k, np, n, npm1, j, ju, indp, lbp
 !-----------------------------------------------------------------------
 !     updates the conjugate directions p given the upper part of the
 !     banded upper triangular matrix u.  u contains the non zero
 !     elements of the column of the triangular matrix..
 !-----------------------------------------------------------------------
-      double precision ::  zero
-      parameter(zero=0.0D0)
+   double precision :: zero
+   parameter(zero=0.0d0)
 !
-      npm1=np-1
-      if (np .le. 1) goto 12
-      j=indp
-      ju = npm1
- 10   if (j .le. 0) j=lbp
-      x = u(ju) /usav(j)
-      if (x .eq. zero) goto 115
-      do k=1,n
-         y(k) = y(k) - x*p(k,j)
-      end do
-      flops = flops + 2*n
- 115  j = j-1
-      ju = ju -1
-      if (ju .ge. 1) goto 10
- 12   indp = indp + 1
-      if (indp .gt. lbp) indp = 1
-      usav(indp) = u(np)
-      do k=1,n
-         p(k,indp) = y(k)
-      end do
- 208  return
-!-----------------------------------------------------------------------
-!-------end-of-uppdir---------------------------------------------------
-      end
-      subroutine givens(x,y,c,s)
-      double precision ::  x,y,c,s
+   npm1 = np - 1
+   if (np <= 1) goto 12
+   j = indp
+   ju = npm1
+10 if (j <= 0) j = lbp
+   x = u(ju) / usav(j)
+   if (x == zero) goto 115
+   do k = 1, n
+      y(k) = y(k) - x * p(k, j)
+   end do
+   flops = flops + 2 * n
+115 j = j - 1
+   ju = ju - 1
+   if (ju >= 1) goto 10
+12 indp = indp + 1
+   if (indp > lbp) indp = 1
+   usav(indp) = u(np)
+   do k = 1, n
+      p(k, indp) = y(k)
+   end do
+208 return
+end subroutine uppdir
+    
+subroutine givens(x, y, c, s)
+   implicit none
+
+   double precision :: x, y, c, s
 !-----------------------------------------------------------------------
 !     Given x and y, this subroutine generates a Givens' rotation c, s.
 !     And apply the rotation on (x,y) ==> (sqrt(x**2 + y**2), 0).
 !     (See P 202 of "matrix computation" by Golub and van Loan.)
 !-----------------------------------------------------------------------
-      double precision ::  t,one,zero
-      parameter (zero=0.0D0,one=1.0D0)
+   double precision :: t, one, zero
+   parameter(zero=0.0d0, one=1.0d0)
 !
-      if (x.eq.zero .and. y.eq.zero) then
+   no_warning_unused_dummy_argument(c)
+   if (x == zero .and. y == zero) then
 !        c = one
-         s = zero
-      else if (abs(y).gt.abs(x)) then
-         t = x / y
-         x = sqrt(one+t*t)
-         s = sign(one / x, y)
+      s = zero
+   else if (abs(y) > abs(x)) then
+      t = x / y
+      x = sqrt(one + t * t)
+      s = sign(one / x, y)
 !        c = t*s
-      else if (abs(y).le.abs(x)) then
-         t = y / x
-         y = sqrt(one+t*t)
+   else if (abs(y) <= abs(x)) then
+      t = y / x
+      y = sqrt(one + t * t)
 !        c = sign(one / y, x)
 !        s = t*c
-      else
+   else
 !
 !     X or Y must be an invalid floating-point number, set both to zero
 !
-         x = zero
-         y = zero
+      x = zero
+      y = zero
 !        c = one
-         s = zero
-      endif
-      x = abs(x*y)
+      s = zero
+   end if
+   x = abs(x * y)
 !
 !     end of givens
 !
-      return
-      end
-!-----end-of-givens
-!-----------------------------------------------------------------------
-      logical function stopbis(n,ipar,mvpi,fpar,r,delx,sx)
-      implicit none
-      integer n,mvpi,ipar(16)
-      double precision ::  fpar(16), r(n), delx(n), sx
-      EXTERNAL_DDOT
+   return
+end subroutine givens
+
+logical function stopbis(n, ipar, mvpi, fpar, r, delx, sx)
+   implicit none
+   integer n, mvpi, ipar(16)
+   double precision :: fpar(16), r(n), delx(n), sx
+   EXTERNAL_DDOT
 !-----------------------------------------------------------------------
 !     function for determining the stopping criteria. return value of
 !     true if the stopbis criteria is satisfied.
 !-----------------------------------------------------------------------
-      if (ipar(11) .eq. 1) then
-         stopbis = .true.
-      else
-         stopbis = .false.
-      endif
-      if (ipar(6).gt.0 .and. ipar(7).ge.ipar(6)) then
-         ipar(1) = -1
-         stopbis = .true.
-      endif
-      if (stopbis) return
+   if (ipar(11) == 1) then
+      stopbis = .true.
+   else
+      stopbis = .false.
+   end if
+   if (ipar(6) > 0 .and. ipar(7) >= ipar(6)) then
+      ipar(1) = -1
+      stopbis = .true.
+   end if
+   if (stopbis) return
 !
 !     computes errors
 !
-      fpar(5) = sqrt(ddot(n,r,1,r,1))
-      fpar(11) = fpar(11) + 2 * n
-      if (ipar(3).lt.0) then
+   fpar(5) = sqrt(ddot(n, r, 1, r, 1))
+   fpar(11) = fpar(11) + 2 * n
+   if (ipar(3) < 0) then
 !
 !     compute the change in the solution vector
 !
-         fpar(6) = sx * sqrt(ddot(n,delx,1,delx,1))
-         fpar(11) = fpar(11) + 2 * n
-         if (ipar(7).lt.mvpi+mvpi+1) then
+      fpar(6) = sx * sqrt(ddot(n, delx, 1, delx, 1))
+      fpar(11) = fpar(11) + 2 * n
+      if (ipar(7) < mvpi + mvpi + 1) then
 !
 !     if this is the end of the first iteration, set fpar(3:4)
 !
-            fpar(3) = fpar(6)
-            if (ipar(3).eq.-1) then
-               fpar(4) = fpar(1) * fpar(3) + fpar(2)
-            endif
-         endif
-      else
-         fpar(6) = fpar(5)
-      endif
+         fpar(3) = fpar(6)
+         if (ipar(3) == -1) then
+            fpar(4) = fpar(1) * fpar(3) + fpar(2)
+         end if
+      end if
+   else
+      fpar(6) = fpar(5)
+   end if
 !
 !     .. the test is struct this way so that when the value in fpar(6)
 !       is not a valid number, STOPBIS is set to .true.
 !
-      if (fpar(6).gt.fpar(4)) then
-         stopbis = .false.
-         ipar(11) = 0
-      else
-         stopbis = .true.
-         ipar(11) = 1
-      endif
+   if (fpar(6) > fpar(4)) then
+      stopbis = .false.
+      ipar(11) = 0
+   else
+      stopbis = .true.
+      ipar(11) = 1
+   end if
 !
-      return
-      end
-!-----end-of-stopbis
-!-----------------------------------------------------------------------
-      subroutine tidycg(n,ipar,fpar,sol,delx)
-      implicit none
-      integer i,n,ipar(16)
-      double precision ::  fpar(16),sol(n),delx(n)
+   return
+end function stopbis
+
+subroutine tidycg(n, ipar, fpar, sol, delx)
+   implicit none
+   integer n, ipar(16)
+   double precision :: fpar(16), sol(n), delx(n)
 !-----------------------------------------------------------------------
 !     Some common operations required before terminating the CG routines
 !-----------------------------------------------------------------------
-      double precision ::  zero
-      parameter(zero=0.0D0)
+   double precision :: zero
+   parameter(zero=0.0d0)
 !
-      if (ipar(12).ne.0) then
-         ipar(1) = ipar(12)
-      else if (ipar(1).gt.0) then
-         if ((ipar(3).eq.999 .and. ipar(11).eq.1) .or. &
-             fpar(6).le.fpar(4)) then
-            ipar(1) = 0
-         else if (ipar(7).ge.ipar(6) .and. ipar(6).gt.0) then
-            ipar(1) = -1
-         else
-            ipar(1) = -10
-         endif
-      endif
-      if (fpar(3).gt.zero .and. fpar(6).gt.zero .and.  ipar(7).gt.ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7)-ipar(13))
+   if (ipar(12) /= 0) then
+      ipar(1) = ipar(12)
+   else if (ipar(1) > 0) then
+      if ((ipar(3) == 999 .and. ipar(11) == 1) .or. &
+          fpar(6) <= fpar(4)) then
+         ipar(1) = 0
+      else if (ipar(7) >= ipar(6) .and. ipar(6) > 0) then
+         ipar(1) = -1
       else
-         fpar(7) = zero
-      endif
+         ipar(1) = -10
+      end if
+   end if
+   if (fpar(3) > zero .and. fpar(6) > zero .and. ipar(7) > ipar(13)) then
+      fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+   else
+      fpar(7) = zero
+   end if
 !      do i = 1, n
 !         sol(i) = sol(i) + delx(i)
 !      enddo
-      SOL = SOL + DELX
-      return
-      end
-!-----end-of-tidycg
-!-----------------------------------------------------------------------
-      logical function brkdn(alpha, ipar)
-      implicit none
-      integer ipar(16)
-      double precision ::  alpha, beta, zero, one
-      parameter (zero=0.0D0, one=1.0D0)
+   SOL = SOL + DELX
+   return
+end subroutine tidycg
+
+logical function brkdn(alpha, ipar)
+   implicit none
+   integer ipar(16)
+   double precision :: alpha, beta, zero, one
+   parameter(zero=0.0d0, one=1.0d0)
 !-----------------------------------------------------------------------
 !     test whether alpha is zero or an abnormal number, if yes,
 !     this routine will return .true.
@@ -6493,108 +6488,107 @@ end do
 !     If alpha == 0, ipar(1) = -3,
 !     if alpha is an abnormal number, ipar(1) = -9.
 !-----------------------------------------------------------------------
-      brkdn = .false.
-      if (alpha.gt.zero) then
-         beta = one / alpha
-         if (.not. beta.gt.zero) then
-            brkdn = .true.
-            ipar(1) = -9
-         endif
-      else if (alpha.lt.zero) then
-         beta = one / alpha
-         if (.not. beta.lt.zero) then
-            brkdn = .true.
-            ipar(1) = -9
-         endif
-      else if (alpha.eq.zero) then
-         brkdn = .true.
-         ipar(1) = -3
-      else
+   brkdn = .false.
+   if (alpha > zero) then
+      beta = one / alpha
+      if (.not. beta > zero) then
          brkdn = .true.
          ipar(1) = -9
-      endif
-      return
-      end
-!-----end-of-brkdn
-!-----------------------------------------------------------------------
-      subroutine bisinit(ipar,fpar,wksize,dsc,lp,rp,wk)
-      implicit none
-      integer i,ipar(16),wksize,dsc
-      logical lp,rp
-      double precision ::   fpar(16),wk(*)
+      end if
+   else if (alpha < zero) then
+      beta = one / alpha
+      if (.not. beta < zero) then
+         brkdn = .true.
+         ipar(1) = -9
+      end if
+   else if (alpha == zero) then
+      brkdn = .true.
+      ipar(1) = -3
+   else
+      brkdn = .true.
+      ipar(1) = -9
+   end if
+   return
+end function brkdn
+
+subroutine bisinit(ipar, fpar, wksize, dsc, lp, rp, wk)
+   implicit none
+   integer i, ipar(16), wksize, dsc
+   logical lp, rp
+   double precision :: fpar(16), wk(*)
 !-----------------------------------------------------------------------
 !     some common initializations for the iterative solvers
 !-----------------------------------------------------------------------
-      double precision ::  zero, one
-      parameter(zero=0.0D0, one=1.0D0)
+   double precision :: zero, one
+   parameter(zero=0.0d0, one=1.0d0)
+   no_warning_unused_dummy_argument(dsc)
 !
 !     ipar(1) = -2 inidcate that there are not enough space in the work
 !     array
 !
-      if (ipar(4).lt.wksize) then
-         ipar(1) = -2
-         ipar(4) = wksize
-         return
-      endif
+   if (ipar(4) < wksize) then
+      ipar(1) = -2
+      ipar(4) = wksize
+      return
+   end if
 !
-      if (ipar(2).gt.2) then
-         lp = .true.
-         rp = .true.
-      else if (ipar(2).eq.2) then
-         lp = .false.
-         rp = .true.
-      else if (ipar(2).eq.1) then
-         lp = .true.
-         rp = .false.
-      else
-         lp = .false.
-         rp = .false.
-      endif
+   if (ipar(2) > 2) then
+      lp = .true.
+      rp = .true.
+   else if (ipar(2) == 2) then
+      lp = .false.
+      rp = .true.
+   else if (ipar(2) == 1) then
+      lp = .true.
+      rp = .false.
+   else
+      lp = .false.
+      rp = .false.
+   end if
 !     if (ipar(3).eq.0) ipar(3) = dsc
 !     .. clear the ipar elements used
-      ipar(7) = 0
-      ipar(8) = 0
-      ipar(9) = 0
-      ipar(10) = 0
-      ipar(11) = 0
-      ipar(12) = 0
-      ipar(13) = 0
+   ipar(7) = 0
+   ipar(8) = 0
+   ipar(9) = 0
+   ipar(10) = 0
+   ipar(11) = 0
+   ipar(12) = 0
+   ipar(13) = 0
 !
 !     fpar(1) must be between (0, 1), fpar(2) must be positive,
 !     fpar(1) and fpar(2) can NOT both be zero
 !     Normally return ipar(1) = -4 to indicate any of above error
 !
-      if (fpar(1).lt.zero .or. fpar(1).ge.one .or. fpar(2).lt.zero .or. (fpar(1).eq.zero .and. fpar(2).eq.zero)) then
-         if (ipar(1).eq.0) then
-            ipar(1) = -4
-            return
-         else
-            fpar(1) = 1.0D-6
-            fpar(2) = 1.0D-16
-         endif
-      endif
+   if (fpar(1) < zero .or. fpar(1) >= one .or. fpar(2) < zero .or. (fpar(1) == zero .and. fpar(2) == zero)) then
+      if (ipar(1) == 0) then
+         ipar(1) = -4
+         return
+      else
+         fpar(1) = 1.0d-6
+         fpar(2) = 1.0d-16
+      end if
+   end if
 !     .. clear the fpar elements
-      do i = 3, 10
-         fpar(i) = zero
-      enddo
-      if (fpar(11).lt.zero) fpar(11) = zero
+   do i = 3, 10
+      fpar(i) = zero
+   end do
+   if (fpar(11) < zero) fpar(11) = zero
 !     .. clear the used portion of the work array to zero
-     
-     ! do i = 1, wksize
-     !    wk(i) = zero
-     ! enddo
+
+   ! do i = 1, wksize
+   !    wk(i) = zero
+   ! enddo
 !
-      WK(1:WKSIZE) = ZERO
-      
-      return
-!-----end-of-bisinit
-      end
-!-----------------------------------------------------------------------
-      subroutine mgsro(full,lda,n,m,ind,ops,vec,hh,ierr)
-      implicit none
-      logical full
-      integer lda,m,n,ind,ierr
-      double precision ::   ops,hh(m),vec(lda,m)
+   WK(1:WKSIZE) = ZERO
+
+   return
+end subroutine bisinit
+
+subroutine mgsro(full, lda, n, m, ind, ops, vec, hh, ierr)
+   implicit none
+   logical full
+   integer lda, m, n, ind, ierr
+   double precision :: ops, hh(m), vec(lda, m)
 !-----------------------------------------------------------------------
 !     MGSRO  -- Modified Gram-Schmidt procedure with Selective Re-
 !               Orthogonalization
@@ -6625,141 +6619,144 @@ end do
 !
 !     External routines used: double precision ::  ddot
 !-----------------------------------------------------------------------
-      integer i,k
-      double precision ::   nrm0, nrm1, fct, thr, zero, one, reorth
-      parameter (zero=0.0D0, one=1.0D0, reorth=0.98D0)
-      EXTERNAL_DDOT
+   integer i, k
+   double precision :: nrm0, nrm1, fct, thr, zero, one, reorth
+   parameter(zero=0.0d0, one=1.0d0, reorth=0.98d0)
+   EXTERNAL_DDOT
 !
 !     compute the norm of the input vector
 !
-      nrm0 = ddot(n,vec(1,ind),1,vec(1,ind),1)
-      ops = ops + n + n
-      thr = nrm0 * reorth
-      if (nrm0.le.zero) then
-         ierr = - 1
-         return
-      else if (nrm0.gt.zero .and. one/nrm0.gt.zero) then
-         ierr = 0
-      else
-         ierr = -2
-         return
-      endif
+   nrm0 = ddot(n, vec(1, ind), 1, vec(1, ind), 1)
+   ops = ops + n + n
+   thr = nrm0 * reorth
+   if (nrm0 <= zero) then
+      ierr = -1
+      return
+   else if (nrm0 > zero .and. one / nrm0 > zero) then
+      ierr = 0
+   else
+      ierr = -2
+      return
+   end if
 !
 !     Modified Gram-Schmidt loop
 !
-      if (full) then
-         do i = ind+1, m
-            fct = ddot(n,vec(1,ind),1,vec(1,i),1)
-            hh(i) = fct
-            do k = 1, n
-               vec(k,ind) = vec(k,ind) - fct * vec(k,i)
-            end do
-            ops = ops + 4 * n + 2
-            if (fct*fct.gt.thr) then
-               fct = ddot(n,vec(1,ind),1,vec(1,i),1)
-               hh(i) = hh(i) + fct
-               do k = 1, n
-                  vec(k,ind) = vec(k,ind) - fct * vec(k,i)
-               end do
-               ops = ops + 4*n + 1
-            endif
-            nrm0 = nrm0 - hh(i) * hh(i)
-            if (nrm0.lt.zero) nrm0 = zero
-            thr = nrm0 * reorth
-         end do
-      endif
-!
-      do i = 1, ind-1
-         fct = ddot(n,vec(1,ind),1,vec(1,i),1)
+   if (full) then
+      do i = ind + 1, m
+         fct = ddot(n, vec(1, ind), 1, vec(1, i), 1)
          hh(i) = fct
          do k = 1, n
-            vec(k,ind) = vec(k,ind) - fct * vec(k,i)
+            vec(k, ind) = vec(k, ind) - fct * vec(k, i)
          end do
          ops = ops + 4 * n + 2
-         if (fct*fct.gt.thr) then
-            fct = ddot(n,vec(1,ind),1,vec(1,i),1)
+         if (fct * fct > thr) then
+            fct = ddot(n, vec(1, ind), 1, vec(1, i), 1)
             hh(i) = hh(i) + fct
             do k = 1, n
-               vec(k,ind) = vec(k,ind) - fct * vec(k,i)
+               vec(k, ind) = vec(k, ind) - fct * vec(k, i)
             end do
-            ops = ops + 4*n + 1
-         endif
+            ops = ops + 4 * n + 1
+         end if
          nrm0 = nrm0 - hh(i) * hh(i)
-         if (nrm0.lt.zero) nrm0 = zero
+         if (nrm0 < zero) nrm0 = zero
          thr = nrm0 * reorth
       end do
+   end if
+!
+   do i = 1, ind - 1
+      fct = ddot(n, vec(1, ind), 1, vec(1, i), 1)
+      hh(i) = fct
+      do k = 1, n
+         vec(k, ind) = vec(k, ind) - fct * vec(k, i)
+      end do
+      ops = ops + 4 * n + 2
+      if (fct * fct > thr) then
+         fct = ddot(n, vec(1, ind), 1, vec(1, i), 1)
+         hh(i) = hh(i) + fct
+         do k = 1, n
+            vec(k, ind) = vec(k, ind) - fct * vec(k, i)
+         end do
+         ops = ops + 4 * n + 1
+      end if
+      nrm0 = nrm0 - hh(i) * hh(i)
+      if (nrm0 < zero) nrm0 = zero
+      thr = nrm0 * reorth
+   end do
 !
 !     test the resulting vector
 !
-      nrm1 = sqrt(ddot(n,vec(1,ind),1,vec(1,ind),1))
-      ops = ops + n + n
- 75   hh(ind) = nrm1
-      if (nrm1.le.zero) then
-         ierr = -3
-         return
-      endif
+   nrm1 = sqrt(ddot(n, vec(1, ind), 1, vec(1, ind), 1))
+   ops = ops + n + n
+75 hh(ind) = nrm1
+   if (nrm1 <= zero) then
+      ierr = -3
+      return
+   end if
 !
 !     scale the resulting vector
 !
-      fct = one / nrm1
-      do k = 1, n
-         vec(k,ind) = vec(k,ind) * fct
-      end do
-      ops = ops + n + 1
+   fct = one / nrm1
+   do k = 1, n
+      vec(k, ind) = vec(k, ind) * fct
+   end do
+   ops = ops + n + 1
 !
 !     normal return
 !
-      ierr = 0
-      return
-!     end surbotine mgsro
-      end
-!-----------------------------------------------------------------------
+   ierr = 0
+   return
+end subroutine mgsro
 
+subroutine entline(outf, mat, its, kk)
+   implicit none
+   integer outf, kk, its(kk), k
+   character mat * 70
 !-----------------------------------------------------------------------
-      subroutine entline(outf,mat,its,kk)
-      implicit none
-      integer outf, kk,its(kk),k
-      character mat*70
-!      double precision ::  err(kk), res(kk)
+   write (outf, 100) mat(19:29), (its(k), k=1, 8)
+100 format(a, ' & ', 8(i4, ' & '), '\\\\ \\hline')
+   return
+end subroutine entline
+
+subroutine stb_test(n, sol, alu, jlu, ju, tmax)
+   implicit none
+   integer n, jlu(*), ju(*)
+   double precision :: sol(n), alu(*), tmax
 !-----------------------------------------------------------------------
-      write(outf,100)  mat(19:29),(its(k),k=1,8)
- 100  format (a,' & ', 8(i4,' & '),'\\\\ \\hline')
-      return
-      end
-!-----------------------------------------------------------------------
-      subroutine stb_test(n,sol,alu,jlu,ju,tmax)
-      implicit none
-      integer n, jlu(*),ju(*)
-      double precision ::  sol(n),alu(*),tmax
-!-----------------------------------------------------------------------
-      double precision ::  max, t, abs
-      integer j
+   double precision :: max, t, abs
+   integer j
 !
-      call lusol(n,sol,sol,alu,jlu,ju,30*n)
+   call lusol(n, sol, sol, alu, jlu, ju, 30 * n)
 !
-      tmax = 0.0
-      do j=1, n
-         t = abs(sol(j))
-         tmax = max(t,tmax)
-      enddo
-      return
-      end
+   tmax = 0.0
+   do j = 1, n
+      t = abs(sol(j))
+      tmax = max(t, tmax)
+   end do
+   return
+end subroutine stb_test
 
+subroutine xyk(nel, xyke, x, y, ijk, node)
+   use precision_basics, only: dp
 
-
-      subroutine xyk(nel,xyke,x,y,ijk,node)
-      implicit double precision  (a-h,o-z)
-      dimension xyke(2,2), x(*), y(*), ijk(node,*)
+   implicit none
+   
+   integer :: nel, ijk(:, :), node
+   real(dp) :: xyke(2, 2), x(:), y(:)
+   no_warning_unused_dummy_argument(nel)
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(ijk)
+   no_warning_unused_dummy_argument(node)
 !
 !     this is the identity matrix.
 !
-      xyke(1,1) = 1.0d0
-      xyke(2,2) = 1.0d0
-      xyke(1,2) = 0.0d0
-      xyke(2,1) = 0.0d0
+   xyke(1, 1) = 1.0d0
+   xyke(2, 2) = 1.0d0
+   xyke(1, 2) = 0.0d0
+   xyke(2, 1) = 0.0d0
 
-      return
-      end
+   return
+end subroutine xyk
 !----------------------------------------------------------------------c
 !                          S P A R S K I T                             c
 !----------------------------------------------------------------------c
@@ -6779,9 +6776,11 @@ end do
 ! clrow    : clear a row of a CSR matrix                               c
 ! lctcsr   : locate the position of A(i,j) in CSR format               c
 !----------------------------------------------------------------------c
-      subroutine gen57pt(nx,ny,nz,al,mode,n,a,ja,ia,iau,rhs)
-      integer ja(*),ia(*),iau(*), nx, ny, nz, mode, n
-      double precision ::  a(*), rhs(*), al(6)
+subroutine gen57pt(nx, ny, nz, al, mode, n, a, ja, ia, iau, rhs)
+   implicit none
+
+   integer ja(*), ia(*), iau(*), nx, ny, nz, mode, n
+   double precision :: a(*), rhs(*), al(6)
 !-----------------------------------------------------------------------
 ! On entry:
 !
@@ -6907,109 +6906,109 @@ end do
 !-------------------------------------------------------------------
 !     some constants
 !
-      double precision ::  one
-      parameter (one=1.0D0)
+   double precision :: one
+   parameter(one=1.0d0)
 !
 !     local variables
 !
-      integer ix, iy, iz, kx, ky, kz, node, iedge
-      double precision ::   r, h, stencil(7)
-      logical value, genrhs
+   integer ix, iy, iz, kx, ky, kz, node, iedge
+   double precision :: r, h, stencil(7)
+   logical value, genrhs
 !
 !     nx has to be larger than 1
 !
-      if (nx.le.1) return
-      h = one / dble(nx-1)
+   if (nx <= 1) return
+   h = one / dble(nx - 1)
 !
 !     the mode
 !
-      value = (mode.ge.0)
-      genrhs = (mode.gt.0)
+   value = (mode >= 0)
+   genrhs = (mode > 0)
 !
 !     first generate the whole matrix as if the boundary condition does
 !     not exist
 !
-      kx = 1
-      ky = nx
-      kz = nx*ny
-      iedge = 1
-      node = 1
-      do iz = 1,nz
-         do iy = 1,ny
-            do ix = 1,nx
-               ia(node) = iedge
+   kx = 1
+   ky = nx
+   kz = nx * ny
+   iedge = 1
+   node = 1
+   do iz = 1, nz
+      do iy = 1, ny
+         do ix = 1, nx
+            ia(node) = iedge
 !
 !     compute the stencil at the current node
 !
-               if (value) call  getsten(nx,ny,nz,mode,ix-1,iy-1,iz-1,stencil,h,r)
+            if (value) call getsten(nx, ny, nz, mode, ix - 1, iy - 1, iz - 1, stencil, h, r)
 !     west
-               if (ix.gt.1) then
-                  ja(iedge)=node-kx
-        if (value) a(iedge) = stencil(2)
-                  iedge=iedge + 1
-               end if
-!     south
-               if (iy.gt.1) then
-                  ja(iedge)=node-ky
-        if (value) a(iedge) = stencil(4)
-                  iedge=iedge + 1
-               end if
-!     front plane
-               if (iz.gt.1) then
-                  ja(iedge)=node-kz
-        if (value) a(iedge) = stencil(6)
-                  iedge=iedge + 1
-               endif
-!     center node
-               ja(iedge) = node
-               iau(node) = iedge
-               if (value) a(iedge) = stencil(1)
+            if (ix > 1) then
+               ja(iedge) = node - kx
+               if (value) a(iedge) = stencil(2)
                iedge = iedge + 1
+            end if
+!     south
+            if (iy > 1) then
+               ja(iedge) = node - ky
+               if (value) a(iedge) = stencil(4)
+               iedge = iedge + 1
+            end if
+!     front plane
+            if (iz > 1) then
+               ja(iedge) = node - kz
+               if (value) a(iedge) = stencil(6)
+               iedge = iedge + 1
+            end if
+!     center node
+            ja(iedge) = node
+            iau(node) = iedge
+            if (value) a(iedge) = stencil(1)
+            iedge = iedge + 1
 !     east
-               if (ix.lt.nx) then
-                  ja(iedge)=node+kx
-        if (value) a(iedge) = stencil(3)
-                  iedge=iedge + 1
-               end if
+            if (ix < nx) then
+               ja(iedge) = node + kx
+               if (value) a(iedge) = stencil(3)
+               iedge = iedge + 1
+            end if
 !     north
-               if (iy.lt.ny) then
-                  ja(iedge)=node+ky
-        if (value) a(iedge) = stencil(5)
-                  iedge=iedge + 1
-               end if
+            if (iy < ny) then
+               ja(iedge) = node + ky
+               if (value) a(iedge) = stencil(5)
+               iedge = iedge + 1
+            end if
 !     back plane
-               if (iz.lt.nz) then
-                  ja(iedge)=node+kz
-                  if (value) a(iedge) = stencil(7)
-                  iedge=iedge + 1
-               end if
+            if (iz < nz) then
+               ja(iedge) = node + kz
+               if (value) a(iedge) = stencil(7)
+               iedge = iedge + 1
+            end if
 !     the right-hand side
-               if (genrhs) rhs(node) = r
-               node=node+1
-            end do
+            if (genrhs) rhs(node) = r
+            node = node + 1
          end do
       end do
-      ia(node)=iedge
+   end do
+   ia(node) = iedge
 !
 !     Add in the boundary conditions
 !
-      call fdaddbc(nx,ny,nz,a,ja,ia,iau,rhs,al,h)
+   call fdaddbc(nx, ny, nz, a, ja, ia, iau, rhs, al, h)
 !
 !     eliminate the boudary nodes from the matrix
 !
-      call fdreduce(nx,ny,nz,al,n,a,ja,ia,iau,rhs,stencil)
+   call fdreduce(nx, ny, nz, al, n, a, ja, ia, iau, rhs, stencil)
 !
 !     done
 !
-      return
-!-----end-of-gen57pt----------------------------------------------------
-!-----------------------------------------------------------------------
-      end
-!-----------------------------------------------------------------------
-      subroutine getsten (nx,ny,nz,mode,kx,ky,kz,stencil,h,rhs)
-      integer nx,ny,nz,mode,kx,ky,kz
-      double precision ::  stencil(*),h,rhs,afun,bfun,cfun,dfun,efun,ffun,gfun,hfun
-      external afun,bfun,cfun,dfun,efun,ffun,gfun,hfun
+   return
+end subroutine gen57pt
+
+subroutine getsten(nx, ny, nz, mode, kx, ky, kz, stencil, h, rhs)
+   implicit none
+
+   integer nx, ny, nz, mode, kx, ky, kz
+   double precision :: stencil(*), h, rhs, afun, bfun, cfun, dfun, efun, ffun, gfun, hfun
+   external afun, bfun, cfun, dfun, efun, ffun, gfun, hfun
 !-----------------------------------------------------------------------
 !     This subroutine calculates the correct stencil values for
 !     centered difference discretization of the elliptic operator
@@ -7031,88 +7030,87 @@ end do
 !-----------------------------------------------------------------------
 !     some constants
 !
-      double precision ::  zero, half
-      parameter (zero=0.0D0,half=0.5D0)
+   double precision :: zero, half
+   parameter(zero=0.0d0, half=0.5d0)
 !
 !     local variables
 !
-      integer k
-      double precision ::  hhalf,cntr, x, y, z, coeff
+   integer k
+   double precision :: hhalf, cntr, x, y, z, coeff
+   no_warning_unused_dummy_argument(nx)
 !
 !     if mode < 0, we shouldn't have come here
 !
-      if (mode .lt. 0) return
+   if (mode < 0) return
 !
-      do k=1,7
-         stencil(k) = zero
-      end do
+   do k = 1, 7
+      stencil(k) = zero
+   end do
 !
-      hhalf = h*half
-      x = h*dble(kx)
-      y = h*dble(ky)
-      z = h*dble(kz)
-      cntr = zero
+   hhalf = h * half
+   x = h * dble(kx)
+   y = h * dble(ky)
+   z = h * dble(kz)
+   cntr = zero
 !     differentiation wrt x:
-      coeff = afun(x+hhalf,y,z)
-      stencil(3) = stencil(3) + coeff
-      cntr = cntr + coeff
+   coeff = afun(x + hhalf, y, z)
+   stencil(3) = stencil(3) + coeff
+   cntr = cntr + coeff
 !
-      coeff = afun(x-hhalf,y,z)
-      stencil(2) = stencil(2) + coeff
-      cntr = cntr + coeff
+   coeff = afun(x - hhalf, y, z)
+   stencil(2) = stencil(2) + coeff
+   cntr = cntr + coeff
 !
-      coeff = dfun(x,y,z)*hhalf
-      stencil(3) = stencil(3) + coeff
-      stencil(2) = stencil(2) - coeff
-      if (ny .le. 1) goto 99
+   coeff = dfun(x, y, z) * hhalf
+   stencil(3) = stencil(3) + coeff
+   stencil(2) = stencil(2) - coeff
+   if (ny <= 1) goto 99
 !
 !     differentiation wrt y:
 !
-      coeff = bfun(x,y+hhalf,z)
-      stencil(5) = stencil(5) + coeff
-      cntr = cntr + coeff
+   coeff = bfun(x, y + hhalf, z)
+   stencil(5) = stencil(5) + coeff
+   cntr = cntr + coeff
 !
-      coeff = bfun(x,y-hhalf,z)
-      stencil(4) = stencil(4) + coeff
-      cntr = cntr + coeff
+   coeff = bfun(x, y - hhalf, z)
+   stencil(4) = stencil(4) + coeff
+   cntr = cntr + coeff
 !
-      coeff = efun(x,y,z)*hhalf
-      stencil(5) = stencil(5) + coeff
-      stencil(4) = stencil(4) - coeff
-      if (nz .le. 1) goto 99
+   coeff = efun(x, y, z) * hhalf
+   stencil(5) = stencil(5) + coeff
+   stencil(4) = stencil(4) - coeff
+   if (nz <= 1) goto 99
 !
 ! differentiation wrt z:
 !
-      coeff = cfun(x,y,z+hhalf)
-      stencil(7) = stencil(7) + coeff
-      cntr = cntr + coeff
+   coeff = cfun(x, y, z + hhalf)
+   stencil(7) = stencil(7) + coeff
+   cntr = cntr + coeff
 !
-      coeff = cfun(x,y,z-hhalf)
-      stencil(6) = stencil(6) + coeff
-      cntr = cntr + coeff
+   coeff = cfun(x, y, z - hhalf)
+   stencil(6) = stencil(6) + coeff
+   cntr = cntr + coeff
 !
-      coeff = ffun(x,y,z)*hhalf
-      stencil(7) = stencil(7) + coeff
-      stencil(6) = stencil(6) - coeff
+   coeff = ffun(x, y, z) * hhalf
+   stencil(7) = stencil(7) + coeff
+   stencil(6) = stencil(6) - coeff
 !
 ! contribution from function G:
 !
- 99   coeff = gfun(x,y,z)
-      stencil(1) = h*h*coeff - cntr
+99 coeff = gfun(x, y, z)
+   stencil(1) = h * h * coeff - cntr
 !
 !     the right-hand side
 !
-      if (mode .gt. 0) rhs = h*h*hfun(x,y,z)
+   if (mode > 0) rhs = h * h * hfun(x, y, z)
 !
-      return
-!------end-of-getsten---------------------------------------------------
-!-----------------------------------------------------------------------
-      end
-!-----------------------------------------------------------------------
-      subroutine gen57bl (nx,ny,nz,nfree,na,n,a,ja,ia,iau,stencil)
-!     implicit double precision ::  (a-h,o-z)
-      integer ja(*),ia(*),iau(*),nx,ny,nz,nfree,na,n
-      double precision ::  a(na,1), stencil(7,1)
+   return
+end subroutine getsten
+
+subroutine gen57bl(nx, ny, nz, nfree, na, n, a, ja, ia, iau, stencil)
+   implicit none
+   integer ja(*), ia(*), iau(*), nx, ny, nz, nfree, na, n
+   double precision :: a(na, 1), stencil(7, 1)
 !--------------------------------------------------------------------
 ! This subroutine computes the sparse matrix in compressed
 ! format for the elliptic operator
@@ -7196,95 +7194,93 @@ end do
 !-------------------------------------------------------------------
 !     some constants
 !
-      double precision ::  one
-      parameter (one=1.0D0)
+   double precision :: one
+   parameter(one=1.0d0)
 !
 !     local variables
 !
-      integer iedge,ix,iy,iz,k,kx,ky,kz,nfree2,node
-      double precision ::   h
+   integer iedge, ix, iy, iz, k, kx, ky, kz, nfree2, node
+   double precision :: h
 !
-      h = one/dble(nx+1)
-      kx = 1
-      ky = nx
-      kz = nx*ny
-      nfree2 = nfree*nfree
-      iedge = 1
-      node = 1
-      do iz = 1,nz
-         do iy = 1,ny
-            do ix = 1,nx
-               ia(node) = iedge
-               call bsten(nx,ny,nz,ix,iy,iz,nfree,stencil,h)
+   h = one / dble(nx + 1)
+   kx = 1
+   ky = nx
+   kz = nx * ny
+   nfree2 = nfree * nfree
+   iedge = 1
+   node = 1
+   do iz = 1, nz
+      do iy = 1, ny
+         do ix = 1, nx
+            ia(node) = iedge
+            call bsten(nx, ny, nz, ix, iy, iz, nfree, stencil, h)
 !     west
-               if (ix.gt.1) then
-                  ja(iedge)=node-kx
-             do k=1,nfree2
-           a(k,iedge) = stencil(2,k)
-         end do
-                  iedge=iedge + 1
-               end if
-!     south
-               if (iy.gt.1) then
-                  ja(iedge)=node-ky
-             do k=1,nfree2
-           a(k,iedge) = stencil(4,k)
-         end do
-                  iedge=iedge + 1
-               end if
-!     front plane
-               if (iz.gt.1) then
-                  ja(iedge)=node-kz
-             do k=1,nfree2
-           a(k,iedge) = stencil(6,k)
-         end do
-                  iedge=iedge + 1
-               endif
-!     center node
-               ja(iedge) = node
-               iau(node) = iedge
-               do k=1,nfree2
-                  a(k,iedge) = stencil(1,k)
+            if (ix > 1) then
+               ja(iedge) = node - kx
+               do k = 1, nfree2
+                  a(k, iedge) = stencil(2, k)
                end do
                iedge = iedge + 1
+            end if
+!     south
+            if (iy > 1) then
+               ja(iedge) = node - ky
+               do k = 1, nfree2
+                  a(k, iedge) = stencil(4, k)
+               end do
+               iedge = iedge + 1
+            end if
+!     front plane
+            if (iz > 1) then
+               ja(iedge) = node - kz
+               do k = 1, nfree2
+                  a(k, iedge) = stencil(6, k)
+               end do
+               iedge = iedge + 1
+            end if
+!     center node
+            ja(iedge) = node
+            iau(node) = iedge
+            do k = 1, nfree2
+               a(k, iedge) = stencil(1, k)
+            end do
+            iedge = iedge + 1
 !     -- upper part
 !     east
-               if (ix.lt.nx) then
-                  ja(iedge)=node+kx
-             do k=1,nfree2
-           a(k,iedge) = stencil(3,k)
-         end do
-                  iedge=iedge + 1
-               end if
+            if (ix < nx) then
+               ja(iedge) = node + kx
+               do k = 1, nfree2
+                  a(k, iedge) = stencil(3, k)
+               end do
+               iedge = iedge + 1
+            end if
 !     north
-               if (iy.lt.ny) then
-                  ja(iedge)=node+ky
-             do k=1,nfree2
-           a(k,iedge) = stencil(5,k)
-         end do
-                  iedge=iedge + 1
-               end if
+            if (iy < ny) then
+               ja(iedge) = node + ky
+               do k = 1, nfree2
+                  a(k, iedge) = stencil(5, k)
+               end do
+               iedge = iedge + 1
+            end if
 !     back plane
-               if (iz.lt.nz) then
-                  ja(iedge)=node+kz
-             do k=1,nfree2
-                     a(k,iedge) = stencil(7,k)
-                  end do
-                  iedge=iedge + 1
-               end if
+            if (iz < nz) then
+               ja(iedge) = node + kz
+               do k = 1, nfree2
+                  a(k, iedge) = stencil(7, k)
+               end do
+               iedge = iedge + 1
+            end if
 !------next node -------------------------
-               node=node+1
-            end do
+            node = node + 1
          end do
       end do
-      n = node-1
-      ia(node)=iedge
-      return
-!--------------end-of-gen57bl-------------------------------------------
-!-----------------------------------------------------------------------
-      end
-!-----------------------------------------------------------------------
-      subroutine bsten (nx,ny,nz,kx,ky,kz,nfree,stencil,h)
+   end do
+   n = node - 1
+   ia(node) = iedge
+   return
+end subroutine gen57bl
+    
+subroutine bsten(nx, ny, nz, kx, ky, kz, nfree, stencil, h)
 
 !-----------------------------------------------------------------------
 !     This subroutine calcultes the correct block-stencil values for
@@ -7307,112 +7303,114 @@ end do
 !-----------------------------------------------------------------------
 !     some constants
 !
-      double precision ::   zero,half
-      parameter(zero=0.0D0,half=0.5D0)
+   implicit none
+
+   double precision :: zero, half
+   parameter(zero=0.0d0, half=0.5d0)
 !
 !     local variables
 !
-      integer          :: i,k,kx,ky,kz,nfree,nfree2,nx,ny,nz
-      double precision ::  stencil(7,*)
-      double precision ::  cntr(225), coeff(225),h,h2,hhalf,x,y,z, xh,yh,zh
+   integer :: i, k, kx, ky, kz, nfree, nfree2, nx, ny, nz
+   double precision :: stencil(7, *)
+   double precision :: cntr(225), coeff(225), h, h2, hhalf, x, y, z, xh
+   no_warning_unused_dummy_argument(nx)
 !------------
-      if (nfree .gt. 15) then
-         print *, ' ERROR ** nfree too large '
-         stop
-      endif
+   if (nfree > 15) then
+      print *, ' ERROR ** nfree too large '
+      stop
+   end if
 !
-      nfree2 = nfree*nfree
-      do k=1, nfree2
-         cntr(k) = zero
-         do i=1,7
-            stencil(i,k) = zero
-         end do
+   nfree2 = nfree * nfree
+   do k = 1, nfree2
+      cntr(k) = zero
+      do i = 1, 7
+         stencil(i, k) = zero
       end do
+   end do
 !------------
-      hhalf = h*half
-      h2 = h*h
-      x = h*dble(kx)
-      y = h*dble(ky)
-      z = h*dble(kz)
+   hhalf = h * half
+   h2 = h * h
+   x = h * dble(kx)
+   y = h * dble(ky)
+   z = h * dble(kz)
 ! differentiation wrt x:
-      xh = x+hhalf
-      call afunbl(nfree,xh,y,z,coeff)
-      do k=1, nfree2
-         stencil(3,k) = stencil(3,k) + coeff(k)
-         cntr(k) = cntr(k) + coeff(k)
-      end do
+   xh = x + hhalf
+   call afunbl(nfree, xh, y, z, coeff)
+   do k = 1, nfree2
+      stencil(3, k) = stencil(3, k) + coeff(k)
+      cntr(k) = cntr(k) + coeff(k)
+   end do
 
 !
-      xh = x-hhalf
-      call afunbl(nfree,xh,y,z,coeff)
-      do k=1, nfree2
-         stencil(2,k) = stencil(2,k) + coeff(k)
-         cntr(k) = cntr(k) + coeff(k)
-      end do
+   xh = x - hhalf
+   call afunbl(nfree, xh, y, z, coeff)
+   do k = 1, nfree2
+      stencil(2, k) = stencil(2, k) + coeff(k)
+      cntr(k) = cntr(k) + coeff(k)
+   end do
 !
-      call dfunbl(nfree,x,y,z,coeff)
-      do k=1, nfree2
-         stencil(3,k) = stencil(3,k) + coeff(k)*hhalf
-         stencil(2,k) = stencil(2,k) - coeff(k)*hhalf
-      end do
-      if (ny .le. 1) goto 99
+   call dfunbl(nfree, x, y, z, coeff)
+   do k = 1, nfree2
+      stencil(3, k) = stencil(3, k) + coeff(k) * hhalf
+      stencil(2, k) = stencil(2, k) - coeff(k) * hhalf
+   end do
+   if (ny <= 1) goto 99
 !
 ! differentiation wrt y:
 !
-      call bfunbl(nfree,x,y+hhalf,z,coeff)
-      do k=1,nfree2
-         stencil(5,k) = stencil(5,k) + coeff(k)
-         cntr(k) = cntr(k) + coeff(k)
-      end do
+   call bfunbl(nfree, x, y + hhalf, z, coeff)
+   do k = 1, nfree2
+      stencil(5, k) = stencil(5, k) + coeff(k)
+      cntr(k) = cntr(k) + coeff(k)
+   end do
 !
-      call bfunbl(nfree,x,y-hhalf,z,coeff)
-      do k=1, nfree2
-         stencil(4,k) = stencil(4,k) + coeff(k)
-         cntr(k) = cntr(k) + coeff(k)
-      end do
+   call bfunbl(nfree, x, y - hhalf, z, coeff)
+   do k = 1, nfree2
+      stencil(4, k) = stencil(4, k) + coeff(k)
+      cntr(k) = cntr(k) + coeff(k)
+   end do
 !
-      call efunbl(nfree,x,y,z,coeff)
-      do k=1, nfree2
-         stencil(5,k) = stencil(5,k) + coeff(k)*hhalf
-         stencil(4,k) = stencil(4,k) - coeff(k)*hhalf
-      end do
-      if (nz .le. 1) goto 99
+   call efunbl(nfree, x, y, z, coeff)
+   do k = 1, nfree2
+      stencil(5, k) = stencil(5, k) + coeff(k) * hhalf
+      stencil(4, k) = stencil(4, k) - coeff(k) * hhalf
+   end do
+   if (nz <= 1) goto 99
 !
 ! differentiation wrt z:
 !
-      call cfunbl(nfree,x,y,z+hhalf,coeff)
-      do k=1, nfree2
-         stencil(7,k) = stencil(7,k) + coeff(k)
-         cntr(k) = cntr(k) + coeff(k)
-      end do
+   call cfunbl(nfree, x, y, z + hhalf, coeff)
+   do k = 1, nfree2
+      stencil(7, k) = stencil(7, k) + coeff(k)
+      cntr(k) = cntr(k) + coeff(k)
+   end do
 !
-      call cfunbl(nfree,x,y,z-hhalf,coeff)
-      do k=1, nfree2
-         stencil(6,k) = stencil(6,k) + coeff(k)
-         cntr(k) = cntr(k) + coeff(k)
-      end do
+   call cfunbl(nfree, x, y, z - hhalf, coeff)
+   do k = 1, nfree2
+      stencil(6, k) = stencil(6, k) + coeff(k)
+      cntr(k) = cntr(k) + coeff(k)
+   end do
 !
-      call ffunbl(nfree,x,y,z,coeff)
-      do k=1, nfree2
-         stencil(7,k) = stencil(7,k) + coeff(k)*hhalf
-         stencil(6,k) = stencil(6,k) - coeff(k)*hhalf
-      end do
+   call ffunbl(nfree, x, y, z, coeff)
+   do k = 1, nfree2
+      stencil(7, k) = stencil(7, k) + coeff(k) * hhalf
+      stencil(6, k) = stencil(6, k) - coeff(k) * hhalf
+   end do
 !
 ! discretization of  product by g:
 !
- 99   call gfunbl(nfree,x,y,z,coeff)
-      do k=1, nfree2
-         stencil(1,k) = h2*coeff(k) - cntr(k)
-end do
+99 call gfunbl(nfree, x, y, z, coeff)
+   do k = 1, nfree2
+      stencil(1, k) = h2 * coeff(k) - cntr(k)
+   end do
 !
-      return
-!------------end of bsten-----------------------------------------------
-!-----------------------------------------------------------------------
-      end
-      subroutine fdreduce(nx,ny,nz,alpha,n,a,ja,ia,iau,rhs,stencil)
-      implicit none
-      integer nx,ny, nz, n, ia(*), ja(*), iau(*)
-      double precision ::   alpha(*), a(*), rhs(*), stencil(*)
+   return
+endsubroutine bsten
+    
+subroutine fdreduce(nx, ny, nz, alpha, n, a, ja, ia, iau, rhs, stencil)
+   implicit none
+   integer nx, ny, nz, n, ia(*), ja(*), iau(*)
+   double precision :: alpha(*), a(*), rhs(*), stencil(*)
 !-----------------------------------------------------------------------
 ! This subroutine tries to reduce the size of the matrix by looking
 ! for Dirichlet boundary conditions at each surface and solve the boundary
@@ -7421,15 +7419,15 @@ end do
 !-----------------------------------------------------------------------
 !     parameters
 !
-      double precision ::    zero
-      parameter(zero=0.0D0)
+   double precision :: zero
+   parameter(zero=0.0d0)
 !
 !     local variables
 !
-      integer  i,j,k,kx,ky,kz,lx,ux,ly,uy,lz,uz,node,nbnode,lk,ld,iedge
-      double precision ::    val
-      integer  lctcsr
-      external lctcsr
+   integer i, j, k, kx, ky, kz, lx, ux, ly, uy, lz, uz, node, nbnode, lk, ld, iedge
+   double precision :: val
+   integer lctcsr
+   external lctcsr
 !
 !     The first half of this subroutine will try to change the right-hand
 !     side of all the nodes that has a neighbor with Dirichlet boundary
@@ -7438,240 +7436,240 @@ end do
 !     Then in the second half, we will try to eliminate the boundary
 !     points with known values (with Dirichlet boundary condition).
 !
-      kx = 1
-      ky = nx
-      kz = nx*ny
-      lx = 1
-      ux = nx
-      ly = 1
-      uy = ny
-      lz = 1
-      uz = nz
+   kx = 1
+   ky = nx
+   kz = nx * ny
+   lx = 1
+   ux = nx
+   ly = 1
+   uy = ny
+   lz = 1
+   uz = nz
 !
 !     Here goes the first part. ----------------------------------------
 !
 !     the left (west) side
 !
-      if (alpha(1) .eq. zero) then
-         lx = 2
-         do k = 1, nz
-            do j = 1, ny
-               node = (k-1)*kz + (j-1)*ky + 1
-               nbnode = node + kx
-               lk = lctcsr(nbnode, node, ja, ia)
-               ld = iau(node)
-               val = rhs(node)/a(ld)
+   if (alpha(1) == zero) then
+      lx = 2
+      do k = 1, nz
+         do j = 1, ny
+            node = (k - 1) * kz + (j - 1) * ky + 1
+            nbnode = node + kx
+            lk = lctcsr(nbnode, node, ja, ia)
+            ld = iau(node)
+            val = rhs(node) / a(ld)
 !     modify the rhs
-               rhs(nbnode) = rhs(nbnode) - a(lk)*val
-            end do
+            rhs(nbnode) = rhs(nbnode) - a(lk) * val
+         end do
       end do
-      endif
+   end if
 !
 !     right (east) side
 !
-      if (alpha(2) .eq. zero) then
-         ux = nx - 1
-         do k = 1, nz
-            do j = 1, ny
-               node = (k-1)*kz + (j-1)*ky + nx
-               nbnode = node - kx
-               lk = lctcsr(nbnode, node, ja, ia)
-               ld = iau(node)
-               val = rhs(node)/a(ld)
+   if (alpha(2) == zero) then
+      ux = nx - 1
+      do k = 1, nz
+         do j = 1, ny
+            node = (k - 1) * kz + (j - 1) * ky + nx
+            nbnode = node - kx
+            lk = lctcsr(nbnode, node, ja, ia)
+            ld = iau(node)
+            val = rhs(node) / a(ld)
 !     modify the rhs
-               rhs(nbnode) = rhs(nbnode) - a(lk)*val
-            end do
+            rhs(nbnode) = rhs(nbnode) - a(lk) * val
+         end do
       end do
-      endif
+   end if
 !
 !     if it's only 1-D, skip the following part
 !
-      if (ny .le. 1) goto 100
+   if (ny <= 1) goto 100
 !
 !     the bottom (south) side
 !
-      if (alpha(3) .eq. zero) then
-         ly = 2
-         do k = 1, nz
-            do i = lx, ux
-               node = (k-1)*kz + i
-               nbnode = node + ky
-               lk = lctcsr(nbnode, node, ja, ia)
-               ld = iau(node)
-               val = rhs(node)/a(ld)
+   if (alpha(3) == zero) then
+      ly = 2
+      do k = 1, nz
+         do i = lx, ux
+            node = (k - 1) * kz + i
+            nbnode = node + ky
+            lk = lctcsr(nbnode, node, ja, ia)
+            ld = iau(node)
+            val = rhs(node) / a(ld)
 !     modify the rhs
-               rhs(nbnode) = rhs(nbnode) - a(lk)*val
-            end do
+            rhs(nbnode) = rhs(nbnode) - a(lk) * val
          end do
-      endif
+      end do
+   end if
 !
 !     top (north) side
 !
-      if (alpha(4) .eq. zero) then
-         uy = ny - 1
-         do k = 1, nz
-            do i = lx, ux
-               node = (k-1)*kz + i + (ny-1)*ky
-               nbnode = node - ky
-               lk = lctcsr(nbnode, node, ja, ia)
-               ld = iau(node)
-               val = rhs(node)/a(ld)
+   if (alpha(4) == zero) then
+      uy = ny - 1
+      do k = 1, nz
+         do i = lx, ux
+            node = (k - 1) * kz + i + (ny - 1) * ky
+            nbnode = node - ky
+            lk = lctcsr(nbnode, node, ja, ia)
+            ld = iau(node)
+            val = rhs(node) / a(ld)
 !     modify the rhs
-               rhs(nbnode) = rhs(nbnode) - a(lk)*val
-            end do
+            rhs(nbnode) = rhs(nbnode) - a(lk) * val
          end do
-      endif
+      end do
+   end if
 !
 !     if only 2-D skip the following section on z
 !
-      if (nz .le. 1) goto 100
+   if (nz <= 1) goto 100
 !
 !     the front surface
 !
-      if (alpha(5) .eq. zero) then
-         lz = 2
-         do j = ly, uy
-            do i = lx,  ux
-               node = (j-1)*ky + i
-               nbnode = node + kz
-               lk = lctcsr(nbnode, node, ja, ia)
-               ld = iau(node)
-               val = rhs(node)/a(ld)
+   if (alpha(5) == zero) then
+      lz = 2
+      do j = ly, uy
+         do i = lx, ux
+            node = (j - 1) * ky + i
+            nbnode = node + kz
+            lk = lctcsr(nbnode, node, ja, ia)
+            ld = iau(node)
+            val = rhs(node) / a(ld)
 !     modify the rhs
-               rhs(nbnode) = rhs(nbnode) - a(lk)*val
-            end do
+            rhs(nbnode) = rhs(nbnode) - a(lk) * val
          end do
-      endif
+      end do
+   end if
 !
 !     rear surface
 !
-      if (alpha(6) .eq. zero) then
-         uz = nz - 1
-         do j = ly, uy
-            do i = lx, ux
-               node = (nz-1)*kz + (j-1)*ky + i
-               nbnode = node - kz
-               lk = lctcsr(nbnode, node, ja, ia)
-               ld = iau(node)
-               val = rhs(node)/a(ld)
+   if (alpha(6) == zero) then
+      uz = nz - 1
+      do j = ly, uy
+         do i = lx, ux
+            node = (nz - 1) * kz + (j - 1) * ky + i
+            nbnode = node - kz
+            lk = lctcsr(nbnode, node, ja, ia)
+            ld = iau(node)
+            val = rhs(node) / a(ld)
 !     modify the rhs
-               rhs(nbnode) = rhs(nbnode) - a(lk)*val
-            end do
+            rhs(nbnode) = rhs(nbnode) - a(lk) * val
          end do
-      endif
+      end do
+   end if
 !
 !     now the second part ----------------------------------------------
 !
 !     go through all the actual nodes with unknown values, collect all
 !     of them to form a new matrix in compressed sparse row format.
 !
- 100  kx = 1
-      ky = ux - lx + 1
-      kz = (uy - ly + 1) * ky
-      node = 1
-      iedge = 1
-      do k = lz, uz
-         do j = ly, uy
-            do i = lx, ux
+100 kx = 1
+   ky = ux - lx + 1
+   kz = (uy - ly + 1) * ky
+   node = 1
+   iedge = 1
+   do k = lz, uz
+      do j = ly, uy
+         do i = lx, ux
 !
 !     the corresponding old node number
-               nbnode = ((k-1)*ny + j-1)*nx + i
+            nbnode = ((k - 1) * ny + j - 1) * nx + i
 !
 !     copy the row into local stencil, copy is done is the exact
 !     same order as the stencil is written into array a
-               lk = ia(nbnode)
-               if (i.gt.1) then
-                  stencil(2) = a(lk)
-                  lk = lk + 1
-               end if
-               if (j.gt.1) then
-                  stencil(4) = a(lk)
-                  lk = lk + 1
-               end if
-               if (k.gt.1) then
-                  stencil(6) = a(lk)
-                  lk = lk + 1
-               end if
-               stencil(1) = a(lk)
+            lk = ia(nbnode)
+            if (i > 1) then
+               stencil(2) = a(lk)
                lk = lk + 1
-               if (i.lt.nx) then
-                  stencil(3) = a(lk)
-                  lk = lk + 1
-               endif
-               if (j.lt.ny) then
-                  stencil(5) = a(lk)
-                  lk = lk + 1
-               end if
-               if (k.lt.nz) stencil(7) = a(lk)
+            end if
+            if (j > 1) then
+               stencil(4) = a(lk)
+               lk = lk + 1
+            end if
+            if (k > 1) then
+               stencil(6) = a(lk)
+               lk = lk + 1
+            end if
+            stencil(1) = a(lk)
+            lk = lk + 1
+            if (i < nx) then
+               stencil(3) = a(lk)
+               lk = lk + 1
+            end if
+            if (j < ny) then
+               stencil(5) = a(lk)
+               lk = lk + 1
+            end if
+            if (k < nz) stencil(7) = a(lk)
 !
 !     first the ia pointer -- points to the beginning of each row
-               ia(node) = iedge
+            ia(node) = iedge
 !
 !     move the values from the local stencil to the new matrix
 !
 !     the neighbor on the left (west)
-               if (i.gt.lx) then
-                  ja(iedge)=node-kx
-                  a(iedge) =stencil(2)
-                  iedge=iedge + 1
-               end if
-!     the neighbor below (south)
-               if (j.gt.ly) then
-                  ja(iedge)=node-ky
-                  a(iedge)=stencil(4)
-                  iedge=iedge + 1
-               end if
-!     the neighbor in the front
-               if (k.gt.lz) then
-                  ja(iedge)=node-kz
-                  a(iedge)=stencil(6)
-                  iedge=iedge + 1
-               endif
-!     center node (itself)
-               ja(iedge) = node
-               iau(node) = iedge
-               a(iedge) = stencil(1)
+            if (i > lx) then
+               ja(iedge) = node - kx
+               a(iedge) = stencil(2)
                iedge = iedge + 1
+            end if
+!     the neighbor below (south)
+            if (j > ly) then
+               ja(iedge) = node - ky
+               a(iedge) = stencil(4)
+               iedge = iedge + 1
+            end if
+!     the neighbor in the front
+            if (k > lz) then
+               ja(iedge) = node - kz
+               a(iedge) = stencil(6)
+               iedge = iedge + 1
+            end if
+!     center node (itself)
+            ja(iedge) = node
+            iau(node) = iedge
+            a(iedge) = stencil(1)
+            iedge = iedge + 1
 !     the neighbor to the right (east)
-               if (i.lt.ux) then
-                  ja(iedge)=node+kx
-                  a(iedge)=stencil(3)
-                  iedge=iedge + 1
-               end if
+            if (i < ux) then
+               ja(iedge) = node + kx
+               a(iedge) = stencil(3)
+               iedge = iedge + 1
+            end if
 !     the neighbor above (north)
-               if (j.lt.uy) then
-                  ja(iedge)=node+ky
-                  a(iedge)=stencil(5)
-                  iedge=iedge + 1
-               end if
+            if (j < uy) then
+               ja(iedge) = node + ky
+               a(iedge) = stencil(5)
+               iedge = iedge + 1
+            end if
 !     the neighbor at the back
-               if (k.lt.uz) then
-                  ja(iedge)=node+kz
-                  a(iedge)=stencil(7)
-                  iedge=iedge + 1
-               end if
+            if (k < uz) then
+               ja(iedge) = node + kz
+               a(iedge) = stencil(7)
+               iedge = iedge + 1
+            end if
 !     the right-hand side
-               rhs(node) = rhs(nbnode)
+            rhs(node) = rhs(nbnode)
 !------next node -------------------------
-               node=node+1
+            node = node + 1
 !
-            end do
          end do
       end do
+   end do
 !
-      ia(node) = iedge
+   ia(node) = iedge
 !
 !     the number of nodes in the final matrix is stored in n
 !
-      n = node - 1
-      return
-!-----------------------------------------------------------------------
-      end
-!-----end of fdreduce-----------------------------------------------------
-!-----------------------------------------------------------------------
-      subroutine fdaddbc(nx,ny,nz,a,ja,ia,iau,rhs,al,h)
-      integer nx, ny, nz, ia(nx*ny*nz), ja(7*nx*ny*nz), iau(nx*ny*nz)
-      double precision ::   h, al(6), a(7*nx*ny*nz), rhs(nx*ny*nz)
+   n = node - 1
+   return
+end subroutine fdreduce
+
+subroutine fdaddbc(nx, ny, nz, a, ja, ia, iau, rhs, al, h)
+   implicit none
+
+   integer nx, ny, nz, ia(nx * ny * nz), ja(7 * nx * ny * nz), iau(nx * ny * nz)
+   double precision :: h, al(6), a(7 * nx * ny * nz), rhs(nx * ny * nz)
 !-----------------------------------------------------------------------
 ! This subroutine will add the boundary condition to the linear system
 ! consutructed without considering the boundary conditions
@@ -7704,24 +7702,24 @@ end do
 !-----------------------------------------------------------------------
 !     some constants
 !
-      double precision ::    half,zero,one,two
-      parameter(half=0.5D0,zero=0.0D0,one=1.0D0,two=2.0D0)
+   double precision :: half, zero, one, two
+   parameter(half=0.5d0, zero=0.0d0, one=1.0d0, two=2.0d0)
 !
 !     local variables
 !
-      character*2 side
-      integer  i,j,k,kx,ky,kz,node,nbr,ly,uy,lx,ux
-      double precision ::    coeff, ctr, hhalf, x, y, z
-      double precision ::    afun, bfun, cfun, dfun, efun, ffun, gfun, hfun
-      external afun, bfun, cfun, dfun, efun, ffun, gfun, hfun
-      double precision ::    betfun, gamfun
-      integer  lctcsr
-      external lctcsr, betfun, gamfun
+   character * 2 side
+   integer i, j, k, kx, ky, kz, node, nbr, ly, uy, lx, ux
+   double precision :: coeff, ctr, hhalf, x, y, z
+   double precision :: afun, bfun, cfun, dfun, efun, ffun, gfun, hfun
+   external afun, bfun, cfun, dfun, efun, ffun, gfun, hfun
+   double precision :: betfun, gamfun
+   integer lctcsr
+   external lctcsr, betfun, gamfun
 !
-      hhalf = half * h
-      kx = 1
-      ky = nx
-      kz = nx*ny
+   hhalf = half * h
+   kx = 1
+   ky = nx
+   kz = nx * ny
 !
 !     In 3-D case, we need to go through all 6 faces one by one. If
 !     the actual dimension is lower, test on ny is performed first.
@@ -7759,37 +7757,37 @@ end do
 !     like this will be removed from the matrix, since they are of
 !     know value before solving the system.(not done in this subroutine)
 !
-      x = zero
-      side = 'x1'
-      do k = 1, nz
-         z = (k-1)*h
-         do j = 1, ny
-            y = (j-1)*h
-            node = 1+(j-1)*ky+(k-1)*kz
+   x = zero
+   side = 'x1'
+   do k = 1, nz
+      z = (k - 1) * h
+      do j = 1, ny
+         y = (j - 1) * h
+         node = 1 + (j - 1) * ky + (k - 1) * kz
 !
 !     check to see if it's Dirichlet Boundary condition here
 !
-            if (al(1) .eq. zero) then
-               call clrow(node, a, ja, ia)
-               a(iau(node)) = betfun(side,x,y,z)
-               rhs(node) = gamfun(side,x,y,z)
-            else
+         if (al(1) == zero) then
+            call clrow(node, a, ja, ia)
+            a(iau(node)) = betfun(side, x, y, z)
+            rhs(node) = gamfun(side, x, y, z)
+         else
 !
 !     compute the terms formulated above to modify the matrix.
 !
 !     the right neighbor is stroed in nbr'th posiiton in the a
-               nbr = lctcsr(node, node+kx, ja, ia)
+            nbr = lctcsr(node, node + kx, ja, ia)
 !
-               coeff = two*afun(x,y,z)
-               ctr = (h*dfun(x,y,z) - coeff)*h/al(1)
-               rhs(node) = rhs(node) + ctr * gamfun(side,x,y,z)
-               ctr = afun(x-hhalf,y,z) + ctr * betfun(side,x,y,z)
-               coeff = afun(x+hhalf,y,z)
-               a(iau(node)) = a(iau(node)) - coeff + ctr
-               a(nbr) = two*coeff
-            end if
-         end do
-end do
+            coeff = two * afun(x, y, z)
+            ctr = (h * dfun(x, y, z) - coeff) * h / al(1)
+            rhs(node) = rhs(node) + ctr * gamfun(side, x, y, z)
+            ctr = afun(x - hhalf, y, z) + ctr * betfun(side, x, y, z)
+            coeff = afun(x + hhalf, y, z)
+            a(iau(node)) = a(iau(node)) - coeff + ctr
+            a(nbr) = two * coeff
+         end if
+      end do
+   end do
 !
 !     the right (east) side boudary, similarly, the contirbution from
 !     the terms containing the derivatives of x were assumed to be
@@ -7814,35 +7812,35 @@ end do
 !
 !     -[2*a(nx,j,k)+h*d(nx,j,k)]*h*gamma/alpha
 !
-      x = one
-      side = 'x2'
-      do k = 1, nz
-         z = (k-1)*h
-         do j = 1, ny
-            y = (j-1)*h
-            node = (k-1)*kz + j*ky
+   x = one
+   side = 'x2'
+   do k = 1, nz
+      z = (k - 1) * h
+      do j = 1, ny
+         y = (j - 1) * h
+         node = (k - 1) * kz + j * ky
 !
-            if (al(2) .eq. zero) then
-               call clrow(node, a, ja, ia)
-               a(iau(node)) = betfun(side,x,y,z)
-               rhs(node) = gamfun(side,x,y,z)
-            else
-               nbr = lctcsr(node, node-kx, ja, ia)
+         if (al(2) == zero) then
+            call clrow(node, a, ja, ia)
+            a(iau(node)) = betfun(side, x, y, z)
+            rhs(node) = gamfun(side, x, y, z)
+         else
+            nbr = lctcsr(node, node - kx, ja, ia)
 !
-               coeff = two*afun(x,y,z)
-               ctr = (coeff + h*dfun(x,y,z))*h/al(2)
-               rhs(node) = rhs(node) - ctr * gamfun(side,x,y,z)
-               ctr = afun(x+hhalf,y,z) - ctr * betfun(side,x,y,z)
-               coeff = afun(x-hhalf,y,z)
-               a(iau(node)) = a(iau(node)) - coeff + ctr
-               a(nbr) = two*coeff
-            end if
-         end do
+            coeff = two * afun(x, y, z)
+            ctr = (coeff + h * dfun(x, y, z)) * h / al(2)
+            rhs(node) = rhs(node) - ctr * gamfun(side, x, y, z)
+            ctr = afun(x + hhalf, y, z) - ctr * betfun(side, x, y, z)
+            coeff = afun(x - hhalf, y, z)
+            a(iau(node)) = a(iau(node)) - coeff + ctr
+            a(nbr) = two * coeff
+         end if
       end do
+   end do
 !
 !     If only one dimension, return now
 !
-      if (ny .le. 1) return
+   if (ny <= 1) return
 !
 !     the bottom (south) side suface, This similar to the situation
 !     with the left side, except all the function and realted variation
@@ -7853,281 +7851,346 @@ end do
 !     Dirichlet Boundary Conditions. They ensure that the edges that have
 !     be assigned a specific value will not be reassigned.
 !
-      if (al(1) .eq. zero) then
-         lx = 2
-      else
-         lx = 1
-      end if
-      if (al(2) .eq. zero) then
-         ux = nx-1
-      else
-         ux = nx
-      end if
-      y = zero
-      side = 'y1'
-      do k = 1, nz
-         z = (k-1)*h
-         do i = lx, ux
-            x = (i-1)*h
-            node = i + (k-1)*kz
+   if (al(1) == zero) then
+      lx = 2
+   else
+      lx = 1
+   end if
+   if (al(2) == zero) then
+      ux = nx - 1
+   else
+      ux = nx
+   end if
+   y = zero
+   side = 'y1'
+   do k = 1, nz
+      z = (k - 1) * h
+      do i = lx, ux
+         x = (i - 1) * h
+         node = i + (k - 1) * kz
 !
-            if (al(3) .eq. zero) then
-               call clrow(node, a, ja, ia)
-               a(iau(node)) = betfun(side,x,y,z)
-               rhs(node) = gamfun(side,x,y,z)
-            else
-               nbr = lctcsr(node, node+ky, ja, ia)
+         if (al(3) == zero) then
+            call clrow(node, a, ja, ia)
+            a(iau(node)) = betfun(side, x, y, z)
+            rhs(node) = gamfun(side, x, y, z)
+         else
+            nbr = lctcsr(node, node + ky, ja, ia)
 !
-               coeff = two*bfun(x,y,z)
-               ctr = (h*efun(x,y,z) - coeff)*h/al(3)
-               rhs(node) = rhs(node) + ctr * gamfun(side,x,y,z)
-               ctr = bfun(x,y-hhalf,z) + ctr * betfun(side,x,y,z)
-               coeff = bfun(x,y+hhalf,z)
-               a(iau(node)) = a(iau(node)) - coeff + ctr
-               a(nbr) = two*coeff
-            end if
-         end do
+            coeff = two * bfun(x, y, z)
+            ctr = (h * efun(x, y, z) - coeff) * h / al(3)
+            rhs(node) = rhs(node) + ctr * gamfun(side, x, y, z)
+            ctr = bfun(x, y - hhalf, z) + ctr * betfun(side, x, y, z)
+            coeff = bfun(x, y + hhalf, z)
+            a(iau(node)) = a(iau(node)) - coeff + ctr
+            a(nbr) = two * coeff
+         end if
       end do
+   end do
 !
 !     The top (north) side, similar to the right side
 !
-      y = (ny-1) * h
-      side = 'y2'
-      do k = 1, nz
-         z = (k-1)*h
-         do i = lx, ux
-            x = (i-1)*h
-            node = (k-1)*kz+(ny-1)*ky + i
+   y = (ny - 1) * h
+   side = 'y2'
+   do k = 1, nz
+      z = (k - 1) * h
+      do i = lx, ux
+         x = (i - 1) * h
+         node = (k - 1) * kz + (ny - 1) * ky + i
 !
-            if (al(4) .eq. zero) then
-               call clrow(node, a, ja, ia)
-               a(iau(node)) = betfun(side,x,y,z)
-               rhs(node) = gamfun(side,x,y,z)
-            else
-               nbr = lctcsr(node, node-ky, ja, ia)
+         if (al(4) == zero) then
+            call clrow(node, a, ja, ia)
+            a(iau(node)) = betfun(side, x, y, z)
+            rhs(node) = gamfun(side, x, y, z)
+         else
+            nbr = lctcsr(node, node - ky, ja, ia)
 !
-               coeff = two*bfun(x,y,z)
-               ctr = (coeff + h*efun(x,y,z))*h/al(4)
-               rhs(node) = rhs(node) - ctr * gamfun(side,x,y,z)
-               ctr = bfun(x,y+hhalf,z) - ctr * betfun(side,x,y,z)
-               coeff = bfun(x,y-hhalf,z)
-               a(iau(node)) = a(iau(node)) - coeff + ctr
-               a(nbr) = two*coeff
-            end if
-         end do
+            coeff = two * bfun(x, y, z)
+            ctr = (coeff + h * efun(x, y, z)) * h / al(4)
+            rhs(node) = rhs(node) - ctr * gamfun(side, x, y, z)
+            ctr = bfun(x, y + hhalf, z) - ctr * betfun(side, x, y, z)
+            coeff = bfun(x, y - hhalf, z)
+            a(iau(node)) = a(iau(node)) - coeff + ctr
+            a(nbr) = two * coeff
+         end if
       end do
+   end do
 !
 !     If only has two dimesion to work on, return now
 !
-      if (nz .le. 1) return
+   if (nz <= 1) return
 !
 !     The front side boundary
 !
 !     If the edges of the surface has been decided by Dirichlet Boundary
 !     Condition, then leave them alone.
 !
-      if (al(3) .eq. zero) then
-         ly = 2
-      else
-         ly = 1
-      end if
-      if (al(4) .eq. zero) then
-         uy = ny-1
-      else
-         uy = ny
-      end if
+   if (al(3) == zero) then
+      ly = 2
+   else
+      ly = 1
+   end if
+   if (al(4) == zero) then
+      uy = ny - 1
+   else
+      uy = ny
+   end if
 !
-      z = zero
-      side = 'z1'
-      do j = ly, uy
-         y = (j-1)*h
-         do i = lx, ux
-            x = (i-1)*h
-            node = i + (j-1)*ky
+   z = zero
+   side = 'z1'
+   do j = ly, uy
+      y = (j - 1) * h
+      do i = lx, ux
+         x = (i - 1) * h
+         node = i + (j - 1) * ky
 !
-            if (al(5) .eq. zero) then
-               call clrow(node, a, ja, ia)
-               a(iau(node)) = betfun(side,x,y,z)
-               rhs(node) = gamfun(side,x,y,z)
-            else
-               nbr = lctcsr(node, node+kz, ja, ia)
+         if (al(5) == zero) then
+            call clrow(node, a, ja, ia)
+            a(iau(node)) = betfun(side, x, y, z)
+            rhs(node) = gamfun(side, x, y, z)
+         else
+            nbr = lctcsr(node, node + kz, ja, ia)
 !
-               coeff = two*cfun(x,y,z)
-               ctr = (h*ffun(x,y,z) - coeff)*h/al(5)
-               rhs(node) = rhs(node) + ctr * gamfun(side,x,y,z)
-               ctr = cfun(x,y,z-hhalf) + ctr * betfun(side,x,y,z)
-               coeff = cfun(x,y,z+hhalf)
-               a(iau(node)) = a(iau(node)) - coeff + ctr
-               a(nbr) = two*coeff
-            end if
-         end do
+            coeff = two * cfun(x, y, z)
+            ctr = (h * ffun(x, y, z) - coeff) * h / al(5)
+            rhs(node) = rhs(node) + ctr * gamfun(side, x, y, z)
+            ctr = cfun(x, y, z - hhalf) + ctr * betfun(side, x, y, z)
+            coeff = cfun(x, y, z + hhalf)
+            a(iau(node)) = a(iau(node)) - coeff + ctr
+            a(nbr) = two * coeff
+         end if
       end do
+   end do
 !
 !     Similiarly for the top side of the boundary suface
 !
-      z = (nz - 1) * h
-      side = 'z2'
-      do j = ly, uy
-         y = (j-1)*h
-         do i = lx, ux
-            x = (i-1)*h
-            node = (nz-1)*kz + (j-1)*ky + i
+   z = (nz - 1) * h
+   side = 'z2'
+   do j = ly, uy
+      y = (j - 1) * h
+      do i = lx, ux
+         x = (i - 1) * h
+         node = (nz - 1) * kz + (j - 1) * ky + i
 !
-            if (al(6) .eq. zero) then
-               call clrow(node, a, ja, ia)
-               a(iau(node)) = betfun(side,x,y,z)
-               rhs(node) = gamfun(side,x,y,z)
-            else
-               nbr = lctcsr(node, node-kz, ja, ia)
+         if (al(6) == zero) then
+            call clrow(node, a, ja, ia)
+            a(iau(node)) = betfun(side, x, y, z)
+            rhs(node) = gamfun(side, x, y, z)
+         else
+            nbr = lctcsr(node, node - kz, ja, ia)
 !
-               coeff = two*cfun(x,y,z)
-               ctr = (coeff + h*ffun(x,y,z))*h/al(6)
-               rhs(node) = rhs(node) - ctr * gamfun(side,x,y,z)
-               ctr = cfun(x,y,z+hhalf) - ctr * betfun(side,x,y,z)
-               coeff = cfun(x,y,z-hhalf)
-               a(iau(node)) = a(iau(node)) - coeff + ctr
-               a(nbr) = two*coeff
-            end if
-         end do
+            coeff = two * cfun(x, y, z)
+            ctr = (coeff + h * ffun(x, y, z)) * h / al(6)
+            rhs(node) = rhs(node) - ctr * gamfun(side, x, y, z)
+            ctr = cfun(x, y, z + hhalf) - ctr * betfun(side, x, y, z)
+            coeff = cfun(x, y, z - hhalf)
+            a(iau(node)) = a(iau(node)) - coeff + ctr
+            a(nbr) = two * coeff
+         end if
       end do
+   end do
 !
 !     all set
 !
-      return
-!-----------------------------------------------------------------------
-      end
-!-----end of fdaddbc----------------------------------------------------
-!-----------------------------------------------------------------------
-      subroutine clrow(i, a, ja, ia)
-      integer i, ja(*), ia(*), k
-      real *8 a(*)
+   return
+end subroutine fdaddbc
+
+subroutine clrow(i, a, ja, ia)
+   use precision, only: dp
+   implicit none
+
+   integer i, ja(:), ia(*), k
+   real(dp) :: a(*)
+   no_warning_unused_dummy_argument(ja)
 !-----------------------------------------------------------------------
 !     clear the row i to all zero, but still keep the structure of the
 !     CSR matrix
 !-----------------------------------------------------------------------
-      do k = ia(i), ia(i+1)-1
-         a(k) = 0.0D0
-end do
+   do k = ia(i), ia(i + 1) - 1
+      a(k) = 0.0d0
+   end do
 !
-      return
-!-----end of clrow------------------------------------------------------
-      end
-!-----------------------------------------------------------------------
-      function lctcsr(i,j,ja,ia)
-      integer lctcsr, i, j, ja(*), ia(*), k
+   return
+end subroutine clrow
+
+function lctcsr(i, j, ja, ia)
+   integer lctcsr, i, j, ja(*), ia(*), k
 !-----------------------------------------------------------------------
 !     locate the position of a matrix element in a CSR format
 !     returns -1 if the desired element is zero
 !-----------------------------------------------------------------------
-      lctcsr = -1
-      k = ia(i)
- 10   if (k .lt. ia(i+1) .and. (lctcsr .eq. -1)) then
-         if (ja(k) .eq. j) lctcsr = k
-         k = k + 1
-         goto 10
-      end if
+   lctcsr = -1
+   k = ia(i)
+10 if (k < ia(i + 1) .and. (lctcsr == -1)) then
+      if (ja(k) == j) lctcsr = k
+      k = k + 1
+      goto 10
+   end if
 !
-      return
-!-----------------------------------------------------------------------
-      end
-!-----end of lctcsr-----------------------------------------------------
-
-
-
+   return
+end function lctcsr
 
 !-----------------------------------------------------------------------
 !     functions for the block PDE's
 !-----------------------------------------------------------------------
-      subroutine afunbl (nfree,x,y,z,coeff)
-      integer :: nfree
-      double precision ::  x, y, z, coeff(225)
-      do j=1, nfree
-         do i=1, nfree
-            coeff((j-1)*nfree+i) = 0.0d0
-         end do
-         coeff((j-1)*nfree+j) = -1.0d0
+subroutine afunbl(nfree, x, y, z, coeff)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer :: nfree
+   real(dp) :: x, y, z, coeff(225)
+   
+   integer :: i, j
+   
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   do j = 1, nfree
+      do i = 1, nfree
+         coeff((j - 1) * nfree + i) = 0.0d0
       end do
-      return
-      end
+      coeff((j - 1) * nfree + j) = -1.0d0
+   end do
+   return
+end subroutine afunbl
 
-      subroutine bfunbl (nfree,x,y,z,coeff)
-      integer :: nfree
-      double precision ::  x, y, z, coeff(225)
-      do j=1, nfree
-         do i=1, nfree
-            coeff((j-1)*nfree+i) = 0.0d0
-         end do
-         coeff((j-1)*nfree+j) = -1.0d0
+subroutine bfunbl(nfree, x, y, z, coeff)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer :: nfree
+   real(dp) :: x, y, z, coeff(225)
+   
+   integer :: i, j 
+   
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   do j = 1, nfree
+      do i = 1, nfree
+         coeff((j - 1) * nfree + i) = 0.0d0
       end do
-      return
-      end
+      coeff((j - 1) * nfree + j) = -1.0d0
+   end do
+   return
+end subroutine bfunbl
 
-      subroutine cfunbl (nfree,x,y,z,coeff)
-      integer :: nfree
-      double precision ::  x, y, z, coeff(225)
-      do j=1, nfree
-         do i=1, nfree
-            coeff((j-1)*nfree+i) = 0.0d0
-         end do
-         coeff((j-1)*nfree+j) = -1.0d0
+subroutine cfunbl(nfree, x, y, z, coeff)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer :: nfree
+   real(dp) :: x, y, z, coeff(225)
+   
+   integer :: i, j
+   
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   do j = 1, nfree
+      do i = 1, nfree
+         coeff((j - 1) * nfree + i) = 0.0d0
       end do
-      return
-      end
+      coeff((j - 1) * nfree + j) = -1.0d0
+   end do
+   return
+end subroutine cfunbl
 
-      subroutine dfunbl (nfree,x,y,z,coeff)
-      integer :: nfree
-      double precision ::  x, y, z, coeff(225)
-      do j=1, nfree
-         do i=1, nfree
-            coeff((j-1)*nfree+i) = 0.0d0
-         end do
+subroutine dfunbl(nfree, x, y, z, coeff)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer :: nfree
+   real(dp) :: x, y, z, coeff(225)
+   
+   integer :: i, j
+   
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   do j = 1, nfree
+      do i = 1, nfree
+         coeff((j - 1) * nfree + i) = 0.0d0
       end do
-      return
-      end
+   end do
+   return
+end subroutine dfunbl
 
-      subroutine efunbl (nfree,x,y,z,coeff)
-      integer :: nfree
-      double precision ::  x, y, z, coeff(225)
-      do j=1, nfree
-         do i=1, nfree
-            coeff((j-1)*nfree+i) = 0.0d0
-         end do
+subroutine efunbl(nfree, x, y, z, coeff)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer :: nfree
+   real(dp) :: x, y, z, coeff(225)
+   
+   integer :: i, j
+   
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   do j = 1, nfree
+      do i = 1, nfree
+         coeff((j - 1) * nfree + i) = 0.0d0
       end do
-      return
-      end
+   end do
+   return
+end subroutine efunbl
 
-      subroutine ffunbl (nfree,x,y,z,coeff)
-      integer :: nfree
-      double precision ::  x, y, z, coeff(225)
-      do j=1, nfree
-         do i=1, nfree
-            coeff((j-1)*nfree+i) = 0.0d0
-         end do
+subroutine ffunbl(nfree, x, y, z, coeff)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer :: nfree
+   real(dp) :: x, y, z, coeff(225)
+   
+   integer :: i, j
+   
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   do j = 1, nfree
+      do i = 1, nfree
+         coeff((j - 1) * nfree + i) = 0.0d0
       end do
-      return
-      end
+   end do
+   return
+end subroutine ffunbl
 
-      subroutine gfunbl (nfree,x,y,z,coeff)
-      integer :: nfree
-      double precision ::  x, y, z, coeff(225)
-      do j=1, nfree
-         do i=1, nfree
-            coeff((j-1)*nfree+i) = 0.0d0
-         end do
+subroutine gfunbl(nfree, x, y, z, coeff)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer :: nfree
+   real(dp) :: x, y, z, coeff(225)
+   
+   integer :: i, j 
+   
+   no_warning_unused_dummy_argument(x)
+   no_warning_unused_dummy_argument(y)
+   no_warning_unused_dummy_argument(z)
+   do j = 1, nfree
+      do i = 1, nfree
+         coeff((j - 1) * nfree + i) = 0.0d0
       end do
-      return
-      end
+   end do
+   return
+end subroutine gfunbl
 
-
-      
 ! NOT THREAD-SAFE
-      subroutine amuxXXX(n, x, y, a,ja,ia)
-      use m_saad, only: jasafe
-      
-      implicit none
-      
-      real*8  x(n), y(n), a(*)
-      integer n, ja(*), ia(*)
+subroutine amuxXXX(n, x, y, a, ja, ia)
+   use m_saad, only: jasafe
+   use precision, only: dp
+
+   implicit none
+
+   real(dp) :: x(n), y(n), a(*)
+   integer n, ja(*), ia(*)
 !-----------------------------------------------------------------------
 !         A times a vector
 !-----------------------------------------------------------------------
@@ -8149,57 +8212,55 @@ end do
 !-----------------------------------------------------------------------
 ! local variables
 !
-      real*8 t
-      integer i, k
+   real(dp) :: t
+   integer i, k
 !-----------------------------------------------------------------------
-     
-      if ( jasafe.ne.1 ) then
-        !$OMP PARALLEL DO                                          &
-        !$OMP PRIVATE(i,k,t)                                        
-     
-         do i = 1,n
-   !
-   !     compute the inner product of row i with vector x
-   !
-            t = 0.0d0
-            do k=ia(i), ia(i+1)-1
-               t = t + a(k)*x(ja(k))
-            enddo
-   !
-   !     store result in y(i)
-   !
-            y(i) = t
-  
-         enddo
-        !$OMP END PARALLEL DO
-      else
-         do i = 1,n
-         
-            t = 0.0d0
-            do k=ia(i), ia(i+1)-1
-               t = t + a(k)*x(ja(k))
-            enddo
-            
-            y(i) = t
-  
-         enddo
-      end if
+
+   if (jasafe /= 1) then
+      !$OMP PARALLEL DO                                          &
+      !$OMP PRIVATE(i,k,t)
+
+      do i = 1, n
+         !
+         !     compute the inner product of row i with vector x
+         !
+         t = 0.0d0
+         do k = ia(i), ia(i + 1) - 1
+            t = t + a(k) * x(ja(k))
+         end do
+         !
+         !     store result in y(i)
+         !
+         y(i) = t
+
+      end do
+      !$OMP END PARALLEL DO
+   else
+      do i = 1, n
+
+         t = 0.0d0
+         do k = ia(i), ia(i + 1) - 1
+            t = t + a(k) * x(ja(k))
+         end do
+
+         y(i) = t
+
+      end do
+   end if
 
 !
-      return
-!---------end-of-amux---------------------------------------------------
-!-----------------------------------------------------------------------
-      end
-      
-      
+   return
+end subroutine amuxXXX
+
 ! NOT THREAD-SAFE
-      subroutine atmux (n, x, y, a, ja, ia)
-      use m_saad, only: jasafe
-      
-      implicit none
-      
-      real*8 x(*), y(*), a(*)
-      integer n, ia(*), ja(*)
+subroutine atmux(n, x, y, a, ja, ia)
+   use m_saad, only: jasafe
+   use precision, only: dp
+
+   implicit none
+
+   real(dp) :: x(*), y(*), a(*)
+   integer n, ia(*), ja(*)
 !-----------------------------------------------------------------------
 !         transp( A ) times a vector
 !-----------------------------------------------------------------------
@@ -8224,7 +8285,7 @@ end do
 !-----------------------------------------------------------------------
 !     local variables
 !
-      integer i, k
+   integer i, k
 !-----------------------------------------------------------------------
 !
 !     zero out output vector
@@ -8232,35 +8293,34 @@ end do
 !
 ! loop over the rows
 !
- 
-     if ( jasafe.ne.1 ) then
-        !$OMP PARALLEL DO                                          &
-        !$OMP PRIVATE(i,k)                                        
-         do i = 1,n
-            y(i) = 0.0
-            do k=ia(i), ia(i+1)-1
-               y(ja(k)) = y(ja(k)) + x(i)*a(k)
-            enddo
-         enddo
-         !$OMP END PARALLEL DO   
-      else                                     
-         do i = 1,n
-            y(i) = 0.0
-            do k=ia(i), ia(i+1)-1
-               y(ja(k)) = y(ja(k)) + x(i)*a(k)
-            enddo
-         enddo
-      end if
-      
+
+   if (jasafe /= 1) then
+      !$OMP PARALLEL DO                                          &
+      !$OMP PRIVATE(i,k)
+      do i = 1, n
+         y(i) = 0.0
+         do k = ia(i), ia(i + 1) - 1
+            y(ja(k)) = y(ja(k)) + x(i) * a(k)
+         end do
+      end do
+      !$OMP END PARALLEL DO
+   else
+      do i = 1, n
+         y(i) = 0.0
+         do k = ia(i), ia(i + 1) - 1
+            y(ja(k)) = y(ja(k)) + x(i) * a(k)
+         end do
+      end do
+   end if
+
 !
-      return
-!-------------end-of-atmux----------------------------------------------
-!-----------------------------------------------------------------------
-      end
-      
-      
-    subroutine lusol(n, y, x, alu, jlu, ju, nau)
-    double precision ::  x(n), y(n), alu(nau)
+   return
+end subroutine atmux
+
+subroutine lusol(n, y, x, alu, jlu, ju, nau)
+   implicit none
+
+   double precision :: x(n), y(n), alu(nau)
    integer n, jlu(nau), ju(nau), nau
 !-----------------------------------------------------------------------
 !
@@ -8285,38 +8345,37 @@ end do
 !-----------------------------------------------------------------------
 ! local variables
 !
-        integer i,k
+   integer i, k
 !
 ! forward solve
 !
-        
-        
-      do i = 1, n
-         x(i) = y(i)
-         do k=jlu(i),ju(i)-1
-            x(i) = x(i) - alu(k)* x(jlu(k))
-         enddo
-     enddo
-     
+
+   do i = 1, n
+      x(i) = y(i)
+      do k = jlu(i), ju(i) - 1
+         x(i) = x(i) - alu(k) * x(jlu(k))
+      end do
+   end do
+
 !
 !     backward solve.
 !
-    
-     do i = n, 1, -1
-       do k=ju(i),jlu(i+1)-1
-           x(i) = x(i) - alu(k)*x(jlu(k))
-       enddo
-        x(i) = alu(i)*x(i)
-     enddo
-    
+
+   do i = n, 1, -1
+      do k = ju(i), jlu(i + 1) - 1
+         x(i) = x(i) - alu(k) * x(jlu(k))
+      end do
+      x(i) = alu(i) * x(i)
+   end do
+
 !
    return
-!----------------end of lusol ------------------------------------------
-!-----------------------------------------------------------------------
-   end
-!-----------------------------------------------------------------------
-   subroutine lutsol(n, y, x, alu, jlu, ju)
-        double precision ::  x(n), y(n), alu(*)
+end subroutine lusol
+
+subroutine lutsol(n, y, x, alu, jlu, ju)
+   implicit none
+
+   double precision :: x(n), y(n), alu(*)
    integer n, jlu(*), ju(*)
 !-----------------------------------------------------------------------
 !
@@ -8340,33 +8399,29 @@ end do
 !-----------------------------------------------------------------------
 ! local variables
 !
-        integer i,k
+   integer i, k
 !
 
 ! forward solve (with U^T)
 !
-        do i = 1, n
-           x(i) = y(i) * alu(i)
-           do k=ju(i),jlu(i+1)-1
-              x(jlu(k)) = x(jlu(k)) - alu(k)* x(i)
-            end do
-end do
+   do i = 1, n
+      x(i) = y(i) * alu(i)
+      do k = ju(i), jlu(i + 1) - 1
+         x(jlu(k)) = x(jlu(k)) - alu(k) * x(i)
+      end do
+   end do
 !
 !       backward solve (with L^T)
 !
-       do i = n, 1, -1
-          do k=jlu(i),ju(i)-1
-               x(jlu(k)) = x(jlu(k)) - alu(k)*x(i)
-            end do
-         end do
+   do i = n, 1, -1
+      do k = jlu(i), ju(i) - 1
+         x(jlu(k)) = x(jlu(k)) - alu(k) * x(i)
+      end do
+   end do
 !
    return
-!----------------end of lutsol -----------------------------------------
-!-----------------------------------------------------------------------
-   end
-!-----------------------------------------------------------------------
+end subroutine lutsol
 
-   
 !> (re)allocate solver
 !>   it is assumed that number of rows, number of non-zero entries, number of non-zero entries in preconditioner and size of work array are set
 subroutine allocSolver(solver, ierror)
@@ -8374,37 +8429,37 @@ subroutine allocSolver(solver, ierror)
    use unstruc_messages
    use m_alloc
    implicit none
-   
-   type(tsolver), intent(inout) :: solver   !< solver
-   integer,       intent(inout) :: ierror   !< error (1) or not (0)
-   
-   ierror = 1
-   
-!  check sizes   
-   if ( solver%numrows.le.0 .or. &
-        solver%numnonzeros.le.0  .or.  &
-        solver%numnonzerosprecond.le.0 .or.  &
-        solver%nwork.le.0 ) then
-       goto 1234
-   end if
-   
-   call realloc(solver%a,     solver%numnonzeros,        keepExisting=.false., fill=0d0)
-   call realloc(solver%ia,    solver%numrows+1,          keepExisting=.false., fill=0)
-   call realloc(solver%ja,    solver%numnonzeros,        keepExisting=.false., fill=0)
-   
-   call realloc(solver%rhs,   solver%numrows,            keepExisting=.false., fill=0d0)
 
-   call realloc(solver%alu,   solver%numnonzerosprecond, keepExisting=.false., fill=0d0)
-   call realloc(solver%ju,    solver%numrows,            keepExisting=.false., fill=0)
-   call realloc(solver%jlu,   solver%numnonzerosprecond, keepExisting=.false., fill=0)
-   
-   call realloc(solver%work,  solver%nwork,              keepExisting=.false., fill=0d0)
-   call realloc(solver%jw,    solver%nwork,              keepExisting=.false., fill=0)
-   
+   type(tsolver), intent(inout) :: solver !< solver
+   integer, intent(inout) :: ierror !< error (1) or not (0)
+
+   ierror = 1
+
+!  check sizes
+   if (solver%numrows <= 0 .or. &
+       solver%numnonzeros <= 0 .or. &
+       solver%numnonzerosprecond <= 0 .or. &
+       solver%nwork <= 0) then
+      goto 1234
+   end if
+
+   call realloc(solver%a, solver%numnonzeros, keepExisting=.false., fill=0d0)
+   call realloc(solver%ia, solver%numrows + 1, keepExisting=.false., fill=0)
+   call realloc(solver%ja, solver%numnonzeros, keepExisting=.false., fill=0)
+
+   call realloc(solver%rhs, solver%numrows, keepExisting=.false., fill=0d0)
+
+   call realloc(solver%alu, solver%numnonzerosprecond, keepExisting=.false., fill=0d0)
+   call realloc(solver%ju, solver%numrows, keepExisting=.false., fill=0)
+   call realloc(solver%jlu, solver%numnonzerosprecond, keepExisting=.false., fill=0)
+
+   call realloc(solver%work, solver%nwork, keepExisting=.false., fill=0d0)
+   call realloc(solver%jw, solver%nwork, keepExisting=.false., fill=0)
+
    ierror = 0
 1234 continue
 
-   if ( ierror.ne.0 ) then
+   if (ierror /= 0) then
       call mess(LEVEL_ERROR, 'alloc_solver: error')
       call deallocSolver(solver)
    end if
@@ -8412,74 +8467,73 @@ subroutine allocSolver(solver, ierror)
    return
 end subroutine allocSolver
 
-
 !> deallocate solver
 subroutine deallocSolver(solver)
    use m_solver
    use m_alloc
    implicit none
-   
-   type(tsolver), intent(inout) :: solver   !< solver
-   
-   if ( allocated(solver%a)     ) deallocate(solver%a)
-   if ( allocated(solver%ia)    ) deallocate(solver%ia)
-   if ( allocated(solver%ja)    ) deallocate(solver%ja)
-   
-   if ( allocated(solver%rhs)   ) deallocate(solver%rhs)
-   
-   if ( allocated(solver%alu)   ) deallocate(solver%alu)
-   if ( allocated(solver%ju)    ) deallocate(solver%ju)
-   if ( allocated(solver%jlu)   ) deallocate(solver%jlu)
-   
-   if ( allocated(solver%work)  ) deallocate(solver%work)
-   if ( allocated(solver%jw)    ) deallocate(solver%jw)
-   
+
+   type(tsolver), intent(inout) :: solver !< solver
+
+   if (allocated(solver%a)) deallocate (solver%a)
+   if (allocated(solver%ia)) deallocate (solver%ia)
+   if (allocated(solver%ja)) deallocate (solver%ja)
+
+   if (allocated(solver%rhs)) deallocate (solver%rhs)
+
+   if (allocated(solver%alu)) deallocate (solver%alu)
+   if (allocated(solver%ju)) deallocate (solver%ju)
+   if (allocated(solver%jlu)) deallocate (solver%jlu)
+
+   if (allocated(solver%work)) deallocate (solver%work)
+   if (allocated(solver%jw)) deallocate (solver%jw)
+
    solver%numrows = 0
    solver%numnonzeros = 0
    solver%numnonzerosprecond = 0
    solver%nwork = 0
-   
+
    return
 end subroutine deallocSolver
 
 !> solve linear system
-subroutine solveSystem(solver,sol,japrecond,iters,ierror)
+subroutine solveSystem(solver, sol, japrecond, iters, ierror)
    use m_solver
    implicit none
-   
-   type(tsolver),                               intent(in)    :: solver    !< solver
-   double precision, dimension(solver%numrows), intent(inout) :: sol       !< solution vector
-   integer,                                     intent(in)    :: japrecond !< compute preconditioner (1) or not (0)
-   integer,                                     intent(out)   :: iters     !< number of iterations
-   integer,                                     intent(inout) :: ierror    !< error (1) or not (0)
-   
+
+   type(tsolver), intent(in) :: solver !< solver
+   double precision, dimension(solver%numrows), intent(inout) :: sol !< solution vector
+   integer, intent(in) :: japrecond !< compute preconditioner (1) or not (0)
+   integer, intent(out) :: iters !< number of iterations
+   integer, intent(inout) :: ierror !< error (1) or not (0)
+
 !   double precision, dimension(:), allocatable :: w
 !   integer,          dimension(:), allocatable :: jw
-   
+
    integer :: N
-   
-   N=solver%numrows
-   
+
+   N = solver%numrows
+
 !   allocate(w(2*N))
 !   allocate(jw(2*N))
-   
+
    ierror = 1
-   
-   if ( japrecond.eq.1 ) then
-!     compute preconditioner   
-      call ilud(solver%numrows,solver%a,solver%ja,solver%ia,solver%alpha,solver%tol,solver%alu,solver%jlu,solver%ju,solver%numnonzerosprecond,solver%work,solver%jw,ierror,solver%numnonzeros)
-      if ( ierror.ne.0 ) goto 1234
+
+   if (japrecond == 1) then
+!     compute preconditioner
+      call ilud(solver%numrows, solver%a, solver%ja, solver%ia, solver%alpha, solver%tol, solver%alu, solver%jlu, solver%ju, solver%numnonzerosprecond, solver%work, solver%jw, ierror, solver%numnonzeros)
+      if (ierror /= 0) goto 1234
    end if
-   
-!  solve system   
-   call runrc2(solver%numrows,solver%rhs,sol,solver%ipar,solver%fpar,solver%work,solver%a,solver%ja,solver%ia,solver%alu,solver%jlu,solver%ju,iters,solver%eps,solver%jabcgstab,ierror,solver%numnonzerosprecond)
-   if ( ierror.ne.0 ) goto 1234
-   
-   ierror=0
+
+!  solve system
+   call runrc2(solver%numrows, solver%rhs, sol, solver%ipar, solver%fpar, solver%work, solver%a, solver%ja, solver%ia, solver%alu, solver%jlu, solver%ju, iters, solver%eps, solver%jabcgstab, ierror, solver%numnonzerosprecond)
+   if (ierror /= 0) goto 1234
+
+   ierror = 0
 1234 continue
 
 !   if ( allocated(w) ) deallocate(w)
 !   if ( allocated(jw) ) deallocate(jw)
-   
+
    return
 end subroutine solveSystem

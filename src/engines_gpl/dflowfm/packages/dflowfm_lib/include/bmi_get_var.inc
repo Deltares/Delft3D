@@ -36,8 +36,8 @@
      x = c_loc(hwav)
   case("twav") !<  [s] wave period {"location": "face", "shape": ["ndx"]}
      x = c_loc(twav)
-  case("Uorb") !<  [m/s] orbital velocity {"location": "face", "shape": ["ndx"]}
-     x = c_loc(Uorb)
+  case("uorb") !<  [m/s] orbital velocity {"location": "face", "shape": ["ndx"]}
+     x = c_loc(uorb)
   case("bodsed") !<  [kg m-2] Available sediment in the bed in flow cell center. {"location": "face", "shape": ["stmpar%morlyr%settings%nfrac", "ndx"], "internal": "stmpar%morlyr%state%bodsed"}
      x = c_loc(stmpar%morlyr%state%bodsed)
   case("dpsed") !<  [m] Sediment thickness in the bed in flow cell center. {"location": "face", "shape": ["ndx"], "internal": "stmpar%morlyr%state%dpsed"}
@@ -140,11 +140,19 @@
      x = c_loc(rain)
   case("evap") !<  [m/s] evaporation at xz,yz {"location": "face", "shape": ["ndx"]}
      x = c_loc(evap)
+  case("qext") !<  [m3/s] External discharge per cell {"location": "face", "shape": ["ndkx"]}
+     x = c_loc(qext)
+  case("qextreal") !<  [m3/s] Realized external discharge per cell {"location": "face", "shape": ["ndkx"]}
+     x = c_loc(qextreal)
+  case("vextcum") !<  [m3] Cumulative realized volume through qext {"location": "face", "shape": ["ndkx"]}
+     x = c_loc(vextcum)
+  case("rainuni") !<  [mm/hr] uniform rain intensity. {"rank": 0}
+     x = c_loc(rainuni)
   case("numlatsg") !<  [-] nr of lateral discharge providers {"rank": 0}
      x = c_loc(numlatsg)
-  case("qplat") !<  [m3/s] Lateral discharge of provider {"shape": ["numlatsg"]}
+  case("qplat") !<  [m3/s] Lateral discharge of provider {"shape": ["num_layers", "numlatsg"]}
      x = c_loc(qplat)
-  case("qqlat") !<  [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["ndx"]}
+  case("qqlat") !<  [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["num_layers","numlatsg", "ndx"]}
      x = c_loc(qqlat)
   case("balat") !<  [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
      x = c_loc(balat)
@@ -170,14 +178,6 @@
      x = c_loc(nnlat)
   case("kclat") !<  [-] for each cell: 0 when not accepting lateral discharge (e.g. pipe) {"location": "face", "shape": ["ndx"]}
      x = c_loc(kclat)
-  case("qext") !<  [m3/s] External discharge per cell {"location": "face", "shape": ["ndkx"]}
-     x = c_loc(qext)
-  case("qextreal") !<  [m3/s] Realized external discharge per cell {"location": "face", "shape": ["ndkx"]}
-     x = c_loc(qextreal)
-  case("vextcum") !<  [m3] Cumulative realized volume through qext {"location": "face", "shape": ["ndkx"]}
-     x = c_loc(vextcum)
-  case("rainuni") !<  [mm/hr] uniform rain intensity. {"rank": 0}
-     x = c_loc(rainuni)
   case("Qsunmap") !<  [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
      x = c_loc(Qsunmap)
   case("zbndz") !<  [m] waterlevel boundary points function {"location": "edge", "shape": ["nbndz"]}
@@ -270,7 +270,7 @@
      x = c_loc(au)
   case("au_nostrucs") !<  [m2] flow area     (m2)   at u point {"location": "edge", "shape": ["lnkx"]}
      x = c_loc(au_nostrucs)
-  case("hu") !<  [m] upwind waterheight at u-point (m) {"location": "edge", "shape": ["lnx"]}
+  case("hu") !<  [m] upwind waterheight at u-point; for 3D layers the distance from the top of layer to the bed (m) {"location": "edge", "shape": ["lnx"]}
      x = c_loc(hu)
   case("frcu") !<  [TODO] friction coefficient set by initial fields {"location": "edge", "shape": ["lnx"]}
      x = c_loc(frcu)
@@ -278,8 +278,6 @@
      x = c_loc(viusp)
   case("diusp") !<  [m2/s] user defined spatial eddy diffusivity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
      x = c_loc(diusp)
-  case("taus") !<  [kg s-2 m-1] cell centre tau N/m2 {"location": "face", "shape": ["ndx"]}
-     x = c_loc(taus)
   case("ndxi") !<  [-] Number of internal flowcells  (internal = 2D + 1D ). {"rank": 0}
      x = c_loc(ndxi)
   case("ndx1db") !<  [-] Number of flow nodes incl. 1D bnds (internal 2D+1D + 1D bnd). {"rank": 0}

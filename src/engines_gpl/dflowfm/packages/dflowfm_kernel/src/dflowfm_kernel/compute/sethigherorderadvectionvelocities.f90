@@ -1,148 +1,144 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-Subroutine sethigherorderadvectionvelocities()
-use m_flowgeom
-use m_flow
-use m_sferic
-use m_flowtimes
-use unstruc_messages
+subroutine sethigherorderadvectionvelocities()
+   use m_flowgeom
+   use m_flow
+   use m_sferic
+   use m_flowtimes
+   use unstruc_messages
 
-implicit none
+   implicit none
 
-integer                    :: L, LL, k1, k2, k, ku, kd, kku, ku2, is, ip, Lb, Lt, kkua, kkub
-integer                    :: n12, ib
-double precision           :: half, sl1, sl2, sl3, cf, ucxku, ucyku, ds1, ds2, ds, ql, qds, ds1x, ds1y, ds2x, ds2y
-double precision, external :: dslim
+   integer :: L, LL, k1, k2, k, ku, kd, kku, ku2, is, ip, Lb, Lt, kkua, kkub
+   integer :: n12, ib
+   double precision :: half, sl1, sl2, sl3, cf, ucxku, ucyku, ds, ql, qds, ds1x, ds1y, ds2x, ds2y
+   double precision, external :: dslim
+   double precision :: dsx, dsy
 
-double precision           :: ds1x_6, ds1y_6, ds_6
-double precision           :: dsx, dsy
+   double precision, external :: nod2linx, nod2liny
+   double precision, external :: nodup2linx, nodup2liny
 
-double precision, external :: nod2linx, nod2liny
-double precision, external :: nodup2linx, nodup2liny
+   if (limtypmom < 1) return
 
+   if (kmx == 0) then
 
-if (limtypmom < 1 ) return
+      !$OMP PARALLEL DO                                                             &
+      !$OMP PRIVATE(L, LL, k1, k2, k, kd, is, half, ip, n12, ib, kku, ku, ku2)      &
+      !$OMP PRIVATE(sl1, sl2, sl3, cf, ucxku, ucyku, ds1x, ds1y, ds2x, ds2y, ds, ql, qds, dsx, dsy )
 
-if (kmx == 0) then
+      do L = 1, lnx ! upwind (supq) + limited high order (dsq)
 
- !$OMP PARALLEL DO                                                             &
- !$OMP PRIVATE(L, LL, k1, k2, k, kd, is, half, ip, n12, ib, kku, ku, ku2)      &
- !$OMP PRIVATE(sl1, sl2, sl3, cf, ucxku, ucyku, ds1x, ds1y, ds2x, ds2y, ds, ql, qds, dsx, dsy )
+         LL = L
+         if (qa(LL) /= 0d0) then
 
+            k1 = ln(1, L); k2 = ln(2, L)
 
-do L  = 1,lnx                                                    ! upwind (supq) + limited high order (dsq)
+            if (qa(LL) > 0) then
+               !   ->      ds1   ds2
+               k = k1; kd = k2; is = 1; half = acl(LL); ip = 0 !   ->   ku     k     kd
+               n12 = 1
+               ib = 0
+            else
+               !   <-      ds2   ds1
+               k = k2; kd = k1; is = -1; half = 1d0 - acl(LL); ip = 3 !   <-   kd     k     ku
+               n12 = 2
+               ib = 2
+            end if
 
-  LL  = L
-  if (qa(LL) .ne. 0d0) then
+            if (hs(ln(1, LL)) < Chkadvd .or. hs(ln(2, LL)) < Chkadvd) cycle
 
-       k1  = ln(1,L) ; k2 = ln(2,L)
-
-       if (qa(LL) > 0) then
-                                                                       !   ->      ds1   ds2
-          k = k1 ; kd = k2 ; is =  1 ; half = acl(LL)       ; ip = 0   !   ->   ku     k     kd
-          n12 = 1
-          ib  = 0
-       else
-                                                                       !   <-      ds2   ds1
-          k = k2 ; kd = k1 ; is = -1 ; half = 1d0-acl(LL)   ; ip = 3   !   <-   kd     k     ku
-          n12 = 2
-          ib  = 2
-       endif
-
-       if (hs(ln(1,LL)) < Chkadvd .or. hs(ln(2,LL)) < Chkadvd) cycle
-
-       if (limtypmom == 6) then
+            if (limtypmom == 6) then
 
 !         use klnup to check for disabled higher-order correction
-          if ( klnup(1,LL).eq.0 ) cycle
+               if (klnup(1, LL) == 0) cycle
 
-          if (jasfer3D == 0) then
-             ! ds1x =  -ducdx(k)*is
-             ! ds1y =  -ducdy(k)*is
-             ds1x = (ducxdx(k)*csu(LL) + ducxdy(k)*snu(LL)) * is * Dx(LL)
-             ds1y = (ducydx(k)*csu(LL) + ducydy(k)*snu(LL)) * is * Dx(LL)
-          else
-             ds1x = (nod2linx(LL,n12,ducxdx(k),ducxdy(k))*csu(LL) + nod2liny(LL,n12,ducxdx(k),ducxdy(k))*snu(LL)) * is * Dx(LL)
-             ds1y = (nod2linx(LL,n12,ducydx(k),ducydy(k))*csu(LL) + nod2liny(LL,n12,ducydx(k),ducydy(k))*snu(LL)) * is * Dx(LL)
-          endif
+               if (jasfer3D == 0) then
+                  ! ds1x =  -ducdx(k)*is
+                  ! ds1y =  -ducdy(k)*is
+                  ds1x = (ducxdx(k) * csu(LL) + ducxdy(k) * snu(LL)) * is * Dx(LL)
+                  ds1y = (ducydx(k) * csu(LL) + ducydy(k) * snu(LL)) * is * Dx(LL)
+               else
+                  ds1x = (nod2linx(LL, n12, ducxdx(k), ducxdy(k)) * csu(LL) + nod2liny(LL, n12, ducxdx(k), ducxdy(k)) * snu(LL)) * is * Dx(LL)
+                  ds1y = (nod2linx(LL, n12, ducydx(k), ducydy(k)) * csu(LL) + nod2liny(LL, n12, ducydx(k), ducydy(k)) * snu(LL)) * is * Dx(LL)
+               end if
 
-       else
+            else
 
-          kku  = klnup(1+ip,LL) ; if (kku == 0) cycle
-          ku   = abs(kku)
+               kku = klnup(1 + ip, LL); if (kku == 0) cycle
+               ku = abs(kku)
 
-          if (kku < 0) then
+               if (kku < 0) then
 
-             if (jasfer3D == 0) then
-                ucxku = ucx(ku)
-                ucyku = ucy(ku)
-             else
-                ucxku = nodup2linx(LL,1+ib,ucx(ku),ucy(ku))
-                ucyku = nodup2liny(LL,1+ib,ucx(ku),ucy(ku))
-             endif
-          else
+                  if (jasfer3D == 0) then
+                     ucxku = ucx(ku)
+                     ucyku = ucy(ku)
+                  else
+                     ucxku = nodup2linx(LL, 1 + ib, ucx(ku), ucy(ku))
+                     ucyku = nodup2liny(LL, 1 + ib, ucx(ku), ucy(ku))
+                  end if
+               else
 
-             ku2   = iabs(klnup(2+ip,LL)) ; if ( ku2 == 0) cycle
-             sl1   = slnup(1+ip,LL) ; sl2  = slnup(2+ip,LL)
-             if (jasfer3D == 0) then
-                ucxku = ucx(ku)*sl1 + ucx(ku2)*sl2
-                ucyku = ucy(ku)*sl1 + ucy(ku2)*sl2
-             else
-                ucxku = nodup2linx(LL,1+ib,ucx(ku),ucy(ku))*sl1 + &
-                        nodup2linx(LL,2+ib,ucx(ku2),ucy(ku2))*sl2
-                ucyku = nodup2liny(LL,1+ib,ucx(ku),ucy(ku))*sl1 + &
-                        nodup2liny(LL,2+ib,ucx(ku2),ucy(ku2))*sl2
-             endif
-          endif
-          sl3  = slnup(3+ip,LL)
-          if (jasfer3D == 0) then
-             ds1x = (ucx(k)  - ucxku)*sl3
-             ds1y = (ucy(k)  - ucyku)*sl3
-          else
-             ds1x = (nod2linx(LL,n12,ucx(k),ucy(k))  - ucxku)*sl3
-             ds1y = (nod2liny(LL,n12,ucx(k),ucy(k))  - ucyku)*sl3
-          endif
-       endif
+                  ku2 = abs(klnup(2 + ip, LL)); if (ku2 == 0) cycle
+                  sl1 = slnup(1 + ip, LL); sl2 = slnup(2 + ip, LL)
+                  if (jasfer3D == 0) then
+                     ucxku = ucx(ku) * sl1 + ucx(ku2) * sl2
+                     ucyku = ucy(ku) * sl1 + ucy(ku2) * sl2
+                  else
+                     ucxku = nodup2linx(LL, 1 + ib, ucx(ku), ucy(ku)) * sl1 + &
+                             nodup2linx(LL, 2 + ib, ucx(ku2), ucy(ku2)) * sl2
+                     ucyku = nodup2liny(LL, 1 + ib, ucx(ku), ucy(ku)) * sl1 + &
+                             nodup2liny(LL, 2 + ib, ucx(ku2), ucy(ku2)) * sl2
+                  end if
+               end if
+               sl3 = slnup(3 + ip, LL)
+               if (jasfer3D == 0) then
+                  ds1x = (ucx(k) - ucxku) * sl3
+                  ds1y = (ucy(k) - ucyku) * sl3
+               else
+                  ds1x = (nod2linx(LL, n12, ucx(k), ucy(k)) - ucxku) * sl3
+                  ds1y = (nod2liny(LL, n12, ucx(k), ucy(k)) - ucyku) * sl3
+               end if
+            end if
 
-       cf   =  dts*abs(u1(L))*dxi(LL)  ! cflj(L)  !cfli(k ) ! cflj(L)
-       cf  =  half*max( 0d0,1d0-cf )
-       if (jasfer3D == 0) then
-          ds2x =  ucx(kd) - ucx(k)
-          ds2y =  ucy(kd) - ucy(k)
-       else
-          ds2x =  nod2linx(LL,3-n12,ucx(kd),ucy(kd)) - nod2linx(LL,n12,ucx(k),ucy(k))
-          ds2y =  nod2liny(LL,3-n12,ucx(kd),ucy(kd)) - nod2liny(LL,n12,ucx(k),ucy(k))
-       endif
+            cf = dts * abs(u1(L)) * dxi(LL) ! cflj(L)  !cfli(k ) ! cflj(L)
+            cf = half * max(0d0, 1d0 - cf)
+            if (jasfer3D == 0) then
+               ds2x = ucx(kd) - ucx(k)
+               ds2y = ucy(kd) - ucy(k)
+            else
+               ds2x = nod2linx(LL, 3 - n12, ucx(kd), ucy(kd)) - nod2linx(LL, n12, ucx(k), ucy(k))
+               ds2y = nod2liny(LL, 3 - n12, ucx(kd), ucy(kd)) - nod2liny(LL, n12, ucx(k), ucy(k))
+            end if
 
 !       if (abs(ds2x)  > eps10 .and. abs(ds1x) > eps10) then
 !           ds = cf*dslim(ds1x, ds2x, limtypmom)  ! no cf, see belanger
@@ -158,115 +154,115 @@ do L  = 1,lnx                                                    ! upwind (supq)
 !           endif
 !       endif
 
-      call dslimvec(ds1x, ds1y, ds2x, ds2y, csu(L), snu(L), limtypmom, dsx, dsy)
-      ucxu(L) = ucxu(L) + cf*dsx
-      ucyu(L) = ucyu(L) + cf*dsy
+            call dslimvec(ds1x, ds1y, ds2x, ds2y, csu(L), snu(L), limtypmom, dsx, dsy)
+            ucxu(L) = ucxu(L) + cf * dsx
+            ucyu(L) = ucyu(L) + cf * dsy
 
-   endif ! qa.ne.0
+         end if ! qa.ne.0
 
-enddo  ! horizontal
+      end do ! horizontal
 
- !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
 
-else
+   else
 
-do LL  = 1,lnx                                                    ! upwind (supq) + limited high order (dsq)
+      do LL = 1, lnx ! upwind (supq) + limited high order (dsq)
 
-  if (qa(LL) .ne. 0d0) then
+         if (qa(LL) /= 0d0) then
 
-    call getLbotLtop(LL,Lb,Lt)
+            call getLbotLtop(LL, Lb, Lt)
 
-    do L = Lb,Lt
+            do L = Lb, Lt
 
-       k1  = ln(1,L) ; k2 = ln(2,L)
+               k1 = ln(1, L); k2 = ln(2, L)
 
-       if (qa(L) > 0) then
-                                                                       !   ->      ds1   ds2
-          k = k1 ; kd = k2 ; is =  1 ; half = acl(LL)       ; ip = 0   !   ->   ku     k     kd
-          n12 = 1
-          ib = 0
+               if (qa(L) > 0) then
+                  !   ->      ds1   ds2
+                  k = k1; kd = k2; is = 1; half = acl(LL); ip = 0 !   ->   ku     k     kd
+                  n12 = 1
+                  ib = 0
 
-       else
-                                                                       !   <-      ds2   ds1
-          k = k2 ; kd = k1 ; is = -1 ; half = 1d0-acl(LL)   ; ip = 3   !   <-   kd     k     ku
-          n12 = 2
-          ib = 2
+               else
+                  !   <-      ds2   ds1
+                  k = k2; kd = k1; is = -1; half = 1d0 - acl(LL); ip = 3 !   <-   kd     k     ku
+                  n12 = 2
+                  ib = 2
 
-       endif
+               end if
 
-       if (hs(ln(1,LL)) < Chkadvd .or. hs(ln(2,LL)) < Chkadvd) cycle
+               if (hs(ln(1, LL)) < Chkadvd .or. hs(ln(2, LL)) < Chkadvd) cycle
 
-       if (limtypmom == 6) then
+               if (limtypmom == 6) then
 !         ds1x =  -ducdx(k)*is
 !         ds1y =  -ducdy(k)*is
 
 !        use klnup to check for disabled higher-order correction
-         if ( klnup(1,LL).eq.0 ) cycle
+                  if (klnup(1, LL) == 0) cycle
 
 !         ds1x = (ducxdx(k)*csu(LL) + ducxdy(k)*snu(LL)) * is * Dx(LL)
 !         ds1y = (ducydx(k)*csu(LL) + ducydy(k)*snu(LL)) * is * Dx(LL)
 
-         ds1x = (nod2linx(LL,n12,ducxdx(k),ducxdy(k))*csu(LL) + nod2liny(LL,n12,ducxdx(k),ducxdy(k))*snu(LL)) * is * Dx(LL)
-         ds1y = (nod2linx(LL,n12,ducydx(k),ducydy(k))*csu(LL) + nod2liny(LL,n12,ducydx(k),ducydy(k))*snu(LL)) * is * Dx(LL)
+                  ds1x = (nod2linx(LL, n12, ducxdx(k), ducxdy(k)) * csu(LL) + nod2liny(LL, n12, ducxdx(k), ducxdy(k)) * snu(LL)) * is * Dx(LL)
+                  ds1y = (nod2linx(LL, n12, ducydx(k), ducydy(k)) * csu(LL) + nod2liny(LL, n12, ducydx(k), ducydy(k)) * snu(LL)) * is * Dx(LL)
 
-       else
+               else
 
-       kku  = klnup(1+ip,LL) ; if (kku == 0) cycle ; kkua = abs(kku)
-       ku   = kbot(kkua) + kmxn(kkua) - ( Lb + kmxL(LL) - L) ; if (ku < kbot(kkua) .or. ku > ktop(kkua) ) cycle
+                  kku = klnup(1 + ip, LL); if (kku == 0) cycle; kkua = abs(kku)
+                  ku = kbot(kkua) + kmxn(kkua) - (Lb + kmxL(LL) - L); if (ku < kbot(kkua) .or. ku > ktop(kkua)) cycle
 
-       if (kku < 0) then
+                  if (kku < 0) then
 
-          if (jasfer3D == 0) then
-             ucxku = ucx(ku)
-             ucyku = ucy(ku)
-          else
-             ucxku = nodup2linx(LL,1+ib,ucx(ku),ucy(ku))
-             ucyku = nodup2liny(LL,1+ib,ucx(ku),ucy(ku))
-          endif
+                     if (jasfer3D == 0) then
+                        ucxku = ucx(ku)
+                        ucyku = ucy(ku)
+                     else
+                        ucxku = nodup2linx(LL, 1 + ib, ucx(ku), ucy(ku))
+                        ucyku = nodup2liny(LL, 1 + ib, ucx(ku), ucy(ku))
+                     end if
 
-       else
+                  else
 
-          kkub  = iabs( klnup(2+ip,LL) )
-          ku2   = kbot(kkub) + kmxn(kkub) - ( Lb + kmxL(LL) - L) ; if (ku2 < kbot(kkub) .or. ku2 > ktop(kkub) ) cycle
+                     kkub = abs(klnup(2 + ip, LL))
+                     ku2 = kbot(kkub) + kmxn(kkub) - (Lb + kmxL(LL) - L); if (ku2 < kbot(kkub) .or. ku2 > ktop(kkub)) cycle
 
-          sl1   = slnup(1+ip,LL) ; sl2  = slnup(2+ip,LL)
+                     sl1 = slnup(1 + ip, LL); sl2 = slnup(2 + ip, LL)
 
-          if (jasfer3D == 0) then
-             ucxku = ucx(ku)*sl1 + ucx(ku2)*sl2
-             ucyku = ucy(ku)*sl1 + ucy(ku2)*sl2
-          else
-             ucxku = nodup2linx(LL,1+ib,ucx(ku),ucy(ku))*sl1 + &
-                     nodup2linx(LL,2+ib,ucx(ku2),ucy(ku2))*sl2
-             ucyku = nodup2liny(LL,1+ib,ucx(ku),ucy(ku))*sl1 + &
-                     nodup2liny(LL,2+ib,ucx(ku2),ucy(ku2))*sl2
-          endif
-       endif
+                     if (jasfer3D == 0) then
+                        ucxku = ucx(ku) * sl1 + ucx(ku2) * sl2
+                        ucyku = ucy(ku) * sl1 + ucy(ku2) * sl2
+                     else
+                        ucxku = nodup2linx(LL, 1 + ib, ucx(ku), ucy(ku)) * sl1 + &
+                                nodup2linx(LL, 2 + ib, ucx(ku2), ucy(ku2)) * sl2
+                        ucyku = nodup2liny(LL, 1 + ib, ucx(ku), ucy(ku)) * sl1 + &
+                                nodup2liny(LL, 2 + ib, ucx(ku2), ucy(ku2)) * sl2
+                     end if
+                  end if
 
-         sl3 = slnup(3+ip,LL)
-         if (jasfer3D == 0) then
-            ds1x = (ucx(k)  - ucxku)*sl3
-            ds1y = (ucy(k)  - ucyku)*sl3
-         else
-            ds1x = (nod2linx(LL,n12,ucx(k),ucy(k))  - ucxku)*sl3
-            ds1y = (nod2liny(LL,n12,ucx(k),ucy(k))  - ucyku)*sl3
-         endif
-       endif
+                  sl3 = slnup(3 + ip, LL)
+                  if (jasfer3D == 0) then
+                     ds1x = (ucx(k) - ucxku) * sl3
+                     ds1y = (ucy(k) - ucyku) * sl3
+                  else
+                     ds1x = (nod2linx(LL, n12, ucx(k), ucy(k)) - ucxku) * sl3
+                     ds1y = (nod2liny(LL, n12, ucx(k), ucy(k)) - ucyku) * sl3
+                  end if
+               end if
 
-       cf  =  dts*abs(u1(L))*dxi(LL)  ! cflj(L)  !cfli(k ) ! cflj(L)
-       cf  =  half*max( 0d0,1d0-cf )
-       if (jasfer3D == 0) then
-          ds2x =  ucx(kd) - ucx(k)
-          ds2y =  ucy(kd) - ucy(k)
-       else
-          ds2x =  nod2linx(LL,3-n12,ucx(kd),ucy(kd)) - nod2linx(LL,n12,ucx(k),ucy(k))
-          ds2y =  nod2liny(LL,3-n12,ucx(kd),ucy(kd)) - nod2liny(LL,n12,ucx(k),ucy(k))
-       endif
+               cf = dts * abs(u1(L)) * dxi(LL) ! cflj(L)  !cfli(k ) ! cflj(L)
+               cf = half * max(0d0, 1d0 - cf)
+               if (jasfer3D == 0) then
+                  ds2x = ucx(kd) - ucx(k)
+                  ds2y = ucy(kd) - ucy(k)
+               else
+                  ds2x = nod2linx(LL, 3 - n12, ucx(kd), ucy(kd)) - nod2linx(LL, n12, ucx(k), ucy(k))
+                  ds2y = nod2liny(LL, 3 - n12, ucx(kd), ucy(kd)) - nod2liny(LL, n12, ucx(k), ucy(k))
+               end if
 
-       ! BEGIN DEBUG
-       !
-       !  ds1x_6 = (ducxdx(k)*csu(LL) + ducxdy(k)*snu(LL)) * is * Dx(LL)
-       !  ds1y_6 = (ducydx(k)*csu(LL) + ducydy(k)*snu(LL)) * is * Dx(LL)
-       ! END DEBUG
+               ! BEGIN DEBUG
+               !
+               !  ds1x_6 = (ducxdx(k)*csu(LL) + ducxdy(k)*snu(LL)) * is * Dx(LL)
+               !  ds1y_6 = (ducydx(k)*csu(LL) + ducydy(k)*snu(LL)) * is * Dx(LL)
+               ! END DEBUG
 
 !       if (abs(ds2x)  > eps10 .and. abs(ds1x) > eps10) then
 !           ds = cf*dslim(ds1x, ds2x, limtypmom)
@@ -291,16 +287,15 @@ do LL  = 1,lnx                                                    ! upwind (supq
 !           endif
 !       endif
 
-      call dslimvec(ds1x, ds1y, ds2x, ds2y, csu(LL), snu(LL), limtypmom, dsx, dsy)
-      ucxu(L) = ucxu(L) + cf*dsx
-      ucyu(L) = ucyu(L) + cf*dsy
-    enddo ! vertical
+               call dslimvec(ds1x, ds1y, ds2x, ds2y, csu(LL), snu(LL), limtypmom, dsx, dsy)
+               ucxu(L) = ucxu(L) + cf * dsx
+               ucyu(L) = ucyu(L) + cf * dsy
+            end do ! vertical
 
-  endif
+         end if
 
-enddo  ! horizontal
+      end do ! horizontal
 
-endif ! kmx
+   end if ! kmx
 
-
-End subroutine sethigherorderadvectionvelocities
+end subroutine sethigherorderadvectionvelocities

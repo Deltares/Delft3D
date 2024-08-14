@@ -1,6 +1,7 @@
 import io
 
 import pytest
+
 from tools.minio.prompt import DefaultPrompt, InteractivePrompt
 
 
@@ -63,7 +64,8 @@ class TestInteractivePrompt:
         assert choice == "foo"
         out_stream.seek(0)
         output = out_stream.read()
-        assert "Invalid option" in output and "qux" in output
+        assert "Invalid option" in output
+        assert "qux" in output
 
     def test_choose__in_stream_ends__return_none(self) -> None:
         # Arrange
@@ -92,7 +94,7 @@ class TestInteractivePrompt:
         with pytest.raises(ValueError, match="out of range"):
             prompt.choose("Choose!", ["foo", "bar", "baz"], default_idx=index)
 
-    @pytest.mark.parametrize("option,expected_result", [("yes", True), ("no", False)])
+    @pytest.mark.parametrize(("option", "expected_result"), [("yes", True), ("no", False)])
     def test_yes_no__select_right_option__get_correct_bool_value(self, option: str, expected_result: bool) -> None:
         # Arrange
         out_stream = io.StringIO()

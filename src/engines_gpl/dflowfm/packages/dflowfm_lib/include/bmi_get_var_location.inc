@@ -36,7 +36,7 @@ select case(var_name)
     location_name = "face"
   case("twav")
     location_name = "face"
-  case("Uorb")
+  case("uorb")
     location_name = "face"
   case("bodsed")
     location_name = "face"
@@ -140,6 +140,14 @@ select case(var_name)
     location_name = "face"
   case("evap")
     location_name = "face"
+  case("qext")
+    location_name = "face"
+  case("qextreal")
+    location_name = "face"
+  case("vextcum")
+    location_name = "face"
+  case("rainuni")
+    location_name = ""
   case("numlatsg")
     location_name = ""
   case("qplat")
@@ -170,14 +178,6 @@ select case(var_name)
     location_name = ""
   case("kclat")
     location_name = "face"
-  case("qext")
-    location_name = "face"
-  case("qextreal")
-    location_name = "face"
-  case("vextcum")
-    location_name = "face"
-  case("rainuni")
-    location_name = ""
   case("Qsunmap")
     location_name = "face"
   case("zbndz")
@@ -278,8 +278,6 @@ select case(var_name)
     location_name = "edge"
   case("diusp")
     location_name = "edge"
-  case("taus")
-    location_name = "face"
   case("ndxi")
     location_name = ""
   case("ndx1db")

@@ -274,53 +274,53 @@
 !
 !
 ! ****************************************************************
-subroutine shsec(nlat,nlon,isym,nt,g,idg,jdg,a,b,mdab,ndab,&
-&wshsec,lshsec,work,lwork,ierror)
+subroutine shsec(nlat, nlon, isym, nt, g, idg, jdg, a, b, mdab, ndab,&
+&wshsec, lshsec, work, lwork, ierror)
    integer, intent(in) :: nlat, nlon, isym, nt, mdab, ndab, lshsec&
    &, lwork, idg, jdg
    integer, intent(out) :: ierror
-   double precision, intent(inout) :: g(idg,jdg,1), a(mdab,ndab,1)&
-   &,b(mdab,ndab,1) ,wshsec(lshsec), work(lwork)
+   double precision, intent(inout) :: g(idg, jdg, 1), a(mdab, ndab, 1)&
+   &, b(mdab, ndab, 1), wshsec(lshsec), work(lwork)
    integer :: mmax, imid, lzz1, labc, ls, nln, ist, iw1
 
    ierror = 1
-   if(nlat.lt.3) return
+   if (nlat < 3) return
    ierror = 2
-   if(nlon.lt.4) return
+   if (nlon < 4) return
    ierror = 3
-   if(isym.lt.0 .or. isym.gt.2) return
+   if (isym < 0 .or. isym > 2) return
    ierror = 4
-   if(nt .lt. 0) return
+   if (nt < 0) return
    ierror = 5
-   if((isym.eq.0 .and. idg.lt.nlat) .or.&
-   &(isym.ne.0 .and. idg.lt.(nlat+1)/2)) return
+   if ((isym == 0 .and. idg < nlat) .or.&
+   &(isym /= 0 .and. idg < (nlat + 1) / 2)) return
    ierror = 6
-   if(jdg .lt. nlon) return
+   if (jdg < nlon) return
    ierror = 7
-   mmax = min0(nlat,nlon/2+1)
-   if(mdab .lt. mmax) return
+   mmax = min(nlat, nlon / 2 + 1)
+   if (mdab < mmax) return
    ierror = 8
-   if(ndab .lt. nlat) return
+   if (ndab < nlat) return
    ierror = 9
-   imid = (nlat+1)/2
-   lzz1 = 2*nlat*imid
-   labc = 3*((mmax-2)*(nlat+nlat-mmax-1))/2
-   if(lshsec .lt. lzz1+labc+nlon+15) return
+   imid = (nlat + 1) / 2
+   lzz1 = 2 * nlat * imid
+   labc = 3 * ((mmax - 2) * (nlat + nlat - mmax - 1)) / 2
+   if (lshsec < lzz1 + labc + nlon + 15) return
    ierror = 10
    ls = nlat
-   if(isym .gt. 0) ls = imid
-   nln = nt*ls*nlon
-   if(lwork .lt. nln+max0(ls*nlon,3*nlat*imid)) return
+   if (isym > 0) ls = imid
+   nln = nt * ls * nlon
+   if (lwork < nln + max(ls * nlon, 3 * nlat * imid)) return
    ierror = 0
    ist = 0
-   if(isym .eq. 0) ist = imid
-   iw1 = lzz1+labc+1
-   call shsec1(nlat,isym,nt,g,idg,jdg,a,b,mdab,ndab,imid,ls,nlon,&
-   &work,work(ist+1),work(nln+1),work(nln+1),wshsec,wshsec(iw1))
+   if (isym == 0) ist = imid
+   iw1 = lzz1 + labc + 1
+   call shsec1(nlat, isym, nt, g, idg, jdg, a, b, mdab, ndab, imid, ls, nlon,&
+   &work, work(ist + 1), work(nln + 1), work(nln + 1), wshsec, wshsec(iw1))
    return
 end
-subroutine shsec1(nlat,isym,nt,g,idgs,jdgs,a,b,mdab,ndab,imid,&
-&idg,jdg,ge,go,work,pb,walin,whrfft)
+subroutine shsec1(nlat, isym, nt, g, idgs, jdgs, a, b, mdab, ndab, imid,&
+&idg, jdg, ge, go, work, pb, walin, whrfft)
 !
 !     whrfft must have at least nlon+15 locations
 !     walin must have 3*l*imid + 3*((l-3)*l+2)/2 locations
@@ -328,117 +328,117 @@ subroutine shsec1(nlat,isym,nt,g,idgs,jdgs,a,b,mdab,ndab,imid,&
 !
    integer, intent(in) :: nlat, mdab, ndab, idg, jdg, imid, isym&
    &, idgs, jdgs
-   double precision g(idgs,jdgs,1),a(mdab,ndab,1),b(mdab,ndab,1),&
-   &ge(idg,jdg,1),go(idg,jdg,1),pb(imid,nlat,3),walin(1),&
-   &whrfft(1),work(1)
+   double precision g(idgs, jdgs, 1), a(mdab, ndab, 1), b(mdab, ndab, 1),&
+   &ge(idg, jdg, 1), go(idg, jdg, 1), pb(imid, nlat, 3), walin(1),&
+   &whrfft(1), work(1)
    integer :: ls, nlon, mmax, mdo, i, j, k, m
    integer :: modl, imm1, nt, i3, np1, ndo, mp1, mp2
    integer :: nlp1
    ls = idg
    nlon = jdg
-   mmax = min0(nlat,nlon/2+1)
+   mmax = min(nlat, nlon / 2 + 1)
    mdo = mmax
-   if(mdo+mdo-1 .gt. nlon) mdo = mmax-1
-   nlp1 = nlat+1
-   modl = mod(nlat,2)
+   if (mdo + mdo - 1 > nlon) mdo = mmax - 1
+   nlp1 = nlat + 1
+   modl = mod(nlat, 2)
    imm1 = imid
-   if(modl .ne. 0) imm1 = imid-1
-   do k=1,nt
-      do j=1,nlon
-         do i=1,ls
-            ge(i,j,k)=0.
+   if (modl /= 0) imm1 = imid - 1
+   do k = 1, nt
+      do j = 1, nlon
+         do i = 1, ls
+            ge(i, j, k) = 0.
          end do
       end do
    end do
-   if(isym .eq. 1) go to 125
-   call alin (2,nlat,nlon,0,pb,i3,walin)
-   do k=1,nt
-      do np1=1,nlat,2
-         do i=1,imid
-            ge(i,1,k)=ge(i,1,k)+a(1,np1,k)*pb(i,np1,i3)
-         end do
-      end do
-   end do
-   ndo = nlat
-   if(mod(nlat,2) .eq. 0) ndo = nlat-1
-   do mp1=2,mdo
-      m = mp1-1
-      call alin (2,nlat,nlon,m,pb,i3,walin)
-      do np1=mp1,ndo,2
-         do k=1,nt
-            do i=1,imid
-               ge(i,2*mp1-2,k) = ge(i,2*mp1-2,k)+a(mp1,np1,k)*pb(i,np1,i3)
-               ge(i,2*mp1-1,k) = ge(i,2*mp1-1,k)+b(mp1,np1,k)*pb(i,np1,i3)
-            end do
-         end do
-      end do
-   end do
-   if(mdo .eq. mmax .or. mmax .gt. ndo) go to 122
-   call alin (2,nlat,nlon,mdo,pb,i3,walin)
-   do np1=mmax,ndo,2
-      do k=1,nt
-         do i=1,imid
-            ge(i,2*mmax-2,k) = ge(i,2*mmax-2,k)+a(mmax,np1,k)*pb(i,np1,i3)
-         end do
-      end do
-   end do
-122 if(isym .eq. 2) go to 155
-125 call alin(1,nlat,nlon,0,pb,i3,walin)
-   do k=1,nt
-      do np1=2,nlat,2
-         do i=1,imm1
-            go(i,1,k)=go(i,1,k)+a(1,np1,k)*pb(i,np1,i3)
+   if (isym == 1) go to 125
+   call alin(2, nlat, nlon, 0, pb, i3, walin)
+   do k = 1, nt
+      do np1 = 1, nlat, 2
+         do i = 1, imid
+            ge(i, 1, k) = ge(i, 1, k) + a(1, np1, k) * pb(i, np1, i3)
          end do
       end do
    end do
    ndo = nlat
-   if(mod(nlat,2) .ne. 0) ndo = nlat-1
-   do mp1=2,mdo
-      mp2 = mp1+1
-      m = mp1-1
-      call alin(1,nlat,nlon,m,pb,i3,walin)
-      do np1=mp2,ndo,2
-         do k=1,nt
-            do i=1,imm1
-               go(i,2*mp1-2,k) = go(i,2*mp1-2,k)+a(mp1,np1,k)*pb(i,np1,i3)
-               go(i,2*mp1-1,k) = go(i,2*mp1-1,k)+b(mp1,np1,k)*pb(i,np1,i3)
+   if (mod(nlat, 2) == 0) ndo = nlat - 1
+   do mp1 = 2, mdo
+      m = mp1 - 1
+      call alin(2, nlat, nlon, m, pb, i3, walin)
+      do np1 = mp1, ndo, 2
+         do k = 1, nt
+            do i = 1, imid
+               ge(i, 2 * mp1 - 2, k) = ge(i, 2 * mp1 - 2, k) + a(mp1, np1, k) * pb(i, np1, i3)
+               ge(i, 2 * mp1 - 1, k) = ge(i, 2 * mp1 - 1, k) + b(mp1, np1, k) * pb(i, np1, i3)
             end do
          end do
       end do
    end do
-   mp2 = mmax+1
-   if(mdo .eq. mmax .or. mp2 .gt. ndo) go to 155
-   call alin(1,nlat,nlon,mdo,pb,i3,walin)
-   do np1=mp2,ndo,2
-      do k=1,nt
-         do i=1,imm1
-            go(i,2*mmax-2,k) = go(i,2*mmax-2,k)+a(mmax,np1,k)*pb(i,np1,i3)
+   if (mdo == mmax .or. mmax > ndo) go to 122
+   call alin(2, nlat, nlon, mdo, pb, i3, walin)
+   do np1 = mmax, ndo, 2
+      do k = 1, nt
+         do i = 1, imid
+            ge(i, 2 * mmax - 2, k) = ge(i, 2 * mmax - 2, k) + a(mmax, np1, k) * pb(i, np1, i3)
          end do
       end do
    end do
-155 do k=1,nt
-      if(mod(nlon,2) .ne. 0) go to 157
-      do i=1,ls
-         ge(i,nlon,k) = 2.*ge(i,nlon,k)
-end do
-157   call hrfftb(ls,nlon,ge(1,1,k),ls,whrfft,work)
-end do
-   if(isym .ne. 0) go to 180
-   do k=1,nt
-      do j=1,nlon
-         do i=1,imm1
-            g(i,j,k) = .5*(ge(i,j,k)+go(i,j,k))
-            g(nlp1-i,j,k) = .5*(ge(i,j,k)-go(i,j,k))
+122 if (isym == 2) go to 155
+125 call alin(1, nlat, nlon, 0, pb, i3, walin)
+   do k = 1, nt
+      do np1 = 2, nlat, 2
+         do i = 1, imm1
+            go(i, 1, k) = go(i, 1, k) + a(1, np1, k) * pb(i, np1, i3)
          end do
-         if(modl .eq. 0) cycle
-         g(imid,j,k) = .5*ge(imid,j,k)
+      end do
+   end do
+   ndo = nlat
+   if (mod(nlat, 2) /= 0) ndo = nlat - 1
+   do mp1 = 2, mdo
+      mp2 = mp1 + 1
+      m = mp1 - 1
+      call alin(1, nlat, nlon, m, pb, i3, walin)
+      do np1 = mp2, ndo, 2
+         do k = 1, nt
+            do i = 1, imm1
+               go(i, 2 * mp1 - 2, k) = go(i, 2 * mp1 - 2, k) + a(mp1, np1, k) * pb(i, np1, i3)
+               go(i, 2 * mp1 - 1, k) = go(i, 2 * mp1 - 1, k) + b(mp1, np1, k) * pb(i, np1, i3)
+            end do
+         end do
+      end do
+   end do
+   mp2 = mmax + 1
+   if (mdo == mmax .or. mp2 > ndo) go to 155
+   call alin(1, nlat, nlon, mdo, pb, i3, walin)
+   do np1 = mp2, ndo, 2
+      do k = 1, nt
+         do i = 1, imm1
+            go(i, 2 * mmax - 2, k) = go(i, 2 * mmax - 2, k) + a(mmax, np1, k) * pb(i, np1, i3)
+         end do
+      end do
+   end do
+155 do k = 1, nt
+      if (mod(nlon, 2) /= 0) go to 157
+      do i = 1, ls
+         ge(i, nlon, k) = 2.*ge(i, nlon, k)
+      end do
+157   call hrfftb(ls, nlon, ge(1, 1, k), ls, whrfft, work)
+   end do
+   if (isym /= 0) go to 180
+   do k = 1, nt
+      do j = 1, nlon
+         do i = 1, imm1
+            g(i, j, k) = .5 * (ge(i, j, k) + go(i, j, k))
+            g(nlp1 - i, j, k) = .5 * (ge(i, j, k) - go(i, j, k))
+         end do
+         if (modl == 0) cycle
+         g(imid, j, k) = .5 * ge(imid, j, k)
       end do
    end do
    return
-180 do k=1,nt
-      do i=1,imid
-         do j=1,nlon
-            g(i,j,k) = .5*ge(i,j,k)
+180 do k = 1, nt
+      do i = 1, imid
+         do j = 1, nlon
+            g(i, j, k) = .5 * ge(i, j, k)
          end do
       end do
    end do
@@ -504,7 +504,7 @@ end
 !
 !
 ! ****************************************************************
-subroutine shseci(nlat,nlon,wshsec,lshsec,dwork,ldwork,ierror)
+subroutine shseci(nlat, nlon, wshsec, lshsec, dwork, ldwork, ierror)
    !dimension wshsec(*)
    integer, intent(in) :: nlat, nlon, ldwork, lshsec
    integer, intent(out) :: ierror
@@ -512,20 +512,20 @@ subroutine shseci(nlat,nlon,wshsec,lshsec,dwork,ldwork,ierror)
    double precision, intent(inout) :: dwork(ldwork)
    integer :: iw1, lzz1, imid, labc, mmax
    ierror = 1
-   if(nlat.lt.3) return
+   if (nlat < 3) return
    ierror = 2
-   if(nlon.lt.4) return
+   if (nlon < 4) return
    ierror = 3
-   imid = (nlat+1)/2
-   mmax = min0(nlat,nlon/2+1)
-   lzz1 = 2*nlat*imid
-   labc = 3*((mmax-2)*(nlat+nlat-mmax-1))/2
-   if(lshsec .lt. lzz1+labc+nlon+15) return
+   imid = (nlat + 1) / 2
+   mmax = min(nlat, nlon / 2 + 1)
+   lzz1 = 2 * nlat * imid
+   labc = 3 * ((mmax - 2) * (nlat + nlat - mmax - 1)) / 2
+   if (lshsec < lzz1 + labc + nlon + 15) return
    ierror = 4
-   if(ldwork .lt. nlat+1) return
+   if (ldwork < nlat + 1) return
    ierror = 0
-   call alinit(nlat,nlon,wshsec,dwork)
-   iw1 = lzz1+labc+1
-   call hrffti(nlon,wshsec(iw1))
+   call alinit(nlat, nlon, wshsec, dwork)
+   iw1 = lzz1 + labc + 1
+   call hrffti(nlon, wshsec(iw1))
    return
 end

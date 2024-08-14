@@ -1555,7 +1555,7 @@
         ! a) Text is displayed directly from the TEXT array rather than from a file.
         ! b) IPOS refers to an array subscript rather than a file record number. Unlike
         ! IWinBrowseFile, it can be negative on entry to indicate that the initial text
-        ! already exists in the window and that browsing will start from IABS(IPOS). This
+        ! already exists in the window and that browsing will start from abs(IPOS). This
         ! feature is similar to the negative ISTOPT option used by the MN group menu
         ! routines and can be used to minimise screen repainting when re-entering the
         ! browser. Like IWinBrowseFile, IPOS must be a variable, since it also returns
@@ -3983,7 +3983,7 @@
         ! may be truncated if it is wider than the frame.
         ! The first option to be highlighted is specified by ISTOPT. Alternatively, ISTOPT can
         ! be specified as a negative value, in which case the following is assumed :
-        ! ·  IABS(ISTOPT) specifies the option to be highlighted.
+        ! ·  abs(ISTOPT) specifies the option to be highlighted.
         ! ·  The menu is assumed to already be on the screen and will not be redrawn. This is
         ! useful to avoid unnecessary menu 'repainting', especially on serial terminals.
         ! The menu is displayed according to the current text styles set by ITextBold,ITextColour, etc. The way in which the current option is highlighted is controlled
@@ -4057,10 +4057,10 @@
         ! dependent exit processing to be performed.
         ! The first option to be highlighted is specified by ISTOPT. Alternatively, ISTOPT can
         ! be specified as a negative value, in which case the following is assumed :
-        ! ·  IABS(ISTOPT) specifies the option to be highlighted.
+        ! ·  abs(ISTOPT) specifies the option to be highlighted.
         ! ·  The menu is assumed to already be on the screen and will not be redrawn. This is
         ! useful to avoid unnecessary menu 'repainting', especially on serial terminals. In this
-        ! case IABS(ISTOPT) must specify the same option as was returned by the call to
+        ! case abs(ISTOPT) must specify the same option as was returned by the call to
         ! IMenuHoriz which printed the menu previously.
         ! INTERACTER Subroutine Reference Menus
         ! 2-31
@@ -4181,10 +4181,10 @@
         ! The first option to be highlighted is specified by ISTOPT. As an extension to this
         ! feature, ISTOPT can be specified as a negative value, in which case the following is
         ! assumed :
-        ! ·  IABS(ISTOPT) specifies the option to be highlighted.
+        ! ·  abs(ISTOPT) specifies the option to be highlighted.
         ! ·  The menu is assumed to already be on the screen and will not be redrawn. This is
         ! useful to avoid unnecessary menu 'repainting', especially on serial terminals. In this
-        ! case IABS(ISTOPT) must specify the same option as was returned by the call to
+        ! case abs(ISTOPT) must specify the same option as was returned by the call to
         ! IMenuHorizHelp which printed the menu previously.
         ! By default, menu options are trimmed to their actual length (with two spaces between
         ! each option). Alternatively, they can be displayed equally spaced, regardless of their
@@ -4305,10 +4305,10 @@
         ! 2-36
         ! The first option to be highlighted is specified by ISTOPT. Alternatively, ISTOPT can
         ! be specified as a negative value, in which case the following is assumed :
-        ! ·  IABS(ISTOPT) specifies the option to be highlighted.
+        ! ·  abs(ISTOPT) specifies the option to be highlighted.
         ! ·  The menu is assumed to already be on the screen and will not be redrawn. This is
         ! useful to avoid unnecessary menu 'repainting', especially on terminals. In this case
-        ! IABS(ISTOPT) must specify the same option as was returned by the call to
+        ! abs(ISTOPT) must specify the same option as was returned by the call to
         ! IMenuScroll which printed the menu previously. There must have been no
         ! intervening calls to IMenuScroll since the menu was previously displayed,otherwise the re-entered menu will not behave correctly.
         ! On exit, IMenuScroll sets the cursor position to the start of the highlighted item.
@@ -4396,10 +4396,10 @@
         ! option strings, so the prompt string may be truncated if it is wider than the frame.
         ! The first option to be highlighted is specified by ISTOPT. Alternatively, ISTOPT can
         ! be specified as a negative value, in which case the following is assumed :
-        ! ·  IABS(ISTOPT) specifies the option to be highlighted.
+        ! ·  abs(ISTOPT) specifies the option to be highlighted.
         ! ·  The menu is assumed to already be on the screen and will not be redrawn. This is
         ! useful to avoid unnecessary menu 'repainting', especially on serial terminals. In this
-        ! case IABS(ISTOPT) must specify the same option as was returned by the call to
+        ! case abs(ISTOPT) must specify the same option as was returned by the call to
         ! IMenuTwo which printed the menu previously.
         ! The menu is displayed according to the current text styles set by ITextBold,ITextColour, etc. The way in which the current option is highlighted is controlled
         ! using InHighlight. A pop-up feature is also available, controlled by InPopup.
@@ -4472,10 +4472,10 @@
         ! frame is requested or not.
         ! ISTOPT specifies the first option to be highlighted. Alternatively, ISTOPT can be
         ! specified as a negative value, in which case the following is assumed :
-        ! ·  IABS(ISTOPT) specifies the option to be highlighted.
+        ! ·  abs(ISTOPT) specifies the option to be highlighted.
         ! ·  The menu is assumed to already be on the screen and will not be redrawn. This is
         ! useful to avoid unnecessary menu 'repainting', especially on serial terminals. In this
-        ! case IABS(ISTOPT) must specify the same option as was returned by the call to
+        ! case abs(ISTOPT) must specify the same option as was returned by the call to
         ! IMenuVertic which printed the menu previously.
         ! The menu is displayed according to the current text styles set by ITextBold,ITextColour, etc. The way in which the current option is highlighted is controlled
         ! using InHighlight. A pop-up feature is also available, controlled by InPopup.
@@ -6462,7 +6462,7 @@
         !C mark two points and open a window
         !CALL ITextInputXY(IX1,IY1)
         !CALL ITextInputXY(IX2,IY2)
-        !CALL IWinOpen(MIN0(IX1,IX2),MIN0(IY1,IY2),1 IABS(IX2-IX1)+1,IABS(IY2-IY1)+1)
+        !CALL IWinOpen(MIN0(IX1,IX2),MIN0(IY1,IY2),1 abs(IX2-IX1)+1,abs(IY2-IY1)+1)
         !Portability notes :
         !DOS:
         !A mouse with a Microsoft compatible driver is required. MOUSE.COM or the equivalent

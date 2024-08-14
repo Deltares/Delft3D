@@ -150,9 +150,9 @@ contains
         real(kind = dp) :: effi       ! calculated efficiency
 
         if (surf > 1.0 .and. exttot * dep > 1.0d-10) then
-            phi_s = - dlog(surf)
+            phi_s = - log(surf)
             call ebcalc(phi_s, fun_s, der_s, igroup)
-            phi_d = exttot * dep - dlog(surf)
+            phi_d = exttot * dep - log(surf)
             call ebcalc(phi_d, fun_d, der_d, igroup)
             effi = (fun_d - fun_s) / exttot / dep
             effi = max(effi, 0.0)

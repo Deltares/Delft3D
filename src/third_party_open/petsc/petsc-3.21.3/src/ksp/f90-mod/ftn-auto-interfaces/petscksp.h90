@@ -1,0 +1,1302 @@
+      subroutine KSPGuessFischerSetModel(a,b,c,z)
+       import tKSPGuess
+       KSPGuess a ! KSPGuess
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPGuessFischerSetModel
+      subroutine KSPBCGSLSetXRes(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPBCGSLSetXRes
+      subroutine KSPBCGSLSetUsePseudoinverse(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPBCGSLSetUsePseudoinverse
+      subroutine KSPBCGSLSetPol(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPBCGSLSetPol
+      subroutine KSPBCGSLSetEll(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPBCGSLSetEll
+      subroutine KSPCGSetType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPCGType b ! KSPCGType
+       PetscErrorCode z
+       end subroutine KSPCGSetType
+      subroutine KSPCGUseSingleReduction(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPCGUseSingleReduction
+      subroutine KSPCGSetRadius(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPCGSetRadius
+      subroutine KSPCGSetObjectiveTarget(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPCGSetObjectiveTarget
+      subroutine KSPCGGetNormD(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPCGGetNormD
+      subroutine KSPCGGetObjFcn(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPCGGetObjFcn
+      subroutine KSPGLTRGetMinEig(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPGLTRGetMinEig
+      subroutine KSPGLTRGetLambda(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPGLTRGetLambda
+      subroutine KSPChebyshevSetEigenvalues(a,b,c,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPChebyshevSetEigenvalues
+      subroutine KSPChebyshevEstEigSet(a,b,c,d,e,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPChebyshevEstEigSet
+      subroutine KSPChebyshevEstEigSetUseNoisy(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPChebyshevEstEigSetUseNoisy
+      subroutine KSPChebyshevEstEigGetKSP(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine KSPChebyshevEstEigGetKSP
+      subroutine KSPChebyshevSetKind(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPChebyshevKind b ! KSPChebyshevKind
+       PetscErrorCode z
+       end subroutine KSPChebyshevSetKind
+      subroutine KSPChebyshevGetKind(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPChebyshevKind b ! KSPChebyshevKind
+       PetscErrorCode z
+       end subroutine KSPChebyshevGetKind
+      subroutine KSPFCGSetMmax(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPFCGSetMmax
+      subroutine KSPFCGGetMmax(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPFCGGetMmax
+      subroutine KSPFCGSetNprealloc(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPFCGSetNprealloc
+      subroutine KSPFCGGetNprealloc(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPFCGGetNprealloc
+      subroutine KSPFCGSetTruncationType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPFCDTruncationType b ! KSPFCDTruncationType
+       PetscErrorCode z
+       end subroutine KSPFCGSetTruncationType
+      subroutine KSPFCGGetTruncationType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPFCDTruncationType b ! KSPFCDTruncationType
+       PetscErrorCode z
+       end subroutine KSPFCGGetTruncationType
+      subroutine KSPPIPEFCGSetMmax(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPPIPEFCGSetMmax
+      subroutine KSPPIPEFCGGetMmax(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPPIPEFCGGetMmax
+      subroutine KSPPIPEFCGSetNprealloc(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPPIPEFCGSetNprealloc
+      subroutine KSPPIPEFCGGetNprealloc(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPPIPEFCGGetNprealloc
+      subroutine KSPPIPEFCGSetTruncationType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPFCDTruncationType b ! KSPFCDTruncationType
+       PetscErrorCode z
+       end subroutine KSPPIPEFCGSetTruncationType
+      subroutine KSPPIPEFCGGetTruncationType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPFCDTruncationType b ! KSPFCDTruncationType
+       PetscErrorCode z
+       end subroutine KSPPIPEFCGGetTruncationType
+      subroutine KSPFETIDPSetPressureOperator(a,b,z)
+       import tKSP,tMat
+       KSP a ! KSP
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine KSPFETIDPSetPressureOperator
+      subroutine KSPFETIDPGetInnerKSP(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine KSPFETIDPGetInnerKSP
+      subroutine KSPFETIDPGetInnerBDDC(a,b,z)
+       import tKSP,tPC
+       KSP a ! KSP
+       PC b ! PC
+       PetscErrorCode z
+       end subroutine KSPFETIDPGetInnerBDDC
+      subroutine KSPFETIDPSetInnerBDDC(a,b,z)
+       import tKSP,tPC
+       KSP a ! KSP
+       PC b ! PC
+       PetscErrorCode z
+       end subroutine KSPFETIDPSetInnerBDDC
+      subroutine KSPGCRSetRestart(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPGCRSetRestart
+      subroutine KSPGCRGetRestart(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPGCRGetRestart
+      subroutine KSPPIPEGCRSetUnrollW(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPPIPEGCRSetUnrollW
+      subroutine KSPPIPEGCRGetUnrollW(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPPIPEGCRGetUnrollW
+      subroutine KSPPIPEGCRSetMmax(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPPIPEGCRSetMmax
+      subroutine KSPPIPEGCRGetMmax(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPPIPEGCRGetMmax
+      subroutine KSPPIPEGCRSetNprealloc(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPPIPEGCRSetNprealloc
+      subroutine KSPPIPEGCRGetNprealloc(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPPIPEGCRGetNprealloc
+      subroutine KSPPIPEGCRSetTruncationType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPFCDTruncationType b ! KSPFCDTruncationType
+       PetscErrorCode z
+       end subroutine KSPPIPEGCRSetTruncationType
+      subroutine KSPPIPEGCRGetTruncationType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPFCDTruncationType b ! KSPFCDTruncationType
+       PetscErrorCode z
+       end subroutine KSPPIPEGCRGetTruncationType
+      subroutine KSPGMRESSetPreAllocateVectors(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPGMRESSetPreAllocateVectors
+      subroutine KSPGMRESSetCGSRefinementType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPGMRESCGSRefinementType b ! KSPGMRESCGSRefinementType
+       PetscErrorCode z
+       end subroutine KSPGMRESSetCGSRefinementType
+      subroutine KSPGMRESGetCGSRefinementType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPGMRESCGSRefinementType b ! KSPGMRESCGSRefinementType
+       PetscErrorCode z
+       end subroutine KSPGMRESGetCGSRefinementType
+      subroutine KSPGMRESSetRestart(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPGMRESSetRestart
+      subroutine KSPGMRESGetRestart(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPGMRESGetRestart
+      subroutine KSPGMRESSetHapTol(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPGMRESSetHapTol
+      subroutine KSPGMRESSetBreakdownTolerance(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPGMRESSetBreakdownTolerance
+      subroutine KSPLGMRESSetAugDim(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPLGMRESSetAugDim
+      subroutine KSPLGMRESSetConstant(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPLGMRESSetConstant
+      subroutine KSPPIPEFGMRESSetShift(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine KSPPIPEFGMRESSetShift
+      subroutine KSPHPDDMSetDeflationMat(a,b,z)
+       import tKSP,tMat
+       KSP a ! KSP
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine KSPHPDDMSetDeflationMat
+      subroutine KSPHPDDMGetDeflationMat(a,b,z)
+       import tKSP,tMat
+       KSP a ! KSP
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine KSPHPDDMGetDeflationMat
+      subroutine KSPHPDDMSetType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPHPDDMType b ! KSPHPDDMType
+       PetscErrorCode z
+       end subroutine KSPHPDDMSetType
+      subroutine KSPHPDDMGetType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPHPDDMType b ! KSPHPDDMType
+       PetscErrorCode z
+       end subroutine KSPHPDDMGetType
+      subroutine KSPLSQRSetComputeStandardErrorVec(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPLSQRSetComputeStandardErrorVec
+      subroutine KSPLSQRSetExactMatNorm(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPLSQRSetExactMatNorm
+      subroutine KSPLSQRGetStandardErrorVec(a,b,z)
+       import tVec,tKSP
+       KSP a ! KSP
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine KSPLSQRGetStandardErrorVec
+      subroutine KSPLSQRGetNorms(a,b,c,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPLSQRGetNorms
+      subroutine KSPMINRESSetUseQLP(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPMINRESSetUseQLP
+      subroutine KSPMINRESSetRadius(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPMINRESSetRadius
+      subroutine KSPMINRESGetUseQLP(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPMINRESGetUseQLP
+      subroutine KSPQCGSetTrustRegionRadius(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPQCGSetTrustRegionRadius
+      subroutine KSPQCGGetTrialStepNorm(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPQCGGetTrialStepNorm
+      subroutine KSPQCGGetQuadratic(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPQCGGetQuadratic
+      subroutine KSPRichardsonSetScale(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPRichardsonSetScale
+      subroutine KSPRichardsonSetSelfScale(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPRichardsonSetSelfScale
+      subroutine KSPComputeEigenvaluesExplicitly(a,b,c,d,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscReal c (*) ! PetscReal
+       PetscReal d (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPComputeEigenvaluesExplicitly
+      subroutine KSPGuessSetFromOptions(a,z)
+       import tKSPGuess
+       KSPGuess a ! KSPGuess
+       PetscErrorCode z
+       end subroutine KSPGuessSetFromOptions
+      subroutine KSPGuessSetTolerance(a,b,z)
+       import tKSPGuess
+       KSPGuess a ! KSPGuess
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPGuessSetTolerance
+      subroutine KSPGuessDestroy(a,z)
+       import tKSPGuess
+       KSPGuess a ! KSPGuess
+       PetscErrorCode z
+       end subroutine KSPGuessDestroy
+      subroutine KSPGuessCreate(a,b,z)
+       import tKSPGuess
+       MPI_Comm a ! MPI_Comm
+       KSPGuess b ! KSPGuess
+       PetscErrorCode z
+       end subroutine KSPGuessCreate
+      subroutine KSPGuessUpdate(a,b,c,z)
+       import tVec,tKSPGuess
+       KSPGuess a ! KSPGuess
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine KSPGuessUpdate
+      subroutine KSPGuessFormGuess(a,b,c,z)
+       import tVec,tKSPGuess
+       KSPGuess a ! KSPGuess
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine KSPGuessFormGuess
+      subroutine KSPGuessSetUp(a,z)
+       import tKSPGuess
+       KSPGuess a ! KSPGuess
+       PetscErrorCode z
+       end subroutine KSPGuessSetUp
+      subroutine KSPSetUseFischerGuess(a,b,c,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPSetUseFischerGuess
+      subroutine KSPSetGuess(a,b,z)
+       import tKSP,tKSPGuess
+       KSP a ! KSP
+       KSPGuess b ! KSPGuess
+       PetscErrorCode z
+       end subroutine KSPSetGuess
+      subroutine KSPGetGuess(a,b,z)
+       import tKSP,tKSPGuess
+       KSP a ! KSP
+       KSPGuess b ! KSPGuess
+       PetscErrorCode z
+       end subroutine KSPGetGuess
+      subroutine KSPSetFromOptions(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPSetFromOptions
+      subroutine KSPResetFromOptions(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPResetFromOptions
+      subroutine KSPSetNormType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPNormType b ! KSPNormType
+       PetscErrorCode z
+       end subroutine KSPSetNormType
+      subroutine KSPSetCheckNormIteration(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPSetCheckNormIteration
+      subroutine KSPSetLagNorm(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetLagNorm
+      subroutine KSPSetSupportedNorm(a,b,c,d,z)
+       import tKSP
+       KSP a ! KSP
+       KSPNormType b ! KSPNormType
+       PCSide c ! PCSide
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPSetSupportedNorm
+      subroutine KSPGetNormType(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPNormType b ! KSPNormType
+       PetscErrorCode z
+       end subroutine KSPGetNormType
+      subroutine KSPSetOperators(a,b,c,z)
+       import tKSP,tMat
+       KSP a ! KSP
+       Mat b ! Mat
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine KSPSetOperators
+      subroutine KSPGetOperators(a,b,c,z)
+       import tKSP,tMat
+       KSP a ! KSP
+       Mat b ! Mat
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine KSPGetOperators
+      subroutine KSPSetNestLevel(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPSetNestLevel
+      subroutine KSPGetNestLevel(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPGetNestLevel
+      subroutine KSPCreate(a,b,z)
+       import tKSP
+       MPI_Comm a ! MPI_Comm
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine KSPCreate
+      subroutine KSPGetResidualNorm(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPGetResidualNorm
+      subroutine KSPGetIterationNumber(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPGetIterationNumber
+      subroutine KSPGetTotalIterations(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPGetTotalIterations
+      subroutine KSPSetConvergedNegativeCurvature(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetConvergedNegativeCurvature
+      subroutine KSPGetConvergedNegativeCurvature(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPGetConvergedNegativeCurvature
+      subroutine KSPConvergedDefaultSetUIRNorm(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPConvergedDefaultSetUIRNorm
+      subroutine KSPConvergedDefaultSetUMIRNorm(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPConvergedDefaultSetUMIRNorm
+      subroutine KSPConvergedDefaultSetConvergedMaxits(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPConvergedDefaultSetConvergedMaxits
+      subroutine KSPBuildResidualDefault(a,b,c,d,z)
+       import tVec,tKSP
+       KSP a ! KSP
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine KSPBuildResidualDefault
+      subroutine KSPGetConvergedReason(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       KSPConvergedReason b ! KSPConvergedReason
+       PetscErrorCode z
+       end subroutine KSPGetConvergedReason
+      subroutine KSPSetDM(a,b,z)
+       import tKSP,tDM
+       KSP a ! KSP
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine KSPSetDM
+      subroutine KSPSetDMActive(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetDMActive
+      subroutine KSPGetDM(a,b,z)
+       import tKSP,tDM
+       KSP a ! KSP
+       DM b ! DM
+       PetscErrorCode z
+       end subroutine KSPGetDM
+      subroutine KSPCheckSolve(a,b,c,z)
+       import tPC,tVec,tKSP
+       KSP a ! KSP
+       PC b ! PC
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine KSPCheckSolve
+      subroutine KSPComputeExtremeSingularValues(a,b,c,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPComputeExtremeSingularValues
+      subroutine KSPComputeEigenvalues(a,b,c,d,e,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscReal c (*) ! PetscReal
+       PetscReal d (*) ! PetscReal
+       PetscInt e ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPComputeEigenvalues
+      subroutine KSPComputeRitz(a,b,c,d,e,f,g,z)
+       import tVec,tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscBool c ! PetscBool
+       PetscInt d ! PetscInt
+       Vec e (*) ! Vec
+       PetscReal f (*) ! PetscReal
+       PetscReal g (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPComputeRitz
+      subroutine KSPSetUpOnBlocks(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPSetUpOnBlocks
+      subroutine KSPSetReusePreconditioner(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetReusePreconditioner
+      subroutine KSPGetReusePreconditioner(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPGetReusePreconditioner
+      subroutine KSPSetSkipPCSetFromOptions(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetSkipPCSetFromOptions
+      subroutine KSPSetUp(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPSetUp
+      subroutine KSPConvergedReasonViewCancel(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPConvergedReasonViewCancel
+      subroutine KSPConvergedReasonViewFromOptions(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPConvergedReasonViewFromOptions
+      subroutine KSPSolve(a,b,c,z)
+       import tVec,tKSP
+       KSP a ! KSP
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine KSPSolve
+      subroutine KSPSolveTranspose(a,b,c,z)
+       import tVec,tKSP
+       KSP a ! KSP
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine KSPSolveTranspose
+      subroutine KSPMatSolve(a,b,c,z)
+       import tKSP,tMat
+       KSP a ! KSP
+       Mat b ! Mat
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine KSPMatSolve
+      subroutine KSPMatSolveTranspose(a,b,c,z)
+       import tKSP,tMat
+       KSP a ! KSP
+       Mat b ! Mat
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine KSPMatSolveTranspose
+      subroutine KSPSetMatSolveBatchSize(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPSetMatSolveBatchSize
+      subroutine KSPGetMatSolveBatchSize(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPGetMatSolveBatchSize
+      subroutine KSPResetViewers(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPResetViewers
+      subroutine KSPReset(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPReset
+      subroutine KSPSetPCSide(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PCSide b ! PCSide
+       PetscErrorCode z
+       end subroutine KSPSetPCSide
+      subroutine KSPGetPCSide(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PCSide b ! PCSide
+       PetscErrorCode z
+       end subroutine KSPGetPCSide
+      subroutine KSPGetTolerances(a,b,c,d,e,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscInt e ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPGetTolerances
+      subroutine KSPSetTolerances(a,b,c,d,e,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscInt e ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPSetTolerances
+      subroutine KSPSetMinimumIterations(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPSetMinimumIterations
+      subroutine KSPGetMinimumIterations(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine KSPGetMinimumIterations
+      subroutine KSPSetInitialGuessNonzero(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetInitialGuessNonzero
+      subroutine KSPGetInitialGuessNonzero(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPGetInitialGuessNonzero
+      subroutine KSPSetErrorIfNotConverged(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetErrorIfNotConverged
+      subroutine KSPGetErrorIfNotConverged(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPGetErrorIfNotConverged
+      subroutine KSPSetInitialGuessKnoll(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetInitialGuessKnoll
+      subroutine KSPGetInitialGuessKnoll(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPGetInitialGuessKnoll
+      subroutine KSPGetComputeSingularValues(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPGetComputeSingularValues
+      subroutine KSPSetComputeSingularValues(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetComputeSingularValues
+      subroutine KSPGetComputeEigenvalues(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPGetComputeEigenvalues
+      subroutine KSPSetComputeEigenvalues(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetComputeEigenvalues
+      subroutine KSPSetComputeRitz(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetComputeRitz
+      subroutine KSPGetRhs(a,b,z)
+       import tVec,tKSP
+       KSP a ! KSP
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine KSPGetRhs
+      subroutine KSPGetSolution(a,b,z)
+       import tVec,tKSP
+       KSP a ! KSP
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine KSPGetSolution
+      subroutine KSPSetPC(a,b,z)
+       import tKSP,tPC
+       KSP a ! KSP
+       PC b ! PC
+       PetscErrorCode z
+       end subroutine KSPSetPC
+      subroutine KSPGetPC(a,b,z)
+       import tKSP,tPC
+       KSP a ! KSP
+       PC b ! PC
+       PetscErrorCode z
+       end subroutine KSPGetPC
+      subroutine KSPMonitor(a,b,c,z)
+       import tKSP
+       KSP a ! KSP
+       PetscInt b ! PetscInt
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPMonitor
+      subroutine KSPMonitorCancel(a,z)
+       import tKSP
+       KSP a ! KSP
+       PetscErrorCode z
+       end subroutine KSPMonitorCancel
+      subroutine KSPSetResidualHistory(a,b,c,d,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b (*) ! PetscReal
+       PetscInt c ! PetscInt
+       PetscBool d ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetResidualHistory
+      subroutine KSPSetErrorHistory(a,b,c,d,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b (*) ! PetscReal
+       PetscInt c ! PetscInt
+       PetscBool d ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetErrorHistory
+      subroutine KSPComputeConvergenceRate(a,b,c,d,e,z)
+       import tKSP
+       KSP a ! KSP
+       PetscReal b ! PetscReal
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscReal e ! PetscReal
+       PetscErrorCode z
+       end subroutine KSPComputeConvergenceRate
+      subroutine KSPSetDiagonalScale(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetDiagonalScale
+      subroutine KSPGetDiagonalScale(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPGetDiagonalScale
+      subroutine KSPSetDiagonalScaleFix(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetDiagonalScaleFix
+      subroutine KSPGetDiagonalScaleFix(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPGetDiagonalScaleFix
+      subroutine KSPSetUseExplicitTranspose(a,b,z)
+       import tKSP
+       KSP a ! KSP
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine KSPSetUseExplicitTranspose
+      subroutine KSPInitialResidual(a,b,c,d,e,f,z)
+       import tVec,tKSP
+       KSP a ! KSP
+       Vec b ! Vec
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       Vec f ! Vec
+       PetscErrorCode z
+       end subroutine KSPInitialResidual
+      subroutine KSPUnwindPreconditioner(a,b,c,z)
+       import tVec,tKSP
+       KSP a ! KSP
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine KSPUnwindPreconditioner
+      subroutine MatLMVMUpdate(a,b,c,z)
+       import tVec,tMat
+       Mat a ! Mat
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine MatLMVMUpdate
+      subroutine MatLMVMClearJ0(a,z)
+       import tMat
+       Mat a ! Mat
+       PetscErrorCode z
+       end subroutine MatLMVMClearJ0
+      subroutine MatLMVMSetJ0Scale(a,b,z)
+       import tMat
+       Mat a ! Mat
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine MatLMVMSetJ0Scale
+      subroutine MatLMVMSetJ0Diag(a,b,z)
+       import tVec,tMat
+       Mat a ! Mat
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine MatLMVMSetJ0Diag
+      subroutine MatLMVMSetJ0(a,b,z)
+       import tMat
+       Mat a ! Mat
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine MatLMVMSetJ0
+      subroutine MatLMVMSetJ0PC(a,b,z)
+       import tPC,tMat
+       Mat a ! Mat
+       PC b ! PC
+       PetscErrorCode z
+       end subroutine MatLMVMSetJ0PC
+      subroutine MatLMVMSetJ0KSP(a,b,z)
+       import tKSP,tMat
+       Mat a ! Mat
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine MatLMVMSetJ0KSP
+      subroutine MatLMVMGetJ0(a,b,z)
+       import tMat
+       Mat a ! Mat
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine MatLMVMGetJ0
+      subroutine MatLMVMGetJ0PC(a,b,z)
+       import tPC,tMat
+       Mat a ! Mat
+       PC b ! PC
+       PetscErrorCode z
+       end subroutine MatLMVMGetJ0PC
+      subroutine MatLMVMGetJ0KSP(a,b,z)
+       import tKSP,tMat
+       Mat a ! Mat
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine MatLMVMGetJ0KSP
+      subroutine MatLMVMApplyJ0Fwd(a,b,c,z)
+       import tVec,tMat
+       Mat a ! Mat
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine MatLMVMApplyJ0Fwd
+      subroutine MatLMVMApplyJ0Inv(a,b,c,z)
+       import tVec,tMat
+       Mat a ! Mat
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine MatLMVMApplyJ0Inv
+      subroutine MatLMVMIsAllocated(a,b,z)
+       import tMat
+       Mat a ! Mat
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine MatLMVMIsAllocated
+      subroutine MatLMVMAllocate(a,b,c,z)
+       import tVec,tMat
+       Mat a ! Mat
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine MatLMVMAllocate
+      subroutine MatLMVMResetShift(a,z)
+       import tMat
+       Mat a ! Mat
+       PetscErrorCode z
+       end subroutine MatLMVMResetShift
+      subroutine MatLMVMReset(a,b,z)
+       import tMat
+       Mat a ! Mat
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine MatLMVMReset
+      subroutine MatLMVMSetHistorySize(a,b,z)
+       import tMat
+       Mat a ! Mat
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine MatLMVMSetHistorySize
+      subroutine MatLMVMGetUpdateCount(a,b,z)
+       import tMat
+       Mat a ! Mat
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine MatLMVMGetUpdateCount
+      subroutine MatLMVMGetRejectCount(a,b,z)
+       import tMat
+       Mat a ! Mat
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine MatLMVMGetRejectCount
+      subroutine MatCreateLMVMBFGS(a,b,c,d,z)
+       import tMat
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateLMVMBFGS
+      subroutine MatCreateLMVMBadBroyden(a,b,c,d,z)
+       import tMat
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateLMVMBadBroyden
+      subroutine MatCreateLMVMBroyden(a,b,c,d,z)
+       import tMat
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateLMVMBroyden
+      subroutine MatCreateLMVMDQN(a,b,c,d,z)
+       import tMat
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateLMVMDQN
+      subroutine MatCreateLMVMDBFGS(a,b,c,d,z)
+       import tMat
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateLMVMDBFGS
+      subroutine MatCreateLMVMDDFP(a,b,c,d,z)
+       import tMat
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateLMVMDDFP
+      subroutine MatLMVMDenseSetType(a,b,z)
+       import tMat
+       Mat a ! Mat
+       MatLMVMDenseType b ! MatLMVMDenseType
+       PetscErrorCode z
+       end subroutine MatLMVMDenseSetType
+      subroutine MatCreateLMVMDFP(a,b,c,d,z)
+       import tMat
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateLMVMDFP
+      subroutine MatCreateLMVMDiagBroyden(a,b,c,d,z)
+       import tMat
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateLMVMDiagBroyden
+      subroutine MatCreateLMVMSR1(a,b,c,d,z)
+       import tMat
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateLMVMSR1
+      subroutine MatCreateLMVMSymBadBroyden(a,b,c,d,z)
+       import tMat
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateLMVMSymBadBroyden
+      subroutine MatLMVMSymBroydenSetDelta(a,b,z)
+       import tMat
+       Mat a ! Mat
+       PetscScalar b ! PetscScalar
+       PetscErrorCode z
+       end subroutine MatLMVMSymBroydenSetDelta
+      subroutine MatLMVMSymBroydenSetScaleType(a,b,z)
+       import tMat
+       Mat a ! Mat
+       MatLMVMSymBroydenScaleType b ! MatLMVMSymBroydenScaleType
+       PetscErrorCode z
+       end subroutine MatLMVMSymBroydenSetScaleType
+      subroutine MatCreateLMVMSymBroyden(a,b,c,d,z)
+       import tMat
+       MPI_Comm a ! MPI_Comm
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateLMVMSymBroyden
+      subroutine MatCreateSchurComplement(a,b,c,d,e,f,z)
+       import tMat
+       Mat a ! Mat
+       Mat b ! Mat
+       Mat c ! Mat
+       Mat d ! Mat
+       Mat e ! Mat
+       Mat f ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateSchurComplement
+      subroutine MatSchurComplementSetSubMatrices(a,b,c,d,e,f,z)
+       import tMat
+       Mat a ! Mat
+       Mat b ! Mat
+       Mat c ! Mat
+       Mat d ! Mat
+       Mat e ! Mat
+       Mat f ! Mat
+       PetscErrorCode z
+       end subroutine MatSchurComplementSetSubMatrices
+      subroutine MatSchurComplementGetKSP(a,b,z)
+       import tKSP,tMat
+       Mat a ! Mat
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine MatSchurComplementGetKSP
+      subroutine MatSchurComplementSetKSP(a,b,z)
+       import tKSP,tMat
+       Mat a ! Mat
+       KSP b ! KSP
+       PetscErrorCode z
+       end subroutine MatSchurComplementSetKSP
+      subroutine MatSchurComplementUpdateSubMatrices(a,b,c,d,e,f,z)
+       import tMat
+       Mat a ! Mat
+       Mat b ! Mat
+       Mat c ! Mat
+       Mat d ! Mat
+       Mat e ! Mat
+       Mat f ! Mat
+       PetscErrorCode z
+       end subroutine MatSchurComplementUpdateSubMatrices
+      subroutine MatSchurComplementComputeExplicitOperator(a,b,z)
+       import tMat
+       Mat a ! Mat
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine MatSchurComplementComputeExplicitOperator
+      subroutine MatGetSchurComplement(a,b,c,d,e,f,g,h,i,j,z)
+       import tIS,tMat
+       Mat a ! Mat
+       IS b ! IS
+       IS c ! IS
+       IS d ! IS
+       IS e ! IS
+       MatReuse f ! MatReuse
+       Mat g ! Mat
+       MatSchurComplementAinvType h ! MatSchurComplementAinvType
+       MatReuse i ! MatReuse
+       Mat j ! Mat
+       PetscErrorCode z
+       end subroutine MatGetSchurComplement
+      subroutine MatSchurComplementSetAinvType(a,b,z)
+       import tMat
+       Mat a ! Mat
+       MatSchurComplementAinvType b ! MatSchurComplementAinvType
+       PetscErrorCode z
+       end subroutine MatSchurComplementSetAinvType
+      subroutine MatSchurComplementGetAinvType(a,b,z)
+       import tMat
+       Mat a ! Mat
+       MatSchurComplementAinvType b ! MatSchurComplementAinvType
+       PetscErrorCode z
+       end subroutine MatSchurComplementGetAinvType
+      subroutine MatCreateSchurComplementPmat(a,b,c,d,e,f,g,z)
+       import tMat
+       Mat a ! Mat
+       Mat b ! Mat
+       Mat c ! Mat
+       Mat d ! Mat
+       MatSchurComplementAinvType e ! MatSchurComplementAinvType
+       MatReuse f ! MatReuse
+       Mat g ! Mat
+       PetscErrorCode z
+       end subroutine MatCreateSchurComplementPmat
+      subroutine MatSchurComplementGetPmat(a,b,c,z)
+       import tMat
+       Mat a ! Mat
+       MatReuse b ! MatReuse
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine MatSchurComplementGetPmat

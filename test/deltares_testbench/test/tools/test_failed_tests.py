@@ -1,19 +1,20 @@
 from inspect import Parameter
+
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.config.test_case_config import TestCaseConfig
+from src.suite.comparison_runner import ComparisonRunner
 from src.suite.run_data import RunData
 from src.suite.test_bench_settings import TestBenchSettings
 from src.suite.test_case_result import TestCaseResult
-from tools.failed_tests import get_failed_tests
-from src.suite.comparison_runner import ComparisonRunner
-from src.utils.logging.log_level import LogLevel
-from src.utils.logging.file_logger import FileLogger
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.logging.file_logger import FileLogger
+from src.utils.logging.log_level import LogLevel
+from tools.failed_tests import get_failed_tests
 
 
 class TestFailedTests:
-    def test_get_failed_tests(self, tmpdir):
+    def test_get_failed_tests(self, tmpdir) -> None:
         # Arrange
         expected_result = ["Test 1", "Test 3"]
         test1 = self.__create_test_case_config("Test 1")
@@ -52,9 +53,7 @@ class TestFailedTests:
         comparison_result.error = True
         comparison_result.result = result_string
         result = TestCaseResult(test_case_config, run_data)
-        result.results.append(
-            (test_case_config.name, FileCheck(), Parameter(), comparison_result)
-        )
+        result.results.append((test_case_config.name, FileCheck(), Parameter(), comparison_result))
 
         return result
 
@@ -69,8 +68,6 @@ class TestFailedTests:
         comparison_result.error = False
         comparison_result.result = result_string
         result = TestCaseResult(test_case_config, run_data)
-        result.results.append(
-            (test_case_config.name, FileCheck(), Parameter(), comparison_result)
-        )
+        result.results.append((test_case_config.name, FileCheck(), Parameter(), comparison_result))
 
         return result

@@ -297,52 +297,52 @@
 !
 !
 ! *******************************************************************
-subroutine shaec(nlat,nlon,isym,nt,g,idg,jdg,a,b,mdab,ndab,&
-&wshaec,lshaec,work,lwork,ierror)
+subroutine shaec(nlat, nlon, isym, nt, g, idg, jdg, a, b, mdab, ndab,&
+&wshaec, lshaec, work, lwork, ierror)
    integer, intent(in) :: nlat, nlon, idg, jdg, mdab, ndab, lwork,&
    &isym, nt, lshaec
    integer, intent(out) :: ierror
-   double precision, intent(inout) :: g(idg,jdg,*),a(mdab,ndab,*),&
-   &b(mdab,ndab,*), wshaec(*), work(*)
+   double precision, intent(inout) :: g(idg, jdg, *), a(mdab, ndab, *),&
+   &b(mdab, ndab, *), wshaec(*), work(*)
    integer :: labc, mmax, imid, lzz1, ls, nln, iw1, ist
    ierror = 1
-   if(nlat.lt.3) return
+   if (nlat < 3) return
    ierror = 2
-   if(nlon.lt.4) return
+   if (nlon < 4) return
    ierror = 3
-   if(isym.lt.0 .or. isym.gt.2) return
+   if (isym < 0 .or. isym > 2) return
    ierror = 4
-   if(nt .lt. 0) return
+   if (nt < 0) return
    ierror = 5
-   if((isym.eq.0 .and. idg.lt.nlat) .or.&
-   &(isym.ne.0 .and. idg.lt.(nlat+1)/2)) return
+   if ((isym == 0 .and. idg < nlat) .or.&
+   &(isym /= 0 .and. idg < (nlat + 1) / 2)) return
    ierror = 6
-   if(jdg .lt. nlon) return
+   if (jdg < nlon) return
    ierror = 7
-   mmax = min0(nlat,nlon/2+1)
-   if(mdab .lt. mmax) return
+   mmax = min(nlat, nlon / 2 + 1)
+   if (mdab < mmax) return
    ierror = 8
-   if(ndab .lt. nlat) return
+   if (ndab < nlat) return
    ierror = 9
-   imid = (nlat+1)/2
-   lzz1 = 2*nlat*imid
-   labc = 3*((mmax-2)*(nlat+nlat-mmax-1))/2
-   if(lshaec .lt. lzz1+labc+nlon+15) return
+   imid = (nlat + 1) / 2
+   lzz1 = 2 * nlat * imid
+   labc = 3 * ((mmax - 2) * (nlat + nlat - mmax - 1)) / 2
+   if (lshaec < lzz1 + labc + nlon + 15) return
    ierror = 10
    ls = nlat
-   if(isym .gt. 0) ls = imid
-   nln = nt*ls*nlon
-   if(lwork .lt. nln+max0(ls*nlon,3*nlat*imid)) return
+   if (isym > 0) ls = imid
+   nln = nt * ls * nlon
+   if (lwork < nln + max(ls * nlon, 3 * nlat * imid)) return
    ierror = 0
    ist = 0
-   if(isym .eq. 0) ist = imid
-   iw1 = lzz1+labc+1
-   call shaec1(nlat,isym,nt,g,idg,jdg,a,b,mdab,ndab,imid,ls,nlon,&
-   &work,work(ist+1),work(nln+1),work(nln+1),wshaec,wshaec(iw1))
+   if (isym == 0) ist = imid
+   iw1 = lzz1 + labc + 1
+   call shaec1(nlat, isym, nt, g, idg, jdg, a, b, mdab, ndab, imid, ls, nlon,&
+   &work, work(ist + 1), work(nln + 1), work(nln + 1), wshaec, wshaec(iw1))
    return
 end
-subroutine shaec1(nlat,isym,nt,g,idgs,jdgs,a,b,mdab,ndab,imid,&
-&idg,jdg,ge,go,work,zb,wzfin,whrfft)
+subroutine shaec1(nlat, isym, nt, g, idgs, jdgs, a, b, mdab, ndab, imid,&
+&idg, jdg, ge, go, work, zb, wzfin, whrfft)
 !
 !     whrfft must have at least nlon+15 locations
 !     wzfin must have 2*l*(nlat+1)/2 + ((l-3)*l+2)/2 locations
@@ -351,10 +351,10 @@ subroutine shaec1(nlat,isym,nt,g,idgs,jdgs,a,b,mdab,ndab,imid,&
 !
    integer, intent(in) :: idg, jdgs, nlat, isym, mdab, ndab, imid,&
    &idgs, jdg, nt
-   double precision, intent(inout) :: g(idgs,jdgs,1),a(mdab,ndab,1),&
-   &b(mdab,ndab,1),&
-   &ge(idg,jdg,1),go(idg,jdg,1),zb(imid,nlat,3),wzfin(1),&
-   &whrfft(1),work(1)
+   double precision, intent(inout) :: g(idgs, jdgs, 1), a(mdab, ndab, 1),&
+   &b(mdab, ndab, 1),&
+   &ge(idg, jdg, 1), go(idg, jdg, 1), zb(imid, nlat, 3), wzfin(1),&
+   &whrfft(1), work(1)
 
    integer :: ls, nlon, mmax, mdo, nlp1, modl, imm1, i, k, j, mp1,&
    &np1, ndo, m, mp2, i3
@@ -362,124 +362,124 @@ subroutine shaec1(nlat,isym,nt,g,idgs,jdgs,a,b,mdab,ndab,imid,&
 
    ls = idg
    nlon = jdg
-   mmax = min0(nlat,nlon/2+1)
+   mmax = min(nlat, nlon / 2 + 1)
    mdo = mmax
-   if(mdo+mdo-1 .gt. nlon) mdo = mmax-1
-   nlp1 = nlat+1
+   if (mdo + mdo - 1 > nlon) mdo = mmax - 1
+   nlp1 = nlat + 1
    tsn = 2./nlon
    fsn = 4./nlon
-   modl = mod(nlat,2)
+   modl = mod(nlat, 2)
    imm1 = imid
-   if(modl .ne. 0) imm1 = imid-1
-   if(isym .ne. 0) go to 15
-   do k=1,nt
-      do i=1,imm1
-         do j=1,nlon
-            ge(i,j,k) = tsn*(g(i,j,k)+g(nlp1-i,j,k))
-            go(i,j,k) = tsn*(g(i,j,k)-g(nlp1-i,j,k))
+   if (modl /= 0) imm1 = imid - 1
+   if (isym /= 0) go to 15
+   do k = 1, nt
+      do i = 1, imm1
+         do j = 1, nlon
+            ge(i, j, k) = tsn * (g(i, j, k) + g(nlp1 - i, j, k))
+            go(i, j, k) = tsn * (g(i, j, k) - g(nlp1 - i, j, k))
          end do
       end do
    end do
    go to 30
-15 do K=1,nt
-      do i=1,imm1
-         do j=1,nlon
-            ge(i,j,k) = fsn*g(i,j,k)
+15 do K = 1, nt
+      do i = 1, imm1
+         do j = 1, nlon
+            ge(i, j, k) = fsn * g(i, j, k)
          end do
       end do
    end do
-   if(isym .eq. 1) go to 27
-30 if(modl .eq. 0) go to 27
-   do k=1,nt
-      do j=1,nlon
-         ge(imid,j,k) = tsn*g(imid,j,k)
+   if (isym == 1) go to 27
+30 if (modl == 0) go to 27
+   do k = 1, nt
+      do j = 1, nlon
+         ge(imid, j, k) = tsn * g(imid, j, k)
       end do
    end do
-27 do k=1,nt
-      call hrfftf(ls,nlon,ge(1,1,k),ls,whrfft,work)
-      if(mod(nlon,2) .ne. 0) cycle
-      do i=1,ls
-         ge(i,nlon,k) = .5*ge(i,nlon,k)
+27 do k = 1, nt
+      call hrfftf(ls, nlon, ge(1, 1, k), ls, whrfft, work)
+      if (mod(nlon, 2) /= 0) cycle
+      do i = 1, ls
+         ge(i, nlon, k) = .5 * ge(i, nlon, k)
       end do
    end do
-   do k=1,nt
-      do mp1=1,mmax
-         do np1=mp1,nlat
-            a(mp1,np1,k) = 0.
-            b(mp1,np1,k) = 0.
+   do k = 1, nt
+      do mp1 = 1, mmax
+         do np1 = mp1, nlat
+            a(mp1, np1, k) = 0.
+            b(mp1, np1, k) = 0.
          end do
       end do
    end do
-   if(isym .eq. 1) go to 145
-   call zfin (2,nlat,nlon,0,zb,i3,wzfin)
-   do k=1,nt
-      do i=1,imid
-         do np1=1,nlat,2
-            a(1,np1,k) = a(1,np1,k)+zb(i,np1,i3)*ge(i,1,k)
-         end do
-      end do
-   end do
-   ndo = nlat
-   if(mod(nlat,2) .eq. 0) ndo = nlat-1
-   do mp1=2,mdo
-      m = mp1-1
-      call zfin (2,nlat,nlon,m,zb,i3,wzfin)
-      do k=1,nt
-         do i=1,imid
-            do np1=mp1,ndo,2
-               a(mp1,np1,k) = a(mp1,np1,k)+zb(i,np1,i3)*ge(i,2*mp1-2,k)
-               b(mp1,np1,k) = b(mp1,np1,k)+zb(i,np1,i3)*ge(i,2*mp1-1,k)
-            end do
-         end do
-      end do
-   end do
-   if(mdo .eq. mmax .or. mmax .gt. ndo) go to 135
-   call zfin (2,nlat,nlon,mdo,zb,i3,wzfin)
-   do k=1,nt
-      do i=1,imid
-         do np1=mmax,ndo,2
-            a(mmax,np1,k) = a(mmax,np1,k)+zb(i,np1,i3)*ge(i,2*mmax-2,k)
-end do
-end do
-end do
-135 if(isym .eq. 2) return
-145 call zfin (1,nlat,nlon,0,zb,i3,wzfin)
-   do k=1,nt
-      do i=1,imm1
-         do np1=2,nlat,2
-            a(1,np1,k) = a(1,np1,k)+zb(i,np1,i3)*go(i,1,k)
+   if (isym == 1) go to 145
+   call zfin(2, nlat, nlon, 0, zb, i3, wzfin)
+   do k = 1, nt
+      do i = 1, imid
+         do np1 = 1, nlat, 2
+            a(1, np1, k) = a(1, np1, k) + zb(i, np1, i3) * ge(i, 1, k)
          end do
       end do
    end do
    ndo = nlat
-   if(mod(nlat,2) .ne. 0) ndo = nlat-1
-   do mp1=2,mdo
-      m = mp1-1
-      mp2 = mp1+1
-      call zfin (1,nlat,nlon,m,zb,i3,wzfin)
-      do k=1,nt
-         do i=1,imm1
-            do np1=mp2,ndo,2
-               a(mp1,np1,k) = a(mp1,np1,k)+zb(i,np1,i3)*go(i,2*mp1-2,k)
-               b(mp1,np1,k) = b(mp1,np1,k)+zb(i,np1,i3)*go(i,2*mp1-1,k)
+   if (mod(nlat, 2) == 0) ndo = nlat - 1
+   do mp1 = 2, mdo
+      m = mp1 - 1
+      call zfin(2, nlat, nlon, m, zb, i3, wzfin)
+      do k = 1, nt
+         do i = 1, imid
+            do np1 = mp1, ndo, 2
+               a(mp1, np1, k) = a(mp1, np1, k) + zb(i, np1, i3) * ge(i, 2 * mp1 - 2, k)
+               b(mp1, np1, k) = b(mp1, np1, k) + zb(i, np1, i3) * ge(i, 2 * mp1 - 1, k)
             end do
          end do
       end do
    end do
-   mp2 = mmax+1
-   if(mdo .eq. mmax .or. mp2 .gt. ndo) return
-   call zfin (1,nlat,nlon,mdo,zb,i3,wzfin)
-   do k=1,nt
-      do i=1,imm1
-         do np1=mp2,ndo,2
-            a(mmax,np1,k) = a(mmax,np1,k)+zb(i,np1,i3)*go(i,2*mmax-2,k)
+   if (mdo == mmax .or. mmax > ndo) go to 135
+   call zfin(2, nlat, nlon, mdo, zb, i3, wzfin)
+   do k = 1, nt
+      do i = 1, imid
+         do np1 = mmax, ndo, 2
+            a(mmax, np1, k) = a(mmax, np1, k) + zb(i, np1, i3) * ge(i, 2 * mmax - 2, k)
+         end do
+      end do
+   end do
+135 if (isym == 2) return
+145 call zfin(1, nlat, nlon, 0, zb, i3, wzfin)
+   do k = 1, nt
+      do i = 1, imm1
+         do np1 = 2, nlat, 2
+            a(1, np1, k) = a(1, np1, k) + zb(i, np1, i3) * go(i, 1, k)
+         end do
+      end do
+   end do
+   ndo = nlat
+   if (mod(nlat, 2) /= 0) ndo = nlat - 1
+   do mp1 = 2, mdo
+      m = mp1 - 1
+      mp2 = mp1 + 1
+      call zfin(1, nlat, nlon, m, zb, i3, wzfin)
+      do k = 1, nt
+         do i = 1, imm1
+            do np1 = mp2, ndo, 2
+               a(mp1, np1, k) = a(mp1, np1, k) + zb(i, np1, i3) * go(i, 2 * mp1 - 2, k)
+               b(mp1, np1, k) = b(mp1, np1, k) + zb(i, np1, i3) * go(i, 2 * mp1 - 1, k)
+            end do
+         end do
+      end do
+   end do
+   mp2 = mmax + 1
+   if (mdo == mmax .or. mp2 > ndo) return
+   call zfin(1, nlat, nlon, mdo, zb, i3, wzfin)
+   do k = 1, nt
+      do i = 1, imm1
+         do np1 = mp2, ndo, 2
+            a(mmax, np1, k) = a(mmax, np1, k) + zb(i, np1, i3) * go(i, 2 * mmax - 2, k)
          end do
       end do
    end do
    return
 end subroutine shaec1
 
-subroutine shaeci(nlat,nlon,wshaec,lshaec,dwork,ldwork,ierror)
+subroutine shaeci(nlat, nlon, wshaec, lshaec, dwork, ldwork, ierror)
    integer, intent(in) :: nlat, nlon, lshaec, ldwork
    double precision, intent(inout) :: wshaec(lshaec)
    double precision, intent(inout) :: dwork(ldwork)
@@ -488,20 +488,20 @@ subroutine shaeci(nlat,nlon,wshaec,lshaec,dwork,ldwork,ierror)
    integer :: imid, mmax, lzz1, labc, iw1
 
    ierror = 1
-   if(nlat.lt.3) return
+   if (nlat < 3) return
    ierror = 2
-   if(nlon.lt.4) return
+   if (nlon < 4) return
    ierror = 3
-   imid = (nlat+1)/2
-   mmax = min0(nlat,nlon/2+1)
-   lzz1 = 2*nlat*imid
-   labc = 3*((mmax-2)*(nlat+nlat-mmax-1))/2
-   if(lshaec .lt. lzz1+labc+nlon+15) return
+   imid = (nlat + 1) / 2
+   mmax = min(nlat, nlon / 2 + 1)
+   lzz1 = 2 * nlat * imid
+   labc = 3 * ((mmax - 2) * (nlat + nlat - mmax - 1)) / 2
+   if (lshaec < lzz1 + labc + nlon + 15) return
    ierror = 4
-   if(ldwork .lt. nlat+1) return
+   if (ldwork < nlat + 1) return
    ierror = 0
-   call zfinit (nlat,nlon,wshaec,dwork)
-   iw1 = lzz1+labc+1
-   call hrffti(nlon,wshaec(iw1))
+   call zfinit(nlat, nlon, wshaec, dwork)
+   iw1 = lzz1 + labc + 1
+   call hrffti(nlon, wshaec(iw1))
    return
 end subroutine shaeci

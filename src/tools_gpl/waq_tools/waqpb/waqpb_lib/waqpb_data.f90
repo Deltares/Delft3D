@@ -34,13 +34,13 @@
                   nprocm=3000, nfluxm=   1, nconfm=20, ninpum=30000, & 
                   noutpm=15000, noutfm=6000, nstocm=9000, nvelom=3000, & 
                   ndispm=3000, nsgrpm=20  , ncnsbm=4000)
-      integer      nsubs , nitem , nfort , num_processes_activated , num_fluxes , &
-                  nconf , ninpu , num_output_files , noutf , nstoc , &
+      integer      nsubs , nitem , nfort , nproc , nflux , & 
+                  nconf , ninpu , noutp , noutf , nstoc , & 
                   nvelo , ndisp , nsgrp , ncnsb , nmodv , & 
                   ncnpr
       common /dims/ & 
-                  nsubs , nitem , nfort , num_processes_activated , num_fluxes , &
-                  nconf , ninpu , num_output_files , noutf , nstoc , &
+                  nsubs , nitem , nfort , nproc , nflux , & 
+                  nconf , ninpu , noutp , noutf , nstoc , & 
                   nvelo , ndisp , nsgrp , ncnsb , nmodv , & 
                   ncnpr
 

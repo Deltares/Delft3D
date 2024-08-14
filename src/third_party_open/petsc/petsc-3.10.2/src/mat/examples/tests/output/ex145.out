@@ -1,6 +1,0 @@
- Create Elemental matrix A
- Create rhs matrix B
- Create solution matrix X
- Create Elemental matrix Aher
- Test Cholesky Solver 
- Test LU Solver 

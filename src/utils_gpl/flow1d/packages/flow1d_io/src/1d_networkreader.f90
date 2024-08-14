@@ -532,7 +532,7 @@ module m_1d_networkreader
       type(t_branchSet), target, intent(inout) :: brs
       type(t_nodeSet), target, intent(inout)   :: nds
       type(tree_data), pointer, intent(in)     :: md_ptr
-      
+
       ! Local Variables
       integer                                  :: ibr
       type(t_branch), pointer                  :: pbr

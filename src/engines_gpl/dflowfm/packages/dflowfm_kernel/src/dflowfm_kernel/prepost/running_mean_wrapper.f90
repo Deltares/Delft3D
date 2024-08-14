@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
+!
 ! $URL$
 !-------------------------------------------------------------------------------------------------------
 module running_mean_wrapper
@@ -42,8 +42,8 @@ module running_mean_wrapper
 
    type TRunningMeanMeta
       character(len=:), allocatable :: fieldname
-      integer                       :: nx, nd
-      real(kind=hp)                 :: tstart, tstop, ti_fou, tupdate
+      integer :: nx, nd
+      real(kind=hp) :: tstart, tstop, ti_fou, tupdate
    end type TRunningMeanMeta
 
    type TRunningMean
@@ -53,14 +53,14 @@ module running_mean_wrapper
 
    ! internal types/data for holding all initialized instances
    integer, parameter :: firstSize = 10
-   integer            :: currentSize
+   integer :: currentSize
    type TPRunningMean
       type(TRunningMean), pointer :: pntRunningMean => null()
    end type TPRunningMean
 
    type(TPRunningMean), allocatable :: listRunningMeans(:)
 
-   contains
+contains
 
    subroutine init_running_mean_admin
       call reallocRM(firstSize)
@@ -68,13 +68,13 @@ module running_mean_wrapper
    end subroutine init_running_mean_admin
 
    subroutine init_running_mean(running, RMmeta)
-      type (TRunningMean), pointer        :: running
-      type (TRunningMeanMeta), intent(in) :: RMmeta
+      type(TRunningMean), pointer :: running
+      type(TRunningMeanMeta), intent(in) :: RMmeta
 
       integer :: timesteps, i, ifound
 
       if (size(listRunningMeans) == currentSize) then
-         call reallocRM(2*currentSize, .true.)
+         call reallocRM(2 * currentSize, .true.)
       end if
 
       timesteps = 1 + nint((RMmeta%tstop - RMmeta%tstart) / RMmeta%ti_fou)
@@ -82,7 +82,7 @@ module running_mean_wrapper
          msgbuf = 'min/max based on running mean only works for FouUpdateStep <> 1'
          call err_flush()
       else if (timesteps < RMmeta%nd) then
-         write(msgbuf, '(a,i0,a)') 'not enough time steps for running mean with ', RMmeta%nd, ' points'
+         write (msgbuf, '(a,i0,a)') 'not enough time steps for running mean with ', RMmeta%nd, ' points'
          call err_flush()
       end if
 
@@ -97,8 +97,8 @@ module running_mean_wrapper
       if (ifound > 0) then
          running => listRunningMeans(ifound)%pntRunningMean
       else
-         allocate(running)
-         allocate(running%runsum)
+         allocate (running)
+         allocate (running%runsum)
          call running%runsum%init(RMmeta%nx, RMmeta%nd)
          running%RMmeta = RMmeta
          running%RMmeta%tupdate = -999.0_hp
@@ -109,9 +109,9 @@ module running_mean_wrapper
 
    subroutine update_runsum(running, rarray, ready2use, sum2mean, time0)
       real(kind=hp), intent(in) :: rarray(:), time0
-      type (TRunningMean), pointer   :: running
-      logical,        intent(out) :: ready2use
-      real(kind=sp),  intent(out) :: sum2mean
+      type(TRunningMean), pointer :: running
+      logical, intent(out) :: ready2use
+      real(kind=sp), intent(out) :: sum2mean
 
       integer :: cur_nd
 
@@ -119,7 +119,7 @@ module running_mean_wrapper
          call running%runsum%update(rarray)
          running%RMmeta%tupdate = time0
       end if
-      cur_nd = size(running%runsum%buffer,dim=2)
+      cur_nd = size(running%runsum%buffer, dim=2)
       ready2use = (running%runsum%nstep >= cur_nd)
       if (ready2use) then
          sum2mean = 1.0_sp / real(cur_nd, sp)
@@ -129,7 +129,7 @@ module running_mean_wrapper
    end subroutine update_runsum
 
    subroutine reallocRM(nwSize, keep)
-      integer, intent(in)           :: nwSize
+      integer, intent(in) :: nwSize
       logical, intent(in), optional :: keep
 
       logical :: keep_
@@ -137,10 +137,10 @@ module running_mean_wrapper
       type(TPRunningMean), allocatable :: buffer(:)
 
       keep_ = .false.
-      if (present(keep)) keep_= keep
+      if (present(keep)) keep_ = keep
 
       if (keep_) then
-         allocate(buffer(currentSize))
+         allocate (buffer(currentSize))
          do i = 1, currentSize
             buffer(i)%pntRunningMean => listRunningMeans(i)%pntRunningMean
          end do
@@ -150,9 +150,9 @@ module running_mean_wrapper
          if (size(listRunningMeans) == nwSize) then
             return
          end if
-         deallocate(listRunningMeans)
+         deallocate (listRunningMeans)
       end if
-      allocate(listRunningMeans(nwSize))
+      allocate (listRunningMeans(nwSize))
 
       if (keep_) then
          do i = 1, currentSize
@@ -167,8 +167,8 @@ module running_mean_wrapper
 
       compareRM = &
          RM1%fieldname == RM2%fieldname .and. &
-         RM1%nd        == RM2%nd        .and. &
-         RM1%tstart    == RM2%tstart    .and. &
-         RM1%tstop     == RM2%tstop
+         RM1%nd == RM2%nd .and. &
+         RM1%tstart == RM2%tstart .and. &
+         RM1%tstop == RM2%tstop
    end function compareRM
 end module running_mean_wrapper

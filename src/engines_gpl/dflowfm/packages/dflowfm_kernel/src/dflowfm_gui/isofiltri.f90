@@ -1,198 +1,198 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE ISOFILTRI(X,Y,Z,NCOLR)
-      implicit none
-      double precision :: dv
-      double precision :: dzn
-      double precision :: frac
-      integer :: i
-      integer :: ih
-      integer :: j
-      integer :: j1
-      integer :: j2
-      integer :: jaauto
-      integer :: ncol
-      integer :: ncolr
-      integer :: ncols
-      integer :: nie
-      integer :: nis
-      integer :: npics
-      integer :: num
-      integer :: nv
-      integer :: nx1
-      integer :: nx3
-      integer :: ny1
-      integer :: ny3
-      double precision :: val
-      double precision :: vmax
-      double precision :: vmin
-      double precision :: zmax
-      double precision :: zmin
-      double precision :: znex
-      double precision :: znow
-      double precision :: X(3), Y(3), Z(3), DX(3),DY(3), DZ(3), XH(10),YH(10)
-      COMMON /DEPMAX/ VMAX,VMIN,DV,VAL(256),NCOLS(256),NV,NIS,NIE,JAAUTO
+      subroutine ISOFILTRI(X, Y, Z, NCOLR)
+         implicit none
+         double precision :: dv
+         double precision :: dzn
+         double precision :: frac
+         integer :: i
+         integer :: ih
+         integer :: j
+         integer :: j1
+         integer :: j2
+         integer :: jaauto
+         integer :: ncol
+         integer :: ncolr
+         integer :: ncols
+         integer :: nie
+         integer :: nis
+         integer :: npics
+         integer :: num
+         integer :: nv
+         integer :: nx1
+         integer :: nx3
+         integer :: ny1
+         integer :: ny3
+         double precision :: val
+         double precision :: vmax
+         double precision :: vmin
+         double precision :: zmax
+         double precision :: zmin
+         double precision :: znex
+         double precision :: znow
+         double precision :: X(3), Y(3), Z(3), DX(3), DY(3), DZ(3), XH(10), YH(10)
+         common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
 
-      do I = 1,3
-         J = I + 1
-         IF (I .EQ. 3) J = 1
-         DX(I) = X(J) - X(I)
-         DY(I) = Y(J) - Y(I)
-         DZ(I) = Z(J) - Z(I)
-end do
+         do I = 1, 3
+            J = I + 1
+            if (I == 3) J = 1
+            DX(I) = X(J) - X(I)
+            DY(I) = Y(J) - Y(I)
+            DZ(I) = Z(J) - Z(I)
+         end do
 
-      ZMAX = Z(1)
-      ZMIN = Z(1)
-      DO I = 2,3
-         ZMAX = MAX(ZMAX,Z(I))
-         ZMIN = MIN(ZMIN,Z(I))
-      end do
+         ZMAX = Z(1)
+         ZMIN = Z(1)
+         do I = 2, 3
+            ZMAX = max(ZMAX, Z(I))
+            ZMIN = min(ZMIN, Z(I))
+         end do
 
-      IF (ZMAX .LE. VAL(1)) THEN
-         NCOL = NCOLS(1)
-         CALL PFILLER(X,Y,3,NCOL,NCOL)
-      ELSE IF (ZMIN .GE. VAL(NV)) THEN
-         NCOL = NCOLS(NV+1)
-         CALL PFILLER(X,Y,3,NCOL,NCOL)
-      ELSE
-       DO I = 0,NV
-         IF (I .EQ. 0) THEN
-            ZNOW = -1E+30
-         ELSE
-            ZNOW = VAL(I)
-         ENDIF
-         IF (I .EQ. NV) THEN
-            ZNEX = 1E+30
-         ELSE
-            ZNEX = VAL(I+1)
-         ENDIF
-         NCOL = NCOLS(I + 1)
-         IF (ZMIN .LE. ZNOW .AND. ZMAX .GE. ZNOW .OR.         &
-             ZMIN .LE. ZNEX .AND. ZMAX .GE. ZNEX    ) THEN
-            IH    = 1
-            DO J1 = 1,3
-               J2   = J1 + 1
-               IF (J1 .EQ. 3) J2 = 1
-               IF (Z(J1) .LT. ZNOW) THEN
-                  IF (Z(J2) .GT. ZNOW) THEN
-                     DZN  = ZNOW - Z(J1)
-                     FRAC = DZN/DZ(J1)
-                     IF (FRAC .GT. 0d0 .AND. FRAC .LE. 1d0) THEN
-                        XH(IH) = X(J1) + FRAC*DX(J1)
-                        YH(IH) = Y(J1) + FRAC*DY(J1)
-                        IH     = IH + 1
-                     ENDIF
-                  ENDIF
-                  IF (Z(J2) .GT. ZNEX) THEN
-                     DZN  = ZNEX - Z(J1)
-                     FRAC = DZN/DZ(J1)
-                     IF (FRAC .GT. 0d0 .AND. FRAC .LE. 1d0) THEN
-                        XH(IH) = X(J1) + FRAC*DX(J1)
-                        YH(IH) = Y(J1) + FRAC*DY(J1)
-                        IH     = IH + 1
-                     ENDIF
-                  ENDIF
-               ELSE IF (Z(J1) .GT. ZNEX) THEN
-                  IF (Z(J2) .LT. ZNEX) THEN
-                     DZN  = ZNEX - Z(J1)
-                     FRAC = DZN/DZ(J1)
-                     IF (FRAC .GT. 0d0 .AND. FRAC .LE. 1d0) THEN
-                        XH(IH) = X(J1) + FRAC*DX(J1)
-                        YH(IH) = Y(J1) + FRAC*DY(J1)
-                        IH     = IH + 1
-                     ENDIF
-                  ENDIF
-                  IF (Z(J2) .LT. ZNOW) THEN
-                     DZN  = ZNOW - Z(J1)
-                     FRAC = DZN/DZ(J1)
-                     IF (FRAC .GT. 0d0 .AND. FRAC .LE. 1d0) THEN
-                        XH(IH) = X(J1) + FRAC*DX(J1)
-                        YH(IH) = Y(J1) + FRAC*DY(J1)
-                        IH     = IH + 1
-                     ENDIF
-                  ENDIF
-               ELSE
-                  XH(IH) = X(J1)
-                  YH(IH) = Y(J1)
-                  IH     = IH + 1
-                  IF (Z(J2) .LT. ZNOW) THEN
-                     DZN  = ZNOW - Z(J1)
-                     FRAC = DZN/DZ(J1)
-                     IF (FRAC .GT. 0d0 .AND. FRAC .LE. 1d0) THEN
-                        XH(IH) = X(J1) + FRAC*DX(J1)
-                        YH(IH) = Y(J1) + FRAC*DY(J1)
-                        IH     = IH + 1
-                     ENDIF
-                  ELSE IF (Z(J2) .GT. ZNEX) THEN
-                     DZN  = ZNEX - Z(J1)
-                     FRAC = DZN/DZ(J1)
-                     IF (FRAC .GT. 0d0 .AND. FRAC .LE. 1d0) THEN
-                        XH(IH) = X(J1) + FRAC*DX(J1)
-                        YH(IH) = Y(J1) + FRAC*DY(J1)
-                        IH     = IH + 1
-                     ENDIF
-                  ENDIF
-               ENDIF
-            end do
+         if (ZMAX <= VAL(1)) then
+            NCOL = NCOLS(1)
+            call PFILLER(X, Y, 3, NCOL, NCOL)
+         else if (ZMIN >= VAL(NV)) then
+            NCOL = NCOLS(NV + 1)
+            call PFILLER(X, Y, 3, NCOL, NCOL)
+         else
+            do I = 0, NV
+               if (I == 0) then
+                  ZNOW = -1e+30
+               else
+                  ZNOW = VAL(I)
+               end if
+               if (I == NV) then
+                  ZNEX = 1e+30
+               else
+                  ZNEX = VAL(I + 1)
+               end if
+               NCOL = NCOLS(I + 1)
+               if (ZMIN <= ZNOW .and. ZMAX >= ZNOW .or. &
+                   ZMIN <= ZNEX .and. ZMAX >= ZNEX) then
+                  IH = 1
+                  do J1 = 1, 3
+                     J2 = J1 + 1
+                     if (J1 == 3) J2 = 1
+                     if (Z(J1) < ZNOW) then
+                        if (Z(J2) > ZNOW) then
+                           DZN = ZNOW - Z(J1)
+                           FRAC = DZN / DZ(J1)
+                           if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                              XH(IH) = X(J1) + FRAC * DX(J1)
+                              YH(IH) = Y(J1) + FRAC * DY(J1)
+                              IH = IH + 1
+                           end if
+                        end if
+                        if (Z(J2) > ZNEX) then
+                           DZN = ZNEX - Z(J1)
+                           FRAC = DZN / DZ(J1)
+                           if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                              XH(IH) = X(J1) + FRAC * DX(J1)
+                              YH(IH) = Y(J1) + FRAC * DY(J1)
+                              IH = IH + 1
+                           end if
+                        end if
+                     else if (Z(J1) > ZNEX) then
+                        if (Z(J2) < ZNEX) then
+                           DZN = ZNEX - Z(J1)
+                           FRAC = DZN / DZ(J1)
+                           if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                              XH(IH) = X(J1) + FRAC * DX(J1)
+                              YH(IH) = Y(J1) + FRAC * DY(J1)
+                              IH = IH + 1
+                           end if
+                        end if
+                        if (Z(J2) < ZNOW) then
+                           DZN = ZNOW - Z(J1)
+                           FRAC = DZN / DZ(J1)
+                           if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                              XH(IH) = X(J1) + FRAC * DX(J1)
+                              YH(IH) = Y(J1) + FRAC * DY(J1)
+                              IH = IH + 1
+                           end if
+                        end if
+                     else
+                        XH(IH) = X(J1)
+                        YH(IH) = Y(J1)
+                        IH = IH + 1
+                        if (Z(J2) < ZNOW) then
+                           DZN = ZNOW - Z(J1)
+                           FRAC = DZN / DZ(J1)
+                           if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                              XH(IH) = X(J1) + FRAC * DX(J1)
+                              YH(IH) = Y(J1) + FRAC * DY(J1)
+                              IH = IH + 1
+                           end if
+                        else if (Z(J2) > ZNEX) then
+                           DZN = ZNEX - Z(J1)
+                           FRAC = DZN / DZ(J1)
+                           if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                              XH(IH) = X(J1) + FRAC * DX(J1)
+                              YH(IH) = Y(J1) + FRAC * DY(J1)
+                              IH = IH + 1
+                           end if
+                        end if
+                     end if
+                  end do
 
-            NUM = IH - 1
-            IF (NUM .GE. 3) THEN
-               CALL PFILLER(XH,YH,NUM,NCOL,NCOL)
-            ELSE IF (NUM .NE. 0) THEN
+                  NUM = IH - 1
+                  if (NUM >= 3) then
+                     call PFILLER(XH, YH, NUM, NCOL, NCOL)
+                  else if (NUM /= 0) then
 !              CALL OKAY(1)
-            ENDIF
-         ELSE IF (ZMIN .GE. ZNOW .AND. ZMAX .LE. ZNEX) THEN
-            CALL PFILLER(X,Y,3,NCOL,NCOL)
-         ENDIF
-      end do
-      ENDIF
+                  end if
+               else if (ZMIN >= ZNOW .and. ZMAX <= ZNEX) then
+                  call PFILLER(X, Y, 3, NCOL, NCOL)
+               end if
+            end do
+         end if
 
-      CALL TOPIX(X(1),Y(1),NX1,NY1)
-      CALL TOPIX(X(3),Y(3),NX3,NY3)
-      NPICS = ABS(NX1-NX3) + ABS(NY1-NY3)
-      IF (NCOLR .EQ. 0) THEN
-         IF (NPICS .GE. 5) THEN
-            CALL SETCOL(NCOLR)
-            CALL PTABS(X(1),Y(1))
-         ENDIF
-      ELSE
-         IF (NPICS .GE. 5) THEN
-            NUM   = 3
-            CALL POLYGON(X,Y,NUM,NCOLR)
-         ELSE
-            CALL SETCOL(NCOLR)
-            CALL PTABS(X(1),Y(1))
-         ENDIF
-      ENDIF
-      RETURN
-      END
+         call TOPIX(X(1), Y(1), NX1, NY1)
+         call TOPIX(X(3), Y(3), NX3, NY3)
+         NPICS = abs(NX1 - NX3) + abs(NY1 - NY3)
+         if (NCOLR == 0) then
+            if (NPICS >= 5) then
+               call SETCOL(NCOLR)
+               call PTABS(X(1), Y(1))
+            end if
+         else
+            if (NPICS >= 5) then
+               NUM = 3
+               call POLYGON(X, Y, NUM, NCOLR)
+            else
+               call SETCOL(NCOLR)
+               call PTABS(X(1), Y(1))
+            end if
+         end if
+         return
+      end
