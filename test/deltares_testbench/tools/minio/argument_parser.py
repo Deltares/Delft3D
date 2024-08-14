@@ -15,9 +15,11 @@ from src.config.types.path_type import PathType
 from src.utils.handlers.credential_handler import CredentialHandler
 from src.utils.minio_rewinder import Rewinder
 from tools.minio import config, prompt
+from tools.minio.config import TestBenchConfigWriter
 from tools.minio.minio_tool import ErrorCode, MinioTool, MinioToolError
 
 HELP_CONFIG = "Path to test bench config file"
+HELP_TEST_CASE_FILE = "Relative path from the testbench root folder, contains a list of testcases to update."
 HELP_TEST_CASE_NAME = (
     "Name of a test case in the config file. This can be a substring, but it should match exactly one test case."
 )
@@ -40,8 +42,10 @@ def make_argument_parser() -> argparse.ArgumentParser:
 
     # Add common arguments.
     common_parser = argparse.ArgumentParser(add_help=False)
-    common_parser.add_argument("-c", "--config", required=True, help=HELP_CONFIG)
-    common_parser.add_argument("-n", "--test-case-name", required=True, help=HELP_TEST_CASE_NAME)
+    common_parser.add_argument("-c", "--config", help=HELP_CONFIG)
+    test_case_input_group = common_parser.add_mutually_exclusive_group(required=True)
+    test_case_input_group.add_argument("-n", "--test-case-name", help=HELP_TEST_CASE_NAME)
+    test_case_input_group.add_argument("-r", "--test-case-file", help=HELP_TEST_CASE_FILE)
     common_parser.add_argument("--color", dest="color_output", action="store_true", help=HELP_COLOR)
     common_parser.add_argument("--no-color", dest="color_output", action="store_false", help=HELP_NO_COLOR)
     common_parser.add_argument("-i", "--interactive", dest="interactive", action="store_true", help=HELP_INTERACTIVE)
@@ -84,7 +88,12 @@ def make_argument_parser() -> argparse.ArgumentParser:
 
 def make_minio_tool(namespace: argparse.Namespace) -> MinioTool:
     """Make an instance of `MinioTool` based on the parsed command line arguments."""
-    config_path: Path = Path(namespace.config)
+    if namespace.config and namespace.test_case_file:
+        raise MinioToolError(
+            "Argument [--config] provided with [--test-case-file]. These arguments are not compatible."
+            + "Write your config filter with the testcase name(s) in the test case file, using a `,` seperator."
+        )
+    indexer = config.ConfigIndexer(namespace.config)
     prompter: prompt.Prompt = (
         prompt.InteractivePrompt() if namespace.interactive else prompt.DefaultPrompt(force_yes=namespace.force)
     )
@@ -108,8 +117,8 @@ def make_minio_tool(namespace: argparse.Namespace) -> MinioTool:
     )
     return MinioTool(
         rewinder=Rewinder(minio_client, logger),  # type: ignore
-        test_case_loader=config.TestBenchConfigLoader(config_path),
-        test_case_writer=config.TestBenchConfigWriter(config_path),
+        test_case_writer=TestBenchConfigWriter(),
+        indexed_configs=indexer.indexed_configs,
         prompt=prompter,
         tags=tags,
         color=color_output,
@@ -122,8 +131,16 @@ def push_tool(args: argparse.Namespace) -> None:
     path_type: PathType = args.path_type
     local_path = Path(args.local_path) if args.local_path else None
 
+    cases = {}
+    if args.test_case_name:
+        cases[args.test_case_name] = args.config
+    elif args.test_case_file:
+        cases = config.CaseListReader().read_cases_from_file(args.test_case_file)
+
     try:
-        tool.push(args.test_case_name, path_type, local_path, args.allow_create_and_delete)
+        for case, config_filters in cases.items():
+            for config_filter in config_filters:
+                tool.push(case, path_type, config_filter, local_path, args.allow_create_and_delete)
     except S3Error as exc:
         raise MinioToolError(f"{exc.code}: {exc.message}", ErrorCode.AUTH) from exc
     except MinioException as exc:
@@ -132,6 +149,7 @@ def push_tool(args: argparse.Namespace) -> None:
 
 def pull_tool(args: argparse.Namespace) -> None:
     """Parse command line arguments and call the pull command on the MinioTool."""
+    tool = make_minio_tool(args)
     path_type: PathType = args.path_type
     local_path = Path(args.local_path) if args.local_path else None
     latest: bool = args.latest
@@ -139,9 +157,16 @@ def pull_tool(args: argparse.Namespace) -> None:
     if args.timestamp and not latest:
         timestamp = datetime.fromisoformat(args.timestamp).replace(tzinfo=timezone.utc)
 
-    tool = make_minio_tool(args)
+    cases = {}
+    if args.test_case_name:
+        cases[args.test_case_name] = args.config
+    elif args.test_case_file:
+        cases = config.CaseListReader().read_cases_from_file(args.test_case_file)
+
     try:
-        tool.pull(args.test_case_name, path_type, local_path, timestamp, latest)
+        for case, config_filters in cases.items():
+            for config_filter in config_filters:
+                tool.pull(case, path_type, config_filter, local_path, timestamp, latest)
     except S3Error as exc:
         raise MinioToolError(f"{exc.code}: {exc.message}", ErrorCode.AUTH) from exc
     except MinioException as exc:
@@ -151,11 +176,18 @@ def pull_tool(args: argparse.Namespace) -> None:
 def update_references_tool(args: argparse.Namespace) -> None:
     """Parse command line arguments and call the update_references command on the MinioTool."""
     tool = make_minio_tool(args)
-    test_case_name: str = args.test_case_name
     local_path = Path(args.local_path) if args.local_path else None
 
+    cases = {}
+    if args.test_case_name:
+        cases[args.test_case_name] = args.config
+    elif args.test_case_file:
+        cases = config.CaseListReader().read_cases_from_file(args.test_case_file)
+
     try:
-        tool.update_references(test_case_name, local_path)
+        for case, config_filters in cases.items():
+            for config_filter in config_filters:
+                tool.update_references(case, local_path, config_filter)
     except S3Error as exc:
         raise MinioToolError(f"{exc.code}: {exc.message}", ErrorCode.AUTH) from exc
     except MinioException as exc:

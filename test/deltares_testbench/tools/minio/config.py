@@ -1,10 +1,11 @@
 import abc
 import io
 import re
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import ClassVar, Dict, Iterable, Mapping, Optional, TextIO, Tuple
+from typing import ClassVar, Dict, Iterable, List, Mapping, Optional, TextIO, Tuple
 
 from s3_path_wrangler.paths import S3Path
 
@@ -82,6 +83,54 @@ class TestCaseData:
         return S3Path.from_bucket(abs_path.bucket) / utils.resolve_relative(abs_path.key)
 
 
+@dataclass
+class ConfigIndexer:
+    """Index the configuration specified or the config folders xml files."""
+
+    def __init__(self, config: Optional[str] = None) -> None:
+        print("Indexing configs, parsing testcases and creating a Dict for processing.")
+        self.__indexed_configs: Dict[Path, List[TestCaseData]] = {}
+        config_folder = Path("configs")
+        xml_files = config_folder.rglob("*.xml")
+        for xml in xml_files:
+            if config or "" in str(xml):
+                test_cases = self._extract_test_cases_from_xml(xml)
+                if test_cases:
+                    self.__indexed_configs[xml] = test_cases
+
+    def _extract_test_cases_from_xml(self, xml: Path) -> Optional[List[TestCaseData]]:
+        """Return test case data defined within the provided XML file.
+
+        Parameters
+        ----------
+        xml : Path
+            Path to the xml file to extract testcasedata from.
+
+        Returns
+        -------
+        Optional[List[TestCaseData]]
+            The list of testcasedata objects that were parsed from the xml configuration file.
+        """
+        with open(xml, "r") as file:
+            if any(re.search(r"<deltaresTestbench_v3", line) for line in file):
+                try:
+                    config_loader = TestBenchConfigLoader(xml)
+                    return list(config_loader.get_test_cases())
+                except Exception as exception:
+                    print(f"Skip xml: {xml} due to error in parsing.\n{exception}")
+        return None
+
+    @property
+    def configs(self) -> List[Path]:
+        """Return the list of configs in the config folder that contained the root element."""
+        return list(self.__indexed_configs.keys())
+
+    @property
+    def indexed_configs(self) -> Dict[Path, List[TestCaseData]]:
+        """Return a list of the indexed configs and the testcases they contain."""
+        return self.__indexed_configs
+
+
 class TestCaseLoader(abc.ABC):
     __test__: ClassVar[bool] = False
 
@@ -108,7 +157,7 @@ class TestCaseWriter(abc.ABC):
     __test__: ClassVar[bool] = False
 
     @abc.abstractmethod
-    def config_updates(self, updates: Mapping[str, datetime]) -> Mapping[Path, TextIO]:
+    def config_updates(self, updates: Mapping[str, datetime], configs: List[Path]) -> Mapping[Path, TextIO]:
         """Generate new config files based on updates test cases.
 
         Parameters
@@ -119,6 +168,9 @@ class TestCaseWriter(abc.ABC):
             have the `version` attribute in their path elements updated
             in the config files. Several config files may be updated in
             the process because config files can 'include' other config files.
+        configs : List[Path]
+            List of Path objects that link to the xml configurations
+            that need to be updated with the new `version` timestamp.
 
         Returns
         -------
@@ -191,11 +243,11 @@ class TestBenchConfigWriter(TestCaseWriter):
         re.VERBOSE,
     )
 
-    def __init__(self, path: Path) -> None:
-        self._path = path
-
-    def config_updates(self, updates: Mapping[str, datetime]) -> Mapping[Path, TextIO]:
-        return self.__update_config(self._path, updates)
+    def config_updates(self, updates: Mapping[str, datetime], configs: List[Path]) -> Mapping[Path, TextIO]:
+        result: Dict[Path, TextIO] = {}
+        for file_path in configs:
+            result.update(self.__update_config(file_path, updates))
+        return result
 
     def __update_config(self, config_path: Path, updates: Mapping[str, datetime]) -> Mapping[Path, TextIO]:
         result: Dict[Path, TextIO] = {}
@@ -254,3 +306,46 @@ class TestBenchConfigWriter(TestCaseWriter):
                 out_handle.write(f'{space}<path version="{new_version}">{path}</path>\n')
             else:
                 out_handle.write(line)
+
+
+class CaseListReader:
+    def read_cases_from_file(self, path: str) -> defaultdict[str, List[str]]:
+        """Parse test cases from a text file.
+
+        Reads a csv file in the format `testcase, config`
+        Both values are used as filter testcase must only match one testcase
+        and config is matched against a part of the path.
+
+        Parameters
+        ----------
+        path: str
+            Path to the csv file to parse a testcase name from
+            and the optional configuration filter.
+
+        Returns
+        -------
+        defaultdict[str, List[str]]
+            A dictionary that couples a testcase string to one
+            or multiple configurations filters.
+            example: {e02_f01_c001_example_case: [lnx64, win64]}
+        """
+        file_path = Path(path)
+        if not file_path.is_file():
+            assert f"File: {file_path} does not exist."
+        parsed_file_cases: defaultdict[str, list[str]] = defaultdict(list)
+
+        with open(file_path) as file:
+            lines = file.readlines()
+            for line in lines:
+                if self.__line_is_comment(line):
+                    continue
+                case_filter, *xml_filter = line.split(",")
+                config_value = xml_filter[0].strip() if xml_filter else ""
+                # Convert filter to Path object and back to string to be platform unspecific when path is provided.
+                if "/" in config_value:
+                    config_value = str(Path(config_value))
+                parsed_file_cases[case_filter].append(config_value)
+        return parsed_file_cases
+
+    def __line_is_comment(self, line: str) -> bool:
+        return line.startswith("#")
