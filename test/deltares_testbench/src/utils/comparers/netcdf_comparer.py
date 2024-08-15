@@ -64,12 +64,7 @@ class NetcdfComparer(IComparer):
                         left_nc_var = left_nc_root.variables[variable_name]
                         right_nc_var = right_nc_root.variables[variable_name]
 
-                        # Check for dimension equality.
-                        if left_nc_var.shape != right_nc_var.shape:
-                            raise Exception(
-                                f"Shapes of parameter {variable_name} not compatible. Shape of reference: "
-                                + f"{left_nc_var.shape}. Shape of run data: {right_nc_var.shape}"
-                            )
+                        self.check_for_dimension_equality(left_nc_var, right_nc_var, variable_name)
 
                         min_ref_value = float(np.min(left_nc_var[:]))
                         max_ref_value = float(np.max(left_nc_var[:]))
@@ -295,6 +290,16 @@ class NetcdfComparer(IComparer):
                     raise Exception(error_msg)
         return results
 
+    def check_for_dimension_equality(
+        self, left_nc_var: nc.Dataset, right_nc_var: nc.Dataset, variable_name: str
+    ) -> None:
+        """Check dimension equility and raises exception if not correct."""
+        if left_nc_var.shape != right_nc_var.shape:
+            raise Exception(
+                f"Shapes of parameter {variable_name} not compatible. Shape of reference: "
+                + f"{left_nc_var.shape}. Shape of run data: {right_nc_var.shape}"
+            )
+
     def create_time_series_plot(
         self,
         right_path: str,
@@ -333,8 +338,8 @@ class NetcdfComparer(IComparer):
         self,
         time_var: nc.Dataset,
         row_id,
-        left_nc_var,
-        right_nc_var,
+        left_nc_var: nc.Dataset,
+        right_nc_var: nc.Dataset,
         left_nc_root,
         right_path: str,
         param_new,
