@@ -622,7 +622,7 @@ contains
       vinrainground = 0 ! Total volume of rain falling onto the ground (in the last time step) (m3)
       vouteva = 0 ! total volume out evaporation            (m3)
       voutevaicept = 0 ! total volume out evaporation from interception layer (m3)
-      vinlat(1:2) = 0 ! total volume in  diffuse laterals       (m3)
+      vinlat(1:2) = 0 ! total volume in diffuse laterals       (m3)
       voutlat(1:2) = 0 ! total volume out diffuse laterals       (m3)
       vingrw = 0 ! total volume in  groundwater            (m3)
       voutgrw = 0 ! total volume out groundwater            (m3)

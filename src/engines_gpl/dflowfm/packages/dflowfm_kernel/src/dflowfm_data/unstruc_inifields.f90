@@ -359,7 +359,7 @@ contains
                                    iloctype, operand, transformcoef, ja, varname)
       use timespace_parameters
       use m_ec_interpolationsettings, only: RCEL_DEFAULT
-      use m_lateral, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       use m_grw
 
       character(len=*), intent(in) :: inifilename !< Name of the ini file, only used in warning messages, actual data is read from node_ptr.

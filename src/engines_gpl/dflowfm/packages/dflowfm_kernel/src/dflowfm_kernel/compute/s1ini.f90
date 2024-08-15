@@ -41,7 +41,7 @@
     use m_hydrology_data, only: jadhyd, ActEvap, interceptionmodel, InterceptThickness, InterceptHs, DFM_HYD_INTERCEPT_LAYER
     use m_mass_balance_areas
     use m_partitioninfo
-    use m_lateral, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
+    use m_laterals, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
                          apply_transport
     implicit none
 

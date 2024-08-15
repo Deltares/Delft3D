@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-submodule(m_lateral) m_lateral_implementation
+submodule(m_laterals) m_laterals_implementation
 
    implicit none
 
@@ -47,7 +47,7 @@ contains
    module subroutine initialize_lateraldata(numconst)
       use m_flow, only: kmx
       use m_flowgeom, only: ndx
-      use m_alloc
+      use m_alloc, only: realloc
 
       integer, intent(in) :: numconst !< number of constitiuents
 
@@ -81,16 +81,17 @@ contains
          deallocate (incoming_lat_concentration)
          deallocate (outgoing_lat_concentration)
          deallocate (lateral_volume_per_layer)
+         deallocate (qqlat)
       end if
 
    end subroutine dealloc_lateraldata
 
    !> At the start of an update, the outgoing_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-   !> In average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
-   !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
+   !! In average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
+   !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
    module subroutine average_concentrations_for_laterals(numconst, kmx, kmxn, cell_volume, constituents, dt)
 
-      use m_alloc
+      use m_alloc, only: aerr
 
       integer, intent(in) :: numconst !< Number or constituents.
       integer, intent(in) :: kmx !< Number of layers (0 means 2D computation).
@@ -160,8 +161,8 @@ contains
       integer :: k1, i_cell, i_lateral, i_layer
       real(kind=dp) :: qlat
 
-      ! TODO: UNST-8062: this routine will be eliminated in the next issue to be picked up in this sprint, 
-      ! so setting i_layer = 1 is acceptable for the moment. 
+      ! TODO: UNST-8062: this routine will be eliminated in the next issue to be picked up in this sprint,
+      ! so setting i_layer = 1 is acceptable for the moment.
       i_layer = 1
       if (numlatsg > 0) then
          lateral_discharge_in = 0._dp
@@ -249,30 +250,29 @@ contains
    end subroutine get_lateral_volume_per_layer
 
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-   !> In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
-   !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
+   !!In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
+   !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
    module subroutine reset_outgoing_lat_concentration()
       outgoing_lat_concentration = 0._dp
    end subroutine reset_outgoing_lat_concentration
 
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-   !> In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
-   !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
+   !! In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
+   !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
    module subroutine finish_outgoing_lat_concentration(time_interval)
       real(kind=dp), intent(in) :: time_interval
       outgoing_lat_concentration = outgoing_lat_concentration / time_interval
    end subroutine finish_outgoing_lat_concentration
 
-   !> Distributes provided lateral discharge across flow nodes. 
-   !. Input is lateral discharge per layer per lateral, output is per layer per lateral per cell.
+   !> Distributes provided lateral discharge across flow nodes.
+   !! Input is lateral discharge per layer per lateral, output is per layer per lateral per cell.
    module subroutine distribute_lateral_discharge(provided_lateral_discharge, lateral_discharge_per_layer_lateral_cell)
 
       use m_flow, only: vol1, kmx, kmxn
       use precision_basics, only: comparereal
       use m_GlobalParameters, only: flow1d_eps10
 
-      real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per
-                                                                               !! layer, which is retrieved from BMI
+      real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per layer
       real(kind=dp), dimension(:, :, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge per layer
                                                                                                  !! per lateral, per cell
       integer :: i_lateral, i_layer, i_nnlat, i_node, i_flownode
@@ -297,4 +297,4 @@ contains
          end if
       end do
    end subroutine distribute_lateral_discharge
-end submodule m_lateral_implementation
+end submodule m_laterals_implementation

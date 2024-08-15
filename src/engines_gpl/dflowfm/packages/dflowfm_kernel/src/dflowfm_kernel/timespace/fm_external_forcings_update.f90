@@ -43,7 +43,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_nearfield, only: nearfield_mode, NEARFIELD_UPDATED, addNearfieldData
    use m_airdensity, only: get_airdensity
    use dfm_error
-   use m_lateral, only: numlatsg
+   use m_laterals, only: numlatsg
    implicit none
 
    integer, parameter :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS = 1

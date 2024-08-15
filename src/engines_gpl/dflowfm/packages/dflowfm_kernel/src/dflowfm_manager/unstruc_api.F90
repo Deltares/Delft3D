@@ -239,7 +239,7 @@ contains
       use network_data
       use unstruc_files
       use waq
-      use m_lateral, only: numlatsg
+      use m_laterals, only: numlatsg
       use m_wind, only: jawind
       use dfm_error
       use m_partitioninfo, only: jampi
@@ -389,7 +389,7 @@ contains
       use m_ec_module
       use m_meteo, only: ecInstancePtr
       use m_nearfield
-      use m_lateral
+      use m_laterals
       use fm_statistical_output, only: close_fm_statistical_output
 
       call dealloc_nfarrays()

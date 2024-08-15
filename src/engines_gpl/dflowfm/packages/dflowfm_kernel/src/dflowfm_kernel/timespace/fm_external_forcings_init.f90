@@ -42,7 +42,7 @@ contains
       use fm_external_forcings_data
       use m_flowgeom
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, UNIFORM, SPACEANDTIME, getmeteoerror
-      use m_lateral, only: balat, qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd
+      use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd
       use m_meteo, only: ec_addtimespacerelation
       use timespace
       use timespace_parameters
@@ -54,7 +54,7 @@ contains
       use m_missing
       use m_ec_parameters, only: provFile_uniform
       use m_partitioninfo, only: jampi, reduce_sum, is_ghost_node
-      use m_lateral, only: apply_transport
+      use m_laterals, only: apply_transport
       use m_flow, only: kmx
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use fm_deprecated_keywords, only: deprecated_ext_keywords

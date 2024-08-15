@@ -1113,7 +1113,7 @@ contains
    subroutine updateTotalInflowLat(dts)
       use m_flow, only: vTotLat, qCurLat, kmx
       use m_flowgeom, only: ndx2d
-      use m_lateral, only: qqlat, num_layers, numlatsg, n1latsg, n2latsg, nnlat
+      use m_laterals, only: qqlat, num_layers, numlatsg, n1latsg, n2latsg, nnlat
       implicit none
       double precision, intent(in) :: dts ! current computational time step
       integer :: n

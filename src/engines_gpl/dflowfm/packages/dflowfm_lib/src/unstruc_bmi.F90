@@ -875,10 +875,10 @@ contains
       use network_data
       use m_observations, only: numobs, nummovobs, MAXNUMVALOBS2D, MAXNUMVALOBS3D, MAXNUMVALOBS3Dw
       use m_monitoring_crosssections, only: ncrs, maxnval
-      use m_lateral, only: num_layers, numlatsg
+      use m_laterals, only: num_layers, numlatsg
       use unstruc_channel_flow, only: network
       use m_transport, only: NAMLEN, NUMCONST
-      use m_lateral, only: numlatsg, nlatnd
+      use m_laterals, only: numlatsg, nlatnd
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       integer(c_int), intent(inout) :: shape(MAXDIMS)
@@ -1062,8 +1062,8 @@ contains
       use m_cell_geometry ! TODO: UNST-1705: temp, replace by m_flowgeom
       use unstruc_model
       use unstruc_channel_flow, only: network
-      use m_lateral, only: numlatsg, kclat, qplatCum, qLatRealCum, qLatRealCumPre, n1latsg, n2latsg, qplat, balat, qLatRealAve, nnlat, qLatReal, qplatAve, qqlat
-      use m_lateral, only: qplatCumPre
+      use m_laterals, only: numlatsg, kclat, qplatCum, qLatRealCum, qLatRealCumPre, n1latsg, n2latsg, qplat, balat, qLatRealAve, nnlat, qLatReal, qplatAve, qqlat
+      use m_laterals, only: qplatCumPre
       use morphology_data_module, only: get_one_transport_parameter
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Variable name. May be slash separated string "name/item/field": then get_compound_field is called.
@@ -1313,8 +1313,8 @@ contains
       use m_partitioninfo, only: jampi
       use MessageHandling
       use iso_c_binding, only: c_double, c_char, c_bool, c_loc, c_f_pointer
-      use m_lateral, only: numlatsg, qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
-      use m_lateral, only: qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
+      use m_laterals, only: numlatsg, qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
+      use m_laterals, only: qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
       use morphology_data_module, only: PARSOURCE_FIELD
 
       character(kind=c_char), intent(in) :: c_var_name(*)
@@ -1605,8 +1605,8 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: set_var_slice
       ! Return a pointer to the variable
       use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
-      use m_lateral, only: qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
-      use m_lateral, only: qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
+      use m_laterals, only: qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
+      use m_laterals, only: qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
       use morphology_data_module, only: PARSOURCE_FIELD
 
       integer(c_int), intent(in) :: c_start(*)
@@ -2312,7 +2312,7 @@ contains
 
    !> Returns the c_ptr for a variable on a lateral location
    function get_pointer_to_lateral_variable(item_name, field_name) result(c_lateral_pointer)
-      use m_lateral, only: qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
+      use m_laterals, only: qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
                            lateral_volume_per_layer, num_layers
       use m_flow, only: s1
       use string_module, only: str_token
@@ -2410,7 +2410,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_General_Structure, only: update_widths
       use m_transport, only: NUMCONST, ISALT, ITEMP
-      use m_lateral, only: qplat
+      use m_laterals, only: qplat
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Name of the set variable, e.g., 'pumps'
       character(kind=c_char), intent(in) :: c_item_name(*) !< Name of a single item's index/location, e.g., 'Pump01'

@@ -44,7 +44,7 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
    use unstruc_inifields, only: readIniFieldProvider, checkIniFieldFileVersion
    use dfm_error
    use unstruc_netcdf
-   use m_lateral, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+   use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
    use fm_deprecated_keywords, only: deprecated_ext_keywords
    use m_deprecation, only: check_file_tree_for_deprecated_keywords
    use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN

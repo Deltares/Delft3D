@@ -1564,7 +1564,7 @@ contains
       use network_data
       use m_partitioninfo, only: is_ghost_node
       use fm_external_forcings_data
-      use m_lateral, only: numlatsg, n1latsg, n2latsg, nnlat, lat_ids
+      use m_laterals, only: numlatsg, n1latsg, n2latsg, nnlat, lat_ids
       use unstruc_files
       use m_sferic, only: jsferic, jasfer3D
       use m_missing, only: dmiss, dxymis
@@ -1745,7 +1745,7 @@ contains
 !! time. Thereafter, accumulated flux is associated with previous
 !! timestep. At the last time a dummy record is written in .are and .flo.
    subroutine waq_wri_couple_files(time)
-      use m_lateral, only: numlatsg
+      use m_laterals, only: numlatsg
       use m_flowtimes
       use m_flowgeom
       use m_flow
@@ -2331,7 +2331,7 @@ contains
       use m_flowgeom
       use m_flow
       use fm_external_forcings_data
-      use m_lateral, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
+      use m_laterals, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
       use m_alloc
       implicit none
 

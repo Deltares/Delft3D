@@ -1221,7 +1221,7 @@ contains
 
 !> Initializes memory for laterals on flow nodes.
    subroutine ini_alloc_laterals()
-      use m_lateral, only: qqlat, kclat, nnlat
+      use m_laterals, only: qqlat, kclat, nnlat
       use m_flowgeom, only: ndx2d, ndxi, ndx
       use m_alloc
       use m_flow, only: kmx
@@ -2305,7 +2305,7 @@ contains
       use m_crosssections, only: cs_type_normal, getcsparstotal
       use m_trachy, only: trachy_resistance
       use m_structures, only: check_model_has_structures_across_partitions
-      use m_lateral, only: initialize_lateraldata
+      use m_laterals, only: initialize_lateraldata
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar

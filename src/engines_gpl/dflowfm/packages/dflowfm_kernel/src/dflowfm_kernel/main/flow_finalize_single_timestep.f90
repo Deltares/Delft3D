@@ -50,7 +50,7 @@ subroutine flow_finalize_single_timestep(iresult)
    use m_statistical_output, only: update_statistical_output, update_source_input
    use m_update_fourier, only: update_fourier
    use mass_balance_areas_routines, only: comp_horflowmba
-   use m_lateral, only: numlatsg
+   use m_laterals, only: numlatsg
    use m_update_values_on_cross_sections, only: update_values_on_cross_sections
 
    implicit none

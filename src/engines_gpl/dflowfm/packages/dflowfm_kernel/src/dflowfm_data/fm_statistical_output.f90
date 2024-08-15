@@ -92,7 +92,7 @@ contains
    end subroutine allocate_and_associate
 
    subroutine transform_qplat(source_input)
-      use m_lateral, only: qplat
+      use m_laterals, only: qplat
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "qplat" item.
       qplat_data = sum(qplat, dim=1)
    end subroutine transform_qplat
@@ -2156,7 +2156,7 @@ contains
       use m_fm_wq_processes, only: jawaqproc, numwqbots
       use processes_input, only: num_wq_user_outputs => noout_user
       use m_dad, only: dad_included, dadpar
-      use m_lateral, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
+      use m_laterals, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal
       use m_sferic, only: jsferic
       use, intrinsic :: iso_c_binding
 

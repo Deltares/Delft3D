@@ -70,7 +70,7 @@ subroutine unc_write_his(tim) ! wrihis
    use m_structures
    use m_GlobalParameters
    use m_longculverts
-   use m_lateral, only: numlatsg, nNodesLat, lat_ids, geomXLat, geomYLat, nlatnd, nodeCountLat
+   use m_laterals, only: numlatsg, nNodesLat, lat_ids, geomXLat, geomYLat, nlatnd, nodeCountLat
    use odugrid
    use m_statistical_output_types, only: SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
    use fm_statistical_output

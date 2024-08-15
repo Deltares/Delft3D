@@ -53,7 +53,7 @@ contains
       use dfm_error, only: dfm_noerr, dfm_extforcerror
       use m_sferic, only: jsferic
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
-      use m_lateral, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
+      use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nlatnd, nnlat, n1latsg, n2latsg, initialize_lateraldata
       use unstruc_files, only: basename, resolvepath
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use unstruc_inifields, only: set_friction_type_values
@@ -1363,7 +1363,7 @@ contains
       use dfm_error, only: dfm_extforcerror, dfm_noerr, dfm_strerror
       use m_sobekdfm, only: nbnd1d2d
       use m_partitioninfo, only: is_ghost_node, jampi, idomain, my_rank, reduce_sum
-      use m_lateral, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, &
+      use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, &
          initialize_lateraldata, apply_transport
       use m_sobekdfm, only: init_1d2d_boundary_points
       use unstruc_files, only: resolvepath
