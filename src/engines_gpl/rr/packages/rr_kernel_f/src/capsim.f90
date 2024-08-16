@@ -89,7 +89,7 @@
       INTEGER     ib,id
       Double Precision        de
       LOGICAL     ISSW
-      Double Precision        Frrdca /0.0/
+      Double Precision  ::    Frrdca = 0.0d0
       Double Precision        DTGW
       Double Precision        ICSELO
       Double Precision        VMRZPT
@@ -1125,10 +1125,10 @@
 !
       logical er
       logical ex
-      integer nmli   /0/
-      integer nmlicm /0/
-      integer nuwa /0/
-      integer nuer /0/
+      integer :: nmli = 0
+      integer :: nmlicm = 0
+      integer :: nuwa = 0 
+      integer :: nuer = 0
       character*132 chline
       logical kyer
       logical kydf

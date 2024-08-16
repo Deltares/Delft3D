@@ -58,7 +58,7 @@ contains
         !          ..
         !          .. Local Scalars ..
         INTEGER            INTA, INTB, ZCODE
-        integer(4) ithandl / 0/
+        integer(4) :: ithandl = 0
         if (timon) call timstrt ("lsame", ithandl)
         !          ..
         !          .. Executable Statements ..
