@@ -44,6 +44,16 @@
     integer :: n, nq, L, k2
     integer :: ng, Lnu, LL, iup, k
     double precision :: at, ssav, wwav, fac, zlu, zgaten, sup, bupmin, bup, openfact, afac, hh
+    integer :: upstream_cell
+    integer :: upstream_cell_index
+    integer :: kb
+    integer :: kt
+    integer :: Lb
+    integer :: left_cell
+    integer :: right_cell
+    integer :: downstream_cell
+    integer :: direction_sign
+    double precision :: velocity
 
     double precision, parameter :: FAC23 = 0.6666666666667d0
 
@@ -248,6 +258,19 @@
 
           if (jbasqbnddownwindhs == 1) then
              hu(L) = s1(k2) - bl(k2) !  Qbnd_downwind_hs
+             if (hu(L) > 0.0) then
+                left_cell = ln(1, L)
+                right_cell = ln(2, L)
+                velocity = u1(L)
+                if (velocity == 0) then
+                   call get_upstream_downstream_cell_numbers(s0(left_cell) > s0(right_cell), left_cell, right_cell, &
+                                                             upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
+                else
+                   call get_upstream_downstream_cell_numbers(velocity > 0, left_cell, right_cell, &
+                                                             upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
+                end if
+                call get_lkbot_set_ltop_upwind(L, upstream_cell, upstream_cell_index, Lb, kb, kt)
+             end if
              call addlink2D(L, 1)
              huqbnd(n) = hu(L)
           end if

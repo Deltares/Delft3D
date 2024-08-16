@@ -68,6 +68,7 @@
     use m_structures
     use unstruc_messages
     use m_find_flownode, only: find_nearest_flownodes_kdtree
+    use m_turbulence, only: ln0
 
     implicit none
 
@@ -495,6 +496,7 @@
     call aerr('ibot   (lnx)', ierr, lnx)
     ibot = 0
 
+    call realloc(ln0, [2, lnx])
     call realloc(onlyWetLinks, lnx, keepExisting=.false., fill=0)
 
     if (allocated(xu)) deallocate (xu, yu, blu)
@@ -605,6 +607,8 @@
     end if
 
     call addexternalboundarypoints() ! add links due to open boundaries
+
+    ln0 = ln
 
     numswap = 0
     do L = 1, lnx ! for all 2d links, check positivity

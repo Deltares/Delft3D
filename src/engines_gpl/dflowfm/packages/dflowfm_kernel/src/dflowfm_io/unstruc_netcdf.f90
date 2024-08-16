@@ -559,6 +559,10 @@ module unstruc_netcdf
       module procedure unc_put_var_map_dble3
    end interface unc_put_var_map
 
+   interface unc_put_var_rst
+      module procedure unc_put_var_rst_dble
+   end interface unc_put_var_rst
+
    interface unc_put_att
       module procedure unc_put_att_int
       module procedure unc_put_att_dble
@@ -3544,6 +3548,7 @@ contains
       end if
 
       ndx1d = ndxi - ndx2d
+
       if (jased > 0 .and. stm_included) then
          ierr = nf90_def_dim(irstfile, 'nSedTot', stmpar%lsedtot, id_sedtotdim)
          ierr = nf90_def_dim(irstfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim)
@@ -3657,11 +3662,12 @@ contains
             end if
          end select
 
-         ierr = nf90_def_var(irstfile, 'sedshort', nf90_double, (/id_sedtotdim, id_flowelemdim, id_timedim/), id_sedshort)
-         ierr = nf90_put_att(irstfile, id_sedshort, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-         ierr = nf90_put_att(irstfile, id_sedshort, 'long_name', 'Sediment shortage of transport layer in flow cell center')
-         ierr = nf90_put_att(irstfile, id_sedshort, 'units', 'kg m-2')
-
+         if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+            ierr = nf90_def_var(irstfile, 'sedshort', nf90_double, (/id_sedtotdim, id_flowelemdim, id_timedim/), id_sedshort)
+            ierr = nf90_put_att(irstfile, id_sedshort, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+            ierr = nf90_put_att(irstfile, id_sedshort, 'long_name', 'Sediment shortage of transport layer in flow cell center')
+            ierr = nf90_put_att(irstfile, id_sedshort, 'units', 'kg m-2')
+         end if
          ! Fluff layers
          if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0) then
             ierr = nf90_def_var(irstfile, 'mfluff', nf90_double, (/id_sedsusdim, id_flowelemdim, id_timedim/), id_mfluff)
@@ -4636,10 +4642,11 @@ contains
                   deallocate (dum)
                end if
             end if !(jarstbnd > 0 .and. ndxbnd > 0)
+            !
             ! density (only necessary if morphodynamics and fractions in suspension and consider concentrations in density)
             if (stmpar%morpar%densin) then
-               call write_rho(irstfile, id_rho, id_rho_bnd, rho, itim)
-               call write_rho(irstfile, id_rhowat, id_rhowat_bnd, rhowat, itim)
+               ierr = unc_put_var_rst(irstfile, id_rho, id_rho_bnd, rho, itim)
+               ierr = unc_put_var_rst(irstfile, id_rhowat, id_rhowat_bnd, rhowat, itim)
             end if !(stmpar%morpar%densin)
          end if !(stmpar%lsedsus .gt. 0)
          ! morbl
@@ -4689,7 +4696,9 @@ contains
             end if
          end select
          ! sedshort
-         ierr = nf90_put_var(irstfile, id_sedshort, stmpar%morlyr%state%sedshort(:, 1:ndxi), (/1, 1, itim/), (/stmpar%lsedtot, ndxi, 1/))
+         if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+            ierr = nf90_put_var(irstfile, id_sedshort, stmpar%morlyr%state%sedshort(:, 1:ndxi), (/1, 1, itim/), (/stmpar%lsedtot, ndxi, 1/))
+         end if
          ! mfluff
          if (stmpar%morpar%flufflyr%iflufflyr > 0 .and. stmpar%lsedsus > 0) then
             do l = 1, stmpar%lsedsus
@@ -5991,7 +6000,9 @@ contains
                !
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_preload, nc_precision, UNC_LOC_S, 'preload', '', 'Historical largest load on layer of the bed in flow cell center', 'kg', dimids=(/mapids%id_tsp%id_nlyrdim, -2, -1/), jabndnd=jabndnd_)
             end select
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedshort, nc_precision, UNC_LOC_S, 'sedshort', '', 'Sediment shortage of transport layer in flow cell center', 'kg m-2', dimids=(/mapids%id_tsp%id_sedtotdim, -2, -1/), jabndnd=jabndnd_)
+            if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedshort, nc_precision, UNC_LOC_S, 'sedshort', '', 'Sediment shortage of transport layer in flow cell center', 'kg m-2', dimids=(/mapids%id_tsp%id_sedtotdim, -2, -1/), jabndnd=jabndnd_)
+            end if
             !
             if (stmpar%morpar%moroutput%taub) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_taub, nc_precision, UNC_LOC_S, 'taub', '', 'Bed shear stress for morphology', 'N m-2', dimids=(/-2, -1/), jabndnd=jabndnd_)
@@ -7289,8 +7300,9 @@ contains
          case default
             ! do nothing
          end select
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedshort, UNC_LOC_S, stmpar%morlyr%state%sedshort, locdim=2, jabndnd=jabndnd_)
-
+         if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sedshort, UNC_LOC_S, stmpar%morlyr%state%sedshort, locdim=2, jabndnd=jabndnd_)
+         end if
          if (stmpar%morpar%moroutput%taub) then
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_taub, UNC_LOC_S, sedtra%taub, jabndnd=jabndnd_)
          end if
@@ -12829,18 +12841,20 @@ contains
       integer, intent(in) :: jaWaqbot !< It is a waq bottom variable (1) or not(0)
       integer, intent(in) :: wqbot3D_output !< Read 3D waq bottom variable (1) or not(0)
       integer, optional, intent(in) :: target_shift !< shift of the index where the array is to be written (1:ndx), default = 0
-      integer :: kk, kloc, k, kb, kt, target_shift_
+      integer :: i, kloc, k, kb, kt, target_shift_
+      integer :: i_target
 
       target_shift_ = 0
       if (present(target_shift)) then
          target_shift_ = target_shift
       end if
 
-      do kk = target_shift_ + 1, target_shift_ + loccount
+      do i = 1, loccount
+         i_target = i + target_shift_
          if (jamergedmap == 1) then
-            kloc = iloc_own(kk)
+            kloc = iloc_own(i_target)
          else
-            kloc = kk
+            kloc = i_target
          end if
 
          if (jaWaqbot == 0 .or. wqbot3D_output > 0) then ! It is not a 2D waq bottom variable
@@ -12893,6 +12907,7 @@ contains
       integer, dimension(nf90_max_var_dims) :: rhdims, tmpdims
       integer :: jamerged_dif
       integer :: target_shift_
+      integer :: i_target
 
       ierr = DFM_NOERR
 
@@ -12933,15 +12948,17 @@ contains
                   goto 999
                end if
                ! Then assign the data based on the mapping
-               do i = target_shift_ + 1, target_shift_ + loccount
-                  imap = iloc_merge(i)
-                  targetarr(iloc_own(i)) = tmparray1D(imap)
+               do i = 1, loccount
+                  i_target = i + target_shift_
+                  imap = iloc_merge(i_target)
+                  targetarr(iloc_own(i_target)) = tmparray1D(imap)
                end do
             else
-               ierr = nf90_get_var(ncid, id_var, tmparr(target_shift_ + 1:target_shift_ + loccount), start=(/locstart, it_read/), count=(/loccount, 1/))
+               ierr = nf90_get_var(ncid, id_var, tmparr(1:loccount), start=[locstart, it_read], count=[loccount, 1])
                if (ierr /= nf90_noerr) goto 999
-               do i = target_shift_ + 1, target_shift_ + loccount
-                  targetarr(iloc_own(i)) = tmparr(i)
+               do i = 1, loccount
+                  i_target = i + target_shift_
+                  targetarr(iloc_own(i_target)) = tmparr(i)
                end do
             end if
          end if
@@ -12967,24 +12984,25 @@ contains
             goto 999
          end if
 
-         do i = target_shift_ + 1, target_shift_ + loccount
+         do i = 1, loccount
+            i_target = i + target_shift_
             if (jamergedmap /= 1) then
-               is = i
+               is = i_target
             else
                if (jamerged_dif == 1) then
-                  is = iloc_own(i)
-                  imap = iloc_merge(i)
+                  is = iloc_own(i_target)
+                  imap = iloc_merge(i_target)
                else
-                  is = iloc_own(i)
+                  is = iloc_own(i_target)
                end if
             end if
 
             if (loctype == UNC_LOC_S3D .or. loctype == UNC_LOC_W) then
-               call getkbotktop(target_shift_ + is, ib, it) ! TODO: AvD: double check whether this original 3D restart reading was working at all with kb, kt! (no kbotktopmax here?? lbotltopmax)
-               call getlayerindices(target_shift_ + is, nlayb, nrlay)
+               call getkbotktop(is, ib, it) ! TODO: AvD: double check whether this original 3D restart reading was working at all with kb, kt! (no kbotktopmax here?? lbotltopmax)
+               call getlayerindices(is, nlayb, nrlay)
             else if (loctype == UNC_LOC_U3D .or. loctype == UNC_LOC_WU) then
-               call getLbotLtopmax(target_shift_ + is, ib, it)
-               call getlayerindicesLmax(target_shift_ + is, nlayb, nrlay)
+               call getLbotLtopmax(is, ib, it)
+               call getlayerindicesLmax(is, nlayb, nrlay)
                !call getlayerindices(is, nlayb, nrlay)
                ! UNST-976: TODO: does NOT work for links yet. We need some setlbotltop call up in read_map, similar to sethu behavior.
                !if (layertype .ne. 1 .and. jawarn < 100)  then
@@ -13028,7 +13046,7 @@ contains
       use m_flowtimes
       use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, constituents, itrac2const, const_names, ifrac2const
       use m_fm_wq_processes
-      use fm_external_forcings_data, only: numtracers, trnames
+      use fm_external_forcings_data, only: numtracers, trnames, ibnd_own, ndxbnd_own
       use m_sediment
       use bedcomposition_module
       use m_flowgeom
@@ -13084,8 +13102,7 @@ contains
                  id_squbnd, id_sqibnd, &
                  id_morft, &
                  id_jmax, id_ncrs, id_flowelemcrsz, id_flowelemcrsn, &
-                 id_ucxqbnd, id_ucyqbnd, &
-                 id_rhobnd, id_rhowatbnd
+                 id_ucxqbnd, id_ucyqbnd
 
       integer :: id_tmp
       integer :: layerfrac, layerthk
@@ -13106,7 +13123,6 @@ contains
       double precision, allocatable :: tmp_s1(:), tmp_bl(:), tmp_s0(:)
       double precision, allocatable :: tmp_sqi(:), tmp_squ(:)
       double precision, allocatable :: tmp_ucxq(:), tmp_ucyq(:)
-      double precision, allocatable :: tmp_rho(:), tmp_rhowat(:)
       double precision, allocatable :: rst_bodsed(:, :), rst_mfluff(:, :), rst_thlyr(:, :)
       double precision, allocatable :: rst_msed(:, :, :)
       integer, allocatable :: itmpvar(:)
@@ -13258,10 +13274,11 @@ contains
          um%jafillghost = 0
       end if
 
-      ! allocate inode_merge and ilink_merge in all restart situations. When the partition is the same, these two arrays do not function,
+      ! allocate inode_merge, ilink_merge and ibnd_merge in all restart situations. When the partition is the same, these two arrays do not function,
       ! but they help to simplify the codes when calling "get_var_and_shift".
       call realloc(um%inode_merge, 1, keepExisting=.false., fill=-999)
       call realloc(um%ilink_merge, 1, keepExisting=.false., fill=-999)
+      call realloc(um%ibnd_merge, 1, keepExisting=.false., fill=-999)
 
       jamergedmap_same_bu = um%jamergedmap_same
       success = unc_read_merged_map(um, imapfile, filename, ierr)
@@ -13469,10 +13486,6 @@ contains
             call realloc(tmp_sqi, um%nbnd_read, stat=ierr, keepExisting=.false.)
             call realloc(tmp_ucxq, um%nbnd_read, stat=ierr, keepExisting=.false.)
             call realloc(tmp_ucyq, um%nbnd_read, stat=ierr, keepExisting=.false.)
-            call realloc(tmp_rho, um%nbnd_read, stat=ierr, keepExisting=.false.)
-            if (stm_included) then
-               call realloc(tmp_rhowat, um%nbnd_read, stat=ierr, keepExisting=.false.)
-            end if
 
             ierr = nf90_inq_varid(imapfile, 's0_bnd', id_s0bnd)
             if (ierr == 0) then
@@ -13518,17 +13531,15 @@ contains
                call check_error(ierr, 'ucyq_bnd')
             end if
 
-            ierr = nf90_inq_varid(imapfile, 'rho_bnd', id_rhobnd)
             if (ierr == 0) then
-               ierr = nf90_get_var(imapfile, id_rhobnd, tmp_rho, start=(/kstart_bnd, it_read/), count=(/um%nbnd_read, 1/))
-               call check_error(ierr, 'rho_bnd')
-            end if
+               ! Read rho_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
+               ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
+                                        um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
 
-            if (stm_included) then
-               ierr = nf90_inq_varid(imapfile, 'rhowat_bnd', id_rhowatbnd)
-               if (ierr == 0) then
-                  ierr = nf90_get_var(imapfile, id_rhowatbnd, tmp_rhowat, start=(/kstart_bnd, it_read/), count=(/um%nbnd_read, 1/))
-                  call check_error(ierr, 'rhowat_bnd')
+               if (stm_included) then
+                  ! Read rhowat_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
+                  ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
+                                           um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
                end if
             end if
 
@@ -13546,10 +13557,6 @@ contains
                   sqi(kk) = tmp_sqi(i)
                   ucxq(kk) = tmp_ucxq(i)
                   ucyq(kk) = tmp_ucyq(i)
-                  rho(kk) = tmp_rho(i)
-                  if (stm_included) then
-                     rhowat(kk) = tmp_rhowat(i)
-                  end if
                end do
             else
                do i = 1, um%nbnd_read ! u and z bnd
@@ -13564,10 +13571,6 @@ contains
                   sqi(kk) = tmp_sqi(i)
                   ucxq(kk) = tmp_ucxq(i)
                   ucyq(kk) = tmp_ucyq(i)
-                  rho(kk) = tmp_rho(i)
-                  if (stm_included) then
-                     rhowat(kk) = tmp_rhowat(i)
-                  end if
                end do
             end if
          end if
@@ -13585,10 +13588,6 @@ contains
             call realloc(tmp_sqi, ndx - ndxi, stat=ierr, keepExisting=.false.)
             call realloc(tmp_ucxq, ndx - ndxi, stat=ierr, keepExisting=.false.)
             call realloc(tmp_ucyq, ndx - ndxi, stat=ierr, keepExisting=.false.)
-            call realloc(tmp_rho, ndx - ndxi, stat=ierr, keepExisting=.false.)
-            if (stm_included) then
-               call realloc(tmp_rhowat, ndx - ndxi, stat=ierr, keepExisting=.false.)
-            end if
 
             ierr = get_var_and_shift(imapfile, 's0_bnd', tmp_s0, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                      um%jamergedmap, ibnd_own, um%ibnd_merge)
@@ -13613,13 +13612,13 @@ contains
             ierr = get_var_and_shift(imapfile, 'ucyq_bnd', tmp_ucyq, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                      um%jamergedmap, ibnd_own, um%ibnd_merge)
             call check_error(ierr, 'ucyq_bnd')
-            ierr = get_var_and_shift(imapfile, 'rho_bnd', tmp_rho, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
+            ! Read rho_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
+            ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
                                      um%jamergedmap, ibnd_own, um%ibnd_merge)
-            call check_error(ierr, 'rho_bnd')
             if (stm_included) then
-               ierr = get_var_and_shift(imapfile, 'rhowat_bnd', tmp_rhowat, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
+               ! Read rhowat_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
+               ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
                                         um%jamergedmap, ibnd_own, um%ibnd_merge)
-               call check_error(ierr, 'rhowat_bnd')
             end if
             do i = 1, ndxbnd_own
                j = ibnd_own(i)
@@ -13634,10 +13633,6 @@ contains
                sqi(kk) = tmp_sqi(j)
                ucxq(kk) = tmp_ucxq(j)
                ucyq(kk) = tmp_ucyq(j)
-               rho(kk) = tmp_rho(j)
-               if (stm_included) then
-                  rhowat(kk) = tmp_rhowat(j)
-               end if
             end do
          end if
       end if
@@ -18300,7 +18295,7 @@ contains
 
 !> Read sediment data to `constituents` (the indexing prevents passing
 !  another variable).
-   subroutine read_sediment(var, stradd, imapfile, kstart, ndx_own, it_read, um, target_shift)
+   subroutine read_sediment(var, stradd, imapfile, kstart, kcount, it_read, um, target_shift)
 
       use m_flow, only: kmx, ndkx
       use m_transport, only: ISED1, ISEDN, const_names
@@ -18310,16 +18305,20 @@ contains
       use fm_location_types, only: UNC_LOC_S3D, UNC_LOC_S
 
 !input/output
-      integer, intent(in) :: imapfile, kstart, ndx_own, it_read, target_shift
-      double precision, allocatable, dimension(:, :), intent(inout) :: var
+      double precision, allocatable, dimension(:, :), intent(inout) :: var !< (:,ndkx) Data array into which the sediment data will be read.
+      character(len=*), intent(in) :: stradd !< variable name suffix for distinguishing between internal and boundary cells, leave empty for internal cells.
+      integer, intent(in) :: imapfile !< file handle for reading in netcdf file
+      integer, intent(in) :: kstart !< 2D start position for reading in netcdf file
+      integer, intent(in) :: kcount !< 2D length of array for reading in netcdf file
+      integer, intent(in) :: it_read !< time index for reading in netcdf file
       type(t_unc_merged), intent(in) :: um !< struct holding all data for ugrid merged map/rst files
+      integer, intent(in) :: target_shift !< 2D shift of index for writing
 
 !local
       integer :: i
       integer :: ierr, tmp_loc
       double precision, allocatable :: tmpvar1(:), tmpvar1D(:)
       character(len=255) :: tmpstr
-      character(len=*), intent(in) :: stradd
 
       if (kmx > 0) then
          tmp_loc = UNC_LOC_S3D
@@ -18336,19 +18335,19 @@ contains
          call replace_char(tmpstr, 32, 95)
          call replace_char(tmpstr, 47, 95)
          ! concentrations exists in restart file
-         ierr = get_var_and_shift(imapfile, trim(tmpstr)//trim(stradd), tmpvar1D, tmpvar1, tmp_loc, kmx, kstart, ndx_own, it_read, um%jamergedmap, um%inode_own, um%inode_merge, target_shift)
+         ierr = get_var_and_shift(imapfile, trim(tmpstr)//trim(stradd), tmpvar1D, tmpvar1, tmp_loc, kmx, kstart, kcount, it_read, um%jamergedmap, um%inode_own, um%inode_merge, target_shift)
          if (ierr /= nf90_noerr) then
             call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//trim(stradd)//''' from the specified restart file. Skip reading this variable.')
             call check_error(ierr, const_names(i), LEVEL_WARN)
          else
-            call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, ndx_own, um%jamergedmap, um%inode_own, 0, 0, target_shift)
+            call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, kcount, um%jamergedmap, um%inode_own, 0, 0, target_shift)
          end if
       end do
 
    end subroutine read_sediment
 
-!> Write rho
-   subroutine write_rho(irstfile, id_rho, id_rho_bnd, rho, itim)
+!> Write 2D/3D array on cell centres and for boundaries
+   function unc_put_var_rst_dble(irstfile, id_internal_flow_node_data_var, id_bnd_flow_node_data_var, data_values, itim) result(ierr)
 
       use m_flowgeom, only: ndxi, ndx
       use m_flow, only: kmx, work1
@@ -18357,8 +18356,11 @@ contains
       use m_partitioninfo, only: jampi
 
 !input/output
-      integer, intent(in) :: irstfile, id_rho, id_rho_bnd, itim
-      double precision, allocatable, intent(in) :: rho(:)
+      integer, intent(in) :: irstfile !< file handle for restart file
+      integer, intent(in) :: id_internal_flow_node_data_var !< index of internal cells variable on netcdf file
+      integer, intent(in) :: id_bnd_flow_node_data_var !< index of boundary cells variable on netcdf file
+      integer, intent(in) :: itim !< time index on netcdf file
+      double precision, allocatable, intent(in) :: data_values(:) !< array for information at flow nodes {"location": "face", "shape": ["ndkx"]}
 
 !local
       integer :: ierr, ndxbnd
@@ -18370,42 +18372,44 @@ contains
       end if
 
       if (kmx > 0) then !3D
-         call get_3d_data(rho, 1, ndxi, work1) !output in `work1`
-         ierr = nf90_put_var(irstfile, id_rho, work1(1:kmx, 1:ndxi), (/1, 1, itim/), (/kmx, ndxi, 1/))
+         call flow_node_vector_to_matrix(data_values, 1, ndxi, work1)
+         ierr = nf90_put_var(irstfile, id_internal_flow_node_data_var, work1(1:kmx, 1:ndxi), (/1, 1, itim/), (/kmx, ndxi, 1/))
       else !2D
-         ierr = nf90_put_var(irstfile, id_rho, rho(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(irstfile, id_internal_flow_node_data_var, data_values(1:ndxi), (/1, itim/), (/ndxi, 1/))
       end if !(kmx > 0)
-!rho at boundaries
+!var at boundaries
       if (jarstbnd > 0 .and. ndxbnd > 0) then
          if (kmx > 0) then !3D
-            call get_3d_data(rho, ndxi + 1, ndx, work1) !output in `work1`
-            ierr = nf90_put_var(irstfile, id_rho_bnd, work1(1:kmx, 1:ndxbnd), (/1, 1, itim/), (/kmx, ndxbnd, 1/))
+            call flow_node_vector_to_matrix(data_values, ndxi + 1, ndx, work1)
+            ierr = nf90_put_var(irstfile, id_bnd_flow_node_data_var, work1(1:kmx, ndxi + 1:ndx), (/1, 1, itim/), (/kmx, ndxbnd, 1/))
          else !2D
-            ierr = nf90_put_var(irstfile, id_rho_bnd, rho(ndxi + 1:ndx), (/1, itim/), (/ndxbnd, 1/))
+            ierr = nf90_put_var(irstfile, id_bnd_flow_node_data_var, data_values(ndxi + 1:ndx), (/1, itim/), (/ndxbnd, 1/))
          end if !(kmx > 0)
       end if
 
-   end subroutine write_rho
+   end function unc_put_var_rst_dble
 
-   subroutine get_3d_data(rho, idx1, idx2, work1)
+!> Transfrom vector information to matrix for 3D information on cell centres
+   subroutine flow_node_vector_to_matrix(data_values, flow_node_index1, flow_node_index2, data_values_matrix)
 
       use m_missing, only: dmiss
 
-      double precision, allocatable, intent(in) :: rho(:)
-      integer, intent(in) :: idx1, idx2
-      double precision, intent(out) :: work1(:, :)
+      double precision, allocatable, intent(in) :: data_values(:) !< array for information at flow nodes {"location": "face", "shape": ["ndkx"]}
+      integer, intent(in) :: flow_node_index1 !< start index (1:ndx) for transfer of data from vector to matrix format
+      integer, intent(in) :: flow_node_index2 !< end index (1:ndx) for transfer of data from vector to matrix format
+      double precision, intent(out) :: data_values_matrix(:, :) !< array for information at flow nodes as matrix {"location": "face", "shape": ["num_layers","ndx"]}
 
       integer :: k, kk, kb, kt, nlayb, nrlay
 
-      work1 = dmiss
-      do kk = idx1, idx2
+      data_values_matrix = dmiss
+      do kk = flow_node_index1, flow_node_index2
          call getkbotktop(kk, kb, kt)
          call getlayerindices(kk, nlayb, nrlay)
          do k = kb, kt
-            work1(k - kb + nlayb, kk) = rho(k)
+            data_values_matrix(k - kb + nlayb, kk) = data_values(k)
          end do
       end do
 
-   end subroutine get_3d_data
+   end subroutine flow_node_vector_to_matrix
 
 end module unstruc_netcdf
