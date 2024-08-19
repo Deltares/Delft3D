@@ -63,7 +63,6 @@ class NetcdfComparer(IComparer):
                         matchnumber = matchnumber + 1
                         left_nc_var = left_nc_root.variables[variable_name]
                         right_nc_var = right_nc_root.variables[variable_name]
-
                         self.check_for_dimension_equality(left_nc_var, right_nc_var, variable_name)
 
                         min_ref_value = float(np.min(left_nc_var[:]))
@@ -169,7 +168,7 @@ class NetcdfComparer(IComparer):
 
     def compare_1d_arrays(self, left_nc_var: nc.Variable, right_nc_var: nc.Variable):
         """Compare two 1D arrays datasets and returns the maximum absolute difference."""
-        diff_arr = np.abs(left_nc_var[:] - right_nc_var[:])
+        diff_arr = self.get_difference(left_nc_var, right_nc_var)
         i_max = np.argmax(diff_arr)
         max_abs_diff = float(diff_arr[i_max])
         max_abs_diff_coordinates = (i_max,)
@@ -187,8 +186,8 @@ class NetcdfComparer(IComparer):
     ) -> Comparison2DArrayResult:
         """Compare two 2D arrays datasets and returns the comparison result."""
         result = Comparison2DArrayResult()
-        # 2D array
-        diff_arr = np.abs(left_nc_var[:] - right_nc_var[:])
+
+        diff_arr = self.get_difference(left_nc_var, right_nc_var)
 
         column_id, row_id = self.get_column_and_row_id(
             param_new.location, cf_role_time_series_vars, left_nc_root, diff_arr, variable_name
@@ -208,6 +207,10 @@ class NetcdfComparer(IComparer):
         result.column_id = column_id
         return result
 
+    def get_difference(self, left_nc_var: nc.Variable, right_nc_var: nc.Variable) -> nc.ndarray:
+        """Calculate the absolute difference between two NetCDF variables."""
+        return np.abs(left_nc_var[:] - right_nc_var[:])
+
     def compare_nd_arrays(self, left_nc_var: nc.Variable, right_nc_var: nc.Variable):
         """
         Compare two n-dimensional arrays and find the maximum absolute difference.
@@ -217,22 +220,12 @@ class NetcdfComparer(IComparer):
         returns the value of this difference along with its coordinates and the values
         at these coordinates in the original arrays.
         """
-        diff_arr = np.abs(left_nc_var[:] - right_nc_var[:])
+        diff_arr = self.get_difference(left_nc_var, right_nc_var)
         i_max = np.argmax(diff_arr)
+        print(type(i_max))
 
-        # Determine block sizes
-        block_sizes = [1]
-        for n in reversed(diff_arr.shape):
-            block_sizes.append(block_sizes[-1] * n)
-        block_sizes.pop()  # Last block size is irrelevant.
-        block_sizes.reverse()
-
-        # Determine coordinates of maximum deviation
-        coordinates = []
-        remainder = i_max
-        for size in block_sizes:
-            coordinates.append(remainder // size)
-            remainder %= size
+        block_sizes = self.get_block_sizes(diff_arr)
+        coordinates = self.get_coordinates_of_max_deviation(i_max, block_sizes)
 
         maxdiff = diff_arr
         left_at_maxdiff = left_nc_var
@@ -443,6 +436,24 @@ class NetcdfComparer(IComparer):
             row_id = int(i_max / diff_arr.shape[1])  # diff_arr.shape = (nrows, ncolumns)
 
         return column_id, row_id
+
+    def get_coordinates_of_max_deviation(self, i_max: np.int64, block_sizes: list) -> list:
+        """Calculate the coordinates of the maximum deviation in a multi-dimensional array."""
+        coordinates = []
+        remainder = i_max
+        for size in block_sizes:
+            coordinates.append(remainder // size)
+            remainder %= size
+        return coordinates
+
+    def get_block_sizes(self, diff_arr: np.ndarray) -> list:
+        """Calculate block sizes based on the shape of the input array."""
+        block_sizes = [1]
+        for n in reversed(diff_arr.shape):
+            block_sizes.append(block_sizes[-1] * n)
+        block_sizes.pop()  # Last block size is irrelevant.
+        block_sizes.reverse()
+        return block_sizes
 
     def open_netcdf_file(self, path: str, filename: str) -> nc.Dataset:
         """Open NetCDF file and return netCDF dataset."""
