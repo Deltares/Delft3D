@@ -1,24 +1,81 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
-    <testCase name="e02_f012_c0322" ref="dimr">
-        <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
-         <checks>
-            <file name="dflowfmoutput/western_scheldt_3domains_0000_map.nc" type="NETCDF">
+    <testCase name="e02_f012_c0322" ref="postproc">
+        <path version="2024-08-18T16:40:00">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
+        <programs>
+          <program ref="dimr" seq="1">
+            <arguments>
+              <argument>3 dimr.xml</argument>
+            </arguments>
+          </program>
+          <program ref="dfmoutput" seq="2">
+            <arguments>
+              <argument>-d</argument>
+              <argument>max25</argument>
+              <argument>--infile</argument>
+              <argument>dflowfmoutput/western_scheldt_3domains_0000_his.nc </argument>
+              <argument>--outfile</argument>
+              <argument>western_scheldt_3domains_max25.txt </argument>
+            </arguments>
+          </program>
+          <program ref="dfmoutput" seq="3">
+            <arguments>
+              <argument>-d</argument>
+              <argument>mapmerge</argument>
+              <argument>--infile</argument>
+              <argument>dflowfmoutput/western_scheldt_3domains_0000_map.nc </argument>
+              <argument>dflowfmoutput/western_scheldt_3domains_0001_map.nc </argument>
+              <argument>dflowfmoutput/western_scheldt_3domains_0002_map.nc </argument>
+              <argument>--outfile</argument>
+              <argument>western_scheldt_3domains_map.nc </argument>
+            </arguments>
+          </program>
+          <program ref="dfmoutput">
+            <arguments>
+              <argument>-d</argument>
+              <argument>max_running_mean</argument>
+              <argument>--infile</argument>
+              <argument>western_scheldt_3domains_0000_his.nc </argument>
+              <argument>--varname</argument>
+              <argument>cross_section_discharge</argument>
+              <argument>--outfile</argument>
+              <argument>western_scheldt_3domains_rm.txt </argument>
+              <argument>-l</argument>
+              <argument>7,4,10</argument>
+            </arguments>
+          </program>
+        </programs>
+        <maxRunTime>120.0</maxRunTime>
+        <checks>
+           <file name="dflowfmoutput/western_scheldt_3domains_0000_map.nc" type="NETCDF">
+               <parameters>
+                   <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+               </parameters>
+           </file>
+           <file name="dflowfmoutput/western_scheldt_3domains_0001_map.nc" type="NETCDF">
+               <parameters>
+                   <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+               </parameters>
+           </file>
+           <file name="dflowfmoutput/western_scheldt_3domains_0002_map.nc" type="NETCDF">
+               <parameters>
+                   <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+               </parameters>
+           </file>
+           <file name="western_scheldt_3domains_map.nc" type="NETCDF">
+               <parameters>
+                   <parameter name="s1" toleranceAbsolute="0.0001" />
+               </parameters>
+           </file>
+           <file name="western_scheldt_3domains_max25.txt" type="NUMBERTEXT">
+           </file>
+            <file name="western_scheldt_3domains_rm.txt" type="NUMBERTEXT">
                 <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                </parameters>
-            </file>
-            <file name="dflowfmoutput/western_scheldt_3domains_0001_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                </parameters>
-            </file>
-            <file name="dflowfmoutput/western_scheldt_3domains_0002_map.nc" type="NETCDF">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+                    <parameter name="dummy" toleranceAbsolute="1e-2" toleranceRelative="1e-4" />
                 </parameters>
             </file>
         </checks>
     </testCase>
+    
     <testCase name="e02_f012_c0323_mapmerge" ref="postproc">
         <programs>
           <program ref="dfmoutput">
