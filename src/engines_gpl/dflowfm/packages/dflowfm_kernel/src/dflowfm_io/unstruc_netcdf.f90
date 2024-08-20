@@ -13923,7 +13923,7 @@ contains
                      rst_mfluff(:, kloc) = tmpvar(:, um%inode_merge(kk))
                   else
                      kloc = kk
-                     rst_mfluff(:, kloc) = tmpvar(:, kstart + kk)
+                     rst_mfluff(:, kloc) = tmpvar(:, kstart + kk - 1)
                   end if
                end do
                call check_error(ierr, 'mfluff')
@@ -13952,7 +13952,7 @@ contains
                      rst_bodsed(:, kloc) = tmpvar(:, um%inode_merge(kk))
                   else
                      kloc = kk
-                     rst_bodsed(:, kloc) = tmpvar(:, kstart + kk)
+                     rst_bodsed(:, kloc) = tmpvar(:, kstart + kk - 1)
                   end if
                end do
                call check_error(ierr, 'bodsed')
@@ -13988,7 +13988,7 @@ contains
                         rst_msed(:, :, kloc) = tmpvar2(:, :, um%inode_merge(kk))
                      else
                         kloc = kk
-                        rst_msed(:, :, kloc) = tmpvar2(:, :, kstart + kk)
+                        rst_msed(:, :, kloc) = tmpvar2(:, :, kstart + kk - 1)
                      end if
                   end do
                   call check_error(ierr, 'msed')
@@ -14012,7 +14012,7 @@ contains
                            rst_msed(:, :, kloc) = tmpvar2(:, :, um%inode_merge(kk))
                         else
                            kloc = kk
-                           rst_msed(:, :, kloc) = tmpvar2(:, :, kstart + kk) ! no typo, see restart_lyrs.f90
+                           rst_msed(:, :, kloc) = tmpvar2(:, :, kstart + kk - 1) ! no typo, see restart_lyrs.f90
                         end if
                      end do
                      layerfrac = 1
@@ -14041,7 +14041,7 @@ contains
                         rst_thlyr(:, kloc) = tmpvar(:, um%inode_merge(kk))
                      else
                         kloc = kk
-                        rst_thlyr(:, kloc) = tmpvar(:, kstart + kk)
+                        rst_thlyr(:, kloc) = tmpvar(:, kstart + kk - 1)
                      end if
                   end do
                end if
