@@ -326,21 +326,13 @@ contains
                         ! This boundary has been skipped in an earlier phase (findexternalboundarypoints),
                         ! so, also do *not* connect it as a spacetimerelation here.
                         is_successful = .true. ! No failure: boundaries are allowed to remain disconnected.
-                     else if (forcing_file == '-') then
-                        is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=node_id, method=method, &
-                                                                        operand=oper, targetindex=target_index(1))
                      else
                         is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=node_id, method=method, &
                                                                         operand=oper, forcingfile=forcing_file, targetindex=target_index(1))
                      end if
                   else
-                     if (forcing_file == '-') then
-                        is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
-                                                                        operand=oper)
-                     else
-                        is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
-                                                                        operand=oper, forcingfile=forcing_file)
-                     end if
+                     is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
+                                                                     operand=oper, forcingfile=forcing_file)
                   end if
                   res = res .and. is_successful ! Remember any previous errors.
                   oper = '-'
