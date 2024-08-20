@@ -249,12 +249,15 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/inidat.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/print_help_commandline.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/fill_onlyWetLinks.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/m_update_values_on_cross_sections.f90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/set_model_boundingbox.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_timespace_path}/timespaceinitialfield_mpi.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_manager_path}/inctime_user.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_manager_path}/dfm_signals.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_manager_path}/flow_externaloutput.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/filez.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/init_openmp.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/mormerge_mpi.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/solve_petsc.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/solve_guus.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/saadf.F90
@@ -265,6 +268,7 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/unstruc_opengl.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/rest_f90/dcross.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}/rest_f90/read_samples_from_geotiff.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_waves_path}/fetch_proc.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 # Set additional compilation properties, specific for Debug mode
