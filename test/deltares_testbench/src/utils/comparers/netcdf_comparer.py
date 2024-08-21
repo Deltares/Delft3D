@@ -27,6 +27,48 @@ class RowColumnIndex:
         self.column = column
 
 
+class PlotData:
+    """Some strings that are passed on as plot data."""
+
+    def __init__(
+        self,
+        testcase_name: str,
+        variable_name: str,
+        right_path: str,
+    ) -> None:
+        self.testcase_name = testcase_name
+        self.variable_name = variable_name
+        self.right_path = right_path
+
+
+class PlotValues:
+    """Compare and reference data to be plotted."""
+
+    def __init__(
+        self,
+        reference: np.ndarray,
+        compare: np.ndarray,
+    ) -> None:
+        self.reference = reference
+        self.compare = compare
+
+
+class ReferenceValues:
+    """Data class to store reference and compare values."""
+
+    def __init__(
+        self,
+        minimum: float,
+        maximum: float,
+    ) -> None:
+        self.minimum = minimum
+        self.maximum = maximum
+
+    def difference(self) -> float:
+        """Return the deferance between max and min value."""
+        return self.maximum - self.minimum
+
+
 class NetcdfComparer(IComparer):
     """Compare two netCDF files, according to the configuration in file_check."""
 
@@ -83,6 +125,7 @@ class NetcdfComparer(IComparer):
         relative tolerances. The function supports 1D, 2D, and n-dimensional arrays.
         """
         result = ComparisonResult()
+        plot_data = PlotData(testcase_name, variable_name, right_path)
         try:
             logger.debug(f"Checking parameter: {variable_name}")
 
@@ -90,15 +133,12 @@ class NetcdfComparer(IComparer):
             right_nc_var = right_nc_root.variables[variable_name]
             self.check_for_dimension_equality(left_nc_var, right_nc_var, variable_name)
 
-            min_ref_value = float(np.min(left_nc_var[:]))
-            max_ref_value = float(np.max(left_nc_var[:]))
+            reference_values = ReferenceValues(float(np.min(left_nc_var[:])), float(np.max(left_nc_var[:])))
 
             # http://docs.scipy.org/doc/numpy/reference/generated/numpy.argmax.html
             if left_nc_var.ndim == 1:
                 result = self.compare_1d_arrays(left_nc_var, right_nc_var)
-
-                plot_ref_val = left_nc_var[:]
-                plot_cmp_val = right_nc_var[:]
+                plot_values = PlotValues(left_nc_var[:], right_nc_var[:])
 
             elif left_nc_var.ndim == 2:
                 cf_role_time_series_vars = search_times_series_id(left_nc_root)
@@ -107,17 +147,15 @@ class NetcdfComparer(IComparer):
                 array_index = self.get_array_index(
                     parameter.location, cf_role_time_series_vars, left_nc_root, diff_arr, variable_name
                 )
-                min_ref_value = np.min(left_nc_var[:, array_index.column])
-                max_ref_value = np.max(left_nc_var[:, array_index.column])
+                reference_values.minimum = np.min(left_nc_var[:, array_index.column])
+                reference_values.maximum = np.max(left_nc_var[:, array_index.column])
                 result = self.compare_2d_arrays(left_nc_var, right_nc_var, diff_arr, array_index)
 
                 if cf_role_time_series_vars.__len__() == 0:
+                    plot_values = PlotValues(left_nc_var[array_index.row, :], right_nc_var[array_index.row, :])
                     observation_type = parameter.name
-                    plot_ref_val = left_nc_var[array_index.row, :]
-                    plot_cmp_val = right_nc_var[array_index.row, :]
                 else:
-                    plot_ref_val = left_nc_var[:, array_index.column]
-                    plot_cmp_val = right_nc_var[:, array_index.column]
+                    plot_values = PlotValues(left_nc_var[:, array_index.column], right_nc_var[:, array_index.column])
                     observation_type = self.get_observation_type(left_nc_var, cf_role_time_series_vars)
             else:
                 result.max_abs_diff, result.max_abs_diff_coordinates, result.max_abs_diff_values = (
@@ -133,15 +171,14 @@ class NetcdfComparer(IComparer):
             logger.error(str(e))
             result.error = True
 
-        if np.ma.is_masked(
-            min_ref_value
-        ):  # if min_ref_value has no value (it is a  _FillValue) then the test is OK (presumed)
+        # if min_ref_value has no value (it is a  _FillValue) then the test is OK (presumed)
+        if np.ma.is_masked(reference_values.minimum):
             result.max_abs_diff = 0.0
             result.max_abs_diff_values = 0.0
-            max_ref_value = 0.0
-            min_ref_value = 0.0
+            reference_values.maximum = 0.0
+            reference_values.minimum = 0.0
 
-        result.max_rel_diff = self.get_max_rel_diff(result.max_abs_diff, min_ref_value, max_ref_value)
+        result.max_rel_diff = self.get_max_rel_diff(result.max_abs_diff, reference_values)
 
         result.is_tolerance_exceeded(
             parameter.tolerance_absolute,
@@ -154,15 +191,12 @@ class NetcdfComparer(IComparer):
             if left_nc_var.ndim == 2:
                 result.error = self.plot_2d_array(
                     logger,
-                    testcase_name,
-                    variable_name,
-                    plot_ref_val,
-                    plot_cmp_val,
+                    plot_data,
+                    plot_values,
                     cf_role_time_series_vars,
                     left_nc_root,
                     left_nc_var,
                     array_index,
-                    right_path,
                     parameter.tolerance_absolute,
                     observation_type,
                 )
@@ -237,11 +271,8 @@ class NetcdfComparer(IComparer):
 
     def plot_2d(
         self,
-        testcase_name: str,
-        variable_name: str,
-        plot_ref_val: np.ndarray,
-        plot_cmp_val: np.ndarray,
-        right_path: str,
+        plot_data: PlotData,
+        plot_values: PlotValues,
         left_nc_root: nc.Dataset,
         left_nc_var: nc.Variable,
         tolerance_absolute: float,
@@ -253,14 +284,14 @@ class NetcdfComparer(IComparer):
         y_coords = left_nc_root.variables[coords[1]][:]
 
         plot.PlotDifferencesMap(
-            right_path,
+            plot_data.right_path,
             x_coords,
             y_coords,
-            plot_ref_val,
-            plot_cmp_val,
+            plot_values.reference,
+            plot_values.compare,
             tolerance_absolute,
-            testcase_name,
-            variable_name,
+            plot_data.testcase_name,
+            plot_data.variable_name,
             subtitle,
             "netcdf",
         )
@@ -268,30 +299,24 @@ class NetcdfComparer(IComparer):
     def plot_2d_array(
         self,
         logger: ILogger,
-        testcase_name: str,
-        variable_name: str,
-        plot_ref_val: np.ndarray,
-        plot_cmp_val: np.ndarray,
+        plot_data: PlotData,
+        plot_values: PlotValues,
         cf_role_time_series_vars: List[str],
         left_nc_root: nc.Dataset,
         left_nc_var: nc.Variable,
         array_index: RowColumnIndex,
-        right_path: str,
         tolerance_absolute: float,
         observation_type: str,
     ) -> bool:
         """Plot a 2D array or time series based on the provided parameters."""
         try:
-            time_var = search_time_variable(left_nc_root, variable_name)
+            time_var = search_time_variable(left_nc_root, plot_data.variable_name)
             if cf_role_time_series_vars.__len__() == 0:
                 subtitle = self.get_plot_subtitle(time_var, array_index.row)
 
                 self.plot_2d(
-                    testcase_name,
-                    variable_name,
-                    plot_ref_val,
-                    plot_cmp_val,
-                    right_path,
+                    plot_data,
+                    plot_values,
                     left_nc_root,
                     left_nc_var,
                     tolerance_absolute,
@@ -300,28 +325,22 @@ class NetcdfComparer(IComparer):
             else:
                 plot_location = self.determine_plot_location(left_nc_root, observation_type, array_index.column)
                 self.plot_time_series(
-                    testcase_name,
-                    variable_name,
-                    plot_ref_val,
-                    plot_cmp_val,
-                    right_path,
+                    plot_data,
+                    plot_values,
                     time_var,
                     plot_location,
                 )
 
         except Exception as e:
-            logger.error(f"Plotting of parameter {variable_name} failed")
+            logger.error(f"Plotting of parameter {plot_data.variable_name} failed")
             logger.error(str(e))
             return True
         return False
 
     def plot_time_series(
         self,
-        testcase_name: str,
-        variable_name: str,
-        plot_ref_val: np.ndarray,
-        plot_cmp_val: np.ndarray,
-        right_path: str,
+        plot_data: PlotData,
+        plot_values: PlotValues,
         time_var: nc.Dataset,
         plot_location: str,
     ) -> None:
@@ -331,12 +350,12 @@ class NetcdfComparer(IComparer):
         datetime_series = [start_datetime + int(t_i) * delta for t_i in time_var[:]]
 
         plot.PlotDifferencesTimeSeries(
-            right_path,
+            plot_data.right_path,
             datetime_series,
-            plot_ref_val,
-            plot_cmp_val,
-            testcase_name,
-            variable_name,
+            plot_values.reference,
+            plot_values.compare,
+            plot_data.testcase_name,
+            plot_data.variable_name,
             plot_location,
             "netcdf",
         )
@@ -373,7 +392,7 @@ class NetcdfComparer(IComparer):
                         return str(location_type)
         return str(cf_role_time_series_vars[0])
 
-    def get_max_rel_diff(self, max_abs_diff: float, min_ref_value: float, max_ref_value: float) -> float:
+    def get_max_rel_diff(self, max_abs_diff: float, reference_values: ReferenceValues) -> float:
         """
         Calculate the maximum relative difference.
 
@@ -383,10 +402,10 @@ class NetcdfComparer(IComparer):
         # Make the absolute difference in maxDiff relative, by dividing by (max_ref_value-min_ref_value).
         if max_abs_diff < 2 * sys.float_info.epsilon:
             return 0.0
-        elif max_ref_value - min_ref_value < 2 * sys.float_info.epsilon:
+        elif reference_values.difference() < 2 * sys.float_info.epsilon:
             return 1.0
         else:
-            return min(1.0, max_abs_diff / (max_ref_value - min_ref_value))
+            return min(1.0, max_abs_diff / (reference_values.difference()))
 
     def get_array_index(
         self,
