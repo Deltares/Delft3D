@@ -9,7 +9,7 @@
           </program>
           <program ref="dimr" seq="2">
             <arguments>
-              <argument>3 dimr.xml</argument>
+              <argument>-c 3 -m dimr.xml</argument>
             </arguments>
           </program>
           <program ref="dfmoutput" seq="3">
@@ -179,7 +179,7 @@
         </program>
           <program ref="dimr" seq="2">
              <arguments>
-                 <argument>4 dimr.xml</argument>
+                 <argument>-c 4 -m dimr.xml</argument>
              </arguments>
           </program>
       </programs>
@@ -205,7 +205,7 @@
         </program>
         <program ref="dimr" seq="2">
            <arguments>
-               <argument>4 dimr_config.xml</argument>
+               <argument>-c 4 -m dimr_config.xml</argument>
            </arguments>
         </program>
       </programs>
@@ -225,7 +225,7 @@
       <programs>
           <program ref="dimr">
              <arguments>
-                 <argument>3 dimr.xml</argument>
+                 <argument>-c 3 -m dimr.xml</argument>
              </arguments>
           </program>
       </programs>
@@ -245,7 +245,7 @@
         <programs>
           <program ref="dimr">
              <arguments>
-                 <argument>4 dimr.xml</argument>
+                 <argument>-c 4 -m dimr.xml</argument>
              </arguments>
           </program>
         </programs>
@@ -277,7 +277,7 @@
         <programs>
           <program ref="dimr">
              <arguments>
-                 <argument>4 dimr.xml</argument>
+                 <argument>-c 4 -m dimr.xml</argument>
              </arguments>
           </program>
         </programs>
@@ -309,7 +309,7 @@
         <programs>
           <program ref="dimr">
              <arguments>
-                 <argument>4 dimr.xml</argument>
+                 <argument>-c 4 -m dimr.xml</argument>
              </arguments>
           </program>
         </programs>
@@ -350,7 +350,7 @@
         <programs>
           <program ref="dimr">
              <arguments>
-                 <argument>3 dimr.xml</argument>
+                 <argument>-c 3 -m dimr.xml</argument>
              </arguments>
           </program>
         </programs>
@@ -367,7 +367,7 @@
         <programs>
           <program ref="dimr">
              <arguments>
-                 <argument>2 dimr.xml</argument>
+                 <argument>-c 2 -m dimr.xml</argument>
              </arguments>
           </program>
         </programs>
