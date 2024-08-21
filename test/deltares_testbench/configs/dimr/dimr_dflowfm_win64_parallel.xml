@@ -100,10 +100,6 @@
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="postproc">
-            <programs>
-                <program ref="dfmoutput">
-                </program>
-            </programs>
             <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>
