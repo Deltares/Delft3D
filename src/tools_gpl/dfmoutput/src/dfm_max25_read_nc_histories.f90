@@ -68,14 +68,6 @@ module read_nc_histories
       if (status == nf90_noerr) status = nf90_inquire_dimension(ncid, name_lenID, len = nNameLength)
       if (status == nf90_noerr) status = nf90_inquire_dimension(ncid, stationsID, len = nStations)
 
-      status = nf90_inq_dimid(ncid, "cross_section_name_len", cross_name_lenID)
-      if (status == nf90_noerr) then
-         status = nf90_inquire_dimension(ncid, cross_name_lenID, len = nCrossNameLength)
-         nNameLength = max(nNameLength, nCrossNameLength)
-      else
-         status = nf90_noerr
-      end if
-
       nStat = nStations
 
       if (status == nf90_noerr .and. verbose_mode) then

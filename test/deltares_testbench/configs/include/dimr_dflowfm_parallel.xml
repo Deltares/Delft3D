@@ -1,13 +1,18 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f012_c0322" ref="postproc">
-        <path version="2024-08-18T16:40:00">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
+        <path version="2024-08-22T16:40:00">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
         <programs>
-          <program ref="dimr" seq="1">
+          <program ref="dflowfm" seq="1">
+            <arguments>
+              <argument>western_scheldt_3domains.mdu --partition:ndomains=3:icgsolver=6</argument>
+            </arguments>
+          </program>
+          <program ref="dimr" seq="2">
             <arguments>
               <argument>3 dimr.xml</argument>
             </arguments>
           </program>
-          <program ref="dfmoutput" seq="2">
+          <program ref="dfmoutput" seq="3">
             <arguments>
               <argument>-d</argument>
               <argument>max25</argument>
@@ -17,7 +22,7 @@
               <argument>western_scheldt_3domains_max25.txt </argument>
             </arguments>
           </program>
-          <program ref="dfmoutput" seq="3">
+          <program ref="dfmoutput" seq="4">
             <arguments>
               <argument>-d</argument>
               <argument>mapmerge</argument>
@@ -29,12 +34,12 @@
               <argument>western_scheldt_3domains_map.nc </argument>
             </arguments>
           </program>
-          <program ref="dfmoutput">
+          <program ref="dfmoutput" seq="5">
             <arguments>
               <argument>-d</argument>
               <argument>max_running_mean</argument>
               <argument>--infile</argument>
-              <argument>western_scheldt_3domains_0000_his.nc </argument>
+              <argument>dflowfmoutput/western_scheldt_3domains_0000_his.nc </argument>
               <argument>--varname</argument>
               <argument>cross_section_discharge</argument>
               <argument>--outfile</argument>
@@ -63,10 +68,13 @@
            </file>
            <file name="western_scheldt_3domains_map.nc" type="NETCDF">
                <parameters>
-                   <parameter name="s1" toleranceAbsolute="0.0001" />
+                   <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
                </parameters>
            </file>
            <file name="western_scheldt_3domains_max25.txt" type="NUMBERTEXT">
+                <parameters>
+                    <parameter name="max13" toleranceAbsolute="1e-2" toleranceRelative="1e-4" />
+                </parameters>
            </file>
             <file name="western_scheldt_3domains_rm.txt" type="NUMBERTEXT">
                 <parameters>
