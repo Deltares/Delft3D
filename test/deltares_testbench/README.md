@@ -180,7 +180,7 @@ in VSCode:
 
 `ruff`, `mypy` and `pytest` will read their configuration directly from the `pyproject.toml` 
 file, so the VSCode plugins should require only minimal configuration.
-Here's an example `.vscode/settings.json` that enables linting and formatting, test 
+Here's an example `.vscode/settings.json` that enables linting, formatting, test 
 discovery and type checking. 
 
 
