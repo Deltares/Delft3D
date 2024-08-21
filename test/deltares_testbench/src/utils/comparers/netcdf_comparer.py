@@ -69,6 +69,22 @@ class ReferenceValues:
         return self.maximum - self.minimum
 
 
+class NetCdfVariable:
+    """Data class to store the netCDF4 varialbe of the left and right file."""
+
+    def __init__(
+        self,
+        left: nc.Variable,
+        right: nc.Variable,
+    ) -> None:
+        self.left = left
+        self.right = right
+
+    def get_difference(self) -> np.ndarray:
+        """Calculate the absolute difference between two NetCDF variables."""
+        return np.abs(self.left[:] - self.right[:])
+
+
 class NetcdfComparer(IComparer):
     """Compare two netCDF files, according to the configuration in file_check."""
 
@@ -128,13 +144,11 @@ class NetcdfComparer(IComparer):
         plot_data = PlotData(testcase_name, variable_name, right_path)
         try:
             logger.debug(f"Checking parameter: {variable_name}")
-
-            left_nc_var = left_nc_root.variables[variable_name]
-            right_nc_var = right_nc_root.variables[variable_name]
-            self.check_for_dimension_equality(left_nc_var, right_nc_var, variable_name)
+            nc_var = NetCdfVariable(left_nc_root.variables[variable_name], right_nc_root.variables[variable_name])
+            self.check_for_dimension_equality(nc_var, variable_name)
 
             # http://docs.scipy.org/doc/numpy/reference/generated/numpy.argmax.html
-            result = self.compare_array(parameter, left_nc_root, variable_name, left_nc_var, right_nc_var)
+            result = self.compare_array(parameter, left_nc_root, variable_name, nc_var)
 
         except RuntimeError as e:
             logger.error(str(e))
@@ -146,15 +160,14 @@ class NetcdfComparer(IComparer):
             result.error = True
 
         if result.result == "NOK":
-            if left_nc_var.ndim == 1:
+            if nc_var.left.ndim == 1:
                 logger.info(f"Plotting of 1d-array not yet supported, variable name: {variable_name}")
-            if left_nc_var.ndim == 2:
+            if nc_var.left.ndim == 2:
                 result.error = self.plot_2d_array(
                     logger,
                     plot_data,
                     left_nc_root,
-                    left_nc_var,
-                    right_nc_var,
+                    nc_var,
                     parameter,
                 )
 
@@ -165,24 +178,24 @@ class NetcdfComparer(IComparer):
         parameter: Parameter,
         left_nc_root: nc.Dataset,
         variable_name: str,
-        left_nc_var: nc.Variable,
-        right_nc_var: nc.Variable,
-    ):
-        reference_values = ReferenceValues(float(np.min(left_nc_var[:])), float(np.max(left_nc_var[:])))
-        if left_nc_var.ndim == 1:
-            result = self.compare_1d_arrays(left_nc_var, right_nc_var)
-        elif left_nc_var.ndim == 2:
+        nc_var: NetCdfVariable,
+    ) -> ComparisonResult:
+        """Compare Netcdf variable based on dimensions of the left file."""
+        reference_values = ReferenceValues(float(np.min(nc_var.left[:])), float(np.max(nc_var.left[:])))
+        if nc_var.left.ndim == 1:
+            result = self.compare_1d_arrays(nc_var)
+        elif nc_var.left.ndim == 2:
             cf_role_time_series_vars = search_times_series_id(left_nc_root)
-            diff_arr = self.get_difference(left_nc_var, right_nc_var)
+            diff_arr = nc_var.get_difference()
 
             array_index = self.get_array_index(
                 parameter.location, cf_role_time_series_vars, left_nc_root, diff_arr, variable_name
             )
-            reference_values.minimum = np.min(left_nc_var[:, array_index.column])
-            reference_values.maximum = np.max(left_nc_var[:, array_index.column])
-            result = self.compare_2d_arrays(left_nc_var, right_nc_var, diff_arr, array_index)
+            reference_values.minimum = np.min(nc_var.left[:, array_index.column])
+            reference_values.maximum = np.max(nc_var.left[:, array_index.column])
+            result = self.compare_2d_arrays(nc_var, diff_arr, array_index)
         else:
-            result = self.compare_nd_arrays(left_nc_var, right_nc_var)
+            result = self.compare_nd_arrays(nc_var)
 
         # if min_ref_value has no value (it is a  _FillValue) then the test is OK (presumed)
         if np.ma.is_masked(reference_values.minimum):
@@ -199,20 +212,19 @@ class NetcdfComparer(IComparer):
         )
         return result
 
-    def compare_1d_arrays(self, left_nc_var: nc.Variable, right_nc_var: nc.Variable) -> ComparisonResult:
+    def compare_1d_arrays(self, nc_var: NetCdfVariable) -> ComparisonResult:
         """Compare two 1D arrays datasets and returns the maximum absolute difference."""
         result = ComparisonResult()
-        diff_arr = self.get_difference(left_nc_var, right_nc_var)
+        diff_arr = nc_var.get_difference()
         i_max = np.argmax(diff_arr)
         result.max_abs_diff = float(diff_arr[i_max])
         result.max_abs_diff_coordinates = (i_max,)
-        result.max_abs_diff_values = (left_nc_var[i_max], right_nc_var[i_max])
+        result.max_abs_diff_values = (nc_var.left[i_max], nc_var.right[i_max])
         return result
 
     def compare_2d_arrays(
         self,
-        left_nc_var: nc.Variable,
-        right_nc_var: nc.Variable,
+        nc_var: NetCdfVariable,
         diff_arr: np.ndarray,
         array_index: RowColumnIndex,
     ) -> ComparisonResult:
@@ -222,12 +234,12 @@ class NetcdfComparer(IComparer):
         result.max_abs_diff = diff_arr[array_index.row, array_index.column]
         result.max_abs_diff_coordinates = (array_index.row, array_index.column)
         result.max_abs_diff_values = (
-            left_nc_var[array_index.row, array_index.column],
-            right_nc_var[array_index.row, array_index.column],
+            nc_var.left[array_index.row, array_index.column],
+            nc_var.right[array_index.row, array_index.column],
         )
         return result
 
-    def compare_nd_arrays(self, left_nc_var: nc.Variable, right_nc_var: nc.Variable) -> ComparisonResult:
+    def compare_nd_arrays(self, nc_var:NetCdfVariable) -> ComparisonResult:
         """
         Compare two n-dimensional arrays and find the maximum absolute difference.
 
@@ -237,7 +249,7 @@ class NetcdfComparer(IComparer):
         at these coordinates in the original arrays.
         """
         result = ComparisonResult()
-        diff_arr = self.get_difference(left_nc_var, right_nc_var)
+        diff_arr = nc_var.get_difference()
         i_max = np.argmax(diff_arr)
         print(type(i_max))
 
@@ -245,13 +257,11 @@ class NetcdfComparer(IComparer):
         coordinates = self.get_coordinates_of_max_deviation(i_max, block_sizes)
 
         maxdiff = diff_arr
-        left_at_maxdiff = left_nc_var
-        right_at_maxdiff = right_nc_var
         try:
             for c in coordinates:
                 maxdiff = maxdiff[c]
-                left_at_maxdiff = left_at_maxdiff[c]
-                right_at_maxdiff = right_at_maxdiff[c]
+                left_at_maxdiff = nc_var.left[c]
+                right_at_maxdiff = nc_var.right[c]
         except Exception as e:
             error_msg = (
                 "Mismatch dimensions: len maxdiff and coordinates: " + str(len(maxdiff)) + " , " + str(len(coordinates))
@@ -271,14 +281,13 @@ class NetcdfComparer(IComparer):
         logger: ILogger,
         plot_data: PlotData,
         left_nc_root: nc.Dataset,
-        left_nc_var: nc.Variable,
-        right_nc_var: nc.Variable,
+        nc_var: NetCdfVariable,
         parameter: Parameter,
     ) -> bool:
         """Plot a 2D array or time series based on the provided parameters."""
         try:
             cf_role_time_series_vars = search_times_series_id(left_nc_root)
-            diff_arr = self.get_difference(left_nc_var, right_nc_var)
+            diff_arr = nc_var.get_difference()
 
             array_index = self.get_array_index(
                 parameter.location, cf_role_time_series_vars, left_nc_root, diff_arr, plot_data.variable_name
@@ -286,7 +295,7 @@ class NetcdfComparer(IComparer):
 
             time_var = search_time_variable(left_nc_root, plot_data.variable_name)
             if cf_role_time_series_vars.__len__() == 0:
-                plot_values = PlotValues(left_nc_var[array_index.row, :], right_nc_var[array_index.row, :])
+                plot_values = PlotValues(nc_var.left[array_index.row, :], nc_var.right[array_index.row, :])
                 observation_type = parameter.name
                 subtitle = self.get_plot_subtitle(time_var, array_index.row)
 
@@ -294,13 +303,13 @@ class NetcdfComparer(IComparer):
                     plot_data,
                     plot_values,
                     left_nc_root,
-                    left_nc_var,
+                    nc_var.left,
                     parameter.tolerance_absolute,
                     subtitle,
                 )
             else:
-                plot_values = PlotValues(left_nc_var[:, array_index.column], right_nc_var[:, array_index.column])
-                observation_type = self.get_observation_type(left_nc_var, cf_role_time_series_vars)
+                plot_values = PlotValues(nc_var.left[:, array_index.column], nc_var.right[:, array_index.column])
+                observation_type = self.get_observation_type(nc_var.left, cf_role_time_series_vars)
                 plot_location = self.determine_plot_location(left_nc_root, observation_type, array_index.column)
                 self.plot_time_series(
                     plot_data,
@@ -372,10 +381,6 @@ class NetcdfComparer(IComparer):
         if plot_location == "":
             plot_location = "model_wide"
         return str(plot_location)
-
-    def get_difference(self, left_nc_var: nc.Variable, right_nc_var: nc.Variable) -> np.ndarray:
-        """Calculate the absolute difference between two NetCDF variables."""
-        return np.abs(left_nc_var[:] - right_nc_var[:])
 
     def get_plot_subtitle(self, time_var: nc.Variable, row_id: int) -> str:
         """Compute datetime for which we are making a plot / scalar field."""
@@ -482,14 +487,12 @@ class NetcdfComparer(IComparer):
             error_msg = f"No match for parameter name {parameter_name} in file {os.path.join(left_path, filename)}"
             raise AttributeError(error_msg)
 
-    def check_for_dimension_equality(
-        self, left_nc_var: nc.Variable, right_nc_var: nc.Variable, variable_name: str
-    ) -> None:
+    def check_for_dimension_equality(self, nc_var: NetCdfVariable, variable_name: str) -> None:
         """Check dimension equility and raises exception if not correct."""
-        if left_nc_var.shape != right_nc_var.shape:
+        if nc_var.left.shape != nc_var.right.shape:
             raise ValueError(
                 f"Shapes of parameter {variable_name} not compatible. Shape of reference: "
-                + f"{left_nc_var.shape}. Shape of run data: {right_nc_var.shape}"
+                + f"{nc_var.left.shape}. Shape of run data: {nc_var.right.shape}"
             )
 
 
