@@ -63,7 +63,7 @@ endif(UNIX)
 if (WIN32)
     # GDAL comes pre-compiled on Windows
     target_link_libraries(${fortrangis_library_name} INTERFACE "gdal_i.lib")
-    target_link_libraries(${fortrangis_library_name} PRIVATE PROJ::proj "sqlite3.lib" "ole32.lib" "shell32.lib")
+    target_link_libraries(${fortrangis_library_name} PRIVATE PROJ::proj "sqlite3.lib" "ole32.lib" "shell32.lib" no_compiler_warnings)
 
     target_include_directories(${fortrangis_library_name} INTERFACE ${gisinternals_path})
     target_link_directories(${fortrangis_library_name} INTERFACE ${sqlite3_path}/lib ${gisinternals_path})

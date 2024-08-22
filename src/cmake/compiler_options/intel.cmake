@@ -2,21 +2,33 @@
 enable_language (Fortran)
 set(src_root_dir ${CMAKE_SOURCE_DIR}/..)
 
-add_library(strict_compiler_warnings INTERFACE)
-# Disable warning 5268, allow text longer than 132 characters
-set(windows_extra_warning_flags /warn:errors /warn:all /warn:stderrors /Qdiag-disable:5268)
-set(linux_extra_warning_flags "SHELL:-warn errors" "SHELL:-warn all" "SHELL:-warn stderrors" "SHELL:-diag-disable 5268")
-target_compile_options(strict_compiler_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_extra_warning_flags},${linux_extra_warning_flags}>>")
+add_library(extra_compiler_warnings INTERFACE)
+set(windows_extra_warning_flags /warn:all)
+set(linux_extra_warning_flags "SHELL:-warn all")
+target_compile_options(extra_compiler_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_extra_warning_flags},${linux_extra_warning_flags}>>")
 
-add_library(no_warnings INTERFACE)
+add_library(compiler_warnings_as_errors INTERFACE)
+set(windows_warning_error_flag /warn:errors /warn:stderrors)
+set(linux_warning_error_flag "SHELL:-warn errors" "SHELL:-warn stderrors")
+target_compile_options(compiler_warnings_as_errors INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_warning_error_flag},${linux_warning_error_flag}>>")
+
+add_library(limit_compiler_warnings INTERFACE)
+# Disable warning 5462, global name too long. The compiler limit of 90 characters is too restrictive, see https://community.intel.com/t5/Intel-Fortran-Compiler/Many-quot-Global-name-too-long-quot-warnings/td-p/1505843
+# Disable warning 5268, allow text longer than 132 characters
+set(windows_disabled_warning_flags /Qdiag-disable:5462 /Qdiag-disable:5268)
+set(linux_disabled_warning_flags "SHELL:-diag-disable 5462" "SHELL:-diag-disable 5268")
+target_compile_options(disable_compiler_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_disabled_warning_flags},${linux_disabled_warning_flags}>>")
+
+add_library(no_compiler_warnings INTERFACE)
 set(windows_no_warning_flags /warn:none)
 set(linux_no_warning_flags "SHELL:-warn none")
-target_compile_options(no_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_no_warning_flags},${linux_no_warning_flags}>>")
+target_compile_options(no_compiler_warnings INTERFACE "$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,${windows_no_warning_flags},${linux_no_warning_flags}>>")
 
 if (WIN32)
     # Set global Fortran compiler flags that apply for each Fortran project
+    # Disable diagnostic indicating that ifort is deprecated (10448)
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
-    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP")
+    set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP /Qdiag-disable:10448")
 
     # Set global C/C++ compiler flags that apply for each C/C++ project
     string(APPEND CMAKE_C_FLAGS " /MP")
@@ -70,12 +82,13 @@ if (UNIX)
     message(STATUS "Setting Fortran compiler flags in Unix")
     # On Linux preprocessing is on by default, but the flag is inserted for
     # at least one C file as well (netCDF). Use a neutral flag to avoid problems
+    # Disable diagnostic indicating that ifort is deprecated (10448)
     set(CMAKE_CXX_FLAGS_RELEASE                  "-O2 -fPIC")
     set(CMAKE_C_FLAGS_RELEASE                    "-O2 -fPIC")
     set(CMAKE_CXX_FLAGS_DEBUG                    "-g -O0 -fPIC")
     set(CMAKE_C_FLAGS_DEBUG                      "-g -O0 -fPIC")
-    set(CMAKE_Fortran_FLAGS_RELEASE              "-O2 -fPIC")
-    set(CMAKE_Fortran_FLAGS_DEBUG                "-g -O0 -fPIC")
+    set(CMAKE_Fortran_FLAGS_RELEASE              "-O2 -fPIC -diag-disable 10448")
+    set(CMAKE_Fortran_FLAGS_DEBUG                "-g -O0 -fPIC -diag-disable 10448")
     set(fortran_standard_flag                    "-std")
 
     set(cpp_compiler_flags                       "-std=c++17")
