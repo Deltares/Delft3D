@@ -33,7 +33,7 @@ contains
 
         ! Close all open file_unit_list files
         do i = 1, num_files
-            write(88,*) i. file_unit_list(i)
+            write(88,*) i, file_unit_list(i)
             inquire (unit = file_unit_list(i), opened = unitop)
             if (unitop .and. file_unit_list(i) /= 88) then
                 close (unit = file_unit_list(i))
