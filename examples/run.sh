@@ -5,8 +5,9 @@ for dir in */; do
     echo "Checking folder: $dir"
     cd "$dir"
     if [ -f run.sh ]; then
-        echo "Running run.sh in $dir"
+        echo "##teamcity[testStarted name='$dir' captureStandardOutput='true']"
         ./run_docker.sh
+        echo "##teamcity[testFinished name='$dir']"
     else
         echo "No run script in $dir"
     fi

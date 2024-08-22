@@ -14,14 +14,15 @@ for dir in */; do
     echo "Checking folder: $dir"
     if [ -f "$dir/run_docker.sh" ]; then
 		cd $dir
-        echo "Running run_docker.sh in $(pwd)"
-        docker run \
+		echo "##teamcity[testStarted name='$dir' captureStandardOutput='true']"
+		docker run \
 			-v ".:/data" \
 			-v "$MPI_DIR:$MPI_DIR" \
 			-v "/usr/:/host" \
 			-e PATH=$container_PATH \
 			-e LD_LIBRARY_PATH=$container_LD_LIBRARY_PATH \
 			$IMAGE
+		echo "##teamcity[testFinished name='$dir']"
 		cd ..
     else
         echo "No run script in $(pwd)"

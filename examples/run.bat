@@ -4,8 +4,10 @@ for /d %%D in (*) do (
     echo Checking folder: %%D
     cd %%D
     if exist run.bat (
-        echo Running run.bat in %%D
+        echo "##teamcity[testStarted name='%%D' captureStandardOutput='true']"
         call run.bat
+        echo "##teamcity[testFinished name='%%D']"
+
     ) else (
         echo No run script in %%D
     )
