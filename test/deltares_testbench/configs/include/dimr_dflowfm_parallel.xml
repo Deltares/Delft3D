@@ -2,17 +2,12 @@
     <testCase name="e02_f012_c0322" ref="postproc">
         <path version="2024-08-23T16:40:00">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
         <programs>
-          <program ref="dflowfm" seq="1">
-            <arguments>
-              <argument>western_scheldt_3domains.mdu --partition:ndomains=3:icgsolver=6 western_scheldt_part.pol</argument>
-            </arguments>
-          </program>
-          <program ref="dimr" seq="2">
+          <program ref="dimr" seq="1">
             <arguments>
               <argument>-c 3 -m dimr.xml</argument>
             </arguments>
           </program>
-          <program ref="dfmoutput" seq="3">
+          <program ref="dfmoutput" seq="2">
             <arguments>
               <argument>-d</argument>
               <argument>max25</argument>
@@ -22,7 +17,7 @@
               <argument>western_scheldt_3domains_max25.txt </argument>
             </arguments>
           </program>
-          <program ref="dfmoutput" seq="4">
+          <program ref="dfmoutput" seq="3">
             <arguments>
               <argument>-d</argument>
               <argument>mapmerge</argument>
@@ -34,7 +29,7 @@
               <argument>western_scheldt_3domains_map.nc </argument>
             </arguments>
           </program>
-          <program ref="dfmoutput" seq="5">
+          <program ref="dfmoutput" seq="4">
             <arguments>
               <argument>-d</argument>
               <argument>max_running_mean</argument>
@@ -48,7 +43,7 @@
               <argument>7,4,10</argument>
             </arguments>
           </program>
-          <program ref="dfmoutput" seq="6">
+          <program ref="dfmoutput" seq="5">
             <arguments>
               <argument>-d</argument>
               <argument>max_running_mean</argument>
