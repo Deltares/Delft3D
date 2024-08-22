@@ -5626,6 +5626,18 @@
         </file>        
       </checks>
     </testCase>
+    <testCase name="e02_f022_c100_inifieldfile_morphopol" ref="dflowfm_default"> 
+      <path version="2024-08-07T17:00:00">e02_dflowfm/f022_morphology_2D/c100_inifieldfile_morphopol</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/r_map.nc" type="netCDF">
+          <parameters>
+      			<parameter name="mesh2d_waterdepth" toleranceAbsolute="0.01" />
+          </parameters>
+        </file>
+        <file name="depthgr.xyz" ignore="true" />
+      </checks>
+    </testCase>
     <testCase name="e02_f022_c300_sedimentmodelnr1_1PK" ref="dflowfm_default">
       <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c300_sedimentmodelnr1_1PK</path>
       <maxRunTime>20.0</maxRunTime>
@@ -6562,6 +6574,44 @@
           <parameters>
             <parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
             <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f500_c01_hydro" ref="dflowfm_default">
+      <path version="2024-07-15T14:00:00">e02_dflowfm/f500_implicit1d/c01_hydro</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f500_c02_morpho" ref="dflowfm_default">
+      <path version="2024-07-15T14:00:00">e02_dflowfm/f500_implicit1d/c02_morpho</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f500_c03_morpho_junctions" ref="dflowfm_default">
+      <path version="2024-07-15T14:00:00">e02_dflowfm/f500_implicit1d/c03_morpho_junctions</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
       </checks>

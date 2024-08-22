@@ -31,9 +31,9 @@ module m_block_2_input_reader
 contains
 
     subroutine read_block_2_from_input (file_unit_list, file_name_list, filtype, nrftot, nlines, &
-            npoins, is_date_format, is_ddhhmmss_format, nodump, integration_id_list, &
+            num_indices, is_date_format, is_ddhhmmss_format, num_monitoring_points, integration_id_list, &
             num_integration_options, iwidth, is_yyddhh_format, ndmpar, ntdmps, &
-            noraai, ntraaq, nosys, notot, nototp, &
+            num_transects, num_transect_exchanges, num_substances_transported, num_substances_total, num_substances_part, &
             output_verbose_level, nsegdmp, isegdmp, nexcraai, &
             iexcraai, ioptraai, status)
 
@@ -62,7 +62,7 @@ contains
         use fileinfo     !   a filename array in PART
         use alloc_mod
         use timers       !   performance timers
-        use m_sysi          ! Timer characteristics
+        use m_timer_variables          ! Timer characteristics
         use date_time_utils, only : convert_string_to_time_offset, simulation_start_time_scu, &
                 simulation_stop_time_scu, convert_relative_time, convert_time_format
         use waq_timers, only : timer
@@ -82,17 +82,17 @@ contains
         integer(kind = int_wp), dimension(:), pointer :: iexcraai !< exchange area numbers of the transect
         integer(kind = int_wp), dimension(:), pointer :: ioptraai !< option for the transects
         integer(kind = int_wp), intent(inout) :: nlines   !< cumulative record  space
-        integer(kind = int_wp), intent(inout) :: npoins   !< cumulative pointer space
-        integer(kind = int_wp), intent(out) :: nodump   !< number of monitoring points output
+        integer(kind = int_wp), intent(inout) :: num_indices   !< cumulative pointer space
+        integer(kind = int_wp), intent(out) :: num_monitoring_points   !< number of monitoring points output
         integer(kind = int_wp), intent(in) :: num_integration_options    !< dimension of integration_id_list
         integer(kind = int_wp), intent(in) :: iwidth   !< width of the output file
         integer(kind = int_wp), intent(out) :: ndmpar   !< number of dump areas
         integer(kind = int_wp), intent(out) :: ntdmps   !< total number segments in dump area
-        integer(kind = int_wp), intent(out) :: noraai   !< number of raaien
-        integer(kind = int_wp), intent(out) :: ntraaq   !< total number of exch. in raaien
-        integer(kind = int_wp), intent(in) :: nosys    !< number of transported substances
-        integer(kind = int_wp), intent(inout) :: notot    !< total number of substances
-        integer(kind = int_wp), intent(out) :: nototp   !< notot inclusive of partcle substances
+        integer(kind = int_wp), intent(out) :: num_transects
+        integer(kind = int_wp), intent(out) :: num_transect_exchanges
+        integer(kind = int_wp), intent(in) :: num_substances_transported    !< number of transported substances
+        integer(kind = int_wp), intent(inout) :: num_substances_total    !< total number of substances
+        integer(kind = int_wp), intent(out) :: num_substances_part   !< num_substances_total inclusive of partcle substances
         integer(kind = int_wp), intent(in) :: output_verbose_level   !< flag for more or less output
 
         logical, intent(out) :: is_date_format !< 'date'-format 1st timescale
@@ -144,7 +144,7 @@ contains
 
         !     There should be at least one substance in the input.
 
-        if (notot < 1) then
+        if (num_substances_total < 1) then
             write (file_unit, '(/, A)') ' ERROR: No substances have been specified.'
             call stop_with_error()
         endif
@@ -233,7 +233,7 @@ contains
 
         !     No in-active substances for fast solver steady state
 
-        if (notot /= nosys .and. (intsrt == 17 .or. intsrt == 18)) then
+        if (num_substances_total /= num_substances_transported .and. (intsrt == 17 .or. intsrt == 18)) then
             call status%increase_error_count()
             write (file_unit, '(/,A)') ' ERROR No in-active substances allowed for' // &
                     ' fast-solver steady state scheme'
@@ -241,7 +241,7 @@ contains
 
         !        Read optional keywords and start time of integration
 
-        nototp = 0
+        num_substances_part = 0
         if (gettoken(cdummy, idummy, itype, ierr2) > 0) goto 30
         do while (itype == 1)                                      ! read a collection of tokens
             call check_integration_option (cdummy, intopt, file_unit, ierr2)
@@ -263,11 +263,11 @@ contains
                 write (file_unit, '(A,i3,A)') &
                         ' The following ', nosubs, ' DELPAR substances are added as passive substances to DELWAQ.'
                 do i = 1, nosubs
-                    write (file_unit, '(i4,2x,a)') notot + i, substi(i)
+                    write (file_unit, '(i4,2x,a)') num_substances_total + i, substi(i)
                     write (file_unit_list(2)) substi(i)
                 enddo
-                nototp = nosubs
-                notot = notot + nototp
+                num_substances_part = nosubs
+                num_substances_total = num_substances_total + num_substances_part
                 call exit_alloc (i2)
             endif
 
@@ -408,7 +408,7 @@ contains
             enddo
             nrftot (1) = 1
             nlines = nlines + 2
-            npoins = npoins + 1 + 3
+            num_indices = num_indices + 1 + 3
             write (file_unit_list(4)) -1, (0, k = 1, 3)
 
             if (is_date_format) then
@@ -465,7 +465,7 @@ contains
 
         !     Read monitoring area's
 
-        20 nodump = 0
+        20 num_monitoring_points = 0
         nullify(duname)
         !             new input processssing
 
@@ -487,10 +487,10 @@ contains
         ierr2 = 0
         nullify(raname)
         call read_monitoring_transects (file_unit_list, file_name_list, filtype, raname, nexcraai, &
-                iexcraai, ioptraai, noraai, ntraaq, output_verbose_level, &
+                iexcraai, ioptraai, num_transects, num_transect_exchanges, output_verbose_level, &
                 ierr2, status)
         if (ierr2 /= 0) goto 30
-        if (noraai > 0 .and. ibflag == 0) then
+        if (num_transects > 0 .and. ibflag == 0) then
             write (file_unit, '(/, A, /, A)') &
                     ' WARNING: Transects used without balance option specified,', &
                     ' Balances automaticaly switched on!'
@@ -498,8 +498,8 @@ contains
             intopt = ibset(intopt, 3)
             intopt = ibset(intopt, 4)
         endif
-        if (noraai > 0 .and. status%ierr == 0) then
-            write (file_unit_list(2)) (raname(k), k = 1, noraai)
+        if (num_transects > 0 .and. status%ierr == 0) then
+            write (file_unit_list(2)) (raname(k), k = 1, num_transects)
         endif
         if (associated(raname)) deallocate(raname)
 

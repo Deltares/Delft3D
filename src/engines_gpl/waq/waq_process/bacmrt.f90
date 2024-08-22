@@ -28,9 +28,9 @@ module m_bacmrt
 contains
 
 
-    subroutine bacmrt (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine bacmrt (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Mortality of bacteria depending on UV-light, salinity and temperature
 
@@ -70,9 +70,9 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
                 IP11, IP12, IP13
         INTEGER(kind = int_wp) :: IFLUX, ISEG
@@ -94,20 +94,20 @@ contains
         IP13 = IPOINT(13)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                BACT = PMSA(IP1)
-                RCMRT = PMSA(IP2)
-                TCMRT = PMSA(IP3)
-                TEMP = PMSA(IP4)
-                CRTEMP = PMSA(IP5)
-                CL = PMSA(IP6)
-                RAD = PMSA(IP7)
-                CFRAD = PMSA(IP8)
-                EXTVL = PMSA(IP9)
-                DEPTH = PMSA(IP10)
-                SPMRTZ = PMSA(IP11)
+                BACT = process_space_real(IP1)
+                RCMRT = process_space_real(IP2)
+                TCMRT = process_space_real(IP3)
+                TEMP = process_space_real(IP4)
+                CRTEMP = process_space_real(IP5)
+                CL = process_space_real(IP6)
+                RAD = process_space_real(IP7)
+                CFRAD = process_space_real(IP8)
+                EXTVL = process_space_real(IP9)
+                DEPTH = process_space_real(IP10)
+                SPMRTZ = process_space_real(IP11)
 
                 !***********************************************************************
                 !**** Processes connected to the MORTALITY OF BACTERIA
@@ -143,8 +143,8 @@ contains
                     !
                 ENDIF
 
-                PMSA (IP12) = MORT
-                PMSA (IP13) = MRTRAD
+                process_space_real (IP12) = MORT
+                process_space_real (IP13) = MRTRAD
                 !
             ENDIF
             IFLUX = IFLUX + NOFLUX

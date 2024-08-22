@@ -39,7 +39,7 @@ contains
     !! the method can be used. In 1D the method outperforms the
     !! iterative methods.
     subroutine integration_scheme_7(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
-        
+
         use m_dlwq71
         use m_dlwq70
         use m_dlwq67
@@ -61,11 +61,11 @@ contains
         use m_waq_openda_exchange_items, only : get_openda_buffer
         use variable_declaration          ! module with the more recently added arrays
         use m_actions
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
-        use m_sysj          ! Pointers in integer array workspace
-        use m_sysc          ! Pointers in character array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
+        use m_integer_array_indices          ! Pointers in integer array workspace
+        use m_character_array_indices          ! Pointers in character array workspace
 
         type(waq_data_buffer), target         :: buffer              !< System total array space
         integer(kind = int_wp), intent(inout) :: file_unit_list  (*) !< Array with logical unit numbers
@@ -114,118 +114,116 @@ contains
             ITIME = ITSTRT + IDT
             IBFLAG = 0
             IF (MOD(INTOPT, 16) >= 8) IBFLAG = 1
-            call initialize_real_array(A(IMAS2:), NOTOT * 5)
+            call initialize_real_array(A(IMAS2:), num_substances_total * 5)
             LDUMMY = .FALSE.
             LSTREC = .FALSE.
-            nosss = noseg + nseg2
-            NOQTT = NOQ + NOQ4
-            inwtyp = intyp + nobnd
+            nosss = num_cells + num_cells_bottom
+            NOQTT = num_exchanges + num_exchanges_bottom_dir
+            inwtyp = intyp + num_boundary_conditions
 
             ! Determine the volumes and areas that ran dry,
             ! They cannot have explicit processes during this time step
 
-            call hsurf(noseg, nopa, c(ipnam:), a(iparm:), nosfun, &
+            call hsurf(num_cells, num_spatial_parameters, c(ipnam:), a(iparm:), num_spatial_time_fuctions, &
                     c(isfna:), a(isfun:), surface, file_unit_list(19))
-            call set_dry_cells_to_zero_and_update_volumes(noseg, nosss, nolay, a(ivol:), &
-                    noq1 + noq2, a(iarea:), nocons, c(icnam:), a(icons:), surface, &
+            call set_dry_cells_to_zero_and_update_volumes(num_cells, nosss, num_layers, a(ivol:), num_exchanges_u_dir + num_exchanges_v_dir, &
+                    a(iarea:), num_constants, c(icnam:), a(icons:), surface, &
                     j(iknmr:), iknmkv)
 
             ! makes closure error
             IF (IDT==0) THEN
-                call initialize_real_array(A(IVOL2:), NOSEG)
+                call initialize_real_array(A(IVOL2:), num_cells)
             ELSE IF (J(INRH2 + 1)>=0 .AND. IVFLAG==0) THEN
                 CALL DLWQ41(file_unit_list, ITIME, ITIMEL, A(IHARM:), A(IFARR:), &
-                        J(INRHA:), J(INRH2:), J(INRFT:), NOSEG, A(IVOL2:), &
+                        J(INRHA:), J(INRH2:), J(INRFT:), num_cells, A(IVOL2:), &
                         J(IBULK:), file_name_list, ftype, ISFLAG, IVFLAG, &
                         LDUMMY, J(INISP:), A(INRSP:), J(INTYP:), J(IWORK:), &
                         LSTREC, LREWIN, A(IVOLL:), dlwqd)
-                CALL DLWQ65(A(IVOL2:), A(IVOL:), IDT, NOSEG)
+                CALL DLWQ65(A(IVOL2:), A(IVOL:), IDT, num_cells)
             ELSE
-                call initialize_real_array(A(IVOL2:), NOSEG)
+                call initialize_real_array(A(IVOL2:), num_cells)
                 WRITE(file_unit_list(19), 1000)
             ENDIF
 
             ! loop over the systems
             NSYS = 1
             IAFLAG = 1
-            DO ISYS = 1, NOSYS
-                IF (ISYS == NOSYS) NSYS = 1 + NOTOT - NOSYS
+            DO ISYS = 1, num_substances_transported
+                IF (ISYS == num_substances_transported) NSYS = 1 + num_substances_total - num_substances_transported
 
                 ! do the user transport processes
                 ICSYS = ISYS
-                CALL DLWQTR(NOTOT, NOSYS, NOSEG, NOQ, NOQ1, &
-                        NOQ2, NOQ3, NOPA, NOSFUN, NODISP, &
-                        NOVELO, J(IXPNT:), A(IVOL:), A(IAREA:), A(IFLOW:), &
-                        A(ILENG:), A(ICONC:), A(IDISP:), A(ICONS:), A(IPARM:), &
-                        A(IFUNC:), A(ISFUN:), A(IDIFF:), A(IVELO:), ICSYS, &
-                        IDT, C(ISNAM:), NOCONS, NOFUN, C(ICNAM:), &
-                        C(IPNAM:), C(IFNAM:), C(ISFNA:), LDUMMY, ILFLAG)
+                call dlwqtr(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
+                            num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
+                            j(ixpnt:), a(ivol:), &
+                            a(ileng:), a(iparm:), &
+                            c(ipnam:), ilflag)
 
                 ! do the user water quality processes
-                CALL DLWQ60(A(IDERV:), A(ICONC:), NOTOT, NOSEG, ITFACT, &
+                CALL DLWQ60(A(IDERV:), A(ICONC:), num_substances_total, num_cells, ITFACT, &
                         A(IMAS2:), ISYS, NSYS, A(IDMPS:), INTOPT, &
                         J(ISDMP:))
 
                 ! add the waste loads
-                call dlwq15(nosys, notot, noseg, noq, nowst, &
-                        nowtyp, ndmps, intopt, 1, itime, &
+                call dlwq15(num_substances_transported, num_substances_total, num_cells, num_exchanges, num_waste_loads, &
+                        num_waste_load_types, num_monitoring_cells, intopt, 1, itime, &
                         iaflag, c(isnam:), a(iconc:), a(ivol:), a(ivol2:), &
                         a(iflow:), j(ixpnt:), c(iwsid:), c(iwnam:), c(iwtyp:), &
                         j(inwtyp:), j(iwast:), iwstkind, a(iwste:), a(iderv:), &
-                        iknmkv, nopa, c(ipnam:), a(iparm:), nosfun, &
+                        iknmkv, num_spatial_parameters, c(ipnam:), a(iparm:), num_spatial_time_fuctions, &
                         c(isfna:), a(isfun:), j(isdmp:), a(idmps:), a(imas2:), &
                         a(iwdmp:), isys, nsys)
 
                 ! fill the matrix
-                CALL DLWQ61(A(ICONC:), A(IDERV:), A(IVOL2:), A(ITIMR:), NOSEG, &
-                        NOTOT, ISYS, NSYS, JTRACK)
+                CALL DLWQ61(A(ICONC:), A(IDERV:), A(IVOL2:), A(ITIMR:), num_cells, &
+                        num_substances_total, ISYS, NSYS, num_codiagonals)
                 CALL DLWQ70(A(IDISP:), A(IDIFF:), A(IAREA:), A(IFLOW:), A(ILENG:), &
-                        A(IVELO:), A(IBOUN:), J(IXPNT:), NOTOT, ISYS, &
-                        NSYS, NOQ1, NOQ2, NOQ, NODISP, &
-                        NOVELO, J(IDPNT:), J(IVPNT:), A(IDERV:), A(ITIMR:), &
-                        JTRACK, INTOPT, ILFLAG)
-                CALL DLWQ67(A(ITIMR:), NOSEG, JTRACK)
+                        A(IVELO:), A(IBOUN:), J(IXPNT:), num_substances_total, ISYS, &
+                        NSYS, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges, num_dispersion_arrays, &
+                        num_velocity_arrays, J(IDPNT:), J(IVPNT:), A(IDERV:), A(ITIMR:), &
+                        num_codiagonals, INTOPT, ILFLAG)
+                CALL DLWQ67(A(ITIMR:), num_cells, num_codiagonals)
 
                 ! invert the matrix and store the results
-                CALL DELMAT(NOSEG, JTRACK, JTRACK, NSYS, A(ITIMR:), &
+                CALL DELMAT(num_cells, num_codiagonals, num_codiagonals, NSYS, A(ITIMR:), &
                         A(IDERV:), 0)
-                CALL DLWQ63(A(ICONC:), A(IDERV:), A(IMAS2:), NOSEG, NOTOT, &
+                CALL DLWQ63(A(ICONC:), A(IDERV:), A(IMAS2:), num_cells, num_substances_total, &
                         ISYS, NSYS, A(IDMPS:), INTOPT, J(ISDMP:))
             end do
 
             ! mass balance
             IAFLAG = 1
             CALL DLWQ71(A(IDISP:), A(IDIFF:), A(IAREA:), A(IFLOW:), A(ILENG:), &
-                    A(IVELO:), A(ICONC:), A(IBOUN:), J(IXPNT:), NOSYS, &
-                    NOTOT, NOQ1, NOQ2, NOQ, NODISP, &
-                    NOVELO, J(IDPNT:), J(IVPNT:), INTOPT, A(IMAS2:), &
+                    A(IVELO:), A(ICONC:), A(IBOUN:), J(IXPNT:), num_substances_transported, &
+                    num_substances_total, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges, num_dispersion_arrays, &
+                    num_velocity_arrays, J(IDPNT:), J(IVPNT:), INTOPT, A(IMAS2:), &
                     ILFLAG, A(IDMPQ:), NDMPQ, J(IQDMP:))
-            CALL DLWQ66(A(IDERV:), A(IVOL:), A(ICONC:), NOTOT, NOSEG)
+            CALL DLWQ66(A(IDERV:), A(IVOL:), A(ICONC:), num_substances_total, num_cells)
 
             ! Call OUTPUT system
-            CALL write_output(NOTOT, NOSEG, NOPA, NOSFUN, ITSTRT, &
-                    C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
+            CALL write_output(num_substances_total, num_cells, num_spatial_parameters, num_spatial_time_fuctions, ITSTRT, &
+                    C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), num_monitoring_points, &
                     A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
-                    A(IVOL:), NOCONS, NOFUN, 1, NOUTP, &
+                    A(IVOL:), num_constants, num_time_functions, 1, num_output_files, &
                     file_name_list, file_unit_list, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
                     C(IOSNM:), C(IOUNI:), C(IODSC:), C(ISSNM:), C(ISUNI:), C(ISDSC:), &
-                    C(IONAM:), NX, NY, J(IGRID:), C(IEDIT:), &
-                    NOSYS, A(IBOUN:), J(ILP:), A(IDERV:), A(IMAS2:), &
-                    A(ISMAS:), NFLUX, A(IFLXI:), ISFLAG, IAFLAG, &
+                    C(IONAM:), num_cells_u_dir, num_cells_v_dir, J(IGRID:), C(IEDIT:), &
+                    num_substances_transported, A(IBOUN:), J(ILP:), A(IDERV:), A(IMAS2:), &
+                    A(ISMAS:), num_fluxes, A(IFLXI:), ISFLAG, IAFLAG, &
                     IBFLAG, IMSTRT, IMSTOP, IMSTEP, IDSTRT, &
                     IDSTOP, IDSTEP, IHSTRT, IHSTOP, IHSTEP, &
-                    IMFLAG, IDFLAG, IHFLAG, NOLOC, A(IPLOC:), &
-                    NODEF, A(IDEFA:), ITSTRT, ITSTOP, NDMPAR, &
-                    C(IDANA:), NDMPQ, NDMPS, J(IQDMP:), J(ISDMP:), &
+                    IMFLAG, IDFLAG, IHFLAG, num_local_vars, A(IPLOC:), &
+                    num_defaults, A(IDEFA:), ITSTRT, ITSTOP, NDMPAR, &
+                    C(IDANA:), NDMPQ, num_monitoring_cells, J(IQDMP:), J(ISDMP:), &
                     J(IPDMP:), A(IDMPQ:), A(IDMPS:), A(IFLXD:), NTDMPQ, &
-                    C(ICBUF:), NORAAI, NTRAAQ, J(IORAA:), J(NQRAA:), &
-                    J(IQRAA:), A(ITRRA:), C(IRNAM:), A(ISTOC:), NOGRID, &
-                    NOVAR, J(IVARR:), J(IVIDX:), J(IVTDA:), J(IVDAG:), &
+                    C(ICBUF:), num_transects, num_transect_exchanges, J(IORAA:), J(NQRAA:), &
+                    J(IQRAA:), A(ITRRA:), C(IRNAM:), A(ISTOC:), num_grids, &
+                    num_vars, J(IVARR:), J(IVIDX:), J(IVTDA:), J(IVDAG:), &
                     J(IAKND:), J(IAPOI:), J(IADM1:), J(IADM2:), J(IVSET:), &
-                    J(IGNOS:), J(IGSEG:), A, NOBND, NOBTYP, &
-                    C(IBTYP:), J(INTYP:), C(ICNAM:), NOQ, J(IXPNT:), &
+                    J(IGNOS:), J(IGSEG:), A, num_boundary_conditions, num_boundary_types, &
+                    C(IBTYP:), J(INTYP:), C(ICNAM:), num_exchanges, J(IXPNT:), &
                     INTOPT, C(IPNAM:), C(IFNAM:), C(ISFNA:), J(IDMPB:), &
-                    NOWST, NOWTYP, C(IWTYP:), J(IWAST:), J(INWTYP:), &
+                    num_waste_loads, num_waste_load_types, C(IWTYP:), J(IWAST:), J(INWTYP:), &
                     A(IWDMP:), iknmkv, isegcol)
 
             ! close files, except monitor file
@@ -234,7 +232,7 @@ contains
 
             ! write restart file
             CALL write_restart_map_file (file_unit_list, file_name_list, A(ICONC:), ITSTRT, C(IMNAM:), &
-                    C(ISNAM:), NOTOT, NOSEG)
+                    C(ISNAM:), num_substances_total, num_cells)
 
             ! output formats
             1000 FORMAT ('No closure error corrections !')

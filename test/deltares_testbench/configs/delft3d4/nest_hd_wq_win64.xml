@@ -37,27 +37,14 @@
     <!--
     The order is important. Start with the following programs:
         command_prompt
-        svn
         mpi
     -->
-    <!--
-    Programs
-    -->
-	<!--
-	The order is important. Start with the following programs:
-		command_prompt
-		svn
-		mpi
-	-->
     <programs>
         <program name="command_prompt">
             <path>cmd</path>
             <arguments>
                 <argument>/C</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>thirdparty\svn\win64\svn.exe</path>
         </program>
         <program name="nesthd1" logOutputToFile="true" addSearchPaths="true">
             <path>dflow2d3d/bin/nesthd1.exe</path>

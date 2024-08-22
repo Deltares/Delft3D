@@ -31,60 +31,34 @@ module m_dlwqtr
 
     !> Reads SURFACE from coupling
     !! Sets dispersion length in vertical
-    subroutine dlwqtr(notot , nosys , noseg , noq   , noq1  , &
-                      noq2  , noq3  , nopa  , nosfun, nodisp, &
-                      novelo, ipoint, volume, area  , flow  , &
-                      aleng , conc  , disp  , cons  , param , &
-                      func  , segfun, disper, velo  , itime , &
-                      idt   , syname, nocons, nofun , coname, &
-                      paname, funame, sfname, updatr, ilflag)
+    subroutine dlwqtr(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
+                      num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
+                      ipoint, volume, &
+                      aleng , param , &
+                      paname, ilflag)
+    
 
         use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         SAVE
-        integer(kind=int_wp), intent(in) :: notot               !< Total number of substances
-        integer(kind=int_wp), intent(in) :: nosys               !< number of active substances
-        integer(kind=int_wp), intent(in) :: noseg               !< Nr. of computational elements
-        integer(kind=int_wp), intent(in) :: noq                 !< Total number of exchanges
-        integer(kind=int_wp), intent(in) :: noq1                !< Nr. of exchanges direction 1
-        integer(kind=int_wp), intent(in) :: noq2                !< Nr. of exchanges direction 2
-        integer(kind=int_wp), intent(in) :: noq3                !< Nr. of exchanges direction 3
-        integer(kind=int_wp), intent(in) :: nopa                !< Number of parameters
-        integer(kind=int_wp), intent(in) :: nosfun              !< Number of segment functions
-        integer(kind=int_wp), intent(in) :: nodisp              !< Number of user-dispersions
-        integer(kind=int_wp), intent(in) :: novelo              !< Number of user-flows
-        integer(kind=int_wp), intent(in) :: ipoint(4, noq)      !< 1= "From"   segment pointers
+
+        integer(kind=int_wp), intent(in) :: num_substances_total               !< Total number of substances
+        integer(kind=int_wp), intent(in) :: num_cells               !< Nr. of computational elements
+        integer(kind=int_wp), intent(in) :: num_exchanges                 !< Total number of exchanges
+        integer(kind=int_wp), intent(in) :: num_exchanges_u_dir                !< Nr. of exchanges direction 1
+        integer(kind=int_wp), intent(in) :: num_exchanges_v_dir                !< Nr. of exchanges direction 2
+        integer(kind=int_wp), intent(in) :: num_exchanges_z_dir                !< Nr. of exchanges direction 3
+        integer(kind=int_wp), intent(in) :: num_spatial_parameters                !< Number of parameters
+        integer(kind=int_wp), intent(in) :: ipoint(4, num_exchanges)      !< 1= "From"   segment pointers
                                                                 !< 2= "To"     segment pointers
                                                                 !< 3= "From-1" segment pointers
                                                                 !< 4= "To+1"   segment pointers
-        real(kind=real_wp), intent(in) :: VOLUME(NOSEG)         !< Segment volumes
-        real(kind=real_wp), intent(in) :: AREA(NOQ)             !< Exchange surfaces
-        real(kind=real_wp), intent(in) :: FLOW(NOQ)             !< Flows
-        real(kind=real_wp), intent(inout) :: ALENG(2, NOQ)      !< 1= Length to "From" surface
+        real(kind=real_wp), intent(in) :: VOLUME(num_cells)         !< Segment volumes
+        real(kind=real_wp), intent(inout) :: ALENG(2, num_exchanges)      !< 1= Length to "From" surface
                                                                 !< 2= Length to "To"   surface
                                                                 !< 3 lengths in the grid
-        real(kind=real_wp), intent(in) :: CONC(NOTOT, NOSEG)    !< Model concentrations
-        real(kind=real_wp), intent(inout) :: DISP(3)            !< Dispersion in 3 directions
-        real(kind=real_wp), intent(inout) :: CONS(*)            !< Model constants
-        real(kind=real_wp), intent(inout) :: PARAM(nopa, noseg) !< Model parameters
-        real(kind=real_wp), intent(inout) :: FUNC(*)            !< Model functions at ITIME
-        real(kind=real_wp), intent(inout) :: SEGFUN(noseg, *)   !< Segment functions at ITIME
-        real(kind=real_wp), intent(out)   :: DISPER(*)          !< User defined dispersion
-        real(kind=real_wp), intent(out)   :: VELO(*)            !< User defined flows
-        integer(kind=int_wp), intent(in) :: ITIME               !< Time in system clock units
-        integer(kind=int_wp), intent(in) :: IDT                 !< Time step system clock units
-        character(len=20), intent(in) :: SYNAME(NOTOT)          !< names of systems
-        integer(kind=int_wp), intent(in) :: NOCONS              !< Number of constants used
-        integer(kind=int_wp), intent(in) :: NOFUN               !< Number of functions ( user )
-        character(len=20), intent(in) :: CONAME(*)              !< Constant names
+        real(kind=real_wp), intent(inout) :: PARAM(num_spatial_parameters, num_cells) !< Model parameters
         character(len=20), intent(in) :: PANAME(*)              !< Parameter names
-        character(len=20), intent(in) :: FUNAME(*)              !< Function names
-        character(len=20), intent(in) :: SFNAME(*)              !< Segment function names
-        logical, intent(inout) :: UPDATR                        !< Flag indicating if the transport
-                                                                !< matrix is changed. The user should
-                                                                !< set this flag to .T. if he alters
-                                                                !< part of the matrix and uses integratio
-                                                                !< option 10.xx .
         integer(kind=int_wp), intent(in) :: ILFLAG              !< if 0 then 3 length values
 
         ! Local variables
@@ -111,10 +85,10 @@ module m_dlwqtr
             write(lunrep,*)
             write(lunrep,2000)
             ! Set pointers in param array
-            isurf = index_in_array( 'SURF      ', paname (:NOPA))
+            isurf = index_in_array( 'SURF      ', paname (:num_spatial_parameters))
             ! read surface areas
             if ( isurf > 0 ) then
-                if ( ilflag == 1 .and. noq3 > 0 ) then
+                if ( ilflag == 1 .and. num_exchanges_z_dir > 0 ) then
                     linit = .true.
                     write(lunrep,2040)
                 end if
@@ -131,11 +105,11 @@ module m_dlwqtr
                     else
                         write(lunrep,2030)
                         read ( lccco ) nmaxa, mmaxa, nma, nma, nma, idummy
-                        layt = noseg/nma
+                        layt = num_cells/nma
                         nmt = nma*layt
-                        if ( nmt /= noseg ) then
-                            write (lunrep,2050) nma,layt,nmt,noseg
-                            write (  *   ,2050) nma,layt,nmt,noseg
+                        if ( nmt /= num_cells ) then
+                            write (lunrep,2050) nma,layt,nmt,num_cells
+                            write (  *   ,2050) nma,layt,nmt,num_cells
                             ier = ier + 1
                         end if
                         if ( ier == 0 ) then
@@ -159,7 +133,7 @@ module m_dlwqtr
 
         ! adapt the length for the third direction
         if ( linit ) then
-            do iq = noq1 + noq2 + 1, noq
+            do iq = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges
                 ifrom = ipoint(1,iq)
                 ito   = ipoint(2,iq)
                 if ( ifrom > 0 ) then
@@ -179,9 +153,9 @@ module m_dlwqtr
 2000 format (' Extra functionality DLWQTR')
 2010 format (' ERROR: opening file <areachar.dat> !')
 2030 format (' Surface area''s will be read from file <areachar.dat>')
-2040 format (' Dispersion length in third dir. will be calculated')
+2040 format (' Dispersion length in third direction will be calculated')
 2050 format (' ERROR: File areachar.dat does not match.', &
-             ' NMA = ',I8,' LAYT= ',I8,' NMT = ',I8,' NOSEG=',I8)
+             ' NMA = ',I8,' LAYT= ',I8,' NMT = ',I8,' num_cells=',I8)
 2070 format (' End extra functionality DLWQTR')
     end subroutine dlwqtr
 end module m_dlwqtr

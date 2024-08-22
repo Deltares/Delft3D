@@ -40,8 +40,8 @@ module m_domain
 
     type t_domain
         character(len = NAME_SIZE) :: name                   ! name of domain
-        integer :: mmax                   ! domain size in the m direction
-        integer :: nmax                   ! domain size in the n direction
+        integer :: num_columns                   ! domain size in the m direction
+        integer :: num_rows                   ! domain size in the n direction
         character(len = NAME_SIZE) :: aggr                   ! aggregation file name
     end type t_domain
 

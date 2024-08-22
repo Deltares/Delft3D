@@ -28,9 +28,9 @@ module m_phcomb
 contains
 
 
-    subroutine phcomb (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine phcomb (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Calculates total C, P, N, Si, Dm, Chlorophyll in algae from fractions in Bloom
 
@@ -40,20 +40,20 @@ contains
 
         ! declaration of the arguments
 
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(*)   ! I  Array of pointers in PMSA to get and store the data
+        integer(kind = int_wp) :: ipoint(*)   ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(*)   ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the FL array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 
-        ! variables from the pmsa array
+        ! variables from the process_space_real array
 
         integer(kind = int_wp) :: ntype       ! I  number of algae types                          (-)
         real(kind = real_wp) :: depth       ! I  depth of computational cell                    (m)
@@ -76,7 +76,7 @@ contains
         real(kind = real_wp) :: chlfa       ! O  Chlorophyll-a concentration                (mg/m3)
         real(kind = real_wp) :: cgroup      ! O  algae group concentration                  (gC/m3)
 
-        ! number of variables in pmsa
+        ! number of variables in process_space_real
 
         integer(kind = int_wp), parameter :: nipfix = 2 !    number of fixed inputs (not per type)
         integer(kind = int_wp), parameter :: nipvar = 11 !    number of variable inputs (per type)
@@ -86,16 +86,16 @@ contains
         ! other local declarations
 
         integer(kind = int_wp) :: iseg        !    loop counter for computational element loop
-        integer(kind = int_wp) :: itel        !    index in pmsa array
+        integer(kind = int_wp) :: itel        !    index in process_space_real array
         integer(kind = int_wp) :: itype       !    loop counter types
         integer(kind = int_wp) :: igrp        !    index algae groups
         integer(kind = int_wp) :: ispec_prev  !    previous algae group
 
-        ntype = pmsa(ipoint(1))
+        ntype = process_space_real(ipoint(1))
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
-            depth = pmsa (ipoint(2) + (iseg - 1) * increm(2))
+            depth = process_space_real (ipoint(2) + (iseg - 1) * increm(2))
 
             phyt = 0.0
             algn = 0.0
@@ -109,30 +109,30 @@ contains
             do itype = 1, ntype
 
                 itel = nipfix + itype + ntype
-                ispec = nint(pmsa (ipoint(itel) + (iseg - 1) * increm(itel)))
+                ispec = nint(process_space_real (ipoint(itel) + (iseg - 1) * increm(itel)))
 
                 if (ispec > 0) then
 
                     itel = nipfix + itype
-                    biomas = pmsa (ipoint(itel) + (iseg - 1) * increm(itel))
+                    biomas = process_space_real (ipoint(itel) + (iseg - 1) * increm(itel))
                     itel = nipfix + itype + ntype * 2
-                    ncrat = pmsa (ipoint(itel) + (iseg - 1) * increm(itel))
+                    ncrat = process_space_real (ipoint(itel) + (iseg - 1) * increm(itel))
                     itel = nipfix + itype + ntype * 3
-                    pcrat = pmsa (ipoint(itel) + (iseg - 1) * increm(itel))
+                    pcrat = process_space_real (ipoint(itel) + (iseg - 1) * increm(itel))
                     itel = nipfix + itype + ntype * 4
-                    sicrat = pmsa (ipoint(itel) + (iseg - 1) * increm(itel))
+                    sicrat = process_space_real (ipoint(itel) + (iseg - 1) * increm(itel))
                     itel = nipfix + itype + ntype * 5
-                    dmcf = pmsa (ipoint(itel) + (iseg - 1) * increm(itel))
+                    dmcf = process_space_real (ipoint(itel) + (iseg - 1) * increm(itel))
                     itel = nipfix + itype + ntype * 6
-                    catocl = pmsa (ipoint(itel) + (iseg - 1) * increm(itel))
+                    catocl = process_space_real (ipoint(itel) + (iseg - 1) * increm(itel))
                     itel = nipfix + itype + ntype * 7
-                    xncralg = max(0.0, pmsa (ipoint(itel) + (iseg - 1) * increm(itel)))
+                    xncralg = max(0.0, process_space_real (ipoint(itel) + (iseg - 1) * increm(itel)))
                     itel = nipfix + itype + ntype * 8
-                    xpcralg = max(0.0, pmsa (ipoint(itel) + (iseg - 1) * increm(itel)))
+                    xpcralg = max(0.0, process_space_real (ipoint(itel) + (iseg - 1) * increm(itel)))
                     itel = nipfix + itype + ntype * 9
-                    fncralg = max(0.0, pmsa (ipoint(itel) + (iseg - 1) * increm(itel)))
+                    fncralg = max(0.0, process_space_real (ipoint(itel) + (iseg - 1) * increm(itel)))
                     itel = nipfix + itype + ntype * 10
-                    fixalg = nint(pmsa (ipoint(itel) + (iseg - 1) * increm(itel)))
+                    fixalg = nint(process_space_real (ipoint(itel) + (iseg - 1) * increm(itel)))
 
                     ! add ratios of mixotophic and n-fixing algae
 
@@ -160,24 +160,24 @@ contains
 
                     cgroup = cgroup + biomas
                     itel = nipfix + nipvar * ntype + nopfix + igrp
-                    pmsa (ipoint(itel) + (iseg - 1) * increm(itel)) = cgroup
+                    process_space_real (ipoint(itel) + (iseg - 1) * increm(itel)) = cgroup
 
                 endif
 
             enddo
 
             itel = nipfix + nipvar * ntype + 1
-            pmsa (ipoint(itel) + (iseg - 1) * increm(itel)) = phyt
+            process_space_real (ipoint(itel) + (iseg - 1) * increm(itel)) = phyt
             itel = nipfix + nipvar * ntype + 2
-            pmsa (ipoint(itel) + (iseg - 1) * increm(itel)) = algn
+            process_space_real (ipoint(itel) + (iseg - 1) * increm(itel)) = algn
             itel = nipfix + nipvar * ntype + 3
-            pmsa (ipoint(itel) + (iseg - 1) * increm(itel)) = algp
+            process_space_real (ipoint(itel) + (iseg - 1) * increm(itel)) = algp
             itel = nipfix + nipvar * ntype + 4
-            pmsa (ipoint(itel) + (iseg - 1) * increm(itel)) = algsi
+            process_space_real (ipoint(itel) + (iseg - 1) * increm(itel)) = algsi
             itel = nipfix + nipvar * ntype + 5
-            pmsa (ipoint(itel) + (iseg - 1) * increm(itel)) = algdm
+            process_space_real (ipoint(itel) + (iseg - 1) * increm(itel)) = algdm
             itel = nipfix + nipvar * ntype + 6
-            pmsa (ipoint(itel) + (iseg - 1) * increm(itel)) = chlfa
+            process_space_real (ipoint(itel) + (iseg - 1) * increm(itel)) = chlfa
 
         enddo
 

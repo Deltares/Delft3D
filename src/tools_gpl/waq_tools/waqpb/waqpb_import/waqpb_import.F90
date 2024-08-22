@@ -35,15 +35,15 @@ program waqpb_import
 
     include 'data_ff.inc'
 
-    character*1  :: c1
-    character*10 :: c10, c10b, c10a
-    character*20 :: c20
-    character*30 :: grp
-    character*50 :: c50
-    character*10 :: initialConfgId
-    character*50 :: initialConfgName
-    character*80 :: pdffil, procesnaam
-    character*255:: argument
+    character(len=1)  :: c1
+    character(len=10) :: c10, c10b, c10a
+    character(len=20) :: c20
+    character(len=30) :: grp
+    character(len=50) :: c50
+    character(len=10) :: initialConfgId
+    character(len=50) :: initialConfgName
+    character(len=80) :: pdffil, procesnaam
+    character(len=255):: argument
     real      :: value
     integer   :: jndex , naanta, iaanta, iproc , i     , ihulp , &
                 noffse, ihulp2, ihulp3, ihulp4, nprocl, &
@@ -575,9 +575,9 @@ subroutine cratab (grp, newtab, initialConfgId, initialConfgName)
 
     use m_string_utils
 
-    character*30 :: grp
-    character*10  :: initialConfgId
-    character*50  :: initialConfgName
+    character(len=30) :: grp
+    character(len=10) :: initialConfgId
+    character(len=50) :: initialConfgName
     include 'data_ff.inc'
     integer  :: iitem , iproc, icnpr, iconf
     logical  :: newtab

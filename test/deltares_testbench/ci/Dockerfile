@@ -1,21 +1,34 @@
-FROM python:3.10.13
+FROM almalinux:8
 
 WORKDIR /data
 
+ENV PIP_ROOT_USER_ACTION=ignore
+ENV PIP_NO_CACHE_DIR=1
+
 # Install system dependencies and clean up packages afterwards
-RUN apt-get update \
-    && apt-get install -y libnetcdf-dev \
+RUN dnf update -y \
+    && dnf install -y python39 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements.txt file into the container at /data
-COPY requirements.txt /data/
+COPY pip/lnx-dev-requirements.txt /data/pip/
+
+# Install pip
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
+    && python3.9 get-pip.py \
+    && rm -f get-pip.py
 
 # Install Python dependencies
-RUN python3 -m pip install --upgrade pip \
-    && pip3 install -r requirements.txt
+RUN python3.9 -m pip install --upgrade pip \
+    && python3.9 -m pip install -r pip/lnx-dev-requirements.txt
 
-# Copy pytest configuration file
-COPY pyproject.toml /data/
+# Copy code and config.
+COPY configs/ /data/configs/
+COPY src/ /data/src/
+COPY test/ /data/test/
+COPY tools/ /data/tools/
+COPY thirdparty/ /data/thirdparty/
+COPY pyproject.toml TestBench.py /data/
 
 # Set the default command to run pytest
-CMD python -m pytest
+CMD python3.9 -m pytest

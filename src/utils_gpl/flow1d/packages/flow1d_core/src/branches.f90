@@ -80,6 +80,12 @@ module m_branch
       integer                        :: uPointsCount            !< number of u points on branch (gridpointsCount -1)
       double precision, allocatable  :: uPointsChainages(:)     !< chainage of velocity points on branch (each upoint 
 
+      ! RR specific branch components
+      character(IdLen)               :: name                    !< Name of the branch
+      character(IdLen)               :: fromnode2
+      character(IdLen)               :: tonode2
+      integer                        :: brType                  !< channel type of 1D channnel
+      
       !!
       !! Concept: Grid points sequences.
       !! A network branch will typically be covered by grid points, e.g., in the gridPointsChainages(:) array.

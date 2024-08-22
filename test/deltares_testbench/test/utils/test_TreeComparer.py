@@ -1,7 +1,6 @@
 import os
 import sys
 from os.path import abspath, dirname, join
-from test.utils.test_logger import TestLogger
 
 import pytest
 
@@ -13,12 +12,13 @@ from src.utils.comparers.tree_comparer import TreeComparer
 from src.utils.logging.console_logger import ConsoleLogger
 from src.utils.logging.log_level import LogLevel
 from src.utils.xml_config_parser import XmlConfigParser
+from test.utils.test_logger import TestLogger
 
 sys.path.insert(0, abspath(join(dirname(__file__), "..")))
 
 
 class TestTreeComparer:
-    def setup_method(self):
+    def setup_method(self) -> None:
         self.python_version = sys.version_info[0]
         self.path_to_file = ""
         # Parse the classes that are going to be tested
@@ -38,14 +38,10 @@ class TestTreeComparer:
         self.ftest.close()
         self.fref.close()
         # Get the branches
-        temp, self.refbranch = TreeComparer.getBranchFromPath(
-            self.trcmp, self.reftree, ">DUMPFILE>"
-        )
-        temp, self.testbranch = TreeComparer.getBranchFromPath(
-            self.trcmp, self.testtree, ">DUMPFILE>"
-        )
+        temp, self.refbranch = TreeComparer.getBranchFromPath(self.trcmp, self.reftree, ">DUMPFILE>")
+        temp, self.testbranch = TreeComparer.getBranchFromPath(self.trcmp, self.testtree, ">DUMPFILE>")
 
-    def test_compareTableWithMissingColumn(self):
+    def test_compareTableWithMissingColumn(self) -> None:
         import numpy as np
 
         # result list
@@ -76,16 +72,12 @@ class TestTreeComparer:
         assert resultlist[0].maxAbsDiffCoordinates == (3, 4)
         assert resultlist[0].result == "NOK"
 
-    def test_getBranchFromPath(self):
+    def test_getBranchFromPath(self) -> None:
         # Branches to be tested
-        branchpath = (
-            ">DUMPFILE>INPUT DATA>CPT LIST>NUMBER OF CPTS!2>MEASURED DATA>TABLE"
-        )
+        branchpath = ">DUMPFILE>INPUT DATA>CPT LIST>NUMBER OF CPTS!2>MEASURED DATA>TABLE"
 
         # Run the function to be tested
-        pad2, refbranch = TreeComparer.getBranchFromPath(
-            self.trcmp, self.reftree, branchpath
-        )
+        pad2, refbranch = TreeComparer.getBranchFromPath(self.trcmp, self.reftree, branchpath)
 
         # Check if the branches are equal with the pads
         assert pad2 == branchpath
@@ -94,9 +86,7 @@ class TestTreeComparer:
         dictionary = {
             "block_start": [974],
             "block_end": [999],
-            "COLUMN INDICATION": [
-                {"block_start": [975], "block_end": [978], "txt": ["z", "qc"]}
-            ],
+            "COLUMN INDICATION": [{"block_start": [975], "block_end": [978], "txt": ["z", "qc"]}],
             "DATA": [
                 {
                     "block_start": [979],
@@ -128,20 +118,18 @@ class TestTreeComparer:
         # Check if the dictionaries are equal
         assert dictionary == refbranch
 
-    def test_getBranchFromPath_Exception(self):
+    def test_getBranchFromPath_Exception(self) -> None:
         # Wrong input to raise exception
         branchpathwrong = ">DUMPDUMPFILE>INPUT DATA>CPT LIST>NUMBER OF CPTS!1"
 
         # Run function with 'with' to catch the exception
         with pytest.raises(Exception) as context:
-            _ = TreeComparer.getBranchFromPath(
-                self.trcmp, self.testtree, branchpathwrong
-            )
+            _ = TreeComparer.getBranchFromPath(self.trcmp, self.testtree, branchpathwrong)
 
         # Check if the right exception is thrown
         assert "Wrong path : " + branchpathwrong == str(context.value)
 
-    def test_getVarData(self):
+    def test_getVarData(self) -> None:
         # Test value for table
         # Set inputs
         path = ">DUMPFILE>DUMPFILE OUTPUT>VERIFICATION RESULTS>NEN PILE RESULTS>MAX SHAFT AND POINT>TABLE"
@@ -161,7 +149,7 @@ class TestTreeComparer:
         value = TreeComparer.getVarData(self.comp, tree, path, var_name)
         assert float(value) == 0.063203
 
-    def test_SetPythonCompatibility(self):
+    def test_SetPythonCompatibility(self) -> None:
         # Set value as none
         value_target = None
         # If python larger than 2 then tolerance = -1
@@ -173,7 +161,7 @@ class TestTreeComparer:
         # Check if they are equal
         assert value_target == value_test
 
-    def test_compareTreePaths(self):
+    def test_compareTreePaths(self) -> None:
         # Check that two fod files that are known to be the same are the same
         # Start parsing
         # Parse the xml file.
@@ -211,7 +199,7 @@ class TestTreeComparer:
         # Check if the output is True
         assert output
 
-    def test_compareTreePaths_Exception1(self):
+    def test_compareTreePaths_Exception1(self) -> None:
         # In this test a full section block will be missing
         with open(join(self.rp, "Unit_test_section_missing.fod"), "r") as section_missing:
             section_missing_tree = DSeriesComparer.buildTrees(self.comp, section_missing)[0]
@@ -253,7 +241,7 @@ class TestTreeComparer:
             # Check if the correct exception is raised
             assert "The test file is missing blocks: INPUT DATA" == str(context.value)
 
-    def test_compare(self):
+    def test_compare(self) -> None:
         # Set the inputs
         testcase_name = "Testing_all_the_fod_file"
         # Parse the xml file.
@@ -268,16 +256,14 @@ class TestTreeComparer:
 
         # Run the function to be tested
         logger = TestLogger()
-        paramResults = TreeComparer.compare(
-            self.comp, self.lp, self.rp, file_check, testcase_name, logger
-        )
+        paramResults = TreeComparer.compare(self.comp, self.lp, self.rp, file_check, testcase_name, logger)
 
         # Check if the correct outputs are produced
         assert paramResults[0][0] == testcase_name
         assert paramResults[0][1] == file_check
         assert paramResults[0][3].result == "OK"
 
-    def test_compare_fail_to_open_files_tested(self):
+    def test_compare_fail_to_open_files_tested(self) -> None:
         # Inputs for the function to be tested
         testcase_name = "Testing_all_the_fod_file"
 
@@ -298,23 +284,15 @@ class TestTreeComparer:
         # Run function with 'with' so that exceptions are raised
         with pytest.raises(Exception) as context:
             logger = TestLogger()
-            TreeComparer.compare(
-                self.comp, self.lp, self.rp, file_check, testcase_name, logger
-            )
+            TreeComparer.compare(self.comp, self.lp, self.rp, file_check, testcase_name, logger)
 
         # Check if the correct exceptions are raised
         if self.python_version < 3:
-            assert (
-                "Cannot open reference file Unit_test_wrong.fod in " + self.lp
-                == str(context.value)
-            )
+            assert "Cannot open reference file Unit_test_wrong.fod in " + self.lp == str(context.value)
         else:
-            assert (
-                "Cannot open reference file Unit_test_wrong.fod in " + self.lp
-                == context.value.args[0]
-            )
+            assert "Cannot open reference file Unit_test_wrong.fod in " + self.lp == context.value.args[0]
 
-    def test_compare_fail_to_open_files_referenced(self):
+    def test_compare_fail_to_open_files_referenced(self) -> None:
         from shutil import copyfile
 
         # Inputs for the function to be tested
@@ -335,23 +313,15 @@ class TestTreeComparer:
         # Run function with 'with' so that exceptions are raised
         with pytest.raises(Exception) as context:
             logger = TestLogger()
-            TreeComparer.compare(
-                self.comp, self.lp, self.rp, file_check, testcase_name, logger
-            )
+            TreeComparer.compare(self.comp, self.lp, self.rp, file_check, testcase_name, logger)
 
         # Check if the correct exception is raised
         if self.python_version < 3:
-            assert (
-                "Cannot open reference file Unit_test_wrong.fod in " + self.lp
-                == str(context.value)
-            )
+            assert "Cannot open reference file Unit_test_wrong.fod in " + self.lp == str(context.value)
         else:
-            assert (
-                "Cannot open reference file Unit_test_wrong.fod in " + self.lp
-                == context.value.args[0]
-            )
+            assert "Cannot open reference file Unit_test_wrong.fod in " + self.lp == context.value.args[0]
 
-    def test_compare_NOK_results(self):
+    def test_compare_NOK_results(self) -> None:
         # Inputs for the function to be tested
         testcase_name = "Testing_all_the_fod_file"
         # Parse the xml file.
@@ -366,16 +336,14 @@ class TestTreeComparer:
 
         # Run the function
         logger = TestLogger()
-        paramResults = TreeComparer.compare(
-            self.comp, self.lp, self.rp, file_check, testcase_name, logger
-        )
+        paramResults = TreeComparer.compare(self.comp, self.lp, self.rp, file_check, testcase_name, logger)
 
         # Check if the desired results were produced
         assert paramResults[0][0] == testcase_name
         assert paramResults[0][1] == file_check
         assert paramResults[0][3].result == "NOK"
 
-    def test_pullIgnored_No_ignored_values(self):
+    def test_pullIgnored_No_ignored_values(self) -> None:
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         logger = ConsoleLogger(LogLevel.DEBUG)
@@ -392,7 +360,7 @@ class TestTreeComparer:
         # Check if none of the values are ignored
         assert ignored_values == []
 
-    def test_pullIgnored_ignored_values(self):
+    def test_pullIgnored_ignored_values(self) -> None:
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         logger = ConsoleLogger(LogLevel.DEBUG)
@@ -412,7 +380,7 @@ class TestTreeComparer:
             ">DUMPFILE>DUMPFILE OUTPUT>RESULTS AT CPT TEST LEVEL>Max Delta Fr;max;i:",
         ]
 
-    def test_compareThisNode(self):
+    def test_compareThisNode(self) -> None:
         # Check that two fod files that are known to be the same are the same
         # Parse the xml file.
         xmlcp = XmlConfigParser()
@@ -471,7 +439,7 @@ class TestTreeComparer:
             counter += 1
         assert output
 
-    def test_compareThisNode_Table(self):
+    def test_compareThisNode_Table(self) -> None:
         # Check that two fod files that are knonw to be the same are the same
         # Parse the xml file.
         xmlcp = XmlConfigParser()
@@ -486,19 +454,15 @@ class TestTreeComparer:
         # Table to be tested
         pathstr = ">DUMPFILE>INPUT DATA>CPT LIST>NUMBER OF CPTS!1>MEASURED DATA>TABLE"
         # the branch of the tests
-        testbranch = self.testbranch["INPUT DATA"][0]["CPT LIST"][0]["NUMBER OF CPTS"][
+        testbranch = self.testbranch["INPUT DATA"][0]["CPT LIST"][0]["NUMBER OF CPTS"][0]["MEASURED DATA"][0]["TABLE"][
             0
-        ]["MEASURED DATA"][0]["TABLE"][0]
+        ]
         # the branch of the reference
-        refbranch = self.refbranch["INPUT DATA"][0]["CPT LIST"][0]["NUMBER OF CPTS"][0][
-            "MEASURED DATA"
-        ][0]["TABLE"][0]
+        refbranch = self.refbranch["INPUT DATA"][0]["CPT LIST"][0]["NUMBER OF CPTS"][0]["MEASURED DATA"][0]["TABLE"][0]
 
         # Function to be tested
         logger = TestLogger()
-        resultslist = TreeComparer.compareThisNode(
-            self.comp, testbranch, refbranch, pathstr, parameter, [], [], logger
-        )
+        resultslist = TreeComparer.compareThisNode(self.comp, testbranch, refbranch, pathstr, parameter, [], [], logger)
 
         # Check if the paths produced from the functions are correct
         output = True
@@ -519,7 +483,7 @@ class TestTreeComparer:
             counter += 1
         assert output
 
-    def test_compareThisNode_exception_1(self):
+    def test_compareThisNode_exception_1(self) -> None:
         # In this case the exception is raised because value is missing
         # Setting the inputs for the function
         pathstr = ">DUMPFILE>INPUT DATA>SOIL COLLECTION>SOIL"
@@ -547,15 +511,10 @@ class TestTreeComparer:
         # Check if the correct exception is raised
         with pytest.raises(Exception) as context:
             logger = TestLogger()
-            TreeComparer.compareThisNode(
-                self.comp, testbranch, refbranch, pathstr, parameter, [], [], logger
-            )
-        assert (
-            "Could not compare values in path\n >DUMPFILE>INPUT DATA>SOIL COLLECTION>SOIL."
-            == str(context.value)
-        )
+            TreeComparer.compareThisNode(self.comp, testbranch, refbranch, pathstr, parameter, [], [], logger)
+        assert "Could not compare values in path\n >DUMPFILE>INPUT DATA>SOIL COLLECTION>SOIL." == str(context.value)
 
-    def test_createKeyValuePair(self):
+    def test_createKeyValuePair(self) -> None:
         # With different inputs of string here it is checked how the Key and Values are seperated
         # TEST 1
         str1 = "0"
@@ -593,7 +552,7 @@ class TestTreeComparer:
         result = TreeComparer.createKeyValuePair(self.comp, str1, str2, diction)
         assert result == [str1 + "_" + str(3), str2]
 
-    def test_getTable(self):
+    def test_getTable(self) -> None:
         # Checking how a table is passed into a dictionary
         import numpy
 
@@ -617,7 +576,7 @@ class TestTreeComparer:
         assert list(tbldata["column 1"]) == list(test["column 1"])
         assert list(tbldata["column 2"]) == list(test["column 2"])
 
-    def test_getTable_exception(self):
+    def test_getTable_exception(self) -> None:
         # Define table that is not parseable
         br = {
             "COLUMN INDICATION": [{"txt": ["column 1", "column 2"]}],
@@ -631,7 +590,7 @@ class TestTreeComparer:
         # Check if the exception raised is what expected
         assert "Table not parseable" == str(context.value)
 
-    def test_getTable_Exception_2(self):
+    def test_getTable_Exception_2(self) -> None:
         # Define table that the dictionary does not have DATA and COLUMN INDICATOR keys
         br = {
             "VERSION": [{"txt": ["column 1", "column 2"]}],
@@ -643,7 +602,7 @@ class TestTreeComparer:
         # The value None is expected
         assert tbldata is None
 
-    def test_rowToArray(self):
+    def test_rowToArray(self) -> None:
         # Set the strings representing arrays of number and check if they are equal
 
         # TEST 1 - Only numbers
@@ -680,12 +639,12 @@ class TestTreeComparer:
         array = TreeComparer.rowToArray(self.comp, ss)
         assert ["", "", "", "", ""] == array
 
-    def test_isFloat(self):
+    def test_isFloat(self) -> None:
         # Test if input is a float
         assert TreeComparer.isFloat(1.23)
         assert not TreeComparer.isFloat("Hello")
 
-    def test_compareDictionary_OK(self):
+    def test_compareDictionary_OK(self) -> None:
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         logger = ConsoleLogger(LogLevel.DEBUG)
@@ -734,9 +693,7 @@ class TestTreeComparer:
 
         # function to be tested
         logger = TestLogger()
-        results = TreeComparer.compareDictionary(
-            self.comp, testdictionary, refdictionary, pathstr, parameter, logger
-        )
+        results = TreeComparer.compareDictionary(self.comp, testdictionary, refdictionary, pathstr, parameter, logger)
         lists = [pathstr + ">" + thing1 for thing1 in lists]
         # Are all the paths existing in the dictionary?
         counter = 0
@@ -747,7 +704,7 @@ class TestTreeComparer:
             counter += 1
         assert output
 
-    def test_compareDictionary_NOK(self):
+    def test_compareDictionary_NOK(self) -> None:
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         logger = ConsoleLogger(LogLevel.DEBUG)
@@ -763,16 +720,15 @@ class TestTreeComparer:
         refdictionary = self.refbranch["INPUT DATA"][0]
         self.refbranch["INPUT DATA"][0]["block_end"] = [2000]
         logger = TestLogger()
-        results = TreeComparer.compareDictionary(
-            self.comp, testdictionary, refdictionary, pathstr, parameter, logger
-        )
+        results = TreeComparer.compareDictionary(self.comp, testdictionary, refdictionary, pathstr, parameter, logger)
         if self.python_version < 3:
             assert results[15].result == "NOK"
         else:
             assert results[0].result == "NOK"
 
-    def test_compareDataTables_OK(self):
+    def test_compareDataTables_OK(self) -> None:
         import numpy
+
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         logger = ConsoleLogger(LogLevel.DEBUG)
@@ -796,9 +752,7 @@ class TestTreeComparer:
         pathstr = ">DUMPFILE>INPUT DATA>CPT LIST>NUMBER OF CPTS>MEASURED DATA>TABLE"
 
         logger = TestLogger()
-        results = TreeComparer.compareDataTables(
-            self.comp, reftable, testtable, pathstr, parameter, logger
-        )
+        results = TreeComparer.compareDataTables(self.comp, reftable, testtable, pathstr, parameter, logger)
         # Check if the value OK is outputted which means that they are equal
         output = True
         for result in results:
@@ -806,8 +760,9 @@ class TestTreeComparer:
                 output = False
         assert output
 
-    def test_compareDataTables_NOK(self):
+    def test_compareDataTables_NOK(self) -> None:
         import numpy
+
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         logger = ConsoleLogger(LogLevel.DEBUG)
@@ -831,9 +786,7 @@ class TestTreeComparer:
         pathstr = ">DUMPFILE>INPUT DATA>CPT LIST>NUMBER OF CPTS>MEASURED DATA>TABLE"
 
         logger = TestLogger()
-        results = TreeComparer.compareDataTables(
-            self.comp, reftable, testtable, pathstr, parameter, logger
-        )
+        results = TreeComparer.compareDataTables(self.comp, reftable, testtable, pathstr, parameter, logger)
         # Check if the value NOK is outputted which means that they are equal
         output = True
         for result in results:
@@ -841,8 +794,9 @@ class TestTreeComparer:
                 output = False
         assert output
 
-    def test_compareDataTables_tolerance(self):
+    def test_compareDataTables_tolerance(self) -> None:
         import numpy
+
         # Parse the xml file.
         xmlcp = XmlConfigParser()
         logger = ConsoleLogger(LogLevel.DEBUG)
@@ -870,9 +824,7 @@ class TestTreeComparer:
         parameter.set_tolerance(100)
         # Test the function
         logger = TestLogger()
-        results = TreeComparer.compareDataTables(
-            self.comp, reftable, testtable, pathstr, parameter, logger
-        )
+        results = TreeComparer.compareDataTables(self.comp, reftable, testtable, pathstr, parameter, logger)
         # Check if the value OK is outputted which means that they are equal
         output = True
         for result in results:
@@ -880,7 +832,7 @@ class TestTreeComparer:
                 output = False
         assert output
 
-    def teardown_method(self):
+    def teardown_method(self) -> None:
         self.fref.close()
         self.fref.close()
         return

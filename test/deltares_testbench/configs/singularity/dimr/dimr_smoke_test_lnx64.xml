@@ -29,17 +29,11 @@
 	</config>
 
 	<programs>
-		<program name="command_prompt">			<!-- The order is important. Start with the following programs: command_prompt, svn, mpi -->
+		<program name="command_prompt">			<!-- The order is important. Start with the following programs: command_prompt, mpi -->
 			<path>/bin/bash</path>
 			<arguments>
 				<argument>-c</argument>
 			</arguments>
-		</program>
-		<program name="svn">
-			<path>svn</path>
-			<environments>
-				<environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-			</environments>
 		</program>
 		<program name="execute_singularity" logOutputToFile="true" programStringRemoveQuotes="true">
 			<location ref="local" type="check">

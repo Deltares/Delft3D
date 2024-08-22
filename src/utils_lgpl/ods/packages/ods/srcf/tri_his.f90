@@ -28,49 +28,8 @@
 !        $Date: 1-04-03 10:52 $
 !        $Source: /u/cvsroot/gpp/libsrc/ods/tri_his.f,v $
 !
-!#ifdef WINNT
-!      INCLUDE '../include/nfsintrf.i'
-!
-!      INTERFACE TO FUNCTION GETELT_i [ALIAS:'_GETELT']
-!     +                             ( VALUE1, VALUE2, VALUE3, VALUE4 ,
-!     +                               VALUE5, VALUE6, VALUE7, VALUE8 )
-!
-!      INTEGER   GETELT_i
-!
-!      INTEGER   VALUE1
-!      INTEGER   VALUE2
-!      CHARACTER VALUE3
-!      CHARACTER VALUE4
-!      INTEGER   VALUE5
-!      INTEGER   VALUE6
-!      INTEGER   VALUE7
-!      CHARACTER VALUE8
-!
-!      END
-!
-!      INTERFACE TO FUNCTION GETELT_j [ALIAS:'_GETELT']
-!     +                             ( VALUE1, VALUE2, VALUE3, VALUE4 ,
-!     +                               VALUE5, VALUE6, VALUE7, VALUE8 )
-!
-!      INTEGER   GETELT_j
-!
-!      INTEGER   VALUE1
-!      INTEGER   VALUE2
-!      CHARACTER VALUE3
-!      CHARACTER VALUE4
-!      INTEGER   VALUE5
-!      INTEGER   VALUE6
-!      INTEGER   VALUE7
-!      INTEGER   VALUE8
-!
-!      END
-
-!#endif
 
 subroutine hispar&
-!#ifdef WINNT
-!     *                 [ALIAS:'_hispar']
-!#endif
 &(fname , itype , pardef, maxdef, timdep, locdep,&
 &maxlst, lang  , parlst, paruni, partyp, parcod,&
 &nrlst , ierror, option                        )
@@ -138,7 +97,7 @@ subroutine hispar&
 ! HDEFDS      I*4  2997            Definition file description for the
 !                                  HIS-DEF file
 ! IERROR      I*4                  Error code for NEFIS error
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! LMAX        I*4                  Total number of constituents
 !                                  for old files LMAX = LSTCI
 !                                  for new files LMAX = LSTCI + LTUR
@@ -178,7 +137,7 @@ subroutine hispar&
    integer         locdep
    integer         timdep,itype
    integer         maxdef,maxlst,i     ,npar  ,nostat,ntruv
-   integer         kmax  ,lmax  ,l     ,ind   ,lstci ,ltur
+   integer         num_layers_grid  ,lmax  ,l     ,ind   ,lstci ,ltur
    integer         ierror,nrlst ,irho
 !
    integer         hisind(mxnpar)
@@ -213,11 +172,6 @@ subroutine hispar&
    character*64  elmdes
 !
    integer       GETELT,GETELS,INQELM
-
-!#ifdef WINNT
-!     integer       GETELT_i
-!#endif
-
    integer       TMLCDP
    parameter     ( TMLCDP = IPLDEP + IPLLST )
 !
@@ -253,6 +207,11 @@ subroutine hispar&
    &28,'constituent         ','user defined        ',    TMLCDP,&
    &29,'constituent         ','user defined        ',    TMLCDP,&
    &30,'                    ','                    ',    TMLCDP/
+!  (bedstress) u and v are not correctly defined in u-points -> removed
+!    *  38,'current u at u-point','m/s                 ',    TMLCDP,
+!    *  39,'current v at v-point','m/s                 ',    TMLCDP,
+!    *  40,'bed stress at u-pnt.','N/m**2              ',    TMLCDP,
+!    *  41,'bed stress at v-pnt.','N/m**2              ',    TMLCDP,
    data (hisind(i),hislst(i),hisuni(i),histyp(i),i=31,45,1)/&
    &31,'density             ','kg/m**3             ',    TMLCDP,&
    &32,'eddy diffusivity    ','m**2/s              ',    TMLCDP,&
@@ -261,14 +220,8 @@ subroutine hispar&
    &35,'                    ','                    ',    TMLCDP,&
    &36,'                    ','                    ',    TMLCDP,&
    &37,'                    ','                    ',    TMLCDP,&
-!  u and v are not correctly defined in u-points -> removed
-!    *  38,'current u at u-point','m/s                 ',    TMLCDP,
-!    *  39,'current v at v-point','m/s                 ',    TMLCDP,
    &38,'                    ','                    ',    TMLCDP,&
    &39,'                    ','                    ',    TMLCDP,&
-!  bedstress u and v are not correctly defined in u-points -> removed
-!    *  40,'bed stress at u-pnt.','N/m**2              ',    TMLCDP,
-!    *  41,'bed stress at v-pnt.','N/m**2              ',    TMLCDP,
    &40,'                    ','                    ',    TMLCDP,&
    &41,'                    ','                    ',    TMLCDP,&
    &42,'accumulated flow u  ','m**3                ',    TMLCDP,&
@@ -349,7 +302,7 @@ subroutine hispar&
    lmax      = 0
    lstci     = 0
    ltur      = 0
-   kmax      = 0
+   num_layers_grid      = 0
 !
    elmnam    = 'NOSTAT'
    ierror    = GETELT(hdefds,grpdef    ,elmnam    ,&
@@ -396,9 +349,9 @@ subroutine hispar&
    endif
 !
    if (nostat .gt. 0) then
-      elmnam = 'KMAX'
+      elmnam = 'num_layers_grid'
       ierror = GETELT(hdefds,grpdef    ,elmnam    ,&
-      &uindex,usrord    ,buflen    ,KMAX      )
+      &uindex,usrord    ,buflen    ,num_layers_grid      )
       if (ierror .ne. 0) then
          fout   = .true.
          goto 8888
@@ -412,11 +365,7 @@ subroutine hispar&
 !-----------------------------------------------------------------------
    buflen    = 23
    elmnam    = 'SELHIS'
-!#ifdef WINNT
-!     ierror    = GETELT_i
-!#else
    ierror    = GETELS&
-!#endif
    &(hdefds   ,grpdef    ,elmnam    ,&
    &uindex   ,usrord    ,buflen    ,SELHIS    )
    if (ierror .ne. 0) then
@@ -427,10 +376,10 @@ subroutine hispar&
       selhis = 'YYYYYYYYYYYYYYYYYYYYYYY'
       selhis(19:19) = 'X'
       if (nostat .eq. 0) selhis( 1:19) = 'NNNNNNNNNNNNNNNNNNN'
-      if (kmax   .eq. 1) selhis( 4: 4) = 'N'
+      if (num_layers_grid   .eq. 1) selhis( 4: 4) = 'N'
       if (lstci  .eq. 0) selhis( 5:12) = 'NNNNNNNN'
       if (ltur   .eq. 0) selhis(13:14) = 'NN'
-      if (kmax   .eq. 1) selhis(17:18) = 'NN'
+      if (num_layers_grid   .eq. 1) selhis(17:18) = 'NN'
       if (lmax   .eq. 0) selhis(18:18) = 'N'
       if (ntruv  .eq. 0) selhis(20:23) = 'NNNN'
       if (lstci  .eq. 0) selhis(22:23) = 'NN'
@@ -443,11 +392,7 @@ subroutine hispar&
    if (index (selhis( 5:14),'Y') .gt. 0) then
       buflen    = 20 * lmax
       elmnam    = 'NAMCON'
-!#ifdef WINNT
-!        ierror = GETELT_i
-!#else
       ierror = GETELS&
-!#endif
       &(hdefds,grpdef    ,elmnam    ,&
       &uindex,usrord    ,buflen    ,NAMCON    )
       if (ierror .ne. 0) then
@@ -490,7 +435,7 @@ subroutine hispar&
          paruni(npar) = hisuni(parcod(npar))
       endif
       if ( selhis(2:3) .eq. 'YY' ) then
-         if (kmax .gt. 1) then
+         if (num_layers_grid .gt. 1) then
 !-----------dpt. aver. cur. u
             npar = npar + 1
             parcod(npar) = hisind( 3)
@@ -544,7 +489,7 @@ subroutine hispar&
       endif
 
       if ( selhis(4:4) .eq. 'Y' ) then
-         if (kmax .gt. 1) then
+         if (num_layers_grid .gt. 1) then
 !-----------current w.   (layer)
             npar = npar + 1
             parcod(npar) = hisind(11)
@@ -570,7 +515,7 @@ subroutine hispar&
       endif
 
       if ( selhis(17:17) .eq. 'Y' ) then
-         if (kmax .gt. 1) then
+         if (num_layers_grid .gt. 1) then
 !-----------viscosity, ZVICWW
             npar = npar + 1
             parcod(npar) = hisind(15)
@@ -636,7 +581,7 @@ subroutine hispar&
       endif
 
       if ( selhis(17:17) .eq. 'Y' ) then
-         if (kmax   .gt. 1) then
+         if (num_layers_grid   .gt. 1) then
 !--------------diffusivity, ZDICWW
             npar = npar + 1
             parcod(npar) = hisind(32)
@@ -753,9 +698,6 @@ subroutine hispar&
 end
 
 subroutine hisdim&
-!#ifdef WINNT
-!    *          [ALIAS:'_hisdim']
-!#endif
 &(fname ,itype ,dimtyp, pardep, timdep,&
 &locdep,ndim  ,ierror, option        )
 !-----------------------------------------------------------------------
@@ -818,7 +760,7 @@ subroutine hisdim&
 ! HDEFDS      I*4  2997            Definition file description for the
 !                                  HIS-DEF file
 ! IERROR      I*4                  Error code for NEFIS error
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! L           I*4                  Help variable
 ! LMAX        I*4                  Total number of constituents
 !                                  for old files LMAX = LSTCI
@@ -846,7 +788,7 @@ subroutine hisdim&
    include         'ods.inc'
 !
    integer         ierror,itype ,lstci ,ltur  ,irho
-   integer         nrcel ,npar  ,nostat,ntruv ,lmax  ,kmax  ,l
+   integer         nrcel ,npar  ,nostat,ntruv ,lmax  ,num_layers_grid  ,l
    integer         pardep,timdep,locdep
    integer         ndim   (4    )
 !
@@ -876,9 +818,6 @@ subroutine hisdim&
 !
    integer       INQGRP,GETELT,GETELS,INQELM
    integer       INQMXI
-!#ifdef WINNT
-!     integer       GETELT_i
-!#endif
 
 !-----------------------------------------------------------------------
 !-----Initialisation
@@ -944,7 +883,7 @@ subroutine hisdim&
    lmax      = 0
    lstci     = 0
    ltur      = 0
-   kmax      = 0
+   num_layers_grid      = 0
 !
    elmnam    = 'NOSTAT'
    ierror    = GETELT(hdefds,grpdef    ,elmnam    ,&
@@ -991,9 +930,9 @@ subroutine hisdim&
    endif
 !
    if (nostat .gt. 0) then
-      elmnam = 'KMAX'
+      elmnam = 'num_layers_grid'
       ierror = GETELT(hdefds,grpdef    ,elmnam    ,&
-      &uindex,usrord    ,buflen    ,KMAX      )
+      &uindex,usrord    ,buflen    ,num_layers_grid      )
       if (ierror .ne. 0) then
          fout   = .true.
          goto 8888
@@ -1007,11 +946,7 @@ subroutine hisdim&
 !-----------------------------------------------------------------------
    buflen    = 23
    elmnam    = 'SELHIS'
-!#ifdef WINNT
-!     ierror    = GETELT_i
-!#else
    ierror    = GETELS&
-!#endif
    &(hdefds   ,grpdef    ,elmnam    ,&
    &uindex   ,usrord    ,buflen    ,SELHIS    )
    if (ierror .ne. 0) then
@@ -1022,10 +957,10 @@ subroutine hisdim&
       selhis = 'YYYYYYYYYYYYYYYYYYYYYYY'
       selhis(19:19) = 'X'
       if (nostat .eq. 0) selhis( 1:19) = 'NNNNNNNNNNNNNNNNNNN'
-      if (kmax   .eq. 1) selhis( 4: 4) = 'N'
+      if (num_layers_grid   .eq. 1) selhis( 4: 4) = 'N'
       if (lstci  .eq. 0) selhis( 5:12) = 'NNNNNNNN'
       if (ltur   .eq. 0) selhis(13:14) = 'NN'
-      if (kmax   .eq. 1) selhis(17:18) = 'NN'
+      if (num_layers_grid   .eq. 1) selhis(17:18) = 'NN'
       if (lmax   .eq. 0) selhis(18:18) = 'N'
       if (ntruv  .eq. 0) selhis(20:23) = 'NNNN'
       if (lstci  .eq. 0) selhis(22:23) = 'NN'
@@ -1038,11 +973,7 @@ subroutine hisdim&
    if (index (selhis( 5:14),'Y') .gt. 0) then
       buflen    = 20 * lmax
       elmnam    = 'NAMCON'
-!#ifdef WINNT
-!        ierror    = GETELT_i
-!#else
       ierror    = GETELS&
-!#endif
       &(hdefds,grpdef    ,elmnam    ,&
       &uindex,usrord    ,buflen    ,NAMCON    )
       if (ierror .ne. 0) then
@@ -1077,7 +1008,7 @@ subroutine hisdim&
          npar = npar + 1
       endif
       if ( selhis(2:3) .eq. 'YY' ) then
-         if (kmax .gt. 1) then
+         if (num_layers_grid .gt. 1) then
 !-----------dpt. aver. cur. u
             npar = npar + 1
 !-----------dpt. aver. cur. v
@@ -1099,7 +1030,7 @@ subroutine hisdim&
       endif
 
       if ( selhis(4:4) .eq. 'Y' ) then
-         if (kmax .gt. 1) then
+         if (num_layers_grid .gt. 1) then
 !-----------current w.   (layer)
             npar = npar + 1
          endif
@@ -1113,7 +1044,7 @@ subroutine hisdim&
       endif
 
       if ( selhis(17:17) .eq. 'Y' ) then
-         if (kmax .gt. 1) then
+         if (num_layers_grid .gt. 1) then
 !-----------viscosity, ZVICWW
             npar = npar + 1
          endif
@@ -1145,7 +1076,7 @@ subroutine hisdim&
       endif
 
       if ( selhis(17:17) .eq. 'Y' ) then
-         if (kmax   .gt. 1) then
+         if (num_layers_grid   .gt. 1) then
 !--------------diffusivity, ZDICWW
             npar = npar + 1
          endif
@@ -1220,15 +1151,15 @@ subroutine hisdim&
       &(pardep .ge. 20 .and. pardep .le. 29).or.&
       &pardep .eq. 31 .or.  pardep .eq. 32 .or.&
       &pardep .eq. 42 .or.  pardep .eq. 43
-      if (kmax .gt. 1 .and. check) then
+      if (num_layers_grid .gt. 1 .and. check) then
 !-----------parameter with more then one layer
          ndim (1) = 3
          if (pardep .eq. 15 .or.  pardep .eq. 32 ) then
-!--------------ZVICWW or ZDICWW with 0:kmax
-            ndim (3) = kmax + 1
+!--------------ZVICWW or ZDICWW with 0:num_layers_grid
+            ndim (3) = num_layers_grid + 1
          else
-!--------------all others 1:kmax
-            ndim (3) = kmax
+!--------------all others 1:num_layers_grid
+            ndim (3) = num_layers_grid
          endif
       else
 !-----------parameter with one layer
@@ -1268,9 +1199,6 @@ subroutine hisdim&
 end
 
 subroutine histme&
-!#ifdef WINNT
-!    *                 [ALIAS:'_histme']
-!#endif
 &(fname  ,itype  ,timdef, maxdef ,pardep , locdep,&
 &maxlst ,        timlst,         timtyp ,&
 &nrlst  ,ierror ,option                         )
@@ -1351,7 +1279,7 @@ subroutine histme&
 ! ITP         I*4                  Help var. time part julian notation
 ! IY          I*4                  Year part of ITDATE (yyyy)
 ! JULDAY      I*4                  julian day number of ITDATE
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! L           I*4                  Help var.
 ! LMAX        I*4                  Number of constituents
 ! M           I*4                  Help var.
@@ -1884,9 +1812,6 @@ subroutine julind(hdefds, hdafds, tim, nindex, ierror)
 end
 
 subroutine hisloc&
-!#ifdef WINNT
-!    *               [ALIAS:'_hisloc']
-!#endif
 &(fname  ,itype  ,locdef ,maxdef ,pardep ,timdep ,&
 &maxlst ,        loclst ,        loctyp ,nrlst  ,&
 &locnr  ,ierror ,zbuffs ,option                 )
@@ -1993,9 +1918,6 @@ subroutine hisloc&
    character*16  grpdef,elmnam
 !
    integer       GETELT,GETELS
-!#ifdef WINNT
-!     integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----Initialisation
 !-----------------------------------------------------------------------
@@ -2064,11 +1986,7 @@ subroutine hisloc&
       usrord    = 1
       buflen    = 20 * nostat
       elmnam    = 'NAMST'
-!#ifdef WINNT
-!        ierror    = GETELT_i
-!#else
       ierror    = GETELS&
-!#endif
       &(hdefds,grpdef    ,elmnam    ,&
       &uindex,usrord    ,buflen    ,zbuffs     )
       if (ierror .ne. 0) then
@@ -2091,11 +2009,7 @@ subroutine hisloc&
       usrord    = 1
       buflen    = 20 * ntruv
       elmnam    = 'NAMTRA'
-!#ifdef WINNT
-!        ierror    = GETELT_i
-!#else
       ierror    = GETELS&
-!#endif
       &(hdefds,grpdef    ,elmnam    ,&
       &uindex,usrord    ,buflen    ,zbuffs     )
       if (ierror .ne. 0) then
@@ -2141,9 +2055,6 @@ subroutine hisloc&
 end
 
 subroutine hismat&
-!#ifdef WINNT
-!    *                [ALIAS:'_hismat']
-!#endif
 &(fname ,itype  ,parcod, loc   , tim   ,misval,&
 &i3gl  ,maxdim ,xdata , ierror, option,zbuffs)
 !-----------------------------------------------------------------------
@@ -2191,7 +2102,7 @@ subroutine hismat&
 ! ZBUFFS      R*4   <len>    O/I   buffer for reading Nefis file:
 !                                  if ( 1<=parcod<=32 .or.
 !                                      38<=parcod<=43    ) then
-!                                       <len> = nostat * lmaxd * kmax
+!                                       <len> = nostat * lmaxd * num_layers_grid
 !                                  else
 !                                       <len> = ntruv  * lmaxd
 !                                  endif
@@ -2226,7 +2137,7 @@ subroutine hismat&
 ! HDEFDS      I*4  2997            Definition file description for the
 ! IERROR      I*4                  Error code for NEFIS error
 ! ISTAT       I*4                  index of station
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! LMAX        I*4                  Total number of constituents
 !                                  for old files LMAX = LSTCI
 !                                  for new files LMAX = LSTCI + LTUR
@@ -2270,7 +2181,7 @@ subroutine hismat&
 !
    integer         nindex (3)
    integer         istat ,lay   ,ind   ,lstci ,ltur
-   integer         ierror,kmax  ,lmax  ,nostat,ntruv
+   integer         ierror,num_layers_grid  ,lmax  ,nostat,ntruv
 !
    logical         ex    ,fout
 !
@@ -2316,7 +2227,7 @@ subroutine hismat&
 !
    nostat    = 0
    ntruv     = 0
-   kmax      = 0
+   num_layers_grid      = 0
    lmax      = 0
    lstci     = 0
    ltur      = 0
@@ -2365,9 +2276,9 @@ subroutine hismat&
    endif
 !
    if (nostat .gt. 0) then
-      elmnam = 'KMAX'
+      elmnam = 'num_layers_grid'
       ierror = GETELT(hdefds,grpdef    ,elmnam    ,&
-      &uindex,usrord    ,buflen    ,KMAX      )
+      &uindex,usrord    ,buflen    ,num_layers_grid      )
       if (ierror .ne. 0) then
          fout   = .true.
          goto 8888
@@ -2419,30 +2330,30 @@ subroutine hismat&
 !--------dpt. aver. cur. mag.      {precon: parcod= 5}
 !--------dpt. aver. cur. dir.      {precon: parcod= 6}
       call m3hcda (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-      &kmax  ,         parcod, xdata , ierror, zbuffs)
+      &num_layers_grid  ,         parcod, xdata , ierror, zbuffs)
    else if (parcod .ge.  7 .and. parcod .le. 10) then
 !--------current u (layer)         {precon: parcod= 7}
 !--------current v (layer)         {precon: parcod= 8}
 !--------current mag. (layer)      {precon: parcod= 9}
 !--------current dir. (layer)      {precon: parcod=10}
       call m3hcur (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-      &kmax  , lay   , parcod, xdata , ierror, zbuffs)
+      &num_layers_grid  , lay   , parcod, xdata , ierror, zbuffs)
    else if (parcod .eq. 11 ) then
 !--------current w.   (layer)
       call m3h2d  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-      &kmax  , lay   ,'ZCURW ',xdata , ierror, zbuffs)
+      &num_layers_grid  , lay   ,'ZCURW ',xdata , ierror, zbuffs)
    else if (parcod .eq. 12 ) then
 !--------flow rate u, ZQXK
       call m3h2d  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-      &kmax  , lay   ,'ZQXK  ',xdata , ierror, zbuffs)
+      &num_layers_grid  , lay   ,'ZQXK  ',xdata , ierror, zbuffs)
    else if (parcod .eq. 13 ) then
 !--------flow rate v, ZQYK
       call m3h2d  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-      &kmax  , lay   ,'ZQYK  ',xdata , ierror, zbuffs)
+      &num_layers_grid  , lay   ,'ZQYK  ',xdata , ierror, zbuffs)
    else if (parcod .eq. 15 ) then
 !--------viscosity, ZVICWW
       call m3h15  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-      &kmax  , lay   ,         xdata , ierror, zbuffs)
+      &num_layers_grid  , lay   ,         xdata , ierror, zbuffs)
    else if (parcod .ge. 16 .and. parcod .le.19 ) then
 !--------bottomstress u, ZTAUKSI   {precon: parcod=16}
 !--------bottomstress v, ZTAUETA   {precon: parcod=17}
@@ -2454,24 +2365,24 @@ subroutine hismat&
       if (parcod-19 .le. lstci) then
 !-----------constituents, GRO (1:lstci) {precon: <con.index>=parcod-19}
          call m3h20(hdefds, hdafds, nindex, maxdim, istat , nostat,&
-         &kmax  , lay   , lmax  , parcod, xdata , ierror,&
+         &num_layers_grid  , lay   , lmax  , parcod, xdata , ierror,&
          &zbuffs)
       else
 !-----------constituents, ZTUR(1:ltur )
 !                        {precon: <con.index>=parcod-19-lstci}
          zturid = parcod - 19 - lstci
          call m3h29(hdefds, hdafds, nindex, maxdim, istat , nostat,&
-         &kmax  , lay   , ltur  , zturid, xdata , ierror,&
+         &num_layers_grid  , lay   , ltur  , zturid, xdata , ierror,&
          &zbuffs)
       endif
    else if (parcod .eq. 31 ) then
 !--------density, ZRHO
       call m3h31  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-      &kmax  , lay   ,         xdata , ierror, zbuffs)
+      &num_layers_grid  , lay   ,         xdata , ierror, zbuffs)
    else if (parcod .eq. 32 ) then
 !--------diffusivity, ZDICWW
       call m3h32  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-      &kmax  , lay   ,         xdata , ierror, zbuffs)
+      &num_layers_grid  , lay   ,         xdata , ierror, zbuffs)
    else if (parcod .eq. 33 ) then
 !--------accumulated flow,CTR
       call m3hcrs (hdefds, hdafds, nindex, maxdim, istat , ntruv ,&
@@ -2485,11 +2396,11 @@ subroutine hismat&
    else if (parcod .eq. 42 ) then
 !--------accumulated flow u
       call m3hfuv (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-      &kmax  , lay   ,'ZQXK  ',xdata , ierror, zbuffs)
+      &num_layers_grid  , lay   ,'ZQXK  ',xdata , ierror, zbuffs)
    else if (parcod .eq. 43 ) then
 !--------accumulated flow v
       call m3hfuv (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-      &kmax  , lay   ,'ZQYK  ',xdata , ierror, zbuffs)
+      &num_layers_grid  , lay   ,'ZQYK  ',xdata , ierror, zbuffs)
    else if (parcod .ge. 47 .and. parcod .le. 55 ) then
 !--------advective flux, ATR(1:lstci)
       call m3hcrs (hdefds, hdafds, nindex, maxdim, istat , ntruv ,&
@@ -2531,7 +2442,7 @@ subroutine hismat&
 end
 
 subroutine m3h2d  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-&kmax  , lay   , pardef, xdata , ierror, zbuffs)
+&num_layers_grid  , lay   , pardef, xdata , ierror, zbuffs)
 !-----------------------------------------------------------------------
 !           Function: select from TRISULA NEFIS-HIS:
 !                     pardef
@@ -2556,7 +2467,7 @@ subroutine m3h2d  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 ! MAXDIM      I*4            I     length of data array
 ! ISTAT       I*4            I     Selected station number
 ! NOSTAT      I*4            I     Number of stations
-! KMAX        I*4            I     Number of layers
+! num_layers_grid        I*4            I     Number of layers
 ! LAY         I*4            I     Selected layer number
 ! PARDEF      CH*6           I     Selected parameter name
 ! XDATA       R*4   maxdim   O     array with the data
@@ -2586,16 +2497,16 @@ subroutine m3h2d  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    character*16    grpdef
    integer         GETELT,GETELS
 !
-   integer         istat ,nostat,kmax  ,lay   ,ierror,n     ,i
+   integer         istat ,nostat,num_layers_grid  ,lay   ,ierror,n     ,i
    integer         maxdim
    integer         nindex (3)
-   real            zbuffs (nostat,kmax)
+   real            zbuffs (nostat,num_layers_grid)
    real            xdata  (maxdim)
    character*6     pardef
 !--------------------------------------------------------------------
 !
    grpdef    = 'his-series'
-   buflen    =  4 * nostat * kmax
+   buflen    =  4 * nostat * num_layers_grid
    ierror    = 0
    usrord    = 1
    n         = 0
@@ -2627,7 +2538,7 @@ subroutine m3h2d  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 end
 
 subroutine m3h15  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-&kmax  , lay   ,         xdata , ierror, zbuffs)
+&num_layers_grid  , lay   ,         xdata , ierror, zbuffs)
 !-----------------------------------------------------------------------
 !           Function: select from TRISULA NEFIS-HIS:
 !                     15 viscosity, ZVICWW
@@ -2652,7 +2563,7 @@ subroutine m3h15  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 ! MAXDIM      I*4            I     length of data array
 ! ISTAT       I*4            I     Selected station number
 ! NOSTAT      I*4            I     Number of stations
-! KMAX        I*4            I     Number of layers
+! num_layers_grid        I*4            I     Number of layers
 ! LAY         I*4            I     Selected layer number
 ! XDATA       R*4   maxdim   O     array with the data
 ! IERROR      I*4            O     error indicator
@@ -2697,10 +2608,10 @@ subroutine m3h15  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    integer       GETELT,GETELS,INQELM
 !-----------------------------------------------------------------------
 !
-   integer         istat ,nostat,kmax  ,lay   ,ierror,n     ,i
+   integer         istat ,nostat,num_layers_grid  ,lay   ,ierror,n     ,i
    integer         maxdim,kmaxon
    integer         nindex (3)
-   real            zbuffs (nostat,kmax+1)
+   real            zbuffs (nostat,num_layers_grid+1)
    real            xdata  (maxdim)
 !--------------------------------------------------------------------
 !
@@ -2708,7 +2619,7 @@ subroutine m3h15  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    elmndm    = 5
    ierror    = INQELM(hdefds,elmnam ,elmtyp ,nbytsg ,elmqty ,&
    &elmunt,elmdes ,elmndm ,elmdms         )
-   if (elmdms(elmndm) .eq. kmax) then
+   if (elmdms(elmndm) .eq. num_layers_grid) then
 !--------version 2.03
       kmaxon    = 0
    else
@@ -2717,7 +2628,7 @@ subroutine m3h15  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    endif
 !
    grpdef    = 'his-series'
-   buflen    =  4 * nostat * (kmax + kmaxon)
+   buflen    =  4 * nostat * (num_layers_grid + kmaxon)
    ierror    = 0
    usrord    = 1
    n         = 0
@@ -2751,7 +2662,7 @@ subroutine m3h15  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 end
 
 subroutine m3h20  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-&kmax  , lay   , lmax  , parcod, xdata , ierror,&
+&num_layers_grid  , lay   , lmax  , parcod, xdata , ierror,&
 &zbuffs)
 !-----------------------------------------------------------------------
 !           Function: select from TRISULA NEFIS-HIS:
@@ -2777,7 +2688,7 @@ subroutine m3h20  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 ! MAXDIM      I*4            I     length of data array
 ! ISTAT       I*4            I     Selected station number
 ! NOSTAT      I*4            I     Number of stations
-! KMAX        I*4            I     Number of layers
+! num_layers_grid        I*4            I     Number of layers
 ! LAY         I*4            I     Selected layer number
 ! LMAX        I*4            I     Number of constituents
 ! PARCOD      I*4            I     parameter to get data of
@@ -2811,18 +2722,18 @@ subroutine m3h20  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    integer       GETELT,GETELS
 !
    integer         maxdim
-   integer         istat ,nostat,kmax  ,lay   ,ierror,n     ,i
+   integer         istat ,nostat,num_layers_grid  ,lay   ,ierror,n     ,i
    integer         lmax
    integer         parcod
    integer         nindex (3)
 !
-   real            zbuffs (nostat,kmax,lmax)
+   real            zbuffs (nostat,num_layers_grid,lmax)
    real            xdata  (maxdim)
 !--------------------------------------------------------------------
 !
    ierror    = 0
    grpdef    = 'his-series'
-   buflen    =  4 * nostat * kmax * lmax
+   buflen    =  4 * nostat * num_layers_grid * lmax
    usrord    = 1
    n         = 0
 
@@ -2855,7 +2766,7 @@ subroutine m3h20  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 end
 
 subroutine m3h29  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-&kmax  , lay   , ltur  , zturid, xdata , ierror,&
+&num_layers_grid  , lay   , ltur  , zturid, xdata , ierror,&
 &zbuffs)
 !-----------------------------------------------------------------------
 !           Function: select from TRISULA NEFIS-HIS:
@@ -2881,7 +2792,7 @@ subroutine m3h29  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 ! MAXDIM      I*4            I     length of data array
 ! ISTAT       I*4            I     Selected station number
 ! NOSTAT      I*4            I     Number of stations
-! KMAX        I*4            I     Number of layers
+! num_layers_grid        I*4            I     Number of layers
 ! LAY         I*4            I     Selected layer number
 ! LTUR        I*4            I     Number of turbulence constituents
 ! ZTURID      I*4            I     parameter to get data of
@@ -2915,18 +2826,18 @@ subroutine m3h29  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    integer       GETELT,GETELS
 !
    integer         maxdim
-   integer         istat ,nostat,kmax  ,lay   ,ierror,n     ,i
+   integer         istat ,nostat,num_layers_grid  ,lay   ,ierror,n     ,i
    integer         ltur
    integer         zturid
    integer         nindex (3)
 !
-   real            zbuffs (nostat,kmax+1,ltur)
+   real            zbuffs (nostat,num_layers_grid+1,ltur)
    real            xdata  (maxdim)
 !--------------------------------------------------------------------
 !
    ierror    = 0
    grpdef    = 'his-series'
-   buflen    =  4 * nostat * (kmax+1) * ltur
+   buflen    =  4 * nostat * (num_layers_grid+1) * ltur
    usrord    = 1
    n         = 0
 
@@ -2959,7 +2870,7 @@ subroutine m3h29  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 end
 
 subroutine m3h31  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-&kmax  , lay   ,         xdata , ierror, zbuffs)
+&num_layers_grid  , lay   ,         xdata , ierror, zbuffs)
 !-----------------------------------------------------------------------
 !           Function: select from TRISULA NEFIS-HIS:
 !                     31 density, ZRHO
@@ -2984,12 +2895,12 @@ subroutine m3h31  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 ! MAXDIM      I*4            I     length of data array
 ! ISTAT       I*4            I     Selected station number
 ! NOSTAT      I*4            I     Number of stations
-! KMAX        I*4            I     Number of layers
+! num_layers_grid        I*4            I     Number of layers
 ! LAY         I*4            I     Selected layer number
 ! XDATA       R*4   maxdim   O     array with the data
 ! IERROR      I*4            O     error indicator
 ! ZBUFFS      R*4   nostat   I/O   buffer for reading Nefis file
-!                   *kmax
+!                   *num_layers_grid
 !-----------------------------------------------------------------------
 !    Local variables:
 !    ----------------
@@ -3017,15 +2928,15 @@ subroutine m3h31  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    integer       GETELT,GETELS
 !
    integer         maxdim
-   integer         istat ,nostat,kmax  ,lay   ,ierror,n     ,i
+   integer         istat ,nostat,num_layers_grid  ,lay   ,ierror,n     ,i
    integer         nindex (3)
-   real            zbuffs (nostat,kmax)
+   real            zbuffs (nostat,num_layers_grid)
    real            xdata  (maxdim)
 !--------------------------------------------------------------------
 !
    ierror    = 0
    grpdef    = 'his-series'
-   buflen    =  4 * nostat * kmax
+   buflen    =  4 * nostat * num_layers_grid
    usrord    = 1
    n         = 0
 
@@ -3058,7 +2969,7 @@ subroutine m3h31  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 end
 
 subroutine m3h32  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-&kmax  , lay   ,         xdata , ierror, zbuffs)
+&num_layers_grid  , lay   ,         xdata , ierror, zbuffs)
 !-----------------------------------------------------------------------
 !           Function: select from TRISULA NEFIS-HIS:
 !                     32 diffusivity, ZDICWW
@@ -3083,7 +2994,7 @@ subroutine m3h32  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 ! MAXDIM      I*4            I     length of data array
 ! ISTAT       I*4            I     Selected station number
 ! NOSTAT      I*4            I     Number of stations
-! KMAX        I*4            I     Number of layers
+! num_layers_grid        I*4            I     Number of layers
 ! LAY         I*4            I     Selected layer number
 ! XDATA       R*4   maxdim   O     array with the data
 ! IERROR      I*4            O     error indicator
@@ -3128,10 +3039,10 @@ subroutine m3h32  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    integer       GETELT,GETELS,INQELM
 !-----------------------------------------------------------------------
 !
-   integer         istat ,nostat,kmax  ,lay   ,ierror,n     ,i
+   integer         istat ,nostat,num_layers_grid  ,lay   ,ierror,n     ,i
    integer         maxdim,kmaxon
    integer         nindex (3)
-   real            zbuffs (nostat,kmax+1)
+   real            zbuffs (nostat,num_layers_grid+1)
    real            xdata  (maxdim)
 !--------------------------------------------------------------------
 !
@@ -3142,7 +3053,7 @@ subroutine m3h32  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    if (ierror .ne. 0) then
 !--------version 2.45 and later
       kmaxon    = 1
-   else if (elmdms(elmndm) .eq. kmax) then
+   else if (elmdms(elmndm) .eq. num_layers_grid) then
 !--------version 2.03
       kmaxon    = 0
    else
@@ -3151,7 +3062,7 @@ subroutine m3h32  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    endif
 !
    grpdef    = 'his-series'
-   buflen    =  4 * nostat * (kmax + kmaxon)
+   buflen    =  4 * nostat * (num_layers_grid + kmaxon)
    ierror    = 0
    usrord    = 1
    n         = 0
@@ -3185,7 +3096,7 @@ subroutine m3h32  (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 end
 
 subroutine m3hfuv (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-&kmax  , lay   , pardef, xdata , ierror, zbuffs)
+&num_layers_grid  , lay   , pardef, xdata , ierror, zbuffs)
 !-----------------------------------------------------------------------
 !           Function: select from TRISULA NEFIS-HIS:
 !                     PARDEF
@@ -3210,7 +3121,7 @@ subroutine m3hfuv (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 ! MAXDIM      I*4            I     length of data array
 ! ISTAT       I*4            I     Selected station number
 ! NOSTAT      I*4            I     Number of stations
-! KMAX        I*4            I     Number of layers
+! num_layers_grid        I*4            I     Number of layers
 ! LAY         I*4            I     Selected layer number
 ! PARDEF      CH*6           I     Selected element name
 ! XDATA       R*4   maxdim   O     array with the data
@@ -3251,7 +3162,7 @@ subroutine m3hfuv (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    character*6     pardef
    integer         GETELT,GETELS,INQGRP,INQMXI
 !
-   integer         istat ,nostat,ierror,n     ,i     ,kmax  ,lay
+   integer         istat ,nostat,ierror,n     ,i     ,num_layers_grid  ,lay
    integer         nrcel ,it1   ,it2
    integer         maxdim
    integer         nindex (3)
@@ -3260,7 +3171,7 @@ subroutine m3hfuv (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    real            dt    ,dthis ,tunit
 !
    real            xdata  (maxdim)
-   real            zbuffs (nostat,kmax)
+   real            zbuffs (nostat,num_layers_grid)
 !
    logical         okee
 
@@ -3325,7 +3236,7 @@ subroutine m3hfuv (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    dthis     = real( it2 - it1 ) * tunit * dt
 !
    grpdef    = 'his-series'
-   buflen    =  4 * nostat * kmax
+   buflen    =  4 * nostat * num_layers_grid
    n         = 0
    zv        = 0.0
 
@@ -3361,7 +3272,7 @@ subroutine m3hfuv (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 end
 
 subroutine m3hcda (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-&kmax  ,         parcod, xdata , ierror, zbuffs)
+&num_layers_grid  ,         parcod, xdata , ierror, zbuffs)
 !-----------------------------------------------------------------------
 !           Function: select from TRISULA NEFIS-HIS:
 !                      3 dpt. aver. cur. u
@@ -3389,7 +3300,7 @@ subroutine m3hcda (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 ! MAXDIM      I*4            I     length of data array
 ! ISTAT       I*4            I     Selected station number
 ! NOSTAT      I*4            I     Number of stations
-! KMAX        I*4            I     Number of layers
+! num_layers_grid        I*4            I     Number of layers
 ! PARCOD      I*4            I     parameter to get data of
 ! XDATA       R*4   maxdim   O     array with the data
 ! IERROR      I*4            O     error indicator
@@ -3448,7 +3359,7 @@ subroutine m3hcda (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    character*16    grpdef
    integer         GETELT,GETELS
 !
-   integer         istat ,nostat,kmax  ,ierror,n     ,i     ,k
+   integer         istat ,nostat,num_layers_grid  ,ierror,n     ,i     ,k
    integer         maxdim
    integer         parcod
    integer         nindex (3)
@@ -3456,7 +3367,7 @@ subroutine m3hcda (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    real            pi    ,eps   ,zcuru ,zcurv ,zcurdu,zcurdv
    real            zcurdm,hulp  ,zcurdd
 !
-   real            zbuffs (nostat,kmax)
+   real            zbuffs (nostat,num_layers_grid)
    real            xdata  (maxdim)
 !
    logical         okee
@@ -3476,7 +3387,7 @@ subroutine m3hcda (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    uindex(3) = 1
    usrord    = 1
 
-   buflen    = 4 * kmax
+   buflen    = 4 * num_layers_grid
    okee      =&
    &GETELT(hdefds,grpdef    ,'THICK'   ,&
    &uindex,usrord    ,buflen    ,THICK     )&
@@ -3497,7 +3408,7 @@ subroutine m3hcda (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 !
    grpdef    = 'his-series'
    n         = 0
-   buflen    =  4 * nostat * kmax
+   buflen    =  4 * nostat * num_layers_grid
 
    do 100 i=nindex(1),nindex(2),nindex(3)
 !--------------------------------------------------------------------
@@ -3514,7 +3425,7 @@ subroutine m3hcda (hdefds, hdafds, nindex, maxdim, istat , nostat,&
       &uindex,usrord    ,buflen    ,zbuffs    )&
       &.eq. 0
       zcuru     = 0.0
-      do 110 k=1,kmax
+      do 110 k=1,num_layers_grid
          zcuru  = zcuru + zbuffs(istat ,k) * thick(k)
 110   continue
 
@@ -3526,7 +3437,7 @@ subroutine m3hcda (hdefds, hdafds, nindex, maxdim, istat , nostat,&
       &uindex,usrord    ,buflen    ,zbuffs    )&
       &.eq. 0
       zcurv     = 0
-      do 120 k=1,kmax
+      do 120 k=1,num_layers_grid
          zcurv  = zcurv + zbuffs(istat ,k) * thick(k)
 120   continue
 !--------------------------------------------------------------------
@@ -3737,7 +3648,7 @@ subroutine m3hcrs (hdefds, hdafds, nindex, maxdim, istat , ntruv ,&
 end
 
 subroutine m3hcur (hdefds, hdafds, nindex, maxdim, istat , nostat,&
-&kmax  , lay   , parcod, xdata , ierror, zbuffs)
+&num_layers_grid  , lay   , parcod, xdata , ierror, zbuffs)
 !-----------------------------------------------------------------------
 !           Function: select from TRISULA NEFIS-HIS:
 !                      7 current u            zeta_position
@@ -3765,7 +3676,7 @@ subroutine m3hcur (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 ! MAXDIM      I*4            I     length of data array
 ! ISTAT       I*4            I     Selected station number
 ! NOSTAT      I*4            I     Number of stations
-! KMAX        I*4            I     Number of layers
+! num_layers_grid        I*4            I     Number of layers
 ! LAY         I*4            I     Selected layer number
 ! PARCOD      I*4            I     parameter to get data of
 ! XDATA       R*4   maxdim   O     array with the data
@@ -3824,7 +3735,7 @@ subroutine m3hcur (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    character*16  grpdef
    integer       GETELT,GETELS
 !
-   integer         istat ,nostat,kmax  ,ierror,n     ,i     ,lay
+   integer         istat ,nostat,num_layers_grid  ,ierror,n     ,i     ,lay
    integer         maxdim
    integer         parcod
    integer         nindex (3)
@@ -3832,7 +3743,7 @@ subroutine m3hcur (hdefds, hdafds, nindex, maxdim, istat , nostat,&
    real            pi    ,eps   ,zcuru ,zcurv ,zcurvt,zcurut
    real            zcurm ,hulp  ,zcurd
 !
-   real            zbuffs (nostat,kmax)
+   real            zbuffs (nostat,num_layers_grid)
    real            xdata  (maxdim)
 !
    logical         okee
@@ -3864,7 +3775,7 @@ subroutine m3hcur (hdefds, hdafds, nindex, maxdim, istat , nostat,&
 !
    grpdef    = 'his-series'
    n         = 0
-   buflen    =  4 * nostat * kmax
+   buflen    =  4 * nostat * num_layers_grid
 
    do 100 i=nindex(1),nindex(2),nindex(3)
 !--------------------------------------------------------------------

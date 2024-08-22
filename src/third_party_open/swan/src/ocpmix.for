@@ -457,7 +457,7 @@
       END
 !*****************************************************************
 !                                                                *
-      CHARACTER *18 FUNCTION DTTIWR (IOPT, TIMESC)                        30.00
+      CHARACTER(len=18) FUNCTION DTTIWR (IOPT, TIMESC)                        30.00
 !                                                                *
 !*****************************************************************
 !
@@ -1757,7 +1757,7 @@
 !     DDNAME_L local copy of DDNAME                                       40.03
 !
       CHARACTER S, F, FILTTM *(LENFNM), DDNAME_L *(LENFNM)                40.03
-      CHARACTER *11 FISTAT(4),FORM(2)
+      CHARACTER(len=11) FISTAT(4),FORM(2)
 !
 !  4. SUBROUTINES USED
 !

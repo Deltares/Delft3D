@@ -69,7 +69,7 @@
          do k3=1,2
             n=n+1
             jk=ij+k3-1
-            svec(n)=xvec(jk)-extb*dabs(sdmix(i))
+            svec(n)=xvec(jk)-extb*abs(sdmix(i))
             dvec(n)=svec(n)
          end do
       end do

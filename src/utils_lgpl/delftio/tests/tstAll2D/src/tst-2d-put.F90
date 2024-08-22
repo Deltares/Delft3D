@@ -42,9 +42,9 @@ subroutine putDatasets_2dput(synched, auto)
     character(len=100) , dimension(NSETS) :: name    ! dataset names
     integer            , dimension(NSETS) :: varType ! dataset var type
 
-    real*4,          dimension(MMAX,NMAX)    :: rValues ! real values in dataset
-    double precision,dimension(MMAX,NMAX)    :: dValues ! double values in dataset
-    integer,         dimension(MMAX,NMAX)    :: iValues ! integer values in dataset
+    real*4,          dimension(num_columns,num_rows)    :: rValues ! real values in dataset
+    double precision,dimension(num_columns,num_rows)    :: dValues ! double values in dataset
+    integer,         dimension(num_columns,num_rows)    :: iValues ! integer values in dataset
 
     integer :: i
     integer :: ds ! dataset counter
@@ -106,9 +106,9 @@ subroutine putDatasets_2dput(synched, auto)
     do ds = 1, numSets
         write (*, *) 'Putting Dataset ', trim(name(ds))
         if ( auto ) then
-            set(ds) = Dio2DFDefine(name(ds), varType(ds), MMAX, NMAX)
+            set(ds) = Dio2DFDefine(name(ds), varType(ds), num_columns, num_rows)
         else
-            set(ds) = Dio2DFDefine(stream(ds), name(ds), varType(ds), MMAX, NMAX)
+            set(ds) = Dio2DFDefine(stream(ds), name(ds), varType(ds), num_columns, num_rows)
         endif
     enddo
 

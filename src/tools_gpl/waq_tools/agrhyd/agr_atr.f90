@@ -32,7 +32,7 @@
       ! declaration of the arguments
 
       type(t_hydrodynamics)          :: input_hyd             ! description of the input hydrodynamics
-      integer              :: ipnt(input_hyd%noseg) ! aggregation pointer segments
+      integer              :: ipnt(input_hyd%num_cells) ! aggregation pointer segments
       type(t_hydrodynamics)          :: output_hyd            ! description of the output hydrodynamics
 
       ! local declarations
@@ -68,7 +68,7 @@
 
       ! initialise
 
-      do iseg2 = 1 , output_hyd%noseg
+      do iseg2 = 1 , output_hyd%num_cells
          output_hyd%attributes(iseg2) = iatr_miss
       enddo
 
@@ -77,7 +77,7 @@
       output_hyd%atr_type = input_hyd%atr_type
       output_hyd%no_atr   = input_hyd%no_atr
 
-      do iseg1 = 1 , input_hyd%noseg
+      do iseg1 = 1 , input_hyd%num_cells
          iseg2 = ipnt(iseg1)
          if ( iseg2 .gt. 0 ) then
             if ( output_hyd%attributes(iseg2) .eq. iatr_miss ) then
@@ -149,7 +149,7 @@
       ! only one bottom possible
 
       do iseg2 = 1 , output_hyd%nosegl
-         do ilay = 1 , output_hyd%nolay - 1
+         do ilay = 1 , output_hyd%num_layers - 1
             iseg_u = (ilay-1)*output_hyd%nosegl + iseg2
             iseg_d = ilay*output_hyd%nosegl + iseg2
             ik1_u = mod(output_hyd%attributes(iseg_u),10)

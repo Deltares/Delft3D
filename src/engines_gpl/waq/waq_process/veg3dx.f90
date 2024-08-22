@@ -28,9 +28,9 @@ module m_veg3dx
 contains
 
 
-    subroutine veg3dx     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine veg3dx     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
 
         use m_extract_waq_attribute
         use layered_sediment
@@ -41,20 +41,20 @@ contains
 
         !     arguments            i/o description
 
-        real(kind = real_wp) :: pmsa(*)     !i/o process manager system array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !i/o process manager system array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! o  array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(*)   ! i  array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(*)   ! i  array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(*)   ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! i  number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! i  number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! i  number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! i  active-inactive, surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! i  nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        integer(kind = int_wp) :: noq2        ! i  nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! i  nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! i  nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
 
-        ! from pmsa array
+        ! from process_space_real array
 
         real(kind = real_wp) :: depth       ! i  depth of segment                               (m)
         real(kind = real_wp) :: totaldepth  ! i  total depth water column                       (m)
@@ -83,10 +83,10 @@ contains
         integer(kind = int_wp) :: ito         !    from segment
         integer(kind = int_wp) :: iflux       !    index in the fl array
 
-        integer(kind = int_wp), parameter :: nipfix = 9         ! first number of entries in pmsa independent of number of parameters
-        integer(kind = int_wp), parameter :: nopfix = 1         ! first output entries in pmsa independent of number of parameters
+        integer(kind = int_wp), parameter :: nipfix = 9         ! first number of entries in process_space_real independent of number of parameters
+        integer(kind = int_wp), parameter :: nopfix = 1         ! first output entries in process_space_real independent of number of parameters
         integer(kind = int_wp), parameter :: nivar = 1         ! number of variable inputs per nvbxx
-        integer(kind = int_wp), parameter :: novar = 1         ! number of variable outputs per nvbxx
+        integer(kind = int_wp), parameter :: num_vars = 1         ! number of variable outputs per nvbxx
         integer(kind = int_wp) :: npnt                ! number of pointers
         integer(kind = int_wp) :: ivbxx               ! loop counter nvbxx
         integer(kind = int_wp), allocatable :: ipnt(:)             ! local work array for the pointering
@@ -102,22 +102,22 @@ contains
                         is_POC4, is_PON4, is_POP4, is_POS4]           ! Note: using POC4 instead of POC5 - omission in DelwaqG?
 
         alt_delwaqg = allocated(sedconc)
-        delt = pmsa(ipoint(8))
+        delt = process_space_real(ipoint(8))
 
-        nvbxx = nint(pmsa(ipoint(9)))
-        npnt = nipfix + nivar * nvbxx + nopfix + novar * nvbxx
+        nvbxx = nint(process_space_real(ipoint(9)))
+        npnt = nipfix + nivar * nvbxx + nopfix + num_vars * nvbxx
         allocate(ipnt(npnt))
         ipnt = ipoint(1:npnt)
         iflux = 0
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
 
-            depth = pmsa(ipnt(1))
-            totaldepth = pmsa(ipnt(2))
-            localdepth = pmsa(ipnt(3))
-            ibotseg = NINT(pmsa(ipnt(4)))
-            swmacdis = pmsa(ipnt(5))
-            hmax = pmsa(ipnt(6))
-            ffac = pmsa(ipnt(7))
+            depth = process_space_real(ipnt(1))
+            totaldepth = process_space_real(ipnt(2))
+            localdepth = process_space_real(ipnt(3))
+            ibotseg = NINT(process_space_real(ipnt(4)))
+            swmacdis = process_space_real(ipnt(5))
+            hmax = process_space_real(ipnt(6))
+            ffac = process_space_real(ipnt(7))
 
             call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
@@ -208,7 +208,7 @@ contains
 
             endif
 
-            pmsa(ipnt(nipfix + nivar * nvbxx + 1)) = frbmlay
+            process_space_real(ipnt(nipfix + nivar * nvbxx + 1)) = frbmlay
 
             if (.not. alt_delwaqg) then
                 !
@@ -217,9 +217,9 @@ contains
                 !
                 do ivbxx = 1, nvbxx
                     ! alway calculate the fluxes, even in dry cells...
-                    vb = pmsa(ipoint(nipfix + ivbxx) + (ibotseg - 1) * increm(nipfix + ivbxx))
+                    vb = process_space_real(ipoint(nipfix + ivbxx) + (ibotseg - 1) * increm(nipfix + ivbxx))
                     bmlayvb = frbmlay * vb
-                    pmsa(ipnt(nipfix + nivar * nvbxx + 1 + ivbxx)) = bmlayvb
+                    process_space_real(ipnt(nipfix + nivar * nvbxx + 1 + ivbxx)) = bmlayvb
                     if (depth>0.0) then
                         fl(ivbxx + iflux) = bmlayvb / depth
                     else
@@ -232,23 +232,19 @@ contains
                 ! Less flexible, so we need to make sure the process definition is in sync with this code!
                 !
                 do ivbxx = 1, nvbxx
-                    vb = pmsa(ipoint(nipfix + ivbxx) + (ibotseg - 1) * increm(nipfix + ivbxx))
+                    vb = process_space_real(ipoint(nipfix + ivbxx) + (ibotseg - 1) * increm(nipfix + ivbxx))
                     bmlayvb = frbmlay * vb
-                    pmsa(ipnt(nipfix + nivar * nvbxx + 1 + ivbxx)) = bmlayvb
+                    process_space_real(ipnt(nipfix + nivar * nvbxx + 1 + ivbxx)) = bmlayvb
                     fl(ivbxx + iflux) = 0.0
                 enddo
                 do ivbxx = 1, size(isidx)
                     isx = isidx(ivbxx)
-                    vb = pmsa(ipoint(nipfix + ivbxx) + (ibotseg - 1) * increm(nipfix + ivbxx))
+                    vb = process_space_real(ipoint(nipfix + ivbxx) + (ibotseg - 1) * increm(nipfix + ivbxx))
                     bmlayvb = frbmlay * vb
 
-                    do ilay = 1, nolay
-                        !sedconc(ilay,isx,iseg) = sedconc(ilay,isx,iseg) + bmlayvb * dl(ilay) / bd(nolay) * delt
+                    do ilay = 1, num_layers
+                        !sedconc(ilay,isx,iseg) = sedconc(ilay,isx,iseg) + bmlayvb * dl(ilay) / bd(num_layers) * delt
                         sedconc(ilay, isx, iseg) = sedconc(ilay, isx, iseg) + vb * delt
-
-                        if (iseg == 4 .and. ilay == 1) then
-                            write(88, *) isx, sedconc(ilay, isx, iseg), vb
-                        endif
                     enddo
                 enddo
             endif

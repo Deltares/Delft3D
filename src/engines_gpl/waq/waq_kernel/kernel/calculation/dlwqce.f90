@@ -36,19 +36,19 @@ contains
     !! time series of concentrations after rewind since DELWAQ preserves
     !! mass. To avoid this jump, the mass can be adjusted according to
     !! the volume error made with the rewind of the dataset.
-    subroutine dlwqce(amass, volumn, voluml, nosys, notot, &
-            noseg, file_unit_list)
+    subroutine dlwqce(amass, volumn, voluml, num_substances_transported, num_substances_total, &
+            num_cells, file_unit_list)
 
         use timers
         implicit none
 
         integer(kind = int_wp), intent(in   ) :: file_unit_list       !< Unit number of the monitroing file
-        integer(kind = int_wp), intent(in   ) :: nosys                !< Number of transport substances
-        integer(kind = int_wp), intent(in   ) :: notot                !< Total number of substances
-        integer(kind = int_wp), intent(in   ) :: noseg                !< Number of computational volumes
-        real(kind = real_wp),   intent(inout) :: amass (notot, noseg) !< Delwaq mass array to be updated
-        real(kind = real_wp),   intent(in   ) :: volumn(noseg)        !< Volume after rewind
-        real(kind = real_wp),   intent(in   ) :: voluml(noseg)        !< Last volume before rewind
+        integer(kind = int_wp), intent(in   ) :: num_substances_transported                !< Number of transport substances
+        integer(kind = int_wp), intent(in   ) :: num_substances_total                !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: num_cells                !< Number of computational volumes
+        real(kind = real_wp),   intent(inout) :: amass (num_substances_total, num_cells) !< Delwaq mass array to be updated
+        real(kind = real_wp),   intent(in   ) :: volumn(num_cells)        !< Volume after rewind
+        real(kind = real_wp),   intent(in   ) :: voluml(num_cells)        !< Last volume before rewind
 
         ! Local variables
         real(kind = dp) :: tovoll      !< total of the last volume array
@@ -65,7 +65,7 @@ contains
         ! Loop accross the number of computational elements
         tovoll = 0.0d00
         tovoln = 0.0d00
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             ! Calculate closure error
             if (abs(voluml(iseg)) > 1.0e-28) then
                 clofac = volumn(iseg) / voluml(iseg)
@@ -75,7 +75,7 @@ contains
             tovoll = tovoll + voluml(iseg)
             tovoln = tovoln + volumn(iseg)
             ! Correct mass of transported substances
-            amass(1:nosys, iseg) = amass(1:nosys, iseg) * clofac
+            amass(1:num_substances_transported, iseg) = amass(1:num_substances_transported, iseg) * clofac
         enddo
         ! Write statistics
         write (file_unit_list, 1010) tovoll

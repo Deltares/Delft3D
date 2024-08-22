@@ -80,11 +80,11 @@ contains
         use delwaq2_data
         use m_waq_openda_exchange_items, only : get_openda_buffer
         use m_actions
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
-        use m_sysj          ! Pointers in integer array workspace
-        use m_sysc          ! Pointers in character array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
+        use m_integer_array_indices          ! Pointers in integer array workspace
+        use m_character_array_indices          ! Pointers in character array workspace
         use m_dlwqdata_save_restore
         use omp_lib
 
@@ -147,7 +147,7 @@ contains
             !     solution method (gmres).
             !     with such an iterative method, systems with multiple rhs cannot be solved
             !     (simultaneously). so we loop over the substances and solve each system
-            !     individually. so rhs can be reduced to an real array of size noseg+nobnd.
+            !     individually. so rhs can be reduced to an real array of size num_cells+num_boundary_conditions.
             !
             !     possible improvements:
             !
@@ -184,12 +184,12 @@ contains
                 !        3 = ssor], iter = maximum number of iterations [ > 0],
                 !        tol = relative tolerance [10^-3, 10^-10], iscale = row scaling
                 !        of system of equations [0 = no, 1 =yes], klat = number of
-                !        layers in preconditioner [1,kmax]
+                !        layers in preconditioner [1,num_layers_grid]
 
-                call initialize_gmres(file_unit_list(19), nocons, c(icnam:), a(icons:), ioptpc, &
-                        iter, tol, iscale, litrep, noseg, &
-                        noq3, noq, novec, nomat, &
-                        nolay, intsrt, intopt)
+                call initialize_gmres(file_unit_list(19), num_constants, c(icnam:), a(icons:), ioptpc, &
+                        iter, tol, iscale, litrep, num_cells, &
+                        num_exchanges_z_dir, num_exchanges, num_fast_solver_vectors, fast_solver_arr_size, &
+                        num_layers, intsrt, intopt)
 
                 ithandl = 0
                 itime = itstrt
@@ -198,22 +198,22 @@ contains
                 iaflag = 0
                 ibflag = 0
                 if (mod(intopt, 16) >= 8) ibflag = 1
-                if (ndspn == 0) then
-                    nddim = nodisp
+                if (num_dispersion_arrays_new == 0) then
+                    nddim = num_dispersion_arrays
                 else
-                    nddim = ndspn
+                    nddim = num_dispersion_arrays_new
                 endif
-                if (nveln == 0) then
-                    nvdim = novelo
+                if (num_velocity_arrays_new == 0) then
+                    nvdim = num_velocity_arrays
                 else
-                    nvdim = nveln
+                    nvdim = num_velocity_arrays_new
                 endif
                 updatr = .true.
                 lstrec = icflag == 1
-                nosss = noseg + nseg2
-                noqtt = noq + noq4
-                inwtyp = intyp + nobnd
-                noqt = noq1 + noq2
+                nosss = num_cells + num_cells_bottom
+                noqtt = num_exchanges + num_exchanges_bottom_dir
+                inwtyp = intyp + num_boundary_conditions
+                noqt = num_exchanges_u_dir + num_exchanges_v_dir
 
 
                 ! initialize second volume array with the first one
@@ -244,105 +244,103 @@ contains
             10 continue
 
             ! Determine the volumes and areas that ran dry at start of time step
-            call hsurf(noseg, nopa, c(ipnam:), a(iparm:), nosfun, &
+            call hsurf(num_cells, num_spatial_parameters, c(ipnam:), a(iparm:), num_spatial_time_fuctions, &
                     c(isfna:), a(isfun:), surface, file_unit_list(19))
-            call set_dry_cells_to_zero_and_update_volumes(noseg, nosss, nolay, a(ivol:), &
-                    noq1 + noq2, a(iarea:), nocons, c(icnam:), a(icons:), surface, &
+            call set_dry_cells_to_zero_and_update_volumes(num_cells, nosss, num_layers, a(ivol:), num_exchanges_u_dir + num_exchanges_v_dir, &
+                    a(iarea:), num_constants, c(icnam:), a(icons:), surface, &
                     j(iknmr:), iknmkv)
 
             ! user transport processes
             update = updatr
-            call dlwqtr(notot, nosys, nosss, noq, noq1, &
-                    noq2, noq3, nopa, nosfun, nodisp, &
-                    novelo, j(ixpnt:), a(ivol:), a(iarea:), a(iflow:), &
-                    a(ileng:), a(iconc:), a(idisp:), a(icons:), a(iparm:), &
-                    a(ifunc:), a(isfun:), a(idiff:), a(ivelo:), itime, &
-                    idt, c(isnam:), nocons, nofun, c(icnam:), &
-                    c(ipnam:), c(ifnam:), c(isfna:), update, ilflag)
+            call dlwqtr(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
+                num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
+                j(ixpnt:), a(ivol:), &
+                a(ileng:), a(iparm:), &
+                c(ipnam:), ilflag)
             if (update) updatr = .true.
 
             ! Temporary ? set the variables grid-setting for the DELWAQ variables
-            call setset(file_unit_list(19), nocons, nopa, nofun, nosfun, &
-                    nosys, notot, nodisp, novelo, nodef, &
-                    noloc, ndspx, nvelx, nlocx, nflux, &
-                    nopred, novar, nogrid, j(ivset:))
+            call setset(file_unit_list(19), num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+                    num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+                    num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
+                    nopred, num_vars, num_grids, j(ivset:))
 
             ! return conc and take-over from previous step or initial condition,
             ! and do particle tracking of this step (will be back-coupled next call)
-            call delpar01(itime, noseg, nolay, noq, nosys, &
-                    notot, a(ivol:), surface, a(iflow:), c(isnam:), &
-                    nosfun, c(isfna:), a(isfun:), a(imass:), a(iconc:), &
-                    iaflag, intopt, ndmps, j(isdmp:), a(idmps:), &
+            call delpar01(itime, num_cells, num_layers, num_exchanges, num_substances_transported, &
+                    num_substances_total, a(ivol:), surface, a(iflow:), c(isnam:), &
+                    num_spatial_time_fuctions, c(isfna:), a(isfun:), a(imass:), a(iconc:), &
+                    iaflag, intopt, num_monitoring_cells, j(isdmp:), a(idmps:), &
                     a(imas2:))
 
-            call proces(notot, noseg, a(iconc:), a(ivol:), itime, &
-                    idt, a(iderv:), ndmpar, nproc, nflux, &
+            call proces(num_substances_total, num_cells, a(iconc:), a(ivol:), itime, &
+                    idt, a(iderv:), ndmpar, num_processes_activated, num_fluxes, &
                     j(iipms:), j(insva:), j(iimod:), j(iiflu:), j(iipss:), &
-                    a(iflux:), a(iflxd:), a(istoc:), ibflag, ipbloo, &
-                    ioffbl, a(imass:), nosys, &
+                    a(iflux:), a(iflxd:), a(istoc:), ibflag, bloom_status_ind, &
+                    bloom_ind, a(imass:), num_substances_transported, &
                     itfact, a(imas2:), iaflag, intopt, a(iflxi:), &
-                    j(ixpnt:), p_iknmkv, noq1, noq2, noq3, &
-                    noq4, ndspn, j(idpnw:), a(idnew:), nodisp, &
-                    j(idpnt:), a(idiff:), ndspx, a(idspx:), a(idsto:), &
-                    nveln, j(ivpnw:), a(ivnew:), novelo, j(ivpnt:), &
-                    a(ivelo:), nvelx, a(ivelx:), a(ivsto:), a(idmps:), &
+                    j(ixpnt:), p_iknmkv, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+                    num_exchanges_bottom_dir, num_dispersion_arrays_new, j(idpnw:), a(idnew:), num_dispersion_arrays, &
+                    j(idpnt:), a(idiff:), num_dispersion_arrays_extra, a(idspx:), a(idsto:), &
+                    num_velocity_arrays_new, j(ivpnw:), a(ivnew:), num_velocity_arrays, j(ivpnt:), &
+                    a(ivelo:), num_velocity_arrays_extra, a(ivelx:), a(ivsto:), a(idmps:), &
                     j(isdmp:), j(ipdmp:), ntdmpq, a(idefa:), j(ipndt:), &
                     j(ipgrd:), j(ipvar:), j(iptyp:), j(ivarr:), j(ividx:), &
                     j(ivtda:), j(ivdag:), j(ivtag:), j(ivagg:), j(iapoi:), &
                     j(iaknd:), j(iadm1:), j(iadm2:), j(ivset:), j(ignos:), &
-                    j(igseg:), novar, a, nogrid, ndmps, &
+                    j(igseg:), num_vars, a, num_grids, num_monitoring_cells, &
                     c(iprna:), intsrt, &
-                    j(iprvpt:), j(iprdon:), nrref, j(ipror:), nodef, &
+                    j(iprvpt:), j(iprdon:), num_input_ref, j(ipror:), num_defaults, &
                     surface, file_unit_list(19))
 
             ! set new boundaries
             if (itime >= 0) then
                 ! first: adjust boundaries by OpenDA
                 if (dlwqd%inopenda) then
-                    do ibnd = 1, nobnd
-                        do isys = 1, nosys
+                    do ibnd = 1, num_boundary_conditions
+                        do isys = 1, num_substances_transported
                             call get_openda_buffer(isys, ibnd, 1, 1, &
-                                    A(ibset:+(ibnd - 1) * nosys + isys - 1))
+                                    A(ibset:+(ibnd - 1) * num_substances_transported + isys - 1))
                         enddo
                     enddo
                 endif
 
-                call thatcher_harleman_bc(a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
-                        notot, idt, a(iconc:), a(iflow:), a(iboun:))
+                call thatcher_harleman_bc(a(ibset:), a(ibsav:), j(ibpnt:), num_boundary_conditions, num_substances_transported, &
+                        num_substances_total, idt, a(iconc:), a(iflow:), a(iboun:))
             endif
 
             ! call output system
-            call write_output(notot, nosss, nopa, nosfun, itime, &
-                    c(imnam:), c(isnam:), c(idnam:), j(idump:), nodump, &
+            call write_output(num_substances_total, nosss, num_spatial_parameters, num_spatial_time_fuctions, itime, &
+                    c(imnam:), c(isnam:), c(idnam:), j(idump:), num_monitoring_points, &
                     a(iconc:), a(icons:), a(iparm:), a(ifunc:), a(isfun:), &
-                    a(ivol:), nocons, nofun, idt, noutp, &
+                    a(ivol:), num_constants, num_time_functions, idt, num_output_files, &
                     file_name_list, file_unit_list, j(iiout:), j(iiopo:), a(iriob:), &
                     c(iosnm:), c(iouni:), c(iodsc:), c(issnm:), c(isuni:), c(isdsc:), &
-                    c(ionam:), nx, ny, j(igrid:), c(iedit:), &
-                    nosys, a(iboun:), j(ilp:), a(imass:), a(imas2:), &
-                    a(ismas:), nflux, a(iflxi:), isflag, iaflag, &
+                    c(ionam:), num_cells_u_dir, num_cells_v_dir, j(igrid:), c(iedit:), &
+                    num_substances_transported, a(iboun:), j(ilp:), a(imass:), a(imas2:), &
+                    a(ismas:), num_fluxes, a(iflxi:), isflag, iaflag, &
                     ibflag, imstrt, imstop, imstep, idstrt, &
                     idstop, idstep, ihstrt, ihstop, ihstep, &
-                    imflag, idflag, ihflag, noloc, a(iploc:), &
-                    nodef, a(idefa:), itstrt, itstop, ndmpar, &
-                    c(idana:), ndmpq, ndmps, j(iqdmp:), j(isdmp:), &
+                    imflag, idflag, ihflag, num_local_vars, a(iploc:), &
+                    num_defaults, a(idefa:), itstrt, itstop, ndmpar, &
+                    c(idana:), ndmpq, num_monitoring_cells, j(iqdmp:), j(isdmp:), &
                     j(ipdmp:), a(idmpq:), a(idmps:), a(iflxd:), ntdmpq, &
-                    c(icbuf:), noraai, ntraaq, j(ioraa:), j(nqraa:), &
-                    j(iqraa:), a(itrra:), c(irnam:), a(istoc:), nogrid, &
-                    novar, j(ivarr:), j(ividx:), j(ivtda:), j(ivdag:), &
+                    c(icbuf:), num_transects, num_transect_exchanges, j(ioraa:), j(nqraa:), &
+                    j(iqraa:), a(itrra:), c(irnam:), a(istoc:), num_grids, &
+                    num_vars, j(ivarr:), j(ividx:), j(ivtda:), j(ivdag:), &
                     j(iaknd:), j(iapoi:), j(iadm1:), j(iadm2:), j(ivset:), &
-                    j(ignos:), j(igseg:), a, nobnd, nobtyp, &
-                    c(ibtyp:), j(intyp:), c(icnam:), noq, j(ixpnt:), &
+                    j(ignos:), j(igseg:), a, num_boundary_conditions, num_boundary_types, &
+                    c(ibtyp:), j(intyp:), c(icnam:), num_exchanges, j(ixpnt:), &
                     intopt, c(ipnam:), c(ifnam:), c(isfna:), j(idmpb:), &
-                    nowst, nowtyp, c(iwtyp:), j(iwast:), j(inwtyp:), &
+                    num_waste_loads, num_waste_load_types, c(iwtyp:), j(iwast:), j(inwtyp:), &
                     a(iwdmp:), iknmkv, isegcol)
 
             ! zero cumulative arrays
-            if (imflag .or. (ihflag .and. noraai > 0)) then
-                call set_cumulative_arrays_zero(notot, nosys, nflux, ndmpar, ndmpq, &
-                        ndmps, a(ismas:), a(iflxi:), a(imas2:), &
-                        a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
-                        a(itrra:), ibflag, nowst, a(iwdmp:))
+            if (imflag .or. (ihflag .and. num_transects > 0)) then
+                call set_cumulative_arrays_zero(num_substances_total, num_substances_transported, num_fluxes, ndmpar, ndmpq, &
+                        num_monitoring_cells, a(ismas:), a(iflxi:), a(imas2:), &
+                        a(idmpq:), a(idmps:), num_transects, imflag, ihflag, &
+                        a(itrra:), ibflag, num_waste_loads, a(iwdmp:))
             endif
 
             ! simulation done ?
@@ -350,11 +348,11 @@ contains
             if (itime >= itstop) goto 50
 
             ! restore conc-array from mass array
-            call dlwqb8(nosys, notot, nototp, noseg, a(ivol:), &
+            call dlwqb8(num_substances_transported, num_substances_total, num_substances_part, num_cells, a(ivol:), &
                     surface, a(imass:), a(iconc:))
 
             ! add processes
-            call scale_processes_derivs_and_update_balances(a(iderv:), notot, noseg, itfact, a(imas2:), &
+            call scale_processes_derivs_and_update_balances(a(iderv:), num_substances_total, num_cells, itfact, a(imas2:), &
                     idt, iaflag, a(idmps:), intopt, j(isdmp:))
 
             ! get new volumes
@@ -362,51 +360,51 @@ contains
             itime = itime + idt
             select case (ivflag)
             case (1) ! computation of volumes for computed volumes only
-                call copy_real_array_elements(a(ivol:), a(ivol2:), noseg)
-                call dlwqb3(a(iarea:), a(iflow:), a(ivnew:), j(ixpnt:), notot, &
-                        noq, nvdim, j(ivpnw:), a(ivol2:), intopt, &
-                        a(imas2:), idt, iaflag, nosys, a(idmpq:), &
+                call copy_real_array_elements(a(ivol:), a(ivol2:), num_cells)
+                call dlwqb3(a(iarea:), a(iflow:), a(ivnew:), j(ixpnt:), num_substances_total, &
+                        num_exchanges, nvdim, j(ivpnw:), a(ivol2:), intopt, &
+                        a(imas2:), idt, iaflag, num_substances_transported, a(idmpq:), &
                         ndmpq, j(iqdmp:))
                 updatr = .true.
             case (2) ! the fraudulent computation option
                 call dlwq41(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
-                        j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivoll:), &
+                        j(inrha:), j(inrh2:), j(inrft:), num_cells, a(ivoll:), &
                         j(ibulk:), file_name_list, ftype, isflag, ivflag, &
                         updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
                         lstrec, lrewin, a(ivol2:), dlwqd)
-                call dlwqf8(noseg, noq, j(ixpnt:), idt, iknmkv, &
+                call dlwqf8(num_cells, num_exchanges, j(ixpnt:), idt, iknmkv, &
                         a(ivol:), a(iflow:), a(ivoll:), a(ivol2:))
                 updatr = .true.
                 lrewin = .true.
                 lstrec = .true.
             case default               !     read new volumes from files
                 call dlwq41(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
-                        j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivol2:), &
+                        j(inrha:), j(inrh2:), j(inrft:), num_cells, a(ivol2:), &
                         j(ibulk:), file_name_list, ftype, isflag, ivflag, &
                         updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
                         lstrec, lrewin, a(ivoll:), dlwqd)
             end select
 
             ! Update the info on dry volumes with the new volumes
-            call identify_wet_cells(noseg, nosss, a(ivol2:), nolay, nocons, &
+            call identify_wet_cells(num_cells, nosss, a(ivol2:), num_layers, num_constants, &
                     c(icnam:), a(icons:), surface, j(iknmr:), iknmkv)
             ! Compute new from-topointer on the basis of non-zeroflows
-            call zflows (noq, noqt, nolay, nocons, c(icnam:), &
+            call zflows (num_exchanges, noqt, num_layers, num_constants, c(icnam:), &
                     a(iflow:), j(ixpnt:))
             ! Initialize pointer matices for fast solvers
-            call dlwqf1(noseg, nobnd, noq, noq1, noq2, &
-                    nomat, j(ixpnt:), j(iwrk:), j(imat:), rowpnt, &
+            call dlwqf1(num_cells, num_boundary_conditions, num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, &
+                    fast_solver_arr_size, j(ixpnt:), j(iwrk:), j(imat:), rowpnt, &
                     fmat, tmat)
 
             ! add the waste loads
-            call dlwq15(nosys, notot, noseg, noq, nowst, &
-                    nowtyp, ndmps, intopt, idt, itime, &
+            call dlwq15(num_substances_transported, num_substances_total, num_cells, num_exchanges, num_waste_loads, &
+                    num_waste_load_types, num_monitoring_cells, intopt, idt, itime, &
                     iaflag, c(isnam:), a(iconc:), a(ivol:), a(ivol2:), &
                     a(iflow:), j(ixpnt:), c(iwsid:), c(iwnam:), c(iwtyp:), &
                     j(inwtyp:), j(iwast:), iwstkind, a(iwste:), a(iderv:), &
-                    iknmkv, nopa, c(ipnam:), a(iparm:), nosfun, &
+                    iknmkv, num_spatial_parameters, c(ipnam:), a(iparm:), num_spatial_time_fuctions, &
                     c(isfna:), a(isfun:), j(isdmp:), a(idmps:), a(imas2:), &
-                    a(iwdmp:), 1, notot)
+                    a(iwdmp:), 1, num_substances_total)
 
             ! Here we implement a loop that inverts the same matrix
             ! for series of subsequent substances having the same
@@ -417,7 +415,7 @@ contains
             ! substances with the same additional velocity and dispersion field
             ! in future we need a smart switch between DELMAT and FS at this place
             ! For now always do FS!
-            call dlwqm7(noq, noq1, noq2, a(iarea:), a(iflow:), &
+            call dlwqm7(num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, a(iarea:), a(iflow:), &
                     a(ileng:), ilflag, intopt, j(ixpnt:), mixlen, &
                     iknmkv)
 
@@ -429,64 +427,64 @@ contains
             !$OMP DO PRIVATE(ith)
             ! start of loop over substances
 
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
 
                 ith = OMP_GET_THREAD_NUM() + 1
 
                 ! make flow and dispersion arrays
-                call dlwqm0(isys, nosys, noq, noq1, noq2, &
+                call dlwqm0(isys, num_substances_transported, num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, &
                         a(iarea:), a(iflow:), flowtot(1, ith), nvdim, j(ivpnw:), &
                         a(ivnew:), a(idisp:), disptot(1, ith), nddim, j(idpnw:), &
                         a(idnew:), mixlen)
 
                 ! compute variable theta coefficients
-                call dlwqm1(idt, noseg, nobnd, a(ivol:), noq, &
-                        noq1, noq2, j(ixpnt:), flowtot(1, ith), disptot(1, ith), &
+                call dlwqm1(idt, num_cells, num_boundary_conditions, a(ivol:), num_exchanges, &
+                        num_exchanges_u_dir, num_exchanges_v_dir, j(ixpnt:), flowtot(1, ith), disptot(1, ith), &
                         theta(1:, ith), thetaseg(1, ith), antidiffusion, iexseg (:, ith))
 
-                if (isys == 1) call dlwq_output_theta (nrvart, c(ionam:), j(iiopo:), nocons, nopa, &
-                        nofun, nosfun, notot, noseg, noloc, &
-                        a(iploc:), nodef, thetaseg(1, ith))
+                if (isys == 1) call dlwq_output_theta (num_output_variables_extra, c(ionam:), j(iiopo:), num_constants, num_spatial_parameters, &
+                        num_time_functions, num_spatial_time_fuctions, num_substances_total, num_cells, num_local_vars, &
+                        a(iploc:), num_defaults, thetaseg(1, ith))
 
                 ! construct matrix
-                call dlwqm2(idt, noseg, a(ivol2:), nobnd, noq, &
+                call dlwqm2(idt, num_cells, a(ivol2:), num_boundary_conditions, num_exchanges, &
                         j(ixpnt:), flowtot(1, ith), disptot(1, ith), theta(1:, ith), gm_diag(1, ith), &
-                        iscale, gm_diac(1:, ith), nomat, gm_amat(1, ith), rowpnt, &
+                        iscale, gm_diac(1:, ith), fast_solver_arr_size, gm_amat(1, ith), rowpnt, &
                         fmat, tmat, iexseg (:, ith))
 
                 ! construct rhs
-                call dlwqm3(idt, isys, nosys, notot, noseg, &
-                        a(iconc:), a(iderv:), a(ivol:), nobnd, a(iboun:), &
-                        noq, j(ixpnt:), flowtot(1, ith), disptot(1, ith), theta(1:, ith), &
+                call dlwqm3(idt, isys, num_substances_transported, num_substances_total, num_cells, &
+                        a(iconc:), a(iderv:), a(ivol:), num_boundary_conditions, a(iboun:), &
+                        num_exchanges, j(ixpnt:), flowtot(1, ith), disptot(1, ith), theta(1:, ith), &
                         gm_diac(1:, ith), iscale, gm_rhs (1, ith), gm_sol(1, ith))
 
                 ! solve linear system of equations by means of gmres to obtain local theta solution estimation
-                call sgmres(noseg + nobnd, gm_rhs (1, ith), gm_sol(1, ith), novec, gm_work(1, ith), &
-                        noseg + nobnd, gm_hess(1, ith), novec + 1, iter, tol, &
-                        nomat, gm_amat(1, ith), j(imat:), gm_diag(1, ith), rowpnt, &
-                        nolay, ioptpc, nobnd, gm_trid(1, ith), iexseg (:, ith), &
+                call sgmres(num_cells + num_boundary_conditions, gm_rhs (1, ith), gm_sol(1, ith), num_fast_solver_vectors, gm_work(1, ith), &
+                        num_cells + num_boundary_conditions, gm_hess(1, ith), num_fast_solver_vectors + 1, iter, tol, &
+                        fast_solver_arr_size, gm_amat(1, ith), j(imat:), gm_diag(1, ith), rowpnt, &
+                        num_layers, ioptpc, num_boundary_conditions, gm_trid(1, ith), iexseg (:, ith), &
                         file_unit_list(19), litrep)
 
                 ! mass balance of transport
-                call dlwqm4(isys, nosys, notot, noseg, a(iconc:), &
-                        gm_sol(1, ith), nobnd, a(iboun:), noq, j(ixpnt:), &
+                call dlwqm4(isys, num_substances_transported, num_substances_total, num_cells, a(iconc:), &
+                        gm_sol(1, ith), num_boundary_conditions, a(iboun:), num_exchanges, j(ixpnt:), &
                         theta (1, ith), flowtot(1, ith), disptot(1, ith), a(imas2:), ndmpq, &
                         j(iqdmp:), a(idmpq:), idt)
 
                 !     apply flux corrected transport to obtain the local theta fct solution estimation
                 if (intsrt == 21)       & ! Flux correction according to Salezac
-                        call dlwqm5(idt, isys, nosys, notot, noseg, &
-                                a(iconc:), gm_sol(1, ith), a(ivol2:), nobnd, a(iboun:), &
-                                noq, noq1, noq2, noq3, j(ixpnt:), &
+                        call dlwqm5(idt, isys, num_substances_transported, num_substances_total, num_cells, &
+                                a(iconc:), gm_sol(1, ith), a(ivol2:), num_boundary_conditions, a(iboun:), &
+                                num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, j(ixpnt:), &
                                 iknmkv, a(iarea:), a(ileng:), theta(1:, ith), flowtot(1, ith), &
                                 disptot(1, ith), a(imas2:), ndmpq, j(iqdmp:), &
                                 a(idmpq:), flux(1, ith), lim(1, ith), maxi (1, ith), mini   (1, ith), &
                                 l1(1, ith), l2  (1, ith), m1 (1, ith), m2   (1, ith), n1     (1, ith), &
                                 n2(1, ith))
                 if (intsrt == 22)       & ! Flux correction according to Boris and Book
-                        call dlwqm8(idt, isys, nosys, notot, noseg, &
-                                a(iconc:), gm_sol (1, ith), a(ivol2:), nobnd, a(iboun:), &
-                                noq, iknmkv, j(ixpnt:), a(iarea:), a(ileng:), &
+                        call dlwqm8(idt, isys, num_substances_transported, num_substances_total, num_cells, &
+                                a(iconc:), gm_sol (1, ith), a(ivol2:), num_boundary_conditions, a(iboun:), &
+                                num_exchanges, iknmkv, j(ixpnt:), a(iarea:), a(ileng:), &
                                 theta(1:, ith), flowtot(1, ith), intopt, a(imas2:), ndmpq, &
                                 j(iqdmp:), a(idmpq:))
 
@@ -498,22 +496,22 @@ contains
             if (timon) call timstop(ithand1)
 
             ! update mass array, explicit step for passive substances
-            call dlwqb4(nosys, notot, nototp, noseg, a(ivol2:), &
+            call dlwqb4(num_substances_transported, num_substances_total, num_substances_part, num_cells, a(ivol2:), &
                     surface, a(imass:), a(iconc:), a(iderv:), idt)
 
             ! calculate closure error
             if (lrewin .and. lstrec) then
-                call dlwqce(a(imass:), a(ivoll:), a(ivol2:), nosys, notot, &
-                        noseg, file_unit_list(19))
-                call copy_real_array_elements(a(ivoll:), a(ivol:), noseg)
+                call dlwqce(a(imass:), a(ivoll:), a(ivol2:), num_substances_transported, num_substances_total, &
+                        num_cells, file_unit_list(19))
+                call copy_real_array_elements(a(ivoll:), a(ivol:), num_cells)
             else
                 ! replace old by new volumes
-                call copy_real_array_elements(a(ivol2:), a(ivol:), noseg)
+                call copy_real_array_elements(a(ivol2:), a(ivol:), num_cells)
             endif
 
             !     integrate the fluxes at dump segments fill asmass with mass
             if (ibflag > 0) then
-                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idt, itfact, a(iflxd:), &
+                call integrate_fluxes_for_dump_areas(num_fluxes, ndmpar, idt, itfact, a(iflxd:), &
                         a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             endif
 
@@ -543,7 +541,7 @@ contains
                 call close_files(file_unit_list)
 
                 call write_restart_map_file(file_unit_list, file_name_list, a(iconc:), itime, c(imnam:), &
-                        c(isnam:), notot, noseg)
+                        c(isnam:), num_substances_total, num_cells)
             endif
 
         end associate

@@ -81,8 +81,8 @@ module meteo_data
 
 
    type tgrid
-      integer                            :: mmax       ! Size of meteo grid, related to tmeteoitem%numm
-      integer                            :: nmax       ! Size of meteo grid, related to tmeteoitem%numn
+      integer                            :: num_columns       ! Size of meteo grid, related to tmeteoitem%numm
+      integer                            :: num_rows       ! Size of meteo grid, related to tmeteoitem%numn
       integer                            :: mcur
       integer                            :: ncur
       integer, dimension(:,:,:), pointer :: mnref
@@ -108,8 +108,8 @@ module meteo_data
       integer                       :: nfirst           ! See mfirst
       integer                       :: nlast            ! See mfirst
       integer                       :: numk
-      integer                       :: numm             ! Size of meteo grid, related to tgrid%mmax
-      integer                       :: numn             ! Size of meteo grid, related to tgrid%nmax
+      integer                       :: numm             ! Size of meteo grid, related to tgrid%num_columns
+      integer                       :: numn             ! Size of meteo grid, related to tgrid%num_rows
       integer                       :: pref_option      ! Reference pressure options: 0: not defined, 1: value specified, 2: use from kernel
       real(hp)                      :: dx               ! x-gridsize
       real(hp)                      :: dy               ! y-gridsize
@@ -155,8 +155,8 @@ module meteo_data
 
    type tflowgrid
       logical                           :: initialized
-      integer                           :: mmax
-      integer                           :: nmax
+      integer                           :: num_columns
+      integer                           :: num_rows
       integer , dimension(:,:), pointer :: kcs
       real(fp), dimension(:,:), pointer :: xz
       real(fp), dimension(:,:), pointer :: yz
@@ -240,8 +240,8 @@ end subroutine nullifyfield
 subroutine nullifygrid( grid )
    implicit none
    type(tgrid) :: grid
-   grid%mmax = 0
-   grid%nmax = 0
+   grid%num_columns = 0
+   grid%num_rows = 0
    grid%mcur = 0
    grid%ncur = 0
    nullify( grid%mnref )
@@ -470,8 +470,8 @@ function meteoallocateitemgrid(runid, meteoitem, m, n, gridfilnam, flowmmax, flo
             ! Found another meteoItem with the same gridfile; pointering to that one
             !
             meteoitem%grid => meteo%item(i)%ptr%grid
-            m       = meteoitem%grid%mmax
-            n       = meteoitem%grid%nmax
+            m       = meteoitem%grid%num_columns
+            n       = meteoitem%grid%num_rows
             success = .true.
             return
          endif
@@ -552,8 +552,8 @@ function meteoallocateitemgrid(runid, meteoitem, m, n, gridfilnam, flowmmax, flo
     endif
     grid%misval = xymiss
     call allocgrid( grid, m, n, flowmmax, flownmax )
-    grid%mmax = m
-    grid%nmax = n
+    grid%num_columns = m
+    grid%num_rows = n
     grid%filename = gridfilnam
     !
     ! read XD

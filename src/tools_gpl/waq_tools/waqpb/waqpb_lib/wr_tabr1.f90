@@ -111,9 +111,9 @@
       INTEGER       I               , IELM
       INTEGER       ELMDMS(3,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      CHARACTER(len=16)  GRPNAM
+      CHARACTER(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      CHARACTER(len=64)  ELMDES(NELEMS)
 !     
 !          External NEFIS Functions
 !     

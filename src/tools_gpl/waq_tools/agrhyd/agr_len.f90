@@ -40,8 +40,8 @@
 
       type(t_hydrodynamics)          :: input_hyd                            ! description of the input hydrodynamics
       type(t_hydrodynamics)          :: output_hyd                           ! description of the output hydrodynamics
-      integer              :: ipnt_h(input_hyd%nmax,input_hyd%mmax)! aggregation pointer in the horizontal
-      integer              :: ipnt_q(input_hyd%noq)                ! aggregation pointer in the horizontal
+      integer              :: ipnt_h(input_hyd%num_rows,input_hyd%num_columns)! aggregation pointer in the horizontal
+      integer              :: ipnt_q(input_hyd%num_exchanges)                ! aggregation pointer in the horizontal
       logical              :: l_expand                             ! expand to full matrix
       logical              :: l_lenlen                             ! take length from length
 
@@ -53,8 +53,8 @@
       real                :: displen         ! dispersion length
       real(8), parameter  :: dearthrad = 6378137.0 ! earth radius
       integer             :: m,n             ! loop counter grid
-      integer             :: mmax            ! m dimension of grid
-      integer             :: nmax            ! n dimension of grid
+      integer             :: num_columns            ! m dimension of grid
+      integer             :: num_rows            ! n dimension of grid
       real, allocatable   :: len1(:,:)       ! length in the first direction for the base grid
       real, allocatable   :: len2(:,:)       ! length in the 2nd direction for the base grid
       real, allocatable   :: len1_n(:)       ! length in the first direction for the new segments
@@ -82,7 +82,7 @@
 
       if ( l_expand .or. l_lenlen ) then
          output_hyd%displen = 1.0
-         do iq = 1, input_hyd%noq
+         do iq = 1, input_hyd%num_exchanges
             iq_n = ipnt_q(iq)
             if ( iq_n .gt. 0 ) then
                output_hyd%displen(1,iq_n) = input_hyd%displen(1,iq)
@@ -103,11 +103,11 @@
             write(message, *) 'The grid has Cartesian coordinates.'
             call mess(LEVEL_INFO, trim(message))
          endif
-         do iq = 1, output_hyd%noq1
+         do iq = 1, output_hyd%num_exchanges_u_dir
             ip1   = output_hyd%ipoint(1,iq)
             ip2   = output_hyd%ipoint(2,iq)
             if ( ip1 .eq. 0 .or. ip1 .eq. 0) cycle
-            if(output_hyd%nolay.gt.1) then
+            if(output_hyd%num_layers.gt.1) then
                ig1 = mod(ip1 - 1,output_hyd%nosegl) + 1
                ig2 = mod(ip2 - 1,output_hyd%nosegl) + 1
             else
@@ -150,9 +150,9 @@
          file_gvv%name = ' '
       endif
 
-      mmax = input_hyd%mmax
-      nmax = input_hyd%nmax
-      allocate(len1(nmax,mmax),len2(nmax,mmax),stat=ierr_alloc)
+      num_columns = input_hyd%num_columns
+      num_rows = input_hyd%num_rows
+      allocate(len1(num_rows,num_columns),len2(num_rows,num_columns),stat=ierr_alloc)
       if ( ierr_alloc .ne. 0 ) goto 980
 
       if ( file_guu%name .ne. ' ' .and. file_gvv%name .ne. ' ' ) then
@@ -161,12 +161,12 @@
          ! the file is a qin file
 
          call file_guu%open()
-         read(file_guu%unit,*) ((len1(n,m),m=1,mmax),n=1,nmax)
+         read(file_guu%unit,*) ((len1(n,m),m=1,num_columns),n=1,num_rows)
          close(file_guu%unit)
          file_guu%status = FILE_STAT_UNOPENED
 
          call file_gvv%open()
-         read(file_gvv%unit,*) ((len2(n,m),m=1,mmax),n=1,nmax)
+         read(file_gvv%unit,*) ((len2(n,m),m=1,num_columns),n=1,num_rows)
          close(file_gvv%unit)
          file_gvv%status = FILE_STAT_UNOPENED
 
@@ -174,8 +174,8 @@
 
          ! calculate from cco file
 
-         do m = 2, mmax - 1
-            do n = 2, nmax - 1
+         do m = 2, num_columns - 1
+            do n = 2, num_rows - 1
                if ( input_hyd%lgrid(n,m) .gt. 0 ) then
                   x1 = (input_hyd%xdepth(n-1,m-1) + input_hyd%xdepth(n-1,m))/2.0
                   y1 = (input_hyd%ydepth(n-1,m-1) + input_hyd%ydepth(n-1,m))/2.0
@@ -198,9 +198,9 @@
       allocate(len1_n(output_hyd%nosegl),stat=ierr_alloc)
       if ( ierr_alloc .ne. 0 ) goto 990
       len1_n = 0.0
-      do m = 2, mmax - 1
+      do m = 2, num_columns - 1
          prev_seg = 0
-         do n = 2, nmax - 1
+         do n = 2, num_rows - 1
             iseg = ipnt_h(n,m)
             if ( iseg .gt. 0 ) then
                if ( iseg .eq. prev_seg ) then
@@ -224,9 +224,9 @@
       allocate(len2_n(output_hyd%nosegl),stat=ierr_alloc)
       if ( ierr_alloc .ne. 0 ) goto 990
       len2_n = 0.0
-      do n = 2, nmax - 1
+      do n = 2, num_rows - 1
          prev_seg = 0
-         do m = 2, mmax - 1
+         do m = 2, num_columns - 1
             iseg = ipnt_h(n,m)
             if ( iseg .gt. 0 ) then
                if ( iseg .eq. prev_seg ) then
@@ -247,7 +247,7 @@
 
       ! length for the pointers
 
-      do iq = 1 , output_hyd%noq1
+      do iq = 1 , output_hyd%num_exchanges_u_dir
          ip1   = output_hyd%ipoint(1,iq)
          ip2   = output_hyd%ipoint(2,iq)
          if ( ip1 .gt. 0 ) then
@@ -259,7 +259,7 @@
             output_hyd%displen(2,iq) = len1_n(iseg)
          endif
       enddo
-      do iq = output_hyd%noq1 + 1 , output_hyd%noq1 + output_hyd%noq2
+      do iq = output_hyd%num_exchanges_u_dir + 1 , output_hyd%num_exchanges_u_dir + output_hyd%num_exchanges_v_dir
          ip1   = output_hyd%ipoint(1,iq)
          ip2   = output_hyd%ipoint(2,iq)
          if ( ip1 .gt. 0 ) then
@@ -271,7 +271,7 @@
             output_hyd%displen(2,iq) = len2_n(iseg)
          endif
       enddo
-      do iq = output_hyd%noq1 + output_hyd%noq2 + 1 , output_hyd%noq
+      do iq = output_hyd%num_exchanges_u_dir + output_hyd%num_exchanges_v_dir + 1 , output_hyd%num_exchanges
          output_hyd%displen(1,iq) = 1.0
          output_hyd%displen(2,iq) = 1.0
       enddo
@@ -280,7 +280,7 @@
 
       ! length for boundaries equal to length within the grid
 
-      do iq = 1 , output_hyd%noq
+      do iq = 1 , output_hyd%num_exchanges
          ip1   = output_hyd%ipoint(1,iq)
          ip2   = output_hyd%ipoint(2,iq)
          if ( ip1 .lt. 0 ) then
@@ -294,7 +294,7 @@
       ! minimum dispersion length
 
       if ( output_hyd%min_disp_len .gt. 0.0 ) then
-         do iq = 1 , output_hyd%noq
+         do iq = 1 , output_hyd%num_exchanges
             output_hyd%displen(1,iq) = max(output_hyd%displen(1,iq),output_hyd%min_disp_len)
             output_hyd%displen(2,iq) = max(output_hyd%displen(2,iq),output_hyd%min_disp_len)
          enddo
@@ -302,13 +302,13 @@
 
       return
   980 write(lunrep,*) 'error allocating memory:',ierr_alloc
-      write(lunrep,*) 'input_hyd%nmax:',input_hyd%nmax
-      write(lunrep,*) 'input_hyd%mmax:',input_hyd%mmax
+      write(lunrep,*) 'input_hyd%num_rows:',input_hyd%num_rows
+      write(lunrep,*) 'input_hyd%num_columns:',input_hyd%num_columns
       call stop_with_error()
   990 write(lunrep,*) 'error allocating memory:',ierr_alloc
       write(lunrep,*) 'input_hyd%nosegl',input_hyd%nosegl
       call stop_with_error()
   995 write(lunrep,*) 'error allocating memory:',ierr_alloc
-      write(lunrep,*) 'output_hyd%noq',output_hyd%noq
+      write(lunrep,*) 'output_hyd%num_exchanges',output_hyd%num_exchanges
       call stop_with_error()
       end

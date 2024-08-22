@@ -28,9 +28,9 @@ module m_methox
 contains
 
 
-    subroutine methox (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine methox (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper
 
         !>\file
@@ -87,9 +87,9 @@ contains
         !
         IMPLICIT NONE
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
                 IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18, IP19, IP20, &
@@ -171,16 +171,16 @@ contains
         !     -----Warnings-----
         !
         IF (FIRST) THEN
-            IF (PMSA(IP7)<= 0.0) THEN
+            IF (process_space_real(IP7)<= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : half saturation constant', &
                         ' KsMet should be greater than zero'
-            ELSEIF (PMSA(IP8)<= 0.0) THEN
+            ELSEIF (process_space_real(IP8)<= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : half saturation constant', &
                         ' KsOxMet should be greater than zero'
-            ELSEIF (PMSA(IP13) <= 0.0) THEN
+            ELSEIF (process_space_real(IP13) <= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : half saturation constant', &
                         ' KsSuMet should be greater than zero'
-            ELSEIF (PMSA(IP17) <= 0.0) THEN
+            ELSEIF (process_space_real(IP17) <= 0.0) THEN
                 WRITE (ILUMON, *) 'WARNING : Poros should be greater', &
                         'than zero'
             ENDIF
@@ -189,32 +189,32 @@ contains
         !
         IFLUX = 0
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                CCH4 = MAX (0.0, PMSA(IP1))
-                COX = MAX (0.0, PMSA(IP2))
-                CSU = MAX (0.0, PMSA(IP3))
-                K0OXI1 = PMSA(IP4)
-                KOXI1 = PMSA(IP5)
-                KTOXI1 = PMSA(IP6)
-                KSCH4 = PMSA(IP7)
-                KSOX = PMSA(IP8)
-                COXC = PMSA(IP9)
-                K0OXI2 = PMSA(IP10)
-                KOXI2 = PMSA(IP11)
-                KTOXI2 = PMSA(IP12)
-                KSSU = PMSA(IP13)
-                CSUC = PMSA(IP14)
-                TEMP = PMSA(IP15)
-                CRTEMP = PMSA(IP16)
-                POROS = PMSA(IP17)
-                DELT = PMSA(IP18)
-                RADINH = PMSA(IP19)
-                RAD = PMSA(IP20)
-                KSRADFr = PMSA(IP21)
-                KSRADSh = PMSA(IP22)
+                CCH4 = MAX (0.0, process_space_real(IP1))
+                COX = MAX (0.0, process_space_real(IP2))
+                CSU = MAX (0.0, process_space_real(IP3))
+                K0OXI1 = process_space_real(IP4)
+                KOXI1 = process_space_real(IP5)
+                KTOXI1 = process_space_real(IP6)
+                KSCH4 = process_space_real(IP7)
+                KSOX = process_space_real(IP8)
+                COXC = process_space_real(IP9)
+                K0OXI2 = process_space_real(IP10)
+                KOXI2 = process_space_real(IP11)
+                KTOXI2 = process_space_real(IP12)
+                KSSU = process_space_real(IP13)
+                CSUC = process_space_real(IP14)
+                TEMP = process_space_real(IP15)
+                CRTEMP = process_space_real(IP16)
+                POROS = process_space_real(IP17)
+                DELT = process_space_real(IP18)
+                RADINH = process_space_real(IP19)
+                RAD = process_space_real(IP20)
+                KSRADFr = process_space_real(IP21)
+                KSRADSh = process_space_real(IP22)
                 !
                 !           Set the rates according to CRTEMP, COXC and CSUC
                 !
@@ -285,9 +285,9 @@ contains
                 !
                 !           Oxygen and sulphate functions are output
                 !
-                PMSA(IP23) = OXFUNC
-                PMSA(IP24) = SUFUNC
-                PMSA(IP25) = LIFUNC
+                process_space_real(IP23) = OXFUNC
+                process_space_real(IP24) = SUFUNC
+                process_space_real(IP25) = LIFUNC
                 !
             ENDIF
             !

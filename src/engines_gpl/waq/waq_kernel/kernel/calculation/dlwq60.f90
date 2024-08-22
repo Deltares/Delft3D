@@ -28,7 +28,7 @@ module m_dlwq60
 contains
 
     !> Scales derivatives after the user quality processes, for steady-state computation.
-    subroutine dlwq60(deriv, conc, notot, noseg, itfact, &
+    subroutine dlwq60(deriv, conc, num_substances_total, num_cells, itfact, &
                       amass2, isys, nsys, dmps, intopt, &
                       isdmp)
 
@@ -36,17 +36,17 @@ contains
 
         implicit none
 
-        integer(kind=int_wp), intent(in   ) :: notot               !< Total number of substances
-        integer(kind=int_wp), intent(in   ) :: noseg               !< Number of computational volumes
-        real(kind=real_wp),   intent(inout) :: deriv(notot, noseg) !< Derivatives to be scaled
-        real(kind=real_wp),   intent(inout) :: conc(notot, noseg)  !< Concentrations per substance per volume
+        integer(kind=int_wp), intent(in   ) :: num_substances_total               !< Total number of substances
+        integer(kind=int_wp), intent(in   ) :: num_cells               !< Number of computational volumes
+        real(kind=real_wp),   intent(inout) :: deriv(num_substances_total, num_cells) !< Derivatives to be scaled
+        real(kind=real_wp),   intent(inout) :: conc(num_substances_total, num_cells)  !< Concentrations per substance per volume
         integer(kind=int_wp), intent(in   ) :: itfact              !< Ratio delta-t process to delta-t transport
-        real(kind=real_wp),   intent(inout) :: amass2(notot, 5)    !< Mass balance array
+        real(kind=real_wp),   intent(inout) :: amass2(num_substances_total, 5)    !< Mass balance array
         integer(kind=int_wp), intent(in   ) :: isys                !< Index current substance
         integer(kind=int_wp), intent(in   ) :: nsys                !< Number of substances
-        real(kind=real_wp),   intent(inout) :: dmps(notot, *)      !< Dumped fluxes is intopt > 7
+        real(kind=real_wp),   intent(inout) :: dmps(num_substances_total, *)      !< Dumped fluxes is intopt > 7
         integer(kind=int_wp), intent(in   ) :: intopt              !< Integration suboptions
-        integer(kind=int_wp), intent(in   ) :: isdmp(noseg)        !< Pointer dumped segments
+        integer(kind=int_wp), intent(in   ) :: isdmp(num_cells)        !< Pointer dumped segments
 
         ! Local variables
         integer(kind=int_wp) :: iseg, i, ip
@@ -54,7 +54,7 @@ contains
 
         if (timon) call timstrt("dlwq60", ithandl)
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             conc(isys, iseg) = conc(isys, iseg)/itfact
             do i = isys, isys + nsys - 1
                 deriv(i, iseg) = deriv(i, iseg)/itfact
@@ -63,7 +63,7 @@ contains
         end do
 
         if (mod(intopt, 16) >= 8) then
-            do iseg = 1, noseg
+            do iseg = 1, num_cells
                 ip = isdmp(iseg)
                 if (ip > 0) then
                     do i = isys, isys + nsys - 1

@@ -28,9 +28,9 @@ module m_vbmrt
 contains
 
 
-    subroutine VBMRT      (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine VBMRT      (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
         !
@@ -40,18 +40,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(79) ! I  Array of pointers in pmsa to get and store the data
+        integer(kind = int_wp) :: ipoint(79) ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(79) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(79)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
         !
@@ -208,54 +208,54 @@ contains
         IdMrtS3VB01 = 13
         IdMrtS4VB01 = 14
         !
-        do  iseg = 1, noseg
+        do  iseg = 1, num_cells
 
             !        lowest water and 2d segments only
             call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
             if (ikmrk1<3 .and. (ikmrk2==0).or.(ikmrk2==3)) then
                 !
-                VB1 = pmsa(ipnt(1))
-                F1VB01 = pmsa(ipnt(2))
-                F2VB01 = pmsa(ipnt(3))
-                F3VB01 = pmsa(ipnt(4))
-                F4VB01 = pmsa(ipnt(5))
-                F5VB01 = pmsa(ipnt(6))
-                SwVB01Mrt = pmsa(ipnt(7))
-                ageVB1 = pmsa(ipnt(8))
-                CNf1VB01 = pmsa(ipnt(9))
-                CNf2VB01 = pmsa(ipnt(10))
-                CNf3VB01 = pmsa(ipnt(11))
-                CNf4VB01 = pmsa(ipnt(12))
-                CNf5VB01 = pmsa(ipnt(13))
-                CPf1VB01 = pmsa(ipnt(14))
-                CPf2VB01 = pmsa(ipnt(15))
-                CPf3VB01 = pmsa(ipnt(16))
-                CPf4VB01 = pmsa(ipnt(17))
-                CPf5VB01 = pmsa(ipnt(18))
-                CSf1VB01 = pmsa(ipnt(19))
-                CSf2VB01 = pmsa(ipnt(20))
-                CSf3VB01 = pmsa(ipnt(21))
-                CSf4VB01 = pmsa(ipnt(22))
-                CSf5VB01 = pmsa(ipnt(23))
-                FfolPOC1 = pmsa(ipnt(24))
-                FfolPOC2 = pmsa(ipnt(25))
-                FfrootPOC1 = pmsa(ipnt(26))
-                FfrootPOC2 = pmsa(ipnt(27))
-                DELT = pmsa(ipnt(28))
-                Depth = pmsa(ipnt(29))
-                rcdec = pmsa(ipnt(30))
-                SWDying = pmsa(ipnt(31))
-                SwWV = pmsa(ipnt(32))
-                Rc0MSWV = pmsa(ipnt(33))
-                TcMSWV = pmsa(ipnt(34))
-                RcMGRWV = pmsa(ipnt(35))
-                AcMWV = pmsa(ipnt(36))
-                MinRWV = pmsa(ipnt(37))
-                MaxRWV = pmsa(ipnt(38))
-                TBmWV = pmsa(ipnt(39))
-                TempAir = pmsa(ipnt(40))
-                MinVB = pmsa(ipnt(41))
+                VB1 = process_space_real(ipnt(1))
+                F1VB01 = process_space_real(ipnt(2))
+                F2VB01 = process_space_real(ipnt(3))
+                F3VB01 = process_space_real(ipnt(4))
+                F4VB01 = process_space_real(ipnt(5))
+                F5VB01 = process_space_real(ipnt(6))
+                SwVB01Mrt = process_space_real(ipnt(7))
+                ageVB1 = process_space_real(ipnt(8))
+                CNf1VB01 = process_space_real(ipnt(9))
+                CNf2VB01 = process_space_real(ipnt(10))
+                CNf3VB01 = process_space_real(ipnt(11))
+                CNf4VB01 = process_space_real(ipnt(12))
+                CNf5VB01 = process_space_real(ipnt(13))
+                CPf1VB01 = process_space_real(ipnt(14))
+                CPf2VB01 = process_space_real(ipnt(15))
+                CPf3VB01 = process_space_real(ipnt(16))
+                CPf4VB01 = process_space_real(ipnt(17))
+                CPf5VB01 = process_space_real(ipnt(18))
+                CSf1VB01 = process_space_real(ipnt(19))
+                CSf2VB01 = process_space_real(ipnt(20))
+                CSf3VB01 = process_space_real(ipnt(21))
+                CSf4VB01 = process_space_real(ipnt(22))
+                CSf5VB01 = process_space_real(ipnt(23))
+                FfolPOC1 = process_space_real(ipnt(24))
+                FfolPOC2 = process_space_real(ipnt(25))
+                FfrootPOC1 = process_space_real(ipnt(26))
+                FfrootPOC2 = process_space_real(ipnt(27))
+                DELT = process_space_real(ipnt(28))
+                Depth = process_space_real(ipnt(29))
+                rcdec = process_space_real(ipnt(30))
+                SWDying = process_space_real(ipnt(31))
+                SwWV = process_space_real(ipnt(32))
+                Rc0MSWV = process_space_real(ipnt(33))
+                TcMSWV = process_space_real(ipnt(34))
+                RcMGRWV = process_space_real(ipnt(35))
+                AcMWV = process_space_real(ipnt(36))
+                MinRWV = process_space_real(ipnt(37))
+                MaxRWV = process_space_real(ipnt(38))
+                TBmWV = process_space_real(ipnt(39))
+                TempAir = process_space_real(ipnt(40))
+                MinVB = process_space_real(ipnt(41))
                 nrofinputs = 41
                 !
                 !
@@ -434,44 +434,44 @@ contains
                 !        fl  ( IdMrtS1VB01 ) = dMrtS1VB01
                 !        fl  ( IdMrtS3VB01 ) = dMrtS3VB01
                 !        fl  ( IdMrtS4VB01 ) = dMrtS4VB01
-                pmsa(ipnt(nrofinputs + 1)) = rcdecact
-                pmsa(ipnt(nrofinputs + 2)) = fMrtVB
-                pmsa(ipnt(nrofinputs + 3)) = fMC2VB01P1
-                pmsa(ipnt(nrofinputs + 4)) = fMC2VB01P2
-                pmsa(ipnt(nrofinputs + 5)) = fMC2VB01P3
-                pmsa(ipnt(nrofinputs + 6)) = fMN2VB01P1
-                pmsa(ipnt(nrofinputs + 7)) = fMN2VB01P2
-                pmsa(ipnt(nrofinputs + 8)) = fMN2VB01P3
-                pmsa(ipnt(nrofinputs + 9)) = fMP2VB01P1
-                pmsa(ipnt(nrofinputs + 10)) = fMP2VB01P2
-                pmsa(ipnt(nrofinputs + 11)) = fMP2VB01P3
-                pmsa(ipnt(nrofinputs + 12)) = fMS2VB01P1
-                pmsa(ipnt(nrofinputs + 13)) = fMS2VB01P2
-                pmsa(ipnt(nrofinputs + 14)) = fMS2VB01P3
-                pmsa(ipnt(nrofinputs + 15)) = fMC5VB01P1
-                pmsa(ipnt(nrofinputs + 16)) = fMC5VB01P2
-                pmsa(ipnt(nrofinputs + 17)) = fMC5VB01P3
-                pmsa(ipnt(nrofinputs + 18)) = fMN5VB01P1
-                pmsa(ipnt(nrofinputs + 19)) = fMN5VB01P2
-                pmsa(ipnt(nrofinputs + 20)) = fMN5VB01P3
-                pmsa(ipnt(nrofinputs + 21)) = fMP5VB01P1
-                pmsa(ipnt(nrofinputs + 22)) = fMP5VB01P2
-                pmsa(ipnt(nrofinputs + 23)) = fMP5VB01P3
-                pmsa(ipnt(nrofinputs + 24)) = fMS5VB01P1
-                pmsa(ipnt(nrofinputs + 25)) = fMS5VB01P2
-                pmsa(ipnt(nrofinputs + 26)) = fMS5VB01P3
-                pmsa(ipnt(nrofinputs + 27)) = fMrtC1VB01
-                pmsa(ipnt(nrofinputs + 28)) = fMrtC3VB01
-                pmsa(ipnt(nrofinputs + 29)) = fMrtC4VB01
-                pmsa(ipnt(nrofinputs + 30)) = fMrtN1VB01
-                pmsa(ipnt(nrofinputs + 31)) = fMrtN3VB01
-                pmsa(ipnt(nrofinputs + 32)) = fMrtN4VB01
-                pmsa(ipnt(nrofinputs + 33)) = fMrtP1VB01
-                pmsa(ipnt(nrofinputs + 34)) = fMrtP3VB01
-                pmsa(ipnt(nrofinputs + 35)) = fMrtP4VB01
-                pmsa(ipnt(nrofinputs + 36)) = fMrtS1VB01
-                pmsa(ipnt(nrofinputs + 37)) = fMrtS3VB01
-                pmsa(ipnt(nrofinputs + 38)) = fMrtS4VB01
+                process_space_real(ipnt(nrofinputs + 1)) = rcdecact
+                process_space_real(ipnt(nrofinputs + 2)) = fMrtVB
+                process_space_real(ipnt(nrofinputs + 3)) = fMC2VB01P1
+                process_space_real(ipnt(nrofinputs + 4)) = fMC2VB01P2
+                process_space_real(ipnt(nrofinputs + 5)) = fMC2VB01P3
+                process_space_real(ipnt(nrofinputs + 6)) = fMN2VB01P1
+                process_space_real(ipnt(nrofinputs + 7)) = fMN2VB01P2
+                process_space_real(ipnt(nrofinputs + 8)) = fMN2VB01P3
+                process_space_real(ipnt(nrofinputs + 9)) = fMP2VB01P1
+                process_space_real(ipnt(nrofinputs + 10)) = fMP2VB01P2
+                process_space_real(ipnt(nrofinputs + 11)) = fMP2VB01P3
+                process_space_real(ipnt(nrofinputs + 12)) = fMS2VB01P1
+                process_space_real(ipnt(nrofinputs + 13)) = fMS2VB01P2
+                process_space_real(ipnt(nrofinputs + 14)) = fMS2VB01P3
+                process_space_real(ipnt(nrofinputs + 15)) = fMC5VB01P1
+                process_space_real(ipnt(nrofinputs + 16)) = fMC5VB01P2
+                process_space_real(ipnt(nrofinputs + 17)) = fMC5VB01P3
+                process_space_real(ipnt(nrofinputs + 18)) = fMN5VB01P1
+                process_space_real(ipnt(nrofinputs + 19)) = fMN5VB01P2
+                process_space_real(ipnt(nrofinputs + 20)) = fMN5VB01P3
+                process_space_real(ipnt(nrofinputs + 21)) = fMP5VB01P1
+                process_space_real(ipnt(nrofinputs + 22)) = fMP5VB01P2
+                process_space_real(ipnt(nrofinputs + 23)) = fMP5VB01P3
+                process_space_real(ipnt(nrofinputs + 24)) = fMS5VB01P1
+                process_space_real(ipnt(nrofinputs + 25)) = fMS5VB01P2
+                process_space_real(ipnt(nrofinputs + 26)) = fMS5VB01P3
+                process_space_real(ipnt(nrofinputs + 27)) = fMrtC1VB01
+                process_space_real(ipnt(nrofinputs + 28)) = fMrtC3VB01
+                process_space_real(ipnt(nrofinputs + 29)) = fMrtC4VB01
+                process_space_real(ipnt(nrofinputs + 30)) = fMrtN1VB01
+                process_space_real(ipnt(nrofinputs + 31)) = fMrtN3VB01
+                process_space_real(ipnt(nrofinputs + 32)) = fMrtN4VB01
+                process_space_real(ipnt(nrofinputs + 33)) = fMrtP1VB01
+                process_space_real(ipnt(nrofinputs + 34)) = fMrtP3VB01
+                process_space_real(ipnt(nrofinputs + 35)) = fMrtP4VB01
+                process_space_real(ipnt(nrofinputs + 36)) = fMrtS1VB01
+                process_space_real(ipnt(nrofinputs + 37)) = fMrtS3VB01
+                process_space_real(ipnt(nrofinputs + 38)) = fMrtS4VB01
 
                 !
 

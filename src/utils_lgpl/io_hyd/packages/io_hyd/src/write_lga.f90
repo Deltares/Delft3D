@@ -27,8 +27,8 @@
 !  
 !  
 
-      subroutine write_lga ( file_lga, mmax  , nmax  , nolay , nosegl, &
-                             noq1    , noq2  , noq3  , lgrid )
+      subroutine write_lga ( file_lga, num_columns  , num_rows  , num_layers , nosegl, &
+                             num_exchanges_u_dir    , num_exchanges_v_dir  , num_exchanges_z_dir  , lgrid )
 !
 !     created             : jan van beek
 !
@@ -41,14 +41,14 @@
 !     name    kind     length     funct.  description
 !     ----    -----    ------     ------- -----------
 !     filnr   integer  1          input   index file in file administr.
-!     mmax    integer  1          input   x,u direction, second in lgrid
-!     nmax    integer  1          input   y,v direction, first in lgrid
-!     nolay   integer  1          input   number of layers
+!     num_columns    integer  1          input   x,u direction, second in lgrid
+!     num_rows    integer  1          input   y,v direction, first in lgrid
+!     num_layers   integer  1          input   number of layers
 !     nosegl  integer  1          input   number of delwaq cells per layer aggregated
-!     noq1    integer  1          input   number of exchanges 1st direction aggregated
-!     noq2    integer  1          input   number of exchanges 2st direction aggregated
-!     noq3    integer  1          input   number of exchanges 3d direction aggregated
-!     lgrid   integer  nmax,mmax  input   grid table
+!     num_exchanges_u_dir    integer  1          input   number of exchanges 1st direction aggregated
+!     num_exchanges_v_dir    integer  1          input   number of exchanges 2st direction aggregated
+!     num_exchanges_z_dir    integer  1          input   number of exchanges 3d direction aggregated
+!     lgrid   integer  num_rows,num_columns  input   grid table
 !
       ! global declarations
 
@@ -58,8 +58,8 @@
 !     declaration of arguments
 
       type(t_file)                       :: file_lga               ! aggregation-file
-      integer       mmax  , nmax  , nolay , nosegl, noq1  , noq2  , noq3
-      integer       lgrid(nmax,mmax)
+      integer       num_columns  , num_rows  , num_layers , nosegl, num_exchanges_u_dir  , num_exchanges_v_dir  , num_exchanges_z_dir
+      integer       lgrid(num_rows,num_columns)
 !
 !     local declarations
 !
@@ -68,10 +68,10 @@
       integer       m
       integer       irlen
       integer       plform
-      character*256 filnam
+      character(len=256) filnam
       integer       filtyp
       integer       filsta
-      character*6   binary
+      character(len=6) binary
       binary = 'BINARY'
       plform = PL_DOS
 !
@@ -84,11 +84,11 @@
 !     write table
 !
       if ( filtyp .eq. FT_UNF .or. filtyp .eq. FT_BIN) then
-         write (lun) nmax,mmax,nosegl,nolay,noq1,noq2,noq3
-         write (lun) ((lgrid(n,m),n=1,nmax),m=1,mmax)
+         write (lun) num_rows,num_columns,nosegl,num_layers,num_exchanges_u_dir,num_exchanges_v_dir,num_exchanges_z_dir
+         write (lun) ((lgrid(n,m),n=1,num_rows),m=1,num_columns)
       elseif ( filtyp .eq. FT_ASC ) then
-         write (lun,'(4i8)') nmax,mmax,nosegl,nolay,noq1,noq2,noq3
-         write (lun,'(i7)') ((lgrid(n,m),n=1,nmax),m=1,mmax)
+         write (lun,'(4i8)') num_rows,num_columns,nosegl,num_layers,num_exchanges_u_dir,num_exchanges_v_dir,num_exchanges_z_dir
+         write (lun,'(i7)') ((lgrid(n,m),n=1,num_rows),m=1,num_columns)
       endif
 !
       return

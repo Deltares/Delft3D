@@ -48,7 +48,7 @@ contains
         integer(kind = int_wp) :: sysndt(num_substances)   ! timestep multiplier substances
 
         ! local decalarations
-        integer(kind = int_wp) :: nproc           ! number of processes
+        integer(kind = int_wp) :: num_processes_activated           ! number of processes
         integer(kind = int_wp) :: iproc           ! loop counter processes
         integer(kind = int_wp) :: iproc2          ! loop counter processes
         type(procesprop), pointer :: proc            ! process description
@@ -114,8 +114,8 @@ contains
         ! what to do with specials like clcrad that use the pointer
         ! table without using exchange io?
 
-        nproc = procesdef%current_size
-        do iproc = 1, nproc
+        num_processes_activated = procesdef%current_size
+        do iproc = 1, num_processes_activated
             proc => procesdef%procesprops(iproc)
             if (proc%active) then
 
@@ -163,7 +163,7 @@ contains
             endif
         enddo
 
-        do iproc = nproc, 1, -1
+        do iproc = num_processes_activated, 1, -1
             proc => procesdef%procesprops(iproc)
             if (proc%active) then
                 ipgrid = proc%grid
@@ -174,7 +174,7 @@ contains
 
                         ! check how the output is used
                         valnam = proc%output_item(ioutput)%name
-                        do iproc2 = iproc + 1, nproc
+                        do iproc2 = iproc + 1, num_processes_activated
                             proc2 => procesdef%procesprops(iproc2)
                             if (proc2%active) then
                                 call zoekio (valnam, proc2%no_input, proc2%input_item, 20, i_input)
@@ -211,7 +211,7 @@ contains
 
         ! set largest step for processes with stochi's
 
-        do iproc = 1, nproc
+        do iproc = 1, num_processes_activated
             proc => procesdef%procesprops(iproc)
             if (proc%active) then
                 imnoag = index_in_array(proc%routine(:10), monoag(:nmnoag))
@@ -248,7 +248,7 @@ contains
 
         ! rest of the processes, check use then set timestep
 
-        do iproc = nproc, 1, -1
+        do iproc = num_processes_activated, 1, -1
             proc => procesdef%procesprops(iproc)
             if (proc%active) then
                 ndt = proc%ndt
@@ -260,7 +260,7 @@ contains
                         ! check how the output is used
 
                         valnam = proc%output_item(ioutput)%name
-                        do iproc2 = iproc + 1, nproc
+                        do iproc2 = iproc + 1, num_processes_activated
                             proc2 => procesdef%procesprops(iproc2)
                             if (proc2%active) then
                                 call zoekio (valnam, proc2%no_input, proc2%input_item, 20, i_input)

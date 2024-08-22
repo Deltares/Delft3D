@@ -27,11 +27,11 @@
 !
 !
 program test15
-   INTEGER ntimes, mmax, nmax, kmax, nsrc
+   INTEGER ntimes, num_columns, num_rows, num_layers_grid, nsrc
    parameter (ntimes = 3,&
-   &mmax = 9,&
-   &nmax = 7,&
-   &kmax = 5,&
+   &num_columns = 9,&
+   &num_rows = 7,&
+   &num_layers_grid = 5,&
    &nsrc = 6&
    &)
 
@@ -52,9 +52,9 @@ program test15
    &i, m, n, k, nt,&
    &UINDEX(3,1),&
    &usrord(5)
-   real    rbuff3(mmax, nmax, kmax)
-   real    rbuff2(mmax, nmax)
-   real    rbuff1(mmax)
+   real    rbuff3(num_columns, num_rows, num_layers_grid)
+   real    rbuff2(num_columns, num_rows)
+   real    rbuff1(num_columns)
    integer ibuff2(7, nsrc)
    integer ibuff1(nsrc)
 
@@ -148,24 +148,24 @@ program test15
    elmdms(1,1) = 1
 
    elmndm(2)   = 3
-   elmdms(1,2) = mmax
-   elmdms(2,2) = nmax
-   elmdms(3,2) = kmax
+   elmdms(1,2) = num_columns
+   elmdms(2,2) = num_rows
+   elmdms(3,2) = num_layers_grid
 
    elmndm(3)   = 3
-   elmdms(1,3) = mmax
-   elmdms(2,3) = nmax
-   elmdms(3,3) = kmax
+   elmdms(1,3) = num_columns
+   elmdms(2,3) = num_rows
+   elmdms(3,3) = num_layers_grid
 
    elmndm(4)   = 3
-   elmdms(1,4) = mmax
-   elmdms(2,4) = nmax
-   elmdms(3,4) = kmax
+   elmdms(1,4) = num_columns
+   elmdms(2,4) = num_rows
+   elmdms(3,4) = num_layers_grid
 
    elmndm(5)   = 3
-   elmdms(1,5) = mmax
-   elmdms(2,5) = nmax
-   elmdms(3,5) = kmax
+   elmdms(1,5) = num_columns
+   elmdms(2,5) = num_rows
+   elmdms(3,5) = num_layers_grid
 
    elmndm(6)   = 1
    elmdms(1,6) = nsrc
@@ -175,8 +175,8 @@ program test15
    elmdms(2,7) = nsrc
 
    elmndm(8)= 2
-   elmdms(1,8) = mmax
-   elmdms(2,8) = nmax
+   elmdms(1,8) = num_columns
+   elmdms(2,8) = num_rows
 !
 !     group dimensions
 !
@@ -266,9 +266,9 @@ program test15
 !------------------------------------------------------------------
       write(*,*) elmnms(2)
 !     'RSAL'
-      do m = 1, mmax
-         do n = 1, nmax
-            do k = 1, kmax
+      do m = 1, num_columns
+         do n = 1, num_rows
+            do k = 1, num_layers_grid
                rbuff3(m,n,k) =&
                &1000.*real(m)+ 100.*real(n)+10.*real(k)+real(nt)
             enddo
@@ -281,9 +281,9 @@ program test15
 !------------------------------------------------------------------
       write(*,*) elmnms(3)
 !     elmnms(3) =
-      do m = 1, mmax
-         do n = 1, nmax
-            do k = 1, kmax
+      do m = 1, num_columns
+         do n = 1, num_rows
+            do k = 1, num_layers_grid
                rbuff3(m,n,k) =&
                &1000.*real(m)+ 100.*real(n)+10.*real(k)+real(nt)
             enddo
@@ -296,9 +296,9 @@ program test15
 !------------------------------------------------------------------
       write(*,*) elmnms(4)
 !     'DICUV'
-      do m = 1, mmax
-         do n = 1, nmax
-            do k = 1, kmax
+      do m = 1, num_columns
+         do n = 1, num_rows
+            do k = 1, num_layers_grid
                rbuff3(m,n,k) =&
                &1000.*real(m)+ 100.*real(n)+10.*real(k)+real(nt)
             enddo
@@ -311,9 +311,9 @@ program test15
 !------------------------------------------------------------------
       write(*,*) elmnms(5)
 !     'DICWW'
-      do m = 1, mmax
-         do n = 1, nmax
-            do k = 1, kmax
+      do m = 1, num_columns
+         do n = 1, num_rows
+            do k = 1, num_layers_grid
                rbuff3(m,n,k) =&
                &1000.*real(m)+ 100.*real(n)+10.*real(k)+real(nt)
             enddo
@@ -348,8 +348,8 @@ program test15
 !------------------------------------------------------------------
       write(*,*) elmnms(8)
 !     'TAUMAX'
-      do m = 1, mmax
-         do n = 1, nmax
+      do m = 1, num_columns
+         do n = 1, num_rows
             rbuff2(m,n) = 0.0
             rbuff2(m,n) =&
             &1000.*real(m)+ 100.*real(n)+real(nt)

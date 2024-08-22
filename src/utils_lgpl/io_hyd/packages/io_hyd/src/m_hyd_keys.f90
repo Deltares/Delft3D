@@ -27,93 +27,86 @@
 
       implicit none
 
-      integer, parameter  :: nokey   = 84           ! number of keywords in hyd file
-
-      character(len=40), parameter :: key(*) = [character(len=40) ::  &
-        'task', &                                         ! 1
-        'geometry', &                                     ! 2
-        'horizontal-aggregation', &                       ! 3
-        'minimum-vert-diffusion-used', &                  ! 4
-        'vertical-diffusion', &                           ! 5
-        'description', &                                  ! 6
-        'end-description', &                              ! 7
-        'reference-time', &                               ! 8
-        'hydrodynamic-start-time', &                      ! 9
-        'hydrodynamic-stop-time', &                       ! 10
-        'hydrodynamic-timestep', &                        ! 11
-        'conversion-ref-time', &                          ! 12
-        'conversion-start-time', &                        ! 13
-        'conversion-stop-time', &                         ! 14
-        'conversion-timestep', &                          ! 15
-        'grid-cells-first-direction', &                   ! 16
-        'grid-cells-second-direction', &                  ! 17
-        'number-hydrodynamic-layers', &                   ! 18
-        'number-water-quality-layers', &                  ! 19
-        'hydrodynamic-file', &                            ! 20
-        'aggregation-file', &                             ! 21
-        'grid-indices-file', &                            ! 22
-        'grid-coordinates-file', &                        ! 23
-        'volumes-file', &                                 ! 24
-        'areas-file', &                                   ! 25
-        'flows-file', &                                   ! 26
-        'pointers-file', &                                ! 27
-        'lengths-file', &                                 ! 28
-        'salinity-file', &                                ! 29
-        'temperature-file', &                             ! 30
-        'vert-diffusion-file', &                          ! 31
-        'surfaces-file', &                                ! 32
-        'total-grid-file', &                              ! 33
-        'discharges-file', &                              ! 34
-        'chezy-coefficients-file', &                      ! 35
-        'shear-stresses-file', &                          ! 36
-        'walking-discharges-file', &                      ! 37
-        'minimum-vert-diffusion', &                       ! 38
-        'upper-layer', &                                  ! 39
-        'lower-layer', &                                  ! 40
-        'interface-depth', &                              ! 41
-        'end-minimum-vert-diffusion', &                   ! 42
-        'constant-dispersion', &                          ! 43
-        'first-direction', &                              ! 44
-        'second-direction', &                             ! 45
-        'third-direction', &                              ! 46
-        'end-constant-dispersion', &                      ! 47
-        'hydrodynamic-layers', &                          ! 48
-        'end-hydrodynamic-layers', &                      ! 49
-        'water-quality-layers', &                         ! 50
-        'end-water-quality-layers', &                     ! 51
-        'discharges', &                                   ! 52
-        'end-discharges', &                               ! 53
-        'domains', &                                      ! 54
-        'end-domains', &                                  ! 55
-        'dd-boundaries', &                                ! 56
-        'end-dd-boundaries', &                            ! 57
-        'normal', &                                       ! 58
-        'inlet', &                                        ! 59
-        'outlet', &                                       ! 60
-        'full-coupling', &                                ! 61
-        'coupling-per-domain', &                          ! 62
-        'attributes-file', &                              ! 63
-        'depths-file', &                                  ! 64
-        'curvilinear-grid', &                             ! 65
-        'yes', &                                          ! 66
-        'no', &                                           ! 67
-        'calculated', &                                   ! 68
-        'unstructured', &                                 ! 69
-        'number-horizontal-exchanges', &                  ! 70
-        'number-vertical-exchanges', &                    ! 71
-        'number-water-quality-segments-per-layer', &      ! 72
-        'horizontal-surfaces-file', &                     ! 73
-        'boundaries-file', &                              ! 74
-        'waqgeom-file', &                                 ! 75
-        'automatic', &                                    ! 76
-        'walking', &                                      ! 77
-        'file-created-by', &                              ! 78
-        'file-creation-date', &                           ! 79
-        'sink-sources', &                                 ! 80
-        'end-sink-sources', &                             ! 81
-        'z-layers', &                                     ! 82
-        'z-layers-ztop', &                                ! 83
-        'z-layers-zbot']                                  ! 84
-
+      character(len=*), parameter :: task = 'task'
+      character(len=*), parameter :: geometry = 'geometry'
+      character(len=*), parameter :: horizontal_aggregation = 'horizontal-aggregation'
+      character(len=*), parameter :: minimum_vert_diffusion_used = 'minimum-vert-diffusion-used'
+      character(len=*), parameter :: vertical_diffusion = 'vertical-diffusion'
+      character(len=*), parameter :: description = 'description'
+      character(len=*), parameter :: end_description = 'end-description'
+      character(len=*), parameter :: reference_time = 'reference-time'
+      character(len=*), parameter :: hydrodynamic_start_time = 'hydrodynamic-start-time'
+      character(len=*), parameter :: hydrodynamic_stop_time = 'hydrodynamic-stop-time'
+      character(len=*), parameter :: hydrodynamic_timestep = 'hydrodynamic-timestep'
+      character(len=*), parameter :: conversion_ref_time = 'conversion-ref-time'
+      character(len=*), parameter :: conversion_start_time = 'conversion-start-time'
+      character(len=*), parameter :: conversion_stop_time = 'conversion-stop-time'
+      character(len=*), parameter :: conversion_timestep = 'conversion-timestep'
+      character(len=*), parameter :: grid_cells_first_direction = 'grid-cells-first-direction'
+      character(len=*), parameter :: grid_cells_second_direction = 'grid-cells-second-direction'
+      character(len=*), parameter :: number_hydrodynamic_layers = 'number-hydrodynamic-layers'
+      character(len=*), parameter :: number_water_quality_layers = 'number-water-quality-layers'
+      character(len=*), parameter :: hydrodynamic_file = 'hydrodynamic-file'
+      character(len=*), parameter :: aggregation_file = 'aggregation-file'
+      character(len=*), parameter :: grid_indices_file = 'grid-indices-file'
+      character(len=*), parameter :: grid_coordinates_file = 'grid-coordinates-file'
+      character(len=*), parameter :: volumes_file = 'volumes-file'
+      character(len=*), parameter :: areas_file = 'areas-file'
+      character(len=*), parameter :: flows_file = 'flows-file'
+      character(len=*), parameter :: pointers_file = 'pointers-file'
+      character(len=*), parameter :: lengths_file = 'lengths-file'
+      character(len=*), parameter :: salinity_file = 'salinity-file'
+      character(len=*), parameter :: temperature_file = 'temperature-file'
+      character(len=*), parameter :: vert_diffusion_file = 'vert-diffusion-file'
+      character(len=*), parameter :: surfaces_file = 'surfaces-file'
+      character(len=*), parameter :: total_grid_file = 'total-grid-file'
+      character(len=*), parameter :: discharges_file = 'discharges-file'
+      character(len=*), parameter :: chezy_coefficients_file = 'chezy-coefficients-file'
+      character(len=*), parameter :: shear_stresses_file = 'shear-stresses-file'
+      character(len=*), parameter :: walking_discharges_file = 'walking-discharges-file'
+      character(len=*), parameter :: minimum_vert_diffusion = 'minimum-vert-diffusion'
+      character(len=*), parameter :: upper_layer = 'upper-layer'
+      character(len=*), parameter :: lower_layer = 'lower-layer'
+      character(len=*), parameter :: interface_depth = 'interface-depth'
+      character(len=*), parameter :: end_minimum_vert_diffusion = 'end-minimum-vert-diffusion'
+      character(len=*), parameter :: constant_dispersion = 'constant-dispersion'
+      character(len=*), parameter :: first_direction = 'first-direction'
+      character(len=*), parameter :: second_direction = 'second-direction'
+      character(len=*), parameter :: third_direction = 'third-direction'
+      character(len=*), parameter :: end_constant_dispersion = 'end-constant-dispersion'
+      character(len=*), parameter :: hydrodynamic_layers = 'hydrodynamic-layers'
+      character(len=*), parameter :: end_hydrodynamic_layers = 'end-hydrodynamic-layers'
+      character(len=*), parameter :: water_quality_layers = 'water-quality-layers'
+      character(len=*), parameter :: end_water_quality_layers = 'end-water-quality-layers'
+      character(len=*), parameter :: discharges = 'discharges'
+      character(len=*), parameter :: end_discharges = 'end-discharges'
+      character(len=*), parameter :: domains = 'domains'
+      character(len=*), parameter :: end_domains = 'end-domains'
+      character(len=*), parameter :: dd_boundaries = 'dd-boundaries'
+      character(len=*), parameter :: end_dd_boundaries = 'end-dd-boundaries'
+      character(len=*), parameter :: normal = 'normal'
+      character(len=*), parameter :: inlet = 'inlet'
+      character(len=*), parameter :: outlet = 'outlet'
+      character(len=*), parameter :: full_coupling = 'full-coupling'
+      character(len=*), parameter :: coupling_per_domain = 'coupling-per-domain'
+      character(len=*), parameter :: attributes_file = 'attributes-file'
+      character(len=*), parameter :: depths_file = 'depths-file'
+      character(len=*), parameter :: curvilinear_grid = 'curvilinear-grid'
+      character(len=*), parameter :: calculated = 'calculated'
+      character(len=*), parameter :: unstructured = 'unstructured'
+      character(len=*), parameter :: number_horizontal_exchanges = 'number-horizontal-exchanges'
+      character(len=*), parameter :: number_vertical_exchanges = 'number-vertical-exchanges'
+      character(len=*), parameter :: number_water_quality_segments_per_layer = 'number-water-quality-segments-per-layer'
+      character(len=*), parameter :: horizontal_surfaces_file = 'horizontal-surfaces-file'
+      character(len=*), parameter :: boundaries_file = 'boundaries-file'
+      character(len=*), parameter :: waqgeom_file = 'waqgeom-file'
+      character(len=*), parameter :: walking = 'walking'
+      character(len=*), parameter :: file_created_by = 'file-created-by'
+      character(len=*), parameter :: file_creation_date = 'file-creation-date'
+      character(len=*), parameter :: sink_sources = 'sink-sources'
+      character(len=*), parameter :: end_sink_sources = 'end-sink-sources'
+      character(len=*), parameter :: z_layers = 'z-layers'
+      character(len=*), parameter :: z_layers_ztop = 'z-layers-ztop'
+      character(len=*), parameter :: z_layers_zbot = 'z-layers-zbot'
 
   end module m_hyd_keys

@@ -50,7 +50,7 @@ contains
         type(stochiprop), pointer :: new_dispstochi(:) ! list with added stochies
         type(stochiprop), pointer :: new_velostochi(:) ! list with added stochies
         type(procesprop), pointer :: proc              ! single process
-        integer(kind = int_wp) :: nproc             ! number of processes
+        integer(kind = int_wp) :: num_processes_activated             ! number of processes
         integer(kind = int_wp) :: iproc             ! loop counter processes
         integer(kind = int_wp) :: isfrac            ! index substance fractions
         integer(kind = int_wp) :: nfrac             ! number fractions in substance fraction
@@ -67,8 +67,8 @@ contains
 
         ! loop over the processes
 
-        nproc = procesdef%current_size
-        do iproc = 1, nproc
+        num_processes_activated = procesdef%current_size
+        do iproc = 1, num_processes_activated
 
             proc => procesdef%procesprops(iproc)
             nstochi = proc%no_dispstochi

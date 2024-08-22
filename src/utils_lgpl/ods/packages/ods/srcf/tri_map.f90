@@ -28,30 +28,8 @@
 !     $Date: 6-06-03 10:40 $
 !     $Source: /u/cvsroot/gpp/libsrc/ods/tri_map.f,v $
 !
-!#ifdef WINNT
-!$ DEFINE GETELT_V8_I
-!      INCLUDE '../include/nfsintrf.i'
-!$ UNDEFINE GETELT_V8_I
-!      INTERFACE TO INTEGER FUNCTION GETELT_i [ALIAS:'_GETELT']
-!     +                             ( VALUE1, VALUE2, VALUE3, VALUE4 ,
-!     +                               VALUE5, VALUE6, VALUE7, VALUE8 )
-!
-!      INTEGER   VALUE1
-!      INTEGER   VALUE2
-!      CHARACTER VALUE3
-!      CHARACTER VALUE4
-!      INTEGER   VALUE5
-!      INTEGER   VALUE6
-!      INTEGER   VALUE7
-!      CHARACTER VALUE8
-!
-!      END
-!#endif
 
 subroutine ods_tri_nef_map_par&
-!#ifdef WINNT
-!     *          [ALIAS:'_ods_tri_nef_map_par']
-!#endif
 &(&
 &fname , itype , pardef, maxdef, timdep, locdep,&
 &maxlst, lang  , parlst, paruni, partyp, parcod,&
@@ -116,7 +94,7 @@ subroutine ods_tri_nef_map_par&
 ! HDEFDS      I*4  2997            Definition file description for the
 !                                  MAP-DEF file
 ! IERROR      I*4                  Error code for NEFIS error
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! LMAX    I   I*4                  Number of constituents
 !                                  for old files LMAX = LSTCI
 !                                  for new files LMAX = LSTCI + LTUR
@@ -152,8 +130,8 @@ subroutine ods_tri_nef_map_par&
    integer         lang
    integer         locdep
    integer         timdep,itype
-   integer         maxdef,maxlst,i     ,npar  ,mmax  ,nmax
-   integer         kmax  ,lmax  ,l     ,ind
+   integer         maxdef,maxlst,i     ,npar  ,num_columns  ,num_rows
+   integer         num_layers_grid  ,lmax  ,l     ,ind
    integer         lstci ,ltur  ,irho
    integer         ierror,nrlst
 !
@@ -184,9 +162,6 @@ subroutine ods_tri_nef_map_par&
    character*16  grpdef,elmnam
 !
    integer       GETELT,GETELS,INQELM
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 
    integer       TMLCDP
    parameter     ( TMLCDP = IPLMNK + IPTDEP )
@@ -292,24 +267,24 @@ subroutine ods_tri_nef_map_par&
    buflen    = 4
 !
    npar      = 0
-   mmax      = 0
-   nmax      = 0
+   num_columns      = 0
+   num_rows      = 0
    lmax      = 0
    lstci     = 0
    ltur      = 0
    irho      = 0
-   kmax      = 0
+   num_layers_grid      = 0
 !
-   elmnam    = 'MMAX'
+   elmnam    = 'num_columns'
    okee = okee .and.&
    &GETELT(hdefds,grpdef    ,elmnam    ,&
-   &uindex,usrord    ,buflen    ,MMAX      )&
+   &uindex,usrord    ,buflen    ,num_columns      )&
    &.eq. 0
 !
-   elmnam    = 'NMAX'
+   elmnam    = 'num_rows'
    okee = okee .and.&
    &GETELT(hdefds,grpdef    ,elmnam    ,&
-   &uindex,usrord    ,buflen    ,NMAX      )&
+   &uindex,usrord    ,buflen    ,num_rows      )&
    &.eq. 0
 !
 !-----------------------------------------------------------------------
@@ -342,9 +317,9 @@ subroutine ods_tri_nef_map_par&
 !
    lmax = lstci + ltur
 !
-   elmnam = 'KMAX'
+   elmnam = 'num_layers_grid'
    ierror = GETELT(hdefds,grpdef    ,elmnam    ,&
-   &uindex,usrord    ,buflen    ,KMAX      )
+   &uindex,usrord    ,buflen    ,num_layers_grid      )
    if (ierror .ne. 0) then
       okee   = .false.
       goto 8888
@@ -355,11 +330,7 @@ subroutine ods_tri_nef_map_par&
 !-----------------------------------------------------------------------
    buflen    = 20
    elmnam    = 'SELMAP'
-!#ifdef WINNT
-!     ierror    = GETELT_i
-!#else
    ierror    = GETELS&
-!#endif
    &(hdefds   ,grpdef    ,elmnam    ,&
    &uindex   ,usrord    ,buflen    ,SELMAP    )
    if (ierror .ne. 0) then
@@ -368,10 +339,10 @@ subroutine ods_tri_nef_map_par&
 !           re-define SELMAP like definition in subroutine RDPRFL
 !-----------------------------------------------------------------------
       selmap = 'YYYYYYYYYYYYYYYYYYYY'
-      if (kmax   .eq. 1) selmap( 4: 5) = 'NN'
+      if (num_layers_grid   .eq. 1) selmap( 4: 5) = 'NN'
       if (lstci  .eq. 0) selmap( 6:13) = 'NNNNNNNN'
       if (ltur   .eq. 0) selmap(14:15) = 'NN'
-      if (kmax   .eq. 1) selmap(18:19) = 'NN'
+      if (num_layers_grid   .eq. 1) selmap(18:19) = 'NN'
       if (lmax   .eq. 0) selmap(19:19) = 'N'
       selmap(20:20) = 'X'
    endif
@@ -382,11 +353,7 @@ subroutine ods_tri_nef_map_par&
    if (index (selmap( 6:15),'Y') .gt. 0) then
       buflen    = 20 * lmax
       elmnam    = 'NAMCON'
-!#ifdef WINNT
-!        ierror    = GETELT_i
-!#else
       ierror    = GETELS&
-!#endif
       &(hdefds,grpdef    ,elmnam    ,&
       &uindex,usrord    ,buflen    ,NAMCON    )
       if (ierror .ne. 0) then
@@ -429,7 +396,7 @@ subroutine ods_tri_nef_map_par&
       paruni(npar) = mapuni(parcod(npar))
    endif
    if ( selmap(2:3) .eq. 'YY' ) then
-      if (kmax .gt. 1) then
+      if (num_layers_grid .gt. 1) then
 !--------dpt. aver. cur. u
          npar = npar + 1
          parcod(npar) = mapind( 3)
@@ -483,7 +450,7 @@ subroutine ods_tri_nef_map_par&
    endif
 
    if ( selmap(5:5) .eq. 'Y' ) then
-      if (kmax .gt. 1) then
+      if (num_layers_grid .gt. 1) then
 !--------current w.   (layer)
          npar = npar + 1
          parcod(npar) = mapind(11)
@@ -493,7 +460,7 @@ subroutine ods_tri_nef_map_par&
       endif
    endif
 !--------z-coordinate (can always be defined: 2D or 3D)
-!     if (kmax .gt. 1) then
+!     if (num_layers_grid .gt. 1) then
    npar = npar + 1
    parcod(npar) = mapind(12)
    parlst(npar) = maplst(parcod(npar))
@@ -515,7 +482,7 @@ subroutine ods_tri_nef_map_par&
 !     paruni(npar) = mapuni(parcod(npar))
 
    if ( selmap(18:18) .eq. 'Y' ) then
-      if (kmax .gt. 1) then
+      if (num_layers_grid .gt. 1) then
 !--------eddy viscosity, ZVICWW
          npar = npar + 1
          parcod(npar) = mapind(15)
@@ -580,7 +547,7 @@ subroutine ods_tri_nef_map_par&
       endif
 
       if ( selmap(19:19) .eq. 'Y' ) then
-         if (kmax   .gt. 1) then
+         if (num_layers_grid   .gt. 1) then
 !-----------eddy diffusivity, ZDICWW
             npar = npar + 1
             parcod(npar) = mapind(32)
@@ -612,7 +579,7 @@ subroutine ods_tri_nef_map_par&
 !     paruni(npar) = mapuni(parcod(npar))
 
 !     if ( selmap(1:3) .eq. 'YYY' ) then
-!        if (kmax .gt. 1) then
+!        if (num_layers_grid .gt. 1) then
 !--------vectors depth average velocity
 !           npar = npar + 1
 !           parcod(npar) = mapind(38)
@@ -728,9 +695,6 @@ subroutine ods_tri_nef_map_par&
 end
 
 subroutine ods_tri_nef_map_dim&
-!#ifdef WINNT
-!    *          [ALIAS:'_ods_tri_nef_map_dim']
-!#endif
 &(&
 &fname ,itype ,dimtyp, pardep, timdep, locdep,&
 &ndim  ,ierror, option                       )
@@ -790,7 +754,7 @@ subroutine ods_tri_nef_map_dim&
 ! HDEFDS      I*4  2997            Definition file description for the
 !                                  MAP-DEF file
 ! IERROR      I*4                  Error code for NEFIS error
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! L           I*4                  Help variable
 ! LMAX    I   I*4                  Number of constituents
 !                                  for old files LMAX = LSTCI
@@ -815,8 +779,8 @@ subroutine ods_tri_nef_map_dim&
    include 'ods.inc'
 !
    integer         ierror,itype
-   integer         nrcel ,npar  ,lmax  ,kmax  ,l
-   integer         mmax  ,nmax
+   integer         nrcel ,npar  ,lmax  ,num_layers_grid  ,l
+   integer         num_columns  ,num_rows
    integer         pardep,timdep,locdep
    integer         lstci ,ltur  ,irho
    integer         ndim   (4    )
@@ -841,9 +805,6 @@ subroutine ods_tri_nef_map_dim&
 !
    integer       INQGRP,GETELT,GETELS
    integer       INQMXI
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 
 !-----------------------------------------------------------------------
 !-----Initialisation
@@ -925,24 +886,24 @@ subroutine ods_tri_nef_map_dim&
    buflen    = 4
 !
    npar      = 0
-   mmax      = 0
-   nmax      = 0
+   num_columns      = 0
+   num_rows      = 0
    lmax      = 0
    lstci     = 0
    ltur      = 0
    irho      = 0
-   kmax      = 0
+   num_layers_grid      = 0
 !
-   elmnam    = 'MMAX'
+   elmnam    = 'num_columns'
    okee = okee .and.&
    &GETELT(hdefds,grpdef    ,elmnam    ,&
-   &uindex,usrord    ,buflen    ,MMAX      )&
+   &uindex,usrord    ,buflen    ,num_columns      )&
    &.eq. 0
 !
-   elmnam    = 'NMAX'
+   elmnam    = 'num_rows'
    okee = okee .and.&
    &GETELT(hdefds,grpdef    ,elmnam    ,&
-   &uindex,usrord    ,buflen    ,NMAX      )&
+   &uindex,usrord    ,buflen    ,num_rows      )&
    &.eq. 0
 !
 !--------------------------------------------------------------------
@@ -975,9 +936,9 @@ subroutine ods_tri_nef_map_dim&
 !
    lmax = lstci + ltur
 !
-   elmnam = 'KMAX'
+   elmnam = 'num_layers_grid'
    ierror = GETELT(hdefds,grpdef    ,elmnam    ,&
-   &uindex,usrord    ,buflen    ,KMAX      )
+   &uindex,usrord    ,buflen    ,num_layers_grid      )
    if (ierror .ne. 0) then
       okee = .false.
       goto 8888
@@ -988,11 +949,7 @@ subroutine ods_tri_nef_map_dim&
 !-----------------------------------------------------------------------
    buflen    = 20
    elmnam    = 'SELMAP'
-!#ifdef WINNT
-!     ierror    = GETELT_i
-!#else
    ierror    = GETELS&
-!#endif
    &(hdefds   ,grpdef    ,elmnam    ,&
    &uindex   ,usrord    ,buflen    ,SELMAP    )
    if (ierror .ne. 0) then
@@ -1001,10 +958,10 @@ subroutine ods_tri_nef_map_dim&
 !           re-define SELMAP like definition in subroutine RDPRFL
 !-----------------------------------------------------------------------
       selmap = 'YYYYYYYYYYYYYYYYYYYY'
-      if (kmax   .eq. 1) selmap( 4: 5) = 'NN'
+      if (num_layers_grid   .eq. 1) selmap( 4: 5) = 'NN'
       if (lstci  .eq. 0) selmap( 6:13) = 'NNNNNNNN'
       if (ltur   .eq. 0) selmap(14:15) = 'NN'
-      if (kmax   .eq. 1) selmap(18:19) = 'NN'
+      if (num_layers_grid   .eq. 1) selmap(18:19) = 'NN'
       if (lmax   .eq. 0) selmap(19:19) = 'N'
       selmap(20:20) = 'X'
    endif
@@ -1015,11 +972,7 @@ subroutine ods_tri_nef_map_dim&
    if (index (selmap( 6:15),'Y') .gt. 0) then
       buflen    = 20 * lmax
       elmnam    = 'NAMCON'
-!#ifdef WINNT
-!        ierror    = GETELT_i
-!#else
       ierror    = GETELS&
-!#endif
       &(hdefds,grpdef    ,elmnam    ,&
       &uindex,usrord    ,buflen    ,NAMCON    )
       if (ierror .ne. 0) then
@@ -1054,7 +1007,7 @@ subroutine ods_tri_nef_map_dim&
       npar = npar + 1
    endif
    if ( selmap(2:3) .eq. 'YY' ) then
-      if (kmax .gt. 1) then
+      if (num_layers_grid .gt. 1) then
 !--------dpt. aver. cur. u                           pardep =  3
          npar = npar + 1
 !--------dpt. aver. cur. v                           pardep =  4
@@ -1084,13 +1037,13 @@ subroutine ods_tri_nef_map_dim&
    endif
 
    if ( selmap(5:5) .eq. 'Y' ) then
-      if (kmax .gt. 1) then
+      if (num_layers_grid .gt. 1) then
 !--------current w.   (layer)                        pardep = 11
          npar = npar + 1
       endif
    endif
 !--------z-coordinate                                pardep = 12
-!     if (kmax .gt. 1) then
+!     if (num_layers_grid .gt. 1) then
    npar = npar + 1
 !     endif
 
@@ -1100,7 +1053,7 @@ subroutine ods_tri_nef_map_dim&
 !     npar = npar + 1
 
    if ( selmap(18:18) .eq. 'Y' ) then
-      if (kmax .gt. 1) then
+      if (num_layers_grid .gt. 1) then
 !--------eddy viscosity, ZVICWW  (layer)             pardep = 15
          npar = npar + 1
       endif
@@ -1132,7 +1085,7 @@ subroutine ods_tri_nef_map_dim&
       endif
 
       if ( selmap(19:19) .eq. 'Y' ) then
-         if (kmax   .gt. 1) then
+         if (num_layers_grid   .gt. 1) then
 !-----------eddy diffusivity, ZDICWW  (layer)        pardep = 32
             npar = npar + 1
          endif
@@ -1182,20 +1135,20 @@ subroutine ods_tri_nef_map_dim&
       if ( pardep .ge. 38 .and. pardep .le. 39 ) then
 !-----------vectors (u, v componen) with one layer
          ndim (1) = 3
-         ndim (2) = mmax
-         ndim (3) = nmax
+         ndim (2) = num_columns
+         ndim (3) = num_rows
          ndim (4) = 2
       else if ( pardep .ge. 40 .and. pardep .le. 42 ) then
 !-----------vectors (u, v componen) with possibly more than one layer
-         if ( kmax .gt. 1 ) then
+         if ( num_layers_grid .gt. 1 ) then
             ndim (1) = 3
-            ndim (2) = mmax
-            ndim (3) = nmax
-            ndim (4) = kmax * 2
+            ndim (2) = num_columns
+            ndim (3) = num_rows
+            ndim (4) = num_layers_grid * 2
          else
             ndim (1) = 3
-            ndim (2) = mmax
-            ndim (3) = nmax
+            ndim (2) = num_columns
+            ndim (3) = num_rows
             ndim (4) = 2
          endif
       endif
@@ -1208,53 +1161,53 @@ subroutine ods_tri_nef_map_dim&
 !              .false. then poss. 3 dimensional (7-11,12,15,20-29,31,32)
       if ( chk ) then
          ndim (1) = 2
-         ndim (2) = mmax
-         ndim (3) = nmax
+         ndim (2) = num_columns
+         ndim (3) = num_rows
       else
          if ( pardep .eq. 15 .or. pardep .eq. 32 ) then
-!--------------ZVICWW and ZDICWW with layers (0:kmax)
+!--------------ZVICWW and ZDICWW with layers (0:num_layers_grid)
             ndim (1) = 3
-            ndim (2) = mmax
-            ndim (3) = nmax
-            ndim (4) = kmax + 1
+            ndim (2) = num_columns
+            ndim (3) = num_rows
+            ndim (4) = num_layers_grid + 1
          else if ( pardep .eq. 12 ) then
 !--------------z-coordinate
             ndim (1) = 3
-            ndim (2) = mmax
-            ndim (3) = nmax
-            ndim (4) = kmax + 1
+            ndim (2) = num_columns
+            ndim (3) = num_rows
+            ndim (4) = num_layers_grid + 1
          else if ( pardep .ge. 20 .and. pardep .le. 29 ) then
 !--------------constituents or turbulence v245 or later
             if ( pardep-19 .gt. lstci ) then
-!-----------------turbulence with layers (0:kmax)
+!-----------------turbulence with layers (0:num_layers_grid)
                ndim (1) = 3
-               ndim (2) = mmax
-               ndim (3) = nmax
-               ndim (4) = kmax + 1
+               ndim (2) = num_columns
+               ndim (3) = num_rows
+               ndim (4) = num_layers_grid + 1
             else
-!-----------------constituents or turbulence with layers (1:kmax)
+!-----------------constituents or turbulence with layers (1:num_layers_grid)
 !                 v240 or before
-               if ( kmax .gt. 1 ) then
+               if ( num_layers_grid .gt. 1 ) then
                   ndim (1) = 3
-                  ndim (2) = mmax
-                  ndim (3) = nmax
-                  ndim (4) = kmax
+                  ndim (2) = num_columns
+                  ndim (3) = num_rows
+                  ndim (4) = num_layers_grid
                else
                   ndim (1) = 2
-                  ndim (2) = mmax
-                  ndim (3) = nmax
+                  ndim (2) = num_columns
+                  ndim (3) = num_rows
                endif
             endif
          else
-            if ( kmax .gt. 1 ) then
+            if ( num_layers_grid .gt. 1 ) then
                ndim (1) = 3
-               ndim (2) = mmax
-               ndim (3) = nmax
-               ndim (4) = kmax
+               ndim (2) = num_columns
+               ndim (3) = num_rows
+               ndim (4) = num_layers_grid
             else
                ndim (1) = 2
-               ndim (2) = mmax
-               ndim (3) = nmax
+               ndim (2) = num_columns
+               ndim (3) = num_rows
             endif
          endif
       endif
@@ -1280,9 +1233,6 @@ subroutine ods_tri_nef_map_dim&
 end
 
 subroutine ods_tri_nef_map_tme&
-!#ifdef WINNT
-!    *          [ALIAS:'_ods_tri_nef_map_tme']
-!#endif
 &(&
 &fname  ,itype  ,timdef, maxdef ,pardep , locdep,&
 &maxlst ,        timlst,         timtyp ,&
@@ -1360,7 +1310,7 @@ subroutine ods_tri_nef_map_tme&
 ! ITP         I*4                  Help var. time part julian notation
 ! IY          I*4                  Year part of ITDATE (yyyy)
 ! JULDAY      I*4                  julian day number of ITDATE
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! L           I*4                  Help var.
 ! LMAX        I*4                  Number of constituents
 ! M           I*4                  Help var.
@@ -1413,9 +1363,6 @@ subroutine ods_tri_nef_map_tme&
 !
    integer       INQGRP,GETELT,GETELS
    integer       INQMXI
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 
 !-----------------------------------------------------------------------
 !-----Initialisation
@@ -1618,9 +1565,6 @@ subroutine ods_tri_nef_map_tme&
 end
 
 subroutine julind_map&
-!#ifdef WINNT
-!    *          [ALIAS:'_julind_map']
-!#endif
 &(hdefds, hdafds, tim, nindex, ierror)
 !-----------------------------------------------------------------------
 !           Function: transform julian day to index in time series
@@ -1728,9 +1672,6 @@ subroutine julind_map&
    &uindex(    3),usrord,buflen
    character*16  grpdef,elmnam,celnam
    integer       INQGRP,GETELT,GETELS,INQMXI
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 
 !-----------------------------------------------------------------------
 !-----Initialisation
@@ -1903,9 +1844,6 @@ subroutine julind_map&
 end
 
 subroutine ods_tri_nef_map_loc&
-!#ifdef WINNT
-!    *          [ALIAS:'_ods_tri_nef_map_loc']
-!#endif
 &(&
 &fname  ,itype  ,locdef ,maxdef ,pardep ,timdep ,&
 &maxlst ,        loclst ,        loctyp ,nrlst  ,&
@@ -1994,7 +1932,7 @@ subroutine ods_tri_nef_map_loc&
 !
    integer         ierror,nrlst ,ind   ,l
    integer         lstci ,ltur  ,irho
-   integer         mmax  ,nmax  ,lmax  ,kmax ,npar
+   integer         num_columns  ,num_rows  ,lmax  ,num_layers_grid ,npar
    integer         maxlst,itype
    integer         maxdef
    integer         pardep
@@ -2021,9 +1959,6 @@ subroutine ods_tri_nef_map_loc&
    character*16  grpdef,elmnam
 !
    integer       GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----Initialisation
 !-----------------------------------------------------------------------
@@ -2058,24 +1993,24 @@ subroutine ods_tri_nef_map_loc&
    buflen    = 4
 !
    npar      = 0
-   mmax      = 0
-   nmax      = 0
+   num_columns      = 0
+   num_rows      = 0
    lmax      = 0
    lstci     = 0
    ltur      = 0
    irho      = 0
-   kmax      = 0
+   num_layers_grid      = 0
 !
-   elmnam    = 'MMAX'
+   elmnam    = 'num_columns'
    okee = okee .and.&
    &GETELT(hdefds,grpdef    ,elmnam    ,&
-   &uindex,usrord    ,buflen    ,MMAX      )&
+   &uindex,usrord    ,buflen    ,num_columns      )&
    &.eq. 0
 !
-   elmnam    = 'NMAX'
+   elmnam    = 'num_rows'
    okee = okee .and.&
    &GETELT(hdefds,grpdef    ,elmnam    ,&
-   &uindex,usrord    ,buflen    ,NMAX      )&
+   &uindex,usrord    ,buflen    ,num_rows      )&
    &.eq. 0
 !
 !--------------------------------------------------------------------
@@ -2108,9 +2043,9 @@ subroutine ods_tri_nef_map_loc&
 !
    lmax = lstci + ltur
 !
-   elmnam = 'KMAX'
+   elmnam = 'num_layers_grid'
    ierror = GETELT(hdefds,grpdef    ,elmnam    ,&
-   &uindex,usrord    ,buflen    ,KMAX      )
+   &uindex,usrord    ,buflen    ,num_layers_grid      )
    if (ierror .ne. 0) then
       okee = .false.
       goto 8888
@@ -2121,11 +2056,7 @@ subroutine ods_tri_nef_map_loc&
 !-----------------------------------------------------------------------
    buflen    = 20
    elmnam    = 'SELMAP'
-!#ifdef WINNT
-!     ierror    = GETELT_i
-!#else
    ierror    = GETELS&
-!#endif
    &(hdefds   ,grpdef    ,elmnam    ,&
    &uindex   ,usrord    ,buflen    ,SELMAP    )
    if (ierror .ne. 0) then
@@ -2134,10 +2065,10 @@ subroutine ods_tri_nef_map_loc&
 !           re-define SELMAP like definition in subroutine RDPRFL
 !-----------------------------------------------------------------------
       selmap = 'YYYYYYYYYYYYYYYYYYYY'
-      if (kmax   .eq. 1) selmap( 4: 5) = 'NN'
+      if (num_layers_grid   .eq. 1) selmap( 4: 5) = 'NN'
       if (lstci  .eq. 0) selmap( 6:13) = 'NNNNNNNN'
       if (ltur   .eq. 0) selmap(14:15) = 'NN'
-      if (kmax   .eq. 1) selmap(18:19) = 'NN'
+      if (num_layers_grid   .eq. 1) selmap(18:19) = 'NN'
       if (lmax   .eq. 0) selmap(19:19) = 'N'
       selmap(20:20) = 'X'
    endif
@@ -2148,11 +2079,7 @@ subroutine ods_tri_nef_map_loc&
    if (index (selmap( 6:15),'Y') .gt. 0) then
       buflen    = 20 * lmax
       elmnam    = 'NAMCON'
-!#ifdef WINNT
-!        ierror    = GETELT_i
-!#else
       ierror    = GETELS&
-!#endif
       &(hdefds,grpdef    ,elmnam    ,&
       &uindex,usrord    ,buflen    ,NAMCON    )
       if (ierror .ne. 0) then
@@ -2210,9 +2137,6 @@ subroutine ods_tri_nef_map_loc&
 end
 
 subroutine ods_tri_nef_map_mat&
-!#ifdef WINNT
-!    *          [ALIAS:'_ods_tri_nef_map_mat']
-!#endif
 &(&
 &fname ,itype  ,parcod, loc   , tim   ,misval,&
 &i3gl  ,maxdim ,xdata , ierror, option,&
@@ -2279,7 +2203,7 @@ subroutine ods_tri_nef_map_mat&
 ! HDEFDS      I*4  2997            Definition file description for the
 ! IERROR      I*4                  Error code for NEFIS error
 ! ITIM        I*4                  index of map time
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! LMAX    I   I*4                  Number of constituents
 !                                  for old files LMAX = LSTCI
 !                                  for new files LMAX = LSTCI + LTUR
@@ -2363,7 +2287,7 @@ subroutine ods_tri_nef_map_mat&
 !
    integer         nindex (3)
    integer         lay(3),ind   ,itim  ,l
-   integer         ierror,kmax  ,lmax  ,mmax  ,nmax
+   integer         ierror,num_layers_grid  ,lmax  ,num_columns  ,num_rows
    integer         lstci ,ltur  ,irho  ,kmaxon
    integer         noroco,irocol
 !
@@ -2383,9 +2307,6 @@ subroutine ods_tri_nef_map_mat&
    character*64  elmdes
 !
    integer       GETELT,GETELS,INQELM
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----Initialisation
 !-----------------------------------------------------------------------
@@ -2420,25 +2341,25 @@ subroutine ods_tri_nef_map_mat&
    usrord    = 1
    buflen    = 4
 !
-   mmax      = 0
-   nmax      = 0
+   num_columns      = 0
+   num_rows      = 0
    lmax      = 0
    lstci     = 0
    ltur      = 0
    irho      = 0
-   kmax      = 0
+   num_layers_grid      = 0
    noroco    = 0
 !
-   elmnam    = 'MMAX'
+   elmnam    = 'num_columns'
    okee = okee .and.&
    &GETELT(hdefds,grpdef    ,elmnam    ,&
-   &uindex,usrord    ,buflen    ,MMAX      )&
+   &uindex,usrord    ,buflen    ,num_columns      )&
    &.eq. 0
 !
-   elmnam    = 'NMAX'
+   elmnam    = 'num_rows'
    okee = okee .and.&
    &GETELT(hdefds,grpdef    ,elmnam    ,&
-   &uindex,usrord    ,buflen    ,NMAX      )&
+   &uindex,usrord    ,buflen    ,num_rows      )&
    &.eq. 0
 !
 !--------------------------------------------------------------------
@@ -2471,9 +2392,9 @@ subroutine ods_tri_nef_map_mat&
 !
    lmax = lstci + ltur
 !
-   elmnam = 'KMAX'
+   elmnam = 'num_layers_grid'
    ierror = GETELT(hdefds,grpdef    ,elmnam    ,&
-   &uindex,usrord    ,buflen    ,KMAX      )
+   &uindex,usrord    ,buflen    ,num_layers_grid      )
    if (ierror .ne. 0) then
       okee   = .false.
       goto 8888
@@ -2484,11 +2405,7 @@ subroutine ods_tri_nef_map_mat&
 !-----------------------------------------------------------------------
    buflen    = 20
    elmnam    = 'SELMAP'
-!#ifdef WINNT
-!     ierror    = GETELT_i
-!#else
    ierror    = GETELS&
-!#endif
    &(hdefds   ,grpdef    ,elmnam    ,&
    &uindex   ,usrord    ,buflen    ,SELMAP    )
    if (ierror .ne. 0) then
@@ -2497,10 +2414,10 @@ subroutine ods_tri_nef_map_mat&
 !           re-define SELMAP like definition in subroutine RDPRFL
 !-----------------------------------------------------------------------
       selmap = 'YYYYYYYYYYYYYYYYYYYY'
-      if (kmax   .eq. 1) selmap( 4: 5) = 'NN'
+      if (num_layers_grid   .eq. 1) selmap( 4: 5) = 'NN'
       if (lstci  .eq. 0) selmap( 6:13) = 'NNNNNNNN'
       if (ltur   .eq. 0) selmap(14:15) = 'NN'
-      if (kmax   .eq. 1) selmap(18:19) = 'NN'
+      if (num_layers_grid   .eq. 1) selmap(18:19) = 'NN'
       if (lmax   .eq. 0) selmap(19:19) = 'N'
       selmap(20:20) = 'X'
    endif
@@ -2511,11 +2428,7 @@ subroutine ods_tri_nef_map_mat&
    if (index (selmap( 6:15),'Y') .gt. 0) then
       buflen    = 20 * lmax
       elmnam    = 'NAMCON'
-!#ifdef WINNT
-!        ierror    = GETELT_i
-!#else
       ierror    = GETELS&
-!#endif
       &(hdefds,grpdef    ,elmnam    ,&
       &uindex,usrord    ,buflen    ,NAMCON    )
       if (ierror .ne. 0) then
@@ -2553,7 +2466,7 @@ subroutine ods_tri_nef_map_mat&
 !--------version 2.45 and later
       kmaxon    = 1
    else
-      if (elmdms(elmndm) .eq. kmax) then
+      if (elmdms(elmndm) .eq. num_layers_grid) then
 !--------version 2.03
          kmaxon    = 0
       else
@@ -2566,38 +2479,38 @@ subroutine ods_tri_nef_map_mat&
 !--------array indices (reals)
 !-----------------------------------------------------------------------
    xcor   = 1
-   ycor   = xcor   + nmax   * mmax
-   xz     = ycor   + nmax   * mmax
-   yz     = xz     + nmax   * mmax
-   alfas  = yz     + nmax   * mmax
-   dp     = alfas  + nmax   * mmax
-   dps    = dp     + nmax   * mmax
-   thick  = dps    + nmax   * mmax
-   jconst = thick  + kmax   + 1
+   ycor   = xcor   + num_rows   * num_columns
+   xz     = ycor   + num_rows   * num_columns
+   yz     = xz     + num_rows   * num_columns
+   alfas  = yz     + num_rows   * num_columns
+   dp     = alfas  + num_rows   * num_columns
+   dps    = dp     + num_rows   * num_columns
+   thick  = dps    + num_rows   * num_columns
+   jconst = thick  + num_layers_grid   + 1
    s1     = jconst
-   tauksi = s1     + nmax * mmax
-   taueta = tauksi + nmax * mmax
+   tauksi = s1     + num_rows * num_columns
+   taueta = tauksi + num_rows * num_columns
    u1     = jconst
-   v1     = u1     + nmax * mmax * kmax
-   wphy   = v1     + nmax * mmax * kmax
+   v1     = u1     + num_rows * num_columns * num_layers_grid
+   wphy   = v1     + num_rows * num_columns * num_layers_grid
    r1     = jconst
    vicww  = jconst
-   dicww  = vicww  + nmax * mmax * (kmax+kmaxon)
-   rho    = dicww  + nmax * mmax * (kmax+kmaxon)
-!        next   = jconst + nmax * mmax * (kmax+kmaxon) * max (3,lmax)
+   dicww  = vicww  + num_rows * num_columns * (num_layers_grid+kmaxon)
+   rho    = dicww  + num_rows * num_columns * (num_layers_grid+kmaxon)
+!        next   = jconst + num_rows * num_columns * (num_layers_grid+kmaxon) * max (3,lmax)
 !
 !-----------------------------------------------------------------------
 !--------array indices (integers)
 !-----------------------------------------------------------------------
    irocol =  1
    kcs    =  irocol + 5     * noroco
-   kcu    =  kcs    + nmax  * mmax
-   kcv    =  kcu    + nmax  * mmax
-   kfu    =  kcv    + nmax  * mmax
-   kfv    =  kfu    + nmax  * mmax
-   iflag  =  kfv    + nmax  * mmax
-   igrid  =  iflag  + nmax  * mmax
-!        next   =  igrid  + nmax  * mmax
+   kcu    =  kcs    + num_rows  * num_columns
+   kcv    =  kcu    + num_rows  * num_columns
+   kfu    =  kcv    + num_rows  * num_columns
+   kfv    =  kfu    + num_rows  * num_columns
+   iflag  =  kfv    + num_rows  * num_columns
+   igrid  =  iflag  + num_rows  * num_columns
+!        next   =  igrid  + num_rows  * num_columns
 !
 !-----------------------------------------------------------------------
 !-----calculate indices for time frame
@@ -2616,13 +2529,13 @@ subroutine ods_tri_nef_map_mat&
 !-----set loc (layer  ) {precon: loc(1,3)<=loc(2,3) and loc(3,3)=1}
 !--------------------------------------------------------------------
    lay(1) = max( 1, loc(1,3) )
-   lay(2) = max( 1, min( loc(2,3), kmax) )
+   lay(2) = max( 1, min( loc(2,3), num_layers_grid) )
    lay(3) = max( 1, loc(3,3) )
 !
 !-----------------------------------------------------------------------
    call ods_tri_nef_map_getdata(&
    &hdefds        ,hdafds        ,misval        ,&
-   &nmax          ,mmax          ,kmax          ,&
+   &num_rows          ,num_columns          ,num_layers_grid          ,&
    &lmax          ,noroco        ,itim          ,&
    &lay           ,parcod        ,ierror        ,&
    &lstci         ,ltur          ,kmaxon        ,&
@@ -2658,12 +2571,9 @@ subroutine ods_tri_nef_map_mat&
 end
 
 subroutine ods_tri_nef_map_getdata&
-!#ifdef WINNT
-!    *          [ALIAS:'_ods_tri_nef_map_getdata']
-!#endif
 &(&
 &hdefds        ,hdafds        ,misval        ,&
-&nmax          ,mmax          ,kmax          ,&
+&num_rows          ,num_columns          ,num_layers_grid          ,&
 &lmax          ,noroco        ,itim          ,&
 &lay           ,parcod        ,ierror        ,&
 &lstci         ,ltur          ,kmaxon        ,&
@@ -2710,7 +2620,7 @@ subroutine ods_tri_nef_map_getdata&
 ! HDEFDS      I*4  2997            Definition file description for the
 ! MISVAL      R*4                  missing value
 ! ITIM        I*4                  index of map time
-! KMAX    I   I*4                  Number of layers
+! num_layers_grid    I   I*4                  Number of layers
 ! LAY     I   I*4  3               Specified layers
 ! LMAX    I   I*4                  Number of constituents
 !                                  for old files LMAX = LSTCI
@@ -2718,8 +2628,8 @@ subroutine ods_tri_nef_map_getdata&
 ! LSTCI   I   I*4                  Total number of constituents (incl.
 !                                  turbulence for old trim files).
 ! LTUR    I   I*4                  Number of turbulence constituents
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
 ! NOROCO  I   I*4                  Number of Computational rows & cols
 ! MAXDIM      I*4            I     length of data array
 ! XDATA       R*4   maxdim   O     array with the data
@@ -2765,52 +2675,52 @@ subroutine ods_tri_nef_map_getdata&
 !  not yet implemented             51 =      z coordinate step
 !  not yet implemented             52 =      z coordinate slope
 !                                  12 =      z-coordinate
-! DICWW   --  R*4  NMAX,MMAX,KMAX+1Diffusity in zeta points
-! DP      --  R*4  NMAX,MMAX       Depth values in depth points
-! DPS     --  R*4  NMAX,MMAX       Depth values in zeta points depending
+! DICWW   --  R*4  num_rows,num_columns,num_layers_grid+1Diffusity in zeta points
+! DP      --  R*4  num_rows,num_columns       Depth values in depth points
+! DPS     --  R*4  num_rows,num_columns       Depth values in zeta points depending
 !                                  on dryflp
-! ALFAS   --  R*4  NMAX,MMAX       Transformation coefficients (in radians)
-! IFLAG   --  I*4  NMAX,MMAX       Array for permanent and tempory dry
+! ALFAS   --  R*4  num_rows,num_columns       Transformation coefficients (in radians)
+! IFLAG   --  I*4  num_rows,num_columns       Array for permanent and tempory dry
 !                                  point
-! IGRID   --  I*4  NMAX,MMAX       Array with actual grid
+! IGRID   --  I*4  num_rows,num_columns       Array with actual grid
 ! IROCOL  --  I*4  5,NOROCO        Pointer table with bound. coord. and
 !                                  bound. types (comp. cols. and rows)
-! KCS     --  I*4  NMAX,MMAX       Mask array for the zeta points
+! KCS     --  I*4  num_rows,num_columns       Mask array for the zeta points
 !                                  (time independent)
 !                                  =0 inactive point
 !                                  =1 active   point
 !                                  =2 open boundary point
-! KCU     --  I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KCU     --  I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time independent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KCV     --  I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KCV     --  I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time independent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFU     --  I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KFU     --  I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFV     --  I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KFV     --  I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! R1      --  R*4  NMAX,MMAX,KMAX+1,LMAX
+! R1      --  R*4  num_rows,num_columns,num_layers_grid+1,LMAX
 !                                  Concentrations in zeta point
-! RHO     --  R*4  NMAX,MMAX,KMAX  Density in zeta points
-! S1      --  R*4  NMAX,MMAX       Water-level in zeta point
-! TAUETA  --  R*4  NMAX,MMAX       Tau bottom in v-velocity point
-! TAUKSI  --  R*4  NMAX,MMAX       Tau bottom in u-velocity point
-! THICK   --  R*4  KMAX            Relative layer thickness
-! U1      --  R*4  NMAX,MMAX,KMAX  U-velocity in u-velocity point
-! V1      --  R*4  NMAX,MMAX,KMAX  V-velocity in v-velocity point
-! VICWW   --  R*4  NMAX,MMAX,KMAX+1Viscosity in zeta points
-! WPHY    --  R*4  NMAX,MMAX,KMAX  W-velocity in zeta point
-! XCOR    --  R*4  NMAX,MMAX       X-coordinate in depth point
-! XZ      --  R*4  NMAX,MMAX       X-coordinate in zeta point
-! YCOR    --  R*4  NMAX,MMAX       Y-coordinate in depth point
-! YZ      --  R*4  NMAX,MMAX       Y-coordinate in zeta point
+! RHO     --  R*4  num_rows,num_columns,num_layers_grid  Density in zeta points
+! S1      --  R*4  num_rows,num_columns       Water-level in zeta point
+! TAUETA  --  R*4  num_rows,num_columns       Tau bottom in v-velocity point
+! TAUKSI  --  R*4  num_rows,num_columns       Tau bottom in u-velocity point
+! THICK   --  R*4  num_layers_grid            Relative layer thickness
+! U1      --  R*4  num_rows,num_columns,num_layers_grid  U-velocity in u-velocity point
+! V1      --  R*4  num_rows,num_columns,num_layers_grid  V-velocity in v-velocity point
+! VICWW   --  R*4  num_rows,num_columns,num_layers_grid+1Viscosity in zeta points
+! WPHY    --  R*4  num_rows,num_columns,num_layers_grid  W-velocity in zeta point
+! XCOR    --  R*4  num_rows,num_columns       X-coordinate in depth point
+! XZ      --  R*4  num_rows,num_columns       X-coordinate in zeta point
+! YCOR    --  R*4  num_rows,num_columns       Y-coordinate in depth point
+! YZ      --  R*4  num_rows,num_columns       Y-coordinate in zeta point
 !-----------------------------------------------------------------------
 !    Local variables:
 !    ----------------
@@ -2825,7 +2735,7 @@ subroutine ods_tri_nef_map_getdata&
 ! IERROR      I*4                  Error code for NEFIS error
 ! IRHO        I*4                  Parameter to check if var='rh' is
 !                                  permitted (irho = 1)
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! LMAX        I*4                  Number of constituents
 ! LAY         I*4                  Actual layer number
 ! K           I*4                  Loop variable
@@ -2850,7 +2760,7 @@ subroutine ods_tri_nef_map_getdata&
    integer       n1           ,n2           ,nlay
    integer       kmaxon
 !
-   integer       nmax         ,mmax         ,kmax         ,&
+   integer       num_rows         ,num_columns         ,num_layers_grid         ,&
    &lmax         ,noroco       ,itim         ,&
    &lay(3)       ,parcod       ,ierror       ,&
    &maxdim       ,lstci        ,ltur
@@ -2862,25 +2772,25 @@ subroutine ods_tri_nef_map_getdata&
 !
    real          xdata(maxdim)
 !
-   integer       irocol(5     ,noroco),kcs   (nmax  ,mmax  ),&
-   &kcu   (nmax  ,mmax  ),kcv   (nmax  ,mmax  ),&
-   &kfu   (nmax  ,mmax  ),kfv   (nmax  ,mmax  ),&
-   &iflag (nmax  ,mmax  ),igrid (nmax  ,mmax  )
+   integer       irocol(5     ,noroco),kcs   (num_rows  ,num_columns  ),&
+   &kcu   (num_rows  ,num_columns  ),kcv   (num_rows  ,num_columns  ),&
+   &kfu   (num_rows  ,num_columns  ),kfv   (num_rows  ,num_columns  ),&
+   &iflag (num_rows  ,num_columns  ),igrid (num_rows  ,num_columns  )
 !
-   real          xcor  (nmax  ,mmax  ),ycor  (nmax  ,mmax  ),&
-   &xz    (nmax  ,mmax  ),yz    (nmax  ,mmax  ),&
-   &alfas (nmax  ,mmax  ),&
-   &dp    (nmax  ,mmax  ),dps   (nmax  ,mmax  ),&
-   &thick (kmax+1)
-   real          s1    (nmax  ,mmax  ),&
-   &tauksi(nmax  ,mmax  ),taueta(nmax  ,mmax  ),&
-   &u1    (nmax  ,mmax   ,kmax  ),&
-   &v1    (nmax  ,mmax   ,kmax  ),&
-   &wphy  (nmax  ,mmax   ,kmax  ),&
-   &r1    (nmax  ,mmax   ,kmax+kmaxon ,lmax ),&
-   &vicww (nmax  ,mmax   ,kmax+kmaxon),&
-   &dicww (nmax  ,mmax   ,kmax+kmaxon),&
-   &rho   (nmax  ,mmax   ,kmax  )
+   real          xcor  (num_rows  ,num_columns  ),ycor  (num_rows  ,num_columns  ),&
+   &xz    (num_rows  ,num_columns  ),yz    (num_rows  ,num_columns  ),&
+   &alfas (num_rows  ,num_columns  ),&
+   &dp    (num_rows  ,num_columns  ),dps   (num_rows  ,num_columns  ),&
+   &thick (num_layers_grid+1)
+   real          s1    (num_rows  ,num_columns  ),&
+   &tauksi(num_rows  ,num_columns  ),taueta(num_rows  ,num_columns  ),&
+   &u1    (num_rows  ,num_columns   ,num_layers_grid  ),&
+   &v1    (num_rows  ,num_columns   ,num_layers_grid  ),&
+   &wphy  (num_rows  ,num_columns   ,num_layers_grid  ),&
+   &r1    (num_rows  ,num_columns   ,num_layers_grid+kmaxon ,lmax ),&
+   &vicww (num_rows  ,num_columns   ,num_layers_grid+kmaxon),&
+   &dicww (num_rows  ,num_columns   ,num_layers_grid+kmaxon),&
+   &rho   (num_rows  ,num_columns   ,num_layers_grid  )
 !
    logical       okee  ,lvar
 !
@@ -2902,9 +2812,6 @@ subroutine ods_tri_nef_map_getdata&
 
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !
 !-----------------------------------------------------------------------
 !-----Initalize
@@ -2933,7 +2840,7 @@ subroutine ods_tri_nef_map_getdata&
 !     If fixed layer coordinates are available, then they are preferred.
 !     If neither information is available, we have a problem
 !
-   buflen    =  4 * (kmax+1)
+   buflen    =  4 * (num_layers_grid+1)
    ierror    = GETELT(hdefds,grpdef    ,'ZK'      ,&
    &uindex,usrord    ,buflen    ,THICK     )
    if ( ierror .eq. 0 ) then
@@ -2954,7 +2861,7 @@ subroutine ods_tri_nef_map_getdata&
    else
       usefix = .true.
       depflm = thick(1)
-      do 5 k = 1,kmax
+      do 5 k = 1,num_layers_grid
          thick(k) = thick(k+1) - thick(k)
 5     continue
    endif
@@ -2963,7 +2870,7 @@ subroutine ods_tri_nef_map_getdata&
 !-----Read and calculate coordinate arrays
 !     s1 will be used as buffer array
    call    wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
-   &nmax      ,mmax      ,noroco    ,norow     ,&
+   &num_rows      ,num_columns      ,noroco    ,norow     ,&
    &irocol    ,kcs       ,kcu       ,kcv       ,&
    &xcor      ,ycor      ,xz        ,yz        ,&
    &alfas                ,dp        ,dps       ,&
@@ -2980,7 +2887,7 @@ subroutine ods_tri_nef_map_getdata&
    if (lvar ) then
       grpdef    = 'map-series'
       usrord    = 1
-      buflen    = 4 * nmax   * mmax
+      buflen    = 4 * num_rows   * num_columns
       uindex(1) = itim
       uindex(2) = itim
       uindex(3) = 1
@@ -3004,13 +2911,13 @@ subroutine ods_tri_nef_map_getdata&
 !--------water level, ZWL                 parcod =  1  'wl'
 !--------total water depth, ZWL + DPS     parcod =  2  'wh'
       call wrhwat(okee      ,hdefds    ,hdafds    ,parcod    ,&
-      &itim      ,nmax      ,mmax      ,&
+      &itim      ,num_rows      ,num_columns      ,&
       &kcs       ,kfu       ,kfv       ,&
       &dps       ,s1                              )
 !--------store results in xdata
-      do 10 n = 1,nmax
-         do 10 m = 1,mmax
-            n1           =   (n-1) * mmax +  m
+      do 10 n = 1,num_rows
+         do 10 m = 1,num_columns
+            n1           =   (n-1) * num_columns +  m
             xdata ( n1 ) = s1    (n,m)
 10    continue
    else if (parcod .ge.  3 .and. parcod .le. 6 ) then
@@ -3020,21 +2927,21 @@ subroutine ods_tri_nef_map_getdata&
 !--------dpt. aver. cur. dir.      {precon: parcod= 6} 'dd'
       call wrh3di(okee      ,hdefds    ,hdafds    ,parcod    ,&
       &grdang    ,itim      ,misval    ,&
-      &nmax      ,mmax      ,kmax      ,&
+      &num_rows      ,num_columns      ,num_layers_grid      ,&
       &kcs       ,kfu       ,kfv       ,&
       &xcor      ,ycor      ,alfas     ,&
       &u1        ,v1        ,thick                )
 !--------store results in xdata
       if ( parcod .eq.  3 .or. parcod .eq.  5 ) then
-         do 30 n = 1,nmax
-            do 30 m = 1,mmax
-               n1           =   (n-1) * mmax +  m
+         do 30 n = 1,num_rows
+            do 30 m = 1,num_columns
+               n1           =   (n-1) * num_columns +  m
                xdata ( n1 ) = u1    (n ,m , 1)
 30       continue
       else if ( parcod .eq.  4 .or. parcod .eq.  6 ) then
-         do 40 n = 1,nmax
-            do 40 m = 1,mmax
-               n1           =   (n-1) * mmax +  m
+         do 40 n = 1,num_rows
+            do 40 m = 1,num_columns
+               n1           =   (n-1) * num_columns +  m
                xdata ( n1 ) = v1    (n ,m , 1)
 40       continue
       endif
@@ -3045,7 +2952,7 @@ subroutine ods_tri_nef_map_getdata&
 !--------current dir. (layer)      {precon: parcod=10} 'd '
       call wrhuvi(okee      ,hdefds    ,hdafds    ,parcod    ,&
       &grdang    ,itim      ,misval    ,&
-      &nmax      ,mmax      ,kmax      ,&
+      &num_rows      ,num_columns      ,num_layers_grid      ,&
       &kcs       ,kfu       ,kfv       ,&
       &xcor      ,ycor      ,&
       &alfas                ,u1        ,v1        )
@@ -3053,16 +2960,16 @@ subroutine ods_tri_nef_map_getdata&
       if ( parcod .eq.  7 .or. parcod .eq.  9 ) then
          n1 = 0
          do 70 k = lay(1), lay(2), lay(3)
-            do 70 n = 1,nmax
-               do 70 m = 1,mmax
+            do 70 n = 1,num_rows
+               do 70 m = 1,num_columns
                   n1           = n1 + 1
                   xdata ( n1 ) = u1    (n ,m ,k )
 70       continue
       else if ( parcod .eq.  8 .or. parcod .eq. 10 ) then
          n1 = 0
          do 80 k = lay(1), lay(2), lay(3)
-            do 80 n = 1,nmax
-               do 80 m = 1,mmax
+            do 80 n = 1,num_rows
+               do 80 m = 1,num_columns
                   n1           = n1 + 1
                   xdata ( n1 ) = v1    (n ,m ,k )
 80       continue
@@ -3071,7 +2978,7 @@ subroutine ods_tri_nef_map_getdata&
 !--------current w.   (layer)                          'w '
       grpdef    = 'map-series'
       usrord    = 1
-      buflen    = 4 * nmax   * mmax   * kmax
+      buflen    = 4 * num_rows   * num_columns   * num_layers_grid
       uindex(1) = itim
       uindex(2) = itim
       uindex(3) = 1
@@ -3087,8 +2994,8 @@ subroutine ods_tri_nef_map_getdata&
 !        := 0 then temporary drypoint
       n1 = 0
       do 110 k = lay(1), lay(2), lay(3)
-         do 110 n = 1,nmax
-            do 110 m = 1,mmax
+         do 110 n = 1,num_rows
+            do 110 m = 1,num_columns
                md    = max (1,m-1)
                nd    = max (1,n-1)
                lvar  = ((kcs   (n ,m ) .eq. 1) .and.&
@@ -3120,12 +3027,12 @@ subroutine ods_tri_nef_map_getdata&
 !
       n1 = 1
       call wrhwat(okee      ,hdefds    ,hdafds    ,n1        ,&
-      &itim      ,nmax      ,mmax      ,&
+      &itim      ,num_rows      ,num_columns      ,&
       &kcs       ,kfu       ,kfv       ,&
       &dps       ,s1                              )
 !
       nlay = lay(2) + 1
-      if ( maxdim .lt. nmax*mmax*nlay ) nlay = maxdim / nmax / mmax
+      if ( maxdim .lt. num_rows*num_columns*nlay ) nlay = maxdim / num_rows / num_columns
 !
 !-------Two cases arise:
 !       Sigma-coordinates and fixed layer coordinates
@@ -3144,8 +3051,8 @@ subroutine ods_tri_nef_map_getdata&
                depth = depth + thick(k-1)
             endif
 
-            do 124 n = 1,nmax
-               do 123 m = 1,mmax
+            do 124 n = 1,num_rows
+               do 123 m = 1,num_columns
                   nd    = max(1,n-1)
                   md    = max(1,m-1)
                   lvar  =  (kcs   (n ,m ) .eq. 1)
@@ -3176,8 +3083,8 @@ subroutine ods_tri_nef_map_getdata&
                if ( k .eq. nlay ) depfac = 1.0
             endif
 
-            do 128 n = 1,nmax
-               do 127 m = 1,mmax
+            do 128 n = 1,num_rows
+               do 127 m = 1,num_columns
                   md    = max (1,m-1)
                   nd    = max (1,n-1)
                   lvar  =  (kcs   (n ,m ) .eq. 1)
@@ -3207,7 +3114,7 @@ subroutine ods_tri_nef_map_getdata&
 !--------eddy viscosity, ZVICWW           parcod = 15 'vw' or 'nu'
       grpdef    = 'map-series'
       usrord    = 1
-      buflen    = 4 * nmax   * mmax  * (kmax+kmaxon)
+      buflen    = 4 * num_rows   * num_columns  * (num_layers_grid+kmaxon)
       uindex(1) = itim
       uindex(2) = itim
       uindex(3) = 1
@@ -3220,8 +3127,8 @@ subroutine ods_tri_nef_map_getdata&
 !        := 0 then temporary drypoint
       n1 = 0
       do 150 k = lay(1), lay(2), lay(3)
-         do 150 n = 1,nmax
-            do 150 m = 1,mmax
+         do 150 n = 1,num_rows
+            do 150 m = 1,num_columns
                md    = max (1,m-1)
                nd    = max (1,n-1)
                lvar  = ((kcs   (n ,m ) .eq. 1) .and.&
@@ -3243,21 +3150,21 @@ subroutine ods_tri_nef_map_getdata&
 !--------bed stress dir, ZTAUETA {precon: parcod=19}   'ta'
       call wrhtai(okee      ,hdefds    ,hdafds    ,parcod    ,&
       &misval    ,&
-      &grdang    ,itim      ,nmax      ,mmax      ,&
+      &grdang    ,itim      ,num_rows      ,num_columns      ,&
       &kcs       ,kfu       ,kfv       ,&
       &xcor      ,ycor      ,alfas     ,&
       &tauksi    ,taueta                          )
 !--------store results in xdata
       if ( parcod .eq. 16 .or. parcod .eq. 18 ) then
-         do 160 n = 1,nmax
-            do 160 m = 1,mmax
-               n1           =   (n-1) * mmax +  m
+         do 160 n = 1,num_rows
+            do 160 m = 1,num_columns
+               n1           =   (n-1) * num_columns +  m
                xdata ( n1 ) = tauksi(n ,m )
 160      continue
       else if ( parcod .eq. 17 .or. parcod .eq. 19 ) then
-         do 170 n = 1,nmax
-            do 170 m = 1,mmax
-               n1           =   (n-1) * mmax +  m
+         do 170 n = 1,num_rows
+            do 170 m = 1,num_columns
+               n1           =   (n-1) * num_columns +  m
                xdata ( n1 ) = taueta(n ,m )
 170      continue
       endif
@@ -3268,20 +3175,20 @@ subroutine ods_tri_nef_map_getdata&
          call wrhcon(okee      ,hdefds    ,hdafds    ,itim      ,&
          &xdata     ,maxdim    ,parcod    ,lay       ,&
          &misval    ,&
-         &nmax      ,mmax      ,kmax      ,lstci     ,&
+         &num_rows      ,num_columns      ,num_layers_grid      ,lstci     ,&
          &kcs       ,kfu       ,kfv       ,r1        )
       else
 !-----------constituents, ZTUR(1:ltur)
 !                          {precon: <con.index>=parcod-19-lstci}
          call wrhtur(okee      ,hdefds    ,hdafds    ,itim      ,&
          &misval    ,&
-         &nmax      ,mmax      ,kmax+1    ,ltur      ,&
+         &num_rows      ,num_columns      ,num_layers_grid+1    ,ltur      ,&
          &kcs       ,kfu       ,kfv       ,r1        )
 !-----------store results in xdata
          n1 = 0
          do 210 k = lay(1), lay(2), lay(3)
-            do 210 n = 1,nmax
-               do 210 m = 1,mmax
+            do 210 n = 1,num_rows
+               do 210 m = 1,num_columns
                   n1           = n1 + 1
                   xdata ( n1 ) = r1 (n ,m , k+1, parcod-19-lstci)
 210      continue
@@ -3290,7 +3197,7 @@ subroutine ods_tri_nef_map_getdata&
 !--------density, ZRHO                    parcod = 31 'rh'
       grpdef    = 'map-series'
       usrord    = 1
-      buflen    = 4 * nmax   * mmax  * kmax
+      buflen    = 4 * num_rows   * num_columns  * num_layers_grid
       uindex(1) = itim
       uindex(2) = itim
       uindex(3) = 1
@@ -3303,8 +3210,8 @@ subroutine ods_tri_nef_map_getdata&
 !        := 0 then temporary drypoint
       n1 = 0
       do 310 k = lay(1), lay(2), lay(3)
-         do 310 n = 1,nmax
-            do 310 m = 1,mmax
+         do 310 n = 1,num_rows
+            do 310 m = 1,num_columns
                md    = max (1,m-1)
                nd    = max (1,n-1)
                lvar  = ((kcs   (n ,m ) .eq. 1) .and.&
@@ -3323,7 +3230,7 @@ subroutine ods_tri_nef_map_getdata&
 !--------eddy diffusivity, ZDICWW         parcod = 32 'dw' or 'k '
       grpdef    = 'map-series'
       usrord    = 1
-      buflen    = 4 * nmax   * mmax  * (kmax+kmaxon)
+      buflen    = 4 * num_rows   * num_columns  * (num_layers_grid+kmaxon)
       uindex(1) = itim
       uindex(2) = itim
       uindex(3) = 1
@@ -3336,8 +3243,8 @@ subroutine ods_tri_nef_map_getdata&
 !        := 0 then temporary drypoint
       n1 = 0
       do 320 k = lay(1), lay(2), lay(3)
-         do 320 n = 1,nmax
-            do 320 m = 1,mmax
+         do 320 n = 1,num_rows
+            do 320 m = 1,num_columns
                md    = max (1,m-1)
                nd    = max (1,n-1)
                lvar  = ((kcs   (n ,m ) .eq. 1) .and.&
@@ -3355,77 +3262,77 @@ subroutine ods_tri_nef_map_getdata&
    else if (parcod .eq. 35 .or. parcod .eq. 36 ) then
 !--------active grid                      parcod = 35  'ag'
 !--------boundary lines                   parcod = 36  'bl'
-      call wrhgrd(nmax      ,mmax      ,noroco    ,norow     ,&
+      call wrhgrd(num_rows      ,num_columns      ,noroco    ,norow     ,&
       &irocol    ,kcu       ,kcv       ,iflag     ,&
       &igrid                                      )
 !--------store results in xdata
       if ( parcod .eq. 35 ) then
-         do 350 n = 1,nmax
-            do 350 m = 1,mmax
-               n1           =   (n-1) * mmax +  m
+         do 350 n = 1,num_rows
+            do 350 m = 1,num_columns
+               n1           =   (n-1) * num_columns +  m
                xdata ( n1 ) = igrid (n ,m )
 350      continue
       else if ( parcod .eq. 36 ) then
-         do 360 n = 1,nmax
-            do 360 m = 1,mmax
-               n1           =   (n-1) * mmax +  m
+         do 360 n = 1,num_rows
+            do 360 m = 1,num_columns
+               n1           =   (n-1) * num_columns +  m
                xdata ( n1 ) = iflag (n ,m )
 360      continue
       endif
    else if (parcod .eq. 37 ) then
 !--------temporary dry pnts.                           'td'
-      call wrhtd (nmax      ,mmax      ,noroco    ,norow     ,&
+      call wrhtd (num_rows      ,num_columns      ,noroco    ,norow     ,&
       &irocol    ,kcu       ,kcv       ,&
       &kfu       ,kfv       ,iflag                )
 !--------store results in xdata
-      do 370 n = 1,nmax
-         do 370 m = 1,mmax
-            n1           =   (n-1) * mmax +  m
+      do 370 n = 1,num_rows
+         do 370 m = 1,num_columns
+            n1           =   (n-1) * num_columns +  m
             xdata ( n1 ) = iflag (n ,m )
 370   continue
    else if (parcod .eq. 38 ) then
 !--------vectors dpth. aver.                           'df'
       call wrh3dv(okee      ,hdefds    ,hdafds    ,misval    ,&
-      &itim      ,nmax      ,mmax      ,kmax      ,&
+      &itim      ,num_rows      ,num_columns      ,num_layers_grid      ,&
       &kcs       ,kfu       ,kfv       ,&
       &xcor      ,ycor      ,alfas     ,&
       &u1        ,v1        ,thick                )
 !--------store results in xdata
-      do 380 n = 1,nmax
-         do 380 m = 1,mmax
-            n1           =   (n-1) * mmax +  m
-            n2           =    nmax * mmax +      n1
+      do 380 n = 1,num_rows
+         do 380 m = 1,num_columns
+            n1           =   (n-1) * num_columns +  m
+            n2           =    num_rows * num_columns +      n1
             xdata ( n1 ) = u1    (n ,m , 1)
             xdata ( n2 ) = v1    (n ,m , 1)
 380   continue
    else if (parcod .eq. 39 ) then
 !--------vectors bed stress                            'tf'
       call wrhtav(okee      ,hdefds    ,hdafds    ,misval    ,&
-      &itim      ,nmax      ,mmax      ,&
+      &itim      ,num_rows      ,num_columns      ,&
       &kcs       ,kfu       ,kfv       ,&
       &xcor      ,ycor      ,alfas     ,&
       &tauksi    ,taueta                          )
 !--------store results in xdata
-      do 390 n = 1,nmax
-         do 390 m = 1,mmax
-            n1           =   (n-1) * mmax +  m
-            n2           =    nmax * mmax +      n1
+      do 390 n = 1,num_rows
+         do 390 m = 1,num_columns
+            n1           =   (n-1) * num_columns +  m
+            n2           =    num_rows * num_columns +      n1
             xdata ( n1 ) = tauksi(n ,m )
             xdata ( n2 ) = taueta(n ,m )
 390   continue
    else if (parcod .eq. 40 ) then
 !--------vectors velocity uv                           'uv'
       call wrhuvv(okee      ,hdefds    ,hdafds    ,misval    ,&
-      &itim      ,nmax      ,mmax      ,kmax      ,&
+      &itim      ,num_rows      ,num_columns      ,num_layers_grid      ,&
       &kcs       ,kfu       ,kfv       ,&
       &xcor      ,ycor      ,&
       &alfas                ,u1        ,v1        )
 !--------store results in xdata
       n1 = 0
-      n2 = nmax * mmax * ( ( lay(2) - lay(1) ) / lay(3) + 1 )
+      n2 = num_rows * num_columns * ( ( lay(2) - lay(1) ) / lay(3) + 1 )
       do 400 k = lay(1), lay(2), lay(3)
-         do 400 n = 1,nmax
-            do 400 m = 1,mmax
+         do 400 n = 1,num_rows
+            do 400 m = 1,num_columns
                n1           = n1 + 1
                n2           = n2 + 1
                xdata ( n1 ) = u1    (n ,m ,k )
@@ -3440,10 +3347,10 @@ subroutine ods_tri_nef_map_getdata&
 !-----------------------------------------------------------------------
 !--------if kcs = 0 then permanent drypoint
 !-----------------------------------------------------------------------
-      do 440 n = 1,nmax
-         do 440 m = 1,mmax
+      do 440 n = 1,num_rows
+         do 440 m = 1,num_columns
             lvar  = ((kcs   (n ,m ) .ne. 0))
-            n1           =   (n-1) * mmax +  m
+            n1           =   (n-1) * num_columns +  m
             if (lvar  ) then
                xdata ( n1 ) = dp    (n ,m )
             else
@@ -3453,10 +3360,10 @@ subroutine ods_tri_nef_map_getdata&
    else if (parcod .eq. 45 ) then
 !--------dpt. at z_points                 parcod = 45  'dz'
 !--------if kcs = 0 then permanent drypoint
-      do 450 n = 1,nmax
-         do 450 m = 1,mmax
+      do 450 n = 1,num_rows
+         do 450 m = 1,num_columns
             lvar  = ((kcs   (n ,m ) .ne. 0))
-            n1           =   (n-1) * mmax +  m
+            n1           =   (n-1) * num_columns +  m
             if (lvar  ) then
                xdata ( n1 ) = dps   (n ,m )
             else
@@ -3465,37 +3372,37 @@ subroutine ods_tri_nef_map_getdata&
 450   continue
    else if (parcod .eq. 46 ) then
 !--------XCOR                             parcod = 46
-      do 460 n = 1,nmax
-         do 460 m = 1,mmax
-            n1           =   (n-1) * mmax +  m
+      do 460 n = 1,num_rows
+         do 460 m = 1,num_columns
+            n1           =   (n-1) * num_columns +  m
             xdata ( n1 ) = xcor(n,m)
 460   continue
    else if (parcod .eq. 47 ) then
 !--------YCOR                             parcod = 47
-      do 470 n = 1,nmax
-         do 470 m = 1,mmax
-            n1           =   (n-1) * mmax +  m
+      do 470 n = 1,num_rows
+         do 470 m = 1,num_columns
+            n1           =   (n-1) * num_columns +  m
             xdata ( n1 ) = ycor(n,m)
 470   continue
    else if (parcod .eq. 48 ) then
 !--------XZ                               parcod = 48
-      do 480 n = 1,nmax
-         do 480 m = 1,mmax
-            n1           =   (n-1) * mmax +  m
+      do 480 n = 1,num_rows
+         do 480 m = 1,num_columns
+            n1           =   (n-1) * num_columns +  m
             xdata ( n1 ) = xz  (n,m)
 480   continue
    else if (parcod .eq. 49 ) then
 !--------XZ                               parcod = 49
-      do 490 n = 1,nmax
-         do 490 m = 1,mmax
-            n1           =   (n-1) * mmax +  m
+      do 490 n = 1,num_rows
+         do 490 m = 1,num_columns
+            n1           =   (n-1) * num_columns +  m
             xdata ( n1 ) = yz  (n,m)
 490   continue
    else if (parcod .eq. 50 ) then
 !--------UVDAMS                           parcod = 50
-      do 500 n = 1,nmax
-         do 500 m = 1,mmax
-            n1           =   (n-1) * mmax +  m
+      do 500 n = 1,num_rows
+         do 500 m = 1,num_columns
+            n1           =   (n-1) * num_columns +  m
             xdata ( n1 ) = kfu(n,m) * 1.0 + kfv(n,m) * 2.0
 500   continue
    else if (parcod .eq. 51 ) then
@@ -3514,7 +3421,7 @@ subroutine ods_tri_nef_map_getdata&
 end
 
 subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
-&nmax      ,mmax      ,noroco    ,norow     ,&
+&num_rows      ,num_columns      ,noroco    ,norow     ,&
 &irocol    ,kcs       ,kcu       ,kcv       ,&
 &xcor      ,ycor      ,xz        ,yz        ,&
 &alfas                ,dp        ,dps       ,&
@@ -3536,10 +3443,10 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !   Var. I/O  Type Dimensions
 !   -------------------------
 !
-! DP       O  R*4  NMAX,MMAX       Depth values in depth points
-! DPS      O  R*4  NMAX,MMAX       Depth values in zeta points
+! DP       O  R*4  num_rows,num_columns       Depth values in depth points
+! DPS      O  R*4  num_rows,num_columns       Depth values in zeta points
 ! OKEE    IO  L*4                  Flag for further execution program
-! ALFAS    O  R*4  NMAX,MMAX       Transformation coefficients (in radians)
+! ALFAS    O  R*4  num_rows,num_columns       Transformation coefficients (in radians)
 ! HDAFDS  I   I*4  999             Data file descriptor for the MAP-DAT
 !                                  file
 ! HDEFDS  I   I*4  2997            Definition file description for the
@@ -3547,28 +3454,28 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 ! MISVAL  I   R*4                  missing value
 ! IROCOL   O  I*4  5,NOROCO        Pointer table with bound. coord. and
 !                                  bound. types (comp. cols. and rows)
-! KCS      O  I*4  NMAX,MMAX       Mask array for the zeta points
+! KCS      O  I*4  num_rows,num_columns       Mask array for the zeta points
 !                                  (time independent)
 !                                  =0 inactive point
 !                                  =1 active   point
 !                                  =2 open boundary point
-! KCU      O  I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KCU      O  I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time independent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KCV      O  I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KCV      O  I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time independent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
 ! NOROCO  I   I*4                  Number of Computational rows & cols
 ! NOROW    O  I*4                  Number of comp. rows  in IROCOL-array
-! XCOR     O  R*4  NMAX,MMAX       X-coordinate in depth point
-! XZ       O  R*4  NMAX,MMAX       X-coordinate in zeta point
-! YCOR     O  R*4  NMAX,MMAX       Y-coordinate in depth point
-! YZ       O  R*4  NMAX,MMAX       Y-coordinate in zeta point
-! ZBUFF    O  R*4  NMAX,MMAX       Buffer array to read nefis files
+! XCOR     O  R*4  num_rows,num_columns       X-coordinate in depth point
+! XZ       O  R*4  num_rows,num_columns       X-coordinate in zeta point
+! YCOR     O  R*4  num_rows,num_columns       Y-coordinate in depth point
+! YZ       O  R*4  num_rows,num_columns       Y-coordinate in zeta point
+! ZBUFF    O  R*4  num_rows,num_columns       Buffer array to read nefis files
 !-----------------------------------------------------------------------
 !    Local variables:
 !    ----------------
@@ -3591,19 +3498,19 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !
 !  declarations
 !
-   integer       nmax  ,mmax  ,norow ,noroco,n     ,m
+   integer       num_rows  ,num_columns  ,norow ,noroco,n     ,m
    integer       nd    ,md
 !
    real          misval,pi    ,degrad,dxdksi ,dydksi
 !
-   integer       irocol(5     ,noroco),kcs   (nmax  ,mmax  ),&
-   &kcu   (nmax  ,mmax  ),kcv   (nmax  ,mmax  )
+   integer       irocol(5     ,noroco),kcs   (num_rows  ,num_columns  ),&
+   &kcu   (num_rows  ,num_columns  ),kcv   (num_rows  ,num_columns  )
 !
-   real          xcor  (nmax  ,mmax  ),ycor  (nmax  ,mmax  ),&
-   &xz    (nmax  ,mmax  ),yz    (nmax  ,mmax  ),&
-   &alfas (nmax  ,mmax  ),&
-   &dp    (nmax  ,mmax  ),dps   (nmax  ,mmax  )
-   real          zbuff (nmax  ,mmax  )
+   real          xcor  (num_rows  ,num_columns  ),ycor  (num_rows  ,num_columns  ),&
+   &xz    (num_rows  ,num_columns  ),yz    (num_rows  ,num_columns  ),&
+   &alfas (num_rows  ,num_columns  ),&
+   &dp    (num_rows  ,num_columns  ),dps   (num_rows  ,num_columns  )
+   real          zbuff (num_rows  ,num_columns  )
 !
    character*4   dryflp
 !
@@ -3618,16 +3525,13 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer*4     GETELT_i
-!#endif
 !
 !-----------------------------------------------------------------------
    dryflp = 'NO  '
    pi = 4.0 * atan( 1.0 )
 !
-   do 10 m = 1,mmax
-      do 10 n = 1,nmax
+   do 10 m = 1,num_columns
+      do 10 n = 1,num_rows
          dps   (n,m) = misval
          xz    (n,m) = misval
          yz    (n,m) = misval
@@ -3657,7 +3561,7 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----------------------------------------------------------------------
 !-----Read KCS array from group 2
 !-----------------------------------------------------------------------
-   buflen    =  4 * nmax  * mmax
+   buflen    =  4 * num_rows  * num_columns
    okee      = okee .and.&
    &GETELT(hdefds,grpdef    ,'KCS   '  ,&
    &uindex,usrord    ,buflen    ,KCS       )&
@@ -3665,7 +3569,7 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----------------------------------------------------------------------
 !-----Read KCU array from group 2
 !-----------------------------------------------------------------------
-   buflen    =  4 * nmax  * mmax
+   buflen    =  4 * num_rows  * num_columns
    okee      = okee .and.&
    &GETELT(hdefds,grpdef    ,'KCU   '  ,&
    &uindex,usrord    ,buflen    ,KCU       )&
@@ -3673,7 +3577,7 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----------------------------------------------------------------------
 !-----Read KCV array from group 2
 !-----------------------------------------------------------------------
-   buflen    =  4 * nmax  * mmax
+   buflen    =  4 * num_rows  * num_columns
    okee      = okee .and.&
    &GETELT(hdefds,grpdef    ,'KCV   '  ,&
    &uindex,usrord    ,buflen    ,KCV       )&
@@ -3681,7 +3585,7 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----------------------------------------------------------------------
 !-----Read XCOR array from group 2 in buffer and calculate min and max
 !-----------------------------------------------------------------------
-   buflen    =  4 * nmax  * mmax
+   buflen    =  4 * num_rows  * num_columns
    okee      = okee .and.&
    &GETELT(hdefds,grpdef    ,'XCOR  '  ,&
    &uindex,usrord    ,buflen    ,XCOR      )&
@@ -3690,7 +3594,7 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----------------------------------------------------------------------
 !-----Read YCOR array from group 2 in buffer and calculate min and max
 !-----------------------------------------------------------------------
-   buflen    =  4 * nmax  * mmax
+   buflen    =  4 * num_rows  * num_columns
    okee      = okee .and.&
    &GETELT(hdefds,grpdef    ,'YCOR  '  ,&
    &uindex,usrord    ,buflen    ,YCOR      )&
@@ -3701,14 +3605,14 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----then compute it from XCOR and YCOR
 !-----------------------------------------------------------------------
 !
-   buflen    =  4 * nmax  * mmax
+   buflen    =  4 * num_rows  * num_columns
    ierror    =&
    &GETELT(hdefds,grpdef    ,'ALFAS '  ,&
    &uindex,usrord    ,buflen    ,ALFAS     )
 
    if ( ierror .ne. 0 ) then
-      do 110 m = 1,mmax
-         do 110 n = 1,nmax
+      do 110 m = 1,num_columns
+         do 110 n = 1,num_rows
             md = max( 1,m-1 )
             nd = max( 1,n-1 )
             dxdksi = 0.5 * ( xcor(n,m) - xcor(n,md) +&
@@ -3723,8 +3627,8 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 110   continue
    else
       degrad = pi / 180.
-      do 115 m = 1,mmax
-         do 115 n = 1,nmax
+      do 115 m = 1,num_columns
+         do 115 n = 1,num_rows
             alfas(n,m) = alfas(n,m) * degrad
 115   continue
    endif
@@ -3736,8 +3640,8 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----This correction appears to be unnecessary and awkward anyway
 !-----in case the coordinate "0.0" is a useful coordinate.
 !-----------------------------------------------------------------------
-!     do 120 n = 1,nmax
-!        do 120 m = 1,mmax
+!     do 120 n = 1,num_rows
+!        do 120 m = 1,num_columns
 !           if (abs(xcor (n,m)) .lt. 1.0e-8 ) then
 !              xcor  (n,m) = misval
 !           endif
@@ -3749,14 +3653,14 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----------------------------------------------------------------------
 !-----Read XZ array from group 2 in buffer for points with kcs <> 0
 !-----------------------------------------------------------------------
-   buflen    =  4 * nmax  * mmax
+   buflen    =  4 * num_rows  * num_columns
    okee      = okee .and.&
    &GETELT(hdefds,grpdef    ,'XZ    '  ,&
    &uindex,usrord    ,buflen    ,ZBUFF     )&
    &.eq. 0
 !
-   do 210 n = 1,nmax
-      do 210 m = 1,mmax
+   do 210 n = 1,num_rows
+      do 210 m = 1,num_columns
          if (kcs  (n,m) .ne. 0) then
             xz    (n,m) = zbuff (n,m)
          endif
@@ -3764,14 +3668,14 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----------------------------------------------------------------------
 !-----Read YZ array from group 2 in buffer for points with kcs <> 0
 !-----------------------------------------------------------------------
-   buflen    =  4 * nmax  * mmax
+   buflen    =  4 * num_rows  * num_columns
    okee      = okee .and.&
    &GETELT(hdefds,grpdef    ,'YZ    '  ,&
    &uindex,usrord    ,buflen    ,ZBUFF     )&
    &.eq. 0
 !
-   do 250 n = 1,nmax
-      do 250 m = 1,mmax
+   do 250 n = 1,num_rows
+      do 250 m = 1,num_columns
          if (kcs  (n,m) .ne. 0) then
             yz    (n,m) = zbuff (n,m)
          endif
@@ -3779,7 +3683,7 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----------------------------------------------------------------------
 !-----Read DP0 array from group 2 calculate min and max
 !-----------------------------------------------------------------------
-   buflen    =  4 * nmax   * mmax
+   buflen    =  4 * num_rows   * num_columns
    okee      = okee .and.&
    &GETELT(hdefds,grpdef    ,'DP0   '  ,&
    &uindex,usrord    ,buflen    ,DP        )&
@@ -3790,11 +3694,7 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----------------------------------------------------------------------
    buflen    = 4
    okee      = okee .and.&
-!#ifdef WINNT
-!    *            GETELT_i
-!#else
    &GETELS&
-!#endif
    &(hdefds,grpdef    ,'DRYFLP'  ,&
    &uindex,usrord    ,buflen    ,DRYFLP    )&
    &.eq. 0
@@ -3804,8 +3704,8 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !--------calculate dps depth in zeta point as the mean of 4 surrounding
 !        depth points
 !-----------------------------------------------------------------------
-      do 410 m = 1,mmax
-         do 420 n = 1,nmax
+      do 410 m = 1,num_columns
+         do 420 n = 1,num_rows
             md    = max(1,m-1)
             nd    = max(1,n-1)
             if (kcs  (n,m) .ne. 0) then
@@ -3819,8 +3719,8 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !--------calculate dps depth in zeta point as mean of 2 minima of 2
 !        surrounding depth points
 !-----------------------------------------------------------------------
-      do 430 m = 1,mmax
-         do 440 n = 1,nmax
+      do 430 m = 1,num_columns
+         do 440 n = 1,num_rows
             md    = max(1,m-1)
             nd    = max(1,n-1)
             if (kcs  (n,m) .ne. 0) then
@@ -3834,8 +3734,8 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 !--------calculate dps depth in zeta point as maximum of 4 depth points
 !        dryflp = 'MAX' or dryflp = 'NO'
 !-----------------------------------------------------------------------
-      do 450 m = 1,mmax
-         do 460 n = 1,nmax
+      do 450 m = 1,num_columns
+         do 460 n = 1,num_rows
             md    = max(1,m-1)
             nd    = max(1,n-1)
             if (kcs  (n,m) .ne. 0) then
@@ -3850,7 +3750,7 @@ subroutine wrhcor(okee      ,hdefds    ,hdafds    ,misval    ,&
 end
 
 subroutine wrhwat(okee      ,hdefds    ,hdafds    ,parcod    ,&
-&itim      ,nmax      ,mmax      ,&
+&itim      ,num_rows      ,num_columns      ,&
 &kcs       ,kfu       ,kfv       ,&
 &dps       ,s1                              )
 !-----------------------------------------------------------------------
@@ -3871,19 +3771,19 @@ subroutine wrhwat(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !   Var. I/O  Type Dimensions
 !   -------------------------
 !
-! DPS     I   R*4  NMAX,MMAX       Depth in zeta point
+! DPS     I   R*4  num_rows,num_columns       Depth in zeta point
 ! OKEE     O  L*4                  Flag for further execution program
 ! ITIM    I   I*4                  Specified time
-! KCS     I   I*4  NMAX,MMAX       Mask array for the zeta points
+! KCS     I   I*4  num_rows,num_columns       Mask array for the zeta points
 !                                  (time independent)
 !                                  =0 inactive point
 !                                  =1 active   point
 !                                  =2 open boundary point
-! KFU     I   I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KFU     I   I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFV     I   I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KFV     I   I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
@@ -3891,9 +3791,9 @@ subroutine wrhwat(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !                                  file
 ! HDEFDS  I   I*4  2997            Definition file description for the
 !                                  MAP-DEF file
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
-! S1       O  R*4  NMAX,MMAX       Water-level or waterhight in zeta pnt
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
+! S1       O  R*4  num_rows,num_columns       Water-level or waterhight in zeta pnt
 ! PARCOD  I   I*4                  Code for parameter
 !-----------------------------------------------------------------------
 !    Local variables:
@@ -3915,13 +3815,13 @@ subroutine wrhwat(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !
 !  DECLARATIONS
 !
-   integer       nmax  ,mmax  ,parcod,itim
+   integer       num_rows  ,num_columns  ,parcod,itim
    integer       n     ,m     ,nd    ,md
 !
-   integer       kcs   (nmax  ,mmax  ),&
-   &kfu   (nmax  ,mmax  ),kfv   (nmax  ,mmax  )
+   integer       kcs   (num_rows  ,num_columns  ),&
+   &kfu   (num_rows  ,num_columns  ),kfv   (num_rows  ,num_columns  )
 !
-   real          dps   (nmax  ,mmax  ),s1    (nmax  ,mmax  )
+   real          dps   (num_rows  ,num_columns  ),s1    (num_rows  ,num_columns  )
 !
    logical       okee  ,lvar
 !-----------------------------------------------------------------------
@@ -3934,15 +3834,12 @@ subroutine wrhwat(okee      ,hdefds    ,hdafds    ,parcod    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !--------------------------------------------------------------------
 !-----Initialize Nefis variables
 !--------------------------------------------------------------------
    grpdef    = 'map-series'
    usrord    = 1
-   buflen    = 4 * nmax   * mmax
+   buflen    = 4 * num_rows   * num_columns
    uindex(1) = itim
    uindex(2) = itim
    uindex(3) = 1
@@ -3960,8 +3857,8 @@ subroutine wrhwat(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !        if kcs = 0 then permanent drypoint
 !        else if surrounding kfu and kfv = 0 then temporary drypoint
 !-----------------------------------------------------------------------
-      do 110 n = 1,nmax
-         do 110 m = 1,mmax
+      do 110 n = 1,num_rows
+         do 110 m = 1,num_columns
             md    = max (1,m-1)
             nd    = max (1,n-1)
 !              lvar  = ((kcs   (n ,m ) .eq. 1) .and.
@@ -3983,7 +3880,7 @@ end
 
 subroutine wrh3di(okee      ,hdefds    ,hdafds    ,parcod    ,&
 &grdang    ,itim      ,misval    ,&
-&nmax      ,mmax      ,kmax      ,&
+&num_rows      ,num_columns      ,num_layers_grid      ,&
 &kcs       ,kfu       ,kfv       ,&
 &xcor      ,ycor      ,alfas     ,&
 &u1        ,v1        ,thick                )
@@ -4008,38 +3905,38 @@ subroutine wrh3di(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !   -------------------------
 !
 ! GRDANG  I   R*4                  Vertex between the y-axis and north
-! GUU     I   R*4  NMAX,MMAX       Mean value for distance coefficients
-! GVV     I   R*4  NMAX,MMAX       Mean value for distance coefficients
+! GUU     I   R*4  num_rows,num_columns       Mean value for distance coefficients
+! GVV     I   R*4  num_rows,num_columns       Mean value for distance coefficients
 ! OKEE     O  L*4                  Flag for further execution program
 ! ITIM    I   I*4                  Specified time
 ! MISVAL  I   R*4                  missing value
 ! PARCOD  I   I*4                  Parameter code
-! KCS     I   I*4  NMAX,MMAX       Mask array for the zeta points
+! KCS     I   I*4  num_rows,num_columns       Mask array for the zeta points
 !                                  (time independent)
 !                                  =0 inactive point
 !                                  =1 active   point
 !                                  =2 open boundary point
-! KFU     I   I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KFU     I   I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFV     I   I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KFV     I   I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KMAX    I   I*4                  Number of layers
+! num_layers_grid    I   I*4                  Number of layers
 ! HDAFDS  I   I*4  999             Data file descriptor for the MAP-DAT
 !                                  file
 ! HDEFDS  I   I*4  2997            Definition file description for the
 !                                  MAP-DEF file
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
-! THICK   I   R*4  KMAX            Relative layer thickness
-! U1       O  R*4  NMAX,MMAX,KMAX  U-velocity in u-velocity point
-! V1       O  R*4  NMAX,MMAX,KMAX  V-velocity in v-velocity point
-! XCOR    I   R*4  NMAX,MMAX       X-distance between 2 grid lines
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
+! THICK   I   R*4  num_layers_grid            Relative layer thickness
+! U1       O  R*4  num_rows,num_columns,num_layers_grid  U-velocity in u-velocity point
+! V1       O  R*4  num_rows,num_columns,num_layers_grid  V-velocity in v-velocity point
+! XCOR    I   R*4  num_rows,num_columns       X-distance between 2 grid lines
 !                                  around a zeta point in y-direction
-! YCOR    I   R*4  NMAX,MMAX       Y-distance between 2 grid lines
+! YCOR    I   R*4  num_rows,num_columns       Y-distance between 2 grid lines
 !                                  around a zeta point in y-direction
 !-----------------------------------------------------------------------
 !    Local variables:
@@ -4066,11 +3963,11 @@ subroutine wrh3di(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !                                  points (max 1)
 ! KFS         I*4                  Temporary dry point
 ! LVAR        L*4                  Help var.
-! M           I*4                  Loop var. 1-MMAX
+! M           I*4                  Loop var. 1-num_columns
 ! MD          I*4                  Max (1,M-1)
 ! MM          I*4                  Max (2,M)
 ! MMD         I*4                  MM-1
-! N           I*4                  Loop var. 1-NMAX
+! N           I*4                  Loop var. 1-num_rows
 ! ND          I*4                  Max (1,N-1)
 ! NN          I*4                  Max (2,N)
 ! NND         I*4                  NN-1
@@ -4092,7 +3989,7 @@ subroutine wrh3di(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !
 !  declarations
 !
-   integer       nmax  ,mmax  ,kmax  ,parcod,itim
+   integer       num_rows  ,num_columns  ,num_layers_grid  ,parcod,itim
    integer       n     ,m     ,nd    ,md
    integer       k
 !
@@ -4101,14 +3998,14 @@ subroutine wrh3di(okee      ,hdefds    ,hdafds    ,parcod    ,&
    real          um    ,umd   ,vn    ,vnd
    real          ugem  ,vgem  ,totthk
 !
-   integer       kcs   (nmax  ,mmax  ),&
-   &kfu   (nmax  ,mmax  ),kfv   (nmax  ,mmax  )
+   integer       kcs   (num_rows  ,num_columns  ),&
+   &kfu   (num_rows  ,num_columns  ),kfv   (num_rows  ,num_columns  )
 !
-   real          xcor  (nmax  ,mmax  ),ycor  (nmax  ,mmax  ),&
-   &alfas (nmax  ,mmax  )
-   real          u1    (nmax  ,mmax   ,kmax  ),&
-   &v1    (nmax  ,mmax   ,kmax  ),&
-   &thick (kmax  )
+   real          xcor  (num_rows  ,num_columns  ),ycor  (num_rows  ,num_columns  ),&
+   &alfas (num_rows  ,num_columns  )
+   real          u1    (num_rows  ,num_columns   ,num_layers_grid  ),&
+   &v1    (num_rows  ,num_columns   ,num_layers_grid  ),&
+   &thick (num_layers_grid  )
 !
    logical       okee  ,lvar
 !-----------------------------------------------------------------------
@@ -4121,9 +4018,6 @@ subroutine wrh3di(okee      ,hdefds    ,hdafds    ,parcod    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----General initialisation
 !-----------------------------------------------------------------------
@@ -4134,7 +4028,7 @@ subroutine wrh3di(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !--------------------------------------------------------------------
    grpdef    = 'map-series'
    usrord    = 1
-   buflen    = 4 * nmax   * mmax   * kmax
+   buflen    = 4 * num_rows   * num_columns   * num_layers_grid
    uindex(1) = itim
    uindex(2) = itim
    uindex(3) = 1
@@ -4157,8 +4051,8 @@ subroutine wrh3di(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !     if kcs = 0 then permanent drypoint
 !     else if surrounding kfu and kfv = 0 then temporary drypoint
 !--------------------------------------------------------------------
-   do 110 n = nmax, 1, -1
-      do 110 m = mmax, 1, -1
+   do 110 n = num_rows, 1, -1
+      do 110 m = num_columns, 1, -1
          md    = max (1,m-1)
          nd    = max (1,n-1)
          lvar  = ((kcs   (n ,m ) .eq. 1) .and.&
@@ -4176,7 +4070,7 @@ subroutine wrh3di(okee      ,hdefds    ,hdafds    ,parcod    ,&
             vn     = 0.
             vnd    = 0.
             totthk = 0.
-            do 120 k = 1,kmax
+            do 120 k = 1,num_layers_grid
                if ( u1(n,m,k)  .ne. -999.0 .and.&
                &u1(n,md,k) .ne. -999.0 .and.&
                &v1(nd,m,k) .ne. -999.0 .and.&
@@ -4241,7 +4135,7 @@ end
 
 subroutine wrhuvi(okee      ,hdefds    ,hdafds    ,parcod    ,&
 &grdang    ,itim      ,misval    ,&
-&nmax      ,mmax      ,kmax      ,&
+&num_rows      ,num_columns      ,num_layers_grid      ,&
 &kcs       ,kfu       ,kfv       ,&
 &xcor      ,ycor      ,&
 &alfas                ,u1        ,v1        )
@@ -4266,37 +4160,37 @@ subroutine wrhuvi(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !   -------------------------
 !
 ! GRDANG  I   R*4                  Vertex between the y-axis and north
-! ALFAS   I   R*4  NMAX,MMAX       Transformation coefficients (in radians)
-! GVV     I   R*4  NMAX,MMAX       Mean value for distance coefficients
+! ALFAS   I   R*4  num_rows,num_columns       Transformation coefficients (in radians)
+! GVV     I   R*4  num_rows,num_columns       Mean value for distance coefficients
 ! OKEE     O  L*4                  Flag for further execution program
 ! ITIM    I   I*4                  Specified time
 ! MISVAL  I   R*4                  missing value
-! KCS     I   I*4  NMAX,MMAX       Mask array for the zeta points
+! KCS     I   I*4  num_rows,num_columns       Mask array for the zeta points
 !                                  (time independent)
 !                                  =0 inactive point
 !                                  =1 active   point
 !                                  =2 open boundary point
-! KFU     I   I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KFU     I   I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFV     I   I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KFV     I   I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KMAX    I   I*4                  Number of layers
+! num_layers_grid    I   I*4                  Number of layers
 ! HDAFDS  I   I*4  999             Data file descriptor for the MAP-DAT
 !                                  file
 ! HDEFDS  I   I*4  2997            Definition file description for the
 !                                  MAP-DEF file
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
 ! PARCOD  I   I*4                  Parameter code
-! U1       O  R*4  NMAX,MMAX,KMAX  U-velocity in u-velocity point
-! V1       O  R*4  NMAX,MMAX,KMAX  V-velocity in v-velocity point
-! XCOR    I   R*4  NMAX,MMAX       X-distance between 2 grid lines
+! U1       O  R*4  num_rows,num_columns,num_layers_grid  U-velocity in u-velocity point
+! V1       O  R*4  num_rows,num_columns,num_layers_grid  V-velocity in v-velocity point
+! XCOR    I   R*4  num_rows,num_columns       X-distance between 2 grid lines
 !                                  around a zeta point in y-direction
-! YCOR    I   R*4  NMAX,MMAX       Y-distance between 2 grid lines
+! YCOR    I   R*4  num_rows,num_columns       Y-distance between 2 grid lines
 !                                  around a zeta point in y-direction
 !-----------------------------------------------------------------------
 !    Local variables:
@@ -4317,11 +4211,11 @@ subroutine wrhuvi(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !                                  points (max 1)
 ! KFS         I*4                  Temporary dry point
 ! LVAR        L*4                  Help var.
-! M           I*4                  Loop var. 1-MMAX
+! M           I*4                  Loop var. 1-num_columns
 ! MD          I*4                  Max (1,M-1)
 ! MM          I*4                  Max (2,M)
 ! MMD         I*4                  MM-1
-! N           I*4                  Loop var. 1-NMAX
+! N           I*4                  Loop var. 1-num_rows
 ! ND          I*4                  Max (1,N-1)
 ! NN          I*4                  Max (2,N)
 ! NND         I*4                  NN-1
@@ -4348,7 +4242,7 @@ subroutine wrhuvi(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !
 !  declarations
 !
-   integer       nmax  ,mmax  ,kmax  ,parcod,itim
+   integer       num_rows  ,num_columns  ,num_layers_grid  ,parcod,itim
    integer       n     ,m     ,nd    ,md    ,k
 !
    real          grdang,pi    ,eps   ,misval,uz    ,vz
@@ -4356,13 +4250,13 @@ subroutine wrhuvi(okee      ,hdefds    ,hdafds    ,parcod    ,&
    real          um    ,umd   ,vn    ,vnd
    real          ugem  ,vgem
 !
-   integer       kcs   (nmax  ,mmax  ),&
-   &kfu   (nmax  ,mmax  ),kfv   (nmax  ,mmax  )
+   integer       kcs   (num_rows  ,num_columns  ),&
+   &kfu   (num_rows  ,num_columns  ),kfv   (num_rows  ,num_columns  )
 !
-   real          xcor  (nmax  ,mmax  ),ycor  (nmax  ,mmax  ),&
-   &alfas (nmax  ,mmax  )
-   real          u1    (nmax  ,mmax   ,kmax  ),&
-   &v1    (nmax  ,mmax   ,kmax  )
+   real          xcor  (num_rows  ,num_columns  ),ycor  (num_rows  ,num_columns  ),&
+   &alfas (num_rows  ,num_columns  )
+   real          u1    (num_rows  ,num_columns   ,num_layers_grid  ),&
+   &v1    (num_rows  ,num_columns   ,num_layers_grid  )
 !
    logical       okee  ,lvar, zactiv
 !-----------------------------------------------------------------------
@@ -4375,9 +4269,6 @@ subroutine wrhuvi(okee      ,hdefds    ,hdafds    ,parcod    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----General initialisation
 !-----------------------------------------------------------------------
@@ -4388,7 +4279,7 @@ subroutine wrhuvi(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !--------------------------------------------------------------------
    grpdef    = 'map-series'
    usrord    = 1
-   buflen    = 4 * nmax   * mmax   * kmax
+   buflen    = 4 * num_rows   * num_columns   * num_layers_grid
    uindex(1) = itim
    uindex(2) = itim
    uindex(3) = 1
@@ -4411,8 +4302,8 @@ subroutine wrhuvi(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !     if kcs = 0 then permanent drypoint; if surrounding kfu and kfv
 !     := 0 then temporary drypoint
 !--------------------------------------------------------------------
-   do 110 n = nmax, 1, -1
-      do 110 m = mmax, 1, -1
+   do 110 n = num_rows, 1, -1
+      do 110 m = num_columns, 1, -1
          md    = max (1,m-1)
          nd    = max (1,n-1)
          lvar  = ((kcs   (n ,m ) .eq. 1) .and.&
@@ -4420,7 +4311,7 @@ subroutine wrhuvi(okee      ,hdefds    ,hdafds    ,parcod    ,&
          &kfu   (n ,md) .eq. 1  .or.&
          &kfv   (n ,m ) .eq. 1  .or.&
          &kfv   (nd,m ) .eq. 1))
-         do 110 k = 1, kmax
+         do 110 k = 1, num_layers_grid
             zactiv = .false.
             if ( lvar ) then
                if ( u1(n,m,k)  .eq. -999.0 .or.&
@@ -4490,7 +4381,7 @@ subroutine wrhuvi(okee      ,hdefds    ,hdafds    ,parcod    ,&
 end
 
 subroutine wrh3dv(okee      ,hdefds    ,hdafds    ,misval    ,&
-&itim      ,nmax      ,mmax      ,kmax      ,&
+&itim      ,num_rows      ,num_columns      ,num_layers_grid      ,&
 &kcs       ,kfu       ,kfv       ,&
 &xcor      ,ycor      ,alfas     ,&
 &u1        ,v1        ,thick                )
@@ -4511,36 +4402,36 @@ subroutine wrh3dv(okee      ,hdefds    ,hdafds    ,misval    ,&
 !   Var. I/O  Type Dimensions
 !   -------------------------
 !
-! ALFAS   I   R*4  NMAX,MMAX       Transformation coefficients (in radians)
+! ALFAS   I   R*4  num_rows,num_columns       Transformation coefficients (in radians)
 ! OKEE     O  L*4                  Flag for further execution program
 ! ITIM    I   I*4                  Specified time
 ! MISVAL  I   R*4                  missing value
-! KCS     I   I*4  NMAX,MMAX       Mask array for the zeta points
+! KCS     I   I*4  num_rows,num_columns       Mask array for the zeta points
 !                                  (time independent)
 !                                  =0 inactive point
 !                                  =1 active   point
 !                                  =2 open boundary point
-! KFU     I   I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KFU     I   I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFV     I   I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KFV     I   I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KMAX    I   I*4                  Number of layers
+! num_layers_grid    I   I*4                  Number of layers
 ! HDAFDS  I   I*4  999             Data file descriptor for the MAP-DAT
 !                                  file
 ! HDEFDS  I   I*4  2997            Definition file description for the
 !                                  MAP-DEF file
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
-! THICK   I   R*4  KMAX            Relative layer thickness
-! U1       O  R*4  NMAX,MMAX,KMAX  U-velocity in u-velocity point
-! V1       O  R*4  NMAX,MMAX,KMAX  V-velocity in v-velocity point
-! XCOR    I   R*4  NMAX,MMAX       X-distance between 2 grid lines
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
+! THICK   I   R*4  num_layers_grid            Relative layer thickness
+! U1       O  R*4  num_rows,num_columns,num_layers_grid  U-velocity in u-velocity point
+! V1       O  R*4  num_rows,num_columns,num_layers_grid  V-velocity in v-velocity point
+! XCOR    I   R*4  num_rows,num_columns       X-distance between 2 grid lines
 !                                  around a zeta point in y-direction
-! YCOR    I   R*4  NMAX,MMAX       Y-distance between 2 grid lines
+! YCOR    I   R*4  num_rows,num_columns       Y-distance between 2 grid lines
 !                                  around a zeta point in y-direction
 !-----------------------------------------------------------------------
 !    Local variables:
@@ -4564,11 +4455,11 @@ subroutine wrh3dv(okee      ,hdefds    ,hdafds    ,misval    ,&
 ! KENMV       I*4                  Mask value for two consecutive v-vel.
 !                                  points (max 1)
 ! LVAR        L*4                  Help var.
-! M           I*4                  Loop var. 1-MMAX
+! M           I*4                  Loop var. 1-num_columns
 ! MD          I*4                  Max (1,M-1)
 ! MM          I*4                  Max (2,M)
 ! MMD         I*4                  MM-1
-! N           I*4                  Loop var. 1-NMAX
+! N           I*4                  Loop var. 1-num_rows
 ! ND          I*4                  Max (1,N-1)
 ! NN          I*4                  Max (2,N)
 ! NND         I*4                  NN-1
@@ -4588,21 +4479,21 @@ subroutine wrh3dv(okee      ,hdefds    ,hdafds    ,misval    ,&
 !
 !  declarations
 !
-   integer       nmax  ,mmax  ,kmax  ,itim
+   integer       num_rows  ,num_columns  ,num_layers_grid  ,itim
    integer       n     ,m     ,nd    ,md    ,k
 !
    real          eps   ,misval,duz   ,dvz
    real          um    ,umd   ,vn    ,vnd
    real          ugem  ,vgem
 !
-   integer       kcs   (nmax  ,mmax  ),&
-   &kfu   (nmax  ,mmax  ),kfv   (nmax  ,mmax  )
+   integer       kcs   (num_rows  ,num_columns  ),&
+   &kfu   (num_rows  ,num_columns  ),kfv   (num_rows  ,num_columns  )
 !
-   real          xcor  (nmax  ,mmax  ),ycor  (nmax  ,mmax  ),&
-   &alfas (nmax  ,mmax  )
-   real          u1    (nmax  ,mmax   ,kmax  ),&
-   &v1    (nmax  ,mmax   ,kmax  ),&
-   &thick (kmax  )
+   real          xcor  (num_rows  ,num_columns  ),ycor  (num_rows  ,num_columns  ),&
+   &alfas (num_rows  ,num_columns  )
+   real          u1    (num_rows  ,num_columns   ,num_layers_grid  ),&
+   &v1    (num_rows  ,num_columns   ,num_layers_grid  ),&
+   &thick (num_layers_grid  )
 !
    logical       okee  ,lvar
 !-----------------------------------------------------------------------
@@ -4615,9 +4506,6 @@ subroutine wrh3dv(okee      ,hdefds    ,hdafds    ,misval    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----General initialisation
 !-----------------------------------------------------------------------
@@ -4627,7 +4515,7 @@ subroutine wrh3dv(okee      ,hdefds    ,hdafds    ,misval    ,&
 !--------------------------------------------------------------------
    grpdef    = 'map-series'
    usrord    = 1
-   buflen    = 4 * nmax   * mmax   * kmax
+   buflen    = 4 * num_rows   * num_columns   * num_layers_grid
    uindex(1) = itim
    uindex(2) = itim
    uindex(3) = 1
@@ -4650,8 +4538,8 @@ subroutine wrh3dv(okee      ,hdefds    ,hdafds    ,misval    ,&
 !     if kcs = 0 then permanent drypoint
 !     else if surrounding kfu and kfv = 0 then temporary drypoint
 !--------------------------------------------------------------------
-   do 110 n = nmax, 1, -1
-      do 110 m = mmax, 1, -1
+   do 110 n = num_rows, 1, -1
+      do 110 m = num_columns, 1, -1
          md    = max (1,m-1)
          nd    = max (1,n-1)
          lvar  = ((kcs   (n ,m ) .ne. 0) .and.&
@@ -4668,7 +4556,7 @@ subroutine wrh3dv(okee      ,hdefds    ,hdafds    ,misval    ,&
             umd    = 0.
             vn     = 0.
             vnd    = 0.
-            do 120 k = 1,kmax
+            do 120 k = 1,num_layers_grid
                um  = um     + u1    (n ,m ,k ) * thick (k)
                umd = umd    + u1    (n ,md,k ) * thick (k)
                vn  = vn     + v1    (n ,m ,k ) * thick (k)
@@ -4702,7 +4590,7 @@ end
 subroutine wrhcon(okee      ,hdefds    ,hdafds    ,itim      ,&
 &xdata     ,maxdim    ,parcod    ,lay       ,&
 &misval    ,&
-&nmax      ,mmax      ,kmax      ,lmax      ,&
+&num_rows      ,num_columns      ,num_layers_grid      ,lmax      ,&
 &kcs       ,kfu       ,kfv       ,r1        )
 !-----------------------------------------------------------------------
 !             Module: SUBROUTINE WRHCON
@@ -4725,29 +4613,29 @@ subroutine wrhcon(okee      ,hdefds    ,hdafds    ,itim      ,&
 ! ITIM    I   I*4                  Specified time
 ! MISVAL  I   R*4                  missing value
 ! ISTOF   I   I*4                  Number of constITUENT TO BE PLOTTED
-! KCS     I   I*4  NMAX,MMAX       Mask array for the zeta points
+! KCS     I   I*4  num_rows,num_columns       Mask array for the zeta points
 !                                  (time independent)
 !                                  =0 inactive point
 !                                  =1 active   point
 !                                  =2 open boundary point
-! KFU     I   I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KFU     I   I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFV     I   I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KFV     I   I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KMAX    I   I*4                  Number of layers
+! num_layers_grid    I   I*4                  Number of layers
 ! LMAX    I   I*4                  Number of constituents
 ! HDAFDS  I   I*4  999             Data file descriptor for the MAP-DAT
 !                                  file
 ! HDEFDS  I   I*4  2997            Definition file description for the
 !                                  MAP-DEF file
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
 ! NAMCON  I  CH*20 LMAX            Name of constituent
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
-! R1       O  R*4  NMAX,MMAX,KMAX,LMAX
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
+! R1       O  R*4  num_rows,num_columns,num_layers_grid,LMAX
 !                                  Concentrations in zeta point
 ! LAY         I*4                  Actual layer number
 ! MAXDIM      I*4            I     length of data array
@@ -4784,7 +4672,7 @@ subroutine wrhcon(okee      ,hdefds    ,hdafds    ,itim      ,&
 !
 !  DECLARATIONS
 !
-   integer       nmax  ,mmax  ,kmax  ,lmax  ,itim
+   integer       num_rows  ,num_columns  ,num_layers_grid  ,lmax  ,itim
    integer       n     ,m     ,k     ,l
    integer       nd    ,md    ,n1    ,maxdim,parcod
    integer       lay(3)
@@ -4792,10 +4680,10 @@ subroutine wrhcon(okee      ,hdefds    ,hdafds    ,itim      ,&
    real          misval
    real          xdata (maxdim)
 !
-   integer       kcs   (nmax  ,mmax  ),&
-   &kfu   (nmax  ,mmax  ),kfv   (nmax  ,mmax  )
+   integer       kcs   (num_rows  ,num_columns  ),&
+   &kfu   (num_rows  ,num_columns  ),kfv   (num_rows  ,num_columns  )
 !
-   real          r1    (nmax  ,mmax   ,kmax  ,lmax  )
+   real          r1    (num_rows  ,num_columns   ,num_layers_grid  ,lmax  )
 !
    logical       okee  ,lvar
 !-----------------------------------------------------------------------
@@ -4808,15 +4696,12 @@ subroutine wrhcon(okee      ,hdefds    ,hdafds    ,itim      ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !--------------------------------------------------------------------
 !-----Initialize Nefis variables
 !--------------------------------------------------------------------
    grpdef    = 'map-series'
    usrord    = 1
-   buflen    = 4 * nmax   * mmax   * kmax   * lmax
+   buflen    = 4 * num_rows   * num_columns   * num_layers_grid   * lmax
    uindex(1) = itim
    uindex(2) = itim
    uindex(3) = 1
@@ -4832,8 +4717,8 @@ subroutine wrhcon(okee      ,hdefds    ,hdafds    ,itim      ,&
 !     if kcs = 0 then permanent drypoint; if surrounding kfu and kfv
 !     := 0 then temporary drypoint
 !--------------------------------------------------------------------
-   do 110 n = 1,nmax
-      do 110 m = 1,mmax
+   do 110 n = 1,num_rows
+      do 110 m = 1,num_columns
          md    = max (1,m-1)
          nd    = max (1,n-1)
          lvar  = (kcs   (n ,m ) .eq. 1)
@@ -4843,7 +4728,7 @@ subroutine wrhcon(okee      ,hdefds    ,hdafds    ,itim      ,&
 !    *                kfv   (n ,m ) .eq. 1  .or.
 !    *                kfv   (nd,m ) .eq. 1))
          if (.not. lvar  ) then
-            do 100 k = 1,kmax
+            do 100 k = 1,num_layers_grid
                do 100 l = 1,lmax
                   r1    (n ,m ,k ,l ) = misval
 100         continue
@@ -4853,8 +4738,8 @@ subroutine wrhcon(okee      ,hdefds    ,hdafds    ,itim      ,&
 !-----store results in xdata
    n1 = 0
    do 200 k = lay(1), lay(2), lay(3)
-      do 200 n = 1,nmax
-         do 200 m = 1,mmax
+      do 200 n = 1,num_rows
+         do 200 m = 1,num_columns
             n1           = n1 + 1
             xdata ( n1 ) = r1 (n ,m , k, parcod-19)
 200 continue
@@ -4864,7 +4749,7 @@ end
 
 subroutine wrhtur(okee      ,hdefds    ,hdafds    ,itim      ,&
 &misval    ,&
-&nmax      ,mmax      ,kmax      ,ltur      ,&
+&num_rows      ,num_columns      ,num_layers_grid      ,ltur      ,&
 &kcs       ,kfu       ,kfv       ,rtur1     )
 !-----------------------------------------------------------------------
 !             Module: SUBROUTINE WRHTUR
@@ -4887,29 +4772,29 @@ subroutine wrhtur(okee      ,hdefds    ,hdafds    ,itim      ,&
 ! ITIM    I   I*4                  Specified time
 ! MISVAL  I   R*4                  missing value
 ! ISTOF   I   I*4                  Number of constITUENT TO BE PLOTTED
-! KCS     I   I*4  NMAX,MMAX       Mask array for the zeta points
+! KCS     I   I*4  num_rows,num_columns       Mask array for the zeta points
 !                                  (time independent)
 !                                  =0 inactive point
 !                                  =1 active   point
 !                                  =2 open boundary point
-! KFU     I   I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KFU     I   I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFV     I   I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KFV     I   I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KMAX    I   I*4                  Number of layers
+! num_layers_grid    I   I*4                  Number of layers
 ! LTUR    I   I*4                  Number of turbulence parameters
 ! HDAFDS  I   I*4  999             Data file descriptor for the MAP-DAT
 !                                  file
 ! HDEFDS  I   I*4  2997            Definition file description for the
 !                                  MAP-DEF file
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
 ! NAMCON  I  CH*20 LMAX            Name of constituent
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
-! RTUR1    O  R*4  NMAX,MMAX,KMAX,LMAX
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
+! RTUR1    O  R*4  num_rows,num_columns,num_layers_grid,LMAX
 !                                  Concentrations in zeta point
 !-----------------------------------------------------------------------
 !    Local variables:
@@ -4941,16 +4826,16 @@ subroutine wrhtur(okee      ,hdefds    ,hdafds    ,itim      ,&
 !
 !  DECLARATIONS
 !
-   integer       nmax  ,mmax  ,kmax  ,ltur  ,itim
+   integer       num_rows  ,num_columns  ,num_layers_grid  ,ltur  ,itim
    integer       n     ,m     ,k     ,l
    integer       nd    ,md
 !
    real          misval
 !
-   integer       kcs   (nmax  ,mmax  ),&
-   &kfu   (nmax  ,mmax  ),kfv   (nmax  ,mmax  )
+   integer       kcs   (num_rows  ,num_columns  ),&
+   &kfu   (num_rows  ,num_columns  ),kfv   (num_rows  ,num_columns  )
 !
-   real          rtur1 (nmax  ,mmax   ,kmax  ,ltur  )
+   real          rtur1 (num_rows  ,num_columns   ,num_layers_grid  ,ltur  )
 !
    logical       okee  ,lvar
 !-----------------------------------------------------------------------
@@ -4963,15 +4848,12 @@ subroutine wrhtur(okee      ,hdefds    ,hdafds    ,itim      ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !--------------------------------------------------------------------
 !-----Initialize Nefis variables
 !--------------------------------------------------------------------
    grpdef    = 'map-series'
    usrord    = 1
-   buflen    = 4 * nmax   * mmax   * kmax   * ltur
+   buflen    = 4 * num_rows   * num_columns   * num_layers_grid   * ltur
    uindex(1) = itim
    uindex(2) = itim
    uindex(3) = 1
@@ -4987,8 +4869,8 @@ subroutine wrhtur(okee      ,hdefds    ,hdafds    ,itim      ,&
 !     if kcs = 0 then permanent drypoint; if surrounding kfu and kfv
 !     := 0 then temporary drypoint
 !--------------------------------------------------------------------
-   do 110 n = 1,nmax
-      do 110 m = 1,mmax
+   do 110 n = 1,num_rows
+      do 110 m = 1,num_columns
          md    = max (1,m-1)
          nd    = max (1,n-1)
          lvar  = ((kcs   (n ,m ) .eq. 1) .and.&
@@ -4997,7 +4879,7 @@ subroutine wrhtur(okee      ,hdefds    ,hdafds    ,itim      ,&
          &kfv   (n ,m ) .eq. 1  .or.&
          &kfv   (nd,m ) .eq. 1))
          if (.not. lvar  ) then
-            do 100 k = 1,kmax
+            do 100 k = 1,num_layers_grid
                do 100 l = 1,ltur
                   rtur1 (n ,m ,k ,l ) = misval
 100         continue
@@ -5009,7 +4891,7 @@ end
 
 subroutine wrhtai(okee      ,hdefds    ,hdafds    ,parcod    ,&
 &misval    ,&
-&grdang    ,itim      ,nmax      ,mmax      ,&
+&grdang    ,itim      ,num_rows      ,num_columns      ,&
 &kcs       ,kfu       ,kfv       ,&
 &xcor      ,ycor      ,alfas                ,&
 &tauksi    ,taueta                          )
@@ -5034,21 +4916,21 @@ subroutine wrhtai(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !   -------------------------
 !
 ! GRDANG  I   R*4                  Vertex between the y-axis and north
-! ALFAS   I   R*4  NMAX,MMAX       Transformation coefficients (in radians)
+! ALFAS   I   R*4  num_rows,num_columns       Transformation coefficients (in radians)
 ! OKEE     O  L*4                  Flag for further execution program
 ! ITIM    I   I*4                  Specified time
 ! MISVAL  I   R*4                  missing value
 ! PARCOD  I   I*4                  Parameter code
-! KCS     I   I*4  NMAX,MMAX       Mask array for the zeta points
+! KCS     I   I*4  num_rows,num_columns       Mask array for the zeta points
 !                                  (time independent)
 !                                  =0 inactive point
 !                                  =1 active   point
 !                                  =2 open boundary point
-! KFU     I   I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KFU     I   I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFV     I   I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KFV     I   I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
@@ -5056,13 +4938,13 @@ subroutine wrhtai(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !                                  file
 ! HDEFDS  I   I*4  2997            Definition file description for the
 !                                  MAP-DEF file
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
-! TAUETA   O  R*4  NMAX,MMAX       Tau bottom in v-velocity point
-! TAUKSI   O  R*4  NMAX,MMAX       Tau bottom in u-velocity point
-! XCOR    I   R*4  NMAX,MMAX       X-distance between 2 grid lines
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
+! TAUETA   O  R*4  num_rows,num_columns       Tau bottom in v-velocity point
+! TAUKSI   O  R*4  num_rows,num_columns       Tau bottom in u-velocity point
+! XCOR    I   R*4  num_rows,num_columns       X-distance between 2 grid lines
 !                                  around a zeta point in y-direction
-! YCOR    I   R*4  NMAX,MMAX       Y-distance between 2 grid lines
+! YCOR    I   R*4  num_rows,num_columns       Y-distance between 2 grid lines
 !                                  around a zeta point in y-direction
 !-----------------------------------------------------------------------
 !    Local variables:
@@ -5083,11 +4965,11 @@ subroutine wrhtai(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !                                  points (max 1)
 ! KFS         I*4                  Temporary dry point
 ! LVAR        L*4                  Help var.
-! M           I*4                  Loop var. 1-MMAX
+! M           I*4                  Loop var. 1-num_columns
 ! MD          I*4                  Max (1,M-1)
 ! MM          I*4                  Max (2,M)
 ! MMD         I*4                  MM-1
-! N           I*4                  Loop var. 1-NMAX
+! N           I*4                  Loop var. 1-num_rows
 ! ND          I*4                  Max (1,N-1)
 ! NN          I*4                  Max (2,N)
 ! NND         I*4                  NN-1
@@ -5112,7 +4994,7 @@ subroutine wrhtai(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !
 !  declarations
 !
-   integer       nmax  ,mmax  ,itim  ,parcod
+   integer       num_rows  ,num_columns  ,itim  ,parcod
    integer       n     ,m     ,nd    ,md
 !
    real          eps   ,misval,tauzu ,tauzv ,hulp
@@ -5120,12 +5002,12 @@ subroutine wrhtai(okee      ,hdefds    ,hdafds    ,parcod    ,&
    real          pi
    real          tkgem ,tegem ,grdang
 !
-   integer       kcs   (nmax  ,mmax  ),&
-   &kfu   (nmax  ,mmax  ),kfv   (nmax  ,mmax  )
+   integer       kcs   (num_rows  ,num_columns  ),&
+   &kfu   (num_rows  ,num_columns  ),kfv   (num_rows  ,num_columns  )
 !
-   real          xcor  (nmax  ,mmax  ),ycor  (nmax  ,mmax  ),&
-   &alfas (nmax  ,mmax  )
-   real          tauksi(nmax  ,mmax  ),taueta(nmax  ,mmax  )
+   real          xcor  (num_rows  ,num_columns  ),ycor  (num_rows  ,num_columns  ),&
+   &alfas (num_rows  ,num_columns  )
+   real          tauksi(num_rows  ,num_columns  ),taueta(num_rows  ,num_columns  )
 !
    logical       okee  ,lvar
 !-----------------------------------------------------------------------
@@ -5138,9 +5020,6 @@ subroutine wrhtai(okee      ,hdefds    ,hdafds    ,parcod    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----General initialisation
 !-----------------------------------------------------------------------
@@ -5151,7 +5030,7 @@ subroutine wrhtai(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !--------------------------------------------------------------------
    grpdef    = 'map-series'
    usrord    = 1
-   buflen    = 4 * nmax   * mmax
+   buflen    = 4 * num_rows   * num_columns
    uindex(1) = itim
    uindex(2) = itim
    uindex(3) = 1
@@ -5174,8 +5053,8 @@ subroutine wrhtai(okee      ,hdefds    ,hdafds    ,parcod    ,&
 !     if kcs = 0 then permanent drypoint; if surrounding kfu and kfv
 !     := 0 then temporary drypoint
 !--------------------------------------------------------------------
-   do 110 n = nmax, 1, -1
-      do 110 m = mmax, 1, -1
+   do 110 n = num_rows, 1, -1
+      do 110 m = num_columns, 1, -1
          md    = max (1,m-1)
          nd    = max (1,n-1)
          lvar  = ((kcs   (n ,m ) .eq. 1) .and.&
@@ -5237,7 +5116,7 @@ subroutine wrhtai(okee      ,hdefds    ,hdafds    ,parcod    ,&
 end
 
 subroutine wrhtav(okee      ,hdefds    ,hdafds    ,misval    ,&
-&itim      ,nmax      ,mmax      ,&
+&itim      ,num_rows      ,num_columns      ,&
 &kcs       ,kfu       ,kfv       ,&
 &xcor      ,ycor      ,alfas     ,&
 &tauksi    ,taueta                          )
@@ -5258,20 +5137,20 @@ subroutine wrhtav(okee      ,hdefds    ,hdafds    ,misval    ,&
 !   Var. I/O  Type Dimensions
 !   -------------------------
 !
-! ALFAS   I   R*4  NMAX,MMAX       Transformation coefficients (in radians)
+! ALFAS   I   R*4  num_rows,num_columns       Transformation coefficients (in radians)
 ! OKEE     O  L*4                  Flag for further execution program
 ! ITIM    I   I*4                  Specified time
 ! MISVAL  I   R*4                  missing value
-! KCS     I   I*4  NMAX,MMAX       Mask array for the zeta points
+! KCS     I   I*4  num_rows,num_columns       Mask array for the zeta points
 !                                  (time independent)
 !                                  =0 inactive point
 !                                  =1 active   point
 !                                  =2 open boundary point
-! KFU     I   I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KFU     I   I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFV     I   I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KFV     I   I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
@@ -5279,13 +5158,13 @@ subroutine wrhtav(okee      ,hdefds    ,hdafds    ,misval    ,&
 !                                  file
 ! HDEFDS  I   I*4  2997            Definition file description for the
 !                                  MAP-DEF file
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
-! TAUETA   O  R*4  NMAX,MMAX       Tau bottom in v-velocity point
-! TAUKSI   O  R*4  NMAX,MMAX       Tau bottom in u-velocity point
-! XCOR    I   R*4  NMAX,MMAX       X-distance between 2 grid lines
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
+! TAUETA   O  R*4  num_rows,num_columns       Tau bottom in v-velocity point
+! TAUKSI   O  R*4  num_rows,num_columns       Tau bottom in u-velocity point
+! XCOR    I   R*4  num_rows,num_columns       X-distance between 2 grid lines
 !                                  around a zeta point in y-direction
-! YCOR    I   R*4  NMAX,MMAX       Y-distance between 2 grid lines
+! YCOR    I   R*4  num_rows,num_columns       Y-distance between 2 grid lines
 !                                  around a zeta point in y-direction
 !-----------------------------------------------------------------------
 !    Local variables:
@@ -5305,11 +5184,11 @@ subroutine wrhtav(okee      ,hdefds    ,hdafds    ,misval    ,&
 ! KENMV       I*4                  Mask value for two consecutive v-vel.
 !                                  points (max 1)
 ! LVAR        L*4                  Help var.
-! M           I*4                  Loop var. 1-MMAX
+! M           I*4                  Loop var. 1-num_columns
 ! MD          I*4                  Max (1,M-1)
 ! MM          I*4                  Max (2,M)
 ! MMD         I*4                  MM-1
-! N           I*4                  Loop var. 1-NMAX
+! N           I*4                  Loop var. 1-num_rows
 ! ND          I*4                  Max (1,N-1)
 ! NN          I*4                  Max (2,N)
 ! NND         I*4                  NN-1
@@ -5331,19 +5210,19 @@ subroutine wrhtav(okee      ,hdefds    ,hdafds    ,misval    ,&
 !
 !  declarations
 !
-   integer       nmax  ,mmax  ,nd    ,md
+   integer       num_rows  ,num_columns  ,nd    ,md
    integer       itim
    integer       n     ,m
 !
    real          tauzu ,tauzv ,misval,eps
    real          tegem ,ten   ,tend  ,tkgem ,tkm   ,tkmd
 !
-   integer       kcs   (nmax  ,mmax  ),&
-   &kfu   (nmax  ,mmax  ),kfv   (nmax  ,mmax  )
+   integer       kcs   (num_rows  ,num_columns  ),&
+   &kfu   (num_rows  ,num_columns  ),kfv   (num_rows  ,num_columns  )
 !
-   real          xcor  (nmax  ,mmax  ),ycor  (nmax  ,mmax  ),&
-   &alfas (nmax  ,mmax  )
-   real          tauksi(nmax  ,mmax  ),taueta(nmax  ,mmax  )
+   real          xcor  (num_rows  ,num_columns  ),ycor  (num_rows  ,num_columns  ),&
+   &alfas (num_rows  ,num_columns  )
+   real          tauksi(num_rows  ,num_columns  ),taueta(num_rows  ,num_columns  )
 !
    logical       okee  ,lvar
 !-----------------------------------------------------------------------
@@ -5356,9 +5235,6 @@ subroutine wrhtav(okee      ,hdefds    ,hdafds    ,misval    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----General initialisation
 !-----------------------------------------------------------------------
@@ -5368,7 +5244,7 @@ subroutine wrhtav(okee      ,hdefds    ,hdafds    ,misval    ,&
 !--------------------------------------------------------------------
    grpdef    = 'map-series'
    usrord    = 1
-   buflen    = 4 * nmax   * mmax
+   buflen    = 4 * num_rows   * num_columns
    uindex(1) = itim
    uindex(2) = itim
    uindex(3) = 1
@@ -5390,8 +5266,8 @@ subroutine wrhtav(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----Calculate TAUZU and TAUZV
 !     if kcs = 0 then permanent drypoint; if surrounding kfu and kfv
 !     := 0 then temporary drypoint
-   do 110 n = nmax, 1, -1
-      do 110 m = mmax, 1, -1
+   do 110 n = num_rows, 1, -1
+      do 110 m = num_columns, 1, -1
          md    = max (1,m-1)
          nd    = max (1,n-1)
          lvar  = ((kcs   (n ,m ) .ne. 0) .and.&
@@ -5427,7 +5303,7 @@ subroutine wrhtav(okee      ,hdefds    ,hdafds    ,misval    ,&
 end
 
 subroutine wrhuvv(okee      ,hdefds    ,hdafds    ,misval    ,&
-&itim      ,nmax      ,mmax      ,kmax      ,&
+&itim      ,num_rows      ,num_columns      ,num_layers_grid      ,&
 &kcs       ,kfu       ,kfv       ,&
 &xcor      ,ycor      ,&
 &alfas                ,u1        ,v1        )
@@ -5448,35 +5324,35 @@ subroutine wrhuvv(okee      ,hdefds    ,hdafds    ,misval    ,&
 !   Var. I/O  Type Dimensions
 !   -------------------------
 !
-! ALFAS   I   R*4  NMAX,MMAX       Transformation coefficients (in radians)
+! ALFAS   I   R*4  num_rows,num_columns       Transformation coefficients (in radians)
 ! OKEE     O  L*4                  Flag for further execution program
 ! ITIM    I   I*4                  Specified time
 ! MISVAL  I   R*4                  missing value
-! KCS     I   I*4  NMAX,MMAX       Mask array for the zeta points
+! KCS     I   I*4  num_rows,num_columns       Mask array for the zeta points
 !                                  (time independent)
 !                                  =0 inactive point
 !                                  =1 active   point
 !                                  =2 open boundary point
-! KFU     I   I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KFU     I   I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFV     I   I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KFV     I   I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KMAX    I   I*4                  Number of layers
+! num_layers_grid    I   I*4                  Number of layers
 ! HDAFDS  I   I*4  999             Data file descriptor for the MAP-DAT
 !                                  file
 ! HDEFDS  I   I*4  2997            Definition file description for the
 !                                  MAP-DEF file
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
-! U1       O  R*4  NMAX,MMAX,KMAX  U-velocity in u-velocity point
-! V1       O  R*4  NMAX,MMAX,KMAX  V-velocity in v-velocity point
-! XCOR    I   R*4  NMAX,MMAX       X-distance between 2 grid lines
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
+! U1       O  R*4  num_rows,num_columns,num_layers_grid  U-velocity in u-velocity point
+! V1       O  R*4  num_rows,num_columns,num_layers_grid  V-velocity in v-velocity point
+! XCOR    I   R*4  num_rows,num_columns       X-distance between 2 grid lines
 !                                  around a zeta point in y-direction
-! YCOR    I   R*4  NMAX,MMAX       Y-distance between 2 grid lines
+! YCOR    I   R*4  num_rows,num_columns       Y-distance between 2 grid lines
 !                                  around a zeta point in y-direction
 !-----------------------------------------------------------------------
 !    Local variables:
@@ -5496,11 +5372,11 @@ subroutine wrhuvv(okee      ,hdefds    ,hdafds    ,misval    ,&
 ! KENMV       I*4                  Mask value for two consecutive v-vel.
 !                                  points (max 1)
 ! LVAR        L*4                  Help var.
-! M           I*4                  Loop var. 1-MMAX
+! M           I*4                  Loop var. 1-num_columns
 ! MD          I*4                  Max (1,M-1)
 ! MM          I*4                  Max (2,M)
 ! MMD         I*4                  MM-1
-! N           I*4                  Loop var. 1-NMAX
+! N           I*4                  Loop var. 1-num_rows
 ! ND          I*4                  Max (1,N-1)
 ! NN          I*4                  Max (2,N)
 ! NND         I*4                  NN-1
@@ -5524,21 +5400,21 @@ subroutine wrhuvv(okee      ,hdefds    ,hdafds    ,misval    ,&
 !
 !  declarations
 !
-   integer       kmax  ,itim
-   integer       nmax  ,mmax  ,nd    ,md
+   integer       num_layers_grid  ,itim
+   integer       num_rows  ,num_columns  ,nd    ,md
    integer       n     ,m     ,k
 !
    real          misval,eps
    real          ugem  ,um    ,umd   ,uz
    real          vgem  ,vn    ,vnd   ,vz
 !
-   integer       kcs   (nmax  ,mmax  ),&
-   &kfu   (nmax  ,mmax  ),kfv   (nmax  ,mmax  )
+   integer       kcs   (num_rows  ,num_columns  ),&
+   &kfu   (num_rows  ,num_columns  ),kfv   (num_rows  ,num_columns  )
 !
-   real          xcor  (nmax  ,mmax  ),ycor  (nmax  ,mmax  ),&
-   &alfas (nmax  ,mmax  )
-   real          u1    (nmax  ,mmax   ,kmax  ),&
-   &v1    (nmax  ,mmax   ,kmax  )
+   real          xcor  (num_rows  ,num_columns  ),ycor  (num_rows  ,num_columns  ),&
+   &alfas (num_rows  ,num_columns  )
+   real          u1    (num_rows  ,num_columns   ,num_layers_grid  ),&
+   &v1    (num_rows  ,num_columns   ,num_layers_grid  )
 !
    logical       okee  ,lvar
 !-----------------------------------------------------------------------
@@ -5551,9 +5427,6 @@ subroutine wrhuvv(okee      ,hdefds    ,hdafds    ,misval    ,&
    character*16  grpdef
 !
    integer*4     GETELT,GETELS
-!#ifdef WINNT
-   integer       GETELT_i
-!#endif
 !-----------------------------------------------------------------------
 !-----General initialisation
 !-----------------------------------------------------------------------
@@ -5563,7 +5436,7 @@ subroutine wrhuvv(okee      ,hdefds    ,hdafds    ,misval    ,&
 !--------------------------------------------------------------------
    grpdef    = 'map-series'
    usrord    = 1
-   buflen    = 4 * nmax   * mmax   * kmax
+   buflen    = 4 * num_rows   * num_columns   * num_layers_grid
    uindex(1) = itim
    uindex(2) = itim
    uindex(3) = 1
@@ -5584,8 +5457,8 @@ subroutine wrhuvv(okee      ,hdefds    ,hdafds    ,misval    ,&
 !-----Calculate UZ and VZ
 !     if kcs = 0 then permanent drypoint; if surrounding kfu and kfv
 !     := 0 then temporary drypoint
-   do 110 n = nmax, 1, -1
-      do 110 m = mmax, 1, -1
+   do 110 n = num_rows, 1, -1
+      do 110 m = num_columns, 1, -1
          md    = max (1,m-1)
          nd    = max (1,n-1)
          lvar  = ((kcs   (n ,m ) .ne. 0) .and.&
@@ -5593,7 +5466,7 @@ subroutine wrhuvv(okee      ,hdefds    ,hdafds    ,misval    ,&
          &kfu   (n ,md) .eq. 1  .or.&
          &kfv   (n ,m ) .eq. 1  .or.&
          &kfv   (nd,m ) .eq. 1))
-         do 110 k = 1, kmax
+         do 110 k = 1, num_layers_grid
             if (lvar  ) then
 !-----------------------------------------------------------------------
 !-----------------Backwards transformation of U1 and V1 and
@@ -5623,7 +5496,7 @@ subroutine wrhuvv(okee      ,hdefds    ,hdafds    ,misval    ,&
    return
 end
 
-subroutine wrhgrd(nmax      ,mmax      ,noroco    ,norow     ,&
+subroutine wrhgrd(num_rows      ,num_columns      ,noroco    ,norow     ,&
 &irocol    ,kcu       ,kcv       ,iflag     ,&
 &igrid                                      )
 !-----------------------------------------------------------------------
@@ -5644,21 +5517,21 @@ subroutine wrhgrd(nmax      ,mmax      ,noroco    ,norow     ,&
 !   Var. I/O  Type Dimensions
 !   -------------------------
 !
-! IFLAG    O  I*4  NMAX,MMAX       Array for permanent and tempory dry
+! IFLAG    O  I*4  num_rows,num_columns       Array for permanent and tempory dry
 !                                  point
-! IGRID    O  I*4  NMAX,MMAX       Array with actual grid
+! IGRID    O  I*4  num_rows,num_columns       Array with actual grid
 ! IROCOL  I   I*4  5,NOROCO        Pointer table with bound. coord. and
 !                                  bound. types (comp. cols. and rows)
-! KCU     I   I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KCU     I   I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time independent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KCV     I   I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KCV     I   I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time independent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
 ! NOROCO  I   I*4                  Number of Computational rows & cols
 ! NOROW       I*4                  Number of comp. rows  in IROCOL-array
 !-----------------------------------------------------------------------
@@ -5681,18 +5554,18 @@ subroutine wrhgrd(nmax      ,mmax      ,noroco    ,norow     ,&
 !
 !  DECLARATIONS
 !
-   integer       nmax  ,mmax  ,noroco,norow ,n     ,m
+   integer       num_rows  ,num_columns  ,noroco,norow ,n     ,m
    integer       m1    ,m2    ,i     ,n1
    integer       i23   ,i29   ,i5    ,i7
 !
-   integer       irocol(5     ,noroco),kcu   (nmax  ,mmax  ),&
-   &kcv   (nmax  ,mmax  ),iflag (nmax  ,mmax  )
-   integer       igrid (nmax  ,mmax  )
+   integer       irocol(5     ,noroco),kcu   (num_rows  ,num_columns  ),&
+   &kcv   (num_rows  ,num_columns  ),iflag (num_rows  ,num_columns  )
+   integer       igrid (num_rows  ,num_columns  )
 !--------------------------------------------------------------------
 !-----Initialize iflag = 0 and igrid = 0
 !--------------------------------------------------------------------
-   do 110 m = 1,mmax
-      do 110 n = 1,nmax
+   do 110 m = 1,num_columns
+      do 110 n = 1,num_rows
          iflag (n,m) = 0
          igrid (n,m) = 0
 110 continue
@@ -5824,8 +5697,8 @@ subroutine wrhgrd(nmax      ,mmax      ,noroco    ,norow     ,&
 !        |          0100                           29
 !        +--------------------------------------------------------------
 !-----------------------------------------------------------------------
-   do 350 n = 1,nmax
-      do 350 m = 1,mmax
+   do 350 n = 1,num_rows
+      do 350 m = 1,num_columns
          i23 = (iflag (n,m)                       ) / 1000
          i29 = (iflag (n,m)-i23*1000              ) / 100
          i5  = (iflag (n,m)-i23*1000-i29*100      ) / 10
@@ -5836,7 +5709,7 @@ subroutine wrhgrd(nmax      ,mmax      ,noroco    ,norow     ,&
    return
 end
 
-subroutine wrhtd (nmax      ,mmax      ,noroco    ,norow     ,&
+subroutine wrhtd (num_rows      ,num_columns      ,noroco    ,norow     ,&
 &irocol    ,kcu       ,kcv       ,&
 &kfu       ,kfv       ,iflag                )
 !-----------------------------------------------------------------------
@@ -5856,28 +5729,28 @@ subroutine wrhtd (nmax      ,mmax      ,noroco    ,norow     ,&
 !   Var. I/O  Type Dimensions
 !   -------------------------
 !
-! IFLAG    O  I*4  NMAX,MMAX       Array for permanent and tempory dry
+! IFLAG    O  I*4  num_rows,num_columns       Array for permanent and tempory dry
 !                                  point
 ! IROCOL  I   I*4  5,NOROCO        Pointer table with bound. coord. and
 !                                  bound. types (comp. cols. and rows)
-! KCU     I   I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KCU     I   I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time independent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KCV     I   I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KCV     I   I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time independent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFU      O  I*4  NMAX,MMAX       Mask array for the u-velocity point
+! KFU      O  I*4  num_rows,num_columns       Mask array for the u-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! KFV      O  I*4  NMAX,MMAX       Mask array for the v-velocity point
+! KFV      O  I*4  num_rows,num_columns       Mask array for the v-velocity point
 !                                  (time dependent)
 !                                  =0 dry      point
 !                                  =1 active   point
-! MMAX    I   I*4                  Number of gridpoints in the x-dir.
-! NMAX    I   I*4                  Number of gridpoints in the y-dir.
+! num_columns    I   I*4                  Number of gridpoints in the x-dir.
+! num_rows    I   I*4                  Number of gridpoints in the y-dir.
 ! NOROCO  I   I*4                  Number of Computational rows & cols
 ! NOROW   I   I*4                  Number of comp. rows  in IROCOL-array
 !-----------------------------------------------------------------------
@@ -5900,19 +5773,19 @@ subroutine wrhtd (nmax      ,mmax      ,noroco    ,norow     ,&
 !
 !  declarations
 !
-   integer       nmax  ,mmax  ,noroco,norow ,n     ,m
+   integer       num_rows  ,num_columns  ,noroco,norow ,n     ,m
    integer       m1    ,m2    ,i     ,n1
    integer       i23   ,i29   ,i5    ,i7
 !
-   integer       irocol(5     ,noroco),kcu   (nmax  ,mmax  ),&
-   &kcv   (nmax  ,mmax  ),kfu   (nmax  ,mmax  ),&
-   &kfv   (nmax  ,mmax  ),iflag (nmax  ,mmax  )
+   integer       irocol(5     ,noroco),kcu   (num_rows  ,num_columns  ),&
+   &kcv   (num_rows  ,num_columns  ),kfu   (num_rows  ,num_columns  ),&
+   &kfv   (num_rows  ,num_columns  ),iflag (num_rows  ,num_columns  )
 !
 !--------------------------------------------------------------------
 !-----Initialize iflag = 0
 !--------------------------------------------------------------------
-   do 110 m = 1,mmax
-      do 110 n = 1,nmax
+   do 110 m = 1,num_columns
+      do 110 n = 1,num_rows
          iflag (n,m) = 0
 110 continue
 !-----------------------------------------------------------------------
@@ -6035,8 +5908,8 @@ subroutine wrhtd (nmax      ,mmax      ,noroco    ,norow     ,&
 !-----------------------------------------------------------------------
 !--------Write values to tekal-data file
 !-----------------------------------------------------------------------
-   do 350 n = 1,nmax
-      do 350 m = 1,mmax
+   do 350 n = 1,num_rows
+      do 350 m = 1,num_columns
          i23 = (iflag (n,m)                       ) / 1000
          i29 = (iflag (n,m)-i23*1000              ) / 100
          i5  = (iflag (n,m)-i23*1000-i29*100      ) / 10

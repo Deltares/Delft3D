@@ -797,8 +797,8 @@
       PARAMETER (IDEBUG=0)                                                40.23
 !
       INTEGER   ISTAT, IF1, IL1                                           40.41
-      CHARACTER*20 NUMSTR, CHARS(1)                                       40.41
-      CHARACTER*80 MSGSTR                                                 40.41
+      CHARACTER(len=20) NUMSTR, CHARS(1)                                       40.41
+      CHARACTER(len=80) MSGSTR                                                 40.41
 !
       INTEGER IARR(10)                                                    40.30
       REAL     ARR(10)                                                    40.30
@@ -9479,8 +9479,8 @@
      &         SXX1  ,SXX2
       REAL     CG(1), K(1), N(1), ND(1), SIG(1)                           30.82
       INTEGER      IF1, IL1
-      CHARACTER*20 INTSTR, CHARS(1)
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=20) INTSTR, CHARS(1)
+      CHARACTER(len=80) MSGSTR
 !
       LOGICAL  NEIGHB
 !

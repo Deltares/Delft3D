@@ -28,9 +28,9 @@ module m_emersi
 contains
 
 
-    subroutine emersi (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine emersi (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       emersion of segments in z-layers, set segment features accordingly
 
@@ -50,20 +50,20 @@ contains
 
         ! arguments
 
-        real(kind = real_wp) :: pmsa(*)            ! in/out input-output array space to be adressed with ipoint/increm
+        real(kind = real_wp) :: process_space_real(*)            ! in/out input-output array space to be adressed with ipoint/increm
         real(kind = real_wp) :: fl(*)              ! in/out flux array
-        integer(kind = int_wp) :: ipoint(*)          ! in     start index input-output parameters in the pmsa array (segment or exchange number 1)
-        integer(kind = int_wp) :: increm(*)          ! in     increment for each segment-exchange for the input-output parameters in the pmsa array
-        integer(kind = int_wp) :: noseg              ! in     number of segments
+        integer(kind = int_wp) :: ipoint(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+        integer(kind = int_wp) :: increm(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+        integer(kind = int_wp) :: num_cells              ! in     number of segments
         integer(kind = int_wp) :: noflux             ! in     total number of fluxes (increment in fl array)
         integer(kind = int_wp) :: iexpnt(4, *)        ! in     exchange pointer table
         integer(kind = int_wp) :: iknmrk(*)          ! in     segment features array
-        integer(kind = int_wp) :: noq1               ! in     number of exchanges in first direction
-        integer(kind = int_wp) :: noq2               ! in     number of exchanges in second direction
-        integer(kind = int_wp) :: noq3               ! in     number of exchanges in third direction
-        integer(kind = int_wp) :: noq4               ! in     number of exchanges in fourth direction
+        integer(kind = int_wp) :: num_exchanges_u_dir               ! in     number of exchanges in first direction
+        integer(kind = int_wp) :: num_exchanges_v_dir               ! in     number of exchanges in second direction
+        integer(kind = int_wp) :: num_exchanges_z_dir               ! in     number of exchanges in third direction
+        integer(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
 
-        ! from pmsa array
+        ! from process_space_real array
 
         real(kind = real_wp) :: depth              ! 1  in  total depth of the water column
         real(kind = real_wp) :: zthreshold         ! 2  in  depth threshold for emersion (drying)
@@ -71,13 +71,13 @@ contains
 
         ! local decalrations
 
-        integer(kind = int_wp) :: ip1            ! index pointer in pmsa array
-        integer(kind = int_wp) :: ip2            ! index pointer in pmsa array
-        integer(kind = int_wp) :: ip3            ! index pointer in pmsa array
-        integer(kind = int_wp) :: in3            ! increment in pmsa array
+        integer(kind = int_wp) :: ip1            ! index pointer in process_space_real array
+        integer(kind = int_wp) :: ip2            ! index pointer in process_space_real array
+        integer(kind = int_wp) :: ip3            ! index pointer in process_space_real array
+        integer(kind = int_wp) :: in3            ! increment in process_space_real array
         integer(kind = int_wp) :: nosegw         ! number of water segments
         integer(kind = int_wp) :: nosegl         ! number of segments per layer
-        integer(kind = int_wp) :: nolay          ! number of layers
+        integer(kind = int_wp) :: num_layers          ! number of layers
         integer(kind = int_wp) :: iseg           ! loop counter segment loop
         integer(kind = int_wp) :: iseg_down      ! underlying segment
         integer(kind = int_wp) :: ikmrk1         ! first feature inactive/active/bottom
@@ -95,8 +95,8 @@ contains
 
         ! initialise bottom if necessary
 
-        call makko2 (iexpnt, iknmrk, noq1, noq2, noq3, &
-                noq4)
+        call makko2 (iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+                num_exchanges_bottom_dir)
 
         ip1 = ipoint(1)
         ip2 = ipoint(2)
@@ -105,15 +105,15 @@ contains
         ! handle the active water segments
 
         call dhnoseg(nosegw)
-        call dhnolay(nolay)
-        nosegl = nosegw / nolay
+        call dhnolay(num_layers)
+        nosegl = nosegw / num_layers
 
         do iseg = 1, nosegw
 
             call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
             if (ikmrk1 == 1) then
-                depth = pmsa(ip1)
-                zthreshold = pmsa(ip2)
+                depth = process_space_real(ip1)
+                zthreshold = process_space_real(ip2)
 
                 ! look if segment has water surface
 
@@ -142,7 +142,7 @@ contains
                     swemersion = 0
                 endif
 
-                pmsa (ip3) = swemersion
+                process_space_real (ip3) = swemersion
 
             endif
 
@@ -171,7 +171,7 @@ contains
             endif
             do iq = iwa1, iwa2
                 iwater = iexpnt(1, iq)
-                sw_water = nint(pmsa(ip3 + (iwater - 1) * in3))
+                sw_water = nint(process_space_real(ip3 + (iwater - 1) * in3))
                 if (opemersion == 1) then
                     if (sw_water==0) then
                         swemersion = 0
@@ -185,7 +185,7 @@ contains
 
             do iq = itop, ibot
                 ibodem = iexpnt(1, iq)
-                pmsa(ip3 + (ibodem - 1) * in3) = swemersion
+                process_space_real(ip3 + (ibodem - 1) * in3) = swemersion
             enddo
 
         enddo

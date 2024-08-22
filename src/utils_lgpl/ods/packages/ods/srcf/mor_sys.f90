@@ -28,31 +28,7 @@
 !        $Date: 1-04-03 10:52 $
 !        $Source: /u/cvsroot/gpp/libsrc/ods/mor_sys.f,v $
 !
-!#ifdef WINNT
-!     INCLUDE '../include/nfsintrf.i'
-!
-!     INTERFACE TO FUNCTION GETELT_i [ALIAS:'_GETELT']
-!    +                             ( VALUE1, VALUE2, VALUE3, VALUE4 ,
-!    +                               VALUE5, VALUE6, VALUE7, VALUE8 )
-!
-!     INTEGER   GETELT_i
-!
-!     INTEGER   VALUE1
-!     INTEGER   VALUE2
-!     CHARACTER VALUE3
-!     CHARACTER VALUE4
-!     INTEGER   VALUE5
-!     INTEGER   VALUE6
-!     INTEGER   VALUE7
-!     CHARACTER VALUE8
-!
-!     END
-
-!#endif
 subroutine ods_mor_nef_com_dim&
-!#ifdef WINNT
-!    *                 [ALIAS:'_ods_mor_nef_com_dim']
-!#endif
 &(fname ,itype ,dimtyp, pardep, timdep, locdep,&
 &ndim  ,ierror, option                       )
 !-----------------------------------------------------------------------
@@ -107,7 +83,7 @@ subroutine ods_mor_nef_com_dim&
 ! HDEFDS      I*4  2997            Definition file description for the
 !                                  COM-DEF file
 ! IERROR      I*4                  Error code for NEFIS error
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! KM          I*4                  Number of layers for chosen parameter
 ! L           I*4                  Help variable
 ! LMAX        I*4                  Number of constituents
@@ -125,7 +101,7 @@ subroutine ods_mor_nef_com_dim&
 !
    integer         ierror , itype  , ind
    integer                  npar   , ii
-   integer         mmax   , nmax   , kmax
+   integer         num_columns   , num_rows   , num_layers_grid
    integer         pardep , timdep , locdep
    integer         ndim(4)
 !
@@ -178,8 +154,8 @@ subroutine ods_mor_nef_com_dim&
    ntrm=0
    ntmbot=0
    nthwg=0
-   call comdim( hdafds , hdefds , okee   , npar  , nmax  , mmax  ,&
-   &kmax   , ntcur  , ntwav  , nthwb , ntran , ntbot ,&
+   call comdim( hdafds , hdefds , okee   , npar  , num_rows  , num_columns  ,&
+   &num_layers_grid   , ntcur  , ntwav  , nthwb , ntran , ntbot ,&
    &ntr    , ntrm   , ntmbot , nthwg , pardep, km    )
 !-----------------------------------------------------------------------
 !-----return required dimension
@@ -200,8 +176,8 @@ subroutine ods_mor_nef_com_dim&
 !-----layers
 !-----------------------------------------------------------------------
       ndim (1) = 2
-      ndim (2) = mmax
-      ndim (3) = nmax
+      ndim (2) = num_columns
+      ndim (3) = num_rows
       if ( km     .gt. 1 ) then
          ndim (1) = 3
          ndim (4) = km
@@ -228,9 +204,6 @@ subroutine ods_mor_nef_com_dim&
 end
 
 subroutine ods_mor_nef_com_par&
-!#ifdef WINNT
-!    *                 [ALIAS:'_ods_mor_nef_com_par']
-!#endif
 &( fname , itype , pardef, maxdef, timdep, locdep,&
 &maxlst, lang  , parlst, paruni, partyp, parcod,&
 &nrlst , ierror, option                        )
@@ -399,9 +372,6 @@ subroutine ods_mor_nef_com_par&
 !-----------------------------------------------------------------------
 end
 subroutine ods_mor_nef_com_tme&
-!#ifdef WINNT
-!    *                 [ALIAS:'_ods_mor_nef_com_tme']
-!#endif
 &(fname  ,itype  ,timdef, maxdef ,pardep , locdep,&
 &maxlst ,        timlst,         timtyp ,&
 &nrlst  ,ierror ,option                         )
@@ -469,7 +439,7 @@ subroutine ods_mor_nef_com_tme&
 ! ITDATE      I*4                  Initial simulation start date
 ! IY          I*4                  Year part of ITDATE (yyyy)
 ! JULDAY      I*4                  julian day number of ITDATE
-! KMAX        I*4                  Number of layers
+! num_layers_grid        I*4                  Number of layers
 ! L           I*4                  Help var.
 ! LMAX        I*4                  Number of constituents
 ! M           I*4                  Help var.
@@ -511,7 +481,7 @@ subroutine ods_mor_nef_com_tme&
 !-----------------------------------------------------------------------
    integer hdefds(2997) , hdafds(999)
    integer ntwav  , nthwb  , ntcur  , ntran  ,ntbot  ,&
-   &nmax   , mmax   , kmax   , npar   ,nthwg
+   &num_rows   , num_columns   , num_layers_grid   , npar   ,nthwg
 !
    integer uindex(3,5  ),usrord(5),buflen
 !
@@ -611,8 +581,8 @@ subroutine ods_mor_nef_com_tme&
    nthwg=0
    ntran=0
    ntbot=0
-   call comtme(hdafds , hdefds , okee   , npar   , nmax   , mmax   ,&
-   &kmax   , ntcur  , ntwav  , nthwb  , nthwg  , ntran  ,&
+   call comtme(hdafds , hdefds , okee   , npar   , num_rows   , num_columns   ,&
+   &num_layers_grid   , ntcur  , ntwav  , nthwb  , nthwg  , ntran  ,&
    &ntbot  , pardep , timlst , nrlst  ,julday  , dt     ,&
    &tunit                                               )
 
@@ -636,9 +606,6 @@ subroutine ods_mor_nef_com_tme&
 end
 
 subroutine ods_mor_nef_com_mat&
-!#ifdef WINNT
-!    *                 [ALIAS:'_ods_mor_nef_com_mat']
-!#endif
 &(fname ,itype  ,parcod, loc   , tim   ,misval,&
 &i3gl  ,maxdim ,xdata , ierror, option,&
 &ibuffs,rbuffs                               )
@@ -746,7 +713,7 @@ subroutine ods_mor_nef_com_mat&
    character grpdaf*16 , elmnaa*16
    integer   hdefds(2997) , hdafds(999)
    integer   ntwav  , nthwb  , ntcur  , ntran  , ntbot  ,&
-   &nmax   , mmax   , kmax   , npar   , nthwg
+   &num_rows   , num_columns   , num_layers_grid   , npar   , nthwg
    integer   ilayf  , ilayl
    integer   uindex(3,5),usrord(5),buflen
    integer   GETELT
@@ -847,8 +814,8 @@ subroutine ods_mor_nef_com_mat&
    nthwg=0
    ilayf=loc(1,3)
    ilayl=loc(2,3)
-   call commat( hdafds , hdefds , okee   , npar   , nmax   ,&
-   &mmax   , kmax   , ntcur  , ntwav  , nthwb  ,&
+   call commat( hdafds , hdefds , okee   , npar   , num_rows   ,&
+   &num_columns   , num_layers_grid   , ntcur  , ntwav  , nthwb  ,&
    &nthwg  , ntran  , ntbot  , parcod , ibuffs ,&
    &rbuffs , tim    , xdata  , dt     , julday ,&
    &tunit  , misval , ilayf  , ilayl           )
@@ -871,14 +838,14 @@ subroutine ods_mor_nef_com_mat&
 !-----------------------------------------------------------------------
 end
 subroutine comdim( datfds  , deffds , okee   , npar   ,&
-&nmax    , mmax   , kmax   , ntcur  ,&
+&num_rows    , num_columns   , num_layers_grid   , ntcur  ,&
 &ntwav   , nthwb  , ntran  , ntbot  ,&
 &ntr     , ntrm   , ntmbot , nthwg  ,&
 &pardep  , km                       )
 !
    integer ntcur  , ntwav   , nthwb  , ntran  , ntbot  , ntr   ,&
-   &ntrm   , ntmbot  , nthwg  , nmax   , mmax   , npar  ,&
-   &kmax   , pardep  , km
+   &ntrm   , ntmbot  , nthwg  , num_rows   , num_columns   , npar  ,&
+   &num_layers_grid   , pardep  , km
 !
    integer icodb  , jcodb   , iku    , jku    , ikv    , jkv
    integer datfds(*) , deffds(*)
@@ -909,25 +876,25 @@ subroutine comdim( datfds  , deffds , okee   , npar   ,&
 !     WRITE(rpt,*) 'Enter: comdim'
 
    npar=0
-   nmax=0
-   mmax=0
-   kmax=0
+   num_rows=0
+   num_columns=0
+   num_layers_grid=0
    igrp=0
    okee=.true.
-   call mapcom( datfds , deffds , okee   , nmax   , mmax   , kmax   ,&
+   call mapcom( datfds , deffds , okee   , num_rows   , num_columns   , num_layers_grid   ,&
    &igrp   , grpnam , grpdef , cel    , elmnam , elmtyp ,&
    &elmqty , elmunt , elmdes , jcodb  , icodb  , iku    ,&
    &jku    , ikv    , jkv    , nelems , grpndm , grpdms ,&
    &elmdms , elmndm , maxgrp , maxelm , ntcur  , ntwav  ,&
    &nthwb  , nthwg  , ntran  , ntbot  , ntr    , ntrm   ,&
    &ntmbot                                              )
-!     WRITE( rpt, *) 'nmax mmax', nmax, mmax
-   if(nmax.eq.0.and.mmax.eq.0)then
+!     WRITE( rpt, *) 'num_rows num_columns', num_rows, num_columns
+   if(num_rows.eq.0.and.num_columns.eq.0)then
       do 15 i=1,igrp-1
          do 15 j=1,nelems(i)
             if(elmndm(j,I).ge.2)then
-               nmax=elmdms(1,j,i)
-               mmax=elmdms(2,j,i)
+               num_rows=elmdms(1,j,i)
+               num_columns=elmdms(2,j,i)
                goto 17
             endif
 15    continue
@@ -940,8 +907,8 @@ subroutine comdim( datfds  , deffds , okee   , npar   ,&
    do 25 i = 1,igrp-1
       do 20 j = 1,nelems(i)
          if ( elmndm(j,i) .ge. 2 ) then
-            if ( elmdms(1,j,i) .eq. nmax .and.&
-            &elmdms(2,j,i) .eq. mmax       )then
+            if ( elmdms(1,j,i) .eq. num_rows .and.&
+            &elmdms(2,j,i) .eq. num_columns       )then
                npar   = npar   + 1
                if ( pardep .eq. npar   ) then
                   if ( elmndm(j,i) .eq. 3 ) then
@@ -977,15 +944,15 @@ subroutine compar( datfds , deffds , okee   , tmlcdp , iplmnk ,&
 !
    integer   i,j,igrp,jcodb,icodb,ntcur,ntwav,nthwb,ntran,nthwg,&
    &ntbot,ntr,ntrm,ntmbot,iku,jku,ikv,jkv,&
-   &nmax,mmax,kmax
+   &num_rows,num_columns,num_layers_grid
 !pvb  write(*,*)' call compar'
    npar=0
-   nmax=0
-   mmax=0
-   kmax=0
+   num_rows=0
+   num_columns=0
+   num_layers_grid=0
    igrp=0
    okee=.true.
-   call mapcom( datfds , deffds , okee   , nmax   , mmax   , kmax   ,&
+   call mapcom( datfds , deffds , okee   , num_rows   , num_columns   , num_layers_grid   ,&
    &igrp   , grpnam , grpdef , cel    , elmnam , elmtyp ,&
    &elmqty , elmunt , elmdes , jcodb  , icodb  , iku    ,&
    &jku    , ikv    , jkv    , nelems , grpndm , grpdms ,&
@@ -993,14 +960,14 @@ subroutine compar( datfds , deffds , okee   , tmlcdp , iplmnk ,&
    &nthwb  , nthwg  , ntran  , ntbot  , ntr    , ntrm   ,&
    &ntmbot                                              )
 !
-! TODO: same for KMAX (not all parameters 3D though)
+! TODO: same for num_layers_grid (not all parameters 3D though)
 !
-   if(nmax.eq.0 .and. mmax.eq.0 )then
+   if(num_rows.eq.0 .and. num_columns.eq.0 )then
       do 15 i=1,igrp-1
          do 15 j=1,nelems(i)
             if(elmndm(j,I).ge.2)then
-               nmax=elmdms(1,j,i)
-               mmax=elmdms(2,j,i)
+               num_rows=elmdms(1,j,i)
+               num_columns=elmdms(2,j,i)
                goto 17
             endif
 15    continue
@@ -1012,8 +979,8 @@ subroutine compar( datfds , deffds , okee   , tmlcdp , iplmnk ,&
    do 20 i=1,igrp-1
       do 20 j=1,nelems(i)
          if ( elmndm(j,i) .ge. 2 ) then
-            if ( elmdms(1,j,i) .eq. nmax   .and.&
-            &elmdms(2,j,i) .eq. mmax         )then
+            if ( elmdms(1,j,i) .eq. num_rows   .and.&
+            &elmdms(2,j,i) .eq. num_columns         )then
                npar         = npar   + 1
                parcod(npar) = npar
                parlst(npar) = elmnam(j,i)
@@ -1042,14 +1009,14 @@ subroutine compar( datfds , deffds , okee   , tmlcdp , iplmnk ,&
    return
 end
 subroutine commat( datfds , deffds , okee   , npar   ,&
-&nmax   , mmax   , kmax   , ntcur  ,&
+&num_rows   , num_columns   , num_layers_grid   , ntcur  ,&
 &ntwav  , nthwb  , nthwg  , ntran  ,&
 &ntbot  , pardep , ibuffs , rbuffs ,&
 &tim    , xdata  , dt     , julday ,&
 &tunit  , misval , ilayf  , ilayl  )
    integer datfds(*) , deffds(*)
    integer ntcur  , ntwav  , nthwb  , ntran  , ntbot  , ntr    ,&
-   &ntrm   , ntmbot , nmax   , mmax   , kmax   , nthwg  ,&
+   &ntrm   , ntmbot , num_rows   , num_columns   , num_layers_grid   , nthwg  ,&
    &npar   , ibuffs(*)
    integer pardep , julday , ilayf  , ilayl
    real    tunit  , rbuffs(*) , xdata(*) , dt     , misval
@@ -1089,9 +1056,9 @@ subroutine commat( datfds , deffds , okee   , npar   ,&
    usrord(1)=1
    vector=.true.
    npar=0
-   nmax=0
-   mmax=0
-   kmax=0
+   num_rows=0
+   num_columns=0
+   num_layers_grid=0
    igrp=0
    ivar=0
    jcodb=0
@@ -1109,7 +1076,7 @@ subroutine commat( datfds , deffds , okee   , npar   ,&
    ntr=0
    ntrm=0
    ntmbot=0
-   call mapcom( datfds , deffds , okee   , nmax   , mmax   , kmax   ,&
+   call mapcom( datfds , deffds , okee   , num_rows   , num_columns   , num_layers_grid   ,&
    &igrp   , grpnam , grpdef , cel    , elmnam , elmtyp ,&
    &elmqty , elmunt , elmdes , jcodb  , icodb  , iku    ,&
    &jku    , ikv    , jkv    , nelems , grpndm , grpdms ,&
@@ -1117,12 +1084,12 @@ subroutine commat( datfds , deffds , okee   , npar   ,&
    &nthwb  , nthwg  , ntran  , ntbot  , ntr    , ntrm   ,&
    &ntmbot                                              )
    okee   = .true.
-   if ( nmax   .eq. 0 .and. mmax   .eq. 0 ) then
+   if ( num_rows   .eq. 0 .and. num_columns   .eq. 0 ) then
       do 16 i = 1,igrp-1
          do 15 j = 1,nelems(i)
             if ( elmndm(j,i) .ge. 2 ) then
-               nmax   = elmdms(1,j,i)
-               mmax   = elmdms(2,j,i)
+               num_rows   = elmdms(1,j,i)
+               num_columns   = elmdms(2,j,i)
                goto 17
             endif
 15       continue
@@ -1142,8 +1109,8 @@ subroutine commat( datfds , deffds , okee   , npar   ,&
       endif
       do 20 j = 1,nelems(i)
          if ( elmndm(j,i) .ge. 2 ) then
-            if ( elmdms(1,j,i) .eq. nmax   .and.&
-            &elmdms(2,j,i) .eq. mmax         ) then
+            if ( elmdms(1,j,i) .eq. num_rows   .and.&
+            &elmdms(2,j,i) .eq. num_columns         ) then
                npar   = npar   + 1
                if ( pardep .eq. npar   ) then
                   ii     = i
@@ -1263,14 +1230,14 @@ subroutine commat( datfds , deffds , okee   , npar   ,&
 !  UVDAMS
 !
       ikfu   = 1
-      ikfv   = ikfu+nmax*mmax*km
-      ilen   = 4 * nmax   * mmax   * km
-      ioff   =    -nmax   * mmax   * km
+      ikfv   = ikfu+num_rows*num_columns*km
+      ilen   = 4 * num_rows   * num_columns   * km
+      ioff   =    -num_rows   * num_columns   * km
 !
 ! --------- Loop over the timesteps
 !
       do 390 i = nindex(1),nindex(2),nindex(3)
-         ioff  = ioff   + nmax   * mmax   * km
+         ioff  = ioff   + num_rows   * num_columns   * km
          uindex(1,1) = i
          uindex(2,1) = i
          uindex(3,1) = 1
@@ -1285,11 +1252,11 @@ subroutine commat( datfds , deffds , okee   , npar   ,&
 !--------UVDAMS                           parcod = 50
 !  TODO: UVDAMS possibly three-dimensional?
 !
-         nm    = nmax*mmax
-         do 320 n = 1,nmax
-            do 310 m = 1,mmax
-               n1           =   (n-1) * mmax +  m
-               n2           =   (m-1) * nmax +  n
+         nm    = num_rows*num_columns
+         do 320 n = 1,num_rows
+            do 310 m = 1,num_columns
+               n1           =   (n-1) * num_columns +  m
+               n2           =   (m-1) * num_rows +  n
                xdata ( ioff+n1 ) =&
                &ibuffs(n2) * 1.0 + ibuffs(n2+nm) * 2.0
 310         continue
@@ -1302,37 +1269,37 @@ subroutine commat( datfds , deffds , okee   , npar   ,&
    if ( pardep .eq. npar   ) goto 1000
 !
    if ( ivar   .ne. 0 ) then
-      ioff   =    -nmax   * mmax   * km
+      ioff   =    -num_rows   * num_columns   * km
 !
 ! --------- Vector quantities:
 !           Loop over the timesteps
 !
       do 490 i = nindex(1),nindex(2),nindex(3)
-         ioff  = ioff   + nmax   * mmax   * km
+         ioff  = ioff   + num_rows   * num_columns   * km
          uindex(1,1) = i
          uindex(2,1) = i
          uindex(3,1) = 1
 !
          ingrp=i
          ixcor=1
-         iycor=ixcor+nmax*mmax
-         iu1  =iycor+nmax*mmax
-         iv1  =iu1  +nmax*mmax*km
-         iguu =iv1  +nmax*mmax*km
-         igvv =iguu +nmax*mmax
-         iu   =igvv +nmax*mmax
-         iv   =iu   +nmax*mmax*km
-         ialfa=iv   +nmax*mmax*km
+         iycor=ixcor+num_rows*num_columns
+         iu1  =iycor+num_rows*num_columns
+         iv1  =iu1  +num_rows*num_columns*km
+         iguu =iv1  +num_rows*num_columns*km
+         igvv =iguu +num_rows*num_columns
+         iu   =igvv +num_rows*num_columns
+         iv   =iu   +num_rows*num_columns*km
+         ialfa=iv   +num_rows*num_columns*km
          ikcs =1
-         ikfu =ikcs +nmax*mmax
-         ikfv =ikfu +nmax*mmax
-         ikcu =ikfv +nmax*mmax
-         ikcv =ikcu +nmax*mmax
+         ikfu =ikcs +num_rows*num_columns
+         ikfv =ikfu +num_rows*num_columns
+         ikcu =ikfv +num_rows*num_columns
+         ikcv =ikcu +num_rows*num_columns
          call travec(ivar,ingrp,deffds,datfds,&
          &rbuffs(ixcor),rbuffs(iycor),rbuffs(iu1),rbuffs(iv1),&
          &rbuffs(iguu),rbuffs(igvv),rbuffs(iu),rbuffs(iv),&
          &rbuffs(ialfa),ibuffs(ikcs),ibuffs(ikfu),ibuffs(ikfv),&
-         &ibuffs(ikcu),ibuffs(ikcv),nmax,mmax,kmax,misval)
+         &ibuffs(ikcu),ibuffs(ikcv),num_rows,num_columns,num_layers_grid,misval)
          if(elmnam(jj,ii).eq.'FX'.or.elmnam(jj,ii).eq.'MX'.or.&
          &elmnam(jj,ii).eq.'QU'.or.elmnam(jj,ii).eq.'U1'.or.&
          &elmnam(jj,ii).eq.'TTXA'.or.elmnam(jj,ii).eq.'TTXSA'.or.&
@@ -1340,21 +1307,21 @@ subroutine commat( datfds , deffds , okee   , npar   ,&
          &elmnam(jj,ii).eq.'SXS '.or.elmnam(jj,ii).eq.'STXS '.or.&
          &elmnam(jj,ii).eq.'TX ')then
             n1 = 1
-            n2 = 1 + nmax * mmax * ( ilayf  - 1 )
+            n2 = 1 + num_rows * num_columns * ( ilayf  - 1 )
             do 21 k = ilayf,ilayl
                call tramat( xdata(ioff+n1) , rbuffs(iu+n2-1) ,&
-               &nmax           , mmax            )
-               n1 = n1 + nmax * mmax
-               n2 = n2 + nmax * mmax
+               &num_rows           , num_columns            )
+               n1 = n1 + num_rows * num_columns
+               n2 = n2 + num_rows * num_columns
 21          continue
          else
             n1 = 1
-            n2 = 1 + nmax * mmax * ( ilayf  - 1 )
+            n2 = 1 + num_rows * num_columns * ( ilayf  - 1 )
             do 22 k = ilayf,ilayl
                call tramat( xdata(ioff+n1) , rbuffs(iv+n2-1) ,&
-               &nmax           , mmax            )
-               n1 = n1 + nmax * mmax
-               n2 = n2 + nmax * mmax
+               &num_rows           , num_columns            )
+               n1 = n1 + num_rows * num_columns
+               n2 = n2 + num_rows * num_columns
 22          continue
          endif
 490   continue
@@ -1363,11 +1330,11 @@ subroutine commat( datfds , deffds , okee   , npar   ,&
 ! -------- Scalar parameters:
 !          Loop over the timesteps
 !
-      ilen   = 4 * nmax   * mmax   * km
-      ioff   =    -nmax   * mmax   * km
+      ilen   = 4 * num_rows   * num_columns   * km
+      ioff   =    -num_rows   * num_columns   * km
 !
       do 110 i = nindex(1),nindex(2),nindex(3)
-         ioff   = ioff   + nmax   * mmax   * km
+         ioff   = ioff   + num_rows   * num_columns   * km
          uindex(1,1) = i
          uindex(2,1) = i
          uindex(3,1) = 1
@@ -1386,10 +1353,10 @@ subroutine commat( datfds , deffds , okee   , npar   ,&
                error = getelt(deffds,grpdef(jcodb),&
                &elmnam(icodb,jcodb),uindex,usrord,&
                &ilen,ibuffs)
-               do 35 n = 1,nmax
-                  do 30 m = 1,mmax
-                     n1           =   (n-1) * mmax +  m
-                     n2           =   (m-1) *nmax+n
+               do 35 n = 1,num_rows
+                  do 30 m = 1,num_columns
+                     n1           =   (n-1) * num_columns +  m
+                     n2           =   (m-1) *num_rows+n
 !AM
 !                       if ( abs(rbuffs(n2)) .lt. 1.e-8 .or.
 !    *                       ibuffs(n2)      .lt. 0         )
@@ -1402,22 +1369,22 @@ subroutine commat( datfds , deffds , okee   , npar   ,&
             else
 !
                n1 = 1
-               n2 = 1 + nmax * mmax * ( ilayf  - 1 )
+               n2 = 1 + num_rows * num_columns * ( ilayf  - 1 )
                do 45 k = ilayf,ilayl
                   call tramat( xdata(ioff+n1) , rbuffs(n2) ,&
-                  &nmax           , mmax       )
-                  n1 = n1 + nmax * mmax
-                  n2 = n2 + nmax * mmax
+                  &num_rows           , num_columns       )
+                  n1 = n1 + num_rows * num_columns
+                  n2 = n2 + num_rows * num_columns
 45             continue
             endif
          else
             error = getelt(deffds,grpdef(ii),&
             &elmnam(jj,ii),uindex,usrord,&
             &ilen,ibuffs)
-            do 55 n = 1,nmax
-               do 50 m = 1,mmax
-                  n1           =   (n-1) * mmax +  m
-                  n2=(m-1)*nmax+n
+            do 55 n = 1,num_rows
+               do 50 m = 1,num_columns
+                  n1           =   (n-1) * num_columns +  m
+                  n2=(m-1)*num_rows+n
                   xdata ( ioff+n1 ) = ibuffs(n2)
 50             continue
 55          continue
@@ -1432,12 +1399,12 @@ subroutine commat( datfds , deffds , okee   , npar   ,&
    return
 end
 subroutine comtme( datfds , deffds , okee   , npar    ,&
-&nmax   , mmax   , kmax   , ntcur   ,&
+&num_rows   , num_columns   , num_layers_grid   , ntcur   ,&
 &ntwav  , nthwb  , nthwg  , ntran   ,&
 &ntbot  , pardep , timlst , nrlist  ,&
 &julday , dt     , tunit            )
    integer datfds(*),deffds(*)
-   integer nmax   , mmax   , kmax   , npar   , pardep ,&
+   integer num_rows   , num_columns   , num_layers_grid   , npar   , pardep ,&
    &julday , nrlist , ntcur  , ntwav  , nthwb  ,&
    &ntran  , ntbot  , ntr    , ntrm   , ntmbot ,&
    &nthwg
@@ -1469,12 +1436,12 @@ subroutine comtme( datfds , deffds , okee   , npar    ,&
    uindex(3,1)=1
    usrord(1)=1
    npar=0
-   nmax=0
-   mmax=0
-   kmax=0
+   num_rows=0
+   num_columns=0
+   num_layers_grid=0
    igrp=0
    okee=.true.
-   call mapcom( datfds , deffds , okee   , nmax   , mmax   , kmax   ,&
+   call mapcom( datfds , deffds , okee   , num_rows   , num_columns   , num_layers_grid   ,&
    &igrp   , grpnam , grpdef , cel    , elmnam , elmtyp ,&
    &elmqty , elmunt , elmdes , jcodb  , icodb  , iku    ,&
    &jku    , ikv    , jkv    , nelems , grpndm , grpdms ,&
@@ -1482,12 +1449,12 @@ subroutine comtme( datfds , deffds , okee   , npar    ,&
    &nthwb  , nthwg  , ntran  , ntbot  , ntr    , ntrm   ,&
    &ntmbot                                              )
 !
-   if( nmax .eq. 0 .and. mmax .eq. 0 )then
+   if( num_rows .eq. 0 .and. num_columns .eq. 0 )then
       do 15 i=1,igrp-1
          do 15 j=1,nelems(i)
             if(elmndm(j,I).ge.2)then
-               nmax=elmdms(1,j,i)
-               mmax=elmdms(2,j,i)
+               num_rows=elmdms(1,j,i)
+               num_columns=elmdms(2,j,i)
                goto 17
             endif
 15    continue
@@ -1507,7 +1474,7 @@ subroutine comtme( datfds , deffds , okee   , npar    ,&
 !
       do 20 j=1,nelems(i)
          if(elmndm(j,i).ge.2)then
-            if(elmdms(1,j,i).eq.nmax.and.elmdms(2,j,i).eq.mmax)then
+            if(elmdms(1,j,i).eq.num_rows.and.elmdms(2,j,i).eq.num_columns)then
                npar=npar+1
                if(pardep.eq.npar)then
                   ii=i
@@ -1604,8 +1571,7 @@ subroutine comtme( datfds , deffds , okee   , npar    ,&
 end
 ! =====================================================================
 subroutine mapcom&
-! ---------------------------------------------------------------------
-&( datfds , deffds , okee   , nmax   , mmax   , kmax   ,&
+&( datfds , deffds , okee   , num_rows   , num_columns   , num_layers_grid   ,&
 &igrp   , grpnam , grpdef , cel    , elmnam , elmtyp ,&
 &elmqty , elmunt , elmdes , jcodb  , icodb  , iku    ,&
 &jku    , ikv    , jkv    , nelems , grpndm , grpdms ,&
@@ -1635,7 +1601,7 @@ subroutine mapcom&
    &maxelm, elmdms, elmndm,&
    &jcodb,icodb,iku,jku,ikv,jkv,&
    &ntcur,ntwav,nthwb,nthwg,ntran,ntbot,ntr,ntrm,ntmbot,&
-   &nmax, mmax, kmax
+   &num_rows, num_columns, num_layers_grid
 
    DIMENSION&
    &datfds(*),&
@@ -1701,11 +1667,11 @@ subroutine mapcom&
    usrord(1)   = 1
    igrp        = 0
 !
-! -------- (AM) The number of layers is at least 1, the element 'KMAX'
+! -------- (AM) The number of layers is at least 1, the element 'num_layers_grid'
 !               may explicitly set this parameter. The other grid
-!               parameters (NMAX and MMAX) are always set explicitly.
+!               parameters (num_rows and num_columns) are always set explicitly.
 !
-   kmax        = 1
+   num_layers_grid        = 1
 !
 1111 continue
    igrp   = igrp   + 1
@@ -1750,23 +1716,23 @@ subroutine mapcom&
 !     call nefout('elmnam '//elmnam(i,igrp),error)
       okee   = error.eq.0
 !
-      if ( elmnam(i,igrp) .eq. 'NMAX' ) then
+      if ( elmnam(i,igrp) .eq. 'num_rows' ) then
          error  = getelt(deffds,grpdef(igrp),&
          &elmnam(i,igrp),uindex,usrord,&
-         &4,nmax)
+         &4,num_rows)
          okee   = okee .and. error.eq.0
       endif
-      if ( elmnam(i,igrp) .eq. 'MMAX' ) then
+      if ( elmnam(i,igrp) .eq. 'num_columns' ) then
          error  = getelt(deffds,grpdef(igrp),&
          &elmnam(i,igrp),uindex,usrord,&
-         &4,mmax)
+         &4,num_columns)
          okee   = okee .and. error.eq.0
       endif
-      if ( elmnam(i,igrp) .eq. 'KMAX' ) then
+      if ( elmnam(i,igrp) .eq. 'num_layers_grid' ) then
          error  = getelt(deffds,grpdef(igrp),&
          &elmnam(i,igrp),uindex,usrord,&
-         &4,kmax)
-         if ( kmax .le. 0 ) kmax   = 1
+         &4,num_layers_grid)
+         if ( num_layers_grid .le. 0 ) num_layers_grid   = 1
          okee   = okee .and. error.eq.0
       endif
       if ( elmnam(i,igrp) .eq. 'NTWAV' ) then
@@ -1862,7 +1828,7 @@ subroutine nefout(name,error)
    return
 end
 subroutine tr2wav (u1, v1, uzeta, vzeta, xcor, ycor,&
-&guu, gvv, nmax, mmax, kcs, kfu, kfv,&
+&guu, gvv, num_rows, num_columns, kcs, kfu, kfv,&
 &ivar,alfas,alfa,misval)
 
 !
@@ -1870,21 +1836,21 @@ subroutine tr2wav (u1, v1, uzeta, vzeta, xcor, ycor,&
 !
 ! name     type     lenght      i o   description
 ! ====     ====     ======      ===   ===========
-! guu      real     nmax*mmax   *     coeff. arrays g-eta-eta
-! gvv      real     nmax*mmax   *     coeff. arrays g-ksi-ksi
-! kcs      integer  nmax*mmax   *     0/1/2 non-active / active /
+! guu      real     num_rows*num_columns   *     coeff. arrays g-eta-eta
+! gvv      real     num_rows*num_columns   *     coeff. arrays g-ksi-ksi
+! kcs      integer  num_rows*num_columns   *     0/1/2 non-active / active /
 !                                     boundary water-level point
-! kfu      integer  nmax*mmax   *     0/1 non-active / active u-point
-! kfv      integer  nmax*mmax   *     0/1 non-active / active v-point
-! mmax     integer  1           *     m-size of the grid
-! nmax     integer  1           *     n-size of the grid
-! u1       real     nmax*mmax   *     array with u-velocity in u-point
-! uzeta    real     nmax*mmax     *   array with x-velocity in zetapoint
-! v1       real     nmax*mmax   *     array with v-velocity in v-point
-! vzeta    real     nmax*mmax     *   array with y-velocity in zetapoint
-! xcor     real     nmax*mmax   *     x-coordinate here used in depth
+! kfu      integer  num_rows*num_columns   *     0/1 non-active / active u-point
+! kfv      integer  num_rows*num_columns   *     0/1 non-active / active v-point
+! num_columns     integer  1           *     m-size of the grid
+! num_rows     integer  1           *     n-size of the grid
+! u1       real     num_rows*num_columns   *     array with u-velocity in u-point
+! uzeta    real     num_rows*num_columns     *   array with x-velocity in zetapoint
+! v1       real     num_rows*num_columns   *     array with v-velocity in v-point
+! vzeta    real     num_rows*num_columns     *   array with y-velocity in zetapoint
+! xcor     real     num_rows*num_columns   *     x-coordinate here used in depth
 !                                     point
-! ycor     real     nmax*mmax   *     y-coordinate here used in depth
+! ycor     real     num_rows*num_columns   *     y-coordinate here used in depth
 !                                     point
 !
 ! important local variables:
@@ -1910,15 +1876,15 @@ subroutine tr2wav (u1, v1, uzeta, vzeta, xcor, ycor,&
 !-----------------------------------------------------------------------
 !-----specifications and declarations
 !-----------------------------------------------------------------------
-   integer nmax,mmax
-   real         u1    (nmax  ,mmax  ), alfas (nmax  ,mmax  ),&
-   &v1    (nmax  ,mmax  ), uzeta (nmax  ,mmax  ),&
-   &vzeta (nmax  ,mmax  ),&
-   &xcor  (nmax  ,mmax  ), ycor  (nmax  ,mmax  ),&
-   &guu   (nmax  ,mmax  ), gvv   (nmax  ,mmax  )
+   integer num_rows,num_columns
+   real         u1    (num_rows  ,num_columns  ), alfas (num_rows  ,num_columns  ),&
+   &v1    (num_rows  ,num_columns  ), uzeta (num_rows  ,num_columns  ),&
+   &vzeta (num_rows  ,num_columns  ),&
+   &xcor  (num_rows  ,num_columns  ), ycor  (num_rows  ,num_columns  ),&
+   &guu   (num_rows  ,num_columns  ), gvv   (num_rows  ,num_columns  )
    Logical      alfa,lvar
-   integer      kcs   (nmax  ,mmax  ),&
-   &kfu   (nmax  ,mmax  ),kfv   (nmax  ,mmax  )
+   integer      kcs   (num_rows  ,num_columns  ),&
+   &kfu   (num_rows  ,num_columns  ),kfv   (num_rows  ,num_columns  )
    integer ivar,m,n,n1,m1,md,nd
    real eps,xksi,yksi,xeta,yeta,guugem,gvvgem,ugem,vgem,&
    &pi,degrad,um,umd,vn,vnd,misval,countu,countv
@@ -1933,8 +1899,8 @@ subroutine tr2wav (u1, v1, uzeta, vzeta, xcor, ycor,&
 !-----arrays
 !     For vectorplots the defaultvalue is <eps>.
 !
-   Do 20 m = 1,mmax
-      Do 10 n = 1,nmax
+   Do 20 m = 1,num_columns
+      Do 10 n = 1,num_rows
          uzeta (n,m) = misval
          vzeta (n,m) = misval
 10    Continue
@@ -1945,8 +1911,8 @@ subroutine tr2wav (u1, v1, uzeta, vzeta, xcor, ycor,&
 !           never .le. eps so this check can be skipped.
 !-----------------------------------------------------------------------
    If (.NOT.alfa) Then
-      do 100 m=1,mmax
-         do 110 n = 1,nmax
+      do 100 m=1,num_columns
+         do 110 n = 1,num_rows
 !
 !
 ! -------- This statement means that some cells which are clearly
@@ -2005,8 +1971,8 @@ subroutine tr2wav (u1, v1, uzeta, vzeta, xcor, ycor,&
    Else
       pi     = 4.*ATAN (1.0)
       degrad = pi/180.
-      Do 210 n=1,nmax
-         Do 200 m=1,mmax
+      Do 210 n=1,num_rows
+         Do 200 m=1,num_columns
             md   = MAX (1,m-1)
             nd   = MAX (1,n-1)
 !
@@ -2063,7 +2029,7 @@ subroutine tr2wav (u1, v1, uzeta, vzeta, xcor, ycor,&
 end
 subroutine travec(ivar,ingrp,deffds,datfds,xcor,ycor,u1,v1,&
 &guu,gvv,u,v,alfas,kcs,kfu,kfv,&
-&kcu,kcv,nmax,mmax,kmax,misval)
+&kcu,kcv,num_rows,num_columns,num_layers_grid,misval)
    real        XCOR(*),YCOR(*),U1(*),V1(*),misval,&
    &GUU(*),GVV(*),&
    &U(*),V(*),alfas(*)
@@ -2076,12 +2042,12 @@ subroutine travec(ivar,ingrp,deffds,datfds,xcor,ycor,u1,v1,&
    &kor*16
    INTEGER INQELM,GETELt
    Logical      alfa
-   integer ivar,ingrp,nmax,mmax,kmax,k,l,i,nvec,nby,idam,nlen,jm,im
+   integer ivar,ingrp,num_rows,num_columns,num_layers_grid,k,l,i,nvec,nby,idam,nlen,jm,im
    integer koff,nlenv
 !
-   do 3 k=1,nmax
-      do 3 l=1,mmax
-         i=(l-1)*nmax+k
+   do 3 k=1,num_rows
+      do 3 l=1,num_columns
+         i=(l-1)*num_rows+k
          kcs(i)=1
          kfu(i)=1
          kfv(i)=1
@@ -2096,7 +2062,7 @@ subroutine travec(ivar,ingrp,deffds,datfds,xcor,ycor,u1,v1,&
    &ELMDES,IDaM,ELMDMS)
    call nefout(elmnam,error)
    nlen=elmdms(1)*elmdms(2)*NBY
-   nlenv=elmdms(1)*elmdms(2)*kmax*NBY
+   nlenv=elmdms(1)*elmdms(2)*num_layers_grid*NBY
    KOR='map-const'
    CELIDT(1)=1
    uindex(1,1)=celidt(1)
@@ -2270,28 +2236,28 @@ subroutine travec(ivar,ingrp,deffds,datfds,xcor,ycor,u1,v1,&
       ENDIF
    endif
    call nefout(elmnam,error)
-   jm=mmax
-   im=nmax
+   jm=num_columns
+   im=num_rows
    koff=1
-   do 10 k = 1,kmax
+   do 10 k = 1,num_layers_grid
       Call tr2wav (u1(koff), v1(koff), u(koff) , v(koff) , xcor,&
       &ycor,guu, gvv, im  , jm  , kcs, kfu, kfv,ivar,&
       &alfas,alfa,misval)
-      koff   = koff   + nmax   * mmax
+      koff   = koff   + num_rows   * num_columns
 10 continue
    RETURN
 END
-subroutine tramat( xdata  , rbuffs  , nmax   , mmax   )
+subroutine tramat( xdata  , rbuffs  , num_rows   , num_columns   )
 !
 ! Subroutine to transpose a matrix stored in the buffer
 !
-   integer nmax   , mmax
-   real    xdata(mmax,nmax) , rbuffs(nmax,mmax)
+   integer num_rows   , num_columns
+   real    xdata(num_columns,num_rows) , rbuffs(num_rows,num_columns)
 !
    integer i      , j
 !
-   do 120 j = 1,nmax
-      do 110 i = 1,mmax
+   do 120 j = 1,num_rows
+      do 110 i = 1,num_columns
          xdata(i,j)  = rbuffs(j,i)
 110   continue
 120 continue

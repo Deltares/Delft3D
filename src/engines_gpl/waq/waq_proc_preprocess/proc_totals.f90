@@ -54,7 +54,7 @@ contains
         ! local decalarations
 
         type(procesprop), pointer :: proc            ! single process
-        integer(kind = int_wp) :: nproc           ! number of processes
+        integer(kind = int_wp) :: num_processes_activated           ! number of processes
         integer(kind = int_wp) :: iproc           ! index processes
         integer(kind = int_wp) :: i_item          ! index io_items
         integer(kind = int_wp) :: ithndl = 0
@@ -71,8 +71,8 @@ contains
         no_sto = 0
         no_dis = 0
         no_vel = 0
-        nproc = procesdef%current_size
-        do iproc = 1, nproc
+        num_processes_activated = procesdef%current_size
+        do iproc = 1, num_processes_activated
 
             proc => procesdef%procesprops(iproc)
 

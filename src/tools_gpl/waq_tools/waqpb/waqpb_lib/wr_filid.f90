@@ -70,10 +70,10 @@
                    IERROR
       INTEGER       DEFFDS
       REAL          VFFORM      , VERSIO
-      CHARACTER*20  RUNDAT
-      CHARACTER*40  FFORM       , CONTEN     , & 
+      CHARACTER(len=20)  RUNDAT
+      CHARACTER(len=40)  FFORM       , CONTEN     , & 
                    SOURCE
-      CHARACTER*40  REMARK(4)
+      CHARACTER(len=40)  REMARK(4)
 !     
 !          Local variables
 !     
@@ -90,9 +90,9 @@
       INTEGER       I               , IELM
       INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      CHARACTER(len=16)  GRPNAM
+      CHARACTER(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      CHARACTER(len=64)  ELMDES(NELEMS)
 !     
 !          External NEFIS Functions
 !     

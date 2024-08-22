@@ -234,7 +234,7 @@ contains
     end subroutine read_monitoring_areas
 
     subroutine read_monitoring_transects(file_unit_list, file_name_list, filtype, raname, nexcraai, &
-            iexcraai, ioptraai, noraai, ntraaq, output_verbose_level, &
+            iexcraai, ioptraai, num_transects, num_transect_exchanges, output_verbose_level, &
             ierr, status)
 
 
@@ -276,8 +276,8 @@ contains
         integer(kind = int_wp), pointer :: nexcraai(:)        !< number of exchanges per monitoring transect
         integer(kind = int_wp), pointer :: iexcraai(:)        !< exchange numbers per monitoring transect
         integer(kind = int_wp), pointer :: ioptraai(:)        !< transport summation option for transects
-        integer(kind = int_wp), intent(out) :: noraai             !< number of monitoring transects
-        integer(kind = int_wp), intent(out) :: ntraaq             !< total number of exchanges in monitoring transects
+        integer(kind = int_wp), intent(out) :: num_transects             !< number of monitoring transects
+        integer(kind = int_wp), intent(out) :: num_transect_exchanges             !< total number of exchanges in monitoring transects
         integer(kind = int_wp), intent(in) :: output_verbose_level             !< flag for more or less output
         integer(kind = int_wp), intent(inout) :: ierr               !< error   count
 
@@ -310,81 +310,81 @@ contains
                     ldummy, ldummy, 0, ierr2, status, &
                     .false.)
             if (ierr2 > 0) goto 20
-            if (gettoken(noraai, ierr2) > 0) goto 20
+            if (gettoken(num_transects, ierr2) > 0) goto 20
         case (0)                      ! new style (October 2012) no dump transects
             write (file_unit, 2020)       ! old style would have produced an error
-            noraai = 0
-            ntraaq = 0
+            num_transects = 0
+            num_transect_exchanges = 0
             goto 30
         case (1)                      ! old style <this input file> or new style 1 transect
-            if (gettoken(option, noraai, itype, ierr2) > 0) goto 20
+            if (gettoken(option, num_transects, itype, ierr2) > 0) goto 20
             if (itype == 1) then     ! character so: new style, 1 transect
                 push = .true.
-                noraai = iropt1
+                num_transects = iropt1
             else
                 write (file_unit, 2000)  iropt1
             endif
         case (2)                      ! old style <no dump transects> or new style 2 transects
-            if (gettoken(option, noraai, itype, ierr2) > 0) goto 20
+            if (gettoken(option, num_transects, itype, ierr2) > 0) goto 20
             push = .true.                ! look to see what will be next
             if (itype == 1) then     ! a string, so first dump-ID from 2 areas
-                call convert_string_to_time_offset (option, noraai, .false., .false., ierr2)
+                call convert_string_to_time_offset (option, num_transects, .false., .false., ierr2)
                 if (ierr2 /= 0) then
-                    noraai = iropt1
+                    num_transects = iropt1
                 else
                     write (file_unit, 2000)  iropt1
                     write (file_unit, 2020)
-                    noraai = 0
-                    ntraaq = 0
+                    num_transects = 0
+                    num_transect_exchanges = 0
                     goto 30
                 endif
             else                         ! an integer, so 2 meant <not used>
                 write (file_unit, 2020)
-                noraai = 0
-                ntraaq = 0
+                num_transects = 0
+                num_transect_exchanges = 0
                 goto 30
             endif
         case default                    ! new processing
-            noraai = iropt1
+            num_transects = iropt1
 
         end select
 
         ! Write number of dump transects, allocate arrays
-        write(file_unit, 2030) noraai
-        ntraaq = 0
-        allocate (raname  (noraai), stat = ierr_alloc)
+        write(file_unit, 2030) num_transects
+        num_transect_exchanges = 0
+        allocate (raname  (num_transects), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             write (file_unit, 2380) ierr_alloc
             goto 20
         endif
-        allocate (nexcraai(noraai), ioptraai(noraai), &
-                iexcraai(noraai * 2), stat = ierr_alloc)
+        allocate (nexcraai(num_transects), ioptraai(num_transects), &
+                iexcraai(num_transects * 2), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             write (file_unit, 2390) ierr_alloc
             goto 20
         endif
-        max_ntraaq = noraai * 2
+        max_ntraaq = num_transects * 2
 
         ! Read specification of the transects
         if (output_verbose_level < 2) write (file_unit, 2040)
         if (output_verbose_level == 2) write (file_unit, 2050)
-        do ir = 1, noraai
+        do ir = 1, num_transects
             if (gettoken(raname  (ir), ierr2) > 0) goto 20
             if (gettoken(ioptraai(ir), ierr2) > 0) goto 20
             if (gettoken(nq, ierr2) > 0) goto 20
-            if (ntraaq + nq > max_ntraaq) then
-                max_ntraaq = 2 * (ntraaq + nq)
+            if (num_transect_exchanges + nq > max_ntraaq) then
+                max_ntraaq = 2 * (num_transect_exchanges + nq)
                 allocate (iexcraai_2(max_ntraaq), stat = ierr_alloc)
                 if (ierr_alloc /= 0) then
                     write (file_unit, 2400) ierr_alloc
                     goto 20
                 endif
-                iexcraai_2(1:ntraaq) = iexcraai(1:ntraaq)
+                iexcraai_2(1:num_transect_exchanges) = iexcraai(1:num_transect_exchanges)
                 deallocate(iexcraai)
                 iexcraai => iexcraai_2
             endif
             do k = 1, nq
-                if (gettoken(iexcraai(ntraaq + k), ierr2) > 0) goto 20
+                if (gettoken(iexcraai(num_transect_exchanges + k), ierr2) > 0) goto 20
             enddo
             if (raname(ir) == ' ') write(raname(ir), '(''Transect-id'',i6)') ir
 
@@ -401,11 +401,11 @@ contains
                 write(file_unit, 2060) ir, raname(ir), ioptraai(ir), nq
                 if (output_verbose_level >= 3) then
                     write(file_unit, 2070)
-                    write(file_unit, 2080) (k, iexcraai(ntraaq + k), k = 1, nq)
+                    write(file_unit, 2080) (k, iexcraai(num_transect_exchanges + k), k = 1, nq)
                 endif
             endif
 
-            ntraaq = ntraaq + nq
+            num_transect_exchanges = num_transect_exchanges + nq
             nexcraai(ir) = nq
 
         end do
@@ -438,9 +438,9 @@ contains
         2500 format (/, ' ERROR. while reading transects')
     end subroutine read_monitoring_transects
 
-    subroutine create_write_monitoring_area_array(file_unit_list, ndmpar, ntdmps, noq, noseg, &
-            nobnd, ipoint, ntdmpq, ndmpq, ndmps, &
-            noraai, ntraaq, nsegdmp, isegdmp, nexcraai, &
+    subroutine create_write_monitoring_area_array(file_unit_list, ndmpar, ntdmps, num_exchanges, num_cells, &
+            num_boundary_conditions, ipoint, ntdmpq, ndmpq, num_monitoring_cells, &
+            num_transects, num_transect_exchanges, nsegdmp, isegdmp, nexcraai, &
             iexcraai, ioptraai, status)
 
         !! Make and write the monitoring areas and crosssection administrations
@@ -470,20 +470,20 @@ contains
         integer(kind = int_wp), intent(in) :: file_unit_list     (*)        !< array with unit numbers
         integer(kind = int_wp), intent(in) :: ndmpar             !< number of dump areas
         integer(kind = int_wp), intent(in) :: ntdmps             !< number of volumes in dump array
-        integer(kind = int_wp), intent(in) :: noq                !< total number of exchange
-        integer(kind = int_wp), intent(in) :: noseg              !< total number of computation volumes
-        integer(kind = int_wp), intent(in) :: nobnd              !< number of open boundaries
-        integer(kind = int_wp), intent(in) :: ipoint  (4, noq)    !< exchange pointers
+        integer(kind = int_wp), intent(in) :: num_exchanges                !< total number of exchange
+        integer(kind = int_wp), intent(in) :: num_cells              !< total number of computation volumes
+        integer(kind = int_wp), intent(in) :: num_boundary_conditions              !< number of open boundaries
+        integer(kind = int_wp), intent(in) :: ipoint  (4, num_exchanges)    !< exchange pointers
         integer(kind = int_wp), intent(out) :: ntdmpq             !< total number exchanges in dump area
         integer(kind = int_wp), intent(out) :: ndmpq              !< number exchanges dumped
-        integer(kind = int_wp), intent(out) :: ndmps              !< number segments dumped
-        integer(kind = int_wp), intent(in) :: noraai             !< number of transects
-        integer(kind = int_wp), intent(in) :: ntraaq             !< total number of exchanges in transects
+        integer(kind = int_wp), intent(out) :: num_monitoring_cells
+        integer(kind = int_wp), intent(in) :: num_transects             !< number of transects
+        integer(kind = int_wp), intent(in) :: num_transect_exchanges             !< total number of exchanges in transects
         integer(kind = int_wp), intent(in) :: nsegdmp (ndmpar)   !< number of volumes per area
         integer(kind = int_wp), intent(inout) :: isegdmp (ntdmps)   !< volume numbers
-        integer(kind = int_wp), intent(in) :: nexcraai(noraai)   !< number of exchanges per transect
-        integer(kind = int_wp), intent(in) :: iexcraai(ntraaq)   !< exchange numbers
-        integer(kind = int_wp), intent(in) :: ioptraai(ntraaq)   !< exchange accumulation option
+        integer(kind = int_wp), intent(in) :: nexcraai(num_transects)   !< number of exchanges per transect
+        integer(kind = int_wp), intent(in) :: iexcraai(num_transect_exchanges)   !< exchange numbers
+        integer(kind = int_wp), intent(in) :: ioptraai(num_transect_exchanges)   !< exchange accumulation option
 
         type(error_status), intent(inout) :: status !< current error status
 
@@ -524,19 +524,19 @@ contains
         integer(kind = int_wp) :: ithndl1 = 0
         integer(kind = int_wp) :: ithndl2 = 0
 
-        if (ndmpar == 0 .and. noraai == 0) return
+        if (ndmpar == 0 .and. num_transects == 0) return
         if (timon) call timstrt("create_write_monitoring_area_array", ithndl)
 
-        allocate(iqdmp(noq))
+        allocate(iqdmp(num_exchanges))
         allocate(nqdmp(ndmpar))
-        allocate(isdmp(noseg))
-        allocate(indmp(noseg))
+        allocate(isdmp(num_cells))
+        allocate(indmp(num_cells))
 
         !     init
 
         ntdmpq = 0
         ndmpq = 0
-        ndmps = 0
+        num_monitoring_cells = 0
         lurep = file_unit_list(29)
 
         !     check segment numbers in dump areas
@@ -550,7 +550,7 @@ contains
                 if (iseg == 0) then
                     write (lurep, 2000) idump, is, iseg
                     call status%increase_error_count()
-                elseif (iseg < -nobnd) then
+                elseif (iseg < -num_boundary_conditions) then
                     write (lurep, 2000) idump, is, iseg
                     call status%increase_error_count()
                 elseif (iseg < 0) then
@@ -561,7 +561,7 @@ contains
                         write (lurep, 2020) idump, is, iseg
                         call status%increase_warning_count()
                     endif
-                elseif (iseg > noseg) then
+                elseif (iseg > num_cells) then
                     write (lurep, 2000) idump, is, iseg
                     call status%increase_error_count()
                     isegdmp(itel) = 0
@@ -577,7 +577,7 @@ contains
         !     allocate
 
         !jvb max_ntdmpq = 6 * ndmpar
-        max_ntdmpq = noq
+        max_ntdmpq = num_exchanges
         allocate (ipdmpq(max_ntdmpq), stat = ierr2)
         if (ierr2 /= 0) then
             write (lurep, 2030) ierr2, max_ntdmpq
@@ -588,9 +588,9 @@ contains
         ! analyse pointer table
 
         if (timon) call timstrt("dmpare1", ithndl1)
-        allocate(nqseg(noseg))
+        allocate(nqseg(num_cells))
         nqseg = 0
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ivan = ipoint(1, iq)
             inaar = ipoint(2, iq)
             if (ivan  > 0) then
@@ -601,9 +601,9 @@ contains
             endif
         enddo
         mxnqseg = maxval(nqseg)
-        allocate(iqseg(mxnqseg, noseg))
+        allocate(iqseg(mxnqseg, num_cells))
         nqseg = 0
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ivan = ipoint(1, iq)
             inaar = ipoint(2, iq)
             if (ivan  > 0) then
@@ -736,15 +736,15 @@ contains
 
         if (timon) call timstop(ithndl2)
 
-        !     Loop over raaien
+        !     Loop over transects
 
         itel = 0
-        do iraai = 1, noraai
+        do iraai = 1, num_transects
             nq = nexcraai(iraai)
             do iq = 1, nq
                 itel = itel + 1
                 iqr = abs(iexcraai(itel))
-                if (iqr == 0 .or. iqr > noq) then
+                if (iqr == 0 .or. iqr > num_exchanges) then
                     write (lurep, 2050) iraai, iq, iexcraai(itel)
                     call status%increase_error_count()
                 else
@@ -760,12 +760,12 @@ contains
             write(file_unit_list(2)) (nqdmp  (i), i = 1, ndmpar), (ipdmpq (i), i = 1, ntdmpq)
             write(file_unit_list(2)) (nsegdmp(i), i = 1, ndmpar), (isegdmp(i), i = 1, ntdmps)
         endif
-        if (noraai > 0) then
-            write(file_unit_list(2)) (ioptraai(i), i = 1, noraai)
-            write(file_unit_list(2)) (nexcraai(i), i = 1, noraai)
-            write(file_unit_list(2)) (iexcraai(i), i = 1, ntraaq)
+        if (num_transects > 0) then
+            write(file_unit_list(2)) (ioptraai(i), i = 1, num_transects)
+            write(file_unit_list(2)) (nexcraai(i), i = 1, num_transects)
+            write(file_unit_list(2)) (iexcraai(i), i = 1, num_transect_exchanges)
         endif
-        write(file_unit_list(2)) (iqdmp(i), i = 1, noq)
+        write(file_unit_list(2)) (iqdmp(i), i = 1, num_exchanges)
 
         deallocate(ipdmpq)
 
@@ -776,12 +776,12 @@ contains
                 iseg = isegdmp(is)
                 if (iseg > 0) then
                     if (isdmp(iseg) == 0) then
-                        ndmps = ndmps + 1
-                        isdmp(iseg) = ndmps
+                        num_monitoring_cells = num_monitoring_cells + 1
+                        isdmp(iseg) = num_monitoring_cells
                     endif
                 endif
             enddo
-            write(file_unit_list(2)) (isdmp(i), i = 1, noseg)
+            write(file_unit_list(2)) (isdmp(i), i = 1, num_cells)
         endif
 
         if (timon) call timstop(ithndl)
@@ -804,7 +804,7 @@ contains
         2030 format (/, ' ERROR. allocating memory for structure for dump area''s (IPDMPQ):', i4, i10)
         2040 format (/, ' ERROR. allocating memory for structure for dump area''s (P2_IPDMPQ):', i4, i10)
         2050 format (/, ' ERROR exchange in transect out of range.', &
-                /' raai number     :', I15, &
+                /' transect number     :', I15, &
                 /' follow number   :', I15, &
                 /' exchamge number :', I15)
 

@@ -28,8 +28,8 @@ module m_wrstoc
 contains
 
 
-    subroutine wrstoc (procesdef, luout, notot, syname, stoch2, &
-            noutp, ioutps, outputs, ndmpar, nbufmx, &
+    subroutine wrstoc (procesdef, luout, num_substances_total, syname, stoch2, &
+            num_output_files, ioutps, outputs, ndmpar, output_buffer_len, &
             intopt)
 
         ! writes the stochi file, sets stoch2 array
@@ -45,14 +45,14 @@ contains
 
         type(procespropcoll) :: procesdef       ! all processes
         integer(kind = int_wp) :: luout           ! stochi file
-        integer(kind = int_wp) :: notot           ! number of substances
-        character(len = *) :: syname(notot)   ! name of substances
-        real(kind = real_wp) :: stoch2(notot, *) ! delwaq stochi array
-        integer(kind = int_wp) :: noutp           ! number of output variables
-        integer(kind = int_wp) :: ioutps(7, noutp) ! output structure
+        integer(kind = int_wp) :: num_substances_total           ! number of substances
+        character(len = *) :: syname(num_substances_total)   ! name of substances
+        real(kind = real_wp) :: stoch2(num_substances_total, *) ! delwaq stochi array
+        integer(kind = int_wp) :: num_output_files           ! number of output variables
+        integer(kind = int_wp) :: ioutps(7, num_output_files) ! output structure
         type(OutputPointers) :: outputs         ! output structure
         integer(kind = int_wp) :: ndmpar          ! number of stations
-        integer(kind = int_wp) :: nbufmx          ! max buffer
+        integer(kind = int_wp) :: output_buffer_len
         integer(kind = int_wp) :: intopt          ! integration option
 
         character(len = 80) :: line            ! output buffer
@@ -98,7 +98,7 @@ contains
         ! zero stoch2 array
 
         do j = 1, noflx
-            do i = 1, notot
+            do i = 1, num_substances_total
                 stoch2(i, j) = 0.0
             enddo
         enddo
@@ -157,11 +157,11 @@ contains
         allocate(outputl%description(nrvarm))
         nrvarn = 0
         nrvaro = 0
-        do ioutp = 1, noutp
+        do ioutp = 1, num_output_files
             isrtou = ioutps(5, ioutp)
             if (isrtou == iba2) then
                 nobalt = 0
-                do isys = 1, notot
+                do isys = 1, num_substances_total
                     if (nrvarn + nobalt + 4 > nrvarm) then
                         outputl%current_size = (nrvarn + nobalt + 4) * 2
                         call resize_integer_array(outputl%pointers, outputl%current_size, nrvarm)
@@ -212,7 +212,7 @@ contains
 
                 nocel = ndmpar
                 nbufou = nocel * nobalt
-                nbufmx = max (nbufmx, nbufou)
+                output_buffer_len = max (output_buffer_len, nbufou)
 
             elseif (isrtou == iba3) then
 

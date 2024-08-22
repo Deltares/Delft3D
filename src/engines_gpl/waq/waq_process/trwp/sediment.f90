@@ -29,9 +29,9 @@
       contains
 
 
-      subroutine SEDAGG    ( pmsa  , fl    , ipoint, increm, noseg , & 
-                            noflux, iexpnt, iknmrk, noq1  , noq2  , & 
-                            noq3  , noq4  )
+      subroutine SEDAGG    ( process_space_real  , fl    , ipoint, increm, num_cells , &
+                            noflux, iexpnt, iknmrk, num_exchanges_u_dir  , num_exchanges_v_dir  , &
+                            num_exchanges_z_dir  , num_exchanges_bottom_dir  )
       use m_extract_waq_attribute
 
 
@@ -63,9 +63,9 @@
 !
       implicit none
 
-      real(kind=real_wp) ::pmsa  ( * ) , fl    (*)
-      integer(kind=int_wp) ::ipoint( * ) , increm(*) , noseg , noflux, & 
-              iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
+      real(kind=real_wp) ::process_space_real  ( * ) , fl    (*)
+      integer(kind=int_wp) ::ipoint( * ) , increm(*) , num_cells , noflux, &
+              iexpnt(4,*) , iknmrk(*) , num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 !
 !     local declarations
 !
@@ -86,24 +86,24 @@
       integer(kind=int_wp) ::ntrwp, itrwp, nspm, ispm, nitem, offset
       
 
-      ntrwp = pmsa(ipoint(ip_ntrwp))
-      nspm = pmsa(ipoint(ip_nim  ))
+      ntrwp = process_space_real(ipoint(ip_ntrwp))
+      nspm = process_space_real(ipoint(ip_nim  ))
       nitem = ip_lastsingle + 5*ntrwp*nspm
-      delt        = pmsa(ipoint(ip_Delt))
-      safe_factor = pmsa(ipoint(ip_SafeFactor))
+      delt        = process_space_real(ipoint(ip_Delt))
+      safe_factor = process_space_real(ipoint(ip_SafeFactor))
       
       ipnt(1:nitem) = ipoint(1:nitem)
 
       iflux = 1
-      do iseg = 1 , noseg
+      do iseg = 1 , num_cells
           call extract_waq_attribute(1,iknmrk(iseg),ikmrk1)
           if (ikmrk1==1) then
           call extract_waq_attribute(2,iknmrk(iseg),ikmrk2)
           if (ikmrk2==0.or.ikmrk2==3) then   ! surface water
 
               ! input independentt of fractions
-              depth          = pmsa(ipnt(ip_Depth))
-              shear_stress    = pmsa(ipnt(ip_Tau) )
+              depth          = process_space_real(ipnt(ip_Depth))
+              shear_stress    = process_space_real(ipnt(ip_Tau) )
               
               ! loop over active fractions, IM are inner loop
               itel = 0
@@ -111,9 +111,9 @@
               do ispm = 1,nspm
 
               itel = itel + 1
-              cwater          = pmsa(ipnt(ip_lastsingle             +itel) )
-              settling        = pmsa(ipnt(ip_lastsingle+  ntrwp*nspm+itel) )
-              critical_stress = pmsa(ipnt(ip_lastsingle+2*ntrwp*nspm+itel) )
+              cwater          = process_space_real(ipnt(ip_lastsingle             +itel) )
+              settling        = process_space_real(ipnt(ip_lastsingle+  ntrwp*nspm+itel) )
+              critical_stress = process_space_real(ipnt(ip_lastsingle+2*ntrwp*nspm+itel) )
               
               !
               ! Probability of settling (limit to avoid instabilities)
@@ -122,7 +122,7 @@
                  max( 0.0, 1.0 - shear_stress / max(critical_stress,1e-6) )
               settling_flux = min( prob_settling * settling / depth, & 
                                   safe_factor / delt ) * cwater
-!              pmsa(ipnt(ip_lastsingle+3*ntrwpm*nspmm+itel) ) = settling_flux * depth  ! g/m2/d
+!              process_space_real(ipnt(ip_lastsingle+3*ntrwpm*nspmm+itel) ) = settling_flux * depth  ! g/m2/d
 
               !
               ! Flux to the bottom
@@ -144,19 +144,19 @@
 !.....Exchangeloop over de horizontale richting
       offset = 6+3*ntrwp*nspm
       ipnt(1:nitem) = ipoint(1:nitem)
-      do IQ=1,NOQ1+NOQ2
+      do IQ=1,num_exchanges_u_dir+num_exchanges_v_dir
         itel = 0
         do itrwp = 1,ntrwp
         do ispm = 1,nspm
             itel = itel + 1
-            pmsa(ipnt(offset+ntrwp*nspm+itel)) = 0.0
+            process_space_real(ipnt(offset+ntrwp*nspm+itel)) = 0.0
         enddo
         enddo
         ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
       enddo
 
 !.....Exchangeloop over de verticale richting
-      DO IQ = NOQ1+NOQ2+1 , NOQ1+NOQ2+NOQ3
+      DO IQ = num_exchanges_u_dir+num_exchanges_v_dir+1 , num_exchanges_u_dir+num_exchanges_v_dir+num_exchanges_z_dir
 
          ifrom = IEXPNT(1,IQ)
          ito   = IEXPNT(2,IQ)
@@ -166,15 +166,15 @@
 !rs             alleen conversie van 1/d naar 1/s. Ten overvloede:
 !rs             scu (s) en aux-timer (d) liggen dus vast!
 
-            depfro = PMSA( ipoint(ip_depth) + (ifrom-1) * increm(ip_depth) )
-            depto  = PMSA( ipoint(ip_depth) + (ito  -1) * increm(ip_depth) )
+            depfro = process_space_real( ipoint(ip_depth) + (ifrom-1) * increm(ip_depth) )
+            depto  = process_space_real( ipoint(ip_depth) + (ito  -1) * increm(ip_depth) )
             itel = 0
             do itrwp = 1,ntrwp
             do ispm = 1,nspm
                 itel = itel + 1
-                settling = pmsa(ipnt(offset+itel))
+                settling = process_space_real(ipnt(offset+itel))
                 settling = min( settling , safe_factor * min(depfro,depto) / delt ) 
-                pmsa(ipnt(offset+ntrwp*nspm+itel)) = settling /86400.
+                process_space_real(ipnt(offset+ntrwp*nspm+itel)) = settling /86400.
             enddo
             enddo
          ELSE
@@ -182,7 +182,7 @@
             do itrwp = 1,ntrwp
             do ispm = 1,nspm
                 itel = itel + 1
-                pmsa(ipnt(offset+ntrwp*nspm+itel)) = 0.0
+                process_space_real(ipnt(offset+ntrwp*nspm+itel)) = 0.0
             enddo
             enddo
          ENDIF

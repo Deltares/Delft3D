@@ -45,8 +45,8 @@ module m_sgmres
     !!  - if no convergence at maxiter the solver stops
     subroutine sgmres (ntrace, rhs, sol, restrt, work, &
             ldw, hess, ldh, maxit, tol, &
-            nomat, amat, imat, diag, idiag, &
-            klay, ioptpc, nobnd, triwrk, iexseg, &
+            fast_solver_arr_size, amat, imat, diag, idiag, &
+            klay, ioptpc, num_boundary_conditions, triwrk, iexseg, &
             lurep, litrep)
 
         use m_psolve
@@ -63,14 +63,14 @@ module m_sgmres
         integer(kind = int_wp), intent(in   ) :: ldh                          !< leading dimension >= max(1,restrt+1) (probably superfluous lp)
         integer(kind = int_wp), intent(in   ) :: maxit                        !< maximum number of iterations
         real(kind = dp),        intent(in   ) :: tol                          !< convergence criterion
-        integer(kind = int_wp), intent(in   ) :: nomat                        !< number of off-diagonal entries of matrix a (format from lp)
-        real(kind = dp),        intent(in   ) :: amat(nomat)                  !< off-diagonal entries of matrix a (format from lp)
-        integer(kind = int_wp), intent(in   ) :: imat(nomat)                  !< pointer table off-diagonal entries
+        integer(kind = int_wp), intent(in   ) :: fast_solver_arr_size                        !< number of off-diagonal entries of matrix a (format from lp)
+        real(kind = dp),        intent(in   ) :: amat(fast_solver_arr_size)                  !< off-diagonal entries of matrix a (format from lp)
+        integer(kind = int_wp), intent(in   ) :: imat(fast_solver_arr_size)                  !< pointer table off-diagonal entries
         real(kind = dp),        intent(in   ) :: diag   (ntrace)              !< diagonal entries of matrix a
         integer(kind = int_wp), intent(in   ) :: idiag  (0:ntrace)            !< position of the diagonals in amat
         integer(kind = int_wp), intent(in   ) :: klay                         !< number of layers
         integer(kind = int_wp), intent(in   ) :: ioptpc                       !< option for preconditioner
-        integer(kind = int_wp), intent(in   ) :: nobnd                        !< number of open boundaries
+        integer(kind = int_wp), intent(in   ) :: num_boundary_conditions                        !< number of open boundaries
         real(kind = dp),        intent(inout) :: triwrk (klay * 6)            !< workspace for tridiagonal solution vertical
         integer(kind = int_wp), intent(in   ) :: iexseg (ntrace)              !< 0 for explicit volumes
         integer(kind = int_wp), intent(in   ) :: lurep                        !< Unit number report file
@@ -144,13 +144,13 @@ module m_sgmres
         !     Set initial residual (AV is temporary workspace here).
         work(:, av) = rhs
         IF (sqrt(sum(sol * sol)) /= 0.0D+00) THEN
-            CALL MATVEC (ntrace, NOMAT, -1.0D+00, amat, imat, &
+            CALL MATVEC (ntrace, fast_solver_arr_size, -1.0D+00, amat, imat, &
                     &                 DIAG, IDIAG, sol, 1.0D+00, WORK(1, AV))
         ENDIF
 
         CALL PSOLVE (ntrace, WORK(1, R), WORK(1, AV), &
-                &              NOMAT, amat, imat, DIAG, IDIAG, &
-                &              KLAY, IOPTPC, NOBND, TRIWRK, iexseg)
+                &              fast_solver_arr_size, amat, imat, DIAG, IDIAG, &
+                &              KLAY, IOPTPC, num_boundary_conditions, TRIWRK, iexseg)
 
         IF (BNRM2 == 0.0D+00) BNRM2 = 1.0D+00
 
@@ -195,12 +195,12 @@ module m_sgmres
         I = I + 1
         ITER = ITER + 1
 
-        CALL MATVEC (ntrace, NOMAT, 1.0D+00, amat, imat, &
+        CALL MATVEC (ntrace, fast_solver_arr_size, 1.0D+00, amat, imat, &
                 &                    DIAG, IDIAG, WORK(1, V + I - 1), 0.0D+00, &
                 &                    WORK(1, AV))
         CALL PSOLVE (ntrace, WORK(1, W), WORK(1, AV), &
-                &                    NOMAT, amat, imat, DIAG, IDIAG, &
-                &                    KLAY, IOPTPC, NOBND, TRIWRK, iexseg)
+                &                    fast_solver_arr_size, amat, imat, DIAG, IDIAG, &
+                &                    KLAY, IOPTPC, num_boundary_conditions, TRIWRK, iexseg)
 
         !           Construct I-th column of H orthnormal to the previous I-1 columns.
 
@@ -261,11 +261,11 @@ module m_sgmres
         !        (AV is temporary workspace here.)
 
         work(:, av) = rhs
-        CALL MATVEC (ntrace, NOMAT, -1.0D+00, amat, imat, &
+        CALL MATVEC (ntrace, fast_solver_arr_size, -1.0D+00, amat, imat, &
                 &                 DIAG, IDIAG, sol, 1.0D+00, WORK(1, AV))
         CALL PSOLVE (ntrace, WORK(1, R), WORK(1, AV), &
-                &                 NOMAT, amat, imat, DIAG, IDIAG, &
-                &                 KLAY, IOPTPC, NOBND, TRIWRK, iexseg)
+                &                 fast_solver_arr_size, amat, imat, DIAG, IDIAG, &
+                &                 KLAY, IOPTPC, num_boundary_conditions, TRIWRK, iexseg)
         work(i + 1, s) = sqrt(sum(work(:, r) * work(:, r)))
         RESID = WORK(I + 1, S) / BNRM2
         IF (RESID <= TOL) GO TO 70
@@ -299,11 +299,11 @@ module m_sgmres
         ENDDO
 
         work(:, av) = rhs
-        CALL MATVEC (ntrace, NOMAT, -1.0D+00, amat, imat, &
+        CALL MATVEC (ntrace, fast_solver_arr_size, -1.0D+00, amat, imat, &
                 &              DIAG, IDIAG, sol, 1.0D+00, WORK(1, AV))
         CALL PSOLVE (ntrace, WORK(1, R), WORK(1, AV), &
-                &          NOMAT, amat, imat, DIAG, IDIAG, &
-                &          KLAY, IOPTPC, NOBND, TRIWRK, iexseg)
+                &          fast_solver_arr_size, amat, imat, DIAG, IDIAG, &
+                &          KLAY, IOPTPC, num_boundary_conditions, TRIWRK, iexseg)
         work(i + 1, s) = sqrt(sum(work(:, r) * work(:, r)))
         RESID = WORK(I + 1, S) / BNRM2
 

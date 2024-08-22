@@ -5,9 +5,9 @@ module m_salchl
 
 contains
 
-    subroutine salchl (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine salchl (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Converts salinity into chloride or vice versa (Aquatic Chemistry 2nd ed 1981 p567)
 
@@ -62,9 +62,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         REAL(kind = real_wp) :: CL, SAL, SAL0, GTCL, TEMP, DENS, SWSALCL
         integer(kind = int_wp) :: iseg
@@ -80,16 +80,16 @@ contains
         IP9 = IPOINT(9)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                SAL = PMSA(IP1)
-                CL = PMSA(IP2)
-                GTCL = PMSA(IP3)
-                TEMP = PMSA(IP4)
-                SAL0 = PMSA(IP5)
-                SWSALCL = PMSA(IP6)
+                SAL = process_space_real(IP1)
+                CL = process_space_real(IP2)
+                GTCL = process_space_real(IP3)
+                TEMP = process_space_real(IP4)
+                SAL0 = process_space_real(IP5)
+                SWSALCL = process_space_real(IP6)
                 !
                 !***********************************************************************
                 !**** Processes connected to the normalization RIZA method
@@ -120,9 +120,9 @@ contains
                     CL = SAL * DENS / GTCL
                 ENDIF
                 !
-                PMSA (IP7) = DENS
-                PMSA (IP8) = SAL
-                PMSA (IP9) = CL
+                process_space_real (IP7) = DENS
+                process_space_real (IP8) = SAL
+                process_space_real (IP9) = CL
                 !
             ENDIF
             !

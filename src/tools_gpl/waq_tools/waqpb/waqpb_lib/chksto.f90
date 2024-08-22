@@ -33,7 +33,7 @@
 
 
       integer      nstoc , nitem, io_mes
-      character*10 flux(nstoc),subs(nstoc),itemid(nitem)
+      character(len=10) flux(nstoc),subs(nstoc),itemid(nitem)
       real         stoch(nstoc)
 
 !          Subroutine to check tables R6-R7-R8

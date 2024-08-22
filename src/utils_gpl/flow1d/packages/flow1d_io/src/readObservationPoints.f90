@@ -71,7 +71,7 @@ module m_readObservationPoints
       implicit none
       
       type(t_network), intent(inout)        :: network
-      character*(*)  , intent(in)           :: observationPointsFile
+      character(len=*)  , intent(in)           :: observationPointsFile
 
       logical                               :: success
       type(tree_data), pointer              :: md_ptr 

@@ -70,11 +70,11 @@ contains
         use m_waq_openda_exchange_items, only: get_openda_buffer
         use variable_declaration          ! module with the more recently added arrays
         use m_actions
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
-        use m_sysj          ! Pointers in integer array workspace
-        use m_sysc          ! Pointers in character array workspace
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
+        use m_integer_array_indices          ! Pointers in integer array workspace
+        use m_character_array_indices          ! Pointers in character array workspace
         use m_dlwqdata_save_restore
 
         type(waq_data_buffer), target :: buffer                  !< System total array space
@@ -126,15 +126,15 @@ contains
                 IBFLAG = 0
                 if (mod(INTOPT, 16) >= 8) IBFLAG = 1
                 LDUMMY = .false.
-                if (NDSPN == 0) then
-                    NDDIM = NODISP
+                if (num_dispersion_arrays_new == 0) then
+                    NDDIM = num_dispersion_arrays
                 else
-                    NDDIM = NDSPN
+                    NDDIM = num_dispersion_arrays_new
                 end if
-                if (NVELN == 0) then
-                    NVDIM = NOVELO
+                if (num_velocity_arrays_new == 0) then
+                    NVDIM = num_velocity_arrays
                 else
-                    NVDIM = NVELN
+                    NVDIM = num_velocity_arrays_new
                 end if
                 LSTREC = ICFLAG == 1
                 FORESTER = btest(INTOPT, 6)
@@ -142,7 +142,7 @@ contains
                 if (ILFLAG == 0) LLENG = ILENG + 2
 
                 ! initialize second volume array with the first one
-                nosss = noseg + nseg2
+                nosss = num_cells + num_cells_bottom
                 call copy_real_array_elements(A(IVOL:), A(IVOL2:), nosss)
             end if
 
@@ -164,12 +164,12 @@ contains
 
             ! adaptations for layered bottom 08-03-2007  lp
 
-            nosss = noseg + nseg2
-            NOQTT = NOQ + NOQ4
-            inwtyp = intyp + nobnd
+            nosss = num_cells + num_cells_bottom
+            NOQTT = num_exchanges + num_exchanges_bottom_dir
+            inwtyp = intyp + num_boundary_conditions
 
             ! set alternating set of pointers
-            NOQT = NOQ1 + NOQ2
+            NOQT = num_exchanges_u_dir + num_exchanges_v_dir
             LNOQ = noqtt - noqt
             LDISP = IDISP + 2
             LDIFF = IDNEW + NDDIM*NOQT
@@ -187,101 +187,99 @@ contains
 10          continue
 
             ! Determine the volumes and areas that ran dry at start of time step
-            call hsurf(nosss, nopa, c(ipnam:), a(iparm:), nosfun, &
-                    c(isfna:), a(isfun:), surface, file_unit_list(19))
-            call set_dry_cells_to_zero_and_update_volumes (noseg, nosss, nolay, a(ivol:), &
-                    noq1 + noq2, a(iarea:), nocons, c(icnam:), a(icons:), surface, &
-                    j(iknmr:), iknmkv)
+            call hsurf(nosss, num_spatial_parameters, c(ipnam:), a(iparm:), num_spatial_time_fuctions, &
+                       c(isfna:), a(isfun:), surface, file_unit_list(19))
+            call set_dry_cells_to_zero_and_update_volumes(num_cells, nosss, num_layers, a(ivol:), num_exchanges_u_dir + num_exchanges_v_dir, &
+                        a(iarea:), num_constants, c(icnam:), a(icons:), surface, &
+                        j(iknmr:), iknmkv)
 
             ! user transport processes
-            call dlwqtr(notot, nosys, nosss, noq, noq1, &
-                        noq2, noq3, nopa, nosfun, nodisp, &
-                        novelo, j(ixpnt:), a(ivol:), a(iarea:), a(iflow:), &
-                        a(ileng:), a(iconc:), a(idisp:), a(icons:), a(iparm:), &
-                        a(ifunc:), a(isfun:), a(idiff:), a(ivelo:), itime, &
-                        idt, c(isnam:), nocons, nofun, c(icnam:), &
-                        c(ipnam:), c(ifnam:), c(isfna:), ldummy, ilflag)
+            call dlwqtr(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
+                num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
+                j(ixpnt:), a(ivol:), &
+                a(ileng:), a(iparm:), &
+                c(ipnam:), ilflag)
 
             !jvb  Temporary ? set the variables grid-setting for the DELWAQ variables
-            call setset(file_unit_list(19), nocons, nopa, nofun, nosfun, &
-                        nosys, notot, nodisp, novelo, nodef, &
-                        noloc, ndspx, nvelx, nlocx, nflux, &
-                        nopred, novar, nogrid, j(ivset:))
+            call setset(file_unit_list(19), num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+                        num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+                        num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
+                        nopred, num_vars, num_grids, j(ivset:))
 
             ! return conc and take-over from previous step or initial condition,
             ! and do particle tracking of this step (will be back-coupled next call)
-            call delpar01(itime, noseg, nolay, noq, nosys, &
-                          notot, a(ivol:), surface, a(iflow:), c(isnam:), &
-                          nosfun, c(isfna:), a(isfun:), a(imass:), a(iconc:), &
-                          iaflag, intopt, ndmps, j(isdmp:), a(idmps:), &
+            call delpar01(itime, num_cells, num_layers, num_exchanges, num_substances_transported, &
+                          num_substances_total, a(ivol:), surface, a(iflow:), c(isnam:), &
+                          num_spatial_time_fuctions, c(isfna:), a(isfun:), a(imass:), a(iconc:), &
+                          iaflag, intopt, num_monitoring_cells, j(isdmp:), a(idmps:), &
                           a(imas2:))
 
             ! call PROCES subsystem
-            call proces(notot, nosss, a(iconc:), a(ivol:), itime, &
-                        idt, a(iderv:), ndmpar, nproc, nflux, &
+            call proces(num_substances_total, nosss, a(iconc:), a(ivol:), itime, &
+                        idt, a(iderv:), ndmpar, num_processes_activated, num_fluxes, &
                         j(iipms:), j(insva:), j(iimod:), j(iiflu:), j(iipss:), &
-                        a(iflux:), a(iflxd:), a(istoc:), ibflag, ipbloo, &
-                        ioffbl, a(imass:), nosys, &
+                        a(iflux:), a(iflxd:), a(istoc:), ibflag, bloom_status_ind, &
+                        bloom_ind, a(imass:), num_substances_transported, &
                         itfact, a(imas2:), iaflag, intopt, a(iflxi:), &
-                        j(ixpnt:), p_iknmkv, noq1, noq2, noq3, &
-                        noq4, ndspn, j(idpnw:), a(idnew:), nodisp, &
-                        j(idpnt:), a(idiff:), ndspx, a(idspx:), a(idsto:), &
-                        nveln, j(ivpnw:), a(ivnew:), novelo, j(ivpnt:), &
-                        a(ivelo:), nvelx, a(ivelx:), a(ivsto:), a(idmps:), &
+                        j(ixpnt:), p_iknmkv, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+                        num_exchanges_bottom_dir, num_dispersion_arrays_new, j(idpnw:), a(idnew:), num_dispersion_arrays, &
+                        j(idpnt:), a(idiff:), num_dispersion_arrays_extra, a(idspx:), a(idsto:), &
+                        num_velocity_arrays_new, j(ivpnw:), a(ivnew:), num_velocity_arrays, j(ivpnt:), &
+                        a(ivelo:), num_velocity_arrays_extra, a(ivelx:), a(ivsto:), a(idmps:), &
                         j(isdmp:), j(ipdmp:), ntdmpq, a(idefa:), j(ipndt:), &
                         j(ipgrd:), j(ipvar:), j(iptyp:), j(ivarr:), j(ividx:), &
                         j(ivtda:), j(ivdag:), j(ivtag:), j(ivagg:), j(iapoi:), &
                         j(iaknd:), j(iadm1:), j(iadm2:), j(ivset:), j(ignos:), &
-                        j(igseg:), novar, a, nogrid, ndmps, &
+                        j(igseg:), num_vars, a, num_grids, num_monitoring_cells, &
                         c(iprna:), intsrt, &
-                        j(iprvpt:), j(iprdon:), nrref, j(ipror:), nodef, &
+                        j(iprvpt:), j(iprdon:), num_input_ref, j(ipror:), num_defaults, &
                         surface, file_unit_list(19))
 
             ! set new boundaries
             if (itime >= 0) then
                 !           first: adjust boundaries by OpenDA
                 if (dlwqd%inopenda) then
-                    do ibnd = 1, nobnd
-                        do isys = 1, nosys
+                    do ibnd = 1, num_boundary_conditions
+                        do isys = 1, num_substances_transported
                             call get_openda_buffer(isys, ibnd, 1, 1, &
-                                                   A(ibset:+(ibnd - 1)*nosys + isys - 1))
+                                                   A(ibset:+(ibnd - 1)*num_substances_transported + isys - 1))
                         end do
                     end do
                 end if
-                call thatcher_harleman_bc(a(ibset:), a(ibsav:), j(ibpnt:), nobnd, nosys, &
-                                          notot, idt, a(iconc:), a(iflow:), a(iboun:))
+                call thatcher_harleman_bc(a(ibset:), a(ibsav:), j(ibpnt:), num_boundary_conditions, num_substances_transported, &
+                                          num_substances_total, idt, a(iconc:), a(iflow:), a(iboun:))
             end if
 
-            call write_output(NOTOT, nosss, NOPA, NOSFUN, ITIME, &
-                              C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), NODUMP, &
+            call write_output(num_substances_total, nosss, num_spatial_parameters, num_spatial_time_fuctions, ITIME, &
+                              C(IMNAM:), C(ISNAM:), C(IDNAM:), J(IDUMP:), num_monitoring_points, &
                               A(ICONC:), A(ICONS:), A(IPARM:), A(IFUNC:), A(ISFUN:), &
-                              A(IVOL:), NOCONS, NOFUN, IDT, NOUTP, &
+                              A(IVOL:), num_constants, num_time_functions, IDT, num_output_files, &
                               file_name_list, file_unit_list, J(IIOUT:), J(IIOPO:), A(IRIOB:), &
                               C(IOSNM:), C(IOUNI:), C(IODSC:), C(ISSNM:), C(ISUNI:), C(ISDSC:), &
-                              C(IONAM:), NX, NY, J(IGRID:), C(IEDIT:), &
-                              NOSYS, A(IBOUN:), J(ILP:), A(IMASS:), A(IMAS2:), &
-                              A(ISMAS:), NFLUX, A(IFLXI:), ISFLAG, IAFLAG, &
+                              C(IONAM:), num_cells_u_dir, num_cells_v_dir, J(IGRID:), C(IEDIT:), &
+                              num_substances_transported, A(IBOUN:), J(ILP:), A(IMASS:), A(IMAS2:), &
+                              A(ISMAS:), num_fluxes, A(IFLXI:), ISFLAG, IAFLAG, &
                               IBFLAG, IMSTRT, IMSTOP, IMSTEP, IDSTRT, &
                               IDSTOP, IDSTEP, IHSTRT, IHSTOP, IHSTEP, &
-                              IMFLAG, IDFLAG, IHFLAG, NOLOC, A(IPLOC:), &
-                              NODEF, A(IDEFA:), ITSTRT, ITSTOP, NDMPAR, &
-                              C(IDANA:), NDMPQ, NDMPS, J(IQDMP:), J(ISDMP:), &
+                              IMFLAG, IDFLAG, IHFLAG, num_local_vars, A(IPLOC:), &
+                              num_defaults, A(IDEFA:), ITSTRT, ITSTOP, NDMPAR, &
+                              C(IDANA:), NDMPQ, num_monitoring_cells, J(IQDMP:), J(ISDMP:), &
                               J(IPDMP:), A(IDMPQ:), A(IDMPS:), A(IFLXD:), NTDMPQ, &
-                              C(ICBUF:), NORAAI, NTRAAQ, J(IORAA:), J(NQRAA:), &
-                              J(IQRAA:), A(ITRRA:), C(IRNAM:), A(ISTOC:), NOGRID, &
-                              NOVAR, J(IVARR:), J(IVIDX:), J(IVTDA:), J(IVDAG:), &
+                              C(ICBUF:), num_transects, num_transect_exchanges, J(IORAA:), J(NQRAA:), &
+                              J(IQRAA:), A(ITRRA:), C(IRNAM:), A(ISTOC:), num_grids, &
+                              num_vars, J(IVARR:), J(IVIDX:), J(IVTDA:), J(IVDAG:), &
                               J(IAKND:), J(IAPOI:), J(IADM1:), J(IADM2:), J(IVSET:), &
-                              J(IGNOS:), J(IGSEG:), A, NOBND, NOBTYP, &
+                              J(IGNOS:), J(IGSEG:), A, num_boundary_conditions, num_boundary_types, &
                               C(IBTYP:), J(INTYP:), C(ICNAM:), noqtt, J(IXPNT:), &
                               INTOPT, C(IPNAM:), C(IFNAM:), C(ISFNA:), J(IDMPB:), &
-                              NOWST, NOWTYP, C(IWTYP:), J(IWAST:), J(INWTYP:), &
+                              num_waste_loads, num_waste_load_types, C(IWTYP:), J(IWAST:), J(INWTYP:), &
                               A(IWDMP:), iknmkv, isegcol)
 
-            if (imflag .or. (ihflag .and. noraai > 0)) then
-                call set_cumulative_arrays_zero(notot, nosys, nflux, ndmpar, ndmpq, &
-                                                ndmps, a(ismas:), a(iflxi:), a(imas2:), &
-                                                a(idmpq:), a(idmps:), noraai, imflag, ihflag, &
-                                                a(itrra:), ibflag, nowst, a(iwdmp:))
+            if (imflag .or. (ihflag .and. num_transects > 0)) then
+                call set_cumulative_arrays_zero(num_substances_total, num_substances_transported, num_fluxes, ndmpar, ndmpq, &
+                                                num_monitoring_cells, a(ismas:), a(iflxi:), a(imas2:), &
+                                                a(idmpq:), a(idmps:), num_transects, imflag, ihflag, &
+                                                a(itrra:), ibflag, num_waste_loads, a(iwdmp:))
             end if
 
             ! simulation done ?
@@ -289,7 +287,7 @@ contains
             if (itime >= itstop) goto 20
 
             ! add processes
-            call scale_processes_derivs_and_update_balances(a(iderv:), notot, nosss, itfact, a(imas2:), &
+            call scale_processes_derivs_and_update_balances(a(iderv:), num_substances_total, nosss, itfact, a(imas2:), &
                                                             idt, iaflag, a(idmps:), intopt, j(isdmp:))
 
             ! get new volumes
@@ -297,74 +295,74 @@ contains
             itime = itime + idt
             select case (ivflag)
             case (1)                 !     computation of volumes for computed volumes only
-                call copy_real_array_elements(a(ivol:), a(ivol2:), noseg)
-                call dlwqb3(a(iarea:), a(iflow:), a(ivnew:), j(ixpnt:), notot, &
-                            noq, nvdim, j(ivpnw:), a(ivol2:), intopt, &
-                            a(imas2:), idt, iaflag, nosys, a(idmpq:), &
+                call copy_real_array_elements(a(ivol:), a(ivol2:), num_cells)
+                call dlwqb3(a(iarea:), a(iflow:), a(ivnew:), j(ixpnt:), num_substances_total, &
+                            num_exchanges, nvdim, j(ivpnw:), a(ivol2:), intopt, &
+                            a(imas2:), idt, iaflag, num_substances_transported, a(idmpq:), &
                             ndmpq, j(iqdmp:))
                 updatr = .true.
             case (2)                 !     the fraudulent computation option
                 call dlwq41(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
-                            j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivoll:), &
+                            j(inrha:), j(inrh2:), j(inrft:), num_cells, a(ivoll:), &
                             j(ibulk:), file_name_list, ftype, isflag, ivflag, &
                             updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
                             lstrec, lrewin, a(ivol2:), dlwqd)
-                call dlwqf8(noseg, noq, j(ixpnt:), idt, iknmkv, &
+                call dlwqf8(num_cells, num_exchanges, j(ixpnt:), idt, iknmkv, &
                             a(ivol:), a(iflow:), a(ivoll:), a(ivol2:))
                 updatr = .true.
                 lrewin = .true.
                 lstrec = .true.
             case default               !     read new volumes from files
                 call dlwq41(file_unit_list, itime, itimel, a(iharm:), a(ifarr:), &
-                            j(inrha:), j(inrh2:), j(inrft:), noseg, a(ivol2:), &
+                            j(inrha:), j(inrh2:), j(inrft:), num_cells, a(ivol2:), &
                             j(ibulk:), file_name_list, ftype, isflag, ivflag, &
                             updatr, j(inisp:), a(inrsp:), j(intyp:), j(iwork:), &
                             lstrec, lrewin, a(ivoll:), dlwqd)
             end select
 
             ! update the info on dry volumes with the new volumes
-            call identify_wet_cells(noseg, nosss, a(ivol2:), nolay, nocons, &
+            call identify_wet_cells(num_cells, nosss, a(ivol2:), num_layers, num_constants, &
                         c(icnam:), a(icons:), surface, j(iknmr:), iknmkv)
 
             ! add the waste loads
-            call dlwq15(nosys, notot, noseg, noq, nowst, &
-                        nowtyp, ndmps, intopt, idt, itime, &
+            call dlwq15(num_substances_transported, num_substances_total, num_cells, num_exchanges, num_waste_loads, &
+                        num_waste_load_types, num_monitoring_cells, intopt, idt, itime, &
                         iaflag, c(isnam:), a(iconc:), a(ivol:), a(ivol2:), &
                         a(iflow:), j(ixpnt:), c(iwsid:), c(iwnam:), c(iwtyp:), &
                         j(inwtyp:), j(iwast:), iwstkind, a(iwste:), a(iderv:), &
-                        iknmkv, nopa, c(ipnam:), a(iparm:), nosfun, &
+                        iknmkv, num_spatial_parameters, c(ipnam:), a(iparm:), num_spatial_time_fuctions, &
                         c(isfna:), a(isfun:), j(isdmp:), a(idmps:), a(imas2:), &
-                        a(iwdmp:), 1, notot)
+                        a(iwdmp:), 1, num_substances_total)
 
             ! explicit part of the transport step, derivative
-            call first_step_fct(nosys, notot, nosss, noqt, nvdim, &
+            call first_step_fct(num_substances_transported, num_substances_total, nosss, noqt, nvdim, &
                                 a(ivnew:), a(iarea:), a(iflow:), j(ixpnt:), j(ivpnw:), &
                                 a(iconc:), a(iboun:), idt, a(iderv:), iaflag, &
                                 a(imas2:))
 
             ! set the first guess in array CONC2 == ITIMR
-            call update_concs_explicit_time_step(nosys, notot, nototp, nosss, a(ivol2:), &
+            call update_concs_explicit_time_step(num_substances_transported, num_substances_total, num_substances_part, nosss, a(ivol2:), &
                                                  surface, a(imass:), a(itimr:), a(iderv:), idt, &
                                                  ivflag, file_unit_list(19))
 
             ! perform the flux correction on conc2 == a(itimr:)
-            call dlwq51(nosys, notot, nosss, noq1, noq2, &
-                        noq3, noqt, nddim, nvdim, a(idisp:), &
+            call dlwq51(num_substances_transported, num_substances_total, nosss, num_exchanges_u_dir, num_exchanges_v_dir, &
+                        num_exchanges_z_dir, noqt, nddim, nvdim, a(idisp:), &
                         a(idnew:), a(ivnew:), a(ivol2:), a(iarea:), a(iflow:), &
                         a(ileng:), j(ixpnt:), iknmkv, j(idpnw:), j(ivpnw:), &
                         a(iconc:), a(itimr:), a(iboun:), intopt, ilflag, &
                         idt, iaflag, a(imas2:), ndmpq, j(iqdmp:), &
                         a(idmpq:))
-            call dlwq52(nosys, notot, nosss, a(ivol2:), a(imass:), &
+            call dlwq52(num_substances_transported, num_substances_total, nosss, a(ivol2:), a(imass:), &
                         a(itimr:), a(iconc:))
 
             ! explicit part of transport done, volumes on diagonal
-            call dlwq42(nosys, notot, nototp, nosss, a(ivol2:), &
+            call dlwq42(num_substances_transported, num_substances_total, num_substances_part, nosss, a(ivol2:), &
                         surface, a(imass:), a(iconc:), a(iderv:), idt, &
                         ivflag, file_unit_list(19))
 
             ! performs the implicit part of the transport step
-            call dlwqd1(nosys, notot, nosss, noq3, lnoq, &
+            call dlwqd1(num_substances_transported, num_substances_total, nosss, num_exchanges_z_dir, lnoq, &
                         nddim, nvdim, a(ldisp:), a(ldiff:), a(lvelo:), &
                         a(larea:), a(lflow:), a(lleng:), j(lxpnt:), iknmkv, &
                         j(idpnw:), j(ivpnw:), a(iconc:), a(iboun:), intopt, &
@@ -374,12 +372,12 @@ contains
 
             ! Forester filter on the vertical
             if (FORESTER) then
-                call DLWQD2(file_unit_list(19), NOSYS, NOTOT, nosss, NOQ3, &
-                            KMAX, A(ICONC:), A(LLENG:), NOWARN)
+                call DLWQD2(file_unit_list(19), num_substances_transported, num_substances_total, nosss, num_exchanges_z_dir, &
+                            num_layers_grid, A(ICONC:), A(LLENG:), NOWARN)
             end if
 
             ! update the necessary arrays
-            call dlwq44(nosys, notot, nosss, a(ivol2:), a(imass:), &
+            call dlwq44(num_substances_transported, num_substances_total, nosss, a(ivol2:), a(imass:), &
                         a(iconc:), a(iderv:))
 
             ! new time values, volumes excluded
@@ -395,17 +393,17 @@ contains
 
             ! calculate closure error
             if (lrewin .and. lstrec) then
-                call dlwqce(a(imass:), a(ivoll:), a(ivol2:), nosys, notot, &
-                            noseg, file_unit_list(19))
-                call copy_real_array_elements(a(ivoll:), a(ivol:), noseg)
+                call dlwqce(a(imass:), a(ivoll:), a(ivol2:), num_substances_transported, num_substances_total, &
+                            num_cells, file_unit_list(19))
+                call copy_real_array_elements(a(ivoll:), a(ivol:), num_cells)
             else
                 ! replace old by new volumes
-                call copy_real_array_elements(a(ivol2:), a(ivol:), noseg)
+                call copy_real_array_elements(a(ivol2:), a(ivol:), num_cells)
             end if
 
             ! integrate the fluxes at dump segments fill ASMASS with mass
             if (ibflag > 0) then
-                call integrate_fluxes_for_dump_areas(nflux, ndmpar, idt, itfact, a(iflxd:), &
+                call integrate_fluxes_for_dump_areas(num_fluxes, ndmpar, idt, itfact, a(iflxd:), &
                                                      a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
             end if
 
@@ -422,7 +420,7 @@ contains
 
                 ! write restart file
                 call write_restart_map_file(file_unit_list, file_name_list, A(ICONC:), ITIME, C(IMNAM:), &
-                                            C(ISNAM:), NOTOT, NOSSS)
+                                            C(ISNAM:), num_substances_total, NOSSS)
             end if
         end associate
 

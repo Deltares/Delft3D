@@ -1,5 +1,0 @@
-      subroutine CharacteristicSetUp(a,z)
-      use petsctsdef
-       Characteristic a ! Characteristic
-       integer z
-       end subroutine

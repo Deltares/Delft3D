@@ -29,9 +29,9 @@ implicit none
 contains
 
 
-subroutine PROPSG   (  pmsa  , fl    , ipoint, increm, noseg , &
-                       noflux, iexpnt, iknmrk, noq1  , noq2  , &
-                       noq3  , noq4  )
+subroutine PROPSG   (  process_space_real  , fl    , ipoint, increm, num_cells , &
+                       noflux, iexpnt, iknmrk, num_exchanges_u_dir  , num_exchanges_v_dir  , &
+                       num_exchanges_z_dir  , num_exchanges_bottom_dir  )
 use m_properties
 use m_extract_waq_attribute
 
@@ -60,13 +60,13 @@ use m_extract_waq_attribute
 
     implicit none
 
-    real(kind=real_wp)      ::pmsa  ( * ) , fl    (*)
-    integer(kind=int_wp)   ::ipoint( * ) , increm(*) , noseg , noflux, &
-             iexpnt(4,*) , iknmrk(*) , noq1, noq2, noq3, noq4
+    real(kind=real_wp)      ::process_space_real  ( * ) , fl    (*)
+    integer(kind=int_wp)   ::ipoint( * ) , increm(*) , num_cells , noflux, &
+             iexpnt(4,*) , iknmrk(*) , num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 !
 !   local declarations
 !
-    integer(kind=int_wp)   ::iseg, ikmrk1,ikmrk2, noq, iq, ifrom, ipp
+    integer(kind=int_wp)   ::iseg, ikmrk1,ikmrk2, num_exchanges, iq, ifrom, ipp
     real(kind=real_wp)      ::diameter, density, biofilm_thk, biofilm_density, shape_factor
     real(kind=real_wp)      ::settle_vel, tcr_sedim
     
@@ -77,7 +77,7 @@ use m_extract_waq_attribute
    
     integer(kind=int_wp)  ::nfrac, ifrac, nitem, offset
     
-    nfrac = pmsa(ipoint(ip_nfrac))
+    nfrac = process_space_real(ipoint(ip_nfrac))
     nitem = ip_lastsingle+7*nfrac ! 4x input and 3x output per fraction
     
 !
@@ -94,26 +94,26 @@ use m_extract_waq_attribute
 !
     ipnt(1:nitem) = ipoint(1:nitem)
     
-    do iseg = 1 , noseg
+    do iseg = 1 , num_cells
         call extract_waq_attribute(1,iknmrk(iseg),ikmrk1)
         if (ikmrk1==1) then
             call extract_waq_attribute(2,iknmrk(iseg),ikmrk2)
                 
             ! input independentt of fractions
-            biofilm_density = pmsa(ipnt(ip_BioFilmDen))
+            biofilm_density = process_space_real(ipnt(ip_BioFilmDen))
             
             ! loop over active fractions
             do ifrac = 1,nfrac
-                diameter        = pmsa(ipnt(ip_lastsingle        +ifrac))
-                density         = pmsa(ipnt(ip_lastsingle+nfrac  +ifrac))
-                shape_factor    = pmsa(ipnt(ip_lastsingle+nfrac*2+ifrac))
-                biofilm_thk     = pmsa(ipnt(ip_lastsingle+nfrac*3+ifrac))
+                diameter        = process_space_real(ipnt(ip_lastsingle        +ifrac))
+                density         = process_space_real(ipnt(ip_lastsingle+nfrac  +ifrac))
+                shape_factor    = process_space_real(ipnt(ip_lastsingle+nfrac*2+ifrac))
+                biofilm_thk     = process_space_real(ipnt(ip_lastsingle+nfrac*3+ifrac))
 
                 call add_biofilm( diameter, density, biofilm_thk, biofilm_density )
                 call calculate_sedim( diameter, density, shape_factor, settle_vel, tcr_sedim )
 
-                pmsa(ipnt(ip_lastsingle+nfrac*4+ifrac)) = settle_vel
-                pmsa(ipnt(ip_lastsingle+nfrac*5+ifrac)) = tcr_sedim
+                process_space_real(ipnt(ip_lastsingle+nfrac*4+ifrac)) = settle_vel
+                process_space_real(ipnt(ip_lastsingle+nfrac*5+ifrac)) = tcr_sedim
             enddo
                 
         endif
@@ -124,16 +124,16 @@ use m_extract_waq_attribute
     
     ! addition for use in 3D
     
-    NOQ = NOQ1 + NOQ2 + NOQ3
+    num_exchanges = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
     offset = ip_lastsingle+nfrac*6
     ipnt(1:nitem) = ipoint(1:nitem)
-    do IQ=1,NOQ1+NOQ2
+    do IQ=1,num_exchanges_u_dir+num_exchanges_v_dir
         do ifrac = 1,nfrac
-            pmsa(ipnt(offset+ifrac)) = 0.0
+            process_space_real(ipnt(offset+ifrac)) = 0.0
         enddo
         ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)
     enddo
-    do  IQ=NOQ1+NOQ2+1,NOQ
+    do  IQ=num_exchanges_u_dir+num_exchanges_v_dir+1,num_exchanges
         ifrom = IEXPNT(1,IQ)
 !
 !       Sedimentation velocity from segment to exchange-area
@@ -141,8 +141,8 @@ use m_extract_waq_attribute
         IF ( ifrom > 0 ) THEN
             do ifrac = 1,nfrac
                 ipp = ip_lastsingle+nfrac*4+ifrac
-                settle_vel = PMSA( ipoint(ipp) + (ifrom-1) * increm(ipp) )
-                pmsa(ipnt(offset+ifrac)) = settle_vel 
+                settle_vel = process_space_real( ipoint(ipp) + (ifrom-1) * increm(ipp) )
+                process_space_real(ipnt(offset+ifrac)) = settle_vel
             enddo
         ENDIF
         ipnt(1:nitem) = ipnt(1:nitem) + increm(1:nitem)

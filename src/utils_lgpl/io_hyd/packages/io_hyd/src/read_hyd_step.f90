@@ -49,21 +49,21 @@ subroutine read_hyd_step(hyd, itime, iend)
     ! for volume check on end of file
 
     call hyd%file_vol%open()
-    read(hyd%file_vol%unit, iostat = iend) itime, (hyd%volume(i), i = 1, hyd%noseg)
+    read(hyd%file_vol%unit, iostat = iend) itime, (hyd%volume(i), i = 1, hyd%num_cells)
     !     write(*,*) 'iend:',iend
     if (iend /= 0) return
 
       ! for the rest read
 
     call hyd%file_are%open()
-    read(hyd%file_are%unit, iostat = ierr) itime, (hyd%area(i), i = 1, hyd%noq)
+    read(hyd%file_are%unit, iostat = ierr) itime, (hyd%area(i), i = 1, hyd%num_exchanges)
     if (ierr /= 0) then
         write(*, *) 'ERROR: reading are file: ', hyd%file_are%unit, trim(hyd%file_are%name)
         call stop_with_error()
     endif
 
     call hyd%file_flo%open()
-    read(hyd%file_flo%unit, iostat = ierr) itime, (hyd%flow(i), i = 1, hyd%noq)
+    read(hyd%file_flo%unit, iostat = ierr) itime, (hyd%flow(i), i = 1, hyd%num_exchanges)
     if (ierr /= 0) then
         write(*, *) 'ERROR: reading flo file: ', hyd%file_flo%unit, trim(hyd%file_flo%name)
         call stop_with_error()
@@ -71,7 +71,7 @@ subroutine read_hyd_step(hyd, itime, iend)
 
     if (hyd%sal_present) then
         call hyd%file_sal%open()
-        read(hyd%file_sal%unit, iostat = ierr) itime, (hyd%sal(i), i = 1, hyd%noseg)
+        read(hyd%file_sal%unit, iostat = ierr) itime, (hyd%sal(i), i = 1, hyd%num_cells)
         if (ierr /= 0) then
             write(*, *) 'ERROR: reading sal file: ', hyd%file_sal%unit, trim(hyd%file_sal%name)
             call stop_with_error()
@@ -80,7 +80,7 @@ subroutine read_hyd_step(hyd, itime, iend)
 
     if (hyd%tem_present) then
         call hyd%file_tem%open()
-        read(hyd%file_tem%unit, iostat = ierr) itime, (hyd%tem(i), i = 1, hyd%noseg)
+        read(hyd%file_tem%unit, iostat = ierr) itime, (hyd%tem(i), i = 1, hyd%num_cells)
         if (ierr /= 0) then
             write(*, *) 'ERROR: reading tem file: ', hyd%file_tem%unit, trim(hyd%file_tem%name)
             call stop_with_error()
@@ -89,7 +89,7 @@ subroutine read_hyd_step(hyd, itime, iend)
 
     if (hyd%tau_present) then
         call hyd%file_tau%open()
-        read(hyd%file_tau%unit, iostat = ierr) itime, (hyd%tau(i), i = 1, hyd%noseg)
+        read(hyd%file_tau%unit, iostat = ierr) itime, (hyd%tau(i), i = 1, hyd%num_cells)
         if (ierr /= 0) then
             write(*, *) 'ERROR: reading tau file: ', hyd%file_tau%unit, trim(hyd%file_tau%name)
             call stop_with_error()
@@ -98,7 +98,7 @@ subroutine read_hyd_step(hyd, itime, iend)
 
     if (hyd%vdf_present) then
         call hyd%file_vdf%open()
-        read(hyd%file_vdf%unit, iostat = ierr) itime, (hyd%vdf(i), i = 1, hyd%noseg)
+        read(hyd%file_vdf%unit, iostat = ierr) itime, (hyd%vdf(i), i = 1, hyd%num_cells)
         if (ierr /= 0) then
             write(*, *) 'ERROR: reading vdf file: ', hyd%file_vdf%unit, trim(hyd%file_vdf%name)
             call stop_with_error()

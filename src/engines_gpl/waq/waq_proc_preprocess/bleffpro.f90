@@ -145,7 +145,7 @@
       do j=1,nuecog
    rfirst(i,j)=effic(i1,j)
       end do
-   domf(i)=-dlog(power(i1))
+   domf(i)=-log(power(i1))
       end do
       return
       end
@@ -282,7 +282,7 @@
       do i=1,nval
       dens(i)=dens(i)*amult
       freq(i)=freq(i)*amult
-      tsol(i)=dlog(solar(i)/sbar)
+      tsol(i)=log(solar(i)/sbar)
    tden(i)=solar(i)*dens(i)
       end do
       return
@@ -290,21 +290,21 @@
 !
 !  Subroutine to determine z-values for convolutions
 !
-      subroutine zval(xvec,nx,yvec,ny,zvec,nz)
+      subroutine zval(xvec,num_cells_u_dir,yvec,num_cells_v_dir,zvec,nz)
       implicit none
       dimension xvec(51),yvec(51),zvec(51),ix(51)
-      integer(kind=int_wp) ::i, nx, ix, nz1, nz, ny, n1, n2, j, k, imin, ixk
+      integer(kind=int_wp) ::i, num_cells_u_dir, ix, nz1, nz, num_cells_v_dir, n1, n2, j, k, imin, ixk
       real(kind=dp) ::rat, crat, xvec, yvec, zvec, smin, del 
       
-      do i=1,nx
+      do i=1,num_cells_u_dir
    ix(i)=1
       end do
       nz1=nz-1
-      rat=(nx*ny-1)/nz1
+      rat=(num_cells_u_dir*num_cells_v_dir-1)/nz1
       crat=0.0
       zvec(1)=xvec(1)+yvec(1)
       ix(1)=2
-      zvec(nz)=xvec(nx)+yvec(ny)
+      zvec(nz)=xvec(num_cells_u_dir)+yvec(num_cells_v_dir)
       n2=0
 !
 !  Loop through desired number of z-values
@@ -319,8 +319,8 @@
       do j=n1,n2
       smin=zvec(nz)+1.0
       imin=0
-      do k=1,nx
-      if (ix(k) > ny) go to 12
+      do k=1,num_cells_u_dir
+      if (ix(k) > num_cells_v_dir) go to 12
       ixk=ix(k)
       if (xvec(k)+yvec(ixk) >= smin) go to 12
       smin=xvec(k)+yvec(ixk)
@@ -353,26 +353,26 @@
 !
 !  Subroutine to convolve the functions f(x) and g(y)
 !
-      subroutine cvolve(xvec,fofx,nx,ax,yvec,gofy,ny,ay,zvec, & 
+      subroutine cvolve(xvec,fofx,num_cells_u_dir,ax,yvec,gofy,num_cells_v_dir,ay,zvec, &
                        fstarg,nz)
       implicit none
       dimension xvec(51),fofx(51),yvec(51),gofy(51),zvec(51), & 
                fstarg(51)
-      integer(kind=int_wp) ::i, j, nx, ny, nz, ix, iy
+      integer(kind=int_wp) ::i, j, num_cells_u_dir, num_cells_v_dir, nz, ix, iy
       real(kind=dp) ::xvec, yvec, zvec, fofx, fstarg, bot, top
       real(kind=dp) ::ex1, ax, ex2, ey1, ay, ey2, f2, f1, g2, gofy, g1, d, s
       real(kind=dp) ::tmp, x
 !
 !  Add a convenience point to f(x).
 !
-      xvec(nx+1)=xvec(nx)+1.0
-      fofx(nx+1)=fofx(nx)
+      xvec(num_cells_u_dir+1)=xvec(num_cells_u_dir)+1.0
+      fofx(num_cells_u_dir+1)=fofx(num_cells_u_dir)
       do i=1,nz
       fstarg(i)=0.0
       iy=2
       bot=yvec(1)
-      ix=nx
-      do j=1,nx
+      ix=num_cells_u_dir
+      do j=1,num_cells_u_dir
       if (zvec(i)-xvec(ix) > yvec(1)) go to 20
     ix=ix-1
       end do
@@ -399,13 +399,13 @@
       +f2*g2*dexp(ax*zvec(i))*(dexp(d*top)-dexp(d*bot))/d
       fstarg(i)=fstarg(i)+s
 !
-!  Update intervals and stop if x(1) or y(ny) has been reached
+!  Update intervals and stop if x(1) or y(num_cells_v_dir) has been reached
 !
       if (top >= yvec(iy)) iy=iy+1
 !
       tmp = zvec(i) - xvec(ix) - 1.0d-60
       if (top >= tmp) ix=ix-1
-      if (iy > ny) go to 50
+      if (iy > num_cells_v_dir) go to 50
       if (ix < 1) go to 50
       bot=top
       go to 20

@@ -28,9 +28,9 @@ module m_outbo2
 contains
 
 
-    SUBROUTINE OUTBO2 (NOUTP, IOUTPS, NOSEG, NODUMP, NX, &
-            NY, NRVART, NBUFMX, NDMPAR, NOTOT, &
-            NCBUFM, NORAAI)
+    SUBROUTINE OUTBO2 (num_output_files, IOUTPS, num_cells, num_monitoring_points, num_cells_u_dir, &
+            num_cells_v_dir, num_output_variables_extra, output_buffer_len, NDMPAR, num_substances_total, &
+            char_arr_buffer_len, num_transects)
         !
         !     Deltares     SECTOR WATERRESOURCES AND ENVIRONMENT
         !
@@ -46,28 +46,28 @@ contains
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     NOUTP   INTEGER       1     INPUT   Number of processes in def file
-        !     IOUTPS  INTEGER   7,NOUTP   INPUT   output structure
-        !     NOSEG   INTEGER       1     INPUT   Number of segments
-        !     NODUMP  INTEGER       1     INPUT   Number of monitoring points
-        !     NX      INTEGER       1     INPUT   Length of dump grid
-        !     NY      INTEGER       1     INPUT   Width of dump grid
-        !     NRVART  INTEGER       1     OUTPUT  Total number of output variables
-        !     NBUFMX  INTEGER       1     OUTPUT  Length of output buffer needed
+        !     num_output_files   INTEGER       1     INPUT   Number of processes in def file
+        !     IOUTPS  INTEGER   7,num_output_files   INPUT   output structure
+        !     num_cells   INTEGER       1     INPUT   Number of segments
+        !     num_monitoring_points  INTEGER       1     INPUT   Number of monitoring points
+        !     num_cells_u_dir      INTEGER       1     INPUT   Length of dump grid
+        !     num_cells_v_dir      INTEGER       1     INPUT   Width of dump grid
+        !     num_output_variables_extra  INTEGER       1     OUTPUT  Total number of output variables
+        !     output_buffer_len  INTEGER       1     OUTPUT  Length of output buffer needed
         !     NDMPAR  INTEGER       1     INPUT   number of dump areas
-        !     NOTOT   INTEGER       1     INPUT   Number of substances
-        !     NCBUFM  INTEGER       1     IN/OUT  Length of character buffer
-        !     NORAAI  INTEGER       1     INPUT   number of raaien
+        !     num_substances_total   INTEGER       1     INPUT   Number of substances
+        !     char_arr_buffer_len  INTEGER       1     IN/OUT  Length of character buffer
+        !     num_transects  INTEGER       1     INPUT
         !
         !     Declaration of arguments
         !
         use timers       !   performance timers
         use results
 
-        INTEGER(kind = int_wp) :: NOUTP, NOSEG, NODUMP, NX, NY, &
-                NRVART, NBUFMX, NDMPAR, NOTOT, NCBUFM, &
-                NORAAI
-        INTEGER(kind = int_wp) :: IOUTPS(7, NOUTP)
+        INTEGER(kind = int_wp) :: num_output_files, num_cells, num_monitoring_points, num_cells_u_dir, num_cells_v_dir, &
+                num_output_variables_extra, output_buffer_len, NDMPAR, num_substances_total, char_arr_buffer_len, &
+                num_transects
+        INTEGER(kind = int_wp) :: IOUTPS(7, num_output_files)
         !
         !     Local
         !
@@ -84,21 +84,21 @@ contains
         !
         !     Loop over the output files
         !
-        NRVART = 0
-        NBUFMX = 0
-        DO IOUT = 1, NOUTP
+        num_output_variables_extra = 0
+        output_buffer_len = 0
+        DO IOUT = 1, num_output_files
             NRVAR = IOUTPS(4, IOUT)
-            NRVART = NRVART + NRVAR
+            num_output_variables_extra = num_output_variables_extra + NRVAR
             !
             !        Grid
             !
             IGRID = IOUTPS(6, IOUT)
             IF (IGRID == IGSEG) THEN
-                NOCEL = NOSEG
+                NOCEL = num_cells
             ELSEIF (IGRID == IGMON) THEN
-                NOCEL = NODUMP
+                NOCEL = num_monitoring_points
             ELSEIF (IGRID == IGGRD) THEN
-                NOCEL = NX * NY
+                NOCEL = num_cells_u_dir * num_cells_v_dir
             ELSEIF (IGRID == IGSUB) THEN
                 NOCEL = NDMPAR
             ENDIF
@@ -114,7 +114,7 @@ contains
                 !           substance names and output names in char buffer.
                 !
                 NBUFOU = NOCEL * (NRVAR + 1)
-                NCBUFO = NOTOT + NRVAR
+                NCBUFO = num_substances_total + NRVAR
             ELSEIF (ISRTO == IHN2 .OR. ISRTO == IMN2) THEN
                 !
                 !           NEFIS file, extra array with length NOCEL needed
@@ -126,27 +126,27 @@ contains
                 !           first half of the nrvar are real output vars.
                 !           substance names and output names in char buffer.
                 !
-                NBUFOU = NOCEL * (NOTOT + NRVAR / 2)
-                NCBUFO = NOTOT + NRVAR / 2
+                NBUFOU = NOCEL * (num_substances_total + NRVAR / 2)
+                NCBUFO = num_substances_total + NRVAR / 2
             ELSEIF (ISRTO == IHI3) THEN
                 !
                 !           On subarea's substances also in buffer, only the
                 !           first half of the nrvar are real output vars.
                 !           substance names and output names in char buffer.
-                !           also output for raaien
+                !           also output for transects
                 !
-                NBUFOU = (NOCEL + NORAAI) * (NOTOT + NRVAR / 2)
-                NCBUFO = NOTOT + NRVAR / 2
+                NBUFOU = (NOCEL + num_transects) * (num_substances_total + NRVAR / 2)
+                NCBUFO = num_substances_total + NRVAR / 2
             ELSEIF (ISRTO == IHN3) THEN
                 !
                 !           NEFIS file, extra array with length NOCEL needed
                 !           On subarea's substances also in buffer, only the
                 !           first half of the nrvar are real output vars.
                 !           substance names and output names in char buffer.
-                !           also output for raaien
+                !           also output for transects
                 !
-                NBUFOU = (NOCEL + NORAAI) * (NOTOT + NRVAR / 2 + 1)
-                NCBUFO = NOTOT + NRVAR / 2
+                NBUFOU = (NOCEL + num_transects) * (num_substances_total + NRVAR / 2 + 1)
+                NCBUFO = num_substances_total + NRVAR / 2
             ELSEIF (ISRTO == IMO4 .OR. ISRTO == IHI4) THEN
                 !
                 !           On subarea's only the first half of the nrvar are
@@ -169,8 +169,8 @@ contains
             !
             !        Buffer is as big as the largest needed
             !
-            NBUFMX = MAX (NBUFMX, NBUFOU)
-            NCBUFM = MAX (NCBUFM, NCBUFO)
+            output_buffer_len = MAX (output_buffer_len, NBUFOU)
+            char_arr_buffer_len = MAX (char_arr_buffer_len, NCBUFO)
             !
         end do
         !

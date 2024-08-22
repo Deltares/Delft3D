@@ -1118,7 +1118,7 @@ module m_ec_provider
          character(len=:), allocatable       :: rec       !< a read line
          character(len=maxFileNameLen)       :: grid_file !< file name of curvilinear grid
          integer                             :: minp      !< IO unit number
-         integer                             :: mx, nx    !< n_clos, n_rows
+         integer                             :: mx, grid_width    !< n_clos, n_rows
          real(hp), dimension(:), allocatable :: x, y      !< coordinate arrays
          integer                             :: i, j      !< loop counters
          character(len=10)                   :: dummy     !< helper variable for ignored data
@@ -1164,18 +1164,18 @@ module m_ec_provider
             goto 20
          ! Comments and keywords done, read ncols and nrows from last record read
          else
-            read(rec,*) mx, nx
+            read(rec,*) mx, grid_width
             read(minp,*) ! skips line with 0 0 0
          endif
 
          ! Read the file body.
-         allocate(x(mx*nx))
-         allocate(y(mx*nx))
+         allocate(x(mx*grid_width))
+         allocate(y(mx*grid_width))
          ! Read the data row-by-row into a 1D array.
-         do j=0, nx-1
+         do j=0, grid_width-1
             read(minp, *, iostat = istat) dummy, dummy, (x(j*mx+i), i=1, mx)
          end do
-         do j=0, nx-1
+         do j=0, grid_width-1
             read(minp, *, iostat = istat) dummy, dummy, (y(j*mx+i), i=1, mx)
          end do
          close(minp)
@@ -1189,13 +1189,13 @@ module m_ec_provider
          if (.not. (ecElementSetSetType(instancePtr, elementSetId, elmSetType) .and. &
                     ecElementSetSetXArray(instancePtr, elementSetId, x) .and. &
                     ecElementSetSetYArray(instancePtr, elementSetId, y) .and. &
-                    ecElementSetSetRowsCols(instancePtr, elementSetId, nx, mx))) then
+                    ecElementSetSetRowsCols(instancePtr, elementSetId, grid_width, mx))) then
             success = .false.
          end if
          deallocate(x)
          deallocate(y)
          n_cols = mx
-         n_rows = nx
+         n_rows = grid_width
       end function ecProviderCreateCurviElementSet
 
       ! =======================================================================
@@ -3671,11 +3671,11 @@ module m_ec_provider
       !> Read the header of a Arcinfo file.
       !! Does not check whether all expected information is present in the header.
       !! meteo1:: readarcinfoheader
-      function readarcinfoheader(minp, mmax, nmax, x0, y0, dxa, dya, dmiss) result(success)
+      function readarcinfoheader(minp, num_columns, num_rows, x0, y0, dxa, dya, dmiss) result(success)
          logical               :: success !< function status
          integer               :: minp    !<
-         integer,  intent(out) :: mmax    !<
-         integer,  intent(out) :: nmax    !<
+         integer,  intent(out) :: num_columns    !<
+         integer,  intent(out) :: num_rows    !<
          real(hp), intent(out) :: x0      !<
          real(hp), intent(out) :: y0      !<
          real(hp), intent(out) :: dxa     !<
@@ -3696,8 +3696,8 @@ module m_ec_provider
          rewind(unit = minp)
 10       continue
          read (minp, '(A)', end = 100) rec
-         mmax = -1
-         nmax = -1
+         num_columns = -1
+         num_rows = -1
          if (index(rec, '### START OF HEADER') > 0) then ! new d3dflow header
 20          continue
             read (minp, '(A)', end = 100) rec
@@ -3709,11 +3709,11 @@ module m_ec_provider
             endif
             !
             if (index(rec, 'n_cols') > 0 .and. index(rec, 'n_cols') < equal_sign_index) then
-               read (rec(L:), *, err = 101) mmax
+               read (rec(L:), *, err = 101) num_columns
             endif
             !
             if (index(rec, 'n_rows') > 0 .and. index(rec, 'n_rows') < equal_sign_index) then
-               read (rec(L:), *, err = 102) nmax
+               read (rec(L:), *, err = 102) num_rows
             endif
             !
             if (index(rec, 'x_llcenter') > 0 .and. index(rec, 'x_llcenter') < equal_sign_index) then
@@ -3748,9 +3748,9 @@ module m_ec_provider
          else
             !
             if (rec(1:1)=='*' .or. rec(2:2)=='*') goto 10
-            read (rec(13:), *, err = 101) mmax
+            read (rec(13:), *, err = 101) num_columns
             read (minp, '(A)', end = 100) rec
-            read (rec(13:), *, err = 102) nmax
+            read (rec(13:), *, err = 102) num_rows
             !
             read (minp, '(A)', end = 100) rec
             read (rec(13:), *, err = 103) x0
@@ -3783,12 +3783,12 @@ module m_ec_provider
             !
          endif
 
-         if (mmax < 0) then
-            call setECMessage('ERROR: Could not find n_cols/mmax value in header of arcinfo file')
+         if (num_columns < 0) then
+            call setECMessage('ERROR: Could not find n_cols/num_columns value in header of arcinfo file')
             goto 999
          end if
-         if (nmax < 0) then
-            call setECMessage('ERROR: Could not find n_rows/nmax value in header of arcinfo file')
+         if (num_rows < 0) then
+            call setECMessage('ERROR: Could not find n_rows/num_rows value in header of arcinfo file')
             goto 999
          end if
 

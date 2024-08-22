@@ -10,7 +10,7 @@ sys.path.insert(0, abspath(join(dirname(__file__), "..")))
 
 
 class TestDSeriesComparer:
-    def setup_method(self):
+    def setup_method(self) -> None:
         self.python_version = sys.version_info[0]
         self.path_to_file = ""
         self.testroot = os.path.abspath(os.path.dirname(__file__))
@@ -22,7 +22,7 @@ class TestDSeriesComparer:
         self.comp = DSeriesComparer()
         pass
 
-    def test_parseNode(self):
+    def test_parseNode(self) -> None:
         # TEST 1
         # Set the inputs of first test
         list = ["", "", ""]
@@ -107,7 +107,7 @@ class TestDSeriesComparer:
         # Compare the results with the test
         assert dictionaryresult == dictionary
 
-    def test_parseNode_Exception(self):
+    def test_parseNode_Exception(self) -> None:
         # Random input that will raise exception
         list = 125
 
@@ -118,7 +118,7 @@ class TestDSeriesComparer:
         # Check if the right exception is raised
         assert "Could not parse block\n " == str(context.value)
 
-    def test_buildTrees(self):
+    def test_buildTrees(self) -> None:
         # Define the path for the fod file that will be tested
         filename = "Unit_test.fod"
         ref_file = os.path.join(self.lp, filename)
@@ -130,9 +130,9 @@ class TestDSeriesComparer:
         fref.close()
 
         # Check the equality with the target
-        output = reftree[0]["DUMPFILE"][0]["DUMPFILE OUTPUT"][0][
-            "VERIFICATION RESULTS"
-        ][0]["GLOBAL NEN RESULTS"][0] == {
+        output = reftree[0]["DUMPFILE"][0]["DUMPFILE OUTPUT"][0]["VERIFICATION RESULTS"][0]["GLOBAL NEN RESULTS"][
+            0
+        ] == {
             "block_start": [1474],
             "block_end": [1479],
             "txt": [
@@ -146,7 +146,7 @@ class TestDSeriesComparer:
         # Check if it is True
         assert output
 
-    def test_branch(self):
+    def test_branch(self) -> None:
         # Set the inputs
         filename = "Unit_test_branch.fod"
         ref_file = os.path.join(self.lp, filename)
@@ -219,7 +219,7 @@ class TestDSeriesComparer:
         newbranch = newbranch["DUMPFILE"][0]
         assert newbranch == testbranch
 
-    def test_branch_Exception(self):
+    def test_branch_Exception(self) -> None:
         # Set the inputs
         filename = "Unit_test_branch.fod"
         ref_file = os.path.join(self.lp, filename)

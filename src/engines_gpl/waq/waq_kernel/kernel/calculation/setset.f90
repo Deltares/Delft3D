@@ -28,33 +28,33 @@ module m_setset
 contains
 
     !> Initialisation of Variables structure
-    subroutine setset(lurep, nocons, nopa, nofun, nosfun, &
-            nosys, notot, nodisp, novelo, nodef, &
-            noloc, ndspx, nvelx, nlocx, nflux, &
-            nopred, novar, nogrid, vgrset)
+    subroutine setset(lurep, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
+            num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
+            num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
+            nopred, num_vars, num_grids, vgrset)
 
         use timers
         implicit none
 
         integer(kind = int_wp), intent(in   ) :: lurep                 !< Unit number monitoring file (not used)
-        integer(kind = int_wp), intent(in   ) :: nocons                !< Number of constants
-        integer(kind = int_wp), intent(in   ) :: nopa                  !< Number of parameters
-        integer(kind = int_wp), intent(in   ) :: nofun                 !< Number of functions
-        integer(kind = int_wp), intent(in   ) :: nosfun                !< Number of segment functions
-        integer(kind = int_wp), intent(in   ) :: nosys                 !< Number of transported substances
-        integer(kind = int_wp), intent(in   ) :: notot                 !< Total number of substances
-        integer(kind = int_wp), intent(in   ) :: nodisp                !< Number of user-dispersions
-        integer(kind = int_wp), intent(in   ) :: novelo                !< Number of user-flows
-        integer(kind = int_wp), intent(in   ) :: nodef                 !< Number of default values
-        integer(kind = int_wp), intent(in   ) :: noloc                 !< Number of local values
-        integer(kind = int_wp), intent(in   ) :: ndspx                 !< Number of dspx
-        integer(kind = int_wp), intent(in   ) :: nvelx                 !< Number of velx
-        integer(kind = int_wp), intent(in   ) :: nlocx                 !< Number of locx
-        integer(kind = int_wp), intent(in   ) :: nflux                 !< Number of flux
+        integer(kind = int_wp), intent(in   ) :: num_constants
+        integer(kind = int_wp), intent(in   ) :: num_spatial_parameters
+        integer(kind = int_wp), intent(in   ) :: num_time_functions
+        integer(kind = int_wp), intent(in   ) :: num_spatial_time_fuctions
+        integer(kind = int_wp), intent(in   ) :: num_substances_transported
+        integer(kind = int_wp), intent(in   ) :: num_substances_total
+        integer(kind = int_wp), intent(in   ) :: num_dispersion_arrays                !< Number of user-dispersions
+        integer(kind = int_wp), intent(in   ) :: num_velocity_arrays                !< Number of user-flows
+        integer(kind = int_wp), intent(in   ) :: num_defaults
+        integer(kind = int_wp), intent(in   ) :: num_local_vars
+        integer(kind = int_wp), intent(in   ) :: num_dispersion_arrays_extra
+        integer(kind = int_wp), intent(in   ) :: num_velocity_arrays_extra
+        integer(kind = int_wp), intent(in   ) :: num_local_vars_exchange
+        integer(kind = int_wp), intent(in   ) :: num_fluxes
         integer(kind = int_wp), intent(in   ) :: nopred                !< Not used
-        integer(kind = int_wp), intent(in   ) :: novar                 !< Number of variables on the grids
-        integer(kind = int_wp), intent(in   ) :: nogrid                !< Number of grids
-        integer(kind = int_wp), intent(inout) :: vgrset(novar, nogrid) !< Number of grids
+        integer(kind = int_wp), intent(in   ) :: num_vars                 !< Number of variables on the grids
+        integer(kind = int_wp), intent(in   ) :: num_grids
+        integer(kind = int_wp), intent(inout) :: vgrset(num_vars, num_grids) !< Number of grids
 
         ! Local declarations
         integer(kind = int_wp) :: i, ivar, igrid      !< Auxiliary variables for loop and index counting
@@ -63,7 +63,7 @@ contains
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("setset", ithandl)
 
-        do igrid = 1, nogrid
+        do igrid = 1, num_grids
             iset = 0
             if (igrid == 1) iset = 1
             ivar = 0
@@ -72,39 +72,39 @@ contains
             ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset    ! flow
             ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset    ! length 1
             ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset    ! length 2
-            ivar = ivar + nocons                              ! constants
-            ivar = ivar + nopa                                ! parameters
-            do i = 1, nofun                                   ! functions
+            ivar = ivar + num_constants                              ! constants
+            ivar = ivar + num_spatial_parameters                                ! parameters
+            do i = 1, num_time_functions                                   ! functions
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, nosfun                                  ! segment functions
+            do i = 1, num_spatial_time_fuctions                                  ! segment functions
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, notot                                   ! concentrations
+            do i = 1, num_substances_total                                   ! concentrations
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, notot                                   ! masses
+            do i = 1, num_substances_total                                   ! masses
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, notot                                   ! derivatives
+            do i = 1, num_substances_total                                   ! derivatives
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, nodisp                                  ! dispersions
+            do i = 1, num_dispersion_arrays                                  ! dispersions
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, novelo                                  ! velocities
+            do i = 1, num_velocity_arrays                                  ! velocities
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, nodef                                   ! default values
+            do i = 1, num_defaults                                   ! default values
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            do i = 1, noloc                                   ! local values
+            do i = 1, num_local_vars                                   ! local values
                 ivar = ivar + 1  ;  vgrset(ivar, igrid) = iset
             enddo
-            ivar = ivar + ndspx                               ! dspx
-            ivar = ivar + nvelx                               ! velx
-            ivar = ivar + nlocx                               ! locx
-            ivar = ivar + nflux                               ! flux
+            ivar = ivar + num_dispersion_arrays_extra
+            ivar = ivar + num_velocity_arrays_extra                               ! velx
+            ivar = ivar + num_local_vars_exchange
+            ivar = ivar + num_fluxes                               ! flux
         enddo
         if (timon) call timstop (ithandl)
     end subroutine setset

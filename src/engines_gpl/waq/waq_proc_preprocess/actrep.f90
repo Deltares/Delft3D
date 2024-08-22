@@ -59,7 +59,7 @@ contains
         character(len=10) :: name1
         character(len=20) :: name20
         character(len=80) :: line
-        integer(kind = int_wp) :: nocons
+        integer(kind = int_wp) :: num_constants
         integer(kind = int_wp) :: nocon2
         integer(kind = int_wp) :: ico
         integer(kind = int_wp) :: ipro
@@ -72,9 +72,9 @@ contains
 
         ! replace active proto processes with actual processes
 
-        nocons = constants%no_item
+        num_constants = constants%no_item
         nocon2 = constants%no_item
-        do ico = 1, nocons
+        do ico = 1, num_constants
             call upper_case(constants%name(ico), name20, 20)
             if (name20(1:6) == 'ACTIVE') then
 

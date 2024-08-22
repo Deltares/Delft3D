@@ -128,6 +128,29 @@ Dimr::Dimr(void) {
     this->timerSumStamp = 0;
 }
 
+bool readComputeTimesFile(const char* fileName, dimr_control_block* controlBlock) {
+    std::ifstream computeTimesFile(fileName);
+    // Check if the file stream is valid (i.e., file was opened successfully)
+    if (!computeTimesFile.is_open()) {
+        return false;
+    }
+    double timeRead;
+    controlBlock->computeTimes = new vector<double>();
+    while (computeTimesFile >> timeRead)
+        controlBlock->computeTimes->push_back(timeRead);
+    // Close the file
+    computeTimesFile.close();
+    vector<double>& controlblock_timearray = *(controlBlock->computeTimes); // Shortcut to keep the code readable
+    // Enough data?
+    if (controlblock_timearray.size() < MINIMUM_TIME_POINTS)
+        throw Exception(true, Exception::ERR_INVALID_INPUT, "File '%s' must contain at least %d times", fileName, MINIMUM_TIME_POINTS);
+    // Update controlBlock with read times
+    controlBlock->tStart = controlblock_timearray[0];                       // First  timePoint to do a computation
+    controlBlock->tStep = controlblock_timearray[1] - controlBlock->tStart; // Second timePoint to do a computation
+    controlBlock->computeTimesCurrent = 1;                                  // Index to current timePoint
+    controlBlock->tEnd = std::numeric_limits<double>::infinity();
+    return true;
+}
 
 
 //------------------------------------------------------------------------------
@@ -196,6 +219,8 @@ Dimr::~Dimr(void) {
 void Dimr::deleteControlBlock(dimr_control_block cb) {
     if (cb.numSubBlocks > 0) {
         for (int i = 0; i < cb.numSubBlocks; i++) {
+            if (cb.computeTimes->empty())
+                cb.computeTimes->clear();
             // Recursively delete all subBlocks
             deleteControlBlock(cb.subBlocks[i]);
         }
@@ -902,8 +927,9 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                             // tUpdate is the timeInterval since the last time this component was executed
                             // This is not the overall tStep!
                             double tUpdate;
-                            tUpdate = *currentTime - masterComponent->tStart - cb->subBlocks[i].tCur;
-    log->Write(INFO, my_rank, "Parallel Startgroup: Current time: %15.5f -- %15.5f", *currentTime, cb->subBlocks[i].tCur);
+                            double subblock_time = cb->subBlocks[i].tCur; // Shortcut to keep the code readable
+                            tUpdate = *currentTime - masterComponent->tStart - subblock_time;
+                            log->Write(INFO, my_rank, "Parallel Startgroup: Current time: %15.5f -- %15.5f", *currentTime, subblock_time);
                             // Hack: Always call RTCTools.Update with argument -1.0
                             if (cb->subBlocks[i].subBlocks[j].unit.component->type == COMP_TYPE_RTC) {
                                 tUpdate = -1.0;
@@ -912,7 +938,7 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                             //              Otherwise, WANDA will hang in case tUpdate is very big (FLOW start time big, related to ref time)
                             //              It doesn't matter for the WANDA results; with this coupling, WANDA doesn't have a time knowledge at all
                             if (cb->subBlocks[i].subBlocks[j].unit.component->type == COMP_TYPE_WANDA) {
-                                if (cb->subBlocks[i].tCur == 0.0) {
+                                if (subblock_time == 0.0) {
                                     tUpdate = 0.0;
                                 }
                             }
@@ -1034,18 +1060,33 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
                     for (int j = 0; j < cb->subBlocks[i].numSubBlocks; j++) {  // look for the WAVE component (wave-library)
                         if (j != cb->masterSubBlockId && cb->subBlocks[i].subBlocks[j].unit.component != nullptr && cb->subBlocks[i].subBlocks[j].unit.component->type == COMP_TYPE_WAVE) {
                             cb->subBlocks[i].tCur = *currentTime;
-    log->Write(INFO, my_rank, "Parallel Child: Current time: %15.5f -- %d", *currentTime, i);
+                            log->Write(INFO, my_rank, "Parallel Child: Current time: %15.5f -- %d", *currentTime, i);
                         }
                         else {
                             cb->subBlocks[i].tCur = *currentTime - masterComponent->tStart;
-    log->Write(INFO, my_rank, "Parallel Child 2: Current time: %15.5f -- %d", *currentTime, i);
+                            log->Write(INFO, my_rank, "Parallel Child 2: Current time: %15.5f -- %d", *currentTime, i);
                         }
                     }
                     cb->subBlocks[i].tNext = cb->subBlocks[i].tNext + cb->subBlocks[i].tStep;
+                    vector<double>& subblock_timearray = *(cb->subBlocks[i].computeTimes); // Shortcut to keep the code readable
                     if (cb->subBlocks[i].tNext > cb->subBlocks[i].tEnd)
                         // This subBlock does not have to be executed anymore
                         // Force this by giving it a nextTime > simulationEndTime
                         cb->subBlocks[i].tNext = 2.0 * masterComponent->tEnd;
+                    else if (cb->subBlocks[i].computeTimesCurrent > 0) {
+                        // Computation times specified in a time series:
+                        // Use the next element from the computeTimes array
+                        cb->subBlocks[i].computeTimesCurrent++;
+                        int subblock_timeindex = cb->subBlocks[i].computeTimesCurrent;  // Shortcut to keep the code readable
+                        // If there are no valid timepoints in array computeTimes anymore:
+                        //     Ensure that tStep is big enough to cover the interval from currentTime to tEnd
+                        if (subblock_timeindex >= subblock_timearray.size())
+                            cb->subBlocks[i].tStep = 2.0 * (masterComponent->tEnd - *currentTime);
+                        else {
+                            // Substract the previous computeTimes-entry to obtain the new tStep
+                            cb->subBlocks[i].tStep = subblock_timearray[subblock_timeindex] - subblock_timearray[subblock_timeindex - 1];
+                        }
+                    }
                 }
             }
         }
@@ -1705,9 +1746,18 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
         XmlTree* timeElt = controlBlockXml->Lookup("time");
         if (timeElt == NULL)
             throw Exception(true, Exception::ERR_INVALID_INPUT, "The startGroup component \"%s\" does not contain a time element", controlBlockXml->name);
-        int intRead = sscanf(timeElt->charData, "%lf %lf %lf", &(controlBlock->tStart), &(controlBlock->tStep), &(controlBlock->tEnd));
-        if (intRead != 3)
-            throw Exception(true, Exception::ERR_INVALID_INPUT, "Cannot find tStart, tStep, tEnd");
+        // The time field either contains:
+        // - tStart, tStep, tStop                             , e.g. <time>0.0 3.6e3 9.99e4</time>
+        // - name of a file containing computation time points, e.g. <time>wave_computations.tim</time>
+        // First check whether it's the name of a file:
+        if (!readComputeTimesFile(timeElt->charData, controlBlock)) {
+            // No, it's not the name of a file. Assume that it contains tStart, tStep, tStop
+            int intRead = sscanf(timeElt->charData, "%lf %lf %lf", &(controlBlock->tStart), &(controlBlock->tStep), &(controlBlock->tEnd));
+            if (intRead != 3)
+                throw Exception(true, Exception::ERR_INVALID_INPUT, "'%s' must either contain 'tStart, tStep, tEnd' or the name of a time series file", timeElt->charData);
+            // computeTimesCurrent>0 indicates a time series read from file
+            controlBlock->computeTimesCurrent = -1;
+        }
     }
     else if (strcmp(controlBlockXml->name, "coupler") == 0) {
         controlBlock->type = CT_COUPLER;

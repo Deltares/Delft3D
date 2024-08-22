@@ -28,9 +28,9 @@ module m_decbod
 contains
 
 
-    subroutine decbod (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine decbod (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         !>\file
@@ -76,8 +76,8 @@ contains
         !
         IMPLICIT NONE
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL  (*)
-        INTEGER(kind = int_wp) :: NOSEG, NOFLUX, NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL  (*)
+        INTEGER(kind = int_wp) :: num_cells, NOFLUX, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), &
                 IEXPNT(4, *), IKNMRK(*)
         !
@@ -122,18 +122,18 @@ contains
         IP14 = IPOINT(14)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             !
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
-                BOD5_1 = MAX (0.0, PMSA(IP1))
-                BOD5_2 = MAX (0.0, PMSA(IP2))
-                BOD5_3 = MAX (0.0, PMSA(IP3))
-                RCBOD1 = PMSA(IP4)
-                RCBOD2 = PMSA(IP5)
-                RCBOD3 = PMSA(IP6)
-                KMOX = PMSA(IP7)
-                OXY = PMSA(IP8)
+                BOD5_1 = MAX (0.0, process_space_real(IP1))
+                BOD5_2 = MAX (0.0, process_space_real(IP2))
+                BOD5_3 = MAX (0.0, process_space_real(IP3))
+                RCBOD1 = process_space_real(IP4)
+                RCBOD2 = process_space_real(IP5)
+                RCBOD3 = process_space_real(IP6)
+                KMOX = process_space_real(IP7)
+                OXY = process_space_real(IP8)
 
                 !           Check if RC's are non zero
 
@@ -183,16 +183,16 @@ contains
                 !
                 !           Output of module
                 !
-                PMSA(IP9) = BODU_1
-                PMSA(IP10) = BODU_2
-                PMSA(IP11) = BODU_3
-                PMSA(IP12) = OXFUNC
+                process_space_real(IP9) = BODU_1
+                process_space_real(IP10) = BODU_2
+                process_space_real(IP11) = BODU_3
+                process_space_real(IP12) = OXFUNC
                 !
                 BOD5 = BOD5_1 + BOD5_2 + BOD5_3
                 BODU = BODU_1 + BODU_2 + BODU_3
                 !
-                PMSA(IP13) = BOD5
-                PMSA(IP14) = BODU
+                process_space_real(IP13) = BOD5
+                process_space_real(IP14) = BODU
                 !
             ENDIF
             !

@@ -54,8 +54,8 @@ module SyncRtcFlow
   character(len=DioMaxLocLen), pointer, dimension(:) :: SignalRLocs
 !
   integer, dimension(1,6) :: SignalXValues
-  character*20, dimension(1) :: SignalXPars
-  character*20, dimension(6) :: SignalXLocs
+  character(len=20), dimension(1) :: SignalXPars
+  character(len=20), dimension(6) :: SignalXLocs
 !
   data SignalXPars / 'Signal' /
   data SignalXLocs / 'Status', 'Date', 'Time', 'Init1', 'Init2', 'Init3' /
@@ -78,7 +78,7 @@ module SyncRtcFlow
   Integer :: numBarriers
 !
   ! Locations for sending data
-  character*20, dimension(2) :: Locbar
+  character(len=20), dimension(2) :: Locbar
 !
   data Locbar / 'Status', 'Value' /
 !

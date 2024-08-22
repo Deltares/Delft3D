@@ -76,7 +76,7 @@ contains
             end do
         else
 
-            ! Use ACO (INOW,K) if the Kmax of SOME type of species I is not yet
+            ! Use ACO (INOW,K) if the num_layers_grid of SOME type of species I is not yet
             ! exceeded, or if the mortality constraint is 0.0: nothing to conserve.
             ! Otherwise allow EACH type of I, but make the growth constraint equal
             ! to the mortality constraint.

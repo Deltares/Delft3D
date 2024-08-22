@@ -28,9 +28,9 @@ module m_varsal
 contains
 
 
-    subroutine varsal     (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine varsal     (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Salinity in case of constant river discharge
 
@@ -38,20 +38,20 @@ contains
 
         ! declaration of the arguments
 
-        real(kind = real_wp) :: pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(4)   ! I  Array of pointers in PMSA to get and store the data
+        integer(kind = int_wp) :: ipoint(4)   ! I  Array of pointers in process_space_real to get and store the data
         integer(kind = int_wp) :: increm(4)   ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-        integer(kind = int_wp) :: noseg       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the FL array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        integer(kind = int_wp) :: noq1        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        integer(kind = int_wp) :: noq2        ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
-        integer(kind = int_wp) :: noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        integer(kind = int_wp) :: noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 
-        ! variables from the pmsa array
+        ! variables from the process_space_real array
 
         real(kind = real_wp) :: frcon       ! I  fraction fresh water from constant river discharge (-)
         real(kind = real_wp) :: frflow      ! I  fraction fresh water from variable river discharge (-)
@@ -63,20 +63,20 @@ contains
         integer(kind = int_wp) :: ipnt(4)     !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
 
-        ! initialise pointers in pmsa array
+        ! initialise pointers in process_space_real array
 
         ipnt = ipoint
 
         ! loop over the segments
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             if (btest(iknmrk(iseg), 0)) then
 
-                ! input from pmsa array
+                ! input from process_space_real array
 
-                frcon = pmsa(ipnt(1))
-                frflow = pmsa(ipnt(2))
-                salbnd = pmsa(ipnt(3))
+                frcon = process_space_real(ipnt(1))
+                frflow = process_space_real(ipnt(2))
+                salbnd = process_space_real(ipnt(3))
 
                 ! calculate salinity from input
 
@@ -87,13 +87,13 @@ contains
                     salinity = 0.0
                 endif
 
-                ! store salinity in pmsa array
+                ! store salinity in process_space_real array
 
-                pmsa(ipnt(4)) = salinity
+                process_space_real(ipnt(4)) = salinity
 
             endif
 
-            ! update pointers in pmsa
+            ! update pointers in process_space_real
 
             ipnt = ipnt + increm
 

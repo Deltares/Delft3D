@@ -10,7 +10,6 @@ from src.config.local_paths import LocalPaths
 from src.config.location import Location
 from src.config.test_case_config import TestCaseConfig
 from src.config.test_case_path import TestCasePath
-from src.config.types.handler_type import HandlerType
 from src.config.types.path_type import PathType
 from src.suite.comparison_runner import ComparisonRunner
 from src.suite.test_bench_settings import TestBenchSettings
@@ -35,7 +34,6 @@ class TestComparisonRunner:
         testcase_logger = MagicMock()
         logger.create_test_case_logger.return_value = testcase_logger
         download_mock = mocker.patch("src.suite.test_set_runner.HandlerFactory.download")
-        detect_mock = mocker.patch("src.suite.test_set_runner.ResolveHandler.detect", return_value=HandlerType.WEB)
 
         runner = ComparisonRunner(settings, logger)
 
@@ -47,7 +45,6 @@ class TestComparisonRunner:
         expected_log_message = f"Downloading reference result, {path} from https://deltares.nl/Name_1/abc/prefix"
         assert call(expected_log_message) in testcase_logger.debug.call_args_list
         assert download_mock.call_count == 2  # Downloads case AND reference data.
-        assert detect_mock.call_count == 2
 
     def test_log_and_skip_with_argument_skip_run(self, mocker: MockerFixture) -> None:
         # Arrange
@@ -86,7 +83,6 @@ class TestComparisonRunner:
         logger.create_test_case_logger.return_value = testcase_logger
         download_mock = mocker.patch("src.suite.test_set_runner.HandlerFactory.download")
         run_mock = mocker.patch("src.suite.test_case.TestCase.run")
-        detect_mock = mocker.patch("src.suite.test_set_runner.ResolveHandler.detect", return_value=HandlerType.WEB)
 
         runner = ComparisonRunner(settings, logger)
 
@@ -98,7 +94,6 @@ class TestComparisonRunner:
         assert call(expected_log_message) in testcase_logger.info.call_args_list
         download_mock.assert_not_called()
         run_mock.assert_called()
-        assert detect_mock.call_count == 2
 
     def test_run_tests_in_parallel_with_empty_settings_raises_value_error(self) -> None:
         # Arrange
@@ -165,14 +160,15 @@ class TestComparisonRunner:
 
         # Act
         if settings.filter != "":
-            settings.configs_to_run = XmlConfigParser.filter_configs(
-                settings.configs_from_xml, settings.filter, logger
-            )
+            settings.configs_to_run = XmlConfigParser.filter_configs(settings.configs_from_xml, settings.filter, logger)
 
         runner.run()
 
         # Assert
-        assert call(f"No testcases where found to run after applying the filter: {settings.filter}.") in logger.warning.call_args_list
+        assert (
+            call(f"No testcases where found to run after applying the filter: {settings.filter}.")
+            in logger.warning.call_args_list
+        )
 
     @staticmethod
     def create_test_case_config(name: str, ignore: bool, type=PathType.REFERENCE) -> TestCaseConfig:

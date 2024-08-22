@@ -79,8 +79,8 @@ contains
         use results, only: OutputPointers
         use partable
         use string_module
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
 
         implicit none
 
@@ -258,7 +258,7 @@ contains
         if (timon) call timstrt("dlwqp1", ithndl)
 
         ! how many threads ?
-        nothread = nothrd
+        nothread = num_threads
 
         ! allocate
 
@@ -267,15 +267,15 @@ contains
         ! start
 
         file_name_list(34) = 'proc_def'
-        noloc = 0
-        nodef = 0
-        ndspx = 0
-        nvelx = 0
-        nlocx = 0
-        ndspn = 0
-        nveln = 0
-        noqtt = noq + noq4
-        nosss = noseg + nseg2
+        num_local_vars = 0
+        num_defaults = 0
+        num_dispersion_arrays_extra = 0
+        num_velocity_arrays_extra = 0
+        num_local_vars_exchange = 0
+        num_dispersion_arrays_new = 0
+        num_velocity_arrays_new = 0
+        noqtt = num_exchanges + num_exchanges_bottom_dir
+        nosss = num_cells + num_cells_bottom
         procesdef%current_size = 0
         procesdef%maxsize = 0
         old_items%current_size = 0
@@ -463,41 +463,40 @@ contains
 
         ! check local dimensions
 
-        allocate (idpnt(notot))
-        allocate (ivpnt(notot))
-        allocate (grdref(nogrid))
-        allocate (sysgrd(notot))
-        allocate (sysndt(notot))
-        allocate (syname(notot))
-        noconm = nocons + 1000
+        allocate (idpnt(num_substances_total))
+        allocate (ivpnt(num_substances_total))
+        allocate (grdref(num_grids))
+        allocate (sysgrd(num_substances_total))
+        allocate (sysndt(num_substances_total))
+        allocate (syname(num_substances_total))
+        noconm = num_constants + 1000
         allocate (coname(noconm))
-        allocate (paname(nopa))
-        allocate (funame(nofun))
-        allocate (sfname(nosfun))
-        allocate (diname(nodisp))
-        allocate (vename(novelo))
+        allocate (paname(num_spatial_parameters))
+        allocate (funame(num_time_functions))
+        allocate (sfname(num_spatial_time_fuctions))
+        allocate (diname(num_dispersion_arrays))
+        allocate (vename(num_velocity_arrays))
 
         ! read ( rest ) of relevant delwaq files
 
         call open_waq_files(file_unit_list(2), file_name_list(2), 2, 2, ierr2)
-        call read_working_file_4(file_unit_list(2), lurep, modid, syname, notot, &
-                                 nodump, nosys, nobnd, nowst, nocons, &
-                                 nopa, noseg, nseg2, coname, paname, &
-                                 funame, nofun, sfname, nosfun, nodisp, &
-                                 novelo, diname, vename, idpnt, ivpnt, &
-                                 ndmpar, ntdmpq, ntdmps, noqtt, noraai, &
-                                 ntraaq, nobtyp, nowtyp, nogrid, grdref, &
-                                 sysgrd, sysndt)
-        write (lurep, 2020) (modid(i), i=1, 2)
-        write (lurep, 2030) (modid(i), i=3, 4)
+        call read_working_file_4(file_unit_list(2), lurep, modid, syname, num_substances_total, &
+                num_monitoring_points, num_substances_transported, num_boundary_conditions, num_waste_loads, num_constants, &
+                num_spatial_parameters, num_cells, num_cells_bottom, coname, paname, &
+                funame, num_time_functions, sfname, num_spatial_time_fuctions, num_dispersion_arrays, &
+                num_velocity_arrays, diname, vename, idpnt, ivpnt, &
+                ndmpar, ntdmpq, ntdmps, noqtt, num_transects, &
+                num_transect_exchanges, num_boundary_types, num_waste_load_types, num_grids, grdref, &
+                sysgrd, sysndt)
+        write (lurep, 2020) (modid(i), i = 1, 2)
+        write (lurep, 2030) (modid(i), i = 3, 4)
         close (file_unit_list(2))
 
         ! change names according to old_items table
-
-        nocon2 = nocons
-        call set_old_items(lurep, old_items, notot, nopa, nofun, &
-                           nosfun, nodisp, novelo, syname, paname, &
-                           funame, sfname, diname, vename, constants)
+        nocon2 = num_constants
+        call set_old_items(lurep, old_items, num_substances_total, num_spatial_parameters, num_time_functions, &
+                num_spatial_time_fuctions, num_dispersion_arrays, num_velocity_arrays, syname, paname, &
+                funame, sfname, diname, vename, constants)
 
         ! replace proto with actual processes
 
@@ -610,24 +609,25 @@ contains
 
         ! set processes and fluxes for the substance fractions, this adds and alters processes in procesdef!
 
-        call set_fraction(lurep, notot, syname, nomult, imultp, &
-                          procesdef, allitems, no_act, actlst, nbpr)
+        call set_fraction(lurep, num_substances_total, syname, nomult, imultp, &
+                procesdef, allitems, no_act, actlst, nbpr)
 
         ! sort processes according to input - output relation
 
-        call prsort(lurep, procesdef, notot, nopa, nosfun, &
-                    syname, nocons, nofun, constants, paname, &
-                    funame, sfname, status)
+        call prsort(lurep, procesdef, num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, &
+                syname, num_constants, num_time_functions, constants, paname, &
+                funame, sfname, status)
 
         ! handle output from statistical processes
 
-        call set_stat_output(statprocesdef, noutp, ioutps, nrvart, outputs)
+        call set_stat_output(statprocesdef, num_output_files, ioutps, num_output_variables_extra, outputs)
 
-        ! set output boot dimensions, attention !!!!! is new ncbufm written to work file?
+        ! set output boot dimensions, attention !!!!! is new char_arr_buffer_len written to work file?
 
-        call outbo2(noutp, ioutps, nosss, nodump, nx, &
-                    ny, nrvart, nbufmx, ndmpar, notot, &
-                    ncbufm, noraai)
+
+        call outbo2(num_output_files, ioutps, nosss, num_monitoring_points, num_cells_u_dir, &
+                num_cells_v_dir, num_output_variables_extra, output_buffer_len, ndmpar, num_substances_total, &
+                char_arr_buffer_len, num_transects)
 
         ! replace names of bloom algea with actual names
 
@@ -655,32 +655,32 @@ contains
 
         ! set offset local array
 
-        ioff = nopred + nocons + nopa + nofun + nosfun + notot
+        ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total
 
         ! check which processes can be turned on
 
-        call makbar(procesdef, notot, syname, nocons, constants, &
-                    nopa, paname, nofun, funame, nosfun, &
-                    sfname, nodisp, diname, novelo, vename, &
-                    noqtt, laswi, no_act, actlst, &
-                    status)
-        deallocate (actlst, stat=ierr_dalloc)
+        call makbar(procesdef, num_substances_total, syname, num_constants, constants, &
+                num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
+                sfname, num_dispersion_arrays, diname, num_velocity_arrays, vename, &
+                noqtt, laswi, no_act, actlst, &
+                status)
+        deallocate (actlst, stat = ierr_dalloc)
 
         ! determine wich primary processes must be turned on
 
-        ioffx = 4 + nodisp + novelo + nofun + nocons
-        allocate (idpnw(notot))
-        allocate (ivpnw(notot))
-        allocate (dsto(nosys * no_dis))
-        allocate (vsto(nosys * no_vel))
+        ioffx = 4 + num_dispersion_arrays + num_velocity_arrays + num_time_functions + num_constants
+        allocate (idpnw(num_substances_total))
+        allocate (ivpnw(num_substances_total))
+        allocate (dsto(num_substances_transported * no_dis))
+        allocate (vsto(num_substances_transported * no_vel))
         idpnw = 0
         ivpnw = 0
         dsto = 0.0
         vsto = 0.0
-        call primpro(procesdef, notot, syname, ndspx, nvelx, &
-                     ioffx, nosys, dsto, vsto, ndspn, &
-                     idpnw, nveln, ivpnw, noqtt, &
-                     status)
+        call primpro(procesdef, num_substances_total, syname, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
+                ioffx, num_substances_transported, dsto, vsto, num_dispersion_arrays_new, &
+                idpnw, num_velocity_arrays_new, ivpnw, noqtt, &
+                status)
 
         ! determine wich processes must be turned on for output purposes
 
@@ -689,10 +689,10 @@ contains
         ! set pointers to input variables and output variables, if nessacary turn processes on.
 
         nmis = 0
-        noloc = 1
-        nlocx = 0
-        nodef = nopred
-        maxdef = nodef + no_ins + no_ine
+        num_local_vars = 1
+        num_local_vars_exchange = 0
+        num_defaults = nopred
+        maxdef = num_defaults + no_ins + no_ine
         allocate (defaul(maxdef))
         allocate (dename(maxdef))
         defaul = 0.0
@@ -701,40 +701,39 @@ contains
         allocate (locnam(novarm))
 
         ! put theta in local array if wanted for output, the value will be filled by the integration routine
-        ! noloc is already 1?, use this space!
+        ! num_local_vars is already 1?, use this space!
 
         parnam = 'theta'
         parindx = index_in_array(parnam, outputs%names)
         if (parindx > 0 .and. (intsrt == 21 .or. intsrt == 22)) then
             locnam(1) = parnam
-            outputs%pointers(parindx) = nopred + nocons + nopa + nofun + nosfun + notot + 1
+            outputs%pointers(parindx) = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total + 1
             write (line, '(3a)') ' output [', parnam, '] will be generated by numerical scheme'
             call write_log_message(line)
         end if
 
-        call getinv(procesdef, notot, syname, nocons, constants, &
-                    nopa, paname, nofun, funame, nosfun, &
-                    sfname, nodisp, diname, novelo, vename, &
-                    nmis, defaul, noloc, nodef, dename, outputs, &
-                    ndspx, nvelx, nlocx, locnam, refday)
+        call getinv(procesdef, num_substances_total, syname, num_constants, constants, &
+                num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
+                sfname, num_dispersion_arrays, diname, num_velocity_arrays, vename, &
+                nmis, defaul, num_local_vars, num_defaults, dename, outputs, &
+                num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, locnam, refday)
 
         ! report on the use of the delwaq input
 
-        call repuse(procesdef, nocons, coname, nopa, paname, &
-                    nofun, funame, nosfun, sfname, status%noinfo)
+        call repuse(procesdef, num_constants, coname, num_spatial_parameters, paname, &
+                num_time_functions, funame, num_spatial_time_fuctions, sfname, status%noinfo)
 
         ! a table will be made on selected processes
         ! to ensure resolved inputs with parallel processing
-
-        call partab(procesdef, notot, syname, nocons, constants, &
-                    nopa, paname, nofun, funame, nosfun, &
-                    sfname, proref, nrref, status, nothread, &
-                    nopred, noloc, nodef)
+        call partab(procesdef, num_substances_total, syname, num_constants, constants, &
+                num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
+                sfname, proref, num_input_ref, status, nothread, &
+                nopred, num_local_vars, num_defaults)
 
         ! set output pointers to process arrays parloc and defaul
 
-        idef = ioff + noloc
-        iflx = idef + nodef
+        idef = ioff + num_local_vars
+        iflx = idef + num_defaults
         call setopo(procesdef, outputs, ioff, idef, iflx, status)
 
         ! if not all input present , stop with exit code
@@ -750,31 +749,31 @@ contains
 
         ! set new pointer for dispersion and velocity
 
-        call setdvp(nodisp, idpnt, ndspn, idpnw, nosys, ndspx, dsto)
-        call setdvp(novelo, ivpnt, nveln, ivpnw, nosys, nvelx, vsto)
+        call setdvp(num_dispersion_arrays, idpnt, num_dispersion_arrays_new, idpnw, num_substances_transported, num_dispersion_arrays_extra, dsto)
+        call setdvp(num_velocity_arrays, ivpnt, num_velocity_arrays_new, ivpnw, num_substances_transported, num_velocity_arrays_extra, vsto)
 
         ! set grid for processes
 
-        call set_grid_all_processes(procesdef, nogrid, notot, grdref, sysgrd, sysndt)
+        call set_grid_all_processes(procesdef, num_grids, num_substances_total, grdref, sysgrd, sysndt)
         deallocate (grdref, sysgrd, sysndt)
 
         ! write proces work file
-        call wr_proceswrk(lurep, procesdef, nodef, defaul, idpnw, &
-                          ivpnw, dsto, vsto, locnam, nopred, &
-                          nocons, nopa, nofun, nosfun, notot, &
-                          noloc, nodisp, novelo, ndspx, nvelx, &
-                          nlocx, nosys, nogrid, dename, coname, paname, &
-                          funame, sfname, syname, intopt, file_unit_list, &
-                          file_name_list, noutp, ioutps, outputs, ndmpar, &
-                          nbufmx, versio, ndspn, nveln, nrref, &
-                          proref, nproc, nflux, novar, nipmsa)
+        call wr_proceswrk(lurep, procesdef, num_defaults, defaul, idpnw, &
+                ivpnw, dsto, vsto, locnam, nopred, &
+                num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_substances_total, &
+                num_local_vars, num_dispersion_arrays, num_velocity_arrays, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
+                num_local_vars_exchange, num_substances_transported, num_grids, dename, coname, paname, &
+                funame, sfname, syname, intopt, file_unit_list, &
+                file_name_list, num_output_files, ioutps, outputs, ndmpar, &
+                output_buffer_len, versio, num_dispersion_arrays_new, num_velocity_arrays_new, num_input_ref, &
+                proref, num_processes_activated, num_fluxes, num_vars, process_space_int_len)
         deallocate (defaul, dsto, vsto)
         deallocate (idpnw, ivpnw)
         deallocate (locnam)
 
-        ! nrvart is in the boot sysn common
+        ! num_output_variables_extra is in the boot sysn common
 
-        nrvart = outputs%current_size
+        num_output_variables_extra = outputs%current_size
 
         ! Prepare descrtion and unit information for output from the proces library to be written in the NetCDF-file
 
@@ -789,10 +788,10 @@ contains
         icof = index_in_array(name10, cofnam)
 
         ! Get information about the substances
-        allocate (substdname(notot))
-        allocate (subunit(notot))
-        allocate (subdescr(notot))
-        do isys = 1, notot
+        allocate (substdname(num_substances_total))
+        allocate (subunit(num_substances_total))
+        allocate (subdescr(num_substances_total))
+        do isys = 1, num_substances_total
             subname = syname(isys)
             call str_lower(subname)
             iindx = index_in_array(subname, ainame)
@@ -863,15 +862,15 @@ contains
         ! write updated output work file ( output.wrk )
 
         call open_waq_files(file_unit_list(25), file_name_list(25), 25, 1, ierr2)
-        call wrwrko(file_unit_list(25), noutp, nbufmx, ioutps, outputs, &
-                    notot, substdname, subunit, subdescr)
+        call wrwrko(file_unit_list(25), num_output_files, output_buffer_len, ioutps, outputs, &
+                num_substances_total, substdname, subunit, subdescr)
         close (file_unit_list(25))
 
         ! write altoys input files, only for old balance file
         ! ( altoys.inp batoys.inp altoys.ini altoys.fil)
 
         if (btest(intopt, 3) .and. .not. btest(intopt, 4)) then
-            call wrtoys(file_name_list, file_unit_list, notot, syname, noutp, ioutps, outputs)
+            call wrtoys(file_name_list, file_unit_list, num_substances_total, syname, num_output_files, ioutps, outputs)
         end if
 
         if (timon) call timstop(ithndl)

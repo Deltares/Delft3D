@@ -110,7 +110,7 @@ class VersionPair:
 class Rewinder:
     """Implements the rewind feature of the Minio server."""
 
-    def __init__(self, client: Minio, logger: ILogger, part_size: int = DEFAULT_MULTIPART_UPLOAD_PART_SIZE):
+    def __init__(self, client: Minio, logger: ILogger, part_size: int = DEFAULT_MULTIPART_UPLOAD_PART_SIZE) -> None:
         self._client = client
         self._logger = logger
         self._part_size = part_size
@@ -122,18 +122,18 @@ class Rewinder:
 
         Parameters
         ----------
-            bucket : str
-                The minio bucket.
-            source_path : str
-                The key prefix of the objects in MinIO.
-            local_dir: Path
-                The local directory on this computer to save the MinIO objects to as files.
-            rewind_timestamp: datetime, optional
-                Get past versions of the objects in MinIO. Rewind time to this timestamp.
+        bucket : str
+            The minio bucket.
+        source_path : str
+            The key prefix of the objects in MinIO.
+        local_dir : Path
+            The local directory on this computer to save the MinIO objects to as files.
+        rewind_timestamp : datetime, optional
+            Get past versions of the objects in MinIO. Rewind time to this timestamp.
         """
         rewind_timestamp = rewind_timestamp or datetime.now(timezone.utc)
 
-        def rewind(versions: Iterable[MinioObject], timestamp) -> Optional[MinioObject]:
+        def rewind(versions: Iterable[MinioObject], timestamp: datetime) -> Optional[MinioObject]:
             return next((obj for obj in versions if timestamp >= obj.last_modified), None)
 
         object_map = self.__object_versions_grouped_by_key(S3Path.from_bucket(bucket) / source_path)
@@ -171,23 +171,23 @@ class Rewinder:
 
         self.__remove_local_files(local_dir, destination_file_paths)
 
-    def __remove_local_files(self, local_dir: Path, destination_file_paths: List[Path]):
+    def __remove_local_files(self, local_dir: Path, destination_file_paths: List[Path]) -> None:
         for file in list(local_dir.glob("**/*")):
             if file not in destination_file_paths and not file.is_dir():
-                self._logger.info(f"Removing local file that is not present in MinIO bucket: {file}")
+                self._logger.debug(f"Removing local file that is not present in MinIO bucket: {file}")
                 file.unlink()
-                if (not any(file.parent.iterdir())):
+                if not any(file.parent.iterdir()):
                     file.parent.rmdir()
 
     def __download_object(
         self, bucket: str, object_info: MinioObject, destination_file_path: Path, object_path: str
     ) -> None:
         if os.path.exists(destination_file_path) and object_info.etag == self.__etag(Path(destination_file_path)):
-            self._logger.info(f"Skipping download: {destination_file_path}, local and online are the same version.")
+            self._logger.debug(f"Skipping download: {destination_file_path}, local and online are the same version.")
             return
 
         try:
-            self._logger.debug(f"Downloading: {destination_file_path}")
+            self._logger.debug(f"Downloading: {destination_file_path} (version_id: {object_info.version_id})")
             self._client.fget_object(
                 bucket,
                 object_path,
@@ -349,9 +349,9 @@ class Rewinder:
         ----------
         prefix : S3Path
             S3 Prefix of a set of objects in MinIO.
-        timestamp: datetime
+        timestamp : datetime
             Compare the MinIO objects from this point in time to the current objects.
-        add_tags_to_latest: bool, optional
+        add_tags_to_latest : bool, optional
             Request and attach the object tags to the latest minio object. Default: False.
 
         Returns
@@ -360,7 +360,7 @@ class Rewinder:
             Return list of conficts between `timestamp` and now.
         """
 
-        def get_rewinded_version(versions: Iterable[MinioObject], timestamp) -> Optional[MinioObject]:
+        def get_rewinded_version(versions: Iterable[MinioObject], timestamp: datetime) -> Optional[MinioObject]:
             return next((obj for obj in versions if timestamp >= obj.last_modified), None)
 
         object_map = self.__object_versions_grouped_by_key(prefix)

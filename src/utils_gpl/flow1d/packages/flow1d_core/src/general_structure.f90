@@ -965,7 +965,6 @@ contains
       !
       double precision               :: cu
       double precision               :: dh
-      double precision               :: dsqrt
       double precision               :: dxdt
       double precision               :: hs1  ! Water depth based on upstream energy level
       double precision               :: hs1w ! Water depth based on upstream water level
@@ -1003,14 +1002,14 @@ contains
          cu = cwfa**2*gravity/1.5D0
          !TEM        WRITE (11,*) cu,cwfa
          auL = wstr*hs1*2.0D0/3.0D0
-         ustru = cwfa*dsqrt(gravity*2.0D0/3.0D0*hs1)
+         ustru = cwfa*sqrt(gravity*2.0D0/3.0D0*hs1)
          rhsc = cu*(hd + velhght - zs)*flowDir
       elseif (state==2) then
          !           drowned weir flow
          cu = cwd**2*2.0D0*gravity
          auL = wstr*ds
          dh = max(hs1 - ds, 0.D0)
-         ustru = cwd*dsqrt(gravity*2.0D0*dh)
+         ustru = cwd*sqrt(gravity*2.0D0*dh)
          rhsc = cu*(hd + velhght - (ds + zs))*flowDir
       elseif (state==3) then
          !           free gate flow
@@ -1018,7 +1017,7 @@ contains
          cu = mu**2*2.0D0*gravity
          auL = wstr*dg
          dh = max(hs1 - dc, 0.D0)
-         ustru = mu*dsqrt(gravity*2.0D0*dh)
+         ustru = mu*sqrt(gravity*2.0D0*dh)
          rhsc = cu*(hd + velhght - (dc + zs))*flowDir
       elseif (state==4) then
          !           drowned gate flow
@@ -1026,7 +1025,7 @@ contains
          cu = mu**2*2.0D0*gravity
          auL = wstr*dg
          dh = max(hs1 - ds, 0.D0)
-         ustru = mu*dsqrt(gravity*2.0D0*dh)
+         ustru = mu*sqrt(gravity*2.0D0*dh)
          rhsc = cu*(hd + velhght - (ds + zs))*flowDir
       endif
       
@@ -1108,7 +1107,7 @@ contains
       end if
 
       do L0=1,numlinks
-         Lf = iabs(links(L0))
+         Lf = abs(links(L0))
          genstru%widthcenteronlink(L0) = wu(Lf)
          totalWidth = totalWidth + wu(Lf)
       end do
@@ -1160,7 +1159,7 @@ contains
    
          do L0=1,numlinks
             
-            Lf = iabs(links(L0))
+            Lf = abs(links(L0))
 
             if (closedWidth > 0d0) then
                help = min (wu(Lf), closedWidth)
@@ -1193,7 +1192,7 @@ contains
          !       have flow underneath doors if they are up high enough.
          closedWidth = max(0d0, totalWidth - crestwidth)/2d0 ! Intentionally symmetric: if crest/sill_width < totalwidth. Only gate door motion may have a direction, was already handled above.
          do L0=numlinks,1,-1
-            Lf = iabs(links(L0))
+            Lf = abs(links(L0))
 
             if (closedWidth > 0d0) then
                help = min (wu(Lf), closedWidth)

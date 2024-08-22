@@ -32,10 +32,10 @@ module m_makbar
 contains
 
 
-    subroutine makbar (procesdef, notot, syname, nocons, constants, &
-            nopa, paname, nofun, funame, nosfun, &
-            sfname, nodisp, diname, novelo, vename, &
-            noq3, laswi, no_act, actlst, &
+    subroutine makbar (procesdef, num_substances_total, syname, num_constants, constants, &
+            num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
+            sfname, num_dispersion_arrays, diname, num_velocity_arrays, vename, &
+            num_exchanges_z_dir, laswi, no_act, actlst, &
             status)
 
         ! Checks which processes can be activated
@@ -59,14 +59,14 @@ contains
         character(len = *), dimension(*) :: vename ! velocity names
         character(len = *), dimension(*) :: actlst ! active processes names
 
-        integer(kind = int_wp) :: notot  ! number of substances
-        integer(kind = int_wp) :: nocons ! number of constants
-        integer(kind = int_wp) :: nopa   ! number of parameters
-        integer(kind = int_wp) :: nofun  ! number of functions
-        integer(kind = int_wp) :: nosfun ! number of segment functions
-        integer(kind = int_wp) :: nodisp ! number of dispersions
-        integer(kind = int_wp) :: novelo ! number of velocities
-        integer(kind = int_wp) :: noq3   ! number of exhcanges in third direction
+        integer(kind = int_wp) :: num_substances_total  ! number of substances
+        integer(kind = int_wp) :: num_constants ! number of constants
+        integer(kind = int_wp) :: num_spatial_parameters   ! number of parameters
+        integer(kind = int_wp) :: num_time_functions  ! number of functions
+        integer(kind = int_wp) :: num_spatial_time_fuctions ! number of segment functions
+        integer(kind = int_wp) :: num_dispersion_arrays ! number of dispersions
+        integer(kind = int_wp) :: num_velocity_arrays ! number of velocities
+        integer(kind = int_wp) :: num_exchanges_z_dir   ! number of exhcanges in third direction
         integer(kind = int_wp) :: no_act ! number of active processes
 
         logical :: laswi ! active only switch
@@ -84,10 +84,10 @@ contains
         character(len = 20), dimension(mismax) :: misnam ! name missing variables
         character(len = 50), dimension(mismax) :: mistxt ! description missing variables
 
-        integer(kind = int_wp) :: nproc   ! number of processes
+        integer(kind = int_wp) :: num_processes_activated   ! number of processes
         integer(kind = int_wp) :: iproc   ! loop counter processes
         integer(kind = int_wp) :: iproc2  ! second loop counter processes
-        integer(kind = int_wp) :: ivalip  ! index variable in pmsa
+        integer(kind = int_wp) :: ivalip  ! index variable in process_space_real
         integer(kind = int_wp) :: iflux   ! index flux
         integer(kind = int_wp) :: i_input ! index input item
         integer(kind = int_wp) :: ioutput ! index output item
@@ -109,8 +109,8 @@ contains
         line = ' '
         call write_log_message(line)
 
-        nproc = procesdef%current_size
-        do iproc = 1, nproc
+        num_processes_activated = procesdef%current_size
+        do iproc = 1, num_processes_activated
 
             proc1 => procesdef%procesprops(iproc)
             if (proc1%sfrac_type == SFRAC_DUPLICATED_ORIGINAL) then
@@ -123,7 +123,7 @@ contains
             endif
 
             nmis = 0
-            call evaluate_dimension_match(proc1%swtransp, noq3, iok)
+            call evaluate_dimension_match(proc1%swtransp, num_exchanges_z_dir, iok)
             if (.not. iok) then
                 write (line, '(4a)') ' Input for [', proc1%name, '] ', proc1%text(1:50)
                 call write_log_message(line)
@@ -153,8 +153,8 @@ contains
 
                     ! specified in input?
 
-                    call valpoi (notot, nopa, nosfun, syname, nocons, &
-                            nofun, constants, paname, funame, sfname, &
+                    call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+                            num_time_functions, constants, paname, funame, sfname, &
                             valnam, ivalip, line)
 
                     ! output of previous proces ? , is this switched on , switch it on
@@ -242,7 +242,7 @@ contains
 
                     ! specified in input?
 
-                    call vxlpoi (nocons, nofun, nodisp, novelo, constants, &
+                    call vxlpoi (num_constants, num_time_functions, num_dispersion_arrays, num_velocity_arrays, constants, &
                             funame, diname, vename, valnam, ivalip, &
                             line)
 

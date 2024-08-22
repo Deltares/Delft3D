@@ -36,12 +36,6 @@
         <argument>-c</argument>
       </arguments>
     </program>
-    <program name="svn">
-      <path>svn</path>
-      <environments>
-        <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-      </environments>
-    </program>
     <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
       <shell ref="command_prompt"/>
       <location ref="local" type="check">

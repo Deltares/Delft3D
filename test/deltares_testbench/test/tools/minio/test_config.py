@@ -8,11 +8,6 @@ import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
 from s3_path_wrangler.paths import S3Path
-from tools.minio.config import (
-    TestBenchConfigLoader,
-    TestBenchConfigWriter,
-    TestCaseData,
-)
 
 from src.config.local_paths import LocalPaths
 from src.config.location import Location
@@ -20,6 +15,7 @@ from src.config.test_case_config import TestCaseConfig
 from src.config.test_case_path import TestCasePath
 from src.config.types.path_type import PathType
 from src.utils.xml_config_parser import XmlConfigParser
+from tools.minio.config import CaseListReader, TestBenchConfigLoader, TestBenchConfigWriter, TestCaseData
 
 
 def make_location(
@@ -282,7 +278,6 @@ class TestTestBenchConfigLoader:
 
 def make_config_content(name_version_pairs: List[Tuple[str, Optional[datetime]]]) -> str:
     """Generate simple XML config with some test cases with versioned paths."""
-
     content_list = []
     for name, version in name_version_pairs:
         if version is None:
@@ -339,13 +334,13 @@ class TestTestBenchConfigWriter:
     def test_config_updates__single_test_case_without_version__single_line_change(self, fs: FakeFilesystem) -> None:
         # Arrange
         config_path = Path("configs/fake_config.xml")
-        writer = TestBenchConfigWriter(config_path)
+        writer = TestBenchConfigWriter()
         now = datetime.now(timezone.utc).replace(microsecond=0)
         content = make_config_content([("foo", None), ("bar", None), ("baz", now - timedelta(days=3))])
         fs.create_file(config_path, contents=content)
 
         # Act
-        updates = writer.config_updates({"foo": now})
+        updates = writer.config_updates({"foo": now}, [config_path])
 
         # Assert
         assert len(updates) == 1
@@ -357,7 +352,8 @@ class TestTestBenchConfigWriter:
         )
         (added_line_nr, added_line), *other_added = added_lines
         (removed_line_nr, removed_line), *other_removed = removed_lines
-        assert not other_added and not other_removed
+        assert not other_added
+        assert not other_removed
         assert f'<path version="{now.isoformat().split("+")[0]}">foo</path>' in added_line
         assert "<path>foo</path>" in removed_line
         assert added_line_nr == removed_line_nr
@@ -365,13 +361,13 @@ class TestTestBenchConfigWriter:
     def test_config_updates__single_test_case_with_version__single_line_change(self, fs: FakeFilesystem) -> None:
         # Arrange
         config_path = Path("configs/fake_config.xml")
-        writer = TestBenchConfigWriter(config_path)
+        writer = TestBenchConfigWriter()
         now = datetime.now(timezone.utc).replace(microsecond=0)
         content = make_config_content([("foo", None), ("bar", None), ("baz", now - timedelta(days=3))])
         fs.create_file(config_path, contents=content)
 
         # Act
-        updates = writer.config_updates({"baz": now})
+        updates = writer.config_updates({"baz": now}, [config_path])
 
         # Assert
         assert len(updates) == 1
@@ -384,7 +380,8 @@ class TestTestBenchConfigWriter:
         )
         (added_line_nr, added_line), *other_added = added_lines
         (removed_line_nr, removed_line), *other_removed = removed_lines
-        assert not other_added and not other_removed
+        assert not other_added
+        assert not other_removed
         assert f'<path version="{now.isoformat().split("+")[0]}">baz</path>' in added_line
         assert f'<path version="{(now - timedelta(days=3)).isoformat().split("+")[0]}">baz</path>' in removed_line
         assert added_line_nr == removed_line_nr
@@ -392,13 +389,13 @@ class TestTestBenchConfigWriter:
     def test_config_updates__multiple_test_cases__multiple_line_changes(self, fs: FakeFilesystem) -> None:
         # Arrange
         config_path = Path("configs/fake_config.xml")
-        writer = TestBenchConfigWriter(config_path)
+        writer = TestBenchConfigWriter()
         now = datetime.now(timezone.utc).replace(microsecond=0)
         content = make_config_content([("foo", None), ("bar", None), ("baz", now - timedelta(days=3))])
         fs.create_file(config_path, contents=content)
 
         # Act
-        result = writer.config_updates({"bar": now, "baz": now})
+        result = writer.config_updates({"bar": now, "baz": now}, [config_path])
 
         # Assert
         assert len(result) == 1
@@ -426,7 +423,7 @@ class TestTestBenchConfigWriter:
         # Arrange
         config_path = Path("configs/fake_config.xml")
         included_config_path = Path("configs/include/included_config.xml")
-        writer = TestBenchConfigWriter(config_path)
+        writer = TestBenchConfigWriter()
 
         now = datetime.now(timezone.utc).replace(microsecond=0)
         config_content = """
@@ -447,7 +444,7 @@ class TestTestBenchConfigWriter:
         fs.create_file(included_config_path, contents=included_content)
 
         # Act
-        updates = writer.config_updates({"foo": now})
+        updates = writer.config_updates({"foo": now}, [config_path])
 
         # Assert
         assert included_config_path in updates
@@ -461,7 +458,8 @@ class TestTestBenchConfigWriter:
         )
         (added_line_nr, added_line), *other_added = added_lines
         (removed_line_nr, removed_line), *other_removed = removed_lines
-        assert not other_added and not other_removed
+        assert not other_added
+        assert not other_removed
         assert f'<path version="{now.isoformat().split("+")[0]}">foo</path>' in added_line
         assert f'<path version="{(now - timedelta(days=3)).isoformat().split("+")[0]}">foo</path>' in removed_line
         assert added_line_nr == removed_line_nr
@@ -471,4 +469,23 @@ class TestTestBenchConfigWriter:
             config_content.splitlines(keepends=True),
             updates[config_path].readlines(),
         )
-        assert not added_lines and not removed_lines
+        assert not added_lines
+        assert not removed_lines
+
+
+class TestCaseListReader:
+    def test_parse__testcase_file(self, fs: FakeFilesystem) -> None:
+        local_dir = Path("local")
+        content_list = {
+            "test1": ["lnx"],
+            "test2": [""],
+            "test3": [str(Path("config/config"))],
+            "test4": [str(Path("config/config.xml")), "this.xml"],
+            "test5": ["config.xml"],
+        }
+        content = "\n".join([f"{key}, {value[0]}" for key, value in content_list.items()])
+        content += "\ntest4, this.xml"
+        file_path = local_dir / "this.txt"
+        fs.create_file(file_path, contents=content)
+        result = CaseListReader().read_cases_from_file(str(file_path))
+        assert result == content_list

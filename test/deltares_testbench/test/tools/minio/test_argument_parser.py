@@ -46,26 +46,20 @@ def test_non_existent_command__raise_system_exit(arg_parser: argparse.ArgumentPa
 @pytest.mark.parametrize(
     "argv",
     [
-        ["push", "--case", "--test-case-name=foo", "--issue-id=FOO-123"],
         ["push", "--reference", "--config=path/config.xml", "--issue-id=FOO-123"],
         ["push", "-c=path/config.xml", "-n=foo", "--issue-id=FOO-123"],
         ["push", "--case", "-c=path/config.xml", "-n=foo"],
-        ["update-references", "--test-case-name=foo", "--issue-id=FOO-123"],
         ["update-references", "--config=path/config.xml", "--issue-id=FOO-123"],
         ["update-references", "-c=path/config.xml", "-n=foo"],
-        ["pull", "--case", "--test-case-name=foo"],
         ["pull", "--reference", "--config=path/config.xml"],
         ["pull", "-c=path/config.xml", "-n=foo"],
     ],
     ids=[
-        "push-missing-config",
         "push-missing-name",
         "push-missing-path-type",
         "push-missing-issue-id",
-        "update-refs-missing-config",
         "update-refs-missing-name",
         "update-refs-missing-issue-id",
-        "pull-missing-config",
         "pull-missing-name",
         "pull-missing-path-type",
     ],
@@ -76,7 +70,7 @@ def test_missing_required__raise_system_exit(argv: List[str], arg_parser: argpar
 
 
 @pytest.mark.parametrize(
-    "path_type_flag, path_type",
+    ("path_type_flag", "path_type"),
     [("--case", PathType.INPUT), ("--reference", PathType.REFERENCE)],
 )
 def test_push__only_required(
@@ -97,7 +91,7 @@ def test_push__only_required(
 
 
 @pytest.mark.parametrize(
-    "path_type_flag, path_type",
+    ("path_type_flag", "path_type"),
     [("--case", PathType.INPUT), ("--reference", PathType.REFERENCE)],
 )
 def test_push__only_required_long_opts(
@@ -118,7 +112,7 @@ def test_push__only_required_long_opts(
 
 
 @pytest.mark.parametrize(
-    "flag, attr_name, attr_value",
+    ("flag", "attr_name", "attr_value"),
     ids=["no-color", "batch", "force", "local-path", "short-local-path", "allow-create-and-delete"],
     argvalues=[
         ("--no-color", "color_output", False),
@@ -165,7 +159,7 @@ def test_update_refs__required_only__long_opts(arg_parser: argparse.ArgumentPars
 
 
 @pytest.mark.parametrize(
-    "flag, attr_name, attr_value",
+    ("flag", "attr_name", "attr_value"),
     ids=["no-color", "batch", "force", "local-path", "short-local-path"],
     argvalues=[
         ("--no-color", "color_output", False),
@@ -185,7 +179,7 @@ def test_update_references__optional_arguments(
 
 
 @pytest.mark.parametrize(
-    "path_type_flag, path_type",
+    ("path_type_flag", "path_type"),
     [("--case", PathType.INPUT), ("--reference", PathType.REFERENCE)],
 )
 def test_pull__only_required(
@@ -205,7 +199,7 @@ def test_pull__only_required(
 
 
 @pytest.mark.parametrize(
-    "path_type_flag, path_type",
+    ("path_type_flag", "path_type"),
     [("--case", PathType.INPUT), ("--reference", PathType.REFERENCE)],
 )
 def test_pull__only_required_long_opts(
@@ -244,7 +238,7 @@ def test_pull__latest(arg_parser: argparse.ArgumentParser) -> None:
 
 
 @pytest.mark.parametrize(
-    "flag, attr_name, attr_value",
+    ("flag", "attr_name", "attr_value"),
     ids=["no-color", "batch", "force", "local-path", "short-local-path", "timestamp", "timestamp-short", "latest"],
     argvalues=[
         ("--no-color", "color_output", False),

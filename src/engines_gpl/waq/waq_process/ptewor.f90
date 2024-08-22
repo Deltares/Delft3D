@@ -28,9 +28,9 @@ module m_ptewor
 contains
 
 
-    subroutine ptewor (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine ptewor (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Production fluxes for TEWOR+
 
@@ -62,9 +62,9 @@ contains
 
         IMPLICIT NONE
         !
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     local declarations
         !
@@ -85,19 +85,19 @@ contains
         IP10 = IPOINT(10)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
-                FBOD = PMSA(IP1)
-                FBOD2 = PMSA(IP2)
-                FBOD3 = PMSA(IP3)
-                FCOD = PMSA(IP4)
-                FOXY = PMSA(IP5)
-                FORGN = PMSA(IP6)
-                FNH4 = PMSA(IP7)
-                FNO3 = PMSA(IP8)
-                FOON = PMSA(IP9)
-                FECOLI = PMSA(IP10)
+                FBOD = process_space_real(IP1)
+                FBOD2 = process_space_real(IP2)
+                FBOD3 = process_space_real(IP3)
+                FCOD = process_space_real(IP4)
+                FOXY = process_space_real(IP5)
+                FORGN = process_space_real(IP6)
+                FNH4 = process_space_real(IP7)
+                FNO3 = process_space_real(IP8)
+                FOON = process_space_real(IP9)
+                FECOLI = process_space_real(IP10)
 
                 FL(1 + IFLUX) = FBOD
                 FL(2 + IFLUX) = FBOD2

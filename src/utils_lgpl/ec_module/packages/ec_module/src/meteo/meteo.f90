@@ -99,7 +99,7 @@ end function initmeteo
 !
 !
 !===============================================================================
-function gridtometeo(runid, nmax, mmax, &
+function gridtometeo(runid, num_rows, num_columns, &
                    & nlb  , nub , mlb , mub, &
                    & kcs  , xz  , yz  ) result(success)
    implicit none
@@ -107,8 +107,8 @@ function gridtometeo(runid, nmax, mmax, &
    logical :: success
    !
    character(*)                         , intent(in)  :: runid
-   integer                              , intent(in)  :: nmax
-   integer                              , intent(in)  :: mmax
+   integer                              , intent(in)  :: num_rows
+   integer                              , intent(in)  :: num_columns
    integer                              , intent(in)  :: nlb
    integer                              , intent(in)  :: nub
    integer                              , intent(in)  :: mlb
@@ -128,34 +128,34 @@ function gridtometeo(runid, nmax, mmax, &
    if ( .not. associated(meteo) ) then
       return
    endif
-   if (nmax==0 .or. mmax==0) then
+   if (num_rows==0 .or. num_columns==0) then
       nullify(meteo%flowgrid%kcs)
       nullify(meteo%flowgrid%xz)
       nullify(meteo%flowgrid%yz)
       return
    endif
-   meteo%flowgrid%nmax = nmax
-   meteo%flowgrid%mmax = mmax
-   allocate(meteo%flowgrid%kcs(nmax,mmax))
-   allocate(meteo%flowgrid%xz (nmax,mmax))
-   allocate(meteo%flowgrid%yz (nmax,mmax))
+   meteo%flowgrid%num_rows = num_rows
+   meteo%flowgrid%num_columns = num_columns
+   allocate(meteo%flowgrid%kcs(num_rows,num_columns))
+   allocate(meteo%flowgrid%xz (num_rows,num_columns))
+   allocate(meteo%flowgrid%yz (num_rows,num_columns))
    meteo%flowgrid%initialized = .true.
-   do m=1, mmax
-      do n=1, nmax
+   do m=1, num_columns
+      do n=1, num_rows
          meteo%flowgrid%kcs(n,m) = kcs(n,m)
          meteo%flowgrid%xz (n,m) = xz(n,m)
          meteo%flowgrid%yz (n,m) = yz(n,m)
       enddo
    enddo
    if (meteo%spiderweb%active) then
-      allocate(meteo%spiderweb%spwf  (  meteo%flowgrid%nmax,meteo%flowgrid%mmax))
-      allocate(meteo%spiderweb%spwarr(3,meteo%flowgrid%nmax,meteo%flowgrid%mmax))
+      allocate(meteo%spiderweb%spwf  (  meteo%flowgrid%num_rows,meteo%flowgrid%num_columns))
+      allocate(meteo%spiderweb%spwarr(3,meteo%flowgrid%num_rows,meteo%flowgrid%num_columns))
    endif
 end function gridtometeo
 !
 !
 !===============================================================================
-function addmeteoitem(runid, inputfile, gridsferic, mmax, nmax) result(success)
+function addmeteoitem(runid, inputfile, gridsferic, num_columns, num_rows) result(success)
     !
     ! return value
     !
@@ -163,8 +163,8 @@ function addmeteoitem(runid, inputfile, gridsferic, mmax, nmax) result(success)
     !
     ! arguments
     !
-    integer      , optional , intent(in) :: mmax
-    integer      , optional , intent(in) :: nmax
+    integer      , optional , intent(in) :: num_columns
+    integer      , optional , intent(in) :: num_rows
     character(*)            , intent(in) :: inputfile       ! filename for meteo data file
     character(*)            , intent(in) :: runid           ! runid for current domain
     logical      , optional , intent(in) :: gridsferic      ! type of flow/wave grid sferic (.true.) or cartesian (.false.)?
@@ -235,15 +235,15 @@ function addmeteoitem(runid, inputfile, gridsferic, mmax, nmax) result(success)
     case ( uniuvp )
        kxr = 3
     case ( meteo_on_computational_grid )
-       mxr     = nmax
-       nxr     = mmax
+       mxr     = num_rows
+       nxr     = num_columns
        kxr     = meteoitem%n_quantity
     case ( meteo_on_equidistant_grid )
        mxr = meteoitem%n_cols
        nxr = meteoitem%n_rows
        kxr = 1
     case ( meteo_on_curvilinear_grid )
-       success = meteoallocateitemgrid(runid, meteoitem, mxr, nxr, meteoitem%grid_file, mmax, nmax)
+       success = meteoallocateitemgrid(runid, meteoitem, mxr, nxr, meteoitem%grid_file, num_columns, num_rows)
        if (.not. success) return
        kxr = 1
     case ( meteo_on_spiderweb_grid )
@@ -410,7 +410,7 @@ function meteoupdateitem(meteoitem, flow_itdate, flow_tzone, tim) result(success
    integer                             :: m
    integer                             :: mx
    integer                             :: n
-   integer                             :: nx
+   integer                             :: grid_width
    integer                             :: kx
    integer                             :: k
    integer                             :: minp
@@ -462,7 +462,7 @@ function meteoupdateitem(meteoitem, flow_itdate, flow_tzone, tim) result(success
       it1          = meteoitem%it1
       minp         = meteoitem%lun
       mx           = meteoitem%numm
-      nx           = meteoitem%numn
+      grid_width           = meteoitem%numn
       kx           = meteoitem%numk
       !
       ! Read the time field in the meteo file
@@ -488,7 +488,7 @@ function meteoupdateitem(meteoitem, flow_itdate, flow_tzone, tim) result(success
          case ( meteo_on_computational_grid )
             !
             wz      => meteoitem%field(it1)%arr3d
-            success =  read_spv_block(minp, meteoitem, wz, mx, nx, kx)
+            success =  read_spv_block(minp, meteoitem, wz, mx, grid_width, kx)
             ! 
             do k = 1,kx
                !
@@ -510,7 +510,7 @@ function meteoupdateitem(meteoitem, flow_itdate, flow_tzone, tim) result(success
          case ( meteo_on_equidistant_grid )
             !
             vz      => meteoitem%field(it1)%arr2d
-            success =  read_equidistant_block(minp, meteoitem, vz, mx, nx)
+            success =  read_equidistant_block(minp, meteoitem, vz, mx, grid_width)
             if (.not. success) then
                return
             endif
@@ -526,7 +526,7 @@ function meteoupdateitem(meteoitem, flow_itdate, flow_tzone, tim) result(success
          case ( meteo_on_spiderweb_grid )
             !
             wz      => meteoitem%field(it1)%arr3d
-            success =  read_spiderweb_block(minp, wz, mx, nx, meteoitem, x_spw_eye, y_spw_eye, all_nodata)
+            success =  read_spiderweb_block(minp, wz, mx, grid_width, meteoitem, x_spw_eye, y_spw_eye, all_nodata)
             if (.not. success) then
                return
             endif
@@ -777,7 +777,7 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
    integer                               :: iq
    integer                               :: k
    integer                               :: mx
-   integer                               :: nx
+   integer                               :: grid_width
    integer                               :: kx
    integer                               :: it1
    integer                               :: it0
@@ -880,7 +880,7 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
          if (meteo%item(i)%ptr%quantities(iq) == quantity) then
             meteoitem => meteo%item(i)%ptr
             mx  =  meteoitem%numm
-            nx  =  meteoitem%numn
+            grid_width  =  meteoitem%numn
             kx  =  meteoitem%numk
             it1 =  meteoitem%it1
             it0 =  meteoitem%it0
@@ -967,8 +967,8 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                !
                ! Note: This loop will not fill the boundaries of qarray. 
                !
-               do m = 1, meteo%flowgrid%mmax
-                  do n = 1, meteo%flowgrid%nmax
+               do m = 1, meteo%flowgrid%num_columns
+                  do n = 1, meteo%flowgrid%num_rows
                      qarray(n,m) = a0*v0(n+nfg-1,m+mfg-1,k) + a1*v1(n+nfg-1,m+mfg-1,k)
                   enddo
                enddo
@@ -982,8 +982,8 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                y01 =  meteoitem%y_llcenter
                dx1 =  meteoitem%field(it1)%dx
                dy1 =  meteoitem%field(it1)%dy
-               do m = 1,meteo%flowgrid%mmax
-                  do n = 1,meteo%flowgrid%nmax
+               do m = 1,meteo%flowgrid%num_columns
+                  do n = 1,meteo%flowgrid%num_rows
                      !
                      ! Check on kcs > 0 to avoid work in the halo regions when running parallel
                      !
@@ -998,7 +998,7 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                            i1  = i1 - 1
                            di1 = 1.0_fp
                         endif
-                        if (j1 == nx) then
+                        if (j1 == grid_width) then
                            j1  = j1 - 1
                            dj1 = 1.0_fp
                         endif
@@ -1015,7 +1015,7 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                            success = .false.
                            return
                         endif
-                        if (j1 < 1 .or. j1 > nx-1) then
+                        if (j1 < 1 .or. j1 > grid_width-1) then
                            write(tex,'(2f10.1)') x1,y1
                            write(meteomessage,'(2a)') 'Flow point outside meteo grid (y-dir) x,y,:',trim(tex)
                            success = .false.
@@ -1047,16 +1047,16 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                   ! Interpolate towards the meteo grid. That means: loop over all
                   ! meteo grid points; a bounding quadrangle on the coarse grid has to be found;
                   ! (using findnm is not possible since the noisegrid does not contain 
-                  ! curvilinaer information (i.e. it has no nmax,mmax; it is one-dimensional!))
+                  ! curvilinaer information (i.e. it has no num_rows,num_columns; it is one-dimensional!))
                   ! Then, bilin5 is called to obtain the interpolation weights
                   ! NOTE: the coarse grid must completely cover the meteogrid.
                   ! The problem boils down to find four noisegrid points, in a quadrangle, in the neighbourhood of
                   ! each meteo gridpoint. This quadrangle should ideally be covering the meteo gridpoint.
                   !
-                  allocate(meteo_noise(grid%mmax, grid%nmax))  
+                  allocate(meteo_noise(grid%num_columns, grid%num_rows))
                   meteo_noise = 0.0_fp
-                  do m_mg = 1, grid%mmax
-                     do n_mg = 1, grid%nmax 
+                  do m_mg = 1, grid%num_columns
+                     do n_mg = 1, grid%num_rows
                         x_mg = grid%x(m_mg,n_mg)
                         y_mg = grid%y(m_mg,n_mg)
                         call find_noisegrid_vertices(x_mg, y_mg, ind, grid_size, &
@@ -1097,8 +1097,8 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                ! interpolate the wind field towards the D3Dflow-grid
                ! at this stage, the wind noise (if present) has already been added
                ! 
-               do m = 1,meteo%flowgrid%mmax
-                  do n = 1,meteo%flowgrid%nmax
+               do m = 1,meteo%flowgrid%num_columns
+                  do n = 1,meteo%flowgrid%num_rows
                      if (meteo%flowgrid%kcs(n, m) > 0) then
                         x = meteo%flowgrid%xz(n, m)
                         y = meteo%flowgrid%yz(n, m)
@@ -1199,7 +1199,7 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                   !
                   ! Radius of cyclone
                   !
-                  rcycl = dy1 * real((nx-1),fp)
+                  rcycl = dy1 * real((grid_width-1),fp)
                   !
                   ! Factor used for merging spiderweb and background winds
                   ! If spw_merge_frac is 0.5 (default), the smooth merging starts
@@ -1209,8 +1209,8 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                   !
                   fm0   = 1.0_fp/(1.0_fp - real(meteoitem%spw_merge_frac,fp))
                   !
-                  do m = 1,meteo%flowgrid%mmax
-                     do n = 1,meteo%flowgrid%nmax
+                  do m = 1,meteo%flowgrid%num_columns
+                     do n = 1,meteo%flowgrid%num_rows
                         if (meteo%flowgrid%kcs(n, m) /= 0) then
                            spw%spwf(n, m) = 1.0_fp
                            do k = 1, kx
@@ -1257,7 +1257,7 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                               i1  = i1 - 1
                               di1 = 1.0_fp
                            endif
-                           if (j1 == nx) then
+                           if (j1 == grid_width) then
                               j1  = j1 - 1
                               dj1 = 1.0_fp
                            endif
@@ -1273,7 +1273,7 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                            ! skip this point
                            !
                            if (i1 < 1 .or. i1 > mx-1) cycle
-                           if (j1 < 1 .or. j1 > nx-1) cycle
+                           if (j1 < 1 .or. j1 > grid_width-1) cycle
                            do k = 1,kx
                               u(1) =   v0(i1  , j1  , k)
                               u(2) =   v0(i1+1, j1  , k)
@@ -1328,8 +1328,8 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
    if (meteo%spiderweb%active) then
       select case (quantity)
       case ('patm')
-         do m = 1,meteo%flowgrid%mmax
-            do n = 1,meteo%flowgrid%nmax
+         do m = 1,meteo%flowgrid%num_columns
+            do n = 1,meteo%flowgrid%num_rows
                if (meteo%flowgrid%kcs(n,m) /= 0) then
                   if (meteoitem%pref_option == opt_not_defined) then
                      qarray(n,m) = qarray(n,m) - (1.0_fp-spw%spwf(n,m))*spw%spwarr(3,n,m)
@@ -1341,8 +1341,8 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
             enddo
          enddo
       case ('windu')
-         do m = 1,meteo%flowgrid%mmax
-            do n = 1,meteo%flowgrid%nmax
+         do m = 1,meteo%flowgrid%num_columns
+            do n = 1,meteo%flowgrid%num_rows
                if (meteo%flowgrid%kcs(n,m) /= 0) then
                   qarray(n,m) = spw%spwf(n,m)*qarray(n,m) &
                               & + (1.0_fp-spw%spwf(n,m))*spw%spwarr(1,n,m)
@@ -1350,8 +1350,8 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
             enddo
          enddo
       case ('windv')
-         do m = 1,meteo%flowgrid%mmax
-            do n = 1,meteo%flowgrid%nmax
+         do m = 1,meteo%flowgrid%num_columns
+            do n = 1,meteo%flowgrid%num_rows
                if (meteo%flowgrid%kcs(n,m) /= 0) then
                   qarray(n,m) = spw%spwf(n,m)*qarray(n,m) &
                               & + (1.0_fp-spw%spwf(n,m))*spw%spwarr(2,n,m)
@@ -1485,9 +1485,9 @@ function findnm(xp, yp, mv, nv, mpoint, npoint, grid) result(success)
     !
     if (grid%mcur > 0 .and. grid%ncur > 0) then
        mlowbound = max(2,grid%mcur - 1)
-       mupbound  = min(grid%mmax,grid%mcur + 1)
+       mupbound  = min(grid%num_columns,grid%mcur + 1)
        nlowbound = max(2,grid%ncur - 1)
-       nupbound  = min(grid%nmax,grid%ncur + 1)
+       nupbound  = min(grid%num_rows,grid%ncur + 1)
        do i = mlowbound,mupbound
           do j = nlowbound,nupbound
              xl(1) = grid%x(i,j)
@@ -1518,8 +1518,8 @@ function findnm(xp, yp, mv, nv, mpoint, npoint, grid) result(success)
     ! If the indices are not found by now, the complete grid
     ! must be walked through
     !
-    do i = 2,grid%mmax
-       do j = 2,grid%nmax
+    do i = 2,grid%num_columns
+       do j = 2,grid%num_rows
           xl(1) = grid%x(i,j)
           xl(2) = grid%x(i-1,j)
           xl(3) = grid%x(i-1,j-1)

@@ -1,7 +1,6 @@
-"""
-Description: logger for combining multiple loggers
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Logger for combining multiple loggers.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 from typing import Iterable, List
@@ -13,32 +12,32 @@ from src.utils.logging.test_loggers.i_test_logger import ITestLogger
 
 
 class CompositeLogger(IMainLogger):
-    """Logger for combining multiple loggers"""
+    """Logger for combining multiple loggers."""
 
     def __init__(self, loggers: Iterable[ILogger]) -> None:
         self.__loggers = list(loggers)
 
     @property
     def loggers(self) -> List[ILogger]:
-        """Loggers of this composite logger"""
+        """Loggers of this composite logger."""
         return self.__loggers
 
-    def error(self, message: str, exc_info: bool = False):
+    def error(self, message: str, exc_info: bool = False) -> None:
         self.log(message, LogLevel.ERROR, exc_info=exc_info)
 
-    def exception(self, message: str):
+    def exception(self, message: str) -> None:
         self.log(message, LogLevel.ERROR, exc_info=True)
 
-    def warning(self, message: str):
+    def warning(self, message: str) -> None:
         self.log(message, LogLevel.WARNING)
 
-    def info(self, message: str):
+    def info(self, message: str) -> None:
         self.log(message, LogLevel.INFO)
 
-    def debug(self, message: str):
+    def debug(self, message: str) -> None:
         self.log(message, LogLevel.DEBUG)
 
-    def log(self, message: str, log_level: LogLevel, exc_info: bool = False):
+    def log(self, message: str, log_level: LogLevel, exc_info: bool = False) -> None:
         for logger in self.__loggers:
             logger.log(message, log_level, exc_info=exc_info)
 

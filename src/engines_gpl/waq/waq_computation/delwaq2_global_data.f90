@@ -37,7 +37,7 @@ module delwaq2_global_data
     type t_size_dlwq_state
         integer(kind = int_wp) :: total
         integer(kind = int_wp) :: core, pseudo, output
-        integer(kind = int_wp) :: conc, other, notot, noseg
+        integer(kind = int_wp) :: conc, other, num_substances_total, num_cells
         integer(kind = int_wp) :: mass, rbuf, names, timeadmin
     end type t_size_dlwq_state
 
@@ -218,9 +218,9 @@ contains
 
     subroutine delwaq2_global_data_copy(dlwqd)
 
-        use m_sysn
-        use m_sysc
-        use m_sysj
+        use m_waq_memory_dimensions
+        use m_character_array_indices
+        use m_integer_array_indices
 
         type(delwaq_data) :: dlwqd
 
@@ -245,47 +245,47 @@ contains
             deallocate (monitor_cell)
         endif
 
-        allocate (substance_name(1:notot))
-        allocate (procparam_const(1:nocons))
-        allocate (procparam_param(1:nopa))
+        allocate (substance_name(1:num_substances_total))
+        allocate (procparam_const(1:num_constants))
+        allocate (procparam_param(1:num_spatial_parameters))
 
-        allocate (load_name(1:nowst))
-        allocate (monitor_name(1:ndmpar)) ! nodump?
+        allocate (load_name(1:num_waste_loads))
+        allocate (monitor_name(1:ndmpar)) ! num_monitoring_points?
         allocate (monitor_cell(1:ndmpar))
 
-        substance_name = transfer(dlwqd%buffer%chbuf(isnam:isnam + 20 * notot - 1), dlwqname)
-        procparam_const = transfer(dlwqd%buffer%chbuf(icnam:icnam + 20 * nocons - 1), dlwqname)
-        procparam_param = transfer(dlwqd%buffer%chbuf(ipnam:ipnam + 20 * nopa - 1), dlwqname)
+        substance_name = transfer(dlwqd%buffer%chbuf(isnam:isnam + 20 * num_substances_total - 1), dlwqname)
+        procparam_const = transfer(dlwqd%buffer%chbuf(icnam:icnam + 20 * num_constants - 1), dlwqname)
+        procparam_param = transfer(dlwqd%buffer%chbuf(ipnam:ipnam + 20 * num_spatial_parameters - 1), dlwqname)
 
-        load_name = transfer(dlwqd%buffer%chbuf(iwsid:iwsid + 20 * nowst - 1), dlwqname)
+        load_name = transfer(dlwqd%buffer%chbuf(iwsid:iwsid + 20 * num_waste_loads - 1), dlwqname)
         monitor_name = transfer(dlwqd%buffer%chbuf(idana:idana + 20 * ndmpar - 1), dlwqname)
 
         ! Copy the segment numbers - but only the first in case of "dump areas"
         ! See fill_output_buffer_sub_grid.f for the background, calculations copied from there
         ip1 = ndmpar + ntdmpq
         itel2 = ndmpar + ntdmpq + ndmpar
-        do i = 1, ndmpar !nodump?
+        do i = 1, ndmpar !num_monitoring_points?
             nsc = dlwqd%buffer%ibuf(ipdmp + ip1 - 1 + i)
             monitor_cell(i) = dlwqd%buffer%ibuf(ipdmp + itel2)
             itel2 = itel2 + nsc
         enddo
 
         ! administrate state sizes for OpenDA use
-        size_dlwq_state%notot = notot
-        size_dlwq_state%noseg = noseg
-        size_dlwq_state%conc = notot * noseg
+        size_dlwq_state%num_substances_total = num_substances_total
+        size_dlwq_state%num_cells = num_cells
+        size_dlwq_state%conc = num_substances_total * num_cells
         size_dlwq_state%other = 1 ! todo: set this to zero?
         size_dlwq_state%core = size_dlwq_state%conc + size_dlwq_state%other
 
         size_dlwq_state%rbuf = size(dlwqd%buffer%rbuf)
 
-        size_dlwq_state%mass = notot * noseg
-        size_dlwq_state%names = notot
+        size_dlwq_state%mass = num_substances_total * num_cells
+        size_dlwq_state%names = num_substances_total
         size_dlwq_state%timeadmin = 3
 
         size_dlwq_state%pseudo = size_dlwq_state%rbuf + size_dlwq_state%mass + size_dlwq_state%names + size_dlwq_state%timeadmin
 
-        size_dlwq_state%output = 9 + 7 * noutp
+        size_dlwq_state%output = 9 + 7 * num_output_files
         size_dlwq_state%total = size_dlwq_state%core + size_dlwq_state%pseudo + size_dlwq_state%output
 
     end subroutine delwaq2_global_data_copy

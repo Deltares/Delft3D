@@ -46,8 +46,8 @@ implicit none
 contains
 
 
-    subroutine delpar00 (outmon, mdpfile, noseg, noq, dwqvol, dwqflo, &
-        nosfun, sfname, segfun )
+    subroutine delpar00 (outmon, mdpfile, num_cells, num_exchanges, dwqvol, dwqflo, &
+            num_spatial_time_fuctions, sfname, segfun)
 
     use m_logger_helper, only : stop_with_error
     use partmem      ! for PARTicle tracking
@@ -65,14 +65,14 @@ contains
 
     ! Particle tracking
     integer  (kind = int_wp), intent(in) :: outmon                  !< monitoring file
-    character(*), intent(in) :: mdpfile                             !< file name mdp-file
-    integer  (kind = int_wp), intent(in) :: noseg                   !< delwaq noseg
-    integer  (kind = int_wp), intent(in) :: noq                     !< delwaq noq
-    real     (kind = real_wp), intent(in) :: dwqvol (noseg)         !< delwaq volumes
-    real     (kind = real_wp), intent(in) :: dwqflo (noq)           !< delwaq flows
-    integer  (kind = int_wp), intent(in) :: nosfun                  !< number of segment functions
-    character(20), intent(in) :: sfname (nosfun)                    !< names of segment functions
-    real(kind = real_wp), intent(in) :: segfun (noseg, nosfun)      !< segment function values
+    character(*), intent(in) :: mdpfile                 !< file name mdp-file
+    integer  (kind = int_wp), intent(in) :: num_cells                   !< delwaq num_cells
+    integer  (kind = int_wp), intent(in) :: num_exchanges                     !< delwaq num_exchanges
+    real     (kind = real_wp), intent(in) :: dwqvol (num_cells)          !< delwaq volumes
+    real     (kind = real_wp), intent(in) :: dwqflo (num_exchanges)            !< delwaq flows
+    integer  (kind = int_wp), intent(in) :: num_spatial_time_fuctions                  !< number of segment functions
+    character(20), intent(in) :: sfname (num_spatial_time_fuctions)         !< names of segment functions
+    real(kind = real_wp), intent(in) :: segfun (num_cells, num_spatial_time_fuctions)   !< segment function values
 
     integer(kind = int_wp), save :: iniday               ! release of initial condition, not used here
 

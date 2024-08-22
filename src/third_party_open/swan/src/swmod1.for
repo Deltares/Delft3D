@@ -114,13 +114,13 @@
 ! KEYWRD [      ] contents of the last keyword read by reading system
 ! TABC   [CALCUL] =CHAR(9); tabular character
 !
-      CHARACTER*4        BLANK
+      CHARACTER(len=4)   BLANK
       CHARACTER          COMID
-      CHARACTER*(LINELN) ELTEXT
-      CHARACTER*4        ELTYPE
-      CHARACTER*(LINELN) KAART
+      CHARACTER(len=LINELN) ELTEXT
+      CHARACTER(len=4)   ELTYPE
+      CHARACTER(len=LINELN) KAART
       CHARACTER          KAR
-      CHARACTER*8        KEYWRD
+      CHARACTER(len=8)   KEYWRD
       CHARACTER          TABC
 !
 !     *** numerical data used by the command reading system ***
@@ -948,16 +948,16 @@
 ! UT    [   'sec'] unit of time (change to s ???)
 ! UV    [   'm/s'] unit of velocity
 !
-      CHARACTER*20 CHTIME
-      CHARACTER*36 FBCL,          FBCR,        FNEST
-      CHARACTER*8  OVKEYW(NMOVAR)
-      CHARACTER*40 OVLNAM(NMOVAR)
-      CHARACTER*6  OVSNAM(NMOVAR)
-      CHARACTER*16 OVUNIT(NMOVAR)
-      CHARACTER*8  SNAME
-      CHARACTER*6  UAP,           UD,          UDI,         UDL
-      CHARACTER*6  UET,           UF,          UH,          UL
-      CHARACTER*6  UP,            UST,         UT,          UV
+      CHARACTER(len=20) CHTIME
+      CHARACTER(len=36) FBCL,          FBCR,        FNEST
+      CHARACTER(len=8)  OVKEYW(NMOVAR)
+      CHARACTER(len=40) OVLNAM(NMOVAR)
+      CHARACTER(len=6)  OVSNAM(NMOVAR)
+      CHARACTER(len=16) OVUNIT(NMOVAR)
+      CHARACTER(len=8)  SNAME
+      CHARACTER(len=6)  UAP,           UD,          UDI,         UDL
+      CHARACTER(len=6)  UET,           UF,          UH,          UL
+      CHARACTER(len=6)  UP,            UST,         UT,          UV
 
 !     *** information for output ***
 !
@@ -1653,7 +1653,7 @@
       REAL*8       IFLBEG(NUMGRD), IFLINT(NUMGRD), IFLEND(NUMGRD)
       REAL*8       IFLTIM(NUMGRD)
       REAL         IFLFAC(NUMGRD)
-      CHARACTER*40 IFLFRM(NUMGRD)
+      CHARACTER(len=40) IFLFRM(NUMGRD)
 !
 !  8. Subroutines and functions used
 !

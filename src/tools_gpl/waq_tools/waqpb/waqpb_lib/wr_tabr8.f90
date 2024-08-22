@@ -66,8 +66,8 @@
       INTEGER       NO_DSTO     , LUNREP     , & 
                    IERROR
       INTEGER       DEFFDS
-      CHARACTER*10  R8_DID      (NO_DSTO)
-      CHARACTER*10  R8_SID      (NO_DSTO)
+      CHARACTER(len=10)  R8_DID      (NO_DSTO)
+      CHARACTER(len=10)  R8_SID      (NO_DSTO)
       REAL          R8_SCAL(NO_DSTO)
 !     
 !          Local variables
@@ -85,9 +85,9 @@
       INTEGER       I               , IELM
       INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      CHARACTER(len=16)  GRPNAM
+      CHARACTER(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      CHARACTER(len=64)  ELMDES(NELEMS)
 !     
 !          External NEFIS Functions
 !     

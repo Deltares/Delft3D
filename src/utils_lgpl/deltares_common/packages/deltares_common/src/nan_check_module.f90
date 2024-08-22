@@ -48,6 +48,8 @@ end interface
 contains
 
 logical function nan_check_1D_sp(field, fieldnam, lundia, ilb) result (retval)
+   use ieee_arithmetic, only: ieee_is_nan
+
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Checks a 1D single precision array on NaN's.
@@ -57,7 +59,7 @@ logical function nan_check_1D_sp(field, fieldnam, lundia, ilb) result (retval)
     ! Arguments
     !
     real(kind=4), dimension(:)               , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: ilb
     !
@@ -65,7 +67,7 @@ logical function nan_check_1D_sp(field, fieldnam, lundia, ilb) result (retval)
     !
     integer                                :: i
     integer                                :: i0
-    character*(256)                        :: message
+    character(len=256)                     :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -76,7 +78,7 @@ logical function nan_check_1D_sp(field, fieldnam, lundia, ilb) result (retval)
        i0 = 0
     endif
     do i = lbound(field,1), ubound(field,1)
-       if (isnan(field(i))) then
+       if (ieee_is_nan(field(i))) then
           write(message,*) 'NaN found in ', fieldnam, &
                ' at (i) = (', i0+i, ')'
           write(lundia,*) '*** ERROR', trim(message)
@@ -87,6 +89,8 @@ logical function nan_check_1D_sp(field, fieldnam, lundia, ilb) result (retval)
 end function nan_check_1D_sp
 
 logical function nan_check_2D_sp(field, fieldnam, lundia, nlb, mlb) result (retval)
+   use ieee_arithmetic, only: ieee_is_nan
+
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Checks a 2D single precision array on NaN's.
@@ -96,7 +100,7 @@ logical function nan_check_2D_sp(field, fieldnam, lundia, nlb, mlb) result (retv
     ! Arguments
     !
     real(kind=4), dimension(:,:)             , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: nlb
     integer, optional                        , intent(in)    :: mlb
@@ -105,7 +109,7 @@ logical function nan_check_2D_sp(field, fieldnam, lundia, nlb, mlb) result (retv
     !
     integer                                  :: m, n
     integer                                  :: m0, n0
-    character*(256)                          :: message
+    character(len=256)                       :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -122,7 +126,7 @@ logical function nan_check_2D_sp(field, fieldnam, lundia, nlb, mlb) result (retv
     endif
     do m = lbound(field,2), ubound(field,2)
        do n = lbound(field,1), ubound(field,1)
-          if (isnan(field(n,m))) then
+          if (ieee_is_nan(field(n,m))) then
              write(message,*) 'NaN found in ', fieldnam, &
               ' at (n,m) = (', n0+n, ',' , m0+m, ')'
              write(lundia,*) '*** ERROR', trim(message)
@@ -134,6 +138,8 @@ logical function nan_check_2D_sp(field, fieldnam, lundia, nlb, mlb) result (retv
 end function nan_check_2D_sp
 
 logical function nan_check_3D_sp(field, fieldnam, lundia, nlb, mlb, klb) result (retval)
+   use ieee_arithmetic, only: ieee_is_nan
+
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Checks a 3D single precision array on NaN's.
@@ -143,7 +149,7 @@ logical function nan_check_3D_sp(field, fieldnam, lundia, nlb, mlb, klb) result 
     ! Arguments
     !
     real(kind=4), dimension(:,:,:)           , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: nlb
     integer, optional                        , intent(in)    :: mlb
@@ -153,7 +159,7 @@ logical function nan_check_3D_sp(field, fieldnam, lundia, nlb, mlb, klb) result 
     !
     integer                                    :: k, m, n
     integer                                    :: k0, m0, n0
-    character*(256)                            :: message
+    character(len=256)                         :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -176,7 +182,7 @@ logical function nan_check_3D_sp(field, fieldnam, lundia, nlb, mlb, klb) result 
     do k = lbound(field,3), ubound(field,3)
        do m = lbound(field,2), ubound(field,2)
           do n = lbound(field,1), ubound(field,1)
-            if (isnan(field(n,m,k))) then
+            if (ieee_is_nan(field(n,m,k))) then
               write(message,*) 'NaN found in ', fieldnam, &
                   ' at (n,m,k) = (', n0+n, ',', m0+m, ',', k0+k, ')'
               write(lundia,*) '*** ERROR', trim(message)
@@ -189,6 +195,8 @@ logical function nan_check_3D_sp(field, fieldnam, lundia, nlb, mlb, klb) result 
     end function nan_check_3D_sp
 
 logical function nan_check_4D_sp(field, fieldnam, lundia, nlb, mlb, klb, llb) result (retval)
+   use ieee_arithmetic, only: ieee_is_nan
+
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Checks a 4D single precision array on NaN's.
@@ -198,7 +206,7 @@ logical function nan_check_4D_sp(field, fieldnam, lundia, nlb, mlb, klb, llb) re
     ! Arguments
     !
     real(kind=4), dimension(:,:,:,:)         , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: nlb
     integer, optional                        , intent(in)    :: mlb
@@ -209,7 +217,7 @@ logical function nan_check_4D_sp(field, fieldnam, lundia, nlb, mlb, klb, llb) re
     !
     integer                                      :: k, l, m, n
     integer                                      :: k0, l0, m0, n0
-    character*(256)                              :: message
+    character(len=256)                           :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -238,7 +246,7 @@ logical function nan_check_4D_sp(field, fieldnam, lundia, nlb, mlb, klb, llb) re
        do k = lbound(field,3), ubound(field,3)
           do m = lbound(field,2), ubound(field,2)
              do n = lbound(field,1), ubound(field,1)
-                if (isnan(field(n,m,k,l))) then
+                if (ieee_is_nan(field(n,m,k,l))) then
                    write(message,*) 'NaN found in ', fieldnam, &
                       ' at (n,m,k,l) = (', n0+n, ',', m0+m, ',', k0+k, ',', l0+l, ')'
                    write(lundia,*) '*** ERROR', trim(message)
@@ -252,6 +260,8 @@ logical function nan_check_4D_sp(field, fieldnam, lundia, nlb, mlb, klb, llb) re
     end function nan_check_4D_sp
 
 logical function nan_check_1D_dp(field, fieldnam, lundia, ilb) result (retval)
+   use ieee_arithmetic, only: ieee_is_nan
+
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Checks a 1D double precision array on NaN's.
@@ -261,7 +271,7 @@ logical function nan_check_1D_dp(field, fieldnam, lundia, ilb) result (retval)
     ! Arguments
     !
     real(kind=8), dimension(:)               , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: ilb
     !
@@ -269,7 +279,7 @@ logical function nan_check_1D_dp(field, fieldnam, lundia, ilb) result (retval)
     !
     integer                                :: i
     integer                                :: i0
-    character*(256)                        :: message
+    character(len=256)                     :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -280,7 +290,7 @@ logical function nan_check_1D_dp(field, fieldnam, lundia, ilb) result (retval)
        i0 = 0
     endif
     do i = lbound(field,1), ubound(field,1)
-       if (isnan(field(i))) then
+       if (ieee_is_nan(field(i))) then
           write(message,*) 'NaN found in ', fieldnam, &
                ' at (i) = (', i0+i, ')'
           write(lundia,*) '*** ERROR', trim(message)
@@ -291,6 +301,8 @@ logical function nan_check_1D_dp(field, fieldnam, lundia, ilb) result (retval)
 end function nan_check_1D_dp
 
 logical function nan_check_2D_dp(field, fieldnam, lundia, nlb, mlb) result (retval)
+   use ieee_arithmetic, only: ieee_is_nan
+
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Checks a 2D double precision array on NaN's.
@@ -300,7 +312,7 @@ logical function nan_check_2D_dp(field, fieldnam, lundia, nlb, mlb) result (retv
     ! Arguments
     !
     real(kind=8), dimension(:,:)             , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: nlb
     integer, optional                        , intent(in)    :: mlb
@@ -309,7 +321,7 @@ logical function nan_check_2D_dp(field, fieldnam, lundia, nlb, mlb) result (retv
     !
     integer                                  :: m, n
     integer                                  :: m0, n0
-    character*(256)                          :: message
+    character(len=256)                       :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -326,7 +338,7 @@ logical function nan_check_2D_dp(field, fieldnam, lundia, nlb, mlb) result (retv
     endif
     do m = lbound(field,2), ubound(field,2)
        do n = lbound(field,1), ubound(field,1)
-          if (isnan(field(n,m))) then
+          if (ieee_is_nan(field(n,m))) then
              write(message,*) 'NaN found in ', fieldnam, &
               ' at (n,m) = (', n0+n, ',' , m0+m, ')'
              write(lundia,*) '*** ERROR', trim(message)
@@ -338,6 +350,8 @@ logical function nan_check_2D_dp(field, fieldnam, lundia, nlb, mlb) result (retv
 end function nan_check_2D_dp
 
 logical function nan_check_3D_dp(field, fieldnam, lundia, nlb, mlb, klb) result (retval)
+   use ieee_arithmetic, only: ieee_is_nan
+
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Checks a 3D double precision array on NaN's.
@@ -347,7 +361,7 @@ logical function nan_check_3D_dp(field, fieldnam, lundia, nlb, mlb, klb) result 
     ! Arguments
     !
     real(kind=8), dimension(:,:,:)           , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: nlb
     integer, optional                        , intent(in)    :: mlb
@@ -357,7 +371,7 @@ logical function nan_check_3D_dp(field, fieldnam, lundia, nlb, mlb, klb) result 
     !
     integer                                    :: k, m, n
     integer                                    :: k0, m0, n0
-    character*(256)                            :: message
+    character(len=256)                         :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -380,7 +394,7 @@ logical function nan_check_3D_dp(field, fieldnam, lundia, nlb, mlb, klb) result 
     do k = lbound(field,3), ubound(field,3)
        do m = lbound(field,2), ubound(field,2)
           do n = lbound(field,1), ubound(field,1)
-            if (isnan(field(n,m,k))) then
+            if (ieee_is_nan(field(n,m,k))) then
               write(message,*) 'NaN found in ', fieldnam, &
                   ' at (n,m,k) = (', n0+n, ',', m0+m, ',', k0+k, ')'
               write(lundia,*) '*** ERROR', trim(message)
@@ -393,6 +407,8 @@ logical function nan_check_3D_dp(field, fieldnam, lundia, nlb, mlb, klb) result 
     end function nan_check_3D_dp
 
 logical function nan_check_4D_dp(field, fieldnam, lundia, nlb, mlb, klb, llb) result (retval)
+   use ieee_arithmetic, only: ieee_is_nan
+
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Checks a 4D double precision array on NaN's.
@@ -402,7 +418,7 @@ logical function nan_check_4D_dp(field, fieldnam, lundia, nlb, mlb, klb, llb) re
     ! Arguments
     !
     real(kind=8), dimension(:,:,:,:)         , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: nlb
     integer, optional                        , intent(in)    :: mlb
@@ -413,7 +429,7 @@ logical function nan_check_4D_dp(field, fieldnam, lundia, nlb, mlb, klb, llb) re
     !
     integer                                      :: k, l, m, n
     integer                                      :: k0, l0, m0, n0
-    character*(256)                              :: message
+    character(len=256)                           :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -442,7 +458,7 @@ logical function nan_check_4D_dp(field, fieldnam, lundia, nlb, mlb, klb, llb) re
        do k = lbound(field,3), ubound(field,3)
           do m = lbound(field,2), ubound(field,2)
              do n = lbound(field,1), ubound(field,1)
-                if (isnan(field(n,m,k,l))) then
+                if (ieee_is_nan(field(n,m,k,l))) then
                    write(message,*) 'NaN found in ', fieldnam, &
                       ' at (n,m,k,l) = (', n0+n, ',', m0+m, ',', k0+k, ',', l0+l, ')'
                    write(lundia,*) '*** ERROR', trim(message)

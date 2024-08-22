@@ -30,9 +30,9 @@ module m_primpro
 contains
 
 
-    subroutine primpro (procesdef, notot, syname, ndspx, nvelx, &
-            ioffx, nosys, dsto, vsto, ndspn, &
-            idpnw, nveln, ivpnw, noq3, &
+    subroutine primpro (procesdef, num_substances_total, syname, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
+            ioffx, num_substances_transported, dsto, vsto, num_dispersion_arrays_new, &
+            idpnw, num_velocity_arrays_new, ivpnw, num_exchanges_z_dir, &
             status)
         !>\file
         !>       detect and activate primary processes (which act directly on substances)
@@ -46,25 +46,25 @@ contains
         ! declaration of arguments
 
         type(procespropcoll) :: procesdef       ! all processes
-        integer(kind = int_wp) :: notot           ! number of substances
+        integer(kind = int_wp) :: num_substances_total           ! number of substances
         character(len = *) :: syname(*)       ! substance name
-        integer(kind = int_wp) :: ndspx           ! number of dispersions
-        integer(kind = int_wp) :: nvelx           ! number of velocities
+        integer(kind = int_wp) :: num_dispersion_arrays_extra
+        integer(kind = int_wp) :: num_velocity_arrays_extra           ! number of velocities
         integer(kind = int_wp) :: ioffx           ! offset to dispersion array in waq data space
-        integer(kind = int_wp) :: nosys           ! number of active substances
-        real(kind = real_wp) :: dsto(nosys, *)   ! dispersion stochi factors
-        real(kind = real_wp) :: vsto(nosys, *)   ! velocity stochi factors
-        integer(kind = int_wp) :: ndspn           ! number of new (combined) dispersions
-        integer(kind = int_wp) :: idpnw(nosys)    ! pointer for substance to new (combined) dispersions
-        integer(kind = int_wp) :: nveln           ! number of new (combined) velocities
-        integer(kind = int_wp) :: ivpnw(nosys)    ! pointer for substance to new (combined) velocity
-        integer(kind = int_wp) :: noq3            ! number of exhcanges in third direction
+        integer(kind = int_wp) :: num_substances_transported           ! number of active substances
+        real(kind = real_wp) :: dsto(num_substances_transported, *)   ! dispersion stochi factors
+        real(kind = real_wp) :: vsto(num_substances_transported, *)   ! velocity stochi factors
+        integer(kind = int_wp) :: num_dispersion_arrays_new           ! number of new (combined) dispersions
+        integer(kind = int_wp) :: idpnw(num_substances_transported)    ! pointer for substance to new (combined) dispersions
+        integer(kind = int_wp) :: num_velocity_arrays_new           ! number of new (combined) velocities
+        integer(kind = int_wp) :: ivpnw(num_substances_transported)    ! pointer for substance to new (combined) velocity
+        integer(kind = int_wp) :: num_exchanges_z_dir            ! number of exhcanges in third direction
 
         type(error_status), intent(inout) :: status !< current error status
 
         ! local decalarations
 
-        integer(kind = int_wp) :: nproc           ! number of processes
+        integer(kind = int_wp) :: num_processes_activated           ! number of processes
         integer(kind = int_wp) :: iproc           ! loop counter processes
         type(procesprop), pointer :: proc            ! process description
         integer(kind = int_wp) :: isys            ! index substance
@@ -89,13 +89,13 @@ contains
 
         ! some init
 
-        nproc = procesdef%current_size
+        num_processes_activated = procesdef%current_size
 
         ! loop over the substances
 
-        ndspx = 0
-        nvelx = 0
-        do isys = 1, notot
+        num_dispersion_arrays_extra = 0
+        num_velocity_arrays_extra = 0
+        do isys = 1, num_substances_total
 
             gen = syname(isys)
             write (line, '(3a)') '-fluxes for [', gen, ']'
@@ -104,7 +104,7 @@ contains
             ! loop over the processes
 
             ifl = 0
-            do iproc = 1, nproc
+            do iproc = 1, num_processes_activated
 
                 proc => procesdef%procesprops(iproc)
 
@@ -163,7 +163,7 @@ contains
             call write_log_message(line)
 
             idsp = 0
-            do iproc = 1, nproc
+            do iproc = 1, num_processes_activated
                 proc => procesdef%procesprops(iproc)
                 do istochi = 1, proc%no_dispstochi
 
@@ -171,7 +171,7 @@ contains
 
                     if (abs(proc%dispstochi(istochi)%scale) > 1e-10) then
                         ! If the stochi substance name is ALLACTIVE, apply to all -active- substances
-                        if ((trim(proc%dispstochi(istochi)%substance)=='ALLACTIVE' .and. isys<=nosys) &
+                        if ((trim(proc%dispstochi(istochi)%substance)=='ALLACTIVE' .and. isys<=num_substances_transported) &
                                 .or. string_equals(gen, proc%dispstochi(istochi)%substance)) then
                             idsp = idsp + 1
                             call zoekio (proc%dispstochi(istochi)%ioitem, proc%no_output, proc%output_item, &
@@ -184,7 +184,7 @@ contains
                             call write_log_message(line)
                             write (line, '(4a)') '   from proces [', proc%name, '] ', proc%text(1:50)
                             call write_log_message(line)
-                            if (isys > nosys) then
+                            if (isys > num_substances_transported) then
                                 call status%increase_info_count()
                                 write (line, '(2a)') '   info : inactive substance not using dispersion.'
                                 call write_log_message(line)
@@ -204,14 +204,14 @@ contains
                                 endif
 
                                 if (proc%output_item(ioutput)%ip_val == 0) then
-                                    ndspx = ndspx + 1
-                                    proc%output_item(ioutput)%ip_val = ioffx + ndspx
+                                    num_dispersion_arrays_extra = num_dispersion_arrays_extra + 1
+                                    proc%output_item(ioutput)%ip_val = ioffx + num_dispersion_arrays_extra
                                 endif
                                 iidspx = proc%output_item(ioutput)%ip_val - ioffx
                                 dsto(isys, iidspx) = proc%dispstochi(istochi)%scale
                                 if (idpnw(isys) == 0) then
-                                    ndspn = ndspn + 1
-                                    idpnw(isys) = ndspn
+                                    num_dispersion_arrays_new = num_dispersion_arrays_new + 1
+                                    idpnw(isys) = num_dispersion_arrays_new
                                 endif
                             else
                                 call status%increase_info_count()
@@ -233,7 +233,7 @@ contains
             call write_log_message(line)
 
             ivel = 0
-            do iproc = 1, nproc
+            do iproc = 1, num_processes_activated
                 proc => procesdef%procesprops(iproc)
                 do istochi = 1, proc%no_velostochi
 
@@ -241,7 +241,7 @@ contains
 
                     if (abs(proc%velostochi(istochi)%scale) > 1e-10) then
                         ! If the stochi substance name is ALLACTIVE, apply to all -active- substances
-                        if ((trim(proc%velostochi(istochi)%substance)=='ALLACTIVE' .and. isys<=nosys) &
+                        if ((trim(proc%velostochi(istochi)%substance)=='ALLACTIVE' .and. isys<=num_substances_transported) &
                                 .or. string_equals(gen, proc%velostochi(istochi)%substance)) then
                             ivel = ivel + 1
                             call zoekio (proc%velostochi(istochi)%ioitem, proc%no_output, proc%output_item, &
@@ -254,7 +254,7 @@ contains
                             call write_log_message(line)
                             write (line, '(4a)') '   from proces [', proc%name, '] ', proc%text(1:50)
                             call write_log_message(line)
-                            if (isys > nosys) then
+                            if (isys > num_substances_transported) then
                                 call status%increase_info_count()
                                 write (line, '(2a)') '   info : inactive substance not using velocity.'
                                 call write_log_message(line)
@@ -274,14 +274,14 @@ contains
                                 endif
 
                                 if (proc%output_item(ioutput)%ip_val == 0) then
-                                    nvelx = nvelx + 1
-                                    proc%output_item(ioutput)%ip_val = -nvelx
+                                    num_velocity_arrays_extra = num_velocity_arrays_extra + 1
+                                    proc%output_item(ioutput)%ip_val = -num_velocity_arrays_extra
                                 endif
                                 iivelx = -proc%output_item(ioutput)%ip_val
                                 vsto(isys, iivelx) = proc%velostochi(istochi)%scale
                                 if (ivpnw(isys) == 0) then
-                                    nveln = nveln + 1
-                                    ivpnw(isys) = nveln
+                                    num_velocity_arrays_new = num_velocity_arrays_new + 1
+                                    ivpnw(isys) = num_velocity_arrays_new
                                 endif
                             else
                                 call status%increase_info_count()
@@ -304,11 +304,11 @@ contains
 
         ! set pointers for extra velocity array's
 
-        do iproc = 1, nproc
+        do iproc = 1, num_processes_activated
             proc => procesdef%procesprops(iproc)
             do ioutput = 1, proc%no_output
                 if (proc%output_item(ioutput)%ip_val < 0) then
-                    proc%output_item(ioutput)%ip_val = ioffx + ndspx - proc%output_item(ioutput)%ip_val
+                    proc%output_item(ioutput)%ip_val = ioffx + num_dispersion_arrays_extra - proc%output_item(ioutput)%ip_val
                 endif
             enddo
         enddo

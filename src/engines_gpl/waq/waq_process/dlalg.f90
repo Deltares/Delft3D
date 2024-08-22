@@ -28,9 +28,9 @@ module m_dlalg
 contains
 
 
-    subroutine dlalg  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine dlalg  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper, only : write_error_message
 
         !>\file
@@ -54,27 +54,27 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
         IP3 = IPOINT(3)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
 
-                DL = PMSA(IP1)
-                KMDL = PMSA(IP2)
+                DL = process_space_real(IP1)
+                KMDL = process_space_real(IP2)
 
                 IF (DL < 1E-20)  CALL write_error_message ('DL in DLALG zero')
 
                 !     Actueel licht / licht voor groei verzadiging
-                PMSA(IP3) = MIN (DL, KMDL) / KMDL
+                process_space_real(IP3) = MIN (DL, KMDL) / KMDL
 
             ENDIF
             !

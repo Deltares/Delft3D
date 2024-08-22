@@ -1,0 +1,10 @@
+# List the testcases and Optional xml configuration filter.
+# Seperate the testcase with the xml config file filter with a `,`
+# Comments can be place in the list file with the prefix `#`
+# Use the linux configurations associated with the testcase to run the [push, pull, update_references] command on.
+e112_f01_c11_waardenburg, lnx64
+# Strict xml filter allowing only 1 xml to match
+e112_f01_c11_waardenburg, configs/singularity/dimr/dimr_smoke_test_lnx64.xml
+# Update all configurations the data waardenburg is used in. 
+# Note: Fails if reference- or input path is different for the testcase between configurations!
+e112_f01_c11_waardenburg

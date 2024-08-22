@@ -28,9 +28,9 @@ module m_waqmeteo
 contains
 
 
-    subroutine meteo  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine meteo  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Process meteo from various meteo-stations
 
@@ -52,9 +52,9 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         INTEGER(kind = int_wp) :: MAXSTA, MAXVAR, IP, NP, ISEG, i
         !
         !     aantal meteo stations
@@ -76,45 +76,46 @@ contains
         real(kind = real_wp), DIMENSION(MAXSTA) :: X, Y
 
         DIMENSION IP((MAXSTA + 1) * MAXVAR + MAXSTA * 2 + NP)
-        real(kind = real_wp), DIMENSION(MAXSTA) :: DIST, WFAC
+        real(kind = real_wp), DIMENSION(MAXSTA) :: WEIGHT, WFAC
+        real(kind = real_wp)                    :: DIST
 
-        integer(kind = int_wp) :: icalcsw, inear
-        real(kind = real_wp) :: scale, nostat, xseg, yseg, sum, sum2, min
+        integer(kind = int_wp) :: icalcsw, inear, nostat
+        real(kind = real_wp) :: scale, xseg, yseg, sum, sum2, min
 
         DO I = 1, (MAXSTA + 1) * MAXVAR + MAXSTA * 2 + NP
             IP(I) = IPOINT(I)
         end do
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
                 !     waarden per station
                 !
                 DO I = 1, MAXSTA
-                    RAD(I) = PMSA(IP((I - 1) * MAXVAR + 1))
-                    VWIND(I) = PMSA(IP((I - 1) * MAXVAR + 2))
-                    DIR(I) = PMSA(IP((I - 1) * MAXVAR + 3))
-                    HUM(I) = PMSA(IP((I - 1) * MAXVAR + 4))
-                    TEMP(I) = PMSA(IP((I - 1) * MAXVAR + 5))
-                    PRES(I) = PMSA(IP((I - 1) * MAXVAR + 6))
-                    SUN(I) = PMSA(IP((I - 1) * MAXVAR + 7))
+                    RAD(I) = process_space_real(IP((I - 1) * MAXVAR + 1))
+                    VWIND(I) = process_space_real(IP((I - 1) * MAXVAR + 2))
+                    DIR(I) = process_space_real(IP((I - 1) * MAXVAR + 3))
+                    HUM(I) = process_space_real(IP((I - 1) * MAXVAR + 4))
+                    TEMP(I) = process_space_real(IP((I - 1) * MAXVAR + 5))
+                    PRES(I) = process_space_real(IP((I - 1) * MAXVAR + 6))
+                    SUN(I) = process_space_real(IP((I - 1) * MAXVAR + 7))
                 end do
                 !
                 !     coordinaten van de stations
 
                 DO I = 1, MAXSTA
-                    X(I) = PMSA(IP(MAXSTA * MAXVAR + (I - 1) * 2 + 1))
-                    Y(I) = PMSA(IP(MAXSTA * MAXVAR + (I - 1) * 2 + 2))
+                    X(I) = process_space_real(IP(MAXSTA * MAXVAR + (I - 1) * 2 + 1))
+                    Y(I) = process_space_real(IP(MAXSTA * MAXVAR + (I - 1) * 2 + 2))
                 end do
                 !
                 !     overige parameters
                 !
-                SCALE = PMSA(IP(MAXSTA * (MAXVAR + 2) + 1))
-                NOSTAT = PMSA(IP(MAXSTA * (MAXVAR + 2) + 2))
-                ICALCSW = NINT(PMSA(IP(MAXSTA * (MAXVAR + 2) + 3)))
-                XSEG = PMSA(IP(MAXSTA * (MAXVAR + 2) + 4))
-                YSEG = PMSA(IP(MAXSTA * (MAXVAR + 2) + 5))
+                SCALE = process_space_real(IP(MAXSTA * (MAXVAR + 2) + 1))
+                NOSTAT = process_space_real(IP(MAXSTA * (MAXVAR + 2) + 2))
+                ICALCSW = NINT(process_space_real(IP(MAXSTA * (MAXVAR + 2) + 3)))
+                XSEG = process_space_real(IP(MAXSTA * (MAXVAR + 2) + 4))
+                YSEG = process_space_real(IP(MAXSTA * (MAXVAR + 2) + 5))
 
                 !*******************************************************************************
                 !**** RESULT Calculated meteo parameters based on 1-MAXSTA meteo stations.
@@ -124,8 +125,8 @@ contains
                 !***********************************************************************
 
                 !     Bereken Distance Cell to all stations (in meters)
-                MIN = -1.0
-                SUM = 0.0
+                MIN  = huge(min)
+                SUM  = 0.0
                 SUM2 = 0.0
                 IF (NOSTAT > MAXSTA) THEN
                     NOSTAT = MAXSTA
@@ -137,36 +138,29 @@ contains
 
                 !
                 DO I = 1, NOSTAT
-                    DIST(I) = SQRT ((XSEG - X(I) * SCALE) * (XSEG - X(I) * SCALE) + &
-                            (YSEG - Y(I) * SCALE) * (YSEG - Y(I) * SCALE))
-                    !
-                    dist(i) = 1. / max(dist(i), 1.0)
-                    SUM = SUM + DIST(I)
-                    SUM2 = SUM2 + DIST(I) * DIST(I)
+                    DIST = SQRT ((XSEG - X(I) * SCALE) ** 2 + (YSEG - Y(I) * SCALE) ** 2 )
+                    weight(i) = 1. / max(dist, 1.0)
 
-                    !
-                    IF (MIN < 0.0) THEN
-                        MIN = DIST(I)
-                        INEAR = I
-                    ELSEIF (DIST(I) < MIN) THEN
-                        MIN = DIST(I)
+                    SUM = SUM + weight(I)
+                    SUM2 = SUM2 + weight(I) ** 2
+
+                    IF (DIST < MIN) THEN
+                        MIN = DIST
                         INEAR = I
                     ENDIF
-                    !
                 end do
-
 
                 !
                 !     optie 1:  nearest station
                 !
                 IF  (ICALCSW == 1) THEN
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 1)) = RAD(INEAR)
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 2)) = VWIND(INEAR)
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 3)) = DIR(INEAR)
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 4)) = HUM(INEAR)
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 5)) = TEMP(INEAR)
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 6)) = PRES(INEAR)
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 7)) = SUN(INEAR)
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 1)) = RAD(INEAR)
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 2)) = VWIND(INEAR)
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 3)) = DIR(INEAR)
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 4)) = HUM(INEAR)
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 5)) = TEMP(INEAR)
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 6)) = PRES(INEAR)
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 7)) = SUN(INEAR)
                     !
                     !     optie 2a: dist weighted lineair
                     !
@@ -174,47 +168,47 @@ contains
                     !         optie 2 lineair inv dist
                     IF (ICALCSW == 2) THEN
                         DO I = 1, NOSTAT
-                            WFAC(I) = DIST(I) / SUM
+                            WFAC(I) = WEIGHT(I) / SUM
                         end do
                         !
                         !         optie 2b: inv dist kwadratisch
                     ELSEIF (ICALCSW == 3) THEN
                         DO I = 1, NOSTAT
-                            WFAC(I) = DIST(I) * DIST(I) / SUM2
+                            WFAC(I) = WEIGHT(I) ** 2 / SUM2
                         end do
 
                     ENDIF
 
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 1)) = 0.0
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 2)) = 0.0
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 4)) = 0.0
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 5)) = 0.0
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 6)) = 0.0
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 7)) = 0.0
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 1)) = 0.0
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 2)) = 0.0
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 4)) = 0.0
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 5)) = 0.0
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 6)) = 0.0
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 7)) = 0.0
                     DO I = 1, NOSTAT
-                        PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 1)) = &
-                                PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 1)) + WFAC(I) * RAD(I)
+                        process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 1)) = &
+                                process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 1)) + WFAC(I) * RAD(I)
 
-                        PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 2)) = &
-                                PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 2)) + WFAC(I) * VWIND(I)
+                        process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 2)) = &
+                                process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 2)) + WFAC(I) * VWIND(I)
 
-                        PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 4)) = &
-                                PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 4)) + WFAC(I) * HUM(I)
+                        process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 4)) = &
+                                process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 4)) + WFAC(I) * HUM(I)
 
-                        PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 5)) = &
-                                PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 5)) + WFAC(I) * TEMP(I)
+                        process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 5)) = &
+                                process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 5)) + WFAC(I) * TEMP(I)
 
-                        PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 6)) = &
-                                PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 6)) + WFAC(I) * PRES(I)
+                        process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 6)) = &
+                                process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 6)) + WFAC(I) * PRES(I)
 
-                        PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 7)) = &
-                                PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 7)) + WFAC(I) * SUN(I)
+                        process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 7)) = &
+                                process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 7)) + WFAC(I) * SUN(I)
 
                     end do
                     !
                     !         wind ricthing niet middelen
                     !
-                    PMSA(IP(MAXSTA * (MAXVAR + 2) + NP + 3)) = DIR(INEAR)
+                    process_space_real(IP(MAXSTA * (MAXVAR + 2) + NP + 3)) = DIR(INEAR)
 
                 ENDIF
 

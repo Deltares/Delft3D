@@ -192,13 +192,13 @@ program waqmerge
             if (domain_hyd%file_cco%name /= ' ') then
                 domain_hyd%file_geo%name = domain_hyd%file_cco%name
             else
-                write (lunrep, '(a)') ' error: no waqgeom file found for domain'
-                call stop_with_error()
-            end if
-        end if
-        call read_hyd_init(domain_hyd)
-        call reallocP(domain_hyd%iglobal_link, domain_hyd%noq1, fill=0, keepExisting=.false.)
-    end do
+               write(lunrep,'(a)') ' error: no waqgeom file found for domain'
+               call stop_with_error()
+            endif
+         endif
+         call read_hyd_init(domain_hyd)
+         call reallocP(domain_hyd%iglobal_link, domain_hyd%num_exchanges_u_dir, fill=0, keepExisting=.false.)
+      enddo
 
     ! set new dimension and renumber tables
 
@@ -231,34 +231,33 @@ program waqmerge
 !         hyd%file_geo%name = new_geom
 !         call write_hyd(hyd, version)
 !         call write_waqgeom_ugrid(new_geom, hyd, version)
-    end if
-    write (lunrep, '(2a)') ' writing boundary def. file     : ', trim(hyd%file_bnd%name)
-    call write_bnd(hyd)
-    write (lunrep, '(2a)') ' writing exchange pointers file : ', trim(hyd%file_poi%name)
-    call write_poi(hyd%file_poi, hyd%noq, hyd%noq1, hyd%noq2, hyd%noq3, hyd%ipoint)
-    write (lunrep, '(2a)') ' writing attributes file       : ', trim(hyd%file_atr%name)
-    call write_atr(hyd)
+      endif
+      write(lunrep,'(2a)') ' writing boundary def. file     : ',trim(hyd%file_bnd%name)
+      call write_bnd(hyd)
+      write(lunrep,'(2a)') ' writing exchange pointers file : ',trim(hyd%file_poi%name)
+      call write_poi(hyd%file_poi, hyd%num_exchanges, hyd%num_exchanges_u_dir, hyd%num_exchanges_v_dir, hyd%num_exchanges_z_dir, hyd%ipoint)
+      write(lunrep,'(2a)') ' writing attributes file       : ',trim(hyd%file_atr%name)
+      call write_atr ( hyd )
 
-    if (hyd%geometry == HYD_GEOM_UNSTRUC) then
-        write (lunrep, '(2a)') ' write horizontal surfaces file : ', trim(hyd%file_hsrf%name)
-        call write_hsrf(hyd%file_hsrf, hyd%noseg, hyd%surf)
-    end if
-    write (lunrep, '(2a)') ' write surface areas file       : ', trim(hyd%file_srf%name)
-    call write_srf(hyd%file_srf, hyd%mmax, hyd%nmax, hyd%nosegl, hyd%surf)
-    if (hyd%file_dps%name /= ' ') then
-        write (lunrep, '(2a)') ' write depths file              : ', trim(hyd%file_dps%name)
-        call write_srf(hyd%file_dps, hyd%mmax, hyd%nmax, hyd%nosegl, hyd%depth)
-    end if
-    itime = 0
-    valnam(1) = 'displen-from'
-    valnam(2) = 'displen-to'
-    write (lunrep, '(2a)') ' writing dispersion length file : ', trim(hyd%file_len%name)
-    call write_data(hyd%file_len, itime, 1, hyd%noq1, hyd%noq2, hyd%noq3, 2, 1, 0, valnam, hyd%displen, 0)
+      if (hyd%geometry .eq. HYD_GEOM_UNSTRUC) then
+         write(lunrep,'(2a)') ' write horizontal surfaces file : ',trim(hyd%file_hsrf%name)
+         call write_hsrf ( hyd%file_hsrf, hyd%num_cells, hyd%surf)
+      endif
+      write(lunrep,'(2a)') ' write surface areas file       : ',trim(hyd%file_srf%name)
+      call write_srf ( hyd%file_srf, hyd%num_columns  , hyd%num_rows  , hyd%nosegl, hyd%surf)
+      if (hyd%file_dps%name.ne.' ') then
+         write(lunrep,'(2a)') ' write depths file              : ',trim(hyd%file_dps%name)
+         call write_srf ( hyd%file_dps, hyd%num_columns  , hyd%num_rows  , hyd%nosegl, hyd%depth)
+      endif
+      itime     = 0
+      valnam(1) = 'displen-from'
+      valnam(2) = 'displen-to'
+      write(lunrep,'(2a)') ' writing dispersion length file : ',trim(hyd%file_len%name)
+      call write_data ( hyd%file_len, itime, 1, hyd%num_exchanges_u_dir, hyd%num_exchanges_v_dir, hyd%num_exchanges_z_dir, 2, 1, 0, valnam, hyd%displen,0)
 
     ! time loop
 
     do
-
         do i_domain = 1, n_domain
 
             domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)

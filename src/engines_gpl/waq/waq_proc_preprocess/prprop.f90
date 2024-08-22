@@ -195,7 +195,7 @@ contains
         !     loop over all processes
         !
         allocate(actuse(no_act))
-        do iproc = 1, nproc
+        do iproc = 1, num_processes_activated
             !
             !        Check if process is requested and licensed
             !
@@ -303,7 +303,7 @@ contains
 
                 ! output items on segment level/exchange level
 
-                do ioutp = 1, noutp
+                do ioutp = 1, num_output_files
                     if (string_equals(procid(iproc), outppr(ioutp))) then
 
                         ! lookup item in items table

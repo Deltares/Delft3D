@@ -1,0 +1,175 @@
+      subroutine TSSetCostGradients(a,b,c,d,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine TSSetCostGradients
+      subroutine TSGetCostGradients(a,b,c,d,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine TSGetCostGradients
+      subroutine TSSetCostHessianProducts(a,b,c,d,e,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       PetscErrorCode z
+       end subroutine TSSetCostHessianProducts
+      subroutine TSGetCostHessianProducts(a,b,c,d,e,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       Vec d ! Vec
+       Vec e ! Vec
+       PetscErrorCode z
+       end subroutine TSGetCostHessianProducts
+      subroutine TSAdjointSetForward(a,b,z)
+       import tTS,tMat
+       TS a ! TS
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine TSAdjointSetForward
+      subroutine TSAdjointResetForward(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSAdjointResetForward
+      subroutine TSAdjointSetUp(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSAdjointSetUp
+      subroutine TSAdjointReset(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSAdjointReset
+      subroutine TSAdjointSetSteps(a,b,z)
+       import tTS
+       TS a ! TS
+       PetscInt b ! PetscInt
+       PetscErrorCode z
+       end subroutine TSAdjointSetSteps
+      subroutine TSAdjointComputeDRDYFunction(a,b,c,d,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine TSAdjointComputeDRDYFunction
+      subroutine TSAdjointComputeDRDPFunction(a,b,c,d,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscReal b ! PetscReal
+       Vec c ! Vec
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine TSAdjointComputeDRDPFunction
+      subroutine TSAdjointStep(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSAdjointStep
+      subroutine TSAdjointSolve(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSAdjointSolve
+      subroutine TSAdjointCostIntegral(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSAdjointCostIntegral
+      subroutine TSForwardSetUp(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSForwardSetUp
+      subroutine TSForwardReset(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSForwardReset
+      subroutine TSForwardSetIntegralGradients(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSForwardSetIntegralGradients
+      subroutine TSForwardGetIntegralGradients(a,b,c,z)
+       import tTS,tVec
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TSForwardGetIntegralGradients
+      subroutine TSForwardStep(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSForwardStep
+      subroutine TSForwardSetSensitivities(a,b,c,z)
+       import tTS,tMat
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine TSForwardSetSensitivities
+      subroutine TSForwardGetSensitivities(a,b,c,z)
+       import tTS,tMat
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine TSForwardGetSensitivities
+      subroutine TSForwardCostIntegral(a,z)
+       import tTS
+       TS a ! TS
+       PetscErrorCode z
+       end subroutine TSForwardCostIntegral
+      subroutine TSForwardSetInitialSensitivities(a,b,z)
+       import tTS,tMat
+       TS a ! TS
+       Mat b ! Mat
+       PetscErrorCode z
+       end subroutine TSForwardSetInitialSensitivities
+      subroutine TSForwardGetStages(a,b,c,z)
+       import tTS,tMat
+       TS a ! TS
+       PetscInt b ! PetscInt
+       Mat c ! Mat
+       PetscErrorCode z
+       end subroutine TSForwardGetStages
+      subroutine TSCreateQuadratureTS(a,b,c,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       TS c ! TS
+       PetscErrorCode z
+       end subroutine TSCreateQuadratureTS
+      subroutine TSGetQuadratureTS(a,b,c,z)
+       import tTS
+       TS a ! TS
+       PetscBool b ! PetscBool
+       TS c ! TS
+       PetscErrorCode z
+       end subroutine TSGetQuadratureTS
+      subroutine TSComputeSNESJacobian(a,b,c,d,z)
+       import tTS,tVec,tMat
+       TS a ! TS
+       Vec b ! Vec
+       Mat c ! Mat
+       Mat d ! Mat
+       PetscErrorCode z
+       end subroutine TSComputeSNESJacobian

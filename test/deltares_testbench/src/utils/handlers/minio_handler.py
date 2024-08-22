@@ -1,6 +1,5 @@
-"""
-Description: Executes MinIO commands
------------------------------------------------------
+"""Executes MinIO commands.
+
 Copyright (C)  Stichting Deltares, 2024
 """
 
@@ -18,20 +17,28 @@ from src.utils.minio_rewinder import Rewinder
 
 
 class MinIOHandler(IHandler):
-    """MinIO wrapper, has handler interface"""
+    """MinIO wrapper, has handler interface."""
 
-    def download(self, from_path: str, to_path: str, credentials: Credentials, version: Optional[str], logger: ILogger):
-        """Sets up a Minio client connection. You can specify the download
-        source and destination
+    def download(
+        self, from_path: str, to_path: str, credentials: Credentials, version: Optional[str], logger: ILogger
+    ) -> None:
+        """Set up a Minio client connection.
 
-        Args:
-            from_path (str): minio URL
-            to_path (str): dowload location
-            credentials (Credentials): minio credentials
-            version (str): timestamp string e.g. "2023.10.20T12:00"
-            logger (ILogger): The logger that logs to a file
+        You can specify the download source and destination.
+
+        Parameters
+        ----------
+        from_path : str
+            Minio URL.
+        to_path : str
+            Dowload location.
+        credentials : Credentials
+            Minio credentials.
+        version : str
+            Timestamp string e.g. "2023.10.20T12:00".
+        logger : ILogger
+            The logger that logs to a file.
         """
-
         match = re.match(r"^https://(?P<hostname>[^/]*)/(?P<bucket>[^/]*)/(?P<path>.*)$", from_path)
         if match is None:
             raise ValueError("Invalid `from_path` value. Must match pattern `https://{hostname}/{bucket-name}/{path}`")

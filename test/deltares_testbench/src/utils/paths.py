@@ -1,7 +1,6 @@
-"""
-Description: Path helper
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Path helper.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import os
@@ -40,7 +39,7 @@ class Paths(object):
     # check if a given path string is an actual path
     # input: path string
     # output: boolean
-    def isPath(self, path):
+    def isPath(self, path) -> bool:
         if "/" in path:
             if path.startswith("/") and path.count("/") == 1:
                 return False
@@ -53,7 +52,7 @@ class Paths(object):
     # check if the given path is an absolute path
     # input: path string
     # output: boolean
-    def isAbsolute(self, path):
+    def isAbsolute(self, path) -> bool:
         if path[0] == "/" or re.match(r"^[A-Za-z]:", path):
             return True
         return False
@@ -147,11 +146,7 @@ class Paths(object):
         if excludePathsContaining == "":
             return [os.path.abspath(x[0]) for x in os.walk(root)]
         else:
-            return [
-                os.path.abspath(x[0])
-                for x in os.walk(root)
-                if excludePathsContaining not in str(x[0])
-            ]
+            return [os.path.abspath(x[0]) for x in os.walk(root) if excludePathsContaining not in str(x[0])]
 
     # find all files in all sub directories from a given path
     # input: root path to search from
@@ -161,14 +156,9 @@ class Paths(object):
         for subdir in self.findAllSubFolders(root, ""):
             prefix = subdir.replace(os.path.abspath(root), "")
             prefix = self.rebuildToLocalPath(prefix)
-            if subdir.find(".svn") == -1:
-                retval.extend(
-                    [
-                        os.path.join(prefix, f)
-                        for f in os.listdir(subdir)
-                        if os.path.isfile(os.path.join(subdir, f))
-                    ]
-                )
+            retval.extend(
+                [os.path.join(prefix, f) for f in os.listdir(subdir) if os.path.isfile(os.path.join(subdir, f))]
+            )
         # Remove leading/trailing slashes; they mess up the comparison
         for index, rv in enumerate(retval):
             retval[index] = rv.strip("/\\")

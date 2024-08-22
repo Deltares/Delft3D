@@ -97,9 +97,9 @@ contains
         ! Note:
         !     There should be no error message
 
-        integer, parameter :: notot = 10
-        integer, parameter :: noseg = 23
-        real, dimension(notot, noseg) :: conc
+        integer, parameter :: num_substances_total = 10
+        integer, parameter :: num_cells = 23
+        real, dimension(num_substances_total, num_cells) :: conc
         integer :: itime
         integer, dimension(30) :: lun
         character(len = 200) :: dataPath
@@ -120,7 +120,7 @@ contains
 
         sname = (/' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', '10'/)
 
-        call write_restart_map_file(lun, file_name_list, conc, itime, mname, sname, notot, noseg)
+        call write_restart_map_file(lun, file_name_list, conc, itime, mname, sname, num_substances_total, num_cells)
 
         close (lun(19))
 
@@ -136,9 +136,9 @@ contains
         ! Note:
         !     There should be no error message
 
-        integer, parameter :: notot = 10
-        integer, parameter :: noseg = 23
-        real, dimension(notot, noseg) :: conc
+        integer, parameter :: num_substances_total = 10
+        integer, parameter :: num_cells = 23
+        real, dimension(num_substances_total, num_cells) :: conc
         integer :: itime
         integer, dimension(30) :: lun
         character(len = 200) :: dataPath
@@ -162,7 +162,7 @@ contains
 
         sname = (/' 1', ' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8', ' 9', '10'/)
 
-        call write_restart_map_file(lun, file_name_list, conc, itime, mname, sname, notot, noseg)
+        call write_restart_map_file(lun, file_name_list, conc, itime, mname, sname, num_substances_total, num_cells)
 
         close (lun(19))
 

@@ -356,7 +356,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f009_c030_zandloper30m" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f009_weirs/c030_zandloper30m</path>
+      <path version="2024-08-06T10:25:00">e02_dflowfm/f009_weirs/c030_zandloper30m</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/zandloper_his.nc" type="netCDF">

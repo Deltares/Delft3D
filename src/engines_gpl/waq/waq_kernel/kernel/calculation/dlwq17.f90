@@ -35,26 +35,26 @@ module m_dlwq17
         !! - at inflow, set open boundary condition to:
         !!       - prescribed value if inflow time larger than the time-lag
         !!       - evaluates Tatcher-Harleman boundary if inflow time is less than time-lag
-    subroutine thatcher_harleman_bc(bset, bsave, ibpnt, nobnd, nosys, &
-            notot, idt, conc, flow, bound)
+    subroutine thatcher_harleman_bc(bset, bsave, ibpnt, num_boundary_conditions, num_substances_transported, &
+            num_substances_total, idt, conc, flow, bound)
 
         use m_cli_utils, only : is_command_arg_specified
         use timers
         implicit none
 
-        integer(kind = int_wp), intent(in) :: nosys                 !< number of transported substances
-        integer(kind = int_wp), intent(in) :: notot                 !< total number of substances
-        integer(kind = int_wp), intent(in) :: nobnd                 !< number of open boundary conditions
-        real(kind = real_wp), intent(in) :: bset (nosys, nobnd)     !< prescribed open boundary conditions
-        real(kind = real_wp), intent(inout) :: bsave(nosys, nobnd)  !< saved open boundaries at outflow
-        integer(kind = int_wp), intent(inout) :: ibpnt(4, nobnd)    !< 1 = timelags /n
+        integer(kind = int_wp), intent(in) :: num_substances_transported                 !< number of transported substances
+        integer(kind = int_wp), intent(in) :: num_substances_total                 !< total number of substances
+        integer(kind = int_wp), intent(in) :: num_boundary_conditions                 !< number of open boundary conditions
+        real(kind = real_wp), intent(in) :: bset (num_substances_transported, num_boundary_conditions)     !< prescribed open boundary conditions
+        real(kind = real_wp), intent(inout) :: bsave(num_substances_transported, num_boundary_conditions)  !< saved open boundaries at outflow
+        integer(kind = int_wp), intent(inout) :: ibpnt(4, num_boundary_conditions)    !< 1 = timelags /n
                                                                     !< 2 = flow pointer (can be negative) /n
                                                                     !< 3 = segment pointer /n
                                                                     !< 4 = time on the cosine /n
         integer(kind = int_wp), intent(in) :: idt                   !< time step size in system clock units
-        real(kind = real_wp), intent(in) :: conc (notot, *)         !< model concentrations
+        real(kind = real_wp), intent(in) :: conc (num_substances_total, *)         !< model concentrations
         real(kind = real_wp), intent(in) :: flow (*)                !< model flows
-        real(kind = real_wp), intent(out) :: bound(nosys, nobnd)    !< model open boundary conditions
+        real(kind = real_wp), intent(out) :: bound(num_substances_transported, num_boundary_conditions)    !< model open boundary conditions
 
         ! Local variables
         real(kind = real_wp), parameter :: pi = 3.141593
@@ -83,7 +83,7 @@ module m_dlwq17
             init = .false.
         endif
 
-        do ibnd = 1, nobnd
+        do ibnd = 1, num_boundary_conditions
             itlag = ibpnt(1, ibnd)
             if (itlag == 0) then                     !  time lag not used for this boundary
                 bound(:, ibnd) = bset(:, ibnd)
@@ -97,8 +97,8 @@ module m_dlwq17
                 if (aflow >= 0.0) then                   !  outflow
                     ibpnt(4, ibnd) = 0
                     iseg = ibpnt(3, ibnd)
-                    bsave(:, ibnd) = conc(1:nosys, iseg)
-                    bound(:, ibnd) = conc(1:nosys, iseg)
+                    bsave(:, ibnd) = conc(1:num_substances_transported, iseg)
+                    bound(:, ibnd) = conc(1:num_substances_transported, iseg)
                 else                                         !  inflow
                     ibtime = ibpnt(4, ibnd) + idt
                     ibpnt(4, ibnd) = ibtime
@@ -113,7 +113,7 @@ module m_dlwq17
 
             ! 'mirror' boundary for substances with negative boundary concentrations, initially for efficiency tracers
             if (bndmirror) then
-                do isub = 1, nosys
+                do isub = 1, num_substances_transported
                     if (bset (isub, ibnd) < 0.0) then
                         ! when a negative boundary concentration is set, use current internal segment concentration
                         ! as a boundary instead of what was determined above

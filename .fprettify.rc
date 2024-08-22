@@ -18,6 +18,6 @@ enable-replacements = True
 c-relations = True
 case = [1, 1, 1, 1]
 exclude = [third_party, third_party_open, src/engines_gpl/dflowfm/packages/dflowfm_lib/templates, src/engines_gpl/flow2d3d]
-strip-comments = False
+strip-comments = True
 disable-fypp = True
 disable-indent-mod = False

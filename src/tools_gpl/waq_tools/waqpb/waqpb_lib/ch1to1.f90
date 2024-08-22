@@ -34,7 +34,7 @@
       integer lu_mes
       logical item_produced_by_process(nitemm)
       integer iconf, item, iproc, ioutp
-      character*10 last_process
+      character(len=10) last_process
 
       do iconf = 1,nconf
 

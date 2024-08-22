@@ -29,44 +29,44 @@ contains
 
     !> Fills off-diagonal values of the matrix for GMRES fast solver
     !! horizontally and vertically according to backward differences in space
-    subroutine dlwqh2(noseg, nobnd, noq1, noq2, noq, &
-                      ipoint, nodisp, novelo, idpnt, ivpnt, &
+    subroutine dlwqh2(num_cells, num_boundary_conditions, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges, &
+                      ipoint, num_dispersion_arrays, num_velocity_arrays, idpnt, ivpnt, &
                       area, flow, disp, disper, velo, &
-                      isys, nomat, amat, imat, idiag, &
+                      isys, fast_solver_arr_size, amat, imat, idiag, &
                       diag, diagcc, iscale, fmat, tmat, &
                       mixlen, iknmrk)
 
         use timers
         implicit none
 
-        integer(kind=int_wp), intent(in   ) :: noseg                  !< Number of computational volumes
-        integer(kind=int_wp), intent(in   ) :: nobnd                  !< Number of open boundaries
-        integer(kind=int_wp), intent(in   ) :: noq1                   !< Number of fluxes first direction
-        integer(kind=int_wp), intent(in   ) :: noq2                   !< Number of fluxes second direction
-        integer(kind=int_wp), intent(in   ) :: noq                    !< Total number fluxes in the water phase
-        integer(kind=int_wp), intent(in   ) :: ipoint(4, noq)         !< From, to, from-1, to+1 volume numbers per flux
-        integer(kind=int_wp), intent(in   ) :: nodisp                 !< Number of additional dispersion arrays
-        integer(kind=int_wp), intent(in   ) :: novelo                 !< Number of additional velocity   arrays
+        integer(kind=int_wp), intent(in   ) :: num_cells                  !< Number of computational volumes
+        integer(kind=int_wp), intent(in   ) :: num_boundary_conditions                  !< Number of open boundaries
+        integer(kind=int_wp), intent(in   ) :: num_exchanges_u_dir                   !< Number of fluxes first direction
+        integer(kind=int_wp), intent(in   ) :: num_exchanges_v_dir                   !< Number of fluxes second direction
+        integer(kind=int_wp), intent(in   ) :: num_exchanges                    !< Total number fluxes in the water phase
+        integer(kind=int_wp), intent(in   ) :: ipoint(4, num_exchanges)         !< From, to, from-1, to+1 volume numbers per flux
+        integer(kind=int_wp), intent(in   ) :: num_dispersion_arrays                 !< Number of additional dispersion arrays
+        integer(kind=int_wp), intent(in   ) :: num_velocity_arrays                 !< Number of additional velocity   arrays
         integer(kind=int_wp), intent(in   ) :: idpnt(*)               !< Dispersion array to be applied per substance
         integer(kind=int_wp), intent(in   ) :: ivpnt(*)               !< Velocity   array to be applied per substance
-        real(kind=real_wp),   intent(in   ) :: area(noq)              !< Crosssectional surface areas of the fluxes
-        real(kind=real_wp),   intent(in   ) :: flow(noq)              !< Fluxes
+        real(kind=real_wp),   intent(in   ) :: area(num_exchanges)              !< Crosssectional surface areas of the fluxes
+        real(kind=real_wp),   intent(in   ) :: flow(num_exchanges)              !< Fluxes
         real(kind=real_wp),   intent(in   ) :: disp(3)                !< Default dispersions in the 3 directions
-        real(kind=real_wp),   intent(in   ) :: disper(nodisp, noq)    !< Additional dispersion arrays
-        real(kind=real_wp),   intent(in   ) :: velo(novelo, noq)      !< Additional velocity arrays
+        real(kind=real_wp),   intent(in   ) :: disper(num_dispersion_arrays, num_exchanges)    !< Additional dispersion arrays
+        real(kind=real_wp),   intent(in   ) :: velo(num_velocity_arrays, num_exchanges)      !< Additional velocity arrays
         integer(kind=int_wp), intent(in   ) :: isys                   !< Substances number to be used for this matrix
-        integer(kind=int_wp), intent(in   ) :: nomat                  !< Dimension of off-diagonal matrix amat
-        real(kind=dp),        intent(  out) :: amat(nomat)            !< Matrix with off-diagonal entries
-        integer(kind=int_wp), intent(in   ) :: imat(nomat)            !< Pointers of the off-diagonals in amat
-        integer(kind=int_wp), intent(in   ) :: idiag(0:noseg + nobnd) !< Position of the diagonals in amat
-        real(kind=dp),        intent(inout) :: diag(noseg + nobnd)    !< Diagonal of the matrix
-        real(kind=dp),        intent(inout) :: diagcc(noseg + nobnd)  !< Copy of (unscaled) diagonal of the matrix
+        integer(kind=int_wp), intent(in   ) :: fast_solver_arr_size                  !< Dimension of off-diagonal matrix amat
+        real(kind=dp),        intent(  out) :: amat(fast_solver_arr_size)            !< Matrix with off-diagonal entries
+        integer(kind=int_wp), intent(in   ) :: imat(fast_solver_arr_size)            !< Pointers of the off-diagonals in amat
+        integer(kind=int_wp), intent(in   ) :: idiag(0:num_cells + num_boundary_conditions) !< Position of the diagonals in amat
+        real(kind=dp),        intent(inout) :: diag(num_cells + num_boundary_conditions)    !< Diagonal of the matrix
+        real(kind=dp),        intent(inout) :: diagcc(num_cells + num_boundary_conditions)  !< Copy of (unscaled) diagonal of the matrix
         integer(kind=int_wp), intent(in   ) :: iscale                 !< = 0 no row scaling of diagonal
                                                                       !< = 1    row scaling of diagonal
-        integer(kind=int_wp), intent(in   ) :: fmat(noq)              !< Location from(iq) in matrix
-        integer(kind=int_wp), intent(in   ) :: tmat(noq)              !< Location to  (iq) in matrix
-        real(kind=real_wp),   intent(in   ) :: mixlen(noq)            !< Area/length for diffusion
-        integer(kind=int_wp), intent(in   ) :: iknmrk(noseg)          !< Feature array, bit zero indicates wet or not
+        integer(kind=int_wp), intent(in   ) :: fmat(num_exchanges)              !< Location from(iq) in matrix
+        integer(kind=int_wp), intent(in   ) :: tmat(num_exchanges)              !< Location to  (iq) in matrix
+        real(kind=real_wp),   intent(in   ) :: mixlen(num_exchanges)            !< Area/length for diffusion
+        integer(kind=int_wp), intent(in   ) :: iknmrk(num_cells)          !< Feature array, bit zero indicates wet or not
 
         ! Local variables
         logical lscale                !<  APPLY row scaling of the diagonal?
@@ -93,7 +93,7 @@ contains
         ! reset the entire matrix
         amat = 0.0d0
 
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ! pointer administration check for transport anyhow
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
@@ -110,9 +110,9 @@ contains
             a = area(iq)
             q = flow(iq)
             if (a < 1.0e-25) a = 1.0
-            if (iq <= noq1) then
+            if (iq <= num_exchanges_u_dir) then
                 e = disp(1)
-            else if (iq <= noq1 + noq2) then
+            else if (iq <= num_exchanges_u_dir + num_exchanges_v_dir) then
                 e = disp(2)
             else
                 e = disp(3)
@@ -149,7 +149,7 @@ contains
         ! finally scale the matrix to avoid possible round-off errors in GMRES
         ! this scaling may need some adaption for future domain decomposition b.c.
         if (lscale) then
-            do iq = 1, noseg + nobnd
+            do iq = 1, num_cells + num_boundary_conditions
                 ifrom = idiag(iq - 1) + 1
                 ito = idiag(iq)
 
@@ -165,7 +165,7 @@ contains
                 diag(iq) = 1.0d00
             end do
         else
-            do iq = 1, noseg + nobnd
+            do iq = 1, num_cells + num_boundary_conditions
                 diagcc(iq) = 1.0d00
             end do
         end if

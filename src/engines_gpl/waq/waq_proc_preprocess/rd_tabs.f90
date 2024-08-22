@@ -219,7 +219,7 @@
 !     table p4 (processes)
 !
       call rd_tabp4 ( deffds      , & 
-                     nprocm      , nproc       , & 
+                     nprocm      , num_processes_activated       , &
                      procid      , procnm      , & 
                      procfo      , procco      , & 
                      lunrep      , ierror      )
@@ -247,7 +247,7 @@
 !
       call rd_tabr1 ( deffds       , & 
                      nconfm*nprocm, nconf       , & 
-                     nproc        , icnpro      , & 
+                     num_processes_activated        , icnpro      , &
                      lunrep       , ierror      )
       if ( ierror /= 0 ) then
          call status%increase_error_count()
@@ -287,7 +287,7 @@
 !     table r4 (output items)
 !
       call rd_tabr4 ( deffds      , & 
-                     noutpm      , noutp       , & 
+                     noutpm      , num_output_files       , &
                      outppr      , outpit      , & 
                      outpnm      , outpdo      , & 
                      outpsx      , lunrep      , & 

@@ -2017,7 +2017,7 @@ module m_ec_converter
          !
          real(hp) :: x01, y01, dx1, dy1 !< uniform grid parameters
          integer  :: mx                 !< n_cols (x or latitude coordinate)
-         integer  :: nx                 !< n_rows (y or longitude coordinate)
+         integer  :: grid_width                 !< n_rows (y or longitude coordinate)
          integer  :: n                  !< loop counter
          real(hp) :: x1, y1             !<
          integer  :: i1, j1             !<
@@ -2056,7 +2056,7 @@ module m_ec_converter
                   dy1 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%dy
                end if
                mx = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_cols
-               nx = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows
+               grid_width = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows
                sourceT0Field => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr
                sourceT1Field => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr
                !
@@ -2067,14 +2067,14 @@ module m_ec_converter
                   if (x1 < -0.5_hp .or. x1 > mx - 0.5_hp) cycle
                   !
                   y1 = (connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n) - y01)/dy1
-                  if (y1 < -0.5_hp .or. y1 > nx - 0.5_hp) cycle
+                  if (y1 < -0.5_hp .or. y1 > grid_width - 0.5_hp) cycle
                   !
                   i1  = int(x1 + 1)
                   i1  = min(mx - 1,max(1, i1))
                   di1 = x1 + 1 - i1
                   !
                   j1  = int(y1 + 1)
-                  j1  = min(nx - 1,max(1, j1))
+                  j1  = min(grid_width - 1,max(1, j1))
                   dj1 = y1 + 1 - j1
                   ! spatial weight factors
                   f(1) = (1-di1)*(1-dj1)
@@ -2195,7 +2195,7 @@ module m_ec_converter
          !
          integer :: j
          integer :: start_j
-         integer :: nx, tgtndx
+         integer :: grid_width, tgtndx
          !
          success = .false.
          !
@@ -2204,14 +2204,14 @@ module m_ec_converter
                select case(connection%converterPtr%operandType)
                   case(operand_replace_element)
                      tgtndx = connection%converterPtr%targetIndex
-                     nx = connection%sourceItemsPtr(1)%ptr%elementSetPtr%nCoordinates
+                     grid_width = connection%sourceItemsPtr(1)%ptr%elementSetPtr%nCoordinates
                      input => connection%converterPtr%inputptr
                      if (input < connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)) then
                         connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx) = connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(1) ! waterlevel(i)
-                     else if (input > connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(nx)) then
-                        connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx) = connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(nx) ! waterlevel(nx)
+                     else if (input > connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(grid_width)) then
+                        connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx) = connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(grid_width) ! waterlevel(grid_width)
                      else
-                        do j=2, nx
+                        do j=2, grid_width
                            if (input < connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(j)) then ! discharge(j)
                               start_j = j
                               exit
@@ -2690,7 +2690,7 @@ module m_ec_converter
          integer, dimension(2)          :: idx
 
          !
-         PI = datan(1.d0)*4.d0
+         PI = atan(1.d0)*4.d0
          success = .false.
          targetField => null()
          sourceT0Field => null()
@@ -2832,7 +2832,7 @@ module m_ec_converter
                                             comparereal(phase0, sourceMissing, .true.)==0 ) then
                                             sourceT0Field%arr1d(ipt) = sourceMissing
                                         else
-                                            sourceT0Field%arr1d(ipt) = amplitude * dcos(omega * delta_t - phase0 * PI/180.0_hp)
+                                            sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI/180.0_hp)
                                         end if
                                     end do
                                 end if
@@ -2851,7 +2851,7 @@ module m_ec_converter
                                                 comparereal(phase0, sourceMissing, .true.)==0 ) then
                                                 sourceT0Field%arr1d(ipt) = sourceMissing
                                             else
-                                                sourceT0Field%arr1d(ipt) = amplitude * dcos(omega * delta_t - phase0 * PI/180.0_hp)
+                                                sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI/180.0_hp)
                                             end if
                                         end do
                                     end do
@@ -3309,6 +3309,8 @@ module m_ec_converter
       !! @param[out] sm lambda in [0,1] on line segment 3-4 (outside [0,1] if no intersection). Unchanged if no intersect!!
       !! @param[out] xcr,ycr x-coord. of intersection point.
       SUBROUTINE CROSS(x1, y1, x2, y2, x3, y3, x4, y4, JACROS,SL,SM,XCR,YCR,CRP)
+         use ieee_arithmetic, only: ieee_is_nan
+
          double precision, intent(inout) :: crp !< crp (in)==-1234 will make crp (out) non-dimensional
          double precision :: det
          double precision :: eps
@@ -3320,7 +3322,7 @@ module m_ec_converter
          double precision                  :: dmiss    = -999d0
 
    !     safety check on crp (in)
-         if ( isnan(crp) ) then
+         if ( ieee_is_nan(crp) ) then
             crp = 0.0_hp
          end if
 

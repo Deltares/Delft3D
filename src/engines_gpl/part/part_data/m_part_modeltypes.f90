@@ -22,15 +22,14 @@
 !!  rights reserved.
 
 module m_part_modeltypes
-!
-!  module declarations
-!
-      implicit none    
-      integer, parameter :: model_tracers             = 1
-      integer, parameter :: model_two_layer_temp      = 2
-      integer, parameter :: model_red_tide            = 3
-      integer, parameter :: model_oil                 = 4
-      integer, parameter :: model_2d3d_temp           = 5
-      integer, parameter :: model_prob_dens_settling  = 6
-      integer, parameter :: model_abm                 = 7
+
+    !  module declarations
+    implicit none
+    integer, parameter :: model_tracers = 1
+    integer, parameter :: model_two_layer_temp = 2
+    integer, parameter :: model_red_tide = 3
+    integer, parameter :: model_oil = 4
+    integer, parameter :: model_2d3d_temp = 5
+    integer, parameter :: model_prob_dens_settling = 6
+    integer, parameter :: model_abm = 7
 end module m_part_modeltypes

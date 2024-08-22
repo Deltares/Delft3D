@@ -1,17 +1,14 @@
 import os
-from datetime import datetime
 import shutil
+from datetime import datetime
 from typing import List
 
 from src.config.test_case_config import TestCaseConfig
-from src.config.types.path_type import PathType
 from src.suite.run_data import RunData
 from src.suite.test_case_result import TestCaseResult
 from src.suite.test_set_runner import TestSetRunner
-from src.utils.handlers.handler_factory import HandlerFactory
 from src.utils.logging.i_logger import ILogger
 from src.utils.logging.test_loggers.i_test_logger import ITestLogger
-from src.utils.paths import Paths
 
 
 class ReferenceRunner(TestSetRunner):
@@ -24,9 +21,7 @@ class ReferenceRunner(TestSetRunner):
         # Get the reference networkPath of the testcase
 
         logger.debug("Overwrite (local) reference")
-        if not os.path.exists(
-            os.path.join(test_case_config.absolute_test_case_path, "_tb3_char.run")
-        ):
+        if not os.path.exists(os.path.join(test_case_config.absolute_test_case_path, "_tb3_char.run")):
             raise OSError(
                 -1,
                 "Could not locate _tb3_char.run",
@@ -46,20 +41,16 @@ class ReferenceRunner(TestSetRunner):
                 shutil.copytree(fl, fr, dirs_exist_ok=True)
         shutil.copyfile(
             os.path.join(test_case_config.absolute_test_case_path, "_tb3_char.run"),
-            os.path.join(
-                test_case_config.absolute_test_case_reference_path, "_tb3_char.run"
-            ),
+            os.path.join(test_case_config.absolute_test_case_reference_path, "_tb3_char.run"),
         )
 
         run_data.end_time = datetime.now()
 
         return TestCaseResult(test_case_config, run_data)
 
-    def show_summary(self, results: List[TestCaseResult], logger: ILogger):
+    def show_summary(self, results: List[TestCaseResult], logger: ILogger) -> None:
         logger.info("SUMMARY of the reference run")
-        logger.info(
-            "%-40s (%7s %7s) %-6s" % ("Test case name", "Runtime", "Ratio", "Result")
-        )
+        logger.info("%-40s (%7s %7s) %-6s" % ("Test case name", "Runtime", "Ratio", "Result"))
         configs = [r.config for r in results]
         for test_case_config in configs:
             if len(test_case_config.errors) > 0:
@@ -89,9 +80,7 @@ class ReferenceRunner(TestSetRunner):
                     lines.append(value.strip())
             return lines
 
-    def create_error_result(
-        self, test_case_config: TestCaseConfig, run_data: RunData
-    ) -> TestCaseResult:
+    def create_error_result(self, test_case_config: TestCaseConfig, run_data: RunData) -> TestCaseResult:
         # the result of a reference run is only determined by whether an error was detected or not.
         # This is reflected in the testCaseConfig (not to be confused with testCase, which also tracks errors).
         test_case_config.errors = [""]

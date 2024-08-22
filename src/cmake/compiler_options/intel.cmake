@@ -19,8 +19,8 @@ if (WIN32)
     set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP")
 
     # Set global C/C++ compiler flags that apply for each C/C++ project
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+    string(APPEND CMAKE_C_FLAGS " /MP")
+    string(APPEND CMAKE_CXX_FLAGS " /MP")
 
     # Set optional flags:
     message(STATUS "Setting optional Intel Fortran compiler flags in Windows")
@@ -34,8 +34,8 @@ if (WIN32)
     set(linker_debug_flag                     /debug)
     set(check_bounds_flag                     /check:bounds)
     set(check_nobounds_flag                   /check:nobounds)
-    set(check_pointers_flag                   /check:pointers)
-    set(check_nopointers_flag                 /check:nopointers)
+    set(check_pointers_flag                   /check:pointer)
+    set(check_nopointers_flag                 /check:nopointer)
     set(check_uninit_flag                     /check:uninit)
     set(check_stack_flag                      /check:stack)
     set(openmp_flag                           /Qopenmp)
@@ -53,14 +53,15 @@ if (WIN32)
     set(debug_information_flag                /Z7)
 
     # Set debug flags:
-    set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${debug_information_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${debug_information_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_RELWITHDEBINFO " ${debug_information_flag}")
 
     # To prevent Visual Studio compilation failures when trying to write the manifest file
     # to a blocked .exe
     if (CMAKE_GENERATOR MATCHES "Visual Studio") # for visual studio
-        set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
-        set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} /MANIFEST:NO")
-        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /MANIFEST:NO")
+        string(APPEND CMAKE_EXE_LINKER_FLAGS " /MANIFEST:NO")
+        string(APPEND CMAKE_MODULE_LINKER_FLAGS " /MANIFEST:NO")
+        string(APPEND CMAKE_SHARED_LINKER_FLAGS " /MANIFEST:NO")
     endif()
 endif(WIN32)
 
@@ -98,7 +99,7 @@ if (UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
     # Set debug flags:
-    set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag}")
 endif(UNIX)
 
 set(qauto_threaded_flags ${automatic_local_variable_storage_flag} ${generate_reentrancy_threaded_flag})
@@ -108,5 +109,5 @@ set(waq_default_flags ${file_preprocessor_flag} ${traceback_flag})
 option(ENABLE_CODE_COVERAGE "Enable the code and profiling coverage" OFF)
 if(ENABLE_CODE_COVERAGE)
     message("Code coverage and profiling analysis is enabled")
-    set(waq_default_flags ${waq_default_flags} ${codecov_flag} ${profiling_flag} ${srcrootdir_code_cov})
+    list(APPEND waq_default_flags ${codecov_flag} ${profiling_flag} ${srcrootdir_code_cov})
 endif(ENABLE_CODE_COVERAGE)

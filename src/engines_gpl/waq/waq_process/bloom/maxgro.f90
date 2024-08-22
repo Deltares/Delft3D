@@ -67,12 +67,12 @@ contains
         ! Check whether ROOT(2) (UKmax) is larger than EXTTOT.
         if (root(2) <= exttot) then
 
-            ! Kmax {=ROOT(2)} is smaller than the total extinction, indicating that
+            ! num_layers_grid {=ROOT(2)} is smaller than the total extinction, indicating that
             ! the species cannot maintain its current biomass.
             ! We do need the average efficiency
             ! EFFI, however, to compute the coefficients for the objective
             ! function.
-            ! When Kmax is negative for a species, its biomass should approach
+            ! When num_layers_grid is negative for a species, its biomass should approach
             ! zero as quickly as possible. Therefore put 0.01 in the objective
             ! function.
             ! Note: do not use a negative number because the mortality constraint
@@ -83,7 +83,7 @@ contains
             end if
             if (lgroch == 1) then
                 ! Compute the right hand side of the growth constraint for a species,
-                ! whose Kmax < EXTTOT of previous time-step. Normally we might put ANY
+                ! whose num_layers_grid < EXTTOT of previous time-step. Normally we might put ANY
                 ! value into the growth constraint as long as it exceeds the energy
                 ! limitation level: the biomass will most likely get energy limited.
                 ! However, as an extra precaution for dealing with infeasible

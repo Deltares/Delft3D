@@ -22,39 +22,39 @@
 !!  rights reserved.
 module m_show_error
 
-implicit none
+    implicit none
 
 contains
 
 
-      subroutine error ( mess )
+    subroutine error (mess)
 
-!       Deltares Software Centre
+        !       Deltares Software Centre
 
-!>\file
-!>                          prints an error message and stops the run with condition 1
+        !>\file
+        !>                          prints an error message and stops the run with condition 1
 
-      use m_stop_exit
-      use fileinfo       ! file information for all input/output files
+        use m_stop_exit
+        use fileinfo       ! file information for all input/output files
 
-      implicit none
+        implicit none
 
-!     Arguments
+        !     Arguments
 
-!     kind            function         name           description
+        !     kind            function         name           description
 
-      character(  *), intent(in   ) :: mess          !< message to be printed before quit
+        character(*), intent(in) :: mess          !< message to be printed before quit
 
-      write( *, 1000 ) mess
-      write( *,  *   ) ' PART program aborted '
+        write(*, 1000) mess
+        write(*, *) ' PART program aborted '
 
-      write( lunit(2), 1000 ) mess
+        write(lunit(2), 1000) mess
 
-      call stop_exit(1)
+        call stop_exit(1)
 
- 1000 format(' Error detected: ',/,a,//)
-      return
+        1000 format(' Error detected: ', /, a, //)
+        return
 
-      end
+    end
 
 end module m_show_error

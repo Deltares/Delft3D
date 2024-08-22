@@ -1,34 +1,34 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 !>   generate grid between fixed points on a spline that itself is defined by control points
 !>     in:  t(Nt) fixed points on spline
@@ -44,59 +44,59 @@
 !>          yh(kmax) y-coordinates of grid points
 !>          kmax     number of grid points = 1+MNfac*(NT-1)
 !>          tt(imax) spline-coordinates of grid points
-     SUBROUTINE MAKESPL(T,X,Y,imax, N,NT,MNFAC,XH,YH,KMAX,TT,H)
-     use m_gridsettings
-     implicit none
-     ! USE DIMENS
+     subroutine MAKESPL(T, X, Y, imax, N, NT, MNFAC, XH, YH, KMAX, TT, H)
+        use m_gridsettings
+        implicit none
+        ! USE DIMENS
 
-     integer :: imax, n, nt, kmax, mnfac
-      double precision :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX),   &
-           S2(IMAX), SSQ(IMAX), XH(IMAX), YH(IMAX),                  &
-            A(IMAX), SL(IMAX), SR(IMAX)
-      double precision, intent(in) :: H   !< for curvature adapted meshing
+        integer :: imax, n, nt, kmax, mnfac
+        double precision :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX), &
+           S2(IMAX), SSQ(IMAX), XH(IMAX), YH(IMAX), &
+           A(IMAX), SL(IMAX), SR(IMAX)
+        double precision, intent(in) :: H !< for curvature adapted meshing
 
-      double precision, dimension(IMAX), intent(out) :: TT !< spline-coordinates of grid points
+        double precision, dimension(IMAX), intent(out) :: TT !< spline-coordinates of grid points
 
-      integer :: L, k1, k2, jadip, k
+        integer :: L, k1, k2, jadip, k
 !      COMMON /SPLINEFAC/ SPLFAC, SPLFAC2
 !     Maak interpolatie
 
 !     Eerst splines X,Y en S aanmaken
-      CALL MAKES(X,Y,X2,Y2,T,S,S2,imax, N,NT,H)
+        call MAKES(X, Y, X2, Y2, T, S, S2, imax, N, NT, H)
 
-      KMAX = MNFAC*(NT - 1) + 1
+        KMAX = MNFAC * (NT - 1) + 1
 
-      IF (NT .GE. 2) THEN
-         CALL MAKESSQ(S,A,SR,SL,SSQ,NT,MNFAC,IMAX)
+        if (NT >= 2) then
+           call MAKESSQ(S, A, SR, SL, SSQ, NT, MNFAC, IMAX)
 
 !        Check op positief en monotoon
-         do L = 1,NT-1
-            K1 = MNFAC*(L - 1) + 1
-            K2 = K1 + MNFAC
+           do L = 1, NT - 1
+              K1 = MNFAC * (L - 1) + 1
+              K2 = K1 + MNFAC
 
-            JADIP = 0
-    23      IF (JADIP .EQ. 1) THEN
-               do K = K1+1,K2-1
-                  SSQ(K) = 0.5*( SSQ(K-1) + SSQ(K+1) )
-               end do
-            ENDIF
+              JADIP = 0
+23            if (JADIP == 1) then
+                 do K = K1 + 1, K2 - 1
+                    SSQ(K) = 0.5 * (SSQ(K - 1) + SSQ(K + 1))
+                 end do
+              end if
 
-            do K = K1,K2-1
-               IF ( SSQ(K+1) .LT. SSQ(K) ) THEN
-                  JADIP = 1
-                  GOTO 23
-               ENDIF
-            end do
+              do K = K1, K2 - 1
+                 if (SSQ(K + 1) < SSQ(K)) then
+                    JADIP = 1
+                    goto 23
+                 end if
+              end do
 
-      end do
-      ELSE
-         SSQ(1) = T(1)
-      ENDIF
+           end do
+        else
+           SSQ(1) = T(1)
+        end if
 
 !     Punten terug invullen in oorspronkelijke spline
-      do K = 1,KMAX
-         CALL GETXY(T,X,X2,Y,Y2,imax,N,NT,SSQ(K),XH(K),YH(K),TT(K),H)
-      end do
+        do K = 1, KMAX
+           call GETXY(T, X, X2, Y, Y2, imax, N, NT, SSQ(K), XH(K), YH(K), TT(K), H)
+        end do
 
-      RETURN
-      END subroutine makespl
+        return
+     end subroutine makespl

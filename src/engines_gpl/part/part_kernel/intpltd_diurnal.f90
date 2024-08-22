@@ -22,47 +22,46 @@
 !!  rights reserved.
 
 module intpltd_diurnal_mod
-!
-!  data definition module(s)
-!
-use m_waq_precision          ! single/double precision
-use timers
-!
-!  module procedure(s)
-!
-!
-use intpltd_function_mod      ! explicit interface
+    !
+    !  data definition module(s)
+    !
+    use m_waq_precision          ! single/double precision
+    use timers
+    !
+    !  module procedure(s)
+    !
+    !
+    use intpltd_function_mod      ! explicit interface
 
-
-implicit none
+    implicit none
 
 contains
-    subroutine intpltd_diurnal ( lunrep, day, daytime)
+    subroutine intpltd_diurnal (lunrep, day, daytime)
 
         ! function  : Based on the time of the day the particles will move upwards during the night and
         !             down during the day. With an interpolation fucntion the difference in daytime
         !             over the year has been incorperated.
 
         ! arguments :
-        integer(int_wp ), intent(in)     :: lunrep              ! report file
-        integer(int_wp )                 :: ipart               ! particle index
-        real   (sp), pointer        :: wsettl( : )         ! settling per particle
-        real   (sp)                 :: day                 ! time in days (real)
-        integer(int_wp )                 :: daynr               ! time in days (int)
-        real   (sp)                 :: timeday             ! time on day as fraction(real)
-        real   (sp)                 :: vz                  ! vz
-        real   (sp)                 :: vzact               ! vzact
-        real   (sp)                 :: buoy                ! buoy
+        integer(int_wp), intent(in) :: lunrep              ! report file
+        integer(int_wp) :: ipart               ! particle index
+        real   (sp), pointer :: wsettl(:)         ! settling per particle
+        real   (sp) :: day                 ! time in days (real)
+        integer(int_wp) :: daynr               ! time in days (int)
+        real   (sp) :: timeday             ! time on day as fraction(real)
+        real   (sp) :: vz                  ! vz
+        real   (sp) :: vzact               ! vzact
+        real   (sp) :: buoy                ! buoy
 
-        real   (sp), pointer        :: srxData(:), sryData(:), ssxData(:), ssyData(:)
-        real   (sp)                 :: sunrise, sunset
+        real   (sp), pointer :: srxData(:), sryData(:), ssxData(:), ssyData(:)
+        real   (sp) :: sunrise, sunset
 
-        logical                     :: daytime             ! true if it is daytime, false in night
+        logical :: daytime             ! true if it is daytime, false in night
 
         !get daynr and timeday
         daynr = int(floor(day))
         timeday = day - real(daynr)
-        if(daynr .gt. int(366)) then
+        if(daynr > int(366)) then
             daynr = daynr - 366
         endif
 
@@ -85,7 +84,7 @@ contains
         sunrise = sunrise / 24.0
         sunset = sunset / 24.0
 
-        if((timeday .gt. (sunrise + 1.0/24.0)) .and. (timeday .lt. (sunset - 1/24.0))) then
+        if((timeday > (sunrise + 1.0 / 24.0)) .and. (timeday < (sunset - 1 / 24.0))) then
             ! it is day time
             daytime = .true.
         else
@@ -93,6 +92,6 @@ contains
             daytime = .false.
         endif
 
-    return                                                                     	   !Return from the subroutine
+        return                                                                           !Return from the subroutine
     end subroutine
 end module

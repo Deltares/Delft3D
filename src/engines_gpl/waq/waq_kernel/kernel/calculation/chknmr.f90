@@ -29,7 +29,7 @@
       contains
 
 
-      subroutine chknmr ( lunrep , noseg  , iknmrk )
+      subroutine chknmr ( lunrep , num_cells  , iknmrk )
 !
 !     Deltares
 !
@@ -45,9 +45,9 @@
       use timers
       implicit none
       integer(kind=int_wp), intent(in)     ::lunrep         ! unit number of output file
-      integer(kind=int_wp), intent(in)     ::noseg          ! number of segments
+      integer(kind=int_wp), intent(in)     ::num_cells          ! number of segments
 
-      integer(kind=int_wp), intent(inout)  ::iknmrk(noseg)  ! property array
+      integer(kind=int_wp), intent(inout)  ::iknmrk(num_cells)  ! property array
 !
 !     Local variables :
 !
@@ -71,7 +71,7 @@
 !     subdomain or not.
 !
       icount = 0
-      do iseg = 1, noseg
+      do iseg = 1, num_cells
 !           Segment belongs to current subdomain
 !            - maintain 1st digit
 !            - maintain 2nd digit

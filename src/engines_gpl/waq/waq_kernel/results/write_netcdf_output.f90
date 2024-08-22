@@ -38,7 +38,7 @@ module m_write_netcdf_output
 contains
 
     subroutine write_netcdf_map_output(ncidmap, mncnam, ugridf, timeid, bndtimeid, mncrec, itime, moname, &
-            noseg, notot1, conc1, synam1, sysnm1, syuni1, sydsc1, wqid1, notot2, &
+            num_cells, notot1, conc1, synam1, sysnm1, syuni1, sydsc1, wqid1, notot2, &
             conc2, synam2, sysnm2, syuni2, sydsc2, wqid2, volume, iknmrk, lunut)
         !! Writes map output to NetCDF
 
@@ -55,23 +55,23 @@ contains
         integer(kind = int_wp), intent(in) :: mncrec               ! present record in NetCDF file
         integer(kind = int_wp), intent(in) :: itime                ! present time in clock units
         character(40), intent(in) :: moname(4)            ! model identification
-        integer(kind = int_wp), intent(in) :: noseg                ! number of computational volumes
+        integer(kind = int_wp), intent(in) :: num_cells                ! number of computational volumes
         integer(kind = int_wp), intent(in) :: notot1               ! number of variables in conc1
-        real(kind = real_wp), intent(in) :: conc1 (notot1, noseg) ! values
+        real(kind = real_wp), intent(in) :: conc1 (notot1, num_cells) ! values
         character(20), intent(in) :: synam1(notot1)       ! names of variables in conc1
         character(100), intent(in) :: sysnm1(notot1)       ! standard names of variables in conc1
         character(40), intent(in) :: syuni1(notot1)       ! units of variables in conc1
         character(60), intent(in) :: sydsc1(notot1)       ! decriptions of variables in conc1
         integer(kind = int_wp), intent(inout) :: wqid1(notot1, 3)      ! NetCDF ids of variables in conc1
         integer(kind = int_wp), intent(in) :: notot2               ! number of variables in conc2
-        real(kind = real_wp), intent(in) :: conc2 (notot2, noseg) ! values
+        real(kind = real_wp), intent(in) :: conc2 (notot2, num_cells) ! values
         character(20), intent(in) :: synam2(notot2)       ! names of variables in conc2
         character(100), intent(in) :: sysnm2(notot2)       ! standard names of variables in conc1
         character(40), intent(in) :: syuni2(notot2)       ! units of variables in conc1
         character(60), intent(in) :: sydsc2(notot2)       ! decriptions of variables in conc1
         integer(kind = int_wp), intent(inout) :: wqid2(notot2, 3)      ! NetCDF ids of variables in conc1
-        real(kind = real_wp), intent(in) :: volume(noseg)        ! values
-        integer(kind = int_wp), intent(in) :: iknmrk(noseg)        ! Feature array. Bit zero set means active.
+        real(kind = real_wp), intent(in) :: volume(num_cells)        ! values
+        integer(kind = int_wp), intent(in) :: iknmrk(num_cells)        ! Feature array. Bit zero set means active.
         integer(kind = int_wp), intent(in) :: lunut                ! unit number monitoring file
 
         integer(kind = int_wp) :: iseg                         ! loop counter for segments
@@ -79,7 +79,7 @@ contains
         real(kind = real_wp), parameter :: missing_value = -999.0 ! missing value indicator
 
         integer(kind = int_wp) :: ncid
-        integer(kind = int_wp) :: varid, varidout, meshidout, ntimeid, wqid, noseglmesh2d, nosegmesh2d3d, nosegmesh1d, nolay
+        integer(kind = int_wp) :: varid, varidout, meshidout, ntimeid, wqid, noseglmesh2d, nosegmesh2d3d, nosegmesh1d, num_layers
         integer(kind = int_wp) :: meshid2d, meshid1d, networkid, network_geometryid
         integer(kind = int_wp) :: inc_error, ierr, iout
         integer(kind = int_wp) :: xtype
@@ -113,7 +113,7 @@ contains
         real(kind = real_wp), dimension(:, :), allocatable :: dlwq_values_2d3d
         real(kind = real_wp), dimension(:), allocatable :: dlwq_values_2d, dlwq_volume_2d, dlwq_values_1d
 
-        save ncid, noseglmesh2d, nolay, nosegmesh1d, varid, meshid2d, meshid1d, networkid, network_geometryid
+        save ncid, noseglmesh2d, num_layers, nosegmesh1d, varid, meshid2d, meshid1d, networkid, network_geometryid
         save nosegmesh2d3d, aggr2d3d, aggr1d, wqidvolume_2d3d, wqidvolume_2d, wqidvolume_1d
         save sumconc1, sumconc2
 
@@ -204,7 +204,7 @@ contains
             mesh_name2d = ' '
             noseglmesh2d = 0
             nosegmesh2d3d = 0
-            nolay = 1
+            num_layers = 1
             if (type_ugrid == type_ugrid_face_crds) then
                 ! Get the dimensions of UNTRIM
                 inc_error = nf90_inquire_variable(ncid, meshid2d, xtype = xtype, ndims = ndims, dimids = dimids)
@@ -216,13 +216,13 @@ contains
                 noseglid2d = dimids(1)
                 nolayid = dimids(2)
                 noseglmesh2d = dimsizes(noseglid2d)
-                nolay = dimsizes(nolayid)
+                num_layers = dimsizes(nolayid)
 
-                nosegmesh2d3d = noseglmesh2d * nolay
+                nosegmesh2d3d = noseglmesh2d * num_layers
                 type_ugrid = type_ugrid_face_crds
 
                 ! Read aggregation table
-                allocate (aggr2d3d(noseglmesh2d, nolay))
+                allocate (aggr2d3d(noseglmesh2d, num_layers))
                 inc_error = nf90_get_var(ncid, meshid2d, aggr2d3d)
 
                 ! Determine the 2D mesh variable from that
@@ -253,18 +253,18 @@ contains
                 noseglmesh2d = dimsizes(noseglid2d)
 
                 ! calculate number of layers
-                nolay = (noseg - nosegmesh1d) / noseglmesh2d
-                nosegmesh2d3d = noseglmesh2d * nolay
+                num_layers = (num_cells - nosegmesh1d) / noseglmesh2d
+                nosegmesh2d3d = noseglmesh2d * num_layers
 
                 ! check number of layers
-                if (nosegmesh2d3d + nosegmesh1d /= noseg) then
-                    write (lunut, 2596) noseg, noseglmesh2d, nolay, nosegmesh1d
+                if (nosegmesh2d3d + nosegmesh1d /= num_cells) then
+                    write (lunut, 2596) num_cells, noseglmesh2d, num_layers, nosegmesh1d
                     goto 800
                 endif
 
                 ! We do not have an aggregation table: construct one
-                allocate (aggr2d3d(noseglmesh2d, nolay))
-                do j = 1, nolay
+                allocate (aggr2d3d(noseglmesh2d, num_layers))
+                do j = 1, num_layers
                     do i = 1, noseglmesh2d
                         aggr2d3d(i, j) = i + (j - 1) * noseglmesh2d
                     enddo
@@ -274,7 +274,7 @@ contains
             if (meshid1d > 0) then
                 ! We do not have an aggregation table: construct one
                 allocate (aggr1d(nosegmesh1d))
-                do j = 1, nolay
+                do j = 1, num_layers
                     do i = 1, nosegmesh1d
                         aggr1d(i) = i + nosegmesh2d3d
                     enddo
@@ -333,7 +333,7 @@ contains
             ! Add a "layer" dimension for DELWAQ and update the IDs
             ! (Must happen after copying the mesh - otherwise the dimension IDs do not match)
             if (type_ugrid == type_ugrid_node_crds) then
-                inc_error = create_dimension(ncidmap, noseglmesh2d, nolay, dimids, dimsizes)
+                inc_error = create_dimension(ncidmap, noseglmesh2d, num_layers, dimids, dimsizes)
                 if (inc_error /= nf90_noerr) then
                     write (lunut, 2570)
                     goto 800
@@ -385,11 +385,11 @@ contains
             endif
 
             if (meshid2d > 0) then
-                allocate(laythickness(nolay))
-                laythickness = 1.0 / real(nolay)  ! Uniform distribution for now !!
-                inc_error = create_layer_dimension(ncidmap, mesh_name2d, nolay, laythickness, nolayid)
+                allocate(laythickness(num_layers))
+                laythickness = 1.0 / real(num_layers)  ! Uniform distribution for now !!
+                inc_error = create_layer_dimension(ncidmap, mesh_name2d, num_layers, laythickness, nolayid)
 
-                if (nolay == 1) then
+                if (num_layers == 1) then
                     nolayid = dlwqnc_type2d
                 endif
 
@@ -410,7 +410,7 @@ contains
             ! Write output variables and process library info to NetCDF-file
             ! long name and unit will follow later, they are in the ouput.wrk-file!
             !
-            ! Create 3D and only when nolay > 1 also 2D variables. This is controlled by the NetCDF ID for the layer
+            ! Create 3D and only when num_layers > 1 also 2D variables. This is controlled by the NetCDF ID for the layer
             ! dimension
             if (meshid2d > 0) then
                 allocate(sumconc1(notot1), sumconc2(notot2))
@@ -422,7 +422,7 @@ contains
                         goto 800
                     endif
 
-                    if (nolay > 1) then
+                    if (num_layers > 1) then
                         inc_error = create_variable(ncidmap, mesh_name2d, synam1(iout), sydsc1(iout), &
                                 sysnm1(iout), syuni1(iout), ntimeid, noseglid2d, dlwqnc_type2d, wqid1(iout, 2))
                         if (inc_error /= nf90_noerr) then
@@ -445,7 +445,7 @@ contains
                         write(lunut, 2582)
                         goto 800
                     endif
-                    if (nolay > 1) then
+                    if (num_layers > 1) then
                         inc_error = create_variable(ncidmap, mesh_name2d, synam2(iout), sydsc2(iout), &
                                 sysnm2(iout), syuni2(iout), ntimeid, noseglid2d, dlwqnc_type2d, wqid2(iout, 2))
                         if (inc_error /= nf90_noerr) then
@@ -469,7 +469,7 @@ contains
                     write(lunut, 2583)
                     goto 800
                 endif
-                if (nolay > 1) then
+                if (num_layers > 1) then
                     inc_error = create_variable(ncidmap, mesh_name2d, 'volume', 'volume (m3)', &
                             'sea_water_volume', 'm3', ntimeid, noseglid2d, dlwqnc_type2d, wqidvolume_2d)
                     if (inc_error /= nf90_noerr) then
@@ -528,20 +528,20 @@ contains
 
         if (noseglmesh2d > 0) then
             !     Output arrays
-            allocate(dlwq_values_2d3d(noseglmesh2d, nolay), dlwq_values_2d(noseglmesh2d), dlwq_volume_2d(noseglmesh2d))
+            allocate(dlwq_values_2d3d(noseglmesh2d, num_layers), dlwq_values_2d(noseglmesh2d), dlwq_volume_2d(noseglmesh2d))
             !     Total volume in 2D
             dlwq_volume_2d = 0.0
             !     Write volumes
-            do ilay = 1, nolay
+            do ilay = 1, num_layers
                 do isegl = 1, noseglmesh2d
                     if (aggr2d3d(isegl, ilay)>0) then
                         dlwq_values_2d3d(isegl, ilay) = volume(aggr2d3d(isegl, ilay))
-                        if (nolay > 1 .and. btest(iknmrk(aggr2d3d(isegl, ilay)), 0)) then
+                        if (num_layers > 1 .and. btest(iknmrk(aggr2d3d(isegl, ilay)), 0)) then
                             dlwq_volume_2d(isegl) = dlwq_volume_2d(isegl) + volume(aggr2d3d(isegl, ilay))
                         endif
                     else
                         dlwq_values_2d3d(isegl, ilay) = -999.0
-                        if (nolay > 1) then
+                        if (num_layers > 1) then
                             dlwq_volume_2d(isegl) = -999.0
                         endif
                     endif
@@ -554,7 +554,7 @@ contains
                 goto 800
             endif
 
-            if (nolay > 1) then
+            if (num_layers > 1) then
                 inc_error = dlwqnc_write_wqvariable(ncidmap, wqidvolume_2d, mncrec, dlwq_volume_2d)
                 if (inc_error /= nf90_noerr) then
                     write(lunut, 2591)
@@ -564,14 +564,14 @@ contains
 
             !        First set of output
             do iout = 1, notot1
-                if (nolay > 1) then
+                if (num_layers > 1) then
                     dlwq_values_2d = 0.0
                 endif
-                do ilay = 1, nolay
+                do ilay = 1, num_layers
                     do isegl = 1, noseglmesh2d
                         if (aggr2d3d(isegl, ilay)>0) then
                             dlwq_values_2d3d(isegl, ilay) = conc1(iout, aggr2d3d(isegl, ilay))
-                            if (nolay > 1 .and. btest(iknmrk(aggr2d3d(isegl, ilay)), 0)) then
+                            if (num_layers > 1 .and. btest(iknmrk(aggr2d3d(isegl, ilay)), 0)) then
                                 if (.not. sumconc1(iout)) then
                                     dlwq_values_2d(isegl) = dlwq_values_2d(isegl) + &
                                             conc1(iout, aggr2d3d(isegl, ilay)) * &
@@ -583,14 +583,14 @@ contains
                             endif
                         else
                             dlwq_values_2d3d(isegl, ilay) = -999.0
-                            if (nolay > 1) then
+                            if (num_layers > 1) then
                                 dlwq_values_2d(isegl) = -999.0
                             endif
                         endif
                     enddo
                 enddo
 
-                if (nolay > 1) then
+                if (num_layers > 1) then
                     inc_error = dlwqnc_write_wqvariable(ncidmap, wqid1(iout, 1), mncrec, dlwq_values_2d3d)
                 else
                     inc_error = dlwqnc_write_wqvariable(ncidmap, wqid1(iout, 1), mncrec, dlwq_values_2d3d(:, 1))
@@ -601,7 +601,7 @@ contains
                 endif
 
                 !           Add 2D output in 3D models
-                if (nolay > 1) then
+                if (num_layers > 1) then
                     if (.not. sumconc1(iout)) then
                         do isegl = 1, noseglmesh2d
                             if(dlwq_volume_2d(isegl)/=-999.0) then
@@ -620,15 +620,15 @@ contains
 
             !        Second set of output
             do iout = 1, notot2
-                if (nolay > 1) then
+                if (num_layers > 1) then
                     dlwq_values_2d = 0.0
                 endif
 
-                do ilay = 1, nolay
+                do ilay = 1, num_layers
                     do isegl = 1, noseglmesh2d
                         if (aggr2d3d(isegl, ilay)>0) then
                             dlwq_values_2d3d(isegl, ilay) = conc2(iout, aggr2d3d(isegl, ilay))
-                            if (nolay > 1 .and. btest(iknmrk(aggr2d3d(isegl, ilay)), 0)) then
+                            if (num_layers > 1 .and. btest(iknmrk(aggr2d3d(isegl, ilay)), 0)) then
                                 if (.not. sumconc2(iout)) then
                                     dlwq_values_2d(isegl) = dlwq_values_2d(isegl) + &
                                             conc2(iout, aggr2d3d(isegl, ilay)) * &
@@ -640,14 +640,14 @@ contains
                             endif
                         else
                             dlwq_values_2d3d(isegl, ilay) = -999.0
-                            if (nolay > 1) then
+                            if (num_layers > 1) then
                                 dlwq_values_2d(isegl) = -999.0
                             endif
                         endif
                     enddo
                 enddo
 
-                if (nolay >  1) then
+                if (num_layers >  1) then
                     inc_error = dlwqnc_write_wqvariable(ncidmap, wqid2(iout, 1), mncrec, dlwq_values_2d3d)
                 else
                     inc_error = dlwqnc_write_wqvariable(ncidmap, wqid2(iout, 1), mncrec, dlwq_values_2d3d(:, 1))
@@ -658,7 +658,7 @@ contains
                 endif
 
                 !           Add 2D output in 3D models
-                if (nolay > 1) then
+                if (num_layers > 1) then
                     if (.not. sumconc2(iout)) then
                         do isegl = 1, noseglmesh2d
                             if(dlwq_volume_2d(isegl)/=-999.0) then
@@ -786,9 +786,9 @@ contains
         2594 format (/ ' Attribute "face_dimension" in mesh not found')
         2595 format (/ ' Dimension "', A, '" not found')
         2596 format (/ ' ERROR: Dimension mismatch!' &
-                / ' noseg        :', I8 &
+                / ' num_cells        :', I8 &
                 / ' noseglmesh2d :', I8 &
-                / ' nolay    :', I8 &
+                / ' num_layers    :', I8 &
                 / ' nosegmesh1d  :', I8)
         2600 format (/ ' NetCDF error number: ', I6)
         2610 format (/ ' NetCDF error message: ', A)
@@ -797,7 +797,7 @@ contains
 
     subroutine write_netcdf_history_output(ncidhis, hncnam, ugridf, timeid, bndtimeid, &
             hncrec, itime, moname, idump, duname, &
-            nodump, notot1, conc1, synam1, sysnm1, &
+            num_monitoring_points, notot1, conc1, synam1, sysnm1, &
             syuni1, sydsc1, wqid1, notot2, conc2, &
             synam2, sysnm2, syuni2, sydsc2, wqid2, &
             lunut)
@@ -817,9 +817,9 @@ contains
         integer(kind = int_wp), intent(in) :: hncrec               ! present record in NetCDF file
         integer(kind = int_wp), intent(in) :: itime                ! present time in clock units
         character(40), intent(in) :: moname(4)            ! model identification
-        integer(kind = int_wp), intent(in) :: idump(nodump)        ! segment number of monitoring points and areas
-        character(*), intent(in) :: duname(nodump)       ! names of monitoring points and areas
-        integer(kind = int_wp), intent(in) :: nodump               ! number of monitoring points and areas
+        integer(kind = int_wp), intent(in) :: idump(num_monitoring_points)        ! segment number of monitoring points and areas
+        character(*), intent(in) :: duname(num_monitoring_points)       ! names of monitoring points and areas
+        integer(kind = int_wp), intent(in) :: num_monitoring_points               ! number of monitoring points and areas
         integer(kind = int_wp), intent(in) :: notot1               ! number of variables in conc1
         real(kind = real_wp), intent(in) :: conc1 (notot1, *)     ! values
         character(20), intent(in) :: synam1(notot1)       ! names of variables in conc1
@@ -828,7 +828,7 @@ contains
         character(60), intent(in) :: sydsc1(notot1)       ! decriptions of variables in conc1
         integer(kind = int_wp), intent(inout) :: wqid1(notot1, 2)      ! NetCDF ids of variables in conc1
         integer(kind = int_wp), intent(in) :: notot2               ! number of variables in conc2
-        real(kind = real_wp), intent(in) :: conc2 (notot2, nodump)! values
+        real(kind = real_wp), intent(in) :: conc2 (notot2, num_monitoring_points)! values
         character(20), intent(in) :: synam2(notot2)       ! names of variables in conc2
         character(100), intent(in) :: sysnm2(notot2)       ! standard names of variables in conc2
         character(40), intent(in) :: syuni2(notot2)       ! units of variables in conc2
@@ -843,7 +843,7 @@ contains
         integer(kind = int_wp) :: ncid
         integer(kind = int_wp) :: varid, varidout, meshid, meshidout, ntimeid, wqid, noseglmesh, nolaymesh
         integer(kind = int_wp) :: nostations_id, name_length_id
-        integer(kind = int_wp) :: inc_error, ierr, nolay, iout
+        integer(kind = int_wp) :: inc_error, ierr, num_layers, iout
         integer(kind = int_wp) :: xtype
         integer(kind = int_wp) :: ndims
         logical, allocatable :: sumconc1(:), sumconc2(:)
@@ -886,7 +886,7 @@ contains
         ! (If the number is zero and we would not suppress the creation of the file,
         ! then we would get a run-time error from NetCDF - apparently 0 is the magic
         ! number for the unlimited-size dimension and there can be only one of those)
-        if (nodump == 0) then
+        if (num_monitoring_points == 0) then
             goto 900
         endif
 
@@ -939,7 +939,7 @@ contains
             endif
 
             ! Create the dimensions (except time - that is done later)
-            inc_error = nf90_def_dim(ncidhis, "nStations", nodump, nostations_id)
+            inc_error = nf90_def_dim(ncidhis, "nStations", num_monitoring_points, nostations_id)
             if (inc_error /= nf90_noerr) then
                 write (lunut, 2575)
                 goto 800
@@ -1004,7 +1004,7 @@ contains
                 goto 800
             endif
             do i = 2, 4
-                inc_error = nf90_put_var(ncidhis, coord_id(i - 1), [(0.0d0, j = 1, nodump)])  ! TODO; FOR NOW
+                inc_error = nf90_put_var(ncidhis, coord_id(i - 1), [(0.0d0, j = 1, num_monitoring_points)])  ! TODO; FOR NOW
                 if (inc_error /= nf90_noerr) then
                     write(lunut, 2587) station_property(1, i)
                     goto 800
@@ -1151,7 +1151,7 @@ contains
         endif
 
         ! Perform output
-        allocate(dlwq_values(nodump))
+        allocate(dlwq_values(num_monitoring_points))
 
         ! New time record
         inc_error = write_time(ncidhis, timeid, bndtimeid, hncrec, itime)
@@ -1164,7 +1164,7 @@ contains
 
         ! First set of output
         do iout = 1, notot1
-            do id = 1, nodump
+            do id = 1, num_monitoring_points
                 dlwq_values(id) = conc1(iout, idump(id))
             enddo
 
@@ -1177,7 +1177,7 @@ contains
 
         ! Second set of output
         do iout = 1, notot2
-            do id = 1, nodump
+            do id = 1, num_monitoring_points
                 dlwq_values(id) = conc2(iout, id)
             enddo
 

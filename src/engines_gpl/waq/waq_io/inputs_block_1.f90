@@ -37,7 +37,7 @@ module m_block_1_input_reader
 contains
 
 
-    subroutine read_block_1_from_input (file_unit_list, syname, nosys, notot, nomult, &
+    subroutine read_block_1_from_input (file_unit_list, syname, num_substances_transported, num_substances_total, nomult, &
             multp, iwidth, otime, isfact, refday, &
             output_verbose_level, status)
 
@@ -69,8 +69,8 @@ contains
         integer(kind = int_wp), intent(out) :: iwidth !< width of the output file
         integer(kind = int_wp), dimension(:, :), pointer :: multp !< multiple substance administration
         integer(kind = int_wp), intent(out) :: nomult !< number of multiple substances
-        integer(kind = int_wp), intent(out) :: nosys  !< number of transported substances
-        integer(kind = int_wp), intent(out) :: notot  !< total number of substances
+        integer(kind = int_wp), intent(out) :: num_substances_transported  !< number of transported substances
+        integer(kind = int_wp), intent(out) :: num_substances_total  !< total number of substances
         integer(kind = int_wp), intent(out) :: refday !< reference day, varying from 1 till 365
 
         real(kind = dp), intent(out) :: otime !< Offset of the system time (Julian)
@@ -192,13 +192,13 @@ contains
 
         !     Read number of transported and number of passive systems
 
-        if (gettoken (nosys, ierr2) > 0) goto 100
+        if (gettoken (num_substances_transported, ierr2) > 0) goto 100
         if (gettoken (idummy, ierr2) > 0) goto 100
-        notot = nosys + idummy
+        num_substances_total = num_substances_transported + idummy
 
         !     allocate
 
-        allocate (sname(notot), imult(notot))
+        allocate (sname(num_substances_total), imult(num_substances_total))
         sname = ' '
         imult = 1
 
@@ -206,19 +206,19 @@ contains
 
         intread = .false.
         nomult = 0
-        do isys = 1, notot
+        do isys = 1, num_substances_total
             if (.not. intread) then                 ! read substance number
                 if (gettoken (idummy, ierr2) > 0) goto 100
             endif                                     ! read substanceID
             if (gettoken (cdummy, ierr2) > 0) goto 100
-            if (idummy <= 0 .or. idummy > notot) then
+            if (idummy <= 0 .or. idummy > num_substances_total) then
                 write (file_unit, 2070) idummy, cdummy
                 call status%increase_error_count()
             else
                 sname(idummy) = cdummy
             endif                                     ! read new substance nr or *n for multiples
             ifound = gettoken (cdummy, idummy, adummy, itype, ierr2)
-            if (isys == notot .and. ifound == 2) exit
+            if (isys == num_substances_total .and. ifound == 2) exit
             if (ifound /= 0) goto 100
             if (itype == 1) then                  ! a string was found. must be *n
                 if (cdummy(1:1) /= '*') then       ! only a multiplication is accepted
@@ -236,32 +236,32 @@ contains
         !        Deal with multiple substances
 
         allocate (multp(2, nomult))
-        nosyss = nosys
-        notots = notot
-        nosys = 0
-        notot = 0
+        nosyss = num_substances_transported
+        notots = num_substances_total
+        num_substances_transported = 0
+        num_substances_total = 0
         nomult = 1
         do isys = 1, nosyss
             if (imult(isys) > 1) then
-                multp(1, nomult) = nosys + 1
-                multp(2, nomult) = nosys + 1 + imult(isys) - 1
+                multp(1, nomult) = num_substances_transported + 1
+                multp(2, nomult) = num_substances_transported + 1 + imult(isys) - 1
                 nomult = nomult + 1
             endif
-            nosys = nosys + imult(isys)
-            notot = notot + imult(isys)
+            num_substances_transported = num_substances_transported + imult(isys)
+            num_substances_total = num_substances_total + imult(isys)
         enddo
         do isys = nosyss + 1, notots
             if (imult(isys) > 1) then
-                multp(1, nomult) = notot + 1
-                multp(2, nomult) = notot + 1 + imult(isys) - 1
+                multp(1, nomult) = num_substances_total + 1
+                multp(2, nomult) = num_substances_total + 1 + imult(isys) - 1
                 nomult = nomult + 1
             endif
-            notot = notot + imult(isys)
+            num_substances_total = num_substances_total + imult(isys)
         enddo
-        allocate (syname(notot + nomult))
+        allocate (syname(num_substances_total + nomult))
 
-        write (file_unit, 2080) nosys, notot - nosys, notot
-        if (nosys < 0 .or. idummy < 0 .or. notot <= 0) then
+        write (file_unit, 2080) num_substances_transported, num_substances_total - num_substances_transported, num_substances_total
+        if (num_substances_transported < 0 .or. idummy < 0 .or. num_substances_total <= 0) then
             write (file_unit, 2090)
             call status%increase_error_count()
         endif
@@ -295,7 +295,7 @@ contains
                 nosyss = nosyss + 1
             else
                 nomult = nomult + 1
-                syname(notot + nomult) = sname(isys)
+                syname(num_substances_total + nomult) = sname(isys)
                 do isys2 = 1, imult(isys)
                     syname(nosyss) = sname(isys)
                     ilen = len_trim(syname(nosyss))
@@ -315,7 +315,7 @@ contains
         !        Watch out !! in dlwq02.f subsequently the names of the particle tracking
         !                     substances are written to file_unit_list(2)
 
-        write (file_unit_list(2)) (syname(isys), isys = 1, notot)
+        write (file_unit_list(2)) (syname(isys), isys = 1, num_substances_total)
 
         !        Check number of data in inputfile
 

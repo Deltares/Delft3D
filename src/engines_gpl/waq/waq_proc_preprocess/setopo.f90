@@ -52,7 +52,7 @@ contains
 
         ! local decalarations
 
-        integer(kind = int_wp) :: nproc           ! number of processes
+        integer(kind = int_wp) :: num_processes_activated           ! number of processes
         integer(kind = int_wp) :: iproc           ! loop counter processes
         type(procesprop), pointer :: proc            ! process description
         character(len = 100) :: line            ! line buffer for output
@@ -76,7 +76,7 @@ contains
         line = ' '
         call write_log_message(line)
 
-        nproc = procesdef%current_size
+        num_processes_activated = procesdef%current_size
 
         do iou = 1, outputs%current_size
 
@@ -102,7 +102,7 @@ contains
             ! if this comes from proloc
 
             if (outputs%pointers(iou) > iloc) then
-                do iproc = 1, nproc
+                do iproc = 1, num_processes_activated
                     proc => procesdef%procesprops(iproc)
                     if (proc%active) then
                         call zoekio (outputs%names(iou), proc%no_output, proc%output_item, 20, ioutput, IOTYPE_SEGMENT_OUTPUT)
@@ -146,7 +146,7 @@ contains
 
                 ! investigate wheter a default with this name is being used
 
-                do iproc = 1, nproc
+                do iproc = 1, num_processes_activated
                     proc => procesdef%procesprops(iproc)
                     if (proc%active) then
                         call zoekio (outputs%names(iou), proc%no_input, proc%input_item, 20, i_input, IOTYPE_SEGMENT_INPUT)

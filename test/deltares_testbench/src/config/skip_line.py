@@ -1,14 +1,13 @@
-"""
-Description: SkipLine Data Class
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""SkipLine Data Class.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 
 class SkipLine:
-    """Skipped line information"""
+    """Skipped line information."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__name = ""
 
     @property
@@ -16,5 +15,5 @@ class SkipLine:
         return self.__name
 
     @name.setter
-    def name(self, value):
+    def name(self, value) -> None:
         self.__name = value

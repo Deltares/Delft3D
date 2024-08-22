@@ -230,18 +230,18 @@ SUBROUTINE PUTDAT (FDS)
    UINDEX (INCR ,3) = 1
 !                 ..
 !                 .. Fill array with values
-   DO 30 PLANE = 1,7
-      DO 20 COL = 1,5
-         DO 10 ROW = 1,3
+   DO PLANE = 1,7
+      DO COL = 1,5
+         DO ROW = 1,3
             ARRAY (ROW, COL, PLANE) = ROW*1000+COL*100+PLANE
-10       CONTINUE
-20    CONTINUE
-30 CONTINUE
+         END DO
+      END DO
+   END DO
 !                 ..
 !                 .. Write data to file
+!  ERROR = PUTELT (FDS, 'GrpNaam', 'ElmName'
    ERROR = PUTELT (FDS, 'GrpNaam', '*'&
-!     ERROR = PUTELT (FDS, 'GrpNaam', 'ElmName'
-   &,UINDEX, USRORD, ARRAY)
+                  ,UINDEX, USRORD, ARRAY)
    IF (ERROR.NE.0) goto 9999
 !                 ..
 !                 .. Flush the buffers
@@ -250,18 +250,18 @@ SUBROUTINE PUTDAT (FDS)
 !                 ..
 !                 .. Output data to screen
 !     write(*,'('' ARRAY(105) written to file:'')')
-!     DO 11 PLANE = 1,105
+!     DO PLANE = 1,105
 !       WRITE (*,'(  I10)') AARRAY(PLANE)
-!  11 CONTINUE
+!     END DO
    write(*,'('' ARRAY(3,5,7) written to file:'')')
-   DO 50 PLANE = 1,7
-      DO 40 COL = 1,5
+   DO PLANE = 1,7
+      DO COL = 1,5
 !           WRITE (*,'(  3F10.2)')
          WRITE (*,'(  3I10)')&
          &(ARRAY(ROW,COL,PLANE),ROW=1,3)
-40    CONTINUE
+      END DO
       WRITE (*,*)
-50 CONTINUE
+   END DO
 !
 9999 continue
    ERROR = NEFERR( 1, ERRSTR)
@@ -317,14 +317,14 @@ SUBROUTINE DTVIEW (FDS)
 !                 ..
 !                 .. Output data to screen
    write(*,'('' Same values now retrieved in ARRAY(7,3,5)'')')
-   DO 20 PLANE = 1,5
-      DO 10 COL = 1,3
+   DO PLANE = 1,5
+      DO COL = 1,3
 !           WRITE (*,'(  7F10.2)')
          WRITE (*,'(  7I10  )')&
          &(ARRAY(ROW,COL,PLANE),ROW=1,7)
-10    CONTINUE
+      END DO
       WRITE (*,*)
-20 CONTINUE
+   END DO
 !
 9999 continue
    ERROR = NEFERR( 1, ERRSTR)
@@ -381,14 +381,14 @@ SUBROUTINE FILTER (FDS)
 !                 ..
 !                 .. Output data to screen
    write(*,'('' Every other value retrieved in ARRAY(4,2,3)'')')
-   DO 20 PLANE = 1,3
-      DO 10 COL = 1,2
+   DO PLANE = 1,3
+      DO COL = 1,2
 !           WRITE (*,'(  4F10.2)')
          WRITE (*,'(  4I10  )')&
          &(ARRAY(ROW,COL,PLANE),ROW=1,4)
-10    CONTINUE
+      END DO
       WRITE (*,*)
-20 CONTINUE
+   END DO
 !
 9999 continue
    ERROR = NEFERR( 0, ERRSTR)

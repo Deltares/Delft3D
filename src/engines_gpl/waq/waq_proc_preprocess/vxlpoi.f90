@@ -29,7 +29,7 @@ module m_vxlpoi
 contains
 
 
-    SUBROUTINE VXLPOI (NOCONS, NOFUN, NODISP, NOVELO, constants, &
+    SUBROUTINE VXLPOI (num_constants, num_time_functions, num_dispersion_arrays, num_velocity_arrays, constants, &
             FUNAME, DINAME, VENAME, VALNAM, IVALIP, &
             LINE)
         !
@@ -49,21 +49,21 @@ contains
         !
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
-        !     NOCONS  INTEGER       1     INPUT   Number of constants used
-        !     NOFUN   INTEGER       1     INPUT   Number of functions ( user )
-        !     NODISP  INTEGER       1     INPUT   Number of dispersion array's
-        !     NOVELO  INTEGER       1     INPUT   Number of velocity array's
-        !     CONAME  CHAR*20   NOCONS    INPUT   Constant names
-        !     FUNAME  CHAR*20   NOFUN     INPUT   Function names
-        !     DINAME  CHAR*20   NODISP    INPUT   Dispersion names
-        !     VENAME  CHAR*20   NOVELO    INPUT   Velocity names
+        !     num_constants  INTEGER       1     INPUT   Number of constants used
+        !     num_time_functions   INTEGER       1     INPUT   Number of functions ( user )
+        !     num_dispersion_arrays  INTEGER       1     INPUT   Number of dispersion array's
+        !     num_velocity_arrays  INTEGER       1     INPUT   Number of velocity array's
+        !     CONAME  CHAR*20   num_constants    INPUT   Constant names
+        !     FUNAME  CHAR*20   num_time_functions     INPUT   Function names
+        !     DINAME  CHAR*20   num_dispersion_arrays    INPUT   Dispersion names
+        !     VENAME  CHAR*20   num_velocity_arrays    INPUT   Velocity names
         !     VALNAM  CHAR*20       1     INPUT   Name of variable in question
         !     IVALIP  INTEGER       1     OUTPUT  Pointer in delwaq array
         !     LINE    CHAR*(*)      1     OUTPUT  Report line
         !
         use timers       !   performance timers
 
-        INTEGER(kind = int_wp) :: NOCONS, NOFUN, NODISP, NOVELO, IVALIP
+        INTEGER(kind = int_wp) :: num_constants, num_time_functions, num_dispersion_arrays, num_velocity_arrays, IVALIP
         character(len=*) VALNAM, LINE
         character(len=*)            FUNAME(*), &
                 DINAME(*), VENAME(*)
@@ -109,7 +109,7 @@ contains
         !
         !     as dispersion ?
         !
-        IDSP = index_in_array(VALNAM(:10), DINAME(:NODISP))
+        IDSP = index_in_array(VALNAM(:10), DINAME(:num_dispersion_arrays))
         IF (IDSP > 0) THEN
             WRITE(LINE, '(A,I3)') '       Using dispersion nr ', IDSP
             IVALIP = NOPREF + IDSP
@@ -118,19 +118,19 @@ contains
         !
         !     as a velocity ?
         !
-        IVEL = index_in_array(VALNAM(:10), VENAME(:NOVELO))
+        IVEL = index_in_array(VALNAM(:10), VENAME(:num_velocity_arrays))
         IF (IVEL  > 0) THEN
             WRITE(LINE, '(A,I3)') '       Using velocity nr', IVEL
-            IVALIP = NOPREF + NODISP + IVEL
+            IVALIP = NOPREF + num_dispersion_arrays + IVEL
             GOTO 800
         ENDIF
         !
         !     as function ?
         !
-        IFUN = index_in_array(VALNAM (:10), FUNAME(:NOFUN))
+        IFUN = index_in_array(VALNAM (:10), FUNAME(:num_time_functions))
         IF (IFUN > 0) THEN
             WRITE(LINE, '(A,I3)') '       Using function nr', IFUN
-            IVALIP = NOPREF + NODISP + NOVELO + IFUN
+            IVALIP = NOPREF + num_dispersion_arrays + num_velocity_arrays + IFUN
             GOTO 800
         ENDIF
         !
@@ -139,7 +139,7 @@ contains
         ico = constants%find(valnam)
         if (ico > 0) then
             write(line, '(a,i3,a,g13.6)') '       Using constant nr', ico, ' with value:', constants%constant(ico)
-            ivalip = nopref + nodisp + novelo + nofun + ico
+            ivalip = nopref + num_dispersion_arrays + num_velocity_arrays + num_time_functions + ico
             goto 800
         endif
         !

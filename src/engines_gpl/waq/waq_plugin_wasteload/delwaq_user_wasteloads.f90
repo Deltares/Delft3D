@@ -30,7 +30,7 @@ module delwaq_user_wasteloads
     use waq_plugin_wasteload_version_module
 
 contains
-    subroutine delwaq_user_wasteload (nowst, wasteloads, notot, nosys, noseg, &
+    subroutine delwaq_user_wasteload (num_waste_loads, wasteloads, num_substances_total, num_substances_transported, num_cells, &
             itime, conc, syname)
         !DEC$ ATTRIBUTES DLLEXPORT::delwaq_user_wasteload
 
@@ -41,11 +41,11 @@ contains
 
         ! arguments declarations
 
-        integer, intent(in) :: nowst                  ! number of wasteloads
+        integer, intent(in) :: num_waste_loads                  ! number of wasteloads
         type(wasteload), intent(inout) :: wasteloads(:)          ! array of all wasteloads (structure)
-        integer, intent(in) :: notot                  ! total number of substances
-        integer, intent(in) :: nosys                  ! number of active substances
-        integer, intent(in) :: noseg                  ! number of segments
+        integer, intent(in) :: num_substances_total                  ! total number of substances
+        integer, intent(in) :: num_substances_transported                  ! number of active substances
+        integer, intent(in) :: num_cells                  ! number of segments
         integer, intent(in) :: itime                  ! system time
         real, intent(in) :: conc(:, :)              ! concentration array
         character(len = *), intent(in) :: syname(:)              ! substance names
@@ -77,17 +77,17 @@ contains
         endif
         ! inlet/outlet pairs - match waste loads by name
 
-        call delwaq_user_inlet_outlet (nowst, wasteloads, notot, nosys, noseg, &
+        call delwaq_user_inlet_outlet (num_waste_loads, wasteloads, num_substances_total, num_substances_transported, num_cells, &
                 itime, conc, syname, lunrep)
 
         ! walking discharges
 
-        call delwaq_user_walking_discharges (nowst, wasteloads, notot, nosys, noseg, &
+        call delwaq_user_walking_discharges (num_waste_loads, wasteloads, num_substances_total, num_substances_transported, num_cells, &
                 itime, conc, syname, lunrep)
 
         ! report on wasteloads
 
-        call delwaq_user_bubble_bath  (nowst, wasteloads, notot, nosys, noseg, &
+        call delwaq_user_bubble_bath  (num_waste_loads, wasteloads, num_substances_total, num_substances_transported, num_cells, &
                 itime, conc, syname, lunrep)
 
         ! control by D-RTC
@@ -97,13 +97,13 @@ contains
         ! (General manipulation of inlet/outlet pairs requires further consideration though
         ! as we have a chicken-and-egg problem.)
 
-        call delwaq_user_drtc_control (nowst, wasteloads, notot, nosys, noseg, &
+        call delwaq_user_drtc_control (num_waste_loads, wasteloads, num_substances_total, num_substances_transported, num_cells, &
                 itime, conc, syname, lunrep)
 
         return
     end subroutine delwaq_user_wasteload
 
-    subroutine delwaq_user_bubble_bath  (nowst, wls, notot, nosys, noseg, &
+    subroutine delwaq_user_bubble_bath  (num_waste_loads, wls, num_substances_total, num_substances_transported, num_cells, &
             itime, conc, syname, lunrep)
 
         !       routine to set the bubble screen option for Nieuwe Meer
@@ -115,11 +115,11 @@ contains
 
         !       arguments declarations
 
-        integer, intent(in) :: nowst             ! number of wasteloads
+        integer, intent(in) :: num_waste_loads             ! number of wasteloads
         type(wasteload), intent(inout) :: wls(:)            ! array of all wasteloads (structure)
-        integer, intent(in) :: notot             ! total number of substances
-        integer, intent(in) :: nosys             ! number of active substances
-        integer, intent(in) :: noseg             ! number of segments
+        integer, intent(in) :: num_substances_total             ! total number of substances
+        integer, intent(in) :: num_substances_transported             ! number of active substances
+        integer, intent(in) :: num_cells             ! number of segments
         integer, intent(in) :: itime             ! system time
         real, intent(in) :: conc(:, :)         ! concentration array
         character(len = *), intent(in) :: syname(:)         ! substance names
@@ -159,11 +159,11 @@ contains
                         write (lunrep, *) 'Screen:', iscrn, ' is called: ', scrnam(iscrn)
                     enddo
                     close (lunscr)
-                    allocate (scrloc(nowst))        !  pointer from waste to screen
-                    allocate (scrwtd(noscrn, notot))
+                    allocate (scrloc(num_waste_loads))        !  pointer from waste to screen
+                    allocate (scrwtd(noscrn, num_substances_total))
                     allocate (scrwdf(noscrn))
                     scrloc = 0
-                    do iwst = 1, nowst
+                    do iwst = 1, num_waste_loads
                         do iscrn = 1, noscrn
                             if (find_string(scrnam(iscrn), wls(iwst)%id%id)) then
                                 scrloc(iwst) = iscrn
@@ -184,18 +184,18 @@ contains
 
         scrwtd = 0.0                                  !  zero the withdrawal
         scrwdf = 0.0                                  !  accumulation arrays
-        do iwst = 1, nowst
+        do iwst = 1, num_waste_loads
             iscrn = scrloc(iwst)
             if (iscrn /= 0) then                   !  screens only
                 wflow = wls(iwst)%flow
                 if (wflow < 0.0) then              !  withdrawals only
                     scrwdf(iscrn) = scrwdf(iscrn) + wflow
-                    do isub = 1, nosys
+                    do isub = 1, num_substances_transported
                         scrwtd (iscrn, isub) = scrwtd (iscrn, isub) + &
                                 wflow * conc(isub, wls(iwst)%loc%segnr)
                         wls(iwst)%loads(isub) = 0.0      !  for safety
                     enddo
-                    do isub = nosys + 1, notot
+                    do isub = num_substances_transported + 1, num_substances_total
                         scrwtd (iscrn, isub) = 0.0
                         wls(iwst)%loads(isub) = 0.0      !  for safety
                     enddo
@@ -209,7 +209,7 @@ contains
             wflow = scrwdf(iscrn)                    !  concentrations
             if (wflow /= 0.0) then                 !  per active screen
 
-                do isub = 1, notot
+                do isub = 1, num_substances_total
                     scrwtd (iscrn, isub) = scrwtd (iscrn, isub) / wflow
                 enddo
             endif
@@ -217,12 +217,12 @@ contains
 
         !        Third  step: set the mixed concentrations for the releases
 
-        do iwst = 1, nowst
+        do iwst = 1, num_waste_loads
             iscrn = scrloc(iwst)
             if (iscrn /= 0) then                   !  screens only
                 wflow = wls(iwst)%flow
                 if (wflow > 0.0) then              !  releases only
-                    do isub = 1, notot
+                    do isub = 1, num_substances_total
                         wls(iwst)%loads(isub) = scrwtd (iscrn, isub)
                     enddo
                 endif
@@ -237,7 +237,7 @@ contains
 
     end subroutine delwaq_user_bubble_bath
 
-    subroutine delwaq_user_inlet_outlet (nowst, wasteloads, notot, nosys, noseg, &
+    subroutine delwaq_user_inlet_outlet (num_waste_loads, wasteloads, num_substances_total, num_substances_transported, num_cells, &
             itime, conc, syname, lunrep)
 
         ! routine to set the default inlet-outlet coupling
@@ -248,11 +248,11 @@ contains
 
         ! arguments declarations
 
-        integer, intent(in) :: nowst                  ! number of wasteloads
+        integer, intent(in) :: num_waste_loads                  ! number of wasteloads
         type(wasteload), intent(inout) :: wasteloads(:)          ! array of all wasteloads (structure)
-        integer, intent(in) :: notot                  ! total number of substances
-        integer, intent(in) :: nosys                  ! number of active substances
-        integer, intent(in) :: noseg                  ! number of segments
+        integer, intent(in) :: num_substances_total                  ! total number of substances
+        integer, intent(in) :: num_substances_transported                  ! number of active substances
+        integer, intent(in) :: num_cells                  ! number of segments
         integer, intent(in) :: itime                  ! system time
         real, intent(in) :: conc(:, :)              ! concentration array
         character(len = *), intent(in) :: syname(:)              ! substance names
@@ -370,19 +370,19 @@ contains
             flow = wasteloads(ipin)%flow
             if (flow <= 0.0) then
                 wasteloads(ipout)%flow = 0.0
-                do isys = 1, nosys
+                do isys = 1, num_substances_transported
                     wasteloads(ipout)%loads(isys) = -flow * conc(isys, iseg)
                 enddo
-                do isys = nosys + 1, notot
+                do isys = num_substances_transported + 1, num_substances_total
                     wasteloads(ipout)%loads(isys) = 0.0
                 enddo
             else
                 ! Reversed flow - still using the flow rate at the inlet (!)
                 wasteloads(ipin)%flow = 0.0
-                do isys = 1, nosys
+                do isys = 1, num_substances_transported
                     wasteloads(ipin)%loads(isys) = flow * conc(isys, isego)
                 enddo
-                do isys = nosys + 1, notot
+                do isys = num_substances_transported + 1, num_substances_total
                     wasteloads(ipin)%loads(isys) = 0.0
                 enddo
             endif
@@ -411,15 +411,15 @@ contains
         ! local declarations
 
         character(len = 20) :: name                   ! fixed length copy of waste_id
-        integer :: nowst                  ! length of wasteloads array
+        integer :: num_waste_loads                  ! length of wasteloads array
         integer :: i                      ! loop counter
 
         ! loop over the wasteloads and compare id with delwaq routine zoek
 
-        nowst = size(wasteloads)
+        num_waste_loads = size(wasteloads)
         name = waste_id
         iwst = 0
-        do i = 1, nowst
+        do i = 1, num_waste_loads
             if (string_equals(name, wasteloads(i)%id%id)) then
                 iwst = i
                 return
@@ -466,15 +466,15 @@ contains
     end function find_string
 
     integer function get_number_of_layers()
-        ! gets the number of layers (from m_sysn)
+        ! gets the number of layers (from m_waq_memory_dimensions)
 
-        use m_sysn
+        use m_waq_memory_dimensions
 
-        get_number_of_layers = nolay
+        get_number_of_layers = num_layers
 
     end function get_number_of_layers
 
-    subroutine delwaq_user_walking_discharges (nowst, wasteloads, notot, nosys, noseg, &
+    subroutine delwaq_user_walking_discharges (num_waste_loads, wasteloads, num_substances_total, num_substances_transported, num_cells, &
             itime, conc, syname, lunrep)
 
         ! routine to handle walking discharges
@@ -485,11 +485,11 @@ contains
 
         ! arguments declarations
 
-        integer, intent(in) :: nowst                  ! number of wasteloads
+        integer, intent(in) :: num_waste_loads                  ! number of wasteloads
         type(wasteload), intent(inout) :: wasteloads(:)          ! array of all wasteloads (structure)
-        integer, intent(in) :: notot                  ! total number of substances
-        integer, intent(in) :: nosys                  ! number of active substances
-        integer, intent(in) :: noseg                  ! number of segments
+        integer, intent(in) :: num_substances_total                  ! total number of substances
+        integer, intent(in) :: num_substances_transported                  ! number of active substances
+        integer, intent(in) :: num_cells                  ! number of segments
         integer, intent(in) :: itime                  ! system time
         real, intent(in) :: conc(:, :)              ! concentration array
         character(len = *), intent(in) :: syname(:)              ! substance names
@@ -503,7 +503,7 @@ contains
         integer, save :: timestep               !< timestep, anticipate next time
         integer, save :: period                 !< period covered in the file
         integer, save :: nosegl                 !< number of segments per layer
-        integer, save :: nolay                  !< number of layers
+        integer, save :: num_layers                  !< number of layers
         integer, dimension(:, :), allocatable, save :: lgrid           !< matrix with segment numbers
 
         integer :: newsegment
@@ -513,7 +513,7 @@ contains
         integer :: lunrep, lunlga
         integer, save :: lunwlk
         integer :: ix, iy, iz, jz, offset
-        integer :: mmax, nmax, noq1, noq2, noq3
+        integer :: num_columns, num_rows, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir
         logical :: l_exi
 
         ! test if there are any walking discharges
@@ -532,21 +532,21 @@ contains
                 read(lunwlk, *) nowalk
                 if (nowalk > 0) then
                     open(newunit = lunlga, file = 'walking.lga', access = 'stream', status = 'old')
-                    read(lunlga) mmax, nmax, nosegl, nolay, noq1, noq2, noq3
+                    read(lunlga) num_columns, num_rows, nosegl, num_layers, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir
 
                     ! check if the grids match
 
-                    if (mod(noseg, nosegl) /= 0) then
-                        write(lunrep, 2002) noseg, nosegl
+                    if (mod(num_cells, nosegl) /= 0) then
+                        write(lunrep, 2002) num_cells, nosegl
                         nowalk = 0
                         close(lunlga)
                         close(lunwlk)
                         return
                     endif
 
-                    nolay = get_number_of_layers()
+                    num_layers = get_number_of_layers()
 
-                    allocate(lgrid(mmax, nmax))
+                    allocate(lgrid(num_columns, num_rows))
                     read(lunlga) lgrid
                     close(lunlga)
                 endif
@@ -558,12 +558,12 @@ contains
             offset = 0
             do i = 1, nowalk
                 read(lunwlk, *, iostat = ierr) id, ix, iy, iz
-                if (id > 0 .and. id + offset <= nowst) then
+                if (id > 0 .and. id + offset <= num_waste_loads) then
                     if (iz > 0) then
                         newsegment = lgrid(ix, iy) + nosegl * (iz - 1)
                         wasteloads(id + offset)%loc%segnr = newsegment
                     else
-                        do jz = 1, nolay
+                        do jz = 1, num_layers
                             newsegment = lgrid(ix, iy) + nosegl * (jz - 1)
                             wasteloads(id + offset)%loc%segnr = newsegment
                             offset = offset + 1
@@ -593,12 +593,12 @@ contains
                 offset = 0
                 do i = 1, nowalk
                     read(lunwlk, *, iostat = ierr) id, ix, iy, iz
-                    if (id > 0 .and. id + offset <= nowst) then
+                    if (id > 0 .and. id + offset <= num_waste_loads) then
                         if (iz > 0) then
                             newsegment = lgrid(ix, iy) + nosegl * (iz - 1)
                             wasteloads(id + offset)%loc%segnr = newsegment
                         else
-                            do jz = 1, nolay
+                            do jz = 1, num_layers
                                 newsegment = lgrid(ix, iy) + nosegl * (jz - 1)
                                 wasteloads(id + offset)%loc%segnr = newsegment
                                 offset = offset + 1
@@ -697,7 +697,7 @@ contains
 
     end subroutine delwaq_user_walking_discharges
 
-    subroutine delwaq_user_drtc_control (nowst, wls, notot, nosys, noseg, &
+    subroutine delwaq_user_drtc_control (num_waste_loads, wls, num_substances_total, num_substances_transported, num_cells, &
             itime, conc, syname, lunrep)
 
         !       routine to allow D-RTC to control the waste load
@@ -714,11 +714,11 @@ contains
 
         !       arguments declarations
 
-        integer, intent(in) :: nowst             ! number of wasteloads
+        integer, intent(in) :: num_waste_loads             ! number of wasteloads
         type(wasteload), intent(inout) :: wls(:)            ! array of all wasteloads (structure)
-        integer, intent(in) :: notot             ! total number of substances
-        integer, intent(in) :: nosys             ! number of active substances
-        integer, intent(in) :: noseg             ! number of segments
+        integer, intent(in) :: num_substances_total             ! total number of substances
+        integer, intent(in) :: num_substances_transported             ! number of active substances
+        integer, intent(in) :: num_cells             ! number of segments
         integer, intent(in) :: itime             ! system time
         real, intent(in) :: conc(:, :)         ! concentration array
         character(len = *), intent(in) :: syname(:)         ! substance names
@@ -728,7 +728,7 @@ contains
 
         integer :: i, n
 
-        do i = 1, nowst
+        do i = 1, num_waste_loads
             !
             ! Set the flow or a specific substance
             ! (Note that index 1 is for the extra quantity "flow")
@@ -736,7 +736,6 @@ contains
             n = size(wls(i)%loads) - 1 ! Compensate error in wascal
 
             if (allocated(wls(i)%set_factor)) then
-                write(88, *) 'Waste: ', i, wls(i)%set_factor
                 if (wls(i)%set_factor(1) /= 0.0) then
                     wls(i)%flow = wls(i)%flow * wls(i)%set_factor(1)
                     wls(i)%loads(1:n) = wls(i)%loads(1:n) * wls(i)%set_factor(2:n + 1)

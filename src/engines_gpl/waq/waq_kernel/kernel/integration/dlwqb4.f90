@@ -29,21 +29,21 @@ contains
 
     !> Computes masses from conc for transported substances, sets explicit step for non transported ones
     !! and resets derivatives to zero.
-    subroutine dlwqb4(nosys, notot, nototp, noseg, volume, &
+    subroutine dlwqb4(num_substances_transported, num_substances_total, num_substances_part, num_cells, volume, &
                       surface, amass, conc, deriv, idt)
 
         use timers
         implicit none
 
-        integer(kind=int_wp), intent(in   ) :: nosys               !< number of transported substances
-        integer(kind=int_wp), intent(in   ) :: notot               !< total number of substances
-        integer(kind=int_wp), intent(in   ) :: nototp              !< number of particle substances
-        integer(kind=int_wp), intent(in   ) :: noseg               !< number of computational volumes
-        real(kind=real_wp),   intent(inout) :: volume(noseg)       !< volumes of the segments
-        real(kind=real_wp),   intent(in   ) :: surface(noseg)      !< horizontal surface area
-        real(kind=real_wp),   intent(inout) :: amass(notot, noseg) !< masses per substance per volume
-        real(kind=real_wp),   intent(inout) :: conc(notot, noseg)  !< concentrations per substance per volume
-        real(kind=real_wp),   intent(inout) :: deriv(notot, noseg) !< derivatives per substance per volume
+        integer(kind=int_wp), intent(in   ) :: num_substances_transported               !< number of transported substances
+        integer(kind=int_wp), intent(in   ) :: num_substances_total               !< total number of substances
+        integer(kind=int_wp), intent(in   ) :: num_substances_part              !< number of particle substances
+        integer(kind=int_wp), intent(in   ) :: num_cells               !< number of computational volumes
+        real(kind=real_wp),   intent(inout) :: volume(num_cells)       !< volumes of the segments
+        real(kind=real_wp),   intent(in   ) :: surface(num_cells)      !< horizontal surface area
+        real(kind=real_wp),   intent(inout) :: amass(num_substances_total, num_cells) !< masses per substance per volume
+        real(kind=real_wp),   intent(inout) :: conc(num_substances_total, num_cells)  !< concentrations per substance per volume
+        real(kind=real_wp),   intent(inout) :: deriv(num_substances_total, num_cells) !< derivatives per substance per volume
         integer(kind=int_wp), intent(in   ) :: idt                 !< integration time step size
 
         ! Local variables
@@ -57,16 +57,16 @@ contains
         if (timon) call timstrt("dlwqb4", ithandl)
 
         ! loop accross the number of computational volumes for the concentrations
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             vol = volume(iseg)
             surf = surface(iseg)
             ! transported substances first
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 amass(isys, iseg) = conc(isys, iseg)*vol
                 deriv(isys, iseg) = 0.0
             end do
             ! then the passive substances
-            do isys = nosys + 1, notot - nototp
+            do isys = num_substances_transported + 1, num_substances_total - num_substances_part
                 amass(isys, iseg) = amass(isys, iseg) + idt*deriv(isys, iseg)
                 conc(isys, iseg) = amass(isys, iseg)/surf
                 deriv(isys, iseg) = 0.0

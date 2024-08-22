@@ -185,6 +185,12 @@ else
 end
 %--------------------------------------------------------------------------
 % Field descriptor array
+% Initialize for the empty file case
+S.Fld.Name = '';
+S.Fld.Type = '';
+S.Fld.Width = [];
+S.Fld(:) = [];
+% Continue reading
 i = 0;
 while 1
     i = i+1;

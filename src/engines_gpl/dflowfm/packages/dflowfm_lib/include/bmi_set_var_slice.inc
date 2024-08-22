@@ -43,10 +43,11 @@
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      twav(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("Uorb")
+  case("uorb")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     Uorb(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     uorb(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+
   case("InterceptThickness")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
@@ -191,20 +192,35 @@
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      evap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+  case("qext")
+
+     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
+     qext(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+  case("qextreal")
+
+     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
+     qextreal(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+  case("vextcum")
+
+     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
+     vextcum(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+  case("rainuni")
+     ! Does not apply to scalar variables
+     continue
   case("numlatsg")
      ! Does not apply to scalar variables
      continue
   case("qplat")
 
-     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1)/))
-     qplat(:,c_start(1)+1:(c_start(1)+c_count(1))) = x_2d_double_ptr
+     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
+     qplat(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
   case("qqlat")
 
-     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
-     qqlat(:,c_start(1)+1:(c_start(1)+c_count(1))) = x_2d_double_ptr
+     call c_f_pointer(xptr, x_3d_double_ptr, (/c_count(1), c_count(2), c_count(3)/))
+     qqlat(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2)),c_start(3)+1:(c_start(3)+c_count(3))) = x_3d_double_ptr
   case("balat")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1), c_count(2)/))
+     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      balat(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
   case("qplatCum")
 
@@ -250,21 +266,6 @@
 
      call c_f_pointer(xptr, x_1d_int_ptr, (/c_count(1)/))
      kclat(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
-  case("qext")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qext(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("qextreal")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qextreal(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("vextcum")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     vextcum(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("rainuni")
-     ! Does not apply to scalar variables
-     continue
   case("Qsunmap")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
@@ -465,10 +466,6 @@
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      diusp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("taus")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     taus(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
   case("ndxi")
      ! Does not apply to scalar variables
      continue

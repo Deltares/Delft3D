@@ -178,8 +178,8 @@ contains
         endif
         if (lmixo) then
             do i = 1, nuspec
-                aa(nunuco + 1, i) = max(0.0, algtyp(16, i) / ctodry(i))
-                aa(nunuco + 2, i) = max(0.0, algtyp(17, i) / ctodry(i))
+                aa(nunuco + 1, i) = max(0.0d0, algtyp(16, i) / ctodry(i))
+                aa(nunuco + 2, i) = max(0.0d0, algtyp(17, i) / ctodry(i))
             enddo
             cstra(nunuco + 1) = 'N-Detr'
             limnam(nunuco + 1) = 'N-D'
@@ -195,7 +195,7 @@ contains
         endif
         if (lfixn) then
             do i = 1, nuspec
-                aa(nunuco + 1, i) = max(0.0, algtyp(18, i) / ctodry(i))
+                aa(nunuco + 1, i) = max(0.0d0, algtyp(18, i) / ctodry(i))
             enddo
             cstra(nunuco + 1) = 'N-Fix'
             limnam(nunuco + 1) = 'N-F'
@@ -205,7 +205,7 @@ contains
             nunuco = nunuco + 1
         endif
         cstra(nunuco + 1) = 'KMIN    '
-        cstra(nunuco + 2) = 'KMAX    '
+        cstra(nunuco + 2) = 'num_layers_grid    '
         if (nunuco>nunucom) then
             write(outdbg, *) 'ERROR: Number of contraints if greater than the maximum number of constraints in BLOOM'
             write(*, *) 'ERROR: Number of contraints if greater than the maximum number of constraints in BLOOM'

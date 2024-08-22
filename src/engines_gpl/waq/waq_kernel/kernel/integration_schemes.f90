@@ -65,13 +65,13 @@ contains
         use delwaq2_data
         use m_waq_data_buffer
         use m_actions
-        use m_sysn          ! System characteristics
-        use m_sysi          ! Timer characteristics
-        use m_sysa          ! Pointers in real array workspace
-        use m_sysj          ! Pointers in integer array workspace
-        use m_sysc          ! Pointers in character array workspace
-        use m_cli_utils, only: get_input_filename
-        use m_logger_helper, only: set_log_unit_number
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+        use m_real_array_indices          ! Pointers in real array workspace
+        use m_integer_array_indices          ! Pointers in integer array workspace
+        use m_character_array_indices          ! Pointers in character array workspace
+        use m_cli_utils, only : get_input_filename
+        use m_logger_helper, only : set_log_unit_number
 
         type(waq_data_buffer), target :: buffer        !< System total array space
         integer(kind=int_wp) :: max_real_arr_size !< Maximum size of the real array
@@ -89,7 +89,7 @@ contains
 
         ! input structure for boot-file
         integer(kind=int_wp), save :: file_unit_list(NUM_FILES)
-        character*(FILE_NAME_LEN), save :: file_name_list(NUM_FILES)
+        character(len=FILE_NAME_LEN), save :: file_name_list(NUM_FILES)
         integer(kind=int_wp), save :: filtype(NUM_FILES)
         character(:), allocatable, save :: runid
 
@@ -97,7 +97,7 @@ contains
         integer(kind=int_wp) :: idummy, ierr2
         real(kind=real_wp) :: rdummy
         character :: cdummy
-        character*2 :: c2
+        character(len=2) :: c2
 
         integer(kind=int_wp), save :: ithndl = 0
 

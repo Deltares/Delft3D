@@ -29,21 +29,21 @@ contains
 
 
     !> Restores concentration array after mass has changed by process routines
-    subroutine dlwqb8(nosys, notot, nototp, noseg, volume, &
+    subroutine dlwqb8(num_substances_transported, num_substances_total, num_substances_part, num_cells, volume, &
             surface, amass, conc)
 
         use timers
 
         implicit none
 
-        integer(kind = int_wp), intent(in) :: nosys                 !< Number of transported substances
-        integer(kind = int_wp), intent(in) :: notot                 !< Total number of substances
-        integer(kind = int_wp), intent(in) :: nototp                !< Number of particle substances
-        integer(kind = int_wp), intent(in) :: noseg                 !< Number of computational volumes
-        real(kind = real_wp), intent(inout) :: volume(noseg)        !< Volumes of the segments
-        real(kind = real_wp), intent(in) :: surface(noseg)          !< Horizontal surface area
-        real(kind = real_wp), intent(inout) :: amass (notot, noseg) !< Masses per substance per volume
-        real(kind = real_wp), intent(inout) :: conc  (notot, noseg) !< Concentrations per substance per volume
+        integer(kind = int_wp), intent(in) :: num_substances_transported                 !< Number of transported substances
+        integer(kind = int_wp), intent(in) :: num_substances_total                 !< Total number of substances
+        integer(kind = int_wp), intent(in) :: num_substances_part                !< Number of particle substances
+        integer(kind = int_wp), intent(in) :: num_cells                 !< Number of computational volumes
+        real(kind = real_wp), intent(inout) :: volume(num_cells)        !< Volumes of the segments
+        real(kind = real_wp), intent(in) :: surface(num_cells)          !< Horizontal surface area
+        real(kind = real_wp), intent(inout) :: amass (num_substances_total, num_cells) !< Masses per substance per volume
+        real(kind = real_wp), intent(inout) :: conc  (num_substances_total, num_cells) !< Concentrations per substance per volume
 
         ! Local variables
         real(kind = real_wp) :: surf !< Horizontal surface area of the cell
@@ -58,19 +58,19 @@ contains
         if (timon) call timstrt ("dlwq18", ithandl)
 
         ! loop along the number of computational volumes for the concentrations
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             ! check for positivity
             vol = volume(iseg)
             surf = surface(iseg)
             if (abs(vol) < 1.0e-25) vol = 1.0
 
             ! transported substances first
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 conc (isys, iseg) = amass(isys, iseg) / vol
             end do
 
             ! then the passive substances
-            do isys = nosys + 1, notot - nototp
+            do isys = num_substances_transported + 1, num_substances_total - num_substances_part
                 conc(isys, iseg) = amass(isys, iseg) / surf
             end do
         end do

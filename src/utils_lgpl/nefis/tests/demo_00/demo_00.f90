@@ -41,73 +41,42 @@ PROGRAM DEMO00
 !=======================================================================
 !     ..
 !     .. Local Scalars ..
-   CHARACTER*1024 ERRSTR
-!                 .. character string to catch the NEFIS error message
-   CHARACTER CODING*1
-!                 .. indicates Y/N neutral representation of data
-   INTEGER   ERROR&
-!                 .. contains return-value of NEFIS functions
-   &,I&
-!                 .. loop control variabel, array index
-   &,J&
-!                 .. loop control variabel, array index
-   &,K&
-!                 .. loop control variabel, array index
-   &,OBSFIL
-!                 .. unitnumber of user's observation file
-!     ..
+   CHARACTER*1024 ERRSTR       !< character string to catch the NEFIS error message
+   CHARACTER CODING*1          !< indicates Y/N neutral representation of data
+   INTEGER   ERROR&            !< contains return-value of NEFIS functions
+            ,I&                !< loop control variabel, array index
+            ,J&                !< loop control variabel, array index
+            ,K&                !< loop control variabel, array index
+            ,OBSFIL            !< unitnumber of user's observation file
+
 !     .. Local Arrays ..
-   CHARACTER ELMNMS(2)*14
-!                 .. cell element names
+   CHARACTER ELMNMS(2)*14      !< cell element names
    CHARACTER*16 GRPDEF
-!
-   INTEGER   FDS&
-!                 .. NEFIS FILE DESCRIPTOR
-   &,GRPDMS(5)&
-!                 .. DIMENSIONS OF DATA GROUP TO DEFINE
-   &,GRPORD(5)&
-!                 .. ORDER INFORMATION OF DATA GROUP TO DEFINE
-   &,USRORD(5)&
-!                 .. ORDERING INFORMATION OF USER DATA
-   &,USRIND(3,5)
-!                 .. ORDERING INFORMATION OF USER DATA
-   REAL      VLOCTY(3,4)&
-!                 .. ARRAY TO CONTAIN VELOCITY-ELEMENT INFO OF 4 POINTS
-   &,DEPTH(12)&
-!                 .. ARRAY TO CONTAIN DEPTHS
-   &,OBSDAT(4,100,10)&
-!                 .. ARRAY TO CONTAIN OBSERVED DATA
-   &,CPU1 ,CPU2
-!     ..
+   INTEGER   FDS&              !< NEFIS FILE DESCRIPTOR
+            ,GRPDMS(5)&        !< DIMENSIONS OF DATA GROUP TO DEFINE
+            ,GRPORD(5)&        !< ORDER INFORMATION OF DATA GROUP TO DEFINE
+            ,USRORD(5)&        !< ORDERING INFORMATION OF USER DATA
+            ,USRIND(3,5)       !< ORDERING INFORMATION OF USER DATA
+   REAL      VLOCTY(3,4)&      !< ARRAY TO CONTAIN VELOCITY-ELEMENT INFO OF 4 POINTS
+            ,DEPTH(12)&        !< ARRAY TO CONTAIN DEPTHS
+            ,OBSDAT(4,100,10)& !< ARRAY TO CONTAIN OBSERVED DATA
+            ,CPU1 ,CPU2
+
 !     .. EXTERNAL FUNCTIONS ..
-   INTEGER   OPNDAT&
-!                 .. NEFIS-FUNCTION: OPEN A DATA FILE
-   &,OPNDEF&
-!                 .. NEFIS-FUNCTION: OPEN A DEFINITION FILE
-   &,DEFELM&
-!                 .. NEFIS-FUNCTION: DEFINE AN ELEMENT
-   &,DEFCEL&
-!                 .. NEFIS-FUNCTION: DEFINE A CELL
-   &,DEFGRP&
-!                 .. NEFIS-FUNCTION: DEFINE A GROUP
-   &,CREDAT&
-!                 .. NEFIS-FUNCTION: CREATE SPACE FOR DATA ON DATA FILE
-   &,PUTELT&
-!                 .. NEFIS-FUNCTION: WRITE DATA OF 1 OR MORE ELEMENTS
-!                 ..                 TO DATA FILE
-   &,GETELT&
-!                 .. NEFIS-FUNCTION: RETRIEVE DATA OF 1 OR MORE
-!                 ..                 ELEMENTS FROM DATA FILE
-   &,CLSDAT&
-!                 .. NEFIS-FUNCTION: CLOSE A DATA FILE
-   &,CLSDEF&
-!                 .. NEFIS-FUNCTION: CLOSE A DEFINITION FILE
-   &,INQDAT&
-!                 .. NEFIS-FUNCTION: INQUIRE A DATA FILE
-   &,NEFERR
-!                 .. NEFIS-FUNCTION: RETRIEVE ERROR STRING
+   INTEGER   OPNDAT&           !< NEFIS-FUNCTION: OPEN A DATA FILE
+            ,OPNDEF&           !< NEFIS-FUNCTION: OPEN A DEFINITION FILE
+            ,DEFELM&           !< NEFIS-FUNCTION: DEFINE AN ELEMENT
+            ,DEFCEL&           !< NEFIS-FUNCTION: DEFINE A CELL
+            ,DEFGRP&           !< NEFIS-FUNCTION: DEFINE A GROUP
+            ,CREDAT&           !< NEFIS-FUNCTION: CREATE SPACE FOR DATA ON DATA FILE
+            ,PUTELT&           !< NEFIS-FUNCTION: WRITE DATA OF 1 OR MORE ELEMENTS TO DATA FILE
+            ,GETELT&           !< NEFIS-FUNCTION: RETRIEVE DATA OF 1 OR MORE ELEMENTS FROM DATA FILE         
+            ,CLSDAT&           !< NEFIS-FUNCTION: CLOSE A DATA FILE
+            ,CLSDEF&           !< NEFIS-FUNCTION: CLOSE A DEFINITION FILE
+            ,INQDAT&           !< NEFIS-FUNCTION: INQUIRE A DATA FILE
+            ,NEFERR            !< NEFIS-FUNCTION: RETRIEVE ERROR STRING
 !=======================================================================
-!                 ..
+
 !                 .. LET US WRITE THE DATA IN NEUTRAL REPRESENTATION
    CODING = 'N'
    CPU1   = 0.0
@@ -182,13 +151,13 @@ PROGRAM DEMO00
    WRITE(*,'(''Demo0: Read observation data from input file'',&
    &             '' (not a NEFIS action)'')')
    OPEN (NEWUNIT=OBSFIL,FILE='observ.inp')
-   DO 10 I = 1, 10
+   DO I = 1, 10
       READ (OBSFIL,*)
-      DO 20 J = 1, 100
+      DO J = 1, 100
          READ (OBSFIL,*) (OBSDAT(K,J,I), K=1,4)
 !                 .. VELOCITIES AND WATERDEPTH AT LOCATION I, TIME J
-20    CONTINUE
-10 CONTINUE
+      END DO
+   END DO
    CLOSE (OBSFIL)
 !=======================================================================
 !                 ..
@@ -201,8 +170,8 @@ PROGRAM DEMO00
    WRITE(*,'(''Demo0: Write DATA to NEFIS file'',&
    &             '' ONE cell at a time'')')
 !jm   call clock@(cpu1)
-   DO 40 I = 1, 100
-      DO 30 J = 1, 10
+   DO I = 1, 100
+      DO J = 1, 10
          USRIND(1,1) = I
          USRIND(2,1) = I
          USRIND(3,1) = 1
@@ -222,8 +191,8 @@ PROGRAM DEMO00
          ERROR = PUTELT (FDS, 'RED RIVER',&
          &'WATERDEPTH', USRIND, USRORD, OBSDAT(4,I,J))
          IF (ERROR .NE. 0) GOTO 9999
-30    CONTINUE
-40 CONTINUE
+      END DO
+   END DO
 !jm   call clock@(cpu2)
    WRITE(*,'(''RED RIVER written in [sec]'',1PE13.5)')&
    &cpu2-cpu1
@@ -276,10 +245,10 @@ PROGRAM DEMO00
    IF (ERROR .NE. 0) GOTO 9999
 !                 ..
    WRITE(*,'(''Demo0: Velocities at time 54'')')
-   DO 50 I = 1, 4
+   DO I = 1, 4
       WRITE (*,'(A,I2,'':'',3F8.1)') '  Location ', I+5,&
       &(VLOCTY(J,I), J=1,3)
-50 CONTINUE
+   END DO
 !                 ..
 !                 .. NOW, RETRIEVE AT LOCATION 7 THE WATERDEPTHS FROM
 !                 .. TIME 35-46
@@ -298,9 +267,9 @@ PROGRAM DEMO00
    IF (ERROR .NE. 0) GOTO 9999
 !                 ..
    WRITE(*,'(''Demo0: Waterdepths at location 7'')')
-   DO 60 I = 1, 12
+   DO I = 1, 12
       WRITE (*,'(A,I2,'':'',F8.1)') '  Time ', I+34, DEPTH(I)
-60 CONTINUE
+   END DO
 !=======================================================================
 !
 !

@@ -1,8 +1,8 @@
+"""Common static functions.
+
+Copyright (C)  Stichting Deltares, 2024
 """
-Description: Common static functions
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
-"""
+
 import os
 import platform
 import re
@@ -27,45 +27,46 @@ if platform.system() == "Windows":
 
 # add search path to environment
 # input: environment to add search path to, path
-def add_search_path(environment, sp, logger: ILogger):
-    # Return immediately when ".svn" is in the path
-    if str(sp).find(".svn") != -1:
-        return
+def add_search_path(environment, sp, logger: ILogger) -> None:
     search_path = Paths().rebuildToLocalPath(sp)
     if platform.system() == "Windows":
         logger.debug(f"Adding windows search path {search_path}")
-        environment["PATH"] = search_path + ";" + environment["PATH"]
+        environment["PATH"] = f'{search_path};{environment["PATH"]}'
     else:
         logger.debug(f"Adding linux search path {search_path}")
-        environment["LD_LIBRARY_PATH"] = (
-            search_path + ":" + environment["LD_LIBRARY_PATH"]
-        )
-        environment["PATH"] = search_path + ":" + environment["PATH"]
+        environment["LD_LIBRARY_PATH"] = f'{search_path}:{environment["LD_LIBRARY_PATH"]}'
+        environment["PATH"] = f'{search_path}:{environment["PATH"]}'
 
 
-def escape_teamcity(input: str) -> str:
-    """Replace regular escape sequences in string with TeamCity escape sequences.
+def escape_teamcity(message: str) -> str:
+    r"""Replace regular escape sequences in string with TeamCity escape sequences.
 
-    TeamCity uses the alternative escape character '|' (vertical bar) instead of 
+    TeamCity uses the alternative escape character '|' (vertical bar) instead of
     '\\' (back-slash) to encode things like unicode characters and line feeds. In
     addition, square brackets ('[', ']') have special meaning in the teamcity logs.
     These need to be escaped as well.
 
-    Args:
-        input (str) : Input string containing escape sequences like '\n' or '\\'.
+    Parameters
+    ----------
+    message : str
+        Input string containing escape sequences like '\n' or '\\'.
 
-    Returns:
-        str: String with regular escape sequences replaced with TeamCity escape sequences.
+    Returns
+    -------
+    str
+        String with regular escape sequences replaced with TeamCity escape sequences.
 
-    Notes:
-        TeamCity documentation:
-        https://www.jetbrains.com/help/teamcity/cloud/service-messages.html#Escaped+Values
+    Notes
+    -----
+    TeamCity documentation:
+    https://www.jetbrains.com/help/teamcity/cloud/service-messages.html#Escaped+Values
     """
-    def generate_segments(input: str) -> Iterator[str]:
+
+    def generate_segments(message: str) -> Iterator[str]:
         last_end = 0
-        for mo in re.finditer(r"[\n\r\[\]'|\u0080-\uffff]", input, re.UNICODE):
+        for mo in re.finditer(r"[\n\r\[\]'|\u0080-\uffff]", message, re.UNICODE):
             begin, end = mo.span()
-            yield input[last_end:begin]
+            yield message[last_end:begin]
             last_end = end
 
             char = mo.group()
@@ -74,14 +75,14 @@ def escape_teamcity(input: str) -> str:
                 yield "|" + chr(char.encode("unicode_escape")[-1])
             elif char in "[]'|":
                 yield "|" + char
-            elif 0x80 <= code <= 0xffff:
+            elif 0x80 <= code <= 0xFFFF:
                 yield f"|0x{code:04X}"  # Watch out: code must be exactly four characters.
             else:
                 raise RuntimeError("Unhandled escape character.")
-        
-        yield input[last_end:]
 
-    return "".join(generate_segments(input))
+        yield message[last_end:]
+
+    return "".join(generate_segments(message))
 
 
 # Replace a word by "***" when it follows a word containing the string "password"
@@ -103,15 +104,13 @@ def stripPassword(cstr):
 
 
 def get_default_logging_folder_path() -> str:
-    current_folder = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "..", ".."
-    )
+    current_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "..")
 
     return os.path.join(current_folder, "logs")
 
 
 def get_log_level(level):
-    """parse log level string to enum"""
+    """Parse log level string to enum."""
     if not level or str(level) == "":
         return LogLevel.DEBUG
     if "info" in str(level).lower():
@@ -126,22 +125,29 @@ def get_log_level(level):
 #
 # input: server name, folder name, optional credentials
 # output: mount point, boolean specifying if we created it or if it already exists
-def mount_network_drive(
-    server: str, folder: str, credentials: Credentials, logger: ILogger
-) -> Tuple[str, bool]:
-    """mount a network drive in linux or windows
+def mount_network_drive(server: str, folder: str, credentials: Credentials, logger: ILogger) -> Tuple[str, bool]:
+    """Mount a network drive in linux or windows.
 
-    Args:
-        server (str): server name
-        folder (str): folder name
-        credentials (Credentials): credentials to use
-        logger (ILogger): logger to use
+    Parameters
+    ----------
+    server : str
+        Server name.
+    folder : str
+        Folder name.
+    credentials : Credentials
+        Credentials to use.
+    logger : ILogger
+        Logger to use.
 
-    Raises:
-        OSError: if no drive letters available
+    Raises
+    ------
+    OSError
+        If no drive letters available.
 
-    Returns:
-        Tuple[str, bool]: mount point, mounted (true/false)
+    Returns
+    -------
+    Tuple[str, bool]
+        Mount point, mounted (true/false).
     """
     if platform.system() == "Windows":
         pmp = check_if_already_mounted(server, folder, logger)
@@ -151,34 +157,30 @@ def mount_network_drive(
         if not dl:
             raise OSError("no drive letters available")
         mount_point = dl + ":"
-        cmd = "net use " + mount_point + " \\\\" + server + "\\" + folder
+        cmd = f"net use {mount_point} \\\\{server}\\{folder}"
         if credentials:
-            cmd = cmd + " /user:" + credentials.username + " " + credentials.password
+            cmd = f"{cmd} /user:{credentials.username} {credentials.password}"
     else:
         mount_point = tempfile.mkdtemp()
-        cmd = "mount -t smbfs //" + server + "/" + folder + " " + mount_point
+        cmd = f"mount -t smbfs //{server}/{folder} {mount_point}"
         if credentials:
-            cmd = (
-                cmd
-                + " -o username="
-                + credentials.username
-                + ",password="
-                + credentials.password
-            )
+            cmd = f"{cmd} -o username={credentials.username},password={credentials.password}"
     subprocess.check_call(cmd, shell=True)
     return mount_point, True
 
 
-def unmount_network_drive(mount_point: str):
-    """unmount a network drive in linux or windows
+def unmount_network_drive(mount_point: str) -> None:
+    """Unmount a network drive in linux or windows.
 
-    Args:
-        mount_point (str): mountpoint to unmount
+    Parameters
+    ----------
+    mount_point : str
+        Mountpoint to unmount.
     """
     if platform.system() == "Windows":
-        cmd = "net use " + mount_point + " /DELETE /YES"
+        cmd = f"net use {mount_point} /DELETE /YES"
     else:
-        cmd = "umount -l " + mount_point
+        cmd = f"umount -l {mount_point}"
     subprocess.check_call(cmd, shell=True)
 
 
@@ -192,7 +194,7 @@ def getAvailableWindowsDriveLetter():
         bitmask >>= 1
     for i in range(1, 26):
         val = string.lowercase[:26][-i]
-        if not val in drives:
+        if val not in drives:
             return val
     return None
 
@@ -203,9 +205,9 @@ def check_if_already_mounted(server, folder, logger: ILogger):
         process = subprocess.Popen(["net", "use"], stdout=subprocess.PIPE)
         while True:
             line = process.stdout.readline()
-            if line == "" and process.poll() != None:
+            if line == "" and process.poll() is not None:
                 break
-            if " \\\\" + server + "\\" + folder in line:
+            if f" \\\\{server}\\{folder}" in line:
                 return line[line.find(":") - 1 : line.find(":") + 1]
         (_, stderr) = process.communicate()
         if stderr:
@@ -220,18 +222,28 @@ def log_header(
     log_level: LogLevel = LogLevel.INFO,
     width: int = 150,
     char: str = "=",
-):
-    """Logs a header like:
+) -> None:
+    """Log a header.
+
+    Resulting header looks like:
+    ```
     ==============
     header
     ==============
+    ```
 
-    Args:
-        header (str): header to log
-        logger (ILogger): logger to use
-        log_level (LogLevel, optional): level to log for. Defaults to LogLevel.INFO.
-        width (int, optional): width of the header. Defaults to 150.
-        char (str, optional): char to use for begin/end of header. Defaults to "=".
+    Parameters
+    ----------
+    header : str
+        Header to log.
+    logger : ILogger
+        Logger to use.
+    log_level : LogLevel, optional
+        Level to log for. Defaults to `LogLevel.INFO`.
+    width : int, optional
+        Width of the header. Defaults to 150.
+    char : str, optional
+        Char to use for begin/end of header. Defaults to "=".
     """
     log_separator(logger, log_level, width, char)
     logger.log(header, log_level)
@@ -244,16 +256,26 @@ def log_sub_header(
     log_level: LogLevel = LogLevel.INFO,
     width: int = 150,
     char: str = "-",
-):
-    """Logs a sub header like
-    -- header ---------
+) -> None:
+    """Log a sub header.
 
-    Args:
-        header (str): header to log
-        logger (ILogger): logger to use
-        log_level (LogLevel, optional): level to log for. Defaults to LogLevel.INFO.
-        width (int, optional): width of the header. Defaults to 150.
-        char (str, optional): char to use for the header. Defaults to "=".
+    Sub header looks like:
+    ```
+    -- header ---------
+    ```
+
+    Parameters
+    ----------
+    header : str
+        Header to log
+    logger : ILogger
+        Logger to use
+    log_level : LogLevel, optional
+        Level to log for. Defaults to LogLevel.INFO.
+    width : int, optional
+        Width of the header. Defaults to 150.
+    char : str, optional
+        Char to use for the header. Defaults to "=".
     """
     log_separator_with_name(header, logger, log_level, width, char)
 
@@ -264,15 +286,24 @@ def log_separator(
     width: int = 150,
     char: str = "=",
     with_new_line: bool = False,
-):
-    """Logs a separator like
-    ===============
+) -> None:
+    """Log a separator.
 
-    Args:
-        logger (ILogger): logger to use
-        log_level (LogLevel, optional): level to log for. Defaults to LogLevel.INFO.
-        width (int, optional): width of the separator. Defaults to 150.
-        char (str, optional): char to use for separator. Defaults to "-".
+    Separator looks like:
+    ```
+    ===============
+    ```
+
+    Parameters
+    ----------
+    logger : ILogger
+        Logger to use.
+    log_level : LogLevel, optional
+        Level to log for. Defaults to `LogLevel.INFO`.
+    width : int, optional
+        Width of the separator. Defaults to 150.
+    char : str, optional
+        Char to use for separator. Defaults to "-".
     """
     logger.log((char * width), log_level)
     if with_new_line:
@@ -285,16 +316,26 @@ def log_separator_with_name(
     log_level: LogLevel = LogLevel.INFO,
     width: int = 150,
     char: str = "=",
-):
-    """Logs a separator with a name like
-    == name ========
+) -> None:
+    """Log a separator with a name.
 
-    Args:
-        name (str): name to log
-        logger (ILogger): logger to use
-        log_level (LogLevel, optional): level to log for. Defaults to LogLevel.INFO.
-        width (int, optional): width of the separator. Defaults to 150.
-        char (str, optional): char to use for separator. Defaults to "=".
+    Separator looks like:
+    ```
+    == name ========
+    ```
+
+    Parameters
+    ----------
+    name : str
+        Name to log.
+    logger : ILogger
+        Logger to use.
+    log_level : LogLevel, optional
+        Level to log for. Defaults to `LogLevel.INFO`.
+    width : int, optional
+        Width of the separator. Defaults to 150.
+    char : str, optional
+        Char to use for separator. Defaults to "=".
     """
     name_to_print = f" {name} "
     name_length = len(name_to_print)
@@ -309,19 +350,29 @@ def log_table(
     logger: ILogger,
     log_level: LogLevel = LogLevel.INFO,
     char: str = "-",
-):
-    """Logs a dictionary as a table like:
+) -> None:
+    """Log a dictionary as a table.
+
+    Table looks like:
+    ```
     -------------------------------
     |header 1|header 2   |header 3|
     -------------------------------
     |       2|test string|     3.9|
     |       5|test 2     |     2.6|
     -------------------------------
-    Args:
-        table (Dict[str, List[str]]): table (keys as headers)
-        logger (ILogger): logger to use
-        log_level (LogLevel, optional): level to log for. Defaults to LogLevel.INFO.
-        char (str, optional): char to use for header. Defaults to "-".
+    ```
+
+    Parameters
+    ----------
+    table : Dict[str, List[str]]
+        Table (keys as headers).
+    logger : ILogger
+        Logger to use.
+    log_level : LogLevel, optional)
+        Level to log for. Defaults to `LogLevel.INFO`.
+    char : str, optional
+        Char to use for header. Defaults to "-".
     """
     dict_table = DictTable(table)
 
@@ -352,12 +403,15 @@ def __create_table_row(row: List, max_lengths: List[int]) -> str:
     return f"{row_str}|"
 
 
-def delete_directory(directory: str, logger: ILogger):
-    """Delete a directory recursively
+def delete_directory(directory: str, logger: ILogger) -> None:
+    """Delete a directory recursively.
 
-    Args:
-        directory (str): directory to remove
-        logger (ILogger): logger for logging errors
+    Parameters
+    ----------
+    directory : str
+        Directory to remove.
+    logger : ILogger
+        Logger for logging errors.
     """
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)

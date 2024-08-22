@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module m_waq_external_access_layer_utils
+module  m_waq_external_access_layer_utils
     use m_waq_precision
     use m_connection_data
 
@@ -96,8 +96,8 @@ contains
     !!
     !! Note: Internal to get_var_ptr
     subroutine split_key(key_name, connection, newidx)
-        use m_sysn
-        use m_sysa
+        use m_waq_memory_dimensions
+        use m_real_array_indices
         use m_waq_api_categories
         use delwaq2_global_data
         use m_string_utils
@@ -205,7 +205,7 @@ contains
                 !
                 read (item_name, *, iostat=ierr) iseg
                 if (ierr == 0) then
-                    if (iseg < 1 .or. iseg > noseg) then
+                    if (iseg < 1 .or. iseg > num_cells) then
                         newidx = 0
                         exit selection
                     end if
@@ -240,7 +240,7 @@ contains
                 if (new_connection%incoming) then
                     new_connection%buffer_idx = iseg
                 else
-                    new_connection%buffer_idx = iwste - 1 + isys + (iseg - 1) * nowst * (notot + 1)
+                    new_connection%buffer_idx = iwste - 1 + isys + (iseg - 1) * num_waste_loads * (num_substances_total + 1)
                 end if
 
             case ('SEGMN')
@@ -250,7 +250,7 @@ contains
                 !
                 read (item_name, *, iostat=ierr) iseg
                 if (ierr == 0) then
-                    if (iseg < 1 .or. iseg > noseg) then
+                    if (iseg < 1 .or. iseg > num_cells) then
                         newidx = 0
                         exit selection
                     end if
@@ -259,13 +259,13 @@ contains
                     exit selection
                 end if
 
-                isys = index_in_array(subst_param(:20), substance_name(:notot))
+                isys = index_in_array(subst_param(:20), substance_name(:num_substances_total))
                 if (isys <= 0) then
                     newidx = 0
                     exit selection
                 end if
 
-                new_connection%buffer_idx = iconc - 1 + isys + (iseg - 1) * notot
+                new_connection%buffer_idx = iconc - 1 + isys + (iseg - 1) * num_substances_total
 
             case ('OBSRV')
                 new_connection%category = category_monitorpoint
@@ -289,12 +289,12 @@ contains
 
                 iseg = monitor_cell(monidx)
 
-                isys = index_in_array(subst_param(:20), substance_name(:notot))
+                isys = index_in_array(subst_param(:20), substance_name(:num_substances_total))
                 if (isys <= 0) then
                     newidx = 0
                     exit selection
                 end if
-                new_connection%buffer_idx = iconc - 1 + isys + (iseg - 1) * notot
+                new_connection%buffer_idx = iconc - 1 + isys + (iseg - 1) * num_substances_total
 
             case ('CONST')
 

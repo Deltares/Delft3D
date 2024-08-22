@@ -132,7 +132,7 @@ module ProcesSet
         character(len = ITEM_NAME_SIZE) :: name            ! IO item name
         integer :: type            ! IO item type
         real :: actdef          ! actual default
-        integer :: indx            ! index number in io list pmsa or flux array
+        integer :: indx            ! index number in io list process_space_real or flux array
         integer :: ip_val          ! pointer in the waq array space
         type(ItemProp), pointer :: item            ! general item properties
     end type IOitemProp

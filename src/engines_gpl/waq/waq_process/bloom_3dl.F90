@@ -28,7 +28,7 @@ module m_bloom_3dl
 contains
 
 
-    subroutine init_3dl(noseg, nosegw, nosegl, nolay, ngro, ntyp)
+    subroutine init_3dl(num_cells, nosegw, nosegl, num_layers, ngro, ntyp)
 
         use m_logger_helper, only : stop_with_error, get_log_unit_number
         use bloom_data_3dl
@@ -43,10 +43,10 @@ contains
         !     stop_with_error, stops execution
 
         !     arguments
-        integer(kind = int_wp) :: noseg      ! input, total number of segments
+        integer(kind = int_wp) :: num_cells      ! input, total number of segments
         integer(kind = int_wp) :: nosegw     ! input, number of segments in the water phase
         integer(kind = int_wp) :: nosegl     ! input, number of segments per layer
-        integer(kind = int_wp) :: nolay      ! input, number of layers
+        integer(kind = int_wp) :: num_layers      ! input, number of layers
         integer(kind = int_wp) :: ngro       ! input, number of BLOOM algae groups
         integer(kind = int_wp) :: ntyp       ! input, number of BLOOM algae types
 
@@ -54,17 +54,17 @@ contains
         integer(kind = int_wp) :: ierr_alloc ! error number memory allocation
         integer(kind = int_wp) :: lunrep     ! unit number report file
 
-        noseg_3dl = noseg
+        noseg_3dl = num_cells
         nosegl_3dl = nosegl
-        nolay_3dl = nolay
+        nolay_3dl = num_layers
         ngro_3dl = ngro
         ntyp_3dl = ntyp
 
-        allocate (radsurf_3dl(noseg), effic_3dl(ntyp, noseg), stat = ierr_alloc)
+        allocate (radsurf_3dl(num_cells), effic_3dl(ntyp, num_cells), stat = ierr_alloc)
         if (ierr_alloc /= 0) then
             call get_log_unit_number(lunrep)
             write (lunrep, 1000) ierr_alloc
-            write (lunrep, 1001) noseg
+            write (lunrep, 1001) num_cells
             write (lunrep, 1002) ntyp
             call stop_with_error()
         endif
@@ -72,7 +72,7 @@ contains
 
         return
         1000 format(' ERROR: allocating memory in INIT_3DL:', I10)
-        1001 format(' NOSEG, number of segments           :', I10)
+        1001 format(' num_cells, number of segments           :', I10)
         1002 format(' NTYP , number of BLOOM  algae types :', I10)
     end subroutine init_3dl
 
@@ -150,12 +150,12 @@ contains
         real(kind = dp) :: effi       ! calculated efficiency
 
         if (surf > 1.0 .and. exttot * dep > 1.0d-10) then
-            phi_s = - dlog(surf)
+            phi_s = - log(surf)
             call ebcalc(phi_s, fun_s, der_s, igroup)
-            phi_d = exttot * dep - dlog(surf)
+            phi_d = exttot * dep - log(surf)
             call ebcalc(phi_d, fun_d, der_d, igroup)
             effi = (fun_d - fun_s) / exttot / dep
-            effi = max(effi, 0.0)
+            effi = max(effi, 0.0_dp)
         else
             effi = 0.0
         endif

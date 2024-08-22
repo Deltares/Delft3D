@@ -27,8 +27,8 @@
 !
 !
 
-      subroutine write_data ( afile , itime , notim , noq1  , noq2  , &
-                              noq3  , noval , nosca , flagsf, valnam, &
+      subroutine write_data ( afile , itime , notim , num_exchanges_u_dir  , num_exchanges_v_dir  , &
+                              num_exchanges_z_dir  , noval , nosca , flagsf, valnam, &
                               ardata, funtyp)
 
       use m_waq_file
@@ -53,9 +53,9 @@
 !     filnr   integer  1          input   index file in file administr.
 !     itime   integer  1          input   actual time in seconds
 !     notim   integer  1          input   number of times in file (total)
-!     noq1    integer  1          input   number of items 1 in file
-!     noq2    integer  1          input   number of items 2 in file
-!     noq3    integer  1          input   number of items 3 in file
+!     num_exchanges_u_dir    integer  1          input   number of items 1 in file
+!     num_exchanges_v_dir    integer  1          input   number of items 2 in file
+!     num_exchanges_z_dir    integer  1          input   number of items 3 in file
 !     noval   integer  1          input   number of values per item
 !     nosca   integer  1          input   number of scale factors
 !     flagsf  integer  1          input   flag indocating segment function
@@ -66,23 +66,23 @@
 !     declaration of arguments
 !
       type(t_file) :: afile
-      integer               itime , notim , noq1  , noq2  , &
-                    noq3  , noval , nosca , flagsf, funtyp
+      integer               itime , notim , num_exchanges_u_dir  , num_exchanges_v_dir  , &
+                    num_exchanges_z_dir  , noval , nosca , flagsf, funtyp
       real          ardata(*)
-      character*20  valnam(*)
+      character(len=20) valnam(*)
 !
 !     local declarations
 !
-      integer       ioerr , lun   , noloc , nodata, filtyp, &
+      integer       ioerr , lun   , num_local_vars , nodata, filtyp, &
                     plform, i     , il    , itime2, &
                     irlen
-      character*256 filnam
+      character(len=256) filnam
 
       plform = which_operating_system()
 !
 !     initialise file
 !
-      noloc  = noq1 + noq2 + noq3
+      num_local_vars  = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
       call afile%open()
       lun    = afile%unit
       filtyp = afile%type
@@ -95,14 +95,14 @@
 
             if ( notim .eq. 1 ) then
                if ( flagsf .eq. 1 ) then
-                  do  i = 1 , noloc
+                  do  i = 1 , num_local_vars
                      write ( lun , 2090 ) valnam(i)
                   enddo
                endif
                write ( lun , 2080 )
             else
                if ( flagsf .eq. 1 ) then
-                  do i = 1 , noloc
+                  do i = 1 , num_local_vars
                      write ( lun , 2090 ) valnam(i)
                   enddo
                else
@@ -113,8 +113,8 @@
                else
                   write ( lun , 2010 )
                endif
-               write ( lun , 2020 ) noloc
-               write ( lun , 2030 ) (i,i=1,noloc)
+               write ( lun , 2020 ) num_local_vars
+               write ( lun , 2030 ) (i,i=1,num_local_vars)
                write ( lun , 2040 ) notim
                write ( lun , 2050 ) (1.0,i=1,nosca)
             endif
@@ -124,33 +124,33 @@
 !
 !     write timestep
 !
-      nodata = noloc*noval
+      nodata = num_local_vars*noval
       if ( filtyp .eq. FT_UNF .or. filtyp .eq. FT_BIN) then
          write ( lun ) itime , (ardata(i),i=1,nodata)
       elseif ( filtyp .eq. FT_ASC ) then
          if ( notim .eq. 1 ) then
-            if ( noq1 .gt. 0 ) then
+            if ( num_exchanges_u_dir .gt. 0 ) then
                write ( lun , 2050 ) (1.0,i=1,nosca)
-               do 20 il = 1 , noq1
+               do 20 il = 1 , num_exchanges_u_dir
                   write ( lun , 2070 ) (ardata(i+(il-1)*noval), i=1,noval)
    20          continue
             endif
-            if ( noq2 .gt. 0 ) then
+            if ( num_exchanges_v_dir .gt. 0 ) then
                write ( lun , 2050 ) (1.0,i=1,nosca)
-               do 30 il = noq1+1 , noq1+noq2
+               do 30 il = num_exchanges_u_dir+1 , num_exchanges_u_dir+num_exchanges_v_dir
                   write ( lun , 2070 ) (ardata(i+(il-1)*noval), i=1,noval)
    30          continue
             endif
-            if ( noq3 .gt. 0 ) then
+            if ( num_exchanges_z_dir .gt. 0 ) then
                write ( lun , 2050 ) (1.0,i=1,nosca)
-               do 40 il = noq1+noq2+1 , noq1+noq2+noq3
+               do 40 il = num_exchanges_u_dir+num_exchanges_v_dir+1 , num_exchanges_u_dir+num_exchanges_v_dir+num_exchanges_z_dir
                   write ( lun , 2070 ) (ardata(i+(il-1)*noval), i=1,noval)
    40          continue
             endif
          else
             call convert_seconds_to_date(itime,itime2,.true.,.false.)
             write ( lun , 2060 ) itime2
-            do 50 il = 1 , noloc
+            do 50 il = 1 , num_local_vars
                write ( lun , 2070 ) (ardata(i+(il-1)*noval),i=1,noval)
    50       continue
          endif

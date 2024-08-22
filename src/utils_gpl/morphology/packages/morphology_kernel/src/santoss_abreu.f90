@@ -38,6 +38,8 @@ subroutine santoss_abreu(hrms, km, d, r_ab, phi_ab, urms, tp, nt, tw, uorb)
 !!--declarations----------------------------------------------------------------
     use precision
     use mathconsts, only:sqrt2, pi
+    use ieee_arithmetic, only: ieee_is_nan
+
     implicit none
 !
 ! arguments
@@ -78,7 +80,7 @@ subroutine santoss_abreu(hrms, km, d, r_ab, phi_ab, urms, tp, nt, tw, uorb)
     do i = 1,nt
         uorb(i) = uw*f_ab*(sin(omega*tw(i))+r_ab*sin(phi_ab)/ &
                 & (1.0_fp+sqrt(1.0_fp-r_ab**2)))/(1.0_fp-r_ab*cos(omega*tw(i)+phi_ab))
-        if (isnan(uorb(i))) uorb(i) = 0.0_fp
+        if (ieee_is_nan(uorb(i))) uorb(i) = 0.0_fp
         if (i /= nt) then
           tw(i+1) = tw(i)+dt
         endif

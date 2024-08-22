@@ -1,7 +1,6 @@
-"""
-Description: Resolve Handler helper
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Resolve Handler helper.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 import re
@@ -18,24 +17,29 @@ from src.utils.logging.i_logger import ILogger
 
 
 class ResolveHandler(ABC):
-    """Detect type of handler behind a path"""
+    """Detect type of handler behind a path."""
 
     @classmethod
-    def detect(
-        cls, path: str, logger: ILogger, credentials: Optional[Credentials] = None
-    ) -> HandlerType:
-        """detect which protocol handler is needed for the path
+    def detect(cls, path: str, logger: ILogger, credentials: Optional[Credentials] = None) -> HandlerType:
+        """Detect which protocol handler is needed for the path.
 
-        Args:
-            path (str): URL
-            credentials (Optional[Credentials]): Credentials to use
+        Parameters
+        ----------
+        path : str
+            URL.
+        credentials : Optional[Credentials]
+            Credentials to use.
 
-        Returns:
-            HandlerType: Detected handler type
+        Returns
+        -------
+        HandlerType
+            Detected handler type.
         """
         logger.debug(f"detecting handler for {path}")
 
-        if re.search(r"^\\(\\)?[A-Za-z0-9]+|^\/\/[A-Za-z0-9]+", path):  # assume network path starts with either [//] or [\\]
+        if re.search(
+            r"^\\(\\)?[A-Za-z0-9]+|^\/\/[A-Za-z0-9]+", path
+        ):  # assume network path starts with either [//] or [\\]
             return HandlerType.NET
         elif re.search(r"[A-Za-z]{1}\:\\|^\/{1}[A-Za-z0-9]|\.\.", path):  # assume local path handler [X:\] or [/]
             return HandlerType.PATH
@@ -48,22 +52,26 @@ class ResolveHandler(ABC):
 
     @classmethod
     def __detect_by_opening_url(cls, path: str, logger: ILogger, credentials: Optional[Credentials]) -> HandlerType:
-        """Try to open http connections to detect protocol header
-        (recursive analysis to root of path)
+        """Try to open http connections to detect protocol header (recursive analysis to root of path).
 
-        Args:
-            path (str): URL
-            credentials (Optional[Credentials]): Credentials to use
+        Parameters
+        ----------
+        path : str
+            URL.
+        credentials : Optional[Credentials]
+            Credentials to use.
 
-        Returns:
-            HandlerType: Detected handler type
+        Returns
+        -------
+        HandlerType
+            Detected handler type.
         """
         if credentials:
             password_mgr = url_lib.HTTPPasswordMgrWithDefaultRealm()
             scheme, netloc, _, _, _, _ = parse.urlparse(path)
             password_mgr.add_password(
                 None,
-                scheme + "://" + netloc + "/",
+                f"{scheme}://{netloc}/",
                 credentials.username,
                 credentials.password,
             )
@@ -83,8 +91,6 @@ class ResolveHandler(ABC):
             logger.debug(f"Trying to urlopen {path}")
             response = url_lib.urlopen(path)
             data = response.read().decode("utf-8")
-            if "<!doctype svn" in data.lower():
-                return HandlerType.SVN
             if "<!doctype html" in data.lower():
                 return HandlerType.WEB
             else:
@@ -95,10 +101,7 @@ class ResolveHandler(ABC):
                 if credentials:
                     logger.error("Credentials missing!")
             else:
-                logger.warning(
-                    f"The server could not fulfill the request ({path}). "
-                    + f"Error code: {exception.code}"
-                )
+                logger.warning(f"The server could not fulfill the request ({path}). Error code: {exception.code}")
                 if path.count("/") > 2:
                     newpath = path[: path.rfind("/")]
                     return cls.__detect_by_opening_url(newpath, logger, credentials)

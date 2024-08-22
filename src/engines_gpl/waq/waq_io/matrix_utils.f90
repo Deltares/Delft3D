@@ -536,19 +536,19 @@ contains
 
     end subroutine interpolate_2d_array
 
-    subroutine compute_matrix_size (noq1, noq2, noq3, noseg, ipoint, nomat)
+    subroutine compute_matrix_size (num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_cells, ipoint, fast_solver_arr_size)
         !! Compute size of the fast solver matrix
         !!
         !!    KHT      note that open boundaries (negative pointers) do not yield/n
         !!    KHT      off-diagonal elements. This is correct for the moment but needs/n
         !!    KHT      to be changed (in future) for (advanced) domain decomposition purposes/n
 
-        integer(kind = int_wp), intent(in) :: noq1               !< nr of exchanges first direction
-        integer(kind = int_wp), intent(in) :: noq2               !< nr of exchanges second direction
-        integer(kind = int_wp), intent(in) :: noq3               !< nr of exchanges third direction
-        integer(kind = int_wp), intent(in) :: noseg              !< nr of computational volumes
-        integer(kind = int_wp), intent(in) :: ipoint(4, noq1 + noq2 + noq3)   !< exchange pointer
-        integer(kind = int_wp), intent(out) :: nomat              !< size of the fast solver matrix
+        integer(kind = int_wp), intent(in) :: num_exchanges_u_dir               !< nr of exchanges first direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_v_dir               !< nr of exchanges second direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_z_dir               !< nr of exchanges third direction
+        integer(kind = int_wp), intent(in) :: num_cells              !< nr of computational volumes
+        integer(kind = int_wp), intent(in) :: ipoint(4, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir)   !< exchange pointer
+        integer(kind = int_wp), intent(out) :: fast_solver_arr_size
 
         integer(kind = int_wp) :: iq            ! loop counter exchanges
         integer(kind = int_wp) :: ifrom, ito    ! help variables exchanges
@@ -556,17 +556,17 @@ contains
         if (timon) call timstrt("compute_matrix_size", ithndl)
 
         ! compute number of offdiagonals to be stored in the matrix
-        nomat = 0
-        do iq = 1, noq1 + noq2
+        fast_solver_arr_size = 0
+        do iq = 1, num_exchanges_u_dir + num_exchanges_v_dir
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom == 0 .or. ito == 0) cycle
-            if (ifrom > 0) nomat = nomat + 1
-            if (ito   > 0) nomat = nomat + 1
+            if (ifrom > 0) fast_solver_arr_size = fast_solver_arr_size + 1
+            if (ito   > 0) fast_solver_arr_size = fast_solver_arr_size + 1
         enddo
 
         ! see if there is a third direction
-        if (noq3 /= 0) nomat = nomat + 2 * noseg
+        if (num_exchanges_z_dir /= 0) fast_solver_arr_size = fast_solver_arr_size + 2 * num_cells
 
         if (timon) call timstop(ithndl)
         return
@@ -613,7 +613,7 @@ contains
         functype = wdata%function_type
         miniem = .false.
         maxiem = .false.
-        ndim1 = wdata%num_parameters
+        ndim1 = wdata%num_spatial_parameters
         ndim2 = wdata%num_locations
         num_records = fdata%num_breakpoints
         allocate(wdata%times(num_records), wdata%values(ndim1, ndim2, num_records))
@@ -842,8 +842,8 @@ contains
         integer(kind = int_wp), intent(in) :: output_verbose_level        ! output file option
 
         logical :: deflts       ! defaults for the parameters
-        integer(kind = int_wp) :: nopar         ! dlwqdata%num_parameters
-        integer(kind = int_wp) :: noloc         ! dlwqdata%num_locations
+        integer(kind = int_wp) :: nopar         ! dlwqdata%num_spatial_parameters
+        integer(kind = int_wp) :: num_local_vars         ! dlwqdata%num_locations
         integer(kind = int_wp) :: num_records         ! dlwqdata%num_breakpoints
         integer(kind = int_wp) :: ftype         ! dlwqdata%function_type
         integer(kind = int_wp) :: iorder        ! dlwqdata%iorder
@@ -867,8 +867,8 @@ contains
         endif
 
         ! initialisation
-        nopar = dlwqdata%num_parameters
-        noloc = dlwqdata%num_locations
+        nopar = dlwqdata%num_spatial_parameters
+        num_local_vars = dlwqdata%num_locations
         num_records = dlwqdata%num_breakpoints
         ftype = dlwqdata%function_type
         iorder = dlwqdata%iorder
@@ -902,7 +902,7 @@ contains
 
             ! perform the actual scaling
             do ibrk = 1, num_records
-                do iloc = 1, noloc
+                do iloc = 1, num_local_vars
                     do ipar = 1, nopar
                         if (iorder == ORDER_PARAM_LOC) then
                             dlwqdata%values(ipar, iloc, ibrk) = dlwqdata%values(ipar, iloc, ibrk) * dlwqdata%parameter_scale_factor(ipar)
@@ -956,7 +956,7 @@ contains
                             write (file_unit, 1150) strng1, (car_used(k), k = ipar, ie)
                         endif
                     endif
-                    do iloc = 1, noloc
+                    do iloc = 1, num_local_vars
                         if (dlwqdata%are_locations_pointered) then
                             iploc = abs(dlwqdata%location_pointers(iloc))
                         else

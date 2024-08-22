@@ -55,12 +55,12 @@ contains
     !! Negative flow is considered directed out of the model (outflow).
     !! Surface and bed loads require the presence of parameter SURF.
     !! Bank loads require the presence of parameter LENGTH.
-    subroutine dlwq15a(nosys, notot, noseg, noq, nowst, &
-            nowtyp, ndmps, intopt, idt, itime, &
+    subroutine dlwq15a(num_substances_transported, num_substances_total, num_cells, num_exchanges, num_waste_loads, &
+            num_waste_load_types, num_monitoring_cells, intopt, idt, itime, &
             iaflag, syname, conc, volume, vol2, &
             flow, ipoint, wastid, wstnam, wsttyp, &
             iwtype, iwaste, iwstkind, waste, deriv, &
-            wdrawal, iknmrk, nopa, paname, param, nosfun, &
+            wdrawal, iknmrk, num_spatial_parameters, paname, param, num_spatial_time_fuctions, &
             sfname, segfun, isdmp, dmps, amass2, &
             wstdmp, isys, nsys)
 
@@ -69,52 +69,52 @@ contains
         use timers
         implicit none
 
-        integer(kind = int_wp), intent(in   ) :: nosys                   !< Number of transported substances
-        integer(kind = int_wp), intent(in   ) :: notot                   !< Total number of substances
-        integer(kind = int_wp), intent(in   ) :: noseg                   !< Number of cells or segments
-        integer(kind = int_wp), intent(in   ) :: noq                     !< Number of flows
-        integer(kind = int_wp), intent(in   ) :: nowst                   !< Number of wastes
-        integer(kind = int_wp), intent(in   ) :: nowtyp                  !< Number of waste types
-        integer(kind = int_wp), intent(in   ) :: ndmps                   !< Number of dumped cells for balances
+        integer(kind = int_wp), intent(in   ) :: num_substances_transported                   !< Number of transported substances
+        integer(kind = int_wp), intent(in   ) :: num_substances_total                   !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: num_cells                   !< Number of cells or segments
+        integer(kind = int_wp), intent(in   ) :: num_exchanges                     !< Number of flows
+        integer(kind = int_wp), intent(in   ) :: num_waste_loads                   !< Number of wastes
+        integer(kind = int_wp), intent(in   ) :: num_waste_load_types                  !< Number of waste types
+        integer(kind = int_wp), intent(in   ) :: num_monitoring_cells
         integer(kind = int_wp), intent(in   ) :: intopt                  !< Integration suboptions
         integer(kind = int_wp), intent(in   ) :: idt                     !< Integration time-step
         integer(kind = int_wp), intent(in   ) :: itime                   !< Current time
         integer(kind = int_wp), intent(in   ) :: iaflag                  !< If 1 then accumulation of balances
-        character(20),          intent(in   ) :: syname(notot)           !< Names of the substances
-        real(kind = real_wp),   intent(in   ) :: conc(notot, noseg)      !< Concentrations for withdrawals
-        real(kind = real_wp),   intent(in   ) :: volume(noseg)           !< Volumes at start of time step
-        real(kind = real_wp),   intent(in   ) :: vol2(noseg)             !< Volumes at end   of time step
-        real(kind = real_wp),   intent(in   ) :: flow(noq)               !< Flows between comp. volumes
-        integer(kind = int_wp), intent(in   ) :: ipoint(4, noq)          !< From-to pointer
-        character(20),          intent(in   ) :: wastid(nowst)           !< IDs   of the wasteloads
-        character(40),          intent(in   ) :: wstnam(nowst)           !< Names of the wasteloads
-        character(40),          intent(in   ) :: wsttyp(nowst)           !< Types of the wasteloads
-        integer(kind = int_wp), intent(in   ) :: iwtype(nowst)           !< Type numbers of the wasteloads
-        integer(kind = int_wp), intent(in   ) :: iwaste(nowst)           !< Volume numbers of the waste locations
+        character(20),          intent(in   ) :: syname(num_substances_total)           !< Names of the substances
+        real(kind = real_wp),   intent(in   ) :: conc(num_substances_total, num_cells)      !< Concentrations for withdrawals
+        real(kind = real_wp),   intent(in   ) :: volume(num_cells)           !< Volumes at start of time step
+        real(kind = real_wp),   intent(in   ) :: vol2(num_cells)             !< Volumes at end   of time step
+        real(kind = real_wp),   intent(in   ) :: flow(num_exchanges)               !< Flows between comp. volumes
+        integer(kind = int_wp), intent(in   ) :: ipoint(4, num_exchanges)          !< From-to pointer
+        character(20),          intent(in   ) :: wastid(num_waste_loads)           !< IDs   of the wasteloads
+        character(40),          intent(in   ) :: wstnam(num_waste_loads)           !< Names of the wasteloads
+        character(40),          intent(in   ) :: wsttyp(num_waste_loads)           !< Types of the wasteloads
+        integer(kind = int_wp), intent(in   ) :: iwtype(num_waste_loads)           !< Type numbers of the wasteloads
+        integer(kind = int_wp), intent(in   ) :: iwaste(num_waste_loads)           !< Volume numbers of the waste locations
                                                                          !<   -1 = a load/withdrawal over the whole water surface. Values are /m2.
                                                                          !<   -2 = a load/withdrawal along the bank length of a volume. Values are /m.
                                                                          !<   -3 = a load/withdrawal over the whole water bed. Values are /m2.
-        integer(kind = int_wp), intent(in   ) :: iwstkind(nowst)         !< Meaning of the flow-concentration combination
+        integer(kind = int_wp), intent(in   ) :: iwstkind(num_waste_loads)         !< Meaning of the flow-concentration combination
                                                                          !< 0 = PRES : original implementation
                                                                          !< 1 = MASS : values are always used as mass, even if a flow exists
                                                                          !< 2 = CONC : values are always used as concentration, even if flow == 0
                                                                          !< 3 = RAIN : concentrations if flow > 0 and zero if flow < 0 (evaporation)
                                                                          !< 4 = WELL : concentrations if flow > 0 and model concentrations if flow < 0 (to groundwater)
-        real(kind = real_wp),   intent(inout) :: waste(0:notot, nowst)   !< Waste masses/concs per system clock
+        real(kind = real_wp),   intent(inout) :: waste(0:num_substances_total, num_waste_loads)   !< Waste masses/concs per system clock
                                                                          !< Zero-th element is 'flow'
-        real(kind = real_wp),   intent(inout) :: deriv(notot, noseg)     !< Derivatives to be updated
-        real(kind = real_wp),   intent(  out) :: wdrawal(noseg)          !< Withdrawals applied to all substances
-        integer(kind = int_wp), intent(in   ) :: iknmrk(noseg)           !< Feature array
-        integer(kind = int_wp), intent(in   ) :: nopa                    !< Number of parameters
-        character(20),          intent(in   ) :: paname(nopa)            !< Names of the parameters
-        real(kind = real_wp),   intent(in   ) :: param(nopa, noseg)      !< Parameter values
-        integer(kind = int_wp), intent(in   ) :: nosfun                  !< Number of segment functions
-        character(20),          intent(in   ) :: sfname(nosfun)          !< Names of the segment functions
-        real(kind = real_wp),   intent(in   ) :: segfun(noseg, nosfun)   !< Segment function values
-        integer(kind = int_wp), intent(in   ) :: isdmp(noseg)            !< Volume to dump-location pointer
-        real(kind = real_wp),   intent(inout) :: dmps(notot, ndmps, *)   !< Dumped segment fluxes if INTOPT > 7
-        real(kind = real_wp),   intent(inout) :: amass2(notot, 5)        !< Mass balance array
-        real(kind = real_wp),   intent(inout) :: wstdmp(notot, nowst, 2) !< Accumulated wasteloads 1/2 in and out
+        real(kind = real_wp),   intent(inout) :: deriv(num_substances_total, num_cells)     !< Derivatives to be updated
+        real(kind = real_wp),   intent(  out) :: wdrawal(num_cells)          !< Withdrawals applied to all substances
+        integer(kind = int_wp), intent(in   ) :: iknmrk(num_cells)           !< Feature array
+        integer(kind = int_wp), intent(in   ) :: num_spatial_parameters                    !< Number of parameters
+        character(20),          intent(in   ) :: paname(num_spatial_parameters)            !< Names of the parameters
+        real(kind = real_wp),   intent(in   ) :: param(num_spatial_parameters, num_cells)      !< Parameter values
+        integer(kind = int_wp), intent(in   ) :: num_spatial_time_fuctions                  !< Number of segment functions
+        character(20),          intent(in   ) :: sfname(num_spatial_time_fuctions)          !< Names of the segment functions
+        real(kind = real_wp),   intent(in   ) :: segfun(num_cells, num_spatial_time_fuctions)   !< Segment function values
+        integer(kind = int_wp), intent(in   ) :: isdmp(num_cells)            !< Volume to dump-location pointer
+        real(kind = real_wp),   intent(inout) :: dmps(num_substances_total, num_monitoring_cells, *)   !< Dumped segment fluxes if INTOPT > 7
+        real(kind = real_wp),   intent(inout) :: amass2(num_substances_total, 5)        !< Mass balance array
+        real(kind = real_wp),   intent(inout) :: wstdmp(num_substances_total, num_waste_loads, 2) !< Accumulated wasteloads 1/2 in and out
         integer(kind = int_wp), intent(in   ) :: isys                    !< First substance in array
         integer(kind = int_wp), intent(in   ) :: nsys                    !< Number of substances  to deal with
 
@@ -156,7 +156,7 @@ contains
         ! Set the array with withdrawal flow rates in any case
         wdrawal = 0.0
         ! No wasteloads
-        if (nowst == 0) goto 9999
+        if (num_waste_loads == 0) goto 9999
 
         ! in steady state mode this subroutine is called substance by substance
         ! preparations only in the call for the first substance
@@ -164,15 +164,15 @@ contains
             ! Create and dimension a backpointering array for load detection
             ! Dimension a work array for surface and bottom loads
             if (.not. allocated(ibpoint)) then
-                allocate(IBpoint(noseg), stat = ierr_alloc)
-                allocate(IWpoint(nowst), stat = ierr_alloc)
-                allocate(wflow  (noseg), stat = ierr_alloc)
-                allocate(surf   (noseg), stat = ierr_alloc)
-                allocate(length (noseg), stat = ierr_alloc)
+                allocate(IBpoint(num_cells), stat = ierr_alloc)
+                allocate(IWpoint(num_waste_loads), stat = ierr_alloc)
+                allocate(wflow  (num_cells), stat = ierr_alloc)
+                allocate(surf   (num_cells), stat = ierr_alloc)
+                allocate(length (num_cells), stat = ierr_alloc)
                 if (ierr_alloc /= 0) then
                     write(*, *) 'ERROR: allocating work array in DLWQ15'
                     write(*, *) 'ierr_alloc :', ierr_alloc
-                    write(*, *) 'noseg,nowst:', noseg, nowst
+                    write(*, *) 'num_cells,num_waste_loads:', num_cells, num_waste_loads
                     call stop_with_error()
                 end if
             end if
@@ -182,7 +182,7 @@ contains
             ! Detect all locations with missing wasteflow
             NrDetec = 0
             surfbed = .false.
-            do i = 1, nowst
+            do i = 1, num_waste_loads
                 iwst = iwaste(i)
                 if (iwst < 0) then
                     surfbed = .true.
@@ -211,7 +211,7 @@ contains
 
             ! Make wasteflows if missings have been detected
             if (NrDetec > 0) then
-                do i = 1, noq
+                do i = 1, num_exchanges
                     ip = ipoint(1, i)
                     if (ip > 0) then
                         if (IBpoint(ip) > 0) then    ! this is a cell with unknown loads
@@ -237,8 +237,8 @@ contains
             end if
 
             ! call the user wasteload dll
-            call wascal(nowst, notot, nosys, noseg, syname, &
-                    conc, itime, nowtyp, wastid, wstnam, &
+            call wascal(num_waste_loads, num_substances_total, num_substances_transported, num_cells, syname, &
+                    conc, itime, num_waste_load_types, wastid, wstnam, &
                     wsttyp, iwaste, iwtype, waste)
 
             ! Process for all waste locations
@@ -272,7 +272,7 @@ contains
         massbal = iaflag == 1
         fluxes = btest(intopt, 3)
 
-        do i = 1, nowst
+        do i = 1, num_waste_loads
             iwst = iwaste(i)
             select case (iwstkind(i))
             case (0) ! Original situation
@@ -316,7 +316,7 @@ contains
                         do i1 = isys, isys + nsys - 1
                             ahelp = 0.0
                             if (abs(waste(i1, i)) < 1.0E-30) then !  with model concentration
-                                if (i1 <= nosys) ahelp = conc(i1, iwst) * WasteFlow ! transported substances
+                                if (i1 <= num_substances_transported) ahelp = conc(i1, iwst) * WasteFlow ! transported substances
                             else !  with prescribed concentration
                                 ahelp = waste(i1, i) * WasteFlow
                             end if
@@ -336,7 +336,7 @@ contains
                     istrt = iwst
                     istop = iwst
                 else                                  ! surface or bed processing
-                    do i1 = 1, noseg
+                    do i1 = 1, num_cells
                         if (btest(iknmrk(i1), 0)) then
                             select case (iwst)
                             case (-1)               ! surface processing
@@ -351,7 +351,7 @@ contains
                         end if
                     end do
                     istrt = 1
-                    istop = noseg
+                    istop = num_cells
                 end if
                 do icel = istrt, istop
                     WasteFlow = wflow(icel)
@@ -383,7 +383,7 @@ contains
                     istrt = iwst
                     istop = iwst
                 else ! surface or bed processing
-                    do i1 = 1, noseg
+                    do i1 = 1, num_cells
                         if (btest(iknmrk(i1), 0)) then
                             select case (iwst)
                             case (-1)
@@ -398,7 +398,7 @@ contains
                         end if
                     end do
                     istrt = 1
-                    istop = noseg
+                    istop = num_cells
                 end if
                 do icel = istrt, istop
                     WasteFlow = wflow(icel)
@@ -430,7 +430,7 @@ contains
                     istrt = iwst
                     istop = iwst
                 else ! surface or bed processing
-                    do i1 = 1, noseg
+                    do i1 = 1, num_cells
                         if (btest(iknmrk(i1), 0)) then
                             select case (iwst)
                             case (-1)
@@ -445,7 +445,7 @@ contains
                         end if
                     end do
                     istrt = 1
-                    istop = noseg
+                    istop = num_cells
                 end if
                 do icel = istrt, istop
                     WasteFlow = wflow(icel)
@@ -468,7 +468,7 @@ contains
                     istrt = iwst
                     istop = iwst
                 else                                  ! surface or bed processing
-                    do i1 = 1, noseg
+                    do i1 = 1, num_cells
                         if (btest(iknmrk(i1), 0)) then
                             select case (iwst)
                             case (-1)
@@ -483,7 +483,7 @@ contains
                         end if
                     end do
                     istrt = 1
-                    istop = noseg
+                    istop = num_cells
                 end if
                 do icel = istrt, istop
                     WasteFlow = wflow(icel)

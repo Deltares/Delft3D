@@ -27,7 +27,7 @@
 !
 !
 
-      subroutine read_src_tmp(file_src_tmp, nolay, wasteload_coll, wasteload_data)
+      subroutine read_src_tmp(file_src_tmp, num_layers, wasteload_coll, wasteload_data)
 
       ! read a src file
       use m_logger_helper, only : stop_with_error, get_log_unit_number
@@ -40,7 +40,7 @@
       ! declaration of the arguments
 
       type(t_file)                       :: file_src_tmp           ! tmp sources file
-      integer                                :: nolay                  ! number of layers
+      integer                                :: num_layers                  ! number of layers
       type(t_wasteload_coll)                 :: wasteload_coll         ! the wasteloads
       type(t_data_block)      , intent(inout)  :: wasteload_data         ! wasteload_data
       type(t_data_block)                       :: wasteload_data_tmp     ! wasteload_data backup to append
@@ -83,7 +83,7 @@
       no_flow  = 0
       do i = 1 , no_waste
          if ( wasteload_coll%wasteload_pnts(i)%k .eq. 0 ) then
-            no_flow = no_flow + nolay
+            no_flow = no_flow + num_layers
          else
             no_flow = no_flow + 1
          endif
@@ -130,7 +130,7 @@
       wasteload_data_tmp%num_breakpoints = nobrk_waste
       no_param = 1
       wasteload_data_tmp%num_locations   = no_waste
-      wasteload_data_tmp%num_parameters = no_param
+      wasteload_data_tmp%num_spatial_parameters = no_param
 
       ! allocate arrays
       allocate(wasteload_data_tmp%times(nobrk_waste), &
@@ -188,7 +188,7 @@
          i_flow = 0
          do i_waste = 1 , no_waste
             if ( wasteload_coll%wasteload_pnts(i_waste)%k .eq. 0 ) then
-               do ilay = 1 , nolay
+               do ilay = 1 , num_layers
                   i_flow = i_flow + 1
                   wasteload_data_tmp%values(1,i_waste,ibrk) = wasteload_data_tmp%values(1,i_waste,ibrk) + flow_data(1,i_flow,ibrk)
                enddo

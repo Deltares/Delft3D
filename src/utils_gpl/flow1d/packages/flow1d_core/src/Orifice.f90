@@ -103,8 +103,6 @@ subroutine ComputeOrifice(orifice, fum, rum, aum, dadsm, kfum, s1m1, s1m2, qm, q
 !
     integer                        :: allowedflowdir
     double precision               :: cu
-    double precision               :: dabs
-    double precision               :: dsqrt
     double precision               :: fr
     double precision               :: qtm
     double precision               :: rhsc
@@ -166,8 +164,8 @@ subroutine ComputeOrifice(orifice, fum, rum, aum, dadsm, kfum, s1m1, s1m2, qm, q
           !          ARS 4681 improved wetted area computation
           !          ARS 3479 wetted area orifice limited to opening
           aum = max(smax - u0m * u0m / (2.0d0*gravity) - scr, 2.0d0/3.0d0*(smax - scr)) * swi
-          uweir = cmu*dsqrt(gravity * 2.0d0 * (smax - smin))
-          fr = dabs(uweir) / dxm
+          uweir = cmu*sqrt(gravity * 2.0d0 * (smax - smin))
+          fr = abs(uweir) / dxm
           rhsc = 0.0d0
           dadsm = swi
        else
@@ -175,8 +173,8 @@ subroutine ComputeOrifice(orifice, fum, rum, aum, dadsm, kfum, s1m1, s1m2, qm, q
           state = 1
           aum = (2.0d0/3.0d0)*(smax - scr)*swi
           cu = cmu**2*gravity/(1.5d0*dxm)
-          uweir = cmu*dsqrt(2.0d0/3.0d0*gravity*(smax - scr))
-          fr = dabs(uweir)/dxm
+          uweir = cmu*sqrt(2.0d0/3.0d0*gravity*(smax - scr))
+          fr = abs(uweir)/dxm
           if (s1m2>s1m1) then
              rhsc = -cu*(s1m1 - scr)
           else
@@ -190,14 +188,14 @@ subroutine ComputeOrifice(orifice, fum, rum, aum, dadsm, kfum, s1m1, s1m2, qm, q
           !          submerged orifice flow;  h_2 > z_s + d_g = z_s + s_op - z_s = s_op
           state = 4
           cu = cmu**2*2.0d0*gravity/dxm
-          uweir = cmu*dsqrt(gravity*2.0d0*(smax - smin))
-          fr = dabs(uweir)/dxm
+          uweir = cmu*sqrt(gravity*2.0d0*(smax - smin))
+          fr = abs(uweir)/dxm
           rhsc = 0.0
        else
           !          free orifice floww;  h_2 <= z_s + d_g = z_s + s_op - z_s = s_op
           state = 3
           cu = cmu**2*2.0d0*gravity/dxm
-          uweir = cmu*dsqrt(2.0d0*gravity*(smax - (scr + scf*(sop - scr))))
+          uweir = cmu*sqrt(2.0d0*gravity*(smax - (scr + scf*(sop - scr))))
           fr = uweir/dxm
           if (s1m2>s1m1) then
              rhsc = -cu*(smin - (scr + scf*(sop - scr)))
@@ -216,14 +214,14 @@ subroutine ComputeOrifice(orifice, fum, rum, aum, dadsm, kfum, s1m1, s1m2, qm, q
     !
     !     check for restriction on flow
     if ((orifice%uselimitflowpos) .and. (qtm > 0.0d0)) then
-       if (dabs(qtm)>orifice%limitflowpos ) then
+       if (abs(qtm)>orifice%limitflowpos ) then
           fum = 0.0
           rum = orifice%limitflowpos/max(aum, 1.0D-4)
           u1m = rum
           qm = orifice%limitflowpos
        endif
     elseif ((orifice%uselimitflowneg) .and. (qtm < 0.0d0)) then
-       if (dabs(qtm)>orifice%limitflowneg) then
+       if (abs(qtm)>orifice%limitflowneg) then
           fum = 0.0
           rum = -1.0*orifice%limitflowneg/max(aum, 1.0D-4)
           u1m = rum

@@ -31,7 +31,7 @@ contains
     subroutine iblbal(ntyp_m, ntyp_a, algtyp, ipoint)
 
         use bloom_data_mass_balance
-        use m_sysa
+        use m_real_array_indices
 
         implicit none
         !

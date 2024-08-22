@@ -27,7 +27,7 @@
 !
 !
 
-subroutine read_atr(file_atr, atr_type, not_atr, noseg, attributes)
+subroutine read_atr(file_atr, atr_type, not_atr, num_cells, attributes)
     !! read a atr file
 
     use m_logger_helper, only : stop_with_error, get_log_unit_number
@@ -43,7 +43,7 @@ subroutine read_atr(file_atr, atr_type, not_atr, noseg, attributes)
     type(t_file) :: file_atr               ! aggregation-file
     integer :: atr_type               ! type of attribute information
     integer :: not_atr                ! total number of attributes
-    integer :: noseg                  ! number of segments
+    integer :: num_cells                  ! number of segments
     integer :: attributes(*)          ! attributes
 
     ! local declarations
@@ -73,7 +73,7 @@ subroutine read_atr(file_atr, atr_type, not_atr, noseg, attributes)
     ! zero attribute array
 
     not_atr = 0
-    do iseg = 1, noseg
+    do iseg = 1, num_cells
         attributes(iseg) = 0
     enddo
 
@@ -178,7 +178,7 @@ subroutine read_atr(file_atr, atr_type, not_atr, noseg, attributes)
 
             ! read and merge attributes (overwrite earlier attribute with the same number = substract)
 
-            do iseg = 1, noseg
+            do iseg = 1, num_cells
                 if (gettoken (atr, ierr) .ne. 0) then
                     write(lunrep, *) ' error reading attributes file:', trim(file_atr%name)
                     write(lunrep, *) ' expected integer with attribute in this block'

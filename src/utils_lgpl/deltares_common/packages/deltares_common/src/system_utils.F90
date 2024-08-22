@@ -85,6 +85,7 @@ function cat_filename(path, file, ext) result(name)
     !
     integer      :: lenpath ! length of path name
     character(1) :: sep     ! separator
+    logical      :: path_ends_with_sep
 !
 !! executable statements -------------------------------------------------------
 !
@@ -97,12 +98,9 @@ function cat_filename(path, file, ext) result(name)
     lenpath = len_trim(path)
     sep = ' '
     if (lenpath>0) then
-       if (path(lenpath:lenpath) /= FILESEP                      &
-#ifndef HAVE_CONFIG_H
-          ! on Windows also check forward slash
-          & .and. path(lenpath:lenpath) /= '/'                   &
-#endif
-          &) then
+       ! on Windows also check forward slash
+       path_ends_with_sep = path(lenpath:lenpath) == FILESEP .or. (ARCH == 'windows' .and. path(lenpath:lenpath) == FILESEP_OTHER_ARCH)
+       if (.not. path_ends_with_sep) then
           sep = FILESEP
        endif
     endif
@@ -137,10 +135,10 @@ subroutine split_filename(name, path, file, ext)
 !
     ! find last file separator
     ifilesep = index(name, FILESEP, back=.true.)
-#ifndef HAVE_CONFIG_H
-    ! on Windows also check forward slash
-    ifilesep = max(ifilesep,index(name, '/', back=.true.))
-#endif
+    if (ARCH == 'windows') then
+        ! on Windows also check forward slash
+        ifilesep = max(ifilesep,index(name, FILESEP_OTHER_ARCH, back=.true.))
+    end if
     !
     ! split name
     if (ifilesep>0) then
@@ -184,10 +182,10 @@ subroutine remove_path(name, file)
 !
     ! find last file separator
     ifilesep = index(name, FILESEP, back=.true.)
-#ifndef HAVE_CONFIG_H
-    ! on Windows also check forward slash
-    ifilesep = max(ifilesep,index(name, '/', back=.true.))
-#endif
+    if (ARCH == 'windows') then
+        ! on Windows also check forward slash
+        ifilesep = max(ifilesep,index(name, FILESEP_OTHER_ARCH, back=.true.))
+    end if
     !
     ! file name with extention
     file = name(ifilesep+1:len_trim(name))
@@ -305,13 +303,12 @@ logical function is_abs(path)
    character(len=*), intent(in   ) :: path !< Input path
 
    integer :: idrive ! last char position of possible drive letter start, e.g. 'D:'
-#ifdef HAVE_CONFIG_H
-   is_abs = (path(1:1) == FILESEP)
-#else
-   idrive = index(path, ':') ! Find piece after drive letter:. When not found, still check from index 1, because it might start with / for Windows UNC paths \\share\etc.
-   is_abs = (path(idrive+1:idrive+1) == FILESEP .or. path(idrive+1:idrive+1) == '/') ! On Windows, also allow forward lash.
-#endif
-
+   if (ARCH == 'linux') then
+      is_abs = (path(1:1) == FILESEP)
+   else
+      idrive = index(path, ':') ! Find piece after drive letter:. When not found, still check from index 1, because it might start with / for Windows UNC paths \\share\etc.
+      is_abs = (path(idrive+1:idrive+1) == FILESEP .or. path(idrive+1:idrive+1) == FILESEP_OTHER_ARCH) ! On Windows, also allow forward lash.
+   end if
 end function is_abs
 
 !> find the last slash in a string.

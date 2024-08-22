@@ -34,11 +34,11 @@ module m_delwaq1_data
     use Workspace, only : set_array_indexes
     use Rd_token
 
-    use m_sysn          ! System characteristics
-    use m_sysi          ! Timer characteristics
-    use m_sysa          ! Pointers in real array workspace
-    use m_sysj          ! Pointers in integer array workspace
-    use m_sysc          ! Pointers in character array workspace
+    use m_waq_memory_dimensions          ! System characteristics
+    use m_timer_variables          ! Timer characteristics
+    use m_real_array_indices          ! Pointers in real array workspace
+    use m_integer_array_indices          ! Pointers in integer array workspace
+    use m_character_array_indices          ! Pointers in character array workspace
     use m_waq_data_buffer
 
     implicit none

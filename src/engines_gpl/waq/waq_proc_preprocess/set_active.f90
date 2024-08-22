@@ -57,7 +57,7 @@ contains
 
         ! local declarations
 
-        integer(kind = int_wp) :: nocons                 !  number of constants
+        integer(kind = int_wp) :: num_constants                 !  number of constants
         integer(kind = int_wp) :: ico                    !  loop counter constants
         integer(kind = int_wp) :: i_act                  !  loop counter active
         integer(kind = int_wp) :: ix_act                 !  index active
@@ -70,8 +70,8 @@ contains
 
         ! check the actives in the constant names
 
-        nocons = constants%no_item
-        do ico = 1, nocons
+        num_constants = constants%no_item
+        do ico = 1, num_constants
             if (string_equals('active', constants%name(ico))) then
 
                 ! check if double in the list

@@ -29,9 +29,9 @@
       contains
 
 
-      subroutine consbl ( pmsa   , fl     , ipoint , increm , noseg  , &
-                         noflux , iexpnt , iknmrk , noq1   , noq2   , &
-                         noq3   , noq4   )
+      subroutine consbl ( process_space_real   , fl     , ipoint , increm , num_cells  , &
+                         noflux , iexpnt , iknmrk , num_exchanges_u_dir   , num_exchanges_v_dir   , &
+                         num_exchanges_z_dir   , num_exchanges_bottom_dir   )
       use m_logger_helper, only : stop_with_error, get_log_unit_number
       use m_extract_waq_attribute
 
@@ -53,9 +53,9 @@
 !     Name     Type   Library
 !     ------   -----  ------------
 
-      REAL(kind=real_wp) ::PMSA  ( * ) , FL    (*)
-      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , NOSEG , NOFLUX, &
-              IEXPNT(4,*) , IKNMRK(*) , NOQ1, NOQ2, NOQ3, NOQ4
+      REAL(kind=real_wp) ::process_space_real  ( * ) , FL    (*)
+      INTEGER(kind=int_wp) ::IPOINT( * ) , INCREM(*) , num_cells , NOFLUX, &
+              IEXPNT(4,*) , IKNMRK(*) , num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 !
 !     Local
 !
@@ -205,51 +205,51 @@
       DO IFILSP = 1,NTOGRZ
         active_grazer(ifilsp) = .false.
         if ( increm(6+(IFILSP-1)*NINGRZ) > 0 .or. &
-            (PMSA(IP(6+(IFILSP-1)*NINGRZ))>1e-20 .or. &
-             PMSA(IP(7+(IFILSP-1)*NINGRZ))>1e-20)      ) &
+            (process_space_real(IP(6+(IFILSP-1)*NINGRZ))>1e-20 .or. &
+             process_space_real(IP(7+(IFILSP-1)*NINGRZ))>1e-20)      ) &
         active_grazer(ifilsp) = .true.
       ENDDO
 
 !     Set parameters not space dependent, active grazers only
 
-      PERIOD = PMSA(IP(1))
-      GEM    = PMSA(IP(5))
+      PERIOD = process_space_real(IP(1))
+      GEM    = process_space_real(IP(5))
       DO IFILSP = 1,NTOGRZ
        if (active_grazer(ifilsp)) then
-        GRZMC (IFILSP) = PMSA(IP(8+(IFILSP-1)*NINGRZ))
-        DETFF (IFILSP) = PMSA(IP(9+(IFILSP-1)*NINGRZ))
-        DETPR (IFILSP) = PMSA(IP(10+(IFILSP-1)*NINGRZ))
-        GRZFM (IFILSP) = PMSA(IP(11+(IFILSP-1)*NINGRZ))
-        GRZGM (IFILSP) = PMSA(IP(12+(IFILSP-1)*NINGRZ))
-        GRZML (IFILSP) = PMSA(IP(13+(IFILSP-1)*NINGRZ))
-        GRZMM (IFILSP) = PMSA(IP(14+(IFILSP-1)*NINGRZ))
-        GRZMO (IFILSP) = PMSA(IP(15+(IFILSP-1)*NINGRZ))
-        GRZRE (IFILSP) = PMSA(IP(16+(IFILSP-1)*NINGRZ))
-        GRZRM (IFILSP) = PMSA(IP(17+(IFILSP-1)*NINGRZ))
-        GRZSE (IFILSP) = PMSA(IP(18+(IFILSP-1)*NINGRZ))
-        FRDBOT_SAVE(IFILSP) = PMSA(IP(19+(IFILSP-1)*NINGRZ))
+        GRZMC (IFILSP) = process_space_real(IP(8+(IFILSP-1)*NINGRZ))
+        DETFF (IFILSP) = process_space_real(IP(9+(IFILSP-1)*NINGRZ))
+        DETPR (IFILSP) = process_space_real(IP(10+(IFILSP-1)*NINGRZ))
+        GRZFM (IFILSP) = process_space_real(IP(11+(IFILSP-1)*NINGRZ))
+        GRZGM (IFILSP) = process_space_real(IP(12+(IFILSP-1)*NINGRZ))
+        GRZML (IFILSP) = process_space_real(IP(13+(IFILSP-1)*NINGRZ))
+        GRZMM (IFILSP) = process_space_real(IP(14+(IFILSP-1)*NINGRZ))
+        GRZMO (IFILSP) = process_space_real(IP(15+(IFILSP-1)*NINGRZ))
+        GRZRE (IFILSP) = process_space_real(IP(16+(IFILSP-1)*NINGRZ))
+        GRZRM (IFILSP) = process_space_real(IP(17+(IFILSP-1)*NINGRZ))
+        GRZSE (IFILSP) = process_space_real(IP(18+(IFILSP-1)*NINGRZ))
+        FRDBOT_SAVE(IFILSP) = process_space_real(IP(19+(IFILSP-1)*NINGRZ))
         DO I = 1,NTONUT
-          GRZST (I,IFILSP) = PMSA(IP(19+(IFILSP-1)*NINGRZ+I))
+          GRZST (I,IFILSP) = process_space_real(IP(19+(IFILSP-1)*NINGRZ+I))
         ENDDO
-        TMPFM (IFILSP) = PMSA(IP(24+(IFILSP-1)*NINGRZ))
-        TMPGM (IFILSP) = PMSA(IP(25+(IFILSP-1)*NINGRZ))
-        TMPMM (IFILSP) = PMSA(IP(26+(IFILSP-1)*NINGRZ))
-        TMPRE (IFILSP) = PMSA(IP(27+(IFILSP-1)*NINGRZ))
-        TMPRM (IFILSP) = PMSA(IP(28+(IFILSP-1)*NINGRZ))
-        TMPSE (IFILSP) = PMSA(IP(29+(IFILSP-1)*NINGRZ))
-        BENTHS(IFILSP) = NINT(PMSA(IP(30+(IFILSP-1)*NINGRZ)))
+        TMPFM (IFILSP) = process_space_real(IP(24+(IFILSP-1)*NINGRZ))
+        TMPGM (IFILSP) = process_space_real(IP(25+(IFILSP-1)*NINGRZ))
+        TMPMM (IFILSP) = process_space_real(IP(26+(IFILSP-1)*NINGRZ))
+        TMPRE (IFILSP) = process_space_real(IP(27+(IFILSP-1)*NINGRZ))
+        TMPRM (IFILSP) = process_space_real(IP(28+(IFILSP-1)*NINGRZ))
+        TMPSE (IFILSP) = process_space_real(IP(29+(IFILSP-1)*NINGRZ))
+        BENTHS(IFILSP) = NINT(process_space_real(IP(30+(IFILSP-1)*NINGRZ)))
        endif
       ENDDO
       DO I=1,NTOALG
         ALGSTC(1,I) = 1.0
         DO J=1,NTONUT-1
-          ALGSTC(J+1,I) = PMSA(IP(5+J*NTOALG+2*NTONUT+NTOGRZ*NINGRZ+I))
+          ALGSTC(J+1,I) = process_space_real(IP(5+J*NTOALG+2*NTONUT+NTOGRZ*NINGRZ+I))
         end do
         DO IFILSP=1,NTOGRZ
          if (active_grazer(ifilsp)) then
-          ALGPR(I,IFILSP) = PMSA(IP(5+(NTONUT+IFILSP-1)*NTOALG+2*NTONUT+ &
+          ALGPR(I,IFILSP) = process_space_real(IP(5+(NTONUT+IFILSP-1)*NTOALG+2*NTONUT+ &
                                   NTOGRZ*NINGRZ+I))
-          ALGFF(I,IFILSP) = PMSA(IP(5+(NTONUT+NTOGRZ+IFILSP-1)*NTOALG+ &
+          ALGFF(I,IFILSP) = process_space_real(IP(5+(NTONUT+NTOGRZ+IFILSP-1)*NTOALG+ &
                                   2*NTONUT+NTOGRZ*NINGRZ+I))
          endif
         end do
@@ -257,7 +257,7 @@
 
 !     Loop over segments
 
-      DO ISEG = 1 , NOSEG
+      DO ISEG = 1 , num_cells
       IF (BTEST(IKNMRK(ISEG),0)) THEN
 
       CALL extract_waq_attribute(2,IKNMRK(ISEG),IKMRK2)
@@ -268,14 +268,14 @@
       end do
 !
 !     Input items (potentially) dependent on space
-      VOLUME = PMSA(IP(2))
-      WATEMP = PMSA(IP(3))
-      DEPTH  = PMSA(IP(4))
+      VOLUME = process_space_real(IP(2))
+      WATEMP = process_space_real(IP(3))
+      DEPTH  = process_space_real(IP(4))
       DO IFILSP = 1,NTOGRZ
        if (active_grazer(ifilsp)) then
-        GRZNEW(IFILSP) = MAX(PMSA(IP(6+(IFILSP-1)*NINGRZ)),GRZMC(IFILSP)) * &
+        GRZNEW(IFILSP) = MAX(process_space_real(IP(6+(IFILSP-1)*NINGRZ)),GRZMC(IFILSP)) * &
                         GRZML(IFILSP)
-        GRZOLD(IFILSP) = MAX(PMSA(IP(7+(IFILSP-1)*NINGRZ)),GRZMC(IFILSP)) * &
+        GRZOLD(IFILSP) = MAX(process_space_real(IP(7+(IFILSP-1)*NINGRZ)),GRZMC(IFILSP)) * &
                         GRZML(IFILSP)
 !       Correct unit of input concentration for zoobenthos
 !       Force concentration zero for zoobenthos segments without bottom
@@ -296,12 +296,12 @@
        endif
       end do
       DO I=1,NTONUT
-        DETRIT(I) = PMSA(IP(5+NTOGRZ*NINGRZ+I))
-        POC(I) =    PMSA(IP(5+NTOGRZ*NINGRZ+NTONUT+I))
+        DETRIT(I) = process_space_real(IP(5+NTOGRZ*NINGRZ+I))
+        POC(I) =    process_space_real(IP(5+NTOGRZ*NINGRZ+NTONUT+I))
         DETBIO(I) = DETRIT(I)*(1.0-GEM) + POC(I)*GEM
       end do
       DO I=1,NTOALG
-        ALGBIO(I) = MAX ( PMSA(IP(5+2*NTONUT+NTOGRZ*NINGRZ+I)) ,0.0 )
+        ALGBIO(I) = MAX ( process_space_real(IP(5+2*NTONUT+NTOGRZ*NINGRZ+I)) ,0.0 )
       end do
 
 !*******************************************************************************
@@ -544,9 +544,9 @@
             GRZNEW(IFILSP) = GRZNEW(IFILSP)*DEPTH
           ENDIF
           IF (GRZML(IFILSP)>0.0) THEN
-            PMSA(IP(7+(IFILSP-1)*NINGRZ)) = GRZNEW(IFILSP)/GRZML(IFILSP)
+            process_space_real(IP(7+(IFILSP-1)*NINGRZ)) = GRZNEW(IFILSP)/GRZML(IFILSP)
           ELSE
-            PMSA(IP(7+(IFILSP-1)*NINGRZ)) = 0.0
+            process_space_real(IP(7+(IFILSP-1)*NINGRZ)) = 0.0
           ENDIF
 !****
 !* 22 End loop over filter feeders

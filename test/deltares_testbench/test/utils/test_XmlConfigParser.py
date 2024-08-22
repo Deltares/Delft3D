@@ -1,13 +1,13 @@
 import io
-import textwrap
 import tempfile
-from pathlib import Path
+import textwrap
 from datetime import datetime, timezone
-from typing import Optional, Iterator
+from pathlib import Path
+from typing import Iterator, Optional
 from unittest.mock import MagicMock, patch
-from lxml import etree
 
 import pytest
+from lxml import etree
 
 from src.config.credentials import Credentials
 from src.config.dependency import Dependency
@@ -19,7 +19,7 @@ from src.utils.logging.test_loggers.test_result_type import TestResultType
 from src.utils.xml_config_parser import XmlConfigParser
 
 
-@pytest.fixture
+@pytest.fixture()
 def tmp_dir() -> Iterator[Path]:
     """Create temporary directory that is cleaned up after tests."""
     with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -27,7 +27,7 @@ def tmp_dir() -> Iterator[Path]:
         yield tmp_dir
 
 
-class TestXmlConfigParser():
+class TestXmlConfigParser:
     def test_load__config_with_testcase__path_not_versioned(self) -> None:
         """It should parse a simple testcase with non-versioned path."""
         # Arrange
@@ -142,15 +142,17 @@ class TestXmlConfigParser():
         logger.create_test_case_logger.return_value = testcase_logger
 
         # Act
-        with patch('src.utils.logging.test_loggers.file_test_logger.FileTestLogger', return_value=testcase_logger):
+        with patch("src.utils.logging.test_loggers.file_test_logger.FileTestLogger", return_value=testcase_logger):
             with pytest.raises(Exception) as excinfo:
                 _, _, _ = parser.load(settings, logger)
 
         # Assert
-        assert excinfo.typename == 'ValueError'
+        assert excinfo.typename == "ValueError"
         logger.create_test_case_logger.assert_called_once()
         testcase_logger.test_started.assert_called_once()
-        testcase_logger.test_Result.assert_called_once_with(TestResultType.Exception, "could not convert string to float: '11.0e'")
+        testcase_logger.test_Result.assert_called_once_with(
+            TestResultType.Exception, "could not convert string to float: '11.0e'"
+        )
 
     def test_assert_validation_error(self, tmp_dir: Path) -> None:
         settings = self.setup_include_element_xml(tmp_dir, "vrsion=")
@@ -198,7 +200,7 @@ class TestXmlConfigParser():
         test_case_path: Optional[TestCasePath] = None,
         dependency: Optional[Dependency] = None,
         reference_value: Optional[str] = "0.0",
-        include: Optional[str] = ""
+        include: Optional[str] = "",
     ) -> io.BytesIO:
         """Make config xml with some default values."""
         # Build `path` element.
@@ -251,7 +253,7 @@ class TestXmlConfigParser():
                         <path>foo.exe</path>
                     </program>
                 </programs>
-        
+
                 <defaultTestCases>
                     <testCase name="default_test_case">
                         <location ref="dsctestbench-cases" type="input">

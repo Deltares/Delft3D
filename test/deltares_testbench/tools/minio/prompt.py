@@ -12,11 +12,11 @@ class Prompt(abc.ABC):
 
         Parameters
         ----------
-        message: str
+        message : str
             A message to show to the users before prompting them to make a choice.
-        options: Sequence[str]
+        options : Sequence[str]
             The list of available options.
-        default_idx: int, optional
+        default_idx : int, optional
             The index in the `options` sequence to use as the default option.
 
         Returns
@@ -31,9 +31,9 @@ class Prompt(abc.ABC):
 
         Parameters
         ----------
-        message: str
+        message : str
             A message to show to the users before prompting them to make a choice.
-        default_yes: bool, optional
+        default_yes : bool, optional
             Whether or not 'yes' is the default option.
 
         Returns

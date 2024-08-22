@@ -44,7 +44,7 @@
       integer                                :: i_domain              ! domain index
       integer                                :: idmn                  ! flow like domain index (0:n_domain-1)
       integer                                :: dmn                   ! segment flow like domain index (0:n_domain-1)
-      integer                                :: nolay                 ! number of layers
+      integer                                :: num_layers                 ! number of layers
       integer                                :: ilay                  ! layer index
       integer                                :: iseg                  ! segment index
       integer                                :: isegl                 ! segment index
@@ -59,7 +59,7 @@
       ! copy to locals for convenience
 
       n_domain  = hyd%domain_coll%current_size
-      nolay     = hyd%nolay
+      num_layers     = hyd%num_layers
 
       do i_domain = 1 , n_domain
          idmn = i_domain - 1
@@ -68,7 +68,7 @@
             iseg_glob = domain_hyd%iglobal(isegl)
             dmn = domain_hyd%idomain(isegl)
             if ( iseg_glob .gt. 0 .and. dmn .eq. idmn) then
-               do ilay = 1, nolay
+               do ilay = 1, num_layers
                   iseg_domain = (ilay-1)*domain_hyd%nosegl + isegl
                   iseg        = (ilay-1)*hyd%nosegl + iseg_glob
                   hyd%volume(iseg) = domain_hyd%volume(iseg_domain)
@@ -76,16 +76,16 @@
                   if ( hyd%tem_present ) hyd%tem(iseg) = domain_hyd%tem(iseg_domain)
                   if ( hyd%tau_present ) hyd%tau(iseg) = domain_hyd%tau(iseg_domain)
                   if ( hyd%vdf_present ) hyd%vdf(iseg) = domain_hyd%vdf(iseg_domain)
-                  if ( ilay .ne. nolay ) then
-                     iq_domain = domain_hyd%noq1 + iseg_domain
-                     iq_glob   = hyd%noq1        + iseg
+                  if ( ilay .ne. num_layers ) then
+                     iq_domain = domain_hyd%num_exchanges_u_dir + iseg_domain
+                     iq_glob   = hyd%num_exchanges_u_dir        + iseg
                      hyd%area(iq_glob) = domain_hyd%area(iq_domain)
                      hyd%flow(iq_glob) = domain_hyd%flow(iq_domain)
                   endif
                enddo
             endif
          enddo
-         noq1_domain = domain_hyd%noq1
+         noq1_domain = domain_hyd%num_exchanges_u_dir
          do iq = 1, noq1_domain
             iq_global = domain_hyd%iglobal_link(iq)
             if ( iq_global .gt. 0 ) then

@@ -46,8 +46,8 @@ contains
     !! For the sweep back the reverse order is followed.
     !! Note the option to have settling substances modelled 'upwind'
     !! whereas the water velocity is taken centrally.
-    subroutine dlwqe1(nosys, notot, noseg, noqw, noq, &
-            nodisp, novelo, disp, disper, velo, &
+    subroutine dlwqe1(num_substances_transported, num_substances_total, num_cells, noqw, num_exchanges, &
+            num_dispersion_arrays, num_velocity_arrays, disp, disper, velo, &
             area, flow, aleng, ipoint, iknmrk, &
             idpnt, ivpnt, conc, bound, integration_id, &
             ilflag, idt, deriv, iaflag, amass2, &
@@ -56,43 +56,43 @@ contains
 
         use timers
 
-        integer(kind = int_wp), intent(in   ) :: nosys                 !< Number of transported substances
-        integer(kind = int_wp), intent(in   ) :: notot                 !< Total number of substances
-        integer(kind = int_wp), intent(in   ) :: noseg                 !< Number of computational volumes
+        integer(kind = int_wp), intent(in   ) :: num_substances_transported                 !< Number of transported substances
+        integer(kind = int_wp), intent(in   ) :: num_substances_total                 !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: num_cells                 !< Number of computational volumes
         integer(kind = int_wp), intent(in   ) :: noqw                  !< Number of interfaces waterphase
-        integer(kind = int_wp), intent(in   ) :: noq                   !< Total number of interfaces
-        integer(kind = int_wp), intent(in   ) :: nodisp                !< Number additional dispersions
-        integer(kind = int_wp), intent(in   ) :: novelo                !< Number additional velocities
+        integer(kind = int_wp), intent(in   ) :: num_exchanges                   !< Total number of interfaces
+        integer(kind = int_wp), intent(in   ) :: num_dispersion_arrays                !< Number additional dispersions
+        integer(kind = int_wp), intent(in   ) :: num_velocity_arrays                !< Number additional velocities
         real(kind = real_wp),   intent(in   ) :: disp(3)               !< Fixed dispersions in the 3 directions
-        real(kind = real_wp),   intent(in   ) :: disper(nodisp, noq)   !< Array with additional dispersions
-        real(kind = real_wp),   intent(in   ) :: velo(novelo, noq)     !< Array with additional velocities
-        real(kind = real_wp),   intent(in   ) :: area(noq)             !< Exchange areas in m2
-        real(kind = real_wp),   intent(in   ) :: flow(noq)             !< Flows through the exchange areas in m3/s
-        real(kind = real_wp),   intent(in   ) :: aleng(2, noq)         !< Mixing length to and from the exchange area
-        integer(kind = int_wp), intent(in   ) :: ipoint(4, noq)        !< From, to, from-1, to+1 volume numbers
-        integer(kind = int_wp), intent(in   ) :: iknmrk(noseg)         !< Feature array
-        integer(kind = int_wp), intent(in   ) :: idpnt(nosys)          !< Additional dispersion number per substance
-        integer(kind = int_wp), intent(in   ) :: ivpnt(nosys)          !< Additional velocity number per substance
-        real(kind = real_wp),   intent(inout) :: conc(notot, noseg)    !< M asses after horizontal transport step
-        real(kind = real_wp),   intent(in   ) :: bound(nosys, *)       !< Open boundary concentrations
+        real(kind = real_wp),   intent(in   ) :: disper(num_dispersion_arrays, num_exchanges)   !< Array with additional dispersions
+        real(kind = real_wp),   intent(in   ) :: velo(num_velocity_arrays, num_exchanges)     !< Array with additional velocities
+        real(kind = real_wp),   intent(in   ) :: area(num_exchanges)             !< Exchange areas in m2
+        real(kind = real_wp),   intent(in   ) :: flow(num_exchanges)             !< Flows through the exchange areas in m3/s
+        real(kind = real_wp),   intent(in   ) :: aleng(2, num_exchanges)         !< Mixing length to and from the exchange area
+        integer(kind = int_wp), intent(in   ) :: ipoint(4, num_exchanges)        !< From, to, from-1, to+1 volume numbers
+        integer(kind = int_wp), intent(in   ) :: iknmrk(num_cells)         !< Feature array
+        integer(kind = int_wp), intent(in   ) :: idpnt(num_substances_transported)          !< Additional dispersion number per substance
+        integer(kind = int_wp), intent(in   ) :: ivpnt(num_substances_transported)          !< Additional velocity number per substance
+        real(kind = real_wp),   intent(inout) :: conc(num_substances_total, num_cells)    !< M asses after horizontal transport step
+        real(kind = real_wp),   intent(in   ) :: bound(num_substances_transported, *)       !< Open boundary concentrations
         integer(kind = int_wp), intent(in   ) :: integration_id        !< Bit 0: 1 if no dispersion at zero flow
                                                                        !< Bit 1: 1 if no dispersion across boundaries
                                                                        !< Bit 2: 1 if lower order across boundaries
                                                                        !< Bit 3: 1 if mass balance output
         integer(kind = int_wp), intent(in   ) :: ilflag                !< If 0 then only 3 constant lenght values
         integer(kind = int_wp), intent(in   ) :: idt                   !< Time step in seconds
-        real(kind = real_wp),   intent(inout) :: deriv(notot, noseg)   !< Workspace containing the diagonal
+        real(kind = real_wp),   intent(inout) :: deriv(num_substances_total, num_cells)   !< Workspace containing the diagonal
         integer(kind = int_wp), intent(in   ) :: iaflag                !< If 1 then accumulate mass in report array
-        real(kind = real_wp),   intent(inout) :: amass2(notot, 5)      !< Report array for monitoring file
+        real(kind = real_wp),   intent(inout) :: amass2(num_substances_total, 5)      !< Report array for monitoring file
         integer(kind = int_wp), intent(in   ) :: file_unit_list        !< Unit number of monitoring file
         integer(kind = int_wp), intent(in   ) :: ndmpq                 !< Number of dumped exchanges
-        integer(kind = int_wp), intent(in   ) :: iqdmp(noq)            !< Pointers dumped exchages
-        real(kind = real_wp),   intent(inout) :: dmpq(nosys, ndmpq, 2) !< Dmpq(*,*,1) incoming transport
+        integer(kind = int_wp), intent(in   ) :: iqdmp(num_exchanges)            !< Pointers dumped exchages
+        real(kind = real_wp),   intent(inout) :: dmpq(num_substances_transported, ndmpq, 2) !< Dmpq(*,*,1) incoming transport
                                                                        !< Dmpq(*,*,2) outgoing transport
-        real(kind = dp),        intent(inout) :: rhs   (notot, noseg)  !< Local right hand side
-        real(kind = dp),        intent(inout) :: diag  (notot, noseg)  !< Local diagonal filled with volumes
-        real(kind = dp),        intent(inout) :: acodia(notot, noq)    !< Local workarray under codiagonal
-        real(kind = dp),        intent(inout) :: bcodia(notot, noq)    !< Local workarray upper codiagonal
+        real(kind = dp),        intent(inout) :: rhs   (num_substances_total, num_cells)  !< Local right hand side
+        real(kind = dp),        intent(inout) :: diag  (num_substances_total, num_cells)  !< Local diagonal filled with volumes
+        real(kind = dp),        intent(inout) :: acodia(num_substances_total, num_exchanges)    !< Local workarray under codiagonal
+        real(kind = dp),        intent(inout) :: bcodia(num_substances_total, num_exchanges)    !< Local workarray upper codiagonal
 
         ! Local variables
         integer(kind = int_wp) :: iq    !< Loop counter exchanges
@@ -134,7 +134,7 @@ contains
         disp0bnd = btest(integration_id, 1)
 
         !Loop over exchanges to fill the matrices
-        do iq = 1, noq
+        do iq = 1, num_exchanges
 
             ! Initialisations, check for transport anyhow
             ifrom = ipoint(1, iq)
@@ -160,7 +160,7 @@ contains
             if (iq > noqw) e = 0.0 ! no constant water diffusion in the bottom
 
             ! the regular case
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
 
                 ! advection
                 v = q
@@ -207,7 +207,7 @@ contains
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom <= 0 .or. ito <= 0) cycle
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 pivot = acodia(isys, iq) / diag(isys, ifrom)
                 diag(isys, ito) = diag(isys, ito) - pivot * bcodia(isys, iq)
                 rhs (isys, ito) = rhs (isys, ito) - pivot * rhs   (isys, ifrom)
@@ -215,12 +215,12 @@ contains
         end do
 
         ! loop over exchanges in the bed
-        do iq = noqw + 1, noq
+        do iq = noqw + 1, num_exchanges
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom <= 0 .or. ito <= 0) cycle
             iq3 = 0              ! find the second equivalent
-            do iq2 = iq + 1, noq ! pointer
+            do iq2 = iq + 1, num_exchanges ! pointer
                 if (ipoint(1, iq2) == ifrom .and. &
                         ipoint(2, iq2) == ito) then
                     iq3 = iq2
@@ -228,7 +228,7 @@ contains
                 end if
             end do              ! if not found, this was the
             if (iq3 == 0) cycle ! second and must be skipped
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 pivot = acodia(isys, iq) + acodia(isys, iq3)
                 pivot = pivot / diag(isys, ifrom)
                 rhs (isys, ito) = rhs (isys, ito) - pivot * rhs(isys, ifrom)
@@ -238,7 +238,7 @@ contains
         end do
 
         ! inverse loop over exchanges in the bed
-        do iq = noq, noqw + 1, -1
+        do iq = num_exchanges, noqw + 1, -1
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ito <= 0) cycle
@@ -251,13 +251,13 @@ contains
                 end if
             end do              ! if not found, this was the
             if (iq3 == 0) cycle ! second and must be skipped
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 pivot = diag(isys, ito)
                 rhs (isys, ito) = rhs(isys, ito) / pivot
                 diag(isys, ito) = 1.0
             end do
             if (ifrom <= 0) cycle
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 pivot = bcodia(isys, iq) + bcodia(isys, iq3)
                 rhs (isys, ifrom) = rhs (isys, ifrom) - pivot * rhs(isys, ito)
             end do
@@ -268,20 +268,20 @@ contains
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ito   <= 0) cycle
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 pivot = diag(isys, ito)
                 rhs (isys, ito) = rhs(isys, ito) / pivot
                 diag(isys, ito) = 1.0
             end do
             if (ifrom <= 0) cycle
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 pivot = bcodia(isys, iq)
                 rhs (isys, ifrom) = rhs (isys, ifrom) - pivot * rhs(isys, ito)
             end do
         end do
 
-        do iseg = 1, noseg ! in case some diagonal entries are not 1.0
-            do isys = 1, nosys
+        do iseg = 1, num_cells ! in case some diagonal entries are not 1.0
+            do isys = 1, num_substances_transported
                 rhs (isys, iseg) = rhs(isys, iseg) / diag(isys, iseg)
                 diag(isys, iseg) = 1.0
             end do
@@ -291,7 +291,7 @@ contains
 
         ! Mass balances ?
         if (iaflag == 0) goto 9999
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom == 0 .or.  ito == 0) cycle
@@ -318,7 +318,7 @@ contains
             e = e * dl
             if (iq > noqw) e = 0.0 ! no constant water diffusion in the bottom
 
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 v = q
                 if (ivpnt(isys) > 0) v = v + velo  (ivpnt(isys), iq) * a
                 if (v > 0.0) then

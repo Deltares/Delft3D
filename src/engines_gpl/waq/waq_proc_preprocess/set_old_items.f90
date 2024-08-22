@@ -35,8 +35,8 @@ contains
     !
     !
 
-    subroutine set_old_items(lurep, old_items, notot, nopa, nofun, &
-            nosfun, nodisp, novelo, syname, paname, &
+    subroutine set_old_items(lurep, old_items, num_substances_total, num_spatial_parameters, num_time_functions, &
+            num_spatial_time_fuctions, num_dispersion_arrays, num_velocity_arrays, syname, paname, &
             funame, sfname, diname, vename, constants)
 
         !     Deltares Software Centre
@@ -54,18 +54,18 @@ contains
 
         integer(kind = int_wp), intent(in) :: lurep             !< unit number report file
         type(old_item_coll) :: old_items         !< old_items table
-        integer(kind = int_wp), intent(in) :: notot             !< Number of systems
-        integer(kind = int_wp), intent(in) :: nopa              !< Number of parameters
-        integer(kind = int_wp), intent(in) :: nofun             !< Number of functions ( user )
-        integer(kind = int_wp), intent(in) :: nosfun            !< Number of segment functions
-        integer(kind = int_wp), intent(in) :: nodisp            !< Number of dispersion array's
-        integer(kind = int_wp), intent(in) :: novelo            !< Number of velocity array's
-        character(20), intent(inout) :: syname(notot)     !< Systems names
-        character(20), intent(inout) :: paname(nopa)      !< Parameter names
-        character(20), intent(inout) :: funame(nofun)    !< Function names
-        character(20), intent(inout) :: sfname(nosfun)    !< Segment function names
-        character(20), intent(inout) :: diname(nodisp)    !< Dispersion array names
-        character(20), intent(inout) :: vename(novelo)    !< Velocity array names
+        integer(kind = int_wp), intent(in) :: num_substances_total             !< Number of systems
+        integer(kind = int_wp), intent(in) :: num_spatial_parameters              !< Number of parameters
+        integer(kind = int_wp), intent(in) :: num_time_functions             !< Number of functions ( user )
+        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions            !< Number of segment functions
+        integer(kind = int_wp), intent(in) :: num_dispersion_arrays            !< Number of dispersion array's
+        integer(kind = int_wp), intent(in) :: num_velocity_arrays            !< Number of velocity array's
+        character(20), intent(inout) :: syname(num_substances_total)     !< Systems names
+        character(20), intent(inout) :: paname(num_spatial_parameters)      !< Parameter names
+        character(20), intent(inout) :: funame(num_time_functions)    !< Function names
+        character(20), intent(inout) :: sfname(num_spatial_time_fuctions)    !< Segment function names
+        character(20), intent(inout) :: diname(num_dispersion_arrays)    !< Dispersion array names
+        character(20), intent(inout) :: vename(num_velocity_arrays)    !< Velocity array names
         type(t_waq_item), intent(inout) :: constants  !< delwaq constants list
 
         ! local declaration
@@ -74,7 +74,7 @@ contains
         integer(kind = int_wp) :: n_old_items       ! number of records in old items table
         character(len = 20) :: name20            ! name
         integer(kind = int_wp) :: ifound            ! index in array
-        integer(kind = int_wp) :: nocons            ! number of constants
+        integer(kind = int_wp) :: num_constants            ! number of constants
         real(kind = real_wp) :: range             ! range in range check
         integer(kind = int_wp) :: ierr2             ! error indicator
         integer(kind = int_wp) :: ithndl = 0        ! handle for performance timer
@@ -90,15 +90,15 @@ contains
                 name20 = 'active_' // old_items%old_items(i)%old_name
                 ifound = constants%find(name20)
                 if (ifound > 0) then
-                    nocons = constants%no_item + 1
-                    ierr2 = constants%resize(nocons)
+                    num_constants = constants%no_item + 1
+                    ierr2 = constants%resize(num_constants)
                     if (ierr2 > 0) then
-                        write(lurep, '(a,i10)') ' ERROR: set_old_items resize error constants size:', nocons
+                        write(lurep, '(a,i10)') ' ERROR: set_old_items resize error constants size:', num_constants
                         call stop_with_error()
                     endif
-                    constants%no_item = nocons
-                    constants%name(nocons) = 'active_' // old_items%old_items(i)%new_name
-                    constants%constant(nocons) = 1.0
+                    constants%no_item = num_constants
+                    constants%name(num_constants) = 'active_' // old_items%old_items(i)%new_name
+                    constants%constant(num_constants) = 1.0
                     write(lurep, '(5a)') ' Added process [', old_items%old_items(i)%new_name, &
                             '] based on activated process [', old_items%old_items(i)%old_name, ']'
                 endif

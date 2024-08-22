@@ -51,7 +51,7 @@ contains
 
         ! copy the license from the proto process to the process
 
-        do iproc = 1, nproc
+        do iproc = 1, num_processes_activated
             found = .false.
             call upper_case(procid(iproc), namep1, 10)
 
@@ -60,7 +60,7 @@ contains
             do ipro = 1, noprot
                 if (namep1 == nampact(ipro)) then
                     found = .true.
-                    do iproc2 = 1, nproc
+                    do iproc2 = 1, num_processes_activated
                         call upper_case(procid(iproc2), namep2, 10)
                         if (namep2 == namprot(ipro)) then
                             do ic = 1, nconf
@@ -86,7 +86,7 @@ contains
                         call get_trimmed_length(namep3, ilen)
                         write(namep3(ilen + 1:), '(i2.2)') ialg
                         if (namep1 == namep3) then
-                            do iproc2 = 1, nproc
+                            do iproc2 = 1, num_processes_activated
                                 call upper_case(procid(iproc2), namep2, 10)
                                 if (namep2 == namprot(ipro)) then
                                     do ic = 1, nconf

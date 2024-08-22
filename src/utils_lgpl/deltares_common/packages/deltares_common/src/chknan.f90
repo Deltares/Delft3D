@@ -31,7 +31,7 @@
 ! 
 
  subroutine chknan(a, b, n)
- !use m_flow
+ use ieee_arithmetic, only: ieee_is_nan
 
  implicit none
  integer           :: n
@@ -39,13 +39,12 @@
  character(len=*)  :: b
 
  integer           :: i
- logical           :: isnan
  character(len=40) :: tex
  do i = 1,n
-    if (isnan(a(i)) ) then
+    if (ieee_is_nan(a(i)) ) then
        write(tex,'(I10)') i
-       write(*,*)  'isnan: ', b , tex
-       call error ('isnan: ', b , tex)
+       write(*,*)  'ieee_is_nan: ', b , tex
+       call error ('ieee_is_nan: ', b , tex)
     endif
  !   write(mdump,*) b, i, a(i)
  enddo

@@ -28,9 +28,9 @@ module m_dayl
 contains
 
 
-    subroutine dayl   (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine dayl   (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Daylength calculation in hours
 
@@ -55,9 +55,9 @@ contains
         !     ------   -----  ------------
 
         implicit none
-        real(kind = real_wp) :: pmsa  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(*), increm(*), noseg, noflux, &
-                iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(*), increm(*), num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         integer(kind = int_wp) :: ip1, ip2, ip3, ip4, ip5
         integer(kind = int_wp) :: in1, in2, in3, in4, in5
@@ -90,11 +90,11 @@ contains
 
             !        Only constant inputs, so only single calculation of daylength needed to be set to all segments
             varflg = .false.
-            time = pmsa(ip1)
+            time = process_space_real(ip1)
             !        Conversion Latitude to rads
-            latitu = pmsa(ip2) / 360 * 2 * pi
-            tref = pmsa(ip3)
-            auxsys = pmsa(ip4)
+            latitu = process_space_real(ip2) / 360 * 2 * pi
+            tref = process_space_real(ip3)
+            auxsys = process_space_real(ip4)
 
             !        Conversion time to daynumbers relative to tref
             daynr = mod (time / auxsys + tref, 365.)
@@ -104,18 +104,18 @@ contains
                 declin = 9.9999d9
             else
                 declin = 6.918d-3 - &
-                        3.99912d-1 * dcos (e * daynr) - &
-                        6.758d-3 * dcos (2.0d0 * e * daynr) - &
-                        2.697d-3 * dcos (3.0d0 * e * daynr) + &
-                        7.0257d-2 * dsin (e * daynr) + &
-                        9.07d-4 * dsin (2.0d0 * e * daynr) + &
-                        1.480d-3 * dsin (3.0d0 * e * daynr)
+                        3.99912d-1 * cos (e * daynr) - &
+                        6.758d-3 * cos (2.0d0 * e * daynr) - &
+                        2.697d-3 * cos (3.0d0 * e * daynr) + &
+                        7.0257d-2 * sin (e * daynr) + &
+                        9.07d-4 * sin (2.0d0 * e * daynr) + &
+                        1.480d-3 * sin (3.0d0 * e * daynr)
             endif
 
             !       Computes daylenth
 
-            temp = ((sin50m - dsin (declin) * dsin (latitu)) / &
-                    (dcos (declin) * dcos (latitu)))
+            temp = ((sin50m - sin (declin) * sin (latitu)) / &
+                    (cos (declin) * cos (latitu)))
 
             if (temp > 1.0) then
                 temp = 0.0
@@ -127,13 +127,13 @@ contains
             daylength = temp / 24.0
         endif
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             if (varflg) then
-                time = pmsa(ip1)
+                time = process_space_real(ip1)
                 !           Conversion Latitude to rads
-                latitu = pmsa(ip2) / 360 * 2 * pi
-                tref = pmsa(ip3)
-                auxsys = pmsa(ip4)
+                latitu = process_space_real(ip2) / 360 * 2 * pi
+                tref = process_space_real(ip3)
+                auxsys = process_space_real(ip4)
 
                 !           Conversion time to daynumbers relative to tref
                 daynr = mod (time / auxsys + tref, 365.)
@@ -143,18 +143,18 @@ contains
                     declin = 9.9999d9
                 else
                     declin = 6.918d-3 - &
-                            3.99912d-1 * dcos (e * daynr) - &
-                            6.758d-3 * dcos (2.0d0 * e * daynr) - &
-                            2.697d-3 * dcos (3.0d0 * e * daynr) + &
-                            7.0257d-2 * dsin (e * daynr) + &
-                            9.07d-4 * dsin (2.0d0 * e * daynr) + &
-                            1.480d-3 * dsin (3.0d0 * e * daynr)
+                            3.99912d-1 * cos (e * daynr) - &
+                            6.758d-3 * cos (2.0d0 * e * daynr) - &
+                            2.697d-3 * cos (3.0d0 * e * daynr) + &
+                            7.0257d-2 * sin (e * daynr) + &
+                            9.07d-4 * sin (2.0d0 * e * daynr) + &
+                            1.480d-3 * sin (3.0d0 * e * daynr)
                 endif
 
                 !           Computes daylenth
 
-                temp = ((sin50m - dsin (declin) * dsin (latitu)) / &
-                        (dcos (declin) * dcos (latitu)))
+                temp = ((sin50m - sin (declin) * sin (latitu)) / &
+                        (cos (declin) * cos (latitu)))
 
                 if (temp > 1.0) then
                     temp = 0.0
@@ -165,7 +165,7 @@ contains
                 endif
                 daylength = temp / 24.0
             endif
-            pmsa (ip5) = daylength
+            process_space_real (ip5) = daylength
 
             ip1 = ip1 + in1
             ip2 = ip2 + in2

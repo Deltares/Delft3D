@@ -34,10 +34,10 @@ module delpar_version_module
     implicit none
 
     ! The component name must be public because it is used by the BMI module
-    character(*),  public, parameter :: component_name      = 'PART'
+    character(*), public, parameter :: component_name = 'PART'
 
-    character(*),  public, parameter :: delpar_version_full = company // ', ' // component_name // major_minor_buildnr
-    character(*),  public, parameter :: delpar_version_id   = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
+    character(*), public, parameter :: delpar_version_full = company // ', ' // component_name // major_minor_buildnr
+    character(*), public, parameter :: delpar_version_id = company_id // ', ' // component_name // ' ' // major_minor_buildnr_date_time
 
 contains
 

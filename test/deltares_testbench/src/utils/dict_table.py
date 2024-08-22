@@ -26,7 +26,8 @@ class DictTable:
     def max_column_width(self, key: str) -> int:
         default_width = len(key)
         return max(
-            default_width, *[len(self.format_value(v)) for v in self.__values_dict[key]],
+            default_width,
+            *[len(self.format_value(v)) for v in self.__values_dict[key]],
         )
 
     def row_values(self, row_index: int) -> List:

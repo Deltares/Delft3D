@@ -31,31 +31,31 @@ module output_utils
 contains
 
 
-    subroutine get_output_pointers(noutp, nrvar, nrvarm, dlwnam, iopoin, &
-            nmis, notot, syname, nocons, coname, &
-            nopa, paname, nofun, funame, nosfun, &
+    subroutine get_output_pointers(num_output_files, nrvar, nrvarm, dlwnam, iopoin, &
+            nmis, num_substances_total, syname, num_constants, coname, &
+            num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
             sfname, lurep)
 
         !! Sets the pointers for all extra vars
 
         use timers       !   performance timers
 
-        integer(kind = int_wp), intent(in) :: noutp                  !< Number of output files
-        integer(kind = int_wp), intent(in) :: nrvar (noutp)         !< No of output vars per file
+        integer(kind = int_wp), intent(in) :: num_output_files                  !< Number of output files
+        integer(kind = int_wp), intent(in) :: nrvar (num_output_files)         !< No of output vars per file
         integer(kind = int_wp), intent(in) :: nrvarm                 !< Maximum of output variables p.p.
         integer(kind = int_wp), intent(out) :: nmis                   !< Number of missing input vars
-        character(len=*), intent(in) :: dlwnam(nrvarm, noutp)  !< Name of input variables
-        integer(kind = int_wp), intent(out) :: iopoin(nrvarm, noutp)   !< Number of missing input vars
-        integer(kind = int_wp), intent(in) :: notot                  !< Total number of substances
-        integer(kind = int_wp), intent(in) :: nopa                   !< Number of parameters
-        integer(kind = int_wp), intent(in) :: nosfun                 !< Number of segment functions
-        character(20), intent(in) :: syname(notot)         !< Names of systems
-        integer(kind = int_wp), intent(in) :: nocons                 !< Number of constants used
-        integer(kind = int_wp), intent(in) :: nofun                  !< Number of functions ( user )
-        character(20), intent(in) :: coname(nocons)        !< Constant names
-        character(20), intent(in) :: paname(nopa)        !< Parameter names
-        character(20), intent(in) :: funame(nofun)        !< Function names
-        character(20), intent(in) :: sfname(nosfun)        !< Segment function names
+        character(len=*), intent(in) :: dlwnam(nrvarm, num_output_files)  !< Name of input variables
+        integer(kind = int_wp), intent(out) :: iopoin(nrvarm, num_output_files)   !< Number of missing input vars
+        integer(kind = int_wp), intent(in) :: num_substances_total                  !< Total number of substances
+        integer(kind = int_wp), intent(in) :: num_spatial_parameters                   !< Number of parameters
+        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions                 !< Number of segment functions
+        character(20), intent(in) :: syname(num_substances_total)         !< Names of systems
+        integer(kind = int_wp), intent(in) :: num_constants                 !< Number of constants used
+        integer(kind = int_wp), intent(in) :: num_time_functions                  !< Number of functions ( user )
+        character(20), intent(in) :: coname(num_constants)        !< Constant names
+        character(20), intent(in) :: paname(num_spatial_parameters)        !< Parameter names
+        character(20), intent(in) :: funame(num_time_functions)        !< Function names
+        character(20), intent(in) :: sfname(num_spatial_time_fuctions)        !< Segment function names
         integer(kind = int_wp), intent(in) :: lurep                  !< Unit nr. report file
 
         character(20) varnam            ! Name of variable to be identified
@@ -71,14 +71,14 @@ contains
 
         nmis = 0
 
-        do iout = 1, noutp
+        do iout = 1, num_output_files
             do inrv = 1, nrvar(iout)
                 varnam = dlwnam(inrv, iout)
                 if (varnam == ' ') then
                     ivarip = 0
                 else
-                    call set_output_pointers (notot, nopa, nosfun, syname, nocons, &
-                            nofun, coname, paname, funame, sfname, &
+                    call set_output_pointers (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+                            num_time_functions, coname, paname, funame, sfname, &
                             varnam, ivarip, lurep)
                     if (ivarip == -1) then
                         nmis = nmis + 1
@@ -94,8 +94,8 @@ contains
         return
     end subroutine get_output_pointers
 
-    subroutine set_output_pointers(notot, nopa, nosfun, syname, nocons, &
-            nofun, coname, paname, funame, sfname, &
+    subroutine set_output_pointers(num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+            num_time_functions, coname, paname, funame, sfname, &
             varnam, ivarip, lurep)
 
         !! sets pointers for output variables
@@ -104,16 +104,16 @@ contains
         use timers       !   performance timers
         use m_string_utils
 
-        integer(kind = int_wp), intent(in) :: notot              !< Total number of substances
-        integer(kind = int_wp), intent(in) :: nopa               !< Number of parameters
-        integer(kind = int_wp), intent(in) :: nosfun             !< Number of segment functions
-        character(20), intent(in) :: syname(notot)     !< Names of systems
-        integer(kind = int_wp), intent(in) :: nocons             !< Number of constants used
-        integer(kind = int_wp), intent(in) :: nofun              !< Number of functions ( user )
-        character(20), intent(in) :: coname(nocons)    !< Constant names
-        character(20), intent(in) :: paname(nopa)    !< Parameter names
-        character(20), intent(in) :: funame(nofun)    !< Function names
-        character(20), intent(in) :: sfname(nosfun)    !< Segment function names
+        integer(kind = int_wp), intent(in) :: num_substances_total              !< Total number of substances
+        integer(kind = int_wp), intent(in) :: num_spatial_parameters               !< Number of parameters
+        integer(kind = int_wp), intent(in) :: num_spatial_time_fuctions             !< Number of segment functions
+        character(20), intent(in) :: syname(num_substances_total)     !< Names of systems
+        integer(kind = int_wp), intent(in) :: num_constants             !< Number of constants used
+        integer(kind = int_wp), intent(in) :: num_time_functions              !< Number of functions ( user )
+        character(20), intent(in) :: coname(num_constants)    !< Constant names
+        character(20), intent(in) :: paname(num_spatial_parameters)    !< Parameter names
+        character(20), intent(in) :: funame(num_time_functions)    !< Function names
+        character(20), intent(in) :: sfname(num_spatial_time_fuctions)    !< Segment function names
         character(20), intent(in) :: varnam            !< Name of variable to be identified
         integer(kind = int_wp), intent(out) :: ivarip             !< Pointer in the SSA
         integer(kind = int_wp), intent(in) :: lurep              !< Unit nr. report file
@@ -154,7 +154,7 @@ contains
         indx = index_in_array(varnam, syname)
         if (indx > 0) then
             write(lurep, *) '       ', varnam, '; Using substance nr', indx
-            ivarip = nopred + nocons + nopa + nofun + nosfun + indx
+            ivarip = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + indx
             goto 800
         endif
 
@@ -163,7 +163,7 @@ contains
         indx = index_in_array(varnam, sfname)
         if (indx > 0) then
             write(lurep, *) '       ', varnam, '; Using segment function nr', indx
-            ivarip = nopred + nocons + nopa + nofun + indx
+            ivarip = nopred + num_constants + num_spatial_parameters + num_time_functions + indx
             goto 800
         endif
 
@@ -172,7 +172,7 @@ contains
         indx = index_in_array(varnam, funame)
         if (indx > 0) then
             write(lurep, *) '       ', varnam, '; Using function nr', indx
-            ivarip = nopred + nocons + nopa + indx
+            ivarip = nopred + num_constants + num_spatial_parameters + indx
             goto 800
         endif
 
@@ -181,7 +181,7 @@ contains
         indx = index_in_array(varnam, paname)
         if (indx > 0) then
             write(lurep, *) '       ', varnam, '; Using parameter nr', indx
-            ivarip = nopred + nocons + indx
+            ivarip = nopred + num_constants + indx
             goto 800
         endif
 
@@ -204,21 +204,21 @@ contains
         return
     end subroutine set_output_pointers
 
-    subroutine set_default_output(noutp, nrvar, iostrt, iostop, iostep, &
+    subroutine set_default_output(num_output_files, nrvar, iostrt, iostop, iostep, &
             isrtou, igrdou)
         !! Sets default output behavior
 
         use timers       !   performance timers
         use results, only : ncopt, idmp, ihi3, imap, iba3, iba2, ibal, ima2, imo4, imo3
-        use m_sysi          ! Timer characteristics
+        use m_timer_variables          ! Timer characteristics
 
-        integer(kind = int_wp), intent(in) :: noutp          !< Number of output files
-        integer(kind = int_wp), intent(out) :: nrvar (noutp)  !< Number of extra output vars
-        integer(kind = int_wp), intent(out) :: iostrt(noutp)  !< Output start time (scu)
-        integer(kind = int_wp), intent(out) :: iostop(noutp)  !< Output stop time (scu)
-        integer(kind = int_wp), intent(out) :: iostep(noutp)  !< Output step time (scu)
-        integer(kind = int_wp), intent(out) :: isrtou(noutp)  !< Sort output indication
-        integer(kind = int_wp), intent(out) :: igrdou(noutp)  !< Output grid indication
+        integer(kind = int_wp), intent(in) :: num_output_files          !< Number of output files
+        integer(kind = int_wp), intent(out) :: nrvar (num_output_files)  !< Number of extra output vars
+        integer(kind = int_wp), intent(out) :: iostrt(num_output_files)  !< Output start time (scu)
+        integer(kind = int_wp), intent(out) :: iostop(num_output_files)  !< Output stop time (scu)
+        integer(kind = int_wp), intent(out) :: iostep(num_output_files)  !< Output step time (scu)
+        integer(kind = int_wp), intent(out) :: isrtou(num_output_files)  !< Sort output indication
+        integer(kind = int_wp), intent(out) :: igrdou(num_output_files)  !< Output grid indication
 
         integer(kind = int_wp), parameter :: igseg = 1, igmon = 2, iggrd = 3, igsub = 4
         integer(kind = int_wp) :: ithndl = 0
@@ -258,7 +258,7 @@ contains
         igrdou(4) = igseg
 
         ! BAL file
-        if (noutp >= 5) then
+        if (num_output_files >= 5) then
             iostrt(5) = imstrt
             iostop(5) = imstop
             iostep(5) = imstep
@@ -274,7 +274,7 @@ contains
         endif
 
         ! NEFIS HIS file
-        if (noutp >= 6) then
+        if (num_output_files >= 6) then
             iostrt(6) = ihstrt
             iostop(6) = ihstop
             iostep(6) = ihstep
@@ -284,7 +284,7 @@ contains
         endif
 
         ! NEFIS MAP file
-        if (noutp >= 7) then
+        if (num_output_files >= 7) then
             iostrt(7) = idstrt
             iostop(7) = idstop
             iostep(7) = idstep
@@ -294,7 +294,7 @@ contains
         endif
 
         ! STATistical output MAP
-        if (noutp >= 8) then
+        if (num_output_files >= 8) then
             iostrt(8) = itstop
             iostop(8) = itstop
             iostep(8) = idt
@@ -304,7 +304,7 @@ contains
         endif
 
         ! STATistical output MON
-        if (noutp >= 9) then
+        if (num_output_files >= 9) then
             iostrt(9) = itstop
             iostop(9) = itstop
             iostep(9) = idt
@@ -317,28 +317,28 @@ contains
         return
     end subroutine set_default_output
 
-    subroutine set_output_boot_variables(noutp, nrvar, igrdou, isrtou, noseg, &
-            nodump, nx, ny, nrvart, nbufmx, &
-            ndmpar, notot, ncbufm, noraai)
+    subroutine set_output_boot_variables(num_output_files, nrvar, igrdou, isrtou, num_cells, &
+            num_monitoring_points, num_cells_u_dir, num_cells_v_dir, num_output_variables_extra, output_buffer_len, &
+            ndmpar, num_substances_total, char_arr_buffer_len, num_transects)
         !! Sets the boot variables for OUTPUT system
 
         use timers       !   performance timers
         use results
 
-        integer(kind = int_wp), intent(in) :: noutp          !< Number of output files
-        integer(kind = int_wp), intent(in) :: nrvar (noutp)  !< Number variables per output file
-        integer(kind = int_wp), intent(in) :: igrdou(noutp)  !< Output grid indication
-        integer(kind = int_wp), intent(in) :: isrtou(noutp)  !< Sort output indication
-        integer(kind = int_wp), intent(in) :: noseg          !< Number of computational cells
-        integer(kind = int_wp), intent(in) :: nodump         !< Number of monitoring points
-        integer(kind = int_wp), intent(in) :: nx             !< Length of dump grid
-        integer(kind = int_wp), intent(in) :: ny             !< Width of dump grid
-        integer(kind = int_wp), intent(out) :: nrvart         !< Total number of output variables
-        integer(kind = int_wp), intent(out) :: nbufmx         !< Length of output buffer needed
+        integer(kind = int_wp), intent(in) :: num_output_files          !< Number of output files
+        integer(kind = int_wp), intent(in) :: nrvar (num_output_files)  !< Number variables per output file
+        integer(kind = int_wp), intent(in) :: igrdou(num_output_files)  !< Output grid indication
+        integer(kind = int_wp), intent(in) :: isrtou(num_output_files)  !< Sort output indication
+        integer(kind = int_wp), intent(in) :: num_cells
+        integer(kind = int_wp), intent(in) :: num_monitoring_points
+        integer(kind = int_wp), intent(in) :: num_cells_u_dir
+        integer(kind = int_wp), intent(in) :: num_cells_v_dir
+        integer(kind = int_wp), intent(out) :: num_output_variables_extra         !< Total number of output variables
+        integer(kind = int_wp), intent(out) :: output_buffer_len
         integer(kind = int_wp), intent(in) :: ndmpar         !< number of dump areas
-        integer(kind = int_wp), intent(in) :: notot          !< Number of substances
-        integer(kind = int_wp), intent(out) :: ncbufm         !< Length of character buffer needed
-        integer(kind = int_wp), intent(in) :: noraai         !< Number of transects
+        integer(kind = int_wp), intent(in) :: num_substances_total
+        integer(kind = int_wp), intent(out) :: char_arr_buffer_len
+        integer(kind = int_wp), intent(in) :: num_transects         !< Number of transects
 
         integer(kind = int_wp), parameter :: igseg = 1, igmon = 2, iggrd = 3, igsub = 4
         integer(kind = int_wp) :: nocel        !  size of the NEFIS cell
@@ -349,19 +349,19 @@ contains
         if (timon) call timstrt("set_output_boot_variables", ithndl)
 
         ! Loop over the output files
-        nrvart = 0
-        nbufmx = 0
-        do iout = 1, noutp
-            nrvart = nrvart + nrvar(iout)
+        num_output_variables_extra = 0
+        output_buffer_len = 0
+        do iout = 1, num_output_files
+            num_output_variables_extra = num_output_variables_extra + nrvar(iout)
 
             ! Grid
             select case (igrdou(iout))
             case (igseg)
-                nocel = noseg
+                nocel = num_cells
             case (igmon)
-                nocel = nodump
+                nocel = num_monitoring_points
             case (iggrd)
-                nocel = nx * ny
+                nocel = num_cells_u_dir * num_cells_v_dir
             case (igsub)
                 nocel = ndmpar
             end select
@@ -375,7 +375,7 @@ contains
                 ! NEFIS file, extra array with length NOCEL needed
                 ! substance names and output names in char buffer.
                 nbufou = nocel * (nrvar(iout) + 1)
-                ncbufo = notot + nrvar(iout)
+                ncbufo = num_substances_total + nrvar(iout)
             case (ihn2, imn2)
                 ! NEFIS file, extra array with length NOCEL needed
                 nbufou = nocel * (nrvar(iout) + 1)
@@ -383,23 +383,23 @@ contains
                 ! On subarea's substances also in buffer, only the
                 ! first half of the nrvar are real output vars.
                 ! substance names and output names in char buffer.
-                nbufou = nocel * (notot + nrvar(iout) / 2)
-                ncbufo = notot + nrvar(iout) / 2
+                nbufou = nocel * (num_substances_total + nrvar(iout) / 2)
+                ncbufo = num_substances_total + nrvar(iout) / 2
             case (ihi3)
                 ! On subarea's substances also in buffer, only the
                 ! first half of the nrvar are real output vars.
                 ! substance names and output names in char buffer.
-                ! also output for raaien
-                nbufou = (nocel + noraai) * (notot + nrvar(iout) / 2)
-                ncbufo = notot + nrvar(iout) / 2
+                ! also output for transects
+                nbufou = (nocel + num_transects) * (num_substances_total + nrvar(iout) / 2)
+                ncbufo = num_substances_total + nrvar(iout) / 2
             case (ihn3)
                 ! NEFIS file, extra array with length NOCEL needed
                 ! On subarea's substances also in buffer, only the
                 ! first half of the nrvar are real output vars.
                 ! substance names and output names in char buffer.
-                ! also output for raaien
-                nbufou = (nocel + noraai) * (notot + nrvar(iout) / 2 + 1)
-                ncbufo = notot + nrvar(iout) / 2
+                ! also output for transects
+                nbufou = (nocel + num_transects) * (num_substances_total + nrvar(iout) / 2 + 1)
+                ncbufo = num_substances_total + nrvar(iout) / 2
             case (imo4, ihi4)
                 ! On subarea's only the first half of the nrvar are
                 ! real output vars.
@@ -415,8 +415,8 @@ contains
             end select
 
             ! Buffer is as big as the largest needed
-            nbufmx = max (nbufmx, nbufou)
-            ncbufm = max (ncbufm, ncbufo)
+            output_buffer_len = max (output_buffer_len, nbufou)
+            char_arr_buffer_len = max (char_arr_buffer_len, ncbufo)
         end do
 
         if (timon) call timstop(ithndl)

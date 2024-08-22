@@ -42,10 +42,10 @@ SUBROUTINE jacobi(a,n,np,d,v,nrot)
    INTEGER, intent(in)                :: n, np
    integer, intent(out)               :: nrot
    double precision, intent(inout)    :: a(np,np),d(np),v(np,np)
-   integer                            :: NMAX
-   PARAMETER (NMAX=500)
+   integer                            :: num_rows
+   PARAMETER (num_rows=500)
    INTEGER i,ip,iq,j
-   double precision c,g,h,s,sm,t,tau,theta,tresh,b(NMAX),z(NMAX)
+   double precision c,g,h,s,sm,t,tau,theta,tresh,b(num_rows),z(num_rows)
    r12:do ip=1,n               ! Initialize to the identity matrix.
       r11:do iq=1,n
          v(ip,iq)=0.

@@ -1,7 +1,7 @@
-#  Description: CSV Timeseries comparer
-#  -----------------------------------------------------
-#  Copyright (C)  Stichting Deltares, 2013
+"""CSV Timeseries comparer.
 
+Copyright (C)  Stichting Deltares, 2024
+"""
 
 import os
 from datetime import datetime, timedelta
@@ -45,9 +45,7 @@ def getDatesValues(TSEvent, TSMeta):
     for event in TSEvent:
         date_str = event["date"]
         time_str = event["time"]
-        TSDates.append(
-            datetime.strptime(" ".join([date_str, time_str]), "%Y-%m-%d %H:%M:%S")
-        )
+        TSDates.append(datetime.strptime(" ".join([date_str, time_str]), "%Y-%m-%d %H:%M:%S"))
         TSValues.append(float(event["value"]))
     #   return TSDates, TSValues
     return TSDates, np.array(TSValues)
@@ -71,11 +69,20 @@ def branch(xmltree):
 
 
 def csv2dict(datafile):
-    """
-    Return a dictionary with lists of strings, each list representing a column, each key the column name.
-        This is an alternative for a Pandas dataframe
-    input: input filename
-    output: dictionary holding the data
+    """Convert csv to dictionary.
+
+    Return a dictionary with lists of strings, each list representing a column,
+    each key the column name. This is an alternative for a Pandas dataframe.
+
+    Parameters
+    ----------
+    input
+        Input filename.
+
+    Returns
+    -------
+    dict
+        Dictionary holding the data.
     """
     fdata = open(datafile, "r")
     columns = fdata.readline().split(",")
@@ -98,10 +105,20 @@ def csv2dict(datafile):
 
 
 class CSVTimeseriesComparer(TimeseriesSetComparer.TimeseriesSetComparer):
-    """
-    Compare two Timeseries files in the comma-separated-value format, according to the configuration in file_check.
-    input: left path (reference), right path (compare), file_check
-    output: list of (file_check, parameter, file_check, ResultComparison) tuples
+    """CSV time series comparer.
+
+    Compare two Timeseries files in the comma-separated-value format,
+    according to the configuration in file_check.
+
+    Parameters
+    ----------
+    input
+        Left path (reference), right path (compare), file_check
+
+    Returns
+    -------
+    list
+        List of (file_check, parameter, file_check, ResultComparison) tuples.
     """
 
     def getTimeseriesSet(self, datafile):
@@ -132,7 +149,5 @@ class CSVTimeseriesComparer(TimeseriesSetComparer.TimeseriesSetComparer):
         for varname in df.keys():
             if varname != tname:
                 values = np.array([np.float64(raw) for raw in df[varname]])
-                TSSet[varname] = {
-                    "None": {"dates": timeslist, "values": values}
-                }  # fake location key 0
+                TSSet[varname] = {"None": {"dates": timeslist, "values": values}}  # fake location key 0
         return TSSet

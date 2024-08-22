@@ -1123,15 +1123,15 @@ subroutine expand(subject,defnames,defstrings,ndef)
     ! Parameters
     !
     character(*),   intent(inout)   :: subject         !< subject to replacments
-    character*(50), intent(in)      :: defnames(:)     !< defined constants: names
-    character*(50), intent(in)      :: defstrings(:)   !< defined constants: content
+    character(len=50), intent(in)   :: defnames(:)     !< defined constants: names
+    character(len=50), intent(in)   :: defstrings(:)   !< defined constants: content
     integer,        intent(in)      :: ndef            !< length of the definition list
     !
     ! Local variables
     !
-    character*(300)     ::  envstring       ! environment strings can be lengthy sometimes  ...
-    character*(600)     ::  outstring       ! so the output must support that. Adapt if still insufficient.
-    character*(50)      ::  defstring
+    character(len=300)  ::  envstring       ! environment strings can be lengthy sometimes  ...
+    character(len=600)  ::  outstring       ! so the output must support that. Adapt if still insufficient.
+    character(len=50)   ::  defstring
     integer             ::  s1
     integer             ::  s2
     integer             ::  l1
@@ -1181,14 +1181,14 @@ end subroutine expand
 !   Context:    preceeds processing an ini-files into a tree
 !   Summary:
 !            * (nested) file inclusion through include-directive
-!                  #include filename
-!                  #include <filename>
+!                 #include filename
+!                 #include <filename>
 !            * aliases, defined
 !                  #define aliasname content
 !              and invoked by placing $aliasname or ${aliasname} in the text
 !            * $_aliasname and ${_aliasname} refer to environment variables
-!            * conditionals #ifdef, #ifndef #endif
-!            * #include and #define work recursive, but preprocessing is 'single-pass' (begin to end of files)
+!            * conditionals#ifdef, #ifndef #endif
+!            *#include and #define work recursive, but preprocessing is 'single-pass' (begin to end of files)
 !            Resulting file (expanded) is written to filename_out
 !            Return error code: -5 -> file not found
 !                               -6 -> trying to open an already opened file
@@ -3054,7 +3054,7 @@ end subroutine count_occurrences
     character(*)               , intent(in)    :: chapterin
     character(*)               , intent(in)    :: keyin
     integer                    , intent(in)    :: valuelength
-    character*(*), dimension(:), intent(inout) :: value
+    character(len=*), dimension(:), intent(inout) :: value
     logical                    , intent(out)   :: success
     character(1)               , optional      :: spChar
     !

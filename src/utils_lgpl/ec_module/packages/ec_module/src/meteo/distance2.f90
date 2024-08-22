@@ -94,15 +94,15 @@ subroutine distance2(sferic    ,x1        ,y1        ,x2        ,y2        , &
        ycrd2 = cos(y2rad)*cos(x2rad)
        zcrd2 = sin(y2rad)
        !
-       dslin = dsqrt((xcrd2-xcrd1)**2 + (ycrd2-ycrd1)**2 + (zcrd2-zcrd1)**2)
-       alpha = dasin(dslin/2.0_hp)
+       dslin = sqrt((xcrd2-xcrd1)**2 + (ycrd2-ycrd1)**2 + (zcrd2-zcrd1)**2)
+       alpha = asin(dslin/2.0_hp)
        d128  = dearthrad*2.0_hp*alpha
     else
        x1rad = real(x1, hp)
        x2rad = real(x2, hp)
        y1rad = real(y1, hp)
        y2rad = real(y2, hp)
-       d128 = dsqrt((x2rad - x1rad)**2 + (y2rad - y1rad)**2)
+       d128 = sqrt((x2rad - x1rad)**2 + (y2rad - y1rad)**2)
     endif
     d12 = real(d128, fp)
 end subroutine distance2

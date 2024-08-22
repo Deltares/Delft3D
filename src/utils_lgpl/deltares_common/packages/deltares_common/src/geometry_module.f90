@@ -433,7 +433,7 @@ module geometry_module
          xx2   = xx2*degrad_hp
          yy1   = y1 *degrad_hp
          yy2   = y2 *degrad_hp
-         csphi = dcos(0.5d0*(yy1+yy2))
+         csphi = cos(0.5d0*(yy1+yy2))
          getdx = earth_radius*csphi*(xx2-xx1)
       else
          getdx = x2-x1
@@ -556,7 +556,8 @@ module geometry_module
       !! @param[out] sm lambda in [0,1] on line segment 3-4 (outside [0,1] if no intersection). Unchanged if no intersect!!
       !! @param[out] xcr,ycr x-coord. of intersection point.
       subroutine CROSS(x1, y1, x2, y2, x3, y3, x4, y4, JACROS,SL,SM,XCR,YCR,CRP, jsferic, dmiss)
-      
+      use ieee_arithmetic, only: ieee_is_nan
+
       implicit none
        
       double precision, intent(inout) :: crp !< crp (in)==-1234 will make crp (out) non-dimensional
@@ -572,7 +573,7 @@ module geometry_module
 
      
 !     safety check on crp (in)
-      if ( isnan(crp) ) then
+      if ( ieee_is_nan(crp) ) then
          crp = 0d0
       end if
 
@@ -1238,7 +1239,7 @@ module geometry_module
 !         D = xiXxip1(1)*ee(1) + xiXxip1(2)*ee(2) + xiXxip1(3)*ee(3)
 
          D = inprod( xiXxip1, ee )
-!         D = dsign(1d0,D)
+!         D = sign(1d0,D)
          
          if ( abs(D) > dtol ) then
             Di = 1d0/D
@@ -1287,8 +1288,8 @@ module geometry_module
       integer          :: ipiv, indxr, indxc, i, j, k, L, LL, irow, icol
       double precision :: big, dum, pivinv
 
-      !      PARAMETER (NMAX=50)
-      !      DIMENSION A(NP,NP),B(NP,MP),IPIV(NMAX),INDXR(NMAX),INDXC(NMAX)
+      !      PARAMETER (num_rows=50)
+      !      DIMENSION A(NP,NP),B(NP,MP),IPIV(num_rows),INDXR(num_rows),INDXC(num_rows)
 
       DIMENSION A(NP,NP),B(NP,MP),IPIV(NP),INDXR(NP),INDXC(NP) ! SPvdP: set NMAX to N
       do J=1,N
@@ -2087,7 +2088,7 @@ module geometry_module
       double precision,               intent(in)    :: dmiss
 
       double precision, dimension(N)                :: x                                  !< Copy of xin, with possibly periodic fixes.
-      double precision                              :: dsx, dsy, xc, yc, dcos, xds, fac, x0, y0, x1, dx0, dx1, dy0, dy1
+      double precision                              :: dsx, dsy, xc, yc, xds, fac, x0, y0, x1, dx0, dx1, dy0, dy1
       double precision                              :: xdum
 
       integer                                       :: i, ip1
@@ -2647,14 +2648,13 @@ module geometry_module
       double precision :: xe3,ye3,xe1,ye1,xe2,ye2,tex,tey,ds, &
          xccf,yccf,xccc,yccc,xcccf,ycccf,xccfo,yccfo,alf
 
-      integer, parameter :: MMAX=10
+      integer, parameter :: num_columns=10
 
-      double precision :: xh(MMAX), yh(MMAX)
-      double precision :: xr(MMAX), yr(MMAX), SL,SM,XCR,YCR,CRP
+      double precision :: xh(num_columns), yh(num_columns)
+      double precision :: xr(num_columns), yr(num_columns), SL,SM,XCR,YCR,CRP
       double precision :: eps = 1d-3, xcc3, ycc3, xf, xmx, xmn
       double precision :: dfac
       integer          :: jacros, in, m2, nintlinks ! nr of internal links = connected edges
-      logical          :: isnan
 
       ! integer,          parameter     :: N6=6
       ! double precision, dimension(N6) :: xhalf, yhalf
@@ -2709,7 +2709,7 @@ module geometry_module
          alf  = 0.1d0
 
          if (jsferic == 1) then
-            xf  = 1d0/dcos( degrad_hp*yzw )
+            xf  = 1d0/cos( degrad_hp*yzw )
          endif
 
          nintlinks = 0
@@ -2854,7 +2854,7 @@ module geometry_module
       endif
       if (jsferic == 1) then
          phi = (y(1)+y(2)+y(3))/3d0
-         xf  = 1d0/dcos( degrad_hp*phi )
+         xf  = 1d0/cos( degrad_hp*phi )
          xz  = x(1) + xf*0.5d0*(dx3-z*dy3)*raddeg_hp/earth_radius
          yz  = y(1) +    0.5d0*(dy3+z*dx3)*raddeg_hp/earth_radius
       else

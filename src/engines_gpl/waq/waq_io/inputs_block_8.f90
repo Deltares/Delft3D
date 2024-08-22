@@ -35,7 +35,7 @@ module inputs_block_8
 contains
 
 
-    subroutine read_block_8_initial_conditions(file_unit_list, file_name_list, filtype, noseg, notot, &
+    subroutine read_block_8_initial_conditions(file_unit_list, file_name_list, filtype, num_cells, num_substances_total, &
             syname, iwidth, output_verbose_level, inpfil, &
             gridps, status)
 
@@ -77,9 +77,9 @@ contains
         integer(kind = int_wp), intent(inout) :: file_unit_list  (*)       !< array with unit numbers
         character       (*), intent(inout) :: file_name_list(*)       !< filenames
         integer(kind = int_wp), intent(inout) :: filtype(*)     !< type of binary file
-        integer(kind = int_wp), intent(in) :: noseg          !< nr of computational volumes
-        integer(kind = int_wp), intent(in) :: notot          !< nr of delwaq + delpar state variables
-        character       (20), intent(in) :: syname(notot)  !< names of the substances
+        integer(kind = int_wp), intent(in) :: num_cells          !< nr of computational volumes
+        integer(kind = int_wp), intent(in) :: num_substances_total          !< nr of delwaq + delpar state variables
+        character       (20), intent(in) :: syname(num_substances_total)  !< names of the substances
         integer(kind = int_wp), intent(in) :: iwidth         !< width of the output file
         integer(kind = int_wp), intent(in) :: output_verbose_level         !< option for extent of output
         type(t_input_file), intent(inout) :: inpfil         !< input file structure with include stack and flags
@@ -219,8 +219,8 @@ contains
             cdummy(81:120) = '                                        '
             cdummy(121:160) = 'there is no time string in this file    '
         endif
-        write (file_unit_list(18)) cdummy(1:160), notot, noseg
-        write (file_unit_list(18)) (syname(i), i = 1, notot)
+        write (file_unit_list(18)) cdummy(1:160), num_substances_total, num_cells
+        write (file_unit_list(18)) (syname(i), i = 1, num_substances_total)
 
         if (old_input) then
             !                see how the data comes
@@ -247,13 +247,13 @@ contains
 
             write (file_unit_list(18)) 0
             if (transp) then
-                allocate (values(noseg, notot))
-                call read_constant_data  (icopt2, values, notot, noseg, 1, &
+                allocate (values(num_cells, num_substances_total))
+                call read_constant_data  (icopt2, values, num_substances_total, num_cells, 1, &
                         iwidth, 0, output_verbose_level, ierr2)
-                write (file_unit_list(18)) (values(i, :), i = 1, noseg)
+                write (file_unit_list(18)) (values(i, :), i = 1, num_cells)
             else
-                allocate (values(notot, noseg))
-                call read_constant_data  (icopt2, values, noseg, notot, notot, &
+                allocate (values(num_substances_total, num_cells))
+                call read_constant_data  (icopt2, values, num_cells, num_substances_total, num_substances_total, &
                         iwidth, 0, output_verbose_level, ierr2)
                 write (file_unit_list(18)) values
             endif
@@ -262,15 +262,15 @@ contains
 
         else
 
-            allocate (values(notot, noseg), stat = ierr2)
+            allocate (values(num_substances_total, num_cells), stat = ierr2)
             if (ierr2 /= 0) then
                 write(file_unit, *) 'ERROR allocating memory for initials'
                 ierr2 = 3
                 goto 10
             endif
             push = .true.
-            call read_initial_conditions (file_unit_list, file_name_list, filtype, inpfil, notot, &
-                    syname, iwidth, output_verbose_level, gridps, noseg, &
+            call read_initial_conditions (file_unit_list, file_name_list, filtype, inpfil, num_substances_total, &
+                    syname, iwidth, output_verbose_level, gridps, num_cells, &
                     values, ierr2, status)
             itime = 0
             write(file_unit_list(18)) itime, values

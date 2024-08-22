@@ -52,9 +52,9 @@ module snow
             rainfrac = 0.0
         end where
     elsewhere
-        rainfrac = min((temperature - (tt - tti / 2.0)) / tti, 1.0)
+        rainfrac = min((temperature - (tt - tti / 2.0)) / tti, 1.0d0)
     end where
-    rainfrac = max(rainfrac, 0.0)
+    rainfrac = max(rainfrac, 0.0d0)
 
     ! fraction of precipitation which falls as snow
     snowfrac = 1.0 - rainfrac
@@ -88,7 +88,7 @@ module snow
     snowwater = snowwater - refreezing  !free water content in snow
     maxsnowwater = snow * whc  ! max water in the snow
     snowwater = snowwater + snowmelt + rainfall  ! add all water and potentially supersaturate the snowpack
-    rainfall = max(snowwater - maxsnowwater, 0.0)  ! rain + surpluss snowwater
+    rainfall = max(snowwater - maxsnowwater, 0.0d0)  ! rain + surpluss snowwater
     snowwater = snowwater - rainfall
 
 end subroutine snowpack_hbv

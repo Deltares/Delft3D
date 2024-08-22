@@ -492,21 +492,21 @@ function checkmeteoheader(meteoitem) result(success)
        if     (meteoitem%first_data_value == 'grid_llcorner') then
           meteoitem%mfirst = 1
           meteoitem%nfirst = 1
-          meteoitem%mlast  = meteoitem%grid%mmax
-          meteoitem%nlast  = meteoitem%grid%nmax
+          meteoitem%mlast  = meteoitem%grid%num_columns
+          meteoitem%nlast  = meteoitem%grid%num_rows
        elseif (meteoitem%first_data_value == 'grid_ulcorner') then
           meteoitem%mfirst = 1
-          meteoitem%nfirst = meteoitem%grid%nmax
-          meteoitem%mlast  = meteoitem%grid%mmax
+          meteoitem%nfirst = meteoitem%grid%num_rows
+          meteoitem%mlast  = meteoitem%grid%num_columns
           meteoitem%nlast  = 1
        elseif (meteoitem%first_data_value == 'grid_lrcorner') then
-          meteoitem%mfirst = meteoitem%grid%mmax
+          meteoitem%mfirst = meteoitem%grid%num_columns
           meteoitem%nfirst = 1
           meteoitem%mlast  = 1
-          meteoitem%nlast  = meteoitem%grid%nmax
+          meteoitem%nlast  = meteoitem%grid%num_rows
        elseif (meteoitem%first_data_value == 'grid_urcorner') then
-          meteoitem%mfirst = meteoitem%grid%mmax
-          meteoitem%nfirst = meteoitem%grid%nmax
+          meteoitem%mfirst = meteoitem%grid%num_columns
+          meteoitem%nfirst = meteoitem%grid%num_rows
           meteoitem%mlast  = 1
           meteoitem%nlast  = 1
        else
@@ -523,8 +523,8 @@ function checkmeteoheader(meteoitem) result(success)
           !
           meteoitem%mfirst = 1
           meteoitem%nfirst = 1
-          meteoitem%mlast  = meteoitem%grid%mmax
-          meteoitem%nlast  = meteoitem%grid%nmax
+          meteoitem%mlast  = meteoitem%grid%num_columns
+          meteoitem%nlast  = meteoitem%grid%num_rows
           meteoitem%mrow   = .false.
        endif
        !

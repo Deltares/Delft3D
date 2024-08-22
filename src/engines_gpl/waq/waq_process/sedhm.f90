@@ -28,9 +28,9 @@ module m_sedhm
 contains
 
 
-    subroutine sedhm  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine sedhm  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
         !>\file
@@ -53,9 +53,9 @@ contains
 
         implicit none
 
-        real(kind = real_wp) :: pmsa  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(27), increm(27), noseg, noflux, &
-                iexpnt(4, *), iknmrk(*), noq1, noq2, noq3, noq4
+        real(kind = real_wp) :: process_space_real  (*), fl    (*)
+        integer(kind = int_wp) :: ipoint(27), increm(27), num_cells, noflux, &
+                iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         integer(kind = int_wp) :: ipnt(27)
 
         integer(kind = int_wp) :: iflux, iseg, ikmrk2, iq, ifrom
@@ -67,36 +67,36 @@ contains
         ipnt = ipoint
         iflux = 0
 
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             if (btest(iknmrk(iseg), 0)) then
                 call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
 
-                    fl1 = pmsa(ipnt(1))
-                    fl2 = pmsa(ipnt(2))
-                    fl3 = pmsa(ipnt(3))
-                    fl1s2 = pmsa(ipnt(4))
-                    fl2s2 = pmsa(ipnt(5))
-                    fl3s2 = pmsa(ipnt(6))
-                    fl4 = pmsa(ipnt(7))
-                    fl5 = pmsa(ipnt(8))
-                    q1 = pmsa(ipnt(9))
-                    q2 = pmsa(ipnt(10))
-                    q3 = pmsa(ipnt(11))
-                    q4 = pmsa(ipnt(12))
-                    q5 = pmsa(ipnt(13))
-                    depth = pmsa(ipnt(14))
+                    fl1 = process_space_real(ipnt(1))
+                    fl2 = process_space_real(ipnt(2))
+                    fl3 = process_space_real(ipnt(3))
+                    fl1s2 = process_space_real(ipnt(4))
+                    fl2s2 = process_space_real(ipnt(5))
+                    fl3s2 = process_space_real(ipnt(6))
+                    fl4 = process_space_real(ipnt(7))
+                    fl5 = process_space_real(ipnt(8))
+                    q1 = process_space_real(ipnt(9))
+                    q2 = process_space_real(ipnt(10))
+                    q3 = process_space_real(ipnt(11))
+                    q4 = process_space_real(ipnt(12))
+                    q5 = process_space_real(ipnt(13))
+                    depth = process_space_real(ipnt(14))
 
                     !***********************************************************************
                     !**** Processes connected to the BURIAL and DIGGING
                     !***********************************************************************
 
                     !.....Sedimentation HM to S1/S2
-                    pmsa(ipnt(25)) = fl1 * q1 + fl2 * q2 + fl3 * q3 + fl4 * q4 + fl5 * q5
-                    fl (1 + iflux) = pmsa(ipnt(25)) / depth
+                    process_space_real(ipnt(25)) = fl1 * q1 + fl2 * q2 + fl3 * q3 + fl4 * q4 + fl5 * q5
+                    fl (1 + iflux) = process_space_real(ipnt(25)) / depth
 
-                    pmsa(ipnt(26)) = fl1s2 * q1 + fl2s2 * q2 + fl3s2 * q3
-                    fl (2 + iflux) = pmsa(ipnt(26)) / depth
+                    process_space_real(ipnt(26)) = fl1s2 * q1 + fl2s2 * q2 + fl3s2 * q3
+                    fl (2 + iflux) = process_space_real(ipnt(26)) / depth
 
                 endif
             endif
@@ -110,39 +110,39 @@ contains
         ipnt = ipoint
 
         !.....Exchangeloop over horizontal direction
-        do iq = 1, noq1 + noq2
+        do iq = 1, num_exchanges_u_dir + num_exchanges_v_dir
 
             !........VxSedHM op nul
-            pmsa(ipnt(27)) = 0.0
+            process_space_real(ipnt(27)) = 0.0
             ipnt(27) = ipnt(27) + increm(27)
 
         end do
 
-        !.....Entery point in PMSA for VxSedIM1, 2 en 3, VxSedPOC en VxSedPhyt
-        ipnt(20) = ipnt(20) + (noq1 + noq2) * increm(20)
-        ipnt(21) = ipnt(21) + (noq1 + noq2) * increm(21)
-        ipnt(22) = ipnt(22) + (noq1 + noq2) * increm(22)
-        ipnt(23) = ipnt(23) + (noq1 + noq2) * increm(23)
+        !.....Entery point in process_space_real for VxSedIM1, 2 en 3, VxSedPOC en VxSedPhyt
+        ipnt(20) = ipnt(20) + (num_exchanges_u_dir + num_exchanges_v_dir) * increm(20)
+        ipnt(21) = ipnt(21) + (num_exchanges_u_dir + num_exchanges_v_dir) * increm(21)
+        ipnt(22) = ipnt(22) + (num_exchanges_u_dir + num_exchanges_v_dir) * increm(22)
+        ipnt(23) = ipnt(23) + (num_exchanges_u_dir + num_exchanges_v_dir) * increm(23)
 
         !.....Exchange loop over the vertical direction
-        do iq = noq1 + noq2 + 1, noq1 + noq2 + noq3
+        do iq = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
             ifrom = iexpnt(1, iq)
 
             if (ifrom > 0) then
-                fhmim1 = pmsa(ipnt(15) + (ifrom - 1) * increm(15))
-                fhmim2 = pmsa(ipnt(16) + (ifrom - 1) * increm(16))
-                fhmim3 = pmsa(ipnt(17) + (ifrom - 1) * increm(17))
-                fhmpoc = pmsa(ipnt(18) + (ifrom - 1) * increm(18))
-                fhmphy = pmsa(ipnt(19) + (ifrom - 1) * increm(19))
-                vsim1 = pmsa(ipnt(20))
-                vsim2 = pmsa(ipnt(21))
-                vsim3 = pmsa(ipnt(22))
-                vspoc = pmsa(ipnt(23))
-                vsphy = pmsa(ipnt(24))
+                fhmim1 = process_space_real(ipnt(15) + (ifrom - 1) * increm(15))
+                fhmim2 = process_space_real(ipnt(16) + (ifrom - 1) * increm(16))
+                fhmim3 = process_space_real(ipnt(17) + (ifrom - 1) * increm(17))
+                fhmpoc = process_space_real(ipnt(18) + (ifrom - 1) * increm(18))
+                fhmphy = process_space_real(ipnt(19) + (ifrom - 1) * increm(19))
+                vsim1 = process_space_real(ipnt(20))
+                vsim2 = process_space_real(ipnt(21))
+                vsim3 = process_space_real(ipnt(22))
+                vspoc = process_space_real(ipnt(23))
+                vsphy = process_space_real(ipnt(24))
 
                 !...........Calculate VxSedHM
-                pmsa(ipnt(27)) = fhmim1 * vsim1 + fhmim2 * vsim2 + fhmim3 * vsim3 + &
+                process_space_real(ipnt(27)) = fhmim1 * vsim1 + fhmim2 * vsim2 + fhmim3 * vsim3 + &
                         fhmpoc * vspoc + fhmphy * vsphy
             endif
 

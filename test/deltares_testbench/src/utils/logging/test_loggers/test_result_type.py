@@ -1,15 +1,15 @@
-"""
-Description: type of result for test case
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Type of result for test case.
+
+Copyright (C)  Stichting Deltares, 2024
 """
 
 from enum import IntEnum
 
 
 class TestResultType(IntEnum):
+    """Type of result for test case."""
+
     __test__ = False
-    """Type of result for test case"""
 
     Empty = (1,)
     Error = (2,)

@@ -42,21 +42,21 @@ contains
         ! sets the array pointers for the array administration array's. declares memory.
 
         use m_array_manipulation, only : make_pointer, memory_partition, char_type, int_type
-        use m_sysn          ! system characteristics
-        use m_sysi          ! timer characteristics
+        use m_waq_memory_dimensions          ! system characteristics
+        use m_timer_variables          ! timer characteristics
         ! pointers in real array workspace
-        use m_sysa, only : iasize
+        use m_real_array_indices, only : iasize
         ! pointers in integer array workspace
-        use m_sysj, only : iapoi, iatyp, iabyt, ialen, iaknd, iadm1, iadm2, iadm3, ijsize
+        use m_integer_array_indices, only : iapoi, iatyp, iabyt, ialen, iaknd, iadm1, iadm2, iadm3, ijsize
         ! pointers in character array workspace
-        use m_sysc
+        use m_character_array_indices
 
         integer(kind = int_wp), intent(in) :: logical_unit            !! logical unitnumber output file
         integer(kind = int_wp), intent(out) :: integer_array(:)       !! integer workspace array
         character(len = *), intent(out) :: character_array(:)         !! character workspace array
         type(memory_partition), intent(inout) :: partition_data       !! private variables for make_pointer
 
-        character(len = 20) :: arrnam   !! name of the arrays in the pmsa
+        character(len = 20) :: arrnam   !! name of the arrays in the process_space_real
         integer(kind = int_wp) :: iiapoi, iiatyp, iiabyt, iialen, iiaknd, iiadm1, iiadm2, iiadm3, iianam, i
         character(len = *), dimension(9), parameter :: array_name_list = [ 'ARRPOI', 'ARRTYP', 'ARRBYT', 'ARRLEN', &
                 'ARRKND', 'ARRDM1', 'ARRDM2', 'ARRDM3', 'ARRNAM']
@@ -76,101 +76,101 @@ contains
         ! first set and declare memory for array administration
         ! directly use the array with pointers
         arrnam = 'ARRPOI'
-        iapoi = make_pointer(partition_data, int_type, noarr)
+        iapoi = make_pointer(partition_data, int_type, num_arrays)
         if (iapoi == 0) then
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
-            write(logical_unit, 2030) noarr
+            write(logical_unit, 2030) num_arrays
             call stop_with_error()
         endif
         iapoi = iapoi + 1
 
         arrnam = 'ARRTYP'
-        iatyp = make_pointer(partition_data, int_type, noarr)
+        iatyp = make_pointer(partition_data, int_type, num_arrays)
         if (iatyp == 0) then
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
-            write(logical_unit, 2030) noarr
+            write(logical_unit, 2030) num_arrays
             call stop_with_error()
         endif
         iatyp = iatyp + 1
 
         arrnam = 'ARRBYT'
-        iabyt = make_pointer(partition_data, int_type, noarr)
+        iabyt = make_pointer(partition_data, int_type, num_arrays)
         if (iabyt == 0) then
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
-            write(logical_unit, 2030) noarr
+            write(logical_unit, 2030) num_arrays
             call stop_with_error()
         endif
         iabyt = iabyt + 1
 
         arrnam = 'ARRLEN'
-        ialen = make_pointer(partition_data, int_type, noarr)
+        ialen = make_pointer(partition_data, int_type, num_arrays)
         if (ialen == 0) then
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
-            write(logical_unit, 2030) noarr
+            write(logical_unit, 2030) num_arrays
             call stop_with_error()
         endif
         ialen = ialen + 1
 
         arrnam = 'ARRKND'
-        iaknd = make_pointer(partition_data, int_type, noarr)
+        iaknd = make_pointer(partition_data, int_type, num_arrays)
         if (iaknd == 0) then
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
-            write(logical_unit, 2030) noarr
+            write(logical_unit, 2030) num_arrays
             call stop_with_error()
         endif
         iaknd = iaknd + 1
 
         arrnam = 'ARRDM1'
-        iadm1 = make_pointer(partition_data, int_type, noarr)
+        iadm1 = make_pointer(partition_data, int_type, num_arrays)
         if (iadm1 == 0) then
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
-            write(logical_unit, 2030) noarr
+            write(logical_unit, 2030) num_arrays
             call stop_with_error()
         endif
         iadm1 = iadm1 + 1
 
         arrnam = 'ARRDM2'
-        iadm2 = make_pointer(partition_data, int_type, noarr)
+        iadm2 = make_pointer(partition_data, int_type, num_arrays)
         if (iadm2 == 0) then
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
-            write(logical_unit, 2030) noarr
+            write(logical_unit, 2030) num_arrays
             call stop_with_error()
         endif
         iadm2 = iadm2 + 1
 
         arrnam = 'ARRDM3'
-        iadm3 = make_pointer(partition_data, int_type, noarr)
+        iadm3 = make_pointer(partition_data, int_type, num_arrays)
         if (iadm3 == 0) then
             write(logical_unit, 2010)
             write(logical_unit, 2020) arrnam
-            write(logical_unit, 2030) noarr
+            write(logical_unit, 2030) num_arrays
             call stop_with_error()
         endif
         iadm3 = iadm3 + 1
 
         !        arrnam = 'ARRNAM'
-        !        ianam = make_pointer(partition_data, char_type, noarr * 20)
+        !        ianam = make_pointer(partition_data, char_type, num_arrays * 20)
         !        if (ianam == 0) then
         !            write(logical_unit, 2010)
         !            write(logical_unit, 2020) arrnam
-        !            write(logical_unit, 2030) noarr * 20
+        !            write(logical_unit, 2030) num_arrays * 20
         !            call stop_with_error()
         !        endif
         !        ianam = ianam + 1
 
         !        arrays = [iapoi, iatyp, iabyt, ialen, iaknd, iadm1, iadm2, iadm3, ianam]
         !        do i = 1, 8
-        !            call abstract_1(logical_unit, array_name_list(i), noarr, arrays(i), partition_data, int_type)
+        !            call abstract_1(logical_unit, array_name_list(i), num_arrays, arrays(i), partition_data, int_type)
         !        end do
 
-        call abstract_1(logical_unit, 'ARRNAM', noarr * 20, ianam, partition_data, char_type)
+        call abstract_1(logical_unit, 'ARRNAM', num_arrays * 20, ianam, partition_data, char_type)
 
         ! fill the array's themselves
         integer_array(iapoi + iiapoi - 1) = iapoi
@@ -203,15 +203,15 @@ contains
         integer_array(iabyt + iiadm3 - 1) = 4
         integer_array(iabyt + iianam - 1) = 20
 
-        integer_array(ialen + iiapoi - 1) = noarr
-        integer_array(ialen + iiatyp - 1) = noarr
-        integer_array(ialen + iiabyt - 1) = noarr
-        integer_array(ialen + iialen - 1) = noarr
-        integer_array(ialen + iiaknd - 1) = noarr
-        integer_array(ialen + iiadm1 - 1) = noarr
-        integer_array(ialen + iiadm2 - 1) = noarr
-        integer_array(ialen + iiadm3 - 1) = noarr
-        integer_array(ialen + iianam - 1) = noarr
+        integer_array(ialen + iiapoi - 1) = num_arrays
+        integer_array(ialen + iiatyp - 1) = num_arrays
+        integer_array(ialen + iiabyt - 1) = num_arrays
+        integer_array(ialen + iialen - 1) = num_arrays
+        integer_array(ialen + iiaknd - 1) = num_arrays
+        integer_array(ialen + iiadm1 - 1) = num_arrays
+        integer_array(ialen + iiadm2 - 1) = num_arrays
+        integer_array(ialen + iiadm3 - 1) = num_arrays
+        integer_array(ialen + iianam - 1) = num_arrays
 
         integer_array(iaknd + iiapoi - 1) = 1
         integer_array(iaknd + iiatyp - 1) = 1
@@ -223,15 +223,15 @@ contains
         integer_array(iaknd + iiadm3 - 1) = 1
         integer_array(iaknd + iianam - 1) = 1
 
-        integer_array(iadm1 + iiapoi - 1) = noarr
-        integer_array(iadm1 + iiatyp - 1) = noarr
-        integer_array(iadm1 + iiabyt - 1) = noarr
-        integer_array(iadm1 + iialen - 1) = noarr
-        integer_array(iadm1 + iiaknd - 1) = noarr
-        integer_array(iadm1 + iiadm1 - 1) = noarr
-        integer_array(iadm1 + iiadm2 - 1) = noarr
-        integer_array(iadm1 + iiadm3 - 1) = noarr
-        integer_array(iadm1 + iianam - 1) = noarr
+        integer_array(iadm1 + iiapoi - 1) = num_arrays
+        integer_array(iadm1 + iiatyp - 1) = num_arrays
+        integer_array(iadm1 + iiabyt - 1) = num_arrays
+        integer_array(iadm1 + iialen - 1) = num_arrays
+        integer_array(iadm1 + iiaknd - 1) = num_arrays
+        integer_array(iadm1 + iiadm1 - 1) = num_arrays
+        integer_array(iadm1 + iiadm2 - 1) = num_arrays
+        integer_array(iadm1 + iiadm3 - 1) = num_arrays
+        integer_array(iadm1 + iianam - 1) = num_arrays
 
         integer_array(iadm2 + iiapoi - 1) = 1
         integer_array(iadm2 + iiatyp - 1) = 1
@@ -278,16 +278,16 @@ contains
         ! module for computing the pointers into the arrays
         use m_array_manipulation, only : make_pointer, memory_partition, char_type
         ! System characteristics
-        use m_sysn, only : NOTOT, NODUMP, NOBND, NOBTYP, NOWST, NOWTYP, NOCONS, NOPA, NOFUN, NOSFUN, NY, NPROC, &
-                NRVART, NODISP, NOVELO, NDMPAR, NORAAI, NCBUFM, NUFIL
+        use m_waq_memory_dimensions, only : num_substances_total, num_monitoring_points, num_boundary_conditions, num_boundary_types, num_waste_loads, num_waste_load_types, num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, num_cells_v_dir, num_processes_activated, &
+                num_output_variables_extra, num_dispersion_arrays, num_velocity_arrays, NDMPAR, num_transects, char_arr_buffer_len, num_unformat_files
         ! Timer characteristics
-        use m_sysi
+        use m_timer_variables
         ! Pointers in real array workspace
-        use m_sysa
+        use m_real_array_indices
         ! Pointers in integer array workspace
-        use m_sysj
+        use m_integer_array_indices
         ! Pointers in character array workspace
-        use m_sysc
+        use m_character_array_indices
 
         integer(kind = int_wp), intent(in) :: logical_unit    ! logical unitnumber output file
         logical, intent(in) :: declare_memory    ! Declare memory y/n
@@ -295,7 +295,7 @@ contains
         integer(kind = int_wp), intent(inout) :: arrtyp(:) ! Array type ( INT=,REAL=,CHAR= ), see FMM/NEFIS
         integer(kind = int_wp), intent(inout) :: arrbyt(:) ! Number of bytes per element, see FMM/NEFIS
         integer(kind = int_wp), intent(inout) :: arrlen(:) ! Length off array
-        integer(kind = int_wp), intent(inout) :: arrknd(:) ! Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR)
+        integer(kind = int_wp), intent(inout) :: arrknd(:) ! Kind of array 1=(num_vars), 2=(num_vars,num_cells) or 3=(num_cells,num_vars)
         integer(kind = int_wp), intent(inout) :: arrdm1(:) ! dimension 1
         integer(kind = int_wp), intent(inout) :: arrdm2(:) ! dimension 2
         integer(kind = int_wp), intent(inout) :: arrdm3(:) ! dimension 3 ( number of grids mostly )
@@ -360,85 +360,85 @@ contains
         arrdm1(index_monitor_name) = 8
 
         arrnam(index_solver_name) = 'SNAME '
-        arrdm1(index_solver_name) = NOTOT
+        arrdm1(index_solver_name) = num_substances_total
 
         arrnam(index_dump_name) = 'DNAME '
-        arrdm1(index_dump_name) = NODUMP
+        arrdm1(index_dump_name) = num_monitoring_points
 
         arrnam(index_bound_id) = 'BNDID '
-        arrdm1(index_bound_id) = NOBND
+        arrdm1(index_bound_id) = num_boundary_conditions
 
         arrnam(index_bound_name) = 'BNAME '
-        arrdm1(index_bound_name) = NOBND * 2
+        arrdm1(index_bound_name) = num_boundary_conditions * 2
 
         arrnam(index_bound_type) = 'BNTYP '
-        arrdm1(index_bound_type) = NOBTYP
+        arrdm1(index_bound_type) = num_boundary_types
 
         arrnam(index_waste_id) = 'WASTID'
-        arrdm1(index_waste_id) = NOWST
+        arrdm1(index_waste_id) = num_waste_loads
 
         arrnam(index_waste_name) = 'WNAME '
-        arrdm1(index_waste_name) = NOWST * 2
+        arrdm1(index_waste_name) = num_waste_loads * 2
 
         arrnam(index_waste_type) = 'WTYPE '
-        arrdm1(index_waste_type) = NOWTYP
+        arrdm1(index_waste_type) = num_waste_load_types
 
         arrnam(index_const_name) = 'CONAM '
-        arrdm1(index_const_name) = NOCONS
+        arrdm1(index_const_name) = num_constants
 
         arrnam(index_param_name) = 'PANAM '
-        arrdm1(index_param_name) = NOPA
+        arrdm1(index_param_name) = num_spatial_parameters
 
         arrnam(index_func_name) = 'FUNAM '
-        arrdm1(index_func_name) = NOFUN
+        arrdm1(index_func_name) = num_time_functions
 
         arrnam(index_segment_func) = 'SFNAM '
-        arrdm1(index_segment_func) = NOSFUN
+        arrdm1(index_segment_func) = num_spatial_time_fuctions
 
         arrnam(index_edit) = 'CGRID '
-        arrdm1(index_edit) = NY * 6
+        arrdm1(index_edit) = num_cells_v_dir * 6
 
         arrnam(index_print_name) = 'PRNAM '
-        arrdm1(index_print_name) = NPROC
+        arrdm1(index_print_name) = num_processes_activated
 
         arrnam(index_output_name) = 'OUNAM '
-        arrdm1(index_output_name) = NRVART
+        arrdm1(index_output_name) = num_output_variables_extra
 
         arrnam(index_dump_int_name) = 'DINAM '
-        arrdm1(index_dump_int_name) = NODISP
+        arrdm1(index_dump_int_name) = num_dispersion_arrays
 
         arrnam(index_velocity_name) = 'VENAM '
-        arrdm1(index_velocity_name) = NOVELO
+        arrdm1(index_velocity_name) = num_velocity_arrays
 
         arrnam(index_dump_analysis) = 'DANAM '
         arrdm1(index_dump_analysis) = NDMPAR
 
         arrnam(index_react_name) = 'RANAM '
-        arrdm1(index_react_name) = NORAAI
+        arrdm1(index_react_name) = num_transects
 
         arrnam(index_char_buffer) = 'CBUFF '
-        arrdm1(index_char_buffer) = NCBUFM
+        arrdm1(index_char_buffer) = char_arr_buffer_len
 
         arrnam(index_log_unit) = 'LUNT  '
-        arrdm1(index_log_unit) = NUFIL * 10
+        arrdm1(index_log_unit) = num_unformat_files * 10
 
         arrnam(index_output_short_name) = 'OUSNM '
-        arrdm1(index_output_short_name) = NRVART * 5
+        arrdm1(index_output_short_name) = num_output_variables_extra * 5
 
         arrnam(index_output_unit) = 'OUUNI '
-        arrdm1(index_output_unit) = NRVART * 2
+        arrdm1(index_output_unit) = num_output_variables_extra * 2
 
         arrnam(index_output_desc) = 'OUDSC '
-        arrdm1(index_output_desc) = NRVART * 3
+        arrdm1(index_output_desc) = num_output_variables_extra * 3
 
         arrnam(index_solver_short_name) = 'OSSNM '
-        arrdm1(index_solver_short_name) = NOTOT * 5
+        arrdm1(index_solver_short_name) = num_substances_total * 5
 
         arrnam(index_solver_unit) = 'OSUNI '
-        arrdm1(index_solver_unit) = NOTOT * 2
+        arrdm1(index_solver_unit) = num_substances_total * 2
 
         arrnam(index_solver_desc) = 'OSDSC '
-        arrdm1(index_solver_desc) = NOTOT * 3
+        arrdm1(index_solver_desc) = num_substances_total * 3
 
         ! the total array length
         if (.not. declare_memory) then
@@ -458,7 +458,7 @@ contains
             arrlen(i_car) = arrlen(i_car) * 4
         enddo
 
-        ! raaien behind the dump areas
+        ! transects behind the dump areas
         arrlen(index_dump_analysis) = arrlen(index_dump_analysis) + arrlen(index_react_name)
         arrlen(index_react_name) = 0
 
@@ -487,7 +487,7 @@ contains
         endif
         if (.not. declare_memory) write (328, '(/5x,a20,i12)') "Total (4 byte words)", char_arr_size
 
-        ! raaien behind the dump areas
+        ! transects behind the dump areas
         ip_car(index_react_name - iasize - ijsize) = ip_car(index_dump_analysis - iasize - ijsize) + ndmpar * 20
         arrpoi(index_react_name) = arrpoi(index_dump_analysis) + ndmpar * 20
         char_arr_size = char_arr_size + ndmpar
@@ -516,18 +516,18 @@ contains
         !! module for computing the pointers into the arrays
         use m_array_manipulation, only : make_pointer, memory_partition, int_type
         ! System characteristics
-        use m_sysn, only : NOSEG, NSEG2, NOSYS, NOTOT, NOQ, NOQ4, NODUMP, NOBND, NOBTYP, NOWST, NOWTYP, NOCONS, NOPA, &
-                NOFUN, NOSFUN, NY, NPROC, NRVART, NODISP, NOVELO, NDMPAR, NORAAI, NCBUFM, NUFIL, NIHARM, NOITEM, &
-                nx, nipmsa, noutp, ifiopk, npoins, nogrid, ntdmpq, ntraaq, newisp, nomat, insize, ntdmps, nmax, mmax, &
-                novar, nrref, ndspn, nveln, nothrd
+        use m_waq_memory_dimensions, only : num_cells, num_cells_bottom, num_substances_transported, num_substances_total, num_exchanges, num_exchanges_bottom_dir, num_monitoring_points, num_boundary_conditions, num_boundary_types, num_waste_loads, num_waste_load_types, num_constants, num_spatial_parameters, &
+                num_time_functions, num_spatial_time_fuctions, num_cells_v_dir, num_processes_activated, num_output_variables_extra, num_dispersion_arrays, num_velocity_arrays, NDMPAR, num_transects, char_arr_buffer_len, num_unformat_files, num_harmonics, num_items_time_fn, &
+                num_cells_u_dir, process_space_int_len, num_output_files, file_option_attributes, num_indices, num_grids, ntdmpq, num_transect_exchanges, newisp, fast_solver_arr_size, insize, ntdmps, num_rows, num_columns, &
+                num_vars, num_input_ref, num_dispersion_arrays_new, num_velocity_arrays_new, num_threads
         ! Timer characteristics
-        use m_sysi
+        use m_timer_variables
         ! Pointers in real array workspace
-        use m_sysa
+        use m_real_array_indices
         ! Pointers in integer array workspace
-        use m_sysj, only : ipror, iprvpt, iprdon, ip_jar, idpnw, idpnt, ivpnt, ivpnw, NR_JAR
+        use m_integer_array_indices, only : ipror, iprvpt, iprdon, ip_jar, idpnw, idpnt, ivpnt, ivpnw, NR_JAR
         ! Pointers in character array workspace
-        use m_sysc
+        use m_character_array_indices
         use omp_lib
 
         integer(kind = int_wp), intent(in) :: logical_unit    ! logical unitnumber output file
@@ -536,7 +536,7 @@ contains
         integer(kind = int_wp), intent(inout) :: arrtyp(:) ! Array type ( INT=,REAL=,CHAR= ), see FMM/NEFIS
         integer(kind = int_wp), intent(inout) :: arrbyt(:) ! Number of bytes per element, see FMM/NEFIS
         integer(kind = int_wp), intent(inout) :: arrlen(:) ! Length off array
-        integer(kind = int_wp), intent(inout) :: arrknd(:) ! Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR)
+        integer(kind = int_wp), intent(inout) :: arrknd(:) ! Kind of array 1=(num_vars), 2=(num_vars,num_cells) or 3=(num_cells,num_vars)
         integer(kind = int_wp), intent(inout) :: arrdm1(:) ! dimension 1
         integer(kind = int_wp), intent(inout) :: arrdm2(:) ! dimension 2
         integer(kind = int_wp), intent(inout) :: arrdm3(:) ! dimension 3 ( number of grids mostly )
@@ -662,74 +662,74 @@ contains
         arrnam(IIXPNT) = 'IXPOIN'
         arrknd(IIXPNT) = 3
         arrdm1(IIXPNT) = 4
-        arrdm2(IIXPNT) = NOQ + NOQ4
+        arrdm2(IIXPNT) = num_exchanges + num_exchanges_bottom_dir
         arrdm3(IIXPNT) = 1
 
         arrnam(IIDUMP) = 'IIDUMP'
         arrknd(IIDUMP) = 1
-        arrdm1(IIDUMP) = NODUMP
+        arrdm1(IIDUMP) = num_monitoring_points
         arrdm2(IIDUMP) = 1
         arrdm3(IIDUMP) = 1
 
         arrnam(IIBPNT) = 'IBPNT '
         arrknd(IIBPNT) = 2
         arrdm1(IIBPNT) = 4
-        arrdm2(IIBPNT) = NOBND
+        arrdm2(IIBPNT) = num_boundary_conditions
         arrdm3(IIBPNT) = 1
 
         arrnam(IIWAST) = 'IWAST '
         arrknd(IIWAST) = 1
-        arrdm1(IIWAST) = NOWST
+        arrdm1(IIWAST) = num_waste_loads
         arrdm2(IIWAST) = 1
         arrdm3(IIWAST) = 1
 
         arrnam(IIDPNW) = 'IDPNEW'
         arrknd(IIDPNW) = 1
-        arrdm1(IIDPNW) = NOSYS
+        arrdm1(IIDPNW) = num_substances_transported
         arrdm2(IIDPNW) = 1
         arrdm3(IIDPNW) = 1
 
         arrnam(IIDPNT) = 'IDPNT '
         arrknd(IIDPNT) = 1
-        arrdm1(IIDPNT) = NOSYS
+        arrdm1(IIDPNT) = num_substances_transported
         arrdm2(IIDPNT) = 1
         arrdm3(IIDPNT) = 1
 
         arrnam(IIVPNW) = 'IVPNEW'
         arrknd(IIVPNW) = 1
-        arrdm1(IIVPNW) = NOSYS
+        arrdm1(IIVPNW) = num_substances_transported
         arrdm2(IIVPNW) = 1
         arrdm3(IIVPNW) = 1
 
         arrnam(IIVPNT) = 'IVPNT '
         arrknd(IIVPNT) = 1
-        arrdm1(IIVPNT) = NOSYS
+        arrdm1(IIVPNT) = num_substances_transported
         arrdm2(IIVPNT) = 1
         arrdm3(IIVPNT) = 1
 
         arrnam(IINRHA) = 'IHARM '
         arrknd(IINRHA) = 1
-        arrdm1(IINRHA) = NIHARM
+        arrdm1(IINRHA) = num_harmonics
         arrdm2(IINRHA) = 1
         arrdm3(IINRHA) = 1
 
         arrnam(IINRH2) = 'NRHARM'
         arrknd(IINRH2) = 1
-        arrdm1(IINRH2) = NOITEM
+        arrdm1(IINRH2) = num_items_time_fn
         arrdm2(IINRH2) = 1
         arrdm3(IINRH2) = 1
 
         arrnam(IINRFT) = 'NRFTOT'
         arrknd(IINRFT) = 1
-        arrdm1(IINRFT) = NOITEM
+        arrdm1(IINRFT) = num_items_time_fn
         arrdm2(IINRFT) = 1
         arrdm3(IINRFT) = 1
 
-        NPOINS = NPOINS + 1           ! Try to avoid problem with the debugger
+        num_indices = num_indices + 1           ! Try to avoid problem with the debugger
 
         arrnam(IIBULK) = 'IPOINT'
         arrknd(IIBULK) = 1
-        arrdm1(IIBULK) = NPOINS
+        arrdm1(IIBULK) = num_indices
         arrdm2(IIBULK) = 1
         arrdm3(IIBULK) = 1
 
@@ -741,69 +741,69 @@ contains
 
         arrnam(IIGRID) = 'LGRID '
         arrknd(IIGRID) = 1
-        arrdm1(IIGRID) = NX
-        arrdm2(IIGRID) = NY
+        arrdm1(IIGRID) = num_cells_u_dir
+        arrdm2(IIGRID) = num_cells_v_dir
         arrdm3(IIGRID) = 1
 
         arrnam(IINSVA) = 'NSVAR '
         arrknd(IINSVA) = 1
-        arrdm1(IINSVA) = NPROC
+        arrdm1(IINSVA) = num_processes_activated
         arrdm2(IINSVA) = 1
         arrdm3(IINSVA) = 1
 
         arrnam(IIIFLU) = 'IFLUX '
         arrknd(IIIFLU) = 1
-        arrdm1(IIIFLU) = NPROC
+        arrdm1(IIIFLU) = num_processes_activated
         arrdm2(IIIFLU) = 1
         arrdm3(IIIFLU) = 1
 
-        arrnam(IIIPMS) = 'IPMSA '
+        arrnam(IIIPMS) = 'process_space_int '
         arrknd(IIIPMS) = 1
-        arrdm1(IIIPMS) = NIPMSA
+        arrdm1(IIIPMS) = process_space_int_len
         arrdm2(IIIPMS) = 1
         arrdm3(IIIPMS) = 1
 
         arrnam(IIIPSS) = 'IPSSA '
         arrknd(IIIPSS) = 1
-        arrdm1(IIIPSS) = NIPMSA
+        arrdm1(IIIPSS) = process_space_int_len
         arrdm2(IIIPSS) = 1
         arrdm3(IIIPSS) = 1
 
         arrnam(IIIMOD) = 'IMODU '
         arrknd(IIIMOD) = 1
-        arrdm1(IIIMOD) = NPROC
+        arrdm1(IIIMOD) = num_processes_activated
         arrdm2(IIIMOD) = 1
         arrdm3(IIIMOD) = 1
 
         arrnam(IIIOUT) = 'IOUTPS'
         arrknd(IIIOUT) = 2
         arrdm1(IIIOUT) = 7
-        arrdm2(IIIOUT) = NOUTP
+        arrdm2(IIIOUT) = num_output_files
         arrdm3(IIIOUT) = 1
 
         arrnam(IIIOPO) = 'IOPOIN'
         arrknd(IIIOPO) = 1
-        arrdm1(IIIOPO) = NRVART
+        arrdm1(IIIOPO) = num_output_variables_extra
         arrdm2(IIIOPO) = 1
         arrdm3(IIIOPO) = 1
 
         arrnam(IIKNMR) = 'IKNMRK'
         arrknd(IIKNMR) = 3
-        arrdm1(IIKNMR) = NOSEG + NSEG2
-        IF (IFIOPK == 0) THEN
+        arrdm1(IIKNMR) = num_cells + num_cells_bottom
+        IF (file_option_attributes == 0) THEN
             arrdm2(IIKNMR) = 1
-        ELSEIF (IFIOPK == 1) THEN
+        ELSEIF (file_option_attributes == 1) THEN
             arrdm2(IIKNMR) = 3
         ELSE
             arrdm2(IIKNMR) = 4
         ENDIF
-        arrdm3(IIKNMR) = NOGRID
+        arrdm3(IIKNMR) = num_grids
 
         arrnam(IIKTIM) = 'IKTIM '
         arrknd(IIKTIM) = 1
-        if (ifiopk == 0) then
+        if (file_option_attributes == 0) then
             arrdm1(iiktim) = 0
-        elseif (ifiopk == 1) then
+        elseif (file_option_attributes == 1) then
             arrdm1(iiktim) = 0
         else
             arrdm1(iiktim) = 3
@@ -813,13 +813,13 @@ contains
 
         arrnam(IIQDMP) = 'IQDMP '
         arrknd(IIQDMP) = 1
-        arrdm1(IIQDMP) = NOQ + NOQ4
+        arrdm1(IIQDMP) = num_exchanges + num_exchanges_bottom_dir
         arrdm2(IIQDMP) = 1
         arrdm3(IIQDMP) = 1
 
         arrnam(IISDMP) = 'ISDMP '
         arrknd(IISDMP) = 1
-        arrdm1(IISDMP) = NOSEG + NSEG2
+        arrdm1(IISDMP) = num_cells + num_cells_bottom
         arrdm2(IISDMP) = 1
         arrdm3(IISDMP) = 1
 
@@ -831,19 +831,19 @@ contains
 
         arrnam(IIORAA) = 'IORAAI'
         arrknd(IIORAA) = 1
-        arrdm1(IIORAA) = NORAAI
+        arrdm1(IIORAA) = num_transects
         arrdm2(IIORAA) = 1
         arrdm3(IIORAA) = 1
 
         arrnam(INQRAA) = 'NQRAAI'
         arrknd(INQRAA) = 1
-        arrdm1(INQRAA) = NORAAI
+        arrdm1(INQRAA) = num_transects
         arrdm2(INQRAA) = 1
         arrdm3(INQRAA) = 1
 
         arrnam(IIQRAA) = 'IQRAAI'
         arrknd(IIQRAA) = 1
-        arrdm1(IIQRAA) = NTRAAQ
+        arrdm1(IIQRAA) = num_transect_exchanges
         arrdm2(IIQRAA) = 1
         arrdm3(IIQRAA) = 1
 
@@ -855,32 +855,32 @@ contains
 
         arrnam(IINTYP) = 'INTYPE'
         arrknd(IINTYP) = 1
-        arrdm1(IINTYP) = NOBND + NOWST
+        arrdm1(IINTYP) = num_boundary_conditions + num_waste_loads
         arrdm2(IINTYP) = 1
         arrdm3(IINTYP) = 1
 
         arrnam(IIWORK) = 'IWORK '
         arrknd(IIWORK) = 1
-        arrdm1(IIWORK) = MAX(NOBND * NOSYS, NOWST * (NOTOT + 2))
+        arrdm1(IIWORK) = MAX(num_boundary_conditions * num_substances_transported, num_waste_loads * (num_substances_total + 2))
         arrdm2(IIWORK) = 1
         arrdm3(IIWORK) = 1
 
         IF (F_SOLV) THEN
             arrnam(IJTRAC) = 'ITRACE'
             arrknd(IJTRAC) = 1
-            arrdm1(IJTRAC) = NOSEG + NSEG2 + NOBND
+            arrdm1(IJTRAC) = num_cells + num_cells_bottom + num_boundary_conditions
             arrdm2(IJTRAC) = 1
             arrdm3(IJTRAC) = 1
 
             arrnam(IIMAT) = 'IMATRX'
             arrknd(IIMAT) = 1
-            arrdm1(IIMAT) = NOMAT
+            arrdm1(IIMAT) = fast_solver_arr_size
             arrdm2(IIMAT) = 1
             arrdm3(IIMAT) = 1
 
             arrnam(IIWRK) = 'IWRK  '
             arrknd(IIWRK) = 1
-            arrdm1(IIWRK) = NOSEG + NSEG2 + NOBND
+            arrdm1(IIWRK) = num_cells + num_cells_bottom + num_boundary_conditions
             arrdm2(IIWRK) = 1
             arrdm3(IIWRK) = 1
         ENDIF
@@ -897,11 +897,11 @@ contains
         arrdm2(IISYSI) = 1
         arrdm3(IISYSI) = 1
 
-        if (nmax * mmax > 0) then
+        if (num_rows * num_columns > 0) then
 
             arrnam(IILGRA) = 'LGRACT'
             arrknd(IILGRA) = 1
-            arrdm1(IILGRA) = MMAX * NMAX
+            arrdm1(IILGRA) = num_columns * num_rows
             arrdm2(IILGRA) = 1
             arrdm3(IILGRA) = 1
 
@@ -909,103 +909,103 @@ contains
 
         arrnam(IIPGRD) = 'PROGRD'
         arrknd(IIPGRD) = 1
-        arrdm1(IIPGRD) = NPROC
+        arrdm1(IIPGRD) = num_processes_activated
         arrdm2(IIPGRD) = 1
         arrdm3(IIPGRD) = 1
 
         arrnam(IIPNDT) = 'PRONDT'
         arrknd(IIPNDT) = 1
-        arrdm1(IIPNDT) = NPROC
+        arrdm1(IIPNDT) = num_processes_activated
         arrdm2(IIPNDT) = 1
         arrdm3(IIPNDT) = 1
 
         arrnam(IIPVAR) = 'PRVVAR'
         arrknd(IIPVAR) = 1
-        arrdm1(IIPVAR) = NIPMSA
+        arrdm1(IIPVAR) = process_space_int_len
         arrdm2(IIPVAR) = 1
         arrdm3(IIPVAR) = 1
 
         arrnam(IIPTYP) = 'PRVTYP'
         arrknd(IIPTYP) = 1
-        arrdm1(IIPTYP) = NIPMSA
+        arrdm1(IIPTYP) = process_space_int_len
         arrdm2(IIPTYP) = 1
         arrdm3(IIPTYP) = 1
 
         arrnam(IIVARR) = 'VARARR'
         arrknd(IIVARR) = 1
-        arrdm1(IIVARR) = NOVAR
+        arrdm1(IIVARR) = num_vars
         arrdm2(IIVARR) = 1
         arrdm3(IIVARR) = 1
 
         arrnam(IIVIDX) = 'VARIDX'
         arrknd(IIVIDX) = 1
-        arrdm1(IIVIDX) = NOVAR
+        arrdm1(IIVIDX) = num_vars
         arrdm2(IIVIDX) = 1
         arrdm3(IIVIDX) = 1
 
         arrnam(IIVTDA) = 'VARTDA'
         arrknd(IIVTDA) = 1
-        arrdm1(IIVTDA) = NOVAR
+        arrdm1(IIVTDA) = num_vars
         arrdm2(IIVTDA) = 1
         arrdm3(IIVTDA) = 1
 
         arrnam(IIVDAG) = 'VARDAG'
         arrknd(IIVDAG) = 1
-        arrdm1(IIVDAG) = NOVAR
+        arrdm1(IIVDAG) = num_vars
         arrdm2(IIVDAG) = 1
         arrdm3(IIVDAG) = 1
 
         arrnam(IIVTAG) = 'VARTAG'
         arrknd(IIVTAG) = 1
-        arrdm1(IIVTAG) = NOVAR
+        arrdm1(IIVTAG) = num_vars
         arrdm2(IIVTAG) = 1
         arrdm3(IIVTAG) = 1
 
         arrnam(IIVAGG) = 'VARAGG'
         arrknd(IIVAGG) = 1
-        arrdm1(IIVAGG) = NOVAR
+        arrdm1(IIVAGG) = num_vars
         arrdm2(IIVAGG) = 1
         arrdm3(IIVAGG) = 1
 
         arrnam(IIVSET) = 'VGRSET'
         arrknd(IIVSET) = 2
-        arrdm1(IIVSET) = NOVAR
-        arrdm2(IIVSET) = NOGRID
+        arrdm1(IIVSET) = num_vars
+        arrdm2(IIVSET) = num_grids
         arrdm3(IIVSET) = 1
 
         arrnam(IIGNOS) = 'GRDNOS'
         arrknd(IIGNOS) = 1
-        arrdm1(IIGNOS) = NOGRID
+        arrdm1(IIGNOS) = num_grids
         arrdm2(IIGNOS) = 1
         arrdm3(IIGNOS) = 1
 
         arrnam(IIGREF) = 'GRDREF'
         arrknd(IIGREF) = 1
-        arrdm1(IIGREF) = NOGRID
+        arrdm1(IIGREF) = num_grids
         arrdm2(IIGREF) = 1
         arrdm3(IIGREF) = 1
 
         arrnam(IIGSEG) = 'GRDSEG'
         arrknd(IIGSEG) = 2
-        arrdm1(IIGSEG) = NOSEG + NSEG2
-        arrdm2(IIGSEG) = NOGRID
+        arrdm1(IIGSEG) = num_cells + num_cells_bottom
+        arrdm2(IIGSEG) = num_grids
         arrdm3(IIGSEG) = 1
 
         arrnam(ipror) = 'PROREF'
         arrknd(ipror) = 1
-        arrdm1(ipror) = nrref
-        arrdm2(ipror) = nproc
+        arrdm1(ipror) = num_input_ref
+        arrdm2(ipror) = num_processes_activated
         arrdm3(ipror) = 1
 
         arrnam(iprvpt) = 'PROPNT'
         arrknd(iprvpt) = 1
-        arrdm1(iprvpt) = nproc
+        arrdm1(iprvpt) = num_processes_activated
         arrdm2(iprvpt) = 1
         arrdm3(iprvpt) = 1
 
         arrnam(iprdon) = 'PRODON'
         arrknd(iprdon) = 1
-        arrdm1(iprdon) = nproc
+        arrdm1(iprdon) = num_processes_activated
         arrdm2(iprdon) = 1
         arrdm3(iprdon) = 1
 
@@ -1056,7 +1056,7 @@ contains
         endif
 
         ! Reset new disp and velo pointers if array's are the same
-        if (ndspn == 0) then
+        if (num_dispersion_arrays_new == 0) then
             idpnw = idpnt
             arrpoi(iidpnw) = arrpoi(iidpnt)
             arrlen(iidpnw) = arrlen(iidpnt)
@@ -1065,7 +1065,7 @@ contains
             arrdm2(iidpnw) = arrdm2(iidpnt)
             arrdm3(iidpnw) = arrdm3(iidpnt)
         endif
-        if (nveln == 0) then
+        if (num_velocity_arrays_new == 0) then
             ivpnw = ivpnt
             arrpoi(iivpnw) = arrpoi(iivpnt)
             arrlen(iivpnw) = arrlen(iivpnt)
@@ -1079,76 +1079,76 @@ contains
         ierr = 0
 
         nr_jar_new = nr_jar
-        int_arr_size = int_arr_size + (noseg + nseg2) * nogrid
+        int_arr_size = int_arr_size + (num_cells + num_cells_bottom) * num_grids
         nr_jar_new = nr_jar_new + 1
-        if (declare_memory) allocate (iknmkv(noseg + nseg2, nogrid), stat = ierr)
+        if (declare_memory) allocate (iknmkv(num_cells + num_cells_bottom, num_grids), stat = ierr)
 
         if (ierr /= 0) then
             write(logical_unit, 2010) "iknmkv              "
             call stop_with_error() ;
         endif
-        if (.not. declare_memory) write (328, 2040) nr_jar_new, "iknmkv              ", (noseg + nseg2) * nogrid
+        if (.not. declare_memory) write (328, 2040) nr_jar_new, "iknmkv              ", (num_cells + num_cells_bottom) * num_grids
 
-        int_arr_size = int_arr_size + nowst
+        int_arr_size = int_arr_size + num_waste_loads
         nr_jar_new = nr_jar_new + 1                                    ! iwstkind
-        if (declare_memory) allocate (iwstkind(nowst), stat = ierr)
+        if (declare_memory) allocate (iwstkind(num_waste_loads), stat = ierr)
         if (ierr /= 0) then
             write(logical_unit, 2010) "iwstkind            "
             call stop_with_error()
         endif
-        if (.not. declare_memory) write (328, 2040) nr_jar_new, "iwstkind            ", nowst
+        if (.not. declare_memory) write (328, 2040) nr_jar_new, "iwstkind            ", num_waste_loads
 
-        if (nmax * mmax > 0) then
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, cellpnt, "cellpnt", noseg, noseg, int_arr_size)
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, flowpnt, "flowpnt", noq, noq, int_arr_size)
+        if (num_rows * num_columns > 0) then
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, cellpnt, "cellpnt", num_cells, num_cells, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, flowpnt, "flowpnt", num_exchanges, num_exchanges, int_arr_size)
         endif
         if (f_solv) then
             noth = OMP_GET_MAX_THREADS()
 
             ! rowpnt
-            int_arr_size = int_arr_size + noseg + nobnd + 1
+            int_arr_size = int_arr_size + num_cells + num_boundary_conditions + 1
             nr_jar_new = nr_jar_new + 1
-            if (declare_memory) allocate (rowpnt (0:noseg + nobnd), stat = ierr)
+            if (declare_memory) allocate (rowpnt (0:num_cells + num_boundary_conditions), stat = ierr)
             if (ierr /= 0) then
                 write(logical_unit, 2010) "rowpnt              "
                 call stop_with_error()
             endif
-            if (.not. declare_memory) write (328, 2040) nr_jar_new, "rowpnt              ", noseg + nobnd + 1
+            if (.not. declare_memory) write (328, 2040) nr_jar_new, "rowpnt              ", num_cells + num_boundary_conditions + 1
 
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, fmat, "fmat", noq, noq, int_arr_size)
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, tmat, "tmat", noq, noq, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, fmat, "fmat", num_exchanges, num_exchanges, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, tmat, "tmat", num_exchanges, num_exchanges, int_arr_size)
 
             ! iexseg
-            int_arr_size = int_arr_size + (noseg + nobnd) * noth
+            int_arr_size = int_arr_size + (num_cells + num_boundary_conditions) * noth
             nr_jar_new = nr_jar_new + 1
-            if (declare_memory) allocate (iexseg (noseg + nobnd, noth), stat = ierr)
+            if (declare_memory) allocate (iexseg (num_cells + num_boundary_conditions, noth), stat = ierr)
             if (ierr /= 0) then
                 write(logical_unit, 2010) "iexseg              "
                 call stop_with_error()
             endif
-            if (.not. declare_memory) write (328, 2040) nr_jar_new, "iexseg              ", (noseg + nobnd) * noth
+            if (.not. declare_memory) write (328, 2040) nr_jar_new, "iexseg              ", (num_cells + num_boundary_conditions) * noth
         endif
         if (intsrt == 24) then
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, ibas, "ibas", noseg, noseg, int_arr_size)
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, ibaf, "ibaf", noq, noq, int_arr_size)
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, iords, "iords", noseg, noseg, int_arr_size)
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, iordf, "iordf", noq, noq, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, ibas, "ibas", num_cells, num_cells, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, ibaf, "ibaf", num_exchanges, num_exchanges, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, iords, "iords", num_cells, num_cells, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, iordf, "iordf", num_exchanges, num_exchanges, int_arr_size)
 
             ! nvert
-            int_arr_size = int_arr_size + 2 * noseg
+            int_arr_size = int_arr_size + 2 * num_cells
             nr_jar_new = nr_jar_new + 1
-            if (declare_memory) allocate (nvert(2, noseg), stat = ierr)
+            if (declare_memory) allocate (nvert(2, num_cells), stat = ierr)
             if (ierr /= 0) then
                 write(logical_unit, 2010) "nvert               "
                 call stop_with_error()
             endif
-            if (.not. declare_memory) write (328, 2040) nr_jar_new, "nvert               ", 2 * noseg
+            if (.not. declare_memory) write (328, 2040) nr_jar_new, "nvert               ", 2 * num_cells
 
-            call allocate_array(logical_unit, nr_jar_new, declare_memory, ivert, "ivert", noseg, noseg, int_arr_size)
+            call allocate_array(logical_unit, nr_jar_new, declare_memory, ivert, "ivert", num_cells, num_cells, int_arr_size)
         endif
 
         call allocate_array(logical_unit, nr_jar_new, declare_memory, isegcol, "isegcol", &
-                noseg + nseg2, noseg + nseg2, int_arr_size)
+                num_cells + num_cells_bottom, num_cells + num_cells_bottom, int_arr_size)
 
         if (.not. declare_memory) write (328, '(/5x,a20,i12)') "Total (4 byte words)", int_arr_size
 
@@ -1170,13 +1170,13 @@ contains
         ! module for computing the pointers into the arrays
         use m_array_manipulation, only : make_pointer, memory_partition, real_type
         ! System characteristics
-        use m_sysn, only : nolay, nosys, notot, nothrd, noseg, nseg2, nogrid, noq4, noq, nobnd, nowst, nocons, nopa, &
-                nofun, nosfun, ndspn, nodisp, nveln, novelo, nharms, nlines, jtrack, nomat, ndmpar, noloc, nodef, &
-                nflux, ndmps, nbufmx, ndspx, nvelx, nlocx, ndmpq, noraai, newrsp, noq3, mmax, nmax, novec
+        use m_waq_memory_dimensions, only : num_layers, num_substances_transported, num_substances_total, num_threads, num_cells, num_cells_bottom, num_grids, num_exchanges_bottom_dir, num_exchanges, num_boundary_conditions, num_waste_loads, num_constants, num_spatial_parameters, &
+                num_time_functions, num_spatial_time_fuctions, num_dispersion_arrays_new, num_dispersion_arrays, num_velocity_arrays_new, num_velocity_arrays, harmonics_arr_len, nlines, num_codiagonals, fast_solver_arr_size, ndmpar, num_local_vars, num_defaults, &
+                num_fluxes, num_monitoring_cells, output_buffer_len, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, ndmpq, num_transects, newrsp, num_exchanges_z_dir, num_columns, num_rows, num_fast_solver_vectors
         ! Timer characteristics
-        use m_sysi
+        use m_timer_variables
         ! Pointers in real array workspace
-        use m_sysa
+        use m_real_array_indices
         use m_cli_utils, only : get_command_argument_by_name
         use omp_lib
 
@@ -1186,7 +1186,7 @@ contains
         integer(kind = int_wp), intent(inout) :: arrtyp(:) ! Array type ( INT=,REAL=,CHAR= ), see FMM/NEFIS
         integer(kind = int_wp), intent(inout) :: arrbyt(:) ! Number of bytes per element, see FMM/NEFIS
         integer(kind = int_wp), intent(inout) :: arrlen(:) ! Length off array
-        integer(kind = int_wp), intent(inout) :: arrknd(:) ! Kind of array 1=(NOVAR), 2=(NOVAR,NOSEG) or 3=(NOSEG,NOVAR)
+        integer(kind = int_wp), intent(inout) :: arrknd(:) ! Kind of array 1=(num_vars), 2=(num_vars,num_cells) or 3=(num_cells,num_vars)
         integer(kind = int_wp), intent(inout) :: arrdm1(:) ! dimension 1
         integer(kind = int_wp), intent(inout) :: arrdm2(:) ! dimension 2
         integer(kind = int_wp), intent(inout) :: arrdm3(:) ! dimension 3 ( number of grids mostly )
@@ -1241,14 +1241,14 @@ contains
         ! No value or zero for [N] will use the maximum number of available threads
         nothreadsarg = 0
         if (get_command_argument_by_name('-threads', nothreadsarg)) then
-            nothrd = nothreadsarg
+            num_threads = nothreadsarg
         else
             if (get_command_argument_by_name('-nothreads', nothreadsarg)) then
-                nothrd = nothreadsarg
+                num_threads = nothreadsarg
             end if
         end if
 
-        if (nothrd > 0) call OMP_SET_NUM_THREADS(nothrd)
+        if (num_threads > 0) call OMP_SET_NUM_THREADS(num_threads)
         noth = OMP_GET_MAX_THREADS()
         write (logical_unit, 2020) noth
         if (declare_memory) write (6, 2030) noth
@@ -1280,19 +1280,19 @@ contains
         arrnam(iivol) = 'VOLUME'
         arrknd(iivol) = 2
         arrdm1(iivol) = 1
-        arrdm2(iivol) = noseg + nseg2
-        arrdm3(iivol) = nogrid
+        arrdm2(iivol) = num_cells + num_cells_bottom
+        arrdm3(iivol) = num_grids
 
         arrnam(iiarea) = 'AREA  '
         arrknd(iiarea) = 2
         arrdm1(iiarea) = 1
-        arrdm2(iiarea) = noq + noq4
+        arrdm2(iiarea) = num_exchanges + num_exchanges_bottom_dir
         arrdm3(iiarea) = 1
 
         arrnam(iiflow) = 'FLOW  '
         arrknd(iiflow) = 2
         arrdm1(iiflow) = 1
-        arrdm2(iiflow) = noq + noq4
+        arrdm2(iiflow) = num_exchanges + num_exchanges_bottom_dir
         arrdm3(iiflow) = 1
 
         arrnam(iileng) = 'LENG  '
@@ -1303,7 +1303,7 @@ contains
         else
             arrknd(iileng) = 2
             arrdm1(iileng) = 2
-            arrdm2(iileng) = noq + noq4
+            arrdm2(iileng) = num_exchanges + num_exchanges_bottom_dir
         endif
         arrdm3(iileng) = 1
 
@@ -1316,114 +1316,114 @@ contains
         arrnam(iiconc) = 'CONC  '
         arrknd(iiconc) = 2
         if (steady) then
-            arrdm1(iiconc) = notot
-            arrdm2(iiconc) = noseg + nseg2
-            arrdm3(iiconc) = nogrid
-            nsubs = notot
+            arrdm1(iiconc) = num_substances_total
+            arrdm2(iiconc) = num_cells + num_cells_bottom
+            arrdm3(iiconc) = num_grids
+            nsubs = num_substances_total
         else
-            arrdm1(iiconc) = notot
-            arrdm2(iiconc) = noseg + nseg2
-            arrdm3(iiconc) = nogrid
-            nsubs = nosys
+            arrdm1(iiconc) = num_substances_total
+            arrdm2(iiconc) = num_cells + num_cells_bottom
+            arrdm3(iiconc) = num_grids
+            nsubs = num_substances_transported
         endif
 
         arrnam(iimass) = 'MASS  '
         arrknd(iimass) = 2
         if (f_solv) then
-            arrdm1(iimass) = notot
-            arrdm2(iimass) = noseg + nseg2 + nobnd
+            arrdm1(iimass) = num_substances_total
+            arrdm2(iimass) = num_cells + num_cells_bottom + num_boundary_conditions
         else
-            arrdm1(iimass) = notot
-            arrdm2(iimass) = noseg + nseg2
+            arrdm1(iimass) = num_substances_total
+            arrdm2(iimass) = num_cells + num_cells_bottom
         endif
-        arrdm3(iimass) = nogrid
+        arrdm3(iimass) = num_grids
 
         arrnam(iiderv) = 'DERIV '
         arrknd(iiderv) = 2
         if (f_solv .and. steady) then
-            arrdm1(iiderv) = notot
-            arrdm2(iiderv) = noseg + nseg2 + nobnd
+            arrdm1(iiderv) = num_substances_total
+            arrdm2(iiderv) = num_cells + num_cells_bottom + num_boundary_conditions
         else
-            arrdm1(iiderv) = notot
-            arrdm2(iiderv) = noseg + nseg2
+            arrdm1(iiderv) = num_substances_total
+            arrdm2(iiderv) = num_cells + num_cells_bottom
         endif
-        arrdm3(iiderv) = nogrid
+        arrdm3(iiderv) = num_grids
 
         arrnam(iiboun) = 'BOUND '
         arrknd(iiboun) = 2
         arrdm1(iiboun) = nsubs
-        arrdm2(iiboun) = nobnd
+        arrdm2(iiboun) = num_boundary_conditions
         arrdm3(iiboun) = 1
 
         arrnam(iibset) = 'BSET  '
         arrknd(iibset) = 2
         arrdm1(iibset) = nsubs
-        arrdm2(iibset) = nobnd
+        arrdm2(iibset) = num_boundary_conditions
         arrdm3(iibset) = 1
 
         arrnam(iibsav) = 'BSAVE '
         arrknd(iibsav) = 2
         arrdm1(iibsav) = nsubs
-        arrdm2(iibsav) = nobnd
+        arrdm2(iibsav) = num_boundary_conditions
         arrdm3(iibsav) = 1
 
         arrnam(iiwste) = 'WASTE '
         arrknd(iiwste) = 2
-        arrdm1(iiwste) = notot + 2
-        arrdm2(iiwste) = nowst
+        arrdm1(iiwste) = num_substances_total + 2
+        arrdm2(iiwste) = num_waste_loads
         arrdm3(iiwste) = 1
 
         arrnam(iicons) = 'CONS  '
         arrknd(iicons) = 1
-        arrdm1(iicons) = nocons
+        arrdm1(iicons) = num_constants
         arrdm2(iicons) = 1
         arrdm3(iicons) = 1
 
         arrnam(iiparm) = 'PARAM '
         arrknd(iiparm) = 2
-        arrdm1(iiparm) = nopa
-        arrdm2(iiparm) = noseg + nseg2
-        arrdm3(iiparm) = nogrid
+        arrdm1(iiparm) = num_spatial_parameters
+        arrdm2(iiparm) = num_cells + num_cells_bottom
+        arrdm3(iiparm) = num_grids
 
         arrnam(iifunc) = 'FUNC  '
         arrknd(iifunc) = 1
-        arrdm1(iifunc) = nofun
+        arrdm1(iifunc) = num_time_functions
         arrdm2(iifunc) = 1
         arrdm3(iifunc) = 1
 
         arrnam(iisfun) = 'SFUNC '
         arrknd(iisfun) = 3
-        arrdm1(iisfun) = noseg + nseg2
-        arrdm2(iisfun) = nosfun
-        arrdm3(iisfun) = nogrid
+        arrdm1(iisfun) = num_cells + num_cells_bottom
+        arrdm2(iisfun) = num_spatial_time_fuctions
+        arrdm3(iisfun) = num_grids
 
         arrnam(iidnew) = 'DISPNW'
         arrknd(iidnew) = 2
-        arrdm1(iidnew) = ndspn
-        arrdm2(iidnew) = noq + noq4
+        arrdm1(iidnew) = num_dispersion_arrays_new
+        arrdm2(iidnew) = num_exchanges + num_exchanges_bottom_dir
         arrdm3(iidnew) = 1
 
         arrnam(iidiff) = 'DISPER'
         arrknd(iidiff) = 2
-        arrdm1(iidiff) = nodisp
-        arrdm2(iidiff) = noq + noq4
+        arrdm1(iidiff) = num_dispersion_arrays
+        arrdm2(iidiff) = num_exchanges + num_exchanges_bottom_dir
         arrdm3(iidiff) = 1
 
         arrnam(iivnew) = 'VELONW'
         arrknd(iivnew) = 2
-        arrdm1(iivnew) = nveln
-        arrdm2(iivnew) = noq + noq4
+        arrdm1(iivnew) = num_velocity_arrays_new
+        arrdm2(iivnew) = num_exchanges + num_exchanges_bottom_dir
         arrdm3(iivnew) = 1
 
         arrnam(iivelo) = 'VELO  '
         arrknd(iivelo) = 2
-        arrdm1(iivelo) = novelo
-        arrdm2(iivelo) = noq + noq4
+        arrdm1(iivelo) = num_velocity_arrays
+        arrdm2(iivelo) = num_exchanges + num_exchanges_bottom_dir
         arrdm3(iivelo) = 1
 
         arrnam(iiharm) = 'HARMAT'
         arrknd(iiharm) = 1
-        arrdm1(iiharm) = nharms
+        arrdm1(iiharm) = harmonics_arr_len
         arrdm2(iiharm) = 1
         arrdm3(iiharm) = 1
 
@@ -1437,24 +1437,24 @@ contains
 
         arrnam(iimas2) = 'MASS2 '
         arrknd(iimas2) = 2
-        arrdm1(iimas2) = notot
+        arrdm1(iimas2) = num_substances_total
         arrdm2(iimas2) = 5
         arrdm3(iimas2) = 1
 
         arrnam(iitimr) = 'TIMER '
         if (fluxco) then
             arrknd(iitimr) = 2
-            arrdm1(iitimr) = notot
-            arrdm2(iitimr) = noseg + nseg2
+            arrdm1(iitimr) = num_substances_total
+            arrdm2(iitimr) = num_cells + num_cells_bottom
             arrdm3(iitimr) = 1
         elseif (delmat) then
             arrknd(iitimr) = 3
-            arrdm1(iitimr) = noseg + nseg2
-            arrdm2(iitimr) = jtrack * 2 + 1
+            arrdm1(iitimr) = num_cells + num_cells_bottom
+            arrdm2(iitimr) = num_codiagonals * 2 + 1
             arrdm3(iitimr) = 1
         elseif (f_solv) then
             arrknd(iitimr) = 1
-            arrdm1(iitimr) = nomat
+            arrdm1(iitimr) = fast_solver_arr_size
             arrdm2(iitimr) = 1
             arrdm3(iitimr) = 1
         endif
@@ -1462,12 +1462,12 @@ contains
         arrnam(iivol2) = 'VOL2  '
         if (f_solv) then
             arrknd(iivol2) = 3
-            arrdm1(iivol2) = noseg + nseg2 + nobnd
+            arrdm1(iivol2) = num_cells + num_cells_bottom + num_boundary_conditions
             arrdm2(iivol2) = 1
             arrdm3(iivol2) = 1
         else
             arrknd(iivol2) = 3
-            arrdm1(iivol2) = noseg + nseg2
+            arrdm1(iivol2) = num_cells + num_cells_bottom
             arrdm2(iivol2) = 1
             arrdm3(iivol2) = 1
         endif
@@ -1475,40 +1475,40 @@ contains
         arrnam(iismas) = 'ASMASS'
         if (balans) then
             arrknd(iismas) = 4
-            arrdm1(iismas) = notot
+            arrdm1(iismas) = num_substances_total
             arrdm2(iismas) = ndmpar
             arrdm3(iismas) = 6
         endif
 
         arrnam(iiploc) = 'LOCAL '
         arrknd(iiploc) = 2
-        arrdm1(iiploc) = noloc
-        arrdm2(iiploc) = noseg + nseg2
-        arrdm3(iiploc) = nogrid
+        arrdm1(iiploc) = num_local_vars
+        arrdm2(iiploc) = num_cells + num_cells_bottom
+        arrdm3(iiploc) = num_grids
 
         arrnam(iidefa) = 'DEFAUL'
         arrknd(iidefa) = 1
-        arrdm1(iidefa) = nodef
+        arrdm1(iidefa) = num_defaults
         arrdm2(iidefa) = 1
         arrdm3(iidefa) = 1
 
         arrnam(iiflux) = 'FLUX  '
         arrknd(iiflux) = 2
-        arrdm1(iiflux) = nflux
-        arrdm2(iiflux) = noseg + nseg2
-        arrdm3(iiflux) = nogrid
+        arrdm1(iiflux) = num_fluxes
+        arrdm2(iiflux) = num_cells + num_cells_bottom
+        arrdm3(iiflux) = num_grids
 
         arrnam(iistoc) = 'STOCHI'
         arrknd(iistoc) = 4
-        arrdm1(iistoc) = notot
-        arrdm2(iistoc) = nflux
+        arrdm1(iistoc) = num_substances_total
+        arrdm2(iistoc) = num_fluxes
         arrdm3(iistoc) = 1
 
         arrnam(iiflxd) = 'FLXDMP'
         if (balans) then
             arrknd(iiflxd) = 3
-            arrdm1(iiflxd) = ndmps
-            arrdm2(iiflxd) = nflux
+            arrdm1(iiflxd) = num_monitoring_cells
+            arrdm2(iiflxd) = num_fluxes
             arrdm3(iiflxd) = 1
         endif
 
@@ -1516,62 +1516,62 @@ contains
         if (balans) then
             arrknd(iiflxi) = 3
             arrdm1(iiflxi) = ndmpar
-            arrdm2(iiflxi) = nflux
+            arrdm2(iiflxi) = num_fluxes
             arrdm3(iiflxi) = 1
         endif
 
         arrnam(iiriob) = 'RIOBUF'
         arrknd(iiriob) = 1
-        arrdm1(iiriob) = nbufmx
+        arrdm1(iiriob) = output_buffer_len
         arrdm2(iiriob) = 1
         arrdm3(iiriob) = 1
 
         arrnam(iidspx) = 'DISPX '
         arrknd(iidspx) = 2
-        arrdm1(iidspx) = ndspx
-        arrdm2(iidspx) = noq + noq4
+        arrdm1(iidspx) = num_dispersion_arrays_extra
+        arrdm2(iidspx) = num_exchanges + num_exchanges_bottom_dir
         arrdm3(iidspx) = 1
 
         arrnam(iivelx) = 'VELX  '
         arrknd(iivelx) = 2
-        arrdm1(iivelx) = nvelx
-        arrdm2(iivelx) = noq + noq4
+        arrdm1(iivelx) = num_velocity_arrays_extra
+        arrdm2(iivelx) = num_exchanges + num_exchanges_bottom_dir
         arrdm3(iivelx) = 1
 
         arrnam(iilocx) = 'VLOCX '
         arrknd(iilocx) = 2
-        arrdm1(iilocx) = nlocx
-        arrdm2(iilocx) = noq + noq4
+        arrdm1(iilocx) = num_local_vars_exchange
+        arrdm2(iilocx) = num_exchanges + num_exchanges_bottom_dir
         arrdm3(iilocx) = 1
 
         arrnam(iidsto) = 'DSTO  '
         arrknd(iidsto) = 4
-        arrdm1(iidsto) = nosys
-        arrdm2(iidsto) = ndspx
+        arrdm1(iidsto) = num_substances_transported
+        arrdm2(iidsto) = num_dispersion_arrays_extra
         arrdm3(iidsto) = 1
 
         arrnam(iivsto) = 'VSTO  '
         arrknd(iivsto) = 4
-        arrdm1(iivsto) = nosys
-        arrdm2(iivsto) = nvelx
+        arrdm1(iivsto) = num_substances_transported
+        arrdm2(iivsto) = num_velocity_arrays_extra
         arrdm3(iivsto) = 1
 
         arrnam(iidmpq) = 'DMPQ  '
         arrknd(iidmpq) = 4
-        arrdm1(iidmpq) = nosys
+        arrdm1(iidmpq) = num_substances_transported
         arrdm2(iidmpq) = ndmpq
         arrdm3(iidmpq) = 2
 
         arrnam(iidmps) = 'DMPS  '
         arrknd(iidmps) = 4
-        arrdm1(iidmps) = notot
-        arrdm2(iidmps) = ndmps
+        arrdm1(iidmps) = num_substances_total
+        arrdm2(iidmps) = num_monitoring_cells
         arrdm3(iidmps) = 3
 
         arrnam(iitrra) = 'TRRAAI'
         arrknd(iitrra) = 3
-        arrdm1(iitrra) = nosys
-        arrdm2(iitrra) = noraai
+        arrdm1(iitrra) = num_substances_transported
+        arrdm2(iitrra) = num_transects
         arrdm3(iitrra) = 1
 
         arrnam(iinrsp) = 'INWRSP'
@@ -1582,14 +1582,14 @@ contains
 
         arrnam(iivoll) = 'VOLUML'
         arrknd(iivoll) = 3
-        arrdm1(iivoll) = noseg + nseg2
+        arrdm1(iivoll) = num_cells + num_cells_bottom
         arrdm2(iivoll) = 1
         arrdm3(iivoll) = 1
 
         arrnam(iiwdmp) = 'WSTDMP'
         arrknd(iiwdmp) = 4
-        arrdm1(iiwdmp) = notot
-        arrdm2(iiwdmp) = nowst
+        arrdm1(iiwdmp) = num_substances_total
+        arrdm2(iiwdmp) = num_waste_loads
         arrdm3(iiwdmp) = 2
 
         ! the total array length
@@ -1640,7 +1640,7 @@ contains
         endif
 
         ! Reset new disp and velo pointers if array's are the same
-        if (ndspn == 0) then
+        if (num_dispersion_arrays_new == 0) then
             idnew = idiff
             arrknd(iidnew) = arrknd(iidiff)
             arrdm1(iidnew) = arrdm1(iidiff)
@@ -1649,7 +1649,7 @@ contains
             arrlen(iidnew) = arrlen(iidiff)
             arrpoi(iidnew) = arrpoi(iidiff)
         endif
-        if (nveln == 0) then
+        if (num_velocity_arrays_new == 0) then
             ivnew = ivelo
             arrknd(iivnew) = arrknd(iivelo)
             arrdm1(iivnew) = arrdm1(iivelo)
@@ -1697,85 +1697,85 @@ contains
         endif
 
         ierr = 0
-        call allocate_array(logical_unit, nr_rar, declare_memory, surface, "surface", noseg + nseg2, &
-                noseg + nseg2, real_arr_size)
-        call allocate_array(logical_unit, nr_rar, declare_memory, wdrawal, "wdrawal", noseg + nseg2, &
-                noseg + nseg2, real_arr_size)
+        call allocate_array(logical_unit, nr_rar, declare_memory, surface, "surface", num_cells + num_cells_bottom, &
+                num_cells + num_cells_bottom, real_arr_size)
+        call allocate_array(logical_unit, nr_rar, declare_memory, wdrawal, "wdrawal", num_cells + num_cells_bottom, &
+                num_cells + num_cells_bottom, real_arr_size)
 
         if (delmat) then
-            num_to_file = nosys * noseg
-            call allocate_array(logical_unit, nr_rar, declare_memory, rhs, "rhs", nosys, noseg, num_to_file, real_arr_size)
+            num_to_file = num_substances_transported * num_cells
+            call allocate_array(logical_unit, nr_rar, declare_memory, rhs, "rhs", num_substances_transported, num_cells, num_to_file, real_arr_size)
         endif
 
         if (intsrt == 11 .or. intsrt == 12 .or. &
                 intsrt == 13 .or. intsrt == 14 .or. &
                 intsrt == 24) then
 
-            num_to_file = notot * (noseg + nseg2) * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, arhs, "arhs", notot, noseg + nseg2, &
+            num_to_file = num_substances_total * (num_cells + num_cells_bottom) * 2
+            call allocate_array(logical_unit, nr_rar, declare_memory, arhs, "arhs", num_substances_total, num_cells + num_cells_bottom, &
                     num_to_file, real_arr_size)
 
-            num_to_file = notot * (noseg + nseg2) * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, adiag, "adiag", notot, &
-                    noseg + nseg2, num_to_file, real_arr_size)
+            num_to_file = num_substances_total * (num_cells + num_cells_bottom) * 2
+            call allocate_array(logical_unit, nr_rar, declare_memory, adiag, "adiag", num_substances_total, &
+                    num_cells + num_cells_bottom, num_to_file, real_arr_size)
 
-            num_to_file = notot * max((noq3 + noq4), 1) * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, acodia, "acodia", notot, &
-                    max(noq3 + noq4, 1), num_to_file, real_arr_size)
+            num_to_file = num_substances_total * max((num_exchanges_z_dir + num_exchanges_bottom_dir), 1) * 2
+            call allocate_array(logical_unit, nr_rar, declare_memory, acodia, "acodia", num_substances_total, &
+                    max(num_exchanges_z_dir + num_exchanges_bottom_dir, 1), num_to_file, real_arr_size)
 
-            num_to_file = notot * max((noq3 + noq4), 1) * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, bcodia, "bcodia", notot, &
-                    max(noq3 + noq4, 1), num_to_file, real_arr_size)
+            num_to_file = num_substances_total * max((num_exchanges_z_dir + num_exchanges_bottom_dir), 1) * 2
+            call allocate_array(logical_unit, nr_rar, declare_memory, bcodia, "bcodia", num_substances_total, &
+                    max(num_exchanges_z_dir + num_exchanges_bottom_dir, 1), num_to_file, real_arr_size)
         endif
 
-        if (nmax * mmax > 0) then
-            num_to_file = nmax * mmax
-            call allocate_array(logical_unit, nr_rar, declare_memory, cell_x, "cell_x", nmax, mmax, num_to_file, real_arr_size)
+        if (num_rows * num_columns > 0) then
+            num_to_file = num_rows * num_columns
+            call allocate_array(logical_unit, nr_rar, declare_memory, cell_x, "cell_x", num_rows, num_columns, num_to_file, real_arr_size)
 
-            num_to_file = nmax * mmax
-            call allocate_array(logical_unit, nr_rar, declare_memory, cell_y, "cell_y", nmax, mmax, num_to_file, real_arr_size)
+            num_to_file = num_rows * num_columns
+            call allocate_array(logical_unit, nr_rar, declare_memory, cell_y, "cell_y", num_rows, num_columns, num_to_file, real_arr_size)
         endif
 
         if (f_solv) then
-            call allocate_array(logical_unit, nr_rar, declare_memory, mixlen, "mixlen", noq, noq, real_arr_size)
+            call allocate_array(logical_unit, nr_rar, declare_memory, mixlen, "mixlen", num_exchanges, num_exchanges, real_arr_size)
 
-            num_to_file = (noseg + nobnd) * noth * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, gm_rhs, "gm_rhs", noseg + nobnd, &
+            num_to_file = (num_cells + num_boundary_conditions) * noth * 2
+            call allocate_array(logical_unit, nr_rar, declare_memory, gm_rhs, "gm_rhs", num_cells + num_boundary_conditions, &
                     noth, num_to_file, real_arr_size)
 
-            num_to_file = (noseg + nobnd) * noth * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, gm_sol, "gm_sol", noseg + nobnd, &
+            num_to_file = (num_cells + num_boundary_conditions) * noth * 2
+            call allocate_array(logical_unit, nr_rar, declare_memory, gm_sol, "gm_sol", num_cells + num_boundary_conditions, &
                     noth, num_to_file, real_arr_size)
 
-            num_to_file = (noseg + nobnd) * (novec + 5) * noth * 2
+            num_to_file = (num_cells + num_boundary_conditions) * (num_fast_solver_vectors + 5) * noth * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, gm_work, "gm_work", &
-                    (noseg + nobnd) * (novec + 5), noth, num_to_file, real_arr_size)
+                    (num_cells + num_boundary_conditions) * (num_fast_solver_vectors + 5), noth, num_to_file, real_arr_size)
 
-            num_to_file = (novec + 1) * (novec + 2) * noth * 2
+            num_to_file = (num_fast_solver_vectors + 1) * (num_fast_solver_vectors + 2) * noth * 2
             call allocate_array(logical_unit, nr_rar, declare_memory, gm_hess, "gm_hess", &
-                    (novec + 1) * (novec + 2), noth, num_to_file, real_arr_size)
+                    (num_fast_solver_vectors + 1) * (num_fast_solver_vectors + 2), noth, num_to_file, real_arr_size)
 
-            num_to_file = nomat * noth * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, gm_amat, "gm_amat", nomat, noth, &
+            num_to_file = fast_solver_arr_size * noth * 2
+            call allocate_array(logical_unit, nr_rar, declare_memory, gm_amat, "gm_amat", fast_solver_arr_size, noth, &
                     num_to_file, real_arr_size)
 
-            num_to_file = (noseg + nobnd) * noth * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, gm_diag, "gm_diag", noseg + nobnd, &
+            num_to_file = (num_cells + num_boundary_conditions) * noth * 2
+            call allocate_array(logical_unit, nr_rar, declare_memory, gm_diag, "gm_diag", num_cells + num_boundary_conditions, &
                     noth, num_to_file, real_arr_size)
 
-            num_to_file = (noseg + nobnd) * noth * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, gm_diac, "gm_diac", noseg + nobnd, &
+            num_to_file = (num_cells + num_boundary_conditions) * noth * 2
+            call allocate_array(logical_unit, nr_rar, declare_memory, gm_diac, "gm_diac", num_cells + num_boundary_conditions, &
                     noth, num_to_file, real_arr_size)
 
-            num_to_file = 6 * nolay * noth * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, gm_trid, "gm_trid", 6 * nolay, noth, &
+            num_to_file = 6 * num_layers * noth * 2
+            call allocate_array(logical_unit, nr_rar, declare_memory, gm_trid, "gm_trid", 6 * num_layers, noth, &
                     num_to_file, real_arr_size)
 
-            num_to_file = noq * noth
-            call allocate_array(logical_unit, nr_rar, declare_memory, flowtot, "flowtot", noq, noth, num_to_file, real_arr_size)
+            num_to_file = num_exchanges * noth
+            call allocate_array(logical_unit, nr_rar, declare_memory, flowtot, "flowtot", num_exchanges, noth, num_to_file, real_arr_size)
 
-            num_to_file = noq * noth
-            call allocate_array(logical_unit, nr_rar, declare_memory, disptot, "disptot", noq, noth, num_to_file, real_arr_size)
+            num_to_file = num_exchanges * noth
+            call allocate_array(logical_unit, nr_rar, declare_memory, disptot, "disptot", num_exchanges, noth, num_to_file, real_arr_size)
 
             ! Note: trick for making sure that memory near the processor is assigned
             !       to the array. This has to do with the NUMA characteristics.
@@ -1856,42 +1856,42 @@ contains
             endif ! declare_memory
 
             if (intsrt == 21) then
-                num_to_file = noq * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, theta, "theta", noq, noth, num_to_file, real_arr_size)
+                num_to_file = num_exchanges * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, theta, "theta", num_exchanges, noth, num_to_file, real_arr_size)
 
-                num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, thetaseg, "thetaseg", noseg, &
+                num_to_file = num_cells * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, thetaseg, "thetaseg", num_cells, &
                         noth, num_to_file, real_arr_size)
 
-                num_to_file = noq * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, flux, "flux", noq, noth, num_to_file, real_arr_size)
+                num_to_file = num_exchanges * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, flux, "flux", num_exchanges, noth, num_to_file, real_arr_size)
 
-                num_to_file = noq * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, lim, "lim", noq, noth, num_to_file, real_arr_size)
+                num_to_file = num_exchanges * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, lim, "lim", num_exchanges, noth, num_to_file, real_arr_size)
 
-                num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, maxi, "maxi", noseg, noth, num_to_file, real_arr_size)
+                num_to_file = num_cells * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, maxi, "maxi", num_cells, noth, num_to_file, real_arr_size)
 
-                num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, mini, "mini", noseg, noth, num_to_file, real_arr_size)
+                num_to_file = num_cells * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, mini, "mini", num_cells, noth, num_to_file, real_arr_size)
 
-                num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, l1, "l1", noseg, noth, num_to_file, real_arr_size)
+                num_to_file = num_cells * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, l1, "l1", num_cells, noth, num_to_file, real_arr_size)
 
-                num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, l2, "l2", noseg, noth, num_to_file, real_arr_size)
+                num_to_file = num_cells * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, l2, "l2", num_cells, noth, num_to_file, real_arr_size)
 
-                num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, m1, "m1", noseg, noth, num_to_file, real_arr_size)
+                num_to_file = num_cells * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, m1, "m1", num_cells, noth, num_to_file, real_arr_size)
 
-                num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, m2, "m2", noseg, noth, num_to_file, real_arr_size)
+                num_to_file = num_cells * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, m2, "m2", num_cells, noth, num_to_file, real_arr_size)
 
-                num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, n1, "n1", noseg, noth, num_to_file, real_arr_size)
+                num_to_file = num_cells * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, n1, "n1", num_cells, noth, num_to_file, real_arr_size)
 
-                num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, n2, "n2", noseg, noth, num_to_file, real_arr_size)
+                num_to_file = num_cells * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, n2, "n2", num_cells, noth, num_to_file, real_arr_size)
 
                 if (declare_memory) then
                     !$omp parallel
@@ -1984,12 +1984,12 @@ contains
 
             endif
             if (intsrt == 22) then
-                num_to_file = noq * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, theta, "theta", noq, noth, &
+                num_to_file = num_exchanges * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, theta, "theta", num_exchanges, noth, &
                         num_to_file, real_arr_size)
 
-                num_to_file = noseg * noth
-                call allocate_array(logical_unit, nr_rar, declare_memory, thetaseg, "thetaseg", noseg, &
+                num_to_file = num_cells * noth
+                call allocate_array(logical_unit, nr_rar, declare_memory, thetaseg, "thetaseg", num_cells, &
                         noth, num_to_file, real_arr_size)
 
                 if (declare_memory) then
@@ -2013,22 +2013,22 @@ contains
             endif
         endif
         if (intsrt == 24) then
-            num_to_file = 3 * noseg * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, dwork, "dwork", 3, noseg, num_to_file, real_arr_size)
+            num_to_file = 3 * num_cells * 2
+            call allocate_array(logical_unit, nr_rar, declare_memory, dwork, "dwork", 3, num_cells, num_to_file, real_arr_size)
 
             ! volint
-            real_arr_size = real_arr_size + noseg * 2
+            real_arr_size = real_arr_size + num_cells * 2
             nr_rar = nr_rar + 1
-            if (declare_memory) allocate (volint  (noseg), stat = ierr)
+            if (declare_memory) allocate (volint  (num_cells), stat = ierr)
             if (ierr /= 0) then
                 write(logical_unit, 2010) "volint              "
                 call stop_with_error()
             endif
-            if (.not. declare_memory) write (328, 2040) nr_rar, "volint              ", noseg * 2
+            if (.not. declare_memory) write (328, 2040) nr_rar, "volint              ", num_cells * 2
 
-            num_to_file = notot * (noseg + nseg2) * 2
-            call allocate_array(logical_unit, nr_rar, declare_memory, dconc2, "dconc2", notot, &
-                    noseg + nseg2, num_to_file, real_arr_size)
+            num_to_file = num_substances_total * (num_cells + num_cells_bottom) * 2
+            call allocate_array(logical_unit, nr_rar, declare_memory, dconc2, "dconc2", num_substances_total, &
+                    num_cells + num_cells_bottom, num_to_file, real_arr_size)
 
         endif
         if (.not. declare_memory) write (328, '(/5x,a20,i12)') "Total (4 byte words)", real_arr_size
@@ -2145,25 +2145,25 @@ contains
         2040 format (i4, 1x, a20, i12)
     end subroutine allocate_real_wp_1d_array
 
-    subroutine abstract_1(logical_unit, array_name, noarr, var, partition_data, var_type)
+    subroutine abstract_1(logical_unit, array_name, num_arrays, var, partition_data, var_type)
         use m_array_manipulation, only : make_pointer, int_type, memory_partition, char_type
 
         integer(kind = int_wp), intent(in) :: logical_unit, var_type
         integer, intent(inout) :: var
-        integer(kind = int_wp), intent(in) :: noarr
-        character(len = *) :: array_name   !! name of the arrays in the pmsa
+        integer(kind = int_wp), intent(in) :: num_arrays
+        character(len = *) :: array_name   !! name of the arrays in the process_space_real
         type(memory_partition), intent(inout) :: partition_data
 
         if (var_type == int_type) then
-            var = make_pointer(partition_data, int_type, noarr)
+            var = make_pointer(partition_data, int_type, num_arrays)
         else if (var_type == char_type) then
-            var = make_pointer(partition_data, char_type, noarr)
+            var = make_pointer(partition_data, char_type, num_arrays)
         end if
 
         if (var == 0) then
             write(logical_unit, 2010)
             write(logical_unit, 2020) array_name
-            write(logical_unit, 2030) noarr
+            write(logical_unit, 2030) num_arrays
             call stop_with_error()
         endif
         var = var + 1

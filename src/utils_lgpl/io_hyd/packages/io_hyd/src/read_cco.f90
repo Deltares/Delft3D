@@ -27,7 +27,7 @@
 !
 !
 
-      subroutine read_cco(file_cco, mmax  , nmax  , xdepth, ydepth)
+      subroutine read_cco(file_cco, num_columns  , num_rows  , xdepth, ydepth)
 
       ! function : read a cco file and check dimensions
 
@@ -38,10 +38,10 @@
       ! declaration of the arguments
 
       type(t_file)                       :: file_cco               ! aggregation-file
-      integer                                :: mmax                   ! grid cells m direction
-      integer                                :: nmax                   ! grid cells n direction
-      real                                   :: xdepth(nmax,mmax)      ! x coordinate depth points
-      real                                   :: ydepth(nmax,mmax)      ! y coordinate depth points
+      integer                                :: num_columns                   ! grid cells m direction
+      integer                                :: num_rows                   ! grid cells n direction
+      real                                   :: xdepth(num_rows,num_columns)      ! x coordinate depth points
+      real                                   :: ydepth(num_rows,num_columns)      ! y coordinate depth points
 
       ! local declarations
 
@@ -51,7 +51,7 @@
       real                                   :: y0                     ! y coordinate origin
       real                                   :: alpha                  ! alpha
       integer                                :: npart                  ! npart
-      integer                                :: nolay                  ! nolay
+      integer                                :: num_layers                  ! num_layers
       integer                                :: ioerr                  ! error on file
       integer                                :: i                      ! loop counter
       integer                                :: m                      ! loop counter
@@ -62,13 +62,13 @@
       call get_log_unit_number(lunrep)
 
       call file_cco%open()
-      read(file_cco%unit,iostat=ioerr) mmaxd, nmaxd, x0, y0, alpha, npart, nolay
+      read(file_cco%unit,iostat=ioerr) mmaxd, nmaxd, x0, y0, alpha, npart, num_layers
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading cco file header record'
          call stop_with_error()
       endif
 
-      if ( nmaxd.ne.nmax .or. mmaxd.ne.mmax ) then
+      if ( nmaxd.ne.num_rows .or. mmaxd.ne.num_columns ) then
          write(lunrep,*) ' dimensions cco file differ from input hydrodynamics'
          call stop_with_error()
       endif
@@ -81,12 +81,12 @@
          endif
       enddo
 
-      read(file_cco%unit,iostat=ioerr) ((xdepth(n,m),n=1,nmax),m=1,mmax)
+      read(file_cco%unit,iostat=ioerr) ((xdepth(n,m),n=1,num_rows),m=1,num_columns)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading cco file xdepth'
          call stop_with_error()
       endif
-      read(file_cco%unit,iostat=ioerr) ((ydepth(n,m),n=1,nmax),m=1,mmax)
+      read(file_cco%unit,iostat=ioerr) ((ydepth(n,m),n=1,num_rows),m=1,num_columns)
       if ( ioerr .ne. 0 ) then
          write(lunrep,*) ' error reading cco file ydepth'
          call stop_with_error()

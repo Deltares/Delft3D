@@ -28,9 +28,9 @@ module m_dmvol
 contains
 
 
-    subroutine dmvol  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine dmvol  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
         !>\file
@@ -55,9 +55,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         PARAMETER (RHOWAT = 1000000.)
 
@@ -73,17 +73,17 @@ contains
         IP10 = IPOINT(10)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
-                Surf = PMSA(IP1)
-                Volume = PMSA(IP2)
-                TIM = PMSA(IP3)
-                POM = PMSA(IP4)
-                RhoIM = PMSA(IP5)
-                RhoOM = PMSA(IP6)
+                Surf = process_space_real(IP1)
+                Volume = process_space_real(IP2)
+                TIM = process_space_real(IP3)
+                POM = process_space_real(IP4)
+                RhoIM = process_space_real(IP5)
+                RhoOM = process_space_real(IP6)
 
                 VolDM = (TIM / RhoIM + POM / RhoOM)
                 VolDM = min (1.0, VolDM)
@@ -100,16 +100,16 @@ contains
                     ActTh = 0.0
                 ENDIF
 
-                PMSA(IP7) = Poros
-                PMSA(IP8) = Rho
-                PMSA(IP9) = VolDM
-                PMSA(IP10) = ActTh
+                process_space_real(IP7) = Poros
+                process_space_real(IP8) = Rho
+                process_space_real(IP9) = VolDM
+                process_space_real(IP10) = ActTh
 
             ELSE
-                PMSA(IP7) = 1.0
-                PMSA(IP8) = RHOWAT
-                PMSA(IP9) = 0.0
-                PMSA(IP10) = 0.0
+                process_space_real(IP7) = 1.0
+                process_space_real(IP8) = RHOWAT
+                process_space_real(IP9) = 0.0
+                process_space_real(IP10) = 0.0
             ENDIF
             !
             IFLUX = IFLUX + NOFLUX

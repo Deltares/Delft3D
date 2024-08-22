@@ -1,38 +1,38 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2024.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      subroutine GEOUTM (xgeo,ygeo,xutm,yutm,Izone,nzone,IERR)
-      implicit none
-      integer :: nzone
+      subroutine GEOUTM(xgeo, ygeo, xutm, yutm, Izone, nzone, IERR)
+         implicit none
+         integer :: nzone
 ! ----------------------------------------------------------------------
 !
 !     conversion of geographical (lat, lon) --> UTM coordinates (x, y, zone)
@@ -49,8 +49,8 @@
 !     zone    o    integer   zone (UTM)
 !     ierr    o    integer   error code (zero for no error)
 !
-      double precision :: xgeo,ygeo,a,e,xutm,yutm
-      integer      Izone,ierr
+         double precision :: xgeo, ygeo, a, e, xutm, yutm
+         integer Izone, ierr
 !
 !     local variables:
 !     pi           double precision ::    3.14....
@@ -81,10 +81,10 @@
 !     gx           double precision ::    function gx(fi,dl)
 !     gy           double precision ::    function gy(fi,dl)
 !
-      double precision :: pi,fn,fe
-      double precision :: fi,dl,dl2,s,ss,sc,c,cc,cccc,f1,f2,f3,f4,e2,e4,e6
-      double precision :: n,nn,x,y,rp,dm,gx,gy
-      COMMON /ELLIPS/ A,E
+         double precision :: pi, fn, fe
+         double precision :: fi, dl, dl2, s, ss, sc, c, cc, cccc, f1, f2, f3, f4, e2, e4, e6
+         double precision :: n, nn, x, y, rp, dm, gx, gy
+         common / ELLIPS / A, E
 !
 ! -----------------------------------------------------------------------------
 !     t.j.zitman                                  last update: 10 december 1990
@@ -92,74 +92,74 @@
 !
 !     initialize constants
 !
-      pi       = 4d0*ATAN(1d0)
+         pi = 4d0 * atan(1d0)
 !
-      e2     = e**2
-      e4     = e2**2
-      e6     = e2*e4
-      n      = e2/(1d0-e2)
-      nn     = n**2
-      f1     = 1d0 - (1d0/4d0)*e2 - (3d0/64d0)*e4 -  ( 5d0/256d0)*e6
-      f2     =       (3d0/8d0)*e2 + (3d0/32d0)*e4 + (45d0/1024d0)*e6
-      f3     =                    (15d0/256d0)*e4 + (45d0/1024d0)*e6
-      f4     =                                      (35d0/3072d0)*e6
+         e2 = e**2
+         e4 = e2**2
+         e6 = e2 * e4
+         n = e2 / (1d0 - e2)
+         nn = n**2
+         f1 = 1d0 - (1d0 / 4d0) * e2 - (3d0 / 64d0) * e4 - (5d0 / 256d0) * e6
+         f2 = (3d0 / 8d0) * e2 + (3d0 / 32d0) * e4 + (45d0 / 1024d0) * e6
+         f3 = (15d0 / 256d0) * e4 + (45d0 / 1024d0) * e6
+         f4 = (35d0 / 3072d0) * e6
 !
 !     set false northing and false easting
 !
-   !  IF (ygeo.LT.0.0) then
-   !    ygeo = -ygeo
-   !    fn   = 1.0E+07
-   !    fn   = Y_offset
-   !  else
-   !    fn   = 0.0d0
-   !  endif
+         !  IF (ygeo.LT.0.0) then
+         !    ygeo = -ygeo
+         !    fn   = 1.0E+07
+         !    fn   = Y_offset
+         !  else
+         !    fn   = 0.0d0
+         !  endif
 
-      fn = 0D0
-      fe = 5d+05
+         fn = 0d0
+         fe = 5d+05
 !
 !     determine zone
 !
-      Nzone = INT( (xgeo+180)/6 ) + 1
-      if (IZONE .EQ. 0) then
-         IZONE = NZONE
-      endif
+         Nzone = int((xgeo + 180) / 6) + 1
+         if (IZONE == 0) then
+            IZONE = NZONE
+         end if
 !
 !     set fi and dl
 !
-      fi = ygeo*pi/180d0
-      dl = (xgeo + 177d0 - 6d0*FLOAT(Izone-1))*pi/180d0
+         fi = ygeo * pi / 180d0
+         dl = (xgeo + 177d0 - 6d0 * real(Izone - 1, kind=kind(dl)) ) * pi / 180d0
 !
 !     constants, related to fi
 !
-      s      = SIN(fi)
-      ss     = s**2
-      c      = COS(fi)
-      cc     = c**2
-      cccc   = cc**2
-      sc     = s*c
+         s = sin(fi)
+         ss = s**2
+         c = cos(fi)
+         cc = c**2
+         cccc = cc**2
+         sc = s * c
 !
 !     values of sub-functions
 !
-      rp     = a/SQRT(1d0-e2*ss)
-      dm     = a*( f1*fi - f2*SIN(2d0*fi)  + f3*SIN(4d0*fi) - f4*SIN(6d0*fi) )
-      dl2    = dl**2
-      gx     = dl2*(2d0*cc - 1d0 + nn*cccc)/6d0
-      gy     = dl2*(6d0*cc - 1d0 + 9d0*nn*cccc)/12d0
+         rp = a / sqrt(1d0 - e2 * ss)
+         dm = a * (f1 * fi - f2 * sin(2d0 * fi) + f3 * sin(4d0 * fi) - f4 * sin(6d0 * fi))
+         dl2 = dl**2
+         gx = dl2 * (2d0 * cc - 1d0 + nn * cccc) / 6d0
+         gy = dl2 * (6d0 * cc - 1d0 + 9d0 * nn * cccc) / 12d0
 !
 !     function values x and y
 !
-      x      = rp*dl*c*(1d0+gx)
-      y      = dm + rp*0.5d0*dl2*sc*(1d0+gy)
+         x = rp * dl * c * (1d0 + gx)
+         y = dm + rp * 0.5d0 * dl2 * sc * (1d0 + gy)
 !
 !     set UTM x- and y-coordinates
 !
-      xutm   = 0.9996d0*x + fe
-      yutm   = 0.9996d0*y + fn
+         xutm = 0.9996d0 * x + fe
+         yutm = 0.9996d0 * y + fn
 !
 !     set no error
 !
-      ierr   = 0
+         ierr = 0
 !
-      continue
-      return
+         continue
+         return
       end subroutine geoutm

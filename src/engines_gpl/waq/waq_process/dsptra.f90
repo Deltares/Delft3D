@@ -28,9 +28,9 @@ module m_dsptra
 contains
 
 
-    subroutine dsptra (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine dsptra (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Dispersion/diffusion in the sediment
 
@@ -67,9 +67,9 @@ contains
 
         IMPLICIT REAL (A-H, J-Z)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7
         INTEGER(kind = int_wp) :: IN1, IN2, IN3, IN4, IN5, IN6, IN7
@@ -83,8 +83,8 @@ contains
         !     we define a double column structure, one for downward,
         !     and one for upward transport
 
-        CALL MAKKO2 (IEXPNT, IKNMRK, NOQ1, NOQ2, NOQ3, &
-                NOQ4)
+        CALL MAKKO2 (IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+                num_exchanges_bottom_dir)
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -103,15 +103,15 @@ contains
         IN7 = INCREM(7)
 
         !.....Segmentloop om uitvoergrootheden op segmentniveau op 0 te zetten
-        !     DO 9000 ISEG=1,NOSEG
+        !     DO 9000 ISEG=1,num_cells
         !9000 CONTINUE
         !
         !.....Exchangeloop over de horizontale richtingen om op 0 te zetten
         !.....en om de pointers te zetten
-        DO IQ = 1, NOQ1 + NOQ2
+        DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
             !         Uitvoeritems op exchange level
-            PMSA(IP6) = 0.0
-            PMSA(IP7) = 0.0
+            process_space_real(IP6) = 0.0
+            process_space_real(IP7) = 0.0
             IP6 = IP6 + IN6
             IP7 = IP7 + IN7
         end do
@@ -138,17 +138,17 @@ contains
 
                 IVAN = IEXPNT(1, IQ)
                 INAAR = IEXPNT(2, IQ)
-                TURCOE = PMSA(IP4 + (Ivan - 1) * IN4)
-                DIFCOE = PMSA(IP5 + (Inaar - 1) * IN5)
+                TURCOE = process_space_real(IP4 + (Ivan - 1) * IN4)
+                DIFCOE = process_space_real(IP5 + (Inaar - 1) * IN5)
 
                 IF (IQ <= IWA2) THEN
 
                     !.....WATER-SEDIMENT INTERFACE
 
-                    DIFLEN = PMSA(IP2 + (IVAN - 1) * IN2)
-                    ACTHS2 = PMSA(IP1 + (INAAR - 1) * IN1)
-                    POROS1 = PMSA(IP3 + (IVAN - 1) * IN3)
-                    POROS2 = PMSA(IP3 + (INAAR - 1) * IN3)
+                    DIFLEN = process_space_real(IP2 + (IVAN - 1) * IN2)
+                    ACTHS2 = process_space_real(IP1 + (INAAR - 1) * IN1)
+                    POROS1 = process_space_real(IP3 + (IVAN - 1) * IN3)
+                    POROS2 = process_space_real(IP3 + (INAAR - 1) * IN3)
                     XFROM = DIFLEN
                     XTO = 0.5 * ACTHS2
                     VD_SOL = 0.0
@@ -160,8 +160,8 @@ contains
 
                     !.....DEEP SEDIMENT BOUNDARY
 
-                    ACTHS1 = PMSA(IP1 + (IVAN - 1) * IN1)
-                    POROS1 = PMSA(IP3 + (IVAN - 1) * IN3)
+                    ACTHS1 = process_space_real(IP1 + (IVAN - 1) * IN1)
+                    POROS1 = process_space_real(IP3 + (IVAN - 1) * IN3)
                     POROS2 = POROS1
                     XFROM = 0.5 * ACTHS1
                     XTO = 0.5 * ACTHS1
@@ -176,10 +176,10 @@ contains
 
                     !.....SEDIMENT-SEDIMENT INTERFACE
 
-                    ACTHS1 = PMSA(IP1 + (IVAN - 1) * IN1)
-                    ACTHS2 = PMSA(IP1 + (INAAR - 1) * IN1)
-                    POROS1 = PMSA(IP3 + (IVAN - 1) * IN3)
-                    POROS2 = PMSA(IP3 + (INAAR - 1) * IN3)
+                    ACTHS1 = process_space_real(IP1 + (IVAN - 1) * IN1)
+                    ACTHS2 = process_space_real(IP1 + (INAAR - 1) * IN1)
+                    POROS1 = process_space_real(IP3 + (IVAN - 1) * IN3)
+                    POROS2 = process_space_real(IP3 + (INAAR - 1) * IN3)
                     XFROM = 0.5 * ACTHS1
                     XTO = 0.5 * ACTHS2
                     VD_SOL = TURCOE * MIN((1. - POROS1), (1. - POROS2)) / (1. - POROS1) / &
@@ -191,10 +191,10 @@ contains
 
                 ENDIF
 
-                PMSA(IP6 + (IQ - 1) * IN6) = VD_SOL / 86400.
-                PMSA(IP6 + (IQ - 1 + IOFFSE) * IN6) = VU_SOL / 86400.
-                PMSA(IP7 + (IQ - 1) * IN7) = VD_DIS / 86400.
-                PMSA(IP7 + (IQ - 1 + IOFFSE) * IN7) = VU_DIS / 86400.
+                process_space_real(IP6 + (IQ - 1) * IN6) = VD_SOL / 86400.
+                process_space_real(IP6 + (IQ - 1 + IOFFSE) * IN6) = VU_SOL / 86400.
+                process_space_real(IP7 + (IQ - 1) * IN7) = VD_DIS / 86400.
+                process_space_real(IP7 + (IQ - 1 + IOFFSE) * IN7) = VU_DIS / 86400.
 
             ENDDO
 

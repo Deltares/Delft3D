@@ -30,9 +30,6 @@
         <argument>/C</argument>
       </arguments>
     </program>
-    <program name="svn" addSearchPaths="false">
-      <path>thirdparty/svn/win64/svn.exe</path>
-    </program>
     <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
       <shell ref="command_prompt"/>
       <location ref="local" type="check">

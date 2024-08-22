@@ -45,6 +45,8 @@ subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
 !!--declarations----------------------------------------------------------------
     use precision
     use mathconsts, only: pi, eps_fp
+    use ieee_arithmetic, only: ieee_is_nan
+
     implicit none
 !
 ! arguments
@@ -185,8 +187,8 @@ subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
             pc = alphar*(1.0_fp-xi*uc/c)*rh/((wss+worbc)*2.0_fp*(tc-tcu))
             pt = alphar*(1.0_fp+xi*ut/c)*rh/(delta_w*2.0_fp*(tt-ttu))
         endif
-        if (isnan(pc)) pc = 1.0_fp
-        if (isnan(pt)) pt = 1.0_fp
+        if (ieee_is_nan(pc)) pc = 1.0_fp
+        if (ieee_is_nan(pt)) pt = 1.0_fp
     endif
 
 !

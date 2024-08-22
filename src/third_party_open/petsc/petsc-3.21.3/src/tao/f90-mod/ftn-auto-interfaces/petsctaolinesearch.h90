@@ -1,0 +1,113 @@
+      subroutine TaoLineSearchSetUp(a,z)
+       TaoLineSearch a ! TaoLineSearch
+       PetscErrorCode z
+       end subroutine TaoLineSearchSetUp
+      subroutine TaoLineSearchReset(a,z)
+       TaoLineSearch a ! TaoLineSearch
+       PetscErrorCode z
+       end subroutine TaoLineSearchReset
+      subroutine TaoLineSearchDestroy(a,z)
+       TaoLineSearch a ! TaoLineSearch
+       PetscErrorCode z
+       end subroutine TaoLineSearchDestroy
+      subroutine TaoLineSearchApply(a,b,c,d,e,f,g,z)
+       import tVec
+       TaoLineSearch a ! TaoLineSearch
+       Vec b ! Vec
+       PetscReal c ! PetscReal
+       Vec d ! Vec
+       Vec e ! Vec
+       PetscReal f ! PetscReal
+       TaoLineSearchConvergedReason g ! TaoLineSearchConvergedReason
+       PetscErrorCode z
+       end subroutine TaoLineSearchApply
+      subroutine TaoLineSearchSetFromOptions(a,z)
+       TaoLineSearch a ! TaoLineSearch
+       PetscErrorCode z
+       end subroutine TaoLineSearchSetFromOptions
+      subroutine TaoLineSearchGetNumberFunctionEvaluations(a,b,c,d,z)
+       TaoLineSearch a ! TaoLineSearch
+       PetscInt b ! PetscInt
+       PetscInt c ! PetscInt
+       PetscInt d ! PetscInt
+       PetscErrorCode z
+       end subroutine TaoLineSearchGetNumberFunctionEvaluations
+      subroutine TaoLineSearchIsUsingTaoRoutines(a,b,z)
+       TaoLineSearch a ! TaoLineSearch
+       PetscBool b ! PetscBool
+       PetscErrorCode z
+       end subroutine TaoLineSearchIsUsingTaoRoutines
+      subroutine TaoLineSearchComputeObjective(a,b,c,z)
+       import tVec
+       TaoLineSearch a ! TaoLineSearch
+       Vec b ! Vec
+       PetscReal c ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoLineSearchComputeObjective
+      subroutine TaoLineSearchComputeObjectiveAndGradient(a,b,c,d,z)
+       import tVec
+       TaoLineSearch a ! TaoLineSearch
+       Vec b ! Vec
+       PetscReal c ! PetscReal
+       Vec d ! Vec
+       PetscErrorCode z
+       end subroutine TaoLineSearchComputeObjectiveAndGradient
+      subroutine TaoLineSearchComputeGradient(a,b,c,z)
+       import tVec
+       TaoLineSearch a ! TaoLineSearch
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TaoLineSearchComputeGradient
+      subroutine TaoLineSearchComputeObjectiveAndGTS(a,b,c,d,z)
+       import tVec
+       TaoLineSearch a ! TaoLineSearch
+       Vec b ! Vec
+       PetscReal c ! PetscReal
+       PetscReal d ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoLineSearchComputeObjectiveAndGTS
+      subroutine TaoLineSearchGetSolution(a,b,c,d,e,f,z)
+       import tVec
+       TaoLineSearch a ! TaoLineSearch
+       Vec b ! Vec
+       PetscReal c ! PetscReal
+       Vec d ! Vec
+       PetscReal e ! PetscReal
+       TaoLineSearchConvergedReason f ! TaoLineSearchConvergedReason
+       PetscErrorCode z
+       end subroutine TaoLineSearchGetSolution
+      subroutine TaoLineSearchGetStartingVector(a,b,z)
+       import tVec
+       TaoLineSearch a ! TaoLineSearch
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TaoLineSearchGetStartingVector
+      subroutine TaoLineSearchGetStepDirection(a,b,z)
+       import tVec
+       TaoLineSearch a ! TaoLineSearch
+       Vec b ! Vec
+       PetscErrorCode z
+       end subroutine TaoLineSearchGetStepDirection
+      subroutine TaoLineSearchGetFullStepObjective(a,b,z)
+       TaoLineSearch a ! TaoLineSearch
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoLineSearchGetFullStepObjective
+      subroutine TaoLineSearchSetVariableBounds(a,b,c,z)
+       import tVec
+       TaoLineSearch a ! TaoLineSearch
+       Vec b ! Vec
+       Vec c ! Vec
+       PetscErrorCode z
+       end subroutine TaoLineSearchSetVariableBounds
+      subroutine TaoLineSearchSetInitialStepLength(a,b,z)
+       TaoLineSearch a ! TaoLineSearch
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoLineSearchSetInitialStepLength
+      subroutine TaoLineSearchGetStepLength(a,b,z)
+       TaoLineSearch a ! TaoLineSearch
+       PetscReal b ! PetscReal
+       PetscErrorCode z
+       end subroutine TaoLineSearchGetStepLength

@@ -1455,6 +1455,8 @@ module m_ec_filereader_read
 
       !> Reads a sample file (*.xyz) given an already opened logical unit number, into allocatable arrays.
       function ecSampleReadAll_from_lun(msam, filename, xs, ys, zs, nSamples, kx) result(success)
+         use ieee_arithmetic, only: ieee_is_nan
+
          logical                                                         :: success       !< function status
          integer,                                          intent(inout) :: msam          !< logical unit number (to already opened file)
          character(len=*),                                 intent(in   ) :: filename      !< Name of the file (for messaging only)
@@ -1496,7 +1498,7 @@ module m_ec_filereader_read
 
          if (  xx .ne. xymis_dflt .and. yy .ne. xymis_dflt .and. &
                zz .ne. dmiss_dflt .and. zz .ne. 999.999d0 .and. &
-               .not.(isnan(xx) .or. isnan(yy) .or. isnan(zz)) ) then
+               .not.(ieee_is_nan(xx) .or. ieee_is_nan(yy) .or. ieee_is_nan(zz)) ) then
             nSamples = nSamples + 1
             xs(nSamples)    = xx
             ys(nSamples)    = yy
@@ -1524,7 +1526,7 @@ module m_ec_filereader_read
 
 !!==============================================================================
 !
-!function read_spv_block(unitnr, p_conv, xwind, ywind, press, nmax, mmax, tread, ipart) result(success)
+!function read_spv_block(unitnr, p_conv, xwind, ywind, press, num_rows, num_columns, tread, ipart) result(success)
 !   !
 !   ! Read block in meteo_on_flow_grid file
 !   !
@@ -1534,8 +1536,8 @@ module m_ec_filereader_read
 !   ! arguments
 !   !
 !   integer, intent(in)        :: unitnr
-!   integer, intent(in)        :: nmax
-!   integer, intent(in)        :: mmax
+!   integer, intent(in)        :: num_rows
+!   integer, intent(in)        :: num_columns
 !   real(hp), dimension(:,:), intent(out) :: xwind, ywind, press
 !   real(hp), intent(in)       :: p_conv
 !   real(hp), intent(out)      :: tread
@@ -1585,33 +1587,33 @@ module m_ec_filereader_read
 !   ! Loop over the first dimension in flow
 !   !
 !   if (ipart == 1 .or. ipart == -1) then
-!      if ( size(xwind,1) .ne. nmax .or. size(xwind,2) .ne. mmax) then
+!      if ( size(xwind,1) .ne. num_rows .or. size(xwind,2) .ne. num_columns) then
 !         call setECMessage('READ_SPV_BLOCK: wrong sizes xwind')
 !         success = .false.
 !         return
 !      endif
-!      do j = 1,nmax
-!         read(unitnr,*,end = 100, err=101) ( xwind(j,i), i = 1,mmax )
+!      do j = 1,num_rows
+!         read(unitnr,*,end = 100, err=101) ( xwind(j,i), i = 1,num_columns )
 !      enddo
 !   endif
 !   if (ipart == 2 .or. ipart == -1) then
-!      if ( size(ywind,1) .ne. nmax .or. size(ywind,2) .ne. mmax ) then
+!      if ( size(ywind,1) .ne. num_rows .or. size(ywind,2) .ne. num_columns ) then
 !         call setECMessage('READ_SPV_BLOCK: wrong sizes ywind')
 !         success = .false.
 !         return
 !      endif
-!      do j = 1,nmax
-!         read(unitnr,*,end = 100, err=102) ( ywind(j,i), i = 1,mmax )
+!      do j = 1,num_rows
+!         read(unitnr,*,end = 100, err=102) ( ywind(j,i), i = 1,num_columns )
 !      enddo
 !   endif
 !   if (ipart == 3 .or. ipart == -1) then
-!      if ( size(press,1) .ne. nmax .or. size(press,2) .ne. mmax ) then
+!      if ( size(press,1) .ne. num_rows .or. size(press,2) .ne. num_columns ) then
 !         call setECMessage('READ_SPV_BLOCK: wrong sizes press')
 !         success = .false.
 !         return
 !      endif
-!      do j = 1,nmax
-!         read(unitnr,*,end = 100, err=103) ( press(j,i), i = 1,mmax )
+!      do j = 1,num_rows
+!         read(unitnr,*,end = 100, err=103) ( press(j,i), i = 1,num_columns )
 !      enddo
 !      !
 !      ! Conversion of pressure to Pa (N/m2). If already Pa, p_conv = 1.0_hp
@@ -1687,7 +1689,7 @@ module m_ec_filereader_read
 !   !
 !end function ec_grib_open
 !!
-!function read_grib(unitnr, filename, filenr, xwind, ywind, press, nmax, mmax, tread, meta) result(success)
+!function read_grib(unitnr, filename, filenr, xwind, ywind, press, num_rows, num_columns, tread, meta) result(success)
 !   !
 !   ! Read wind and pressure from grib file
 !   !
@@ -1699,8 +1701,8 @@ module m_ec_filereader_read
 !   integer                            :: unitnr
 !   character(maxFileNameLen)          :: filename
 !   integer                            :: filenr
-!   integer                            :: nmax       ! out at initialization, otherwise in
-!   integer                            :: mmax       ! out at initialization, otherwise in
+!   integer                            :: num_rows       ! out at initialization, otherwise in
+!   integer                            :: num_columns       ! out at initialization, otherwise in
 !   type(tGrib_data), pointer, optional :: meta
 !   real(hp), dimension(:,:)           :: xwind, ywind, press
 !   real(hp)                           :: txwind, tywind, tpress, tread
@@ -1752,7 +1754,7 @@ module m_ec_filereader_read
 !      bufsz2 = 1
 !   else
 !      request  = 'D'
-!      bufsz1 = 4 * mmax * nmax
+!      bufsz1 = 4 * num_columns * num_rows
 !      bufsz2 = bufsz1
 !   endif
 !   allocate(buffer(bufsz1), zbuf4(bufsz2), stat=ierr)
@@ -1847,7 +1849,7 @@ module m_ec_filereader_read
 !      ! fill metadata
 !      !
 !      if (initialize) then
-!          call fill_grib_metadata(nmax, mmax, meta, isec2)
+!          call fill_grib_metadata(num_rows, num_columns, meta, isec2)
 !          exit
 !      endif
 !      !
@@ -1866,27 +1868,27 @@ module m_ec_filereader_read
 !      select case (ifldtp)
 !      case (1)
 !         if (debug) write (*,*) 'found pressure'
-!         do m = 1, mmax
-!             do n = 1, nmax
-!                press(n, m) = zbuf4(m+(n-1)*mmax)
+!         do m = 1, num_columns
+!             do n = 1, num_rows
+!                press(n, m) = zbuf4(m+(n-1)*num_columns)
 !             enddo
 !         enddo
 !         tpress = tread
 !         found_p = .true.
 !      case (33)
 !         if (debug) write (*,*) 'found u-wind'
-!         do m = 1, mmax
-!             do n = 1, nmax
-!                xwind(n,m) = zbuf4(m+(n-1)*mmax)
+!         do m = 1, num_columns
+!             do n = 1, num_rows
+!                xwind(n,m) = zbuf4(m+(n-1)*num_columns)
 !             enddo
 !         enddo
 !         txwind = tread
 !         found_u = .true.
 !      case (34)
 !         if (debug) write (*,*) 'found v-wind'
-!         do m = 1, mmax
-!             do n = 1, nmax
-!                ywind(n,m) = zbuf4(m+(n-1)*mmax)
+!         do m = 1, num_columns
+!             do n = 1, num_rows
+!                ywind(n,m) = zbuf4(m+(n-1)*num_columns)
 !             enddo
 !         enddo
 !         tywind = tread
@@ -1906,11 +1908,11 @@ module m_ec_filereader_read
 !   deallocate(buffer, zbuf4)
 !end function read_grib
 !!
-!subroutine fill_grib_metadata(nmax, mmax, meta, isec2)
+!subroutine fill_grib_metadata(num_rows, num_columns, meta, isec2)
 !   !
 !   ! arguments
 !   !
-!   integer                  :: nmax, mmax
+!   integer                  :: num_rows, num_columns
 !   type(tGrib_data)         :: meta
 !   integer, dimension(1024) :: isec2
 !   !
@@ -1921,8 +1923,8 @@ module m_ec_filereader_read
 !   !
 !   ! body
 !   !
-!   nmax = isec2(3)
-!   mmax = isec2(2)
+!   num_rows = isec2(3)
+!   num_columns = isec2(2)
 !   !
 !   if ( isec2(7) .gt. isec2(4) ) then
 !      iang1y = isec2(4)
@@ -1940,8 +1942,8 @@ module m_ec_filereader_read
 !      iang1x = isec2(8)
 !      iangx  = isec2(5)
 !   endif
-!   meta%dx = (real (iangx - iang1x, hp) * 1D-3) / real (mmax - 1, hp)
-!   meta%dy = (real (iangy - iang1y, hp) * 1D-3) / real (nmax - 1, hp)
+!   meta%dx = (real (iangx - iang1x, hp) * 1D-3) / real (num_columns - 1, hp)
+!   meta%dy = (real (iangy - iang1y, hp) * 1D-3) / real (num_rows - 1, hp)
 !   meta%x0 = real (iang1x, hp) * 1D-3
 !   meta%y0 = real (iang1y, hp) * 1D-3
 !   !
@@ -2109,8 +2111,8 @@ module m_ec_filereader_read
                 read(rec,*,iostat=iostat) mask%msk((mask%nrange-i)*mask%mrange+1:(mask%nrange-i+1)*mask%mrange)
             endif
          enddo          ! reading maskfile
-         mask%mmax = mask%mmin + mask%mrange - 1
-         mask%nmax = mask%nmin + mask%nrange - 1
+         mask%num_columns = mask%mmin + mask%mrange - 1
+         mask%num_rows = mask%nmin + mask%nrange - 1
          success = .true.
          close(fmask)
       end function ecParseARCinfoMask

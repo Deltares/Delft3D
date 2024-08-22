@@ -1,0 +1,81 @@
+      subroutine AOMappingHasPetscIndex(a,b,c,z)
+       AO a ! AO
+       PetscInt b ! PetscInt
+       PetscBool c ! PetscBool
+       PetscErrorCode z
+       end subroutine AOMappingHasPetscIndex
+      subroutine AOCreateMappingIS(a,b,c,z)
+       import tIS
+       IS a ! IS
+       IS b ! IS
+       AO c ! AO
+       PetscErrorCode z
+       end subroutine AOCreateMappingIS
+      subroutine AODestroy(a,z)
+       AO a ! AO
+       PetscErrorCode z
+       end subroutine AODestroy
+      subroutine AOPetscToApplicationIS(a,b,z)
+       import tIS
+       AO a ! AO
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine AOPetscToApplicationIS
+      subroutine AOApplicationToPetscIS(a,b,z)
+       import tIS
+       AO a ! AO
+       IS b ! IS
+       PetscErrorCode z
+       end subroutine AOApplicationToPetscIS
+      subroutine AOPetscToApplication(a,b,c,z)
+       AO a ! AO
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine AOPetscToApplication
+      subroutine AOApplicationToPetsc(a,b,c,z)
+       AO a ! AO
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine AOApplicationToPetsc
+      subroutine AOPetscToApplicationPermuteInt(a,b,c,z)
+       AO a ! AO
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine AOPetscToApplicationPermuteInt
+      subroutine AOApplicationToPetscPermuteInt(a,b,c,z)
+       AO a ! AO
+       PetscInt b ! PetscInt
+       PetscInt c (*) ! PetscInt
+       PetscErrorCode z
+       end subroutine AOApplicationToPetscPermuteInt
+      subroutine AOPetscToApplicationPermuteReal(a,b,c,z)
+       AO a ! AO
+       PetscInt b ! PetscInt
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine AOPetscToApplicationPermuteReal
+      subroutine AOApplicationToPetscPermuteReal(a,b,c,z)
+       AO a ! AO
+       PetscInt b ! PetscInt
+       PetscReal c (*) ! PetscReal
+       PetscErrorCode z
+       end subroutine AOApplicationToPetscPermuteReal
+      subroutine AOSetFromOptions(a,z)
+       AO a ! AO
+       PetscErrorCode z
+       end subroutine AOSetFromOptions
+      subroutine AOSetIS(a,b,c,z)
+       import tIS
+       AO a ! AO
+       IS b ! IS
+       IS c ! IS
+       PetscErrorCode z
+       end subroutine AOSetIS
+      subroutine AOCreate(a,b,z)
+       MPI_Comm a ! MPI_Comm
+       AO b ! AO
+       PetscErrorCode z
+       end subroutine AOCreate

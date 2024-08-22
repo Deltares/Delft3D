@@ -30,13 +30,12 @@ implicit none
 contains
 
 
-     subroutine DLWQG2     ( pmsa   , fl     , ipoint , increm, noseg , &
-                              noflux , iexpnt , iknmrk , noq1  , noq2  , &
-                              noq3   , noq4   )
+     subroutine DLWQG2     ( process_space_real   , fl     , ipoint , increm, num_cells , &
+                              noflux , iexpnt , iknmrk , num_exchanges_u_dir  , num_exchanges_v_dir  , &
+                              num_exchanges_z_dir   , num_exchanges_bottom_dir   )
      use m_logger_helper, only : write_error_message, get_log_unit_number
      use m_extract_waq_attribute
 
-!XXXDEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'DLWQG2' :: DLWQG2
 !
 !*******************************************************************************
 !
@@ -44,18 +43,18 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(kind=real_wp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp)  ::process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
       real(kind=real_wp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer(kind=int_wp)  ::ipoint(*)  ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::ipoint(*)  ! I  Array of pointers in process_space_real to get and store the data
       integer(kind=int_wp)  ::increm(*)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer(kind=int_wp)  ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::num_cells       ! I  Number of computational elements in the whole model schematisation
       integer(kind=int_wp)  ::noflux      ! I  Number of fluxes, increment in the fl array
       integer(kind=int_wp)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
       integer(kind=int_wp)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer(kind=int_wp)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer(kind=int_wp)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer(kind=int_wp)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer(kind=int_wp)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 !
 !*******************************************************************************
 !     This process replaces DELWAQ G in stand alone DELWAQ in the context of DFM-WAQ
@@ -85,6 +84,7 @@ contains
       integer(kind=int_wp),parameter    ::nototsed = 34
       integer(kind=int_wp),parameter    ::nototseddis = 12
       integer(kind=int_wp),parameter    ::nototsedpart = 22
+      integer(kind=int_wp),parameter    ::nototsedextra = 6
       integer(kind=int_wp),parameter    ::nofl = 101
 
       ! pointers to concrete items
@@ -242,10 +242,11 @@ contains
       integer(kind=int_wp),parameter  ::OFFSET_S1 = ip_Depth + nototseddis
 
       ! settling fluxes (particulate)
-      integer(kind=int_wp),parameter  ::OFFSET_Setl = ip_Depth + nototseddis + nototsed
+      integer(kind=int_wp),parameter  ::OFFSET_Setl  = ip_Depth + nototseddis + nototsed
+      integer(kind=int_wp),parameter  ::OFFSET_Extra = ip_Depth + nototseddis + nototsed + nototsedpart
 
       ! VB fluxes
-      integer(kind=int_wp),parameter  ::OFFSET_VB = ip_Depth + nototseddis + nototsed + nototsedpart
+      integer(kind=int_wp),parameter  ::OFFSET_VB = ip_Depth + nototseddis + nototsed + nototsedpart + nototsedextra
       integer(kind=int_wp),parameter  ::nflvb = 22
       integer(kind=int_wp),parameter  ::ip_fN1VBup = OFFSET_VB + 1
       integer(kind=int_wp),parameter  ::ip_fN2VBup = OFFSET_VB + 2
@@ -558,7 +559,7 @@ contains
       integer(kind=int_wp), allocatable ::bottomsegments(:)
       real(kind=real_wp), allocatable ::sedconc(:,:,:)
 
-      integer(kind=int_wp)                              ::nolay
+      integer(kind=int_wp)                              ::num_layers
       real(kind=real_wp), allocatable ::tt(:), td(:)
       real(kind=real_wp), allocatable ::dl(:)  ! layer thickness
       real(kind=real_wp), allocatable ::sd(:)  ! depth of upper surface of layer
@@ -593,6 +594,13 @@ contains
       integer(kind=int_wp), save  ::ipnt(1) = -999
       integer(kind=int_wp)        ::i
 
+      !
+      ! Algae related pools and fluxes
+      ! Includes sedimentation and resuspension
+      !
+      integer(kind=int_wp), save :: id_algal_nutrient(nototsedextra) = [ is_POC1, is_PON1, is_POP1, is_POC1, is_PON1, is_POP1 ]
+      real(kind=real_wp), save   :: weight_flux_algae(nototsedextra) = [     1.0,     1.0,     1.0,    -1.0,    -1.0,    -1.0 ]
+
       save
 !
 !******************************************************************************* INITIAL PROCESSING
@@ -604,138 +612,138 @@ contains
 
 
           ! load constants
-          ku_dFdcC20 = PMSA(IPOINT(ip_ku_dFdcC20))
-          kl_dFdcC20 = PMSA(IPOINT(ip_kl_dFdcC20))
-          ku_dFdcN20 = PMSA(IPOINT(ip_ku_dFdcN20))
-          kl_dFdcN20 = PMSA(IPOINT(ip_kl_dFdcN20))
-          ku_dFdcP20 = PMSA(IPOINT(ip_ku_dFdcP20))
-          kl_dFdcP20 = PMSA(IPOINT(ip_kl_dFdcP20))
-          ku_dMdcC20 = PMSA(IPOINT(ip_ku_dMdcC20))
-          kl_dMdcC20 = PMSA(IPOINT(ip_kl_dMdcC20))
-          ku_dMdcN20 = PMSA(IPOINT(ip_ku_dMdcN20))
-          kl_dMdcN20 = PMSA(IPOINT(ip_kl_dMdcN20))
-          ku_dMdcP20 = PMSA(IPOINT(ip_ku_dMdcP20))
-          kl_dMdcP20 = PMSA(IPOINT(ip_kl_dMdcP20))
-          ku_dSdcC20 = PMSA(IPOINT(ip_ku_dSdcC20))
-          kl_dSdcC20 = PMSA(IPOINT(ip_kl_dSdcC20))
-          ku_dSdcN20 = PMSA(IPOINT(ip_ku_dSdcN20))
-          kl_dSdcN20 = PMSA(IPOINT(ip_kl_dSdcN20))
-          ku_dSdcP20 = PMSA(IPOINT(ip_ku_dSdcP20))
-          kl_dSdcP20 = PMSA(IPOINT(ip_kl_dSdcP20))
-          k_dprdcC20 = PMSA(IPOINT(ip_k_dprdcC20))
-          k_DOCdcC20 = PMSA(IPOINT(ip_k_DOCdcC20))
-          al_dNf = PMSA(IPOINT(ip_al_dNf))
-          al_dPf = PMSA(IPOINT(ip_al_dPf))
-          au_dNf = PMSA(IPOINT(ip_au_dNf))
-          au_dPf = PMSA(IPOINT(ip_au_dPf))
-          al_dNm = PMSA(IPOINT(ip_al_dNm))
-          al_dPm = PMSA(IPOINT(ip_al_dPm))
-          au_dNm = PMSA(IPOINT(ip_au_dNm))
-          au_dPm = PMSA(IPOINT(ip_au_dPm))
-          al_dNs = PMSA(IPOINT(ip_al_dNs))
-          al_dPs = PMSA(IPOINT(ip_al_dPs))
-          au_dNs = PMSA(IPOINT(ip_au_dNs))
-          au_dPs = PMSA(IPOINT(ip_au_dPs))
-          a_dNpr = PMSA(IPOINT(ip_a_dNpr))
-          a_dPpr = PMSA(IPOINT(ip_a_dPpr))
-          a_dSpr = PMSA(IPOINT(ip_a_dSpr))
-          b_ni = PMSA(IPOINT(ip_b_ni))
-          b_poc1doc = PMSA(IPOINT(ip_b_poc1doc))
-          b_poc1poc2 = PMSA(IPOINT(ip_b_poc1poc2))
-          b_poc2doc = PMSA(IPOINT(ip_b_poc2doc))
-          b_poc2poc3 = PMSA(IPOINT(ip_b_poc2poc3))
-          b_poc3doc = PMSA(IPOINT(ip_b_poc3doc))
-          b_poc3poc4 = PMSA(IPOINT(ip_b_poc3poc4))
-          b_su = PMSA(IPOINT(ip_b_su))
-          kT_dec = PMSA(IPOINT(ip_kT_dec))
-          SWOMDec = PMSA(IPOINT(ip_SWOMDec))
-          KsOxCon = MAX (1.0E-06 , PMSA(IPOINT(ip_KsOxCon)) )
-          KsNiDen = MAX (1.0E-06 , PMSA(IPOINT(ip_KsNiDen)) )
-          KsFeRed = MAX (1.0E-06 , PMSA(IPOINT(ip_KsFeRed)) )
-          KsSuRed = MAX (1.0E-06 , PMSA(IPOINT(ip_KsSuRed)) )
-          KsOxDenInh = MAX (1.0E-06 , PMSA(IPOINT(ip_KsOxDenInh)) )
-          KsNiIRdInh = MAX (1.0E-06 , PMSA(IPOINT(ip_KsNiIRdInh)) )
-          KsNiSRdInh = MAX (1.0E-06 , PMSA(IPOINT(ip_KsNiSRdInh)) )
-          KsSuMetInh = MAX (1.0E-06 , PMSA(IPOINT(ip_KsSuMetInh)) )
-          CoxDenInh = PMSA(IPOINT(ip_CoxDenInh))
-          CoxIRedInh = PMSA(IPOINT(ip_CoxIRedInh))
-          CoxSRedInh = PMSA(IPOINT(ip_CoxSRedInh))
-          CoxMetInh = PMSA(IPOINT(ip_CoxMetInh))
-          CniMetInh = PMSA(IPOINT(ip_CniMetInh))
-          RedFacDen = PMSA(IPOINT(ip_RedFacDen))
-          RedFacIRed = PMSA(IPOINT(ip_RedFacIRed))
-          RedFacSRed = PMSA(IPOINT(ip_RedFacSRed))
-          RedFacMet = PMSA(IPOINT(ip_RedFacMet))
-          CTBactAc = PMSA(IPOINT(ip_CTBactAc))
-          SWOxCon = PMSA(IPOINT(ip_SWOxCon))
-          TcDen = PMSA(IPOINT(ip_TcDen))
-          TcIRed = PMSA(IPOINT(ip_TcIRed))
-          TcMet = PMSA(IPOINT(ip_TcMet))
-          TcOxCon = PMSA(IPOINT(ip_TcOxCon))
-          TcSRed = PMSA(IPOINT(ip_TcSRed))
-          RcNit20 = PMSA(IPOINT(ip_RcNit20))
-          TcNit = PMSA(IPOINT(ip_TcNit))
-          KsAmNit = PMSA(IPOINT(ip_KsAmNit))
-          KsOxNit = PMSA(IPOINT(ip_KsOxNit))
-          ZNit = PMSA(IPOINT(ip_ZNit))
-          Rc0NitOx = PMSA(IPOINT(ip_Rc0NitOx))
-          COXNIT = PMSA(IPOINT(ip_COXNIT))
-          CTNit = PMSA(IPOINT(ip_CTNit))
-          RcSox20 = PMSA(IPOINT(ip_RcSox20))
-          TcSox = PMSA(IPOINT(ip_TcSox))
-          Rc0Sox = PMSA(IPOINT(ip_Rc0Sox))
-          CoxSUD = PMSA(IPOINT(ip_CoxSUD))
-          DisSEqFeS = PMSA(IPOINT(ip_DisSEqFeS))
-          RcDisS20 = PMSA(IPOINT(ip_RcDisS20))
-          TcDisS = PMSA(IPOINT(ip_TcDisS))
-          RcPrcS20 = PMSA(IPOINT(ip_RcPrcS20))
-          lKstH2S = PMSA(IPOINT(ip_lKstH2S))
-          lKstHS = PMSA(IPOINT(ip_lKstHS))
-          TcKstH2S = PMSA(IPOINT(ip_TcKstH2S))
-          TcKstHS = PMSA(IPOINT(ip_TcKstHS))
-          TcPrcS = PMSA(IPOINT(ip_TcPrcS))
-          RcMetOx20 = PMSA(IPOINT(ip_RcMetOx20))
-          TcMetOx = PMSA(IPOINT(ip_TcMetOx))
-          Rc0MetOx = PMSA(IPOINT(ip_Rc0MetOx))
-          RcMetSu20 = PMSA(IPOINT(ip_RcMetSu20))
-          TcMetSu = PMSA(IPOINT(ip_TcMetSu))
-          Rc0MetSu = PMSA(IPOINT(ip_Rc0MetSu))
-          CoxMet = PMSA(IPOINT(ip_CoxMet))
-          CsuMet = PMSA(IPOINT(ip_CsuMet))
-          KsMet = PMSA(IPOINT(ip_KsMet))
-          KsOxMet = PMSA(IPOINT(ip_KsOxMet))
-          KsSuMet = PMSA(IPOINT(ip_KsSuMet))
-          CTMetOx = PMSA(IPOINT(ip_CTMetOx))
-          fScEbul = PMSA(IPOINT(ip_fScEbul))
-          FrMetGeCH4 = PMSA(IPOINT(ip_FrMetGeCH4))
-          KadsP_20 = PMSA(IPOINT(ip_KadsP_20))
-          TCKadsP = PMSA(IPOINT(ip_TCKadsP))
-          a_OH_PO4 = PMSA(IPOINT(ip_a_OH_PO4))
-          fr_FeIM1 = PMSA(IPOINT(ip_fr_FeIM1))
-          fr_FeIM2 = PMSA(IPOINT(ip_fr_FeIM2))
-          fr_FeIM3 = PMSA(IPOINT(ip_fr_FeIM3))
-          fr_Feox = PMSA(IPOINT(ip_fr_Feox))
-          Cc_oxPsor = PMSA(IPOINT(ip_Cc_oxPsor))
-          RcAdPO4AAP = PMSA(IPOINT(ip_RcAdPO4AAP))
-          RCprecP20 = PMSA(IPOINT(ip_RCprecP20))
-          TCprecipP = PMSA(IPOINT(ip_TCprecipP))
-          RCdissP20 = PMSA(IPOINT(ip_RCdissP20))
-          TCdissolP = PMSA(IPOINT(ip_TCdissolP))
-          EqVivDisP = PMSA(IPOINT(ip_EqVivDisP))
-          RatAPandVP = PMSA(IPOINT(ip_RatAPandVP))
-          RCdisAP20 = PMSA(IPOINT(ip_RCdisAP20))
-          EqAPATDisP = PMSA(IPOINT(ip_EqAPATDisP))
-          Cc_oxVivP = PMSA(IPOINT(ip_Cc_oxVivP))
-          KdPO4AAP = PMSA(IPOINT(ip_KdPO4AAP))
-          MaxPO4AAP = PMSA(IPOINT(ip_MaxPO4AAP))
-          SWAdsP = PMSA(IPOINT(ip_SWAdsP))
-          Ceq_disSi = PMSA(IPOINT(ip_Ceq_disSi))
-          RCdisSi20 = PMSA(IPOINT(ip_RCdisSi20))
-          TCdisSi = PMSA(IPOINT(ip_TCdisSi))
-          SWDisSi = PMSA(IPOINT(ip_SWDisSi))
+          ku_dFdcC20 = process_space_real(IPOINT(ip_ku_dFdcC20))
+          kl_dFdcC20 = process_space_real(IPOINT(ip_kl_dFdcC20))
+          ku_dFdcN20 = process_space_real(IPOINT(ip_ku_dFdcN20))
+          kl_dFdcN20 = process_space_real(IPOINT(ip_kl_dFdcN20))
+          ku_dFdcP20 = process_space_real(IPOINT(ip_ku_dFdcP20))
+          kl_dFdcP20 = process_space_real(IPOINT(ip_kl_dFdcP20))
+          ku_dMdcC20 = process_space_real(IPOINT(ip_ku_dMdcC20))
+          kl_dMdcC20 = process_space_real(IPOINT(ip_kl_dMdcC20))
+          ku_dMdcN20 = process_space_real(IPOINT(ip_ku_dMdcN20))
+          kl_dMdcN20 = process_space_real(IPOINT(ip_kl_dMdcN20))
+          ku_dMdcP20 = process_space_real(IPOINT(ip_ku_dMdcP20))
+          kl_dMdcP20 = process_space_real(IPOINT(ip_kl_dMdcP20))
+          ku_dSdcC20 = process_space_real(IPOINT(ip_ku_dSdcC20))
+          kl_dSdcC20 = process_space_real(IPOINT(ip_kl_dSdcC20))
+          ku_dSdcN20 = process_space_real(IPOINT(ip_ku_dSdcN20))
+          kl_dSdcN20 = process_space_real(IPOINT(ip_kl_dSdcN20))
+          ku_dSdcP20 = process_space_real(IPOINT(ip_ku_dSdcP20))
+          kl_dSdcP20 = process_space_real(IPOINT(ip_kl_dSdcP20))
+          k_dprdcC20 = process_space_real(IPOINT(ip_k_dprdcC20))
+          k_DOCdcC20 = process_space_real(IPOINT(ip_k_DOCdcC20))
+          al_dNf = process_space_real(IPOINT(ip_al_dNf))
+          al_dPf = process_space_real(IPOINT(ip_al_dPf))
+          au_dNf = process_space_real(IPOINT(ip_au_dNf))
+          au_dPf = process_space_real(IPOINT(ip_au_dPf))
+          al_dNm = process_space_real(IPOINT(ip_al_dNm))
+          al_dPm = process_space_real(IPOINT(ip_al_dPm))
+          au_dNm = process_space_real(IPOINT(ip_au_dNm))
+          au_dPm = process_space_real(IPOINT(ip_au_dPm))
+          al_dNs = process_space_real(IPOINT(ip_al_dNs))
+          al_dPs = process_space_real(IPOINT(ip_al_dPs))
+          au_dNs = process_space_real(IPOINT(ip_au_dNs))
+          au_dPs = process_space_real(IPOINT(ip_au_dPs))
+          a_dNpr = process_space_real(IPOINT(ip_a_dNpr))
+          a_dPpr = process_space_real(IPOINT(ip_a_dPpr))
+          a_dSpr = process_space_real(IPOINT(ip_a_dSpr))
+          b_ni = process_space_real(IPOINT(ip_b_ni))
+          b_poc1doc = process_space_real(IPOINT(ip_b_poc1doc))
+          b_poc1poc2 = process_space_real(IPOINT(ip_b_poc1poc2))
+          b_poc2doc = process_space_real(IPOINT(ip_b_poc2doc))
+          b_poc2poc3 = process_space_real(IPOINT(ip_b_poc2poc3))
+          b_poc3doc = process_space_real(IPOINT(ip_b_poc3doc))
+          b_poc3poc4 = process_space_real(IPOINT(ip_b_poc3poc4))
+          b_su = process_space_real(IPOINT(ip_b_su))
+          kT_dec = process_space_real(IPOINT(ip_kT_dec))
+          SWOMDec = process_space_real(IPOINT(ip_SWOMDec))
+          KsOxCon = MAX (1.0E-06 , process_space_real(IPOINT(ip_KsOxCon)) )
+          KsNiDen = MAX (1.0E-06 , process_space_real(IPOINT(ip_KsNiDen)) )
+          KsFeRed = MAX (1.0E-06 , process_space_real(IPOINT(ip_KsFeRed)) )
+          KsSuRed = MAX (1.0E-06 , process_space_real(IPOINT(ip_KsSuRed)) )
+          KsOxDenInh = MAX (1.0E-06 , process_space_real(IPOINT(ip_KsOxDenInh)) )
+          KsNiIRdInh = MAX (1.0E-06 , process_space_real(IPOINT(ip_KsNiIRdInh)) )
+          KsNiSRdInh = MAX (1.0E-06 , process_space_real(IPOINT(ip_KsNiSRdInh)) )
+          KsSuMetInh = MAX (1.0E-06 , process_space_real(IPOINT(ip_KsSuMetInh)) )
+          CoxDenInh = process_space_real(IPOINT(ip_CoxDenInh))
+          CoxIRedInh = process_space_real(IPOINT(ip_CoxIRedInh))
+          CoxSRedInh = process_space_real(IPOINT(ip_CoxSRedInh))
+          CoxMetInh = process_space_real(IPOINT(ip_CoxMetInh))
+          CniMetInh = process_space_real(IPOINT(ip_CniMetInh))
+          RedFacDen = process_space_real(IPOINT(ip_RedFacDen))
+          RedFacIRed = process_space_real(IPOINT(ip_RedFacIRed))
+          RedFacSRed = process_space_real(IPOINT(ip_RedFacSRed))
+          RedFacMet = process_space_real(IPOINT(ip_RedFacMet))
+          CTBactAc = process_space_real(IPOINT(ip_CTBactAc))
+          SWOxCon = process_space_real(IPOINT(ip_SWOxCon))
+          TcDen = process_space_real(IPOINT(ip_TcDen))
+          TcIRed = process_space_real(IPOINT(ip_TcIRed))
+          TcMet = process_space_real(IPOINT(ip_TcMet))
+          TcOxCon = process_space_real(IPOINT(ip_TcOxCon))
+          TcSRed = process_space_real(IPOINT(ip_TcSRed))
+          RcNit20 = process_space_real(IPOINT(ip_RcNit20))
+          TcNit = process_space_real(IPOINT(ip_TcNit))
+          KsAmNit = process_space_real(IPOINT(ip_KsAmNit))
+          KsOxNit = process_space_real(IPOINT(ip_KsOxNit))
+          ZNit = process_space_real(IPOINT(ip_ZNit))
+          Rc0NitOx = process_space_real(IPOINT(ip_Rc0NitOx))
+          COXNIT = process_space_real(IPOINT(ip_COXNIT))
+          CTNit = process_space_real(IPOINT(ip_CTNit))
+          RcSox20 = process_space_real(IPOINT(ip_RcSox20))
+          TcSox = process_space_real(IPOINT(ip_TcSox))
+          Rc0Sox = process_space_real(IPOINT(ip_Rc0Sox))
+          CoxSUD = process_space_real(IPOINT(ip_CoxSUD))
+          DisSEqFeS = process_space_real(IPOINT(ip_DisSEqFeS))
+          RcDisS20 = process_space_real(IPOINT(ip_RcDisS20))
+          TcDisS = process_space_real(IPOINT(ip_TcDisS))
+          RcPrcS20 = process_space_real(IPOINT(ip_RcPrcS20))
+          lKstH2S = process_space_real(IPOINT(ip_lKstH2S))
+          lKstHS = process_space_real(IPOINT(ip_lKstHS))
+          TcKstH2S = process_space_real(IPOINT(ip_TcKstH2S))
+          TcKstHS = process_space_real(IPOINT(ip_TcKstHS))
+          TcPrcS = process_space_real(IPOINT(ip_TcPrcS))
+          RcMetOx20 = process_space_real(IPOINT(ip_RcMetOx20))
+          TcMetOx = process_space_real(IPOINT(ip_TcMetOx))
+          Rc0MetOx = process_space_real(IPOINT(ip_Rc0MetOx))
+          RcMetSu20 = process_space_real(IPOINT(ip_RcMetSu20))
+          TcMetSu = process_space_real(IPOINT(ip_TcMetSu))
+          Rc0MetSu = process_space_real(IPOINT(ip_Rc0MetSu))
+          CoxMet = process_space_real(IPOINT(ip_CoxMet))
+          CsuMet = process_space_real(IPOINT(ip_CsuMet))
+          KsMet = process_space_real(IPOINT(ip_KsMet))
+          KsOxMet = process_space_real(IPOINT(ip_KsOxMet))
+          KsSuMet = process_space_real(IPOINT(ip_KsSuMet))
+          CTMetOx = process_space_real(IPOINT(ip_CTMetOx))
+          fScEbul = process_space_real(IPOINT(ip_fScEbul))
+          FrMetGeCH4 = process_space_real(IPOINT(ip_FrMetGeCH4))
+          KadsP_20 = process_space_real(IPOINT(ip_KadsP_20))
+          TCKadsP = process_space_real(IPOINT(ip_TCKadsP))
+          a_OH_PO4 = process_space_real(IPOINT(ip_a_OH_PO4))
+          fr_FeIM1 = process_space_real(IPOINT(ip_fr_FeIM1))
+          fr_FeIM2 = process_space_real(IPOINT(ip_fr_FeIM2))
+          fr_FeIM3 = process_space_real(IPOINT(ip_fr_FeIM3))
+          fr_Feox = process_space_real(IPOINT(ip_fr_Feox))
+          Cc_oxPsor = process_space_real(IPOINT(ip_Cc_oxPsor))
+          RcAdPO4AAP = process_space_real(IPOINT(ip_RcAdPO4AAP))
+          RCprecP20 = process_space_real(IPOINT(ip_RCprecP20))
+          TCprecipP = process_space_real(IPOINT(ip_TCprecipP))
+          RCdissP20 = process_space_real(IPOINT(ip_RCdissP20))
+          TCdissolP = process_space_real(IPOINT(ip_TCdissolP))
+          EqVivDisP = process_space_real(IPOINT(ip_EqVivDisP))
+          RatAPandVP = process_space_real(IPOINT(ip_RatAPandVP))
+          RCdisAP20 = process_space_real(IPOINT(ip_RCdisAP20))
+          EqAPATDisP = process_space_real(IPOINT(ip_EqAPATDisP))
+          Cc_oxVivP = process_space_real(IPOINT(ip_Cc_oxVivP))
+          KdPO4AAP = process_space_real(IPOINT(ip_KdPO4AAP))
+          MaxPO4AAP = process_space_real(IPOINT(ip_MaxPO4AAP))
+          SWAdsP = process_space_real(IPOINT(ip_SWAdsP))
+          Ceq_disSi = process_space_real(IPOINT(ip_Ceq_disSi))
+          RCdisSi20 = process_space_real(IPOINT(ip_RCdisSi20))
+          TCdisSi = process_space_real(IPOINT(ip_TCdisSi))
+          SWDisSi = process_space_real(IPOINT(ip_SWDisSi))
 
-          Exp_Tur = PMSA(IPOINT(ip_Exp_Tur))
-          Exp_Dif = PMSA(IPOINT(ip_Exp_Dif))
+          Exp_Tur = process_space_real(IPOINT(ip_Exp_Tur))
+          Exp_Dif = process_space_real(IPOINT(ip_Exp_Dif))
 
 !          ! hardcoded for the moment, needs to be input
 !          ! fraction of mixing 0.01 achieved at depth 0.1
@@ -743,10 +751,10 @@ contains
 !          exp_tur = exp_dif
 
           ! Fixed layer thickness and other parameters
-          Th_DelwaqG = PMSA(IPOINT(ip_Th_DelwaqG))
-          Delt = PMSA(IPOINT(ip_Delt))
-          Poros = PMSA(IPOINT(ip_Poros))
-          OutInt = nint(PMSA(IPOINT(ip_OutInt)))
+          Th_DelwaqG = process_space_real(IPOINT(ip_Th_DelwaqG))
+          Delt = process_space_real(IPOINT(ip_Delt))
+          Poros = process_space_real(IPOINT(ip_Poros))
+          OutInt = nint(process_space_real(IPOINT(ip_OutInt)))
 
           ! check on non-constants (assume numbering is from 1 to linsconstant)
           do item = 1,linsconstant
@@ -808,7 +816,7 @@ contains
 
           ! Determine 2D structure, first find dimension and next fill a mapping array
           noseg2d = 0
-          do iseg = 1,noseg
+          do iseg = 1,num_cells
               CALL extract_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
               CALL extract_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
               if (iatt2==0.or.iatt2==3) then
@@ -818,7 +826,7 @@ contains
           allocate(bottomsegments(noseg2d))
           bottomsegments = 0
           itel = 0
-          do iseg = 1,noseg
+          do iseg = 1,num_cells
               CALL extract_waq_attribute(1,IKNMRK(iseg),iatt1) ! pick up first attribute
               CALL extract_waq_attribute(2,IKNMRK(iseg),iatt2) ! pick up second attribute
 
@@ -829,43 +837,42 @@ contains
           enddo
 
           ! create layered structure
-          allocate (sedconc(nolay,nototsed,noseg2d))
+          allocate (sedconc(num_layers,nototsed,noseg2d))
 
           ! create initial values for sedconc; zero except parameters taken from external model
           ! substance dependent profile to be added!!
           !
           call initialise_sedconc
 
+          !
+          ! Calculate correction fluxes - they synchronise the S1 substances with the sedconc array
+          !
+          call sync_S1_sedconc
+
           first = .false.
 
       endif
 
       ! output
-      Itime = nint(PMSA(IPOINT(ip_Itime)))
+      Itime = nint(process_space_real(IPOINT(ip_Itime)))
       if (mod(itime,outint*3600)==0) then
           call write_sedconc
       endif
 
-      !
-      ! Calculate correction fluxes - they synchronise the S1 substances with the sedconc array
-      ! (required for complicated reasons)
-      !
-      call sync_S1_sedconc
-
       ! loop over bottom segments
 
       do iseg2d = 1,noseg2d
-          iseg = bottomsegments(iseg2d) ! this is the 3D segment number (link to PMSA)
+          iseg = bottomsegments(iseg2d) ! this is the 3D segment number (link to process_space_real)
 
           ! Pick up variable environment
-          pH      = PMSA(IPOINT(ip_pH     )+(iseg-1)*INCREM(ip_pH     ))
-          Temp    = PMSA(IPOINT(ip_Temp   )+(iseg-1)*INCREM(ip_Temp   ))
-          Turcoef = PMSA(IPOINT(ip_TurCoef)+(iseg-1)*INCREM(ip_TurCoef))
-          DifCoef = PMSA(IPOINT(ip_DifCoef)+(iseg-1)*INCREM(ip_DifCoef))
-          Diflen  = PMSA(IPOINT(ip_Diflen )+(iseg-1)*INCREM(ip_Diflen ))
-          Depth   = PMSA(IPOINT(ip_Depth  )+(iseg-1)*INCREM(ip_Depth  ))
+          pH      = process_space_real(IPOINT(ip_pH     )+(iseg-1)*INCREM(ip_pH     ))
+          Temp    = process_space_real(IPOINT(ip_Temp   )+(iseg-1)*INCREM(ip_Temp   ))
+          Turcoef = process_space_real(IPOINT(ip_TurCoef)+(iseg-1)*INCREM(ip_TurCoef))
+          DifCoef = process_space_real(IPOINT(ip_DifCoef)+(iseg-1)*INCREM(ip_DifCoef))
+          Diflen  = process_space_real(IPOINT(ip_Diflen )+(iseg-1)*INCREM(ip_Diflen ))
+          Depth   = process_space_real(IPOINT(ip_Depth  )+(iseg-1)*INCREM(ip_Depth  ))
           if ( default_profile ) then
-              do ilay = 1,nolay
+              do ilay = 1,num_layers
                   tt(ilay) = turcoef*exp(-exp_tur*bd(ilay))
                   td(ilay) = difcoef*exp(-exp_dif*sd(ilay))
               enddo
@@ -873,53 +880,63 @@ contains
 
           if (SW_VB) then
               ip = OFFSET_S1+is_nh4
-              s1_nh4 = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
+              s1_nh4 = process_space_real(ipoint(ip)+(iseg-1)*increm(ip))
               ip = OFFSET_S1+is_no3
-              s1_no3 = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
+              s1_no3 = process_space_real(ipoint(ip)+(iseg-1)*increm(ip))
               ip = OFFSET_S1+is_aap
-              s1_aap = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
+              s1_aap = process_space_real(ipoint(ip)+(iseg-1)*increm(ip))
               ip = OFFSET_S1+is_po4
-              s1_po4 = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
+              s1_po4 = process_space_real(ipoint(ip)+(iseg-1)*increm(ip))
               ip = OFFSET_S1+is_so4
-              s1_so4 = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
+              s1_so4 = process_space_real(ipoint(ip)+(iseg-1)*increm(ip))
               ip = OFFSET_S1+is_sud
-              s1_sud = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
+              s1_sud = process_space_real(ipoint(ip)+(iseg-1)*increm(ip))
 
-              fN1VBup = PMSA(IPOINT(ip_fN1VBup)+(iseg-1)*INCREM(ip_fN1VBup))
-              fN2VBup = PMSA(IPOINT(ip_fN2VBup)+(iseg-1)*INCREM(ip_fN2VBup))
-              fP1VBup = PMSA(IPOINT(ip_fP1VBup)+(iseg-1)*INCREM(ip_fP1VBup))
-              fP2VBup = PMSA(IPOINT(ip_fP2VBup)+(iseg-1)*INCREM(ip_fP2VBup))
-              fS1VBup = PMSA(IPOINT(ip_fS1VBup)+(iseg-1)*INCREM(ip_fS1VBup))
-              fS2VBup = PMSA(IPOINT(ip_fS2VBup)+(iseg-1)*INCREM(ip_fS2VBup))
+              fN1VBup = process_space_real(IPOINT(ip_fN1VBup)+(iseg-1)*INCREM(ip_fN1VBup))
+              fN2VBup = process_space_real(IPOINT(ip_fN2VBup)+(iseg-1)*INCREM(ip_fN2VBup))
+              fP1VBup = process_space_real(IPOINT(ip_fP1VBup)+(iseg-1)*INCREM(ip_fP1VBup))
+              fP2VBup = process_space_real(IPOINT(ip_fP2VBup)+(iseg-1)*INCREM(ip_fP2VBup))
+              fS1VBup = process_space_real(IPOINT(ip_fS1VBup)+(iseg-1)*INCREM(ip_fS1VBup))
+              fS2VBup = process_space_real(IPOINT(ip_fS2VBup)+(iseg-1)*INCREM(ip_fS2VBup))
 
-              fC1VBrel = PMSA(IPOINT(ip_fC1VBrel)+(iseg-1)*INCREM(ip_fC1VBrel))
-              fC2VBrel = PMSA(IPOINT(ip_fC2VBrel)+(iseg-1)*INCREM(ip_fC2VBrel))
-              fC3VBrel = PMSA(IPOINT(ip_fC3VBrel)+(iseg-1)*INCREM(ip_fC3VBrel))
-              fC4VBrel = PMSA(IPOINT(ip_fC4VBrel)+(iseg-1)*INCREM(ip_fC4VBrel))
-              fN1VBrel = PMSA(IPOINT(ip_fN1VBrel)+(iseg-1)*INCREM(ip_fN1VBrel))
-              fN2VBrel = PMSA(IPOINT(ip_fN2VBrel)+(iseg-1)*INCREM(ip_fN2VBrel))
-              fN3VBrel = PMSA(IPOINT(ip_fN3VBrel)+(iseg-1)*INCREM(ip_fN3VBrel))
-              fN4VBrel = PMSA(IPOINT(ip_fN4VBrel)+(iseg-1)*INCREM(ip_fN4VBrel))
-              fP1VBrel = PMSA(IPOINT(ip_fP1VBrel)+(iseg-1)*INCREM(ip_fP1VBrel))
-              fP2VBrel = PMSA(IPOINT(ip_fP2VBrel)+(iseg-1)*INCREM(ip_fP2VBrel))
-              fP3VBrel = PMSA(IPOINT(ip_fP3VBrel)+(iseg-1)*INCREM(ip_fP3VBrel))
-              fP4VBrel = PMSA(IPOINT(ip_fP4VBrel)+(iseg-1)*INCREM(ip_fP4VBrel))
-              fS1VBrel = PMSA(IPOINT(ip_fS1VBrel)+(iseg-1)*INCREM(ip_fS1VBrel))
-              fS2VBrel = PMSA(IPOINT(ip_fS2VBrel)+(iseg-1)*INCREM(ip_fS2VBrel))
-              fS3VBrel = PMSA(IPOINT(ip_fS3VBrel)+(iseg-1)*INCREM(ip_fS3VBrel))
-              fS4VBrel = PMSA(IPOINT(ip_fS4VBrel)+(iseg-1)*INCREM(ip_fS4VBrel))
+              fC1VBrel = process_space_real(IPOINT(ip_fC1VBrel)+(iseg-1)*INCREM(ip_fC1VBrel))
+              fC2VBrel = process_space_real(IPOINT(ip_fC2VBrel)+(iseg-1)*INCREM(ip_fC2VBrel))
+              fC3VBrel = process_space_real(IPOINT(ip_fC3VBrel)+(iseg-1)*INCREM(ip_fC3VBrel))
+              fC4VBrel = process_space_real(IPOINT(ip_fC4VBrel)+(iseg-1)*INCREM(ip_fC4VBrel))
+              fN1VBrel = process_space_real(IPOINT(ip_fN1VBrel)+(iseg-1)*INCREM(ip_fN1VBrel))
+              fN2VBrel = process_space_real(IPOINT(ip_fN2VBrel)+(iseg-1)*INCREM(ip_fN2VBrel))
+              fN3VBrel = process_space_real(IPOINT(ip_fN3VBrel)+(iseg-1)*INCREM(ip_fN3VBrel))
+              fN4VBrel = process_space_real(IPOINT(ip_fN4VBrel)+(iseg-1)*INCREM(ip_fN4VBrel))
+              fP1VBrel = process_space_real(IPOINT(ip_fP1VBrel)+(iseg-1)*INCREM(ip_fP1VBrel))
+              fP2VBrel = process_space_real(IPOINT(ip_fP2VBrel)+(iseg-1)*INCREM(ip_fP2VBrel))
+              fP3VBrel = process_space_real(IPOINT(ip_fP3VBrel)+(iseg-1)*INCREM(ip_fP3VBrel))
+              fP4VBrel = process_space_real(IPOINT(ip_fP4VBrel)+(iseg-1)*INCREM(ip_fP4VBrel))
+              fS1VBrel = process_space_real(IPOINT(ip_fS1VBrel)+(iseg-1)*INCREM(ip_fS1VBrel))
+              fS2VBrel = process_space_real(IPOINT(ip_fS2VBrel)+(iseg-1)*INCREM(ip_fS2VBrel))
+              fS3VBrel = process_space_real(IPOINT(ip_fS3VBrel)+(iseg-1)*INCREM(ip_fS3VBrel))
+              fS4VBrel = process_space_real(IPOINT(ip_fS4VBrel)+(iseg-1)*INCREM(ip_fS4VBrel))
           endif
 
           ! update sedconc for settling
           do isys = 1,nototsedpart
               ip = offset_setl + isys
-              sedwatflx = PMSA(IPOINT(ip)+(iseg-1)*INCREM(ip))  ! g/m2/d
+              sedwatflx = process_space_real(IPOINT(ip)+(iseg-1)*INCREM(ip))  ! g/m2/d
               sedconc(1,nototseddis+isys,iseg2d) = sedconc(1,nototseddis+isys,iseg2d) + sedwatflx/dl(1)*delt ! to g/m3
 
               !AM: this flux is already handled via the individual sedimentation processes, so do not set it!
               !iflux = nototseddis + nofl + isys
               !fl(iflux+(iseg-1)*noflux) = sedwatflx/depth
 
+          enddo
+
+          !
+          ! Algae related fluxes: add sedimentation fluxes, subtract resuspension fluxes
+          !
+          do i = 1,nototsedextra
+              isys = id_algal_nutrient(i)
+              ip   = offset_extra + i
+              sedwatflx = weight_flux_algae(i) * process_space_real(IPOINT(ip)+(iseg-1)*INCREM(ip))  ! g/m2/d
+              sedconc(1,isys,iseg2d) = sedconc(1,isys,iseg2d) + sedwatflx/dl(1)*delt ! to g/m3
           enddo
 
           kp = 0.0
@@ -929,7 +946,7 @@ contains
               fl(iflux+(iseg-1)*noflux) = 0.0
           enddo
 
-          do ilay = 1,nolay
+          do ilay = 1,num_layers
          ! Derive states from sedconc
           CH4 = max( 0.0, sedconc(ilay,is_CH4,iseg2d) )
           DOC = max( 0.0, sedconc(ilay,is_DOC,iseg2d) )
@@ -2011,17 +2028,17 @@ contains
               ! av     a(iun,ieq)
               ! bv     b(ieq)
               ! cwater    concentration in overlying water
-              ! sedconc(nolay,nototsed,noseg2d)
+              ! sedconc(num_layers,nototsed,noseg2d)
 
               if (dissub) then
                 ip = offset_cwater + isys
-                cwater = pmsa(IPOINT(ip)+(iseg-1)*INCREM(ip))
+                cwater = process_space_real(IPOINT(ip)+(iseg-1)*INCREM(ip))
               endif
 
               ! build equations
               av = 0d0
               bv = 0d0
-              do ilay = 1,nolay
+              do ilay = 1,num_layers
 
                   ! main diagonal element and rhs for dm/dt term
                   av(ilay,ilay) = av(ilay,ilay) + dble(dl(ilay)/delt)
@@ -2052,7 +2069,7 @@ contains
                           av(ilay,ilay) = av(ilay,ilay) + term
                       endif
                       ! dissolved lower
-                      if (ilay/=nolay) then
+                      if (ilay/=num_layers) then
                           term = dble(td(ilay+1)/(dl(ilay+1)/2.+dl(ilay)/2.))
                           av(ilay+1,ilay) = av(ilay+1,ilay) - term
                           av(ilay,ilay) = av(ilay,ilay) + term
@@ -2065,7 +2082,7 @@ contains
                           av(ilay,ilay) = av(ilay,ilay) + term
                       endif
                       ! solid lower
-                      if (ilay/=nolay) then
+                      if (ilay/=num_layers) then
                           term = dble(tt(ilay)/(dl(ilay+1)/2.+dl(ilay)/2.))
                           av(ilay+1,ilay) = av(ilay+1,ilay) - term
                           av(ilay,ilay) = av(ilay,ilay) + term
@@ -2075,12 +2092,12 @@ contains
               enddo
 
               ! solve; solution will come back as bv
-              !all printstelsel(av,bv,nolay,'IN',isys)
-              call INVERM (av,bv,nolay,1,nolay,iwork,rwork,ierror)
-              !all printstelsel(av,bv,nolay,'OUT',isys)
+              !all printstelsel(av,bv,num_layers,'IN',isys)
+              call INVERM (av,bv,num_layers,1,num_layers,iwork,rwork,ierror)
+              !all printstelsel(av,bv,num_layers,'OUT',isys)
               if (ierror/=0) CALL write_error_message ('Error Solving Local Equations')
 
-              do ilay = 1,nolay
+              do ilay = 1,num_layers
                   sedconc(ilay,isys,iseg2d) = bv(ilay)
               enddo
 
@@ -2121,7 +2138,7 @@ contains
           read( luinp, * ) mapfile
           read( luinp, * ) restartfile
           read( luinp, * ) initfile
-          read( luinp, * ) nolay
+          read( luinp, * ) num_layers
           default_profile = .false.
       else
           write( lumon, '(/,3a)' ) 'DELWAQG: file "', trim(param_file), '" not found - using default layer parameters instead'
@@ -2129,12 +2146,12 @@ contains
           restartfile = 'delwaqg.restart'
           initfile    = 'none'
 
-          nolay = nolay_default
+          num_layers = nolay_default
           default_profile = .true.
       endif
 
-      allocate( tt(nolay), td(nolay), dl(nolay), sd(nolay), bd(nolay), av(nolay,nolay), bv(nolay), rwork(nolay), &
-                kp(nolay,nototsed), lp(nolay,nototsed), iwork(nolay) )
+      allocate( tt(num_layers), td(num_layers), dl(num_layers), sd(num_layers), bd(num_layers), av(num_layers,num_layers), bv(num_layers), rwork(num_layers), &
+                kp(num_layers,nototsed), lp(num_layers,nototsed), iwork(num_layers) )
 
       write( lumon, '(2a)' ) 'Map file for detailed sediment concentrations:  ', trim(mapfile)
       write( lumon, '(2a)' ) 'Restart file for subsequent calculations:       ', trim(restartfile)
@@ -2144,7 +2161,7 @@ contains
           write( lumon, '(a)' )  'Initial conditions for sediment from "S1" substances'
       endif
 
-      write( lumon, '(a,i0)' ) 'Number of layers: ', nolay
+      write( lumon, '(a,i0)' ) 'Number of layers: ', num_layers
       if ( exists ) then
           read( luinp, '(a)' ) line
           read( line, *, iostat = ierr ) dl(1), td(1), tt(1)
@@ -2153,12 +2170,12 @@ contains
               skip_tt_td      = .true.
 
               read( line, * ) dl(1)
-              do i = 2,nolay
+              do i = 2,num_layers
                   read( luinp, * ) dl(i)
               enddo
           else
               skip_tt_td      = .false.
-              do i = 2,nolay
+              do i = 2,num_layers
                   read( luinp, * ) dl(i), td(i), tt(i)
               enddo
           endif
@@ -2167,21 +2184,21 @@ contains
           skip_tt_td = .false.
       endif
       sd(1) = 0.0
-      do i = 1,nolay-1
+      do i = 1,num_layers-1
           sd(i+1) = sd(i) + dl(i)
           bd(i)   = sd(i+1)
       enddo
-      bd(nolay) = sd(nolay) + dl(nolay)
+      bd(num_layers) = sd(num_layers) + dl(num_layers)
 
       write( lumon, '(a)' ) 'Per layer (in m):'
       if ( skip_tt_td ) then
           write( lumon, '(a)' ) '           Thickness            Top         Bottom'
-          do i = 1,nolay
+          do i = 1,num_layers
               write( lumon, '(i5,5g15.4)' ) i, dl(i), sd(i), bd(i)
           enddo
       else
           write( lumon, '(a)' ) '           Thickness            Top         Bottom      Diffusion   Bioturbation'
-          do i = 1,nolay
+          do i = 1,num_layers
               write( lumon, '(i5,5g15.4)' ) i, dl(i), sd(i), bd(i), td(i), tt(i)
           enddo
       endif
@@ -2202,8 +2219,8 @@ contains
       character(len=20), allocatable :: synameinit(:)
       character(len=40)              :: title(4)
 
-      thickness = PMSA(IPOINT(ip_Th_DelwaqG))
-      poros     = PMSA(IPOINT(ip_poros))
+      thickness = process_space_real(IPOINT(ip_Th_DelwaqG))
+      poros     = process_space_real(IPOINT(ip_poros))
 
       if ( initfile == 'none' ) then
           sedconc = 0.0
@@ -2211,8 +2228,8 @@ contains
               iseg = bottomsegments(iseg2d)
               do isys = 1,nototsed
                   ip = offset_s1 + isys
-                  mass3d = PMSA(IPOINT(ip)+(iseg-1)*INCREM(ip)) / Th_DelwaqG ! g/m2 to g/m3
-                  do ilay = 1,nolay
+                  mass3d = process_space_real(IPOINT(ip)+(iseg-1)*INCREM(ip)) / Th_DelwaqG ! g/m2 to g/m3
+                  do ilay = 1,num_layers
                       sedconc(ilay,isys,iseg2d) = mass3d
                   enddo
               enddo
@@ -2229,18 +2246,18 @@ contains
           read( luinit ) title
           read( luinit ) nosysini, nosegini
 
-          if ( nosysini /= nototsed .or. nosegini /= nolay * noseg2d ) then
+          if ( nosysini /= nototsed .or. nosegini /= num_layers * noseg2d ) then
               call get_log_unit_number( lumon )
               write( lumon, '(2a)' )     'Error reading file: ', trim(initfile)
               write( lumon, '(a,2i10)' ) 'Wrong size parameters:', nosysini, nosegini
-              write( lumon, '(a,2i10)' ) 'Expected parameters:  ', nototsed, nolay * noseg2d
+              write( lumon, '(a,2i10)' ) 'Expected parameters:  ', nototsed, num_layers * noseg2d
               call write_error_message( 'Initial conditions file for sediment inconsistent')
           endif
 
           allocate( synameinit(nosysini) )
           read( luinit ) synameinit
 
-          read( luinit ) timeini, (((sedconc(ilay,isys,iseg2d),isys=1,nototsed), iseg2d=1,noseg2d), ilay=1,nolay)
+          read( luinit ) timeini, (((sedconc(ilay,isys,iseg2d),isys=1,nototsed), iseg2d=1,noseg2d), ilay=1,num_layers)
 
           sedconc(:,1:nototseddis,:) = sedconc(:,1:nototseddis,:) * poros
 
@@ -2263,13 +2280,13 @@ contains
               iseg = bottomsegments(iseg2d)
               do isys = 1,nototsed
                   totmas = 0.0
-                  do ilay = 1,nolay
+                  do ilay = 1,num_layers
                       totmas = totmas + sedconc(ilay,isys,iseg2d)*dl(ilay)
                   enddo
                   iflux  = OFFSET_FL+isys
                   ip     = OFFSET_S1+isys
-                  fl(iflux+(iseg-1)*noflux) = (totmas - pmsa(ipoint(ip)+(iseg-1)*increm(ip)))  / &
-                                              pmsa(ipoint(ip_depth)+(iseg-1)*increm(ip_depth)) / delt
+                  fl(iflux+(iseg-1)*noflux) = (totmas - process_space_real(ipoint(ip)+(iseg-1)*increm(ip)))  / &
+                                              process_space_real(ipoint(ip_depth)+(iseg-1)*increm(ip_depth)) / delt
               enddo
           enddo
       end subroutine sync_S1_sedconc
@@ -2295,12 +2312,12 @@ contains
 
           moname = ''
           write (lumap) moname
-          write (lumap) nototsed,nolay*noseg2d
+          write (lumap) nototsed,num_layers*noseg2d
           write (lumap) syname
       endif
 
       write (lumap) itime,(((sedconc(ilay,isys,iseg2d)/poros,isys=1,nototseddis), &
-                            (sedconc(ilay,isys,iseg2d),isys=nototseddis+1,nototsed),iseg2d=1,noseg2d),ilay=1,nolay)
+                            (sedconc(ilay,isys,iseg2d),isys=nototseddis+1,nototsed),iseg2d=1,noseg2d),ilay=1,num_layers)
 
       !
       ! Rewrite the complete restart file
@@ -2309,11 +2326,11 @@ contains
 
       moname = ''
       write (lurestart) moname
-      write (lurestart) nototsed,nolay*noseg2d
+      write (lurestart) nototsed,num_layers*noseg2d
       write (lurestart) syname
 
       write (lurestart) itime,(((sedconc(ilay,isys,iseg2d)/poros,isys=1,nototseddis), &
-                                (sedconc(ilay,isys,iseg2d),isys=nototseddis+1,nototsed),iseg2d=1,noseg2d),ilay=1,nolay)
+                                (sedconc(ilay,isys,iseg2d),isys=nototseddis+1,nototsed),iseg2d=1,noseg2d),ilay=1,num_layers)
 
       end subroutine write_sedconc
 
@@ -2407,10 +2424,10 @@ contains
           ip2 = ip + (noseg2d-1) * ic
 
           if ( idx < first_s1 ) then
-              pmsa(ip:ip2:ic) = initvalue(zone)
+              process_space_real(ip:ip2:ic) = initvalue(zone)
           else
               idx = idx - first_s1 + 1
-              do ilay = 1,nolay
+              do ilay = 1,num_layers
                   sedconc(ilay,idx,:) = initvalue(zone) / thickness ! sedconc is the concentration in the active
                                                                     ! sediment layer, initvalue is the concentration
                                                                     ! per m2

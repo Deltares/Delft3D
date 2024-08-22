@@ -28,9 +28,9 @@ module m_posoxy
 contains
 
 
-    subroutine posoxy (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine posoxy (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Returns positive oxygen concentration or zero
 
@@ -51,9 +51,9 @@ contains
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         integer(kind = int_wp) :: iseg
 
@@ -61,12 +61,12 @@ contains
         IP2 = IPOINT(2)
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
 
-                OXY = PMSA(IP1)
+                OXY = process_space_real(IP1)
 
                 !*******************************************************************************
                 !**** Processes connected to the RESUSENSION
@@ -74,7 +74,7 @@ contains
 
                 !     CALCULATE POSITIVE DO FROM OXY
 
-                PMSA(IP2) = MAX (OXY, 0.0)
+                process_space_real(IP2) = MAX (OXY, 0.0)
 
             ENDIF
             !

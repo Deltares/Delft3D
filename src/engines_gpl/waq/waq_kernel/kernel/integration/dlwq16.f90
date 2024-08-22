@@ -28,7 +28,7 @@ module m_dlwq16
 contains
 
     !> Calculates transport with explicit derivatives for the advection diffusion equation.
-    !! Besides the (main) water flow in the array FLOW(noq), there are optional additional velocities.
+    !! Besides the (main) water flow in the array FLOW(num_exchanges), there are optional additional velocities.
     !! These options are often used in the vertical for settling velocities of particulates or
     !! floating velocities of blue-green algae.
     !! Next to the constant diffusion terms in 3 directions contained in DISP(3), optionally
@@ -38,12 +38,12 @@ contains
     !! This option may also become common for the horizontal if the Horizontal Large Scale Eddy
     !! diffusivity as computed by the hydrodynamic model will commonly be used.
     !! This routine also accumulates on the fly the mass balance information for the whole area in
-    !! the AMASS2(notot,5) array. This array is printed as header for every time step in the monitoring
+    !! the AMASS2(num_substances_total,5) array. This array is printed as header for every time step in the monitoring
     !! file.
     !! Furthermore the fluxes in and out of monitoring areas for detail balances are accumulated on
-    !! the fly. IQDMP(noq) indicates Which flux needs to be accumulated in what balance.
-    subroutine dlwq16(nosys, notot, noseg, noq1, noq2, &
-            noq3, noq, nodisp, novelo, disp, &
+    !! the fly. IQDMP(num_exchanges) indicates Which flux needs to be accumulated in what balance.
+    subroutine dlwq16(num_substances_transported, num_substances_total, num_cells, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges, num_dispersion_arrays, num_velocity_arrays, disp, &
             disper, velo, area, flow, aleng, &
             ipoint, iknmrk, idpnt, ivpnt, conc, &
             bound, integration_id, ilflag, idt, deriv, &
@@ -51,40 +51,40 @@ contains
 
         use timers
 
-        integer(kind = int_wp), intent(in   ) :: nosys                   !< Number of transported substances
-        integer(kind = int_wp), intent(in   ) :: notot                   !< Total number of substances
-        integer(kind = int_wp), intent(in   ) :: noseg                   !< Number of cells or segments
-        integer(kind = int_wp), intent(in   ) :: noq1                    !< Number of interfaces in direction 1
-        integer(kind = int_wp), intent(in   ) :: noq2                    !< Number of interfaces in direction 2
-        integer(kind = int_wp), intent(in   ) :: noq3                    !< Number of interfaces in direction 3
-        integer(kind = int_wp), intent(in   ) :: noq                     !< Total number of interfaces
-        integer(kind = int_wp), intent(in   ) :: nodisp                  !< Number of additional dispersions
-        integer(kind = int_wp), intent(in   ) :: novelo                  !< Number of additional velocities
+        integer(kind = int_wp), intent(in   ) :: num_substances_transported                   !< Number of transported substances
+        integer(kind = int_wp), intent(in   ) :: num_substances_total                   !< Total number of substances
+        integer(kind = int_wp), intent(in   ) :: num_cells                   !< Number of cells or segments
+        integer(kind = int_wp), intent(in   ) :: num_exchanges_u_dir                    !< Number of interfaces in direction 1
+        integer(kind = int_wp), intent(in   ) :: num_exchanges_v_dir                    !< Number of interfaces in direction 2
+        integer(kind = int_wp), intent(in   ) :: num_exchanges_z_dir                    !< Number of interfaces in direction 3
+        integer(kind = int_wp), intent(in   ) :: num_exchanges                     !< Total number of interfaces
+        integer(kind = int_wp), intent(in   ) :: num_dispersion_arrays                  !< Number of additional dispersions
+        integer(kind = int_wp), intent(in   ) :: num_velocity_arrays                  !< Number of additional velocities
         real(kind = real_wp),   intent(in   ) :: disp(3)                 !< Fixed dispersions in the 3 directions
-        real(kind = real_wp),   intent(in   ) :: disper(nodisp, noq)     !< Array with additional dispersions
-        real(kind = real_wp),   intent(in   ) :: velo(novelo, noq)       !< Array with additional velocities
-        real(kind = real_wp),   intent(in   ) :: area(noq)               !< Exchange areas in m2
-        real(kind = real_wp),   intent(in   ) :: flow(noq)               !< Flows through the exchange areas in m3/s
-        real(kind = real_wp),   intent(in   ) :: aleng(2, noq)           !< Mixing length to and from the exchange area
-        integer(kind = int_wp), intent(in   ) :: ipoint(4, noq)          !< From, to, from-1, to+1 volume numbers
-        integer(kind = int_wp), intent(in   ) :: iknmrk(noseg)           !< Feature array
-        integer(kind = int_wp), intent(in   ) :: idpnt(nosys)            !< Index of additional dispersion per substance
+        real(kind = real_wp),   intent(in   ) :: disper(num_dispersion_arrays, num_exchanges)     !< Array with additional dispersions
+        real(kind = real_wp),   intent(in   ) :: velo(num_velocity_arrays, num_exchanges)       !< Array with additional velocities
+        real(kind = real_wp),   intent(in   ) :: area(num_exchanges)               !< Exchange areas in m2
+        real(kind = real_wp),   intent(in   ) :: flow(num_exchanges)               !< Flows through the exchange areas in m3/s
+        real(kind = real_wp),   intent(in   ) :: aleng(2, num_exchanges)           !< Mixing length to and from the exchange area
+        integer(kind = int_wp), intent(in   ) :: ipoint(4, num_exchanges)          !< From, to, from-1, to+1 volume numbers
+        integer(kind = int_wp), intent(in   ) :: iknmrk(num_cells)           !< Feature array
+        integer(kind = int_wp), intent(in   ) :: idpnt(num_substances_transported)            !< Index of additional dispersion per substance
                                                                          !< if <= 0, then no additional dispersion for that substance.
-        integer(kind = int_wp), intent(in   ) :: ivpnt(nosys)            !< Index of additional velocity per substance
+        integer(kind = int_wp), intent(in   ) :: ivpnt(num_substances_transported)            !< Index of additional velocity per substance
                                                                          !< if <= 0, then no additional velocity for that substance.
-        real(kind = real_wp),   intent(in   ) :: conc(notot, noseg)      !< Concentrations at previous time level
-        real(kind = real_wp),   intent(in   ) :: bound(nosys, *)         !< Open boundary concentrations
+        real(kind = real_wp),   intent(in   ) :: conc(num_substances_total, num_cells)      !< Concentrations at previous time level
+        real(kind = real_wp),   intent(in   ) :: bound(num_substances_transported, *)         !< Open boundary concentrations
         integer(kind = int_wp), intent(in   ) :: integration_id          !< Bit 0: 1 if no dispersion at zero flow
                                                                          !< Bit 1: 1 if no dispersion across boundaries
                                                                          !< Bit 3: 1 if mass balance output
         integer(kind = int_wp), intent(in   ) :: ilflag                  !< If 0 then only 3 constant lenght values
         integer(kind = int_wp), intent(in   ) :: idt                     !< Time step in seconds
-        real(kind = real_wp),   intent(inout) :: deriv(notot, noseg)     !< Explicit derivative in mass/s
+        real(kind = real_wp),   intent(inout) :: deriv(num_substances_total, num_cells)     !< Explicit derivative in mass/s
         integer(kind = int_wp), intent(in   ) :: iaflag                  !< If 1 then accumulate mass in report array
-        real(kind = real_wp),   intent(inout) :: amass2(notot, 5)        !< Report array for monitoring file
+        real(kind = real_wp),   intent(inout) :: amass2(num_substances_total, 5)        !< Report array for monitoring file
         integer(kind = int_wp), intent(in   ) :: ndmpq                   !< Number of dumped exchanges for mass balances
-        integer(kind = int_wp), intent(in   ) :: iqdmp(noq)              !< Pointer from exchange to dump location
-        real(kind = real_wp),   intent(inout) :: dmpq(nosys, ndmpq, 2)   !< Array with mass balance information
+        integer(kind = int_wp), intent(in   ) :: iqdmp(num_exchanges)              !< Pointer from exchange to dump location
+        real(kind = real_wp),   intent(inout) :: dmpq(num_substances_transported, ndmpq, 2)   !< Array with mass balance information
 
         ! Local variables
         integer(kind = int_wp) :: iq, k      !< Loop counter exchanges
@@ -105,8 +105,8 @@ contains
         if (timon) call timstrt ("dlwq16", ithandl)
 
         ! loop accross the number of exchanges
-        noq12 = noq1 + noq2
-        do iq = 1, noq
+        noq12 = num_exchanges_u_dir + num_exchanges_v_dir
+        do iq = 1, num_exchanges
 
             ! initialisations, check if transport will take place
             ifrom = ipoint(1, iq)
@@ -125,7 +125,7 @@ contains
             end if
 
             ! initialize uniform values
-            if (iq <= noq1) then
+            if (iq <= num_exchanges_u_dir) then
                 e = disp (1)
                 al = aleng(1, 1)
             elseif (iq <= noq12) then
@@ -135,7 +135,7 @@ contains
                 e = disp (3)
                 al = aleng(1, 2)
             end if
-            if (iq > noq12 + noq3) e = 0.0     ! in the bed
+            if (iq > noq12 + num_exchanges_z_dir) e = 0.0     ! in the bed
 
             if (ilflag == 1) al = aleng(1, iq) + aleng(2, iq)
 
@@ -149,7 +149,7 @@ contains
             if (ito   < 0) goto 40
 
             ! The regular case
-            do isys = 1, nosys
+            do isys = 1, num_substances_transported
                 d = e
                 v = q
                 if (idpnt(isys) > 0) d = d + disper(idpnt(isys), iq) * dl
@@ -176,7 +176,7 @@ contains
             cycle
 
             ! The 'from' element was a boundary. Note the 2 options.
-            20    do isys = 1, nosys
+            20    do isys = 1, num_substances_transported
                 v = q
                 d = 0.0
                 if (.not. btest(integration_id, 1)) then
@@ -212,7 +212,7 @@ contains
             cycle
 
             ! The 'to' element was a boundary.
-            40    do isys = 1, nosys
+            40    do isys = 1, num_substances_transported
                 v = q
                 d = 0.0
                 if (.not. btest(integration_id, 1)) then

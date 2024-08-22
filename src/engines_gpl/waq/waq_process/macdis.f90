@@ -28,9 +28,9 @@ module m_macdis
 contains
 
 
-    SUBROUTINE MACDIS     (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
+    SUBROUTINE MACDIS     (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper, only : stop_with_error, get_log_unit_number
         use m_extract_waq_attribute
 
@@ -41,18 +41,18 @@ contains
         !
         !     Type    Name         I/O Description
         !
-        REAL(kind = real_wp) :: PMSA(*)      !I/O Process Manager System Array, window of routine to process library
+        REAL(kind = real_wp) :: process_space_real(*)      !I/O Process Manager System Array, window of routine to process library
         REAL(kind = real_wp) :: FL(*)        ! O  Array of fluxes made by this process in mass/volume/time
-        INTEGER(kind = int_wp) :: IPOINT(14)   ! I  Array of pointers in PMSA to get and store the data
+        INTEGER(kind = int_wp) :: IPOINT(14)   ! I  Array of pointers in process_space_real to get and store the data
         INTEGER(kind = int_wp) :: INCREM(14)   ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
-        INTEGER(kind = int_wp) :: NOSEG        ! I  Number of computational elements in the whole model schematisation
+        INTEGER(kind = int_wp) :: num_cells        ! I  Number of computational elements in the whole model schematisation
         INTEGER(kind = int_wp) :: NOFLUX       ! I  Number of fluxes, increment in the FL array
         INTEGER(kind = int_wp) :: IEXPNT(4, *)  ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
         INTEGER(kind = int_wp) :: IKNMRK(*)    ! I  Active-Inactive, Surface-water-bottom, see manual for use
-        INTEGER(kind = int_wp) :: NOQ1         ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
-        INTEGER(kind = int_wp) :: NOQ2         ! I  Nr of exchanges in 2nd direction, NOQ1+NOQ2 gives hor. dir. reg. grid
-        INTEGER(kind = int_wp) :: NOQ3         ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-        INTEGER(kind = int_wp) :: NOQ4         ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir         ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir         ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir         ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir         ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         INTEGER(kind = int_wp) :: IPNT(14)     !    Local work array for the pointering
         INTEGER(kind = int_wp) :: ISEG         !    Local loop counter for computational element loop
         !*******************************************************************************
@@ -98,26 +98,26 @@ contains
 
         IPNT = IPOINT
         !     Loop over segments
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             !        Check on active segments
             CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
             IF (IKMRK1==1) THEN
 
-                Surf = PMSA(IPNT(1))
-                Depth = PMSA(IPNT(2))
-                TotalDepth = PMSA(IPNT(3))
-                LocalDepth = PMSA(IPNT(4))
-                SwDisSM = PMSA(IPNT(6))
-                Hmax = PMSA(IPNT(7))
-                Ffac = PMSA(IPNT(8))
-                IBotSeg = NINT(PMSA(IPNT(9)))
-                smmax = PMSA(IPNT(10))
+                Surf = process_space_real(IPNT(1))
+                Depth = process_space_real(IPNT(2))
+                TotalDepth = process_space_real(IPNT(3))
+                LocalDepth = process_space_real(IPNT(4))
+                SwDisSM = process_space_real(IPNT(6))
+                Hmax = process_space_real(IPNT(7))
+                Ffac = process_space_real(IPNT(8))
+                IBotSeg = NINT(process_space_real(IPNT(9)))
+                smmax = process_space_real(IPNT(10))
 
                 ! get biomass from bottom segment
 
-                !SM          = max( 1.0e-10, PMSA(IPOINT(5)+(IBOTSEG-1)*INCREM(5)) )
-                SM = PMSA(IPOINT(5) + (IBOTSEG - 1) * INCREM(5))
+                !SM          = max( 1.0e-10, process_space_real(IPOINT(5)+(IBOTSEG-1)*INCREM(5)) )
+                SM = process_space_real(IPOINT(5) + (IBOTSEG - 1) * INCREM(5))
 
                 !           Limit the maximum height of the plants to the water depth
                 absHmax = min(abs(Hmax), TotalDepth)
@@ -178,7 +178,7 @@ contains
                     Else
                         BmlaySM = (A / 2) * (Z2**2 - Zm**2) + B * (Z2 - Zm)
                         !                 For the segment IBotSeg, current segment is ITopSeg!!!
-                        PMSA(IPOINT(14) + (IBotSeg - 1) * INCREM(14)) = ISEG
+                        process_space_real(IPOINT(14) + (IBotSeg - 1) * INCREM(14)) = ISEG
                     Endif
 
                     !              Switch = 2:  Exponential Biomass distribution
@@ -207,7 +207,7 @@ contains
                     Else
                         BmLaySM = A * ((exp(Ffac * Hactd) - exp(Ffac * Z1ad)) / Ffac - (Hactd - Z1ad))
                         !                 For the segment IBotSeg, current segment is ITopSeg!!!
-                        PMSA(IPOINT(14) + (IBotSeg - 1) * INCREM(14)) = ISEG
+                        process_space_real(IPOINT(14) + (IBotSeg - 1) * INCREM(14)) = ISEG
                     Endif
 
                 ENDIF
@@ -219,7 +219,7 @@ contains
                 If (Hmax < 0.0) Then
                     CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
                     If (IKMRK2 == 0 .OR. IKMRK2 == 1) Then
-                        PMSA(IPOINT(14) + (IBotSeg - 1) * INCREM(14)) = ISEG
+                        process_space_real(IPOINT(14) + (IBotSeg - 1) * INCREM(14)) = ISEG
                     Endif
                 Endif
 
@@ -235,12 +235,12 @@ contains
 
                 !           Return Outputparameters to delwaq
 
-                PMSA(IPNT(11)) = FrBmLay
-                PMSA(IPNT(12)) = BmLaySM / Depth
+                process_space_real(IPNT(11)) = FrBmLay
+                process_space_real(IPNT(12)) = BmLaySM / Depth
                 If (Hmax > 0.0) Then
-                    PMSA(IPNT(13)) = Hact
+                    process_space_real(IPNT(13)) = Hact
                 Else
-                    PMSA(IPNT(13)) = OriginalDepth
+                    process_space_real(IPNT(13)) = OriginalDepth
                 Endif
 
             ENDIF

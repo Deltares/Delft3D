@@ -80,7 +80,7 @@ module m_hash_search
       do i = 1, length
          ires = ishft(ires,4) + ires+ iachar(string(i:i))
       enddo
-      ires = iabs(ires)
+      ires = abs(ires)
       ires = mod (ires, hashcon)
 
       if (ires == 0) then

@@ -28,9 +28,9 @@ module m_sedox
 contains
 
 
-    subroutine sedox  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine sedox  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
         !>\file
@@ -72,9 +72,9 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
         REAL(kind = real_wp) :: x1real(6), kapc20, kappad, &
                 OXY, COXSOD, OOXSOD, TCSOD, TEMP, TFSOD, O2FUNC, &
@@ -161,8 +161,8 @@ contains
         IN33 = INCREM(33)
 
         IF (IN6==0 .AND. IN7==0) THEN
-            TCSOD = PMSA(IP6)
-            TEMP = PMSA(IP7)
+            TCSOD = process_space_real(IP6)
+            TEMP = process_space_real(IP7)
 
             TFSOD = TCSOD ** (TEMP - 20.)
 
@@ -173,9 +173,9 @@ contains
         ENDIF
         IF (IN15==0 .AND. IN22==0 .AND. IN23==0) THEN
 
-            OXY = PMSA(IP15)
-            COXSOD = PMSA(IP22)
-            OOXSOD = PMSA(IP23)
+            OXY = process_space_real(IP15)
+            COXSOD = process_space_real(IP22)
+            OOXSOD = process_space_real(IP23)
 
             !       Zuurstoffunctie
 
@@ -198,17 +198,17 @@ contains
         ENDIF
         !
         IFLUX = 0
-        DO ISEG = 1, NOSEG
-            PMSA (IP24) = 0.0
-            PMSA (IP25) = 0.0
-            PMSA (IP26) = 0.0
-            PMSA (IP27) = 0.0
-            PMSA (IP28) = 0.0
-            PMSA (IP29) = 0.0
-            PMSA (IP30) = 0.0
-            PMSA (IP31) = 0.0
-            PMSA (IP32) = 0.0
-            PMSA (IP33) = 0.0
+        DO ISEG = 1, num_cells
+            process_space_real (IP24) = 0.0
+            process_space_real (IP25) = 0.0
+            process_space_real (IP26) = 0.0
+            process_space_real (IP27) = 0.0
+            process_space_real (IP28) = 0.0
+            process_space_real (IP29) = 0.0
+            process_space_real (IP30) = 0.0
+            process_space_real (IP31) = 0.0
+            process_space_real (IP32) = 0.0
+            process_space_real (IP33) = 0.0
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
@@ -219,12 +219,12 @@ contains
                     BODEM = .TRUE.
                 ENDIF
 
-                ZFLAUT = PMSA(IP1)
-                ZFL = PMSA(IP2)
-                DEPTH = PMSA(IP3)
-                SOD = PMSA(IP4)
-                RCSOD = PMSA(IP5)
-                VOL = PMSA(IP8)
+                ZFLAUT = process_space_real(IP1)
+                ZFL = process_space_real(IP2)
+                DEPTH = process_space_real(IP3)
+                SOD = process_space_real(IP4)
+                RCSOD = process_space_real(IP5)
+                VOL = process_space_real(IP8)
 
                 !           Indien diepte of volume bijna of < 0, bereken dan niks.
                 !           Dit is tevens beveiliging tegen delen door 0.
@@ -234,8 +234,8 @@ contains
                 IF (BODEM) THEN
 
                     IF (TFACT) THEN
-                        TCSOD = PMSA(IP6)
-                        TEMP = PMSA(IP7)
+                        TCSOD = process_space_real(IP6)
+                        TEMP = process_space_real(IP7)
                         TFSOD = TCSOD ** (TEMP - 20.)
                     ENDIF
 
@@ -250,15 +250,15 @@ contains
 
                     !              beveiliging(en) tegen deling door nul in sodch4
                     IF (DOXSOD<1.E-15) DOXSOD = 1.E-15
-                    DMINER = 2.67 * (PMSA(IP17) + PMSA(IP18) + &
-                            PMSA(IP19) + PMSA(IP20))
+                    DMINER = 2.67 * (process_space_real(IP17) + process_space_real(IP18) + &
+                            process_space_real(IP19) + process_space_real(IP20))
 
                     !              Indien nodig DOXSOD corrigeren voor methaanbellen
                     !              DOXSOD is het effect op zuurstof, dat dus kleiner wordt
                     !              als er methaan bubbels ontsnappen.
 
                     GASBEL = .FALSE.
-                    IF (INT(PMSA(IP9)) == 1) GASBEL = .TRUE.
+                    IF (INT(process_space_real(IP9)) == 1) GASBEL = .TRUE.
 
                     IF (GASBEL) THEN
 
@@ -281,19 +281,19 @@ contains
                         !
                         diagen = DOXSOD * DEPTH + DMINER * DEPTH
 
-                        temp = PMSA(IP7)
-                        hsed = PMSA(IP10)
-                        kapc20 = PMSA(IP11)
-                        thetak = PMSA(IP12)
-                        edwcsd = PMSA(IP13)
-                        diamb = PMSA(IP14)
-                        xox = PMSA(IP15)
-                        kappad = PMSA(IP16)
+                        temp = process_space_real(IP7)
+                        hsed = process_space_real(IP10)
+                        kapc20 = process_space_real(IP11)
+                        thetak = process_space_real(IP12)
+                        edwcsd = process_space_real(IP13)
+                        diamb = process_space_real(IP14)
+                        xox = process_space_real(IP15)
+                        kappad = process_space_real(IP16)
 
                         !                  OPGELET Hier wordt de totale diepte gebruikt indien
                         !                  gelaagde schematisatie...
 
-                        dep = PMSA(IP21)
+                        dep = process_space_real(IP21)
                         IF (dep < DEPTH) THEN
                             dep = DEPTH
                         ENDIF
@@ -316,21 +316,21 @@ contains
                         DOXSOD = (x1real(1) + x1real(3) + x1real(4)) / DEPTH &
                                 - DMINER
 
-                        PMSA (IP25) = x1real(2)
-                        PMSA (IP26) = x1real(3)
-                        PMSA (IP27) = x1real(4)
-                        PMSA (IP28) = x1real(5)
-                        PMSA (IP29) = x1real(6)
-                        PMSA (IP30) = x1real(2) / DEPTH
+                        process_space_real (IP25) = x1real(2)
+                        process_space_real (IP26) = x1real(3)
+                        process_space_real (IP27) = x1real(4)
+                        process_space_real (IP28) = x1real(5)
+                        process_space_real (IP29) = x1real(6)
+                        process_space_real (IP30) = x1real(2) / DEPTH
 
                     ELSE
 
                         !                  Zuurstoffunctie
 
                         IF (OFACT) THEN
-                            OXY = PMSA(IP15)
-                            COXSOD = PMSA(IP22)
-                            OOXSOD = PMSA(IP23)
+                            OXY = process_space_real(IP15)
+                            COXSOD = process_space_real(IP22)
+                            OOXSOD = process_space_real(IP23)
 
                             IF (COXSOD < OOXSOD - 0.01) THEN
                                 IF (OXY <= COXSOD) THEN
@@ -350,10 +350,10 @@ contains
                     ENDIF
 
                     !    Dit ook doen indien geen gasbellen gewenst
-                    PMSA (IP24) = (DOXSOD + DMINER) * DEPTH
-                    PMSA (IP31) = DOXSOD
-                    PMSA (IP32) = DMINER
-                    PMSA (IP33) = DSOD
+                    process_space_real (IP24) = (DOXSOD + DMINER) * DEPTH
+                    process_space_real (IP31) = DOXSOD
+                    process_space_real (IP32) = DMINER
+                    process_space_real (IP33) = DSOD
 
                     FL(1 + IFLUX) = DSOD
                     FL(2 + IFLUX) = DOXSOD
@@ -458,7 +458,7 @@ contains
         !        max carbonaceous sod if all methane transferred to
         !        sediment-water column interface were oxidized
         !     *******************************************************
-        csodmx = dsqrt(2. * kappad * ch4ssd * diagen)
+        csodmx = sqrt(2. * kappad * ch4ssd * diagen)
         !     *******************************************************
         !     write(not,1330)  csodmx,edwcsd,ch4ssd,diagv
         !1330 format(' csodmx,edwcsd,ch4ssd,diagv',4e11.4)
@@ -484,11 +484,11 @@ contains
         !             converged - compute remaining fluxes
         !        depth of methane saturation
         120  x1(1) = csod
-        !     lch4s = dsqrt(2.0 * edwcsd*ch4ssd/diagv)
-        lch4s = dsqrt(2.0 * kappad * ch4ssd * hsed * hsed / diagen)
+        !     lch4s = sqrt(2.0 * edwcsd*ch4ssd/diagv)
+        lch4s = sqrt(2.0 * kappad * ch4ssd * hsed * hsed / diagen)
         x1(5) = lch4s
         !        methane gas diffusive flux (g o2/m**2-day)
-        jch4d = dsqrt(2. * kappad * ch4ssd * diagen) * sechxc
+        jch4d = sqrt(2. * kappad * ch4ssd * diagen) * sechxc
         !        ch4 production only if saturation depth < sediment depth
         if(lch4s<=hsed)  then
             !          methane saturation therefore methane gas (l/m**2-day)

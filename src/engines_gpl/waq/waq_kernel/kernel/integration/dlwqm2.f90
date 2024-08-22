@@ -28,33 +28,33 @@ module m_dlwqm2
 contains
 
     !> Fills in the matrix for self adjusting theta algorithm
-    subroutine dlwqm2(idt, noseg, volnew, nobnd, noq, &
+    subroutine dlwqm2(idt, num_cells, volnew, num_boundary_conditions, num_exchanges, &
                       ipoint, flowtot, disptot, theta, diag, &
-                      iscale, diagcc, nomat, mat, rowpnt, &
+                      iscale, diagcc, fast_solver_arr_size, mat, rowpnt, &
                       fmat, tmat, iexseg)
 
         use timers
         implicit none
 
         integer(kind=int_wp), intent(in   ) :: idt                     !< Time step
-        integer(kind=int_wp), intent(in   ) :: noseg                   !< Number of cells
-        real(kind=real_wp),   intent(in   ) :: volnew(noseg)           !< Segment volumes
-        integer(kind=int_wp), intent(in   ) :: nobnd                   !< Number of boundary cells
-        integer(kind=int_wp), intent(in   ) :: noq                     !< Number of exchanges
-        integer(kind=int_wp), intent(in   ) :: ipoint(4, noq)          !< Exchange pointers
-        real(kind=real_wp),   intent(in   ) :: flowtot(noq)            !< Total flows (including additional velocities)
-        real(kind=real_wp),   intent(in   ) :: disptot(noq)            !< Total dispersion (including additional dipersion)
-        real(kind=real_wp),   intent(in   ) :: theta(noq)              !< Variable theta coefficients
-        real(kind=dp),        intent(  out) :: diag(noseg + nobnd)     !< Diagonal matrix (scaled or not) elements
+        integer(kind=int_wp), intent(in   ) :: num_cells                   !< Number of cells
+        real(kind=real_wp),   intent(in   ) :: volnew(num_cells)           !< Segment volumes
+        integer(kind=int_wp), intent(in   ) :: num_boundary_conditions                   !< Number of boundary cells
+        integer(kind=int_wp), intent(in   ) :: num_exchanges                     !< Number of exchanges
+        integer(kind=int_wp), intent(in   ) :: ipoint(4, num_exchanges)          !< Exchange pointers
+        real(kind=real_wp),   intent(in   ) :: flowtot(num_exchanges)            !< Total flows (including additional velocities)
+        real(kind=real_wp),   intent(in   ) :: disptot(num_exchanges)            !< Total dispersion (including additional dipersion)
+        real(kind=real_wp),   intent(in   ) :: theta(num_exchanges)              !< Variable theta coefficients
+        real(kind=dp),        intent(  out) :: diag(num_cells + num_boundary_conditions)     !< Diagonal matrix (scaled or not) elements
         integer(kind=int_wp), intent(in   ) :: iscale                  !< 0: no diagonal scaling
                                                                        !< 1: diagonal scaling
-        real(kind=dp),        intent(  out) :: diagcc(noseg + nobnd)   !< Copy of the unscaled diagonal, needed to scale the rhs later
-        integer(kind=int_wp), intent(in   ) :: nomat                   !< Number of non-zero off-diagonal matrix elements
-        real(kind=dp),        intent(  out) :: mat(nomat)              !< Non-zero off-diagonal matrix (scaled or not) elements (elsewhere: amat)
-        integer(kind=int_wp), intent(in   ) :: rowpnt(0:noseg + nobnd) !< Row pointer, contains row lengths of mat (elsewhere: itrac)
-        integer(kind=int_wp), intent(in   ) :: fmat(noq)               !< Index from (iq) in matrix
-        integer(kind=int_wp), intent(in   ) :: tmat(noq)               !< Index to (iq) in matrix
-        integer(kind=int_wp), intent(in   ) :: iexseg(noseg + nobnd)   !< Zero if explicit
+        real(kind=dp),        intent(  out) :: diagcc(num_cells + num_boundary_conditions)   !< Copy of the unscaled diagonal, needed to scale the rhs later
+        integer(kind=int_wp), intent(in   ) :: fast_solver_arr_size                   !< Number of non-zero off-diagonal matrix elements
+        real(kind=dp),        intent(  out) :: mat(fast_solver_arr_size)              !< Non-zero off-diagonal matrix (scaled or not) elements (elsewhere: amat)
+        integer(kind=int_wp), intent(in   ) :: rowpnt(0:num_cells + num_boundary_conditions) !< Row pointer, contains row lengths of mat (elsewhere: itrac)
+        integer(kind=int_wp), intent(in   ) :: fmat(num_exchanges)               !< Index from (iq) in matrix
+        integer(kind=int_wp), intent(in   ) :: tmat(num_exchanges)               !< Index to (iq) in matrix
+        integer(kind=int_wp), intent(in   ) :: iexseg(num_cells + num_boundary_conditions)   !< Zero if explicit
 
         ! Local variables
         integer(kind=int_wp) :: iseg  !< Index of current cell
@@ -69,19 +69,19 @@ contains
         if (timon) call timstrt("dlwqm2", ithandl)
 
         ! set the diagonal
-        do iseg = 1, noseg
+        do iseg = 1, num_cells
             diag(iseg) = volnew(iseg)/real(idt)
         end do
-        do iseg = noseg + 1, noseg + nobnd
+        do iseg = num_cells + 1, num_cells + num_boundary_conditions
             diag(iseg) = 1.0
         end do
 
         ! reset the offdiagonal entries
-        do iq = 1, nomat
+        do iq = 1, fast_solver_arr_size
             mat(iq) = 0.0
         end do
 
-        do iq = 1, noq
+        do iq = 1, num_exchanges
             ifrom = ipoint(1, iq)
             ito = ipoint(2, iq)
             if (ifrom == 0 .or. ito == 0) cycle
@@ -107,7 +107,7 @@ contains
         ! finally scale the matrix to avoid possible round-off errors in gmres
         ! this scaling may need some adaption for future domain decomposition b.c.
         if (iscale == 1) then
-            do iseg = 1, noseg + nobnd
+            do iseg = 1, num_cells + num_boundary_conditions
                 ifrom = rowpnt(iseg - 1) + 1
                 ito = rowpnt(iseg)
 
@@ -123,7 +123,7 @@ contains
                 diag(iseg) = 1.0
             end do
         else
-            do iseg = 1, noseg + nobnd
+            do iseg = 1, num_cells + num_boundary_conditions
                 diagcc(iseg) = 1.0
             end do
         end if

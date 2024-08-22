@@ -28,9 +28,9 @@ module m_mpbtmp
 contains
 
 
-    SUBROUTINE MPBTMP (PMSA, FL, IPOINT, INCREM, NOSEG, &
-            NOFLUX, IEXPNT, IKNMRK, NOQ1, NOQ2, &
-            NOQ3, NOQ4)
+    SUBROUTINE MPBTMP (process_space_real, FL, IPOINT, INCREM, num_cells, &
+            NOFLUX, IEXPNT, IKNMRK, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !     ***********************************************************************
         !          +----------------------------------------+
         !          |    D E L F T   H Y D R A U L I C S     |
@@ -45,20 +45,20 @@ contains
 
         !          arguments
 
-        REAL(kind = real_wp) :: PMSA(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
+        REAL(kind = real_wp) :: process_space_real(*)            ! in/out input-output array space to be adressed with IPOINT/INCREM
         REAL(kind = real_wp) :: FL(*)              ! in/out flux array
-        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the PMSA array (segment or exchange number 1)
-        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the PMSA array
-        INTEGER(kind = int_wp) :: NOSEG              ! in     number of segments
+        INTEGER(kind = int_wp) :: IPOINT(*)          ! in     start index input-output parameters in the process_space_real array (segment or exchange number 1)
+        INTEGER(kind = int_wp) :: INCREM(*)          ! in     increment for each segment-exchange for the input-output parameters in the process_space_real array
+        INTEGER(kind = int_wp) :: num_cells              ! in     number of segments
         INTEGER(kind = int_wp) :: NOFLUX             ! in     total number of fluxes (increment in FL array)
         INTEGER(kind = int_wp) :: IEXPNT(4, *)        ! in     exchange pointer table
         INTEGER(kind = int_wp) :: IKNMRK(*)          ! in     segment features array
-        INTEGER(kind = int_wp) :: NOQ1               ! in     number of exchanges in first direction
-        INTEGER(kind = int_wp) :: NOQ2               ! in     number of exchanges in second direction
-        INTEGER(kind = int_wp) :: NOQ3               ! in     number of exchanges in third direction
-        INTEGER(kind = int_wp) :: NOQ4               ! in     number of exchanges in fourth direction
+        INTEGER(kind = int_wp) :: num_exchanges_u_dir               ! in     number of exchanges in first direction
+        INTEGER(kind = int_wp) :: num_exchanges_v_dir               ! in     number of exchanges in second direction
+        INTEGER(kind = int_wp) :: num_exchanges_z_dir               ! in     number of exchanges in third direction
+        INTEGER(kind = int_wp) :: num_exchanges_bottom_dir               ! in     number of exchanges in fourth direction
 
-        !          from PMSA array
+        !          from process_space_real array
 
         REAL(kind = real_wp) :: TEMP               !  1 in  , ambient water temperature                     (oC)
         REAL(kind = real_wp) :: KTGP               !  2 in  , MPB1 temperature coefficient gross production  (-)
@@ -72,28 +72,28 @@ contains
         !          local decalrations
 
         INTEGER(kind = int_wp) :: ISEG               ! loop counter segment loop
-        INTEGER(kind = int_wp), parameter :: NO_POINTER = 10    ! number of input output variables in PMSA array
-        INTEGER(kind = int_wp) :: IP(NO_POINTER)     ! index pointer in PMSA array updated for each segment
+        INTEGER(kind = int_wp), parameter :: NO_POINTER = 10    ! number of input output variables in process_space_real array
+        INTEGER(kind = int_wp) :: IP(NO_POINTER)     ! index pointer in process_space_real array updated for each segment
         REAL(kind = real_wp) :: FTMP_NOW           ! actual MPB temperature function                         (-)
 
-        !          initialise pointers for PMSA and FL array
+        !          initialise pointers for process_space_real and FL array
 
         IP = IPOINT(1:NO_POINTER)
 
         !          loop over the segments
 
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             !             input, the workspace and ftmp are input-output only the input pointer is used
 
-            TEMP = PMSA(IP(1))
-            KTGP = PMSA(IP(2))
-            ITIME = NINT(PMSA(IP(3)))
-            IDT = NINT(PMSA(IP(4)))
-            ITSTRT = NINT(PMSA(IP(5)))
-            AUXSYS = NINT(PMSA(IP(6)))
-            FTMP = PMSA(IP(7))
-            WS = PMSA(IP(8))
+            TEMP = process_space_real(IP(1))
+            KTGP = process_space_real(IP(2))
+            ITIME = NINT(process_space_real(IP(3)))
+            IDT = NINT(process_space_real(IP(4)))
+            ITSTRT = NINT(process_space_real(IP(5)))
+            AUXSYS = NINT(process_space_real(IP(6)))
+            FTMP = process_space_real(IP(7))
+            WS = process_space_real(IP(8))
 
             FTMP_NOW = KTGP**(TEMP - 20.)
 
@@ -114,10 +114,10 @@ contains
 
             !             output
 
-            PMSA(IP(7)) = FTMP
-            PMSA(IP(8)) = WS
+            process_space_real(IP(7)) = FTMP
+            process_space_real(IP(8)) = WS
 
-            !             update pointering in PMSA
+            !             update pointering in process_space_real
 
             IP = IP + INCREM(1:NO_POINTER)
 

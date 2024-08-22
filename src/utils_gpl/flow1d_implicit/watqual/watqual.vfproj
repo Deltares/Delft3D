@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject ProjectType="typeStaticLibrary" ProjectCreator="Intel Fortran" Keyword="Static Library" Version="11.0" ProjectIdGuid="{AD7CAD30-45D8-4818-9A78-C246237B5334}">
+	<Platforms>
+		<Platform Name="x64"/></Platforms>
+	<Configurations>
+		<Configuration Name="Debug|x64" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" DebugInformationFormat="debugEnabled" Optimization="optimizeDisabled" Preprocess="preprocessYes" PreprocessorDefinitions="USE_MSWINDOWS" DebugParameter="debugParameterAll" WarnDeclarations="true" WarnUnusedVariables="true" WarnInterfaces="true" Traceback="true" NullPointerCheck="true" BoundsCheck="true" UninitializedVariablesCheck="true" StackFrameCheck="true" RuntimeLibrary="rtMultiThreadedDebugDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration>
+		<Configuration Name="Release|x64" ConfigurationType="typeStaticLibrary">
+				<Tool Name="VFFortranCompilerTool" SuppressStartupBanner="true" Preprocess="preprocessYes" PreprocessorDefinitions="USE_MSWINDOWS" RuntimeLibrary="rtMultiThreadedDLL"/>
+				<Tool Name="VFLibrarianTool"/>
+				<Tool Name="VFResourceCompilerTool"/>
+				<Tool Name="VFMidlTool" SuppressStartupBanner="true" TargetEnvironment="midlTargetAMD64"/>
+				<Tool Name="VFCustomBuildTool"/>
+				<Tool Name="VFPreLinkEventTool"/>
+				<Tool Name="VFPreBuildEventTool"/>
+				<Tool Name="VFPostBuildEventTool"/></Configuration></Configurations>
+	<Files>
+		<Filter Name="Header Files" Filter="fi;fd"/>
+		<Filter Name="Resource Files" Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"/>
+		<Filter Name="Source Files" Filter="f90;for;f;fpp;ftn;def;odl;idl">
+		<File RelativePath=".\src\WQABGP.f"/>
+		<File RelativePath=".\src\WQAIGP.f"/>
+		<File RelativePath=".\src\WQAIND.f"/>
+		<File RelativePath=".\src\WQAUX.f"/>
+		<File RelativePath=".\src\WQDNUM.f"/>
+		<File RelativePath=".\src\WQEXAD.f"/>
+		<File RelativePath=".\src\WQEXAR.f"/>
+		<File RelativePath=".\src\WQEXDI.f"/>
+		<File RelativePath=".\src\WQEXFL.f"/>
+		<File RelativePath=".\src\WQFBGP.f"/>
+		<File RelativePath=".\src\WQFDIR.f"/>
+		<File RelativePath=".\src\WQFFCR.f"/>
+		<File RelativePath=".\src\WQFICR.f"/>
+		<File RelativePath=".\src\WQFIGP.f"/>
+		<File RelativePath=".\src\WQFILE.f"/>
+		<File RelativePath=".\src\WQFIND.f"/>
+		<File RelativePath=".\src\WQFQLT.f"/>
+		<File RelativePath=".\src\WQFRTO.f"/>
+		<File RelativePath=".\src\WQFWRT.f"/>
+		<File RelativePath=".\src\WQGPAR.f"/>
+		<File RelativePath=".\src\WQGPCH.f"/>
+		<File RelativePath=".\src\WQGPFL.f"/>
+		<File RelativePath=".\src\WQGPWD.f"/>
+		<File RelativePath=".\src\WQHSEC.f"/>
+		<File RelativePath=".\src\WQINT.f"/>
+		<File RelativePath=".\src\WQMBPS.f"/>
+		<File RelativePath=".\src\WQMDAY.f"/>
+		<File RelativePath=".\src\WQMOIN.f"/>
+		<File RelativePath=".\src\WQOFIL.f"/>
+		<File RelativePath=".\src\WQPNTR.f"/>
+		<File RelativePath=".\src\WQRFIL.f"/>
+		<File RelativePath=".\src\WQSLAT.f"/>
+		<File RelativePath=".\src\WQSLEN.f"/>
+		<File RelativePath=".\src\WQSVOL.f"/>
+		<File RelativePath=".\src\WQTBOU.f"/>
+		<File RelativePath=".\src\WQTCNS.f"/>
+		<File RelativePath=".\src\WQTIME.f"/>
+		<File RelativePath=".\src\WQTNOD.f"/></Filter></Files>
+	<Globals/></VisualStudioProject>

@@ -101,18 +101,17 @@ function(create_vs_user_files)
 <VisualStudioUserFile>
 	<Configurations>
 		<Configuration Name=\"Debug|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
-		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/></Configurations></VisualStudioUserFile>"
+		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
+		<Configuration Name=\"RelWithDebInfo|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
+    </Configurations>
+</VisualStudioUserFile>"
 )
 	set (userfilename "${CMAKE_BINARY_DIR}/template.vcxproj.user")
     file(
         WRITE "${userfilename}"
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <Project ToolsVersion=\"15.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">
-    <PropertyGroup Condition=\"'\$(Configuration)'=='Release'\">
-        <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
-        <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
-    </PropertyGroup>
-    <PropertyGroup Condition=\"'\$(Configuration)'=='Debug'\">
+    <PropertyGroup>
         <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
         <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
     </PropertyGroup>
@@ -336,11 +335,11 @@ function(create_test test_name)
     if (DEFINED op_test_list)
         foreach(test_i IN LISTS op_test_list)
             add_test(NAME ${test_i} COMMAND ${test_name} ${test_i})
-            set_property (TEST ${test_i} PROPERTY FAIL_REGULAR_EXPRESSION "Condition.*failed;Values not comparable.*assertion failed")            
+            set_property (TEST ${test_i} PROPERTY FAIL_REGULAR_EXPRESSION "Condition.*failed;Values not comparable.*assertion failed")
         endforeach()
     else()
         add_test(NAME ${test_name} COMMAND ${test_name})
-        set_property (TEST ${test_name} PROPERTY FAIL_REGULAR_EXPRESSION "Condition.*failed;Values not comparable.*assertion failed")        
+        set_property (TEST ${test_name} PROPERTY FAIL_REGULAR_EXPRESSION "Condition.*failed;Values not comparable.*assertion failed")
     endif()
 
 
@@ -422,14 +421,20 @@ endfunction()
 
 # Function to return ifort version number
 function(get_intel_version)
-    if (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\.(1|2|3|4)[\.0-9]*")
-        set(intel_version 21 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\.(5|6|7)[\.0-9]*")
-        set(intel_version 22 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\.(8|9|10)[\.0-9]*")
-        set(intel_version 23 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "(2021\.0\.0\.20231010|2021\.0\.0\.20240222|2024[\.0-9]*)")
+    # Intel OneAPI versions have different version numbers for their compilers.
+    # Furthermore, the compiler versions reported through CMAKE_Fortran_COMPILER_VERSION do not always match the official compiler version string.
+    # Before OneAPI 2021, the compiler version matches the ifort version (e.g., 2020.2)
+    # After OneAPI 2024, the compiler version matches the ifx version (e.g., 2025.1)
+    # In between, the ifx version does match the OneAPI version, but the ifort version is always reported as 2021.x(x).x.xxxxxxxx.
+    # Up to and including version 2023, the 2021.x version kept increasing, but in OneAPI 2024 the version reported in CMake goes back to 2021.0 or 2021.1.
+    if (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.[0-9]\\.[0-9]\\.(20231010|202[4-9][0-9][0-9][0-9][0-9])|^2024[\\.0-9]*")
         set(intel_version 24 PARENT_SCOPE)
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.(8|9|10)\\.[\\.0-9]*|^2023[\\.0-9]*")
+        set(intel_version 23 PARENT_SCOPE)
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.(5|6|7)\\.[\\.0-9]*|^2022[\\.0-9]*")
+        set(intel_version 22 PARENT_SCOPE)
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^20([0-9][0-9])[\\.0-9]*")
+        set(intel_version ${CMAKE_MATCH_1} PARENT_SCOPE) # Set to the result of the first capture group in parentheses (the last two year numbers, for example 25)
     else()
         message(FATAL_ERROR "Intel version ${CMAKE_Fortran_COMPILER_VERSION} is not recognized.")
     endif()

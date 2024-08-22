@@ -28,9 +28,9 @@ module m_rfpart
 contains
 
 
-    subroutine rfpart (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine rfpart (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         !>\file
@@ -73,10 +73,10 @@ contains
         !
         !     declaration of arguments
         !
-        INTEGER(kind = int_wp) :: NOSEG, NOFLUX, NOQ1, NOQ2, NOQ3, NOQ4
+        INTEGER(kind = int_wp) :: num_cells, NOFLUX, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), &
                 IEXPNT(4, *), IKNMRK(*)
-        REAL(kind = real_wp) :: PMSA(*), FL(*)
+        REAL(kind = real_wp) :: process_space_real(*), FL(*)
         !
         !     local declarations
         !
@@ -119,27 +119,27 @@ contains
         !
         IFLUX = 0
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                PH = PMSA(IP1)
-                ALK = PMSA(IP2)
-                CCL = PMSA(IP3)
-                DOC = PMSA(IP4)
-                CECIM1 = PMSA(IP5)
-                CECIM2 = PMSA(IP6)
-                CECIM3 = PMSA(IP7)
-                AC = PMSA(IP8)
-                BC = PMSA(IP9)
-                CC = PMSA(IP10)
-                DC = PMSA(IP11)
-                GC = PMSA(IP13)
-                LC = PMSA(IP12)
-                MC = PMSA(IP14)
-                NC = PMSA(IP15)
-                OC = PMSA(IP16)
-                IVERSN = NINT (PMSA(IP17))
+                PH = process_space_real(IP1)
+                ALK = process_space_real(IP2)
+                CCL = process_space_real(IP3)
+                DOC = process_space_real(IP4)
+                CECIM1 = process_space_real(IP5)
+                CECIM2 = process_space_real(IP6)
+                CECIM3 = process_space_real(IP7)
+                AC = process_space_real(IP8)
+                BC = process_space_real(IP9)
+                CC = process_space_real(IP10)
+                DC = process_space_real(IP11)
+                GC = process_space_real(IP13)
+                LC = process_space_real(IP12)
+                MC = process_space_real(IP14)
+                NC = process_space_real(IP15)
+                OC = process_space_real(IP16)
+                IVERSN = NINT (process_space_real(IP17))
                 !
                 IF (ALK < 1.0) ALK = 1.0
                 IF (CCL < 1.0) CCL = 1.0
@@ -190,9 +190,9 @@ contains
                 !
                 !           Output of module
                 !
-                PMSA(IP18) = KPIM1
-                PMSA(IP19) = KPIM2
-                PMSA(IP20) = KPIM3
+                process_space_real(IP18) = KPIM1
+                process_space_real(IP19) = KPIM2
+                process_space_real(IP20) = KPIM3
                 !
                 !        End active cells block
                 !

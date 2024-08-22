@@ -4,8 +4,9 @@
 ..\..\dflowfm_kernel\src\dflowfm_data\hydrology_data.f90
 ..\..\dflowfm_kernel\src\dflowfm_data\m_ship.f90
 ..\..\dflowfm_kernel\src\dflowfm_data\m_wind.f90
+..\..\dflowfm_kernel\src\dflowfm_kernel\compute\laterals.f90
 ..\..\dflowfm_kernel\src\dflowfm_data\m_heatfluxes.f90
-..\..\dflowfm_kernel\src\dflowfm_data\m_flowexternalforcings.f90
+..\..\dflowfm_kernel\src\dflowfm_data\fm_external_forcings_data.f90
 ..\..\dflowfm_kernel\src\dflowfm_data\m_turbulence.f90
 ..\..\dflowfm_kernel\src\dflowfm_data\m_vegetation.f90
 ..\..\dflowfm_kernel\src\dflowfm_data\m_flow.f90

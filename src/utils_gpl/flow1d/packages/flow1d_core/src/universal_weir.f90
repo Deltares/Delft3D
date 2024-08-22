@@ -270,7 +270,7 @@ module m_Universal_Weir
 
             ! check for rectangular or sloping sections
             ! dzb is the height of the slope
-            dzb = dabs(uniweir%z(isect) - uniweir%z(isect + 1))
+            dzb = abs(uniweir%z(isect) - uniweir%z(isect + 1))
 
             if (dzb .gt.1d-5) then
 
@@ -311,10 +311,10 @@ module m_Universal_Weir
 
             if (isfreeflow) then
                ! free flow
-               qsect = cmuoriginal * mulfactor * warea * dsqrt(2.d0 * gravity * (1 - vkm) * (smax - crestlevel))
+               qsect = cmuoriginal * mulfactor * warea * sqrt(2.d0 * gravity * (1 - vkm) * (smax - crestlevel))
             else
                ! submerged flow
-               qsect = cmuoriginal * mulfactor * warea * dsqrt(2.d0 * gravity * (smax - smin))
+               qsect = cmuoriginal * mulfactor * warea * sqrt(2.d0 * gravity * (smax - smin))
             endif
             qflow = qflow + qsect 
          endif

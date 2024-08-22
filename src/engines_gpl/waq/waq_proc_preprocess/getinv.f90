@@ -31,11 +31,11 @@ module m_getinv
 contains
 
 
-    subroutine getinv (procesdef, notot, syname, nocons, constants, &
-            nopa, paname, nofun, funame, nosfun, &
-            sfname, nodisp, diname, novelo, vename, &
-            nmis, defaul, noloc, nodef, dename, outputs, &
-            ndspx, nvelx, nlocx, locnam, refday)
+    subroutine getinv (procesdef, num_substances_total, syname, num_constants, constants, &
+            num_spatial_parameters, paname, num_time_functions, funame, num_spatial_time_fuctions, &
+            sfname, num_dispersion_arrays, diname, num_velocity_arrays, vename, &
+            nmis, defaul, num_local_vars, num_defaults, dename, outputs, &
+            num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, locnam, refday)
 
         ! sets the i/o pointers for every proces
         ! if nessacary turns on secondary processes
@@ -52,35 +52,35 @@ contains
         ! declaration of arguments
 
         type(procespropcoll) :: procesdef       ! all processes
-        integer(kind = int_wp) :: notot           ! number of substances
+        integer(kind = int_wp) :: num_substances_total           ! number of substances
         character(len = *) :: syname(*)       ! substance name
-        integer(kind = int_wp) :: nocons          ! number of constants
+        integer(kind = int_wp) :: num_constants          ! number of constants
         type(t_waq_item), intent(inout) :: constants       !< delwaq constants list
-        integer(kind = int_wp) :: nopa            ! number of parameters
+        integer(kind = int_wp) :: num_spatial_parameters            ! number of parameters
         character(len = *) :: paname(*)       ! parameter names
-        integer(kind = int_wp) :: nofun           ! number of functions
+        integer(kind = int_wp) :: num_time_functions           ! number of functions
         character(len = *) :: funame(*)       ! function names
-        integer(kind = int_wp) :: nosfun          ! number of segment functions
+        integer(kind = int_wp) :: num_spatial_time_fuctions          ! number of segment functions
         character(len = *) :: sfname(*)       ! segment function names
-        integer(kind = int_wp) :: nodisp          ! number of dispersions
+        integer(kind = int_wp) :: num_dispersion_arrays          ! number of dispersions
         character(len = *) :: diname(*)       ! dispersion names
-        integer(kind = int_wp) :: novelo          ! number of velocities
+        integer(kind = int_wp) :: num_velocity_arrays          ! number of velocities
         character(len = *) :: vename(*)       ! velocity names
         integer(kind = int_wp) :: nmis            ! number of missing inpu items
         real(kind = real_wp) :: defaul(*)       ! default values array
-        integer(kind = int_wp) :: noloc           ! number of local values
-        integer(kind = int_wp) :: nodef           ! number of default
+        integer(kind = int_wp) :: num_local_vars           ! number of local values
+        integer(kind = int_wp) :: num_defaults           ! number of default
         character(len = *) :: dename(*)       ! default names
         type(OutputPointers) :: outputs         ! output structure
-        integer(kind = int_wp) :: ndspx           ! number of dispersions
-        integer(kind = int_wp) :: nvelx           ! number of velocities
-        integer(kind = int_wp) :: nlocx           ! number of local values on exchanges
+        integer(kind = int_wp) :: num_dispersion_arrays_extra
+        integer(kind = int_wp) :: num_velocity_arrays_extra           ! number of velocities
+        integer(kind = int_wp) :: num_local_vars_exchange           ! number of local values on exchanges
         character(len = *) :: locnam(*)       ! local values names
         integer(kind = int_wp), intent(in) :: refday          ! reference day, varying from 1 till 365
 
         ! local decalarations
 
-        integer(kind = int_wp) :: nproc           ! number of processes
+        integer(kind = int_wp) :: num_processes_activated           ! number of processes
         integer(kind = int_wp) :: iproc           ! loop counter processes
         integer(kind = int_wp) :: iproc2          ! second loop counter processes
         type(procesprop), pointer :: proc1           ! process description
@@ -91,9 +91,9 @@ contains
         integer(kind = int_wp) :: ioux            ! index output item
         integer(kind = int_wp) :: nrout           ! number of outputs
         integer(kind = int_wp) :: iflux           ! index flux
-        integer(kind = int_wp) :: ivalip          ! index variable in pmsa
-        integer(kind = int_wp) :: ioff            ! offset for values in pmsa
-        integer(kind = int_wp) :: ioffx           ! offset for values in pmsa
+        integer(kind = int_wp) :: ivalip          ! index variable in process_space_real
+        integer(kind = int_wp) :: ioff            ! offset for values in process_space_real
+        integer(kind = int_wp) :: ioffx           ! offset for values in process_space_real
         integer(kind = int_wp) :: idef            ! index defualt
         integer(kind = int_wp) :: nfl             ! flux counter
         character(len = 20) :: valnam          ! variable name
@@ -110,8 +110,8 @@ contains
 
         ! some init
 
-        ioff = nopred + nocons + nopa + nofun + nosfun + notot
-        ioffx = 4 + nodisp + novelo + nofun + nocons + ndspx + nvelx
+        ioff = nopred + num_constants + num_spatial_parameters + num_time_functions + num_spatial_time_fuctions + num_substances_total
+        ioffx = 4 + num_dispersion_arrays + num_velocity_arrays + num_time_functions + num_constants + num_dispersion_arrays_extra + num_velocity_arrays_extra
         line2 = ' '
 
         write (line, '(a)') '# determining the input for the processes (in reversed order)'
@@ -121,8 +121,8 @@ contains
 
         ! loop over all possible processes
 
-        nproc = procesdef%current_size
-        do iproc = nproc, 1, -1
+        num_processes_activated = procesdef%current_size
+        do iproc = num_processes_activated, 1, -1
             proc1 => procesdef%procesprops(iproc)
             if (proc1%active) then
                 write (line, '(4a)') ' Input for [', proc1%name, '] ', proc1%text(1:50)
@@ -143,8 +143,8 @@ contains
 
                         10             continue
 
-                        call valpoi (notot, nopa, nosfun, syname, nocons, &
-                                nofun, constants, paname, funame, sfname, &
+                        call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+                                num_time_functions, constants, paname, funame, sfname, &
                                 valnam, ivalip, line1)
 
                         ! output earlier in process ? , is this switched on , switch this on
@@ -194,9 +194,9 @@ contains
 
                                             ! reserve local spot
 
-                                            noloc = noloc + 1
-                                            locnam(noloc) = valnam
-                                            ivalip = ioff + noloc
+                                            num_local_vars = num_local_vars + 1
+                                            locnam(num_local_vars) = valnam
+                                            ivalip = ioff + num_local_vars
                                             proc2%output_item(ioutput)%ip_val = ivalip
                                         endif
                                         exit
@@ -224,9 +224,9 @@ contains
 
                                     ! reserve local spot
 
-                                    noloc = noloc + 1
-                                    locnam(noloc) = valnam
-                                    ivalip = ioff + noloc
+                                    num_local_vars = num_local_vars + 1
+                                    locnam(num_local_vars) = valnam
+                                    ivalip = ioff + num_local_vars
                                     proc1%output_item(ioutput)%ip_val = ivalip
                                 endif
                             endif
@@ -250,18 +250,18 @@ contains
                                 nmis = nmis + 1
                                 write (line1, '(a)')  'error: not in input'
                             else
-                                nodef = nodef + 1
-                                dename(nodef) = valnam
+                                num_defaults = num_defaults + 1
+                                dename(num_defaults) = valnam
                                 ivalip = -3
                                 if (string_equals('RefDay', valnam)) then
-                                    defaul(nodef) = real(refday)
+                                    defaul(num_defaults) = real(refday)
                                     write(line1, '(a,g13.6)') '       based on T0-string:', real(refday)
                                 else
                                     if (abs(proc1%input_item(i_input)%actdef - rmis0) < 1.e-20)then
                                         line = ' '
-                                        defaul(nodef) = 0.0
+                                        defaul(num_defaults) = 0.0
                                     else
-                                        defaul(nodef) = proc1%input_item(i_input)%actdef
+                                        defaul(num_defaults) = proc1%input_item(i_input)%actdef
                                         write(line1, '(a,g13.6)') '       using default value:', proc1%input_item(i_input)%actdef
                                     endif
                                 endif
@@ -293,7 +293,7 @@ contains
 
                         ! specified in input?
 
-                        call vxlpoi (nocons, nofun, nodisp, novelo, constants, &
+                        call vxlpoi (num_constants, num_time_functions, num_dispersion_arrays, num_velocity_arrays, constants, &
                                 funame, diname, vename, valnam, ivalip, &
                                 line1)
 
@@ -324,8 +324,8 @@ contains
 
                                             ! reserve local spot
 
-                                            nlocx = nlocx + 1
-                                            ivalip = ioffx + nlocx
+                                            num_local_vars_exchange = num_local_vars_exchange + 1
+                                            ivalip = ioffx + num_local_vars_exchange
                                             proc2%output_item(ioutput)%ip_val = ivalip
                                         endif
                                         exit
@@ -355,14 +355,14 @@ contains
                                 nmis = nmis + 1
                                 write (line1, '(a)')  'error: not in input'
                             else
-                                nodef = nodef + 1
-                                dename(nodef) = valnam
+                                num_defaults = num_defaults + 1
+                                dename(num_defaults) = valnam
                                 ivalip = -3
                                 if (abs(proc1%input_item(i_input)%actdef - rmis0) < 1.e-20)then
                                     line = ' '
-                                    defaul(nodef) = 0.0
+                                    defaul(num_defaults) = 0.0
                                 else
-                                    defaul(nodef) = proc1%input_item(i_input)%actdef
+                                    defaul(num_defaults) = proc1%input_item(i_input)%actdef
                                     write(line1, '(a,g13.6)') '       using default value:', proc1%input_item(i_input)%actdef
                                 endif
                             endif
@@ -399,9 +399,9 @@ contains
 
                                     ! reserve local spot
 
-                                    noloc = noloc + 1
-                                    locnam(noloc) = valnam
-                                    ivalip = ioff + noloc
+                                    num_local_vars = num_local_vars + 1
+                                    locnam(num_local_vars) = valnam
+                                    ivalip = ioff + num_local_vars
                                     proc1%output_item(ioutput)%ip_val = ivalip
                                     outputs%pointers(iou) = ivalip
                                 endif
@@ -418,12 +418,12 @@ contains
 
         ! reserve in the default array idt and delt per process, delwaq2 will set value
 
-        nodef = nodef + 2 * nproc
+        num_defaults = num_defaults + 2 * num_processes_activated
 
         ! all processes turned on , so set the pointers to the fluxes
 
         idef = nopred
-        do iproc = nproc, 1, -1
+        do iproc = num_processes_activated, 1, -1
             proc1 => procesdef%procesprops(iproc)
             if (proc1%active) then
 
@@ -438,7 +438,7 @@ contains
                                 if (proc2%active) then
                                     call zoekio (valnam, proc2%no_fluxoutput, proc2%fluxoutput, 20, iflux)
                                     if (iflux > 0) then
-                                        ivalip = ioff + noloc + nodef + nfl + iflux
+                                        ivalip = ioff + num_local_vars + num_defaults + nfl + iflux
                                         exit
                                     endif
                                     nfl = nfl + proc2%no_fluxoutput
@@ -447,7 +447,7 @@ contains
                             proc1%input_item(i_input)%ip_val = ivalip
                         elseif (proc1%input_item(i_input)%ip_val == -3) then
                             idef = idef + 1
-                            ivalip = ioff + noloc + idef
+                            ivalip = ioff + num_local_vars + idef
                             proc1%input_item(i_input)%ip_val = ivalip
                         endif
                     endif
@@ -457,7 +457,7 @@ contains
                     if (proc1%input_item(i_input)%type == IOTYPE_EXCHANG_INPUT) then
                         if (proc1%input_item(i_input)%ip_val == -3) then
                             idef = idef + 1
-                            ivalip = ioffx + nlocx + idef
+                            ivalip = ioffx + num_local_vars_exchange + idef
                             proc1%input_item(i_input)%ip_val = ivalip
                         endif
                     endif

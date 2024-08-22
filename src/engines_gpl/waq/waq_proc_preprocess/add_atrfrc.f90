@@ -49,7 +49,7 @@ contains
         ! local declaration
 
         type(procesprop), pointer :: proc              ! single process
-        integer(kind = int_wp) :: nproc             ! number of processes
+        integer(kind = int_wp) :: num_processes_activated             ! number of processes
         integer(kind = int_wp) :: iproc             ! loop counter processes
         character(:), allocatable :: patrfil        ! process attributes file
         integer(kind = int_wp) :: lun_patr          ! unit number
@@ -62,8 +62,8 @@ contains
 
             ! loop over the processes
 
-            nproc = procesdef%current_size
-            do iproc = 1, nproc
+            num_processes_activated = procesdef%current_size
+            do iproc = 1, num_processes_activated
 
                 proc => procesdef%procesprops(iproc)
                 call extract_value_from_group(lun_patr, proc%name, 'sfrac_type', type)

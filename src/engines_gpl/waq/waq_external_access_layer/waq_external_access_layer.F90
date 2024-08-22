@@ -141,7 +141,7 @@ contains
     !! that are to take place before entering the model's time loop.
     function ext_initialize(c_config_file) result(error_code)
         use m_actions
-        use m_sysi
+        use m_timer_variables
         use m_cli_utils, only: store_command_arguments
 
         character(kind=c_char), intent(in) :: c_config_file(EXT_MAXSTRLEN)  !< Name of the DELWAQ input file
@@ -263,7 +263,7 @@ contains
         use messagehandling
         use iso_c_binding, only: c_double
         use m_actions
-        use m_sysi
+        use m_timer_variables
 
         real(c_double), value, intent(in) :: tupdate   !< Time until which the calculation is to be run.
         integer :: error_code !< return error code
@@ -319,7 +319,7 @@ contains
 
     !> Return the start time of the calculation
     function ext_get_start_time(t) result(error_code)
-        use m_sysi
+        use m_timer_variables
         real(c_double), intent(out) :: t
         integer :: error_code
 
@@ -336,7 +336,7 @@ contains
 
     !> Return the end time of the calculation
     function ext_get_end_time(t) result(error_code)
-        use m_sysi
+        use m_timer_variables
         real(c_double), intent(out) :: t
         integer :: error_code
 
@@ -353,7 +353,7 @@ contains
 
     !> Return the end time of the calculation
     function ext_get_time_step(dt) result(error_code)
-        use m_sysi
+        use m_timer_variables
         real(c_double), intent(out) :: dt
         integer :: error_code
 
@@ -370,7 +370,7 @@ contains
 
     !> Return the current time in the calculation
     function ext_get_current_time(t) result(error_code)
-        use m_sysi
+        use m_timer_variables
         real(c_double), intent(out) :: t
         integer :: error_code
 
@@ -395,8 +395,8 @@ contains
     !! The consequence is that we do not know whether a new value has been set or not.
     !! Also noteworthy: DIMR only accepts double-precision numbers.
     function ext_get_value_ptr(c_key, xptr) result(error_code)
-        use m_sysn
-        use m_sysa
+        use m_waq_memory_dimensions
+        use m_real_array_indices
 
         character(kind=c_char), intent(in) :: c_key(EXT_MAXSTRLEN)
         type(c_ptr), intent(inout) :: xptr
@@ -463,7 +463,7 @@ contains
 
     subroutine init_logger()
         if (.not. allocated(log)) then
-            log = create_logger(FILE, INFO_LEVEL, "delwaq_coupling.log")
+            log = create_logger(file, info_level, "delwaq_coupling.log")
         end if
     end subroutine init_logger
 

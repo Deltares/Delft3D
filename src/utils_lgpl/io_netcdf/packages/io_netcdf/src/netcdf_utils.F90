@@ -103,8 +103,7 @@ interface ncu_set_att
 end interface
 
 abstract interface
-   function ncu_apply_to_att(attname, attvalue) result(ierr)
-      character(len=*),              intent(in   ) :: attname  !< Name of the attribute, cannot be changed.
+   function ncu_apply_to_att(attvalue) result(ierr)
       character(len=:), allocatable, intent(inout) :: attvalue !< value of the attribute, can be changed. Should be an allocatable character string.
       integer                                      :: ierr     !< Result status (recommended IONC_NOERR if successful)
    end function ncu_apply_to_att
@@ -331,7 +330,7 @@ function ncu_copy_atts( ncidin, ncidout, varidin, varidout, forbidden_atts, appl
          ! Special case: do not just copy, but apply a user-provided function to the attribute text first.
          call realloc(atttext, attlen, keepExisting=.false., fill=' ')
          ierr = nf90_get_att(ncidin, varidin, attname, atttext)
-         ierr = apply_fun(attname, atttext)
+         ierr = apply_fun(atttext)
          ierr = nf90_put_att(ncidout, varidout, attname, atttext)
       else
          ! Standard case: copy attribute+value as-is from input dataset to output dataset.

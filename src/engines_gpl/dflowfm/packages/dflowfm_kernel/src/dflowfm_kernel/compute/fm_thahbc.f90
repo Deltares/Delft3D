@@ -27,8 +27,8 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 !!--description-----------------------------------------------------------------
 ! FROM DELFT3D
 ! computes boundary values at open boundaries,
@@ -52,128 +52,127 @@
 
    subroutine fm_thahbc()
 
-   use fm_external_forcings_data
-   use m_flowparameters
-   use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, itrac2const, ifrac2const
-   use m_sediment
+      use fm_external_forcings_data
+      use m_flowparameters
+      use m_transport, only: ISALT, ITEMP, ISED1, itrac2const, ifrac2const
+      use m_sediment
 
-   implicit none
+      implicit none
 
-   integer :: i, iconst, ised
+      integer :: i, iconst
 
-   if(jasal > 0 .and. nbnds>0) then
-      call thconst(ISALT, nbnds, zbnds, kbnds, thtbnds, thzbnds)
-   endif
+      if (jasal > 0 .and. nbnds > 0) then
+         call thconst(ISALT, nbnds, zbnds, kbnds, thtbnds, thzbnds)
+      end if
 
-   if(jatem > 0 .and. nbndtm>0) then
-      call thconst(ITEMP, nbndtm, zbndtm, kbndtm, thtbndtm, thzbndtm)
-   endif
+      if (jatem > 0 .and. nbndtm > 0) then
+         call thconst(ITEMP, nbndtm, zbndtm, kbndtm, thtbndtm, thzbndtm)
+      end if
 
-   if(jased > 0 .and. nbndsd>0 .and. .not. stm_included) then
-      call thconst(ISED1, nbndsd, zbndsd, kbndsd, thtbndsd, thzbndsd)
-   endif
+      if (jased > 0 .and. nbndsd > 0 .and. .not. stm_included) then
+         call thconst(ISED1, nbndsd, zbndsd, kbndsd, thtbndsd, thzbndsd)
+      end if
 
-   if(allocated(bndtr)) then
-      do i=1,numtracers
-         iconst = itrac2const(i)
-         if ( .not. allocated(bndtr(i)%z) ) then
-            allocate( bndtr(i)%z(0) )
-         endif
-         if ( .not. allocated(bndtr(i)%k) ) then
-            allocate( bndtr(i)%k(0,0) )
-         endif
-         if ( .not. allocated(bndtr(i)%tht) ) then
-            allocate( bndtr(i)%tht(0) )
-         endif
-         if ( .not. allocated(bndtr(i)%thz) ) then
-            allocate( bndtr(i)%thz(0) )
-         endif
-         call thconst(iconst, nbndtr(i), bndtr(i)%z, bndtr(i)%k, bndtr(i)%tht, bndtr(i)%thz)
-      enddo
-   endif
-   if (jased > 0 .and. stm_included .and. allocated(bndsf)) then
-      do i = 1, numfracs ! only valid suspended fractions
-         iconst = ifrac2const(i)
-         if (iconst==0) cycle
-         if ( .not. allocated(bndsf(i)%z) ) then
-            allocate( bndsf(i)%z(0) )
-         endif
-         if ( .not. allocated(bndsf(i)%k) ) then
-            allocate( bndsf(i)%k(0,0) )
-         endif
-         if ( .not. allocated(bndsf(i)%tht) ) then
-            allocate( bndsf(i)%tht(0) )
-         endif
-         if ( .not. allocated(bndsf(i)%thz) ) then
-            allocate( bndsf(i)%thz(0) )
-         endif
-         call thconst(iconst, nbndsf(i), bndsf(i)%z, bndsf(i)%k, bndsf(i)%tht, bndsf(i)%thz)
-      end do
-   end if
+      if (allocated(bndtr)) then
+         do i = 1, numtracers
+            iconst = itrac2const(i)
+            if (.not. allocated(bndtr(i)%z)) then
+               allocate (bndtr(i)%z(0))
+            end if
+            if (.not. allocated(bndtr(i)%k)) then
+               allocate (bndtr(i)%k(0, 0))
+            end if
+            if (.not. allocated(bndtr(i)%tht)) then
+               allocate (bndtr(i)%tht(0))
+            end if
+            if (.not. allocated(bndtr(i)%thz)) then
+               allocate (bndtr(i)%thz(0))
+            end if
+            call thconst(iconst, nbndtr(i), bndtr(i)%z, bndtr(i)%k, bndtr(i)%tht, bndtr(i)%thz)
+         end do
+      end if
+      if (jased > 0 .and. stm_included .and. allocated(bndsf)) then
+         do i = 1, numfracs ! only valid suspended fractions
+            iconst = ifrac2const(i)
+            if (iconst == 0) cycle
+            if (.not. allocated(bndsf(i)%z)) then
+               allocate (bndsf(i)%z(0))
+            end if
+            if (.not. allocated(bndsf(i)%k)) then
+               allocate (bndsf(i)%k(0, 0))
+            end if
+            if (.not. allocated(bndsf(i)%tht)) then
+               allocate (bndsf(i)%tht(0))
+            end if
+            if (.not. allocated(bndsf(i)%thz)) then
+               allocate (bndsf(i)%thz(0))
+            end if
+            call thconst(iconst, nbndsf(i), bndsf(i)%z, bndsf(i)%k, bndsf(i)%tht, bndsf(i)%thz)
+         end do
+      end if
 
    end subroutine fm_thahbc
 
-subroutine thconst(iconst, nbnd, zbnd, kbnd, tht, thz)
+   subroutine thconst(iconst, nbnd, zbnd, kbnd, tht, thz)
 
+      use m_transport
+      use mathconsts, only: pi_hp
+      use m_flow, only: kmxd, q1
+      use m_flowtimes, only: dt_user
+      use m_flowgeom, only: ln
+      use fm_external_forcings_data
+      use m_missing
 
-   use m_transport
-   use mathconsts, only: pi_hp
-   use m_flow, only: kmxd, q1
-   use m_flowtimes, only: dt_user
-   use m_flowgeom, only: ln
-   use fm_external_forcings_data
-   use m_missing
+      implicit none
 
-   implicit none
+      integer, intent(in) :: iconst, nbnd
+      integer, intent(in) :: kbnd(5, nbnd)
+      double precision, intent(inout) :: zbnd(nbnd * kmxd), tht(nbnd), thz(nbnd * kmxd)
 
-   integer,intent(in)               :: iconst, nbnd
-   integer,intent(in)               :: kbnd(5,nbnd)
-   double precision, intent(inout)  :: zbnd(nbnd*kmxd), tht(nbnd), thz(nbnd*kmxd)
+      double precision :: thfactor, rettim, q
+      integer :: i, j, l, lf, m, n, lb, lt, ki
 
-   double precision                 :: thfactor, rettim, q
-   integer                          :: i, j, l, lf, m, n, lb, lt, ki
+      if (nbnd == 0) then
+         return
+      end if
 
-   if (nbnd == 0) then
-      return
-   endif
+      thfactor = 1.0
 
-   thfactor = 1.0
+      if (thz(1) == DMISS) then
+         thz = zbnd
+      end if
 
-   if(thz(1) == DMISS) then
-      thz=zbnd
-   endif
-
-   do i = 1, nopenbndsect !faster, in general few TH-boundary conditions
-      rettim = threttim(iconst,i)
-      if(rettim <= 0d0) then
-         cycle
-      endif
-      do j = 1, nbnd
-         if(kbnd(5, j) /= i) then
+      do i = 1, nopenbndsect !faster, in general few TH-boundary conditions
+         rettim = threttim(iconst, i)
+         if (rettim <= 0d0) then
             cycle
-         endif
-         lf = kbnd(3, j)
-         q = q1(lf)
-         if(q > 0d0) then !inflow condition
-            tht(j) = max(tht(j) - dt_user, 0d0)
-            thfactor = 0.5*(1d0 + cos((tht(j)/rettim)*pi_hp))
-            call getLbotLtop(lf,lb,lt)
-            do l = lb,lt
-               m = (j - 1)*kmxd + (l-lb+1)
-               zbnd(m) = thz(m) + thfactor*(zbnd(m)-thz(m))
-            enddo
-         else if(q == 0d0) then
-            tht(j) = 0d0
-         else           !outflow condition
-            tht(j) = rettim
-            call getLbotLtop(lf,lb,lt)
-            do l = lb,lt
-               ki = ln(2,l)                     ! internal point
-               n = (j - 1)*kmxd + (l-lb+1)
-               thz(n) = constituents(iconst,ki) ! translate m into a range in the constituents array :
-            enddo
-         endif
-      enddo
-   enddo
-end subroutine
+         end if
+         do j = 1, nbnd
+            if (kbnd(5, j) /= i) then
+               cycle
+            end if
+            lf = kbnd(3, j)
+            q = q1(lf)
+            if (q > 0d0) then !inflow condition
+               tht(j) = max(tht(j) - dt_user, 0d0)
+               thfactor = 0.5 * (1d0 + cos((tht(j) / rettim) * pi_hp))
+               call getLbotLtop(lf, lb, lt)
+               do l = lb, lt
+                  m = (j - 1) * kmxd + (l - lb + 1)
+                  zbnd(m) = thz(m) + thfactor * (zbnd(m) - thz(m))
+               end do
+            else if (q == 0d0) then
+               tht(j) = 0d0
+            else !outflow condition
+               tht(j) = rettim
+               call getLbotLtop(lf, lb, lt)
+               do l = lb, lt
+                  ki = ln(2, l) ! internal point
+                  n = (j - 1) * kmxd + (l - lb + 1)
+                  thz(n) = constituents(iconst, ki) ! translate m into a range in the constituents array :
+               end do
+            end if
+         end do
+      end do
+   end subroutine
 

@@ -559,18 +559,18 @@ contains
         2000 FORMAT (' ERROR: undefined dis-aggregation type in resample_v2 :', I8)
     end subroutine resample_v2
 
-    subroutine aggregate_attributes (num_segments, num_attributes, num_grids, attribute_array, grid_cell_counts, &
+    subroutine aggregate_attributes (num_cells, num_attributes, num_grids, attribute_array, grid_cell_counts, &
             segment_pointers)
         use m_extract_waq_attribute
         !! Aggregates attribute array across different grids and segments
 
-        INTEGER(kind = int_wp), intent(in) :: num_segments        !!Number of segments
+        INTEGER(kind = int_wp), intent(in) :: num_cells        !!Number of segments
         INTEGER(kind = int_wp), intent(in) :: num_attributes      !!Second dimension kenmerk array
         INTEGER(kind = int_wp), intent(in) :: num_grids           !!Number of grids
 
         INTEGER(kind = int_wp), intent(in) :: grid_cell_counts(num_grids)                !! number of grid cells per grid
-        INTEGER(kind = int_wp), intent(in) :: segment_pointers(num_segments, num_grids)  !! segment pointers
-        INTEGER(kind = int_wp), intent(inout) :: attribute_array(num_segments, num_attributes, num_grids)
+        INTEGER(kind = int_wp), intent(in) :: segment_pointers(num_cells, num_grids)  !! segment pointers
+        INTEGER(kind = int_wp), intent(inout) :: attribute_array(num_cells, num_attributes, num_grids)
 
         INTEGER(kind = int_wp) :: grid_index, base_segment, coarser_segment, attr1_base_grid, attr1_coarser_grid, &
                 attr2_base_grid, attr2_coarser_grid
@@ -584,7 +584,7 @@ contains
                 attribute_array(coarser_segment, 1, grid_index) = 20
             ENDDO
 
-            DO base_segment = 1, num_segments
+            DO base_segment = 1, num_cells
                 coarser_segment = segment_pointers(base_segment, grid_index)
 
                 ! Process first attribute

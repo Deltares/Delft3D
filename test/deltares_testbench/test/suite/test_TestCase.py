@@ -1,16 +1,17 @@
 import os
-from typing import Optional, List
-from pytest_mock import MockerFixture
+from typing import List, Optional
+
 from pyfakefs.fake_filesystem import FakeFilesystem
+from pytest_mock import MockerFixture
 
 from src.config.test_case_config import TestCaseConfig
-from src.suite.test_case import TestCase
 from src.suite.program import Program
+from src.suite.test_case import TestCase
 from src.utils.logging.file_logger import FileLogger
 
 
 class TestTestCase:
-    def test_run__tb3_char_output_file(self, mocker: MockerFixture, fs: FakeFilesystem):
+    def test_run__tb3_char_output_file(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         # Arrange
         platform = "win64" if os.name == "nt" else "lnx64"
         logger = mocker.Mock(spec=FileLogger)
@@ -49,15 +50,18 @@ class TestTestCase:
         return config
 
     def create_file_side_effect(self, filename):
-        def side_effect(*args, **kwargs):
-            with open(filename, 'w') as f:
-                f.write('File content')
+        def side_effect(*args, **kwargs) -> None:
+            with open(filename, "w") as f:
+                f.write("File content")
             return None  # Return None to mimic the function call
+
         return side_effect
 
     def tb3_char_output(self) -> List[str]:
-        return ['Start_size:10\n',
-                'Runtime:0.004995584487915039\n',
-                'Output_added:out1.out\n',
-                'Output_added:_tb3_char.run\n',
-                'End_size:22\n']
+        return [
+            "Start_size:10\n",
+            "Runtime:0.004995584487915039\n",
+            "Output_added:out1.out\n",
+            "Output_added:_tb3_char.run\n",
+            "End_size:22\n",
+        ]

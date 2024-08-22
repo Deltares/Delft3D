@@ -19,13 +19,13 @@ def get_failed_tests(filename):
     return failed_tests
 
 
-def prepare_failed_tests_directory():
+def prepare_failed_tests_directory() -> None:
     if os.path.exists("failed"):
         shutil.rmtree("failed", ignore_errors=True)
     os.makedirs("failed")
 
 
-def copy_directory(src, dst, copy_log):
+def copy_directory(src, dst, copy_log) -> None:
     copy_log.write(f"{src} => {dst}")
     try:
         shutil.copytree(src, dst)
@@ -34,7 +34,7 @@ def copy_directory(src, dst, copy_log):
         copy_log.write("  COPY FAILED\n")
 
 
-def copy_failed_tests(failed_tests, platform):
+def copy_failed_tests(failed_tests, platform) -> None:
     prepare_failed_tests_directory()
 
     with open(os.path.join("failed", "list.txt"), "w") as copy_log:
@@ -55,7 +55,7 @@ def copy_failed_tests(failed_tests, platform):
             copy_directory(src_ref_result, dst_ref_result, copy_log)
 
 
-def main():
+def main() -> None:
     platform = sys.argv[1]
     failed_tests = get_failed_tests("logs/testbench.log")
     copy_failed_tests(failed_tests, platform)

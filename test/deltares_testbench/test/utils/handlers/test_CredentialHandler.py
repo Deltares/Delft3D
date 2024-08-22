@@ -13,7 +13,7 @@ from src.utils.logging.console_logger import ConsoleLogger
 
 class TestCredentialHandler:
     @pytest.mark.parametrize(
-        "username, password, status",
+        ("username", "password", "status"),
         [
             ("", "", CredentialStatus.MISSING),
             ("testname", "", CredentialStatus.USERNAME),
@@ -21,7 +21,7 @@ class TestCredentialHandler:
             ("testname", "testpass", CredentialStatus.BOTH),
         ],
     )
-    def test_credentialstatus(self, username, password, status):
+    def test_credentialstatus(self, username, password, status) -> None:
         # Arrange
         credentials = Credentials()
         credentials.username = username
@@ -34,7 +34,7 @@ class TestCredentialHandler:
         # Assert
         assert result == status
 
-    def test_get_credentials(self, fs: FakeFilesystem):
+    def test_get_credentials(self, fs: FakeFilesystem) -> None:
         # Arrange
         credentials = Credentials()
         credentials.username = "test"
@@ -51,7 +51,7 @@ class TestCredentialHandler:
         assert credentials.password == "testpass"
 
     @pytest.mark.parametrize(
-        "username, password, status",
+        ("username", "password", "status"),
         [
             ("", "", CredentialStatus.MISSING),
             ("testname", "", CredentialStatus.USERNAME),
@@ -59,7 +59,7 @@ class TestCredentialHandler:
             ("testname", "testpass", CredentialStatus.BOTH),
         ],
     )
-    def test_setup_credentials(self, username, password, status, mocker: MockerFixture, fs: FakeFilesystem):
+    def test_setup_credentials(self, username, password, status, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         # Arrange
         credentials = Credentials()
         credentials.username = username
@@ -87,7 +87,7 @@ class TestCredentialHandler:
             assert mocker.call("No credentials provided and no credential file is available.") in errorcalls
         assert mocker.call(self.setup_warning(handler)) in warningcalls
 
-    def test_credential_creation(self, fs: FakeFilesystem):
+    def test_credential_creation(self, fs: FakeFilesystem) -> None:
         # Arrange
         credentials = Credentials()
         credentials.username = "testname"

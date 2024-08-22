@@ -31,8 +31,8 @@ module m_prsort
 contains
 
 
-    subroutine prsort(lurep, ProcesDef, notot, nopa, nosfun, &
-            syname, nocons, nofun, constants, paname, &
+    subroutine prsort(lurep, ProcesDef, num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, &
+            syname, num_constants, num_time_functions, constants, paname, &
             funame, sfname, status)
 
         ! sort processes according to input - output relation, simpel linear sort at the moment
@@ -47,12 +47,12 @@ contains
 
         integer(kind = int_wp) :: lurep           ! unit number report file
         type(ProcesPropColl) :: ProcesDef       ! all processes
-        integer(kind = int_wp) :: notot           ! number of substances
-        integer(kind = int_wp) :: nopa            ! number of parameters
-        integer(kind = int_wp) :: nosfun          ! number of segment functions
+        integer(kind = int_wp) :: num_substances_total           ! number of substances
+        integer(kind = int_wp) :: num_spatial_parameters            ! number of parameters
+        integer(kind = int_wp) :: num_spatial_time_fuctions          ! number of segment functions
         character(len = *) :: syname(*)       ! substance name
-        integer(kind = int_wp) :: nocons          ! number of constants
-        integer(kind = int_wp) :: nofun           ! number of functions
+        integer(kind = int_wp) :: num_constants          ! number of constants
+        integer(kind = int_wp) :: num_time_functions           ! number of functions
         type(t_waq_item), intent(inout) :: constants       !< delwaq constants list
         character(len = *) :: paname(*)       ! parameter names
         character(len = *) :: funame(*)       ! function names
@@ -66,7 +66,7 @@ contains
         integer(kind = int_wp) :: iproc
         integer(kind = int_wp) :: iproc1
         integer(kind = int_wp) :: iproc2
-        integer(kind = int_wp) :: nproc
+        integer(kind = int_wp) :: num_processes_activated
         integer(kind = int_wp) :: i_in, i_out
         integer(kind = int_wp) :: i_flx
         integer(kind = int_wp) :: ifound
@@ -81,16 +81,16 @@ contains
 
         ! loop over the processes
 
-        nproc = ProcesDef%current_size
+        num_processes_activated = ProcesDef%current_size
         i_lowest_rank = 1
         nloop = 0
 
         do
 
-            if (i_lowest_rank == nproc .or. nloop > nproc) exit
+            if (i_lowest_rank == num_processes_activated .or. nloop > num_processes_activated) exit
 
             iproc1 = i_lowest_rank
-            i_lowest_rank = nproc
+            i_lowest_rank = num_processes_activated
             nloop = nloop + 1
             do iproc = iproc1, ProcesDef%current_size
 
@@ -106,8 +106,8 @@ contains
                                 ! see if it not specified in the input, then the process needs to be moved
 
                                 valnam = ProcesDef%ProcesProps(iproc)%output_item(i_out)%name
-                                call valpoi (notot, nopa, nosfun, syname, nocons, &
-                                        nofun, constants, paname, funame, sfname, &
+                                call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+                                        num_time_functions, constants, paname, funame, sfname, &
                                         valnam, ivalip, line)
 
                                 if (ivalip == -1) then
@@ -129,8 +129,8 @@ contains
                                 ! see if it not specified in the input, then the process needs to be moved
 
                                 valnam = ProcesDef%ProcesProps(iproc)%fluxoutput(i_flx)%name
-                                call valpoi (notot, nopa, nosfun, syname, nocons, &
-                                        nofun, constants, paname, funame, sfname, &
+                                call valpoi (num_substances_total, num_spatial_parameters, num_spatial_time_fuctions, syname, num_constants, &
+                                        num_time_functions, constants, paname, funame, sfname, &
                                         valnam, ivalip, line)
 
                                 if (ivalip == -1) then
@@ -162,7 +162,7 @@ contains
         ! check if there is conflict, report it but allow it to continue, to be done
         ! this is tricky because the user has no means to influence the final order
 
-        if (nloop > nproc) then
+        if (nloop > num_processes_activated) then
             write(lurep, '(a)') ' WARNING: circular input output relation detected in process library'
             call status%increase_warning_count()
         endif
