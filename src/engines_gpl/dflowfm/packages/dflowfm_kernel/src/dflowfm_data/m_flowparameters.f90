@@ -486,14 +486,15 @@ module m_flowparameters
    integer :: jahistaucurrent !< Write bed shear stress to his file, 0: no, 1: yes
    integer :: jahisvelocity !< Write velocity magnitude to his file, 0: no, 1: yes
    integer :: jahisdischarge !< Write discharge magnitude to his file, 0: no, 1: yes
-   integer :: jahisrunupgauge !< Write runupgauge       to his file, 0: no, 1: yes
-   integer :: jahiswaqbot !< Write wqbot            to his file, 0: no, 1: yes
-   integer :: jahistracers !< Write tracers          to his file, 0: no, 1: yes
-   integer :: jahiscrs_flow !< Write crs_flow         to his file, 0: no, 1: yes
+   integer :: jahisrunupgauge !< Write runupgauge to his file, 0: no, 1: yes
+   integer :: jahiswaqbot !< Write wqbot to his file, 0: no, 1: yes
+   integer :: jahiswaqbot3d !< Write wqbot3d to his file, 0: no, 1: yes
+   integer :: jahistracers !< Write tracers to his file, 0: no, 1: yes
+   integer :: jahiscrs_flow !< Write crs_flow to his file, 0: no, 1: yes
    integer :: jahiscrs_constituents !< Write crs_constituents to his file, 0: no, 1: yes
-   integer :: jahiscrs_sediment !< Write crs_sediment     to his file, 0: no, 1: yes
-   integer :: jahisdred !< Write dred             to his file, 0: no, 1: yes
-   integer :: jahiswaq !< Write Water Quality    to his file, 0: no, 1: yes
+   integer :: jahiscrs_sediment !< Write crs_sediment to his file, 0: no, 1: yes
+   integer :: jahisdred !< Write dred to his file, 0: no, 1: yes
+   integer :: jahiswaq !< Write Water Quality to his file, 0: no, 1: yes
    ! His output structure keywords
    integer :: jahiscgen !< Write structure parameters to his file, 0: n0, 1: yes
    integer :: jahispump !< Write pump      parameters to his file, 0: n0, 1: yes
@@ -587,6 +588,7 @@ module m_flowparameters
    integer :: jamapFlowAnalysis !< Write flow analysis output to map file
    integer :: jamapNearField !< Nearfield related output
    integer :: jamapice !< Ice cover related output
+   integer :: jamapwaqbot3d !< Write wqbot3d to map file, 0: no, 1: yes
 
 ! read from restart
    integer :: jarstignorebl !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)

@@ -582,7 +582,7 @@ contains
          end if
 
          ! add output config item
-         call add_output_config(output_config_set, idx_wqbot3D_stations(i), 'Wrihis_wqbot3d', trim(waqb_sub_name)//'_3D', &
+         call add_output_config(output_config_set, idx_wqbot3D_stations(i), 'Wrihis_waqbot3d', trim(waqb_sub_name)//'_3D', &
                                 trim(wqbotnames(i))//' (3D)', '', unit_string, UNC_LOC_STATION, nc_dim_ids=station_nc_dims_3D_center, nc_attributes=atts)
 
          output_config_set%configs(idx_wqbot3D_stations(i))%input_value = &
@@ -2152,7 +2152,7 @@ contains
       use m_longculverts, only: nlongculverts
       use m_monitoring_crosssections, only: ncrs
       use m_monitoring_runupgauges, only: num_rugs, rug
-      use m_fm_wq_processes, only: jawaqproc, numwqbots, wqbot3d_output
+      use m_fm_wq_processes, only: jawaqproc, numwqbots
       use processes_input, only: num_wq_user_outputs => noout_user
       use m_dad, only: dad_included, dadpar
       use m_laterals, only: numlatsg, qplat, qplatAve, qLatRealAve, qLatReal

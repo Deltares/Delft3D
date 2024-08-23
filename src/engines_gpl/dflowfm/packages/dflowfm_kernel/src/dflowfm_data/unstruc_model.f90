@@ -185,7 +185,6 @@ module unstruc_model
    double precision :: md_dt_waqproc = 0d0 !< processes time step
    double precision :: md_dt_waqbal = 0d0 !< mass balance output time step (old)
    integer :: md_flux_int = 1 !< process fluxes integration option (1: WAQ, 2: D-Flow FM)
-   integer :: md_wqbot3D_output = 0 !< write 3D wqbot output
 
    ! TODO: reading for trachytopes is still within rdtrt, below was added for partitioning (when no initialization)
    character(len=4) :: md_trtrfile = ' ' !< Variable that stores information if trachytopes are used ('Y') or not ('N')
@@ -1942,6 +1941,13 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_heat_fluxes', jahisheatflux, success, alternative_key='Wrihis_heatflux')
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_runupgauge', jahisrunupgauge, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot', jahiswaqbot, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waqbot3d', jahiswaqbot3d, success)
+      if (kmx == 0 .and. jahiswaqbot3d == 1) then
+         jahiswaqbot3d = 0
+         write (msgbuf, '(a)') 'MDU setting "Wrihis_waqbot3d = 1" asks to write 3D water quality bottom quantities to the history output, ' &
+            //'but this is ignored since the simulation is 2D.'
+         call warn_flush()
+      end if
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_constituents', jahistracers, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_flow', jahiscrs_flow, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_constituents', jahiscrs_constituents, success)
@@ -2083,6 +2089,13 @@ contains
       call prop_get_integer(md_ptr, 'output', 'Wrimap_every_dt', jaeverydt, success)
       call prop_get_integer(md_ptr, 'output', 'Wrimap_NearField', jamapNearField, success)
       call prop_get_integer(md_ptr, 'output', 'Wrimap_ice', jamapice, success)
+      call prop_get_integer(md_ptr, 'output', 'Wrimap_waqbot3d', jamapwaqbot3d, success)
+      if (kmx == 0 .and. jamapwaqbot3d == 1) then
+         jamapwaqbot3d = 0
+         write (msgbuf, '(a)') 'MDU setting "Wrimap_waqbot3d = 1" asks to write 3D water quality bottom quantities to the map output, ' &
+            //'but this is ignored since the simulation is 2D.'
+         call warn_flush()
+      end if
 
       ! Output
       ! [output] OutputDir was read earlier already.
@@ -2354,7 +2367,6 @@ contains
       call prop_get_string(md_ptr, 'processes', 'StatisticsFile', md_sttfile, success)
       call prop_get_double(md_ptr, 'processes', 'ThetaVertical', md_thetav_waq, success)
       call prop_get_integer(md_ptr, 'processes', 'ProcessFluxIntegration', md_flux_int, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrihis_wqbot3d', md_wqbot3D_output, success)
       call prop_get_double(md_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr)
       call prop_get_double(md_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr)
       call prop_get_integer(md_ptr, 'processes', 'SubstanceDensityCoupling', JaSubstancedensitycoupling)
@@ -3805,6 +3817,9 @@ contains
       if (jamapice > 0 .or. writeall) then
          call prop_set(prop_ptr, 'output', 'Wrimap_ice', jamapice, 'Write output to map file for ice cover, 0=no (default), 1=yes')
       end if
+      if (jamapwaqbot3d > 0 .or. writeall) then
+         call prop_set(prop_ptr, 'output', 'Wrimap_waqbot3d', jamapwaqbot3d, 'Write output to map file for waqbot3d, 0=no (default), 1=yes')
+      end if
       if (writeall .or. epswetout /= 0.1d0) then
          call prop_set(prop_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, 'Waterdepth threshold above which a grid point counts as ''wet''. Used for Wrimap_time_water_on_ground.')
       end if
@@ -3872,7 +3887,6 @@ contains
       call prop_set_double(prop_ptr, 'processes', 'ThetaVertical', md_thetav_waq, 'theta vertical for waq')
       call prop_set_double(prop_ptr, 'processes', 'DtProcesses', md_dt_waqproc, 'waq processes time step')
       call prop_set_integer(prop_ptr, 'processes', 'ProcessFluxIntegration', md_flux_int, 'Process fluxes integration option (1: WAQ, 2: D-Flow FM)')
-      call prop_set_integer(prop_ptr, 'processes', 'Wriwaqbot3Doutput', md_wqbot3D_output, 'Write 3D water quality bottom variables (1: yes, 0: no)')
       call prop_set_double(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
       call prop_set_double(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
       call prop_set(prop_ptr, 'processes', 'SubstanceDensityCoupling', jaSubstancedensitycoupling, 'Substance density coupling (1: yes, 0: no). It only functions correctly when all substances are sediments.')

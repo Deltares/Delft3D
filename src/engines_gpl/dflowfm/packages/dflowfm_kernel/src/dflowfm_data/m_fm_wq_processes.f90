@@ -70,7 +70,7 @@ module m_fm_wq_processes
    real(hp) :: waq_vol_dry_thr = 1.0d-3 !< minimum volume for processes to be active
    real(hp) :: waq_dep_dry_thr = 1.0d-3 !< minimum depth for processes to be active
    integer :: flux_int !< flux integration by WAQ (1) or by FM (2, not implemented)
-   integer :: wqbot3D_output = 0 !< write 3D wqbot output
+   logical :: is_waq_bot_3d !< flag for 3D water quality bottom variables (usually 2D)
    integer :: kbx !< pointer of first segment to D-Flow FM 3D administration
    integer :: ktx !< pointer of last  segment to D-Flow FM 3D administration
 
