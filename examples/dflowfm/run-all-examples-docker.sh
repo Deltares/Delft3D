@@ -16,7 +16,7 @@ for dir in */; do
 		cd $dir
 		echo "##teamcity[testStarted name='$dir' captureStandardOutput='true']"
 		docker run \
-			-v ".:/data" \
+			-v "$(pwd):/data" \
 			-v "$MPI_DIR:$MPI_DIR" \
 			-v "/usr/:/host" \
 			-e PATH=$PATH \
