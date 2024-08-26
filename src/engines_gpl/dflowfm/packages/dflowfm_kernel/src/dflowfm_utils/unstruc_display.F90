@@ -782,8 +782,8 @@ contains
 
    subroutine plotSpline(xh, yh, numpi, ncol)
       use m_wearelt
-      double precision, dimension(numpi), intent(in) :: xh, yh
       integer, intent(in) :: numpi
+      double precision, dimension(numpi), intent(in) :: xh, yh
       integer, intent(in) :: ncol
 
       !integer :: imax = 500 ! TODO: uit DIMENS [AvD]

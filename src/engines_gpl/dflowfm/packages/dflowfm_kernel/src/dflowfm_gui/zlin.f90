@@ -269,7 +269,7 @@
           end do
           zlin = dum
        case (7)
-          zlin = bermslopeindex(LL)
+          zlin = merge(1.0d0, 0.0d0, bermslopeindex(LL))
        end select
     else if (linval == 49) then
        zlin = Ltop(LL) - Lbot(LL) + 1; zlin = max(zlin, 0d0)

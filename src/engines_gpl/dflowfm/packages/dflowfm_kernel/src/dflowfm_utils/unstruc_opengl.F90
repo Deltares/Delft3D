@@ -64,9 +64,9 @@ contains
    !todo: optimize by checking for triangle (n=3)/quads (n=4) first, don't switch mode while in those
    subroutine FillPolygon(xs, ys, n)
       implicit none
+      integer, intent(in) :: n !< num vertices
       real(kind=sp), intent(in) :: xs(n)
       real(kind=sp), intent(in) :: ys(n)
-      integer, intent(in) :: n !< num vertices
       integer :: i
 
 #ifdef HAVE_OPENGL
@@ -261,12 +261,11 @@ contains
 
    subroutine EndRender
 #ifdef HAVE_OPENGL
-      use, intrinsic :: iso_c_binding
       use IFWINA
       use M_DEVICES
       use user32
       implicit none
-      logical(c_bool) :: res
+      integer(1) :: res 
 
       if (jaOpenGL == 0) then
          return
@@ -284,12 +283,12 @@ contains
 
    subroutine ReInitializeBackBuffer
 #ifdef HAVE_OPENGL
-      use, intrinsic :: iso_c_binding
       use IFWINA ! renamed symbols to avoid conflicts
       use M_DEVICES
       implicit none
       integer(HANDLE) :: ptr_bytes
-      logical(c_bool) :: res
+      integer(1) :: res 
+
       type(T_BITMAPINFO) bmi
 
       ! We render into a bitmap because not all video cards support mixing gdi / opengl directly. This may mean
@@ -330,10 +329,9 @@ contains
 
    subroutine InitializeOpenGl
 #ifdef HAVE_OPENGL
-      use, intrinsic :: iso_c_binding
       use IFWINA ! renamed symbols to avoid conflicts
       implicit none
-      logical(c_bool) :: res
+      integer(1) :: res 
       integer :: pixelFormat, error_code
       type(T_PixelFormatDescriptor) pfd
 
@@ -371,7 +369,6 @@ contains
 
    subroutine SetTextHeight(height)
 #ifdef HAVE_OPENGL
-      use, intrinsic :: iso_c_binding
       use IFWINA ! renamed symbols to avoid conflicts
 #endif
       implicit none
@@ -380,7 +377,7 @@ contains
 
 #ifdef HAVE_OPENGL
       integer(HANDLE) :: font
-      logical(c_bool) :: res
+      integer(1) :: res 
 
       ! prepare the font to render text in
       font = CreateFont(height, 0, 0, 0, & ! font size
@@ -406,9 +403,8 @@ contains
    subroutine DeInitializeOpenGl
 #ifdef HAVE_OPENGL
       use IFWINA
-      use iso_c_binding, only: c_bool
       implicit none
-      logical(c_bool) :: res
+      integer(1) :: res 
 
       res = DeleteObject(hbitmap)
       res = fwglMakeCurrent(NULL, NULL)

@@ -34,8 +34,8 @@
 !     VERWISSEL KOLOM J1 EN J2
 !      USE DIMENS
          implicit none
-         double precision :: X(MMAX, NMAX)
          integer :: mmax, nmax, j1, j2, numspl
+         double precision :: X(MMAX, NMAX)
          integer :: i
          double precision :: xh
 

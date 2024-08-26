@@ -2199,7 +2199,7 @@ contains
       charbuf = ' '
       call prop_get_string(md_ptr, 'output', 'TimeSplitInterval', charbuf, success)
       if (success) then
-         read (charbuf, *, iostat=iostat), ibuf, ti_split_unit
+         read (charbuf, *, iostat=iostat) ibuf, ti_split_unit
          if (iostat == 0) then
             ti_split = dble(ibuf)
             select case (ti_split_unit)
@@ -3758,7 +3758,7 @@ contains
 
       call prop_set(prop_ptr, 'output', 'TimingsInterval', ti_timings, 'Timings statistics output interval')
       helptxt = ' '
-      write (helptxt, '(i0,a1,a1)'), int(ti_split), ' ', ti_split_unit
+      write (helptxt, '(i0,a1,a1)') int(ti_split), ' ', ti_split_unit
       call prop_set(prop_ptr, 'output', 'TimeSplitInterval', trim(helptxt), 'Time splitting interval, after which a new output file is started. value+unit, e.g. ''1 M'', valid units: Y,M,D,h,m,s.')
 
       write (helptxt, "('Map file format ')")

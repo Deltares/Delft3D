@@ -2644,9 +2644,9 @@ subroutine qsplit(a, ind, n, ncut)
    use precision_basics, only: dp
 
    implicit none
-
+   integer :: n
    real(dp) :: a(n)
-   integer :: ind(n), n, ncut
+   integer :: ind(n), ncut
 !-----------------------------------------------------------------------
 !     does a quick-sort split of a real array.
 !     on input a(1:n). is a real array
@@ -2704,7 +2704,7 @@ end subroutine qsplit
 
 subroutine runrc2(n, rhs, sol, ipar, fpar, wk, a, ja, ia, au, jau, ju, its, eps, jabcgstab, ierror, nau)
    implicit none
-   integer n, ipar(16), ia(n + 1), ja(5 * n), ju(n), jau(nau), jabcgstab, nau
+   integer n, nau, ipar(16), ia(n + 1), ja(5 * n), ju(n), jau(nau), jabcgstab 
    double precision :: fpar(16), rhs(n), sol(n), wk(2 * nau), a(5 * n), au(nau), eps
    integer :: ierror !< error (1) or not (0)
 
@@ -6476,9 +6476,8 @@ end subroutine implu
 
 subroutine uppdir(n, p, np, lbp, indp, y, u, usav, flops)
    implicit none
-
-   double precision :: p(n, lbp), y(*), u(*), usav(*), x, flops
    integer k, np, n, npm1, j, ju, indp, lbp
+   double precision :: p(n, lbp), y(*), u(*), usav(*), x, flops
 !-----------------------------------------------------------------------
 !     updates the conjugate directions p given the upper part of the
 !     banded upper triangular matrix u.  u contains the non zero
@@ -8356,8 +8355,8 @@ subroutine amuxXXX(n, x, y, a, ja, ia)
 
    implicit none
 
-   real(dp) :: x(n), y(n), a(*)
    integer n, ja(*), ia(*)
+   real(dp) :: x(n), y(n), a(*)
 !-----------------------------------------------------------------------
 !         A times a vector
 !-----------------------------------------------------------------------
@@ -8487,8 +8486,8 @@ end subroutine atmux
 subroutine lusol(n, y, x, alu, jlu, ju, nau)
    implicit none
 
+   integer n, nau, jlu(nau), ju(nau)
    double precision :: x(n), y(n), alu(nau)
-   integer n, jlu(nau), ju(nau), nau
 !-----------------------------------------------------------------------
 !
 ! This routine solves the system (LU) x = y,
@@ -8542,8 +8541,8 @@ end subroutine lusol
 subroutine lutsol(n, y, x, alu, jlu, ju)
    implicit none
 
-   double precision :: x(n), y(n), alu(*)
    integer n, jlu(*), ju(*)
+   double precision :: x(n), y(n), alu(*)
 !-----------------------------------------------------------------------
 !
 ! This routine solves the system  Transp(LU) x = y,

@@ -1,7 +1,7 @@
 !
 !     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 !     *                                                               *
-!     *                  copyright (c) 1998-2024 by UCAR                   *
+!     *                  copyright (c) 1998-2024 by UCAR              *
 !     *                                                               *
 !     *       University Corporation for Atmospheric Research         *
 !     *                                                               *
@@ -212,7 +212,8 @@ subroutine hrffti(n, wsave)
    if (n == 1) return
    call hrfti1(n, wsave(1), wsave(n + 1))
    return
-end
+end subroutine hrffti
+    
 subroutine hrfti1(n, wa, fac)
 !
 !     a multiple fft package for spherepack
@@ -228,14 +229,17 @@ subroutine hrfti1(n, wa, fac)
    nf = 0
    j = 0
 101 j = j + 1
-   if (j - 4) 102, 102, 103
-102 ntry = ntryh(j)
-   go to 104
-103 ntry = ntry + 2
-104 nq = nl / ntry
+   if (j <= 4) then
+      ntry = ntryh(j)
+   else
+      ntry = ntry + 2
+   end if
+104 continue
+   nq = nl / ntry
    nr = nl - ntry * nq
-   if (nr) 101, 105, 101
-105 nf = nf + 1
+   if (nr /= 0) goto 101
+
+   nf = nf + 1
    fac(nf + 2) = ntry
    nl = nq
    if (ntry /= 2) go to 107
@@ -278,6 +282,7 @@ subroutine hrfti1(n, wa, fac)
    end do
    return
 end
+
 subroutine hrfftf(m, n, r, mdimr, whrfft, work)
 !
 !     a multiple fft package for spherepack
@@ -291,7 +296,8 @@ subroutine hrfftf(m, n, r, mdimr, whrfft, work)
    call hrftf1(m, n, r, mdimr, work, whrfft, whrfft(n + 1))
 !     tfft = tfft+second(dum)-tstart
    return
-end
+end subroutine hrfftf
+
 subroutine hrftf1(m, n, c, mdimc, ch, wa, fac)
 !
 !     a multiple fft package for spherepack
@@ -358,7 +364,8 @@ subroutine hrftf1(m, n, c, mdimc, ch, wa, fac)
       end do
    end do
    return
-end
+end subroutine hrftf1
+
 subroutine hradf4(mp, ido, l1, cc, mdimcc, ch, mdimch, wa1, wa2, wa3)
 !
 !     a multiple fft package for spherepack
@@ -379,63 +386,64 @@ subroutine hradf4(mp, ido, l1, cc, mdimcc, ch, mdimch, wa1, wa2, wa3)
          ch(m, 1, 3, k) = cc(m, 1, k, 4) - cc(m, 1, k, 2)
       end do
    end do
-   if (ido - 2) 107, 105, 102
-102 idp2 = ido + 2
-   do k = 1, l1
-      do i = 3, ido, 2
-         ic = idp2 - i
-         do m = 1, mp
-            ch(m, i - 1, 1, k) = ((wa1(i - 2) * cc(m, i - 1, k, 2) + wa1(i - 1) *&
-            &cc(m, i, k, 2)) + (wa3(i - 2) * cc(m, i - 1, k, 4) + wa3(i - 1) *&
-            &cc(m, i, k, 4))) + (cc(m, i - 1, k, 1) + (wa2(i - 2) * cc(m, i - 1, k, 3) +&
-            &wa2(i - 1) * cc(m, i, k, 3)))
-            ch(m, ic - 1, 4, k) = (cc(m, i - 1, k, 1) + (wa2(i - 2) * cc(m, i - 1, k, 3) +&
-            &wa2(i - 1) * cc(m, i, k, 3))) - ((wa1(i - 2) * cc(m, i - 1, k, 2) +&
-            &wa1(i - 1) * cc(m, i, k, 2)) + (wa3(i - 2) * cc(m, i - 1, k, 4) +&
-            &wa3(i - 1) * cc(m, i, k, 4)))
-            ch(m, i, 1, k) = ((wa1(i - 2) * cc(m, i, k, 2) - wa1(i - 1) *&
-            &cc(m, i - 1, k, 2)) + (wa3(i - 2) * cc(m, i, k, 4) - wa3(i - 1) *&
-            &cc(m, i - 1, k, 4))) + (cc(m, i, k, 1) + (wa2(i - 2) * cc(m, i, k, 3) -&
-            &wa2(i - 1) * cc(m, i - 1, k, 3)))
-            ch(m, ic, 4, k) = ((wa1(i - 2) * cc(m, i, k, 2) - wa1(i - 1) *&
-            &cc(m, i - 1, k, 2)) + (wa3(i - 2) * cc(m, i, k, 4) - wa3(i - 1) *&
-            &cc(m, i - 1, k, 4))) - (cc(m, i, k, 1) + (wa2(i - 2) * cc(m, i, k, 3) -&
-            &wa2(i - 1) * cc(m, i - 1, k, 3)))
-            ch(m, i - 1, 3, k) = ((wa1(i - 2) * cc(m, i, k, 2) - wa1(i - 1) *&
-            &cc(m, i - 1, k, 2)) - (wa3(i - 2) * cc(m, i, k, 4) - wa3(i - 1) *&
-            &cc(m, i - 1, k, 4))) + (cc(m, i - 1, k, 1) - (wa2(i - 2) * cc(m, i - 1, k, 3) +&
-            &wa2(i - 1) * cc(m, i, k, 3)))
-            ch(m, ic - 1, 2, k) = (cc(m, i - 1, k, 1) - (wa2(i - 2) * cc(m, i - 1, k, 3) +&
-            &wa2(i - 1) * cc(m, i, k, 3))) - ((wa1(i - 2) * cc(m, i, k, 2) - wa1(i - 1) *&
-            &cc(m, i - 1, k, 2)) - (wa3(i - 2) * cc(m, i, k, 4) - wa3(i - 1) *&
-            &cc(m, i - 1, k, 4)))
-            ch(m, i, 3, k) = ((wa3(i - 2) * cc(m, i - 1, k, 4) + wa3(i - 1) *&
-            &cc(m, i, k, 4)) - (wa1(i - 2) * cc(m, i - 1, k, 2) + wa1(i - 1) *&
-            &cc(m, i, k, 2))) + (cc(m, i, k, 1) - (wa2(i - 2) * cc(m, i, k, 3) -&
-            &wa2(i - 1) * cc(m, i - 1, k, 3)))
-            ch(m, ic, 2, k) = ((wa3(i - 2) * cc(m, i - 1, k, 4) + wa3(i - 1) *&
-            &cc(m, i, k, 4)) - (wa1(i - 2) * cc(m, i - 1, k, 2) + wa1(i - 1) *&
-            &cc(m, i, k, 2))) - (cc(m, i, k, 1) - (wa2(i - 2) * cc(m, i, k, 3) - wa2(i - 1) *&
-            &cc(m, i - 1, k, 3)))
+   if (ido > 2) then
+      idp2 = ido + 2
+      do k = 1, l1
+         do i = 3, ido, 2
+            ic = idp2 - i
+            do m = 1, mp
+               ch(m, i - 1, 1, k) = ((wa1(i - 2) * cc(m, i - 1, k, 2) + wa1(i - 1) *&
+               &cc(m, i, k, 2)) + (wa3(i - 2) * cc(m, i - 1, k, 4) + wa3(i - 1) *&
+               &cc(m, i, k, 4))) + (cc(m, i - 1, k, 1) + (wa2(i - 2) * cc(m, i - 1, k, 3) +&
+               &wa2(i - 1) * cc(m, i, k, 3)))
+               ch(m, ic - 1, 4, k) = (cc(m, i - 1, k, 1) + (wa2(i - 2) * cc(m, i - 1, k, 3) +&
+               &wa2(i - 1) * cc(m, i, k, 3))) - ((wa1(i - 2) * cc(m, i - 1, k, 2) +&
+               &wa1(i - 1) * cc(m, i, k, 2)) + (wa3(i - 2) * cc(m, i - 1, k, 4) +&
+               &wa3(i - 1) * cc(m, i, k, 4)))
+               ch(m, i, 1, k) = ((wa1(i - 2) * cc(m, i, k, 2) - wa1(i - 1) *&
+               &cc(m, i - 1, k, 2)) + (wa3(i - 2) * cc(m, i, k, 4) - wa3(i - 1) *&
+               &cc(m, i - 1, k, 4))) + (cc(m, i, k, 1) + (wa2(i - 2) * cc(m, i, k, 3) -&
+               &wa2(i - 1) * cc(m, i - 1, k, 3)))
+               ch(m, ic, 4, k) = ((wa1(i - 2) * cc(m, i, k, 2) - wa1(i - 1) *&
+               &cc(m, i - 1, k, 2)) + (wa3(i - 2) * cc(m, i, k, 4) - wa3(i - 1) *&
+               &cc(m, i - 1, k, 4))) - (cc(m, i, k, 1) + (wa2(i - 2) * cc(m, i, k, 3) -&
+               &wa2(i - 1) * cc(m, i - 1, k, 3)))
+               ch(m, i - 1, 3, k) = ((wa1(i - 2) * cc(m, i, k, 2) - wa1(i - 1) *&
+               &cc(m, i - 1, k, 2)) - (wa3(i - 2) * cc(m, i, k, 4) - wa3(i - 1) *&
+               &cc(m, i - 1, k, 4))) + (cc(m, i - 1, k, 1) - (wa2(i - 2) * cc(m, i - 1, k, 3) +&
+               &wa2(i - 1) * cc(m, i, k, 3)))
+               ch(m, ic - 1, 2, k) = (cc(m, i - 1, k, 1) - (wa2(i - 2) * cc(m, i - 1, k, 3) +&
+               &wa2(i - 1) * cc(m, i, k, 3))) - ((wa1(i - 2) * cc(m, i, k, 2) - wa1(i - 1) *&
+               &cc(m, i - 1, k, 2)) - (wa3(i - 2) * cc(m, i, k, 4) - wa3(i - 1) *&
+               &cc(m, i - 1, k, 4)))
+               ch(m, i, 3, k) = ((wa3(i - 2) * cc(m, i - 1, k, 4) + wa3(i - 1) *&
+               &cc(m, i, k, 4)) - (wa1(i - 2) * cc(m, i - 1, k, 2) + wa1(i - 1) *&
+               &cc(m, i, k, 2))) + (cc(m, i, k, 1) - (wa2(i - 2) * cc(m, i, k, 3) -&
+               &wa2(i - 1) * cc(m, i - 1, k, 3)))
+               ch(m, ic, 2, k) = ((wa3(i - 2) * cc(m, i - 1, k, 4) + wa3(i - 1) *&
+               &cc(m, i, k, 4)) - (wa1(i - 2) * cc(m, i - 1, k, 2) + wa1(i - 1) *&
+               &cc(m, i, k, 2))) - (cc(m, i, k, 1) - (wa2(i - 2) * cc(m, i, k, 3) - wa2(i - 1) *&
+               &cc(m, i - 1, k, 3)))
+            end do
          end do
       end do
-   end do
-   if (mod(ido, 2) == 1) return
-105 continue
-   do k = 1, l1
-      do m = 1, mp
-         ch(m, ido, 1, k) = (hsqt2 * (cc(m, ido, k, 2) - cc(m, ido, k, 4))) +&
-         &cc(m, ido, k, 1)
-         ch(m, ido, 3, k) = cc(m, ido, k, 1) - (hsqt2 * (cc(m, ido, k, 2) -&
-         &cc(m, ido, k, 4)))
-         ch(m, 1, 2, k) = (-hsqt2 * (cc(m, ido, k, 2) + cc(m, ido, k, 4))) -&
-         &cc(m, ido, k, 3)
-         ch(m, 1, 4, k) = (-hsqt2 * (cc(m, ido, k, 2) + cc(m, ido, k, 4))) +&
-         &cc(m, ido, k, 3)
+      if (mod(ido, 2) == 1) return
+   else if (ido == 2) then
+      do k = 1, l1
+         do m = 1, mp
+            ch(m, ido, 1, k) = (hsqt2 * (cc(m, ido, k, 2) - cc(m, ido, k, 4))) +&
+            &cc(m, ido, k, 1)
+            ch(m, ido, 3, k) = cc(m, ido, k, 1) - (hsqt2 * (cc(m, ido, k, 2) -&
+            &cc(m, ido, k, 4)))
+            ch(m, 1, 2, k) = (-hsqt2 * (cc(m, ido, k, 2) + cc(m, ido, k, 4))) -&
+            &cc(m, ido, k, 3)
+            ch(m, 1, 4, k) = (-hsqt2 * (cc(m, ido, k, 2) + cc(m, ido, k, 4))) +&
+            &cc(m, ido, k, 3)
+         end do
       end do
-   end do
-107 return
-end
+   end if
+end subroutine hradf4
+
 subroutine hradf2(mp, ido, l1, cc, mdimcc, ch, mdimch, wa1)
 !
 !     a multiple fft package for spherepack
@@ -450,32 +458,34 @@ subroutine hradf2(mp, ido, l1, cc, mdimcc, ch, mdimch, wa1)
          ch(m, ido, 2, k) = cc(m, 1, k, 1) - cc(m, 1, k, 2)
       end do
    end do
-   if (ido - 2) 107, 105, 102
-102 idp2 = ido + 2
-   do k = 1, l1
-      do i = 3, ido, 2
-         ic = idp2 - i
-         do m = 1, mp
-            ch(m, i, 1, k) = cc(m, i, k, 1) + (wa1(i - 2) * cc(m, i, k, 2) -&
-            &wa1(i - 1) * cc(m, i - 1, k, 2))
-            ch(m, ic, 2, k) = (wa1(i - 2) * cc(m, i, k, 2) - wa1(i - 1) *&
-            &cc(m, i - 1, k, 2)) - cc(m, i, k, 1)
-            ch(m, i - 1, 1, k) = cc(m, i - 1, k, 1) + (wa1(i - 2) * cc(m, i - 1, k, 2) +&
-            &wa1(i - 1) * cc(m, i, k, 2))
-            ch(m, ic - 1, 2, k) = cc(m, i - 1, k, 1) - (wa1(i - 2) * cc(m, i - 1, k, 2) +&
-            &wa1(i - 1) * cc(m, i, k, 2))
+   if (ido > 2) then
+      idp2 = ido + 2
+      do k = 1, l1
+         do i = 3, ido, 2
+            ic = idp2 - i
+            do m = 1, mp
+               ch(m, i, 1, k) = cc(m, i, k, 1) + (wa1(i - 2) * cc(m, i, k, 2) -&
+               &wa1(i - 1) * cc(m, i - 1, k, 2))
+               ch(m, ic, 2, k) = (wa1(i - 2) * cc(m, i, k, 2) - wa1(i - 1) *&
+               &cc(m, i - 1, k, 2)) - cc(m, i, k, 1)
+               ch(m, i - 1, 1, k) = cc(m, i - 1, k, 1) + (wa1(i - 2) * cc(m, i - 1, k, 2) +&
+               &wa1(i - 1) * cc(m, i, k, 2))
+               ch(m, ic - 1, 2, k) = cc(m, i - 1, k, 1) - (wa1(i - 2) * cc(m, i - 1, k, 2) +&
+               &wa1(i - 1) * cc(m, i, k, 2))
+            end do
          end do
       end do
-   end do
-   if (mod(ido, 2) == 1) return
-105 do k = 1, l1
-      do m = 1, mp
-         ch(m, 1, 2, k) = -cc(m, ido, k, 2)
-         ch(m, ido, 1, k) = cc(m, ido, k, 1)
+      if (mod(ido, 2) == 1) return
+   else if (ido == 2) then
+      do k = 1, l1
+         do m = 1, mp
+            ch(m, 1, 2, k) = -cc(m, ido, k, 2)
+            ch(m, ido, 1, k) = cc(m, ido, k, 1)
+         end do
       end do
-   end do
-107 return
-end
+   end if
+end subroutine hradf2
+
 subroutine hradf3(mp, ido, l1, cc, mdimcc, ch, mdimch, wa1, wa2)
 !
 !     a multiple fft package for spherepack
@@ -533,7 +543,8 @@ subroutine hradf3(mp, ido, l1, cc, mdimcc, ch, mdimch, wa1, wa2)
       end do
    end do
    return
-end
+end subroutine hradf3
+
 subroutine hradf5(mp, ido, l1, cc, mdimcc, ch, mdimch,&
 &wa1, wa2, wa3, wa4)
 !
@@ -655,7 +666,8 @@ subroutine hradf5(mp, ido, l1, cc, mdimcc, ch, mdimch,&
       end do
    end do
    return
-end
+end subroutine hradf5
+
 subroutine hradfg(mp, ido, ip, l1, idl1, cc, c1, c2, mdimcc,&
 &ch, ch2, mdimch, wa)
 !
@@ -867,11 +879,13 @@ subroutine hradfg(mp, ido, ip, l1, idl1, cc, c1, c2, mdimcc,&
       end do
    end do
    return
-end
+end subroutine hradfg
+
 double precision function pimach()
    pimach = 3.14159265358979d0
    return
-end
+end function pimach
+
 subroutine hrfftb(m, n, r, mdimr, whrfft, work)
 !
 !     a multiple fft package for spherepack
@@ -885,7 +899,8 @@ subroutine hrfftb(m, n, r, mdimr, whrfft, work)
    call hrftb1(m, n, r, mdimr, work, whrfft, whrfft(n + 1))
 !     tfft = tfft+second(dum)-tstart
    return
-end
+end subroutine hrfftb
+
 subroutine hrftb1(m, n, c, mdimc, ch, wa, fac)
 !
 !     a multiple fft package for spherepack
@@ -951,7 +966,8 @@ subroutine hrftb1(m, n, c, mdimc, ch, wa, fac)
       end do
    end do
    return
-end
+end subroutine hrftb1
+    
 subroutine hradbg(mp, ido, ip, l1, idl1, cc, c1, c2, mdimcc,&
 &ch, ch2, mdimch, wa)
    integer, intent(in) :: mp, ido, ip, l1, mdimcc, mdimch, idl1
@@ -1154,7 +1170,8 @@ subroutine hradbg(mp, ido, ip, l1, idl1, cc, c1, c2, mdimcc,&
       end do
    end do
 143 return
-end
+end subroutine hradbg
+    
 subroutine hradb4(mp, ido, l1, cc, mdimcc, ch, mdimch, wa1, wa2, wa3)
 !
 !     a multiple fft package for spherepack
@@ -1224,7 +1241,8 @@ subroutine hradb4(mp, ido, l1, cc, mdimcc, ch, mdimch, wa1, wa2, wa3)
       end do
    end do
 107 return
-end
+end subroutine hradb4
+    
 subroutine hradb2(mp, ido, l1, cc, mdimcc, ch, mdimch, wa1)
 !
 !     a multiple fft package for spherepack
@@ -1262,7 +1280,8 @@ subroutine hradb2(mp, ido, l1, cc, mdimcc, ch, mdimch, wa1)
       end do
    end do
 107 return
-end
+end subroutine hradb2
+    
 subroutine hradb3(mp, ido, l1, cc, mdimcc, ch, mdimch, wa1, wa2)
 !
 !     a multiple fft package for spherepack
@@ -1321,7 +1340,8 @@ subroutine hradb3(mp, ido, l1, cc, mdimcc, ch, mdimch, wa1, wa2)
       end do
    end do
    return
-end
+end subroutine hradb3
+    
 subroutine hradb5(mp, ido, l1, cc, mdimcc, ch, mdimch,&
 &wa1, wa2, wa3, wa4)
 !
@@ -1436,4 +1456,4 @@ subroutine hradb5(mp, ido, l1, cc, mdimcc, ch, mdimch,&
       end do
    end do
    return
-end
+end subroutine hradb5

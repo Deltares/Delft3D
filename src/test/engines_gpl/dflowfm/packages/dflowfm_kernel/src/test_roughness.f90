@@ -47,7 +47,7 @@ subroutine test_roughness_branches
    integer                 :: ibranch
    integer                 :: section
    integer                 :: igrid
-   integer                 :: istat
+   logical                 :: success
    double precision        :: h
    double precision        :: q
    double precision        :: u
@@ -69,12 +69,12 @@ subroutine test_roughness_branches
    call fill_hashtable(network%brs)
    cross => null()
 
-   istat = CHANGEDIRQQ("roughness")
+   success = CHANGEDIRQQ("roughness")
 
    roughnessfiles = 'roughness_main.ini;roughness-globals.ini'
    call roughness_reader(network, roughnessfiles)
 
-   istat = CHANGEDIRQQ("..")
+   success = CHANGEDIRQQ("..")
 
    ibranch  = 4
    section  = hashsearch(network%rgs%hashlist, 'chezy45')

@@ -1182,11 +1182,11 @@ contains
 
       if (jsferic /= 1) then
          do i = 1, numobs
-            write (mobs, '(f12.3,f12.3,a,a,a)'), xobs(i), yobs(i), ' ''', trim(namobs(i)), ''''
+            write (mobs, '(f12.3,f12.3,a,a,a)') xobs(i), yobs(i), ' ''', trim(namobs(i)), ''''
          end do
       else
          do i = 1, numobs
-            write (mobs, '(f12.6,f12.6,a,a,a)'), xobs(i), yobs(i), ' ''', trim(namobs(i)), ''''
+            write (mobs, '(f12.6,f12.6,a,a,a)') xobs(i), yobs(i), ' ''', trim(namobs(i)), ''''
          end do
       end if
       call doclose(mobs)

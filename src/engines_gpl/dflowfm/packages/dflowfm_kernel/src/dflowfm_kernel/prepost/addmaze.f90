@@ -35,8 +35,8 @@
       use gridoperations
 
       implicit none
-      double precision :: X(N), Y(N), Z(N)
       integer :: N
+      double precision :: X(N), Y(N), Z(N)
       integer :: k
       integer :: k2
       integer :: lnu

@@ -162,10 +162,10 @@ contains
       !
       ! Input variables
       integer, intent(in) :: np, ibnd, ntheta
+      integer, intent(in) :: ntheta_s
       real(dp), intent(in) :: t
       real(dp), dimension(ntheta_s), intent(in) :: theta_s
       integer, intent(in) :: singledir
-      integer, intent(in) :: ntheta_s
 
       ! output variables
       real(dp), intent(out) :: Hbc, Tbc, Dbc

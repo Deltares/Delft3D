@@ -37,10 +37,10 @@
     subroutine mergepoly(X, Y, Z, maxpol, n, i1, i2)
        use M_MISSING
        implicit none
+       integer, intent(in) :: MAXPOL !< Length of polyline coordinate arrays.
        double precision, intent(inout) :: X(MAXPOL), Y(MAXPOL) !< Entire polyline coordinate arrays
        double precision, intent(inout) :: Z(MAXPOL) !< polyline Z-value array
        integer, intent(inout) :: N !< Index of last filled polyline point (npol<=maxpol)
-       integer, intent(in) :: MAXPOL !< Length of polyline coordinate arrays.
        integer, intent(inout) :: i1, i2 !< Indices of polyline start/ends which need to be connected.
 
        integer :: i, im, in, ih, ii, n2, nh
