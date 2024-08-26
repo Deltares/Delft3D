@@ -348,8 +348,8 @@ class NetcdfComparer(IComparer):
         try:
             for c in coordinates:
                 maxdiff = maxdiff[c]
-                left_at_maxdiff = nc_var.left[c]
-                right_at_maxdiff = nc_var.right[c]
+                left_at_maxdiff = left_at_maxdiff[c]
+                right_at_maxdiff = right_at_maxdiff[c]
         except Exception as e:
             error_msg = (
                 "Mismatch dimensions: len maxdiff and coordinates: " + str(len(maxdiff)) + " , " + str(len(coordinates))
