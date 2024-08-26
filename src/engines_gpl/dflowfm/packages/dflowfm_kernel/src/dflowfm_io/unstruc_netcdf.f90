@@ -1159,7 +1159,7 @@ contains
       select case (iloc)
       case (UNC_LOC_S3D)
          ! Check which vertical coordinate variable is present in the file, and add it to the :coordinate attribute.
-         checkvars(1:4) = (/'layer_sigma_z', 'layer_z', 'layer_sigma', 'flowelem_zcc'/)
+         checkvars(1:4) = [character(len=50) :: 'layer_sigma_z', 'layer_z', 'layer_sigma', 'flowelem_zcc']
          do i = 1, 4
             if (nf90_inq_varid(ncid, trim(mesh2dname)//'_'//trim(checkvars(i)), varid) == NF90_NOERR) then
                ierr = ncu_append_atts(ncid, id_var(2), 'coordinates', trim(mesh2dname)//'_'//trim(checkvars(i)))
@@ -1168,7 +1168,7 @@ contains
          end do
       case (UNC_LOC_W)
          ! Check which vertical coordinate variable is present in the file, and add it to the :coordinate attribute.
-         checkvars(1:4) = (/'interface_sigma_z', 'interface_z', 'interface_sigma', 'flowelem_zw'/)
+         checkvars(1:4) = [character(len=50) :: 'interface_sigma_z', 'interface_z', 'interface_sigma', 'flowelem_zw']
          do i = 1, 4
             if (nf90_inq_varid(ncid, trim(mesh2dname)//'_'//trim(checkvars(i)), varid) == NF90_NOERR) then
                ierr = ncu_append_atts(ncid, id_var(2), 'coordinates', trim(mesh2dname)//'_'//trim(checkvars(i)))
