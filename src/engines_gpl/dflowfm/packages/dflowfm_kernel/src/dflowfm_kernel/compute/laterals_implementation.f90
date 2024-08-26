@@ -199,20 +199,24 @@ contains
       real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3]
       real(kind=dp), intent(in) :: dtol !< cut off value for cell_volume, to prevent division by zero
 
-      real(kind=dp) :: delta_cell_volume
+      real(kind=dp) :: delta_cell_volume, qlat
       integer :: i_const, i_lateral, i_cell, k1, i_layer
 
-      ! TODO: UNST-8062: generalize do i_layer = 1, num_layers
-      i_layer = 1
-      do i_const = 1, numconst
-         do i_lateral = 1, numlatsg
-            do k1 = n1latsg(i_lateral), n2latsg(i_lateral)
-               i_cell = nnlat(k1)
-               delta_cell_volume = 1._dp / max(cell_volume(i_cell), dtol)
-               ! transport_load is added to RHS of transport equation, sink is added to diagonal:
-               ! only multiply transport_load with concentration
-               transport_load(i_const, i_cell) = transport_load(i_const, i_cell) + delta_cell_volume * discharge_in(i_layer, i_lateral, i_cell) * incoming_lat_concentration(1, i_const, i_lateral)
-               transport_sink(i_const, i_cell) = transport_sink(i_const, i_cell) + delta_cell_volume * discharge_out(i_layer, i_lateral, i_cell)
+      do i_layer = 1, num_layers
+         do i_const = 1, numconst
+            do i_lateral = 1, numlatsg
+               do k1 = n1latsg(i_lateral), n2latsg(i_lateral)
+                  i_cell = nnlat(k1)
+                  delta_cell_volume = 1._dp / max(cell_volume(i_cell), dtol)
+                  ! transport_load is added to RHS of transport equation, sink is added to diagonal:
+                  ! only multiply transport_load with concentration
+                  qlat = qqlat(i_layer, i_lateral, i_cell)
+                  if (qlat >= 0) then
+                     transport_load(i_const, i_cell) = transport_load(i_const, i_cell) + delta_cell_volume * qlat * incoming_lat_concentration(1, i_const, i_lateral)
+                  else
+                     transport_sink(i_const, i_cell) = transport_sink(i_const, i_cell) + delta_cell_volume * qlat
+                  end if
+               end do
             end do
          end do
       end do

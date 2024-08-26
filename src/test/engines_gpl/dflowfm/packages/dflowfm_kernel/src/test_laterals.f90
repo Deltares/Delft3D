@@ -40,7 +40,6 @@ subroutine tests_lateral()
    ! initialization of global state variables for all tests in this module
    call setup_testcase()
 
-   call test(test_get_lateral_discharge,     'Test computation of total discharge over laterals.')
    call test(test_add_lateral_load_and_sink, 'Test computation of constituents sinks and sources due to laterals.')
 
    ! deallocation of global state variables
@@ -50,58 +49,6 @@ subroutine tests_lateral()
    call test(test_distribute_lateral_discharge, 'Test the distribution of lateral discharge per layer per lateral,' // &
                                                 ' which is retrieved from BMI, to per layer per lateral per cell.')
 end subroutine tests_lateral
-!
-!==============================================================================
-!> Test computation of sinks and sources (discharge and transport load per cell) due to laterals
-subroutine test_get_lateral_discharge()
-   use m_flow, only: vol1
-   use m_transportdata, only: numconst
-   use m_flowgeom, only: ndxi
-   
-   real(kind=dp), allocatable, dimension(:,:,:)   :: lateral_discharge_in                !< Lateral discharge going into the model (source)
-   real(kind=dp), allocatable, dimension(:,:,:)   :: lateral_discharge_out               !< Lateral discharge extracted out of the model (sink)
-   real(kind=dp), allocatable, dimension(:,:)   :: reference_lateral_discharge_in      !< Reference lateral discharge going into the model (source)
-   real(kind=dp), allocatable, dimension(:,:)   :: reference_lateral_discharge_out     !< Reference lateral discharge extracted out of the model (sink)
-   real(kind=dp), allocatable, dimension(:,:)   :: transport_load                      !< Load being transported into domain
-   real(kind=dp), allocatable, dimension(:,:)   :: transport_sink                      !< Load being transported out 
-   
-   integer :: iostat
-   integer :: i_cell, i_const, i_lateral      ! loop counters
-
-   allocate(lateral_discharge_in(1,numlatsg,ndxi),stat=iostat)
-   call aerr('lateral_discharge_in',iostat,numlatsg*ndxi,'test_get_lateral_discharge' )
-   allocate(lateral_discharge_out(1,numlatsg,ndxi),stat=iostat)
-   call aerr('lateral_discharge_out',iostat,numlatsg*ndxi,'test_get_lateral_discharge' )
-   allocate(reference_lateral_discharge_in(numlatsg,ndxi),stat=iostat)
-   call aerr('reference_lateral_discharge_in',iostat,numlatsg*ndxi,'test_get_lateral_discharge' )
-   allocate(reference_lateral_discharge_out(numlatsg,ndxi),stat=iostat)
-   call aerr('reference_lateral_discharge_out',iostat,numlatsg*ndxi,'test_get_lateral_discharge' )
-
-   ! check setup_testcase: lateral inflow over three cells with vol1
-   ! lateral outflow over 2 lateral cells with vol1
-   reference_lateral_discharge_in = 0._dp
-   reference_lateral_discharge_in(1,nnlat(1)) = qplat(1,1)*vol1(1)
-   reference_lateral_discharge_in(1,nnlat(2)) = qplat(1,1)*vol1(2)
-   reference_lateral_discharge_in(1,nnlat(3)) = qplat(1,1)*vol1(3)
-   reference_lateral_discharge_out = 0._dp
-   reference_lateral_discharge_out(2,nnlat(4)) = -qplat(1,2)*vol1(1)
-   reference_lateral_discharge_out(2,nnlat(5)) = -qplat(1,2)*vol1(1)
-   
-   call get_lateral_discharge(lateral_discharge_in,lateral_discharge_out,vol1)
-   
-   do i_lateral = 1,numlatsg
-      do i_cell=1,ndxi
-         call assert_comparable(lateral_discharge_in(1,i_lateral,i_cell), reference_lateral_discharge_in(i_lateral,i_cell), tolerance, "get_lateral_discharge(): lateral_discharge_in is not correct" )
-         call assert_comparable(lateral_discharge_out(1,i_lateral,i_cell), reference_lateral_discharge_out(i_lateral,i_cell), tolerance, "get_lateral_discharge(): lateral_discharge_out is not correct" )         
-      end do
-   end do
-      
-   deallocate(lateral_discharge_in)
-   deallocate(lateral_discharge_out)
-   deallocate(reference_lateral_discharge_in)
-   deallocate(reference_lateral_discharge_out)
- 
-end subroutine test_get_lateral_discharge
 !
 !==============================================================================
 !> Test computation of sinks and sources (discharge and transport load per cell) due to laterals
@@ -120,7 +67,8 @@ subroutine test_add_lateral_load_and_sink()
    real(kind=dp) :: dvoli 
    integer :: iostat                      ! allocation status
    integer :: i_cell, i_const, i_lateral  ! loop counters
-
+   integer :: i_node
+   
    allocate(discharge_in(1,numlatsg,ndxi),stat=iostat)
    call aerr('discharge_in',iostat,numlatsg*ndxi,'test_add_lateral_load_and_sink')
    allocate(discharge_out(1,numlatsg,ndxi),stat=iostat)
@@ -137,24 +85,23 @@ subroutine test_add_lateral_load_and_sink()
    transport_sink(:,:) = 0._dp
 
    ! first check that no discharge means no added transport
-   discharge_in = 0._dp
-   discharge_out = 0._dp
-   call add_lateral_load_and_sink(transport_load,transport_sink,discharge_in,discharge_out,vol1,tolerance)
+   qqlat(:,:,:) = 0._dp
+   call add_lateral_load_and_sink(transport_load, transport_sink, discharge_in, discharge_out, vol1, tolerance)
 
-   call assert_comparable(sum(transport_load), 0._dp, tolerance, "todo")
-   call assert_comparable(sum(transport_sink), 0._dp, tolerance, "todo")
+   call assert_comparable(sum(transport_load), 0._dp, tolerance, "lateral_laod value expected to be zero for qplat=0")
+   call assert_comparable(sum(transport_sink), 0._dp, tolerance, "lateral_sink value expected to be zero for qplat=0")
 
    ! check transport into the domain
    i_lateral = 1 ! only the first lateral is a source
-   discharge_in(1,i_lateral,nnlat(1)) = 5._dp
-   discharge_in(1,i_lateral,nnlat(2)) = 5._dp
-   discharge_in(1,i_lateral,nnlat(3)) = 5._dp
-   call add_lateral_load_and_sink(transport_load,transport_sink,discharge_in,discharge_out,vol1,tolerance)
+   do i_node = n1latsg(i_lateral), n2latsg(i_lateral)
+      qqlat(1,i_lateral,nnlat(i_node)) = 5._dp
+   end do 
+   call add_lateral_load_and_sink(transport_load, transport_sink, discharge_in, discharge_out, vol1, tolerance)
 
    do i_const = 1,numconst
       do i_cell=1,ndxi
          dvoli = 1/(vol1(i_cell))
-         refval = dvoli*incoming_lat_concentration(1,i_const,i_lateral)*discharge_in(1,i_lateral,i_cell)
+         refval = dvoli*incoming_lat_concentration(1,i_const,i_lateral)*qqlat(1,i_lateral,i_cell)
          call assert_comparable(transport_load(i_const,i_cell),refval,tolerance,"lateral_load value is not correct" )
       end do
    end do
@@ -162,36 +109,35 @@ subroutine test_add_lateral_load_and_sink()
 
    ! check transport out of the domain
    i_lateral = 2 ! only the second lateral is a sink
-   discharge_in(1,:,:) = 0._dp
-   discharge_out(1,i_lateral,nnlat(4)) = -5._dp
-   discharge_out(1,i_lateral,nnlat(5)) = -5._dp
+   qqlat = 0._dp
+   do i_node = n1latsg(i_lateral), n2latsg(i_lateral)
+      qqlat(1,i_lateral,nnlat(i_node)) = -5._dp
+   end do 
    ! copy values of transport_load
    ref_load(:,:) = transport_load(:,:)
    call add_lateral_load_and_sink(transport_load,transport_sink,discharge_in,discharge_out,vol1,tolerance)
    ! check that transport_load was not changed
-   call assert_comparable(sum(transport_load), sum(ref_load), tolerance, "todo")
+   call assert_comparable(sum(transport_load), sum(ref_load), tolerance, "transport_load should not change")
    do i_const = 1,numconst
       do i_cell=1,ndxi
          dvoli = 1/(vol1(i_cell))
-         refval = dvoli*discharge_out(1,i_lateral,i_cell)
-         call assert_comparable(transport_sink(i_const,i_cell), refval, tolerance, "lateral_sink value is not correct" )
+         refval = dvoli*qqlat(1,i_lateral,i_cell)
+         call assert_comparable(transport_sink(i_const,i_cell), refval, tolerance, "lateral_sink value is not correct")
       end do
    end do
-      
-   deallocate(discharge_in)
-   deallocate(discharge_out)
-   deallocate(transport_load)
-   deallocate(transport_sink)
- 
+
+   deallocate (transport_load)
+   deallocate (transport_sink)
+
 end subroutine test_add_lateral_load_and_sink
 !
 !> initialize a domain with an incoming and an outgoing lateral for three constituents
 subroutine setup_testcase()
-   use m_flow, only: vol1, hs
+   use m_flow, only: vol1, hs, kmxn
    use m_flowtimes, only: dts
    use m_partitioninfo, only: jampi
    use m_transportdata, only: numconst
-   use m_flowgeom, only: ndxi
+   use m_flowgeom, only: ndx, ndxi
 
    integer :: iostat                ! allocation status
    integer :: i_cell, i_lateral, k1 ! loop counter
@@ -202,6 +148,7 @@ subroutine setup_testcase()
    ! domain of 10 points, 2 laterals (1 incoming with 3 nodes, 1 outgoing with 2 nodes)
    ! and 3 constituents. Volume (vol1) of each cell is set to 0.1d0.
    ! consider 3 constituents to represent salt, temperature and tracer transport. 
+   ndx = 10
    ndxi = 10
    nlatnd = 5
    numlatsg = 2
@@ -222,6 +169,10 @@ subroutine setup_testcase()
    call aerr('vol1',iostat,ndxi,'test_lateral, setup_testcase' )
    allocate(hs(ndxi),stat=iostat)
    call aerr('hs',iostat,ndxi,'test_lateral, setup_testcase' )
+   allocate(kmxn(ndx),stat=iostat)
+   call aerr('kmxn',iostat,ndx,'test_lateral, setup_testcase')
+   allocate(lateral_volume_per_layer(num_layers,numlatsg), stat=iostat)
+   call aerr('lateral_volume_per_layer',iostat,num_layers*numlatsg, 'test_lateral, setup_testcase')
 
    n1latsg(1) = 1
    n2latsg(1) = 3
@@ -231,9 +182,9 @@ subroutine setup_testcase()
    apply_transport(:)=1
    vol1(:) = 0.1_dp
    hs(:) = 2_dp
+   kmxn(:) = 1
+   lateral_volume_per_layer(1:num_layers,1:numlatsg) = 0.1_dp
 
-   ! positive qplat is considered inflow (source), negative value outflow (sink) 
-   qplat(1,:) = (/9_dp,-10_dp/)
    ! top layer, per constituent, lateral 1, 
    incoming_lat_concentration(1,:,1) = (/31.0_dp,20.0_dp,0.23_dp/)  
    ! top layer, all constituents, lateral 2. 
@@ -243,7 +194,7 @@ end subroutine setup_testcase
 !
 !> reset to default values and deallocate arrays from other modules
 subroutine finish_testcase()
-   use m_flow, only: vol1, hs
+   use m_flow, only: vol1, hs, kmxn
    use m_partitioninfo, only: jampi
    use m_transportdata, only: numconst
    use m_flowgeom, only: ndxi
@@ -261,6 +212,7 @@ subroutine finish_testcase()
    deallocate(qplat)
    deallocate(vol1)
    deallocate(hs)
+   deallocate (kmxn)
 
 end subroutine finish_testcase
 !
