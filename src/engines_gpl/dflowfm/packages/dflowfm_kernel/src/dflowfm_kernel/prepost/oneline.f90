@@ -33,34 +33,21 @@
   subroutine ONELINE(K) ! TWEE LIJNTJES WORDEN 1
      use m_netw
      use gridoperations
+     use m_settings
+     use m_cconstants
      implicit none
      integer :: K
 
      double precision :: a0
-     double precision :: ag
-     double precision :: cdflow
-     double precision :: cfl
-     double precision :: cfric
-     double precision :: e0
-     double precision :: eps
-     double precision :: fbouy
-     double precision :: fdyn
      integer :: ja
-     integer :: janet
      integer :: k1
      integer :: k2
      integer :: l1
      integer :: l2
      integer :: lfa
-     integer :: moments
      integer :: nm
-     double precision :: pi
      double precision :: r0
-     double precision :: rho
-     double precision :: rhow
 
-     common / SETTINGS / FDYN, FBOUY, CDFLOW, CFRIC, MOMENTS, JANET
-     common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
      JA = 0
      NM = NMK(K)
      if (NM == 2) then

@@ -118,10 +118,6 @@ integer function gethandletype_integer(handle)
 !
     type(handletype)   ,intent(in)  :: handle
 !
-! Local variables
-!
-    integer                         :: htype
-!
 !! executable statements -------------------------------------------------------
 !
     if (handle%htype>0) then
@@ -142,10 +138,6 @@ character(HTYPELENGTH) function gethandletype_string(handle)
 ! Global variables
 !
     type(handletype)   ,intent(in)  :: handle
-!
-! Local variables
-!
-    integer                         :: htype
 !
 !! executable statements -------------------------------------------------------
 !

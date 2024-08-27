@@ -31,7 +31,7 @@ program tests_rear
 
     implicit none
     character(len=200) :: cmd_arg
-    integer :: iargc, getarg
+    integer :: iargc
     real(kind=real_wp), parameter :: tolerance = 0.0001
 
     ! Administrative arrays and variables

@@ -52,7 +52,6 @@ contains
       integer, intent(in) :: numconst !< number of constitiuents
 
       integer :: i ! loop counter
-      integer :: ierr ! error status
 
       apply_transport_is_used = .false.
       if (allocated(apply_transport)) then

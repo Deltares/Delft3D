@@ -5200,8 +5200,8 @@ subroutine fm_surrounding_points(no_nodes, connected_nodes, no_connected_nodes, 
 
    integer, intent(in) :: no_nodes ! number of network nodes
    integer, intent(in) :: no_connected_nodes ! max node numbers connected to each cell
-   integer, dimension(no_cells, no_connected_nodes), intent(in) :: connected_nodes ! node numbers connected to each cell
    integer, intent(in) :: no_cells ! number of cells
+   integer, dimension(no_cells, no_connected_nodes), intent(in) :: connected_nodes ! node numbers connected to each cell
    integer, dimension(12, no_nodes), intent(out) :: kp ! sorted surrounding node numbers for each node
    integer, intent(out) :: ierr
 

@@ -141,11 +141,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     integer                                 :: lsed
     integer                                 :: lsedtot
     integer                                 :: n
-    integer                                 :: nglob
-    integer                                 :: m
-    integer                                 :: mglob
     integer                                 :: nm
-    integer                                 :: nmglob
     integer                                 :: nmcor
     integer                                 :: noutletlinks
     integer                                 :: npnt

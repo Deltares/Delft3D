@@ -451,7 +451,7 @@ end function newTablesModelFind_ByHandle
 
       character(Len=MaxKeyLength)       keyupp, keylow
       character(Len=MaxKeyLengthPlus1)  space_keylow
-      integer            linlen, iposl, iposr, iposr2, toklen, ios, nrecr, actlen, StartPos
+      integer            linlen, iposl, iposr, toklen, ios, nrecr, actlen, StartPos
       parameter         (linlen=2048)
       character(len=linlen) line
       logical            start , stopr

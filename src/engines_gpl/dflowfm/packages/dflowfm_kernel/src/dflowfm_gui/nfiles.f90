@@ -56,6 +56,7 @@
       use gridoperations
       use string_module, only: strcmpi
       use m_setucxcuy_leastsquare, only: reconst2nd
+      use m_drawthis
 
       implicit none
       integer :: NUM, NWHAT, KEY
@@ -63,7 +64,6 @@
       integer :: mlan
       integer :: midp
       integer :: mtek
-      integer :: ndraw
       integer :: i, ierror
       logical :: jawel
       logical, external :: read_samples_from_geotiff
@@ -75,9 +75,7 @@
          end subroutine realan
       end interface
 
-      common / DRAWTHIS / ndraw(50)
-      common / BACKGROUND / SCREENFILE
-      character FILNAM * 86, SCREENFILE * 86
+      character FILNAM * 86
 
       KEY = 0
 

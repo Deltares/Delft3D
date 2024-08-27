@@ -181,12 +181,10 @@ c     conv = 2 niet geconvergeerd, alle iteraties verbruikt en doorgaan
 c
 c     Local variables
 c
-      integer  igp  ,igph  ,igpq  ,ibrh ,ibrq  ,juis,
-     +         l1, l2 ,lbrnam 
-      real     afwh ,afwq  ,xh    ,xq   ,epsq2
+      integer  igp  ,igph  ,igpq  ,juis
+      real     afwh ,afwq   ,epsq2
       logical  EPSEQU
       logical  hcrit  , qcrit2
-      character(len=40) branam
 c
 c     Include error codes
 c

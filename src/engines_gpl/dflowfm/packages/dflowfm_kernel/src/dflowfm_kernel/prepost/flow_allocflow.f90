@@ -59,7 +59,7 @@
     integer :: ndx1d
 
     double precision :: zmn, zmx, dzm ! for 3D
-    double precision :: gf, w1, w2, w3, zbt, zbb, dzb, gfi, gfk, sumcof
+    double precision :: gf, w1, w2, w3, zbt, zbb, dzb, gfi, gfk
     logical :: jawel
 
     if (ndx == 0) return

@@ -22,8 +22,12 @@
 !!  rights reserved.
 module m_integrate_areas_fluxes
     use m_waq_precision
+    use timers
 
     implicit none
+
+    private
+    public :: integrate_fluxes_for_dump_areas
 
 contains
 
@@ -32,22 +36,18 @@ contains
     subroutine integrate_fluxes_for_dump_areas(noflux, ndmpar, idt, iturat, flxdmp, &
             flxint, isdmp, ipdmp, ntdmpq)
 
-        use timers
-
-        implicit none
-
-        integer(kind = int_wp), intent(in)    :: noflux                 !< Number of fluxes
-        integer(kind = int_wp), intent(in)    :: ndmpar                 !< Number of dump areas
-        integer(kind = int_wp), intent(in)    :: idt                    !< Time step system clock units
-        integer(kind = int_wp), intent(in)    :: iturat                 !< System clock/proces clock ratio
-        real(kind = real_wp),   intent(in)    :: flxdmp(noflux, *)      !< Fluxes at dump segments
-        real(kind = real_wp),   intent(inout) :: flxint(noflux, ndmpar) !< Integrated fluxes at dump segments
-        integer(kind = int_wp), intent(in)    :: isdmp (*)              !< Segment to dumped segment pointer
-        integer(kind = int_wp), intent(in)    :: ipdmp (*)              !< Pointer structure dump area's
-        integer(kind = int_wp), intent(in)    :: ntdmpq                 !< Total number exchanges in dump area
+        integer(kind = int_wp), intent(in) :: noflux                 !< Number of fluxes
+        integer(kind = int_wp), intent(in) :: ndmpar                 !< Number of dump areas
+        integer(kind = int_wp), intent(in) :: idt                    !< Time step system clock units
+        integer(kind = int_wp), intent(in) :: iturat                 !< System clock/proces clock ratio
+        real(kind = real_wp), intent(in) :: flxdmp(noflux, *)        !< Fluxes at dump segments
+        real(kind = real_wp), intent(inout) :: flxint(noflux, ndmpar)!< Integrated fluxes at dump segments
+        integer(kind = int_wp), intent(in) :: isdmp (*)              !< Segment to dumped segment pointer
+        integer(kind = int_wp), intent(in) :: ipdmp (*)              !< Pointer structure dump area's
+        integer(kind = int_wp), intent(in) :: ntdmpq                 !< Total number exchanges in dump area
 
         ! Local variables
-        integer(kind = int_wp) :: itel2, idump, nsc, isc, iseg, &
+        integer(kind = int_wp) :: itel2, idump, nsc, isc, cell_i, &
                 ips, iflx, ip1
         real(kind = real_wp) :: fscale
         integer(kind = int_wp) :: ithandl = 0
@@ -62,9 +62,9 @@ contains
             nsc = ipdmp(ip1 + idump)
             do isc = 1, nsc
                 itel2 = itel2 + 1
-                iseg = ipdmp(itel2)
-                if (iseg > 0) then    !  integrate the fluxes
-                    ips = isdmp(iseg)
+                cell_i = ipdmp(itel2)
+                if (cell_i > 0) then    !  integrate the fluxes
+                    ips = isdmp(cell_i)
                     flxint(:, idump) = flxint(:, idump) + flxdmp(:, ips) * fscale
                 endif
             enddo

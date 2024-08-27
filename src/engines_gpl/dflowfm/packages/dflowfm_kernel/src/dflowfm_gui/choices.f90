@@ -80,16 +80,12 @@
       use gridoperations
       use m_oned_functions, only: convert_cross_to_prof
       use unstruc_model, only: md_ident
+      use m_drawthis
 
       implicit none
       integer :: ja, n12, ikey, mnx
-      integer :: ndraw
       integer :: NUM, NWHAT, KEY, nwhat2
-      integer :: JDEMO
       integer :: irerun ! orthogonalisenet: rerun
-
-      common / DRAWTHIS / ndraw(50)
-      common / DEMO / JDEMO
       integer :: maxopt, ierr
       integer, parameter :: MAXOP = 64
       character * 40 OPTION(MAXOP), exp(MAXOP)

@@ -1111,9 +1111,9 @@ contains
 
    !> Update total net inflow of all laterals for each 1d node with given computational time step.
    subroutine updateTotalInflowLat(dts)
-      use m_flow, only: vTotLat, qCurLat, kmx
+      use m_flow, only: vTotLat, qCurLat
       use m_flowgeom, only: ndx2d
-      use m_laterals, only: qqlat, num_layers, numlatsg, n1latsg, n2latsg, nnlat
+      use m_laterals, only: qqlat, numlatsg, n1latsg, n2latsg, nnlat
       implicit none
       double precision, intent(in) :: dts ! current computational time step
       integer :: n

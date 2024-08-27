@@ -31,15 +31,13 @@
 !
 
       subroutine GETKEY(KEY)
+         use m_nkeys
          implicit none
          integer :: i
          integer :: infoinput
          integer :: key
          integer :: keynum
-         integer :: nkey
-         integer :: numc
-         integer :: numkeys
-         common / NKEYS / NUMKEYS, NKEY(20), NUMC(20)
+
          KEY = InfoInput(57)
          KEYNUM = -999
          do I = 1, NUMKEYS

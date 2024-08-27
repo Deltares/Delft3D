@@ -36,6 +36,7 @@
          use unstruc_colors
          use geometry_module, only: dbdistance
          use unstruc_display
+         use m_drawthis
 
          implicit none
          integer :: ja
@@ -45,11 +46,8 @@
          integer :: k2
          integer :: k3
          integer :: L, LL
-         integer :: ndraw
          double precision :: d1, d2, x, y
          logical inview
-
-         common / DRAWTHIS / ndraw(50)
 
          if (NDRAW(2) <= 0 .or. NUML == 0) return
 

@@ -40,7 +40,6 @@ subroutine updateValuesOnLaterals(tim1, timestep)
    use m_alloc
    use m_flowparameters, only: eps10
    use m_partitioninfo, only: jampi, reduce_double_sum, is_ghost_node
-   use m_flow, only: kmx
    implicit none
    double precision, intent(in) :: tim1 !< Current (new) time
    double precision, intent(in) :: timestep !< Timestep is the difference between tim1 and the last update time

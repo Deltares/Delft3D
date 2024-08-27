@@ -35,6 +35,7 @@
                         NUMP, NLOC, IN, JN)
          use m_missing
          use m_wearelt
+         use m_grid_block
          implicit none
 !     VELDTRANSLATIE VAN XH,YH OP BASIS X,Y RONDOM PUNT MP,NP
 !     ALS NLOC IS 1, DAN LOKAAL ORTHOGONALE TRANSLATIES
@@ -42,9 +43,6 @@
          integer :: mmax, nmax, mc, nc, mp, np, nump, nloc, in, jn
 
          double precision :: X(MMAX, NMAX), Y(MMAX, NMAX), XH(MMAX, NMAX), YH(MMAX, NMAX)
-         integer :: mb, nb, mb2, nb2, npt, npt2, nputo, itype
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
-
          double precision :: pi2, x0, y0, dx0, dy0, rsx, rn, fr, dx, dy, xn, yn
          integer :: m1, n1, m2, n2, ismeer, i, j
 

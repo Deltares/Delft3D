@@ -113,7 +113,6 @@ contains
         character(len = *) :: test_description  !! Description of the test being run
 
         integer :: log_unit
-        integer :: ierr
 
         ! Check if the test should run
         testno = testno + 1
@@ -1130,7 +1129,6 @@ contains
     !
     subroutine ftnunit_write_html_failed_equivalent(test_description)
         character(len = *) :: test_description
-        logical :: expected
 
         integer :: log_unit
 
@@ -1470,7 +1468,6 @@ contains
 
     subroutine ftnunit_write_html_failed_files(test_description, string1, string2, string3)
         character(len = *) :: test_description
-        integer :: type
         character(len = *) :: string1
         character(len = *) :: string2
         character(len = *) :: string3

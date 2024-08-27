@@ -77,7 +77,6 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
                                                   ! Calling perf_function_eqtran with "message" caused problems
                                                   ! Solved by using "message_c"
     integer                     :: i
-    integer                     :: l = 0
     logical                     :: apply_hinset
     real(fp)                    :: rhow
     real(fp)                    :: rhosol
@@ -92,8 +91,6 @@ subroutine eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strin
     real(fp)                    :: s
     real(fp)                    :: tdiss
     real(fp)                    :: tshear
-    real(fp)                    :: vonkar
-    real(fp)                    :: settling_flux
     real(fp)                    :: macro_frac  ! macro floc fraction
     real(fp)                    :: ws_macro
     real(fp)                    :: ws_micro

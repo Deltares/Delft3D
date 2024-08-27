@@ -144,7 +144,7 @@ subroutine nc_prepare(ncid, numitem, item_prefix, dimid_item, dimid_time, refdat
 
     integer :: ierr, idLen
     integer :: dimid_chars
-    integer :: varid_id, varid_x, varid_y, varid_x2, varid_y2, varid_type
+    integer :: varid_id, varid_x, varid_y, varid_x2, varid_y2
 
     integer          :: imiss
     double precision :: dmiss
@@ -458,7 +458,7 @@ contains
       integer,                intent(out) :: NrSecs
       real (kind=8),          intent(out) :: TStart, Tend
       integer                             :: ierr, nTim, unit
-      integer                             :: varid, tim_dimid
+      integer                             :: tim_dimid
       real                                :: RTimestepSize
       real(kind=8)                        :: ref_date, tzone
 
@@ -862,7 +862,7 @@ contains
       integer,                intent(in)  :: ndx1
       real(kind=8),   dimension(:), intent(out) :: time_arr
       real(kind=8),   dimension(:), intent(out) :: data_arr
-      integer :: ierr, nVar, nDim, nTim, nLoc, iVar, iDim, iTim, iLoc
+      integer :: ierr, nVar, nDim, nTim, nLoc, iVar, iLoc
       integer :: varid, series_varid, tim_dimid, time_varid  !loc_dimid
       integer :: tslen, nn
       character(len=:), allocatable   :: attstr, tsname

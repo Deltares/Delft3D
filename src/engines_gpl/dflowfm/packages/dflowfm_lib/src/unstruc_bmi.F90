@@ -100,19 +100,58 @@ contains
 !> \defgroup modelinformation Model Information Functions
 !! \{
 
-!> Returns a string array of the model's input variable names as "long variable names" from the CSDMS Standard Names.
-!! TODO: not implemented yet.
-   subroutine get_input_var_names(names) bind(C, name="get_input_var_names")
-      character(kind=c_char), dimension(MAXNAMES), intent(out) :: names(:)
-      !type(c_ptr), dimension(:) :: names
-      no_warning_unused_variable(names)
-   end subroutine get_input_var_names
+!> Fills a string array with the model's input variable names as "long variable names" from the CSDMS Standard Names.
+!! NOTE: not implemented yet, will return a DFM_NOTIMPLEMENTED error.
+   function get_input_var_names(names) bind(C, name="get_input_var_names") result(c_istat)
+      type(c_ptr), dimension(:), intent(out) :: names !< Array of C-pointers, will contain pointers to C-compatible strings upon return.
+      integer(c_int) :: c_istat !< Integer status code indicating success (zero) or failure (nonzero)
+
+      integer :: i_var, var_count
+      character(kind=c_char, len=1), dimension(:, :), pointer :: cnames
+      character(len=MAXSTRLEN) :: fname
+
+      c_istat = DFM_NOTIMPLEMENTED
+      return
+
+      ! NOTE: code below is working example code for returning a BMI 2.0
+      ! compliant array of names.
+
+      var_count = 1
+
+      allocate (cnames(MAXSTRLEN, var_count))
+      do i_var = 1, var_count
+         fname = 'test_get_input_var_names' ! TODO: UNST-7403: implement this.
+         cnames(:, i_var) = string_to_char_array(trim(fname), len(trim(fname)))
+         names(i_var) = c_loc(cnames(:, i_var))
+      end do
+
+   end function get_input_var_names
 
 !> Returns a string array of the model's output variable names as "long variable names" from the CSDMS Standard Names.
-!! TODO: not implemented yet.
+!! NOTE: not implemented yet, will return a DFM_NOTIMPLEMENTED error.
    subroutine get_output_var_names(names) bind(C, name="get_output_var_names")
-      character(kind=c_char), dimension(MAXNAMES), intent(out) :: names(:)
-      no_warning_unused_variable(names)
+      type(c_ptr), dimension(:), intent(out) :: names !< Array of C-pointers, will contain pointers to C-compatible strings upon return.
+      integer(c_int) :: c_istat !< Integer status code indicating success (zero) or failure (nonzero)
+
+      integer :: i_var, var_count
+      character(kind=c_char, len=1), dimension(:, :), pointer :: cnames
+      character(len=MAXSTRLEN) :: fname
+
+      c_istat = DFM_NOTIMPLEMENTED
+      return
+
+      ! NOTE: code below is working example code for returning a BMI 2.0
+      ! compliant array of names.
+
+      var_count = 1
+
+      allocate (cnames(MAXSTRLEN, var_count))
+      do i_var = 1, var_count
+         fname = 'test_get_output_var_names' ! TODO: UNST-7403: implement this.
+         cnames(:, i_var) = string_to_char_array(trim(fname), len(trim(fname)))
+         names(i_var) = c_loc(cnames(:, i_var))
+      end do
+
    end subroutine get_output_var_names
 
 !> Returns a static attribute (i.e. an attribute that does not change
@@ -317,7 +356,7 @@ contains
 
       if (do_check_bmi_timestep .and. timetarget - time_user /= dt_user) then ! We don't support yet a changing dt_user (may affect input/output, meteo, etc.)
          iresult = DFM_INVALIDTARGETTIME
-         write (msg, '(a,g15.9,a,g15.9,a)') 'Mismatch of requested step (', timetarget - time_user, ') and the specified user timestep (', dt_user, ').'
+         write (msg, '(a,g16.9,a,g16.9,a)') 'Mismatch of requested step (', timetarget - time_user, ') and the specified user timestep (', dt_user, ').'
          call mess(LEVEL_WARN, msg)
 !      goto 888
       end if
@@ -367,7 +406,7 @@ contains
 
       if (do_check_bmi_timestep .and. timetarget /= time_user) then ! We don't yet support another targettime than upcoming time_user
          iresult = DFM_INVALIDTARGETTIME
-         write (msg, '(a,g15.9,a,g15.9,a)') 'Mismatch of requested step (', timetarget, ') and the specified user timestep (', time_user, ').'
+         write (msg, '(a,g16.9,a,g16.9,a)') 'Mismatch of requested step (', timetarget, ') and the specified user timestep (', time_user, ').'
          call mess(LEVEL_WARN, msg)
 !      goto 888
       end if
@@ -703,37 +742,6 @@ contains
 
    end subroutine get_var_name
 
-   subroutine get_var_names(names) bind(C, name="get_var_names")
-      use iso_c_binding, only: c_char, c_ptr
-      character(kind=c_char), dimension(MAXNAMES), intent(out) :: names(:)
-
-      no_warning_unused_variable(names)
-      
-      ! I can't get this to work.....
-
-      ! http://stackoverflow.com/questions/9686532/arrays-of-strings-in-fortran-c-bridges-using-iso-c-binding
-      ! The way we do it is to use a C_PTR array to point to strings. For example:
-
-      ! CHARACTER(LEN=100), DIMENSION(numStrings), TARGET :: stringArray
-      ! TYPE(C_PTR), DIMENSION(numStrings) :: stringPtrs
-      ! then we set our strings in stringArray, remembering to null-terminate them such as:
-
-      ! DO ns = 1, numStrings
-      !    stringArray(ns) = "My String"//C_NULL_CHAR
-      !    stringPtrs(ns) = C_LOC(stringArray(ns))
-      ! END DO
-      ! and pass stringPtrs to the C function.
-
-      ! The C function has the interface:
-
-      ! void stringFunc(int *numStrings, char **stringArray) {
-      !     int i;
-      !     for(i=0;i<*numStrings;++i) {
-      !        printf("%s\n",stringArray[i]);
-      !     }
-      !  }
-   end subroutine get_var_names
-
    subroutine get_var_type(c_var_name, c_type) bind(C, name="get_var_type")
       !DEC$ ATTRIBUTES DLLEXPORT :: get_var_type
 
@@ -801,17 +809,6 @@ contains
       c_location = string_to_char_array(trim(location_name), len(trim(location_name)))
 
    end subroutine get_var_location
-
-   subroutine get_var_role(c_var_name, role) bind(C, name="get_var_role")
-      character(kind=c_char), intent(in) :: c_var_name(:)
-      character(kind=c_char), intent(out) :: role(:)
-      no_warning_unused_variable(c_var_name)
-      no_warning_unused_variable(role)
-      ! Roles:
-      ! BMI_INPUT
-      ! BMI_OUTPUT
-      ! BMI_INPUTOUTPUT
-   end subroutine get_var_role
 
    subroutine get_var_units(c_var_name, unit) bind(C, name="get_var_units")
       character(kind=c_char), intent(in) :: c_var_name(:)
@@ -2313,7 +2310,7 @@ contains
    !> Returns the c_ptr for a variable on a lateral location
    function get_pointer_to_lateral_variable(item_name, field_name) result(c_lateral_pointer)
       use m_laterals, only: qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
-                           lateral_volume_per_layer, num_layers
+                            lateral_volume_per_layer, num_layers
       use m_flow, only: s1
       use string_module, only: str_token
 

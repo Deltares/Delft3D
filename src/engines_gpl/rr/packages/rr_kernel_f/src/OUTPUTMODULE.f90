@@ -638,7 +638,7 @@ module Output
 
     Implicit none
 
-    Integer iEvent, iNode, iKind, iNr, iMap, iLoc, iSlt, iKKl, i, j, Itmstp, IRRRunoffSub
+    Integer iEvent, iNode, iKind, iNr, iMap, iLoc, iSlt, iKKl, j, Itmstp, IRRRunoffSub
     Integer iPlv, iPlv2, iPlv3, iplv4, ipTyp, iPOpp
     Integer iOW, Ibnd, IRwzi, iPluv
     Integer NodeUp, NodeDown, kind, inr2, idum
@@ -3812,7 +3812,7 @@ module Output
 ! Character(Len=40)                :: DateString
   Character(Len=40), pointer, dimension(:)  :: locationid
   integer                             nitem, refdate, reftime, ipos, j, ikind
-  Character(Len=40)                   Id, VariableName
+  Character(Len=40)                   VariableName
   Character(Len=80)                   LongVariableName
   Character(Len=7)                    AggregationVar
   double precision, dimension(:), allocatable       :: X1Coor, X2Coor, Y1Coor, Y2Coor
@@ -4998,7 +4998,7 @@ module Output
 ! Ievent = event number
 ! Itmstp = timestep
 
-   Integer Ievent, Lasttm, iout1
+   Integer Ievent, Lasttm
    Real    DefaultT0OutputValue
    Character(len=32) RestartVersion
 

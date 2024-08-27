@@ -36,11 +36,11 @@
     use m_flow
     use m_missing
     use m_transport
+    use m_drawthis
     implicit none
-    integer :: nodemode, nodewhat, ndraw(50)
+    integer :: nodemode, nodewhat
     integer :: k, ja, ja2, nn, ncol
     double precision :: znod, zn
-    common / drawthis / ndraw
     logical inview
 
     nodemode = ndraw(19)

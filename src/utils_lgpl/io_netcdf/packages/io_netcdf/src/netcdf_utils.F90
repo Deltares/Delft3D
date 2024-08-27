@@ -431,9 +431,6 @@ function ncu_clone_vardef(ncidin, ncidout, varidin, newname, varidout, &
 
 
    integer                        :: ierr
-   integer                        :: i
-
-   character(len=nf90_max_name)   :: attname
    integer                        :: natts
    integer :: ndims, xtype
    integer, allocatable ::dimids(:)
@@ -821,7 +818,6 @@ function ncu_copy_var_atts( ncidin, ncidout, varidin, varidout ) result(ierr)
     integer                        :: i
     character(len=nf90_max_name)   :: attname
     integer                        :: natts
-    integer                        :: attvalue
 
     ierr = -1
     ierr = nf90_inquire_variable( ncidin, varidin, nAtts=natts )

@@ -258,7 +258,7 @@ contains
 
             call prop_get(str_ptr, '', 'allowedFlowdir', txt, success)
             if (.not. success) then
-               TXT = 'both'
+               txt = 'both'
             end if
             longculverts(nlongculverts)%allowed_flowdir = allowedFlowDirToInt(txt)
 
@@ -479,6 +479,12 @@ contains
                call SetMessage(LEVEL_ERROR, 'valveRelativeOpening not found for long culvert: '//trim(st_id))
             end if
 
+            call prop_get(str_ptr, '', 'allowedFlowdir', txt, success)
+            if (.not. success) then
+               txt = 'both'
+            end if
+            longculverts(nlongculverts)%allowed_flowdir = allowedFlowDirToInt(txt)
+
             call prop_get(str_ptr, '', 'branchId', longculverts(nlongculverts)%branchId, success)
             if (success) then
                call prop_get(str_ptr, '', 'csDefId', csDefId, success)
@@ -510,7 +516,7 @@ contains
                longculverts(nlongculverts)%flowlinks = -999
                call prop_get(str_ptr, '', 'allowedFlowdir', txt, success)
                if (.not. success) then
-                  TXT = 'both'
+                  txt = 'both'
                end if
                longculverts(nlongculverts)%allowed_flowdir = allowedFlowDirToInt(txt)
 
@@ -766,13 +772,13 @@ contains
    end subroutine setFrictionForLongculverts
 
    !> In case  the valve_relative_area < 1 the flow area
-   !! at the first link is reduced by valve_relative_area
+   !! at the first link is reduced by valve_relative_area, or set to 0 by allowed_flowdir
    subroutine reduceFlowAreaAtLongculverts()
       use m_flow
-
+      use m_1d_structures, only: FLOWDIR_POSITIVE, FLOWDIR_NONE, FLOWDIR_NEGATIVE
       implicit none
 
-      integer i, L
+      integer i, L, L_dir, allowed_flowdir
 
       do i = 1, nlongculverts
          if (longculverts(i)%numlinks > 0) then
@@ -783,6 +789,14 @@ contains
             end if
             if (L > 0) then
                au(L) = longculverts(i)%valve_relative_opening * au(L)
+               call getflowdir(L, L_dir)
+               allowed_flowdir = longculverts(i)%allowed_flowdir
+               if (allowed_flowdir == FLOWDIR_NONE &
+                   .or. L_dir < 0 .and. allowed_flowdir == FLOWDIR_POSITIVE &
+                   .or. L_dir > 0 .and. allowed_flowdir == FLOWDIR_NEGATIVE) then
+                  hu(L) = 0d0
+                  au(L) = 0d0
+               end if
             end if
          end if
       end do
@@ -1128,7 +1142,7 @@ contains
       use kdtree2Factory
       use m_hash_search
       use m_find_flownode, only: find_nearest_flownodes_kdtree
-      
+
       implicit none
 
       type(t_network), intent(inout) :: network !< Network structure
@@ -1138,7 +1152,7 @@ contains
       integer, allocatable :: inode(:), inodeGlob(:), jnode(:)
 
       integer :: ierror
-      
+
       associate (xpl => longculvert%xcoords, ypl => longculvert%ycoords)
 
          longculvert%flowlinks = 0

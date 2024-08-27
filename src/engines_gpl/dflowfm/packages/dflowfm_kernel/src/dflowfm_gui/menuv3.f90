@@ -33,6 +33,7 @@
       subroutine MENUV3(NWHAT, OPTION, MAXOPT)
          use unstruc_files
          use m_devices
+         use m_helpnow
          implicit none
          integer :: imenuvertic, IXP, IYP
          integer :: infoinput
@@ -41,12 +42,10 @@
          integer :: key
          integer :: maxop
          integer :: maxopt
-         integer :: nlevel
          integer :: nstart
          integer :: nwhat
          parameter(MAXOP=64)
-         character(len=40) OPTION(MAXOP), WRDKEY
-         common / HELPNOW / WRDKEY, NLEVEL
+         character(len=40) OPTION(MAXOP)
 !     Keuzemenu verticaal
 !
          NSTART = NWHAT

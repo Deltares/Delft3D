@@ -1221,10 +1221,9 @@ contains
 
 !> Initializes memory for laterals on flow nodes.
    subroutine ini_alloc_laterals()
-      use m_laterals, only: qqlat, kclat, nnlat
+      use m_laterals, only: kclat, nnlat
       use m_flowgeom, only: ndx2d, ndxi, ndx
       use m_alloc
-      use m_flow, only: kmx
       integer :: ierr
       integer :: nlatndguess
 

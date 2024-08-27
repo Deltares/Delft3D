@@ -1371,7 +1371,7 @@ contains
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
       integer :: ierr
-      integer :: k, L, LF, KB, KBI, N, K2, ja, method, filetype0
+      integer :: k, L, LF, KB, KBI, N, ja, method, filetype0
       integer :: k1, l1, l2
       character(len=256) :: filename, filename0
       character(len=64) :: varname

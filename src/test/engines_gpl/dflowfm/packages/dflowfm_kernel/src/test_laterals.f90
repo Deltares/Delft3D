@@ -55,18 +55,15 @@ end subroutine tests_lateral
 !> Test computation of sinks and sources (discharge and transport load per cell) due to laterals
 subroutine test_get_lateral_discharge()
    use m_flow, only: vol1
-   use m_transportdata, only: numconst
    use m_flowgeom, only: ndxi
    
    real(kind=dp), allocatable, dimension(:,:,:)   :: lateral_discharge_in                !< Lateral discharge going into the model (source)
    real(kind=dp), allocatable, dimension(:,:,:)   :: lateral_discharge_out               !< Lateral discharge extracted out of the model (sink)
    real(kind=dp), allocatable, dimension(:,:)   :: reference_lateral_discharge_in      !< Reference lateral discharge going into the model (source)
    real(kind=dp), allocatable, dimension(:,:)   :: reference_lateral_discharge_out     !< Reference lateral discharge extracted out of the model (sink)
-   real(kind=dp), allocatable, dimension(:,:)   :: transport_load                      !< Load being transported into domain
-   real(kind=dp), allocatable, dimension(:,:)   :: transport_sink                      !< Load being transported out 
    
    integer :: iostat
-   integer :: i_cell, i_const, i_lateral      ! loop counters
+   integer :: i_cell, i_lateral      ! loop counters
 
    allocate(lateral_discharge_in(1,numlatsg,ndxi),stat=iostat)
    call aerr('lateral_discharge_in',iostat,numlatsg*ndxi,'test_get_lateral_discharge' )
@@ -194,8 +191,6 @@ subroutine setup_testcase()
    use m_flowgeom, only: ndxi
 
    integer :: iostat                ! allocation status
-   integer :: i_cell, i_lateral, k1 ! loop counter
-   integer :: k                     ! node number            
 
    jampi = 0
    dts = 1.0e-3_dp
@@ -356,7 +351,7 @@ subroutine test_distribute_lateral_discharge
 
    integer :: ierr !< error flag
    integer :: ndx, ndkx
-   integer :: i_node, i_layer
+   integer :: i_node
    real(kind=dp), allocatable, dimension(:,:) :: provided_lateral_discharge
 
    ! Specify number of computational cells, ndx

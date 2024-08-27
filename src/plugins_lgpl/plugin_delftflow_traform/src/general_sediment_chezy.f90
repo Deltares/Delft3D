@@ -93,7 +93,6 @@ subroutine core_function()
 !
 ! Local variables for input parameters
 !
-integer            :: i
 integer            :: l
 integer            :: m
 integer            :: n, nm
@@ -115,7 +114,6 @@ character(len=256) :: filenm
 !
 ! Local variables
 !
-real(hp)   :: temp ! user-specified suspended sediment factor
 real(hp)   :: delta
 real(hp)   :: th      ! Shields number
 real(hp)   :: f     ! help variable for excess Shields number

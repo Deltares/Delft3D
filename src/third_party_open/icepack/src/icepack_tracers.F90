@@ -480,7 +480,7 @@
 !autodocument_end
 
         ! local
-        integer (kind=int_kind) :: k, nsiz
+        integer (kind=int_kind) :: nsiz
         character(len=*),parameter :: subname='(icepack_init_tracer_indices)'
 
         if (present(nt_Tsfc_in)) nt_Tsfc = nt_Tsfc_in

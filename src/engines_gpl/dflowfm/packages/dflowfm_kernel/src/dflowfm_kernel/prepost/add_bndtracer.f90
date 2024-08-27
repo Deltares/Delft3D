@@ -86,13 +86,13 @@ subroutine add_bndtracer(tracnam, tracunit, itrac, janew)
       itrac = numtracers
    else
       if (transformcoef(4) /= dmiss .and. transformcoef(4) /= 0d0 .and. transformcoef(4) /= wstracers(itrac)) then
-         write (msgbuf, '(a,e10.5,a,e10.5,a)') 'add_bndtracer: tracer '''//trim(tracnam)//''' already has a fall velocity (', wstracers(itrac), &
-            '). Ignoring different value (', transformcoef(4), ').'
+         write (msgbuf, '(a,e12.5,a,e12.5,a)') 'add_bndtracer: tracer '''//trim(tracnam)//''' already has a fall velocity (', &
+                wstracers(itrac), '). Ignoring different value (', transformcoef(4), ').'
          call warn_flush()
       end if
       if (transformcoef(5) /= dmiss .and. transformcoef(5) /= 0d0 .and. transformcoef(5) /= decaytimetracers(itrac)) then
-         write (msgbuf, '(a,e10.5,a,e10.5,a)') 'add_bndtracer: tracer '''//trim(tracnam)//''' already has a decay time (', decaytimetracers(itrac), &
-            '). Ignoring different value (', transformcoef(5), ').'
+         write (msgbuf, '(a,e12.5,a,e12.5,a)') 'add_bndtracer: tracer '''//trim(tracnam)//''' already has a decay time (', &
+                decaytimetracers(itrac), '). Ignoring different value (', transformcoef(5), ').'
          call warn_flush()
       end if
    end if

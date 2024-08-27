@@ -1,0 +1,129 @@
+output 'ExtVlPhyt'
+   description   'VL extinction by phytoplankton'
+end-output
+output 'Depth'
+   description   'depth of segment'
+end-output
+output 'DayL'
+   description   'daylength <0-1>'
+end-output
+output 'Limit Chlo'
+   description   'total chlorophyll in algae'
+end-output
+output 'Limit nit'
+   description   'limiting factor nitrogen'
+end-output
+output 'Limit pho'
+   description   'limiting factor phosphorus'
+end-output
+output 'Limit sil'
+   description   'limiting factor silicate'
+end-output
+output 'Limit e'
+   description   'limiting factor energy'
+end-output
+output 'Limit gro'
+   description   'limiting factor growth'
+end-output
+output 'TOC'
+   description   'total organic C (including algae)'
+end-output
+output 'KjelN'
+   description   'Kjeldahl nitrogen'
+end-output
+output 'DIN'
+   description   'dissolved inorganic nitrogen'
+end-output
+output 'TON'
+   description   'total organic N (including algae)'
+end-output
+output 'PON'
+   description   'Particulate Organic Nitrogen (including algae)'
+end-output
+output 'TOP'
+   description   'total organic P (including algae)'
+end-output
+output 'POP'
+   description   'particulate organic P (incl algae)'
+end-output
+output 'TotSi'
+   description   'total silica (including algae)'
+end-output
+output 'VsedFDI_E'
+   description   'sedimentation velocity algae FDIATOMS_E'
+end-output
+output 'VsedFDI_P'
+   description   'sedimentation velocity algae FDIATOMS_P'
+end-output
+output 'VsedGRE_E'
+   description   'sedimentation velocity algae GREENS_E'
+end-output
+output 'VsedGRE_N'
+   description   'sedimentation velocity algae GREENS_N'
+end-output
+output 'VsedGRE_P'
+   description   'sedimentation velocity algae GREENS_P'
+end-output
+output 'VsedAPH_E'
+   description   'sedimentation velocity algae APHANIZO_E'
+end-output
+output 'VsedAPH_N'
+   description   'sedimentation velocity algae APHANIZO_N'
+end-output
+output 'VsedAPH_P'
+   description   'sedimentation velocity algae APHANIZO_P'
+end-output
+output 'VsedBLU_E'
+   description   'sedimentation velocity algae BLUEGRN_E'
+end-output
+output 'VsedBLU_N'
+   description   'sedimentation velocity algae BLUEGRN_N'
+end-output
+output 'VsedBLU_P'
+   description   'sedimentation velocity algae BLUEGRN_P'
+end-output
+output 'fSedFDI_E'
+   description   'sedimentation flux algae FDIATOMS_E'
+end-output
+output 'fSedFDI_P'
+   description   'sedimentation flux algae FDIATOMS_P'
+end-output
+output 'fSedGRE_E'
+   description   'sedimentation flux algae GREENS_E'
+end-output
+output 'fSedGRE_N'
+   description   'sedimentation flux algae GREENS_N'
+end-output
+output 'fSedGRE_P'
+   description   'sedimentation flux algae GREENS_P'
+end-output
+output 'fSedAPH_E'
+   description   'sedimentation flux algae APHANIZO_E'
+end-output
+output 'fSedAPH_N'
+   description   'sedimentation flux algae APHANIZO_N'
+end-output
+output 'fSedAPH_P'
+   description   'sedimentation flux algae APHANIZO_P'
+end-output
+output 'fSedBLU_E'
+   description   'sedimentation flux algae BLUEGRN_E'
+end-output
+output 'fSedBLU_N'
+   description   'sedimentation flux algae BLUEGRN_N'
+end-output
+output 'fSedBLU_P'
+   description   'sedimentation flux algae BLUEGRN_P'
+end-output
+output 'VxSedAlg'
+   description   'sedimentation velocity'
+end-output
+output 'ExtVlISS'
+   description   'VL extinction by inorganic suspended matter'
+end-output
+output 'ExtVlOSS'
+   description   'VL extinction by POC'
+end-output
+output 'RadSurf'
+   description   'irradiation at the water surface'
+end-output

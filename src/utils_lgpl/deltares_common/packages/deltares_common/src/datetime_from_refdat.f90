@@ -39,7 +39,7 @@
  character (len=8), intent(in)  :: refdat                                 !< reference date
  integer,           intent(out) :: iyear, imonth, iday, ihour, imin, isec !< Actual date, split up in year/month, etc.
 
- integer :: jul, jul0, iyear0, imonth0, iday0
+ integer :: jul0, iyear0, imonth0, iday0
  double precision :: tnr, tsec
  integer :: ndag
 

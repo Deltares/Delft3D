@@ -35,15 +35,13 @@
     use m_flowgeom
     use m_flow
     use m_missing
+    use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, dv=>dv2, val=>val2, nv=>nv2, jaauto=>jaauto2
 
     implicit none
     double precision :: zlin
     double precision :: zn
     double precision :: rmin, rmax
     integer :: i, l, k1, k2
-    double precision :: VMAX, VMIN, DV, VAL(256)
-    integer :: NCOLS(256), NIS, NIE, nv, JAAUTO
-    common / depmax2 / vmax, vmin, dv, val, ncols, nv, nis, nie, jaauto
     logical inview
 
     if (jaauto > 0) then

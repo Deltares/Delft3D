@@ -16,6 +16,8 @@ endif()
 # Set preprocessor definitions
 target_compile_definitions(${library_name} PRIVATE _LIB)
 
+target_link_libraries(${library_name} PRIVATE no_compiler_warnings)
+
 # Create the folder structure in project
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES   ${headers} ${source} )
 set_target_properties (${library_name} PROPERTIES FOLDER third_party_open)

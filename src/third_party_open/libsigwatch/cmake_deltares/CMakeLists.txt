@@ -7,6 +7,8 @@ set(library_name libsigwatch)
 add_library(${library_name} ${headers}
                             ${source})
 
+target_link_libraries(${library_name} PRIVATE no_compiler_warnings)
+
 # Set preprocessor definitions
 target_compile_definitions(${library_name} PRIVATE _MBCS)
 

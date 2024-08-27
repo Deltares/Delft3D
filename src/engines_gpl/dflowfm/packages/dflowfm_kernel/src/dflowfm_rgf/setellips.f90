@@ -32,10 +32,9 @@
 
 !
       subroutine SETELLIPS(IELL)
+         use m_ellips
          implicit none
          integer :: iell
-         common / ELLIPS / A, E
-         double precision :: A, E
 
          A = 6378137d0
          E = 0.081819d0

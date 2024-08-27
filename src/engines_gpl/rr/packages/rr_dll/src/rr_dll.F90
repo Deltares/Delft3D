@@ -103,7 +103,6 @@ function SE_Initialize(model, schematization) result(retVal)
     character(Len=oes_path_len), dimension(argCount):: argsToModel
     integer                                         :: modelHandle
     integer                                         :: dummyNumEvents, dummyNumTimesteps
-    integer                                         :: finalizeResult
     character(len=oes_path_len)                     :: workingDir
     
     ! body

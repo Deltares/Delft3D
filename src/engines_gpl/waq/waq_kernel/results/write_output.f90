@@ -22,7 +22,7 @@
 !!  rights reserved.
 module m_write_output
     use m_waq_precision
-    use m_values
+    use m_exchange_values, only: exchange_values
     use m_write_balance_output
     use m_write_monitoring_output
     use m_write_binary_output, only: write_binary_history_output, write_binary_map_output
@@ -32,7 +32,7 @@ module m_write_output
             fill_transport_terms_transects, fill_output_buffer_sub_grid, fill_transect_output_buffer, &
             fill_dump_areas_balances, update_base_grid_local_array, calculate_balance_terms, &
             write_balance_history_output
-    use m_write_restart_map_file
+    use m_write_restart_map_file, only: write_restart_map_file
     use timers, only: evaluate_timers
 
     implicit none
@@ -639,7 +639,7 @@ contains
                 allocate(surf(num_cells))
                 name = 'SURF'
                 lget = .true.
-                call values (name, num_cells, surf, num_constants, num_spatial_parameters, &
+                call exchange_values (name, num_cells, surf, num_constants, num_spatial_parameters, &
                         num_time_functions, num_spatial_time_fuctions, cons, coname, param, &
                         paname, func, funame, segfun, sfname, &
                         lget, ierr)

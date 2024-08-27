@@ -79,7 +79,6 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     integer                  :: j
     integer                  :: l
     integer                  :: mxnulyr
-    integer                  :: nm
     integer                  :: nval
     character(11)            :: fmttmp       !< Format file ('formatted  ') 
     character(20)            :: parname
@@ -88,7 +87,6 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     character(80)            :: bndname
     character(256)           :: errmsg
     character(256)           :: fildiff
-    logical                  :: log_temp
     logical                  :: ex
     logical                  :: found
     type(tree_data), pointer :: morbound_ptr
@@ -845,7 +843,6 @@ subroutine rdinidiff(lundia    ,fildiff   ,ndiff     ,kdiff    , &
     integer                               :: i
     integer                               :: ilyr
     integer                               :: istat
-    integer                               :: nm
     logical                               :: ex
     real(fp)                              :: rmissval
     real(fp)                              :: temp
@@ -854,7 +851,6 @@ subroutine rdinidiff(lundia    ,fildiff   ,ndiff     ,kdiff    , &
     character(11)                         :: fmttmp   ! Format file ('formatted  ') 
     character(256)                        :: filename
     character(300)                        :: message
-    character(40)                         :: txtput1
     type(tree_data), pointer              :: mor_ptr
     type(tree_data), pointer              :: layer_ptr
 !
@@ -1038,7 +1034,6 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
     real(fp)                              :: poros
     real(fp)                              :: rmissval
     real(fp)                              :: sedbed
-    real(fp)                              :: sedmass
     real(fp)                              :: svf
     real(fp)                              :: thick
     real(fp)                              :: totfrac

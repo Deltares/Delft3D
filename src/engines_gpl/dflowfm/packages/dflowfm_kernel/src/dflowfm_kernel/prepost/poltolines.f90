@@ -35,23 +35,16 @@
      use m_netw
      use m_afmeting
      use gridoperations
+     use m_cconstants
 
      implicit none
      double precision :: ael
-     double precision :: ag
-     double precision :: cfl
-     double precision :: e0
-     double precision :: eps
      integer :: k
      integer :: k1
      integer :: k2
-     double precision :: pi
-     double precision :: rho
-     double precision :: rhow
      double precision :: rml
      double precision :: zp
-     common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
-     double precision DLENGTH
+     double precision :: DLENGTH
 
      AEL = PI * RDIAM * RDIAM / 4 ! RDIAM in mm
      do K = 1, NPL - 1

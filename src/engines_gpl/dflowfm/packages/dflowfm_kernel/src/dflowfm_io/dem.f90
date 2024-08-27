@@ -221,7 +221,7 @@ contains
 
       ! next we have the final data elements that we are concerned with
 
-      read (fp, '(i6,3E12.6,2i6)', advance='no') &
+      read (fp, '(i6,3E12.5,2i6)', advance='no') &
          dem_info%accuracyCode, & !< non or unknown accuracy
          dem_info%spatialResolution, & !< x, y, z spatial resolution
          dem_info%profileDimension !< number of rows and columns

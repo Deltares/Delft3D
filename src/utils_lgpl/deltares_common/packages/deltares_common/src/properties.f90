@@ -588,8 +588,6 @@ subroutine prop_xmlfile(filename , tree, error)
     ! Local variables
     !
     integer               :: lu
-    integer               :: iostat
-    logical               :: opened
     !
     lu = -1
     !
@@ -629,7 +627,6 @@ subroutine prop_xmlfile_pointer(lu, tree, error)
     integer                                                   :: ierr
     integer                                                   :: noattribs
     integer                                                   :: nodata
-    logical                                                   :: filestatus
     logical                                                   :: xmlendtag
     character(10)                                             :: inttostring
     character(80)                                             :: xmltag
@@ -1038,7 +1035,6 @@ subroutine xml_compress_( data, no_data )
    integer :: i
    integer :: j
    integer :: k
-   logical :: empty
 
    j = 0
    do i = 1,no_data
@@ -2305,7 +2301,6 @@ subroutine prop_get_logical(tree, chapter, key, value, success, value_parsed)
     !
     integer :: k1
     integer :: k2
-    integer :: pointpos
     integer :: spacepos
     integer :: vallength
     character(100) :: falsity

@@ -33,14 +33,12 @@
       subroutine DISPOS()
          use m_devices
          use m_sferic
+         use m_locatora
+         use m_disfor
+         use m_howtoview
+         
          implicit none
-         integer :: jashow, jav, jmouse, jview, ixmax, ixmin, ixy, ndec, nxy
-         double precision :: xa, ya, xlc, ylc
-         double precision :: xyz
-         common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
-         common / dispfor / xyform, zform, disform
-         character(len=7) xyform, zform, disform
+         integer :: ixmax, ixmin, ixy, ndec, nxy
          character POSITI * 25
 
          POSITI = 'X,Y:         ,         '

@@ -47,6 +47,7 @@ subroutine ORTHOGONALISENET(jarerun)
    use geometry_module, only: dbpinpol
    use fm_external_forcings_data, only: transformcoef
    use gridoperations
+   use m_drawthis
 
    implicit none
 
@@ -103,9 +104,6 @@ subroutine ORTHOGONALISENET(jarerun)
    double precision, allocatable, dimension(:) :: xloc, yloc ! local coordinates
    integer, allocatable, dimension(:) :: iloc ! startpointers in local coordinate arrays, dim(numk+1)
    double precision, dimension(1) :: dumx, dumy
-
-   integer :: NDRAW
-   common / DRAWTHIS / ndraw(50)
 
    jarerun = 0
 

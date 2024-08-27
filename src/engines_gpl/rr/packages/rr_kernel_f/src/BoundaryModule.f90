@@ -246,7 +246,6 @@ contains
     real            blval
     Character(CharIdLength), Pointer :: TBLDEF(:)
     Logical       , Pointer :: AlreadyRead(:)
-    Integer, pointer        :: ec_boundary_handle(:)
     Logical Success
 
 
@@ -451,7 +450,7 @@ subroutine readBoundaryConditionsInto_ec(boundaryConditionsFile)
    logical                         :: success
 
    integer              :: istat          ! status after function call
-   integer              :: i, inod, ityp  ! loop counter, node index, boundary type
+   integer              :: i  ! loop counter
    integer              :: total_items    ! total number of items expected in bc-file (boundaries, laterals)
 
    character(len=40)    :: locationID     ! boundary location identifier (node name)
@@ -462,11 +461,6 @@ subroutine readBoundaryConditionsInto_ec(boundaryConditionsFile)
    integer              :: bc_count       ! #boundary conditions read from bc file
    integer              :: ec_bc_item     ! boundary condition item id in ec- module
 
-   logical                         :: is_qh_bound         ! Q(h) boundary?
-   real(hp), dimension(:), pointer :: h_values, q_values  ! Q(h) table
-   integer                         :: numValues           ! #rows in Q(h) table
-   integer     :: numpars
-   integer     :: j
    integer     :: index
 
    inquire(file=boundaryConditionsFile, exist=success)
@@ -699,7 +693,6 @@ end subroutine closeBoundaryConditionFiles
     logical                    :: DateTimeOutsideTable
     double precision           :: value_from_ec
     double precision           :: current_time
-    double precision           :: start_time
     double Precision, external :: modified_julian_fromJulian
 
     integer, save :: timerRRRdSobek    = 0

@@ -36,19 +36,11 @@
       use m_arcinfo
       use unstruc_display
       use unstruc_opengl
+      use m_drawthis
       implicit none
 
-      double precision :: epsgs
-      integer :: itgs
-      integer :: maxitgs
       integer :: metdraw
-      integer :: ndraw
-
       integer :: KEY, nsiz
-
-      common / DRAWTHIS / ndraw(50)
-
-      common / SOLVER / EPSGS, MAXITGS, ITGS
 
 !
       if (KEY /= 3) return

@@ -213,8 +213,6 @@ module time_module
 
          integer :: year, month, day, ierr, npc, intdate
          character :: separator
-         logical :: has_separators
-         character(len=20) :: fmt
          character(len=12), dimension(:), allocatable :: date_elements
 
          success = .false.
@@ -724,7 +722,6 @@ module time_module
          integer      , optional, intent(  out)  :: ierr        !< Error status, 0 if success, nonzero in case of format error.
          character(len=25)                       :: datetimestr !< The resulting date time string. Considering using trim() on it.
 
-         real(kind=hp) :: days
          real(kind=hp) :: dayfrac_
          integer       :: ierr_
 

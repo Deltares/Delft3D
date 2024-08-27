@@ -142,7 +142,6 @@ function flow_to_wave_init(case_name, flow_IT01, flow_timestep, &
     !
     character(Len=diomaxparlen), dimension(num_to_pars)                  :: par_names   ! 'Parameter'
     real(hp)                   , dimension(num_to_pars, max_num_subdoms) :: out_values  ! outgoing param. values
-    integer                    , dimension(:,:), pointer                 :: in_results  ! incoming result flag
     integer                                                              :: num_dom     ! local version of numPassedDomains/numPassedMudDomains
     integer                                                              :: i
     !
@@ -277,7 +276,6 @@ function wave_from_flow_init(subdom_names, flow_IT01, flow_timestep, mud) result
     character(diomaxparlen), dimension(:)  , pointer                 :: par_names         ! must be 'Parameter'
     character(diomaxloclen), dimension(:)  , pointer                 :: dio_subdom_names  ! <case name>
     real(hp)               , dimension(:,:), pointer                 :: in_values         ! incoming param. values
-    integer                , dimension(m_result_size, n_result_size) :: out_results       ! outgoing result flag
     !
     ! Executable statements ---------------------------------------------------
     !
@@ -345,7 +343,6 @@ function flow_to_wave_command(command, numdomains, mud, num_steps) result(ierror
     ! Local variables (for DIO communication)
     !
     real(hp), dimension(num_to_pars, max_num_subdoms)          :: out_values ! outgoing param. values
-    integer , dimension(:,:)                         , pointer :: in_results ! incoming result flag
     integer                                                    :: num_dom    ! local version of numPassedDomains/numPassedMudDomains
     logical                                                    :: init       ! local version of initialized/mudinitialized
     !
@@ -417,7 +414,6 @@ function wave_from_flow_command(command, mud, num_steps) result(success)
     ! Local variables (for DIO communication)
     !
     real(hp), dimension(:,:), pointer                 :: in_values   ! incoming param. values
-    integer , dimension(m_result_size, n_result_size) :: out_results ! outgoing result flag
     !
     ! Executable statements ---------------------------------------------------
     !

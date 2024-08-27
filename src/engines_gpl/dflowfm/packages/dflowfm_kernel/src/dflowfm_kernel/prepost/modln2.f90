@@ -38,8 +38,8 @@
 !     OF INSERT, NPUT = -1
 !     DELETE ENTIRE LINE, -3
 !     DELETE ALL EXCEPT SELECTED LINE, -4
-         double precision :: X(MMAX), Y(MMAX), Z(MMAX)
          integer :: MMAX, NUMPI, MP, nput
+         double precision :: X(MMAX), Y(MMAX), Z(MMAX)
          double precision :: XP, YP, ZP
          integer :: i
          integer :: istart

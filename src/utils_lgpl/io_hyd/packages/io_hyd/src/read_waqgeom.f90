@@ -59,9 +59,6 @@ module m_read_waqgeom
 
         logical                                :: success !< Result status, true if successful.
 
-        character(len=260) :: msgtxt
-        type(t_ug_mesh),allocatable            :: meshids
-
         ! NetCDF variables
         !> Dimensions   Node variables Link variables Link type Boundary variables Element variables Computational boundaries
         integer :: ierr
@@ -72,7 +69,6 @@ module m_read_waqgeom
         integer :: id_idomain
         integer :: id_iglobal
         integer :: file_size
-        character(len=260) :: var_name
 
         integer :: i_mesh, i_netw, ifill
 

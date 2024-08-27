@@ -59,10 +59,8 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
 !
 ! Local variables
 !
-    logical                                      :: success
     integer                                      :: istat
     integer                                      :: model
-    character(256)                               :: filename
     character(256)                               :: tmp
 !
 !! executable statements -------------------------------------------------------

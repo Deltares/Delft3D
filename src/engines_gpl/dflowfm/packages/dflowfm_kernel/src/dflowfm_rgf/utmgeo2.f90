@@ -38,6 +38,7 @@
 !! BY: Chuck Gantz, http://www.gpsy.com/gpsinfo/geotoutm/gantz/LatLong-UTMconversion.cpp
     subroutine utmgeo2(xutm, yutm, xgeo, ygeo, IZONE, ihem)
        use m_sferic
+       use m_ellips
        implicit none
 !     xutm    i    double precision ::    easting (UTM)
 !     yutm    i    double precision ::    northing (UTM)
@@ -48,9 +49,8 @@
 !     xgeo    o    double precision ::    longitude (geographical coordinate)
 !     ygeo    o    double precision ::    lattitude (geographical coordinate)
 !
-       double precision :: xutm, yutm, a, e, ygeo, xgeo
+       double precision :: xutm, yutm, ygeo, xgeo
        integer :: Izone, ihem
-       common / ELLIPS / A, E
 
        double precision :: k0 = 0.9996
        double precision :: eccSquared

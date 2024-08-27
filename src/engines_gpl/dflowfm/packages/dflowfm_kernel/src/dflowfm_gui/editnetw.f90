@@ -40,13 +40,10 @@
          use gridoperations
          use m_mergenodes
          use unstruc_display, only: nhlNetNode
+         use m_helpnow
+         use m_cconstants
          implicit none
          integer :: MODE, KEY
-
-         double precision :: ag
-         double precision :: cfl
-         double precision :: e0
-         double precision :: eps
          integer :: newmode
          integer :: ja
          integer :: jadd
@@ -59,26 +56,16 @@
          integer :: ncol
          integer :: nl1
          integer :: nl2
-         integer :: nlevel
          integer :: nput
          integer :: num
          integer :: numb
          integer :: nwhat
          integer :: ierror
-         double precision :: pi
-         double precision :: rho
-         double precision :: rhow
          double precision :: xp1
          double precision :: yp1
          double precision :: zp1
-
          double precision :: xp, yp, zp, ZPP
-
-         common / HELPNOW / WRDKEY, NLEVEL
-
-         common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
-
-         character TEX * 26, WRDKEY * 40
+         character TEX * 26
          integer :: iresult
 
          TEX = ' Edit Network             '

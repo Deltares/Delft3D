@@ -35,16 +35,12 @@
          use m_grid
          use m_gridsettings
          use unstruc_colors
+         use m_grid_block
          implicit none
 
 !      integer :: mmax, nmax, mc, nc
 !      double precision :: X(MMAX,NMAX), Y(MMAX,NMAX)
 !      INTEGER IJC(MMAX,NMAX), IJYES(MMAX,NMAX)
-
-         integer :: ndraw
-         common / DRAWTHIS / ndraw(50)
-         integer :: MB, NB, MB2, NB2, NPT, NPT2, NPUTO, ITYPE
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
 
          integer :: M1, M2, N1, N2, MD, ND, M, N
          double precision :: A, B

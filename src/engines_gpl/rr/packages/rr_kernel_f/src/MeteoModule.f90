@@ -1467,19 +1467,10 @@ contains
     ! *** ------------------------
     ! ***  IDEBUG = file unit number of debug file
     ! ***  Ievent = bui nummer
-    ! ***  BuiTmstp = tijdstap in bui
     ! *********************************************************************
 
-    INTEGER       iECode, I, iDebug, Ievent, BuiTmstp, RunoffTmstp
+    INTEGER       iECode, I, iDebug, Ievent, RunoffTmstp
     CHARACTER(Len=CharIdLength) STRING
-
-!!  ToDo: Convert BuiTmstp to RunoffTmstp based on NrSecsRai, NrSecsRunoff
-!!                                                 EventStartDate, EventStartDateRunoff
-!!
-!!  checked: this works ok if BuiTmstp size <= Runoff Timestepsize
-!!  but not ok if Runoff timestepsize is smaller than bui timestep
-!!  therefore done in same way as for rainfall, but independent
-!!  Call ConvertBuiTimestepToRunoffTimestep (Ievent, BuiTmstp, RunoffTmstp)
 
     String = ' '
     iDebug = ConfFil_get_iDebug()
@@ -1520,13 +1511,13 @@ contains
   Integer Ievent, BuiTmstp, RunoffTmstp, T0shift
 
   ! use DateTimeStartEvent, DateTimeStartEventRunoff
-   Integer           DateSubStart, DateSubEnd, DateEventStart
-   Integer           TimeSubStart, TimeSubEnd, TimeEventStart
-   Integer           DateSubStartRunoff, DateSubEndRunoff, DateEventStartRunoff
-   Integer           TimeSubStartRunoff, TimeSubEndRunoff, TimeEventStartRunoff
+   Integer           DateEventStart
+   Integer           TimeEventStart
+   Integer           DateEventStartRunoff
+   Integer           TimeEventStartRunoff
 
    Double Precision  Julian
-   Double Precision  JulianSubDateStart, JulianSubDateEnd, JulianEventStart, JulianEventStartRunoff, SubSetDuration
+   Double Precision  JulianEventStart, JulianEventStartRunoff
 
     DateEventStart = EventStartDateTime(Ievent,1)*10000 + EventStartDateTime(Ievent,2)*100 + EventStartDateTime(Ievent,3)
     TimeEventStart = EventStartDateTime(Ievent,4)*10000 + EventStartDateTime(Ievent,5)*100 + EventStartDateTime(Ievent,6)
@@ -1723,19 +1714,10 @@ contains
     ! *** ------------------------
     ! ***  IDEBUG = file unit number of debug file
     ! ***  Ievent = bui nummer
-    ! ***  BuiTmstp = tijdstap in bui
     ! *********************************************************************
 
-    INTEGER       iECode, I, iDebug, Ievent, BuiTmstp, TemperatureTmstp
+    INTEGER       iECode, I, iDebug, Ievent, TemperatureTmstp
     CHARACTER(Len=CharIdLength) STRING
-
-!!  ToDo: Convert BuiTmstp to TemperatureTmstp based on NrSecsRai, NrSecsTemperature
-!!                                                 EventStartDate, EventStartDateTemperature
-!!
-!!  checked: this works ok if BuiTmstp size <= Temperature Timestepsize
-!!  but not ok if Temperature timestepsize is smaller than bui timestep
-!!  therefore done in same way as for rainfall, but independent
-!!  Call ConvertBuiTimestepToTemperatureTimestep (Ievent, BuiTmstp, TemperatureTmstp)
 
     String = ' '
     iDebug = ConfFil_get_iDebug()
@@ -1802,7 +1784,7 @@ contains
       Double Precision  Julian
       Double Precision  JulianSubDateStart, JulianSubDateEnd, JulianEventStart, SubSetDuration
 
-      Real              DaysAfterStartEvent, DaysInEvent, DaysInSubset, Rshift, RLASTT, RTempStart
+      Real              DaysAfterStartEvent, DaysInEvent, DaysInSubset, Rshift, RLASTT
 
       iDebug = ConfFil_get_iDebug()
       if (idebug .ne. 0) WRITE (IDEBUG,1)
@@ -2547,18 +2529,17 @@ contains
       Subroutine VerifyRainfallAndRunoffAndTemperatureData
 
       Integer Ievent
-      Integer           DateSubStart, DateSubEnd, DateEventStart
-      Integer           TimeSubStart, TimeSubEnd, TimeEventStart
-      Integer           DateSubStartRunoff, DateSubEndRunoff, DateEventStartRunoff
-      Integer           TimeSubStartRunoff, TimeSubEndRunoff, TimeEventStartRunoff, iout1
-      Integer           DateSubStartTemperature, DateSubEndTemperature, DateEventStartTemperature
-      Integer           TimeSubStartTemperature, TimeSubEndTemperature, TimeEventStartTemperature
+      Integer           DateEventStart
+      Integer           TimeEventStart
+      Integer           DateEventStartRunoff
+      Integer           TimeEventStartRunoff, iout1
+      Integer           DateEventStartTemperature
+      Integer           TimeEventStartTemperature
 
       Double Precision  Julian
-      Double Precision  JulianSubDateStart, JulianSubDateEnd, &
-                        JulianEventStart, JulianEventStartRunoff, JulianEventStartTemperature, SubSetDuration
+      Double Precision  JulianEventStart, JulianEventStartRunoff, JulianEventStartTemperature
 
-      Real              DaysAfterStartEvent, DaysInEvent, DaysInEventRunoff, DaysInEventTemperature
+      Real              DaysInEvent, DaysInEventRunoff, DaysInEventTemperature
       Logical           errorfound
       Logical           errorfoundtemp
 

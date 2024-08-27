@@ -113,7 +113,6 @@
 
       integer lu, k, eof
       character(len=max_length) line
-      logical opend
 
       no_props = 0
       
@@ -186,8 +185,6 @@
       subroutine prop_get_string( chapter, key, value )
 
       character(len=*) chapter, key, value
-      character(len=255) prop_value
-
       integer ip, k, istart, kend, length
       logical ignore
 !
@@ -335,7 +332,6 @@
       logical       value
 
       character(len=255) prop_value
-      character(len=20)  format
       integer            k1, k2
 
       character(len=100) truth, falsity

@@ -31,12 +31,10 @@
 !
 
    subroutine ISOFILb(X, Y, Z, n4, NCOLR) ! as isofil, now for depmax2
+      use m_depmax2, only: val=>val2, ncols=>ncols2, nv=>nv2
       implicit none
       integer :: n4, ncolr
       double precision :: X(n4), Y(n4), Z(n4)
-      double precision :: vmax, vmin, dv, val
-      integer :: ncols, nv, nis, nie, jaauto
-      common / DEPMAX2 / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
 
       call isofil_color(X, Y, Z, n4, NCOLR, VAL, NCOLS, NV)
 

@@ -37,6 +37,7 @@
     use m_flowtimes
     use m_partitioninfo
     use m_missing
+    use m_drawthis
     implicit none
 
     integer, intent(out) :: jareduced ! maximum time-step is already globally reduced (1) or not (0)
@@ -51,9 +52,6 @@
     double precision :: huv
     double precision :: dtsc1, dtsc2
     double precision :: squloc
-
-    integer :: NDRAW
-    common / DRAWTHIS / ndraw(50)
 
     jareduced = 0
     if (jamapdtcell > 0) dtcell = 0d0

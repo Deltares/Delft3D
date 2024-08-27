@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by ICT (Stichting Deltares) -->
+<schema xmlns:rtc="http://www.wldelft.nl/fews" xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.wldelft.nl/fews" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<include schemaLocation="rtcSharedTypes.xsd"/>
+	<element name="rtcDataConfig" type="rtc:RTCDataConfigComplexType"/>
+	<complexType name="RTCDataConfigComplexType">
+		<choice>
+			<sequence>
+				<element name="import" type="rtc:RTCImportSeriesComplexType"/>
+				<element name="export" type="rtc:RTCExportSeriesComplexType"/>
+				<element name="timeSeries" type="rtc:RTCTimeSeriesComplexType" maxOccurs="unbounded">
+					<annotation>
+						<documentation>Time series for importing and exporting optionally including the mapping from to Delft-FEWS or OpenMI </documentation>
+					</annotation>
+				</element>
+			</sequence>
+			<sequence>
+				<element name="importSeries" type="rtc:RTCSeriesImportComplexType">
+					<annotation>
+						<documentation>Import time series RTC-Tools imports from XML files or other interfaces (DEPRECATED, will be removed in future versions)</documentation>
+					</annotation>
+				</element>
+				<element name="exportSeries" type="rtc:RTCSeriesExportComplexType">
+					<annotation>
+						<documentation>Export time series RTC-Tools genenerates and exports to XML or csv files or supplies to other applications via other interfaces (DEPRECATED, will be removed in future versions)</documentation>
+					</annotation>
+				</element>
+			</sequence>
+		</choice>
+	</complexType>
+	<complexType name="RTCImportSeriesComplexType">
+		<sequence>
+			<element name="PITimeSeriesFile" type="rtc:PITimeSeriesImportFileComplexType" minOccurs="0"/>
+		</sequence>
+	</complexType>
+	<complexType name="RTCExportSeriesComplexType">
+		<sequence>
+			<element name="CSVTimeSeriesFile" type="rtc:CSVTimeSeriesFileComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Comma-separated file for data exports. Note that this option is only used in the exportSeries element. If selected, all available time series will be exported.</documentation>
+				</annotation>
+			</element>
+			<element name="PITimeSeriesFile" type="rtc:PITimeSeriesExportFileComplexType" minOccurs="0"/>
+		</sequence>
+	</complexType>
+	<complexType name="RTCSeriesImportComplexType">
+		<sequence>
+			<element name="PITimeSeriesFile" type="rtc:PITimeSeriesImportFileComplexType" minOccurs="0"/>
+			<element name="timeSeries" type="rtc:RTCTimeSeriesComplexType" maxOccurs="unbounded">
+				<annotation>
+					<documentation>Time series for importing and exporting optionally including the mapping from to Delft-FEWS or OpenMI </documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="RTCSeriesExportComplexType">
+		<sequence>
+			<element name="CSVTimeSeriesFile" type="rtc:CSVTimeSeriesFileComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Comma-separated file for data exports. Note that this option is only used in the exportSeries element. If selected, all available time series will be exported.</documentation>
+				</annotation>
+			</element>
+			<element name="PITimeSeriesFile" type="rtc:PITimeSeriesExportFileComplexType" minOccurs="0"/>
+			<element name="timeSeries" type="rtc:RTCTimeSeriesComplexType" maxOccurs="unbounded">
+				<annotation>
+					<documentation>Time series for importing and exporting optionally including the mapping from to Delft-FEWS or OpenMI </documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="RTCTimeSeriesComplexType">
+		<annotation>
+			<documentation>The header is used to specify the link to the location
+                and the contents</documentation>
+		</annotation>
+		<sequence>
+			<element name="PITimeSeries" type="rtc:PITimeSeriesComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Time series definition of the PI XML time series format of Delft-FEWS</documentation>
+				</annotation>
+			</element>
+			<element name="OpenMIExchangeItem" type="rtc:OpenMIExchangeItemComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Time series definition of the OpenMI format for the online coupling of models during runtime</documentation>
+				</annotation>
+			</element>
+		</sequence>
+		<attribute name="id" use="required">
+			<annotation>
+				<documentation>ID of time series in RTC Tools configuration.</documentation>
+			</annotation>
+			<simpleType>
+				<restriction base="rtc:TimeSeriesSimpleType"/>
+			</simpleType>
+		</attribute>
+		<attribute name="vectorLength" use="optional">
+			<annotation>
+				<documentation>Optional vector length for vector definition. This attribute generates ids according to id[0], id[1], ..., id[length-1] according to the configured id above.</documentation>
+			</annotation>
+			<simpleType>
+				<restriction base="int">
+					<minInclusive value="1"/>
+				</restriction>
+			</simpleType>
+		</attribute>
+		<attribute name="validation" use="optional">
+			<annotation>
+				<documentation>data validation to make sure that the state or the complete time series is available after startup of the application (DEPRECATED, will be removed in future versions)</documentation>
+			</annotation>
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="NO"/>
+					<enumeration value="STATE"/>
+					<enumeration value="UPDATE"/>
+					<enumeration value="UPDATE_EXCEPT_STATE"/>
+					<enumeration value="FORECAST"/>
+					<enumeration value="FORECAST_EXCEPT_T0"/>
+					<enumeration value="ALL"/>
+					<enumeration value="ALL_EXCEPT_STATE"/>
+				</restriction>
+			</simpleType>
+		</attribute>
+		<attribute name="validationImport" use="optional">
+			<annotation>
+				<documentation>data validation to make sure that the state or the complete time series is available after startup of the application</documentation>
+			</annotation>
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="NO"/>
+					<enumeration value="STATE"/>
+					<enumeration value="UPDATE"/>
+					<enumeration value="UPDATE_EXCEPT_STATE"/>
+					<enumeration value="FORECAST"/>
+					<enumeration value="FORECAST_EXCEPT_T0"/>
+					<enumeration value="ALL"/>
+					<enumeration value="ALL_EXCEPT_STATE"/>
+				</restriction>
+			</simpleType>
+		</attribute>
+		<attribute name="validationExport" use="optional">
+			<annotation>
+				<documentation>data validation to make sure that the state or the complete time series is available at termination of the application</documentation>
+			</annotation>
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="NO"/>
+					<enumeration value="STATE"/>
+					<enumeration value="UPDATE"/>
+					<enumeration value="UPDATE_EXCEPT_STATE"/>
+					<enumeration value="FORECAST"/>
+					<enumeration value="FORECAST_EXCEPT_T0"/>
+					<enumeration value="ALL"/>
+					<enumeration value="ALL_EXCEPT_STATE"/>
+				</restriction>
+			</simpleType>
+		</attribute>
+	</complexType>
+	<complexType name="PITimeSeriesComplexType">
+		<annotation>
+			<documentation>The header is used to specify the link to the location
+                and the contents</documentation>
+		</annotation>
+		<sequence>
+			<element name="locationId" type="string">
+				<annotation>
+					<documentation>Location ID in Delft-FEWS PI-XML file</documentation>
+				</annotation>
+			</element>
+			<element name="parameterId" type="string">
+				<annotation>
+					<documentation>Parameter ID in Delft-FEWS PI-XML file</documentation>
+				</annotation>
+			</element>
+			<element name="qualifierId" type="string" minOccurs="0" maxOccurs="unbounded">
+				<annotation>
+					<documentation>Optional qualifier ID in Delft-FEWS PI-XML file</documentation>
+				</annotation>
+			</element>
+			<element name="timeStep" type="rtc:TimeStepComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Equidistant time step of time series with optional multiplier of divider</documentation>
+				</annotation>
+			</element>
+			<element name="unit" type="string" minOccurs="0">
+				<annotation>
+					<documentation>Optional check for this unit during import, write this unit optionally when export the time series</documentation>
+				</annotation>
+			</element>
+			<element name="interpolationOption" type="rtc:PIInterpolationOptionEnumStringType" minOccurs="0">
+				<annotation>
+					<documentation>Interpolation option in data import</documentation>
+				</annotation>
+			</element>
+			<element name="extrapolationOption" type="rtc:PIExtrapolationOptionEnumStringType" minOccurs="0">
+				<annotation>
+					<documentation>Extrapolation option in data import</documentation>
+				</annotation>
+			</element>
+		</sequence>
+		<attribute name="import" type="boolean" use="optional"/>
+		<attribute name="export" type="boolean" use="optional"/>
+	</complexType>
+	<simpleType name="PIInterpolationOptionEnumStringType">
+		<restriction base="string">
+			<enumeration value="BLOCK"/>
+			<enumeration value="LINEAR"/>
+		</restriction>
+	</simpleType>
+	<simpleType name="PIExtrapolationOptionEnumStringType">
+		<restriction base="string">
+			<enumeration value="BLOCK"/>
+			<enumeration value="PERIODIC"/>
+		</restriction>
+	</simpleType>
+	<complexType name="OpenMIExchangeItemComplexType">
+		<sequence>
+			<element name="elementId" type="string">
+				<annotation>
+					<documentation>OpenMI element ID, corresponds to the locationId</documentation>
+				</annotation>
+			</element>
+			<element name="quantityId" type="string">
+				<annotation>
+					<documentation>OpenMI quantity ID, corresponds to the parameterId</documentation>
+				</annotation>
+			</element>
+			<element name="unit" type="rtc:UnitEnumStringType">
+				<annotation>
+					<documentation>Selection of supported units</documentation>
+				</annotation>
+			</element>
+		</sequence>
+		<attribute name="import" type="boolean" use="optional"/>
+		<attribute name="export" type="boolean" use="optional"/>
+	</complexType>
+	<simpleType name="UnitEnumStringType">
+		<restriction base="string">
+			<enumeration value="m"/>
+			<enumeration value="m^2"/>
+			<enumeration value="m^3"/>
+			<enumeration value="m^3/s"/>
+			<enumeration value="s"/>
+		</restriction>
+	</simpleType>
+	<complexType name="PITimeSeriesImportFileComplexType">
+		<sequence>
+			<element name="timeSeriesFile" type="string">
+				<annotation>
+					<documentation>Name of the file containing timeseries data. </documentation>
+				</annotation>
+			</element>
+			<element name="useBinFile" type="boolean" default="false" minOccurs="0">
+				<annotation>
+					<documentation>DEPRECATED, will be removed in future versions</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="PITimeSeriesExportFileComplexType">
+		<sequence>
+			<element name="timeSeriesFile" type="string">
+				<annotation>
+					<documentation>Name of the file containing timeseries data. </documentation>
+				</annotation>
+			</element>
+			<element name="useBinFile" type="boolean" default="false" minOccurs="0">
+				<annotation>
+					<documentation>When true the events in the PI time series file are read from / written into a binairy file instead of the xml file.
+The xml file only contains the time series headers and optionally a time zone.
+The binairy file has the same name as the xml file only the extension is "bin" instead of "xml". The byte order in the bin file is always Intel x86.
+                </documentation>
+				</annotation>
+			</element>
+			<element name="adjointOutput" type="boolean" default="false" minOccurs="0"/>
+		</sequence>
+	</complexType>
+	<complexType name="CSVTimeSeriesFileComplexType">
+		<attribute name="decimalSeparator" type="rtc:SeparatorEnumStringType" use="optional" default="."/>
+		<attribute name="delimiter" type="rtc:SeparatorEnumStringType" use="optional" default=","/>
+		<attribute name="adjointOutput" type="boolean" use="optional" default="false"/>
+	</complexType>
+	<simpleType name="SeparatorEnumStringType">
+		<restriction base="string">
+			<enumeration value="."/>
+			<enumeration value=","/>
+			<enumeration value=";"/>
+		</restriction>
+	</simpleType>
+</schema>

@@ -372,9 +372,6 @@ subroutine OesCreate(logName)
     ! arguments
     character(Len=*), intent(in), optional :: logName
 
-    ! locals
-    integer :: ierr
-
     if ( present(logName) ) then
        if (oesLogHandle == 0) then
 #if (defined(DO_LOG))
@@ -2607,7 +2604,7 @@ end function OesGetChildElmSetID
    subroutine small(string)
       implicit none
       character(len=*)           :: string
-      integer       i, j, newlen, lenstr, biga, bigz, smalla, offset
+      integer       i, j, newlen, biga, bigz, smalla, offset
 !
       biga   = ICHAR('A')
       bigz   = ICHAR('Z')
@@ -2629,7 +2626,7 @@ end function OesGetChildElmSetID
    subroutine big(string)
       implicit none
       character(len=*)           :: string
-      integer       i, j, newlen, lenstr, smalla, smallz, biga, offset
+      integer       i, j, newlen, smalla, smallz, biga, offset
 !
       smalla = ICHAR('a')
       smallz = ICHAR('z')

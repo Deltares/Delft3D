@@ -35,21 +35,14 @@
      use M_AFMETING
      use m_missing, only: jins, dmiss
      use geometry_module, only: dpinpok
+     use m_cconstants
      implicit none
 
-     double precision :: ag
-     double precision :: cfl
-     double precision :: e0
-     double precision :: eps
      integer :: in1
      integer :: in2
      integer :: k1
      integer :: k2
      integer :: l
-     double precision :: pi
-     double precision :: rho
-     double precision :: rhow
-     common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
 
 !  DO K = 1,NUMK
 !     RM(K) = 0

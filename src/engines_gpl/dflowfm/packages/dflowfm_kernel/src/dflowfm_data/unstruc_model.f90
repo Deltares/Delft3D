@@ -740,10 +740,10 @@ contains
       character(len=1000) :: charbuf = ' '
       character(len=255) :: tmpstr, fnam, bnam
       double precision, allocatable :: tmpdouble(:)
-      integer :: ibuf, ifil, mptfile, warn
-      integer :: i, n, j, je, iostat, readerr, ierror
+      integer :: ibuf, ifil
+      integer :: i, n, iostat, readerr, ierror
       integer :: jadum
-      real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), acc, ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
+      real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
       character(len=200), dimension(:), allocatable :: fnames
       double precision, external :: densfm
       double precision :: tim
@@ -2186,7 +2186,7 @@ contains
       charbuf = ' '
       call prop_get_string(md_ptr, 'output', 'TimeSplitInterval', charbuf, success)
       if (success) then
-         read (charbuf, *, iostat=iostat), ibuf, ti_split_unit
+         read (charbuf, *, iostat=iostat) ibuf, ti_split_unit
          if (iostat == 0) then
             ti_split = dble(ibuf)
             select case (ti_split_unit)
@@ -3746,7 +3746,7 @@ contains
 
       call prop_set(prop_ptr, 'output', 'TimingsInterval', ti_timings, 'Timings statistics output interval')
       helptxt = ' '
-      write (helptxt, '(i0,a1,a1)'), int(ti_split), ' ', ti_split_unit
+      write (helptxt, '(i0,a1,a1)') int(ti_split), ' ', ti_split_unit
       call prop_set(prop_ptr, 'output', 'TimeSplitInterval', trim(helptxt), 'Time splitting interval, after which a new output file is started. value+unit, e.g. ''1 M'', valid units: Y,M,D,h,m,s.')
 
       write (helptxt, "('Map file format ')")

@@ -141,7 +141,6 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     real(fp) :: epsmax
     real(fp) :: epsmxc
     real(fp) :: fact1
-    real(fp) :: gambr
     real(fp) :: hs
     real(fp) :: lci
     real(fp) :: muc

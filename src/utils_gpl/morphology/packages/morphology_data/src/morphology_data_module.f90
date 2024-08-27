@@ -2020,7 +2020,6 @@ subroutine get_one_transport_parameter(val, trapar, l, i, timhr, nm)
     integer     , optional, intent(in)    :: nm         !< spatial index for which value is requested
     
     integer                     :: j           !< sediment parameter source file index
-    real(fp)                    :: par         !< scalar to store the value
     real(fp)                    :: parvec(1)   !< array to receive the value
     character(256)              :: message     !< error message
     type(parfile_type), pointer :: parfile     !< temporary to one trapar%parfile field

@@ -36,6 +36,7 @@
          use m_devices
          use unstruc_model, only: MD_AUTOSTARTSTOP, md_jaAutoStart
          use unstruc_display, only: jaGUI
+         use m_helpnow
          implicit none
 
          character(len=*), intent(in) :: W1, W2, W3
@@ -44,11 +45,7 @@
          integer :: key
          integer :: nbck
          integer :: nfor
-         integer :: nLEVEL
          character(len=600) :: REC, rec2
-
-         common / HELPNOW / WRDKEY, NLEVEL
-         character WRDKEY * 40
 
          REC = trim(W1)//' '//trim(W2)//' '//trim(W3)
 

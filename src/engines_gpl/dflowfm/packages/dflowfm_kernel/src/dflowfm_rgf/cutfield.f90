@@ -32,12 +32,10 @@
 
       subroutine CUTFIELD(X, Y, mmax, nmax, MC, NC)
          use m_missing
+         use m_grid_block
          implicit none
          integer :: mmax, nmax, mc, nc
          double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
-         integer :: MB, NB, MB2, NB2, NPT, NPT2, NPUTO, ITYPE
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
-
          integer :: i, j
 
          do I = 1, MC

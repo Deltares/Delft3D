@@ -35,17 +35,15 @@
     use m_flowgeom
     use m_flow
     use m_missing
-
+    use m_depmax
+    use m_drawthis
+    
     implicit none
     integer :: i
     double precision :: rmin, rmax
     double precision, external :: znod
     double precision :: zn
-    integer :: n, ja2, ndraw
-    double precision :: VMAX, VMIN, DV, VAL(256)
-    integer :: NCOLS(256), NIS, NIE, nv, JAAUTO
-    common / depmax / vmax, vmin, dv, val, ncols, nv, nis, nie, jaauto
-    common / DRAWTHIS / ndraw(50)
+    integer :: n, ja2
     logical inview
 
     if (jaauto > 0) then

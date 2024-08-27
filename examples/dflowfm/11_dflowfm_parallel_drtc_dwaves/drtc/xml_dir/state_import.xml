@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<treeVectorFile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.openda.org" xsi:schemaLocation="http://www.openda.org D:\svn\trunk\src\DeltaShell\DeltaShell.Gui\bin\plugins\DeltaShell.Plugins.DelftModels.RealTimeControl\xsd\treeVector.xsd">
+  <treeVector>
+    <treeVectorLeaf id="output_weir_crest_level">
+      <vector>NaN</vector>
+    </treeVectorLeaf>
+  </treeVector>
+</treeVectorFile>

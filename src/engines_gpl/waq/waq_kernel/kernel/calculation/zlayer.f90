@@ -23,8 +23,12 @@
 module m_zlayer
     use m_waq_precision
     use m_string_utils
+    use timers
 
     implicit none
+
+    private
+    public :: zlayer, zflows
 
 contains
 
@@ -35,9 +39,6 @@ contains
             num_spatial_time_fuctions, sfname, segfun, conc, mass, &
             iknmrk, iknmkv, ifrmto)
 
-        !     Deltares Software Centre
-
-        !>\File
         !>      Sets feature of dry cells below bed to zero, determines position bed layer
         !>
         !>      - Only works if the constant 'Z_THRESH' exists, otherwise it only:
@@ -60,30 +61,12 @@ contains
         !>      NB. This routine also initialises the variable property array. It does so for the
         !>      whole array, so inclusive of any bed cells.
 
-        !     Created             : September 2010 by Leo Postma
-        !     Modified            : February  2011 by Leo Postma determine position of bedlayer
-        !                           August    2011 by Leo Postma more limited functionality
-        !                           February  2013 by Leo Postma expanded functionality again
-
-        !     Files               : none
-
-        !     Routines            : zoek  - to search the DRY_TRESH constant
-        !                                     and SURF parameter/segfunction
-        !                           set_feature  - to set features
-        !                           extract_waq_attribute  - to get features
-
-        use waq_attribute_utils, only : set_feature
+        use waq_attribute_utils, only: set_feature
         use m_extract_waq_attribute
-        use timers
-        implicit none
-
-        !     Parameters          :
-
-        !     kind           function         name                   description
 
         integer(kind = int_wp), intent(in) :: nosegw               !< number of computational volumes water
         integer(kind = int_wp), intent(in) :: num_cells                !< number of computational volumes total
-        integer(kind = int_wp), intent(in) :: num_substances_transported                !< number of transported substance
+        integer(kind = int_wp), intent(in) :: num_substances_transported          !< number of transported substance
         integer(kind = int_wp), intent(in) :: num_substances_total                !< total number of substance
         integer(kind = int_wp), intent(in) :: num_layers                !< number of layers
         real(kind = real_wp), intent(in) :: volume(num_cells)       !< volumes at start of time step
@@ -112,7 +95,7 @@ contains
         real(kind = real_wp) :: threshold       ! drying and flooding value
         real(kind = real_wp) :: minarea         ! minimum exhange area of a horizontal exchange
         integer(kind = int_wp) :: nosegl          ! number of computational volumes per layer
-        integer(kind = int_wp) :: iseg            ! loop variable volumes
+        integer(kind = int_wp) :: cell_i            ! loop variable volumes
         integer(kind = int_wp) :: iq              ! loop variable exchanges
         integer(kind = int_wp) :: i, j            ! general loop variables
         integer(kind = int_wp) :: ivol            ! this computational volumes
@@ -141,11 +124,11 @@ contains
         !        SURF is a parameter
 
         if (isurf > 0) then
-            do iseg = 1, nosegl
-                call extract_waq_attribute(1, iknmrk(iseg), ikm)
+            do cell_i = 1, nosegl
+                call extract_waq_attribute(1, iknmrk(cell_i), ikm)
                 if (ikm == 0) cycle                                    ! whole collumn is inactive
                 do ilay = num_layers, 1, -1                                     ! from bottom to top
-                    ivol = iseg + (ilay - 1) * nosegl
+                    ivol = cell_i + (ilay - 1) * nosegl
                     if (volume(ivol) < param(isurf, ivol) * threshold) then
                         if (ilay > 1) then
                             iknmrk(ivol) = 0                                  ! inactive cell below the bed
@@ -174,11 +157,11 @@ contains
             !        SURF is a spatial time function (often with 1D models)
 
             if (isurf > 0) then
-                do iseg = 1, nosegl
-                    call extract_waq_attribute(1, iknmrk(iseg), ikm)
+                do cell_i = 1, nosegl
+                    call extract_waq_attribute(1, iknmrk(cell_i), ikm)
                     if (ikm == 0) cycle
                     do ilay = num_layers, 1, -1                                  ! from bottom to top
-                        ivol = iseg + (ilay - 1) * nosegl
+                        ivol = cell_i + (ilay - 1) * nosegl
                         if (volume(ivol) < segfun(ivol, isurf) * threshold) then
                             if (ilay > 1) then
                                 iknmrk(ivol) = 0                               ! inactive cell below the bed
@@ -205,11 +188,11 @@ contains
 
                 !        SURF is not found, so the default value of 1 m2 is used
 
-                do iseg = 1, nosegl
-                    call extract_waq_attribute(1, iknmrk(iseg), ikm)
+                do cell_i = 1, nosegl
+                    call extract_waq_attribute(1, iknmrk(cell_i), ikm)
                     if (ikm == 0) cycle
                     do ilay = num_layers, 1, -1                               ! from bottom to top
-                        ivol = iseg + (ilay - 1) * nosegl
+                        ivol = cell_i + (ilay - 1) * nosegl
                         if (volume(ivol) < threshold) then
                             if (ilay > 1) then
                                 iknmrk(ivol) = 0                            ! inactive cell below the bed
@@ -268,15 +251,12 @@ contains
     subroutine zflows(num_exchanges, noq12, num_layers, num_constants, coname, &
             flow, ifrmto)
 
-        use timers
-        implicit none
-
-        integer(kind = int_wp), intent(in   ) :: num_exchanges            !< Number of exchanges between cells
-        integer(kind = int_wp), intent(in   ) :: noq12          !< Number of horizontal exchanges
-        integer(kind = int_wp), intent(in   ) :: num_layers          !< Number of Z-layers
-        integer(kind = int_wp), intent(in   ) :: num_constants         !< Number of constants
-        character(20),          intent(in   ) :: coname(num_constants) !< Names of the constants
-        real(kind = real_wp),   intent(in   ) :: flow(num_exchanges)      !< Flows between cells
+        integer(kind = int_wp), intent(in) :: num_exchanges            !< Number of exchanges between cells
+        integer(kind = int_wp), intent(in) :: noq12          !< Number of horizontal exchanges
+        integer(kind = int_wp), intent(in) :: num_layers          !< Number of Z-layers
+        integer(kind = int_wp), intent(in) :: num_constants         !< Number of constants
+        character(20), intent(in) :: coname(num_constants) !< Names of the constants
+        real(kind = real_wp), intent(in) :: flow(num_exchanges)      !< Flows between cells
         integer(kind = int_wp), intent(inout) :: ifrmto(4, num_exchanges) !< Exchange index array
 
         ! Local variables
@@ -323,4 +303,5 @@ contains
         end do
         if (timon) call timstop (ithandl)
     end subroutine zflows
+
 end module m_zlayer

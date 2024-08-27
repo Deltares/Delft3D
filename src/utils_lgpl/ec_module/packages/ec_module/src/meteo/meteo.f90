@@ -696,7 +696,6 @@ function getmeteoquantities(runid, meteoquantities) result(success)
    logical                             :: newquant
    character(60)                       :: curquant
    type(tmeteo)              , pointer :: meteo     ! all meteo for one subdomain
-   type(tmeteoitem)          , pointer :: meteoitem
 !
 !! executable statements -------------------------------------------------------
 !

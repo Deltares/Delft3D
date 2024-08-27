@@ -56,9 +56,6 @@
     double precision :: sumlay, dmorfacL, dh, ustar2swart, ustw2, fw, qeng, cf, wa, z00
     integer :: j, n, k, kg, nn, n1, L, LL, jabanhydrad = 0
 
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
-
     if (stm_included) return
 
     seq = 0d0; flx = 0d0

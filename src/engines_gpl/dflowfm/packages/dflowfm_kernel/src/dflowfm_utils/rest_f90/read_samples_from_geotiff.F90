@@ -42,6 +42,7 @@ function read_samples_from_geotiff(filename) result(success)
    use m_samples
    use m_samples_refine, only: iHesstat, iHesstat_DIRTY
    use string_module, only: strcmpi
+   use m_drawthis
    implicit none
 
    character(len=*), intent(in) :: filename !< Path of the file to be read
@@ -65,8 +66,6 @@ function read_samples_from_geotiff(filename) result(success)
    type(c_ptr) :: c_area_or_point
    logical :: is_area
    double precision :: pixeloffset
-   integer :: ndraw
-   common / DRAWTHIS / ndraw(50)
 
    ! Register all available gdal drivers
    call gdalallregister()

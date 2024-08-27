@@ -4,7 +4,7 @@
      + juer   ,
 c              mozart parameters (extra qlatnm) plus groundwater switch
      +         lmoza  ,nstmoz ,qlatid ,qlatnm ,lgrwt  ,lrest  , 
-     + flwpar ,contrl ,branch ,typcr  ,maxlev ,nlev   ,hlev   ,
+     +flwpar ,contrl ,branch ,typcr  ,maxlev ,nlev   ,hlev   ,
      + wft    ,aft    ,wtt    ,att    ,arex   ,arexcn ,arexop ,of     ,
      + bfrict ,bfricp ,maxtab ,ntabm  ,ntab   ,table  ,sectc  ,sectv  ,
      + grsize ,engpar ,gangle ,wndpar ,wfrict ,wshld  ,snceq  ,snmeq  ,
@@ -367,13 +367,11 @@ c     mozart declarations
 c
 c     Declaration of local variables
 c
-      integer ibuf1,ibuf2
-      integer iterbc ,exrstp ,istru, igrid
+      integer iterbc ,exrstp
       real    theta2 ,omalfa ,omc    ,omr    ,omw    ,omboun ,omqlat
       real    g      ,psi    ,theta  ,rhow   ,omega  ,lambda ,relstr
       real    dhstru ,cflpse ,overlp ,omcfl  ,dhtyp  ,urelax
       double precision        resid
-      character(len=18)       txt
 c
 c     FM1DIMP2DO: remove debug
       real dbg1

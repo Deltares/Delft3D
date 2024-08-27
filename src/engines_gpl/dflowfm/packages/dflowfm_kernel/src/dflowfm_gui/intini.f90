@@ -35,30 +35,14 @@
          use dflowfm_version_module, only: company, product_name, version_full
          use m_wearelt
          use m_devices
+         use m_locatora
+         use m_screenarea
+         use m_colnow
+         use m_initscreen
+         
          implicit none
-         double precision :: croshrsz
          integer :: icrhf
          integer :: infoopsystem
-         integer :: jashow
-         integer :: jaxis
-         integer :: jmouse
-         integer :: jvga
-         integer :: ncolnow
-         integer :: ntxcols
-         integer :: ntxrows
-         integer :: nxpix
-         integer :: nypix
-         double precision :: xa
-         double precision :: xlc
-         double precision :: xleft
-         double precision :: ya
-         double precision :: ybot
-         double precision :: ylc
-
-         common / INITSCREEN / CROSHRSZ, JVGA, NXPIX, NYPIX, NTXCOLS, NTXROWS
-         common / SCREENAREA / XLEFT, YBOT, JAXIS
-         common / COLNOW / NCOLNOW
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
 
          JSFERIC = 0
          ! CALL ISCREENMODEOPTIONS(1,NTXCOLS)
