@@ -46,7 +46,7 @@ contains
 !==============================================================================
 !> Test computation of sinks and sources (discharge and transport load per cell) due to laterals
    subroutine test_add_lateral_load_and_sink()
-      use m_flow, only: vol1
+      use m_flow, only: vol1, hs, kmxn
       use m_transportdata, only: numconst
       use m_flowgeom, only: ndxi
 
@@ -60,8 +60,33 @@ contains
       integer :: i_cell, i_const, i_lateral ! loop counters
       integer :: i_node
 
+      integer:: n_nodes, n_nodes_on_laterals, n_laterals, n_tracers
+
+      ! domain of 10 points, 2 laterals (1 incoming with 3 nodes, 1 outgoing with 2 nodes)
+      ! and 3 constituents. Volume (vol1) of each cell is set to 0.1d0.
+      ! consider 3 constituents to represent salt, temperature and tracer transport.
+      n_nodes = 10
+      n_nodes_on_laterals = 5
+      n_laterals = 2
+      n_tracers = 3
+
       ! initialization and allocation of global state variables
-      call setup_testcase()
+      call setup_testcase(n_nodes, n_nodes_on_laterals,n_laterals,n_tracers)
+      ! test-specific
+      n1latsg(1) = 1
+      n2latsg(1) = 3
+      n1latsg(2) = 4
+      n2latsg(2) = 5
+      nnlat = (/1, 2, 3, 5, 8/)
+      apply_transport(:) = 1
+      vol1(:) = 0.1_dp
+      hs(:) = 2_dp
+      kmxn(:) = 1
+      lateral_volume_per_layer(1:num_layers, 1:numlatsg) = 0
+      ! top layer, per constituent, lateral 1,
+      incoming_lat_concentration(1, :, 1) = (/31.0_dp, 20.0_dp, 0.23_dp/)
+      ! top layer, all constituents, lateral 2.
+      outgoing_lat_concentration(1, :, 2) = 25_dp
 
       allocate (transport_load(numconst, ndxi), stat=iostat)
       call aerr('transport_load', iostat, numconst * ndxi, 'test_add_lateral_load_and_sink')
@@ -124,13 +149,18 @@ contains
 
    end subroutine test_add_lateral_load_and_sink
 !
-!> initialize a domain with an incoming and an outgoing lateral for three constituents
-   subroutine setup_testcase()
+!> initialize and allocate global state variables for lateral testcases
+   subroutine setup_testcase(n_nodes, n_nodes_on_laterals, n_laterals, n_tracers)
       use m_flow, only: vol1, hs, kmxn
       use m_flowtimes, only: dts
       use m_partitioninfo, only: jampi
       use m_transportdata, only: numconst
       use m_flowgeom, only: ndx, ndxi
+
+      integer, intent(in) :: n_nodes
+      integer, intent(in) :: n_nodes_on_laterals
+      integer, intent(in) :: n_laterals
+      integer, intent(in) :: n_tracers
 
       integer :: iostat ! allocation status
       integer :: i_cell, i_lateral, k1 ! loop counter
@@ -138,14 +168,11 @@ contains
 
       jampi = 0
       dts = 1.0e-3_dp
-      ! domain of 10 points, 2 laterals (1 incoming with 3 nodes, 1 outgoing with 2 nodes)
-      ! and 3 constituents. Volume (vol1) of each cell is set to 0.1d0.
-      ! consider 3 constituents to represent salt, temperature and tracer transport.
-      ndx = 10
-      ndxi = 10
-      nlatnd = 5
-      numlatsg = 2
-      numconst = 3
+      ndx = n_nodes
+      ndxi = n_nodes
+      nlatnd = n_nodes_on_laterals
+      numlatsg = n_laterals
+      numconst = n_tracers
 
       call initialize_lateraldata(numconst)
       allocate (n1latsg(numlatsg), stat=iostat)
@@ -167,32 +194,19 @@ contains
       allocate (lateral_volume_per_layer(num_layers, numlatsg), stat=iostat)
       call aerr('lateral_volume_per_layer', iostat, num_layers * numlatsg, 'test_lateral, setup_testcase')
 
-      n1latsg(1) = 1
-      n2latsg(1) = 3
-      n1latsg(2) = 4
-      n2latsg(2) = 5
-      nnlat = (/1, 2, 3, 5, 8/)
-      apply_transport(:) = 1
-      vol1(:) = 0.1_dp
-      hs(:) = 2_dp
-      kmxn(:) = 1
-      lateral_volume_per_layer(1:num_layers, 1:numlatsg) = 0.1_dp
-
-      ! top layer, per constituent, lateral 1,
-      incoming_lat_concentration(1, :, 1) = (/31.0_dp, 20.0_dp, 0.23_dp/)
-      ! top layer, all constituents, lateral 2.
-      outgoing_lat_concentration(1, :, 2) = 25_dp
-
    end subroutine setup_testcase
 !
-!> reset to default values and deallocate arrays from other modules
+!> reset to default values and deallocate global state variables
    subroutine finish_testcase()
       use m_flow, only: vol1, hs, kmxn
+      use m_flowtimes, only: dts
       use m_partitioninfo, only: jampi
       use m_transportdata, only: numconst
-      use m_flowgeom, only: ndxi
+      use m_flowgeom, only: ndx, ndxi
 
       jampi = 1
+      dts = 0._dp
+      ndx = 0
       ndxi = 0
       numconst = 0
 
