@@ -37,10 +37,8 @@
     use m_sediment
     use m_sferic
     use m_missing
+    use m_drawthis
     implicit none
-
-    common / drawthis / ndraw(50)
-    integer :: ndraw
 
     integer, intent(in) :: LL
     integer :: L, linval, k1, k2, n1, n2, lll, ka, kb

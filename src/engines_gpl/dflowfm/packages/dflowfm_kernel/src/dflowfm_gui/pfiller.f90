@@ -33,17 +33,14 @@
     subroutine PFILLER(X, Y, N_, NCOL, NCLR)
        use unstruc_opengl
        use m_sferic
+       use m_colnow
+       use m_drawthis
 
        implicit none
        integer :: N_
        integer :: nclr
        integer :: ncol, i, n
-       integer :: ncolnow
-       integer :: ndraw
        double precision :: X(N_), Y(N_), xx, yy
-       common / DRAWTHIS / ndraw(50)
-       common / COLNOW / NCOLNOW
-
        integer, parameter :: NMAX = 128
        real xr(NMAX), yr(NMAX)
 

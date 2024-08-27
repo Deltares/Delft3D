@@ -33,6 +33,7 @@
       ! Now a double precision (double precision ::)
       subroutine SHOWREAL(TEXT, value)
          use m_devices
+         use m_helpnow
          implicit none
          integer :: infoattribute
          integer :: ixp
@@ -40,11 +41,10 @@
          integer :: len
          integer :: nbckgr
          integer :: nforgr
-         integer :: nlevel
          double precision :: val
          double precision :: value
-         character WRDKEY * 40, TEXT * (*)
-         common / HELPNOW / WRDKEY, NLEVEL
+         character TEXT * (*)
+         
          VAL = value
          IXP = IWS / 2
          IYP = IHS / 2

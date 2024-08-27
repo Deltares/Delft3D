@@ -35,36 +35,22 @@
          use M_MISSING
          use unstruc_colors
          use m_partitioninfo
+         use m_helpnow
+         use m_drawthis
+         use m_depmax2
          implicit none
          integer :: MODE, KEY
-         double precision :: ddx
-         integer :: jalinear
-         integer :: jaspline
          integer :: jonce
          integer :: k, L1, L2
          integer :: newmode
-         integer :: nlevel
          integer :: nput
          integer :: num
          integer :: numb
-         integer :: numinp
          integer :: nwhat
          double precision :: ziso
-         double precision :: ziso2
-         double precision :: vmax2, vmin2, dv2, val2
-         integer :: ncols2, nv2, nis2, nie2, jaauto2
-         common / DEPMAX2 / VMAX2, VMIN2, DV2, VAL2(256), NCOLS2(256), NV2, NIS2, NIE2, JAAUTO2
-         integer :: ndraw
-         common / DRAWTHIS / ndraw(50)
-
          double precision :: xp, yp, rd
          integer :: mp, mps
-
-         common / HELPNOW / WRDKEY, NLEVEL
-
-         common / ISOPOL / ZISO, ZISO2, DDX, NUMINP, JASPLINE, JALINEAR
-
-         character TEX * 26, WRDKEY * 40
+         character TEX * 26
 
          TEX = ' Edit Samples             '
          WRDKEY = TEX

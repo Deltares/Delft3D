@@ -29,7 +29,6 @@
 
 !
 !
-
       subroutine WRITEARCINFOHEADER(MARC, MC, NC, X0, Y0, DX, DY, dmiss)
          implicit none
          double precision :: dmiss

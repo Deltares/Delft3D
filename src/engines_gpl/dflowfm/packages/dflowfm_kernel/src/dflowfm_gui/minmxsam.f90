@@ -35,14 +35,12 @@
     use m_samples
     use m_missing
     use m_isoscaleunit
+    use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, dv=>dv2, val=>val2, nv=>nv2, jaauto=>jaauto2
 
     implicit none
 
     double precision :: rmin, rmax
-    double precision :: VMAX, VMIN, DV, VAL(256)
-    integer :: NCOLS(256), NIS, NIE, nv, JAAUTO
     character(len=256) :: buffer
-    common / depmax2 / vmax, vmin, dv, val, ncols, nv, nis, nie, jaauto
     integer :: k, i
     logical inview
 
@@ -80,14 +78,12 @@
     use m_arcinfo
     use m_missing
     use m_isoscaleunit
+    use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, dv=>dv2, val=>val2, nv=>nv2, jaauto=>jaauto2
 
     implicit none
 
     double precision :: rmin, rmax, x, y, z
-    double precision :: VMAX, VMIN, DV, VAL(256)
-    integer :: NCOLS(256), NIS, NIE, nv, JAAUTO
     character(len=256) :: buffer
-    common / depmax2 / vmax, vmin, dv, val, ncols, nv, nis, nie, jaauto
     integer :: m, n, i
     logical inview
 

@@ -204,12 +204,11 @@ contains
       use M_DEVICES
       use m_WEARELT
       use unstruc_colors
+      use m_drawthis
 
       implicit none
       integer :: infoscreen
       real(kind=sp) :: r, g, b
-      integer :: ndraw
-      common / DRAWTHIS / ndraw(50)
 
       if (jaOpenGL == 0) then
          InOpenGLRendering = .false.

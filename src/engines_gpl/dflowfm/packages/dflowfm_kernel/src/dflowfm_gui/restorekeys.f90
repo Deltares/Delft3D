@@ -31,12 +31,10 @@
 !
 
       subroutine RESTOREKEYS()
+         use m_keycodes
          implicit none
          integer :: i
-         integer :: keycod
-         integer :: maxkey
-         parameter(MAXKEY=50)
-         common / KEYCODES / KEYCOD(MAXKEY)
+
          do I = 1, MAXKEY
             call INCONTROLKEY(I, KEYCOD(I))
          end do

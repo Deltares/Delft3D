@@ -38,6 +38,7 @@
       use m_missing
       use dflowfm_version_module, only: company, product_name
       use unstruc_model, only: md_dryptsfile
+      use m_helpnow
 
       implicit none
       integer :: i
@@ -54,7 +55,6 @@
       integer :: iyp
       integer :: key
       integer :: nbut
-      integer :: nlevel
       integer :: numfldactual
       integer :: numparactual
       integer :: jins_old ! netcell administration out of date if jins changes
@@ -63,8 +63,7 @@
 
       integer, parameter :: NUMPAR = 22, NUMFLD = 2 * NUMPAR
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-      character WRDKEY * 40, OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
-      common / HELPNOW / WRDKEY, NLEVEL
+      character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
       external :: highlight_form_line
 

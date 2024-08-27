@@ -196,7 +196,14 @@ contains
       use M_FLOW, only: kplot, nplot, kplotfrombedorsurface, kplotordepthaveraged
       use m_observations, only: jafahrenheit
       use m_sferic
-!   use unstruc_opengl    ! circular dependency
+      use m_depmax
+      use m_screenarea
+      use m_textsize
+      use m_hardcopy
+      use m_scalepos
+      use m_vfac
+      use m_drawthis
+      use m_depmax2
 
       character(len=*), intent(in) :: filename
 
@@ -205,36 +212,7 @@ contains
       integer :: istat, numdraw, i
       logical :: success, jawel
       integer :: jaeps, jaland
-
-      integer :: ndraw
-      common / DRAWTHIS / ndraw(50)
-
-      integer :: ncols, nv, nis, nie, jaAUTO, KRGB(4)
-      double precision :: VMAX, VMIN, DV, VAL
-      common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-
-      integer :: ncols2, nv2, nis2, nie2, jaAUTO2
-      double precision :: VMAX2, VMIN2, DV2, VAL2
-      common / DEPMAX2 / VMAX2, VMIN2, DV2, VAL2(256), NCOLS2(256), NV2, NIS2, NIE2, JAAUTO2
-
-      integer :: nvec
-      double precision :: vfac, vfacforce
-      common / VFAC / VFAC, VFACFORCE, NVEC
-
-      integer :: jaxis
-      double precision :: xleft, ybot
-      common / SCREENAREA / XLEFT, YBOT, JAXIS
-
-      integer :: ndec
-      double precision :: xsc, ysc, scalesize
-      common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
-
-      integer :: NHCDEV, NUMHCOPTS, IHCOPTS
-      common / HARDCOPY / NHCDEV, NUMHCOPTS, IHCOPTS(2, 20)
-
-      double precision :: tsize
-      common / TEXTSIZE / TSIZE
-
+      integer :: KRGB(4)
       integer :: jaopengl_loc
       double precision :: x, y, dy, asp
 
@@ -429,45 +407,21 @@ contains
       use m_flow
       use m_observations
       use m_sferic
-!   use unstruc_opengl    ! circular dependency
+      use m_depmax
+      use m_screenarea
+      use m_textsize
+      use m_hardcopy
+      use m_scalepos
+      use m_vfac
+      use m_drawthis
+      use m_depmax2
 
       character(len=*), intent(in) :: filename
 
       type(tree_data), pointer :: dis_ptr
       character(len=20) :: rundat
       integer :: mfil, istat, i, KRGB(4)
-
-      integer :: ndraw
-      common / DRAWTHIS / ndraw(50)
-
-      integer :: ncols, nv, nis, nie, jaAUTO
-      double precision :: VMAX, VMIN, DV, VAL
-      common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-
-      integer :: ncols2, nv2, nis2, nie2, jaAUTO2
-      double precision :: VMAX2, VMIN2, DV2, VAL2
-      common / DEPMAX2 / VMAX2, VMIN2, DV2, VAL2(256), NCOLS2(256), NV2, NIS2, NIE2, JAAUTO2
-
-      integer :: nvec
-      double precision :: vfac, vfacforce
-      common / VFAC / VFAC, VFACFORCE, NVEC
-
-      integer :: jaxis
-      double precision :: xleft, ybot
-      common / SCREENAREA / XLEFT, YBOT, JAXIS
-
-      integer :: ndec
-      double precision :: xsc, ysc, scalesize
-      common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
-
-      integer :: NHCDEV, NUMHCOPTS, IHCOPTS
-      common / HARDCOPY / NHCDEV, NUMHCOPTS, IHCOPTS(2, 20)
-
-      double precision :: tsize
-      common / TEXTSIZE / TSIZE
-
       integer :: jaeps, jaland
-
       integer, external :: iget_jaopengl
 
       call newfil(mfil, filename)
@@ -782,6 +736,7 @@ contains
 
    subroutine plotSpline(xh, yh, numpi, ncol)
       use m_wearelt
+      use m_drawthis
       integer, intent(in) :: numpi
       double precision, dimension(numpi), intent(in) :: xh, yh
       integer, intent(in) :: ncol
@@ -790,9 +745,6 @@ contains
 !    double precision :: XH2(1000), YH2(1000)
       double precision, allocatable, dimension(:) :: xh2, yh2
       double precision :: xk, yk, tn
-
-      integer :: ndraw
-      common / DRAWTHIS / ndraw(50)
       integer :: i, met, k, numk
       MET = NDRAW(15)
 
@@ -1102,14 +1054,14 @@ contains
       use m_arcinfo
       use M_grid
       use M_SPLINES
+      use m_drawthis
       implicit none
       double precision :: aspect
       integer :: n
-      integer :: ndraw
       double precision :: xcmax, xcmin, xlmax, xlmin, xplmax, xplmin, xsmax, xsmin, xspmax, xspmin
       double precision :: ycmax, ycmin, ylmax, ylmin, yplmax, yplmin, ysmax, ysmin, yspmax, yspmin
       double precision :: XH(10), YH(10)
-      common / DRAWTHIS / ndraw(50)
+
       call DMINMAX(XLAN, MXLAN, XLMIN, XLMAX, MAXLAN)
       call DMINMAX(YLAN, MXLAN, YLMIN, YLMAX, MAXLAN)
 
@@ -1593,11 +1545,10 @@ subroutine zoomshift(nshift) ! based on polygon
    use unstruc_display
    use m_flowtimes
    use m_polygon
+   use m_drawthis
    implicit none
-   integer :: nshift, ndraw, i1
+   integer :: nshift, i1
    double precision :: dr, x00, y00, dxw, dyw, rshift
-
-   common / DRAWTHIS / ndraw(50)
 
    nshift = nshift + 1
    rshift = dble(nshift) / dble(numzoomshift)
@@ -1694,10 +1645,9 @@ subroutine tekwindvector()
    use m_missing
    use m_statistics
    use messagehandling
+   use m_drawthis
 
    implicit none
-   common / DRAWTHIS / ndraw(50)
-   integer :: ndraw
    double precision :: xp, yp, vfw, ws, dyp, upot, ukin, ueaa
    character tex * 60
    integer :: ncol, k, kk, vlatin, vlatout, i, mout

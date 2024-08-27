@@ -521,13 +521,9 @@
    use network_data
 
    implicit none
-   integer :: jav
-   integer :: jview
-   double precision :: xyz
    double precision :: XP, YP, ZP
    integer :: K1
 
-   COMMON /HOWTOVIEW/ JVIEW, JAV, XYZ ! 1,2,3 OF 4
    CALL GIVENEWNODENUM(K1)
    xk(k1) = xp
    yk(k1) = yp

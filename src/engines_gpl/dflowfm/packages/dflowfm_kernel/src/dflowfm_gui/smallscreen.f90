@@ -31,13 +31,11 @@
 !
 
       subroutine SMALLSCREEN()
+         use m_screenarea
+
          implicit none
-         integer :: jaxis
-         double precision :: xleft
          double precision :: xright
-         double precision :: ybot
          double precision :: ytop
-         common / SCREENAREA / XLEFT, YBOT, JAXIS
 
          YTOP = max(0.95d0, 1 - YBOT)
          XRIGHT = max(0.90d0, 1 - XLEFT)

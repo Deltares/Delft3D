@@ -33,19 +33,15 @@
       subroutine EDITGRIDBLOK(MODE, NFLD, KEY)
          use m_grid
          use unstruc_colors
+         use m_helpnow
+         use m_drawthis
+         use m_grid_block
          implicit none
 
          integer :: mode, nfld, key
          integer :: newmode
-
-         integer :: ndraw, nlevel, num, nwhat, numb, mp, np
-         common / DRAWTHIS / ndraw(50)
-         common / HELPNOW / WRDKEY, NLEVEL
-
-         integer :: MB, NB, MB2, NB2, NPT, NPT2, NPUTO, ITYPE
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
-
-         character TEX * 20, WRDKEY * 40, FIELDOP * 40
+         integer :: num, nwhat, numb, mp, np
+         character TEX * 20, FIELDOP * 40
          integer :: m1b, n1b, m2b, n2b, ipt, ja, jonce, m, n, nput
          double precision :: xp, yp
 

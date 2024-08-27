@@ -43,13 +43,12 @@
     use UNSTRUC_MODEL, only: md_ident
     use unstruc_colors
     use m_transport, only: nsubsteps, numnonglobal
-! use m_equatorial, only : ampliforced, amplifreeL, amplitotal, ndxforced, ndxfreeL, ndtforced, ndtfreeL, cflforced, cflfreeL, tforce, tfreeL, amplicomp
+    use m_drawthis
     implicit none
     double precision, external :: znod, zlin
     double precision :: cpuperstep, solrest, znn, dtav
     double precision :: tsteps, tsol, tstepinc
     integer :: nn, LL, nl
-
     character TEX * 210
     character, save :: TEX1 * 210 = '@'
     character, save :: TEX2 * 210 = ''
@@ -57,9 +56,6 @@
     character(len=4) :: c_nsubsteps
     character(len=7) :: c_numnonglobal
     character(len=15) :: c_lts
-
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
 
     if (jtextflow < 1) return
 

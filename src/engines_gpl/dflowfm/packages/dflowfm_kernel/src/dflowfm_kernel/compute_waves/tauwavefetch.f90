@@ -47,6 +47,7 @@ subroutine tauwavefetch(tim)
    use m_flowtimes
    use m_partitioninfo
    use timers
+   use m_drawthis
 
    implicit none
 
@@ -58,9 +59,6 @@ subroutine tauwavefetch(tim)
    logical, external :: stop_fetch_computation
    logical, parameter :: call_from_tauwavefetch = .true.
    double precision :: U10, fetchL, fetchd, hsig, tsig, rsqrt2, dum
-
-   integer :: ndraw
-   common / DRAWTHIS / ndraw(50)
 
    if (.not. allocated(fetch) .or. size(fetch, 2) /= ndx) then
       nwf = 13

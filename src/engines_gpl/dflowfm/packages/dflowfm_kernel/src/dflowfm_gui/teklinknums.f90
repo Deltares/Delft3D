@@ -33,6 +33,7 @@
   subroutine TEKLINKNUMS(MET, NCOL)
      use M_MISSING
      use m_netw
+     use m_drawthis
      implicit none
      integer :: MET, NCOL
 
@@ -40,11 +41,8 @@
      integer :: k2
      integer :: key
      integer :: l
-     integer :: ndraw
      double precision :: vv
      logical :: invnod
-
-     common / DRAWTHIS / ndraw(50)
 
      double precision XP, YP, ZP
      call SETCOL(NCOL)

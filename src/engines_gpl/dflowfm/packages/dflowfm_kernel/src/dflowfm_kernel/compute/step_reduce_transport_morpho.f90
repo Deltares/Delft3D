@@ -56,9 +56,6 @@
 
     implicit none
 
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
-
     numnodneg = 0
     if (wrwaqon .and. allocated(qsrcwaq)) then
        qsrcwaq0 = qsrcwaq ! store current cumulative qsrc for waq at the beginning of this time step

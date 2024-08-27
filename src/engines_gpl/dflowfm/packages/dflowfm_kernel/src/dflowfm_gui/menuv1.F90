@@ -32,17 +32,14 @@
 
    subroutine MENUV1(NUM, NWHAT)
       use m_netw
-      !use m_sferic
+      use m_modenow
 
       implicit none
       integer :: NUM, NWHAT
       integer :: maxopt
       integer, parameter :: MAXOP = 64
       character(len=40) OPTION(MAXOP), exp(MAXOP)
-      integer :: MODE, NFLD, NFO
-      integer :: jdemo
-      common / MODENOW / MODE, NFLD
-      common / DEMO / JDEMO
+      integer :: NFO
 
       if (NUM == 1) then
          exp(1) = 'MENU 1                                  '

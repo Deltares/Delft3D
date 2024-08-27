@@ -32,16 +32,12 @@
 
       subroutine ZOOM3(KEY, NPUT)
          use m_wearelt
+         use m_locatora
+
          implicit none
-         integer :: jashow
-         integer :: jmouse
          integer :: key
          integer :: nput
-         double precision :: xa
-         double precision :: xlc
-         double precision :: ya
-         double precision :: ylc
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
+
          XLC = (X1 + X2) / 2
          YLC = (Y1 + Y2) / 2
          call IMOUSECURSORXYG(real(XLC), real(YLC))

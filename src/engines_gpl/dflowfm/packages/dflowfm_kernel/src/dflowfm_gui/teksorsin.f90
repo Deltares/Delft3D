@@ -34,10 +34,9 @@ subroutine teksorsin() ! teksrc
    use fm_external_forcings_data
    use unstruc_display
    use m_transport, only: isalt, itemp
+   use m_drawthis
 
    implicit none
-   common / DRAWTHIS / ndraw(50)
-   integer :: ndraw
    integer :: n, k, n2, ncol
    character(len=40) :: tex
    double precision :: xp, yp

@@ -33,7 +33,6 @@
       subroutine ININUMBERS()
          use M_MISSING
          implicit none
-         common / NUMBERS / PI, DG2RD, RD2DG, RA
 
          double precision :: pi, dg2rd, rd2dg, ra
          RA = 6370000d0

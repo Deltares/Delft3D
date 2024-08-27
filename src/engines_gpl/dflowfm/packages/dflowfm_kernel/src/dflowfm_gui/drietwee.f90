@@ -31,12 +31,10 @@
 !
 
    subroutine DRIETWEE(XD, YD, ZD, X, Y, Z)
+      use m_howtoview
       implicit none
-      integer :: jav
-      integer :: jview
-      double precision :: xyz
       double precision XD, YD, ZD, X, Y, Z
-      common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
+
       if (JVIEW == 1) then ! NORMAL
          X = XD
          Y = YD

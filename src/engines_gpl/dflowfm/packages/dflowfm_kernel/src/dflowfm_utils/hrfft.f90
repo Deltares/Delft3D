@@ -201,13 +201,18 @@
 !
 ! **********************************************************************
 !
-!
+module hrf
+   use precision, only: dp
+
+   real(dp) :: tfft
+   
+end module hrf
 !
 subroutine hrffti(n, wsave)
+   use hrf
    integer, intent(in) :: n
    double precision wsave(n + 15)
-   double precision :: tfft
-   common / hrf / tfft
+
    tfft = 0.
    if (n == 1) return
    call hrfti1(n, wsave(1), wsave(n + 1))
@@ -287,10 +292,11 @@ subroutine hrfftf(m, n, r, mdimr, whrfft, work)
 !
 !     a multiple fft package for spherepack
 !
+   use hrf
+
    integer, intent(in) :: m, n, mdimr
    double precision r(mdimr, n), work(1), whrfft(n + 15)
-   double precision :: tfft
-   common / hrf / tfft
+
    if (n == 1) return
 !     tstart = second(dum)
    call hrftf1(m, n, r, mdimr, work, whrfft, whrfft(n + 1))
@@ -890,10 +896,11 @@ subroutine hrfftb(m, n, r, mdimr, whrfft, work)
 !
 !     a multiple fft package for spherepack
 !
+   use hrf
+
    integer, intent(in) :: m, n, mdimr
    double precision r(mdimr, n), work(1), whrfft(n + 15)
-   double precision :: tfft
-   common / hrf / tfft
+
    if (n == 1) return
 !     tstart = second(dum)
    call hrftb1(m, n, r, mdimr, work, whrfft, whrfft(n + 1))

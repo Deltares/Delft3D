@@ -32,22 +32,13 @@
 
     subroutine DELELEM(K1, K2, LNU)
        use m_netw
+       use m_cconstants
        implicit none
        integer :: K1, K2, LNU
-
-       double precision :: ag
-       double precision :: cfl
-       double precision :: e0
-       double precision :: eps
        integer :: l1
        integer :: l2
        integer :: nm1
        integer :: nm2
-       double precision :: pi
-       double precision :: rho
-       double precision :: rhow
-
-       common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
 
        LNU = 0
        do L1 = 1, NMK(K1)

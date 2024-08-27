@@ -31,10 +31,9 @@
 !
 
       subroutine NEWBLOCKPOINT(MP, NP, JA, IPT)
+         use m_grid_block
          implicit none
          integer :: mp, np, ja, ipt
-         integer :: mb, nb, mb2, nb2, npt, npt2, nputo, itype
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
 !     NIEUW PUNT = 1, OUD PUNT = 0, NIEW PUNT MAAR REEDS VIER PUNTEN = -1
          integer :: i
          JA = 1

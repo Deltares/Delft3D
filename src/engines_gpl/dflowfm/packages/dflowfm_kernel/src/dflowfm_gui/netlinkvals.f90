@@ -41,40 +41,25 @@
      use m_sferic, only: jsferic, jasfer3D
      use gridoperations
      use m_statistics
-
+     use m_depmax
+     use m_cconstants
+     
      implicit none
 
      integer :: MET
      integer :: jacftrt
-     double precision :: ag
-     double precision :: cfl
-     double precision :: dv
-     double precision :: e0
-     double precision :: eps
      double precision :: fsp
-     integer :: jaauto
      integer :: k1, k2, L, jaxz, kL, kR
-     integer :: ncols
-     integer :: nie, nis, nv, i
-     double precision :: pi
+     integer :: i
      double precision :: rd
      double precision :: rek
-     double precision :: rho
-     double precision :: rhow
      double precision :: sp
      double precision :: v
-     double precision :: val
-     double precision :: vmax
-     double precision :: vmin
      double precision :: X3, Y3, X4, Y4
      double precision :: xd, YD, ZD
      double precision :: areaL, areaR, xc, yc, aa
-
      double precision, external :: topo_info
 
-     common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
-
-     common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
      if (MET == 1) return
 
      jaxz = 0

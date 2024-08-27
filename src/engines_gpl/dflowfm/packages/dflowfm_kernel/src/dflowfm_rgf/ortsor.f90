@@ -38,6 +38,7 @@
          use m_grid
          use m_gridsettings
          use m_orthosettings
+         use m_drawthis
          implicit none
          integer :: i
          integer :: key
@@ -45,7 +46,6 @@
          integer :: m2
          integer :: n1
          integer :: n2
-         integer :: ndraw
          double precision :: rjac
 
          double precision :: XR(MMAX, NMAX), YR(MMAX, NMAX), &
@@ -54,7 +54,6 @@
             XO(MMAX, NMAX), YO(MMAX, NMAX), &
             A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), &
             D(MMAX, NMAX), E(MMAX, NMAX), ATP(MMAX, NMAX)
-         common / DRAWTHIS / ndraw(50)
 
          do I = 1, ITBND
 

@@ -671,6 +671,7 @@ subroutine poiseuille(init)
    use geometry_module, only: dbdistance
    use m_missing, only: dmiss
    use m_sferic, only: jsferic, jasfer3D
+   use m_drawthis
 
    implicit none
 
@@ -701,10 +702,6 @@ subroutine poiseuille(init)
 
    character(len=40) :: tex
    double precision :: sumba
-
-   integer :: ndraw
-
-   common / drawthis / ndraw(50)
 
    if (abs(bedslope) < 1d-8) bedslope = -0d-5 ! SPvdP: now old mdu-files still work
 

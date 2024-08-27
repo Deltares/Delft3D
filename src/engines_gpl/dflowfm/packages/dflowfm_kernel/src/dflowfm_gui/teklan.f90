@@ -35,12 +35,10 @@
      use m_wearelt
      use unstruc_colors
      use unstruc_display
+     use m_drawthis
 
      implicit none
      integer :: NCOL
-     integer :: NDRAW
-     common / DRAWTHIS / ndraw(50)
-
      integer :: j1
      integer :: k
      integer :: ncl

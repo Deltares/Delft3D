@@ -36,22 +36,15 @@
          use geometry_module, only: dbdistance
          use m_missing, only: dmiss
          use m_sferic, only: jsferic, jasfer3D
-
+         use m_locatora
+         use m_disfor
+         
          implicit none
 
          double precision :: dis
-         integer :: jashow
-         integer :: jmouse
-         double precision :: xa
-         double precision :: xlc
-         double precision :: ya
-         double precision :: ylc
 !     -------------------------------
 !     write distance
 !     -------------------------------
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
-         common / dispfor / xyform, zform, disform
-         character * 7 xyform, zform, disform
          character DISTAN * 25
 
          DISTAN = 'DIS:'

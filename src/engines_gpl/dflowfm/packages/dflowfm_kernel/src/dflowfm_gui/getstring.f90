@@ -33,6 +33,7 @@
    !> Get a string
    subroutine getstring(text, string)
       use m_devices
+      use m_helpnow
       implicit none
       character(len=*), intent(in) :: text
       character(len=*), intent(out) :: string
@@ -44,11 +45,8 @@
       integer :: key
       integer :: nbckgr
       integer :: nforgr
-      integer :: nlevel
       integer :: lstring
       character string_tmp * 40
-      character wrdkey * 40
-      common / helpnow / wrdkey, nlevel
 
       ixp = iws / 2
       iyp = ihs / 2

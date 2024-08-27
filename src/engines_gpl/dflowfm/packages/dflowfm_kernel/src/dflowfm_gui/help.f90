@@ -33,6 +33,7 @@
       subroutine HELP(WRDKEY, NLEVEL)
          use unstruc_display
          use dflowfm_version_module, only: company, product_name
+         use m_helpc
          implicit none
          integer :: i
          integer :: ih
@@ -47,7 +48,6 @@
          integer :: jofnd
          integer :: len
          integer :: line
-         integer :: maxhlp
          integer :: maxkwd
          integer :: nahead
          integer :: nback
@@ -58,16 +58,14 @@
          integer :: numpag
          integer :: numpgk
          integer :: numtop
-         integer :: numtxt
          integer :: numwnb
          integer :: numwnh
          integer :: numwnk
          integer :: numwnt
 !     Gives helptext starting from wrdkey in screen with dimensions npos
-         parameter(MAXHLP=2000, MAXKWD=400)
+         parameter(MAXKWD=400)
          integer NHTONK(MAXHLP), NKTONH(MAXKWD)
-         character HLPTXT(MAXHLP) * 80, WRDKEY * 40, KEYWRD(MAXKWD) * 40, LOOKUP * 20, TEXLIN * 80
-         common / HELPC / HLPTXT, NUMTXT
+         character WRDKEY * 40, KEYWRD(MAXKWD) * 40, LOOKUP * 20, TEXLIN * 80
 !
 !     Initialise
          call IWinWordWrap('OFF')

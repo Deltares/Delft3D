@@ -47,11 +47,9 @@
     use unstruc_display
     use m_waves
     use m_1d2d_fixedweirs, only: compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
+    use m_drawthis
 
     implicit none
-
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
 
     integer :: key, jposhchk_sav, itype
     integer :: k, ierror, noddifmaxlevm

@@ -40,7 +40,6 @@
     double precision :: pi, g
     integer :: ic1, ic2, nt, ic, iter, it
     double precision :: bessj0, bessj1
-    common / signal / ahh
 
     !open(1,file='carrier.inp')
     !open(2,file='carrier.out')

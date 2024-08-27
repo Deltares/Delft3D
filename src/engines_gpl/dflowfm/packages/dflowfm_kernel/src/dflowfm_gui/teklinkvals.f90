@@ -37,30 +37,21 @@
      use geometry_module, only: getdx, getdy, getdxdy
      use m_sferic, only: jsferic
      use gridoperations
+     use m_depmax2, only: vmax=>vmax2, vmin=>vmin2
+     use m_howtoview
 
      implicit none
      integer :: MET
-
      double precision :: d
-     integer :: jav
-     integer :: jview
      integer :: k1
      integer :: k2
      integer :: l
      integer :: ncol, key
      double precision :: rd
      double precision :: vv
-     double precision :: xyz
-
      double precision XD, YD, ZD, DX, DY, DZ, XX1, YY1, ZZ1, XX2, YY2, ZZ2, X3, Y3, Z3
      double precision :: X(4), Y(4), Z(4), GETRCIR
      logical :: invnod
-
-     integer :: NCOLS, NV, NIS, NIE, JAAUTO
-     double precision :: VMAX, VMIN, DV, VAL
-     common / DEPMAX2 / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-
-     common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
 
      D = 0.5d0 * GETRCIR() !
      if (MET >= 3) then

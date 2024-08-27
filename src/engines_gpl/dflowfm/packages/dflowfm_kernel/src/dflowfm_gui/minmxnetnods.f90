@@ -34,15 +34,12 @@
      use m_netw
      use m_missing
      use unstruc_display
-
+     use m_depmax
+     
      implicit none
 
      integer :: i, k
      double precision :: rd, rmax, rmin
-
-     double precision :: VMAX, VMIN, DV, VAL
-     integer :: NCOLS, NV, NIS, NIE, JAAUTO
-     common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
      logical inview
 
      ! BEPAAL MINIMUM EN MAXIMUM VAN DIEPTES BINNEN VIEWING AREA

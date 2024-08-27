@@ -31,13 +31,11 @@
 !
 
       subroutine SAVEKEYS()
+         use m_keycodes
          implicit none
          integer :: i
          integer :: infoinput
-         integer :: keycod
-         integer :: maxkey
-         parameter(MAXKEY=50)
-         common / KEYCODES / KEYCOD(MAXKEY)
+
          do I = 1, MAXKEY
             KEYCOD(I) = INFOINPUT(I)
          end do

@@ -35,14 +35,11 @@
       use M_DEVICES
       use network_data, only: kn3typ
       use m_missing, only: JINS
+      use m_howtoview
       implicit none
-      integer :: jav
-      integer :: jview
-      double precision :: xyz
       integer :: NPUT
-
-      common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
       character TEX * 32
+      
       if (NPUT == 0) then
          TEX = ' GET A POINT                    '
       else if (NPUT == 1) then

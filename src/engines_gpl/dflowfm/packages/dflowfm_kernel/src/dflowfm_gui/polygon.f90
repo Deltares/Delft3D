@@ -31,13 +31,13 @@
 !
 
     subroutine POLYGON(X, Y, N, NCOL)
+       use m_colnow
        implicit none
        integer :: i
        integer :: n
        integer :: ncol
-       integer :: ncolnow
        double precision :: X(N), Y(N)
-       common / COLNOW / NCOLNOW
+
        call SETCOL(NCOL)
        call PTABS(X(1), Y(1))
        do I = 2, N

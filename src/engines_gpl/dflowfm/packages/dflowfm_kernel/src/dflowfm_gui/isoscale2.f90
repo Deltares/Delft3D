@@ -34,48 +34,26 @@
      use M_isoscaleunit
      use unstruc_display
      use m_samples
+     use m_hardcopy
+     use m_scalepos
+     use m_vfac
+     use m_drawthis
+     use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, val=>val2, ncols=>ncols2, nv=>nv2
      implicit none
 
-     double precision :: dv
      double precision :: hic
      integer :: i, j
      integer :: INC
-     integer :: ihcopts
-     integer :: jaauto
-     integer :: ncols
-     integer :: ndec
-     integer :: ndraw
-     integer :: nhcdev
-     integer :: nie
-     integer :: nis
-     integer :: numhcopts
-     integer :: nv
-     integer :: nvec
-
-     double precision :: scalesize
-     double precision :: val
-     double precision :: vfac
      double precision :: vfac2
-     double precision :: vfacforce
-     double precision :: vmax
-     double precision :: vmin
      double precision :: wi
      double precision :: wic
      double precision :: xleg
-     double precision :: xsc
      double precision :: xsc1
      double precision :: xsc2
      double precision :: yleg
-     double precision :: ysc
      double precision :: ysc1
      double precision :: ysc2
      double precision :: yt
-
-     common / DEPMAX2 / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-     common / HARDCOPY / NHCDEV, NUMHCOPTS, IHCOPTS(2, 20)
-     common / DRAWTHIS / ndraw(50)
-     common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
-     common / VFAC / VFAC, VFACFORCE, NVEC
      character TEXT2 * 10, FMT * 7
      character(LEN=8) :: TEX
      character(LEN=16) :: MINTEX, MAXTEX

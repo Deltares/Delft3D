@@ -34,12 +34,9 @@
          use m_grid
          use m_landboundary
          use M_SPLINES, only: mcs, splnump => nump
+         use m_grid_block
          implicit none
          integer :: nump, landorspline
-
-         integer :: MB, NB, MB2, NB2, NPT, NPT2, NPUTO, ITYPE
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
-
          integer :: m1, m2, n1, n2, i, j, in, jn, ncs, jdum
          double precision :: EPS, X0, Y0, XN, YN, DIS, RL
 !     TO LAND

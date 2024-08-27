@@ -31,10 +31,10 @@
 !
 
       subroutine RESETB(NPUT)
+         use m_grid_block
          implicit none
          integer :: nput
-         integer :: mb, nb, mb2, nb2, npt, npt2, nputo, itype
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
+
          MB = 0
          NB = 0
          NPT = 0

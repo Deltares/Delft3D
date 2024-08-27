@@ -36,7 +36,6 @@
      double precision :: hic, WIC
      integer :: jahoog
      integer :: ncol
-     integer :: ndraw
      double precision :: x
      double precision :: xa
      double precision :: xb
@@ -46,7 +45,6 @@
      double precision :: yb
      double precision :: yp
      character TEX * (*)
-     common / DRAWTHIS / ndraw(50)
 
      call SETCOL(KLTEX)
      call DRAWTEXT(real(X), real(Y), TEX)

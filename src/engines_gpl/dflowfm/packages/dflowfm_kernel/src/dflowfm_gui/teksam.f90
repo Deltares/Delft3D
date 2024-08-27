@@ -38,28 +38,18 @@
       use m_samples
       use unstruc_display
       use m_arcinfo
-
+      use m_perspx
+      
       implicit none
-      double precision :: deltx, RC
-      double precision :: delty
-      double precision :: deltz
-      double precision :: dscr
+      double precision :: RC
       double precision :: hrc
       integer :: i, KMOD
       integer :: key
-      integer :: mcs
-      integer :: ncs
-      integer :: ns1
-      double precision :: wpqr
       double precision :: x
       double precision :: y
       double precision :: z
-      double precision :: zfac
-      double precision :: zupw
       integer :: MET
 !     TEKEN SAMPLES
-      common / PERSPX / WPQR, DELTX, DELTY, DELTZ, ZFAC, DSCR, ZUPW
-      common / SAMPLESADM / MCS, NCS, NS1
 
       if (MET == 0) return
 
@@ -141,15 +131,13 @@
       use unstruc_colors
       use unstruc_display
       use m_arcinfo
+      use m_drawthis
 
       implicit none
-      
-      double precision :: x, y, z, hrc
-      integer :: met, m, ndraw, ncol
-      
-      logical, external :: inview
 
-      common / DRAWTHIS / ndraw(50)
+      double precision :: x, y, z, hrc
+      integer :: met, m, ncol
+      logical, external :: inview
 
       if (INVIEW(X, Y)) then
          if (NDRAW(9) == 2) then

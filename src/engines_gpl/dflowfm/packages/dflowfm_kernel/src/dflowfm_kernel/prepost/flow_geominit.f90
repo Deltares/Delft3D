@@ -69,6 +69,7 @@
     use unstruc_messages
     use m_find_flownode, only: find_nearest_flownodes_kdtree
     use m_turbulence, only: ln0
+    use m_drawthis
 
     implicit none
 
@@ -119,8 +120,6 @@
     integer :: numl2D
 
     double precision, external :: cosphiu
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
 
     numl2D = numl - numl1D
 

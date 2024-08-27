@@ -32,12 +32,9 @@
 
       subroutine INIKEYS()
          use m_devices
+         use m_nkeys
          implicit none
          integer :: i
-         integer :: nkey
-         integer :: numc
-         integer :: numkeys
-         common / NKEYS / NUMKEYS, NKEY(20), NUMC(20)
 !     Keyboard
          NKEY(1) = 142
          NKEY(2) = 166
