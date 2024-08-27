@@ -60,18 +60,19 @@ contains
       integer :: i_cell, i_const, i_lateral ! loop counters
       integer :: i_node
 
-      integer:: n_nodes, n_nodes_on_laterals, n_laterals, n_tracers
+      integer :: n_nodes, n_nodes_on_laterals, n_laterals, n_tracers, n_layers
 
       ! domain of 10 points, 2 laterals (1 incoming with 3 nodes, 1 outgoing with 2 nodes)
-      ! and 3 constituents. Volume (vol1) of each cell is set to 0.1d0.
+      ! 1 layer and 3 constituents. Volume (vol1) of each cell is set to 0.1d0.
       ! consider 3 constituents to represent salt, temperature and tracer transport.
       n_nodes = 10
       n_nodes_on_laterals = 5
       n_laterals = 2
+      n_layers = 1
       n_tracers = 3
 
       ! initialization and allocation of global state variables
-      call setup_testcase(n_nodes, n_nodes_on_laterals,n_laterals,n_tracers)
+      call setup_testcase(n_nodes, n_nodes_on_laterals, n_laterals, n_layers, n_tracers)
       ! test-specific
       n1latsg(1) = 1
       n2latsg(1) = 3
@@ -103,8 +104,8 @@ contains
       qqlat(:, :, :) = 0._dp
       call add_lateral_load_and_sink(transport_load, transport_sink, vol1, tolerance)
 
-      call assert_comparable(sum(transport_load), 0._dp, tolerance, "lateral_laod value expected to be zero for qplat=0")
-      call assert_comparable(sum(transport_sink), 0._dp, tolerance, "lateral_sink value expected to be zero for qplat=0")
+      call assert_comparable(sum(transport_load), 0._dp, tolerance, "lateral_load value expected to be zero for qqlat=0")
+      call assert_comparable(sum(transport_sink), 0._dp, tolerance, "lateral_sink value expected to be zero for qqlat=0")
 
       ! check transport into the domain
       i_lateral = 1 ! only the first lateral is a source
@@ -150,8 +151,8 @@ contains
    end subroutine test_add_lateral_load_and_sink
 !
 !> initialize and allocate global state variables for lateral testcases
-   subroutine setup_testcase(n_nodes, n_nodes_on_laterals, n_laterals, n_tracers)
-      use m_flow, only: vol1, hs, kmxn
+   subroutine setup_testcase(n_nodes, n_nodes_on_laterals, n_laterals, n_layers, n_tracers)
+      use m_flow, only: vol1, hs, kmx, kmxn, ndkx, kbot, ktop
       use m_flowtimes, only: dts
       use m_partitioninfo, only: jampi
       use m_transportdata, only: numconst
@@ -160,6 +161,7 @@ contains
       integer, intent(in) :: n_nodes
       integer, intent(in) :: n_nodes_on_laterals
       integer, intent(in) :: n_laterals
+      integer, intent(in) :: n_layers
       integer, intent(in) :: n_tracers
 
       integer :: iostat ! allocation status
@@ -173,6 +175,8 @@ contains
       nlatnd = n_nodes_on_laterals
       numlatsg = n_laterals
       numconst = n_tracers
+      kmx = n_layers
+      ndkx = ndx * kmx
 
       call initialize_lateraldata(numconst)
       allocate (n1latsg(numlatsg), stat=iostat)
@@ -183,22 +187,24 @@ contains
       call aerr('apply_transport', iostat, numlatsg, 'test_lateral, setup_testcase')
       allocate (nnlat(nlatnd), stat=iostat)
       call aerr('nnlat', iostat, nlatnd, 'test_lateral, setup_testcase')
-      allocate (qplat(1, nlatnd), stat=iostat)
-      call aerr('qplat', iostat, nlatnd, 'test_lateral, setup_testcase')
       allocate (vol1(ndxi), stat=iostat)
       call aerr('vol1', iostat, ndxi, 'test_lateral, setup_testcase')
       allocate (hs(ndxi), stat=iostat)
       call aerr('hs', iostat, ndxi, 'test_lateral, setup_testcase')
-      allocate (kmxn(ndx), stat=iostat)
+      allocate (kmxn(ndkx), stat=iostat)
       call aerr('kmxn', iostat, ndx, 'test_lateral, setup_testcase')
       allocate (lateral_volume_per_layer(num_layers, numlatsg), stat=iostat)
-      call aerr('lateral_volume_per_layer', iostat, num_layers * numlatsg, 'test_lateral, setup_testcase')
+      call aerr('test_lateral, setup_testcase', iostat, num_layers * numlatsg, 'test_lateral, setup_testcase')
+      allocate (kbot(ndx), stat=iostat)
+      call aerr('kbot', iostat, ndx, 'test_lateral, setup_testcase')
+      allocate (ktop(ndx), stat=iostat)
+      call aerr('ktop', iostat, ndx, 'test_lateral, setup_testcase')
 
    end subroutine setup_testcase
 !
 !> reset to default values and deallocate global state variables
    subroutine finish_testcase()
-      use m_flow, only: vol1, hs, kmxn
+      use m_flow, only: vol1, hs, kmxn, kbot, ktop
       use m_flowtimes, only: dts
       use m_partitioninfo, only: jampi
       use m_transportdata, only: numconst
@@ -212,14 +218,16 @@ contains
 
       call reset_lateral()
       call dealloc_lateraldata()
+
       deallocate (n1latsg)
       deallocate (n2latsg)
       deallocate (apply_transport)
       deallocate (nnlat)
-      deallocate (qplat)
       deallocate (vol1)
       deallocate (hs)
       deallocate (kmxn)
+      deallocate (kbot)
+      deallocate (ktop)
 
    end subroutine finish_testcase
 !
@@ -229,34 +237,35 @@ contains
 !> In the last node, the model is shallow meaning it has only 2 active layers.
 !> The model contains 2 laterals.
    subroutine test_get_lateral_volume_per_layer
-      use m_flow, only: vol1, kbot, ktop, kmxn, kmx
-
-      real(kind=dp), allocatable, dimension(:, :) :: lateral_volume_per_layer !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
+      use m_flow, only: vol1, kbot, ktop, kmxn, kmx, ndkx
+      use m_flowgeom, only: ndx
+      use m_alloc, only: realloc
 
       integer :: iostat
-      integer :: ndx, ndkx
       integer :: i_cell
+      integer :: n_nodes, n_nodes_on_laterals, n_laterals, n_tracers, n_layers
 
-      ! specify number of computational cells, ndx
-      ndx = 9
+      ! domain of 9 points, 2 laterals (1 incoming with 3 nodes, 1 outgoing with 2 nodes)
+      ! max 3 layers and 3 constituents. Volume (vol1) of each cell is set to 0.1d0.
+      ! only consider 1 constituent.
+      n_nodes = 9
+      n_nodes_on_laterals = 4
+      n_laterals = 2
+      n_tracers = 1
+      n_layers = 3
+
+      ! initialization and allocation of global state variables
+      call setup_testcase(n_nodes, n_nodes_on_laterals, n_laterals, n_layers, n_tracers)
 
       ! initialize number of active layers for each node
-      allocate (kmxn(ndx), stat=iostat)
-      call aerr('kmxn', iostat, ndx, 'test_get_lateral_volume_per_layer')
       kmxn = (/3, 3, 3, 3, 3, 3, 3, 3, 2/) ! the last cell is assumed shallow and contains only two layers
 
       ! initialize water volume per cell, vol1
-      kmx = 3
       ndkx = ndx * (kmx + 1) - 1 ! one cell is shallow and contains only two layers
-      allocate (vol1(ndkx), stat=iostat)
-      call aerr('vol1', iostat, ndkx, 'test_get_lateral_volume_per_layer')
+      call realloc(vol1, ndkx, keepExisting=.false., fill=0d0)
       vol1(ndx + 1:) = 1d0 ! only volume per cell, per layer is needed; the first ndx elements contain 2D volume (i.e. total volume over all layers) and are not needed for the function tested here, hence not set.
 
       ! initialize kbot and ktop
-      allocate (kbot(ndx), stat=iostat)
-      call aerr('kbot', iostat, ndx, 'test_get_lateral_volume_per_layer')
-      allocate (ktop(ndx), stat=iostat)
-      call aerr('ktop', iostat, ndx, 'test_get_lateral_volume_per_layer')
       kbot(1) = ndx + 1
       ktop(1) = kbot(1) + kmxn(1) - 1
       do i_cell = 2, ndx
@@ -265,19 +274,9 @@ contains
       end do
 
       ! initialize laterals administration
-      numlatsg = 2
-      allocate (n1latsg(numlatsg), stat=iostat)
-      call aerr('n1latsg', iostat, numlatsg, 'test_get_lateral_volume_per_layer')
-      allocate (n2latsg(numlatsg), stat=iostat)
-      call aerr('n2latsg', iostat, numlatsg, 'test_get_lateral_volume_per_layer')
-      allocate (nnlat(nlatnd), stat=iostat)
-      call aerr('nnlat', iostat, nlatnd, 'test_get_lateral_volume_per_layer')
       nnlat = (/1, 2, 8, 9/)
       n1latsg = (/1, 3/)
       n2latsg = (/2, 4/)
-
-      allocate (lateral_volume_per_layer(kmx, numlatsg), stat=iostat)
-      call aerr('lateral_volume_per_layer', iostat, kmx * numlatsg, 'test_get_lateral_volume_per_layer')
 
       call get_lateral_volume_per_layer(lateral_volume_per_layer)
       call assert_comparable(lateral_volume_per_layer(1, 1), 2d0, tolerance, "get_lateral_volume_per_layer(1,1) output lateral_volume_per_layer is not correct")
@@ -287,14 +286,8 @@ contains
       call assert_comparable(lateral_volume_per_layer(2, 2), 2d0, tolerance, "get_lateral_volume_per_layer(2,2) output lateral_volume_per_layer is not correct")
       call assert_comparable(lateral_volume_per_layer(3, 2), 2d0, tolerance, "get_lateral_volume_per_layer(3,2) output lateral_volume_per_layer is not correct")
 
-      deallocate (kmxn)
-      deallocate (vol1)
-      deallocate (kbot)
-      deallocate (ktop)
-      deallocate (n1latsg)
-      deallocate (n2latsg)
-      deallocate (nnlat)
-      deallocate (lateral_volume_per_layer)
+      ! deallocation of global state variables
+      call finish_testcase()
 
    end subroutine test_get_lateral_volume_per_layer
 
@@ -312,7 +305,6 @@ contains
       real(kind=dp), allocatable, dimension(:, :, :) :: lateral_discharge_per_layer_lateral_cell !< Discharge per layer per lateral per cell,
                                                                                         !! dimension=(number_of_layer,numlatsg,number_of_node)
                                                                                         !!          =(kmx,numlatsg,ndkx)
-
       integer :: ierr !< error flag
       integer :: ndx, ndkx
       integer :: i_node, i_layer
