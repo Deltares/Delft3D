@@ -262,11 +262,11 @@
              end do nonlincont
              exit wetdry
           end do wetdry
-          exit setback
        else ! explicit time-step
           s1 = s0
           call volsur()
        end if
+       exit setback
     end do setback
 
  end subroutine step_reduce_hydro
