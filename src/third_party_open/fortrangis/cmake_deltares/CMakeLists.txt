@@ -14,6 +14,8 @@ set(configFile ${fortranc_path}/config.h)
 set(fortranc_library_name fortranc)
 add_library(${fortranc_library_name} ${fortranc_sources})
 
+target_link_libraries(${fortranc_library_name} PRIVATE no_compiler_warnings)
+
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${fortranc_library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
 target_compile_options(${fortranc_library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")
@@ -41,7 +43,7 @@ add_library(${fortrangis_library_name} ${fortrangis_sources})
 target_include_directories(${fortrangis_library_name} PRIVATE ${src_path}/include)
 
 # Add dependencies
-target_link_libraries(${fortrangis_library_name} PRIVATE ${fortranc_library_name})
+target_link_libraries(${fortrangis_library_name} PRIVATE ${fortranc_library_name} no_compiler_warnings)
 
 # Add dependencies of underlying 3rd party libraries
 # Use target_link_libraries with INTERFACE to propagate all these dependencies

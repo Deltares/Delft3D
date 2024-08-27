@@ -218,7 +218,10 @@ set(oss_dependencies    deltares_common
 
 
 oss_include_libraries(${library_name} oss_dependencies)
-target_link_libraries(${library_name} ${oss_dependencies})
+target_link_libraries(${library_name} PRIVATE
+                      ${oss_dependencies}
+                      limit_compiler_warnings
+)
 
 include_directories(${petsc_path})
 endif(WIN32)
