@@ -42,6 +42,7 @@
          use unstruc_display, only: nhlNetNode
          use m_helpnow
          use m_cconstants
+         use m_qnerror
          implicit none
          integer :: MODE, KEY
          integer :: newmode

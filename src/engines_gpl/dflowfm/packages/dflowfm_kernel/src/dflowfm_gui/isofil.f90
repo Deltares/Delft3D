@@ -31,6 +31,7 @@
 !
 
       subroutine ISOFIL(X, Y, Z, n4, NCOLR)
+         use m_isofil_color
          use m_depmax
          implicit none
          integer :: n4, ncolr

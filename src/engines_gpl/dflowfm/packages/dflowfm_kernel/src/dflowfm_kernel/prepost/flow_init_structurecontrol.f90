@@ -53,6 +53,7 @@ function flow_init_structurecontrol() result(status)
    use m_inquire_flowgeom
    use m_longculverts, only: nlongculverts
    use m_partitioninfo, only: jampi
+   use m_qnerror
 
    implicit none
    logical :: status

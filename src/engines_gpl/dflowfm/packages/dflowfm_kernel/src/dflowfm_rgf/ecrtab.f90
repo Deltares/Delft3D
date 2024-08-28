@@ -31,6 +31,7 @@
 !
 
       subroutine ECRTAB(X, MC, NC, MRGF, HALF, mmax, nmax)
+         use m_readyy
          implicit none
          double precision :: af
          double precision :: half

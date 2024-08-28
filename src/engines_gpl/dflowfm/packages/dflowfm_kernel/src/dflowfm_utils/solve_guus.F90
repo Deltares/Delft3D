@@ -41,6 +41,7 @@
     use m_flowparameters, only: icgsolver, ipre
     use m_alloc
     use system_utils, only: ARCH
+    use m_qnerror
 
     ! subroutine to intialise the following variables:
     ! noactive
@@ -496,6 +497,7 @@
     use m_flowtimes
     use m_partitioninfo, only: my_rank, ndomains
     use m_timer
+    use m_qnerror
 
 #ifdef HAVE_PETSC
     use m_petsc
@@ -622,7 +624,8 @@
     use m_partitioninfo, only: my_rank
     use m_netw, only: xzw, yzw
     use unstruc_model, only: md_ident
-
+    use m_qnerror
+    
     implicit none
     integer :: ndx, its
     double precision :: s1(ndx)
@@ -1663,6 +1666,7 @@
     use unstruc_messages
     use m_flowparameters, only: icgsolver, ipre, Noderivedtypes
     use m_partitioninfo
+    use m_readyy
 
     implicit none
 

@@ -39,6 +39,7 @@ subroutine runupgauges_on_flowgeom()
    use dfm_error
    use m_inquire_flowgeom
    use m_alloc
+   use m_readyy
    implicit none
 
    integer :: ic, icmod

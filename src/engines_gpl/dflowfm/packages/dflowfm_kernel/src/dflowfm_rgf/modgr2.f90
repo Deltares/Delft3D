@@ -31,6 +31,7 @@
 !
 
       subroutine MODGR2(XH, YH, X, Y, mmax, nmax, MC, NC, NUMP)
+         use m_modfld
          use m_grid_block
          implicit none
          integer :: mmax, nmax, mc, nc, nump

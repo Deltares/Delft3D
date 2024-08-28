@@ -424,6 +424,7 @@ contains
       use m_partitioninfo
       use system_utils, only: split_filename
       use unstruc_files, only: resolvePath
+      use m_qnerror
 
       implicit none
 
@@ -634,7 +635,8 @@ contains
       use string_module, only: strcmpi
       use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
       use m_missing, only: dmiss
-
+      use m_qnerror
+      
       implicit none
 
       character(len=*), intent(in) :: filename
@@ -832,6 +834,7 @@ contains
       use string_module
       use m_strucs, only: NUMGENERALKEYWRD
       use m_missing, only: dmiss
+      use m_qnerror
 
       implicit none
 
@@ -1096,6 +1099,7 @@ contains
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
       use m_flowparameters, only: jawave
       use m_flowtimes, only: dt_nodal
+      use m_qnerror
 
       implicit none
 
@@ -1627,6 +1631,7 @@ contains
       use timespace_data, only: settimespacerefdat
       use timers, only: timstop, timstrt
       use unstruc_inifields, only: initialize_initial_fields
+      use m_qnerror
 
       integer, intent(out) :: iresult
 

@@ -36,6 +36,7 @@
       use m_flow, only: vol1, Au
       use m_advec
       use m_alloc
+      use m_qnerror
       implicit none
 
       integer, intent(inout) :: ierror

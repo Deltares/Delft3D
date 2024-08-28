@@ -35,7 +35,7 @@
 function read_commandline() result(istat)
    use m_commandline_option
    use unstruc_model
-   use unstruc_display, only: jaGUI
+   use m_gui
    use unstruc_messages
    use string_module, only: str_lower, str_tolower
    use m_samples_refine

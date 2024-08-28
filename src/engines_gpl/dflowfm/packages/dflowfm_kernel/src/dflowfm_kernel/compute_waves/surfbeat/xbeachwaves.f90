@@ -2351,7 +2351,9 @@ subroutine advec_horz(dtmaxwav, snx, csx, limtypw, quant, veloc, advec)
    use m_physcoef
    use m_flowgeom
    use m_flowparameters, only: eps10
-
+   use m_dlimiter_nonequi
+   use m_dslim
+   
    implicit none
 
    double precision, intent(in) :: dtmaxwav
@@ -2360,8 +2362,6 @@ subroutine advec_horz(dtmaxwav, snx, csx, limtypw, quant, veloc, advec)
    double precision, intent(in), dimension(ndx) :: veloc
    double precision, intent(in), dimension(ntheta, ndx) :: quant
    double precision, intent(out), dimension(ntheta, ndx) :: advec
-   double precision, external :: dslim
-   double precision, external :: dlimiter_nonequi
 
    integer :: L, k, k1, k2, itheta, ku, kl2s, kl2, kl1, kd, is, ip
    double precision :: velocL, qds, qst, half, fluxvel1, waku, sl1, sl2, sl3
@@ -2608,6 +2608,7 @@ subroutine advec_horzho_bulk(thetamean, quant, veloc, advec)
    use m_flowgeom
    use m_flow
    use m_flowtimes
+   use m_dslim
 
    implicit none
 
@@ -2618,7 +2619,6 @@ subroutine advec_horzho_bulk(thetamean, quant, veloc, advec)
    double precision, intent(in), dimension(ndx) :: quant
    double precision, intent(in), dimension(ndx) :: thetamean
    double precision, intent(out), dimension(ndx) :: advec
-   double precision, external :: dslim
 
    advec = 0d0
    do L = 1, lnx ! upwind (supq) + limited high order (dsq), loop over link

@@ -57,6 +57,7 @@
       use string_module, only: strcmpi
       use m_setucxcuy_leastsquare, only: reconst2nd
       use m_drawthis
+      use m_qnerror
 
       implicit none
       integer :: NUM, NWHAT, KEY

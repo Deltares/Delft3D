@@ -31,6 +31,7 @@
 !
 
        subroutine MAKESSQ(S, A, SR, SL, SSQ, NT, MFAC, IMAX)
+          use m_makesr
           implicit none
           integer :: nt, mfac, imax
           double precision :: S(IMAX), A(IMAX), SR(IMAX), SL(IMAX), SSQ(IMAX)

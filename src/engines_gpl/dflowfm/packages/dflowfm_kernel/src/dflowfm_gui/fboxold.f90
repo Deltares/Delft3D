@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_fboxold
+    implicit none
+contains
+    
       subroutine FBOXOLD(XB1, YB1, XB2, YB2)
          use m_colnow
-         implicit none
          integer :: n
          double precision :: xb1
          double precision :: xb2
@@ -51,3 +53,5 @@
          if (NCOLNOW >= 0) call PFILLERCORE(X, Y, N)
          return
       end
+
+end module m_fboxold

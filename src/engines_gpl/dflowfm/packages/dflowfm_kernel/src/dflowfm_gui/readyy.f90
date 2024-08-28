@@ -29,46 +29,49 @@
 
 !
 !
+module m_readyy
+contains
 
 !>    plot a statusbar in the GUI
-      subroutine READYY(TEXT, AF)
-         use m_devices
-         use unstruc_display, only: jaGUI
-         implicit none
+   subroutine READYY(TEXT, AF)
+      use m_devices
+      use m_gui
+      implicit none
 
-         character TEXT * (*), BALK * 400
-         double precision :: af
+      character TEXT * (*), BALK * 400
+      double precision :: af
 
-         integer, save :: ih
-         integer, save :: ini = 0
-         integer, save :: iw
-         integer, save :: ixp
-         integer, save :: iyp
-         integer :: naf
+      integer, save :: ih
+      integer, save :: ini = 0
+      integer, save :: iw
+      integer, save :: ixp
+      integer, save :: iyp
+      integer :: naf
 
-         if (jaGUI /= 1) return
+      if (jaGUI /= 1) return
 
-         if (INI == 0) then
-            INI = 1
-            IXP = 10
-            IYP = 10
-            IW = IWS - 10 - 10
-            IH = 2
-            call ITEXTCOLOUR('BWHITE', 'BLUE')
-            call IWinAction('FCP')
-            call IWinOpenTitle(IXP, IYP, IW, IH, TEXT)
-            call FILLUP(BALK, ' ', IW)
-            call ITEXTCOLOUR('BLACK', 'BWHITE')
-            call IWinOutStringXY(2, 2, BALK(1:IW))
-         else
-            NAF = max(AF * IW, 1d0)
-            call FILLUP(BALK, 'X', NAF)
-            call IWinOutStringXY(1, 2, BALK(1:NAF))
-         end if
-         if (AF == -1) then
-            call IWinClose(1)
-            INI = 0
-            return
-         end if
+      if (INI == 0) then
+         INI = 1
+         IXP = 10
+         IYP = 10
+         IW = IWS - 10 - 10
+         IH = 2
+         call ITEXTCOLOUR('BWHITE', 'BLUE')
+         call IWinAction('FCP')
+         call IWinOpenTitle(IXP, IYP, IW, IH, TEXT)
+         call FILLUP(BALK, ' ', IW)
+         call ITEXTCOLOUR('BLACK', 'BWHITE')
+         call IWinOutStringXY(2, 2, BALK(1:IW))
+      else
+         NAF = max(AF * IW, 1d0)
+         call FILLUP(BALK, 'X', NAF)
+         call IWinOutStringXY(1, 2, BALK(1:NAF))
+      end if
+      if (AF == -1) then
+         call IWinClose(1)
+         INI = 0
          return
-      end subroutine READYY
+      end if
+      return
+   end subroutine READYY
+end module m_readyy

@@ -41,6 +41,7 @@ subroutine netboundtocurvi(kp)
    use geometry_module, only: dbdistance, dprodout
    use m_sferic, only: jsferic, jasfer3D
    use gridoperations
+   use m_qnerror
 
    implicit none
 

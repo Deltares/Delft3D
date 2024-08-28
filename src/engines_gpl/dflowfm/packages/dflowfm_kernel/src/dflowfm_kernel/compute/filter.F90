@@ -44,6 +44,7 @@ subroutine ini_filter(jafilter, filterorder, jacheckmonitor, ierr)
    use dfm_error
    use m_alloc
    use m_partitioninfo, only: jampi
+   use m_qnerror
    implicit none
 
    integer, intent(in) :: jafilter !< explicit (1), implicit (2), or no filter (0)

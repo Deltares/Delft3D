@@ -42,6 +42,7 @@
      use m_ec_basic_interpolation, only: triinterp2, bilin_interp, averaging2, TerrorInfo
      use fm_external_forcings_data, only: transformcoef
      use gridoperations
+     use m_qnerror
 
      implicit none
 

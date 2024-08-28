@@ -161,6 +161,7 @@ contains
 !> make path for land boundary segment
    subroutine make_path(numseg, num, numrejected)
       use unstruc_colors, only: ncolhl
+      use m_qnerror
 
       implicit none
 
@@ -341,6 +342,7 @@ contains
       use m_polygon, only: NPL, xpl, ypl, zpl
       use geometry_module, only: dbpinpol
       use geometry_module, only: pinpok
+      use m_qnerror
 
       implicit none
 

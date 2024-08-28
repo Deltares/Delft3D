@@ -29,9 +29,11 @@
 
 !
 !
+module m_dlimitercentral
+    implicit none
+contains
 
    double precision function dlimitercentral(dc, d2, limtyp) ! as dlimiter, now for central gradient instead of slope
-      implicit none
 
       double precision, intent(in) :: dc, d2 !< central and right slopes
       integer, intent(in) :: limtyp !< first order upwind (0) or MC (>0)
@@ -55,3 +57,4 @@
 
       dlimitercentral = d2 * max(0d0, min(2d0 * r, 0.5d0 * (1d0 + r), 2d0)) !  Monotonized Central
    end function dlimitercentral
+end module m_dlimitercentral

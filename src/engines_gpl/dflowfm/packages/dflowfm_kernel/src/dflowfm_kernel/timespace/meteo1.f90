@@ -177,6 +177,7 @@ contains
    subroutine readprovider(minp, qid, filename, filetype, method, operand, transformcoef, ja, varname, smask, maxSearchRadius)
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use MessageHandling, only: LEVEL_WARN, LEVEL_INFO, mess
+      use m_qnerror
       ! globals
       integer, intent(in) :: minp !< File handle to already opened input file.
       integer, intent(out) :: filetype !< File type of current quantity.

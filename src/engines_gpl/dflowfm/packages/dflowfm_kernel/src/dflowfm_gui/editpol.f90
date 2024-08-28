@@ -46,6 +46,7 @@
       use m_helpnow
       use m_qnrgf
       use m_settings
+      use m_qnerror
       implicit none
       integer :: jaquit, jazoomshift, nshift
       integer :: k

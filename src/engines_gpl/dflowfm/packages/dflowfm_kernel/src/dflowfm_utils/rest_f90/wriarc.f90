@@ -31,6 +31,7 @@
 !
 
       subroutine WRIARC(MARC, DP, MMAX, NMAX, MC, NC, X0, Y0, DX, DY, dmiss)
+         use m_writearcinfoheader
          implicit none
          double precision :: dmiss
          double precision :: dp

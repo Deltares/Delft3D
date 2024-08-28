@@ -36,6 +36,7 @@ subroutine smooth_samples(MXSAM, MYSAM, NS, NDIM, Nsamplesmooth, zs, zss)
 !   use m_samples
 !   use m_samples_refine
    use m_missing
+   use m_readyy
 
    implicit none
 

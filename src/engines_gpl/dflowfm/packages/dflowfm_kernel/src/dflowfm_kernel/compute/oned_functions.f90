@@ -749,6 +749,7 @@ contains
       use m_polygon
       use m_missing
       use m_flowgeom
+      use m_qnerror
 
       character(len=*), intent(in) :: basename !< Basename for the profdef/loc output files.
 

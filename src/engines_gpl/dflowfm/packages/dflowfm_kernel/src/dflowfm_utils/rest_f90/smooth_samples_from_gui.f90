@@ -32,6 +32,7 @@
 
 subroutine smooth_samples_from_GUI()
    use m_samples
+   use m_qnerror
    implicit none
 
    integer :: N

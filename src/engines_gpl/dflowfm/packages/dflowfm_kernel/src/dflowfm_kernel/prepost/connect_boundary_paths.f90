@@ -37,6 +37,7 @@ recursive subroutine connect_boundary_paths(Lstart, nodemask, init, numnodes, no
    use m_missing
    use m_landboundary
    use unstruc_colors, only: ncolhl
+   use m_qnerror
 
    implicit none
 

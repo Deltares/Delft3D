@@ -31,6 +31,7 @@
 !
 
       subroutine FBOX(X1, Y1, X2, Y2)
+         use m_fboxold
          use m_drawthis
          implicit none
          double precision :: x1, x2, y1, y2

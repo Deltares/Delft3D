@@ -31,6 +31,7 @@
 !
 
       subroutine SPLINTXY(X, Y, X2, Y2, N, T, XT, YT)
+         use m_splint
          implicit none
          !USE DIMENS
          integer :: n

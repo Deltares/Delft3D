@@ -36,7 +36,7 @@
          use unstruc_files
          use unstruc_startup
          use dflowfm_version_module, only: base_name
-         use unstruc_display, only: jaGUI
+         use m_gui
          use unstruc_messages
          use m_helpnow
 

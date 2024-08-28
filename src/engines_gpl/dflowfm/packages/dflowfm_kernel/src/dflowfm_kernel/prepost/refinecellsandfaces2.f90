@@ -39,13 +39,14 @@ subroutine refinecellsandfaces2()
    use m_missing
    use m_alloc
    use unstruc_messages
-   use unstruc_display, only: jaGUI
+   use m_gui
    use kdtree2Factory
    use m_sferic
    use gridoperations
    use timespace
    use m_polygon
    use m_arcinfo
+   use m_qnerror
 
    implicit none
 

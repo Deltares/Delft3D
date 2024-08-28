@@ -50,6 +50,7 @@
     use m_bedform
     use m_fm_erosed, only: ucxq_mor, ucyq_mor, hs_mor
     use m_hydrology, only: jadhyd, alloc_hydrology, init_hydrology
+    use m_qnerror
 
     implicit none
     integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2

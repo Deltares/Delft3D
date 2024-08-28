@@ -29,31 +29,16 @@
 
 !
 !
+module m_gui
 
-  subroutine ALREADYTRI(K1, K2, K3, JA)
-     use m_netw
-     use m_qnerror
-     implicit none
-     integer :: K1, K2, K3, JA
+   implicit none
 
-     integer :: n1
-     integer :: n2
-     integer :: n3
-     integer :: np
-     JA = 0
-     do NP = NUMP, 1, -1
-        if (netcell(NP)%N == 3) then
-           N1 = netcell(NP)%NOD(1)
-           N2 = netcell(NP)%NOD(2)
-           N3 = netcell(NP)%NOD(3)
-           if ((K1 == N1 .or. K1 == N2 .or. K1 == N3) .and. &
-               (K2 == N1 .or. K2 == N2 .or. K2 == N3) .and. &
-               (K3 == N1 .or. K3 == N2 .or. K3 == N3)) then
-              JA = np
-              call qnerror('already 3', ' ', ' ')
-              return
-           end if
-        end if
-     end do
-     return
-  end subroutine ALREADYTRI
+#ifndef HAVE_DISPLAY
+#define HAVE_DISPLAY 1
+#endif
+#if HAVE_DISPLAY==1
+   integer :: jaGUI = 1 !< GUI (1) or not (0)
+#else
+   integer :: jaGUI = 0 !< GUI (1) or not (0)
+#endif
+end module m_gui

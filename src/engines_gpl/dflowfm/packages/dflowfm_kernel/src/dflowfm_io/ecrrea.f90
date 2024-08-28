@@ -33,6 +33,7 @@
       !> read from rfg grid file
       subroutine ECRREA(X, MMAX, NMAX, MC, NC, MRGF, HALF)
          use m_missing
+         use m_readyy
          implicit none
          character dummy * 10, REC * 132
 !     LEES RGF

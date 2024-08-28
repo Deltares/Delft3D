@@ -41,7 +41,8 @@ subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, zws, qw, kbot, ktop, 
    use m_sediment, only: jased, sedtra, stm_included
    use sediment_basics_module
    use timers
-
+   use m_dlimiter
+   
    implicit none
 
    integer, intent(in) :: NUMCONST !< number of transported quantities
@@ -67,8 +68,6 @@ subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, zws, qw, kbot, ktop, 
 
    integer :: kk, k, kb, kt, kL, kR, kLL, kRR
    integer :: j, ll
-
-   double precision :: dlimiter
 
    double precision, parameter :: DTOL = 1d-8
 

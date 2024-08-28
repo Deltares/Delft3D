@@ -38,6 +38,7 @@ subroutine make_wholegridline(ierror)
    use m_spline2curvi
    use m_alloc
    use m_missing
+   use m_qnerror
 
    implicit none
 
