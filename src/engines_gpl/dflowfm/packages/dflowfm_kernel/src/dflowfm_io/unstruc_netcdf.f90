@@ -2933,7 +2933,7 @@ contains
       use network_data
       use m_sediment
       use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, const_units, ifrac2const
-      use m_fm_wq_processes, only: wqbot3D_output, numwqbots, wqbotnames, wqbotunits, wqbot
+      use m_fm_wq_processes, only: numwqbots, wqbotnames, wqbotunits, wqbot
       use m_xbeach_data, only: E, thetamean, sigmwav
       use fm_external_forcings_data, only: numtracers
       use m_partitioninfo
@@ -3024,6 +3024,7 @@ contains
       double precision, allocatable, dimension(:) :: tmp_x, tmp_y, tmp_s0, tmp_s1, tmp_bl, tmp_sa1, tmp_tem1
       double precision, allocatable, dimension(:) :: tmp_squ, tmp_sqi
       double precision, allocatable, dimension(:) :: tmp_ucxq, tmp_ucyq
+      logical :: is_wq_bot_3d
 
       character(len=8) :: numformat
       character(len=2) :: numtrastr, numsedfracstr
@@ -3505,6 +3506,7 @@ contains
          ITRAN0 = ITRAN
       end if
 
+      is_wq_bot_3d = jahiswqbot3d == 1 .or. jamapwqbot3d == 1
       ! water quality bottom variables
       if (numwqbots > 0) then
          call realloc(id_rwqb, numwqbots, keepExisting=.false., fill=0)
@@ -3513,7 +3515,7 @@ contains
             ! Forbidden chars in NetCDF names: space, /, and more.
             call replace_char(tmpstr, 32, 95)
             call replace_char(tmpstr, 47, 95)
-            if (wqbot3D_output == 1) then
+            if (is_wq_bot_3d) then
                ierr = nf90_def_var(irstfile, trim(tmpstr)//'_3D', nf90_double, (/id_laydim, id_flowelemdim, id_timedim/), id_rwqb(j))
             else
                ierr = nf90_def_var(irstfile, trim(tmpstr), nf90_double, (/id_flowelemdim, id_timedim/), id_rwqb(j))
@@ -4562,7 +4564,7 @@ contains
       if (numwqbots > 0) then
          allocate (dum(ndxi))
          do j = 1, numwqbots
-            if (wqbot3D_output == 1) then
+            if (is_wq_bot_3d) then
 !           3D
                work1 = dmiss
                do kk = 1, ndxi
@@ -5631,7 +5633,7 @@ contains
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqb(:, j), nc_precision, UNC_LOC_S, trim(tmpstr), &
                                       '', trim(wqbotnames(j))//' in flow element', wqbotunits(j), jabndnd=jabndnd_)
             end do
-            if (wqbot3D_output == 1) then
+            if (jamapwqbot3d == 1) then
                call realloc(mapids%id_wqb3d, (/3, numwqbots/), keepExisting=.false., fill=0)
                do j = 1, numwqbots
                   tmpstr = wqbotnames(j)
@@ -7792,7 +7794,7 @@ contains
                workx(k) = wqbot(j, kb)
             end do
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_wqb(:, j), UNC_LOC_S, workx(1:ndxndxi), jabndnd=jabndnd_)
-            if (wqbot3D_output == 1) then
+            if (jamapwqbot3d == 1) then
 !         also write 3D
                do kk = 1, ndxndxi
                   call getkbotktop(kk, kb, kt)
@@ -7904,12 +7906,12 @@ contains
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_veg_stemheight, UNC_LOC_S, stemheight, jabndnd=jabndnd_)
       end if
 
-      if (ndxi - ndx2d > 0 .and. jamapPure1D_debug/=0) then
+      if (ndxi - ndx2d > 0 .and. jamapPure1D_debug /= 0) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_adve, UNC_LOC_U, adve(:), jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_advi, UNC_LOC_U, advi(:), jabndnd=jabndnd_)
       end if
 
-      if (ndxi - ndx2d > 0 .and. jaPure1D >= 3 .and. jamapPure1D_debug/=0) then
+      if (ndxi - ndx2d > 0 .and. jaPure1D >= 3 .and. jamapPure1D_debug /= 0) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1d_1, UNC_LOC_U, q1d(1, :), jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1d_2, UNC_LOC_U, q1d(2, :), jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_volu1d, UNC_LOC_U, volu1D(:), jabndnd=jabndnd_)
@@ -8540,7 +8542,7 @@ contains
                   ierr = nf90_put_att(imapfile, id_wqb(iid, j), 'units', tmpstr)
                   ierr = nf90_put_att(imapfile, id_wqb(iid, j), '_FillValue', dmiss)
                end do
-               if (wqbot3D_output == 1) then
+               if (jamapwqbot3d == 1) then
                   call realloc(id_wqb3d, (/3, numwqbots/), keepExisting=.false., fill=0)
                   do j = 1, numwqbots
                      tmpstr = wqbotnames(j)
@@ -10217,7 +10219,7 @@ contains
                end do
                ierr = nf90_put_var(imapfile, id_wqb(iid, j), dum, (/1, itim/), (/NdxNdxi, 1/))
             end do
-            if (wqbot3D_output == 1) then
+            if (jamapwqbot3d == 1) then
                do j = 1, numwqbots
                   do kk = 1, ndxndxi
                      work1(:, kk) = dmiss ! For proper fill values in z-model runs.
@@ -12830,7 +12832,7 @@ contains
    end subroutine md5_net_file
 
 !> Assigns the information, that has been read from a restart file and stored in array1, to a 2D array2.
-   subroutine assign_restart_data_to_local_array(array1, array2, iloc, kmx, loccount, jamergedmap, iloc_own, jaWaqbot, wqbot3D_output, target_shift)
+   subroutine assign_restart_data_to_local_array(array1, array2, iloc, kmx, loccount, jamergedmap, iloc_own, write_only_bottom_layer, target_shift)
       double precision, allocatable, intent(in) :: array1(:) !< Array that contains information read from a restart file
       double precision, allocatable, intent(inout) :: array2(:, :) !< Target 2D array
       integer, intent(in) :: iloc !< Index of one dimension of the 2D array
@@ -12838,11 +12840,16 @@ contains
       integer, intent(in) :: loccount !< Spatial count in file to read (e.g. ndxi_own)
       integer, intent(in) :: jamergedmap !< Whether input is from a merged map file (i.e. needs shifting or not) (1/0)
       integer, intent(in) :: iloc_own(:) !< Mapping array from the unique own (i.e. non-ghost) nodes/links to the actual ndxi/lnx numbering. Should be filled from index 1:loccount (e.g. 1:ndxi_own).
-      integer, intent(in) :: jaWaqbot !< It is a waq bottom variable (1) or not(0)
-      integer, intent(in) :: wqbot3D_output !< Read 3D waq bottom variable (1) or not(0)
+      logical, optional, intent(in) :: write_only_bottom_layer !< Whether to only perform the assignment of the 2D bottom layer (e.g. for waq bottom variables)
       integer, optional, intent(in) :: target_shift !< shift of the index where the array is to be written (1:ndx), default = 0
       integer :: i, kloc, k, kb, kt, target_shift_
       integer :: i_target
+      logical :: write_only_bottom_layer_
+
+      write_only_bottom_layer_ = .false.
+      if (present(write_only_bottom_layer)) then
+         write_only_bottom_layer_ = write_only_bottom_layer
+      end if
 
       target_shift_ = 0
       if (present(target_shift)) then
@@ -12857,18 +12864,13 @@ contains
             kloc = i_target
          end if
 
-         if (jaWaqbot == 0 .or. wqbot3D_output > 0) then ! It is not a 2D waq bottom variable
-            if (kmx > 0) then
-               call getkbotktop(kloc, kb, kt)
-               do k = kb, kt
-                  array2(iloc, k) = array1(k)
-               end do
-            else
-               array2(iloc, kloc) = array1(kloc)
-            end if
-         else ! It is a 2D waq bottom variable
-            call getkbotktop(kloc, kb, kt)
+         call getkbotktop(kloc, kb, kt)
+         if (write_only_bottom_layer_) then
             array2(iloc, kb) = array1(kloc)
+         else
+            do k = kb, kt ! When model is 2D, then there is one iteration since k == kb == kt == kloc
+               array2(iloc, k) = array1(k)
+            end do
          end if
       end do
    end subroutine assign_restart_data_to_local_array
@@ -13133,6 +13135,7 @@ contains
       integer :: jamergedmap_same_bu
       integer :: tmp_loc
       integer :: numl1d
+      logical :: is_wq_bot_3d
 
       character(len=8) :: numformat
       character(len=2) :: numtrastr, numsedfracstr
@@ -13745,7 +13748,7 @@ contains
          if (ierr /= nf90_noerr) then
             call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable sa1 from the specified restart file. Skip reading this variable.')
          else
-            call assign_restart_data_to_local_array(sa1, constituents, isalt, kmx, um%ndxi_own, um%jamergedmap, um%inode_own, 0, 0)
+            call assign_restart_data_to_local_array(sa1, constituents, isalt, kmx, um%ndxi_own, um%jamergedmap, um%inode_own)
          end if
       end if
 
@@ -13763,7 +13766,7 @@ contains
          if (ierr /= nf90_noerr) then
             call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable tem1 from the specified restart file. Skip reading this variable.')
          else
-            call assign_restart_data_to_local_array(tem1, constituents, itemp, kmx, um%ndxi_own, um%jamergedmap, um%inode_own, 0, 0)
+            call assign_restart_data_to_local_array(tem1, constituents, itemp, kmx, um%ndxi_own, um%jamergedmap, um%inode_own)
          end if
       end if
 
@@ -13787,12 +13790,13 @@ contains
             if (ierr /= nf90_noerr) then
                call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//''' from the specified restart file. Skip reading this variable.')
             else
-               call assign_restart_data_to_local_array(tmpvar1D, constituents, iconst, kmx, um%ndxi_own, um%jamergedmap, um%inode_own, 0, 0)
+               call assign_restart_data_to_local_array(tmpvar1D, constituents, iconst, kmx, um%ndxi_own, um%jamergedmap, um%inode_own)
             end if !ierr
          end do !iconst
       end if !ITRA1
 
-!   Read the water quality bottom variables
+      ! Read the water quality bottom variables
+      is_wq_bot_3d = jahiswqbot3d .or. jamapwqbot3d
       if (numwqbots > 0) then
          call realloc(tmpvar1D, ndkx, keepExisting=.false., fill=0.0d0)
          do iwqbot = 1, numwqbots
@@ -13800,7 +13804,7 @@ contains
             ! Forbidden chars in NetCDF names: space, /, and more.
             call replace_char(tmpstr, 32, 95)
             call replace_char(tmpstr, 47, 95)
-            if (wqbot3D_output == 1) then
+            if (is_wq_bot_3d) then
                tmp_loc = UNC_LOC_S3D
                tmpstr1 = trim(tmpstr)//'_3D'
             else
@@ -13812,7 +13816,7 @@ contains
             if (ierr /= nf90_noerr) then
                call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr1)//''' from the specified restart file. Skip reading this variable.')
             else
-               call assign_restart_data_to_local_array(tmpvar1D, wqbot, iwqbot, kmx, um%ndxi_own, um%jamergedmap, um%inode_own, 1, wqbot3D_output)
+               call assign_restart_data_to_local_array(tmpvar1D, wqbot, iwqbot, kmx, um%ndxi_own, um%jamergedmap, um%inode_own,.not. is_wq_bot_3d)
             end if
          end do
       end if
@@ -18340,7 +18344,7 @@ contains
             call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//trim(stradd)//''' from the specified restart file. Skip reading this variable.')
             call check_error(ierr, const_names(i), LEVEL_WARN)
          else
-            call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, kcount, um%jamergedmap, um%inode_own, 0, 0, target_shift)
+            call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, kcount, um%jamergedmap, um%inode_own, .false., target_shift)
          end if
       end do
 

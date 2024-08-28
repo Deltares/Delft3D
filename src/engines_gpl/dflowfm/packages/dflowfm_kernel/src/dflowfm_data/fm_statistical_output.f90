@@ -561,7 +561,7 @@ contains
       implicit none
 
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< Output configuration for the his-file.
-      integer, allocatable, intent(out) :: idx_wqbot3D_stations(:) !< Indices of just-in-time added waq bottom    substances in output_config_set array
+      integer, allocatable, intent(out) :: idx_wqbot3D_stations(:) !< Indices of just-in-time added waq bottom substances in output_config_set array
 
       character(len=idlen) :: waqb_sub_name
       character(len=idlen) :: unit_string
@@ -582,13 +582,12 @@ contains
          end if
 
          ! add output config item
-         call add_output_config(output_config_set, idx_wqbot3D_stations(i), 'Wrihis_wqbot3d', waqb_sub_name, &
+         call add_output_config(output_config_set, idx_wqbot3D_stations(i), 'wrihis_wqbot3d', trim(waqb_sub_name)//'_3D', &
                                 trim(wqbotnames(i))//' (3D)', '', unit_string, UNC_LOC_STATION, nc_dim_ids=station_nc_dims_3D_center, nc_attributes=atts)
 
          output_config_set%configs(idx_wqbot3D_stations(i))%input_value = &
-            output_config_set%configs(IDX_HIS_WQBOT_ABSTRACT)%input_value
+            output_config_set%configs(IDX_HIS_WQBOT3D_ABSTRACT)%input_value
       end do
-
    end subroutine add_station_wqbot3D_configs
 
    !> Add output items for all waq bottom substances on stations to output set.
@@ -1550,11 +1549,11 @@ contains
                              '', '-', UNC_LOC_STATION, description='Write tracers to his-file')
 
       call add_output_config(config_set_his, IDX_HIS_WQBOT_ABSTRACT, &
-                             'Wrihis_wqbot', 'station_wqb_abstract', '', &
+                             'wriHis_wqBot', 'station_wqb_abstract', '', &
                              '', '-', UNC_LOC_STATION, description='Write waq bottom substances to his-file')
 
       call add_output_config(config_set_his, IDX_HIS_WQBOT3D_ABSTRACT, &
-                             'Wriwaqbot3Doutput', 'station_wqb3d_abstract', '', &
+                             'wriHis_wqBot3d', 'station_wqb3d_abstract', '', &
                              '', '-', UNC_LOC_STATION, description='Write waq bottom 3D substances to his-file')
 
       ! HIS: Variables on observation cross sections
@@ -2635,7 +2634,7 @@ contains
 
          if (jahissed > 0 .and. jased > 0 .and. stm_included) then
             if (stmpar%morpar%moroutput%taub) then
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAUB), valobs(1:ntot,IPNT_TAUB))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAUB), valobs(1:ntot, IPNT_TAUB))
             end if
             if (stmpar%lsedtot > 0) then
                if (stmpar%morpar%moroutput%sbcuv) then
