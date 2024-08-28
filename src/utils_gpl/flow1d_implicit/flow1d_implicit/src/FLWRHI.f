@@ -164,7 +164,7 @@ c
      +                 buffer(npflw,*)      , qltpar(9,*)  ,
      +                 wt(ngrid)
       double precision dt, h2(ngrid), q2(ngrid)
-      character*40     gridnm(*), strunm(*), qlatnm(*)
+      character(len=40) gridnm(*), strunm(*), qlatnm(*)
 c
 c     local variables
 c
@@ -176,8 +176,8 @@ c
       logical      new    , newuit
       real         qstat  , a2     , w2     , q22 
       double precision    scudt
-      character*40 idhis(4)     ,idstr(4)      ,idqlt(4)     ,idmap(4)
-      character*20 parflw(npflw),parflw1(npflw),parstr(npstr),
+      character(len=40) idhis(4), idstr(4), idqlt(4), idmap(4)
+      character(len=20) parflw(npflw),parflw1(npflw),parstr(npstr),
      +             parqlt(npqlt)
       save         istepf, istphf, istplf, istpsf,scudt
 c
@@ -637,8 +637,8 @@ c
 c     Initialize arrays to be written to headers
 c
       integer      npflw  ,npstr ,npqlt  
-      character*40 idhis(4)      ,idstr(4)      ,idqlt(4)     ,idmap(4)
-      character*20 parflw(npflw) ,parstr(npstr) ,parqlt(npqlt)
+      character(len=40) idhis(4), idstr(4), idqlt(4), idmap(4)
+      character(len=20) parflw(npflw) ,parstr(npstr) ,parqlt(npqlt)
 c      
       idhis(1)   = 'SOBEK                                   '
       idhis(2)   = 'History at gridpoints                   '

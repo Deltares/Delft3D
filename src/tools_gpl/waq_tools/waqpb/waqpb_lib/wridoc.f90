@@ -28,8 +28,8 @@
 !  
 
       subroutine wridoc ( procid, procnm, procco, procfo, lun )
-      character*50 procnm
-      character*10 procid, procfo
+      character(len=50) procnm
+      character(len=10) procid, procfo
       integer      procco, lun   , i
       include 'pdf.inc'
 

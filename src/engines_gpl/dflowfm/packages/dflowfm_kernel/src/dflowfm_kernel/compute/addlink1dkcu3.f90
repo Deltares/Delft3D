@@ -68,7 +68,6 @@
 
     else
        if (hu(L) > 0) then
-          !DIR$ INLINE
           hpr = get_hpr_nostruc(L)
           calcConv = 1
           call getprof_1D(L, hpr, au(L), widu, japerim, calcConv, perim)

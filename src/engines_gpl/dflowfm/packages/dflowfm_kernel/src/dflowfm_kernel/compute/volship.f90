@@ -53,7 +53,7 @@
 
           hpr1 = 0d0 - BL1
           if (hpr1 > 0d0) then
-             call getlinkareawid2D(L, wu2, b21, ai, hpr1, ar1, wid1)
+             call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
              dx1 = 0.5d0 * dx(L) * acl(L)
              dx2 = 0.5d0 * dx(L) * (1d0 - acl(L))
 

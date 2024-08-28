@@ -32,7 +32,7 @@
 
 !> Initializes all administration necessary for writing lateral discharge output to his-files.
 subroutine init_lateral_his()
-   use m_lateral, only: qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum, qLatRealCumPre, qLatRealAve, numlatsg
+   use m_laterals, only: qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum, qLatRealCumPre, qLatRealAve, numlatsg
    use m_flowparameters, only: jahislateral
    use m_alloc
    implicit none

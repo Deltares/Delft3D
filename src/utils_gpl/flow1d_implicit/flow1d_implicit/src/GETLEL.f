@@ -62,7 +62,7 @@ c
       integer       getlel
       integer       fd_nefis, uindex(*) ,usrord(*) ,buflen
       logical       buffer(*)
-      character*(*) grpnam    ,elmnam
+      character(len=*) grpnam    ,elmnam
 c
 c     Declaration of external functions
 c

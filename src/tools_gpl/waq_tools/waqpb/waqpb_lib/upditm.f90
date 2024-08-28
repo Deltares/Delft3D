@@ -34,10 +34,10 @@
       use m_string_utils
       use m_waqpb_data
 
-      character*10 c10, naam
-      character*20 c20
-      character*30 grp
-      character*50 c50, c50l
+      character(len=10) c10, naam
+      character(len=20) c20
+      character(len=30) grp
+      character(len=50) c50, c50l
       real         value
       integer      jndex , segmnt, ihulp1, ihulp2, io_mes, ihulp, j
       integer      ihulp3, ihulp4, iitem
@@ -130,7 +130,7 @@
       subroutine upd_p3 ( c10 , newtab , io_mes )
       use m_string_utils
       use m_waqpb_data
-      character*10 c10
+      character(len=10) c10
       logical newtab
       integer io_mes, jndex
 

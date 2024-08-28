@@ -66,8 +66,8 @@
       INTEGER       NO_STOC     , LUNREP     , & 
                    IERROR
       INTEGER       DEFFDS
-      CHARACTER*10  R6_FID      (NO_STOC)
-      CHARACTER*10  R6_SID      (NO_STOC)
+      CHARACTER(len=10)  R6_FID      (NO_STOC)
+      CHARACTER(len=10)  R6_SID      (NO_STOC)
       REAL          R6_SCAL(NO_STOC)
 !     
 !          Local variables
@@ -85,9 +85,9 @@
       INTEGER       I               , IELM
       INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      CHARACTER(len=16)  GRPNAM
+      CHARACTER(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      CHARACTER(len=64)  ELMDES(NELEMS)
 !     
 !          External NEFIS Functions
 !     

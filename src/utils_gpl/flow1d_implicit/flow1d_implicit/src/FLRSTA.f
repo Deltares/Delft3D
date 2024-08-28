@@ -158,11 +158,11 @@ c
       parameter   (nentri=10)
       integer      errr  ,nrerr ,i
       integer      ndim  (nentri)
-      character*16 grnamf
-      character*16 nameel(nentri)  ,quanel(nentri)  ,unitel(nentri) ,
+      character(len=16) grnamf
+      character(len=16) nameel(nentri), quanel(nentri), unitel(nentri),
      &             nameac(nentri+1)
-      character*64 descel(nentri)
-      character*8  txt
+      character(len=64) descel(nentri)
+      character(len=8)  txt
       logical      inidum
 c
 c     Include sobek error code file

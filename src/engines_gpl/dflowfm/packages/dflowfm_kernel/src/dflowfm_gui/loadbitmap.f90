@@ -34,6 +34,7 @@
          use M_BITMAP
          use M_WEARELT
          use string_module, only: find_first_letter, find_first_char
+         use m_drawthis
          implicit none
          integer :: ierr
          integer :: k
@@ -41,12 +42,10 @@
          integer :: k2
          integer :: l
          integer :: minp
-         integer :: ndraw
          integer :: num
          integer :: numbersonline
          logical JAWEL
          integer INFO(10)
-         common / DRAWTHIS / ndraw(50)
          character FILNAM * (*), REC * 132
 
          K1 = find_first_char(FILNAM)

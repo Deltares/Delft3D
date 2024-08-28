@@ -32,19 +32,18 @@
 
 !>  network field rotate
 !!     It is assumed that there is a backup copy of the grid.
-subroutine netrotfld(xp, yp, zp, kp)
+subroutine netrotfld(xp, yp, kp)
    use m_netw
    use m_grid
    use m_alloc
    use m_missing
    use m_wearelt
    use m_sferic
-   use unstruc_colors, only: ncolhl
    use geometry_module, only: dbdistance
 
    implicit none
 
-   double precision :: xp, yp, zp !< coordinates that determine the influenced region and rotation angle
+   double precision :: xp, yp !< coordinates that determine the influenced region and rotation angle
 
    integer :: kp !< center point index
 
@@ -67,7 +66,7 @@ subroutine netrotfld(xp, yp, zp, kp)
 
       !  whipe out previous net image
       ja = 0
-      call teknet(0, ja)
+      call teknet(ja)
 
       do i = 1, numk
          xn = xk(i)
@@ -82,7 +81,7 @@ subroutine netrotfld(xp, yp, zp, kp)
          yk(i) = ycen + (xn - xcen) * sin(alpha) + (yn - ycen) * cos(alpha)
       end do
 
-      call teknet(ncolhl, ja)
+      call teknet(ja)
 
       jac = 1
       call confrm('More? ', jac)

@@ -33,9 +33,11 @@
       subroutine CHANGEISOPARAMETERS()
          use unstruc_display
          use dflowfm_version_module, only: company, product_name
-
+         use m_depmax
+         use m_helpnow
+         use m_scalepos
+         use m_depmax2
          implicit none
-         double precision :: dv, dv2
          double precision :: dvi, dvi2
          double precision :: dvnu
          integer :: i
@@ -49,35 +51,18 @@
          integer :: iw
          integer :: ixp
          integer :: iyp
-         integer :: jaauto, jaauto2
          integer :: key
          integer :: nbut
-         integer :: ncols, ncols2
-         integer :: ndec
-         integer :: nie, nie2
          integer :: nien
-         integer :: nis, nis2
          integer :: nisn
-         integer :: nlevel
          integer :: numfld
          integer :: numpar
-         integer :: nv, nv2
          integer :: nvn
-         double precision :: scalesize
-         double precision :: val, val2
-         double precision :: vmax, vmax2
          double precision :: vmaxn
-         double precision :: vmin, vmin2
          double precision :: vminn
-         double precision :: xsc
-         double precision :: ysc
          parameter(NUMPAR=19, NUMFLD=2 * NUMPAR)
          integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-         character WRDKEY * 40, OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
-         common / HELPNOW / WRDKEY, NLEVEL
-         common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-         common / DEPMAX2 / VMAX2, VMIN2, DV2, VAL2(256), NCOLS2(256), NV2, NIS2, NIE2, JAAUTO2
-         common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
+         character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
          integer, external :: infoinput
          external :: highlight_form_line
 !

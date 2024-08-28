@@ -333,7 +333,7 @@ else if (jatem == 5) then
           else  
              salinity = backgroundsalinity
           endif    
-          call preprocess_icecover(n, Qlong_ice, twatn, salinity, windn, timhr)
+          call preprocess_icecover(n, Qlong_ice, twatn, salinity, windn)
        endif
        !
        if (ice_h(n) > MIN_THICK) then

@@ -34,18 +34,15 @@
          use unstruc_colors
          use M_SPLINES
          use unstruc_display, only: plotSplines
+         use m_helpnow
+         use m_drawthis
          implicit none
          integer, intent(inout) :: mode, key
          integer :: newmode
 
 !      use rgfblock
 !
-         character WRDKEY * 40
-         integer :: nlevel
-         common / HELPNOW / WRDKEY, NLEVEL
-         integer :: ndraw, IIJ
-         common / DRAWTHIS / ndraw(50)
-
+         integer :: IIJ
          integer :: ja, num, numb, ncol, nwhat, nput
          double precision :: xp, yp
 
@@ -81,7 +78,7 @@
                   mp = 0
                   np = 0
                end if
-               call CHOICES(MODE, NUM, NWHAT, KEY)
+               call CHOICES(NUM, NWHAT, KEY)
             end if
          else if (KEY >= 577) then ! Alt+letter switches edit mode.
             call selecteditmode(newmode, key)

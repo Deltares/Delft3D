@@ -1657,7 +1657,7 @@
     return
  end
 
- subroutine reducept(Ndx, Ndxi, Lnx)
+ subroutine reducept(Ndx, Lnx)
     ! this subroutine finds an elimination order for Gaussian elimination based upon minimum degree algorithm
     use m_reduce
     use unstruc_messages
@@ -1666,7 +1666,7 @@
 
     implicit none
 
-    integer :: Ndx, Ndxi, Lnx
+    integer :: Ndx, Lnx
 
     integer :: nn ! integers used for counting
     integer :: minold ! minimum degree values
@@ -1753,12 +1753,12 @@
        end if
     else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
-       call ini_petsc(Ndx, Ndxi, ierror)
+       call ini_petsc(Ndx, ierror)
        call preparePETSCsolver(0)
 #endif
     else if (icgsolver == 10) then
 #ifdef HAVE_PETSC
-       call ini_petsc(Ndx, Ndxi, ierror)
+       call ini_petsc(Ndx, ierror)
        call preparePETSCsolver(1)
 #endif
     else if (icgsolver == 8) then

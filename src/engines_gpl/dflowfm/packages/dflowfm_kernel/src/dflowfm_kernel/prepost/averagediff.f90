@@ -34,9 +34,9 @@
       !! by averaging between left and right neighbouring points at each point.
       subroutine averageDiff(DPL, DDX, NPL)
          implicit none
+         integer :: npl !< Nr. of polyline points.
          double precision, intent(in) :: DPL(NPL) !< Accumulated distance at each point
          double precision, intent(out) :: DDX(NPL) !< Output average segment size.
-         integer :: npl !< Nr. of polyline points.
 
          integer :: n
 

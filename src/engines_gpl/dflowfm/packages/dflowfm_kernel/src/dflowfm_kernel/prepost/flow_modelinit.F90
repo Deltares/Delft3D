@@ -38,7 +38,7 @@
     use waq, only: reset_waq
     use m_flow, only: kmx, kmxn, jasecflow, iperot, taubxu, ucxq, ucyq, fvcoro, vol1
     use m_flowtimes
-    use m_lateral, only: numlatsg
+    use m_laterals, only: numlatsg
     use network_data, only: NETSTAT_CELLS_DIRTY
     use gridoperations, only: make1D2Dinternalnetlinks
     use m_partitioninfo
@@ -82,7 +82,7 @@
     use system_utils, only: makedir
     use m_fm_erosed, only: taub
     use m_transport, only: numconst, constituents
-    use m_lateral, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used, &
+    use m_laterals, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used, &
                          get_lateral_volume_per_layer, lateral_volume_per_layer
     use m_initialize_flow1d_implicit, only: initialize_flow1d_implicit
     !

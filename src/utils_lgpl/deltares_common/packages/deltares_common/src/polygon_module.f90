@@ -218,7 +218,6 @@ subroutine ipon(xpoly, ypoly, n, xp, yp, inout) ! should use pinpok from geometr
 ! Local variables
 !
     integer :: i
-    integer :: istat
     integer :: nunder
     real(fp):: ysn
     real(fp):: xprev

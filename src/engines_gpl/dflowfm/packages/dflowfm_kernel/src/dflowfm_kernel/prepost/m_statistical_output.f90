@@ -247,7 +247,7 @@ contains
                               model_has_compound_structures_across_partitions
       use m_dad, only: model_has_dredge_links_across_partitions
       use m_partitioninfo, only: model_has_crosssections_across_partitions
-      use m_lateral, only: model_has_laterals_across_partitions
+      use m_laterals, only: model_has_laterals_across_partitions
       integer, intent(in) :: location_specifier !< The location specifier indicating the type of structure (UNC_LOC_XXX)
       logical :: res !< Whether or not any structures of this type lie across multiple partitions
 

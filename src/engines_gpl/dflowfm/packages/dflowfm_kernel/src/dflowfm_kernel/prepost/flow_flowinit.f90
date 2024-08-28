@@ -329,7 +329,7 @@ contains
       end if
 
       if (jaFlowNetChanged == ON .or. nodtot /= ndx .or. lintot /= lnx) then
-         call reducept(Ndx, Ndxi, Lnx) ! also alloc arrays for reduce
+         call reducept(Ndx, Lnx) ! also alloc arrays for reduce
          if (icgsolver == 10) then
             call alloc_jacobi(ndx, lnx)
          end if

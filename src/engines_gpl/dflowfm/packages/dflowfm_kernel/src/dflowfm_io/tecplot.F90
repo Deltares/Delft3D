@@ -55,8 +55,7 @@ module m_tecplot
 
    character :: NULLCHR
 
-   pointer(NullPtr, Nulli)
-   integer :: Nulli(*)
+   integer, pointer, dimension(:)  :: Nulli => null()
 
    integer :: ifileformat = 0 ! 0: .plt, 1: .szplt
    integer :: ifiletype = 1 ! 0: full, 1: grid, 2: solution
@@ -327,7 +326,6 @@ subroutine ini_tecplot()
    integer :: i, k, L
 
    NULLCHR = char(0)
-   NullPtr = 0
 
    ifileformat = 0 ! 0: .plt, 1: .szplt
    ifiletype = 1 ! 0: full, 1: grid, 2: solution

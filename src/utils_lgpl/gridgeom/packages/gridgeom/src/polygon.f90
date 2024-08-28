@@ -387,7 +387,6 @@
 
 ! in/outside multiple tpoly-type polygons
    subroutine dbpinpol_tpolies(pols, xp,yp,in,zval)
-      use m_missing, only: JINS
 
       implicit none
 

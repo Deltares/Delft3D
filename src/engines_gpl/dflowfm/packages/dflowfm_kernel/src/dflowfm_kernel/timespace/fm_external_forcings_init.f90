@@ -42,7 +42,7 @@ contains
       use fm_external_forcings_data
       use m_flowgeom
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, UNIFORM, SPACEANDTIME, getmeteoerror
-      use m_lateral, only: balat, qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd
+      use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd
       use m_meteo, only: ec_addtimespacerelation
       use timespace
       use timespace_parameters
@@ -54,7 +54,7 @@ contains
       use m_missing
       use m_ec_parameters, only: provFile_uniform
       use m_partitioninfo, only: jampi, reduce_sum, is_ghost_node
-      use m_lateral, only: apply_transport
+      use m_laterals, only: apply_transport
       use m_flow, only: kmx
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use fm_deprecated_keywords, only: deprecated_ext_keywords
@@ -326,21 +326,13 @@ contains
                         ! This boundary has been skipped in an earlier phase (findexternalboundarypoints),
                         ! so, also do *not* connect it as a spacetimerelation here.
                         is_successful = .true. ! No failure: boundaries are allowed to remain disconnected.
-                     else if (forcing_file == '-') then
-                        is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=node_id, method=method, &
-                                                                        operand=oper, targetindex=target_index(1))
                      else
                         is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=node_id, method=method, &
                                                                         operand=oper, forcingfile=forcing_file, targetindex=target_index(1))
                      end if
                   else
-                     if (forcing_file == '-') then
-                        is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
-                                                                        operand=oper)
-                     else
-                        is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
-                                                                        operand=oper, forcingfile=forcing_file)
-                     end if
+                     is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
+                                                                     operand=oper, forcingfile=forcing_file)
                   end if
                   res = res .and. is_successful ! Remember any previous errors.
                   oper = '-'
@@ -703,7 +695,7 @@ contains
                mask(:) = 0
                call prepare_lateral_mask(mask, ilattype)
 
-               res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, 2, mask)
+               res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, UNC_LOC_S, mask)
                return ! This was a special case, don't continue with timespace processing below.
             case default
                write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
@@ -847,7 +839,7 @@ contains
    !> Construct target mask array for later ec_addtimespacerelation/timespaceinitialfield calls.
    subroutine construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
       use fm_location_types
-      use m_flowgeom, only: ndx, lnx, xz, yz, kcs, ln
+      use m_flowgeom, only: ndx, lnx, xz, yz, kcs
       use timespace_parameters, only: LOCTP_POLYGON_FILE
       use timespace, only: selectelset_internal_nodes, selectelset_internal_links
       use dfm_error, only: DFM_NOTIMPLEMENTED, DFM_NOERR
@@ -876,7 +868,7 @@ contains
                                             target_mask_file)
          case (UNC_LOC_U)
             ! in: no link pre-mask, all flow links, out: mask: all masked flow links.
-            call selectelset_internal_links(xz, yz, ndx, ln, lnx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
+            call selectelset_internal_links(lnx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
                                             target_mask_file)
          case default
             ierr = DFM_NOTIMPLEMENTED

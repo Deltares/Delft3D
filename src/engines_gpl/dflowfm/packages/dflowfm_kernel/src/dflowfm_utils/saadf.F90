@@ -52,7 +52,7 @@
 !----------------------------------------------------------------------c
 ! Note: this module still incomplete.                                  c
 !----------------------------------------------------------------------c
-    
+
 #define no_warning_unused_dummy_argument(x) associate( x => x ); end associate
 
 subroutine amub(nrow, ncol, job, a, ja, ia, b, jb, ib,&
@@ -302,10 +302,10 @@ subroutine aplb1(nrow, ncol, job, a, ja, ia, b, jb, ib, c, jc, ic, nzmax, ierr)
 !     this will not work if any of the two input matrices is not sorted
 !-----------------------------------------------------------------------
    logical values
-   
+
    no_warning_unused_dummy_argument(ic)
    no_warning_unused_dummy_argument(nzmax)
-   
+
    values = (job /= 0)
    ierr = 0
 !     kc = 1
@@ -411,10 +411,10 @@ subroutine aplsb(nrow, ncol, a, ja, ia, s, b, jb, ib, c, jc, ic,&
 !-------
 !     this will not work if any of the two input matrices is not sorted
 !-----------------------------------------------------------------------
-   
+
    no_warning_unused_dummy_argument(ic)
    no_warning_unused_dummy_argument(nzmax)
-   
+
    ierr = 0
 !     kc = 1
 !     ic(1) = kc
@@ -533,10 +533,10 @@ subroutine aplsb1(nrow, ncol, a, ja, ia, s, b, jb, ib, c, jc, ic,&
 !-------
 !     this will not work if any of the two input matrices is not sorted
 !-----------------------------------------------------------------------
-   
+
    no_warning_unused_dummy_argument(ic)
    no_warning_unused_dummy_argument(nzmax)
-   
+
    ierr = 0
 !     kc = 1
 !     ic(1) = kc
@@ -667,10 +667,10 @@ subroutine apmbt(nrow, ncol, job, a, ja, ia, b, jb, ib,&
    logical values
    values = (job /= 0)
 !
-   
+
    no_warning_unused_dummy_argument(b)
    no_warning_unused_dummy_argument(jb)
-   
+
    ierr = 0
    do j = 1, ncol
       iw(j) = 0
@@ -810,7 +810,7 @@ subroutine aplsbt(nrow, ncol, a, ja, ia, s, b, jb, ib,&
    ierr = 0
    no_warning_unused_dummy_argument(b)
    no_warning_unused_dummy_argument(jb)
-   
+
    do j = 1, ncol
       iw(j) = 0
    end do
@@ -2018,7 +2018,7 @@ subroutine errpr(n, y, y1, iout, msg)
 
    integer, intent(in) :: n, iout
    real(dp), intent(in) :: y(*), y1(*)
-   character*6, intent(in) :: msg
+   character(len=6), intent(in) :: msg
 
    real(dp) :: t
    integer :: k
@@ -2525,7 +2525,7 @@ subroutine drotgXXX(da, db, c, s)
    double precision da, db, c, s, roe, scale, r, z
 !
    no_warning_unused_dummy_argument(c)
-   
+
    roe = db
    if (abs(da) > abs(db)) roe = da
    scale = abs(da) + abs(db)
@@ -3110,8 +3110,15 @@ subroutine csrcoo(nrow, job, nzmax, a, ja, ia, nnz, ao, ir, jc, ierr)
       ierr = 1
       return
    end if
-!------------------------------------------------------------------------
-   goto(3, 2, 1) job
+
+   if (job == 1) then
+      goto 3
+   else if (job == 2) then
+      goto 2
+   else if (job == 3) then
+      goto 1
+   end if
+
 1  do k = 1, nnz
       ao(k) = a(k)
    end do
@@ -4124,7 +4131,7 @@ subroutine csrlnk(n, a, ja, ia, link)
 !-----------------------------------------------------------------------
 ! local variables
    integer i, k, istart, iend
-   
+
    no_warning_unused_dummy_argument(a)
    no_warning_unused_dummy_argument(ja)
 !
@@ -6387,7 +6394,15 @@ subroutine filter(n, job, drptol, a, ja, ia, b, jb, ib, len, ierr)
       k1 = ia(row)
       k2 = ia(row + 1) - 1
       ib(row) = index
-      goto(100, 200, 300) job
+
+      if (job == 1) then
+         goto 100
+      else if (job == 2) then
+         goto 200
+      else if (job == 3) then
+        goto 300
+      end if
+
 100   norm = 1.0d0
       goto 400
 200   norm = 0.0d0
@@ -6479,7 +6494,15 @@ subroutine filterm(n, job, drop, a, ja, b, jb, len, ierr)
       k1 = ja(row)
       k2 = ja(row + 1) - 1
       jb(row) = index
-      goto(100, 200, 300) job
+
+      if (job == 1) then
+         goto 100
+      else if (job == 2) then
+         goto 200
+      else if (job == 3) then
+         goto 300
+      end if
+
 100   norm = 1.0d0
       goto 400
 200   norm = a(row)**2
@@ -8269,7 +8292,15 @@ subroutine dscaldg(n, a, ja, ia, diag, job)
 !----------------------------------------------------------------------c
 !           Y. Saad, Sep. 21 1989                                      c
 !----------------------------------------------------------------------c
-   goto(12, 11, 10) job + 1
+
+   if (job == 0) then
+      goto 12
+   else if (job == 1) then
+      goto 11
+   else if (job == 2) then
+      goto 10
+   end if
+
 10 do j = 1, n
       k1 = ia(j)
       k2 = ia(j + 1) - 1

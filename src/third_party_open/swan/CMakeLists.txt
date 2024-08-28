@@ -18,7 +18,9 @@ list(FILTER swan_sourcefiles EXCLUDE REGEX ".*swanhcat.for$")
 set(library_name swan)
 set(library_source_list     ${headers}
                             ${swan_sourcefiles})
-add_library(${library_name} ${library_source_list})  
+add_library(${library_name} ${library_source_list})
+
+target_link_libraries(${library_name} PRIVATE no_compiler_warnings)
 
 # Add dependencies
 if (UNIX)
@@ -28,7 +30,7 @@ if (UNIX)
     # these calls create special `PkgConfig::<MODULE>` variables
     pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
     pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-    target_link_libraries(${library_name}
+    target_link_libraries(${library_name} PRIVATE
          PkgConfig::NETCDF
          netcdff)
 
@@ -44,7 +46,7 @@ if (WIN32)
     set(oss_dependencies    netcdf4
                             netcdff)
     oss_include_libraries(${library_name} ${oss_dependencies})
-    target_link_libraries(${library_name} ${oss_dependencies})
+    target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${mpi_module_path}
                         ${version_include_dir})

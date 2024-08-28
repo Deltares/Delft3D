@@ -65,8 +65,8 @@
       INTEGER       NO_SGRP     , LUNREP     , & 
                    IERROR
       INTEGER       DEFFDS
-      CHARACTER*30  SGRP_ID     (NO_SGRP)
-      CHARACTER*50  SGRP_NAME   (NO_SGRP)
+      CHARACTER(len=30)  SGRP_ID     (NO_SGRP)
+      CHARACTER(len=50)  SGRP_NAME   (NO_SGRP)
 !     
 !          Local variables
 !     
@@ -83,9 +83,9 @@
       INTEGER       I               , IELM
       INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      CHARACTER(len=16)  GRPNAM
+      CHARACTER(len=16)  ELMNMS(NELEMS), ELMTPS(NELEMS)
+      CHARACTER(len=64)  ELMDES(NELEMS)
 !     
 !          External NEFIS Functions
 !     

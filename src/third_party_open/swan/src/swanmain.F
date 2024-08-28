@@ -321,8 +321,8 @@
       INTEGER   INERR                                                     40.31
       INTEGER   ISTAT, IF1, IL1                                           40.41
       CHARACTER COMPUT *4, DTTIWR*18                                      40.00
-      CHARACTER*20 NUMSTR, CHARS(1)                                       40.41
-      CHARACTER*80 MSGSTR                                                 40.41
+      CHARACTER(len=20) NUMSTR, CHARS(1)                                       40.41
+      CHARACTER(len=80) MSGSTR                                                 40.41
       LOGICAL   LOPEN                                                     34.01
 !ADC!     some variables and arrays have been moved to the                    41.20
 !ADC!     Couple2Adcirc module so that they will persist in memory            41.20
@@ -6134,7 +6134,7 @@
 !
 !     MSGSTR:     string to pass message to call MSGERR
 !
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=80) MSGSTR
 !
 !  8. Subroutines used
 !

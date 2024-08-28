@@ -88,7 +88,7 @@ subroutine findqorifice12(gateheight, crestheight, h1, h2, q, hg, regime, num, q
    end do
 
    hg = hc
-   call getq3(hg, d, a, h1, h2, q)
+   call getq3(hg, a, h1, h2, q)
 
    return
 

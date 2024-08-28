@@ -1,0 +1,1363 @@
+==========================================
+SLURM_JOB_ID = 40708
+SLURM_NODELIST = v-lcf4vcpu0288
+==========================================
+MPIR_pmi_virtualization(): MPI startup(): PMI calls are forwarded to /usr/lib64/libpmi2.so
+MPIR_pmi_virtualization(): MPI startup(): PMI calls are forwarded to /usr/lib64/libpmi2.so
+MPIR_pmi_virtualization(): MPI startup(): PMI calls are forwarded to /usr/lib64/libpmi2.so
+[0] MPI startup(): Intel(R) MPI Library, Version 2021.9  Build 20230307 (id: d82b3071db)
+[0] MPI startup(): Copyright (C) 2003-2023 Intel Corporation.  All rights reserved.
+[0] MPI startup(): library kind: release
+[0] MPI startup(): libfabric version: 1.18.0-impi
+[0] MPI startup(): libfabric provider: tcp
+[0] MPI startup(): File "" not found
+[0] MPI startup(): Load tuning file: "/opt/apps/intelmpi/2021.10.0/mpi/2021.10.0/etc/tuning_skx_ofi.dat"
+[0] MPI startup(): Rank    Pid      Node name                       Pin cpu
+[0] MPI startup(): 0       1570     v-lcf4vcpu0288.directory.intra  0,1,2,3
+[0] MPI startup(): 1       1571     v-lcf4vcpu0288.directory.intra  0,1,2,3
+[0] MPI startup(): 2       1572     v-lcf4vcpu0288.directory.intra  0,1,2,3
+[0] MPI startup(): I_MPI_ROOT=/opt/apps/intelmpi/2021.10.0/mpi/2021.10.0
+[0] MPI startup(): I_MPI_FABRICS=ofi
+[0] MPI startup(): I_MPI_OFI_PROVIDER=tcp
+[0] MPI startup(): I_MPI_DEBUG=5
+[0] MPI startup(): I_MPI_PMI_LIBRARY=/usr/lib64/libpmi2.so
+#1: Running parallel with 3 partitions
+#2: Running parallel with 3 partitions
+Dimr [2023-12-20 15:54:57.910417] #2 >> Deltares, DIMR_EXE Version 2.00.445b50d6305cfe80e16b185130c8e8d94159a28c, Dec 14 2023, 13:26:06
+Dimr [2023-12-20 15:54:57.910416] #1 >> Deltares, DIMR_EXE Version 2.00.445b50d6305cfe80e16b185130c8e8d94159a28c, Dec 14 2023, 13:26:06
+Dimr [2023-12-20 15:54:57.910512] #1 >> Deltares, DIMR_LIB Version 1.02.445b50d6305cfe80e16b185130c8e8d94159a28c, Dec 14 2023, 13:26:01
+Dimr [2023-12-20 15:54:57.910515] #2 >> Deltares, DIMR_LIB Version 1.02.445b50d6305cfe80e16b185130c8e8d94159a28c, Dec 14 2023, 13:26:01
+#0: Running parallel with 3 partitions
+Dimr [2023-12-20 15:54:57.910718] #0 >> Deltares, DIMR_EXE Version 2.00.445b50d6305cfe80e16b185130c8e8d94159a28c, Dec 14 2023, 13:26:06
+Dimr [2023-12-20 15:54:57.910820] #0 >> Deltares, DIMR_LIB Version 1.02.445b50d6305cfe80e16b185130c8e8d94159a28c, Dec 14 2023, 13:26:01
+Dimr [2023-12-20 15:54:58.69536] #1 >> DFlowFM.Initialize(f34_BLOOM.mdu)
+Dimr [2023-12-20 15:54:58.69536] #2 >> DFlowFM.Initialize(f34_BLOOM.mdu)
+Dimr [2023-12-20 15:54:58.70997] #0 >> 
+Dimr [2023-12-20 15:54:58.71007] #0 >> Version Information of Components
+Dimr [2023-12-20 15:54:58.71011] #0 >> =================================
+Dimr [2023-12-20 15:54:58.71013] #0 >> dflowfm                            : Deltares, D-Flow FM1.2.184.445b50d6305cfe80e16b185130c8e8d94159a28c
+Dimr [2023-12-20 15:54:58.71015] #0 >> ---------------------------------
+Dimr [2023-12-20 15:54:58.71017] #0 >> 
+Dimr [2023-12-20 15:54:58.71024] #0 >> DFlowFM.Initialize(f34_BLOOM.mdu)
+** DEBUG  :            0  0.1000010      NOD(KMAX)
+** DEBUG  :            0  0.1000010      NOD(KMAX)
+** DEBUG  :            0  0.1000010      NOD(KMAX)
+** DEBUG  :            6  0.7000070      XK (KMAX), YK (KMAX), ZK (KMAX), KC (KMAX), NMK (KMAX), RNOD(KMAX)
+** DEBUG  :            6  0.7000070      XK (KMAX), YK (KMAX), ZK (KMAX), KC (KMAX), NMK (KMAX), RNOD(KMAX)
+** DEBUG  :            6  0.7000070      XK (KMAX), YK (KMAX), ZK (KMAX), KC (KMAX), NMK (KMAX), RNOD(KMAX)
+ loading model
+ loading model
+ loading model
+** INFO   : no partitioning polygons file: read subdomain numbering from netfiles
+** INFO   : no partitioning polygons file: read subdomain numbering from netfiles
+** INFO   : no partitioning polygons file: read subdomain numbering from netfiles
+** WARNING: TimeSplitInterval invalid, disabling time partitioning of output. Got: 0X
+** WARNING: TimeSplitInterval invalid, disabling time partitioning of output. Got: 0X
+Dimr [2023-12-20 15:54:58.118310] #0 >> kernel: TimeSplitInterval invalid, disabling time partitioning of output. Got: 0X
+Dimr [2023-12-20 15:54:58.118302] #1 >> kernel: TimeSplitInterval invalid, disabling time partitioning of output. Got: 0X
+** WARNING: The keyword DtMassBalance in the Processes section is now replaced by MbaInterval in the Output section.
+Dimr [2023-12-20 15:54:58.118394] #1 >> kernel: The keyword DtMassBalance in the Processes section is now replaced by MbaInterval in the Output section.
+** WARNING: The keyword DtMassBalance in the Processes section is now replaced by MbaInterval in the Output section.
+Dimr [2023-12-20 15:54:58.118400] #0 >> kernel: The keyword DtMassBalance in the Processes section is now replaced by MbaInterval in the Output section.
+** WARNING: MbaInterval was not specified, will use DtMassBalance for backwards compatibility.
+** WARNING: MbaInterval was not specified, will use DtMassBalance for backwards compatibility.
+Dimr [2023-12-20 15:54:58.118400] #1 >> kernel: MbaInterval was not specified, will use DtMassBalance for backwards compatibility.
+Dimr [2023-12-20 15:54:58.118405] #0 >> kernel: MbaInterval was not specified, will use DtMassBalance for backwards compatibility.
+** WARNING: While reading 'f34_BLOOM_0000.mdu': keyword [numerics] qhrelax=1.d-2 was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118424] #0 >> kernel: While reading 'f34_BLOOM_0000.mdu': keyword [numerics] qhrelax=1.d-2 was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0000.mdu': keyword [numerics] jaorgsethu=1 was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118430] #0 >> kernel: While reading 'f34_BLOOM_0000.mdu': keyword [numerics] jaorgsethu=1 was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0001.mdu': keyword [numerics] qhrelax=1.d-2 was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118432] #1 >> kernel: While reading 'f34_BLOOM_0001.mdu': keyword [numerics] qhrelax=1.d-2 was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0000.mdu': keyword [physics] effectspiral=0. was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118441] #0 >> kernel: While reading 'f34_BLOOM_0000.mdu': keyword [physics] effectspiral=0. was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0001.mdu': keyword [numerics] jaorgsethu=1 was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118438] #1 >> kernel: While reading 'f34_BLOOM_0001.mdu': keyword [numerics] jaorgsethu=1 was in file, but not used. Check possible typo.
+** WARNING: TimeSplitInterval invalid, disabling time partitioning of output. Got: 0X
+** WARNING: While reading 'f34_BLOOM_0000.mdu': keyword [wind] gapres=101325.0000000 was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118447] #0 >> kernel: While reading 'f34_BLOOM_0000.mdu': keyword [wind] gapres=101325.0000000 was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0000.mdu': keyword [waves] wavenikuradse=1.d-2 was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118452] #0 >> kernel: While reading 'f34_BLOOM_0000.mdu': keyword [waves] wavenikuradse=1.d-2 was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0001.mdu': keyword [physics] effectspiral=0. was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118449] #1 >> kernel: While reading 'f34_BLOOM_0001.mdu': keyword [physics] effectspiral=0. was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0001.mdu': keyword [wind] gapres=101325.0000000 was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118456] #1 >> kernel: While reading 'f34_BLOOM_0001.mdu': keyword [wind] gapres=101325.0000000 was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0001.mdu': keyword [waves] wavenikuradse=1.d-2 was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0000.mdu': keyword [processes] dtmassbalance is deprecated and may be removed in a future release.
+Dimr [2023-12-20 15:54:58.118460] #1 >> kernel: While reading 'f34_BLOOM_0001.mdu': keyword [waves] wavenikuradse=1.d-2 was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118451] #2 >> kernel: TimeSplitInterval invalid, disabling time partitioning of output. Got: 0X
+Dimr [2023-12-20 15:54:58.118467] #0 >> kernel: While reading 'f34_BLOOM_0000.mdu': keyword [processes] dtmassbalance is deprecated and may be removed in a future release.
+** WARNING: While reading 'f34_BLOOM_0000.mdu': Deprecated keywords used: Check Section "Overview of deprecated and removed keywords" in the User Manual for information on how to update the input file.
+Dimr [2023-12-20 15:54:58.118471] #0 >> kernel: While reading 'f34_BLOOM_0000.mdu': Deprecated keywords used: Check Section "Overview of deprecated and removed keywords" in the User Manual for information on how to update the input file.
+** WARNING: While reading 'f34_BLOOM_0001.mdu': keyword [processes] dtmassbalance is deprecated and may be removed in a future release.
+Dimr [2023-12-20 15:54:58.118475] #1 >> kernel: While reading 'f34_BLOOM_0001.mdu': keyword [processes] dtmassbalance is deprecated and may be removed in a future release.
+** WARNING: While reading 'f34_BLOOM_0001.mdu': Deprecated keywords used: Check Section "Overview of deprecated and removed keywords" in the User Manual for information on how to update the input file.
+Dimr [2023-12-20 15:54:58.118480] #1 >> kernel: While reading 'f34_BLOOM_0001.mdu': Deprecated keywords used: Check Section "Overview of deprecated and removed keywords" in the User Manual for information on how to update the input file.
+** WARNING: The keyword DtMassBalance in the Processes section is now replaced by MbaInterval in the Output section.
+Dimr [2023-12-20 15:54:58.118532] #2 >> kernel: The keyword DtMassBalance in the Processes section is now replaced by MbaInterval in the Output section.
+** WARNING: MbaInterval was not specified, will use DtMassBalance for backwards compatibility.
+Dimr [2023-12-20 15:54:58.118537] #2 >> kernel: MbaInterval was not specified, will use DtMassBalance for backwards compatibility.
+** WARNING: While reading 'f34_BLOOM_0002.mdu': keyword [numerics] qhrelax=1.d-2 was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118555] #2 >> kernel: While reading 'f34_BLOOM_0002.mdu': keyword [numerics] qhrelax=1.d-2 was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0002.mdu': keyword [numerics] jaorgsethu=1 was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118561] #2 >> kernel: While reading 'f34_BLOOM_0002.mdu': keyword [numerics] jaorgsethu=1 was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0002.mdu': keyword [physics] effectspiral=0. was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118571] #2 >> kernel: While reading 'f34_BLOOM_0002.mdu': keyword [physics] effectspiral=0. was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0002.mdu': keyword [wind] gapres=101325.0000000 was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118578] #2 >> kernel: While reading 'f34_BLOOM_0002.mdu': keyword [wind] gapres=101325.0000000 was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0002.mdu': keyword [waves] wavenikuradse=1.d-2 was in file, but not used. Check possible typo.
+Dimr [2023-12-20 15:54:58.118583] #2 >> kernel: While reading 'f34_BLOOM_0002.mdu': keyword [waves] wavenikuradse=1.d-2 was in file, but not used. Check possible typo.
+** WARNING: While reading 'f34_BLOOM_0002.mdu': keyword [processes] dtmassbalance is deprecated and may be removed in a future release.
+Dimr [2023-12-20 15:54:58.118597] #2 >> kernel: While reading 'f34_BLOOM_0002.mdu': keyword [processes] dtmassbalance is deprecated and may be removed in a future release.
+** WARNING: While reading 'f34_BLOOM_0002.mdu': Deprecated keywords used: Check Section "Overview of deprecated and removed keywords" in the User Manual for information on how to update the input file.
+Dimr [2023-12-20 15:54:58.118601] #2 >> kernel: While reading 'f34_BLOOM_0002.mdu': Deprecated keywords used: Check Section "Overview of deprecated and removed keywords" in the User Manual for information on how to update the input file.
+** INFO   : Opened file : f34_obs.xyn
+** INFO   : Opened file : f34_obs.xyn
+** INFO   : Opened file : f34_obs.xyn
+** INFO   : Closed file : f34_obs.xyn
+** INFO   : Closed file : f34_obs.xyn
+** INFO   : Closed file : f34_obs.xyn
+** INFO   : Opened file : f34_thd.pli
+** INFO   : Opened file : f34_thd.pli
+** INFO   : Opened file : f34_thd.pli
+** INFO   : Closed file : f34_thd.pli
+** INFO   : Closed file : f34_thd.pli
+** INFO   : Closed file : f34_thd.pli
+** INFO   : Opened file : f34_crs.pli
+** INFO   : Opened file : f34_crs.pli
+** INFO   : Opened file : f34_crs.pli
+** INFO   : Closed file : f34_crs.pli
+** INFO   : Closed file : f34_crs.pli
+** INFO   : Closed file : f34_crs.pli
+ model loaded
+ model loaded
+ model loaded
+ Initializing flow: flow_modelinit
+ Initializing flow: flow_modelinit
+ Initializing flow: flow_modelinit
+** INFO   : Initializing flow model geometry...
+** INFO   : Initializing flow model geometry...
+** INFO   : Initializing flow model geometry...
+** INFO   : Finding crossed flowlinks...
+** INFO   : Finding crossed flowlinks...
+** INFO   : Finding crossed flowlinks...
+** INFO   : done
+** INFO   : done
+** INFO   : done
+** INFO   : thin dams with kdtree2, elapsed time:     0.10000E-02s.
+** INFO   : thin dams with kdtree2, elapsed time:     0.10000E-02s.
+** INFO   : thin dams with kdtree2, elapsed time:     0.10000E-02s.
+** INFO   : Opened file : f34_BLOOM.ext
+** INFO   : Opened file : f34_BLOOM.ext
+** INFO   : Opened file : f34_BLOOM.ext
+** INFO   : disabled 16 boundary links
+** INFO   : disabled 29 boundary links
+** INFO   : partition_reduce_mirrorcells, elapsed time:     0.10000E-02s.
+** INFO   : partition_reduce_mirrorcells, elapsed time:     0.10000E-02s.
+** INFO   : disabled 26 boundary links
+** INFO   : partition_reduce_mirrorcells, elapsed time:     0.10000E-02s.
+** INFO   : Opened file : f34_NW.pli
+** INFO   : Opened file : f34_NW.pli
+** INFO   : Opened file : f34_NW.pli
+** INFO   : Closed file : f34_NW.pli
+** INFO   : Closed file : f34_NW.pli
+** INFO   : boundary: 'f34_NW.pli' opened 0 cells.
+** INFO   : waterlevelbnd f34_NW.pli       0 nr of open bndcells
+** INFO   : boundary: 'f34_NW.pli' opened 5 cells.
+** INFO   : waterlevelbnd f34_NW.pli       5 nr of open bndcells
+** INFO   : Closed file : f34_NW.pli
+** INFO   : boundary: 'f34_NW.pli' opened 0 cells.
+** INFO   : waterlevelbnd f34_NW.pli       0 nr of open bndcells
+** INFO   : Opened file : f34_NW_IM1.pli
+** INFO   : Opened file : f34_NW_IM1.pli
+** INFO   : Opened file : f34_NW_IM1.pli
+** INFO   : Closed file : f34_NW_IM1.pli
+** INFO   : boundary: 'f34_NW_IM1.pli' opened 0 cells.
+** INFO   : tracerbndIM1 f34_NW_IM1.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NW_IM1.pli
+** INFO   : boundary: 'f34_NW_IM1.pli' opened 0 cells.
+** INFO   : tracerbndIM1 f34_NW_IM1.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NW_IM1.pli
+** INFO   : boundary: 'f34_NW_IM1.pli' opened 5 cells.
+** INFO   : tracerbndIM1 f34_NW_IM1.pli       5 nr of tracer bndcells
+** INFO   : Opened file : f34_NW_IM2.pli
+** INFO   : Opened file : f34_NW_IM2.pli
+** INFO   : Opened file : f34_NW_IM2.pli
+** INFO   : Closed file : f34_NW_IM2.pli
+** INFO   : Closed file : f34_NW_IM2.pli
+** INFO   : boundary: 'f34_NW_IM2.pli' opened 0 cells.
+** INFO   : tracerbndIM2 f34_NW_IM2.pli       0 nr of tracer bndcells
+** INFO   : boundary: 'f34_NW_IM2.pli' opened 0 cells.
+** INFO   : tracerbndIM2 f34_NW_IM2.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NW_IM2.pli
+** INFO   : boundary: 'f34_NW_IM2.pli' opened 5 cells.
+** INFO   : tracerbndIM2 f34_NW_IM2.pli       5 nr of tracer bndcells
+** INFO   : Opened file : f34_NW_NH4.pli
+** INFO   : Opened file : f34_NW_NH4.pli
+** INFO   : Opened file : f34_NW_NH4.pli
+** INFO   : Closed file : f34_NW_NH4.pli
+** INFO   : boundary: 'f34_NW_NH4.pli' opened 0 cells.
+** INFO   : tracerbndNH4 f34_NW_NH4.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NW_NH4.pli
+** INFO   : boundary: 'f34_NW_NH4.pli' opened 5 cells.
+** INFO   : tracerbndNH4 f34_NW_NH4.pli       5 nr of tracer bndcells
+** INFO   : Closed file : f34_NW_NH4.pli
+** INFO   : boundary: 'f34_NW_NH4.pli' opened 0 cells.
+** INFO   : tracerbndNH4 f34_NW_NH4.pli       0 nr of tracer bndcells
+** INFO   : Opened file : f34_NW_NO3.pli
+** INFO   : Opened file : f34_NW_NO3.pli
+** INFO   : Opened file : f34_NW_NO3.pli
+** INFO   : Closed file : f34_NW_NO3.pli
+** INFO   : Closed file : f34_NW_NO3.pli
+** INFO   : boundary: 'f34_NW_NO3.pli' opened 0 cells.
+** INFO   : tracerbndNO3 f34_NW_NO3.pli       0 nr of tracer bndcells
+** INFO   : boundary: 'f34_NW_NO3.pli' opened 0 cells.
+** INFO   : tracerbndNO3 f34_NW_NO3.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NW_NO3.pli
+** INFO   : boundary: 'f34_NW_NO3.pli' opened 5 cells.
+** INFO   : tracerbndNO3 f34_NW_NO3.pli       5 nr of tracer bndcells
+** INFO   : Opened file : f34_NW_PO4.pli
+** INFO   : Opened file : f34_NW_PO4.pli
+** INFO   : Opened file : f34_NW_PO4.pli
+** INFO   : Closed file : f34_NW_PO4.pli
+** INFO   : boundary: 'f34_NW_PO4.pli' opened 0 cells.
+** INFO   : Closed file : f34_NW_PO4.pli
+** INFO   : boundary: 'f34_NW_PO4.pli' opened 0 cells.
+** INFO   : tracerbndPO4 f34_NW_PO4.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NW_PO4.pli
+** INFO   : tracerbndPO4 f34_NW_PO4.pli       0 nr of tracer bndcells
+** INFO   : boundary: 'f34_NW_PO4.pli' opened 5 cells.
+** INFO   : tracerbndPO4 f34_NW_PO4.pli       5 nr of tracer bndcells
+** INFO   : Opened file : f34_NW_FDIATOMS_E.pli
+** INFO   : Opened file : f34_NW_FDIATOMS_E.pli
+** INFO   : Opened file : f34_NW_FDIATOMS_E.pli
+** INFO   : Closed file : f34_NW_FDIATOMS_E.pli
+** INFO   : boundary: 'f34_NW_FDIATOMS_E.pli' opened 0 cells.
+** INFO   : Closed file : f34_NW_FDIATOMS_E.pli
+** INFO   : boundary: 'f34_NW_FDIATOMS_E.pli' opened 0 cells.
+** INFO   : Closed file : f34_NW_FDIATOMS_E.pli
+** INFO   : boundary: 'f34_NW_FDIATOMS_E.pli' opened 5 cells.
+** INFO   : tracerbndFDIATOMS_E f34_NW_FDIATOMS_E.pli       0 nr of tracer bndcells
+** INFO   : tracerbndFDIATOMS_E f34_NW_FDIATOMS_E.pli       0 nr of tracer bndcells
+** INFO   : tracerbndFDIATOMS_E f34_NW_FDIATOMS_E.pli       5 nr of tracer bndcells
+** INFO   : Opened file : f34_NW_GREENS_E.pli
+** INFO   : Opened file : f34_NW_GREENS_E.pli
+** INFO   : Opened file : f34_NW_GREENS_E.pli
+** INFO   : Closed file : f34_NW_GREENS_E.pli
+** INFO   : Closed file : f34_NW_GREENS_E.pli
+** INFO   : boundary: 'f34_NW_GREENS_E.pli' opened 0 cells.
+** INFO   : tracerbndGREENS_E f34_NW_GREENS_E.pli       0 nr of tracer bndcells
+** INFO   : boundary: 'f34_NW_GREENS_E.pli' opened 0 cells.
+** INFO   : tracerbndGREENS_E f34_NW_GREENS_E.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NW_GREENS_E.pli
+** INFO   : boundary: 'f34_NW_GREENS_E.pli' opened 5 cells.
+** INFO   : tracerbndGREENS_E f34_NW_GREENS_E.pli       5 nr of tracer bndcells
+** INFO   : Opened file : f34_NE.pli
+** INFO   : Opened file : f34_NE.pli
+** INFO   : Opened file : f34_NE.pli
+** INFO   : Closed file : f34_NE.pli
+** INFO   : boundary: 'f34_NE.pli' opened 0 cells.
+** INFO   : Closed file : f34_NE.pli
+** INFO   : Closed file : f34_NE.pli
+** INFO   : waterlevelbnd f34_NE.pli       0 nr of open bndcells
+** INFO   : boundary: 'f34_NE.pli' opened 0 cells.
+** INFO   : waterlevelbnd f34_NE.pli       0 nr of open bndcells
+** INFO   : boundary: 'f34_NE.pli' opened 5 cells.
+** INFO   : waterlevelbnd f34_NE.pli       5 nr of open bndcells
+** INFO   : Opened file : f34_NE_IM1.pli
+** INFO   : Opened file : f34_NE_IM1.pli
+** INFO   : Closed file : f34_NE_IM1.pli
+** INFO   : Opened file : f34_NE_IM1.pli
+** INFO   : Closed file : f34_NE_IM1.pli
+** INFO   : boundary: 'f34_NE_IM1.pli' opened 5 cells.
+** INFO   : tracerbndIM1 f34_NE_IM1.pli       5 nr of tracer bndcells
+** INFO   : boundary: 'f34_NE_IM1.pli' opened 0 cells.
+** INFO   : tracerbndIM1 f34_NE_IM1.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NE_IM1.pli
+** INFO   : boundary: 'f34_NE_IM1.pli' opened 0 cells.
+** INFO   : tracerbndIM1 f34_NE_IM1.pli       0 nr of tracer bndcells
+** INFO   : Opened file : f34_NE_IM2.pli
+** INFO   : Opened file : f34_NE_IM2.pli
+** INFO   : Closed file : f34_NE_IM2.pli
+** INFO   : Opened file : f34_NE_IM2.pli
+** INFO   : Closed file : f34_NE_IM2.pli
+** INFO   : boundary: 'f34_NE_IM2.pli' opened 5 cells.
+** INFO   : tracerbndIM2 f34_NE_IM2.pli       5 nr of tracer bndcells
+** INFO   : boundary: 'f34_NE_IM2.pli' opened 0 cells.
+** INFO   : tracerbndIM2 f34_NE_IM2.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NE_IM2.pli
+** INFO   : boundary: 'f34_NE_IM2.pli' opened 0 cells.
+** INFO   : tracerbndIM2 f34_NE_IM2.pli       0 nr of tracer bndcells
+** INFO   : Opened file : f34_NE_NH4.pli
+** INFO   : Opened file : f34_NE_NH4.pli
+** INFO   : Closed file : f34_NE_NH4.pli
+** INFO   : Opened file : f34_NE_NH4.pli
+** INFO   : boundary: 'f34_NE_NH4.pli' opened 5 cells.
+** INFO   : tracerbndNH4 f34_NE_NH4.pli       5 nr of tracer bndcells
+** INFO   : Closed file : f34_NE_NH4.pli
+** INFO   : boundary: 'f34_NE_NH4.pli' opened 0 cells.
+** INFO   : tracerbndNH4 f34_NE_NH4.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NE_NH4.pli
+** INFO   : boundary: 'f34_NE_NH4.pli' opened 0 cells.
+** INFO   : tracerbndNH4 f34_NE_NH4.pli       0 nr of tracer bndcells
+** INFO   : Opened file : f34_NE_NO3.pli
+** INFO   : Opened file : f34_NE_NO3.pli
+** INFO   : Closed file : f34_NE_NO3.pli
+** INFO   : Opened file : f34_NE_NO3.pli
+** INFO   : Closed file : f34_NE_NO3.pli
+** INFO   : boundary: 'f34_NE_NO3.pli' opened 5 cells.
+** INFO   : tracerbndNO3 f34_NE_NO3.pli       5 nr of tracer bndcells
+** INFO   : boundary: 'f34_NE_NO3.pli' opened 0 cells.
+** INFO   : tracerbndNO3 f34_NE_NO3.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NE_NO3.pli
+** INFO   : boundary: 'f34_NE_NO3.pli' opened 0 cells.
+** INFO   : tracerbndNO3 f34_NE_NO3.pli       0 nr of tracer bndcells
+** INFO   : Opened file : f34_NE_PO4.pli
+** INFO   : Opened file : f34_NE_PO4.pli
+** INFO   : Closed file : f34_NE_PO4.pli
+** INFO   : Opened file : f34_NE_PO4.pli
+** INFO   : boundary: 'f34_NE_PO4.pli' opened 5 cells.
+** INFO   : tracerbndPO4 f34_NE_PO4.pli       5 nr of tracer bndcells
+** INFO   : Closed file : f34_NE_PO4.pli
+** INFO   : Closed file : f34_NE_PO4.pli
+** INFO   : boundary: 'f34_NE_PO4.pli' opened 0 cells.
+** INFO   : tracerbndPO4 f34_NE_PO4.pli       0 nr of tracer bndcells
+** INFO   : boundary: 'f34_NE_PO4.pli' opened 0 cells.
+** INFO   : tracerbndPO4 f34_NE_PO4.pli       0 nr of tracer bndcells
+** INFO   : Opened file : f34_NE_FDIATOMS_E.pli
+** INFO   : Opened file : f34_NE_FDIATOMS_E.pli
+** INFO   : Closed file : f34_NE_FDIATOMS_E.pli
+** INFO   : Closed file : f34_NE_FDIATOMS_E.pli
+** INFO   : boundary: 'f34_NE_FDIATOMS_E.pli' opened 0 cells.
+** INFO   : boundary: 'f34_NE_FDIATOMS_E.pli' opened 5 cells.
+** INFO   : tracerbndFDIATOMS_E f34_NE_FDIATOMS_E.pli       5 nr of tracer bndcells
+** INFO   : Opened file : f34_NE_FDIATOMS_E.pli
+** INFO   : tracerbndFDIATOMS_E f34_NE_FDIATOMS_E.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NE_FDIATOMS_E.pli
+** INFO   : boundary: 'f34_NE_FDIATOMS_E.pli' opened 0 cells.
+** INFO   : tracerbndFDIATOMS_E f34_NE_FDIATOMS_E.pli       0 nr of tracer bndcells
+** INFO   : Opened file : f34_NE_GREENS_E.pli
+** INFO   : Opened file : f34_NE_GREENS_E.pli
+** INFO   : Opened file : f34_NE_GREENS_E.pli
+** INFO   : Closed file : f34_NE_GREENS_E.pli
+** INFO   : boundary: 'f34_NE_GREENS_E.pli' opened 5 cells.
+** INFO   : tracerbndGREENS_E f34_NE_GREENS_E.pli       5 nr of tracer bndcells
+** INFO   : Closed file : f34_NE_GREENS_E.pli
+** INFO   : boundary: 'f34_NE_GREENS_E.pli' opened 0 cells.
+** INFO   : tracerbndGREENS_E f34_NE_GREENS_E.pli       0 nr of tracer bndcells
+** INFO   : Closed file : f34_NE_GREENS_E.pli
+** INFO   : boundary: 'f34_NE_GREENS_E.pli' opened 0 cells.
+** INFO   : tracerbndGREENS_E f34_NE_GREENS_E.pli       0 nr of tracer bndcells
+** INFO   : Start partitioning model...
+** INFO   : Start partitioning model...
+** INFO   : Start partitioning model...
+** INFO   : added node-based ghostcells:              0
+** INFO   : added node-based ghostcells:              2
+** INFO   : added node-based ghostcells:              1
+** INFO   : added node-based ghostcells:              6
+** INFO   : added node-based ghostcells:              1
+** INFO   : added node-based ghostcells:              0
+** INFO   : added node-based ghostcells:              9
+** INFO   : added node-based ghostcells:              8
+** INFO   : added node-based ghostcells:              7
+** INFO   : added node-based ghostcells:              1
+** INFO   : added node-based ghostcells:              0
+** INFO   : added node-based ghostcells:              7
+** INFO   : added node-based ghostcells:              8
+** INFO   : added node-based ghostcells:              6
+** INFO   : added node-based ghostcells:              9
+** INFO   : added node-based ghostcells:              6
+** INFO   : added node-based ghostcells:              1
+** INFO   : added node-based ghostcells:              0
+** INFO   : added node-based ghostcells:              8
+** INFO   : added node-based ghostcells:              7
+** INFO   : added node-based ghostcells:              9
+** INFO   : added node-based ghostcells:              6
+** INFO   : added node-based ghostcells:              1
+** INFO   : added node-based ghostcells:              0
+** INFO   : added node-based ghostcells:              9
+** INFO   : added node-based ghostcells:              8
+** INFO   : added node-based ghostcells:              7
+** INFO   : partition_fixorientation_ghostlist: number of reversed flowlinks=              0
+** INFO   : partition_fixorientation_ghostlist: number of reversed flowlinks=              0
+** INFO   : partition_fixorientation_ghostlist: number of reversed flowlinks=              0
+** INFO   : Done partitioning model.
+** INFO   : Done partitioning model.
+** INFO   : Done partitioning model.
+** INFO   : setbedlevelfromextfile: Using bedlevel as specified in net-file.
+** INFO   : setbedlevelfromextfile: Using bedlevel as specified in net-file.
+** INFO   : setbedlevelfromextfile: Using bedlevel as specified in net-file.
+** INFO   : Done initializing flow model geometry.
+** INFO   : Done initializing flow model geometry.
+** INFO   : Done initializing flow model geometry.
+** WARNING: get_projection: could not initialize projection for proj_string ''.
+** WARNING: get_projection: could not initialize projection for proj_string ''.
+** WARNING: get_projection: could not initialize projection for proj_string ''.
+Dimr [2023-12-20 15:54:58.555823] #0 >> kernel: get_projection: could not initialize projection for proj_string ''.
+Dimr [2023-12-20 15:54:58.555830] #1 >> kernel: get_projection: could not initialize projection for proj_string ''.
+Dimr [2023-12-20 15:54:58.555833] #2 >> kernel: get_projection: could not initialize projection for proj_string ''.
+** INFO   : Initialising water quality processes
+** INFO   : Initialising water quality processes
+** INFO   : Initialising water quality processes
+** INFO   : Opening substance file: bloom_basic_sed.sub
+** INFO   : Opening substance file: bloom_basic_sed.sub
+** INFO   : Opening substance file: bloom_basic_sed.sub
+** INFO   : Opening extra history output file: bloom_basic_sed.eho
+** INFO   : Opening extra history output file: bloom_basic_sed.eho
+** INFO   : Opening extra history output file: bloom_basic_sed.eho
+** INFO   : External Forcing or Initialising 'windxy' from file 'f34.wnd'.
+** INFO   : External Forcing or Initialising 'windxy' from file 'f34.wnd'.
+** INFO   : External Forcing or Initialising 'windxy' from file 'f34.wnd'.
+** INFO   : External Forcing or Initialising 'waterlevelbnd' from file 'f34_NW.pli'.
+** INFO   : External Forcing or Initialising 'waterlevelbnd' from file 'f34_NW.pli'.
+** INFO   : External Forcing or Initialising 'waterlevelbnd' from file 'f34_NW.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM1' from file 'f34_NW_IM1.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM1' from file 'f34_NW_IM1.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM2' from file 'f34_NW_IM2.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM1' from file 'f34_NW_IM1.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM2' from file 'f34_NW_IM2.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNH4' from file 'f34_NW_NH4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM2' from file 'f34_NW_IM2.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNH4' from file 'f34_NW_NH4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNO3' from file 'f34_NW_NO3.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNH4' from file 'f34_NW_NH4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNO3' from file 'f34_NW_NO3.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndPO4' from file 'f34_NW_PO4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNO3' from file 'f34_NW_NO3.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndPO4' from file 'f34_NW_PO4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndFDIATOMS_E' from file 'f34_NW_FDIATOMS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndPO4' from file 'f34_NW_PO4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndFDIATOMS_E' from file 'f34_NW_FDIATOMS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndGREENS_E' from file 'f34_NW_GREENS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndFDIATOMS_E' from file 'f34_NW_FDIATOMS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndGREENS_E' from file 'f34_NW_GREENS_E.pli'.
+** INFO   : External Forcing or Initialising 'waterlevelbnd' from file 'f34_NE.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndGREENS_E' from file 'f34_NW_GREENS_E.pli'.
+** INFO   : External Forcing or Initialising 'waterlevelbnd' from file 'f34_NE.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM1' from file 'f34_NE_IM1.pli'.
+** INFO   : External Forcing or Initialising 'waterlevelbnd' from file 'f34_NE.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM1' from file 'f34_NE_IM1.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM2' from file 'f34_NE_IM2.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM1' from file 'f34_NE_IM1.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM2' from file 'f34_NE_IM2.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNH4' from file 'f34_NE_NH4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM2' from file 'f34_NE_IM2.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNH4' from file 'f34_NE_NH4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNO3' from file 'f34_NE_NO3.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNH4' from file 'f34_NE_NH4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNO3' from file 'f34_NE_NO3.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndPO4' from file 'f34_NE_PO4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNO3' from file 'f34_NE_NO3.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndPO4' from file 'f34_NE_PO4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndFDIATOMS_E' from file 'f34_NE_FDIATOMS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndPO4' from file 'f34_NE_PO4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndFDIATOMS_E' from file 'f34_NE_FDIATOMS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndGREENS_E' from file 'f34_NE_GREENS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndFDIATOMS_E' from file 'f34_NE_FDIATOMS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndGREENS_E' from file 'f34_NE_GREENS_E.pli'.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para1.pol'.
+** INFO   : External Forcing or Initialising 'tracerbndGREENS_E' from file 'f34_NE_GREENS_E.pli'.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para1.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para2.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para1.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para2.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para3.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para2.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para3.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerIM2' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para3.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerIM2' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerNO3' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerIM2' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerNO3' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerNH4' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerNO3' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerNH4' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerPO4' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerNH4' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerPO4' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerPOC1' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerPO4' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerPOC1' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerPON1' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerPOC1' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerPON1' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerPOP1' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerPON1' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerPOP1' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerSi' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerPOP1' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerSi' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerFDIATOMS_E' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerSi' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerFDIATOMS_E' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerGREENS_E' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerGREENS_E' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerFDIATOMS_E' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaSouthWest' from file 'para1.pol'.
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaSouthWest' from file 'para1.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerGREENS_E' from file 'fullextent.pol'.
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaSouthEast' from file 'para2.pol'.
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaSouthEast' from file 'para2.pol'.
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaSouthWest' from file 'para1.pol'.
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaNorth' from file 'para3.pol'.
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaNorth' from file 'para3.pol'.
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaSouthEast' from file 'para2.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaSouthWest' from file 'para1.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaSouthWest' from file 'para1.pol'.
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaNorth' from file 'para3.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaSouthWest' from file 'para1.pol'.
+** INFO   : Opened file : para1.pol
+** INFO   : Opened file : para1.pol
+** INFO   : Opened file : para1.pol
+** INFO   : Closed file : para1.pol
+** INFO   : Closed file : para1.pol
+** INFO   : Closed file : para1.pol
+** INFO   : External Forcing or Initialising 'waqmonitoringareaSouthEast' from file 'para2.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaSouthEast' from file 'para2.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaSouthEast' from file 'para2.pol'.
+** INFO   : Opened file : para2.pol
+** INFO   : Opened file : para2.pol
+** INFO   : Opened file : para2.pol
+** INFO   : Closed file : para2.pol
+** INFO   : Closed file : para2.pol
+** INFO   : Closed file : para2.pol
+** INFO   : External Forcing or Initialising 'waqmonitoringareaNorth' from file 'para3.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaNorth' from file 'para3.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaNorth' from file 'para3.pol'.
+** INFO   : Opened file : para3.pol
+** INFO   : Opened file : para3.pol
+** INFO   : Closed file : para3.pol
+** INFO   : Closed file : para3.pol
+** INFO   : Opened file : para3.pol
+** INFO   : Closed file : para3.pol
+** INFO   : List of constituents defined in the model
+** INFO   : List of constituents defined in the model
+** INFO   :        1 IM1
+** INFO   :        2 IM2
+** INFO   :        3 NH4
+** INFO   :        4 NO3
+** INFO   :        5 PO4
+** INFO   :        6 FDIATOMS_E
+** INFO   :        7 GREENS_E
+** INFO   : List of constituents defined in the model
+** INFO   :        8 POC1
+** INFO   :        9 PON1
+** INFO   :       10 POP1
+** INFO   :        1 IM1
+** INFO   :       11 Si
+** INFO   :       12 Opal
+** INFO   :       13 APHANIZO_E
+** INFO   :        2 IM2
+** INFO   :        3 NH4
+** INFO   :        4 NO3
+** INFO   :       14 APHANIZO_N
+** INFO   :       15 APHANIZO_P
+** INFO   :       16 BLUEGRN_E
+** INFO   :        5 PO4
+** INFO   :        6 FDIATOMS_E
+** INFO   :        7 GREENS_E
+** INFO   :       17 BLUEGRN_N
+** INFO   :       18 BLUEGRN_P
+** INFO   :       19 FDIATOMS_P
+** INFO   :        8 POC1
+** INFO   :        9 PON1
+** INFO   :       10 POP1
+** INFO   :       20 GREENS_N
+** INFO   :       21 GREENS_P
+** INFO   : List of water quality bottom variables defined in the model
+** INFO   :       11 Si
+** INFO   :       12 Opal
+** INFO   :       13 APHANIZO_E
+** INFO   :        1 DetCS1
+** INFO   :        2 DetNS1
+** INFO   :        3 DetPS1
+** INFO   :       14 APHANIZO_N
+** INFO   :       15 APHANIZO_P
+** INFO   :       16 BLUEGRN_E
+** INFO   :        4 DetSiS1
+** INFO   :       17 BLUEGRN_N
+** INFO   :       18 BLUEGRN_P
+** INFO   :       19 FDIATOMS_P
+** INFO   :       20 GREENS_N
+** INFO   :       21 GREENS_P
+** INFO   : List of water quality bottom variables defined in the model
+** INFO   :        1 DetCS1
+** INFO   :        2 DetNS1
+** INFO   :        3 DetPS1
+** INFO   :        4 DetSiS1
+** INFO   : Finding crossed flowlinks...
+** INFO   : Finding crossed flowlinks...
+** INFO   :        1 IM1
+** INFO   :        2 IM2
+** INFO   :        3 NH4
+** INFO   :        4 NO3
+** INFO   :        5 PO4
+** INFO   :        6 FDIATOMS_E
+** INFO   :        7 GREENS_E
+** INFO   :        8 POC1
+** INFO   :        9 PON1
+** INFO   :       10 POP1
+** INFO   :       11 Si
+** INFO   :       12 Opal
+** INFO   :       13 APHANIZO_E
+** INFO   :       14 APHANIZO_N
+** INFO   :       15 APHANIZO_P
+** INFO   :       16 BLUEGRN_E
+** INFO   :       17 BLUEGRN_N
+** INFO   :       18 BLUEGRN_P
+** INFO   :       19 FDIATOMS_P
+** INFO   :       20 GREENS_N
+** INFO   :       21 GREENS_P
+** INFO   : List of water quality bottom variables defined in the model
+** INFO   :        1 DetCS1
+** INFO   :        2 DetNS1
+** INFO   :        3 DetPS1
+** INFO   :        4 DetSiS1
+** INFO   : Finding crossed flowlinks...
+** INFO   : done
+** INFO   : cross sections with kdtree2, elapsed time:     0.10000E-02s.
+** INFO   : done
+** INFO   : Finding flow nodes...
+** INFO   : cross sections with kdtree2, elapsed time:     0.10000E-02s.
+** INFO   : Finding flow nodes...
+** INFO   : done in      0.00000 sec.
+** INFO   : done in      0.00000 sec.
+** INFO   : done
+** INFO   : cross sections with kdtree2, elapsed time:      0.0000    s.
+** INFO   : Finding flow nodes...
+** INFO   : done in      0.00000 sec.
+** INFO   : Start initializing external forcings...
+** INFO   : Start initializing external forcings...
+** INFO   : Start initializing external forcings...
+** INFO   : External Forcing or Initialising 'windxy' from file 'f34.wnd'.
+** INFO   : External Forcing or Initialising 'windxy' from file 'f34.wnd'.
+** INFO   : External Forcing or Initialising 'windxy' from file 'f34.wnd'.
+** INFO   : External Forcing or Initialising 'waterlevelbnd' from file 'f34_NW.pli'.
+** INFO   : External Forcing or Initialising 'waterlevelbnd' from file 'f34_NW.pli'.
+** INFO   : External Forcing or Initialising 'waterlevelbnd' from file 'f34_NW.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM1' from file 'f34_NW_IM1.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM1' from file 'f34_NW_IM1.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM2' from file 'f34_NW_IM2.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM2' from file 'f34_NW_IM2.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNH4' from file 'f34_NW_NH4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNH4' from file 'f34_NW_NH4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNO3' from file 'f34_NW_NO3.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNO3' from file 'f34_NW_NO3.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndPO4' from file 'f34_NW_PO4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndPO4' from file 'f34_NW_PO4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndFDIATOMS_E' from file 'f34_NW_FDIATOMS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndFDIATOMS_E' from file 'f34_NW_FDIATOMS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndGREENS_E' from file 'f34_NW_GREENS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndGREENS_E' from file 'f34_NW_GREENS_E.pli'.
+** INFO   : External Forcing or Initialising 'waterlevelbnd' from file 'f34_NE.pli'.
+** INFO   : External Forcing or Initialising 'waterlevelbnd' from file 'f34_NE.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM1' from file 'f34_NE_IM1.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM1' from file 'f34_NE_IM1.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM2' from file 'f34_NE_IM2.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM2' from file 'f34_NE_IM2.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNH4' from file 'f34_NE_NH4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNH4' from file 'f34_NE_NH4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNO3' from file 'f34_NE_NO3.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNO3' from file 'f34_NE_NO3.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndPO4' from file 'f34_NE_PO4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndPO4' from file 'f34_NE_PO4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndFDIATOMS_E' from file 'f34_NE_FDIATOMS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndFDIATOMS_E' from file 'f34_NE_FDIATOMS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndGREENS_E' from file 'f34_NE_GREENS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndGREENS_E' from file 'f34_NE_GREENS_E.pli'.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para1.pol'.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para1.pol'.
+** INFO   : add_tracer: tracer IM1 already exists. No update required.
+** INFO   : add_tracer: tracer IM1 already exists. No update required.
+** INFO   : Opened file : para1.pol
+** INFO   : Opened file : para1.pol
+** INFO   : Closed file : para1.pol
+** INFO   : Closed file : para1.pol
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para2.pol'.
+** INFO   : add_tracer: tracer IM1 already exists. No update required.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para2.pol'.
+** INFO   : add_tracer: tracer IM1 already exists. No update required.
+** INFO   : Opened file : para2.pol
+** INFO   : Closed file : para2.pol
+** INFO   : Opened file : para2.pol
+** INFO   : Closed file : para2.pol
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para3.pol'.
+** INFO   : add_tracer: tracer IM1 already exists. No update required.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para3.pol'.
+** INFO   : add_tracer: tracer IM1 already exists. No update required.
+** INFO   : Opened file : para3.pol
+** INFO   : Closed file : para3.pol
+** INFO   : External Forcing or Initialising 'initialtracerIM2' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer IM2 already exists. No update required.
+** INFO   : Opened file : para3.pol
+** INFO   : Closed file : para3.pol
+** INFO   : External Forcing or Initialising 'initialtracerIM2' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer IM2 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerNO3' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer NO3 already exists. No update required.
+** INFO   : External Forcing or Initialising 'initialtracerNO3' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer NO3 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerNH4' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer NH4 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerNH4' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer NH4 already exists. No update required.
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerPO4' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer PO4 already exists. No update required.
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerPO4' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer PO4 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerPOC1' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer POC1 already exists. No update required.
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerPOC1' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer POC1 already exists. No update required.
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerPON1' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer PON1 already exists. No update required.
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerPON1' from file 'fullextent.pol'.
+** INFO   : Closed file : fullextent.pol
+** INFO   : add_tracer: tracer PON1 already exists. No update required.
+** INFO   : External Forcing or Initialising 'initialtracerPOP1' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer POP1 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerPOP1' from file 'fullextent.pol'.
+** INFO   : Closed file : fullextent.pol
+** INFO   : add_tracer: tracer POP1 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerSi' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer Si already exists. No update required.
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerSi' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer Si already exists. No update required.
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerFDIATOMS_E' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer FDIATOMS_E already exists. No update required.
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerFDIATOMS_E' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer FDIATOMS_E already exists. No update required.
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerGREENS_E' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer GREENS_E already exists. No update required.
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerGREENS_E' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer GREENS_E already exists. No update required.
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : fullextent.pol
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaSouthWest' from file 'para1.pol'.
+** INFO   : Closed file : fullextent.pol
+** INFO   : Opened file : para1.pol
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaSouthWest' from file 'para1.pol'.
+** INFO   : Closed file : para1.pol
+** INFO   : Opened file : para1.pol
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaSouthEast' from file 'para2.pol'.
+** INFO   : Closed file : para1.pol
+** INFO   : Opened file : para2.pol
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaSouthEast' from file 'para2.pol'.
+** INFO   : Closed file : para2.pol
+** INFO   : Opened file : para2.pol
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaNorth' from file 'para3.pol'.
+** INFO   : Closed file : para2.pol
+** INFO   : Opened file : para3.pol
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaNorth' from file 'para3.pol'.
+** INFO   : Closed file : para3.pol
+** INFO   : Opened file : para3.pol
+** INFO   : External Forcing or Initialising 'waqmonitoringareaSouthWest' from file 'para1.pol'.
+** INFO   : Closed file : para3.pol
+** INFO   : External Forcing or Initialising 'waqmonitoringareaSouthEast' from file 'para2.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaSouthWest' from file 'para1.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaNorth' from file 'para3.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaSouthEast' from file 'para2.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaNorth' from file 'para3.pol'.
+** INFO   : Closed file : f34_BLOOM.ext
+** INFO   : Closed file : f34_BLOOM.ext
+** INFO   : External Forcing or Initialising 'tracerbndIM1' from file 'f34_NW_IM1.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM2' from file 'f34_NW_IM2.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNH4' from file 'f34_NW_NH4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNO3' from file 'f34_NW_NO3.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndPO4' from file 'f34_NW_PO4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndFDIATOMS_E' from file 'f34_NW_FDIATOMS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndGREENS_E' from file 'f34_NW_GREENS_E.pli'.
+** INFO   : External Forcing or Initialising 'waterlevelbnd' from file 'f34_NE.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM1' from file 'f34_NE_IM1.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndIM2' from file 'f34_NE_IM2.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNH4' from file 'f34_NE_NH4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndNO3' from file 'f34_NE_NO3.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndPO4' from file 'f34_NE_PO4.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndFDIATOMS_E' from file 'f34_NE_FDIATOMS_E.pli'.
+** INFO   : External Forcing or Initialising 'tracerbndGREENS_E' from file 'f34_NE_GREENS_E.pli'.
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para1.pol'.
+** INFO   : add_tracer: tracer IM1 already exists. No update required.
+** INFO   : Opened file : para1.pol
+** INFO   : Closed file : para1.pol
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para2.pol'.
+** INFO   : add_tracer: tracer IM1 already exists. No update required.
+** INFO   : Opened file : para2.pol
+** INFO   : Closed file : para2.pol
+** INFO   : External Forcing or Initialising 'initialtracerIM1' from file 'para3.pol'.
+** INFO   : add_tracer: tracer IM1 already exists. No update required.
+** INFO   : Opened file : para3.pol
+** INFO   : Closed file : para3.pol
+** INFO   : External Forcing or Initialising 'initialtracerIM2' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer IM2 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerNO3' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer NO3 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerNH4' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer NH4 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerPO4' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer PO4 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerPOC1' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer POC1 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerPON1' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer PON1 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerPOP1' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer POP1 already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerSi' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer Si already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerFDIATOMS_E' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer FDIATOMS_E already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'initialtracerGREENS_E' from file 'fullextent.pol'.
+** INFO   : add_tracer: tracer GREENS_E already exists. No update required.
+** INFO   : Opened file : fullextent.pol
+** INFO   : Closed file : fullextent.pol
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaSouthWest' from file 'para1.pol'.
+** INFO   : Opened file : para1.pol
+** INFO   : Closed file : para1.pol
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaSouthEast' from file 'para2.pol'.
+** INFO   : Opened file : para2.pol
+** INFO   : Closed file : para2.pol
+** INFO   : External Forcing or Initialising 'waqmassbalanceareaNorth' from file 'para3.pol'.
+** INFO   : Opened file : para3.pol
+** INFO   : Closed file : para3.pol
+** INFO   : External Forcing or Initialising 'waqmonitoringareaSouthWest' from file 'para1.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaSouthEast' from file 'para2.pol'.
+** INFO   : External Forcing or Initialising 'waqmonitoringareaNorth' from file 'para3.pol'.
+** INFO   : Closed file : f34_BLOOM.ext
+** INFO   : Done initializing external forcings.
+** INFO   : Done initializing external forcings.
+** INFO   : Done initializing external forcings.
+** INFO   : nogauss , nocg :             93            57
+** INFO   : nogauss , nocg :             84            52
+** INFO   : nogauss , nocg :             93            53
+** INFO   : ==========================================================================
+** INFO   : Data from hydrodynamics available for water quality
+** INFO   : --------------------------------------------------------------------------
+** INFO   : 'horizontal surface' connected as 'surf' (by default)
+** INFO   : 'bottom shear stress' connected as 'tau'
+** INFO   : jawaveSwartDelwaq == 0 so tau/tauflow = taucur or tau from wave-current interaction if waves activated
+** INFO   : 'flow element center velocity' not connected, because 'velocity' is not in the sub-file.
+** INFO   : 'flow element center WaveHeight' not connected, because 'WaveHeight' is not in the sub-file.
+** INFO   : 'flow element center WaveLength' not connected, because 'WaveLength' is not in the sub-file.
+** INFO   : 'flow element center WavePeriod' not connected, because 'WavePeriod' is not in the sub-file.
+** INFO   : 'salinity' is the sub-file but 'salinity' is not in the hydrodynamic model.
+** INFO   : 'temp' is the sub-file but 'temperature' is not in the hydrodynamic model.
+** INFO   : 'wind velocity magnitude' not connected, because 'vwind' is not in the sub-file.
+** INFO   : 'wind direction' not connected, because 'winddir' is not in the sub-file.
+** INFO   : 'radsurf' is the sub-file but 'solar radiation' is not in the hydrodynamic model.
+** INFO   : --------------------------------------------------------------------------
+** INFO   : Water quality constant replaced by segment function: Tau
+** INFO   : Initialising water quality processes.
+** INFO   : ==========================================================================
+** INFO   : Data from hydrodynamics available for water quality
+** INFO   : --------------------------------------------------------------------------
+** INFO   : 'horizontal surface' connected as 'surf' (by default)
+** INFO   : 'bottom shear stress' connected as 'tau'
+** INFO   : jawaveSwartDelwaq == 0 so tau/tauflow = taucur or tau from wave-current interaction if waves activated
+** INFO   : 'flow element center velocity' not connected, because 'velocity' is not in the sub-file.
+** INFO   : 'flow element center WaveHeight' not connected, because 'WaveHeight' is not in the sub-file.
+** INFO   : 'flow element center WaveLength' not connected, because 'WaveLength' is not in the sub-file.
+** INFO   : 'flow element center WavePeriod' not connected, because 'WavePeriod' is not in the sub-file.
+** INFO   : 'salinity' is the sub-file but 'salinity' is not in the hydrodynamic model.
+** INFO   : 'temp' is the sub-file but 'temperature' is not in the hydrodynamic model.
+** INFO   : 'wind velocity magnitude' not connected, because 'vwind' is not in the sub-file.
+** INFO   : 'wind direction' not connected, because 'winddir' is not in the sub-file.
+** INFO   : 'radsurf' is the sub-file but 'solar radiation' is not in the hydrodynamic model.
+** INFO   : --------------------------------------------------------------------------
+** INFO   : Water quality constant replaced by segment function: Tau
+** INFO   : Initialising water quality processes.
+** INFO   : ==========================================================================
+** INFO   : Data from hydrodynamics available for water quality
+** INFO   : --------------------------------------------------------------------------
+** INFO   : 'horizontal surface' connected as 'surf' (by default)
+** INFO   : 'bottom shear stress' connected as 'tau'
+** INFO   : jawaveSwartDelwaq == 0 so tau/tauflow = taucur or tau from wave-current interaction if waves activated
+** INFO   : 'flow element center velocity' not connected, because 'velocity' is not in the sub-file.
+** INFO   : 'flow element center WaveHeight' not connected, because 'WaveHeight' is not in the sub-file.
+** INFO   : 'flow element center WaveLength' not connected, because 'WaveLength' is not in the sub-file.
+** INFO   : 'flow element center WavePeriod' not connected, because 'WavePeriod' is not in the sub-file.
+** INFO   : 'salinity' is the sub-file but 'salinity' is not in the hydrodynamic model.
+** INFO   : 'temp' is the sub-file but 'temperature' is not in the hydrodynamic model.
+** INFO   : 'wind velocity magnitude' not connected, because 'vwind' is not in the sub-file.
+** INFO   : 'wind direction' not connected, because 'winddir' is not in the sub-file.
+** INFO   : 'radsurf' is the sub-file but 'solar radiation' is not in the hydrodynamic model.
+** INFO   : --------------------------------------------------------------------------
+** INFO   : Water quality constant replaced by segment function: Tau
+** INFO   : Initialising water quality processes.
+** INFO   : Number of warnings during initialisation of the processes :              3
+** INFO   : Number of errors during initialisation of the processes   :              0
+** INFO   : Water quality processes initialisation was successful
+** INFO   : ==========================================================================
+** INFO   : Number of warnings during initialisation of the processes :              3
+** INFO   : Number of errors during initialisation of the processes   :              0
+** INFO   : Water quality processes initialisation was successful
+** INFO   : ==========================================================================
+** INFO   : Number of warnings during initialisation of the processes :              3
+** INFO   : Number of errors during initialisation of the processes   :              0
+** INFO   : Water quality processes initialisation was successful
+** INFO   : ==========================================================================
+** INFO   : Finding crossed flowlinks...
+** INFO   : Finding crossed flowlinks...
+** INFO   : done
+** INFO   : cross sections with kdtree2, elapsed time:     0.10000E-02s.
+** INFO   : done
+** INFO   : Finding flow nodes...
+** INFO   : cross sections with kdtree2, elapsed time:     0.10000E-02s.
+** INFO   : Finding flow nodes...
+** INFO   : done in      0.00000 sec.
+** INFO   : done in      0.00000 sec.
+** INFO   : Finding crossed flowlinks...
+** INFO   : done
+** INFO   : cross sections with kdtree2, elapsed time:      0.0000    s.
+** INFO   : Finding flow nodes...
+** INFO   : done in      0.00000 sec.
+** INFO   : ** Model initialization was successful **
+** INFO   : ** Model initialization was successful **
+** INFO   : * Active Model definition:
+** INFO   : ** Model initialization was successful **
+** INFO   : * Active Model definition:
+** INFO   : * Active Model definition:
+** INFO   : **
+** INFO   : **
+** INFO   : **
+** INFO   : Modelinit finished   at: 15:54:58, 20-12-2023
+** INFO   : 
+** INFO   : 
+** INFO   : nr of netnodes               ( )  :                      176
+** INFO   : nr of netlinks               ( )  :                      321
+** INFO   : 
+** INFO   : nr of 2D netlinks            ( )  :                      321
+** INFO   : nr of 1D netlinks            ( )  :                        0
+** INFO   : 
+** INFO   : nr of netcells               ( )  :                      146
+** INFO   : nr of netcells 1D2D          ( )  :                      146
+** INFO   : 
+** INFO   : nr of flownodes              ( )  :                      146
+** INFO   : nr of internal flownodes     ( )  :                      146
+** INFO   : nr of 2D internal flownodes  ( )  :                      146
+** INFO   : nr of 1D internal flownodes  ( )  :                        0
+** INFO   : 
+** INFO   : nr of openbnd cells       ( )     :                        0
+** INFO   : nr of 2D boundaries       ( )     :                        0
+** INFO   : nr of 1D boundaries       ( )     :                        0
+** INFO   : nr of flowlinks           ( )     :                      259
+** INFO   : nr of internal links      ( )     :                      259
+** INFO   : nr of 1D links            ( )     :                        0
+** INFO   : 
+** INFO   : nr of closed walls     ( )  :                       58
+** INFO   : max nr of layers       ( )  :                        8
+** INFO   : nr of 3D cells         ( )  :                     1168
+** INFO   : nr of 3D links         ( )  :                     2072
+** INFO   : 
+** INFO   : 
+** INFO   : my model area          (m2) :         0.1330331224E+09
+** INFO   : Modelinit finished   at: 15:54:58, 20-12-2023
+** INFO   : 
+** INFO   : 
+** INFO   : Modelinit finished   at: 15:54:58, 20-12-2023
+** INFO   : 
+** INFO   : 
+** INFO   : nr of netnodes               ( )  :                      151
+** INFO   : nr of netlinks               ( )  :                      276
+** INFO   : 
+** INFO   : nr of 2D netlinks            ( )  :                      276
+** INFO   : nr of 1D netlinks            ( )  :                        0
+** INFO   : 
+** INFO   : nr of netcells               ( )  :                      126
+** INFO   : nr of netcells 1D2D          ( )  :                      126
+** INFO   : 
+** INFO   : nr of flownodes              ( )  :                      136
+** INFO   : nr of internal flownodes     ( )  :                      126
+** INFO   : nr of 2D internal flownodes  ( )  :                      126
+** INFO   : nr of 1D internal flownodes  ( )  :                        0
+** INFO   : 
+** INFO   : nr of openbnd cells       ( )     :                       10
+** INFO   : nr of 2D boundaries       ( )     :                       10
+** INFO   : nr of 1D boundaries       ( )     :                        0
+** INFO   : nr of flowlinks           ( )     :                      232
+** INFO   : nr of internal links      ( )     :                      222
+** INFO   : nr of 1D links            ( )     :                        0
+** INFO   : 
+** INFO   : nr of closed walls     ( )  :                       38
+** INFO   : max nr of layers       ( )  :                        8
+** INFO   : nr of 3D cells         ( )  :                     1088
+** INFO   : nr of 3D links         ( )  :                     1856
+** INFO   : 
+** INFO   : 
+** INFO   : my model area          (m2) :         0.3489902051E+09
+** INFO   : nr of netnodes               ( )  :                      181
+** INFO   : nr of netlinks               ( )  :                      330
+** INFO   : 
+** INFO   : nr of 2D netlinks            ( )  :                      330
+** INFO   : nr of 1D netlinks            ( )  :                        0
+** INFO   : 
+** INFO   : nr of netcells               ( )  :                      150
+** INFO   : nr of netcells 1D2D          ( )  :                      150
+** INFO   : 
+** INFO   : nr of flownodes              ( )  :                      150
+** INFO   : nr of internal flownodes     ( )  :                      150
+** INFO   : nr of 2D internal flownodes  ( )  :                      150
+** INFO   : nr of 1D internal flownodes  ( )  :                        0
+** INFO   : 
+** INFO   : nr of openbnd cells       ( )     :                        0
+** INFO   : nr of 2D boundaries       ( )     :                        0
+** INFO   : nr of 1D boundaries       ( )     :                        0
+** INFO   : nr of flowlinks           ( )     :                      264
+** INFO   : nr of internal links      ( )     :                      264
+** INFO   : nr of 1D links            ( )     :                        0
+** INFO   : 
+** INFO   : nr of closed walls     ( )  :                       60
+** INFO   : max nr of layers       ( )  :                        8
+** INFO   : nr of 3D cells         ( )  :                     1200
+** INFO   : nr of 3D links         ( )  :                     2112
+** INFO   : 
+** INFO   : 
+** INFO   : my model area          (m2) :         0.1299387516E+09
+** INFO   : total model area       (m2) :         0.6119620791E+09
+** INFO   : total model area       (m2) :         0.6119620791E+09
+** INFO   : my model volume        (m3) :         0.1942628430E+10
+** INFO   : total model area       (m2) :         0.6119620791E+09
+** INFO   : my model volume        (m3) :         0.5030310466E+09
+** INFO   : my model volume        (m3) :         0.5239819123E+09
+** INFO   : total model volume     (m3) :         0.2969641389E+10
+** INFO   : 
+** INFO   : 
+** INFO   : total model volume     (m3) :         0.2969641389E+10
+** INFO   : total model volume     (m3) :         0.2969641389E+10
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : Opened file : dflowfmoutput/f34_BLOOM_0002_Cdwcoeff.tek
+** INFO   : Closed file : dflowfmoutput/f34_BLOOM_0002_Cdwcoeff.tek
+** INFO   : Opened file : dflowfmoutput/f34_BLOOM_0000_Cdwcoeff.tek
+** INFO   : Closed file : dflowfmoutput/f34_BLOOM_0000_Cdwcoeff.tek
+** INFO   : Opened file : dflowfmoutput/f34_BLOOM_0001_Cdwcoeff.tek
+** INFO   : Closed file : dflowfmoutput/f34_BLOOM_0001_Cdwcoeff.tek
+** INFO   : Writing initial output to file(s)...
+** INFO   : Writing initial output to file(s)...
+** INFO   : Writing initial output to file(s)...
+** INFO   :    Sim. time done   Sim. time left   Real time used   Real time left Steps left Complete% Interval-averaged time step
+** INFO   :           0d  0:00:30          1d 23:59:30          0d  0:00:00     ??d ??:??:??           5759     0.0%     0.00000
+** INFO   :    Sim. time done   Sim. time left   Real time used   Real time left Steps left Complete% Interval-averaged time step
+** INFO   :           0d  0:00:30          1d 23:59:30          0d  0:00:00     ??d ??:??:??           5759     0.0%     0.00000
+** INFO   :    Sim. time done   Sim. time left   Real time used   Real time left Steps left Complete% Interval-averaged time step
+** INFO   :           0d  0:00:30          1d 23:59:30          0d  0:00:00     ??d ??:??:??           5759     0.0%     0.00000
+** INFO   : Done writing initial output to file(s).
+** INFO   : Done writing initial output to file(s).
+Dimr [2023-12-20 15:54:58.881536] #2 >> DFlowFM.Update(172800.0)
+** INFO   : Done writing initial output to file(s).
+Dimr [2023-12-20 15:54:58.881791] #1 >> DFlowFM.Update(172800.0)
+Dimr [2023-12-20 15:54:58.883341] #0 >> DFlowFM.Update(172800.0)
+** INFO   :           1d  0:00:00          1d  0:00:00          0d  0:00:05          0d  0:00:05       2880    50.0%     0.00000
+** INFO   :           1d  0:00:00          1d  0:00:00          0d  0:00:05          0d  0:00:05       2880    50.0%     0.00000
+** INFO   :           1d  0:00:00          1d  0:00:00          0d  0:00:05          0d  0:00:05       2880    50.0%     0.00000
+** INFO   :           2d  0:00:00          0d  0:00:00          0d  0:00:11          0d  0:00:00          0   100.0%    30.00000
+** INFO   :           2d  0:00:00          0d  0:00:00          0d  0:00:11          0d  0:00:00          0   100.0%    30.00000
+** INFO   :           2d  0:00:00          0d  0:00:00          0d  0:00:11          0d  0:00:00          0   100.0%    30.00000
+Dimr [2023-12-20 15:55:10.968302] #1 >> DFlowFM.Finalize()
+Dimr [2023-12-20 15:55:10.968302] #2 >> DFlowFM.Finalize()
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : extra timer:Flow geometry                                        0.3281781673
+** INFO   : extra timer:WAQ processes init                                   0.1529459953
+** INFO   : extra timer:Flow init                                            0.1478338242
+** INFO   : extra timer:Set boundaries                                       0.0216898918
+** INFO   : extra timer:Sethuau                                              0.0776951313
+** INFO   : extra timer:setdt                                                0.1637635231
+** INFO   : extra timer:Compute advection term                               0.6501119137
+** INFO   : extra timer:u0u1                                                 0.0151698589
+** INFO   : extra timer:Setumod                                              0.8987360001
+** INFO   : extra timer:Init ExtForceFile (old)                              0.0145330429
+** INFO   : extra timer:step_reduce                                          9.0225045681
+** INFO   : extra timer:Transport                                            5.9912724495
+** INFO   : extra timer:Output                                               0.0996906757
+** INFO   : extra timer:unc_write_map_filepointer_ugrid                      0.0206685066
+** INFO   : extra timer:unc_write_map_filepointer_ugrid vars                 0.0109157562
+** INFO   : extra timer:update HIS data DtUser                               0.0237145424
+** INFO   : extra timer:call wrimap                                          0.0306179523
+** INFO   : extra timer:call flow_externaloutput                             0.0597193241
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : nr of timesteps        ( )  :          5778.0000000000
+** INFO   : average timestep       (s)  :            29.9013670185
+** INFO   : nr of setbacks         ( )  :             0.0000000000
+** INFO   : 
+** INFO   : 
+** INFO   : simulation period      (d)  :             2.0000000000
+** INFO   : total computation time (d)  :             0.0001488119
+** INFO   : time modelinit         (d)  :             0.0000088998
+** INFO   : time steps (+ plots)   (d)  :             0.0001399121
+** INFO   : 
+** INFO   : simulation period      (h)  :            48.0000000000
+** INFO   : total computation time (h)  :             0.0035714858
+** INFO   : time modelinit         (h)  :             0.0002135944
+** INFO   : time steps (+ plots)   (h)  :             0.0033578914
+** INFO   : 
+** INFO   : simulation period      (s)  :        172800.0000000000
+** INFO   : total computation time (s)  :            12.8573489189
+** INFO   : time modelinit         (s)  :             0.7689399719
+** INFO   : time steps (+ plots)   (s)  :            12.0884089470
+** INFO   : 
+** INFO   : 
+** INFO   : time iniexternalforc.  (s)  :             0.1267020702
+** INFO   : 
+** INFO   : time inistep           (s)  :             1.9551565647
+** INFO   : time setumod           (s)  :             0.8871498108
+** INFO   : time furu              (s)  :             1.2866420746
+** INFO   : time solve             (s)  :             1.2306332588
+** INFO   : time gausselimination  (s)  :             0.0270000000
+** INFO   : time gausssubstitution (s)  :             0.0150000000
+** INFO   : time totalsolve        (s)  :             1.2390000000
+** INFO   : time setexternalforc.  (s)  :             0.0646486282
+** INFO   : time setext.forc.fetch (s)  :             0.0000000000
+** INFO   : time setexternalfbnd.  (s)  :             0.0104916096
+** INFO   : time steps             (s)  :            11.0660459995
+** INFO   : fraction solve/steps   ( )  :             0.1112080375
+** INFO   : total/(dnt*ndx)        (s)  :             0.0000148348
+** INFO   : av nr of cont. it s1it ( )  :             0.0000000000
+** INFO   : time transport         (s)  :             6.0340000000
+** INFO   : time processes         (s)  :             0.8200000001
+** INFO   : time debug            (s)  :             0.1710000000
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : Computation started  at: 15:54:58, 20-12-2023
+** INFO   : Computation finished at: 15:55:10, 20-12-2023
+** INFO   : 
+** INFO   : simulation period      (h)  :            48.0000000000
+** INFO   : total time in timeloop (h)  :             0.0033578914
+** INFO   : MPI    : yes.         #processes   : 3, my_rank: 1
+** INFO   : OpenMP : unavailable.
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : extra timer:Flow geometry                                        0.3281822205
+** INFO   : extra timer:WAQ processes init                                   0.1526522636
+** INFO   : extra timer:Flow init                                            0.1478450298
+** INFO   : extra timer:Set boundaries                                       0.0219838619
+** INFO   : extra timer:Sethuau                                              0.0776841640
+** INFO   : extra timer:setdt                                                0.2240772247
+** INFO   : extra timer:Compute advection term                               0.6487517357
+** INFO   : extra timer:u0u1                                                 0.0139179230
+** INFO   : extra timer:Setumod                                              0.8726840019
+** INFO   : extra timer:Init ExtForceFile (old)                              0.0142948627
+** INFO   : extra timer:step_reduce                                          9.0046350956
+** INFO   : extra timer:Transport                                            5.9720139503
+Dimr [2023-12-20 15:55:10.969666] #0 >> DFlowFM.Finalize()
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : extra timer:Flow geometry                                        0.3281829357
+** INFO   : extra timer:WAQ processes init                                   0.1524579525
+** INFO   : extra timer:Flow init                                            0.1478350163
+** INFO   : extra timer:Set boundaries                                       0.2190473080
+** INFO   : extra timer:Sethuau                                              0.0737414360
+** INFO   : extra timer:setdt                                                0.1103594303
+** INFO   : extra timer:Compute advection term                               0.5377738476
+** INFO   : extra timer:u0u1                                                 0.0125277042
+** INFO   : extra timer:Setumod                                              0.7932546139
+** INFO   : extra timer:Init ExtForceFile (old)                              0.1216568947
+** INFO   : extra timer:step_reduce                                          9.0979967117
+** INFO   : extra timer:Transport                                            5.9736628532
+** INFO   : extra timer:Output                                               0.2212071419
+** INFO   : extra timer:unc_write_his                                        0.0673754215
+** INFO   : extra timer:unc_write_his obs/crs data 2                         0.0358359814
+** INFO   : extra timer:unc_write_his time data                              0.0154402256
+** INFO   : extra timer:unc_write_map_filepointer_ugrid                      0.0161476135
+** INFO   : extra timer:update HIS data DtUser                               0.0799248219
+** INFO   : extra timer:call wrimap                                          0.0246534348
+** INFO   : extra timer:call flow_externaloutput                             0.1239602566
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : nr of timesteps        ( )  :          5778.0000000000
+** INFO   : average timestep       (s)  :            29.9013670185
+** INFO   : nr of setbacks         ( )  :             0.0000000000
+** INFO   : 
+** INFO   : 
+** INFO   : simulation period      (d)  :             2.0000000000
+** INFO   : total computation time (d)  :             0.0001488274
+** INFO   : time modelinit         (d)  :             0.0000089229
+** INFO   : time steps (+ plots)   (d)  :             0.0001399045
+** INFO   : 
+** INFO   : simulation period      (h)  :            48.0000000000
+** INFO   : total computation time (h)  :             0.0035718584
+** INFO   : time modelinit         (h)  :             0.0002141506
+** INFO   : time steps (+ plots)   (h)  :             0.0033577078
+** INFO   : 
+** INFO   : simulation period      (s)  :        172800.0000000000
+** INFO   : total computation time (s)  :            12.8586902618
+** INFO   : time modelinit         (s)  :             0.7709422112
+** INFO   : time steps (+ plots)   (s)  :            12.0877480507
+** INFO   : 
+** INFO   : 
+** INFO   : time iniexternalforc.  (s)  :             0.1267018318
+** INFO   : 
+** INFO   : time inistep           (s)  :             1.8639681339
+** INFO   : time setumod           (s)  :             0.7818989754
+** INFO   : time furu              (s)  :             1.2481918335
+** INFO   : time solve             (s)  :             1.3903160095
+** INFO   : time gausselimination  (s)  :             0.0200000000
+** INFO   : time gausssubstitution (s)  :             0.0180000000
+** INFO   : time totalsolve        (s)  :             1.3890000000
+** INFO   : time setexternalforc.  (s)  :             0.0618586540
+** INFO   : time setext.forc.fetch (s)  :             0.0000000000
+** INFO   : time setexternalfbnd.  (s)  :             0.2075557709
+** INFO   : time steps             (s)  :            11.0509052277
+** INFO   : fraction solve/steps   ( )  :             0.1258101469
+** INFO   : total/(dnt*ndx)        (s)  :             0.0000163637
+** INFO   : av nr of cont. it s1it ( )  :             0.0000000000
+** INFO   : time transport         (s)  :             6.0140000000
+** INFO   : time processes         (s)  :             0.7060000000
+** INFO   : time debug            (s)  :             0.1590000000
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : Computation started  at: 15:54:58, 20-12-2023
+** INFO   : Computation finished at: 15:55:10, 20-12-2023
+** INFO   : 
+** INFO   : simulation period      (h)  :            48.0000000000
+** INFO   : total time in timeloop (h)  :             0.0033577078
+** INFO   : MPI    : yes.         #processes   : 3, my_rank: 0
+** INFO   : OpenMP : unavailable.
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : extra timer:Output                                               0.1117784977
+** INFO   : extra timer:unc_write_map_filepointer_ugrid                      0.0198569298
+** INFO   : extra timer:unc_write_map_filepointer_ugrid vars                 0.0105111599
+** INFO   : extra timer:update HIS data DtUser                               0.0344934464
+** INFO   : extra timer:call wrimap                                          0.0298125744
+** INFO   : extra timer:call flow_externaloutput                             0.0607256889
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : nr of timesteps        ( )  :          5778.0000000000
+** INFO   : average timestep       (s)  :            29.9013670185
+** INFO   : nr of setbacks         ( )  :             0.0000000000
+** INFO   : 
+** INFO   : 
+** INFO   : simulation period      (d)  :             2.0000000000
+** INFO   : total computation time (d)  :             0.0001488156
+** INFO   : time modelinit         (d)  :             0.0000088998
+** INFO   : time steps (+ plots)   (d)  :             0.0001399158
+** INFO   : 
+** INFO   : simulation period      (h)  :            48.0000000000
+** INFO   : total computation time (h)  :             0.0035715738
+** INFO   : time modelinit         (h)  :             0.0002135947
+** INFO   : time steps (+ plots)   (h)  :             0.0033579791
+** INFO   : 
+** INFO   : simulation period      (s)  :        172800.0000000000
+** INFO   : total computation time (s)  :            12.8576657772
+** INFO   : time modelinit         (s)  :             0.7689409256
+** INFO   : time steps (+ plots)   (s)  :            12.0887248516
+** INFO   : 
+** INFO   : 
+** INFO   : time iniexternalforc.  (s)  :             0.1267001629
+** INFO   : 
+** INFO   : time inistep           (s)  :             1.9831347466
+** INFO   : time setumod           (s)  :             0.8613295555
+** INFO   : time furu              (s)  :             1.2386021614
+** INFO   : 
+** INFO   : time solve             (s)  :             1.2805645466
+** INFO   : time gausselimination  (s)  :             0.0180000000
+** INFO   : time gausssubstitution (s)  :             0.0190000000
+** INFO   : time totalsolve        (s)  :             1.2830000000
+** INFO   : time setexternalforc.  (s)  :             0.0625720024
+** INFO   : time setext.forc.fetch (s)  :             0.0000000000
+** INFO   : time setexternalfbnd.  (s)  :             0.0100231171
+** INFO   : time steps             (s)  :            11.0705811977
+** INFO   : fraction solve/steps   ( )  :             0.1156727478
+** INFO   : total/(dnt*ndx)        (s)  :             0.0000152416
+** INFO   : av nr of cont. it s1it ( )  :             0.0000000000
+** INFO   : time transport         (s)  :             6.0090000000
+** INFO   : time processes         (s)  :             0.7990000001
+** INFO   : time debug            (s)  :             0.1660000000
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : Computation started  at: 15:54:58, 20-12-2023
+** INFO   : Computation finished at: 15:55:10, 20-12-2023
+** INFO   : 
+** INFO   : simulation period      (h)  :            48.0000000000
+** INFO   : total time in timeloop (h)  :             0.0033579791
+** INFO   : MPI    : yes.         #processes   : 3, my_rank: 2
+** INFO   : OpenMP : unavailable.
+** INFO   : 
+** INFO   : 
+** INFO   : 
+** INFO   : 
+Dimr [2023-12-20 15:55:10.980752] #1 >> TIMER INFO:
+
+Dimr [2023-12-20 15:55:10.980864] #1 >> DFlowFM	: 12.907635 sec
+Dimr [2023-12-20 15:55:10.980959] #1 >> DIMR_LIB	: 13.659816 sec
+Dimr [2023-12-20 15:55:10.981028] #1 >> DIMR_EXE	: 13.70622 sec
+Dimr [2023-12-20 15:55:10.990616] #2 >> TIMER INFO:
+
+Dimr [2023-12-20 15:55:10.990631] #2 >> DFlowFM	: 12.917188 sec
+Dimr [2023-12-20 15:55:10.990650] #2 >> DIMR_LIB	: 13.669518 sec
+Dimr [2023-12-20 15:55:10.990653] #2 >> DIMR_EXE	: 13.80247 sec
+Dimr [2023-12-20 15:55:11.2217] #0 >> TIMER INFO:
+
+Dimr [2023-12-20 15:55:11.2231] #0 >> DFlowFM	: 12.928980 sec
+Dimr [2023-12-20 15:55:11.2237] #0 >> DIMR_LIB	: 13.681120 sec
+Dimr [2023-12-20 15:55:11.2240] #0 >> DIMR_EXE	: 13.91539 sec

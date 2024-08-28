@@ -320,8 +320,8 @@ contains
                                              i, tmip, binnr, irq, &
                                              tip, ips(MIP), iproc, nref, ilpos
       integer, save                       :: IENT=0
-      character*80                        :: binfile, ncfile, basefile
-      character*256                       :: errmsg
+      character(len=80)                   :: binfile, ncfile, basefile
+      character(len=256)                  :: errmsg
       type(spcaux_type)                   :: spcaux, lspcaux
       real                                :: xref, yref
 
@@ -407,7 +407,7 @@ contains
             end if
             inquire(unit=binnr, opened=lopen)
             if ( .not. lopen ) then
-                write(errmsg,'("unit ",I3," is NOT open")'), binnr
+                write(errmsg,'("unit ",I3," is NOT open")') binnr
                 call MSGERR(4, errmsg)
                 return
             end if
@@ -588,8 +588,8 @@ contains
                                                         binnr, xi, yi, npnts
       integer, allocatable                           :: ips(:)
       integer, save                                  :: IENT=0
-      character*80                                   :: outfile
-      character*256                                  :: errmsg
+      character(len=80)                              :: outfile
+      character(len=256)                             :: errmsg
 !  8. Subroutines used
 !
 !     SWCMSP
@@ -692,7 +692,7 @@ contains
           if ( oqi(1) == 0 ) then
               call FOR(oqi(1), OUTP_FILES(irq), 'UU', ierr)
               if ( ierr > 0 ) then
-                  write(errmsg,'("File ", A, " open returned IOSTAT ", I3)'), trim(OUTP_FILES(irq)), ierr
+                  write(errmsg,'("File ", A, " open returned IOSTAT ", I3)') trim(OUTP_FILES(irq)), ierr
                   call MSGERR(4, errmsg)
                   return
               end if
@@ -803,7 +803,7 @@ contains
 
         integer                                        :: ip, indx, npnts, ix, iy
         integer, save                                  :: IENT=0
-        character*256                                  :: errmsg
+        character(len=256)                             :: errmsg
         if (LTRACE) call STRACE(IENT,'swn_outnc_spcaux_on_wetnodes')
 
         npnts = MCGRDGL - 1
@@ -939,7 +939,7 @@ contains
 !
       integer                             :: ierr, xpctmp(2), xpctime, pnr, ri, irq, i, &
                                              ncid
-      character*256                       :: errmsg
+      character(len=256)                  :: errmsg
       integer, save                       :: IENT=0
       logical                             :: spc_as_map, wetnode_list, noaux
       type(spcaux_type), target           :: lspcaux
@@ -1100,7 +1100,7 @@ contains
 !
 ! 1) input arguments
 !
-        character*80,                  intent(   in) :: ncfile
+        character(len=80),             intent(   in) :: ncfile
         type(spcaux_type), target,     intent(   in) :: spcaux
         integer,                       intent(   in) :: oqi(4)
         real*8,                        intent(   in) :: oqr(2)
@@ -1489,11 +1489,11 @@ contains
 
     subroutine swn_outnc_openblockfile(ncfile, myk, mxk, ovlnam, &
                                        oqi, oqr, ivtyp,irq, xgrdgl, ygrdgl)
-        character*80,           intent(   in) :: ncfile
+        character(len=80),      intent(   in) :: ncfile
         integer,                intent(   in) :: myk, mxk, irq
         integer, dimension(:),  intent(   in) :: oqi, ivtyp
         real*8,  dimension(:),  intent(   in) :: oqr
-        character*40,           intent(   in) :: ovlnam(:)
+        character(len=40),      intent(   in) :: ovlnam(:)
         real,    optional,      intent(   in) :: xgrdgl(mxk, myk), &
                                                  ygrdgl(mxk, myk)
 
@@ -1663,7 +1663,7 @@ contains
         integer,                intent( in) :: ncid
         logical,                intent( in) :: spc_as_map
         integer                             :: ivtyp(4)
-        character*40                        :: dummy(4)
+        character(len=40)                   :: dummy(4)
 
         ivtyp = (/4, 5, 10, 26/)
         call create_variables(ncid, ivtyp, dummy, spc_as_map)
@@ -1673,11 +1673,11 @@ contains
     subroutine create_variables(ncid, ivtyp, ovlnam, spc_as_map)
         integer,                intent( in) :: ncid
         integer,dimension(:),   intent( in) :: ivtyp
-        character*40,           intent( in) :: ovlnam(:)
+        character(len=40),      intent( in) :: ovlnam(:)
         logical,                intent( in) :: spc_as_map
         integer                             :: i
 
-        character*40                        :: stname
+        character(len=40)                   :: stname
         integer, save                       :: IENT=0
         if (LTRACE) call STRACE (IENT,'create_variables')
 

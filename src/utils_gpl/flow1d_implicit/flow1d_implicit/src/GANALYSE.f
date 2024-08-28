@@ -60,7 +60,7 @@ c
       integer   nstepsim ,juer        ,ker 
       integer   dattimsim(2)          ,flowframe(3) ,saltframe(3)
       real      EstimPer ,dtsim    
-      character*(256)     flownamhis  ,saltnamhis   ,gaprinam    ,
+      character(len=256) flownamhis, saltnamhis, gaprinam,
      +                    gaviewnam(4) 
 c
 c     Declaration of local variables:

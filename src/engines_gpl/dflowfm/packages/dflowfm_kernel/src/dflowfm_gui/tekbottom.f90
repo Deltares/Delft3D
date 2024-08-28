@@ -32,25 +32,18 @@
 
   subroutine TEKBOTTOM(MET)
      use m_wearelt
+     use m_howtoview
      implicit none
      double precision :: dz
      integer :: i
-     integer :: jav
-     integer :: jview
      integer :: k
      integer :: k1
      integer :: k2
      integer :: nz
-     double precision :: uf
-     double precision :: vf
      double precision :: wd
-     double precision :: wf
-     double precision :: xyz
      double precision :: ybot
      double precision :: ytop
      integer :: MET
-     common / FLOWSTUFF / UF, VF, WF, YBOT, YTOP
-     common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
      double precision XD, YD, ZD, XX1, XX2, ZZ1, ZZ2
      call SETCOL(160)
      if (MET == 1) return

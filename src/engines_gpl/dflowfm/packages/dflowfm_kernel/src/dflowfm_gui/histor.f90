@@ -34,6 +34,7 @@
          use unstruc_files
          use unstruc_display
          use dflowfm_version_module, only: company, product_name
+         use m_helpnow
          implicit none
          integer :: ih
          integer :: infoinput
@@ -49,15 +50,13 @@
          integer :: key
          integer :: kstart
          integer :: maxtxt
-         integer :: nlevel
          integer :: numchc
          integer :: numtop
          integer :: numtxt
          integer :: numwnh
 
          parameter(MAXTXT=400)
-         character DIATXT(MAXTXT) * 70, WRDKEY * 40
-         common / HELPNOW / WRDKEY, NLEVEL
+         character DIATXT(MAXTXT) * 70
 !
          rewind (MDIA)
          K = 0

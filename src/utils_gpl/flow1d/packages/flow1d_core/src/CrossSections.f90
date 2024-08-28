@@ -965,8 +965,8 @@ subroutine useBranchOrdersCrs(crs, brs)
    type(t_branchSet)      , intent(in   )          :: brs       !< Set of reaches
 
    ! local variables
-   integer  ibr, i
-   integer  ics, iorder, minOrderNumber, OrderNumberCount, currentOrder
+   integer  ibr
+   integer  ics, iorder, minOrderNumber, OrderNumberCount
    integer  crsCount
    integer, allocatable, dimension(:,:)         :: orderNumber       !< first index contains orderNumber, second contains start position for this ordernumber
    double precision, allocatable, dimension(:)  :: crsData
@@ -2695,7 +2695,6 @@ use messageHandling
 
    implicit none
 
-   integer nc
    type(t_CrossSection), intent(inout)    :: crs   !< cross section
    
    type(t_convtab), pointer   :: convTab

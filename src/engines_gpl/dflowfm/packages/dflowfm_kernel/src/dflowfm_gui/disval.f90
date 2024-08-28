@@ -32,12 +32,11 @@
 
       subroutine DISVAL(M, N, DEP)
          use m_devices
+         use m_drawthis
          implicit none
          double precision :: dep
          integer :: m
          integer :: n
-         integer :: ndraw
-         common / DRAWTHIS / ndraw(50)
          character DISTAN * 23
          if (NDRAW(14) <= 1) then
             DISTAN = 'M:     N:              '

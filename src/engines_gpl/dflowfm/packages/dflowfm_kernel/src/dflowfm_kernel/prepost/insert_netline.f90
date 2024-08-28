@@ -65,7 +65,7 @@ recursive subroutine insert_netline(xp, yp, L_)
 
       if (L == 0) goto 1234
 
-      call teknet(0, ja) ! whipe out previous net
+      call teknet(ja) ! whipe out previous net
       call readyy('Inserting meshline', 0d0)
    else
       L = L_
@@ -113,7 +113,7 @@ recursive subroutine insert_netline(xp, yp, L_)
 
    if (L_ == 0) then
       call readyy(' ', -1d0)
-      call teknet(1, ja) ! plot new net
+      call teknet(ja) ! plot new net
    end if
 
    return

@@ -571,7 +571,7 @@ subroutine ConveyYZ(numyz,y,z,frictype,friction_value,level,flow_area,total_area
    !local
    integer          :: k
    double precision :: cfrictval                      ! friction coefficients for segments (1, n-1)
-   double precision :: z0,z1,d0,d1,dz,y0,y1,bb,beta
+   double precision :: z0,z1,d0,d1,y0,y1,bb,beta
    double precision :: aa,ww,pp,cc
 
    flow_area = 0 

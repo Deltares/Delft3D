@@ -30,11 +30,11 @@
 !
 !
 
-subroutine getsoulsbywci(modind, z00, ustc2, ustw2, fw, cdrag, umod, abscos, taubpuLL, taubxuLL)
+subroutine getsoulsbywci(modind, ustc2, ustw2, fw, cdrag, umod, abscos, taubpuLL, taubxuLL)
    use m_physcoef, only: rhomean
    implicit none
    integer, intent(in) :: modind
-   double precision, intent(in) :: z00, ustc2, ustw2, fw, cdrag, umod, abscos ! Cdrag = ag/C2, abscos = wav relative to link dir
+   double precision, intent(in) :: ustc2, ustw2, fw, cdrag, umod, abscos ! Cdrag = ag/C2, abscos = wav relative to link dir
    double precision, intent(out) :: taubpuLL, taubxuLL
    double precision :: ypar, ymxpar
    double precision :: tauwav, taucur

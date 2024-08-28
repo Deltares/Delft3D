@@ -197,6 +197,7 @@ module unstruc_model
    integer :: md_mthtrach = 1 !< Area averaging method, 1: Nikuradse k based, 2: Chezy C based (parallel and serial)
 
    character(len=255) :: md_mptfile = ' ' !< File (.mpt) containing fixed map output times w.r.t. RefDate (in TUnit)
+   character(len=255) :: md_ctvfile = ' ' !< File (.ctv) containing fixed com output times w.r.t. RefDate (in TUnit)
 
 ! calibration factor
    character(len=256) :: md_cldfile = ' ' !< File containing calibration definitions
@@ -726,7 +727,7 @@ contains
       use m_read_statistical_output, only: read_output_parameter_toggle
       use fm_deprecated_keywords, only: deprecated_mdu_keywords
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
-
+      use precision
       use m_map_his_precision
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
@@ -739,10 +740,10 @@ contains
       character(len=1000) :: charbuf = ' '
       character(len=255) :: tmpstr, fnam, bnam
       double precision, allocatable :: tmpdouble(:)
-      integer :: ibuf, ifil, mptfile, warn
-      integer :: i, n, j, je, iostat, readerr, ierror
+      integer :: ibuf, ifil
+      integer :: i, n, iostat, readerr, ierror
       integer :: jadum
-      real(kind=hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), acc, ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3)
+      real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
       character(len=200), dimension(:), allocatable :: fnames
       double precision, external :: densfm
       double precision :: tim
@@ -965,14 +966,14 @@ contains
             end if
          else if (iStrchType == STRCH_EXPONENT) then
             call realloc(laycof, 3)
-            laycof(:)= dmiss
+            laycof(:) = dmiss
             call prop_get_doubles(md_ptr, 'geometry', 'StretchCoef', laycof, 3, success)
-            if(.not.success) then
-                call mess(LEVEL_ERROR, '"StretchCoef" values are absent.')
+            if (.not. success) then
+               call mess(LEVEL_ERROR, '"StretchCoef" values are absent.')
             else
-                if(any(laycof == dmiss) ) then
-                   call mess(LEVEL_ERROR, '"StretchCoef" values are not properly set.')
-                end if
+               if (any(laycof == dmiss)) then
+                  call mess(LEVEL_ERROR, '"StretchCoef" values are not properly set.')
+               end if
             end if
          end if
 
@@ -1849,6 +1850,21 @@ contains
       call getOutputTimeArrays(ti_map_array, ti_maps, ti_map, ti_mape, success)
       call check_time_interval(ti_maps, ti_map, ti_mape, dt_user, 'MapInterval', tstart_user)
 
+      if (jawave == 3) then
+         ti_com_array = 0.0_hp
+         ti_com = dt_user !< defaults to backward compatible behaviour
+         call prop_get_doubles(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
+         call getOutputTimeArrays(ti_com_array, ti_coms, ti_com, ti_come, success)
+         call check_time_interval(ti_coms, ti_com, ti_come, dt_user, 'ComInterval', tstart_user)
+         !
+         call prop_get_string(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
+         if (success) then
+            ti_com = huge(0.0_hp)
+         end if
+         call set_output_time_vector(md_ctvfile, ti_ctv, ti_ctv_rel)
+
+      end if
+
       call prop_get_integer(md_ptr, 'output', 'MapFormat', md_mapformat, success)
       if (md_mapformat == IFORMAT_UGRID) then
          md_unc_conv = UNC_CONV_UGRID
@@ -2170,7 +2186,7 @@ contains
       charbuf = ' '
       call prop_get_string(md_ptr, 'output', 'TimeSplitInterval', charbuf, success)
       if (success) then
-         read (charbuf, *, iostat=iostat), ibuf, ti_split_unit
+         read (charbuf, *, iostat=iostat) ibuf, ti_split_unit
          if (iostat == 0) then
             ti_split = dble(ibuf)
             select case (ti_split_unit)
@@ -2190,56 +2206,7 @@ contains
       end if
 
       call prop_get_string(md_ptr, 'output', 'MapOutputTimeVector', md_mptfile, success)
-
-      warn = 0
-      inquire (file=trim(md_mptfile), exist=success)
-      if (success) then
-         call oldfil(mptfile, trim(md_mptfile))
-         readerr = 0
-         j = 0
-         do while (readerr == 0)
-            read (mptfile, *, iostat=readerr)
-            j = j + 1
-         end do
-         je = j - 1
-         je = max(je, 1)
-         if (allocated(ti_mpt)) deallocate (ti_mpt)
-         if (allocated(ti_mpt_rel)) deallocate (ti_mpt_rel)
-         allocate (ti_mpt(je))
-         allocate (ti_mpt_rel(je))
-         rewind (mptfile)
-         do j = 1, je
-            read (mptfile, *) ti_mpt(j)
-            acc = 1d0
-            ti_mpt(j) = ceiling(ti_mpt(j) * acc) / acc
-            if (ti_mpt(j) < 0d0) then
-               call mess(LEVEL_WARN, 'Negative times demanded in MapOutputTimeVector. Please modify the time values. MapOutputTimeVector is kept out of consideration.')
-               warn = 1
-            end if
-            if (j > 1) then
-               if (ti_mpt(j) <= ti_mpt(j - 1)) then
-                  call mess(LEVEL_WARN, 'MapOutputTimeVector contains unsorted times (rounded to seconds). Please sort the data first. MapOutputTimeVector is kept out of consideration.')
-                  warn = 1
-               end if
-            end if
-         end do
-         close (mptfile)
-      else
-         if (allocated(ti_mpt)) deallocate (ti_mpt)
-         if (allocated(ti_mpt_rel)) deallocate (ti_mpt_rel)
-         allocate (ti_mpt(1))
-         allocate (ti_mpt_rel(1))
-         ti_mpt = 0d0
-         ti_mpt_rel = tstop_user
-      end if
-      if (warn == 1) then
-         if (allocated(ti_mpt)) deallocate (ti_mpt)
-         if (allocated(ti_mpt_rel)) deallocate (ti_mpt_rel)
-         allocate (ti_mpt(1))
-         allocate (ti_mpt_rel(1))
-         ti_mpt = 0d0
-         ti_mpt_rel = tstop_user
-      end if
+      call set_output_time_vector(md_mptfile, ti_mpt, ti_mpt_rel)
 
       call prop_get_integer(md_ptr, 'output', 'FullGridOutput', jafullgridoutput, success)
       if (jafullgridoutput < 1 .and. jawave == 3 .and. kmx > 0) then
@@ -2620,7 +2587,7 @@ contains
       character(len=128) :: helptxt
       character(len=256) :: tmpstr
       integer :: i, ibuf
-      real(kind=hp) :: ti_map_array(3), ti_rst_array(3), ti_his_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3)
+      real(kind=hp) :: ti_map_array(3), ti_rst_array(3), ti_his_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
 
       istat = 0 ! Success
 
@@ -3719,6 +3686,11 @@ contains
       ti_map_array(3) = ti_mape
       call prop_set(prop_ptr, 'output', 'MapInterval', ti_map_array, 'Map times (s), interval, starttime, stoptime (s), if starttime, stoptime are left blank, use whole simulation period')
 
+      ti_com_array(1) = ti_com
+      ti_com_array(2) = ti_coms
+      ti_com_array(3) = ti_come
+      call prop_set(prop_ptr, 'output', 'ComInterval', ti_com_array, 'Communication times (s), interval, starttime, stoptime (s), if starttime, stoptime are left blank, use whole simulation period')
+
       ti_rst_array(1) = ti_rst
       ti_rst_array(2) = ti_rsts
       ti_rst_array(3) = ti_rste
@@ -3774,7 +3746,7 @@ contains
 
       call prop_set(prop_ptr, 'output', 'TimingsInterval', ti_timings, 'Timings statistics output interval')
       helptxt = ' '
-      write (helptxt, '(i0,a1,a1)'), int(ti_split), ' ', ti_split_unit
+      write (helptxt, '(i0,a1,a1)') int(ti_split), ' ', ti_split_unit
       call prop_set(prop_ptr, 'output', 'TimeSplitInterval', trim(helptxt), 'Time splitting interval, after which a new output file is started. value+unit, e.g. ''1 M'', valid units: Y,M,D,h,m,s.')
 
       write (helptxt, "('Map file format ')")
@@ -4138,5 +4110,75 @@ contains
          call mess(LEVEL_ERROR, trim(mdu_keyword), ' should be larger than 0.')
       end if
    end subroutine check_positive_value
+
+   subroutine set_output_time_vector(md_tvfil, ti_tv, ti_tv_rel)
+
+      use m_flowtimes, only: tstop_user
+
+      implicit none
+
+      character(len=255), intent(in) :: md_tvfil !< file with output times requested
+      real(kind=dp), allocatable, dimension(:), intent(out) :: ti_tv
+      real(kind=dp), allocatable, dimension(:), intent(out) :: ti_tv_rel
+
+      integer :: j, je
+      integer :: warn
+      integer :: tvfile
+      integer :: readerr
+      real(kind=dp) :: acc
+      logical :: success
+
+      warn = 0
+      if (allocated(ti_tv)) deallocate (ti_tv)
+      if (allocated(ti_tv_rel)) deallocate (ti_tv_rel)
+      !
+      inquire (file=trim(md_tvfil), exist=success)
+      if (success) then
+         call oldfil(tvfile, trim(md_tvfil))
+         readerr = 0
+         j = 0
+         do while (readerr == 0)
+            read (tvfile, *, iostat=readerr)
+            j = j + 1
+         end do
+         je = j - 1
+         je = max(je, 1)
+         !
+         allocate (ti_tv(je))
+         allocate (ti_tv_rel(je))
+         rewind (tvfile)
+         acc = 1.0_dp
+         do j = 1, je
+            read (tvfile, *) ti_tv(j)
+            ti_tv(j) = ceiling(ti_tv(j) * acc) / acc
+            if (ti_tv(j) < 0d0) then
+               call mess(LEVEL_WARN, 'Negative times demanded in output time vector. Please modify the time values. Output time vector is not applied.')
+               warn = 1
+            end if
+            if (j > 1) then
+               if (ti_tv(j) <= ti_tv(j - 1)) then
+                  call mess(LEVEL_WARN, 'Output time vector contains unsorted times (rounded to seconds). Please sort the data first. Output time vector is not applied.')
+                  warn = 1
+               end if
+            end if
+         end do
+         close (tvfile)
+      else
+         allocate (ti_tv(1))
+         allocate (ti_tv_rel(1))
+         ti_tv = 0.0_dp
+         ti_tv_rel = tstop_user
+      end if
+      !
+      if (warn == 1) then
+         if (allocated(ti_tv)) deallocate (ti_tv)
+         if (allocated(ti_tv_rel)) deallocate (ti_tv_rel)
+         allocate (ti_tv(1))
+         allocate (ti_tv_rel(1))
+         ti_tv = 0.0_dp
+         ti_tv_rel = tstop_user
+      end if
+
+   end subroutine set_output_time_vector
 
 end module unstruc_model

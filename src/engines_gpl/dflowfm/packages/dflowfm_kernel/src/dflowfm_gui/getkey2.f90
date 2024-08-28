@@ -31,14 +31,12 @@
 !
 
       subroutine GETKEY2(KEY)
+         use m_nkeys
          implicit none
          integer :: i
          integer :: key
          integer :: keynum
-         integer :: nkey
-         integer :: numc
-         integer :: numkeys
-         common / NKEYS / NUMKEYS, NKEY(20), NUMC(20)
+
          KEYNUM = -999
          do I = 1, NUMKEYS
             if (KEY == NKEY(I)) KEYNUM = I

@@ -30,36 +30,23 @@
 !
 !
 
-  subroutine ADDELEM(K1, K2, JA)
+  subroutine ADDELEM(K1, K2)
      use M_AFMETING
+     use m_settings
+     use m_cconstants
      implicit none
-     integer :: K1, K2, JA
+     integer :: K1, K2
 
      double precision :: a0
-     double precision :: ag
-     double precision :: cdflow
-     double precision :: cfl
-     double precision :: cfric
-     double precision :: e0
-     double precision :: eps
-     double precision :: fbouy
-     double precision :: fdyn
-     integer :: janet
-     integer :: moments
-     double precision :: pi
      double precision :: r0
-     double precision :: rho
-     double precision :: rhow
-
-     double precision DLENGTH
-     common / SETTINGS / FDYN, FBOUY, CDFLOW, CFRIC, MOMENTS, JANET
-     common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
+     double precision :: DLENGTH
+     
      if (JANET == 1) then
         A0 = PI * RDIAM * RDIAM / 4
      else
         A0 = 1e6 * RWIDTH * RTHICK
      end if
      R0 = DLENGTH(K1, K2)
-     call CONNECT(K1, K2, 1, A0, R0)
+     call CONNECT(K1, K2, 1, R0)
      return
   end subroutine ADDELEM

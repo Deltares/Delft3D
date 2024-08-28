@@ -31,12 +31,10 @@
 !
 
    subroutine TWEEDRIE(X, Y, XD, YD, ZD)
+      use m_howtoview
       implicit none
-      integer :: jav
-      integer :: jview
-      double precision :: xyz
       double precision :: X, Y, XD, YD, ZD
-      common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
+
       if (JVIEW == 1) then
          XD = X
          YD = Y

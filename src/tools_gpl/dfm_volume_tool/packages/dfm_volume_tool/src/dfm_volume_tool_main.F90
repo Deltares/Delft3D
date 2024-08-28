@@ -59,7 +59,7 @@ implicit none
 character(len=Idlen) :: dll_name
 character(len=Idlen) :: mdufile
 integer(pntrsize)    :: dfm
-integer              :: ret_val, dia
+integer              :: dia
 integer              :: i, j, L
 integer              :: idindex
 integer              :: numids
@@ -69,7 +69,6 @@ double precision     :: increment
 double precision     :: bedlevel, toplevel
 character(len=Idlen) :: output_type
 character(len=Idlen) :: output_file, grid_output_file
-character(len=Idlen) :: var_name
 type(c_ptr)          :: xptr
 integer              :: numpoints, numlinks, lnx, numbnd
 integer, pointer     :: integer_pointer
@@ -83,9 +82,7 @@ real(c_double), pointer, dimension(:,:) :: surface
 real(c_double), pointer, dimension(:,:) :: storage
 real(c_double), pointer, dimension(:,:) :: deadstorage
 real(c_double), pointer, dimension(:)   :: levels
-real(C_double), pointer, dimension(:)   :: help
 
-character(kind=c_char)                          :: c_output_type(15)
 character(len=idlen), allocatable, dimension(:) :: ids
 integer :: numlevels
 type(t_voltable), dimension(:),   pointer       :: volumetable

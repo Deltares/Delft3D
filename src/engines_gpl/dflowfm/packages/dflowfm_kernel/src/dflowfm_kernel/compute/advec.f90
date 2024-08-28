@@ -102,8 +102,8 @@
              else
                 kd = ln(1, L); ku = ln(2, L)
              end if
-             call getucxucyweironly(kd, ucx(kd), ucy(kd), ifixedweirscheme)
-             call getucxucyweironly(ku, ucx(ku), ucy(ku), ifixedweirscheme)
+             call getucxucyweironly(kd, ucx(kd), ucy(kd))
+             call getucxucyweironly(ku, ucx(ku), ucy(ku))
           end if
        end do
     end if
@@ -676,7 +676,7 @@
                    ku = k2; kd = k1; isg = -1; n12 = 2
                 end if
 
-                call getucxucynoweirs(ku, ucxku, ucyku, ifixedweirscheme)
+                call getucxucynoweirs(ku, ucxku, ucyku)
                 if (jasfer3D == 1) then
                    ucin = nod2linx(L, n12, ucxku, ucyku) * csu(L) + nod2liny(L, n12, ucxku, ucyku) * snu(L)
                 else

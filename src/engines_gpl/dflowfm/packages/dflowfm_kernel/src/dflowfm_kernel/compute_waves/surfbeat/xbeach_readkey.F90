@@ -159,7 +159,7 @@ contains
       use m_xbeach_errorhandling
       use m_xbeach_filefunctions
       implicit none
-      character*(*) :: fname, key
+      character(len=*) :: fname, key
       character(slen) :: printkey
       character(slen) :: value
       integer(4) :: value_int
@@ -236,7 +236,7 @@ contains
       use m_xbeach_filefunctions
 
       implicit none
-      character*(*) :: fname, key
+      character(len=*) :: fname, key
       integer, intent(in) :: vlength, tlength
       integer, dimension(tlength) :: value_vec
       integer :: defval, mnval, mxval
@@ -308,7 +308,7 @@ contains
       use m_xbeach_filefunctions
       use m_xbeach_errorhandling
       implicit none
-      character*(*) :: fname, key, defval
+      character(len=*) :: fname, key, defval
       character(slen) :: value_str
       character(slen) :: value
       integer(4) :: nv, nov, i, j
@@ -386,7 +386,7 @@ contains
       use m_xbeach_filefunctions
       use m_xbeach_errorhandling
       implicit none
-      character*(*) :: fname, key
+      character(len=*) :: fname, key
       character(slen) :: value_str
       character(slen) :: value
       logical, intent(in), optional :: bcast, required, silent
@@ -437,7 +437,7 @@ contains
       use m_xbeach_errorhandling
       use precision_basics, only: dp
       implicit none
-      character*(*) :: fname, key
+      character(len=*) :: fname, key
       integer, intent(in) :: vlength, tlength
       real(dp), dimension(tlength) :: value_vec
       real(dp) :: defval, mnval, mxval
@@ -500,7 +500,7 @@ contains
       ! Function return logical true if the keyword is specified in file,
       ! or logical false if the keyword is not specified in the file.
       implicit none
-      character*(*) :: fname, key
+      character(len=*) :: fname, key
       logical, intent(in), optional :: bcast
       logical :: isSet
       character(slen) :: value
@@ -538,7 +538,7 @@ contains
       ! combinations in params.txt
       use m_xbeach_filefunctions
       integer :: lun, i, ier, nlines, ic, ikey, itab
-      character*1 :: ch
+      character(len=1) :: ch
       character(len=*), intent(in) :: fname, key
       character(len=*), intent(out) :: value
       character(slen), dimension(1024), save :: keyword, values

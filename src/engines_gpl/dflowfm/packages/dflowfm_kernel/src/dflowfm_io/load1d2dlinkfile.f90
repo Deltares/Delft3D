@@ -34,7 +34,7 @@
    !! and assigns them to the correct flow links.
    subroutine load1D2DLinkFile(filename)
       use string_module, only: strcmpi
-      use m_flowgeom, only: lnx1d, kcu, wu1D2D, hh1D2D, xz, yz, ndx, ln, lnx, lnx1D
+      use m_flowgeom, only: lnx1d, kcu, wu1D2D, hh1D2D, lnx, lnx1D
       use m_inquire_flowgeom
       use properties
       use unstruc_messages
@@ -140,7 +140,7 @@
             end if
 
             num1d2dprops = 0
-            call selectelset_internal_links(xz, yz, ndx, ln, lnx, ke1d2dprops(1:lnx1D), num1d2dprops, &
+            call selectelset_internal_links(lnx, ke1d2dprops(1:lnx1D), num1d2dprops, &
                                             loc_spec_type, nump=numcoordinates, xpin=xcoordinates, ypin=ycoordinates, &
                                             contactId=contactId, linktype=icontactType)
 

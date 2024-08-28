@@ -551,10 +551,10 @@ c      qlatgr =     gtrpnt ( 'QLATGR')
 c      nodenm =     gtcpnt ('NODENM')
       
 c      qlatid =     max(1,gtcpnt ('QLATID'))
-      character*40  qlatid
+      character(len=40) qlatid
       
 c      qlatnm =     max(1,gtcpnt ('QLATNM'))
-      character*40  qlatnm
+      character(len=40) qlatnm
       
 c      gridnm =     gtcpnt ( 'GRIDNM')      
       
@@ -710,10 +710,7 @@ c      x      =     gtrpnt ( 'X'     )
       
 c      grhis  =     gtrpnt ( 'GRHIS' )
       real grhis(1)     
-      
-      double precision h2(ngrid)
-      double precision q2(ngrid)
-      
+            
 c    debug
       double precision dbg1
       integer debug_wr

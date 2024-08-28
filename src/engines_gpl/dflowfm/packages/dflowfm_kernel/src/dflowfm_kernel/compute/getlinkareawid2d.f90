@@ -30,11 +30,10 @@
 !
 !
 
- subroutine getlinkareawid2D(L, wu2, dz, ai, hpr, ar, wid)
+ subroutine getlinkareawid2D(wu2, dz, ai, hpr, ar, wid)
     use m_flow, only: slotw2D
 
     implicit none
-    integer, intent(in) :: L
     double precision, intent(in) :: wu2, dz, ai, hpr
     double precision, intent(out) :: ar, wid
     double precision :: hp2

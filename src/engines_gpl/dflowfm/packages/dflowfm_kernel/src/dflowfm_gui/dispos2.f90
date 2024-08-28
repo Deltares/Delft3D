@@ -32,11 +32,10 @@
 
       subroutine DISPOS2(X, Y)
          use M_DEVICES
+         use m_disfor
          implicit none
          double precision :: x
          double precision :: y
-         common / dispfor / xyform, zform, disform
-         character * 7 xyform, zform, disform
          character POSITI * 25
 
          POSITI = 'X,Y:         ,         '

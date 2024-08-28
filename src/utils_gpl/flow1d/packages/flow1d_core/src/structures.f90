@@ -115,6 +115,11 @@ module m_1d_structures
    integer, public, parameter :: CFiHighestParameter   = 31
    integer,         parameter :: MaxWarnings = 50
    integer                    :: numberOfWarnings = 0
+   
+   integer, public, parameter :: FLOWDIR_BOTH = 0
+   integer, public, parameter :: FLOWDIR_POSITIVE = 1
+   integer, public, parameter :: FLOWDIR_NEGATIVE = 2
+   integer, public, parameter :: FLOWDIR_NONE = 3
 
     !---------------------------------------------------------
    type, public :: t_structure
@@ -235,8 +240,6 @@ module m_1d_structures
 
       ! Local variables
       integer              :: i
-
-      type(t_structure), pointer       :: pstru
 
       ! Program code
       sts%Count = sts%Count+1

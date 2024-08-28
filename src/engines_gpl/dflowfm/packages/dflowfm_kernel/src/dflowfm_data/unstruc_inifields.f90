@@ -43,7 +43,8 @@ module unstruc_inifields
    implicit none
    private ! Prevent used modules from being exported
 
-   public :: init1dField, initialize_initial_fields, spaceInit1dField, readIniFieldProvider, checkIniFieldFileVersion, set_friction_type_values
+   public :: init1dField, initialize_initial_fields, spaceInit1dField, readIniFieldProvider, checkIniFieldFileVersion, &
+             set_friction_type_values
 
 !> The file version number of the IniFieldFile format: d.dd, [config_major].[config_minor], e.g., 1.03
 !!
@@ -81,7 +82,9 @@ contains
       minor = 0
       call prop_get_version_number(inifield_ptr, major=major, minor=minor, success=success)
       if (.not. success .or. major < IniFieldMajorVersion) then
-         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported IniFieldFile format detected in '''//trim(inifilename)//''': v', major, minor, '. Current format: v', IniFieldMajorVersion, IniFieldMinorVersion, '. Ignoring this file.'
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') &
+            'Unsupported IniFieldFile format detected in '''//trim(inifilename)//''': v', major, minor, &
+            '. Current format: v', IniFieldMajorVersion, IniFieldMinorVersion, '. Ignoring this file.'
          call warn_flush()
          ierr = DFM_EFILEFORMAT
       end if
@@ -158,24 +161,23 @@ contains
       use stdlib_kinds, only: c_bool
       use tree_data_types
       use tree_structures
+      use m_alloc, only: realloc
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use messageHandling
       use unstruc_files, only: resolvePath
       use system_utils, only: split_filename
-      use m_ec_interpolationsettings
       use m_flow, only: s1, hs, frcu
-      use m_flowgeom
-      use m_wind ! |TODO: AvD: reduce amount of uses
-      use m_missing
-      use timespace
+      use m_flowgeom, only: ndx2d, ndxi, xz, yz, ndx, lnx, xu, yu, kcs, bl, iadv
+      use timespace_parameters, only: FIELD1D
+      use timespace, only: timespaceinitialfield, timespaceinitialfield_int
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use fm_external_forcings_data, only: qid, operand, transformcoef, success
-      use network_data
-      use m_alloc
-      use dfm_error
-      use m_hydrology_data, only: infiltcap, infiltrationmodel, DFM_HYD_INFILT_CONST, &
-                                  HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
-                                  InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
-                                  PotEvap, ActEvap, InterceptHs
+      use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
+                                  DFM_HYD_INTERCEPT_LAYER
+      use unstruc_model, only: md_extfile
+      use m_fm_icecover, only: fm_ice_activate_by_ext_forces
+      use m_meteo, only: ec_addtimespacerelation
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use fm_deprecated_keywords, only: deprecated_ext_keywords
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
 
@@ -185,7 +187,6 @@ contains
 
       type(tree_data), pointer :: inifield_ptr !< tree of inifield-file's [Initial] or [Parameter] blocks
       type(tree_data), pointer :: node_ptr
-      integer :: istat
       integer, parameter :: ini_key_len = 32
       integer, parameter :: ini_value_len = 256
       character(len=ini_key_len) :: groupname
@@ -194,15 +195,21 @@ contains
       integer :: num_items_in_file
       character(len=255) :: fnam, filename
       character(len=255) :: basedir
-      integer :: i, ib, ja
+      integer :: istat
+      integer :: i, ib, ja, kx
+      integer :: num_items
+      integer :: target_location_type
       integer :: method, iloctype, filetype, ierr_loc
       logical(kind=c_bool), allocatable :: specified_water_levels(:) !< indices where waterlevels are specified with non-global values
       logical(kind=c_bool), allocatable :: specified_indices(:)
       double precision :: global_value, water_level_global_value
       logical :: global_value_provided, water_level_global_value_provided
+      logical :: time_dependent_array
       integer, allocatable :: kcsini(:) ! node code during initialization
 
       logical, external :: timespaceinitialfield_mpi
+      double precision, pointer, dimension(:) :: target_array, x_loc, y_loc
+      integer, pointer, dimension(:) :: target_array_integer
 
       ierr = DFM_NOERR
       success = .true.
@@ -233,7 +240,8 @@ contains
 
          node_ptr => inifield_ptr%child_nodes(i)%node_ptr
       !! Step 1: Read each block
-         call readIniFieldProvider(inifilename, node_ptr, groupname, qid, filename, filetype, method, iloctype, operand, transformcoef, ja, varname) !,smask, maxSearchRadius)
+         call readIniFieldProvider(inifilename, node_ptr, groupname, qid, filename, filetype, method, &
+                                   iloctype, operand, transformcoef, ja, varname)
          if (ja == 1) then
             call resolvePath(filename, basedir)
             ib = ib + 1
@@ -246,7 +254,7 @@ contains
 
       !! Step 2: operation for each block
          if (filetype == field1D) then
-            ierr_loc = init1dField(filename, inifilename, qid, specified_indices, global_value, global_value_provided) ! todo: underneath timespaceinitial?
+            ierr_loc = init1dField(filename, inifilename, qid, specified_indices, global_value, global_value_provided)
             if (ierr_loc /= DFM_NOERR) then
                success = .false.
                exit ! Or, consider cycle instead, to try all remaining blocks and return with an error only at the very end.
@@ -270,110 +278,67 @@ contains
                return
             end if
          else
-            if (strcmpi(qid, 'waterlevel')) then
-               call realloc(kcsini, ndx, keepExisting=.false.)
-               call prepare_lateral_mask(kcsini, iLocType)
-
-               success = timespaceinitialfield(xz, yz, s1, ndx, filename, filetype, method, operand, transformcoef, 2, kcsini) ! zie meteo module
-            else if (strcmpi(qid, 'waterdepth')) then
-               call realloc(kcsini, ndx, keepExisting=.false.)
-               call prepare_lateral_mask(kcsini, iLocType)
-
-               success = timespaceinitialfield(xz, yz, hs, ndx, filename, filetype, method, operand, transformcoef, 2, kcsini)
-               s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
-
-            else if (strcmpi(qid, 'InfiltrationCapacity')) then
-               if (infiltrationmodel /= DFM_HYD_INFILT_CONST) then
-                  write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(qid)//'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_CONST, ''' in the MDU file (constant).'
-                  call warn_flush() ! No error, just warning and continue
-               end if
-               call realloc(kcsini, ndx, keepExisting=.false.)
-               call prepare_lateral_mask(kcsini, iLocType)
-
-               success = timespaceinitialfield(xz, yz, infiltcap, ndx, filename, filetype, method, operand, transformcoef, 2, kcsini)
-               if (success) then
-                  where (infiltcap /= dmiss)
-                     infiltcap = infiltcap * 1d-3 / (24d0 * 3600d0) ! mm/day => m/s
-                  end where
-               end if
-
-            else if (strcmpi(qid, 'HortonMinInfCap')) then
-               call realloc(kcsini, ndx, keepExisting=.false.)
-               call prepare_lateral_mask(kcsini, iLocType)
-
-               success = timespaceinitialfield(xz, yz, HortonMinInfCap, ndx, filename, filetype, method, operand, transformcoef, 2, kcsini)
-            else if (strcmpi(qid, 'HortonMaxInfCap')) then
-               call realloc(kcsini, ndx, keepExisting=.false.)
-               call prepare_lateral_mask(kcsini, iLocType)
-
-               success = timespaceinitialfield(xz, yz, HortonMaxInfCap, ndx, filename, filetype, method, operand, transformcoef, 2, kcsini)
-            else if (strcmpi(qid, 'HortonDecreaseRate')) then
-               call realloc(kcsini, ndx, keepExisting=.false.)
-               call prepare_lateral_mask(kcsini, iLocType)
-
-               success = timespaceinitialfield(xz, yz, HortonDecreaseRate, ndx, filename, filetype, method, operand, transformcoef, 2, kcsini)
-            else if (strcmpi(qid, 'HortonRecoveryRate')) then
-               call realloc(kcsini, ndx, keepExisting=.false.)
-               call prepare_lateral_mask(kcsini, iLocType)
-
-               success = timespaceinitialfield(xz, yz, HortonRecoveryRate, ndx, filename, filetype, method, operand, transformcoef, 2, kcsini)
-            else if (strcmpi(qid, 'InterceptionLayerThickness')) then
-               call realloc(kcsini, ndx, keepExisting=.false.)
-               call prepare_lateral_mask(kcsini, iLocType)
-
-               call realloc(InterceptThickness, ndx, keepExisting=.false.)
-               success = timespaceinitialfield(xz, yz, InterceptThickness, ndx, filename, filetype, method, operand, transformcoef, 2, kcsini)
-               if (success) then
-                  call realloc(InterceptHs, ndx, keepExisting=.false., fill=0d0)
-                  interceptionmodel = DFM_HYD_INTERCEPT_LAYER
-                  jadhyd = 1
-               end if
-            else if (strcmpi(qid, 'PotentialEvaporation')) then
-               call realloc(kcsini, ndx, keepExisting=.false.)
-               call prepare_lateral_mask(kcsini, iLocType)
-
-               call realloc(PotEvap, ndx, keepExisting=.true., fill=0d0)
-               success = timespaceinitialfield(xz, yz, PotEvap, ndx, filename, filetype, method, operand, transformcoef, 2, kcsini)
-               if (success) then
-                  where (PotEvap /= dmiss)
-                     PotEvap = PotEvap * 1d-3 / (3600d0) ! mm/hr => m/s
-                  end where
-                  ! TODO: UNST-3875: when proper EvaporationModel is introduced: remove/refactor the lines below.
-                  jaevap = 1
-                  if (.not. allocated(evap)) then
-                     call realloc(evap, ndx, keepExisting=.false., fill=0d0)
-                  end if
-                  evap = -PotEvap ! evap and PotEvap are now still doubling
-
-                  if (.not. allocated(ActEvap)) then
-                     call realloc(ActEvap, ndx, keepExisting=.false., fill=0d0)
-                  end if
-
-                  ! Auto-enable hydrology module, if PotentialEvaporation was supplied.
-                  jadhyd = 1
-               end if
-            else if (strcmpi(qid, 'frictioncoefficient')) then
-               ! TODO: masking u points
-               success = timespaceinitialfield(xu, yu, frcu, lnx, filename, filetype, method, operand, transformcoef, 1) ! zie meteo module
-               if (success) then
-                  call set_friction_type_values()
-               end if
-            else if (strcmpi(groupname, 'Initial') .and. strcmpi(qid, 'bedlevel')) then
-               ! Bed level was earlier set in setbedlevelfromextfile()
-               cycle
+            if (strcmpi(groupname, 'Initial')) then
+               call prepare_for_initial_items(qid, inifilename, target_location_type, time_dependent_array, target_array)
             else
-               write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), ']. Field ''quantity'' does not match (refer to User Manual). Ignoring this block.'
-               call warn_flush()
+               call prepare_for_parameter_items(qid, inifilename, target_location_type, time_dependent_array, target_array, &
+                                                target_array_integer)
+            end if
+
+            if (.not. success) then
+               ierr = DFM_WRONGINPUT
+               cycle
+            end if
+
+            select case (target_location_type)
+            case (UNC_LOC_S)
+               call realloc(kcsini, ndx, keepExisting=.false.)
+               call prepare_lateral_mask(kcsini, iloctype)
+               x_loc => xz
+               y_loc => yz
+               num_items = ndx
+            case (UNC_LOC_U)
+               call realloc(kcsini, lnx, keepExisting=.false.)
+               kcsini = 1
+               x_loc => xu
+               y_loc => yu
+               num_items = lnx
+            case default
+            end select
+
+            if (time_dependent_array) then
+               kx = 1
+               success = ec_addtimespacerelation(qid, x_loc, y_loc, kcs, kx, filename, filetype, method, operand, &
+                                                 varname=varname)
+            else
+               if (associated(target_array)) then
+                  success = timespaceinitialfield(x_loc, y_loc, target_array, num_items, filename, filetype, method, operand, &
+                                                  transformcoef, target_location_type, kcsini) ! zie meteo module
+               else if (associated(target_array_integer)) then
+                  success = timespaceinitialfield_int(x_loc, y_loc, iadv, num_items, filename, filetype, operand, transformcoef)
+               else
+               end if
+            end if
+
+            if (success) then
+               call finish_initialization(qid)
+            end if
+
+            if (.not. success) then
+               ierr = DFM_WRONGINPUT
             end if
          end if
+
       end do
 
       if (.not. all(specified_water_levels) .and. water_level_global_value_provided) then
-         call set_global_water_values(bl(ndx2D + 1:ndxi), hs(ndx2D + 1:ndxi), s1(ndx2D + 1:ndxi), specified_water_levels, global_water_level_quantity, water_level_global_value, inifilename)
+         call set_global_water_values(bl(ndx2D + 1:ndxi), hs(ndx2D + 1:ndxi), s1(ndx2D + 1:ndxi), specified_water_levels, &
+                                      global_water_level_quantity, water_level_global_value, inifilename)
          ! Otherwise, use the default values
       end if
 
-      write (msgbuf, '(a,i8,a)') 'Finish initializing the initial field file '''//trim(inifilename)//''':', ib, ' blocks have been read and handled.'
+      write (msgbuf, '(a,i8,a)') 'Finish initializing the initial field file '''//trim(inifilename)//''':', ib, &
+         ' blocks have been read and handled.'
       call msg_flush()
 
       if (.not. success) then
@@ -382,7 +347,7 @@ contains
 
 888   continue
       ! Return with whichever ierr status was set before.
-    
+
       call check_file_tree_for_deprecated_keywords(inifield_ptr, deprecated_ext_keywords, istat, prefix='While reading ''' &
                                                    //trim(inifilename)//'''')
 
@@ -390,10 +355,11 @@ contains
 
 !> Reads all key values for a data provider from an IniFieldFile block.
 !! All returned values will typically be used for a call to timespaceinitialfield().
-   subroutine readIniFieldProvider(inifilename, node_ptr, groupname, quantity, filename, filetype, method, iloctype, operand, transformcoef, ja, varname, smask, maxSearchRadius)
+   subroutine readIniFieldProvider(inifilename, node_ptr, groupname, quantity, filename, filetype, method, &
+                                   iloctype, operand, transformcoef, ja, varname)
       use timespace_parameters
       use m_ec_interpolationsettings, only: RCEL_DEFAULT
-      use m_lateral, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       use m_grw
 
       character(len=*), intent(in) :: inifilename !< Name of the ini file, only used in warning messages, actual data is read from node_ptr.
@@ -408,8 +374,6 @@ contains
       double precision, intent(out) :: transformcoef(:) !< Transformation coefficients
       integer, intent(out) :: ja !< Whether a block was successfully read or not.
       character(len=*), intent(out) :: varname !< variable name within filename; only in case of NetCDF
-      character(len=*), intent(out), optional :: smask !< Name of mask-file applied to source arcinfo meteo-data
-      double precision, intent(out), optional :: maxSearchRadius !< max search radius for method == 11
 
       integer, parameter :: ini_key_len = 32
       integer, parameter :: ini_value_len = 256
@@ -431,7 +395,8 @@ contains
       transformcoef = -999d0
 
       if ((.not. strcmpi(groupname, 'Initial')) .and. (.not. (strcmpi(groupname, 'Parameter')))) then
-         write (msgbuf, '(5a)') 'Unrecognized block in file ''', trim(inifilename), ''': [', trim(groupname), ']. Ignoring this block.'
+         write (msgbuf, '(5a)') 'Unrecognized block in file ''', trim(inifilename), ''': [', trim(groupname), &
+            ']. Ignoring this block.'
          call warn_flush()
          goto 888
       end if
@@ -439,7 +404,8 @@ contains
       ! read quantity
       call prop_get(node_ptr, '', 'quantity', quantity, retVal)
       if (.not. retVal) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), ']. Field ''quantity'' is missing. Ignoring this block.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), &
+            ']. Field ''quantity'' is missing. Ignoring this block.'
          call warn_flush()
          goto 888
       end if
@@ -448,24 +414,24 @@ contains
       call prop_get(node_ptr, '', 'dataFile', filename, retVal)
       if (retVal) then
       else
-         write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)// &
-                            '. Field ''dataFile'' is missing. Ignoring this block.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), &
+            '] for quantity='//trim(quantity)//'. Field ''dataFile'' is missing. Ignoring this block.'
          call warn_flush()
          goto 888
       end if
 
       ! read dataFileType
-      call prop_get(node_ptr, '', 'dataFileType ', dataFileType , retVal)
+      call prop_get(node_ptr, '', 'dataFileType ', dataFileType, retVal)
       if (.not. retVal) then
-         write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)// &
-                            '. Field ''dataFileType'' is missing. Ignoring this block.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), &
+            '] for quantity='//trim(quantity)//'. Field ''dataFileType'' is missing. Ignoring this block.'
          call warn_flush()
          goto 888
       end if
       filetype = convert_file_type_string_to_integer(dataFileType)
       if (filetype < 0) then
-         write(msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)// &
-                            '. Field ''dataFileType'' has invalid value '''//trim(dataFileType)//'''. Ignoring this block.'
+         write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
+            //trim(quantity)//'. Field ''dataFileType'' has invalid value '''//trim(dataFileType)//'''. Ignoring this block.'
          call warn_flush()
          goto 888
       end if
@@ -474,24 +440,25 @@ contains
       ! averagingRelSize, averagingNumMin, averagingPercentile, locationType, extrapolationMethod, value
       if (filetype /= field1D) then
          ! read interpolationMethod
-         call prop_get(node_ptr, '', 'interpolationMethod ', interpolationMethod , retVal)
+         call prop_get(node_ptr, '', 'interpolationMethod ', interpolationMethod, retVal)
          if (.not. retVal) then
-            write(msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)// &
-                               '. Field ''interpolationMethod'' is missing. Ignoring this block.'
+            write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
+               //trim(quantity)//'. Field ''interpolationMethod'' is missing. Ignoring this block.'
             call warn_flush()
             goto 888
          end if
          method = convert_method_string_to_integer(interpolationMethod)
          if (method < 0 .or. (method == 4 .and. filetype /= inside_polygon)) then
-            write(msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)// &
-                               '. Field ''interpolationMethod'' has invalid value '''//trim(interpolationMethod)//'''. Ignoring this block.'
+            write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
+               //trim(quantity)//'. Field ''interpolationMethod'' has invalid value '''//trim(interpolationMethod)// &
+               '''. Ignoring this block.'
             call warn_flush()
             goto 888
          end if
 
          if (method == 6) then ! 'averaging'
             ! read averagingType
-            call prop_get(node_ptr, '', 'averagingType ', averagingType , retVal)
+            call prop_get(node_ptr, '', 'averagingType ', averagingType, retVal)
             if (.not. retVal) then
                averagingType = 'mean'
             end if
@@ -499,33 +466,35 @@ contains
             if (iav >= 0) then
                transformcoef(4) = dble(iav)
             else
-               write(msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)// &
-                                  '. Field ''averagingType'' has invalid value '''//trim(averagingType)//'''. Ignoring this block.'
+               write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='// &
+                  trim(quantity)//'. Field ''averagingType'' has invalid value '''//trim(averagingType)//'''. Ignoring this block.'
                call warn_flush()
                goto 888
             end if
 
             ! read averagingRelSize
-            call prop_get(node_ptr,'','averagingRelSize', transformcoef(5), retVal)
+            call prop_get(node_ptr, '', 'averagingRelSize', transformcoef(5), retVal)
             if (.not. retVal) then
                transformcoef(5) = RCEL_DEFAULT
             else
                if (transformcoef(5) <= 0d0) then
-                  write(msgbuf, '(5a,f10.3,a,f10.3,a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
-                                                      //trim(quantity)//'. Field ''averagingRelSize'' has invalid value ', transformcoef(5), &
-                                                      '. Setting to default: ', RCEL_DEFAULT, '.'
+                  write (msgbuf, '(5a,f10.3,a,f10.3,a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), &
+                     '] for quantity='//trim(quantity)//'. Field ''averagingRelSize'' has invalid value ', transformcoef(5), &
+                     '. Setting to default: ', RCEL_DEFAULT, '.'
                   call warn_flush()
                   transformcoef(5) = RCEL_DEFAULT
                end if
             end if
 
             ! read averagingNumMin
-            call prop_get(node_ptr,'','averagingNumMin', averagingNumMin, retVal)
+            call prop_get(node_ptr, '', 'averagingNumMin', averagingNumMin, retVal)
             if (.not. retVal) then
                transformcoef(8) = 1d0
             else
                if (averagingNumMin <= 0) then
-                  write (msgbuf, '(5a,i0,a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''averagingNumMin'' has invalid value ', averagingNumMin, '. Setting to default: 1.'
+                  write (msgbuf, '(5a,i0,a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), &
+                     '] for quantity='//trim(quantity)//'. Field ''averagingNumMin'' has invalid value ', averagingNumMin, &
+                     '. Setting to default: 1.'
                   call warn_flush()
                   transformcoef(8) = 1d0
                else
@@ -534,19 +503,21 @@ contains
             end if
 
             ! read averagingPercentile
-            call prop_get(node_ptr,'','averagingPercentile', transformcoef(7), retVal)
+            call prop_get(node_ptr, '', 'averagingPercentile', transformcoef(7), retVal)
             if (.not. retVal) then
                transformcoef(7) = 0d0
             else
                if (transformcoef(7) < 0d0) then
-                  write (msgbuf, '(5a,f10.3,a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''averagingPercentile'' has invalid value ', transformcoef(7), '. Setting to default: 0.0.'
+                  write (msgbuf, '(5a,f10.3,a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), &
+                     '] for quantity='//trim(quantity)//'. Field ''averagingPercentile'' has invalid value ', &
+                     transformcoef(7), '. Setting to default: 0.0.'
                   call warn_flush()
                   transformcoef(7) = 0d0
                end if
             end if
          end if
 
-         call prop_get(node_ptr, '', 'locationType ', locationType , retVal)
+         call prop_get(node_ptr, '', 'locationType ', locationType, retVal)
          if (.not. retVal) then
             ilocType = ILATTP_ALL
          else
@@ -565,12 +536,13 @@ contains
          ! if the infiltrationmodel is not horton, but a horton quantity is detected, then send a error message
          if (infiltrationmodel /= DFM_HYD_INFILT_HORTON .and. &
              strcmpi(quantity, 'Horton', 6)) then
-            write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(quantity)//'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_HORTON, ''' in the MDU file (Horton).'
+            write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(quantity) &
+               //'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_HORTON, ''' in the MDU file (Horton).'
             call warn_flush()
          end if
 
          ! read extrapolationMethod
-         call prop_get(node_ptr,'','extrapolationMethod', extrapolation, retVal)
+         call prop_get(node_ptr, '', 'extrapolationMethod', extrapolation, retVal)
          if (.not. retVal) then
             extrapolation = 0
          end if
@@ -578,9 +550,10 @@ contains
 
          ! read value
          if (filetype == inside_polygon) then
-            call prop_get(node_ptr,'','value', transformcoef(1), retVal)
+            call prop_get(node_ptr, '', 'value', transformcoef(1), retVal)
             if (.not. retVal) then
-               write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''value'' is missing. Ignore this block.'
+               write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), &
+                  '] for quantity='//trim(quantity)//'. Field ''value'' is missing. Ignore this block.'
                call warn_flush()
                goto 888
             end if
@@ -588,14 +561,15 @@ contains
       end if ! .not. strcmpi(dataFileType, '1dField'))
 
       ! read operand, for any filetype
-      call prop_get(node_ptr, '', 'operand ', operand , retVal)
+      call prop_get(node_ptr, '', 'operand ', operand, retVal)
       if (.not. retVal) then
          operand = 'O'
       else
          if ((.not. strcmpi(operand, 'O')) .and. (.not. strcmpi(operand, 'A')) .and. (.not. strcmpi(operand, '+')) .and. &
              (.not. strcmpi(operand, '*')) .and. (.not. strcmpi(operand, 'X')) .and. (.not. strcmpi(operand, 'N')) .and. &
              (.not. strcmpi(operand, 'V'))) then
-            write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='//trim(quantity)//'. Field ''operand'' has invalid value '''//trim(operand)//'''. Ignoring this block.'
+            write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
+               //trim(quantity)//'. Field ''operand'' has invalid value '''//trim(operand)//'''. Ignoring this block.'
             call warn_flush()
             goto 888
          end if
@@ -614,7 +588,8 @@ contains
    end subroutine readIniFieldProvider
 
 !> Read the global section of the 1dField file
-   subroutine init_1d_field_read_global(field_ptr, ini_field_file_name, ini_file_name, intended_quantity, value, value_provided, num_errors)
+   subroutine init_1d_field_read_global(field_ptr, ini_field_file_name, ini_file_name, intended_quantity, value, value_provided, &
+                                        num_errors)
       use tree_data_types, only: tree_data
 
       type(tree_data), pointer, intent(in) :: field_ptr !< tree of inifield-file's [Initial] or [Parameter] blocks
@@ -639,21 +614,24 @@ contains
          call warn_flush()
          return
       else if (global_section_count > 1) then
-         write (msgbuf, '(3a)') 'In file ''', trim(ini_file_name), ''': Only the first [Global] block is read, other [Global] blocks are ignored.'
+         write (msgbuf, '(3a)') 'In file ''', trim(ini_file_name), &
+            ''': Only the first [Global] block is read, other [Global] blocks are ignored.'
          call warn_flush()
       end if
 
       call prop_get(field_ptr, 'Global', 'quantity', quantity, success)
       if (.not. success) then
          num_errors = num_errors + 1
-         write (msgbuf, '(3a)') 'Incomplete block in file ''', trim(ini_file_name), ''': [Global]. Field ''quantity'' is missing.'
+         write (msgbuf, '(3a)') 'Incomplete block in file ''', trim(ini_file_name), &
+            ''': [Global]. Field ''quantity'' is missing.'
          call err_flush()
          return
       end if
       if (.not. strcmpi(quantity, intended_quantity)) then
          num_errors = num_errors + 1
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(ini_file_name), &
-            ''': [Global]. Field ''quantity'' does not match the "quantity" which is specified in iniField file ''', trim(ini_field_file_name), '''.'
+            ''': [Global]. Field ''quantity'' does not match the "quantity" which is specified in iniField file ''', &
+            trim(ini_field_file_name), '''.'
          call err_flush()
          return
       end if
@@ -661,7 +639,8 @@ contains
           (.not. strcmpi(quantity, 'waterdepth')) .and. (.not. strcmpi(quantity, 'frictioncoefficient')) .and. &
           (.not. strcmpi(quantity, 'initialvelocity'))) then
          num_errors = num_errors + 1
-         write (msgbuf, '(5a)') 'Wrong block in file ''', trim(ini_file_name), ''': [Global]. Quantity ''', trim(quantity), ''' is unknown.'
+         write (msgbuf, '(5a)') 'Wrong block in file ''', trim(ini_file_name), ''': [Global]. Quantity ''', trim(quantity), &
+            ''' is unknown.'
          call err_flush()
          return
       end if
@@ -773,7 +752,8 @@ contains
 
       call init_1d_field_read_global(field_ptr, inifieldfilename, filename, quant, global_value, global_value_provided, numerr)
 
-      if (strcmpi(quant, 'waterlevel') .or. strcmpi(quant, 'waterdepth') .or. strcmpi(quant, 'bedlevel') .or. strcmpi(quant, 'initialvelocity')) then
+      if (strcmpi(quant, 'waterlevel') .or. strcmpi(quant, 'waterdepth') .or. strcmpi(quant, 'bedlevel') .or. &
+          strcmpi(quant, 'initialvelocity')) then
          call realloc(specified_indices, ndxi - ndx2D, fill=.false._c_bool, keepExisting=.false.)
       else if (strcmpi(quant, 'frictioncoefficient')) then
          call realloc(specified_indices, lnx1d, fill=.false._c_bool, keepExisting=.false.)
@@ -797,7 +777,8 @@ contains
             call prop_get(node_ptr, '', 'branchId', branchId, retVal)
             if (.not. retVal) then
                numerr = numerr + 1
-               write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''branchId'' is missing.'
+               write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), &
+                  ']. Field ''branchId'' is missing.'
                call warn_flush()
                cycle
             end if
@@ -812,14 +793,16 @@ contains
                call prop_get(node_ptr, '', 'chainage', chainage, numLocations, retVal)
                if (.not. retVal) then
                   numerr = numerr + 1
-                  write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''chainage'' could not be read.'
+                  write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), &
+                     ']. Field ''chainage'' could not be read.'
                   call warn_flush()
                   cycle
                end if
 
                if (.not. is_monotonically_increasing(chainage)) then
                   numerr = numerr + 1
-                  write (msgbuf, '(3a)') 'Invalid data in file ''', trim(filename), ''': the locations are not sorted by increasing chainage.'
+                  write (msgbuf, '(3a)') 'Invalid data in file ''', trim(filename), &
+                     ''': the locations are not sorted by increasing chainage.'
                   call err_flush()
                   cycle
                end if
@@ -828,23 +811,26 @@ contains
                call prop_get(node_ptr, '', 'values', values, numLocations, retVal)
                if (.not. retVal) then
                   numerr = numerr + 1
-                  write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''values'' could not be read.'
+                  write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), &
+                     ']. Field ''values'' could not be read.'
                   call err_flush()
                   cycle
                end if
             else
                call realloc(values, 1, keepExisting=.false.)
-               call prop_get(node_ptr, '', 'values', values(1),retVal)
+               call prop_get(node_ptr, '', 'values', values(1), retVal)
                if (.not. retVal) then
                   numerr = numerr + 1
-                  write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), ']. Field ''values'' could not be read.'
+                  write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(filename), ''': [', trim(groupname), &
+                     ']. Field ''values'' could not be read.'
                   call err_flush()
                   cycle
                end if
             end if
             ib = ib + 1
          else
-            write (msgbuf, '(5a)') 'Unrecognized block in file ''', trim(filename), ''': [', trim(groupname), ']. Ignoring this block.'
+            write (msgbuf, '(5a)') 'Unrecognized block in file ''', trim(filename), ''': [', trim(groupname), &
+               ']. Ignoring this block.'
             call warn_flush()
             cycle
          end if
@@ -864,7 +850,8 @@ contains
             !call spaceInit1dfield(branchId, chainage, values, 2, zk(ndx2D+1:ndxi), specified_indices)
             ! TODO: UNST-2694, Reading bedlevel from 1dField file type is not yet supported.
             numerr = numerr + 1
-            write (msgbuf, '(5a)') 'Unsupported block in file ''', trim(filename), ''': [', trim(groupname), ']. Reading bedlevel from 1dField file type is not yet supported.'
+            write (msgbuf, '(5a)') 'Unsupported block in file ''', trim(filename), ''': [', trim(groupname), &
+               ']. Reading bedlevel from 1dField file type is not yet supported.'
             call err_flush()
             cycle
          end if
@@ -874,11 +861,11 @@ contains
          goto 888
       end if
 
-       
-      call check_file_tree_for_deprecated_keywords(field_ptr, deprecated_ext_keywords, istat, prefix='While reading ''' &
-                                                   //trim(filename)//'''')
+      call check_file_tree_for_deprecated_keywords(field_ptr, deprecated_ext_keywords, istat, &
+                                                   prefix='While reading '''//trim(filename)//'''')
       ! No errors
-      write (msgbuf, '(a, i10,a)') 'Finish initializing 1dField file '''//trim(filename)//''':', ib, ' [Branch] blocks have been read and handled.'
+      write (msgbuf, '(a, i10,a)') 'Finish initializing 1dField file '''//trim(filename)//''':', ib, &
+         ' [Branch] blocks have been read and handled.'
       call msg_flush()
       return
 
@@ -950,7 +937,8 @@ contains
       double precision, intent(in) :: sChainages(:) !< Sample chainages
       double precision, intent(in) :: sValues(:) !< Sample values
       integer, intent(in) :: ipos !< position: 1= u point location, 2= 1d flownode(netnode) location
-      double precision, intent(inout) :: res(:) !< Flow state array into which the interpolated values will be stored. Should be only the 1D slice (especially in the case of ipos==2, flow nodes).
+      double precision, intent(inout) :: res(:) !< Flow state array into which the interpolated values will be stored.
+                                                !!Should be only the 1D slice (especially in the case of ipos==2, flow nodes).
       logical(kind=c_bool), intent(inout) :: modified_elements(:) !< true for every index for which res was set
 
       integer :: nbrstart, ibr, k, j, i, ipre, ns, ncount
@@ -1063,5 +1051,505 @@ contains
       end if
 
    end subroutine set_friction_type_values
+
+   !> Subroutine to initialize the subsupl array based on the ibedlevtyp value.
+   subroutine initialize_subsupl()
+      use m_subsidence, only: sdu_blp, subsupl_t0, subsupl, subsout, subsupl_tp, jasubsupl
+      use m_flowparameters, only: ibedlevtyp
+      use m_meteo, only: ec_addtimespacerelation
+      ! use m_flow, only:
+      use network_data, only: numk, xk, yk
+      use m_flowgeom, only: lnx
+      use m_alloc, only: aerr
+
+      implicit none
+
+      integer, allocatable :: mask(:)
+      integer :: kx, ierr
+      logical :: success
+      integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
+                            enum_field6D = 6
+
+      kx = 1
+      if (allocated(subsupl)) deallocate (subsupl)
+      if (allocated(subsupl_t0)) deallocate (subsupl_t0)
+      if (allocated(subsupl_tp)) deallocate (subsupl_tp)
+      if (allocated(subsout)) deallocate (subsout)
+      if (allocated(sdu_blp)) deallocate (sdu_blp)
+
+      select case (ibedlevtyp)
+      case (enum_field1D)
+         allocate (subsupl(lnx), stat=ierr)
+         call aerr('subsupl(lnx)', ierr, lnx)
+         subsupl = 0d0
+         allocate (subsupl_t0(lnx), stat=ierr)
+         call aerr('subsupl_t0(lnx)', ierr, lnx)
+         subsupl_t0 = 0d0
+         allocate (subsupl_tp(lnx), stat=ierr)
+         call aerr('subsupl_tp(lnx)', ierr, lnx)
+         subsupl_tp = 0d0
+         allocate (subsout(lnx), stat=ierr)
+         call aerr('subsout(lnx)', ierr, lnx)
+         subsout = 0d0
+
+      case (enum_field2D)
+         if (allocated(mask)) deallocate (mask)
+         allocate (mask(lnx), source=1, stat=ierr)
+         call aerr('mask(lnx)', ierr, lnx)
+         allocate (subsupl(lnx), stat=ierr)
+         call aerr('subsupl(lnx)', ierr, lnx)
+         subsupl = 0d0
+         allocate (subsupl_t0(lnx), stat=ierr)
+         call aerr('subsupl_t0(lnx)', ierr, lnx)
+         subsupl_t0 = 0d0
+         allocate (subsupl_tp(lnx), stat=ierr)
+         call aerr('subsupl_tp(lnx)', ierr, lnx)
+         subsupl_tp = 0d0
+         allocate (subsout(lnx), stat=ierr)
+         call aerr('subsout(lnx)', ierr, lnx)
+         subsout = 0d0
+
+      case (enum_field3D, enum_field4D, enum_field5D, enum_field6D)
+         if (allocated(mask)) deallocate (mask)
+         allocate (mask(numk), source=1, stat=ierr)
+         call aerr('mask(numk)', ierr, numk)
+         allocate (subsupl(numk), stat=ierr)
+         call aerr('subsupl(numk)', ierr, numk)
+         subsupl = 0d0
+         allocate (subsupl_t0(numk), stat=ierr)
+         call aerr('subsupl_t0(numk)', ierr, numk)
+         subsupl_t0 = 0d0
+         allocate (subsupl_tp(numk), stat=ierr)
+         call aerr('subsupl_tp(numk)', ierr, numk)
+         subsupl_tp = 0d0
+         allocate (subsout(numk), stat=ierr)
+         call aerr('subsout(numk)', ierr, numk)
+         subsout = 0d0
+      end select
+
+      allocate (sdu_blp(lnx), stat=ierr)
+      call aerr('sdu_blp(lnx)', ierr, lnx)
+      sdu_blp = 0d0
+
+      if (success) then
+         jasubsupl = 1
+      end if
+   end subroutine initialize_subsupl
+
+   !> Set the control parameters for the actual reading of the [Initial] type items from the inifields input file.
+   subroutine prepare_for_initial_items(qid, inifilename, target_location_type, time_dependent_array, target_array)
+      use stdlib_kinds, only: c_bool
+      use system_utils, only: split_filename
+      use tree_data_types
+      use tree_structures
+      use messageHandling
+      use m_alloc, only: realloc, aerr
+      use unstruc_files, only: resolvePath
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+      use m_flow, only: s1, hs
+      use m_flow, only: h_unsat
+      use m_flowgeom, only: ndx
+      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use fm_external_forcings_data, only: success
+      use m_fm_icecover, only: fm_ice_activate_by_ext_forces
+      use m_meteo, only: ec_addtimespacerelation
+      use unstruc_model, only: md_extfile
+      use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
+      use m_hydrology_data, only: infiltcap, infiltrationmodel
+      ! use network_data
+      ! use dfm_error
+
+      implicit none
+
+      character(len=*), intent(in) :: qid !< Name of the quantity.
+      character(len=*), intent(in) :: inifilename !< Name of the quantity.
+      integer, intent(out) :: target_location_type !< Type of the quantity, either UNC_LOC_S or UNC_LOC_U.
+      logical, intent(out) :: time_dependent_array !< Logical indicating, whether the quantity is time dependent or not.
+      double precision, dimension(:), pointer, intent(out) :: target_array !< pointer to the array that corresponds to the quantity (double precision).
+
+      integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
+                            enum_field6D = 6
+      integer :: ierr
+
+      target_array => null()
+      time_dependent_array = .false.
+
+      select case (str_tolower(qid))
+      case ('waterlevel')
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => s1
+      case ('waterdepth')
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => hs
+      case ('infiltrationcapacity')
+         if (infiltrationmodel /= DFM_HYD_INFILT_CONST) then
+            write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(qid) &
+               //'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_CONST, ''' in the MDU file (constant).'
+            call warn_flush() ! No error, just warning and continue
+         end if
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => infiltcap
+      case ('initial', 'bedlevel')
+         ! Bed level was earlier set in setbedlevelfromextfile()
+      case ('initialunsaturedzonethickness')
+
+         if (.not. allocated(h_unsat)) then
+            allocate (h_unsat(ndx), stat=ierr)
+            call aerr('h_unsat(ndx)', ierr, ndx)
+            h_unsat = -999d0
+         end if
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => h_unsat
+      case default
+         write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), &
+            ' Field '''//trim(qid)//''' is not allowed in the ''[Initial]'' section (refer to User Manual). Ignoring this block.'
+         call warn_flush()
+         success = .false.
+      end select
+
+   end subroutine prepare_for_initial_items
+
+   !> Set the control parameters for the actual reading of the [Initial] type items from the input file/connecting
+   !! the input to the EC-module.
+   subroutine prepare_for_parameter_items(qid, inifilename, target_location_type, time_dependent_array, target_array, &
+                                          target_array_integer)
+      use stdlib_kinds, only: c_bool
+      use system_utils, only: split_filename
+      use tree_data_types
+      use tree_structures
+      use messageHandling
+      use m_alloc, only: realloc, aerr
+      use unstruc_files, only: resolvePath
+      use m_missing, only: dmiss
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+      use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave
+      use m_flow, only: frcu, h_unsat
+      use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
+      use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
+      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use fm_external_forcings_data, only: success
+      use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
+      use m_wind, only: ICdtyp
+      use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
+      use m_meteo, only: ec_addtimespacerelation
+      use m_vegetation, only: stemdiam, stemdens, stemheight
+      use unstruc_model, only: md_extfile
+      use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
+                                  HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
+                                  InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
+                                  PotEvap, InterceptHs
+      use m_hydrology_data, only: infiltcap, infiltrationmodel
+
+      implicit none
+
+      character(len=*), intent(in) :: qid !< Name of the quantity.
+      character(len=*), intent(in) :: inifilename !< Name of initial field file, should already be opened in inifield_ptr.
+      integer, intent(out) :: target_location_type !< Type of the quantity either UNC_LOC_S or UNC_LOC_U.
+      logical, intent(out) :: time_dependent_array !< Logical indicating whether the quantity is time dependent or not.
+      double precision, dimension(:), pointer, intent(out) :: target_array !< pointer to the array that corresponds to the quantity (double precision).
+      integer, dimension(:), pointer, intent(out) :: target_array_integer !< pointer to the array that corresponds to the quantity (integer).
+
+      integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
+                            enum_field6D = 6
+      integer :: ierr
+
+      target_array => null()
+      target_array_integer => null()
+      time_dependent_array = .false.
+
+      select case (str_tolower(qid))
+      case ('frictioncoefficient')
+         target_location_type = UNC_LOC_U
+         time_dependent_array = .false.
+         target_array => frcu
+      case ('advectiontype')
+         target_location_type = UNC_LOC_U
+         time_dependent_array = .false.
+         target_array_integer => iadv
+
+      case ('groundlayerthickness')
+         target_location_type = UNC_LOC_U
+         time_dependent_array = .false.
+         target_array => grounlay
+         jagrounlay = 1
+      case ('bedrock_surface_elevation')
+         call initialize_subsupl()
+         time_dependent_array = .true.
+         select case (ibedlevtyp)
+         case (enum_field1D)
+            target_location_type = UNC_LOC_S
+         case (enum_field2D)
+            target_location_type = UNC_LOC_U
+         case (enum_field3D, enum_field4D, enum_field5D, enum_field6D)
+            target_location_type = UNC_LOC_CN
+         end select
+
+      case ('frictiontrtfactor')
+
+         if (jatrt /= 1) then
+            call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', getting QUANTITY '//trim(qid)// &
+                      ', but [trachytopes] is not switched on in MDU file. Ignoring this block.')
+            success = .false.
+         else
+            if (.not. allocated(cftrtfac)) then
+               allocate (cftrtfac(lnx), stat=ierr)
+               call aerr('cftrtfac(lnx)', ierr, lnx)
+               cftrtfac = 1d0
+            end if
+            target_location_type = UNC_LOC_U
+            time_dependent_array = .false.
+            target_array => cftrtfac
+            jacftrtfac = 1
+         end if
+
+      case ('horizontaleddyviscositycoefficient')
+
+         if (javiusp == 0) then
+            if (allocated(viusp)) deallocate (viusp)
+            allocate (viusp(lnx), stat=ierr)
+            call aerr('viusp(lnx)', ierr, lnx)
+            viusp = dmiss
+            javiusp = 1
+         end if
+         target_location_type = UNC_LOC_U
+         time_dependent_array = .false.
+         target_array => viusp
+
+      case ('horizontaleddydiffusivitycoefficient')
+
+         if (jadiusp == 0) then
+            if (allocated(diusp)) deallocate (diusp)
+            allocate (diusp(lnx), stat=ierr)
+            call aerr('diusp(lnx)', ierr, lnx)
+            diusp = dmiss
+            jadiusp = 1
+         end if
+         target_location_type = UNC_LOC_U
+         time_dependent_array = .false.
+         target_array => diusp
+
+      case ('ibedlevtype')
+         target_location_type = UNC_LOC_U
+         time_dependent_array = .false.
+         target_array_integer => ibot
+
+      case ('internaltidesfrictioncoefficient')
+
+         if (jaFrcInternalTides2D /= 1) then ! not added yet
+            if (allocated(frcInternalTides2D)) deallocate (frcInternalTides2D)
+            allocate (frcInternalTides2D(Ndx), stat=ierr)
+            call aerr('frcInternalTides2D(Ndx)', ierr, Ndx)
+            frcInternalTides2D = DMISS
+
+            if (allocated(DissInternalTidesPerArea)) deallocate (DissInternalTidesPerArea)
+            allocate (DissInternalTidesPerArea(Ndx), stat=ierr)
+            call aerr(' DissInternalTidesPerArea(Ndx)', ierr, Ndx)
+            DissInternalTidesPerArea = 0d0
+
+            jaFrcInternalTides2D = 1
+         end if
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => frcInternalTides2D
+
+      case ('linearfrictioncoefficient')
+         target_location_type = UNC_LOC_U
+         time_dependent_array = .false.
+         target_array => frculin
+         jafrculin = 1
+      case ('sea_ice_area_fraction', 'sea_ice_thickness')
+
+! if ice properties not yet read before, initialize ...
+         if (.not. (ja_ice_area_fraction_read .or. ja_ice_thickness_read)) then
+            call fm_ice_activate_by_ext_forces(ndx)
+         end if
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .true.
+         if (qid == 'sea_ice_area_fraction') then
+            ja_ice_area_fraction_read = 1
+         else
+            ja_ice_thickness_read = 1
+         end if
+      case ('stemdiameter')
+
+         if (.not. allocated(stemdiam)) then
+            allocate (stemdiam(ndx), stat=ierr)
+            call aerr('stemdiam(ndx)', ierr, ndx)
+            stemdiam = dmiss
+         end if
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => stemdiam
+
+      case ('stemdensity')
+
+         if (.not. allocated(stemdens)) then
+            allocate (stemdens(ndx), stat=ierr)
+            call aerr('stemdens(ndx)', ierr, ndx)
+            stemdens = dmiss
+         end if
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => stemdens
+
+      case ('stemheight')
+
+         if (.not. allocated(stemheight)) then
+            allocate (stemheight(ndx), stat=ierr)
+            call aerr('stemheight(ndx)', ierr, ndx)
+            stemheight = dmiss
+         end if
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => stemheight
+
+      case ('windstresscoefficient')
+
+         if (jaCdwusp == 0) then
+            if (allocated(Cdwusp)) deallocate (Cdwusp)
+            allocate (Cdwusp(lnx), stat=ierr)
+            call aerr('Cdwusp(lnx)', ierr, lnx)
+            Cdwusp = dmiss
+            jaCdwusp = 1
+         end if
+         target_location_type = UNC_LOC_U
+         time_dependent_array = .false.
+         target_array => Cdwusp
+         iCdtyp = 1 ! only 1 coeff
+      case ('wavesignificantheight')
+         if (jawave == 6 .or. jawave == 7) then
+            target_location_type = UNC_LOC_S
+            time_dependent_array = .true.
+         else
+            call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7')
+            call qnerror('Reading *.ext forcings file '''//trim(md_extfile)//''', ', &
+                         'QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7', trim(qid))
+            success = .false.
+         end if
+      case ('hortonmininfcap')
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => HortonMinInfCap
+      case ('hortonmaxinfcap')
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => HortonMaxInfCap
+      case ('hortondecreaserate')
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => HortonDecreaseRate
+      case ('hortonrecoveryrate')
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => HortonRecoveryRate
+      case ('interceptionlayerthickness')
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         call realloc(InterceptHs, ndx, keepExisting=.false., fill=0d0)
+         call realloc(h_unsat, ndx, keepExisting=.true., fill=0d0)
+         call realloc(InterceptThickness, ndx, keepExisting=.false.)
+         target_array => InterceptThickness
+         interceptionmodel = DFM_HYD_INTERCEPT_LAYER
+         jadhyd = 1
+      case ('potentialevaporation')
+         call realloc(PotEvap, ndx, keepExisting=.true., fill=0d0)
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => PotEvap
+      case ('infiltrationcapacity')
+         if (infiltrationmodel /= DFM_HYD_INFILT_CONST) then
+            write (msgbuf, '(a,i0,a)') 'File '''//trim(inifilename)//''' contains quantity '''//trim(qid) &
+               //'''. This requires ''InfiltrationModel=', DFM_HYD_INFILT_CONST, ''' in the MDU file (constant).'
+            call warn_flush() ! No error, just warning and continue
+         end if
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .false.
+         target_array => infiltcap
+      case default
+         write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), &
+            ' Field '''//trim(qid)//''' is not allowed in the ''[Parameters]'' section (refer to User Manual). Ignoring this block.'
+         call warn_flush()
+         success = .false.
+      end select
+
+   end subroutine prepare_for_parameter_items
+
+   !> Perform finalization after reading the input file.
+   subroutine finish_initialization(qid)
+      use stdlib_kinds, only: c_bool
+      use tree_data_types
+      use tree_structures
+      use m_missing, only: dmiss
+      use m_alloc, only: realloc
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use messageHandling
+      use unstruc_files, only: resolvePath
+      use system_utils, only: split_filename
+      ! use m_ec_interpolationsettings
+      use m_flow, only: s1, hs, evap, h_unsat
+      use m_flowgeom, only: ndxi, ndx, bl
+      use timespace_parameters, only: FIELD1D
+      use m_wind, only: jaevap
+      use timespace, only: timespaceinitialfield
+      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      ! use network_data
+      use m_hydrology_data, only: infiltcap, DFM_HYD_INFILT_CONST, &
+                                  DFM_HYD_INTERCEPT_LAYER, jadhyd, &
+                                  PotEvap, ActEvap
+      use unstruc_model, only: md_extfile
+      use m_grw, only: jaintercept2D
+      use m_fm_icecover, only: fm_ice_activate_by_ext_forces
+      use m_meteo, only: ec_addtimespacerelation
+      use m_vegetation, only: stemheight, stemheightstd
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
+
+      implicit none
+
+      character(len=*), intent(in) :: qid !< Quantity identifier.
+
+      integer :: idum
+      double precision, external :: ran0
+
+      select case (str_tolower(qid))
+      case ('waterdepth')
+         s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
+      case ('infiltrationcapacity')
+         where (infiltcap /= dmiss)
+            infiltcap = infiltcap * 1d-3 / (24d0 * 3600d0) ! mm/day => m/s
+         end where
+      case ('potentialevaporation')
+         where (PotEvap /= dmiss)
+            PotEvap = PotEvap * 1d-3 / (3600d0) ! mm/hr => m/s
+         end where
+         jaevap = 1
+         if (.not. allocated(evap)) then
+            call realloc(evap, ndx, keepExisting=.false., fill=0d0)
+         end if
+         evap = -PotEvap ! evap and PotEvap are now still doubling
+
+         if (.not. allocated(ActEvap)) then
+            call realloc(ActEvap, ndx, keepExisting=.false., fill=0d0)
+         end if
+         jadhyd = 1
+      case ('frictioncoefficient')
+         call set_friction_type_values()
+      case ('initialunsaturedzonethickness', 'interceptionlayerthickness')
+         where (h_unsat == -999d0)
+            h_unsat = 0d0
+         end where
+         if (qid == 'interceptionlayerthickness') then
+            jaintercept2D = 1
+         end if
+      case ('stemheight')
+         if (stemheightstd > 0d0) then
+            stemheight = stemheight * (1d0 + stemheightstd * (ran0(idum) - 0.5d0))
+         end if
+      end select
+   end subroutine finish_initialization
 
 end module unstruc_inifields

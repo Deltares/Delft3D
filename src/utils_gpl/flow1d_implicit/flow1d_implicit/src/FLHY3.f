@@ -144,11 +144,11 @@ c
       integer      usrord(1),
      &             uindex(3)
       integer      istat ,istru
-      character*16 grnamm          ,grnamh          ,grnamd
-      character*16 nameel(nentri),quanel(nentri),unitel(nentri),
+      character(len=16) grnamm, grnamh, grnamd
+      character(len=16) nameel(nentri),quanel(nentri),unitel(nentri),
      &             nameac(nentri+1)
-      character*64 descel(nentri)
-      character*9  txt
+      character(len=64) descel(nentri)
+      character(len=9)  txt
       logical      llog, new       ,newuit
 c
 c     Include sobek error code file

@@ -39,12 +39,10 @@
 !! such as gridgeom, as a callback.
 !!
 !! NOTE: this subroutine is dflowfm's implementation of the MHCallBack::messagebox_iface interface.
-subroutine unstruc_guimessage(title, msg, level)
+subroutine unstruc_guimessage(msg)
    use unstruc_messages
    implicit none
-   character(len=*) :: title !< Title string
    character(len=*) :: msg !< Message string
-   integer, intent(in) :: level !< Severity level, use values from the MessageHandling module (e.g., LEVEL_ERROR). Currently not used.
 
    call qnerror(msg, ' ', ' ')
 

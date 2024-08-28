@@ -678,7 +678,7 @@
             call subsitute_reduce_buffer(vallongculvert, nlongculverts * NUMVALS_LONGCULVERT)
          end if
          do n = 1, nlongculverts
-            call average_valstruct(vallongculvert(:, n), ST_LONGCULVERT, n, nlinks)
+            call average_valstruct(vallongculvert(:, n), ST_LONGCULVERT, n)
          end do
       end if
       ! === Compound structure
@@ -689,7 +689,7 @@
          do n = 1, network%cmps%count
             pcmp => network%cmps%compound(n)
             nlinks = pcmp%numlinks
-            call average_valstruct(valcmpstru(:, n), ST_COMPOUND, 0, nlinks)
+            call average_valstruct(valcmpstru(:, n), ST_COMPOUND, 0)
          end do
       end if
 
@@ -702,7 +702,7 @@
             istru = network%sts%bridgeIndices(n)
             pstru => network%sts%struct(istru)
             nlinks = pstru%numlinks
-            call average_valstruct(valbridge(:, n), ST_BRIDGE, istru, nlinks)
+            call average_valstruct(valbridge(:, n), ST_BRIDGE, istru)
          end do
       end if
       ! === Culvert
@@ -714,7 +714,7 @@
             istru = network%sts%culvertIndices(n)
             pstru => network%sts%struct(istru)
             nlinks = pstru%numlinks
-            call average_valstruct(valculvert(:, n), ST_CULVERT, istru, nlinks)
+            call average_valstruct(valculvert(:, n), ST_CULVERT, istru)
          end do
       end if
       ! === Orifice
@@ -726,7 +726,7 @@
             istru = network%sts%orificeIndices(n)
             pstru => network%sts%struct(istru)
             nlinks = pstru%numlinks
-            call average_valstruct(valorifgen(:, n), ST_ORIFICE, istru, nlinks)
+            call average_valstruct(valorifgen(:, n), ST_ORIFICE, istru)
          end do
       end if
       ! === Universal weir
@@ -738,7 +738,7 @@
             istru = network%sts%uniweirIndices(n)
             pstru => network%sts%struct(istru)
             nlinks = pstru%numlinks
-            call average_valstruct(valuniweir(:, n), ST_UNI_WEIR, istru, nlinks)
+            call average_valstruct(valuniweir(:, n), ST_UNI_WEIR, istru)
             if (valuniweir(IVAL_WIDTH, n) == 0) then
                valuniweir(IVAL_UW_CRESTL:NUMVALS_UNIWEIR, n) = dmiss
             end if
@@ -763,11 +763,11 @@
                istru = network%sts%generalStructureIndices(n)
                pstru => network%sts%struct(istru)
                nlinks = pstru%numlinks
-               call average_valstruct(valgenstru(:, n), ST_GENERAL_ST, istru, nlinks)
+               call average_valstruct(valgenstru(:, n), ST_GENERAL_ST, istru)
             end do
          else ! Old general structure
             do n = 1, ngenstru
-               call average_valstruct(valgenstru(:, n), ST_UNSET, 0, 0)
+               call average_valstruct(valgenstru(:, n), ST_UNSET, 0)
                if (jampi > 0) then
                   if (valgenstru(NUMVALS_GENSTRU, n) > 1) then ! The structure lies on more than one partition
                      valgenstru(IVAL_OPENW, n) = valgenstru(IVAL_OPENW, n) / valgenstru(NUMVALS_GENSTRU, n) ! id_genstru_openw.
@@ -789,11 +789,11 @@
                istru = network%sts%weirIndices(n)
                pstru => network%sts%struct(istru)
                nlinks = pstru%numlinks
-               call average_valstruct(valweirgen(:, n), ST_WEIR, istru, nlinks)
+               call average_valstruct(valweirgen(:, n), ST_WEIR, istru)
             end do
          else ! old weir
             do n = 1, nweirgen
-               call average_valstruct(valweirgen(:, n), ST_UNSET, 0, 0)
+               call average_valstruct(valweirgen(:, n), ST_UNSET, 0)
                i = weir2cgen(n)
                if (L1cgensg(i) <= L2cgensg(i)) then ! At least one flow link in this domain is affected by this structure.
                   valweirgen(NUMVALS_WEIRGEN, n) = 1 ! rank contains the weir.
@@ -887,7 +887,7 @@
             call subsitute_reduce_buffer(valpump, npumpsg * NUMVALS_PUMP)
          end if
          do n = 1, npumpsg
-            call average_valstruct(valpump(:, n), ST_UNSET, 0, 0)
+            call average_valstruct(valpump(:, n), ST_UNSET, 0)
 
             do L = L1pumpsg(n), L2pumpsg(n)
                Lf = kpump(3, L)

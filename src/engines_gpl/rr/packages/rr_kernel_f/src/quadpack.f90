@@ -480,7 +480,6 @@ subroutine qage ( f, a, b, epsabs, epsrel, key, limit, result, abserr, neval, &
   integer iord(limit)
   integer iroff1
   integer iroff2
-  integer k
   integer key
   integer keyf
   integer last
@@ -1451,7 +1450,6 @@ subroutine qagp ( f, a, b, npts2, points, epsabs, epsrel, result, abserr, &
   double precision rlist(limit)
   double precision rlist2(52)
   double precision sign
-  double precision temp
 !
 !  Test on validity of parameters.
 !
@@ -2644,7 +2642,6 @@ subroutine qawce ( f, a, b, c, epsabs, epsrel, limit, result, abserr, neval, &
   integer iord(limit)
   integer iroff1
   integer iroff2
-  integer k
   integer krule
   integer last
   integer maxerr
@@ -3835,7 +3832,6 @@ subroutine qawse ( f, a, b, alfa, beta, integr, epsabs, epsrel, limit, &
   integer iord(limit)
   integer iroff1
   integer iroff2
-  integer k
   integer last
   integer maxerr
   integer nev

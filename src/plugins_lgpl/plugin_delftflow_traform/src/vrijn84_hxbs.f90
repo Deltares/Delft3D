@@ -81,17 +81,10 @@ integer            :: kode
 integer            :: ntrsi
 integer			   :: lundia 
 
-real(hp)           :: acal
-real(hp)           :: ag     ! gravity acceleration
 real(hp)           :: c
-real(hp)           :: cc
-real(hp)           :: cf
-real(hp)           :: chezy
 real(hp)           :: d10
 real(hp)           :: d50
 real(hp)           :: d90
-real(hp)           :: delta  ! relative density of sediment particle
-real(hp)           :: di50
 real(hp)           :: dss
 real(hp)           :: dstar
 real(hp)           :: h
@@ -100,7 +93,6 @@ real(hp)           :: hrms
 real(hp)           :: mudfrac
 real(hp)           :: rhosol
 real(hp)           :: rhowat
-real(hp)           :: rk
 real(hp)           :: rlabda
 real(hp)           :: teta
 real(hp)           :: timsec
@@ -111,7 +103,6 @@ real(hp)           :: uorb
 real(hp)           :: utot
 real(hp)           :: uuu
 real(hp)           :: v
-real(hp)           :: vster
 real(hp)           :: vvv
 real(hp)           :: ws     ! settling velocity
 real(hp)           :: zumod
@@ -124,7 +115,6 @@ real(hp), save     :: rhidexp = 1.0
 !
 ! Local variables
 !
-    integer        :: i 
     real(hp)       :: a
     real(hp)       :: ah
     real(hp), save :: alf1
@@ -139,9 +129,7 @@ real(hp), save     :: rhidexp = 1.0
     real(hp)       :: rhos   ! density of sediment
     real(hp)       :: rhow   ! density of water
     real(hp)       :: rkap
-    real(hp)       :: rksc
     real(hp), save :: rmuc
-    real(hp)       :: rnu    ! laminar viscosity of water
     real(hp)       :: t      ! time in seconds
     real(hp)       :: tbc
     real(hp)       :: tbce

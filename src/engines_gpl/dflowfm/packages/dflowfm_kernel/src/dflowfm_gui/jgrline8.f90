@@ -36,8 +36,8 @@
       ! use gridoperations
 
       implicit none
-      double precision :: X(N), Y(N)
       integer :: n
+      double precision :: X(N), Y(N)
 
       integer :: i
       integer :: in

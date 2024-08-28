@@ -947,7 +947,7 @@ contains
   integer      Infile1, idebug
 
   Integer       inode, isacr
-  Character*1   Quote
+  Character(len=1) Quote
 
   ! file is already opened
   iDebug = ConfFil_get_iDebug()

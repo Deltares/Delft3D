@@ -35,29 +35,19 @@
 !----------------------------------------------------------------------
       subroutine CHANGECOLOR(XP, YP)
          use unstruc_colors
+         use m_depmax
+         use m_helpnow
+
          implicit none
-         double precision :: dv
          integer :: ic
-         integer :: jaauto
          integer :: key
          integer :: n1
          integer :: n2
          integer :: n3
-         integer :: ncols
-         integer :: nie
-         integer :: nis
-         integer :: nlevel
          integer :: numcol
-         integer :: nv
-         double precision :: val
-         double precision :: vmax
-         double precision :: vmin
+
          double precision :: xp
          double precision :: yp
-         character :: WRDKEY * 40
-
-         common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-         common / HELPNOW / WRDKEY, NLEVEL
 
          integer NCL(3)
 

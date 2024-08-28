@@ -54,6 +54,7 @@ subroutine test_read_snapped_observ_crs
     integer, parameter                           :: N_Observ_Crs = 3
     integer                                      :: i
     integer                                      :: istat
+    logical                                      :: success
     double precision                             :: refcoord1(2)
     double precision                             :: refcoord2(2,3)
     double precision                             :: refcoord3(2)
@@ -65,7 +66,6 @@ subroutine test_read_snapped_observ_crs
     double precision                             :: refdata3(2)
     character(len=40), dimension(N_Observ_Crs)   :: refnames
     character(len=40)                            :: mdufile
-    
    
     ! reference: coordinates of the original location of the three observation cross sections
     data refcoord1 /1.458360454017425d5, 4.271440320425944d5/
@@ -101,11 +101,11 @@ subroutine test_read_snapped_observ_crs
     
     
     !
-    istat = CHANGEDIRQQ("observCrossSections_snapped")
+    success = CHANGEDIRQQ("observCrossSections_snapped")
     mdufile = 'FlowFM.mdu'
     call loadModel(mdufile)
     istat = flow_modelinit()
-    istat = CHANGEDIRQQ("..")
+    success = CHANGEDIRQQ("..")
     !
     ! first observCrs
     call assert_equal     (crs(1)%name, refnames(1), 'Name of the first observation cross section incorrect' )

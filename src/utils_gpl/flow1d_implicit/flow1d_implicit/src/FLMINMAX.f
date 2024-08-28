@@ -49,7 +49,7 @@ c
      &             tminh(ngrid)   ,tmaxh(ngrid) ,
      &             qmin(ngrid)    ,qmax(ngrid)  ,
      &             tminq(ngrid)   ,tmaxq(ngrid)
-      character*40 gridnm(ngrid)
+      character(len=40) gridnm(ngrid)
       double precision dt, h(ngrid), q(ngrid)
 c
 c     Declaration of local variables
@@ -62,8 +62,8 @@ c      parameter   (nentri=4) change Ars07786
       integer      lun   ,nvar ,igr
       real         time   
       double precision    scudt
-      character*40 idmap(4) 
-      character*20 parnam(nentri)
+      character(len=40) idmap(4) 
+      character(len=20) parnam(nentri)
       logical      writef
 c
       save         istepf, istepl

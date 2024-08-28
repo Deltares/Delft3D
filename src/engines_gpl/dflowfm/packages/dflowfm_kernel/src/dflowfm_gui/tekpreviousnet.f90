@@ -32,15 +32,13 @@
 
       subroutine TEKPREVIOUSNET(NCOL)
          use m_netw
+         use m_drawthis
          implicit none
          integer :: NCOL
-
          integer :: k1
          integer :: k2
          integer :: l
-         integer :: ndraw
 
-         common / DRAWTHIS / ndraw(50)
          if (NDRAW(16) <= 0) return
          call SETCOL(NCOL)
          do L = 1, NUML0

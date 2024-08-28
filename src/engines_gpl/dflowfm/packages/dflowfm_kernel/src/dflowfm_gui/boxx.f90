@@ -31,12 +31,12 @@
 !
 
       subroutine BOXX(X, Y, NCOL)
+         use m_colnow
          implicit none
          integer :: ncol
-         integer :: ncolnow
          double precision :: x
          double precision :: y
-         common / COLNOW / NCOLNOW
+
          call SETCOL(NCOL)
          if (NCOLNOW >= 0) call IGrMARKER(real(X), real(Y), 3)
          return

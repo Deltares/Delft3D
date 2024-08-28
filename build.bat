@@ -1,10 +1,12 @@
 @ echo off
 
 setlocal enabledelayedexpansion
-rem Default arguments
+rem Default arguments.
+rem No default value means that the option is a flag that is either on or off.
+rem A variable that can have arguments requires a default value (can be "")
 set config=all
 set build=
-set vs=
+set vs=0
 set coverage=
 set build_type=Debug
 set keep_build=
@@ -242,14 +244,14 @@ rem =================================
         echo Found: VisualStudio 17 2022
     )
 
-    if "!vs!" == "" (
+    if "!vs!" == "0" (
         echo Warning: Could not find Visual Studio version in environment.
     )
 
-    if NOT "!-vs!" == "" (
+    if NOT "!-vs!" == "0" (
         echo Overriding automatically found VS version !vs! with argument !-vs!
         set vs=!-vs!
-    ) else if "!vs!" == "" (
+    ) else if "!vs!" == "0" (
         echo Warning: Visual Studio not found nor provided by -vs. Please ensure that Visual Studio is installed and run build.bat from a prompt with the right environment set.
         echo Continuing without specifying the generator, using the CMake default.
     )

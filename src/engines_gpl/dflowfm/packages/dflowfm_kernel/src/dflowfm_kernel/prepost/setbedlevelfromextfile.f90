@@ -44,10 +44,10 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
    use unstruc_inifields, only: readIniFieldProvider, checkIniFieldFileVersion
    use dfm_error
    use unstruc_netcdf
-   use m_lateral, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+   use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
    use fm_deprecated_keywords, only: deprecated_ext_keywords
    use m_deprecation, only: check_file_tree_for_deprecated_keywords
-
+   use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
    implicit none
 
    logical, external :: timespaceinitialfield_mpi
@@ -86,17 +86,17 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
    ! These types need to be mapped to one of three possible primitive locations (center/edge/corner).
    select case (ibedlevtyp)
    case (1) ! position = waterlevelpoint, cell centre
-      iprimpos = 2; mx = max(numk, ndx)
+      iprimpos = UNC_LOC_S; mx = max(numk, ndx)
    case (2) ! position = velocitypoint, cellfacemid
-      iprimpos = 1; mx = max(numk, lnx)
+      iprimpos = UNC_LOC_U; mx = max(numk, lnx)
    case (3, 4, 5, 6) ! position = netnode, cell corner
-      iprimpos = 3; mx = numk
+      iprimpos = UNC_LOC_CN; mx = numk
    end select
 
    if (mext /= 0 .or. len_trim(md_inifieldfile) > 0) then
       ! 0.a Prepare masks for 1D/2D distinctions
       kc_size_store = size(kc)
-      allocate (kcc(mx), kc1d(mx), kc2d(mx)); kcc = 1; kc1D = 0; kc2D = 0
+      allocate (kcc(mx), kc1d(mx), kc2d(max(lnxi,mx))); kcc = 1; kc1D = 0; kc2D = 0
       call realloc(kc, mx, keepExisting=.false., fill=0)
 
       do L = 1, numL1D
@@ -172,7 +172,7 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
                   exit
                end if
                node_ptr => inifield_ptr%child_nodes(i)%node_ptr
-               call readIniFieldProvider(md_inifieldfile, node_ptr, groupname, qid, filename, filetype, method, iLocType, operand, transformcoef, ja, varname) !,smask, maxSearchRadius)
+               call readIniFieldProvider(md_inifieldfile, node_ptr, groupname, qid, filename, filetype, method, iLocType, operand, transformcoef, ja, varname)
                i = i + 1
                if (.not. strcmpi(groupname, 'Initial')) then
                   cycle
@@ -191,7 +191,7 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
                if (strcmpi(qid, 'bedlevel1D') .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 2 .and. iLocType == ILATTP_1D)) then
                   call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting 1D bedlevel from file '''//trim(filename)//'''.')
                   kc(1:mx) = kc1D
-                  success = timespaceinitialfield_mpi(xk, yk, zk, numk, filename, filetype, method, operand, transformcoef, 3, kc) ! see meteo module
+                  success = timespaceinitialfield_mpi(xk, yk, zk, numk, filename, filetype, method, operand, transformcoef, UNC_LOC_CN, kc) ! see meteo module
                else if (strcmpi(qid, 'bedlevel', 8)) then
                   if ((strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 1) .or. (strcmpi(qid, 'bedlevel') .and. ibathyfiletype == 2 .and. iLocType == ILATTP_ALL)) then
                      call mess(LEVEL_INFO, 'setbedlevelfromextfile: Setting both 1D and 2D bedlevel from file '''//trim(filename)//'''.')
@@ -221,10 +221,10 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
       if (mext /= 0) then
          rewind (mext)
       end if
-    
+
       call check_file_tree_for_deprecated_keywords(inifield_ptr, deprecated_ext_keywords, istat, prefix='While reading ''' &
                                                    //trim(md_inifieldfile)//'''')
-    
+
       ! Clean up *.ini file.
       call tree_destroy(inifield_ptr)
 

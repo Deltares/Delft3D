@@ -98,7 +98,6 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     !
     integer                                          :: ll
     real(fp)                                         :: drho
-    real(fp)                                         :: s
 !
 !! executable statements -------------------------------------------------------
 !

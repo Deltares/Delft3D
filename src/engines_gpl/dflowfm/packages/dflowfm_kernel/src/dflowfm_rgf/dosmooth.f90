@@ -35,15 +35,10 @@
          use m_grid
          use unstruc_colors
          use unstruc_messages
+         use m_drawthis
+         use m_grid_block
          implicit none
          integer :: nfld
-
-         integer :: ndraw
-         common / DRAWTHIS / ndraw(50)
-
-         integer :: MB, NB, MB2, NB2, NPT, NPT2, NPUTO, ITYPE
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
-
          double precision, allocatable :: XH(:, :), YH(:, :)
 
          integer :: MD, ND, M1, M2, N1, N2, JS, I, J, K, JA1, JA2

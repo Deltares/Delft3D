@@ -31,14 +31,13 @@
 !
 
       subroutine FBOXOLD(XB1, YB1, XB2, YB2)
+         use m_colnow
          implicit none
          integer :: n
-         integer :: ncolnow
          double precision :: xb1
          double precision :: xb2
          double precision :: yb1
          double precision :: yb2
-         common / COLNOW / NCOLNOW
          real X(4), Y(4)
          N = 4
          X(1) = real(XB1)

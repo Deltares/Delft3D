@@ -31,12 +31,11 @@
 !
 
       subroutine FBOX(X1, Y1, X2, Y2)
+         use m_drawthis
          implicit none
-         integer :: ndraw
          double precision :: x1, x2, y1, y2
          double precision :: xb1, xb2, yb1, yb2
 
-         common / DRAWTHIS / ndraw(50)
          call DPROJECT(X1, Y1, XB1, YB1, 1)
          call DPROJECT(X2, Y2, XB2, YB2, 1)
          if (ndraw(10) == 0) then

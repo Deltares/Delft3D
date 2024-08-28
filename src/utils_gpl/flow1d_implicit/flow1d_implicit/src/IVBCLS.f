@@ -63,7 +63,7 @@ c
       real             x     (ngrid)
 	double precision q (ngrid)  ,h(ngrid)   ,q1(ngrid)
       double precision time            ,timep
-      character*40     gridnm(ngrid)
+      character(len=40) gridnm(ngrid)
 c
 c     Common block for communication with Sobek
 c
@@ -85,8 +85,8 @@ c
      j             rtncod, gpsvko, gproom
       real         qlobit, rotter, dordre, hmax_hvh, hcrit ,
      j             hin   , qin   , peilos, alaros
-      character*80 inifil, sobfil, mesfil, oskfil
-      character*20 c20   , tstart
+      character(len=80) inifil, sobfil, mesfil, oskfil
+      character(len=20) c20   , tstart
       logical      active, first , ontere, kenter, flood , svkoflag
       double precision
      j             tsvkwt, tsvkwo, tsvkht, tsvkho, tsvkot, tsvkoo,
@@ -589,8 +589,8 @@ c 907 stop 'IVBCLS: Error reading MaximumWaterstanden'
      j                    nbran , ibran )
       integer      ngrid , nbran , ibran
       integer      branch(4,nbran)
-      character*20 brannm
-      character*40 gridnm(ngrid)
+      character(len=20) brannm
+      character(len=40) gridnm(ngrid)
 
 c     Deze subroutine probeert de naam van een branch af te leiden
 c     uit de naam van het eerste gridpunt op de branch
@@ -609,7 +609,7 @@ c     Omdat de oude SOBEK in middels wel uitgefaseerd is, gaan we gewoon op
 c     nieuw over!
 
       integer      i     , igp   , ihulp1, ihulp2, ihulp
-      character*20 locnam
+      character(len=20) locnam
 
 c      write (133,'(''Looking for '',a)') brannm
       ibran = -1
@@ -655,7 +655,7 @@ c          write (133,'(''No match!'')')
       end
 
       subroutine makdat ( time , instri , outstr )
-      character*20        instri , outstr
+      character(len=20)   instri , outstr
       double precision    time
 
       integer             year,month,day,hour,minute,sec
@@ -711,10 +711,10 @@ c     write (*,*) ' seconds added ',ihulp
       integer      io_ini, ngrid , gp    , nbran , rtncod
       integer      branch(4,nbran)
       real         x(ngrid)
-      character*(*) section, branchname, distancename
-      character*40 gridnm(ngrid)
+      character(len=*) section, branchname, distancename
+      character(len=40) gridnm(ngrid)
       
-      character*20 c20
+      character(len=20) c20
       integer      ibran
       real         dist
       
@@ -802,7 +802,7 @@ c
 c
 c local variables
       double precision timediff
-      character*(*)     date1, date2
+      character(len=*)     date1, date2
 c      integer          convert_date
       integer          aday(12), nyear, nleap, nday, endday, startday,
      &                 year1, month1, day1, hour1, min1, sec1, hun1,
@@ -892,7 +892,7 @@ c
       end
 
       subroutine readat (dattim,year,month,day,hour,minute,sec,err)
-      character*(*) dattim
+      character(len=*) dattim
       integer year,month,day,hour,minute,sec,err
       err = 0
       read (dattim,'(i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2)',err=910)

@@ -102,8 +102,8 @@ subroutine findqorifice(gateheight, crestheight, h1, h3, q, h2, hg, regime, num,
 
       h2 = hc
       call getq1(hg, d, h1, h2, qa)
-      call getq2(hg, d, h2, h3, qb)
-      call getq3(hg, d, a, h1, h2, qc)
+      call getq2(hg, h2, h3, qb)
+      call getq3(hg, a, h1, h2, qc)
       q = 0.5d0 * (qa + qb)
       qer = abs(q - qc)
       if (qer < qermin) then

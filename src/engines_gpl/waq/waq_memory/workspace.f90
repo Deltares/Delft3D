@@ -111,9 +111,9 @@ CONTAINS
         itot = int8(itota + itoti + itotc) * 4_2
         write (logical_unit, 2000) itota, itoti, itotc, itot / 4, &
                 itot / 1000000000, &
-                mod(itot, 1000000000) / 1000000, &
-                mod(itot, 1000000) / 1000, &
-                mod(itot, 1000)
+                mod(itot, 1000000000_int64) / 1000000, &
+                mod(itot, 1000000_int64) / 1000, &
+                mod(itot, 1000_int64)
         ieflag = 0
 
         if (itota > max_real_arr_size .and. max_real_arr_size /= 0 .and. decclare_memory) then

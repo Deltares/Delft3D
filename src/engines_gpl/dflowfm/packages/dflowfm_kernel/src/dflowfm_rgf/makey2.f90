@@ -34,9 +34,9 @@
          use M_SFERIC
          use M_MISSING
          implicit none
+         integer :: mmax, nmax
          double precision :: XR(MMAX, NMAX), YR(MMAX, NMAX), &
             XO(MMAX, NMAX), YO(MMAX, NMAX), FI2
-         integer :: mmax, nmax
          integer :: i, j
 
          do I = 1, MMAX

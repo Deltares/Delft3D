@@ -36,10 +36,10 @@
 !
 ! declarations and specifications
 !
-      character*20 rundat
-      character*8  date
-      character*10 time
-      character*5  zone
+      character(len=20) rundat
+      character(len=8)  date
+      character(len=10) time
+      character(len=5)  zone
       integer      values(8)
 
       call date_and_time (date,time,zone,values)

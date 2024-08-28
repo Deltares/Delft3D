@@ -131,8 +131,8 @@ c
      &              strhis(dmstrh,*),contrl(17,*)   ,
      &              buflag(lagstm,nlags)            ,
      &              qaggr(ngrid,3)  ,qlaggr(*)      ,grhis(*)
-      character*(*) grnamf
-      character*(*) nameel(nentri)
+      character(len=*) grnamf
+      character(len=*) nameel(nentri)
 c
 c     Declaration of local variables
 c

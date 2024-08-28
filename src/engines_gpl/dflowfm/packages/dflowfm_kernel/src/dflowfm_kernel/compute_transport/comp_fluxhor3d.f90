@@ -31,8 +31,8 @@
 !
 
 !> compute horizontal transport fluxes at flowlink
-subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, sed, difsed, sigdifi, &
-                          viu, vicouv, nsubsteps, jaupdate, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu)
+subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, sed, difsed, sigdifi, &
+                          viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu)
    use m_flowgeom, only: Ndx, Lnx, ln, nd, klnup, slnup, dxi, acl, csu, snu, wcx1, wcx2, wcy1, wcy2, Dx ! static mesh information
    use m_flowtimes, only: dts
    use m_flowparameters, only: cflmx
@@ -51,7 +51,6 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
    integer, intent(in) :: Lnkx !< total number of flowlinks (dynamically changing)
    double precision, dimension(Lnkx), intent(in) :: u1 !< flow-field face-normal velocities
    double precision, dimension(Lnkx), intent(in) :: q1 !< flow-field discharges
-   double precision, dimension(Lnkx), intent(in) :: au !< wet area of flowlinks, note: q1=au*u1
    double precision, dimension(Ndkx), intent(in) :: sqi !< total outward-fluxes at flownodes
    double precision, dimension(Ndkx), intent(in) :: vol1 !< volumes
    integer, dimension(Ndx), intent(in) :: kbot !< flow-node based layer administration
@@ -63,10 +62,8 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, k
    double precision, dimension(NUMCONST, Ndkx), intent(in) :: sed !< transported quantities
    double precision, dimension(NUMCONST), intent(in) :: difsed !< scalar-specific diffusion coefficent (dicouv)
    real, dimension(Lnkx), intent(in) :: viu !< spatially varying horizontal eddy viscosity, NOTE: real, not double
-   double precision, intent(in) :: vicouv !< uniform horizontal eddy viscosity
    double precision, dimension(NUMCONST), intent(in) :: sigdifi !< 1/(Prandtl number) for heat, 1/(Schmidt number) for mass
    integer, intent(in) :: nsubsteps !< number of substeps
-   integer, dimension(Ndx), intent(in) :: jaupdate !< cell updated (1) or not (0)
    integer, dimension(Lnx), intent(in) :: jaupdatehorflux !< update horizontal flux (1) or not (0)
    integer, dimension(Ndx), intent(in) :: ndeltasteps !< number of substeps between updates
    integer, dimension(NUMCONST), intent(in) :: jaupdateconst !< update constituent (1) or not (0)

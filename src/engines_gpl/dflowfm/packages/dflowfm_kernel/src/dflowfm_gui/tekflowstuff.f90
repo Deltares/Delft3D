@@ -44,14 +44,10 @@
     use gridoperations
 
     use m_observations
+    use m_vfac
+    use m_drawthis
 
     implicit none
-
-    integer :: ndraw
-    double precision :: vfac, vfacforce
-    integer :: nvec
-    common / drawthis / ndraw(50)
-    common / VFAC / VFAC, VFACFORCE, NVEC
 
     !locals
     integer :: k, kk, L, LL, k1, k2, ncol, nn, k3, k4
@@ -281,7 +277,7 @@
        call tekarcuv(vfac, ndraw(13))
     else if (ndraw(13) == 8) then ! show arc wind
        call setcol(221)
-       call tekspw(vfac, ndraw(13))
+       call tekspw(vfac)
     else if (ndraw(13) == 9) then ! show primitive velocity u1
        call setcol(2)
        do LL = 1, lnx

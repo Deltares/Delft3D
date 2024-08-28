@@ -37,10 +37,8 @@
     use m_sediment
     use m_sferic
     use m_missing
+    use m_drawthis
     implicit none
-
-    common / drawthis / ndraw(50)
-    integer :: ndraw
 
     integer, intent(in) :: LL
     integer :: L, linval, k1, k2, n1, n2, lll, ka, kb
@@ -269,7 +267,7 @@
           end do
           zlin = dum
        case (7)
-          zlin = bermslopeindex(LL)
+          zlin = merge(1.0d0, 0.0d0, bermslopeindex(LL))
        end select
     else if (linval == 49) then
        zlin = Ltop(LL) - Lbot(LL) + 1; zlin = max(zlin, 0d0)

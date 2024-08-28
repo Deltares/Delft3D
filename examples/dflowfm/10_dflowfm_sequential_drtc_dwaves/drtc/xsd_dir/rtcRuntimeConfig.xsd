@@ -1,0 +1,666 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by ICT (Stichting Deltares) -->
+<schema xmlns:rtc="http://www.wldelft.nl/fews" xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.wldelft.nl/fews" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<include schemaLocation="rtcSharedTypes.xsd"/>
+	<element name="rtcRuntimeConfig" type="rtc:RtcRuntimeConfigComplexType"/>
+	<complexType name="RtcRuntimeConfigComplexType">
+		<sequence>
+			<element name="files" type="rtc:FileComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Optional provision of input files, if provided ALL relevant input files needs to be defined, if not, the program will check for files with default naming in the current working folder</documentation>
+				</annotation>
+			</element>
+			<element name="period" type="rtc:PeriodComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Execution period of the simulation or optimization</documentation>
+				</annotation>
+			</element>
+			<element name="mode" type="rtc:ModeComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Optional definition of the execution mode of the application, default = simulation if not provided</documentation>
+				</annotation>
+			</element>
+			<element name="parallelization" type="rtc:ParallelizationComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Optional parallelization settings</documentation>
+				</annotation>
+			</element>
+			<element name="logging" type="rtc:LoggingComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Logging</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="FileComplexType">
+		<sequence>
+			<element name="rtcDataConfig" type="rtc:FileDataComplexType">
+				<annotation>
+					<documentation>File with the time series model definition</documentation>
+				</annotation>
+			</element>
+			<element name="rtcObjectiveConfig" type="rtc:FileObjectiveComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Optional file with the definition of an optimization problem including optimization variables, constraints and objective function terms</documentation>
+				</annotation>
+			</element>
+			<element name="rtcParameterConfig" type="rtc:FileParameterComplexType" minOccurs="0" maxOccurs="unbounded">
+				<annotation>
+					<documentation>Optional file with externalized (scalar) parameters</documentation>
+				</annotation>
+			</element>
+			<element name="rtcScenarioTreeConfig" type="rtc:FileScenarioTreeComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Optional file with the definition of a scenario tree for the control trajectory in case of multi-stage stochastic optimization problems</documentation>
+				</annotation>
+			</element>
+			<element name="rtcToolsConfig" type="rtc:FileToolsComplexType">
+				<annotation>
+					<documentation>File with the schematization of the process model, i.e. the model of the water resources systems</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="FileDataComplexType">
+		<attribute name="name" type="string" use="required"/>
+	</complexType>
+	<complexType name="FileObjectiveComplexType">
+		<attribute name="name" type="string" use="required"/>
+	</complexType>
+	<complexType name="FileParameterComplexType">
+		<attribute name="name" type="string" use="required"/>
+		<attribute name="type" type="rtc:ParameterFileTypeEnumStringType" use="required"/>
+		<attribute name="prefix" type="rtc:ParameterFilePrefixEnumStringType" use="optional" default="NONE"/>
+	</complexType>
+	<complexType name="FileScenarioTreeComplexType">
+		<attribute name="name" type="string" use="required"/>
+	</complexType>
+	<complexType name="FileToolsComplexType">
+		<attribute name="name" type="string" use="required"/>
+	</complexType>
+	<complexType name="PeriodComplexType">
+		<choice>
+			<element name="userDefined" type="rtc:UserDefinedRuntimeComplexType">
+				<annotation>
+					<documentation>The execution period is user-defined by start and end time, time step and optionally the number of ensembles.</documentation>
+				</annotation>
+			</element>
+			<element name="PIInput" type="rtc:PIInputRuntimeComplexType">
+				<annotation>
+					<documentation>The execution period is defined by the first time series of the referred PI-XML file.</documentation>
+				</annotation>
+			</element>
+		</choice>
+	</complexType>
+	<complexType name="UserDefinedRuntimeComplexType">
+		<sequence>
+			<element name="startDate" type="rtc:DateTimeComplexType">
+				<annotation>
+					<documentation>Start date and time of the similation.</documentation>
+				</annotation>
+			</element>
+			<element name="endDate" type="rtc:DateTimeComplexType">
+				<annotation>
+					<documentation>End dat and time of the simulation.</documentation>
+				</annotation>
+			</element>
+			<element name="timeStep" type="rtc:TimeStepComplexType">
+				<annotation>
+					<documentation>Time step of the simulation (till now, the model supports only equidistant time steps)</documentation>
+				</annotation>
+			</element>
+			<element name="numberEnsembles" type="int" default="1" minOccurs="0">
+				<annotation>
+					<documentation>Optional number of ensemble of the simulation. If not provided, one ensemble member is assumed.</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="PIInputRuntimeComplexType">
+		<sequence>
+			<element name="file" type="string"/>
+			<element name="numberEnsembles" type="int" default="1" minOccurs="0">
+				<annotation>
+					<documentation>optional number of ensemble, if not provides one ensemble member is assumed</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="ModeComplexType">
+		<choice>
+			<element name="simulation" type="rtc:ModeSimulationComplexType">
+				<annotation>
+					<documentation>Simulation mode (default)</documentation>
+				</annotation>
+			</element>
+			<element name="firstOrderSensitivity" type="string">
+				<annotation>
+					<documentation>Calculation of first-order model sensitivities of an objective function value with respect to inputs, states and outputs (requires the definition of an objective function in the rtcObjectiveConfig.xml)</documentation>
+				</annotation>
+			</element>
+			<element name="optimization" type="rtc:ModeOptimizationComplexType">
+				<annotation>
+					<documentation>Optimization mode (requires the definition of an optimization problem in the rtcObjectiveConfig.xml)</documentation>
+				</annotation>
+			</element>
+			<element name="closedLoop" type="rtc:ModeClosedLoopComplexType">
+				<annotation>
+					<documentation>Closed loop mode with an alternating switch between simulation and optimization</documentation>
+				</annotation>
+			</element>
+			<element name="postprocessing" type="string"/>
+		</choice>
+	</complexType>
+	<complexType name="ModeSimulationComplexType">
+		<sequence>
+			<element name="limitedMemory" type="boolean" minOccurs="0">
+				<annotation>
+					<documentation>limited-memory option for time series matrix</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="ModeOptimizationComplexType">
+		<sequence>
+			<choice>
+				<element name="optimizer" type="rtc:OptimizerComplexType" maxOccurs="unbounded">
+					<annotation>
+						<documentation>Selection of one or more optimizer settings for solving the optimization problem</documentation>
+					</annotation>
+				</element>
+			</choice>
+			<element name="optimizerMode" type="rtc:OptimizerModeEnumStringType" minOccurs="0">
+				<annotation>
+					<documentation>Mode for defining more robust hybrid optimizer settings for running optimizations sequentially (optimimum of the first is input for the next) or parallel (independent optimization, best one is returned), STILL NOT IMPLEMENTED</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="OptimizerComplexType">
+		<choice>
+			<element name="GAMS" type="rtc:GAMSComplexType">
+				<annotation>
+					<documentation>This option generates a GAMS optimization problem with an external model in RTC-Tools. Note that you need to run the optimization in GAMS after executing the stand alone RTC-Tools.</documentation>
+				</annotation>
+			</element>
+			<element name="IPOPT" type="rtc:IPOPTComplexType">
+				<annotation>
+					<documentation>Optimization by the IPOPT optimizer, check also the related documentation on the COIN-OR website</documentation>
+				</annotation>
+			</element>
+			<element name="SA" type="rtc:SAComplexType">
+				<annotation>
+					<documentation>Optimization by a simulated annealing optimizer (NOT FULLY IMPLEMENTED right now)</documentation>
+				</annotation>
+			</element>
+		</choice>
+	</complexType>
+	<complexType name="GAMSComplexType">
+		<sequence>
+			<element name="algorithm" default="ipopth" minOccurs="0">
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="ipopt"/>
+						<enumeration value="ipopth"/>
+						<enumeration value="conopt"/>
+					</restriction>
+				</simpleType>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="IPOPTComplexType">
+		<sequence>
+			<element name="output" type="rtc:IPOPTOutputComplexType">
+				<annotation>
+					<documentation>Output options</documentation>
+				</annotation>
+			</element>
+			<element name="termination" type="rtc:IPOPTTerminationComplexType">
+				<annotation>
+					<documentation>Termination criteria</documentation>
+				</annotation>
+			</element>
+			<element name="nlpScaling" type="rtc:IPOPTNLPScalingComplexType">
+				<annotation>
+					<documentation>Scaling options for the optimization problem</documentation>
+				</annotation>
+			</element>
+			<element name="nlp" type="rtc:IPOPTNLPComplexType">
+				<annotation>
+					<documentation>Settings of the nonlinear optimizer</documentation>
+				</annotation>
+			</element>
+			<element name="linearSolver" type="rtc:IPOPTLinearSolverComplexType" minOccurs="0">
+				<annotation>
+					<documentation>Settings and selection of the integrated linear equation solver </documentation>
+				</annotation>
+			</element>
+			<element name="derivativeChecker" type="rtc:IPOPTDerivativeCheckerComplexType">
+				<annotation>
+					<documentation>Optional derivative checker</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="IPOPTOutputComplexType">
+		<sequence>
+			<element name="print_level" default="5" minOccurs="0">
+				<annotation>
+					<documentation>Output verbosity level 0-12</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="integer">
+						<minInclusive value="0"/>
+						<maxInclusive value="12"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="print_user_options" default="yes" minOccurs="0">
+				<annotation>
+					<documentation>Print all options set by the user [no/yes]</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="yes"/>
+						<enumeration value="no"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="print_options_documentation" default="no" minOccurs="0">
+				<annotation>
+					<documentation>Switch to print all algorithmic options [no/yes]</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="yes"/>
+						<enumeration value="no"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="print_timing_statistics" default="no" minOccurs="0">
+				<annotation>
+					<documentation>Switch to print timing statistics [no/yes]</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="yes"/>
+						<enumeration value="no"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="file_print_level" default="5" minOccurs="0">
+				<annotation>
+					<documentation>Verbosity level for output file 0-12</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="integer">
+						<minInclusive value="0"/>
+						<maxInclusive value="12"/>
+					</restriction>
+				</simpleType>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="IPOPTTerminationComplexType">
+		<sequence>
+			<element name="tol" default="1e-8" minOccurs="0">
+				<annotation>
+					<documentation>Desired convergence tolerance (relative)</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="double">
+						<minExclusive value="0.0"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="max_iter" type="integer" default="3000" minOccurs="0">
+				<annotation>
+					<documentation>Maximum number of iterations</documentation>
+				</annotation>
+			</element>
+			<element name="max_cpu_time" type="double" default="1e6" minOccurs="0">
+				<annotation>
+					<documentation>Maximum number of CPU seconds</documentation>
+				</annotation>
+			</element>
+			<element name="dual_inf_tol" type="double" default="1.0" minOccurs="0">
+				<annotation>
+					<documentation>Desired threshold for the dual infeasibility</documentation>
+				</annotation>
+			</element>
+			<element name="constr_viol_tol" type="double" default="0.0001" minOccurs="0">
+				<annotation>
+					<documentation>Desired threshold for the constraint violation</documentation>
+				</annotation>
+			</element>
+			<element name="compl_inf_tol" type="double" default="0.0001" minOccurs="0">
+				<annotation>
+					<documentation>Desired threshold for the complementarity conditions</documentation>
+				</annotation>
+			</element>
+			<element name="acceptable_tol" type="double" default="1e-6" minOccurs="0">
+				<annotation>
+					<documentation>"Acceptable" convergence tolerance (relative)</documentation>
+				</annotation>
+			</element>
+			<element name="acceptable_iter" type="integer" default="15" minOccurs="0">
+				<annotation>
+					<documentation>Number of "acceptable" iterates before triggering termination</documentation>
+				</annotation>
+			</element>
+			<element name="acceptable_constr_viol_tol" type="double" default="0.01" minOccurs="0">
+				<annotation>
+					<documentation>"Acceptance" threshold for the constraint violation</documentation>
+				</annotation>
+			</element>
+			<element name="acceptable_dual_inf_tol" type="double" default="1e10" minOccurs="0">
+				<annotation>
+					<documentation>"Acceptance" threshold for the dual infeasibility</documentation>
+				</annotation>
+			</element>
+			<element name="acceptable_compl_inf_tol" type="double" default="0.01" minOccurs="0">
+				<annotation>
+					<documentation>"Acceptance" threshold for the complementarity conditions</documentation>
+				</annotation>
+			</element>
+			<element name="acceptable_obj_change_tol" type="double" default="1e20" minOccurs="0">
+				<annotation>
+					<documentation>"Acceptance" stopping criterion based on objective function change</documentation>
+				</annotation>
+			</element>
+			<element name="diverging_iterates_tol" type="double" default="1e20" minOccurs="0">
+				<annotation>
+					<documentation>Threshold for maximal value of primal iterates</documentation>
+				</annotation>
+			</element>
+			<element name="treat_unsuccess_as_error" type="boolean" default="false" minOccurs="0">
+				<annotation>
+					<documentation>Other return codes than SUCESS are treated as error message</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="IPOPTNLPScalingComplexType">
+		<sequence>
+			<element name="obj_scaling_factor" type="double" default="1.0" minOccurs="0">
+				<annotation>
+					<documentation>Scaling factor for the objective function</documentation>
+				</annotation>
+			</element>
+			<element name="nlp_scaling_method" default="gradient-based" minOccurs="0">
+				<annotation>
+					<documentation>Select the technique used for scaling the NLP</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="none"/>
+						<enumeration value="user-scaling"/>
+						<enumeration value="gradient-based"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="nlp_scaling_max_gradient" default="100.0" minOccurs="0">
+				<annotation>
+					<documentation>Maximum gradient after NLP scaling</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="double">
+						<minExclusive value="0.0"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="nlp_scaling_min_value" default="1e-8" minOccurs="0">
+				<annotation>
+					<documentation>Maximum gradient after NLP scaling</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="double">
+						<minInclusive value="0.0"/>
+					</restriction>
+				</simpleType>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="IPOPTNLPComplexType">
+		<sequence>
+			<element name="bound_relax_factor" default="1e-8" minOccurs="0">
+				<annotation>
+					<documentation>Factor for initial relaxation of the bounds</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="double">
+						<minInclusive value="0.0"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="honor_original_bounds" default="yes" minOccurs="0">
+				<annotation>
+					<documentation>Indicates whether final points should be projected into original bounds [no/yes]</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="yes"/>
+						<enumeration value="no"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="check_derivatives_for_naninf" default="no" minOccurs="0">
+				<annotation>
+					<documentation>Indicates whether it is desired to check for Nan/Inf in derivative matrices [no/yes]</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="yes"/>
+						<enumeration value="no"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="fixed_variable_treatment" default="make_parameter" minOccurs="0">
+				<annotation>
+					<documentation>Determines how fixed variables should be handled</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="make_parameter"/>
+						<enumeration value="make_constraint"/>
+						<enumeration value="relax_bounds"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="jac_c_constant" default="no" minOccurs="0">
+				<annotation>
+					<documentation>Indicates whether all equality constraints are linear [no/yes]</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="yes"/>
+						<enumeration value="no"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="jac_d_constant" default="no" minOccurs="0">
+				<annotation>
+					<documentation>Indicates whether all inequality constraints are linear [no/yes]</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="yes"/>
+						<enumeration value="no"/>
+					</restriction>
+				</simpleType>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="IPOPTLinearSolverComplexType">
+		<sequence>
+			<element name="linear_solver" default="mumps" minOccurs="0">
+				<annotation>
+					<documentation>Linear solver used for step computations</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="ma27"/>
+						<enumeration value="ma57"/>
+						<enumeration value="ma77"/>
+						<enumeration value="ma86"/>
+						<enumeration value="ma97"/>
+						<enumeration value="mumps"/>
+						<enumeration value="pardiso"/>
+					</restriction>
+				</simpleType>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="IPOPTDerivativeCheckerComplexType">
+		<sequence>
+			<element name="derivative_test" default="none" minOccurs="0">
+				<annotation>
+					<documentation>Enable derivative checker</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="none"/>
+						<enumeration value="first-order"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="derivative_test_perturbation" default="1e-8" minOccurs="0">
+				<annotation>
+					<documentation>Size of the finite difference perturbation in derivative test</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="double">
+						<minExclusive value="0.0"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="derivative_test_tol" default="0.0001" minOccurs="0">
+				<annotation>
+					<documentation>Threshold for indicating wrong derivative</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="double">
+						<minExclusive value="0.0"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="derivative_test_print_all" default="no" minOccurs="0">
+				<annotation>
+					<documentation>Indicates whether information for all estimated derivatives should be
+   printed</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="yes"/>
+						<enumeration value="no"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="jacobian_approximation" default="exact" minOccurs="0">
+				<annotation>
+					<documentation>Specifies technique to compute constraint Jacobian</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="string">
+						<enumeration value="exact"/>
+						<enumeration value="finite-difference-values"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="findiff_perturbation" default="1e-7" minOccurs="0">
+				<annotation>
+					<documentation>Size of the finite difference perturbation for derivative approximation</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="double">
+						<minExclusive value="0.0"/>
+					</restriction>
+				</simpleType>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="SAComplexType">
+		<sequence>
+			<element name="ftoll" type="double" default="0.001" minOccurs="0">
+				<annotation>
+					<documentation>???</documentation>
+				</annotation>
+			</element>
+			<element name="dels" type="double" default="0.5" minOccurs="0">
+				<annotation>
+					<documentation>???</documentation>
+				</annotation>
+			</element>
+			<element name="max_iter" type="integer" default="3000" minOccurs="0">
+				<annotation>
+					<documentation>Maximum number of iterations</documentation>
+				</annotation>
+			</element>
+			<element name="max_cpu_time" type="double" default="60.0" minOccurs="0">
+				<annotation>
+					<documentation>maximum cpu time for executing the optimization</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="LoggingComplexType">
+		<sequence>
+			<element name="logLevel" default="2">
+				<annotation>
+					<documentation>definition of the logging level, 0 = fatal error, 1 = error, 2 = warning, 3 = info, 4 = debug messages</documentation>
+				</annotation>
+				<simpleType>
+					<restriction base="integer">
+						<minInclusive value="0"/>
+						<maxInclusive value="4"/>
+					</restriction>
+				</simpleType>
+			</element>
+			<element name="eventCode" type="boolean" default="false" minOccurs="0"/>
+			<element name="flushing" type="boolean" default="false">
+				<annotation>
+					<documentation>set flushing of the diagnostics file after each new message (=true) or at the end of the program execution (=false)</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="ModeClosedLoopComplexType">
+		<sequence>
+			<element name="recedingHorizon" type="integer" default="1">
+				<annotation>
+					<documentation>Number of time steps after which the optimization is repeated</documentation>
+				</annotation>
+			</element>
+			<element name="forecastHorizon" type="integer" default="1">
+				<annotation>
+					<documentation>Number of time steps of forecasts in the predictive control mode</documentation>
+				</annotation>
+			</element>
+			<element name="optimization" type="rtc:ModeOptimizationComplexType"/>
+		</sequence>
+	</complexType>
+	<complexType name="ParallelizationComplexType">
+		<sequence>
+			<element name="simExecution" type="boolean" default="false"/>
+			<element name="evalGExecution" type="boolean" default="false"/>
+		</sequence>
+	</complexType>
+	<simpleType name="OptimizerModeEnumStringType">
+		<restriction base="string">
+			<enumeration value="SEQUENTIAL"/>
+			<enumeration value="PARALLEL"/>
+		</restriction>
+	</simpleType>
+	<simpleType name="ParameterFileTypeEnumStringType">
+		<restriction base="string">
+			<enumeration value="TREEVECTOR"/>
+			<enumeration value="PIMODELPARAMETERS"/>
+		</restriction>
+	</simpleType>
+	<simpleType name="ParameterFilePrefixEnumStringType">
+		<restriction base="string">
+			<enumeration value="NONE"/>
+			<enumeration value="LOCATIONID"/>
+		</restriction>
+	</simpleType>
+</schema>

@@ -194,7 +194,7 @@ contains
             call update_ghosts(ITYPE_Sall, lsedtot, Ndx, dbodsd, ierror)
          end if
 
-         call fm_apply_mormerge(dtmor)
+         call fm_apply_mormerge()
 
          do ll = 1, lsedtot
             dbodsd(ll, :) = dbodsd(ll, :) * kcsmor
@@ -1307,7 +1307,7 @@ contains
    end subroutine fm_dry_bed_erosion
 
    !>Update `dbodsd` considering mormerge
-   subroutine fm_apply_mormerge(dtmor)
+   subroutine fm_apply_mormerge()
 
    !!
    !! Declarations
@@ -1322,12 +1322,6 @@ contains
       use m_mormerge_mpi, only: update_mergebuffer
 
       implicit none
-
-   !!
-   !! I/O
-   !!
-
-      double precision, intent(in) :: dtmor
 
    !!
    !! Local variables

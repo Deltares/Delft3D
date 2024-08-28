@@ -295,7 +295,6 @@ subroutine rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
     integer           :: iformdef
     integer           :: istat
     integer           :: ll
-    character(256)    :: errmsg
 !
 !! executable statements -------------------------------------------------------
 !
@@ -491,7 +490,6 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
     character(80)                              :: string
     character(256)                             :: errmsg
     character(256)                             :: rec
-    character(256)                             :: parfile
     type(tree_data)              , pointer     :: tran_ptr
     type(tree_data)              , pointer     :: sed_ptr
 !

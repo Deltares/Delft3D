@@ -2618,7 +2618,7 @@
       REAL              :: EF(MSC)
 !
 !     CHARACTER*20 NUMSTR, CHARS
-      CHARACTER*80 MSGSTR
+      CHARACTER(len=80) MSGSTR
 
       REAL    EDENS(MSC)
       REAL    ANAR(MSC)

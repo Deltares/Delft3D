@@ -32,18 +32,14 @@
 
     subroutine PFILLERconcave(X, Y, N_, NCOL, NCLR)
        use unstruc_opengl
+       use m_colnow
+       use m_drawthis
        implicit none
        integer :: N_
        integer :: nclr
        integer :: ncol
-       integer :: ncolnow
-       integer :: ndraw
        double precision :: X(N_), Y(N_)
-       common / DRAWTHIS / ndraw(50)
-       common / COLNOW / NCOLNOW
-
        integer :: N
-
        integer, parameter :: NMAX = 128
        real xr(NMAX), yr(NMAX)
 

@@ -116,14 +116,14 @@ module m_hydmod
         integer :: minimum_vdf_used       !
         integer :: vertical_diffusion     !
         character(len = TEXT_SIZE) :: description(3)         !
-        character*14 :: hyd_ref                ! hydrodynamic reference date
-        character*14 :: hyd_start              ! hydrodynamic start date
-        character*14 :: hyd_stop               ! hydrodynamic stop date
-        character*14 :: hyd_step               ! hydrodynamic time step
-        character*14 :: cnv_ref                ! conversion reference date
-        character*14 :: cnv_start              ! conversion start date
-        character*14 :: cnv_stop               ! conversion stop date
-        character*14 :: cnv_step               ! conversion time step
+        character(len=14) :: hyd_ref                ! hydrodynamic reference date
+        character(len=14) :: hyd_start              ! hydrodynamic start date
+        character(len=14) :: hyd_stop               ! hydrodynamic stop date
+        character(len=14) :: hyd_step               ! hydrodynamic time step
+        character(len=14) :: cnv_ref                ! conversion reference date
+        character(len=14) :: cnv_start              ! conversion start date
+        character(len=14) :: cnv_stop               ! conversion stop date
+        character(len=14) :: cnv_step               ! conversion time step
         integer :: cnv_step_sec           ! conversion time step in seconds
         real(kind = 8) :: time_ref               ! hydrodynamic reference date in julian
         integer :: num_columns                   ! grid cells m direction

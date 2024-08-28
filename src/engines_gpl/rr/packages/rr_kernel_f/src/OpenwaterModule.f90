@@ -1,31 +1,31 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
- ! Last changed
+! Last changed
 ! by:               $Author:: Schrier           $
 ! at:               $Modtime:: 29-08-97 1:44p   $
 !
@@ -548,6 +548,7 @@ contains
           dummyKwel    = 0.0
           dummyCvalue  = 1000.0
           dummyH0Table = ' '
+          owseepage = 0.0
           if (dummyCompOption .le. 0 .or. dummyCompOption .gt. 5) call ErrMsgStandard (972, 0, ' Unknown seepage computation option', ' Error in SEEP records')
           if (dummyCompOption .eq. 1) then
 !           1 = constant seepage
@@ -1206,7 +1207,7 @@ contains
   integer      Infile1, idebug
 
   Integer       inode, iow
-  Character*1   Quote
+  Character(len=1) Quote
 
   ! file is already opened
   iDebug = ConfFil_get_iDebug()
@@ -1283,7 +1284,7 @@ contains
     REAL    RKWEL, Vkwel, tQIn, qOutp, rArea, rhelp
     Real    AvLvl, LvlTemp, RDum
     Integer iTmStp, iOW, iMeteo, iNode, iDum1, iDebug, iHour, idim, i
-    Character*40 TempString
+    Character(len=40) TempString
 
     Real PeilArray(6), AreaArray(6), VolumeArray(6)  ! aanname dat NVAL=6 zoals in Conf_Arr.
     Real TotalBergPeilArray(NStorageCurvePoints), TotalBergVolumeArray(NStorageCurvePoints)
@@ -1346,7 +1347,7 @@ contains
        if (Rkwel .lt. 0) then
            Vkwel = Rkwel * TimeSettings%TimestepSize
            If (VolOw0(iow) + Vkwel .lt. 0) then
-              Vkwel = max (-1. * max (0.0, VolOw0(iow)), Vkwel)
+              Vkwel = max (-1. * max (0.0, real(VolOw0(iow))), Vkwel)
               Rkwel = Vkwel / TimeSettings%TimestepSize
            Endif
        Endif
@@ -1731,7 +1732,7 @@ end function constant
       INTEGER iknoop, inode, iow, idim, i
       Real    Rdum, RHelp, RHelp2
       Logical Err972
-      Character*40 TempString
+      Character(len=40) TempString
 
       Real PeilArray(6), AreaArray(6), VolumeArray(6)  ! aanname dat NVAL=6 zoals in Conf_Arr.
       Real TotalBergPeilArray(NStorageCurvePoints), TotalBergVolumeArray(NStorageCurvePoints)
@@ -1969,7 +1970,7 @@ end function constant
     Integer     INODE, IOw, Iout5, Ievent
     Integer     ExcDur
     Real        Peil, PeilMx
-    CHARACTER*3 MONTH(12)
+    CHARACTER(len=3) MONTH(12)
 
            if (.not. associated(OWMLVL)) return  ! If there is nothing, do nothing
 

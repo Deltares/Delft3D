@@ -55,10 +55,10 @@
 !     
       integer            :: deffds                                       ! nefis file descriptor
       integer            :: n_old_items                                  ! number of old items
-      character*10       :: old_items_old_name(n_old_items)              ! old name (if equal to new name then use old_default if target serial is less then
-      character*10       :: old_items_new_name(n_old_items)              ! new name
+      character(len=10)  :: old_items_old_name(n_old_items)              ! old name (if equal to new name then use old_default if target serial is less then
+      character(len=10)  :: old_items_new_name(n_old_items)              ! new name
       real               :: old_items_old_default(n_old_items)           ! old default value
-      character*10       :: old_items_configuration(n_old_items)         ! (only use this new name if a specific configuration is used?)
+      character(len=10)  :: old_items_configuration(n_old_items)         ! (only use this new name if a specific configuration is used?)
       integer            :: old_items_serial(n_old_items)                ! the proces definition serial number up to where this old name, old default was used
       integer            :: old_items_action_type(n_old_items)           ! process rename, process parameter rename, default value change
       integer            :: lunrep                                       ! report file
@@ -79,9 +79,9 @@
       INTEGER       I               , IELM
       INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      CHARACTER(len=16)  GRPNAM
+      CHARACTER(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      CHARACTER(len=64)  ELMDES(NELEMS)
 !     
 !          External NEFIS Functions
 !     

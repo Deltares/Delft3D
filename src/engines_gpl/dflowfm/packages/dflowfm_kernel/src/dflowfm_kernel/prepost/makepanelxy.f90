@@ -35,25 +35,19 @@
          use m_netw
          use M_AFMETING
          use gridoperations
+         use m_howtoview
+         use m_cconstants
 
          implicit none
          integer :: JPANEL
 
          double precision :: ael
-         double precision :: ag
-         double precision :: cfl
          double precision :: cs
-         double precision :: drukmax
          double precision :: dx
          double precision :: dy
-         double precision :: e0
-         double precision :: eps
          integer :: i
          integer :: i2
          integer :: j
-         integer :: jav
-         integer :: jofreeze
-         integer :: jview
          integer :: k
          integer :: k1
          integer :: k2
@@ -73,10 +67,6 @@
          integer :: numh
          integer :: numrb
          integer :: numv
-         double precision :: pi
-         double precision :: rekmax
-         double precision :: rho
-         double precision :: rhow
          double precision :: rmas
          double precision :: rmk
          double precision :: rml
@@ -84,13 +74,10 @@
          double precision :: sn
          double precision :: x
          double precision :: xkk
-         double precision :: xyz
          double precision :: y
          double precision :: ykk
 
-         common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
-         common / SET2 / REKMAX, DRUKMAX, NUMDIK, JOFREEZE
-         common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
+     !    common / SET2 / REKMAX, DRUKMAX, NUMDIK, JOFREEZE
          double precision DX1, DY1, DZ1
          double precision :: DR(4)
          integer :: INI, JaNET

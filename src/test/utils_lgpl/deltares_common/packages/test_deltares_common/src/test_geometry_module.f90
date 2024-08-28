@@ -113,7 +113,6 @@ end subroutine test_clockwise
 subroutine test_pinpok
     real(hp), dimension(6) :: x, y
     real(hp)               :: xl, yl
-    logical                :: isclockwise
     integer                :: jins
     integer                :: inside
 

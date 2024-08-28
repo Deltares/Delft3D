@@ -54,8 +54,8 @@ subroutine determine_densprof(kbot   , ktop   , ha    , hd     , &
     real(hp)      , intent(out) :: rhoab         !< Density at bottom  at ambient point
     real(hp)      , intent(out) :: hint
     real(hp)      , intent(out) :: drohj
-    character*1   , intent(out) :: stype1
-    character*1   , intent(out) :: stype2
+    character(len=1), intent(out) :: stype1
+    character(len=1), intent(out) :: stype2
     !
     ! Local variables
     !

@@ -61,7 +61,7 @@ c     Declaration of parameters
 c
       integer       putiel
       integer       fd_nefis, uindex(*) ,usrord(*) ,buffer(*)
-      character*(*) grpnam    ,elmnam
+      character(len=*) grpnam    ,elmnam
 c
 c     Declaration of external functions
 c

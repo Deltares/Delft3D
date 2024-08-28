@@ -46,6 +46,17 @@ C       ... code to process polyline fragment defined by arguments ...
 C       RETURN
 C     END
 C
+      integer MPOW_labels(81)
+      data MPOW_labels/ 115,115,115,115,115,106,115,106,106,
+     +            115,115,115,107,115,106,107,106,106,
+     +            115,115,115,107,115,115,107,107,115,
+     +            115,109,109,115,115,106,115,106,106,
+     +            115,115,115,115,115,115,115,115,115,
+     +            108,108,115,108,115,115,107,107,115,
+     +            115,109,109,115,115,109,115,115,115,
+     +            108,108,109,108,115,109,115,115,115,
+     +            108,108,115,108,115,115,115,115,115/
+c
 C Zero the error flag.
 C
       IERR=0
@@ -213,17 +224,21 @@ C Last point outside, next point outside.  Check whether or not part of
 C the line joining them lies in the window.
 C
   105     MPOW=9*LPOW+NPOW+41
-C
-          GO TO ( 115,115,115,115,115,106,115,106,106,
-     +            115,115,115,107,115,106,107,106,106,
-     +            115,115,115,107,115,115,107,107,115,
-     +            115,109,109,115,115,106,115,106,106,
-     +            115,115,115,115,115,115,115,115,115,
-     +            108,108,115,108,115,115,107,107,115,
-     +            115,109,109,115,115,109,115,115,115,
-     +            108,108,109,108,115,109,115,115,115,
-     +            108,108,115,108,115,115,115,115,115 ) , MPOW
-C
+
+          if (MPOW >= 1 .and. MPOW <= 81) then
+             if (MPOW_labels(MPOW) == 115) then
+                goto 115
+             else if(MPOW_labels(MPOW) == 106) then
+                goto 106
+             else if(MPOW_labels(MPOW) == 107) then
+                goto 107
+             else if(MPOW_labels(MPOW) == 108) then
+                goto 108
+             else if(MPOW_labels(MPOW) == 109) then
+                goto 109
+             end if
+          end if
+
   106     XPE1=XMIN
           YPT1=YMIN
           XPE2=XMAX

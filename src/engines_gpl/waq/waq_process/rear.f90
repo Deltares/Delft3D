@@ -87,58 +87,24 @@ contains
                 FCOVER, MAXRRC, REARKL, SATPERC, MINRRC, DELT, RAIN
         REAL(kind = real_wp) :: A, B1, B2, C1, &
                 C2, D1, D2, D3, D4, &
-                D1Os, D2Os, D3Os, D4Os, &
-                D1Cs, D2Cs, D3Cs, D4Cs, &
-                D1Hs, D2Hs, D3Hs, D4Hs
-
-        !   PBo3: hard coded original coefficients -> user defined input
-        !     Parameters for Schmidt number calculation (Warninkhoff and Guerin)
-        !     A1-D1=oxygen Wannikhof (seawater)
-        !     A2-D2=oxygen Gerin and Wannikhof (both fresh)
-        !     A3-D3=CO2 Wannikhof (seawater)
-        !     A4-D4=CO2 Gerin and Wannikhof (both fresh)
-        !     A5-D5= reserved for CH4 seawater
-        !     A6-D6=CH4 freshwater
-
-        !      PARAMETER ( A1 = 1953.4     ,
-        !    +            B1 =  128.00    ,
-        !    +            C1 =    3.9918  ,
-        !    +            D1 =    0.050091,
-        !    +            A2 = 1800.6     ,
-        !    +            B2 =  120.10    ,
-        !    +            C2 =    3.7818  ,
-        !    +            D2 =    0.047608,
-        !    +            A3 = 2073.1     ,
-        !    +            B3 =  125.62    ,
-        !    +            C3 =    3.6276  ,
-        !    +            D3 =    0.043219,
-        !    +            A4 = 1911.1     ,
-        !    +            B4 =  118.11    ,
-        !    +            C4 =    3.4527  ,
-        !    +            D4 =    0.04132 ,
-        !    +            A6 = 1897.8     ,
-        !    +            B6 =  114 .28   ,
-        !    +            C6 =    3.2902  ,
-        !    +            D6 =    0.039061 )
+                A_O, B_O, C_O, D_O, E_O, &
+                A_CO, B_CO, C_CO, D_CO, E_CO
 
         !   PBo3: hard coded coefficients for salt water options Wannikhof
         !     Parameters for Schmidt number calculation (Wanninkhoff and Guerin)
         !     D1-4Os = oxygen Wannikhof (seawater)
         !     D1-4Cs = CO2 Wannikhof (seawater)
-        !     D1-4Hs = dummy values for CH4 seawater
 
-        PARAMETER (D1Os = 1953.4, &
-                D2Os = 128.00, &
-                D3Os = 3.9918, &
-                D4Os = 0.050091, &
-                D1Cs = 2073.1, &
-                D2Cs = 125.62, &
-                D3Cs = 3.6276, &
-                D4Cs = 0.043219, &
-                D1Hs = 2073.1, &
-                D2Hs = 125.62, &
-                D3Hs = 3.6276, &
-                D4Hs = 0.043219)
+        PARAMETER ( A_O = 1920.4, &
+                    B_O = -135.6, &
+                    C_O = 5.2122, &
+                    D_O = -0.10939, &
+                    E_O = 0.00093777, &
+                    A_CO = 2116.8, &
+                    B_CO = -136.25, &
+                    C_CO = 4.7353, &
+                    D_CO = -0.092307, &
+                    E_CO = 0.0007555)
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -217,19 +183,20 @@ contains
                     !     b) compute flux by multiplying with (surface) deficit
                     !     c) convert to volumetric flux by using the (surface) layer thickness
 
-                    IF (IFREAR == 0) THEN
+                    select case (IFREAR)
+                    case(0)
                         !
                         !         0. Unscaled user input coefficient in 1/day
                         !
                         REARRC = REARKL * TOTDEP
 
-                    ELSEIF (IFREAR == 1) THEN
+                    case(1)
                         !
                         !         1. User input coefficient in m/day
                         !
                         REARRC = REARKL
 
-                    ELSEIF (IFREAR == 2) THEN
+                    case(2)
                         !
                         !         2. Churchill [1962]
                         !
@@ -237,7 +204,7 @@ contains
                         IF (VELOC  > 1E-30) &
                                 REARRC = 5.026 * (VELOC**0.969) / (TOTDEP**0.673)
 
-                    ELSEIF (IFREAR == 3) THEN
+                    case(3)
                         !
                         !         3. O'Connor - Dobbins [1958]
                         !
@@ -245,7 +212,7 @@ contains
                         IF (VELOC  > 1E-30) &
                                 REARRC = 3.863 * (VELOC**0.5) / (TOTDEP**0.5)
 
-                    ELSEIF (IFREAR == 4) THEN
+                    case(4)
                         !
                         !         4. Scaled version of O'Connor - Dobbins [1958]
                         !
@@ -253,7 +220,7 @@ contains
                         IF (VELOC  > 1E-30) &
                                 REARRC = 3.863 * (VELOC**0.5) / (TOTDEP**0.5) * REARKL
 
-                    ELSEIF (IFREAR == 5) THEN
+                    case(5)
                         !
                         !         5. Owens - Edwards - Gibb [1964]
                         !
@@ -261,7 +228,7 @@ contains
                         IF (VELOC  > 1E-30) &
                                 REARRC = 5.322 * (VELOC**0.67) / (TOTDEP**0.85)
 
-                    ELSEIF (IFREAR == 6) THEN
+                    case(6)
                         !
                         !         6. Langbien - Durum [1967]
                         !
@@ -269,7 +236,7 @@ contains
                         IF (VELOC  > 1E-30) &
                                 REARRC = 11.23 * VELOC / (TOTDEP**0.333)
 
-                    ELSEIF (IFREAR == 7) THEN
+                    case(7)
                         !
                         !         7. Van Pagee[1978] and Delvigne [1980]
                         !
@@ -280,7 +247,7 @@ contains
                             REARRC = REARKL * 0.065 * VWIND**2
                         ENDIF
 
-                    ELSEIF (IFREAR == 8) THEN
+                    case(8)
                         !
                         !         8. Thackston - Krenkel [1966]
                         !
@@ -290,19 +257,19 @@ contains
                         WRITE (*, *) ' Reaeration formula 8 has not been implemented'
                         CALL stop_with_error()
 
-                    ELSEIF (IFREAR == 9) THEN
+                    case(9)
                         !
                         !         9. DBS
                         !
                         REARRC = (0.30 + REARKL * 0.028 * VWIND**2)
 
-                    ELSEIF (IFREAR == 10) THEN
+                    case(10)
                         !
                         !        10. Wanninkhof Oxygen
                         !
                         IF (SAL > 5.0) THEN
-                            SC = D1Os - D2Os * TEMP + D3Os * TEMP**2 - D4Os * TEMP**3
-                            SC20 = D1Os - D2Os * 20.0 + D3Os * 20.0**2 - D4Os * 20.0**3
+                            SC = A_O + B_O * TEMP + C_O * TEMP**2 + D_O * TEMP**3 + E_O * TEMP**4
+                            SC20 = A_O + B_O * 20.0 + C_O * 20.0**2 + D_O * 20.0**3 + E_O * 20.0**4
                         ELSE
                             SC = D1 - D2 * TEMP + D3 * TEMP**2 - D4 * TEMP**3
                             SC20 = D1 - D2 * 20.0 + D3 * 20.0**2 - D4 * 20.0**3
@@ -310,13 +277,13 @@ contains
                         KLREAR = 0.31 * VWIND**2 * (SC / SC20)**(-0.5) * 24. / 100.
                         REARRC = KLREAR
 
-                    ELSEIF (IFREAR == 11) THEN
+                    case(11)
                         !
                         !        10. Wanninkhof CO2
                         !
                         IF (SAL > 5.0) THEN
-                            SC = D1Cs - D2Cs * TEMP + D3Cs * TEMP**2 - D4Cs * TEMP**3
-                            SC20 = D1Cs - D2Cs * 20.0 + D3Cs * 20.0**2 - D4Cs * 20.0**3
+                            SC = A_CO + B_CO * TEMP + C_CO * TEMP**2 + D_CO * TEMP**3 + E_CO * TEMP**4
+                            SC20 = A_CO + B_CO * 20.0 + C_CO * 20.0**2 + D_CO * 20.0**3 + E_CO * 20.0**4
                         ELSE
                             SC = D1 - D2 * TEMP + D3 * TEMP**2 - D4 * TEMP**3
                             SC20 = D1 - D2 * 20.0 + D3 * 20.0**2 - D4 * 20.0**3
@@ -325,7 +292,7 @@ contains
                         KLREAR = (B_ENHA + 0.31 * VWIND**2) * (SC / SC20)**(-0.5) * 24. / 100.
                         REARRC = KLREAR
 
-                    ELSEIF (IFREAR == 12) THEN
+                    case(12)
 
                         !     Note this option is not included in the process documentation!
                         !
@@ -343,7 +310,7 @@ contains
                         ENDIF
                         REARRC = MAX(MINRRC, REARRC)
 
-                    ELSEIF (IFREAR == 13) THEN
+                    case(13)
                         !
                         !        13. Guerin O2  - only fresh water
                         !            Guerin CO2 - only fresh water
@@ -357,12 +324,12 @@ contains
 
                         REARTC = 1.0
                         !
-                    ELSE
+                    case default
                         CALL get_log_unit_number(LUNREP)
                         WRITE (LUNREP, *) ' Invalid option for reaeration formula'
                         WRITE (*, *) ' Invalid option for reaeration formula'
                         CALL stop_with_error()
-                    ENDIF
+                    end select
 
                     process_space_real (IP26) = REARRC / DEPTH
 

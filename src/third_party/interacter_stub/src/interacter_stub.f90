@@ -220,7 +220,7 @@
         ! Text which would extend beyond the end of the current screen line is truncated. Text
         ! can safely be written to the bottom right hand corner of the screen, since scrolling is
         ! suppressed.
-        !e.g. CHARACTER*10 STR1
+        !e.g. character(len=10) STR1
         !:
         !CALL IOutString(STR1)
         !CALL ICursorXY(1,5)
@@ -894,7 +894,7 @@
         ! character graphics state to that set previously by ICharGraphics. Initially, character
         ! graphics are disabled by IScreenOpen.
         ! See ISpecialChar for a table of the available characters.
-        !e.g. CHARACTER*1 LESSEQ,ISpecialChar
+        !e.g. character(len=1) LESSEQ,ISpecialChar
         !LESSEQ = ISpecialChar(13)
         !CALL IOutStringXY(10,5,'X > Y')
         !IF (X.LE.Y) THEN
@@ -1154,8 +1154,9 @@
         !CALL IOutStringXY(30,18,'and this is in the bottom half')
     end subroutine
 
-    CHARACTER*1 function ISpecialChar(NUMBER) result(res)
+    function ISpecialChar(NUMBER) result(res)
         integer NUMBER ! Number of special character to be returned (1-23)
+        character(len=1) :: res
         ! CornerTopRight (1) ChrPlusMinus (12)
         ! CornerTopLeft (2) ChrLessEqual (13)
         ! CornerBottomRight (3) ChrGreaterEqual (14)
@@ -1183,9 +1184,9 @@
         ! character sets which provide such characters. In practice they are available in graphics
         ! mode on the majority of currently supported displays, the major exception being
         ! Windows.
-        ! Note that ISpecialChar must be declared as CHARACTER*1 in your calling
+        ! Note that ISpecialChar must be declared as character(len=1) in your calling
         ! program.
-        !e.g. CHARACTER*1 LESSEQ,ISpecialChar
+        !e.g. character(len=1) LESSEQ,ISpecialChar
         !:
         !LESSEQ = ISpecialChar(13)
         !CALL IOutStringXY(10,5,'X > Y')
@@ -1564,7 +1565,7 @@
         ! d) Text record width is determined by the passed length of TEXT().
         ! Text Window manager INTERACTER Subroutine Reference
         ! 1-38
-        !e.g. CHARACTER*60 TEXT(1000)
+        !e.g. character(len=60) TEXT(1000)
         !OPEN(20,FILE='results.dat',STATUS='OLD')
         !DO 100 I = 1,1000
         !READ(20,'(A)',END=200) TEXT(I)
@@ -1874,8 +1875,8 @@
         !automatically saved. Instead, InfoWindow(18) can be interrogated to determine
         !whether the file has been saved since the last change.
         !e.g. PARAMETER (NLINES = 1000)
-        !CHARACTER*80 FILENAME
-        !CHARACTER*80 TBUFFER(NLINES)
+        !character(len=80) FILENAME
+        !character(len=80) TBUFFER(NLINES)
         !:
         !C Open window for editor
         !5 CALL IWinOpenTitle(0,0,78,20,'Editing File '//FILENAME')
@@ -2523,7 +2524,7 @@
         ! (1 to MAXOPT - defaults to 1 if outside this range)
         ! Displays a cycling menu, in exactly the same way as IMenuCycle.
         ! IHIOPT determines which option is displayed and highlighted in the menu.
-        !e.g. CHARACTER*6 OPTION(3)
+        !e.g. character(len=6) OPTION(3)
         !DATA OPTION/'Large ','Medium','Small '/
         !IXPOS = 20
         !IYPOS = 2
@@ -2555,7 +2556,7 @@
         ! displayed, in the same way as it would be in IMenuHoriz, but no input is required. If
         ! IHIOPT is zero, no option is highlighted. This argument is equivalent to ISTOPT
         ! when calling IMenuHoriz.
-        !e.g. CHARACTER*8 OPTION(4)
+        !e.g. character(len=8) OPTION(4)
         !DATA OPTION/'1 : Load','2 : Save','3 : Edit','4 : Quit'/
         !IX = 11
         !IY = 5
@@ -2581,8 +2582,8 @@
         ! Displays a horizontal help menu, in exactly the same way as IMenuHorizHelp.
         ! INTERACTER Subroutine Reference Output-only Menus
         ! 1-59
-        !e.g. CHARACTER*4 OPTION(4)
-        !CHARACTER*20 HELP(4)
+        !e.g. character(len=4) OPTION(4)
+        !character(len=20) HELP(4)
         !DATA OPTION/'Help','Run ','Edit','Quit'/
         !HELP(1) = 'Display help text'
         !HELP(2) = 'Run data analysis'
@@ -2612,7 +2613,7 @@
         integer IHIOPT ! First option to be highlighted
         ! (1 to MAXOPT - defaults to 1 if outside this range)
         ! Displays a vertical scrolling menu, in exactly the same way as IMenuScroll.
-        !e.g. CHARACTER*14 FILES(20)
+        !e.g. character(len=14) FILES(20)
         !C get a list of up to 20 filenames
         !NFILE = 20
         !CALL IOsDirList(' ',' ',FILES,NFILE)
@@ -2673,7 +2674,7 @@
         ! highlighted. This argument is equivalent to ISTOPT when calling IMenuVertic.
         ! INTERACTER Subroutine Reference Output-only Menus
         ! 1-61
-        !e.g. CHARACTER*8 OPTION(4)
+        !e.g. character(len=8) OPTION(4)
         !DATA OPTION/'1 : Load','2 : Save','3 : Edit','4 : Quit'/
         !IX = 11
         !IY = 1
@@ -2702,8 +2703,8 @@
         integer IHIOPT ! First option to be highlighted
         ! (1 to MAXOPT - defaults to 1 if outside this range)
         ! Displays a vertical help menu, in exactly the same way as IMenuVerticHelp.
-        !e.g. CHARACTER*4 OPTION(3)
-        !CHARACTER*21 HELP
+        !e.g. character(len=4) OPTION(3)
+        !character(len=21) HELP
         !OPTION(1) = 'Save'
         !OPTION(2) = 'Load'
         !OPTION(3) = 'Edit'
@@ -3076,7 +3077,7 @@
         ! simulated, InKeyEventCursor is exactly equivalent to InKeyEvent.
         ! Keyboard/Mouse Event Handling INTERACTER Subroutine Reference
         ! 2-8
-        !e.g. CHARACTER*10 NAME
+        !e.g. character(len=10) NAME
         !CALL IOutStringXY(2,2,'Enter name : ')
         !IPOS = 1
         !10 CALL InKeyEventCursor(ICODE)
@@ -3487,7 +3488,7 @@
         ! The LENGTH argument has the OPTIONAL attribute under Fortran 90 compilers, when
         ! the INTERACTER module is USE'd.
         ! To offer a default value, see the equivalent InLongStringDef routine.
-        !e.g. CHARACTER*70 FILNAM
+        !e.g. character(len=70) FILNAM
         !CALL IOutStringXY(1,5,'Enter filename (max 70 characters) :')
         !CALL InLongString(FILNAM,LENGTH,20)
         !IF (LENGTH.GT.0) OPEN(20,FILE=FILNAM(:LENGTH),STATUS='OLD')
@@ -3503,7 +3504,7 @@
         ! Long-string input routine, with a default reply supplied to save the user typing a full
         !response (e.g. a standard filename). In all other respects, this routine is equivalent to
         !InLongString. It is the long-string equivalent of InStringDef.
-        !e.g. CHARACTER*70 FILNAM
+        !e.g. character(len=70) FILNAM
         !100 CALL IOutStringXY(1,5,'Enter filename (max 70 characters) :')
         !FILNAM = 'c:\project\defaults\work01.dat'
         !CALL InCursorPos(999)
@@ -3544,7 +3545,7 @@
         ! The pop-up mode is selectable by calling InPopup and the appearance of the input
         ! field is controlled by InHighlight. The text and mouse cursors are automatically
         ! enabled for the duration of the call and restored to their previous state on exit.
-        !e.g. CHARACTER*70 FILEN
+        !e.g. character(len=70) FILEN
         !:
         !CALL InHighlight('W','BLUE')
         !IWIDTH = 20
@@ -3578,7 +3579,7 @@
         ! The pop-up mode is selectable by calling InPopup and the appearance of the input
         ! field is controlled by InHighlight. The text and mouse cursors are automatically
         ! enabled for the duration of the call and restored to their previous state on exit.
-        !e.g. CHARACTER*70 FILNAM
+        !e.g. character(len=70) FILNAM
         !:
         !FILNAM = '/usr/project/datafiles/work001.dat'
         !CALL InLongStringXYDef(5,5,'File: ',1,FILNAM,LENGTH,20)
@@ -3758,7 +3759,7 @@
         ! The LENGTH argument has the OPTIONAL attribute under Fortran 90 compilers, when
         ! the INTERACTER module is USE'd.
         ! To offer a default value, see InStringDef. See also InMouseOptions.
-        !e.g. CHARACTER*12 FILNAM
+        !e.g. character(len=12) FILNAM
         !:
         !CALL IOutStringXY(1,5,'Enter filename (max 8 characters) :')
         !CALL InString(FILNAM(:8),LENGTH)
@@ -3796,7 +3797,7 @@
         !explicitly type at the end of the string.
         !To enter a numeric value, the alternative routines InDoubleDef, InIntegerDef
         !and InRealDef are available for double precision, integer and real data respectively.
-        !e.g. CHARACTER*8 FILNAM
+        !e.g. character(len=8) FILNAM
         !:
         !100 CALL IOutStringXY(1,5,'Enter filename (max 8 characters) :')
         !FILNAM = 'MYDATA'
@@ -3845,7 +3846,7 @@
         ! The pop-up mode is selectable by calling InPopup and the appearance of the input
         ! field is controlled by InHighlight. The text and mouse cursors are automatically
         ! enabled for the duration of the call and restored to their previous state on exit.
-        !e.g. CHARACTER*8 USERID
+        !e.g. character(len=8) USERID
         !:
         !CALL InHighlight('W','BLUE')
         !CALL InStringXY(5,5,'Enter i.d. ',0,USERID,LENGTH)
@@ -3877,7 +3878,7 @@
         ! The pop-up mode is selectable by calling InPopup and the appearance of the input
         ! field is controlled by InHighlight. The text and mouse cursors are automatically
         ! enabled for the duration of the call and restored to their previous state on exit.
-        !e.g. CHARACTER*20 FILNAM
+        !e.g. character(len=20) FILNAM
         !:
         !FILNAM = 'datafile.dat'
         !CALL InStringXYDef(5,5,'Filename : ',1,FILNAM,LENGTH)
@@ -3989,7 +3990,7 @@
         ! The menu is displayed according to the current text styles set by ITextBold,ITextColour, etc. The way in which the current option is highlighted is controlled
         ! using InHighlight. A pop-up feature is also available, controlled by InPopup.
         ! The cursor is disabled for the duration of the menu, if the display supports this feature.
-        !e.g. CHARACTER*6 OPTION(3)
+        !e.g. character(len=6) OPTION(3)
         !DATA OPTION/'Large ','Medium','Small '/
         !IXPOS = 20
         !IYPOS = 2
@@ -4081,7 +4082,7 @@
         !control key 34 or left-button mouse clicks toggle menu options on/off. Right-button
         !mouse clicks confirm multiple choice menus. See InMultiple and
         !InMouseOptions in the IP group.
-        !e.g. CHARACTER*4 OPTION(4)
+        !e.g. character(len=4) OPTION(4)
         !LOGICAL LOADED
         !DATA OPTION/'Help','Run ','Edit','Quit'/
         !:
@@ -4203,8 +4204,8 @@
         !The cursor is disabled for the duration of the menu, if the display supports this feature.
         !Menus INTERACTER Subroutine Reference
         !2-34
-        !e.g. CHARACTER*4 OPTION(4)
-        !CHARACTER*20 HELP(4)
+        !e.g. character(len=4) OPTION(4)
+        !character(len=20) HELP(4)
         !DATA OPTION/'Help','Run ','Edit','Quit'/
         !:
         !HELP(1) = 'Display help text'
@@ -4322,7 +4323,7 @@
         ! control key 34 or left-button mouse clicks toggle menu options on/off. Right-button
         ! mouse clicks confirm multiple choice menus. See InMultiple and
         ! InMouseOptions in the IP group.
-        !e.g. CHARACTER*14 FILES(20)
+        !e.g. character(len=14 FILES(20)
         !C get a list of up to 20 filenames
         !NFILE = 20
         !CALL IOsDirList(' ',' ',FILES,NFILE)
@@ -4493,7 +4494,7 @@
         ! control key 34 or left-button mouse clicks toggle menu options on/off. Right-button
         ! mouse clicks confirm multiple choice menus. See InMultiple and
         ! InMouseOptions in the IP group.
-        !e.g. CHARACTER*4 OPTION(6)
+        !e.g. character(len=4 OPTION(6)
         !DATA OPTION/'Save','Load','Edit',1 '----','Help','Quit'/
         !IXPOS = 20
         !IYPOS = 5
@@ -4535,8 +4536,8 @@
         ! menu option strings, but within the menu frame (if selected). The position of the help
         ! text is redefinable via InHelpStringPos. The help text is displayed in the currently
         ! selected attributes unless the InHighlightHelp routine has been called.
-        !e.g. CHARACTER*4 OPTION(3)
-        !CHARACTER*21 HELP(3)
+        !e.g. character(len=4 OPTION(3)
+        !character(len=21 HELP(3)
         !DATA OPTION/'Save','Load','Edit'/
         !HELP(1) = 'Write data to disk'
         !HELP(2) = 'Read data from disk'
@@ -4655,7 +4656,7 @@
         ! method used in that routine.
         ! By default, no case conversion is performed on input. This state can be returned to by
         ! passing a CASE argument other than 'U' or 'L'.
-        !e.g. CHARACTER*4 USERID
+        !e.g. character(len=4 USERID
         !:
         !C force upper case conversion
         !CALL InCase('U')
@@ -4675,8 +4676,8 @@
         ! enabled, so option strings are trimmed to their actual length allowing more options to
         ! be displayed at one time. Alternatively, options can be displayed uncondensed (i.e.
         ! equally spaced).
-        !e.g. CHARACTER*4 OPTION(4)
-        !CHARACTER*20 HELP(4)
+        !e.g. character(len=4 OPTION(4)
+        !character(len=20 HELP(4)
         !DATA OPTION/'Analyse ','Modify','Help','Quit'/
         !:
         !HELP(1) = 'Run data analysis'
@@ -4907,8 +4908,8 @@
         ! displayed in a horizontal help menu, taking account of the current 'condensed options'
         ! mode as set by InCondenseHelpMenu. This function is useful when calculating the
         ! required position for a drop-down menu which option number ITEM will lead to.
-        !e.g. CHARACTER*7 OPTION(4)
-        !CHARACTER*20 HELP(4)
+        !e.g. character(len=7 OPTION(4)
+        !character(len=20 HELP(4)
         !DATA OPTION/'Analyse ','Modify','Help','Quit'/
         !HELP(1) = 'Run data analysis'
         !HELP(2) = 'Modify data'
@@ -5202,7 +5203,7 @@
         !e.g. Keypad * returns ASCII 42, but Alt/Keypad * returns 164.
         !Input Control Parameters INTERACTER Subroutine Reference
         !2-56
-        !e.g. CHARACTER*2 ARG1
+        !e.g. character(len=2 ARG1
         !CALL IScreenOpen(' ','G',640,480,16)
         !CALL IOsArgument(1,ARG1)
         !CALL IUpperCase(ARG1)
@@ -5369,7 +5370,7 @@
         !menu (see InMouseOptions(2,n)). Alternatively, specific mouse buttons can be
         !assigned to signify 'toggle+confirm' or 'confirm-only', when clicked on a multiple
         !choice menu option. See InMouseOptions(103/104,n).
-        !e.g. CHARACTER*8 NAME(5)
+        !e.g. character(len=8 NAME(5)
         !DATA NAME/' John',' Terry',' Michael',' Graham',' Eric'/
         !C enable multiple choice mode by setting tag character to *
         !CALL InMultiple('*')
@@ -5439,7 +5440,7 @@
         ! 2-61
         ! Not all displays are able to restore graphics data if a pop-up is used in a graphics mode.
         ! Use InfoGrScreen to test this feature.
-        !e.g. CHARACTER*12 OPTION(4)
+        !e.g. character(len=12 OPTION(4)
         !DATA OPTION/'Help Screen','Run Analysis',1 'Edit Data' ,'Quit Program'/
         !CALL InHighlight('BLU','WHI')
         !C use single pop-up mode to make the menu
@@ -5500,7 +5501,7 @@
         ! IMenuVerticHelp IOutMenuVerticHelp
         ! The setting of SELCHARS is ignored in scrolling, two-way and cycling menus, though
         ! single key-selection will still be available in those routines if enabled by InSingle.
-        !e.g. CHARACTER*4 MENU(3)
+        !e.g. character(len=4 MENU(3)
         !DATA MENU/'Open','Edit','Exit'/
         !CALL InSelectionChars('OEX')
         !IOPT = IMenuVertic(MENU,4,IX,IY,' ',0,IFRAME,ISTOPT)
@@ -5780,9 +5781,9 @@
         ! scheme and field frame styles for the whole of the form can be set via
         ! IdMenuOptions option 13. The window-close action on exit is controllable via
         ! IdMenuOptions option 12.
-        !e.g. CHARACTER*50 PATH
+        !e.g. character(len=50 PATH
         !LOGICAL EXISTS
-        !CHARACTER*3 FSTAT
+        !character(len=3 FSTAT
         !:
         !CALL IWinAction('FPC')
         !PATH = 'c:\datafile\*.dat'
@@ -5845,7 +5846,7 @@
         ! 28 or 36-70). As always, a user-definable key can also be attached to these codes by
         ! calling InControlKey.
         ! The maximum number of user-buttons is three (or two in IdPgStyles).
-        !e.g. CHARACTER*6 BUTTS(3)
+        !e.g. character(len=6 BUTTS(3)
         !INTEGER IBCODE(3)
         !DATA BUTTS /' Yes ',' No ','Cancel'/
         !DATA IBCODE/21,36,23/
@@ -7319,7 +7320,7 @@
         ! INTERACTER Subroutine Reference Screen Manipulation
         ! 4-5
         ! Note that unlike most INTERACTER routines which use passed length CHARACTER
-        ! variables, TEXT should be declared as a CHARACTER*1 array. Obviously, TEXT must
+        ! variables, TEXT should be declared as a character(len=1 array. Obviously, TEXT must
         ! be declared to be large enough to hold the amount of text which is to be copied,according to the formula :
         ! TEXT dimension = (IXBOTR-IXTOPL+1) * (IYBOTR-IYTOPL+1)
         ! An alternative method of performing a direct screen-area to screen-area cut and paste
@@ -7328,7 +7329,7 @@
         !attributes, such as reverse video, etc. On the other hand it has a greater screen
         !processing overhead and does not give the calling program access to the actual screen
         !contents. Each method will be appropriate in different situations.
-        !e.g. CHARACTER*1 TEXT(400)
+        !e.g. character(len=1 TEXT(400)
         !C copy top left quarter of screen to top right
         !CALL IScreenCopy(1,1,40,10,TEXT)
         !CALL IScreenPaste(41,1,80,10,TEXT)
@@ -8235,11 +8236,11 @@
         ! current attributes as set by the AT group routines.
         ! The entire screen can be pasted by setting IXTOPL and IYTOPL to one, IXBOTR to
         ! InfoScreen(2) and IYBOTR to InfoScreen(3).
-        ! Unlike most INTERACTER routines which use passed length CHARACTER variables,TEXT should be declared as a CHARACTER*1 array. IScreenPaste assumes that
+        ! Unlike most INTERACTER routines which use passed length CHARACTER variables,TEXT should be declared as a character(len=1 array. IScreenPaste assumes that
         ! TEXT has been declared to be large enough to hold the full area of text which is to be
         ! pasted, according to the formula :
         ! TEXT dimension = (IXBOTR-IXTOPL+1) * (IYBOTR-IYTOPL+1)
-        !e.g. CHARACTER*1 TEXT(400)
+        !e.g. character(len=1 TEXT(400)
         !C copy top left quarter of screen to top right
         !CALL IScreenCopy(1,1,40,10,TEXT)
         !CALL IScreenPaste(41,1,80,10,TEXT)
@@ -8372,8 +8373,8 @@
         !Returns a descriptive string for the current INTERACTER printer or plotter type (e.g.
         !"Epson LQ/SQ"). These correspond to the device types described in the Printers and
         !Plotters chapter of the User Guide.
-        !e.g. CHARACTER*27 PRNAME,PLNAME
-        !CHARACTER*31 P2NAME
+        !e.g. character(len=27 PRNAME,PLNAME
+        !character(len=31 P2NAME
         !CALL InfoDeviceName(1,PRNAME)
         !CALL InfoDeviceName(2,PLNAME)
         !CALL InfoDeviceName(3,P2NAME)
@@ -8513,7 +8514,7 @@
         ! but this may change in future releases.
         ! Since InfoErrorMessage is a character function the length of the returned value
         ! depends on its declared size in the calling program. See the example.
-        !e.g. CHARACTER*62 InfoErrorMessage,MESSAGE
+        !e.g. character(len=62 InfoErrorMessage,MESSAGE
         !CALL IGrHardCopy(plotfile)
         !ierror = InfoError(1)
         !IF (ierror.NE.0) THEN
@@ -8625,7 +8626,7 @@
         ! 4-35
         ! Since InfoFilename is a character function the length of the returned value depends
         ! on its declared size in the calling program. See the example.
-        !e.g. CHARACTER*60 InfoFilename,OUTFIL
+        !e.g. character(len=60 InfoFilename,OUTFIL
         !:
         !C ask for hardcopy output file name, offering current default
         !OUTFIL = InfoFilename(2)
@@ -8691,7 +8692,7 @@
         !If IFIELD or ITEM are invalid (e.g. field does not exist or is not a menu) then the
         !returned string is blank filled.
         !e.g. PARAMETER (MAXOPT = 100)
-        !CHARACTER*10 OPTION(MAXOPT),InfoFormMenu
+        !character(len=10 OPTION(MAXOPT),InfoFormMenu
         !:
         !C how many options in menu ?
         !NOPT = MIN(InfoField(IFIELD,11),MAXOPT)
@@ -9991,7 +9992,7 @@
         ! editor via the Find option. The significant length of the string, including entered trailing
         ! blanks, is available via InfoWindow(15). If no search string has been entered, a
         ! blank string is returned.
-        !e.g. CHARACTER*40 SearchString,InfoWinString
+        !e.g. character(len=40 SearchString,InfoWinString
         !:
         !CALL IWinBrowseFile(Fname,LRSTEP,IPOS,'')
         !LenSearch = InfoWindow(15)
@@ -10047,9 +10048,9 @@
         ! Note that unlike most INTERACTER routines, IOsArgument (and InfoOpSystem)
         ! can be called before IScreenOpen if required allowing command line argument
         ! processing of initialisation file names.
-        !e.g. CHARACTER*80 RECORD
-        !CHARACTER*12 FILNAM
-        !CHARACTER*3 NUMBER
+        !e.g. character(len=80 RECORD
+        !character(len=12 FILNAM
+        !character(len=3 NUMBER
         !CALL IScreenOpen(' ','T',80,25,16)
         !C how many command line arguments ?
         !IF (InfoOpSystem(2).LT.2)
@@ -10116,7 +10117,7 @@
         ! nuisance in the situation where an operating system command generates no output, the
         ! alternative IOsCommandSilent is also provided for the execution of 'silent'
         ! commands (i.e. those which will perform no screen I/O).
-        !e.g. CHARACTER*20 COMAND
+        !e.g. character(len=20 COMAND
         !CALL IOutStringXY(1,1,'Enter o.s. command : ')
         !CALL InString(COMAND,LENCOM)
         !CALL IOsCommand(COMAND(:LENCOM))
@@ -10218,7 +10219,7 @@
         ! operating systems may accept wildcards in OLDFIL (see the Portability notes). If the
         ! file cannot be copied, the InfoError(1) error flag is set. If FROM and TO specify
         ! the same file, error code 55 is set.
-        !e.g. CHARACTER*5 ERRCOD
+        !e.g. character(len=5 ERRCOD
         !CALL IOsCopyFile('results.dat','results.bak')
         !IF (InfoError(1).EQ.13) THEN
         !CALL IntegerToString(InfoError(3),ERRCOD,'(I5)')
@@ -10262,7 +10263,7 @@
         ! multiple files to be deleted in a single operation. If a file cannot be deleted, the
         ! InfoError(1) error flag is set. If FILNAM is blank, IOsDeleteFile has no
         ! effect. See also IOsRenameFile.
-        !e.g. CHARACTER*5 ERRCOD
+        !e.g. character(len=5 ERRCOD
         !CALL IOsDeleteFile('work*.dat')
         !IF (InfoError(1).EQ.13) THEN
         !CALL IntegerToString(InfoError(3),ERRCOD,'(I5)')
@@ -10300,7 +10301,7 @@
         ! Note that the change of directory may or may not persist after the program terminates
         ! depending on the current operating system. Under DOS the new directory becomes the
         ! current directory on program exit, for example.
-        !e.g. CHARACTER*40 DIRNAM
+        !e.g. character(len=40 DIRNAM
         !CALL IOutStringXY(10,2,'Directory to move to (..=parent) : ')
         !CALL InString(DIRNAM,LENGTH)
         !IF (LENGTH.GT.0) CALL IOsDirChange(DIRNAM(:LENGTH))
@@ -10360,7 +10361,7 @@
         ! information about files only and not sub-directories. Call IOsDirEntryType with a
         ! 'D' argument to cause sub-directory information to be returned instead. Alternatively,'FD' causes both file and directory information to be returned in the same call.
         !e.g. PARAMETER (MAXDIR = 40)
-        !CHARACTER*14 DIRNAM(MAXDIR)
+        !character(len=14 DIRNAM(MAXDIR)
         !C get a list of sub-directories in current directory
         !NUMDIR = MAXDIR
         !CALL IOsDirEntryType('D')
@@ -10387,7 +10388,7 @@
         ! IOsFileTime. The size of each file is returned in terms of bytes in IFSIZE.
         ! For further information, refer to IOsDirList.
         !e.g. PARAMETER (MAXFIL = 10)
-        !CHARACTER*14 FILNAM(MAXFIL)
+        !character(len=14 FILNAM(MAXFIL)
         !INTEGER IFDATE(MAXFIL),IFSIZE(MAXFIL)
         !NUMFIL = MAXFIL
         !CALL IOsDirInfo(' ','*.DAT',FILNAM,NUMFIL,IFDATE,IFSIZE)
@@ -10431,7 +10432,7 @@
         ! directory, but not sub-directories of that directory. The type of directory entries to be
         ! returned by IOsDirList (i.e. Files and/or sub-directories) can be specified by
         ! calling IOsDirEntryType before IOsDirList.
-        !e.g. CHARACTER*14 FILNAM(40),MATCH
+        !e.g. character(len=14 FILNAM(40),MATCH
         !NUMFIL = 40
         !CALL IOutStringXY(10,2,'Match files with : ')
         !MATCH = '*.dat'
@@ -10481,7 +10482,7 @@
         ! Makes a new directory. Equivalent to the operating system mkdir or cre/dir
         ! command. The format of the directory name is dependent on the conventions used by
         ! the current operating system.
-        !e.g. CHARACTER*40 DIRNAM
+        !e.g. character(len=40 DIRNAM
         !CALL IOutStringXY(10,2,'Directory to make : ')
         !CALL InString(DIRNAM,LENGTH)
         !IF (LENGTH.GT.0) CALL IOsDirMake(DIRNAM(:LENGTH))
@@ -10499,7 +10500,7 @@
         ! Short-name : OSDIRN
         ! Returns the name of the current directory. The format of the returned name will be
         ! operating system dependent.
-        !e.g. CHARACTER*60 OLDDIR,NEWDIR
+        !e.g. character(len=60 OLDDIR,NEWDIR
         !CALL IOsDirName(OLDDIR)
         !CALL IOutStringXY(2,2,'Old directory : ',OLDDIR)
         !NEWDIR = OLDDIR
@@ -10531,7 +10532,7 @@
         ! IOsExitProgram with an exit code of 2 if this does occur. See chapter 16 of the
         ! User Guide for a list of INTERACTER exit codes. If the supplied program name is
         ! blank, an error code is set and program execution continues.
-        !e.g. CHARACTER*20 PRGNAM
+        !e.g. character(len=20 PRGNAM
         !CALL IOutStringXY(1,1,'Enter program name : ')
         !CALL InString(PRGNAM,LENPRG)
         !IF (LENPRG.GT.0) CALL IOsExecute(PRGNAM(:LENPRG))
@@ -10648,7 +10649,7 @@
         !INTERACTER Subroutine Reference Operating System Interface
         !4-75
         !e.g. PARAMETER (MAXFIL = 10)
-        !CHARACTER*14 FILNAM(MAXFIL)
+        !character(len=14 FILNAM(MAXFIL)
         !INTEGER IFDATE(MAXFIL),IFSIZE(MAXFIL)
         !NUMFIL = MAXFIL
         !CALL IOsDirInfo(' ','*.DAT',FILNAM,NUMFIL,IFDATE,IFSIZE)
@@ -10675,7 +10676,7 @@
         ! If a time is required in string format, the returned integer values can be converted using
         ! the routines in the CH group.
         !e.g. PARAMETER (MAXFIL = 10)
-        !CHARACTER*14 FILNAM(MAXFIL)
+        !character(len=14 FILNAM(MAXFIL)
         !INTEGER IFDATE(MAXFIL),IFSIZE(MAXFIL)
         !NUMFIL = MAXFIL
         !CALL IOsDirInfo(' ','*.DAT',FILNAM,NUMFIL,IFDATE,IFSIZE)
@@ -10703,7 +10704,7 @@
         ! 4-76
         ! If OLDFIL or NEWFIL are blank, IOsRenameFile has no effect. See also
         ! IOsDeleteFile.
-        !e.g. CHARACTER*5 ERRCOD
+        !e.g. character(len=5 ERRCOD
         !:
         !CALL IOsRenameFile('data.dat','result.dat')
         !IF (InfoError(1).EQ.13) THEN
@@ -10754,7 +10755,7 @@
         ! In general it is a good idea to stick to upper case for operating system variables. Some
         ! operating systems are case sensitive, but others are not. IOsVariable performs no
         ! case translation, so it pays to be consistent.
-        !e.g. CHARACTER*80 FILNAM
+        !e.g. character(len=80 FILNAM
         !:
         !CALL IOsVariable('DEFDATA',FILNAM)
         !IF (IActualLength(FILNAM).GT.0) THEN
@@ -10882,7 +10883,7 @@
         !case.
         !e.g. PARAMETER (NVAL = 50)
         !INTEGER IVAL(NVAL)
-        !CHARACTER*7 COMMENT
+        !character(len=7 COMMENT
         !C Open file in read/write mode
         !CALL IFileOpen('temp.dat',2,IHANDLE)
         !IF (IHANDLE.EQ.-1)
@@ -11318,7 +11319,7 @@
         ! zero is returned. IActualLength is a replacement for the standard LEN function
         ! which simply returns the length of a character variable not the length of the string
         ! which is held in it.
-        !e.g. CHARACTER*20 STR
+        !e.g. character(len=20 STR
         !LASTCH = IActualLength(STR)
         !IF (LASTCH.NE.LEN(STR)) IOutString('STR has trailing blanks')
     
@@ -11335,7 +11336,7 @@
         ! error occurs, STRING is filled with asterisks. IDoubleToString is the reverse of
         ! IStringToDouble. See also IntegerToString and IRealToString.
         !e.g. DOUBLE PRECISION D
-        !CHARACTER*10 CHR
+        !character(len=10 CHR
         !D = 1.0000001
         !CALL IDoubleToString(D,CHR,'(F10.7)')
         !CALL IOutString(CHR)
@@ -11349,7 +11350,7 @@
         ! (note : only first character of CHR is used)
         ! Short-name : FILSTR
         ! Fills the whole of STRING with the first character of CHR.
-        !e.g. CHARACTER*80 STARS
+        !e.g. character(len=80 STARS
         !CALL IFillString(STARS,'*')
         !Character Manipulation INTERACTER Subroutine Reference
         !4-94
@@ -11372,7 +11373,7 @@
         ! character to the last non-blank character within the character variable STRING.
         ! Since IJustifyString justifies the string within the supplied variable itself,STRING must be passed as a variable rather than as a literal string. If STRING is
         ! blank, IJustifyString takes no action.
-        !e.g. CHARACTER*12 TITLE
+        !e.g. character(len=12 TITLE
         !TITLE = ' Help Menu '
         !CALL IJustifyString(TITLE,'L')
         !C variable TITLE will now contain : 'Help menu '
@@ -11387,7 +11388,7 @@
         ! Short-name : LOCCHR
         ! Locates and returns the position of the first non-blank/non-null character within
         ! STRING. If the string contains only blanks and/or nulls, zero is returned.
-        !e.g. CHARACTER*20 FILNAM
+        !e.g. character(len=20 FILNAM
         !CALL InString(FILNAM,LEN)
         !IPOS1 = ILocateChar(FILNAM)
     
@@ -11405,7 +11406,7 @@
         ! positions are returned, rather than just the start position.
         ! INTERACTER Subroutine Reference Character Manipulation
         ! 4-95
-        !e.g. CHARACTER*80 STRING
+        !e.g. character(len=80 STRING
         !READ(LFN,'(A80)') STRING
         !CALL ILocateString(STRING,ISTART,IEND)
         !IF (ISTART.GT.0) THEN
@@ -11419,7 +11420,7 @@
         character(len=*) STRING ! String to be converted to lower case
         ! Short-name : LOWERC
         ! Converts any upper case characters in STRING to lower case.
-        !e.g. CHARACTER*10 STRING
+        !e.g. character(len=10 STRING
         !STRING = 'ABCDE12345'
         !CALL ILowerCase(STRING)
         !C string should now be abcde12345
@@ -11437,7 +11438,7 @@
         ! string must be scanned for a series of space delimited values.
         ! If STRING is blank on entry, INextDouble will behave like IStringToDouble.
         ! i.e. DVALUE will be set to zero and the error flag will be set.
-        !e.g. CHARACTER*40 LINE1,LINE2
+        !e.g. character(len=40 LINE1,LINE2
         !DOUBLE PRECISION DVAL
         !100 CALL InStringXYDef(IX,IY,' ',0,LINE1,LENLIN)
         !LINE2 = LINE1
@@ -11469,7 +11470,7 @@
         ! string must be scanned for a series of space delimited values.
         ! If STRING is blank on entry, INextInteger will behave like
         ! IStringToInteger. i.e. IVALUE will be set to zero and the error flag will be set.
-        !e.g. CHARACTER*80 LINE
+        !e.g. character(len=80 LINE
         !INTEGER IVALUE(5)
         !:
         !C get a string containing up to 5 space separated integers
@@ -11508,7 +11509,7 @@
         ! RVALUE will be set to zero and the error flag will be set.
         ! INTERACTER Subroutine Reference Character Manipulation
         ! 4-97
-        !e.g. CHARACTER*40 LINE1,LINE2
+        !e.g. character(len=40 LINE1,LINE2
         !100 CALL InStringXYDef(IX,IY,' ',0,LINE1,LENLIN)
         !LINE2 = LINE1
         !C extract an integer and two reals from a copy of the entered string
@@ -11537,8 +11538,8 @@
         ! next substring value. This routine is mainly useful where a character string must be
         ! scanned for a series of space delimited values.
         ! If STRING is blank on entry, INextString will return a blank CVALUE.
-        !e.g. CHARACTER*80 LINE
-        !CHARACTER*5 TOKENS(20),TEMP
+        !e.g. character(len=80 LINE
+        !character(len=5 TOKENS(20),TEMP
         !:
         !CALL InString(LINE,LENLIN)
         !DO 100 ISTR = 1,20
@@ -11564,7 +11565,7 @@
         !IRealToString and IDoubleToString.
         !Character Manipulation INTERACTER Subroutine Reference
         !4-98
-        !e.g. CHARACTER*5 CHR
+        !e.g. character(len=5 CHR
         !I = 100
         !CALL IntegerToString(I,CHR,'(I5)')
         !CALL IOutString(CHR)
@@ -11579,7 +11580,7 @@
         ! Returns the value of the digit (0 to 9) represented by the first character in CHR. If CHR
         ! contains any character other than 0123456789 IntValueOfChar is returned with the
         ! value -1.
-        !e.g. CHARACTER*1 CHR
+        !e.g. character(len=1 CHR
         !CALL IOutStringXY(10,1,'Press a key from 0 to 9')
         !CALL InKeyEvent(KEY)
         !CHR = CHAR(KEY)
@@ -11599,7 +11600,7 @@
         !(e.g. RVALUE is too large), STRING is filled with asterisks. IRealToString is
         !the reverse of IStringToReal. See also IntegerToString and
         !IDoubleToString.
-        !e.g. CHARACTER*10 CHR
+        !e.g. character(len=10 CHR
         !A = 100.0
         !CALL IRealToString(A,CHR,'(F10.2)')
         !CALL IOutString(CHR)
@@ -11617,8 +11618,8 @@
         ! IDoubleToString. See also IStringToInteger and IStringToReal.
         ! INTERACTER Subroutine Reference Character Manipulation
         ! 4-99
-        !e.g. CHARACTER*80 LINE
-        !CHARACTER*20 VALSTR
+        !e.g. character(len=80 LINE
+        !character(len=20 VALSTR
         !DOUBLE PRECISION DVALUE
         !CALL InString(LINE,LENLIN)
         !CALL IStringToDouble(LINE(:LENLIN),DVALUE)
@@ -11644,8 +11645,8 @@
         ! conversion IVALUE is returned as zero and the INTERACTER error flag is set.
         ! IStringToInteger is the reverse of IntegerToString. See also
         ! IStringToReal.
-        !e.g. CHARACTER*80 LINE
-        !CHARACTER*10 VALSTR
+        !e.g. character(len=80 LINE
+        !character(len=10 VALSTR
         !CALL InString(LINE,LENLIN)
         !CALL IStringToInteger(LINE(:LENLIN),IVALUE)
         !IF (InfoError(1).GT.0) THEN
@@ -11672,8 +11673,8 @@
         ! IStringToDouble/IDoubleToString.
         ! Character Manipulation INTERACTER Subroutine Reference
         ! 4-100
-        !e.g. CHARACTER*80 LINE
-        !CHARACTER*10 VALSTR
+        !e.g. character(len=80 LINE
+        !character(len=10 VALSTR
         !CALL InString(LINE,LENLIN)
         !CALL IStringToReal(LINE(:LENLIN),RVALUE)
         !IF (InfoError(1).GT.0) THEN
@@ -11694,7 +11695,7 @@
         character(len=*) STRING ! String to be converted to upper case
         ! Short-name : UPPERC
         ! Converts any lower case characters in STRING to upper case.
-        !e.g. CHARACTER*10 STRING
+        !e.g. character(len=10 STRING
         !STRING = 'abcde12345'
         !CALL IUpperCase(STRING)
         !C string should now be ABCDE12345
@@ -15858,7 +15859,7 @@
         ! will end a logical 'page' within the output file. A call to IGrHardCopy('S') or
         ! IScreenClose will close the hardcopy output channel.
         !e.g. LOGICAL DEFAUL
-        !CHARACTER*12 DESTIN
+        !character(len=12 DESTIN
         !:
         !C Select alternative driver if required
         !CALL IGrHardCopySelect(1,IDRIVR)
@@ -16497,7 +16498,7 @@
         ! code is also supplied in ghcsel.f90.
         ! Graphics Hardcopy/Export INTERACTER Subroutine Reference
         ! 1-86
-        !e.g. CHARACTER*10 DRVER(3)
+        !e.g. character(len=10 DRVER(3)
         !INTEGER IDRV(3)
         !DATA DRVER/'PostScript',1 'Windows ',
         !2 'HP-GL/2 '/
@@ -16529,7 +16530,7 @@
         ! used with that driver/device, one per record.
         ! No special processing is performed on the filename. INTERACTER will attempt to open
         ! the file exactly as specified.
-        !e.g. CHARACTER*12 FILNAM
+        !e.g. character(len=12 FILNAM
         !:
         !C Select hardcopy options file
         !CALL IdFilename(FILNAM)
@@ -16574,7 +16575,7 @@
         ! new page is forced if a form feed character (ASCII 12) is found in column one of an
         ! input record. When Fortran carriage control is enabled (option 107=1) then a 1 in the
         ! first column has this effect instead.
-        !e.g. CHARACTER*80 FILNAM
+        !e.g. character(len=80 FILNAM
         !:
         !C Select text file to print
         !CALL IdFilename(FILNAM)
@@ -16671,7 +16672,7 @@
         !e.g. PARAMETER (IW = 640 )
         !PARAMETER (IH = 480 )
         !PARAMETER (LENBMP = IW*IH)
-        !CHARACTER*1 BMPDATA(LENBMP)
+        !character(len=1 BMPDATA(LENBMP)
         !:
         !CALL IGrSaveImageData8('bitmap.bmp',BMPDATA,IW,IH)
         !Errors :
@@ -16903,7 +16904,7 @@
         ! determined by IGrFileInfo. i.e. IBMPDATA must be at least INFO(2)*INFO(3)
         ! elements long, where INFO(2) and INFO(3) are the image width and height
         ! returned by IGrFileInfo.
-        !e.g. CHARACTER*10 FILENAME
+        !e.g. character(len=10 FILENAME
         !PARAMETER (MAXBMP = 100000)
         !INTEGER IBMPDATA(MAXBMP)
         !INTEGER INFO(3)
@@ -16959,7 +16960,7 @@
         ! WMF files is a screen-only facility. Simultaneous hardcopy output is not available in
         ! this case.
         ! See IGrReplayOptions which controls certain aspects of IGrReplay behaviour.
-        !e.g. CHARACTER*20 PLTFIL
+        !e.g. character(len=20 PLTFIL
         !:
         !CALL IOutStringXY(10,10,'Enter name of file to replay : ')
         !CALL InString(PLTFIL,LENGTH)
@@ -17847,7 +17848,7 @@
         ! when the marker type has been set to 6 (user defined contour label) for contour ISET.
         ! A maximum of 10 characters per label are stored. Longer strings are truncated.
         !e.g. PARAMETER (NCONTOUR = 3)
-        !CHARACTER*6 LABELS(NCONTOUR)
+        !character(len=6 LABELS(NCONTOUR)
         !DATA LABELS/'Low','Middle','High'/
         !CALL IPgNewPlot(PgZarrayPlot,NCONTOUR,NVALUE,0,1)
         !DO 100 ICONT = 1,NCONTOUR
@@ -18793,7 +18794,7 @@
         ! strings are displayed left justified and horizontally, using the current rotation, font
         ! and colour.
         !e.g. DIMENSION YEAR1(12),YEAR2(12)
-        !CHARACTER*10 DESCRP(2)
+        !character(len=10 DESCRP(2)
         !DATA DESCRP/'1998 Sales','1999 Sales'/
         !CALL IGrUnits(0.0,0.0,100.0,100.0)
         !C only use 60% of width of main graphics area but 80% of height
@@ -19062,7 +19063,7 @@
         ! maximum character width.
         ! Labels are output centred within each column, using unrotated, horizontal text.
         ! The currently selected graphics character size and justification are restored on exit.
-        !e.g. CHARACTER*3 MONTH(12)
+        !e.g. character(len=3 MONTH(12)
         !DATA MONTH/'Jan','Feb','Mar','Apr','May','Jun',1 'Jul','Aug','Sep','Oct','Nov','Dec'/
         !CALL IPgNewPlot(PgHistogram,1,12,0,0)
         !CALL IPgUnits(1.,0.,12.,10000.)
@@ -19440,7 +19441,7 @@
         ! However, if the labels would overlap as a result, character size is adjusted accordingly.
         ! The currently selected graphics character size is restored on exit.
         !e.g. REAL SPOINT(3)
-        !CHARACTER*6 DESCR(3)
+        !character(len=6 DESCR(3)
         !DATA SPOINT/0.0,0.5,1.0/
         !DATA DESCR/'Low','Medium','High'/
         !NVALUE(1) = NXGRID
@@ -19692,7 +19693,7 @@
         ! graphics colour will remain unchanged on exit.
         !e.g. PARAMETER (NWEDGE = 5)
         !DIMENSION PIEVAL(NWEDGE)
-        !CHARACTER*10 DESCRP(NWEDGE)
+        !character(len=10 DESCRP(NWEDGE)
         !C generate a pie chart with 5 wedges with the 2nd & 4th exploded
         !CALL IPgNewPlot(PgPieChart,NWEDGE,0,PgLaySpider,0)
         !CALL IPgPieChart(PIEVAL,90.,' E E')

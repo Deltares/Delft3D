@@ -155,8 +155,8 @@ program ddcouple
     integer :: length
     logical :: success
     logical :: interactive   ! no commandline arguments given, work in interactive mode
-    character*1 :: askparallel   ! get a character
-    character(len = 99) :: version       ! version string
+    character(len=1) :: askparallel   ! get a character
+    character(len=99) :: version       ! version string
     character(:), allocatable :: temp_buffer
     type(banner_information) :: info
     !

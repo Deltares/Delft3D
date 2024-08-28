@@ -89,10 +89,10 @@ c
       integer       fd_nefis_waq ,itim(2)
       integer       ngrid, nqlat, dlwqts, neferr
       real          psi
-      character*16  grnamd, grnamw
-      character*16  elwqi(*)
-      character*16  namdes(2)
-      character*64  desdes(2)
+      character(len=16)  grnamd, grnamw
+      character(len=16)  elwqi(*)
+      character(len=16)  namdes(2)
+      character(len=64)  desdes(2)
 c
 c     Nefis variables
 c
@@ -107,7 +107,7 @@ c
       integer       i  ,itimf(2)
 
       integer, parameter                :: nelwqi = 9
-      character*16  clnamd ,clnamw
+      character(len=16) clnamd ,clnamw
       integer       ndim(nelwqi), dimw(2,nelwqi), dimd(1), ord(1)
       integer       ibuf(1), uindex(3), ncel, icel
       real          buf(1)

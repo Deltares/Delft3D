@@ -27,9 +27,6 @@
 !
 !-------------------------------------------------------------------------------
 
-! 
-! 
-
 !> DFM_MAX25_GETDATA - Subroutine to provide max25 filters to dfmoutput.
 !!
 module dfm_max25_getdata

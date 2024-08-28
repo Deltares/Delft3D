@@ -78,7 +78,6 @@ subroutine core_function()
 !
 ! Local variables for input parameters
 !
-integer            :: i
 integer            :: k
 integer            :: l
 integer            :: m

@@ -29,8 +29,8 @@ module M_control
 
  implicit none
  
- CHARACTER*256   IODir
- CHARACTER*26    Procs, Deps, IniDeps
+ CHARACTER(len=256) IODir
+ CHARACTER(len=26)  Procs, Deps, IniDeps
  INTEGER   ::    NrDep, NrProc, IniNrDep
  LOGICAL   ::    ProcFirst = .false.
  logical   ::    IniFirst  = .false.    !hk: is this ok?
@@ -120,27 +120,27 @@ end module M_control
       use M_control
       implicit none
       
-      CHARACTER*(*) CmdLine
+      CHARACTER(len=*) CmdLine
       INTEGER*4 Id
       INTEGER*2 Status
 
       INTEGER         :: Ctl = 149
       INTEGER*2       i, clen, cbegin, cend, Pos, POS1
       INTEGER         DepLen, Res, ilwr
-      CHARACTER*13    Name
-      CHARACTER*256   CtlNam, Regel
-      CHARACTER*32    Key
-      CHARACTER*26    RawDep
-      CHARACTER*1     MyID
+      CHARACTER(len=13)  Name
+      CHARACTER(len=256) CtlNam, Regel
+      CHARACTER(len=32)  Key
+      CHARACTER(len=26)  RawDep
+      CHARACTER(len=1)   MyID
       LOGICAL         raak
 !   de volgende strings zijn precies passend gedefinieerd, om padding
 !   met blanks te voorkomen:
-      CHARACTER*7     :: FirstKop    = '[first]'
-      CHARACTER*8     :: ProcKop     = '[proces]'
-      CHARACTER*8     :: DirKop      = '[common]'
-      CHARACTER*9     :: DepKop      = '[depends]'
-      Character*10    :: IniFirstKop = '[inifirst]'
-      Character*12    :: IniDepKop   = '[inidepends]'
+      CHARACTER(len=7) :: FirstKop    = '[first]'
+      CHARACTER(len=8) :: ProcKop     = '[proces]'
+      CHARACTER(len=8) :: DirKop      = '[common]'
+      CHARACTER(len=9) :: DepKop      = '[depends]'
+      Character(len=10) :: IniFirstKop = '[inifirst]'
+      Character(len=12) :: IniDepKop   = '[inidepends]'
 
 !
 !   CmdLine bevat naam aanroepende programma als eerste substring
@@ -446,8 +446,8 @@ end module M_control
       
       INTEGER*4 Id
 !
-      CHARACTER*1   Ch
-      CHARACTER*128 SigNam
+      CHARACTER(len=1) Ch
+      CHARACTER(len=128) SigNam
       LOGICAL       Selfcrash
       INTEGER       Ifout, len_trim, ilen, ilenio
       INTEGER       :: Sig   = 148
@@ -524,11 +524,11 @@ end module M_control
       INTEGER*4 Id
       INTEGER*2 Status
 !
-      CHARACTER*1   Ch, Ch2
-      CHARACTER*128 SigNam
+      CHARACTER(len=1)   Ch, Ch2
+      CHARACTER(len=128) SigNam
       Double precision  SigTim
       LOGICAL       InitMode, Crashed, Wacht, FnmXt, Einde, firsttime
-      INTEGER       i, Fout1, Foutcd, ret, len_trim, ilen, ilenio
+      INTEGER       i, Fout1, ret, len_trim, ilen, ilenio
       INTEGER       NDone, NSignalOK
       Integer       Local_nrdep
       INTEGER       :: Sig   = 148  ! Sig is UNIT nummer Signal file
@@ -693,10 +693,9 @@ end module M_control
       INTEGER*2 Status
 !
       INTEGER         :: Sig = 148
-      CHARACTER*1     MyId
-      CHARACTER*128   SigBase, SigName, DoneBase, DoneName
-      INTEGER         i, ilen
-      LOGICAL         FnmXt
+      CHARACTER(len=1)  MyId
+      CHARACTER(len=128) SigBase, DoneBase, DoneName
+      INTEGER         ilen
 
 !   vertaal Id naar character
       MyId = CHAR(Id)

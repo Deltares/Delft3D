@@ -39,7 +39,7 @@ c
 c     Declaration of parameters
 c
       integer    istr , lstnam
-      character*(*)     strnam
+      character(len=*)     strnam
 c
 c     Declaration of local variables
 c
@@ -65,8 +65,8 @@ c
 c     Declaration of parameters
 c
       integer       istr   ,lstnam
-      character*40  strunm(*)
-      character*(*) strnam
+      character(len=40) strunm(*)
+      character(len=*) strnam
 c
 c     Declaration of local variables
 c

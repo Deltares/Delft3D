@@ -104,7 +104,7 @@
        if (abs(u1(L)) > 0.1d0) then
 
           if (hs(k1) > 0d0) then
-             call getucxucynoweirs(k1, ucxk, ucyk, ifixedweirscheme)
+             call getucxucynoweirs(k1, ucxk, ucyk)
              umod = sqrt(ucxk * ucxk + ucyk * ucyk)
              uin = abs(ucxk * csu(L) + ucyk * snu(L))
              call getcz(hs(k1), frcu(L), ifrcutp(L), Cz, L)
@@ -112,7 +112,7 @@
           end if
 
           if (hs(k2) > 0d0) then
-             call getucxucynoweirs(k2, ucxk, ucyk, ifixedweirscheme)
+             call getucxucynoweirs(k2, ucxk, ucyk)
              umod = sqrt(ucxk * ucxk + ucyk * ucyk)
              uin = abs(ucxk * csu(L) + ucyk * snu(L))
              call getcz(hs(k2), frcu(L), ifrcutp(L), Cz, L)

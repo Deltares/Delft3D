@@ -71,7 +71,6 @@ subroutine calseddf1993(ustarc    ,ws        ,h1        ,num_layers_grid      ,s
     real(fp)                    :: betaef
     real(fp)                    :: epscur
     real(fp)                    :: epswav
-    real(fp)                    :: hs
     real(fp)                    :: zi
 !
 !! executable statements -------------------------------------------------------

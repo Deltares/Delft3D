@@ -31,7 +31,7 @@
 !
 
 !> compute the height of the subintervals of grid layers on a cross spline, w.r.t. a center spline
-subroutine comp_subheights(is, Lorient, num, xs, ys, ncs, ics, t, cosphi, nsubL, nsubR, hL, hR)
+subroutine comp_subheights(is, Lorient, num, xs, ys, ncs, ics, t, nsubL, nsubR, hL, hR)
    use m_splines
    use m_spline2curvi
 
@@ -44,7 +44,6 @@ subroutine comp_subheights(is, Lorient, num, xs, ys, ncs, ics, t, cosphi, nsubL,
    integer, intent(in) :: ncs !< number of splines crossing the cross spline
    integer, dimension(ncs), intent(in) :: ics !< spline numbers of splines that cross the cross spline
    double precision, dimension(ncs), intent(in) :: t !< cross spline coordinates of the crossings
-   double precision, dimension(ncs), intent(in) :: cosphi !< cosine of crossing angle
 
    integer, intent(out) :: nsubL, nsubR !< number of subintervals left and right of the center spline
    double precision, dimension(Nsubmax), intent(inout) :: hL, hR !< subinterval heights left and right of center spline

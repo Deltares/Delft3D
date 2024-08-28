@@ -35,9 +35,7 @@
          use m_samples
          implicit none
 
-         common / DIAGNOSTICFILE / MDIAG
          integer mdiag
-
          double precision :: avdiffm, avdifwq, fm, wq
          integer :: k, kk, num
          double precision, external :: znod

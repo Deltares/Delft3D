@@ -41,7 +41,7 @@
     use m_hydrology_data, only: jadhyd, ActEvap, interceptionmodel, InterceptThickness, InterceptHs, DFM_HYD_INTERCEPT_LAYER
     use m_mass_balance_areas
     use m_partitioninfo
-    use m_lateral, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
+    use m_laterals, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
                          apply_transport
     implicit none
 
@@ -197,7 +197,6 @@
                 idim = 1
              end if
 
-             !DIR$ FORCEINLINE
              isGhost = is_ghost_node(k)
              do i_lat = 1, numlatsg
                 do i_layer = 1, num_layers
@@ -296,7 +295,6 @@
           else
              dd(k) = 0
           end if
-          !DIR$ FORCEINLINE
           isGhost = is_ghost_node(k)
           if (.not. isGhost) then ! Do not count ghosts in mass balances
              qincel = qincel + qin(k)

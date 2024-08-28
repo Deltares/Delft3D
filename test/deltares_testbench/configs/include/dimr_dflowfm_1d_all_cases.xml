@@ -107,7 +107,7 @@
 				</parameters>
 			</file>
 		</checks>
-	</testCase>	
+	</testCase>
 	<testCase name="e02_f024_c05_Horton_test_Spatial_varying_P+ET_with_runoff" ref="dimr_default">
 		<path version="2024-01-11T13:10:00">e02_dflowfm/f024_hydrology/c05_Horton_test_Spatial_varying_P+ET_with_runoff</path>
 		<checks>
@@ -119,9 +119,9 @@
 				</parameters>
 			</file>
 		</checks>
-	</testCase>	
+	</testCase>
 	<testCase name="e02_f024_c06_Evaporation" ref="dimr_default">
-		<path version="2024-07-05T14:30:00">e02_dflowfm/f024_hydrology/c06_Evaporation</path>
+		<path version="2024-08-06T15:50:00">e02_dflowfm/f024_hydrology/c06_Evaporation</path>
 		<checks>
 			<file name="DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
 				<parameters>
@@ -136,7 +136,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f024_c07_Interception" ref="dimr_default">
-		<path version="2024-07-05T14:30:00">e02_dflowfm/f024_hydrology/c07_Interception</path>
+		<path version="2024-08-06T15:54:00">e02_dflowfm/f024_hydrology/c07_Interception</path>
 		<checks>
 			<file name="DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
 				<parameters>
@@ -147,7 +147,7 @@
 					<parameter name="rain" toleranceAbsolute="0.0001" />
 					<parameter name="water_balance_total_volume_interception" toleranceAbsolute="0.0001" />
 					<parameter name="waterlevel" toleranceAbsolute="0.0001" />
-					<parameter name="water_balance_evaporation_interception" toleranceAbsolute="0.0001" />					
+					<parameter name="water_balance_evaporation_interception" toleranceAbsolute="0.0001" />
 				</parameters>
 			</file>
 		</checks>
@@ -970,7 +970,7 @@
 					<parameter name="cmpstru_s1up" toleranceAbsolute="0.0001" />
 					<parameter name="cmpstru_s1dn" toleranceAbsolute="0.0001" />
 					<parameter name="cmpstru_flow_area" toleranceAbsolute="0.0001" />
-					<parameter name="cmpstru_head" toleranceAbsolute="0.0001" />						
+					<parameter name="cmpstru_head" toleranceAbsolute="0.0001" />
 					<parameter name="cmpstru_velocity" toleranceAbsolute="0.0001" />
 					<parameter name="culvert_discharge" toleranceAbsolute="0.0001" />
 					<parameter name="culvert_s1up" toleranceAbsolute="0.0001" />
@@ -1373,7 +1373,7 @@
 				</parameters>
 			</file>
 		</checks>
-	</testCase>	
+	</testCase>
 	<testCase name="e02_f107_c08_roof_T2" ref="dimr_default">
 		<path version="2024-01-11T13:00:00">e02_dflowfm/f107_1d2d_validation/c08_roof/T2</path>
 		<checks>
@@ -1390,7 +1390,7 @@
 				</parameters>
 			</file>
 		</checks>
-	</testCase>	
+	</testCase>
 	<testCase name="e02_f107_c09_useStreetStorage_T1" ref="dimr_default">
 		<path version="2024-04-19T13:10:00">e02_dflowfm/f107_1d2d_validation/c09_useStreetStorage/T1</path>
 		<checks>
@@ -1422,7 +1422,7 @@
 				</parameters>
 			</file>
 		</checks>
-	</testCase>			
+	</testCase>
 	<testCase name="e02_f115_c01_M1" ref="dimr_default">
 		<path version="2024-03-22T19:30:00">e02_dflowfm/f115_1D_backwater-curves/c01_M1</path>
 		<checks>
@@ -1520,7 +1520,7 @@
 				</parameters>
 			</file>
 		</checks>
-	</testCase>	
+	</testCase>
 	<testCase name="e02_f153_c03_Korte_Woerden_2D" ref="dimr_default">
 		<path>e02_dflowfm/f153_1D2D-acceptance-urban/c03_Korte_Woerden_2D</path>
 		<checks>
@@ -1538,7 +1538,7 @@
 				</parameters>
 			</file>
 		</checks>
-	</testCase>	
+	</testCase>
 	 ======================================================================== -->
 	<testCase name="e02_f190_c01_iniField_1dField" ref="dimr_default">
 		<path version="2024-01-11T13:00:00">e02_dflowfm/f190_1D_regression/c01_iniField_1dField</path>

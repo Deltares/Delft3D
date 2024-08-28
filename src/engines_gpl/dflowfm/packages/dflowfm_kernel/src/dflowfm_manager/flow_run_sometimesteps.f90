@@ -36,7 +36,7 @@ subroutine flow_run_sometimesteps(dtrange, iresult) ! do computational flowsteps
    use unstruc_messages
    use m_partitioninfo
    use dfm_error
-   use m_lateral, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used, &
+   use m_laterals, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used, &
                         qqlat, qplat, get_lateral_volume_per_layer, &
                         lateral_volume_per_layer, distribute_lateral_discharge
 

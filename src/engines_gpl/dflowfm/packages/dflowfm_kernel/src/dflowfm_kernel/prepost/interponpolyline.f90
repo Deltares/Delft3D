@@ -35,11 +35,11 @@
       !! measured along the consecutive polyline segments.
       subroutine interpOnPolyline(DPL, DXS, NPL, DXS1, DXS2)
          implicit none
+         integer :: npl
          double precision, intent(in) :: DPL(NPL) !< Accumulated distance at each point.
          double precision, intent(out) :: DXS(NPL) !< Interpolated values of dxs1--dxs2 on polyline points.
          double precision, intent(in) :: dxs1 !< Value at first polyline point.
          double precision, intent(in) :: dxs2 !< Value at last polyline point.
-         integer :: npl
 
          double precision :: f
          double precision :: f1

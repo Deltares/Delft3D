@@ -59,7 +59,7 @@ logical function nan_check_1D_sp(field, fieldnam, lundia, ilb) result (retval)
     ! Arguments
     !
     real(kind=4), dimension(:)               , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: ilb
     !
@@ -67,7 +67,7 @@ logical function nan_check_1D_sp(field, fieldnam, lundia, ilb) result (retval)
     !
     integer                                :: i
     integer                                :: i0
-    character*(256)                        :: message
+    character(len=256)                     :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -100,7 +100,7 @@ logical function nan_check_2D_sp(field, fieldnam, lundia, nlb, mlb) result (retv
     ! Arguments
     !
     real(kind=4), dimension(:,:)             , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: nlb
     integer, optional                        , intent(in)    :: mlb
@@ -109,7 +109,7 @@ logical function nan_check_2D_sp(field, fieldnam, lundia, nlb, mlb) result (retv
     !
     integer                                  :: m, n
     integer                                  :: m0, n0
-    character*(256)                          :: message
+    character(len=256)                       :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -149,7 +149,7 @@ logical function nan_check_3D_sp(field, fieldnam, lundia, nlb, mlb, klb) result 
     ! Arguments
     !
     real(kind=4), dimension(:,:,:)           , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: nlb
     integer, optional                        , intent(in)    :: mlb
@@ -159,7 +159,7 @@ logical function nan_check_3D_sp(field, fieldnam, lundia, nlb, mlb, klb) result 
     !
     integer                                    :: k, m, n
     integer                                    :: k0, m0, n0
-    character*(256)                            :: message
+    character(len=256)                         :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -206,7 +206,7 @@ logical function nan_check_4D_sp(field, fieldnam, lundia, nlb, mlb, klb, llb) re
     ! Arguments
     !
     real(kind=4), dimension(:,:,:,:)         , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: nlb
     integer, optional                        , intent(in)    :: mlb
@@ -217,7 +217,7 @@ logical function nan_check_4D_sp(field, fieldnam, lundia, nlb, mlb, klb, llb) re
     !
     integer                                      :: k, l, m, n
     integer                                      :: k0, l0, m0, n0
-    character*(256)                              :: message
+    character(len=256)                           :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -271,7 +271,7 @@ logical function nan_check_1D_dp(field, fieldnam, lundia, ilb) result (retval)
     ! Arguments
     !
     real(kind=8), dimension(:)               , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: ilb
     !
@@ -279,7 +279,7 @@ logical function nan_check_1D_dp(field, fieldnam, lundia, ilb) result (retval)
     !
     integer                                :: i
     integer                                :: i0
-    character*(256)                        :: message
+    character(len=256)                     :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -312,7 +312,7 @@ logical function nan_check_2D_dp(field, fieldnam, lundia, nlb, mlb) result (retv
     ! Arguments
     !
     real(kind=8), dimension(:,:)             , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: nlb
     integer, optional                        , intent(in)    :: mlb
@@ -321,7 +321,7 @@ logical function nan_check_2D_dp(field, fieldnam, lundia, nlb, mlb) result (retv
     !
     integer                                  :: m, n
     integer                                  :: m0, n0
-    character*(256)                          :: message
+    character(len=256)                       :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -361,7 +361,7 @@ logical function nan_check_3D_dp(field, fieldnam, lundia, nlb, mlb, klb) result 
     ! Arguments
     !
     real(kind=8), dimension(:,:,:)           , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: nlb
     integer, optional                        , intent(in)    :: mlb
@@ -371,7 +371,7 @@ logical function nan_check_3D_dp(field, fieldnam, lundia, nlb, mlb, klb) result 
     !
     integer                                    :: k, m, n
     integer                                    :: k0, m0, n0
-    character*(256)                            :: message
+    character(len=256)                         :: message
 !
 !! executable statements -------------------------------------------------------
 !
@@ -418,7 +418,7 @@ logical function nan_check_4D_dp(field, fieldnam, lundia, nlb, mlb, klb, llb) re
     ! Arguments
     !
     real(kind=8), dimension(:,:,:,:)         , intent(in)    :: field
-    character*(*)                            , intent(in)    :: fieldnam
+    character(len=*)                         , intent(in)    :: fieldnam
     integer                                  , intent(in)    :: lundia
     integer, optional                        , intent(in)    :: nlb
     integer, optional                        , intent(in)    :: mlb
@@ -429,7 +429,7 @@ logical function nan_check_4D_dp(field, fieldnam, lundia, nlb, mlb, klb, llb) re
     !
     integer                                      :: k, l, m, n
     integer                                      :: k0, l0, m0, n0
-    character*(256)                              :: message
+    character(len=256)                           :: message
 !
 !! executable statements -------------------------------------------------------
 !

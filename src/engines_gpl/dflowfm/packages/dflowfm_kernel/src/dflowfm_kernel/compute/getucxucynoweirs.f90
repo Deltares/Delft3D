@@ -30,13 +30,13 @@
 !
 !
 
- subroutine getucxucynoweirs(ku, ucxku, ucyku, ischeme)
+ subroutine getucxucynoweirs(ku, ucxku, ucyku)
     use m_flow
     use m_flowgeom
     use m_sferic, only: jasfer3D
     implicit none
 
-    integer :: ku, LL, L, Ls, ischeme, n12
+    integer :: ku, LL, L, Ls, n12
 
     double precision :: ucxku, ucyku, ww, ac1, huweir, hunoweir, wl, wlno, at, cs, sn, fac
 

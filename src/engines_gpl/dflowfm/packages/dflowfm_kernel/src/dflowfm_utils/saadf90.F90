@@ -226,15 +226,15 @@ end subroutine initsaad
 
 subroutine cgsaad(its, na, nocg, jaini, jabcgstab, ierror, res)
    use m_saad
-   
+
    implicit none
-   
+
    integer :: its, na, nocg
    integer, intent(in) :: jaini !< compute preconditioner and permutation (1) or not (0), or initialization only (-1), or ILU solve only (2)
    integer, intent(in) :: jabcgstab !< use bcgstab (1) or cg (other)
    integer, intent(out) :: ierror !< error (1) or not (0)
    double precision, intent(out) :: res !< || residual ||
-   
+
    integer :: n, m, maxcol, ncol, nset, job
 
    ierror = 0
@@ -728,7 +728,7 @@ subroutine ilut(n, a, ja, ia, lfil, droptol, alu, jlu, ju, iwk, w, jw, ierr)
 999 ierr = -5
    return
 end subroutine ilut
-    
+
 subroutine ilutp(n, a, ja, ia, lfil, droptol, permtol, mbloc, alu, jlu, ju, iwk, w, jw, iperm, ierr)
    implicit none
    integer n, ja(*), ia(n + 1), lfil, jlu(*), ju(n), jw(2 * n), iwk, iperm(2 * n), ierr
@@ -828,7 +828,7 @@ subroutine ilutp(n, a, ja, ia, lfil, droptol, permtol, mbloc, alu, jlu, ju, iwk,
    double precision :: s, tmp, tnorm, xmax, xmax0, fact, abs, t, permtol
 !
    no_warning_unused_dummy_argument(mbloc)
-   
+
    if (lfil < 0) goto 998
 !-----------------------------------------------------------------------
 !     initialize ju0 (points to next element to be added to alu,jlu)
@@ -1848,7 +1848,7 @@ subroutine iludp(n, a, ja, ia, alph, droptol, permtol, mbloc, alu, jlu, ju, iwk,
 997 ierr = -3
    return
 end subroutine iludp
-    
+
 subroutine iluk(n, a, ja, ia, lfil, alu, jlu, ju, levs, iwk, w, jw, ierr)
    implicit none
    integer n
@@ -2151,7 +2151,7 @@ subroutine iluk(n, a, ja, ia, lfil, alu, jlu, ju, levs, iwk, w, jw, ierr)
 999 ierr = -5
    return
 end subroutine iluk
-    
+
 subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
    use precision_basics, only: dp
 
@@ -2208,7 +2208,7 @@ subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
 !-----------------------------------------------------------------------
    integer :: ju0, i, ii, js, j, jcol, jf, jm, jrow, jj, jw
    real(dp) :: tl
-   
+
    ju0 = n + 2
    jlu(1) = ju0
 !
@@ -2281,12 +2281,12 @@ subroutine ilu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
 !
    return
 end subroutine ilu0
-    
+
 subroutine milu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
    use precision_basics, only: dp
 
    implicit none
-   
+
    integer :: n, ierr
    real(dp) :: a(*), alu(*)
    integer :: ja(*), ia(*), ju(*), jlu(*), iw(*)
@@ -2337,7 +2337,7 @@ subroutine milu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
 !-----------------------------------------------------------
    integer :: ju0, i, ii, js, j, jcol, jf, jm, jrow, jj, jw
    real(dp) :: s, tl
-   
+
    ju0 = n + 2
    jlu(1) = ju0
 ! initialize work vector to zero's
@@ -2402,13 +2402,13 @@ subroutine milu0(n, a, ja, ia, alu, jlu, ju, iw, ierr)
 !     zero pivot :
 600 ierr = ii
    return
- end subroutine milu0
+end subroutine milu0
 
 subroutine pgmres(n, im, rhs, sol, vv, eps, maxits, iout, aa, ja, ia, alu, jlu, ju, ierr)
    use precision_basics, only: dp
 
    implicit none
-   
+
    integer :: n, im, maxits, iout, ierr, ja(*), ia(n + 1), jlu(*), ju(n)
    real(dp) :: vv(n, *), rhs(n), sol(n), aa(*), alu(*), eps
 !----------------------------------------------------------------------*
@@ -2495,9 +2495,9 @@ subroutine pgmres(n, im, rhs, sol, vv, eps, maxits, iout, aa, ja, ia, alu, jlu, 
 ! BLAS1  routines.                                                     *
 !----------------------------------------------------------------------*
    integer :: n1, its, j, i, i1, ii, jj, k, k1
-   integer, parameter :: KMAX=50
+   integer, parameter :: KMAX = 50
    real(dp) :: hh(KMAX + 1, KMAX), c(KMAX), s(KMAX), rs(KMAX + 1), t, ro, eps1, gam
-   
+
    EXTERNAL_DNRM2
    EXTERNAL_DDOT
 !-------------------------------------------------------------
@@ -2644,9 +2644,9 @@ subroutine qsplit(a, ind, n, ncut)
    use precision_basics, only: dp
 
    implicit none
-
+   integer :: n
    real(dp) :: a(n)
-   integer :: ind(n), n, ncut
+   integer :: ind(n), ncut
 !-----------------------------------------------------------------------
 !     does a quick-sort split of a real array.
 !     on input a(1:n). is a real array
@@ -2704,7 +2704,7 @@ end subroutine qsplit
 
 subroutine runrc2(n, rhs, sol, ipar, fpar, wk, a, ja, ia, au, jau, ju, its, eps, jabcgstab, ierror, nau)
    implicit none
-   integer n, ipar(16), ia(n + 1), ja(5 * n), ju(n), jau(nau), jabcgstab, nau
+   integer n, nau, ipar(16), ia(n + 1), ja(5 * n), ju(n), jau(nau), jabcgstab 
    double precision :: fpar(16), rhs(n), sol(n), wk(2 * nau), a(5 * n), au(nau), eps
    integer :: ierror !< error (1) or not (0)
 
@@ -2724,7 +2724,7 @@ subroutine runrc2(n, rhs, sol, ipar, fpar, wk, a, ja, ia, au, jau, ju, its, eps,
 !     external dtime
    EXTERNAL_DNRM2
    save res
-   
+
    no_warning_unused_dummy_argument(eps)
 
 !
@@ -2934,13 +2934,12 @@ subroutine runrc(n, rhs, sol, sol0, ipar, fpar, wk, guess, a, ja, ia, au, jau, j
    return
 end subroutine runrc
 
-
 subroutine watisdefout(n, sol, sol0)
    implicit none
-   
+
    integer :: n
    double precision :: sol(n), sol0(n)
-   
+
    double precision :: errmx, errav
    errmx = maxval(abs(sol - sol0))
    errav = sum(abs(sol - sol0))
@@ -3029,7 +3028,7 @@ end function hfun
 
 function betfun(side, x, y, z)
    double precision :: betfun, x, y, z
-   character * 2 side
+   character(len=2) side
    no_warning_unused_dummy_argument(side)
    no_warning_unused_dummy_argument(x)
    no_warning_unused_dummy_argument(y)
@@ -3040,7 +3039,7 @@ end function betfun
 
 function gamfun(side, x, y, z)
    double precision :: gamfun, x, y, z
-   character * 2 side
+   character(len=2) side
    no_warning_unused_dummy_argument(x)
    no_warning_unused_dummy_argument(y)
    no_warning_unused_dummy_argument(z)
@@ -3460,7 +3459,23 @@ subroutine cg(n, rhs, sol, ipar, fpar, w)
 !     check the status of the call
 !
    if (ipar(1) <= 0) ipar(10) = 0
-   goto(10, 20, 40, 50, 60, 70, 80), ipar(10)
+
+   if (ipar(10) == 1) then
+      goto 10
+   else if (ipar(10) == 2) then
+      goto 20
+   else if (ipar(10) == 3) then
+      goto 40
+   else if (ipar(10) == 4) then
+      goto 50
+   else if (ipar(10) == 5) then
+      goto 60
+   else if (ipar(10) == 6) then
+      goto 70
+   else if (ipar(10) == 7) then
+      goto 80
+   end if
+
 !
 !     initialization
 !
@@ -3644,7 +3659,27 @@ subroutine cgnr(n, rhs, sol, ipar, fpar, wk)
 !     check the status of the call
 !
    if (ipar(1) <= 0) ipar(10) = 0
-   goto(10, 20, 40, 50, 60, 70, 80, 90, 100, 110), ipar(10)
+   if (ipar(10) == 1) then
+      goto 10
+   else if (ipar(10) == 2) then
+      goto 20
+   else if (ipar(10) == 3) then
+      goto 40
+   else if (ipar(10) == 4) then
+      goto 50
+   else if (ipar(10) == 5) then
+      goto 60
+   else if (ipar(10) == 6) then
+      goto 70
+   else if (ipar(10) == 7) then
+      goto 80
+   else if (ipar(10) == 8) then
+      goto 90
+   else if (ipar(10) == 9) then
+      goto 100
+   else if (ipar(10) == 10) then
+      goto 110
+   end if
 !
 !     initialization
 !
@@ -3880,7 +3915,27 @@ subroutine bcg(n, rhs, sol, ipar, fpar, w)
 !     status of the program
 !
    if (ipar(1) <= 0) ipar(10) = 0
-   goto(10, 20, 40, 50, 60, 70, 80, 90, 100, 110), ipar(10)
+   if (ipar(10) == 1) then
+      goto 10
+   else if (ipar(10) == 2) then
+      goto 20
+   else if (ipar(10) == 3) then
+      goto 40
+   else if (ipar(10) == 4) then
+      goto 50
+   else if (ipar(10) == 5) then
+      goto 60
+   else if (ipar(10) == 6) then
+      goto 70
+   else if (ipar(10) == 7) then
+      goto 80
+   else if (ipar(10) == 8) then
+      goto 90
+   else if (ipar(10) == 9) then
+      goto 100
+   else if (ipar(10) == 10) then
+      goto 110
+   end if
 !
 !     initialization, initial residual
 !
@@ -4137,7 +4192,27 @@ subroutine bcgstab(n, rhs, sol, ipar, fpar, w)
 !     where to go
 !
    if (ipar(1) > 0) then
-      goto(10, 20, 40, 50, 60, 70, 80, 90, 100, 110) ipar(10)
+      if (ipar(10) == 1) then
+         goto 10
+      else if (ipar(10) == 2) then
+         goto 20
+      else if (ipar(10) == 3) then
+         goto 40
+      else if (ipar(10) == 4) then
+         goto 50
+      else if (ipar(10) == 5) then
+         goto 60
+      else if (ipar(10) == 6) then
+         goto 70
+      else if (ipar(10) == 7) then
+         goto 80
+      else if (ipar(10) == 8) then
+         goto 90
+      else if (ipar(10) == 9) then
+         goto 100
+      else if (ipar(10) == 10) then
+         goto 110
+      end if
    else if (ipar(1) < 0) then
       goto 900
    end if
@@ -4482,7 +4557,27 @@ subroutine tfqmr(n, rhs, sol, ipar, fpar, w)
 !     status of the call (where to go)
 !
    if (ipar(1) <= 0) ipar(10) = 0
-   goto(10, 20, 40, 50, 60, 70, 80, 90, 100, 110), ipar(10)
+   if (ipar(10) == 1) then
+      goto 10
+   else if (ipar(10) == 2) then
+      goto 20
+   else if (ipar(10) == 3) then
+      goto 40
+   else if (ipar(10) == 4) then
+      goto 50
+   else if (ipar(10) == 5) then
+      goto 60
+   else if (ipar(10) == 6) then
+      goto 70
+   else if (ipar(10) == 7) then
+      goto 80
+   else if (ipar(10) == 8) then
+      goto 90
+   else if (ipar(10) == 9) then
+      goto 100
+   else if (ipar(10) == 10) then
+      goto 110
+   end if
 !
 !     initializations
 !
@@ -4767,7 +4862,21 @@ subroutine fom(n, rhs, sol, ipar, fpar, w)
 !     check the status of the call
 !
    if (ipar(1) <= 0) ipar(10) = 0
-   goto(10, 20, 30, 40, 50, 60, 70) ipar(10)
+   if (ipar(10) == 1) then
+      goto 10
+   else if (ipar(10) == 2) then
+      goto 20
+   else if (ipar(10) == 3) then
+      goto 30
+   else if (ipar(10) == 4) then
+      goto 40
+   else if (ipar(10) == 5) then
+      goto 50
+   else if (ipar(10) == 6) then
+      goto 60
+   else if (ipar(10) == 7) then
+      goto 70
+   end if
 !
 !     initialization
 !
@@ -5077,7 +5186,21 @@ subroutine gmres(n, rhs, sol, ipar, fpar, w)
 !     check the status of the call
 !
    if (ipar(1) <= 0) ipar(10) = 0
-   goto(10, 20, 30, 40, 50, 60, 70) ipar(10)
+   if (ipar(10) == 1) then
+      goto 10
+   else if (ipar(10) == 2) then
+      goto 20
+   else if (ipar(10) == 3) then
+      goto 30
+   else if (ipar(10) == 4) then
+      goto 40
+   else if (ipar(10) == 5) then
+      goto 50
+   else if (ipar(10) == 6) then
+      goto 60
+   else if (ipar(10) == 7) then
+      goto 70
+   end if
 !
 !     initialization
 !
@@ -5361,7 +5484,19 @@ subroutine dqgmres(n, rhs, sol, ipar, fpar, w)
 !     where to go
 !
    if (ipar(1) <= 0) ipar(10) = 0
-   goto(10, 20, 40, 50, 60, 70) ipar(10)
+   if (ipar(10) == 1) then
+      goto 10
+   else if (ipar(10) == 2) then
+      goto 20
+   else if (ipar(10) == 3) then
+      goto 40
+   else if (ipar(10) == 4) then
+      goto 50
+   else if (ipar(10) == 5) then
+      goto 60
+   else if (ipar(10) == 6) then
+      goto 70
+   end if
 !
 !     locations of the work arrays. The arrangement is as follows:
 !     w(1:n) -- temporary storage for the results of the preconditioning
@@ -5676,7 +5811,19 @@ subroutine fgmres(n, rhs, sol, ipar, fpar, w)
 !     check the status of the call
 !
    if (ipar(1) <= 0) ipar(10) = 0
-   goto(10, 20, 30, 40, 50, 60) ipar(10)
+   if (ipar(10) == 1) then
+      goto 10
+   else if (ipar(10) == 2) then
+      goto 20
+   else if (ipar(10) == 3) then
+      goto 30
+   else if (ipar(10) == 4) then
+      goto 40
+   else if (ipar(10) == 5) then
+      goto 50
+   else if (ipar(10) == 6) then
+      goto 60
+   end if
 !
 !     initialization
 !
@@ -5967,7 +6114,27 @@ subroutine dbcg(n, rhs, sol, ipar, fpar, w)
 !     where to go
 !
    if (ipar(1) <= 0) ipar(10) = 0
-   goto(110, 120, 130, 140, 150, 160, 170, 180, 190, 200) ipar(10)
+   if (ipar(10) == 1) then
+      goto 110
+   else if (ipar(10) == 2) then
+      goto 120
+   else if (ipar(10) == 3) then
+      goto 130
+   else if (ipar(10) == 4) then
+      goto 140
+   else if (ipar(10) == 5) then
+      goto 150
+   else if (ipar(10) == 6) then
+      goto 160
+   else if (ipar(10) == 7) then
+      goto 170
+   else if (ipar(10) == 8) then
+      goto 180
+   else if (ipar(10) == 9) then
+      goto 190
+   else if (ipar(10) == 10) then
+      goto 200
+   end if
 !
 !     initialization, parameter checking, clear the work arrays
 !
@@ -6309,9 +6476,8 @@ end subroutine implu
 
 subroutine uppdir(n, p, np, lbp, indp, y, u, usav, flops)
    implicit none
-
-   double precision :: p(n, lbp), y(*), u(*), usav(*), x, flops
    integer k, np, n, npm1, j, ju, indp, lbp
+   double precision :: p(n, lbp), y(*), u(*), usav(*), x, flops
 !-----------------------------------------------------------------------
 !     updates the conjugate directions p given the upper part of the
 !     banded upper triangular matrix u.  u contains the non zero
@@ -6342,7 +6508,7 @@ subroutine uppdir(n, p, np, lbp, indp, y, u, usav, flops)
    end do
 208 return
 end subroutine uppdir
-    
+
 subroutine givens(x, y, c, s)
    implicit none
 
@@ -6739,7 +6905,7 @@ subroutine xyk(nel, xyke, x, y, ijk, node)
    use precision_basics, only: dp
 
    implicit none
-   
+
    integer :: nel, ijk(:, :), node
    real(dp) :: xyke(2, 2), x(:), y(:)
    no_warning_unused_dummy_argument(nel)
@@ -7279,7 +7445,7 @@ subroutine gen57bl(nx, ny, nz, nfree, na, n, a, ja, ia, iau, stencil)
    ia(node) = iedge
    return
 end subroutine gen57bl
-    
+
 subroutine bsten(nx, ny, nz, kx, ky, kz, nfree, stencil, h)
 
 !-----------------------------------------------------------------------
@@ -7405,8 +7571,8 @@ subroutine bsten(nx, ny, nz, kx, ky, kz, nfree, stencil, h)
    end do
 !
    return
-endsubroutine bsten
-    
+end subroutine bsten
+
 subroutine fdreduce(nx, ny, nz, alpha, n, a, ja, ia, iau, rhs, stencil)
    implicit none
    integer nx, ny, nz, n, ia(*), ja(*), iau(*)
@@ -7707,7 +7873,7 @@ subroutine fdaddbc(nx, ny, nz, a, ja, ia, iau, rhs, al, h)
 !
 !     local variables
 !
-   character * 2 side
+   character(len=2) side
    integer i, j, k, kx, ky, kz, node, nbr, ly, uy, lx, ux
    double precision :: coeff, ctr, hhalf, x, y, z
    double precision :: afun, bfun, cfun, dfun, efun, ffun, gfun, hfun
@@ -8039,9 +8205,9 @@ subroutine afunbl(nfree, x, y, z, coeff)
 
    integer :: nfree
    real(dp) :: x, y, z, coeff(225)
-   
+
    integer :: i, j
-   
+
    no_warning_unused_dummy_argument(x)
    no_warning_unused_dummy_argument(y)
    no_warning_unused_dummy_argument(z)
@@ -8061,9 +8227,9 @@ subroutine bfunbl(nfree, x, y, z, coeff)
 
    integer :: nfree
    real(dp) :: x, y, z, coeff(225)
-   
-   integer :: i, j 
-   
+
+   integer :: i, j
+
    no_warning_unused_dummy_argument(x)
    no_warning_unused_dummy_argument(y)
    no_warning_unused_dummy_argument(z)
@@ -8083,9 +8249,9 @@ subroutine cfunbl(nfree, x, y, z, coeff)
 
    integer :: nfree
    real(dp) :: x, y, z, coeff(225)
-   
+
    integer :: i, j
-   
+
    no_warning_unused_dummy_argument(x)
    no_warning_unused_dummy_argument(y)
    no_warning_unused_dummy_argument(z)
@@ -8105,9 +8271,9 @@ subroutine dfunbl(nfree, x, y, z, coeff)
 
    integer :: nfree
    real(dp) :: x, y, z, coeff(225)
-   
+
    integer :: i, j
-   
+
    no_warning_unused_dummy_argument(x)
    no_warning_unused_dummy_argument(y)
    no_warning_unused_dummy_argument(z)
@@ -8126,9 +8292,9 @@ subroutine efunbl(nfree, x, y, z, coeff)
 
    integer :: nfree
    real(dp) :: x, y, z, coeff(225)
-   
+
    integer :: i, j
-   
+
    no_warning_unused_dummy_argument(x)
    no_warning_unused_dummy_argument(y)
    no_warning_unused_dummy_argument(z)
@@ -8147,9 +8313,9 @@ subroutine ffunbl(nfree, x, y, z, coeff)
 
    integer :: nfree
    real(dp) :: x, y, z, coeff(225)
-   
+
    integer :: i, j
-   
+
    no_warning_unused_dummy_argument(x)
    no_warning_unused_dummy_argument(y)
    no_warning_unused_dummy_argument(z)
@@ -8168,9 +8334,9 @@ subroutine gfunbl(nfree, x, y, z, coeff)
 
    integer :: nfree
    real(dp) :: x, y, z, coeff(225)
-   
-   integer :: i, j 
-   
+
+   integer :: i, j
+
    no_warning_unused_dummy_argument(x)
    no_warning_unused_dummy_argument(y)
    no_warning_unused_dummy_argument(z)
@@ -8189,8 +8355,8 @@ subroutine amuxXXX(n, x, y, a, ja, ia)
 
    implicit none
 
-   real(dp) :: x(n), y(n), a(*)
    integer n, ja(*), ia(*)
+   real(dp) :: x(n), y(n), a(*)
 !-----------------------------------------------------------------------
 !         A times a vector
 !-----------------------------------------------------------------------
@@ -8320,8 +8486,8 @@ end subroutine atmux
 subroutine lusol(n, y, x, alu, jlu, ju, nau)
    implicit none
 
+   integer n, nau, jlu(nau), ju(nau)
    double precision :: x(n), y(n), alu(nau)
-   integer n, jlu(nau), ju(nau), nau
 !-----------------------------------------------------------------------
 !
 ! This routine solves the system (LU) x = y,
@@ -8375,8 +8541,8 @@ end subroutine lusol
 subroutine lutsol(n, y, x, alu, jlu, ju)
    implicit none
 
-   double precision :: x(n), y(n), alu(*)
    integer n, jlu(*), ju(*)
+   double precision :: x(n), y(n), alu(*)
 !-----------------------------------------------------------------------
 !
 ! This routine solves the system  Transp(LU) x = y,

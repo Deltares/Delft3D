@@ -65,7 +65,7 @@ c
       real             x     (ngrid)   ,hmax(ngrid)
       double precision time  ,dt, qp(ngrid,3),hp(ngrid,3)
       logical          first ,wrirst
-      character*40     gridnm(ngrid)
+      character(len=40) gridnm(ngrid)
 
       logical          ivbact,maxwl,restrt
       common  /ivbdos/ ivbact,maxwl,restrt

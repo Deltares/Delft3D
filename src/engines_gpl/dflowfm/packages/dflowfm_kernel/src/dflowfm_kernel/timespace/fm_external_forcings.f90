@@ -1221,10 +1221,9 @@ contains
 
 !> Initializes memory for laterals on flow nodes.
    subroutine ini_alloc_laterals()
-      use m_lateral, only: qqlat, kclat, nnlat
+      use m_laterals, only: kclat, nnlat
       use m_flowgeom, only: ndx2d, ndxi, ndx
       use m_alloc
-      use m_flow, only: kmx
       integer :: ierr
       integer :: nlatndguess
 
@@ -1599,9 +1598,13 @@ contains
       call setup(iresult)
       if (iresult == DFM_NOERR) then
          call init_new(md_extfile_new, iresult)
+      end if
+      if (iresult == DFM_NOERR) then
          call init_old(iresult)
       end if
-      call finalize()
+      if (iresult == DFM_NOERR) then
+         call finalize()
+      end if
 
    end function flow_initexternalforcings
 
@@ -2301,7 +2304,7 @@ contains
       use m_crosssections, only: cs_type_normal, getcsparstotal
       use m_trachy, only: trachy_resistance
       use m_structures, only: check_model_has_structures_across_partitions
-      use m_lateral, only: initialize_lateraldata
+      use m_laterals, only: initialize_lateraldata
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2673,7 +2676,7 @@ contains
       use m_cell_geometry, only: ndx
       use m_alloc, only: aerr
       use precision_basics, only: hp
-      
+
       real(kind=hp), intent(in) :: default_value !< default atmospheric pressure value
       integer :: status
 

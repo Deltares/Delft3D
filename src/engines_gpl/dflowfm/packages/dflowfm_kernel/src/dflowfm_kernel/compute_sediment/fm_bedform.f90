@@ -997,7 +997,7 @@ contains
 
    subroutine fm_advecbedform(thevar, uadv, qadv, bedform_sour, bedform_sink, limityp, ierror)
       use m_transport
-      use m_flowgeom, only: Ndx, Lnx, ln, ba, wu ! static mesh information
+      use m_flowgeom, only: Ndx, Lnx, ln, ba ! static mesh information
       use m_flow, only: Ndkx, Lnkx, kbot, ktop, Lbot, Ltop, kmxn, kmxL, vol1, epshu
       use m_transport
       use m_alloc
@@ -1094,9 +1094,9 @@ contains
 
 !  compute horizontal fluxes, explicit part
       call comp_dxiAu()
-      call comp_fluxhor3D(1, limityp, Ndx, Lnx, uadv, qadv, wu, bfsqi, ba, kbot, Lbot, Ltop, kmxn, kmxL, thevar, difsedubf, sigdifibf, dumL, dumd, 1, jabfupdate, jabfhorupdate, nbfdeltasteps, (/1/), fluxhorbf, dumx, dumy, 1, dxiAu)
+      call comp_fluxhor3D(1, limityp, Ndx, Lnx, uadv, qadv, bfsqi, ba, kbot, Lbot, Ltop, kmxn, kmxL, thevar, difsedubf, sigdifibf, dumd, jabfupdate, jabfhorupdate, nbfdeltasteps, (/1/), fluxhorbf, dumx, dumy, 1, dxiAu)
       call comp_sumhorflux(1, 0, Lnkx, Ndkx, Lbot, Ltop, fluxhorbf, bfsumhorflux)
-      call solve_2D(1, Ndx, Lnx, ba, kbot, ktop, Lbot, Ltop, bfsumhorflux, fluxverbf, const_sourbf, const_sinkbf, 1, jabfupdate, nbfdeltasteps, thevar, rhsbf)
+      call solve_2D(1, Ndx, ba, kbot, ktop, bfsumhorflux, fluxverbf, const_sourbf, const_sinkbf, 1, jabfupdate, nbfdeltasteps, thevar, rhsbf)
       ierror = 0
 1234  continue
       return

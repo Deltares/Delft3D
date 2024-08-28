@@ -30,9 +30,9 @@
 !
 !
 
-subroutine getq3(hg, d, a, h1, h2, q) ! momentumbehoud bovenstrooms
+subroutine getq3(hg, a, h1, h2, q) ! momentumbehoud bovenstrooms
    implicit none ! bepaal q gegeven a,hg,h1,h2
-   double precision :: hg, d, a, h1, h2, q
+   double precision :: hg, a, h1, h2, q
    double precision :: g, t, r, tr
    g = 9.81d0
    t = g * a * (h2 - h1)

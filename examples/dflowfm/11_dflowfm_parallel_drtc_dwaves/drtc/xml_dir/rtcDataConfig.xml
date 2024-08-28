@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rtcDataConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rtc="http://www.wldelft.nl/fews" xmlns="http://www.wldelft.nl/fews" xsi:schemaLocation="http://www.wldelft.nl/fews D:\svn\trunk\src\DeltaShell\DeltaShell.Gui\bin\plugins\DeltaShell.Plugins.DelftModels.RealTimeControl\xsd\rtcDataConfig.xsd">
+  <importSeries>
+    <timeSeries id="input_ObservationPoint01_water_level">
+      <OpenMIExchangeItem>
+        <elementId>ObservationPoint01</elementId>
+        <quantityId>water_level</quantityId>
+        <unit>m</unit>
+      </OpenMIExchangeItem>
+    </timeSeries>
+  </importSeries>
+  <exportSeries>
+    <CSVTimeSeriesFile decimalSeparator="." delimiter="," adjointOutput="false"></CSVTimeSeriesFile>
+    <PITimeSeriesFile>
+      <timeSeriesFile>timeseries_export.xml</timeSeriesFile>
+      <useBinFile>false</useBinFile>
+    </PITimeSeriesFile>
+    <timeSeries id="output_weir_crest_level">
+      <OpenMIExchangeItem>
+        <elementId>weir</elementId>
+        <quantityId>crest_level</quantityId>
+        <unit>m</unit>
+      </OpenMIExchangeItem>
+    </timeSeries>
+  </exportSeries>
+</rtcDataConfig>

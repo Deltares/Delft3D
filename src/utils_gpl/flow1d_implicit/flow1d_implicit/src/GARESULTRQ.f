@@ -39,8 +39,8 @@ c
 c     Declaration of local variables
 c
       integer  i   ,ierr  ,newsize
-      character*10  artype,siztxt
-      character*100 txt
+      character(len=10) artype,siztxt
+      character(len=100) txt
       real               ,allocatable :: rwork(:)
 c      
 c     Allocate or increase array garesult      

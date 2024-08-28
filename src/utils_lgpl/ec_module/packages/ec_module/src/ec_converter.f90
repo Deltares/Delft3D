@@ -1532,7 +1532,7 @@ module m_ec_converter
          real(hp)              , intent(in) :: zmin, zmax
          integer               , intent(out):: ndxmin, ndxmax
 
-         real(hp) :: wt, minz, maxz, dz
+         real(hp) :: wt, dz
          integer  :: ndx
          ndxmin = size(zpos)
          ndxmax = 1
@@ -1572,7 +1572,7 @@ module m_ec_converter
          type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
          real(hp),            intent(in)    :: timesteps  !< convert to this number of timesteps past the kernel's reference date
          !
-         integer  :: i, k, j          !< loop counters
+         integer  :: i, k          !< loop counters
          real(hp) :: wL, wR           !< left and right weights
          integer  :: kL, kR           !<
          integer  :: maxlay_tgt       !< size of ElementSet of the TARGET in third dimension (if relevant), a.k.a kmx
@@ -1874,8 +1874,6 @@ module m_ec_converter
          integer, intent(in) :: maxlay_src, kLR
          real(kind=hp), intent(out) :: ww
          integer, intent(out) :: idx1, idx2
-
-         integer :: kkl
 
          if ((sigmak - sigma(1)) * (sigmak - sigma(maxlay_src)) >= 0) then      ! beyond the range of source levels
             if (abs(sigmak - sigma(1)) < abs(sigmak - sigma(maxlay_src))) then  ! closer to sigma(1) (avoiding the assumption sigma(1) is the lowest)
@@ -2680,7 +2678,6 @@ module m_ec_converter
          real(hp) :: phase0          ! harmonics: current phase offset angle (in radians)
          integer  :: n_phase_rows    ! harmonics: number of phase rows
          integer  :: n_phase_cols    ! harmonics: number of phase columns
-         integer  :: index1d         ! harmonics: 1d array index.
 
          integer                        :: issparse
          integer, dimension(:), pointer :: ia                    ! sparsity pattern in CRS format, startpointers

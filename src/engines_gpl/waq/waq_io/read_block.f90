@@ -387,7 +387,7 @@ contains
                     igrid = gridps%find_column(ctoken)
                     if (igrid >= 1) then
                         data_block%igrid = igrid
-                        write (file_unit, 2290), trim(ctoken)
+                        write (file_unit, 2290) trim(ctoken)
                         waq_loc%no_item = gridps%pointers(igrid)%num_cells
                         write (file_unit, 2300) waq_loc%no_item
                         ierr2 = waq_loc%resize(waq_loc%no_item)
@@ -396,7 +396,7 @@ contains
                             write(waq_loc%name(i), '(''segment '',i8)') i
                         enddo
                     else
-                        write (file_unit, 2310), trim(ctoken)
+                        write (file_unit, 2310) trim(ctoken)
                         ierr = 1
                         goto 100
                     endif

@@ -2266,10 +2266,10 @@ contains
 !> derive 3d ghost- and sendlists from 2d counterparts and 3d layer information
 !>    only nghostlist_XXX_3d will be generated, actual ghost flow node/link numbers
 !>       can be derived from 2d ighostlist/isendlist and layer information
-!>    it is assumed that 3d layer information (kbot, Lbot, kmxn, kmxL) is available
+!>    it is assumed that 3d layer information (kmxn, kmxL) is available
    subroutine partition_make_ghostsendlists_3d(ierror)
       use m_flowgeom, only: Ndx, Lnx
-      use m_flow, only: kmx, kbot, Lbot, kmxn, kmxL
+      use m_flow, only: kmx, kmxn, kmxL
       implicit none
 
       integer, intent(out) :: ierror
@@ -2303,19 +2303,19 @@ contains
       allocate (nghostlist_u_3dw(-1:ndomains - 1))
       allocate (nsendlist_u_3dw(-1:ndomains - 1))
 
-      call partition_fill_ghostsendlist_3d(nghostlist_sall(ndomains - 1), ighostlist_sall, nghostlist_sall, Ndx, kbot, kmxn, nghostlist_sall_3d)
-      call partition_fill_ghostsendlist_3d(nsendlist_sall(ndomains - 1), isendlist_sall, nsendlist_sall, Ndx, kbot, kmxn, nsendlist_sall_3d)
+      call partition_fill_ghostsendlist_3d(nghostlist_sall(ndomains - 1), ighostlist_sall, nghostlist_sall, Ndx, kmxn, nghostlist_sall_3d)
+      call partition_fill_ghostsendlist_3d(nsendlist_sall(ndomains - 1), isendlist_sall, nsendlist_sall, Ndx, kmxn, nsendlist_sall_3d)
 
-      call partition_fill_ghostsendlist_3d(nghostlist_u(ndomains - 1), ighostlist_u, nghostlist_u, Lnx, Lbot, kmxL, nghostlist_u_3d)
-      call partition_fill_ghostsendlist_3d(nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, Lnx, Lbot, kmxL, nsendlist_u_3d)
+      call partition_fill_ghostsendlist_3d(nghostlist_u(ndomains - 1), ighostlist_u, nghostlist_u, Lnx, kmxL, nghostlist_u_3d)
+      call partition_fill_ghostsendlist_3d(nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, Lnx, kmxL, nsendlist_u_3d)
 
       if (allocated(kmxL1)) deallocate (kmxL1)
       allocate (kmxL1(lnx))
       do L = 1, lnx
          kmxL1(L) = kmxL(L) + 1
       end do
-      call partition_fill_ghostsendlist_3d(nghostlist_u(ndomains - 1), ighostlist_u, nghostlist_u, Lnx, Lbot, kmxL1, nghostlist_u_3dw)
-      call partition_fill_ghostsendlist_3d(nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, Lnx, Lbot, kmxL1, nsendlist_u_3dw)
+      call partition_fill_ghostsendlist_3d(nghostlist_u(ndomains - 1), ighostlist_u, nghostlist_u, Lnx, kmxL1, nghostlist_u_3dw)
+      call partition_fill_ghostsendlist_3d(nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, Lnx, kmxL1, nsendlist_u_3dw)
       deallocate (kmxL1)
 
       ierror = 0
@@ -2325,14 +2325,13 @@ contains
    end subroutine partition_make_ghostsendlists_3d
 
 !> fill 3d ghost/send flow node/link list
-   subroutine partition_fill_ghostsendlist_3d(Nghost, ilist2d, nlist2d, N, kbot, kmxn, nlist3d)
+   subroutine partition_fill_ghostsendlist_3d(Nghost, ilist2d, nlist2d, N, kmxn, nlist3d)
       implicit none
 
       integer, intent(in) :: Nghost !< number of ghost/send flow nodes/links
       integer, dimension(Nghost), intent(in) :: ilist2d !< 2d ghost/send list
       integer, dimension(-1:ndomains - 1), intent(in) :: nlist2d !< cumulative number of flow nodes/links in 2d ghost/send list
       integer, intent(in) :: N !< number of flow nodes/links
-      integer, dimension(N), intent(in) :: kbot !< bottom layer indices
       integer, dimension(N), intent(in) :: kmxn !< number of layers
       integer, dimension(-1:ndomains - 1), intent(out) :: nlist3d !< 3d ghost/send list
 

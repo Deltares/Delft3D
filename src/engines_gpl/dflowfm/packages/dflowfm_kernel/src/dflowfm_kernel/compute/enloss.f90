@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine enloss(ag, d1, eweir, hkruin, hov, &
+subroutine enloss(ag, d1, eweir, hkruin, &
                 & qunit, qvolk, toest, vov, &
                 & ewben, wsbov, wsben, dte, &
                 & dtefri, iflagweir, &
@@ -71,7 +71,6 @@ subroutine enloss(ag, d1, eweir, hkruin, hov, &
    real(fp), intent(in) :: ewben !!  Energy height downstream
    real(fp), intent(in) :: eweir !!  Energy height at weir
    real(fp), intent(in) :: hkruin !!  Crest height (downward positive).
-   real(fp), intent(in) :: hov !!  Total water depth at crest weir
    real(fp), intent(in) :: qunit !!  Discharge at weir crest
    real(fp), intent(in) :: qvolk !!  Maximum discharge (super critical flow)
    real(fp), intent(in) :: vov !!  Velocity at crest of weir

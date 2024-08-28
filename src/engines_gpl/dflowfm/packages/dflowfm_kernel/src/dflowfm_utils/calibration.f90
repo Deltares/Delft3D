@@ -436,12 +436,12 @@ contains
          error = .true.
          goto 9999
       elseif (nrflds == -2) then
-         write (errmsg, '(A,i4,A,A)'), 'More than ', CLD_MAXFLD, ' fields in rd_cldfile() on line: ', rec132
+         write (errmsg, '(A,i4,A,A)') 'More than ', CLD_MAXFLD, ' fields in rd_cldfile() on line: ', rec132
          call mess(LEVEL_ERROR, errmsg)
          error = .true.
          goto 9999
       elseif (nrflds == -3) then
-         write (errmsg, '(A,i4,A,A)'), 'Character string longer than ', CLD_MAXCHR, ' characters in rd_cldfile() on line: ', rec132
+         write (errmsg, '(A,i4,A,A)') 'Character string longer than ', CLD_MAXCHR, ' characters in rd_cldfile() on line: ', rec132
          call mess(LEVEL_ERROR, errmsg)
          error = .true.
          goto 9999

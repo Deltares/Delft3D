@@ -27,3 +27,9 @@ source_group("Include" FILES ${include_files})
  # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER utils_gpl/flow1d_implicit)
+
+set_source_files_properties(${src_path}/dumpTime.F90
+                            ${src_path}/FLMINMAX.f
+                            ${src_path}/FLWRHI.f
+                            ${src_path}/SOFLOW.f
+                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")

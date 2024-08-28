@@ -193,7 +193,7 @@
      if (Idum .eq. 0) then
         Flux = 0.0
      else
-        Weerstand = Max (Weerstand, 0.0001)
+        Weerstand = Max (Weerstand, 0.0001d0)
         Flux = DeltaH / (Weerstand * Vormfactor) / NrSecondsPerDay     ! in m/s
      Endif
      Volume = Flux * Area * DeltaT   ! in m3
@@ -778,7 +778,7 @@
   double precision LGSIInterflow, HDiff, C
 
   ! to be implemented
-  LGSIInterflow = Hdiff / max (0.001, C)
+  LGSIInterflow = Hdiff / max (0.001d0, C)
 
   Return
   END subroutine LGSI_FlowHighToLowSubArea

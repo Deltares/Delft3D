@@ -40,13 +40,10 @@
          use gridoperations
          use m_mergenodes
          use unstruc_display, only: nhlNetNode
+         use m_helpnow
+         use m_cconstants
          implicit none
          integer :: MODE, KEY
-
-         double precision :: ag
-         double precision :: cfl
-         double precision :: e0
-         double precision :: eps
          integer :: newmode
          integer :: ja
          integer :: jadd
@@ -59,26 +56,16 @@
          integer :: ncol
          integer :: nl1
          integer :: nl2
-         integer :: nlevel
          integer :: nput
          integer :: num
          integer :: numb
          integer :: nwhat
          integer :: ierror
-         double precision :: pi
-         double precision :: rho
-         double precision :: rhow
          double precision :: xp1
          double precision :: yp1
          double precision :: zp1
-
          double precision :: xp, yp, zp, ZPP
-
-         common / HELPNOW / WRDKEY, NLEVEL
-
-         common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
-
-         character TEX * 26, WRDKEY * 40
+         character TEX * 26
          integer :: iresult
 
          TEX = ' Edit Network             '
@@ -146,7 +133,7 @@
                MODE = NWHAT
                return
             else
-               call CHOICES(MODE, NUM, NWHAT, KEY)
+               call CHOICES(NUM, NWHAT, KEY)
             end if
          else if (KEY >= 577) then ! Alt+letter switches edit mode.
             call selecteditmode(newmode, key)
@@ -307,7 +294,7 @@
                else if (KPP /= 0) then
                   call SAVENET()
                   call TEKNODE(KPP, NCOLDN)
-                  call netmodfld(xp, yp, zpp, kpp)
+                  call netmodfld(xp, yp, kpp)
                   NPUT = 0
                   kpp = 0
                   KEY = 3
@@ -321,7 +308,7 @@
                else if (KPP /= 0) then
                   call SAVENET()
                   call TEKNODE(KPP, NCOLDN)
-                  call netrotfld(xp, yp, zpp, kpp)
+                  call netrotfld(xp, yp, kpp)
                   NPUT = 0
                   kpp = 0
                   KEY = 3
@@ -491,7 +478,7 @@
             JADD = 4
             if (KP /= 0) then
                call TEKNODE(KP, 0)
-               call ONELINE(KP, 99999d0)
+               call ONELINE(KP)
             end if
          else if (KEY == 84 .or. KEY == 84 + 32) then ! T-key
 !        thin dam mode

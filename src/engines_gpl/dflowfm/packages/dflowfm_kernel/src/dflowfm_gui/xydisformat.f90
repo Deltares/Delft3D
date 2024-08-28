@@ -33,9 +33,12 @@
       subroutine XYDISFORMAT()
          use m_sferic
          use m_wearelt
+         use m_depmax
+         use m_locatora
+         use m_disfor
+
          implicit none
 
-         double precision :: dv
          integer :: ix
          integer :: ixmax
          integer :: ixmin
@@ -45,24 +48,9 @@
          integer :: iymin
          integer :: izmax
          integer :: izmin
-         integer :: jaauto, JMOUSE, JASHOW
-         integer :: ncols
          integer :: ndec
-         integer :: nie
-         integer :: nis
-         integer :: nv
          integer :: nxy
          integer :: nz
-         double precision :: val
-         double precision :: vmax, XLC, YLC, XA, YA
-         double precision :: vmin
-
-         common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-
-         common / DISPFOR / XYFORM, ZFORM, DISFORM
-         character * 7 XYFORM, ZFORM, DISFORM
-
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
 
          ZFORM = '(F7.1)'
 

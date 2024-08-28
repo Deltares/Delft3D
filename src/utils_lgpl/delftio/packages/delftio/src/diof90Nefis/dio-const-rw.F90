@@ -297,7 +297,7 @@ function DioConstCreate(name, varType) result(const)
     type(DioConstType)       :: const  ! dataset
 
     ! arguments
-    character*(*), intent(in) :: name    ! dataset name
+    character(len=*), intent(in) :: name    ! dataset name
     integer                   :: varType ! type of variabe
 
     ! create the ds and the header
@@ -469,7 +469,7 @@ function DioConstDefine(stream, name, varType) result(const)
 
     ! arguments
     type(DioStreamType), target, intent(in) :: stream         ! stream
-    character*(*)              , intent(in) :: name           ! const name
+    character(len=*)              , intent(in) :: name           ! const name
     integer                    , intent(in) :: varType        ! type of var to be stored
 
     ! body
@@ -539,7 +539,7 @@ function DioConstGetDataset(stream, name) result(const)
 
     ! arguments
     type(DioStreamType), target, intent(in) :: stream  ! stream
-    character*(*)              , intent(in) :: name    ! dataset name
+    character(len=*)           , intent(in) :: name    ! dataset name
     logical                                 :: retVal ! result of read call
 
     ! body

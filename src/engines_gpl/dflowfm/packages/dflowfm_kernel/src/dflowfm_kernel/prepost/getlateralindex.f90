@@ -32,7 +32,7 @@
 
 !> returns the index of a named lateral in the global array from this module
 subroutine getLateralIndex(idlat, index)
-   use m_lateral, only: lat_ids, numlatsg
+   use m_laterals, only: lat_ids, numlatsg
 
    implicit none
    character(len=*), intent(in) :: idlat !< id of the lateral

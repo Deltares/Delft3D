@@ -38,6 +38,7 @@ subroutine change_samples_refine_param(jacancelled)
    use m_ec_interpolationsettings
    use m_arcinfo
    use network_data, only: NUMITCOURANT
+   use m_helpnow
 
    implicit none
    integer, intent(out) :: jacancelled !< Whether or not (1/0) user has pressed 'Esc' in parameter screen.
@@ -55,15 +56,13 @@ subroutine change_samples_refine_param(jacancelled)
    integer :: iyp
    integer :: key
    integer :: nbut
-   integer :: nlevel
    integer :: numfldactual
    integer :: numparactual
 
    integer, parameter :: NUMPAR = 16, NUMFLD = 2 * NUMPAR
    integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-   character WRDKEY * 40, OPTION(NUMPAR) * 60, HELPM(NUMPAR) * 60
+   character OPTION(NUMPAR) * 60, HELPM(NUMPAR) * 60
    character(len=60) :: text
-   common / HELPNOW / WRDKEY, NLEVEL
    integer, external :: infoinput
 
    external :: highlight_form_line

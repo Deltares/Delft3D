@@ -1,31 +1,31 @@
 !----- AGPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2024.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
 
- ! Last changed
+! Last changed
 ! by:               $Author:: Schrier           $
 ! at:               $Modtime:: 18-08-97 2:07p   $
 !
@@ -246,7 +246,6 @@ contains
     real            blval
     Character(CharIdLength), Pointer :: TBLDEF(:)
     Logical       , Pointer :: AlreadyRead(:)
-    Integer, pointer        :: ec_boundary_handle(:)
     Logical Success
 
 
@@ -451,7 +450,7 @@ subroutine readBoundaryConditionsInto_ec(boundaryConditionsFile)
    logical                         :: success
 
    integer              :: istat          ! status after function call
-   integer              :: i, inod, ityp  ! loop counter, node index, boundary type
+   integer              :: i  ! loop counter
    integer              :: total_items    ! total number of items expected in bc-file (boundaries, laterals)
 
    character(len=40)    :: locationID     ! boundary location identifier (node name)
@@ -462,11 +461,6 @@ subroutine readBoundaryConditionsInto_ec(boundaryConditionsFile)
    integer              :: bc_count       ! #boundary conditions read from bc file
    integer              :: ec_bc_item     ! boundary condition item id in ec- module
 
-   logical                         :: is_qh_bound         ! Q(h) boundary?
-   real(hp), dimension(:), pointer :: h_values, q_values  ! Q(h) table
-   integer                         :: numValues           ! #rows in Q(h) table
-   integer     :: numpars
-   integer     :: j
    integer     :: index
 
    inquire(file=boundaryConditionsFile, exist=success)
@@ -504,15 +498,27 @@ subroutine readBoundaryConditionsInto_ec(boundaryConditionsFile)
 !SOFTSUP-152     total_items = bc_count
    endif
 
-   success = Dh_AllocInit(total_items, ec_target_items_ids, -1)
-   success = success .and. Dh_AllocInit(total_items, ec_loc_names, ' ')
-   success = success .and. Dh_AllocInit(total_items, ec_quant_names, ' ')
-   success = success .and. Dh_AllocInit(total_items, ec_item_has_been_set_externally, .false.)
-   success = success .and. Dh_AllocInit(1, total_items, ec_bnd_2_ec_index, -1)
-   if (.not. success) then
-      call ErrMsgStandard(996, 996, 'Reading RR-Boundaries: Error Allocating Arrays', ' ')
+   if (islcmp .eq. 0) then   ! only RR-boundary water level
+      success = Dh_AllocInit(total_items, ec_target_items_ids, -1)
+      success = success .and. Dh_AllocInit(total_items, ec_loc_names, ' ')
+      success = success .and. Dh_AllocInit(total_items, ec_quant_names, ' ')
+      success = success .and. Dh_AllocInit(total_items, ec_item_has_been_set_externally, .false.)
+      success = success .and. Dh_AllocInit(1, total_items, ec_bnd_2_ec_index, -1)
+      if (.not. success) then
+         call ErrMsgStandard(996, 996, 'Reading RR-Boundaries: Error Allocating Arrays', ' ')
+      endif
+   else
+      total_items = total_items * 2   ! water_level and chloride
+      success = Dh_AllocInit(total_items, ec_target_items_ids, -1)
+      success = success .and. Dh_AllocInit(total_items, ec_loc_names, ' ')
+      success = success .and. Dh_AllocInit(total_items, ec_quant_names, ' ')
+      success = success .and. Dh_AllocInit(total_items, ec_item_has_been_set_externally, .false.)
+      success = success .and. Dh_AllocInit(1, total_items, ec_bnd_2_ec_index, -1)
+      if (.not. success) then
+         call ErrMsgStandard(996, 996, 'Reading RR-Boundaries: Error Allocating Arrays', ' ')
+      endif
+      total_items = total_items / 2  ! back to ncboun
    endif
-
    bc_count = 0
 
 ! initialisation required for BNDNAM
@@ -536,12 +542,12 @@ subroutine readBoundaryConditionsInto_ec(boundaryConditionsFile)
    enddo
 
 
-   ! check boundaries using EC module
+   ! check boundaries using EC module; water levels
    do i = 1, total_items
       locationID = Id_Nod(BNDNAM(i))
       quantityID = 'water_level'
       ec_bc_item = ecFindItemByQuantityLocation(ec, locationID, quantityID)
-      if (ec_bc_item < 0)then
+      if (ec_bc_item < 0) then
          call ErrMsgStandard(995, 995, 'Reading RR-Boundaries: '//'Could not find '//trim(locationID)//'.'//trim(quantityID)//' in file '//trim(boundaryConditionsFile), ' ')
       else
          bc_count = bc_count + 1
@@ -551,6 +557,23 @@ subroutine readBoundaryConditionsInto_ec(boundaryConditionsFile)
          ec_bnd_2_ec_index(1, i) = bc_count
       endif
    enddo
+   ! check boundaries using EC module; chloride
+   if (Islcmp .ne. 0) then
+      do i = 1, total_items
+         locationID = Id_Nod(BNDNAM(i))
+         quantityID = 'chloride_concentration'
+         ec_bc_item = ecFindItemByQuantityLocation(ec, locationID, quantityID)
+         if (ec_bc_item < 0) then
+            call ErrMsgStandard(995, 995, 'Reading RR-Boundaries: '//'Could not find '//trim(locationID)//'.'//trim(quantityID)//' in file '//trim(boundaryConditionsFile), ' ')
+         else
+            bc_count = bc_count + 1
+            ec_target_items_ids(bc_count) = ecCreateTimeInterpolatedItem(ec, ec_bc_item)
+            ec_loc_names(bc_count) = locationID
+            ec_quant_names(bc_count) = quantityID
+            ec_bnd_2_ec_index(1, total_items+i) = bc_count
+         endif
+      enddo
+   endif
 
 end subroutine readBoundaryConditionsInto_ec
 
@@ -664,13 +687,12 @@ end subroutine closeBoundaryConditionFiles
     use ParallelData, only: JulianTimestep
     use timers
 
-    Integer                    :: teller, rowNr, iDebug, IOut1, TabelNr
+    Integer                    :: teller, teller1, rowNr, iDebug, IOut1, TabelNr
     type (Time)                :: currentTime
     type (Date)                :: currentDate
     logical                    :: DateTimeOutsideTable
     double precision           :: value_from_ec
     double precision           :: current_time
-    double precision           :: start_time
     double Precision, external :: modified_julian_fromJulian
 
     integer, save :: timerRRRdSobek    = 0
@@ -745,6 +767,7 @@ end subroutine closeBoundaryConditionFiles
       ! Data from EC-Module
       current_time = julStart + JulianTimestep * dble(timeSettings%CurrentTimeStep - 1)
 
+      ! water level
       do teller = 1, ncBoun
          value_from_ec = getBoundaryValue(ec_target_items_ids(teller), current_time)
 
@@ -757,6 +780,16 @@ end subroutine closeBoundaryConditionFiles
          SltBnd(teller) = 0.0
 
       enddo
+
+      ! chloride concentration
+      if (IslCmp .ne. 0) then
+         do teller = NcBoun+1, ncBoun+ncBoun
+            value_from_ec = getBoundaryValue(ec_target_items_ids(teller), current_time)
+            teller1 = teller - NcBoun
+            SltBnd(teller1) = value_from_ec
+         enddo
+      endif
+
       call timstop(timerRRRdSobek)
 
    else
@@ -904,7 +937,7 @@ end subroutine closeBoundaryConditionFiles
 
     Integer      INODE, Ibnd, Iout7, Ievent
     Real         QFlw
-    CHARACTER*3  MONTH(12)
+    CHARACTER(len=3)  MONTH(12)
 
        if (.not. associated(QBNDMX)) return  ! If there is nothing, do nothing
 

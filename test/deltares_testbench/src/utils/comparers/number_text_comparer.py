@@ -65,7 +65,11 @@ class NumberTextComparer(IComparer):
         max_ref_value = -1.0 * min_ref_value
 
         nCompared = 0
-        parameter = Parameter()
+        if len(file_check.parameters) != 0:
+            parameterlist = list(file_check.parameters.values())[0]
+            parameter = parameterlist[0]
+        else:
+            parameter = Parameter()
         result = ComparisonResult()
 
         try:

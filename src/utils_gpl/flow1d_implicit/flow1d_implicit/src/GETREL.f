@@ -59,7 +59,7 @@ c
       integer       getrel
       integer       fd_nefis, uindex(*) ,usrord(*) ,buflen
       real          buffer(*)
-      character*(*) grpnam    ,elmnam
+      character(len=*) grpnam    ,elmnam
 c
 c     Declaration of external functions
 c

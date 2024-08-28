@@ -36,14 +36,13 @@
       use m_arcinfo, only: mca
       use unstruc_display
       use dflowfm_version_module, only: company, product_name
+      use m_helpnow
 
       implicit none
       integer :: numpar, numfld, numparactual, numfldactual
       parameter(NUMPAR=8, NUMFLD=2 * NUMPAR)
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-      character WRDKEY * 40, OPTION(NUMPAR) * 45, HELPM(NUMPAR) * 60
-      integer :: nlevel
-      common / HELPNOW / WRDKEY, NLEVEL
+      character OPTION(NUMPAR) * 45, HELPM(NUMPAR) * 60
       integer, external :: infoinput
       external :: highlight_form_line
 !

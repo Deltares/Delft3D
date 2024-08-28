@@ -62,7 +62,7 @@
        hpr1 = s1(k1) - BL1
        ! Also include waterdepth ==0 in order to make a1 /=0, this prevents SAAD errors                                                                       ! == 1,2: (ibedlevtyp=3), hrad = A/P   , link or node
        if (hpr1 >= 0) then
-          call getlinkareawid2D(L, wu2, b21, ai, hpr1, ar1, wid1)
+          call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
           dx1 = 0.5d0 * dx(L) * 0.5d0 ! acl(L)
           !if (k1 > ndx2D) dx1 = 2*dx1
           a1(k1) = a1(k1) + dx1 * wid1
@@ -72,7 +72,7 @@
        hpr2 = s1(k2) - BL1 ! == 5,6: (ibedlevtyp=3), 2D conveyance, link or node
        ! Also include waterdepth ==0 in order to make a1 /=0, this prevents SAAD errors
        if (hpr2 >= 0) then
-          call getlinkareawid2D(L, wu2, b21, ai, hpr2, ar2, wid2)
+          call getlinkareawid2D(wu2, b21, ai, hpr2, ar2, wid2)
           dx2 = 0.5d0 * dx(L) * 0.5d0 ! (1d0-acl(L))
           !if (k2 > ndx2D) dx2 = 2*dx2
           a1(k2) = a1(k2) + dx2 * wid2
@@ -82,7 +82,6 @@
     else
        if (hu(L) > 0d0) then
 
-          !DIR$ INLINE
           hpr1 = get_hpr_nostruc(L)
           frcn = frcu(L)
           ifrctyp = ifrcutp(L)
@@ -112,7 +111,7 @@
           hpr1 = s1(k1) - BL1
           ! Also include waterdepth ==0 in order to make a1 /=0, this prevents SAAD errors                                                                       ! == 1,2: (ibedlevtyp=3), hrad = A/P   , link or node
           if (hpr1 >= 0) then
-             call getlinkareawid2D(L, wu2, b21, ai, hpr1, ar1, wid1)
+             call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
              dx1 = 0.5d0 * dx(L) * 0.5d0 ! acl(L)
              !if (k1 > ndx2D) dx1 = 2*dx1
              vol1_f(k1) = vol1_f(k1) + dx1 * ar1
@@ -121,7 +120,7 @@
           hpr2 = s1(k2) - BL1 ! == 5,6: (ibedlevtyp=3), 2D conveyance, link or node
           ! Also include waterdepth ==0 in order to make a1 /=0, this prevents SAAD errors
           if (hpr2 >= 0) then
-             call getlinkareawid2D(L, wu2, b21, ai, hpr2, ar2, wid2)
+             call getlinkareawid2D(wu2, b21, ai, hpr2, ar2, wid2)
              dx2 = 0.5d0 * dx(L) * 0.5d0 ! (1d0-acl(L))
              !if (k2 > ndx2D) dx2 = 2*dx2
              vol1_f(k2) = vol1_f(k2) + dx2 * ar2

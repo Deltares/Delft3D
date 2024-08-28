@@ -193,12 +193,10 @@ c         if (itel .eq. 1) then
              endif
 c         endif
 c      endif
-
-      goto (1,2,3,4,5) iflow
-
 c
 c flowtype 1
- 1    hg = 1.6 * go/gh
+      if (iflow <= 1 .or. iflow > 5) then
+      hg = 1.6 * go/gh
       hg = hdle - hg * (hu -hd)
 
       z = (hnrg - hg - le) / deltah
@@ -249,11 +247,11 @@ c eqn VIII-14.1 and VIII-14.2
          endif
 
          qstr = qa + qb
-         goto 10
-
 c
 c flowtype 2
- 2    x = go/hule
+      else if ( iflow == 2 ) then
+
+      x = go/hule
       x2 = x * x
       cc = .323 * x2 * x -.134 * x2 + .046 * x + .61
 
@@ -283,20 +281,18 @@ c eqn VIII-17.1 and VIII-17.2
       endif
 
       qstr = qa + qb
-      goto 10        
-
 c
 c flowtype 3
 c eqn VIII-18.3
- 3    arg =  2.*g * (deltah - yco - hfric)
+      else if ( iflow == 3 ) then
+      arg =  2.*g * (deltah - yco - hfric)
       if (arg .lt. 0.) arg = 2. * g * (deltah - yco)
       qstr =  c2 * w * yco * SQRT(arg)
-      goto 10
-
 c
 c flowtype 4
 c check on calculation of head loss or discharge
- 4    a0mu = c3 * w * hdle
+      else if ( iflow == 4 ) then
+      a0mu = c3 * w * hdle
 
 c
 c eqn VIII-19.7
@@ -304,11 +300,12 @@ c eqn VIII-19.7
 
       if (arg .lt. 0.) arg = 1.0e-6
       qstr = a0mu * SQRT(arg)
-      goto 10
 
-  5   continue
+      else if ( iflow == 5 ) then
       qstr = 0.
- 10   FLQH08 = qstr
+      end if
+10    continue
+      FLQH08 = qstr
 
       return
       end

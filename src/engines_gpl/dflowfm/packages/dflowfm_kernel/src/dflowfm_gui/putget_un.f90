@@ -31,17 +31,16 @@
 !
 
       subroutine putget_un(NUM, NWHAT, NPUT, NUMB, XP, YP, KEY)
+         use m_drawthis
          implicit none
          integer :: ja
          integer :: key
-         integer :: ndraw
          integer :: nput
          integer :: num
          integer :: numb
          integer :: nwhat
          double precision :: xp
          double precision :: yp
-         common / DRAWTHIS / ndraw(50)
 
 !
          call DISPUT(NPUT)

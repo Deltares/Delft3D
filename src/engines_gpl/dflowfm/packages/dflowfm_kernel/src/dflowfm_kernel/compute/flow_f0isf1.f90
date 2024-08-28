@@ -38,12 +38,11 @@
     use m_sediment
     use m_strucs
     use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
+    use m_drawthis
 
     implicit none
 
     integer :: k, kk, kb, kt, Lf, i, k1, k2
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
 
     call a1vol1tot()
 

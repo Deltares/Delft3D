@@ -36,12 +36,12 @@
       Integer       PmcNMsg, RtnCode
       Parameter    (PmcNMsg = 3)
       Logical       UsePm
-      Character*20  PmStringHeads, PmStringTimestep, PmStringFluxes
-      Character*256 PmRRInport, PmRROutPort
-      Character*256 PmcArgs(4)
-      Character*256 PmcMsgTable (PmcNMsg)
-      Character*256 PmcMsgIden  (PmcNMsg)
-      Character*256 PmcRetIden
+      Character(len=20) PmStringHeads, PmStringTimestep, PmStringFluxes
+      Character(len=256) PmRRInport, PmRROutPort
+      Character(len=256) PmcArgs(4)
+      Character(len=256) PmcMsgTable (PmcNMsg)
+      Character(len=256) PmcMsgIden  (PmcNMsg)
+      Character(len=256) PmcRetIden
       Logical       PmSuccess
 
       Character(20), allocatable :: Pmc_Ids(:)
@@ -123,8 +123,8 @@
       !Get Modflow Timestep in days
       implicit none
       Real    ModflowTimestep
-      Character*1024 Header
-      Character*1    Quote
+      Character(len=1024) Header
+      Character(len=1)    Quote
       Quote = ''''
 
 !     Header voor message is opgebouwd uit MSG, Subid, message string
@@ -163,11 +163,11 @@
       !Get Modflow Heads
       implicit none
       Integer      NrLocations
-      Character*20 ModflowIds(NrLocations)
+      Character(len=20) ModflowIds(NrLocations)
       Real         ModflowHeads(NrLocations), Time
       Integer      i
-      Character*1024 Header
-      Character*1    Quote
+      Character(len=1024) Header
+      Character(len=1)    Quote
 
       Quote = ''''
 
@@ -193,11 +193,11 @@
       implicit none
 
       Integer      NrLocations
-      Character*20 ModflowIds(NrLocations)
+      Character(len=20) ModflowIds(NrLocations)
       Real         ModflowFluxes(NrLocations), Time
       Integer      i
-      Character*1024 Header
-      Character*1    Quote
+      Character(len=1024) Header
+      Character(len=1)    Quote
 
       Quote = ''''
 

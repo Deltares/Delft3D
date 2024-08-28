@@ -190,65 +190,34 @@ contains
       use unstruc_display
       use dflowfm_version_module, only: base_name
       use m_arcinfo
+      use m_depmax
+      use m_textsize
+      use m_hardcopy
+      use m_scalepos
+      use m_vfac
+      use m_drawthis
+      use m_startdir
+      use m_initscreen
 
       implicit none
-      double precision :: croshrsz
-      double precision :: dv
       integer :: i, INTINIT, ISTAT, maxarctiler, maxsamarcr
       integer :: iblue
       integer :: icl
       integer :: ifltyp
       integer :: igreen
-      integer :: ihcopts
       integer :: ihmous
       integer :: ired
       integer :: ivmous
-      integer :: jaauto
-      integer :: jvga
       integer :: k
-      integer :: keepstartdir
       integer :: limslo
       integer :: limtel
       integer :: limwat
-      integer :: ncols
-      integer :: ndec
-      integer :: ndraw
-      integer :: nhcdev
-      integer :: nie
-      integer :: nis
-      integer :: ntxcols
-      integer :: ntxrows
-      integer :: numhcopts
-      integer :: nv
-      integer :: nvec
-      integer :: nxpix
-      integer :: nypix, jaopengl_loc
-      double precision :: scalesize
-      double precision :: val
-      double precision :: vfac
-      double precision :: vfacforce
-      double precision :: vmax
-      double precision :: vmin
-      double precision :: xsc
-      double precision :: ysc
-      double precision :: tsize
+      integer :: jaopengl_loc
       integer, dimension(4, 50) :: rgbvalues
       logical :: jawel
 
       character(len=76) :: filnam
       character(len=180) :: inifilename
-
-      common / CSPEED / LIMTEL, LIMSLO, LIMWAT, IHMOUS, IVMOUS
-      common / INITSCREEN / CROSHRSZ, JVGA, NXPIX, NYPIX, NTXCOLS, NTXROWS
-      common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
-      common / TEXTSIZE / TSIZE
-
-      common / HARDCOPY / NHCDEV, NUMHCOPTS, IHCOPTS(2, 20)
-      common / OLDORNEWNAMES / IFLTYP
-      common / STARTDIR / KEEPSTARTDIR
-      common / SCALEPOS / XSC, YSC, SCALESIZE, NDEC
-      common / VFAC / VFAC, VFACFORCE, NVEC
-      common / DRAWTHIS / ndraw(50)
 
       type(tree_data), pointer :: ini_ptr !< Unstruc.ini settings in tree_data
 

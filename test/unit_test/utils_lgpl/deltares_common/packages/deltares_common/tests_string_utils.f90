@@ -30,7 +30,7 @@ program tests_string_utils
 
     implicit none
     character(len=200) :: cmd_arg
-    integer :: iargc, getarg
+    integer :: iargc
 
     ! Determine the number of command line arguments
     iargc = command_argument_count()

@@ -76,10 +76,11 @@ contains
         real(kind = real_wp), DIMENSION(MAXSTA) :: X, Y
 
         DIMENSION IP((MAXSTA + 1) * MAXVAR + MAXSTA * 2 + NP)
-        real(kind = real_wp), DIMENSION(MAXSTA) :: DIST, WFAC
+        real(kind = real_wp), DIMENSION(MAXSTA) :: WEIGHT, WFAC
+        real(kind = real_wp)                    :: DIST
 
-        integer(kind = int_wp) :: icalcsw, inear
-        real(kind = real_wp) :: scale, nostat, xseg, yseg, sum, sum2, min
+        integer(kind = int_wp) :: icalcsw, inear, nostat
+        real(kind = real_wp) :: scale, xseg, yseg, sum, sum2, min
 
         DO I = 1, (MAXSTA + 1) * MAXVAR + MAXSTA * 2 + NP
             IP(I) = IPOINT(I)
@@ -124,8 +125,8 @@ contains
                 !***********************************************************************
 
                 !     Bereken Distance Cell to all stations (in meters)
-                MIN = -1.0
-                SUM = 0.0
+                MIN  = huge(min)
+                SUM  = 0.0
                 SUM2 = 0.0
                 IF (NOSTAT > MAXSTA) THEN
                     NOSTAT = MAXSTA
@@ -137,24 +138,17 @@ contains
 
                 !
                 DO I = 1, NOSTAT
-                    DIST(I) = SQRT ((XSEG - X(I) * SCALE) * (XSEG - X(I) * SCALE) + &
-                            (YSEG - Y(I) * SCALE) * (YSEG - Y(I) * SCALE))
-                    !
-                    dist(i) = 1. / max(dist(i), 1.0)
-                    SUM = SUM + DIST(I)
-                    SUM2 = SUM2 + DIST(I) * DIST(I)
+                    DIST = SQRT ((XSEG - X(I) * SCALE) ** 2 + (YSEG - Y(I) * SCALE) ** 2 )
+                    weight(i) = 1. / max(dist, 1.0)
 
-                    !
-                    IF (MIN < 0.0) THEN
-                        MIN = DIST(I)
-                        INEAR = I
-                    ELSEIF (DIST(I) < MIN) THEN
-                        MIN = DIST(I)
+                    SUM = SUM + weight(I)
+                    SUM2 = SUM2 + weight(I) ** 2
+
+                    IF (DIST < MIN) THEN
+                        MIN = DIST
                         INEAR = I
                     ENDIF
-                    !
                 end do
-
 
                 !
                 !     optie 1:  nearest station
@@ -174,13 +168,13 @@ contains
                     !         optie 2 lineair inv dist
                     IF (ICALCSW == 2) THEN
                         DO I = 1, NOSTAT
-                            WFAC(I) = DIST(I) / SUM
+                            WFAC(I) = WEIGHT(I) / SUM
                         end do
                         !
                         !         optie 2b: inv dist kwadratisch
                     ELSEIF (ICALCSW == 3) THEN
                         DO I = 1, NOSTAT
-                            WFAC(I) = DIST(I) * DIST(I) / SUM2
+                            WFAC(I) = WEIGHT(I) ** 2 / SUM2
                         end do
 
                     ENDIF

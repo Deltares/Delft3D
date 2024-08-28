@@ -218,9 +218,8 @@
 
   Double Precision Julian, modified_julian_fromJulian
   Integer          idum, i, LicenseReturnCode
-  Integer          LengthA, lengthB, iSecStart, ISecDuration
+  Integer          iSecStart, ISecDuration
   Logical          Success
-  Character(Len=600) FlexlmErrorMessage
 
 ! Avoid Digital Visual Fortran underflow problem on operating systems Windows 95/98:
 #if (defined(HAVE_CONFIG_H))
@@ -1339,7 +1338,6 @@
   Integer          NetCdfMaxNrDaysAdd
   Integer          idum, i
   Logical          FnmOpened
-  Character(len=80) MessageString
 
 !extra variables for Modflow coupling using Process Manager
 !  Real          ModFlowHeads(NOvh+NOw), ModFlowFluxes(NOvh+NOw)
@@ -1878,7 +1876,6 @@
   Integer  RR_RunId, RR_Ievent, RR_Timestep
   Integer  weekdy, idum
   Double Precision Julian
-  Character(len=80) MessageString
 
   call timstrt('RRInitializeT',TimerRRInitializeT)
 !extra variables for Modflow coupling using Process Manager
@@ -2233,7 +2230,7 @@
     Implicit none
     Integer  RR_RunId, RR_Ievent, RR_Timestep
 
-    real, dimension(:), pointer        :: rainValues, runoffValues, seepValues, pumpValues, bndValues
+    real, dimension(:), pointer        :: rainValues, seepValues, pumpValues, bndValues
     logical, dimension(:), pointer     :: mask
     integer                            :: numStations, numConnected
     logical                            :: allocSuccess

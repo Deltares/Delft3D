@@ -33,9 +33,8 @@
       subroutine cleargrid()
          use m_grid
          use unstruc_colors
+         use m_drawthis
          implicit none
          integer :: key
-         integer :: ndraw
-         common / DRAWTHIS / ndraw(50)
          call tekgrd(XC, YC, MMAX, NMAX, 1, 1, mc, nc, 0, ndraw(38), key, MC)
       end subroutine cleargrid

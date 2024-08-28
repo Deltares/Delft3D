@@ -55,7 +55,7 @@ c
       integer   lunhis   ,nstepsim ,ind         ,juer        ,ker 
       integer   dattimsim(2)       ,idattim(6)  ,outframe(3)
       real      EstimPer ,dtsim    ,hisstart 
-      character*(*)       filnamhis 
+      character(len=*)       filnamhis 
 c
 c     Declaration of local variables:
 c
@@ -69,7 +69,7 @@ c
       integer, parameter :: maxtypes=6
       integer               lenvartypes(maxtypes)
       real,    parameter :: tstepi=60.     
-      character*20          vartypes(maxtypes)
+      character(len=20)     vartypes(maxtypes)
 c      
       vartypes(hreeks) = 'Water level'
       vartypes(qreeks) = 'Disch'

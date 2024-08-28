@@ -171,14 +171,14 @@ function flow_init_structurecontrol() result(status)
       ! NOTE: kegen below does not apply to general structures. Just a placeholder for the link snapping of all structure types.
       select case (pstru%type)
       case (ST_DAMBREAK)
-         call selectelset_internal_links(xz, yz, ndx, ln, lnx, kegen(1:numl), numgen, &
+         call selectelset_internal_links(lnx, kegen(1:numl), numgen, &
                                          loc_spec_type, nump=pstru%numCoordinates, xpin=pstru%xCoordinates, ypin=pstru%yCoordinates, &
                                          branchindex=pstru%ibran, chainage=pstru%chainage, &
                                          xps=dambreakPolygons(i)%xp, yps=dambreakPolygons(i)%yp, nps=dambreakPolygons(i)%np, &
                                          lftopol=lftopol(ndambreaklinks + 1:numl), sortLinks=1)
          ndambreaklinks = ndambreaklinks + numgen ! UNST-3308: early counting of ndambreaklinks is needed here, because of lftopol array
       case default
-         call selectelset_internal_links(xz, yz, ndx, ln, lnx, kegen(1:numl), numgen, &
+         call selectelset_internal_links(lnx, kegen(1:numl), numgen, &
                                          loc_spec_type, nump=pstru%numCoordinates, xpin=pstru%xCoordinates, ypin=pstru%yCoordinates, &
                                          branchindex=pstru%ibran, chainage=pstru%chainage, &
                                          sortLinks=1)
@@ -297,7 +297,7 @@ function flow_init_structurecontrol() result(status)
       case ('gateloweredgelevel') ! Old-style controllable gateloweredgelevel
          !else if (qid == 'gateloweredgelevel' ) then
 
-         call selectelset_internal_links(xz, yz, ndx, ln, lnx, keg(ngate + 1:numl), numg, LOCTP_POLYLINE_FILE, plifile)
+         call selectelset_internal_links(lnx, keg(ngate + 1:numl), numg, LOCTP_POLYLINE_FILE, plifile)
          success = .true.
          write (msgbuf, '(2a,i8,a)') trim(qid), trim(plifile), numg, ' nr of gateheight links'; call msg_flush()
 
@@ -311,7 +311,7 @@ function flow_init_structurecontrol() result(status)
       case ('damlevel') ! Old-style controllable damlevel
          ! else if (qid == 'damlevel' ) then
 
-         call selectelset_internal_links(xz, yz, ndx, ln, lnx, ked(ncdam + 1:numl), numd, LOCTP_POLYLINE_FILE, plifile)
+         call selectelset_internal_links(lnx, ked(ncdam + 1:numl), numd, LOCTP_POLYLINE_FILE, plifile)
          success = .true.
          write (msgbuf, '(2a,i8,a)') trim(qid), trim(plifile), numd, ' nr of dam level cells'; call msg_flush()
 
@@ -330,7 +330,7 @@ function flow_init_structurecontrol() result(status)
                kep(npump + 1:npump + npum) = pstru%linknumbers(1:npum)
             end if
          else
-            call selectelset_internal_links(xz, yz, ndx, ln, lnx, kep(npump + 1:numl), npum, LOCTP_POLYLINE_FILE, plifile)
+            call selectelset_internal_links(lnx, kep(npump + 1:numl), npum, LOCTP_POLYLINE_FILE, plifile)
          end if
 
          !endif
@@ -352,7 +352,7 @@ function flow_init_structurecontrol() result(status)
                kedb(ndambreaklinks + 1:ndambreaklinks + ndambr) = pstru%linknumbers(1:ndambr)
             end if
          else
-            call selectelset_internal_links(xz, yz, ndx, ln, lnx, kedb(ndambreaklinks + 1:numl), ndambr, LOCTP_POLYLINE_FILE, plifile, &
+            call selectelset_internal_links(lnx, kedb(ndambreaklinks + 1:numl), ndambr, LOCTP_POLYLINE_FILE, plifile, &
                                             xps=dambreakPolygons(i)%xp, yps=dambreakPolygons(i)%yp, nps=dambreakPolygons(i)%np, &
                                             lftopol=lftopol(ndambreaklinks + 1:numl), sortLinks=1)
          end if
@@ -374,7 +374,7 @@ function flow_init_structurecontrol() result(status)
                kegen(ncgen + 1:ncgen + numgen) = pstru%linknumbers(1:numgen)
             end if
          else
-            call selectelset_internal_links(xz, yz, ndx, ln, lnx, kegen(ncgen + 1:numl), numgen, LOCTP_POLYLINE_FILE, plifile, sortLinks=1)
+            call selectelset_internal_links(lnx, kegen(ncgen + 1:numl), numgen, LOCTP_POLYLINE_FILE, plifile, sortLinks=1)
          end if
 
          success = .true.

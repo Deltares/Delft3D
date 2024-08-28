@@ -34,7 +34,7 @@ c
       integer       putlel
       integer       fd_nefis, uindex(*) ,usrord(*)
       logical       buffer(*)
-      character*(*) grpnam    ,elmnam
+      character(len=*) grpnam    ,elmnam
 c
 c     Declaration of external functions
 c

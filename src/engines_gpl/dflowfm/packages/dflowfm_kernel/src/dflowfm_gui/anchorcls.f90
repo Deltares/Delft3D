@@ -32,15 +32,10 @@
 
       subroutine ANCHORCLS()
          use unstruc_colors
+         use m_locatora
+
          implicit none
-         integer :: jashow
-         integer :: jmouse
-         double precision :: xa
-         double precision :: xlc
-         double precision :: ya
-         double precision :: ylc
 !     ZET ANCHOR NA CLEARSCREEN
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
 
          call SETXOR(1)
          call SETCOL(KLANK)

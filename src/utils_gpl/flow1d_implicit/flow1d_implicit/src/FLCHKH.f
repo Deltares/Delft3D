@@ -148,8 +148,8 @@ c
       integer         ibr, igr ,ibrd, lbrnam
       real            eps, xc
       double precision bottom
-      character*11    btxt, htxt,xtxt
-      character*40    branam
+      character(len=11) btxt, htxt,xtxt
+      character(len=40) branam
       logical         lslot
 c
 c     Include sobek error code file

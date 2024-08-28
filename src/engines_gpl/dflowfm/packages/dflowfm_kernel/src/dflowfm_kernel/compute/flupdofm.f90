@@ -33,7 +33,7 @@
 !> Determines flow link' upwind/downwind parameters based on current velocities and water levels.
 !! NOTE that this is purely for this flow link, independent of left-right orientation of the structure itself.
 !! (Motivation: a single structure in 2D may be crossed by multiple flow links, with varying 1->2 orientation.)
-subroutine flupdofm(m, il, ir, istru, velheight, rholeft, rhoright, crest, &
+subroutine flupdofm(m, il, ir, istru, velheight, &
                     husb, hdsb, uu, ud, teken, relax)
 
    use m_strucs
@@ -47,12 +47,10 @@ subroutine flupdofm(m, il, ir, istru, velheight, rholeft, rhoright, crest, &
    integer, intent(in) :: m !< Flow link number, signed! If m < 0 then flow link is in opposite direction than structure left-right orientation.
    integer, intent(in) :: il, ir, istru
    logical, intent(in) :: velheight
-   double precision, intent(in) :: crest, relax
+   double precision, intent(in) :: relax
 
    double precision :: hdsb
    double precision :: husb
-   double precision :: rholeft
-   double precision :: rhoright
    double precision :: teken
    double precision :: ud
    double precision :: uu

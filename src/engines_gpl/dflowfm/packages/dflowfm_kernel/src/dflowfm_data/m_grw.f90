@@ -36,7 +36,7 @@ module m_grw
    double precision, allocatable :: sgrw0(:) !< ground water level start
    double precision, allocatable :: sgrw1(:) !< ground water level end of timestep
    double precision, allocatable :: pgrw(:) !< pressure and plotting of sgrw
-   double precision, allocatable :: h_unsat(:) !< initial height unsaturated zone
+   double precision, allocatable, target :: h_unsat(:) !< initial height unsaturated zone
    double precision, allocatable :: bgrw(:) !< initial height unsaturated zone
 
    !  TODO: UNST-3763: Use named parameter constant for jaintercept2D

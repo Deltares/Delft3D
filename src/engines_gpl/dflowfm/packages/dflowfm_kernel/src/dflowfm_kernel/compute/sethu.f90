@@ -142,14 +142,15 @@ contains
          velocity = velocity_pointer(link)
 
          if (velocity == 0) then
-            call get_upstream_downstream_cell_numbers(s0(left_cell) > s0(right_cell))
+            call get_upstream_downstream_cell_numbers(s0(left_cell) > s0(right_cell), left_cell, right_cell, &
+                                                      upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
          else
-            call get_upstream_downstream_cell_numbers(velocity > 0)
+            call get_upstream_downstream_cell_numbers(velocity > 0, left_cell, right_cell, &
+                                                      upstream_cell_index, upstream_cell, downstream_cell, direction_sign)
          end if
 
          upstream_water_level = get_upstream_water_level()
 
-         !DIR$ INLINE
          call getblu_from_bob(link, upstream_cell_index, bed_level_at_u_point)
          if (jafullgridoutput > 0) then ! is it possible to move to other subroutine?
             blup(link) = bed_level_at_u_point
@@ -231,32 +232,10 @@ contains
 
    contains
 
-      !> get_upstream_downstream_cell_numbers
-      subroutine get_upstream_downstream_cell_numbers(left_cell_upstream)
-
-         integer, parameter :: LEFT = 1
-         integer, parameter :: RIGHT = 2
-
-         logical :: left_cell_upstream
-
-         if (left_cell_upstream) then
-            upstream_cell_index = LEFT
-            upstream_cell = left_cell
-            downstream_cell = right_cell
-            direction_sign = 1
-         else
-            upstream_cell_index = RIGHT
-            upstream_cell = right_cell
-            downstream_cell = left_cell
-            direction_sign = -1
-         end if
-
-      end subroutine get_upstream_downstream_cell_numbers
-
 !> calculate_advection_subgrid
       subroutine calculate_advection_subgrid()
 
-         call getucxucynoweirs(upstream_cell, ucx_up, ucy_up, ifixedweirscheme)
+         call getucxucynoweirs(upstream_cell, ucx_up, ucy_up)
          u_in = ucx_up * csu(link) + ucy_up * snu(link)
          call calculate_vhei_and_eup()
          call calculate_advection_block_subgrid_and_Rajaratnam()
@@ -388,7 +367,7 @@ contains
          end if
          dte0 = weirdte(nfw)
          dtefri = 0.0d0
-         call enloss(ag, d1, energy_height_upstream, hkru_in, hov, qunit, qvolk, toest, vov, &
+         call enloss(ag, d1, energy_height_upstream, hkru_in, qunit, qvolk, toest, vov, &
                      energy_height_downstream, wsbov, wsben, weirdte(nfw), dtefri, iadv(link), crestlxw(nfw), &
                      taludlxw(nfw), taludrxw(nfw), vegxw(nfw), testfixedweirs)
          weirdte(nfw) = (1d0 - waquaweirthetaw) * weirdte(nfw) + waquaweirthetaw * dte0
@@ -433,11 +412,8 @@ contains
          if (hu(link) <= 0d0) then
             Ltop(link) = DRY_FLAG
          else
-            Lb = Lbot(link)
-            kt = ktop(upstream_cell)
-            kb = min(ln0(upstream_cell_index, Lb), kt)
+            call get_lkbot_set_ltop_upwind(link, upstream_cell, upstream_cell_index, Lb, kb, kt)
             kb0 = kb - 1
-            Ltop(link) = Lb + kt - kb
             au(link) = 0d0
             hu(Lb - 1) = 0d0
 

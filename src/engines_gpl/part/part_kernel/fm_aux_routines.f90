@@ -203,32 +203,20 @@ contains
         use MessageHandling
         use m_meteo1temphelpers
         use stdlib_sorting, only: sort_index
+        use m_pharosflow
         implicit none
         integer, intent(inout) :: msam        !< already opened file pointer to sample file
         integer, intent(in) :: jadoorladen !< whether to append to global set (1) or start empty (0)
         integer :: ierr
-        integer :: jflow
-        integer :: jqn
-        integer :: mcs
-        integer :: ncs
-        integer :: ndraw
         integer :: nkol
         integer :: nrow
-        integer :: ns1
         integer :: nsm
         integer :: num
         integer :: K, K0
         double precision :: x, y, z
         double precision :: XX, YY, ZZ, ZZ2
         double precision, allocatable :: xs_copy(:)
-
-        COMMON /PHAROSFLOW/  JFLOW
-        COMMON /PHAROSLINE/  REC1
-        COMMON /SAMPLESADM/  MCS, NCS, NS1
-        COMMON /QNRGF/ JQN
-        COMMON /DRAWTHIS/ ndraw(50)
-
-        CHARACTER(len = 132) :: REC, REC1
+        CHARACTER(len = 132) :: REC
         CHARACTER(len = 10) :: TEX
 
         CALL SAVESAM()
@@ -259,7 +247,6 @@ contains
         ELSE
             CALL RESTORESAM()
             K = NS
-            NS1 = NS
         ENDIF
         K0 = K
 

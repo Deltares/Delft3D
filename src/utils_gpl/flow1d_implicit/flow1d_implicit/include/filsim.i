@@ -52,8 +52,8 @@
 !
 !***********************************************************************
 !
-      character*256 rtncod
-      character*256 flwmap  , flwhis  ,                                               &
+      character(len=256) rtncod
+      character(len=256) flwmap, flwhis,                                              &
      &              fstrhs  , fqlths  ,                                               &
      &              minmax  ,                                                         &
      &              fihmap  , fihhis  ,                                               &
@@ -66,23 +66,23 @@
      &              mrpmap  , mrphis  ,                                               &
      &              gsedmap , gsedhis ,                                               &
      &              gfrcmap , gfrchis 
-      character*256 trainp  , traout  ,                                               &
+      character(len=256) trainp, traout,                                              &
      &              griout
-      character*256 graout  , gralog  
-      character*256 fsgfun  , fexare  ,                                               &
+      character(len=256) graout  , gralog  
+      character(len=256) fsgfun, fexare,                                              &
      &              fexflo  , flenth  ,                                               &
      &              fvolum  , fpoint  ,                                               &
      &              fwqino  , fwqinp
-      character*256 nefrda  , nefrdf  ,                                               &
+      character(len=256) nefrda, nefrdf,                                              &
      &              nefnda  , nefndf
-      character*256 logfil  , statfl
-      character*256 fresid  , ffroud  ,                                               &
+      character(len=256) logfil  , statfl
+      character(len=256) fresid, ffroud,                                              &
      &              fdmprs  , fdmpst  ,                                               &
      &              fdmpsl
-      character*256 nefmda  , nefmdf
-      character*256 nefwda  , nefwdf
-      character*256 errtem
-      character*256 gaprinam, gawlev  ,                                               &
+      character(len=256) nefmda  , nefmdf
+      character(len=256) nefwda  , nefwdf
+      character(len=256) errtem
+      character(len=256) gaprinam, gawlev,                                            &
      &              gadisch , gaveloc ,                                               &
      &              gaconcen
       common /simfls/                                                                 &

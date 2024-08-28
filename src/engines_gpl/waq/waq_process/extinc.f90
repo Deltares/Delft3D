@@ -157,7 +157,7 @@ contains
                     EXTDOC = ADOC * DOC
                     EXTALG = EXTBL + EXTDYN + EXTPRO
                     SALIN = MIN(SALIN, SALMAX)
-                    SALIN = MAX(SALIN, 0.0)
+                    SALIN = MAX(SALIN, 0.0_dp)
                     EXTSAL = XTSAL0 * (1.0 - SALIN / SALMAX)
                     EXT = EXT0 + EXTIM + EXTPOC + EXTDOC + EXTALG + EXTMAC &
                             + EXTSAL
@@ -191,7 +191,7 @@ contains
                     !  calculate extinction coefficients - with UITZICHT
                     !
                     CHLORP = 0.0
-                    DETRIC = MAX (0.0, DETCDM * (POC1 + POC2 + POC3 + POC4))
+                    DETRIC = MAX (0.0_dp, DETCDM * (POC1 + POC2 + POC3 + POC4))
                     AH_380 = DOC * ADOC
                     GLOEIR = AIM1 + AIM2 + AIM3
                     !

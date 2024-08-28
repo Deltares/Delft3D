@@ -8,6 +8,8 @@ get_fortran_source_files(${src_directory} source_files)
 set(library_name icepack)
 add_library(${library_name} ${source_files})
 
+target_link_libraries(${library_name} PRIVATE no_compiler_warnings)
+
 # Define additional compilation flags
 set_source_files_properties(${src_directory}/icepack_aerosol.F90
                             ${src_directory}/icepack_age.F90

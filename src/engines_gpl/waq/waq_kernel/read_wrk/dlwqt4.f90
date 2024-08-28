@@ -45,7 +45,7 @@ contains
         USE HydroSet           ! for composed hydrodynamics
 
         integer(kind = int_wp), intent(inout) :: file_unit_list(*)          ! logical unitnumbers of files
-        character*(*), intent(in) :: luntxt(*)       ! file names
+        character(len=*), intent(in) :: luntxt(*)       ! file names
         integer(kind = int_wp), intent(in) :: ftype(*)        ! type of the files
         integer(kind = int_wp), intent(in) :: lunout          ! unit number monitor file
         integer(kind = int_wp), intent(in) :: ilun            ! entry in file_unit_list/LUNTXT for this item
@@ -97,11 +97,11 @@ contains
         character(255) sfile                             ! help variable for file names
         logical        updat2                            ! help variable to determine updated record
         logical        lre3                              ! help variable to determine rewind
-        integer(kind = int_wp), save :: islun                         ! base unit number for work files
-        integer(kind = int_wp) :: filtype                           ! type of file
+        integer(kind = int_wp), save :: islun            ! base unit number for work files
+        integer(kind = int_wp) :: filtype                ! type of file
         real(kind = real_wp), pointer :: array1(:), array2(:), array3(:) ! help arrays for interpolation
-        logical        first  / .true. /                 ! construct for initialisation
-        integer(kind = int_wp) :: ithandl = 0                       ! performance timer construct
+        logical                :: first = .true.         ! construct for initialisation
+        integer(kind = int_wp) :: ithandl = 0            ! performance timer construct
         if (timon) call timstrt ("dlwqt4", ithandl)
 
         lrewin = .false.
