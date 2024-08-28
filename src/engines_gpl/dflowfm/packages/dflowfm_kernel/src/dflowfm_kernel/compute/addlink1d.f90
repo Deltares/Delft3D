@@ -141,7 +141,6 @@
        calcConv = 1
 
        if (hu(L) > 0) then
-          !DIR$ INLINE
           hpr = get_hpr_nostruc(L)
           ! getprof1D sets cfu
           call getprof_1D(L, hpr, au(L), widu, japerim, calcConv, perim) ! memory closeness of profiles causes this statement here instead of in setau

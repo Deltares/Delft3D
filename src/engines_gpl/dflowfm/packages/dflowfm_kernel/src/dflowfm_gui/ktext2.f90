@@ -37,7 +37,7 @@
          integer :: nx
          integer :: ny
 !     tekst op normale text posities met EIGEN achtergrond
-         character * (*) TEX
+         character(len=*) TEX
          call ITEXTCOLOURN(NCOL, NCOL2)
          call IOUTSTRINGXY(NX, NY, trim(TEX))
          return

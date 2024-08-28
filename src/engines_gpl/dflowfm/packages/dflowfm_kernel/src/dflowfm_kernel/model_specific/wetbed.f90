@@ -170,6 +170,6 @@
     ! call htext(dble(h2), dble(xu+xc), dble(h2) )
 
     x = x + xc
-    call compareanalytic(s, u, x, mmax)
+    call compareanalytic(s, x, mmax)
 
  end subroutine wetbed

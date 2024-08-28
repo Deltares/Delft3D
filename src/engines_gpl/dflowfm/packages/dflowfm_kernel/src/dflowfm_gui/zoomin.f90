@@ -35,15 +35,14 @@
          use m_wearelt
          use m_sferic
          use m_sferzoom
+         use m_locatora
 
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
-         double precision :: xlc, ylc, xa, ya
-         integer :: JMOUSE, JASHOW
-
+         implicit none
+         
          double precision :: aspect, dx, dy, xln, yln, xl, yl, X1B, Y1B, X2B, Y2B, xl2, yl2
          integer :: k, nlevel, jadraw, nput, nnn, ja, key
 
-         character WRDKEY * 40
+         character(len=40) :: WRDKEY
          integer, parameter :: MAXZOOM = 4
          real XYWOLD(MAXZOOM, 4)
          save XYWOLD

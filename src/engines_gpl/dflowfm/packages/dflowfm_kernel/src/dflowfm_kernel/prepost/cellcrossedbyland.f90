@@ -31,7 +31,7 @@
 !
 
 !> check if a cell is close to a land boundary segment
-subroutine cellcrossedbyland(k, jstart, jend, jland, jacross)
+subroutine cellcrossedbyland(k, jstart, jend, jacross)
    use m_netw
    use m_landboundary
    use m_missing
@@ -42,7 +42,6 @@ subroutine cellcrossedbyland(k, jstart, jend, jland, jacross)
 
    integer, intent(in) :: k !< cell number
    integer, intent(in) :: jstart, jend !< start and end point of land boundary segment respectively
-   integer, intent(inout) :: jland !< point in land boundary that is (in:) visited first (out:) found
    integer, intent(out) :: jacross !< crossed (1) or not (0)
 
    double precision :: x1, y1, x2, y2, x3, y3, x4, y4, sL, sm, xcr, ycr, crp

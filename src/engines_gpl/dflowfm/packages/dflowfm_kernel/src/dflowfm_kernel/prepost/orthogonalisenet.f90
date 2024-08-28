@@ -47,6 +47,7 @@ subroutine ORTHOGONALISENET(jarerun)
    use geometry_module, only: dbpinpol
    use fm_external_forcings_data, only: transformcoef
    use gridoperations
+   use m_drawthis
 
    implicit none
 
@@ -103,9 +104,6 @@ subroutine ORTHOGONALISENET(jarerun)
    double precision, allocatable, dimension(:) :: xloc, yloc ! local coordinates
    integer, allocatable, dimension(:) :: iloc ! startpointers in local coordinate arrays, dim(numk+1)
    double precision, dimension(1) :: dumx, dumy
-
-   integer :: NDRAW
-   common / DRAWTHIS / ndraw(50)
 
    jarerun = 0
 
@@ -531,7 +529,7 @@ subroutine ORTHOGONALISENET(jarerun)
                         DUM(2) = wwy * Ra * dg2rd
                      else
                         y1 = yk(k1)
-                        DUM(1) = wwx * dcos(0.5d0 * (y00 + y1) * dg2rd) * Ra * dg2rd
+                        DUM(1) = wwx * cos(0.5d0 * (y00 + y1) * dg2rd) * Ra * dg2rd
                         DUM(2) = wwy * Ra * dg2rd
                      end if
                   else
@@ -603,7 +601,7 @@ subroutine ORTHOGONALISENET(jarerun)
          call halt3(ja3)
          if (Lteknet) then
             ja1 = -1234
-            call teknet(0, ja1) ! whipe out previous net image
+            call teknet(ja1) ! whipe out previous net image
 !            call teknetcells(NDRAW(33), -1234, 0)
 !            xk(1:numk) = xk1(1:numk)
 !            yk(1:numk) = yk1(1:numk)
@@ -612,7 +610,7 @@ subroutine ORTHOGONALISENET(jarerun)
             !           if ( JAPROJECT.ge.2 ) call snap_to_landboundary() ! JAPROJECT)
 
             ja1 = -1234
-            call teknet(ncolhl, ja1)
+            call teknet(ja1)
 !            call teknetcells(NDRAW(33), -1234, 1)
             !NDRAW(10) = 1
             !CALL PLOT(NDRAW(10))
@@ -625,7 +623,7 @@ subroutine ORTHOGONALISENET(jarerun)
          end if
 
          if (ja3 == 1 .or. ja3 == 2) then
-            call teknet(0, ja1) ! whipe out net image
+            call teknet(ja1) ! whipe out net image
             Lteknet = .not. Lteknet
          end if
 
@@ -712,20 +710,6 @@ subroutine ORTHOGONALISENET(jarerun)
 !   end if
 
 contains
-
-!> determine atpf from residuals ***INOPERATIVE***
-   double precision function get_atpf(res)
-      implicit none
-
-      double precision, dimension(2) :: res !< residual
-
-      double precision, parameter :: beta = 1.00d0 ! influence parameter
-
-!      get_atpf = 1d0/(1d0 + beta*sqrt(sum(res**2)))
-!      get_atpf = 1d0/(1d0 + beta*maxval(abs(res)))
-
-      get_atpf = 1d0 ! disabled
-   end function get_atpf
 
    subroutine comp_local_coords(iloc, kk1, x, y, Nloc, xloc, yloc)
       use m_sferic
@@ -1527,7 +1511,7 @@ contains
       Phi_ave = 0d0
       vol = 0d0
 
-      call orthonet_smooth_u(u, adapt_niter_u, ops, u_smooth) ! <1: no smoothing
+      call orthonet_smooth_u(u, adapt_niter_u, u_smooth) ! <1: no smoothing
 
 !     compute Phi
       do k0 = 1, Numk
@@ -1603,7 +1587,7 @@ contains
 
 !     smooth G
       do k = 1, 4
-         call orthonet_smooth_u(G_tmp(k, :), adapt_niter_G, ops, G(k, :))
+         call orthonet_smooth_u(G_tmp(k, :), adapt_niter_G, G(k, :))
       end do
 
       do k0 = 1, Numk
@@ -2648,7 +2632,7 @@ contains
    end function opt_angle
 
 !>  smooth the node-based variable u
-   subroutine orthonet_smooth_u(u, ITAPSM, ops, u_smooth)
+   subroutine orthonet_smooth_u(u, ITAPSM, u_smooth)
       use m_netw
       use m_orthosettings
       use unstruc_messages
@@ -2659,7 +2643,6 @@ contains
 
       double precision, dimension(:), intent(in) :: u !< node-based solution
       integer, intent(in) :: ITAPSM !< number of smoothing iterations
-      type(tops), dimension(:), intent(in) :: ops !< per-topology operators
       double precision, dimension(:), intent(out) :: u_smooth !< smoothed node-based solution
 
       double precision, dimension(nmkx2) :: ww2

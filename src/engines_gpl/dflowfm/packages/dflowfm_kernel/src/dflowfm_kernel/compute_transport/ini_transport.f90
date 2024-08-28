@@ -202,7 +202,7 @@ subroutine ini_transport()
    if (NUMCONST > 0) then
       call mess(LEVEL_INFO, 'List of constituents defined in the model')
       do i = 1, NUMCONST
-         write (msg, '(I8,X,A)') i, const_names(i)
+         write (msg, '(I8,1X,A)') i, const_names(i)
          call mess(LEVEL_INFO, msg)
       end do
    end if
@@ -210,7 +210,7 @@ subroutine ini_transport()
    if (numwqbots > 0) then
       call mess(LEVEL_INFO, 'List of water quality bottom variables defined in the model')
       do i = 1, numwqbots
-         write (msg, '(I8,X,A)') i, wqbotnames(i)
+         write (msg, '(I8,1X,A)') i, wqbotnames(i)
          call mess(LEVEL_INFO, msg)
       end do
    end if

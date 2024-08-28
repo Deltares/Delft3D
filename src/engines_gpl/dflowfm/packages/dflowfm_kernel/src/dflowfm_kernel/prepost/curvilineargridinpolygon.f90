@@ -46,6 +46,7 @@
          use m_netw
          use m_sferic, only: jsferic, jasfer3D
          use geometry_module, only: dcosphi
+         use m_drawthis
          implicit none
 
          double precision :: atpfo
@@ -64,12 +65,10 @@
          integer :: n
          integer :: n1
          integer :: n2
-         integer :: ndraw
          integer :: ndraw8org
          integer :: nfo
          integer :: npo
          integer :: nr
-         common / drawthis / ndraw(50)
 
          double precision, allocatable :: XH(:, :), YH(:, :)
 
@@ -121,7 +120,7 @@
          do N = 2, NPL - 1
             prin = dcosphi(XPO(N - 1), YPO(N - 1), XPO(N), YPO(N), &
                            XPO(N), YPO(N), XPO(N + 1), YPO(N + 1), jsferic, jasfer3D, dxymis)
-            prin = dabs(prin)
+            prin = abs(prin)
             if (PRIN < 0.5d0) then
                call RCIRC(XPL(1), YPL(1))
                NR = NR + 1

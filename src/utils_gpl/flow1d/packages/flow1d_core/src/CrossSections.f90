@@ -965,8 +965,8 @@ subroutine useBranchOrdersCrs(crs, brs)
    type(t_branchSet)      , intent(in   )          :: brs       !< Set of reaches
 
    ! local variables
-   integer  ibr, i
-   integer  ics, iorder, minOrderNumber, OrderNumberCount, currentOrder
+   integer  ibr
+   integer  ics, iorder, minOrderNumber, OrderNumberCount
    integer  crsCount
    integer, allocatable, dimension(:,:)         :: orderNumber       !< first index contains orderNumber, second contains start position for this ordernumber
    double precision, allocatable, dimension(:)  :: crsData
@@ -1735,7 +1735,7 @@ subroutine GetTabSizesFromTables(dpt, pCSD, doFlow, area, width, perimeter, af_s
                      
                      a = width - width_sub_tab(isec, ilev - 1)
                      b = dpt - d1
-                     perim_sub(isec) = perim_sub_tab(isec, ilev - 1) + 2.0d0 * dsqrt(0.25d0 * a * a + b * b)
+                     perim_sub(isec) = perim_sub_tab(isec, ilev - 1) + 2.0d0 * sqrt(0.25d0 * a * a + b * b)
                      
                   enddo
                   
@@ -1746,7 +1746,7 @@ subroutine GetTabSizesFromTables(dpt, pCSD, doFlow, area, width, perimeter, af_s
                   
                   a = width - flowWidth_tab(ilev - 1)
                   b = dpt - d1
-                  perimeter = wetPerimeter_tab(ilev - 1) + 2.0d0 * dsqrt(0.25d0 * a * a + b * b)
+                  perimeter = wetPerimeter_tab(ilev - 1) + 2.0d0 * sqrt(0.25d0 * a * a + b * b)
                   
                else
                   
@@ -1953,7 +1953,7 @@ subroutine GetTabulatedSizes(dpt, crossDef, doFlow, area, width, maxwidth, perim
          e2 = min(widths(ilev + 1)-widthplains(isec), widthplains(isec+1)-widthplains(isec))
          if (dpt > d2) then
             af_sub(isec)    = af_sub(isec) + 0.5d0 * (d2 - d1) * (e1 + e2)
-            perim_sub(isec) = perim_sub(isec) + 2.0d0 * dsqrt(0.25d0 * (e2 - e1)**2 + (d2 - d1)**2)
+            perim_sub(isec) = perim_sub(isec) + 2.0d0 * sqrt(0.25d0 * (e2 - e1)**2 + (d2 - d1)**2)
             
             ! calculate decreasing area:
             ! area = width_min*height subsection + 0.5 * decrease in width * height subsection
@@ -2146,7 +2146,7 @@ subroutine GetTabFlowSectionFromTables(dpt, pCross, isector, area, width, perime
                   if (ilev <= plainsLocation(isector)) then
                      a = width - width_sub_tab(isector, ilev - 1)
                      b = dpt - d1
-                     perimeter = perim_sub_tab(isector, ilev - 1) + 2.0d0 * dsqrt(0.25d0 * a * a + b * b)
+                     perimeter = perim_sub_tab(isector, ilev - 1) + 2.0d0 * sqrt(0.25d0 * a * a + b * b)
                   else
                      perimeter = perim_sub_tab(isector, ilev - 1)
                   endif
@@ -2328,7 +2328,7 @@ subroutine trapez(dpt, d1, d2, w1, w2, area, width, perimeter)
    !
    width= w1 + (dpt - d1) * (w2 - w1) / (d2 - d1)
    area = (dpt - d1) * 0.5d0 * (width + w1)
-   perimeter = 2.0d0 * dsqrt(0.25d0 * (width - w1)**2 + (dpt - d1)**2)
+   perimeter = 2.0d0 * sqrt(0.25d0 * (width - w1)**2 + (dpt - d1)**2)
    
 end subroutine trapez
 
@@ -2355,8 +2355,6 @@ subroutine CircleProfile(dpt, diameter, area, width, maxwidth, perimeter, calcul
 !
 ! Local variables
 !
-   double precision               :: dacos
-   double precision               :: dsqrt
    double precision               :: fi
    double precision               :: ra
    double precision               :: sq
@@ -2382,12 +2380,12 @@ subroutine CircleProfile(dpt, diameter, area, width, maxwidth, perimeter, calcul
          else
             dpt2 = dpt              ! second step full egg profile up to water depth
          endif
-         fi = dacos(max((ra-dpt2)/ra, -1d0))
-         sq = dsqrt(max(dpt2*(diameter - dpt2),0d0))
+         fi = acos(max((ra-dpt2)/ra, -1d0))
+         sq = sqrt(max(dpt2*(diameter - dpt2),0d0))
       
          if (dpt2<diameter) then
-            area      = dabs(fi*ra*ra - sq*(ra-dpt2))
-            perimeter       = dabs(2d0*fi*ra)
+            area      = abs(fi*ra*ra - sq*(ra-dpt2))
+            perimeter       = abs(2d0*fi*ra)
             width     = 2d0*sq
          else
             area      = pi*ra*ra
@@ -2462,27 +2460,27 @@ subroutine EggProfile(dpt, diameter, area, width, perimeter, calculationOption)
       endif
       
       if ((dpt2>0) .and. (dpt2<=.2*r)) then
-         perimeter = 2*r*(.5*atan((dsqrt(r*dpt2 - dpt2*dpt2)/(.5*r - dpt2))))
-         width = r*sin(atan(dsqrt(dpt2*r - dpt2*dpt2)/(.5*r - dpt2)))
-         e = .25*r*r*atan((dpt2 - .5*r)/(dsqrt(dpt2*r - dpt2*dpt2))) + .392699082*r*r +       &
-            & (dpt2 - .5*r)*dsqrt(dpt2*r - dpt2*dpt2)
+         perimeter = 2*r*(.5*atan((sqrt(r*dpt2 - dpt2*dpt2)/(.5*r - dpt2))))
+         width = r*sin(atan(sqrt(dpt2*r - dpt2*dpt2)/(.5*r - dpt2)))
+         e = .25*r*r*atan((dpt2 - .5*r)/(sqrt(dpt2*r - dpt2*dpt2))) + .392699082*r*r +       &
+            & (dpt2 - .5*r)*sqrt(dpt2*r - dpt2*dpt2)
          area = e
 
       elseif ((dpt2>.2*r) .and. (dpt2<=2.*r)) then
          perimeter = 2*r*(2.39415093538065 -                                          &
-               & 3.*atan((2*r - dpt2)/(dsqrt(5.*r*r + 4*r*dpt2 - dpt2*dpt2))))
-         width = 2.*((dsqrt(5.*r*r + 4.*r*dpt2 - dpt2*dpt2)) - 2.*r)
-         e = 9.*r*r*atan((dpt2 - 2*r)/(dsqrt(9.*r*r - ((dpt2 - 2*r)**2)))) + (dpt2 - 2*r)&
-            & *dsqrt(9*r*r - ((dpt2 - 2*r)**2)) - 4.*r*(dpt2 - .2*r)                   &
+               & 3.*atan((2*r - dpt2)/(sqrt(5.*r*r + 4*r*dpt2 - dpt2*dpt2))))
+         width = 2.*((sqrt(5.*r*r + 4.*r*dpt2 - dpt2*dpt2)) - 2.*r)
+         e = 9.*r*r*atan((dpt2 - 2*r)/(sqrt(9.*r*r - ((dpt2 - 2*r)**2)))) + (dpt2 - 2*r)&
+            & *sqrt(9*r*r - ((dpt2 - 2*r)**2)) - 4.*r*(dpt2 - .2*r)                   &
             & + 10.11150997913956*r*r
          area = .11182380480168*r*r + e
 
       elseif ((dpt2>2*r) .and. (comparereal(dpt2,3*r, 1d-6) < 0)) then
          perimeter = 2.*r*(2.39415093538065 +                                         &
-               & atan((dpt2 - 2*r)/(dsqrt( - 3.*r*r + 4*r*dpt2 - dpt2*dpt2))))
-         width = 2*r*cos(atan((dpt2 - 2*r)/(dsqrt( - 3.*r*r + 4*dpt2*r - dpt2*dpt2))))
-         e = r*r*(atan((dpt2 - 2*r)/(dsqrt(r*r - ((dpt2 - 2*r)**2))))) + (dpt2 - 2*r)   &
-               & *dsqrt(r*r - ((dpt2 - 2*r)**2))
+               & atan((dpt2 - 2*r)/(sqrt( - 3.*r*r + 4*r*dpt2 - dpt2*dpt2))))
+         width = 2*r*cos(atan((dpt2 - 2*r)/(sqrt( - 3.*r*r + 4*dpt2*r - dpt2*dpt2))))
+         e = r*r*(atan((dpt2 - 2*r)/(sqrt(r*r - ((dpt2 - 2*r)**2))))) + (dpt2 - 2*r)   &
+               & *sqrt(r*r - ((dpt2 - 2*r)**2))
          area = 3.02333378394124*r*r + e
 
       else 
@@ -2605,7 +2603,7 @@ else if (i012 == 0) then                                ! look at u points, mom.
             convtab%chezy_act = 0d0
          else
             r3 = area / perimeter                            ! actual hydraulic radius
-            convtab%chezy_act = conv / (area * dsqrt(r3))  ! Used in function ChezyFromConveyance
+            convtab%chezy_act = conv / (area * sqrt(r3))  ! Used in function ChezyFromConveyance
          endif
          cz = convtab%chezy_act
          !
@@ -2636,7 +2634,7 @@ else if (i012 == 0) then                                ! look at u points, mom.
                !
                conv = c_a*((dpt)**(c_b))
                ! Actual Chezy Value for ChezyFromConveyance
-               convtab%chezy_act = conv / (AREA * DSQRT(r3))
+               convtab%chezy_act = conv / (AREA * sqrt(r3))
                cz = convtab%chezy_act
             else
                cz = getchezy(frictionType, frictionValue, area/perimeter, dpt, 0d0)
@@ -2697,7 +2695,6 @@ use messageHandling
 
    implicit none
 
-   integer nc
    type(t_CrossSection), intent(inout)    :: crs   !< cross section
    
    type(t_convtab), pointer   :: convTab
@@ -3250,10 +3247,10 @@ subroutine createTablesForTabulatedProfile(crossDef)
             elseif (widths(ilev - 1) >= widthplains(isec)) then 
                crossDef%perim_sub(isec, ilev) = crossDef%perim_sub(isec, ilev - 1)
             else
-               crossDef%perim_sub(isec, ilev) = crossDef%perim_sub(isec, ilev - 1) + 2.0d0 * dsqrt(0.25d0 * (e2 - e1)**2 + (d2 - d1)**2)
+               crossDef%perim_sub(isec, ilev) = crossDef%perim_sub(isec, ilev - 1) + 2.0d0 * sqrt(0.25d0 * (e2 - e1)**2 + (d2 - d1)**2)
             endif
          else
-            crossDef%perim_sub(isec, ilev) = crossDef%perim_sub(isec, ilev - 1) + 2.0d0 * dsqrt(0.25d0 * (e2 - e1)**2 + (d2 - d1)**2)
+            crossDef%perim_sub(isec, ilev) = crossDef%perim_sub(isec, ilev - 1) + 2.0d0 * sqrt(0.25d0 * (e2 - e1)**2 + (d2 - d1)**2)
          endif
             
       enddo

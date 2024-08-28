@@ -94,10 +94,10 @@
             if (KC(K1) == 1 .and. (NMK(K1) > 1 .or. (kn(3, l) == 1 .or. kn(3, l) == 6))) then ! NIEUWE 1d CELL
                nump1d2d = nump1d2d + 1
                KC(K1) = -nump1d2d ! MARKEREN ALS OUD
-               LNE(1, L) = -iabs(KC(K1)) ! NEW 1D CELL flag 1D links through negative lne ref
+               LNE(1, L) = -abs(KC(K1)) ! NEW 1D CELL flag 1D links through negative lne ref
                LNN(L) = LNN(L) + 1
             else if (KC(K1) /= 1) then
-               LNE(1, L) = -iabs(KC(K1)) ! NEW 1D CELL flag 1D links through negative lne ref
+               LNE(1, L) = -abs(KC(K1)) ! NEW 1D CELL flag 1D links through negative lne ref
                LNN(L) = LNN(L) + 1
             else
                call mess(LEVEL_WARN, '1D2D link without valid 1D branch detected, discarding!')
@@ -110,10 +110,10 @@
             if (KC(K2) == 1 .and. (NMK(K2) > 1 .or. (kn(3, l) == 1 .or. kn(3, l) == 6))) then ! NIEUWE 1d CELL
                nump1d2d = nump1d2d + 1
                KC(K2) = -nump1d2d
-               LNE(2, L) = -iabs(KC(K2)) ! NEW 1D CELL
+               LNE(2, L) = -abs(KC(K2)) ! NEW 1D CELL
                LNN(L) = LNN(L) + 1
             else if (KC(k2) /= 1) then
-               LNE(2, L) = -iabs(KC(K2)) ! NEW 1D CELL
+               LNE(2, L) = -abs(KC(K2)) ! NEW 1D CELL
                LNN(L) = LNN(L) + 1
             else
                call mess(LEVEL_WARN, '1D2D link without valid 1D branch detected, discarding!')

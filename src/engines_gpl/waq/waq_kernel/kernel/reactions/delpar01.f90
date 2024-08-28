@@ -39,6 +39,9 @@ module m_delpar01
 
     implicit none
 
+    private
+    public :: delpar01
+
 contains
 
     !> Carries out a Particle tracking step.
@@ -96,7 +99,7 @@ contains
         integer(kind = int_wp) :: lunout             !  output unit number
         integer(kind = int_wp) :: indx              !  index in segment names
         integer(kind = int_wp) :: ioff              !  offset in substances array
-        integer(kind = int_wp) :: isys              !  loop counter substances
+        integer(kind = int_wp) :: substance_i              !  loop counter substances
         logical :: first = .true.
         integer(kind = int_wp), save :: idtimd, itimd1, itimd2     ! timings of the vertical diffusion file
         integer(kind = int_wp), save :: idtimt, itimt1, itimt2     ! timings of the tau file
@@ -105,7 +108,7 @@ contains
         integer(kind = int_wp), save :: ifflag, isflag
         logical, save :: updatd
         integer(kind = int_wp) nosubud
-        integer(kind = int_wp) iseg, i, i2, ipart
+        integer(kind = int_wp) cell_i, i, i2, ipart
         real(kind = real_wp)  depmin
         real(kind = real_wp) :: pctprogress
         logical     update
@@ -278,10 +281,10 @@ contains
 
         ! Store Part concentrations and masses in the last part of the Waq arrays.
         ioff = num_substances_total - nosubs
-        do iseg = 1, num_cells            !  give Part concentrations to Waq
-            do isys = 1, nosubs
-                conc (ioff + isys, iseg) = concp(isys, iseg)
-                amass(ioff + isys, iseg) = concp(isys, iseg) * dwqvol(iseg)
+        do cell_i = 1, num_cells            !  give Part concentrations to Waq
+            do substance_i = 1, nosubs
+                conc (ioff + substance_i, cell_i) = concp(substance_i, cell_i)
+                amass(ioff + substance_i, cell_i) = concp(substance_i, cell_i) * dwqvol(cell_i)
             end do
         end do
 

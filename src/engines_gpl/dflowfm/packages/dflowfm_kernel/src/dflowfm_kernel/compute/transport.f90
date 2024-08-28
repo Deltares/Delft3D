@@ -47,7 +47,7 @@ subroutine transport() ! transport for now, advect salinity and add
    use m_missing
    use unstruc_messages
    use m_transport, only: NUMCONST, constituents, ISALT, ITEMP
-   use m_lateral, only: average_concentrations_for_laterals, apply_transport_is_used
+   use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
 
    implicit none
 

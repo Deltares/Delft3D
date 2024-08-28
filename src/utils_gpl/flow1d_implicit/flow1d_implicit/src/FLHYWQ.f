@@ -126,11 +126,11 @@ c
       integer       nelwqi, mcell, i, nrerr
       parameter     (nelwqi=9)
       integer       ord(5), uindex(3), ibuf(1),itim0(2)
-      character*16  elwqi(nelwqi)
-      character*16  grnamd, grnamw
-      character*16  namdes(2)
-      character*64  desdes(2)
-      character*8   txt
+      character(len=16)  elwqi(nelwqi)
+      character(len=16)  grnamd, grnamw
+      character(len=16)  namdes(2)
+      character(len=64)  desdes(2)
+      character(len=8)   txt
       double  precision  dtag
 c
 c     Include sobek error code file
@@ -219,8 +219,22 @@ c
 c
 c        Write each array to the data file
 c
-        do 200 i = 1, mcell
-           goto (110,120,130,140,180,160,170), i
+        do i = 1, mcell
+           if (i == 1) then
+              goto 110
+           else if (i == 2) then
+              goto 120
+           else if (i == 3) then
+              goto 130
+           else if (i == 4) then
+              goto 140
+           else if (i == 5) then
+              goto 180
+           else if (i == 6) then
+              goto 160
+           else if (i == 7) then
+              goto 170
+           end if
   110       continue
               err = PUTREL (fd_nefis_waq, grnamw, elwqi(1),
      +                       uindex, ord   , af)
@@ -244,10 +258,9 @@ c
   170       continue
               err = PUTREL (fd_nefis_waq, grnamw, elwqi(7),
      +                       uindex, ord   , wfs)
-              goto 180
   180       continue
            if (err .ne. 0) goto 1000
-  200    continue
+        end do
       endif
 c
 c     Make last written time step on aggregation file complete

@@ -64,7 +64,7 @@ subroutine disable_invalid_ghostcells_with_wu()
    do k = 1, Ndxi
       if (imask(k) == 0 .and. idomain(k) /= my_rank) then
          do i = 1, nd(k)%lnx
-            L = iabs(nd(k)%ln(i))
+            L = abs(nd(k)%ln(i))
             wu(L) = 0d0
          end do
       end if

@@ -202,8 +202,8 @@ subroutine flow_trachyinit()
       !
       if (kL /= 0 .and. kR /= 0) then
 
-         trachy_fl%dir(1)%lin(1, L) = iabs(kL)
-         trachy_fl%dir(1)%lin(2, L) = iabs(kR)
+         trachy_fl%dir(1)%lin(1, L) = abs(kL)
+         trachy_fl%dir(1)%lin(2, L) = abs(kR)
          if (lne2ln(L) > 0) then
             ! net link corresponds to flow link
             trachy_fl%dir(1)%acLin(L) = acl(lne2ln(L))
@@ -214,8 +214,8 @@ subroutine flow_trachyinit()
          end if
       else
          ! net link is on closed boundary (Note: 1D network should not get here)
-         trachy_fl%dir(1)%lin(1, L) = max(iabs(kR), iabs(kL))
-         trachy_fl%dir(1)%lin(2, L) = max(iabs(kR), iabs(kL))
+         trachy_fl%dir(1)%lin(1, L) = max(abs(kR), abs(kL))
+         trachy_fl%dir(1)%lin(2, L) = max(abs(kR), abs(kL))
          trachy_fl%dir(1)%acLin(L) = 1.0
       end if
    end do

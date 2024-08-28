@@ -47,11 +47,11 @@
             i = i + 1
             k1 = klnup(1 + ip, L)
             sln1 = slnup(1 + ip, L)
-            k2 = iabs(klnup(2 + ip, L))
+            k2 = abs(klnup(2 + ip, L))
             sln2 = slnup(2 + ip, L)
             sln3 = slnup(3 + ip, L)
             if (k1 /= 0) then
-               kdum = iabs(k1)
+               kdum = abs(k1)
                call cirr(xz(kdum), yz(kdum), icolor(i))
                call dHTEXT(sln1, xz(kdum), yz(kdum), 0d0)
             else

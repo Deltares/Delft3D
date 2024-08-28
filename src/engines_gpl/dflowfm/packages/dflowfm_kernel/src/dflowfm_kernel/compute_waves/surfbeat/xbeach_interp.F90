@@ -34,21 +34,22 @@ module interp
    implicit none
 contains
    subroutine linear_interp_2d(X, nx, Y, ny, Z, xx, yy, zz, method, exception)
+      use precision_basics, only: dp
 
       implicit none
       ! input/output
       integer, intent(in) :: nx, ny
-      real*8, dimension(nx), intent(in) :: X
-      real*8, dimension(ny), intent(in) :: Y
-      real*8, dimension(nx, ny), intent(in) :: Z
-      real*8, intent(in) :: xx, yy
-      real*8, intent(out) :: zz
+      real(dp), dimension(nx), intent(in) :: X
+      real(dp), dimension(ny), intent(in) :: Y
+      real(dp), dimension(nx, ny), intent(in) :: Z
+      real(dp), intent(in) :: xx, yy
+      real(dp), intent(out) :: zz
       character(len=*), intent(in) :: method
-      real*8, intent(in) :: exception
+      real(dp), intent(in) :: exception
       ! internal
       integer, dimension(4) :: ind
-      real*8, dimension(2) :: yint
-      real*8 :: modx, mody, disx, disy
+      real(dp), dimension(2) :: yint
+      real(dp) :: modx, mody, disx, disy
       logical :: interpX, interpY
 
       ! does the interpolation point fall within the data?
@@ -131,19 +132,20 @@ contains
 ! SOURCE
 !
    subroutine LINEAR_INTERP(X, Y, N, XX, YY, INDINT)
+      use precision_basics, only: dp
+
       integer, intent(in) :: n
-      real*8, dimension(n), intent(in) :: x
-      real*8, dimension(n), intent(in) :: y
-      real*8, intent(in) :: xx
-      real*8, intent(out) :: yy
+      real(dp), dimension(n), intent(in) :: x
+      real(dp), dimension(n), intent(in) :: y
+      real(dp), intent(in) :: xx
+      real(dp), intent(out) :: yy
       integer, intent(out), optional :: indint
       !****
       !
       ! CODE: linear interpolation
       !
       !
-      !
-      real*8 :: a, b, dyy
+      real(dp) :: a, b, dyy
       integer :: j
 
       yy = 0.0d0
@@ -206,9 +208,11 @@ contains
    ! SOURCE
    !
    subroutine BINARY_SEARCH(XX, N, X, J)
+      use precision_basics, only: dp
+
       integer, intent(in) :: N
-      real*8, dimension(N), intent(in) :: xx
-      real*8, intent(in) :: x
+      real(dp), dimension(N), intent(in) :: xx
+      real(dp), intent(in) :: x
       integer, intent(out) :: j
       !****
       !
@@ -266,6 +270,8 @@ contains
   !!--pseudo code and references--------------------------------------------------
       ! NONE
   !!--declarations----------------------------------------------------------------
+      use precision_basics, only: dp
+
       implicit none
       !
       ! Global variables
@@ -275,9 +281,9 @@ contains
       integer, intent(in) :: n2
       integer, intent(in) :: np
       integer, dimension(np, n2), intent(in) :: iref
-      real*8, dimension(n1), intent(in) :: f1
-      real*8, dimension(n2) :: f2
-      real*8, dimension(np, n2), intent(in) :: w
+      real(dp), dimension(n1), intent(in) :: f1
+      real(dp), dimension(n2) :: f2
+      real(dp), dimension(np, n2), intent(in) :: w
       !
       ! Local variables
       !
@@ -327,6 +333,8 @@ contains
   !!--pseudo code and references--------------------------------------------------
       ! NONE
   !!--declarations----------------------------------------------------------------
+      use precision_basics, only: dp
+
       implicit none
       !
       ! Global variables
@@ -335,11 +343,11 @@ contains
       integer, intent(in) :: n2
       integer, intent(in) :: np
       integer, dimension(np, n2), intent(in) :: iref
-      real*8, dimension(n1) :: f1
-      real*8, dimension(n1), intent(in) :: cellsz1i !array with 1/cell size
-      real*8, intent(in) :: cellsz2
-      real*8, dimension(n2), intent(in) :: f2
-      real*8, dimension(np, n2), intent(in) :: w
+      real(dp), dimension(n1) :: f1
+      real(dp), dimension(n1), intent(in) :: cellsz1i !array with 1/cell size
+      real(dp), intent(in) :: cellsz2
+      real(dp), dimension(n2), intent(in) :: f2
+      real(dp), dimension(np, n2), intent(in) :: w
       !
       ! Local variables
       !
@@ -383,25 +391,27 @@ contains
       ! NONE
       !--declarations---------------------------------------------------------------
       !
+      use precision_basics, only: dp
+
       implicit none
       !
       ! Global variables
       !
       integer, intent(out) :: inout
       integer, intent(in) :: n
-      real*8, intent(in) :: xp
-      real*8, intent(in) :: yp
-      real*8, dimension(*) :: xq
-      real*8, dimension(*) :: yq
+      real(dp), intent(in) :: xp
+      real(dp), intent(in) :: yp
+      real(dp), dimension(*) :: xq
+      real(dp), dimension(*) :: yq
       !
       ! Local variables
       !
       integer :: i
       integer :: ierr
       integer :: nunder
-      real*4 :: ysn
-      real*4, dimension(:), allocatable :: x
-      real*4, dimension(:), allocatable :: y
+      real(4) :: ysn
+      real(4), dimension(:), allocatable :: x
+      real(4), dimension(:), allocatable :: y
       !
       ! executable statements ------------------------------------------------------
       !
@@ -468,14 +478,16 @@ contains
       ! NONE
   !!--declarations----------------------------------------------------------------
       !
+      use precision_basics, only: dp
+
       implicit none
       !
       ! Global variables
       !
       integer :: jlo
       integer, intent(in) :: n
-      real*8, intent(in) :: x
-      real*8, dimension(n), intent(in) :: xx
+      real(dp), intent(in) :: x
+      real(dp), dimension(n), intent(in) :: xx
       !
       ! Local variables
       !
@@ -537,47 +549,48 @@ contains
       ! Author: H. Petit
       !
   !!--declarations----------------------------------------------------------------
-      !
+      use precision_basics, only: dp
+
       implicit none
       !
       ! Global variables
       !
       integer, intent(out) :: ier
-      real*8, intent(in) :: x0
-      real*8, intent(in) :: y0
-      real*8, dimension(4), intent(out) :: w
-      real*8, dimension(4), intent(in) :: xa
-      real*8, dimension(4), intent(in) :: ya
+      real(dp), intent(in) :: x0
+      real(dp), intent(in) :: y0
+      real(dp), dimension(4), intent(out) :: w
+      real(dp), dimension(4), intent(in) :: xa
+      real(dp), dimension(4), intent(in) :: ya
       !
       ! Local variables
       !
-      real*8 :: a
-      real*8 :: a21
-      real*8 :: a22
-      real*8 :: a31
-      real*8 :: a32
-      real*8 :: a41
-      real*8 :: a42
-      real*8 :: b
-      real*8 :: c
-      real*8 :: det
-      real*8 :: discr
-      real*8 :: eta
-      real*8 :: x
-      real*8 :: x1
-      real*8 :: x2
-      real*8 :: x3
-      real*8 :: x3t
-      real*8 :: x4
-      real*8 :: xi
-      real*8 :: xt
-      real*8 :: y
-      real*8 :: y1
-      real*8 :: y2
-      real*8 :: y3
-      real*8 :: y3t
-      real*8 :: y4
-      real*8 :: yt
+      real(dp) :: a
+      real(dp) :: a21
+      real(dp) :: a22
+      real(dp) :: a31
+      real(dp) :: a32
+      real(dp) :: a41
+      real(dp) :: a42
+      real(dp) :: b
+      real(dp) :: c
+      real(dp) :: det
+      real(dp) :: discr
+      real(dp) :: eta
+      real(dp) :: x
+      real(dp) :: x1
+      real(dp) :: x2
+      real(dp) :: x3
+      real(dp) :: x3t
+      real(dp) :: x4
+      real(dp) :: xi
+      real(dp) :: xt
+      real(dp) :: y
+      real(dp) :: y1
+      real(dp) :: y2
+      real(dp) :: y3
+      real(dp) :: y3t
+      real(dp) :: y4
+      real(dp) :: yt
       !
   !! executable statements -------------------------------------------------------
       !
@@ -665,12 +678,14 @@ contains
       ! Compute integral over function y(x) from x1 to x2
       ! x is equidistant
       !(c)2014 Dano Roelvink
+      use precision_basics, only: dp
+
       implicit none
       integer, intent(in) :: n
-      real*8, dimension(n), intent(in) :: x, y ! arrays x and y(x)
-      real*8, intent(in) :: x1_in, x2_in ! integration limits
-      real*8, intent(out) :: integ ! integral
-      real*8 :: x1, y1, x2, y2, Ifirst, Imid, Ilast, dx
+      real(dp), dimension(n), intent(in) :: x, y ! arrays x and y(x)
+      real(dp), intent(in) :: x1_in, x2_in ! integration limits
+      real(dp), intent(out) :: integ ! integral
+      real(dp) :: x1, y1, x2, y2, Ifirst, Imid, Ilast, dx
       integer :: i1, i2, i, i1p1, i2p1
       if (x1_in > x(n) .or. x2_in < x(1)) then
          integ = 0
@@ -704,13 +719,15 @@ contains
       ! Compute integral over function y(x) from x1 to x2
       ! x is equidistant, function is cyclic so y(x+k*xcycle)=y(x)
       !(c)2014 Dano Roelvink
+      use precision_basics, only: dp
+
       implicit none
       integer, intent(in) :: n
-      real*8, dimension(n), intent(in) :: x, y ! arrays x and y(x)
-      real*8, intent(in) :: x1, x2, xcycle ! integration limits,cycle length
-      real*8, intent(out) :: integ ! integral
-      real*8, dimension(:), allocatable :: xp, yp
-      real*8 :: dx
+      real(dp), dimension(n), intent(in) :: x, y ! arrays x and y(x)
+      real(dp), intent(in) :: x1, x2, xcycle ! integration limits,cycle length
+      real(dp), intent(out) :: integ ! integral
+      real(dp), dimension(:), allocatable :: xp, yp
+      real(dp) :: dx
       integer :: ip, indt, np
 
       dx = x(2) - x(1)
@@ -740,16 +757,18 @@ contains
    end subroutine trapezoidal_cyclic
 
    subroutine interp_using_trapez_rule(x, y, n, xcycle, xtarg, ytarg, ntarg)
+      use precision_basics, only: dp
+
       implicit none
       ! Compute integral over function y(x) from x1 to x2
       ! x is equidistant, function is cyclic so y(x+k*xcycle)=y(x)
       !(c)2014 Dano Roelvink
       integer, intent(in) :: n, ntarg
-      real*8, dimension(n), intent(in) :: x, y ! arrays x and y(x)
-      real*8, intent(in) :: xcycle ! cycle length
-      real*8, dimension(ntarg), intent(in) :: xtarg ! x values to interpolate to
-      real*8, dimension(ntarg), intent(out) :: ytarg ! y values to interpolate to
-      real*8 :: dx, x1, x2, integ
+      real(dp), dimension(n), intent(in) :: x, y ! arrays x and y(x)
+      real(dp), intent(in) :: xcycle ! cycle length
+      real(dp), dimension(ntarg), intent(in) :: xtarg ! x values to interpolate to
+      real(dp), dimension(ntarg), intent(out) :: ytarg ! y values to interpolate to
+      real(dp) :: dx, x1, x2, integ
       integer :: itarg
 
       dx = xtarg(2) - xtarg(1)
@@ -763,16 +782,18 @@ contains
    end subroutine interp_using_trapez_rule
 
    subroutine interp_in_cyclic_function(x, y, n, xcycle, xp, np, yp)
+      use precision_basics, only: dp
+
       implicit none
       integer, intent(in) :: n
-      real*8, dimension(n), intent(in) :: x, y ! arrays x and y(x)
-      real*8, dimension(:), allocatable :: xc, yc ! complemented cyclic arrays
-      real*8, intent(in) :: xcycle ! cycle length
+      real(dp), dimension(n), intent(in) :: x, y ! arrays x and y(x)
+      real(dp), dimension(:), allocatable :: xc, yc ! complemented cyclic arrays
+      real(dp), intent(in) :: xcycle ! cycle length
       integer, intent(in) :: np
-      real*8, dimension(np), intent(in) :: xp ! points to interpolate to
-      real*8, dimension(np), intent(out) :: yp ! interpolated yp values
+      real(dp), dimension(np), intent(in) :: xp ! points to interpolate to
+      real(dp), dimension(np), intent(out) :: yp ! interpolated yp values
       integer :: icycle, ip, ileft, iright, nc, i
-      real*8 :: dx, yleft, yright, facleft, facright
+      real(dp) :: dx, yleft, yright, facleft, facright
 
       dx = x(2) - x(1)
       icycle = nint(xcycle / dx)

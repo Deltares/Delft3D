@@ -74,7 +74,7 @@
     end do
 
     do i = 1, numghost_u
-       L = iabs(ighostlist_u(i))
+       L = abs(ighostlist_u(i))
        ccr(Lv2(L)) = workmatc(1, L) * workmatc(2, L)
     end do
 

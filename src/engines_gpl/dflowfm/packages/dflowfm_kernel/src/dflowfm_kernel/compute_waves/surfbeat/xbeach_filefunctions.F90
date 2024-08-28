@@ -164,18 +164,19 @@ contains
    end subroutine get_logfileid
 
    subroutine progress_indicator(initialize, curper, dper, dt)
+      use precision_basics, only: dp
 
       implicit none
 
       logical, intent(in) :: initialize ! initialize current progress indicator
-      real*8, intent(in) :: curper ! current percentage done
-      real*8, intent(in) :: dper ! steps in percentage between output
-      real*8, intent(in) :: dt ! steps in time (s) between output
+      real(dp), intent(in) :: curper ! current percentage done
+      real(dp), intent(in) :: dper ! steps in percentage between output
+      real(dp), intent(in) :: dt ! steps in time (s) between output
       ! whichever reached earlier (dper,dt) will determin output
       ! internal
-      real*8, save :: lastper, lastt
-      real*8 :: tnow
-      integer*4 :: count, count_rate, count_max
+      real(dp), save :: lastper, lastt
+      real(dp) :: tnow
+      integer(4) :: count, count_rate, count_max
 
       if (initialize) then
          lastper = 0.d0
@@ -587,7 +588,7 @@ contains
       implicit none
       character(*), intent(in) :: form, message_char1, message_char2, message_char3
       character(*), intent(in) :: destination
-      integer*4, intent(in) :: message_i1, message_i2
+      integer(4), intent(in) :: message_i1, message_i2
       character(slen) :: display
 
       if (form == '') then
@@ -612,7 +613,7 @@ contains
       implicit none
       character(*), intent(in) :: form, message_char1, message_char2, message_char3, message_char4
       character(*), intent(in) :: destination
-      integer*4, intent(in) :: message_i1, message_i2
+      integer(4), intent(in) :: message_i1, message_i2
       character(slen) :: display
 
       if (form == '') then
@@ -636,11 +637,12 @@ contains
    end subroutine writelog_aaaiai
 
    subroutine writelog_aiafa(destination, form, mc1, mi1, mc2, mf1, mc3)
+      use precision_basics, only: dp
       implicit none
       character(*), intent(in) :: form, mc1, mc2, mc3
       character(*), intent(in) :: destination
-      integer*4, intent(in) :: mi1
-      real*8, intent(in) :: mf1
+      integer(4), intent(in) :: mi1
+      real(dp), intent(in) :: mf1
       character(slen) :: display
 
       if (form == '') then
@@ -660,11 +662,13 @@ contains
    end subroutine writelog_aiafa
 
    subroutine writelog_aiafaf(destination, form, mc1, mi1, mc2, mf1, mc3, mf2)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, mc1, mc2, mc3
       character(*), intent(in) :: destination
-      integer*4, intent(in) :: mi1
-      real*8, intent(in) :: mf1, mf2
+      integer(4), intent(in) :: mi1
+      real(dp), intent(in) :: mf1, mf2
       character(slen) :: display
 
       if (form == '') then
@@ -691,7 +695,7 @@ contains
       implicit none
       character(*), intent(in) :: form, message_char1, message_char2, message_char3
       character(*), intent(in) :: destination
-      integer*4, intent(in) :: message_i1, message_i2, message_i3
+      integer(4), intent(in) :: message_i1, message_i2, message_i3
       character(slen) :: display
 
       if (form == '') then
@@ -719,7 +723,7 @@ contains
       implicit none
       character(*), intent(in) :: form, mc1, mc2, mc3, mc4
       character(*), intent(in) :: destination
-      integer*4, intent(in) :: message_i1, message_i2, message_i3
+      integer(4), intent(in) :: message_i1, message_i2, message_i3
       character(slen) :: display
 
       if (form == '') then
@@ -743,11 +747,13 @@ contains
    end subroutine writelog_aiaiaia
 
    subroutine writelog_aiaiaf(destination, form, mc1, mi1, mc2, mi2, mc3, mf1)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, mc1, mc2, mc3
       character(*), intent(in) :: destination
-      integer*4, intent(in) :: mi1, mi2
-      real*8, intent(in) :: mf1
+      integer(4), intent(in) :: mi1, mi2
+      real(dp), intent(in) :: mf1
       character(slen) :: display
 
       if (form == '') then
@@ -771,11 +777,13 @@ contains
    end subroutine writelog_aiaiaf
 
    subroutine writelog_aiaiafa(destination, form, mc1, mi1, mc2, mi2, mc3, mf1, mc4)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, mc1, mc2, mc3, mc4
       character(*), intent(in) :: destination
-      integer*4, intent(in) :: mi1, mi2
-      real*8, intent(in) :: mf1
+      integer(4), intent(in) :: mi1, mi2
+      real(dp), intent(in) :: mf1
       character(slen) :: display
 
       if (form == '') then
@@ -802,7 +810,7 @@ contains
       implicit none
       character(*), intent(in) :: form
       character(*), intent(in) :: destination
-      integer*4, intent(in) :: mi1, mi2, mi3, mi4, mi5
+      integer(4), intent(in) :: mi1, mi2, mi3, mi4, mi5
       character(slen) :: display
 
       if (form == '') then
@@ -816,10 +824,12 @@ contains
    end subroutine writelog_iiiii
 
    subroutine writelog_af(destination, form, message_char1, message_f1)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, message_char1
       character(*), intent(in) :: destination
-      real*8, intent(in) :: message_f1
+      real(dp), intent(in) :: message_f1
       character(slen) :: display
 
       if (form == '') then
@@ -835,10 +845,12 @@ contains
    end subroutine writelog_af
 
    subroutine writelog_aaf(destination, form, message_char1, message_char2, message_f1)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, message_char1, message_char2
       character(*), intent(in) :: destination
-      real*8, intent(in) :: message_f1
+      real(dp), intent(in) :: message_f1
       character(slen) :: display
 
       if (form == '') then
@@ -856,10 +868,12 @@ contains
    end subroutine writelog_aaf
 
    subroutine writelog_afa(destination, form, mc1, mf1, mc2)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, mc1, mc2
       character(*), intent(in) :: destination
-      real*8, intent(in) :: mf1
+      real(dp), intent(in) :: mf1
       character(slen) :: display
 
       if (form == '') then
@@ -875,10 +889,12 @@ contains
    end subroutine writelog_afa
 
    subroutine writelog_afaf(destination, form, message_char1, message_f1, message_char2, message_f2)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, message_char1, message_char2
       character(*), intent(in) :: destination
-      real*8, intent(in) :: message_f1, message_f2
+      real(dp), intent(in) :: message_f1, message_f2
       character(slen) :: display
 
       if (form == '') then
@@ -898,10 +914,12 @@ contains
    end subroutine writelog_afaf
 
    subroutine writelog_afafa(destination, form, mc1, mf1, mc2, mf2, mc3)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, mc1, mc2, mc3
       character(*), intent(in) :: destination
-      real*8, intent(in) :: mf1, mf2
+      real(dp), intent(in) :: mf1, mf2
       character(slen) :: display
 
       if (form == '') then
@@ -921,10 +939,12 @@ contains
    end subroutine writelog_afafa
 
    subroutine writelog_aaaf(destination, form, message_char1, message_char2, message_char3, message_f1)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, message_char1, message_char2, message_char3
       character(*), intent(in) :: destination
-      real*8, intent(in) :: message_f1
+      real(dp), intent(in) :: message_f1
       character(slen) :: display
 
       if (form == '') then
@@ -944,10 +964,12 @@ contains
    end subroutine writelog_aaaf
 
    subroutine writelog_aafa(destination, form, message_char1b, message_char2b, message_f1b, message_char3b)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, message_char1b, message_char2b, message_char3b
       character(*), intent(in) :: destination
-      real*8, intent(in) :: message_f1b
+      real(dp), intent(in) :: message_f1b
       character(slen) :: display
 
       if (form == '') then
@@ -965,10 +987,12 @@ contains
    end subroutine writelog_aafa
 
    subroutine writelog_afaaa(destination, form, mc1a, mfa, mc2a, mc3a, mc4a)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, mc1a, mc2a, mc3a, mc4a
       character(*), intent(in) :: destination
-      real*8, intent(in) :: mfa
+      real(dp), intent(in) :: mfa
       character(slen) :: display
 
       if (form == '') then
@@ -990,10 +1014,11 @@ contains
    end subroutine writelog_afaaa
 
    subroutine writelog_aafaf(destination, form, message_char1, message_char2, message_f1, message_char3, message_f2)
+      use precision_basics, only: dp
       implicit none
       character(*), intent(in) :: form, message_char1, message_char2, message_char3
       character(*), intent(in) :: destination
-      real*8, intent(in) :: message_f1, message_f2
+      real(dp), intent(in) :: message_f1, message_f2
       character(slen) :: display
 
       if (form == '') then
@@ -1015,10 +1040,11 @@ contains
    end subroutine writelog_aafaf
 
    subroutine writelog_aaafaf(destination, form, message_char1, message_char2, message_char3, message_f1, message_char4, message_f2)
+      use precision_basics, only: dp
       implicit none
       character(*), intent(in) :: form, message_char1, message_char2, message_char3, message_char4
       character(*), intent(in) :: destination
-      real*8, intent(in) :: message_f1, message_f2
+      real(dp), intent(in) :: message_f1, message_f2
       character(slen) :: display
 
       if (form == '') then
@@ -1042,10 +1068,12 @@ contains
    end subroutine writelog_aaafaf
 
    subroutine writelog_afafafaf(destination, form, mc1, mf1, mc2, mf2, mc3, mf3, mc4, mf4)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, mc1, mc2, mc3, mc4
       character(*), intent(in) :: destination
-      real*8, intent(in) :: mf1, mf2, mf3, mf4
+      real(dp), intent(in) :: mf1, mf2, mf3, mf4
       character(slen) :: display
 
       if (form == '') then
@@ -1076,7 +1104,7 @@ contains
       implicit none
       character(*), intent(in) :: form
       character(*), intent(in) :: destination
-      integer*4, intent(in) :: mi1
+      integer(4), intent(in) :: mi1
       logical, intent(in) :: ml1, ml2, ml3, ml4
       character(slen) :: display
 
@@ -1091,10 +1119,12 @@ contains
    end subroutine writelog_illll
 
    subroutine writelog_fa(destination, form, mf1, mc1)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, mc1
       character(*), intent(in) :: destination
-      real*8, intent(in) :: mf1
+      real(dp), intent(in) :: mf1
       character(slen) :: display
 
       if (form == '') then
@@ -1108,10 +1138,12 @@ contains
    end subroutine writelog_fa
 
    subroutine writelog_afaiaaa(destination, form, mc1, mf1, mc2, mi1, mc3, mc4, mc5)
+      use precision_basics, only: dp
+
       implicit none
       character(*), intent(in) :: form, mc1, mc2, mc3, mc4, mc5
       character(*), intent(in) :: destination
-      real*8, intent(in) :: mf1
+      real(dp), intent(in) :: mf1
       integer, intent(in) :: mi1
       character(slen) :: display
 
@@ -1255,6 +1287,7 @@ contains
    subroutine checkbcfilelength(tstop, instat, filename, nspectrumloc, filetype, nonh)
 
       use m_xbeach_errorhandling
+      use precision_basics, only: dp
 
       implicit none
       type fileinfo
@@ -1262,13 +1295,13 @@ contains
          integer :: nlines
       end type
 
-      real*8, intent(in) :: tstop
+      real(dp), intent(in) :: tstop
       character(slen), intent(in) :: instat
       character(slen) :: filename, dummy
       character(slen) :: testc
       character(len=1) :: ch
       integer :: i, ier = 0, nlines, fid, nlocs, ifid, fid2
-      real*8 :: t, dt, total, d1, d2, d3, d4, d5
+      real(dp) :: t, dt, total, d1, d2, d3, d4, d5
       type(fileinfo), dimension(:), allocatable :: bcfiles
       integer, intent(in) :: nspectrumloc
       integer, intent(inout) :: filetype
@@ -1396,13 +1429,14 @@ contains
    end subroutine checkbcfilelength
 
    function get_file_length(filename) result(n)
+      use precision_basics, only: dp
 
       implicit none
 
       character(slen), intent(in) :: filename
       integer :: n
       integer :: io, error, lunfil
-      real*8 :: temp
+      real(dp) :: temp
 
       n = 0
       io = 0

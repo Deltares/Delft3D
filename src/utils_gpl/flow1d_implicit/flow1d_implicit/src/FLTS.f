@@ -145,8 +145,8 @@ c
      &            xnod   ,ynod   ,n      ,m     ,deltah ,inttyp,
      &            zs     ,zero   ,juer   ,ker   )
 c      
-      hl = sngl( h(il) )
-      hr = sngl( h(ir) )
+      hl = real( h(il), kind=kind(hl) )
+      hr = real( h(ir), kind=kind(hr) )
 c      
       call flqht(hl   ,hr   ,qa   ,qdh1 ,qdh2  ,stdbq(s) ,stdbq(xnod) ,
      +           stdbq(ynod),n    ,m    ,deltah,inttyp   ,zs    ,zero ,
@@ -169,12 +169,12 @@ c     WRITE (*,*) qa,asde,csde
 c
       strhis(qol,istru) = qa
 c
-      hunp1 = sngl ( h (il) )
-      hun   = sngl ( h1(il) )
-      hdnp1 = sngl ( h (ir) )
-      hdn   = sngl ( h1(ir) )
-      qunp1 = sngl ( q (il) )
-      qun   = sngl ( q1(il) )
+      hunp1 = real ( h (il) )
+      hun   = real ( h1(il) )
+      hdnp1 = real ( h (ir) )
+      hdn   = real ( h1(ir) )
+      qunp1 = real ( q (il) )
+      qun   = real ( q1(il) )
       esde  = -qa+asde*(hunp1-hun)+csde*(hdnp1-hdn)+
      &        (qunp1-qun)*(bsde+dsde)
 c

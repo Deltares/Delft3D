@@ -78,8 +78,8 @@
        ! Built-in adj_set_ij is VERY slow, don't use it.
        adj_tmp2 = 0
        do L = 1, NUML
-          k1 = iabs(lne(1, L))
-          k2 = iabs(lne(2, L))
+          k1 = abs(lne(1, L))
+          k2 = abs(lne(2, L))
           if (k1 > nump .or. k2 > nump .or. k1 == 0 .or. k2 == 0) then
              cycle ! Don't use 1D links for now.
           end if

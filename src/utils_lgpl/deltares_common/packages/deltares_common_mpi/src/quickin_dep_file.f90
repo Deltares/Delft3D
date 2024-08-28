@@ -54,6 +54,8 @@ subroutine read_qndep_single(lundia    ,error     ,fildep    ,fmttmp    ,array  
     use message_module
     use system_utils, only: exifil
     use dfparall 
+    use ieee_arithmetic, only: ieee_is_nan
+
     ! 
     implicit none 
 ! 
@@ -70,7 +72,6 @@ subroutine read_qndep_single(lundia    ,error     ,fildep    ,fmttmp    ,array  
 ! 
 ! Local variables 
 ! 
-    integer                               :: ierr
     integer                               :: luntmp ! Unit number for attribute file  
     integer                               :: m 
     integer                               :: n 
@@ -106,7 +107,7 @@ subroutine read_qndep_single(lundia    ,error     ,fildep    ,fmttmp    ,array  
           ! If a NaN is read -> error
           ! 
           do m = 1, num_columns
-              if ( isnan(array(n, m)) ) then  
+              if ( ieee_is_nan(array(n, m)) ) then  
                  errmsg = 'NaN found in file ' // fildep 
                  error = .true. 
                  goto 9999 
@@ -140,7 +141,7 @@ subroutine read_qndep_single(lundia    ,error     ,fildep    ,fmttmp    ,array  
           ! If a NaN is read -> error
           ! 
           do m = 1, num_columns
-             if ( isnan(array(n, m)) ) then  
+             if ( ieee_is_nan(array(n, m)) ) then  
                 errmsg = 'NaN found in file ' // fildep 
                 error = .true. 
                 goto 9999 
@@ -172,7 +173,9 @@ subroutine read_qndep_double(lundia    ,error     ,fildep    ,fmttmp    ,array  
     use grid_dimens_module 
     use message_module
     use system_utils, only: exifil
-    use dfparall 
+    use dfparall
+    use ieee_arithmetic, only: ieee_is_nan
+
     ! 
     implicit none 
 ! 
@@ -189,7 +192,6 @@ subroutine read_qndep_double(lundia    ,error     ,fildep    ,fmttmp    ,array  
 ! 
 ! Local variables 
 ! 
-    integer                               :: ierr
     integer                               :: luntmp ! Unit number for attribute file  
     integer                               :: m 
     integer                               :: n 
@@ -225,7 +227,7 @@ subroutine read_qndep_double(lundia    ,error     ,fildep    ,fmttmp    ,array  
           ! If a NaN is read -> error
           ! 
           do m = 1, num_columns
-              if ( isnan(array(n, m)) ) then  
+              if ( ieee_is_nan(array(n, m)) ) then  
                  errmsg = 'NaN found in file ' // fildep 
                  error = .true. 
                  goto 9999 
@@ -259,7 +261,7 @@ subroutine read_qndep_double(lundia    ,error     ,fildep    ,fmttmp    ,array  
           ! If a NaN is read -> error
           ! 
           do m = 1, num_columns
-             if ( isnan(array(n, m)) ) then  
+             if ( ieee_is_nan(array(n, m)) ) then  
                 errmsg = 'NaN found in file ' // fildep 
                 error = .true. 
                 goto 9999 

@@ -90,7 +90,7 @@ contains
     function get_char_untileol_tok(achar, untileol, ierr2) result (ierr)
         !! get a character string until the end of the line
 
-        character*(*), intent(out) :: achar
+        character(len=*), intent(out) :: achar
         logical, intent(in) :: untileol
         integer   (4), intent(inout) :: ierr2
         integer   (4)                   ierr
@@ -239,7 +239,7 @@ contains
     function get_noreal_tok(achar, anint, itype, ierr2) result (ierr)
         !! get anything but a real
 
-        character*(*), intent(out) :: achar
+        character(len=*), intent(out) :: achar
         integer   (4), intent(out) :: anint
         integer   (4), intent(out) :: itype
         integer   (4), intent(inout) :: ierr2
@@ -269,7 +269,7 @@ contains
     function get_all_tok(achar, anint, areal, itype, ierr2) result (ierr)
         ! get anything
 
-        character*(*), intent(out) :: achar
+        character(len=*), intent(out) :: achar
         integer   (4), intent(out) :: anint
         real      (4), intent(out) :: areal
         integer   (4), intent(out) :: itype
@@ -297,7 +297,7 @@ contains
 
     function puttoken(achar) result (ierr)
 
-        character*(*), intent(in) :: achar
+        character(len=*), intent(in) :: achar
         integer :: ierr
 
         ierr = 0
@@ -826,7 +826,7 @@ contains
 
         integer :: file_unit, error_file_unit, left_position, right_position, line_width, expected_type, found_type, &
                 line_number, error_code
-        character*(*) :: file_name, line, linerr
+        character(len=*) :: file_name, line, linerr
         character :: line2*80
 
         integer :: i, ilim, j, iwidth_trim

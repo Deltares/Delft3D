@@ -52,7 +52,7 @@
        if (japerim == 0) then
           hpr1 = s1m(k1) - BL1
           if (hpr1 > 0) then
-             call getlinkareawid2D(L, wu2, b21, ai, hpr1, ar1, wid1)
+             call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
              dx1 = 0.5d0 * dx(L) * acl(L)
              a1m(k1) = a1m(k1) + dx1 * wid1
              vol1(k1) = vol1(k1) - dx1 * ar1
@@ -60,7 +60,7 @@
 
           hpr2 = s1m(k2) - BL1
           if (hpr2 > 0) then
-             call getlinkareawid2D(L, wu2, b21, ai, hpr2, ar2, wid2)
+             call getlinkareawid2D(wu2, b21, ai, hpr2, ar2, wid2)
              dx2 = 0.5d0 * dx(L) * (1d0 - acl(L))
              a1m(k2) = a1m(k2) + dx2 * wid2
              vol1(k2) = vol1(k2) - dx2 * ar2
@@ -68,7 +68,7 @@
        else if (hu(L) > 0) then
           hpr1 = 0.5d0 * (s1(k1) + s1(k2)) - BL1
           if (hpr1 > 0) then
-             call getlinkareawid2D(L, wu2, b21, ai, hpr1, ar1, wid1)
+             call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
              au(L) = au(L) - ar1
           end if
        end if

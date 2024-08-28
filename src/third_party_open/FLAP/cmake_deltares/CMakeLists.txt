@@ -21,6 +21,8 @@ endif(UNIX)
 set(libFLAP_library_name FLAP)
 add_library(${libFLAP_library_name} ${libFLAP_sources})
 
+target_link_libraries(${libFLAP_library_name} PRIVATE no_compiler_warnings)
+
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${libFLAP_library_name} PRIVATE $<$<CONFIG:Debug>:${check_nopointers_flag}>)
 

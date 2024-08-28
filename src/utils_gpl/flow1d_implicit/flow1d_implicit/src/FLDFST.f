@@ -129,16 +129,16 @@ c
       integer       fd_nefis_rst, ndim(nentri)
       integer       arexop(*)
       logical       lwqin  ,inires, define, lgrwt
-      character*(*) grnamf
-      character*(*) nameel(nentri) ,quanel(nentri)  ,unitel(nentri)  ,
-     &              nameac(*)      ,
+      character(len=*) grnamf
+      character(len=*) nameel(nentri), quanel(nentri), unitel(nentri),
+     &              nameac(:)      ,
      &              descel(nentri)
 c
 c     Declaration of local variables
 c
       integer       error  ,i      ,l      ,nelems ,ie
       integer       dims(3,10) ,dim(1) ,ord(1)
-      character*16  celnam
+      character(len=16)  celnam
 c
 c     Declaration of external functions
 c

@@ -56,7 +56,7 @@
          !
          dum = 0.d0
          do kk = 1, nd(k)%lnx
-            L = iabs(nd(k)%ln(kk))
+            L = abs(nd(k)%ln(kk))
             k1 = ln(1, L)
             k2 = ln(2, L)
             ac1 = acl(L)

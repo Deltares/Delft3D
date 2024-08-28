@@ -46,10 +46,9 @@
       do i = 1, Ni
          do j = 1, Nj
             if (var(i, j) /= -1234) then
-!               write(matfile, "(E20.8, $)") var(i,j)
-               write (matfile, "(D28.16, $)") var(i, j)
+               write (matfile, "(D28.16)", advance="no") var(i, j)
             else
-               write (matfile, "(' NaN', $)")
+               write (matfile, "(' NaN')", advance="no")
             end if
          end do
          write (matfile, *)

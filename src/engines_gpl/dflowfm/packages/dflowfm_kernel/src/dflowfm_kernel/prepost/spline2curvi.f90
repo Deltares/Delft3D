@@ -224,7 +224,7 @@ subroutine spline2curvi()
    do j = jc + 1, nc
 !      idum = 1
 !      call plot(idum)
-      call growlayer(mc, nc, mmax, nmax, 1, maxaspect, j, edgevel, dt, xc, yc, ifront, istop)
+      call growlayer(mc, nc, mmax, nmax, 1, j, edgevel, dt, xc, yc, ifront, istop)
 
 !     update edge velocity
       nlist(:) = nfac1(:, 1)

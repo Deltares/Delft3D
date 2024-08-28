@@ -58,7 +58,7 @@ subroutine postgrid()
       do j = nc - 1, 2, -1
          ifront = 1
          do iter = 1, 10
-            write (6, "('iter = ', i0, ': ', $)") iter
+            write (6, "('iter = ', i0, ': ')", advance="no") iter
             numchanged = 0
             !        loop over the edges
             !         do i=1,mc-1
@@ -99,14 +99,14 @@ subroutine postgrid()
                         xc(i:iR - 1, j) = xc(iR, j)
                         yc(i:iR - 1, j) = yc(iR, j)
                         numchanged = numchanged + 1
-                        write (6, "(I0, '-', I0, 'L ', $)") i, iR - 1
+                        write (6, "(I0, '-', I0, 'L ')", advance="no") i, iR - 1
                      else if ((iL == i .or. dcosR - dcos < -dtolcos) .and. iRR /= iR) then ! move right node
                         call cirr(xc(iR, j), yc(iR, j), 211)
                         call cirr(xc(i, j), yc(i, j), 204)
                         xc(iR:iRR - 1, j) = xc(i, j)
                         yc(iR:iRR - 1, j) = yc(i, j)
                         numchanged = numchanged + 1
-                        write (6, "(I0, '-', I0, 'R ', $)") iR, iRR - 1
+                        write (6, "(I0, '-', I0, 'R ')", advance="no") iR, iRR - 1
                      else ! move both nodes
                         xn = 0.5d0 * (xc(i, j) + xc(iR, j))
                         yn = 0.5d0 * (yc(i, j) + yc(iR, j))
@@ -116,7 +116,7 @@ subroutine postgrid()
                         xc(iR:iRR - 1, j) = xn
                         yc(iR:iRR - 1, j) = yn
                         numchanged = numchanged + 1
-                        write (6, "(I0, '-', I0, 'C ', $)") i, iRR - 1
+                        write (6, "(I0, '-', I0, 'C ')", advance="no") i, iRR - 1
                      end if
                   end if
                end if

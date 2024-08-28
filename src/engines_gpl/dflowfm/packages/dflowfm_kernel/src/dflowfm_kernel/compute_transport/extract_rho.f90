@@ -41,7 +41,8 @@ subroutine extract_rho()
 
    integer :: k
 
-   integer(4) ithndl / 0 /
+   integer(4) :: ithndl = 0
+   
    if (timon) call timstrt("extract_rho", ithndl)
 
    do k = 1, Ndkx

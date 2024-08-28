@@ -34,31 +34,21 @@
          use M_MISSING
          use M_SAMPLES
          use m_alloc
+         use ieee_arithmetic, only: ieee_is_nan
+         use m_drawthis
+         use m_pharosflow
          implicit none
          integer, intent(inout) :: msam !< already opened file pointer to sample file
          integer, intent(in) :: jadoorladen !< whether to append to global set (1) or start empty (0)
          integer :: ierr
-         integer :: jflow
-         integer :: jqn
-         integer :: mcs
-         integer :: ncs
-         integer :: ndraw
          integer :: nkol
          integer :: nrow
-         integer :: ns1
          integer :: nsm
          integer :: num
          integer :: K, K0
          double precision :: x, y, z
          double precision :: XX, YY, ZZ, ZZ2
-
-         common / PHAROSFLOW / JFLOW
-         common / PHAROSLINE / REC1
-         common / SAMPLESADM / MCS, NCS, NS1
-         common / QNRGF / JQN
-         common / DRAWTHIS / ndraw(50)
-
-         character REC * 132, TEX * 10, REC1 * 132
+         character REC * 132, TEX * 10
          logical THISISANUMBER
 
          call SAVESAM()
@@ -94,7 +84,6 @@
          else
             call RESTORESAM()
             K = NS
-            NS1 = NS
          end if
          K0 = K
 
@@ -142,7 +131,7 @@
 
             if (K <= NSMAX - 1 .and. XX /= XYMIS .and. &
                 ZZ /= dmiss .and. ZZ /= 999.999d0 .and. &
-                .not. (isnan(XX) .or. isnan(YY) .or. isnan(ZZ))) then
+                .not. (ieee_is_nan(XX) .or. ieee_is_nan(YY) .or. ieee_is_nan(ZZ))) then
                K = K + 1
                NS = K
                XS(K) = XX

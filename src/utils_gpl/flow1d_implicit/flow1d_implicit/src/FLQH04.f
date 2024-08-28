@@ -394,7 +394,7 @@ c
 c end of square culvert
 
         hulp  = 12. * rc / ks
-        froot = 1. / (2. * ALOG10(hulp))
+        froot = 1. / (2. * LOG10(hulp))
         rnc   = rc**(1./6.) * froot / SQRT(8.*9.81)
 
         scrit = (rnc*qin / (ac*rc**(2./3.)))**2
@@ -565,196 +565,190 @@ c c5
 c
 c end of long (not used) loop
 c      endif
-
-      goto (1,2,3,4,5,6,7) iflow
-
 c
 c flowtype 1
-    1 hf1i = applen * qin * qin / (sk11 * sk1i)
+      if (iflow <= 1 .or. iflow > 7) then
+         hf1i = applen * qin * qin / (sk11 * sk1i)
 
-      if (lround) then
-        x    = yci / heidia
-        aci  = FLWAPI(x,heidia)
-      else
-        aci  = width * yci
-      endif
+         if (lround) then
+           x    = yci / heidia
+           aci  = FLWAPI(x,heidia)
+         else
+           aci  = width * yci
+         endif
 
-      if ((delh1 - yci - hf1i) .le. 0.) then
-        q1 = 0.
-      else
-        q1 = nculv * cc(1) * aci * SQRT(19.62 * (delh1 - yci - hf1i))
-      endif
+         if ((delh1 - yci - hf1i) .le. 0.) then
+           q1 = 0.
+         else
+           q1 = nculv * cc(1) * aci * SQRT(19.62 * (delh1 - yci - hf1i))
+         endif
 
-      qstr = q1
-
-      goto 10
-
+         qstr = q1
 c
 c flowtype 2
- 2    if (lround) then
-        hf1i = applen * qin * qin / (sk11 * sk1i)
+      else if ( iflow == 2 ) then
+         if (lround) then
+           hf1i = applen * qin * qin / (sk11 * sk1i)
 
 c-- iteratief bepalen van hfio, start met beginwaarde voor yco, waarbij
 c---  hfiostart = l*q*q/ki/ki
 c
 c determne hfio by iteration
-        hfio = cullen * qin * qin / (sk1i*sk1i)
-        x    = (delhz - hf1i - hfio) / heidia
+           hfio = cullen * qin * qin / (sk1i*sk1i)
+           x    = (delhz - hf1i - hfio) / heidia
 
-        if ( x .le. 0.) then
-          yco = 0
-        else
-          if (x .ge. 2.96) x = 2.96
-          x2 = x * x
-          x3 = x2 * x
-          yco = .021308 * x3 * x2 - 0.089157 * x2 * x2 + 0.040374
+           if ( x .le. 0.) then
+             yco = 0
+           else
+             if (x .ge. 2.96) x = 2.96
+             x2 = x * x
+             x3 = x2 * x
+             yco = .021308 * x3 * x2 - 0.089157 * x2 * x2 + 0.040374
      &         * x3 - 0.0296 * x2 + 0.744717 * x
-          yco = yco * heidia
-        endif
+             yco = yco * heidia
+           endif
 
-        x    = yco / heidia
-        rco  = FLHRPI(x,heidia)
-        rco0 = rco
-        aco0 = FLWAPI(x,heidia)
+           x    = yco / heidia
+           rco  = FLHRPI(x,heidia)
+           rco0 = rco
+           aco0 = FLWAPI(x,heidia)
 
 c
 c determine rco by iteration
-        dif = 9999.
-        do 111 i = 1,10
+           dif = 9999.
+           do 111 i = 1,10
 
 c
 c correct for friction
-          xmaxo= MAX(0.025,10.*ks/heidia)
-          x    = yco/heidia
+             xmaxo= MAX(0.025,10.*ks/heidia)
+             x    = yco/heidia
 
-          if (x .lt. xmaxo) then
-            x   = xmaxo
-            rco0 = FLHRPI(x,heidia)
-            aco0 = FLWAPI(x,heidia)
-          endif
+             if (x .lt. xmaxo) then
+               x   = xmaxo
+               rco0 = FLHRPI(x,heidia)
+               aco0 = FLWAPI(x,heidia)
+             endif
 
-          sk1o = FLFRIK(rco0,ks,aco0)
-          hfio = cullen * qin * qin / (sk1i*sk1o)
-          x    = (delhz - hf1i - hfio) / heidia
+             sk1o = FLFRIK(rco0,ks,aco0)
+             hfio = cullen * qin * qin / (sk1i*sk1o)
+             x    = (delhz - hf1i - hfio) / heidia
 
-          if ( x .le. 0.) then
-            yco = 0.
-          else
-            if (x .ge. 2.96) x = 2.96
-            x2 = x * x
-            x3 = x2 * x
-            yco = .021308 * x3 * x2 - 0.089157 * x2 * x2 + 0.040374
+             if ( x .le. 0.) then
+               yco = 0.
+             else
+               if (x .ge. 2.96) x = 2.96
+               x2 = x * x
+               x3 = x2 * x
+               yco = .021308 * x3 * x2 - 0.089157 * x2 * x2 + 0.040374
      &            * x3 - 0.0296 * x2 + 0.744717 * x
-            yco = yco * heidia
-          endif
+               yco = yco * heidia
+             endif
 
-          x    = yco / heidia
-          if (x .lt. xmaxo) x = xmaxo
-          rco1 = FLHRPI(x,heidia)
-          aco1 = FLWAPI(x,heidia)
+             x    = yco / heidia
+             if (x .lt. xmaxo) x = xmaxo
+             rco1 = FLHRPI(x,heidia)
+             aco1 = FLWAPI(x,heidia)
 
 c
 c check for divergence
 c yco0 is not yet defined. The assumption is that the 
 c following IF statement is not true for the first
 c iteration.
-          if (ABS((rco1 - rco) / dif ) .gt. 1.) then
-            yco = yco0
-            rco = rco0
-            aco = aco0
-            goto 1125
-          endif
+             if (ABS((rco1 - rco) / dif ) .gt. 1.) then
+               yco = yco0
+               rco = rco0
+               aco = aco0
+               goto 1125
+             endif
 
-          dif = rco1 - rco
-          if (ABS((rco1-rco)/rco1) .lt. 5.e-04) goto 112
-          yco0 = yco
-          rco  = rco1
-          rco0 = rco1
-          aco0 = aco1
+             dif = rco1 - rco
+             if (ABS((rco1-rco)/rco1) .lt. 5.e-04) goto 112
+             yco0 = yco
+             rco  = rco1
+             rco0 = rco1
+             aco0 = aco1
 
-  111   continue
-  112   continue
+  111      continue
+  112      continue
 
-        rco = rco1
-        aco = aco1
+           rco = rco1
+           aco = aco1
 c
 c this is an odd statement! Is it correct?
-        yco = yco
- 1125   continue
+           yco = yco
+ 1125      continue
 
-      else
-        hf1i = applen * qin * qin / (sk11 * sk1i)
+         else
+           hf1i = applen * qin * qin / (sk11 * sk1i)
 
-        if (ABS(qin) .lt. 1.0e-10) then
-          hfio = 0
-          yco  = (delhz-hf1i-hfio)*2./3.
-          aco  = yco*width
-        else
+           if (ABS(qin) .lt. 1.0e-10) then
+             hfio = 0
+             yco  = (delhz-hf1i-hfio)*2./3.
+             aco  = yco*width
+           else
 
 c---         iteratief bepalen van hfio start met beginwaarde voor yco,
 c---         waarbij hfiostart = l*q*q/ki/ki
 c
 c determine hfio by iteration
-          hfio = cullen* qin * qin / (sk1i*sk1i)
-          yco  = (delhz-hf1i-hfio)*2./3.
-          rco  = yco*width/(2.*yco+width)
-          rco0 = rco
-          aco0 = yco*width
+             hfio = cullen* qin * qin / (sk1i*sk1i)
+             yco  = (delhz-hf1i-hfio)*2./3.
+             rco  = yco*width/(2.*yco+width)
+             rco0 = rco
+             aco0 = yco*width
 
 c
 c determine rco by iteration
-          dif  = 9999.
-          do 115 i = 1,10
+             dif  = 9999.
+             do 115 i = 1,10
 
 c
 c correct for friction
-            ymaxo= MAX(0.1,10.*ks)
+               ymaxo= MAX(0.1,10.*ks)
 
-            if (yco .lt. ymaxo) then
-              yco  = ymaxo
-              aco0 = width * yco
-              rco0 = aco0/(width + 2.*yco)
-            endif
+               if (yco .lt. ymaxo) then
+                 yco  = ymaxo
+                 aco0 = width * yco
+                 rco0 = aco0/(width + 2.*yco)
+               endif
 
-            sk1o = FLFRIK(rco0,ks,aco0)
-            hfio = cullen * qin * qin / (sk1i*sk1o)
-            yco  = (delhz-hf1i-hfio)*2./3.
-            rco1 = yco*width/(2.*yco+width)
-            aco1 = yco*width
+               sk1o = FLFRIK(rco0,ks,aco0)
+               hfio = cullen * qin * qin / (sk1i*sk1o)
+               yco  = (delhz-hf1i-hfio)*2./3.
+               rco1 = yco*width/(2.*yco+width)
+               aco1 = yco*width
 
 c
 c check for divergence
-            if (ABS((rco1 - rco) / dif ) .gt. 1.) then
-              yco = yco0
-              rco = rco0
-              aco = aco0
-              goto 1165
-            endif
+               if (ABS((rco1 - rco) / dif ) .gt. 1.) then
+                 yco = yco0
+                 rco = rco0
+                 aco = aco0
+                 goto 1165
+               endif
 
-            dif = rco1 - rco
-            if (ABS((rco1-rco)/rco1) .lt. 5.e-04) goto 116
-            rco  = rco1
-            rco0 = rco1
-            aco0 = aco1
-  115     continue
+               dif = rco1 - rco
+               if (ABS((rco1-rco)/rco1) .lt. 5.e-04) goto 116
+               rco  = rco1
+               rco0 = rco1
+               aco0 = aco1
+  115        continue
 
-  116     continue
-          rco = rco1
-          aco = aco1
-          yco = yco
- 1165     continue
-        endif
-      endif
-      arg2 = delhz - yco - hf1i- hfio
-      if (arg2 .le. 0.) arg2 = 1.0e-6
+  116        continue
+             rco = rco1
+             aco = aco1
+             yco = yco
+ 1165        continue
+           endif
+         endif
+         arg2 = delhz - yco - hf1i- hfio
+         if (arg2 .le. 0.) arg2 = 1.0e-6
 
-      qstr = nculv * cc(2) * aco * SQRT(2 * g * arg2)
-
-      goto  10
-
+         qstr = nculv * cc(2) * aco * SQRT(2 * g * arg2)
 c
 c flowtype 3
- 3    if (lround) then
+      else if ( iflow == 3 ) then
+      if (lround) then
         hf1i = applen * qin * qin / (sk11 * sk1i)
         yo   = delh2
         x    = yo/heidia
@@ -800,12 +794,10 @@ c correct for friction
       arg3 = hnrg - hd - hf1i- hfio
 
       qstr =  nculv * cc(3)*ao*FLSQRT( 2 * g * arg3 )
-
-      goto 10
-
 c
 c flowtype 4
- 4    if (lround) then
+      else if ( iflow == 4 ) then
+      if (lround) then
         pi = 4.*ATAN(1.)
         r  = heidia / 4.
         a  = r*pi*heidia
@@ -815,7 +807,7 @@ c flowtype 4
       endif
 
       hulp  = 12*r/ks
-      froot = 1. / (2 * ALOG10(hulp))
+      froot = 1. / (2 * LOG10(hulp))
       rn    = r**(1./6) * froot / 8.86
       c42   = cc(4) * cc(4)
       rnoem = 1. + 19.62*c42*rn*rn*cullen/r**(4./3.)
@@ -824,12 +816,10 @@ c flowtype 4
       if (arg4 .le. 0.) arg4 = 1.0e-6
       q4    = SQRT(19.62 * arg4)
       qstr  = nculv * q4 * cc(4) * a
-
-      goto 10
-
 c
 c flowtype 5
-    5 if (lround) then
+      else if ( iflow == 5 ) then
+      if (lround) then
         pi = 4.*ATAN(1.)
         r  = heidia / 4.
         a  = r*pi*heidia
@@ -838,12 +828,10 @@ c flowtype 5
       endif
 
       qstr = nculv * cc(5) * a * SQRT(2. * g * delh1)
-
-      goto 10
-
 c
 c flowtype 6
- 6    if (lround) then
+      else if ( iflow == 6 ) then
+      if (lround) then
         pi = 4.*ATAN(1.)
         ri = heidia / 4.
         ai = ri*pi*heidia
@@ -866,12 +854,11 @@ c flowtype 6
       arg6 = (delhz-hf1i- hfio - heidia)
       if (arg6 .le. 0.) arg6 = 1.0e-6
       qstr = nculv * cc(6) * a * SQRT(2. * g * arg6)
-
-      goto 10
 c
-c flowtype 6
-    7 qstr = 0.
-
+c flowtype 7
+      else if ( iflow == 7 ) then
+      qstr = 0.
+      end if
  10   continue
       FLQH04 = qstr
 

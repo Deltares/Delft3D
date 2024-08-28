@@ -128,7 +128,7 @@ subroutine runupgauges_on_flowgeom()
                iend = istartcrs(ic + 1) - 1
                if (ipol(i) >= istart .and. ipol(i) <= iend) then
                   numlist(ic) = numlist(ic) + 1
-                  linklist(numlist(ic), ic) = iabs(lne2ln(iLink(i)))
+                  linklist(numlist(ic), ic) = abs(lne2ln(iLink(i)))
                end if
             end do
          end do

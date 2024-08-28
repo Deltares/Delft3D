@@ -275,7 +275,7 @@
        do k = 1, ndxi
           rowsum = 0
           do LL = 1, size(nd(n)%ln)
-             L = iabs(nd(n)%ln(LL))
+             L = abs(nd(n)%ln(LL))
              rowsum = rowsum + abs(ccr(Lv2(L)))
           end do
           if (bbr(k) <= rowsum) then

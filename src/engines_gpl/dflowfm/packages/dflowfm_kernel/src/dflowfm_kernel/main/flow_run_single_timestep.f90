@@ -58,7 +58,7 @@ subroutine flow_run_single_timestep(key, iresult) ! do only 1 flow timestep
          call SOFLOW_wrap(time1) !in module, only accesses SRE variables
          call flow_finalize_fm1dimp_timestep() !in kernel, can access everything
       end select
-      call step_reduce_transport_morpho(key)
+      call step_reduce_transport_morpho()
 
       call timstop(handle_extra(51)) ! step_reduce
 

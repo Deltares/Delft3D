@@ -65,7 +65,7 @@ module m_readStorageNodes
       implicit none
       
       type(t_network), intent(inout)                :: network
-      character*(*),   intent(in   )                :: storgNodesFile
+      character(len=*),   intent(in   )                :: storgNodesFile
 
       logical                                       :: success
       logical                                       :: success1, success2

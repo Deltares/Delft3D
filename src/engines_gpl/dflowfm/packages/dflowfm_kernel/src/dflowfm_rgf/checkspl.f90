@@ -36,8 +36,8 @@
      subroutine CHECKSPL(X, Y, mmax, nmax, MCS, NCS)
         use m_missing
         implicit none
-        double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
         integer :: mmax, nmax, mcs, ncs
+        double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
 
         integer :: numspl, numpx, numpi, numpj, i, j, k
 

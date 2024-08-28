@@ -690,6 +690,8 @@ contains
 !! Does not write the actual data yet.
    function ug_def_var(ncid, id_var, id_dims, itype, iloctype, mesh_name, var_name, standard_name, long_name, &
                        units, cell_method, cell_measures, crs, ifill, dfill, writeopts, do_deflate) result(ierr)
+      use precision, only: sp
+
       integer, intent(in) :: ncid          !< NetCDF dataset id
       integer, intent(out) :: id_var        !< Created NetCDF variable id.
       integer, dimension(:), intent(in) :: id_dims       !< NetCDF dimension ids for this variable. Example: (/ id_edgedim /) for scalar data on edges, or (/ id_twodim, id_facedim /) for vector data on faces.
@@ -831,7 +833,7 @@ contains
          ierr = nf90_put_att(ncid, id_var, '_FillValue', dfill)
       end if
       if (itype == nf90_float .and. present(dfill)) then
-         ierr = nf90_put_att(ncid, id_var, '_FillValue', SNGL(dfill))
+         ierr = nf90_put_att(ncid, id_var, '_FillValue', real(dfill, sp))
       end if
 
       ! Leave the dataset in the same mode as we got it.
@@ -1757,7 +1759,7 @@ contains
       type(t_ug_file), intent(inout) :: ug_file       !< UGRID file struct with cached meta information.
       integer :: ierr          !< Result status (UG_NOERR if successful).
 
-      integer :: im, nmesh, numvar, il, ncontacts, i, nnetworks, inet
+      integer :: im, nmesh, numvar, il, ncontacts, nnetworks, inet
       logical :: is_mesh_topo, is_link_topo, is_network_topo
       integer :: varid         !< NetCDF variable ID (1-based).
 
@@ -2025,7 +2027,6 @@ contains
       integer :: ierr          !< Result status (UG_NOERR if successful).
       character(len=:), allocatable :: coordspaceind !< The name of the network used by the mesh
       character(len=nf90_max_name) :: varname
-      integer :: id
       integer :: dimids(2)
       integer :: isMappedMesh
 
@@ -2328,10 +2329,7 @@ contains
       integer, intent(in) :: varid        !< NetCDF variable id (1-based).
       logical :: is_mesh_topo !< Return value
 
-      integer :: cfrole, nodeidvar, edgeGeometryId, edgecoord
       character(len=:), allocatable :: buffer
-      integer :: buffer_len
-      integer :: status
       integer :: mesh_topo
       integer :: edge_geom
 
@@ -2600,13 +2598,8 @@ contains
 
       !locals
       integer :: ierr          !< Result status (UG_NOERR if successful).
-      integer, allocatable :: sourcenodeid(:), targetnodeid(:)
-      integer :: i, k, idxstart, idxbr, cbranchid, idxend
 
       logical :: includeArrays_
-      character(len=255) :: varname
-      integer :: id
-      integer :: dimids(2)
 
       ierr = UG_NOERR
 
@@ -2826,7 +2819,7 @@ contains
       integer, optional, intent(out) :: ifill             !< (Optional) Integer fill value.
       integer :: ierr              !< Result status (UG_NOERR==NF90_NOERRif successful).
       integer, optional, intent(in) :: startIndex        !< The start index the caller asks for
-      integer :: k, varStartIndex  !< Temp variables
+      integer :: varStartIndex  !< Temp variables
 
       ierr = nf90_get_var(ncid, meshids%varids(mid_edgefaces), edge_faces)
       if (ierr /= nf90_noerr) then
@@ -3180,7 +3173,6 @@ contains
       integer, intent(out) :: varid    !< The resulting variable id, if found (1-based).
       integer :: ierr     !< Result status, ug_noerr if successful.
 
-      integer :: numVar, ivarloc, nvar, maxvar
       character(len=nf90_max_name) :: meshname
       character(len=:), allocatable :: str
       integer :: loc_varid     !< NetCDF variable ID (1-based).
@@ -4167,7 +4159,7 @@ contains
       integer, intent(out) :: ncontacts  !< Number of contact links in the given meshcontact set.
       integer :: ierr       !< Result status (IONC_NOERR if successful).
 
-      integer :: xtype, ndims, nAtts, dimvalue, ncontactsDim1, ncontactsDim2
+      integer :: xtype, ndims, nAtts, ncontactsDim1, ncontactsDim2
       character(len=nf90_max_name) :: name
       integer, dimension(nf90_max_dims) :: dimids
 
@@ -4200,7 +4192,7 @@ contains
       integer, allocatable :: contacts(:, :)
       character(len=*), optional, intent(in) :: contactsids(:), contactslongnames(:)
       integer, intent(in), optional :: startIndex
-      integer :: ierr, i
+      integer :: ierr
 
       ierr = UG_SOMEERR
       ierr = nf90_enddef(ncid) !Put the NetCDF in write mode
@@ -4239,7 +4231,7 @@ contains
       integer, intent(out) :: mesh1indexes(:), mesh2indexes(:), contacttype(:)
       character(len=*), intent(out) :: contactsids(:), contactslongnames(:)
       integer, allocatable :: contacts(:, :)
-      integer :: ierr, i, varStartIndex
+      integer :: ierr, i
       integer :: ncontacts_file
       integer :: idstrlen_file, idstrlen_local, longnamestrlen_file, longnamestrlen_local
       character(len=:), allocatable :: tmpstring(:)
@@ -4315,7 +4307,7 @@ contains
       integer, intent(in) :: startIndex     !< Desired start index for the table.
       integer :: ierr           !< Result status (UG_NOERR if succesful)
 
-      integer :: i, varStartIndex
+      integer :: varStartIndex
       integer :: ifill
 
       ierr = nf90_get_var(ncid, contactids%varids(cid_contacttopo), contactlinksfromto)
@@ -4451,8 +4443,7 @@ contains
       double precision, intent(in) :: nodeoffset(:)
       type(t_ug_mesh), intent(in) :: meshids
 
-      integer, allocatable :: shiftednodebranchidx(:), shiftedEdgeNodes(:, :)
-      integer :: ierr, nmeshpoints
+      integer :: ierr
 
       ierr = UG_SOMEERR
       ierr = ug_put_1d_mesh_discretisation_points_v1(ncid, meshids, nodebranchidx, nodeoffset, startIndex)
@@ -4466,7 +4457,7 @@ contains
       double precision, intent(in) :: nodeoffset(:)
       type(t_ug_mesh), intent(in) :: meshids
       double precision, dimension(:), optional, intent(in) :: coordx, coordy
-      integer, allocatable :: shiftednodebranchidx(:), shiftedEdgeNodes(:, :)
+      integer, allocatable :: shiftednodebranchidx(:)
       integer :: ierr, nmeshpoints
 
       ierr = UG_SOMEERR
@@ -4646,7 +4637,7 @@ contains
       integer, intent(out) :: sourcenodeid(:), targetnodeid(:), nbranchgeometrypoints(:)
       real(kind=dp), intent(out) :: branchlengths(:)
       character(len=*), intent(out), optional :: nbranchid(:), nbranchlongnames(:)
-      integer :: ierr, n, k, bid, nmeshpoints, nbranches, varStartIndex
+      integer :: ierr, n, k, nbranches, varStartIndex
       integer, allocatable :: sourcestargets(:, :)
 
       nbranches = size(sourceNodeId)
@@ -4932,14 +4923,12 @@ contains
       integer, intent(in) :: ncidin, ncidout
       type(t_ug_mesh), intent(in) :: meshidsin
       type(t_ug_mesh), intent(inout) :: meshidsout
-      integer :: i, j, ierr, xtype, ndims, nAtts, dimvalue
+      integer :: i, ierr, xtype, ndims, nAtts, dimvalue
       integer :: attval
       logical :: isMeshTopo
       integer, dimension(nf90_max_var_dims) :: dimids
       character(len=nf90_max_name) :: name
       integer, dimension(nf90_max_dims) :: dimmap, outdimids
-      character(len=:), allocatable :: invarname
-      type(t_ug_meta) :: meta  !< Meta information on file.
 
       ierr = UG_SOMEERR
       ierr = nf90_redef(ncidout) !open NetCDF in define mode
@@ -5018,7 +5007,7 @@ contains
 
       integer, intent(in) :: ncidin, ncidout
       type(t_ug_mesh), intent(in) :: meshidsin, meshidsout
-      integer :: i, dim, ierr, xtype, ndims, nAtts, dimvalue
+      integer :: i, dim, ierr, xtype, ndims, nAtts
       integer, dimension(nf90_max_var_dims) :: dimids, dimsizes
       character(len=nf90_max_name) :: name
 
@@ -5075,7 +5064,7 @@ contains
       type(t_ug_network), intent(in) :: netidsin  !< network struct with dim+varids in input dataset
       type(t_ug_network), intent(inout) :: netidsout !< network struct with newly created dim+varids in output dataset
 
-      integer :: i, j, ierr, xtype, ndims, nAtts, dimvalue
+      integer :: i, ierr, xtype, ndims, nAtts, dimvalue
       integer, dimension(nf90_max_var_dims) :: dimids
       character(len=nf90_max_name) :: name
       integer, dimension(nf90_max_dims) :: dimmap, outdimids
@@ -5160,7 +5149,7 @@ contains
       type(t_ug_network), intent(in) :: netidsin  !< network struct with dim+varids in input dataset
       type(t_ug_network), intent(in) :: netidsout !< network struct with already existing dim+varids in output dataset
 
-      integer :: i, dim, ierr, xtype, ndims, nAtts, dimvalue
+      integer :: i, dim, ierr, xtype, ndims, nAtts
       integer, dimension(nf90_max_var_dims) :: dimids, dimsizes
       character(len=nf90_max_name) :: name
 
@@ -5315,7 +5304,7 @@ contains
    function ug_copy_int_var(ncidin, ncidout, meshidin, meshidout, ndims, dimsizes) result(ierr)
 
       integer, intent(in) :: ncidin, ncidout, meshidin, meshidout, ndims, dimsizes(:)
-      integer :: ierr, dim1, dim2
+      integer :: ierr
       integer, allocatable :: value(:), value2d(:, :)
 
       if (ndims == 0) then
@@ -5341,7 +5330,7 @@ contains
    function ug_copy_real_var(ncidin, ncidout, meshidin, meshidout, ndims, dimsizes) result(ierr)
 
       integer, intent(in) :: ncidin, ncidout, meshidin, meshidout, ndims, dimsizes(:)
-      integer :: ierr, dim1, dim2
+      integer :: ierr
       real, allocatable :: value(:), value2d(:, :)
 
       if (ndims == 0) then
@@ -5367,7 +5356,7 @@ contains
    function ug_copy_double_var(ncidin, ncidout, meshidin, meshidout, ndims, dimsizes) result(ierr)
 
       integer, intent(in) :: ncidin, ncidout, meshidin, meshidout, ndims, dimsizes(:)
-      integer :: ierr, dim1, dim2
+      integer :: ierr
       real(kind=kind(1.0d0)), allocatable :: value(:), value2d(:, :)
 
       if (ndims == 0) then
@@ -5393,7 +5382,7 @@ contains
    function ug_copy_char_var(ncidin, ncidout, meshidin, meshidout, ndims, dimsizes) result(ierr)
 
       integer, intent(in) :: ncidin, ncidout, meshidin, meshidout, ndims, dimsizes(:)
-      integer :: ierr, dim1, dim2
+      integer :: ierr
       character(len=dimsizes(1)) :: value2d(dimsizes(2))
 
       ierr = nf90_get_var(ncidin, meshidin, value2d)
@@ -5408,7 +5397,7 @@ contains
       integer :: ierr
       integer :: i
       character(len=nf90_max_name) :: attname
-      integer :: natts, attvalue
+      integer :: natts
 
       ierr = -1
       ierr = nf90_inquire_variable(ncidin, varidin, nAtts=natts)
@@ -5563,7 +5552,6 @@ contains
       integer, intent(in) :: ncid                                      !< ID of already opened data set.
       integer :: i, ierr, attval         !< Result status (UG_NOERR if successful).
       integer, intent(inout) :: networkid
-      character(len=13) :: attname
       type(t_ug_file), intent(in) :: ug_file
 
       networkid = -1
@@ -5595,7 +5583,6 @@ contains
       integer, intent(in) :: ncid, dim
       integer :: i, ierr, attval    !< Result status (UG_NOERR if successful).
       integer, intent(inout) :: meshid
-      character(len=13) :: attname
       type(t_ug_file), intent(in) :: ug_file
       logical :: isMeshTopo
 

@@ -42,8 +42,6 @@
 !     tekenen van de strings die in een file staan en ingelezen zijn met
 !     REATXT
 !     ------------------------------------------------------------------
-         common / XYTEXT / xtxt, ytxt, coltxt, symtxt, heitxt, ntxt
-         common / TEXTSS / xytexts
          parameter(maxtxt=2000)
          double precision :: xtxt(maxtxt), ytxt(maxtxt), heitxt(maxtxt)
          integer symtxt(maxtxt), coltxt(maxtxt)

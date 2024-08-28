@@ -319,7 +319,7 @@ subroutine shaec(nlat, nlon, isym, nt, g, idg, jdg, a, b, mdab, ndab,&
    ierror = 6
    if (jdg < nlon) return
    ierror = 7
-   mmax = min0(nlat, nlon / 2 + 1)
+   mmax = min(nlat, nlon / 2 + 1)
    if (mdab < mmax) return
    ierror = 8
    if (ndab < nlat) return
@@ -332,7 +332,7 @@ subroutine shaec(nlat, nlon, isym, nt, g, idg, jdg, a, b, mdab, ndab,&
    ls = nlat
    if (isym > 0) ls = imid
    nln = nt * ls * nlon
-   if (lwork < nln + max0(ls * nlon, 3 * nlat * imid)) return
+   if (lwork < nln + max(ls * nlon, 3 * nlat * imid)) return
    ierror = 0
    ist = 0
    if (isym == 0) ist = imid
@@ -362,7 +362,7 @@ subroutine shaec1(nlat, isym, nt, g, idgs, jdgs, a, b, mdab, ndab, imid,&
 
    ls = idg
    nlon = jdg
-   mmax = min0(nlat, nlon / 2 + 1)
+   mmax = min(nlat, nlon / 2 + 1)
    mdo = mmax
    if (mdo + mdo - 1 > nlon) mdo = mmax - 1
    nlp1 = nlat + 1
@@ -493,7 +493,7 @@ subroutine shaeci(nlat, nlon, wshaec, lshaec, dwork, ldwork, ierror)
    if (nlon < 4) return
    ierror = 3
    imid = (nlat + 1) / 2
-   mmax = min0(nlat, nlon / 2 + 1)
+   mmax = min(nlat, nlon / 2 + 1)
    lzz1 = 2 * nlat * imid
    labc = 3 * ((mmax - 2) * (nlat + nlat - mmax - 1)) / 2
    if (lshaec < lzz1 + labc + nlon + 15) return

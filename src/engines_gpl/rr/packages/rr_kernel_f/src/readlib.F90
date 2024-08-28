@@ -71,10 +71,10 @@
 !--------------------------------------------------------------------
 
       SUBROUTINE CHRTRIM (STRING, CHAR1)
-      CHARACTER*(*)             :: STRING
-      CHARACTER*1  , intent(in) :: CHAR1
+      CHARACTER(len=*)             :: STRING
+      CHARACTER(len=1), intent(in) :: CHAR1
 
-      CHARACTER*999 TEMP
+      CHARACTER(len=999) TEMP
       INTEGER I
 
       IF (STRING.EQ.' ') RETURN
@@ -129,7 +129,7 @@
 !     CONSTR.FOR: Concatenate string elements from array to 1 string
 !--------------------------------------------------------------------
 
-      CHARACTER*999 FUNCTION CONSTR(STRING, N)
+      CHARACTER(len=999) FUNCTION CONSTR(STRING, N)
 
       INTEGER             , intent(in) :: N
       CHARACTER(Len=999)  , intent(in) :: STRING(N)
@@ -167,13 +167,13 @@
 !     CONSTR2.FOR: Concatenate string elements from array to 1 string
 !--------------------------------------------------------------------
 
-      CHARACTER*999 FUNCTION CONSTR2(STRING, N, Iout1, IflRtn)
+      CHARACTER(len=999) FUNCTION CONSTR2(STRING, N, Iout1, IflRtn)
 
       INTEGER            , intent(in) :: N
       CHARACTER(Len=999) , intent(in) :: STRING(N)
 
       INTEGER               INDEX, L, LR, Iout1, IflRtn
-      CHARACTER*999         RESULTString
+      CHARACTER(len=999)    RESULTString
 
       RESULTString = STRING(1)(1:Len_Trim(STRING(1)))
       DO INDEX=2,N
@@ -205,13 +205,13 @@
 !     CONSTR2Long.FOR: Concatenate string elements from array to 1 string
 !--------------------------------------------------------------------
 
-      CHARACTER*99999 FUNCTION CONSTR2Long(STRING, N, Iout1, IflRtn)
+      CHARACTER(len=99999) FUNCTION CONSTR2Long(STRING, N, Iout1, IflRtn)
 
       INTEGER        , intent(in) :: N, Iout1, IflRtn
-      CHARACTER*999  , intent(in) :: STRING(N)
+      CHARACTER(len=999), intent(in) :: STRING(N)
 
       INTEGER          INDEX, L, LR
-      CHARACTER*99999  RESULTString
+      CHARACTER(len=99999) RESULTString
 
       RESULTString = STRING(1)(1:Len_Trim(STRING(1)))
       DO INDEX=2,N
@@ -244,7 +244,7 @@
 !--------------------------------------------------------------------
 
       INTEGER FUNCTION COUNTS(STRING)
-      CHARACTER*(*) STRING
+      CHARACTER(len=*) STRING
 
       INTEGER I, ICOUNT, K2, K1
 
@@ -310,8 +310,8 @@
 
 
       INTEGER        , intent(in) :: IOUT1, IECODE, ICODE
-      CHARACTER*(*)  , intent(in) :: NAMSUB
-      CHARACTER*(*)  , intent(in) :: STRING
+      CHARACTER(len=*)  , intent(in) :: NAMSUB
+      CHARACTER(len=*)  , intent(in) :: STRING
 
       CHARACTER(Len=999) STR(10), Messg
 
@@ -365,8 +365,8 @@
 
 
       INTEGER        , intent(in) :: IOUT1, IECODE, ICODE, Iflrtn
-      CHARACTER*(*)  , intent(in) :: NAMSUB
-      CHARACTER*(*)  , intent(in) :: STRING
+      CHARACTER(len=*)  , intent(in) :: NAMSUB
+      CHARACTER(len=*)  , intent(in) :: STRING
 
       CHARACTER(Len=999) STR(10), Messg
 
@@ -439,7 +439,7 @@
       CHARACTER(Len=*)  , intent(in) :: XString,  StringArray(MaxStrings)
       Logical           , intent(in) :: CaseSensitive
 
-      CHARACTER*9999    TempX, TempAr
+      CHARACTER(len=9999) TempX, TempAr
 
       INTEGER        IPOS, INDX, LA, LB
 
@@ -479,7 +479,7 @@
 
       INTEGER FUNCTION FNDFRST(STRNGA, STRNGB, WithSpaces)
 
-      CHARACTER*(*)  , intent(in) :: STRNGA, STRNGB
+      CHARACTER(len=*)  , intent(in) :: STRNGA, STRNGB
       Logical        , intent(in) :: WithSpaces
 
       INTEGER IPOS
@@ -514,9 +514,9 @@
 
       Double Precision FUNCTION GetDouble(IPOS, STRING, ReadError)
 
-      CHARACTER*(*)  , intent(in) :: STRING
+      CHARACTER(len=*), intent(in) :: STRING
       Logical                        ReadError
-      CHARACTER*9999                 STRNGB
+      CHARACTER(len=9999)            STRNGB
 
       Double Precision RVAL
       INTEGER IPOS
@@ -542,9 +542,9 @@
 
       INTEGER FUNCTION GETINT(IPOS, STRING, ReadError)
 
-      CHARACTER*(*)  , intent(in) :: STRING
+      CHARACTER(len=*), intent(in) :: STRING
       Logical                        ReadError
-      CHARACTER*9999                 STRNGB
+      CHARACTER(len=9999)            STRNGB
 
       INTEGER IPOS, IVAL
 
@@ -569,9 +569,9 @@
 
       REAL FUNCTION GETREAL(IPOS, STRING, ReadError)
 
-      CHARACTER*(*)  , intent(in) :: STRING
+      CHARACTER(len=*), intent(in) :: STRING
       Logical                        ReadError
-      CHARACTER*9999                 STRNGB
+      CHARACTER(len=9999)            STRNGB
 
       REAL    RVAL
       INTEGER IPOS
@@ -597,11 +597,11 @@
 !     GETSTR.FOR: Get string from position IPOS to first space from string
 !--------------------------------------------------------------------
 
-      CHARACTER*999 FUNCTION GETSTR(IPOS, STRING, ReadError)
+      CHARACTER(len=999) FUNCTION GETSTR(IPOS, STRING, ReadError)
 
-      CHARACTER*(*)  , intent(in) :: STRING
+      CHARACTER(len=*), intent(in) :: STRING
       Logical                        ReadError
-      CHARACTER*9999                 STRNGA, STRNGB
+      CHARACTER(len=9999)            STRNGA, STRNGB
 
       INTEGER IPOS
 
@@ -653,8 +653,8 @@
 
       Integer :: RetVal
 
-      CHARACTER*(*)  , intent(in) :: STRING, SEARCH, NAMSUB, FILSUB
-      CHARACTER*(*)               :: CHARRS
+      CHARACTER(len=*), intent(in) :: STRING, SEARCH, NAMSUB, FILSUB
+      CHARACTER(len=*)            :: CHARRS
       INTEGER                     :: ITYPE, IOUT1, INTRS
       REAL                        :: REALRS
       LOGICAL                     :: ALLOW, FOUND
@@ -743,8 +743,8 @@
                        CHARRS, REALRS, INTRS, ALLOW, FOUND, IflRtn) result(RetVal)
 
       Integer :: RetVal
-      CHARACTER*(*)  , intent(in) :: StriNG, SEARCH, NAMSUB, FILSUB
-      CHARACTER*(*)               :: CHARRS
+      CHARACTER(len=*), intent(in) :: StriNG, SEARCH, NAMSUB, FILSUB
+      CHARACTER(len=*)            :: CHARRS
       INTEGER                     :: ITYPE, IOUT1, INTRS
       INTEGER                     :: IflRtn
       REAL                        :: REALRS
@@ -851,8 +851,8 @@
 
       integer :: RetVal
 
-      CHARACTER*(*)  , intent(in) :: StriNG, SEARCH, NAMSUB, FILSUB
-      CHARACTER*(*)               :: CHARRS
+      CHARACTER(len=*), intent(in) :: StriNG, SEARCH, NAMSUB, FILSUB
+      CHARACTER(len=*)            :: CHARRS
       INTEGER                     :: ITYPE, IOUT1, INTRS
       INTEGER                     :: IflRtn
       REAL                        :: REALRS
@@ -939,9 +939,9 @@
 
       Integer :: RetVal
 
-      CHARACTER*(*)  , intent(in) :: String, SEARCH, NAMSUB, FILSUB
+      CHARACTER(len=*), intent(in) :: String, SEARCH, NAMSUB, FILSUB
       INTEGER                     :: NVAL
-      CHARACTER*(*)               :: CHARRS(NVAL)
+      CHARACTER(len=*)            :: CHARRS(NVAL)
       INTEGER                     :: ITYPE, IOUT1, INTRS(NVAL)
       REAL                        :: REALRS(NVAL)
 
@@ -1047,9 +1047,9 @@
 
       Integer :: RetVal
 
-      CHARACTER*(*)  , intent(in) ::  STRING, SEARCH, NAMSUB, FILSUB
+      CHARACTER(len=*), intent(in) ::  STRING, SEARCH, NAMSUB, FILSUB
       INTEGER                     ::  NVAL, Iflrtn
-      CHARACTER*(*)               ::  CHARRS(NVAL)
+      CHARACTER(len=*)            ::  CHARRS(NVAL)
       INTEGER                     ::  ITYPE, IOUT1, INTRS(NVAL)
       REAL                        ::  REALRS(NVAL)
 
@@ -1173,16 +1173,16 @@
 
       Integer :: RetVal
 
-      CHARACTER*(*)  , intent(in) :: String, SEARCH, NAMSUB, FILSUB
+      CHARACTER(len=*), intent(in) :: String, SEARCH, NAMSUB, FILSUB
       INTEGER                     :: NVAL, Iflrtn
-      CHARACTER*(*)               :: CHARRS(NVAL)
+      CHARACTER(len=*)            :: CHARRS(NVAL)
       INTEGER                     :: ITYPE, IOUT1, INTRS(NVAL)
       REAL                        :: REALRS(NVAL)
       Double Precision            :: DoublRS(NVAL)
       LOGICAL                     :: ALLOW, FOUND
 
       INTEGER       I, IPOS, IPOS2, Lengtezoekstring, lengtestring
-      CHARACTER*1   Quote, DblQuote
+      CHARACTER(len=1) Quote, DblQuote
       Logical       WithSpaces, ReadError
 
       FOUND = .FALSE.
@@ -1322,13 +1322,13 @@
 !--------------------------------------------------------------------
 
       SUBROUTINE GTDoubles (IPOS, STRING, DoublRS, NVAL, ReadError)
-      CHARACTER*(*)  , intent(in) :: String
+      CHARACTER(len=*), intent(in) :: String
       Logical                        ReadError
 
       INTEGER                     :: NVAL
       Double Precision            :: DoublRS(NVAL)
 
-      CHARACTER*9999                 STRNGB
+      CHARACTER(len=9999)            STRNGB
       INTEGER                        IPOS, I
 
       ReadError = .false.
@@ -1348,12 +1348,12 @@
 !C--------------------------------------------------------------------
 
       SUBROUTINE GTINTS(IPOS, STRING, INTRS, NVAL, ReadError)
-      CHARACTER*(*)  , intent(in) :: STRING
+      CHARACTER(len=*), intent(in) :: STRING
       INTEGER                     :: NVAL
       INTEGER                     :: INTRS(NVAL)
 
       INTEGER        IPOS, I
-      CHARACTER*9999 STRNGB
+      CHARACTER(len=9999) STRNGB
       LOGICAL        ReadError
 
       ReadError = .false.
@@ -1374,12 +1374,12 @@
 !C--------------------------------------------------------------------
 
       SUBROUTINE GTREAL(IPOS, STRING, REALRS, NVAL, ReadError)
-      CHARACTER*(*) , intent(in) :: STRING
+      CHARACTER(len=*), intent(in) :: STRING
       INTEGER                    :: NVAL
       REAL                       :: REALRS(NVAL)
       Logical                    :: ReadError
 
-      CHARACTER*9999 STRNGB
+      CHARACTER(len=9999) STRNGB
       INTEGER        IPOS, I
 
       ReadError = .false.
@@ -1477,7 +1477,7 @@
 !C--------------------------------------------------------------------
 
       INTEGER FUNCTION LENSTRING(STRING)
-      CHARACTER*(*)  , intent(in) :: STRING
+      CHARACTER(len=*), intent(in) :: STRING
 
       INTEGER I
 
@@ -1497,7 +1497,7 @@
 !C--------------------------------------------------------------------
 
       INTEGER FUNCTION LENTR1(STRING)
-      CHARACTER*(*)  , intent(in) :: STRING
+      CHARACTER(len=*), intent(in) :: STRING
 
       INTEGER I
 
@@ -1523,7 +1523,7 @@
 !C--------------------------------------------------------------------
 
       INTEGER FUNCTION LENTR2(STRING)
-      CHARACTER*(*)  , intent(in) :: STRING
+      CHARACTER(len=*), intent(in) :: STRING
 
       INTEGER I
 
@@ -1581,7 +1581,7 @@
 
       SUBROUTINE LOWERC(STRING)
 
-      CHARACTER*(*) STRING
+      CHARACTER(len=*) STRING
       INTEGER L
 
       L=LEN(STRING)
@@ -1602,10 +1602,7 @@
 !C--------------------------------------------------------------------
 
       SUBROUTINE LTRIM(STRING)
-      CHARACTER*(*)  :: STRING
-
-      CHARACTER*999 TEMP
-      INTEGER I
+      CHARACTER(len=*)  :: STRING
 
       IF (STRING.EQ.' ') GOTO 99
 
@@ -1638,7 +1635,7 @@
 !C--------------------------------------------------------------------
 
       INTEGER FUNCTION MyFNDFRST(STRNGA, STRNGB, WithSpaces)
-      CHARACTER*(*)  , intent(in) :: STRNGA, STRNGB
+      CHARACTER(len=*), intent(in) :: STRNGA, STRNGB
 
       INTEGER I, IPOS, LA, LB
       Logical WithSpaces
@@ -1720,7 +1717,7 @@
 !C    MyOwnLENTRIM.FOR: Determine length of string, less trailing blanks
 !C--------------------------------------------------------------------
       INTEGER FUNCTION MyOwnLentrim(STRING)
-      CHARACTER*(*)  , intent(in) :: STRING
+      CHARACTER(len=*), intent(in) :: STRING
 
       INTEGER I
 
@@ -1786,8 +1783,8 @@
 !
       implicit none
 !
-      character*(*)   name
-      character*1     achar
+      character(len=*) name
+      character(len=1) achar
 !
       integer         length,endpos,begpos,pos
 !-----------------------------------------------------------------------
@@ -1838,7 +1835,7 @@
       IMPLICIT NONE
       INTEGER N
       CHARACTER(LEN=N) STRING
-      CHARACTER*1      CHAR
+      CHARACTER(len=1) CHAR
       INTEGER INDEX
 
       DO INDEX=1,N
@@ -1880,8 +1877,8 @@
 !      CHARACTER(*) FUNCTION RPLSTR(STRNGA, STRNGB, STRNGC)
       SUBROUTINE RPLSTR(STRNGA, STRNGB, STRNGC)
 
-      CHARACTER(*)               :: STRNGA
-      CHARACTER*1   , intent(in) :: STRNGB, STRNGC
+      CHARACTER(len=*)               :: STRNGA
+      CHARACTER(len=1)  , intent(in) :: STRNGB, STRNGC
 
       INTEGER I, KA, IPOS1, IPOS2
       IF (STRNGA.EQ.' ') GOTO 999
@@ -1931,9 +1928,9 @@
 !C **********************************************************************
 
       INTEGER       IN, Lenskip
-      CHARACTER*1   STAR, COMENT
-      CHARACTER*(*) SkipString
-      CHARACTER*10  STRING
+      CHARACTER(len=1) STAR, COMENT
+      CHARACTER(len=*) SkipString
+      CHARACTER(len=10) STRING
       LOGICAL       ENDFIL
       DATA          STAR /'*'/
 
@@ -2009,7 +2006,7 @@
 ! lun                    : geen
 !***********************************************************************
       implicit none
-      character*(*) string
+      character(len=*) string
       integer       i, j, newlen, lenstr, biga, bigz, smalla, offset
 !
       biga   = ICHAR('A')
@@ -2048,8 +2045,8 @@
 !C ***       false  strings are not equal
 !C *********************************************************************
 
-      CHARACTER*(*) StringA,  StringB
-      CHARACTER*999 TempA, TempB
+      CHARACTER(len=*) StringA,  StringB
+      CHARACTER(len=999) TempA, TempB
       Logical       CaseSensitive, Resultlog
 !     INTEGER       LenTrim, LA, LB
 
@@ -2087,7 +2084,7 @@
 
       implicit none
 
-      CHARACTER*(*) STRING
+      CHARACTER(len=*) STRING
       integer       i, j, l, smalla, smallz, biga, offset
 
       L=LEN(STRING)

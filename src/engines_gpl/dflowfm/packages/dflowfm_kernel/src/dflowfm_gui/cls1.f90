@@ -33,9 +33,8 @@
 !
       subroutine CLS1()
          use unstruc_display
+         use m_drawthis
          implicit none
-         integer :: ndraw
-         common / DRAWTHIS / ndraw(50)
 
          call IGRAREACLEAR()
 

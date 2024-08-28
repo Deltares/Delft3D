@@ -650,8 +650,8 @@ contains
             cycle
          end if
 
-         ic1 = iabs(lne(1, L))
-         ic2 = iabs(lne(min(lnn(L), 2), L))
+         ic1 = abs(lne(1, L))
+         ic2 = abs(lne(min(lnn(L), 2), L))
          if (kn(3, L) == 2) then ! 2D links
             if (idomain(ic1) == idmn .or. ighostlev(ic1) /= 0 .or. &
                 idomain(ic2) == idmn .or. ighostlev(ic2) /= 0) then
@@ -967,8 +967,8 @@ contains
       nump1d2d_org = 0
       do L = 1, numL
          L_org = L2Lorg(L)
-         ic3 = iabs(lne_org(1, L_org))
-         ic4 = iabs(lne_org(2, L_org))
+         ic3 = abs(lne_org(1, L_org))
+         ic4 = abs(lne_org(2, L_org))
          nump1d2d_org = max(max(nump1d2d_org, ic3), ic4)
       end do
 
@@ -977,10 +977,10 @@ contains
       icandidate = -1
       do L = 1, numL
          L_org = L2Lorg(L)
-         ic3 = iabs(lne_org(1, L_org)) ! first new candidate
-         ic4 = iabs(lne_org(2, L_org)) ! second new candiate, can be 0 if lnn_org==1
+         ic3 = abs(lne_org(1, L_org)) ! first new candidate
+         ic4 = abs(lne_org(2, L_org)) ! second new candiate, can be 0 if lnn_org==1
          do i = 1, 2
-            k = iabs(lne(i, L)) ! this cell number
+            k = abs(lne(i, L)) ! this cell number
             if (k == 0) cycle
             ic1 = icandidate(1, k) ! first stored candidate
             ic2 = icandidate(2, k) ! second stored candidate
@@ -1017,8 +1017,8 @@ contains
 !     set cells connected through one link/edge
       do L = 1, numL
          do i = 1, 2
-            k = iabs(lne(i, L)) ! this cell number
-            kother = iabs(lne(3 - i, L)) ! other cell number
+            k = abs(lne(i, L)) ! this cell number
+            kother = abs(lne(3 - i, L)) ! other cell number
 
             if (k == 0 .or. kother == 0) cycle
 
@@ -1199,10 +1199,10 @@ contains
          do L = 1, numL ! loop over the netlinks
             if (lnn(L) < 2) cycle ! 1d-links: relies on proper lnn (set by find1dcells)
             do n = 1, 2 ! loop over the cells attached to this link
-               ic = iabs(lne(n, L))
+               ic = abs(lne(n, L))
                if (idomain(ic) == idmn .or. (ilay > 1 .and. ighostlev_cellbased(ic) == ilay - 1)) then
 !                activate inactive other cell
-                  icother = iabs(lne(1, L)) + iabs(lne(2, L)) - ic
+                  icother = abs(lne(1, L)) + abs(lne(2, L)) - ic
                   if (idomain(icother) /= idmn .and. ighostlev_cellbased(icother) == 0) then ! other cell not active
                      ighostlev_cellbased(icother) = ilay ! set ighostlev_cellbased to the layer number
                   end if
@@ -1456,7 +1456,7 @@ contains
       do i = 0, ubound(nghostlist_u, 1)
          do j = nghostlist_u(i - 1) + 1, nghostlist_u(i)
             NPL = NPL + 1
-            Lf = iabs(ighostlist_u(j))
+            Lf = abs(ighostlist_u(j))
             xpl(NPL) = xu(Lf)
             ypl(NPL) = yu(Lf)
             ipl(NPL) = i
@@ -2266,10 +2266,10 @@ contains
 !> derive 3d ghost- and sendlists from 2d counterparts and 3d layer information
 !>    only nghostlist_XXX_3d will be generated, actual ghost flow node/link numbers
 !>       can be derived from 2d ighostlist/isendlist and layer information
-!>    it is assumed that 3d layer information (kbot, Lbot, kmxn, kmxL) is available
+!>    it is assumed that 3d layer information (kmxn, kmxL) is available
    subroutine partition_make_ghostsendlists_3d(ierror)
       use m_flowgeom, only: Ndx, Lnx
-      use m_flow, only: kmx, kbot, Lbot, kmxn, kmxL
+      use m_flow, only: kmx, kmxn, kmxL
       implicit none
 
       integer, intent(out) :: ierror
@@ -2303,19 +2303,19 @@ contains
       allocate (nghostlist_u_3dw(-1:ndomains - 1))
       allocate (nsendlist_u_3dw(-1:ndomains - 1))
 
-      call partition_fill_ghostsendlist_3d(nghostlist_sall(ndomains - 1), ighostlist_sall, nghostlist_sall, Ndx, kbot, kmxn, nghostlist_sall_3d)
-      call partition_fill_ghostsendlist_3d(nsendlist_sall(ndomains - 1), isendlist_sall, nsendlist_sall, Ndx, kbot, kmxn, nsendlist_sall_3d)
+      call partition_fill_ghostsendlist_3d(nghostlist_sall(ndomains - 1), ighostlist_sall, nghostlist_sall, Ndx, kmxn, nghostlist_sall_3d)
+      call partition_fill_ghostsendlist_3d(nsendlist_sall(ndomains - 1), isendlist_sall, nsendlist_sall, Ndx, kmxn, nsendlist_sall_3d)
 
-      call partition_fill_ghostsendlist_3d(nghostlist_u(ndomains - 1), ighostlist_u, nghostlist_u, Lnx, Lbot, kmxL, nghostlist_u_3d)
-      call partition_fill_ghostsendlist_3d(nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, Lnx, Lbot, kmxL, nsendlist_u_3d)
+      call partition_fill_ghostsendlist_3d(nghostlist_u(ndomains - 1), ighostlist_u, nghostlist_u, Lnx, kmxL, nghostlist_u_3d)
+      call partition_fill_ghostsendlist_3d(nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, Lnx, kmxL, nsendlist_u_3d)
 
       if (allocated(kmxL1)) deallocate (kmxL1)
       allocate (kmxL1(lnx))
       do L = 1, lnx
          kmxL1(L) = kmxL(L) + 1
       end do
-      call partition_fill_ghostsendlist_3d(nghostlist_u(ndomains - 1), ighostlist_u, nghostlist_u, Lnx, Lbot, kmxL1, nghostlist_u_3dw)
-      call partition_fill_ghostsendlist_3d(nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, Lnx, Lbot, kmxL1, nsendlist_u_3dw)
+      call partition_fill_ghostsendlist_3d(nghostlist_u(ndomains - 1), ighostlist_u, nghostlist_u, Lnx, kmxL1, nghostlist_u_3dw)
+      call partition_fill_ghostsendlist_3d(nsendlist_u(ndomains - 1), isendlist_u, nsendlist_u, Lnx, kmxL1, nsendlist_u_3dw)
       deallocate (kmxL1)
 
       ierror = 0
@@ -2325,14 +2325,13 @@ contains
    end subroutine partition_make_ghostsendlists_3d
 
 !> fill 3d ghost/send flow node/link list
-   subroutine partition_fill_ghostsendlist_3d(Nghost, ilist2d, nlist2d, N, kbot, kmxn, nlist3d)
+   subroutine partition_fill_ghostsendlist_3d(Nghost, ilist2d, nlist2d, N, kmxn, nlist3d)
       implicit none
 
       integer, intent(in) :: Nghost !< number of ghost/send flow nodes/links
       integer, dimension(Nghost), intent(in) :: ilist2d !< 2d ghost/send list
       integer, dimension(-1:ndomains - 1), intent(in) :: nlist2d !< cumulative number of flow nodes/links in 2d ghost/send list
       integer, intent(in) :: N !< number of flow nodes/links
-      integer, dimension(N), intent(in) :: kbot !< bottom layer indices
       integer, dimension(N), intent(in) :: kmxn !< number of layers
       integer, dimension(-1:ndomains - 1), intent(out) :: nlist3d !< 3d ghost/send list
 
@@ -2343,7 +2342,7 @@ contains
 !        add number of 3d ghost/send nodes/links from/to this domain
          num = 0
          do i = nlist2d(idmn - 1) + 1, nlist2d(idmn)
-            k = iabs(ilist2d(i))
+            k = abs(ilist2d(i))
             num = num + kmxn(k)
          end do
          nlist3d(idmn) = nlist3d(idmn - 1) + num
@@ -2668,7 +2667,7 @@ contains
          if (NDIM == 1) then
             icount = 0
             do i = 1, nsend(ndomains - 1)
-               i2d = iabs(isend(i))
+               i2d = abs(isend(i))
                ib = kbot(i2d)
                it = ib + kmxnL(i2d) - 1 ! override it
                do ii = ib, it
@@ -2691,7 +2690,7 @@ contains
          else ! NDIM.ne.1
             icount = 0
             do i = 1, nsend(ndomains - 1)
-               i2d = iabs(isend(i))
+               i2d = abs(isend(i))
                ib = kbot(i2d)
                it = ib + kmxnL(i2d) - 1 ! override it
                do ii = ib, it
@@ -3986,7 +3985,7 @@ contains
       numdots = 0
       klp: do k = 1, Ndxi
          do LL = 1, nd(k)%lnx
-            L = iabs(nd(k)%ln(LL))
+            L = abs(nd(k)%ln(LL))
             if (wu(L) /= 0d0) then
                cycle klp
             end if
@@ -4133,10 +4132,10 @@ contains
          num = netbr(ibr)%NX
          LL = netbr(ibr)%LN(1)
          LR = netbr(ibr)%LN(num)
-         xyL_loc(1, iglob) = 0.5d0 * (xk(kn(1, iabs(LL))) + xk(kn(2, iabs(LL))))
-         xyL_loc(2, iglob) = 0.5d0 * (yk(kn(1, iabs(LL))) + yk(kn(2, iabs(LL))))
-         xyR_loc(1, iglob) = 0.5d0 * (xk(kn(1, iabs(LR))) + xk(kn(2, iabs(LR))))
-         xyR_loc(2, iglob) = 0.5d0 * (yk(kn(1, iabs(LR))) + yk(kn(2, iabs(LR))))
+         xyL_loc(1, iglob) = 0.5d0 * (xk(kn(1, abs(LL))) + xk(kn(2, abs(LL))))
+         xyL_loc(2, iglob) = 0.5d0 * (yk(kn(1, abs(LL))) + yk(kn(2, abs(LL))))
+         xyR_loc(1, iglob) = 0.5d0 * (xk(kn(1, abs(LR))) + xk(kn(2, abs(LR))))
+         xyR_loc(2, iglob) = 0.5d0 * (yk(kn(1, abs(LR))) + yk(kn(2, abs(LR))))
 
          xyL_loc(3, iglob) = dLinkangle(LL)
          xyR_loc(3, iglob) = dLinkangle(LR)
@@ -4180,7 +4179,7 @@ contains
 
          if (my_rank == 0) then
             write (6, "(I4, ':', 100I4)") numnew, (idum(i), i=1, icount)
-            write (6, "(I4, ':', 100I4)") numnew, (iorient(iabs(idum(i))), i=1, icount)
+            write (6, "(I4, ':', 100I4)") numnew, (iorient(abs(idum(i))), i=1, icount)
          end if
 
 !        add to the ordered branch list
@@ -4189,7 +4188,7 @@ contains
 
 !        measure lengths in the connected branch
          do i = 1, icount
-            ibr_glob = iabs(idum(i))
+            ibr_glob = abs(idum(i))
             ibrr = ibr_glob - iglobalbranch_first + 1
 
             if (ibrr < 1 .or. ibrr > numnetbr) cycle ! local branches only
@@ -4203,7 +4202,7 @@ contains
 
 !           find the link that is connected to the start/end of the other link
             if (i > 1) then
-               Lconnect = Lother_right(iabs(idum(i - 1))) ! we need the right connection of the previous branch, since the orientation is always from left to right
+               Lconnect = Lother_right(abs(idum(i - 1))) ! we need the right connection of the previous branch, since the orientation is always from left to right
             else
                Lconnect = 0
             end if
@@ -4213,7 +4212,7 @@ contains
             do k = 1, N
                L = netbr(ibrr)%LN(k)
                dlength = dlength + dlinklength(L)
-               if (iabs(L) == iabs(Lconnect)) then ! offset link
+               if (abs(L) == abs(Lconnect)) then ! offset link
                   dleft = dlength
                end if
             end do
@@ -4243,7 +4242,7 @@ contains
       do i = 1, numnew
          dconnected = 0d0
          do k = ipoint(i), ipoint(i + 1) - 1
-            ibr_glob = iabs(iordened_branches(k))
+            ibr_glob = abs(iordened_branches(k))
             ibrr = ibr_glob - iglobalbranch_first + 1
 
 !           fill local branch properties
@@ -4310,8 +4309,8 @@ contains
          iorient(ibr_glob) = 1 - iorient(ibr_glob)
 
          do i = 1, N / 2
-            Ldum = iabs(netbr(ibr)%LN(i))
-            Lnew = iabs(netbr(ibr)%LN(N - i + 1))
+            Ldum = abs(netbr(ibr)%LN(i))
+            Lnew = abs(netbr(ibr)%LN(N - i + 1))
             idum = NRLB(Ldum)
             NRLB(Ldum) = NRLB(Lnew)
             NRLB(Lnew) = idum
@@ -4319,7 +4318,7 @@ contains
 
          do i = 1, N
             Ldum = netbr(ibr)%LN(i)
-            La = iabs(Ldum)
+            La = abs(Ldum)
             if (Ldum > 0) then
                K1BR(NRLB(La)) = kn(1, La)
             else
@@ -4343,7 +4342,7 @@ contains
 
          integer :: inext, ibra
 
-         ibra = iabs(ibr)
+         ibra = abs(ibr)
 
          if (inew(ibra) /= 0) return ! branch has already new global number assigned
 
@@ -4405,7 +4404,7 @@ contains
                      num = netbr(ibr)%NX
                      do i = 1, num
                         L = netbr(ibr)%LN(i)
-                        La = iabs(L)
+                        La = abs(L)
                         xloc = 0.5d0 * (xk(kn(1, La)) + xk(kn(2, La)))
                         yloc = 0.5d0 * (yk(kn(1, La)) + yk(kn(2, La)))
                         if (dbdistance(xloc, yloc, xyL_all(1, ibr_other), xyL_all(2, ibr_other), jsferic, jasfer3D, dmiss) < dtol) then
@@ -5194,7 +5193,7 @@ contains
                min_ghost_level_for_cell = ghost_level(list_of_cells(index))
                cell = list_of_cells(index)
             else if (min_ghost_level_for_cell == ghost_level(list_of_cells(index))) then
-               if (iabs(domain_number - idomain(cell)) > iabs(domain_number - idomain(list_of_cells(index)))) then
+               if (abs(domain_number - idomain(cell)) > abs(domain_number - idomain(list_of_cells(index)))) then
                   cell = list_of_cells(index)
                end if
             end if
@@ -5736,45 +5735,44 @@ subroutine print_timings(FNAM, dtime)
 !           print header
          lenstr = 4
          do j = 1, ISTRLEN - lenstr
-            write (MFILE, '(" ", $)')
+            write (MFILE, '(" ")', advance="no")
          end do
-         write (MFILE, "(A, $)") 'time'
+         write (MFILE, '(A)', advance="no") 'time'
 
          lenstr = 16
          do j = 1, ISTRLEN - lenstr
-            write (MFILE, '(" ", $)')
+            write (MFILE, '(" ")', advance="no")
          end do
-         write (MFILE, "(A, $)") 'number_of_tsteps'
+         write (MFILE, '(A)', advance="no") 'number_of_tsteps'
 
          do i = 1, Ntvarlist
             lenstr = len_trim(tnams(itvarlist(i)))
             do j = 1, ISTRLEN - (lenstr + 4)
-               write (MFILE, '(" ", $)')
+               write (MFILE, '(" ")', advance="no")
             end do
-            write (MFILE, "(A, '_ave', $)") trim(tnams(itvarlist(i)))
+            write (MFILE, "(A, '_ave')", advance="no") trim(tnams(itvarlist(i)))
 
             do j = 1, ISTRLEN - (lenstr + 4)
-               write (MFILE, '(" ", $)')
+               write (MFILE, '(" ")', advance="no")
             end do
-            write (MFILE, "(A, '_max', $)") trim(tnams(itvarlist(i)))
+            write (MFILE, "(A, '_max')", advance="no") trim(tnams(itvarlist(i)))
 
             do j = 1, ISTRLEN - (lenstr + 8)
-               write (MFILE, '(" ", $)')
+               write (MFILE, '(" ")', advance="no")
             end do
-            write (MFILE, "(A, '_CPU_ave', $)") trim(tnams(itvarlist(i)))
+            write (MFILE, "(A, '_CPU_ave')", advance="no") trim(tnams(itvarlist(i)))
 
             do j = 1, ISTRLEN - (lenstr + 8)
-               write (MFILE, '(" ", $)')
+               write (MFILE, '(" ")', advance="no")
             end do
-            write (MFILE, "(A, '_CPU_max', $)") trim(tnams(itvarlist(i)))
+            write (MFILE, "(A, '_CPU_max')", advance="no") trim(tnams(itvarlist(i)))
          end do
 
          lenstr = 8
          do j = 1, ISTRLEN - lenstr
-            write (MFILE, '(" ", $)')
+            write (MFILE, '(" ")', advance="no")
          end do
-         write (MFILE, "(A, $)") 'cg_iters'
-
+         write (MFILE, "(A)", advance="no") 'cg_iters'
          write (MFILE, *)
       end if
 
@@ -6217,13 +6215,13 @@ subroutine writemesg(mesg)
 #ifdef HAVE_MPI
    call mpi_comm_rank(DFM_COMM_DFMWORLD, my_rank, ierr)
 #endif
-   call flush (6)
+   flush (6)
 
    if (my_rank == 0) then
       write (6, *) trim(mesg)
    end if
 
-   call flush (6)
+   flush (6)
 #ifdef HAVE_MPI
    call MPI_barrier(DFM_COMM_DFMWORLD, ierr)
 #endif

@@ -73,6 +73,7 @@
       integer*8                              :: imin                   ! imin
       integer*8                              :: isec                   ! isec
       integer*8                              :: itime                  ! time in seconds
+      integer*8, parameter :: I8_1000000 = 1000000, I8_10000 = 10000, I8_100 = 100
 
 
       call get_log_unit_number(lunrep)
@@ -234,10 +235,10 @@
          ! convert to seconds if needed using integer*8
 
          if ( .not. time_in_seconds ) then
-            iday  = itime/1000000
-            ihour = mod(itime,1000000)/10000
-            imin  = mod(itime,10000)/100
-            isec  = mod(itime,100)
+            iday  = itime/I8_1000000
+            ihour = mod(itime,I8_1000000)/I8_10000
+            imin  = mod(itime,I8_10000)/I8_100
+            isec  = mod(itime,I8_100)
             itime = iday*86400 + ihour*3600 + imin*60 + isec
          endif
 

@@ -91,7 +91,7 @@
                 </program>
             </programs>
             <location ref="reference_results" type="reference">
-                <from>lnx64</from>
+                <from>win64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>
@@ -113,6 +113,6 @@
         </testCase>
     </defaultTestCases>
 
-  <xi:include href="../include/dimr_dflowfm_parallel_lnx64.xml"/>
+  <xi:include href="../include/dimr_dflowfm_parallel.xml"/>
 
 </deltaresTestbench_v3>

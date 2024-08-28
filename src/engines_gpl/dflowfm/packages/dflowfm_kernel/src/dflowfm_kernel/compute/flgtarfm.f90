@@ -30,7 +30,7 @@
 !
 !
 
-subroutine flgtarfm(ng, L0, wuL, bl1, bl2, teken, zs, wstr, w2, wsd, zb2, dg, ds1, ds2, cgf, & ! fromgeneral
+subroutine flgtarfm(ng, L0, wuL, bl1, bl2, teken, zs, wstr, w2, wsd, zb2, ds1, ds2, cgf, & ! fromgeneral
                     cgd, cwf, cwd, mugf, lambda, strdamf, gatedoorheight)
 !!--description-----------------------------------------------------------------
 ! NONE
@@ -53,7 +53,6 @@ subroutine flgtarfm(ng, L0, wuL, bl1, bl2, teken, zs, wstr, w2, wsd, zb2, dg, ds
    double precision, intent(out) :: cgf
    double precision, intent(out) :: cwd
    double precision, intent(out) :: cwf
-   double precision :: dg
    double precision, intent(out) :: ds1
    double precision, intent(out) :: ds2
    double precision :: lambda

@@ -43,23 +43,22 @@ subroutine update_waq_lateral_fluxes()
    use m_flow
    use m_flowgeom
    use m_flowtimes
-   use m_lateral, only: numlatsg, n1latsg, n2latsg, nnlat, qqlat
+   use m_laterals, only: num_layers, numlatsg, n1latsg, n2latsg, nnlat, qqlat
    implicit none
 
-   integer :: k, k1, ilat
-   integer :: ilatwaq, nlayer, num_layers
+   integer :: i_node, k1 
+   integer :: i_lat, i_latwaq, i_layer
 
 ! Accumulate lateral discharges for waq
-   ilatwaq = 0
-   num_layers = max(1, kmx)
-   do ilat = 1, numlatsg
-      do k1 = n1latsg(ilat), n2latsg(ilat)
-         k = nnlat(k1)
-         if (k > 0) then
-            if (.not. is_ghost_node(k)) then
-               ilatwaq = ilatwaq + 1
-               do nlayer = 1, num_layers
-                  qlatwaq(ilatwaq) = qlatwaq(ilatwaq) + dts * qqLat(nlayer, k)
+   i_latwaq = 0
+   do i_lat = 1, numlatsg
+      do k1 = n1latsg(i_lat), n2latsg(i_lat)
+         i_node = nnlat(k1)
+         if (i_node > 0) then
+            if (.not. is_ghost_node(i_node)) then
+               i_latwaq = i_latwaq + 1
+               do i_layer = 1, num_layers
+                  qlatwaq(i_latwaq) = qlatwaq(i_latwaq) + dts * qqLat(i_layer, i_lat, i_node)
                end do
             end if
          end if

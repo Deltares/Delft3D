@@ -31,6 +31,7 @@
 !
 
       subroutine UTMGeo(xutm, yutm, xgeo, ygeo, IZONE, ierr)
+         use m_ellips
          implicit none
 !
 ! -----------------------------------------------------------------------------
@@ -50,7 +51,7 @@
 !     ygeo    o    double precision ::    lattitude (geographical coordinate)
 !     ierr    o    integer   error code (zero for no error)
 !
-         double precision :: xutm, yutm, a, e, ygeo, xgeo
+         double precision :: xutm, yutm, ygeo, xgeo
          integer Izone, ierr
 !
 !     local variables:
@@ -103,7 +104,6 @@
          double precision :: fi, dl, dl2, s, ss, sc, c, cc, cccc, f1, f2, f3, f4, e2, e4, e6, r
          double precision :: n, nn, x, dxdfi, dxddl, y, dydfi, dyddl, rp, drpdfi, dm, ddmdfi
          double precision :: gx, dgxdfi, gy, dgydfi, det, chanfi, chandl
-         common / ELLIPS / A, E
 !
 !c -----------------------------------------------------------------------------
 !     t.j.zitman                                   last update: 5 december 1990
@@ -111,7 +111,7 @@
 !
 !     initialize constants
 !
-         pi = acos(-1.d0) ! 4.0d0*daTAN(1.0d0)
+         pi = acos(-1.d0) ! 4.0d0*atan(1.0d0)
          eps = 1.0d-05
          fe = 5.0d+05
 !     fn     = 1.0E+07
@@ -201,7 +201,7 @@
 !     set final values
 !
          ygeo = fi * 180d0 / pi
-         xgeo = dl * 180d0 / pi + 6d0 * FLOAT(Izone - 1) - 177d0
+         xgeo = dl * 180d0 / pi + 6d0 * real(Izone - 1, kind=kind(xgeo)) - 177d0
          ierr = 0
 !
 900      continue

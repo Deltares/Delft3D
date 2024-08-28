@@ -69,7 +69,7 @@ c
       endif
 
       do igr=1,ngrid
-         hmax(igr) = max(hmax(igr),h(igr))
+         hmax(igr) = max(hmax(igr),real(h(igr)))
       enddo
 
       if (kode .eq. 3) then

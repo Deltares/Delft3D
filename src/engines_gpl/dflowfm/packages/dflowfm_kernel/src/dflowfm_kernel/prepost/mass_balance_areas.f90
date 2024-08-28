@@ -724,7 +724,8 @@ contains
       integer :: LL, L, Lb, Lt, k1, k2, i, n
       double precision :: qsrck
 
-      integer(4) ithndl / 0 /
+      integer(4) :: ithndl =  0
+      
       if (timon) call timstrt("comp_horflowmba", ithndl)
 
       do i = 1, nombaln
@@ -895,7 +896,6 @@ contains
       integer :: isys
       integer :: iflux
       integer :: jflux
-      integer :: ifluxsys
 
       call getfullversionstring_dflowfm(version_id)
 
@@ -964,15 +964,12 @@ contains
          write (lunbal, '( "total number of substances fluxes               :",I8)') totfluxsys
          write (lunbal, '(/"Substance      Process        Flux        Stochiometry factor")')
          write (lunbal, '( "-------------------------------------------------------------")')
-         ifluxsys = 0
          do isys = 1, num_substances_total
-            ipfluxsys(isys) = ifluxsys
             if (nfluxsys(isys) > 0) then
-               do iflux = ifluxsys + 1, ifluxsys + nfluxsys(isys)
+               do iflux = ipfluxsys(isys) + 1, ipfluxsys(isys) + nfluxsys(isys)
                   jflux = fluxsys(iflux)
                   write (lunbal, '(A10,5X,A10,5X,A10,ES20.6)') syname_sub(isys), fluxprocname(jflux), fluxname(jflux), stochi(isys, jflux)
                end do
-               ifluxsys = ifluxsys + nfluxsys(isys)
             end if
          end do
       end if

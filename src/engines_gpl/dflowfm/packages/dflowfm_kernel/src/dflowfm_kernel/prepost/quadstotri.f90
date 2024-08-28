@@ -59,7 +59,7 @@
         call FINDEL(K1, K2, L12)
         A = 0 ! EA(L12)
         R = DLENGTH(K1, K2)
-        call CONNECT(K1, K3, 1, A, R)
+        call CONNECT(K1, K3, 1, R)
 
         L = L + 1
         K0 = 1 + (L - 1) * 3

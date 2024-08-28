@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<dimrConfig xmlns="http://schemas.deltares.nl/dimrConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.deltares.nl/dimrConfig http://content.oss.deltares.nl/schemas/d_hydro-1.00.xsd">
+    <documentation>
+        <fileVersion>1.00</fileVersion>
+        <createdBy>Deltares, Coupling team</createdBy>
+        <creationDate>2016-01-20T07:56:32+01:00</creationDate>
+    </documentation>
+    
+    <control>
+        <start name="myD-Waves"/>
+    </control>
+
+    <component name="myD-Waves">
+        <library>wave</library>
+        <workingDir>dwaves</workingDir>
+        <inputFile>obw.mdw</inputFile>
+    </component>
+</dimrConfig>

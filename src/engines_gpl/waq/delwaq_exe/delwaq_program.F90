@@ -23,14 +23,14 @@
 
 program delwaq
 
-    use m_delwaq1
-    use m_delwaq2
-    use delwaq_exe_version_module
+    use m_delwaq1, only: delwaq1
+    use m_delwaq2, only: delwaq2
+    use delwaq_exe_version_module, only: get_fullversionstring_delwaq
 
-    use m_logger_factory
-    use m_logger_type
-    use m_logger
-    use m_log_level
+    use m_logger_factory, only: create_logger
+    use m_logger_type, only: file
+    use m_logger, only: logger
+    use m_log_level, only: info_level
 
     use m_command_line_help, only: show_command_line_help, show_command_line_version
     use m_string_utils, only: join_strings
@@ -61,7 +61,7 @@ program delwaq
 
     ! initialize logging
     log_file_path = 'delwaq.log'
-    log = create_logger(file_and_screen, info_level, log_file_path)
+    log = create_logger(file, info_level, log_file_path)
 
     argv = get_arguments()
     call log%log_info('Running: '//trim(id_str))
@@ -80,4 +80,5 @@ program delwaq
     end if
 
     call log%log_info('Normal end', .true.)
+    write(*, *) 'Normal end'
 end program delwaq

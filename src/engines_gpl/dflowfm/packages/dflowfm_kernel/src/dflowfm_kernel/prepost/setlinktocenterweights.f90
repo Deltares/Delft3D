@@ -185,7 +185,7 @@
        lnxmax = max(lnxmax, nd(k1)%lnx)
        call realloc(wwL, lnxmax, keepExisting=.false.)
        do kk = 1, size(nd(k1)%ln)
-          LL = iabs(nd(k1)%ln(kk))
+          LL = abs(nd(k1)%ln(kk))
           n12 = 1; alf = acL(LL)
           if (k1 /= ln(1, LL)) then
              n12 = 2; alf = 1d0 - acL(LL)
@@ -200,7 +200,7 @@
        if (wcw > 0d0) then
           wc(k1) = wc(k1) + aa1
           do kk = 1, size(nd(k1)%ln)
-             LL = iabs(nd(k1)%ln(kk))
+             LL = abs(nd(k1)%ln(kk))
              n12 = 1; alf = acL(LL)
              if (k1 /= ln(1, LL)) then
                 n12 = 2; alf = 1d0 - acL(LL)
@@ -212,7 +212,7 @@
 
     do L = 1, lnx
        k1 = ln(1, L); k2 = ln(2, L)
-       if (iabs(kcu(L)) == 2 .or. iabs(kcu(L)) == 4) then ! 2D links and 1D2D lateral links
+       if (abs(kcu(L)) == 2 .or. abs(kcu(L)) == 4) then ! 2D links and 1D2D lateral links
           if (kfs(K1) == 0) then ! kfs temporarily used as cutcell flag, set in cutcelwu
              wcx1(L) = wcx1(L) * bai(k1)
              wcy1(L) = wcy1(L) * bai(k1)

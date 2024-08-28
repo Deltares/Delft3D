@@ -238,7 +238,7 @@ c set criterium
 c
 c calculate critical slope
         hulp  =  12 * rcrit / ks
-        fcroot= 1. / (2 * ALOG10(hulp) )
+        fcroot= 1. / (2 * LOG10(hulp) )
         rnc    = rcrit**(1./6.) * fcroot / 8.86
         scrit  = (rnc * q / (acrit * rcrit**(2./3)))**2
 
@@ -261,8 +261,15 @@ c determine the flowtype
         endif
 c      endif
 
-      goto (1,2,3,4) kflow
-
+      if (kflow == 1 ) then
+         goto 1
+      else if (kflow == 2 ) then
+         goto 2
+      else if (kflow == 3 ) then
+         goto 3
+      else if (kflow == 4 ) then
+         goto 4
+      end if
 c
 c flowtype 1: critical depth at inlet
  1    r1 = beta * (hup - bot)

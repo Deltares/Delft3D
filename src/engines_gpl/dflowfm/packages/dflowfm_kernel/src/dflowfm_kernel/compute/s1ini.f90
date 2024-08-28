@@ -31,6 +31,7 @@
 !
 
  subroutine s1ini() ! links in continuity eq.
+    use precision_basics, only: dp
     use m_flow
     use m_flowgeom
     use m_flowtimes
@@ -40,15 +41,15 @@
     use m_hydrology_data, only: jadhyd, ActEvap, interceptionmodel, InterceptThickness, InterceptHs, DFM_HYD_INTERCEPT_LAYER
     use m_mass_balance_areas
     use m_partitioninfo
-    use m_lateral, only: numlatsg, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
-                         apply_transport_is_used
+    use m_laterals, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
+                         apply_transport
     implicit none
 
-    integer :: L, k1, k2, k, n, LL, kt, idim, imba
+    integer :: L, k1, k2, k, LL, kt, idim, imba, i_lat, i_node
     double precision :: aufu, auru, tetau
     double precision :: ds, hsk, Qeva_ow, Qeva_icept, Qrain, Qicept, Qextk, aloc
     logical :: isGhost
-    integer :: nlayer, num_layers
+    integer :: i_layer
 
     bb = 0d0
     ccr = 0d0
@@ -172,23 +173,22 @@
        end if
 
        if (numlatsg > 0) then
-          num_layers = max(1, kmx)
-
-          ! if apply_transport_is_used: qqlat has been computed in flow_run_sometimesteps already
-          if (.not. apply_transport_is_used) then
-             ! First accumulate all lateral discharges per grid cell
-             QQLat(1:num_layers, 1:ndx) = 0d0
-             do n = 1, numlatsg
-                do k1 = n1latsg(n), n2latsg(n)
-                   k = nnlat(k1)
-                   if (k > 0) then
-                      do nlayer = 1, num_layers
-                         QQLat(nlayer, k) = QQLat(nlayer, k) + QPlat(nlayer, n) * ba(k) / baLat(n)
+          ! First accumulate all lateral discharges per grid cell
+          ! qqlat may have been computed in flow_run_sometimesteps already but only for
+          ! laterals with apply_transport(i_lat) > 0
+          do i_lat = 1, numlatsg
+             if (apply_transport(i_lat) == 0) then
+                qqlat(1:num_layers, i_lat, 1:ndx) = 0._dp
+                do k1 = n1latsg(i_lat), n2latsg(i_lat)
+                   i_node = nnlat(k1)
+                   if (i_node > 0) then
+                      do i_layer = 1, num_layers
+                         qqlat(i_layer, i_lat, i_node) = qqlat(i_layer, i_lat, i_node) + qplat(i_layer, i_lat) * ba(i_node) / balat(i_lat)
                       end do
                    end if
                 end do
-             end do
-          end if
+             end if
+          end do
           ! Now, handle the total lateral discharge for each grid cell
           do k = 1, ndxi
              if (k <= ndx2d) then
@@ -197,22 +197,23 @@
                 idim = 1
              end if
 
-             !DIR$ FORCEINLINE
              isGhost = is_ghost_node(k)
-             do nlayer = 1, num_layers
-                if (QQLat(nlayer, k) > 0) then
-                   if (.not. isGhost) then ! Do not count ghosts in mass balances
-                      qinlat(idim) = qinlat(idim) + QQLat(nlayer, k) ! Qlat can be pos or neg
+             do i_lat = 1, numlatsg
+                do i_layer = 1, num_layers
+                   if (qqlat(i_layer, i_lat, k) > 0) then
+                      if (.not. isGhost) then ! Do not count ghosts in mass balances
+                         qinlat(idim) = qinlat(idim) + qqLat(i_layer, i_lat, k) ! qqlat can be pos or neg
+                      end if
+                   else if (hs(k) > epshu) then
+                      qqlat(i_layer, i_lat, k) = -min(0.5d0 * vol1(k) / dts, -qqlat(i_layer, i_lat, k))
+                      if (.not. isGhost) then
+                         qoutlat(idim) = qoutlat(idim) - qqlat(i_layer, i_lat, k)
+                      end if
+                   else
+                      qqlat(i_layer, i_lat, k) = 0d0
                    end if
-                else if (hs(k) > epshu) then
-                   QQlat(nlayer, k) = -min(0.5d0 * vol1(k) / dts, -QQlat(nlayer, k))
-                   if (.not. isGhost) then
-                      qoutlat(idim) = qoutlat(idim) - QQlat(nlayer, k)
-                   end if
-                else
-                   QQlat(nlayer, k) = 0d0
-                end if
-                qin(k) = qin(k) + QQlat(nlayer, k)
+                   qin(k) = qin(k) + qqlat(i_layer, i_lat, k)
+                end do
              end do
           end do
        end if
@@ -294,7 +295,6 @@
           else
              dd(k) = 0
           end if
-          !DIR$ FORCEINLINE
           isGhost = is_ghost_node(k)
           if (.not. isGhost) then ! Do not count ghosts in mass balances
              qincel = qincel + qin(k)

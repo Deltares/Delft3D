@@ -107,9 +107,9 @@
       Logical      VullingsgraadMaximum100Percent
       Logical      FixARS13964OW, ReduceRROpenWaterInfiltrationAtNegativeVolume
 
-      CHARACTER*100 STRING, TempString
-      CHARACTER*80  RestartPrefix
-      CHARACTER*4   RRVersion
+      CHARACTER(len=100) STRING, TempString
+      CHARACTER(len=80)  RestartPrefix
+      CHARACTER(len=4)   RRVersion
       Logical       SmallOutput
 ! Nov 2001 NewFormatCropFactorfile
       Logical       IniNewFormatCropFactors
@@ -709,8 +709,8 @@
             READ(STRING(POS1+1:),*) UserCoefKSat
          ELSEIF (STRING(1:POS1-1) .EQ. 'USERFACTVRZ')  THEN
             READ(STRING(POS1+1:),*) UserFactVRZ
-            UserFactVRZ = min (UserFactVRZ, 1.0)
-            UserFactVRZ = max (UserFactVRZ, 0.0)
+            UserFactVRZ = min (UserFactVRZ, 1.0d0)
+            UserFactVRZ = max (UserFactVRZ, 0.0d0)
          ELSEIF (STRING(1:POS1-1) .EQ. 'CAPSIMPLUSFLAG')  THEN
             READ(STRING(POS1+1:),*) CapsimPlusFlag    ! 1 = initial, 2 = initial and final
          ELSEIF (STRING(1:POS1-1) .EQ. 'EVAPORATIONYEAR')  THEN
@@ -934,8 +934,8 @@
       Integer      NDim
       Logical      OutputDesird(Ndim)
 
-      CHARACTER*100 STRING
-      CHARACTER*4   RRVersion
+      CHARACTER(len=100) STRING
+      CHARACTER(len=4)   RRVersion
       Logical       SmallOutput
 
       IF (STRING(1:POS1-1) .EQ. 'OUTPUTRRPAVED') THEN

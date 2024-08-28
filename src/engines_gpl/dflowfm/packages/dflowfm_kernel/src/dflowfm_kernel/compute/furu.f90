@@ -214,7 +214,7 @@
                 k1 = kpump(1, n)
                 k2 = kpump(2, n)
                 L1 = kpump(3, n)
-                L = iabs(L1)
+                L = abs(L1)
                 hu(L) = 0d0; au(L) = 0d0
                 fu(L) = 0d0; ru(L) = 0d0
                 if (qp * L1 >= 0) then
@@ -243,7 +243,7 @@
              if (ap > 0d0) then
                 do n = L1pumpsg(np), L2pumpsg(np)
                    L1 = kpump(3, n)
-                   L = iabs(L1)
+                   L = abs(L1)
                    if (au(L) > 0d0) then
                       if (L1 > 0) then
                          ru(L) = qp / ap

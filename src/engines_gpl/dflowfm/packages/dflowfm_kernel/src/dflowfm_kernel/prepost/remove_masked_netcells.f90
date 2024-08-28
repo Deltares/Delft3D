@@ -136,13 +136,13 @@
 !           check if right cell still exists
             icR = lne(2, L)
             isR = sign(1, icR)
-            if (numnew(iabs(icR)) == 0) then
+            if (numnew(abs(icR)) == 0) then
 !              remove right cell
                lnn(L) = lnn(L) - 1
                lne(2, L) = 0
             else
 !              use new right cell number
-               lne(2, L) = isR * numnew(iabs(icR))
+               lne(2, L) = isR * numnew(abs(icR))
             end if
          end if
 
@@ -150,7 +150,7 @@
          icL = lne(1, L)
          isL = sign(1, icL)
          if (icL /= 0) then
-            if (numnew(iabs(icL)) == 0) then
+            if (numnew(abs(icL)) == 0) then
 !              remove left cell
                lnn(L) = lnn(L) - 1
                if (lnn(L) == 1) then
@@ -162,7 +162,7 @@
                end if
             else
 !              use new left cell number
-               lne(1, L) = isL * numnew(iabs(icL))
+               lne(1, L) = isL * numnew(abs(icL))
             end if
          end if
       end do

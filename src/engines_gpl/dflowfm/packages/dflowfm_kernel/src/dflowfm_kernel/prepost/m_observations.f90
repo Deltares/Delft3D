@@ -339,7 +339,7 @@ contains
       use m_flowparameters
       use m_flow, only: iturbulencemodel, idensform, kmx, density_is_pressure_dependent
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
-      use m_fm_wq_processes, only: noout, numwqbots, wqbot3D_output
+      use m_fm_wq_processes, only: noout, numwqbots
       use m_sediment, only: stm_included, stmpar
       implicit none
 
@@ -599,7 +599,7 @@ contains
          i = i + 1; IVAL_HWQ1 = i
          i = i + noout - 1; IVAL_HWQN = i !< All waq history outputs
       end if
-      if (numwqbots > 0 .and. wqbot3D_output == 1) then
+      if (numwqbots > 0 .and. jahiswqbot3d == 1) then
          i = i + 1; IVAL_WQB3D1 = i
          i = i + numwqbots - 1; IVAL_WQB3DN = i !< All 3D waqbot history outputs
       end if
@@ -1182,11 +1182,11 @@ contains
 
       if (jsferic /= 1) then
          do i = 1, numobs
-            write (mobs, '(f12.3,f12.3,a,a,a)'), xobs(i), yobs(i), ' ''', trim(namobs(i)), ''''
+            write (mobs, '(f12.3,f12.3,a,a,a)') xobs(i), yobs(i), ' ''', trim(namobs(i)), ''''
          end do
       else
          do i = 1, numobs
-            write (mobs, '(f12.6,f12.6,a,a,a)'), xobs(i), yobs(i), ' ''', trim(namobs(i)), ''''
+            write (mobs, '(f12.6,f12.6,a,a,a)') xobs(i), yobs(i), ' ''', trim(namobs(i)), ''''
          end do
       end if
       call doclose(mobs)

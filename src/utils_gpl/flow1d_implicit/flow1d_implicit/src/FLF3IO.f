@@ -79,7 +79,7 @@ c---  set minimal value on r1:  ----------------------------------------
           a1 = w * h1le
       endif
       hulp   = 12 * r1 / ks1
-      f1root = 1. / (2 * alog10(hulp))
+      f1root = 1. / (2 * log10(hulp))
       n1     = r1**(1./6) * f1root / 8.86
       k1     = a1 * r1**(2./3) / n1
 
@@ -93,7 +93,7 @@ c---  set minimal value on r2:  ----------------------------------------
           a2 = w * h2le
       endif
       hulp   = 12 * r2 / ks2
-      f2root = 1. / (2 * alog10(hulp))
+      f2root = 1. / (2 * log10(hulp))
       n2     = r2**(1./6) * f2root / 8.86
       k2     = a2 * r2**(2./3) / n2
 

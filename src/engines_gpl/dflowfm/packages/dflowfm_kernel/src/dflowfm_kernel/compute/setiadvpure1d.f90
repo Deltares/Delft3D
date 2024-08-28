@@ -61,7 +61,7 @@ subroutine setiadvpure1D(jaPure1D)
    do L = 1, lnx
       n1 = ln(1, L)
       n2 = ln(2, L)
-      if (iabs(kcu(L)) == 1) then
+      if (abs(kcu(L)) == 1) then
          kc(n1) = kc(n1) + 1
          kc(n2) = kc(n2) + 1
       end if
@@ -77,7 +77,7 @@ subroutine setiadvpure1D(jaPure1D)
 
    do L = lnxi + 1, lnx
       n2 = ln(2, L)
-      if (iabs(kcu(L)) == 1 .and. kc(n2) == 2) then
+      if (abs(kcu(L)) == 1 .and. kc(n2) == 2) then
          iadv(L) = iadv_Pure1D
       end if
    end do

@@ -30,7 +30,7 @@
       subroutine clrcar (ndim, indarr, array )
       integer ndim
       integer indarr(ndim)
-      character*(*) array(ndim)
+      character(len=*) array(ndim)
 
 !          Remove all elements for which the index = 0
 !          Without actually updating the index array

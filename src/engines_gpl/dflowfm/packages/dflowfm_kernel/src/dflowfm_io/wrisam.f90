@@ -34,15 +34,12 @@
          use M_SAMPLES
          use M_ARCINFO
          use M_MISSING, only: DMISS
+         use m_pharosflow
          implicit none
          integer :: msam, KMOD
 
          double precision :: af
          integer :: i
-         integer :: jflow
-         common / PHAROSFLOW / JFLOW
-         common / PHAROSLINE / REC1
-         character REC1 * 132
 
          call READYY('Writing Samples File', 0d0)
 

@@ -31,13 +31,11 @@
 !
 
   subroutine VIEMATn(the, phi)
+     use m_viewmat
+     use m_perspx
      implicit none
      double precision :: cp
      double precision :: ct
-     double precision :: deltx
-     double precision :: delty
-     double precision :: deltz
-     double precision :: dscr
      double precision :: r
      double precision :: sp
      double precision :: st
@@ -45,13 +43,7 @@
      double precision :: t2
      double precision :: t3
      double precision :: t4
-     double precision :: vs
-     double precision :: wpqr
-     double precision :: x0s
-     double precision :: y0s
      double precision :: z
-     double precision :: zfac
-     double precision :: zupw
      double precision :: the, phi
 !
 ! Maak viewing matrix Vs
@@ -62,8 +54,6 @@
 ! Dscr                                 : oog-scherm in wereldcoor
 ! Vs                                   : Viewing matrix
 !
-     common / viewmat / vs(4, 4), x0s, y0s
-     common / PERSPX / WPQR, DELTX, DELTY, DELTZ, ZFAC, DSCR, ZUPW
      dimension T1(4, 4), T2(4, 4), T3(4, 4), T4(4, 4), R(4, 4), Z(4, 4)
 
      T1 = 0

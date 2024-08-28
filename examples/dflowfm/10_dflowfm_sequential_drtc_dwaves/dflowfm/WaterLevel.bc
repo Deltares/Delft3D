@@ -1,0 +1,33 @@
+[forcing]
+Name                            = Boundary01_0001
+Function                        = timeseries
+Time-interpolation              = linear
+Quantity                        = time
+Unit                            = seconds since 2015-05-27 00:00:00
+Quantity                        = waterlevelbnd
+Unit                            = m
+0      0
+3600   5
+7200   10
+10800  10
+14400  5
+18000  0
+21600  0
+
+[forcing]
+Name                            = Boundary01_0001
+Function                        = timeseries
+FunctionIndex                   = 2
+Time-interpolation              = linear
+Quantity                        = time
+Unit                            = seconds since 2015-05-27 00:00:00
+Quantity                        = waterlevelbnd
+Unit                            = m
+0      0
+3600   5
+7200   10
+10800  10
+14400  5
+18000  0
+21600  0
+

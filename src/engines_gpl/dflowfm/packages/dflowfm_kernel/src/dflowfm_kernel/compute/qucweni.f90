@@ -54,7 +54,7 @@
     k12 = ln(n12, L)
     do LL = 1, nd(k12)%lnx ! loop over all attached links
        LLL = nd(k12)%ln(LL)
-       LLLL = iabs(LLL)
+       LLLL = abs(LLL)
 
        if (qa(LLLL) == 0d0 .or. L == LLLL) then ! skip, this is link L itself
 

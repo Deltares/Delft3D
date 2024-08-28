@@ -313,7 +313,7 @@ c
 
       double precision wght, z0br, q
 
-      character*40  branam
+      character(len=40) branam
 c
 c     Include sobek error code file
 c
@@ -331,9 +331,9 @@ c
 c
 c     Determine lowest bottom of branch
 c
-      z0br = real( hlev(i1,1) )
+      z0br = hlev(i1,1)
       do 100 igp = i1, i2
-         z0br = min ( z0br, real( hlev(igp,1) ) )
+         z0br = min ( z0br, hlev(igp,1) )
  100  continue
 c
 c     Calculate depth of slot and determine w*

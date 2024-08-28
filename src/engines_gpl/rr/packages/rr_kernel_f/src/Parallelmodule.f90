@@ -55,14 +55,14 @@ module ParallelData
 ! Okt 1999      Addition for starting daily values not at 0 o'clock, but at x o'clock
   Real          StartSecDailyRainfall
 !huidige datum/tijd
-  CHARACTER*10     CDATE, CTIME, CZONE
+  CHARACTER(len=10) CDATE, CTIME, CZONE
   INTEGER          time_fields(8)
   Double Precision JulianStartSimulation, JulianNowSimulation, JulianStartEventSimulation
   Double Precision JulianStart, JulianNow,  &
                    JulianStartOutputDate, JulianEndOutputDate
   Real             EstimatedRemainingDuration
   Integer          IDateAct, ITimeAct, RemHours, RemMinutes, RemSeconds, TotalNrTimesteps, AlreadySimulated
-  Character*9      RemTime
+  Character(len=9) RemTime
   Logical          EstimateRemainingDuration, TestSaveState
   Integer          HisConvergence, RestoreTimeStep, RestoreInTimestep
 

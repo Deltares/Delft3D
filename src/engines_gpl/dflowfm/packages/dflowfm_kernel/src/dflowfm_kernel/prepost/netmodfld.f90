@@ -32,7 +32,7 @@
 
 !> network field move
 !!   Is is assumed that there is a backup copy of the grid.
-subroutine netmodfld(xp, yp, zp, kp)
+subroutine netmodfld(xp, yp, kp)
    use m_netw
    use m_grid
    use m_alloc
@@ -43,7 +43,7 @@ subroutine netmodfld(xp, yp, zp, kp)
 
    implicit none
 
-   double precision :: xp, yp, zp !< coordinates that determine the influenced region
+   double precision :: xp, yp !< coordinates that determine the influenced region
 
    integer :: kp !< center point index
 

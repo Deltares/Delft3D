@@ -109,8 +109,8 @@ c
 c           Flow in main channel and in sub section 1
 c
             if ( r(i)<0d0 .or. rs(i,1)<0d0 ) then
-	         r (i  ) = max( 0d0, r (i  ))
-	         rs(i,1) = max( 0d0, rs(i,1))
+	         r (i  ) = max( 0.0, r (i  ))
+	         rs(i,1) = max( 0.0, rs(i,1))
 	      end if
             acrtot = af(i) * c(i) * sqrt(r(i))
             q2s(i,1) = afs(i,1) * cs(i,1) * sqrt(rs(i,1)) * q2(i)/acrtot
@@ -120,10 +120,10 @@ c
 c
 c           Flow in main channel and both sub sections
 c
-            if ( r(i)<0d0 .or. rs(i,1)<0d0 .or. rs(i,2)<0 ) then
-	         r (i  ) = max( 0d0, r (i  ))
-	         rs(i,1) = max( 0d0, rs(i,1))
-	         rs(i,2) = max( 0d0, rs(i,2))
+            if ( r(i)<0.0 .or. rs(i,1)<0.0 .or. rs(i,2)<0.0 ) then
+	         r (i  ) = max( 0.0, r (i  ))
+	         rs(i,1) = max( 0.0, rs(i,1))
+	         rs(i,2) = max( 0.0, rs(i,2))
 	      end if
             acrtot = af(i) * c(i) * sqrt(r(i))
             q2s(i,1) = afs(i,1) * cs(i,1) * sqrt(rs(i,1)) * q2(i)/acrtot

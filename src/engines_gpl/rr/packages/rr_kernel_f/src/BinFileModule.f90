@@ -104,8 +104,6 @@ contains
     Integer iDebug, iOut1, infile1, infile2, infile3, infile4, infile5, infile6
     Integer SetMaxTabNr, SetMaxDataNr
     Character(Len=FilCharIdLength)            :: boundCondFile
-    logical                                   :: bnd_Bc_File_present
-
 
     Character(1000) :: inifile_01, inifile_02, tmpfile
 !    Integer i, hashcode
@@ -566,7 +564,7 @@ contains
           IF (IKIND .EQ. 1) THEN
              OWMNMA(IOW) = MIN (OWMNMA(IOW), LVLVH(INR))
           ELSEIF (IKIND .EQ. 2) THEN
-             OWMNMA(IOW) = MIN (OWMNMA(IOW), LVLOHMx(INR))
+             OWMNMA(IOW) = MIN (OWMNMA(IOW), real(LVLOHMx(INR)))
           ENDIF
        endif
     ENDDO

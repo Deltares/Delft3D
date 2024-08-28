@@ -36,7 +36,7 @@ subroutine setequilibriumsedimentbnds(nbnd, n4, kbnd, kban, i01)
    use m_sediment
    implicit none
 
-   integer :: nbnd, kban(2, nbnd), kbnd(n4, nbnd), i01, n4
+   integer :: nbnd, kban(2, nbnd), n4, kbnd(n4, nbnd), i01
 
    integer :: k, kb, ki, L, LL, Lb, Lt, j
    double precision :: hsk

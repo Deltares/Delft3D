@@ -70,7 +70,7 @@ subroutine unc_write_his(tim) ! wrihis
    use m_structures
    use m_GlobalParameters
    use m_longculverts
-   use m_lateral, only: numlatsg, nNodesLat, lat_ids, geomXLat, geomYLat, nlatnd, nodeCountLat
+   use m_laterals, only: numlatsg, nNodesLat, lat_ids, geomXLat, geomYLat, nlatnd, nodeCountLat
    use odugrid
    use m_statistical_output_types, only: SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
    use fm_statistical_output
@@ -186,7 +186,7 @@ subroutine unc_write_his(tim) ! wrihis
    end if
 
    ! When no crs/obs present, return immediately.
-   if (model_has_obs_stations() == .false. .and. ncrs <= 0 .and. jahisbal <= 0 .and. jahiscgen <= 0 .and. num_rugs <= 0) then
+   if (.not. model_has_obs_stations() .and. ncrs <= 0 .and. jahisbal <= 0 .and. jahiscgen <= 0 .and. num_rugs <= 0) then
       if (ihisfile == 0) then
          call mess(LEVEL_WARN, 'No observations nor cross sections defined. Will not produce a history file.')
       end if
@@ -906,7 +906,7 @@ subroutine unc_write_his(tim) ! wrihis
                )
             call check_netcdf_error(nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start=(/1, it_his/)))
          case (UNC_LOC_STATION)
-            call write_station_netcdf_variable(ihisfile, out_variable_set_his%statout(ivar))
+            call write_station_netcdf_variable(out_variable_set_his%statout(ivar))
          case (UNC_LOC_DRED_LINK)
             call check_netcdf_error(nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start=(/1, 1, it_his/), count=(/dadpar%nalink, stmpar%lsedtot, 1/)))
          case (UNC_LOC_GLOBAL)
@@ -988,14 +988,14 @@ contains
 
       call get_prefix_and_name_from_struc_type_id(struc_type_id, prefix, name)
 
-      call check_netcdf_error(nf90_def_dim(ihisfile, trim(prefix), count, id_strdim))
-      call check_netcdf_error(nf90_def_var(ihisfile, trim(prefix)//'_name', nf90_char, (/id_strlendim, id_strdim/), id_strid))
-      call check_netcdf_error(nf90_put_att(ihisfile, id_strid, 'cf_role', 'timeseries_id'))
-      call check_netcdf_error(nf90_put_att(ihisfile, id_strid, 'long_name', 'name of '//trim(name)))
+      call check_netcdf_error(nf90_def_dim(ncid, trim(prefix), count, id_strdim))
+      call check_netcdf_error(nf90_def_var(ncid, trim(prefix)//'_name', nf90_char, (/id_strlendim, id_strdim/), id_strid))
+      call check_netcdf_error(nf90_put_att(ncid, id_strid, 'cf_role', 'timeseries_id'))
+      call check_netcdf_error(nf90_put_att(ncid, id_strid, 'long_name', 'name of '//trim(name)))
 
       if (.not. strcmpi(geom_type, 'none') .and. len_trim(geom_type) > 0) then
          ! Define geometry related variables
-         ierr = sgeom_def_geometry_variables(ihisfile, trim(prefix)//'_geom', trim(name), geom_type, ngeom_node, id_strdim, &
+         ierr = sgeom_def_geometry_variables(ncid, trim(prefix)//'_geom', trim(name), geom_type, ngeom_node, id_strdim, &
                                              id_geom_node_count, id_geom_coordx, id_geom_coordy, add_latlon, id_geom_coordlon, id_geom_coordlat)
       end if
 
@@ -1004,12 +1004,12 @@ contains
          if (.not. (present(id_poly_xmid) .and. present(id_poly_ymid))) then
             call mess(LEVEL_WARN, 'unc_def_his_structure_static_vars should return id_poly_xmid and id_poly_ymid for polyline structures')
          end if
-         call check_netcdf_error(nf90_def_var(ihisfile, trim(prefix)//'_xmid', nc_precision, [id_strdim], id_poly_xmid))
-         call check_netcdf_error(nf90_def_var(ihisfile, trim(prefix)//'_ymid', nc_precision, [id_strdim], id_poly_ymid))
+         call check_netcdf_error(nf90_def_var(ncid, trim(prefix)//'_xmid', nc_precision, [id_strdim], id_poly_xmid))
+         call check_netcdf_error(nf90_def_var(ncid, trim(prefix)//'_ymid', nc_precision, [id_strdim], id_poly_ymid))
          ! jsferic: xy pair is in : 0=cart, 1=sferic coordinates
-         ierr = unc_addcoordatts(ihisfile, id_poly_xmid, id_poly_ymid, jsferic)
-         call check_netcdf_error(nf90_put_att(ihisfile, id_poly_xmid, 'long_name', 'x-coordinate of representative mid point of '//trim(prefix)//' location (snapped polyline)'))
-         call check_netcdf_error(nf90_put_att(ihisfile, id_poly_ymid, 'long_name', 'y-coordinate of representative mid point of '//trim(prefix)//' location (snapped polyline)'))
+         ierr = unc_addcoordatts(ncid, id_poly_xmid, id_poly_ymid, jsferic)
+         call check_netcdf_error(nf90_put_att(ncid, id_poly_xmid, 'long_name', 'x-coordinate of representative mid point of '//trim(prefix)//' location (snapped polyline)'))
+         call check_netcdf_error(nf90_put_att(ncid, id_poly_ymid, 'long_name', 'y-coordinate of representative mid point of '//trim(prefix)//' location (snapped polyline)'))
       end if
 
    end function unc_def_his_structure_static_vars
@@ -1648,11 +1648,10 @@ contains
       call check_netcdf_error(nf90_inquire_dimension(ihisfile, id, len=get_dimid_len))
    end function get_dimid_len
 
-   subroutine write_station_netcdf_variable(i_his_file, output_variable_item)
+   subroutine write_station_netcdf_variable(output_variable_item)
       use m_reshape, only: reshape_implicit
       use MessageHandling, only: err
       use m_statistical_output_types, only: t_output_variable_item
-      integer, intent(in) :: i_his_file
       type(t_output_variable_item), intent(in) :: output_variable_item
 
       type(t_output_quantity_config), pointer :: local_config

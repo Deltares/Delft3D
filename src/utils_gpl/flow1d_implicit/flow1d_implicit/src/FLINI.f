@@ -400,7 +400,7 @@ c
       real     buflag(lagstm,nlags)
       real     resbuf(dmbuf1,6)   ,strbuf(dmbuf1,2,*)     ,
      &         solbuf(dmbuf2,7,ngrid)
-      character*40 gridnm(*) , strunm(*), qlatnm(*)
+      character(len=40) gridnm(*) , strunm(*), qlatnm(*)
 
       double precision dtf, hlev(ngrid,maxlev)
       double precision hp(ngrid,3), qp(ngrid,3)
@@ -416,8 +416,8 @@ c
       parameter (d90=3)
       real    havg,  th2 ,omboun ,xc, cdum
       double precision   t0
-      character*40     branam
-      character*11    xtxt
+      character(len=40)  branam
+      character(len=11)  xtxt
 c
 c     Include sobek constants
 c

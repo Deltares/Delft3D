@@ -1,7 +1,7 @@
 !
 !     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 !     *                                                               *
-!     *                  copyright (c) 1998-2024 by UCAR                   *
+!     *                  copyright (c) 1998-2024 by UCAR              *
 !     *                                                               *
 !     *       University Corporation for Atmospheric Research         *
 !     *                                                               *
@@ -37,73 +37,84 @@
 !     called by some or all of main programs
 !
 subroutine dnlfk(m, n, cp)
+   use precision_basics, only: dp
+
+   implicit none
 !
 !     cp requires n/2+1 double precision locations
 !
    integer, intent(in) :: m, n
-   double precision, intent(out) :: cp(1)
-   double precision :: fnum, fden, fnmh, a1, b1, c1, cp2, fnnp1, fnmsq, fk,&
-   &t1, t2, pm1, sc10, sc20, sc40
+   real(dp), intent(out) :: cp(1)
+
+   real(dp) :: fnum, fden, fnmh, a1, b1, c1, cp2, fnnp1, fnmsq, fk, t1, t2, pm1, sc10, sc20, sc40
    parameter(sc10=1024.d0)
    parameter(sc20=sc10 * sc10)
    parameter(sc40=sc20 * sc20)
-   integer :: ma, nmms2, i, l
+   integer :: ma, nmms2, i, l, nex
 !
    cp(1) = 0.
-   ma = iabs(m)
+   ma = abs(m)
    if (ma > n) return
-   if (n - 1) 2, 3, 5
-2  cp(1) = dsqrt(2.d0)
-   return
-3  if (ma /= 0) go to 4
-   cp(1) = dsqrt(1.5d0)
-   return
-4  cp(1) = dsqrt(.75d0)
-   if (m == -1) cp(1) = -cp(1)
-   return
-5  if (mod(n + ma, 2) /= 0) go to 10
-   nmms2 = (n - ma) / 2
-   fnum = n + ma + 1
-   fnmh = n - ma + 1
-   pm1 = 1.d0
-   go to 15
-10 nmms2 = (n - ma - 1) / 2
-   fnum = n + ma + 2
-   fnmh = n - ma + 2
-   pm1 = -1.d0
-!      t1 = 1.
-!      t1 = 2.d0**(n-1)
-!      t1 = 1.d0/t1
-15 t1 = 1.d0 / sc20
+   if (n < 1) then
+      cp(1) = sqrt(2.d0)
+      return
+   else if (n == 1) then
+      if (ma == 0) then
+         cp(1) = sqrt(1.5d0)
+         return
+      else
+         cp(1) = sqrt(.75d0)
+         if (m == -1) cp(1) = -cp(1)
+         return
+      end if
+   else
+      if (mod(n + ma, 2) == 0) then
+         nmms2 = (n - ma) / 2
+         fnum = n + ma + 1
+         fnmh = n - ma + 1
+         pm1 = 1.d0
+      else
+         nmms2 = (n - ma - 1) / 2
+         fnum = n + ma + 2
+         fnmh = n - ma + 2
+         pm1 = -1.d0
+      end if
+   end if
+
+   t1 = 1.d0 / sc20
    nex = 20
    fden = 2.d0
-   if (nmms2 < 1) go to 20
-   do i = 1, nmms2
-      t1 = fnum * t1 / fden
-      if (t1 > sc20) then
-         t1 = t1 / sc40
-         nex = nex + 40
-      end if
-      fnum = fnum + 2.
-      fden = fden + 2.
-   end do
-20 t1 = t1 / 2.d0**(n - 1 - nex)
+   if (nmms2 >= 1) then
+      do i = 1, nmms2
+         t1 = fnum * t1 / fden
+         if (t1 > sc20) then
+            t1 = t1 / sc40
+            nex = nex + 40
+         end if
+         fnum = fnum + 2.
+         fden = fden + 2.
+      end do
+   end if
+
+   t1 = t1 / 2.d0**(n - 1 - nex)
    if (mod(ma / 2, 2) /= 0) t1 = -t1
    t2 = 1.
-   if (ma == 0) go to 26
-   do i = 1, ma
-      t2 = fnmh * t2 / (fnmh + pm1)
-      fnmh = fnmh + 2.
-   end do
-26 cp2 = t1 * dsqrt((n + .5d0) * t2)
+   if (ma /= 0) then
+      do i = 1, ma
+         t2 = fnmh * t2 / (fnmh + pm1)
+         fnmh = fnmh + 2.
+      end do
+   end if
+   cp2 = t1 * sqrt((n + 0.5d0) * t2)
    fnnp1 = n * (n + 1)
    fnmsq = fnnp1 - 2.d0 * ma * ma
    l = (n + 1) / 2
    if (mod(n, 2) == 0 .and. mod(ma, 2) == 0) l = l + 1
    cp(l) = cp2
-   if (m >= 0) go to 29
-   if (mod(ma, 2) /= 0) cp(l) = -cp(l)
-29 if (l <= 1) return
+   if (m < 0) then
+      if (mod(ma, 2) /= 0) cp(l) = -cp(l)
+   end if
+   if (l <= 1) return
    fk = n
    a1 = (fk - 2.) * (fk - 1.) - fnnp1
    b1 = 2.*(fk * fk - fnmsq)
@@ -116,162 +127,202 @@ subroutine dnlfk(m, n, cp)
    c1 = (fk + 1.) * (fk + 2.) - fnnp1
    cp(l - 1) = -(b1 * cp(l) + c1 * cp(l + 1)) / a1
    go to 30
-end
+end subroutine dnlfk
+
 subroutine dnlft(m, n, theta, cp, pb)
-   double precision cp(*), pb, theta, cdt, sdt, cth, sth, chh
-   cdt = dcos(theta + theta)
-   sdt = dsin(theta + theta)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer :: m, n
+   real(dp) :: theta, cp(:), pb
+
+   real(dp) :: cdt, sdt, cth, sth, chh
+   integer :: k, kdo, nmod, mmod
+
+   cdt = cos(theta + theta)
+   sdt = sin(theta + theta)
    nmod = mod(n, 2)
    mmod = mod(m, 2)
-   if (nmod) 1, 1, 2
-1  if (mmod) 3, 3, 4
+   if (nmod <= 0) then
+      if (mmod <= 0) then
 !
 !     n even, m even
 !
-3  kdo = n / 2
-   pb = .5 * cp(1)
-   if (n == 0) return
-   cth = cdt
-   sth = sdt
-   do k = 1, kdo
-!     pb = pb+cp(k+1)*dcos(2*k*theta)
-      pb = pb + cp(k + 1) * cth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
+         kdo = n / 2
+         pb = 0.5 * cp(1)
+         if (n == 0) return
+         cth = cdt
+         sth = sdt
+         do k = 1, kdo
+!     pb = pb+cp(k+1)*cos(2*k*theta)
+            pb = pb + cp(k + 1) * cth
+            chh = cdt * cth - sdt * sth
+            sth = sdt * cth + cdt * sth
+            cth = chh
+         end do
+         return
+      else
 !
 !     n even, m odd
 !
-4  kdo = n / 2
-   pb = 0.
-   cth = cdt
-   sth = sdt
-   do k = 1, kdo
-!     pb = pb+cp(k)*dsin(2*k*theta)
-      pb = pb + cp(k) * sth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
-2  if (mmod) 13, 13, 14
+         kdo = n / 2
+         pb = 0.
+         cth = cdt
+         sth = sdt
+         do k = 1, kdo
+!     pb = pb+cp(k)*sin(2*k*theta)
+            pb = pb + cp(k) * sth
+            chh = cdt * cth - sdt * sth
+            sth = sdt * cth + cdt * sth
+            cth = chh
+         end do
+         return
+      end if
+   else
+      if (mmod <= 0) then
 !
 !     n odd, m even
 !
-13 kdo = (n + 1) / 2
-   pb = 0.
-   cth = dcos(theta)
-   sth = dsin(theta)
-   do k = 1, kdo
-!     pb = pb+cp(k)*dcos((2*k-1)*theta)
-      pb = pb + cp(k) * cth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
+         kdo = (n + 1) / 2
+         pb = 0.
+         cth = cos(theta)
+         sth = sin(theta)
+         do k = 1, kdo
+!     pb = pb+cp(k)*cos((2*k-1)*theta)
+            pb = pb + cp(k) * cth
+            chh = cdt * cth - sdt * sth
+            sth = sdt * cth + cdt * sth
+            cth = chh
+         end do
+         return
+      else
 !
 !     n odd, m odd
 !
-14 kdo = (n + 1) / 2
-   pb = 0.
-   cth = dcos(theta)
-   sth = dsin(theta)
-   do k = 1, kdo
-!     pb = pb+cp(k)*dsin((2*k-1)*theta)
-      pb = pb + cp(k) * sth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
-end
+         kdo = (n + 1) / 2
+         pb = 0.
+         cth = cos(theta)
+         sth = sin(theta)
+         do k = 1, kdo
+!     pb = pb+cp(k)*sin((2*k-1)*theta)
+            pb = pb + cp(k) * sth
+            chh = cdt * cth - sdt * sth
+            sth = sdt * cth + cdt * sth
+            cth = chh
+         end do
+         return
+      end if
+   end if
+end subroutine dnlft
+
 subroutine dnlftd(m, n, theta, cp, pb)
+   use precision_basics, only: dp
+
+   implicit none
+
 !
 !     computes the derivative of pmn(theta) with respect to theta
 !
-   dimension cp(1)
-   double precision cp, pb, theta, cdt, sdt, cth, sth, chh
-   cdt = dcos(theta + theta)
-   sdt = dsin(theta + theta)
+   integer, intent(in) :: m, n
+   real(dp), intent(inout) :: cp(1), pb, theta
+
+   real(dp) :: cdt, sdt, cth, sth, chh
+   integer :: k, kdo, nmod, mmod
+
+   cdt = cos(theta + theta)
+   sdt = sin(theta + theta)
    nmod = mod(n, 2)
    mmod = mod(abs(m), 2)
-   if (nmod) 1, 1, 2
-1  if (mmod) 3, 3, 4
+   if (nmod <= 0) then
+      if (mmod <= 0) then
 !
 !     n even, m even
 !
-3  kdo = n / 2
-   pb = 0.d0
-   if (n == 0) return
-   cth = cdt
-   sth = sdt
-   do k = 1, kdo
-!     pb = pb+cp(k+1)*dcos(2*k*theta)
-      pb = pb - 2.d0 * k * cp(k + 1) * sth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
+         kdo = n / 2
+         pb = 0.d0
+         if (n == 0) return
+         cth = cdt
+         sth = sdt
+         do k = 1, kdo
+!     pb = pb+cp(k+1)*cos(2*k*theta)
+            pb = pb - 2.d0 * k * cp(k + 1) * sth
+            chh = cdt * cth - sdt * sth
+            sth = sdt * cth + cdt * sth
+            cth = chh
+         end do
+         return
+      else
 !
 !     n even, m odd
 !
-4  kdo = n / 2
-   pb = 0.
-   cth = cdt
-   sth = sdt
-   do k = 1, kdo
-!     pb = pb+cp(k)*dsin(2*k*theta)
-      pb = pb + 2.d0 * k * cp(k) * cth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
-2  if (mmod) 13, 13, 14
+         kdo = n / 2
+         pb = 0.
+         cth = cdt
+         sth = sdt
+         do k = 1, kdo
+!     pb = pb+cp(k)*sin(2*k*theta)
+            pb = pb + 2.d0 * k * cp(k) * cth
+            chh = cdt * cth - sdt * sth
+            sth = sdt * cth + cdt * sth
+            cth = chh
+         end do
+         return
+      end if
+   else
+      if (mmod <= 0) then
 !
 !     n odd, m even
 !
-13 kdo = (n + 1) / 2
-   pb = 0.
-   cth = dcos(theta)
-   sth = dsin(theta)
-   do k = 1, kdo
-!     pb = pb+cp(k)*dcos((2*k-1)*theta)
-      pb = pb - (2.d0 * k - 1) * cp(k) * sth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
+         kdo = (n + 1) / 2
+         pb = 0.
+         cth = cos(theta)
+         sth = sin(theta)
+         do k = 1, kdo
+!     pb = pb+cp(k)*cos((2*k-1)*theta)
+            pb = pb - (2.d0 * k - 1) * cp(k) * sth
+            chh = cdt * cth - sdt * sth
+            sth = sdt * cth + cdt * sth
+            cth = chh
+         end do
+         return
+      else
 !
 !     n odd, m odd
 !
-14 kdo = (n + 1) / 2
-   pb = 0.
-   cth = dcos(theta)
-   sth = dsin(theta)
-   do k = 1, kdo
-!     pb = pb+cp(k)*dsin((2*k-1)*theta)
-      pb = pb + (2.d0 * k - 1) * cp(k) * cth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
-end
+         kdo = (n + 1) / 2
+         pb = 0.
+         cth = cos(theta)
+         sth = sin(theta)
+         do k = 1, kdo
+!     pb = pb+cp(k)*sin((2*k-1)*theta)
+            pb = pb + (2.d0 * k - 1) * cp(k) * cth
+            chh = cdt * cth - sdt * sth
+            sth = sdt * cth + cdt * sth
+            cth = chh
+         end do
+         return
+      end if
+   end if
+end subroutine dnlftd
+
+!>     this subroutine computes legendre polynomials for n=m,...,l-1
+!!     and  i=1,...,late (late=((nlat+mod(nlat,2))/2) gaussian grid
+!!     in pmn(n+1,i,km) using swarztrauber's recursion formula.
+!!     the vector w contains quantities precomputed in shigc.
+!!     legin must be called in the order m=0,1,...,l-1
+!!     (e.g., if m=10 is sought it must be preceded by calls with
+!!     m=0,1,2,...,9 in that order)
 subroutine legin(mode, l, nlat, m, w, pmn, km)
-!     this subroutine computes legendre polynomials for n=m,...,l-1
-!     and  i=1,...,late (late=((nlat+mod(nlat,2))/2)gaussian grid
-!     in pmn(n+1,i,km) using swarztrauber's recursion formula.
-!     the vector w contains quantities precomputed in shigc.
-!     legin must be called in the order m=0,1,...,l-1
-!     (e.g., if m=10 is sought it must be preceded by calls with
-!     m=0,1,2,...,9 in that order)
-   dimension w(1), pmn(1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: mode, l, nlat, m, km
+   real(dp), dimension(:), intent(inout) :: w, pmn
+
+   integer :: late, i1, i2, i3, i4, i5
+
 !     set size of pole to equator gaussian grid
    late = (nlat + mod(nlat, 2)) / 2
 !     partition w (set pointers for p0n,p1n,abel,bbel,cbel,pmn)
@@ -280,24 +331,23 @@ subroutine legin(mode, l, nlat, m, w, pmn, km)
    i3 = i2 + nlat * late
    i4 = i3 + (2 * nlat - l) * (l - 1) / 2
    i5 = i4 + (2 * nlat - l) * (l - 1) / 2
-   call legin1(mode, l, nlat, late, m, w(i1), w(i2), w(i3), w(i4),&
-   &w(i5), pmn, km)
-   return
-end
-subroutine legin1(mode, l, nlat, late, m, p0n, p1n, abel, bbel, cbel,&
-&pmn, km)
+   call legin1(mode, l, nlat, late, m, w(i1), w(i2), w(i3), w(i4), w(i5), pmn, km)
 
-   dimension p0n(nlat, late), p1n(nlat, late)
-   dimension abel(1), bbel(1), cbel(1), pmn(nlat, late, 3)
+end subroutine legin
+
+subroutine legin1(mode, l, nlat, late, m, p0n, p1n, abel, bbel, cbel, pmn, km)
+   use precision_basics, only: dp
+   implicit none
+
+   integer, intent(inout) :: mode, l, nlat, late, m, km
+   real(dp), intent(inout) :: p0n(nlat, late), p1n(nlat, late)
+   real(dp), intent(inout) :: abel(1), bbel(1), cbel(1), pmn(nlat, late, 3)
+
+   integer :: km0, km1, km2, kmt, ms, ninc, np1, imn, i, n
    data km0, km1, km2/1, 2, 3/
    save km0, km1, km2
 !     define index function used in storing triangular
 !     arrays for recursion coefficients (functions of (m,n))
-!     for 2.le.m.le.n-1 and 2.le.n.le.l-1
-   indx(m, n) = (n - 1) * (n - 2) / 2 + m - 1
-!     for l.le.n.le.nlat and 2.le.m.le.l
-   imndx(m, n) = l * (l - 1) / 2 + (n - l - 1) * (l - 1) + m - 1
-
 !     set do loop indices for full or half sphere
    ms = m + 1
    ninc = 1
@@ -314,8 +364,8 @@ subroutine legin1(mode, l, nlat, late, m, p0n, p1n, abel, bbel, cbel,&
    if (m > 1) then
       do np1 = ms, nlat, ninc
          n = np1 - 1
-         imn = indx(m, n)
-         if (n >= l) imn = imndx(m, n)
+         imn = (n - 1) * (n - 2) / 2 + m - 1
+         if (n >= l) imn = l * (l - 1) / 2 + (n - l - 1) * (l - 1) + m - 1
          do i = 1, late
             pmn(np1, i, km0) = abel(imn) * pmn(n - 1, i, km2)&
             &+ bbel(imn) * pmn(n - 1, i, km0)&
@@ -346,15 +396,22 @@ subroutine legin1(mode, l, nlat, late, m, p0n, p1n, abel, bbel, cbel,&
    km1 = kmt
 !     set current m index in output param km
    km = kmt
-   return
-end
+
+end subroutine legin1
 
 subroutine zfin(isym, nlat, nlon, m, z, i3, wzfin)
-   double precision z, wzfin
-   dimension z(1), wzfin(1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: isym, nlat, nlon, m, i3
+   real(dp), dimension(:), intent(inout) :: z, wzfin
+
+   integer :: imid, lim, mmax, labc, iw1, iw2, iw3, iw4
+
    imid = (nlat + 1) / 2
    lim = nlat * imid
-   mmax = min0(nlat, nlon / 2 + 1)
+   mmax = min(nlat, nlon / 2 + 1)
    labc = ((mmax - 2) * (nlat + nlat - mmax - 1)) / 2
    iw1 = lim + 1
    iw2 = iw1 + lim
@@ -363,84 +420,109 @@ subroutine zfin(isym, nlat, nlon, m, z, i3, wzfin)
 !
 !     the length of wzfin is 2*lim+3*labc
 !
-   call zfin1(isym, nlat, m, z, imid, i3, wzfin, wzfin(iw1), wzfin(iw2),&
-   &wzfin(iw3), wzfin(iw4))
-   return
-end
+   call zfin1(isym, nlat, m, z, imid, i3, wzfin, wzfin(iw1), wzfin(iw2), wzfin(iw3), wzfin(iw4))
+
+end subroutine zfin
+
 subroutine zfin1(isym, nlat, m, z, imid, i3, zz, z1, a, b, c)
-   double precision z, zz, z1, a, b, c
-   dimension z(imid, nlat, 3), zz(imid, 1), z1(imid, 1),&
-   &a(1), b(1), c(1)
-   save i1, i2
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: isym, nlat, m, imid, i3
+   real(dp), intent(inout) :: z(imid, nlat, 3), zz(imid, 1), z1(imid, 1), a(1), b(1), c(1)
+
+   integer :: i1, i2, ihold, np1, i, ns, nstrt, nstp
+   save i1, i2, ihold
+
    ihold = i1
    i1 = i2
    i2 = i3
    i3 = ihold
-   if (m - 1) 25, 30, 35
-25 i1 = 1
-   i2 = 2
-   i3 = 3
-   do np1 = 1, nlat
-      do i = 1, imid
-         z(i, np1, i3) = zz(i, np1)
+   if (m < 1) then
+      i1 = 1
+      i2 = 2
+      i3 = 3
+      do np1 = 1, nlat
+         do i = 1, imid
+            z(i, np1, i3) = zz(i, np1)
+         end do
       end do
-   end do
-   return
-30 do np1 = 2, nlat
-      do i = 1, imid
-         z(i, np1, i3) = z1(i, np1)
+      return
+   else if (m == 1) then
+      do np1 = 2, nlat
+         do i = 1, imid
+            z(i, np1, i3) = z1(i, np1)
+         end do
       end do
-   end do
-   return
-35 ns = ((m - 2) * (nlat + nlat - m - 1)) / 2 + 1
-   if (isym == 1) go to 36
-   do i = 1, imid
-      z(i, m + 1, i3) = a(ns) * z(i, m - 1, i1) - c(ns) * z(i, m + 1, i1)
-   end do
-36 if (m == nlat - 1) return
-   if (isym == 2) go to 71
-   ns = ns + 1
-   do i = 1, imid
-      z(i, m + 2, i3) = a(ns) * z(i, m, i1) - c(ns) * z(i, m + 2, i1)
-   end do
-71 nstrt = m + 3
-   if (isym == 1) nstrt = m + 4
-   if (nstrt > nlat) go to 80
-   nstp = 2
-   if (isym == 0) nstp = 1
-   do np1 = nstrt, nlat, nstp
-      ns = ns + nstp
-      do i = 1, imid
-         z(i, np1, i3) = a(ns) * z(i, np1 - 2, i1) + b(ns) * z(i, np1 - 2, i3)&
-         &- c(ns) * z(i, np1, i1)
+      return
+   else
+      ns = ((m - 2) * (nlat + nlat - m - 1)) / 2 + 1
+      if (isym /= 1) then
+         do i = 1, imid
+            z(i, m + 1, i3) = a(ns) * z(i, m - 1, i1) - c(ns) * z(i, m + 1, i1)
+         end do
+      end if
+      if (m == nlat - 1) return
+      if (isym /= 2) then
+         ns = ns + 1
+         do i = 1, imid
+            z(i, m + 2, i3) = a(ns) * z(i, m, i1) - c(ns) * z(i, m + 2, i1)
+         end do
+      end if
+      nstrt = m + 3
+      if (isym == 1) nstrt = m + 4
+      if (nstrt > nlat) return
+      nstp = 2
+      if (isym == 0) nstp = 1
+      do np1 = nstrt, nlat, nstp
+         ns = ns + nstp
+         do i = 1, imid
+            z(i, np1, i3) = a(ns) * z(i, np1 - 2, i1) + b(ns) * z(i, np1 - 2, i3)&
+            &- c(ns) * z(i, np1, i1)
+         end do
       end do
-   end do
-80 return
-end
+   end if
+
+end subroutine zfin1
+
 subroutine zfinit(nlat, nlon, wzfin, dwork)
-   double precision wzfin
-   dimension wzfin(*)
-   double precision dwork(*)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(in) :: nlat, nlon
+   real(dp), dimension(:), intent(inout) :: wzfin, dwork
+
+   integer :: imid, iw1
+
    imid = (nlat + 1) / 2
    iw1 = 2 * nlat * imid + 1
 !
 !     the length of wzfin is 3*((l-3)*l+2)/2 + 2*l*imid
 !     the length of dwork is nlat+2
 !
-   call zfini1(nlat, nlon, imid, wzfin, wzfin(iw1), dwork,&
-   &dwork(nlat / 2 + 1))
-   return
-end
+   call zfini1(nlat, nlon, imid, wzfin, wzfin(iw1), dwork, dwork(nlat / 2 + 1))
+
+end subroutine zfinit
+
 subroutine zfini1(nlat, nlon, imid, z, abc, cz, work)
 !
 !     abc must have 3*((mmax-2)*(nlat+nlat-mmax-1))/2 locations
 !     where mmax = min0(nlat,nlon/2+1)
 !     cz and work must each have nlat+1 locations
 !
-   double precision z, abc
-   dimension z(imid, nlat, 2), abc(1)
-   double precision pi, dt, th, zh, cz(*), work(*)
-   pi = 4.*datan(1.d0)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: nlat, nlon, imid
+   real(dp), intent(inout) :: z(imid, nlat, 2), abc(1), cz(:), work(:)
+
+   integer :: np1, mp1, m, n, i
+   real(dp) :: pi, dt, th, zh
+
+   pi = 4.*atan(1.d0)
    dt = pi / (nlat - 1)
    do mp1 = 1, 2
       m = mp1 - 1
@@ -457,224 +539,270 @@ subroutine zfini1(nlat, nlon, imid, z, abc, cz, work)
    end do
    call rabcp(nlat, nlon, abc)
    return
-end
+end subroutine zfini1
+
+!>     dnzfk computes the coefficients in the trigonometric
+!!     expansion of the z functions that are used in spherical
+!!     harmonic analysis.
+!!
 subroutine dnzfk(nlat, m, n, cz, work)
-!
-!     dnzfk computes the coefficients in the trigonometric
-!     expansion of the z functions that are used in spherical
-!     harmonic analysis.
-!
-   dimension cz(1), work(1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: nlat, m, n
+   real(dp), intent(inout) :: cz(1), work(1)
 !
 !     cz and work must both have nlat/2+1 locations
 !
-   double precision sum, sc1, t1, t2, work, cz
+   integer :: lc, nmod, mmod, kdo, idx, i, kp1, k
+   real(dp) :: sum, sc1, t1, t2
+
    lc = (nlat + 1) / 2
-   sc1 = 2.d0 / float(nlat - 1)
+   sc1 = 2.d0 / real(nlat - 1, kind=kind(sc1))
    call dnlfk(m, n, work)
    nmod = mod(n, 2)
    mmod = mod(m, 2)
-   if (nmod) 1, 1, 2
-1  if (mmod) 3, 3, 4
+   if (nmod <= 0) then
+      if (mmod <= 0) then
 !
 !     n even, m even
 !
-3  kdo = n / 2 + 1
-   do idx = 1, lc
-      i = idx + idx - 2
-      sum = work(1) / (1.d0 - i * i)
-      if (kdo < 2) go to 29
-      do kp1 = 2, kdo
-         k = kp1 - 1
-         t1 = 1.d0 - (k + k + i)**2
-         t2 = 1.d0 - (k + k - i)**2
-8        sum = sum + work(kp1) * (t1 + t2) / (t1 * t2)
-      end do
-29    cz(idx) = sc1 * sum
-   end do
-   return
+         kdo = n / 2 + 1
+         do idx = 1, lc
+            i = idx + idx - 2
+            sum = work(1) / (1.d0 - i * i)
+            if (kdo < 2) go to 29
+            do kp1 = 2, kdo
+               k = kp1 - 1
+               t1 = 1.d0 - (k + k + i)**2
+               t2 = 1.d0 - (k + k - i)**2
+               sum = sum + work(kp1) * (t1 + t2) / (t1 * t2)
+            end do
+29          continue
+            cz(idx) = sc1 * sum
+         end do
+         return
+      else
 !
 !     n even, m odd
 !
-4  kdo = n / 2
-   do idx = 1, lc
-      i = idx + idx - 2
-      sum = 0.
-      do k = 1, kdo
-         t1 = 1.d0 - (k + k + i)**2
-         t2 = 1.d0 - (k + k - i)**2
-12       sum = sum + work(k) * (t1 - t2) / (t1 * t2)
-      end do
-      cz(idx) = sc1 * sum
-   end do
-   return
-2  if (mmod) 13, 13, 14
+         kdo = n / 2
+         do idx = 1, lc
+            i = idx + idx - 2
+            sum = 0.
+            do k = 1, kdo
+               t1 = 1.d0 - (k + k + i)**2
+               t2 = 1.d0 - (k + k - i)**2
+               sum = sum + work(k) * (t1 - t2) / (t1 * t2)
+            end do
+            cz(idx) = sc1 * sum
+         end do
+         return
+      end if
+   else
+      if (mmod <= 0) then
 !
 !     n odd, m even
 !
-13 kdo = (n + 1) / 2
-   do idx = 1, lc
-      i = idx + idx - 1
-      sum = 0.
-      do k = 1, kdo
-         t1 = 1.d0 - (k + k - 1 + i)**2
-         t2 = 1.d0 - (k + k - 1 - i)**2
-18       sum = sum + work(k) * (t1 + t2) / (t1 * t2)
-      end do
-      cz(idx) = sc1 * sum
-   end do
-   return
+         kdo = (n + 1) / 2
+         do idx = 1, lc
+            i = idx + idx - 1
+            sum = 0.
+            do k = 1, kdo
+               t1 = 1.d0 - (k + k - 1 + i)**2
+               t2 = 1.d0 - (k + k - 1 - i)**2
+               sum = sum + work(k) * (t1 + t2) / (t1 * t2)
+            end do
+            cz(idx) = sc1 * sum
+         end do
+         return
+      else
 !
 !     n odd, m odd
 !
-14 kdo = (n + 1) / 2
-   do idx = 1, lc
-      i = idx + idx - 3
-      sum = 0.
-      do k = 1, kdo
-         t1 = 1.d0 - (k + k - 1 + i)**2
-         t2 = 1.d0 - (k + k - 1 - i)**2
-22       sum = sum + work(k) * (t1 - t2) / (t1 * t2)
-      end do
-      cz(idx) = sc1 * sum
-   end do
-   return
-end
+         kdo = (n + 1) / 2
+         do idx = 1, lc
+            i = idx + idx - 3
+            sum = 0.
+            do k = 1, kdo
+               t1 = 1.d0 - (k + k - 1 + i)**2
+               t2 = 1.d0 - (k + k - 1 - i)**2
+               sum = sum + work(k) * (t1 - t2) / (t1 * t2)
+            end do
+            cz(idx) = sc1 * sum
+         end do
+         return
+      end if
+   end if
+end subroutine dnzfk
+
 subroutine dnzft(nlat, m, n, th, cz, zh)
-   dimension cz(1)
-   double precision cz, zh, th, cdt, sdt, cth, sth, chh
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: nlat, m, n
+   real(dp), intent(inout) :: th, cz(1), zh
+
+   integer :: lmod, mmod, nmod, lc, lq, ls, k
+   real(dp) :: cdt, sdt, cth, sth, chh
+
    zh = 0.
-   cdt = dcos(th + th)
-   sdt = dsin(th + th)
-   lmod = mod(nlat, 2)
+   cdt = cos(th + th)
+   sdt = sin(th + th)
    mmod = mod(m, 2)
    nmod = mod(n, 2)
-   if (lmod) 20, 20, 10
-10 lc = (nlat + 1) / 2
-   lq = lc - 1
-   ls = lc - 2
-   if (nmod) 1, 1, 2
-1  if (mmod) 3, 3, 4
-!
-!     nlat odd n even m even
-!
-3  zh = .5 * (cz(1) + cz(lc) * dcos(2 * lq * th))
-   cth = cdt
-   sth = sdt
-   do k = 2, lq
-!     zh = zh+cz(k)*dcos(2*(k-1)*th)
-      zh = zh + cz(k) * cth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
-!
-!     nlat odd n even m odd
-!
-4  cth = cdt
-   sth = sdt
-   do k = 1, ls
-!     zh = zh+cz(k+1)*dsin(2*k*th)
-      zh = zh + cz(k + 1) * sth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
-!
-!     nlat odd n odd, m even
-!
-2  if (mmod) 5, 5, 6
-5  cth = dcos(th)
-   sth = dsin(th)
-   do k = 1, lq
-!     zh = zh+cz(k)*dcos((2*k-1)*th)
-      zh = zh + cz(k) * cth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
-!
-!     nlat odd n odd m odd
-!
-6  cth = dcos(th)
-   sth = dsin(th)
-   do k = 1, lq
-!     zh = zh+cz(k+1)*dsin((2*k-1)*th)
-      zh = zh + cz(k + 1) * sth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
-20 lc = nlat / 2
-   lq = lc - 1
-   if (nmod) 30, 30, 80
-30 if (mmod) 40, 40, 60
-!
-!     nlat even n even m even
-!
-40 zh = .5 * cz(1)
-   cth = cdt
-   sth = sdt
-   do k = 2, lc
-!     zh = zh+cz(k)*dcos(2*(k-1)*th)
-      zh = zh + cz(k) * cth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
-!
-!     nlat even n even m odd
-!
-60 cth = cdt
-   sth = sdt
-   do k = 1, lq
-!     zh = zh+cz(k+1)*dsin(2*k*th)
-      zh = zh + cz(k + 1) * sth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
-!
-!     nlat even n odd m even
-!
-80 if (mmod) 90, 90, 110
-90 zh = .5 * cz(lc) * dcos((nlat - 1) * th)
-   cth = dcos(th)
-   sth = dsin(th)
-   do k = 1, lq
-!     zh = zh+cz(k)*dcos((2*k-1)*th)
-      zh = zh + cz(k) * cth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
-!
-!     nlat even n odd m odd
-!
-110 cth = dcos(th)
-   sth = dsin(th)
-   do k = 1, lq
-!     zh = zh+cz(k+1)*dsin((2*k-1)*th)
-      zh = zh + cz(k + 1) * sth
-      chh = cdt * cth - sdt * sth
-      sth = sdt * cth + cdt * sth
-      cth = chh
-   end do
-   return
-end
+   if (mod(nlat, 2) > 0) then
+      lc = (nlat + 1) / 2
+      lq = lc - 1
+      ls = lc - 2
+      if (nmod <= 0) then
+         if (mmod <= 0) then
+            call nlat_odd_n_even_m_even()
+         else
+            call nlat_odd_n_even_m_odd()
+         end if
+      else
+         if (mmod <= 0) then
+            call nlat_odd_n_odd_m_even()
+         else
+            call nlat_odd_n_odd_m_odd()
+         end if
+      end if
+   else
+      lc = nlat / 2
+      lq = lc - 1
+      if (nmod <= 0) then
+         if (mmod <= 0) then
+            call nlat_even_n_even_m_even()
+         else
+            call nlat_even_n_even_m_odd()
+         end if
+      else
+         if (mmod <= 0) then
+            call nlat_even_n_odd_m_even()
+         else
+            call nlat_even_n_odd_m_odd()
+         end if
+      end if
+   end if
+contains
+
+   subroutine nlat_odd_n_even_m_even()
+      zh = .5 * (cz(1) + cz(lc) * cos(2 * lq * th))
+      cth = cdt
+      sth = sdt
+      do k = 2, lq
+!     zh = zh+cz(k)*cos(2*(k-1)*th)
+         zh = zh + cz(k) * cth
+         chh = cdt * cth - sdt * sth
+         sth = sdt * cth + cdt * sth
+         cth = chh
+      end do
+   end subroutine nlat_odd_n_even_m_even
+
+   subroutine nlat_odd_n_even_m_odd()
+      cth = cdt
+      sth = sdt
+      do k = 1, ls
+!     zh = zh+cz(k+1)*sin(2*k*th)
+         zh = zh + cz(k + 1) * sth
+         chh = cdt * cth - sdt * sth
+         sth = sdt * cth + cdt * sth
+         cth = chh
+      end do
+   end subroutine nlat_odd_n_even_m_odd
+
+   subroutine nlat_odd_n_odd_m_even()
+      cth = cos(th)
+      sth = sin(th)
+      do k = 1, lq
+!     zh = zh+cz(k)*cos((2*k-1)*th)
+         zh = zh + cz(k) * cth
+         chh = cdt * cth - sdt * sth
+         sth = sdt * cth + cdt * sth
+         cth = chh
+      end do
+   end subroutine nlat_odd_n_odd_m_even
+
+   subroutine nlat_odd_n_odd_m_odd()
+      cth = cos(th)
+      sth = sin(th)
+      do k = 1, lq
+!     zh = zh+cz(k+1)*sin((2*k-1)*th)
+         zh = zh + cz(k + 1) * sth
+         chh = cdt * cth - sdt * sth
+         sth = sdt * cth + cdt * sth
+         cth = chh
+      end do
+   end subroutine nlat_odd_n_odd_m_odd
+
+   subroutine nlat_even_n_even_m_even()
+      zh = .5 * cz(1)
+      cth = cdt
+      sth = sdt
+      do k = 2, lc
+!     zh = zh+cz(k)*cos(2*(k-1)*th)
+         zh = zh + cz(k) * cth
+         chh = cdt * cth - sdt * sth
+         sth = sdt * cth + cdt * sth
+         cth = chh
+      end do
+   end subroutine nlat_even_n_even_m_even
+
+   subroutine nlat_even_n_even_m_odd()
+      cth = cdt
+      sth = sdt
+      do k = 1, lq
+!     zh = zh+cz(k+1)*sin(2*k*th)
+         zh = zh + cz(k + 1) * sth
+         chh = cdt * cth - sdt * sth
+         sth = sdt * cth + cdt * sth
+         cth = chh
+      end do
+   end subroutine nlat_even_n_even_m_odd
+
+   subroutine nlat_even_n_odd_m_even()
+      zh = .5 * cz(lc) * cos((nlat - 1) * th)
+      cth = cos(th)
+      sth = sin(th)
+      do k = 1, lq
+!     zh = zh+cz(k)*cos((2*k-1)*th)
+         zh = zh + cz(k) * cth
+         chh = cdt * cth - sdt * sth
+         sth = sdt * cth + cdt * sth
+         cth = chh
+      end do
+   end subroutine nlat_even_n_odd_m_even
+
+   subroutine nlat_even_n_odd_m_odd()
+      cth = cos(th)
+      sth = sin(th)
+      do k = 1, lq
+!     zh = zh+cz(k+1)*sin((2*k-1)*th)
+         zh = zh + cz(k + 1) * sth
+         chh = cdt * cth - sdt * sth
+         sth = sdt * cth + cdt * sth
+         cth = chh
+      end do
+   end subroutine nlat_even_n_odd_m_odd
+
+end subroutine dnzft
+
 subroutine alin(isym, nlat, nlon, m, p, i3, walin)
-   double precision p, walin
-   dimension p(1), walin(1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: isym, nlat, nlon, m, i3
+   real(dp), intent(inout) :: p(1), walin(1)
+
+   integer :: imid, lim, mmax, labc, iw1, iw2, iw3, iw4
+
    imid = (nlat + 1) / 2
    lim = nlat * imid
-   mmax = min0(nlat, nlon / 2 + 1)
+   mmax = min(nlat, nlon / 2 + 1)
    labc = ((mmax - 2) * (nlat + nlat - mmax - 1)) / 2
    iw1 = lim + 1
    iw2 = iw1 + lim
@@ -683,65 +811,81 @@ subroutine alin(isym, nlat, nlon, m, p, i3, walin)
 !
 !     the length of walin is ((5*l-7)*l+6)/2
 !
-   call alin1(isym, nlat, m, p, imid, i3, walin, walin(iw1), walin(iw2),&
-   &walin(iw3), walin(iw4))
-   return
-end
+   call alin1(isym, nlat, m, p, imid, i3, walin, walin(iw1), walin(iw2), walin(iw3), walin(iw4))
+
+end subroutine alin
+
 subroutine alin1(isym, nlat, m, p, imid, i3, pz, p1, a, b, c)
-   double precision p, pz, p1, a, b, c
-   dimension p(imid, nlat, 3), pz(imid, 1), p1(imid, 1),&
-   &a(1), b(1), c(1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: isym, nlat, m, imid, i3
+   real(dp), intent(inout) :: p(imid, nlat, 3), pz(imid, 1), p1(imid, 1), a(1), b(1), c(1)
+
+   integer :: ihold, i1, i2, i, np1, ns, nstrt, nstp
    save i1, i2
+
    ihold = i1
    i1 = i2
    i2 = i3
    i3 = ihold
-   if (m - 1) 25, 30, 35
-25 i1 = 1
-   i2 = 2
-   i3 = 3
-   do np1 = 1, nlat
-      do i = 1, imid
-         p(i, np1, i3) = pz(i, np1)
+   if (m < 1) then
+      i1 = 1
+      i2 = 2
+      i3 = 3
+      do np1 = 1, nlat
+         do i = 1, imid
+            p(i, np1, i3) = pz(i, np1)
+         end do
       end do
-   end do
-   return
-30 do np1 = 2, nlat
-      do i = 1, imid
-         p(i, np1, i3) = p1(i, np1)
+      return
+   else if (m == 1) then
+      do np1 = 2, nlat
+         do i = 1, imid
+            p(i, np1, i3) = p1(i, np1)
+         end do
       end do
-   end do
-   return
-35 ns = ((m - 2) * (nlat + nlat - m - 1)) / 2 + 1
-   if (isym == 1) go to 36
-   do i = 1, imid
-      p(i, m + 1, i3) = a(ns) * p(i, m - 1, i1) - c(ns) * p(i, m + 1, i1)
-   end do
-36 if (m == nlat - 1) return
-   if (isym == 2) go to 71
-   ns = ns + 1
-   do i = 1, imid
-      p(i, m + 2, i3) = a(ns) * p(i, m, i1) - c(ns) * p(i, m + 2, i1)
-   end do
-71 nstrt = m + 3
-   if (isym == 1) nstrt = m + 4
-   if (nstrt > nlat) go to 80
-   nstp = 2
-   if (isym == 0) nstp = 1
-   do np1 = nstrt, nlat, nstp
-      ns = ns + nstp
+      return
+   else
+      ns = ((m - 2) * (nlat + nlat - m - 1)) / 2 + 1
+      if (isym == 1) go to 36
       do i = 1, imid
-         p(i, np1, i3) = a(ns) * p(i, np1 - 2, i1) + b(ns) * p(i, np1 - 2, i3)&
-         &- c(ns) * p(i, np1, i1)
+         p(i, m + 1, i3) = a(ns) * p(i, m - 1, i1) - c(ns) * p(i, m + 1, i1)
       end do
-   end do
-80 return
-end
+36    if (m == nlat - 1) return
+      if (isym == 2) go to 71
+      ns = ns + 1
+      do i = 1, imid
+         p(i, m + 2, i3) = a(ns) * p(i, m, i1) - c(ns) * p(i, m + 2, i1)
+      end do
+71    continue
+      nstrt = m + 3
+      if (isym == 1) nstrt = m + 4
+      if (nstrt > nlat) return
+      nstp = 2
+      if (isym == 0) nstp = 1
+      do np1 = nstrt, nlat, nstp
+         ns = ns + nstp
+         do i = 1, imid
+            p(i, np1, i3) = a(ns) * p(i, np1 - 2, i1) + b(ns) * p(i, np1 - 2, i3)&
+            &- c(ns) * p(i, np1, i1)
+         end do
+      end do
+   end if
+
+end subroutine alin1
+
 subroutine alinit(nlat, nlon, walin, dwork)
-   !dimension       walin(*)
-   double precision walin
-   dimension walin(*)
-   double precision dwork(*)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: nlat, nlon
+   real(dp), intent(inout) :: walin(:), dwork(:)
+
+   integer :: imid, iw1
+
    imid = (nlat + 1) / 2
    iw1 = 2 * nlat * imid + 1
 !
@@ -749,13 +893,21 @@ subroutine alinit(nlat, nlon, walin, dwork)
 !     the length of work is nlat+1
 !
    call alini1(nlat, nlon, imid, walin, walin(iw1), dwork)
-   return
-end
+
+end subroutine alinit
+
 subroutine alini1(nlat, nlon, imid, p, abc, cp)
-   double precision p, abc
-   dimension p(imid, nlat, 2), abc(1), cp(1)
-   double precision pi, dt, th, cp, ph
-   pi = 4.*datan(1.d0)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(inout) :: nlat, nlon, imid
+   real(dp), intent(inout) :: p(imid, nlat, 2), abc(1), cp(1)
+
+   integer :: mp1, m, n, np1, i
+   real(dp) :: pi, dt, th, ph
+
+   pi = 4.*atan(1.d0)
    dt = pi / (nlat - 1)
    do mp1 = 1, 2
       m = mp1 - 1
@@ -770,35 +922,50 @@ subroutine alini1(nlat, nlon, imid, p, abc, cp)
       end do
    end do
    call rabcp(nlat, nlon, abc)
-   return
-end
+
+end subroutine alini1
+
+!>     subroutine rabcp computes the coefficients in the recurrence
+!!     relation for the associated legendre fuctions. array abc
+!!     must have 3*((mmax-2)*(nlat+nlat-mmax-1))/2 locations.
 subroutine rabcp(nlat, nlon, abc)
-!
-!     subroutine rabcp computes the coefficients in the recurrence
-!     relation for the associated legendre fuctions. array abc
-!     must have 3*((mmax-2)*(nlat+nlat-mmax-1))/2 locations.
-!
-   double precision abc
-   dimension abc(1)
-   mmax = min0(nlat, nlon / 2 + 1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(in) :: nlat, nlon
+   real(dp), intent(inout) :: abc(1)
+
+   integer :: mmax, labc, iw1, iw2
+
+   mmax = min(nlat, nlon / 2 + 1)
    labc = ((mmax - 2) * (nlat + nlat - mmax - 1)) / 2
    iw1 = labc + 1
    iw2 = iw1 + labc
    call rabcp1(nlat, nlon, abc, abc(iw1), abc(iw2))
-   return
-end
+
+end subroutine rabcp
+
 subroutine rabcp1(nlat, nlon, a, b, c)
 !
 !     coefficients a, b, and c for computing pbar(m,n,theta) are
 !     stored in location ((m-2)*(nlat+nlat-m-1))/2+n+1
 !
-   double precision a, b, c
-   dimension a(1), b(1), c(1)
-   mmax = min0(nlat, nlon / 2 + 1)
+   use precision_basics, only: dp
+
+   implicit none
+
+   integer, intent(in) :: nlat, nlon
+   real(dp), intent(inout) :: a(1), b(1), c(1)
+
+   integer :: mmax, mp1, m, ns, mp3, np1, n
+   real(dp) :: fm, tm, temp, fn, tn, cn, fnpm, fnmm
+
+   mmax = min(nlat, nlon / 2 + 1)
    do mp1 = 3, mmax
       m = mp1 - 1
       ns = ((m - 2) * (nlat + nlat - m - 1)) / 2 + 1
-      fm = float(m)
+      fm = real(m, kind=kind(fm))
       tm = fm + fm
       temp = tm * (tm - 1.)
       a(ns) = sqrt((tm + 1.) * (tm - 2.) / temp)
@@ -813,7 +980,7 @@ subroutine rabcp1(nlat, nlon, a, b, c)
       do np1 = mp3, nlat
          n = np1 - 1
          ns = ns + 1
-         fn = float(n)
+         fn = real(n, kind=kind(fn))
          tn = fn + fn
          cn = (tn + 1.) / (tn - 3.)
          fnpm = fn + fm
@@ -824,6 +991,6 @@ subroutine rabcp1(nlat, nlon, a, b, c)
          c(ns) = sqrt((fnmm + 1.) * (fnmm + 2.) / temp)
       end do
    end do
-   return
-end
+
+end subroutine rabcp1
 

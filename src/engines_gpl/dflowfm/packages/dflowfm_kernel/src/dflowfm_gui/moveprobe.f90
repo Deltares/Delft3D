@@ -66,7 +66,7 @@
 !            do i=1,size(nd(kk)%nod)
 !               k = nd(kk)%nod(i)
 !               do j=1,cn(k)%lnx
-!                  L = iabs(cn(k)%ln(j))
+!                  L = abs(cn(k)%ln(j))
 !                  do jj=1,2
 !                     k2 = ln(jj,L)
 !                     if ( k2.eq.kk ) cycle
@@ -98,7 +98,7 @@
                   dum = -(csdir * csu(L) + sndir * snu(L))
                end if
                if (dum > 0d0 .and. dum > dmaxinprod) then
-                  knext = ln(1, iabs(L)) + ln(2, iabs(L)) - kk
+                  knext = ln(1, abs(L)) + ln(2, abs(L)) - kk
                   dmaxinprod = dum
                end if
             end do

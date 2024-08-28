@@ -37,8 +37,8 @@
     use m_flow
     use m_sferic
     use m_missing
+    use m_drawthis
     implicit none
-    integer :: ndraw(50)
     integer :: k, L, ja, k1, k2, ncol, linkmode
     double precision :: zlin, zL
     double precision :: xcl, ycl, zcl ! help only
@@ -48,8 +48,6 @@
     double precision :: x(4), y(4), z(4), hw, cs, sn
     real :: xr(4), yr(4)
     logical inview
-
-    common / drawthis / ndraw
 
     linkmode = ndraw(11)
     if (LINKMODE > 1 .and. ndraw(29) >= 2) then ! show VALUES AT links
@@ -145,7 +143,7 @@
                 end if
                 if (linkmode == 2 .or. linkmode == 6 .or. linkmode == 7 .or. linkmode == 8) then
                    if (NDRAW(29) == 12 .or. NDRAW(29) == 29 .or. NDRAW(29) == 33 .or. NDRAW(29) == 35 .or. NDRAW(29) == 36) then
-                      call DHITEXT(int(zl), xCL, yCL, zCL)
+                      call DHITEXT(int(zl), xCL, yCL)
                    else
                       call dhtext(zl, xCL, yCL, zCL)
                    end if

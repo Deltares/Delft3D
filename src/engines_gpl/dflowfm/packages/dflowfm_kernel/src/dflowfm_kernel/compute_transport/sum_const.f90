@@ -55,9 +55,9 @@ subroutine sum_const(iter, vol1)
       end do
    end do
 
-   write (6, "(I5, ':', $)") iter
+   write (6, "(I5, ':')", advance="no") iter
    do j = 1, NUMCONST
-      write (6, "(E25.15, $)") sum(j)
+      write (6, "(E25.15)", advance="no") sum(j)
    end do
    write (6, *)
 

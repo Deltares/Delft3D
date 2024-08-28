@@ -294,7 +294,7 @@
           k1 = lncn(1, L); k2 = lncn(2, L)
           k3 = 0
           do k = 1, nd(n2)%lnx
-             LL = iabs(nd(n2)%ln(k))
+             LL = abs(nd(n2)%ln(k))
              if (kcu(LL) == 1) then
                 if (nd(n2)%ln(k) < 0) k3 = lncn(2, LL)
                 if (nd(n2)%ln(k) > 0) k3 = lncn(1, LL)
@@ -360,7 +360,7 @@
        do n = 1, ndx2D
           wn = 0d0; bln = 0d0
           do LL = 1, nd(n)%lnx
-             Ls = nd(n)%ln(LL); L = iabs(Ls)
+             Ls = nd(n)%ln(LL); L = abs(Ls)
              bln = bln + wu(L) * 0.5d0 * (bob(1, L) + bob(2, L))
              wn = wn + wu(L)
           end do

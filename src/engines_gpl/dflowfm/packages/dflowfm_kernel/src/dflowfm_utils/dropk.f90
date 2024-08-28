@@ -30,13 +30,12 @@
 !
 !
 
- subroutine dropk(xp, yp, idir)
+ subroutine dropk(xp, yp)
     use m_polygon
     use m_flowgeom
     use m_flow
     implicit none
     double precision, intent(in) :: xp, yp
-    integer, intent(in) :: idir
 
     ! locals
     integer :: L, LL, Lb, Lt

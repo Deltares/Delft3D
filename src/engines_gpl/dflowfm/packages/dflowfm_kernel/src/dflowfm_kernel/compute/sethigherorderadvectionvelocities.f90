@@ -108,7 +108,7 @@ subroutine sethigherorderadvectionvelocities()
                   end if
                else
 
-                  ku2 = iabs(klnup(2 + ip, LL)); if (ku2 == 0) cycle
+                  ku2 = abs(klnup(2 + ip, LL)); if (ku2 == 0) cycle
                   sl1 = slnup(1 + ip, LL); sl2 = slnup(2 + ip, LL)
                   if (jasfer3D == 0) then
                      ucxku = ucx(ku) * sl1 + ucx(ku2) * sl2
@@ -222,7 +222,7 @@ subroutine sethigherorderadvectionvelocities()
 
                   else
 
-                     kkub = iabs(klnup(2 + ip, LL))
+                     kkub = abs(klnup(2 + ip, LL))
                      ku2 = kbot(kkub) + kmxn(kkub) - (Lb + kmxL(LL) - L); if (ku2 < kbot(kkub) .or. ku2 > ktop(kkub)) cycle
 
                      sl1 = slnup(1 + ip, LL); sl2 = slnup(2 + ip, LL)

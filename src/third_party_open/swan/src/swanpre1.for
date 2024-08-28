@@ -317,8 +317,8 @@
       REAL           :: FD1, FD2, FD3, FD4                                40.31 40.28
       REAL, ALLOCATABLE :: RLAMBDA(:)                                     40.17
 
-      CHARACTER*6  QOVSNM                                                 40.87
-      CHARACTER*40 QOVLNM                                                 40.87
+      CHARACTER(len=6)  QOVSNM                                                 40.87
+      CHARACTER(len=40) QOVLNM                                                 40.87
       REAL         QR(10)                                                 41.72 40.87
       REAL*8       DVAL                                                   40.87
 
@@ -4501,8 +4501,8 @@
       INTEGER ISTAT, IF1, IL1                                             40.41
       INTEGER, ALLOCATABLE :: IARR(:)                                     40.31
 !JAC      LOGICAL   MCOLR                                                     40.31
-      CHARACTER*20 NUMSTR, CHARS(1)                                       40.41
-      CHARACTER*80 MSGSTR                                                 40.41
+      CHARACTER(len=20) NUMSTR, CHARS(1)                                       40.41
+      CHARACTER(len=80) MSGSTR                                                 40.41
 !
 !  8. SUBROUTINES CALLING
 !

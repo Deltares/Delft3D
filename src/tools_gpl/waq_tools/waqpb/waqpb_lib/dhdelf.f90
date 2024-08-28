@@ -36,7 +36,7 @@
 !     FILNAM  CHAR*(*)      1     INPUT   file to be deleted
 !     IERROR  INTEGER       1     OUTPUT  Error indication
 !
-      CHARACTER*(*) FILNAM
+      CHARACTER(len=*) FILNAM
       INTEGER       IERROR
 !
 !     Local

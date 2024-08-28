@@ -190,7 +190,7 @@ c     body
 
       if ( da_seconds_from_org_start /= not_running ) then
           if ( log_file_handle > 0 ) then
-             write(log_file_handle, '(A,I,A,I,A,I,A,I)')
+             write(log_file_handle, '(A,I0,A,I0,A,I0,A,I0)')
      &           'Check itim == da_itim ',    itim(1), ' ',    itim(2),
      &                             ' == ', da_itim(1), ' ', da_itim(2)
           endif
@@ -224,7 +224,7 @@ c     body
       seconds = 0
       if ( da_seconds_from_org_start /= not_running ) then
           if ( log_file_handle > 0 ) then
-             write(log_file_handle, '(A,I,A,I,A,I,A,I)')
+             write(log_file_handle, '(A,I0)')
      &           'Seconds from start ', da_seconds_from_org_start
           endif
           seconds = da_seconds_from_org_start

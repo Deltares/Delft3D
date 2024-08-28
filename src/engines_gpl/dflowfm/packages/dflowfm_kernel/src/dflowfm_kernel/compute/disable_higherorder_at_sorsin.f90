@@ -59,7 +59,7 @@
 !              loop over all attached flow links
                do iL = 1, nd(kk)%lnx
 !                 get 2D flink link
-                  LL = iabs(nd(kk)%ln(iL))
+                  LL = abs(nd(kk)%ln(iL))
 
 !                 disable high-order reconstruction
                   klnup(:, LL) = 0

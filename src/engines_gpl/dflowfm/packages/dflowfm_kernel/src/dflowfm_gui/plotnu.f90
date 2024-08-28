@@ -31,11 +31,10 @@
 !
 
    subroutine plotnu(fnam)
+      use m_drawthis
+      use m_plotfil
       implicit none
-      common / DRAWTHIS / ndraw(50)
-      common / PLOTFIL / PLOTJE
-      integer :: key, ndraw
-      character PLOTJE * 255
+      integer :: key
       character(len=*) fnam
 
       plotje = trim(fnam)

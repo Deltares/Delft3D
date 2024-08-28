@@ -71,8 +71,8 @@
          ja1D = 1
          do LL = 1, nx
             L = nd(n)%ln(LL)
-            La = iabs(L)
-            if (iabs(kcu(La)) /= 1) ja1D = 0
+            La = abs(L)
+            if (abs(kcu(La)) /= 1) ja1D = 0
          end do
          if (ja1D == 0) cycle
          if (jaJunction1D == 0 .and. nx > 2) cycle
@@ -83,7 +83,7 @@
          q_out = 0d0
          do LL = 1, nx ! loop over all links of the upstream node
             L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
-            La = iabs(L)
+            La = abs(L)
 
             if (L * u1(La) >= 0d0) then ! inflowing: positive flow to this node, or negative flow from this node
                qu_in = qu_in + qa(La) * u1(La)
@@ -100,7 +100,7 @@
             uc = 0d0
          end if
 
-         L1 = iabs(nd(n)%ln(1))
+         L1 = abs(nd(n)%ln(1))
          uc1D(n) = sign(uc, u1(L1))
       end do
 
@@ -138,8 +138,8 @@
             ja1D = 1
             do LL = 1, nx
                L = nd(n)%ln(LL)
-               La = iabs(L)
-               if (iabs(kcu(La)) /= 1) ja1D = 0
+               La = abs(L)
+               if (abs(kcu(La)) /= 1) ja1D = 0
             end do
             if (ja1D == 0) cycle
             if (jaJunction1D == 0 .and. nx > 2) cycle
@@ -149,7 +149,7 @@
             surface_area = 0d0
             do LL = 1, nx ! loop over all links connected to the node
                L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
-               La = iabs(L)
+               La = abs(L)
 
                half_link_length = 0.5 * dx(La)
                if (L > 0) then ! link points to node
@@ -179,7 +179,7 @@
             dzw_dt = q_net_in / surface_area
             do LL = 1, nx ! loop over all links connected to the node
                L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
-               La = iabs(L)
+               La = abs(L)
 
                if (L > 0) then ! link points to node: reduce by the storage on the remainder of the link
                   link_surface_area = sar1D(2, La)

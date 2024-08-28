@@ -171,11 +171,11 @@ c
       integer      errr  ,i ,j ,ie  ,nrerr ,nsk ,nlc ,lastcod
       integer      strmap(nstmap)  ,usrord(1),
      &             uindex(3)
-      character*16 grnamm          ,grnamh          ,grnamd
-      character*16 nameel(nentri),quanel(nentri),unitel(nentri),
+      character(len=16) grnamm          ,grnamh          ,grnamd
+      character(len=16) nameel(nentri),quanel(nentri),unitel(nentri),
      &             nameac(nentri+1)
-      character*64 descel(nentri)
-      character*9  txt
+      character(len=64) descel(nentri)
+      character(len=9)  txt
       logical      llog, new
 c
 c     Include sobek error code file

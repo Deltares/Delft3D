@@ -91,7 +91,7 @@ c
             ai     = xar(ip)
             gammai = xar(ip+1)
             arg    = dble(w0) * time * i - dble(gammai)
-            y      = y + ai * sngl(dcos( arg ))
+            y      = y + ai * real(cos( arg ), kind=kind(y))
   100    continue
 c
       else if (iopt .eq. cbtidl) then
@@ -108,7 +108,7 @@ c
             ai     = xar(ip+1)
             gammai = xar(ip+2)
             arg    = dble(wi) * time - dble(gammai)
-            y      = y + ai * sngl(dcos( arg ))
+            y      = y + ai * real(cos( arg ), kind=kind(y))
   200    continue
       endif
 c

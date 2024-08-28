@@ -349,6 +349,8 @@ subroutine debgrz(process_space_real , fl , ipoint , increm , num_cells , noflux
         real(kind=real_wp) :: pomm          !< Energy flux to organic shell matrix [J/ind/d])
         real(kind=real_wp) :: food_pelagic  !< Food for pelagic organisms
         real(kind=real_wp) :: food_benthic  !< Food for benthic organisms
+        real(kind=real_wp) :: ddis          !< Dissipation flux (not the same as respiration!)[J/ind/d]
+
        ! internal variables
 
         iv = process_vars%inp
@@ -389,11 +391,13 @@ subroutine debgrz(process_space_real , fl , ipoint , increm , num_cells , noflux
                             iv%temp, iv%minsptemp, ov%v, ov%e, ov%r, pc, &
                             kT, iv%rspawn, iv%tn, iv%tp, iv%dospawn, ov%gsi, &
                             pjj, prj, pja, pra, pr, dspw, dnspw, dpspw)
+
+        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv, iv%fpgrosmo, iv%fpdissmo, iv%ycacosmo, ddis, pomm, pca)
+
         call calculate_respiration(&
-                            pm, pja, pjj, prj, kappa_g, pg, pra, iv%kappar, &
+                            ddis, pomm, kappa_g, pg, pra, iv%kappar, &
                             iv%tn, iv%tp, dres, dnres, dpres)
 
-        call calculate_shell_formation_fluxes(pv, iv%frgsmo, iv%frsmosmi, pomm, pca)
         call calculate_mortality(&
                             iv%rmor_ref, iv%cmor, iv%conv_j_gc, iv%conv_cm3_gc, iv%rhrv_ref, iv%chrv, &
                             iv%tn, iv%tp, ov%length, ov%v, ov%e, ov%r, rmor, rhrv, dmor, dnmor, dpmor, kT, pv)

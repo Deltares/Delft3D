@@ -5,6 +5,8 @@ file(GLOB source    ${source_path}/kdtree2.f90)
 set(library_name kdtree2)
 add_library(${library_name} ${source})
 
+target_link_libraries(${library_name} PRIVATE no_compiler_warnings)
+
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${check_pointers_flag}>")
 target_compile_options(${library_name} PRIVATE "$<$<CONFIG:Debug>:${floating_point_exception_flag}>")

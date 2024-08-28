@@ -171,9 +171,9 @@ c
       endif
 c
       if      ( condir .eq. cpmpup ) then
-         hact = sngl( h1(il) )
+         hact = real( h1(il), kind=kind(hact) )
       else if ( condir .eq. cpmpdw ) then
-         hact = sngl( h1(ir) )
+         hact = real( h1(ir), kind=kind(hact) )
       endif
 c
       end

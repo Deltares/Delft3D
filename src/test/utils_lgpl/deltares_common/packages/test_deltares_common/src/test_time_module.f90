@@ -130,16 +130,16 @@ module test_time_module
       subroutine test_date2mjd2date()
          implicit none
          logical       :: success_
-         real(kind=hp) :: expected_mjd, refdate_mjd, second
-         integer       :: refdate, returndate, returntime
+         real(kind=hp) :: expected_mjd, refdate_mjd
+         integer       :: refdate, returndate, returntime, istat
          
          refdate = 20221101
          expected_mjd = 59884.0_hp
          success_ = ymd2modified_jul(refdate, refdate_mjd)
          call assert_comparable(refdate_mjd, expected_mjd, tol, 'error in conversion ymd to modified julian date')
-         success_ = mjd2date(refdate_mjd, returndate)
+         istat = mjd2date(refdate_mjd, returndate)
          call assert_equal(refdate, returndate,'error in conversion modified julian date to ymd')
-         success_ = mjd2date(refdate_mjd, returndate, returntime)
+         istat = mjd2date(refdate_mjd, returndate, returntime)
          ! check that no time shift was introduced
          call assert_equal(returntime, 0,'error in mjd2date, unexpected timeshift')
                   

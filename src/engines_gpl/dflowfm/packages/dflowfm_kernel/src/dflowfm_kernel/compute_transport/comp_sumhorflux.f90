@@ -49,7 +49,8 @@ subroutine comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumho
    integer :: LL, L, Lb, Lt
    integer :: j, k1, k2
 
-   integer(4) ithndl / 0 /
+   integer(4) :: ithndl =  0
+   
    if (timon) call timstrt("comp_sumhorflux", ithndl)
 
    if (kmx < 1) then

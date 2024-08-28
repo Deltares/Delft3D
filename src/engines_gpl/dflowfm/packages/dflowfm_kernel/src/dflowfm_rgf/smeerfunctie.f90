@@ -31,13 +31,10 @@
 !
 
       subroutine SMEERFUNCTIE(I, J, MP, NP, FR, IN, JN)
+         use m_grid_block
          implicit none
          integer :: i, j, mp, np, in, jn
          double precision :: fr
-
-         integer :: mb, nb, mb2, nb2, npt, npt2, nputo, itype
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
-
          double precision :: pi, phi, fri, frj
          PI = acos(-1d0)
 

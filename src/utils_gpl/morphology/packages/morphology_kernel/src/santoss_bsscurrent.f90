@@ -67,10 +67,8 @@ subroutine santoss_bsscurrent(i2d3d, g, d, d50, d90, delta, unet, ang, &
 !
 ! local variables
 !
-    integer                 :: istat
     integer                 :: j
     real(fp)                :: mu
-    real(fp)                :: p_corr
     real(fp)                :: ksc1
     real(fp)                :: theta1
     real(fp)                :: ksc

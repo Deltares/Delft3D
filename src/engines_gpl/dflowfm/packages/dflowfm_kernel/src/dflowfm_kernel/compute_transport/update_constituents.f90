@@ -73,7 +73,6 @@ subroutine update_constituents(jarhoonly)
    use m_flow, only: Ndkx, Lnkx, u1, q1, au, qw, zws, sqi, vol1, kbot, ktop, Lbot, Ltop, kmxn, kmxL, kmx, viu, vicwws, wsf, jadecaytracers
    use m_flowtimes, only: dts
    use m_turbulence, only: sigdifi
-   use m_physcoef, only: vicouv
    use m_transport
    use m_mass_balance_areas
    use m_flowparameters, only: limtypsa, limtyptm, limtypsed, flowwithoutwaves
@@ -99,8 +98,8 @@ subroutine update_constituents(jarhoonly)
    integer :: istep
    integer :: numstepssync
 
-   integer(4) ithndl / 0 /
-
+   integer(4) :: ithndl =  0
+   
    if (NUMCONST == 0) return ! nothing to do
    if (timon) call timstrt("update_constituents", ithndl)
 
@@ -164,7 +163,7 @@ subroutine update_constituents(jarhoonly)
 
 !     compute horizontal fluxes, explicit part
       if ((.not. stm_included) .or. flowwithoutwaves) then ! just do the normal stuff
-         call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, vicouv, nsubsteps, jaupdate, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
+         call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
       else
          if (jatranspvel == 0 .or. jatranspvel == 1) then ! Lagrangian approach
             ! only add velocity asymmetry
@@ -185,9 +184,9 @@ subroutine update_constituents(jarhoonly)
                end do
             end do
          end if
-         call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1sed, q1sed, au, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, vicouv, nsubsteps, jaupdate, jaupdatehorflux, ndeltasteps, noupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
+         call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1sed, q1sed, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, noupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
 !        water advection velocity
-         call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, au, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, vicouv, nsubsteps, jaupdate, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
+         call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
       end if
 
       call starttimer(IDEBUG)
@@ -204,16 +203,16 @@ subroutine update_constituents(jarhoonly)
 
 !     determine which cells need to be updated
       if (nsubsteps > 1) then
-         call get_jaupdate(istep, nsubsteps, Ndxi, Ndx, ndeltasteps, jaupdate)
+         call get_jaupdate(istep, Ndxi, Ndx, ndeltasteps, jaupdate)
       end if
 
       if (kmx < 1) then ! 2D, call to 3D as well for now
-         call solve_2D(NUMCONST, Ndkx, Lnkx, vol1, kbot, ktop, Lbot, Ltop, sumhorflux, fluxver, const_sour, const_sink, nsubsteps, jaupdate, ndeltasteps, constituents, rhs)
+         call solve_2D(NUMCONST, Ndkx, vol1, kbot, ktop, sumhorflux, fluxver, const_sour, const_sink, nsubsteps, jaupdate, ndeltasteps, constituents, rhs)
       else
-         call comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, kmx, zws, qw, kbot, ktop, constituents, nsubsteps, jaupdate, ndeltasteps, fluxver, wsf)
+         call comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, zws, qw, kbot, ktop, constituents, nsubsteps, jaupdate, ndeltasteps, fluxver, wsf)
 
-         call solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx, kmx, &
-                             zws, qw, vol1, kbot, ktop, Lbot, Ltop, &
+         call solve_vertical(NUMCONST, ISED1, ISEDN, thetavert, Ndkx, kmx, &
+                             zws, qw, vol1, kbot, ktop, &
                              sumhorflux, fluxver, const_sour, const_sink, &
                              difsedw, sigdifi, vicwws, nsubsteps, jaupdate, ndeltasteps, constituents, &
                              a, b, c, d, e, sol, rhs)

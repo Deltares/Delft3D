@@ -46,8 +46,8 @@ module m_grid_utils_external
     integer, parameter :: AggregationFile = 4
     integer, parameter :: NolayGrid = 5
     integer, parameter :: NrGridTypes = 5
-    character*20        GridTypes(NrGridTypes)
-    DATA GridTypes / 'BASEGRID', 'PROCESSGRID', 'BOTTOMGRID', 'AGGREGATIONFILE', 'num_layers' /
+    character(len=20)  GridTypes(NrGridTypes)
+    DATA GridTypes / 'BASEGRID', 'PROCESSGRID', 'BOTTOMGRID', 'AGGREGATIONFILE', 'NOLAY' /
 
     ! this is the grid pointer itself
     type t_grid

@@ -50,7 +50,7 @@
     use m_longculverts, only: reset_longculverts
     use m_sedtrails_data
     use m_nearfield, only: reset_nearfieldData
-    use m_lateral, only: reset_lateral
+    use m_laterals, only: reset_lateral
     implicit none
 
     ! Only reset counters and other scalars, allocatables should be

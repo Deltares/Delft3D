@@ -11,6 +11,12 @@ function print_usage_info {
     echo "-h, --help"
     echo "       print this help message and exit"
     echo
+    echo "-p|--processlibrary <proc_def>"
+    echo "       use an alternative process library file instead of $D3D_HOME/share/delft3d/proc_def"
+    echo
+    echo "-eco|--bloomspecies [<bloom.spe>]"
+    echo "       use BLOOM, optionally using an alternative algea database for the default $D3D_HOME/share/delft3d/bloom.spe"
+    echo
     echo "--"
     echo "       All following arguments are passed to D-Flow FM."
     echo "       (optional)"
@@ -46,7 +52,7 @@ function set_omp_threads {
     fi
 }
 
-
+# Analyse the options
 
 while [[ $# -ge 1 ]]
 do
@@ -56,22 +62,30 @@ case $key in
     -h|--help)
     print_usage_info
     ;;
-    --)
-    dfmoptions=$*
-    break	# exit loop, all remaining options to dflowfm executable
+    -p|--processlibrary)
+    userprocfile="$1"
+    shift
+    ;;
+    -eco|--bloomspecies)
+    eco=true
+    if [[ $# -ge 1 ]]
+        then
+        userspefile="$1" ## using only -eco would result in using the default spe-file in $D3D_HOME/share/delft3d/
+        shift
+    else
+        userspefile=none
+    fi
     ;;
     *)
-    dfmoptions="$key $*"
-    break	# exit loop, $key+all remaining options to dflowfm executable
+    dfmoptions="$dfmoptions $key"
     ;;
 esac
 done
 
 scriptdirname=`readlink \-f \$0`
 scriptdir=`dirname $scriptdirname`
-export D3D_HOME=$scriptdir/.. 
+export D3D_HOME=$scriptdir/..
 export LD_LIBRARY_PATH=$D3D_HOME/lib:$LD_LIBRARY_PATH
-
 
 
 # On Deltares systems only:
@@ -85,11 +99,43 @@ if [ -f "/opt/apps/deltares/.nl" ]; then
 fi
 
 
+# Fill in default options
+
+if [ ! "$userprocfile" == "" ]
+    then
+    procfile=$userprocfile
+else
+    procfile=$D3D_HOME/share/delft3d/proc_def.dat
+fi
+
+if [ ! -f $procfile ]; then
+    if [ ! -f $procfile.dat ]; then
+        echo "ERROR: procfile $procfile does not exist"
+        print_usage_info
+    fi
+fi
+
+spefile=$D3D_HOME/share/delft3d/bloom.spe
+if [ "$eco" == "true" ]
+   then
+   if [ ! -f $userspefile ]; then
+       if [ ! -f $spefile ]; then
+          echo "ERROR: default bloom.spe $spefile does not exist"
+          echo "ERROR: the optional specified bloom.spe $userspefile does not exist either"
+          print_usage_info
+       else
+          echo "Using default bloom.spe"
+       fi
+   else
+       echo "Using specified bloom.spe $userspefile"
+       spefile=$userspefile
+   fi
+fi
 
 set_omp_threads
 
-echo "$D3D_HOME/bin/dflowfm --nodisplay --autostartstop $dfmoptions"
+echo "$D3D_HOME/bin/dflowfm --nodisplay --autostartstop --processlibrary $procfile --bloomspecies $spefile $dfmoptions"
 #ldd $D3D_HOME/bin/dflowfm
-$D3D_HOME/bin/dflowfm --nodisplay --autostartstop $dfmoptions
+$D3D_HOME/bin/dflowfm --nodisplay --autostartstop --processlibrary $procfile --bloomspecies $spefile $dfmoptions
 
 

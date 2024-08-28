@@ -57,7 +57,7 @@ subroutine generateTotalVolumeTable(volume, surface, storage, deadstorage, wl_de
    double precision, dimension(:),  intent(  out)     :: surface        !< Aggregated areas per level
    double precision, dimension(:),  intent(  out)     :: storage        !< Aggregated storage per level (=volume - deadstorage)
    double precision, dimension(:),  intent(  out)     :: deadstorage    !< Aggregated dead storage per level
-   double precision, dimension(:),  intent(  out)     :: wl_deadstorage  !< Minimal waterlevel 
+   double precision, dimension(:),  intent(in   )     :: wl_deadstorage  !< Dead storage waterlevel on each grid point
    type(T_voltable), dimension(:),  intent(in   )     :: voltb           !< Volume tables on grid points
    double precision,                intent(in   )     :: bedlevel        !< Bed level of the model
    double precision,                intent(in   )     :: increment       !< Requested increment
@@ -65,7 +65,7 @@ subroutine generateTotalVolumeTable(volume, surface, storage, deadstorage, wl_de
    integer,                         intent(in   )     :: numlevels       !< number of levels in volume, surface and levels
    integer,          dimension(:),  intent(in   )     :: nodes           !< mask array for defining a sub set on nodes.  
 
-   integer           :: j, i, ipoint, L
+   integer           :: j, ipoint
 
    volume      = 0d0
    deadstorage = 0d0
@@ -98,7 +98,7 @@ subroutine generateVolumeTableOnBranches(volume, surface, storage, deadstorage, 
    integer,          dimension(:),  intent(in   )     :: links          !< Mask array for defining a sub set on flow links.  
    integer,          dimension(:,:),intent(in   )     :: ln2nd          !< Indirection array links to nodes.  
 
-   integer           :: j, i, ipoint, L
+   integer           :: j, L
 
    volume = 0d0
 
@@ -124,7 +124,7 @@ double precision,               intent(in   ) :: bedlevel         !< Bed level
 double precision,               intent(in   ) :: increment        !< Requested increment   
 
 integer :: i
-double precision :: waterlevel, help
+double precision :: waterlevel
 
 do i = 2, numlevels
    waterlevel = bedlevel + (i-1)*increment
@@ -150,7 +150,6 @@ integer,                        intent(in   ) :: numlevels        !< Number of l
 double precision,               intent(in   ) :: increment        !< Requested increment   
 
 integer :: i
-double precision :: waterlevel
 
 storage(1) = 0d0
 do i = 2, numlevels

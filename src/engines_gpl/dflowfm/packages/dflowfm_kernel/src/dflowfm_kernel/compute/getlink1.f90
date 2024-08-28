@@ -36,6 +36,6 @@ subroutine getlink1(k, LL)
    if (nd(k)%lnx == 0) then
       LL = 1
    else
-      LL = iabs(nd(k)%ln(1))
+      LL = abs(nd(k)%ln(1))
    end if
 end subroutine

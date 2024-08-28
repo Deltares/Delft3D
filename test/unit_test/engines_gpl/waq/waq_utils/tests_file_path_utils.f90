@@ -37,7 +37,7 @@ program tests_file_path_utils
 
     implicit none
     character(len=200) :: cmd_arg
-    integer :: iargc, getarg
+    integer :: iargc
     real(kind=real_wp), parameter :: tolerance = 0.0001
 
     ! Determine the number of command line arguments

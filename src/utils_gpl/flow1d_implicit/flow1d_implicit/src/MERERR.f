@@ -41,7 +41,7 @@ c
 c     Parameters
 c
 
-      character*(*)  rectem, recsim, recdis
+      character(len=*)  rectem, recsim, recdis
       integer        lendis
 c
 c     Variables

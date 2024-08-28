@@ -42,7 +42,8 @@ subroutine comp_horfluxtot()
    integer :: LL, L, Lb, Lt
    integer :: j
 
-   integer(4) ithndl / 0 /
+   integer(4) :: ithndl =  0
+   
    if (timon) call timstrt("comp_horfluxtot", ithndl)
 
    if (kmx < 1) then

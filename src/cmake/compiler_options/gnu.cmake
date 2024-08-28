@@ -3,7 +3,7 @@ enable_language (Fortran)
 set(src_root_dir ${CMAKE_SOURCE_DIR}/..)
 
 if (WIN32)
-    message( FATAL_ERROR "GNU compilers on Windows are not supported. CMake will exit." )
+    message(FATAL_ERROR "GNU compilers are not supported on Windows. CMake will exit.")
 endif(WIN32)
 
 if (UNIX)
@@ -16,7 +16,7 @@ if (UNIX)
     set(CMAKE_CXX_FLAGS_DEBUG        "-g -O0 -fPIC -fopenmp")
     set(CMAKE_C_FLAGS_DEBUG          "-g -O0 -fPIC -fopenmp")
     
-    set(cpp_compiler_flags           "-std=c++11")
+    set(cpp_compiler_flags           "-std=c++17")
     set(dialect                      "-std=f2008")
     set(bounds                       "-fbounds-check")
 

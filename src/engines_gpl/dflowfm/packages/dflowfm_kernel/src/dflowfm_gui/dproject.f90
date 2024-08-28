@@ -37,9 +37,6 @@
     implicit none
     double precision :: x8, y8, xx4, yy4
     integer :: mode
-
-    ! COMMON /SFERZOOM/ X0,Y0,FAC,X1W,Y1W,X2W,Y2W  ! GRADEN
-
     double precision :: X, Y, XX, YY, SX, CX, SY, CY, SY0, CY0, RR, C, SC, CC, RN
     double precision, save :: EPS = 1.d-20
     X = X8
@@ -90,10 +87,10 @@
           if (Y >= 89d0) Y = 89.d0
           if (Y <= -89d0) Y = -89.d0
           YY = DG2RD * Y
-          YY = DLOG(1d0 + sin(YY)) / cos(YY)
+          YY = log(1d0 + sin(YY)) / cos(YY)
           XX = DG2RD * X
        else if (MODE == 2) then
-          YY = DATAN(sinh(Y))
+          YY = atan(sinh(Y))
           YY = RD2DG * YY
           XX = RD2DG * X
        end if

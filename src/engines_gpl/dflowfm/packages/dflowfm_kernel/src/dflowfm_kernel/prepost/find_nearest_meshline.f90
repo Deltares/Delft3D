@@ -205,7 +205,7 @@ contains
 
 !     find start- and endnode
 !      call get_kstartend(jstart,jend,kstart,kend)   ! will use jleft, jright, rLleft and rLright
-      call get_kstartend2(jstart, jend, kstart, kend) ! will use jleft, jright, rLleft and rLright
+      call get_kstartend2(jend, kstart, kend) ! will use jleft, jright, rLleft and rLright
       if (kstart < 1 .or. kend < 1) goto 1234 ! no start and/or end node found
 
       if (kstart == kend) goto 1234 ! no path can be found
@@ -399,7 +399,7 @@ contains
 !           get the boundary cell number
             k = lne(1, L)
 !           check the cell
-            call cellcrossedbyland(k, jstart, jend, j, in)
+            call cellcrossedbyland(k, jstart, jend, in)
             if (in == 1) then
 !              crossed: startcell found
                kstart = k
@@ -510,7 +510,7 @@ contains
                jacross = 0
                do kk = 1, netcell(kothercell)%N
                   LL = netcell(kothercell)%lin(kk)
-                  call linkcrossedbyland(LL, jstart, jend, 0, j, jacross)
+                  call linkcrossedbyland(LL, jstart, jend, j, jacross)
                   if (jacross == 1) exit
                end do
 
@@ -560,7 +560,7 @@ contains
                      !           unvisited links
                      linkmask(LL) = 0
 
-                     call linkcrossedbyland(LL, jstart, jend, 0, j, jacross)
+                     call linkcrossedbyland(LL, jstart, jend, j, jacross)
                      if (jacross == 1) then
                         linkmask(LL) = 1
                         jacell = 1
@@ -851,7 +851,7 @@ contains
 !>    these are nodes that are
 !>       on a link that is closest to the start and end node of the boundary segment respectively
 !>  note: will use jleft, jright, rLleft and rLright
-   subroutine get_kstartend2(jstart, jend, kstart, kend)
+   subroutine get_kstartend2(jend, kstart, kend)
 
       use m_missing, only: dmiss, JINS
       use m_polygon, only: NPL, xpl, ypl, zpl
@@ -860,7 +860,7 @@ contains
 
       implicit none
 
-      integer, intent(in) :: jstart, jend !< land boundary segment start and end point
+      integer, intent(in) :: jend !< land boundary segment end point
       integer, intent(out) :: kstart, kend !< start and end node
 
       integer :: ja ! for toland

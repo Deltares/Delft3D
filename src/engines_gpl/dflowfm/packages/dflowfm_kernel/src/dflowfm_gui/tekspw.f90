@@ -30,13 +30,12 @@
 !
 !
 
- subroutine tekspw(vfac, met)
+ subroutine tekspw(vfac)
     use m_flowgeom
     use m_spiderweb
     use m_wind
     implicit none
     double precision :: vfac, shft
-    integer :: met
 
     integer :: mx, nx, i, j, L
 

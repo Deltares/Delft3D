@@ -68,7 +68,7 @@ c declare function
       real   FLFRIK
 
       hulp   = 12. * r / sk
-      f1root = 1. / (2. * ALOG10(hulp))
+      f1root = 1. / (2. * LOG10(hulp))
       rn1    = r**(1./6.) * f1root / 8.86
       FLFRIK = a * r**(2./3.) / rn1
 

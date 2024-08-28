@@ -47,8 +47,8 @@
                ja1D = 1
                do LL = 1, nx
                   LLL = nd(n)%ln(LL)
-                  LLLa = iabs(LLL)
-                  if (iabs(kcu(LLLa)) /= 1) then
+                  LLLa = abs(LLL)
+                  if (abs(kcu(LLLa)) /= 1) then
                      ja1D = 0
                      exit
                   end if
@@ -56,9 +56,9 @@
                kc(n) = ja1D
                if (ja1D == 1) then
                   L1 = nd(n)%ln(1) ! uc1D on a node follows sign of u1 of its first link
-                  L1a = iabs(L1)
+                  L1a = abs(L1)
                   L2 = nd(n)%ln(2) ! this is the second link
-                  L2a = iabs(L2)
+                  L2a = abs(L2)
 
                   if (L1 > 0) then ! first link is incoming for node n
                      isnbnod(2, L1a) = 1 ! node is on side 2 of first link

@@ -127,8 +127,8 @@ c
       integer       fd_nefis_res ,rmap(nrmap) ,rtim(nrtim) ,
      &              codpre(*)
       logical       writed
-      character*(*) grnamm         ,grnamh
-      character*(*) nameel(nentri) ,quanel(nentri)  ,unitel(nentri) ,
+      character(len=*) grnamm         ,grnamh
+      character(len=*) nameel(nentri) ,quanel(nentri)  ,unitel(nentri) ,
      &              nameac(*)      ,
      &              descel(nentri)
 c
@@ -137,8 +137,8 @@ c
       integer        error  ,i     ,l   ,nelems ,ie  ,ie1  ,ie2
       integer        dimn(1),dimpi(1)   ,ord(1) ,nlc ,nsk
       logical        new
-      character*16   celnam ,name  ,name1
-      character*2    txt
+      character(len=16)   celnam ,name  ,name1
+      character(len=2)    txt
 c
 c     Declaration of external functions
 c

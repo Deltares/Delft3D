@@ -255,7 +255,7 @@ c
 c     mozart dummy declarations
       integer      nstmoz 
       logical      lmozad
-      character*40 qlatidd(1)
+      character(len=40) qlatidd(1)
 c
 c     External functions
 c
@@ -460,9 +460,9 @@ c
       do 84 i=1,5
          call flausm (nbran,ngrid,branch,hp(1,3),hp(1,2),0.5)
          do igr = 1, ngrid
-            hp(igr,3) = dble( max(adepth*.05 + 
-     +                      FLBOTT(igr,ngrid,maxlev,hlev),
-     +                      hp(igr,3)) )
+            hp(igr,3) = max(dble(adepth*.05 + 
+     +                      FLBOTT(igr,ngrid,maxlev,hlev)),
+     +                      hp(igr,3))
          enddo 
  84   continue
 
@@ -581,7 +581,7 @@ c
 c     Calculate discharge in every point
 c
       do 115 igr = 1, ngrid
-         qp(igr,3) = dsqrt(qp(igr,3) * af(igr))
+         qp(igr,3) = sqrt(qp(igr,3) * af(igr))
  115  continue
 c
 c      DO IGR=1,NGRID

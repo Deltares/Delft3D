@@ -47,11 +47,9 @@
     use unstruc_display
     use m_waves
     use m_1d2d_fixedweirs, only: compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
+    use m_drawthis
 
     implicit none
-
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
 
     integer :: key, jposhchk_sav, itype
     integer :: k, ierror, noddifmaxlevm
@@ -206,7 +204,7 @@
              noiterations(noddifmaxlev) = noiterations(noddifmaxlev) + 1
           end if
 
-          write (msgbuf, '(''No convergence in nonlinear solver at time '', g10.5,'' (s), time step is reduced from '', f8.4, '' (s) into '', f8.4, '' (s)'')') time0, dts, 0.5d0 * dts
+          write (msgbuf, '(''No convergence in nonlinear solver at time '', g12.5,'' (s), time step is reduced from '', f8.4, '' (s) into '', f8.4, '' (s)'')') time0, dts, 0.5d0 * dts
           !if (nonlin1D == 2) then
           !   ! Nested Newton
           !   !call err_flush()

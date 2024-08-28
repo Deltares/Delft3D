@@ -60,7 +60,7 @@ subroutine adjust_bobs_on_dambreak_breach(width, maxwidth, crl, startingLink, L1
    double precision :: rightside !< total dambreak structure width on the "right" [m]
 
    ! process the breach at the starting link
-   Lf = iabs(kdambreak(3, startingLink))
+   Lf = abs(kdambreak(3, startingLink))
    if (Lf > 0 .and. width > 0d0) then
       ! some breach, set to breached crest level
       bob(1, Lf) = max(bob0(1, Lf), crl)
@@ -110,7 +110,7 @@ subroutine adjust_bobs_on_dambreak_breach(width, maxwidth, crl, startingLink, L1
 
    ! process dam "left" of initial breach segment
    do k = startingLink - 1, L1, -1
-      Lf = iabs(kdambreak(3, k))
+      Lf = abs(kdambreak(3, k))
       if (leftBreachWidth > 0d0) then
          ! some breach, set to breached crest level
          if (Lf > 0) then
@@ -132,7 +132,7 @@ subroutine adjust_bobs_on_dambreak_breach(width, maxwidth, crl, startingLink, L1
 
    ! process dam "right" of initial breach segment
    do k = startingLink + 1, L2
-      Lf = iabs(kdambreak(3, k))
+      Lf = abs(kdambreak(3, k))
       if (rightBreachWidth > 0d0) then
          ! some breach, set to breached crest level
          if (Lf > 0) then

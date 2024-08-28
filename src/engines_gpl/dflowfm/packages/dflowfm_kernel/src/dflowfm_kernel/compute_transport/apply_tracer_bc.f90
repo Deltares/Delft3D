@@ -44,8 +44,8 @@ subroutine apply_tracer_bc()
    integer :: itrac, iconst
    integer :: k, kk, ki, kb
    integer :: L, LL, Lb, Lt
-
-   integer(4) ithndl / 0 /
+   integer(4) :: ithndl =  0
+   
    if (timon) call timstrt("apply_tracer_bc", ithndl)
 
 !  loop over the tracer boundary conditions

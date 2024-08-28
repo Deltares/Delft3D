@@ -260,7 +260,7 @@ c
 c             Compute actual total extra area
 c
               if (arexop(2) .ne. 0) then
-                 call FLAREX (iter      ,arexop(2)  ,sngl(h(i)) ,
+                 call FLAREX (iter      ,arexop(2)  ,real(h(i)) ,
      +                        arex(i,1) ,arex(i,2)  ,arex(i,4)  ,
      +                        overlp    ,delA       ,arexcn(i,2),
      +                        delW      )
@@ -298,7 +298,7 @@ c
 c              Compute extra area
 c
               if (arexop(1) .ne. 0) then
-                 call FLAREX (iter      ,arexop(1)  ,sngl(hact) ,
+                 call FLAREX (iter      ,arexop(1)  ,real(hact) ,
      +                        arex(i,1) ,arex(i,2)  ,arex(i,3)  ,
      +                        overlp    ,delA       ,arexcn(i,1),
      +                        delW      )

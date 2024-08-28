@@ -31,13 +31,13 @@
 !
 
 !> solve equations implicitly in vertical direction
-subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx, kmx, &
-                          zws, qw, vol1, kbot, ktop, Lbot, Ltop, &
+subroutine solve_vertical(NUMCONST, ISED1, ISEDN, thetavert, Ndkx, kmx, &
+                          zws, qw, vol1, kbot, ktop, &
                           sumhorflux, fluxver, source, sink, &
                           difsed, sigdifi, vicwws, &
                           nsubsteps, jaupdate, ndeltasteps, sed, &
                           a, b, c, d, e, sol, rhs)
-   use m_flowgeom, only: Ndxi, Ndx, Lnx, ba, kfs ! static mesh information
+   use m_flowgeom, only: Ndxi, Ndx, ba, kfs ! static mesh information
    use m_flowtimes, only: dts
    use m_flow, only: kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
    use m_flowparameters, only: epshu, testdryflood
@@ -51,10 +51,8 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
    integer, intent(in) :: NUMCONST !< number of transported quantities
    integer, intent(in) :: ISED1 !< index of first sediment fraction in constituents array
    integer, intent(in) :: ISEDN !< index of last  sediment fraction in constituents array
-   integer, intent(in) :: limtyp !< limiter type
    double precision, dimension(NUMCONST), intent(in) :: thetavert !< vertical advection explicit (0) or implicit (1)
    integer, intent(in) :: Ndkx !< total number of flownodes (dynamically changing)
-   integer, intent(in) :: Lnkx !< total number of flowlinks (dynamically changing)
    integer, intent(in) :: kmx !< maximum number of layers
    double precision, dimension(Ndkx), intent(in) :: zws !< vertical coordinate of layers at interface/center locations
    double precision, dimension(Ndkx), intent(in) :: qw !< flow-field vertical discharges
@@ -62,8 +60,6 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
    double precision, dimension(Ndkx), intent(in) :: vol1 !< volumes
    integer, dimension(Ndx), intent(in) :: kbot !< flow-node based layer administration
    integer, dimension(Ndx), intent(in) :: ktop !< flow-node based layer administration
-   integer, dimension(Lnx), intent(in) :: Lbot !< flow-link based layer administration
-   integer, dimension(Lnx), intent(in) :: Ltop !< flow-link based layer administration
    double precision, dimension(NUMCONST, Ndkx), intent(inout) :: sumhorflux !< sum of horizontal fluxes
    double precision, dimension(NUMCONST, Ndkx), intent(in) :: fluxver !< vertical fluxes
    double precision, dimension(NUMCONST, Ndkx), intent(in) :: source !< sources
@@ -90,14 +86,15 @@ subroutine solve_vertical(NUMCONST, ISED1, ISEDN, limtyp, thetavert, Ndkx, Lnkx,
 
    double precision, parameter :: dtol = 1d-8
 
-   integer(4) ithndl / 0 /
+   integer(4) :: ithndl =  0
+   
    if (timon) call timstrt("solve_vertical", ithndl)
 
    dt_loc = dts
 
    rhs = 0d0
 
-   call make_rhs(NUMCONST, thetavert, Ndkx, Lnkx, kmx, vol1, kbot, ktop, Lbot, Ltop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
+   call make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
 
    ! construct and solve system
    !$OMP PARALLEL DO                                                 &

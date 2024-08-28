@@ -447,17 +447,6 @@ contains
       return
    end subroutine SYSFIL
 
-!> Constructs the full path to a file in the system directory.
-   function getfilename(ftype, success)
-      character(len=255) :: getfilename
-      character(len=*), intent(in) :: ftype
-      logical, optional, intent(out) :: success
-
-!    fullpath = trim(pathdi)//trim(filename)
-      getfilename = 'todo'
-      success = .true.
-   end function getfilename
-
 !> Gets the basename of a file. By default this is the filename without its extension.
 !! Optionally, a file category may be specified, such that e.g., '_net.nc'
 !! is stripped off (instead of .nc only)

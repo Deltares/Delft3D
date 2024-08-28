@@ -42,7 +42,8 @@ subroutine comp_sinktot()
 
    integer :: k, j, ll
 
-   integer(4) ithndl / 0 /
+   integer(4) :: ithndl =  0
+   
    if (.not. stm_included) return
    if (mxgr == 0) return
    if (timon) call timstrt("comp_sinktot", ithndl)

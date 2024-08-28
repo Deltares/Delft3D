@@ -102,9 +102,9 @@ c
 c       hint = ( h1(i) + h(i) ) / 2.
         hint = dble( theta2*h(i) + (1.-theta2)*h1(i) )
 
-        zbmain = sngl( hlev(i,1) )
+        zbmain = real( hlev(i,1), kind=kind(zbmain) )
         wmain  = wft (i,1)
-        zbsub1 = sngl( hlev(i,2) )
+        zbsub1 = real( hlev(i,2), kind=kind(zbsub1) )
         wsub1  = wft (i,2)
 
         if ( zbmain .lt. zbsub1 ) then

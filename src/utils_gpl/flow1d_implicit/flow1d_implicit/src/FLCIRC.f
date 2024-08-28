@@ -94,12 +94,12 @@ c     Check if water level > reference + radius
 c
       if ( h .ge. reflev + radius ) then
 
-         af = sngl(( 0.5 * pi * radius * radius ) +
-     +        ( 2. * radius ) * ( h - reflev - radius ))
+         af = real(( 0.5 * pi * radius * radius ) +
+     +        ( 2. * radius ) * ( h - reflev - radius ), kind=kind(af))
 
          wf = 2. * radius
 
-         o  = sngl(( pi * radius ) + ( 2. * ( h - reflev - radius )))
+         o = real(( pi * radius ) + ( 2. * ( h - reflev - radius )))
 
       else if ( h .lt. reflev ) then
          ker = fatal

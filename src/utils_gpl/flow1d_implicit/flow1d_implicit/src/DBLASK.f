@@ -187,7 +187,7 @@ c
       SUBROUTINE DGEMM ( TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB,
      $                   BETA, C, LDC )
 *     .. Scalar Arguments ..
-      CHARACTER*1        TRANSA, TRANSB
+      character(len=1)   TRANSA, TRANSB
       INTEGER            M, N, K, LDA, LDB, LDC
       DOUBLE PRECISION   ALPHA, BETA
 *     .. Array Arguments ..
@@ -211,7 +211,7 @@ c
 *  Parameters
 *  ==========
 *
-*  TRANSA - CHARACTER*1.
+*  TRANSA - character(len=1.
 *           On entry, TRANSA specifies the form of op( A ) to be used in
 *           the matrix multiplication as follows:
 *
@@ -223,7 +223,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  TRANSB - CHARACTER*1.
+*  TRANSB - character(len=1.
 *           On entry, TRANSB specifies the form of op( B ) to be used in
 *           the matrix multiplication as follows:
 *
@@ -502,7 +502,7 @@ c
 *     .. Scalar Arguments ..
       DOUBLE PRECISION   ALPHA, BETA
       INTEGER            INCX, INCY, LDA, M, N
-      CHARACTER*1        TRANS
+      character(len=1)   TRANS
 *     .. Array Arguments ..
       DOUBLE PRECISION   A( LDA, * ), X( * ), Y( * )
 *     ..
@@ -520,7 +520,7 @@ c
 *  Parameters
 *  ==========
 *
-*  TRANS  - CHARACTER*1.
+*  TRANS  - character(len=1.
 *           On entry, TRANS specifies the operation to be performed as
 *           follows:
 *
@@ -931,8 +931,8 @@ c     modified 3/93 to return if incx .le. 0.
 c
 c     four phase method     using two built-in constants that are
 c     hopefully applicable to all machines.
-c         cutlo = maximum of  dsqrt(u/eps)  over all known machines.
-c         cuthi = minimum of  dsqrt(v)      over all known machines.
+c         cutlo = maximum of  sqrt(u/eps)  over all known machines.
+c         cuthi = minimum of  sqrt(v)      over all known machines.
 c     where
 c         eps = smallest no. such that eps + 1. .gt. 1.
 c         u   = smallest positive no.   (underflow limit)
@@ -971,14 +971,14 @@ c
       ix = 1
 c                                                 begin main loop
    20    go to next,(30, 50, 70, 110)
-   30 if( dabs(dx(i)) .gt. cutlo) go to 85
+   30 if( abs(dx(i)) .gt. cutlo) go to 85
       assign 50 to next
       xmax = zero
 c
 c                        phase 1.  sum is zero
 c
    50 if( dx(i) .eq. zero) go to 200
-      if( dabs(dx(i)) .gt. cutlo) go to 85
+      if( abs(dx(i)) .gt. cutlo) go to 85
 c
 c                                prepare for phase 2.
       assign 70 to next
@@ -990,20 +990,20 @@ c
       ix = j
       assign 110 to next
       sum = (sum / dx(i)) / dx(i)
-  105 xmax = dabs(dx(i))
+  105 xmax = abs(dx(i))
       go to 115
 c
 c                   phase 2.  sum is small.
 c                             scale to avoid destructive underflow.
 c
-   70 if( dabs(dx(i)) .gt. cutlo ) go to 75
+   70 if( abs(dx(i)) .gt. cutlo ) go to 75
 c
 c                     common code for phases 2 and 4.
 c                     in phase 4 sum is large.  scale to avoid overflow.
 c
-  110 if( dabs(dx(i)) .le. xmax ) go to 115
+  110 if( abs(dx(i)) .le. xmax ) go to 115
          sum = one + sum * (xmax / dx(i))**2
-         xmax = dabs(dx(i))
+         xmax = abs(dx(i))
          go to 200
 c
   115 sum = sum + (dx(i)/xmax)**2
@@ -1018,16 +1018,16 @@ c
 c     for real or d.p. set hitest = cuthi/n
 c     for complex      set hitest = cuthi/(2*n)
 c
-   85 hitest = cuthi/float( n )
+   85 hitest = cuthi / real(n, kind=kind(hitest)) 
 c
 c                   phase 3.  sum is mid-range.  no scaling.
 c
       do 95 j = ix,n
-      if(dabs(dx(i)) .ge. hitest) go to 100
+      if(abs(dx(i)) .ge. hitest) go to 100
          sum = sum + dx(i)**2
          i = i + incx
    95 continue
-      dnrm2 = dsqrt( sum )
+      dnrm2 = sqrt( sum )
       go to 300
 c
   200 continue
@@ -1039,7 +1039,7 @@ c              end of main loop.
 c
 c              compute square root and adjust for scaling.
 c
-      dnrm2 = xmax * dsqrt(sum)
+      dnrm2 = xmax * sqrt(sum)
   300 continue
       return
       end
@@ -1051,21 +1051,21 @@ c
       double precision da,db,c,s,roe,scale,r,z
 c
       roe = db
-      if( dabs(da) .gt. dabs(db) ) roe = da
-      scale = dabs(da) + dabs(db)
+      if( abs(da) .gt. abs(db) ) roe = da
+      scale = abs(da) + abs(db)
       if( scale .ne. 0.0d0 ) go to 10
          c = 1.0d0
          s = 0.0d0
          r = 0.0d0
          z = 0.0d0
          go to 20
-   10 r = scale*dsqrt((da/scale)**2 + (db/scale)**2)
-      r = dsign(1.0d0,roe)*r
+   10 r = scale*sqrt((da/scale)**2 + (db/scale)**2)
+      r = sign(1.0d0,roe)*r
       c = da/r
       s = db/r
       z = 1.0d0
-      if( dabs(da) .gt. dabs(db) ) z = s
-      if( dabs(db) .ge. dabs(da) .and. c .ne. 0.0d0 ) z = 1.0d0/c
+      if( abs(da) .gt. abs(db) ) z = s
+      if( abs(db) .ge. abs(da) .and. c .ne. 0.0d0 ) z = 1.0d0/c
    20 da = r
       db = z
       return
@@ -1208,7 +1208,7 @@ c
 *     .. Scalar Arguments ..
       DOUBLE PRECISION   ALPHA, BETA
       INTEGER            INCX, INCY, LDA, N
-      CHARACTER*1        UPLO
+      character(len=1)   UPLO
 *     .. Array Arguments ..
       DOUBLE PRECISION   A( LDA, * ), X( * ), Y( * )
 *     ..
@@ -1226,7 +1226,7 @@ c
 *  Parameters
 *  ==========
 *
-*  UPLO   - CHARACTER*1.
+*  UPLO   - character(len=1.
 *           On entry, UPLO specifies whether the upper or lower
 *           triangular part of the array A is to be referenced as
 *           follows:
@@ -1469,7 +1469,7 @@ c
 *     .. Scalar Arguments ..
       DOUBLE PRECISION   ALPHA
       INTEGER            INCX, INCY, LDA, N
-      CHARACTER*1        UPLO
+      character(len=1)   UPLO
 *     .. Array Arguments ..
       DOUBLE PRECISION   A( LDA, * ), X( * ), Y( * )
 *     ..
@@ -1487,7 +1487,7 @@ c
 *  Parameters
 *  ==========
 *
-*  UPLO   - CHARACTER*1.
+*  UPLO   - character(len=1.
 *           On entry, UPLO specifies whether the upper or lower
 *           triangular part of the array A is to be referenced as
 *           follows:
@@ -1698,7 +1698,7 @@ c
       SUBROUTINE DSYR2K( UPLO, TRANS, N, K, ALPHA, A, LDA, B, LDB,
      $                   BETA, C, LDC )
 *     .. Scalar Arguments ..
-      CHARACTER*1        UPLO, TRANS
+      character(len=1)   UPLO, TRANS
       INTEGER            N, K, LDA, LDB, LDC
       DOUBLE PRECISION   ALPHA, BETA
 *     .. Array Arguments ..
@@ -1723,7 +1723,7 @@ c
 *  Parameters
 *  ==========
 *
-*  UPLO   - CHARACTER*1.
+*  UPLO   - character(len=1.
 *           On  entry,   UPLO  specifies  whether  the  upper  or  lower
 *           triangular  part  of the  array  C  is to be  referenced  as
 *           follows:
@@ -1736,7 +1736,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  TRANS  - CHARACTER*1.
+*  TRANS  - character(len=1.
 *           On entry,  TRANS  specifies the operation to be performed as
 *           follows:
 *
@@ -2025,7 +2025,7 @@ c
       SUBROUTINE DTRMM ( SIDE, UPLO, TRANSA, DIAG, M, N, ALPHA, A, LDA,
      $                   B, LDB )
 *     .. Scalar Arguments ..
-      CHARACTER*1        SIDE, UPLO, TRANSA, DIAG
+      character(len=1)   SIDE, UPLO, TRANSA, DIAG
       INTEGER            M, N, LDA, LDB
       DOUBLE PRECISION   ALPHA
 *     .. Array Arguments ..
@@ -2047,7 +2047,7 @@ c
 *  Parameters
 *  ==========
 *
-*  SIDE   - CHARACTER*1.
+*  SIDE   - character(len=1.
 *           On entry,  SIDE specifies whether  op( A ) multiplies B from
 *           the left or right as follows:
 *
@@ -2057,7 +2057,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  UPLO   - CHARACTER*1.
+*  UPLO   - character(len=1.
 *           On entry, UPLO specifies whether the matrix A is an upper or
 *           lower triangular matrix as follows:
 *
@@ -2067,7 +2067,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  TRANSA - CHARACTER*1.
+*  TRANSA - character(len=1.
 *           On entry, TRANSA specifies the form of op( A ) to be used in
 *           the matrix multiplication as follows:
 *
@@ -2079,7 +2079,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  DIAG   - CHARACTER*1.
+*  DIAG   - character(len=1.
 *           On entry, DIAG specifies whether or not A is unit triangular
 *           as follows:
 *
@@ -2380,7 +2380,7 @@ c
       SUBROUTINE DTRMV ( UPLO, TRANS, DIAG, N, A, LDA, X, INCX )
 *     .. Scalar Arguments ..
       INTEGER            INCX, LDA, N
-      CHARACTER*1        DIAG, TRANS, UPLO
+      character(len=1)   DIAG, TRANS, UPLO
 *     .. Array Arguments ..
       DOUBLE PRECISION   A( LDA, * ), X( * )
 *     ..
@@ -2398,7 +2398,7 @@ c
 *  Parameters
 *  ==========
 *
-*  UPLO   - CHARACTER*1.
+*  UPLO   - character(len=1.
 *           On entry, UPLO specifies whether the matrix is an upper or
 *           lower triangular matrix as follows:
 *
@@ -2408,7 +2408,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  TRANS  - CHARACTER*1.
+*  TRANS  - character(len=1.
 *           On entry, TRANS specifies the operation to be performed as
 *           follows:
 *
@@ -2420,7 +2420,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  DIAG   - CHARACTER*1.
+*  DIAG   - character(len=1.
 *           On entry, DIAG specifies whether or not A is unit
 *           triangular as follows:
 *
@@ -2666,7 +2666,7 @@ c
       SUBROUTINE DTRSV ( UPLO, TRANS, DIAG, N, A, LDA, X, INCX )
 *     .. Scalar Arguments ..
       INTEGER            INCX, LDA, N
-      CHARACTER*1        DIAG, TRANS, UPLO
+      character(len=1)   DIAG, TRANS, UPLO
 *     .. Array Arguments ..
       DOUBLE PRECISION   A( LDA, * ), X( * )
 *     ..
@@ -2687,7 +2687,7 @@ c
 *  Parameters
 *  ==========
 *
-*  UPLO   - CHARACTER*1.
+*  UPLO   - character(len=1.
 *           On entry, UPLO specifies whether the matrix is an upper or
 *           lower triangular matrix as follows:
 *
@@ -2697,7 +2697,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  TRANS  - CHARACTER*1.
+*  TRANS  - character(len=1.
 *           On entry, TRANS specifies the equations to be solved as
 *           follows:
 *
@@ -2709,7 +2709,7 @@ c
 *
 *           Unchanged on exit.
 *
-*  DIAG   - CHARACTER*1.
+*  DIAG   - character(len=1.
 *           On entry, DIAG specifies whether or not A is unit
 *           triangular as follows:
 *
@@ -2970,23 +2970,23 @@ c
 c        code for increment not equal to 1
 c
       ix = 1
-      dmax = dabs(dx(1))
+      dmax = abs(dx(1))
       ix = ix + incx
       do 10 i = 2,n
-         if(dabs(dx(ix)).le.dmax) go to 5
+         if(abs(dx(ix)).le.dmax) go to 5
          idamax = i
-         dmax = dabs(dx(ix))
+         dmax = abs(dx(ix))
     5    ix = ix + incx
    10 continue
       return
 c
 c        code for increment equal to 1
 c
-   20 dmax = dabs(dx(1))
+   20 dmax = abs(dx(1))
       do 30 i = 2,n
-         if(dabs(dx(i)).le.dmax) go to 30
+         if(abs(dx(i)).le.dmax) go to 30
          idamax = i
-         dmax = dabs(dx(i))
+         dmax = abs(dx(i))
    30 continue
       return
       end

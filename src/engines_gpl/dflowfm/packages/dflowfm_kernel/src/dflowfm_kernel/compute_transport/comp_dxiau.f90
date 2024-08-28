@@ -43,8 +43,8 @@ subroutine comp_dxiAu() ! or: setdxiau
    integer :: k1, k2, i
    integer :: LL, L, Lb, Lt
    double precision :: hh, ff
-   integer(4) ithndl / 0 /
-
+   integer(4) :: ithndl =  0
+   
    if (timon) call timstrt("comp_dxiAu", ithndl)
 
    if (jalimitdtdiff == 0) then

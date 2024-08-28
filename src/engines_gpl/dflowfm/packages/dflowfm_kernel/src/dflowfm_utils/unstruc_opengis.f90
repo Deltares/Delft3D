@@ -629,6 +629,9 @@ contains
       logical :: success
       integer :: level
 
+      ! stop is not used in this subroutine and associate is introduced to avoid the warning
+      associate( stop => stop ); end associate 
+          
       inputdata = transfer(data, inputdata)
       mout = inputdata(1) !< File pointer
       maxkeylength = inputdata(2)

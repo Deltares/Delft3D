@@ -50,7 +50,7 @@
     qls = 0
     do kk = 1, nd(k)%lnx
        LL = nd(k)%ln(kk)
-       LLL = iabs(LL)
+       LLL = abs(LL)
        ku = ln(1, LLL)
        if (ku == k) ku = ln(2, LLL)
 

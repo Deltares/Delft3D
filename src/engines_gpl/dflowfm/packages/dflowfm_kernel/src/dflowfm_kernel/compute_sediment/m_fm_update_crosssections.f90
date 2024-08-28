@@ -191,7 +191,7 @@ contains
                if (c == -999) cycle
                cdef => network%crs%cross(c)%tabdef
                !LL = nd(nm)%ln(j)
-               !L = iabs(LL)
+               !L = abs(LL)
                !if (LL < 0) then
                !   ds = dx(L)*acl(L)
                !else
@@ -256,7 +256,7 @@ contains
          ds = 0d0
          do i = 1, nd_mor(nm)%lnx
             LL = nd_mor(nm)%ln(i)
-            L = iabs(LL)
+            L = abs(LL)
             if (LL < 0) then
                ds = ds + dx(L) * acl(L)
             else
@@ -265,7 +265,7 @@ contains
          end do
       else
          LL = nd_mor(nm)%ln(j)
-         L = iabs(LL)
+         L = abs(LL)
          if (LL < 0) then
             ds = dx(L) * acl(L)
          else

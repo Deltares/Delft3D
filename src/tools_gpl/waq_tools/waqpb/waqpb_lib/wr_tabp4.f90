@@ -68,9 +68,9 @@
       INTEGER       NO_PROC     , LUNREP     , & 
                    IERROR
       INTEGER       DEFFDS
-      CHARACTER*10  PROC_ID     (NO_PROC)
-      CHARACTER*50  PROC_NAME   (NO_PROC)
-      CHARACTER*10  PROC_FORT   (NO_PROC)
+      CHARACTER(len=10)  PROC_ID     (NO_PROC)
+      CHARACTER(len=50)  PROC_NAME   (NO_PROC)
+      CHARACTER(len=10)  PROC_FORT   (NO_PROC)
       INTEGER       PROC_TRCO   (NO_PROC)
 !     
 !          Local variables
@@ -88,9 +88,9 @@
       INTEGER       I               , IELM
       INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      CHARACTER(len=16)  GRPNAM
+      CHARACTER(len=16)  ELMNMS(NELEMS), ELMTPS(NELEMS)
+      CHARACTER(len=64)  ELMDES(NELEMS)
 !     
 !          External NEFIS Functions
 !     

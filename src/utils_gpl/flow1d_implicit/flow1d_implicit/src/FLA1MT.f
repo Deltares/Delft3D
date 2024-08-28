@@ -140,8 +140,8 @@ c           [ Doc. S-FO-001.5KV / Eq. 5-19 ]
 c
             if (ilev .gt. 0) then
 c
-               ht1 = sngl(hlev(i,ilev  ))
-               ht2 = sngl(hlev(i,ilev+1))
+               ht1 = real(hlev(i,ilev  ), kind=kind(ht1))
+               ht2 = real(hlev(i,ilev+1), kind=kind(ht2))
                wf1 = wft (i,ilev  )
                wf2 = wft (i,ilev+1)
 c
@@ -171,7 +171,7 @@ c              table overflow
 c              [ Doc. S-FO-001.5KV / Eq. 5-18 ]
 c
                ntmax = nlev(i)
-               hmax  = sngl(hlev(i,ntmax))
+               hmax  = real(hlev(i,ntmax), kind=kind(hmax))
                wfmax = wft (i,ntmax)
                izwf  = izwft(i,ntmax) + wfmax * (hint*hint-hmax*hmax)/2.
 

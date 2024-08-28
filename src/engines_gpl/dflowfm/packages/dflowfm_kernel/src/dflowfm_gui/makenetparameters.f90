@@ -34,6 +34,7 @@
       use M_MAKENET
       use unstruc_display
       use dflowfm_version_module, only: company, product_name
+      use m_helpnow
       implicit none
       integer :: i
       integer :: ifexit
@@ -48,14 +49,12 @@
       integer :: iyp
       integer :: key
       integer :: nbut
-      integer :: nlevel
       integer :: numfldactual
       integer :: numparactual
 
       integer, parameter :: NUMPAR = 15, NUMFLD = 2 * NUMPAR
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-      character WRDKEY * 40, OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
-      common / HELPNOW / WRDKEY, NLEVEL
+      character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
       external :: highlight_form_line
 

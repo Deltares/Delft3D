@@ -120,7 +120,7 @@
          ! updated ustokes needed before conversion to eulerian velocities
          if (jawave > 0 .and. .not. flowwithoutwaves) then
             ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
-            call getustwav(LL, z00, umod, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu)
+            call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu)
             !
             if (jawaveStokes >= 1) then ! ustokes correction at bed
                umod = sqrt((u1Lb - ustokes(Lb)) * (u1Lb - ustokes(Lb)) + (v(Lb) - vstokes(Lb)) * (v(Lb) - vstokes(Lb)))
@@ -173,7 +173,7 @@
                   cphi = csw * csu(LL) + snw * snu(LL)
                   sphi = -csw * snu(LL) + snw * csu(LL)
                   abscos = abs(cphi * uu + sphi * vv) / umod
-                  call getsoulsbywci(modind, z00, ustc2, ustw2, fw, cdrag, umod, abscos, taubpuLL, taubxuLL)
+                  call getsoulsbywci(modind, ustc2, ustw2, fw, cdrag, umod, abscos, taubpuLL, taubxuLL)
                   ! ustbLL = sqrt(umod*taubpuLL)
                else if (modind == 9) then ! wave-current interaction van Rijn (2004)
                   call getvanrijnwci(LL, umod, u2dh, taubpuLL, z0urouL)
@@ -267,7 +267,7 @@
          u1Lb = u1(Lb)
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
          if (jawave > 0) then
-            call getustwav(LL, z00, umod, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
+            call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
             !
             if (jawaveStokes >= 1) then
                umod = sqrt((u1Lb - ustokes(Lb)) * (u1Lb - ustokes(Lb)) + (v(Lb) - vstokes(Lb)) * (v(Lb) - vstokes(Lb))) ! was ustokes(LL)

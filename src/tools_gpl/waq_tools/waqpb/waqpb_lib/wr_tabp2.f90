@@ -75,15 +75,15 @@
       INTEGER       NO_ITEM     , LUNREP     , & 
                    IERROR
       INTEGER       DEFFDS
-      CHARACTER*10  ITEM_ID     (NO_ITEM)
-      CHARACTER*50  ITEM_NAME   (NO_ITEM)
-      CHARACTER*20  ITEM_UNIT   (NO_ITEM)
+      CHARACTER(len=10)  ITEM_ID     (NO_ITEM)
+      CHARACTER(len=50)  ITEM_NAME   (NO_ITEM)
+      CHARACTER(len=20)  ITEM_UNIT   (NO_ITEM)
       REAL          ITEM_DEFAULT(NO_ITEM)
-      CHARACTER*10  ITEM_AGGREGA(NO_ITEM)
-      CHARACTER*10  ITEM_DISAGGR(NO_ITEM)
-      CHARACTER*30  ITEM_GROUPID(NO_ITEM)
-      CHARACTER*1   ITEM_SEGX   (NO_ITEM)
-      CHARACTER*1   ITEM_WK     (NO_ITEM)
+      CHARACTER(len=10)  ITEM_AGGREGA(NO_ITEM)
+      CHARACTER(len=10)  ITEM_DISAGGR(NO_ITEM)
+      CHARACTER(len=30)  ITEM_GROUPID(NO_ITEM)
+      CHARACTER(len=1)   ITEM_SEGX   (NO_ITEM)
+      CHARACTER(len=1)   ITEM_WK     (NO_ITEM)
 !     
 !          Local variables
 !     
@@ -100,9 +100,9 @@
       INTEGER       I               , IELM
       INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      CHARACTER(len=16)  GRPNAM
+      CHARACTER(len=16)  ELMNMS(NELEMS), ELMTPS(NELEMS)
+      CHARACTER(len=64)  ELMDES(NELEMS)
 !     
 !          External NEFIS Functions
 !     

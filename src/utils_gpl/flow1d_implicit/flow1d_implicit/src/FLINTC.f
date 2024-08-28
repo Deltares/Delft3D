@@ -304,7 +304,7 @@ c
 c     contyp = 1 : fixed interval
 c            = 2 : variable interval
 c
-      conint = contrl( 5,icont) * sngl(dt1)
+      conint = contrl( 5,icont) * real(dt1, kind=kind(conint))
       contyp = int(contrl(10,icont))
 c
       if      ( contyp .eq. cintfx ) then

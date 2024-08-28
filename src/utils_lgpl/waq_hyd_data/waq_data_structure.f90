@@ -420,7 +420,7 @@ contains
         real :: amiss                ! missing value
         real, allocatable :: tmp_conc(:, :)        ! store result on different grid in temp array
         logical, allocatable :: iseg_set(:)          ! indicates if segment is set in temporary array
-        integer(4) ithandl /0/
+        integer(4) :: ithandl = 0
         if (timon) call timstrt ("evaluate_data_block", ithandl)
 
         ierror = 0

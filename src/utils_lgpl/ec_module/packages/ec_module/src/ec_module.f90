@@ -671,10 +671,10 @@ module m_ec_module
          success = .true.                    ! in which case we simply ignore the Get-request
          return
       else
-         success = .false.
          call clearECMessage()
          tUnitFactor = ecSupportTimeUnitConversionFactor(tgt_tunit)
-         ierr = ymd2modified_jul(tgt_refdate, tgt_mjd)
+         success = ymd2modified_jul(tgt_refdate, tgt_mjd)
+         success = .false.
          call ecReqTime%set2(tgt_mjd, timesteps * tUnitFactor / 86400.0_hp - tgt_tzone / 24.0_hp)        
          if (.not. ecGetValues(instancePtr, itemId, ecReqTime, target_array)) then
             datestring = datetime_to_string(ecReqTime%mjd(), ierr)

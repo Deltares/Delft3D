@@ -37,43 +37,43 @@ module wave_boundary_update_module
    public generate_wave_boundary_surfbeat
    !
    type spectrum ! These are related to input spectra
-      real*8, dimension(:, :), pointer :: S ! 2D variance density spectrum
-      real*8, dimension(:), pointer :: f, ang ! 1D frequency and direction vectors for S
-      real*8, dimension(:), pointer :: Sf ! S integrated over all directions
-      real*8, dimension(:), pointer :: Sd ! S integrated over all frequencies
+      real(dp), dimension(:, :), pointer :: S ! 2D variance density spectrum
+      real(dp), dimension(:), pointer :: f, ang ! 1D frequency and direction vectors for S
+      real(dp), dimension(:), pointer :: Sf ! S integrated over all directions
+      real(dp), dimension(:), pointer :: Sd ! S integrated over all frequencies
       integer :: nf, nang ! number of frequencies and angles
-      real*8 :: df, dang ! frequency and angle step size
-      real*8 :: hm0, fp, dir0, scoeff ! imposed significant wave height, peak frequency,
+      real(dp) :: df, dang ! frequency and angle step size
+      real(dp) :: hm0, fp, dir0, scoeff ! imposed significant wave height, peak frequency,
       ! main wave angle and spreading coefficient
-      real*8 :: trep, dirm ! representative period and mean wave direction
+      real(dp) :: trep, dirm ! representative period and mean wave direction
    end type spectrum
    type shortspectrum
-      real*8, dimension(:), pointer :: Sf ! S integrated over all directions
+      real(dp), dimension(:), pointer :: Sf ! S integrated over all directions
    end type shortspectrum
    type waveparamsnew ! These are related to the generated bc series
-      real*8 :: h0 ! average water depth on offshore boundary
+      real(dp) :: h0 ! average water depth on offshore boundary
       integer :: K ! number of wave train components
-      real*8 :: rtbc, dtbc ! duration and time step to be written to boundary condition file
-      real*8 :: rtin, dtin ! duration and time step for the internal time axis, based on Fourier
+      real(dp) :: rtbc, dtbc ! duration and time step to be written to boundary condition file
+      real(dp) :: rtin, dtin ! duration and time step for the internal time axis, based on Fourier
       ! limitations and the number of wave train components (wp%K)
-      real*8, dimension(:), pointer :: tin ! internal time axis
-      real*8, dimension(:), pointer :: taperf, taperw ! internal taper function for flow and waves
+      real(dp), dimension(:), pointer :: tin ! internal time axis
+      real(dp), dimension(:), pointer :: taperf, taperw ! internal taper function for flow and waves
       integer :: tslen ! internal time axis length (is always even, not odd)
       integer :: tslenbc ! time axis length for boundary condition file
       logical :: dtchanged ! quick check to see if dtin == dtbc (useful for interpolation purpose)
-      real*8, dimension(:), pointer :: fgen, thetagen, phigen, kgen, wgen ! frequency, angle, phase, wave number, radian frequency
+      real(dp), dimension(:), pointer :: fgen, thetagen, phigen, kgen, wgen ! frequency, angle, phase, wave number, radian frequency
       ! of wavetrain components for boundary signal
-      real*8 :: dfgen ! frequency grid size in the generated components
+      real(dp) :: dfgen ! frequency grid size in the generated components
       type(shortspectrum), dimension(:), pointer :: vargen ! This is where the variance for each wave train at each spectrum location
       ! is stored
       type(shortspectrum), dimension(:), pointer :: vargenq ! This is where the variance for each wave train at each spectrum location
       ! is stored, which is not scaled and is used for the generation of bound waves
-      real*8, dimension(:, :), pointer :: A ! Amplitude, per wave train component, per offshore grid point A(ny+1,K)
-      real*8, dimension(:, :), pointer :: Sfinterp ! S integrated over all directions at frequency locations of fgen,
+      real(dp), dimension(:, :), pointer :: A ! Amplitude, per wave train component, per offshore grid point A(ny+1,K)
+      real(dp), dimension(:, :), pointer :: Sfinterp ! S integrated over all directions at frequency locations of fgen,
       ! per offshore grid point Sfinterp(npb,K)
-      real*8, dimension(:, :), pointer :: Sfinterpq ! S integrated over all directions at frequency locations of fgen,
+      real(dp), dimension(:, :), pointer :: Sfinterpq ! S integrated over all directions at frequency locations of fgen,
       ! per offshore grid point Sfinterpq(npb,K), uncorrected for generation of bound waves
-      real*8, dimension(:), pointer :: Hm0interp ! Hm0 per offshore point, based on intergration of Sfinterp and used to scale
+      real(dp), dimension(:), pointer :: Hm0interp ! Hm0 per offshore point, based on intergration of Sfinterp and used to scale
       ! final time series
       integer, dimension(:), pointer :: Findex ! Index of wave train component locations on frequency/Fourier axis
       integer, dimension(:), pointer :: WDindex ! Index of wave train component locations on wave directional bin axis
@@ -81,10 +81,10 @@ module wave_boundary_update_module
       ! using energy balance)
       double complex, dimension(:, :), pointer :: CompFn ! Fourier components of the wave trains
       character(1024) :: Efilename, qfilename, nhfilename
-      real*8, dimension(:, :), pointer :: zsits ! time series of total surface elevation for nonhspectrum==1
-      real*8, dimension(:, :), pointer :: uits ! time series of depth-averaged horizontal east velocity nonhspectrum==1 or swkhmin>0
-      real*8, dimension(:, :), pointer :: vits ! time series of depth-averaged horizontal north velocity nonhspectrum==1 or swkhmin>0
-      real*8, dimension(:, :), pointer :: wits ! time series of depth-averaged vertical velocity for nonhspectrum==1  ??
+      real(dp), dimension(:, :), pointer :: zsits ! time series of total surface elevation for nonhspectrum==1
+      real(dp), dimension(:, :), pointer :: uits ! time series of depth-averaged horizontal east velocity nonhspectrum==1 or swkhmin>0
+      real(dp), dimension(:, :), pointer :: vits ! time series of depth-averaged horizontal north velocity nonhspectrum==1 or swkhmin>0
+      real(dp), dimension(:, :), pointer :: wits ! time series of depth-averaged vertical velocity for nonhspectrum==1  ??
    end type waveparamsnew
    !
    ! These parameters control a lot how the spectra are handled. They could be put in params.txt,
@@ -92,7 +92,7 @@ module wave_boundary_update_module
    integer, parameter :: nfint = 801 ! size of standard 2D spectrum in frequency dimension
    integer, parameter :: naint = 401 ! size of standard 2D spectrum in angular dimension
    integer, parameter :: Kmin = 200 ! minimum number of wave train components
-   real*8, parameter :: wdmax = 5.d0 ! maximum depth*reliable angular wave frequency that can be resolved by
+   real(dp), parameter :: wdmax = 5.d0 ! maximum depth*reliable angular wave frequency that can be resolved by
    ! nonhydrostatic wave model. All frequencies above this are removed
    ! from nonhspectrum generation
    ! Shortcut pointers to commonly used parameters
@@ -100,14 +100,14 @@ module wave_boundary_update_module
    integer :: ntheta
    integer :: ntheta_s
    integer :: singledir
-   real*8 :: hb0
+   real(dp) :: hb0
    ! Physical constants
-   real*8, parameter :: par_pi = 4.d0 * atan(1.d0)
-   real*8, parameter :: par_g = 9.81d0
+   real(dp), parameter :: par_pi = 4.d0 * atan(1.d0)
+   real(dp), parameter :: par_g = 9.81d0
    complex(kind(0.0d0)), parameter :: par_compi = (0.0d0, 1.0d0)
    ! others
    integer, save :: ind_end_taper
-   real*8, dimension(:, :), allocatable, save :: lastwaveelevation ! wave height at the end of the last spectrum
+   real(dp), dimension(:, :), allocatable, save :: lastwaveelevation ! wave height at the end of the last spectrum
 contains
 
    subroutine generate_wave_boundary_surfbeat(ibnd, durationlength)
@@ -120,7 +120,7 @@ contains
       implicit none
       ! Input and output variables
       integer, intent(in) :: ibnd
-      real*8, intent(out) :: durationlength
+      real(dp), intent(out) :: durationlength
       !
       !
       ! Internal variables
@@ -128,8 +128,8 @@ contains
       type(spectrum) :: combspec
       type(waveparamsnew) :: wp ! Most will be deallocated, but some variables useful to keep?
       integer :: iloc
-      real*8 :: fmax
-      real*8, dimension(:), allocatable :: wL, wR
+      real(dp) :: fmax
+      real(dp), dimension(:), allocatable :: wL, wR
       integer, dimension(:), allocatable :: kL, kR
 
       type(filenames), save :: waveSpectrumFileName
@@ -201,7 +201,7 @@ contains
             call writelog('sl', '', 'Values calculated from interpolated spectrum:')
             call writelog('sl', '(a,f0.2,a)', 'Hm0       = ', specinterp(iloc)%hm0, ' m')
             call writelog('sl', '(a,f0.2,a)', 'Trep      = ', specinterp(iloc)%trep, ' s')
-            call writelog('sl', '(a,f0.2,a)', 'Mean dir  = ', mod(specinterp(iloc)%dirm, 360.), ' degN')
+            call writelog('sl', '(a,f0.2,a)', 'Mean dir  = ', mod(specinterp(iloc)%dirm, 360.d0), ' degN')
 
          end do
 
@@ -228,7 +228,7 @@ contains
                        waveSpectrumAdministration(ibnd)%Tbc, ' s')
 
          if (waveboundaryParameters(ibnd)%singledir > 0) then
-            call set_stationary_spectrum(ibnd, wp, combspec)
+            call set_stationary_spectrum(ibnd, combspec)
          end if
          ! Wave trains that are used by XBeach. The number of wave trains, their frequencies and directions
          ! are based on the combined spectra of all the locations to ensure all wave conditions are
@@ -443,17 +443,17 @@ contains
       integer :: forcepartition
       integer, dimension(2) :: indvec
       integer, dimension(:), allocatable :: tma
-      real*8, dimension(:), allocatable :: x, y, Dd, tempdir
-      real*8, dimension(:), allocatable :: Hm0, fp, gam, mainang, scoeff
-      real*8 :: dfj, fnyq
-      real*8 :: Tp
+      real(dp), dimension(:), allocatable :: x, y, Dd, tempdir
+      real(dp), dimension(:), allocatable :: Hm0, fp, gam, mainang, scoeff
+      real(dp) :: dfj, fnyq
+      real(dp) :: Tp
       character(len=80) :: dummystring
       type(spectrum), dimension(:), allocatable :: multinomalspec, scaledspec
       logical :: cont
-      real*8, dimension(:), allocatable :: scalefac1, scalefac2, tempmax, avgscale
-      real*8, dimension(:), allocatable :: oldvariance, newvariance
-      real*8 :: newconv, oldconv
-      real*8 :: LL, LL0, sigmatma, k, nn, hh
+      real(dp), dimension(:), allocatable :: scalefac1, scalefac2, tempmax, avgscale
+      real(dp), dimension(:), allocatable :: oldvariance, newvariance
+      real(dp) :: newconv, oldconv
+      real(dp) :: LL, LL0, sigmatma, k, nn, hh
 
       ! First part: read JONSWAP parameter data
 
@@ -662,7 +662,7 @@ contains
             end where
          end do
          ! Calculate directional spreading based on cosine law
-         Dd = dcos(tempdir)**(2 * nint(scoeff(ip))) ! Robert: apparently nint is needed here, else MATH error
+         Dd = cos(tempdir)**(2 * nint(scoeff(ip))) ! Robert: apparently nint is needed here, else MATH error
          ! Scale directional spreading to have a surface of unity by dividing by its
          ! own surface
          Dd = Dd / (sum(Dd) * specin%dang)
@@ -882,12 +882,12 @@ contains
       !                 - gam         : peak enhancement factor, optional parameter (DEFAULT 3.3)
       !                 - y is output : nondimensional relative spectral density, equal to one at the peak
 
-      real*8, intent(IN) :: gam
-      real*8, dimension(:), intent(IN) :: x
-      real*8, dimension(:), intent(INOUT) :: y
+      real(dp), intent(IN) :: gam
+      real(dp), dimension(:), intent(IN) :: x
+      real(dp), dimension(:), intent(INOUT) :: y
 
       ! Internal variables
-      real*8, dimension(size(x)) :: xa, sigma, fac1, fac2, fac3, temp
+      real(dp), dimension(size(x)) :: xa, sigma, fac1, fac2, fac3, temp
 
       xa = abs(x)
 
@@ -938,13 +938,13 @@ contains
 
       ! Internal variables
       character(6) :: rtext
-      real*8 :: factor, exc
+      real(dp) :: factor, exc
       integer :: fid, switch
       integer :: i, ii, ier, ier2, ier3
       logical :: flipped
       integer :: nt, Ashift
-      real*8, dimension(:), allocatable :: temp
-      real*8, dimension(:, :), allocatable :: tempA
+      real(dp), dimension(:), allocatable :: temp
+      real(dp), dimension(:, :), allocatable :: tempA
 
       flipped = .false.
       switch = 0
@@ -1304,12 +1304,12 @@ contains
       integer, intent(in) :: ibnd
       type(spectrum), intent(in) :: specin
       type(spectrum), intent(inout) :: specinterp
-      real*8, intent(in) :: fmax
+      real(dp), intent(in) :: fmax
       ! internal
       integer :: i, j, dummy
-      real*8 :: m0, df, dang
-      real*8 :: hm0pre, hm0post, Sfnow, factor, tempt0
-      real*8, dimension(:, :), allocatable :: Stemp
+      real(dp) :: m0, df, dang
+      real(dp) :: hm0pre, hm0post, Sfnow, factor, tempt0
+      real(dp), dimension(:, :), allocatable :: Stemp
 
       double precision, parameter :: dtol = 1d-16
 
@@ -1475,8 +1475,8 @@ contains
       type(spectrum), intent(inout) :: combspec
       integer :: iloc
       integer :: ifn
-      real*8, dimension(3) :: peakSd, peakang
-      real*8, dimension(:), allocatable :: tempSf
+      real(dp), dimension(3) :: peakSd, peakang
+      real(dp), dimension(:), allocatable :: tempSf
 
       double precision, parameter :: dtol = 1d-16
 
@@ -1561,12 +1561,12 @@ contains
       integer, intent(in) :: ibnd
       integer, intent(in) :: npb
       integer, dimension(npb), intent(in) :: kL, kR
-      real*8, dimension(npb), intent(in) :: wL, wR
+      real(dp), dimension(npb), intent(in) :: wL, wR
       type(spectrum), dimension(nspectra), intent(in) :: specinterp
       type(spectrum), intent(inout) :: combspec
       integer :: iloc
-      real*8, dimension(3) :: peakSd, peakang
-      real*8, dimension(:), allocatable :: tempSf
+      real(dp), dimension(3) :: peakSd, peakang
+      real(dp), dimension(:), allocatable :: tempSf
 
       double precision, parameter :: dtol = 1d-16
 
@@ -1664,8 +1664,8 @@ contains
       ! internal
       integer :: i, ii
       integer :: ind1, ind2, dummy
-      real*8, dimension(:), allocatable :: randnums, pdflocal, cdflocal
-      real*8 :: L0, L, kmax, fmax
+      real(dp), dimension(:), allocatable :: randnums, pdflocal, cdflocal
+      real(dp) :: L0, L, kmax, fmax
 
       ! If we are running non-hydrostatic boundary conditions, we want to remove
       ! very high frequency components, as these will not be computed well anyway
@@ -1791,20 +1791,20 @@ contains
 
       implicit none
       ! input
-      real*8, intent(in) :: L0
-      real*8, intent(in) :: Lestimate
-      real*8, intent(in) :: px
-      real*8, intent(in) :: h
+      real(dp), intent(in) :: L0
+      real(dp), intent(in) :: Lestimate
+      real(dp), intent(in) :: px
+      real(dp), intent(in) :: h
       ! output
-      real*8 :: L
+      real(dp) :: L
       ! internal
-      real*8 :: L1, L2
+      real(dp) :: L1, L2
       integer :: iter
-      real*8 :: err
-      real*8, parameter :: aphi = 1.d0 / (((1.0d0 + sqrt(5.0d0)) / 2) + 1)
-      real*8, parameter :: bphi = ((1.0d0 + sqrt(5.0d0)) / 2) / (((1.0d0 + sqrt(5.0d0)) / 2) + 1)
+      real(dp) :: err
+      real(dp), parameter :: aphi = 1.d0 / (((1.0d0 + sqrt(5.0d0)) / 2) + 1)
+      real(dp), parameter :: bphi = ((1.0d0 + sqrt(5.0d0)) / 2) / (((1.0d0 + sqrt(5.0d0)) / 2) + 1)
       integer, parameter :: itermax = 150
-      real*8, parameter :: errmax = 0.00001d0
+      real(dp), parameter :: errmax = 0.00001d0
 
       err = huge(0.0d0)
       iter = 0
@@ -1832,12 +1832,12 @@ contains
 
       implicit none
 
-      real*8, dimension(:), intent(in) :: Sf, f
-      real*8, intent(out) :: Trep
-      real*8, intent(in) :: trepfac
+      real(dp), dimension(:), intent(in) :: Sf, f
+      real(dp), intent(out) :: Trep
+      real(dp), intent(in) :: trepfac
       integer, intent(in) :: switch
 
-      real*8, dimension(:), allocatable :: temp
+      real(dp), dimension(:), allocatable :: temp
 
       double precision, parameter :: dtol = 1d-16
 
@@ -1867,13 +1867,13 @@ contains
       implicit none
 
       integer, intent(in) :: ibnd
-      real*8, dimension(:), intent(in) :: f, Sf
-      real*8, intent(in) :: fmax
+      real(dp), dimension(:), intent(in) :: f, Sf
+      real(dp), intent(in) :: fmax
 
       integer, intent(out) :: firstp, lastp
 
-      real*8, dimension(:), intent(out), allocatable, optional :: findlineout
-      real*8, dimension(:), allocatable :: temp, findline
+      real(dp), dimension(:), intent(out), allocatable, optional :: findlineout
+      real(dp), dimension(:), allocatable :: temp, findline
       integer :: i = 0
 
       ! find frequency range around peak
@@ -1997,7 +1997,7 @@ contains
       type(spectrum), dimension(nspectra), intent(in) :: specinterp
       ! internal
       integer :: i, ii, dummy
-      real*8 :: hm0post
+      real(dp) :: hm0post
 
       ! allocate space for the variance arrays
       allocate (wp%vargen(nspectra))
@@ -2049,8 +2049,8 @@ contains
       ! internal
       integer :: i, ii
       integer :: kkL, kkR
-      real*8 :: sfnow, sfimp
-      real*8 :: wwL, wwR
+      real(dp) :: sfnow, sfimp
+      real(dp) :: wwL, wwR
 
       ! allocate space for the amplitude array and representative integration angle
       allocate (wp%A(npb, wp%K))
@@ -2152,8 +2152,8 @@ contains
             ! start at x(1,1), y(1,1).
             wp%CompFn(ii, wp%Findex(i)) = wp%A(ii, i) / 2 * exp(par_compi * wp%phigen(i)) * & ! Bas: wp%Findex used in time dimension because t=j*dt in frequency space
                                           exp(-par_compi * wp%kgen(i) * &
-                                              (dsin(wp%thetagen(i)) * (waveBoundaryParameters(ibnd)%yb(ii) - waveBoundaryParameters(ibnd)%y0) &
-                                               + dcos(wp%thetagen(i)) * (waveBoundaryParameters(ibnd)%xb(ii) - waveBoundaryParameters(ibnd)%x0)))
+                                              (sin(wp%thetagen(i)) * (waveBoundaryParameters(ibnd)%yb(ii) - waveBoundaryParameters(ibnd)%y0) &
+                                               + cos(wp%thetagen(i)) * (waveBoundaryParameters(ibnd)%xb(ii) - waveBoundaryParameters(ibnd)%x0)))
 
             ! Determine Fourier coefficients beyond Nyquist frequency (equal to
             ! coefficients at negative frequency axis) of relevant wave components for
@@ -2185,10 +2185,10 @@ contains
       integer, intent(in) :: ibnd, nspr
       ! internal
       integer :: i, itheta
-      real*8, dimension(:, :), allocatable :: binedges
-      real*8 :: lostvar, keptvar, perclost
+      real(dp), dimension(:, :), allocatable :: binedges
+      real(dp) :: lostvar, keptvar, perclost
       integer :: lntheta ! local copies that can be changed without
-      real*8 :: ldtheta ! damage to the rest of the model
+      real(dp) :: ldtheta ! damage to the rest of the model
 
       ! Calculate the bin edges of all the computational wave bins in the
       ! XBeach model (not the input spectrum)
@@ -2294,12 +2294,12 @@ contains
       integer :: index, status
       integer :: nInBoundaryFile
       integer, dimension(:), allocatable :: nwc
-      real*8, dimension(:, :, :), allocatable :: zeta, Ampzeta, E_tdir
-      real*8, dimension(:, :), allocatable :: eta, Amp
+      real(dp), dimension(:, :, :), allocatable :: zeta, Ampzeta, E_tdir
+      real(dp), dimension(:, :), allocatable :: eta, Amp
       complex(fftkind), dimension(:), allocatable :: Gn, tempcmplx, tempcmplxhalf
       integer, dimension(:), allocatable :: tempindex, tempinclude
-      real*8 :: stdzeta, stdeta, etot, perc, emean
-      real*8, dimension(:), allocatable :: E_t
+      real(dp) :: stdzeta, stdeta, etot, perc, emean
+      real(dp), dimension(:), allocatable :: E_t
 
       ! Allocate variables for water level exitation and amplitude with and without
       ! directional spreading dependent envelope
@@ -2549,8 +2549,8 @@ contains
       type(waveparamsnew), intent(inout) :: wp
       ! internal
       integer :: j, it, ik
-      real*8 :: U
-      real*8, dimension(npb) :: distx, disty
+      real(dp) :: U
+      real(dp), dimension(npb) :: distx, disty
 
       ! allocate memory for time series of data
       allocate (wp%zsits(npb, wp%tslen))
@@ -2578,10 +2578,10 @@ contains
          do ik = 1, wp%K
             if (wp%PRindex(ik) == 1) then
                do j = 1, npb
-                  wp%zsits(j, it) = wp%zsits(j, it) + wp%A(j, ik) * dsin( &
+                  wp%zsits(j, it) = wp%zsits(j, it) + wp%A(j, ik) * sin( &
                                     +wp%wgen(ik) * wp%tin(it) &
-                                    - wp%kgen(ik) * (dsin(wp%thetagen(ik)) * disty(j) &
-                                                     + dcos(wp%thetagen(ik)) * distx(j) &
+                                    - wp%kgen(ik) * (sin(wp%thetagen(ik)) * disty(j) &
+                                                     + cos(wp%thetagen(ik)) * distx(j) &
                                                      ) &
                                     + wp%phigen(ik) &
                                     )
@@ -2603,17 +2603,17 @@ contains
                do j = 1, npb
                   ! Depth-average velocity in wave direction:
                   U = 1.d0 / hb0 * wp%wgen(ik) * wp%A(j, ik) * &
-                      dsin(wp%wgen(ik) * wp%tin(it) &
-                           - wp%kgen(ik) * (dsin(wp%thetagen(ik)) * disty(j) &
-                                            + dcos(wp%thetagen(ik)) * distx(j)) &
+                      sin(wp%wgen(ik) * wp%tin(it) &
+                           - wp%kgen(ik) * (sin(wp%thetagen(ik)) * disty(j) &
+                                            + cos(wp%thetagen(ik)) * distx(j)) &
                            + wp%phigen(ik) &
                            ) * &
                       1.d0 / wp%kgen(ik)
 
                   ! Eastward component:
-                  wp%uits(j, it) = wp%uits(j, it) + dcos(wp%thetagen(ik)) * U
+                  wp%uits(j, it) = wp%uits(j, it) + cos(wp%thetagen(ik)) * U
                   ! Northward component:
-                  wp%vits(j, it) = wp%vits(j, it) + dsin(wp%thetagen(ik)) * U
+                  wp%vits(j, it) = wp%vits(j, it) + sin(wp%thetagen(ik)) * U
                end do
             end if
          end do
@@ -2650,12 +2650,12 @@ contains
       integer :: halflen, status
       integer :: nInBoundaryFile
       logical :: firsttime ! used for output message only
-      real*8 :: deltaf ! difference frequency
-      real*8 :: qmean
-      real*8, dimension(:), allocatable :: term1, term2, term2new, dif, chk1, chk2, qinterp
-      real*8, dimension(npb) :: distx, disty
-      real*8, dimension(:, :), allocatable :: Eforc, D, deltheta, KKx, KKy, dphi3, k3, cg3, theta3, Abnd, D_sign
-      real*8, dimension(:, :, :), allocatable :: q
+      real(dp) :: deltaf ! difference frequency
+      real(dp) :: qmean
+      real(dp), dimension(:), allocatable :: term1, term2, term2new, dif, chk1, chk2, qinterp
+      real(dp), dimension(npb) :: distx, disty
+      real(dp), dimension(:, :), allocatable :: Eforc, D, deltheta, KKx, KKy, dphi3, k3, cg3, theta3, Abnd, D_sign
+      real(dp), dimension(:, :, :), allocatable :: q
       complex(fftkind), dimension(:), allocatable :: Comptemp, Comptemp2, Gn
       complex(fftkind), dimension(:, :, :), allocatable :: Ftemp
 
@@ -2728,13 +2728,13 @@ contains
          deltheta(m, 1:K - m) = abs(wp%thetagen(m + 1:K) - wp%thetagen(1:K - m)) + par_pi
 
          ! Determine x- and y-components of wave numbers of difference waves
-         KKy(m, 1:K - m) = wp%kgen(m + 1:K) * dsin(wp%thetagen(m + 1:K)) - wp%kgen(1:K - m) * dsin(wp%thetagen(1:K - m))
-         KKx(m, 1:K - m) = wp%kgen(m + 1:K) * dcos(wp%thetagen(m + 1:K)) - wp%kgen(1:K - m) * dcos(wp%thetagen(1:K - m))
+         KKy(m, 1:K - m) = wp%kgen(m + 1:K) * sin(wp%thetagen(m + 1:K)) - wp%kgen(1:K - m) * sin(wp%thetagen(1:K - m))
+         KKx(m, 1:K - m) = wp%kgen(m + 1:K) * cos(wp%thetagen(m + 1:K)) - wp%kgen(1:K - m) * cos(wp%thetagen(1:K - m))
 
          ! Determine difference wave numbers according to Van Dongeren et al. 2003
          ! eq. 19
          k3(m, 1:K - m) = sqrt(wp%kgen(1:K - m)**2 + wp%kgen(m + 1:K)**2 + &
-                               2 * wp%kgen(1:K - m) * wp%kgen(m + 1:K) * dcos(deltheta(m, 1:K - m)))
+                               2 * wp%kgen(1:K - m) * wp%kgen(m + 1:K) * cos(deltheta(m, 1:K - m)))
 
          ! Determine group velocity of difference waves
          cg3(m, 1:K - m) = 2.d0 * par_pi * deltaf / k3(m, 1:K - m)
@@ -2756,10 +2756,10 @@ contains
          chk1 = cosh(wp%kgen(1:K - m) * hb0)
          chk2 = cosh(wp%kgen(m + 1:K) * hb0)
 
-         D(m, 1:K - m) = -par_g * wp%kgen(1:K - m) * wp%kgen(m + 1:K) * dcos(deltheta(m, 1:K - m)) / 2.d0 / term1 + &
+         D(m, 1:K - m) = -par_g * wp%kgen(1:K - m) * wp%kgen(m + 1:K) * cos(deltheta(m, 1:K - m)) / 2.d0 / term1 + &
                          +term2**2 / (par_g * 2) + par_g * term2 / &
                          ((par_g * k3(m, 1:K - m) * tanh(k3(m, 1:K - m) * hb0) - (term2new)**2) * term1) * &
-                         (term2 * ((term1)**2 / par_g / par_g - wp%kgen(1:K - m) * wp%kgen(m + 1:K) * dcos(deltheta(m, 1:K - m))) &
+                         (term2 * ((term1)**2 / par_g / par_g - wp%kgen(1:K - m) * wp%kgen(m + 1:K) * cos(deltheta(m, 1:K - m))) &
                           - 0.50d0 * ((-wp%wgen(1:K - m)) * wp%kgen(m + 1:K)**2 / (chk2**2) + wp%wgen(m + 1:K) * wp%kgen(1:K - m)**2 / (chk1**2)))
 
          ! Exclude interactions with components smaller than or equal to current
@@ -2778,7 +2778,7 @@ contains
          Comptemp = conjg(wp%CompFn(1, wp%Findex(1) + m:wp%Findex(1) + K - 1))
          Comptemp2 = conjg(wp%CompFn(1, wp%Findex(1):wp%Findex(1) + K - m - 1))
          !dphi3(m,1:K-m) = par_pi+imag(log(Comptemp))-imag(log(Comptemp2))
-         dphi3(m, 1:K - m) = imag(log(Comptemp)) - imag(log(Comptemp2))
+         dphi3(m, 1:K - m) = aimag(log(Comptemp)) - aimag(log(Comptemp2))
          deallocate (Comptemp, Comptemp2)
          !
          ! Determine angle of bound long wave according to Van Dongeren et al. 2003 eq. 22
@@ -2835,8 +2835,8 @@ contains
          !
          ! Determine complex description of bound long wave per interaction pair of
          ! primary waves for first y-coordinate along seaside boundary
-         Ftemp(:, :, 1) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 * dcos(theta3) ! qx
-         Ftemp(:, :, 2) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 * dsin(theta3) ! qy
+         Ftemp(:, :, 1) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 * cos(theta3) ! qx
+         Ftemp(:, :, 2) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 * sin(theta3) ! qy
          Ftemp(:, :, 3) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 ! qtot
          Ftemp(:, :, 4) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) ! eta
          !
@@ -2865,7 +2865,7 @@ contains
             ! increase and decrease in and out the wave time record using the earlier
             ! specified window
             Comptemp2 = Comptemp2 / sqrt(dble(wp%tslen))
-            q(j, :, iq) = dreal(Comptemp2 * wp%tslen) * wp%taperf
+            q(j, :, iq) = real(Comptemp2 * wp%tslen) * wp%taperf
          end do ! iq=1,3
       end do ! j=1,npb
       !
@@ -2976,7 +2976,7 @@ contains
 
    end subroutine generate_nhtimeseries_file
 
-   subroutine set_stationary_spectrum(ibnd, wp, combspec)
+   subroutine set_stationary_spectrum(ibnd, combspec)
       use m_sferic
       use m_physcoef
       use interp
@@ -2985,7 +2985,6 @@ contains
 
       integer, intent(in) :: ibnd
       type(spectrum), intent(in) :: combspec
-      type(waveparamsnew), intent(in) :: wp
 
       double precision :: xcycle
       double precision, dimension(:), allocatable :: angcart, Sdcart, eet

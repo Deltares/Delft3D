@@ -644,13 +644,45 @@ module m_debgrz_computations
         dpspw = dspw * tp
     end subroutine calculate_spawning
 
-    !> Respiration per individual
+
+
+    !> Shell formation fluxes per individual
+    subroutine calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv, fpgrosmo, fpdissmo, ycacosmo, ddis, pomm, pca)
+        real(kind=real_wp), intent(in   ) :: pm       !< Maintenance per individual                      [J/ind/d]
+        real(kind=real_wp), intent(in   ) :: pja      !< Maturity maintenance adults                     [J/ind/d]
+        real(kind=real_wp), intent(in   ) :: pjj      !< Maturity maintenance juveniles                  [J/ind/d]
+        real(kind=real_wp), intent(in   ) :: prj      !< Maturity development                            [J/ind/d]
+        real(kind=real_wp), intent(in   ) :: pv       !< Energy flux to growth (i.e. structural biomass)[J/ind/d]
+        real(kind=real_wp), intent(in   ) :: fpgrosmo !< Growth-based contribution to shell matrix      [-]
+        real(kind=real_wp), intent(in   ) :: fpdissmo !< Dissipation-based contribution to shell matrix [-]
+        real(kind=real_wp), intent(in   ) :: ycacosmo !< Yield coefficient CaCO3 deposition on matrix   [-]
+
+! AM: for the second round
+!        real(kind=real_wp), intent(in   ) :: satarg   !< aragonite saturation state                           [-]
+!        real(kind=real_wp), intent(in   ) :: ksat     !< half sat const for reduced aragonite precipitation   [-]
+
+        real(kind=real_wp), intent(  out) :: ddis     !< Dissipation flux (not the same as respiration!)[J/ind/d]
+        real(kind=real_wp), intent(  out) :: pomm     !< Energy flux to organic shell matrix            [J/ind/d]
+        real(kind=real_wp), intent(  out) :: pca      !< Energy flux to calcification of shell matrix   [J/ind/d]
+
+        ddis = pm + pja + pjj + prj
+        pomm = max( 0.0, pv * fpgrosmo + ddis * fpdissmo )
+        if ( ycacosmo > 0.0 ) then
+            pca  = max( 0.0, pomm / ycacosmo )
+        else
+            pca  = 0.0
+        endif
+
+        ! AM: for the second round
+        ! s_s2 = satarg / (satarg + ksarag);                   ! reduced precipitation
+        ! pca  =  max(0., (pomm / frsmosmi) * s_s2)
+    end subroutine calculate_shell_formation_fluxes
+
+ !> Respiration per individual
     !! Last two terms refer to overhead costs of growth and reproduction
-    subroutine calculate_respiration(pm, pja, pjj, prj, kappa_g, pg, pra, kappar, tn, tp, dres, dnres, dpres)
-        real(kind=real_wp), intent(in   ) :: pm      !< Maintenance per individual             [J/ind/d]
-        real(kind=real_wp), intent(in   ) :: pja     !< Maturity maintenance adults            [J/ind/d]
-        real(kind=real_wp), intent(in   ) :: pjj     !< Maturity maintenance juveniles         [J/ind/d]
-        real(kind=real_wp), intent(in   ) :: prj     !< Maturity development                   [J/ind/d]
+    subroutine calculate_respiration(ddis, pomm, kappa_g, pg, pra, kappar, tn, tp, dres, dnres, dpres)
+        real(kind=real_wp), intent(in   ) :: ddis    !< Dissipation flux                       [J/ind/d]
+        real(kind=real_wp), intent(in   ) :: pomm    !< Energy flux to organic shell matrix    [J/ind/d]
         real(kind=real_wp), intent(in   ) :: kappa_g !< Overhead costs for growth                    [-]
         real(kind=real_wp), intent(in   ) :: pg      !< Energy costs for growth                [J/ind/d]
         real(kind=real_wp), intent(in   ) :: pra     !< Specific energy for reproduction       [J/ind/d]
@@ -666,22 +698,10 @@ module m_debgrz_computations
 
         overhead_costs_growth =       (1.-kappa_g) * max(pg, 0.)
         overhead_costs_reproduction = (1.-kappar)  * max(pra,0.)
-        dres = pm + pja + pjj + prj + overhead_costs_growth + overhead_costs_reproduction
+        dres = ddis - pomm + overhead_costs_growth + overhead_costs_reproduction
         dnres = dres * tn
         dpres = dres * tp
     end subroutine calculate_respiration
-
-    !> Shell formation fluxes per individual
-    subroutine calculate_shell_formation_fluxes(pv, frgsmo, frsmosmi, pomm, pca)
-        real(kind=real_wp), intent(in   ) :: pv       !< Overhead costs per volume                      [J/ind/d]
-        real(kind=real_wp), intent(in   ) :: frgsmo   !< Fraction of growth flux to shell matrix              [-]
-        real(kind=real_wp), intent(in   ) :: frsmosmi !< Fraction of shell matrix flux to calcification       [-]
-        real(kind=real_wp), intent(  out) :: pomm     !< Energy flux to organic shell matrix            [J/ind/d]
-        real(kind=real_wp), intent(  out) :: pca      !< Energy flux to calcification of shell matrix   [J/ind/d]
-
-        pomm =  max(0., (pv   * frgsmo))
-        pca  =  max(0., (pomm * frsmosmi))
-    end subroutine calculate_shell_formation_fluxes
 
     !> Natural mortality and harvesting (only former comes back into the system as detritus)
     !! These added fractions cannot be larger than one (minus the material used for maintenance, at Pv<0)

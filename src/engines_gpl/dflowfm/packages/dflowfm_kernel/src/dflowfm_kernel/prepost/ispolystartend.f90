@@ -35,11 +35,11 @@
     !! Multiple polylines are stored in one large array, separated by dmiss.
     !! To know whether point at index L1 is a start/end point of one of these
     !! polylines, check on a neighbouring dmiss.
-    logical function ispolystartend(X, Y, N, MAXPOL, ipoi) result(res)
+    logical function ispolystartend(X, N, MAXPOL, ipoi) result(res)
        use m_missing
        implicit none
        integer, intent(in) :: MAXPOL !< Length of polyline coordinate arrays.
-       double precision, intent(in) :: X(MAXPOL), Y(MAXPOL) !< Entire polyline coordinate arrays
+       double precision, intent(in) :: X(MAXPOL) !< Entire polyline coordinate array
        integer, intent(in) :: N !< Index of last filled polyline point (npol<=maxpol)
        integer, intent(in) :: ipoi !< Index of polyline point to be checked.
 

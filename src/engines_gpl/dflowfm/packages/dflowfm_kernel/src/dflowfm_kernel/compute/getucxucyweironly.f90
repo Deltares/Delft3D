@@ -32,13 +32,13 @@
 
 ! =================================================================================================
 ! =================================================================================================
- subroutine getucxucyweironly(ku, ucxku, ucyku, ischeme)
+ subroutine getucxucyweironly(ku, ucxku, ucyku)
     use m_flow
     use m_flowgeom
     use m_sferic, only: jasfer3D
     implicit none
 
-    integer :: ku, LL, L, Ls, ischeme, n12
+    integer :: ku, LL, L, Ls, n12
 
     double precision :: ucxku, ucyku, ww, ac1, huweir, hunoweir, wl, wlno, at, cs, sn, fac
 
@@ -48,7 +48,7 @@
     huweir = 0d0; hunoweir = 0d0; wl = 0d0; wlno = 0d0; at = 0d0
 
     do LL = 1, nd(ku)%lnx
-       Ls = nd(ku)%ln(LL); L = iabs(Ls)
+       Ls = nd(ku)%ln(LL); L = abs(Ls)
        if (iadv(L) >= 21 .and. iadv(L) <= 29) then
           huweir = huweir + wu(L) * hu(L)
           wl = wl + wu(L)
@@ -57,7 +57,7 @@
     huweir = huweir / wl
 
     do LL = 1, nd(ku)%lnx
-       Ls = nd(ku)%ln(LL); L = iabs(Ls)
+       Ls = nd(ku)%ln(LL); L = abs(Ls)
        if (Ls < 0) then
           ac1 = acL(L)
           n12 = 1

@@ -46,7 +46,7 @@
      integer :: K, KPREV
 
      if (KP < 0) then
-        KPREV = IABS(KP)
+        KPREV = abs(KP)
      else
         KPREV = 0
      end if

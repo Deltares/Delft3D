@@ -281,7 +281,13 @@ contains
         endif
 
         write (file_unit, 2100) iaropt
-        goto (60, 70, 110) iaropt + 1
+        if (iaropt == 0) then
+           goto 60
+        else if(iaropt == 1) then
+           goto 70
+        else if(iaropt == 2) then
+           goto 110
+        end if
         write (file_unit, 2110)
         call status%increase_error_count()
         goto 160

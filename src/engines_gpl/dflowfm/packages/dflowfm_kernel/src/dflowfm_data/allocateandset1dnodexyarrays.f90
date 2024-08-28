@@ -127,8 +127,7 @@
 
     do LL = 1, nd(n)%lnx
        L = linnrs(LL)
-
-       La = iabs(L)
+       La = abs(L)
 
        if (kcu(La) /= 1 .and. kcu(La) /= 4) then
           cycle ! Only use real 1D links in the flow node contour, no 1d2d links

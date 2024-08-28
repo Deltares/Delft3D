@@ -177,9 +177,6 @@ function get_proj_string_from_epsg(epsg, proj_string) result(ierr)
    character(len=1024), intent(  out) :: proj_string !< The PROJ-string for the given crs.
    integer                            :: ierr        !< Result status (IONC_NOERR==NF90_NOERR) if successful.
 
-   integer :: i, natts
-   logical :: found
-
    ierr = 0 ! TODO: AvD
 
    select case(epsg)

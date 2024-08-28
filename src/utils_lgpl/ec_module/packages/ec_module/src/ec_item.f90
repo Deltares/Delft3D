@@ -367,7 +367,6 @@ module m_ec_item
          integer                            :: j            !< loop variable
          character(len=1000)                :: message
          logical, dimension(:), allocatable :: skipWeights  !< Flags for each connection if weight computation can be skipped
-         integer                            :: ntimes
          logical                            :: first_item_is_periodic
          type(tEcItem), pointer             :: source_item  !< the source item
          !
@@ -481,8 +480,6 @@ module m_ec_item
          type(c_time),              intent(in)    :: timesteps     !< objective: t0<=timesteps<=t1
          integer ,                  intent(in)    :: interpol_type !< interpolation
          !
-         integer                                  :: i                     !< loop counter
-         integer                                  :: j                     !< loop counter
          type(tEcFileReader), pointer             :: fileReaderPtr         !< helper pointer for a file reader
          character(len=22)                        :: strnum1               !< 1st number converted to string for error message
          character(len=22)                        :: strnum2               !< 2nd number converted to string for error message
@@ -909,7 +906,6 @@ module m_ec_item
          real(hp), dimension(:), pointer    :: values     !< values at time t0
          type(tEcItem)                      :: item
 
-         type(tEcConverter), pointer        :: cnvrt => null()
          integer, parameter                 :: array_increment = 100
          integer                            :: vectormax, newsize
          logical                            :: do_add
@@ -947,7 +943,6 @@ module m_ec_item
       function ecItemFinalizeTimeseries(item) result (success)
          implicit none
          logical                             :: success    !< function status
-         real(hp)                            :: t0, t1     !< source item t0 and t1
          type(tEcItem), intent(inout)        :: item
          integer, parameter                  :: array_increment = 100
          integer                             :: vectormax, ntimes
@@ -976,7 +971,7 @@ module m_ec_item
          real(hp), dimension(:), pointer    :: valuesT1      !< values at time t1
          type(tEcItem), intent(inout)       :: item
          integer, parameter                 :: array_increment = 100
-         integer                            :: vectormax, newsize
+         integer                            :: vectormax
          real(hp)                           :: tmod
          integer                            :: it
          real(hp)                           :: periodic_shift

@@ -44,7 +44,8 @@ subroutine fill_rho()
    integer :: kk, k, kb, kt
    double precision :: dvoli, dtol = 1d-8
 
-   integer(4) ithndl / 0 /
+   integer(4) :: ithndl = 0
+   
    if (timon) call timstrt("fill_rho", ithndl)
 
    do k = 1, Ndkx

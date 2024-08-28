@@ -105,6 +105,6 @@
        xx(k) = x; ss(k) = h + bot
     end do
 
-    call compareanalytic(ss, uu, xx, mmax)
+    call compareanalytic(ss, xx, mmax)
 
  end subroutine belanger

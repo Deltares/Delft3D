@@ -63,7 +63,7 @@
 !
       INTEGER        Ivnt, In, IeCode, year, month, day, iDefltl, iDefltOld
       Integer        CheckYear
-      CHARACTER*(*)  STRING
+      CHARACTER(len=*) STRING
       Integer        iDebug, Iout1, IExit, iCount, i
       Logical        YearNul
 

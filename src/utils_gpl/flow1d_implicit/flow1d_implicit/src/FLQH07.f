@@ -192,8 +192,15 @@ c determine flow type
          endif
 c      endif
 
-      goto (1,2,3,4) iflow
-
+      if (iflow == 1) then
+         goto 1
+      else if (iflow == 2) then
+         goto 2
+      else if (iflow == 3) then
+         goto 3
+      else if (iflow == 4) then
+         goto 4
+      end if
 c
 c flowtype 1
  1    x  = hgate / hule

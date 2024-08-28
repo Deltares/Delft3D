@@ -58,8 +58,8 @@ c
      +         newsize
       real     aWaarde ,pWaarde ,cWaarde ,cmax  ,cmin  ,a0   ,a1
 c 
-      character*10      artype,siztxt
-      character*100     txt
+      character(len=10)  artype,siztxt
+      character(len=100) txt
 c
       integer  GAIndex
       external GAIndex

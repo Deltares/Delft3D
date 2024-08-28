@@ -43,14 +43,13 @@
       use unstruc_messages
       use m_fixedweirs
       use m_waves
+      use m_helpnow
       implicit none
 
       integer :: numpar, numfld, numparactual, numfldactual
       parameter(NUMPAR=22, NUMFLD=2 * NUMPAR)
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
-      character WRDKEY * 40, OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
-      integer :: nlevel
-      common / HELPNOW / WRDKEY, NLEVEL
+      character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
       external :: highlight_form_line
 !

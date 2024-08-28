@@ -45,6 +45,6 @@
       double precision  DiofTimeString2Julian
       external          DiofTimeString2Julian
 
-      character*(DioMaxTimLen) DiofJulian2DioTime
+      character(len=DioMaxTimLen) DiofJulian2DioTime
       external                 DiofJulian2DioTime
 

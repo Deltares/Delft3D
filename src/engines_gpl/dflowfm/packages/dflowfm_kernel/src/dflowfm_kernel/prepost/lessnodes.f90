@@ -37,7 +37,7 @@
 
      integer :: k
      do K = 1, NUMK
-        call ONELINE(K, RLMIN) ! TWEE LIJNTJES WORDEN 1
+        call ONELINE(K) ! TWEE LIJNTJES WORDEN 1
      end do
      return
   end subroutine LESSNODES

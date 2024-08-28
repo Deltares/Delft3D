@@ -86,7 +86,7 @@
 
             af = dble(jfile - Nfile) / dble(jstart - Nfile)
             call readyy('Reading Arcinfo file (press right mouse button to cancel)', af)
-            write (6, '(1H+"Reading Arcinfo file: ", F7.2, "% done")') 1d2 * af
+            write (6, '("+Reading Arcinfo file: ", F7.2, "% done")') 1d2 * af
 
          end do
 
@@ -120,7 +120,7 @@
 
             af = dble(jfile - Nfile) / dble(jstart - Nfile)
             call readyy('Reading Arcinfo file (press right mouse button to cancel)', af)
-            write (6, '(1H+"Reading Arcinfo file: ", F7.2, "% done")') 1d2 * af
+            write (6, '("+Reading Arcinfo file: ", F7.2, "% done")') 1d2 * af
 
 !        divide by the number of samples in a subcell
             do iarray = 1, Marray

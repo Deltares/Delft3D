@@ -226,7 +226,7 @@ c
       integer put, i, j, k, icn,lstnam,lcntrnm1,lcntrnm2, nrcon0
       logical lwrn
       parameter (put=1)
-      character*40  strnam, cntrnm1, cntrnm2
+      character(len=40) strnam, cntrnm1, cntrnm2
 c
 c     Declaration of external function
 c

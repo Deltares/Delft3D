@@ -34,16 +34,16 @@
          use m_wearelt
          use m_devices
          use m_partitioninfo
+         use m_locatora
+
          implicit none
          double precision :: dpx
          double precision, save :: f = 1d0
-         integer :: ini, jashow, jmouse, key, ixp, iyp
+         integer :: ini, key, ixp, iyp
          integer, save :: keyold = 0
          real :: xloc, yloc
          double precision :: x, y
-         double precision :: xa, ya, xlc, ylc
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
-
+         
          real, external :: INFOGRAPHICS
 
          DPX = (X2 - X1) / NPX

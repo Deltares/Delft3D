@@ -39,14 +39,14 @@ subroutine cosphiunetcheck(jausererror)
    use m_missing
    use m_partitioninfo
    use m_plotdots
+   use m_drawthis
 
    implicit none
    integer, intent(in) :: jausererror !< Whether or not (1/0) to topup a error message when bad ortho occurs.
    double precision, external :: cosphiunet
    double precision :: csph
-   integer :: ndraw, L
+   integer :: L
    integer :: i
-   common / DRAWTHIS / ndraw(50)
 
    nlinkbadortho = 0
    nlinktoosmall = 0

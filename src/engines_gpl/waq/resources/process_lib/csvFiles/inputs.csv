@@ -50,21 +50,21 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Meteo     ","Cloud_5   ",  35,"Y","x",1
 "Meteo     ","Rad_6     ",  36,"Y","x",1
 "Meteo     ","VWind_6   ",  37,"Y","x",1
-"Meteo     ","WinDir_6  ",  38,"N","x",1
+"Meteo     ","WinDir_6  ",  38,"Y","x",1
 "Meteo     ","RelHum_6  ",  39,"Y","x",1
 "Meteo     ","AirTemp_6 ",  40,"Y","x",1
 "Meteo     ","AirPres_6 ",  41,"Y","x",1
 "Meteo     ","Cloud_6   ",  42,"Y","x",1
 "Meteo     ","Rad_7     ",  43,"Y","x",1
 "Meteo     ","VWind_7   ",  44,"Y","x",1
-"Meteo     ","WinDir_7  ",  45,"N","x",1
+"Meteo     ","WinDir_7  ",  45,"Y","x",1
 "Meteo     ","RelHum_7  ",  46,"Y","x",1
 "Meteo     ","AirTemp_7 ",  47,"Y","x",1
 "Meteo     ","AirPres_7 ",  48,"Y","x",1
 "Meteo     ","Cloud_7   ",  49,"Y","x",1
 "Meteo     ","Rad_8     ",  50,"Y","x",1
 "Meteo     ","VWind_8   ",  51,"Y","x",1
-"Meteo     ","WinDir_8  ",  52,"N","x",1
+"Meteo     ","WinDir_8  ",  52,"Y","x",1
 "Meteo     ","RelHum_8  ",  53,"Y","x",1
 "Meteo     ","AirTemp_8 ",  54,"Y","x",1
 "Meteo     ","AirPres_8 ",  55,"Y","x",1
@@ -13324,9 +13324,9 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_M  ","M_SMItot  ",  59,"Y","x",1
 "DEBGRZ_M  ","M_EgSMO   ",  60,"Y","x",1
 "DEBGRZ_M  ","M_EgSMI   ",  61,"Y","x",1
-"DEBGRZ_M  ","M_FrGSMO  ",  62,"Y","x",1
-"DEBGRZ_M  ","M_FrRspSMO",  63,"Y","x",1
-"DEBGRZ_M  ","M_FrSMOSMI",  64,"Y","x",1
+"DEBGRZ_M  ","M_FpGroSMO",  62,"Y","x",1
+"DEBGRZ_M  ","M_FpDisSMO",  63,"Y","x",1
+"DEBGRZ_M  ","M_YCaCOSMO",  64,"Y","x",1
 "DEBGRZ_M  ","M_cSMOrg  ",  65,"Y","x",1
 "DEBGRZ_M  ","M_cSMInorg",  66,"Y","x",1
 "DEBGRZ_M  ","DetC      ",  67,"Y","x",1
@@ -13682,9 +13682,9 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_Z  ","Z_SMItot  ",  59,"Y","x",1
 "DEBGRZ_Z  ","Z_EgSMO   ",  60,"Y","x",1
 "DEBGRZ_Z  ","Z_EgSMI   ",  61,"Y","x",1
-"DEBGRZ_Z  ","Z_FrGSMO  ",  62,"Y","x",1
-"DEBGRZ_Z  ","Z_FrRspSMO",  63,"Y","x",1
-"DEBGRZ_Z  ","Z_FrSMOSMI",  64,"Y","x",1
+"DEBGRZ_Z  ","Z_FpGroSMO",  62,"Y","x",1
+"DEBGRZ_Z  ","Z_FpDisSMO",  63,"Y","x",1
+"DEBGRZ_Z  ","Z_YCaCOSMO",  64,"Y","x",1
 "DEBGRZ_Z  ","Z_cSMOrg  ",  65,"Y","x",1
 "DEBGRZ_Z  ","Z_cSMInorg",  66,"Y","x",1
 "DEBGRZ_Z  ","DetC      ",  67,"Y","x",1
@@ -14040,9 +14040,9 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_G3 ","G3_SMItot ",  59,"Y","x",1
 "DEBGRZ_G3 ","G3_EgSMO  ",  60,"Y","x",1
 "DEBGRZ_G3 ","G3_EgSMI  ",  61,"Y","x",1
-"DEBGRZ_G3 ","G3_FrGSMO ",  62,"Y","x",1
-"DEBGRZ_G3 ","G3FrRspSMO",  63,"Y","x",1
-"DEBGRZ_G3 ","G3FrSMOSMI",  64,"Y","x",1
+"DEBGRZ_G3 ","G3_FpGroSM",  62,"Y","x",1
+"DEBGRZ_G3 ","G3_FpDisSM",  63,"Y","x",1
+"DEBGRZ_G3 ","G3_YCaCOSM",  64,"Y","x",1
 "DEBGRZ_G3 ","G3_cSMOrg ",  65,"Y","x",1
 "DEBGRZ_G3 ","G3cSMInorg",  66,"Y","x",1
 "DEBGRZ_G3 ","DetC      ",  67,"Y","x",1
@@ -14398,9 +14398,9 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_G4 ","G4_SMItot ",  59,"Y","x",1
 "DEBGRZ_G4 ","G4_EgSMO  ",  60,"Y","x",1
 "DEBGRZ_G4 ","G4_EgSMI  ",  61,"Y","x",1
-"DEBGRZ_G4 ","G4_FrGSMO ",  62,"Y","x",1
-"DEBGRZ_G4 ","G4FrRspSMO",  63,"Y","x",1
-"DEBGRZ_G4 ","G4FrSMOSMI",  64,"Y","x",1
+"DEBGRZ_G4 ","G4_FpGroSM",  62,"Y","x",1
+"DEBGRZ_G4 ","G4_FpDisSM",  63,"Y","x",1
+"DEBGRZ_G4 ","G4_YCaCOSM",  64,"Y","x",1
 "DEBGRZ_G4 ","G4_cSMOrg ",  65,"Y","x",1
 "DEBGRZ_G4 ","G4cSMInorg",  66,"Y","x",1
 "DEBGRZ_G4 ","DetC      ",  67,"Y","x",1
@@ -14756,9 +14756,9 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRZ_G5 ","G5_SMItot ",  59,"Y","x",1
 "DEBGRZ_G5 ","G5_EgSMO  ",  60,"Y","x",1
 "DEBGRZ_G5 ","G5_EgSMI  ",  61,"Y","x",1
-"DEBGRZ_G5 ","G5_FrGSMO ",  62,"Y","x",1
-"DEBGRZ_G5 ","G5FrRspSMO",  63,"Y","x",1
-"DEBGRZ_G5 ","G5FrSMOSMI",  64,"Y","x",1
+"DEBGRZ_G5 ","G5_FpGroSM",  62,"Y","x",1
+"DEBGRZ_G5 ","G5_FpDisSM",  63,"Y","x",1
+"DEBGRZ_G5 ","G5_YCaCOSM",  64,"Y","x",1
 "DEBGRZ_G5 ","G5_cSMOrg ",  65,"Y","x",1
 "DEBGRZ_G5 ","G5cSMInorg",  66,"Y","x",1
 "DEBGRZ_G5 ","DetC      ",  67,"Y","x",1
@@ -18035,9 +18035,9 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_M  ","M_SMItot  ",  59,"Y","x",1
 "DEBGRP_M  ","M_EgSMO   ",  60,"Y","x",1
 "DEBGRP_M  ","M_EgSMI   ",  61,"Y","x",1
-"DEBGRP_M  ","M_FrGSMO  ",  62,"Y","x",1
-"DEBGRP_M  ","M_FrRspSMO",  63,"Y","x",1
-"DEBGRP_M  ","M_FrSMOSMI",  64,"Y","x",1
+"DEBGRP_M  ","M_FpGroSMO",  62,"Y","x",1
+"DEBGRP_M  ","M_FpDisSMO",  63,"Y","x",1
+"DEBGRP_M  ","M_YCaCOSMO",  64,"Y","x",1
 "DEBGRP_M  ","M_cSMOrg  ",  65,"Y","x",1
 "DEBGRP_M  ","M_cSMInorg",  66,"Y","x",1
 "DEBGRP_M  ","DetC      ",  67,"Y","x",1
@@ -18193,9 +18193,9 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_Z  ","Z_SMItot  ",  59,"Y","x",1
 "DEBGRP_Z  ","Z_EgSMO   ",  60,"Y","x",1
 "DEBGRP_Z  ","Z_EgSMI   ",  61,"Y","x",1
-"DEBGRP_Z  ","Z_FrGSMO  ",  62,"Y","x",1
-"DEBGRP_Z  ","Z_FrRspSMO",  63,"Y","x",1
-"DEBGRP_Z  ","Z_FrSMOSMI",  64,"Y","x",1
+"DEBGRP_Z  ","Z_FpGroSMO",  62,"Y","x",1
+"DEBGRP_Z  ","Z_FpDisSMO",  63,"Y","x",1
+"DEBGRP_Z  ","Z_YCaCOSMO",  64,"Y","x",1
 "DEBGRP_Z  ","Z_cSMOrg  ",  65,"Y","x",1
 "DEBGRP_Z  ","Z_cSMInorg",  66,"Y","x",1
 "DEBGRP_Z  ","DetC      ",  67,"Y","x",1
@@ -18351,9 +18351,9 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G3 ","G3_SMItot ",  59,"Y","x",1
 "DEBGRP_G3 ","G3_EgSMO  ",  60,"Y","x",1
 "DEBGRP_G3 ","G3_EgSMI  ",  61,"Y","x",1
-"DEBGRP_G3 ","G3_FrGSMO ",  62,"Y","x",1
-"DEBGRP_G3 ","G3FrRspSMO",  63,"Y","x",1
-"DEBGRP_G3 ","G3FrSMOSMI",  64,"Y","x",1
+"DEBGRP_G3 ","G3_FpGroSM",  62,"Y","x",1
+"DEBGRP_G3 ","G3_FpDisSM",  63,"Y","x",1
+"DEBGRP_G3 ","G3_YCaCOSM",  64,"Y","x",1
 "DEBGRP_G3 ","G3_cSMOrg ",  65,"Y","x",1
 "DEBGRP_G3 ","G3cSMInorg",  66,"Y","x",1
 "DEBGRP_G3 ","DetC      ",  67,"Y","x",1
@@ -18509,9 +18509,9 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G4 ","G4_SMItot ",  59,"Y","x",1
 "DEBGRP_G4 ","G4_EgSMO  ",  60,"Y","x",1
 "DEBGRP_G4 ","G4_EgSMI  ",  61,"Y","x",1
-"DEBGRP_G4 ","G4_FrGSMO ",  62,"Y","x",1
-"DEBGRP_G4 ","G4FrRspSMO",  63,"Y","x",1
-"DEBGRP_G4 ","G4FrSMOSMI",  64,"Y","x",1
+"DEBGRP_G4 ","G4_FpGroSM",  62,"Y","x",1
+"DEBGRP_G4 ","G4_FpDisSM",  63,"Y","x",1
+"DEBGRP_G4 ","G4_YCaCOSM",  64,"Y","x",1
 "DEBGRP_G4 ","G4_cSMOrg ",  65,"Y","x",1
 "DEBGRP_G4 ","G4cSMInorg",  66,"Y","x",1
 "DEBGRP_G4 ","DetC      ",  67,"Y","x",1
@@ -18667,9 +18667,9 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "DEBGRP_G5 ","G5_SMItot ",  59,"Y","x",1
 "DEBGRP_G5 ","G5_EgSMO  ",  60,"Y","x",1
 "DEBGRP_G5 ","G5_EgSMI  ",  61,"Y","x",1
-"DEBGRP_G5 ","G5_FrGSMO ",  62,"Y","x",1
-"DEBGRP_G5 ","G5FrRspSMO",  63,"Y","x",1
-"DEBGRP_G5 ","G5FrSMOSMI",  64,"Y","x",1
+"DEBGRP_G5 ","G5_FpGroSM",  62,"Y","x",1
+"DEBGRP_G5 ","G5_FpDisSM",  63,"Y","x",1
+"DEBGRP_G5 ","G5_YCaCOSM",  64,"Y","x",1
 "DEBGRP_G5 ","G5_cSMOrg ",  65,"Y","x",1
 "DEBGRP_G5 ","G5cSMInorg",  66,"Y","x",1
 "DEBGRP_G5 ","DetC      ",  67,"Y","x",1

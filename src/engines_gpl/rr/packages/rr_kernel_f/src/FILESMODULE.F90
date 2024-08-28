@@ -54,7 +54,7 @@
           INTEGER         iunit, IECODE, teller !length, length2, j
           LOGICAL         ENDFIL
           CHARACTER(Len=CharIdLength)   FILNAM, FILNM2, STRING
-          CHARACTER*8     NAMSUB
+          CHARACTER(len=8)     NAMSUB
           Character(Len=CharIdLength)   nameFile
 ! voor controller!
           CHARACTER(Len=3*CharIdLength)  CMDLINE !, Buffr1
@@ -140,9 +140,9 @@
       INTEGER       IDEBUG, IN, IECODE, teller
       LOGICAL       ENDFIL
       CHARACTER(Len=CharIdLength) FILNAM, STRING
-      CHARACTER*999 Namefile
-      CHARACTER*8   NAMSUB
-      CHARACTER*1   SLASH
+      CHARACTER(len=999) Namefile
+      CHARACTER(len=8)   NAMSUB
+      CHARACTER(len=1)   SLASH
 
 #if ( defined(HAVE_CONFIG_H) )
       SLASH='/'
@@ -219,8 +219,8 @@
       Subroutine GetDirMap(In, Imap, slash)
       Integer       In, Imap, imfl, slen, ipos, iecode
       CHARACTER(Len=CharIdLength) STRING
-      CHARACTER*9   NAMSUB
-      CHARACTER*1   SLASH
+      CHARACTER(len=9)   NAMSUB
+      CHARACTER(len=1)   SLASH
 
 
       NAMSUB = ' GetDirMap'
@@ -590,8 +590,8 @@
 ! In case Ievent =0 : set SOME file names to original file name plus extension _00
 
       Integer       Ievent, Teller, ILen, ILenExt, ILenPrevExt, IMap, Imfl
-      Character*5   Prev
-      Character*4   Ext, PrevExt
+      Character(len=5) Prev
+      Character(len=4) Ext, PrevExt
       Character(Len=CharIdLength) NameFile
 
       If (IEvent .ge. 1) then
@@ -686,8 +686,8 @@
 !     Routine only used on UNIX Parallel version and on PC with EmulateUnixonPC switch
 
       Integer       ILen, ILenExt, ILenPrevExt
-      Character*5   Prev
-      Character*4   Ext, PrevExt
+      Character(len=5) Prev
+      Character(len=4) Ext, PrevExt
       Character(Len=CharIdLength) NameFile
 
          If (Nevent+1 .gt. 9999) then

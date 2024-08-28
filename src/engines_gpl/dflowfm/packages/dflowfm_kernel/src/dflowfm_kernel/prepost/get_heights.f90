@@ -103,7 +103,7 @@ subroutine get_heights()
          ylist(1:numj) = ysp(js, 1:numj)
 
          call comp_subheights(is, Lorient, numj, xlist, ylist, &
-                              splineprops(js)%ncs, splineprops(js)%ics, splineprops(js)%t, splineprops(js)%cosphi, &
+                              splineprops(js)%ncs, splineprops(js)%ics, splineprops(js)%t, &
                               splineprops(is)%NsubL(j), splineprops(is)%NsubR(j), splineprops(is)%hL(:, j), splineprops(is)%hR(:, j))
       end do
    end do

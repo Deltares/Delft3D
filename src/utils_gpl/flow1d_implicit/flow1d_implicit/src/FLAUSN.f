@@ -66,7 +66,7 @@ c
      +                     + alfa1*af(igr+1) )
  10      continue
          do 20 igr = i1+1, i2-1
-            af(igr) = sngl(hq2(igr))
+            af(igr) = real(hq2(igr), kind=kind(af))
  20      continue
  30   continue
 

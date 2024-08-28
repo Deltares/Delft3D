@@ -34,9 +34,9 @@
       !! The distance is measured along the consecutive polyline segments.
       subroutine interpolateOnPolyline(X, Y, Z, T, MMAX, XP, YP, ZP, TP, JA)
          implicit none
+         integer, intent(in) :: mmax !< Nr. of polyline points.
          double precision, intent(in) :: X(MMAX), Y(MMAX), Z(mmax) !< The polyline coordinates.
          double precision, intent(in) :: T(MMAX) !< Accumulated segment lengths at all points.
-         integer, intent(in) :: mmax !< Nr. of polyline points.
          double precision, intent(out) :: XP, YP, ZP !< interpolated point coordinates at distance TP.
          double precision, intent(in) :: TP !< Distance from polyline start at which to place point XP,YP.
          integer, intent(out) :: ja !< Whether distance is within polyline length (1) or not (0).

@@ -3,10 +3,10 @@
 subroutine dumpTimeInit(fileName)
 
     ! arguments
-    character*(*) :: fileName
+    character(len=*) :: fileName
 
     ! shared between routines
-    integer*4 :: curTimeStep
+    integer(4) :: curTimeStep
     integer   :: fh
     common / dumpInfo / curTimeStep, fh
 
@@ -22,7 +22,7 @@ end subroutine dumpTimeInit
 subroutine dumpTimeClose()
 
     ! shared between routines
-    integer*4 :: curTimeStep
+    integer(4) :: curTimeStep
     integer   :: fh,ios
     common / dumpInfo / curTimeStep, fh
 
@@ -36,7 +36,7 @@ end subroutine dumpTimeClose
 subroutine dumpTimeIncrement()
 
     ! shared between routines
-    integer*4 :: curTimeStep
+    integer(4):: curTimeStep
     integer   :: fh
     common / dumpInfo / curTimeStep, fh
 
@@ -51,10 +51,10 @@ end subroutine dumpTimeIncrement
 subroutine dumpTimeStep(text)
 
     ! arguments
-    character*(*) :: text
+    character(len=*) :: text
 
     ! shared between routines
-    integer*4 :: curTimeStep
+    integer(4):: curTimeStep
     integer   :: fh
     common / dumpInfo / curTimeStep, fh
 
@@ -67,7 +67,7 @@ subroutine dumpTimeStep(text)
 
     write(fh, '('' '',A2,'':'',A2,'':'',A2,''.'',A3, '' - '', A, '' TS = '', I5)') &
             sysTime(1:2), sysTime(3:4), sysTime(5:6), sysTime(8:10), text, curTimeStep
-    call flush(fh)
+    flush(fh)
 #endif
 
 end subroutine dumpTimeStep

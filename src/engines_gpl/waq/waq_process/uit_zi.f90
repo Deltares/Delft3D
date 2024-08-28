@@ -336,7 +336,7 @@ SUBROUTINE BEP_D (C_GL1, C_GL2, C_DET, HELHUM, CORCHL, &
     !
     !     Beveiliging tegen negatieve waarde CHLORO (RS27jan97 voor Maarten O.)
     !
-    CHLORO = MAX(0.0, CHLORO)
+    CHLORO = MAX(0.0_dp, CHLORO)
     !
     !     CHLOROFYL BUNDEL VERZWAKKING
     !

@@ -163,12 +163,12 @@ c
       integer      errr  ,i ,j ,ie  ,nrerr, igr ,nsk ,nlc ,lastcod
       integer      usrord(1),
      &             uindex(3)
-      character*16 grnamm          ,grnamh          ,grnamd         ,
+      character(len=16) grnamm, grnamh, grnamd,
      &             name
-      character*16 nameel(nentri),quanel(nentri),unitel(nentri),
+      character(len=16) nameel(nentri),quanel(nentri),unitel(nentri),
      &             nameac(nentri+1)
-      character*64 descel(nentri)
-      character*8  txt
+      character(len=64) descel(nentri)
+      character(len=8)  txt
       logical      llog   ,new   ,newuit
 c
 c     Declaration of external functions
@@ -263,7 +263,7 @@ c
             uindex(2) = ncelm
             uindex(3) = 1
 c
-            do 210 i = 4,nhymap,2
+            do i = 4,nhymap,2
              ie = hycpre(hyrmap(i))+hyrmap(i+1)
              if (ie.le.lastcod) then
 c             
@@ -273,93 +273,74 @@ c              The element names of the Map block start with
 c              MAP instead of HIS.
 c
                name  = 'MAP'//nameel(ie)(4:)
-               goto (10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,
-     &               160,170,180) , ie
-   10          continue
+               if ( ie <= 1 .or. ie > 18 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
-     &                           uindex  ,usrord ,sngl(h2))
-                  goto 200
-   20          continue
+     &                           uindex  ,usrord , real(h2))
+               else if ( ie == 2 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
-     &                           uindex  ,usrord ,sngl(q2))
-                  goto 200
-   30          continue
+     &                           uindex  ,usrord , real(q2))
+               else if ( ie == 3 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,q2s(1,1))
-                  goto 200
-   40          continue
+               else if ( ie == 4 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,q2s(1,2))
-                  goto 200
-   50          continue
-                  do 55 igr = 1, ngrid
-                     buf(igr) = sngl(q2(igr)) - q2s(igr,1) - q2s(igr,2)
-   55             continue
+               else if ( ie == 5 ) then
+                  do igr = 1, ngrid
+                     buf(igr) = real(q2(igr)) - q2s(igr,1) - q2s(igr,2)
+                  end do
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,buf    )
-                  goto 200
-   60          continue
+               else if ( ie == 6 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,at     )
-                  goto 200
-   70          continue
+               else if ( ie == 7 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,af     )
-                  goto 200
-   80          continue
+               else if ( ie == 8 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,afs(1,1))
-                  goto 200
-   90          continue
+               else if ( ie == 9 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,afs(1,2))
-                  goto 200
-  100          continue
-                  do 105 igr = 1, ngrid
+               else if ( ie == 10 ) then
+                  do igr = 1, ngrid
                      buf(igr) = af(igr) - afs(igr,1) - afs(igr,2)
-  105             continue
+                  end do
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,buf    )
-                  goto 200
-  110          continue
+               else if ( ie == 11 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,c      )
-                  goto 200
-  120          continue
+               else if ( ie == 12 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,cs(1,1))
-                  goto 200
-  130          continue
+               else if ( ie == 13 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,cs(1,2))
-                  goto 200
-  140          continue
+               else if ( ie == 14 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,cs(1,3))
-                  goto 200
-  150          continue
+               else if ( ie == 15 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,wf     )
-                  goto 200
-  160          continue
+               else if ( ie == 16 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,wfs(1,1))
-                  goto 200
-  170          continue
+               else if ( ie == 17 ) then
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,wfs(1,2))
-                  goto 200
-  180          continue
-                  do 185 igr = 1, ngrid
+               else if ( ie == 18 ) then
+                  do igr = 1, ngrid
                      buf(igr) = wf(igr) - wfs(igr,1) - wfs(igr,2)
-  185             continue
+                  end do
                   errr = putrel (fd_nefis_res ,grnamm ,name   ,
      &                           uindex  ,usrord ,buf    )
-  200          continue
-                  if (errr.ne.0) goto 1000
-             endif     
-  210       continue
-         endif
+               end if
+               if (errr.ne.0) goto 1000
+             end if     
+          end do
+        end if
       endif
 c
 c     Write History results.
@@ -395,113 +376,94 @@ c
             uindex(2) = ncelh
             uindex(3) = 1
 c
-            do 410 i = hyrtim(1)+2+nsk,nhytim,2
+            do i = hyrtim(1)+2+nsk,nhytim,2
              ie = hycpre(hyrtim(i))+hyrtim(i+1)
              if (ie.le.lastcod) then
 c             
 c              Codes > lastcod can only be used in his format             
 c                              
-               goto (220,230,240,250,260,270,280,290,300,310,320,330,
-     &               340,350,360,370,380,390) ,ie
-  220          continue
-                  do 225 j=1,hyrtim(1)
-                     buf(j) = sngl( h2(hyrtim(j+1)) )
-  225             continue
-                  goto 400
-  230          continue
-                  do 235 j=1,hyrtim(1)
-                     buf(j) = sngl( q2(hyrtim(j+1)) )
-  235             continue
-                  goto 400
-  240          continue
-                  do 245 j=1,hyrtim(1)
+               if ( ie <= 1 .or. ie > 18 ) then
+                  do j=1,hyrtim(1)
+                     buf(j) = real( h2(hyrtim(j+1)), kind=kind(buf) )
+                  end do
+               else if ( ie == 2 ) then
+                  do j=1,hyrtim(1)
+                     buf(j) = real( q2(hyrtim(j+1)), kind=kind(buf) )
+                  end do
+               else if ( ie == 3 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = q2s(hyrtim(j+1),1)
-  245             continue
-                  goto 400
-  250          continue
-                  do 255 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 4 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = q2s(hyrtim(j+1),2)
-  255             continue
-                  goto 400
-  260          continue
-                  do 265 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 5 ) then
+                  do j=1,hyrtim(1)
                      igr = hyrtim(j+1)
                      buf(j) = q2(igr) - q2s(igr,1) - q2s(igr,2)
-  265             continue
-                  goto 400
-  270          continue
-                  do 275 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 6 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = at(hyrtim(j+1))
-  275             continue
-                  goto 400
-  280          continue
-                  do 285 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 7 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = af(hyrtim(j+1))
-  285             continue
-                  goto 400
-  290          continue
-                  do 295 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 8 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = afs(hyrtim(j+1),1)
-  295             continue
-                  goto 400
-  300          continue
-                  do 305 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 9 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = afs(hyrtim(j+1),2)
-  305             continue
-                  goto 400
-  310          continue
-                  do 315 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 10 ) then
+                  do j=1,hyrtim(1)
                      igr = hyrtim(j+1)
                      buf(j) = af(igr) - afs(igr,1) - afs(igr,2)
-  315             continue
-                  goto 400
-  320          continue
-                  do 325 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 11 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = c(hyrtim(j+1))
-  325             continue
-                  goto 400
-  330          continue
-                  do 335 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 12 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = cs(hyrtim(j+1),1)
-  335             continue
-                  goto 400
-  340          continue
-                  do 345 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 13 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = cs(hyrtim(j+1),2)
-  345             continue
-                  goto 400
-  350          continue
-                  do 355 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 14 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = cs(hyrtim(j+1),3)
-  355             continue
-                  goto 400
-  360          continue
-                  do 365 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 15 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = wf(hyrtim(j+1))
-  365             continue
-                  goto 400
-  370          continue
-                  do 375 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 16 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = wfs(hyrtim(j+1),1)
-  375             continue
-                  goto 400
-  380          continue
-                  do 385 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 17 ) then
+                  do j=1,hyrtim(1)
                      buf(j) = wfs(hyrtim(j+1),2)
-  385             continue
-                  goto 400
-  390          continue
-                  do 395 j=1,hyrtim(1)
+                  end do
+               else if ( ie == 18 ) then
+                  do j=1,hyrtim(1)
                      igr = hyrtim(j+1)
                      buf(j) = wf(igr) - wfs(igr,1) - wfs(igr,2)
-  395             continue
-  400          continue
-                  errr = putrel (fd_nefis_res ,grnamh ,nameel(ie) ,
+                  end do
+               end if
+               errr = putrel (fd_nefis_res ,grnamh ,nameel(ie) ,
      &                           uindex  ,usrord ,buf    )
-                  if (errr.ne.0) goto 1000
-             endif
-  410       continue
-         endif
+               if (errr.ne.0) goto 1000
+            end if
+         end do
+        end if
       endif
 c
 c     Be sure that at the last step the number of cells has been

@@ -60,7 +60,7 @@
 
        hpr1 = s1(k1) - BL1
        if (hpr1 > 0) then
-          call getlinkareawid2D(L, wu2, b21, ai, hpr1, ar1, wid1)
+          call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
           dx1 = 0.5d0 * dx(L) * acl(L)
           a1(k1) = a1(k1) + dx1 * wid1
           vol1(k1) = vol1(k1) + dx1 * ar1
@@ -68,7 +68,7 @@
 
        hpr2 = s1(k2) - BL1 ! == 5,6: (ibedlevtyp=3), 2D conveyance, link or node
        if (hpr2 > 0) then
-          call getlinkareawid2D(L, wu2, b21, ai, hpr2, ar2, wid2)
+          call getlinkareawid2D(wu2, b21, ai, hpr2, ar2, wid2)
           dx2 = 0.5d0 * dx(L) * (1d0 - acl(L))
           a1(k2) = a1(k2) + dx2 * wid2
           vol1(k2) = vol1(k2) + dx2 * ar2
@@ -88,7 +88,6 @@
        b21 = BL2 - BL1; ai = b21 / wu2
        k1 = ln(1, L); k2 = ln(2, L)
 
-       !DIR$ INLINE
        hpr1 = get_hpr_nostruc(L)
 
        if (jaconveyance2D > 0) then

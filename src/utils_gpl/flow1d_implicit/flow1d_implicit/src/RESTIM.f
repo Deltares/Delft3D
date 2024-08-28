@@ -84,15 +84,15 @@ c     Declaration of parameters
 c
       integer       kotim     ,ncel      ,neferr
       integer       fd_nefis_res, itim(2)
-      character*(*) grpnam
-      character*(*) nameac(*)
+      character(len=*) grpnam
+      character(len=*) nameac(*)
 c
 c     Declaration of local variables
 c
       integer       error     ,icel
       integer       dimn(1)   ,uindex(3) ,usrord(1) ,itimf(2)
-      character*16  nameti    ,quanti    ,unitti
-      character*64  descti
+      character(len=16)  nameti    ,quanti    ,unitti
+      character(len=64)  descti
 c
 c     Declaration of external functions
 c

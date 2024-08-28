@@ -255,7 +255,7 @@ contains
          zs = bob(1, L)
 
          s1p_1d = s1(k1d)
-         if (comparereal(b0_2dv(i), 0d0)) then
+         if (comparereal(b0_2dv(i), 0d0)/=0) then
             s1_2dv(i) = d1p_2dv(i) / b0_2dv(i) - (b0_2di(i) / b0_2dv(i)) * s1(k2d)
          else
             s1_2dv(i) = s1(k2d)

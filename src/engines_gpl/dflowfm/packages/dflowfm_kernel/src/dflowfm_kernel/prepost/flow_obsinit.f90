@@ -52,7 +52,7 @@
 
     call obs_on_flowgeom(0)
 
-    if (md_delete_observation_points_outside_grid) then
+    if (md_delete_observation_points_outside_grid == 1) then
        call delete_static_observation_points_outside_grid()
     end if
 

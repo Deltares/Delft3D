@@ -49,7 +49,7 @@ double precision function upwsalslope(L, k, ds2) ! k is upwind cell for link L, 
 
    do kk = 1, nd(k)%lnx
       LLL = nd(k)%ln(kk)
-      LL = iabs(LLL)
+      LL = abs(LLL)
       if (LL /= L .and. q1(LL) * LLL > 0) then
          ku = ln(1, LL)
          if (ku == k) ku = ln(2, LL)

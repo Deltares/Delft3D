@@ -22,13 +22,26 @@
 !!  rights reserved.
 module m_integration_scheme_0
     use m_waq_precision
-    use m_zercum
-    use m_setset
-    use m_integrate_areas_fluxes
-    use m_proces
-    use m_hsurf
-    use m_dlwqtr
-    use m_write_output
+    use timers
+    use delwaq2_data
+    use variable_declaration          ! module with the more recently added arrays
+    use m_actions
+    use m_waq_memory_dimensions          ! System characteristics
+    use m_timer_variables          ! Timer characteristics
+    use m_real_array_indices          ! Pointers in real array workspace
+    use m_integer_array_indices          ! Pointers in integer array workspace
+    use m_character_array_indices          ! Pointers in character array workspace
+    use m_dlwqdata_save_restore
+    use m_grid_utils_external
+    use m_waq_openda_exchange_items, only: get_openda_buffer
+    use m_zero_cumulative_arrays, only: set_cumulative_arrays_zero
+    use m_initialize_variables, only: initialize_variables
+    use m_integrate_areas_fluxes, only: integrate_fluxes_for_dump_areas
+    use m_process_calculation, only: calculate_processes
+    use m_set_horizontal_surface_area, only: set_horizontal_surface_area
+    use m_set_vertical_dispersion_length, only: set_vertical_dispersion_length
+    use m_write_output, only: write_output
+    use data_processing, only: close_files
     use m_wet_dry_cells, only: set_dry_cells_to_zero_and_update_volumes
 
     implicit none
@@ -37,62 +50,47 @@ contains
 
     !> No tranport scheme (0)
     !! Performs only calculation of new concentrations due to processes
-    subroutine integration_scheme_0(buffer, file_unit_list, file_name_list, &
-                                    action, dlwqd, gridps)
+    subroutine scheme_0_no_transport(buffer, file_unit_list, file_name_list, &
+            action, dlwqd, gridps)
 
-        use m_dlwq18
-        use m_dlwq14
-        use m_write_restart_map_file
-        use m_delpar01
+        use m_update_concentration, only: update_concs_explicit_time_step
+        use m_scale_derivatives_steady_state, only: scale_processes_derivs_and_update_balances
+        use m_write_restart_map_file, only: write_restart_map_file
+        use m_delpar01, only: delpar01
         use m_array_manipulation, only: copy_real_array_elements
-        use data_processing, only: close_files
-        use m_grid_utils_external
-        use timers
-        use delwaq2_data
-        use m_waq_openda_exchange_items, only: get_openda_buffer
-        use variable_declaration          ! module with the more recently added arrays
-        use m_actions
-        use m_waq_memory_dimensions          ! System characteristics
-        use m_timer_variables          ! Timer characteristics
-        use m_real_array_indices          ! Pointers in real array workspace
-        use m_integer_array_indices          ! Pointers in integer array workspace
-        use m_character_array_indices          ! Pointers in character array workspace
-        use m_dlwqdata_save_restore
 
-        implicit none
-
-        type(waq_data_buffer), target         :: buffer              !< System total array space
+        type(waq_data_buffer), target :: buffer              !< System total array space
         integer(kind = int_wp), intent(inout) :: file_unit_list  (*) !< Array with logical unit numbers
-        character(len=*),       intent(in)    :: file_name_list(*)   !< Array with file names
-        integer(kind = int_wp), intent(in)    :: action              !< Span of the run or type of action to perform
-                                                                     !< (run_span = {initialise, time_step, finalise, whole_computation})
-        type(delwaq_data),      target        :: dlwqd               !< DELWAQ data structure
-        type(GridPointerColl)                 :: gridps              !< Collection of all grid definitions
+        character(len = *), intent(in) :: file_name_list(*)   !< Array with file names
+        integer(kind = int_wp), intent(in) :: action              !< Span of the run or type of action to perform
+        !< (run_span = {initialise, time_step, finalise, whole_computation})
+        type(delwaq_data), target :: dlwqd               !< DELWAQ data structure
+        type(GridPointerColl) :: gridps              !< Collection of all grid definitions
 
         ! Local declarations
         logical :: imflag, idflag, ihflag
         logical :: lrewin
-        real(kind=real_wp) :: rdummy(1)
-        integer(kind=int_wp) :: nstep
-        integer(kind=int_wp) :: ibnd
-        integer(kind=int_wp) :: isys
-        integer(kind=int_wp) :: ierror
+        real(kind = real_wp) :: rdummy(1)
+        integer(kind = int_wp) :: nstep
+        integer(kind = int_wp) :: ibnd
+        integer(kind = int_wp) :: substance_i
+        integer(kind = int_wp) :: ierror
 
-        integer(kind=int_wp) :: idtold
+        integer(kind = int_wp) :: idtold
 
-        integer(kind=int_wp), pointer :: p_iknmkv(:)
+        integer(kind = int_wp), pointer :: p_iknmkv(:)
         p_iknmkv(1:size(iknmkv)) => iknmkv
 
         associate (a => buffer%rbuf, j => buffer%ibuf, c => buffer%chbuf)
 
             if (ACTION == ACTION_FINALISATION) then
                 call dlwqdata_restore(dlwqd)
-                if (timon) call timstrt("integration_scheme_0", ithandl)
+                if (timon) call timstrt("scheme_0_no_transport", ithandl)
                 goto 20
             end if
 
             if (ACTION == ACTION_INITIALISATION .or. &
-                ACTION == ACTION_FULLCOMPUTATION) then
+                    ACTION == ACTION_FULLCOMPUTATION) then
 
                 !          some initialisation
 
@@ -146,7 +144,7 @@ contains
             !     properly initialised and restored
             !
             if (ACTION == ACTION_INITIALISATION) then
-                if (timon) call timstrt("integration_scheme_0", ithandl)
+                if (timon) call timstrt("scheme_0_no_transport", ithandl)
                 call dlwqdata_save(dlwqd)
                 if (timon) call timstop(ithandl)
                 return
@@ -156,43 +154,45 @@ contains
                 call dlwqdata_restore(dlwqd)
             end if
 
-            if (timon) call timstrt("integration_scheme_0", ithandl)
+            if (timon) call timstrt("scheme_0_no_transport", ithandl)
 
             !=== simulation loop ====
-10          continue
+            10          continue
 
             ! Determine the volumes and areas that ran dry,
             ! They cannot have explicit processes during this time step
-            call hsurf(num_cells, num_spatial_parameters, c(ipnam), a(iparm:), num_spatial_time_fuctions, &
-                       c(isfna), a(isfun:), surface, file_unit_list(19))
-            call set_dry_cells_to_zero_and_update_volumes(num_cells, nosss, num_layers, a(ivol:), num_exchanges_u_dir + num_exchanges_v_dir, &
-                        a(iarea:), num_constants, c(icnam), a(icons:), surface, &
-                        j(iknmr:), iknmkv)
+            call set_horizontal_surface_area(num_cells, num_spatial_parameters, c(ipnam), a(iparm:), num_spatial_time_fuctions, &
+                    c(isfna), a(isfun:), surface, file_unit_list(19))
+            call set_dry_cells_to_zero_and_update_volumes(num_cells, nosss, num_layers, a(ivol:), &
+                    num_exchanges_u_dir + num_exchanges_v_dir, &
+                    a(iarea:), num_constants, c(icnam), a(icons:), surface, &
+                    j(iknmr:), iknmkv)
 
             ! user transport processes
             ! set dispersion length
-            call dlwqtr(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
-                num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
-                j(ixpnt:), a(ivol:), &
-                a(ileng:), a(iparm:), &
-                c(ipnam:), ilflag)
+            call set_vertical_dispersion_length(num_substances_total, num_cells, num_exchanges, num_exchanges_u_dir, &
+                    num_exchanges_v_dir, num_exchanges_z_dir, num_spatial_parameters, &
+                    j(ixpnt:), a(ivol:), &
+                    a(ileng:), a(iparm:), &
+                    c(ipnam:), ilflag)
 
-            !jvb     Temporary ? set the variables grid-setting for the DELWAQ variables
-            call setset(file_unit_list(19), num_constants, num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, &
-                    num_substances_transported, num_substances_total, num_dispersion_arrays, num_velocity_arrays, num_defaults, &
-                    num_local_vars, num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
+            ! set the variables grid-setting for the DELWAQ variables
+            call initialize_variables(file_unit_list(19), num_constants, num_spatial_parameters, num_time_functions, &
+                    num_spatial_time_fuctions, num_substances_transported, num_substances_total, &
+                    num_dispersion_arrays, num_velocity_arrays, num_defaults, num_local_vars, &
+                    num_dispersion_arrays_extra, num_velocity_arrays_extra, num_local_vars_exchange, num_fluxes, &
                     nopred, num_vars, num_grids, j(ivset:))
 
             ! return conc and take-over from previous step or initial condition,
             ! and do particle tracking of this step (will be back-coupled next call)
             call delpar01(itime, num_cells, num_layers, num_exchanges, num_substances_transported, &
-                          num_substances_total, a(ivol:), surface, a(iflow:), c(isnam:), &
-                          num_spatial_time_fuctions, c(isfna:), a(isfun:), a(imass:), a(iconc:), &
-                          iaflag, intopt, num_monitoring_cells, j(isdmp:), a(idmps:), &
-                          a(imas2:))
+                    num_substances_total, a(ivol:), surface, a(iflow:), c(isnam:), &
+                    num_spatial_time_fuctions, c(isfna:), a(isfun:), a(imass:), a(iconc:), &
+                    iaflag, intopt, num_monitoring_cells, j(isdmp:), a(idmps:), &
+                    a(imas2:))
 
-            ! call PROCES subsystem
-            call proces(num_substances_total, nosss, a(iconc:), a(ivol:), itime, &
+            ! call calculate_processes subsystem
+            call calculate_processes(num_substances_total, nosss, a(iconc:), a(ivol:), itime, &
                     idt, a(iderv:), ndmpar, num_processes_activated, num_fluxes, &
                     j(iipms:), j(insva:), j(iimod:), j(iiflu:), j(iipss:), &
                     a(iflux:), a(iflxd:), a(istoc:), ibflag, bloom_status_ind, &
@@ -239,11 +239,11 @@ contains
                     a(iwdmp:), iknmkv, isegcol)
 
             if (imflag .or. (ihflag .and. num_transects > 0)) then
-            ! zero cummulative array's
+                ! zero cummulative array's
                 call set_cumulative_arrays_zero(num_substances_total, num_substances_transported, num_fluxes, ndmpar, ndmpq, &
-                            num_monitoring_cells, a(ismas:), a(iflxi:), a(imas2:), &
-                            a(idmpq:), a(idmps:), num_transects, imflag, ihflag, &
-                            a(itrra:), ibflag, num_waste_loads, a(iwdmp:))
+                        num_monitoring_cells, a(ismas:), a(iflxi:), a(imas2:), &
+                        a(idmpq:), a(idmps:), num_transects, imflag, ihflag, &
+                        a(itrra:), ibflag, num_waste_loads, a(iwdmp:))
             end if
 
             ! simulation done ?
@@ -252,15 +252,15 @@ contains
 
             ! add processes
             call scale_processes_derivs_and_update_balances(a(iderv:), num_substances_total, nosss, itfact, a(imas2:), &
-                        idt, iaflag, a(idmps:), intopt, j(isdmp:))
+                    idt, iaflag, a(idmps:), intopt, j(isdmp:))
             itimel = itime       ! For case 2 a(ivoll) contains the incorrect
             itime = itime + idt  ! new volume from file and mass correction
             idtold = idt
 
             ! set a time step
             call update_concs_explicit_time_step(num_substances_transported, num_substances_total, num_substances_part, nosss, a(ivol2:), &
-                        surface, a(imass:), a(iconc:), a(iderv:), idtold, &
-                        ivflag, file_unit_list(19))
+                    surface, a(imass:), a(iconc:), a(iderv:), idtold, &
+                    ivflag, file_unit_list(19))
 
             ! integrate the fluxes at dump segments fill ASMASS with mass
             if (ibflag > 0) then
@@ -269,10 +269,10 @@ contains
             endif
             ! end of loop
             if (ACTION == ACTION_FULLCOMPUTATION) goto 10
-20          continue
+            20          continue
 
             if (ACTION == ACTION_FINALISATION .or. &
-                ACTION == ACTION_FULLCOMPUTATION) then
+                    ACTION == ACTION_FULLCOMPUTATION) then
                 ! close files, except monitor file
                 call close_hydro_files(dlwqd%collcoll)
                 call close_files(file_unit_list)
@@ -284,7 +284,7 @@ contains
 
         end associate
 
-9999    if (timon) call timstop(ithandl)
+        9999    if (timon) call timstop(ithandl)
 
         dlwqd%iaflag = iaflag
         dlwqd%itime = itime

@@ -36,7 +36,7 @@ subroutine fm_wq_processes_ini_sub()
    use m_transport
    use m_partitioninfo
    use unstruc_model
-   use m_flowparameters, only: jawriteDetailedTimers
+   use m_flowparameters, only: jawriteDetailedTimers, jahiswqbot3d, jamapwqbot3d
    use unstruc_files, only: mdia
    use m_flowtimes
    use timers
@@ -66,11 +66,6 @@ subroutine fm_wq_processes_ini_sub()
    jawriteDetailedTimers = 1
    if (timon) call timstrt("fm_wq_processes_ini_sub", ithndl)
 
-   if (kmx > 0) then
-      wqbot3D_output = md_wqbot3D_output
-   else
-      wqbot3D_output = 0
-   end if
    ibflag = 0
 
    substance_file = md_subfile
@@ -410,27 +405,27 @@ subroutine fm_wq_processes_ini_proc()
 
    integer(4), save :: ithndl = 0
 
-   character*20, parameter :: ctauflow = 'tauflow'
-   character*20, parameter :: ctau = 'tau'
-   character*20, parameter :: cvelocity = 'velocity'
-   character*20, parameter :: csalinity = 'salinity'
-   character*20, parameter :: ctemperatureflow = 'tempflow'
-   character*20, parameter :: ctemperature = 'temp'
-   character*20, parameter :: cwind = 'vwind'
-   character*20, parameter :: cwinddir = 'winddir'
-   character*20, parameter :: cfetchl = 'fetch'
-   character*20, parameter :: cfetchd = 'initdepth'
-   character*20, parameter :: cirradiation = 'radsurf'
-   character*20, parameter :: crain = 'rain'
-   character*20, parameter :: cvtrans = 'ACTIVE_vtrans'
-   character*20, parameter :: cvertdisp = 'ACTIVE_vertdisp'
-   character*10, parameter :: cbloom = 'd40blo'
-   character*20, parameter :: cdoprocesses = 'DoProcesses'
-   character*20, parameter :: cprocessesinactive = 'ProcessesInactive'
+   character(len=20), parameter :: ctauflow = 'tauflow'
+   character(len=20), parameter :: ctau = 'tau'
+   character(len=20), parameter :: cvelocity = 'velocity'
+   character(len=20), parameter :: csalinity = 'salinity'
+   character(len=20), parameter :: ctemperatureflow = 'tempflow'
+   character(len=20), parameter :: ctemperature = 'temp'
+   character(len=20), parameter :: cwind = 'vwind'
+   character(len=20), parameter :: cwinddir = 'winddir'
+   character(len=20), parameter :: cfetchl = 'fetch'
+   character(len=20), parameter :: cfetchd = 'initdepth'
+   character(len=20), parameter :: cirradiation = 'radsurf'
+   character(len=20), parameter :: crain = 'rain'
+   character(len=20), parameter :: cvtrans = 'ACTIVE_vtrans'
+   character(len=20), parameter :: cvertdisp = 'ACTIVE_vertdisp'
+   character(len=10), parameter :: cbloom = 'd40blo'
+   character(len=20), parameter :: cdoprocesses = 'DoProcesses'
+   character(len=20), parameter :: cprocessesinactive = 'ProcessesInactive'
 
-   character*20, parameter :: cWaveH = 'WaveHeight'
-   character*20, parameter :: cWaveL = 'WaveLength'
-   character*20, parameter :: cWaveT = 'WavePeriod'
+   character(len=20), parameter :: cWaveH = 'WaveHeight'
+   character(len=20), parameter :: cWaveL = 'WaveLength'
+   character(len=20), parameter :: cWaveT = 'WavePeriod'
 
    if (timon) call timstrt("fm_wq_processes_ini_proc", ithndl)
 
@@ -917,6 +912,7 @@ subroutine dfm_waq_initexternalforcings(iresult)
    use m_fm_wq_processes
    use timers
    use unstruc_files, only: resolvePath
+   use fm_location_types, only: UNC_LOC_S
 
    implicit none
    integer, intent(out) :: iresult
@@ -996,7 +992,7 @@ subroutine dfm_waq_initexternalforcings(iresult)
                end do
 
                ! will only fill 2D part of viuh
-               success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, 2)
+               success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
 
                if (success) then
                   do kk = 1, Ndxi
@@ -1032,7 +1028,7 @@ subroutine dfm_waq_initexternalforcings(iresult)
                end do
 
                ! will only fill 2D part of viuh
-               success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, 2)
+               success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
 
                if (success) then
                   do kk = 1, Ndxi
@@ -1095,7 +1091,7 @@ subroutine dfm_waq_initexternalforcings(iresult)
                call realloc(viuh, Ndkx, keepExisting=.false., fill=dmiss)
 
                ! will only fill 2D part of viuh
-               success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, 2)
+               success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
 
                if (success) then
                   do kk = 1, Ndxi
@@ -1845,7 +1841,7 @@ logical function reduce_sum_wq_processes(size_wq_processes_data, wq_processes_da
    if (jampi == 1) then
       mpi_wq_processes_data = dble(wq_processes_data)
       call reduce_double_sum(size_wq_processes_data, mpi_wq_processes_data, mpi_wq_processes_data_reduce)
-      wq_processes_data = sngl(mpi_wq_processes_data_reduce)
+      wq_processes_data = real(mpi_wq_processes_data_reduce)
    end if
 
    reduce_sum_wq_processes = .true.

@@ -127,13 +127,13 @@
                    case (2, 3) ! set dry all attached links
                       key = FLAG_REDO_TIMESTEP
                       do link_index = 1, nd(node)%lnx
-                         link = iabs(nd(node)%ln(link_index))
+                         link = abs(nd(node)%ln(link_index))
                          upwind_waterheight(link) = SET_VALUE
                          is_hu_changed = .true.
                       end do
                    case (4, 5) ! reduce links au
                       do link_index = 1, nd(node)%lnx
-                         link = iabs(nd(node)%ln(link_index))
+                         link = abs(nd(node)%ln(link_index))
                          if (upwind_waterheight(link) > 0) then
                             if (REDUCTION_FACTOR * au(link) < eps6) then
                                upwind_waterheight(link) = SET_VALUE
@@ -145,7 +145,7 @@
                       end do
                    case (6, 7) ! only set dry outflowing links
                       do link_index = 1, nd(node)%lnx
-                         link = iabs(nd(node)%ln(link_index))
+                         link = abs(nd(node)%ln(link_index))
                          if (nd(node)%ln(link_index) < 0 .and. u1(link) > 0 .or. &
                              nd(node)%ln(link_index) > 0 .and. u1(link) < 0) then
                             upwind_waterheight(link) = SET_VALUE

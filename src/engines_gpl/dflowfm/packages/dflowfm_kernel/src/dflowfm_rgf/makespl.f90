@@ -58,7 +58,6 @@
         double precision, dimension(IMAX), intent(out) :: TT !< spline-coordinates of grid points
 
         integer :: L, k1, k2, jadip, k
-!      COMMON /SPLINEFAC/ SPLFAC, SPLFAC2
 !     Maak interpolatie
 
 !     Eerst splines X,Y en S aanmaken

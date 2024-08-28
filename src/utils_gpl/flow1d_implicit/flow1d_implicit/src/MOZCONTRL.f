@@ -9,12 +9,12 @@ c
       double     precision        dtf
       real       qltpar(9,nqlat) ,qlatgr(ngrid)
       double precision hpack(ngrid,3) 
-      character*20                qlatid(nqlat)
+      character(len=20) qlatid(nqlat)
 c
-      character*120     cntrlnam, cmdline, ininam
+      character(len=120) cntrlnam, cmdline, ininam
       integer           nfm,istk,ipnt,nd,nh,nm,ns,nstmoz,nE,i
       integer           itim_new(2)
-      integer*2         istcnt
+      integer(2) ::     istcnt
       real              dtfm
       double precision  dattim, dattim_new  
       logical           FirstProc, Initmode, Crashed
@@ -93,7 +93,7 @@ c         write(juer,*) ' na Stepct'
 c
       end
       integer function lentrim(string)
-      character*(*)    string
+      character(len=*)    string
       integer          len, ld, lact, i
 c 
       ld   = len (string)

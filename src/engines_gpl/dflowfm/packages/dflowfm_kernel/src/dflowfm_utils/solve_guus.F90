@@ -827,38 +827,38 @@
        call newfil(minp, 'system_'//trim(md_ident)//'.m')
        write (minp, "('Numrows = ', I0, ';')") nn
        write (minp, "('%startpointers')")
-       write (minp, "('ia = [', $)")
-       write (minp, "(I0, ' ', $)") (iao(i), i=1, nn + 1)
+       write (minp, "('ia = [')", advance="no")
+       write (minp, "(I0, ' ')", advance="no") (iao(i), i=1, nn + 1)
        write (minp, "('];')")
        write (minp, "('%rowindices')")
-       write (minp, "('ja = [', $)")
-       write (minp, "(I0, ' ', $)") (jao(i), i=1, iao(nn + 1) - 1)
+       write (minp, "('ja = [')", advance="no")
+       write (minp, "(I0, ' ')", advance="no") (jao(i), i=1, iao(nn + 1) - 1)
        write (minp, "('];')")
        write (minp, "('%matrix elements')")
-       write (minp, "('aa = [', $)")
-       write (minp, "(E15.5, $)") (ao(i), i=1, iao(nn + 1) - 1)
+       write (minp, "('aa = [')", advance="no")
+       write (minp, "(E15.5)", advance="no") (ao(i), i=1, iao(nn + 1) - 1)
        write (minp, "('];')")
        write (minp, "('%right-hand side')")
-       write (minp, "('rhs = [', $)")
-       write (minp, "(E15.5, $)") (rhs(i), i=1, nn)
+       write (minp, "('rhs = [')", advance="no")
+       write (minp, "(E15.5)", advance="no") (rhs(i), i=1, nn)
        write (minp, "('];')")
        write (minp, "('%x-coordinates')")
-       write (minp, "('x= [', $)")
+       write (minp, "('x= [')", advance="no")
        nn = 0
        do n = nogauss + 1, nogauss + nocg
           k = noel(n)
           if (k > 0) then
              nn = nn + 1
-             write (minp, "(E15.5, $)") xzw(k)
+             write (minp, "(E15.5)", advance="no") xzw(k)
           end if
        end do
        write (minp, "('];')")
        write (minp, "('%y-coordinates')")
-       write (minp, "('y= [', $)")
+       write (minp, "('y= [')", advance="no")
        do n = nogauss + 1, nogauss + nocg
           k = noel(n)
           if (k > 0) then
-             write (minp, "(E15.5, $)") yzw(k)
+             write (minp, "(E15.5)", advance="no") yzw(k)
           end if
        end do
        write (minp, "('];')")
@@ -1196,13 +1196,13 @@
              end if
           end do
 
-          !if (isnan(bbr(ndn) ) ) then
+          !if (ieee_is_nan(bbr(ndn) ) ) then
           !   write(*,*) 'before ', ndn, bbr(ndn), zkr(ndn)
           !endif
 
           zkr(ndn) = zkr(ndn) / bbr(ndn)
 
-          !if (isnan(zkr(ndn) ) ) then
+          !if (ieee_is_nan(zkr(ndn) ) ) then
           !    write(*,*) 'after ', ndn, bbr(ndn), zkr(ndn)
           !endif
 
@@ -1358,13 +1358,13 @@
              end if
           end do
 
-          !if (isnan(bbr(ndn) ) ) then
+          !if (ieee_is_nan(bbr(ndn) ) ) then
           !   write(*,*) 'before ', ndn, bbr(ndn), zkr(ndn)
           !endif
 
           zkr(ndn) = zkr(ndn) / bbr(ndn)
 
-          !if (isnan(zkr(ndn) ) ) then
+          !if (ieee_is_nan(zkr(ndn) ) ) then
           !    write(*,*) 'after ', ndn, bbr(ndn), zkr(ndn)
           !endif
 
@@ -1657,7 +1657,7 @@
     return
  end
 
- subroutine reducept(Ndx, Ndxi, Lnx)
+ subroutine reducept(Ndx, Lnx)
     ! this subroutine finds an elimination order for Gaussian elimination based upon minimum degree algorithm
     use m_reduce
     use unstruc_messages
@@ -1666,7 +1666,7 @@
 
     implicit none
 
-    integer :: Ndx, Ndxi, Lnx
+    integer :: Ndx, Lnx
 
     integer :: nn ! integers used for counting
     integer :: minold ! minimum degree values
@@ -1753,12 +1753,12 @@
        end if
     else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
-       call ini_petsc(Ndx, Ndxi, ierror)
+       call ini_petsc(Ndx, ierror)
        call preparePETSCsolver(0)
 #endif
     else if (icgsolver == 10) then
 #ifdef HAVE_PETSC
-       call ini_petsc(Ndx, Ndxi, ierror)
+       call ini_petsc(Ndx, ierror)
        call preparePETSCsolver(1)
 #endif
     else if (icgsolver == 8) then
@@ -1834,7 +1834,7 @@
 !       do k = 1, nd(nn)%lnx
 !          ff    = dts/a1(nn)
 !          l     = nd(nn)%ln(k)
-!          il    = iabs(l)
+!          il    = abs(l)
 
 !          if ( hu(L) > 0 ) then
 !             if (l>0) then

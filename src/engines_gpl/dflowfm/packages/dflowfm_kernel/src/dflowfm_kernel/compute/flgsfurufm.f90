@@ -78,7 +78,6 @@ subroutine flgsfurufm(formno, m, teken, husb, hdsb, velhght, zs, ds, dg, dc, wst
    logical :: again
    double precision :: cu
    double precision :: dh
-   double precision :: dsqrt
    double precision :: dxdt
    double precision :: hs1
    double precision :: mu
@@ -172,7 +171,7 @@ subroutine flgsfurufm(formno, m, teken, husb, hdsb, velhght, zs, ds, dg, dc, wst
          cu = cwd**2 * 2.0d0 * ag
          au(m) = wstr * ds
          dh = max(hs1 - ds, 0.d0)
-         ustru = cwd * dsqrt(ag * 2.0d0 * dh)
+         ustru = cwd * sqrt(ag * 2.0d0 * dh)
          rhsc = cu * (hdsb + velhght - (ds + zs)) * teken
       elseif (formno == 3) then
          !           free gate flow
@@ -180,7 +179,7 @@ subroutine flgsfurufm(formno, m, teken, husb, hdsb, velhght, zs, ds, dg, dc, wst
          cu = mu**2 * 2.0d0 * ag
          au(m) = wstr * dg
          dh = max(hs1 - dc, 0.d0)
-         ustru = mu * dsqrt(ag * 2.0d0 * dh)
+         ustru = mu * sqrt(ag * 2.0d0 * dh)
          rhsc = cu * (hdsb + velhght - (dc + zs)) * teken
       elseif (formno == 4) then
          !           drowned gate flow
@@ -188,7 +187,7 @@ subroutine flgsfurufm(formno, m, teken, husb, hdsb, velhght, zs, ds, dg, dc, wst
          cu = mu**2 * 2.0d0 * ag
          au(m) = wstr * dg
          dh = max(hs1 - ds, 0.d0)
-         ustru = mu * dsqrt(ag * 2.0d0 * dh)
+         ustru = mu * sqrt(ag * 2.0d0 * dh)
          rhsc = cu * (hdsb + velhght - (ds + zs)) * teken
       else
       end if

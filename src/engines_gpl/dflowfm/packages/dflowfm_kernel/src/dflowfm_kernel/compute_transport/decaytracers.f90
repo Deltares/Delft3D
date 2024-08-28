@@ -42,7 +42,8 @@ subroutine decaytracers()
    double precision :: decaytime
    integer :: i, k
 
-   integer(4) ithndl / 0 /
+   integer(4) :: ithndl = 0
+   
    if (timon) call timstrt("decaytracers", ithndl)
 
    do i = ITRA1, ITRAN

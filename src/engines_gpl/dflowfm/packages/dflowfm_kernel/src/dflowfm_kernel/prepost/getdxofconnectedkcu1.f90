@@ -47,7 +47,7 @@
     !do kk = 1,nd(k)%lnx
     !   if (kcu(L) == 1) then
     !      n   = n + 1
-    !      LL  = iabs( nd(k)%ln(kk) )
+    !      LL  = abs( nd(k)%ln(kk) )
     !      wu1 = wu1 + dx(L)
     !   endif
     ! enddo
@@ -58,7 +58,7 @@
     if (nmk(k1) == 1) k = k2
     if (nmk(k2) == 1) k = k1
     do kk = 1, nmk(k)
-       LL = iabs(nod(k)%lin(kk))
+       LL = abs(nod(k)%lin(kk))
        if (kn(3, LL) == 1 .or. kn(3, LL) == 6) then ! on second thought, only true 1D links should influence lateral inflow width ! .or. kn(3,LL) == 4) then
           n = n + 1
           wu1 = wu1 + dx(lne2ln(LL))

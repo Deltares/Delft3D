@@ -37,19 +37,15 @@
          integer :: m
          integer :: m1
          integer :: m2
-         integer :: mb
-         integer :: mb2
+         integer :: mb(80)
          integer :: md
          integer :: n
          integer :: n1
          integer :: n2
-         integer :: nb
-         integer :: nb2
+         integer :: nb(80)
          integer :: nd
          integer :: npt
-         integer :: npt2
-         integer :: nputo
-         common / DOMBND / MB(80), NB(80), MB2(80), NB2(80), NPT, NPT2, NPUTO
+
          do I = 1, NPT - 1, 2
             M1 = MB(I)
             N1 = NB(I)

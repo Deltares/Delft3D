@@ -216,7 +216,7 @@ subroutine refinecellsandfaces2()
 
 !     perform the actual refinement
       nump_virtual = nump_virtual * 4
-      call refine_cells(jarefine, jalink, linkbrother, 1, ierror)
+      call refine_cells(jarefine, jalink, linkbrother, ierror)
       netstat = netstat_cells_dirty
 
 !     rearrange worldmesh
@@ -932,7 +932,7 @@ contains
    end subroutine smooth_jarefine
 
 !> refine the cells, based on a cell and link refinement mask
-   subroutine refine_cells(jarefine, jalink, linkbrother, jahang, ierror)
+   subroutine refine_cells(jarefine, jalink, linkbrother, ierror)
 
       use m_netw
       use m_alloc
@@ -946,7 +946,6 @@ contains
       integer, dimension(:), intent(inout) :: jarefine !< refine cell (>0) or not (0), dim(nump)
       integer, dimension(:), intent(inout) :: jalink !< refine link (>0) or not (0), dim(numL)
       integer, allocatable, dimension(:), intent(inout) :: linkbrother !< brotherlink, that shares a (hanging) node
-      integer, intent(in) :: jahang !< allow hanging nodes (1) or not (0)
       integer, intent(out) :: ierror !< error (1) or not (0)
 
       double precision :: xnew, ynew

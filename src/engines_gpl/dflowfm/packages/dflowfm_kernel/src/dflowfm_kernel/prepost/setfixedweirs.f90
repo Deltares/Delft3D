@@ -486,16 +486,16 @@ subroutine setfixedweirs()
                if (k > 0) then ! flatland on node k
                   nx = nd(k)%lnx
                   do LL = 1, nx ! loop over all attached links
-                     LLL = nd(k)%ln(LL); LLLa = iabs(LLL)
+                     LLL = nd(k)%ln(LL); LLLa = abs(LLL)
                      if (LLLa == L) then
                         LLLa = LL - 1; if (LLLa == 0) LLLa = nx ! left of weir link
-                        LLLa = iabs(nd(k)%ln(LLLa))
+                        LLLa = abs(nd(k)%ln(LLLa))
                         if (ihu(LLLa) == 0) then ! if not already marked as weir
                            bob(1, LLLa) = max(zcrest(L), bob(1, LLLa)) ! raise both bobs
                            bob(2, LLLa) = max(zcrest(L), bob(2, LLLa)) ! raise both bobs
                         end if
                         LLLa = LL + 1; if (LLLa > nx) LLLa = 1 ! right of weir link
-                        LLLa = iabs(nd(k)%ln(LLLa))
+                        LLLa = abs(nd(k)%ln(LLLa))
                         if (ihu(LLLa) == 0) then ! if not already marked as weir
                            bob(1, LLLa) = max(zcrest(L), bob(1, LLLa)) ! raise both bobs
                            bob(2, LLLa) = max(zcrest(L), bob(2, LLLa)) ! raise both bobs o

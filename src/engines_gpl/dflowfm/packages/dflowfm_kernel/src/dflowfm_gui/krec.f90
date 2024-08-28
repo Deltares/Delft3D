@@ -31,14 +31,14 @@
 !
 
       subroutine KREC(X, Y, Z, XD)
+         use m_colnow
          implicit none
          integer :: ncol
-         integer :: ncolnow
          double precision :: x
          double precision :: xd
          double precision :: y
          double precision :: z
-         common / COLNOW / NCOLNOW
+
          call ISOCOL(Z, NCOL)
          if (NCOLNOW >= 0) call RECTANGLE(real(X - XD), real(Y - XD), real(X + XD), real(Y + XD))
          return

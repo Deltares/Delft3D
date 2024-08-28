@@ -108,11 +108,11 @@ c              Update arguments that exceed data base
                limit   = nint(strpar(19,istru))
 c
                if (limit.gt.0) then
-                  h1 = sngl( h(il) ) - zs
+                  h1 = real( h(il), kind=kind(h1) ) - zs
                   if (deltah) then
-                     h2 = sngl( h(il) - h(ir) )
+                     h2 = real( h(il) - h(ir), kind=kind(h2) )
                    else
-                     h2 = sngl( h(ir) ) - zs
+                     h2 = real( h(ir), kind=kind(h2) ) - zs
                   endif
                   if (mod(limit,10).eq.1) 
      +                strpar(15,istru) = min(strpar(15,istru),h1) 

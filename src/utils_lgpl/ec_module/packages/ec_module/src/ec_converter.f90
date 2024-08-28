@@ -1532,7 +1532,7 @@ module m_ec_converter
          real(hp)              , intent(in) :: zmin, zmax
          integer               , intent(out):: ndxmin, ndxmax
 
-         real(hp) :: wt, minz, maxz, dz
+         real(hp) :: wt, dz
          integer  :: ndx
          ndxmin = size(zpos)
          ndxmax = 1
@@ -1572,7 +1572,7 @@ module m_ec_converter
          type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
          real(hp),            intent(in)    :: timesteps  !< convert to this number of timesteps past the kernel's reference date
          !
-         integer  :: i, k, j          !< loop counters
+         integer  :: i, k          !< loop counters
          real(hp) :: wL, wR           !< left and right weights
          integer  :: kL, kR           !<
          integer  :: maxlay_tgt       !< size of ElementSet of the TARGET in third dimension (if relevant), a.k.a kmx
@@ -1874,8 +1874,6 @@ module m_ec_converter
          integer, intent(in) :: maxlay_src, kLR
          real(kind=hp), intent(out) :: ww
          integer, intent(out) :: idx1, idx2
-
-         integer :: kkl
 
          if ((sigmak - sigma(1)) * (sigmak - sigma(maxlay_src)) >= 0) then      ! beyond the range of source levels
             if (abs(sigmak - sigma(1)) < abs(sigmak - sigma(maxlay_src))) then  ! closer to sigma(1) (avoiding the assumption sigma(1) is the lowest)
@@ -2680,7 +2678,6 @@ module m_ec_converter
          real(hp) :: phase0          ! harmonics: current phase offset angle (in radians)
          integer  :: n_phase_rows    ! harmonics: number of phase rows
          integer  :: n_phase_cols    ! harmonics: number of phase columns
-         integer  :: index1d         ! harmonics: 1d array index.
 
          integer                        :: issparse
          integer, dimension(:), pointer :: ia                    ! sparsity pattern in CRS format, startpointers
@@ -2690,7 +2687,7 @@ module m_ec_converter
          integer, dimension(2)          :: idx
 
          !
-         PI = datan(1.d0)*4.d0
+         PI = atan(1.d0)*4.d0
          success = .false.
          targetField => null()
          sourceT0Field => null()
@@ -2832,7 +2829,7 @@ module m_ec_converter
                                             comparereal(phase0, sourceMissing, .true.)==0 ) then
                                             sourceT0Field%arr1d(ipt) = sourceMissing
                                         else
-                                            sourceT0Field%arr1d(ipt) = amplitude * dcos(omega * delta_t - phase0 * PI/180.0_hp)
+                                            sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI/180.0_hp)
                                         end if
                                     end do
                                 end if
@@ -2851,7 +2848,7 @@ module m_ec_converter
                                                 comparereal(phase0, sourceMissing, .true.)==0 ) then
                                                 sourceT0Field%arr1d(ipt) = sourceMissing
                                             else
-                                                sourceT0Field%arr1d(ipt) = amplitude * dcos(omega * delta_t - phase0 * PI/180.0_hp)
+                                                sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI/180.0_hp)
                                             end if
                                         end do
                                     end do
@@ -3309,6 +3306,8 @@ module m_ec_converter
       !! @param[out] sm lambda in [0,1] on line segment 3-4 (outside [0,1] if no intersection). Unchanged if no intersect!!
       !! @param[out] xcr,ycr x-coord. of intersection point.
       SUBROUTINE CROSS(x1, y1, x2, y2, x3, y3, x4, y4, JACROS,SL,SM,XCR,YCR,CRP)
+         use ieee_arithmetic, only: ieee_is_nan
+
          double precision, intent(inout) :: crp !< crp (in)==-1234 will make crp (out) non-dimensional
          double precision :: det
          double precision :: eps
@@ -3320,7 +3319,7 @@ module m_ec_converter
          double precision                  :: dmiss    = -999d0
 
    !     safety check on crp (in)
-         if ( isnan(crp) ) then
+         if ( ieee_is_nan(crp) ) then
             crp = 0.0_hp
          end if
 

@@ -107,7 +107,7 @@
 
           n = 0
           do kk = 1, nd(k)%lnx ! first try to find 1 point that is sufficiently close to link line
-             LL = iabs(nd(k)%ln(kk)) ! use this 1 point if it is less than e.g. 0.1dx away from xzup
+             LL = abs(nd(k)%ln(kk)) ! use this 1 point if it is less than e.g. 0.1dx away from xzup
              if (LL > lnx1D .and. LL /= L) then !
                 ku = ln(1, LL)
                 if (ku == k) ku = ln(2, LL)
@@ -155,7 +155,7 @@
 
                 if (L > lnx1D) then ! switch of when intersecting fixed weir flagged by iadv type 6 or 8
                    do kk = 1, nd(k)%lnx !
-                      LL = iabs(nd(k)%ln(kk)) ! see testcase transport harbour
+                      LL = abs(nd(k)%ln(kk)) ! see testcase transport harbour
                       k2 = ln(1, LL) + ln(2, LL) - k
                       if (k2 == ku) then
                          if (iadv(LL) == 6 .or. iadv(LL) == 8) then
@@ -194,7 +194,7 @@
 
                 if (L > lnx1D) then ! switch of when intersecting fixed weir flagged by iadv type 6 or 8
                    do kk = 1, nd(k)%lnx !
-                      LL = iabs(nd(k)%ln(kk)) ! see testcase transport harbour
+                      LL = abs(nd(k)%ln(kk)) ! see testcase transport harbour
                       k2 = ln(1, LL) + ln(2, LL) - k
                       if (k2 == ku .or. k2 == ku2) then
                          if (iadv(LL) == 6 .or. iadv(LL) == 8) then
@@ -219,7 +219,7 @@
                 slnup(3 + 3 * (k12 - 1), L) = dxL / dxk ! slope weigths in 3 or 6
 
                 if (size(nd(k)%x) == 3 .or. size(nd(kd)%x) == 3) then ! flag links connected to triangle on either side as negative through klnup(2,*)
-                   klnup(2 + 3 * (k12 - 1), L) = -iabs(klnup(2 + 3 * (k12 - 1), L)) ! for maxlimontris
+                   klnup(2 + 3 * (k12 - 1), L) = -abs(klnup(2 + 3 * (k12 - 1), L)) ! for maxlimontris
                 end if
 
              end if
@@ -237,7 +237,7 @@
              do i = 1, 2
                 iup = (k12 - 1) * 3 + i
                 ib = (k12 - 1) * 2 + i
-                k = iabs(klnup(iup, L))
+                k = abs(klnup(iup, L))
                 if (k > 0) then
                    call spher2locvec(xz(k), yz(k), 1, (/xu(L)/), (/yu(L)/), (/1d0/), (/0d0/), csbup(ib, L), snbup(ib, L), jsferic, jasfer3D, dmiss)
                 end if

@@ -364,7 +364,7 @@ c
 c
 c              Define actual number of subsections
 c
-               call FLNSEC(sngl(hi),i ,asubsc(i),subsec ,secth0 ,secth1,
+               call FLNSEC(real(hi),i ,asubsc(i),subsec ,secth0 ,secth1,
      +                     wfh0 ,wfh1 ,af     ,afh0   ,afh1   ,ngrid )
 c
                h0  = secth0(i)

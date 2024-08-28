@@ -194,7 +194,7 @@ contains
             call update_ghosts(ITYPE_Sall, lsedtot, Ndx, dbodsd, ierror)
          end if
 
-         call fm_apply_mormerge(dtmor)
+         call fm_apply_mormerge()
 
          do ll = 1, lsedtot
             dbodsd(ll, :) = dbodsd(ll, :) * kcsmor
@@ -581,7 +581,7 @@ contains
          if (pnod%numberofconnections > 1) then
             k3 = pnod%gridnumber
             do j = 1, nd(k3)%lnx
-               L = iabs(nd(k3)%ln(j))
+               L = abs(nd(k3)%ln(j))
                Ldir = sign(1, nd(k3)%ln(j))
                !
                wb1d = wu_mor(L)
@@ -614,7 +614,7 @@ contains
          if (pnod%nodeType == nt_LinkNode) then ! connection node
             k1 = pnod%gridnumber
             do j = 1, nd(k1)%lnx
-               L = iabs(nd(k1)%ln(j))
+               L = abs(nd(k1)%ln(j))
                Ldir = sign(1, nd(k1)%ln(j))
                !
                wb1d = wu_mor(L)
@@ -664,7 +664,7 @@ contains
                ! loop over branches and determine redistribution of incoming sediment
                k3 = pnod%gridnumber
                do j = 1, nd(k3)%lnx
-                  L = iabs(nd(k3)%ln(j))
+                  L = abs(nd(k3)%ln(j))
                   Ldir = sign(1, nd(k3)%ln(j))
                   qb1d = -qa(L) * Ldir
                   wb1d = wu_mor(L)
@@ -733,7 +733,7 @@ contains
                if ((facCheck /= 1.0_fp) .and. (facCheck > 0.0_fp)) then
                   ! loop over branches and correct redistribution of incoming sediment
                   do j = 1, nd(k3)%lnx
-                     L = iabs(nd(k3)%ln(j))
+                     L = abs(nd(k3)%ln(j))
                      if (sb_dir(inod, ised, j) == -1) then
                         e_sbcn(L, ised) = e_sbcn(L, ised) / facCheck
                      end if
@@ -1049,7 +1049,7 @@ contains
                   if (kmx > 0) then
                      do ii = 1, nd(nm)%lnx
                         LL = nd(nm)%ln(ii)
-                        Lf = iabs(LL)
+                        Lf = abs(LL)
                         call getLbotLtop(Lf, Lb, Lt)
                         if (Lt < Lb) cycle
                         flux = 0d0
@@ -1062,7 +1062,7 @@ contains
                   else
                      do ii = 1, nd(nm)%lnx
                         LL = nd(nm)%ln(ii)
-                        Lf = iabs(LL)
+                        Lf = abs(LL)
 
                         flux = fluxhortot(j, Lf)
                         call fm_sumflux(LL, sumflux, flux)
@@ -1102,7 +1102,7 @@ contains
                   sumflux = 0d0
                   do ii = 1, nd(nm)%lnx
                      LL = nd(nm)%ln(ii)
-                     Lf = iabs(LL)
+                     Lf = abs(LL)
                      flux = e_scrn(Lf, l) * wu(Lf)
                      call fm_sumflux(LL, sumflux, flux)
                   end do
@@ -1113,7 +1113,7 @@ contains
                sumflux = 0d0
                do ii = 1, nd(nm)%lnx
                   LL = nd(nm)%ln(ii)
-                  Lf = iabs(LL)
+                  Lf = abs(LL)
                   flux = e_sbn(Lf, l) * wu_mor(Lf)
                   call fm_sumflux(LL, sumflux, flux)
                end do
@@ -1124,7 +1124,7 @@ contains
                sumflux = 0d0 ! drawback: avalanching fluxes not included in total transports
                do ii = 1, nd(nm)%lnx
                   LL = nd(nm)%ln(ii)
-                  Lf = iabs(LL)
+                  Lf = abs(LL)
                   flux = avalflux(Lf, l) * wu_mor(Lf)
                   call fm_sumflux(LL, sumflux, flux)
                end do
@@ -1239,7 +1239,7 @@ contains
             totfixfrac = 0d0
             !
             do L = 1, nd(nm)%lnx
-               k1 = ln(1, iabs(nd(nm)%ln(L))); k2 = ln(2, iabs(nd(nm)%ln(L)))
+               k1 = ln(1, abs(nd(nm)%ln(L))); k2 = ln(2, abs(nd(nm)%ln(L)))
                if (k2 == nm) then
                   knb = k1
                else
@@ -1282,8 +1282,8 @@ contains
                   ! process.
                   !
                   do L = 1, nd(nm)%lnx
-                     k1 = ln(1, iabs(nd(nm)%ln(L))); k2 = ln(2, iabs(nd(nm)%ln(L)))
-                     Lf = iabs(nd(nm)%ln(L))
+                     k1 = ln(1, abs(nd(nm)%ln(L))); k2 = ln(2, abs(nd(nm)%ln(L)))
+                     Lf = abs(nd(nm)%ln(L))
                      ! cutcells
                      if (wu_mor(Lf) == 0d0) cycle
                      !
@@ -1307,7 +1307,7 @@ contains
    end subroutine fm_dry_bed_erosion
 
    !>Update `dbodsd` considering mormerge
-   subroutine fm_apply_mormerge(dtmor)
+   subroutine fm_apply_mormerge()
 
    !!
    !! Declarations
@@ -1322,12 +1322,6 @@ contains
       use m_mormerge_mpi, only: update_mergebuffer
 
       implicit none
-
-   !!
-   !! I/O
-   !!
-
-      double precision, intent(in) :: dtmor
 
    !!
    !! Local variables

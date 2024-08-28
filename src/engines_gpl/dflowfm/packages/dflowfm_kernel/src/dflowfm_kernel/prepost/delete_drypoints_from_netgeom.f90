@@ -116,7 +116,7 @@ subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
             end if
 
             if (ext(1:4) == '.lst') then
-               call cutcell_list(6, 'dum', 3, 0)
+               call cutcell_list(6, 0)
                ierror = 0
             else if (ext(1:4) == '.pol' .or. ext(1:4) == '.POL') then
                call oldfil(minp, dryptsfile)

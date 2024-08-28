@@ -48,11 +48,11 @@ subroutine findqorifice12(gateheight, crestheight, h1, h2, q, hg, regime, num, q
    h2 = min(h2, h1 - 0.0001) ! hg = gateheight * contractie = effectieve keeldoorsnee
    d = crestheight
    a = gateheight
-   h1 = max(h1, 0.00010)
-   h2 = max(h2, 0.00001)
+   h1 = max(h1, 0.00010d0)
+   h2 = max(h2, 0.00001d0)
 
    hg = gateheight * 0.5d0 ! lower boundary
-   hg = max(hg, 0.0001)
+   hg = max(hg, 0.0001d0)
 
    if (gateheight >= h1) then ! gate above water
       q = 11111d0
@@ -88,7 +88,7 @@ subroutine findqorifice12(gateheight, crestheight, h1, h2, q, hg, regime, num, q
    end do
 
    hg = hc
-   call getq3(hg, d, a, h1, h2, q)
+   call getq3(hg, a, h1, h2, q)
 
    return
 

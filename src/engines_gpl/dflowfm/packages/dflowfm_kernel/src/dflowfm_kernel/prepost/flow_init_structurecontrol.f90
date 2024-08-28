@@ -171,14 +171,14 @@ function flow_init_structurecontrol() result(status)
       ! NOTE: kegen below does not apply to general structures. Just a placeholder for the link snapping of all structure types.
       select case (pstru%type)
       case (ST_DAMBREAK)
-         call selectelset_internal_links(xz, yz, ndx, ln, lnx, kegen(1:numl), numgen, &
+         call selectelset_internal_links(lnx, kegen(1:numl), numgen, &
                                          loc_spec_type, nump=pstru%numCoordinates, xpin=pstru%xCoordinates, ypin=pstru%yCoordinates, &
                                          branchindex=pstru%ibran, chainage=pstru%chainage, &
                                          xps=dambreakPolygons(i)%xp, yps=dambreakPolygons(i)%yp, nps=dambreakPolygons(i)%np, &
                                          lftopol=lftopol(ndambreaklinks + 1:numl), sortLinks=1)
          ndambreaklinks = ndambreaklinks + numgen ! UNST-3308: early counting of ndambreaklinks is needed here, because of lftopol array
       case default
-         call selectelset_internal_links(xz, yz, ndx, ln, lnx, kegen(1:numl), numgen, &
+         call selectelset_internal_links(lnx, kegen(1:numl), numgen, &
                                          loc_spec_type, nump=pstru%numCoordinates, xpin=pstru%xCoordinates, ypin=pstru%yCoordinates, &
                                          branchindex=pstru%ibran, chainage=pstru%chainage, &
                                          sortLinks=1)
@@ -297,7 +297,7 @@ function flow_init_structurecontrol() result(status)
       case ('gateloweredgelevel') ! Old-style controllable gateloweredgelevel
          !else if (qid == 'gateloweredgelevel' ) then
 
-         call selectelset_internal_links(xz, yz, ndx, ln, lnx, keg(ngate + 1:numl), numg, LOCTP_POLYLINE_FILE, plifile)
+         call selectelset_internal_links(lnx, keg(ngate + 1:numl), numg, LOCTP_POLYLINE_FILE, plifile)
          success = .true.
          write (msgbuf, '(2a,i8,a)') trim(qid), trim(plifile), numg, ' nr of gateheight links'; call msg_flush()
 
@@ -311,7 +311,7 @@ function flow_init_structurecontrol() result(status)
       case ('damlevel') ! Old-style controllable damlevel
          ! else if (qid == 'damlevel' ) then
 
-         call selectelset_internal_links(xz, yz, ndx, ln, lnx, ked(ncdam + 1:numl), numd, LOCTP_POLYLINE_FILE, plifile)
+         call selectelset_internal_links(lnx, ked(ncdam + 1:numl), numd, LOCTP_POLYLINE_FILE, plifile)
          success = .true.
          write (msgbuf, '(2a,i8,a)') trim(qid), trim(plifile), numd, ' nr of dam level cells'; call msg_flush()
 
@@ -330,7 +330,7 @@ function flow_init_structurecontrol() result(status)
                kep(npump + 1:npump + npum) = pstru%linknumbers(1:npum)
             end if
          else
-            call selectelset_internal_links(xz, yz, ndx, ln, lnx, kep(npump + 1:numl), npum, LOCTP_POLYLINE_FILE, plifile)
+            call selectelset_internal_links(lnx, kep(npump + 1:numl), npum, LOCTP_POLYLINE_FILE, plifile)
          end if
 
          !endif
@@ -352,7 +352,7 @@ function flow_init_structurecontrol() result(status)
                kedb(ndambreaklinks + 1:ndambreaklinks + ndambr) = pstru%linknumbers(1:ndambr)
             end if
          else
-            call selectelset_internal_links(xz, yz, ndx, ln, lnx, kedb(ndambreaklinks + 1:numl), ndambr, LOCTP_POLYLINE_FILE, plifile, &
+            call selectelset_internal_links(lnx, kedb(ndambreaklinks + 1:numl), ndambr, LOCTP_POLYLINE_FILE, plifile, &
                                             xps=dambreakPolygons(i)%xp, yps=dambreakPolygons(i)%yp, nps=dambreakPolygons(i)%np, &
                                             lftopol=lftopol(ndambreaklinks + 1:numl), sortLinks=1)
          end if
@@ -374,7 +374,7 @@ function flow_init_structurecontrol() result(status)
                kegen(ncgen + 1:ncgen + numgen) = pstru%linknumbers(1:numgen)
             end if
          else
-            call selectelset_internal_links(xz, yz, ndx, ln, lnx, kegen(ncgen + 1:numl), numgen, LOCTP_POLYLINE_FILE, plifile, sortLinks=1)
+            call selectelset_internal_links(lnx, kegen(ncgen + 1:numl), numgen, LOCTP_POLYLINE_FILE, plifile, sortLinks=1)
          end if
 
          success = .true.
@@ -455,7 +455,7 @@ function flow_init_structurecontrol() result(status)
       do n = 1, ncgensg
 
          do k = L1cgensg(n), L2cgensg(n)
-            Lf = iabs(kegen(k))
+            Lf = abs(kegen(k))
             kb = ln(1, Lf)
             kbi = ln(2, Lf)
             if (kegen(k) > 0) then
@@ -862,7 +862,7 @@ function flow_init_structurecontrol() result(status)
       do n = 1, ngatesg
 
          do k = L1gatesg(n), L2gatesg(n)
-            Lf = iabs(keg(k))
+            Lf = abs(keg(k))
             kb = ln(1, Lf)
             kbi = ln(2, Lf)
             kgate(1, k) = kb
@@ -933,7 +933,7 @@ function flow_init_structurecontrol() result(status)
       do n = 1, ncdamsg
 
          do k = L1cdamsg(n), L2cdamsg(n)
-            Lf = iabs(ked(k))
+            Lf = abs(ked(k))
             kb = ln(1, Lf) ! TODO: HK: moeten we hier niet altijd de upstream kb pakken (af van sign(ked(k))?
             kbi = ln(2, Lf)
             kcdam(1, k) = kb
@@ -1017,7 +1017,7 @@ function flow_init_structurecontrol() result(status)
 
          do k = L1pumpsg(n), L2pumpsg(n)
             L = kep(k)
-            Lf = iabs(L)
+            Lf = abs(L)
             if (L > 0) then
                kb = ln(1, Lf)
                kbi = ln(2, Lf)
@@ -1070,7 +1070,7 @@ function flow_init_structurecontrol() result(status)
                istrtmp = hashsearch(network%sts%hashlist_pump, strid)
                if (istrtmp == -1) then
                   k = L1pumpsg(n)
-                  istrtmp = addStructure(network%sts, kpump(1, k), kpump(2, k), iabs(kpump(3, k)), -1, "", strid, istrtype)
+                  istrtmp = addStructure(network%sts, kpump(1, k), kpump(2, k), abs(kpump(3, k)), -1, "", strid, istrtype)
                   call readPump(network%sts%struct(istrtmp)%pump, str_ptr, strid, network%forcinglist, success)
                end if
             end if
@@ -1232,7 +1232,7 @@ function flow_init_structurecontrol() result(status)
       do n = 1, ndambreaksignals
          do k = L1dambreaksg(n), L2dambreaksg(n)
             L = kedb(k)
-            Lf = iabs(L)
+            Lf = abs(L)
             if (L > 0) then
                kb = ln(1, Lf)
                kbi = ln(2, Lf)
@@ -1280,7 +1280,7 @@ function flow_init_structurecontrol() result(status)
                k = L1dambreaksg(n)
                k1 = kdambreak(1, k)
                k2 = kdambreak(2, k)
-               Lf = iabs(kdambreak(3, k))
+               Lf = abs(kdambreak(3, k))
             else
                ! Structure is not active in current grid: use dummy calc points and flow links, not used in computations.
                k1 = 0
@@ -1392,7 +1392,7 @@ function flow_init_structurecontrol() result(status)
          do k = L1dambreaksg(n), L2dambreaksg(n)
             indexLink = indexLink + 1
             ! compute the mid point
-            Lf = iabs(kdambreak(3, k))
+            Lf = abs(kdambreak(3, k))
             k1 = ln(1, Lf)
             k2 = ln(2, Lf)
             xl(indexLink, 1) = xz(k1)
@@ -1420,7 +1420,7 @@ function flow_init_structurecontrol() result(status)
 
          ! compute the normal projections of the start and endpoints of the flow links
          do k = L1dambreaksg(n), L2dambreaksg(n)
-            Lf = iabs(kdambreak(3, k))
+            Lf = abs(kdambreak(3, k))
             if (kcu(Lf) == 3) then ! 1d2d flow link
                dambreakLinksEffectiveLength(k) = wu(Lf)
             else

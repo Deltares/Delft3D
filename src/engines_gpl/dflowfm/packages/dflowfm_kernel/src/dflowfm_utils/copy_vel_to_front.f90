@@ -31,13 +31,12 @@
 !
 
 !> copy growth velocities to the front, and add points in the front at corners
-subroutine copy_vel_to_front(mc, nc, j, vel, ifront, nf, numf, xf, yf, velf, idxf)
+subroutine copy_vel_to_front(mc, j, vel, ifront, nf, numf, xf, yf, velf, idxf)
    use m_missing
 
    implicit none
 
    integer, intent(in) :: mc !< number of grid points
-   integer, intent(in) :: nc !< number of grid layers
    integer, intent(in) :: j !< grid layer
 
    double precision, dimension(2, mc), intent(in) :: vel !  growth velocity vector at grid layer, per node

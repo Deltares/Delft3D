@@ -48,7 +48,7 @@ contains
         !!              processing. In new input processing the software counts the number
         !!              of additional grid specifications.
         !!          - ZMODEL. A Zlayer model is used, relevance unknown.
-        !!          - num_layers followed by an integer, specifies number of layers in base grid.
+        !!          - NOLAY followed by an integer, specifies number of layers in base grid.
         !!              May be redundant because this can be done at several locations.
         !!          - BOTTOMGRID. Specifies grid in waterbed. Diverts to read_grid.
         !!          - BEDGRID. Seems to be the right name for BOTTOMGRID.
@@ -167,13 +167,13 @@ contains
                 endif
             endif
 
-            if (.not. multigrid) then                 ! still no multigrid chosen
-                select case (ctoken)                   ! num_layers necessary here
-                case ('num_layers')                      ! Deal with number of layers
+            if (.not. multigrid) then                  ! still no multigrid chosen
+                select case (ctoken)                   ! number of layers necessary here
+                case ('NOLAY')                         ! Deal with number of layers
                     if (gettoken(num_layers, ierr2) > 0) goto 1000
                     write (file_unit, 2020) num_layers
-                case ('MULTIGRID')                  ! Deal with multiple grids
-                    multigrid = .true.                ! Allow an integer to give
+                case ('MULTIGRID')                     ! Deal with multiple grids
+                    multigrid = .true.                 ! Allow an integer to give
                     read_input = .true.                ! number of additional grids
                     if (gettoken(ctoken, itoken, itype, ierr2) > 0) goto 1000
                     push = .true.
@@ -191,8 +191,8 @@ contains
                 newinput = .true.
                 zmodel = .true.
 
-            case ('num_layers')
-                ! num_layers must precede grid definitions
+            case ('NOLAY')
+                ! Keyword 'NOLAY' must precede grid definitions
                 if (GridPs%current_size > 1) then
                     write(file_unit, 2050)
                     goto 1000
@@ -398,7 +398,7 @@ contains
         2020 format (' Number of layers in base grid :', I10)
         2030 format (/' ERROR, unrecognized token: ', A)
         2040 format (/' Reading MULTIGRID information')
-        2050 format (/' ERROR, num_layers definition must preceed the GRID definitions')
+        2050 format (/' ERROR, keyword ''NOLAY'' must preceed the GRID definitions')
         2060 format (/' ERROR, nr of segments/nr of layers is no integer.')
         2070 format (/' WARNING, bottomgrid already defined, first definition prevails!')
         2080 format (' Number of segments in sub-grid', I4, ' equals:', i10)
@@ -508,7 +508,7 @@ contains
         !!      The type of the grid has already been set in the calling grid.f routine
         !!
         !!      Poperties that can be set are:
-        !!          - num_layers followed by an integer, number of layers of the grid (default is 0)
+        !!          - NOLAY followed by an integer, number of layers of the grid (default is 0)
         !!          - AGGREGATIONFILE followed by a filename of a .lga type binary aggregation file
         !!          - REFERENCEGRID followed by the name of the reference grid for this grid
         !!          If an integer is met, the routine expects as many integers as in one
@@ -578,7 +578,7 @@ contains
             if (itype == 1) then                              ! it is a string
                 select case (ctoken)
 
-                case ('num_layers')
+                case ('NOLAY')
                     if (gettoken(aGrid%num_layers, ierr2) > 0) goto 1000
                     write (file_unit, 2010) aGrid%num_layers
 

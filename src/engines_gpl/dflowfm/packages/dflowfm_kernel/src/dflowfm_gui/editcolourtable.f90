@@ -32,6 +32,7 @@
 
       subroutine EDITCOLOURTABLE(MODE, KEY)
          use unstruc_colors
+         use m_helpnow
          implicit none
          integer :: key
          integer :: mode
@@ -41,7 +42,6 @@
          integer :: n2c
          integer :: n3
          integer :: n3c
-         integer :: nlevel
          integer :: nput
          integer :: num
          integer :: numb
@@ -51,9 +51,7 @@
          double precision :: xp
          double precision :: yp
 
-         common / HELPNOW / WRDKEY, NLEVEL
-
-         character TEX * 26, WRDKEY * 40, TEX2 * 4
+         character TEX * 26, TEX2 * 4
 
          TEX = ' EDIT COLORTABLE          '
          WRDKEY = TEX
@@ -76,7 +74,7 @@
                KEY = 3
                return
             else
-               call CHOICES(MODE, NUM, NWHAT, KEY)
+               call CHOICES(NUM, NWHAT, KEY)
             end if
          else if (KEY == 21) then
 !        INS KEY

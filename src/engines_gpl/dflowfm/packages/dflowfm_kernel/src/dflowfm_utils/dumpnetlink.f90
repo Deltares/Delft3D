@@ -37,7 +37,7 @@
     use unstruc_messages
     implicit none
     integer :: L, k1, k2
-    character * (*) tex
+    character(len=*) tex
     character(len=14) tex2
 
     write (tex2, '(i14.0)') L

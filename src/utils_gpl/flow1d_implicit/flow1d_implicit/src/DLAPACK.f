@@ -56,11 +56,11 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  JOBZ    (input) CHARACTER*1
+*  JOBZ    (input) character(len=1
 *          = 'N':  Compute eigenvalues only;
 *          = 'V':  Compute eigenvalues and eigenvectors.
 *
-*  UPLO    (input) CHARACTER*1
+*  UPLO    (input) character(len=1
 *          = 'U':  Upper triangle of A is stored;
 *          = 'L':  Lower triangle of A is stored.
 *
@@ -265,7 +265,7 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  COMPZ   (input) CHARACTER*1
+*  COMPZ   (input) character(len=1
 *          = 'N':  Compute eigenvalues only.
 *          = 'V':  Compute eigenvalues and eigenvectors of the original
 *                  symmetric matrix.  On entry, Z must contain the
@@ -823,19 +823,19 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  SIDE    (input) CHARACTER*1
+*  SIDE    (input) character(len=1
 *          Specifies whether the plane rotation matrix P is applied to
 *          A on the left or the right.
 *          = 'L':  Left, compute A := P*A
 *          = 'R':  Right, compute A:= A*P'
 *
-*  DIRECT  (input) CHARACTER*1
+*  DIRECT  (input) character(len=1
 *          Specifies whether P is a forward or backward sequence of
 *          plane rotations.
 *          = 'F':  Forward, P = P( z - 1 )*...*P( 2 )*P( 1 )
 *          = 'B':  Backward, P = P( 1 )*P( 2 )*...*P( z - 1 )
 *
-*  PIVOT   (input) CHARACTER*1
+*  PIVOT   (input) character(len=1
 *          Specifies the plane for which P(k) is a plane rotation
 *          matrix.
 *          = 'V':  Variable pivot, the plane (k,k+1)
@@ -1356,7 +1356,7 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  UPLO    (input) CHARACTER*1
+*  UPLO    (input) character(len=1
 *          = 'U': Upper triangle of A contains elementary reflectors
 *                 from DSYTRD;
 *          = 'L': Lower triangle of A contains elementary reflectors
@@ -2059,21 +2059,21 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  SIDE    (input) CHARACTER*1
+*  SIDE    (input) character(len=1
 *          = 'L': apply H or H' from the Left
 *          = 'R': apply H or H' from the Right
 *
-*  TRANS   (input) CHARACTER*1
+*  TRANS   (input) character(len=1
 *          = 'N': apply H (No transpose)
 *          = 'T': apply H' (Transpose)
 *
-*  DIRECT  (input) CHARACTER*1
+*  DIRECT  (input) character(len=1
 *          Indicates how H is formed from a product of elementary
 *          reflectors
 *          = 'F': H = H(1) H(2) . . . H(k) (Forward)
 *          = 'B': H = H(k) . . . H(2) H(1) (Backward)
 *
-*  STOREV  (input) CHARACTER*1
+*  STOREV  (input) character(len=1
 *          Indicates how the vectors which define the elementary
 *          reflectors are stored:
 *          = 'C': Columnwise
@@ -2659,13 +2659,13 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  DIRECT  (input) CHARACTER*1
+*  DIRECT  (input) character(len=1
 *          Specifies the order in which the elementary reflectors are
 *          multiplied to form the block reflector:
 *          = 'F': H = H(1) H(2) . . . H(k) (Forward)
 *          = 'B': H = H(k) . . . H(2) H(1) (Backward)
 *
-*  STOREV  (input) CHARACTER*1
+*  STOREV  (input) character(len=1
 *          Specifies how the vectors which define the elementary
 *          reflectors are stored (see also Further Details):
 *          = 'C': columnwise
@@ -2998,7 +2998,7 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  SIDE    (input) CHARACTER*1
+*  SIDE    (input) character(len=1
 *          = 'L': form  H * C
 *          = 'R': form  C * H
 *
@@ -3579,7 +3579,7 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  UPLO    (input) CHARACTER*1
+*  UPLO    (input) character(len=1
 *          = 'U':  Upper triangle of A is stored;
 *          = 'L':  Lower triangle of A is stored.
 *
@@ -3856,7 +3856,7 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  UPLO    (input) CHARACTER*1
+*  UPLO    (input) character(len=1
 *          Specifies whether the upper or lower triangular part of the
 *          symmetric matrix A is stored:
 *          = 'U':  Upper triangular
@@ -4089,7 +4089,7 @@ c***********************************************************************
 *     February 29, 1992
 *
 *     .. Scalar Arguments ..
-      CHARACTER*6        SRNAME
+      character(len=6)   SRNAME
       INTEGER            INFO
 *     ..
 *
@@ -4106,7 +4106,7 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  SRNAME  (input) CHARACTER*6
+*  SRNAME  (input) character(len=6
 *          The name of the routine which called XERBLA.
 *
 *  INFO    (input) INTEGER
@@ -4541,7 +4541,7 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  CMACH   (input) CHARACTER*1
+*  CMACH   (input) character(len=1
 *          Specifies the value to be returned by DLAMCH:
 *          = 'E' or 'e',   DLAMCH := eps
 *          = 'S' or 's ,   DLAMCH := sfmin
@@ -5442,7 +5442,7 @@ c***********************************************************************
 *     February 20, 1992
 *
 *     .. Scalar Arguments ..
-      CHARACTER*( * )    NAME, OPTS
+      character(len=*)   NAME, OPTS
       INTEGER            ISPEC, N1, N2, N3, N4
 *     ..
 *
@@ -5488,11 +5488,11 @@ c***********************************************************************
 *          = 8: the crossover point for the multishift QR and QZ methods
 *               for nonsymmetric eigenvalue problems.
 *
-*  NAME    (input) CHARACTER*(*)
+*  NAME    (input) character(len=*)
 *          The name of the calling subroutine, in either upper case or
 *          lower case.
 *
-*  OPTS    (input) CHARACTER*(*)
+*  OPTS    (input) character(len=*)
 *          The character options to the subroutine NAME, concatenated
 *          into a single character string.  For example, UPLO = 'U',
 *          TRANS = 'T', and DIAG = 'N' for a triangular routine would
@@ -5533,10 +5533,10 @@ c***********************************************************************
 *
 *     .. Local Scalars ..
       LOGICAL            CNAME, SNAME
-      CHARACTER*1        C1
-      CHARACTER*2        C2, C4
-      CHARACTER*3        C3
-      CHARACTER*6        SUBNAM
+      character(len=1)   C1
+      character(len=2)   C2, C4
+      character(len=3)   C3
+      character(len=6)   SUBNAM
       INTEGER            I, IC, IZ, NB, NBMIN, NX
 *     ..
 *     .. Intrinsic Functions ..
@@ -5544,7 +5544,20 @@ c***********************************************************************
 *     ..
 *     .. Executable Statements ..
 *
-      GO TO ( 100, 100, 100, 400, 500, 600, 700, 800 ) ISPEC
+c      GO TO ( 100, 100, 100, 400, 500, 600, 700, 800 ) ISPEC
+      if (ISPEC >= 1 .and. ISPEC <=3) then
+         goto 100 
+      else if (ISPEC == 4) then
+         goto 400
+      else if (ISPEC == 5) then
+         goto 500
+      else if (ISPEC == 6) then
+         goto 600
+      else if (ISPEC == 7) then
+         goto 700
+      else if (ISPEC == 8) then
+         goto 800
+      end if
 *
 *     Invalid value for ISPEC
 *
@@ -5612,7 +5625,13 @@ c***********************************************************************
       C3 = SUBNAM( 4:6 )
       C4 = C3( 2:3 )
 *
-      GO TO ( 110, 200, 300 ) ISPEC
+      if (ISPEC == 1) then
+         goto 110
+      else if (ISPEC == 2) then
+         goto 200
+      else if (ISPEC == 3) then
+         goto 300
+      end if
 *
   110 CONTINUE
 *
@@ -5982,11 +6001,11 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  NORM    (input) CHARACTER*1
+*  NORM    (input) character(len=1
 *          Specifies the value to be returned in DLANSY as described
 *          above.
 *
-*  UPLO    (input) CHARACTER*1
+*  UPLO    (input) character(len=1
 *          Specifies whether the upper or lower triangular part of the
 *          symmetric matrix A is to be referenced.
 *          = 'U':  Upper triangular part of A is referenced
@@ -6311,8 +6330,8 @@ c***********************************************************************
 *  Arguments
 *  =========
 *
-*  CA      (input) CHARACTER*1
-*  CB      (input) CHARACTER*1
+*  CA      (input) character(len=1
+*  CB      (input) character(len=1
 *          CA and CB specify the single characters to be compared.
 *
 *     .. Intrinsic Functions ..
@@ -6384,7 +6403,7 @@ c***********************************************************************
 *     February 29, 1992
 *
 *     .. Scalar Arguments ..
-      CHARACTER*( * )    CA, CB
+      character(len=*)   CA, CB
       INTEGER            N
 *     ..
 *
@@ -6403,8 +6422,8 @@ c***********************************************************************
 *  N       (input) INTEGER
 *          The number of characters in CA and CB to be compared.
 *
-*  CA      (input) CHARACTER*(*)
-*  CB      (input) CHARACTER*(*)
+*  CA      (input) character(len=*)
+*  CB      (input) character(len=*)
 *          CA and CB specify two character strings of length at least N.
 *          Only the first N characters of each string will be accessed.
 *

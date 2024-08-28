@@ -126,7 +126,6 @@ subroutine Link_ReadAscii_ini(infile, infile4)
     integer :: teller, tp, idebug, ifrom, ito, infile4
     integer :: iecode, iout1, ilink, ilink2,i,j, ilen, ilen2
     character(CharIdLength) ::  id,nm, fn_name, tn_name
-    type(t_node) :: fn, tn
     Logical    ::     allow, found, endfil, success, occurs
 
     Integer       IDUM(10)
@@ -880,7 +879,7 @@ end subroutine Link_ReadAscii_ini
     Integer noDown
     Integer, Pointer :: ExistUp(:), ExistDown(:)
     Character(Len=CharIdLength) string
-    Character*999 errorString
+    Character(len=999) errorString
     Integer iDebug
     Logical Err917, Err974, Err920, Success
 
@@ -1869,7 +1868,7 @@ end subroutine Link_ReadAscii_ini
     Subroutine SimSeqAddNodeType(Ikind, Index, Stringoption)
 ! Add all nodes of type =IKIND, or type <= IKIND (depending on StringOption) to SimSeq array
 
-    Character*2 StringOption
+    Character(len=2) StringOption
     Integer Ikind, Index
     Integer Inode, KindNd
 
@@ -2128,12 +2127,12 @@ end subroutine Link_ReadAscii_ini
   ! update upstream gw level, make sure it is below surface; otherwise limit the GWLinkFlow
    GWFlowVol = GwLinkFlow * Timesettings%TimestepSize
    BoBD(iovhup) = BoBD(iovhup) - GWFlowVol
-   GwAreaUp = max (AreaGwComp(iovhUp), 0.0001)
+   GwAreaUp = max (AreaGwComp(iovhUp), 0.0001d0)
    GWLupold = Gwl(iovhup)
    GWL(iovhup) = GWL(iovhup) - 1/BergC(iovhup) * GWFlowVol / GwAreaUp
   ! update downstream gw level, make sure it is below surface, otherwise limit the GWLinkFlow
    BoBD(iovhdown) = BoBD(iovhdown) + GWFlowVol
-   GwAreaDown = max (AreaGwComp(iovhDown), 0.0001)
+   GwAreaDown = max (AreaGwComp(iovhDown), 0.0001d0)
    GWLdownold = Gwl(iovhdown)
    GWL(iovhdown) = GWL(iovhdown) + 1/BergC(iovhDown) * GWFlowVol / GwAreaDown
 

@@ -212,7 +212,7 @@ module kdtree2Factory
       
       integer, parameter                          :: Nquerydim = 2 !< query vector length
       
-      integer                                     :: i, num
+      integer                                     :: i
       
       ierror = 0     
       

@@ -35,9 +35,9 @@ subroutine readdb(lu_inp, lu_mes)
     integer  :: lu_inp  !< Logical unit number for input
     integer  :: lu_mes  !< Logical unit number for messages (logging)
 
-    character*255 c255
-    character*10 chkcnf(nconfm),c10
-    character*1  swicnf(nconfm),c1dum
+    character(len=255) c255
+    character(len=10) chkcnf(nconfm),c10
+    character(len=1)  swicnf(nconfm),c1dum
     integer      jndex , iproc , iconf , ipos  , ihulp , idum(1), error
 
 
@@ -326,8 +326,8 @@ subroutine writdb(lu)
     integer :: lu !< logical unit number
 
     integer iproc, iconf, i
-    character*10 c10
-    character*1  swicnf(nconfm)
+    character(len=10) c10
+    character(len=1)  swicnf(nconfm)
 
     !Table P1
     open(newunit=lu, file='grpsub.csv')

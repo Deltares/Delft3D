@@ -42,7 +42,8 @@ subroutine doforester()
    integer :: kk, km, kb
    double precision :: a(kmxx), d(kmxx)
 
-   integer(4) ithndl / 0 /
+   integer(4) ::ithndl = 0
+   
    if (timon) call timstrt("doforester", ithndl)
 
    do kk = 1, ndxi

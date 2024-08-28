@@ -31,7 +31,7 @@
 !
 
 !> compute vertical fluxes
-subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, kmx, zws, qw, kbot, ktop, sed, nsubsteps, jaupdate, ndeltasteps, flux, wsf)
+subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, zws, qw, kbot, ktop, sed, nsubsteps, jaupdate, ndeltasteps, flux, wsf)
    use m_flowgeom, only: Ndx, ba, kfs ! static mesh information
    use m_flowtimes, only: dts
    use m_flow, only: s1, epshsdif, cffacver, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
@@ -48,7 +48,6 @@ subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, kmx, zws, qw, kbot, k
    integer, intent(in) :: limtyp !< limiter type
    double precision, dimension(NUMCONST), intent(in) :: thetavert !< compute fluxes (<1) or not (1)
    integer, intent(in) :: Ndkx !< total number of flownodes (dynamically changing)
-   integer, intent(in) :: kmx !< maximum number of layers (dynamically changing)
    double precision, dimension(Ndkx), intent(in) :: zws !< vertical coordinate of layers at interface/center locations
    double precision, dimension(Ndkx), intent(in) :: qw !< flow-field vertical discharges
    integer, dimension(Ndx), intent(in) :: kbot !< flow-node based layer administration
@@ -73,7 +72,8 @@ subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, kmx, zws, qw, kbot, k
 
    double precision, parameter :: DTOL = 1d-8
 
-   integer(4) ithndl / 0 /
+   integer(4) :: ithndl = 0
+   
    if (timon) call timstrt("comp_fluxver", ithndl)
 
    if (sum(1d0 - thetavert(1:NUMCONST)) < DTOL) goto 1234 ! nothing to do

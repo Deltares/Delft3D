@@ -46,7 +46,8 @@ subroutine get_ndeltasteps()
 
    double precision, external :: get_dt
 
-   integer(4) ithndl / 0 /
+   integer(4) :: ithndl =  0
+   
    if (timon) call timstrt("get_ndeltasteps", ithndl)
 
    numnonglobal = 0

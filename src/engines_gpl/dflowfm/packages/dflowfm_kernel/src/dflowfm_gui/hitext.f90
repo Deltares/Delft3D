@@ -31,15 +31,15 @@
 !
 
       subroutine HITEXT(IVAL, X, Y)
+         use m_colnow
          implicit none
          integer :: ival
          integer :: l
-         integer :: ncolnow
          double precision :: x
          double precision :: y
 !     INTEGER grafisch scherm in current color
          character TEX * 8
-         common / COLNOW / NCOLNOW
+
          if (NCOLNOW >= 0) then
             if (abs(IVAL) < 100) then
                write (TEX, '(I3)') IVAL

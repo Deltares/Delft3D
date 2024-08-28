@@ -30,14 +30,14 @@
 !
 !
 
-subroutine compareanalytic(s, u, x, mmax)
+subroutine compareanalytic(s, x, mmax)
 
    use m_flowgeom
    use m_flow
 
    implicit none
    integer :: mmax
-   double precision :: s(0:mmax), u(0:mmax), x(0:mmax)
+   double precision :: s(0:mmax), x(0:mmax)
    double precision :: alf, dif, si
    integer :: n, i, ii
    logical inview

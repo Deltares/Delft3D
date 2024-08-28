@@ -71,5 +71,5 @@
     call movabs(xmx, 0.1d0 * h0)
     call lnabs(xmx, 0.2d0 * h0)
 
-    call compareanalytic(s, u, xx, mmax)
+    call compareanalytic(s, xx, mmax)
  end subroutine drybed

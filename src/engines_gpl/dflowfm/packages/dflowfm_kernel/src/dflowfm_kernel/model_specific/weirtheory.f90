@@ -31,10 +31,10 @@
 !
 
 subroutine weirtheory(zupstream, zdownstream, crestheight, zcrestperfect, zminsub, zcrest, &
-                      qweir, uupstream, ucrest, udownstream, regime, qfree, gateheight)
+                      qweir, uupstream, ucrest, udownstream, regime, qfree)
    implicit none
    double precision :: zupstream, zdownstream, crestheight, zcrestperfect, zminsub, zcrest, &
-      qweir, uupstream, ucrest, udownstream, qfree, gateheight
+      qweir, uupstream, ucrest, udownstream, qfree
    double precision :: pi, g, d, z1, h1, p, q, cosfi, fi, zc1, zc2, zc3, &
       res1, res2, res3, z2, z2critical, h2, u1, u2, u3, qd, ff, z3, z3critical, &
       h3, fz2, z3inp, z2a, fz2a, z2b, fz2b, z2c, fz2c, za, zb, fa, fb, zc, fc, &

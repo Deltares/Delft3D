@@ -113,7 +113,7 @@
                     KNEW(L) = -1 * KNEW(L)
                  end if
                  K = K + 1
-                 KK(K) = IABS(KNEW(L))
+                 KK(K) = abs(KNEW(L))
 
               end if
 

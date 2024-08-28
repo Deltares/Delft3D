@@ -8,7 +8,7 @@ c
 c     Declaration of local variables:
 c
       integer i1, i2, ibr, j, igr, lbrnam
-      character*40   branam
+      character(len=40) branam
 c
 c     Include sobek constants and error codes
 c

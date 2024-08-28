@@ -132,12 +132,12 @@ contains
             OMEGA = ABS(12.D0 - HOUR) * PI / 12.D0
 
             DECLIN = 6.918D-3 - &
-                    3.99912D-1 * DCOS (E * DAYNR) - &
-                    6.758D-3 * DCOS (2.0D0 * E * DAYNR) - &
-                    2.697D-3 * DCOS (3.0D0 * E * DAYNR) + &
-                    7.0257D-2 * DSIN (E * DAYNR) + &
-                    9.07D-4 * DSIN (2.0D0 * E * DAYNR) + &
-                    1.480D-3 * DSIN (3.0D0 * E * DAYNR)
+                    3.99912D-1 * cos (E * DAYNR) - &
+                    6.758D-3 * cos (2.0D0 * E * DAYNR) - &
+                    2.697D-3 * cos (3.0D0 * E * DAYNR) + &
+                    7.0257D-2 * sin (E * DAYNR) + &
+                    9.07D-4 * sin (2.0D0 * E * DAYNR) + &
+                    1.480D-3 * sin (3.0D0 * E * DAYNR)
 
             !        compute actual irradiance
 
@@ -173,12 +173,12 @@ contains
                 OMEGA = ABS(12.D0 - HOUR) * PI / 12.D0
 
                 DECLIN = 6.918D-3 - &
-                        3.99912D-1 * DCOS (E * DAYNR) - &
-                        6.758D-3 * DCOS (2.0D0 * E * DAYNR) - &
-                        2.697D-3 * DCOS (3.0D0 * E * DAYNR) + &
-                        7.0257D-2 * DSIN (E * DAYNR) + &
-                        9.07D-4 * DSIN (2.0D0 * E * DAYNR) + &
-                        1.480D-3 * DSIN (3.0D0 * E * DAYNR)
+                        3.99912D-1 * cos (E * DAYNR) - &
+                        6.758D-3 * cos (2.0D0 * E * DAYNR) - &
+                        2.697D-3 * cos (3.0D0 * E * DAYNR) + &
+                        7.0257D-2 * sin (E * DAYNR) + &
+                        9.07D-4 * sin (2.0D0 * E * DAYNR) + &
+                        1.480D-3 * sin (3.0D0 * E * DAYNR)
 
                 !              compute actual irradiance
 

@@ -33,18 +33,15 @@
       subroutine EDITGRID(MODE, NFLD, KEY)
          use unstruc_colors
          use m_grid
+         use m_helpnow
+         use m_drawthis
          implicit none
          integer :: mode, nfld, key
 
-         integer :: L, NLEVEL, JA, NUM, NWHAT, NPUT, NUMB, MP, NP, MD, ND, &
-                    ML, NL, MH, NH, NUMP, NLOC, IN, JN, INSIDE, ndraw, NCOL
+         integer :: L, JA, NUM, NWHAT, NPUT, NUMB, MP, NP, MD, ND, &
+                    ML, NL, MH, NH, NUMP, NLOC, IN, JN, INSIDE, NCOL
          integer :: newmode
-
-         common / HELPNOW / WRDKEY, NLEVEL
-         common / DRAWTHIS / ndraw(50)
-
-         character TEX * 20, WRDKEY * 40, FIELDOP * 40
-
+         character TEX * 20, FIELDOP * 40
          double precision :: xp, yp, wf(4)
 
          TEX = ' '//FIELDOP(NFLD)
@@ -74,7 +71,7 @@
                MODE = NWHAT
                return
             else
-               call CHOICES(MODE, NUM, NWHAT, KEY)
+               call CHOICES(NUM, NWHAT, KEY)
             end if
          else if (KEY >= 577) then ! Alt+letter switches edit mode.
             call selecteditmode(newmode, key)

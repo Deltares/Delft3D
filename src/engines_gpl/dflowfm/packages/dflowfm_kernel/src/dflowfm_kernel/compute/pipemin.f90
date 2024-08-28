@@ -36,7 +36,7 @@ subroutine pipemin(hpr, dia, area, width) ! top minus part
    double precision, intent(in) :: dia, hpr
    double precision, intent(out) :: area, width
 
-   double precision :: are, dsqrt, fi, r, sq
+   double precision :: are, fi, r, sq
 
    r = 0.5 * dia
    if (hpr < r) then
@@ -44,8 +44,8 @@ subroutine pipemin(hpr, dia, area, width) ! top minus part
       width = 0d0
    else if (hpr < dia) then
       are = hpr - r
-      fi = dasin(are / r)
-      sq = dsqrt(hpr * (dia - hpr))
+      fi = asin(are / r)
+      sq = sqrt(hpr * (dia - hpr))
       area = are * dia - fi * r * r - sq * are
       width = dia - 2 * sq
    else

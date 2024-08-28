@@ -46,7 +46,7 @@
     xn1 = 0d0; yn1 = 0d0; a = 0d0
     do k = 1, size(nd(n1)%ln)
        LL = nd(n1)%ln(k)
-       L = iabs(LL)
+       L = abs(LL)
        if (LL < 0) then ! incoming link has positive LL
           alf = acL(L)
        else

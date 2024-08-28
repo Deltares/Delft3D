@@ -69,10 +69,10 @@
 !          Declaration of file identification group
 !
       REAL          VFFORM
-      CHARACTER*20  RUNDAT
-      CHARACTER*40  FFORM      , CONTEN      , &
+      CHARACTER(len=20)  RUNDAT
+      CHARACTER(len=40)  FFORM      , CONTEN      , &
                    SOURCE
-      CHARACTER*40  REMARK(4)
+      CHARACTER(len=40)  REMARK(4)
 !
 !          Local variables
 !
@@ -82,9 +82,9 @@
       INTEGER       IC              , IP          , &
                    ITEL
       INTEGER       DEFFDS
-      CHARACTER*1   CODING
-      CHARACTER*2   ACCESS
-      CHARACTER*255 DEFNAM          , DATNAM
+      CHARACTER(len=1)   CODING
+      CHARACTER(len=2)   ACCESS
+      CHARACTER(len=255) DEFNAM          , DATNAM
 !
 !          External NEFIS Functions
 !

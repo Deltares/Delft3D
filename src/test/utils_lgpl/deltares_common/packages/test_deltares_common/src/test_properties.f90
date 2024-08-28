@@ -37,11 +37,8 @@ subroutine tests_properties
 end subroutine tests_properties
 
 subroutine test_properties_load
-    character(len=20)        :: filename
     type(tree_data), pointer :: tree
     integer                  :: error
-    logical                  :: preprocess
-
     !
     ! Check that a non-existing file causes an error
     !
@@ -70,10 +67,8 @@ subroutine test_properties_load
 end subroutine test_properties_load
 
 subroutine test_properties_check
-    character(len=20)        :: filename
     type(tree_data), pointer :: tree1, tree2, tree
     integer                  :: error
-    logical                  :: preprocess
 
     logical                  :: success
     integer                  :: integerValue
@@ -175,7 +170,6 @@ end subroutine test_properties_check
 
 
 subroutine test_properties_version
-    character(len=20)        :: filename
     character(len=20)        :: fileVersion
     type(tree_data), pointer :: tree
     integer                  :: error

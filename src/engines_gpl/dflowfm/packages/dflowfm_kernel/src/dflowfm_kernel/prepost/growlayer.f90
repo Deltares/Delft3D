@@ -31,7 +31,7 @@
 !
 
 !> grow a gridlayer
-subroutine growlayer(mc, nc, mmax, nmax, idir, maxaspect, j, edgevel, dt, xc, yc, ifront, istop)
+subroutine growlayer(mc, nc, mmax, nmax, idir, j, edgevel, dt, xc, yc, ifront, istop)
 
    use m_alloc
    use m_missing
@@ -41,6 +41,7 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, maxaspect, j, edgevel, dt, xc, yc
    use m_sferic
    use m_spline2curvi, only: jaCheckFrontCollision, dtolLR
    use geometry_module, only: dbdistance, dcosphi
+   use m_drawthis
 
    implicit none
 
@@ -49,7 +50,6 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, maxaspect, j, edgevel, dt, xc, yc
    integer, intent(in) :: mmax !< array size
    integer, intent(in) :: nmax !< array size
    integer, intent(in) :: idir !< grow direction, -1 or 1  (not used)
-   double precision, intent(in) :: maxaspect !< maximum cell aspect ratio height/width
    integer, intent(in) :: j !< grid layer
    double precision, dimension(mc - 1), intent(in) :: edgevel !< grid layer edge-height
    double precision, intent(inout) :: dt !< time step
@@ -83,10 +83,6 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, maxaspect, j, edgevel, dt, xc, yc
    logical :: Lalllines = .false. ! all gridlines (.true.) or not (.false.)
 
    integer, save :: numgrow = 0
-
-   integer :: ndraw
-
-   common / DRAWTHIS / ndraw(50)
 
 !  store settings
    dtolLR_bak = dtolLR
@@ -136,7 +132,7 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, maxaspect, j, edgevel, dt, xc, yc
    call findfront(mc, nc, mmax, nmax, xc, yc, numf, xf, yf, idxf, nf)
 
 !  copy growth velocity vectors to front
-   call copy_vel_to_front(mc, nc, j - 1, vel, ifrontold, nf, numf, xf, yf, velf, idxf)
+   call copy_vel_to_front(mc, j - 1, vel, ifrontold, nf, numf, xf, yf, velf, idxf)
 
    do while (dt_tot < dt)
       numgrow = numgrow + 1
@@ -174,7 +170,7 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, maxaspect, j, edgevel, dt, xc, yc
          !     collision with front
          dtmax = dt_loc + 1d0 ! a bit larger, for safety
          dtmax2 = 1d99 ! not used
-         call comp_tmax_other(mc, j, xc1, yc1, vel, nf, xf, yf, velf, idxf, dtmax, dtmax2)
+         call comp_tmax_other(mc, j, xc1, yc1, vel, nf, xf, yf, velf, idxf, dtmax)
 
          dt_other = minval(dtmax)
       else
@@ -197,10 +193,10 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, maxaspect, j, edgevel, dt, xc, yc
 
       if (dt_other < dt_loc) then
 !         istop = 1
-         write (6, '(A, $)') "--- stop ---"
+         write (6, '(A)', advance="no") "--- stop ---"
          do i = 1, mc
             if (ifrontnew(i) == 0 .and. ifrontold(i) == 1) then
-               write (6, '(I5, ":", $)') i
+               write (6, '(I5, ":")', advance="no") i
             end if
          end do
          write (6, *)
@@ -296,7 +292,7 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, maxaspect, j, edgevel, dt, xc, yc
          call findfront(mc, nc, mmax, nmax, xc, yc, numf, xf, yf, idxf, nf)
 
 !        copy growth velocity vectors to front
-         call copy_vel_to_front(mc, nc, j, vel, ifrontold, nf, numf, xf, yf, velf, idxf)
+         call copy_vel_to_front(mc, j, vel, ifrontold, nf, numf, xf, yf, velf, idxf)
 
       end if ! if ( dt_tot.lt.dt )
    end do

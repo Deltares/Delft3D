@@ -32,6 +32,7 @@
 
       subroutine CONFRM(TEXT, JAZEKR)
          use unstruc_display
+         use m_helpnow
          implicit none
 
          character TEXT * (*)
@@ -47,9 +48,6 @@
          integer :: key
          integer :: nbckgr
          integer :: nforgr
-         integer :: nlevel
-         character WRDKEY * 40
-         common / HELPNOW / WRDKEY, NLEVEL
 
          if (jaGUI /= 1) then
             if (jazekr /= 1) then

@@ -255,7 +255,7 @@ contains
          ! lnxbnd(Lf-lnxi) = itpen1d2d(k)! TODO: AvD: not needed?
 
          do n = 1, nd(kbi)%lnx
-            L = iabs(nd(kbi)%ln(n))
+            L = abs(nd(kbi)%ln(n))
             teta(L) = 1d0
          end do
 

@@ -130,7 +130,7 @@
 !     boundaries: apply homogeneous Neumann condition (copy from inside)
       do kk = Ndxi + 1, Ndx
          irow = irow + 1
-         LL = iabs(nd(kk)%ln(1)) ! only one flowlink attached to boundary flownode
+         LL = abs(nd(kk)%ln(1)) ! only one flowlink attached to boundary flownode
          kkother = ln(1, LL) + ln(2, LL) - kk ! ln(2,LL)
 
 !        x-component

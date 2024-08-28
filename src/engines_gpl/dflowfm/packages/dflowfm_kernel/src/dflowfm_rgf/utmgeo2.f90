@@ -36,8 +36,9 @@
 !! Lat and Long are in decimal degrees.
 !! Written by Chuck Gantz- chuck.gantz@globalstar.com
 !! BY: Chuck Gantz, http://www.gpsy.com/gpsinfo/geotoutm/gantz/LatLong-UTMconversion.cpp
-    subroutine utmgeo2(xutm, yutm, xgeo, ygeo, IZONE, ihem, ierr)
+    subroutine utmgeo2(xutm, yutm, xgeo, ygeo, IZONE, ihem)
        use m_sferic
+       use m_ellips
        implicit none
 !     xutm    i    double precision ::    easting (UTM)
 !     yutm    i    double precision ::    northing (UTM)
@@ -47,11 +48,9 @@
 !     e       i    double precision ::    excentricity of ellipsoid
 !     xgeo    o    double precision ::    longitude (geographical coordinate)
 !     ygeo    o    double precision ::    lattitude (geographical coordinate)
-!     ierr    o    integer   error code (zero for no error)
 !
-       double precision :: xutm, yutm, a, e, ygeo, xgeo
-       integer Izone, ihem, ierr
-       common / ELLIPS / A, E
+       double precision :: xutm, yutm, ygeo, xgeo
+       integer :: Izone, ihem
 
        double precision :: k0 = 0.9996
        double precision :: eccSquared

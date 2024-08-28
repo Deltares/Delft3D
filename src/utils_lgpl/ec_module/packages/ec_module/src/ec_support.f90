@@ -797,8 +797,6 @@ end subroutine ecInstanceListSourceItems
          integer                       :: i        !< helper index for location of 'since'
          integer                       :: jcomment !< helper index for location of '#'
          logical                       :: ok       !< check of refdate is found
-         character(len=20)             :: date     !< parts of string for date
-         character(len=20)             :: time     !< parts of string for time
          character(len=:), allocatable :: string   !< unit string without comments and in lowercase
          !
          success = .false.

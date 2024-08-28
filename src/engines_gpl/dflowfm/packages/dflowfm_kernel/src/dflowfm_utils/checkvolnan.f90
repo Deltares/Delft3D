@@ -34,14 +34,14 @@
     use MessageHandling
     use m_flowgeom
     use m_flow
-
+    use ieee_arithmetic, only: ieee_is_nan
     implicit none
 
     integer, intent(in) :: i
     integer :: n
 
     do n = 1, ndx
-       if (isnan(vol1(n))) then
+       if (ieee_is_nan(vol1(n))) then
           write (msgbuf, *) ' volnan ', i, n; call msg_flush()
        end if
     end do

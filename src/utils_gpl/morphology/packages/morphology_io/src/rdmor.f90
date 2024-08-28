@@ -91,11 +91,9 @@ subroutine rdmor(lundia    ,error     ,filmor    ,lsec      ,lsedtot   , &
     integer                                                           :: nxxprog
     integer                                                           :: nxxuser
     integer                                                           :: version
-    real(fp)                   , dimension(3)                         :: tint
     real(fp)                   , dimension(:) , allocatable           :: xxprog
     real(fp)                   , dimension(MAX_NUSERFRAC)             :: rfield
     logical                                                           :: ex       !< Logical flag for file existence
-    logical                                                           :: found
     character(10)                                                     :: versionstring
     character(256)                                                    :: errmsg
     character(256)                                                    :: pxxstr
@@ -2125,7 +2123,6 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
     real(fp)      , dimension(:,:)  , pointer :: depfac
     character(256), dimension(:)    , pointer :: mflfil
     !
-    integer                   :: i
     integer                   :: istat
     integer                   :: l
     integer                   :: nm
@@ -2133,11 +2130,9 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
     integer                   :: nmub
     real(fp)                  :: rmissval
     logical                   :: ex
-    logical                   :: success
     type(tree_data), pointer  :: sedblock_ptr
     character(256)            :: filfluff
     character(11)             :: fmttmp       ! Format file ('formatted  ') 
-    character(256)            :: parname
     character(256)            :: errmsg
 !
 !! executable statements -------------------------------------------------------
@@ -2360,7 +2355,6 @@ subroutine echoflufflyr(lundia    ,error    ,flufflyr)
     integer         , pointer :: iflufflyr
     !
     character(30)             :: txtput1
-    character(10)             :: txtput2
 !
 !! executable statements -------------------------------------------------------
 !
