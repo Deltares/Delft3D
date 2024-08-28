@@ -1,13 +1,13 @@
 '''
 Description: Path helper
 -----------------------------------------------------
-Copyright (C)  Stichting Deltares, 2015
+Copyright (C)  Stichting Deltares, 2024
 '''
 
-import os, re, sys, glob, argparse, getpass, subprocess
+import argparse
+import subprocess
 from pathlib import Path
 
-#
 # Get commandline arguments
 parser = argparse.ArgumentParser(description='SVN remove deleted files.')
 
@@ -22,45 +22,7 @@ parser.add_argument("--target",
                     help="Path to source directory",
                     dest="targetdir")
 
-
-# Username/password not needed for svn remove?
-#   parser.add_argument("--username",
-#                       help="Subversion username.",
-#                       default=None,
-#                       #required=True,
-#                       dest="username")
-#   parser.add_argument("--password",
-#                       help="Subversion password.",
-#                       default=None,
-#                       #required=True,
-#                       dest="password")
-#   parser.add_argument('-i', '--interactive',
-#                       help="Must be True to enable username/password via keyboard.",
-#                       default=None,
-#                       dest="interactive")
-
 args = parser.parse_args()
-
-#   print("u:" + str(args.__dict__["username"]))
-#   print("p:" + str(args.__dict__["password"]))
-#   print("i:" + str(args.__dict__["interactive"]))
-#   
-#   if args.__dict__["username"] != None:
-#       username = args.__dict__["username"]
-#   else:
-#       if args.__dict__["interactive"] != None and str(args.__dict__["interactive"]) ==  "True":
-#           username = input('Username for TeamCity access:')
-#       else:
-#           print('No username on commandline. add "-i True" to enable interactive input')
-#           exit()
-#   if args.__dict__["password"] != None:
-#       password = args.__dict__["password"]
-#   else:
-#       if args.__dict__["interactive"] != None and str(args.__dict__["interactive"]) ==  "True":
-#           password = getpass.getpass()
-#       else:
-#           print('No password on commandline. add "-i True" to enable interactive input')
-#           exit()
 
 # rootdir is the location of this script
 rootdir = Path.cwd()
