@@ -337,7 +337,6 @@ class NetcdfComparer(IComparer):
         result = ComparisonResult()
         diff_arr = nc_var.get_difference()
         i_max = np.argmax(diff_arr)
-        print(type(i_max))
 
         block_sizes = self._get_block_sizes(diff_arr)
         coordinates = self._get_coordinates_of_max_deviation(i_max, block_sizes)
