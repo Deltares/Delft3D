@@ -511,6 +511,7 @@ contains
             end do
             deallocate (fnames)
             if (.not. newculverts .and. nlongculverts > 0) then
+               call setnodadm(0)
                call finalizeLongCulvertsInNetwork()
             end if
          end if
