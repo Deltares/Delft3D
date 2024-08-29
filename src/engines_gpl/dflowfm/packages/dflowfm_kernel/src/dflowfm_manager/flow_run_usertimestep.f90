@@ -37,7 +37,7 @@ subroutine flow_run_usertimestep(key, iresult) ! do computational flowsteps unti
    use m_flowtimes
    use unstruc_messages
    use m_partitioninfo
-   use unstruc_display, only: jaGUI
+   use m_gui
    use dfm_error
    implicit none
    integer, intent(out) :: key

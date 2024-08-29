@@ -50,6 +50,7 @@ subroutine setfixedweirs()
    use geometry_module, only: dbdistance, CROSSinbox, dcosphi, duitpl, normalout
    use unstruc_caching
    use m_1d2d_fixedweirs, only: find_1d2d_fixedweirs
+   use m_readyy
 
    implicit none
 

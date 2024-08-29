@@ -37,6 +37,8 @@
          use ieee_arithmetic, only: ieee_is_nan
          use m_drawthis
          use m_pharosflow
+         use m_readyy
+         use m_qnerror
          implicit none
          integer, intent(inout) :: msam !< already opened file pointer to sample file
          integer, intent(in) :: jadoorladen !< whether to append to global set (1) or start empty (0)

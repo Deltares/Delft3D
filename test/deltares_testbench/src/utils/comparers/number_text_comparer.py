@@ -106,10 +106,10 @@ class NumberTextComparer(IComparer):
 
                             nCompared += 1
                             diff = abs(leftData[0] - rightData[0])
-                            if diff > 2 * float_info.epsilon and diff > result.maxAbsDiff:
-                                result.maxAbsDiff = diff
-                                result.maxAbsDiffCoordinates = (nCompared,)
-                                result.maxAbsDiffValues = (leftData[0], rightData[0])
+                            if diff > 2 * float_info.epsilon and diff > result.max_abs_diff:
+                                result.max_abs_diff = diff
+                                result.max_abs_diff_coordinates = (nCompared,)
+                                result.max_abs_diff_values = (leftData[0], rightData[0])
                         else:
                             #  Word found
                             nCompared += 1
@@ -121,9 +121,9 @@ class NumberTextComparer(IComparer):
                                 # leftData is different from rightData, exit comparer
                                 parameter.location = leftData[2]
                                 parameter.name = leftData[0]
-                                result.maxRelDiff = np.nan
-                                result.maxAbsDiff = np.nan
-                                result.maxAbsDiffCoordinates = (
+                                result.max_rel_diff = np.nan
+                                result.max_abs_diff = np.nan
+                                result.max_abs_diff_coordinates = (
                                     leftData[2],
                                     rightData[2],
                                 )
@@ -131,21 +131,21 @@ class NumberTextComparer(IComparer):
                                 break
 
             # Make the absolute difference in maxDiff relative, by dividing by (max_ref_value-min_ref_value).
-            if result.maxAbsDiff < 2 * sys.float_info.epsilon:
+            if result.max_abs_diff < 2 * sys.float_info.epsilon:
                 # No difference found, so relative difference is set to 0.
-                result.maxRelDiff = 0.0
+                result.max_rel_diff = 0.0
             elif max_ref_value - min_ref_value < 2 * sys.float_info.epsilon:
                 # Difference found, but denominator will be very small, so set relative difference to maximum.
-                result.maxRelDiff = 1.0
+                result.max_rel_diff = 1.0
             else:
                 # Difference found, make the difference relative. Maximise relative difference to 1.0.
-                result.maxRelDiff = min(1.0, result.maxAbsDiff / (max_ref_value - min_ref_value))
+                result.max_rel_diff = min(1.0, result.max_abs_diff / (max_ref_value - min_ref_value))
 
         except Exception as e:
             logger.error(e)
             result.error = True
         finally:
-            result.isToleranceExceeded(parameter.tolerance_absolute, parameter.tolerance_relative)
+            result.is_tolerance_exceeded(parameter.tolerance_absolute, parameter.tolerance_relative)
 
             # Even though only one result is generated, the caller expects a list of results.
         results = [(testcase_name, file_check, parameter, result)]

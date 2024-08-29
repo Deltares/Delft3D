@@ -41,6 +41,7 @@
 !! NOTE: this subroutine is dflowfm's implementation of the MHCallBack::messagebox_iface interface.
 subroutine unstruc_guimessage(msg)
    use unstruc_messages
+   use m_qnerror
    implicit none
    character(len=*) :: msg !< Message string
 

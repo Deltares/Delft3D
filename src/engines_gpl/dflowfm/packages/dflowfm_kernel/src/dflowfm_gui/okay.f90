@@ -33,7 +33,7 @@
 !
       subroutine OKAY(JA)
          use m_devices
-         use unstruc_display, only: jaGUI
+         use m_gui
          implicit none
          integer, intent(in) :: ja
 

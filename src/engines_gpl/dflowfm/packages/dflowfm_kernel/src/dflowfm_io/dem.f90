@@ -294,6 +294,7 @@ contains
 !! \param arr(:,:) 2D array to store elevation raster data in.
    subroutine read_dem_data(fp, dem_info, arr)
       use unstruc_messages
+      use m_readyy
       integer, intent(in) :: fp
       type(DEMInfo), intent(inout) :: dem_info
       integer, intent(out) :: arr(:, :)

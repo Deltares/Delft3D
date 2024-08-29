@@ -33,6 +33,7 @@
    !> limited higher-order correction of vector data
    subroutine dslimvec(ds1x, ds1y, ds2x, ds2y, csu, snu, limtyp, dsx, dsy)
       use m_flowparameters
+      use m_dslim
       implicit none
 
       double precision, intent(in) :: ds1x, ds1y !< "voorslope" components
@@ -44,8 +45,6 @@
       double precision :: ds1n, ds1t !< normal and tangential component, respectively
       double precision :: ds2n, ds2t !< normal and tangential component, respectively
       double precision :: dsn, dst
-
-      double precision, external :: dslim
 
       if (jalimnor == 1) then
          ds1n = csu * ds1x + snu * ds1y

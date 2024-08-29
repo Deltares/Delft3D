@@ -98,8 +98,8 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
                 # These values are part of the final result summary
                 end_result = ComparisonResult(error=local_error)
                 end_result.result = param_result["valueOK"]
-                end_result.maxAbsDiff = param_result["absolute difference"]
-                end_result.maxRelDiff = param_result["relative difference"]
+                end_result.max_abs_diff = param_result["absolute difference"]
+                end_result.max_rel_diff = param_result["relative difference"]
 
                 if isinstance(param_result["result value"], str):
                     resultvalue = "%18s" % param_result["result value"]

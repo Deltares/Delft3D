@@ -32,6 +32,7 @@
 
        subroutine TOSPLINE(XX, YY, XV, YV)
           use M_SPLINES
+          use m_spline
           implicit none
 
           double precision :: XX, YY, XV, YV

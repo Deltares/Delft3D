@@ -34,6 +34,7 @@
          use m_grid
          use unstruc_colors
          use m_helpnow
+         use m_qnerror
          implicit none
          integer :: MODE, NFLD, KEY, M1, N1, M2, N2
          integer :: newmode

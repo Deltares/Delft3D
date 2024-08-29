@@ -1243,6 +1243,7 @@ contains
                                   InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, InterceptHs
       use m_hydrology_data, only: infiltcap, infiltrationmodel
+      use m_qnerror
 
       implicit none
 

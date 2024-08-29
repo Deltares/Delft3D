@@ -39,6 +39,8 @@ subroutine make_orthocenters(dmaxnonortho, maxiter)
    use m_sferic, only: jsferic, jasfer3D
    use m_missing, only: dxymis
    use gridoperations
+   use m_readyy
+   use m_qnerror
 
    implicit none
 

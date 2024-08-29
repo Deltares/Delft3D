@@ -37,6 +37,7 @@ subroutine readprofilesdef(ja) ! in afwachting van een module die profieldefinit
    use m_missing
    use messagehandling
    use m_alloc
+   use m_qnerror
    implicit none
    integer :: ja
 

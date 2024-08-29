@@ -35,6 +35,7 @@ subroutine sortlinks()
    use m_netw
    use m_inverse_map
    use unstruc_colors
+   use m_qnerror
 
    implicit none
 

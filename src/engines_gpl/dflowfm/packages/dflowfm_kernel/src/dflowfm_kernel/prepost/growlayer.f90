@@ -42,6 +42,7 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, j, edgevel, dt, xc, yc, ifront, i
    use m_spline2curvi, only: jaCheckFrontCollision, dtolLR
    use geometry_module, only: dbdistance, dcosphi
    use m_drawthis
+   use m_qnerror
 
    implicit none
 

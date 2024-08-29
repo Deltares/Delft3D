@@ -29,34 +29,38 @@
 
 !
 !
+module m_splint
+   implicit none
+contains
 
-      subroutine SPLINT(YA, Y2A, N, X, Y)
-         implicit none
+   subroutine SPLINT(YA, Y2A, N, X, Y)
 
-         integer :: N !< number of control points
-         double precision, dimension(N) :: ya !< control point values
-         double precision, dimension(N) :: y2a !< control point second order derivatives
-         double precision, intent(in) :: x !< spline coordinate
-         double precision, intent(out) :: y !< interpolated value at prescribed spline coordinate
+      integer :: N !< number of control points
+      double precision, dimension(N) :: ya !< control point values
+      double precision, dimension(N) :: y2a !< control point second order derivatives
+      double precision, intent(in) :: x !< spline coordinate
+      double precision, intent(out) :: y !< interpolated value at prescribed spline coordinate
 
 !     AANGEPAST VOOR GEBRUIK BIJ XA IS ENKEL 0,1,2...N-1
 !     ZOEKEN KAN GESLOOPT DOOR DEFINITIE VAN XA IS 0,1,
 
-         double precision :: EPS, A, B, SPLFAC = 1d0
+      double precision :: EPS, A, B, SPLFAC = 1d0
 
-         integer :: intx
-         integer :: KLO, KHI
+      integer :: intx
+      integer :: KLO, KHI
 
-         EPS = 0.00001d0
-         INTX = int(X)
-         if (X - INTX < EPS) then
-            Y = YA(INTX + 1)
-         else
-            KLO = INTX + 1
-            KHI = KLO + 1
-            A = ((KHI - 1) - X)
-            B = (X - (KLO - 1))
-            Y = A * YA(KLO) + B * YA(KHI) + SPLFAC * ((A**3 - A) * Y2A(KLO) + (B**3 - B) * Y2A(KHI)) / 6d0
-         end if
-         return
-      end subroutine SPLINT
+      EPS = 0.00001d0
+      INTX = int(X)
+      if (X - INTX < EPS) then
+         Y = YA(INTX + 1)
+      else
+         KLO = INTX + 1
+         KHI = KLO + 1
+         A = ((KHI - 1) - X)
+         B = (X - (KLO - 1))
+         Y = A * YA(KLO) + B * YA(KHI) + SPLFAC * ((A**3 - A) * Y2A(KLO) + (B**3 - B) * Y2A(KHI)) / 6d0
+      end if
+      return
+   end subroutine SPLINT
+
+end module m_splint

@@ -36,7 +36,9 @@
          use m_sferic
          use m_wearelt
          use geometry_module, only: dbdistance
+         use m_tolocl
          use m_grid_block
+         use m_smeerfunctie
          implicit none
          integer :: mmax, nmax, mc, nc, nump, ja
          double precision :: X(MMAX, NMAX), Y(MMAX, NMAX), XH(MMAX, NMAX), YH(MMAX, NMAX)

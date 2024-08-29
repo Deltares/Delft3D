@@ -29,76 +29,79 @@
 
 !
 !
+module m_qnerror
+   implicit none
+contains
 
-      !>   write an error-message to the log-file and GUI
-      subroutine QNERROR(W1, W2, W3)
-         use unstruc_messages
-         use m_devices
-         use unstruc_model, only: MD_AUTOSTARTSTOP, md_jaAutoStart
-         use unstruc_display, only: jaGUI
-         use m_helpnow
-         implicit none
+   !>   write an error-message to the log-file and GUI
+   subroutine QNERROR(W1, W2, W3)
+      use MessageHandling, only: level_error, warn_flush, mess, msgbuf
+      use m_devices, only: ihs, iws
+      use m_start_parameters, only: MD_AUTOSTARTSTOP, md_jaAutoStart
+      use m_gui
+      use m_helpnow
 
-         character(len=*), intent(in) :: W1, W2, W3
+      character(len=*), intent(in) :: W1, W2, W3
 
-         integer :: infoattribute
-         integer :: key
-         integer :: nbck
-         integer :: nfor
-         character(len=600) :: REC, rec2
+      integer :: infoattribute
+      integer :: key
+      integer :: nbck
+      integer :: nfor
+      character(len=600) :: REC, rec2
 
-         REC = trim(W1)//' '//trim(W2)//' '//trim(W3)
+      REC = trim(W1)//' '//trim(W2)//' '//trim(W3)
 
-         if (len_trim(W2) == 0) then
-            rec2 = msgbuf
-         else
-            rec2 = ' '
+      if (len_trim(W2) == 0) then
+         rec2 = msgbuf
+      else
+         rec2 = ' '
+      end if
+      msgbuf = REC
+
+      ! No user dialog in batchmode runs:
+      if (jaGUI == 1 .and. md_jaAutoStart /= MD_AUTOSTARTSTOP) then
+         call warn_flush()
+         !     inquire current colors
+         NFOR = InfoAttribute(13)
+         NBCK = InfoAttribute(14)
+         call IWinAction('FCP')
+         !     set error color
+         call ITEXTCOLOUR('BWHITE', 'RED')
+         call IWinOpen(1, IHS - 2, IWS, 3)
+         call IWINOUTSTRINGXY(IWS - 15, 3, 'press any key')
+         call OKAY(0)
+         call ITEXTCOLOUR('BLUE', 'BWHITE')
+         call IWINOutCentre(2, trim(REC))
+
+         if (len_trim(rec2) > 0) then
+            call IWINOutCentre(3, trim(rec2))
          end if
-         msgbuf = REC
 
-         ! No user dialog in batchmode runs:
-         if (jaGUI == 1 .and. md_jaAutoStart /= MD_AUTOSTARTSTOP) then
-            call warn_flush()
-            !     inquire current colors
-            NFOR = InfoAttribute(13)
-            NBCK = InfoAttribute(14)
-            call IWinAction('FCP')
-            !     set error color
-            call ITEXTCOLOUR('BWHITE', 'RED')
-            call IWinOpen(1, IHS - 2, IWS, 3)
-            call IWINOUTSTRINGXY(IWS - 15, 3, 'press any key')
-            call OKAY(0)
-            call ITEXTCOLOUR('BLUE', 'BWHITE')
-            call IWINOutCentre(2, trim(REC))
-
-            if (len_trim(rec2) > 0) then
-               call IWINOutCentre(3, trim(rec2))
-            end if
-
-10          continue
-            !     CALL INFLUSH()
-            call INKEYEVENT(KEY)
-            if (KEY == 50 .or. (KEY >= 254 .and. KEY <= 259)) then
+10       continue
+         !     CALL INFLUSH()
+         call INKEYEVENT(KEY)
+         if (KEY == 50 .or. (KEY >= 254 .and. KEY <= 259)) then
+            goto 10
+         else
+            call GETKEY2(KEY)
+            if (KEY >= 24 .and. KEY <= 26) then
+               WRDKEY = REC
+               NLEVEL = 4
+               call FKEYS(KEY)
                goto 10
-            else
-               call GETKEY2(KEY)
-               if (KEY >= 24 .and. KEY <= 26) then
-                  WRDKEY = REC
-                  NLEVEL = 4
-                  call FKEYS(KEY)
-                  goto 10
-               end if
             end if
-
-            call IWinClose(1)
-            !                            reset colors
-            call ITEXTCOLOURN(NFOR, NBCK)
-
-         else
-
-            call mess(LEVEL_ERROR, trim(msgbuf))
-
          end if
 
-         return
-      end
+         call IWinClose(1)
+         !                            reset colors
+         call ITEXTCOLOURN(NFOR, NBCK)
+
+      else
+
+         call mess(LEVEL_ERROR, trim(msgbuf))
+
+      end if
+
+      return
+   end
+end module m_qnerror

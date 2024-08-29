@@ -36,6 +36,7 @@
          use unstruc_files, only: filnammenu
          use m_helpc
          use m_startdir
+         use m_qnerror
          implicit none
          integer, intent(inout) :: mrgf !<  call with mrgf = 0 means LOAD, mrgf = 1  means SAVE, mrgf = 2 means get filename only
          character(len=*), intent(inout) :: filnam

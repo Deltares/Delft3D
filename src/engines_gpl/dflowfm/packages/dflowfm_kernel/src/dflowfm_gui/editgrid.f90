@@ -33,6 +33,7 @@
       subroutine EDITGRID(MODE, NFLD, KEY)
          use unstruc_colors
          use m_grid
+         use m_modfld
          use m_helpnow
          use m_drawthis
          implicit none

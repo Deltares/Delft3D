@@ -74,6 +74,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_fixedweirs, only: weirdte, nfxw
       use m_setup_structures_and_weirs_list, only: build_structures_and_weirs_list
+      use m_qnerror
 
       implicit none
 
@@ -374,6 +375,7 @@ contains
       use dfm_error
       use m_partitioninfo, only: jampi, reduce_int1_max
       use m_cell_geometry, only: ndx
+      use m_qnerror
 
       implicit none
 
@@ -1556,6 +1558,7 @@ contains
       use m_partitioninfo
       use geometry_module, only: dbdistance, half, normalout
       use m_sethu
+      use m_dminmax
 
       implicit none
 

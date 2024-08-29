@@ -29,12 +29,13 @@
 
 !
 !
-
-   ! ==============================================================================================
-   ! ==============================================================================================
-   subroutine isofil_color(X, Y, Z, n4, NCOLR, VAL, NCOLS, NV)
+module m_isofil_color
+    implicit none
+contains
+    
+    subroutine isofil_color(X, Y, Z, n4, NCOLR, VAL, NCOLS, NV)
+      use m_topix
       use m_drawthis
-      implicit none
       integer :: n4, ncolr
       double precision :: X(n4), Y(n4), Z(n4)
 
@@ -190,3 +191,5 @@
       end if
       return
    end subroutine isofil_color
+
+end module m_isofil_color

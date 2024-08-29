@@ -405,6 +405,7 @@ contains
       end subroutine calculate_advection_Villemonte
 
       subroutine calculate_hu_au_3D()
+         use m_qnerror
 
          integer, parameter :: TYPE_ALL_Z = 2
          integer, parameter :: AVERAGE_BED_CELLING = 2
@@ -720,6 +721,7 @@ contains
       use m_flow, only: s0
       use m_flowgeom, only: klnup, slnup
       use m_missing, only: dmiss
+      use m_dslim
 
       implicit none
 
@@ -729,8 +731,6 @@ contains
       double precision :: sku
       double precision :: ds1
       double precision :: ds2
-
-      double precision, external :: dslim
 
       if (velocity > 0) then
          ip = 0

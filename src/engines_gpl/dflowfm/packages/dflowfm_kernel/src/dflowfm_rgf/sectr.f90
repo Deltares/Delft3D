@@ -36,6 +36,10 @@
         use unstruc_colors
         use unstruc_messages
         use unstruc_display
+        use m_splint
+        use m_spline
+        use m_readyy
+        use m_qnerror
 
         implicit none
         integer :: mmax, nmax, imax

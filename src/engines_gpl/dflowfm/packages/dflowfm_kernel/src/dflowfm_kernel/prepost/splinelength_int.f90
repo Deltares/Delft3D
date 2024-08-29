@@ -36,6 +36,7 @@ double precision function splinelength_int(num, xspl, yspl, s0, s1)
    use geometry_module, only: dbdistance
    use m_missing, only: dmiss
    use m_sferic, only: jsferic, jasfer3D
+   use m_splinxy
 
    implicit none
 

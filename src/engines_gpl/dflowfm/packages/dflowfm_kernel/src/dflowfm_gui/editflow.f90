@@ -46,6 +46,7 @@
         use m_transport, only: ISALT, constituents
         use m_depmax
         use m_helpnow
+        use m_qnerror
         implicit none
         integer :: MODE, KEY, kb, kt, k, NL
         integer :: newmode

@@ -34,7 +34,9 @@
          use m_grid
          use m_landboundary
          use M_SPLINES, only: mcs, splnump => nump
+         use m_modfld
          use m_grid_block
+         use m_qnerror
          implicit none
          integer :: nump, landorspline
          integer :: m1, m2, n1, n2, i, j, in, jn, ncs, jdum

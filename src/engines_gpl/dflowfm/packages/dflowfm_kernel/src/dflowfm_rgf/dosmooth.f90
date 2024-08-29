@@ -35,8 +35,10 @@
          use m_grid
          use unstruc_colors
          use unstruc_messages
+         use m_smeerfunctie
          use m_drawthis
          use m_grid_block
+         use m_readyy
          implicit none
          integer :: nfld
          double precision, allocatable :: XH(:, :), YH(:, :)

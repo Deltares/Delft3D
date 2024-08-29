@@ -33,6 +33,7 @@
       subroutine REANET(filename, k0, L0, NUMKN, NUMLN, istat)
          use m_netw
          use gridoperations
+         use m_readyy
          implicit none
 
          character(len=*), intent(in) :: filename !< inderdaad, filename

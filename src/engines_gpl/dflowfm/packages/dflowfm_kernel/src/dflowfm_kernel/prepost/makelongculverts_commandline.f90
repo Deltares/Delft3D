@@ -27,10 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
-!>  perform partitioning from command line
+!>  perform long culvert conversion from command line
 subroutine makelongculverts_commandline()
    use unstruc_model
    use m_readstructures
@@ -47,7 +44,7 @@ subroutine makelongculverts_commandline()
    character(len=:), allocatable :: tempstring_crsdef
    character(len=:), allocatable :: tempstring_fnames
    character(len=:), allocatable :: tempstring_netfile
-   character(len=200), dimension(:), allocatable :: fnames
+   character(len=200), dimension(:), allocatable :: fnames, crsdefname
    character(len=IdLen) :: temppath, tempname, tempext
    
    integer :: istat, ifil
@@ -56,13 +53,19 @@ subroutine makelongculverts_commandline()
 
       fnamesstring = md_1dfiles%structures
       call strsplit(fnamesstring, 1, fnames, 1)
-      call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat)
-      do ifil = 2, size(fnames)
-         call convertLongCulvertsAsNetwork(fnames(ifil), 1, md_culvertprefix, tempstring_fnames, tempstring_crsdef, istat)
+
+      if (len_trim(md_1dfiles%cross_section_definitions) > 0) then
+         call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat, md_1dfiles%cross_section_definitions)
+      else
+         call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat)
+      end if 
+      do ifil=2,size(fnames)
+         call convertLongCulvertsAsNetwork(fnames(ifil), 1,md_culvertprefix, tempstring_fnames,tempstring_crsdef, istat)
          converted_crsdefsstring = trim(trim(converted_crsdefsstring)//', ')//tempstring_crsdef
-         converted_fnamesstring = trim(trim(converted_fnamesstring)//', ')//tempstring_fnames
+         converted_fnamesstring  = trim(trim(converted_fnamesstring) //', ')//tempstring_fnames
       end do
       deallocate (fnames)
+      call setnodadm(0)
       call finalizeLongCulvertsInNetwork()
 
       call split_filename(md_netfile, temppath, tempname, tempext)

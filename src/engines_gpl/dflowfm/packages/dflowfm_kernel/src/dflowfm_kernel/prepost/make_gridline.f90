@@ -37,6 +37,7 @@ subroutine make_gridline(num, xsp, ysp, dwidth, mfacmax, mfac, hmax, xg, yg, sc,
    use m_alloc
    use geometry_module, only: dbdistance
    use m_sferic, only: jsferic, jasfer3D
+   use m_spline
 
    implicit none
 

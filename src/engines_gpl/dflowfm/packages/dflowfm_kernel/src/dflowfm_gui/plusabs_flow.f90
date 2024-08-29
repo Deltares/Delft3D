@@ -35,6 +35,7 @@
     use m_flow
     use m_flowgeom
     use m_transport, only: ISALT, constituents
+    use m_qnerror
 
     implicit none
 

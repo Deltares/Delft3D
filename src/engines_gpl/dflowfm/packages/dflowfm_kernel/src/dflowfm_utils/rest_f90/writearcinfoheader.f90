@@ -29,20 +29,24 @@
 
 !
 !
-      subroutine WRITEARCINFOHEADER(MARC, MC, NC, X0, Y0, DX, DY, dmiss)
-         implicit none
-         double precision :: dmiss
-         double precision :: dx, dy
-         integer :: marc
-         integer :: mc
-         integer :: nc
-         double precision :: x0
-         double precision :: y0
-         write (MARC, '(A,I8)') 'ncols         ', MC
-         write (MARC, '(A,I8)') 'nrows         ', NC
-         write (MARC, '(A,F16.6)') 'xllcorner     ', X0 - DX / 2
-         write (MARC, '(A,F16.6)') 'yllcorner     ', Y0 - DY / 2
-         write (MARC, '(A,2F16.6)') 'cellsize      ', DX, DY
-         write (MARC, '(A,F16.6)') 'NODATA_value  ', dmiss
-         return
-      end
+module m_writearcinfoheader
+   implicit none
+contains
+   subroutine WRITEARCINFOHEADER(MARC, MC, NC, X0, Y0, DX, DY, dmiss)
+      double precision :: dmiss
+      double precision :: dx, dy
+      integer :: marc
+      integer :: mc
+      integer :: nc
+      double precision :: x0
+      double precision :: y0
+      write (MARC, '(A,I8)') 'ncols         ', MC
+      write (MARC, '(A,I8)') 'nrows         ', NC
+      write (MARC, '(A,F16.6)') 'xllcorner     ', X0 - DX / 2
+      write (MARC, '(A,F16.6)') 'yllcorner     ', Y0 - DY / 2
+      write (MARC, '(A,2F16.6)') 'cellsize      ', DX, DY
+      write (MARC, '(A,F16.6)') 'NODATA_value  ', dmiss
+      return
+   end
+
+end module m_writearcinfoheader

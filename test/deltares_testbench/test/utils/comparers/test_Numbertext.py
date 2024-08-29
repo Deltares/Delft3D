@@ -41,9 +41,9 @@ class TestNumberTextComparer:
         assert result_structure.passed
         assert not result_structure.error
         assert result_structure.result == "OK"
-        assert result_structure.maxAbsDiff == 0.0
-        assert result_structure.maxAbsDiffCoordinates == ()
-        assert pytest.approx(result_structure.maxRelDiff) == 0.0
+        assert result_structure.max_abs_diff == 0.0
+        assert result_structure.max_abs_diff_coordinates == ()
+        assert pytest.approx(result_structure.max_rel_diff) == 0.0
 
     def test_number_differences(self) -> None:
         fc = FileCheck()
@@ -60,9 +60,9 @@ class TestNumberTextComparer:
         assert not result_structure.passed
         assert not result_structure.error
         assert result_structure.result == "NOK"
-        assert result_structure.maxAbsDiff == 100.0
-        assert result_structure.maxAbsDiffCoordinates == (51,)
-        assert pytest.approx(result_structure.maxRelDiff) == 0.004644202966531087
+        assert result_structure.max_abs_diff == 100.0
+        assert result_structure.max_abs_diff_coordinates == (51,)
+        assert pytest.approx(result_structure.max_rel_diff) == 0.004644202966531087
 
     def test_comma_difference(self) -> None:
         fc = FileCheck()
@@ -79,6 +79,6 @@ class TestNumberTextComparer:
         assert not result_structure.passed
         assert not result_structure.error
         assert result_structure.result == "NOK"
-        assert is_Nan(result_structure.maxAbsDiff)
-        assert result_structure.maxAbsDiffCoordinates == (4, 4)
-        assert pytest.approx(result_structure.maxRelDiff) == 1.0
+        assert is_Nan(result_structure.max_abs_diff)
+        assert result_structure.max_abs_diff_coordinates == (4, 4)
+        assert pytest.approx(result_structure.max_rel_diff) == 1.0

@@ -42,6 +42,7 @@ subroutine spline2curvi()
    use m_sferic
    use m_polygon
    use geometry_module, only: pinpok, normalout
+   use m_readyy
 
    implicit none
 

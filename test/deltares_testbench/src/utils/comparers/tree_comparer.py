@@ -293,18 +293,18 @@ class TreeComparer(IComparer):
             for result in results:
                 if result.result == "NOK":
                     end_result.result = "NOK"
-                    if result.maxAbsDiffCoordinates not in end_result.maxAbsDiffCoordinates:
-                        end_result.maxAbsDiffCoordinates = result.maxAbsDiffCoordinates
-                    if result.lineNumber != 0:
-                        result.path = f"{result.path} (row: {result.lineNumber})"
+                    if result.max_abs_diff_coordinates not in end_result.max_abs_diff_coordinates:
+                        end_result.max_abs_diff_coordinates = result.max_abs_diff_coordinates
+                    if result.line_number != 0:
+                        result.path = f"{result.path} (row: {result.line_number})"
                     if result.path not in end_result.path:
                         end_result.path.append(result.path)
                         parameter.location = result.path
                 if result.error:
                     end_result.error = True
                     end_result.result = "ERROR"
-                    if result.lineNumber != 0:
-                        result.path = f"{result.path} (row: {result.lineNumber})"
+                    if result.line_number != 0:
+                        result.path = f"{result.path} (row: {result.line_number})"
                     if result.path not in end_result.path:
                         end_result.path.append(result.path)
             paramResults.append((testcase_name, file_check, parameter, end_result))
@@ -363,7 +363,7 @@ class TreeComparer(IComparer):
         if reftable.__len__() < testtable.__len__():
             # Column was added to the table
             missingcolumns = list(set(testtable.keys()) - set(reftable.keys()))
-            columnresults.maxAbsDiffCoordinates = (
+            columnresults.max_abs_diff_coordinates = (
                 testbranch["block_start"][0],
                 testbranch["block_end"][0],
             )
@@ -374,7 +374,7 @@ class TreeComparer(IComparer):
         else:
             # Column was removed from the table
             missingcolumns = list(set(reftable.keys()) - set(testtable.keys()))
-            columnresults.maxAbsDiffCoordinates = (
+            columnresults.max_abs_diff_coordinates = (
                 refbranch["block_start"][0],
                 refbranch["block_end"][0],
             )
@@ -653,24 +653,24 @@ class TreeComparer(IComparer):
                         result.result = "OK"
                     # The value is not the same and is above absolute Tolerances
                     elif abs(testvalue - refvalue) >= self.SetPythonCompatibility(parameter.getToleranceAbsolute()):
-                        result.maxAbsDiff = abs(testvalue - refvalue)
-                        result.maxAbsDiffValues = (testvalue, refvalue)
+                        result.max_abs_diff = abs(testvalue - refvalue)
+                        result.max_abs_diff_values = (testvalue, refvalue)
                         message = "Absolute Error:   test = %12.6e     ref = %12.6e (%12.6e): %s" % (
                             testvalue,
                             refvalue,
-                            result.maxAbsDiff,
+                            result.max_abs_diff,
                             result.path,
                         )
                         logger.info(message)
                         result.result = "NOK"
                     # The value is not the same and is above relative Tolerances
                     else:
-                        result.maxRelDiff = abs((testvalue - refvalue) / refvalue)
-                        result.maxRelDiffValues = (testvalue, refvalue)
+                        result.max_rel_diff = abs((testvalue - refvalue) / refvalue)
+                        result.max_rel_diff_values = (testvalue, refvalue)
                         message = "Relative Error:   test = %12.6e     ref = %12.6e (%10.2f %%): %s" % (
                             testvalue,
                             refvalue,
-                            result.maxRelDiff * 100,
+                            result.max_rel_diff * 100,
                             result.path,
                         )
                         logger.info(message)
@@ -714,8 +714,8 @@ class TreeComparer(IComparer):
                 for i, ref_val in enumerate(refvalue):
                     # Create a container for the results
                     result = ComparisonResult(error=local_error)
-                    result.lineNumber = i + 1
-                    result.columnNumber = columnNumber
+                    result.line_number = i + 1
+                    result.column_number = columnNumber
                     result.path = f"{pathstr}>{key}"
                     # values equal
                     if ref_val == testvalue[i]:
@@ -737,11 +737,11 @@ class TreeComparer(IComparer):
                             result.result = "OK"
                         # absolute tolerance exceeded
                         elif abs(testvalue[i] - ref_val) > self.SetPythonCompatibility(parameter.tolerance_absolute):
-                            result.maxAbsDiff = abs(testvalue[i] - ref_val)
-                            result.maxAbsDiffValues = (testvalue[i], ref_val)
+                            result.max_abs_diff = abs(testvalue[i] - ref_val)
+                            result.max_abs_diff_values = (testvalue[i], ref_val)
                             message = (
                                 f"Absolute Error:   test = {testvalue[i]:12.6e}"
-                                + f"     ref = {ref_val:12.6e} ({result.maxAbsDiff:12.6e}): {result.path}({i:d})"
+                                + f"     ref = {ref_val:12.6e} ({result.max_abs_diff:12.6e}): {result.path}({i:d})"
                             )
                             logger.info(message)
                             result.result = "NOK"
@@ -749,12 +749,12 @@ class TreeComparer(IComparer):
                         elif abs((testvalue[i] - ref_val) / ref_val) > self.SetPythonCompatibility(
                             parameter.tolerance_relative
                         ):
-                            result.maxRelDiff = abs((testvalue[i] - ref_val) / ref_val)
-                            result.maxRelDiffValues = (testvalue[i], ref_val)
+                            result.max_rel_diff = abs((testvalue[i] - ref_val) / ref_val)
+                            result.max_rel_diff_values = (testvalue[i], ref_val)
 
                             message = (
                                 f"Relative Error:   test = {testvalue:12.6e}"
-                                + f"     ref = {ref_val:12.6e} ({result.maxRelDiff * 100:10.2f}): {result.path}({i:d})"
+                                + f"     ref = {ref_val:12.6e} ({result.max_rel_diff * 100:10.2f}): {result.path}({i:d})"
                             )
                             logger.info(message)
                             result.result = "NOK"

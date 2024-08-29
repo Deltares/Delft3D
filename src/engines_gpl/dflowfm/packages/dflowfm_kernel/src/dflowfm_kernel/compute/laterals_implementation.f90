@@ -69,7 +69,7 @@ contains
       incoming_lat_concentration = 0._dp
       call realloc(outgoing_lat_concentration, [num_layers, numconst, numlatsg])
       call realloc(lateral_volume_per_layer, [num_layers, numlatsg])
-      call realloc(qqlat, [num_layers, numlatsg, ndx], fill=0._dp)
+      call realloc(qqlat, [num_layers, nlatnd], fill=0._dp)
 
    end subroutine initialize_lateraldata
 
@@ -272,12 +272,12 @@ contains
       use m_GlobalParameters, only: flow1d_eps10
 
       real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per layer
-      real(kind=dp), dimension(:, :, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge per layer
+      real(kind=dp), dimension(:, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge per layer
                                                                                                  !! per lateral, per cell
       integer :: i_lateral, i_layer, i_nnlat, i_node, i_flownode
       integer :: i_node_bottom_layer, i_node_top_layer, i_active_bottom_layer
 
-      lateral_discharge_per_layer_lateral_cell(:, :, :) = 0.0_dp
+      lateral_discharge_per_layer_lateral_cell(:, :) = 0.0_dp
       do i_lateral = 1, numlatsg
          if (apply_transport(i_lateral) > 0) then
             do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
@@ -287,7 +287,7 @@ contains
                i_layer = max(i_active_bottom_layer, 1)
                do i_flownode = i_node_bottom_layer, i_node_top_layer
                   if (comparereal(lateral_volume_per_layer(i_layer, i_lateral), 0.0_dp, flow1d_eps10) /= 0) then ! Avoid division by 0
-                     lateral_discharge_per_layer_lateral_cell(i_layer, i_lateral, i_flownode) = &
+                     lateral_discharge_per_layer_lateral_cell(i_layer, i_nnlat) = &
                         provided_lateral_discharge(i_layer, i_lateral) * (vol1(i_flownode) / lateral_volume_per_layer(i_layer, i_lateral))
                      i_layer = i_layer + 1
                   end if

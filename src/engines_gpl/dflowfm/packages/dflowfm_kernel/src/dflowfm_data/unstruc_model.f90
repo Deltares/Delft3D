@@ -42,6 +42,7 @@ module unstruc_model
    use m_fm_icecover, only: ice_mapout
    use netcdf, only: nf90_double
    use m_deprecation
+   use m_start_parameters
    implicit none
 
    !> The version number of the MDU File format: d.dd, [config_major].[config_minor], e.g., 1.03
@@ -94,9 +95,6 @@ module unstruc_model
    ! History File1D2DLinkVersion:
    ! 1.00 (2019-12-04): Initial version.
 
-   integer, parameter :: MD_NOAUTOSTART = 0 !< Do not autostart (nor stop) this model.
-   integer, parameter :: MD_AUTOSTART = 1 !< Autostart this model and then idle.
-   integer, parameter :: MD_AUTOSTARTSTOP = 2 !< Autostart this model and then exit (batchmode)
 
    type(tree_data), pointer, public :: md_ptr !< Unstruc Model Data in tree_data
 
@@ -208,7 +206,6 @@ module unstruc_model
    character(len=200) :: md_snapshotdir = ' ' !< Directory where hardcopy snapshots should be saved.
                                                  !! Created if non-existent.
 
-   integer :: md_jaAutoStart = MD_NOAUTOSTART !< Autostart simulation after loading or not.
    integer :: md_input_specific = 0 !< use (0: no, 1: yes) specific hardcoded input.
    integer :: md_snapshot_seqnr = 0 !< Sequence number of last snapshot file written.
 !   partitioning command line options
@@ -514,6 +511,7 @@ contains
             end do
             deallocate (fnames)
             if (.not. newculverts .and. nlongculverts > 0) then
+               call setnodadm(0)
                call finalizeLongCulvertsInNetwork()
             end if
          end if
@@ -720,7 +718,7 @@ contains
       use m_sediment
       use m_waves, only: hwavuni, twavuni, phiwavuni
       use m_sedtrails_data, only: sedtrails_analysis
-      use unstruc_display, only: jaGUI
+      use m_gui
       use m_output_config, only: scan_input_tree
       use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
       use m_read_statistical_output, only: read_output_parameter_toggle
@@ -728,6 +726,7 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use precision
       use m_map_his_precision
+      use m_qnerror
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)

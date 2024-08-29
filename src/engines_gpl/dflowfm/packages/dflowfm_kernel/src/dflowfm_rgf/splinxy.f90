@@ -29,13 +29,17 @@
 
 !
 !
+module m_splinxy
+   implicit none
+contains
 
-      subroutine SPLINXY(X, Y, X2, Y2, N)
+   subroutine SPLINXY(X, Y, X2, Y2, N)
 !      USE DIMENS
-         implicit none
-         integer :: n
-         double precision :: X(N), Y(N), X2(N), Y2(N)
-         call SPLINE(X, N, X2)
-         call SPLINE(Y, N, Y2)
-         return
-      end
+      use m_spline
+      integer :: n
+      double precision :: X(N), Y(N), X2(N), Y2(N)
+      call SPLINE(X, N, X2)
+      call SPLINE(Y, N, Y2)
+      return
+   end
+end module m_splinxy

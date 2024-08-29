@@ -31,6 +31,7 @@
 !
 
       subroutine REAMDD(MMDD, RD1, MC, NC, JA)
+         use m_readyy
          implicit none
 
          integer :: mmdd, mc, nc, ja

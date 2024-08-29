@@ -32,6 +32,7 @@
 
   subroutine ALREADYTRI(K1, K2, K3, JA)
      use m_netw
+     use m_qnerror
      implicit none
      integer :: K1, K2, K3, JA
 

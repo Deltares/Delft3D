@@ -42,6 +42,9 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot,
    use m_missing
    use MessageHandling
    use timers
+   use m_dlimiter
+   use m_dlimitercentral
+   use m_dlimiter_nonequi
 
    implicit none
 
@@ -84,10 +87,6 @@ subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot,
    integer :: j, iswitchL, iswitchR
    integer :: k1, k2, LL, L, Lb, Lt, laydif, jaL, jaR
    integer :: kk1L, kk2L, kk1R, kk2R, k1L, k2L, k1R, k2R, is, ku
-
-   double precision :: dlimiter, dlimitercentral
-   double precision :: dlimiter_nonequi
-
    integer :: number_limited_links
    double precision :: flux_max_limit
 

@@ -258,7 +258,7 @@ subroutine set_mpi_environment_wwo_fetch_proc()
    use m_partitioninfo, only: jampi, my_rank, numranks, fetch_proc_rank, use_fetch_proc, &
                               DFM_COMM_DFMWORLD, DFM_COMM_ALLWORLD
 #endif
-   use unstruc_display, only: jagui
+   use m_gui
 
    implicit none
 
@@ -303,7 +303,7 @@ subroutine clean_fetch_proc_settings()
    use fetch_proc_operation_data
    use m_partitioninfo, only: jampi, my_rank, fetch_proc_rank, use_fetch_proc, DFM_COMM_DFMWORLD
 #endif
-   use unstruc_display, only: jagui
+   use m_gui
 
    implicit none
 

@@ -61,11 +61,8 @@ subroutine updateValuesOnLaterals(tim1, timestep)
          if (i_node > 0) then
             if (.not. is_ghost_node(i_node)) then
                ! sum over 2nd dimension of qqlat
-               do i_lat = 1, numlatsg
-                  ! sum over 1st dimension of qqlat
-                  do i_layer = 1, num_layers
-                     qLatReal(i) = qLatReal(i) + qqLat(i_layer, i_lat, i_node)
-                  end do
+               do i_layer = 1, num_layers
+                  qLatReal(i) = qLatReal(i) + qqLat(i_layer, k1)
                end do
             end if
          end if

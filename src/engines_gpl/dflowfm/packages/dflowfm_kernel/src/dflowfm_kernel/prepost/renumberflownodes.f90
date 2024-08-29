@@ -47,6 +47,7 @@
        use unstruc_messages
        use m_alloc
        use m_partitioninfo, only: idomain, iglobal_s, my_rank
+       use m_readyy
 
        implicit none
 

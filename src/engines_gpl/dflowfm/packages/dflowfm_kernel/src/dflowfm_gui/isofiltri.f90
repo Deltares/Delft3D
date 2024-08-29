@@ -31,6 +31,7 @@
 !
 
       subroutine ISOFILTRI(X, Y, Z, NCOLR)
+         use m_topix
          use m_depmax
          implicit none
          double precision :: dzn

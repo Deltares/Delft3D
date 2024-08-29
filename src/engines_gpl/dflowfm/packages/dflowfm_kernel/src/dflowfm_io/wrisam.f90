@@ -35,6 +35,8 @@
          use M_ARCINFO
          use M_MISSING, only: DMISS
          use m_pharosflow
+         use m_readyy
+         use m_qnerror
          implicit none
          integer :: msam, KMOD
 

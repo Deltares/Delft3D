@@ -32,10 +32,6 @@
 
 ! m_WEARELT movet to gridgeom
 
-module M_DEVICES
-   integer :: NPX, NPY, NCOLR, NDEV, NOPSYS, IWS, IHS
-end module M_DEVICES
-
 module m_textlines
    double precision :: txsize
    double precision :: txxpos
@@ -131,15 +127,8 @@ module unstruc_display
 !
 
    use unstruc_colors
+   use m_gui
    implicit none
-#ifndef HAVE_DISPLAY
-#define HAVE_DISPLAY 1
-#endif
-#if HAVE_DISPLAY==1
-   integer :: jaGUI = 1 !< GUI (1) or not (0)
-#else
-   integer :: jaGUI = 0 !< GUI (1) or not (0)
-#endif
 
    integer :: ntek = 0
    integer :: plottofile = 0
@@ -736,7 +725,12 @@ contains
 
    subroutine plotSpline(xh, yh, numpi, ncol)
       use m_wearelt
+      use m_splint
       use m_drawthis
+      use m_spline
+
+      implicit none
+
       integer, intent(in) :: numpi
       double precision, dimension(numpi), intent(in) :: xh, yh
       integer, intent(in) :: ncol
@@ -1054,6 +1048,7 @@ contains
       use m_arcinfo
       use M_grid
       use M_SPLINES
+      use m_dminmax
       use m_drawthis
       implicit none
       double precision :: aspect

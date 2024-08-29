@@ -61,7 +61,7 @@ class TestTreeComparer:
             self, resultlist, table1, table2, table1branch, table2branch, logger
         )
         assert resultlist[0].path[0] == "Column2"
-        assert resultlist[0].maxAbsDiffCoordinates == (3, 4)
+        assert resultlist[0].max_abs_diff_coordinates == (3, 4)
         assert resultlist[0].result == "NOK"
 
         # Column was added to the table
@@ -69,7 +69,7 @@ class TestTreeComparer:
             self, resultlist, table2, table1, table2branch, table1branch, logger
         )
         assert resultlist[0].path[0] == "Column2"
-        assert resultlist[0].maxAbsDiffCoordinates == (3, 4)
+        assert resultlist[0].max_abs_diff_coordinates == (3, 4)
         assert resultlist[0].result == "NOK"
 
     def test_getBranchFromPath(self) -> None:

@@ -72,6 +72,7 @@ module m_partitioninfo
    use precision_basics, only: hp
    use meshdata, only: ug_idsLen, ug_idsLongNamesLen
    use gridoperations, only: dlinkangle
+   use m_qnerror
 
 #ifdef HAVE_MPI
    use mpi, only: NAMECLASH_MPI_COMM_WORLD => MPI_COMM_WORLD ! Apparently PETSc causes a name clash, see commit #28532.
@@ -295,7 +296,7 @@ contains
       use m_missing
       use m_alloc
       use gridoperations
-
+      
       implicit none
 
       integer, intent(in) :: janet !< for network (1) or flow geom (0) or add 1D net (2)

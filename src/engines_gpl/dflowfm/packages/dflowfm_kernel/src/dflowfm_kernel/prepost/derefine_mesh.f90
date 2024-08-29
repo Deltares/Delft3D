@@ -38,6 +38,7 @@ subroutine derefine_mesh(xp, yp, Lconfirm)
    use geometry_module, only: pinpok
    use m_missing, only: jins, dmiss
    use gridoperations
+   use m_qnerror
 
    implicit none
 
