@@ -58,7 +58,7 @@ subroutine update_waq_lateral_fluxes()
             if (.not. is_ghost_node(i_node)) then
                i_latwaq = i_latwaq + 1
                do i_layer = 1, num_layers
-                  qlatwaq(i_latwaq) = qlatwaq(i_latwaq) + dts * qqLat(i_layer, i_lat, i_node)
+                  qlatwaq(i_latwaq) = qlatwaq(i_latwaq) + dts * qqLat(i_layer, k1)
                end do
             end if
          end if

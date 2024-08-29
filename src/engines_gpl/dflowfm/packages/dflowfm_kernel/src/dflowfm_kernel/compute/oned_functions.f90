@@ -1130,8 +1130,8 @@ contains
                   cycle
                end if
                ! only 1D nodes, so only 1 layer in qqlat
-               qCurLat(i_node) = qCurLat(i_node) + qqlat(1, i_lat, i_node)
-               vTotLat(i_node) = vTotLat(i_node) + qqlat(1, i_lat, i_node) * dts
+               qCurLat(i_node) = qCurLat(i_node) + qqlat(1, n)
+               vTotLat(i_node) = vTotLat(i_node) + qqlat(1, n) * dts
             end do
          end do
       else

@@ -178,43 +178,44 @@
           ! laterals with apply_transport(i_lat) > 0
           do i_lat = 1, numlatsg
              if (apply_transport(i_lat) == 0) then
-                qqlat(1:num_layers, i_lat, 1:ndx) = 0._dp
+                qqlat(1:num_layers, n1latsg(i_lat): n2latsg(i_lat)) = 0._dp
                 do k1 = n1latsg(i_lat), n2latsg(i_lat)
                    i_node = nnlat(k1)
                    if (i_node > 0) then
                       do i_layer = 1, num_layers
-                         qqlat(i_layer, i_lat, i_node) = qqlat(i_layer, i_lat, i_node) + qplat(i_layer, i_lat) * ba(i_node) / balat(i_lat)
+                         qqlat(i_layer, k1) = qqlat(i_layer, k1) + qplat(i_layer, i_lat) * ba(i_node) / balat(i_lat)
                       end do
                    end if
                 end do
              end if
           end do
           ! Now, handle the total lateral discharge for each grid cell
-          do k = 1, ndxi
-             if (k <= ndx2d) then
-                idim = 2
-             else
-                idim = 1
-             end if
-
-             isGhost = is_ghost_node(k)
-             do i_lat = 1, numlatsg
+          do i_lat = 1, numlatsg
+             do k1 = n1latsg(i_lat), n2latsg(i_lat)
+                k = nnlat(k1)
+                if (k <=    ndx2d) then
+                   idim = 2
+                else
+                   idim = 1 
+                end if
+   
+                isGhost = is_ghost_node(k)
                 do i_layer = 1, num_layers
-                   if (qqlat(i_layer, i_lat, k) > 0) then
+                   if (qqlat(i_layer, k1) > 0) then
                       if (.not. isGhost) then ! Do not count ghosts in mass balances
-                         qinlat(idim) = qinlat(idim) + qqLat(i_layer, i_lat, k) ! qqlat can be pos or neg
+                         qinlat(idim) = qinlat(idim) + qqLat(i_layer, k1) ! qqlat can be pos or neg
                       end if
                    else if (hs(k) > epshu) then
-                      qqlat(i_layer, i_lat, k) = -min(0.5d0 * vol1(k) / dts, -qqlat(i_layer, i_lat, k))
+                      qqlat(i_layer, k1) = -min(0.5d0 * vol1(k) / dts, -qqlat(i_layer, k1))
                       if (.not. isGhost) then
-                         qoutlat(idim) = qoutlat(idim) - qqlat(i_layer, i_lat, k)
+                         qoutlat(idim) = qoutlat(idim) - qqlat(i_layer, k1)
                       end if
                    else
-                      qqlat(i_layer, i_lat, k) = 0d0
+                      qqlat(i_layer, k1) = 0d0
                    end if
-                   qin(k) = qin(k) + qqlat(i_layer, i_lat, k)
-                end do
-             end do
+                   qin(k) = qin(k) + qqlat(i_layer, k1)
+                 end do
+              end do
           end do
        end if
 

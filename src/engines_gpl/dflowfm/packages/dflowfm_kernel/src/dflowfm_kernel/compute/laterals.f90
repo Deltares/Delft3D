@@ -57,7 +57,7 @@ module m_laterals
    !                    3) in test_laterals (unit test)
    ! so yes, 3 is necessary for now.
    real(kind=dp), allocatable, target, public :: qplat(:, :) !< [m3/s] Lateral discharge of provider {"shape": ["num_layers", "numlatsg"]}
-   real(kind=dp), allocatable, target, public :: qqlat(:, :, :) !< [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["num_layers","numlatsg", "ndx"]}
+   real(kind=dp), allocatable, target, public :: qqlat(:, :) !< [m3/s] Lateral discharge at xz,yz {"location": "face": ["num_layers","nlatnd"]}
    real(kind=dp), allocatable, target, public :: balat(:) !< [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
    character(len=128), allocatable, public :: lat_ids(:) !< id of laterals {"shape": ["numlatsg"]}
    real(kind=dp), allocatable, target, public :: qplatCum(:) !< [m3/s] Cumulative lateral discharge of provider {"shape": ["numlatsg"]}
@@ -178,7 +178,7 @@ module m_laterals
    interface distribute_lateral_discharge
       module subroutine distribute_lateral_discharge(provided_lateral_discharge, lateral_discharge_per_layer_lateral_cell)
          real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per layer
-         real(kind=dp), dimension(:, :, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge
+         real(kind=dp), dimension(:, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge
                                                                                                     !! per layer per lateral per cell
       end subroutine distribute_lateral_discharge
    end interface distribute_lateral_discharge
