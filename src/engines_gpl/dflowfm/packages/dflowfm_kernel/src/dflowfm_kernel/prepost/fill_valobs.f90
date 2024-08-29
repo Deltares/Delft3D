@@ -351,6 +351,10 @@ subroutine fill_valobs()
             if (jatem > 0) then
                valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
             end if
+            if (jahistur > 0) then
+               call linkstocenterstwodoubles(workx, real(vicLu, kind=8))
+               valobs(i, IPNT_VIU + klay - 1) = workx(kk)
+            end if
             if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
                if (density_is_pressure_dependent()) then
                   valobs(i, IPNT_RHOP + klay - 1) = setrhofixedp(kk, 0d0)

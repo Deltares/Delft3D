@@ -1265,6 +1265,10 @@ contains
                              'Wrihis_turbulence', 'tke', 'turbulent kinetic energy at nearest velocity point', '', &
                              'm2 s-2', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write k, eps and vicww to his-file', &
                              nc_dim_ids=station_nc_dims_3D_interface_edge)
+      call add_output_config(config_set_his, IDX_HIS_VIU, &
+                             'Wrihis_turbulence', 'viu', 'horizontal eddy viscosity (flowlink-averaged) at pressure point ', '', &
+                             'm2 s-1''', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_VICWWS, &
                              'Wrihis_turbulence', 'vicwws', 'turbulent vertical eddy viscosity at pressure point', '', &
                              'm2 s-1''', UNC_LOC_STATION, nc_attributes=atts(1:1), &
@@ -2465,7 +2469,16 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DISCHARGE_MAGNITUDE), valobs(:, IPNT_QMAG))
             end if
          end if
+         
          ! Turbulence model
+         if (jahistur > 0) then
+            if (model_is_3D()) then
+               temp_pointer(1:kmx * ntot) => valobs(1:ntot, IPNT_VIU:IPNT_VIU + kmx)
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VIU), temp_pointer)
+            else
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VIU), valobs(:, IPNT_VIU))
+            end if
+         end if
          if (model_is_3D()) then
             if (iturbulencemodel >= 3 .and. jahistur > 0) then
                temp_pointer(1:(kmx + 1) * ntot) => valobs(1:ntot, IPNT_TKIN:IPNT_TKIN + kmx)
