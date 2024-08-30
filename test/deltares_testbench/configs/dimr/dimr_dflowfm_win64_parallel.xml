@@ -65,7 +65,7 @@
             <location ref="local" type="check">
                 <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
             </location>
-            <path>bin/dfmoutput.exe</path>
+            <path>bin/run_dfmoutput.bat</path>
             <shell ref="command_prompt"/>
         </program>
         <program name="dflowfm" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
