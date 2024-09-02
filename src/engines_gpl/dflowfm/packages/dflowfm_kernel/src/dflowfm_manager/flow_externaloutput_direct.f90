@@ -39,13 +39,14 @@ subroutine flow_externaloutput_direct()
    use m_flowtimes
    use unstruc_messages
    use time_module, only: datetime_to_string
+   use m_date_time_from_ref_date, only: date_time_from_ref_date
    implicit none
    integer :: iyear, imonth, iday, ihour, imin, isec
 
    call mess(LEVEL_INFO, 'Performing direct write of solution state...')
 
    ! Compute current absolute date time, based on time1 since refdat
-   call datetime_from_refdat(time1, refdat, iyear, imonth, iday, ihour, imin, isec)
+   call date_time_from_ref_date(time1, refdat, iyear, imonth, iday, ihour, imin, isec)
    write (msgbuf, '(a,i0,a,f12.2,a,a,a,a)') 'Simulation current time: nt = ', int(dnt, 8), ', time1 = ', time1, 's ', &
       '(', trim(datetime_to_string(iyear, imonth, iday, ihour, imin, isec)), ').'
    call msg_flush()

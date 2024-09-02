@@ -1096,6 +1096,7 @@ module time_module
      !> Given time in seconds from refdat, fill dateandtime string
      !! NOTE: seconds_to_datetimestring and datetimestring_to_seconds are not compatible, because of minutes versus seconds, and different format string.
      subroutine seconds_to_datetimestring(dateandtime,refdat,tim)
+         use m_date_time_from_ref_date, only: date_time_from_ref_date
          implicit none
 
          character,        intent(out) :: dateandtime*(*) !< Output datetime string, format '20000101_000000', note: includes seconds.
@@ -1107,7 +1108,7 @@ module time_module
          dateandtime = '20000101_000000'
          ! TODO: AvD: seconds_to_datetimestring and datetimestring_to_seconds are now inconsistent since the addition of this '_'
 
-         call datetime_from_refdat(tim, refdat, iyear, imonth, iday, ihour, imin, isec)
+         call date_time_from_ref_date(tim, refdat, iyear, imonth, iday, ihour, imin, isec)
 
          write(dateandtime( 1:4 ),'(i4)')   iyear
          write(dateandtime( 5:6 ),'(i2.2)') imonth
