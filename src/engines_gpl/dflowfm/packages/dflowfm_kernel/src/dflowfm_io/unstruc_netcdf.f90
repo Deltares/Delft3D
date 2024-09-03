@@ -11518,8 +11518,9 @@ contains
 
       integer :: n1dedges, n1d2dcontacts, start_index
       integer, allocatable :: contacttype(:), idomain1d(:), iglobal_s1d(:)
-      integer, allocatable :: NETCELL_PERMUTATION(:)! backup_branchid(:), backup_chainage(:)
-      type(tface), allocatable :: tempcell
+      integer, allocatable :: NETCELL_PERMUTATION(:) ! backup_branchid(:), backup_chainage(:)
+      !type(tface), allocatable :: tempcell
+      integer, allocatable :: tempnode
 
       call readyy('Writing net data', 0d0)
 
@@ -11649,47 +11650,23 @@ contains
          nump1d = nump1d2d - nump
 
          if (janetcell_ == 1 .and. nump1d > 0) then
-            allocate(NETCELL_permutation(nump1d))
-            do N1 = 1,nump1d
-            NETCELL_permutation(N1) = N1 + nump
-            enddo
             ! Determine 1D net nodes directly from 1D net cells
             do N1 = nump + 1, nump1d2d
                numk1d = numk1d + 1
-               k1 = netcell(N1)%nod(1)
-               if (k1 /= numk1d) then !netcells not in correct order
-                  do N2 = N1 + 1, nump1d2d
-                     k1 = netcell(n2)%nod(1)
-                     if (k1 == numk1d) then
-                        tempcell = netcell(N1)
-                        netcell(N1) = netcell(N2)
-                        netcell(N2) = tempcell
-                        netcell_permutation(n1-nump) = N2
-                        netcell_permutation(N2-nump) = N1
-                        exit
-                     end if
-                  end do
-               end if
-
+               k1 = numk1d 
                xn(numk1d) = xk(k1)
                yn(numk1d) = yk(k1)
                zn(numk1d) = zk(k1)
-
-               kc(k1) = -numk1d ! Remember new node number
             end do
 
-            !backup_branchid = meshgeom1d%nodebranchidx
-            !backup_chainage = meshgeom1d%nodeoffsets
             do L = 1, NUML1D
                if (kn(3, L) == 1 .or. kn(3, L) == 6) then
                   n1dedges = n1dedges + 1
                   K1 = KN(1, L)
                   K2 = KN(2, L)
 
-                  !meshgeom1d%nodebranchidx(n1dedges) = backup_branchid(abs(KC(K1)))
-                  !meshgeom1d%nodeoffsets(n1dedges) = backup_chainage(abs(KC(K1)))
-                  edge_nodes(1, n1dedges) = abs(KC(K1))
-                  edge_nodes(2, n1dedges) = abs(KC(K2))
+                  edge_nodes(1, n1dedges) = k1!abs(KC(K1))
+                  edge_nodes(2, n1dedges) = k2!abs(KC(K2))
                   edge_type(n1dedges) = KN(3, L)
 
                   xe(n1dedges) = .5d0 * (xk(K1) + xk(K2)) ! TODO: AvD: make this sferic+3D-safe
@@ -11703,18 +11680,15 @@ contains
 
                   n1d2dcontacts = n1d2dcontacts + 1
                   if (N1 > nump .and. N2 <= nump) then ! First point of 1D link is 1D cell
-                     N1 = NETCELL_PERMUTATION(N1-nump)
-                     contacts(1, n1d2dcontacts) = abs(KC(netcell(N1)%nod(1))) ! cell -> orig node -> new node
+                     contacts(1, n1d2dcontacts) = netcell(N1)%nod(1)!abs(KC(netcell(N1)%nod(1))) ! cell -> orig node -> new node
                      contacts(2, n1d2dcontacts) = N2 ! 2D cell number in network_data is the same in UGRID mesh2d numbering (see below).
                   else if (N2 > nump .and. N1 <= nump) then ! First point of 1D link is 1D cell
-                     N2 = NETCELL_PERMUTATION(N2-nump)
-                     contacts(1, n1d2dcontacts) = abs(KC(netcell(N2)%nod(1))) ! cell -> orig node -> new node
+                     contacts(1, n1d2dcontacts) = netcell(N2)%nod(1)!abs(KC(netcell(N2)%nod(1))) ! cell -> orig node -> new node
                      contacts(2, n1d2dcontacts) = N1 ! 2D cell number in network_data is the same in UGRID mesh2d numbering (see below).
                   else
                      n1d2dcontacts = n1d2dcontacts - 1
                      cycle
                   end if
-
                   contacttype(n1d2dcontacts) = kn(3, L)
                end if
             end do
