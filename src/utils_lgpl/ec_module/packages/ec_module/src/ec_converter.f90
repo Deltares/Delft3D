@@ -2310,7 +2310,7 @@ module m_ec_converter
 
       !> Cyclic interpolation of two scalars, based on periodicity of 360 (degrees)
       !! Sort data in monotonically increasing order and rotate over smallest angle
-      function cyclic_interpolation(var1, var2, weight1, weight2)
+      elemental function cyclic_interpolation(var1, var2, weight1, weight2)
          real(hp), intent(in) :: var1                !< First input argument for in interpolation functions using a scalar weight value
          real(hp), intent(in) :: var2                !< Second input argument for in interpolation functions using a scalar weight value
          real(hp), intent(in) :: weight1             !< Value for weighing two variables: 'weight1' holds for var1
