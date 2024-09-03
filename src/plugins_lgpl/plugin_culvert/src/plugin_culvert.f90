@@ -320,7 +320,6 @@ subroutine cptdis(ag         ,area       ,alfa       ,cd1        , &
 !
 ! Local variables:
 !
-    integer           :: iexit
     integer           :: iter
     real(hp)          :: eps    
     real(hp)          :: hc     ! critical depth

@@ -29,14 +29,18 @@
 
 !
 !
+module m_dminmod
+   implicit none
+contains
 
- double precision function dminmod(d1, d2) ! twee maal vergroot vanwege acl
-    implicit none
-    double precision d1, d2
-    if (d1 * d2 > 0d0) then
-       dminmod = min(1d0, d2 / d1)
-    else
-       dminmod = 0d0
-    end if
-    return
- end function dminmod
+   double precision function dminmod(d1, d2) ! twee maal vergroot vanwege acl
+
+      double precision d1, d2
+      if (d1 * d2 > 0d0) then
+         dminmod = min(1d0, d2 / d1)
+      else
+         dminmod = 0d0
+      end if
+      return
+   end function dminmod
+end module m_dminmod

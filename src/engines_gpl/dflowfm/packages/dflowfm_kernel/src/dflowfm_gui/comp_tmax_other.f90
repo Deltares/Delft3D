@@ -31,7 +31,7 @@
 !
 
 !> compute maximum allowable grid layer growth time; with other grid points
-subroutine comp_tmax_other(mc, jlay, xc, yc, vel, mc1, xc1, yc1, vel1, idx1, tmax, tmax1)
+subroutine comp_tmax_other(mc, jlay, xc, yc, vel, mc1, xc1, yc1, vel1, idx1, tmax)
    use m_missing
    use m_sferic
    use m_spline2curvi, only: dtolLR
@@ -50,7 +50,6 @@ subroutine comp_tmax_other(mc, jlay, xc, yc, vel, mc1, xc1, yc1, vel1, idx1, tma
    integer, dimension(2, mc1), intent(in) :: idx1 !< (i,j)-indices of other grid points
 
    double precision, dimension(mc), intent(inout) :: tmax !< maximum allowable grid layer growth time
-   double precision, dimension(mc1), intent(inout) :: tmax1 !< maximum allowable other grid points growth time
 
 !   double precision, dimension(mc-1)                  :: edge_width, edge_incr
 

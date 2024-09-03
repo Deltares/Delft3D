@@ -185,7 +185,7 @@
 
            nzero = 0
            do nn = 1, size(netcell(n)%lin) ! check if any link should be kept for cell n
-              L = iabs(netcell(n)%lin(nn))
+              L = abs(netcell(n)%lin(nn))
               if (L > 0) then
                  if (Lc(L) == 0) then
                     nzero = 1; exit
@@ -195,7 +195,7 @@
 
            if (nzero == 1) then ! if it should be kept, flag all links of that cell to be kept.
               do nn = 1, size(netcell(n)%lin)
-                 L = iabs(netcell(n)%lin(nn))
+                 L = abs(netcell(n)%lin(nn))
                  if (L > 0) then
                     LC2(L) = 0
                  end if

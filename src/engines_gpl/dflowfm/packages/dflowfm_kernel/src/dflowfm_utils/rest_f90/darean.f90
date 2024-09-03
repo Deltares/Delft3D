@@ -40,11 +40,11 @@
     use geometry_module, only: dbdistance, get_startend, comp_masscenter
 
     implicit none
+    integer, intent(in) :: n !< Nr. of polygon points.
     double precision, intent(in) :: XX(N), YY(N) !< Polygon points.
     double precision, intent(out) :: DAREA !< Area enclosed within polygon.
     double precision, intent(out) :: DLENGTH !< Length of polygon contour.
     double precision, intent(out) :: DLENMX !< Length of longest segment in polygon contour.
-    integer, intent(in) :: n !< Nr. of polygon points.
 
     integer :: i, iu, nend, jstart, jend
     double precision :: Y0, DLE

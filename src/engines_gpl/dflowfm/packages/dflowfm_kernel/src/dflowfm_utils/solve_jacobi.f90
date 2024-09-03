@@ -70,7 +70,7 @@
           if (kfs(n) == 1) then
              s1(n) = db(n)
              do nn = 1, nd(n)%lnx
-                L = nd(n)%ln(nn); La = iabs(L)
+                L = nd(n)%ln(nn); La = abs(L)
                 if (ccr(Lv2(La)) < 0d0) then
                    if (L > 0) then
                       s1(n) = s1(n) - ccr(Lv2(La)) * s1(ln(1, La)) * bbi(n)
@@ -91,7 +91,7 @@
              if (kfs(n) == 1) then
                 rrn = ddr(n) - bbr(n) * s1(n) ! For explicit points db = s0, so this does won't hurt
                 do nn = 1, nd(n)%lnx
-                   L = nd(n)%ln(nn); La = iabs(L)
+                   L = nd(n)%ln(nn); La = abs(L)
                    if (ccr(Lv2(La)) < 0d0) then
                       if (L > 0) then
                          rrn = rrn - ccr(Lv2(La)) * s1(ln(1, La))

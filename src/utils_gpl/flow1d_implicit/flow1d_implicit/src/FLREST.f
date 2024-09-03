@@ -130,8 +130,8 @@ c
      &              strhis(dmstrh,*),qaggr(ngrid,3) ,qlaggr(*)
       real          buflag(lagstm,nlags), grhis(*)
       double precision h2(ngrid)       ,q2(ngrid)
-      character*(*) grnamf
-      character*(*) nameel(nentri)
+      character(len=*) grnamf
+      character(len=*) nameel(nentri)
 c
 c     Declaration of local variables
 c

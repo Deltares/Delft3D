@@ -199,7 +199,7 @@ subroutine flow_trachyupdate()
             k = trachy_fl%dir(1)%lin(1, L) ! neighbouring flow node
             cftrt(L, 3) = 0.0
             do n = 1, nd(k)%lnx
-               LF = iabs(nd(k)%ln(n)) ! neighbouring flow links to flow node
+               LF = abs(nd(k)%ln(n)) ! neighbouring flow links to flow node
                cftrt(L, 3) = cftrt(L, 3) + frcu(LF)
             end do
             cftrt(L, 3) = cftrt(L, 3) / max(nd(k)%lnx, 1)

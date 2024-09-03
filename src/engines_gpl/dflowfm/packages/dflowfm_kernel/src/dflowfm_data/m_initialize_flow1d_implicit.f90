@@ -300,7 +300,7 @@ contains
 !FM1DIMP2DO: I am now adapting the input for using the morphodynamic implementation of Pure 1D. However,
 !I amnot sure it is the best. This should be revisited with Bert :).
       if (jased > 0 .and. stm_included) then !passing if no morphpdynamics
-         stmpar%morpar%mornum%pure1d = 1
+         stmpar%morpar%mornum%pure1d = .true.
          call init_1dinfo() !<initialize_flow1d_implicit> is called before <init_1dinfo>. We have to call it here and it will not be called again because it will be allocated.
       end if
 
@@ -608,7 +608,7 @@ contains
                   L = lin(pointscount - 1)
                end if
                do kl = 1, nd_o(idx_fm)%lnx
-                  if (L == iabs(nd_o(idx_fm)%ln(kl))) then
+                  if (L == abs(nd_o(idx_fm)%ln(kl))) then
                      jpos = kl
                   end if
                end do !kl
@@ -1001,7 +1001,7 @@ contains
          call flow_sedmorinit()
          griddim%nmub = ndx !restore to the original size because it is used for exporting data
 
-         stmpar%morpar%mornum%pure1d = 1 !we have set it for reading <init_1dinfo> but we have to set it again because it is overwritten in <flow_sedmorinit>
+         stmpar%morpar%mornum%pure1d = .true. !we have set it for reading <init_1dinfo> but we have to set it again because it is overwritten in <flow_sedmorinit>
 
 !FM1DIMP2DO: We could do the same trick and call <lnx_mor> in <flow_waveinit>, but some variables have been moved to another module after JR merge. Hence, we reallocate in this routine.
 !call flow_waveinit()

@@ -39,8 +39,8 @@
       implicit none
       
       Integer       In, IOut1, IOpt
-      Character*(*) FileName
-      Character*4   KeyWord, String
+      Character(len=*) FileName
+      Character(len=4) KeyWord, String
       Integer       NrRecords
       Logical       Eof, Minimaal1
 

@@ -32,6 +32,7 @@
 
 !> select link for directional refinement in GUI
    subroutine getlink_GUI(xp, yp, L)
+      use m_qnerror
       implicit none
 
       double precision, intent(out) :: xp, yp !< coordinates of clicked point

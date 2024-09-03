@@ -30,8 +30,7 @@
 !
 !
 
-  subroutine cutcell_list(n12, FILNAM, lenf, jamasks) ! filnam = mask
-
+  subroutine cutcell_list(n12, jamasks)
      use M_NETW
      use M_FLOWGEOM
      use m_missing
@@ -44,8 +43,7 @@
      use unstruc_model
      implicit none
 
-     integer, intent(in) :: n12, lenf !< type of operation (1, 2, 3, 4, 5), see docs below.
-     character(LEN=lenf), intent(in) :: FILNAM
+     integer, intent(in) :: n12 !< type of operation (1, 2, 3, 4, 5), see docs below.
      integer, intent(in) :: jamasks !< store masks and polygons (1), use stored masks and polygons (2), use stored masks masks and polygons and clear masks and polygons (3), do not use stored masks and polygons at all (0)
      logical JAWEL
      double precision :: t0, t1
@@ -240,7 +238,7 @@
 !    SPvdP: disable flow-links that are associated to disabled net-links
         do Lf = 1, Lnx
            if (kcu(Lf) /= 2) cycle
-           L = iabs(ln2lne(Lf))
+           L = abs(ln2lne(Lf))
            if (L > 0) then
               if (lnn(L) == 0) then
                  wu(Lf) = 0d0

@@ -248,7 +248,7 @@ c
 c
 c     Declaration of local variables:
 c
-      integer           iup, idown, formno, lstnam
+      integer           iup, idown, formno
       logical           strsta
       double precision  hunp1 ,hdnp1 ,hun   ,hdn   ,uu  ,ud ,qa ,qdhu ,
      +                  qdhd  ,teken ,wstr  ,zs    ,w2  ,zb2,dg ,
@@ -257,8 +257,6 @@ c
      +                  qun   ,qunp1 ,wu    ,au    ,qdqu,
      +                  gdub  ,lamdub,reldub,dhsdub,dum1
       real              astr, abran, hcrit, hstr
-      character*8       abrtxt, astrtxt
-      character*40      strnam
 c
       integer     qol
       parameter  (qol=4)
@@ -293,7 +291,7 @@ c
             hcrit = 0.6666667*(hunp1 + uu*uu/g*0.5 - zs)
             hstr  = min(h1(il),h1(ir))-zs
             hstr  = max(hstr,hcrit)
-            astr  = min(hstr,sngl(dg))*wstr
+            astr  = min(hstr,real(dg, kind=kind(hstr)))*wstr
             if (astr.gt.abran*1.01) then
 c               nrerperr(neragenstr) = nrerperr(neragenstr) + 1 
 c               call getstr(istru,strnam,lstnam)
@@ -374,19 +372,19 @@ c
          qa = reldub*qa+(1.0D0 - reldub)*dble(strhis(qol,istru))
       endif
 
-      asde = sngl(as)
-      bsde = sngl(bs)
-      csde = sngl(cs)
-      dsde = sngl(ds)
-      strhis(qol,istru) = sngl(qa)
+      asde = real(as, kind=kind(asde))
+      bsde = real(bs, kind=kind(bsde))
+      csde = real(cs, kind=kind(ssde))
+      dsde = real(ds, kind=kind(dsde))
+      strhis(qol,istru) = real(qa, kind=kind(strhis))
 c
       if (teken .gt. 0) then
-         esde = sngl(-qa + (hunp1-hun) * as + (hdnp1-hdn) * cs
-     +                   + (qunp1-qun) * (bs + ds))
+         esde = real(-qa + (hunp1-hun) * as + (hdnp1-hdn) * cs
+     +                   + (qunp1-qun) * (bs + ds), kind=kind(esde))
 
       else
-         esde = sngl(-qa + (hdnp1-hdn) * as + (hunp1-hun) * cs
-     +                   + (qunp1-qun) * (bs + ds))
+         esde = real(-qa + (hdnp1-hdn) * as + (hunp1-hun) * cs
+     +                   + (qunp1-qun) * (bs + ds), kind=kind(esde))
       endif
 c
       strhis(8,istru)=formno

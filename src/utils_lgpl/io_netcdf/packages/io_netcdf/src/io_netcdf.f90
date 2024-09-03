@@ -297,7 +297,7 @@ function ionc_create(netCDFFile, mode, ioncid, iconvtype, chunksize) result(ierr
    integer, optional, intent(inout) :: chunksize !< (optional) NetCDF chunksize parameter.
    integer                          :: ierr      !< Result status (IONC_NOERR if successful).
 
-   integer :: ncid, istat
+   integer :: ncid
 
    if (present(chunksize)) then
       ierr = nf90_create(netCDFFile, mode, ncid, chunksize)
@@ -382,7 +382,7 @@ function ionc_open(netCDFFile, mode, ioncid, iconvtype, convversion, chunksize) 
    integer, optional, intent(  out) :: chunksize !< (optional) NetCDF chunksize parameter.
    integer                          :: ierr      !< Result status (IONC_NOERR if successful).
 
-   integer :: ncid, istat
+   integer :: ncid
 
    ierr = IONC_NOERR
 
@@ -423,8 +423,6 @@ end function ionc_open
 function ionc_close(ioncid) result(ierr)
    integer,           intent(in   ) :: ioncid    !< The io_netcdf dataset id (this is not the NetCDF ncid, which is stored in datasets(ioncid)%ncid.
    integer                          :: ierr      !< Result status (IONC_NOERR if successful).
-
-   integer :: ncid, istat
 
    if (ioncid <= 0 .or. ioncid > ndatasets) then
       ierr = IONC_EBADID
@@ -476,8 +474,6 @@ end function ionc_enddef
 function ionc_redef(ioncid) result(ierr)
    integer,           intent(in   ) :: ioncid    !< The io_netcdf dataset id (this is not the NetCDF ncid, which is stored in datasets(ioncid)%ncid.
    integer                          :: ierr      !< Result status (IONC_NOERR if successful).
-
-   integer :: ncid, istat
 
    if (ioncid <= 0 .or. ioncid > ndatasets) then
       ierr = IONC_EBADID
@@ -666,8 +662,6 @@ function ionc_put_network(ioncid, networkgeom, networkid) result(ierr)
    character(len=ug_idsLen), allocatable                     :: nnodeids(:), nbranchids(:)
    character(len=ug_idsLongNamesLen), allocatable            :: nnodelongnames(:), nbranchlongnames(:)
 
-   integer :: ierrLocal
-
    allocate(nnodeids(networkgeom%nnodes))
    allocate(nnodelongnames(networkgeom%nnodes))
    allocate(nbranchids(networkgeom%nbranches))
@@ -696,7 +690,6 @@ function ionc_get_meshgeom(ioncid, meshid, networkid, meshgeom, start_index, inc
    integer                            :: networkid     !< The mesh id in the specified data set.
    type(t_ug_meshgeom), intent(inout) :: meshgeom      !< Structure in which all mesh geometry will be stored.
    integer                            :: ierr          !< Result status, ionc_noerr if successful.
-   type(t_ug_network)                 :: netid
 
    !Optional variables
    logical, optional,   intent(in)                          :: includeArrays !< (optional) Whether or not to include coordinate arrays and connectivity tables. Default: .false., i.e., dimension counts only.
@@ -1426,8 +1419,6 @@ function ionc_write_mesh_struct(ioncid, meshids, networkids, meshgeom, network1d
    integer                            :: ierr        !< Result status, ionc_noerr if successful.
 
    !Locals
-   integer :: ierrLocal
-
    character(len=ug_idsLen), allocatable             :: nodeids(:)
    character(len=ug_idsLongNamesLen), allocatable    :: nodelongnames(:)
 
@@ -1588,7 +1579,6 @@ subroutine realloc(arr, uindex, lindex, stat, keepExisting)
    type(t_ionc), allocatable :: b(:)
    integer        :: uind, lind, muind, mlind, lindex_
 
-   integer        :: i
    integer        :: localErr
    logical        :: docopy
    logical        :: equalSize
@@ -1711,7 +1701,7 @@ function ionc_create_1d_network_ugrid(ioncid, networkid, networkName, nNodes, nB
    integer, intent(inout)             :: networkid
    character(len=*), intent(in)       :: networkName !< File name for netCDF dataset to be opened.
    integer, intent(in)                :: nNodes, nBranches, nGeometry
-   integer                            :: ierr, dum
+   integer                            :: ierr
 
    ! allocate add a meshids
    ierr = ug_add_network(datasets(ioncid)%ncid, datasets(ioncid)%ug_file, networkid)
@@ -1946,8 +1936,6 @@ function ionc_create_1d_mesh_ugrid_v1(ioncid, networkname, meshid, meshname, nme
    character(len=*),intent(in) :: meshname, networkname
    integer                     :: ierr
 
-   integer :: ierrLocal
-
    !adds a meshids structure
    ierr = ug_add_mesh(datasets(ioncid)%ncid, datasets(ioncid)%ug_file, meshid)
    ! set the meshname
@@ -2151,8 +2139,7 @@ function ionc_clone_mesh_definition_ugrid( ncidin, ncidout, meshidin, meshidout 
 
    integer, intent(in)               :: ncidin, ncidout, meshidin
    integer, intent(inout)            :: meshidout
-   integer                           :: ierr,status,sourceid,targetid
-   character(len=nf90_max_name)      :: buffer
+   integer                           :: ierr
 
    !We always add meshes, not links (otherwise we need to check here if ug_add_links should be used instead)
    ierr = ug_add_mesh(datasets(ncidout)%ncid, datasets(ncidout)%ug_file, meshidout)
@@ -2164,7 +2151,7 @@ function ionc_clone_mesh_data_ugrid( ncidin, ncidout, meshidin, meshidout ) resu
 
    integer, intent(in)    :: ncidin, ncidout, meshidin
    integer, intent(in)    :: meshidout
-   integer                :: ierr,status,sourceid,targetid
+   integer                :: ierr
 
    ierr = ug_clone_mesh_data( datasets(ncidin)%ncid, datasets(ncidout)%ncid,datasets(ncidin)%ug_file%meshids(meshidin), datasets(ncidout)%ug_file%meshids(meshidout))
 

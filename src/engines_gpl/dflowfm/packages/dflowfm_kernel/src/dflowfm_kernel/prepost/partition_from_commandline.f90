@@ -31,7 +31,7 @@
 !
 
 !>  perform partitioning from command line
-subroutine partition_from_commandline(fnam, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_dryptsfile, md_encfile, md_genpolygon, md_partugrid, md_partseed)
+subroutine partition_from_commandline(fnam, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
 
    use network_data
    use m_partitioninfo
@@ -46,8 +46,6 @@ subroutine partition_from_commandline(fnam, md_Ndomains, md_jacontiguous, md_icg
    integer, intent(in) :: md_jacontiguous !< contiguous domains, Metis (1) or not (0)
    integer, intent(in) :: md_icgsolver !< intended solver
    integer, intent(in) :: md_pmethod !< partition method: K-way (=1, default), Recursive Bisection(=2), Mesh-dual(=3)
-   character(len=255), intent(in) :: md_dryptsfile !< dry points file
-   character(len=255), intent(in) :: md_encfile !< Enclosure file to clip outer parts from the grid *.pol
    integer, intent(in) :: md_genpolygon !< make partition file (1) or not (0)
    integer, intent(in) :: md_partugrid !< write partitioning in ugrid format (1) or not (0)
    integer, intent(in) :: md_partseed !< User defined random seed, passed to METIS'option "SEED". Useful for reproducible partitionings, but only used when /= 0.

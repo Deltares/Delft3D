@@ -53,13 +53,13 @@ subroutine switchiadvnearlink(L)
    end if
 
    do kk = 1, nd(k1)%lnx
-      LL = iabs(nd(k1)%ln(kk))
+      LL = abs(nd(k1)%ln(kk))
       if (iadv(LL) /= 22 .and. (kcu(LL) == 1 .or. kcu(LL) == 2)) then ! Only for regular 1D or 2D.
          iadv(LL) = iadv1
       end if
    end do
    do kk = 1, nd(k2)%lnx
-      LL = iabs(nd(k2)%ln(kk))
+      LL = abs(nd(k2)%ln(kk))
       if (iadv(LL) /= 22 .and. (kcu(LL) == 1 .or. kcu(LL) == 2)) then ! Only for regular 1D or 2D.
          iadv(LL) = iadv2
       end if

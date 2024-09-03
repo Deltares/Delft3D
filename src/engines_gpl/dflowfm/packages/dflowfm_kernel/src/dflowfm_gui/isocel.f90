@@ -31,14 +31,13 @@
 !
 
       subroutine ISOCEL(X, Y, P, NCOLR)
+         use m_depmax
          implicit none
-         double precision :: dv
-         integer :: i, ih, ja, jaauto, ncolr, ncols, nh, nie, nis, nplus, nv
-         double precision :: p, p1, p2, val, vmax, vmin, vn, x, x1, x2, xh, xhit, y, y1, y2, yh, yhit
+         integer :: i, ih, ja, ncolr, nh, nplus
+         double precision :: p, p1, p2, vn, x, x1, x2, xh, xhit, y, y1, y2, yh, yhit
 
 !     TEKENT ALLE NV ISOLIJNEN IN EEN CEL TEKAL-METHODE
          dimension P(4), X(4), Y(4), XH(4), YH(4)
-         common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
 
          do I = 1, NV
             NPLUS = 1

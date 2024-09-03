@@ -145,7 +145,7 @@
       do j=1,nuecog
    rfirst(i,j)=effic(i1,j)
       end do
-   domf(i)=-dlog(power(i1))
+   domf(i)=-log(power(i1))
       end do
       return
       end
@@ -282,7 +282,7 @@
       do i=1,nval
       dens(i)=dens(i)*amult
       freq(i)=freq(i)*amult
-      tsol(i)=dlog(solar(i)/sbar)
+      tsol(i)=log(solar(i)/sbar)
    tden(i)=solar(i)*dens(i)
       end do
       return

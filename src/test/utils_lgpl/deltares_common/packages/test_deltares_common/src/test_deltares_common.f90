@@ -36,6 +36,7 @@ program test_deltares_common
     use test_m_alloc
     use test_reshape
     use test_array_module
+    use test_date_time_from_ref_date
 
     implicit none
 
@@ -59,6 +60,7 @@ program test_deltares_common
     call tests_alloc()
     call tests_reshape()
     call tests_array_module()
+    call tests_date_time_from_ref_date()
     !
     ! Done - properly finalize
     !

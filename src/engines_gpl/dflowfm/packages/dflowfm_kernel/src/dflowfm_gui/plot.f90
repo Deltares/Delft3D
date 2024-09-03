@@ -42,16 +42,13 @@
          use unstruc_messages
          use unstruc_model, only: md_ident, md_snapshotdir, md_snapshot_seqnr
          use unstruc_opengl, only: jaopengl
+         use m_hardcopy
+         use m_plotfil
          implicit none
          integer :: i
-         integer :: ihcopts
          integer :: l
-         integer :: nhcdev
          integer :: nopen, mout
-         integer :: numhcopts
-         character PLOTJE * 255, EXT * 4
-         common / HARDCOPY / NHCDEV, NUMHCOPTS, IHCOPTS(2, 20)
-         common / PLOTFIL / PLOTJE
+         character EXT * 4
 
          if (Jaopengl == 1) then
             nhcdev = 14
@@ -111,7 +108,7 @@
                end if
                write (PLOTJE(L + 1:), '(I6.6,A4)') md_snapshot_seqnr, EXT
             else
-               ! Not in use now, but it's possible through common /plotfil/ to specify file name.
+               ! Not in use now, but it's possible through m_plotfil to specify file name.
                ! md_snapshotdir is not used then...
                write (PLOTJE(L + 1:), '(A4)') EXT
             end if

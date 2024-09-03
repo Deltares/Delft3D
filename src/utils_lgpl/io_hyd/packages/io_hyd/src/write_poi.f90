@@ -61,7 +61,7 @@
       integer       noq12 , noq123, lun, k
       integer       irlen
       integer       plform
-      character*256 filnam
+      character(len=256) filnam
       integer       filtyp
       integer       filsta
 

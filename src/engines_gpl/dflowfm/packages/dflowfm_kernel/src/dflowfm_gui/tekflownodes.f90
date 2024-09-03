@@ -36,11 +36,11 @@
     use m_flow
     use m_missing
     use m_transport
+    use m_drawthis
     implicit none
-    integer :: nodemode, nodewhat, ndraw(50)
+    integer :: nodemode, nodewhat
     integer :: k, ja, ja2, nn, ncol
     double precision :: znod, zn
-    common / drawthis / ndraw
     logical inview
 
     nodemode = ndraw(19)
@@ -89,7 +89,7 @@
                 if (nodemode == 2 .or. nodemode >= 6) then
                    call isocol(zn, ncol)
                    if (nodewhat == 15 .or. nodewhat == 16 .or. nodewhat == 17 .or. nodewhat == 25) then
-                      call DHITEXT(int(zn), xz(k), yz(k), bl(k))
+                      call DHITEXT(int(zn), xz(k), yz(k))
                    else
                       call dhtext(zn, xz(k), yz(k), bl(k))
                    end if

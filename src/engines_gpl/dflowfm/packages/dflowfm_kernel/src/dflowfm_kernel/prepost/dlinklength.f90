@@ -45,7 +45,7 @@
          integer, intent(in) :: L !< link number
          integer :: La, k1, k2
 
-         La = iabs(L)
+         La = abs(L)
          k1 = kn(1, La)
          k2 = kn(2, La)
 

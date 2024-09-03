@@ -36,7 +36,8 @@ subroutine comp_curv(num, xsp, ysp, xsp2, ysp2, s, curv, dnx, dny, dsx, dsy)
    use m_sferic
    use geometry_module, only: dbdistance, getdxdy, normalout
    use m_missing, only: dmiss, dxymis
-
+   use m_splint
+   
    implicit none
 
    integer, intent(in) :: num !< number of spline control points

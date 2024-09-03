@@ -106,7 +106,7 @@ c     *         flow/total area Af/At      *
 c     * at level h = hact                    *
 c     **************************************
 c
-      if ( lslot .and. ( sngl(hact) .lt. psltvr(5,i) ) ) then
+      if ( lslot .and. ( real(hact) < psltvr(5,i) ) ) then
 c       
 c        Preismann slot defined and waterlevel inside slot
 c
@@ -115,12 +115,12 @@ c
          htop  = psltvr(5,i)
          wdown = psltvr(6,i)
          wtop  = psltvr(7,i)
-         if ( sngl(hact) .le. hster ) then
+         if ( real(hact, kind=kind(hster)) .le. hster ) then
             w = wdown
-            a = w * ( sngl(hact)-hdown)
+            a = w * ( real(hact, kind=kind(a))-hdown)
          else
-            w = wdown + (wtop-wdown)*(sngl(hact)-hster)/(htop-hster)
-            a = wdown * (hster-hdown) + (sngl(hact)-hster)*
+            w = wdown + (wtop-wdown)*(real(hact) - hster)/(htop-hster)
+            a = wdown * (hster-hdown) + (real(hact)-hster)*
      +          (wdown+w)/2.
          endif
       else
@@ -132,13 +132,13 @@ c
 c           Compute actual flow width
 c           [Doc. S-FO-001.5KV   Eq. 4-3]
 c
-            w = (1.-sngl(wght)) * width(i,ilev) +
-     +          sngl(wght) * width(i,ilev+1)
+            w = (1.-real(wght, kind=kind(w))) * width(i,ilev) +
+     +          real(wght, kind=kind(w)) * width(i,ilev+1)
 c
 c           Compute actual flow area
 c           [Doc. S-FO-001.5KV   Eq. 4-3]
 c
-            a = area(i,ilev) + sngl(hact-hlev(i,ilev)) *
+            a = area(i,ilev) + real(hact-hlev(i,ilev), kind=kind(a)) *
      +             ( width(i,ilev) + 0.5 * (w-width(i,ilev) ) )
          else
 c

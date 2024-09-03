@@ -33,23 +33,14 @@
   subroutine DELNODE(KP)
      use m_netw
      use m_missing
+     use m_cconstants
      implicit none
      integer :: KP
-
-     double precision :: ag
-     double precision :: cfl
-     double precision :: e0
-     double precision :: eps
      integer :: k1
      integer :: k2
      integer :: l1
      integer :: lnu
      integer :: nm1
-     double precision :: pi
-     double precision :: rho
-     double precision :: rhow
-
-     common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
 
      do NM1 = NMK(KP), 1, -1
         L1 = NOD(KP)%LIN(NM1)

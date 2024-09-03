@@ -104,18 +104,18 @@ contains
                 declin = 9.9999d9
             else
                 declin = 6.918d-3 - &
-                        3.99912d-1 * dcos (e * daynr) - &
-                        6.758d-3 * dcos (2.0d0 * e * daynr) - &
-                        2.697d-3 * dcos (3.0d0 * e * daynr) + &
-                        7.0257d-2 * dsin (e * daynr) + &
-                        9.07d-4 * dsin (2.0d0 * e * daynr) + &
-                        1.480d-3 * dsin (3.0d0 * e * daynr)
+                        3.99912d-1 * cos (e * daynr) - &
+                        6.758d-3 * cos (2.0d0 * e * daynr) - &
+                        2.697d-3 * cos (3.0d0 * e * daynr) + &
+                        7.0257d-2 * sin (e * daynr) + &
+                        9.07d-4 * sin (2.0d0 * e * daynr) + &
+                        1.480d-3 * sin (3.0d0 * e * daynr)
             endif
 
             !       Computes daylenth
 
-            temp = ((sin50m - dsin (declin) * dsin (latitu)) / &
-                    (dcos (declin) * dcos (latitu)))
+            temp = ((sin50m - sin (declin) * sin (latitu)) / &
+                    (cos (declin) * cos (latitu)))
 
             if (temp > 1.0) then
                 temp = 0.0
@@ -143,18 +143,18 @@ contains
                     declin = 9.9999d9
                 else
                     declin = 6.918d-3 - &
-                            3.99912d-1 * dcos (e * daynr) - &
-                            6.758d-3 * dcos (2.0d0 * e * daynr) - &
-                            2.697d-3 * dcos (3.0d0 * e * daynr) + &
-                            7.0257d-2 * dsin (e * daynr) + &
-                            9.07d-4 * dsin (2.0d0 * e * daynr) + &
-                            1.480d-3 * dsin (3.0d0 * e * daynr)
+                            3.99912d-1 * cos (e * daynr) - &
+                            6.758d-3 * cos (2.0d0 * e * daynr) - &
+                            2.697d-3 * cos (3.0d0 * e * daynr) + &
+                            7.0257d-2 * sin (e * daynr) + &
+                            9.07d-4 * sin (2.0d0 * e * daynr) + &
+                            1.480d-3 * sin (3.0d0 * e * daynr)
                 endif
 
                 !           Computes daylenth
 
-                temp = ((sin50m - dsin (declin) * dsin (latitu)) / &
-                        (dcos (declin) * dcos (latitu)))
+                temp = ((sin50m - sin (declin) * sin (latitu)) / &
+                        (cos (declin) * cos (latitu)))
 
                 if (temp > 1.0) then
                     temp = 0.0

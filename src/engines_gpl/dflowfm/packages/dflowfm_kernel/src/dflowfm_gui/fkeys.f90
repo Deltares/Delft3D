@@ -31,11 +31,10 @@
 !
 
       subroutine FKEYS(KEY)
+         use m_helpnow
          implicit none
          integer :: key
-         integer :: nlevel
-         character WRDKEY * 40
-         common / HELPNOW / WRDKEY, NLEVEL
+
          if (KEY == 24) then
 !        F1
             call HELP(WRDKEY, NLEVEL)

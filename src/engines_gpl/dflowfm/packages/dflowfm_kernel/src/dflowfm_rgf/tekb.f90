@@ -31,13 +31,10 @@
 !
 
       subroutine TEKB(X, Y, MMAX, NMAX, NCOL)
+         use m_grid_block
          implicit none
          integer :: mmax, nmax, ncol
          double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
-
-         integer :: mb, nb, mb2, nb2, npt, npt2, nputo, itype
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
-
          integer :: i
 
          if (ITYPE == 1) then

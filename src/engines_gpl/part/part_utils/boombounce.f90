@@ -174,10 +174,10 @@ contains
                 a1 = yb - yoldd
                 b1 = xoldd - xb
                 c1 = xb * yoldd - xoldd * yb
-                xmin = min(xold, xb)
-                xmax = max(xold, xb)
-                ymin = min(yold, yb)
-                ymax = max(yold, yb)
+                xmin = min(xold, real(xb,kind(xold)))
+                xmax = max(xold, real(xb,kind(xold)))
+                ymin = min(yold, real(yb,kind(yold)))
+                ymax = max(yold, real(yb,kind(yold)))
 
                 !           loop over booms, we saved some data from the previous loop (boomgap, a2, b2, c2)
                 do iboom = 1, (nboom - 1)

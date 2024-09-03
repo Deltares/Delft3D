@@ -32,10 +32,12 @@
 #include "config.h"
 #endif
 
+#define no_warning_unused_variable(x) associate( x => x ); end associate
+
 module bmi
    use iso_c_binding
    use unstruc_api
-   use unstruc_display, only: jaGUI ! this should be removed when jaGUI = 0 by default
+   use m_gui ! this should be removed when jaGUI = 0 by default
 
    use m_partitioninfo
    use m_flow
@@ -98,17 +100,58 @@ contains
 !> \defgroup modelinformation Model Information Functions
 !! \{
 
-!> Returns a string array of the model's input variable names as "long variable names" from the CSDMS Standard Names.
-!! TODO: not implemented yet.
-   subroutine get_input_var_names(names) bind(C, name="get_input_var_names")
-      character(kind=c_char), dimension(MAXNAMES), intent(out) :: names(*)
-      !type(c_ptr), dimension(:) :: names
-   end subroutine get_input_var_names
+!> Fills a string array with the model's input variable names as "long variable names" from the CSDMS Standard Names.
+!! NOTE: not implemented yet, will return a DFM_NOTIMPLEMENTED error.
+   function get_input_var_names(names) bind(C, name="get_input_var_names") result(c_istat)
+      type(c_ptr), dimension(:), intent(out) :: names !< Array of C-pointers, will contain pointers to C-compatible strings upon return.
+      integer(c_int) :: c_istat !< Integer status code indicating success (zero) or failure (nonzero)
+
+      integer :: i_var, var_count
+      character(kind=c_char, len=1), dimension(:, :), pointer :: cnames
+      character(len=MAXSTRLEN) :: fname
+
+      c_istat = DFM_NOTIMPLEMENTED
+      return
+
+      ! NOTE: code below is working example code for returning a BMI 2.0
+      ! compliant array of names.
+
+      var_count = 1
+
+      allocate (cnames(MAXSTRLEN, var_count))
+      do i_var = 1, var_count
+         fname = 'test_get_input_var_names' ! TODO: UNST-7403: implement this.
+         cnames(:, i_var) = string_to_char_array(trim(fname), len(trim(fname)))
+         names(i_var) = c_loc(cnames(:, i_var))
+      end do
+
+   end function get_input_var_names
 
 !> Returns a string array of the model's output variable names as "long variable names" from the CSDMS Standard Names.
-!! TODO: not implemented yet.
+!! NOTE: not implemented yet, will return a DFM_NOTIMPLEMENTED error.
    subroutine get_output_var_names(names) bind(C, name="get_output_var_names")
-      character(kind=c_char), dimension(MAXNAMES), intent(out) :: names(*)
+      type(c_ptr), dimension(:), intent(out) :: names !< Array of C-pointers, will contain pointers to C-compatible strings upon return.
+      integer(c_int) :: c_istat !< Integer status code indicating success (zero) or failure (nonzero)
+
+      integer :: i_var, var_count
+      character(kind=c_char, len=1), dimension(:, :), pointer :: cnames
+      character(len=MAXSTRLEN) :: fname
+
+      c_istat = DFM_NOTIMPLEMENTED
+      return
+
+      ! NOTE: code below is working example code for returning a BMI 2.0
+      ! compliant array of names.
+
+      var_count = 1
+
+      allocate (cnames(MAXSTRLEN, var_count))
+      do i_var = 1, var_count
+         fname = 'test_get_output_var_names' ! TODO: UNST-7403: implement this.
+         cnames(:, i_var) = string_to_char_array(trim(fname), len(trim(fname)))
+         names(i_var) = c_loc(cnames(:, i_var))
+      end do
+
    end subroutine get_output_var_names
 
 !> Returns a static attribute (i.e. an attribute that does not change
@@ -269,7 +312,6 @@ contains
       use MessageHandling
       use iso_c_binding
       type(c_funptr), value :: c_msg_callback !< Set a callback that will be called with new messages
-      integer :: ierr !< Result status, ionc_noerr if successful.
       call set_logger(c_msg_callback)
       call mess(LEVEL_WARN, "callback initialized")
    end subroutine set_logger_c_callback
@@ -308,13 +350,13 @@ contains
       use MessageHandling
       real(c_double), intent(in) :: timetarget !< Target time. For now, this is assumed to be equal to upcoming next user time. If not, errorstatus returned.
       integer(c_int) :: iresult !< Result status, DFM_NOERR(=0) if successful.
-      character*(MAXSTRLEN) :: msg
+      character(len=MAXSTRLEN) :: msg
 
       iresult = DFM_NOERR
 
       if (do_check_bmi_timestep .and. timetarget - time_user /= dt_user) then ! We don't support yet a changing dt_user (may affect input/output, meteo, etc.)
          iresult = DFM_INVALIDTARGETTIME
-         write (msg, '(a,g15.9,a,g15.9,a)') 'Mismatch of requested step (', timetarget - time_user, ') and the specified user timestep (', dt_user, ').'
+         write (msg, '(a,g16.9,a,g16.9,a)') 'Mismatch of requested step (', timetarget - time_user, ') and the specified user timestep (', dt_user, ').'
          call mess(LEVEL_WARN, msg)
 !      goto 888
       end if
@@ -358,13 +400,13 @@ contains
       real(c_double), intent(in) :: timetarget !< Target time, resulting timestep may (will generally) be smaller. For now, this is assumed to be equal to upcoming next user time. If not, errorstatus returned.
       real(c_double), intent(out) :: dtpredict !< The predicted computational timestep, based on stability criteria. Pass this value (or smaller) on to run_computational_timestep.
       integer(c_int) :: iresult !< Result status, DFM_NOERR(=0) if successful.
-      character*(MAXSTRLEN) :: msg
+      character(len=MAXSTRLEN) :: msg
 
       iresult = DFM_NOERR
 
       if (do_check_bmi_timestep .and. timetarget /= time_user) then ! We don't yet support another targettime than upcoming time_user
          iresult = DFM_INVALIDTARGETTIME
-         write (msg, '(a,g15.9,a,g15.9,a)') 'Mismatch of requested step (', timetarget, ') and the specified user timestep (', time_user, ').'
+         write (msg, '(a,g16.9,a,g16.9,a)') 'Mismatch of requested step (', timetarget, ') and the specified user timestep (', time_user, ').'
          call mess(LEVEL_WARN, msg)
 !      goto 888
       end if
@@ -433,6 +475,7 @@ contains
    subroutine update_until(t) bind(C, name="update_until")
       use iso_c_binding, only: c_double
       real(c_double), intent(in) :: t
+      no_warning_unused_variable(t)
       ! Calls update(t-tnow)
    end subroutine update_until
 
@@ -501,7 +544,8 @@ contains
 
    subroutine get_time_units(unit) bind(C, name="get_time_units")
       ! returns unit string for model time, e.g. 'days since 1970-01-01'
-      character(kind=c_char), intent(in) :: unit(*)
+      character(kind=c_char), intent(in) :: unit(:)
+      no_warning_unused_variable(unit)
    end subroutine get_time_units
 
    subroutine get_n_attributes(n) bind(C, name="get_n_attributes")
@@ -525,7 +569,7 @@ contains
       name = 'some attribute name'
       c_att_name = string_to_char_array(trim(name), len(trim(name)))
       ! get name of attribute i
-
+      no_warning_unused_variable(i)
    end subroutine get_attribute_name
 
    subroutine get_attribute_type(c_att_name, c_type) bind(C, name="get_attribute_type")
@@ -698,35 +742,6 @@ contains
 
    end subroutine get_var_name
 
-   subroutine get_var_names(names) bind(C, name="get_var_names")
-      use iso_c_binding, only: c_char, c_ptr
-      character(kind=c_char), dimension(MAXNAMES), intent(out) :: names(*)
-
-      ! I can't get this to work.....
-
-      ! http://stackoverflow.com/questions/9686532/arrays-of-strings-in-fortran-c-bridges-using-iso-c-binding
-      ! The way we do it is to use a C_PTR array to point to strings. For example:
-
-      ! CHARACTER(LEN=100), DIMENSION(numStrings), TARGET :: stringArray
-      ! TYPE(C_PTR), DIMENSION(numStrings) :: stringPtrs
-      ! then we set our strings in stringArray, remembering to null-terminate them such as:
-
-      ! DO ns = 1, numStrings
-      !    stringArray(ns) = "My String"//C_NULL_CHAR
-      !    stringPtrs(ns) = C_LOC(stringArray(ns))
-      ! END DO
-      ! and pass stringPtrs to the C function.
-
-      ! The C function has the interface:
-
-      ! void stringFunc(int *numStrings, char **stringArray) {
-      !     int i;
-      !     for(i=0;i<*numStrings;++i) {
-      !        printf("%s\n",stringArray[i]);
-      !     }
-      !  }
-   end subroutine get_var_names
-
    subroutine get_var_type(c_var_name, c_type) bind(C, name="get_var_type")
       !DEC$ ATTRIBUTES DLLEXPORT :: get_var_type
 
@@ -795,18 +810,11 @@ contains
 
    end subroutine get_var_location
 
-   subroutine get_var_role(c_var_name, role) bind(C, name="get_var_role")
-      character(kind=c_char), intent(in) :: c_var_name(*)
-      character(kind=c_char), intent(out) :: role(*)
-      ! Roles:
-      ! BMI_INPUT
-      ! BMI_OUTPUT
-      ! BMI_INPUTOUTPUT
-   end subroutine get_var_role
-
    subroutine get_var_units(c_var_name, unit) bind(C, name="get_var_units")
-      character(kind=c_char), intent(in) :: c_var_name(*)
-      character(kind=c_char), intent(out) :: unit(*)
+      character(kind=c_char), intent(in) :: c_var_name(:)
+      character(kind=c_char), intent(out) :: unit(:)
+      no_warning_unused_variable(c_var_name)
+      no_warning_unused_variable(unit)
    end subroutine get_var_units
 
 !> Returns the rank of a variable, i.e., its dimensionality.
@@ -864,10 +872,10 @@ contains
       use network_data
       use m_observations, only: numobs, nummovobs, MAXNUMVALOBS2D, MAXNUMVALOBS3D, MAXNUMVALOBS3Dw
       use m_monitoring_crosssections, only: ncrs, maxnval
-      use m_lateral, only: num_layers, numlatsg
+      use m_laterals, only: num_layers, numlatsg
       use unstruc_channel_flow, only: network
       use m_transport, only: NAMLEN, NUMCONST
-      use m_lateral, only: numlatsg, nlatnd
+      use m_laterals, only: numlatsg, nlatnd
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       integer(c_int), intent(inout) :: shape(MAXDIMS)
@@ -1051,8 +1059,8 @@ contains
       use m_cell_geometry ! TODO: UNST-1705: temp, replace by m_flowgeom
       use unstruc_model
       use unstruc_channel_flow, only: network
-      use m_lateral, only: numlatsg, kclat, qplatCum, qLatRealCum, qLatRealCumPre, n1latsg, n2latsg, qplat, balat, qLatRealAve, nnlat, qLatReal, qplatAve, qqlat
-      use m_lateral, only: qplatCumPre
+      use m_laterals, only: numlatsg, kclat, qplatCum, qLatRealCum, qLatRealCumPre, n1latsg, n2latsg, qplat, balat, qLatRealAve, nnlat, qLatReal, qplatAve, qqlat
+      use m_laterals, only: qplatCumPre
       use morphology_data_module, only: get_one_transport_parameter
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Variable name. May be slash separated string "name/item/field": then get_compound_field is called.
@@ -1302,8 +1310,8 @@ contains
       use m_partitioninfo, only: jampi
       use MessageHandling
       use iso_c_binding, only: c_double, c_char, c_bool, c_loc, c_f_pointer
-      use m_lateral, only: numlatsg, qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
-      use m_lateral, only: qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
+      use m_laterals, only: numlatsg, qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
+      use m_laterals, only: qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
       use morphology_data_module, only: PARSOURCE_FIELD
 
       character(kind=c_char), intent(in) :: c_var_name(*)
@@ -1335,6 +1343,12 @@ contains
 
       ! Store the name
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
+      no_warning_unused_variable(x_0d_char_ptr)
+      no_warning_unused_variable(x_3d_int_ptr)
+      no_warning_unused_variable(x_0d_float_ptr)
+      no_warning_unused_variable(x_1d_float_ptr)
+      no_warning_unused_variable(x_2d_float_ptr)
+      no_warning_unused_variable(x_3d_float_ptr)
 
       include "bmi_set_var.inc"
 
@@ -1588,8 +1602,8 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: set_var_slice
       ! Return a pointer to the variable
       use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
-      use m_lateral, only: qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
-      use m_lateral, only: qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
+      use m_laterals, only: qplat, qqlat, balat, qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum
+      use m_laterals, only: qLatRealCumPre, qLatRealAve, n1latsg, n2latsg, nnlat, kclat
       use morphology_data_module, only: PARSOURCE_FIELD
 
       integer(c_int), intent(in) :: c_start(*)
@@ -1614,6 +1628,14 @@ contains
 
       ! The fortran name of the attribute name
       character(len=strlen(c_var_name)) :: var_name
+      no_warning_unused_variable(x_0d_double_ptr)
+      no_warning_unused_variable(x_3d_double_ptr)
+      no_warning_unused_variable(x_0d_int_ptr)
+      no_warning_unused_variable(x_3d_int_ptr)
+      no_warning_unused_variable(x_0d_float_ptr)
+      no_warning_unused_variable(x_1d_float_ptr)
+      no_warning_unused_variable(x_2d_float_ptr)
+      no_warning_unused_variable(x_3d_float_ptr)
 
       ! Store the name
       var_name = char_array_to_string(c_var_name, strlen(c_var_name))
@@ -2287,8 +2309,8 @@ contains
 
    !> Returns the c_ptr for a variable on a lateral location
    function get_pointer_to_lateral_variable(item_name, field_name) result(c_lateral_pointer)
-      use m_lateral, only: qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
-                           lateral_volume_per_layer, num_layers
+      use m_laterals, only: qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
+                            lateral_volume_per_layer, num_layers
       use m_flow, only: s1
       use string_module, only: str_token
 
@@ -2385,7 +2407,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_General_Structure, only: update_widths
       use m_transport, only: NUMCONST, ISALT, ITEMP
-      use m_lateral, only: qplat
+      use m_laterals, only: qplat
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Name of the set variable, e.g., 'pumps'
       character(kind=c_char), intent(in) :: c_item_name(*) !< Name of a single item's index/location, e.g., 'Pump01'

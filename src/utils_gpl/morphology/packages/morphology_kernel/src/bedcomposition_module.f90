@@ -456,7 +456,6 @@ function gettoplyr(this, dz_eros, dbodsd, messages  ) result (istat)
     !
     ! Local variables
     !
-    integer                                 :: k
     integer                                 :: l
     integer                                 :: nm
     real(fp)                                :: dz
@@ -690,7 +689,6 @@ subroutine lyrerosion(this, nm, dzini, dmi)
     real(fp)                                           :: dz
     real(fp)                                           :: dm
     real(fp)                                           :: fac
-    real(fp)                                           :: thick
     real(fp)                                           :: thbaselyr
     real(fp), dimension(this%settings%nfrac)           :: mbaselyr  
     real(fp)                                 , pointer :: thlalyr
@@ -880,18 +878,11 @@ subroutine lyrsedimentation(this, nm, dzini, dmi, svfracdep)
     integer                                     :: k
     integer                                     :: k2
     integer                                     :: kmin
-    integer                                     :: kne
     integer                                     :: l
-    real(fp)                                    :: depfrac
     real(fp)                                    :: dm
     real(fp)                                    :: dz
-    real(fp)                                    :: dz2
     real(fp)                                    :: dzc
-    real(fp)                                    :: dzk
-    real(fp)                                    :: dzlmax
     real(fp)                                    :: fac
-    real(fp)                                    :: newthlyr
-    real(fp)                                    :: thick
     real(fp)                  , pointer         :: thlalyr
     integer                   , pointer         :: keuler
     integer                   , pointer         :: nlyr
@@ -1056,12 +1047,10 @@ subroutine lyrsedimentation_eulerian(this, nm, dzini, dmi, svfracdep)
     integer                                     :: kne
     integer                                     :: l
 
-    real(fp)                                    :: depfrac
     real(fp)                                    :: dm
     real(fp)                                    :: dz
     real(fp)                                    :: fac
     real(fp)                                    :: newthlyr
-    real(fp)                                    :: thick
     real(fp)                  , pointer         :: theulyr
     integer                   , pointer         :: keuler
     integer                   , pointer         :: nlyr
@@ -1278,7 +1267,6 @@ subroutine lyrdiffusion(this, dt)
     ! Local variables
     !
     integer                                            :: k
-    integer                                            :: l
     integer                                            :: nd
     integer                                            :: nlyrloc
     integer                                            :: nm
@@ -1474,7 +1462,6 @@ subroutine getalluvthick(this, seddep, nmfrom, nmto, nval)
     integer, pointer                     :: nlyr
     real(prec), dimension(:,:) , pointer :: bodsed
     real(fp)  , dimension(:,:) , pointer :: thlyr
-    real(fp)                   , pointer :: thresh
     real(fp)  , dimension(:)   , pointer :: rhofrac
 !
 !! executable statements -------------------------------------------------------
@@ -2606,7 +2593,6 @@ subroutine bedcomp_use_bodsed(this)
     real(fp)  , dimension(this%settings%nfrac) :: mfrac
     real(fp)                                   :: poros
     real(fp)                                   :: sedthick
-    real(fp)                                   :: sedthicklim
     real(fp)                                   :: svf
     real(fp)                                   :: thsed
     real(fp)                                   :: totsed

@@ -70,7 +70,7 @@ c     Declaration of parameters
 c
       integer       ncel    ,kerstt
       integer       fd_nefis_rst ,itim(2)
-      character*(*) grpnam    ,nameti
+      character(len=*) grpnam    ,nameti
 c
 c     Declaration of local variables
 c

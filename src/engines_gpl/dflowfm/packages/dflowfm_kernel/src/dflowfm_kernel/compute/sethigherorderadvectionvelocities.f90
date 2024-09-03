@@ -36,13 +36,13 @@ subroutine sethigherorderadvectionvelocities()
    use m_sferic
    use m_flowtimes
    use unstruc_messages
+   use m_dslim
 
    implicit none
 
    integer :: L, LL, k1, k2, k, ku, kd, kku, ku2, is, ip, Lb, Lt, kkua, kkub
    integer :: n12, ib
    double precision :: half, sl1, sl2, sl3, cf, ucxku, ucyku, ds, ql, qds, ds1x, ds1y, ds2x, ds2y
-   double precision, external :: dslim
    double precision :: dsx, dsy
 
    double precision, external :: nod2linx, nod2liny
@@ -108,7 +108,7 @@ subroutine sethigherorderadvectionvelocities()
                   end if
                else
 
-                  ku2 = iabs(klnup(2 + ip, LL)); if (ku2 == 0) cycle
+                  ku2 = abs(klnup(2 + ip, LL)); if (ku2 == 0) cycle
                   sl1 = slnup(1 + ip, LL); sl2 = slnup(2 + ip, LL)
                   if (jasfer3D == 0) then
                      ucxku = ucx(ku) * sl1 + ucx(ku2) * sl2
@@ -222,7 +222,7 @@ subroutine sethigherorderadvectionvelocities()
 
                   else
 
-                     kkub = iabs(klnup(2 + ip, LL))
+                     kkub = abs(klnup(2 + ip, LL))
                      ku2 = kbot(kkub) + kmxn(kkub) - (Lb + kmxL(LL) - L); if (ku2 < kbot(kkub) .or. ku2 > ktop(kkub)) cycle
 
                      sl1 = slnup(1 + ip, LL); sl2 = slnup(2 + ip, LL)

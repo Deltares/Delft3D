@@ -30,7 +30,7 @@
 !
 !
 
-subroutine getustwav(LL, z00, umod, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! at u-point, get ustarwave and get ustokes
+subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! at u-point, get ustarwave and get ustokes
    use m_flow
    use m_flowgeom
    use m_waves
@@ -40,7 +40,6 @@ subroutine getustwav(LL, z00, umod, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, cost
    implicit none
    integer, intent(in) :: LL
    double precision, intent(in) :: z00 ! current only z0
-   double precision, intent(in) :: umod
    double precision, intent(out) :: fw, ustw2, csw, snw
    double precision, intent(out) :: Dfu ! wave dissipation due to bedfriction
    double precision, intent(out) :: Dfuc ! Dfu/c

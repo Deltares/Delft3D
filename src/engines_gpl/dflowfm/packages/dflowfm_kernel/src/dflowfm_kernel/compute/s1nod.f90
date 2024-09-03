@@ -46,6 +46,7 @@
     use unstruc_channel_flow
     use iso_c_utils, only: MAXSTRINGLEN
     use m_fm_icecover, only: ice_apply_pressure, ice_p
+    use m_qnerror
 
     implicit none
 
@@ -275,7 +276,7 @@
        do k = 1, ndxi
           rowsum = 0
           do LL = 1, size(nd(n)%ln)
-             L = iabs(nd(n)%ln(LL))
+             L = abs(nd(n)%ln(LL))
              rowsum = rowsum + abs(ccr(Lv2(L)))
           end do
           if (bbr(k) <= rowsum) then

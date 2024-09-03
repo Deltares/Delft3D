@@ -119,7 +119,7 @@ subroutine get_dtmax()
 
 ! BEGIN DEBUG
 !            do LL=1,nd(k)%lnx
-!               L = iabs(nd(k)%ln(LL))
+!               L = abs(nd(k)%ln(LL))
 !               if ( hu(L).gt.0d0 .and. u1(L).gt.0d0 ) then
 !                  dtmax(k) = min(dtmax(k),cflmx*Dx(L)/u1(L))
 !               end if

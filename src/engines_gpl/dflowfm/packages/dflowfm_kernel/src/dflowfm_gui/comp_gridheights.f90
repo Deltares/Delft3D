@@ -37,7 +37,9 @@ subroutine comp_gridheights(mc, eheight, ierror)
    use m_spline2curvi
    use m_alloc
    use m_missing
-
+   use m_splint
+   use m_spline
+   
    implicit none
 
    integer, intent(in) :: mc !< number of grid points

@@ -37,7 +37,9 @@
     use m_partitioninfo
     use m_fixedweirs
     use m_sferic
-
+    use m_dlimiter
+    use m_dslim
+    
     implicit none
 
     ! locals
@@ -85,7 +87,6 @@
 
     double precision, external :: lin2nodx, lin2nody
     double precision, external :: nod2linx, nod2liny
-    double precision, external :: dlimiter, dslim
 
     double precision :: am
     double precision :: qv
@@ -102,8 +103,8 @@
              else
                 kd = ln(1, L); ku = ln(2, L)
              end if
-             call getucxucyweironly(kd, ucx(kd), ucy(kd), ifixedweirscheme)
-             call getucxucyweironly(ku, ucx(ku), ucy(ku), ifixedweirscheme)
+             call getucxucyweironly(kd, ucx(kd), ucy(kd))
+             call getucxucyweironly(ku, ucx(ku), ucy(ku))
           end if
        end do
     end if
@@ -111,7 +112,7 @@
     if (jabarrieradvection == 2) then
        do n = 1, ngatesg
           do L = L1gatesg(n), L2gatesg(n)
-             LL = kgate(3, L); LL = iabs(LL)
+             LL = kgate(3, L); LL = abs(LL)
              kd = ln(1, LL); ku = ln(2, LL)
              call getucxucybarrierzero(LL, kd, ucx(kd), ucy(kd))
              call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
@@ -120,7 +121,7 @@
        do n = 1, ngategen
           i = gate2cgen(n)
           do L = L1cgensg(i), L2cgensg(i)
-             LL = kcgen(3, L); LL = iabs(LL)
+             LL = kcgen(3, L); LL = abs(LL)
              kd = ln(1, LL); ku = ln(2, LL)
              call getucxucybarrierzero(LL, kd, ucx(kd), ucy(kd))
              call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
@@ -676,7 +677,7 @@
                    ku = k2; kd = k1; isg = -1; n12 = 2
                 end if
 
-                call getucxucynoweirs(ku, ucxku, ucyku, ifixedweirscheme)
+                call getucxucynoweirs(ku, ucxku, ucyku)
                 if (jasfer3D == 1) then
                    ucin = nod2linx(L, n12, ucxku, ucyku) * csu(L) + nod2liny(L, n12, ucxku, ucyku) * snu(L)
                 else

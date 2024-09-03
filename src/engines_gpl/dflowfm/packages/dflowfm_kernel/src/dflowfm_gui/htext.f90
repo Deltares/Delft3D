@@ -31,14 +31,14 @@
 !
 
       subroutine HTEXT(VAL, X, Y)
+         use m_colnow
          implicit none
-         integer :: ncolnow
          double precision :: val
          double precision :: x
          double precision :: y
 !     getal value op grafisch scherm in current color
          character TEXT * 6, TEXT2 * 10
-         common / COLNOW / NCOLNOW
+
          if (NCOLNOW >= 0) then
             if (-1.000d0 < VAL .and. VAL < 10.000d0) then
                write (TEXT(1:6), '(F6.3)') VAL

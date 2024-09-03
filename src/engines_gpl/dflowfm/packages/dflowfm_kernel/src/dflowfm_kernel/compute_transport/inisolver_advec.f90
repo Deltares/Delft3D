@@ -124,7 +124,7 @@
          numnonzeros = numnonzeros + 2 * nd(kk)%lnx
       end do
       do kkb = Ndxi + 1, Ndx ! boundaries: apply Neumann conditions (copy from inside)
-         LL = iabs(nd(kkb)%ln(1)) ! only one flowlink connected to boundary flownode
+         LL = abs(nd(kkb)%ln(1)) ! only one flowlink connected to boundary flownode
          kk = ln(1, LL) + ln(2, LL) - kkb
          numnonzeros = numnonzeros + 2 * nd(kk)%lnx
       end do
@@ -141,7 +141,7 @@
          if (kkb <= Ndxi) then
             kk = kkb
          else ! boundaries: apply homogeneous Neumann condition (copy from inside)
-            LL = iabs(nd(kkb)%ln(1)) ! only one flowlink connected to boundary flownode
+            LL = abs(nd(kkb)%ln(1)) ! only one flowlink connected to boundary flownode
             kk = ln(1, LL) + ln(2, LL) - kkb
          end if
 
@@ -156,7 +156,7 @@
          iR(irow + 1) = iR(irow) + ishift
 
          do i = 1, nd(kk)%lnx
-            LL = iabs(nd(kk)%ln(i))
+            LL = abs(nd(kk)%ln(i))
 
 !           x-component
             ipoint = ipoint + 1
@@ -218,7 +218,7 @@
 !        off-diagonals
          do i = 1, nd(kk)%lnx
             ipoint = ipoint + 1
-            LL = iabs(nd(kk)%ln(i))
+            LL = abs(nd(kk)%ln(i))
             kkother = ln(1, LL) + ln(2, LL) - kk
             icolumn = (kkother - 1) * 2 + 1
 
@@ -240,7 +240,7 @@
       do kk = Ndxi + 1, Ndx
          irow = irow + 1
          ic(irow) = ipoint + 1
-         LL = iabs(nd(kk)%ln(1)) ! only one flowlink attached to boundary flownode
+         LL = abs(nd(kk)%ln(1)) ! only one flowlink attached to boundary flownode
          kkother = ln(1, LL) + ln(2, LL) - kk ! ln(2,LL)
 
 !        x-component

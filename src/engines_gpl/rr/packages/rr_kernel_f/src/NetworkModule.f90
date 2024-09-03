@@ -175,7 +175,7 @@
   type ExchangeSetting
     Integer timestepSize
     Integer      option
-    character*20 StringOption
+    character(len=20) StringOption
   end type ExchangeSetting
 
   ! variables
@@ -359,7 +359,7 @@
     Character(FilCharIdLength) string
     INTEGER POS1, IECODE, Idum
 
-    Character*1  quote, klteken, slash, puntkomma, dubbelpunt, teken
+    Character(len=1) quote, klteken, slash, puntkomma, dubbelpunt, teken
 
     klteken   = '<'
     slash     = '/'
@@ -955,7 +955,7 @@
     Integer inRain
     Character(FilCHarIdLength) string !,deletespaces
     Logical  endFil
-    Integer  iDummy, idum
+    Integer  iDummy
 
     ! body
     ! only called if not meteo data from NetCdf

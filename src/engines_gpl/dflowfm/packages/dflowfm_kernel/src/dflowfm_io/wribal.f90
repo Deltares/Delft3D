@@ -32,14 +32,12 @@
 
 !> Writes the current water balance quantities to file.
 !! File format is ascii, one time per line, all quantities in columns.
-subroutine wribal(tim)
+subroutine wribal()
    use m_flowtimes
    use m_flow
    use unstruc_files, only: defaultFilename
 
    implicit none
-
-   double precision :: tim
 
    ! locals
    integer, save :: ibal = 0

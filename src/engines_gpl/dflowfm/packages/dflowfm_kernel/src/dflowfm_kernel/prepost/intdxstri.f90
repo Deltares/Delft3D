@@ -39,8 +39,8 @@
          use fm_external_forcings_data, only: transformcoef
 
          implicit none
-         double precision :: XH(NPH), YH(NPH), DXS(NPH)
          integer :: nph, jdla
+         double precision :: XH(NPH), YH(NPH), DXS(NPH)
 
          double precision :: dxsav
          integer :: n

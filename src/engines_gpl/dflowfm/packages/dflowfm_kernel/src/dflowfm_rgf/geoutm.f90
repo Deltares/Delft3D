@@ -31,6 +31,7 @@
 !
 
       subroutine GEOUTM(xgeo, ygeo, xutm, yutm, Izone, nzone, IERR)
+         use m_ellips
          implicit none
          integer :: nzone
 ! ----------------------------------------------------------------------
@@ -49,7 +50,7 @@
 !     zone    o    integer   zone (UTM)
 !     ierr    o    integer   error code (zero for no error)
 !
-         double precision :: xgeo, ygeo, a, e, xutm, yutm
+         double precision :: xgeo, ygeo, xutm, yutm
          integer Izone, ierr
 !
 !     local variables:
@@ -84,7 +85,6 @@
          double precision :: pi, fn, fe
          double precision :: fi, dl, dl2, s, ss, sc, c, cc, cccc, f1, f2, f3, f4, e2, e4, e6
          double precision :: n, nn, x, y, rp, dm, gx, gy
-         common / ELLIPS / A, E
 !
 ! -----------------------------------------------------------------------------
 !     t.j.zitman                                  last update: 10 december 1990
@@ -127,7 +127,7 @@
 !     set fi and dl
 !
          fi = ygeo * pi / 180d0
-         dl = (xgeo + 177d0 - 6d0 * FLOAT(Izone - 1)) * pi / 180d0
+         dl = (xgeo + 177d0 - 6d0 * real(Izone - 1, kind=kind(dl)) ) * pi / 180d0
 !
 !     constants, related to fi
 !

@@ -50,10 +50,10 @@ program waqpb_export
                 ierror, icnsb , imodv , i
     logical      itmswi(nitemm)
     logical      generate_latex_tables
-    character*10 c10, num_decimals_version_char
-    character*20 c20
-    character*50 adduni
-    character*255 argument
+    character(len=10) c10, num_decimals_version_char
+    character(len=20) c20
+    character(len=50) adduni
+    character(len=255) argument
     real         actdef, version
     integer      lu_inp, lu_mes, status, lunfil, num_decimals_version
 
@@ -425,8 +425,8 @@ program waqpb_export
 end program waqpb_export
 
       function adduni(name,unit)
-      character*50 adduni, name
-      character*20 unit
+      character(len=50) adduni, name
+      character(len=20) unit
 
       integer      lennam, lenuni, i
 

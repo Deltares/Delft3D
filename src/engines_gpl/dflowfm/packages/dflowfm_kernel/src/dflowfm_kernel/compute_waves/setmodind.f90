@@ -33,7 +33,7 @@
    subroutine setmodind(rouwav, modind)
       implicit none
       integer, intent(out) :: modind
-      character*4, intent(in) :: rouwav
+      character(len=4), intent(in) :: rouwav
 
       modind = 0 ! safety
       if (rouwav == 'FR84') then

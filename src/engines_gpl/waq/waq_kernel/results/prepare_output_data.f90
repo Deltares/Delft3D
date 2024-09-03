@@ -980,7 +980,7 @@ contains
         !     GRDSEG  INTEGER   num_grids    INPUT   Segment pointering
         !     A       REAL      *         IN/OUT  Real array work space
 
-        use m_dhgvar
+        use m_get_variable_index_number, only: get_variable_index_number
         use m_array_manipulation, only: set_array_parameters
         use timers
         use aggregation, only: resample_v2
@@ -1028,7 +1028,7 @@ contains
         ia_loc = 33
         ix_hlp = 1
         ia_hlp = 33
-        call dhgvar(ia_hlp, ix_hlp, iv_hlp)
+        call get_variable_index_number(ia_hlp, ix_hlp, iv_hlp)
         ik_hlp = arrknd(ia_hlp)
         ip_hlp = arrpoi(ia_hlp)
         id1hlp = arrdm1(ia_hlp)
@@ -1044,7 +1044,7 @@ contains
                 !           get variable number
                 !
                 iloc = ip - ioloc + 1
-                call dhgvar(ia_loc, iloc, ivar)
+                call get_variable_index_number(ia_loc, iloc, ivar)
                 !
                 !           check is variable is active for base grid
                 !

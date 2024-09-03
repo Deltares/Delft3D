@@ -1,0 +1,207 @@
+substance 'OXY'     active   description 'Oxygen'                                    concentration-unit 'gO2/m3' waste-load-unit '-' end-substance
+substance 'CBOD5'   active   description 'carbonaceous BOD (first pool) at 5 days'   concentration-unit 'gO2/m3' waste-load-unit '-' end-substance
+substance 'NO3'     active   description 'Nitrate (NO3)'                             concentration-unit 'gN/m3'  waste-load-unit '-' end-substance
+substance 'NH4'     active   description 'Ammonium (NH4)'                            concentration-unit 'g/m3'   waste-load-unit '-' end-substance
+substance 'PO4'     active   description 'Ortho Phosphorus (O-PO4)'                  concentration-unit 'g/m3'   waste-load-unit '-' end-substance
+substance 'AAP'     active   description 'adsorbed ortho phosphorus'                 concentration-unit 'gP/m3'  waste-load-unit '-' end-substance
+substance 'Si'      active   description 'dissolved Silica (Si)'                     concentration-unit 'gSi/m3' waste-load-unit '-' end-substance
+substance 'Diat'    active   description 'Diatoms'                                   concentration-unit 'gC/m3'  waste-load-unit '-' end-substance
+substance 'Green'   active   description 'Algae (non-diatoms)'                       concentration-unit 'gC/m3'  waste-load-unit '-' end-substance
+substance 'DetC'    active   description 'Detritus Carbon (DetC)'                    concentration-unit 'gC/m3'  waste-load-unit '-' end-substance
+substance 'DetN'    active   description 'Detritus Nitrogen (DetN)'                  concentration-unit 'gN/m3'  waste-load-unit '-' end-substance
+substance 'DetP'    active   description 'Detritus phosphorus (DetP)'                concentration-unit 'gP/m3'  waste-load-unit '-' end-substance
+substance 'DetSi'   active   description 'Detritus Silica (DetSi)'                   concentration-unit 'gSi/m3' waste-load-unit '-' end-substance
+substance 'IM1'     active   description 'inorganic matter (IM1)'                    concentration-unit 'gDM/m3' waste-load-unit '-' end-substance
+substance 'IM2'     active   description 'inorganic matter (IM2)'                    concentration-unit 'gDM/m3' waste-load-unit '-' end-substance
+substance 'AAPS1'   inactive description 'adsorbed O-PO4 in sediment 1'              concentration-unit 'gP/m2'  waste-load-unit '-' end-substance
+substance 'DiatS1'  inactive description 'diatoms in sediment 1'                     concentration-unit 'gC/m2'  waste-load-unit '-' end-substance
+substance 'GreenS1' inactive description 'Algae in sediment 1'                       concentration-unit 'gC/m2'  waste-load-unit '-' end-substance
+substance 'DetCS1'  inactive description 'DetC in sediment 1'                        concentration-unit 'gC/m2'  waste-load-unit '-' end-substance
+substance 'DetNS1'  inactive description 'DetN in sediment 1'                        concentration-unit 'gN/m2'  waste-load-unit '-' end-substance
+substance 'DetPS1'  inactive description 'DetP in sediment layer 1'                  concentration-unit 'gP/m2'  waste-load-unit '-' end-substance
+substance 'DetSiS1' inactive description 'DetSi in sediment layer 1'                 concentration-unit 'gSi/m2' waste-load-unit '-' end-substance
+substance 'IM1S1'   inactive description 'IM1 in sediment 1'                         concentration-unit 'gDW/m2' waste-load-unit '-' end-substance
+substance 'IM2S1'   inactive description 'IM2 in sediment 1'                         concentration-unit 'gDW/m2' waste-load-unit '-' end-substance
+
+parameter 'SWresusalg' description 'Respunsion Diat <0=Diat|1=DetC>'                 unit '-' value 1.000e+00 end-parameter
+parameter 'SWAdsP'     description 'switch formulation <0=Kd|1=Langmuir|2=GEM>'      unit '-' value 0.000e+00 end-parameter
+parameter 'RcAdPO4AAP' description 'rate constant for adsorption PO4->AAP'           unit '1/d' value 5.000e-01 end-parameter
+parameter 'KdPO4AAP'   description 'partition coefficient PO4-AAP'                   unit 'm3/gDM' value 8.000e-01 end-parameter
+parameter 'MaxPO4AAP'  description 'adsorption capaciy sum-IM <AAP> for PO4'         unit 'gP/gDM' value 5.000e-03 end-parameter
+parameter 'RcDenWat'   description 'first-order denit. rate constant water'          unit '1/d' value 1.000e-01 end-parameter
+parameter 'RcNit'      description 'first-order nitrification rate constant'         unit '1/d' value 1.000e-01 end-parameter
+parameter 'RcDetNS1'   description 'first-order N-min. rate const. sediment S1'      unit '1/d' value 3.000e-02 end-parameter
+parameter 'RcDetPS1'   description 'first-order P-min. rate const. sediment S1'      unit '1/d' value 3.000e-02 end-parameter
+parameter 'RcDetN'     description 'first-order mineralisation rate constant'        unit '1/d' value 1.000e-01 end-parameter
+parameter 'RcDetP'     description 'first-order mineralisation rate constant'        unit '1/d' value 8.000e-02 end-parameter
+parameter 'NH4KRIT'    description 'critical NH4 concentration'                      unit 'gN/m3' value 5.000e-02 end-parameter
+parameter 'MrtSedDiat' description 'mortality rc of diatoms st. temp'                unit '1/d' value 3.000e+00 end-parameter
+parameter 'RcBOD'      description 'decay reaction rate BOD (first pool) at 20 oC'   unit '1/d' value 1.000e-01 end-parameter
+parameter 'AlgFrBOD'   description 'fraction algae contributing to BOD-inf'          unit '-' value 1.000e+00 end-parameter
+parameter 'VSedBOD5'   description 'sedimentatin velocity CBOD5'                     unit 'm/d' value 1.000e+00 end-parameter
+parameter 'TaucSBOD'   description 'critical shear stress for sedimentation'         unit 'g/m/s2' value 7.500e-02 end-parameter
+parameter 'MinDepth'   description 'minimum waterdepth for sedimentation'            unit 'm' value 1.000e-01 end-parameter
+parameter 'RcDetCS1'   description 'first-order C-min. rate const. sediment S1'      unit '1/d' value 3.000e-02 end-parameter
+parameter 'RcDetC'     description 'first-order mineralisation rate constant'        unit '1/d' value 1.000e-01 end-parameter
+parameter 'PPMaxGreen' description 'pot. max. pr. prod. rc. green alg. st.temp'      unit '1/d' value 4.700e+00 end-parameter
+parameter 'MRespGreen' description 'maintenance respiration green algae st.temp'     unit '-' value 3.600e-02 end-parameter
+parameter 'GRespGreen' description 'growth respiration factor green algae'           unit '-' value 1.100e-01 end-parameter
+parameter 'Mort0Green' description 'mortality rc of green algae st. temp'            unit '1/d' value 3.200e-01 end-parameter
+parameter 'MortSGreen' description 'mortality of greens at high salinity'            unit '1/d' value 2.000e+00 end-parameter
+parameter 'SalM1Green' description 'lower salinity limit mortality Greens'           unit '0/00' value 5.000e+00 end-parameter
+parameter 'SalM2Green' description 'upper salinity limit mortality Greens'           unit '0/00' value 1.000e+01 end-parameter
+parameter 'PPMaxDiat'  description 'pot. max. pr. prod. rc. diatoms st.temp'         unit '1/d' value 2.300e+00 end-parameter
+parameter 'MRespDiat'  description 'maintenance respiration diatoms st.temp'         unit '-' value 3.600e-02 end-parameter
+parameter 'GRespDiat'  description 'growth respiration factor diatoms'               unit '-' value 1.100e-01 end-parameter
+parameter 'Mort0Diat'  description 'mortality rc of diatoms st. temp'                unit '1/d' value 2.000e+00 end-parameter
+parameter 'MortSDiat'  description 'mortality of diatoms at high salinity'           unit '1/d' value 3.200e-01 end-parameter
+parameter 'SalM1Diat'  description 'lower salinity limit mortality Diat'             unit '0/00' value 5.000e+00 end-parameter
+parameter 'SalM2Diat'  description 'upper salinity limit mortality Diat'             unit '0/00' value 1.000e+01 end-parameter
+parameter 'VSedDetC'   description 'sedimentation velocity DetC'                     unit 'm/d' value 1.000e+00 end-parameter
+parameter 'TauCSDetC'  description 'critical shear stress sedimentation DetC'        unit 'g/m/s2' value 7.500e-02 end-parameter
+parameter 'RcDetSi'    description 'first-order mineralisation rate constant'        unit '1/d' value 1.000e-02 end-parameter
+parameter 'RcDetSiS1'  description 'first-order Si-min. rate const. sediment S1'     unit '1/d' value 1.500e-02 end-parameter
+parameter 'VSedDiat'   description 'sedimentation velocity Diat'                     unit 'm/d' value 0.100e+00 end-parameter
+parameter 'TaucSDiat'  description 'critical shear stress for sediment. Diat'        unit 'g/m/s2' value 7.500e-02 end-parameter
+parameter 'VSedGreen'  description 'sedimentation velocity Green'                    unit 'm/d' value 0.100e+00 end-parameter
+parameter 'TaucSGreen' description 'critical shear stress for sediment. Green'       unit 'g/m/s2' value 7.500e-02 end-parameter
+parameter 'MrtSedGree' description 'mortality rc of green-algae in sediment'         unit '1/d' value 3.000e+00 end-parameter
+parameter 'VSedIM1'    description 'sedimentation velocity IM1'                      unit 'm/d' value 1.000e+00 end-parameter
+parameter 'TaucSIM1'   description 'critical shear stress sedimentation IM1'         unit 'g/m/s2' value 7.500e-02 end-parameter
+parameter 'VSedIM2'    description 'sedimentation velocity IM2'                      unit 'm/d' value 1.500e+00 end-parameter
+parameter 'TaucSIM2'   description 'critical shear stress sedimentation IM2'         unit 'g/m/s2' value 1.000e+00 end-parameter
+parameter 'NatTemp'    description 'ambient natural background water temperature'    unit 'oC' value 1.500e+01 end-parameter
+parameter 'SwitchTemp' description 'Switch modelled temp is absolute(0) surplus(1)'  unit '-' value 0.000e+00 end-parameter
+parameter 'RcDenSed'   description 'first-order denit. rate const. bottom'           unit 'm/d' value 1.000e-01 end-parameter
+parameter 'SWRear'     description 'switch for oxygen reaeration formulation <1-11>' unit '-' value 1.000e+00 end-parameter
+parameter 'KLRear'     description 'reaeration transfer coefficient'                 unit 'm/d' value 1.500e+00 end-parameter
+parameter 'RcSOD'      description 'decay reaction rate SOD at 20 oC'                unit '1/d' value 1.000e-01 end-parameter
+parameter 'SecchiExt1' description 'Secchi depth if extinction = 1'                  unit 'm' value 1.800e+00 end-parameter
+parameter 'ExtVlGreen' description 'Vl specific extinction Greens'                   unit 'm2/gC' value 1.500e-01 end-parameter
+parameter 'ExtVlDiat'  description 'Vl specific extinction Diats'                    unit 'm2/gC' value 1.500e-01 end-parameter
+parameter 'ExtUVGreen' description 'Vl specific extinction Greens'                   unit 'm2/gC' value 1.500e-01 end-parameter
+parameter 'ExtUVDiat'  description 'Vl specific extinction Diats'                    unit 'm2/gC' value 1.500e-01 end-parameter
+parameter 'ExtVlDetC'  description 'Vl specific extinction DetC'                     unit 'm2/gC' value 4.700e-01 end-parameter
+parameter 'ExtUVDetC'  description 'UV specific extinction DetC'                     unit 'm2/gC' value 4.700e-01 end-parameter
+parameter 'ExtVlIM1'   description 'Vl specific extinction coefficent IM1'           unit 'm2/gDM' value 7.500e-02 end-parameter
+parameter 'ExtVlIM2'   description 'Vl specific extinction coefficent IM2'           unit 'm2/gDM' value 7.500e-02 end-parameter
+parameter 'ExtVlBak'   description 'background extinction visible light'             unit '1/m' value 5.000e-01 end-parameter
+parameter 'ExtUvIM1'   description 'Uv specific extinction coefficent IM1'           unit 'm2/gDM' value 7.500e-02 end-parameter
+parameter 'ExtUvIM2'   description 'Uv specific extinction coefficent IM2'           unit 'm2/gDM' value 7.500e-02 end-parameter
+parameter 'ExtUvBak'   description 'background extinction uv light'                  unit '1/m' value 5.000e-01 end-parameter
+parameter 'SCRatGreen' description 'Silicate-Carbon ratio in greens'                 unit 'gSi/gC' value 4.900e-01 end-parameter
+parameter 'Ditochl'    description 'conversion Diat C to chlorophyl-a'               unit 'mg chlfa/g C' value 3.000e+01 end-parameter
+parameter 'Grtochl'    description 'conversion Green C to chlorophyl-a'              unit 'mg chlfa/g C' value 3.000e+01 end-parameter
+parameter 'MaxVeloc'   description 'maximum horizontal stream velocity'              unit 'm/s' value 5.000e+00 end-parameter
+parameter 'SwChezy'    description '1-White/Coolbrook 2-Manning'                     unit 'switch' value 2.000e+00 end-parameter
+parameter 'FETCH'      description 'fetch area for wind'                             unit 'm' value 3.5000e+04 end-parameter
+parameter 'InitDepth'  description 'depth where wave is created <-1: actual depth>'  unit 'm' value -1.000e+00 end-parameter
+parameter 'SWTau'      description 'Switch <1=Tamminga|2=Bijker>'                    unit '-' value 1.000e+00 end-parameter
+parameter 'RadSurf'    description 'irradiation at the watersurface'                 unit 'W/m2' value 1.600e+02 end-parameter
+parameter 'Latitude'   description 'latitude of study area'                          unit 'degrees' value 2.200e+01 end-parameter
+parameter 'RefDay'     description 'daynumber at start of the simulation'            unit 'd' value 0.000e+00 end-parameter
+parameter 'TcGroGreen' description 'temp. coeff. for growth processes green algae'   unit '-' value 1.070e+00 end-parameter
+parameter 'TcGroDiat'  description 'temp. coeff. for growth processes diatoms'       unit '-' value 1.070e+00 end-parameter
+parameter 'KmSiGreen'  description 'half saturation value Si Greens'                 unit 'g/m3' value 2.700e-02 end-parameter
+parameter 'OptDLGreen' description 'daylength for growth saturation green-algae'     unit 'd' value 5.000e-01 end-parameter
+parameter 'RadSatGree' description 'total radiation growth saturation greens'        unit 'W/m2' value 2.500e+01 end-parameter
+parameter 'ZResDM'     description 'zeroth order resuspension flux'                  unit 'gDM/m2/d' value 3.000e+01 end-parameter
+parameter 'TaucRS1DM'  description 'crit. shear stress resusp. DM from S1'           unit 'g/m/s2' value 1.000e-01 end-parameter
+parameter 'COXDEN'     description 'COXDEN'                                          unit '-' value 3.000e+00 end-parameter
+parameter 'fsod'       description 'fsod'                                            unit '-' value 1.000e+00 end-parameter
+parameter 'MinGreen'   description 'MinGreen'                                        unit '-' value 0.005e+00 end-parameter
+parameter 'MinDiat'    description 'MinDiat'                                         unit '-' value 0.005e+00 end-parameter
+parameter 'OON'        description 'OON'                                             unit '-' value 0.100e+00 end-parameter
+parameter 'OOXDEN'     description 'OOXDEN'                                          unit '-' value 1.000e+00 end-parameter
+parameter 'TcNit'      description 'TcNit'                                           unit '-' value 1.150e+00 end-parameter
+parameter 'pH'         description 'pH'                                              unit '-' value 8.200e+00 end-parameter
+parameter 'Tau'        description 'total bottom shear stress'                       unit '-' value 0.000e+00 end-parameter
+parameter 'Velocity'   description 'horizontal flow velocity'                        unit 'm/s' value 0.000e+00 end-parameter
+parameter 'AttribIdx'  description 'index of the attribute requested'                unit '(0=all)'  value 0.0  end-parameter
+
+output 'Chlfa' description 'chlorofyl a concentration'    end-output
+output 'TotN'  description 'total nitrogen (incl. algae)' end-output
+output 'TotP'  description 'total fosforus (incl. algae)' end-output
+output 'Rad'   description 'Rad'                          end-output
+output 'ExtVl' description 'ExtVl'                        end-output
+output 'Tau'   description 'total bottom shear stress'    end-output
+output 'Attribute' description 'value of the attribute'    end-output
+
+active-processes
+     name  'DenWat_NO3' 'Denitrification in water column'
+     name  'Nitrif_NH4' 'Nitrification of ammonium'
+     name  'RearOXY'    'Reaeration of oxygen'
+     name  'BMS1_DetC'  'Mineralisation detritus carbon in sediment S1'
+     name  'WM_DetC'    'Mineralisation detritus carbon'
+     name  'BODCOD'     'Mineralisation BOD and COD'
+     name  'SedOXYDem'  'Sediment oxygen demand (additional)'
+     name  'GroMrt_Gre' 'Nett primary production and mortality green algae'
+     name  'GroMrt_Dia' 'Nett primary production and mortality diatoms'
+     name  'PPrLim'     'Limitation (numerical) on primary production'
+     name  'NutUpt_Alg' 'Uptake of nutrients by growth of algae'
+     name  'PosOXY'     'Absolute value of OXY'
+     name  'S_CBOD51'   'Sedimentation CBOD5 (first pool)'
+     name  'SED_SOD'    'Sedimentation of oxygen demand'
+     name  'DenSed_NO3' 'Denitrification in sediment'
+     name  'BMS1_DetN'  'Mineralisation detritus nitrogen in sediment S1'
+     name  'WM_DetN'    'Mineralisation detritus nitrogen'
+     name  'NutRel_Alg' 'Release (nutrients/detritus) by of mortality algae'
+     name  'AdsPO4AAP'  'Ad(De)Sorption ortho phosphorus to inorg. matter'
+     name  'BMS1_DetP'  'Mineralisation detritus phosphorus in sediment S1'
+     name  'WM_DetP'    'Mineralisation detritus phosphorus'
+     name  'Sed_AAP'    'Sedimentation AAP (adsorbed PO4)'
+     name  'Res_AAP'    'Resuspension AAP (adsorbed PO4)'
+     name  'BMS1_DetSi' 'Mineralisation detritus silica in sediment S1'
+     name  'WM_DetSi'   'Mineralisation detritus silicium'
+     name  'SedDiat'    'Sedimentation diatoms'
+     name  'Res_Diat'   'Resuspension diatoms'
+     name  'MrtDiat_S1' 'Mortality of diatoms in S1'
+     name  'Sed_Gre'    'Sedimentation green algae'
+     name  'Res_Green'  'Resuspension green algae'
+     name  'MrtGree_S1' 'Mortality of algae in S1'
+     name  'SedDetC'    'Sedimentation detritus carbon'
+     name  'Res_DetC'   'Resuspension detritus carbon'
+     name  'Secchi'     'Computation of Secchi Depth'
+     name  'SedN_Det'   'Sedim. nutrients in detritus'
+     name  'ResN_Det'   'Resuspension nutrients in detritus'
+     name  'Sed_IM1'    'Sedimentation IM1'
+     name  'Res_IM1'    'Resuspension 1th inorganic matter'
+     name  'Sed_IM2'    'Sedimentation IM2'
+     name  'Res_IM2'    'Resuspension 2th inorganic matter'
+     name  'DynDepth'   'dynamic calculation of the depth'
+     name  'Chloride'   'calculation of chloride concentration from salinit'
+     name  'CalcRadUV'  'UV-Radiation at segment upper and lower boundaries'
+     name  'Daylength'  'Daylength calculation'
+     name  'Extinc_UV'  'Extinction of ultraviolet-light (350-480nm)'
+     name  'Veloc'      'horizontal stream velocity'
+     name  'SaturOXY'   'Saturation concentration oxygen'
+     name  'Phy_dyn'    'Computation of phytoplankton - Dynamo'
+     name  'POC_Dyn'    'Composition of POC (Dynamo & Bloom)'
+     name  'DL_Green'   'Daylength function for green algae'
+     name  'NLGreen'    'Nutrient limiation function for green algae'
+     name  'Rad_Green'  'Light efficiency function green algae'
+     name  'TF_Green'   'Temperature functions for green algae'
+     name  'DL_Diat'    'Daylength function for diatoms'
+     name  'NLDiat'     'Nutrient limiation function for diatoms'
+     name  'Rad_Diat'   'Light efficiency function diatoms'
+     name  'TF_Diat'    'Temperature functions for diatoms'
+     name  'Tau'        'Bottom friction'
+     name  'Compos'     'Composition'
+     name  'Sum_Sedim'  'Total of all sedimenting substances'
+     name  'Sum_ResS1'  'Sum of (in)organics resuspending from S1'
+     name  'S1_Comp'    'Composition sediment layer S1'
+     name  'Res_DM'     'Resuspension total bottom material (dry mass)'
+     name  'Extinc_VL'  'Extinction of visible-light (370-680nm)'
+     name  'ExtPODUV'   'Extinction of UV light by POC (Dynamo & Bloom)'
+     name  'ExtPhDUV'   'Extinction of UV light by algae (Dynamo)'
+     name  'CalcRad'    'Radiation at segment upper and lower boundaries'
+     name  'Wave'       'Wave characteristics'
+     name  'Chezy'      'Chezy coefficient'
+     name  'TotDepth'   'depth watercolumn'
+     name  'ExtPODVL'   'Extinction of light by POC (Dynamo & Bloom)'
+     name  'ExtPhDVL'   'Extinction of visual light by algae (Dynamo)'
+     name  'SedPODyn'   'Sum sedimentation of POC (Dynamo & Bloom)'
+     name  'SedPhDyn'   'Sum sedimentation of algae - Dynamo'
+     name  'NH3free'    'Calculation unionized ammonia'
+	 name  'AttribOut'  'Output segment attribute'
+end-active-processes

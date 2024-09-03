@@ -754,7 +754,6 @@ contains
       ! .. Local Scalars ..
       integer :: i, c, m, dimen
       logical :: recompute
-      real(kdkind)    :: average
       ! Temp variables for the correction in the k-d tree algorithm
       real(kdkind), allocatable :: toSort(:)
       integer                   ::sizeToSort

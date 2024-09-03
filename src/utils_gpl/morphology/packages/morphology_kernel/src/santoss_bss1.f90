@@ -79,13 +79,9 @@ subroutine santoss_bss1(i2d3d, g, d, d50, d90, delta, aw, uw, &
 !
 ! local variables
 !
-    integer                 :: istat
     integer                 :: j
-    real(fp)                :: fw_wblt
-    real(fp)                :: wblt_sett
     real(fp)                :: mu
     real(fp)                :: ksw1
-    real(fp)                :: fw1
     real(fp)                :: p_corr
     real(fp)                :: ksc1
     real(fp)                :: theta1

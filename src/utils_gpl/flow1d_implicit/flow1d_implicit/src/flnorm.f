@@ -257,8 +257,7 @@ c
 c
 c     Declaration of local variables
 c
-      integer          i, j, k, ibuf3n, istepb, iterb,
-     +                 indsp, ifroud
+      integer          i, j, k, ifroud
       double precision a(8), b(8), c(8), d(8), e(8)
       real  ompsi, onemth, dxodt, dt2, dx, e11, e12
       real  hi, hip1, qi, qip1, wfti, wftip1, wtti, wttip1
@@ -274,7 +273,7 @@ c
       if ( steady ) then
        dt2    = 1.0E6
       else
-        dt2    = sngl(dt1)
+        dt2    = real(dt1, kind=kind(dt2))
       endif
 c
 c     Calculate 1 - psi and 1 - theta

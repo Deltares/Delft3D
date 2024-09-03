@@ -79,7 +79,6 @@ contains
       type(t_spatial_dataSet) , pointer      :: spData
       
       character(len=1024)                    :: inputfiles
-      integer                                :: i
       integer                                :: ifrst
       integer                                :: isemi
       integer                                :: count

@@ -620,9 +620,6 @@ subroutine DioGetIdent(retVal)
     ! arguments
     character(Len=*) :: retval
 
-    ! locals
-    integer       :: identLen ! len of id.string minus null-char
-
     ! body
     retVal = ' '
     call getfullversionstring_delftio(retval)

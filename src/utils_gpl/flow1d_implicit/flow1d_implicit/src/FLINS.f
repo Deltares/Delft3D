@@ -123,7 +123,7 @@ c
             h1 (i) = h2(i)
             q1 (i) = q2(i)
             at1(i) = at(i)
-            qtyp = sngl( max( qtyp , sngl( abs(q1(i))) ) )
+            qtyp = max( qtyp , real( abs(q1(i)), kind=kind(qtyp)) )
    10    continue
       endif
       do 20 i = 1, ngrid

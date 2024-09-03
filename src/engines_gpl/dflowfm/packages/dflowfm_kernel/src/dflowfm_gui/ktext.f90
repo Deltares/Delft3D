@@ -36,7 +36,7 @@
          integer :: nx
          integer :: ny
 !     tekst op normale text posities met standaard blauwe achtergrond
-         character * (*) TEXNU
+         character(len=*) TEXNU
          call ITEXTCOLOURN(NCOL, 5)
          call IOUTSTRINGXY(NX, NY, trim(TEXNU))
          return

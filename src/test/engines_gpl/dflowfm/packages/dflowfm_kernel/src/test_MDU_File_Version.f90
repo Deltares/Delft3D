@@ -46,16 +46,17 @@ subroutine test_MDU_fileversion_model
     use unstruc_files
     use ifport
     ! Locals 
-    integer                   :: istat, ierr
+    integer                   :: ierr
+    logical                   :: success
     
     !
     ! Body
     jampi = 0
     !
-    istat = CHANGEDIRQQ("MDUversion")
+    success = CHANGEDIRQQ("MDUversion")
     ! read MDU
     call readMDUFile('old_model.mdu', ierr)
-    istat = CHANGEDIRQQ("..")
+    success = CHANGEDIRQQ("..")
         
     call assert_equal(ierr, DFM_NOERR, 'Error when reading old MDU file version with [model] block.' ) 
  
@@ -69,16 +70,17 @@ subroutine test_MDU_fileversion_general
     use unstruc_files
     use ifport
     ! Locals 
-    integer                   :: istat, ierr
-    
+    integer                   :: ierr
+    logical                   :: success
+
     !
     ! Body
     jampi = 0
     !
-    istat = CHANGEDIRQQ("MDUversion")
+    success = CHANGEDIRQQ("MDUversion")
     ! read MDU
     call readMDUFile('new_general.mdu', ierr)
-    istat = CHANGEDIRQQ("..")
+    success = CHANGEDIRQQ("..")
 
     call assert_equal(ierr, DFM_NOERR, 'Error when reading new MDU file version with [General] block.' ) 
 
@@ -92,17 +94,18 @@ subroutine test_read_stretch_coef
     use unstruc_files
     use ifport
     ! Locals
-    integer       :: istat, ierr
+    integer       :: ierr
+    logical       :: success
     real(kind=hp) :: sumlaycof
 
     !
     ! Body
     jampi = 0
     !
-    istat = CHANGEDIRQQ("MDUversion")
+    success = CHANGEDIRQQ("MDUversion")
     ! read MDU
     call readMDUFile('stretch_example.mdu', ierr)
-    istat = CHANGEDIRQQ("..")
+    success = CHANGEDIRQQ("..")
 
     call assert_equal(ierr, DFM_NOERR, 'Error when reading MDU file with stretch coeff.' )
     call assert_equal(size(laycof), 18, "Difference in dimension of laycof")

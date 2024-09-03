@@ -194,10 +194,10 @@ c              Compute of actual total extra area
 c
                if (arexop(2) .ne. 0) then
                   if (inires) then
-                     call FLAREI (sngl(h(i))   ,arex(i,1)   ,arex(i,4) ,
+                     call FLAREI (real(h(i))   ,arex(i,1)   ,arex(i,4) ,
      +                            overlp,delA  ,arexcn(i,2) )
                   else
-                     call FLAREX (iter      ,arexop(2)  ,sngl(h(i)) ,
+                     call FLAREX (iter      ,arexop(2)  , real(h(i)) ,
      +                            arex(i,1) ,arex(i,2)  ,arex(i,4)  ,
      +                            overlp    ,delA       ,arexcn(i,2),
      +                            dummy)
@@ -217,10 +217,10 @@ c              Compute actual flow extra area
 c
                if (arexop(1) .ne. 0) then
                   if (inires) then
-                     call FLAREI (sngl(h(i))  ,arex(i,1)   ,arex(i,3) ,
+                     call FLAREI (real(h(i))  ,arex(i,1)   ,arex(i,3) ,
      +                            overlp,delA  ,arexcn(i,1) )
                   else
-                     call FLAREX (iter      ,arexop(1)  ,sngl(h(i)) ,
+                     call FLAREX (iter      ,arexop(1)  , real(h(i)) ,
      +                            arex(i,1) ,arex(i,2)  ,arex(i,3)  ,
      +                            overlp    ,delA       ,arexcn(i,1),
      +                            dummy)

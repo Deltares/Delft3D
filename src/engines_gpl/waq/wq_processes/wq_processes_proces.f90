@@ -26,6 +26,8 @@ module m_wq_processes_proces
 
     implicit none
 
+    private
+    public :: wq_processes_proces
 contains
 
 
@@ -194,7 +196,7 @@ contains
                 defaul(ipp_dts) = dts
                 defaul(ipp_delt) = dts / real(itfact)
 
-                call onepro_wqp (bloom_status_ind, bloom_ind, prvnio, prvtyp, prvvar, vararr, &
+                call calculate_single_process (bloom_status_ind, bloom_ind, prvnio, prvtyp, prvvar, vararr, &
                         varidx, arrknd, arrpoi, arrdm1, arrdm2, &
                         num_cells, a, process_space_int, increm, &
                         noflux, iflux, promnr, flux, iexpnt, &
@@ -268,7 +270,7 @@ contains
                     defaul(ipp_dts) = dtspro
                     defaul(ipp_delt) = dtspro / real(itfact)
 
-                    call onepro_wqp (iproc, prvpnt(iproc), prvnio, prvtyp, prvvar, vararr, &
+                    call calculate_single_process (iproc, prvpnt(iproc), prvnio, prvtyp, prvvar, vararr, &
                             varidx, arrknd, arrpoi, arrdm1, arrdm2, &
                             num_cells, a, process_space_int, increm, &
                             noflux, iflux, promnr, flux, iexpnt, &
@@ -280,7 +282,7 @@ contains
 
         !     Now update the derivatives and the dumps of the fluxes from
         !     all processes together outside of the parallel region
-        call twopro_wqm (num_processes_activated, noflux, num_cells, &
+        call update_derivaties_and_dump_fluxes (num_processes_activated, noflux, num_cells, &
                 num_substances_total, num_monitoring_cells, dts, iflux, &
                 volume, deriv, stochi, flux, &
                 prondt, ibflag, isdmp, flxdmp, bloom_status_ind, istep)
@@ -331,7 +333,7 @@ contains
         return
     end
 
-    subroutine onepro_wqp (iproc, k, prvnio, prvtyp, prvvar, vararr, &
+    subroutine calculate_single_process (iproc, k, prvnio, prvtyp, prvvar, vararr, &
             varidx, arrknd, arrpoi, arrdm1, arrdm2, num_cells, &
             a, process_space_int, increm, noflux, iflux, promnr, &
             flux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
@@ -369,7 +371,7 @@ contains
 
         integer(4) :: ithndl =  0
         
-        if (timon) call timstrt ("onepro_wqp", ithndl)
+        if (timon) call timstrt ("calculate_single_process", ithndl)
 
         !     Set the variables
         do ivario = 1, prvnio(iproc)
@@ -409,7 +411,7 @@ contains
         return
     end
 
-    subroutine twopro_wqm (num_processes_activated, noflux, num_cells, &
+    subroutine update_derivaties_and_dump_fluxes (num_processes_activated, noflux, num_cells, &
             num_substances_total, num_monitoring_cells, dts, iflux, &
             volume, deriv, stochi, flux, &
             prondt, ibflag, isdmp, flxdmp, bloom_status_ind, istep)
@@ -452,7 +454,7 @@ contains
 
         integer(4) :: ithndl =  0
         
-        if (timon) call timstrt ("twopro_wqm", ithndl)
+        if (timon) call timstrt ("update_derivaties_and_dump_fluxes", ithndl)
 
         do iproc = 1, num_processes_activated
             if (iproc == bloom_status_ind) cycle

@@ -51,7 +51,7 @@
     xt = 0d0; yt = 0d0; ka = 0; kb = 0; n2 = 0
     do k = 1, size(nd(n1)%ln)
        LL = nd(n1)%ln(k)
-       L = iabs(LL)
+       L = abs(LL)
        if (kcu(L) /= 3) then
           k1 = ln(1, L); k2 = ln(2, L)
           n2 = k2

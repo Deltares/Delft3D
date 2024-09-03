@@ -34,12 +34,11 @@
          use dem
          use m_missing
          use m_samples
+         use m_drawthis
+         use m_readyy
          implicit none
          character(len=*), intent(in) :: filnam
          integer, intent(in) :: jadoorladen
-         integer :: ndraw
-         common / DRAWTHIS / ndraw(50)
-
          integer :: i, j, istep
          type(DEMInfo) :: dem_info
          integer, allocatable :: arr(:, :)

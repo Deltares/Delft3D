@@ -346,11 +346,11 @@ contains
          summerDikeIndex = 0
 
          ! Only generate volume tables for 1d nodes (so skip the 2d boundary points)
-         if (iabs(kcs(nod)) == 1) then
+         if (abs(kcs(nod)) == 1) then
 
             ! compute volumes, NOTE the volume at the first level is 0 by design
             do LL = 1, nd(nod)%lnx
-               L = iabs(nd(nod)%ln(LL))
+               L = abs(nd(nod)%ln(LL))
                if (L > lnxi) then
                   L = lbnd1d(L)
                end if
@@ -365,7 +365,7 @@ contains
                   end if
                end if
                ! Reset L to original value
-               L = iabs(nd(nod)%ln(LL))
+               L = abs(nd(nod)%ln(LL))
                if (generateVLTBOnLinks) then
                   call addVolumeAtLinkToVltb(L, n, summerDikeIndex, nd(nod)%ln(LL), vltb, vltbOnLinks)
                else
@@ -444,8 +444,8 @@ contains
                ! link to this node
                bobAboveBedLevel = bob0(2, L) - bl(nod)
             end if
-            L = iabs(L)
-            if (iabs(kcu(L)) == 1) then
+            L = abs(L)
+            if (abs(kcu(L)) == 1) then
                if (L > lnxi) then ! for 1D boundary links, refer to attached link
                   L = LBND1D(L)
                end if
@@ -562,7 +562,7 @@ contains
          ! there is additional storage on this node, split this over the flow links
          numlinks = nd(nod)%lnx
          do LL = 1, numlinks
-            L = iabs(nd(nod)%ln(LL))
+            L = abs(nd(nod)%ln(LL))
 
             if (L > lnx1d) then
                !Skip boundary links
@@ -640,7 +640,7 @@ contains
          Lindex = 2
       end if
 
-      if (iabs(kcu(L)) == 1) then ! for 1D boundary links, refer to attached link
+      if (abs(kcu(L)) == 1) then ! for 1D boundary links, refer to attached link
 
          ! Handle boundary links
          if (dxDoubleAt1DEndNodes .and. nd(nod)%lnx == 1) then

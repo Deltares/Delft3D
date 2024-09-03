@@ -96,7 +96,7 @@
           end if
 
           do L0 = 1, pstru%numlinks
-             L = iabs(pstru%linknumbers(L0))
+             L = abs(pstru%linknumbers(L0))
              direction = sign(1, pstru%linknumbers(L0))
              if (hu(l) > 0) then
                 k1 = ln(1, L)

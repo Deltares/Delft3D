@@ -34,6 +34,7 @@
       use time_module
       use waq_file_utils_external, only : get_filepath_and_pathlen
       use m_hydmod
+      use m_hyd_keys
       use rd_token       ! tokenized reading
       use m_string_utils, only: index_in_array
       use Ieee_arithmetic, only: ieee_value, ieee_quiet_nan, ieee_is_finite
@@ -46,10 +47,6 @@
 
       ! local declarations
 
-      integer, parameter  :: nokey   = 84           ! number of keywords in hyd file
-      character(len=40)   :: key(nokey)             ! keywords in the hyd file
-      integer             :: ikey                   ! index keyword (first level)
-      integer             :: ikey2                  ! index keyword (second level)
       integer             :: lunhyd                 ! unit number hyd file
       integer             :: lunrep                 ! unit number report file
       integer             :: ilay                   ! index layers
@@ -84,91 +81,6 @@
       integer             :: idate                  ! date
       integer             :: itime                  ! time
       logical, parameter  :: untileol = .true.      ! read until the end of the line
-
-      key(1)  = 'task'
-      key(2)  = 'geometry'
-      key(3)  = 'horizontal-aggregation'
-      key(4)  = 'minimum-vert-diffusion-used'
-      key(5)  = 'vertical-diffusion'
-      key(6)  = 'description'
-      key(7)  = 'end-description'
-      key(8)  = 'reference-time'
-      key(9)  = 'hydrodynamic-start-time'
-      key(10) = 'hydrodynamic-stop-time'
-      key(11) = 'hydrodynamic-timestep'
-      key(12) = 'conversion-ref-time'
-      key(13) = 'conversion-start-time'
-      key(14) = 'conversion-stop-time'
-      key(15) = 'conversion-timestep'
-      key(16) = 'grid-cells-first-direction'
-      key(17) = 'grid-cells-second-direction'
-      key(18) = 'number-hydrodynamic-layers'
-      key(19) = 'number-water-quality-layers'
-      key(20) = 'hydrodynamic-file'
-      key(21) = 'aggregation-file'
-      key(22) = 'grid-indices-file'
-      key(23) = 'grid-coordinates-file'
-      key(24) = 'volumes-file'
-      key(25) = 'areas-file'
-      key(26) = 'flows-file'
-      key(27) = 'pointers-file'
-      key(28) = 'lengths-file'
-      key(29) = 'salinity-file'
-      key(30) = 'temperature-file'
-      key(31) = 'vert-diffusion-file'
-      key(32) = 'surfaces-file'
-      key(33) = 'total-grid-file'
-      key(34) = 'discharges-file'
-      key(35) = 'chezy-coefficients-file'
-      key(36) = 'shear-stresses-file'
-      key(37) = 'walking-discharges-file'
-      key(38) = 'minimum-vert-diffusion'
-      key(39) = 'upper-layer'
-      key(40) = 'lower-layer'
-      key(41) = 'interface-depth'
-      key(42) = 'end-minimum-vert-diffusion'
-      key(43) = 'constant-dispersion'
-      key(44) = 'first-direction'
-      key(45) = 'second-direction'
-      key(46) = 'third-direction'
-      key(47) = 'end-constant-dispersion'
-      key(48) = 'hydrodynamic-layers'
-      key(49) = 'end-hydrodynamic-layers'
-      key(50) = 'water-quality-layers'
-      key(51) = 'end-water-quality-layers'
-      key(52) = 'discharges'
-      key(53) = 'end-discharges'
-      key(54) = 'domains'
-      key(55) = 'end-domains'
-      key(56) = 'dd-boundaries'
-      key(57) = 'end-dd-boundaries'
-      key(58) = 'normal'
-      key(59) = 'inlet'
-      key(60) = 'outlet'
-      key(61) = 'full-coupling'
-      key(62) = 'coupling-per-domain'
-      key(63) = 'attributes-file'
-      key(64) = 'depths-file'
-      key(65) = 'curvilinear-grid'
-      key(66) = 'yes'
-      key(67) = 'no'
-      key(68) = 'calculated'
-      key(69) = 'unstructured'
-      key(70) = 'number-horizontal-exchanges'
-      key(71) = 'number-vertical-exchanges'
-      key(72) = 'number-water-quality-segments-per-layer'
-      key(73) = 'horizontal-surfaces-file'
-      key(74) = 'boundaries-file'
-      key(75) = 'waqgeom-file'
-      key(76) = 'automatic'
-      key(77) = 'walking'
-      key(78) = 'file-created-by'
-      key(79) = 'file-creation-date'
-      key(80) = 'sink-sources'
-      key(81) = 'end-sink-sources'
-      key(82) = 'z-layers'
-      key(83) = 'z-layers-ztop'
-      key(84) = 'z-layers-zbot'
 
       ft_dat = ft_bin
       call get_log_unit_number(lunrep)
@@ -242,15 +154,13 @@
              goto 900
          end if
 
-         ikey = index_in_array( ctoken(1:30), key )
-         if ( ikey .eq. 1 ) then
+         if ( ctoken .eq. task ) then
 
             ! task
             if ( gettoken( ctoken, ierr) .ne. 0 ) goto 900
-            ikey2 = index_in_array( ctoken(1:30), key )
-            if ( ikey2 .eq. 61 ) then
+            if ( ctoken == full_coupling ) then
                hyd%task = HYD_TASK_FULL
-            elseif ( ikey2 .eq. 62 ) then
+            elseif ( ctoken == coupling_per_domain ) then
                hyd%task = HYD_TASK_DDC
             else
                hyd%task = HYD_TASK_UNKNOWN
@@ -258,13 +168,12 @@
                write(lunrep,'(2a)') ' task =',trim(ctoken)
             endif
 
-         elseif ( ikey .eq. 2 ) then
+         elseif ( ctoken .eq. geometry ) then
             ! geometry
             if ( gettoken( ctoken, ierr) .ne. 0 ) goto 900
-            ikey2 = index_in_array( ctoken(1:30), key )
-            if ( ikey2 .eq. 65 ) then
+            if ( ctoken == curvilinear_grid ) then
                hyd%geometry = HYD_GEOM_CURVI
-            elseif ( ikey2 .eq. 69 ) then
+            elseif ( ctoken == unstructured ) then
                hyd%geometry = HYD_GEOM_UNSTRUC
             else
                hyd%geometry = HYD_GEOM_UNKNOWN
@@ -275,8 +184,7 @@
             ! layer type
             hyd%layer_type = HYD_LAYERS_SIGMA ! Always assume sigma layers, unless otherwise stated
             if ( gettoken( ctoken, ierr) .eq. 0 ) then
-               ikey2 = index_in_array( ctoken(1:30), key )
-               if ( ikey2 .eq. 82 ) then
+               if ( ctoken == z_layers ) then
                   hyd%layer_type = HYD_LAYERS_Z
                else
                   if ( puttoken( ctoken ) .ne. 0 ) goto 900
@@ -284,20 +192,19 @@
             else
                if ( puttoken( ctoken ) .ne. 0 ) goto 900
             end if
-         elseif ( ikey .eq. 6 ) then
+         elseif ( ctoken .eq. description ) then
             ! description
             i_desc = 0
             do
                ! look for end-description token
                if ( gettoken ( ctoken, ierr) .ne. 0 ) goto 900
-               ikey2 = index_in_array( ctoken(1:30), key )
-               if ( ikey2 .eq. 7 ) exit
+               if ( ctoken == end_description ) exit
                ! it is a description line, store up to three
                i_desc = i_desc + 1
                if ( i_desc .le. 3 ) hyd%description(i_desc) = ctoken
             enddo
 
-         elseif ( ikey .eq. 8 ) then
+         elseif ( ctoken == reference_time ) then
             ! reference time
             if ( gettoken (hyd%hyd_ref, ierr) .ne. 0 ) goto 900
             ! convert to julian
@@ -305,31 +212,31 @@
             read (hyd%hyd_ref(9:14),'(i6)') itime
             hyd%time_ref = julian_with_leapyears ( idate , itime )
 
-         elseif ( ikey .eq. 9 ) then
+         elseif ( ctoken == hydrodynamic_start_time ) then
             ! hydrodynamic start
             if ( gettoken(hyd%hyd_start, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 10) then
+         elseif ( ctoken == hydrodynamic_stop_time) then
             ! hydrodynamic stop
             if ( gettoken(hyd%hyd_stop, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 11) then
+         elseif ( ctoken == hydrodynamic_timestep) then
             ! hydrodynamic step
             if ( gettoken(hyd%hyd_step, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 12) then
+         elseif ( ctoken == conversion_ref_time) then
             ! conversion reference time
             if ( gettoken(hyd%cnv_ref, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 13) then
+         elseif ( ctoken == conversion_start_time) then
             ! conversion start time
             if ( gettoken(hyd%cnv_start, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 14) then
+         elseif ( ctoken == conversion_stop_time) then
             ! conversion stop time
             if ( gettoken(hyd%cnv_stop, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 15) then
+         elseif ( ctoken == conversion_timestep) then
             ! conversion step time
             if ( gettoken(hyd%cnv_step, ierr) .ne. 0 ) goto 900
             read(hyd%cnv_step,'(i4,i2,i2,i2,i2,i2)') iy,imo,id,ih,im,is
@@ -339,90 +246,90 @@
             endif
             hyd%cnv_step_sec = id*86400+ih*3600+im*60+is
 
-         elseif ( ikey .eq. 16) then
+         elseif ( ctoken == grid_cells_first_direction) then
             ! grid cells first direction
             if ( gettoken(hyd%num_columns, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 17) then
+         elseif ( ctoken == grid_cells_second_direction) then
             ! grid cells second direction
             if ( gettoken(hyd%num_rows, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 18) then
+         elseif ( ctoken == number_hydrodynamic_layers) then
             ! number of hydrodynamic layers
             if ( gettoken(hyd%num_layers_grid, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 19) then
+         elseif ( ctoken == number_water_quality_layers) then
             ! number of waq layers
             if ( gettoken(hyd%num_layers, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 70) then
+         elseif ( ctoken == number_horizontal_exchanges) then
             ! number of horizontal exchanges
             if ( gettoken(hyd%num_exchanges_u_dir, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 71) then
+         elseif ( ctoken == number_vertical_exchanges) then
             ! number of vertical exchanges
             if ( gettoken(hyd%num_exchanges_z_dir, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 72) then
+         elseif ( ctoken == number_water_quality_segments_per_layer) then
             ! number of water quality segments per layer
             if ( gettoken(hyd%nosegl, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 20) then
+         elseif ( ctoken == hydrodynamic_file) then
             ! com file
             if ( gettoken(hyd%file_com%name, ierr) .ne. 0 ) goto 900
             hyd%file_com%name = trim(filpath)//hyd%file_com%name
 
-         elseif ( ikey .eq. 21) then
+         elseif ( ctoken == aggregation_file) then
             ! dwq file
             if ( gettoken(hyd%file_dwq%name, ierr) .ne. 0 ) goto 900
             hyd%file_dwq%name = trim(filpath)//hyd%file_dwq%name
 
-         elseif ( ikey .eq. 22) then
+         elseif ( ctoken == grid_indices_file) then
             ! lga file
             if ( gettoken(hyd%file_lga%name, ierr) .ne. 0 ) goto 900
             hyd%file_lga%name = trim(filpath)//hyd%file_lga%name
 
-         elseif ( ikey .eq. 23) then
+         elseif ( ctoken == grid_coordinates_file) then
             ! cco file
             if ( gettoken(hyd%file_cco%name, ierr) .ne. 0 ) goto 900
             hyd%file_cco%name = trim(filpath)//hyd%file_cco%name
 
-         elseif ( ikey .eq. 74) then
+         elseif ( ctoken == boundaries_file) then
             ! bnd file (unstructured)
             if ( gettoken(hyd%file_bnd%name, ierr) .ne. 0 ) goto 900
             hyd%file_bnd%name = trim(filpath)//hyd%file_bnd%name
 
-         elseif ( ikey .eq. 75) then
+         elseif ( ctoken == waqgeom_file) then
             ! waqgeom file (unstructured)
             if ( gettoken(hyd%file_geo%name, ierr) .ne. 0 ) goto 900
             hyd%file_geo%name = trim(filpath)//hyd%file_geo%name
 
-         elseif ( ikey .eq. 24) then
+         elseif ( ctoken == volumes_file) then
             ! vol file
             if ( gettoken(hyd%file_vol%name, ierr) .ne. 0 ) goto 900
             hyd%file_vol%name = trim(filpath)//hyd%file_vol%name
 
-         elseif ( ikey .eq. 25) then
+         elseif ( ctoken == areas_file) then
             ! are file
             if ( gettoken(hyd%file_are%name, ierr) .ne. 0 ) goto 900
             hyd%file_are%name = trim(filpath)//hyd%file_are%name
 
-         elseif ( ikey .eq. 26) then
+         elseif ( ctoken == flows_file) then
             ! flo file
             if ( gettoken(hyd%file_flo%name, ierr) .ne. 0 ) goto 900
             hyd%file_flo%name = trim(filpath)//hyd%file_flo%name
 
-         elseif ( ikey .eq. 27) then
+         elseif ( ctoken == pointers_file) then
             ! poi file
             if ( gettoken(hyd%file_poi%name, ierr) .ne. 0 ) goto 900
             hyd%file_poi%name = trim(filpath)//hyd%file_poi%name
 
-         elseif ( ikey .eq. 28) then
+         elseif ( ctoken == lengths_file) then
             ! len file
             if ( gettoken(hyd%file_len%name, ierr) .ne. 0 ) goto 900
             hyd%file_len%name = trim(filpath)//hyd%file_len%name
 
-         elseif ( ikey .eq. 29) then
+         elseif ( ctoken == salinity_file) then
             ! sal file
             if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
             if ( ctoken.ne. 'none' ) then
@@ -433,7 +340,7 @@
                hyd%sal_present = .false.
             endif
 
-         elseif ( ikey .eq. 30) then
+         elseif ( ctoken == temperature_file) then
             ! tmp file
             if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
             if ( ctoken.ne. 'none' ) then
@@ -444,7 +351,7 @@
                hyd%tem_present = .false.
             endif
 
-         elseif ( ikey .eq. 31) then
+         elseif ( ctoken == vert_diffusion_file) then
             ! vdf file
             if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
             if ( ctoken.ne. 'none' ) then
@@ -455,32 +362,32 @@
                hyd%vdf_present = .false.
             endif
 
-         elseif ( ikey .eq. 32) then
+         elseif ( ctoken == surfaces_file) then
             ! srf file
             if ( gettoken(hyd%file_srf%name, ierr) .ne. 0 ) goto 900
             hyd%file_srf%name = trim(filpath)//hyd%file_srf%name
 
-         elseif ( ikey .eq. 73) then
+         elseif ( ctoken == horizontal_surfaces_file) then
             ! hsrf file
             if ( gettoken(hyd%file_hsrf%name, ierr) .ne. 0 ) goto 900
             hyd%file_hsrf%name = trim(filpath)//hyd%file_hsrf%name
 
-         elseif ( ikey .eq. 33) then
+         elseif ( ctoken == total_grid_file) then
             ! lgt file
             if ( gettoken(hyd%file_lgt%name, ierr) .ne. 0 ) goto 900
             hyd%file_lgt%name = trim(filpath)//hyd%file_lgt%name
 
-         elseif ( ikey .eq. 34) then
+         elseif ( ctoken == discharges_file) then
             ! src file
             if ( gettoken(hyd%file_src%name, ierr) .ne. 0 ) goto 900
             hyd%file_src%name = trim(filpath)//hyd%file_src%name
 
-         elseif ( ikey .eq. 35) then
+         elseif ( ctoken == chezy_coefficients_file) then
             ! chz file
             if ( gettoken(hyd%file_chz%name, ierr) .ne. 0 ) goto 900
             hyd%file_chz%name = trim(filpath)//hyd%file_chz%name
 
-         elseif ( ikey .eq. 36) then
+         elseif ( ctoken == shear_stresses_file) then
             ! tau file
             if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
             if ( ctoken.ne. 'none' ) then
@@ -491,30 +398,30 @@
                hyd%tau_present = .false.
             endif
 
-         elseif ( ikey .eq. 37) then
+         elseif ( ctoken == walking_discharges_file) then
             ! wlk file
             if ( gettoken(hyd%file_wlk%name, ierr) .ne. 0 ) goto 900
             hyd%file_wlk%name = trim(filpath)//hyd%file_wlk%name
 
-         elseif ( ikey .eq. 63) then
+         elseif ( ctoken == attributes_file) then
             ! attrubutes file
             if ( gettoken(hyd%file_atr%name, ierr) .ne. 0 ) goto 900
             hyd%file_atr%name = trim(filpath)//hyd%file_atr%name
 
-         elseif ( ikey .eq. 64) then
+         elseif ( ctoken == depths_file) then
             ! depths file
             if ( gettoken(hyd%file_dps%name, ierr) .ne. 0 ) goto 900
             hyd%file_dps%name = trim(filpath)//hyd%file_dps%name
 
-         elseif ( ikey .eq. 83) then
+         elseif ( ctoken == z_layers_ztop) then
             ! ztop
             if ( gettoken( hyd%ztop, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 84) then
+         elseif ( ctoken == z_layers_zbot) then
             ! ztop
             if ( gettoken( hyd%zbot, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 48) then
+         elseif ( ctoken == hydrodynamic_layers) then
             ! hydrodynamic-layers
             allocate(hyd%hyd_layers(hyd%num_layers_grid))
             do ilay = 1 , hyd%num_layers_grid
@@ -523,7 +430,7 @@
             ! end-hydrodynamic-layers
             if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 50) then
+         elseif ( ctoken == water_quality_layers) then
             ! water-quality-layers
             allocate(hyd%waq_layers(hyd%num_layers))
             do ilay = 1 , hyd%num_layers
@@ -532,15 +439,14 @@
             ! end-water-quality-layers
             if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
 
-         elseif ( ikey .eq. 52) then
+         elseif ( ctoken == discharges) then
             ! discharges
             token_used = .true.
             do
                if ( token_used ) then
                   if ( gettoken(ctoken, idummy, rdummy, itype, ierr) .ne. 0 ) goto 900
                endif
-               ikey2 = index_in_array( ctoken(1:30), key )
-               if ( ikey2 .eq. 53 ) exit
+               if ( ctoken == end_discharges ) exit
 
                ! a new wasteload
                if ( itype .eq. TYPE_INT ) then
@@ -552,16 +458,15 @@
                if ( gettoken(wasteload%k, ierr) .ne. 0 ) goto 900
                if ( gettoken(wasteload%name, ierr) .ne. 0 ) goto 900
                if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
-               ikey2 = index_in_array( ctoken(1:30), key )
-               if ( ikey2 .eq. 58 .or. ikey2 .eq. 59 .or. ikey2 .eq. 60 .or. ikey2 .eq. 77 ) then
+               if ( ctoken == normal .or. ctoken == inlet .or. ctoken == outlet .or. ctoken == walking ) then
                   token_used = .true.
-                  if ( ikey2 .eq. 58 ) then
+                  if ( ctoken == normal ) then
                      wasteload%type = DLWQ_WASTE_NORMAL
-                  elseif ( ikey2 .eq. 59 ) then
+                  elseif ( ctoken == inlet ) then
                      wasteload%type = DLWQ_WASTE_INLET
-                  elseif ( ikey2 .eq. 60 ) then
+                  elseif ( ctoken == outlet ) then
                      wasteload%type = DLWQ_WASTE_OUTLET
-                  elseif ( ikey2 .eq. 77 ) then
+                  elseif ( ctoken == walking ) then
                      wasteload%type = DLWQ_WASTE_WALK
                   endif
                else
@@ -575,13 +480,12 @@
 
             enddo
 
-         elseif ( ikey .eq. 54) then
+         elseif ( ctoken == domains) then
             ! domains
             do
                if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
                ! look for end-domains keyword
-               ikey2 = index_in_array( ctoken(1:30), key )
-               if ( ikey2 .eq. 55 ) exit
+               if ( ctoken == end_domains ) exit
 
                ! key is domain name , read num_columns num_rows and dido file do not store dido file
                domain%name = ctoken
@@ -593,14 +497,13 @@
                i_domain = hyd%domain_coll%add(domain)
             enddo
 
-         elseif ( ikey .eq. 56) then
+         elseif ( ctoken == dd_boundaries) then
             ! dd-boundaries
             do
                if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
 
                ! look for end-dd-boundaries keyword
-               ikey2 = index_in_array( ctoken(1:30), key )
-               if ( ikey2 .eq. 57 ) exit
+               if ( ctoken == end_dd_boundaries ) exit
 
                ! ctokenis domain name 1 , read m_begin1, n_begin1, m_end1, n_end1, domain name 2, m_begin2, n_begin2, m_end2, n_end2
                dd_bound%name1 = ctoken
@@ -644,33 +547,24 @@
 
             enddo
 
-         elseif ( ikey .eq. 78) then
+         elseif ( ctoken == file_created_by) then
             ! file-created-by string.
             if (gettoken(line, untileol, ierr) .ne. 0 ) goto 900
             hyd%created_by = line(1:80)
 
-         elseif ( ikey .eq. 79) then
+         elseif ( ctoken == file_creation_date) then
             ! file-creation-date
             if (gettoken(line, untileol, ierr) .ne. 0 ) goto 900
             hyd%creation_date = line(1:40)
 
-         elseif ( ikey .eq. 80) then
+         elseif ( ctoken == sink_sources) then
             ! sink-sources
             do
                if ( gettoken(ctoken, idummy, rdummy, itype, ierr) .ne. 0 ) goto 900
                   if(itype==1) then
                      ! look for end-domains keyword
-                     ikey2 = index_in_array( ctoken(1:30), key )
-                     if ( ikey2 .eq. 81 ) exit
+                     if ( ctoken == end_sink_sources ) exit
                   endif
-!               ! key is domain name , read num_columns num_rows and dido file do not store dido file
-!               domain%name = ctoken
-!               if ( gettoken(domain%num_columns, ierr) .ne. 0 ) goto 900
-!               if ( gettoken(domain%num_rows, ierr) .ne. 0 ) goto 900
-!               if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
-!
-!               ! add to domains collection
-!               i_domain = hyd%domain_coll%add(domain)
             enddo
 
          else
@@ -709,5 +603,5 @@
 
       return
  900  continue
-      call write_error_message('error reading hyd file ('//trim(key(ikey))//')')
+      call write_error_message('error reading hyd file ('//trim(ctoken)//')')
       end subroutine read_hyd

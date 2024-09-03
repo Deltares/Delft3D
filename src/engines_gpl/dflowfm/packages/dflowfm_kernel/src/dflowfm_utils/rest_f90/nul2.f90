@@ -30,12 +30,11 @@
 !
 !
 
-!     PLUS QNRGF
       subroutine NUL2(N1, NSMAX)
          implicit none
          integer :: i
          integer :: nsmax
-         integer * 2 N1(NSMAX)
+         integer(2) :: N1(NSMAX)
          do I = 1, NSMAX
             N1(I) = 0
          end do

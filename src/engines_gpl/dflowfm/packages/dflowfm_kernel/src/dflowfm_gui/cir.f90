@@ -32,10 +32,9 @@
 
       subroutine CIR(R)
          use unstruc_opengl
+         use m_colnow
          implicit none
-         integer :: ncolnow
          double precision :: r, Hr
-         common / COLNOW / NCOLNOW
 
          if (r == 0d0) return
          if (InOpenGLRendering) then

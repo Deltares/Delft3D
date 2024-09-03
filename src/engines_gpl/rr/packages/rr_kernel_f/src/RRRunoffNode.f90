@@ -1026,7 +1026,7 @@ contains
                                                    NAM_SoilParameterDefinition(:), NAM_LevelAndDepthDefinition(:), &
                                                    NAM_SurfaceRunoffDefinition(:), NAM_BaseFlowDefinition(:), &
                                                    NAM_GroundwaterForcingDefinition(:)
-    Character(Len=CharIdLength), pointer, save ::  LGSTDef(:), LGSTDef2(:), Walrus_HSMINDef(:)
+    Character(Len=CharIdLength), pointer, save ::  LGSTDef(:), LGSTDef2(:)
     Logical  Success
     Integer  NrHbvNodes, NrExtNodes, NrScsNodes, NrNAMNodes, NrLGSINodes, NrWageningenNodes, NrWalrusNodes
     ! HBV
@@ -1035,7 +1035,7 @@ contains
              BetaDum, FieldCapacityDum, EvapFractionDum, &
              KBaseFlowDum, KInterFlowDum, KQuickFlowDum, MaxPercolationDum, QuickFlowThresholdDum, &
              InitialDrySnowDum, InitialFreeWaterDum, InitialSoilMoistureDum, &
-             InitialUpperZoneDum, InitialLowerZoneDum, InitialQRunoffInMMDum
+             InitialUpperZoneDum, InitialLowerZoneDum
     !NAM
     Real     infcapdum, sldum, rzbldum, gwsbldum, u0dum, l0dum, gwd0dum, &
              cldum, ssdum, mandum, utofdum, ckifdum, utifdum, ltifdum, &
@@ -1554,7 +1554,7 @@ contains
             Do i=1,LGSI_NrSubAreas(IRRRunoffSub)
                LGSI_N(IRRRunoffSub,i) = RDUM(i)
                if (LGSI_N(IRRRunoffSub,i) .le. 1.00) call SetMessage(LEVEL_WARN, 'LGSI_n (van Genuchten parameter 2) should be > 1')
-               LGSI_N(IRRRunoffSub,i) = max(1.01, LGSI_N(IRRRunoffSub,i))  ! ivm functie 1/(n-1) moet n>1 zijn
+               LGSI_N(IRRRunoffSub,i) = max(1.01d0, LGSI_N(IRRRunoffSub,i))  ! ivm functie 1/(n-1) moet n>1 zijn
             Enddo
             RetVal = RetVal + GetVRS2(STRING,' qout ',2,' RRRunoffNode-ReadAscii',' RRRunoffNode.3B file', &
                                       IOUT1, CDUM(1), RDUM(1), IDUM(1), LGSI_NrSubAreas(IRRRunoffSub), IflRtn)
@@ -2722,7 +2722,7 @@ contains
                        Err969 = .true.
                     else
                        ! to prevent rounding off errors
-                       L0Dum = min (L0dum, ddum)
+                       L0Dum = min (L0dum, real(ddum))
                     endif
                     ! input check 10
                     ddum = 1000.D0 * NAM_SYSS(iRRRunoffSub) * (RzblDum-GwsblDum) + &
@@ -2740,7 +2740,7 @@ contains
                        Err969 = .true.
                     else
                        ! to prevent rounding off errors
-                       Gwd0Dum = min (Gwd0dum, ddum)
+                       Gwd0Dum = min (Gwd0dum, real(ddum))
                     endif
                   endif
                endif
@@ -4314,7 +4314,6 @@ contains
   Integer IEvent, IOut1, i, j, k, Idebug, ilast1, inode, iu, IOutWagMod, itmstp, IRRRunoff, IRRRunoffSub, isub, ICache
   Logical  LevelError, ReadLGSICacheFile
 
-  Integer          IOUnit
   Integer          Ibnd, iow
   real             NAMAlfa, fact
 
@@ -4489,7 +4488,7 @@ contains
 
        ! eq. 5.6 and 5.7 distribution of GWSD over subsoil and rootzone
        NAM_GWSDss = min (NAM_GWSDSSmax, NAM_GWSD)
-       NAM_GWSDRZ = max (0.0, NAM_GWSD - NAM_GWSDSS)
+       NAM_GWSDRZ = max (0.0d0, NAM_GWSD - NAM_GWSDSS)
 
      ! make initial and final equal
        NAM_LInitial = NAM_L
@@ -4522,7 +4521,7 @@ contains
                                                                       ( NAM_GWSDRZ(IRRRunoffSub) + NAM_LInitial(IRRRunoffSub) ) / (1000.D0 * NAM_SYRZ(IRRRunoffSub))
                  endif
                  ! eq. 5.9  GWTD
-                 NAM_GWTD(IRRRunoffSub) = max (0.0, NAM_SurfaceLevel(IRRRunoffSub) - NAM_GWL(IRRRunoffSub))
+                 NAM_GWTD(IRRRunoffSub) = max (0.0d0, NAM_SurfaceLevel(IRRRunoffSub) - NAM_GWL(IRRRunoffSub))
                  if (idebug .ne. 0) then
                     write(Idebug,*) ' NAM_SFC ', NAM_SFC (IRRRunoffSub)
                     write(Idebug,*) ' NAM_SYRZ', NAM_SYRZ(IRRRunoffSub)
@@ -5848,7 +5847,7 @@ enddo
   integer      Infile1, idebug
 
   Integer       inode, iRRRunoff, IRRRunoffSub
-  Character*1   Quote
+  Character(len=1) Quote
 
   ! file is already opened
   iDebug = ConfFil_get_iDebug()
@@ -6004,7 +6003,7 @@ enddo
   integer      Infile1, idebug
 
   Integer       inode, irrRunoff, IRRRunoffSub
-  Character*1   Quote
+  Character(len=1) Quote
 
   ! file is already opened
   iDebug = ConfFil_get_iDebug()
@@ -6151,7 +6150,7 @@ enddo
   integer      Infile1, idebug
 
   Integer       inode, irrRunoff, IRRRunoffSub
-  Character*1   Quote
+  Character(len=1) Quote
 
   ! file is already opened
   iDebug = ConfFil_get_iDebug()
@@ -6233,11 +6232,11 @@ enddo
 
 ! additional local variables for LGSI
 
-    double precision LGSIPrecipitation, LGSIPotEvap, LGSIActEvap, LGSITotalRunoff, LGSIPreviousTotalRunoff
+    double precision LGSIPrecipitation, LGSIPotEvap, LGSITotalRunoff, LGSIPreviousTotalRunoff
     double precision LGSIGwl, LGSIRunoff, LGSIDelayedRunoff
     double precision LGSIInterflow, LGSIHeadDiff
     double precision LGSIPreviousGwl(2), LGSIInitVolume(2)
-    double precision x, mean, sD, PrecipReduction, EvapReduction, StorageChange, LGSIVolume, NewGWLevel
+    double precision x, sD, PrecipReduction, EvapReduction, StorageChange, LGSIVolume, NewGWLevel
     double precision RiverOutflow, OverlandFlow, DrainageFlow
     double precision TotalInOutflow(LGSI_MaxNrSubAreas)
     double precision TempVolume (LGSI_MaxInterpLength)
@@ -6561,7 +6560,7 @@ enddo
             endif
             if (idebug .ne. 0) write(Idebug,*) ' 6.5 Lalfa', Lalfa
             ! eq. 6.6
-            NAM_IF(IRRRunoffSub) = Lalfa * max (0.0, NAM_U(IRRRunoffSub) - NAM_UTif(IRRRUnoffSub)) / ckif
+            NAM_IF(IRRRunoffSub) = Lalfa * max (0.0d0, NAM_U(IRRRunoffSub) - NAM_UTif(IRRRUnoffSub)) / ckif
             if (idebug .ne. 0) write(Idebug,*) ' 6.6 IF', NAM_IF(IRRRunoffSub)
             ! eq. 6.7
             NAM_U(IRRRUnoffSub) = NAM_U(IRRRUnoffSub) - NAM_IF(IRRRunoffSub)
@@ -6588,7 +6587,7 @@ enddo
                                                                  ( NAM_GWSDRZ(IRRRunoffSub) + NAM_LInitial(IRRRunoffSub) ) / (1000.D0 * NAM_SYRZ(IRRRunoffSub))
             endif
             ! eq. 6.12
-             NAM_GWTD(IRRRunoffSub) = max (0.0, NAM_SurfaceLevel(IRRRunoffSub) - NAM_GWL(IRRRunoffSub))
+             NAM_GWTD(IRRRunoffSub) = max (0.0d0, NAM_SurfaceLevel(IRRRunoffSub) - NAM_GWL(IRRRunoffSub))
              if (idebug .ne. 0) write(Idebug,*) ' 6.12 GWTD', NAM_GWTD(IRRRunoffSub)
             ! eq. 6.13
             if (NAM_PercOpt(IRRRunoffSub) .eq. 1) then
@@ -6620,7 +6619,7 @@ enddo
             NAM_U(IRRRUnoffSub) = NAM_U(IRRRunoffSub) - NAM_INF(IRRRunoffSub)
             if (idebug .ne. 0) write(Idebug,*) ' 6.18 U', NAM_U(IRRRunoffSub)
             ! eq. 6.19
-            OFDt1 = max (0.0, NAM_U(IRRRunoffSub) - NAM_UTOF(IRRRunoffSub))
+            OFDt1 = max (0.0d0, NAM_U(IRRRunoffSub) - NAM_UTOF(IRRRunoffSub))
             if (idebug .ne. 0) write(Idebug,*) ' 6.19 OFDt1', OFDt1
             ! eq. 6.20
             if (OFDt1 .le. 0) then
@@ -6687,7 +6686,7 @@ enddo
             NAM_GWSD (iRRRunoffSub) = NAM_GWSD(IRRRunoffSub) - DeltaLInfmaxcor
             if (idebug .ne. 0) write(Idebug,*) ' 6.35 GWSD', NAM_GWSD(IRRRunoffSub)
             ! eq. 6.36
-            NAM_GWSDrz (iRRRunoffSub) = max (0.0, NAM_GWSD(IRRRunoffSub) - NAM_GWSDssmax(IRRRunoffSub))
+            NAM_GWSDrz (iRRRunoffSub) = max (0.0d0, NAM_GWSD(IRRRunoffSub) - NAM_GWSDssmax(IRRRunoffSub))
             if (idebug .ne. 0) write(Idebug,*) ' 6.36 GWSDrz', NAM_GWSDrz(IRRRunoffSub)
             ! eq. 6.37
             DLgravityCorr = min (NAM_LMAX(IRRRunoffSub) - NAM_L(IRRRunoffSub), NAM_GWSDRZ(IRRRunoffSub))
@@ -6705,7 +6704,7 @@ enddo
             NAM_GWSD (iRRRunoffSub) = NAM_GWSD(IRRRunoffSub) - DLGravityCorr
             if (idebug .ne. 0) write(Idebug,*) ' 6.41 GWSD  ', NAM_GWSD(IRRRunoffSub)
             ! eq. 6.42
-            NAM_GWSDrz (iRRRunoffSub) = max (0.0, NAM_GWSD(IRRRunoffSub) - NAM_GWSDssmax(IRRRunoffSub))
+            NAM_GWSDrz (iRRRunoffSub) = max (0.0d0, NAM_GWSD(IRRRunoffSub) - NAM_GWSDssmax(IRRRunoffSub))
             if (idebug .ne. 0) write(Idebug,*) ' 6.42 GWSDrz', NAM_GWSDrz(IRRRunoffSub)
             ! eq. 6.43
             fact = (NAM_LInitial(IRRRunoffSub)+ NAM_GWSDrz(IRRRunoffSub)) / (NAM_LMax(IRRRunoffSub)+ NAM_GWSDrz(IRRRunoffSub))
@@ -6745,7 +6744,7 @@ enddo
             endif
             if (idebug .ne. 0) write(Idebug,*) ' 6.51 GWL', NAM_GWL(IRRRunoffSub)
             ! eq. 6.52
-             NAM_GWTD(IRRRunoffSub) = max (0.0, NAM_SurfaceLevel(IRRRunoffSub) - NAM_GWL(IRRRunoffSub))
+             NAM_GWTD(IRRRunoffSub) = max (0.0d0, NAM_SurfaceLevel(IRRRunoffSub) - NAM_GWL(IRRRunoffSub))
              if (idebug .ne. 0) write(Idebug,*) ' 6.52 GWTD', NAM_GWTD(IRRRunoffSub)
             ! eq. 6.53
              if (NAM_GWL(IRRRunoffSub) .le. NAM_GWSBL(IRRRUnoffSub)) then
@@ -7766,7 +7765,7 @@ enddo
         Implicit none
 
         Integer      INode, IRRRunoff, IRRRunoffSub
-        Integer      IDebug, ikind, i
+        Integer      ikind, i
 
 ! LGSI
         Do iNode=1,NcNode
@@ -8250,7 +8249,6 @@ enddo
 !
   double precision, parameter :: a = 0.0D+00
   integer, parameter          :: key = 6
-  double precision               b
   double precision               abserr
 ! double precision, parameter :: epsabs = 0.0D+00
   double precision, parameter :: epsabs = 1.0D-300
@@ -8521,7 +8519,6 @@ enddo
 
   Subroutine LGSI_ConstructDelayTable
 
-  double precision LGSITotalRunoff, LGSIDelayedRunoff
   integer          IRRRunoffSub, i, j, k, idebug, iout1
 
   Idebug = Conffil_get_Idebug()
@@ -8878,7 +8875,7 @@ enddo
 
          !* adding of outputblocks of the two model elements
 ! 50469  WagMod_QC(IRRRunoffSub) = max(0.0, WagMod_QG(IRRRunoffSub,Itmstp)) + WagMod_QD(IRRRunoffSub,Itmstp)
-         WagMod_QC(IRRRunoffSub) = max(0.0, WagMod_QG(IRRRunoffSub,1)) + WagMod_QD(IRRRunoffSub,1)
+         WagMod_QC(IRRRunoffSub) = max(0.0d0, WagMod_QG(IRRRunoffSub,1)) + WagMod_QD(IRRRunoffSub,1)
 
          ! store QSNew
          WagMod_QSNEW(IRRRunoffSub) = QSNEW
@@ -8888,7 +8885,7 @@ enddo
          IoUnit = Wagmod_PlotfileUnit(IRRRunoffSub)
          If (Wagmod_ActEvapCompOption(IRRRunoffSub) .eq. 1) then
               if (GenerateOldWagmodOutputFiles) Write (Iounit,232)  Wagmod_P(IRRRunoffSub),Wagmod_ET(IRRRunoffSub), 0.0 ,Itmstp, &
-                                  Wagmod_QC(IRRRunoffSub),Wagmod_ETA(IRRRunoffSub),Max(0.0,Wagmod_QG(IRRRunoffSub,1)), &
+                                  Wagmod_QC(IRRRunoffSub),Wagmod_ETA(IRRRunoffSub),Max(0.0d0,Wagmod_QG(IRRRunoffSub,1)), &
                                   Wagmod_PEFJ(IRRRunoffSub),Wagmod_QD(IRRRunoffSub, 1), &
                                   Wagmod_PEFCD(IRRRunoffSub),Wagmod_DIV(IRRRunoffSub), &
                                   Wagmod_GSTORE(IRRRunoffSub),Wagmod_SM(IRRRunoffSub),Wagmod_CAP(IRRRunoffSub)
@@ -8900,7 +8897,7 @@ enddo
 232           Format(F7.2,2F8.3,I11,7F11.5,F12.5,2F11.5)
          Else
               if (GenerateOldWagmodOutputFiles) Write (Iounit,230)  Wagmod_P(IRRRunoffSub),Wagmod_ET(IRRRunoffSub), 0.0 ,Itmstp, &
-                                  Wagmod_QC(IRRRunoffSub),Wagmod_PEF(IRRRunoffSub),Max(0.0,Wagmod_QG(IRRRunoffSub,1)), &
+                                  Wagmod_QC(IRRRunoffSub),Wagmod_PEF(IRRRunoffSub),Max(0.0d0,Wagmod_QG(IRRRunoffSub,1)), &
                                   Wagmod_PEFJ(IRRRunoffSub),Wagmod_QD(IRRRunoffSub, 1), &
                                   Wagmod_PEFCD(IRRRunoffSub),Wagmod_DIV(IRRRunoffSub), &
                                   Wagmod_GSTORE(IRRRunoffSub),Wagmod_SM(IRRRunoffSub),Wagmod_CAP(IRRRunoffSub)

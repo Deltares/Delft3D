@@ -74,6 +74,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_fixedweirs, only: weirdte, nfxw
       use m_setup_structures_and_weirs_list, only: build_structures_and_weirs_list
+      use m_qnerror
 
       implicit none
 
@@ -329,7 +330,7 @@ contains
       end if
 
       if (jaFlowNetChanged == ON .or. nodtot /= ndx .or. lintot /= lnx) then
-         call reducept(Ndx, Ndxi, Lnx) ! also alloc arrays for reduce
+         call reducept(Ndx, Lnx) ! also alloc arrays for reduce
          if (icgsolver == 10) then
             call alloc_jacobi(ndx, lnx)
          end if
@@ -374,6 +375,7 @@ contains
       use dfm_error
       use m_partitioninfo, only: jampi, reduce_int1_max
       use m_cell_geometry, only: ndx
+      use m_qnerror
 
       implicit none
 
@@ -996,7 +998,7 @@ contains
       do structure_number = 1, network%sts%count
          pstru => network%sts%struct(structure_number)
          do link_index = 1, pstru%numlinks
-            link = iabs(pstru%linknumbers(link_index))
+            link = abs(pstru%linknumbers(link_index))
             teta(link) = 1d0
          end do
       end do
@@ -1556,6 +1558,7 @@ contains
       use m_partitioninfo
       use geometry_module, only: dbdistance, half, normalout
       use m_sethu
+      use m_dminmax
 
       implicit none
 
@@ -1927,7 +1930,7 @@ contains
                sq(k) = 0d0
                do kk = 1, nd(k)%lnx
                   L = nd(k)%ln(kk)
-                  La = iabs(L)
+                  La = abs(L)
                   if (L > 0) then
                      sq(k) = sq(k) + u1(La) * hu(La)
                   else
@@ -1941,7 +1944,7 @@ contains
                foutk = 0
                do kk = 1, nd(k)%lnx
                   L = nd(k)%ln(kk)
-                  La = iabs(L)
+                  La = abs(L)
                   if (L > 0) then
                      foutk = foutk + sq(ln(2, La))
                   end if

@@ -126,7 +126,7 @@
               call crspath_on_flowgeom(Path(n), 1, 0, 1, idum, 0, 1)
               do L = 1, Path(n)%lnx
                  Lf = Path(n)%ln(L)
-                 La = iabs(Lf)
+                 La = abs(Lf)
                  linktype(La) = 1
               end do
            end do
@@ -136,7 +136,7 @@
               if (k == 0) cycle
               do L = 1, nd(k)%lnx
                  Lf = nd(k)%ln(L)
-                 La = iabs(Lf)
+                 La = abs(Lf)
                  if (linktype(La) /= 1) cycle
                  cdeq(La) = cdeq(La) + pillar(m)%cd(i) * pillar(m)%dia(i)
                  Aeff(La) = Aeff(La) - pillar(m)%dia(i)

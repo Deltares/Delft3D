@@ -35,13 +35,14 @@
          use m_missing
          use geometry_module, only: dpinpok
          use gridoperations
+         use m_readyy
          implicit none
          integer, parameter :: MAXOP = 64
          integer :: NUMK, NUML, KEY
          double precision XK(NUMK), YK(NUMK), ZK(NUMK), XI, YI, ZI
          integer KN(3, NUML)
          integer, intent(inout) :: kndefault !< Default uniform value (e.g. kn3typ), will be changed too at call site when user changes it in the dialog.
-         character * 40 OPTION(MAXOP), exp(MAXOP)
+         character(len=40) OPTION(MAXOP), exp(MAXOP)
 
          double precision :: af
          integer :: ia
@@ -51,7 +52,6 @@
          integer :: k1
          integer :: k2
          integer :: l
-         integer :: maxexp
          integer :: maxopt
          integer :: nwhat
          double precision :: rd
@@ -76,7 +76,7 @@
 10       continue
          NWHAT = ICHANGE
          call SHOWREAL('UNIFORM VALUE = ', A)
-         call MENUV3(NWHAT, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT, OPTION, MAXOPT)
          call IWINCLOSE(1)
          if (NWHAT == 0) then
             KEY = 0

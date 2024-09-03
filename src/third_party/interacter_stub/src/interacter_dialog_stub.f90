@@ -107,8 +107,8 @@ subroutine IFormDefine(TYPE,NFIELD,IX,IY,IWIDTH,ITYPE)
   !3-6
   !e.g. PARAMETER ( NFIELD = 9)
   !INTEGER IX(NFIELD),IY(NFIELD),IWIDTH(NFIELD),ITYPE(NFIELD)
-  !CHARACTER*4 OPTION(2)
-  !CHARACTER*8 LABEL
+  !character(len=4) OPTION(2)
+  !character(len=8) LABEL
   !DOUBLE PRECISION DVAL
   !DATA IX / 1,16, 1,16, 1,16,10, 1,16/
   !DATA IY / 1, 1, 3, 3, 5, 5, 7, 9, 9/
@@ -238,7 +238,7 @@ subroutine IFormDefineTabs(EDGE,NTABS,LABELS,LIMITF,LIMITB)
   ! form, with any common boxes appearing at the end of the list, after the sub-form
   ! specific boxes.
   !e.g. PARAMETER ( NTABS = 3 )
-  !CHARACTER*7 LABELS(NTABS)
+  !character(len=7) LABELS(NTABS)
   !INTEGER LIMITF(NTABS),LIMITB(NTABS)
   !DATA LABELS/'Style','Options','Values'/
   !DATA LIMITF/ 20, 40, 60/
@@ -405,9 +405,9 @@ subroutine IFormEditUser(IFINIT,IFEXIT,FMUSER)
   ! takes two arguments which have specific meanings on entry and exit :
 end subroutine IFormEditUser
 
-subroutine FMUSER (IFIELD,IEXITK)
+subroutine FMUSER (IFIELD)
   integer IFIELD ! Field number
-  integer IEXITK ! 'Exit' key
+  !integer IEXITK ! 'Exit' key, not used right now.
   ! On entry, IFIELD specifies the field in which the user has just pressed an 'exit' key
   ! (which may have been a next/previous field key). IEXITK specifies the control key
   ! number of that key. It will be set to one of the following values on entry :
@@ -844,7 +844,7 @@ subroutine IFormBox(IBOX,IFTYPE,FORCOL,BACCOL,INCOL)
   integer IFTYPE ! Frame type :
   ! 0 : None (clear inside only)
   ! 1 to 10 : As for IFrameType(IFTYPE)
-  ! -1 to -10 : As for IFrameType(IABS(IFTYPE))
+  ! -1 to -10 : As for IFrameType(abs(IFTYPE))
   ! but only when graphical frames available
   ! other : Use current frame style (default)
   character(len=*) FORCOL ! Foreground colour name ) As for ITextColour, or
@@ -899,7 +899,7 @@ subroutine IFormFrame(IFIELD,IFTYPE,FORCOL,BACCOL)
   integer IFTYPE ! Frame type :
   ! 0 : none (default if value out of range)
   ! 1 to 10 : as for IFrameType(IFTYPE)
-  ! -1 to -10 : as for IFrameType(IABS(IFTYPE))
+  ! -1 to -10 : as for IFrameType(abs(IFTYPE))
   ! but only when graphical frames available
   character(len=*) FORCOL ! Foreground colour name ) As for ITextColour
   character(len=*) BACCOL ! Background colour name ) or blank to use default
@@ -940,7 +940,7 @@ subroutine IFormFrameN(IFIELD,IFTYPE,NFCOL,NBCOL)
   integer IFTYPE ! Frame type :
   ! 0 : none (default if value out of range)
   ! 1 to 10 : as for IFrameType(IFTYPE)
-  ! -1 to -10 : as for IFrameType(IABS(IFTYPE))
+  ! -1 to -10 : as for IFrameType(abs(IFTYPE))
   ! but only when graphical frames available
   integer NFCOL ! Foreground colour name ) As for ITextColourN
   integer NBCOL ! Background colour name ) or -1 to use default
@@ -1061,7 +1061,7 @@ subroutine IFormPopUpMenu(IFIELD,NOPTN)
   ! Form Field Charactereristics INTERACTER Subroutine Reference
   ! 3-26
   !e.g. PARAMETER (MAXOPT = 50)
-  !CHARACTER*10 OPTION(MAXOPT)
+  !character(len=10) OPTION(MAXOPT)
   !CALL IFormPutMenu(IFIELD,OPTION,MAXOPT,IOPT1)
   !C enable a pop-up scrolling menu, 10 deep, in form editor
   !CALL IFormPopUpMenu(IFIELD,10)
@@ -1229,7 +1229,7 @@ subroutine IFormVerticalMenu(IFIELD,NOPTN,IFRAME)
   ! The number of visible options in a menu field can be retrieved subsequently via
   ! InfoField(10).
   !e.g. PARAMETER (MAXOPT = 50)
-  !CHARACTER*10 OPTION(MAXOPT)
+  !character(len=10) OPTION(MAXOPT)
   !:
   !CALL IFormPutMenu(IFIELD,OPTION,MAXOPT,IOPT1)
   !C set visible number of options to 15 and leave frame type unchanged

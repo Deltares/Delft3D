@@ -286,7 +286,7 @@ c
 c           Nikuradze-formula
 c           [Doc. S-FO-001.5KV  Eq. 3-1]
 c
-            c = 18.0 * alog10 (12.*rad/cpar)
+            c = 18.0 * log10 (12.*rad/cpar)
 
          else if (kform .eq. cfrman) then
 c

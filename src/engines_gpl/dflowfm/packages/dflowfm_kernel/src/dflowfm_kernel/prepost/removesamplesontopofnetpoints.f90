@@ -33,8 +33,8 @@
    subroutine REMOVESAMPLESONTOPOFNETPOINTS(XS, YS, NS)
       use m_netw
       implicit none
-      double precision :: XS(NS), YS(NS)
       integer :: ns
+      double precision :: XS(NS), YS(NS)
 
       double precision :: dx
       double precision :: dy

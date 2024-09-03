@@ -30,7 +30,7 @@
 !
 !
 
- !> in m_flowgeom: nd and ln apply to waterlevel nodes and links
+!> in m_flowgeom: nd and ln apply to waterlevel nodes and links
  !! in m_netw    : nod and lin apply to 'grid' or 'net' nodes and links
 module m_flowgeom
 
@@ -138,7 +138,7 @@ module m_flowgeom
    double precision, allocatable, target :: bob(:, :) !< [m] left and right inside lowerside tube (binnenkant onderkant buis) HEIGHT values (m) (positive upward), adjusted for structures {"location": "edge", "shape": [2, "lnx"]}
    double precision, allocatable, target :: bob0(:, :) !< [m] left and right inside lowerside tube (binnenkant onderkant buis) HEIGHT values (m) (positive upward), NOT adjusted for structures {"location": "edge", "shape": [2, "lnx"]}
    double precision, allocatable, target :: blup(:) !< [m] "upwind" bed level at u point, as determined by sethu() {"location": "edge", "shape": ["lnx"]}
-   integer, allocatable :: ibot(:) !< local ibedlevtype for setting min or max network depths (temporary, result goes to bobs)
+   integer, allocatable, target :: ibot(:) !< local ibedlevtype for setting min or max network depths (temporary, result goes to bobs)
 
    double precision, allocatable :: acl(:) !< left dx fraction, alfacl
    double precision, allocatable :: acn(:, :) !< 2,L left and right wu fraction
@@ -177,7 +177,7 @@ module m_flowgeom
    integer, allocatable :: ln2lne(:) !< flowlink to netlink nr dim = lnx
    integer, allocatable :: lne2ln(:) !< netlink to flowlink nr dim = numL
 
-   double precision, allocatable :: grounlay(:) !< spatially varying ground layer thickness
+   double precision, allocatable, target :: grounlay(:) !< spatially varying ground layer thickness
    double precision, allocatable :: argr(:) !< spatially varying ground layer area
    double precision, allocatable :: wigr(:) !< spatially varying ground layer top width
    double precision, allocatable :: pergr(:) !< spatially varying ground layer perimeter

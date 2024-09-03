@@ -32,7 +32,7 @@
 
 !          Subroutine to sort (part of) tables R6-R7-R8
       integer      nr, ir, jndex
-      character*10 c10a(nr), c10b(nr), evea, eveb, sortar(nr)
+      character(len=10) c10a(nr), c10b(nr), evea, eveb, sortar(nr)
       real         val(nr), eveval
       logical      flag
       integer      sortnr(nr), evenr, nrarr
@@ -86,8 +86,8 @@
 !          Subroutine to sort tables R3-R4-R5
 
       integer      nr, nm(nr), sx(nr), ir, evenm, evesx
-      character*10 pr(nr), it(nr), sortar(nr), evepr, eveit
-      character*1  de(nr), do(nr), evede, evedo
+      character(len=10) pr(nr), it(nr), sortar(nr), evepr, eveit
+      character(len=1)  de(nr), do(nr), evede, evedo
       logical      flag  , do_de, do_sx
       integer      sortnr(nr), evenr, nrarr, irarr, noffse, & 
                   nrsub, jndex

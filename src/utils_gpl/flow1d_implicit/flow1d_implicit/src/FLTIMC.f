@@ -303,7 +303,7 @@ c
 c        - start time not set or expired ?
          if (curtim .gt. (statim + timper) ) then
 c           - store start time (=current time)
-            statim = sngl(curtim - dt1)
+            statim = real(curtim - dt1, kind=kind(statim))
             conhis(2,icont) = statim
          endif
          time = curtim - dble(statim)
@@ -330,7 +330,7 @@ c
 c
 c           - store start time (=searched time)
 c
-            statim = sngl(curtim - dt1) - srchtm
+            statim = real(curtim - dt1, kind=kind(statim)) - srchtm
             conhis(2,icont) = statim
          endif
          time = curtim - dble(statim)
@@ -362,7 +362,7 @@ c
          actval = strhis(FLIHIS(icp),istru)
 c
          dc = conpar - actval
-         conpar = actval + sign( min(abs(dc), dcdtmx * sngl(dt1) ), dc)
+         conpar = actval + sign( min(abs(dc), dcdtmx * real(dt1) ), dc)
       endif
 c
 c     Store controlled parameter in -conhis-

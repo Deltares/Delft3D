@@ -36,8 +36,8 @@
       double precision :: xa
       double precision :: ya
       integer :: innump
-      integer :: KIN(NKIN)
       integer :: nkin
+      integer :: KIN(NKIN)
       integer :: kk
 
       double precision :: dx

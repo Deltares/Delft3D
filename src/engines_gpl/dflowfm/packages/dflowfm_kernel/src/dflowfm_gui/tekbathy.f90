@@ -35,11 +35,11 @@
     use m_flowgeom
     use m_flow
     use gridoperations
+    use m_drawthis
     implicit none
-    integer :: nodewhat, ndraw
+    integer :: nodewhat
     integer :: k, ja, nn, ncol
     double precision :: znod, zn
-    common / drawthis / ndraw(50)
     logical inview
 
     if (ndraw(39) == 0) return

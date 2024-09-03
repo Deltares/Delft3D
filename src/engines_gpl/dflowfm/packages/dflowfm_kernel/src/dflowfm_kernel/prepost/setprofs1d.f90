@@ -44,6 +44,7 @@
     use geometry_module, only: dbdistance
     use m_sferic, only: jsferic, jasfer3D
     use m_samples
+    use m_qnerror
 
     implicit none
     integer :: ierr, MINP, LS, L, K, IBR, LL, LA, K1, K2, KA, KB, NRL, KK, ja, ium
@@ -135,7 +136,7 @@
                    XLB = netbr(ibr)%doff
                 end if
                 do LL = 1, netbr(ibr)%NX
-                   L = netbr(ibr)%ln(LL); LA = iabs(L)
+                   L = netbr(ibr)%ln(LL); LA = abs(L)
                    if (L > 0) then
                       k1 = kn(1, La); k2 = kn(2, LA)
                    else
@@ -201,7 +202,7 @@
                    XLB = netbr(ibr)%doff
                 end if
                 do LL = 1, netbr(ibr)%NX
-                   L = netbr(ibr)%ln(LL); LA = iabs(L)
+                   L = netbr(ibr)%ln(LL); LA = abs(L)
                    if (L > 0) then
                       k1 = kn(1, La); k2 = kn(2, LA)
                    else
@@ -279,7 +280,7 @@
                    do LL = 1, netbr(ibr)%NX
                       ! NOTE: vulnerability: netbr(:)%ln(:) contains NETlinks (see SETBRANCH_LC()), but it is used below as FLOWlinks
                       !       Not a problem as long as *no* netlinks are discarded during geominit. (Then: numl1d == lnx1d.)
-                      LA = IABS(NETBR(IBR)%LN(LL))
+                      LA = abs(NETBR(IBR)%LN(LL))
                       XL = XLLIN(LA)
                       do while (XL > XLH(K2) .and. K2 < NSBR(IBR))
                          K2 = K2 + 1; K1 = K1 + 1

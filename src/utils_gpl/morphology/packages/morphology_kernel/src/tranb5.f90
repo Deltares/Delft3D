@@ -70,7 +70,6 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
 !
 ! Local variables
 !
-    integer                        :: ilun
     logical                        :: crstr
     logical                        :: exist
     logical, save                  :: first

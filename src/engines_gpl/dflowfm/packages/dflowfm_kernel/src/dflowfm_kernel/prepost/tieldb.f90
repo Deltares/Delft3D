@@ -40,7 +40,7 @@
 
          implicit none
          double precision :: crp
-         integer :: in1, in2, ja, jacros, k, k1, k2, k3, ku, L, Lnu
+         integer :: in1, in2, jacros, k, k1, k2, k3, ku, L, Lnu
          double precision :: sl, sm, xcr, ycr, z, zcr, x1, x2, y1, y2
          do L = 1, NUML
             K1 = KN(1, L)
@@ -63,8 +63,8 @@
                         K3 = NUMK
                         ZCR = SL * ZK(K2) + (1 - SL) * ZK(K1)
                         call SETPOINT(XCR, YCR, ZCR, K3)
-                        call ADDELEM(K1, K3, JA)
-                        call ADDELEM(K2, K3, JA)
+                        call ADDELEM(K1, K3)
+                        call ADDELEM(K2, K3)
                      end if
                   end if
                   if (K < MXLAN) goto 10

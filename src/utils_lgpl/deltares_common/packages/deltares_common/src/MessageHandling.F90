@@ -68,10 +68,8 @@ module MHCallBack
 !! This interface is to be used by utility libraries that want to call back
 !! a GUI routine in the parent program to display a message box.
    abstract interface
-      subroutine msgbox_callbackiface(title, msg, level)
-        character(len=*), intent(in) :: title !< Title string
+      subroutine msgbox_callbackiface(msg)
         character(len=*), intent(in) :: msg   !< Message string
-        integer,          intent(in) :: level !< Severity level (e.g., LEVEL_ERROR).
       end subroutine msgbox_callbackiface
    end interface
 
@@ -352,7 +350,7 @@ subroutine msgbox(title, msg, level)
 
    ! call the registered msgbox
    if (associated(msgbox_callback)) then
-      call msgbox_callback(title, msg, level)
+      call msgbox_callback(msg)
    end if
 
 end subroutine msgbox

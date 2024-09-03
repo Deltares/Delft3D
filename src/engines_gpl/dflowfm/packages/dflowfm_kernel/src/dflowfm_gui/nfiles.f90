@@ -30,7 +30,7 @@
 !
 !
 
-   subroutine NFILES(MODE, NUM, NWHAT, KEY)
+   subroutine NFILES(NUM, NWHAT, KEY)
 !  grid lijst
 !  NUM = 0, GELUKT, NUM = 1, NIET GELUKT
       use m_netw
@@ -56,14 +56,15 @@
       use gridoperations
       use string_module, only: strcmpi
       use m_setucxcuy_leastsquare, only: reconst2nd
+      use m_drawthis
+      use m_qnerror
 
       implicit none
-      integer :: MODE, NUM, NWHAT, KEY
+      integer :: NUM, NWHAT, KEY
       integer :: ja, ierr
       integer :: mlan
       integer :: midp
       integer :: mtek
-      integer :: ndraw
       integer :: i, ierror
       logical :: jawel
       logical, external :: read_samples_from_geotiff
@@ -75,9 +76,7 @@
          end subroutine realan
       end interface
 
-      common / DRAWTHIS / ndraw(50)
-      common / BACKGROUND / SCREENFILE
-      character FILNAM * 86, SCREENFILE * 86
+      character FILNAM * 86
 
       KEY = 0
 

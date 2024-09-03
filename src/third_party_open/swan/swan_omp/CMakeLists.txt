@@ -28,13 +28,15 @@ add_executable(${executable_name}   ${headers}
                                     ${rc_version_file}
                                     ${executable_files})
 
+target_link_libraries(${executable_name} PRIVATE no_compiler_warnings)
+
 # Set dependencies
 if (WIN32)
     set(exe_dependencies netcdf4
                          netcdff)
 
     oss_include_libraries(${executable_name} exe_dependencies)
-    target_link_libraries(${executable_name} ${exe_dependencies})
+    target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir})
@@ -44,7 +46,7 @@ if (WIN32)
                             PRIVATE
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
                             "netcdf.lib")
 
     # Set linker options
@@ -60,7 +62,7 @@ if(UNIX)
     # these calls create special `PkgConfig::<MODULE>` variables
     pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
          PkgConfig::NETCDF
          netcdff)
 

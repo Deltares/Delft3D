@@ -39,6 +39,7 @@ subroutine deletecell(k, ndirect, nindirect, kdirect, kindirect, kne, Lprompt_no
    use geometry_module, only: dbpinpol
    use gridoperations
    use m_mergenodes
+   use m_qnerror
 
    implicit none
 

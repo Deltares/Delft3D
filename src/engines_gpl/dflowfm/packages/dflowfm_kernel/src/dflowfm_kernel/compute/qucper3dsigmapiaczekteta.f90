@@ -65,7 +65,7 @@
        do La = 1, nd(k12)%lnx ! loop over all attached links
           LLL = nd(k12)%ln(La)
           nn12 = 1; if (LLL > 0) nn12 = 2
-          LLLL = iabs(LLL)
+          LLLL = abs(LLL)
 
           Lb2 = Lbot(LLLL); Lt2 = Ltop(LLLL)
           do Lk = LB2, LT2

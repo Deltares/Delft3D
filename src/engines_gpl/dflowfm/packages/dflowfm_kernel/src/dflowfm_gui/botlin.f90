@@ -33,6 +33,7 @@
       subroutine BOTLIN(JA, NUMB, KEY)
          use m_devices
          use unstruc_display
+         use m_helpnow
          implicit none
          integer :: imenuhoriz
          integer :: infoinput
@@ -42,14 +43,11 @@
          integer :: li
          integer :: maxop
          integer :: maxopt
-         integer :: nlevel
          integer :: nput
          integer :: numb
          integer :: nwhat
          parameter(MAXOP=64)
-         character * 14 OPTION(MAXOP), TEX * 14
-         character WRDKEY * 40
-         common / HELPNOW / WRDKEY, NLEVEL
+         character(len=14) :: OPTION(MAXOP), TEX
          integer, save :: lastmenuheight = 1
 
 10       continue

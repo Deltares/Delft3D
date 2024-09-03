@@ -57,8 +57,8 @@ c     Declaration of local variables:
 c 
       integer   i      ,nreeksi, nreeksf , 
      +          ierr   ,newsize
-      character*10      artype,siztxt
-      character*100     txt
+      character(len=10)  artype,siztxt
+      character(len=100) txt
 c   
 c     Maak reeksen
 

@@ -40,7 +40,7 @@
 
      do J = 1, 2
         K1 = KN(J, L)
-        call GAANWESTOPPEN(K1, KN316, JASTART, L)
+        call GAANWESTOPPEN(K1, KN316, JASTART)
         if (JASTART == 1) then
            return
         end if

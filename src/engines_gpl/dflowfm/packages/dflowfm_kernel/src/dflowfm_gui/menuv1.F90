@@ -32,18 +32,14 @@
 
    subroutine MENUV1(NUM, NWHAT)
       use m_netw
-      !use m_sferic
+      use m_modenow
 
       implicit none
       integer :: NUM, NWHAT
-      integer :: maxexp
       integer :: maxopt
       integer, parameter :: MAXOP = 64
-      character * 40 OPTION(MAXOP), exp(MAXOP)
-      integer :: MODE, NFLD, NFO
-      integer :: jdemo
-      common / MODENOW / MODE, NFLD
-      common / DEMO / JDEMO
+      character(len=40) OPTION(MAXOP), exp(MAXOP)
+      integer :: NFO
 
       if (NUM == 1) then
          exp(1) = 'MENU 1                                  '
@@ -266,11 +262,11 @@
          call FIELDOPT(NFLD)
          NWHAT = 4
          if (NFLD == 22) then
-            call MENUV2(NWHAT, OPTION, MAXOPT, EXP, MAXEXP)
+            call MENUV2(NWHAT, OPTION, MAXOPT)
             NFLD = NFO
          end if
       else
-         call MENUV2(NWHAT, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV2(NWHAT, OPTION, MAXOPT)
       end if
 
       return

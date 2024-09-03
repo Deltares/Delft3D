@@ -64,7 +64,8 @@ contains
    subroutine local_netstore(k)
       use m_netw
       use m_alloc
-
+      use m_qnerror
+      
       implicit none
 
       integer, dimension(:), intent(in) :: k !< list of cells

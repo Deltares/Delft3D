@@ -33,7 +33,7 @@
       function FIELDOP(NUM)
          implicit none
          integer :: num
-         character * 40 FIELDOP
+         character(len=40) FIELDOP
          if (NUM == 1) then
             FIELDOP = 'Point Mode                              '
          else if (NUM == 2) then

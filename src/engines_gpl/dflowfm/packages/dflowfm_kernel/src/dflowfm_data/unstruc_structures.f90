@@ -533,7 +533,7 @@ contains
 !! Note 1: fill_valstructs_perlink must have been called in
 !! a loop prior to calling this averaging routine.
 !! Note 2: if in parallel computing, MPI reduction must be done before calling this subroutine.
-   subroutine average_valstruct(valstruct, istrtypein, istru, nlinks)
+   subroutine average_valstruct(valstruct, istrtypein, istru)
       use m_missing, only: dmiss
       use m_1d_structures
       use m_General_Structure, only: t_GeneralStructure
@@ -572,7 +572,6 @@ contains
       integer, intent(in) :: istrtypein !< The type of the structure. May differ from the struct%type, for example:
       !< an orifice should be called with istrtypein = ST_ORIFICE, whereas its struct(istru)%type = ST_GENERAL_ST.
       integer, intent(in) :: istru !< Structure index in network%sts set or in longculverts
-      integer, intent(in) :: nlinks !< Number of flow links for this structure (on the current partition)
 
       type(t_structure), pointer :: pstru
 

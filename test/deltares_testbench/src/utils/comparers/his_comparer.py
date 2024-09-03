@@ -150,7 +150,7 @@ class HisComparer(IComparer):
                                 np.abs(left_results[i, loc_id, par_id] - right_results[i, loc_id, par_id])
                             )  # sizes: diff_arr[nr_times]
                         time_id = np.argmax(diff_arr)
-                        result.maxAbsDiff = float(diff_arr[time_id])
+                        result.max_abs_diff = float(diff_arr[time_id])
 
                     else:
                         diff_arr = np.abs(
@@ -161,7 +161,7 @@ class HisComparer(IComparer):
                         time_id = max_id // nr_locs  # integer division
                         loc_id = max_id - (time_id * nr_locs)  # compute the remainder
 
-                        result.maxAbsDiff = float(diff_arr[time_id, loc_id])
+                        result.max_abs_diff = float(diff_arr[time_id, loc_id])
 
                     min_ref_value = float(np.min(left_results[:, loc_id, par_id]))
                     max_ref_value = float(np.max(left_results[:, loc_id, par_id]))
@@ -170,24 +170,24 @@ class HisComparer(IComparer):
                     plot_cmp_val = right_results[:, loc_id, par_id]
                     plot_location = locations_in_his[loc_id]
 
-                    result.maxAbsDiffCoordinates = (time_id, loc_id, par_id)
-                    result.maxAbsDiffValues = (
+                    result.max_abs_diff_coordinates = (time_id, loc_id, par_id)
+                    result.max_abs_diff_values = (
                         left_results[time_id, loc_id, par_id],
                         right_results[time_id, loc_id, par_id],
                     )
 
                     # Make the absolute difference in maxDiff relative, by dividing by (max_ref_value-min_ref_value).
-                    if result.maxAbsDiff < 2 * sys.float_info.epsilon:
+                    if result.max_abs_diff < 2 * sys.float_info.epsilon:
                         # No difference found, so relative difference is set to 0.
-                        result.maxRelDiff = 0.0
+                        result.max_rel_diff = 0.0
                     elif max_ref_value - min_ref_value < 2 * sys.float_info.epsilon:
                         # Difference found, but denominator will be very small, so set relative difference to maximum.
-                        result.maxRelDiff = 1.0
+                        result.max_rel_diff = 1.0
                     else:
                         # Difference found, make the difference relative. Maximise relative difference to 1.0.
-                        result.maxRelDiff = min(1.0, result.maxAbsDiff / (max_ref_value - min_ref_value))
+                        result.max_rel_diff = min(1.0, result.max_abs_diff / (max_ref_value - min_ref_value))
 
-                    result.isToleranceExceeded(
+                    result.is_tolerance_exceeded(
                         parameter.tolerance_absolute,
                         parameter.tolerance_relative,
                     )

@@ -33,13 +33,13 @@
 double precision function upwsalslope(L, k, ds2) ! k is upwind cell for link L, find slope upwind of k
    use m_flowgeom ! limit upwind slopes for all inflowing links
    use m_flow
+   use m_dcminmod
    implicit none
    integer :: L, k
    double precision :: ds2
 
    integer :: kk, ku, LL, LLL, jap
    double precision :: ds1
-   double precision, external :: dcminmod
 
    upwsalslope = -1d9
    if (ds2 < 0) upwsalslope = 1d9
@@ -49,7 +49,7 @@ double precision function upwsalslope(L, k, ds2) ! k is upwind cell for link L, 
 
    do kk = 1, nd(k)%lnx
       LLL = nd(k)%ln(kk)
-      LL = iabs(LLL)
+      LL = abs(LLL)
       if (LL /= L .and. q1(LL) * LLL > 0) then
          ku = ln(1, LL)
          if (ku == k) ku = ln(2, LL)

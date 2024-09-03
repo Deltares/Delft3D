@@ -44,6 +44,7 @@ subroutine ini_filter(jafilter, filterorder, jacheckmonitor, ierr)
    use dfm_error
    use m_alloc
    use m_partitioninfo, only: jampi
+   use m_qnerror
    implicit none
 
    integer, intent(in) :: jafilter !< explicit (1), implicit (2), or no filter (0)
@@ -151,7 +152,7 @@ subroutine ini_filter(jafilter, filterorder, jacheckmonitor, ierr)
       end do
 
 !     Curl-part: get netlink
-      L = iabs(ln2lne(Lf))
+      L = abs(ln2lne(Lf))
 !     loop over left,right netnode
       do nn = 1, 2
 !        get netnode number
@@ -196,7 +197,7 @@ subroutine ini_filter(jafilter, filterorder, jacheckmonitor, ierr)
 
 !        loop over edges of cell that are flowlinks
          do LL2 = 1, nd(k)%lnx
-            Lf2 = iabs(nd(k)%ln(LL2))
+            Lf2 = abs(nd(k)%ln(LL2))
             if (Lf2 == 0) then
                call mess(LEVEL_ERROR, 'ini_filter: zero link number')
                goto 1234
@@ -897,7 +898,7 @@ subroutine get_filter_coeff()
 !        loop over links in cell
          do iL = 1, nd(kk)%lnx
             iLL1 = nd(kk)%ln(iL)
-            LL1 = iabs(iLL1)
+            LL1 = abs(iLL1)
 
 !           exclude self
             if (LL1 == LL) then

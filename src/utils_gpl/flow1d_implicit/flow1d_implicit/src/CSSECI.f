@@ -211,6 +211,6 @@ c
 c
  200  continue
 c
-      hsec = sngl(hsec0)
+      hsec = real(hsec0, kind=kind(hsec))
 c
       end

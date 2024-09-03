@@ -158,7 +158,7 @@ subroutine fill_valobs()
             valobs(i, IPNT_wx) = 0d0
             valobs(i, IPNT_wy) = 0d0
             do LL = 1, nd(k)%lnx
-               LLL = iabs(nd(k)%ln(LL))
+               LLL = abs(nd(k)%ln(LL))
                k1 = ln(1, LLL); k2 = ln(2, LLL)
                k3 = 1; if (nd(k)%ln(LL) > 0) k3 = 2
                valobs(i, IPNT_wx) = valobs(i, IPNT_wx) + wx(LLL) * wcL(k3, LLL)
@@ -445,22 +445,24 @@ subroutine fill_valobs()
                end if
             end do
 
-            call getLbotLtop(link_id_nearest, Lb, Lt)
-            call getlayerindicesLmax(link_id_nearest, nlaybL, nrlayLx)
-            do L = Lb - 1, Lt
-               klay = L - Lb + nlaybL + 1
-               valobs(i, IPNT_ZWU + klay - 1) = min(bob(1, link_id_nearest), bob(2, link_id_nearest)) + hu(L)
-               if (iturbulencemodel >= 2) then
-                  valobs(i, IPNT_VICWWU + klay - 1) = vicwwu(L)
-               end if
-               if (iturbulencemodel >= 3) then
-                  valobs(i, IPNT_TKIN + klay - 1) = turkin1(L)
-                  valobs(i, IPNT_TEPS + klay - 1) = tureps1(L)
-               end if
-               if (idensform > 0 .and. jaRichardsononoutput > 0) then
-                  valobs(i, IPNT_RICH + klay - 1) = rich(L)
-               end if
-            end do
+            if (link_id_nearest > 0) then
+               call getLbotLtop(link_id_nearest, Lb, Lt)
+               call getlayerindicesLmax(link_id_nearest, nlaybL, nrlayLx)
+               do L = Lb - 1, Lt
+                  klay = L - Lb + nlaybL + 1
+                  valobs(i, IPNT_ZWU + klay - 1) = min(bob(1, link_id_nearest), bob(2, link_id_nearest)) + hu(L)
+                  if (iturbulencemodel >= 2) then
+                     valobs(i, IPNT_VICWWU + klay - 1) = vicwwu(L)
+                  end if
+                  if (iturbulencemodel >= 3) then
+                     valobs(i, IPNT_TKIN + klay - 1) = turkin1(L)
+                     valobs(i, IPNT_TEPS + klay - 1) = tureps1(L)
+                  end if
+                  if (idensform > 0 .and. jaRichardsononoutput > 0) then
+                     valobs(i, IPNT_RICH + klay - 1) = rich(L)
+                  end if
+               end do
+            end if
          end if
 
 !        Rainfall

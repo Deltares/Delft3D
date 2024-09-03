@@ -287,9 +287,6 @@
       character(kind=c_char), intent(in) :: c_var_name(*)
       integer(c_int), intent(out) :: rank
 
-      ! The fortran name of the attribute name
-      character(len=strlen(c_var_name)) :: var_name
-
       rank = 1
       return
    end subroutine get_var_rank
@@ -303,9 +300,6 @@
       character(kind=c_char), intent(in) :: c_var_name(*)
       integer(c_int), intent(inout) :: shape(MAXDIMS)
 
-      ! The fortran name of the attribute name
-      character(len=strlen(c_var_name)) :: var_name
-
       shape = 0
       shape(1) = 1
 
@@ -317,7 +311,7 @@
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       character(kind=c_char), intent(out) :: c_type(MAXSTRLEN)
-      character(len=MAXSTRLEN) :: type_name, var_name
+      character(len=MAXSTRLEN) :: type_name
 
       ! Use one of the following types
       ! BMI datatype        C datatype        NumPy datatype

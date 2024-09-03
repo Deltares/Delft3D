@@ -33,6 +33,7 @@
   subroutine CUTCELLS(n12)
      use m_netw
      use gridoperations
+     use m_readyy
      implicit none
      integer, intent(in) :: N12
      integer :: ja, KMOD
@@ -113,7 +114,7 @@
                     KNEW(L) = -1 * KNEW(L)
                  end if
                  K = K + 1
-                 KK(K) = IABS(KNEW(L))
+                 KK(K) = abs(KNEW(L))
 
               end if
 

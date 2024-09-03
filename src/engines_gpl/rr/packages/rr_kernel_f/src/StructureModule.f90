@@ -3819,7 +3819,7 @@ IMPLICIT NONE
            If (CrestLvl .gt. -999.) then
                CALL RR_INTERP (NVAL, VolumeArrayUp, PeilArrayUp, MinVolOw, CrestLvl, idum)
            Endif
-           MaxVolChk = max (0.0, VolOw0(iow) - MinVolOw + Tqin * timeSettings%timestepSize) / TimeSettings%timestepSize
+           MaxVolChk = max (0.0d0, VolOw0(iow) - MinVolOw + Tqin * timeSettings%timestepSize) / TimeSettings%timestepSize
            if (idebug .ne. 0) write(idebug,*) ' Tqin iow MaxVolChkflow ', Tqin, MaxVolChk
            StrucFlow = min (StrucFlow, MaxVolChk)
            SimpleVolumeCheck = .true.
@@ -3834,7 +3834,7 @@ IMPLICIT NONE
            If (CrestLvl .gt. -999.) then
                CALL RR_INTERP (NVAL, VolumeArrayDown, PeilArrayDown, MinVolOw, CrestLvl, idum)
            Endif
-           MaxVolChk = -1. * max (0.0, VolOw0(iowd)-MinVolOw + Tqin * timeSettings%timestepSize) / TimeSettings%timestepSize
+           MaxVolChk = -1. * max (0.0d0, VolOw0(iowd)-MinVolOw + Tqin * timeSettings%timestepSize) / TimeSettings%timestepSize
            if (idebug .ne. 0) write(idebug,*) ' Tqin iowd MaxVolChkFlow', Tqin, MaxVolChk
            StrucFlow = max (StrucFlow, MaxVolChk)
            SimpleVolumeCheck = .true.
@@ -4981,7 +4981,7 @@ IMPLICIT NONE
         Integer      INODE, IKIND, INR, i, k
         Integer      IOUT9, IOUT6
         Integer*2    RNDATE(3), RNTIME(4)
-        CHARACTER*20 NAMSTR(8)
+        CHARACTER(len=20) NAMSTR(8)
 
         NAMSTR (1) = ' Pumpstation'
         NAMSTR (2) = ' Weir'
@@ -5041,7 +5041,7 @@ IMPLICIT NONE
 
     Integer     INODE, IStr, Iout6, Ievent
     Real        QFlw
-    CHARACTER*3 MONTH(12)
+    CHARACTER(len=3) MONTH(12)
     
            if (.not. associated(QSTRMX)) return  ! If there is nothing, do nothing
     

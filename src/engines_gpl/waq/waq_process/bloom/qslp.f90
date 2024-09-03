@@ -277,13 +277,13 @@ contains
         if (itflag >= integration_id_list(2)) then
             itflag = 0
             do i = 1, nr
-                if (dabs(b(i)) < 1.0d-12) b(i) = 0.0d0
+                if (abs(b(i)) < 1.0d-12) b(i) = 0.0d0
                 do j = i, nc
-                    if (dabs(a(i, j)) < 1.0d-12) a(i, j) = 0.0d0
+                    if (abs(a(i, j)) < 1.0d-12) a(i, j) = 0.0d0
                 end do
             end do
             do j = i, nc
-                if (dabs(c(j)) < 1.0d-12) c(j) = 0.0d0
+                if (abs(c(j)) < 1.0d-12) c(j) = 0.0d0
             end do
         end if
         !
@@ -302,7 +302,7 @@ contains
         ! Update C vector.
         do j = 1, nc
             if (j == jp) cycle
-            if (dabs(a(ip, j)) < 1.0d-12) cycle
+            if (abs(a(ip, j)) < 1.0d-12) cycle
             c(j) = c(j) - a(ip, j) * cjpap
         end do
 
@@ -310,14 +310,14 @@ contains
         do i = 1, nr
             if (i == ip) cycle
             aijp = a(i, jp)
-            if (dabs(aijp) < 1.0d-12) cycle
+            if (abs(aijp) < 1.0d-12) cycle
             do j = 1, nc
                 if (j == jp) cycle
-                if (dabs(a(ip, j)) < 1.0d-12) cycle
+                if (abs(a(ip, j)) < 1.0d-12) cycle
                 a(i, j) = a(i, j) + a(ip, j) * aijp
             end do
             bi = b (i) + b(ip) * aijp
-            if (dabs(bi) < 1.0d-12) then
+            if (abs(bi) < 1.0d-12) then
                 b(i) = 0.0d0
             else
                 b(i) = bi

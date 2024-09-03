@@ -35,7 +35,6 @@
      use gridoperations
      implicit none
 
-     integer :: ja
      integer :: k
      integer :: k1
      integer :: n1
@@ -45,7 +44,7 @@
      call GIVENEWNODENUM(K1)
      call SETPOINT(XX, YY, ZZ, K1)
      do K = 1, N1
-        call ADDELEM(K1, K, JA)
+        call ADDELEM(K1, K)
      end do
      return
   end subroutine NODTOALL

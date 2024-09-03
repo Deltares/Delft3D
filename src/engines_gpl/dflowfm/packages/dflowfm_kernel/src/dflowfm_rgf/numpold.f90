@@ -35,8 +35,8 @@
          !USE DIMENS
          use m_missing
          implicit none
-         double precision :: X(MMAX, NMAX)
          integer :: mp, numpi, mmax, nmax
+         double precision :: X(MMAX, NMAX)
 
          integer :: j
          NUMPI = 0

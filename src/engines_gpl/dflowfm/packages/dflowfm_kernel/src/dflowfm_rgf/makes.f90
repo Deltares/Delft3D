@@ -34,6 +34,8 @@
 !     maak X,Y splines + afstandsarray en splines S op basis
 !     van NT snijpunten
          !USE DIMENS
+         use m_splinxy
+         use m_spline
          implicit none
          integer :: imax, n, nt
          double precision :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX), S2(IMAX)

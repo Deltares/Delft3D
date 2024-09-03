@@ -31,7 +31,7 @@
 !
 
    subroutine get_spiral3d
-      use m_flow, only: ucx, ucy, spirint, czssf, zws, hs, dzslay, spiratx, spiraty
+      use m_flow, only: ucx, ucy, spirint, zws, hs, dzslay, spiratx, spiraty
       use m_flowgeom, only: ndx
 
       implicit none
@@ -59,7 +59,7 @@
          sumfu = 0d0
          do kk = kb, kt
             zn = ((zws(kk) + zws(kk - 1)) * 0.5d0 - zws(kb - 1)) / hs(k)
-            call findfn(czssf(k), zn, fn)
+            call findfn(zn, fn)
             ut = ucx(kk) * spiratx(k) + ucy(kk) * spiraty(k)
             unx = ucx(kk) - ut * spiratx(k)
             uny = ucy(kk) - ut * spiraty(k)

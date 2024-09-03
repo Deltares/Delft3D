@@ -41,6 +41,7 @@ subroutine CUTCELWU(n12, jamasks, ipoly)
    use geometry_module, only: dbpinpol, dbdistance
    use m_sferic, only: jsferic, jasfer3D
    use m_flow, only: numlimdt, numlimdt_baorg, baorgfracmin
+   use m_readyy
 
    implicit none
    integer, intent(in) :: N12 ! 3: only mask nodes, 4: preparation for cut cells (set kfs), 5: actual cut cells (change wu, nd), 6: dry cells
@@ -312,7 +313,7 @@ subroutine CUTCELWU(n12, jamasks, ipoly)
                         jadelete = 1
                      end if
                      if (jadelete == 1) then
-                        lnn(L) = -iabs(lnn(L))
+                        lnn(L) = -abs(lnn(L))
                      end if
                   end if
 
@@ -327,7 +328,7 @@ subroutine CUTCELWU(n12, jamasks, ipoly)
                   else if (N12 == 4) then
                      LNN(L) = 0
                   else if (n12 == 6) then
-                     lnn(L) = -iabs(lnn(L))
+                     lnn(L) = -abs(lnn(L))
                   end if
                end if
 
@@ -354,7 +355,7 @@ subroutine CUTCELWU(n12, jamasks, ipoly)
                if (IC < 3) then
 
                   do KL = 1, nd(n)%lnx
-                     L = iabs(nd(n)%ln(KL)); wu(L) = 0d0
+                     L = abs(nd(n)%ln(KL)); wu(L) = 0d0
                   end do
                   ba(n) = 0d0
 
@@ -364,7 +365,7 @@ subroutine CUTCELWU(n12, jamasks, ipoly)
 
                   if (DAREA / BA(n) < 0.05d0) then
                      do KL = 1, nd(n)%lnx
-                        L = iabs(nd(n)%ln(KL)); wu(L) = 0d0
+                        L = abs(nd(n)%ln(KL)); wu(L) = 0d0
                      end do
                      ba(n) = 0d0
                   else
@@ -388,7 +389,7 @@ subroutine CUTCELWU(n12, jamasks, ipoly)
 !  if ( n12.eq.5 ) then
 !!    SPvdP: disable flow-links that are associated to disabled net-links
 !     do Lf=1,Lnx
-!        L = iabs(ln2lne(Lf))
+!        L = abs(ln2lne(Lf))
 !        if ( L.gt.0 ) then
 !           if ( lnn(L).eq.0 ) then
 !              wu(Lf) = 0d0

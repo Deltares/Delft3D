@@ -458,7 +458,7 @@ contains
         !        max carbonaceous sod if all methane transferred to
         !        sediment-water column interface were oxidized
         !     *******************************************************
-        csodmx = dsqrt(2. * kappad * ch4ssd * diagen)
+        csodmx = sqrt(2. * kappad * ch4ssd * diagen)
         !     *******************************************************
         !     write(not,1330)  csodmx,edwcsd,ch4ssd,diagv
         !1330 format(' csodmx,edwcsd,ch4ssd,diagv',4e11.4)
@@ -484,11 +484,11 @@ contains
         !             converged - compute remaining fluxes
         !        depth of methane saturation
         120  x1(1) = csod
-        !     lch4s = dsqrt(2.0 * edwcsd*ch4ssd/diagv)
-        lch4s = dsqrt(2.0 * kappad * ch4ssd * hsed * hsed / diagen)
+        !     lch4s = sqrt(2.0 * edwcsd*ch4ssd/diagv)
+        lch4s = sqrt(2.0 * kappad * ch4ssd * hsed * hsed / diagen)
         x1(5) = lch4s
         !        methane gas diffusive flux (g o2/m**2-day)
-        jch4d = dsqrt(2. * kappad * ch4ssd * diagen) * sechxc
+        jch4d = sqrt(2. * kappad * ch4ssd * diagen) * sechxc
         !        ch4 production only if saturation depth < sediment depth
         if(lch4s<=hsed)  then
             !          methane saturation therefore methane gas (l/m**2-day)

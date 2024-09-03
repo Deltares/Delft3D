@@ -26,7 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-module m_lateral
+module m_laterals
    use precision_basics, only: dp
    implicit none
    private
@@ -50,14 +50,14 @@ module m_lateral
    integer, parameter, public :: ILATTP_2D = 2 !< Type code for laterals that only apply to 2D nodes.
 
    integer, target, public :: numlatsg !< [-] nr of lateral discharge providers  {"rank": 0}
-   integer, public :: num_layers !< first dimension of qplat and qqlat array, 1 for 2D, kmx for 3D. 
+   integer, public :: num_layers !< first dimension of qplat and qqlat array, 1 for 2D, kmx for 3D.
    ! I see 3 occurences where QPLAT is being allocated. Investigate if this is necessary.
    ! QPLAT is allocated 1) in fm_external_forcings_init_old, module subroutine init_new (will be removed)
    !                    2) in fm_external_forcings_init, module subroutine init_new
    !                    3) in test_laterals (unit test)
    ! so yes, 3 is necessary for now.
    real(kind=dp), allocatable, target, public :: qplat(:, :) !< [m3/s] Lateral discharge of provider {"shape": ["num_layers", "numlatsg"]}
-   real(kind=dp), allocatable, target, public :: qqlat(:, :, :) !< [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["num_layers","numlatsg", "ndx"]}
+   real(kind=dp), allocatable, target, public :: qqlat(:, :) !< [m3/s] Lateral discharge at xz,yz {"location": "face": ["num_layers","nlatnd"]}
    real(kind=dp), allocatable, target, public :: balat(:) !< [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
    character(len=128), allocatable, public :: lat_ids(:) !< id of laterals {"shape": ["numlatsg"]}
    real(kind=dp), allocatable, target, public :: qplatCum(:) !< [m3/s] Cumulative lateral discharge of provider {"shape": ["numlatsg"]}
@@ -115,8 +115,8 @@ module m_lateral
    end interface dealloc_lateraldata
 
    !> At the start of an update, the outgoing_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-   !> In average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
-   !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
+   !! In average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
+   !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
    interface average_concentrations_for_laterals
       module subroutine average_concentrations_for_laterals(numconst, kmx, kmxn, cell_volume, constituents, dt)
          integer, intent(in) :: numconst !< Number or constituents.
@@ -129,16 +129,16 @@ module m_lateral
    end interface average_concentrations_for_laterals
 
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-   !> In average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
-   !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
+   !! In average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
+   !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
    interface reset_outgoing_lat_concentration
       module subroutine reset_outgoing_lat_concentration()
       end subroutine reset_outgoing_lat_concentration
    end interface reset_outgoing_lat_concentration
 
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-   !> In average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
-   !> While in finish_outgoing_lat_concentration, the average over time is actually computed.
+   !! In average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
+   !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
    interface finish_outgoing_lat_concentration
       module subroutine finish_outgoing_lat_concentration(time_interval)
          real(kind=dp), intent(in) :: time_interval
@@ -162,7 +162,7 @@ module m_lateral
       module subroutine get_lateral_discharge(lateral_discharge_in, lateral_discharge_out, cell_volume)
          real(kind=dp), dimension(:, :, :), intent(inout) :: lateral_discharge_in !< Lateral discharge flowing into the model (source)
          real(kind=dp), dimension(:, :, :), intent(inout) :: lateral_discharge_out !< Lateral discharge extracted out of the model (sink)
-         real(kind=dp), dimension(:), intent(in) :: cell_volume !< cell_volume !< Volume of water in computational cells [m3]
+         real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3]
       end subroutine get_lateral_discharge
    end interface get_lateral_discharge
 
@@ -173,15 +173,14 @@ module m_lateral
       end subroutine get_lateral_volume_per_layer
    end interface get_lateral_volume_per_layer
 
-   !> Distributes provided lateral discharge across flow nodes. 
-   !> Input is lateral discharge per layer per lateral, output is per layer per lateral per cell.
+   !> Distributes provided lateral discharge across flow nodes.
+   !! Input is lateral discharge per layer per lateral, output is per layer per lateral per cell.
    interface distribute_lateral_discharge
       module subroutine distribute_lateral_discharge(provided_lateral_discharge, lateral_discharge_per_layer_lateral_cell)
-         real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per
-                                                                                  !! layer, retrieved from BMI
-         real(kind=dp), dimension(:, :, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge
+         real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per layer
+         real(kind=dp), dimension(:, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge
                                                                                                     !! per layer per lateral per cell
       end subroutine distribute_lateral_discharge
    end interface distribute_lateral_discharge
-end module m_lateral
+end module m_laterals
 

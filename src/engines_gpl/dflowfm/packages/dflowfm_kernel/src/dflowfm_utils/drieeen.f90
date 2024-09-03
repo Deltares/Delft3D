@@ -31,12 +31,10 @@
 !
 
   subroutine DRIEEEN(XD, YD, ZD, Z)
+     use m_howtoview
      implicit none
-     integer :: jav
-     integer :: jview
-     double precision :: xyz
-     common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
      double precision :: XD, YD, ZD, Z
+
      if (JVIEW == 1) then ! TEGEN Z-AS
         Z = ZD
      else if (JVIEW == 2) then ! VAN LINKS

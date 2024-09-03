@@ -32,6 +32,7 @@
 
   subroutine MIRROR()
      use m_netw
+     use m_qnerror
      implicit none
 
      integer :: k

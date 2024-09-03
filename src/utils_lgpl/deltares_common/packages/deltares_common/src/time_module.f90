@@ -213,8 +213,6 @@ module time_module
 
          integer :: year, month, day, ierr, npc, intdate
          character :: separator
-         logical :: has_separators
-         character(len=20) :: fmt
          character(len=12), dimension(:), allocatable :: date_elements
 
          success = .false.
@@ -724,7 +722,6 @@ module time_module
          integer      , optional, intent(  out)  :: ierr        !< Error status, 0 if success, nonzero in case of format error.
          character(len=25)                       :: datetimestr !< The resulting date time string. Considering using trim() on it.
 
-         real(kind=hp) :: days
          real(kind=hp) :: dayfrac_
          integer       :: ierr_
 
@@ -1099,6 +1096,7 @@ module time_module
      !> Given time in seconds from refdat, fill dateandtime string
      !! NOTE: seconds_to_datetimestring and datetimestring_to_seconds are not compatible, because of minutes versus seconds, and different format string.
      subroutine seconds_to_datetimestring(dateandtime,refdat,tim)
+         use m_date_time_from_ref_date, only: date_time_from_ref_date
          implicit none
 
          character,        intent(out) :: dateandtime*(*) !< Output datetime string, format '20000101_000000', note: includes seconds.
@@ -1110,7 +1108,7 @@ module time_module
          dateandtime = '20000101_000000'
          ! TODO: AvD: seconds_to_datetimestring and datetimestring_to_seconds are now inconsistent since the addition of this '_'
 
-         call datetime_from_refdat(tim, refdat, iyear, imonth, iday, ihour, imin, isec)
+         call date_time_from_ref_date(tim, refdat, iyear, imonth, iday, ihour, imin, isec)
 
          write(dateandtime( 1:4 ),'(i4)')   iyear
          write(dateandtime( 5:6 ),'(i2.2)') imonth
@@ -1151,8 +1149,8 @@ module time_module
 !
 !     Name   Type     Size   Description
 !     ------ -----    ------ ------------------------
-!     TEMP1  real*8   -      Temporary variable
-!     TEMP2  real*8   -      Temporary variable
+!     TEMP1  real(dp)   -      Temporary variable
+!     TEMP2  real(dp)   -      Temporary variable
 !     IYEAR  integer  -      Year   ( -4713-.. )
 !     IMONTH integer  -      Month  ( 1-12 )
 !     IDAY   integer  -      Day    ( 1-28,29,30 or 31 )
@@ -1201,9 +1199,9 @@ module time_module
          GOTO 999
       ELSE if (compareDates([iyear, imonth, iday], justAfterLastJulian) == -1) then
          TEMP2 = JulianYearMonthDayToJulianDateNumber(iyear, imonth, iday)
-         TEMP1  = FLOAT ( IHOUR ) * 3600.0 + &
-                  FLOAT ( IMIN  ) *   60.0 + &
-                  FLOAT ( ISEC  ) - 43200.0
+         TEMP1  = real(IHOUR, kind=kind(TEMP1)) * 3600.0d0 + &
+                  real(IMIN, kind=kind(TEMP1))  *   60.0d0 + &
+                  real(ISEC, kind=kind(TEMP1))  - 43200.0d0
          JULIAN = TEMP2 + ( TEMP1 / 86400.0 )
       ELSE
          TEMP1  = INT (( IMONTH-14.0) / 12.0 )
@@ -1212,9 +1210,9 @@ module time_module
                 INT ( 367.0 * ( IMONTH - 2.0 - TEMP1 * 12.0 ) / 12.0 ) - &
                 INT ( 3.0 * INT ( ( IYEAR + 4900.0 + TEMP1 ) / 100.0 ) / &
                 4.0 )
-         TEMP1  = FLOAT ( IHOUR ) * 3600.0 + &
-                  FLOAT ( IMIN  ) *   60.0 + &
-                  FLOAT ( ISEC  ) - 43200.0
+         TEMP1  = real(IHOUR, kind=kind(TEMP1)) * 3600.0d0 + &
+                  real(IMIN, kind=kind(TEMP1))  *   60.0d0 + &
+                  real(ISEC, kind=kind(TEMP1))  - 43200.0d0
          JULIAN = TEMP2 + ( TEMP1 / 86400.0 )
       ENDIF
   999 RETURN
@@ -1265,8 +1263,8 @@ module time_module
 !
 !     Name   Type     Size   Description
 !     ------ -----    ------ ------------------------
-!     TEMP1  real*8   -      Temporary variable
-!     TEMP2  real*8   -      Temporary variable
+!     TEMP1  real(dp)   -      Temporary variable
+!     TEMP2  real(dp)   -      Temporary variable
 !     IYEAR  integer  -      Year   ( -4713-.. )
 !     IMONTH integer  -      Month  ( 1-12 )
 !     IDAY   integer  -      Day    ( 1-28,29,30 or 31 )
@@ -1284,7 +1282,7 @@ module time_module
       INTEGER          IYEAR , IMONTH, IDAY  , IHOUR , IMIN  , ISEC  , &
                        IDATE , ITIME , MONLEN(12)
       DOUBLE PRECISION TEMP1 , TEMP2
-      CHARACTER*48     LINE
+      character(len=48) LINE
 !
 !***********************************************************************
 !
@@ -1334,8 +1332,9 @@ module time_module
                 INT ( 1461.0 * ( IYEAR + 4800.0 + TEMP1 ) / 4.0 ) + &
                 INT ( 367.0 * ( IMONTH - 2.0 - TEMP1 * 12.0 ) / 12.0 ) - &
                 INT ( 3.0 * INT ( ( IYEAR + 4900.0 + TEMP1 ) / 100.0 ) / 4.0 )
-         TEMP1  = FLOAT ( IHOUR ) * 3600.0 + &
-                  FLOAT ( IMIN  ) *   60.0 + FLOAT ( ISEC  ) - 43200.0
+         TEMP1  = real(IHOUR, kind=kind(TEMP1)) * 3600.0d0 + &
+                  real(IMIN, kind=kind(TEMP1))  *   60.0d0 + &
+                  real(ISEC, kind=kind(TEMP1)) - 43200.0d0
          julian_with_leapyears = TEMP2 + ( TEMP1 / 86400.0 )
       ENDIF
   999 RETURN
@@ -1361,24 +1360,24 @@ module time_module
 !
 !     Name   Type     In/Out Size            Description
 !     ------ -----    ------ -------         ---------------------------
-!     JULIAN real*8   in     -               Julian day
+!     JULIAN real(dp)   in     -               Julian day
 !     IYEAR  integer  out    -               Year   ( -4713-.. )
 !     IMONTH integer  out    -               Month  ( 1-12 )
 !     IDAY   integer  out    -               Day    ( 1-28,29,30 or 31 )
 !     IHOUR  integer  out    -               Hour   ( 0-23 )
 !     IMIN   integer  out    -               Minute ( 0-59 )
 !     ISEC   integer  out    -               Second ( 0-59 )
-!     DSEC   real*8   out    -               Second as double
+!     DSEC   real(dp)   out    -               Second as double
 !
 !     Local variables :
 !
 !     Name   Type     Size   Description
 !     ------ -----    ------ ------------------------
-!     TEMP1  real*8   -      Temporary variable
-!     TEMP2  real*8   -      Temporary variable
-!     TEMP3  real*8   -      Temporary variable
-!     TEMP4  real*8   -      Temporary variable, JULIAN
-!     TEMP5  real*8   -      Temporary variable, fractional part JULIAN
+!     TEMP1  real(dp)   -      Temporary variable
+!     TEMP2  real(dp)   -      Temporary variable
+!     TEMP3  real(dp)   -      Temporary variable
+!     TEMP4  real(dp)   -      Temporary variable, JULIAN
+!     TEMP5  real(dp)   -      Temporary variable, fractional part JULIAN
 !
 !     Calls to : none
 !

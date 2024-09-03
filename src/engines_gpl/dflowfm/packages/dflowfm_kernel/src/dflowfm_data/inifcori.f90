@@ -119,7 +119,7 @@ subroutine inifcori()
                k = ln(i, L)
                do LL = 1, nd(k)%lnx ! loop over all attached links  k1,L1,k2,L2,k3
                   LLL = nd(k)%ln(LL) !                              ( 3  1  4  2  5, L)
-                  LLLL = iabs(LLL)
+                  LLLL = abs(LLL)
                   if (L < LLLL) then
                      n = n + 1
                      if (j == 2) then
@@ -226,7 +226,7 @@ subroutine orginifcori()
                k = ln(i, L)
                do LL = 1, nd(k)%lnx ! loop over all attached links  k1,L1,k2,L2,k3
                   LLL = nd(k)%ln(LL) !                              ( 3  1  4  2  5, L)
-                  LLLL = iabs(LLL)
+                  LLLL = abs(LLL)
                   if (L < LLLL) then
                      n = n + 1
                      if (j == 2) then

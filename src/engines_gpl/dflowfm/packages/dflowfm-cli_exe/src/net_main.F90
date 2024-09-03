@@ -85,16 +85,13 @@ program unstruc
 #ifdef HAVE_MPI
    use mpi
 #endif
-
+   use m_modenow
+   use m_qnrgf
+   
    implicit none
 
-   integer :: MODE, NFLD, KEY
-   integer :: JQN
-   integer :: JDEMO
+   integer :: KEY
 
-   common / MODENOW / MODE, NFLD
-   common / QNRGF / JQN
-   common / DEMO / JDEMO
    integer :: ierr, lastmode, IDUM
    logical :: JAWEL
 
@@ -143,7 +140,6 @@ program unstruc
 !   WHATST       = '@(#)   | Kernkamp Herman  ,      NETWORK, Version 1.0000; 04-07-2001'//char(0)
 !   WHATST       = '@(#)WL | Deltares,               Unstruc, Version 1.0000; 20-03-2007'//char(0)   ! Starting date
 !   WHATST       = '@(#)WL | Deltares,               Unstruc, Version 1.0011; 01-06-2009'//char(0)
-   JDEMO = 0
    JQN = 2
 
    MMAX = 0
@@ -232,7 +228,7 @@ program unstruc
          !     call axpy(md_M, md_N)
       end do
 !      output timings
-      write (6, '(a,E8.2,a,E8.2)') ' WC-time Axpy test [s]: ', gettimer(1, IAXPY), ' CPU-time Axpy test [s]: ', gettimer(0, IAXPY)
+      write (6, '(a,E9.2,a,E9.2)') ' WC-time Axpy test [s]: ', gettimer(1, IAXPY), ' CPU-time Axpy test [s]: ', gettimer(0, IAXPY)
 
       goto 1234
    end if
@@ -298,7 +294,7 @@ program unstruc
       end if
 
       if (len_trim(md_ident) > 0) then ! partitionmduparse
-         call partition_from_commandline(md_netfile, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_dryptsfile, md_encfile, md_genpolygon, md_partugrid, md_partseed)
+         call partition_from_commandline(md_netfile, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
          L = index(md_netfile, '_net') - 1
          md_mdu = md_ident
          if (len_trim(md_restartfile) > 0) then ! If there is a restart file
@@ -346,7 +342,7 @@ program unstruc
             call generatePartitionMDUFile(trim(md_ident)//'.mdu', trim(md_mdu)//'_'//sdmn_loc//'.mdu')
          end do
       else
-         call partition_from_commandline(md_netfile, md_ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_dryptsfile, md_encfile, md_genpolygon, md_partugrid, md_partseed)
+         call partition_from_commandline(md_netfile, md_ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
       end if
 
       goto 1234 !      stop
@@ -367,7 +363,7 @@ program unstruc
    if (md_cutcells == 1) then
       n12 = 3
       call findcells(0)
-      call cutcell_list(n12, '*.cut', 5, 0)
+      call cutcell_list(n12, 0)
       call unc_write_net('out_net.nc')
    end if
 

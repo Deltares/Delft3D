@@ -79,7 +79,7 @@
           end if
 
           k1 = k ! external point
-          k2 = iabs(lne(1, L)) ! internal point
+          k2 = abs(lne(1, L)) ! internal point
 
           ln(1, Lf) = k1
           ln(2, Lf) = k2
@@ -122,7 +122,7 @@
                 else if (izbndpos == 2) then ! on specified boundary polyline
 
                 end if
-                ln(2, Lf) = iabs(lne(1, L)) ! this overrides previous k2
+                ln(2, Lf) = abs(lne(1, L)) ! this overrides previous k2
                 kcu(Lf) = -1
                 kcs(k1) = -1
                 nd(k1)%x = xz(k1); nd(k1)%y = yz(k1) ! todo, naar allocateandset1D nodestuff
@@ -139,7 +139,7 @@
                 else if (izbndpos == 2) then ! on specified boundary polyline
 
                 end if
-                ln(2, Lf) = iabs(lne(2, L))
+                ln(2, Lf) = abs(lne(2, L))
                 kcu(Lf) = -1
                 kcs(k1) = -1
                 nd(k1)%x = xz(k1); nd(k1)%y = yz(k1) ! todo, naar allocateandset1D nodestuff
@@ -169,7 +169,7 @@
              ndx1db = k
           end if
           k1 = k ! external point
-          k2 = iabs(lne(1, L)) ! internal point
+          k2 = abs(lne(1, L)) ! internal point
 
           ln(1, Lf) = k1
           ln(2, Lf) = k2
@@ -191,7 +191,7 @@
 !            xz(k1)  = 2d0*xk(k3) - xk(k4)
 !            yz(k1)  = 2d0*yk(k3) - yk(k4)
                 call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), 2d0, -1d0, xz(k1), yz(k1))
-                ln(2, Lf) = iabs(lne(1, L)) ! this overrides previous k2
+                ln(2, Lf) = abs(lne(1, L)) ! this overrides previous k2
                 kcu(Lf) = -1
                 kcs(k1) = -1
                 nd(k1)%x = xz(k1); nd(k1)%y = yz(k1) ! todo: JN: naar allocateandset1D nodestuff
@@ -200,7 +200,7 @@
 !            xz(k1)  = 2d0*xk(k4) - xk(k3)
 !            yz(k1)  = 2d0*yk(k4) - yk(k3)
                 call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), -1d0, 2.0d0, xz(k1), yz(k1))
-                ln(2, Lf) = iabs(lne(2, L))
+                ln(2, Lf) = abs(lne(2, L))
                 kcu(Lf) = -1
                 kcs(k1) = -1
                 nd(k1)%x = xz(k1); nd(k1)%y = yz(k1) ! todo: JN: naar allocateandset1D nodestuff
@@ -217,7 +217,7 @@
        k = k + 1
        Lf = Lf + 1
        k1 = k ! external point
-       k2 = iabs(lne(1, L)) ! internal point
+       k2 = abs(lne(1, L)) ! internal point
 
        ln(1, Lf) = k1
        ln(2, Lf) = k2

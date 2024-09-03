@@ -58,7 +58,7 @@
       do ibr = 1, mxnetbr ! SET UP BRANCH DISTANCE COORDINATE
          XLB = 0d0
          do LL = 1, netbr(ibr)%NX
-            L = netbr(ibr)%ln(LL); LA = iabs(L)
+            L = netbr(ibr)%ln(LL); LA = abs(L)
             if (L > 0) then
                k1 = kn0(1, La); k2 = kn0(2, LA)
             else

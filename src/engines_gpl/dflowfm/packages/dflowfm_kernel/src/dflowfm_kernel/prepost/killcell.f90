@@ -36,6 +36,7 @@ subroutine killcell(xp, yp)
    use m_missing, only: dmiss, jins
    use geometry_module, only: pinpok
    use gridoperations
+   use m_qnerror
 
    implicit none
 

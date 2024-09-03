@@ -34,7 +34,7 @@
          implicit none
          integer :: i
          integer :: mmax
-         integer * 2 X(MMAX)
+         integer(2) :: X(MMAX)
          do I = 1, MMAX
             X(I) = 0d0
          end do

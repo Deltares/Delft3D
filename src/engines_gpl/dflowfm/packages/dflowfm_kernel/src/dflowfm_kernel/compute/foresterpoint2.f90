@@ -34,8 +34,8 @@ subroutine foresterpoint2(constituents, numconst, ndkx, itemp, vol, a, d, km, km
    use m_flow, only: eps6, eps10
    implicit none
 
-   double precision :: constituents(numconst, ndkx), vol(kmxx), a(km), d(km)
    integer :: numconst, ndkx, itemp, km, kmxx, kb, maxit, ip
+   double precision :: constituents(numconst, ndkx), vol(kmxx), a(km), d(km)
 
    double precision :: dif
    integer :: k, m, ja

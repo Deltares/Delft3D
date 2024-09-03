@@ -176,7 +176,7 @@ c
            do 10 i = i1, i2
               phiwi = phiwbr - gangle(i)
               tauwi(i) = rhoair * cwi * wshld(i) * uwi * uwi *
-     +                    sngl(cos(phiwi*pi/180.D0))
+     +                    real(cos(phiwi*pi/180.D0), kind=kind(tauwi))
    10      continue
 c
 c          No wind defined for this branch

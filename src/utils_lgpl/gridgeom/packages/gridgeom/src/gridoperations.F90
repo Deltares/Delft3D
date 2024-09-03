@@ -176,7 +176,7 @@
    use network_data
    implicit none
    integer :: ierr
-   integer :: k, KX, LS, LS0, LX, NN
+   integer :: k, KX, LS, LS0, LX
 
    if (.not. allocated(xk) .or. .not. allocated(kn) .or. .not. allocated(nod)) return
 
@@ -423,9 +423,6 @@
 
    integer                           :: i, j
    integer                           :: kL, kR, LL
-
-   integer                           :: num
-
    integer                           :: knod, kcom
 
    integer, dimension(N)             :: icell
@@ -522,16 +519,12 @@
    SUBROUTINE SETNEWPOINT(XP,YP,ZP,K1)
 
    use network_data
-   use m_missing, only : dmiss, xymis
 
    implicit none
-   integer :: jav
-   integer :: jview
-   double precision :: xyz
-   double precision :: XP, YP, ZP
-   integer :: K1
 
-   COMMON /HOWTOVIEW/ JVIEW, JAV, XYZ ! 1,2,3 OF 4
+   double precision, intent(in) :: XP, YP, ZP
+   integer,         intent(out) :: K1
+
    CALL GIVENEWNODENUM(K1)
    xk(k1) = xp
    yk(k1) = yp
@@ -555,16 +548,15 @@
    SUBROUTINE CROSSED2d_BNDCELL(NML, XP1, YP1, XP2, YP2 , NC1, Lfound)
    !use m_netw
    use network_data
-   use m_cell_geometry, only: xz, yz
    use m_missing, only : dmiss
    use geometry_module, only : crossinbox, cross
-   use m_sferic, only: jsferic, jasfer3D
+   use m_sferic, only: jsferic
 
    implicit none
    INTEGER          :: NC1, NML
    DOUBLE PRECISION :: XP1, YP1, XP2, YP2
 
-   INTEGER          :: L, JACROS, K1, K2, LL, Lfound
+   INTEGER          :: L, JACROS, K1, K2, Lfound
    DOUBLE PRECISION :: SL, SM, XCR, YCR, CRP, slm
 
    NC1 = 0
@@ -595,14 +587,14 @@
    use m_cell_geometry, only: xz, yz
    use m_missing, only : dmiss
    use geometry_module, only : crossinbox, cross
-   use m_sferic, only: jsferic, jasfer3D
+   use m_sferic, only: jsferic
 
    implicit none
    INTEGER          :: NC1, NML
    DOUBLE PRECISION :: XP1, YP1, XP2, YP2
 
-   INTEGER          :: L, JACROS, K1, K2, LL, Lfound
-   DOUBLE PRECISION :: SL, SM, XCR, YCR, CRP, slm
+   INTEGER          :: JACROS, K1, K2, LL, Lfound
+   DOUBLE PRECISION :: SL, SM, XCR, YCR, CRP
   
    if (nc1 > 0) then 
       xp2 = xz(nc1) ; yp2 = yz(nc1)
@@ -704,7 +696,7 @@
    use mathconsts, only: degrad_hp
    use geometry_module, only: getdx, getdy, dcosphi, cross
    use m_missing, only : dmiss, dxymis
-   use m_sferic, only: pi, jsferic, jasfer3D
+   use m_sferic, only: jsferic, jasfer3D
    use MessageHandling
    use m_alloc
 
@@ -712,13 +704,13 @@
    INTEGER               :: JACROSSCHECK_ !< remove crossed 2D links (1), or not (0), output permutation array (+10)
 
    double precision :: crp, e, e1
-   integer          :: jacros, mout
-   integer          :: k, k1, k12, k2, k22, k3, KI, ka, kb, kk, L, L1, L2, LL, LLL, LI, LTOT, ls, JA
+   integer          :: jacros
+   integer          :: k, k1, k12, k2, k22, k3, KI, ka, kb, kk, L, L1, L2, LL, LLL, LI, JA
    INTEGER          :: jDupLinks, jOverlapLinks, jSmallAng, maxlin
    double precision :: sl, sm, xcr, ycr
 
    INTEGER, ALLOCATABLE          ::  KC2(:), KN2(:,:), KCK(:)
-   double precision              :: phi, dx, dy, dmaxcosp, dcosp, costriangleminangle, phi0
+   double precision              :: dmaxcosp, dcosp, costriangleminangle
 
    double precision :: X(4), Y(4)
 
@@ -726,8 +718,6 @@
 
    integer :: jacrosscheck ! remove 2D crossing netlinks (1) or not (0)
    integer :: japermout    ! output permutation array (1) or not (0)
-   integer :: janodperm    ! output node permutation array (1) or not (0)
-
    
    logical :: need_to_allocate_kc
 
@@ -824,7 +814,7 @@
             JA = 0
          ELSE                                                    !            : OR BOTH EQUAL
             if ((K3 == 1 .or. k3 == 6) .and. allocated(dxe)) then ! User-defined net link lengths
-               if (dxe(L) <= 0d0) then                           ! X/Y of K1, K2 may be equal, as long as length > 0
+               if (dxe(L) /= dmiss .and. dxe(L) <= 0d0) then                           ! X/Y of K1, K2 may be equal, as long as length > 0
                   ja = 0
                end if
             else IF (XK(K1) == XK(K2) .AND. YK(K1) == YK(K2) ) THEN
@@ -1057,7 +1047,7 @@
 
    use network_data
    use m_alloc
-   use m_sferic, only:  jsferic, jasfer3D, dtol_pole
+   use m_sferic, only:  dtol_pole
    use m_cell_geometry
 
    implicit none
@@ -1122,7 +1112,7 @@
    double precision, dimension(Msize) :: xv, yv
    integer, dimension(Msize)          :: Lorg
    integer, dimension(Msize)          :: LnnL
-   integer                            :: i, k, L, nn
+   integer                            :: nn
 
    nn = netcell(n)%n
 
@@ -1148,8 +1138,6 @@
 
    implicit none
    integer, intent(in) :: JP !< Type of cells to find (unfolded: 3: triangle, etc. up to 6=hexa, 0 = all; folded: code+100; no new nodemask (nonzero values will be used as mask here): code+1000, no sednodadm: code+10000, output link permutation array: code+100000)
-
-   integer, allocatable, dimension(:) :: kc_sav  ! save of kc
 
    integer :: ik
    integer :: k
@@ -1322,7 +1310,6 @@
    integer :: l
    integer :: ll
    integer :: lll
-   integer :: i
    integer :: kr(3), Lr(3)
    integer :: kkk_, kkkk_, nmkmax
 
@@ -2027,7 +2014,7 @@
 
    double precision                  :: darea
    integer                           :: jacounterclockwise          ! counterclockwise (1) or not (0)
-   integer                           :: i, ip1, kk, kkp1
+   integer                           :: i, kk
 
    iscounterclockwise = .true.
 
@@ -2205,7 +2192,7 @@
       integer, intent(in   ) :: netcellnod(:,:)  !< connectivity table with vertex nodes for all netcells (faces)
       integer, intent(  out) :: netcelllin(:,:)  !< Resulting connectivity table with side edges for all netcells (faces), in same order as the nodes.
 
-      integer :: N, ik, inext, kcur, knext, nv
+      integer :: N, ik, inext, nv
       nv = size(netcellnod, 1)
 
       do N=1,numcell
@@ -2263,7 +2250,6 @@
    !use m_netw
    use network_data
    use geometry_module, only: pinpok
-   use m_missing, only : jins, dmiss
    use m_sferic, only: jsferic
    use kdtree2Factory
    implicit none
@@ -2350,12 +2336,10 @@
    double precision, allocatable   :: arglin(:)                   ! dummy array
    integer,          allocatable   :: linnrs(:), inn(:)           ! dummy arrays
 
-   integer                         :: k1, k2, L, LL
+   integer                         :: k1, k2, L
+   double precision                :: phi0
 
-   integer                         :: jDupLinks, jOverlapLinks, jSmallAng
-   double precision                :: sl, sm, xcr, ycr, phi0
-
-   double precision                :: phi, dx, dy, dmaxcosp, dcosp, costriangleminangle
+   double precision                :: phi, dx, dy
 
    allocate(arglin(maxlin), linnrs(maxlin), inn(maxlin))
    do L=1,NMK(K)
@@ -2412,7 +2396,7 @@
    double precision,                   intent(out) :: zz     !< polygon-averaged value
 
    integer,          dimension(Msize)              :: kpole
-   integer                                         :: num, numz, m, mp1, mp2, k1, k2, k3
+   integer                                         :: num, numz, m, mp1, mp2, k1, k2
 
    !  initialization
    xv   = 0d0
@@ -2550,7 +2534,7 @@
 
 
    double precision :: dismin
-   integer          :: ja, k, k1, k2, L, k1ClientIndex, k2ClientIndex
+   integer          :: k, k1, k2, L, k1ClientIndex, k2ClientIndex
    double precision :: dis,dis1,dis2
    logical                       :: validOneDMask
    
@@ -2622,7 +2606,7 @@
 
 
    double precision :: dismin
-   integer          :: ja, k, k1, k1ClientIndex
+   integer          :: k, k1, k1ClientIndex
    double precision :: dis
    logical          :: validOneDMask
    integer, save :: timerhandle(2) = 0
@@ -2739,7 +2723,7 @@
    integer,          dimension(MMAX) :: LnnL
    integer                           :: nn
    integer                           :: jaccw  ! counterclockwise (1) or not (0) (not used here)
-   integer                           :: i, k, k2, k3, iv, ih
+   integer                           :: i, k, k2, iv, ih
 
    double precision                  :: ba, xzw, yzw, xh(4), yh(4)
 
@@ -2816,13 +2800,12 @@
    integer, optional,          intent(in) :: inNet                                 !< Whether or not (1/0) to generate links only for 1D points that lie inside of 2D grid cells. Default: off, 0.
    
    !locals
-   integer                                :: K1, K2, K3, L, NC1, NC2, JA, KK2(2), KK, NML, LL
-   integer                                :: i, ierr, k, kcell
+   integer                                :: K1, K2, K3, L, NC1, NC2, KK2(2), KK, NML, LL
+   integer                                :: i, ierr, k
    double precision                       :: XN, YN, XK2, YK2, WWU
    integer                                :: insidePolygons, Lfound, k1ClientIndex, k2ClientIndex 
    integer                                :: inNet_
    logical                                :: validOneDMask
-   integer :: ifil
    integer :: timerhandle(6)
    type(kdtree_instance) :: treeinstcells
    double precision :: searchradiussq
@@ -3058,13 +3041,11 @@
    double precision, optional, intent(in)  :: xplRoofs(:), yplRoofs(:), zplRoofs(:)
    integer, optional, intent(in)           :: oneDMask(:)                !< Masking array for 1d mesh points, unmerged nodes
 
-   integer                                 :: inp, n, n1, ip, i, k1, k2, L, k, numUnMergedNodes
-   double precision                        :: XN1, YN1, DIST
+   integer                                 :: inp, n, n1, ip, i, k1, k2, L
+   double precision                        :: DIST
    integer,          allocatable           :: nodroof(:), nod1D(:)
    double precision, allocatable           :: dismin(:)
-   character(len=5)                        :: sd
    integer                                 :: ierr
-   integer                                 :: nInputPolygon
    logical                                 :: validOneDMask
    
    validOneDMask = .false.
@@ -3435,7 +3416,7 @@
       integer,          dimension(N)              :: iclist
       double precision                            :: xc, yc, area, w, sn, cs, xh, yh, aa, cs2, cs3, sn2, sn3, f
       double precision, dimension(1)              :: csloc, snloc, csloc2, snloc2, csloc3, snloc3
-      double precision                            :: xh2, yh2, xh3, yh3, dist
+      double precision                            :: xh2, yh2, xh3, yh3
 
       integer                                     :: i, ic, k1, k2, L, NN, Nc, ja2D, Lp, k3, ip, is, ncol
       integer                                     :: jacounterclockwise          ! counterclockwise (1) or not (0) (not used here)
@@ -3625,7 +3606,7 @@
 
       integer                            :: ierror    ! error (1) or not (0)
 
-      integer                            :: i, ip1, ic1, ic2, j, ja, L, Lp1, NN
+      integer                            :: i, ip1, ic1, ic2, ja, L, Lp1, NN
       integer                            :: ii, iim1
 
       ierror = 1
@@ -3782,7 +3763,7 @@
 
    integer, intent(inout)  :: nlinks
    integer                 :: l, ierr
-   integer                 :: linkType, mesh1dCellIndex, mesh2dCellIndex
+   integer                 :: linkType
 
    ierr = 0
    nlinks = 0
@@ -3801,7 +3782,7 @@
 
    integer, intent(inout)  :: arrayfrom(:), arrayto(:)
    integer, intent(in)     :: start_index
-   integer                 :: ierr, nlinks, l, nc
+   integer                 :: ierr, nlinks, l
    integer                 :: linkType, mesh1dCellIndex, mesh2dCellIndex
    integer, allocatable    :: mesh2dMapping(:)
 
@@ -3852,7 +3833,7 @@
    double precision, intent(in)          :: nodex(:), nodey(:), nodeoffset(:), branchlength(:)
    integer, intent(in)                   :: nodebranchidx(:), sourcenodeid(:), targetnodeid(:), startindex
    type(t_ug_meshgeom), intent(inout)    :: meshgeom
-   integer                               :: ierr, nbranches, branch, numMeshNodes, numk, numl, st, en, stn, enn, stnumk, ennumk, k, numNetworkNodes, numLocalNodes
+   integer                               :: ierr, nbranches, branch, numMeshNodes, numk, numl, st, en, stn, enn, k, numNetworkNodes, numLocalNodes
    integer, allocatable                  :: startEndBranchNodes(:,:), edge_nodes(:,:), correctedNodeBranchidx(:), localNodeIndexses(:), networkNodeIndex(:), branchids(:), meshnodeIndex(:)
    integer                               :: shift, startInternal, endInternal
    double precision, allocatable, target :: xk(:), yk(:)
@@ -4083,7 +4064,7 @@
    integer, intent(inout)                 :: numedege
    integer, allocatable                   :: meshnodemapping(:,:), internalnodeindexses(:), connectionMask(:), correctedBranchidx(:)
    integer, optional, intent(inout)       :: edgenodes(:,:)
-   integer                                :: nnetworknodes, nBranches,nmeshnodes, ierr , k , n, br, st, en, kk, firstvalidarraypos
+   integer                                :: nnetworknodes, nBranches,nmeshnodes, ierr , n, br, st, en, kk, firstvalidarraypos
 
    ierr = 0
    firstvalidarraypos = 0
@@ -4327,9 +4308,9 @@
    !locals
    integer                          :: ierr !< Error status, 0 if success, nonzero in case of error.
    integer                          :: k, kk, k1, k2, k3, k4, ncellsinSearchRadius
-   integer                          :: numberCellNetlinks, prevConnected1DNode, newPointIndex, newLinkIndex
+   integer                          :: prevConnected1DNode, newPointIndex, newLinkIndex
    integer                          :: l, cellNetLink, cellId, kn3localType, numnetcells, insidePolygons, clientIndex
-   double precision                 :: searchRadiusSquared, maxdistance, prevDistance, currDistance, ldistance, rdistance
+   double precision                 :: searchRadiusSquared, prevDistance, currDistance, ldistance, rdistance
    logical                          :: boundaryCell
    type(kdtree_instance)            :: treeinst
    logical                          :: validOneDMask, isPolygonPresent

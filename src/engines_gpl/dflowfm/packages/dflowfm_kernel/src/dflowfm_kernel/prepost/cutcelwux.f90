@@ -37,6 +37,7 @@
      use m_polygon, only: NPL, xpl, ypl, zpl
      use geometry_module, only: dbpinpol, dbdistance
      use m_sferic, only: jsferic, jasfer3D
+     use m_readyy
 
      implicit none
      integer :: N12
@@ -150,7 +151,7 @@
      if (n12 == 51) then
 !    SPvdP: disable flow-links that are associated to disabled net-links
         do Lf = 1, Lnx
-           L = iabs(ln2lne(Lf))
+           L = abs(ln2lne(Lf))
            if (L > 0) then
               if (lnn(L) == 0) then
                  wu(Lf) = 0d0

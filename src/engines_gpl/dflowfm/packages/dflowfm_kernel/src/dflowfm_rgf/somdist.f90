@@ -30,7 +30,7 @@
 !
 !
 
-      subroutine SOMDIST(X, Y, A, B, C, D, M1, N1, M2, N2)
+      subroutine SOMDIST(A, B, C, D, M1, N1, M2, N2)
          use m_grid
          use m_missing
          implicit none
@@ -46,8 +46,7 @@
          integer :: m2
          integer :: n1
          integer :: n2
-         double precision :: X(MMAX, NMAX), Y(MMAX, NMAX), &
-            A(MMAX, NMAX), B(MMAX, NMAX), &
+         double precision :: A(MMAX, NMAX), B(MMAX, NMAX), &
             C(MMAX, NMAX), D(MMAX, NMAX)
 !
          do I = M1 + 1, M2

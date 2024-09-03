@@ -305,7 +305,7 @@ c     In case of getting active after non-active period, reset correctly
 
       dus = us - usold
 
-      conint = contrl( 5,icont) * sngl(dt1)
+      conint = contrl( 5,icont) * real(dt1, kind=kind(conint))
       vmax   = contrl(15,icont)
       dusmax = vmax * conint
 c

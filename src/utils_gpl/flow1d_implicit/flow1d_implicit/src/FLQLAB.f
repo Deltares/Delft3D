@@ -83,7 +83,7 @@ c
       if ( steady ) then
         dt2    = 1.0E6
       else
-        dt2    = sngl(dt1)
+        dt2    = real(dt1, kind=kind(dt2))
       endif
 c
       thetql = 1.0
@@ -107,8 +107,8 @@ c
 c first determine a to e
 c
             i      = first
-            debi   = sngl( theta2*q(i  ) + (1.0-theta2) * q1(i  ) )
-            debi1  = sngl( theta2*q(i+1) + (1.0-theta2) * q1(i+1) )
+            debi   = real( theta2*q(i  ) + (1.0-theta2) * q1(i  ))
+            debi1  = real( theta2*q(i+1) + (1.0-theta2) * q1(i+1))
 
             dx = x(i+1) - x(i)
 c ARS 6341  dtpse = dx**2 / (pseudo * ccc) 

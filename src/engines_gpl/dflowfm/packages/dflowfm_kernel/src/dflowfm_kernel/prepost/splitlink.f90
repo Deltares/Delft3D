@@ -40,8 +40,8 @@ subroutine splitlink(xp, yp, L_, dcosmin, jatek, ierror)
    use m_sferic, only: jsferic, jasfer3D, dtol_pole
    use m_missing, only: dxymis
    use gridoperations
-
    use m_alloc
+   use m_qnerror
 
    implicit none
 

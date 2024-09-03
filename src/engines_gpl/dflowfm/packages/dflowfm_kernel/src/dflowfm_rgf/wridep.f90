@@ -31,6 +31,7 @@
 !
 
       subroutine WRIDEP(MMDD, ZC, M1, N1, MC, NC, mmax, nmax)
+         use m_readyy
          implicit none
          integer :: MMDD, M1, N1, MC, NC, mmax, nmax, n, m
          double precision :: ZC(mmax, nmax)

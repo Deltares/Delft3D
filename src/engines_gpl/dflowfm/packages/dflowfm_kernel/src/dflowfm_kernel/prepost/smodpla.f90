@@ -33,9 +33,9 @@
       subroutine SMODPLA(DPLA, DXS, NPL) ! SMOOTH WITH DESIRED
          use M_ALLOC
          implicit none
+         integer :: npl
          double precision :: DPLA(NPL), DXS(NPL)
          double precision, allocatable :: DH(:)
-         integer :: npl
 
          double precision :: a1
          double precision :: a2

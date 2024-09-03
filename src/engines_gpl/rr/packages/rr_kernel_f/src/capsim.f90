@@ -55,7 +55,7 @@
       INTEGER      DEBUG_UNIT
       INTEGER      MESSAGE_UNIT
       INTEGER      STATUS
-      CHARACTER*(*) debug_file,message_file
+      CHARACTER(len=*) debug_file,message_file
 !In
       INTEGER       NXTE               ! Maxumum number of land use forms
       INTEGER       NXSPUN             ! Maximum number of soil physical units
@@ -89,7 +89,7 @@
       INTEGER     ib,id
       Double Precision        de
       LOGICAL     ISSW
-      Double Precision        Frrdca /0.0/
+      Double Precision  ::    Frrdca = 0.0d0
       Double Precision        DTGW
       Double Precision        ICSELO
       Double Precision        VMRZPT
@@ -106,7 +106,6 @@
 !
 ! Functions
 !
-      Double Precision frswfu
       Double Precision ActualEvaporation
       Double Precision Unsa
 !
@@ -437,7 +436,7 @@
 !
 ! Local variables
 !
-      Double Precision    e1,e2,e3,e4,e5                ! Points of graph for calculating redunction
+      Double Precision    e1,e2,e3,e4                   ! Points of graph for calculating redunction
       Double Precision    beta                          ! Reductionfactor
       Double Precision    de
 !
@@ -564,7 +563,7 @@
       use globals
 ! Arguments
 !
-      character*(*) filenam
+      character(len=*) filenam
       integer     nm
       logical     ex
       integer     ib
@@ -616,7 +615,7 @@
 !
 ! Arguments
 !
-      character*(*) filenam
+      character(len=*) filenam
       integer       nm
       integer       status
 !
@@ -655,7 +654,7 @@
       LOGICAL* 4 FUNCTION isbl (chline,bg,ed)
 !
       INTEGER*4     bg,ed,ii
-      CHARACTER*(*) chline
+      CHARACTER(len=*) chline
 !
       isbl = .TRUE.
       DO 1000 ii= bg,ed
@@ -709,7 +708,7 @@
 !
       integer       ib  ! Message unit
       integer       id ! debug unit
-      character*(*) dirnam
+      character(len=*) dirnam
       integer       nxte
       integer       nxspun
       integer       icselo(nxte)
@@ -720,12 +719,11 @@
 !
       logical       ex
       logical       er
-      character*132 nafi
-      character*132 chline
+      character(len=132) nafi
+      character(len=132) chline
       integer       nuwa
       integer       nuer
       logical       kyer
-      logical       kydf
       integer       nmli
       integer       nmlicm
       integer       nm
@@ -733,19 +731,16 @@
       integer       ns
       integer       iiin
       integer       r_nmteex
-      character*15  r_tena
+      character(len=15) r_tena
       integer       r_ipfa
       integer       r_ipagte
       Double Precision          r_frpric
       integer       r_icselo
-      integer       nuse
       Double Precision          RRin
 !
 ! Functions
 !
       logical isbl
-      logical ctrl_val
-      logical ctrl_real
       logical ctrl_int
       integer GetIIin
       Double Precision    GetRRin
@@ -1118,20 +1113,19 @@
       integer file_unit,nm
       integer message_unit,ib
       integer debug_unit,id
-      character*(*) filenam,message_file,debug_file
+      character(len=*) filenam,message_file,debug_file
       integer Status
 !
 ! Local variables
 !
       logical er
       logical ex
-      integer nmli   /0/
-      integer nmlicm /0/
-      integer nuwa /0/
-      integer nuer /0/
-      character*132 chline
+      integer :: nmli = 0
+      integer :: nmlicm = 0
+      integer :: nuwa = 0 
+      integer :: nuer = 0
+      character(len=132) chline
       logical kyer
-      logical kydf
       integer ns
       integer nt
       Double Precision    r_dprz
@@ -1148,10 +1142,7 @@
 ! Functions
 !
       logical ctrl_real
-      logical ctrl_int
       logical isbl
-      Double Precision    GetRRin
-      integer GetIIin
 !
 ! Common blocks
 !
@@ -1512,7 +1503,7 @@
       integer nxte
       integer Status
       integer nxdpun
-      character*(*) filenam, message_file, debug_file
+      character(len=*) filenam, message_file, debug_file
       integer file_unit, nm
       Double Precision    srrz(nxspun, nxrz, nxdpun )
       Double Precision    fmca(nxspun, nxrz, nxdpun)
@@ -1529,10 +1520,9 @@
       integer nuwa
       integer nuer
       logical kyer
-      logical kydf
       integer nmli
       integer nmlicm
-      character*132 chline
+      character(len=132) chline
       integer rz
       integer iiin
       integer ns
@@ -1555,10 +1545,7 @@
 !
 ! Functions
 !
-      logical ctrl_val
-      logical ctrl_int
       logical ctrl_real
-      logical isbl
       Double Precision    GetRRin
       integer GetIIin
       integer IndexInReallist
@@ -2263,9 +2250,9 @@
       integer ib
       INTEGER*4     tyva,nmli
       Double Precision        va,vamn,vamx,vaod
-      CHARACTER*(*) nava
-      CHARACTER*(*) nafi
-      CHARACTER*(*) deva
+      CHARACTER(len=*) nava
+      CHARACTER(len=*) nafi
+      CHARACTER(len=*) deva
 !
 !
       ctrl_real = .TRUE.
@@ -2392,9 +2379,9 @@
       integer ib
       INTEGER*4     tyva,nmli
       INTEGER*4     va,vamn,vamx,vaod
-      CHARACTER*(*) nava
-      CHARACTER*(*) nafi
-      CHARACTER*(*) deva
+      CHARACTER(len=*) nava
+      CHARACTER(len=*) nafi
+      CHARACTER(len=*) deva
 !
 !
       ctrl_int = .TRUE.

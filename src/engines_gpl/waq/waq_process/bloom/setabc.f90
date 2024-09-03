@@ -70,7 +70,7 @@ contains
         do k = 1, nuspec
             if (sdmix(k) < 0.0) then
                 sdmixn(k) = 1.0d0 + sdmix(k)
-                dmix(k) = dabs(sdmix(k)) * dep
+                dmix(k) = abs(sdmix(k)) * dep
                 idrem = idump
             else
                 sdmixn(k) = 0.0d0
@@ -88,7 +88,7 @@ contains
             !  Initiate multiplier for exponential term at zero:
             !  start with steady state solution for the dead algal pool
             if (idrem /= 0) then
-                write (outdbg, 99996) (dabs(sdmix(k)), k = 1, nuspec)
+                write (outdbg, 99996) (abs(sdmix(k)), k = 1, nuspec)
                 write (outdbg, 99995) (sdmixn(k), k = 1, nuspec)
             end if
         end if

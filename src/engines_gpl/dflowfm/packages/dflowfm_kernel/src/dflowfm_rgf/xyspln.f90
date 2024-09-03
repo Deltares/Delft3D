@@ -29,17 +29,19 @@
 
 !
 !
-
+!>     SPLINE INTERPOLATIE BINNEN ALLE GROVE CELLEN
+!!     LIJN 1,2 ZIJN DE VERTICALE   CELWANDEN
+!!     LIJN 3,4 ZIJN DE HORIZONTALE CELWANDEN
       subroutine XYSPLN(X, Y, XR, YR, &
                         XI2, YI2, XJ2, YJ2, XRH, YRH, &
                         mmax, nmax, imax, &
                         M1, N1, M2, N2, MC, NC, &
                         MFAC, NFAC, IJYES)
          use m_missing
+         use m_splint
+         use m_readyy
          implicit none
-!     SPLINE INTERPOLATIE BINNEN ALLE GROVE CELLEN
-!     LIJN 1,2 ZIJN DE VERTICALE   CELWANDEN
-!     LIJN 3,4 ZIJN DE HORIZONTALE CELWANDEN
+
          integer :: mmax, nmax, imax, m1, n1, m2, n2, mc, nc, mfac, nfac
          double precision :: X(MMAX, NMAX), XR(MMAX, NMAX), &
             Y(MMAX, NMAX), YR(MMAX, NMAX), &

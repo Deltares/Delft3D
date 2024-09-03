@@ -83,7 +83,7 @@ contains
             end if
 
             do L0 = 1, p_structure%numlinks
-               L = iabs(p_structure%linknumbers(L0))
+               L = abs(p_structure%linknumbers(L0))
                does_link_contain_structures(L) = .true.
             end do
          end associate

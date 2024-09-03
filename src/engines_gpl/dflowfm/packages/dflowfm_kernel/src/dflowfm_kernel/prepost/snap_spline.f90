@@ -39,6 +39,7 @@ subroutine snap_spline(ispline)
    use geometry_module, only: dbdistance, gaussj
    use m_missing, only: dmiss
    use m_sferic, only: jsferic, jasfer3D
+   use m_spline
 
    implicit none
 

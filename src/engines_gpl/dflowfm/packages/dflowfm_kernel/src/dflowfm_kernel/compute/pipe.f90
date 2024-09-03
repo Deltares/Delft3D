@@ -54,13 +54,13 @@ subroutine pipe(hpr, dia, area, width, japerim, perim) ! half open part
 
 ! Local variables
 
-   double precision :: are, dacos, dsqrt, fi, r, sq
+   double precision :: are, fi, r, sq
 
    r = 0.5 * dia
    are = r - hpr
    if (hpr < r) then
-      fi = dacos(are / r)
-      sq = dsqrt(hpr * (dia - hpr))
+      fi = acos(are / r)
+      sq = sqrt(hpr * (dia - hpr))
       area = fi * r * r - sq * are
       width = 2 * sq
       if (japerim == 1) perim = 2 * fi * r
@@ -69,8 +69,8 @@ subroutine pipe(hpr, dia, area, width, japerim, perim) ! half open part
       width = dia
       if (japerim == 1) then
          if (hpr < dia) then
-            fi = dacos(are / r)
-            sq = dsqrt(hpr * (dia - hpr))
+            fi = acos(are / r)
+            sq = sqrt(hpr * (dia - hpr))
             area = fi * r * r - sq * are
             perim = 2 * fi * r
          else

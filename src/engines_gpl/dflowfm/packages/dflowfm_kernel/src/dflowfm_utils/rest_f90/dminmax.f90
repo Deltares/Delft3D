@@ -29,9 +29,11 @@
 
 !
 !
-
+module m_dminmax
+    contains
+    
       subroutine DMINMAX(X, MXLAN, XMIN, XMAX, MAXLAN)
-         use M_MISSING
+         use m_missing, only: dmiss
          implicit none
          integer :: i
          integer :: maxlan
@@ -61,3 +63,5 @@
          if (XMAX == -10d20) XMAX = 0
          return
       end
+
+end module m_dminmax

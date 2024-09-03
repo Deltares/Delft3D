@@ -177,6 +177,7 @@ contains
    subroutine readprovider(minp, qid, filename, filetype, method, operand, transformcoef, ja, varname, smask, maxSearchRadius)
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use MessageHandling, only: LEVEL_WARN, LEVEL_INFO, mess
+      use m_qnerror
       ! globals
       integer, intent(in) :: minp !< File handle to already opened input file.
       integer, intent(out) :: filetype !< File type of current quantity.
@@ -867,7 +868,7 @@ contains
                   if (k <= Ndxi) then
                      k1 = k
                   else ! boundary nodes: take connected internal node for domain number (boundary nodes are always in own domain)
-                     LL = iabs(nd(k)%ln(1)) !< only one link connected to boundary node
+                     LL = abs(nd(k)%ln(1)) !< only one link connected to boundary node
                      k1 = ln(1, LL) + ln(2, LL) - k
                   end if
 
@@ -941,7 +942,7 @@ contains
             if (k <= Ndxi) then ! internal nodes
                k1 = k
             else ! boundary nodes: take connected internal node for domain number (boundary nodes are always in own domain)
-               LL = iabs(nd(k)%ln(1)) !< only one link connected to boundary node
+               LL = abs(nd(k)%ln(1)) !< only one link connected to boundary node
                k1 = ln(1, LL) + ln(2, LL) - k
             end if
 
@@ -1128,7 +1129,7 @@ contains
       !If avhs is smaller then 0 is chosen at the location of the missing values
       avhs1 = 0d0
       k1 = 0
-      do i = i1, min0(i2, i1 + 360 - 1)
+      do i = i1, min(i2, i1 + 360 - 1)
          do j = j1, j2
             avhs1(j + 90, k1) = avhs(i, j)
          end do
@@ -3382,7 +3383,7 @@ contains
          dtab, rlslat, rlslon, rlat, rlong, potent
       double precision :: elmnts(6), can(maxdat), san(maxdat)
       double precision :: cansum(0:3, 2:3), sansum(0:3, 2:3)
-      character * 80 record
+      character(len=80) record
       logical permnt
       double precision, save :: FACTORIAL(0:6)
 
@@ -3391,7 +3392,7 @@ contains
       !     argfct         multiplication factor needed to compute argument
       !     argum          argument for time-dependent harmonic components ca,sa
       !     can            table with scaled harmonic components
-      !                    dcos(argument) * amp(i)
+      !                    cos(argument) * amp(i)
       !     cansum         selected sum of elements of can for fixed mq,nq
       !     cm1            cosine-component of potential
       !     d2r            conversion factor pi/180
@@ -3438,7 +3439,7 @@ contains
       !     rlslon         previous value of rlong
       !     rmu            gravitational constant (3.9860044d14)
       !     san            table with scaled harmonic components
-      !                    dsin(argument) * amp(i)
+      !                    sin(argument) * amp(i)
       !     sansum         selected sum of elements of san for fixed mq,nq
       !     sm1            sine-component of potential
       !
@@ -3498,8 +3499,8 @@ contains
       !     compute arrays can, san:
       !     do (all tidal components)
       !        compute argum
-      !        can(i) = dcos(argum) * amps(i)
-      !        san(i) = dsin(argum) * amps(i)
+      !        can(i) = cos(argum) * amps(i)
+      !        san(i) = sin(argum) * amps(i)
       !     enddo
       !     compute arrays cansum, sansum:
       !     do nq = 2, 3
@@ -5261,7 +5262,7 @@ contains
    ! ==========================================================================
    !>
    subroutine xxpolyint(xs, ys, zs, kcs, ns, & ! interpolate in a polyline like way
-                        x, y, z, kc, kx, mnx, jintp, xyen, indxn, wfn)
+                        x, y, z, kx, mnx, jintp, xyen, indxn, wfn)
 
       implicit none
 
@@ -5277,7 +5278,6 @@ contains
       double precision, dimension(:), intent(in) :: x !< Grid points (where to interpolate to)
       double precision, dimension(:), intent(in) :: y
       double precision, dimension(kx*mnx), intent(out) :: z !< Output array for interpolated values. Dimension: mnx*kx
-      integer, dimension(:), intent(in) :: kc !< Target (grid) points mask
       integer, intent(in) :: jintp !< (Re-)interpolate if 1 (otherwise use index weights)
 
       double precision, dimension(:, :), intent(in) :: xyen !< cellsize / tol
@@ -5648,7 +5648,7 @@ contains
          kcs = 1 ! todo make this safe
 
          do m = 1, mnx
-            if (iabs(kc(m)) == 1) then ! point is a possible candidate for a line boundary
+            if (abs(kc(m)) == 1) then ! point is a possible candidate for a line boundary
                call polyindexweight(x(m), y(m), xyen(1, m), xyen(2, m), xs, ys, kcs, ns, kL, wL, kR, wR)
                if (kL > 0 .or. kR > 0) then
                   if (present(rrtolrel)) then
@@ -5721,8 +5721,8 @@ contains
    !! * branchid+chainage: the one flow link on this location is selected.
    !! * contactid: the one flow link on this mesh contact is selected.
    !! Only one of these methods is tried, based on loc_spec_type input.
-   subroutine selectelset_internal_links(xz, yz, nx, ln, lnx, keg, numg, &
-                                         loc_spec_type, loc_file, nump, xpin, ypin, branchindex, chainage, contactId, linktype, &
+   subroutine selectelset_internal_links(lnx, keg, numg, loc_spec_type, loc_file, nump, xpin, ypin, &
+                                         branchindex, chainage, contactId, linktype, &
                                          xps, yps, nps, lftopol, sortLinks)
       use m_inquire_flowgeom
       use m_flowgeom, only: lnx1D, xu, yu, kcu
@@ -5731,13 +5731,8 @@ contains
       use m_polygon
 
       implicit none
-
-      !inputs
-      double precision, intent(in) :: xz(:) !< Flow nodes center x-coordinates. (Currently unused).
-      double precision, intent(in) :: yz(:) !< Flow nodes center y-coordinates. (Currently unused).
-      integer, intent(in) :: nx !< Number of flow nodes in input. (Currently unused).
-      integer, intent(in) :: ln(:, :) !< Flow link table. (Currently unused).
-      integer, intent(in) :: lnx !< Number of flow links in input. (Currently unused).
+      
+      integer, intent(in) :: lnx !< Number of flow links in input.
       integer, intent(out) :: keg(:) !< Output array containing the flow link numbers that were selected.
       !< Size of array is responsability of call site, and filling starts at index 1 upon each call.
       integer, intent(out) :: numg !< Number of flow links that were selected (i.e., keg(1:numg) will be filled).
@@ -5936,6 +5931,8 @@ contains
 
       select case (loc_spec_type)
       case (LOCTP_POLYGON_FILE)
+         call savepol() ! save state
+         call delpol() ! clear state
          ! Fill npl, xpl, ypl from file
          call oldfil(minp, loc_file)
          call reapol(minp, 0)
@@ -5989,6 +5986,9 @@ contains
                end if
             end if
          end do
+      end if
+      if (loc_spec_type == LOCTP_POLYGON_FILE) then
+         call restorepol() ! restore state
       end if
    end subroutine selectelset_internal_nodes
 
@@ -6047,6 +6047,7 @@ contains
       use unstruc_model, only: getoutputdir
       use system_utils, only: FILESEP
       use m_arcinfo
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
 
       implicit none
 
@@ -6070,7 +6071,7 @@ contains
       character(1), intent(in) :: operand ! override, add
       double precision, intent(in) :: transformcoef(:) !< Transformation coefficients
       integer, intent(in) :: iprimpos ! only needed for averaging, position of primitive variables in network
-      ! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
+      ! UNC_LOC_U = u point, cellfacemid, UNC_LOC_S = zeta point, cell centre, UNC_LOC_CN = netnode
 
       double precision, allocatable :: zh(:)
       integer :: ierr
@@ -6190,7 +6191,7 @@ contains
                nummin = int(transformcoef(8))
             end if
 
-            if (iprimpos == 1) then ! primitime position = velocitypoint, cellfacemid
+            if (iprimpos == UNC_LOC_U) then ! primitime position = velocitypoint, cellfacemid
                n6 = 4
                allocate (xx(n6, lnx), yy(n6, lnx), nnn(lnx))
                do L = 1, lnx
@@ -6205,7 +6206,7 @@ contains
                   yy(4, L) = yk(kn(2, Lk))
                end do
                nnn = 4 ! array nnn
-            else if (iprimpos == 2) then ! primitime position = waterlevelpoint, cell centre
+            else if (iprimpos == UNC_LOC_S) then ! primitime position = waterlevelpoint, cell centre
                n6 = maxval(netcell%n)
                if (jsferic == 1) then
                   n6 = n6 + 2 ! safety at poles
@@ -6219,7 +6220,7 @@ contains
                   call get_cellpolygon(n, n6, nnn(n), rcel, xx(1, n), yy(1, n), LnnL, Lorg, zz)
                end do
                deallocate (LnnL, Lorg)
-            else if (iprimpos == 3) then ! primitime position = netnode, cell corner
+            else if (iprimpos == UNC_LOC_CN) then ! primitime position = netnode, cell corner
 
                n6 = 3 * maxval(nmk) ! 2: safe upper bound , 3 : even safer!
                allocate (xx(n6, numk), yy(n6, numk), nnn(numk), xxx(n6), yyy(n6))
@@ -6406,7 +6407,7 @@ contains
    !
    ! ==========================================================================
    !>
-   function timespaceinitialfield_int(xz, yz, zz, nx, filename, filetype, method, operand, transformcoef) result(success) ! deze subroutine moet veralgemeniseerd en naar meteo module
+   function timespaceinitialfield_int(xz, yz, zz, nx, filename, filetype, operand, transformcoef) result(success) ! deze subroutine moet veralgemeniseerd en naar meteo module
       use m_missing
       use m_polygon
       use geometry_module, only: dbpinpol
@@ -6420,7 +6421,6 @@ contains
       integer, intent(out) :: zz(nx)
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
-      integer, intent(in) :: method ! time/space interpolation method
       character(1), intent(in) :: operand ! file name for meteo data file
       double precision, intent(in) :: transformcoef(:) !< Transformation coefficients
       integer :: minp0, inside, k
@@ -7296,7 +7296,7 @@ contains
    !> Replacement function for FM's meteo1 'addtimespacerelation' function.
    logical function ec_addtimespacerelation(name, x, y, mask, vectormax, filename, filetype, method, operand, &
                                             xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
-                                            dtnodal, quiet, varname, maxSearchRadius, targetMaskSelect, &
+                                            dtnodal, quiet, varname, targetMaskSelect, &
                                             tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
                                             tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
                                             multuni1, multuni2, multuni3, multuni4)
@@ -7332,7 +7332,6 @@ contains
       real(hp), optional, intent(in) :: dtnodal !< update interval for nodal factors
       logical, optional, intent(in) :: quiet !< When .true., in case of errors, do not write the errors to screen/dia at the end of the routine.
       character(len=*), optional, intent(in) :: varname !< variable name within filename
-      real(hp), optional, intent(in) :: maxSearchRadius !< max search radius in case method==11
       character(len=1), optional, intent(in) :: targetMaskSelect !< 'i'nside (default) or 'o'utside mask polygons
       real(hp), dimension(:), optional, pointer :: tgt_data1 !< optional pointer to the storage location for target data 1 field
       real(hp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
@@ -7746,7 +7745,7 @@ contains
                srcmask%msk = 1
             end if
 
-            success = timespaceinitialfield_int(x, y, srcmask%msk, ndx, srcmaskfile, inside_polygon, ec_method, operand, transformcoef) ! zie meteo module
+            success = timespaceinitialfield_int(x, y, srcmask%msk, ndx, srcmaskfile, inside_polygon, operand, transformcoef) ! zie meteo module
             if (.not. success) then
                write (msgbuf, '(3a)') 'Error while reading mask file ''', trim(srcmaskfile), '''.'
                call err_flush()

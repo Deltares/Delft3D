@@ -169,9 +169,8 @@
        shape(2) = num_layers
        shape(1) = numlatsg
     case("qqlat")
-       shape(3) = num_layers
-       shape(2) = numlatsg
-       shape(1) = ndx
+       shape(2) = num_layers
+       shape(1) = nlatnd
     case("balat")
        shape(1) = numlatsg
     case("qplatCum")

@@ -43,11 +43,12 @@
       use m_waves, only: waveparopt, numoptwav
       !use m_xbeach_data,   only: windmodel
       use gridoperations
+      use m_drawthis
+      use m_qnerror
 
       implicit none
-      integer :: maxexp, ium
+      integer :: ium
       integer :: maxopt
-      integer :: ndraw
       integer :: nputz
       integer :: nwhat2, MINP
       integer :: NWHAT, KEY
@@ -57,10 +58,7 @@
       integer :: i
       integer :: ierror
       integer :: numopt
-
       integer, parameter :: MAXOP = 64
-
-      common / DRAWTHIS / ndraw(50)
       character * 40 OPTION(MAXOP), exp(MAXOP)
 
 1234  continue
@@ -78,7 +76,7 @@
 
          MAXOPT = 7
          NWHAT2 = 0
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 == 1) then ! Network topology
             NDRAW(2) = 1 !    Network solid lines
             NDRAW(16) = 0 ! NO previous network
@@ -156,7 +154,7 @@
 
          MAXOPT = 7
          NWHAT2 = NDRAW(2) + 1
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
             if (NWHAT2 - 1 /= NDRAW(2)) KEY = 3
             NDRAW(2) = NWHAT2 - 1
@@ -178,7 +176,7 @@
          OPTION(6) = 'GRID SOLID LINES PLUS M,N COORDINATES   '
          MAXOPT = 6
          NWHAT2 = NDRAW(16) + 1
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
             if (NWHAT2 - 1 /= NDRAW(16)) KEY = 3
             NDRAW(16) = NWHAT2 - 1
@@ -191,7 +189,7 @@
          OPTION(3) = 'Splines                                 '
          MAXOPT = 3
          NWHAT2 = NDRAW(15) + 1
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
             if (NWHAT2 - 1 /= NDRAW(15)) KEY = 3
             NDRAW(15) = NWHAT2 - 1
@@ -211,7 +209,7 @@
 
          MAXOPT = 9
          NWHAT2 = NDRAW(3) + 1
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
             if (NWHAT2 - 1 /= NDRAW(3)) KEY = 3
             NDRAW(3) = NWHAT2 - 1
@@ -231,7 +229,7 @@
          OPTION(10) = 'highlight dots largest  5 %             '
          MAXOPT = 10
          NWHAT2 = NDRAW(19)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 /= NDRAW(19)) KEY = 3
          NDRAW(19) = NWHAT2
       else if (NWHAT == 7) then
@@ -249,7 +247,7 @@
          OPTION(10) = 'highlight dots largest  5 %             '
          MAXOPT = 10
          NWHAT2 = NDRAW(11)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 /= NDRAW(11)) KEY = 3
          NDRAW(11) = NWHAT2
       else if (NWHAT == 8) then
@@ -268,7 +266,7 @@
          OPTION(11) = 'Ship hull vertical level            (m )'
          MAXOPT = 11
          NWHAT2 = NDRAW(8)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 /= NDRAW(8)) KEY = 3
          NDRAW(8) = NWHAT2
          ! Set default display mode to numbers for nodenums/codes, etc.
@@ -316,7 +314,7 @@
             end if
          end if
          NWHAT2 = NDRAW(7)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 /= NDRAW(7)) KEY = 3
          NDRAW(7) = NWHAT2
          ! Prepare data
@@ -452,7 +450,7 @@
          MAXOPT = numopt !53
 
          NWHAT2 = NDRAW(28)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          ! Set default display mode to numbers for nodenums/codes, etc.
          if (nwhat2 == 11 .and. isalt > 0) iconst_cur = isalt
          if (nwhat2 == 12 .and. itemp > 0) iconst_cur = itemp
@@ -603,7 +601,7 @@
 
          MAXOPT = numopt
          NWHAT2 = NDRAW(29)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 /= NDRAW(29)) KEY = 3
          ! Set default display mode to numbers for linknums, etc.
          if (nwhat2 == 29) then
@@ -649,7 +647,7 @@
 
          MAXOPT = 20
          NWHAT2 = NDRAW(33)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 /= NDRAW(33)) KEY = 3
          NDRAW(33) = NWHAT2
          if (NWHAT2 > 1) then
@@ -674,7 +672,7 @@
          OPTION(5) = 'Show corner velocity vectors            '
          MAXOPT = 5
          NWHAT2 = NDRAW(31)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 /= NDRAW(31)) KEY = 3
          NDRAW(31) = NWHAT2
       else if (NWHAT == 14) then ! show all flow white line
@@ -687,7 +685,7 @@
          OPTION(5) = 'Show All 3D flow links sideview         '
          MAXOPT = 5
          NWHAT2 = NDRAW(30)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 /= NDRAW(30)) KEY = 3
          NDRAW(30) = NWHAT2
       else if (NWHAT == 15) then
@@ -704,7 +702,7 @@
          OPTION(9) = 'Primitive velocity u1                   '
          MAXOPT = 9
          NWHAT2 = NDRAW(13)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
             NDRAW(13) = NWHAT2
          end if
@@ -726,7 +724,7 @@
 
          MAXOPT = 10
          NWHAT2 = NDRAWobs
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
             if (NWHAT2 /= NDRAWobs) KEY = 3
             NDRAWobs = NWHAT2
@@ -750,7 +748,7 @@
          if (numconst >= 1) MAXOPT = 10
          if (numconst >= 2) MAXOPT = 11
          NWHAT2 = ndrawcrosssections
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
             if (NWHAT2 /= NDRAWcrosssections) KEY = 3
             NDRAWcrosssections = NWHAT2
@@ -763,7 +761,7 @@
          OPTION(3) = 'Thin dam net links                      '
          MAXOPT = 3
          NWHAT2 = ndrawThinDams + 1
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          ndrawThinDams = NWHAT2 - 1
          KEY = 3
       else if (NWHAT == 19) then
@@ -777,7 +775,7 @@
          OPTION(6) = 'Fixed weir only if above water surface   '
          MAXOPT = 6
          NWHAT2 = ndrawFixedWeirs + 1
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          ndrawFixedWeirs = NWHAT2 - 1
          KEY = 3
       else if (NWHAT == 20) then
@@ -791,7 +789,7 @@
          OPTION(4) = 'ISOSCALES OFF                           '
          MAXOPT = 4
          NWHAT2 = NDRAW(12)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
             if (NWHAT2 /= NDRAW(12)) KEY = 3
             NDRAW(12) = NWHAT2
@@ -818,7 +816,7 @@
             call oldfil(minp, trim(md_ident)//'.x1y1x2')
             read (minp, *) x1, y1, x2
             call doclose(minp)
-            call setwy(x1, y1, x2, y2)
+            call setwy(x1, y1, x2)
             key = 3
          else
             NPUTZ = 2
@@ -840,7 +838,7 @@
          OPTION(5) = 'velocity prof                           '
          MAXOPT = 5
          NWHAT2 = NDRAW(18)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          NDRAW(18) = NWHAT2
          KEY = 3
       else if (NWHAT == 31) then
@@ -860,7 +858,7 @@
          OPTION(9) = 'INDEX NUMBERS                           '
          MAXOPT = 9
          NWHAT2 = max(0, NDRAW(32)) + 1
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
             if (NWHAT2 - 1 /= NDRAW(32)) KEY = 3
             NDRAW(32) = NWHAT2 - 1
@@ -872,7 +870,7 @@
          OPTION(2) = 'NO BITMAP                               '
          MAXOPT = 2
          NWHAT2 = NDRAW(26)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          NDRAW(26) = NWHAT2
          KEY = 3
       else if (NWHAT == 34) then
@@ -887,7 +885,7 @@
 
          MAXOPT = 6
          NWHAT2 = NDRAW(34)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          NDRAW(34) = NWHAT2
          KEY = 3
       else if (NWHAT == 35) then
@@ -908,7 +906,7 @@
 
          MAXOPT = 12
          NWHAT2 = NDRAWPOL
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          NDRAWPOL = NWHAT2
          KEY = 3
       else if (NWHAT == 36) then
@@ -921,7 +919,7 @@
          OPTION(5) = 'Nr of netcells in gridcells (partition).'
          MAXOPT = 5
          NWHAT2 = NDRAW(38)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          NDRAW(38) = NWHAT2
          if (ndraw(38) == 5) then
             call teknumnetcells(1)
@@ -938,7 +936,7 @@
          end do
          MAXOPT = 1 + NUMCONST
          NWHAT2 = NDRAW(28)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          NDRAW(28) = NWHAT2
          KEY = 3
          iconst_cur = max(nwhat2 - 1, 0)
@@ -964,7 +962,7 @@
          OPTION(6) = 'idem + temperature (degC)               '
 
          MAXOPT = 6
-         call MENUV3(Ndraw(41), OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(Ndraw(41), OPTION, MAXOPT)
          KEY = 3
 
       else if (NWHAT == 39) then
@@ -975,7 +973,7 @@
          OPTION(3) = 'CLEAR DOTS                              '
          MAXOPT = 3
          NWHAT2 = NDRAWDOTS
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 == 3) then
             call deldots()
          else
@@ -990,7 +988,7 @@
          OPTION(3) = 'SHOW STRUCTURES SYMBOLS AND IDS       '
          MAXOPT = 3
          NWHAT2 = 1
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          ndrawStructures = NWHAT2
          KEY = 3
 
@@ -1001,7 +999,7 @@
          OPTION(2) = 'SHOW PARTICLES                          '
          MAXOPT = 2
          NWHAT2 = NDRAWPART
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          NDRAWPART = NWHAT2
          KEY = 3
       else if (NWHAT == 42) then ! wave stuff
@@ -1059,7 +1057,7 @@
          end if
 
          NWHAT2 = NDRAW(28)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          NDRAW(28) = NWHAT2
          KEY = 3
          waveparopt = nwhat2
@@ -1077,7 +1075,7 @@
 
          MAXOPT = 3
          NWHAT2 = NDRAW(28)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          NDRAW(28) = NWHAT2
          KEY = 3
          ispirparopt = nwhat2
@@ -1100,7 +1098,7 @@
 
          MAXOPT = 7
          NWHAT2 = NDRAW(29)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          NDRAW(29) = NWHAT2
          KEY = 3
          sedparopt = nwhat2
@@ -1120,7 +1118,7 @@
 
          MAXOPT = 4
          NWHAT2 = NDRAW(28)
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          NDRAW(28) = NWHAT2
          KEY = 3
          sedparopt = nwhat2
@@ -1145,7 +1143,7 @@
 
          MAXOPT = 9
          NWHAT2 = grwhydopt
-         call MENUV3(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV3(NWHAT2, OPTION, MAXOPT)
          KEY = 3
          grwhydopt = nwhat2
 

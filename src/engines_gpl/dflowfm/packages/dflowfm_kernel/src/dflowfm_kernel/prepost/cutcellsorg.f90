@@ -37,9 +37,10 @@
      use m_polygon, only: NPL, xpl, ypl, zpl
      use geometry_module, only: dbpinpol
      use gridoperations
+     use m_readyy
 
      implicit none
-     integer :: iabs
+     
      integer :: ja, KMOD
      integer :: k
      integer :: k1
@@ -155,7 +156,7 @@
                        end if
                        KNEW(L) = -1 * KNEW(L)
                     end if
-                    K = K + 1; KK(K) = IABS(KNEW(L))
+                    K = K + 1; KK(K) = abs(KNEW(L))
 
                  end if
 

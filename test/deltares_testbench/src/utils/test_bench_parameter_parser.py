@@ -69,6 +69,8 @@ class TestBenchParameterParser:
         settings.config_file = cls.__get_argument_value("config", args) or "config.xml"
         settings.credentials = cls.__get_credentials(args, settings.teamcity, settings.log_level)
 
+        settings.skip_post_processing = cls.__get_argument_value("skip_post_processing", args) or False
+
         return settings
 
     @classmethod
@@ -242,6 +244,12 @@ class TestBenchParameterParser:
             action="store_true",
             help="Must be True to enable username/password via keyboard.",
             dest="interactive",
+        )
+        parser.add_argument(
+            "--skip-post-processing",
+            action="store_true",
+            help="Skips the postprocessing for either compare or reference.",
+            dest="skip_post_processing",
         )
 
         return parser

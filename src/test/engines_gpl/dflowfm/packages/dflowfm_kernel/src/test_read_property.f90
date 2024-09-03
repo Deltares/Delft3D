@@ -45,29 +45,26 @@ subroutine test_generalstructure_2d3d
    use mathconsts, only: eps_hp
    use m_strucs
 
-   integer                   :: istat   
    integer                   :: ierr
    integer                   :: numblocks
-   integer                   :: i, j, k
+   integer                   :: i
 
    type(TREE_DATA), pointer        :: str_ptr    !< Property tree as read from structures.ini
    type(TREE_DATA), pointer        :: block_ptr  !< Property tree containing one block of generalstructure data in ini file   
-   character(len=256)              :: key        !< property key.
    character(len=256)              :: strvalue   !< Returned string value for requested property key.
    character(len=256)              :: idvalue    !< block idententy string 
    character(len=32)               :: structurefile !< filename with testdata.
    double precision                :: dblvalue   !< Returned scalar double value for requested property key, IF possible.
-   double precision                :: tmpvalue   !< Returned scalar double value for requested property key, IF possible.
    logical                         :: is_double  !< Tells whether the found value could be parsed into a scalar double value.
    logical                         :: success    !< Whether value was read successfully or not.
 
    structurefile = "structures.ini"
-   istat = CHANGEDIRQQ("structures")
+   success = CHANGEDIRQQ("structures")
 
    call tree_create(trim(structurefile), str_ptr)
    call prop_inifile(structurefile, str_ptr, ierr)
    call assert_equal(ierr, DFM_NOERR, 'Error reading structure file.') 
-   istat = CHANGEDIRQQ("..")
+   success = CHANGEDIRQQ("..")
 
    numblocks = tree_num_nodes(str_ptr)
    call assert_equal(numblocks,5,'File structures/structures.ini is expected to contain 5 blocks.')

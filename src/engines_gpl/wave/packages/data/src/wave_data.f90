@@ -93,7 +93,6 @@ contains
 subroutine initialize_wavedata(wavedata)
    use netcdf_utils, only: ncu_format_to_cmode
    type(wave_data_type) :: wavedata
-   character(30)        :: txthlp
 
    wavedata%mode                      =  0
    wavedata%time%refdate              =  0

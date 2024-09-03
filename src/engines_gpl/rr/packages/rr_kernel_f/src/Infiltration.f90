@@ -108,7 +108,7 @@
           Else where (RATIO .LE. 0)
               DT1 = 9999.
           End Where
-          DT  = MAX (0.0, DT1 - RFRAC)
+          DT  = MAX (0.0d0, DT1 - RFRAC)
        Else Where (InfCapStatus .EQ. 2 .AND. (InitialStorage .GT. 0 .OR. Rainfall .GT. 0) )
           ! status is recovery, but storage or rain: switch to decrease
           InfCapStatus = 1
@@ -118,7 +118,7 @@
           Else where (Ratio .le. 0)
               DT1 = 9999.
           End Where
-          DT = MAX (0.0, DT1 - RFRAC)
+          DT = MAX (0.0d0, DT1 - RFRAC)
        End Where
 
        Where (InfCapStatus .EQ. 0)

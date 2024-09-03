@@ -77,7 +77,7 @@ c
       dh = 0.001
 c
       strsta = .true.
-      qa = rteken * FLQH09 (g, hunp1 , sngl(hdnp1) , qin   , wn    , 
+      qa = rteken * FLQH09 (g, hunp1 , real(hdnp1) , qin   , wn    , 
      &                      wp    , le    , shapco, teken , strsta, 
      &                      strclo, istru , nstru )
 c
@@ -86,12 +86,12 @@ c      strhis(4,istru) = qa
 c
       if (teken .gt. 0) then
         qdhu = FLQH09 (g     , hunp1+dh,
-     &                 sngl(hdnp1) , qin   , wn    , 
+     &                 real(hdnp1) , qin   , wn    , 
      &                 wp    , le    , shapco, teken , strsta, 
      &                 strclo, istru , nstru )
         qdhu = (qdhu - qa) / dh
       else
-        qdhu = FLQH09 (g     , hunp1 , sngl(hdnp1)-dh,
+        qdhu = FLQH09 (g     , hunp1 , real(hdnp1)-dh,
      &                                         qin   , wn    , 
      &                 wp    , le    , shapco, teken , strsta, 
      &                 strclo, istru , nstru )
@@ -99,14 +99,14 @@ c
       endif
 c
       if (teken .gt. 0) then
-        qdhd = FLQH09 (g     , hunp1 , sngl(hdnp1-dh),
+        qdhd = FLQH09 (g     , hunp1 , real(hdnp1-dh),
      &                                         qin   , wn    , 
      &                 wp    , le    , shapco, teken , strsta, 
      &                 strclo, istru , nstru )
         qdhd = (qdhd - qa) / dh
       else
         qdhd = FLQH09 (g     , hunp1+dh,
-     &                 sngl(hdnp1) , qin   , wn    , 
+     &                 real(hdnp1) , qin   , wn    , 
      &                 wp    , le    , shapco, teken , strsta, 
      &                 strclo, istru , nstru )
         qdhd = (-qdhd - qa) / dh

@@ -44,7 +44,7 @@
      ucxku = 0d0; ucyku = 0d0
 
      do LL = 1, nd(ku)%lnx
-        Ls = nd(ku)%ln(LL); L = iabs(Ls)
+        Ls = nd(ku)%ln(LL); L = abs(Ls)
         if (Ls < 0) then
            ac1 = acL(L)
            n12 = 1

@@ -99,7 +99,7 @@ if (surftempsmofac > 0d0) then
    arn    = ba(n)
    twatn  = twatn*arn 
    do LL  = 1,nd(n)%lnx
-      L   = iabs( nd(n)%ln(LL) )
+      L   = abs( nd(n)%ln(LL) )
       k2  = ln(1,L) + ln(2,L) - n
       if (hs(k2) > epshstem) then
          bak2  = surftempsmofac*ba(k2)
@@ -333,7 +333,7 @@ else if (jatem == 5) then
           else  
              salinity = backgroundsalinity
           endif    
-          call preprocess_icecover(n, Qlong_ice, twatn, salinity, windn, timhr)
+          call preprocess_icecover(n, Qlong_ice, twatn, salinity, windn)
        endif
        !
        if (ice_h(n) > MIN_THICK) then

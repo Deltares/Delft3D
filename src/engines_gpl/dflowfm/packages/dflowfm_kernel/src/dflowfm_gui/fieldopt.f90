@@ -35,8 +35,8 @@
          implicit none
          integer :: nfld
          integer, parameter :: MAXOP = 64
-         integer :: nwhat2, maxexp, maxopt, i
-         character * 40 OPTION(MAXOP), exp(MAXOP), FIELDOP
+         integer :: nwhat2, maxopt, i
+         character(len=40) OPTION(MAXOP), exp(MAXOP), FIELDOP
          exp(1) = 'MENU 10                                 '
          exp(2) = 'GRID EDIT OPTIONS                       '
          MAXOPT = 22
@@ -44,7 +44,7 @@
             OPTION(I) = FIELDOP(I)
          end do
          NWHAT2 = NFLD
-         call MENUV2(NWHAT2, OPTION, MAXOPT, EXP, MAXEXP)
+         call MENUV2(NWHAT2, OPTION, MAXOPT)
          if (NWHAT2 >= 1) then
             if (NWHAT2 == 19) then
                call ORTHOGRID(1, 1, MC, NC)

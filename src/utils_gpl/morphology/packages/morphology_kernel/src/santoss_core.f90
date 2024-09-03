@@ -108,12 +108,9 @@ subroutine santoss_core(pl_effects, sw_effects, g, d50, d, hw, rhos, rhow, &
 !
     real(fp)                :: l
     real(fp)                :: xi
-    real(fp)                :: uw
     real(fp)                :: ksi
     real(fp)                :: eta
     real(fp)                :: c
-    real(fp)                :: fsl_bagnold_c
-    real(fp)                :: fsl_bagnold_t
     real(fp)                :: tmp
     real(fp)                :: eps_corr
     real(fp)                :: worbc

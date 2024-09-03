@@ -6870,7 +6870,7 @@
 !     TEXT        text string
 !
       INTEGER IF, IL
-      CHARACTER*(*) TEXT
+      CHARACTER(len=*) TEXT
 !
 !  6. Local variables
 !
@@ -6916,7 +6916,7 @@
       END
 !****************************************************************
 !
-      CHARACTER*20 FUNCTION INTSTR ( IVAL )
+      CHARACTER(len=20) FUNCTION INTSTR ( IVAL )
 !
 !****************************************************************
 !
@@ -6978,7 +6978,7 @@
 !     IQUO  :     whole quotient
 !
       INTEGER I, IPOS, IQUO
-      CHARACTER*1, ALLOCATABLE :: CVAL(:)
+      CHARACTER(len=1), ALLOCATABLE :: CVAL(:)
 !
 ! 12. Structure
 !
@@ -7006,7 +7006,7 @@
       END
 !****************************************************************
 !
-      CHARACTER*20 FUNCTION NUMSTR ( IVAL, RVAL, FORM )
+      CHARACTER(len=20) FUNCTION NUMSTR ( IVAL, RVAL, FORM )
 !
 !****************************************************************
 !
@@ -7066,7 +7066,7 @@
 !
       INTEGER   IVAL
       REAL      RVAL
-      CHARACTER*(*) FORM
+      CHARACTER(len=*) FORM
 !
 !  6. Local variables
 !

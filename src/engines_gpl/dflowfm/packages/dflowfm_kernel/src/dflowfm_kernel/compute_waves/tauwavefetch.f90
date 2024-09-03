@@ -47,6 +47,7 @@ subroutine tauwavefetch(tim)
    use m_flowtimes
    use m_partitioninfo
    use timers
+   use m_drawthis
 
    implicit none
 
@@ -58,9 +59,6 @@ subroutine tauwavefetch(tim)
    logical, external :: stop_fetch_computation
    logical, parameter :: call_from_tauwavefetch = .true.
    double precision :: U10, fetchL, fetchd, hsig, tsig, rsqrt2, dum
-
-   integer :: ndraw
-   common / DRAWTHIS / ndraw(50)
 
    if (.not. allocated(fetch) .or. size(fetch, 2) /= ndx) then
       nwf = 13
@@ -172,7 +170,7 @@ subroutine calculate_fetch_values_for_all_wind_directions(total_nr_cells)
    use timers
    use m_waves, only: nwf, fetch, fetdp
    use m_partitioninfo
-   use unstruc_display, only: jagui
+   use m_gui
    use m_wearelt
    use m_missing, only: dmiss
    use m_sferic
@@ -251,6 +249,7 @@ subroutine make_list_of_upwind_cells(u_wind, v_wind)
    use m_flowgeom
    use m_fetch_local_data
    use m_alloc
+   use m_qnerror
 
    implicit none
 
@@ -264,7 +263,7 @@ subroutine make_list_of_upwind_cells(u_wind, v_wind)
    do cell = 1, ndxi
       if (calculate_for(cell)) then
          do cell_link = 1, nd(cell)%lnx
-            link = iabs(nd(cell)%ln(cell_link))
+            link = abs(nd(cell)%ln(cell_link))
             cell2 = ln(1, link); if (cell2 == cell) cell2 = ln(2, link)
             if (kcs(cell2) == 2) then ! internal
                cs = u_wind * csu(link) + v_wind * snu(link)
@@ -299,7 +298,7 @@ subroutine make_list_of_upwind_cells(u_wind, v_wind)
       if (calculate_for(cell)) then
          index = 0
          do cell_link = 1, nd(cell)%lnx
-            link = iabs(nd(cell)%ln(cell_link))
+            link = abs(nd(cell)%ln(cell_link))
             cell2 = ln(1, link); if (cell2 == cell) cell2 = ln(2, link)
             if (kcs(cell2) == 2) then ! internal
                cs = u_wind * csu(link) + v_wind * snu(link)
@@ -339,7 +338,7 @@ subroutine search_starting_cells(u_wind, v_wind, nr_cells_done)
    use m_flowtimes
    use timers
    use m_partitioninfo
-   use unstruc_display, only: jagui
+   use m_gui
    use geometry_module, only: getdx, getdy, dbdistance, cross, normalout, normalin
    use m_missing, only: dmiss
    use m_sferic
@@ -382,7 +381,7 @@ subroutine search_starting_cells(u_wind, v_wind, nr_cells_done)
 
       jaopen = 0
       do cell_link = 1, nd(cell)%lnx
-         link = iabs(nd(cell)%ln(cell_link))
+         link = abs(nd(cell)%ln(cell_link))
          if (ln(1, link) > ndxi) then
             jaopen = 1
             exit
@@ -447,9 +446,10 @@ subroutine calculate_fetch_values(nr_cells_done, total_nr_cells)
    use m_flowtimes
    use timers
    use m_partitioninfo
-   use unstruc_display, only: jagui
+   use m_gui
    use m_missing, only: dmiss
    use m_fetch_local_data
+   use m_qnerror
 
    implicit none
 

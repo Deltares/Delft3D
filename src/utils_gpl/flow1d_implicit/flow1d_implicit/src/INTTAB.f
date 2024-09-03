@@ -87,7 +87,7 @@ c     Include sobek constant file
 c
       include '../include/sobcon.i'
 c
-      xxs = sngl(xs)
+      xxs = real(xs, kind=kind(xxs))
 c     Period defined ?
 c
       period = access/10 .eq. ctbpfu 
@@ -113,10 +113,10 @@ c           interpolation itself is not periodical
          endif
          if (xs.gt.xar(perp2)) then
 c           periodical; x > 0
-            lt = sngl(dmod(xs-bgn,dble(xar(1))) + bgn)
+            lt = real(dmod(xs-bgn,dble(xar(1))) + bgn)
          elseif (xs.lt.xar(perp1) .and. bgn .lt. fween+1.0D-2 ) then
 c           periodical; x < 0
-            lt = sngl(dmod(xs-bgn,dble(xar(1))) + bgn + dble(xar(1)))
+            lt = real(dmod(xs-bgn,dble(xar(1))) + bgn + dble(xar(1)))
          else
 c           run-in part (also for x < 0)
             lt = xxs

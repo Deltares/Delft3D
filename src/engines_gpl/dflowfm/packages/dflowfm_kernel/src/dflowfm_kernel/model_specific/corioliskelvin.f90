@@ -58,7 +58,7 @@
        do k = 1, ndx
           yy = yz(k) - y0
           xx = xz(k) - x0
-          rr = dsqrt(xx * xx + yy * yy)
+          rr = sqrt(xx * xx + yy * yy)
           cs = xx / rr
           sn = yy / rr
 

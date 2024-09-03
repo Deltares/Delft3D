@@ -201,7 +201,6 @@ module m_ec_filereader
          character(len=255)      :: qname
          integer                 :: nv, nl, iitem
          integer                 :: from, thru
-         integer                 :: time_ndx
          real(hp), dimension(:), allocatable    :: values
          type(tEcItem), pointer  :: itemPtr
          integer                 :: n_invalid_components

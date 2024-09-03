@@ -31,13 +31,13 @@
 !
 
       subroutine realPOLYGON(X, Y, N, NCOL)
+         use m_colnow
          implicit none
          integer :: i
          integer :: n
          integer :: ncol
-         integer :: ncolnow
          real :: X(N), Y(N)
-         common / COLNOW / NCOLNOW
+
          call SETCOL(NCOL)
          call PTABS(dble(X(1)), dble(Y(1)))
          do I = 2, N

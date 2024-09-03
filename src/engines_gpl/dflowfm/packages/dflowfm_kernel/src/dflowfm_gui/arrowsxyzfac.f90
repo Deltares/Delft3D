@@ -30,9 +30,8 @@
 !
 !
 
-      subroutine ARROWSXYzfac(X0, Y0, UX, UY, VFAC, JW, zfac)
+      subroutine ARROWSXYzfac(X0, Y0, UX, UY, VFAC, zfac)
          implicit none
-         integer :: jw
          double precision :: X0, Y0, UX, UY, VFAC, zfac
 
          if (UX == 0 .and. UY == 0) return

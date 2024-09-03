@@ -33,6 +33,7 @@
       subroutine GETINT(TEXT, IVAL)
          use m_devices
          use M_MISSING
+         use m_helpnow
          implicit none
          integer :: infoattribute
          integer :: infoinput
@@ -41,11 +42,9 @@
          integer :: key
          integer :: nbckgr
          integer :: nforgr
-         integer :: nlevel
          integer :: iv
          integer :: ival
-         character WRDKEY * 40, TEXT * (*)
-         common / HELPNOW / WRDKEY, NLEVEL
+         character TEXT * (*)
 
          IV = IVAL
          IXP = IWS / 2

@@ -31,11 +31,10 @@
 !
 
       subroutine POSITIVEBLOK()
+         use m_grid_block
          implicit none
-         integer :: mb, nb, mb2, nb2, npt, npt2, nputo, itype
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
-
          integer :: mh, nh, m1, n1, m2, n2, i
+
          if (NPT <= 1) return
 
 !     IF (ITYPE .EQ. 1) THEN

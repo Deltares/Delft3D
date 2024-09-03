@@ -38,14 +38,12 @@
          use unstruc_display
          use geometry_module, only: dbpinpol
          use gridoperations
-
+         use m_depmax
+         
          implicit none
          integer :: i, j, n, jatel, in, k, im, jm, mxnum
          double precision :: x, y, z
 
-         double precision :: vmax, vmin, dv, val
-         integer :: ncols, nv, nis, nie, jaauto
-         common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
          logical inview
 
          call savepol()

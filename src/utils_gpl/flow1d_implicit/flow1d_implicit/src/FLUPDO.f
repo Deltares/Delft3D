@@ -109,8 +109,8 @@ c
       iup   = il
       idown = ir
 c
-      hunp1 = sngl(h(iup))
-      hdnp1 = sngl(h(idown))
+      hunp1 = real(h(iup), kind=kind(hunp1))
+      hdnp1 = real(h(idown), kind=kind(hdnp1))
 c
       uu = q(iup)   / af(iup)
       ud = q(idown) / af(idown)
@@ -163,17 +163,17 @@ c
 c
 c     Water levels on time n
 c
-      hun   = sngl(h1(iup))
-      hdn   = sngl(h1(idown))
+      hun   = real(h1(iup), kind=kind(hun))
+      hdn   = real(h1(idown), kind=kind(hdn))
 c
 c     Water levels on time *
 c
-      hunp1 = sngl(h(iup))
-      hdnp1 = sngl(h(idown))
+      hunp1 = real(h(iup), kind=kind(hunp1))
+      hdnp1 = real(h(idown), kind=kind(hdnp1))
 c
 c     Velocities on time *
 c
-      uu = sngl(q(iup)   / af(iup))
-      ud = sngl(q(idown) / af(idown))
+      uu = real(q(iup)   / af(iup),kind=kind(uu))
+      ud = real(q(idown) / af(idown), kind=kind(ud))
 c
       end

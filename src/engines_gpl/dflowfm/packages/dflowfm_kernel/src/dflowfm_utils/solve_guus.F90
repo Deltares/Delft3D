@@ -41,6 +41,7 @@
     use m_flowparameters, only: icgsolver, ipre
     use m_alloc
     use system_utils, only: ARCH
+    use m_qnerror
 
     ! subroutine to intialise the following variables:
     ! noactive
@@ -496,6 +497,7 @@
     use m_flowtimes
     use m_partitioninfo, only: my_rank, ndomains
     use m_timer
+    use m_qnerror
 
 #ifdef HAVE_PETSC
     use m_petsc
@@ -622,7 +624,8 @@
     use m_partitioninfo, only: my_rank
     use m_netw, only: xzw, yzw
     use unstruc_model, only: md_ident
-
+    use m_qnerror
+    
     implicit none
     integer :: ndx, its
     double precision :: s1(ndx)
@@ -1657,16 +1660,17 @@
     return
  end
 
- subroutine reducept(Ndx, Ndxi, Lnx)
+ subroutine reducept(Ndx, Lnx)
     ! this subroutine finds an elimination order for Gaussian elimination based upon minimum degree algorithm
     use m_reduce
     use unstruc_messages
     use m_flowparameters, only: icgsolver, ipre, Noderivedtypes
     use m_partitioninfo
+    use m_readyy
 
     implicit none
 
-    integer :: Ndx, Ndxi, Lnx
+    integer :: Ndx, Lnx
 
     integer :: nn ! integers used for counting
     integer :: minold ! minimum degree values
@@ -1753,12 +1757,12 @@
        end if
     else if (icgsolver == 6) then
 #ifdef HAVE_PETSC
-       call ini_petsc(Ndx, Ndxi, ierror)
+       call ini_petsc(Ndx, ierror)
        call preparePETSCsolver(0)
 #endif
     else if (icgsolver == 10) then
 #ifdef HAVE_PETSC
-       call ini_petsc(Ndx, Ndxi, ierror)
+       call ini_petsc(Ndx, ierror)
        call preparePETSCsolver(1)
 #endif
     else if (icgsolver == 8) then
@@ -1834,7 +1838,7 @@
 !       do k = 1, nd(nn)%lnx
 !          ff    = dts/a1(nn)
 !          l     = nd(nn)%ln(k)
-!          il    = iabs(l)
+!          il    = abs(l)
 
 !          if ( hu(L) > 0 ) then
 !             if (l>0) then

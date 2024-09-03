@@ -55,8 +55,7 @@ module m_tecplot
 
    character :: NULLCHR
 
-   pointer(NullPtr, Nulli)
-   integer :: Nulli(*)
+   integer, pointer, dimension(:)  :: Nulli => null()
 
    integer :: ifileformat = 0 ! 0: .plt, 1: .szplt
    integer :: ifiletype = 1 ! 0: full, 1: grid, 2: solution
@@ -142,6 +141,7 @@ subroutine wrinet_tecplot(FNAM)
    use network_data
    use unstruc_messages
    use m_partitioninfo
+   use m_qnerror
 
    implicit none
 
@@ -327,7 +327,6 @@ subroutine ini_tecplot()
    integer :: i, k, L
 
    NULLCHR = char(0)
-   NullPtr = 0
 
    ifileformat = 0 ! 0: .plt, 1: .szplt
    ifiletype = 1 ! 0: full, 1: grid, 2: solution

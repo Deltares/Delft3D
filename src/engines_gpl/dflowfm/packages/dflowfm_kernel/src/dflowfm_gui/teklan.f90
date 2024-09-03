@@ -35,12 +35,10 @@
      use m_wearelt
      use unstruc_colors
      use unstruc_display
+     use m_drawthis
 
      implicit none
      integer :: NCOL
-     integer :: NDRAW
-     common / DRAWTHIS / ndraw(50)
-
      integer :: j1
      integer :: k
      integer :: ncl
@@ -88,7 +86,7 @@
         do K = 1, MXLAN
            if (inview(xlan(k), ylan(k))) then
               RH = 0
-              call DHITEXT(K, XLAN(K), YLAN(K), RH)
+              call DHITEXT(K, XLAN(K), YLAN(K))
            end if
         end do
      end if

@@ -46,7 +46,7 @@
     vnod = 0d0
     if (kmx == 0) then
        do L = 1, nd(knod)%lnx
-          LL = iabs(L)
+          LL = abs(L)
           k1 = ln(1, LL); k2 = ln(2, LL)
           if (k1 == knod) then
              vnod(1, 1) = vnod(1, 1) + vlin(LL) * wcx1(LL)
@@ -60,7 +60,7 @@
 
     else
        do L = 1, nd(knod)%lnx
-          LL = iabs(nd(knod)%ln(L))
+          LL = abs(nd(knod)%ln(L))
           k1 = ln(1, LL); k2 = ln(2, LL)
           if (k1 == knod) then
              call getLbotLtop(LL, Lb, Lt)

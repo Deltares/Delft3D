@@ -59,7 +59,7 @@
     do LL = 1, nd(k12)%lnx ! loop over all attached links
 
        LLL = nd(k12)%ln(LL)
-       LLLL = iabs(LLL)
+       LLLL = abs(LLL)
 
        if (LLLL /= L) then
 

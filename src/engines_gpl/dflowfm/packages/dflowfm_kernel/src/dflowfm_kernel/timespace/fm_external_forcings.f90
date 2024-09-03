@@ -424,6 +424,7 @@ contains
       use m_partitioninfo
       use system_utils, only: split_filename
       use unstruc_files, only: resolvePath
+      use m_qnerror
 
       implicit none
 
@@ -634,7 +635,8 @@ contains
       use string_module, only: strcmpi
       use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
       use m_missing, only: dmiss
-
+      use m_qnerror
+      
       implicit none
 
       character(len=*), intent(in) :: filename
@@ -832,6 +834,7 @@ contains
       use string_module
       use m_strucs, only: NUMGENERALKEYWRD
       use m_missing, only: dmiss
+      use m_qnerror
 
       implicit none
 
@@ -1096,6 +1099,7 @@ contains
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
       use m_flowparameters, only: jawave
       use m_flowtimes, only: dt_nodal
+      use m_qnerror
 
       implicit none
 
@@ -1221,10 +1225,9 @@ contains
 
 !> Initializes memory for laterals on flow nodes.
    subroutine ini_alloc_laterals()
-      use m_lateral, only: qqlat, kclat, nnlat
+      use m_laterals, only: kclat, nnlat
       use m_flowgeom, only: ndx2d, ndxi, ndx
       use m_alloc
-      use m_flow, only: kmx
       integer :: ierr
       integer :: nlatndguess
 
@@ -1599,9 +1602,13 @@ contains
       call setup(iresult)
       if (iresult == DFM_NOERR) then
          call init_new(md_extfile_new, iresult)
+      end if
+      if (iresult == DFM_NOERR) then
          call init_old(iresult)
       end if
-      call finalize()
+      if (iresult == DFM_NOERR) then
+         call finalize()
+      end if
 
    end function flow_initexternalforcings
 
@@ -1624,6 +1631,7 @@ contains
       use timespace_data, only: settimespacerefdat
       use timers, only: timstop, timstrt
       use unstruc_inifields, only: initialize_initial_fields
+      use m_qnerror
 
       integer, intent(out) :: iresult
 
@@ -1752,7 +1760,7 @@ contains
             lnxbnd(Lf - lnxi) = itpenz(k)
 
             do n = 1, nd(kbi)%lnx
-               L = iabs(nd(kbi)%ln(n))
+               L = abs(nd(kbi)%ln(n))
                teta(L) = 1d0
             end do
 
@@ -1850,7 +1858,7 @@ contains
             lnxbnd(Lf - lnxi) = itpenu(k)
 
             do n = 1, nd(kbi)%lnx
-               L = iabs(nd(kbi)%ln(n))
+               L = abs(nd(kbi)%ln(n))
                teta(L) = 1d0
             end do
 
@@ -2301,7 +2309,7 @@ contains
       use m_crosssections, only: cs_type_normal, getcsparstotal
       use m_trachy, only: trachy_resistance
       use m_structures, only: check_model_has_structures_across_partitions
-      use m_lateral, only: initialize_lateraldata
+      use m_laterals, only: initialize_lateraldata
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2510,7 +2518,7 @@ contains
          jagrounlay = 0
          do L = 1, lnx1D
             itp = prof1D(3, L)
-            if (grounlay(L) > 0d0 .and. iabs(itp) <= 3) then
+            if (grounlay(L) > 0d0 .and. abs(itp) <= 3) then
                call getprof_1D(L, grounlay(L), argr(L), wigr(L), 1, 1, pergr(L))
             end if
          end do
@@ -2673,7 +2681,7 @@ contains
       use m_cell_geometry, only: ndx
       use m_alloc, only: aerr
       use precision_basics, only: hp
-      
+
       real(kind=hp), intent(in) :: default_value !< default atmospheric pressure value
       integer :: status
 

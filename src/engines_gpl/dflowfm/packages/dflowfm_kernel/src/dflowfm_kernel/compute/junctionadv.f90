@@ -48,7 +48,7 @@
             k = ln(i, L)
             do Li = 1, nd(k)%lnx ! loop over all flow links for each zeta point
                Lf = nd(k)%ln(Li)
-               La = iabs(Lf)
+               La = abs(Lf)
                if (La /= L) then ! if (m1 /= current flow link)
                   s_l = sign(1d0, Lf + 0d0)
                   q_zeta(i, L) = q_zeta(i, L) + q1(La) * s_l

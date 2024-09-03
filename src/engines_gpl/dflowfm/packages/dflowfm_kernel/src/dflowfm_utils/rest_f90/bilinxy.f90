@@ -31,6 +31,7 @@
 !
 
       subroutine BILINXY(X, Y, XZ, YZ, XP, YP, XP2, YP2, INI)
+         use m_qnerror
          implicit none
          double precision :: c
          integer :: i

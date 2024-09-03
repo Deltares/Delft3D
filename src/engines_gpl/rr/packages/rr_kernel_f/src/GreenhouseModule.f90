@@ -1285,7 +1285,7 @@
   integer      Infile1, idebug
 
   Integer       inode, ikas, ikkl
-  Character*1   Quote
+  Character(len=1)   Quote
 
   ! file is already opened
   iDebug = ConfFil_get_iDebug()
@@ -1710,7 +1710,7 @@
     Integer      INODE, Ikas, Iout4, Ievent
     Integer      Ikkl
     Real         BMax, Area, RksBrg, RksFlw, RksRai
-    CHARACTER*3 MONTH(12)
+    CHARACTER(len=3) MONTH(12)
 
            if (.not. associated(KSMBPC)) return  ! If there is nothing, do nothing
 

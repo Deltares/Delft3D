@@ -105,7 +105,7 @@ contains
       integer :: ierr, minp, mout, L1, istat, i
       integer :: MODE, NUM, NWHAT, KEY
       double precision :: QQQ, upot, ukin, ueaa
-      character*(*) :: batfile
+      character(len=*) :: batfile
       character(len=256) :: rec, filnam, basemdu, tex
 
       call resetFullFlowModel()
@@ -138,7 +138,7 @@ contains
          L1 = index(rec, '=') + 1
          read (rec(L1:), *, err=888) NUM, NWHAT
          MODE = 1; KEY = 3
-         call CHOICES(MODE, NUM, NWHAT, KEY)
+         call CHOICES(NUM, NWHAT, KEY)
       end if
 
       if (index(rec, 'START PARAMETERS') > 0) then ! specify new model with only few parameters changed through readmdufile
@@ -239,7 +239,7 @@ contains
       use network_data
       use unstruc_files
       use waq
-      use m_lateral, only: numlatsg
+      use m_laterals, only: numlatsg
       use m_wind, only: jawind
       use dfm_error
       use m_partitioninfo, only: jampi
@@ -322,14 +322,12 @@ contains
    end function flowinit
 
    subroutine flowstep(jastop, iresult)
-      use unstruc_display, only: ntek, plottofile, jaGUI
+      use unstruc_display, only: ntek, plottofile
+      use m_gui
       use dfm_error
+      use m_drawthis
       integer, intent(out) :: jastop !< Communicate back to caller: whether to stop computations (1) or not (0)
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
-      integer :: ndraw
-
-      common / DRAWTHIS / ndraw(50)
-
       integer :: key
 
       jastop = 0
@@ -389,7 +387,7 @@ contains
       use m_ec_module
       use m_meteo, only: ecInstancePtr
       use m_nearfield
-      use m_lateral
+      use m_laterals
       use fm_statistical_output, only: close_fm_statistical_output
 
       call dealloc_nfarrays()

@@ -96,7 +96,6 @@
    double precision :: hmx
    double precision :: hmn
    double precision :: deltaLevel
-   double precision :: deltaWidth
    double precision :: breachWidth
    double precision :: actualMaximumWidth
    double precision :: timeFromBreaching
@@ -123,7 +122,7 @@
          breachWidth     = dambreak%breachWidthIni
       else
       ! The logarithmic part, timeFromBreaching in seconds 
-         breachWidth = dambreak%aCoeff * dlog(timeFromBreaching/dambreak%bCoeff)
+         breachWidth = dambreak%aCoeff * log(timeFromBreaching/dambreak%bCoeff)
       endif
       
       ! breach width must increase monotonically 
@@ -152,7 +151,7 @@
          timeFromFirstPhase = time1 - dambreak%endTimeFirstPhase
          
          if (dambreak%width < maximumWidth .and. (.not.ieee_is_nan(u0)) .and. dabs(u0) > dambreak%ucrit) then
-            breachWidthDerivative = (dambreak%f1*dambreak%f2/dlog(10D0)) * &
+            breachWidthDerivative = (dambreak%f1*dambreak%f2/log(10D0)) * &
                              (deltaLevel/(dambreak%ucrit*dambreak%ucrit)) * &
                              (1.0/(1.0 + (dambreak%f2*gravity*timeFromFirstPhase/(dambreak%ucrit*hoursToSeconds)))) 
             widthIncrement = breachWidthDerivative * (dt/hoursToSeconds)

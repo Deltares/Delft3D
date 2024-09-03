@@ -65,7 +65,7 @@
 
     do LL = 1, nd(k12)%lnx ! loop over all attached links
        L2 = nd(k12)%ln(LL)
-       L2a = iabs(L2)
+       L2a = abs(L2)
        L2s = sign(1, L2)
 
        ! distinguish between vectorial treatment of momentum and pure 1D approach

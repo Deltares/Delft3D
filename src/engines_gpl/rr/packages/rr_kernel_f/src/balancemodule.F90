@@ -477,7 +477,7 @@ contains
 
   Logical   NwrwContinuous  ! =true if DataSetHisNwrwSystem should be generated
 
-  Character*160     String
+  Character(len=160) String
 
   Integer       IYear, IMo, IDay, IHour, IMin, ISec, TimeSeriesVar
   Integer       TmSize
@@ -499,7 +499,7 @@ contains
   integer                             nitem, refdate, reftime
 ! Character(Len=40)                   Id
   Character(Len=40)                   VariableName, LongVariableName
-  Character*8                         Unit
+  Character(len=8)                    Unit
 
 ! create empty dataset (no name, var. type unknown)
   DataSetHisRRBalance = DioPltCreate('NoName', Dio_PLT_Unknown)

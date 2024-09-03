@@ -122,7 +122,7 @@ module m_readstructures
       implicit none
       
       type(t_network), intent(inout) :: network              !< Network pointer
-      character*(*), intent(in)      :: structureFile        !< Name of the structure file
+      character(len=*), intent(in)      :: structureFile        !< Name of the structure file
 
       logical                                                :: success, success1
       type(tree_data), pointer                               :: md_ptr 
@@ -984,14 +984,14 @@ module m_readstructures
 
          pump%direction = pump%direction * iside  ! (+/-1 * 1 or 2 or 3)
 
-         if (iabs(pump%direction) == 1 .or. iabs(pump%direction) == 3) then
+         if (abs(pump%direction) == 1 .or. abs(pump%direction) == 3) then
             call prop_get_doubles(md_ptr, '', 'startLevelSuctionSide', pump%ss_onlevel, pump%nrstages, success1)
             success = success .and. check_input_result(success1, st_id, 'startLevelSuctionSide')
             call prop_get_doubles(md_ptr, '', 'stopLevelSuctionSide', pump%ss_offlevel, pump%nrstages, success1)
             success = success .and. check_input_result(success1, st_id, 'stopLevelSuctionSide')
          end if
       
-         if (iabs(pump%direction) == 2 .or. iabs(pump%direction) == 3) then
+         if (abs(pump%direction) == 2 .or. abs(pump%direction) == 3) then
             call prop_get_doubles(md_ptr, '', 'startLevelDeliverySide', pump%ds_onlevel, pump%nrstages, success1)
             success = success .and. check_input_result(success1, st_id, 'startLevelDeliverySide')
             call prop_get_doubles(md_ptr, '', 'stopLevelDeliverySide', pump%ds_offlevel, pump%nrstages, success1)
@@ -1413,19 +1413,19 @@ module m_readstructures
    !! An unknown/invalid value defaults to 0 (both).
    integer function allowedFlowDirToInt(flowdirString)
       character(len=*), intent(inout) :: flowdirString !< String value of the allowedFlowDir parameter.
-   
+
       call str_lower(flowdirString)
       select case(flowdirString)
       case('both')
-         allowedFlowDirToInt = 0
+         allowedFlowDirToInt = FLOWDIR_BOTH
       case('positive')
-         allowedFlowDirToInt = 1
+         allowedFlowDirToInt = FLOWDIR_POSITIVE
       case('negative')
-         allowedFlowDirToInt = 2
+         allowedFlowDirToInt = FLOWDIR_NEGATIVE
       case('none')
-         allowedFlowDirToInt = 3
+         allowedFlowDirToInt = FLOWDIR_NONE
       case default
-         allowedFlowDirToInt = 0
+         allowedFlowDirToInt = FLOWDIR_BOTH
       end select
       
    end function  allowedFlowDirToInt

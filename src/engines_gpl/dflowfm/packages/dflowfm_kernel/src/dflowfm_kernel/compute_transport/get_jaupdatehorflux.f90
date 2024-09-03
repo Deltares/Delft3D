@@ -73,14 +73,14 @@ subroutine get_jaupdatehorflux(nsubsteps, limtyp, jaupdate, jaupdatehorflux)
 
             kk1L = klnup(1, LL)
             if (kk1L /= 0) then
-               if (jaupdate(iabs(kk1L)) == 1) then
+               if (jaupdate(abs(kk1L)) == 1) then
                   jaupdatehorflux(LL) = 1
                   cycle
                end if
 
                if (kk1L > 0) then
                   kk2L = klnup(2, LL)
-                  if (jaupdate(iabs(kk2L)) == 1) then
+                  if (jaupdate(abs(kk2L)) == 1) then
                      jaupdatehorflux(LL) = 1
                      cycle
                   end if
@@ -89,14 +89,14 @@ subroutine get_jaupdatehorflux(nsubsteps, limtyp, jaupdate, jaupdatehorflux)
 
             kk1R = klnup(4, LL)
             if (kk1R /= 0) then
-               if (jaupdate(iabs(kk1R)) == 1) then
+               if (jaupdate(abs(kk1R)) == 1) then
                   jaupdatehorflux(LL) = 1
                   cycle
                end if
 
                if (kk1R > 0) then
                   kk2R = klnup(5, LL)
-                  if (jaupdate(iabs(kk2R)) == 1) then
+                  if (jaupdate(abs(kk2R)) == 1) then
                      jaupdatehorflux(LL) = 1
                   end if
                end if

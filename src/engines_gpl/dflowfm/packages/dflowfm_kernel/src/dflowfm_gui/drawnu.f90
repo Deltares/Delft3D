@@ -36,19 +36,11 @@
       use m_arcinfo
       use unstruc_display
       use unstruc_opengl
+      use m_drawthis
       implicit none
 
-      double precision :: epsgs
-      integer :: itgs
-      integer :: maxitgs
       integer :: metdraw
-      integer :: ndraw
-
-      integer :: KEY, ja, nsiz
-
-      common / DRAWTHIS / ndraw(50)
-
-      common / SOLVER / EPSGS, MAXITGS, ITGS
+      integer :: KEY, nsiz
 
 !
       if (KEY /= 3) return
@@ -77,7 +69,7 @@
       if (ndraw(3) > 4) call TEKLAN(NCOLLN)
 
       if (NDRAW(7) >= 2) then
-         call NETLINKVALS(NDRAW(7), NCOLLN)
+         call NETLINKVALS(NDRAW(7))
          call MINMXNETLINS()
       end if
 
@@ -107,7 +99,7 @@
          end if
 
          if (ndraw(2) == 6) then
-            call TEKNET(NCOLDN, key) ! network on top
+            call TEKNET(key) ! network on top
          end if
 
          if (ndraw(3) <= 4) call TEKLAN(NCOLLN)
@@ -121,7 +113,7 @@
          ! obs plotting used to be here [AvD]
          if (NDRAW(18) > 1) then
             nsiz = ndraw(18) - 1
-            call tekrai(nsiz, ja)
+            call tekrai(nsiz)
          end if
 
          call tekprofs() ! and initialise some turb parstm.amp

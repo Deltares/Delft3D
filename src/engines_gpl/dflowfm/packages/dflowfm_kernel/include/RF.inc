@@ -1,4 +1,4 @@
-real*8 , dimension(5,33,40),parameter    :: RF=reshape((/ &
+real(dp) , dimension(5,33,40),parameter    :: RF=reshape((/ &
   0.00000000000000 , &
   0.00000000000000 , &
   0.00000000000000 , &

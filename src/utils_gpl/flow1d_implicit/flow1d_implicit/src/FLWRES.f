@@ -210,7 +210,7 @@ c
       real    buflag(lagstm,nlags), grhis(*)
       double  precision  dt, hp(ngrid,3), qp(ngrid,3)
       logical first  ,writim ,wrirst,  lfilt, lgrwt
-      character*40 gridnm(*), strunm(*), qlatnm(*)
+      character(len=40) gridnm(*), strunm(*), qlatnm(*)
 c
 c     Declaration of local variables
 c

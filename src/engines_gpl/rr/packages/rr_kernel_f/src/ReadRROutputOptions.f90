@@ -60,9 +60,7 @@
 
   IMPLICIT NONE
  
-
-    Integer       Iout1, Idebug
-    Character(Len=FilCharIdLength) InputFileName, String
+    Character(Len=FilCharIdLength) InputFileName
 
     Logical       success
     Integer       NMAP, i

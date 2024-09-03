@@ -31,6 +31,7 @@
 !
 
       double precision function SPLDIST(X, X2, Y, Y2, XX, YY, TV, N)
+         use m_splint
          implicit none
          integer :: n
 !     AFSTAND VAN PUNT XX,YY TOT SPLINEPUNT MET PARM TV

@@ -229,7 +229,7 @@ contains
 
     !> Starts timing for this subroutine or program part.
     subroutine timstrt(subrou, ihandl, handle_)
-        character*(*), intent(in) :: subrou          !< Name of (part of) subroutine to monitor; max. 40 character ID-string.
+        character(len=*), intent(in) :: subrou          !< Name of (part of) subroutine to monitor; max. 40 character ID-string.
         integer(4), intent(inout) :: ihandl          !< Handle of the section; If ihandl==0, a new timer with name 'subrou' will be created.
                                                      !< 'ihandl' must afterwards be saved by the caller
         integer(4), optional, intent(out) :: handle_ !< Handle of the unique timer that has now been started.
@@ -326,7 +326,7 @@ contains
 
     !> Writes the timer results to the report file 'afile'.
     subroutine timdump(afile, write_total_time)
-        character*(*), intent(in) :: afile             !< Name of the output file
+        character(len=*), intent(in) :: afile             !< Name of the output file
         logical, intent(in), optional :: write_total_time  !< Flag for writing totals of the timers of the children. Default: .false.
 
         integer(4) :: i                         !   loop accross timer handles

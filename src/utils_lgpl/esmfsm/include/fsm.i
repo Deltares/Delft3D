@@ -73,7 +73,7 @@
     complex (kind=8) dcbuf      ! double complex
     complex (kind=4) cbuf
     logical          lbuf
-    character*1      chbuf
+    character(len=1) chbuf
 
     integer    &
        ityp,   &

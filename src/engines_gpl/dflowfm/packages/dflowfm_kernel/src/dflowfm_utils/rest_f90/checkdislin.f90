@@ -35,16 +35,10 @@
          use m_sferic
          use geometry_module, only: dlinedis
          use m_missing, only: dmiss
+         use m_locatora
 
          implicit none
          integer :: ja
-         integer :: jashow
-         integer :: jmouse
-         double precision :: xa
-         double precision :: xlc
-         double precision :: ya
-         double precision :: ylc
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
          double precision :: dis, xn, yn
 
          if (npl >= 2) then

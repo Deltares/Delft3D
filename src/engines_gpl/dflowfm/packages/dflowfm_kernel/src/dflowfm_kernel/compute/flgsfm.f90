@@ -30,7 +30,7 @@
 !
 !
 
-subroutine flgsfm(n, ng, L, firstiter, jarea)
+subroutine flgsfm(n, ng, L, jarea)
    use m_flowgeom
 !!--description-----------------------------------------------------------------
 ! NONE
@@ -51,7 +51,6 @@ subroutine flgsfm(n, ng, L, firstiter, jarea)
    integer, intent(in) :: n !< general structure point n
    integer, intent(in) :: ng !< is a member of general structure sigal ng
    integer, intent(in) :: L !< Flow link number, signed! If L < 0 then flow link is in opposite direction than structure left-right orientation.
-   logical, intent(in) :: firstiter
    logical :: jarea
 
 !
@@ -62,13 +61,11 @@ subroutine flgsfm(n, ng, L, firstiter, jarea)
    integer :: L0, Lb, Lt, LL, kk, iup
    logical :: velheight
    double precision :: cgd, cgf
-   double precision :: crest
    double precision :: cwd, cwf
    double precision :: dg, ds, ds1, ds2
    double precision :: hdsb, husb
    double precision :: lambda, mugf
    double precision :: relax
-   double precision :: rholeft, rhoright
    double precision :: strdamf
    double precision :: teken, tekenstr
    double precision :: ud, uu
@@ -160,7 +157,7 @@ subroutine flgsfm(n, ng, L, firstiter, jarea)
 
    dg = gateloweredgelevel - zs
 
-   call flupdofm(m, il, ir, ng, velheight, rholeft, rhoright, crest, husb, hdsb, &
+   call flupdofm(m, il, ir, ng, velheight, husb, hdsb, &
                  uu, ud, teken, relax)
 
    gatedoorheight = 0d0
@@ -174,7 +171,7 @@ subroutine flgsfm(n, ng, L, firstiter, jarea)
 
    if (husb > zs) then ! in all three tests of this type we do not have risc of immediate drying after opening, (sills usually above bed)
       zbi(1) = zs ! so we do not have the regular husb-zs>epshu, that would make a structure first overflowing too epshu dependent
-      call flgtarfm(ng, L0, wu(Lf), bl(kL), bl(kR), tekenstr, zs, wstr, w2, wsd, zb2, dg, ds1, ds2, cgf, cgd, &
+      call flgtarfm(ng, L0, wu(Lf), bl(kL), bl(kR), tekenstr, zs, wstr, w2, wsd, zb2, ds1, ds2, cgf, cgd, &
                     cwf, cwd, mugf, lambda, strdamf, gatedoorheight)
       u1(Lf) = rusav(1, n) - fusav(1, n) * DsL; u0(Lf) = u1(Lf); q1(Lf) = ausav(1, n) * u1(Lf)
       call flqhgsfm(Lf, teken, husb, hdsb, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, dg, &
@@ -192,7 +189,7 @@ subroutine flgsfm(n, ng, L, firstiter, jarea)
       if (husb > zs) then ! husb = upwind waterlevel instead of height
          dg = 1d9 ! sky is the limit, this gate fully open
          u1(Lf) = rusav(2, n) - fusav(2, n) * dsL; u0(Lf) = u1(Lf); q1(Lf) = ausav(2, n) * u1(Lf)
-         call flgtarfm(ng, L0, wu(Lf), bl(kL), bl(kR), tekenstr, zs, wstr, w2, wsd, zb2, dg, ds1, ds2, cgf, cgd, &
+         call flgtarfm(ng, L0, wu(Lf), bl(kL), bl(kR), tekenstr, zs, wstr, w2, wsd, zb2, ds1, ds2, cgf, cgd, &
                        cwf, cwd, mugf, lambda, strdamf, gatedoorheight)
          call flqhgsfm(Lf, teken, husb, hdsb, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, dg, &
                        cgf, cgd, cwf, cwd, mugf, lambda, strdamf, jarea, ds)
@@ -214,7 +211,7 @@ subroutine flgsfm(n, ng, L, firstiter, jarea)
       zbi(3) = zs ! 1d-9 prevents unneccesary evaluation
       dg = huge(1d0)
       u1(Lf) = rusav(3, n) - fusav(3, n) * dsL; u0(Lf) = u1(Lf); q1(Lf) = ausav(3, n) * u1(Lf)
-      call flgtarfm(ng, L0, wu(Lf), bl(kL), bl(kR), tekenstr, zs, wstr, w2, wsd, zb2, dg, ds1, ds2, cgf, cgd, &
+      call flgtarfm(ng, L0, wu(Lf), bl(kL), bl(kR), tekenstr, zs, wstr, w2, wsd, zb2, ds1, ds2, cgf, cgd, &
                     cwf, cwd, mugf, lambda, strdamf, gatedoorheight)
       call flqhgsfm(Lf, teken, husb, hdsb, uu, zs, wstr, wstr, wstr, zb2, ds1, ds2, dg, & ! no width variation here, 3 times wstr,
                     cgf, cgd, cwf, cwd, mugf, lambda, strdamf, jarea, ds) ! easy to see in the call

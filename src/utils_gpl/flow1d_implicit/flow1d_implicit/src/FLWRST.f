@@ -131,8 +131,8 @@ c
      &              strhis(dmstrh,*),contrl(17,*)   ,
      &              buflag(lagstm,nlags)            ,
      &              qaggr(ngrid,3)  ,qlaggr(*)      ,grhis(*)
-      character*(*) grnamf
-      character*(*) nameel(nentri)
+      character(len=*) grnamf
+      character(len=*) nameel(nentri)
 c
 c     Declaration of local variables
 c
@@ -160,14 +160,14 @@ c
 c
       allocate(sngl_buffer(ngrid))
       do i = 1, ngrid
-         sngl_buffer(i) = sngl(h2(i))
+         sngl_buffer(i) = real(h2(i), kind=kind(sngl_buffer))
       enddo
       error = putrel (fd_nefis_rst, grnamf, nameel(2),
      &                uindex, usrord, sngl_buffer)
       if (error.ne.0) goto 1000
 c
       do i = 1, ngrid
-         sngl_buffer(i) = sngl(q2(i))
+         sngl_buffer(i) = real(q2(i), kind=kind(sngl_buffer))
       enddo
       error = putrel (fd_nefis_rst, grnamf, nameel(3),
      &                uindex, usrord, sngl_buffer)

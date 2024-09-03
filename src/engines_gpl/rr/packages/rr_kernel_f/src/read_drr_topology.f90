@@ -247,7 +247,6 @@ module m_1d_networkreader_rr
         !use m_branch
 
         implicit none
-        double precision                 :: minSectionLength              = 1.0
         type(t_branchSet), target, intent(inout) :: brs
         type(t_nodeSet), target, intent(inout)   :: nds
         type(tree_data), pointer, intent(in)     :: md_ptr
@@ -256,27 +255,14 @@ module m_1d_networkreader_rr
         ! Local Variables
         integer                                  :: ibr
         type(t_branch), pointer                  :: pbr
-        type(t_node), pointer                    :: node
         logical                                  :: success
-        integer                                  :: istat
         integer                                  :: ibegNode
         integer                                  :: iendNode
-        integer                                  :: igr
-        integer                                  :: gridIndex
-        integer                                  :: j
-        integer                                  :: ip1
-        integer                                  :: ip2
         integer                                  :: branchType
         character(len=IdLen)                     :: branchId
         character(len=IdLen)                     :: branchName
         character(len=IdLen)                     :: begNodeId
         character(len=IdLen)                     :: endNodeId
-        character(len=IdLen)                     :: Chainage
-
-        double precision, allocatable, dimension(:)     :: gpX
-        double precision, allocatable, dimension(:)     :: gpY
-        double precision, allocatable, dimension(:)     :: gpOffsets
-        character(len=IdLen), allocatable, dimension(:) :: gpID
 
         brs%Count = brs%Count + 1
         ibr = brs%Count
@@ -369,10 +355,7 @@ module m_1d_networkreader_rr
         integer :: istat
         integer :: maxlenpar=10000
         integer :: numstr
-        integer :: i
-        Character(1000) ::inifile_01
-        
-        
+        integer :: i        
       
         call tree_create(trim(networkFile), md_ptr, maxlenpar)
       

@@ -152,15 +152,12 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
 ! Local variables
 !
     integer                     :: i
-    integer                     :: iocond
     integer                     :: isize
     integer                     :: istat
     integer(pntrsize)           :: istat_ptr
     integer                     :: j
     integer                     :: l
-    integer                     :: lbl                 !< bedload fraction number: lbl = l - lsed
     integer                     :: lenc                !< Help var. (length of character var.) 
-    integer                     :: lfile
     integer                     :: luninp
     integer                     :: n                   !< Temporary storage for nseddia(l)
     integer                     :: nclayfrac           ! Number of clay fractions
@@ -177,11 +174,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     character(20)               :: sedname
     character(256)              :: filtrn
     character(256)              :: rec
-    character(300)              :: message
     character(80)               :: parname
     character(20)               :: sc_type
-    character(20)               :: sedtype             !< Local variable for sediment type
-    character(78)               :: string
     character(10)               :: versionstring
     character(6)                :: seddxxstring
     character(256)              :: errmsg

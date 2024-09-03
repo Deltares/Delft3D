@@ -80,7 +80,7 @@
     do istru = 1, network%sts%count
        pstru => network%sts%struct(istru)
        do L0 = 1, pstru%numlinks
-          L = iabs(pstru%linknumbers(L0))
+          L = abs(pstru%linknumbers(L0))
           k1 = ln(1, L)
           k2 = ln(2, L)
        end do
@@ -91,7 +91,7 @@
        end if
 
        do L0 = 1, pstru%numlinks
-          L = iabs(pstru%linknumbers(L0))
+          L = abs(pstru%linknumbers(L0))
           k1 = ln(1, L)
           k2 = ln(2, L)
           bob(1, L) = max(zcdamn, bob0(1, L))
@@ -140,7 +140,7 @@
        end do
        if (minzcdamn < huge(1d0)) then
           do L0 = 1, pcompound%numlinks
-             L = iabs(pcompound%linknumbers(L0))
+             L = abs(pcompound%linknumbers(L0))
              k1 = ln(1, L)
              k2 = ln(2, L)
              bob(1, L) = max(minzcdamn, bob0(1, L))

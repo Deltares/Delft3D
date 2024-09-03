@@ -408,7 +408,7 @@ module geometry_module
       implicit none
       double precision                    :: x1, y1, x2, y2
       double precision                    :: xx1, yy1, xx2, yy2
-      double precision                    :: diff1, diff2, dy, r, dx2
+      double precision                    :: diff1, diff2
       integer, intent(in)                 :: jsferic
       double precision                    :: csphi
 
@@ -434,7 +434,7 @@ module geometry_module
          xx2   = xx2*degrad_hp
          yy1   = y1 *degrad_hp
          yy2   = y2 *degrad_hp
-         csphi = dcos(0.5d0*(yy1+yy2))
+         csphi = cos(0.5d0*(yy1+yy2))
          getdx = earth_radius*csphi*(xx2-xx1)
       else
          getdx = x2-x1
@@ -452,7 +452,7 @@ module geometry_module
       implicit none
       
       double precision :: x1, y1, x2, y2
-      double precision :: xx1, yy1,yy2
+      double precision :: yy1,yy2
       integer, intent(in)  :: jsferic
 
       if (jsferic == 1) then
@@ -472,7 +472,7 @@ module geometry_module
       
       implicit none
       
-      double precision :: x1, y1, x2, y2, dx, dy, dx2, dy2, dum
+      double precision :: x1, y1, x2, y2, dx, dy
       integer, intent(in)  :: jsferic
       
       if (Jsferic == 1) then
@@ -523,7 +523,7 @@ module geometry_module
          double precision, intent(out) :: y1    !< lattitude (spherical) or y-coordinate (2D Cartesian)
          double precision, intent(in)  :: xref  !< reference point longitude
          
-         double precision              :: xx1_, yy1a
+         double precision              :: xx1_
          
          double precision, parameter   :: dtol=1d-16
          
@@ -644,7 +644,7 @@ module geometry_module
          double precision, dimension(3) :: xx1, xx2, xx3, xx4
          double precision, dimension(3) :: xxcr
          
-         double precision, dimension(3) :: n12, n34, n
+         double precision, dimension(3) :: n12, n34
          
          double precision               :: Det12, Det34, dum
          
@@ -1240,7 +1240,7 @@ module geometry_module
 !         D = xiXxip1(1)*ee(1) + xiXxip1(2)*ee(2) + xiXxip1(3)*ee(3)
 
          D = inprod( xiXxip1, ee )
-!         D = dsign(1d0,D)
+!         D = sign(1d0,D)
          
          if ( abs(D) > dtol ) then
             Di = 1d0/D
@@ -1786,7 +1786,6 @@ module geometry_module
 
       double precision, dimension(3) :: xx1
       double precision, dimension(3) :: xx2
-      double precision, dimension(3) :: xxu
       double precision, dimension(3) :: elambda
       double precision, dimension(3) :: ephi
 
@@ -1913,7 +1912,6 @@ module geometry_module
       double precision, intent(in)  :: x3, y3 !< Point that is considered 'inside'.
       double precision, intent(out) :: xn, yn !< Output normal vector
       integer,          intent(out) :: jaflip !< Indicates whether normal was flipped (1) or not (0).
-      double precision :: din
       double precision, external :: dprodin
 
       double precision, dimension(1) :: xnloc, ynloc
@@ -2089,7 +2087,7 @@ module geometry_module
       double precision,               intent(in)    :: dmiss
 
       double precision, dimension(N)                :: x                                  !< Copy of xin, with possibly periodic fixes.
-      double precision                              :: dsx, dsy, xc, yc, dcos, xds, fac, x0, y0, x1, dx0, dx1, dy0, dy1
+      double precision                              :: dsx, dsy, xc, yc, xds, fac, x0, y0, x1, dx0, dx1, dy0, dy1
       double precision                              :: xdum
 
       integer                                       :: i, ip1
@@ -2219,7 +2217,6 @@ module geometry_module
       double precision                              :: Jx, Jy, Jz
       double precision                              :: Rai
       double precision                              :: sx, sy, sz
-      double precision                              :: xmin, xmax
 
       integer                                       :: i, ip1, iter
 
@@ -2230,7 +2227,6 @@ module geometry_module
       double precision, parameter                   :: dtol=1d-8
       double precision, parameter                   :: deps=1d-8
       double precision, parameter                   :: onesixth = 0.166666666666666667d0
-      integer                             :: mout=0 ,k
 
       area = 0d0
       xcg = 0d0
@@ -2438,13 +2434,11 @@ module geometry_module
 
       double precision, dimension(4,4) :: A           ! matrix
       double precision, dimension(4)   :: rhs         ! right-hand side
-      double precision, dimension(4)   :: update      ! update of (xxc,yyc,zzc,lambda)
 
       double precision                 :: xxc, yyc, zzc      ! circumcenter in 3D coordinates
       double precision                 :: lambda             ! Lagrange multiplier to enforce circumcenter on the sphere
 
       double precision                 :: dsi, dinpr
-      double precision                 :: xmin, xmax
 
       integer                          :: i, ip1
 
@@ -2460,7 +2454,7 @@ module geometry_module
       double precision, intent(in)     :: dcenterinside
                                        
       double precision                 :: xzw, yzw
-      double precision                 :: SL,SM,XCR,YCR,CRP
+      double precision                 :: SL,SM,XCR,YCR
       
       integer                          :: jacros, in
 
@@ -2642,17 +2636,14 @@ module geometry_module
 
       ! locals
       double precision :: xzw, yzw                        ! zwaartepunt
-      double precision :: xn, yn                          ! normal out
-      double precision :: dis
-      integer          :: m,k,k1,k2
-      double precision :: xz2, yz2                        ! only for help 4 corners
+      integer          :: m,k
       double precision :: xe3,ye3,xe1,ye1,xe2,ye2,tex,tey,ds, &
-         xccf,yccf,xccc,yccc,xcccf,ycccf,xccfo,yccfo,alf
+         xccf,yccf,xccfo,yccfo,alf
 
       integer, parameter :: num_columns=10
 
       double precision :: xh(num_columns), yh(num_columns)
-      double precision :: xr(num_columns), yr(num_columns), SL,SM,XCR,YCR,CRP
+      double precision :: SL,SM,XCR,YCR,CRP
       double precision :: eps = 1d-3, xcc3, ycc3, xf, xmx, xmn
       double precision :: dfac
       integer          :: jacros, in, m2, nintlinks ! nr of internal links = connected edges
@@ -2710,7 +2701,7 @@ module geometry_module
          alf  = 0.1d0
 
          if (jsferic == 1) then
-            xf  = 1d0/dcos( degrad_hp*yzw )
+            xf  = 1d0/cos( degrad_hp*yzw )
          endif
 
          nintlinks = 0
@@ -2855,7 +2846,7 @@ module geometry_module
       endif
       if (jsferic == 1) then
          phi = (y(1)+y(2)+y(3))/3d0
-         xf  = 1d0/dcos( degrad_hp*phi )
+         xf  = 1d0/cos( degrad_hp*phi )
          xz  = x(1) + xf*0.5d0*(dx3-z*dy3)*raddeg_hp/earth_radius
          yz  = y(1) +    0.5d0*(dy3+z*dx3)*raddeg_hp/earth_radius
       else

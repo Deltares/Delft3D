@@ -47,18 +47,15 @@ subroutine transport() ! transport for now, advect salinity and add
    use m_missing
    use unstruc_messages
    use m_transport, only: NUMCONST, constituents, ISALT, ITEMP
-   use m_lateral, only: average_concentrations_for_laterals, apply_transport_is_used
+   use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
+   use m_dlimitercentral
+   use m_dslim
 
    implicit none
 
    integer :: L, k, k1, k2, kb, n
 
    double precision :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
-
-   ! kuzmin 2D limiting
-
-   double precision, external :: dslim, dlimitercentral
-
    integer :: j, kj, ki, jastep, kk
    integer :: LL, Lb, Lt, kt, km
 

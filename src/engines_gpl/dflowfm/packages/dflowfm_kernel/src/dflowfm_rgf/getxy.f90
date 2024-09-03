@@ -49,7 +49,7 @@
          BX = (AX + CX) / 2
          TOL = 0.00001d0
 !     Dan bijhorende T zoeken
-         call GOLDDIS(AX, BX, CX, TOL, X, X2, Y, Y2, T, N, NT, TT, DIS, SSQ, H)
+         call GOLDDIS(AX, BX, CX, TOL, X, X2, Y, Y2, N, TT, DIS, SSQ, H)
 
 !     EN punt invullen
          call SPLINTXY(X, Y, X2, Y2, N, TT, XT, YT)

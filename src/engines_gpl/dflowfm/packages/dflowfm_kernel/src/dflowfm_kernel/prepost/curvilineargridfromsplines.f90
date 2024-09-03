@@ -32,6 +32,7 @@
 
       subroutine curvilinearGRIDfromsplines()
          use M_SPLINES
+         use m_qnerror
          implicit none
          if (MCS == 0) then
             call QNERROR('First Create or Open Splines', ' ', ' ')

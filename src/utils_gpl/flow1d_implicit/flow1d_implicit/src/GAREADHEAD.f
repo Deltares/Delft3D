@@ -65,7 +65,7 @@ c
       integer   outframe(3)        ,dattimsim(2)      ,
      +          idattim(6)
       real      dtsim   ,tstart    ,tstop    ,tstep   ,hisstart
-      character*(*)      filnamhis
+      character(len=*)      filnamhis
 c
 c     Declaration of local variables:
 c 
@@ -73,8 +73,8 @@ c
      +          timind ,time  ,timep ,d
       integer   idattimfil(6)
       integer   ierr   ,newsize
-      character*10      artype,siztxt
-      character*100     txt
+      character(len=10)  artype,siztxt
+      character(len=100) txt
       double precision         diff
       character dattim*40
 c      

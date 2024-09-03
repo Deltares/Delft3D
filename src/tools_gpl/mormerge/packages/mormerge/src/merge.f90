@@ -68,8 +68,6 @@ subroutine merge (inputfile, workdir, runid)
     integer                                             :: loopcount
     integer                                             :: lundia
     integer                                             :: lunfil
-    integer                                             :: lunin
-    integer                                             :: lunout
     integer                                             :: scanmode
     integer, external                                   :: createstream
     integer       , dimension(:)  , allocatable         :: handles         ! data stream handles
