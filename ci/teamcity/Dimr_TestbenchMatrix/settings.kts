@@ -34,16 +34,16 @@ object TriggerMatrix : BuildType({
 
     steps {
         script {
-            id = "start a new build"
+            id = "Start Linux Testbench"
             scriptContent = """
                 curl -u %teamcity_user%:%teamcity_pass% \
                      -X POST \
                      -H "Content-Type: application/xml" \
                      -d '<build branchName="%teamcity.build.branch%">
-                            <buildType id="Test_GitlabCode_DoRunTest"/>
+                            <buildType id="Dimr_TestbenchMatrix_Linux"/>
                             <revisions>
                                 <revision version="%build.vcs.number%" vcsBranchName="refs/%teamcity.build.branch%/head">
-                                    <vcs-root-instance vcs-root-id="Test_TestGitlab"/>
+                                    <vcs-root-instance vcs-root-id="Delft3dGitlab"/>
                                 </revision>
                             </revisions>
                             <properties>
@@ -51,6 +51,11 @@ object TriggerMatrix : BuildType({
                             </properties>
                          </build>' \
                      "https://build.avi.directory.intra/app/rest/buildQueue"
+                if (test $? -ne 0)
+                then
+                    echo Start Linux Testbench through TC API failed.
+                    exit 1
+                fi
             """.trimIndent()
         }
     }
@@ -111,5 +116,9 @@ object Linux : BuildType({
                 ignoreDrafts = true
             }
         }
+    }
+
+    requirements {
+        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })
