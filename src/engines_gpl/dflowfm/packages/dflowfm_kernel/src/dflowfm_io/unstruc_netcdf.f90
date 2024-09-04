@@ -11657,19 +11657,19 @@ contains
             do N1 = nump + 1, nump1d2d
                numk1d = numk1d + 1
                k1 = netcell(N1)%nod(1)
-               if (k1 /= numk1d) then !netcells not in correct order
-                  do N2 = N1 + 1, nump1d2d
-                     k1 = netcell(n2)%nod(1)
-                     if (k1 == numk1d) then
-                        tempcell = netcell(N1)
-                        netcell(N1) = netcell(N2)
-                        netcell(N2) = tempcell
-                        netcell_permutation(n1-nump) = N2
-                        netcell_permutation(N2-nump) = N1
-                        exit
-                     end if
-                  end do
-               end if
+               !if (k1 /= numk1d) then !netcells not in correct order
+               !   do N2 = N1 + 1, nump1d2d
+               !      k1 = netcell(n2)%nod(1)
+               !      if (k1 == numk1d) then
+               !         tempcell = netcell(N1)
+               !         netcell(N1) = netcell(N2)
+               !         netcell(N2) = tempcell
+               !         netcell_permutation(n1-nump) = N2
+               !         netcell_permutation(N2-nump) = N1
+               !         exit
+               !      end if
+               !   end do
+               !end if
 
                xn(numk1d) = xk(k1)
                yn(numk1d) = yk(k1)
@@ -11703,11 +11703,11 @@ contains
 
                   n1d2dcontacts = n1d2dcontacts + 1
                   if (N1 > nump .and. N2 <= nump) then ! First point of 1D link is 1D cell
-                     N1 = NETCELL_PERMUTATION(N1-nump)
+                     !N1 = NETCELL_PERMUTATION(N1-nump)
                      contacts(1, n1d2dcontacts) = abs(KC(netcell(N1)%nod(1))) ! cell -> orig node -> new node
                      contacts(2, n1d2dcontacts) = N2 ! 2D cell number in network_data is the same in UGRID mesh2d numbering (see below).
                   else if (N2 > nump .and. N1 <= nump) then ! First point of 1D link is 1D cell
-                     N2 = NETCELL_PERMUTATION(N2-nump)
+                     !N2 = NETCELL_PERMUTATION(N2-nump)
                      contacts(1, n1d2dcontacts) = abs(KC(netcell(N2)%nod(1))) ! cell -> orig node -> new node
                      contacts(2, n1d2dcontacts) = N1 ! 2D cell number in network_data is the same in UGRID mesh2d numbering (see below).
                   else
