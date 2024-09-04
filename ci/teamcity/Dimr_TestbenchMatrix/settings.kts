@@ -7,18 +7,18 @@ import jetbrains.buildServer.configs.kotlin.triggers.VcsTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
-import testbenchMatrix.trigger
-import testbenchMatrix.linux
-import testbenchMatrix.windows
+import testbenchMatrix.Trigger
+import testbenchMatrix.Linux
+import testbenchMatrix.Windows
 
 version = "2024.03"
 
 project {
     description = "contact: BlackOps"
 
-    buildType(trigger)
-    buildType(windows)
-    buildType(linux)
+    buildType(Trigger)
+    buildType(Windows)
+    buildType(Linux)
 
-    buildTypesOrder = arrayListOf(trigger, linux, windows)
+    buildTypesOrder = arrayListOf(Trigger, Linux, Windows)
 }

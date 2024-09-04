@@ -8,7 +8,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.VcsTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
-object trigger : BuildType({
+object Trigger : BuildType({
     name = "Trigger"
 
     vcs {
@@ -72,7 +72,8 @@ object trigger : BuildType({
             name = "Start Linux Testbench"
 
             scriptContent = """
-                curl -u %teamcity_user%:%teamcity_pass% \
+                curl -sS \
+                     -u %teamcity_user%:%teamcity_pass% \
                      -X POST \
                      -H "Content-Type: application/xml" \
                      -d '<build branchName="%teamcity.build.branch%">
@@ -99,7 +100,8 @@ object trigger : BuildType({
             name = "Start Windows Testbench"
 
             scriptContent = """
-                curl -u %teamcity_user%:%teamcity_pass% \
+                curl -sS \
+                     -u %teamcity_user%:%teamcity_pass% \
                      -X POST \
                      -H "Content-Type: application/xml" \
                      -d '<build branchName="%teamcity.build.branch%">
