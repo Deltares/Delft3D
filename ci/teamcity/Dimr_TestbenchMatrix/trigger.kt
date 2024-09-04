@@ -6,7 +6,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.VcsTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
-object Trigger : BuildType({
+object trigger : BuildType({
     name = "Trigger"
 
     vcs {

@@ -16,9 +16,9 @@ version = "2024.03"
 project {
     description = "contact: BlackOps"
 
-    buildType(Trigger)
-    buildType(Windows)
-    buildType(Linux)
+    buildType(trigger)
+    buildType(windows)
+    buildType(linux)
 
     buildTypesOrder = arrayListOf(Trigger, Linux, Windows)
 }

@@ -7,9 +7,9 @@ import jetbrains.buildServer.configs.kotlin.triggers.VcsTrigger
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
-import Trigger
+import trigger
 
-object Linux : BuildType({
+object linux : BuildType({
     name = "Linux"
 
     val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
@@ -30,7 +30,7 @@ object Linux : BuildType({
     }
 
     dependencies {
-        snapshot(Trigger) {
+        snapshot(trigger) {
             onDependencyFailure = FailureAction.CANCEL
             onDependencyCancel = FailureAction.CANCEL
         }

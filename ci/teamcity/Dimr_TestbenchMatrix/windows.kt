@@ -9,7 +9,7 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
 import trigger
 
-object Windows : BuildType({
+object windows : BuildType({
     name = "Windows"
 
     val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
@@ -30,7 +30,7 @@ object Windows : BuildType({
     }
 
     dependencies {
-        snapshot(Trigger) {
+        snapshot(trigger) {
             onDependencyFailure = FailureAction.CANCEL
             onDependencyCancel = FailureAction.CANCEL
         }
