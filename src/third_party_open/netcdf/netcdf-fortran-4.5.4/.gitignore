@@ -1,0 +1,6 @@
+CTestConfig.cmake
+build*
+\#.\#
+*.*~
+html
+.idea

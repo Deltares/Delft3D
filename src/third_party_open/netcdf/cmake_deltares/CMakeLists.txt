@@ -1,36 +1,20 @@
 # Set the source path where the library components are located
-set(library_path "${CMAKE_CURRENT_SOURCE_DIR}/../")
+set(library_path "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 # Include directories that are necessary references for netcdff
-include_directories(${library_path}/netcdf-fortran-4.4.4/libsrc)
+include_directories(${library_path}/netcdf-fortran-4.5.4/libsrc)
 
-set(source_path "${library_path}/netcdf-fortran-4.4.4/fortran")
+set(source_path "${library_path}/netcdf-fortran-4.5.4/fortran")
 
 # Include directories that are necessary references for netcdf4
 # message(STATUS ${netcdf_version} " include dir is ${library_path}/${netcdf_version}/include")
 # include_directories("${library_path}/${netcdf_version}/include")
 # set(c_sources ${source_path}/nf_lib.c)
 
-set(fortran_sources ${source_path}/module_netcdf4_nc_interfaces.f90
-					${source_path}/module_netcdf4_nf_interfaces.F90
-					${source_path}/module_netcdf_nc_data.F90
-					${source_path}/module_netcdf_nc_interfaces.f90
-					${source_path}/module_netcdf_nf_data.F90
-					${source_path}/netcdf4.f90
-					${source_path}/nf_attio.F90
-					${source_path}/nf_control.F90
-					${source_path}/nf_dim.f90
-					${source_path}/nf_genatt.f90
-					${source_path}/nf_geninq.f90
-					${source_path}/nf_genvar.f90
-					${source_path}/nf_misc.f90
-					${source_path}/nf_nc4.f90
-					${source_path}/nf_par_dummy.f90
-					${source_path}/nf_var1io.F90
-					${source_path}/nf_varaio.F90
-					${source_path}/nf_varmio.F90
-					${source_path}/nf_varsio.F90
-					${source_path}/typeSizes.f90)
+file(GLOB SRC_FILES ${source_path}/*.f90 ${source_path}/*.F90)
+message("HARMEN HIDDE " ${SRC_FILES})
+
+set(fortran_sources ${SRC_FILES})
 
 # Add library
 set (netcdf_library_name netcdff)
