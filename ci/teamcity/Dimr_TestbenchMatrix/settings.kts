@@ -27,11 +27,12 @@ object Trigger : BuildType({
     }
 
     params {
+        param("testbench_table", "ci/teamcity/Dimr_TestbenchMatrix/dimr_testbench_table.csv")
         param("teamcity_user", "svc_dimr_trigger")
         password("teamcity_pass", "credentialsJSON:15cc6665-e900-4360-8942-00e654f6acfe")
         param("matrix_list", "first,second")
         param("git_head", "dummy_value")
-        param("testbench_table", "ci/teamcity/Dimr_TestbenchMatrix/dimr_testbench_table.csv")
+        param("branch_name", "dummy_value")
     }
 
     steps {
