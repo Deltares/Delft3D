@@ -70,8 +70,8 @@ object Trigger : BuildType({
             command = script {
                 content="""
                     matrix_list = "%matrix_list%".split(',')
-                    matrix_list_linux   = [xml for xml in matrix_list if "lnx64" in xml]
-                    matrix_list_windows = [xml for xml in matrix_list if "win64" in xml]
+                    matrix_list_linux   = ",".join([xml for xml in matrix_list if "lnx64" in xml])
+                    matrix_list_windows = ",".join([xml for xml in matrix_list if "win64" in xml])
 
                     print(f"##teamcity[setParameter name='matrix_list_linux' value='{matrix_list_linux}']")
                     print(f"##teamcity[setParameter name='matrix_list_windows' value='{matrix_list_windows}']")
