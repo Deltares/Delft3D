@@ -138,4 +138,9 @@ object trigger : BuildType({
             }
         }
     }
+
+    requirements {
+        equals("teamcity.agent.jvm.os.name", "Linux")
+    }
+
 })
