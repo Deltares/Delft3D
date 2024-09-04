@@ -36,12 +36,14 @@ object TriggerMatrix : BuildType({
     steps {
 
         python {
-            scriptContent = """
+            command = script {
+                content="""
                 if "merge_request" in "%teamcity.build.branch%":
                     print("##teamcity[setParameter name='git_head' value='refs/%teamcity.build.branch%/head']")
                 else:
                     print("##teamcity[setParameter name='git_head' value='refs/%teamcity.build.branch%']")
-            """.trimIndent()
+                """.trimIndent()
+            }
         }
 
         script {
