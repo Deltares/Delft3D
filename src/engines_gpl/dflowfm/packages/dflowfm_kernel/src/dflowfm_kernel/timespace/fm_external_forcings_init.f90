@@ -40,7 +40,7 @@ contains
    module subroutine init_new(external_force_file_name, iresult)
       use properties, only: get_version_number, prop_file
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
-      use messageHandling
+      use messageHandling, only: warn_flush, err_flush, msgbuf
       use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, thrtt, num_lat_ini_blocks
       use m_flowgeom, only: ba
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat
@@ -204,7 +204,7 @@ contains
       use timespace_parameters, only: NODE_ID
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
       use tree_structures, only: tree_get_name, tree_get_data_string
-      use messageHandling
+      use messageHandling, only: mess, LEVEL_WARN, warn_flush, msgbuf
       use string_module, only: strcmpi
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
@@ -361,16 +361,129 @@ contains
 
    end function init_boundary_forcings
 
+   !> Read the discharge specification by the current [Lateral] block from new external forcings file
+   subroutine read_lateral_discharge_definition(node_ptr, loc_id, base_dir, ilattype, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_success)
+      use messageHandling, only: mess, err, LEVEL_WARN
+      use precision, only: dp
+      use m_missing, only: imiss, dmiss
+      use properties, only: has_prop, prop_get
+      use tree_data_types, only: tree_data
+      use timespace_parameters, only: LOCTP_NODEID, LOCTP_BRANCHID_CHAINAGE, LOCTP_POLYGON_XY, LOCTP_POLYGON_FILE
+      use m_laterals, only: ILATTP_1D
+      use unstruc_files, only: resolvePath
+
+      type(tree_data), pointer, intent(in) :: node_ptr !< The tree node of the lateral block
+      character(len=*), intent(in) :: loc_id !< The id of the lateral
+      character(len=*), intent(in) :: base_dir !< The base directory of the lateral
+      integer, intent(inout) :: ilattype !< The type of lateral (1D, 2D, or both)
+      integer, intent(out) :: loc_spec_type !< Specify how lateral discharge is defined
+      character(len=*), intent(out) :: node_id !< The node id of the lateral, only set if loc_spec_type = LOCTP_NODEID
+      character(len=*), intent(out) :: branch_id !< The branch id of the lateral, only set if loc_spec_type = LOCTP_BRANCHID_CHAINAGE
+      real(kind=dp), intent(out) :: chainage !< The chainage of the lateral, only set if loc_spec_type = LOCTP_BRANCHID_CHAINAGE
+      integer, intent(out) :: num_coordinates !< The number of coordinates of the lateral, only set if loc_spec_type = LOCTP_POLYGON_XY
+      real(kind=dp), allocatable, intent(out) :: x_coordinates(:), y_coordinates(:) !< The x and y coordinates of the lateral, only set if loc_spec_type = LOCTP_POLYGON_XY
+      character(len=*), intent(out) :: location_file !< The location file of the lateral, only set if loc_spec_type = LOCTP_POLYGON_FILE
+      logical, intent(out) :: is_success !< Flag indicating if the reading was successful
+
+      logical :: has_node_id, has_branch_id, has_chainage, has_num_coordinates, has_location_file, has_x_coordinates, has_y_coordinates
+      integer :: number_of_discharge_specifications, ierr
+      integer, parameter :: maximum_number_of_discharge_specifications = 4
+
+      loc_spec_type = imiss
+      node_id = ''
+      branch_id = ''
+      chainage = dmiss
+      num_coordinates = imiss
+      location_file = ''
+      is_success = .false.
+
+      has_node_id = has_prop(node_ptr, '', 'nodeId')
+      has_branch_id = has_prop(node_ptr, '', 'branchId')
+      has_chainage = has_prop(node_ptr, '', 'chainage')
+      has_num_coordinates = has_prop(node_ptr, '', 'numCoordinates')
+      has_x_coordinates = has_prop(node_ptr, '', 'xCoordinates')
+      has_y_coordinates = has_prop(node_ptr, '', 'yCoordinates')
+      has_location_file = has_prop(node_ptr, '', 'locationFile')
+
+      ! Test if multiple discharge methods were set
+      number_of_discharge_specifications = sum([(1, integer :: i=1, maximum_number_of_discharge_specifications)], [has_node_id, has_branch_id .or. has_chainage, has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates, has_location_file])
+
+      if (number_of_discharge_specifications < 1) then
+         call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': No discharge specifications found. Use nodeId, branchId + chainage, numcoor + xcoors + ycoors, or locationFile.')
+         return
+      else if (number_of_discharge_specifications > 1) then
+         call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': Multiple discharge specifications found. Use nodeId, branchId + chainage, numcoor + xcoors + ycoors, or locationFile.')
+         return
+      end if
+
+      ! nodeId                  => location_specifier = LOCTP_NODEID
+      ! branchId+chainage       => location_specifier = LOCTP_BRANCH_CHAINAGE
+      ! numcoor+xcoors+ycoors   => location_specifier = LOCTP_XY_POLYGON
+      ! locationFile = test.pol => location_specifier = LOCTP_POLYGON_FILE
+      if (has_node_id) then
+         call prop_get(node_ptr, '', 'nodeId', node_id)
+         loc_spec_type = LOCTP_NODEID
+         ilattype = ILATTP_1D
+         is_success = .true.
+         return
+      end if
+
+      if (has_branch_id .or. has_chainage) then
+         if (.not. (has_branch_id .and. has_chainage)) then
+            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': branchId and chainage must be set together.')
+            return
+         end if
+
+         call prop_get(node_ptr, '', 'branchId', branch_id)
+         call prop_get(node_ptr, '', 'chainage', chainage)
+         if (len_trim(branch_id) > 0 .and. chainage /= dmiss .and. chainage >= 0.0d0) then
+            loc_spec_type = LOCTP_BRANCHID_CHAINAGE
+            ilattype = ILATTP_1D
+            is_success = .true.
+            return
+         else
+            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': values of branchId and chainage are invalid.')
+            return
+         end if
+      end if
+
+      if (has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates) then
+         if (.not. (has_num_coordinates .and. has_x_coordinates .and. has_y_coordinates)) then
+            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': numCoordinates, xCoordinates and yCoordinates must be set together.')
+            return
+         end if
+         call prop_get(node_ptr, '', 'numCoordinates', num_coordinates)
+         allocate (x_coordinates(num_coordinates), stat=ierr)
+         allocate (y_coordinates(num_coordinates), stat=ierr)
+         call prop_get(node_ptr, '', 'xCoordinates', x_coordinates, num_coordinates)
+         call prop_get(node_ptr, '', 'yCoordinates', y_coordinates, num_coordinates)
+         loc_spec_type = LOCTP_POLYGON_XY
+         is_success = .true.
+         return
+      end if
+
+      if (has_location_file) then
+         location_file = ''
+         call prop_get(node_ptr, '', 'locationFile', location_file)
+         if (len_trim(location_file) == 0) then
+            call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': locationFile is empty.')
+            return
+         end if
+         call resolvePath(location_file, base_dir)
+         loc_spec_type = LOCTP_POLYGON_FILE
+         is_success = .true.
+         return
+      end if
+      call err('Programming error, please report: read_lateral_discharge_definition failed to read lateral '''//trim(loc_id)//'''')
+   end subroutine read_lateral_discharge_definition
+
    !> Read lateral blocks from new external forcings file and makes required initialisations
    function init_lateral_forcings(node_ptr, base_dir, block_number, major) result(is_successful)
-      use messageHandling
+      use messageHandling, only: warn_flush, msgbuf
       use string_module, only: str_tolower
       use tree_data_types, only: tree_data
-      use m_laterals, only: qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd
+      use m_laterals, only: qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd, apply_transport
       use m_flowgeom, only: ndxi, xz, yz
-      use m_laterals, only: apply_transport
-      use m_missing, only: imiss, dmiss
-      use timespace_parameters, only: LOCTP_NODEID, LOCTP_BRANCHID_CHAINAGE, LOCTP_POLYGON_XY, LOCTP_POLYGON_FILE, convert_file_type_string_to_integer
       use m_alloc, only: realloc, reserve_sufficient_space
       use fm_external_forcings_data, only: kx, qid
       use m_wind, only: jaqin
@@ -425,63 +538,7 @@ contains
       call reserve_sufficient_space(apply_transport, numlatsg + 1, 0)
       call prop_get(node_ptr, '', 'applyTransport', apply_transport(numlatsg + 1), is_read)
 
-      ! [lateral]
-      ! fileVersion >= 2: nodeId                  => location_specifier = LOCTP_NODEID
-      !                   branchId+chainage       => location_specifier = LOCTP_BRANCHID_CHAINAGE
-      !                   numcoor+xcoors+ycoors   => location_specifier = LOCTP_POLYGON_XY
-      ! fileVersion <= 1: locationFile = test.pol => location_specifier = LOCTP_POLYGON_FILE
-      loc_spec_type = imiss
-      node_id = ' '
-      branch_id = ' '
-      chainage = dmiss
-      num_coordinates = imiss
-
-      if (major >= 2) then
-         call prop_get(node_ptr, '', 'nodeId', node_id, is_successful)
-         if (is_successful) then
-            loc_spec_type = LOCTP_NODEID
-            ilattype = ILATTP_1D
-         else
-            call prop_get(node_ptr, '', 'branchId', branch_id, is_successful)
-            if (is_successful) then
-               call prop_get(node_ptr, '', 'chainage', chainage, is_successful)
-            end if
-            if (is_successful) then
-               if (len_trim(branch_id) > 0 .and. chainage /= dmiss .and. chainage >= 0.0d0) then
-                  loc_spec_type = LOCTP_BRANCHID_CHAINAGE
-                  ilattype = ILATTP_1D
-               end if
-            else
-               call prop_get(node_ptr, '', 'numCoordinates', num_coordinates, is_successful)
-               if (is_successful .and. num_coordinates > 0) then
-                  allocate (x_coordinates(num_coordinates), stat=ierr)
-                  allocate (y_coordinates(num_coordinates), stat=ierr)
-                  call prop_get(node_ptr, '', 'xCoordinates', x_coordinates, num_coordinates, is_successful)
-                  call prop_get(node_ptr, '', 'yCoordinates', y_coordinates, num_coordinates, is_successful)
-                  if (is_successful) then
-                     loc_spec_type = LOCTP_POLYGON_XY
-                  end if
-               end if
-            end if
-         end if
-      else ! fileVersion <= 1
-         loc_spec_type = LOCTP_POLYGON_FILE
-
-         location_file = ''
-         call prop_get(node_ptr, '', 'locationFile', location_file, is_successful)
-         if (.not. is_successful .or. len_trim(location_file) == 0) then
-            write (msgbuf, '(a,a,a)') 'Required field ''locationFile'' missing in lateral ''', trim(loc_id), '''.'
-            call warn_flush()
-            return
-         else
-            call resolvePath(location_file, base_dir)
-         end if
-      end if
-      if (loc_spec_type == imiss) then
-         write (msgbuf, '(a,a,a)') 'Unrecognized location specification in lateral ''', trim(loc_id), '''.'
-         call warn_flush()
-         return
-      end if
+      call read_lateral_discharge_definition(node_ptr, loc_id, base_dir, ilattype, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_successful)
 
       call ini_alloc_laterals()
 
@@ -532,7 +589,7 @@ contains
       !! and do required initialisation for that quantity.
    function init_meteo_forcings(node_ptr, base_dir, file_name, group_name) result(res)
       use string_module, only: strcmpi, str_tolower
-      use messageHandling
+      use messageHandling, only: warn_flush, msgbuf, LEVEL_INFO, mess
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       use m_missing, only: dmiss
       use tree_data_types, only: tree_data
