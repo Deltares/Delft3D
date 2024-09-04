@@ -30,6 +30,7 @@ object TriggerMatrix : BuildType({
         param("teamcity_user", "svc_dimr_trigger")
         password("teamcity_pass", "credentialsJSON:15cc6665-e900-4360-8942-00e654f6acfe")
         param("matrix_list", "first,second")
+        param("git_head", "dummy")
     }
 
     steps {
