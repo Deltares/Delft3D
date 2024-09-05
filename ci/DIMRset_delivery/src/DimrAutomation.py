@@ -44,7 +44,7 @@ class DimrAutomation(object):
         self.__get_kernel_versions()  # This step is crucial for the script to run, do not comment this one out!
         self.__update_public_wiki()
         self.__download_and_install_artifacts()
-        print(f"WARNING: Tagging in SVN is disabled: must be replaced by a tag in Git.")
+        print("WARNING: Tagging in SVN is disabled: must be replaced by a tag in Git.")
         self.__pin_and_tag_builds()
         self.__update_excel_sheet()
         self.__prepare_email()

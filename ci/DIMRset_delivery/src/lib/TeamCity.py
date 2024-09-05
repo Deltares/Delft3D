@@ -55,7 +55,7 @@ class TeamCity(object):
         )
         if result.status_code == 200:
             return True
-        print(f"Could not connect to the TeamCity API:")
+        print("Could not connect to the TeamCity API:")
         print(f"Error: {result.status_code} - {result.content}")
         return False
 
