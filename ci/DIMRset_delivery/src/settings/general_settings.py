@@ -4,6 +4,9 @@ NETWORK_BASE_PATH = "p:\\d-hydro\\dimrset\\weekly\\"
 # Address to Linux
 LINUX_ADDRESS = "h7"
 
+# Address to git
+DELFT3D_GIT_REPO = "https://git.deltares.nl/oss/delft3d.git"
+
 # Filename of the Excelsheet containing an overview of the DIMR versions.
 VERSIONS_EXCEL_FILENAME = "versions_overview.xlsx"
 

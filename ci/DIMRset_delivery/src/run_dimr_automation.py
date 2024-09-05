@@ -13,9 +13,10 @@ from getpass import getpass
 
 from DimrAutomation import DimrAutomation
 from helpers.SshClient import SshClient
+from helpers.GitClient import GitClient
 from lib.Atlassian import Atlassian
 from lib.TeamCity import TeamCity
-
+from settings.general_settings import DELFT3D_GIT_REPO
 
 if __name__ == "__main__":
     username = input("Enter your Deltares username:")
@@ -24,9 +25,10 @@ if __name__ == "__main__":
     atlassian_wrapper = Atlassian(username=username, password=password)
     teamcity_wrapper = TeamCity(username=username, password=password)
     ssh_client_wrapper = SshClient(username=username, password=password)
+    git_client_wrapper = GitClient(DELFT3D_GIT_REPO, username, password)
 
     dimr_automation = DimrAutomation(atlassian=atlassian_wrapper, teamcity=teamcity_wrapper,
-                                     ssh_client=ssh_client_wrapper)
+                                     ssh_client=ssh_client_wrapper, git_client=git_client_wrapper)
     print("Starting the automation process...")
     dimr_automation.run()
     print("Finished")
