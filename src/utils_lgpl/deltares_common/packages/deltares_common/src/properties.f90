@@ -79,7 +79,7 @@ module properties
       module procedure prop_get_strings
       module procedure prop_get_integer
       module procedure prop_get_integers
-      module procedure prop_get_integers_2
+      module procedure prop_get_integers_2d
       module procedure prop_get_real
       module procedure prop_get_reals
       module procedure prop_get_logical
@@ -2012,7 +2012,7 @@ contains
    !!    Everywhere behind the character "=".
    !!    The following example is allowed:
    !!    IntegersIn = (n,m): 4,5
-   subroutine prop_get_integers_2(tree, chapter, key, value, valuelength, success, valuesfirst)
+   subroutine prop_get_integers_2d(tree, chapter, key, value, valuelength, success, valuesfirst)
       implicit none
       type(tree_data), pointer :: tree !< The property tree
       integer, dimension(:, :), intent(inout) :: value !< Value of the key (not set if the key is not found, so you can set a default value)
@@ -2027,7 +2027,7 @@ contains
       valuearray = reshape(value, [valuelength])
       call prop_get_integers(tree, chapter, key, valuearray, 1, success, valuesfirst)
       value = reshape(valuearray, shape(value))
-   end subroutine prop_get_integers_2
+   end subroutine prop_get_integers_2d
 
    !> Get the real value for a property
    !!    Use prop_get_string to get the string value.
