@@ -654,7 +654,7 @@ contains
       character(len=ini_key_len) :: groupname !
       character(len=ini_value_len) :: quantity !
       character(len=ini_value_len) :: location_file !< contains either the name of the polygon file (.pli) or the nodeId
-      character(len=ini_value_len) :: forcingfile !
+      character(len=ini_value_len) :: forcing_file !
       double precision :: return_time !
       double precision :: tr_ws ! Tracer fall velocity
       double precision :: tr_decay_time ! Tracer decay time
@@ -701,7 +701,7 @@ contains
          if (strcmpi(groupname, 'Boundary')) then
             quantity = ''
             location_file = ''
-            forcingFile = ''
+            forcing_file = ''
             return_time = 0.0
 
             group_ok = .true.
@@ -730,9 +730,9 @@ contains
 
             group_ok = group_ok .and. property_ok
 
-            call prop_get(node_ptr, '', 'forcingFile ', forcingFile, property_ok)
+            call prop_get(node_ptr, '', 'forcingFile ', forcing_file, property_ok)
             if (property_ok) then
-               call resolvePath(forcingFile, basedir)
+               call resolvePath(forcing_file, basedir)
             else
                call qnerror('Expected property', 'forcingFile', ' for boundary definition')
             end if
@@ -1094,7 +1094,7 @@ contains
    end subroutine processexternalboundarypoints
 
 !> Calls the ec_addtimespacerelation with all proper unstruc-specific target arrays and element set masks.
-   function addtimespacerelation_boundaries(qid, filename, filetype, method, operand, forcingFile, targetindex) result(success)
+   function addtimespacerelation_boundaries(qid, filename, filetype, method, operand, forcing_file, targetindex) result(success)
       use fm_external_forcings_data, no1 => qid, no2 => filetype, no3 => operand, no4 => success
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
       use m_flowparameters, only: jawave
@@ -1108,7 +1108,7 @@ contains
       integer, intent(in) :: filetype !< File type of current quantity.
       integer, intent(in) :: method !< Time-interpolation method for current quantity.
       character(len=1), intent(in) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
-      character(len=*), optional, intent(in) :: forcingFile !< Optional forcings file, if it differs from the filename (i.e., if filename=*.pli, and forcingFile=*.bc)
+      character(len=*), optional, intent(in) :: forcing_file !< Optional forcings file, if it differs from the filename (i.e., if filename=*.pli, and forcing_file=*.bc)
       integer, optional, intent(in) :: targetIndex !< target position or rank of (complete!) vector in target array
 
       logical :: success
@@ -1123,8 +1123,8 @@ contains
       ! TODO: AVD: we now leave it to caller to fill array with length(zbnd*),
       ! instead of the number of polyline points. Cleaner alternative is to create
       ! a poly_tim provider, with the *underlying* point child providers being REALTIME.
-      if (present(forcingFile)) then
-         if (trim(forcingFile) == 'REALTIME') then
+      if (present(forcing_file)) then
+         if (trim(forcing_file) == 'REALTIME') then
             call mess(LEVEL_DEBUG, 'addtimespacerelation_boundaries: leave empty timespacerelation for '''//trim(qid)//''' from locationFile '''//trim(filename)//''' (REALTIME data).')
             return
          end if
@@ -1132,40 +1132,40 @@ contains
 
       kx = 1
       if (nbndz > 0 .and. (qid == 'waterlevelbnd' .or. qid == 'neumannbnd' .or. qid == 'riemannbnd' .or. qid == 'outflowbnd')) then
-         success = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, filename, filetype, method, operand, xy2bndz, forcingfile=forcingFile, dtnodal=dt_nodal, targetindex=targetindex)
+         success = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, filename, filetype, method, operand, xy2bndz, forcingfile=forcing_file, dtnodal=dt_nodal, targetindex=targetindex)
 
       else if (nbndz > 0 .and. nqhbnd > 0 .and. (qid == 'qhbnd')) then
-         success = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, filename, filetype, method, operand, xy2bndz, forcingfile=forcingFile, targetindex=targetindex)
+         success = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, filename, filetype, method, operand, xy2bndz, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (nbndu > 0 .and. (qid == 'dischargebnd' .or. qid == 'criticaloutflowbnd' .or. qid == 'weiroutflowbnd' .or. qid == 'absgenbnd')) then
          if (qid == 'absgenbnd') then
             jawave = 4
          end if
-         success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcingFile, targetindex=targetindex)
+         success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (nbndu > 0 .and. qid == 'velocitybnd') then
          pzmin => zminmaxu(1:nbndu)
          pzmax => zminmaxu(nbndu + 1:2 * nbndu)
          success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, &
-                                           xy2bndu, z=sigmabndu, pzmin=pzmin, pzmax=pzmax, forcingfile=forcingFile, targetindex=targetindex)
+                                           xy2bndu, z=sigmabndu, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (nbnds > 0 .and. qid == 'salinitybnd') then ! 2D
          pzmin => zminmaxs(1:nbnds)
          pzmax => zminmaxs(nbnds + 1:2 * nbnds)
          success = ec_addtimespacerelation(qid, xbnds, ybnds, kds, kx, filename, filetype, method, operand, xy2bnds, &
-                                           z=sigmabnds, pzmin=pzmin, pzmax=pzmax, forcingfile=forcingFile, targetindex=targetindex)
+                                           z=sigmabnds, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (nbndTM > 0 .and. qid == 'temperaturebnd') then
          pzmin => zminmaxtm(1:nbndTM)
          pzmax => zminmaxtm(nbndTM + 1:2 * nbndTM)
          success = ec_addtimespacerelation(qid, xbndTM, ybndTM, kdtm, kx, filename, filetype, method, operand, xy2bndtm, &
-                                           z=sigmabndtm, pzmin=pzmin, pzmax=pzmax, forcingfile=forcingFile, targetindex=targetindex)
+                                           z=sigmabndtm, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (nbndsd > 0 .and. (qid == 'sedimentbnd')) then
          pzmin => zminmaxsd(1:nbndsd)
          pzmax => zminmaxsd(nbndsd + 1:2 * nbndsd)
          success = ec_addtimespacerelation(qid, xbndsd, ybndsd, kdsd, kx, filename, filetype, method, operand, xy2bndsd, &
-                                           z=sigmabndsd, pzmin=pzmin, pzmax=pzmax, forcingfile=forcingFile, targetindex=targetindex)
+                                           z=sigmabndsd, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (numtracers > 0 .and. (qid(1:9) == 'tracerbnd')) then
          ! get tracer boundary condition number
@@ -1180,7 +1180,7 @@ contains
             pzmin => bndtr(itrac)%zminmax(1:nbndtr(itrac))
             pzmax => bndtr(itrac)%zminmax(nbndtr(itrac) + 1:2 * nbndtr(itrac))
             success = ec_addtimespacerelation(qid, bndtr(itrac)%x, bndtr(itrac)%y, bndtr(itrac)%kd, kx, filename, filetype, method, operand, bndtr(itrac)%xy2, &
-                                              z=bndtr(itrac)%sigma, forcingfile=forcingfile, pzmin=pzmin, pzmax=pzmax, targetindex=targetindex)
+                                              z=bndtr(itrac)%sigma, forcingfile=forcing_file, pzmin=pzmin, pzmax=pzmax, targetindex=targetindex)
          else
             success = .true.
          end if
@@ -1195,7 +1195,7 @@ contains
                pzmin => bndsf(isf)%zminmax(1:nbndsf(isf))
                pzmax => bndsf(isf)%zminmax(nbndsf(isf) + 1:2 * nbndsf(isf))
                success = ec_addtimespacerelation(qid, bndsf(isf)%x, bndsf(isf)%y, bndsf(isf)%kd, kx, filename, filetype, method, operand, bndsf(isf)%xy2, &
-                                                 z=bndsf(isf)%sigma, forcingfile=forcingfile, pzmin=pzmin, pzmax=pzmax, targetindex=targetindex)
+                                                 z=bndsf(isf)%sigma, forcingfile=forcing_file, pzmin=pzmin, pzmax=pzmax, targetindex=targetindex)
             else
                success = .true.
             end if
@@ -1205,17 +1205,17 @@ contains
          end if
 
       else if (nbndt > 0 .and. (qid == 'tangentialvelocitybnd')) then
-         success = ec_addtimespacerelation(qid, xbndt, ybndt, kdt, kx, filename, filetype, method, operand, xy2bndt, forcingfile=forcingFile, targetindex=targetindex)
+         success = ec_addtimespacerelation(qid, xbndt, ybndt, kdt, kx, filename, filetype, method, operand, xy2bndt, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (nbnduxy > 0 .and. (qid == 'uxuyadvectionvelocitybnd')) then
          kx = 2
          pzmin => zminmaxuxy(1:nbnduxy)
          pzmax => zminmaxuxy(nbnduxy + 1:2 * nbnduxy)
          success = ec_addtimespacerelation(qid, xbnduxy, ybnduxy, kduxy, kx, filename, filetype, method, operand, xy2bnduxy, &
-                                           z=sigmabnduxy, pzmin=pzmin, pzmax=pzmax, forcingfile=forcingFile)
+                                           z=sigmabnduxy, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file)
 
       else if (nbndn > 0 .and. (qid == 'normalvelocitybnd')) then
-         success = ec_addtimespacerelation(qid, xbndn, ybndn, kdn, kx, filename, filetype, method, operand, xy2bndn, forcingfile=forcingFile, targetindex=targetindex)
+         success = ec_addtimespacerelation(qid, xbndn, ybndn, kdn, kx, filename, filetype, method, operand, xy2bndn, forcingfile=forcing_file, targetindex=targetindex)
 
       else !There is some boundary that is not detected or recognized
 !      success = .false.

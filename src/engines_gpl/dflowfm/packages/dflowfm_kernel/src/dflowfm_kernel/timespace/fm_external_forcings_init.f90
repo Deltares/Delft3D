@@ -28,7 +28,7 @@
 !-------------------------------------------------------------------------------
 !
 submodule(fm_external_forcings) fm_external_forcings_init
-   use precision_basics, only: hp
+   use precision_basics, only: dp
    implicit none
 
    integer, parameter :: INI_VALUE_LEN = 256
@@ -319,11 +319,11 @@ contains
                      is_successful = .true. ! No failure: boundaries are allowed to remain disconnected.
                   else
                      is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=node_id, method=method, &
-                                                                     operand=oper, forcingfile=forcing_file, targetindex=target_index(1))
+                                                                     operand=oper, forcing_file=forcing_file, targetindex=target_index(1))
                   end if
                else
                   is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
-                                                                  operand=oper, forcingfile=forcing_file)
+                                                                  operand=oper, forcing_file=forcing_file)
                end if
                res = res .and. is_successful ! Remember any previous errors.
                oper = '-'
@@ -386,8 +386,8 @@ contains
       character(len=INI_VALUE_LEN) :: loc_id
       integer :: loc_spec_type, num_coordinates
       character(len=INI_VALUE_LEN) :: node_id, branch_id, location_file, item_type
-      real(kind=hp) :: chainage
-      real(kind=hp), allocatable :: x_coordinates(:), y_coordinates(:)
+      real(kind=dp) :: chainage
+      real(kind=dp), allocatable :: x_coordinates(:), y_coordinates(:)
       logical :: is_successful, is_read
       character(len=300) :: rec
       integer :: ilattype, nlat, ierr
@@ -564,12 +564,12 @@ contains
       character(len=INI_KEY_LEN) :: variable_name
       character(len=INI_VALUE_LEN) :: interpolation_method, forcing_file, forcing_file_type, item_type, quantity, target_mask_file
       character(len=1) :: oper
-      real(hp) :: max_search_radius
+      real(dp) :: max_search_radius
       ! generalized properties+pointers to target element grid:
       integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
       integer :: target_num_points !< Number of points in target element set.
-      real(hp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set.
-      real(hp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set.
+      real(dp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set.
+      real(dp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set.
       integer :: ierr, method, ilattype
       logical :: is_successful
 
@@ -660,7 +660,7 @@ contains
             end if
          case ('airpressure', 'atmosphericpressure')
             kx = 1
-            ierr = allocate_patm(0._hp)
+            ierr = allocate_patm(0._dp)
 
          case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
             kx = 1
@@ -669,7 +669,7 @@ contains
             jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
             jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
 
-            ierr = allocate_patm(100000._hp)
+            ierr = allocate_patm(100000._dp)
 
             if (.not. allocated(ec_pwxwy_x)) then
                allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0d0)
@@ -853,12 +853,12 @@ contains
    subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
       use fm_location_types
       use m_flowgeom, only: ndx, lnx, xz, yz, xu, yu
-      use precision_basics, only: hp
+      use precision_basics, only: dp
       use dfm_error, only: DFM_NOERR, DFM_NOTIMPLEMENTED
       integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
       integer, intent(out) :: target_num_points !< Number of points in target element set.
-      real(hp), dimension(:), pointer, intent(out) :: target_x !< Pointer to x-coordinates array of target element set.
-      real(hp), dimension(:), pointer, intent(out) :: target_y !< Pointer to y-coordinates array of target element set.
+      real(dp), dimension(:), pointer, intent(out) :: target_x !< Pointer to x-coordinates array of target element set.
+      real(dp), dimension(:), pointer, intent(out) :: target_y !< Pointer to y-coordinates array of target element set.
       integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if unknown quantity location was given).
 
       ierr = DFM_NOERR
@@ -950,22 +950,22 @@ contains
       select case (quantity)
 
       case ('airtemperature')
-         call realloc(tair, ndx, stat=ierr, fill=0.0_hp, keepexisting=.false.)
+         call realloc(tair, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('tair(ndx)', ierr, ndx)
       case ('cloudiness')
-         call realloc(clou, ndx, stat=ierr, fill=0.0_hp, keepexisting=.false.)
+         call realloc(clou, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('clou(ndx)', ierr, ndx)
       case ('humidity')
-         call realloc(rhum, ndx, stat=ierr, fill=0.0_hp, keepexisting=.false.)
+         call realloc(rhum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('rhum(ndx)', ierr, ndx)
       case ('dewpoint') ! Relative humidity array used to store dewpoints
-         call realloc(rhum, ndx, stat=ierr, fill=0.0_hp, keepexisting=.false.)
+         call realloc(rhum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('rhum(ndx)', ierr, ndx)
       case ('solarradiation')
-         call realloc(qrad, ndx, stat=ierr, fill=0.0_hp, keepexisting=.false.)
+         call realloc(qrad, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('qrad(ndx)', ierr, ndx)
       case ('longwaveradiation')
-         call realloc(longwave, ndx, stat=ierr, fill=0.0_hp, keepexisting=.false.)
+         call realloc(longwave, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('longwave(ndx)', ierr, ndx)
       case ('humidity_airtemperature_cloudiness')
          kx = 3

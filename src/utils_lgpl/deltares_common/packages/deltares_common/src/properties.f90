@@ -108,7 +108,7 @@ module properties
       module procedure prop_get_version_number
    end interface
 
-   public :: readIniFile, max_keylength, leaf_keylength, print_initree, has_prop, prop_get, prop_set, get_version_number, count_occurrences
+   public :: readIniFile, max_keylength, leaf_keylength, print_initree, has_key, prop_get, prop_set, get_version_number, count_occurrences
    public :: prop_file, prop_inifile, prop_write_xmlfile, prop_write_inifile, prop_get_alloc_string
    public :: node_value, tree_data, tree_get_name, tree_create, tree_create_node, tree_put_data, tree_get_node_by_name, tree_get_data_ptr, tree_remove_child_by_name
    public :: tree_destroy, tree_add_node, tree_disconnect_node, tree_get_data_string, tree_num_nodes, tree_traverse_level, tree_count_nodes_byname, tree_fold, tree_traverse, maxlen
@@ -1653,14 +1653,15 @@ contains
       end select
    end subroutine print_initree
 
-   function has_prop(tree, chapter_in, key_in) result(res)
+   !> Test if a key exists in the property tree.
+   function has_key(tree, chapter_in, key_in) result(res)
       type(tree_data), pointer, intent(in) :: tree !< The property tree
       character(*), intent(in) :: chapter_in !< Name of the chapter (case-insensitive) or "*" to get any key
       character(*), intent(in) :: key_in !< Name of the key (case-insensitive)
       logical :: res
       character(len=:), allocatable :: local_value
       call prop_get_alloc_string(tree, chapter_in, key_in, local_value, res)
-   end function has_prop
+   end function has_key
 
    !> Get the string value for a property
    !!    Go through the list of props to check the
