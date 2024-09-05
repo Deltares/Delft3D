@@ -201,7 +201,7 @@ subroutine rdbndd(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! locate 'Filbnd' record for boundary definition in extra input file
     !
     filbnd = fildef
-    call prop_get_string(gdp%mdfile_ptr,'*','Filbnd',filbnd)
+    call prop_get(gdp%mdfile_ptr,'*','Filbnd',filbnd)
     !
     ! open boundary definition in file? <YES>
     !

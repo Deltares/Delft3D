@@ -134,7 +134,7 @@ subroutine dimmud(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
           call prterr(lundia, 'G051', 'Mud layer calculation')
           mudlay = .true.
           flmd2l = .true.
-          call prop_get_logical(gdp%mdfile_ptr, '*', 'MudWave', mudwave)
+          call prop_get(gdp%mdfile_ptr, '*', 'MudWave', mudwave)
           if (mudwave) then
              call prterr(lundia, 'G051', 'Mud - Wave interaction activated')
           endif

@@ -685,7 +685,7 @@ module m_1d_networkreader
       endif
       gpID = ' '
 
-      call prop_get_strings(md_ptr, 'branch', 'gridPointIds', gridPointsCount, gpID, success)
+      call prop_get(md_ptr, 'branch', 'gridPointIds', gridPointsCount, gpID, success)
       call realloc(pbr%gridPointIDs, gridPointsCount)
 
       if (success) then

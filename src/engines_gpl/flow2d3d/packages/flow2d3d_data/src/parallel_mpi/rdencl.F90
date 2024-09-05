@@ -126,7 +126,7 @@ subroutine rdencl( lunmd     ,lundia    ,error     , runid    , &
     ! 'Filgrd': grid enclosure file
     !
     filgrd = fildef
-    call prop_get_string(gdp%mdfile_ptr,'*','Filgrd',filgrd)
+    call prop_get(gdp%mdfile_ptr,'*','Filgrd',filgrd)
     if (filgrd /= fildef) then
        !
        ! Grid enclosure in file

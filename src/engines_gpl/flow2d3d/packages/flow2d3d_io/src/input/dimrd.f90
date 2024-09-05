@@ -333,7 +333,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     ! defined NMAX
     !
     iarray = 0
-    call prop_get_integers(gdp%mdfile_ptr, '*', 'MNKmax', iarray, 3)
+    call prop_get(gdp%mdfile_ptr, '*', 'MNKmax', iarray, 3)
     if (iarray(1) == 0 .or. iarray(2) == 0 .or. iarray(3) == 0) then
        error = .true.
        call prterr(lundia, 'P004', ' on reading grid dimensions')
@@ -660,7 +660,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     !             nonhyd = full
     !
     stringval = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Nonhyd', stringval)
+    call prop_get(gdp%mdfile_ptr, '*', 'Nonhyd', stringval)
     if (stringval /= ' ') then
        call small(stringval,999)
        if (stringval == 'weak') then
@@ -670,7 +670,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
           nonhyd   = .true.
           nh_level = nh_full
        else
-          call prop_get_logical(gdp%mdfile_ptr, '*', 'Nonhyd', nonhyd)
+          call prop_get(gdp%mdfile_ptr, '*', 'Nonhyd', nonhyd)
           if (nonhyd) then
              nh_level = nh_weak
              write(lundia,'(3a)') 'Keyword "Nonhyd" found in mdf-file with value ', trim(stringval), '. Interpreted as "ON: Weak formulation (Bijvelds)"'

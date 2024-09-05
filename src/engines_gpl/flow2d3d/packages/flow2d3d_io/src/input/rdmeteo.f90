@@ -196,13 +196,13 @@ subroutine rdmeteo(gdp, ecwind)
       endif
       !
       filename = ' '
-      call prop_get_string(gdp%mdfile_ptr,'*','Filwnd',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Filwnd',filename)
       if (filename /= ' ') then
          value = ' '
-         call prop_get_string(gdp%mdfile_ptr,'*','Wnsvwp',value)
+         call prop_get(gdp%mdfile_ptr,'*','Wnsvwp',value)
          if (index(value,'y')>=1 .or. index(value,'Y')>=1) then
             value = ' '
-            call prop_get_string(gdp%mdfile_ptr,'*','Wndgrd',value)
+            call prop_get(gdp%mdfile_ptr,'*','Wndgrd',value)
             if ( index(value,'a')==0 .and. index(value,'A')==0 ) then
                !
                ! flow dimensions needed here
@@ -243,7 +243,7 @@ subroutine rdmeteo(gdp, ecwind)
       endif
       !
       filename = ' '
-      call prop_get_string(gdp%mdfile_ptr,'*','Filspv',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Filspv',filename)
       if (filename /= ' ') then
          !
          ! flow dimensions needed here
@@ -261,7 +261,7 @@ subroutine rdmeteo(gdp, ecwind)
       endif
       !
       filename = ' '
-      call prop_get_string(gdp%mdfile_ptr,'*','Filwu',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Filwu',filename)
       if (filename /= ' ') then
          success = addmeteoitem(gdp%runid, filename, sferic)
          call checkmeteoresult(success, gdp)
@@ -274,7 +274,7 @@ subroutine rdmeteo(gdp, ecwind)
       endif
       !
       filename = ' '
-      call prop_get_string(gdp%mdfile_ptr,'*','Filwv',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Filwv',filename)
       if (filename /= ' ') then
          success = addmeteoitem(gdp%runid, filename, sferic)
          call checkmeteoresult(success, gdp)
@@ -287,7 +287,7 @@ subroutine rdmeteo(gdp, ecwind)
       endif
       !
       filename = ' '
-      call prop_get_string(gdp%mdfile_ptr,'*','Filwp',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Filwp',filename)
       if (filename /= ' ') then
          success = addmeteoitem(gdp%runid, filename, sferic)
          call checkmeteoresult(success, gdp)
@@ -300,7 +300,7 @@ subroutine rdmeteo(gdp, ecwind)
       endif
       !
       filename = ' '
-      call prop_get_string(gdp%mdfile_ptr,'*','Fwndgu',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Fwndgu',filename)
       if (filename /= ' ') then
          success = addmeteoitem(gdp%runid, filename, sferic, mmaxgl, nmaxgl)
          call checkmeteoresult(success, gdp)
@@ -313,7 +313,7 @@ subroutine rdmeteo(gdp, ecwind)
       endif
       !
       filename = ' '
-      call prop_get_string(gdp%mdfile_ptr,'*','Fwndgv',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Fwndgv',filename)
       if (filename /= ' ') then
          success = addmeteoitem(gdp%runid, filename, sferic, mmaxgl, nmaxgl)
          call checkmeteoresult(success, gdp)
@@ -326,7 +326,7 @@ subroutine rdmeteo(gdp, ecwind)
       endif
       !
       filename = ' '
-      call prop_get_string(gdp%mdfile_ptr,'*','Fwndgp',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Fwndgp',filename)
       if (filename /= ' ') then
          success = addmeteoitem(gdp%runid, filename, sferic, mmaxgl, nmaxgl)
          call checkmeteoresult(success, gdp)
@@ -340,7 +340,7 @@ subroutine rdmeteo(gdp, ecwind)
       endif
       !
       filename = ' '
-      call prop_get_string(gdp%mdfile_ptr,'*','Filweb',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Filweb',filename)
       if (filename /= ' ') then
          success = addmeteoitem(gdp%runid, filename, sferic)
          call checkmeteoresult(success, gdp)
@@ -383,12 +383,12 @@ subroutine rdmeteo(gdp, ecwind)
    scc_file  = .false. 
    !
    filename = ' '
-   call prop_get_string(gdp%mdfile_ptr,'*','Fwndgr',filename)
+   call prop_get(gdp%mdfile_ptr,'*','Fwndgr',filename)
    if (filename /= ' ') then
       success = addmeteoitem(gdp%runid, filename, sferic, mmaxgl, nmaxgl)
       call prterr(lundia, 'G051', 'Relative air humidity specified on a separate curvilinear grid')
    else
-      call prop_get_string(gdp%mdfile_ptr,'*','Filwr',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Filwr',filename)
       if (filename /= ' ') then
          success = addmeteoitem(gdp%runid, filename, sferic)
          call prterr(lundia, 'G051', 'Relative air humidity specified on a separate equidistant grid')
@@ -409,12 +409,12 @@ subroutine rdmeteo(gdp, ecwind)
    ! Air Temperature
    !
    filename = ' '
-   call prop_get_string(gdp%mdfile_ptr,'*','Fwndgt',filename)
+   call prop_get(gdp%mdfile_ptr,'*','Fwndgt',filename)
    if (filename /= ' ') then
       success = addmeteoitem(gdp%runid, filename, sferic, mmaxgl, nmaxgl)
       call prterr(lundia, 'G051', 'Air temperature specified on a separate curvilinear grid')
    else
-      call prop_get_string(gdp%mdfile_ptr,'*','Filwt',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Filwt',filename)
       if (filename /= ' ') then
          success = addmeteoitem(gdp%runid, filename, sferic)
          call prterr(lundia, 'G051', 'Air temperature specified on a separate equidistant grid')
@@ -435,12 +435,12 @@ subroutine rdmeteo(gdp, ecwind)
    ! Cloudiness
    !
    filename = ' '
-   call prop_get_string(gdp%mdfile_ptr,'*','Fwndgc',filename)
+   call prop_get(gdp%mdfile_ptr,'*','Fwndgc',filename)
    if (filename /= ' ') then
       success = addmeteoitem(gdp%runid, filename, sferic, mmaxgl, nmaxgl)
       call prterr(lundia, 'G051', 'Air cloudiness specified on a separate curvilinear grid')
    else
-      call prop_get_string(gdp%mdfile_ptr,'*','Filwc',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Filwc',filename)
       if (filename /= ' ') then
          success = addmeteoitem(gdp%runid, filename, sferic)
          call prterr(lundia, 'G051', 'Air cloudiness specified on a separate equidistant grid')
@@ -461,12 +461,12 @@ subroutine rdmeteo(gdp, ecwind)
    ! Precipitation
    !
    filename = ' '
-   call prop_get_string(gdp%mdfile_ptr,'*','Fwndgpr',filename)
+   call prop_get(gdp%mdfile_ptr,'*','Fwndgpr',filename)
    if (filename /= ' ') then
       success = addmeteoitem(gdp%runid, filename, sferic, mmaxgl, nmaxgl)
       call prterr(lundia, 'G051', 'Precipitation specified on a separate curvilinear grid')
    else
-      call prop_get_string(gdp%mdfile_ptr,'*','Filwpr',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Filwpr',filename)
       if (filename /= ' ') then
          success = addmeteoitem(gdp%runid, filename, sferic)
          call prterr(lundia, 'G051', 'Precipitation specified on a separate equidistant grid')
@@ -482,12 +482,12 @@ subroutine rdmeteo(gdp, ecwind)
    ! Short-wave radiation flux
    !
    filename = ' '
-   call prop_get_string(gdp%mdfile_ptr,'*','Fwndgs',filename)
+   call prop_get(gdp%mdfile_ptr,'*','Fwndgs',filename)
    if (filename /= ' ') then
       success = addmeteoitem(gdp%runid, filename, sferic, mmaxgl, nmaxgl)
       call prterr(lundia, 'G051', 'Short-wave solar radiation specified on a separate curvilinear grid')
    else
-      call prop_get_string(gdp%mdfile_ptr,'*','Filws',filename)
+      call prop_get(gdp%mdfile_ptr,'*','Filws',filename)
       if (filename /= ' ') then
          success = addmeteoitem(gdp%runid, filename, sferic)
          call prterr(lundia, 'G051', 'Short-wave solar radiation specified on a separate equidistant grid')
@@ -508,7 +508,7 @@ subroutine rdmeteo(gdp, ecwind)
    !   Time and space varying Secchi depth
    !
    filename = ' '
-   call prop_get_string(gdp%mdfile_ptr,'*','Filscc',filename)
+   call prop_get(gdp%mdfile_ptr,'*','Filscc',filename)
    if (filename /= ' ') then
       scc_file  = .true.
       if (.not.associated(gdp%gdheat%secchi)) then 
@@ -528,7 +528,7 @@ subroutine rdmeteo(gdp, ecwind)
    !  Subsidence/Uplift 
    !
    filename = ' '
-   call prop_get_string(gdp%mdfile_ptr,'*','Filsdu',filename)
+   call prop_get(gdp%mdfile_ptr,'*','Filsdu',filename)
    if (filename /= ' ') then
       if (.not.associated(gdp%gdsdu%sdu_t0)) then 
           allocate (gdp%gdsdu%sdu_t0(gdp%d%nmlb:gdp%d%nmub), stat = istat)
@@ -550,7 +550,7 @@ subroutine rdmeteo(gdp, ecwind)
    ! If block 'interpolation', notify meteo module
    !
    interpolate = .true.
-   call prop_get_logical(gdp%mdfile_ptr,'*','Wndint',interpolate)
+   call prop_get(gdp%mdfile_ptr,'*','Wndint',interpolate)
    if (.not. interpolate) then
       call meteoblockint()
       call prterr(lundia, 'G051', 'No interpolation on meteo data')
@@ -657,7 +657,7 @@ subroutine rdmeteo(gdp, ecwind)
          ! Locate and read 'Secchi' Secchidepth; default value allowed
          !
          filename = ' '
-         call prop_get_string(gdp%mdfile_ptr, '*', 'Secchi', filename)
+         call prop_get(gdp%mdfile_ptr, '*', 'Secchi', filename)
          if (filename == ' ') filename = 'dummyname'
          inquire (file = trim(filename), exist = ex)
          if (ex) then

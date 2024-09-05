@@ -127,7 +127,7 @@ subroutine rdroll(lunmd     ,lundia    ,lunscr    ,lerror    ,nrrec     , &
     !
     if (wavcmp) then
        filrol = ' '
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Filwcm', filrol)
+       call prop_get(gdp%mdfile_ptr, '*', 'Filwcm', filrol)
        if (filrol == ' ') then
           !
           ! This is really an error: the keyword did exist in dimpro since
@@ -151,12 +151,12 @@ subroutine rdroll(lunmd     ,lundia    ,lunscr    ,lerror    ,nrrec     , &
     ! locate 'Disform' record
     !
     disform = 'R1993'
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Disform', disform)
+    call prop_get(gdp%mdfile_ptr, '*', 'Disform', disform)
     !
     ! locate 'Wavrfc' record
     !
     wavfrc = .true.
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'Wavfrc', wavfrc)
+    call prop_get(gdp%mdfile_ptr, '*', 'Wavfrc', wavfrc)
     !
     ! locate 'RolCor' record
     ! rolcorr is already initialized in dimpro

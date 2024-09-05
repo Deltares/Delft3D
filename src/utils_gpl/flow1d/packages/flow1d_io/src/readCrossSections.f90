@@ -455,12 +455,12 @@ module m_readCrossSections
          else
             plural_string = ''
          end if
-         call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionId'//trim(plural_string), pCs%frictionSectionsCount, pCS%frictionSectionID, success)
+         call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'frictionId'//trim(plural_string), pCs%frictionSectionsCount, pCS%frictionSectionID, success)
          call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', multiple_friction_inputs, 'frictionIds', 'frictionId', success, trim(id))
 
 
          if (.not. success) then
-            call prop_get_strings(md_ptr%child_nodes(i)%node_ptr, '', 'frictionType'//trim(plural_string), pCs%frictionSectionsCount, fricTypes, success)
+            call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'frictionType'//trim(plural_string), pCs%frictionSectionsCount, fricTypes, success)
             call check_prop_get_wrong_singular_or_plural_keyword(md_ptr%child_nodes(i)%node_ptr, '', multiple_friction_inputs, 'frictionTypes', 'frictionType', success, trim(id))
 
             if (success) then

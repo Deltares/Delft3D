@@ -89,7 +89,7 @@ subroutine rdscour(lundia    ,error     ,nmmax     ,gdp       )
     ! for transport formulation
     !
     flname = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Scour', flname)
+    call prop_get(gdp%mdfile_ptr, '*', 'Scour', flname)
     !
     if (flname == ' ') then
        ! no scour

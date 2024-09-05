@@ -111,7 +111,7 @@ subroutine rdwaqpar(lundia, error, kmax, lsed, dt, itcomf, itcomi, itcoml, gdp)
     ! If keyword Flwq is in the mdf-file, waqfil = true
     !
     txtput1 = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Flwq', txtput1)
+    call prop_get(gdp%mdfile_ptr, '*', 'Flwq', txtput1)
     if (txtput1 == ' ') then
        waqfil = .false.
     else
@@ -147,7 +147,7 @@ subroutine rdwaqpar(lundia, error, kmax, lsed, dt, itcomf, itcomi, itcoml, gdp)
     ! When WaqOL = true, FLOW and WAQ communicate online via WAQ input files 
     ! Default WaqOL = false
     !
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'WaqOL', waqol)
+    call prop_get(gdp%mdfile_ptr, '*', 'WaqOL', waqol)
     !
     ilaggrInput = 0
     call prop_get(gdp%mdfile_ptr, '*', 'ilaggr', ilaggrInput, kmax)
@@ -226,7 +226,7 @@ subroutine rdwaqpar(lundia, error, kmax, lsed, dt, itcomf, itcomi, itcoml, gdp)
     ! WaqAgg= #example.dwq#
     !
     flaggr = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'WaqAgg', flaggr)
+    call prop_get(gdp%mdfile_ptr, '*', 'WaqAgg', flaggr)
     if (flaggr /= ' ' .and. flaggr /= 'active only') then
        if (.not. exifil(flaggr, lundia)) then
           error = .true.

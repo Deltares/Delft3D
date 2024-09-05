@@ -100,7 +100,7 @@ subroutine dimsedconst(lundia    ,error     ,sedim     ,const     , &
              write (keyword(5:6), '(i2)') i
           endif
           namc = ' '
-          call prop_get_string(gdp%mdfile_ptr, '*', keyword, namc)
+          call prop_get(gdp%mdfile_ptr, '*', keyword, namc)
           if (namc == ' ') then
              exit
           else
@@ -121,14 +121,14 @@ subroutine dimsedconst(lundia    ,error     ,sedim     ,const     , &
        else
           write (keyword(5:6), '(i2)') i
        endif
-       call prop_get_string(gdp%mdfile_ptr, '*', keyword, namconst(i))
+       call prop_get(gdp%mdfile_ptr, '*', keyword, namconst(i))
        call small(namconst(i) ,999 )
     enddo
     !
     ! locate 'Filsed' record; file containing sediment parameters
     !
     filsed = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filsed', filsed)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filsed', filsed)
     if (filsed /= ' ') then
        sedim = .true.
     else

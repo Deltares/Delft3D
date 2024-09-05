@@ -341,7 +341,7 @@ contains
       ! 9:cgm ,12: hpgl2)
       ! (and windows only: 10 print manager, 11 windows metafile)
 
-      call prop_get_integers(ini_ptr, 'hardcopyoptions', 'IHCOPTS', IHCOPTS, size(ihcopts))
+      call prop_get(ini_ptr, 'hardcopyoptions', 'IHCOPTS', IHCOPTS, size(ihcopts))
       NUMHCOPTS = 0
       ! Determine actual number of HC-options read.
       do
@@ -469,7 +469,7 @@ contains
       ! Reset again
       rgbvalues(:, :) = 0
       ! And override with colors from inifile.
-      call prop_get_integers(ini_ptr, 'grafcol', 'rgbvalues', rgbvalues, size(rgbvalues))
+      call prop_get(ini_ptr, 'grafcol', 'rgbvalues', rgbvalues, size(rgbvalues))
       k = 1
       do
          if (rgbvalues(1, k) == 0) then

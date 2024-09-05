@@ -80,14 +80,14 @@ subroutine rddept(lundia    ,error     , &
     ! locate 'Fildep' record for depth values in extra input file
     !
     fildep = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Fildep', fildep)
+    call prop_get(gdp%mdfile_ptr, '*', 'Fildep', fildep)
     if (fildep /= ' ') then
        !
        ! depth values in file
        ! locate 'Fmtdep' record for format definition of input file
        !
        fmtdep = 'FR'
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Fmtdep', fmtdep)
+       call prop_get(gdp%mdfile_ptr, '*', 'Fmtdep', fmtdep)
        fmttmp = fmtdep
        call filfmt(lundia    ,'Fmtdep'      ,fmttmp    ,lerror    ,gdp       )
        call depfil(lundia    ,error     ,fildep    ,fmttmp    , &
@@ -98,7 +98,7 @@ subroutine rddept(lundia    ,error     , &
        ! locate 'Depuni' record for depuni
        !
        rval = real(gdp%gdconst%amiss,sp)
-       call prop_get_real(gdp%mdfile_ptr, '*', 'Depuni', rval) 
+       call prop_get(gdp%mdfile_ptr, '*', 'Depuni', rval) 
        depuni = real(rval,fp)
        if (comparereal(depuni, real(gdp%gdconst%amiss,fp)) == 0) then
           depuni = 0.0_fp

@@ -76,7 +76,10 @@ module properties
 
    interface prop_get
       module procedure prop_get_string
+      module procedure prop_get_strings
       module procedure prop_get_integer
+      module procedure prop_get_integers
+      module procedure prop_get_integers_2
       module procedure prop_get_real
       module procedure prop_get_reals
       module procedure prop_get_logical
@@ -98,7 +101,7 @@ module properties
       module procedure prop_set_integer
       module procedure prop_set_integers
       module procedure prop_set_double
-      module procedure prop_set
+      module procedure prop_set_doubles
    end interface
 
    interface get_version_number
@@ -106,7 +109,7 @@ module properties
    end interface
 
    public :: readIniFile, max_keylength, leaf_keylength, print_initree, has_prop, prop_get, prop_set, get_version_number, count_occurrences
-   public :: prop_file, prop_inifile, prop_get_strings, prop_write_xmlfile, prop_get_integers, prop_write_inifile, prop_get_alloc_string
+   public :: prop_file, prop_inifile, prop_write_xmlfile, prop_write_inifile, prop_get_alloc_string
    public :: node_value, tree_data, tree_get_name, tree_create, tree_create_node, tree_put_data, tree_get_node_by_name, tree_get_data_ptr, tree_remove_child_by_name
    public :: tree_destroy, tree_add_node, tree_disconnect_node, tree_get_data_string, tree_num_nodes, tree_traverse_level, tree_count_nodes_byname, tree_fold, tree_traverse, maxlen
 
@@ -1902,12 +1905,12 @@ contains
    !!    Only after valuelength integers if valuesfirst = .true., otherwise:
    !!    Everywhere behind the character "=".
    !!    The following example is allowed:
-   !!    IntegersIn = (n,m): 4,5
+   !!    IntegersIn = (n): 4
    subroutine prop_get_integers(tree, chapter, key, value, valuelength, success, valuesfirst)
       implicit none
       type(tree_data), pointer :: tree !< The property tree
       integer, intent(in) :: valuelength !< Size of the array value
-      integer, dimension(*), intent(inout) :: value !< Values of the key (not set if the key is not found, so you can set a default value)
+      integer, dimension(:), intent(inout) :: value !< Values of the key (not set if the key is not found, so you can set a default value)
       character(*), intent(in) :: chapter !< Name of the chapter (case-insensitive) or "*" to get any key
       character(*), intent(in) :: key !< Name of the key (case-insensitive)
       logical, optional, intent(out) :: success !< Whether successful or not (optional)
@@ -1995,6 +1998,36 @@ contains
       end do
    end subroutine prop_get_integers
 
+   !> Get the array of integer values for a property
+   !!    Use prop_get_string to get the string value.
+   !!    Convert it to integers.
+   !!    If the string contains less integers than valuelength,
+   !!    only the integers found are set in value.
+   !!    If the string contains more integers than valuelength,
+   !!    only valuelength integers are set in value
+   !!
+   !!  Comments on this line:
+   !!    Only after valuelength integers if valuesfirst = .true., otherwise:
+   !!    Everywhere behind the character "=".
+   !!    The following example is allowed:
+   !!    IntegersIn = (n,m): 4,5
+   subroutine prop_get_integers_2(tree, chapter, key, value, valuelength, success, valuesfirst)
+      implicit none
+      type(tree_data), pointer :: tree !< The property tree
+      integer, dimension(:, :), intent(inout) :: value !< Value of the key (not set if the key is not found, so you can set a default value)
+      integer, intent(in) :: valuelength !< Size of the array value
+      character(*), intent(in) :: chapter !< Name of the chapter (case-insensitive) or "*" to get any key
+      character(*), intent(in) :: key !< Name of the key (case-insensitive)
+      logical, optional, intent(out) :: success !< Whether successful or not (optional)
+      logical, optional, intent(in) :: valuesfirst !< Whether value should be specified before any comments (optional)
+
+      integer, allocatable, dimension(:) :: valuearray
+
+      valuearray = reshape(value, [valuelength])
+      call prop_get_integers(tree, chapter, key, valuearray, 1, success, valuesfirst)
+      value = reshape(valuearray, shape(value))
+   end subroutine prop_get_integers_2
+
    !> Get the real value for a property
    !!    Use prop_get_string to get the string value.
    !!    Convert it to real.
@@ -2041,7 +2074,7 @@ contains
       implicit none
       type(tree_data), pointer :: tree !< The property tree
       integer, intent(in) :: valuelength !< Size of the array value
-      real, dimension(*), intent(inout) :: value !< Values of the key (not set if the key is not found, so you can set a default value)
+      real, dimension(:), intent(inout) :: value !< Values of the key (not set if the key is not found, so you can set a default value)
       character(*), intent(in) :: chapter !< Name of the chapter (case-insensitive) or "*" to get any key
       character(*), intent(in) :: key !< Name of the key (case-insensitive)
       logical, optional, intent(out) :: success !< Whether successful or not (optional)
@@ -2183,7 +2216,7 @@ contains
       implicit none
       type(tree_data), pointer :: tree !< The property tree
       integer, intent(in) :: valuelength !< Size of the array value
-      real(kind=hp), dimension(*), intent(inout) :: value !< Values of the key (not set if the key is not found, so you can set a default value)
+      real(kind=hp), dimension(:), intent(inout) :: value !< Values of the key (not set if the key is not found, so you can set a default value)
       character(*), intent(in) :: chapter !< Name of the chapter (case-insensitive) or "*" to get any key
       character(*), intent(in) :: key !< Name of the key (case-insensitive)
       logical, optional, intent(out) :: success !< Whether successful or not (optional)
@@ -2451,7 +2484,7 @@ contains
       ! Parameters
       !
       type(tree_data), pointer :: tree
-      integer, dimension(*), intent(inout) :: value
+      integer, dimension(:), intent(inout) :: value
       integer, intent(in) :: valuelength
       character(*), intent(in) :: subtree
       logical, optional, intent(out) :: success
@@ -2534,7 +2567,7 @@ contains
       ! Parameters
       !
       type(tree_data), pointer :: tree
-      real(sp), dimension(*), intent(inout) :: value
+      real(sp), dimension(:), intent(inout) :: value
       integer, intent(in) :: valuelength
       character(*), intent(in) :: subtree
       logical, optional, intent(out) :: success
@@ -2617,7 +2650,7 @@ contains
       ! Parameters
       !
       type(tree_data), pointer :: tree
-      real(hp), dimension(*), intent(inout) :: value
+      real(hp), dimension(:), intent(inout) :: value
       integer, intent(in) :: valuelength
       character(*), intent(in) :: subtree
       logical, optional, intent(out) :: success
@@ -2792,7 +2825,7 @@ contains
    ! ====================================================================
    !> Sets a double precision array property in the tree.
    !! The property value is stored as a string representation.
-   subroutine prop_set(tree, chapter, key, value, anno, success)
+   subroutine prop_set_doubles(tree, chapter, key, value, anno, success)
       type(tree_data), pointer :: tree !< The property tree
       character(*), intent(in) :: chapter !< Name of the chapter under which to store the property ('' or '*' for global)
       character(*), intent(in) :: key !< Name of the property
@@ -2829,7 +2862,7 @@ contains
          success = success_
       end if
 
-   end subroutine prop_set
+   end subroutine prop_set_doubles
    !
    !
    ! ====================================================================

@@ -138,7 +138,7 @@ subroutine dimbub(error, gdp)
     ! for old files 'Filbub' is not found, which leads to fifsrd = ' '
     !
     filtmp = fildef
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filbub', filtmp)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filbub', filtmp)
     if (filtmp /= fildef) then
        !
        ! test file existence

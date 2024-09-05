@@ -279,7 +279,7 @@ subroutine rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! Time UNIT
     !
     ctunit = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Tunit', ctunit)
+    call prop_get(gdp%mdfile_ptr, '*', 'Tunit', ctunit)
     if (ctunit == ' ') ctunit = 'M'
     if (ctunit == 'S') then
        tunit = 1.0_fp
@@ -445,7 +445,7 @@ subroutine rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! Locate and read keyword 'DryRun', used for running without actual calculations
     !
     dryrun = .false.
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'DryRun', dryrun)
+    call prop_get(gdp%mdfile_ptr, '*', 'DryRun', dryrun)
     if (dryrun) then
        call prterr(lundia, 'U190', 'DryRun switched on; running without actual calculations')
        write(*,'(a)') '*** WARNING: DryRun switched on; running without actual calculations'

@@ -344,7 +344,7 @@ module m_readstructures
       
       allocate(pcompound%structureIds(pcompound%numstructs))
 
-      call prop_get_strings(md_ptr, '', 'structureIds', pcompound%numstructs, pcompound%structureIds, success1)
+      call prop_get(md_ptr, '', 'structureIds', pcompound%numstructs, pcompound%structureIds, success1)
       success = success .and. check_input_result(success1, st_id, 'structureIds')
       if (.not. success) then
          ! Stop processing this structure
