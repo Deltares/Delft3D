@@ -240,7 +240,7 @@ module m_dfparall
     !>Carries out the partitioning of the computational grid
     subroutine dfpartit ( ipown, icom, mmax, nmax, gdp )
 
-    use properties, only: prop_get_integers
+    use properties, only: prop_get
     !
     type(globdat), target    :: gdp
     !
@@ -283,7 +283,7 @@ module m_dfparall
     ! check if partition boundaries have been specified
     !
     partbnd = 0
-    call prop_get_integers(gdp%mdfile_ptr,'*','PartBnd',partbnd,nproc,partbnd_read,valuesfirst=.true.)
+    call prop_get(gdp%mdfile_ptr,'*','PartBnd',partbnd,nproc,partbnd_read,valuesfirst=.true.)
     
     if (max(mmax,nmax)/nproc < 4) then
        write(txt1,'(a,i0,a)') 'Domain is too small to divide in ', nproc, ' partitions'
