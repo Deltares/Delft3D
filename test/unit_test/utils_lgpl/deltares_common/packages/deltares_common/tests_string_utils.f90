@@ -61,6 +61,9 @@ program tests_string_utils
         case ('test_centre_text')
             write (*, *) "Running test_centre_text"
             call runtests(call_test_centre_text)
+        case ('test_split_string')
+            write (*, *) "Running test_split_string"
+            call runtests(call_test_split_string)
         end select
     else
         write (*, *) "No test specified, running all tests"
@@ -70,6 +73,7 @@ program tests_string_utils
         call runtests(call_test_index_in_array_custom_settings)
         call runtests(call_test_remove_duplicates)
         call runtests(call_test_centre_text)
+        call runtests(call_test_split_string)
     end if
 
     call runtests_final()
@@ -100,6 +104,11 @@ contains
         call test(test_centre_text_odd_length, 'check if centre_text works correctl for odd length strings')
         call test(test_centre_text_even_length, 'check if centre_text works correctly for even length strings')
     end subroutine call_test_centre_text
+
+    subroutine call_test_split_string
+        call test(test_split_string, 'test splitting of string')
+        call test(test_split_string_without_delimiter, 'test splitting of string where there is no delimiter')
+    end subroutine call_test_split_string
 
     subroutine test_string_equals_default_settings
         ! test default settings for string_equals
@@ -217,5 +226,50 @@ contains
         call assert_true(len(centred_text) == expected_length, 'centre_text should be of provided length')
         call assert_true(centred_text == expected_text, 'centre_text should put the provided text in the centre')
     end subroutine test_centre_text
+
+    subroutine test_split_string
+        character(:), allocatable :: input_string
+        character(:), dimension(:), allocatable :: result
+
+        input_string = "test:new test:another new test"
+
+        !! Act
+        result = split_string(input_string, ":")
+
+        !! Assert
+        call assert_equal(size(result), 3, 'splitted string should contain 3 parts')
+        call assert_equal(trim(result(1)), "test", 'first part should be correct')
+        call assert_equal(trim(result(2)), "new test", 'second part should be correct')
+        call assert_equal(trim(result(3)), "another new test", 'third part should be correct')
+    end subroutine test_split_string
+
+    subroutine test_split_string_with_asterisk_delimiter
+        character(:), allocatable :: input_string
+        character(:), dimension(:), allocatable :: result
+
+        input_string = "test*another test"
+
+        !! Act
+        result = split_string(input_string, "*")
+
+        !! Assert
+        call assert_equal(size(result), 2, 'splitted string should contain 2 parts')
+        call assert_equal(trim(result(1)), "test", 'first part should be correct')
+        call assert_equal(trim(result(2)), "another test", 'second part should be correct')
+    end subroutine test_split_string_with_asterisk_delimiter
+
+    subroutine test_split_string_without_delimiter
+        character(:), allocatable :: input_string
+        character(:), dimension(:), allocatable :: expected_result
+
+        input_string = "test"
+
+        !! Act
+        expected_result = split_string(input_string, ":")
+
+        !! Assert
+        call assert_equal(size(expected_result), 1, 'splitted string should contain 1 part')
+        call assert_equal(trim(expected_result(1)), "test", 'first part should be correct')
+    end subroutine test_split_string_without_delimiter
 
 end program tests_string_utils
