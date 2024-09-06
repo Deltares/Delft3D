@@ -366,7 +366,7 @@ contains
       use messageHandling, only: mess, err, LEVEL_WARN
       use precision, only: dp
       use m_missing, only: imiss, dmiss
-      use properties, only: has_prop, prop_get
+      use properties, only: has_key, prop_get
       use tree_data_types, only: tree_data
       use timespace_parameters, only: LOCTP_NODEID, LOCTP_BRANCHID_CHAINAGE, LOCTP_POLYGON_XY, LOCTP_POLYGON_FILE
       use m_laterals, only: ILATTP_1D
@@ -397,22 +397,22 @@ contains
       location_file = ''
       is_success = .false.
 
-      has_node_id = has_prop(node_ptr, '', 'nodeId')
-      has_branch_id = has_prop(node_ptr, '', 'branchId')
-      has_chainage = has_prop(node_ptr, '', 'chainage')
-      has_num_coordinates = has_prop(node_ptr, '', 'numCoordinates')
-      has_x_coordinates = has_prop(node_ptr, '', 'xCoordinates')
-      has_y_coordinates = has_prop(node_ptr, '', 'yCoordinates')
-      has_location_file = has_prop(node_ptr, '', 'locationFile')
+      has_node_id = has_key(node_ptr, 'Lateral', 'nodeId')
+      has_branch_id = has_key(node_ptr, 'Lateral', 'branchId')
+      has_chainage = has_key(node_ptr, 'Lateral', 'chainage')
+      has_num_coordinates = has_key(node_ptr, 'Lateral', 'numCoordinates')
+      has_x_coordinates = has_key(node_ptr, 'Lateral', 'xCoordinates')
+      has_y_coordinates = has_key(node_ptr, 'Lateral', 'yCoordinates')
+      has_location_file = has_key(node_ptr, 'Lateral', 'locationFile')
 
       ! Test if multiple discharge methods were set
       number_of_discharge_specifications = sum([(1, integer :: i=1, maximum_number_of_discharge_specifications)], [has_node_id, has_branch_id .or. has_chainage, has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates, has_location_file])
 
       if (number_of_discharge_specifications < 1) then
-         call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': No discharge specifications found. Use nodeId, branchId + chainage, numcoor + xcoors + ycoors, or locationFile.')
+         call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': No discharge specifications found. Use nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates, or locationFile.')
          return
       else if (number_of_discharge_specifications > 1) then
-         call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': Multiple discharge specifications found. Use nodeId, branchId + chainage, numcoor + xcoors + ycoors, or locationFile.')
+         call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': Multiple discharge specifications found. Use nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates, or locationFile.')
          return
       end if
 
@@ -421,7 +421,7 @@ contains
       ! numcoor+xcoors+ycoors   => location_specifier = LOCTP_XY_POLYGON
       ! locationFile = test.pol => location_specifier = LOCTP_POLYGON_FILE
       if (has_node_id) then
-         call prop_get(node_ptr, '', 'nodeId', node_id)
+         call prop_get(node_ptr, 'Lateral', 'nodeId', node_id)
          loc_spec_type = LOCTP_NODEID
          ilattype = ILATTP_1D
          is_success = .true.
@@ -434,8 +434,8 @@ contains
             return
          end if
 
-         call prop_get(node_ptr, '', 'branchId', branch_id)
-         call prop_get(node_ptr, '', 'chainage', chainage)
+         call prop_get(node_ptr, 'Lateral', 'branchId', branch_id)
+         call prop_get(node_ptr, 'Lateral', 'chainage', chainage)
          if (len_trim(branch_id) > 0 .and. chainage /= dmiss .and. chainage >= 0.0d0) then
             loc_spec_type = LOCTP_BRANCHID_CHAINAGE
             ilattype = ILATTP_1D
@@ -452,11 +452,11 @@ contains
             call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': numCoordinates, xCoordinates and yCoordinates must be set together.')
             return
          end if
-         call prop_get(node_ptr, '', 'numCoordinates', num_coordinates)
+         call prop_get(node_ptr, 'Lateral', 'numCoordinates', num_coordinates)
          allocate (x_coordinates(num_coordinates), stat=ierr)
          allocate (y_coordinates(num_coordinates), stat=ierr)
-         call prop_get(node_ptr, '', 'xCoordinates', x_coordinates, num_coordinates)
-         call prop_get(node_ptr, '', 'yCoordinates', y_coordinates, num_coordinates)
+         call prop_get(node_ptr, 'Lateral', 'xCoordinates', x_coordinates, num_coordinates)
+         call prop_get(node_ptr, 'Lateral', 'yCoordinates', y_coordinates, num_coordinates)
          loc_spec_type = LOCTP_POLYGON_XY
          is_success = .true.
          return
@@ -464,7 +464,7 @@ contains
 
       if (has_location_file) then
          location_file = ''
-         call prop_get(node_ptr, '', 'locationFile', location_file)
+         call prop_get(node_ptr, 'Lateral', 'locationFile', location_file)
          if (len_trim(location_file) == 0) then
             call mess(LEVEL_WARN, 'Lateral '''//trim(loc_id)//''': locationFile is empty.')
             return
@@ -508,9 +508,9 @@ contains
       is_successful = .false.
 
       loc_id = ' '
-      call prop_get(node_ptr, '', 'Id', loc_id, is_read)
+      call prop_get(node_ptr, 'Lateral', 'id', loc_id, is_read)
       if (.not. is_read .or. len_trim(loc_id) == 0) then
-         write (msgbuf, '(a,i0,a)') 'Required field ''Id'' missing in lateral (block #', block_number, ').'
+         write (msgbuf, '(a,i0,a)') 'Required field ''id'' missing in lateral (block #', block_number, ').'
          call warn_flush()
          return
       end if
@@ -520,9 +520,9 @@ contains
       ! fileVersion <= 1: Type         = 1d | 2d | 1d2d
       item_type = ' '
       if (major >= 2) then
-         call prop_get(node_ptr, '', 'locationType', item_type, is_read)
+         call prop_get(node_ptr, 'Lateral', 'locationType', item_type, is_read)
       else
-         call prop_get(node_ptr, '', 'Type', item_type, is_read)
+         call prop_get(node_ptr, 'Lateral', 'type', item_type, is_read)
       end if
       select case (str_tolower(trim(item_type)))
       case ('1d')
@@ -536,7 +536,7 @@ contains
       end select
 
       call reserve_sufficient_space(apply_transport, numlatsg + 1, 0)
-      call prop_get(node_ptr, '', 'applyTransport', apply_transport(numlatsg + 1), is_read)
+      call prop_get(node_ptr, 'Lateral', 'applyTransport', apply_transport(numlatsg + 1), is_read)
 
       call read_lateral_discharge_definition(node_ptr, loc_id, base_dir, ilattype, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_successful)
 
@@ -561,9 +561,9 @@ contains
       ! Flow = 1.23 | test.tim | REALTIME
       kx = 1
       rec = ' '
-      call prop_get(node_ptr, '', 'discharge', rec, is_read)
+      call prop_get(node_ptr, 'Lateral', 'discharge', rec, is_read)
       if (.not. is_read .and. major <= 1) then ! Old pre-2.00 keyword 'flow'
-         call prop_get(node_ptr, '', 'flow', rec, is_read)
+         call prop_get(node_ptr, 'Lateral', 'flow', rec, is_read)
       end if
       if (len_trim(rec) > 0) then
          call resolvePath(rec, base_dir)
