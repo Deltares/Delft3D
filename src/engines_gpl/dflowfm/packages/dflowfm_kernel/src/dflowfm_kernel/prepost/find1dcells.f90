@@ -59,6 +59,7 @@ contains
       logical :: Lisnew
       integer :: temp_threads
       integer :: ierror
+      integer :: nump1d
       ierror = 1
 
       allocate (nc1_array(NUML1D), nc2_array(NUML1D))
@@ -87,7 +88,17 @@ contains
             KC(k1) = 1; KC(k2) = 1
          end if
       end do
-
+   
+   nump1d = size(meshgeom1d%nodebranchidx) !< Old number of nodes contained in meshgeom1d
+     if (.not. associated(meshgeom1d%nodeidx)) then ! assume that the nodes were put at the front in order during network reading.
+        allocate (meshgeom1d%nodeidx(nump1d))
+        meshgeom1d%nodeidx = [1:nump1d] 
+     end if
+     allocate (meshgeom1d%nodeidx_inverse(size(kc)))
+     do i = 1,nump1d
+       meshgeom1d%nodeidx_inverse(meshgeom1d%nodeidx(i)) = i !Use KC0 as inverse mapping array for branch nodes
+     end do
+      
       nump1d2d = nump
       do i = 1,2
          do L = 1, NUML1D
@@ -178,16 +189,19 @@ contains
    end function is_new_1D_cell
 
    subroutine set_lne(NC, K, L, i_lne, nump1d2d)
-
+      use precision_basics, only: comparereal
       integer, intent(in) :: NC !< 2D cell number
       integer, intent(in) :: K !< new node number
       integer, intent(in) :: L !< index in LNE array to set
       integer, intent(in) :: i_lne !< index specifying if the left node (1) or right node (2) in LNE array is to be set
       integer, intent(inout) :: nump1d2d !< 1D netnode counter (starts at nump)
 
+      integer :: k_inv, next_index
       if (NC == 0) then
+         k_inv = meshgeom1d%nodeidx_inverse(k)
+         next_index = nump1d2d - nump + 1
          !> Nodes need to be found in the correct order. This is why we do 2 passes.
-         if (meshgeom1d%nodebranchidx(k) == meshgeom1d%nodebranchidx(nump1d2d + 1) .and. meshgeom1d%nodeoffsets(k) == meshgeom1d%nodeoffsets(nump1d2d + 1)) then
+         if (meshgeom1d%nodebranchidx(k_inv) == meshgeom1d%nodebranchidx(next_index) .and. comparereal(meshgeom1d%nodeoffsets(k_inv),meshgeom1d%nodeoffsets(next_index),1d-6)==0) then
             if (is_new_1D_cell(K, l)) then ! NIEUWE 1d CELL
                nump1d2d = nump1d2d + 1
                KC(K) = -nump1d2d ! MARKEREN ALS OUD

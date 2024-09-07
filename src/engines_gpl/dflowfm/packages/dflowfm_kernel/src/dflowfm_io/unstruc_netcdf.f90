@@ -11676,10 +11676,10 @@ contains
             !call sort_index(branch_ids_chainages,permuted_node_ids)
             backup_branchid = meshgeom1d%nodebranchidx
             backup_chainage = meshgeom1d%nodeoffsets
-            if (.not. associated(meshgeom1d%nodeidx)) then ! assume that the nodes were put at the front in order during network reading.
-               allocate (meshgeom1d%nodeidx(nump1d))
-               meshgeom1d%nodeidx = [1:nump1d]
-            end if
+            !if (.not. associated(meshgeom1d%nodeidx)) then ! assume that the nodes were put at the front in order during network reading.
+            !   allocate (meshgeom1d%nodeidx(nump1d))
+            !   meshgeom1d%nodeidx = [1:nump1d]
+            !end if
             ! Determine 1D net nodes directly from 1D net cells
             do N1 = 1 + nump, nump1d2d
                k1 = netcell(N1)%nod(1)
