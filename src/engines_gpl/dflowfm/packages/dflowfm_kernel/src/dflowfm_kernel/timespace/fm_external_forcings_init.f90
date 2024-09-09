@@ -143,13 +143,13 @@ contains
             ! General block, was already read.
 
          case ('boundary')
-            res = init_boundary_forcings(node_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh)
+            res = res .and. init_boundary_forcings(node_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh)
 
          case ('lateral')
-            res = init_lateral_forcings(node_ptr, base_dir, i, major)
+            res = res .and. init_lateral_forcings(node_ptr, base_dir, i, major)
 
          case ('meteo')
-            res = init_meteo_forcings(node_ptr, base_dir, file_name, group_name)
+            res = res .and. init_meteo_forcings(node_ptr, base_dir, file_name, group_name)
 
          case default ! Unrecognized item in a ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
@@ -539,6 +539,9 @@ contains
       call prop_get(node_ptr, 'Lateral', 'applyTransport', apply_transport(numlatsg + 1), is_read)
 
       call read_lateral_discharge_definition(node_ptr, loc_id, base_dir, ilattype, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_successful)
+      if (.not. is_successful) then
+         return
+      end if
 
       call ini_alloc_laterals()
 
