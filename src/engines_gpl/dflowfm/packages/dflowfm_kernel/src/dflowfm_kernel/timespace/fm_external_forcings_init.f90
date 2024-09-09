@@ -361,7 +361,9 @@ contains
 
    end function init_boundary_forcings
 
-   !> Read the discharge specification by the current [Lateral] block from new external forcings file
+   !> Read the discharge specification by the current [Lateral] block from new external forcings file.
+   !! File version 1 only allowed for a locationFile, file version 2.01 allowed for nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates.
+   !! File version 2.02 allows for everything: locationFile, nodeId, branchId + chainage, numCoordinates + xCoordinates + yCoordinates.
    subroutine read_lateral_discharge_definition(node_ptr, loc_id, base_dir, ilattype, loc_spec_type, node_id, branch_id, chainage, num_coordinates, x_coordinates, y_coordinates, location_file, is_success)
       use messageHandling, only: mess, err, LEVEL_WARN
       use precision, only: dp
@@ -520,8 +522,7 @@ contains
       end if
 
       ! locationType = optional for lateral
-      ! fileVersion >= 2: locationType = 1d | 2d | all
-      ! fileVersion <= 1: Type         = 1d | 2d | 1d2d
+      ! locationType = 1d | 2d | all/1d2d
       item_type = ' '
       if (major >= 2) then
          call prop_get(node_ptr, 'Lateral', 'locationType', item_type, is_read)
