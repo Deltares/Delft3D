@@ -14,6 +14,10 @@ object WindowsApprove : BuildType({
 
     vcs {
         root(DslContext.settingsRoot)
+        branchFilter = """
+            +:<default>
+            +:all/release/*
+        """.trimIndent()
     }
 
     steps {
@@ -24,7 +28,7 @@ object WindowsApprove : BuildType({
                 endsWith("dep.${Trigger.id}.teamcity.build.triggeredBy", "Release")
             }
             scriptContent = """
-                curl -sS \
+                curl --fail --verbose --silent --show-error \
                      -u %teamcity_user%:%teamcity_pass% \
                      -X POST \
                      -H "Content-Type: application/xml" \

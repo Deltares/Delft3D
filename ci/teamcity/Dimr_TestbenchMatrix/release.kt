@@ -11,6 +11,10 @@ object Release : BuildType({
 
     vcs {
         root(DslContext.settingsRoot)
+        branchFilter = """
+            +:<default>
+            +:all/release/*
+        """.trimIndent()
     }
 
     features {
