@@ -16,7 +16,8 @@ object Linux : BuildType({
 
     val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
     val lines = File(filePath).readLines()
-    val configs = lines.drop(1).map { line ->
+    val linuxLines = lines.filter({ line -> line.contains("lnx64")})
+    val configs = linuxLines.drop(1).map { line ->
         line.split(",")[1]
     }
 
