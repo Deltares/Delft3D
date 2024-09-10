@@ -1655,12 +1655,12 @@ contains
       use m_statistical_output_types, only: t_output_variable_item
       type(t_output_variable_item), intent(in) :: output_variable_item
 
-      type(t_output_quantity_config), pointer :: local_config
+      type(t_output_quantity_config) :: local_config
       integer :: local_id_var, station_id_index
       integer, allocatable :: counts(:), starts(:), positions(:)
       double precision, allocatable :: transformed_data(:)
 
-      local_config => output_variable_item%output_config
+      local_config = output_variable_item%output_config
       local_id_var = output_variable_item%id_var
 
       if (.not. local_config%nc_dim_ids%statdim) then
