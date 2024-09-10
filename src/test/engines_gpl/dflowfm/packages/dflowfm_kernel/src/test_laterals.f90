@@ -39,8 +39,8 @@ contains
 
       call test(test_add_lateral_load_and_sink, 'Test computation of constituents sinks and sources due to laterals.')
       call test(test_get_lateral_volume_per_layer, 'Test computation of water volume per layer in laterals.')
-      call test(test_distribute_lateral_discharge, 'Test the distribution of lateral discharge per layer per lateral,'// &
-                ' which is retrieved from BMI, to per layer per lateral per cell.')
+      call test(test_distribute_lateral_discharge, 'Test the distribution of lateral discharge per layer per lateral '// &
+                ' to per layer per lateral per cell.')
    end subroutine tests_lateral
 !
 !==============================================================================
@@ -292,8 +292,7 @@ contains
    end subroutine test_get_lateral_volume_per_layer
 
 !==============================================================================
-!> Test computation of distribution of lateral discharge per layer, which is retrieved from BMI,
-!! to discharge per layer per cell.
+!> Test computation of distribution of lateral discharge per layer to discharge per layer per cell.
 !! This test assumes a model of dimension (nx,ny,nz) = (4,2,3). In another word, there are 4 nodes in x-direction, 2 nodes
 !! in y-direction, so that ndx = 8.
 !! There are 3 layers on all nodes, except for the 8th node which has only 2 active layers. So ndkx = (3+1)*8-1 = 31.
@@ -301,26 +300,34 @@ contains
    subroutine test_distribute_lateral_discharge
       use m_flow, only: vol1, kbot, ktop, kmxn, kmx
       use m_alloc, only: realloc
+      use m_flowgeom, only: ndx
 
       real(kind=dp), allocatable, dimension(:,:) :: lateral_discharge_per_layer_lateral_cell !< Discharge per layer per lateral per cell,
                                                                                              !! dimension=(number_of_layer,numlatsg,number_of_node)
                                                                                              !!          =(kmx,numlatsg,ndkx)
       
       integer :: ierr !< error flag
-      integer :: ndx, ndkx
       integer :: i_node, i_layer
+      integer :: ndkx
+      integer :: n_nodes, n_nodes_on_laterals, n_laterals, n_tracers, n_layers
       real(kind=dp), allocatable, dimension(:, :) :: provided_lateral_discharge
 
-      ! Specify number of computational cells, ndx
-      ndx = 8
+      ! domain of 8 points, 2 laterals (1 incoming with 2 nodes, 1 outgoing with 2 nodes)
+      ! max 3 layers and 3 constituents. Volume (vol1) of each cell is set to 0.1d0.
+      ! only consider 1 constituent.
+      n_nodes = 8
+      n_nodes_on_laterals = 4
+      n_laterals = 2
+      n_tracers = 1
+      n_layers = 3
+
+      ! initialization and allocation of global state variables
+      call setup_testcase(n_nodes, n_nodes_on_laterals, n_laterals, n_layers, n_tracers)
 
       ! Initialize number of active layers for each cell
-      call realloc(kmxn, ndx, stat=ierr, keepExisting=.false., fill=0)
-      call aerr('kmxn', ierr, ndx, 'test_distribute_lateral_discharge_per_layer_per_cell')
       kmxn = [3, 3, 3, 3, 3, 3, 3, 2] ! The 8th cell is assumed shallow and contains only two layers
 
       ! Initialize water volume per cell per layer, vol1.
-      kmx = 3
       ndkx = ndx * (kmx + 1) - 1 ! one cell is shallow and contains only two layers
       call realloc(vol1, ndkx, stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('vol1', ierr, ndkx, 'test_distribute_lateral_discharge_per_layer_per_cell')
@@ -333,12 +340,6 @@ contains
       end do
 
       ! Initialize kbot and ktop
-      call realloc(kbot, ndx, stat=ierr, keepExisting=.false., fill=0)
-      call aerr('kbot', ierr, ndx, 'test_distribute_lateral_discharge_per_layer_per_cell')
-
-      call realloc(ktop, ndx, stat=ierr, keepExisting=.false., fill=0)
-      call aerr('ktop', ierr, ndx, 'test_distribute_lateral_discharge_per_layer_per_cell')
-
       kbot(1) = ndx + 1
       ktop(1) = kbot(1) + kmxn(1) - 1
       do i_node = 2, ndx
@@ -346,123 +347,75 @@ contains
          ktop(i_node) = kbot(i_node) + kmxn(i_node) - 1
       end do
 
-      ! Initialize laterals administration
-      numlatsg = 2
-      nlatnd = 4
-      call realloc(apply_transport, numlatsg, stat=ierr, keepExisting=.false., fill=1)
-      call aerr('apply_transport', ierr, numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
-
-      call realloc(n1latsg, numlatsg, stat=ierr, keepExisting=.false., fill=0)
-      call aerr('n1latsg', ierr, numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
-
-      call realloc(n2latsg, numlatsg, stat=ierr, keepExisting=.false., fill=0)
-      call aerr('n2latsg', ierr, numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
-
-      call realloc(nnlat, nlatnd, stat=ierr, keepExisting=.false., fill=0)
-      call aerr('nnlat', ierr, nlatnd, 'test_distribute_lateral_discharge_per_layer_per_cell')
-
       ! The 1st lateral is on nodes 1 and 2, the 2nd lateral is on nodes 7 and 8.
       nnlat = [1, 2, 7, 8]
       n1latsg = [1, 3]
       n2latsg = [2, 4]
 
       ! Initialize lateral volume per layer and discharge per layer.
-      call realloc(lateral_volume_per_layer, [kmx, numlatsg], stat=ierr, keepExisting=.false., fill=0d0)
-      call aerr('lateral_volume_per_layer', ierr, kmx * numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
       call realloc(provided_lateral_discharge, [kmx, numlatsg], stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('provided_lateral_discharge_per_layer', ierr, kmx * numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
-      call realloc(lateral_discharge_per_layer_lateral_cell, [kmx, nlatnd], stat=ierr, keepExisting=.false., fill=0d0)
-      call aerr('lateral_discharge_per_layer_per_cell', ierr, kmx * numlatsg*ndkx, 'test_distribute_lateral_discharge_per_layer_per_cell')
 
       lateral_volume_per_layer(1:kmx,1) = [100, 300, 250] ! Volume for the 1st lateral per layer
       lateral_volume_per_layer(1:kmx,2) = [200, 250, 330] ! Volume for the 2nd lateral per layer
       provided_lateral_discharge(1:kmx,1) = [1000, 1500, 2800] ! Discharge for the 1st lateral per layer
       provided_lateral_discharge(1:kmx,2) = [2000, 3000, 2500] ! Discharge for the 2nd lateral per layer
 
+      call realloc(lateral_discharge_per_layer_lateral_cell, [kmx, nlatnd], stat=ierr, keepExisting=.false., fill=0d0)
+      call aerr('lateral_discharge_per_layer_per_cell', ierr, kmx * numlatsg*ndkx, 'test_distribute_lateral_discharge_per_layer_per_cell')
+
       ! Distribute the lateral discharge
       call distribute_lateral_discharge(provided_lateral_discharge, lateral_discharge_per_layer_lateral_cell)
 
-   ! Compare results with reference results.
-   ! The 2 laterals are applied on 4 nodes, i.e. 1, 2, 7 and 8. Considering the layers, in total 4*3-1=11 cells are involved,
-   ! so below we compare 11 sets of values, for each cell on each layer.
-   ! Take the 1st comparison as an example:
-   ! Target:
-   !  lateral_discharge_per_layer_per_cell(1,9) is for node 9 on layer 1.
-   ! Known:
-   !  a. vo1(9) = 19. Node 9 is above node 1 on layer 1, so it belongs to the 1st lateral. Then we need
-   !  b. lateral_volume_per_layer(1,1) = 100, which is the volume of lateral 1 at layer 1. Then we need
-   !  c. provided_lateral_discharge_per_layer(1,1) = 1000, which is the discharge of lateral 1 at layer 1.
-   ! With a, b. and c, we can compute the target:
-   !   lateral_discharge_per_layer_per_cell(1,9) = 19/100*1000 = 190.
-   call assert_comparable(lateral_discharge_per_layer_lateral_cell(1,1),  190.0d0, tolerance, &
-                          "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,9)" // &
-                          " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_lateral_cell(2,1), 100.0d0, tolerance, &
-                          "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,10)" // &
-                          " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_lateral_cell(3,1), 235.2d0, tolerance, &
-                          "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,11)" // &
-                          " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_lateral_cell(1,2), 220.0d0, tolerance, &
-                          "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,12)" // &
-                          " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_lateral_cell(2,2), 115.0d0, tolerance, &
-                          "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,13)" // &
-                          " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_lateral_cell(3,2), 268.8d0, tolerance, &
-                          "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,14)" // &
-                          " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_lateral_cell(1,3), 370.0d0, tolerance, &
-                         "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,27)" // &
-                          " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_lateral_cell(2,3), 456.0d0, tolerance, &
-                          "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,13)" // &
-                          " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_lateral_cell(3,3), 295.454545454545d0, tolerance, &
-                          "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,29)" // &
-                          " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_lateral_cell(2,4), 480.0d0, tolerance, &
-                          "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,30)" // &
-                          " is not correct.")
-   call assert_comparable(lateral_discharge_per_layer_lateral_cell(3,4), 310.606060606061d0, tolerance, &
-                          "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,31)" // &
-                          " is not correct.")
+      ! Compare results with reference results.
+      ! The 2 laterals are applied on 4 nodes, i.e. 1, 2, 7 and 8. Considering the layers, in total 4*3-1=11 cells are involved,
+      ! so below we compare 11 sets of values, for each cell on each layer.
+      ! Take the 1st comparison as an example:
+      ! Target:
+      !  lateral_discharge_per_layer_per_cell(1,9) is for node 9 on layer 1.
+      ! Known:
+      !  a. vo1(9) = 19. Node 9 is above node 1 on layer 1, so it belongs to the 1st lateral. Then we need
+      !  b. lateral_volume_per_layer(1,1) = 100, which is the volume of lateral 1 at layer 1. Then we need
+      !  c. provided_lateral_discharge_per_layer(1,1) = 1000, which is the discharge of lateral 1 at layer 1.
+      ! With a, b. and c, we can compute the target:
+      !   lateral_discharge_per_layer_per_cell(1,9) = 19/100*1000 = 190.
+      call assert_comparable(lateral_discharge_per_layer_lateral_cell(1,1),  190.0d0, tolerance, &
+                             "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,9)" // &
+                             " is not correct.")
+      call assert_comparable(lateral_discharge_per_layer_lateral_cell(2,1), 100.0d0, tolerance, &
+                             "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,10)" // &
+                             " is not correct.")
+      call assert_comparable(lateral_discharge_per_layer_lateral_cell(3,1), 235.2d0, tolerance, &
+                             "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,11)" // &
+                             " is not correct.")
+      call assert_comparable(lateral_discharge_per_layer_lateral_cell(1,2), 220.0d0, tolerance, &
+                             "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,12)" // &
+                             " is not correct.")
+      call assert_comparable(lateral_discharge_per_layer_lateral_cell(2,2), 115.0d0, tolerance, &
+                             "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,13)" // &
+                             " is not correct.")
+      call assert_comparable(lateral_discharge_per_layer_lateral_cell(3,2), 268.8d0, tolerance, &
+                             "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,14)" // &
+                             " is not correct.")
+      call assert_comparable(lateral_discharge_per_layer_lateral_cell(1,3), 370.0d0, tolerance, &
+                            "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(1,27)" // &
+                             " is not correct.")
+      call assert_comparable(lateral_discharge_per_layer_lateral_cell(2,3), 456.0d0, tolerance, &
+                             "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,13)" // &
+                             " is not correct.")
+      call assert_comparable(lateral_discharge_per_layer_lateral_cell(3,3), 295.454545454545d0, tolerance, &
+                             "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,29)" // &
+                             " is not correct.")
+      call assert_comparable(lateral_discharge_per_layer_lateral_cell(2,4), 480.0d0, tolerance, &
+                             "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(2,30)" // &
+                             " is not correct.")
+      call assert_comparable(lateral_discharge_per_layer_lateral_cell(3,4), 310.606060606061d0, tolerance, &
+                             "distribute_lateral_discharge_per_layer_per_cell: output lateral_discharge_per_layer_per_cell(3,31)" // &
+                             " is not correct.")
    
-   ! Deallocate
-   if (allocated(kmxn)) then
-      deallocate(kmxn)
-   end if
-   if (allocated(vol1)) then
-      deallocate(vol1)
-   end if
-   if (allocated(kbot)) then
-      deallocate(kbot)
-   end if
-   if (allocated(ktop)) then
-      deallocate(ktop)
-   end if
-   if (allocated(apply_transport)) then
-      deallocate(apply_transport)
-   end if
-   if (allocated(n1latsg)) then
-      deallocate(n1latsg)
-   end if
-   if (allocated(n2latsg)) then
-      deallocate(n2latsg)
-   end if
-   if (allocated(nnlat)) then
-      deallocate(nnlat)
-   end if
-   if (allocated(lateral_volume_per_layer)) then
-      deallocate(lateral_volume_per_layer)
-   end if
-   if (allocated(provided_lateral_discharge)) then
-      deallocate(provided_lateral_discharge)
-   end if
-   if (allocated(lateral_discharge_per_layer_lateral_cell)) then
-      deallocate(lateral_discharge_per_layer_lateral_cell)
-   end if
+      ! deallocation of global state variables
+      call finish_testcase()
 
-end subroutine test_distribute_lateral_discharge
+   end subroutine test_distribute_lateral_discharge
 
 end module test_lateral
