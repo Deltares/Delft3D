@@ -1263,15 +1263,15 @@ contains
       ! Turbulence model
       call add_output_config(config_set_his, IDX_HIS_VIU, &
                              'Wrihis_turbulence', 'viu', 'horizontal eddy viscosity (flowlink-averaged) at pressure point ', '', &
-                             'm2 s-1''', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_center)
       call add_output_config(config_set_his, IDX_HIS_VICWWS, &
                              'Wrihis_turbulence', 'vicwws', 'turbulent vertical eddy viscosity at pressure point', '', &
-                             'm2 s-1''', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_center)
       call add_output_config(config_set_his, IDX_HIS_VICWWU, &
                              'Wrihis_turbulence', 'vicwwu', 'turbulent vertical eddy viscosity at nearest velocity point', '', &
-                             'm2 s-1''', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             'm2 s-1', UNC_LOC_STATION, nc_attributes=atts(1:1), &
                              nc_dim_ids=station_nc_dims_3D_interface_edge)
       call add_output_config(config_set_his, IDX_HIS_TKIN, &
                              'Wrihis_turbulence', 'tke', 'turbulent kinetic energy at nearest velocity point', '', &
