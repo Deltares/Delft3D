@@ -57,7 +57,7 @@
       end if
 
       ! Set correct limiting depth
-      if (jawave == 3) then
+   if (jawave==3 .or. jawave==7) then
          hminlw = m_waves_hminlw
          hminlwi = 1d0 / m_waves_hminlw
          gammaloc = gammax

@@ -53,6 +53,7 @@ function flow_init_structurecontrol() result(status)
    use m_inquire_flowgeom
    use m_longculverts, only: nlongculverts
    use m_partitioninfo, only: jampi
+   use m_qnerror
 
    implicit none
    logical :: status
@@ -238,7 +239,7 @@ function flow_init_structurecontrol() result(status)
       end if
 
       strtype = ' '
-      call prop_get_string(str_ptr, '', 'type', strtype, success)
+      call prop_get(str_ptr, '', 'type', strtype, success)
       if (.not. success .or. len_trim(strtype) == 0) then
          write (msgbuf, '(a,i0,a)') 'Required field ''type'' missing in structure #', i, '.'
          call warn_flush()
@@ -246,8 +247,8 @@ function flow_init_structurecontrol() result(status)
       end if
 
       ! check if this structure concerns Flow1D type structure
-      call prop_get_string(str_ptr, '', 'branchid', branchid, success)
-      if (.not. success) call prop_get_string(str_ptr, '', 'numCoordinates', branchid, success)
+      call prop_get(str_ptr, '', 'branchid', branchid, success)
+      if (.not. success) call prop_get(str_ptr, '', 'numCoordinates', branchid, success)
       if (success) then
          if (trim(strtype) /= 'pump' .and. trim(strtype) /= 'dambreak') then
             cycle
@@ -255,7 +256,7 @@ function flow_init_structurecontrol() result(status)
       end if
 
       strid = ' '
-      call prop_get_string(str_ptr, '', 'id', strid, success)
+      call prop_get(str_ptr, '', 'id', strid, success)
       if (.not. success .or. len_trim(strid) == 0) then
          write (msgbuf, '(a,i0,a)') 'Required field ''id'' missing in '//trim(strtype)//' #', i, '.'
          call warn_flush()
@@ -511,14 +512,14 @@ function flow_init_structurecontrol() result(status)
          str_ptr => strs_ptr%child_nodes(cgenidx(n))%node_ptr
 
          strtype = ' '
-         call prop_get_string(str_ptr, '', 'type', strtype)
+         call prop_get(str_ptr, '', 'type', strtype)
 
          strid = ' '
-         call prop_get_string(str_ptr, '', 'id', strid, success)
+         call prop_get(str_ptr, '', 'id', strid, success)
          cgen_ids(n) = strid
 
          plifile = ' '
-         call prop_get_string(str_ptr, '', 'polylinefile', plifile, successloc) ! TODO: Remove? This plifile is nowhere used below
+         call prop_get(str_ptr, '', 'polylinefile', plifile, successloc) ! TODO: Remove? This plifile is nowhere used below
          call resolvePath(plifile, md_structurefile_dir)
 
          ! Start with some general structure default params, and thereafter, make changes depending on actual strtype
@@ -878,11 +879,11 @@ function flow_init_structurecontrol() result(status)
          str_ptr => strs_ptr%child_nodes(gateidx(n))%node_ptr
 
          strid = ' '
-         call prop_get_string(str_ptr, '', 'id', strid, success)
+         call prop_get(str_ptr, '', 'id', strid, success)
          gate_ids(n) = strid
 
          plifile = ' '
-         call prop_get_string(str_ptr, '', 'polylinefile', plifile, success) ! TODO: Remove? This plifile is nowhere used below
+         call prop_get(str_ptr, '', 'polylinefile', plifile, success) ! TODO: Remove? This plifile is nowhere used below
          call resolvePath(plifile, md_structurefile_dir)
 
          key = 'lower_edge_level'
@@ -950,11 +951,11 @@ function flow_init_structurecontrol() result(status)
          str_ptr => strs_ptr%child_nodes(cdamidx(n))%node_ptr
 
          strid = ' '
-         call prop_get_string(str_ptr, '', 'id', strid, success)
+         call prop_get(str_ptr, '', 'id', strid, success)
          cdam_ids(n) = strid
 
          plifile = ' '
-         call prop_get_string(str_ptr, '', 'polylinefile', plifile) ! TODO: Remove? This plifile is nowhere used below
+         call prop_get(str_ptr, '', 'polylinefile', plifile) ! TODO: Remove? This plifile is nowhere used below
          call resolvePath(plifile, md_structurefile_dir)
 
          rec = ' '
@@ -1053,16 +1054,16 @@ function flow_init_structurecontrol() result(status)
 
          ! read the id first
          strid = ' '
-         call prop_get_string(str_ptr, '', 'id', strid, success)
+         call prop_get(str_ptr, '', 'id', strid, success)
          pump_ids(n) = strid
 
          ! read the type
          strtype = ' '
-         call prop_get_string(str_ptr, '', 'type', strtype, success)
+         call prop_get(str_ptr, '', 'type', strtype, success)
          istrtype = getStructype_from_string(strtype)
 
          ! Do a try-read to determine whether this is a staged flow1d pump. If not, just continue (capacity is enough then).
-         call prop_get_integer(str_ptr, 'structure', 'numStages', itmp, success) ! UNST-2709: new consistent keyword
+         call prop_get(str_ptr, 'structure', 'numStages', itmp, success) ! UNST-2709: new consistent keyword
          if (success) then
             ! flow1d_io library: add and read SOBEK pump
             ! just use the first link of the the structure (the network%sts%struct(istrtmp)%link_number  is not used in computations)
@@ -1085,7 +1086,7 @@ function flow_init_structurecontrol() result(status)
          if (.not. success) then ! Original pump code, with only a capacity.
 
             plifile = ' '
-            call prop_get_string(str_ptr, '', 'polylinefile', plifile) ! TODO: Remove? This plifile is nowhere used below
+            call prop_get(str_ptr, '', 'polylinefile', plifile) ! TODO: Remove? This plifile is nowhere used below
             call resolvePath(plifile, md_structurefile_dir)
 
             rec = ' '
@@ -1259,7 +1260,7 @@ function flow_init_structurecontrol() result(status)
 
          ! read the id first
          strid = ' '
-         call prop_get_string(str_ptr, '', 'id', strid, success)
+         call prop_get(str_ptr, '', 'id', strid, success)
          dambreak_ids(n) = strid
 
          istrtmp = hashsearch(network%sts%hashlist_structure, strid) ! Assumes unique names across all structure types.
@@ -1272,7 +1273,7 @@ function flow_init_structurecontrol() result(status)
 
             ! read the type
             strtype = ' '
-            call prop_get_string(str_ptr, '', 'type', strtype, success)
+            call prop_get(str_ptr, '', 'type', strtype, success)
             istrtype = getStructype_from_string(strtype)
             ! flow1d_io library: add and read SOBEK dambreak
             if (L2dambreaksg(n) >= L1dambreaksg(n)) then

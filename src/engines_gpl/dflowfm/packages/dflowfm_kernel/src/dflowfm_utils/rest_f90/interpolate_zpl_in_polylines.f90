@@ -36,6 +36,7 @@ subroutine interpolate_zpl_in_polylines()
    use m_missing
    use geometry_module, only: dbdistance, get_startend
    use m_sferic, only: jsferic, jasfer3D
+   use m_qnerror
 
    implicit none
 

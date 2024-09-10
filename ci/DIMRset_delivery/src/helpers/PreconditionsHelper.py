@@ -1,6 +1,7 @@
 import os
 
 from helpers.SshClient import SshClient
+from helpers.GitClient import GitClient
 from lib.Atlassian import Atlassian
 from lib.TeamCity import TeamCity
 from settings.general_settings import NETWORK_BASE_PATH, LINUX_ADDRESS
@@ -9,18 +10,20 @@ from settings.general_settings import NETWORK_BASE_PATH, LINUX_ADDRESS
 class PreconditionsHelper(object):
     """ Class to check preconditions before running the main DIMR automation script. """
 
-    def __init__(self, atlassian: Atlassian, teamcity: TeamCity,  ssh_client: SshClient):
+    def __init__(self, atlassian: Atlassian, teamcity: TeamCity,  ssh_client: SshClient,  git_client: GitClient):
         """
         Creates a new instance of PreconditionsHelper.
 
         Args:
             atlassian (Atlassian): A wrapper for the Atlassian Confluence REST API.
             teamcity (TeamCity): A wrapper for the TeamCity REST API.
-            ssh_client (SshClient): A wrapper for a SSH client.
+            ssh_client: A wrapper for a SSH client.
+            git_client: A wrapper for a Git client.
         """
         self.__teamcity = teamcity
         self.__atlassian = atlassian
         self.__ssh_client = ssh_client
+        self.__git_client = git_client
 
     def assert_preconditions(self) -> None:
         """ Asserts if all preconditions are met. """
@@ -29,6 +32,7 @@ class PreconditionsHelper(object):
         self.__check_atlassian_api_connection()
         self.__check_network_base_path_accessible()
         self.__check_ssh_connection_to_linux()
+        self.__check_git_connection()
         print("Successfully asserted all preconditions.")
 
     def __check_teamcity_api_connection(self) -> None:
@@ -59,3 +63,11 @@ class PreconditionsHelper(object):
             print(f"Successfully created and closed a ssh connection to {LINUX_ADDRESS}.")
         except Exception as e:
             raise AssertionError(f"Could not establish ssh connection to {LINUX_ADDRESS}:\n{e}")
+
+    def __check_git_connection(self) -> None:
+        print("Checking if git connection can be made...")
+        try:
+            self.__git_client.test_connection()
+            print("Successfully tested git connection.")
+        except Exception as e:
+            raise AssertionError(f"Could not establish git connection:\n{e}")

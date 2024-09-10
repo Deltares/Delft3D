@@ -65,41 +65,41 @@ contains
 
         type(delwaq_data), target, intent(inout) :: dlwqd                !< derived type for persistent storage
 
-        DLWQD%II = II
-        DLWQD%IN = IN
-        DLWQD%ITIME = ITIME
-        DLWQD%IFFLAG = IFFLAG
-        DLWQD%IAFLAG = IAFLAG
-        DLWQD%IBFLAG = IBFLAG
-        DLWQD%NDDIM = NDDIM
-        DLWQD%NVDIM = NVDIM
-        DLWQD%NOSSS = NOSSS
-        DLWQD%NOQTT = NOQTT
-        DLWQD%NOQT = NOQT
-        DLWQD%NOPRED = NOPRED
-        DLWQD%ITIMEL = ITIMEL
-        DLWQD%LSTREC = LSTREC
-        DLWQD%ITHANDL = ITHANDL
-        DLWQD%LITREP = LITREP
-        DLWQD%LDUMMY = LDUMMY
-        DLWQD%INWTYP = INWTYP
+        dlwqd%ii = ii
+        dlwqd%in = in
+        dlwqd%itime = itime
+        dlwqd%ifflag = ifflag
+        dlwqd%iaflag = iaflag
+        dlwqd%ibflag = ibflag
+        dlwqd%nddim = nddim
+        dlwqd%nvdim = nvdim
+        dlwqd%nosss = nosss
+        dlwqd%noqtt = noqtt
+        dlwqd%noqt = noqt
+        dlwqd%nopred = nopred
+        dlwqd%itimel = itimel
+        dlwqd%lstrec = lstrec
+        dlwqd%ithandl = ithandl
+        dlwqd%litrep = litrep
+        dlwqd%ldummy = ldummy
+        dlwqd%inwtyp = inwtyp
 
-        DLWQD%OTIME = OTIME
-        DLWQD%DELTIM = DELTIM
-        DLWQD%TSCALE = TSCALE
+        dlwqd%otime = otime
+        dlwqd%deltim = deltim
+        dlwqd%tscale = tscale
 
-        DLWQD%NOWARN = NOWARN
-        DLWQD%IOPTZB = IOPTZB
-        DLWQD%FORESTER = FORESTER
-        DLWQD%UPDATR = UPDATR
+        dlwqd%nowarn = nowarn
+        dlwqd%ioptzb = ioptzb
+        dlwqd%forester = forester
+        dlwqd%updatr = updatr
 
-        DLWQD%LLENG = LLENG
+        dlwqd%lleng = lleng
 
-        DLWQD%TOL = TOL
+        dlwqd%tol = tol
 
-        DLWQD%IWSTKIND => IWSTKIND
-        DLWQD%IEXSEG => IEXSEG
-        DLWQD%IKNMKV => IKNMKV
+        dlwqd%iwstkind => iwstkind
+        dlwqd%iexseg => iexseg
+        dlwqd%iknmkv => iknmkv
 
         !     DLWQD%GRIDPS    - no need!
 
@@ -113,40 +113,40 @@ contains
 
         type(delwaq_data), target, intent(inout) :: dlwqd                !< derived type for persistent storage
 
-        IN = DLWQD%IN
-        II = DLWQD%II
-        ITIME = DLWQD%ITIME
-        IFFLAG = DLWQD%IFFLAG
-        IAFLAG = DLWQD%IAFLAG
-        IBFLAG = DLWQD%IBFLAG
-        NDDIM = DLWQD%NDDIM
-        NVDIM = DLWQD%NVDIM
-        NOSSS = DLWQD%NOSSS
-        NOQTT = DLWQD%NOQTT
-        NOQT = DLWQD%NOQT
-        NOPRED = DLWQD%NOPRED
-        ITIMEL = DLWQD%ITIMEL
-        ITHANDL = DLWQD%ITHANDL
-        LITREP = DLWQD%LITREP
-        LSTREC = DLWQD%LSTREC
-        LDUMMY = DLWQD%LDUMMY
-        INWTYP = DLWQD%INWTYP
+        in = dlwqd%in
+        ii = dlwqd%ii
+        itime = dlwqd%itime
+        ifflag = dlwqd%ifflag
+        iaflag = dlwqd%iaflag
+        ibflag = dlwqd%ibflag
+        nddim = dlwqd%nddim
+        nvdim = dlwqd%nvdim
+        nosss = dlwqd%nosss
+        noqtt = dlwqd%noqtt
+        noqt = dlwqd%noqt
+        nopred = dlwqd%nopred
+        itimel = dlwqd%itimel
+        ithandl = dlwqd%ithandl
+        litrep = dlwqd%litrep
+        lstrec = dlwqd%lstrec
+        ldummy = dlwqd%ldummy
+        inwtyp = dlwqd%inwtyp
 
-        OTIME = DLWQD%OTIME
-        DELTIM = DLWQD%DELTIM
-        TSCALE = DLWQD%TSCALE
+        otime = dlwqd%otime
+        deltim = dlwqd%deltim
+        tscale = dlwqd%tscale
 
-        NOWARN = DLWQD%NOWARN
-        IOPTZB = DLWQD%IOPTZB
-        FORESTER = DLWQD%FORESTER
-        LLENG = DLWQD%LLENG
-        UPDATR = DLWQD%UPDATR
+        nowarn = dlwqd%nowarn
+        ioptzb = dlwqd%ioptzb
+        forester = dlwqd%forester
+        lleng = dlwqd%lleng
+        updatr = dlwqd%updatr
 
-        TOL = DLWQD%TOL
+        tol = dlwqd%tol
 
-        IWSTKIND => DLWQD%IWSTKIND
-        IEXSEG => DLWQD%IEXSEG
-        IKNMKV => DLWQD%IKNMKV
+        iwstkind => dlwqd%iwstkind
+        iexseg => dlwqd%iexseg
+        iknmkv => dlwqd%iknmkv
 
         call copy_time_data(dlwqd, .false.)
 

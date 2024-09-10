@@ -41,10 +41,11 @@
     use m_physcoef
     use m_arcinfo
     use geometry_module, only: dbdistance
+    use m_drawthis
 
     implicit none
     integer :: L, k, k1, k2, k3, k4, kk, n, ierr, i0, i1, j0, j1, m, nn
-    integer :: mmx, mm, ndraw, Lt, k1t, k2t
+    integer :: mmx, mm, Lt, k1t, k2t
     double precision :: alf, alfy
     double precision :: rela, dpx, dpy, fxx, fyy, yf, yf2, dvL, dp
     double precision :: sxr, syr, sxr2, syr2, css, sns, dss, prp, prop, volprop, prptot, volu, frb, a
@@ -54,8 +55,6 @@
     double precision :: xx, yy, dxx, dyy, dxsa, dysa, df, ai, bi, qz, qza, arm
     double precision, allocatable :: zsp2(:)
     double precision :: xxm, delx, Cf, Cf2, Rex, h1, h2, clear, vnu, Ar, aav, aa, fac, yyk, xxk, dxxx, zspk, exx, eyy
-
-    common / DRAWTHIS / ndraw(50)
 
     if (nshiptxy == 0) return
 

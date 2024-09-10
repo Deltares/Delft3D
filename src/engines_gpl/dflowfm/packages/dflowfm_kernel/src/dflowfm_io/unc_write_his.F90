@@ -1507,6 +1507,7 @@ contains
    !> Write data to WAQ statistic output variables (not to be confused with the general statistical output framework).
    function unc_put_his_station_waq_statistic_outputs(waq_statistics_ids) result(ierr)
       use dfm_error, only: DFM_NOERR
+      use precision
 
       integer, intent(in) :: waq_statistics_ids(:) !< NetCDF ids for the water quality statistic output variables
       integer :: ierr !< D-Flow FM error code

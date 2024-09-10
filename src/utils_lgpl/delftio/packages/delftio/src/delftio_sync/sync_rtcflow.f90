@@ -109,13 +109,9 @@ subroutine SyncRtcFlow_Init(n2steps, error, flagFLOWtoRTC, idate, itstart, rdt)
   integer :: itstart
   double precision :: rdt  ! time step in seconds
 
-  integer :: itest
-
   ! Stream for receiving barrier names
   type(DioPltType)  :: InfoFlowToRtc
   character(len=DioMaxParLen), pointer, dimension(:) :: InfoPars
-  character(len=DioMaxLocLen), pointer, dimension(:) :: DummyLocs
-
 
   ! Initialise error
   error = .false.

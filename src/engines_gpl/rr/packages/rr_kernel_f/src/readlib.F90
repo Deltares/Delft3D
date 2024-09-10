@@ -1604,9 +1604,6 @@
       SUBROUTINE LTRIM(STRING)
       CHARACTER(len=*)  :: STRING
 
-      CHARACTER(len=999) TEMP
-      INTEGER I
-
       IF (STRING.EQ.' ') GOTO 99
 
 #if (defined(HAVE_CONFIG_H))

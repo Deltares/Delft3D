@@ -335,8 +335,8 @@ contains
       ! Read Bedform sediment diameter
       !
       if (.not. stm_included) then
-         call prop_get_string(md_bfmptr, 'bedform', 'BdfD50', flnmD50, successD50)
-         call prop_get_string(md_bfmptr, 'bedform', 'BdfD90', flnmD90, successD90)
+         call prop_get(md_bfmptr, 'bedform', 'BdfD50', flnmD50, successD50)
+         call prop_get(md_bfmptr, 'bedform', 'BdfD90', flnmD90, successD90)
          !
          ! check if D50 or D90 is spatial varying; if only one is given, both are treated so.
          ! JRE/AvD to do: depfil to FM version
@@ -526,7 +526,7 @@ contains
       ! Reading choice for Bedform height
       !
       ctemp = ''
-      call prop_get_string(md_bfmptr, 'bedform', 'BdfH', ctemp)
+      call prop_get(md_bfmptr, 'bedform', 'BdfH', ctemp)
       call small(ctemp, 20)
       select case (ctemp)
       case ('vanrijn84')
@@ -589,7 +589,7 @@ contains
       ! Reading choice for Bedform relaxation
       !
       ctemp = ''
-      call prop_get_string(md_bfmptr, 'bedform', 'BdfRlx', ctemp)
+      call prop_get(md_bfmptr, 'bedform', 'BdfRlx', ctemp)
       call small(ctemp, 20)
       select case (ctemp)
       case ('thconst')
@@ -717,7 +717,7 @@ contains
       ! Reading choice for Bedform length
       !
       ctemp = ''
-      call prop_get_string(md_bfmptr, 'bedform', 'BdfL', ctemp)
+      call prop_get(md_bfmptr, 'bedform', 'BdfL', ctemp)
       call small(ctemp, 20)
       select case (ctemp)
       case ('vanrijn84')
@@ -756,7 +756,7 @@ contains
       ! Reading choice for Bedform roughness predictor
       !
       ctemp = ''
-      call prop_get_string(md_bfmptr, 'bedform', 'BdfRou', ctemp)
+      call prop_get(md_bfmptr, 'bedform', 'BdfRou', ctemp)
       call small(ctemp, 20)
       select case (ctemp)
       case ('vanrijn07')
@@ -851,7 +851,7 @@ contains
          ! First assume that 'BdfUni' contains a filename
          ! If the file does not exist, assume that 'BdfUni' contains a uniform value (real)
          !
-         call prop_get_string(md_bfmptr, 'bedform', 'BdfUni', flbdfh)
+         call prop_get(md_bfmptr, 'bedform', 'BdfUni', flbdfh)
          !
          ! Intel 7.0 crashes on an inquire statement when file = ' '
          !

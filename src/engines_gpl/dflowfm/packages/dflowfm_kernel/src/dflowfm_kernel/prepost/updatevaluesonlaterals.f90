@@ -40,7 +40,6 @@ subroutine updateValuesOnLaterals(tim1, timestep)
    use m_alloc
    use m_flowparameters, only: eps10
    use m_partitioninfo, only: jampi, reduce_double_sum, is_ghost_node
-   use m_flow, only: kmx
    implicit none
    double precision, intent(in) :: tim1 !< Current (new) time
    double precision, intent(in) :: timestep !< Timestep is the difference between tim1 and the last update time
@@ -62,11 +61,8 @@ subroutine updateValuesOnLaterals(tim1, timestep)
          if (i_node > 0) then
             if (.not. is_ghost_node(i_node)) then
                ! sum over 2nd dimension of qqlat
-               do i_lat = 1, numlatsg
-                  ! sum over 1st dimension of qqlat
-                  do i_layer = 1, num_layers
-                     qLatReal(i) = qLatReal(i) + qqLat(i_layer, i_lat, i_node)
-                  end do
+               do i_layer = 1, num_layers
+                  qLatReal(i) = qLatReal(i) + qqLat(i_layer, k1)
                end do
             end if
          end if

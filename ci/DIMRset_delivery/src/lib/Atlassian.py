@@ -47,7 +47,7 @@ class Atlassian(object):
         result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=False)
         if result.status_code == 200:
             return True
-        print(f"Could not connect to the Atlassian Confluence API:")
+        print("Could not connect to the Atlassian Confluence API:")
         print(f"Error : {result.status_code} - {result.content}")
         return False
 

@@ -33,13 +33,13 @@
       subroutine SHOWBITMAP(jainterpolate)
          use M_WEARELT
          use M_BITMAP
+         use m_drawthis
          implicit none
          integer :: i
          integer :: ini
          integer :: j
          integer :: k
          integer :: key
-         integer :: ndraw
          integer :: nko
          double precision :: xd
          double precision :: xs
@@ -51,7 +51,6 @@
          double precision :: yy2
          double precision :: zs
          integer :: jainterpolate
-         common / DRAWTHIS / ndraw(50)
 
          call IGRCOLOURMODEL(24)
 

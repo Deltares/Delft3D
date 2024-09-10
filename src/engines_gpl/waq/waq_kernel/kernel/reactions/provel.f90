@@ -59,7 +59,7 @@ contains
 
         ! local declarations
 
-        integer(kind = int_wp) :: isys                            ! index substances
+        integer(kind = int_wp) :: substance_i                            ! index substances
         integer(kind = int_wp) :: isys2                           ! index substances
         integer(kind = int_wp) :: ivnw                            ! index new velocities
         integer(kind = int_wp) :: ivx                             ! index velocities from process
@@ -81,18 +81,18 @@ contains
 
         ! we construeren nu de velonw
 
-        do isys = 1, num_substances_transported
+        do substance_i = 1, num_substances_transported
 
             do ivnw = 1, num_velocity_arrays_new
 
-                if (ivpnew_loc(isys) == ivnw) then
+                if (ivpnew_loc(substance_i) == ivnw) then
 
                     ! check if update is needed, always from input, fractional step from processes
 
                     update = .false.
-                    if (ivpnt(isys) /= 0) update = .true.
+                    if (ivpnt(substance_i) /= 0) update = .true.
                     do ivx = 1, num_velocity_arrays_extra
-                        factor = vsto(isys, ivx)
+                        factor = vsto(substance_i, ivx)
                         if (abs(factor) > 1.e-20) then
                             if (mod(istep - 1, velndt(ivx)) == 0) update = .true.
                         endif
@@ -103,9 +103,9 @@ contains
                         ! look in original velo
 
                         lfirst = .true.
-                        if (ivpnt(isys) /= 0) then
+                        if (ivpnt(substance_i) /= 0) then
                             lfirst = .false.
-                            ivp = ivpnt(isys)
+                            ivp = ivpnt(substance_i)
                             do iq = 1, num_exchanges
                                 velonw(ivnw, iq) = velo(ivp, iq)
                             enddo
@@ -114,7 +114,7 @@ contains
                         ! add the contribution of the calculated velocities.
 
                         do ivx = 1, num_velocity_arrays_extra
-                            factor = vsto(isys, ivx)
+                            factor = vsto(substance_i, ivx)
                             if (abs(factor) > 1.e-20) then
                                 if (lfirst) then
                                     lfirst = .false.
@@ -147,7 +147,7 @@ contains
 
                     ! trick the other substances also pointing to this array by setting pointer negative
 
-                    do isys2 = isys + 1, num_substances_transported
+                    do isys2 = substance_i + 1, num_substances_transported
                         if (ivpnew_loc(isys2) == ivnw) then
                             ivpnew_loc(isys2) = -ivpnew_loc(isys2)
                         endif

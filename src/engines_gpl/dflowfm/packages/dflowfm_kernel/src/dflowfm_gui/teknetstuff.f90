@@ -34,13 +34,10 @@
       use unstruc_colors
       use unstruc_display, only: jaHighlight
       use m_netw
+      use m_drawthis
       implicit none
-      integer :: ndraw
       double precision :: XP, YP
-
       integer :: key, K1, K2
-
-      common / DRAWTHIS / ndraw(50)
 
       if (NDRAW(7) >= 2) call TEKLINKVALS(NDRAW(11))
 

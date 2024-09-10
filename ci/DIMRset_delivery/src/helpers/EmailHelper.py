@@ -78,7 +78,7 @@ class EmailHelper(object):
             html += "<tr>"
             html += f"<td>{kernel_name}</td>"
             html += f"<td>{revision}</td>"
-            html += f"<td></td>"
+            html += "<td></td>"
             html += "</tr>"
 
         # Insert the passing test percentage info

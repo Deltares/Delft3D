@@ -37,6 +37,8 @@
          use m_missing
          use geometry_module, only: dbdistance, cross
          use m_sferic, only: jsferic, jasfer3D
+         use m_splint
+         use m_spline
 
          implicit none
 !     BEPAAL HET SNYPUNT VAN DE 2 SPLINES NR I EN J      USE DIMENS

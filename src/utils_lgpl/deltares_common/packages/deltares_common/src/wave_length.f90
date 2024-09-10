@@ -44,23 +44,23 @@
     !!--pseudo code and references--------------------------------------------------
     ! NONE
     !!--declarations----------------------------------------------------------------
-    use mathconsts, only: twopi_sp, sqrt2_sp
+    use mathconsts, only: twopi_hp, sqrt2_hp
     use precision
     
     implicit none
     !
     ! Global variables
     !
-    logical, intent(  out)  :: water_is_too_shallow_or_waves_are_too_small
-    real   , intent(in   )  :: deph
-    real   , intent(in   )  :: grav
-    real   , intent(in   )  :: hrm
-    real   , intent(in   )  :: tp
-    real   , intent(  out)  :: wavel
+    logical, intent(  out)      :: water_is_too_shallow_or_waves_are_too_small
+    real(hp)   , intent(in   )  :: deph
+    real(hp)   , intent(in   )  :: grav
+    real(hp)   , intent(in   )  :: hrm
+    real(hp)   , intent(in   )  :: tp
+    real(hp)   , intent(  out)  :: wavel
     !
     ! Local variables
     !
-    real     :: wavek
+    real(hp)     :: wavek
     !
     !! executable statements -------------------------------------------------------
     !
@@ -68,8 +68,8 @@
     water_is_too_shallow_or_waves_are_too_small   = .false.
     
     if (deph>0.05 .and. hrm>=0.01 .and. tp>0.0) then
-        call compute_wave_number_in_single_precision(deph, tp, wavek)
-        wavel = twopi_sp/wavek
+        call compute_wave_number(deph, tp, wavek)
+        wavel = twopi_hp/wavek
     else
         water_is_too_shallow_or_waves_are_too_small = .true.
     endif

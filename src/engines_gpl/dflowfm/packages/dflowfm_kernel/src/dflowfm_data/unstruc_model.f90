@@ -42,6 +42,7 @@ module unstruc_model
    use m_fm_icecover, only: ice_mapout
    use netcdf, only: nf90_double
    use m_deprecation
+   use m_start_parameters
    implicit none
 
    !> The version number of the MDU File format: d.dd, [config_major].[config_minor], e.g., 1.03
@@ -94,9 +95,6 @@ module unstruc_model
    ! History File1D2DLinkVersion:
    ! 1.00 (2019-12-04): Initial version.
 
-   integer, parameter :: MD_NOAUTOSTART = 0 !< Do not autostart (nor stop) this model.
-   integer, parameter :: MD_AUTOSTART = 1 !< Autostart this model and then idle.
-   integer, parameter :: MD_AUTOSTARTSTOP = 2 !< Autostart this model and then exit (batchmode)
 
    type(tree_data), pointer, public :: md_ptr !< Unstruc Model Data in tree_data
 
@@ -185,7 +183,6 @@ module unstruc_model
    double precision :: md_dt_waqproc = 0d0 !< processes time step
    double precision :: md_dt_waqbal = 0d0 !< mass balance output time step (old)
    integer :: md_flux_int = 1 !< process fluxes integration option (1: WAQ, 2: D-Flow FM)
-   integer :: md_wqbot3D_output = 0 !< write 3D wqbot output
 
    ! TODO: reading for trachytopes is still within rdtrt, below was added for partitioning (when no initialization)
    character(len=4) :: md_trtrfile = ' ' !< Variable that stores information if trachytopes are used ('Y') or not ('N')
@@ -209,7 +206,6 @@ module unstruc_model
    character(len=200) :: md_snapshotdir = ' ' !< Directory where hardcopy snapshots should be saved.
                                                  !! Created if non-existent.
 
-   integer :: md_jaAutoStart = MD_NOAUTOSTART !< Autostart simulation after loading or not.
    integer :: md_input_specific = 0 !< use (0: no, 1: yes) specific hardcoded input.
    integer :: md_snapshot_seqnr = 0 !< Sequence number of last snapshot file written.
 !   partitioning command line options
@@ -515,6 +511,7 @@ contains
             end do
             deallocate (fnames)
             if (.not. newculverts .and. nlongculverts > 0) then
+               call setnodadm(0)
                call finalizeLongCulvertsInNetwork()
             end if
          end if
@@ -721,7 +718,7 @@ contains
       use m_sediment
       use m_waves, only: hwavuni, twavuni, phiwavuni
       use m_sedtrails_data, only: sedtrails_analysis
-      use unstruc_display, only: jaGUI
+      use m_gui
       use m_output_config, only: scan_input_tree
       use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
       use m_read_statistical_output, only: read_output_parameter_toggle
@@ -729,6 +726,7 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use precision
       use m_map_his_precision
+      use m_qnerror
 
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
@@ -740,10 +738,10 @@ contains
       character(len=1000) :: charbuf = ' '
       character(len=255) :: tmpstr, fnam, bnam
       double precision, allocatable :: tmpdouble(:)
-      integer :: ibuf, ifil, mptfile, warn
-      integer :: i, n, j, je, iostat, readerr, ierror
+      integer :: ibuf, ifil
+      integer :: i, n, iostat, readerr, ierror
       integer :: jadum
-      real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), acc, ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
+      real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
       character(len=200), dimension(:), allocatable :: fnames
       double precision, external :: densfm
       double precision :: tim
@@ -774,15 +772,15 @@ contains
       end if
 
 ! Early read of OutputDir, such that the .dia fle can be stored there.
-      call prop_get_string(md_ptr, 'output', 'OutputDir', md_outputdir, success)
+      call prop_get(md_ptr, 'output', 'OutputDir', md_outputdir, success)
       call switch_dia_file()
 
 ! Read FileVersion into major and minor from the [General] block.
 ! If it fails, then try to read MDUFormatVersion from the [model] block
-      call prop_get_version_number(md_ptr, major=major, minor=minor, success=success)
+      call get_version_number(md_ptr, major=major, minor=minor, success=success)
       if (success) then
          bnam = 'General'
-         call prop_get_string(md_ptr, bnam, 'fileType', tmpstr, success) ! Not used currently. Mark as read to prevent warnings.
+         call prop_get(md_ptr, bnam, 'fileType', tmpstr, success) ! Not used currently. Mark as read to prevent warnings.
       else
          bnam = 'model'
          tmpstr = ''
@@ -811,134 +809,134 @@ contains
 ! Note: in future, version checking may be done on a per-key basis below
 
       program = ''
-      call prop_get_string(md_ptr, bnam, 'Program', program, success)
+      call prop_get(md_ptr, bnam, 'Program', program, success)
 ! Correct program ?
       if (.not. success .or. (program /= 'Unstruc' .and. program /= 'UNSTRUC' .and. program /= 'D-Flow FM' .and. program /= 'D-Flow Flexible Mesh')) then
          istat = -1
          call mess(LEVEL_ERROR, 'Wrong model definition file. ', trim(program), ' should be ''D-Flow FM''.')
          return
       end if
-      call prop_get_string(md_ptr, bnam, 'Version', tmpstr, success) ! Not used currently. Mark as read to prevent warnings.
+      call prop_get(md_ptr, bnam, 'Version', tmpstr, success) ! Not used currently. Mark as read to prevent warnings.
 
-      call prop_get_integer(md_ptr, bnam, 'AutoStart', md_jaAutoStart)
-      call prop_get_integer(md_ptr, bnam, 'InputSpecific', md_input_specific)
-      call prop_get_string(md_ptr, bnam, 'ModelSpecific', md_specific)
-      call prop_get_integer(md_ptr, bnam, 'PathsRelativeToParent', md_paths_relto_parent)
+      call prop_get(md_ptr, bnam, 'AutoStart', md_jaAutoStart)
+      call prop_get(md_ptr, bnam, 'InputSpecific', md_input_specific)
+      call prop_get(md_ptr, bnam, 'ModelSpecific', md_specific)
+      call prop_get(md_ptr, bnam, 'PathsRelativeToParent', md_paths_relto_parent)
 
 ! Geometry
-      call prop_get_string(md_ptr, 'geometry', 'CrossDefFile', md_1dfiles%cross_section_definitions, success)
-      call prop_get_string(md_ptr, 'geometry', 'CrossLocFile', md_1dfiles%cross_section_locations, success)
-      call prop_get_string(md_ptr, 'geometry', 'StorageNodeFile', md_1dfiles%storage_nodes, success)
-      call prop_get_string(md_ptr, 'geometry', 'frictFile', md_1dfiles%roughness, success)
-      call prop_get_string(md_ptr, 'geometry', 'StructureFile', md_1dfiles%structures, success) ! pending code merge, structure file either applies to v2.00 structure file, or the old one, so store in both
+      call prop_get(md_ptr, 'geometry', 'CrossDefFile', md_1dfiles%cross_section_definitions, success)
+      call prop_get(md_ptr, 'geometry', 'CrossLocFile', md_1dfiles%cross_section_locations, success)
+      call prop_get(md_ptr, 'geometry', 'StorageNodeFile', md_1dfiles%storage_nodes, success)
+      call prop_get(md_ptr, 'geometry', 'frictFile', md_1dfiles%roughness, success)
+      call prop_get(md_ptr, 'geometry', 'StructureFile', md_1dfiles%structures, success) ! pending code merge, structure file either applies to v2.00 structure file, or the old one, so store in both
       md_1dfiles%roughnessdir = ' '
-      call prop_get_string(md_ptr, 'geometry', 'NetFile', md_netfile, success)
-      call prop_get_string(md_ptr, 'geometry', 'GridEnclosureFile', md_encfile, success)
-      call prop_get_string(md_ptr, 'geometry', 'DryPointsFile', md_dryptsfile, success)
-      call prop_get_string(md_ptr, 'geometry', 'WaterLevIniFile', md_s1inifile, success)
-      call prop_get_string(md_ptr, 'geometry', 'LandBoundaryFile', md_ldbfile, success)
-      call prop_get_string(md_ptr, 'geometry', 'ThinDamFile', md_thdfile, success)
-      call prop_get_string(md_ptr, 'geometry', 'Cutcelllist', md_cutcelllist, success)
-      call prop_get_string(md_ptr, 'geometry', 'IniFieldFile', md_inifieldfile, success)
+      call prop_get(md_ptr, 'geometry', 'NetFile', md_netfile, success)
+      call prop_get(md_ptr, 'geometry', 'GridEnclosureFile', md_encfile, success)
+      call prop_get(md_ptr, 'geometry', 'DryPointsFile', md_dryptsfile, success)
+      call prop_get(md_ptr, 'geometry', 'WaterLevIniFile', md_s1inifile, success)
+      call prop_get(md_ptr, 'geometry', 'LandBoundaryFile', md_ldbfile, success)
+      call prop_get(md_ptr, 'geometry', 'ThinDamFile', md_thdfile, success)
+      call prop_get(md_ptr, 'geometry', 'Cutcelllist', md_cutcelllist, success)
+      call prop_get(md_ptr, 'geometry', 'IniFieldFile', md_inifieldfile, success)
 
-      call prop_get_integer(md_ptr, 'geometry', 'UseCaching', md_usecaching, success)
+      call prop_get(md_ptr, 'geometry', 'UseCaching', md_usecaching, success)
       ! Merge cmd line switches with mdu file settings
       if (iarg_usecaching /= -1) then
          md_usecaching = iarg_usecaching
       end if
 
-      call prop_get_string(md_ptr, 'geometry', 'FixedWeirFile', md_fixedweirfile, success)
-      call prop_get_string(md_ptr, 'geometry', 'PillarFile', md_pillarfile, success)
+      call prop_get(md_ptr, 'geometry', 'FixedWeirFile', md_fixedweirfile, success)
+      call prop_get(md_ptr, 'geometry', 'PillarFile', md_pillarfile, success)
       if (len_trim(md_pillarfile) > 0) then
          japillar = 3
       end if
-      call prop_get_string(md_ptr, 'geometry', 'GulliesFile', md_gulliesfile, success)
-      call prop_get_string(md_ptr, 'geometry', 'RoofsFile', md_roofsfile, success)
+      call prop_get(md_ptr, 'geometry', 'GulliesFile', md_gulliesfile, success)
+      call prop_get(md_ptr, 'geometry', 'RoofsFile', md_roofsfile, success)
 
-      call prop_get_string(md_ptr, 'geometry', 'VertplizFile', md_vertplizfile, success)
+      call prop_get(md_ptr, 'geometry', 'VertplizFile', md_vertplizfile, success)
 
-      call prop_get_string(md_ptr, 'geometry', 'ProflocFile', md_proflocfile, success)
-      call prop_get_string(md_ptr, 'geometry', 'ProfdefFile', md_profdeffile, success)
-      call prop_get_string(md_ptr, 'geometry', 'ProfdefxyzFile', md_profdefxyzfile, success)
+      call prop_get(md_ptr, 'geometry', 'ProflocFile', md_proflocfile, success)
+      call prop_get(md_ptr, 'geometry', 'ProfdefFile', md_profdeffile, success)
+      call prop_get(md_ptr, 'geometry', 'ProfdefxyzFile', md_profdefxyzfile, success)
 
-      call prop_get_double(md_ptr, 'geometry', 'Uniformwidth1D', wu1Duni, success)
-      call prop_get_double(md_ptr, 'geometry', 'Uniformheight1D', hh1Duni, success)
-      call prop_get_integer(md_ptr, 'geometry', 'Uniformtyp1D', iproftypuni, success)
+      call prop_get(md_ptr, 'geometry', 'Uniformwidth1D', wu1Duni, success)
+      call prop_get(md_ptr, 'geometry', 'Uniformheight1D', hh1Duni, success)
+      call prop_get(md_ptr, 'geometry', 'Uniformtyp1D', iproftypuni, success)
 
-      call prop_get_double(md_ptr, 'geometry', 'Uniformwidth1Dstreetinlets', wu1Duni5, success)
-      call prop_get_double(md_ptr, 'geometry', 'Uniformheight1Dstreetinlets', hh1Duni5, success)
-      call prop_get_integer(md_ptr, 'geometry', 'Uniformtyp1Dstreetinlets', iproftypuni5, success)
+      call prop_get(md_ptr, 'geometry', 'Uniformwidth1Dstreetinlets', wu1Duni5, success)
+      call prop_get(md_ptr, 'geometry', 'Uniformheight1Dstreetinlets', hh1Duni5, success)
+      call prop_get(md_ptr, 'geometry', 'Uniformtyp1Dstreetinlets', iproftypuni5, success)
 
-      call prop_get_double(md_ptr, 'geometry', 'Uniformwidth1Droofgutterpipes', wu1Duni7, success)
-      call prop_get_double(md_ptr, 'geometry', 'Uniformheight1Droofgutterpipes', hh1Duni7, success)
-      call prop_get_integer(md_ptr, 'geometry', 'Uniformtyp1Droofgutterpipes', iproftypuni7, success)
-      call prop_get_string(md_ptr, 'geometry', '1D2DLinkFile', md_1d2dlinkfile, success)
+      call prop_get(md_ptr, 'geometry', 'Uniformwidth1Droofgutterpipes', wu1Duni7, success)
+      call prop_get(md_ptr, 'geometry', 'Uniformheight1Droofgutterpipes', hh1Duni7, success)
+      call prop_get(md_ptr, 'geometry', 'Uniformtyp1Droofgutterpipes', iproftypuni7, success)
+      call prop_get(md_ptr, 'geometry', '1D2DLinkFile', md_1d2dlinkfile, success)
 
-      call prop_get_double(md_ptr, 'geometry', 'Dxmin1D', Dxmin1D)
-      call prop_get_double(md_ptr, 'geometry', 'Dxwuimin2D', Dxwuimin2D)
+      call prop_get(md_ptr, 'geometry', 'Dxmin1D', Dxmin1D)
+      call prop_get(md_ptr, 'geometry', 'Dxwuimin2D', Dxwuimin2D)
 
-      call prop_get_integer(md_ptr, 'geometry', '1D2Dinternallinktype', ja1D2Dinternallinktype)
+      call prop_get(md_ptr, 'geometry', '1D2Dinternallinktype', ja1D2Dinternallinktype)
 
-      call prop_get_string(md_ptr, 'geometry', 'PipeFile', md_pipefile, success)
-      call prop_get_string(md_ptr, 'geometry', 'ShipdefFile', md_shipdeffile, success)
+      call prop_get(md_ptr, 'geometry', 'PipeFile', md_pipefile, success)
+      call prop_get(md_ptr, 'geometry', 'ShipdefFile', md_shipdeffile, success)
 
-      call prop_get_double(md_ptr, 'geometry', 'Removesmalllinkstrsh', removesmalllinkstrsh)
-      call prop_get_double(md_ptr, 'geometry', 'Cosphiutrsh', Cosphiutrsh)
+      call prop_get(md_ptr, 'geometry', 'Removesmalllinkstrsh', removesmalllinkstrsh)
+      call prop_get(md_ptr, 'geometry', 'Cosphiutrsh', Cosphiutrsh)
 
-      call prop_get_double(md_ptr, 'geometry', 'WaterLevIni', sini)
-      call prop_get_double(md_ptr, 'geometry', 'WaterdepthIni1D', WaterdepthIni1D)
-      call prop_get_double(md_ptr, 'geometry', 'Uniformhu', uniformhu)
+      call prop_get(md_ptr, 'geometry', 'WaterLevIni', sini)
+      call prop_get(md_ptr, 'geometry', 'WaterdepthIni1D', WaterdepthIni1D)
+      call prop_get(md_ptr, 'geometry', 'Uniformhu', uniformhu)
 
-      call prop_get_double(md_ptr, 'geometry', 'BedlevUni', zkuni)
-      call prop_get_double(md_ptr, 'geometry', 'Bedslope', bedslope)
-      call prop_get_double(md_ptr, 'geometry', 'Bedwaveamplitude', bedwaveamplitude)
-      call prop_get_double(md_ptr, 'geometry', 'Bedwavelength', bedwavelength)
+      call prop_get(md_ptr, 'geometry', 'BedlevUni', zkuni)
+      call prop_get(md_ptr, 'geometry', 'Bedslope', bedslope)
+      call prop_get(md_ptr, 'geometry', 'Bedwaveamplitude', bedwaveamplitude)
+      call prop_get(md_ptr, 'geometry', 'Bedwavelength', bedwavelength)
 
-      call prop_get_integer(md_ptr, 'geometry', 'BedlevMode', ibedlevmode)
+      call prop_get(md_ptr, 'geometry', 'BedlevMode', ibedlevmode)
 
-      call prop_get_integer(md_ptr, 'geometry', 'BedlevType', ibedlevtyp)
-      call prop_get_double(md_ptr, 'geometry', 'Blmeanbelow', blmeanbelow)
-      call prop_get_double(md_ptr, 'geometry', 'Blminabove', blminabove)
-      call prop_get_double(md_ptr, 'geometry', 'Groundlayerthickness', grounLayuni)
+      call prop_get(md_ptr, 'geometry', 'BedlevType', ibedlevtyp)
+      call prop_get(md_ptr, 'geometry', 'Blmeanbelow', blmeanbelow)
+      call prop_get(md_ptr, 'geometry', 'Blminabove', blminabove)
+      call prop_get(md_ptr, 'geometry', 'Groundlayerthickness', grounLayuni)
 
-      call prop_get_double(md_ptr, 'geometry', 'AngLat', anglat)
-      call prop_get_double(md_ptr, 'geometry', 'AngLon', anglon)
+      call prop_get(md_ptr, 'geometry', 'AngLat', anglat)
+      call prop_get(md_ptr, 'geometry', 'AngLon', anglon)
 
-      call prop_get_integer(md_ptr, 'geometry', 'Helmert', jaHelmert)
+      call prop_get(md_ptr, 'geometry', 'Helmert', jaHelmert)
 
-      call prop_get_integer(md_ptr, 'geometry', 'Conveyance2D', Jaconveyance2D)
-      call prop_get_integer(md_ptr, 'geometry', 'Conveyance3D', Jaconveyance3D)
-      call prop_get_integer(md_ptr, 'geometry', 'Nonlin2D', Nonlin2D)
-      call prop_get_integer(md_ptr, 'geometry', 'Nonlin1D', Nonlin1D)
-      call prop_get_double(md_ptr, 'geometry', 'Slotw2D', slotw2D)
-      call prop_get_double(md_ptr, 'geometry', 'Slotw1D', slotw1D)
-      call prop_get_integer(md_ptr, 'geometry', 'Dpuopt', jadpuopt)
-      call prop_get_integer(md_ptr, 'geometry', 'ExtrBl', jaextrapbl)
+      call prop_get(md_ptr, 'geometry', 'Conveyance2D', Jaconveyance2D)
+      call prop_get(md_ptr, 'geometry', 'Conveyance3D', Jaconveyance3D)
+      call prop_get(md_ptr, 'geometry', 'Nonlin2D', Nonlin2D)
+      call prop_get(md_ptr, 'geometry', 'Nonlin1D', Nonlin1D)
+      call prop_get(md_ptr, 'geometry', 'Slotw2D', slotw2D)
+      call prop_get(md_ptr, 'geometry', 'Slotw1D', slotw1D)
+      call prop_get(md_ptr, 'geometry', 'Dpuopt', jadpuopt)
+      call prop_get(md_ptr, 'geometry', 'ExtrBl', jaextrapbl)
       ! use slotw1d also in getcspars routines
       sl = slotw1D
 
-      call prop_get_double(md_ptr, 'geometry', 'Sillheightmin', sillheightmin)
+      call prop_get(md_ptr, 'geometry', 'Sillheightmin', sillheightmin)
 
       kmx = 0
-      call prop_get_integer(md_ptr, 'geometry', 'Kmx', kmx)
+      call prop_get(md_ptr, 'geometry', 'Kmx', kmx)
       if (kmx > 0) then
-         call prop_get_integer(md_ptr, 'geometry', 'Layertype', Layertype)
+         call prop_get(md_ptr, 'geometry', 'Layertype', Layertype)
          if (Layertype /= LAYTP_SIGMA) then
             mxlayz = kmx
          end if
 
-         call prop_get_integer(md_ptr, 'geometry', 'Numtopsig', Numtopsig)
-         call prop_get_integer(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform)
-         call prop_get_double(md_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor)
-         call prop_get_double(md_ptr, 'geometry', 'Dztopuniabovez', dztopuniabovez)
-         call prop_get_double(md_ptr, 'geometry', 'Dztop', Dztop)
-         call prop_get_double(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
-         call prop_get_double(md_ptr, 'geometry', 'Floorlevtoplay', Floorlevtoplay)
-         call prop_get_integer(md_ptr, 'geometry', 'OrgFloorlevtoplaydef', jaorgFloorlevtoplaydef)
-         call prop_get_double(md_ptr, 'geometry', 'Tsigma', Tsigma)
-         call prop_get_double(md_ptr, 'geometry', 'ZlayBot', zlaybot)
-         call prop_get_double(md_ptr, 'geometry', 'ZlayTop', zlaytop)
-         call prop_get_integer(md_ptr, 'geometry', 'StretchType', iStrchType)
+         call prop_get(md_ptr, 'geometry', 'Numtopsig', Numtopsig)
+         call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform)
+         call prop_get(md_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor)
+         call prop_get(md_ptr, 'geometry', 'Dztopuniabovez', dztopuniabovez)
+         call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
+         call prop_get(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
+         call prop_get(md_ptr, 'geometry', 'Floorlevtoplay', Floorlevtoplay)
+         call prop_get(md_ptr, 'geometry', 'OrgFloorlevtoplaydef', jaorgFloorlevtoplaydef)
+         call prop_get(md_ptr, 'geometry', 'Tsigma', Tsigma)
+         call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
+         call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
+         call prop_get(md_ptr, 'geometry', 'StretchType', iStrchType)
 
          if (Dztop > 0d0) then ! hk claims back original functionality
             iStrchType = -1
@@ -946,11 +944,11 @@ contains
 
          if (iStrchType == STRCH_USER) then
             call realloc(laycof, kmx)
-            call prop_get_doubles(md_ptr, 'geometry', 'StretchCoef', laycof, kmx)
+            call prop_get(md_ptr, 'geometry', 'StretchCoef', laycof, kmx)
             sumlaycof = sum(laycof)
             if (comparereal(sumlaycof, 100d0, tolSumLay) /= 0) then
                call realloc(tmpdouble, maxLayers, fill=0d0)
-               call prop_get_doubles(md_ptr, 'geometry', 'StretchCoef', tmpdouble, maxLayers)
+               call prop_get(md_ptr, 'geometry', 'StretchCoef', tmpdouble, maxLayers)
                n = 0
                do i = 1, maxLayers
                   if (.not. (tmpdouble(i) > 0)) then
@@ -967,7 +965,7 @@ contains
          else if (iStrchType == STRCH_EXPONENT) then
             call realloc(laycof, 3)
             laycof(:) = dmiss
-            call prop_get_doubles(md_ptr, 'geometry', 'StretchCoef', laycof, 3, success)
+            call prop_get(md_ptr, 'geometry', 'StretchCoef', laycof, 3, success)
             if (.not. success) then
                call mess(LEVEL_ERROR, '"StretchCoef" values are absent.')
             else
@@ -975,21 +973,21 @@ contains
                   call mess(LEVEL_ERROR, '"StretchCoef" values are not properly set.')
                end if
             end if
-         end if
+         end if   
 
-         call prop_get_integer(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success)
+         call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success)
          if (.not. success) then
-            call prop_get_integer(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed)
+            call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed)
          end if
-         call prop_get_integer(md_ptr, 'geometry', 'Ihuz', ihuz, success)
-         call prop_get_integer(md_ptr, 'geometry', 'Ihuzcsig', ihuzcsig, success)
-         call prop_get_integer(md_ptr, 'geometry', 'Keepzlay1bedvol', keepzlay1bedvol, success)
-         call prop_get_integer(md_ptr, 'geometry', 'Zlayeratubybob', jaZlayeratubybob, success)
+         call prop_get(md_ptr, 'geometry', 'Ihuz', ihuz, success)
+         call prop_get(md_ptr, 'geometry', 'Ihuzcsig', ihuzcsig, success)
+         call prop_get(md_ptr, 'geometry', 'Keepzlay1bedvol', keepzlay1bedvol, success)
+         call prop_get(md_ptr, 'geometry', 'Zlayeratubybob', jaZlayeratubybob, success)
       end if
-      call prop_get_integer(md_ptr, 'geometry', 'Makeorthocenters', Makeorthocenters)
-      call prop_get_integer(md_ptr, 'geometry', 'stripMesh', strip_mesh)
-      call prop_get_double(md_ptr, 'geometry', 'Dcenterinside', Dcenterinside)
-      call prop_get_string(md_ptr, 'geometry', 'PartitionFile', md_partitionfile, success)
+      call prop_get(md_ptr, 'geometry', 'Makeorthocenters', Makeorthocenters)
+      call prop_get(md_ptr, 'geometry', 'stripMesh', strip_mesh)
+      call prop_get(md_ptr, 'geometry', 'Dcenterinside', Dcenterinside)
+      call prop_get(md_ptr, 'geometry', 'PartitionFile', md_partitionfile, success)
       if (jampi == 1 .and. md_japartition /= 1) then
          if (len_trim(md_partitionfile) < 1) then
             call mess(LEVEL_INFO, 'no partitioning polygons file: read subdomain numbering from netfiles')
@@ -1003,64 +1001,64 @@ contains
 !          write(*,*) 'hence, use polygon to obtain subdomain info.'
          end if
       end if
-      call prop_get_double(md_ptr, 'geometry', 'Bamin', Bamin)
-      call prop_get_double(md_ptr, 'geometry', 'OpenBoundaryTolerance', rrtol)
-      call prop_get_integer(md_ptr, 'geometry', 'AllowBndAtBifurcation', jaAllowBndAtBifurcation)
-      call prop_get_integer(md_ptr, 'geometry', 'CreateLinks1D2D', md_jamake1d2dlinks)
-      call prop_get_integer(md_ptr, 'geometry', 'RenumberFlowNodes', jarenumber) ! hidden option for testing renumbering
-      call prop_get_integer(md_ptr, 'geometry', 'Autotrisam', autotrisam) ! hidden option for auto generation of networks from samples or not
-      call prop_get_logical(md_ptr, 'geometry', 'dxDoubleAt1DEndNodes', dxDoubleAt1DEndNodes)
-      call prop_get_logical(md_ptr, 'geometry', 'ChangeVelocityAtStructures', changeVelocityAtStructures)
+      call prop_get(md_ptr, 'geometry', 'Bamin', Bamin)
+      call prop_get(md_ptr, 'geometry', 'OpenBoundaryTolerance', rrtol)
+      call prop_get(md_ptr, 'geometry', 'AllowBndAtBifurcation', jaAllowBndAtBifurcation)
+      call prop_get(md_ptr, 'geometry', 'CreateLinks1D2D', md_jamake1d2dlinks)
+      call prop_get(md_ptr, 'geometry', 'RenumberFlowNodes', jarenumber) ! hidden option for testing renumbering
+      call prop_get(md_ptr, 'geometry', 'Autotrisam', autotrisam) ! hidden option for auto generation of networks from samples or not
+      call prop_get(md_ptr, 'geometry', 'dxDoubleAt1DEndNodes', dxDoubleAt1DEndNodes)
+      call prop_get(md_ptr, 'geometry', 'ChangeVelocityAtStructures', changeVelocityAtStructures)
 
-      call prop_get_logical(md_ptr, 'geometry', 'ChangeStructureDimensions', changeStructureDimensions)
+      call prop_get(md_ptr, 'geometry', 'ChangeStructureDimensions', changeStructureDimensions)
 
       ! 1D Volume tables
       useVolumeTables = .false.
-      call prop_get_logical(md_ptr, 'volumeTables', 'useVolumeTables', useVolumeTables)
-      call prop_get_double(md_ptr, 'volumeTables', 'increment', tableIncrement)
+      call prop_get(md_ptr, 'volumeTables', 'useVolumeTables', useVolumeTables)
+      call prop_get(md_ptr, 'volumeTables', 'increment', tableIncrement)
       useVolumeTableFile = .false.
-      call prop_get_logical(md_ptr, 'volumeTables', 'useVolumeTableFile', useVolumeTableFile)
+      call prop_get(md_ptr, 'volumeTables', 'useVolumeTableFile', useVolumeTableFile)
 
       ! Numerics
-      call prop_get_double(md_ptr, 'numerics', 'CFLMax', cflmx)
-      call prop_get_double(md_ptr, 'numerics', 'EpsMaxlev', epsmaxlev)
-      call prop_get_double(md_ptr, 'numerics', 'EpsMaxlevm', epsmaxlevm)
-      !call prop_get_double( md_ptr, 'numerics', 'CFLWaveFrac'     , cflw)
-      call prop_get_integer(md_ptr, 'numerics', 'AdvecType', iadvec)
+      call prop_get(md_ptr, 'numerics', 'CFLMax', cflmx)
+      call prop_get(md_ptr, 'numerics', 'EpsMaxlev', epsmaxlev)
+      call prop_get(md_ptr, 'numerics', 'EpsMaxlevm', epsmaxlevm)
+      !call prop_get( md_ptr, 'numerics', 'CFLWaveFrac'     , cflw)
+      call prop_get(md_ptr, 'numerics', 'AdvecType', iadvec)
       if (Layertype > 1) then
          iadvec = 33; iadvec1D = 33
       end if
-      call prop_get_integer(md_ptr, 'numerics', 'AdvecCorrection1D2D', iadveccorr1D2D)
-      call prop_get_integer(md_ptr, 'numerics', 'TimeStepType', itstep)
+      call prop_get(md_ptr, 'numerics', 'AdvecCorrection1D2D', iadveccorr1D2D)
+      call prop_get(md_ptr, 'numerics', 'TimeStepType', itstep)
 
-      call prop_get_integer(md_ptr, 'numerics', 'maxNonlinearIterations', maxNonlinearIterations)
-      call prop_get_logical(md_ptr, 'numerics', 'setHorizontalBobsFor1d2d', setHorizontalBobsFor1d2d)
+      call prop_get(md_ptr, 'numerics', 'maxNonlinearIterations', maxNonlinearIterations)
+      call prop_get(md_ptr, 'numerics', 'setHorizontalBobsFor1d2d', setHorizontalBobsFor1d2d)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Testdryingflooding', testdryflood)
-      call prop_get_integer(md_ptr, 'numerics', 'Testfixedweirs', testfixedweirs)
+      call prop_get(md_ptr, 'numerics', 'Testdryingflooding', testdryflood)
+      call prop_get(md_ptr, 'numerics', 'Testfixedweirs', testfixedweirs)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Icoriolistype', icorio)
-      call prop_get_integer(md_ptr, 'numerics', 'Newcorio', newcorio)
+      call prop_get(md_ptr, 'numerics', 'Icoriolistype', icorio)
+      call prop_get(md_ptr, 'numerics', 'Newcorio', newcorio)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Corioconstant', jacorioconstant)
-      call prop_get_double(md_ptr, 'numerics', 'Corioadamsbashfordfac', Corioadamsbashfordfac)
-      call prop_get_double(md_ptr, 'numerics', 'Coriohhtrsh', hhtrshcor)
+      call prop_get(md_ptr, 'numerics', 'Corioconstant', jacorioconstant)
+      call prop_get(md_ptr, 'numerics', 'Corioadamsbashfordfac', Corioadamsbashfordfac)
+      call prop_get(md_ptr, 'numerics', 'Coriohhtrsh', hhtrshcor)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Limtyphu', limtyphu)
-      call prop_get_integer(md_ptr, 'numerics', 'Limtypmom', limtypmom)
-      call prop_get_integer(md_ptr, 'numerics', 'Limtypsa', limtypsa)
-      call prop_get_integer(md_ptr, 'numerics', 'Limtypw', limtypw)
+      call prop_get(md_ptr, 'numerics', 'Limtyphu', limtyphu)
+      call prop_get(md_ptr, 'numerics', 'Limtypmom', limtypmom)
+      call prop_get(md_ptr, 'numerics', 'Limtypsa', limtypsa)
+      call prop_get(md_ptr, 'numerics', 'Limtypw', limtypw)
       if (kmx > 1) then ! package deal
          ja_timestep_auto = 5
       end if
 
-      call prop_get_integer(md_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff)
+      call prop_get(md_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff)
 
       if (jatransportautotimestepdiff == 3 .and. kmx > 0) then
          call mess(LEVEL_ERROR, 'Implicit horizontaldiffusion is only implemented in 2D', 'set TransportAutoTimestepdiff = 0, 1 or 2')
       end if
 
-      call prop_get_integer(md_ptr, 'numerics', 'Implicitdiffusion2D', Implicitdiffusion2D)
+      call prop_get(md_ptr, 'numerics', 'Implicitdiffusion2D', Implicitdiffusion2D)
       if (Implicitdiffusion2D == 1) then
          if (kmx > 0) then
             call mess(LEVEL_ERROR, 'Implicit horizontaldiffusion is only implemented in 2D', ' ')
@@ -1069,56 +1067,56 @@ contains
          end if
       end if
 
-      call prop_get_integer(md_ptr, 'numerics', 'DiagnosticTransport', jadiagnostictransport)
+      call prop_get(md_ptr, 'numerics', 'DiagnosticTransport', jadiagnostictransport)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Vertadvtypsal', javasal)
-      call prop_get_integer(md_ptr, 'numerics', 'Vertadvtyptem', javatem)
-      call prop_get_integer(md_ptr, 'numerics', 'Vertadvtypmom', javau)
-      call prop_get_integer(md_ptr, 'numerics', 'Vertadvtypmom3onbnd', javau3onbnd)
+      call prop_get(md_ptr, 'numerics', 'Vertadvtypsal', javasal)
+      call prop_get(md_ptr, 'numerics', 'Vertadvtyptem', javatem)
+      call prop_get(md_ptr, 'numerics', 'Vertadvtypmom', javau)
+      call prop_get(md_ptr, 'numerics', 'Vertadvtypmom3onbnd', javau3onbnd)
 
-      call prop_get_double(md_ptr, 'numerics', 'Cffacver', Cffacver)
-      call prop_get_double(md_ptr, 'numerics', 'Cffachormom', Cffachormom)
-      call prop_get_double(md_ptr, 'numerics', 'Cfexphormom', Cfexphormom)
-      call prop_get_double(md_ptr, 'numerics', 'Cfconhormom', Cfconhormom)
-      call prop_get_double(md_ptr, 'numerics', 'Cffachu', Cffachu)
-      call prop_get_double(md_ptr, 'numerics', 'Cfexphu', Cfexphu)
+      call prop_get(md_ptr, 'numerics', 'Cffacver', Cffacver)
+      call prop_get(md_ptr, 'numerics', 'Cffachormom', Cffachormom)
+      call prop_get(md_ptr, 'numerics', 'Cfexphormom', Cfexphormom)
+      call prop_get(md_ptr, 'numerics', 'Cfconhormom', Cfconhormom)
+      call prop_get(md_ptr, 'numerics', 'Cffachu', Cffachu)
+      call prop_get(md_ptr, 'numerics', 'Cfexphu', Cfexphu)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Horadvtypzlayer', jahazlayer)
+      call prop_get(md_ptr, 'numerics', 'Horadvtypzlayer', jahazlayer)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Pure1D', jaPure1D)
-      call prop_get_integer(md_ptr, 'numerics', 'Junction1D', jaJunction1D)
+      call prop_get(md_ptr, 'numerics', 'Pure1D', jaPure1D)
+      call prop_get(md_ptr, 'numerics', 'Junction1D', jaJunction1D)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Zlayercenterbedvel', jaZlayercenterbedvel)
+      call prop_get(md_ptr, 'numerics', 'Zlayercenterbedvel', jaZlayercenterbedvel)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Structurelayersactive', jastructurelayersactive)
+      call prop_get(md_ptr, 'numerics', 'Structurelayersactive', jastructurelayersactive)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Zerozbndinflowadvection', jaZerozbndinflowadvection)
+      call prop_get(md_ptr, 'numerics', 'Zerozbndinflowadvection', jaZerozbndinflowadvection)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Jarhoxu', Jarhoxu)
+      call prop_get(md_ptr, 'numerics', 'Jarhoxu', Jarhoxu)
       if (Jarhoxu > 0) then
          call mess(LEVEL_WARN, 'Jarhoxu=0 is strongly advised and other values are discouraged.')
       end if
 
-      call prop_get_integer(md_ptr, 'numerics', 'Icgsolver', Icgsolver)
-      call prop_get_integer(md_ptr, 'numerics', 'Maxdegree', Maxdge)
-      ! call prop_get_integer(md_ptr, 'numerics', 'Noderivedtypes'  , Noderivedtypes)
+      call prop_get(md_ptr, 'numerics', 'Icgsolver', Icgsolver)
+      call prop_get(md_ptr, 'numerics', 'Maxdegree', Maxdge)
+      ! call prop_get(md_ptr, 'numerics', 'Noderivedtypes'  , Noderivedtypes)
       if (icgsolver == 7 .or. icgsolver == 6) then
          Noderivedtypes = min(Noderivedtypes, 4) ! no deallocation of derived types
       end if
-      call prop_get_integer(md_ptr, 'numerics', 'jposhchk', jposhchk)
-      call prop_get_integer(md_ptr, 'numerics', 'FixedWeirScheme', ifixedweirscheme, success)
+      call prop_get(md_ptr, 'numerics', 'jposhchk', jposhchk)
+      call prop_get(md_ptr, 'numerics', 'FixedWeirScheme', ifixedweirscheme, success)
       ifixedweirscheme_input = ifixedweirscheme
-      call prop_get_integer(md_ptr, 'numerics', 'FixedWeirScheme1d2d', ifixedweirscheme1D2D, success)
-      call prop_get_double(md_ptr, 'numerics', 'FixedWeir1d2d_dx', lat_fix_weir_dx)
-      call prop_get_double(md_ptr, 'numerics', 'FixedWeirContraction', Fixedweircontraction, success)
+      call prop_get(md_ptr, 'numerics', 'FixedWeirScheme1d2d', ifixedweirscheme1D2D, success)
+      call prop_get(md_ptr, 'numerics', 'FixedWeir1d2d_dx', lat_fix_weir_dx)
+      call prop_get(md_ptr, 'numerics', 'FixedWeirContraction', Fixedweircontraction, success)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Fixedweirfrictscheme', ifxedweirfrictscheme)
-      call prop_get_double(md_ptr, 'numerics', 'Fixedweirtopwidth', fixedweirtopwidth)
-      call prop_get_double(md_ptr, 'numerics', 'Fixedweirtopfrictcoef', fixedweirtopfrictcoef)
-      call prop_get_double(md_ptr, 'numerics', 'Fixedweirtalud', fixedweirtalud)
-      call prop_get_double(md_ptr, 'numerics', 'FixedweirRelaxationcoef', waquaweirthetaw)
+      call prop_get(md_ptr, 'numerics', 'Fixedweirfrictscheme', ifxedweirfrictscheme)
+      call prop_get(md_ptr, 'numerics', 'Fixedweirtopwidth', fixedweirtopwidth)
+      call prop_get(md_ptr, 'numerics', 'Fixedweirtopfrictcoef', fixedweirtopfrictcoef)
+      call prop_get(md_ptr, 'numerics', 'Fixedweirtalud', fixedweirtalud)
+      call prop_get(md_ptr, 'numerics', 'FixedweirRelaxationcoef', waquaweirthetaw)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Izbndpos', Izbndpos)
+      call prop_get(md_ptr, 'numerics', 'Izbndpos', Izbndpos)
       !ideally, we move all this sort of reworking to another subroutine
       if (jaextrapbl == 1) then
          if (ibedlevtyp /= 1) then
@@ -1134,99 +1132,99 @@ contains
             call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: Conveyance2D /= -1 and jaextrapbl == 1. It is not possible to extrapolate bed level if conveyance is not calculated as HU. Extrapolation has been disabled.')
          end if
       end if !jaextrapbl
-      call prop_get_double(md_ptr, 'numerics', 'Tlfsmo', Tlfsmo)
-      call prop_get_integer(md_ptr, 'numerics', 'Keepstbndonoutflow', keepstbndonoutflow)
-      call prop_get_integer(md_ptr, 'numerics', 'Diffusiononbnd', jadiffusiononbnd)
-      call prop_get_double(md_ptr, 'numerics', 'Tspinupturblogprof', Tspinupturblogprof)
-      call prop_get_integer(md_ptr, 'numerics', 'Logprofatubndin', jaLogprofatubndin)
-      call prop_get_integer(md_ptr, 'numerics', 'Logprofkepsbndin', jaLogprofkepsbndin)
+      call prop_get(md_ptr, 'numerics', 'Tlfsmo', Tlfsmo)
+      call prop_get(md_ptr, 'numerics', 'Keepstbndonoutflow', keepstbndonoutflow)
+      call prop_get(md_ptr, 'numerics', 'Diffusiononbnd', jadiffusiononbnd)
+      call prop_get(md_ptr, 'numerics', 'Tspinupturblogprof', Tspinupturblogprof)
+      call prop_get(md_ptr, 'numerics', 'Logprofatubndin', jaLogprofatubndin)
+      call prop_get(md_ptr, 'numerics', 'Logprofkepsbndin', jaLogprofkepsbndin)
 
-      call prop_get_double(md_ptr, 'numerics', 'Slopedrop2D', Slopedrop2D)
-      call prop_get_logical(md_ptr, 'numerics', 'Drop1D', Drop1D)
-      call prop_get_double(md_ptr, 'numerics', 'Drop3D', Drop3D)
-      call prop_get_integer(md_ptr, 'numerics', 'Lincontin', lincontin)
-      call prop_get_double(md_ptr, 'numerics', 'Chkadvd', chkadvd)
+      call prop_get(md_ptr, 'numerics', 'Slopedrop2D', Slopedrop2D)
+      call prop_get(md_ptr, 'numerics', 'Drop1D', Drop1D)
+      call prop_get(md_ptr, 'numerics', 'Drop3D', Drop3D)
+      call prop_get(md_ptr, 'numerics', 'Lincontin', lincontin)
+      call prop_get(md_ptr, 'numerics', 'Chkadvd', chkadvd)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Linkdriedmx', Linkdriedmx)
-      call prop_get_double(md_ptr, 'numerics', 'Huweirregular', Huweirregular)
+      call prop_get(md_ptr, 'numerics', 'Linkdriedmx', Linkdriedmx)
+      call prop_get(md_ptr, 'numerics', 'Huweirregular', Huweirregular)
 
-      call prop_get_double(md_ptr, 'numerics', 'Chkdifd', chkdifd)
-      call prop_get_double(md_ptr, 'numerics', 'Zwsbtol', zwsbtol)
-      call prop_get_double(md_ptr, 'numerics', 'Trsh_u1Lb', Trsh_u1Lb)
-      call prop_get_double(md_ptr, 'numerics', 'Epshstem', epshstem)
+      call prop_get(md_ptr, 'numerics', 'Chkdifd', chkdifd)
+      call prop_get(md_ptr, 'numerics', 'Zwsbtol', zwsbtol)
+      call prop_get(md_ptr, 'numerics', 'Trsh_u1Lb', Trsh_u1Lb)
+      call prop_get(md_ptr, 'numerics', 'Epshstem', epshstem)
 
-      call prop_get_double(md_ptr, 'numerics', 'Teta0', teta0)
-      call prop_get_integer(md_ptr, 'numerics', 'Jbasqbnddownwindhs', jbasqbnddownwindhs)
+      call prop_get(md_ptr, 'numerics', 'Teta0', teta0)
+      call prop_get(md_ptr, 'numerics', 'Jbasqbnddownwindhs', jbasqbnddownwindhs)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Maxitverticalforestersal', Maxitverticalforestersal)
-      call prop_get_integer(md_ptr, 'numerics', 'cstbnd', jacstbnd)
-      call prop_get_integer(md_ptr, 'numerics', 'Maxitverticalforestertem', Maxitverticalforestertem)
-      call prop_get_integer(md_ptr, 'numerics', 'Turbulencemodel', Iturbulencemodel)
-      call prop_get_integer(md_ptr, 'numerics', 'Turbulenceadvection', javakeps)
-      call prop_get_integer(md_ptr, 'numerics', 'Jadrhodz', jadrhodz)
-      call prop_get_double(md_ptr, 'numerics', 'FacLaxTurb', turbulence_lax_factor)
-      call prop_get_integer(md_ptr, 'numerics', 'FacLaxTurbVer', turbulence_lax_vertical)
-      call prop_get_integer(md_ptr, 'numerics', 'FacLaxTurbHor', turbulence_lax_horizontal)
-      call prop_get_double(md_ptr, 'numerics', 'EpsTKE', epstke)
-      call prop_get_double(md_ptr, 'numerics', 'EpsEPS', epseps)
+      call prop_get(md_ptr, 'numerics', 'Maxitverticalforestersal', Maxitverticalforestersal)
+      call prop_get(md_ptr, 'numerics', 'cstbnd', jacstbnd)
+      call prop_get(md_ptr, 'numerics', 'Maxitverticalforestertem', Maxitverticalforestertem)
+      call prop_get(md_ptr, 'numerics', 'Turbulencemodel', Iturbulencemodel)
+      call prop_get(md_ptr, 'numerics', 'Turbulenceadvection', javakeps)
+      call prop_get(md_ptr, 'numerics', 'Jadrhodz', jadrhodz)
+      call prop_get(md_ptr, 'numerics', 'FacLaxTurb', turbulence_lax_factor)
+      call prop_get(md_ptr, 'numerics', 'FacLaxTurbVer', turbulence_lax_vertical)
+      call prop_get(md_ptr, 'numerics', 'FacLaxTurbHor', turbulence_lax_horizontal)
+      call prop_get(md_ptr, 'numerics', 'EpsTKE', epstke)
+      call prop_get(md_ptr, 'numerics', 'EpsEPS', epseps)
 
-      call prop_get_double(md_ptr, 'numerics', 'Eddyviscositybedfacmax', Eddyviscositybedfacmax)
-      call prop_get_integer(md_ptr, 'numerics', 'AntiCreep', jacreep)
+      call prop_get(md_ptr, 'numerics', 'Eddyviscositybedfacmax', Eddyviscositybedfacmax)
+      call prop_get(md_ptr, 'numerics', 'AntiCreep', jacreep)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Orgbarockeywords', jaorgbarockeywords)
+      call prop_get(md_ptr, 'numerics', 'Orgbarockeywords', jaorgbarockeywords)
       if (jaorgbarockeywords == 1) then
-         call prop_get_integer(md_ptr, 'numerics', 'Barocterm', jabarocterm)
-         call prop_get_integer(md_ptr, 'numerics', 'Baroctimeint', jabaroctimeint)
+         call prop_get(md_ptr, 'numerics', 'Barocterm', jabarocterm)
+         call prop_get(md_ptr, 'numerics', 'Baroctimeint', jabaroctimeint)
       else
-         call prop_get_integer(md_ptr, 'numerics', 'Barocterm', ignore_value)
-         call prop_get_integer(md_ptr, 'numerics', 'Baroctimeint', ignore_value)
+         call prop_get(md_ptr, 'numerics', 'Barocterm', ignore_value)
+         call prop_get(md_ptr, 'numerics', 'Baroctimeint', ignore_value)
       end if
-      call prop_get_integer(md_ptr, 'numerics', 'Baroczlaybed', jabaroczlaybed)
-      call prop_get_integer(md_ptr, 'numerics', 'Barocponbnd', jaBarocponbnd)
-      call prop_get_integer(md_ptr, 'numerics', 'Maxitpresdens', maxitpresdens)
-      call prop_get_integer(md_ptr, 'numerics', 'Rhointerfaces', jarhointerfaces)
+      call prop_get(md_ptr, 'numerics', 'Baroczlaybed', jabaroczlaybed)
+      call prop_get(md_ptr, 'numerics', 'Barocponbnd', jaBarocponbnd)
+      call prop_get(md_ptr, 'numerics', 'Maxitpresdens', maxitpresdens)
+      call prop_get(md_ptr, 'numerics', 'Rhointerfaces', jarhointerfaces)
 
-      call prop_get_integer(md_ptr, 'numerics', 'EnableJRE', jajre)
+      call prop_get(md_ptr, 'numerics', 'EnableJRE', jajre)
 
       if (icgsolver == 8) then ! for parms solver
          do i = 1, NPARMS_INT
-            call prop_get_integer(md_ptr, 'numerics', trim(iparmsnam(i)), iparms(i))
+            call prop_get(md_ptr, 'numerics', trim(iparmsnam(i)), iparms(i))
          end do
 
          do i = 1, NPARMS_DBL
-            call prop_get_double(md_ptr, 'numerics', trim(dparmsnam(i)), dparms(i))
+            call prop_get(md_ptr, 'numerics', trim(dparmsnam(i)), dparms(i))
          end do
       end if
 
-      call prop_get_double(md_ptr, 'numerics', 'Maxwaterleveldiff', s01max)
-      call prop_get_double(md_ptr, 'numerics', 'Maxvelocitydiff', u01max)
-      call prop_get_double(md_ptr, 'numerics', 'Maxvelocity', umagmax)
-      call prop_get_double(md_ptr, 'numerics', 'Waterlevelwarn', s01warn)
-      call prop_get_double(md_ptr, 'numerics', 'Velocitywarn', u01warn)
-      call prop_get_double(md_ptr, 'numerics', 'Velmagnwarn', umagwarn)
-      call prop_get_double(md_ptr, 'numerics', 'MinTimestepBreak', dtminbreak)
-      call prop_get_double(md_ptr, 'numerics', 'MaxSSC', sscmax)
-      call prop_get_double(md_ptr, 'numerics', 'Epshu', epshu)
-      call prop_get_double(md_ptr, 'numerics', 'Epsz0', epsz0)
+      call prop_get(md_ptr, 'numerics', 'Maxwaterleveldiff', s01max)
+      call prop_get(md_ptr, 'numerics', 'Maxvelocitydiff', u01max)
+      call prop_get(md_ptr, 'numerics', 'Maxvelocity', umagmax)
+      call prop_get(md_ptr, 'numerics', 'Waterlevelwarn', s01warn)
+      call prop_get(md_ptr, 'numerics', 'Velocitywarn', u01warn)
+      call prop_get(md_ptr, 'numerics', 'Velmagnwarn', umagwarn)
+      call prop_get(md_ptr, 'numerics', 'MinTimestepBreak', dtminbreak)
+      call prop_get(md_ptr, 'numerics', 'MaxSSC', sscmax)
+      call prop_get(md_ptr, 'numerics', 'Epshu', epshu)
+      call prop_get(md_ptr, 'numerics', 'Epsz0', epsz0)
       epshs = .2d0 * epshu ! minimum waterdepth for setting cfu
 
-      call prop_get_double(md_ptr, 'numerics', 'Lateral_fixedweir_umin', lat_fix_weir_umin)
-      call prop_get_integer(md_ptr, 'numerics', 'Lateral_fixedweir_umin_method', lat_fix_weir_umin_method)
-      call prop_get_double(md_ptr, 'numerics', 'Lateral_fixedweir_Minimal_1d2d_Embankment', lat_fix_weir_minimal_1d2d_embankment)
-      call prop_get_double(md_ptr, 'numerics', 'Lateral_fixedweir_relax', lat_fix_weir_relax)
+      call prop_get(md_ptr, 'numerics', 'Lateral_fixedweir_umin', lat_fix_weir_umin)
+      call prop_get(md_ptr, 'numerics', 'Lateral_fixedweir_umin_method', lat_fix_weir_umin_method)
+      call prop_get(md_ptr, 'numerics', 'Lateral_fixedweir_Minimal_1d2d_Embankment', lat_fix_weir_minimal_1d2d_embankment)
+      call prop_get(md_ptr, 'numerics', 'Lateral_fixedweir_relax', lat_fix_weir_relax)
 
-      call prop_get_integer(md_ptr, 'numerics', 'jaupwindsrc', jaupwindsrc)
+      call prop_get(md_ptr, 'numerics', 'jaupwindsrc', jaupwindsrc)
 
-      call prop_get_integer(md_ptr, 'numerics', 'jasfer3D', jasfer3D, success)
+      call prop_get(md_ptr, 'numerics', 'jasfer3D', jasfer3D, success)
       if (success .and. jasfer3D == 1) then
          jalimnor = 1
       end if
 
-      call prop_get_integer(md_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection); 
-      call prop_get_integer(md_ptr, 'numerics', 'HorizontalMomentumFilter', jafilter)
-      !call prop_get_integer(md_ptr, 'numerics', 'filter'          , jafilter)
-      !call prop_get_integer(md_ptr, 'numerics', 'filterorder'     , filterorder)
-      call prop_get_integer(md_ptr, 'numerics', 'checkerboardmonitor', jacheckmonitor)
+      call prop_get(md_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection); 
+      call prop_get(md_ptr, 'numerics', 'HorizontalMomentumFilter', jafilter)
+      !call prop_get(md_ptr, 'numerics', 'filter'          , jafilter)
+      !call prop_get(md_ptr, 'numerics', 'filterorder'     , filterorder)
+      call prop_get(md_ptr, 'numerics', 'checkerboardmonitor', jacheckmonitor)
       !
       ! Filter to suppress checkerboarding is also available for z-layers (so that ERROR message has been switched off)
       !
@@ -1241,22 +1239,22 @@ contains
       ! jacheckmonitor = 0
       ! end if
 
-      call prop_get_double(md_ptr, 'numerics', 'LocSaltLev', locsaltlev)
-      call prop_get_double(md_ptr, 'numerics', 'LocSaltMin', locsaltmin)
-      call prop_get_double(md_ptr, 'numerics', 'LocSaltMax', locsaltmax)
+      call prop_get(md_ptr, 'numerics', 'LocSaltLev', locsaltlev)
+      call prop_get(md_ptr, 'numerics', 'LocSaltMin', locsaltmin)
+      call prop_get(md_ptr, 'numerics', 'LocSaltMax', locsaltmax)
 
-      call prop_get_integer(md_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg)
-      call prop_get_double(md_ptr, 'numerics', 'Baorgfracmin', Baorgfracmin)
+      call prop_get(md_ptr, 'numerics', 'Numlimdt_baorg', Numlimdt_baorg)
+      call prop_get(md_ptr, 'numerics', 'Baorgfracmin', Baorgfracmin)
 
-      call prop_get_integer(md_ptr, 'numerics', 'LogSolverConvergence', jalogsolverconvergence)
-      call prop_get_integer(md_ptr, 'numerics', 'LogTransportSolverLimiting', jalogtransportsolverlimiting)
-      call prop_get_integer(md_ptr, 'numerics', 'SubsUplUpdateS1', sdu_update_s1)
+      call prop_get(md_ptr, 'numerics', 'LogSolverConvergence', jalogsolverconvergence)
+      call prop_get(md_ptr, 'numerics', 'LogTransportSolverLimiting', jalogtransportsolverlimiting)
+      call prop_get(md_ptr, 'numerics', 'SubsUplUpdateS1', sdu_update_s1)
       if (sdu_update_s1 < 0 .or. sdu_update_s1 > 1) then
          call mess(LEVEL_WARN, 'Invalid settings specified for SubsUplUpdateS1; using 0.')
          sdu_update_s1 = 0
       end if
 
-      call prop_get_integer(md_ptr, 'numerics', 'PerotType', iperot)
+      call prop_get(md_ptr, 'numerics', 'PerotType', iperot)
 
       call prop_get(md_ptr, 'numerics', 'Oceaneddysizefrac', Oceaneddysizefrac)
       call prop_get(md_ptr, 'numerics', 'Oceaneddysize', Oceaneddysize)
@@ -1265,7 +1263,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'Oceaneddyyoff', Oceaneddyyoff)
       call prop_get(md_ptr, 'numerics', 'Oceaneddyxoff', Oceaneddyxoff)
 
-      call prop_get_string(md_ptr, 'numerics', 'FlowSolver', md_flow_solver, success)
+      call prop_get(md_ptr, 'numerics', 'FlowSolver', md_flow_solver, success)
       call str_lower(md_flow_solver)
       select case (md_flow_solver)
       case ('generic1d2d3d')
@@ -1297,110 +1295,110 @@ contains
       call prop_get(md_ptr, 'implicit1d', 'exrstp', f1dimppar%exrstp)
 
       ! Physics
-      call prop_get_double(md_ptr, 'physics', 'UnifFrictCoef', frcuni)
-      call prop_get_integer(md_ptr, 'physics', 'UnifFrictType', ifrctypuni)
-      call prop_get_double(md_ptr, 'physics', 'UnifFrictCoef1D', frcuni1D) ! TODO: LUMBRICUS: HK: ook UnifFrictType1D? EN/OF prof1d type --> frcutp(LF) zetten?
-      call prop_get_double(md_ptr, 'physics', 'UnifFrictCoef1D2D', frcuni1D2D)
-      call prop_get_double(md_ptr, 'physics', 'UnifFrictCoefLin', frcunilin)
-      call prop_get_double(md_ptr, 'physics', 'UnifFrictCoef1DgrLay', frcuni1Dgrounlay)
+      call prop_get(md_ptr, 'physics', 'UnifFrictCoef', frcuni)
+      call prop_get(md_ptr, 'physics', 'UnifFrictType', ifrctypuni)
+      call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D', frcuni1D) ! TODO: LUMBRICUS: HK: ook UnifFrictType1D? EN/OF prof1d type --> frcutp(LF) zetten?
+      call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D2D', frcuni1D2D)
+      call prop_get(md_ptr, 'physics', 'UnifFrictCoefLin', frcunilin)
+      call prop_get(md_ptr, 'physics', 'UnifFrictCoef1DgrLay', frcuni1Dgrounlay)
 
       if (frcunilin > 0) then
          jafrculin = 1
       end if
 
-      call prop_get_double(md_ptr, 'physics', 'Umodlin', umodlin)
-      call prop_get_double(md_ptr, 'physics', 'Vicouv', vicouv)
-      call prop_get_double(md_ptr, 'physics', 'Dicouv', dicouv)
-      call prop_get_double(md_ptr, 'physics', 'Vicoww', vicoww)
-      call prop_get_double(md_ptr, 'physics', 'Dicoww', dicoww)
-      call prop_get_double(md_ptr, 'physics', 'Vicwminb', Vicwminb)
-      call prop_get_double(md_ptr, 'physics', 'Xlozmidov', Xlozmidov)
+      call prop_get(md_ptr, 'physics', 'Umodlin', umodlin)
+      call prop_get(md_ptr, 'physics', 'Vicouv', vicouv)
+      call prop_get(md_ptr, 'physics', 'Dicouv', dicouv)
+      call prop_get(md_ptr, 'physics', 'Vicoww', vicoww)
+      call prop_get(md_ptr, 'physics', 'Dicoww', dicoww)
+      call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
+      call prop_get(md_ptr, 'physics', 'Xlozmidov', Xlozmidov)
 
-      call prop_get_double(md_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity)
+      call prop_get(md_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity)
       call check_positive_value('SchmidtNumberSalinity', Schmidt_number_salinity)
-      call prop_get_double(md_ptr, 'physics', 'PrandtlNumberTemperature', Prandtl_number_temperature)
+      call prop_get(md_ptr, 'physics', 'PrandtlNumberTemperature', Prandtl_number_temperature)
       call check_positive_value('PrandtlNumberTemperature', Prandtl_number_temperature)
-      call prop_get_double(md_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer)
+      call prop_get(md_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer)
       call check_positive_value('SchmidtNumberTracer', Schmidt_number_tracer)
 
-      call prop_get_double(md_ptr, 'physics', 'Smagorinsky', Smagorinsky)
-      call prop_get_double(md_ptr, 'physics', 'Elder   ', Elder)
-      call prop_get_integer(md_ptr, 'physics', 'irov', irov)
-      call prop_get_double(md_ptr, 'physics', 'wall_ks', wall_ks)
+      call prop_get(md_ptr, 'physics', 'Smagorinsky', Smagorinsky)
+      call prop_get(md_ptr, 'physics', 'Elder   ', Elder)
+      call prop_get(md_ptr, 'physics', 'irov', irov)
+      call prop_get(md_ptr, 'physics', 'wall_ks', wall_ks)
       wall_z0 = wall_ks / 30d0
-      call prop_get_integer(md_ptr, 'physics', 'TidalForcing', jatidep)
-      call prop_get_integer(md_ptr, 'physics', 'SelfAttractionLoading', jaselfal)
-      call prop_get_integer(md_ptr, 'physics', 'SelfAttractionLoading_correct_wl_with_ini', jaSELFALcorrectWLwithIni)
-      call prop_get_double(md_ptr, 'physics', 'ITcap', ITcap)
-      call prop_get_double(md_ptr, 'physics', 'Doodsonstart', Doodsonstart)
-      call prop_get_double(md_ptr, 'physics', 'Doodsonstop', Doodsonstop)
-      call prop_get_double(md_ptr, 'physics', 'Doodsoneps', Doodsoneps)
+      call prop_get(md_ptr, 'physics', 'TidalForcing', jatidep)
+      call prop_get(md_ptr, 'physics', 'SelfAttractionLoading', jaselfal)
+      call prop_get(md_ptr, 'physics', 'SelfAttractionLoading_correct_wl_with_ini', jaSELFALcorrectWLwithIni)
+      call prop_get(md_ptr, 'physics', 'ITcap', ITcap)
+      call prop_get(md_ptr, 'physics', 'Doodsonstart', Doodsonstart)
+      call prop_get(md_ptr, 'physics', 'Doodsonstop', Doodsonstop)
+      call prop_get(md_ptr, 'physics', 'Doodsoneps', Doodsoneps)
 
-      call prop_get_double(md_ptr, 'physics', 'VillemonteCD1', VillemonteCD1)
-      call prop_get_double(md_ptr, 'physics', 'VillemonteCD2', VillemonteCD2)
+      call prop_get(md_ptr, 'physics', 'VillemonteCD1', VillemonteCD1)
+      call prop_get(md_ptr, 'physics', 'VillemonteCD2', VillemonteCD2)
 
-      call prop_get_double(md_ptr, 'physics', 'Rhomean', rhomean)
-      call prop_get_double(md_ptr, 'physics', 'Ag', ag); sag = sqrt(ag)
+      call prop_get(md_ptr, 'physics', 'Rhomean', rhomean)
+      call prop_get(md_ptr, 'physics', 'Ag', ag); sag = sqrt(ag)
 
-      call prop_get_integer(md_ptr, 'physics', 'Salinity', jasal)
-      call prop_get_double(md_ptr, 'physics', 'InitialSalinity', salini)
-      call prop_get_double(md_ptr, 'physics', 'DeltaSalinity', deltasalinity)
-      call prop_get_double(md_ptr, 'physics', 'Sal0abovezlev', Sal0abovezlev)
+      call prop_get(md_ptr, 'physics', 'Salinity', jasal)
+      call prop_get(md_ptr, 'physics', 'InitialSalinity', salini)
+      call prop_get(md_ptr, 'physics', 'DeltaSalinity', deltasalinity)
+      call prop_get(md_ptr, 'physics', 'Sal0abovezlev', Sal0abovezlev)
 !    Secondary Flow
-      call prop_get_integer(md_ptr, 'physics', 'SecondaryFlow', jasecflow)
-      call prop_get_double(md_ptr, 'physics', 'BetaSpiral', spirbeta)
-      call prop_get_integer(md_ptr, 'physics', 'Equili', jaequili) ! TODO: Ottevanger/Nabi: consider changing the name of these settings: add "spiral/secondary flow" into it.
+      call prop_get(md_ptr, 'physics', 'SecondaryFlow', jasecflow)
+      call prop_get(md_ptr, 'physics', 'BetaSpiral', spirbeta)
+      call prop_get(md_ptr, 'physics', 'Equili', jaequili) ! TODO: Ottevanger/Nabi: consider changing the name of these settings: add "spiral/secondary flow" into it.
 
-      call prop_get_integer(md_ptr, 'physics', 'Idensform', idensform)
+      call prop_get(md_ptr, 'physics', 'Idensform', idensform)
       idensform_input = idensform
 
-      !call prop_get_integer(md_ptr, 'physics', 'Baroczlaybed'   , jabaroczlaybed)
-      !call prop_get_integer(md_ptr, 'physics', 'Barocponbnd'    , jaBarocponbnd)
-      !call prop_get_integer(md_ptr, 'physics', 'Maxitpresdens'  , maxitpresdens)
-      !call prop_get_integer(md_ptr, 'physics', 'Rhointerfaces'  , jarhointerfaces)
+      !call prop_get(md_ptr, 'physics', 'Baroczlaybed'   , jabaroczlaybed)
+      !call prop_get(md_ptr, 'physics', 'Barocponbnd'    , jaBarocponbnd)
+      !call prop_get(md_ptr, 'physics', 'Maxitpresdens'  , maxitpresdens)
+      !call prop_get(md_ptr, 'physics', 'Rhointerfaces'  , jarhointerfaces)
 
-      call prop_get_integer(md_ptr, 'physics', 'Temperature', jatem)
-      call prop_get_double(md_ptr, 'physics', 'InitialTemperature', temini)
-      call prop_get_double(md_ptr, 'physics', 'Secchidepth', Secchidepth)
-      call prop_get_double(md_ptr, 'physics', 'Secchidepth2', Secchidepth2)
-      call prop_get_double(md_ptr, 'physics', 'Secchidepth2fraction', Secchidepth2fraction)
+      call prop_get(md_ptr, 'physics', 'Temperature', jatem)
+      call prop_get(md_ptr, 'physics', 'InitialTemperature', temini)
+      call prop_get(md_ptr, 'physics', 'Secchidepth', Secchidepth)
+      call prop_get(md_ptr, 'physics', 'Secchidepth2', Secchidepth2)
+      call prop_get(md_ptr, 'physics', 'Secchidepth2fraction', Secchidepth2fraction)
       zab(1) = Secchidepth / 1.7d0; sfr(1) = 1d0
       if (Secchidepth2 > 0) then
          zab(2) = Secchidepth2 / 1.7d0; sfr(2) = Secchidepth2fraction; sfr(1) = 1d0 - sfr(2)
       end if
 
-      call prop_get_double(md_ptr, 'physics', 'Stanton', Stanton)
-      call prop_get_double(md_ptr, 'physics', 'Dalton', Dalton)
-      call prop_get_double(md_ptr, 'physics', 'Tempmax', Tempmax)
-      call prop_get_double(md_ptr, 'physics', 'Tempmin', Tempmin)
-      call prop_get_integer(md_ptr, 'physics', 'Allowcoolingbelowzero', Jaallowcoolingbelowzero)
+      call prop_get(md_ptr, 'physics', 'Stanton', Stanton)
+      call prop_get(md_ptr, 'physics', 'Dalton', Dalton)
+      call prop_get(md_ptr, 'physics', 'Tempmax', Tempmax)
+      call prop_get(md_ptr, 'physics', 'Tempmin', Tempmin)
+      call prop_get(md_ptr, 'physics', 'Allowcoolingbelowzero', Jaallowcoolingbelowzero)
 
-      call prop_get_double(md_ptr, 'physics', 'Salimax', Salimax)
-      call prop_get_double(md_ptr, 'physics', 'Salimin', Salimin)
-      call prop_get_double(md_ptr, 'physics', 'Surftempsmofac', Surftempsmofac)
-      call prop_get_integer(md_ptr, 'physics', 'RhoairRhowater', jaroro)
-      call prop_get_integer(md_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep)
-      call prop_get_double(md_ptr, 'physics', 'Soiltempthick', Soiltempthick)
+      call prop_get(md_ptr, 'physics', 'Salimax', Salimax)
+      call prop_get(md_ptr, 'physics', 'Salimin', Salimin)
+      call prop_get(md_ptr, 'physics', 'Surftempsmofac', Surftempsmofac)
+      call prop_get(md_ptr, 'physics', 'RhoairRhowater', jaroro)
+      call prop_get(md_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep)
+      call prop_get(md_ptr, 'physics', 'Soiltempthick', Soiltempthick)
       if (soiltempthick > 0d0) then
          jaheat_eachstep = 1
       end if
 
-      call prop_get_double(md_ptr, 'physics', 'Nudgetimeuni', Tnudgeuni)
-      call prop_get_integer(md_ptr, 'physics', 'IniWithNudge', jainiwithnudge)
+      call prop_get(md_ptr, 'physics', 'Nudgetimeuni', Tnudgeuni)
+      call prop_get(md_ptr, 'physics', 'IniWithNudge', jainiwithnudge)
 
-      call prop_get_integer(md_ptr, 'physics', 'Jadelvappos', Jadelvappos)
+      call prop_get(md_ptr, 'physics', 'Jadelvappos', Jadelvappos)
       if (Jadelvappos /= 0) then
          call mess(LEVEL_WARN, 'Jadelvappos=0 is strongly advised and other values are discouraged.')
       end if
 
-      call prop_get_double(md_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity)
-      call prop_get_double(md_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature)
+      call prop_get(md_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity)
+      call prop_get(md_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature)
       ! Set molecular viscosity
       vismol = 4.d0 / (20.d0 + backgroundwatertemperature) * 1d-5 ! Van Rijn, 1993, from iniphys.f90
 
-      call prop_get_integer(md_ptr, 'physics', 'NFEntrainmentMomentum', NFEntrainmentMomentum)
+      call prop_get(md_ptr, 'physics', 'NFEntrainmentMomentum', NFEntrainmentMomentum)
 
-      call prop_get_string(md_ptr, 'physics', 'BreachGrowth', dambreakWideningString)
+      call prop_get(md_ptr, 'physics', 'BreachGrowth', dambreakWideningString)
       call str_lower(dambreakWideningString)
       select case (dambreakWideningString)
       case ('symmetric')
@@ -1417,59 +1415,59 @@ contains
       ierror = DFM_NOERR
       call fm_ice_read(md_ptr, ierror)
 
-      call prop_get_integer(md_ptr, 'veg', 'Vegetationmodelnr', javeg) ! Vegetation model nr, (0=no, 1=Baptist DFM)
+      call prop_get(md_ptr, 'veg', 'Vegetationmodelnr', javeg) ! Vegetation model nr, (0=no, 1=Baptist DFM)
       if (japillar == 2) then
          javeg = 1
       end if
       if (kmx == 0 .and. javeg > 0) then
          jabaptist = javeg
       end if
-      call prop_get_double(md_ptr, 'veg', 'Clveg', Clveg)
-      call prop_get_double(md_ptr, 'veg', 'Cdveg', Cdveg)
-      call prop_get_integer(md_ptr, 'veg', 'Cdvegspatial', JaCdvegsp)
-      call prop_get_double(md_ptr, 'veg', 'Cbveg', Cbveg)
-      call prop_get_double(md_ptr, 'veg', 'Rhoveg', Rhoveg)
-      call prop_get_double(md_ptr, 'veg', 'Stemheightstd', Stemheightstd)
-      call prop_get_double(md_ptr, 'veg', 'Densvegminbap', Densvegminbap)
+      call prop_get(md_ptr, 'veg', 'Clveg', Clveg)
+      call prop_get(md_ptr, 'veg', 'Cdveg', Cdveg)
+      call prop_get(md_ptr, 'veg', 'Cdvegspatial', JaCdvegsp)
+      call prop_get(md_ptr, 'veg', 'Cbveg', Cbveg)
+      call prop_get(md_ptr, 'veg', 'Rhoveg', Rhoveg)
+      call prop_get(md_ptr, 'veg', 'Stemheightstd', Stemheightstd)
+      call prop_get(md_ptr, 'veg', 'Densvegminbap', Densvegminbap)
 
-      call prop_get_double(md_ptr, 'veg', 'Expchistem', expchistem)
-      call prop_get_double(md_ptr, 'veg', 'Expchileaf', expchileaf)
-      call prop_get_double(md_ptr, 'veg', 'Uchistem', uchistem)
-      call prop_get_double(md_ptr, 'veg', 'Uchileaf', uchileaf)
-      call prop_get_double(md_ptr, 'veg', 'Arealeaf', arealeaf)
-      call prop_get_double(md_ptr, 'veg', 'Cdleaf', Cdleaf)
+      call prop_get(md_ptr, 'veg', 'Expchistem', expchistem)
+      call prop_get(md_ptr, 'veg', 'Expchileaf', expchileaf)
+      call prop_get(md_ptr, 'veg', 'Uchistem', uchistem)
+      call prop_get(md_ptr, 'veg', 'Uchileaf', uchileaf)
+      call prop_get(md_ptr, 'veg', 'Arealeaf', arealeaf)
+      call prop_get(md_ptr, 'veg', 'Cdleaf', Cdleaf)
 
-      call prop_get_integer(md_ptr, 'sediment', 'Sedimentmodelnr', jased) ! 1 = krone, 2 = svr, 3 engelund, 4=D3D
+      call prop_get(md_ptr, 'sediment', 'Sedimentmodelnr', jased) ! 1 = krone, 2 = svr, 3 engelund, 4=D3D
       !ideally this is moved to a subroutine that groups reworking
       if (jadpuopt == 2 .and. jased /= 4) then
          jadpuopt = 1
          call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: Dpuopt = 2 and Sedimentmodelnr /= 4. It is not possible to compute the bed level at velocity points as the mean if you are not running a morphodynamic simulation. Consider running morphodynamics without bed level update. Dpuopt has been set to 1 (min value).')
       end if
-      call prop_get_string(md_ptr, 'sediment', 'SedFile', md_sedfile, success)
-      call prop_get_string(md_ptr, 'sediment', 'MorFile', md_morfile, success)
+      call prop_get(md_ptr, 'sediment', 'SedFile', md_sedfile, success)
+      call prop_get(md_ptr, 'sediment', 'MorFile', md_morfile, success)
 
       stm_included = (len_trim(md_sedfile) /= 0 .and. len_trim(md_morfile) /= 0 .and. jased == 4)
       if (jased == 4 .and. .not. stm_included) then
          call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Sedimentmodelnr=4, but no *.sed or no *.mor file specified.')
       end if
 
-      call prop_get_string(md_ptr, 'sediment', 'DredgeFile', md_dredgefile, success)
-      call prop_get_integer(md_ptr, 'sediment', 'BndTreatment', jabndtreatment, success) ! separate treatment boundary links in upwinding transports
-      call prop_get_integer(md_ptr, 'sediment', 'SourSink', jasourcesink, success) ! switch off source or sink terms for sed advection
-      call prop_get_string(md_ptr, 'sediment', 'MorphoPol', md_morphopol, success) ! Only apply mormerge operation/bottom change in polygon
-      call prop_get_integer(md_ptr, 'sediment', 'InMorphoPol', inmorphopol, success) ! value of the update inside morphopol (only 0 or 1 make sense)
-      call prop_get_integer(md_ptr, 'sediment', 'MorCFL', jamorcfl, success) ! use morphological time step restriction (1, default) or not (0)
-      call prop_get_double(md_ptr, 'sediment', 'DzbDtMax', dzbdtmax, success) ! Max bottom level change per timestep
-      call prop_get_double(md_ptr, 'sediment', 'MasBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
-      call prop_get_integer(md_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
-      call prop_get_double(md_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
-      call prop_get_integer(md_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
-      call prop_get_double(md_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
+      call prop_get(md_ptr, 'sediment', 'DredgeFile', md_dredgefile, success)
+      call prop_get(md_ptr, 'sediment', 'BndTreatment', jabndtreatment, success) ! separate treatment boundary links in upwinding transports
+      call prop_get(md_ptr, 'sediment', 'SourSink', jasourcesink, success) ! switch off source or sink terms for sed advection
+      call prop_get(md_ptr, 'sediment', 'MorphoPol', md_morphopol, success) ! Only apply mormerge operation/bottom change in polygon
+      call prop_get(md_ptr, 'sediment', 'InMorphoPol', inmorphopol, success) ! value of the update inside morphopol (only 0 or 1 make sense)
+      call prop_get(md_ptr, 'sediment', 'MorCFL', jamorcfl, success) ! use morphological time step restriction (1, default) or not (0)
+      call prop_get(md_ptr, 'sediment', 'DzbDtMax', dzbdtmax, success) ! Max bottom level change per timestep
+      call prop_get(md_ptr, 'sediment', 'MasBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
+      call prop_get(md_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
+      call prop_get(md_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
+      call prop_get(md_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
+      call prop_get(md_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
 
       if (jased > 0 .and. .not. stm_included) then
-         call prop_get_integer(md_ptr, 'sediment', 'Nr_of_sedfractions', Mxgr)
+         call prop_get(md_ptr, 'sediment', 'Nr_of_sedfractions', Mxgr)
          MxgrKrone = -1
-         call prop_get_integer(md_ptr, 'sediment', 'MxgrKrone', MxgrKrone)
+         call prop_get(md_ptr, 'sediment', 'MxgrKrone', MxgrKrone)
          if (Mxgr <= 0) then
             call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of sediment fractions (Nr_of_sedfractions) should be larger than 0.')
          elseif (MxgrKrone < 0) then
@@ -1484,56 +1482,56 @@ contains
             call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of cohesive fractions (MxgrKrone) can''t be larger than total number of fractions (Nr_of_sedfractions).')
          end if
       end if
-      call prop_get_integer(md_ptr, 'sediment', 'Seddenscoupling', jaseddenscoupling)
-      call prop_get_integer(md_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity)
+      call prop_get(md_ptr, 'sediment', 'Seddenscoupling', jaseddenscoupling)
+      call prop_get(md_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity)
 
       if (jased * mxgr > 0 .and. .not. stm_included) then
 
          call allocgrains()
 
-         call prop_get_doubles(md_ptr, 'sediment', 'D50', D50, Mxgr)
-         call prop_get_doubles(md_ptr, 'sediment', 'Rhosed', rhosed, Mxgr)
+         call prop_get(md_ptr, 'sediment', 'D50', D50, Mxgr)
+         call prop_get(md_ptr, 'sediment', 'Rhosed', rhosed, Mxgr)
          call setgrainsizes()
 
          if (mxgrKrone > 0) then
-            call prop_get_doubles(md_ptr, 'sediment', 'Ws', Ws, MxgrKrone)
-            call prop_get_doubles(md_ptr, 'sediment', 'Erosionpar', erosionpar, MxgrKrone)
-            call prop_get_doubles(md_ptr, 'sediment', 'Taucre', Ustcre2, MxgrKrone)
+            call prop_get(md_ptr, 'sediment', 'Ws', Ws, MxgrKrone)
+            call prop_get(md_ptr, 'sediment', 'Erosionpar', erosionpar, MxgrKrone)
+            call prop_get(md_ptr, 'sediment', 'Taucre', Ustcre2, MxgrKrone)
             Ustcre2 = Ustcre2 / rhomean ! ust2 = tau/rho
          end if
 
-         call prop_get_doubles(md_ptr, 'sediment', 'InitialSedimentConcentration', sedini, mxgr)
-         call prop_get_doubles(md_ptr, 'sediment', 'Uniformerodablethickness', Uniformerodablethickness, Mxgr)
-         call prop_get_integer(md_ptr, 'sediment', 'Numintverticaleinstein', Numintverticaleinstein)
-         call prop_get_integer(md_ptr, 'sediment', 'Jaceneqtr', Jaceneqtr)
-         call prop_get_double(md_ptr, 'sediment', 'Morfac', Dmorfac)
+         call prop_get(md_ptr, 'sediment', 'InitialSedimentConcentration', sedini, mxgr)
+         call prop_get(md_ptr, 'sediment', 'Uniformerodablethickness', Uniformerodablethickness, Mxgr)
+         call prop_get(md_ptr, 'sediment', 'Numintverticaleinstein', Numintverticaleinstein)
+         call prop_get(md_ptr, 'sediment', 'Jaceneqtr', Jaceneqtr)
+         call prop_get(md_ptr, 'sediment', 'Morfac', Dmorfac)
          if (jased == 0) then
             dmorfac = 0d0
          end if
 
-         call prop_get_double(md_ptr, 'sediment', 'TMorfspinup', tmorfspinup)
-         call prop_get_double(md_ptr, 'sediment', 'Alfabed', alfabed)
-         call prop_get_double(md_ptr, 'sediment', 'Alfasus', alfasus)
-         call prop_get_double(md_ptr, 'sediment', 'Crefcav', crefcav)
+         call prop_get(md_ptr, 'sediment', 'TMorfspinup', tmorfspinup)
+         call prop_get(md_ptr, 'sediment', 'Alfabed', alfabed)
+         call prop_get(md_ptr, 'sediment', 'Alfasus', alfasus)
+         call prop_get(md_ptr, 'sediment', 'Crefcav', crefcav)
 
       end if ! jased
 
-      call prop_get_string(md_ptr, 'bedform', 'BedformFile', md_bedformfile, success)
+      call prop_get(md_ptr, 'bedform', 'BedformFile', md_bedformfile, success)
       bfm_included = len_trim(md_bedformfile) /= 0
 
-      call prop_get_string(md_ptr, 'sedtrails', 'SedtrailsGrid', md_sedtrailsfile, success)
+      call prop_get(md_ptr, 'sedtrails', 'SedtrailsGrid', md_sedtrailsfile, success)
       if (md_sedtrailsfile /= '') then
          inquire (file=md_sedtrailsfile, exist=ex)
          if (ex) then
             jasedtrails = 1
             call mess(LEVEL_INFO, 'SedTrails enabled.')
-            call prop_get_string(md_ptr, 'sedtrails', 'SedtrailsAnalysis', sedtrails_analysis, success)
+            call prop_get(md_ptr, 'sedtrails', 'SedtrailsAnalysis', sedtrails_analysis, success)
 
             ti_st_array = 0d0
-            call prop_get_doubles(md_ptr, 'sedtrails', 'SedtrailsInterval', ti_st_array, 3, success)
+            call prop_get(md_ptr, 'sedtrails', 'SedtrailsInterval', ti_st_array, 3, success)
             if (ti_st_array(1) > 0d0) ti_st_array(1) = max(ti_st_array(1), dt_user)
             call getOutputTimeArrays(ti_st_array, ti_sts, ti_st, ti_ste, success)
-            call prop_get_string(md_ptr, 'sedtrails', 'SedtrailsOutputFile', md_avgsedtrailsfile, success)
+            call prop_get(md_ptr, 'sedtrails', 'SedtrailsOutputFile', md_avgsedtrailsfile, success)
 
             call str_lower(sedtrails_analysis)
             if (.not. (trim(sedtrails_analysis) == 'all' .or. &
@@ -1546,76 +1544,79 @@ contains
          end if
       end if
 
-      call prop_get_integer(md_ptr, 'wind', 'ICdtyp', ICdtyp)
+      call prop_get(md_ptr, 'wind', 'ICdtyp', ICdtyp)
       if (Icdtyp == 1) then
-         call prop_get_doubles(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 1)
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 1)
       else if (Icdtyp == 2) then
-         call prop_get_doubles(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 2)
-         call prop_get_doubles(md_ptr, 'wind', 'Windspeedbreakpoints', Wdb, 2)
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 2)
+         call prop_get(md_ptr, 'wind', 'Windspeedbreakpoints', Wdb, 2)
          Cdb(3) = Cdb(2)
          Wdb(2) = max(Wdb(2), Wdb(1) + .1d0)
          Wdb(3) = Wdb(2) + .1d0
       else if (Icdtyp == 3) then
-         call prop_get_doubles(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 3)
-         call prop_get_doubles(md_ptr, 'wind', 'Windspeedbreakpoints', Wdb, 3)
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 3)
+         call prop_get(md_ptr, 'wind', 'Windspeedbreakpoints', Wdb, 3)
          Wdb(2) = max(Wdb(2), Wdb(1) + .1d0)
          Wdb(3) = max(Wdb(3), Wdb(2) + .1d0)
       else if (Icdtyp == 4) then
-         call prop_get_doubles(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 1)
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 1)
          cdb(2) = 0d0
       else if (Icdtyp == 7 .or. Icdtyp == 8) then
-         call prop_get_doubles(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 2)
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 2)
       end if
-      call prop_get_double(md_ptr, 'wind', 'Relativewind', relativewind)
+      call prop_get(md_ptr, 'wind', 'Relativewind', relativewind)
       if (kmx == 0) then
          jawindhuorzwsbased = 1
       else
          jawindhuorzwsbased = 0
       end if
-      call prop_get_integer(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased)
-      call prop_get_integer(md_ptr, 'wind', 'Windpartialdry', jawindpartialdry)
+      call prop_get(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased)
+      call prop_get(md_ptr, 'wind', 'Windpartialdry', jawindpartialdry)
 
-      call prop_get_double(md_ptr, 'wind', 'Rhoair', rhoair)
-      call prop_get_double(md_ptr, 'wind', 'PavIni', PavIni)
-      call prop_get_double(md_ptr, 'wind', 'PavBnd', PavBnd)
-      call prop_get_integer(md_ptr, 'wind', 'Stresstowind', jastresstowind)
-      call prop_get_integer(md_ptr, 'wind', 'Wind_eachstep', update_wind_stress_each_time_step)
-      call prop_get_integer(md_ptr, 'wind', 'computedAirdensity', ja_computed_airdensity)
+      call prop_get(md_ptr, 'wind', 'Rhoair', rhoair)
+      call prop_get(md_ptr, 'wind', 'PavIni', PavIni)
+      call prop_get(md_ptr, 'wind', 'PavBnd', PavBnd)
+      call prop_get(md_ptr, 'wind', 'Stresstowind', jastresstowind)
+      call prop_get(md_ptr, 'wind', 'Wind_eachstep', update_wind_stress_each_time_step)
+      call prop_get(md_ptr, 'wind', 'computedAirdensity', ja_computed_airdensity)
 
-      call prop_get_integer(md_ptr, 'waves', 'Wavemodelnr', jawave)
-      call prop_get_integer(md_ptr, 'waves', 'Waveforcing', waveforcing)
+      call prop_get(md_ptr, 'waves', 'Wavemodelnr', jawave)
+      call prop_get(md_ptr, 'waves', 'Waveforcing', waveforcing)
+      call prop_get(md_ptr, 'waves', 'WavePeakEnhancementFactor', JONSWAPgamma0)
       if (jawave /= 7 .and. waveforcing /= 0) then
-         call mess(LEVEL_ERROR, 'Waveforcing = 1, 2 or 3 is only supported for Wavemodelnr = 7.')
+         write (msgbuf, '(a,i0,a)') 'Waveforcing = , ', waveforcing, ' is only supported for Wavemodelnr = 7. Keyword ignored.'
+         call mess(LEVEL_WARN, msgbuf)
+         waveforcing = 0
       end if
-      call prop_get_double(md_ptr, 'waves', 'Tifetchcomp', Tifetch)
-      call prop_get_string(md_ptr, 'waves', 'SurfbeatInput', md_surfbeatfile)
+      call prop_get(md_ptr, 'waves', 'Tifetchcomp', Tifetch)
+      call prop_get(md_ptr, 'waves', 'SurfbeatInput', md_surfbeatfile)
       if (jawave == 4) then
          if (trim(md_surfbeatfile) == '') then
             md_surfbeatfile = 'params.txt'
          end if
       end if
-      call prop_get_double(md_ptr, 'waves', 'Hwavuni', Hwavuni)
-      call prop_get_double(md_ptr, 'waves', 'Twavuni', Twavuni)
-      call prop_get_double(md_ptr, 'waves', 'Phiwavuni', Phiwavuni)
+      call prop_get(md_ptr, 'waves', 'Hwavuni', Hwavuni)
+      call prop_get(md_ptr, 'waves', 'Twavuni', Twavuni)
+      call prop_get(md_ptr, 'waves', 'Phiwavuni', Phiwavuni)
 
-      call prop_get_string(md_ptr, 'waves', 'Rouwav', rouwav)
+      call prop_get(md_ptr, 'waves', 'Rouwav', rouwav)
       if (jawave > 0 .and. .not. flowWithoutWaves) then
          call setmodind(rouwav, modind)
       end if
-      call prop_get_double(md_ptr, 'waves', 'Gammax', gammax)
-      call prop_get_double(md_ptr, 'waves', 'hminlw', hminlw)
-      call prop_get_integer(md_ptr, 'waves', 'uorbfac', jauorb) ! 0=delft3d4, sqrt(pi)/2 included in uorb calculation; >0: FM, factor not included; default: 0
-      call prop_get_logical(md_ptr, 'waves', 'flowWithoutWaves', flowWithoutWaves) ! True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
+      call prop_get(md_ptr, 'waves', 'Gammax', gammax)
+      call prop_get(md_ptr, 'waves', 'hminlw', hminlw)
+      call prop_get(md_ptr, 'waves', 'uorbfac', jauorb) ! 0=delft3d4, sqrt(pi)/2 included in uorb calculation; >0: FM, factor not included; default: 0
+      call prop_get(md_ptr, 'waves', 'flowWithoutWaves', flowWithoutWaves) ! True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
       ! backward compatibility for hk in tauwavehk:
       if (jawave > 0 .and. jawave < 3 .or. flowWithoutWaves) then
          jauorb = 1
       end if
-      call prop_get_integer(md_ptr, 'waves', 'jahissigwav', jahissigwav) ! 1: sign wave height on his output; 0: hrms wave height on his output. Default=1
-      call prop_get_integer(md_ptr, 'waves', 'jamapsigwav', jamapsigwav) ! 1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy)
-      call prop_get_integer(md_ptr, 'waves', 'jauorbfromswan', jauorbfromswan) ! 1: use orbital velocities from com file; 0=internal uorb calculation. Default=0
-      call prop_get_double(md_ptr, 'waves', 'fwfac', fwfac) ! factor for adjusting wave boundary layer streaming, default 1.0
-      call prop_get_double(md_ptr, 'waves', 'ftauw', ftauw) ! factor for adjusting wave related bottom shear stress
-      call prop_get_double(md_ptr, 'waves', 'fbreak', fbreak) ! factor for adjusting wave breaking contribution to tke
+      call prop_get(md_ptr, 'waves', 'jahissigwav', jahissigwav) ! 1: sign wave height on his output; 0: hrms wave height on his output. Default=1
+      call prop_get(md_ptr, 'waves', 'jamapsigwav', jamapsigwav) ! 1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy)
+      call prop_get(md_ptr, 'waves', 'jauorbfromswan', jauorbfromswan) ! 1: use orbital velocities from com file; 0=internal uorb calculation. Default=0
+      call prop_get(md_ptr, 'waves', 'fwfac', fwfac) ! factor for adjusting wave boundary layer streaming, default 1.0
+      call prop_get(md_ptr, 'waves', 'ftauw', ftauw) ! factor for adjusting wave related bottom shear stress
+      call prop_get(md_ptr, 'waves', 'fbreak', fbreak) ! factor for adjusting wave breaking contribution to tke
       if (ftauw < 0d0) then
          call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: ftauw<0d0, reset to 0d0. Bed shear stress due to waves switched off.')
          ftauw = 0d0
@@ -1633,15 +1634,15 @@ contains
       if (jawave == 1 .or. jawave == 2) then
          jawaveStokes = 0
       end if
-      call prop_get_integer(md_ptr, 'waves', '3Dstokesprofile', jawaveStokes) ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity
+      call prop_get(md_ptr, 'waves', '3Dstokesprofile', jawaveStokes) ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity
       if ((jawave == 1 .or. jawave == 2) .and. jawaveStokes > 0) then
          write (msgbuf, *) 'unstruc_model::readMDUFile: wavemodelnr=', jawave, ', and 3Dstokesprofile=', jawavestokes, '. It is *strongly* advised to leave 3Dstokesprofile at 0 when using fetch based wave models.'
          call warn_flush()
       end if
-      call prop_get_integer(md_ptr, 'waves', '3Dwavestreaming', jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
-      call prop_get_integer(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta) ! Boundary layer formulation. 1: Sana
-      call prop_get_integer(md_ptr, 'waves', '3Dwaveforces', jawaveforces) ! Diagnostic mode: apply wave forces (1) or not (0)
-      call prop_get_double(md_ptr, 'waves', '3Dwaveturbpendepth', fwavpendep) ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
+      call prop_get(md_ptr, 'waves', '3Dwavestreaming', jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
+      call prop_get(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta) ! Boundary layer formulation. 1: Sana
+      call prop_get(md_ptr, 'waves', '3Dwaveforces', jawaveforces) ! Diagnostic mode: apply wave forces (1) or not (0)
+      call prop_get(md_ptr, 'waves', '3Dwaveturbpendepth', fwavpendep) ! Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
       !
       ! safety
       if (fwavpendep < 0d0) then
@@ -1650,43 +1651,43 @@ contains
          call warn_flush()
       end if
 
-      call prop_get_integer(md_ptr, 'grw', 'groundwater', jagrw)
+      call prop_get(md_ptr, 'grw', 'groundwater', jagrw)
 
-      call prop_get_integer(md_ptr, 'grw', 'Infiltrationmodel', Infiltrationmodel)
+      call prop_get(md_ptr, 'grw', 'Infiltrationmodel', Infiltrationmodel)
       if (infiltrationmodel == 1 .or. infiltrationmodel == DFM_HYD_INFILT_DARCY) then
          jagrw = 1
       else if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then
          jadhyd = 1
       end if
 
-      call prop_get_double(md_ptr, 'grw', 'Hinterceptionlayer', Hinterceptionlayer)
-      call prop_get_double(md_ptr, 'grw', 'InfiltrationVelocity', infiltcapuni) ! old keyword: backwards compatibility
-      call prop_get_double(md_ptr, 'grw', 'UnifInfiltrationCapacity', infiltcapuni)
-      call prop_get_double(md_ptr, 'grw', 'Conductivity', Conductivity)
-      call prop_get_double(md_ptr, 'grw', 'h_aquiferuni', h_aquiferuni)
-      call prop_get_double(md_ptr, 'grw', 'h_unsatini', h_unsatini)
-      call prop_get_double(md_ptr, 'grw', 'sgrwini', sgrwini)
-      call prop_get_double(md_ptr, 'grw', 'bgrwuni', bgrwuni)
+      call prop_get(md_ptr, 'grw', 'Hinterceptionlayer', Hinterceptionlayer)
+      call prop_get(md_ptr, 'grw', 'InfiltrationVelocity', infiltcapuni) ! old keyword: backwards compatibility
+      call prop_get(md_ptr, 'grw', 'UnifInfiltrationCapacity', infiltcapuni)
+      call prop_get(md_ptr, 'grw', 'Conductivity', Conductivity)
+      call prop_get(md_ptr, 'grw', 'h_aquiferuni', h_aquiferuni)
+      call prop_get(md_ptr, 'grw', 'h_unsatini', h_unsatini)
+      call prop_get(md_ptr, 'grw', 'sgrwini', sgrwini)
+      call prop_get(md_ptr, 'grw', 'bgrwuni', bgrwuni)
 
       !
       ! Hydrology (takes over some functionality that used to be under [grw])
       !
-      call prop_get_integer(md_ptr, 'hydrology', 'InterceptionModel', interceptionmodel)
+      call prop_get(md_ptr, 'hydrology', 'InterceptionModel', interceptionmodel)
 
 ! Time
-      call prop_get_string(md_ptr, 'time', 'RefDate', refdat)
+      call prop_get(md_ptr, 'time', 'RefDate', refdat)
       read (refdat, *) irefdate
       success = ymd2modified_jul(irefdate, refdate_mjd)
       if (.not. success) then
          call mess(LEVEL_ERROR, 'Something went wrong in conversion from RefDate to Modified Julian Date')
       end if
-      call prop_get_double(md_ptr, 'time', 'Tzone', Tzone)
-      call prop_get_string(md_ptr, 'time', 'Tunit', md_tunit)
-      call prop_get_double(md_ptr, 'time', 'TStart', tstart_user)
+      call prop_get(md_ptr, 'time', 'Tzone', Tzone)
+      call prop_get(md_ptr, 'time', 'Tunit', md_tunit)
+      call prop_get(md_ptr, 'time', 'TStart', tstart_user)
       tstart_user = max(tstart_user, 0d0)
       tstart_tlfsmo_user = tstart_user
-      call prop_get_double(md_ptr, 'time', 'TStartTlfsmo', tstart_tlfsmo_user)
-      call prop_get_double(md_ptr, 'time', 'TStop', tstop_user)
+      call prop_get(md_ptr, 'time', 'TStartTlfsmo', tstart_tlfsmo_user)
+      call prop_get(md_ptr, 'time', 'TStop', tstop_user)
       select case (md_tunit) ! tfac added here for use in sedmorinit
       case ('D')
          tfac = 3600d0 * 24d0
@@ -1703,16 +1704,16 @@ contains
 
       call setTUDUnitString()
 
-      call prop_get_double(md_ptr, 'time', 'DtUser', dt_user)
+      call prop_get(md_ptr, 'time', 'DtUser', dt_user)
       if (dt_user <= 0) then
          dt_user = 300d0
          dt_max = 60d0
          ja_timestep_auto = 1
       end if
 
-      call prop_get_double(md_ptr, 'time', 'DtNodal', dt_nodal)
+      call prop_get(md_ptr, 'time', 'DtNodal', dt_nodal)
 
-      call prop_get_double(md_ptr, 'time', 'DtMax', dt_max)
+      call prop_get(md_ptr, 'time', 'DtMax', dt_max)
       if (dt_max > dt_user) then
          dt_max = dt_user
          write (msgbuf, '(a,f9.3)') 'DtMax should be <= DtUser. It has been reset to: ', dt_max
@@ -1721,12 +1722,12 @@ contains
 
       ! 1.02: Don't read [time] AutoTimestep (ja_timestep_auto) from MDU anymore.
       ! ibuf = 1
-      call prop_get_integer(md_ptr, 'time', 'AutoTimestep', ja_timestep_auto, success)
-      call prop_get_integer(md_ptr, 'time', 'Autotimestepdiff', jadum, success)
+      call prop_get(md_ptr, 'time', 'AutoTimestep', ja_timestep_auto, success)
+      call prop_get(md_ptr, 'time', 'Autotimestepdiff', jadum, success)
       if (success .and. jadum /= 0) then
          call mess(LEVEL_ERROR, 'Autotimestepdiff not supported')
       end if
-      call prop_get_integer(md_ptr, 'time', 'Autotimestepvisc', ja_timestep_auto_visc, success)
+      call prop_get(md_ptr, 'time', 'Autotimestepvisc', ja_timestep_auto_visc, success)
       if (success .and. ja_timestep_auto_visc /= 0) then
          if (ja_timestep_auto_visc /= 1234) then
 !         hide feature
@@ -1739,17 +1740,17 @@ contains
       !   write(msgbuf, '(a,i0,a)') 'MDU [time] AutoTimestep=', ibuf, ' is deprecated, timestep always automatic. Use DtMax instead.'
       !   call warn_flush()
       ! endif
-      call prop_get_integer(md_ptr, 'time', 'AutoTimestepNoStruct', ja_timestep_nostruct, success)
-      call prop_get_integer(md_ptr, 'time', 'AutoTimestepNoQout', ja_timestep_noqout, success)
+      call prop_get(md_ptr, 'time', 'AutoTimestepNoStruct', ja_timestep_nostruct, success)
+      call prop_get(md_ptr, 'time', 'AutoTimestepNoQout', ja_timestep_noqout, success)
 
-      call prop_get_double(md_ptr, 'time', 'Dtfacmax', dtfacmax)
+      call prop_get(md_ptr, 'time', 'Dtfacmax', dtfacmax)
 
-      call prop_get_double(md_ptr, 'time', 'DtInit', dt_init)
+      call prop_get(md_ptr, 'time', 'DtInit', dt_init)
 
-      call prop_get_integer(md_ptr, 'time', 'Timestepanalysis', jatimestepanalysis)
+      call prop_get(md_ptr, 'time', 'Timestepanalysis', jatimestepanalysis)
 
       Startdatetime = ' '
-      call prop_get_string(md_ptr, 'time', 'Startdatetime', Startdatetime, success)
+      call prop_get(md_ptr, 'time', 'Startdatetime', Startdatetime, success)
       if (len_trim(Startdatetime) > 0 .and. success) then
          call datetimestring_to_seconds(Startdatetime, refdat, tim, iostat)
          if (iostat == 0) then
@@ -1758,7 +1759,7 @@ contains
       end if
 
       Stopdatetime = ' '
-      call prop_get_string(md_ptr, 'time', 'Stopdatetime', Stopdatetime, success)
+      call prop_get(md_ptr, 'time', 'Stopdatetime', Stopdatetime, success)
       if (len_trim(Stopdatetime) > 0 .and. success) then
          call datetimestring_to_seconds(Stopdatetime, refdat, tim, iostat)
          if (iostat == 0) then
@@ -1776,27 +1777,27 @@ contains
       ! TIDAL TURBINES: Insert calls to rdturbine and echoturbine here (use the structure_turbines variable defined in m_structures)
       !
 ! Restart information
-      call prop_get_string(md_ptr, 'restart', 'RestartFile', md_restartfile, success)
+      call prop_get(md_ptr, 'restart', 'RestartFile', md_restartfile, success)
       restartdatetime = 'yyyymmddhhmmss'
-      call prop_get_string(md_ptr, 'restart', 'RestartDateTime', restartdatetime, success)
-      call prop_get_integer(md_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, success)
+      call prop_get(md_ptr, 'restart', 'RestartDateTime', restartdatetime, success)
+      call prop_get(md_ptr, 'restart', 'RstIgnoreBl', jarstignorebl, success)
 
 ! External forcings
-      call prop_get_string(md_ptr, 'external forcing', 'ExtForceFile', md_extfile, success)
-      call prop_get_string(md_ptr, 'external forcing', 'ExtForceFileNew', md_extfile_new, success)
-      call prop_get_integer(md_ptr, 'external forcing', 'Rainfall', jarain, success)
+      call prop_get(md_ptr, 'external forcing', 'ExtForceFile', md_extfile, success)
+      call prop_get(md_ptr, 'external forcing', 'ExtForceFileNew', md_extfile_new, success)
+      call prop_get(md_ptr, 'external forcing', 'Rainfall', jarain, success)
       if (jarain > 0) then
          jaqin = 1
       end if
-      call prop_get_integer(md_ptr, 'external forcing', 'QExt', jaQext, success)
+      call prop_get(md_ptr, 'external forcing', 'QExt', jaQext, success)
       if (jaQext > 0) then
          jaqin = 1
       end if
-      call prop_get_integer(md_ptr, 'external forcing', 'Evaporation', jaevap, success)
+      call prop_get(md_ptr, 'external forcing', 'Evaporation', jaevap, success)
       if (jaevap > 0) then
          jaqin = 1
       end if
-      call prop_get_integer(md_ptr, 'external forcing', 'WindExt', jawind, success)
+      call prop_get(md_ptr, 'external forcing', 'WindExt', jawind, success)
 
 ! Trachytopes
       ! Further reading is done in m_rdtrt, by passing just the [trachytopes] chapter as a separate trtdef_ptr to rdtrt.
@@ -1805,59 +1806,59 @@ contains
       !if (associated(trtdef_ptr)) call visit_tree(trtdef_ptr,1)
       trtdef_ptr => null()
 
-      call prop_get_string(md_ptr, 'trachytopes', 'TrtRou', md_trtrfile, success)
+      call prop_get(md_ptr, 'trachytopes', 'TrtRou', md_trtrfile, success)
       if (strcmpi(md_trtrfile, 'Y')) then
          call tree_get_node_by_name(md_ptr, 'trachytopes', trtdef_ptr)
          if (associated(trtdef_ptr)) then
             jatrt = 1
          end if
       end if
-      call prop_get_string(md_ptr, 'trachytopes', 'TrtDef', md_trtdfile, success)
-      call prop_get_string(md_ptr, 'trachytopes', 'TrtL', md_trtlfile, success)
-      call prop_get_double(md_ptr, 'trachytopes', 'DtTrt', dt_trach, success)
+      call prop_get(md_ptr, 'trachytopes', 'TrtDef', md_trtdfile, success)
+      call prop_get(md_ptr, 'trachytopes', 'TrtL', md_trtlfile, success)
+      call prop_get(md_ptr, 'trachytopes', 'DtTrt', dt_trach, success)
       if (.not. success) dt_trach = dt_user
-      call prop_get_integer(md_ptr, 'trachytopes', 'TrtMxR', md_mxrtrach, success)
-      call prop_get_string(md_ptr, 'trachytopes', 'TrtCll', md_trtcllfile, success)
-      call prop_get_double(md_ptr, 'trachytopes', 'TrtMnH', md_mnhtrach, success)
-      call prop_get_integer(md_ptr, 'trachytopes', 'TrtMth', md_mthtrach, success)
+      call prop_get(md_ptr, 'trachytopes', 'TrtMxR', md_mxrtrach, success)
+      call prop_get(md_ptr, 'trachytopes', 'TrtCll', md_trtcllfile, success)
+      call prop_get(md_ptr, 'trachytopes', 'TrtMnH', md_mnhtrach, success)
+      call prop_get(md_ptr, 'trachytopes', 'TrtMth', md_mthtrach, success)
 
 ! Calibration factor
-      call prop_get_integer(md_ptr, 'calibration', 'UseCalibration', jacali, success)
-      call prop_get_string(md_ptr, 'calibration', 'DefinitionFile', md_cldfile, success)
-      call prop_get_string(md_ptr, 'calibration', 'AreaFile', md_cllfile, success)
+      call prop_get(md_ptr, 'calibration', 'UseCalibration', jacali, success)
+      call prop_get(md_ptr, 'calibration', 'DefinitionFile', md_cldfile, success)
+      call prop_get(md_ptr, 'calibration', 'AreaFile', md_cllfile, success)
 
-      call prop_get_string(md_ptr, 'output', 'ObsFile', md_obsfile, success)
-      call prop_get_integer(md_ptr, 'output', 'DeleteObsPointsOutsideGrid', md_delete_observation_points_outside_grid, success)
-      call prop_get_string(md_ptr, 'output', 'CrsFile', md_crsfile, success)
-      call prop_get_string(md_ptr, 'output', 'RugFile', md_rugfile, success)
-      call prop_get_string(md_ptr, 'output', 'FouFile', md_foufile, success)
-      call prop_get_integer(md_ptr, 'output', 'FouUpdateStep', md_fou_step, success)
+      call prop_get(md_ptr, 'output', 'ObsFile', md_obsfile, success)
+      call prop_get(md_ptr, 'output', 'DeleteObsPointsOutsideGrid', md_delete_observation_points_outside_grid, success)
+      call prop_get(md_ptr, 'output', 'CrsFile', md_crsfile, success)
+      call prop_get(md_ptr, 'output', 'RugFile', md_rugfile, success)
+      call prop_get(md_ptr, 'output', 'FouFile', md_foufile, success)
+      call prop_get(md_ptr, 'output', 'FouUpdateStep', md_fou_step, success)
 
-      call prop_get_string(md_ptr, 'output', 'HisFile', md_hisfile, success)
+      call prop_get(md_ptr, 'output', 'HisFile', md_hisfile, success)
       ti_his_array = 0d0
-      call prop_get_doubles(md_ptr, 'output', 'HisInterval', ti_his_array, 3, success)
+      call prop_get(md_ptr, 'output', 'HisInterval', ti_his_array, 3, success)
       call getOutputTimeArrays(ti_his_array, ti_hiss, ti_his, ti_hise, success)
       call check_time_interval(ti_hiss, ti_his, ti_hise, dt_user, 'HisInterval', tstart_user)
 
-      call prop_get_double(md_ptr, 'output', 'XLSInterval', ti_xls, success)
+      call prop_get(md_ptr, 'output', 'XLSInterval', ti_xls, success)
 
-      call prop_get_string(md_ptr, 'output', 'FlowGeomFile', md_flowgeomfile, success)
+      call prop_get(md_ptr, 'output', 'FlowGeomFile', md_flowgeomfile, success)
 
-      call prop_get_string(md_ptr, 'output', 'MapFile', md_mapfile, success)
+      call prop_get(md_ptr, 'output', 'MapFile', md_mapfile, success)
 
       ti_map_array = 0d0
-      call prop_get_doubles(md_ptr, 'output', 'MapInterval', ti_map_array, 3, success)
+      call prop_get(md_ptr, 'output', 'MapInterval', ti_map_array, 3, success)
       call getOutputTimeArrays(ti_map_array, ti_maps, ti_map, ti_mape, success)
       call check_time_interval(ti_maps, ti_map, ti_mape, dt_user, 'MapInterval', tstart_user)
 
       if (jawave == 3) then
          ti_com_array = 0.0_hp
          ti_com = dt_user !< defaults to backward compatible behaviour
-         call prop_get_doubles(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
+         call prop_get(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
          call getOutputTimeArrays(ti_com_array, ti_coms, ti_com, ti_come, success)
          call check_time_interval(ti_coms, ti_com, ti_come, dt_user, 'ComInterval', tstart_user)
          !
-         call prop_get_string(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
+         call prop_get(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
          if (success) then
             ti_com = huge(0.0_hp)
          end if
@@ -1865,7 +1866,7 @@ contains
 
       end if
 
-      call prop_get_integer(md_ptr, 'output', 'MapFormat', md_mapformat, success)
+      call prop_get(md_ptr, 'output', 'MapFormat', md_mapformat, success)
       if (md_mapformat == IFORMAT_UGRID) then
          md_unc_conv = UNC_CONV_UGRID
       else
@@ -1883,29 +1884,29 @@ contains
          call warn_flush()
       end if
 
-      call prop_get_integer(md_ptr, 'output', 'NcFormat', md_ncformat, success)
+      call prop_get(md_ptr, 'output', 'NcFormat', md_ncformat, success)
       call unc_set_ncformat(md_ncformat)
-      call prop_get_string(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
-      call prop_get_string(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
-      call prop_get_logical(md_ptr, 'output', 'NcCompression', md_nccompress, success, value_parsed)
+      call prop_get(md_ptr, 'output', 'NcMapDataPrecision', md_nc_map_precision, success)
+      call prop_get(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
+      call prop_get(md_ptr, 'output', 'NcCompression', md_nccompress, success, value_parsed)
       if (success .and. .not. value_parsed) then
          call mess(LEVEL_ERROR, 'Did not recognise NcCompression value. It must be 0 or 1.')
       end if
       call unc_set_nccompress(md_nccompress)
 
-      call prop_get_integer(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success) ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
-      call prop_get_integer(md_ptr, 'output', 'NcNoUnlimited', unc_nounlimited, success)
-      call prop_get_integer(md_ptr, 'output', 'NcNoForcedFlush', unc_noforcedflush, success)
+      call prop_get(md_ptr, 'output', 'enableDebugArrays', jawritedebug, success) ! allocate 1d, 2d, 3d arrays to quickly write quantities to map file
+      call prop_get(md_ptr, 'output', 'NcNoUnlimited', unc_nounlimited, success)
+      call prop_get(md_ptr, 'output', 'NcNoForcedFlush', unc_noforcedflush, success)
 
       ibuf = 0
-      call prop_get_integer(md_ptr, 'output', 'NcWriteLatLon', ibuf, success)
+      call prop_get(md_ptr, 'output', 'NcWriteLatLon', ibuf, success)
       if (success .and. ibuf > 0) then
          unc_writeopts = UG_WRITE_LATLON
       end if
 
-      call prop_get_string(md_ptr, 'output', 'MetaDataFile', unc_metadatafile, success)
+      call prop_get(md_ptr, 'output', 'MetaDataFile', unc_metadatafile, success)
 
-      call prop_get_integer(md_ptr, 'output', 'GenerateUUID', unc_uuidgen, success)
+      call prop_get(md_ptr, 'output', 'GenerateUUID', unc_uuidgen, success)
 
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_balance', jahisbal, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sourcesink', jahissourcesink, success)
@@ -1941,7 +1942,14 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_discharge', jahisdischarge, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_heat_fluxes', jahisheatflux, success, alternative_key='Wrihis_heatflux')
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_runupgauge', jahisrunupgauge, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot', jahiswaqbot, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot', jahiswqbot, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'wrihis_wqbot3d', jahiswqbot3d, success)
+      if (kmx == 0 .and. jahiswqbot3d == 1) then
+         jahiswqbot3d = 0
+         write (msgbuf, '(a)') 'MDU setting "wrihis_wqbot3d = 1" asks to write 3D water quality bottom quantities to the history output, ' &
+            //'but this is ignored since the simulation is 2D.'
+         call warn_flush()
+      end if
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_constituents', jahistracers, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_flow', jahiscrs_flow, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_constituents', jahiscrs_constituents, success)
@@ -1963,13 +1971,13 @@ contains
          call warn_flush()
       end if
 
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_waterlevel_s0', jamaps0, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_waterlevel_s1', jamaps1, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_evaporation', jamapevap, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_volume1', jamapvol1, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_waterdepth', jamaphs, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_waterdepth_hu', jamaphu, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_ancillary_variables', jamapanc, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s0', jamaps0, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s1', jamaps1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_evaporation', jamapevap, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_volume1', jamapvol1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth', jamaphs, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_hu', jamaphu, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_ancillary_variables', jamapanc, success)
       if (jamapanc > 0) then
          if (jamaps1 <= 0) then
             jamaps1 = 1
@@ -1990,31 +1998,31 @@ contains
             call warn_flush()
          end if
       end if
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_flow_analysis', jamapFlowAnalysis, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_flowarea_au', jamapau, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_velocity_component_u1', jamapu1, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_velocity_component_u0', jamapu0, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_velocity_vector', jamapucvec, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_analysis', jamapFlowAnalysis, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flowarea_au', jamapau, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u1', jamapu1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u0', jamapu0, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vector', jamapucvec, success)
       if ((jawave == 3 .or. jawave == 6) .and. jamapucvec == 0) then
          jamapucvec = 1
          write (msgbuf, '(a, i0, a)') 'MDU setting "Wavemodelnr = ', jawave, '" requires ' &
             //'"Wrimap_velocity_vector = 1". Has been enabled now.'
          call warn_flush()
       end if
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_velocity_magnitude', jamapucmag, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_velocity_vectorq', jamapucqvec, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_upward_velocity_component', jamapww1, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_density_rho', jamaprho, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_horizontal_viscosity_viu', jamapviu, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_horizontal_diffusivity_diu', jamapdiu, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_flow_flux_q1', jamapq1, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_flow_flux_q1_main', jamapq1main, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', jamapfw, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_spiral_flow', jamapspir, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_numlimdt', jamapnumlimdt, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_taucurrent', jamaptaucurrent, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_z0', jamapz0, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_salinity', jamapsal, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_magnitude', jamapucmag, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vectorq', jamapucqvec, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_upward_velocity_component', jamapww1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_density_rho', jamaprho, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_viscosity_viu', jamapviu, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_diffusivity_diu', jamapdiu, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1', jamapq1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1_main', jamapq1main, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', jamapfw, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_spiral_flow', jamapspir, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_numlimdt', jamapnumlimdt, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', jamaptaucurrent, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_z0', jamapz0, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_salinity', jamapsal, success)
       if (success .and. jamapsal == 1 .and. jasal < 1) then
          write (msgbuf, '(a)') 'MDU setting "Wrimap_salinity = 1" asks to write salinity to the output map file, ' &
             //'but no salinity is involved due to MDU setting "Salinity = 0". So we set "Wrimap_salinity = 0" ' &
@@ -2022,11 +2030,11 @@ contains
          call warn_flush()
       end if
 
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_chezy', jamap_chezy_elements, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_chezy_on_flow_links', jamap_chezy_links, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_input_roughness', jamap_chezy_input, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_chezy', jamap_chezy_elements, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links', jamap_chezy_links, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', jamap_chezy_input, success)
 
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_temperature', jamaptem, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_temperature', jamaptem, success)
       if (success .and. jamaptem == 1 .and. jatem < 1) then
          write (msgbuf, '(a)') 'MDU setting "Wrimap_temperature = 1" asks to write temperature to the output map file, ' &
             //'but no temperature is involved due to MDU setting "Temperature = 0". So we set "Wrimap_temperature = 0"' &
@@ -2034,30 +2042,30 @@ contains
          call warn_flush()
       end if
 
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_constituents', jamapconst, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_sediment', jamapsed, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_turbulence', jamaptur, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_trachytopes', jamaptrachy, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_calibration', jamapcali, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_rain', jamaprain, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_interception', jamapicept, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_wind', jamapwind, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_windstress', jamapwindstress, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_airdensity', jamap_airdensity, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_heat_fluxes', jamapheatflux, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_tidal_potential', jamaptidep, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_sal_potential', jamapselfal, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_internal_tides_dissipation', jamapIntTidesDiss, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_nudging', jamapnudge, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_pure1d_debug', jamapPure1D_debug, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_waves', jamapwav, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_constituents', jamapconst, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_sediment', jamapsed, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_turbulence', jamaptur, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_trachytopes', jamaptrachy, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_calibration', jamapcali, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_rain', jamaprain, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_interception', jamapicept, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_wind', jamapwind, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_windstress', jamapwindstress, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_airdensity', jamap_airdensity, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_heat_fluxes', jamapheatflux, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_tidal_potential', jamaptidep, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_sal_potential', jamapselfal, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_internal_tides_dissipation', jamapIntTidesDiss, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_nudging', jamapnudge, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_pure1d_debug', jamapPure1D_debug, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waves', jamapwav, success)
       jamapwav_hwav = 0
       jamapwav_twav = 0
       jamapwav_phiwav = 0
       jamapwav_sxwav = 0
       jamapwav_sywav = 0
-      jamapwav_sxbwav = 0
-      jamapwav_sybwav = 0
+      jamapwav_sbxwav = 0
+      jamapwav_sbywav = 0
       jamapwav_mxwav = 0
       jamapwav_mywav = 0
       jamapwav_dsurf = 0
@@ -2065,24 +2073,31 @@ contains
       jamapwav_distot = 0
       jamapwav_uorb = 0
 
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_DTcell', jamapdtcell, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_DTcell', jamapdtcell, success)
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
-      call prop_get_double(md_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_time_water_on_ground', jamapTimeWetOnGround, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_freeboard', jamapFreeboard, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_waterdepth_on_ground', jamapDepthOnGround, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_volume_on_ground', jamapVolOnGround, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_total_net_inflow_1d2d', jamapTotalInflow1d2d, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_total_net_inflow_lateral', jamapTotalInflowLat, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_water_level_gradient', jamapS1Gradient, success)
-      call prop_get_integer(md_ptr, 'output', 'Writek_CdWind', jatekcd, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrirst_bnd', jarstbnd, success)
-      call prop_get_integer(md_ptr, 'output', 'Writepart_domain', japartdomain, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_bnd', jamapbnd, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_Qin', jamapqin, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_every_dt', jaeverydt, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_NearField', jamapNearField, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrimap_ice', jamapice, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_time_water_on_ground', jamapTimeWetOnGround, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_freeboard', jamapFreeboard, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_on_ground', jamapDepthOnGround, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_volume_on_ground', jamapVolOnGround, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_1d2d', jamapTotalInflow1d2d, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_lateral', jamapTotalInflowLat, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_water_level_gradient', jamapS1Gradient, success)
+      call prop_get(md_ptr, 'output', 'Writek_CdWind', jatekcd, success)
+      call prop_get(md_ptr, 'output', 'Wrirst_bnd', jarstbnd, success)
+      call prop_get(md_ptr, 'output', 'Writepart_domain', japartdomain, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_bnd', jamapbnd, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_Qin', jamapqin, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_every_dt', jaeverydt, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_NearField', jamapNearField, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_ice', jamapice, success)
+      call prop_get(md_ptr, 'output', 'wrimap_wqbot3d', jamapwqbot3d, success)
+      if (kmx == 0 .and. jamapwqbot3d == 1) then
+         jamapwqbot3d = 0
+         write (msgbuf, '(a)') 'MDU setting "wrimap_wqbot3d = 1" asks to write 3D water quality bottom quantities to the map output, ' &
+            //'but this is ignored since the simulation is 2D.'
+         call warn_flush()
+      end if
 
       ! Output
       ! [output] OutputDir was read earlier already.
@@ -2111,53 +2126,53 @@ contains
 
       call read_output_parameter_toggle(md_ptr, 'output', 'Richardsononoutput', jaRichardsononoutput, success)
 
-      call prop_get_integer(md_ptr, 'output', 'Wrishp_crs', jashp_crs, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrishp_obs', jashp_obs, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrishp_weir', jashp_weir, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrishp_thd', jashp_thd, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrishp_gate', jashp_gate, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrishp_emb', jashp_emb, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrishp_fxw', jashp_fxw, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrishp_src', jashp_src, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrishp_pump', jashp_pump, success)
-      call prop_get_integer(md_ptr, 'output', 'Wrishp_dryarea', jashp_dry, success)
-      call prop_get_integer(md_ptr, 'output', 'wrishp_genstruc', jashp_genstruc, success)
-      call prop_get_integer(md_ptr, 'output', 'wrishp_dambreak', jashp_dambreak, success)
+      call prop_get(md_ptr, 'output', 'Wrishp_crs', jashp_crs, success)
+      call prop_get(md_ptr, 'output', 'Wrishp_obs', jashp_obs, success)
+      call prop_get(md_ptr, 'output', 'Wrishp_weir', jashp_weir, success)
+      call prop_get(md_ptr, 'output', 'Wrishp_thd', jashp_thd, success)
+      call prop_get(md_ptr, 'output', 'Wrishp_gate', jashp_gate, success)
+      call prop_get(md_ptr, 'output', 'Wrishp_emb', jashp_emb, success)
+      call prop_get(md_ptr, 'output', 'Wrishp_fxw', jashp_fxw, success)
+      call prop_get(md_ptr, 'output', 'Wrishp_src', jashp_src, success)
+      call prop_get(md_ptr, 'output', 'Wrishp_pump', jashp_pump, success)
+      call prop_get(md_ptr, 'output', 'Wrishp_dryarea', jashp_dry, success)
+      call prop_get(md_ptr, 'output', 'wrishp_genstruc', jashp_genstruc, success)
+      call prop_get(md_ptr, 'output', 'wrishp_dambreak', jashp_dambreak, success)
 
-      call prop_get_integer(md_ptr, 'output', 'WriteDFMinterpretedvalues', jawriteDFMinterpretedvalues, success)
+      call prop_get(md_ptr, 'output', 'WriteDFMinterpretedvalues', jawriteDFMinterpretedvalues, success)
 
-      call prop_get_integer(md_ptr, 'output', 'WriteDetailedTimers', jawriteDetailedTimers, success)
+      call prop_get(md_ptr, 'output', 'WriteDetailedTimers', jawriteDetailedTimers, success)
 
       ti_rst_array = 0d0
-      call prop_get_doubles(md_ptr, 'output', 'RstInterval', ti_rst_array, 3, success)
+      call prop_get(md_ptr, 'output', 'RstInterval', ti_rst_array, 3, success)
       call getOutputTimeArrays(ti_rst_array, ti_rsts, ti_rst, ti_rste, success)
       call check_time_interval(ti_rsts, ti_rst, ti_rste, dt_user, 'RstInterval', tstart_user)
 
-      call prop_get_double(md_ptr, 'output', 'MbaInterval', ti_mba, success)
+      call prop_get(md_ptr, 'output', 'MbaInterval', ti_mba, success)
 
-      call prop_get_integer(md_ptr, 'output', 'MbaWriteTxt', jambawritetxt, success)
-      call prop_get_integer(md_ptr, 'output', 'MbaWriteCsv', jambawritecsv, success)
-      call prop_get_integer(md_ptr, 'output', 'MbaWriteNetCDF', jambawritenetcdf, success)
+      call prop_get(md_ptr, 'output', 'MbaWriteTxt', jambawritetxt, success)
+      call prop_get(md_ptr, 'output', 'MbaWriteCsv', jambawritecsv, success)
+      call prop_get(md_ptr, 'output', 'MbaWriteNetCDF', jambawritenetcdf, success)
 
-      call prop_get_integer(md_ptr, 'output', 'MbaLumpFromToMba', jambalumpmba, success)
-      call prop_get_integer(md_ptr, 'output', 'MbaLumpBoundaries', jambalumpbnd, success)
-      call prop_get_integer(md_ptr, 'output', 'MbaLumpSourceSinks', jambalumpsrc, success)
-      call prop_get_integer(md_ptr, 'output', 'MbaLumpProcesses', jambalumpproc, success)
+      call prop_get(md_ptr, 'output', 'MbaLumpFromToMba', jambalumpmba, success)
+      call prop_get(md_ptr, 'output', 'MbaLumpBoundaries', jambalumpbnd, success)
+      call prop_get(md_ptr, 'output', 'MbaLumpSourceSinks', jambalumpsrc, success)
+      call prop_get(md_ptr, 'output', 'MbaLumpProcesses', jambalumpproc, success)
 
-!    call prop_get_string(md_ptr, 'output', 'WaqFileBase', md_waqfilebase, success)
+!    call prop_get(md_ptr, 'output', 'WaqFileBase', md_waqfilebase, success)
       ! Default basename of Delwaq files is model identifier:
       if (len_trim(md_waqfilebase) == 0) then
          md_waqfilebase = md_ident
       end if
 
-      call prop_get_string(md_ptr, 'output', 'WaqOutputDir', md_waqoutputdir, success)
+      call prop_get(md_ptr, 'output', 'WaqOutputDir', md_waqoutputdir, success)
 
       ti_waq_array = 0d0
-      call prop_get_doubles(md_ptr, 'output', 'WaqInterval', ti_waq_array, 3, success)
+      call prop_get(md_ptr, 'output', 'WaqInterval', ti_waq_array, 3, success)
       call getOutputTimeArrays(ti_waq_array, ti_waqs, ti_waq, ti_waqe, success)
-      call prop_get_string(md_ptr, 'output', 'WaqHorAggr', md_waqhoraggr, success)
-      call prop_get_string(md_ptr, 'output', 'WaqVertAggr', md_waqvertaggr, success)
-      call prop_get_integer(md_ptr, 'waves', 'waveSwartDelwaq', jawaveSwartDelwaq, success)
+      call prop_get(md_ptr, 'output', 'WaqHorAggr', md_waqhoraggr, success)
+      call prop_get(md_ptr, 'output', 'WaqVertAggr', md_waqvertaggr, success)
+      call prop_get(md_ptr, 'waves', 'waveSwartDelwaq', jawaveSwartDelwaq, success)
       if (jawave == 0) then
          if (jawaveSwartdelwaq == 1) then
             jawaveswartdelwaq = 0
@@ -2179,14 +2194,14 @@ contains
          end if
       end if
 
-      call prop_get_double(md_ptr, 'output', 'StatsInterval', ti_stat, success)
+      call prop_get(md_ptr, 'output', 'StatsInterval', ti_stat, success)
 
-      call prop_get_double(md_ptr, 'output', 'TimingsInterval', ti_timings, success)
+      call prop_get(md_ptr, 'output', 'TimingsInterval', ti_timings, success)
 
       charbuf = ' '
-      call prop_get_string(md_ptr, 'output', 'TimeSplitInterval', charbuf, success)
+      call prop_get(md_ptr, 'output', 'TimeSplitInterval', charbuf, success)
       if (success) then
-         read (charbuf, *, iostat=iostat), ibuf, ti_split_unit
+         read (charbuf, *, iostat=iostat) ibuf, ti_split_unit
          if (iostat == 0) then
             ti_split = dble(ibuf)
             select case (ti_split_unit)
@@ -2205,10 +2220,10 @@ contains
          end if
       end if
 
-      call prop_get_string(md_ptr, 'output', 'MapOutputTimeVector', md_mptfile, success)
+      call prop_get(md_ptr, 'output', 'MapOutputTimeVector', md_mptfile, success)
       call set_output_time_vector(md_mptfile, ti_mpt, ti_mpt_rel)
 
-      call prop_get_integer(md_ptr, 'output', 'FullGridOutput', jafullgridoutput, success)
+      call prop_get(md_ptr, 'output', 'FullGridOutput', jafullgridoutput, success)
       if (jafullgridoutput < 1 .and. jawave == 3 .and. kmx > 0) then
          jafullgridoutput = 1
          call mess(LEVEL_WARN, 'D-WAVES coupling enabled and kmx>0, so layer interface coordinates are needed on com-file. FullGridOutput set to 1.')
@@ -2227,17 +2242,17 @@ contains
          end if
       end if
 
-      call prop_get_integer(md_ptr, 'output', 'EulerVelocities', jaeulervel)
+      call prop_get(md_ptr, 'output', 'EulerVelocities', jaeulervel)
       if ((jawave < 3 .or. flowWithoutWaves) .and. jaeulervel == 1) then
          call mess(LEVEL_WARN, '''EulerVelocities'' is not compatible with the selected Wavemodelnr. ''EulerVelocities'' is set to zero.')
          jaeulervel = 0
       end if
       !
       if (jawave == 4) then ! not for Delta Shell
-         call prop_get_integer(md_ptr, 'output', 'AvgWaveQuantities', jaavgwavquant)
-         call prop_get_string(md_ptr, 'output', 'AvgWaveQuantitiesFile', md_avgwavquantfile, success)
+         call prop_get(md_ptr, 'output', 'AvgWaveQuantities', jaavgwavquant)
+         call prop_get(md_ptr, 'output', 'AvgWaveQuantitiesFile', md_avgwavquantfile, success)
          ti_wav_array = 0d0
-         call prop_get_doubles(md_ptr, 'output', 'AvgWaveOutputInterval', ti_wav_array, 3, success)
+         call prop_get(md_ptr, 'output', 'AvgWaveOutputInterval', ti_wav_array, 3, success)
          if (ti_wav_array(2) < 0d0) then
             ti_wav_array(2) = 0d0
             ti_wav_array(3) = 0d0
@@ -2255,20 +2270,20 @@ contains
             jaavgwriteall = 1 ! write all by default, unless explicitly switched off
          end if
 
-         call prop_get_integer(md_ptr, 'output', 'MomentumBalance', jamombal, success)
-         call prop_get_integer(md_ptr, 'output', 'AvgWaveWriteAll', jaavgwriteall, success)
+         call prop_get(md_ptr, 'output', 'MomentumBalance', jamombal, success)
+         call prop_get(md_ptr, 'output', 'AvgWaveWriteAll', jaavgwriteall, success)
          if (success .and. jaavgwriteall == 0) then ! else don't bother, everything written anyway
-            call prop_get_integer(md_ptr, 'output', 'AvgWaveWriteH', jaavgwriteH, success) ! height
-            call prop_get_integer(md_ptr, 'output', 'AvgWaveWriteE', jaavgwriteE, success) ! energy
-            call prop_get_integer(md_ptr, 'output', 'AvgWaveWriteR', jaavgwriteR, success) ! roller
-            call prop_get_integer(md_ptr, 'output', 'AvgWaveWriteD', jaavgwriteD, success) ! dissipation breaking+roller
-            call prop_get_integer(md_ptr, 'output', 'AvgWaveWriteCel', jaavgwriteCel, success) ! celerity+group velocity
-            call prop_get_integer(md_ptr, 'output', 'AvgWaveWriteDir', jaavgwriteDir, success) ! wave direction
-            call prop_get_integer(md_ptr, 'output', 'AvgWaveWriteU', jaavgwriteU, success) ! velocity + stokes
-            call prop_get_integer(md_ptr, 'output', 'AvgWaveWriteF', jaavgwriteF, success) ! wave forces
-            call prop_get_integer(md_ptr, 'output', 'AvgWaveWriteUrms', jaavgwriteUrms, success) ! orbital velocities
-            call prop_get_integer(md_ptr, 'output', 'AvgWaveWriteS', jaavgwriteS, success) ! water level
-            call prop_get_integer(md_ptr, 'output', 'AvgWaveWriteSigm', jaavgwriteSigm, success) ! frequency
+            call prop_get(md_ptr, 'output', 'AvgWaveWriteH', jaavgwriteH, success) ! height
+            call prop_get(md_ptr, 'output', 'AvgWaveWriteE', jaavgwriteE, success) ! energy
+            call prop_get(md_ptr, 'output', 'AvgWaveWriteR', jaavgwriteR, success) ! roller
+            call prop_get(md_ptr, 'output', 'AvgWaveWriteD', jaavgwriteD, success) ! dissipation breaking+roller
+            call prop_get(md_ptr, 'output', 'AvgWaveWriteCel', jaavgwriteCel, success) ! celerity+group velocity
+            call prop_get(md_ptr, 'output', 'AvgWaveWriteDir', jaavgwriteDir, success) ! wave direction
+            call prop_get(md_ptr, 'output', 'AvgWaveWriteU', jaavgwriteU, success) ! velocity + stokes
+            call prop_get(md_ptr, 'output', 'AvgWaveWriteF', jaavgwriteF, success) ! wave forces
+            call prop_get(md_ptr, 'output', 'AvgWaveWriteUrms', jaavgwriteUrms, success) ! orbital velocities
+            call prop_get(md_ptr, 'output', 'AvgWaveWriteS', jaavgwriteS, success) ! water level
+            call prop_get(md_ptr, 'output', 'AvgWaveWriteSigm', jaavgwriteSigm, success) ! frequency
          end if
 
          ! Override settings above if momentum balance data is switched on
@@ -2288,18 +2303,18 @@ contains
 
       ! Map classes output (formerly: incremental file)
       ti_classmap_array = 0d0
-      call prop_get_doubles(md_ptr, 'output', 'ClassMapInterval', ti_classmap_array, 3, success)
+      call prop_get(md_ptr, 'output', 'ClassMapInterval', ti_classmap_array, 3, success)
       call getOutputTimeArrays(ti_classmap_array, ti_classmaps, ti_classmap, ti_classmape, success)
       call check_time_interval(ti_classmaps, ti_classmap, ti_classmape, dt_user, 'ClassMapInterval', tstart_user)
 
       if (ti_classmap > 0d0) then
-         call prop_get_string(md_ptr, 'output', 'ClassMapFile', md_classmap_file, success)
+         call prop_get(md_ptr, 'output', 'ClassMapFile', md_classmap_file, success)
 
          call readClasses('WaterlevelClasses', map_classes_s1)
          call readClasses('WaterdepthClasses', map_classes_hs)
 
          call readClasses('VelocityMagnitudeClasses', map_classes_ucmag)
-         call prop_get_double(md_ptr, 'output', 'VelocityDirectionClassesInterval', map_classes_ucdirstep, success)
+         call prop_get(md_ptr, 'output', 'VelocityDirectionClassesInterval', map_classes_ucdirstep, success)
          if (success) then
             call createDirectionClasses(map_classes_ucdir, map_classes_ucdirstep)
          else
@@ -2312,18 +2327,18 @@ contains
 
       end if
 
-      call prop_get_double(md_ptr, 'equatorial', 'Ampfreeleft', amm)
-      call prop_get_double(md_ptr, 'equatorial', 'Ampfreeright', app)
-      call prop_get_double(md_ptr, 'equatorial', 'Ampforcedzerofr', ztyp)
-      call prop_get_integer(md_ptr, 'equatorial', 'Nmode', Nmode)
-      call prop_get_integer(md_ptr, 'equatorial', 'Nfreq', Nfreq)
+      call prop_get(md_ptr, 'equatorial', 'Ampfreeleft', amm)
+      call prop_get(md_ptr, 'equatorial', 'Ampfreeright', app)
+      call prop_get(md_ptr, 'equatorial', 'Ampforcedzerofr', ztyp)
+      call prop_get(md_ptr, 'equatorial', 'Nmode', Nmode)
+      call prop_get(md_ptr, 'equatorial', 'Nfreq', Nfreq)
 
       ! Create a separate property tree for structures.
       call tree_create('structures_'//trim(filename), strs_ptr)
 
       ! First, try to read from a single StructureFile.
       md_structurefile = ' '
-      call prop_get_string(md_ptr, 'geometry', 'StructureFile', md_structurefile, success)
+      call prop_get(md_ptr, 'geometry', 'StructureFile', md_structurefile, success)
       if (len_trim(md_structurefile) > 0 &
           .and. index(md_structurefile, ';') == 0) then ! UNST-2854: workaround, as long as we don't support ;-separator in MDU, skip it here and leave it all to readStructures().
          call strsplit(md_structurefile, 1, fnames, 1)
@@ -2349,20 +2364,19 @@ contains
       end if
 
 !  processes (WAQ)
-      call prop_get_string(md_ptr, 'processes', 'SubstanceFile', md_subfile, success)
-      call prop_get_string(md_ptr, 'processes', 'AdditionalHistoryOutputFile', md_ehofile, success)
-      call prop_get_string(md_ptr, 'processes', 'StatisticsFile', md_sttfile, success)
-      call prop_get_double(md_ptr, 'processes', 'ThetaVertical', md_thetav_waq, success)
-      call prop_get_integer(md_ptr, 'processes', 'ProcessFluxIntegration', md_flux_int, success)
-      call prop_get_integer(md_ptr, 'processes', 'Wriwaqbot3Doutput', md_wqbot3D_output, success)
-      call prop_get_double(md_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr)
-      call prop_get_double(md_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr)
-      call prop_get_integer(md_ptr, 'processes', 'SubstanceDensityCoupling', JaSubstancedensitycoupling)
+      call prop_get(md_ptr, 'processes', 'SubstanceFile', md_subfile, success)
+      call prop_get(md_ptr, 'processes', 'AdditionalHistoryOutputFile', md_ehofile, success)
+      call prop_get(md_ptr, 'processes', 'StatisticsFile', md_sttfile, success)
+      call prop_get(md_ptr, 'processes', 'ThetaVertical', md_thetav_waq, success)
+      call prop_get(md_ptr, 'processes', 'ProcessFluxIntegration', md_flux_int, success)
+      call prop_get(md_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr)
+      call prop_get(md_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr)
+      call prop_get(md_ptr, 'processes', 'SubstanceDensityCoupling', JaSubstancedensitycoupling)
       if (JaSubstancedensitycoupling == 1) then
          call mess(LEVEL_WARN, 'SubstanceDensityCoupling = 1 assumes that ONLY sediment substances (with a density of 2600 kg/m3) are being used.')
       end if
 
-      call prop_get_double(md_ptr, 'processes', 'DtProcesses', md_dt_waqproc, success)
+      call prop_get(md_ptr, 'processes', 'DtProcesses', md_dt_waqproc, success)
       ti_waqproc = md_dt_waqproc
       if (md_dt_waqproc > 0d0) then
          if (dt_user > 0d0 .and. md_dt_waqproc > 0d0) then
@@ -2378,7 +2392,7 @@ contains
          call mess(LEVEL_INFO, 'DtProcesses is negative. Water quality processes are calculated with every hydrodynamic time step.')
       end if
 
-      call prop_get_double(md_ptr, 'processes', 'DtMassBalance', md_dt_waqbal, success)
+      call prop_get(md_ptr, 'processes', 'DtMassBalance', md_dt_waqbal, success)
       if (md_dt_waqbal > 0d0) then
          call mess(LEVEL_WARN, 'The keyword DtMassBalance in the Processes section is now replaced by MbaInterval in the Output section.')
          if (ti_mba > 0d0) then
@@ -2477,7 +2491,7 @@ contains
 
       allocate (reals(maxClasses))
       reals = huge(reals)
-      call prop_get_doubles(md_ptr, 'output', className, reals, maxClasses, success)
+      call prop_get(md_ptr, 'output', className, reals, maxClasses, success)
       if (success) then
          j = maxClasses + 1
          do i = 1, maxClasses
@@ -2582,11 +2596,10 @@ contains
       integer, intent(out) :: istat !< Return status (0=success)
 
       type(tree_data), pointer :: prop_ptr
-      ! TODO: [TRUNKMERGE] WO: I prefer having tfac not in m_flowtimes, but back here again.
       character(len=20) :: rundat
       character(len=128) :: helptxt
       character(len=256) :: tmpstr
-      integer :: i, ibuf
+      integer :: i, ibuf, fww
       real(kind=hp) :: ti_map_array(3), ti_rst_array(3), ti_his_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
 
       istat = 0 ! Success
@@ -2819,7 +2832,7 @@ contains
             call prop_set(prop_ptr, 'geometry', 'Toplayminthick', Toplayminthick, 'Minimum top layer thickness(m), only for Z-layers')
          end if
 
-         call prop_set_integer(prop_ptr, 'geometry', 'StretchType', iStrchType, 'Type of layer stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential')
+         call prop_set(prop_ptr, 'geometry', 'StretchType', iStrchType, 'Type of layer stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential')
          if (iStrchType == STRCH_USER) then
             call prop_set(prop_ptr, 'geometry', 'StretchCoef', laycof(1:kmx), 'Layers thickness percentage')
          else if (iStrchType == STRCH_EXPONENT) then
@@ -2912,7 +2925,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Coriohhtrsh', hhtrshcor, '0=default=no safety in hu/hus weightings, only for Newcorio=1)')
       end if ! change hhtrshcor to Coriohhtrsh
 
-!   call prop_set_integer(prop_ptr, 'numerics', 'numoverlap', numoverlap, ' ')
+!   call prop_set(prop_ptr, 'numerics', 'numoverlap', numoverlap, ' ')
 
       if (writeall .or. Limtyphu /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Limtyphu', limtyphu, 'Limiter type for waterdepth in continuity eqn. (0: none, 1: minmod, 2: van Leer, 3: Koren, 4: monotone central)')
@@ -3138,10 +3151,10 @@ contains
 
       if (icgsolver == 8) then ! for parms solver
          do i = 1, NPARMS_INT
-            call prop_set_integer(prop_ptr, 'numerics', trim(iparmsnam(i)), iparms(i), '0: parms-default')
+            call prop_set(prop_ptr, 'numerics', trim(iparmsnam(i)), iparms(i), '0: parms-default')
          end do
          do i = 1, NPARMS_DBL
-            call prop_set_double(prop_ptr, 'numerics', trim(dparmsnam(i)), dparms(i), '0d0: parms-default')
+            call prop_set(prop_ptr, 'numerics', trim(dparmsnam(i)), dparms(i), '0d0: parms-default')
          end do
       end if
 
@@ -3191,12 +3204,12 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Lateral_fixedweir_relax', lat_fix_weir_relax, 'Relaxation factor for iterative lateral 1d2d weir coupling algorithm.')
       end if
 
-      call prop_set_integer(prop_ptr, 'numerics', 'jaupwindsrc', jaupwindsrc, '1st-order upwind advection at sources/sinks (1) or higher-order (0)')
+      call prop_set(prop_ptr, 'numerics', 'jaupwindsrc', jaupwindsrc, '1st-order upwind advection at sources/sinks (1) or higher-order (0)')
 
-      call prop_set_integer(prop_ptr, 'numerics', 'jasfer3D', jasfer3D, 'corrections for spherical coordinates')
+      call prop_set(prop_ptr, 'numerics', 'jasfer3D', jasfer3D, 'corrections for spherical coordinates')
 
       if (writeall .or. jabarrieradvection /= 1) then
-         call prop_set_integer(prop_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection, '1 = no correction, 2 = advection correction')
+         call prop_set(prop_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection, '1 = no correction, 2 = advection correction')
       end if
 
       if (writeall .or. jafilter /= 0) then
@@ -3361,8 +3374,8 @@ contains
          end if
 
          if (writeall .or. janudge > 0 .or. jainiwithnudge > 0) then
-            call prop_set_double(prop_ptr, 'physics', 'Nudgetimeuni', Tnudgeuni, 'Uniform nudge relaxation time')
-            call prop_set_integer(prop_ptr, 'physics', 'IniWithNudge', jainiwithnudge, 'Initialize salinity and temperature with nudge variables')
+            call prop_set(prop_ptr, 'physics', 'Nudgetimeuni', Tnudgeuni, 'Uniform nudge relaxation time')
+            call prop_set(prop_ptr, 'physics', 'IniWithNudge', jainiwithnudge, 'Initialize salinity and temperature with nudge variables')
          end if
 
       end if
@@ -3380,7 +3393,7 @@ contains
       end if
 
       if (ndambreaklinks > 0) then
-         call prop_set_string(prop_ptr, 'physics', 'BreachGrowth', trim(dambreakWideningString), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
+         call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(dambreakWideningString), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 
       if (writeall .or. jased > 0) then
@@ -3521,7 +3534,12 @@ contains
          call prop_set(prop_ptr, 'waves', 'jahissigwav', jahissigwav, '1: sign wave height on his output; 0: hrms wave height on his output. Default=1.')
          call prop_set(prop_ptr, 'waves', 'jamapsigwav', jamapsigwav, '1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy behaviour).')
          call prop_set(prop_ptr, 'waves', 'hminlw', hminlw, 'Cut-off depth for application of wave forces in momentum balance')
-         ! prop_set_logical is not yet implemented call prop_set(prop_ptr, 'waves', 'FlowWithoutWaves',    flowWithoutWaves, 'True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ')
+         if (flowWithoutWaves) then
+            fww = 1
+         else
+            fww = 0
+         end if
+         call prop_set(prop_ptr, 'waves', 'FlowWithoutWaves', fww, '1: Do not use wave data in the flow computations, it will only be passed through to D-WAQ; 0: use wave information. Default 0.')
          if (writeall .or. hwavuni /= 0d0) then
             call prop_set(prop_ptr, 'waves', 'Hwavuni', hwavuni, 'root mean square wave height (m)')
             call prop_set(prop_ptr, 'waves', 'Twavuni', twavuni, 'root mean square wave period (s)')
@@ -3746,7 +3764,7 @@ contains
 
       call prop_set(prop_ptr, 'output', 'TimingsInterval', ti_timings, 'Timings statistics output interval')
       helptxt = ' '
-      write (helptxt, '(i0,a1,a1)'), int(ti_split), ' ', ti_split_unit
+      write (helptxt, '(i0,a1,a1)') int(ti_split), ' ', ti_split_unit
       call prop_set(prop_ptr, 'output', 'TimeSplitInterval', trim(helptxt), 'Time splitting interval, after which a new output file is started. value+unit, e.g. ''1 M'', valid units: Y,M,D,h,m,s.')
 
       write (helptxt, "('Map file format ')")
@@ -3804,6 +3822,9 @@ contains
       end if
       if (jamapice > 0 .or. writeall) then
          call prop_set(prop_ptr, 'output', 'Wrimap_ice', jamapice, 'Write output to map file for ice cover, 0=no (default), 1=yes')
+      end if
+      if (jamapwqbot3d > 0 .or. writeall) then
+         call prop_set(prop_ptr, 'output', 'wrimap_wqbot3d', jamapwqbot3d, 'Write output to map file for waqbot3d, 0=no (default), 1=yes')
       end if
       if (writeall .or. epswetout /= 0.1d0) then
          call prop_set(prop_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, 'Waterdepth threshold above which a grid point counts as ''wet''. Used for Wrimap_time_water_on_ground.')
@@ -3866,15 +3887,14 @@ contains
       call set_properties(prop_ptr, 'Output', config_set_clm)
 
 !  processes (WAQ)
-      call prop_set_string(prop_ptr, 'processes', 'SubstanceFile', trim(md_subfile), 'substance file')
-      call prop_set_string(prop_ptr, 'processes', 'AdditionalHistoryOutputFile', trim(md_ehofile), 'extra history output file')
-      call prop_set_string(prop_ptr, 'processes', 'StatisticsFile', trim(md_sttfile), 'statistics file')
-      call prop_set_double(prop_ptr, 'processes', 'ThetaVertical', md_thetav_waq, 'theta vertical for waq')
-      call prop_set_double(prop_ptr, 'processes', 'DtProcesses', md_dt_waqproc, 'waq processes time step')
-      call prop_set_integer(prop_ptr, 'processes', 'ProcessFluxIntegration', md_flux_int, 'Process fluxes integration option (1: WAQ, 2: D-Flow FM)')
-      call prop_set_integer(prop_ptr, 'processes', 'Wriwaqbot3Doutput', md_wqbot3D_output, 'Write 3D water quality bottom variables (1: yes, 0: no)')
-      call prop_set_double(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
-      call prop_set_double(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
+      call prop_set(prop_ptr, 'processes', 'SubstanceFile', trim(md_subfile), 'substance file')
+      call prop_set(prop_ptr, 'processes', 'AdditionalHistoryOutputFile', trim(md_ehofile), 'extra history output file')
+      call prop_set(prop_ptr, 'processes', 'StatisticsFile', trim(md_sttfile), 'statistics file')
+      call prop_set(prop_ptr, 'processes', 'ThetaVertical', md_thetav_waq, 'theta vertical for waq')
+      call prop_set(prop_ptr, 'processes', 'DtProcesses', md_dt_waqproc, 'waq processes time step')
+      call prop_set(prop_ptr, 'processes', 'ProcessFluxIntegration', md_flux_int, 'Process fluxes integration option (1: WAQ, 2: D-Flow FM)')
+      call prop_set(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
+      call prop_set(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')
       call prop_set(prop_ptr, 'processes', 'SubstanceDensityCoupling', jaSubstancedensitycoupling, 'Substance density coupling (1: yes, 0: no). It only functions correctly when all substances are sediments.')
 
       call datum(rundat)
@@ -4178,7 +4198,7 @@ contains
          ti_tv = 0.0_dp
          ti_tv_rel = tstop_user
       end if
-
+      
    end subroutine set_output_time_vector
 
 end module unstruc_model

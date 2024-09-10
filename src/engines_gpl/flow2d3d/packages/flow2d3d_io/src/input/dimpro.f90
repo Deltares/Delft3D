@@ -64,7 +64,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     logical                             , pointer :: tps_from_com  !  Description and declaration in procs.igs    
     logical                             , pointer :: ubot_from_com !  Description and declaration in procs.igs
     logical                             , pointer :: wlen_from_com !  Description and declaration in procs.igs
-	logical                             , pointer :: skipuniqueid
+	logical                             , pointer :: add_uniqueid
     integer                             , pointer :: numdomains
     integer                             , pointer :: itis
     integer                             , pointer :: rolcorr
@@ -123,6 +123,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     integer        , external :: newlun
     integer                   :: uw
     logical                   :: lhulp  ! Help variable to read logical from MD-file
+    logical                   :: skipuniqueid !< temporary variable for reading the corresponding keyword
     character(20)             :: chulp  ! Help variable to read character from MD-file 
     character(256)            :: filrol
 !
@@ -140,13 +141,13 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     itis              => gdp%gdrdpara%itis
     rolcorr           => gdp%gdbetaro%rolcorr
     sbkConfigFile     => gdp%gdsobek%sbkConfigFile
-    skipuniqueid      => gdp%gdnfl%skipuniqueid
+    add_uniqueid      => gdp%gdnfl%add_uniqueid
     !
     ! calculate LSTSC
     ! locate 'Sub1' record for 'S'alinity, 'T'emperaure, 'I'secondary flow and 'W'ind
     !
     chulp = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Sub1', chulp)
+    call prop_get(gdp%mdfile_ptr, '*', 'Sub1', chulp)
     !
     ! test for 'S'
     !
@@ -185,7 +186,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     ! locate 'Sub2' record for 'P'articles, 'W'ave, 'C'onstituents
     !
     chulp = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Sub2', chulp)
+    call prop_get(gdp%mdfile_ptr, '*', 'Sub2', chulp)
     !
     ! test for 'P'
     !
@@ -225,7 +226,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
         waveol = 1
     else
         lhulp = .false.
-        call prop_get_logical(gdp%mdfile_ptr, '*', 'WaveOL', lhulp)
+        call prop_get(gdp%mdfile_ptr, '*', 'WaveOL', lhulp)
         if (lhulp) then
             waveol = 2
         else
@@ -255,7 +256,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     !
     roller  = .false.
     rolcorr = 2
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'Roller', roller)
+    call prop_get(gdp%mdfile_ptr, '*', 'Roller', roller)
     !
     if (roller) then
        ncmax  = 0
@@ -265,7 +266,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
        ! ncmax is used in esm_alloc_real for dimensioning arrays
        !
        filrol = ' '
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Filwcm', filrol)
+       call prop_get(gdp%mdfile_ptr, '*', 'Filwcm', filrol)
        if (filrol /= ' ') then
           inquire (file = filrol, exist = wavcmp)
           if (.not. wavcmp) then
@@ -286,39 +287,39 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     ! default = no ('N') which means snelli = .false.
     !
     snelli = .false.
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'Snelli', snelli)
+    call prop_get(gdp%mdfile_ptr, '*', 'Snelli', snelli)
     !
     ! locate 'cnstwv' Constant wave condition set for complete domain (No Wave computation)
     ! default = no ('N') which means cnstwv = .false.
     !
     cnstwv = .false.
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'Cnstwv', cnstwv)
+    call prop_get(gdp%mdfile_ptr, '*', 'Cnstwv', cnstwv)
     !
     ! locate keyword 'tpscom' for using the smoothed peak wave period TPS
     ! instead of the standard peak wave period TP (both from the COM-file).
     ! Default = .false. 
     !
     tps_from_com = .false.
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'tpscom', tps_from_com)
+    call prop_get(gdp%mdfile_ptr, '*', 'tpscom', tps_from_com)
     !
     ! locate keyword 'ubcom' for using the orbital velicity near the bottom UBOT from the COM-file
     ! instead of re-computing UBOT in FLOW based on other wave parameters. 
     ! Default = .false.
     !
     ubot_from_com = .false.
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'ubcom', ubot_from_com)
+    call prop_get(gdp%mdfile_ptr, '*', 'ubcom', ubot_from_com)
     !
     ! locate keyword 'wlcom' for using the mean wave length WLEN from the COM-file
     ! instead of re-computing WLEN in FLOW based on other wave parameters. 
     ! Default = .false.
     !
     wlen_from_com = .false.
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'wlcom', wlen_from_com)
+    call prop_get(gdp%mdfile_ptr, '*', 'wlcom', wlen_from_com)
     !
     ! Dredging and Dumping: get file name
     !
     dredgefile = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Fildad', dredgefile)
+    call prop_get(gdp%mdfile_ptr, '*', 'Fildad', dredgefile)
     if (dredgefile /= ' ') then
        dredge = .true.
     elseif (prgnm /= 'tdatom') then
@@ -335,7 +336,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     ! Culvert
     !
     culverfile = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filcul', culverfile)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filcul', culverfile)
     if (culverfile /= ' ') then
        culvert = .true.
     endif
@@ -343,12 +344,12 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     ! Barrier data: get file name
     !
     filbar = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filbar', filbar)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filbar', filbar)
     !
     ! Bubble screen data: get file name
     !
     filbub = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filbub', filbub)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filbub', filbub)
     if (filbub /= ' ') then
        bubble = .true.
     endif
@@ -359,33 +360,38 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     nfl               = .false.
     nf_timeout        = huge(nf_timeout)
     gdp%gdnfl%infile  = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filnfl', gdp%gdnfl%infile)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filnfl', gdp%gdnfl%infile)
     if (gdp%gdnfl%infile /= ' ') then
        nfl    = .true.
        nflmod = 'generic'
        write (lundia, '(2a)') '*** MESSAGE COSUMO config file: ', trim(gdp%gdnfl%infile)
        !
+       ! SkipUniqueId read for backward compatibility
        skipuniqueid = .false.
        call prop_get(gdp%mdfile_ptr, '*', 'SkipUniqueId', skipuniqueid)
+       add_uniqueid = .not.skipuniqueid
+       !
+       ! Read preferred keyword
+       call prop_get(gdp%mdfile_ptr, '*', 'AddUniqueId', add_uniqueid)
        !
        call prop_get(gdp%mdfile_ptr, '*', 'NfTimeout', nf_timeout)
        if (nf_timeout < huge(nf_timeout)) then
           write (lundia, '(a,f8.1,a)') '*** MESSAGE NfTimeout = ', nf_timeout, ' minutes'
        endif
     else
-       skipuniqueid = .true.
+       add_uniqueid = .false.
     endif
     !
     !
     ! Fixed gates (CDW): get file name
     !
     filcdw = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filcdw', filcdw)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filcdw', filcdw)
     !
     ! (Rigid) 3D Vegetation Model
     !
     filvg3d = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filpla', filvg3d)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filpla', filvg3d)
     if (filvg3d /= ' ') then
        veg3d = .true.
     endif
@@ -393,7 +399,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     ! Low Reynolds damping on viscosity/diffusivity
     !
     lrdamp = .false.
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'LRdamp', lrdamp)
+    call prop_get(gdp%mdfile_ptr, '*', 'LRdamp', lrdamp)
     !
     ! Online coupling with Sobek. Note that in the current implementation this
     ! coupling is managed by Sobek user interface.
@@ -401,7 +407,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     ! 
     sbkol         = .false.
     sbkConfigFile = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'SbkOL', sbkConfigFile)
+    call prop_get(gdp%mdfile_ptr, '*', 'SbkOL', sbkConfigFile)
     if (sbkConfigFile /= ' ') then
        sbkol = .true.
     endif
@@ -410,13 +416,13 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
     !
     filsdu = ' '
     lfsdu = .false.
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filsdu', filsdu)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filsdu', filsdu)
     if (filsdu /= ' ') then
        lfsdu = .true.
     endif
     !    
     lfsdus1 = .false.
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'SduS1', lfsdus1)
+    call prop_get(gdp%mdfile_ptr, '*', 'SduS1', lfsdus1)
     !
  9999 continue
 end subroutine dimpro

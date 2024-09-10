@@ -37,7 +37,9 @@
     use m_partitioninfo
     use m_fixedweirs
     use m_sferic
-
+    use m_dlimiter
+    use m_dslim
+    
     implicit none
 
     ! locals
@@ -85,7 +87,6 @@
 
     double precision, external :: lin2nodx, lin2nody
     double precision, external :: nod2linx, nod2liny
-    double precision, external :: dlimiter, dslim
 
     double precision :: am
     double precision :: qv

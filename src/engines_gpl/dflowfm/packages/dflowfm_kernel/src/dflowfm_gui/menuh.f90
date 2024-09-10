@@ -32,6 +32,7 @@
 
       subroutine MENUH(JA, NUM, NWHAT)
          use m_devices
+         use m_helpnow
          implicit none
          integer :: ja
          integer :: num
@@ -43,11 +44,8 @@
          integer :: key
          integer :: maxop
          integer :: maxopt
-         integer :: nlevel
          parameter(MAXOP=20)
          character(len=10) OPTION(MAXOP)
-         character(len=40) WRDKEY
-         common / HELPNOW / WRDKEY, NLEVEL
 !
 !     Keuzemenu horizontaal
 !

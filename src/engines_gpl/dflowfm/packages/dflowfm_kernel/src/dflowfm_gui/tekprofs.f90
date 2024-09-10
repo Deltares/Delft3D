@@ -45,25 +45,22 @@
      use m_waves, only: ustokes
      use m_sediment, only: jased, sed
      use m_transport !, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, const_units
+     use m_drawthis
+     use m_depmax2, only: vmax=>vmax2, vmin=>vmin2
 
      implicit none
 
      integer :: ini = 0, kt, jaref
-     double precision :: vmin, vmax, ugem, viceld
+     double precision :: ugem, viceld
      integer :: n, kb, km, km1, k, kk, ku, kku, Lb0, Lb, Lt, Lm1, L, LL, La
      double precision :: zmin, zmax
      double precision :: h0, b0, z00, zinc, cz, ustbref, ustwref, zint, z1, dz2, zz
      double precision :: tkebot, tkesur, tkewin
      double precision :: epsbot, epssur, dzkap, sqcf, ulx, sg, drhodz, rhomea, rhop0, prsappr
      double precision, external :: densfm, setrhofixedp
-
-     double precision :: VMAX2, VMIN2, DV2, VAL2
-     integer :: NCOLS2, NV2, NIS2, NIE2, JAAUTO2, is, Ls, LLs, Lbs, Lts
+     double precision :: VMAX2, VMIN2
+     integer :: is, Ls, LLs, Lbs, Lts
      integer :: jabruv
-
-     integer :: ndraw
-     common / DRAWTHIS / ndraw(50)
-     common / DEPMAX2 / VMAX2, VMIN2, DV2, VAL2(256), NCOLS2(256), NV2, NIS2, NIE2, JAAUTO2
 
      if (ndx < 1 .or. kmx < 2 .or. ndraw(35) == 0) return
 

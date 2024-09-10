@@ -21,376 +21,348 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_rear
-    use m_waq_precision
+   use m_waq_precision
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine rear(process_space_real, fl, ipoint, increm, num_cells, &
+                   noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+                   num_exchanges_z_dir, num_exchanges_bottom_dir)
+      use m_zerome
+      use m_logger_helper, only: stop_with_error, get_log_unit_number
+      use m_extract_waq_attribute
 
-    subroutine rear   (process_space_real, fl, ipoint, increm, num_cells, &
-            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
-            num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_zerome
-        use m_logger_helper, only : stop_with_error, get_log_unit_number
-        use m_extract_waq_attribute
+      !>\file
+      !>       Reaeration of carbon dioxide and oxygen
 
-        !>\file
-        !>       Reaeration of carbon dioxide and oxygen
+      implicit none
 
-        !
-        !     Description of the module :
-        !
-        ! Name    T   L I/O   Description                                   Units
-        ! ----    --- -  -    -------------------                            ----
-        ! DEPTH   R*4 1 I actual depth of the water column                     [m]
-        ! FCOVER  R*4 1 I fraction of water surface covered <0-1>              [-]
-        ! FL (1)  R*4 1 O reaeration flux                                 [g/m3/d]
-        ! HCRT    R*4 1 I critical water depth/velocity                        [m]
-        ! IFREAR  I*4 1 I switch for the rearation formula                     [-]
-        ! MAXRRC  R*4 1 I maximum wat trf. coef. for temp. lim.              [m/d]
-        ! MINRRC  R*4 1 I minimum reaeration rate                            [m/d]
-        ! O2      R*4 1 I concentration of dissolved oxygen                 [g/m3]
-        ! OXSAT   R*4 1 L saturation concentration of dissolved oxygen      [g/m3]
-        ! RAIN    R*4 1 L rainfall rate                                     [mm/h]
-        ! REARTC  R*4 1 L reaeration temperatuur coefficient                   [-]
-        ! REARKL  R*4 1 L reaeration transfer coefficient                    [m/d]
-        ! REARRC  R*4 1 L reaeration rate                                    [1/d]
-        ! TEMP    R*4 1 I ambient temperature                                 [xC]
-        ! TEMP20  R*4 1 L ambient temperature - stand. temp (20)              [xC]
-        ! VELOC   R*4 1 I streamflow velocity                                [m/s]
-        ! VWIND   R*4 1 I wind velocity                                      [m/s]
+      real(kind=real_wp) :: process_space_real(*), FL(*)
+      integer(kind=int_wp) :: ipoint(*), increm(*), num_cells, noflux, &
+                              iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+      !
+      !     Local declarations
+      !
+      integer(kind=int_wp) :: lunrep
+      integer(kind=int_wp) :: ifrear, ikmrk1, ikmrk2, iseg, iflux
+      integer(kind=int_wp) :: ip1, ip2, ip3, ip4, ip5, ip6, ip7, ip8, ip9, ip10, &
+                              ip11, ip12, ip13, ip14, ip15, ip16, ip17, ip18, ip19, ip20, &
+                              ip21, ip22, ip23, ip24, ip25, ip26, ip27, ip28
+      real(kind=real_wp) :: sal, b_enha, sc, sc20, klrear, totdep, &
+                            reartc, rearrc, hcrt, veloc, vwind, temp, &
+                            oxsat, o2, temp20, tmpcf, depth, fl1, &
+                            fcover, maxrrc, rearkl, satperc, minrrc, delt, rain
+      real(kind=real_wp) :: a, b1, b2, c1, &
+                            c2, d1, d2, d3, d4, d5, &
+                            a_o, b_o, c_o, d_o, e_o, &
+                            a_co, b_co, c_co, d_co, e_co
 
-        !     Logical Units : -
+      !   PBo3: hard coded coefficients for salt water options Wannikhof
+      !     Parameters for Schmidt number calculation (Wanninkhoff and Guerin)
+      !     D1-4Os = oxygen Wannikhof (seawater)
+      !     D1-4Cs = CO2 Wannikhof (seawater)
 
-        !     Modules called : -
+      parameter(a_o=1920.4, &
+                b_o=-135.6, &
+                c_o=5.2122, &
+                d_o=-0.10939, &
+                e_o=0.00093777, &
+                a_co=2116.8, &
+                b_co=-136.25, &
+                c_co=4.7353, &
+                d_co=-0.092307, &
+                e_co=0.0007555)
 
-        !     Name     Type   Library
-        !     ------   -----  ------------
+      ip1 = ipoint(1)
+      ip2 = ipoint(2)
+      ip3 = ipoint(3)
+      ip4 = ipoint(4)
+      ip5 = ipoint(5)
+      ip6 = ipoint(6)
+      ip7 = ipoint(7)
+      ip8 = ipoint(8)
+      ip9 = ipoint(9)
+      ip10 = ipoint(10)
+      ip11 = ipoint(11)
+      ip12 = ipoint(12)
+      ip13 = ipoint(13)
+      ip14 = ipoint(14)
+      ip15 = ipoint(15)
+      ip16 = ipoint(16)
+      ip17 = ipoint(17)
+      ip18 = ipoint(18)
+      ip19 = ipoint(19)
+      ip20 = ipoint(20)
+      ip21 = ipoint(21)
+      ip22 = ipoint(22)
+      ip23 = ipoint(23)
+      ip24 = ipoint(24)
+      ip25 = ipoint(25)
+      ip26 = ipoint(26)
+      ip27 = ipoint(27)
+      ip28 = ipoint(28)
 
-        IMPLICIT NONE
+      !
+      iflux = 0
+      do iseg = 1, num_cells
+         call extract_waq_attribute(1, iknmrk(iseg), ikmrk1)
+         if (ikmrk1 == 1) then
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
-        !
-        !     Local declarations
-        !
-        INTEGER(kind = int_wp) :: LUNREP
-        INTEGER(kind = int_wp) :: IFREAR, IKMRK1, IKMRK2, ISEG, IFLUX
-        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
-                IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18, IP19, IP20, &
-                IP21, IP22, IP23, IP24, IP25, IP26, IP27
-        REAL(kind = real_wp) :: SAL, B_ENHA, SC, SC20, KLREAR, TOTDEP, &
-                REARTC, REARRC, HCRT, VELOC, VWIND, TEMP, &
-                OXSAT, O2, TEMP20, TMPCF, DEPTH, FL1, &
-                FCOVER, MAXRRC, REARKL, SATPERC, MINRRC, DELT, RAIN
-        REAL(kind = real_wp) :: A, B1, B2, C1, &
-                C2, D1, D2, D3, D4, &
-                A_O, B_O, C_O, D_O, E_O, &
-                A_CO, B_CO, C_CO, D_CO, E_CO
+            !         Compute saturation percentage for all layers
 
-        !   PBo3: hard coded coefficients for salt water options Wannikhof
-        !     Parameters for Schmidt number calculation (Wanninkhoff and Guerin)
-        !     D1-4Os = oxygen Wannikhof (seawater)
-        !     D1-4Cs = CO2 Wannikhof (seawater)
+            o2 = process_space_real(ip1)
+            oxsat = process_space_real(ip10)
+            satperc = o2 / oxsat * 100
+            process_space_real(ip28) = satperc
 
-        PARAMETER ( A_O = 1920.4, &
-                    B_O = -135.6, &
-                    C_O = 5.2122, &
-                    D_O = -0.10939, &
-                    E_O = 0.00093777, &
-                    A_CO = 2116.8, &
-                    B_CO = -136.25, &
-                    C_CO = 4.7353, &
-                    D_CO = -0.092307, &
-                    E_CO = 0.0007555)
+            call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
+            if ((ikmrk2 == 0) .or. (ikmrk2 == 1)) then
+               !
+               depth = process_space_real(ip2)
+               temp = process_space_real(ip3)
+               veloc = process_space_real(ip4)
+               vwind = process_space_real(ip5)
+               ifrear = process_space_real(ip6) + 0.5
+               rearkl = process_space_real(ip7)
+               reartc = process_space_real(ip8)
+               delt = process_space_real(ip9)
+               sal = process_space_real(ip11)
+               totdep = process_space_real(ip12)
+               fcover = process_space_real(ip13)
+               maxrrc = process_space_real(ip14)
+               minrrc = process_space_real(ip15)
+               rain = process_space_real(ip16)
+               a = process_space_real(ip17)
+               b1 = process_space_real(ip18)
+               b2 = process_space_real(ip19)
+               c1 = process_space_real(ip20)
+               c2 = process_space_real(ip21)
+               d1 = process_space_real(ip22)
+               d2 = process_space_real(ip23)
+               d3 = process_space_real(ip24)
+               d4 = process_space_real(ip25)
+               d5 = process_space_real(ip26)
 
-        IP1 = IPOINT(1)
-        IP2 = IPOINT(2)
-        IP3 = IPOINT(3)
-        IP4 = IPOINT(4)
-        IP5 = IPOINT(5)
-        IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
-        IP8 = IPOINT(8)
-        IP9 = IPOINT(9)
-        IP10 = IPOINT(10)
-        IP11 = IPOINT(11)
-        IP12 = IPOINT(12)
-        IP13 = IPOINT(13)
-        IP14 = IPOINT(14)
-        IP15 = IPOINT(15)
-        IP16 = IPOINT(16)
-        IP17 = IPOINT(17)
-        IP18 = IPOINT(18)
-        IP19 = IPOINT(19)
-        IP20 = IPOINT(20)
-        IP21 = IPOINT(21)
-        IP22 = IPOINT(22)
-        IP23 = IPOINT(23)
-        IP24 = IPOINT(24)
-        IP25 = IPOINT(25)
-        IP26 = IPOINT(26)
-        IP27 = IPOINT(27)
+               if (depth < 1e-30) call zerome('DEPTH in REAR')
 
-        !
-        IFLUX = 0
-        DO ISEG = 1, num_cells
-            CALL extract_waq_attribute(1, IKNMRK(ISEG), IKMRK1)
-            IF (IKMRK1==1) THEN
+               !     JvG, 1 May 2002
+               !     Current formulation was not valid for layered schematisations
+               !     Correct by using the methodology as follows:
+               !     a) compute surface transfer coefficient in m/day per method
+               !     b) compute flux by multiplying with (surface) deficit
+               !     c) convert to volumetric flux by using the (surface) layer thickness
 
-                !         Compute saturation percentage for all layers
+               select case (ifrear)
+               case (0)
+                  !
+                  !         0. Unscaled user input coefficient in 1/day
+                  !
+                  rearrc = rearkl * totdep
 
-                O2 = process_space_real(IP1)
-                OXSAT = process_space_real(IP10)
-                SATPERC = O2 / OXSAT * 100
-                process_space_real (IP27) = SATPERC
+               case (1)
+                  !
+                  !         1. User input coefficient in m/day
+                  !
+                  rearrc = rearkl
 
-                CALL extract_waq_attribute(2, IKNMRK(ISEG), IKMRK2)
-                IF ((IKMRK2==0).OR.(IKMRK2==1)) THEN
-                    !
-                    DEPTH = process_space_real(IP2)
-                    TEMP = process_space_real(IP3)
-                    VELOC = process_space_real(IP4)
-                    VWIND = process_space_real(IP5)
-                    IFREAR = process_space_real(IP6) + 0.5
-                    REARKL = process_space_real(IP7)
-                    REARTC = process_space_real(IP8)
-                    DELT = process_space_real(IP9)
-                    SAL = process_space_real(IP11)
-                    TOTDEP = process_space_real(IP12)
-                    FCOVER = process_space_real(IP13)
-                    MAXRRC = process_space_real(IP14)
-                    MINRRC = process_space_real(IP15)
-                    RAIN = process_space_real(IP16)
-                    A = process_space_real(IP17)
-                    B1 = process_space_real(IP18)
-                    B2 = process_space_real(IP19)
-                    C1 = process_space_real(IP20)
-                    C2 = process_space_real(IP21)
-                    D1 = process_space_real(IP22)
-                    D2 = process_space_real(IP23)
-                    D3 = process_space_real(IP24)
-                    D4 = process_space_real(IP25)
+               case (2)
+                  !
+                  !         2. Churchill [1962]
+                  !
+                  rearrc = 0.0
+                  if (veloc > 1e-30) &
+                     rearrc = 5.026 * (veloc**0.969) / (totdep**0.673)
 
-                    IF (DEPTH   < 1E-30) CALL ZEROME ('DEPTH in REAR')
+               case (3)
+                  !
+                  !         3. O'Connor - Dobbins [1958]
+                  !
+                  rearrc = 0.0
+                  if (veloc > 1e-30) &
+                     rearrc = 3.863 * (veloc**0.5) / (totdep**0.5)
 
-                    !     JvG, 1 May 2002
-                    !     Current formulation was not valid for layered schematisations
-                    !     Correct by using the methodology as follows:
-                    !     a) compute surface transfer coefficient in m/day per method
-                    !     b) compute flux by multiplying with (surface) deficit
-                    !     c) convert to volumetric flux by using the (surface) layer thickness
+               case (4)
+                  !
+                  !         4. Scaled version of O'Connor - Dobbins [1958]
+                  !
+                  rearrc = 0.0
+                  if (veloc > 1e-30) &
+                     rearrc = 3.863 * (veloc**0.5) / (totdep**0.5) * rearkl
 
-                    select case (IFREAR)
-                    case(0)
-                        !
-                        !         0. Unscaled user input coefficient in 1/day
-                        !
-                        REARRC = REARKL * TOTDEP
+               case (5)
+                  !
+                  !         5. Owens - Edwards - Gibb [1964]
+                  !
+                  rearrc = 0.0
+                  if (veloc > 1e-30) &
+                     rearrc = 5.322 * (veloc**0.67) / (totdep**0.85)
 
-                    case(1)
-                        !
-                        !         1. User input coefficient in m/day
-                        !
-                        REARRC = REARKL
+               case (6)
+                  !
+                  !         6. Langbien - Durum [1967]
+                  !
+                  rearrc = 0.0
+                  if (veloc > 1e-30) &
+                     rearrc = 11.23 * veloc / (totdep**0.333)
 
-                    case(2)
-                        !
-                        !         2. Churchill [1962]
-                        !
-                        REARRC = 0.0
-                        IF (VELOC  > 1E-30) &
-                                REARRC = 5.026 * (VELOC**0.969) / (TOTDEP**0.673)
+               case (7)
+                  !
+                  !         7. Van Pagee[1978] and Delvigne [1980]
+                  !
+                  if (veloc > 1e-30) then
+                     rearrc = (rearkl * 0.065 * vwind**2 + &
+                               3.86 * sqrt(veloc / totdep))
+                  else
+                     rearrc = rearkl * 0.065 * vwind**2
+                  end if
 
-                    case(3)
-                        !
-                        !         3. O'Connor - Dobbins [1958]
-                        !
-                        REARRC = 0.0
-                        IF (VELOC  > 1E-30) &
-                                REARRC = 3.863 * (VELOC**0.5) / (TOTDEP**0.5)
+               case (8)
+                  !
+                  !         8. Thackston - Krenkel [1966]
+                  !
+                  call get_log_unit_number(lunrep)
+                  write (lunrep, *) &
+                     ' Reaeration formula 8 has not been implemented'
+                  write (*, *) ' Reaeration formula 8 has not been implemented'
+                  call stop_with_error()
 
-                    case(4)
-                        !
-                        !         4. Scaled version of O'Connor - Dobbins [1958]
-                        !
-                        REARRC = 0.0
-                        IF (VELOC  > 1E-30) &
-                                REARRC = 3.863 * (VELOC**0.5) / (TOTDEP**0.5) * REARKL
+               case (9)
+                  !
+                  !         9. DBS
+                  !
+                  rearrc = (0.30 + rearkl * 0.028 * vwind**2)
 
-                    case(5)
-                        !
-                        !         5. Owens - Edwards - Gibb [1964]
-                        !
-                        REARRC = 0.0
-                        IF (VELOC  > 1E-30) &
-                                REARRC = 5.322 * (VELOC**0.67) / (TOTDEP**0.85)
+               case (10)
+                  !
+                  !        10. Wanninkhof Oxygen
+                  !
+                  if (sal > 5.0) then
+                     sc = a_o + b_o * temp + c_o * temp**2 + d_o * temp**3 + e_o * temp**4
+                     sc20 = a_o + b_o * 20.0 + c_o * 20.0**2 + d_o * 20.0**3 + e_o * 20.0**4
+                  else
+                     sc = d1 + d2 * temp + d3 * temp**2 + d4 * temp**3 + d5 * temp**4
+                     sc20 = d1 + d2 * 20.0 + d3 * 20.0**2 + d4 * 20.0**3 + d5 * 20.0**4
+                  end if
+                  klrear = 0.31 * vwind**2 * (sc / sc20)**(-0.5) * 24./100.
+                  rearrc = klrear
 
-                    case(6)
-                        !
-                        !         6. Langbien - Durum [1967]
-                        !
-                        REARRC = 0.0
-                        IF (VELOC  > 1E-30) &
-                                REARRC = 11.23 * VELOC / (TOTDEP**0.333)
+               case (11)
+                  !
+                  !        11. Wanninkhof CO2
+                  !
+                  if (sal > 5.0) then
+                     sc = a_co + b_co * temp + c_co * temp**2 + d_co * temp**3 + e_co * temp**4
+                     sc20 = a_co + b_co * 20.0 + c_co * 20.0**2 + d_co * 20.0**3 + e_co * 20.0**4
+                  else
+                     sc = d1 + d2 * temp + d3 * temp**2 + d4 * temp**3 + d5 * temp**4
+                     sc20 = d1 + d2 * 20.0 + d3 * 20.0**2 + d4 * 20.0**3 + d5 * 20.0**4
+                  end if
+                  b_enha = 2.5 * (.5246 + 1.6256e-2 * temp + 4.9946e-4 * temp**2)
+                  klrear = (b_enha + 0.31 * vwind**2) * (sc / sc20)**(-0.5) * 24./100.
+                  rearrc = klrear
 
-                    case(7)
-                        !
-                        !         7. Van Pagee[1978] and Delvigne [1980]
-                        !
-                        IF (VELOC  > 1E-30) THEN
-                            REARRC = (REARKL * 0.065 * VWIND**2 + &
-                                    3.86 * SQRT(VELOC / TOTDEP))
-                        ELSE
-                            REARRC = REARKL * 0.065 * VWIND**2
-                        ENDIF
+               case (12)
 
-                    case(8)
-                        !
-                        !         8. Thackston - Krenkel [1966]
-                        !
-                        CALL get_log_unit_number(LUNREP)
-                        WRITE (LUNREP, *) &
-                                ' Reaeration formula 8 has not been implemented'
-                        WRITE (*, *) ' Reaeration formula 8 has not been implemented'
-                        CALL stop_with_error()
+                  !     Note this option is not included in the process documentation!
+                  !
+                  !         12. Hybride formulation using O'Connor - Dobbins [1958]
+                  !             and Owens - Edwards - Gibb [1964]
+                  !
+                  rearrc = 0.0
+                  hcrt = 3.93 / 5.32 * totdep**0.35
+                  if (veloc > 1e-30) then
+                     if (veloc < hcrt**6) then
+                        rearrc = 3.93 * (veloc**0.5) / (totdep**0.5)
+                     else
+                        rearrc = 5.32 * (veloc**0.67) / (totdep**0.85)
+                     end if
+                  end if
+                  rearrc = max(minrrc, rearrc)
 
-                    case(9)
-                        !
-                        !         9. DBS
-                        !
-                        REARRC = (0.30 + REARKL * 0.028 * VWIND**2)
+               case (13)
+                  !
+                  !        13. Guerin O2  - only fresh water
+                  !            Guerin CO2 - only fresh water
+                  !            Guerin CH4 - only fresh water
+                  !
+                  sc = d1 + d2 * temp + d3 * temp**2 + d4 * temp**3 + d5 * temp**4
+                  sc20 = d1 + d2 * 20.0 + d3 * 20.0**2 + d4 * 20.0**3 + d5 * 20.0**4
 
-                    case(10)
-                        !
-                        !        10. Wanninkhof Oxygen
-                        !
-                        IF (SAL > 5.0) THEN
-                            SC = A_O + B_O * TEMP + C_O * TEMP**2 + D_O * TEMP**3 + E_O * TEMP**4
-                            SC20 = A_O + B_O * 20.0 + C_O * 20.0**2 + D_O * 20.0**3 + E_O * 20.0**4
-                        ELSE
-                            SC = D1 - D2 * TEMP + D3 * TEMP**2 - D4 * TEMP**3
-                            SC20 = D1 - D2 * 20.0 + D3 * 20.0**2 - D4 * 20.0**3
-                        ENDIF
-                        KLREAR = 0.31 * VWIND**2 * (SC / SC20)**(-0.5) * 24. / 100.
-                        REARRC = KLREAR
+                  klrear = (a * exp(b1 * vwind**b2) + c1 * rain**c2) * (sc / sc20)**(-0.67)
+                  rearrc = klrear
 
-                    case(11)
-                        !
-                        !        10. Wanninkhof CO2
-                        !
-                        IF (SAL > 5.0) THEN
-                            SC = A_CO + B_CO * TEMP + C_CO * TEMP**2 + D_CO * TEMP**3 + E_CO * TEMP**4
-                            SC20 = A_CO + B_CO * 20.0 + C_CO * 20.0**2 + D_CO * 20.0**3 + E_CO * 20.0**4
-                        ELSE
-                            SC = D1 - D2 * TEMP + D3 * TEMP**2 - D4 * TEMP**3
-                            SC20 = D1 - D2 * 20.0 + D3 * 20.0**2 - D4 * 20.0**3
-                        ENDIF
-                        B_ENHA = 2.5 * (.5246 + 1.6256E-2 * TEMP + 4.9946E-4 * TEMP**2)
-                        KLREAR = (B_ENHA + 0.31 * VWIND**2) * (SC / SC20)**(-0.5) * 24. / 100.
-                        REARRC = KLREAR
+                  reartc = 1.0
+                  !
+               case default
+                  call get_log_unit_number(lunrep)
+                  write (lunrep, *) ' Invalid option for reaeration formula'
+                  write (*, *) ' Invalid option for reaeration formula'
+                  call stop_with_error()
+               end select
 
-                    case(12)
+               process_space_real(IP27) = rearrc / depth
 
-                        !     Note this option is not included in the process documentation!
-                        !
-                        !         12. Hybride formulation using O'Connor - Dobbins [1958]
-                        !             and Owens - Edwards - Gibb [1964]
-                        !
-                        REARRC = 0.0
-                        HCRT = 3.93 / 5.32 * TOTDEP**0.35
-                        IF (VELOC  > 1E-30) THEN
-                            IF (VELOC < HCRT**6) THEN
-                                REARRC = 3.93 * (VELOC**0.5) / (TOTDEP**0.5)
-                            ELSE
-                                REARRC = 5.32 * (VELOC**0.67) / (TOTDEP**0.85)
-                            ENDIF
-                        ENDIF
-                        REARRC = MAX(MINRRC, REARRC)
+               !     Calculation of rearation flux ( M.L-1.DAY)
+               !     negatieve zuurstof wordt 0 gemaakt i.v.m. deficiet berekening!
+               !     Wanninkhof, don't use temperature dependency
 
-                    case(13)
-                        !
-                        !        13. Guerin O2  - only fresh water
-                        !            Guerin CO2 - only fresh water
-                        !            Guerin CH4 - only fresh water
-                        !
-                        SC = D1 - D2 * TEMP + D3 * TEMP**2 - D4 * TEMP**3
-                        SC20 = D1 - D2 * 20.0 + D3 * 20.0**2 - D4 * 20.0**3
+               o2 = max(o2, 0.0)
+               if (ifrear == 10 .or. ifrear == 11) then
+                  fl1 = rearrc * (oxsat - o2) / depth
+               else
+                  temp20 = temp - 20.0
+                  tmpcf = reartc**temp20
+                  if (rearrc <= maxrrc) then
+                     rearrc = rearrc * tmpcf
+                  end if
+                  fl1 = min(1.0 / delt, rearrc * (1 - fcover) / depth) * (oxsat - o2)
+               end if
 
-                        KLREAR = (A * EXP(B1 * VWIND**B2) + C1 * Rain**C2) * (SC / SC20)**(-0.67)
-                        REARRC = KLREAR
+               !     Limitation of FL(1) to amount of oxygen present
+               if (fl1 < 0.0) then
+                  fl1 = max(-1.*o2 / delt, fl1)
+               end if
+               fl(1 + iflux) = fl1
 
-                        REARTC = 1.0
-                        !
-                    case default
-                        CALL get_log_unit_number(LUNREP)
-                        WRITE (LUNREP, *) ' Invalid option for reaeration formula'
-                        WRITE (*, *) ' Invalid option for reaeration formula'
-                        CALL stop_with_error()
-                    end select
-
-                    process_space_real (IP26) = REARRC / DEPTH
-
-                    !     Calculation of rearation flux ( M.L-1.DAY)
-                    !     negatieve zuurstof wordt 0 gemaakt i.v.m. deficiet berekening!
-                    !     Wanninkhof, don't use temperature dependency
-
-                    O2 = MAX (O2, 0.0)
-                    IF (IFREAR == 10 .OR. IFREAR == 11) THEN
-                        FL1 = REARRC * (OXSAT - O2) / DEPTH
-                    ELSE
-                        TEMP20 = TEMP - 20.0
-                        TMPCF = REARTC ** TEMP20
-                        IF (REARRC<=MAXRRC) THEN
-                            REARRC = REARRC * TMPCF
-                        ENDIF
-                        FL1 = MIN(1.0 / DELT, REARRC * (1 - FCOVER) / DEPTH) * (OXSAT - O2)
-                    ENDIF
-
-                    !     Limitation of FL(1) to amount of oxygen present
-                    IF (FL1 < 0.0) THEN
-                        FL1 = MAX (-1. * O2 / DELT, FL1)
-                    ENDIF
-                    FL(1 + IFLUX) = FL1
-
-                ENDIF
-            ENDIF
-            !
-            IFLUX = IFLUX + NOFLUX
-            IP1 = IP1 + INCREM (1)
-            IP2 = IP2 + INCREM (2)
-            IP3 = IP3 + INCREM (3)
-            IP4 = IP4 + INCREM (4)
-            IP5 = IP5 + INCREM (5)
-            IP6 = IP6 + INCREM (6)
-            IP7 = IP7 + INCREM (7)
-            IP8 = IP8 + INCREM (8)
-            IP9 = IP9 + INCREM (9)
-            IP10 = IP10 + INCREM (10)
-            IP11 = IP11 + INCREM (11)
-            IP12 = IP12 + INCREM (12)
-            IP13 = IP13 + INCREM (13)
-            IP14 = IP14 + INCREM (14)
-            IP15 = IP15 + INCREM (15)
-            IP16 = IP16 + INCREM (16)
-            IP17 = IP17 + INCREM (17)
-            IP18 = IP18 + INCREM (18)
-            IP19 = IP19 + INCREM (19)
-            IP20 = IP20 + INCREM (20)
-            IP21 = IP21 + INCREM (21)
-            IP22 = IP22 + INCREM (22)
-            IP23 = IP23 + INCREM (23)
-            IP24 = IP24 + INCREM (24)
-            IP25 = IP25 + INCREM (25)
-            IP26 = IP26 + INCREM (26)
-            IP27 = IP27 + INCREM (27)
-            !
-        end do
-        !
-        RETURN
-        !
-    END
+            end if
+         end if
+         !
+         iflux = iflux + noflux
+         ip1 = ip1 + increm(1)
+         ip2 = ip2 + increm(2)
+         ip3 = ip3 + increm(3)
+         ip4 = ip4 + increm(4)
+         ip5 = ip5 + increm(5)
+         ip6 = ip6 + increm(6)
+         ip7 = ip7 + increm(7)
+         ip8 = ip8 + increm(8)
+         ip9 = ip9 + increm(9)
+         ip10 = ip10 + increm(10)
+         ip11 = ip11 + increm(11)
+         ip12 = ip12 + increm(12)
+         ip13 = ip13 + increm(13)
+         ip14 = ip14 + increm(14)
+         ip15 = ip15 + increm(15)
+         ip16 = ip16 + increm(16)
+         ip17 = ip17 + increm(17)
+         ip18 = ip18 + increm(18)
+         ip19 = ip19 + increm(19)
+         ip20 = ip20 + increm(20)
+         ip21 = ip21 + increm(21)
+         ip22 = ip22 + increm(22)
+         ip23 = ip23 + increm(23)
+         ip24 = ip24 + increm(24)
+         ip25 = ip25 + increm(25)
+         ip26 = ip26 + increm(26)
+         ip27 = ip27 + increm(27)
+         ip28 = ip28 + increm(28)
+         !
+      end do
+      !
+      return
+      !
+   end
 
 end module m_rear

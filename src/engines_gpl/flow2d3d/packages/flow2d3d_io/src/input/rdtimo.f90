@@ -448,7 +448,7 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        ! default value allowed => defaul
        !
        restrt = .true.
-       call prop_get_logical(gdp%mdfile_ptr,'*','Restrt',restrt)
+       call prop_get(gdp%mdfile_ptr,'*','Restrt',restrt)
        if (restrt) then
           tfrsti = rdef
        else
@@ -468,17 +468,17 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! Additional output options
     !
     if (lstsci>0) then
-       call prop_get_logical(gdp%mdfile_ptr, '*', 'AdvFlx', flwoutput%difuflux)
-       call prop_get_logical(gdp%mdfile_ptr, '*', 'CumAFl', flwoutput%cumdifuflux)
+       call prop_get(gdp%mdfile_ptr, '*', 'AdvFlx', flwoutput%difuflux)
+       call prop_get(gdp%mdfile_ptr, '*', 'CumAFl', flwoutput%cumdifuflux)
     endif
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'MomTrm'   , flwoutput%momentum)
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'Chezy'    , flwoutput%chezy)
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'DredgeMap', flwoutput%dredge_map)
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'Rough'    , flwoutput%roughness)
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'Vortic'   , flwoutput%vortic)
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'Z0Cur'    , flwoutput%z0cur)
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'Z0Rou'    , flwoutput%z0rou)
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'KfMnMx'   , flwoutput%kf_minmax)
+    call prop_get(gdp%mdfile_ptr, '*', 'MomTrm'   , flwoutput%momentum)
+    call prop_get(gdp%mdfile_ptr, '*', 'Chezy'    , flwoutput%chezy)
+    call prop_get(gdp%mdfile_ptr, '*', 'DredgeMap', flwoutput%dredge_map)
+    call prop_get(gdp%mdfile_ptr, '*', 'Rough'    , flwoutput%roughness)
+    call prop_get(gdp%mdfile_ptr, '*', 'Vortic'   , flwoutput%vortic)
+    call prop_get(gdp%mdfile_ptr, '*', 'Z0Cur'    , flwoutput%z0cur)
+    call prop_get(gdp%mdfile_ptr, '*', 'Z0Rou'    , flwoutput%z0rou)
+    call prop_get(gdp%mdfile_ptr, '*', 'KfMnMx'   , flwoutput%kf_minmax)
     if (flwoutput%cumdifuflux) flwoutput%difuflux = .true.
     !
     ! Old flag: WindUV
@@ -486,32 +486,32 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! New flag: AirOut
     ! have the same meaning
     !
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'WindUV', flwoutput%air)
+    call prop_get(gdp%mdfile_ptr, '*', 'WindUV', flwoutput%air)
     if (.not. flwoutput%air) then
-       call prop_get_logical(gdp%mdfile_ptr, '*', 'AirOut', flwoutput%air)
+       call prop_get(gdp%mdfile_ptr, '*', 'AirOut', flwoutput%air)
     endif
     !
     ! Flag for output of heat fluxes determined by temperature models
     !
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'HeaOut' , flwoutput%temperature)
+    call prop_get(gdp%mdfile_ptr, '*', 'HeaOut' , flwoutput%temperature)
     !
     ! Flag for output at half time steps
     !
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'HdtOut' , flwoutput%halfdt)
+    call prop_get(gdp%mdfile_ptr, '*', 'HdtOut' , flwoutput%halfdt)
     !
     ! Flag for writing barrier height to history file
     !
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'HisBar' , flwoutput%hisbar)
+    call prop_get(gdp%mdfile_ptr, '*', 'HisBar' , flwoutput%hisbar)
     !
     ! Flag for writing flow rates and in-/outflow locations of discharges to history file
     ! For historical reasons this flag is set to true for simulations with culverts.
     !
     if (gdp%gdprocs%culvert) flwoutput%hisdis = .true.
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'HisDis' , flwoutput%hisdis)
+    call prop_get(gdp%mdfile_ptr, '*', 'HisDis' , flwoutput%hisdis)
     !
     ! Flag for additional timers (print extra timers in tri-diag file)
     !
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'AddTim', flwoutput%addtim)
+    call prop_get(gdp%mdfile_ptr, '*', 'AddTim', flwoutput%addtim)
     !
     ! Flag for output of vertical coordinates of layer interfaces to the MAP-file
     !
@@ -522,21 +522,21 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        !
        flwoutput%layering = .true.
     endif
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'LayOut' , flwoutput%layering)
+    call prop_get(gdp%mdfile_ptr, '*', 'LayOut' , flwoutput%layering)
     !
     ! Flag for writing warnings concerning too high advective Courant numbers 
     ! during the whole simulation period instead of with a maximum of 100 warnings
     !
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'CflMsg' , flwoutput%cflmsg)
+    call prop_get(gdp%mdfile_ptr, '*', 'CflMsg' , flwoutput%cflmsg)
     !
     ! Flag for writing wave quantities to the trim-file
     !
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'MapWav' , flwoutput%waveqnt)
+    call prop_get(gdp%mdfile_ptr, '*', 'MapWav' , flwoutput%waveqnt)
     !
     ! smax
     !
     sval = smiss
-    call prop_get_real(gdp%mdfile_ptr, '*', 'SgrThr', sval)
+    call prop_get(gdp%mdfile_ptr, '*', 'SgrThr', sval)
     if (comparereal(real(sval,fp), real(smiss,fp)) /= 0) then
        if (comparereal(real(sval,fp), 1.0e-3_fp) == -1 .or. &
          & comparereal(real(sval,fp), 1.0e3_fp ) ==  1) then
@@ -550,7 +550,7 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! velmax
     !
     sval = smiss
-    call prop_get_real(gdp%mdfile_ptr, '*', 'UgrThr', sval)
+    call prop_get(gdp%mdfile_ptr, '*', 'UgrThr', sval)
     if (comparereal(real(sval,fp), real(smiss,fp)) /= 0) then
        if (comparereal(real(sval,fp), 1.0e-3_fp) == -1 .or. &
          & comparereal(real(sval,fp), 1.0e3_fp ) ==  1) then
@@ -572,5 +572,5 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        write (message,'(a)') 'Writing GLM velocities to map and his file'
        call prterr(lundia, 'G051', trim(message))
     endif
-    call prop_get_integer(gdp%mdfile_ptr, '*', 'IterOutputSteps', flwoutput%iteroutputsteps)
+    call prop_get(gdp%mdfile_ptr, '*', 'IterOutputSteps', flwoutput%iteroutputsteps)
 end subroutine rdtimo

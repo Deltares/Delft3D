@@ -44,14 +44,10 @@
     use gridoperations
 
     use m_observations
+    use m_vfac
+    use m_drawthis
 
     implicit none
-
-    integer :: ndraw
-    double precision :: vfac, vfacforce
-    integer :: nvec
-    common / drawthis / ndraw(50)
-    common / VFAC / VFAC, VFACFORCE, NVEC
 
     !locals
     integer :: k, kk, L, LL, k1, k2, ncol, nn, k3, k4

@@ -101,8 +101,8 @@ class ComparisonRunner(TestSetRunner):
 
             if compare_result.result != "ERROR":
                 table["Result"].append(compare_result.result)
-                table["MaxAbsDiff"].append(compare_result.maxAbsDiff)
-                table["MaxRelDiff"].append(compare_result.maxRelDiff)
+                table["MaxAbsDiff"].append(compare_result.max_abs_diff)
+                table["MaxRelDiff"].append(compare_result.max_rel_diff)
             else:
                 table["Result"].append("<error>")
                 table["MaxAbsDiff"].append("<error>")
@@ -241,9 +241,9 @@ class ComparisonRunner(TestSetRunner):
             i_worst = -1
             for i, (_, _, _, comparison_result) in enumerate(tc_results):
                 if comparison_result.result < result_worst or (
-                    comparison_result.result == result_worst and comparison_result.maxAbsDiff > maxAbsDiff_worst
+                    comparison_result.result == result_worst and comparison_result.max_abs_diff > maxAbsDiff_worst
                 ):
-                    maxAbsDiff_worst = comparison_result.maxAbsDiff
+                    maxAbsDiff_worst = comparison_result.max_abs_diff
                     result_worst = comparison_result.result
                     i_worst = i
 
@@ -264,17 +264,17 @@ class ComparisonRunner(TestSetRunner):
             table["Ratio"].append(
                 test_case_config.run_time / test_case_config.ref_run_time if not is_ignored else "---"
             )
-            table["MaxAbsDiff"].append(w_cr.maxAbsDiff if not is_ignored else "---")
-            table["MaxRelDiff"].append(w_cr.maxRelDiff if not is_ignored else "---")
-            table["Information"].append("at coordinates" + str(w_cr.maxAbsDiffCoordinates) if not is_ignored else "---")
+            table["MaxAbsDiff"].append(w_cr.max_abs_diff if not is_ignored else "---")
+            table["MaxRelDiff"].append(w_cr.max_rel_diff if not is_ignored else "---")
+            table["Information"].append("at coordinates" + str(w_cr.max_abs_diff_coordinates) if not is_ignored else "---")
 
         log_table(table, logger)
         log_separator(logger)
 
     def create_error_result(self, test_case_config: TestCaseConfig, run_data: RunData) -> TestCaseResult:
         comparison_result = ComparisonResult()
-        comparison_result.maxAbsDiff = 0.0
-        comparison_result.maxRelDiff = 0.0
+        comparison_result.max_abs_diff = 0.0
+        comparison_result.max_rel_diff = 0.0
         comparison_result.passed = False
         comparison_result.error = True
         comparison_result.result = "ERROR"

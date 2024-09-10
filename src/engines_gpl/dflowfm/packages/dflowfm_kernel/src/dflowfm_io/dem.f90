@@ -221,7 +221,7 @@ contains
 
       ! next we have the final data elements that we are concerned with
 
-      read (fp, '(i6,3E12.6,2i6)', advance='no') &
+      read (fp, '(i6,3E12.5,2i6)', advance='no') &
          dem_info%accuracyCode, & !< non or unknown accuracy
          dem_info%spatialResolution, & !< x, y, z spatial resolution
          dem_info%profileDimension !< number of rows and columns
@@ -294,6 +294,7 @@ contains
 !! \param arr(:,:) 2D array to store elevation raster data in.
    subroutine read_dem_data(fp, dem_info, arr)
       use unstruc_messages
+      use m_readyy
       integer, intent(in) :: fp
       type(DEMInfo), intent(inout) :: dem_info
       integer, intent(out) :: arr(:, :)

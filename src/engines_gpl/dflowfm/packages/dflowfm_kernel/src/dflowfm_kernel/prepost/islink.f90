@@ -42,22 +42,18 @@
      use geometry_module, only: pinpok, normalout
      use m_sferic, only: jsferic, jasfer3D
      use gridoperations
+     use m_howtoview
 
      implicit none
      integer, intent(out) :: LL !< Number of first netlink found, 0 if none.
      double precision, intent(in) :: XP, YP !< Coordinates of input point.
      double precision, intent(out) :: ZP !< Z-coordinate of netlink's center.
-
-     integer :: jav, jview
      integer :: k1, k2, l, in, jins_old
      double precision :: xkk
-     double precision :: xyz
      double precision :: ykk
      double precision :: zkk
      double precision :: xprange(4), yprange(4)
      double precision :: xk1p, yk1p, xk2p, yk2p, rx, ry
-
-     common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
      double precision :: H = 0.5d0
 
 ! store

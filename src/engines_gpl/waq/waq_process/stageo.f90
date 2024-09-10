@@ -219,7 +219,7 @@ contains
                     process_space_real(IP10) = 0.0
 
                     IF (NOWARN < MAXWARN) THEN
-                        CALL extract_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
+                        CALL extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
                         IF (ATTRIB /= 0) THEN
                             NOWARN = NOWARN + 1
                             WRITE(*, '(a,i0)') 'Geometric mean could not be determined for segment ', ISEG

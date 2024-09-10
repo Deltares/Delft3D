@@ -31,13 +31,10 @@
 !
 
       subroutine ISOCOL2(VALC, NCOL)
+         use m_depmax2, only: val=>val2, ncols=>ncols2, nv=>nv2
          implicit none
          integer :: i, ncol
          double precision :: valc
-
-         integer :: NCOLS, NV, NIS, NIE, JAAUTO
-         double precision :: VMAX, VMIN, DV, VAL
-         common / DEPMAX2 / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
 
          do I = NV, 1, -1
             if (VALC >= VAL(I)) then

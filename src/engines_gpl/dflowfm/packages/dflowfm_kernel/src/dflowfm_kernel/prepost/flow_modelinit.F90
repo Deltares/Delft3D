@@ -69,7 +69,8 @@
     use m_sedtrails_netcdf, only: sedtrails_loadNetwork
     use m_sedtrails_stats, only: default_sedtrails_stats, alloc_sedtrails_stats
     use fm_statistical_output
-    use unstruc_display, only: ntek, jaGUI
+    use unstruc_display, only: ntek
+    use m_gui
     use m_debug
     use m_flow_flowinit
     use m_pre_bedlevel, only: extrapolate_bedlevel_at_boundaries

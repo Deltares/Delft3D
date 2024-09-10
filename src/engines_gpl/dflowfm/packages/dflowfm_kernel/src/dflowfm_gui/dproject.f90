@@ -37,9 +37,6 @@
     implicit none
     double precision :: x8, y8, xx4, yy4
     integer :: mode
-
-    ! COMMON /SFERZOOM/ X0,Y0,FAC,X1W,Y1W,X2W,Y2W  ! GRADEN
-
     double precision :: X, Y, XX, YY, SX, CX, SY, CY, SY0, CY0, RR, C, SC, CC, RN
     double precision, save :: EPS = 1.d-20
     X = X8

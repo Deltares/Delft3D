@@ -102,7 +102,7 @@ module m_readObservCrossSections
       ierr = 0
       major = 0
       minor = 0
-      call prop_get_version_number(md_ptr, major = major, minor = minor, success = success)
+      call get_version_number(md_ptr, major = major, minor = minor, success = success)
       if (.not. success .or. major < ObservCrsFileMajorVersion) then
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of observation cross section file detected in '''//trim(CrossSectionFile)//''': v', major, minor, '. Current format: v',ObservCrsFileMajorVersion,ObservCrsFileMinorVersion,'. Ignoring this file.'
          call warn_flush()
@@ -123,25 +123,25 @@ module m_readObservCrossSections
         
          if (tree_get_name(md_ptr%child_nodes(i)%node_ptr) == 'observationcrosssection') then
             ! Read Data
-            call prop_get_string(md_ptr%child_nodes(i)%node_ptr, 'observationcrosssection', 'name', observcrsName, success)
+            call prop_get(md_ptr%child_nodes(i)%node_ptr, 'observationcrosssection', 'name', observcrsName, success)
             if (success) then
-               call prop_get_string(md_ptr%child_nodes(i)%node_ptr, 'observationcrosssection', 'branchID', branchID, success)
+               call prop_get(md_ptr%child_nodes(i)%node_ptr, 'observationcrosssection', 'branchID', branchID, success)
                if (success) then ! the crs is defined by branchid and chainage
                   formatbr = 1
-                  call prop_get_double(md_ptr%child_nodes(i)%node_ptr, 'observationcrosssection', 'chainage', chainage, success)
+                  call prop_get(md_ptr%child_nodes(i)%node_ptr, 'observationcrosssection', 'chainage', chainage, success)
                else ! the crs is defined by x, y coordinate
                   formatbr = 0
-                  call prop_get_integer(md_ptr%child_nodes(i)%node_ptr, 'observationcrosssection', 'numCoordinates', numv, success) ! UNST-2390: new consistent keyword
+                  call prop_get(md_ptr%child_nodes(i)%node_ptr, 'observationcrosssection', 'numCoordinates', numv, success) ! UNST-2390: new consistent keyword
                   if (success) then
                      if (numv < 2) then
                         call SetMessage(LEVEL_ERROR, 'Observation cross section '''//trim(observcrsName)//''' should have more than 1 point (numCoordinates > 1).')     
                         cycle
                      else if (numv > 0) then
                         call realloc(xx, numv)
-                        call prop_get_doubles(md_ptr%child_nodes(i)%node_ptr, 'observationcrosssection', 'xCoordinates', xx, numv, success)
+                        call prop_get(md_ptr%child_nodes(i)%node_ptr, 'observationcrosssection', 'xCoordinates', xx, numv, success)
                         if (success) then
                            call realloc(yy, numv)
-                           call prop_get_doubles(md_ptr%child_nodes(i)%node_ptr, 'observationcrosssection', 'yCoordinates', yy, numv, success)
+                           call prop_get(md_ptr%child_nodes(i)%node_ptr, 'observationcrosssection', 'yCoordinates', yy, numv, success)
                         end if
                      end if
                   end if

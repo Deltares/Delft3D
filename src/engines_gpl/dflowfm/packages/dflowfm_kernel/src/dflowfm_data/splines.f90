@@ -31,7 +31,8 @@
 !
 module M_splines
    use m_missing, only: dxymis
-
+   use m_readyy
+   
    implicit none
 
    double precision, dimension(:, :), allocatable :: xsp, ysp, xsp2, ysp2

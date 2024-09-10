@@ -39,12 +39,14 @@
       use m_sferic
       use m_flowtimes
       use mathconsts, only: sqrt2_hp
+      use m_transform_wave_physics
 
       use unstruc_display
 
       implicit none
 
       integer :: k1, k2, k, L
+      integer :: ierror
       double precision :: hh, hw, tw, cs, sn, uorbi, rkw, ustt, uwi
 
       ! Fetch models
@@ -78,31 +80,45 @@
       end if
 
       ! SWAN
-      if ((jawave == 3 .or. jawave == 6) .and. .not. flowWithoutWaves) then
-         if (jawave == 6) then
+      if ((jawave == 3 .or. jawave >= 6) .and. .not. flowWithoutWaves) then
+         if (jawave == 6 .or. jawave == 7) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
             hwav = hwavcom
          end if
          hwav = min(hwav, gammax * hs)
-         call wave_uorbrlabda()
+         twav = twavcom
+         !
+         ! Needed here, because we need wave mass fluxes to calculate stokes drift
+         if (jawave == 7) then
+            call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
+                               & sxwav, sywav, mxwav, mywav, &
+                               & distot, dsurf, dwcap, &
+                               & ndx, 1, hwav, twav, &
+                               & ag, .true., waveforcing, &
+                               & JONSWAPgamma0, sbxwav, sbywav, ierror)
+         end if
+         !
+         call wave_uorbrlabda() ! twav is potentially changed above
+         !
          if (kmx == 0) then
             call wave_comp_stokes_velocities()
          end if
       end if
       !
-      if ((jawave == 3 .or. jawave == 6) .and. flowWithoutWaves) then
+      if ((jawave == 3 .or. jawave >= 6) .and. flowWithoutWaves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          ! Only compute uorb
          ! Works both for 2D and 3D
-         if (jawave == 6) then
+         if (jawave == 6 .or. jawave == 7) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
             hwav = hwavcom
          end if
          hwav = min(hwav, gammax * hs)
+         twav = twavcom
          call wave_uorbrlabda() ! hwav gets depth-limited here
       end if
       !
@@ -124,8 +140,8 @@
                   ustokes(L) = 0d0; vstokes(L) = 0d0
                else
                   hw = 0.5d0 * (hwav(k1) + hwav(k2)); tw = .5d0 * (twav(k1) + twav(k2))
-                  cs = 0.5 * (cos(phiwav(k1) * dg2rd) + cos(phiwav(k2) * dg2rd))
-                  sn = 0.5 * (sin(phiwav(k1) * dg2rd) + sin(phiwav(k2) * dg2rd))
+                  cs = 0.5d0 * (cosd(phiwav(k1)) + cosd(phiwav(k2)))
+                  sn = 0.5d0 * (sind(phiwav(k1)) + sind(phiwav(k2)))
                   call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
                   ustokes(L) = ustt * (csu(L) * cs + snu(L) * sn)
                   vstokes(L) = ustt * (-snu(L) * cs + csu(L) * sn)

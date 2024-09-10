@@ -34,16 +34,14 @@
          use unstruc_colors
          use m_flow, only: nplot
          use m_GlobalParameters, only: INDTP_ALL
+         use m_locatora
          implicit none
-         integer :: jashow
-         integer :: jmouse
          integer :: ma
          integer :: na
          integer :: k
-         double precision :: x, y, xa, ya, xlc, ylc, xx, yy
+         double precision :: x, y, xx, yy
          real :: xr, yr
          !    VEEG OUDE CROSS UIT EN ZET NIEUWE
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
 
          if (X == 0 .and. Y == 0) then
             MA = 25

@@ -33,10 +33,10 @@
       subroutine RSORT3new(X, Y, Z, N)
          use stdlib_sorting, only: sort_index
          implicit none
+         integer :: k, n
          double precision :: X(N), Y(N), Z(N)
          integer, allocatable :: ind(:)
          double precision, allocatable :: h(:)
-         integer :: k, n
 
          allocate (ind(n), h(n))
 

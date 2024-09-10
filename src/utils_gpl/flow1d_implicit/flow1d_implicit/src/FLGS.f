@@ -248,7 +248,7 @@ c
 c
 c     Declaration of local variables:
 c
-      integer           iup, idown, formno, lstnam
+      integer           iup, idown, formno
       logical           strsta
       double precision  hunp1 ,hdnp1 ,hun   ,hdn   ,uu  ,ud ,qa ,qdhu ,
      +                  qdhd  ,teken ,wstr  ,zs    ,w2  ,zb2,dg ,
@@ -257,8 +257,6 @@ c
      +                  qun   ,qunp1 ,wu    ,au    ,qdqu,
      +                  gdub  ,lamdub,reldub,dhsdub,dum1
       real              astr, abran, hcrit, hstr
-      character(len=8)  abrtxt, astrtxt
-      character(len=40) strnam
 c
       integer     qol
       parameter  (qol=4)

@@ -43,19 +43,16 @@
       use unstruc_api
       use dfm_error
       use unstruc_messages
+      use m_helpnow
+      use m_qnrgf
+      use m_settings
+      use m_qnerror
       implicit none
-      double precision :: cdflow
-      double precision :: cfric
-      double precision :: fbouy
-      double precision :: fdyn
-      integer :: janet
       integer :: jaquit, jazoomshift, nshift
       integer :: k
       integer :: l1
       integer :: l2
       integer :: l3
-      integer :: moments
-      integer :: nlevel
       integer :: nput
       integer :: num
       integer :: numb
@@ -64,16 +61,10 @@
       integer :: MODE, KEY, NETFLOW
       integer :: newmode, mout
       double precision :: xp, yp, RD
-      integer :: JQN
       integer :: iresult
       integer :: ja4
       logical, external :: ispolystartend
-
-      common / HELPNOW / WRDKEY, NLEVEL
-      common / QNRGF / JQN
-      common / SETTINGS / FDYN, FBOUY, CDFLOW, CFRIC, MOMENTS, JANET
-
-      character TEX * 26, WRDKEY * 40, fnam * 255
+      character TEX * 26, fnam * 255
 
       if (jampi == 1) then
          write (tex, "(' EDITPOL:', I5)") my_rank

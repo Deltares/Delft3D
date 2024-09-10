@@ -114,6 +114,7 @@ subroutine test_read_snapped_obs_points
     integer, parameter                           :: N_OBS_POINTS = 4
     integer                                      :: i
     integer                                      :: istat
+    logical                                      :: success_
     integer          , dimension(N_OBS_POINTS)   :: ref_k
     double precision , dimension(2,N_OBS_POINTS) :: refdata
     character(len=40), dimension(N_OBS_POINTS)   :: refnames
@@ -136,14 +137,14 @@ subroutine test_read_snapped_obs_points
     call resetFullFlowModel()
     call increaseNetw(kmax, lmax)
     !
-    istat = CHANGEDIRQQ("observations_snapped")
+    success_ = CHANGEDIRQQ("observations_snapped")
     !istat = SYSTEM("echo %CD%")
     
     mdufile = 'Flow1d.mdu'
     call loadModel(mdufile)
     istat = flow_modelinit()
     
-    istat = CHANGEDIRQQ("..")
+    success_ = CHANGEDIRQQ("..")
     !
     do i=1,N_OBS_POINTS
         call assert_equal     (kobs(i)    , ref_k    (i), 'index of snapped observation points incorrect' )

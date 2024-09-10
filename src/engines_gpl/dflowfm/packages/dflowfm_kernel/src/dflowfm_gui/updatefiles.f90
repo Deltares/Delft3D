@@ -32,6 +32,7 @@
 
       subroutine UPDATEFILES(FILNAM, FILIST, NUMFIL, NUMDIR, IFDATE, IFSIZE, IXP, IYP, IH)
          use unstruc_display
+         use m_qnerror
          implicit none
          integer :: i, j, k, L, ic, ic0
          integer :: iday

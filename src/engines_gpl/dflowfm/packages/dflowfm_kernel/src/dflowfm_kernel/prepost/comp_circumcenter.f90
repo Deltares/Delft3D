@@ -35,6 +35,7 @@ subroutine comp_circumcenter(N, xp, yp, xf, yf, xc, yc)
    use m_sferic
    use m_missing
    use geometry_module, only: pinpok, getdxdy, getdx, getdy, cross, normalin
+   use m_qnerror
 
    implicit none
 

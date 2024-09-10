@@ -36,7 +36,7 @@ subroutine fm_wq_processes_ini_sub()
    use m_transport
    use m_partitioninfo
    use unstruc_model
-   use m_flowparameters, only: jawriteDetailedTimers
+   use m_flowparameters, only: jawriteDetailedTimers, jahiswqbot3d, jamapwqbot3d
    use unstruc_files, only: mdia
    use m_flowtimes
    use timers
@@ -66,11 +66,6 @@ subroutine fm_wq_processes_ini_sub()
    jawriteDetailedTimers = 1
    if (timon) call timstrt("fm_wq_processes_ini_sub", ithndl)
 
-   if (kmx > 0) then
-      wqbot3D_output = md_wqbot3D_output
-   else
-      wqbot3D_output = 0
-   end if
    ibflag = 0
 
    substance_file = md_subfile
@@ -917,7 +912,7 @@ subroutine dfm_waq_initexternalforcings(iresult)
    use m_fm_wq_processes
    use timers
    use unstruc_files, only: resolvePath
-   use fm_location_types, only : UNC_LOC_S
+   use fm_location_types, only: UNC_LOC_S
 
    implicit none
    integer, intent(out) :: iresult

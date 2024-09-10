@@ -32,10 +32,10 @@
 
       subroutine SETCOL(NCOL)
          use unstruc_opengl
+         use m_colnow
          implicit none
          integer :: ncol
-         integer :: ncolnow
-         common / COLNOW / NCOLNOW
+
          if (NCOL /= NCOLNOW) then
             call IGRCOLOURN(NCOL)
             call SetColorFromColorNr(NCOL)

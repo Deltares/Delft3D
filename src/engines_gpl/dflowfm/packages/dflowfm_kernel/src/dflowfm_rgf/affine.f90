@@ -33,6 +33,7 @@
       subroutine AFFINE(XX, YY, XG, YG, INI)
          use M_BITMAP
          use string_module, only: find_first_letter
+         use m_qnerror
          implicit none
          integer :: ini
          logical :: jawel

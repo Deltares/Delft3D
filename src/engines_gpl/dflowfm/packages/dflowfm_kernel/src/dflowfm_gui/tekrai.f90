@@ -45,6 +45,9 @@
     use m_strucs
     use fm_external_forcings_data
     use kdtree2Factory
+    use m_depmax
+    use m_vfac
+    use m_drawthis
 
     implicit none
 
@@ -55,17 +58,8 @@
     double precision :: uu, ww
     double precision :: zfac, zgaten
     integer :: l, k, kk, j, kplotorg, n, ncol
-
-    double precision :: VMAX, VMIN, DV, VAL(256)
-    integer :: NCOLS(256), NIS, NIE, nv, JAAUTO
-    double precision :: vfac, vfacforce, doorh
-    integer :: nvec, ng
-
-    common / depmax / vmax, vmin, dv, val, ncols, nv, nis, nie, jaauto
-    common / VFAC / VFAC, VFACFORCE, NVEC
-    common / drawthis / ndraw(50)
-    integer :: ndraw
-
+    double precision :: doorh
+    integer :: ng
     double precision :: zz1, zz2, xz1, xz2
     double precision :: xmn, xmx, ymx, zmx, zmx2, bot, top, xx, yy, bup, xxu, zzu
     double precision :: xp(4), yp(4), zp(4), xxmn, xxmx, zn, dlay, dl, xp1, yp1, qsrck

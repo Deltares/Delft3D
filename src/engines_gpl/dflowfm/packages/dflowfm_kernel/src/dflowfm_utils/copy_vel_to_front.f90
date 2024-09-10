@@ -33,6 +33,7 @@
 !> copy growth velocities to the front, and add points in the front at corners
 subroutine copy_vel_to_front(mc, j, vel, ifront, nf, numf, xf, yf, velf, idxf)
    use m_missing
+   use m_qnerror
 
    implicit none
 

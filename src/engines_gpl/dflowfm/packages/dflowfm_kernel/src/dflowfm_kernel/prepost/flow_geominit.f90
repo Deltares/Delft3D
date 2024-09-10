@@ -51,7 +51,7 @@
     use dfm_error
     use m_ship
     use kdtree2Factory
-    use unstruc_display, only: jagui
+    use m_gui
     use unstruc_messages
     use string_module
     use m_plotdots
@@ -69,6 +69,9 @@
     use unstruc_messages
     use m_find_flownode, only: find_nearest_flownodes_kdtree
     use m_turbulence, only: ln0
+    use m_drawthis
+    use m_readyy
+    use m_qnerror
 
     implicit none
 
@@ -119,8 +122,6 @@
     integer :: numl2D
 
     double precision, external :: cosphiu
-    integer :: ndraw
-    common / DRAWTHIS / ndraw(50)
 
     numl2D = numl - numl1D
 

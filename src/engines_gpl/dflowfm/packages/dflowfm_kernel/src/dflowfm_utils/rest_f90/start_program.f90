@@ -36,8 +36,9 @@
          use unstruc_files
          use unstruc_startup
          use dflowfm_version_module, only: base_name
-         use unstruc_display, only: jaGUI
+         use m_gui
          use unstruc_messages
+         use m_helpnow
 
          implicit none
 
@@ -46,15 +47,9 @@
          integer :: ja
          integer :: jscreen
          integer :: key
-         integer :: nlevel
          integer :: num
          integer :: numclargs
          integer :: nwhat
-         common / HELPNOW / WRDKEY, NLEVEL
-         common / KERN3D / INFOFILE, NAMEGRID, NAMEFIELDI, NAMEFIELDO, GRIDAT
-         common / MESSAGETOSCREEN / JSCREEN
-         character NAMEGRID * 80, NAMEFIELDI * 80, NAMEFIELDO * 80, GRIDAT * 1
-         character WRDKEY * 40
          character(len=8192) :: cmd
          integer :: cmdlen
 

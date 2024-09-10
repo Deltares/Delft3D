@@ -91,11 +91,9 @@ subroutine rdmor(lundia    ,error     ,filmor    ,lsec      ,lsedtot   , &
     integer                                                           :: nxxprog
     integer                                                           :: nxxuser
     integer                                                           :: version
-    real(fp)                   , dimension(3)                         :: tint
     real(fp)                   , dimension(:) , allocatable           :: xxprog
     real(fp)                   , dimension(MAX_NUSERFRAC)             :: rfield
     logical                                                           :: ex       !< Logical flag for file existence
-    logical                                                           :: found
     character(10)                                                     :: versionstring
     character(256)                                                    :: errmsg
     character(256)                                                    :: pxxstr
@@ -165,7 +163,7 @@ subroutine rdmor(lundia    ,error     ,filmor    ,lsec      ,lsedtot   , &
        !
        ! Check version number of mor input file
        !
-       call prop_get_string(mor_ptr, 'MorphologyFileInformation', 'FileVersion', versionstring)
+       call prop_get(mor_ptr, 'MorphologyFileInformation', 'FileVersion', versionstring)
        if (trim(versionstring) == '02.00') then
           version = 2
           !
@@ -174,7 +172,7 @@ subroutine rdmor(lundia    ,error     ,filmor    ,lsec      ,lsedtot   , &
           ! If the file does not exist, assume that 'MorFac' contains a uniform value (real)
           !
           string = ' '
-          call prop_get_string(mor_ptr, 'Morphology', 'MorFac', string)
+          call prop_get(mor_ptr, 'Morphology', 'MorFac', string)
           !
           ! Intel 7.0 crashes on an inquire statement when file = ' '
           !
@@ -382,16 +380,16 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     ! By replacing morupd with bedupd, the parameter morupd is no longer needed.
     ! By default, cmpupd must be true
     !
-    call prop_get_logical(mor_ptr, 'Morphology', 'MorUpd', morpar%bedupd)
+    call prop_get(mor_ptr, 'Morphology', 'MorUpd', morpar%bedupd)
     morpar%cmpupd = .true.
     !
     ! flag for doing bed level updates
     !
-    call prop_get_logical(mor_ptr, 'Morphology', 'BedUpd', morpar%bedupd)
+    call prop_get(mor_ptr, 'Morphology', 'BedUpd', morpar%bedupd)
     !
     ! flag for doing composition updates
     !
-    call prop_get_logical(mor_ptr, 'Morphology', 'CmpUpd', morpar%cmpupd)
+    call prop_get(mor_ptr, 'Morphology', 'CmpUpd', morpar%cmpupd)
     !
     if (morpar%ti_sedtrans > morpar%tmor .or. morpar%ti_sedtrans > morpar%tcmp) then
         errmsg = 'SedTransStt must be smaller than or equal to CmpUpdStt and BedUpdStt (MorStt) in ' // trim(filmor)
@@ -407,7 +405,7 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
         return   
     end if 
     !
-    call prop_get_logical(mor_ptr, 'Morphology', 'NeglectEntrainment', morpar%neglectentrainment)
+    call prop_get(mor_ptr, 'Morphology', 'NeglectEntrainment', morpar%neglectentrainment)
     !
     ! === flag for setting equilibrium sediment concentration profiles
     ! at the open boundaries for sand sediment
@@ -416,21 +414,21 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     ! NeuBcSand will be used when both keywords are present
     !
     string = ' '
-    call prop_get_string(mor_ptr, 'Morphology', 'NeuBcSand', string)
+    call prop_get(mor_ptr, 'Morphology', 'NeuBcSand', string)
     if (string /= ' ') then
-        call prop_get_logical(mor_ptr, 'Morphology', 'NeuBcSand', morpar%eqmbcsand)
+        call prop_get(mor_ptr, 'Morphology', 'NeuBcSand', morpar%eqmbcsand)
     else
-        call prop_get_logical(mor_ptr, 'Morphology', 'EqmBc', morpar%eqmbcsand)
+        call prop_get(mor_ptr, 'Morphology', 'EqmBc', morpar%eqmbcsand)
     end if
     !
     ! === flag for setting equilibrium sediment concentration profiles
     ! at the open boundaries for mud sediment
     !
-    call prop_get_logical(mor_ptr, 'Morphology', 'NeuBcMud', morpar%eqmbcmud)
+    call prop_get(mor_ptr, 'Morphology', 'NeuBcMud', morpar%eqmbcmud)
     !
     ! === flag for including sediment in fluid density calculations
     !
-    call prop_get_logical(mor_ptr, 'Morphology', 'DensIn', morpar%densin)
+    call prop_get(mor_ptr, 'Morphology', 'DensIn', morpar%densin)
     !
     ! === factor for setting aks height
     !
@@ -560,9 +558,9 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     ! === flag for parametric epsilon distribution in case of K-Eps model
     !
-    call prop_get_logical(mor_ptr, 'Morphology', 'EpsPar', morpar%epspar)
+    call prop_get(mor_ptr, 'Morphology', 'EpsPar', morpar%epspar)
     !
-    call prop_get_integer(mor_ptr, 'Morphology', 'IopKCW', morpar%iopkcw)
+    call prop_get(mor_ptr, 'Morphology', 'IopKCW', morpar%iopkcw)
     !
     ! === calibration factor for 2D suspended load relaxation time
     !
@@ -574,15 +572,15 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     ! === flag for updating bed level at inflow boundary
     !
-    call prop_get_logical(mor_ptr, 'Morphology', 'UpdInf', morpar%updinf)
+    call prop_get(mor_ptr, 'Morphology', 'UpdInf', morpar%updinf)
     !
     ! === flag for merging bottoms of parallel runs
     !
-    call prop_get_logical(mor_ptr, 'Morphology', 'Multi', morpar%multi)
+    call prop_get(mor_ptr, 'Morphology', 'Multi', morpar%multi)
     !
        ! === bermslope (FM only)
        !
-       call prop_get_logical(mor_ptr, 'Morphology', 'bermslopetransport' , morpar%bermslopetransport)
+       call prop_get(mor_ptr, 'Morphology', 'bermslopetransport' , morpar%bermslopetransport)
        if (morpar%bermslopetransport) then
           call prop_get(mor_ptr, 'Morphology', 'bermslope'          , morpar%bermslope         )
           call prop_get(mor_ptr, 'Morphology', 'bermslopefac'       , morpar%bermslopefac      )
@@ -607,11 +605,11 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     call prop_get(mor_ptr, 'Morphology', 'DzMax', morpar%dzmax)
     call prop_get(mor_ptr, 'Morphology', 'CaMax', morpar%camax)
-    call prop_get_logical(mor_ptr, 'Morphology', 'OldMudFrac', morpar%oldmudfrac)
+    call prop_get(mor_ptr, 'Morphology', 'OldMudFrac', morpar%oldmudfrac)
     !
     ! Hiding & exposure
     !
-    call prop_get_integer(mor_ptr, 'Morphology', 'IHidExp', morpar%ihidexp)
+    call prop_get(mor_ptr, 'Morphology', 'IHidExp', morpar%ihidexp)
     if ( morpar%ihidexp < 1 .or. morpar%ihidexp > 5 ) then
         errmsg = 'IHidExp should be in the range 1 to 5 in ' // trim(filmor)
         call write_error(errmsg, unit=lundia)
@@ -664,7 +662,7 @@ subroutine read_morsys_parameters(mor_ptr, morpar, filmor, lsec, islope, lundia,
         ! factor for spiral flow intensity effect
         call prop_get(mor_ptr, 'Morphology', 'Espir', morpar%espir)
     end if
-    call prop_get_integer(mor_ptr, 'Morphology', 'ISlope', islope)
+    call prop_get(mor_ptr, 'Morphology', 'ISlope', islope)
     if (islope < 1 .or. islope > 4) then
         ! bedslope effect formulation
         errmsg = 'ISlope should be 1 to 4 in ' // trim(filmor)
@@ -716,7 +714,7 @@ subroutine read_morphology_boundary_conditions(mor_ptr, morbnd, bcmfilnam, bcmfi
     type(tree_data)                            , pointer    :: morbound_ptr
 !    
     bcmfilnam = ' '
-    call prop_get_string(mor_ptr, 'Morphology', 'BcFil', bcmfilnam)
+    call prop_get(mor_ptr, 'Morphology', 'BcFil', bcmfilnam)
     if (bcmfilnam /= ' ') then
         call combinepaths(filmor, bcmfilnam)
         !write (lundia, '(3a)') txtput1, ': ', trim(bcmfilnam)
@@ -736,7 +734,7 @@ subroutine read_morphology_boundary_conditions(mor_ptr, morbnd, bcmfilnam, bcmfi
         bndname = tree_get_name( morbound_ptr )
         if ( trim(bndname) /= 'boundary') cycle
         bndname = ' '
-        call prop_get_string(morbound_ptr, '*', 'Name', bndname)
+        call prop_get(morbound_ptr, '*', 'Name', bndname)
         found = .false.
         do j = 1, nto
             !
@@ -756,7 +754,7 @@ subroutine read_morphology_boundary_conditions(mor_ptr, morbnd, bcmfilnam, bcmfi
         !
         ! Read bed boundary condition for open boundary
         !
-        call prop_get_integer(morbound_ptr, '*', 'IBedCond', morbnd(j)%icond)
+        call prop_get(morbound_ptr, '*', 'IBedCond', morbnd(j)%icond)
         if (morbnd(j)%icond<0 .or. morbnd(j)%icond>8) then
             errmsg = 'Invalid bed boundary condition at "'//trim(bndname)//'" in '//trim(filmor)
             call write_error(errmsg, unit=lundia)
@@ -773,6 +771,7 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
     use tree_data_types
     use morphology_data_module
     use properties
+    use string_module, only: str_lower
 
     implicit none
     
@@ -781,13 +780,13 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
     
     character(20)                                :: fluxlimstring
     
-    call prop_get_logical(mor_ptr, 'Numerics', 'Pure1D', mornum%pure1d)
-    call prop_get_logical(mor_ptr, 'Numerics', 'UpwindBedload', mornum%upwindbedload)
-    call prop_get_logical(mor_ptr, 'Numerics', 'LaterallyAveragedBedload', mornum%laterallyaveragedbedload)
-    call prop_get_logical(mor_ptr, 'Numerics', 'MaximumWaterdepth', mornum%maximumwaterdepth)
-    call prop_get_double(mor_ptr, 'Numerics', 'MaximumWaterdepthFraction', mornum%maximumwaterdepthfrac)
+    call prop_get(mor_ptr, 'Numerics', 'Pure1D', mornum%pure1d)
+    call prop_get(mor_ptr, 'Numerics', 'UpwindBedload', mornum%upwindbedload)
+    call prop_get(mor_ptr, 'Numerics', 'LaterallyAveragedBedload', mornum%laterallyaveragedbedload)
+    call prop_get(mor_ptr, 'Numerics', 'MaximumWaterdepth', mornum%maximumwaterdepth)
+    call prop_get(mor_ptr, 'Numerics', 'MaximumWaterdepthFraction', mornum%maximumwaterdepthfrac)
     fluxlimstring = ' '
-    call prop_get_string(mor_ptr, 'Numerics', 'FluxLimiter', fluxlimstring)       
+    call prop_get(mor_ptr, 'Numerics', 'FluxLimiter', fluxlimstring)       
     call str_lower(fluxlimstring)
     select case(fluxlimstring)
         case('minmod')
@@ -807,6 +806,7 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     use morphology_data_module
     use properties
     use message_module
+    use string_module, only: str_lower
     
     implicit none
     
@@ -823,69 +823,69 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     integer                                      :: i, iqnt
     integer                    , dimension(6)    :: stat_flags
         
-    call prop_get_logical(mor_ptr, 'Output', 'Default', defined, success = found)
-    if (.not.found) call prop_get_logical(mor_ptr, 'Output', 'OutDefault', defined, success = found) ! backward compatibility
+    call prop_get(mor_ptr, 'Output', 'Default', defined, success = found)
+    if (.not.found) call prop_get(mor_ptr, 'Output', 'OutDefault', defined, success = found) ! backward compatibility
     if (found) then
         call initmoroutput(moroutput, defined)
     end if
-    call prop_get_logical(mor_ptr, 'Output', 'VelocAtZeta', moroutput%uuuvvv)
-    call prop_get_logical(mor_ptr, 'Output', 'VelocMagAtZeta', moroutput%umod)
-    call prop_get_logical(mor_ptr, 'Output', 'VelocZAtZeta', moroutput%zumod)
-    call prop_get_logical(mor_ptr, 'Output', 'ShearVeloc', moroutput%ustar)
+    call prop_get(mor_ptr, 'Output', 'VelocAtZeta', moroutput%uuuvvv)
+    call prop_get(mor_ptr, 'Output', 'VelocMagAtZeta', moroutput%umod)
+    call prop_get(mor_ptr, 'Output', 'VelocZAtZeta', moroutput%zumod)
+    call prop_get(mor_ptr, 'Output', 'ShearVeloc', moroutput%ustar)
     !
-    call prop_get_integer(mor_ptr, 'Output', 'TranspType',moroutput%transptype)
+    call prop_get(mor_ptr, 'Output', 'TranspType',moroutput%transptype)
     if (moroutput%transptype < 0 .or. moroutput%transptype > 2) then
         errmsg = 'Invalid transport type in '//trim(filmor)
         call write_error(errmsg, unit=lundia)
         error = .true.
         return
     end if
-    call prop_get_logical(mor_ptr, 'Output', 'BedTranspAtFlux'             , moroutput%sbuuvv)
-    call prop_get_logical(mor_ptr, 'Output', 'SuspTranspAtFlux'            , moroutput%ssuuvv)
-    call prop_get_logical(mor_ptr, 'Output', 'BedTranspDueToCurrentsAtZeta', moroutput%sbcuv)
-    call prop_get_logical(mor_ptr, 'Output', 'BedTranspDueToCurrentsAtFlux', moroutput%sbcuuvv)
-    call prop_get_logical(mor_ptr, 'Output', 'BedTranspDueToWavesAtZeta'   , moroutput%sbwuv)
-    call prop_get_logical(mor_ptr, 'Output', 'BedTranspDueToWavesAtFlux'   , moroutput%sbwuuvv)
-    call prop_get_logical(mor_ptr, 'Output', 'SuspTranspDueToWavesAtZeta'  , moroutput%sswuv)
-    call prop_get_logical(mor_ptr, 'Output', 'SuspTranspDueToCurrentsAtZeta'  , moroutput%sscuv)
-    call prop_get_logical(mor_ptr, 'Output', 'SuspTranspDueToWavesAtFlux'  , moroutput%sswuuvv)
-    call prop_get_logical(mor_ptr, 'Output', 'NearBedRefConcentration'     , moroutput%rca)
-    call prop_get_logical(mor_ptr, 'Output', 'EquilibriumConcentration'    , moroutput%rsedeq)
-    call prop_get_logical(mor_ptr, 'Output', 'NearBedTranspCorrAtFlux'     , moroutput%suvcor)
-    call prop_get_logical(mor_ptr, 'Output', 'SourceSinkTerms'             , moroutput%sourcesink)
-    call prop_get_logical(mor_ptr, 'Output', 'ReferenceHeight'             , moroutput%aks)
-    call prop_get_logical(mor_ptr, 'Output', 'SettlingVelocity'            , moroutput%ws)
-    call prop_get_logical(mor_ptr, 'Output', 'RawTransportsAtZeta'         , moroutput%rawtransports)
-    call prop_get_logical(mor_ptr, 'Output', 'Seddif'                      , moroutput%seddif)
-    call prop_get_logical(mor_ptr, 'Output', 'SedParOut'                   , moroutput%sedpar) ! backward compatibility
-    call prop_get_logical(mor_ptr, 'Output', 'SedPar'                      , moroutput%sedpar)
+    call prop_get(mor_ptr, 'Output', 'BedTranspAtFlux'             , moroutput%sbuuvv)
+    call prop_get(mor_ptr, 'Output', 'SuspTranspAtFlux'            , moroutput%ssuuvv)
+    call prop_get(mor_ptr, 'Output', 'BedTranspDueToCurrentsAtZeta', moroutput%sbcuv)
+    call prop_get(mor_ptr, 'Output', 'BedTranspDueToCurrentsAtFlux', moroutput%sbcuuvv)
+    call prop_get(mor_ptr, 'Output', 'BedTranspDueToWavesAtZeta'   , moroutput%sbwuv)
+    call prop_get(mor_ptr, 'Output', 'BedTranspDueToWavesAtFlux'   , moroutput%sbwuuvv)
+    call prop_get(mor_ptr, 'Output', 'SuspTranspDueToWavesAtZeta'  , moroutput%sswuv)
+    call prop_get(mor_ptr, 'Output', 'SuspTranspDueToCurrentsAtZeta'  , moroutput%sscuv)
+    call prop_get(mor_ptr, 'Output', 'SuspTranspDueToWavesAtFlux'  , moroutput%sswuuvv)
+    call prop_get(mor_ptr, 'Output', 'NearBedRefConcentration'     , moroutput%rca)
+    call prop_get(mor_ptr, 'Output', 'EquilibriumConcentration'    , moroutput%rsedeq)
+    call prop_get(mor_ptr, 'Output', 'NearBedTranspCorrAtFlux'     , moroutput%suvcor)
+    call prop_get(mor_ptr, 'Output', 'SourceSinkTerms'             , moroutput%sourcesink)
+    call prop_get(mor_ptr, 'Output', 'ReferenceHeight'             , moroutput%aks)
+    call prop_get(mor_ptr, 'Output', 'SettlingVelocity'            , moroutput%ws)
+    call prop_get(mor_ptr, 'Output', 'RawTransportsAtZeta'         , moroutput%rawtransports)
+    call prop_get(mor_ptr, 'Output', 'Seddif'                      , moroutput%seddif)
+    call prop_get(mor_ptr, 'Output', 'SedParOut'                   , moroutput%sedpar) ! backward compatibility
+    call prop_get(mor_ptr, 'Output', 'SedPar'                      , moroutput%sedpar)
     !
-    call prop_get_logical(mor_ptr, 'Output', 'Bedslope'                    , moroutput%dzduuvv)
-    call prop_get_logical(mor_ptr, 'Output', 'Taub'                        , moroutput%taub)
-    call prop_get_logical(mor_ptr, 'Output', 'Taurat'                      , moroutput%taurat)
+    call prop_get(mor_ptr, 'Output', 'Bedslope'                    , moroutput%dzduuvv)
+    call prop_get(mor_ptr, 'Output', 'Taub'                        , moroutput%taub)
+    call prop_get(mor_ptr, 'Output', 'Taurat'                      , moroutput%taurat)
     !
-    call prop_get_logical(mor_ptr, 'Output', 'Dm'                          , moroutput%dm)
-    call prop_get_logical(mor_ptr, 'Output', 'Dg'                          , moroutput%dg)
-    call prop_get_logical(mor_ptr, 'Output', 'Dgsd'                        , moroutput%dgsd)
-    call prop_get_logical(mor_ptr, 'Output', 'Frac'                        , moroutput%frac)
-    call prop_get_logical(mor_ptr, 'Output', 'MudFrac'                     , moroutput%mudfrac)
-    call prop_get_logical(mor_ptr, 'Output', 'SandFrac'                    , moroutput%sandfrac)
-    call prop_get_logical(mor_ptr, 'Output', 'FixFac'                      , moroutput%fixfac)
-    call prop_get_logical(mor_ptr, 'Output', 'HidExp'                      , moroutput%hidexp)
+    call prop_get(mor_ptr, 'Output', 'Dm'                          , moroutput%dm)
+    call prop_get(mor_ptr, 'Output', 'Dg'                          , moroutput%dg)
+    call prop_get(mor_ptr, 'Output', 'Dgsd'                        , moroutput%dgsd)
+    call prop_get(mor_ptr, 'Output', 'Frac'                        , moroutput%frac)
+    call prop_get(mor_ptr, 'Output', 'MudFrac'                     , moroutput%mudfrac)
+    call prop_get(mor_ptr, 'Output', 'SandFrac'                    , moroutput%sandfrac)
+    call prop_get(mor_ptr, 'Output', 'FixFac'                      , moroutput%fixfac)
+    call prop_get(mor_ptr, 'Output', 'HidExp'                      , moroutput%hidexp)
     !
-    call prop_get_logical(mor_ptr, 'Output', 'CumNetSedimentationFlux'     , moroutput%dmsedcum)
-    call prop_get_logical(mor_ptr, 'Output', 'BedLayerSedimentMass'        , moroutput%msed)
-    call prop_get_logical(mor_ptr, 'Output', 'BedLayerVolumeFractions'     , moroutput%lyrfrac)
-    call prop_get_logical(mor_ptr, 'Output', 'BedLayerDepth'               , moroutput%dpbedlyr)
-    call prop_get_logical(mor_ptr, 'Output', 'BedLayerPorosity'            , moroutput%poros)
+    call prop_get(mor_ptr, 'Output', 'CumNetSedimentationFlux'     , moroutput%dmsedcum)
+    call prop_get(mor_ptr, 'Output', 'BedLayerSedimentMass'        , moroutput%msed)
+    call prop_get(mor_ptr, 'Output', 'BedLayerVolumeFractions'     , moroutput%lyrfrac)
+    call prop_get(mor_ptr, 'Output', 'BedLayerDepth'               , moroutput%dpbedlyr)
+    call prop_get(mor_ptr, 'Output', 'BedLayerPorosity'            , moroutput%poros)
     !
-    call prop_get_logical(mor_ptr, 'Output', 'AverageAtEachOutputTime'     , moroutput%cumavg)
+    call prop_get(mor_ptr, 'Output', 'AverageAtEachOutputTime'     , moroutput%cumavg)
     !
-    call prop_get_logical(mor_ptr, 'Output', 'MainChannelAveragedBedLevel' , moroutput%blave)
+    call prop_get(mor_ptr, 'Output', 'MainChannelAveragedBedLevel' , moroutput%blave)
     !
-    call prop_get_logical(mor_ptr, 'Output', 'MainChannelCellArea'         , moroutput%bamor)
+    call prop_get(mor_ptr, 'Output', 'MainChannelCellArea'         , moroutput%bamor)
     !
-    call prop_get_logical(mor_ptr, 'Output', 'MainChannelWidthAtFlux'      , moroutput%wumor)
+    call prop_get(mor_ptr, 'Output', 'MainChannelWidthAtFlux'      , moroutput%wumor)
     !
     call prop_get(mor_ptr,         'Output', 'MorStatsOutputInterval'      , moroutput%avgintv, 3, exist)
     if (exist) then
@@ -896,7 +896,7 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
         moroutput%avgintv(3) = 0.0_fp
     end if
     string = ' '
-    call prop_get_string (mor_ptr, 'Output', 'MorstatsWeightFactor'         , string)
+    call prop_get (mor_ptr, 'Output', 'MorstatsWeightFactor'         , string)
     call str_lower(string)
     if (index(string,'time') > 0) then
         moroutput%weightflg = MOR_STAT_TIME
@@ -911,13 +911,13 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
         string = ' '
         select case (iqnt)
         case (1)
-            call prop_get_string (mor_ptr, 'Output', 'StatWaterDepth'             , string)
+            call prop_get (mor_ptr, 'Output', 'StatWaterDepth'             , string)
         case (2)
-            call prop_get_string (mor_ptr, 'Output', 'StatVelocity'               , string)
+            call prop_get (mor_ptr, 'Output', 'StatVelocity'               , string)
         case (3)
-            call prop_get_string (mor_ptr, 'Output', 'StatBedLoad'                , string)
+            call prop_get (mor_ptr, 'Output', 'StatBedLoad'                , string)
         case (4)
-            call prop_get_string (mor_ptr, 'Output', 'StatSuspLoad'               , string)
+            call prop_get (mor_ptr, 'Output', 'StatSuspLoad'               , string)
         endselect
         !
         stat_flags(:) = 0
@@ -974,7 +974,7 @@ subroutine set_sediment_percentiles(mor_ptr, moroutput, pxxstr)
     integer                                                     :: lenc
         
     pxxstr = ' '
-    call prop_get_string(mor_ptr, 'Output', 'Percentiles', pxxstr)
+    call prop_get(mor_ptr, 'Output', 'Percentiles', pxxstr)
     lenc = 999
     call str_lower(pxxstr, lenc)
     call remove_leading_spaces(pxxstr, lenc)
@@ -2125,7 +2125,6 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
     real(fp)      , dimension(:,:)  , pointer :: depfac
     character(256), dimension(:)    , pointer :: mflfil
     !
-    integer                   :: i
     integer                   :: istat
     integer                   :: l
     integer                   :: nm
@@ -2133,11 +2132,9 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
     integer                   :: nmub
     real(fp)                  :: rmissval
     logical                   :: ex
-    logical                   :: success
     type(tree_data), pointer  :: sedblock_ptr
     character(256)            :: filfluff
     character(11)             :: fmttmp       ! Format file ('formatted  ') 
-    character(256)            :: parname
     character(256)            :: errmsg
 !
 !! executable statements -------------------------------------------------------
@@ -2195,7 +2192,7 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
         ! uniform or spatially varying value
         !
         filfluff = ''
-        call prop_get_string(mor_ptr, 'FluffLayer', 'BurFluff0', filfluff)
+        call prop_get(mor_ptr, 'FluffLayer', 'BurFluff0', filfluff)
         !
         ! Intel 7.0 crashes on an inquire statement when file = ' '
         !
@@ -2243,7 +2240,7 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
         ! uniform or spatially varying value
         !
         filfluff = ''
-        call prop_get_string(mor_ptr, 'FluffLayer', 'BurFluff1', filfluff)
+        call prop_get(mor_ptr, 'FluffLayer', 'BurFluff1', filfluff)
         !
         ! Intel 7.0 crashes on an inquire statement when file = ' '
         !
@@ -2294,7 +2291,7 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
         ! uniform or spatially varying value
         !
         filfluff = ''
-        call prop_get_string(mor_ptr, 'FluffLayer', 'DepFac', filfluff)
+        call prop_get(mor_ptr, 'FluffLayer', 'DepFac', filfluff)
         !
         ! Intel 7.0 crashes on an inquire statement when file = ' '
         !
@@ -2360,7 +2357,6 @@ subroutine echoflufflyr(lundia    ,error    ,flufflyr)
     integer         , pointer :: iflufflyr
     !
     character(30)             :: txtput1
-    character(10)             :: txtput2
 !
 !! executable statements -------------------------------------------------------
 !

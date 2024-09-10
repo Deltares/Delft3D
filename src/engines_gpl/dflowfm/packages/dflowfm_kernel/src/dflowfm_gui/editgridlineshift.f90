@@ -33,13 +33,14 @@
       subroutine EDITGRIDLINESHIFT(MODE, NFLD, KEY, M1, N1, M2, N2)
          use m_grid
          use unstruc_colors
+         use m_helpnow
+         use m_qnerror
          implicit none
          integer :: MODE, NFLD, KEY, M1, N1, M2, N2
          integer :: newmode
-         common / HELPNOW / WRDKEY, NLEVEL
-         character TEX * 20, WRDKEY * 40, FIELDOP * 40
+         character TEX * 20, FIELDOP * 40
 
-         integer :: NLEVEL, JA, NUM, NWHAT, NPUT, NUMB, JONCE, mp, np, m, n, NCOL
+         integer :: JA, NUM, NWHAT, NPUT, NUMB, JONCE, mp, np, m, n, NCOL
          double precision :: xp, yp
          TEX = ' '//FIELDOP(NFLD)
          WRDKEY = FIELDOP(NFLD)

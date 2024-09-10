@@ -25,21 +25,32 @@
 !! Used by adapters like BMI
 module m_waq_external_access_layer
 
-    use m_waq_precision
-    use m_string_utils
-    use m_delwaq2_main
-    use delwaq2_global_data
-    use delwaq_loads
-    use m_delwaq1
-    use m_getidentification
-    use m_connection_data
-    use m_waq_external_access_layer_utils
+    ! system modules
     use iso_c_binding
     use iso_c_utils
+    use m_waq_precision
+    use m_getidentification
+
+    ! delwaq data modules
+    use delwaq2_global_data
+    use delwaq_loads
+
+    ! delwaq logic modules
+    use m_delwaq1
+    use m_delwaq2_main
+
+    ! utility modules
+    use m_string_utils
+
+    ! logging modules
     use m_logger
     use m_logger_factory
     use m_log_level
     use m_logger_type
+
+    ! sub modules
+    use m_connection_manager
+    use m_connection_data
 
     implicit none
 
@@ -60,8 +71,7 @@ module m_waq_external_access_layer
     integer(c_int), parameter, public :: EXT_MAXSTRLEN = 1024
     integer(c_int), parameter, public :: EXT_MAXDIMS = 6
 
-    ! Store the connections between DELWAQ and external components
-    type(connection_data), allocatable, target, save :: connection(:)
+    type(connection_manager), public :: connections = connection_manager() !< Controls the exchanges between Delwaq and other external components
     class(logger), allocatable, save :: log !< logger to log towards
 
 contains
@@ -259,9 +269,8 @@ contains
     !> Run the model calculation up to a given model time
     !! Always returns 0
     function ext_update_until(tupdate) result(error_code)
-        use delwaq2_global_data
         use messagehandling
-        use iso_c_binding, only: c_double
+        use m_waq_external_access_layer_utils
         use m_actions
         use m_timer_variables
 
@@ -286,7 +295,7 @@ contains
             update_steps = (update_steps + 1) / 2
         end if
 
-        call update_from_incoming_data(connection)
+        call update_from_incoming_data(connections)
 
         do step = 1, update_steps
             call dlwqmain(ACTION_SINGLESTEP, dlwqd)
@@ -395,16 +404,16 @@ contains
     !! The consequence is that we do not know whether a new value has been set or not.
     !! Also noteworthy: DIMR only accepts double-precision numbers.
     function ext_get_value_ptr(c_key, xptr) result(error_code)
-        use m_waq_memory_dimensions
-        use m_real_array_indices
+        use m_connection_parser
+        use m_connection_data_mapping
 
-        character(kind=c_char), intent(in) :: c_key(EXT_MAXSTRLEN)
-        type(c_ptr), intent(inout) :: xptr
+        character(kind=c_char), intent(in) :: c_key(EXT_MAXSTRLEN) !< Incoming string, determines the variable to be set
+        type(c_ptr), intent(inout) :: xptr !< Pointer to the actual value to be picked up by DELWAQ
         integer :: error_code !< 0 on success, 1 if the key was not recognised or an index was out of scope
 
-        type(connection_data) :: con_data !< current connection data object
-        character(EXT_MAXSTRLEN) :: key_given
-        integer(kind=int_wp) :: idx
+        type(connection_data), pointer :: con_data !< current connection data object
+        type(connection_data), allocatable :: new_con_data
+        character(EXT_MAXSTRLEN) :: key_given !< key as string
 
         call init_logger()
         call log%log_debug("ext_get_current_time started")
@@ -414,7 +423,7 @@ contains
         key_given = char_array_to_string(c_key)
 
         call log%log_debug("Get_var: "//trim(key_given))
-        !
+
         ! * Format of the key:
         !   direction|category|item-name-or-number|substance-or-parameter-name
         ! * The part "direction" is meant to indicate whether the data are sent to DELWAQ
@@ -422,42 +431,28 @@ contains
         ! * Categories: BOUND, WASTE, CONST, OBSRV, SEGMN, MODEL
         ! * item-name-or-number: name of the waste load and the like or segment number, could also be "*"
         ! * substance-or-parameter-name: name or "*"
-        !
-        if (.not. allocated(connection)) then
-            allocate (connection(0))
-        end if
 
-        idx = key_index(key_given, connection)
-
-        if (idx <= 0) then
-            call split_key(key_given, connection, idx)
-
-            !
-            ! If the connection string was not recognised or contained invalid information,
-            ! notify the caller.
-            !
-            if (idx <= 0) then
-                xptr = c_null_ptr
-                error_code = 1
-
-                call log%log_debug("ext_get_current_time ended")
-                return
+        con_data => connections%get_connection_by_exchange_name(key_given)
+        if (.not. associated(con_data)) then
+            new_con_data = parse_connection_string(key_given)
+            
+            if (allocated(new_con_data)) then
+                call set_connection_data(new_con_data)
+                                
+                ! use added connection instance                
+                con_data => connections%add_connection(new_con_data)
             end if
         end if
 
-        !
         ! If the connection is outgoing, copy the current value into the pointer,
         ! else leave it to the update routine.
-        !
-        con_data = connection(idx)
-
         if (.not. con_data%incoming) then
             con_data%p_value = dlwqd%buffer%rbuf(con_data%buffer_idx)
         end if
 
         xptr = c_loc(con_data%p_value)
 
-        call log%log_debug("Get_var done "//int_to_str(idx)//real_to_str(con_data%p_value))
+        call log%log_debug("Get_var done "//int_to_str(con_data%buffer_idx)//real_to_str(con_data%p_value))
         call log%log_debug("ext_get_current_time ended")
     end function ext_get_value_ptr
 

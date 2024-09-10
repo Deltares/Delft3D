@@ -119,7 +119,7 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
     integer       , dimension(:)       , pointer :: nl
     logical                            , pointer :: zmodel
 	logical                            , pointer :: nf_src_mom
-	logical                            , pointer :: skipuniqueid
+	logical                            , pointer :: add_uniqueid
 
 !
 ! Global variables
@@ -284,7 +284,7 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
     mmaxgl         => gdp%gdparall%mmaxgl
     nmaxgl         => gdp%gdparall%nmaxgl
     nf_src_mom     => gdp%gdnfl%nf_src_mom
-    skipuniqueid   => gdp%gdnfl%skipuniqueid
+    add_uniqueid   => gdp%gdnfl%add_uniqueid
 
     filename = ' '
     !    
@@ -497,9 +497,7 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
                    !
                    write(c_idis,'(i3.3)') idis
                    !
-                   if (skipuniqueid) then
-                      gdp%uniqueid = ' '
-                   else
+                   if (add_uniqueid) then
                       !
                       ! Improved UniqueId generation:
                       ! Part 2: Use seed array with elements "idis" and "seedIrand". "seedSize" is typically 2.
@@ -520,6 +518,8 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
                          call random_number(dummy)
                          gdp%uniqueid(i:i) = char(floor(65.0_fp+dummy*26.0_fp))
                       enddo
+                   else
+                      gdp%uniqueid = ' '
                    endif
                    !
                    call makedir(trim(gdp%gdnfl%base_path(idis)))

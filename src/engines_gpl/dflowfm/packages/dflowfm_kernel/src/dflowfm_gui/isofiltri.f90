@@ -31,8 +31,9 @@
 !
 
       subroutine ISOFILTRI(X, Y, Z, NCOLR)
+         use m_topix
+         use m_depmax
          implicit none
-         double precision :: dv
          double precision :: dzn
          double precision :: frac
          integer :: i
@@ -40,28 +41,19 @@
          integer :: j
          integer :: j1
          integer :: j2
-         integer :: jaauto
          integer :: ncol
          integer :: ncolr
-         integer :: ncols
-         integer :: nie
-         integer :: nis
          integer :: npics
          integer :: num
-         integer :: nv
          integer :: nx1
          integer :: nx3
          integer :: ny1
          integer :: ny3
-         double precision :: val
-         double precision :: vmax
-         double precision :: vmin
          double precision :: zmax
          double precision :: zmin
          double precision :: znex
          double precision :: znow
          double precision :: X(3), Y(3), Z(3), DX(3), DY(3), DZ(3), XH(10), YH(10)
-         common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
 
          do I = 1, 3
             J = I + 1

@@ -127,7 +127,7 @@ subroutine rdheat(lunmd     ,lundia    ,error     ,nrrec       ,mdfrec    , &
     ! Keyword does not have to exist, temperature might be specified space-varying via the meteo-module
     !
     filtem = fildef
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filtmp', filtem)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filtmp', filtem)
     !
     ! Time varying heat module data in file?
     !
@@ -196,17 +196,17 @@ subroutine rdheat(lunmd     ,lundia    ,error     ,nrrec       ,mdfrec    , &
        !
        filtem = fildef
        ex     = .false.
-                     call prop_get_string(gdp%mdfile_ptr, '*', 'Fwndgr', filtem)
+                     call prop_get(gdp%mdfile_ptr, '*', 'Fwndgr', filtem)
        if (filtem /= fildef) ex = .true.
-       if (.not. ex) call prop_get_string(gdp%mdfile_ptr, '*', 'Fwndgt', filtem)
+       if (.not. ex) call prop_get(gdp%mdfile_ptr, '*', 'Fwndgt', filtem)
        if (filtem /= fildef) ex = .true.
-       if (.not. ex) call prop_get_string(gdp%mdfile_ptr, '*', 'Fwndgc', filtem)
+       if (.not. ex) call prop_get(gdp%mdfile_ptr, '*', 'Fwndgc', filtem)
        if (filtem /= fildef) ex = .true.
-       if (.not. ex) call prop_get_string(gdp%mdfile_ptr, '*', 'Filwr' , filtem)
+       if (.not. ex) call prop_get(gdp%mdfile_ptr, '*', 'Filwr' , filtem)
        if (filtem /= fildef) ex = .true.
-       if (.not. ex) call prop_get_string(gdp%mdfile_ptr, '*', 'Filwt' , filtem)
+       if (.not. ex) call prop_get(gdp%mdfile_ptr, '*', 'Filwt' , filtem)
        if (filtem /= fildef) ex = .true.
-       if (.not. ex) call prop_get_string(gdp%mdfile_ptr, '*', 'Filwc' , filtem)
+       if (.not. ex) call prop_get(gdp%mdfile_ptr, '*', 'Filwc' , filtem)
        if (ex) then
           !
           ! Reading/checking heat data is done by the meteo module,

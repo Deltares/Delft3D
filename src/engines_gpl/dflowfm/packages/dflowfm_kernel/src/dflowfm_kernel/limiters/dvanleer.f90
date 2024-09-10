@@ -29,14 +29,17 @@
 
 !
 !
+module m_dvanleer
+   implicit none
+contains
 
- double precision function dvanleer(d1, d2) ! twee maal vergroot vanwege acl
-    implicit none
-    double precision d1, d2
-    if (d1 * d2 > 0d0) then
-       dvanleer = 2d0 * d2 / (d1 + d2)
-    else
-       dvanleer = 0d0
-    end if
-    return
- end function dvanleer
+   double precision function dvanleer(d1, d2) ! twee maal vergroot vanwege acl
+      double precision d1, d2
+      if (d1 * d2 > 0d0) then
+         dvanleer = 2d0 * d2 / (d1 + d2)
+      else
+         dvanleer = 0d0
+      end if
+      return
+   end function dvanleer
+end module m_dvanleer

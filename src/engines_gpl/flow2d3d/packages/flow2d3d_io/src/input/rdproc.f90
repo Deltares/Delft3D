@@ -315,7 +315,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        endif
        !
        sprval = -1.0_sp
-       call prop_get_real(gdp%mdfile_ptr, '*', 'Exchcf', sprval)
+       call prop_get(gdp%mdfile_ptr, '*', 'Exchcf', sprval)
        lambda = real(sprval,fp)       
        if (comparereal(lambda,-1.0_fp) /= 0) then
           if (ktemp == 3) then
@@ -327,7 +327,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
           endif
        endif
        sprval = 0.0_sp
-       call prop_get_real(gdp%mdfile_ptr, '*', 'Qtotmx', sprval)
+       call prop_get(gdp%mdfile_ptr, '*', 'Qtotmx', sprval)
        qtotmx = real(sprval,fp)       
        if (comparereal(qtotmx,0.0_fp) /= 0) then
           if (ktemp == 3) then
@@ -573,7 +573,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
           ! Locate and read 'Wslake'
           ! 
           Wslake = 0
-          call prop_get_integer(gdp%mdfile_ptr, '*', 'Wslake', Wslake)
+          call prop_get(gdp%mdfile_ptr, '*', 'Wslake', Wslake)
           !
           ! test constistency
           !
@@ -585,7 +585,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
           ! Locate and read 'SDlake'
           !
           SDlake = 0
-          call prop_get_integer(gdp%mdfile_ptr, '*', 'SDlake', SDlake)
+          call prop_get(gdp%mdfile_ptr, '*', 'SDlake', SDlake)
           !
           ! test constistency
           !
@@ -639,7 +639,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
           ! free convection is switched on by default
           !
           free_convec = .true.
-          call prop_get_real(gdp%mdfile_ptr, '*', 'cfrcon', sprval)
+          call prop_get(gdp%mdfile_ptr, '*', 'cfrcon', sprval)
           cfrcon = real(sprval, fp)
           if (comparereal(cfrcon, -999.0_fp) == 0) then
              cfrcon = 0.14_fp
@@ -658,7 +658,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
           ! Locate and read 'SolRad' for possible specification of Nett Solar Radiation in .tem file
           ! Default value is .false.
           !
-          call prop_get_logical(gdp%mdfile_ptr, '*', 'SolRad', solrad_read)
+          call prop_get(gdp%mdfile_ptr, '*', 'SolRad', solrad_read)
           solrad_read2 = solrad_read
           if (solrad_read) then
              call prterr(lundia, 'G051', 'Using solar radiation specified in .tem file')
@@ -675,7 +675,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     !
     keva = -999
     stringval = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Fileva', stringval)
+    call prop_get(gdp%mdfile_ptr, '*', 'Fileva', stringval)
     if (stringval /= ' ') then
        !
        ! FilEva specified
@@ -686,7 +686,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        ! QEvap
        !
        stringval = ' '
-       call prop_get_string(gdp%mdfile_ptr, '*', 'QEvap', stringval)
+       call prop_get(gdp%mdfile_ptr, '*', 'QEvap', stringval)
        if (stringval /= ' ') then
           call small(stringval, 999)
           select case (stringval)   
@@ -762,8 +762,8 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     elseif (ktemp>0) then
        levamas = .false.
        lmaseva = .false.
-       call prop_get_logical(gdp%mdfile_ptr, '*', 'Evamas', levamas)
-       call prop_get_logical(gdp%mdfile_ptr, '*', 'Maseva', lmaseva)
+       call prop_get(gdp%mdfile_ptr, '*', 'Evamas', levamas)
+       call prop_get(gdp%mdfile_ptr, '*', 'Maseva', lmaseva)
        if (levamas .or. lmaseva) then
           if (ktemp == 3) then
              maseva = 0
@@ -1141,7 +1141,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     ! default = no ('N') which means RTCMOD = noRTC (= 0)
     !
     lhelp = .false.
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'Rtcmod', lhelp)
+    call prop_get(gdp%mdfile_ptr, '*', 'Rtcmod', lhelp)
     if (lhelp) then
        rtcmod = ibset(rtcmod,dataFromRTCToFLOW)
     endif
@@ -1193,7 +1193,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        ! Read 'Nharea'
        !
        ival(1) = 0
-       call prop_get_integers(gdp%mdfile_ptr, '*', 'Nharea', ival, 4)
+       call prop_get(gdp%mdfile_ptr, '*', 'Nharea', ival, 4)
        if (ival(1) == 0) then
           !
           ! No non_hyd area specified
@@ -1296,7 +1296,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        endif
        !
        sprval = -999.999_sp
-       call prop_get_real(gdp%mdfile_ptr,'*','Epsnh',sprval)
+       call prop_get(gdp%mdfile_ptr,'*','Epsnh',sprval)
        if (sprval >= 0.0_sp) then
           epsnh = real(sprval,fp)
        else
@@ -1305,7 +1305,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Epsnh     = ', epsnh
        !
        sprval = -999.999_sp
-       call prop_get_real(gdp%mdfile_ptr,'*','Repsnh',sprval)
+       call prop_get(gdp%mdfile_ptr,'*','Repsnh',sprval)
        if ( sprval >= 0.0_sp) then
           rel_epsnh = real(sprval,fp)
        else
@@ -1314,7 +1314,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Rel_epsnh = ', rel_epsnh
        !
        sprval = -999.999_sp
-       call prop_get_real(gdp%mdfile_ptr,'*','Tetaq',sprval)
+       call prop_get(gdp%mdfile_ptr,'*','Tetaq',sprval)
        if ( sprval >= 0.0_sp) then
           tetaq = real(sprval,fp)
        else
@@ -1323,7 +1323,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Tetaq     = ', tetaq
        !
        sprval = -999.999_sp
-       call prop_get_real(gdp%mdfile_ptr,'*','Tetaz',sprval)
+       call prop_get(gdp%mdfile_ptr,'*','Tetaz',sprval)
        if ( sprval >= 0.0_sp) then
           tetaz = real(sprval,fp)
        else
@@ -1332,11 +1332,11 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Tetaz     = ', tetaz
        !
        flag_pp = .false.
-       call prop_get_logical(gdp%mdfile_ptr,'*','Flagpp',flag_pp)
+       call prop_get(gdp%mdfile_ptr,'*','Flagpp',flag_pp)
        write (lundia,*) ' Flagpp    = ', flag_pp
        !
        updwl = ' '
-       call prop_get_string(gdp%mdfile_ptr,'*','Updwl',updwl)
+       call prop_get(gdp%mdfile_ptr,'*','Updwl',updwl)
        call small(updwl,999)
        if ( (updwl /= 'conteq') .and.  (updwl /= 'momcor') ) then
           write (lundia,*) 'WARNING: wrong input for Updwl:', trim(updwl)
@@ -1345,7 +1345,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Updwl     = ', updwl
        !
        precon = ' '
-       call prop_get_string(gdp%mdfile_ptr,'*','Precon',precon)
+       call prop_get(gdp%mdfile_ptr,'*','Precon',precon)
        call small(precon,999)
        if ( (precon /= 'none') .and.  (precon /= 'diag') .and. &
           & (precon /= 'tridiag') .and.  (precon /= 'ilu') ) then
@@ -1355,7 +1355,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Precon    = ', precon
        !
        krylov = ' '
-       call prop_get_string(gdp%mdfile_ptr,'*','Krylov',krylov)
+       call prop_get(gdp%mdfile_ptr,'*','Krylov',krylov)
        call small(krylov,999)
        if ( (krylov /= 'cg') .and.  (krylov /= 'bicgstab') ) then
           write (lundia,*) 'WARNING: wrong input for Krylov'
@@ -1364,7 +1364,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Krylov    = ', krylov
        !
        sprval = -999.999_sp
-       call prop_get_real(gdp%mdfile_ptr,'*','Milu',sprval)
+       call prop_get(gdp%mdfile_ptr,'*','Milu',sprval)
        if ( sprval >= 0.0_sp) then
           milu = real(sprval,fp)
        else

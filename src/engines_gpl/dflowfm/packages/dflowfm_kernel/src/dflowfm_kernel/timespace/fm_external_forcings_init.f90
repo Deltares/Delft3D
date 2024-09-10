@@ -28,81 +28,50 @@
 !-------------------------------------------------------------------------------
 !
 submodule(fm_external_forcings) fm_external_forcings_init
-   use precision_basics, only: hp
+   use precision_basics, only: dp
    implicit none
+
+   integer, parameter :: INI_VALUE_LEN = 256
+   integer, parameter :: INI_KEY_LEN = 32
 
 contains
 
-!> reads new external forcings file and makes required initialisations. Only to be called once as part of fm_initexternalforcings.
+   !> reads new external forcings file and makes required initialisations. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_new(external_force_file_name, iresult)
-      use properties
-      use tree_data_types
-      use tree_structures
+      use properties, only: get_version_number, prop_file
+      use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use messageHandling
-      use fm_external_forcings_data
-      use m_flowgeom
-      use timespace_data, only: WEIGHTFACTORS, POLY_TIM, UNIFORM, SPACEANDTIME, getmeteoerror
-      use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd
-      use m_meteo, only: ec_addtimespacerelation
-      use timespace
-      use timespace_parameters
-      use fm_location_types
-      use string_module, only: str_tolower, strcmpi
-      use system_utils
-      use unstruc_files, only: resolvePath
+      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, thrtt, num_lat_ini_blocks
+      use m_flowgeom, only: ba
+      use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat
+      use string_module, only: str_tolower
+      use system_utils, only: split_filename
       use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
-      use m_missing
       use m_ec_parameters, only: provFile_uniform
       use m_partitioninfo, only: jampi, reduce_sum, is_ghost_node
-      use m_laterals, only: apply_transport
       use m_flow, only: kmx
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use fm_deprecated_keywords, only: deprecated_ext_keywords
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
-      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT, DFM_NOTIMPLEMENTED
-      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypH, btempforcingtypL, btempforcingtypS, itempforcingtyp
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use m_alloc, only: realloc
 
       character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
-      logical :: res
 
+      logical :: res
       logical :: is_successful
       type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
-      type(tree_data), pointer :: node_ptr !
-      integer :: istat !
-      integer, parameter :: INI_KEY_LEN = 32 !
-      integer, parameter :: INI_VALUE_LEN = 256 !
-      character(len=:), allocatable :: group_name !
-      character(len=INI_VALUE_LEN) :: property_name
-      character(len=INI_VALUE_LEN) :: property_value
-      character(len=INI_VALUE_LEN) :: quantity
-      character(len=INI_VALUE_LEN) :: location_file !
-      character(len=INI_VALUE_LEN) :: forcing_file !
-      character(len=INI_VALUE_LEN) :: forcing_file_type !
-      character(len=INI_VALUE_LEN) :: target_mask_file !
-      integer :: i, j !
-      integer :: method
-      integer :: num_items_in_file !
-      integer :: num_items_in_block
-      character(len=1) :: oper !
-      character(len=300) :: rec
-      character(len=INI_VALUE_LEN) :: nodeid
-      character(len=INI_VALUE_LEN) :: branchid
-      character(len=INI_VALUE_LEN) :: loc_id
-      character(len=INI_VALUE_LEN) :: item_type
-      character(len=INI_VALUE_LEN) :: fnam
-      character(len=INI_VALUE_LEN) :: base_dir
-      double precision :: chainage
+      type(tree_data), pointer :: node_ptr
+      integer :: istat
+      character(len=:), allocatable :: group_name
+      integer :: i
+      integer :: num_items_in_file
+      character(len=INI_VALUE_LEN) :: fnam, base_dir
       integer :: ierr ! error number from allocate function
-      integer :: ilattype, nlat
       integer :: k, n, k1
-      integer, dimension(1) :: target_index
       integer :: ib, ibqh, ibt
       integer :: maxlatsg
       integer :: major, minor
-      integer :: loc_spec_type
-      integer :: numcoordinates
-      double precision, allocatable :: xcoordinates(:), ycoordinates(:)
       character(len=:), allocatable :: file_name
       integer, allocatable :: itpenzr(:), itpenur(:)
 
@@ -120,7 +89,7 @@ contains
       ! check FileVersion
       major = 1
       minor = 0
-      call prop_get_version_number(bnd_ptr, major=major, minor=minor, success=is_successful)
+      call get_version_number(bnd_ptr, major=major, minor=minor, success=is_successful)
       if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
             //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
@@ -174,13 +143,13 @@ contains
             ! General block, was already read.
 
          case ('boundary')
-            res = init_boundary_forcings()
+            res = init_boundary_forcings(node_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh)
 
          case ('lateral')
-            res = init_lateral_forcings()
+            res = init_lateral_forcings(node_ptr, base_dir, i, major)
 
          case ('meteo')
-            res = init_meteo_forcings()
+            res = init_meteo_forcings(node_ptr, base_dir, file_name, group_name)
 
          case default ! Unrecognized item in a ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
@@ -226,583 +195,655 @@ contains
       else
          iresult = DFM_WRONGINPUT
       end if
-
-   contains
-
-!> reads boundary blocks from new external forcings file and makes required initialisations
-      function init_boundary_forcings() result(res)
-
-         logical :: res
-
-         type(tree_data), pointer :: block_ptr !
-
-         res = .false.
-         ! First check for required input:
-         call prop_get(node_ptr, '', 'quantity', quantity, is_successful)
-         if (.not. is_successful) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
-            call warn_flush()
-            return
-         end if
-         ib = ib + 1
-
-         call prop_get(node_ptr, '', 'nodeId', location_file, is_successful)
-         if (is_successful) then
-            filetype = NODE_ID
-            method = SPACEANDTIME
-         else
-            filetype = POLY_TIM
-            method = WEIGHTFACTORS
-            call prop_get(node_ptr, '', 'locationFile', location_file, is_successful)
-         end if
-
-         if (is_successful) then
-            call resolvePath(location_file, base_dir)
-         else
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
-            call warn_flush()
-            return
-         end if
-
-         call prop_get(node_ptr, '', 'forcingFile ', forcing_file, is_successful)
-         if (is_successful) then
-            call resolvePath(forcing_file, base_dir)
-         else
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
-            call warn_flush()
-            return
-         end if
-
-         oper = '-'
-         call prop_get(node_ptr, '', 'operand ', oper, is_successful)
-
-         num_items_in_block = 0
-         if (associated(node_ptr%child_nodes)) then
-            num_items_in_block = size(node_ptr%child_nodes)
-         end if
-
-         ! Now loop over all key-value pairs, to support reading *multiple* lines with forcingFile=...
-         do j = 1, num_items_in_block
-            block_ptr => node_ptr%child_nodes(j)%node_ptr
-            ! todo: read multiple quantities
-            property_name = trim(tree_get_name(block_ptr))
-            call tree_get_data_string(block_ptr, property_value, is_successful)
-            if (is_successful) then
-               if (property_name == 'quantity') then
-                  quantity = property_value ! We already knew this
-               else if (strcmpi(property_name, 'locationFile')) then
-                  location_file = property_value ! We already knew this
-                  call resolvePath(location_file, base_dir)
-               else if (strcmpi(property_name, 'forcingFile')) then
-                  forcing_file = property_value
-                  call resolvePath(forcing_file, base_dir)
-                  if (oper /= 'O' .and. oper /= '+') then
-                     oper = 'O'
-                     if (quantity_pli_combination_is_registered(quantity, location_file)) then
-                        oper = '+'
-                     end if
-                  end if
-                  call register_quantity_pli_combination(quantity, location_file)
-                  if (filetype == node_id .or. quantity == 'qhbnd') then
-                     select case (quantity)
-                     case ('waterlevelbnd')
-                        target_index = itpenzr(ib)
-
-                     case ('qhbnd')
-                        ibqh = ibqh + 1
-                        target_index = (/ibqh/)
-                        if (filetype /= node_id) then
-                           location_file = qhpliname(ibqh)
-                        end if
-
-                     case ('dischargebnd')
-                        target_index = itpenur(ib)
-
-                     case default
-                        target_index = (/-1/)
-                     end select
-
-                     if (target_index(1) <= 0) then
-                        ! This boundary has been skipped in an earlier phase (findexternalboundarypoints),
-                        ! so, also do *not* connect it as a spacetimerelation here.
-                        is_successful = .true. ! No failure: boundaries are allowed to remain disconnected.
-                     else
-                        is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=node_id, method=method, &
-                                                                        operand=oper, forcingfile=forcing_file, targetindex=target_index(1))
-                     end if
-                  else
-                     is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
-                                                                     operand=oper, forcingfile=forcing_file)
-                  end if
-                  res = res .and. is_successful ! Remember any previous errors.
-                  oper = '-'
-               else if (property_name == 'operand') then
-                  continue
-               else if (property_name == 'returntime' .or. property_name == 'return_time') then
-                  continue ! used elsewhere to set Thatcher-Harleman delay
-               else if (property_name == 'openboundarytolerance') then
-                  continue ! used in findexternalboundarypoints/readlocationfiles... to set search distance. Not relevant here.
-               else if (property_name == 'nodeid') then
-                  continue
-               else if (property_name == 'bndwidth1d') then
-                  continue
-               else if (property_name == 'bndbldepth') then
-                  continue
-               else
-                  ! res remains unchanged: support ignored lines in ext file.
-                  write (msgbuf, '(9a)') 'Unrecognized line in file ''', file_name, ''' for block [', group_name, ']: ', &
-                     trim(property_name), ' = ', trim(property_value), '. Ignoring this line.'
-                  call warn_flush()
-                  cycle
-               end if
-            end if
-         end do
-         if (.not. is_successful) then ! This addtimespace was not successful
-            rec = getmeteoerror()
-            if (len_trim(rec) > 0) then
-               call mess(LEVEL_WARN, trim(rec))
-            end if
-            call mess(LEVEL_WARN, 'initboundaryblockforcings: Error while initializing quantity '''//trim(quantity)// &
-                      '''. Check preceding log lines for details.')
-         end if
-
-         res = .true.
-
-      end function init_boundary_forcings
-
-      !> reads lateral blocks from new external forcings file and makes required initialisations
-      function init_lateral_forcings() result(res)
-
-         logical :: res
-
-         res = .false.
-
-         loc_id = ' '
-         call prop_get(node_ptr, '', 'Id', loc_id, is_successful)
-         if (.not. is_successful .or. len_trim(loc_id) == 0) then
-            write (msgbuf, '(a,i0,a)') 'Required field ''Id'' missing in lateral (block #', i, ').'
-            call warn_flush()
-            return
-         end if
-
-         ! locationType = optional for lateral
-         ! fileVersion >= 2: locationType = 1d | 2d | all
-         ! fileVersion <= 1: Type         = 1d | 2d | 1d2d
-         item_type = ' '
-         if (major >= 2) then
-            call prop_get(node_ptr, '', 'locationType', item_type, is_successful)
-         else
-            call prop_get(node_ptr, '', 'Type', item_type, is_successful)
-         end if
-         select case (str_tolower(trim(item_type)))
-         case ('1d')
-            ilattype = ILATTP_1D
-         case ('2d')
-            ilattype = ILATTP_2D
-         case ('1d2d', 'all')
-            ilattype = ILATTP_ALL
-         case default
-            ilattype = ILATTP_ALL
-         end select
-
-         call reserve_sufficient_space(apply_transport, numlatsg + 1, 0)
-         call prop_get(node_ptr, '', 'applyTransport', apply_transport(numlatsg + 1), is_successful)
-
-         ! [lateral]
-         ! fileVersion >= 2: nodeId                  => location_specifier = LOCTP_NODEID
-         !                   branchId+chainage       => location_specifier = LOCTP_BRANCH_CHAINAGE
-         !                   numcoor+xcoors+ycoors   => location_specifier = LOCTP_XY_POLYGON
-         ! fileVersion <= 1: locationFile = test.pol => location_specifier = LOCTP_POLYGON_FILE
-         loc_spec_type = imiss
-         nodeId = ' '
-         branchid = ' '
-         chainage = dmiss
-         numcoordinates = imiss
-         !
-         if (major >= 2) then
-            call prop_get(node_ptr, '', 'nodeId', nodeId, is_successful)
-            if (is_successful) then
-               loc_spec_type = LOCTP_NODEID
-               ilattype = ILATTP_1D
-            else
-               call prop_get(node_ptr, '', 'branchId', branchid, is_successful)
-               if (is_successful) then
-                  call prop_get(node_ptr, '', 'chainage', chainage, is_successful)
-               end if
-               if (is_successful) then
-                  if (len_trim(branchid) > 0 .and. chainage /= dmiss .and. chainage >= 0.0d0) then
-                     loc_spec_type = LOCTP_BRANCHID_CHAINAGE
-                     ilattype = ILATTP_1D
-                  end if
-               else
-                  call prop_get(node_ptr, '', 'numCoordinates', numcoordinates, is_successful)
-                  if (is_successful .and. numcoordinates > 0) then
-                     allocate (xcoordinates(numcoordinates), stat=ierr)
-                     allocate (ycoordinates(numcoordinates), stat=ierr)
-                     call prop_get_doubles(node_ptr, '', 'xCoordinates', xcoordinates, numcoordinates, is_successful)
-                     call prop_get_doubles(node_ptr, '', 'yCoordinates', ycoordinates, numcoordinates, is_successful)
-                     if (is_successful) then
-                        loc_spec_type = LOCTP_POLYGON_XY
-                     end if
-                  end if
-               end if
-            end if
-         else ! fileVersion <= 1
-            loc_spec_type = LOCTP_POLYGON_FILE
-            !
-            location_file = ''
-            call prop_get(node_ptr, '', 'locationFile', location_file, is_successful)
-            if (.not. is_successful .or. len_trim(location_file) == 0) then
-               write (msgbuf, '(a,a,a)') 'Required field ''locationFile'' missing in lateral ''', trim(loc_id), '''.'
-               call warn_flush()
-               return
-            else
-               call resolvePath(location_file, base_dir)
-            end if
-         end if
-         if (loc_spec_type == imiss) then
-            write (msgbuf, '(a,a,a)') 'Unrecognized location specification in lateral ''', trim(loc_id), '''.'
-            call warn_flush()
-            return
-         end if
-
-         call ini_alloc_laterals()
-
-         call prepare_lateral_mask(kclat, ilattype)
-
-         numlatsg = numlatsg + 1
-         call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
-         call selectelset_internal_nodes(xz, yz, kclat, ndxi, nnLat(nlatnd + 1:), nlat, &
-                                         loc_spec_type, location_file, numcoordinates, xcoordinates, ycoordinates, branchid, chainage, nodeId)
-
-         n1latsg(numlatsg) = nlatnd + 1
-         n2latsg(numlatsg) = nlatnd + nlat
-
-         nlatnd = nlatnd + nlat
-
-         if (allocated(xcoordinates)) deallocate (xcoordinates, stat=ierr)
-         if (allocated(ycoordinates)) deallocate (ycoordinates, stat=ierr)
-
-         ! [lateral]
-         ! Flow = 1.23 | test.tim | REALTIME
-         kx = 1
-         rec = ' '
-         call prop_get(node_ptr, '', 'discharge', rec, is_successful)
-         if (.not. is_successful .and. major <= 1) then ! Old pre-2.00 keyword 'flow'
-            call prop_get(node_ptr, '', 'flow', rec, is_successful)
-         end if
-         if (len_trim(rec) > 0) then
-            call resolvePath(rec, base_dir)
-         else
-            write (msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', trim(loc_id), '''.'
-            call warn_flush()
-            return
-         end if
-
-         qid = 'lateral_discharge' ! New quantity name in .bc files
-         is_successful = adduniformtimerelation_objects(qid, '', 'lateral', trim(loc_id), 'discharge', trim(rec), numlatsg, &
-                                                        kx, qplat(1, :))
-         if (is_successful) then
-            jaqin = 1
-            lat_ids(numlatsg) = loc_id
-         end if
-
-         res = .true.
-
-      end function init_lateral_forcings
-
-      !> Read the current [Meteo] block from new external forcings file
-      !! and do required initialisation for that quantity.
-      function init_meteo_forcings() result(res)
-         logical :: res
-
-         integer, allocatable :: mask(:)
-         logical :: invert_mask, bla
-         logical :: is_variable_name_available
-         logical :: is_extrapolation_allowed
-         character(len=INI_KEY_LEN) :: variable_name
-         character(len=INI_VALUE_LEN) :: interpolation_method
-         real(hp) :: max_search_radius
-         ! generalized properties+pointers to target element grid:
-         integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-         integer :: target_num_points !< Number of points in target element set.
-         real(hp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set.
-         real(hp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set.
-         integer :: ierr
-
-         res = .false.
-
-         call prop_get(node_ptr, '', 'quantity ', quantity, is_successful)
-         if (.not. is_successful) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
-            call warn_flush()
-            return
-         end if
-
-         call prop_get(node_ptr, '', 'forcingFileType ', forcing_file_type, is_successful)
-         if (.not. is_successful) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
-               ']. Field ''forcingFileType'' is missing.'
-            call warn_flush()
-            return
-         end if
-
-         call prop_get(node_ptr, '', 'forcingFile ', forcing_file, is_successful)
-         if (.not. is_successful) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', forcing_file, ''': [', group_name, &
-               ']. Field ''forcingFile'' is missing.'
-            call warn_flush()
-            return
-         else
-            call resolvePath(forcing_file, base_dir)
-         end if
-
-         target_mask_file = ''
-         call prop_get(node_ptr, '', 'targetMaskFile ', target_mask_file)
-
-         invert_mask = .false.
-         call prop_get(node_ptr, '', 'targetMaskInvert ', invert_mask, is_successful)
-
-         is_variable_name_available = .false.
-         variable_name = ' '
-         call prop_get(node_ptr, '', 'forcingVariableName ', variable_name, is_variable_name_available)
-
-         call prop_get(node_ptr, '', 'interpolationMethod ', interpolation_method, is_successful)
-         if (is_successful) then
-            method = convert_method_string_to_integer(interpolation_method)
-         else
-            method = get_default_method_for_file_type(forcing_file_type)
-         end if
-         if (method == -1) then
-            if (is_successful) then
-               write (msgbuf, '(7a)') 'There is no method associated with ''interpolationMethod'' ', trim(interpolation_method), &
-                  ' in block in file ''', file_name, ''': [', group_name, '].'
-            else
-               write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', file_name, ''': [', group_name, &
-                  '] nor an internal value associated with given ''forcingFileType'':', trim(forcing_file_type), '.'
-            end if
-            call warn_flush()
-            return
-         end if
-
-         is_extrapolation_allowed = .false.
-         call prop_get(node_ptr, '', 'extrapolationAllowed ', is_extrapolation_allowed, is_successful)
-         call update_method_in_case_extrapolation(method, is_extrapolation_allowed)
-
-         max_search_radius = -1
-         call prop_get(node_ptr, '', 'extrapolationSearchRadius ', max_search_radius, is_successful)
-
-         oper = 'O'
-         call prop_get(node_ptr, '', 'operand ', oper, is_successful)
-
-         transformcoef = DMISS
-         call prop_get(node_ptr, '', 'averagingType ', transformcoef(4), is_successful)
-         call prop_get(node_ptr, '', 'averagingRelSize ', transformcoef(5), is_successful)
-         call prop_get(node_ptr, '', 'averagingNumMin ', transformcoef(8), is_successful)
-         call prop_get(node_ptr, '', 'averagingPercentile ', transformcoef(7), is_successful)
-
-         filetype = convert_file_type_string_to_integer(forcing_file_type)
-
-         ! Default location type: s-points. Only cases below that need u-points or different, will override.
-         target_location_type = UNC_LOC_S
-
-         success = scan_for_heat_quantities(quantity, kx)
-         if (.not. success) then
-            select case (quantity)
-            case ('airdensity')
-               kx = 1
-               if (.not. allocated(airdensity)) then
-                  allocate (airdensity(ndx), stat=ierr, source=0d0)
-                  call aerr('airdensity(ndx)', ierr, ndx)
-               end if
-            case ('airpressure', 'atmosphericpressure')
-               kx = 1
-               ierr = allocate_patm(0._hp)
-
-            case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
-               kx = 1
-               call allocatewindarrays()
-
-               jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
-               jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
-
-               ierr = allocate_patm(100000._hp)
-
-               if (.not. allocated(ec_pwxwy_x)) then
-                  allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0d0)
-                  call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
-               end if
-
-               if (jaspacevarcharn == 1) then
-                  if (.not. allocated(ec_pwxwy_c)) then
-                     allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr, source=0d0)
-                     call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
-                  end if
-               end if
-
-            case ('charnock')
-               kx = 1
-               if (.not. allocated(ec_charnock)) then
-                  allocate (ec_charnock(ndx), stat=ierr, source=0d0)
-                  call aerr('ec_charnock(ndx)', ierr, ndx)
-               end if
-               if (.not. allocated(wcharnock)) then
-                  allocate (wcharnock(lnx), stat=ierr)
-                  call aerr('wcharnock(lnx)', ierr, lnx)
-               end if
-
-            case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
-               kx = 1
-               target_location_type = UNC_LOC_U
-               call allocatewindarrays()
-
-               jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
-
-            case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
-               kx = 1
-               if (.not. allocated(rain)) then
-                  allocate (rain(ndx), stat=ierr, source=0d0)
-                  call aerr('rain(ndx)', ierr, ndx)
-               end if
-
-            case ('qext')
-               ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
-               if (jaQext == 0) then
-                  write (msgbuf, '(a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
-                     '] is missing QExt=1 in MDU. Ignoring this block.'
-                  call warn_flush()
-                  return
-               end if
-               if (.not. strcmpi(forcing_file_type, 'sample')) then
-                  write (msgbuf, '(a)') 'Unknown forcingFileType '''//trim(forcing_file_type)//' in file ''', file_name, &
-                     ''': [', group_name, '], quantity=', trim(quantity), '. Ignoring this block.'
-                  call warn_flush()
-                  return
-               end if
-               method = get_default_method_for_file_type(forcing_file_type)
-               call prop_get(node_ptr, '', 'locationType', item_type, is_successful)
-               select case (str_tolower(trim(item_type)))
-               case ('1d')
-                  ilattype = ILATTP_1D
-               case ('2d')
-                  ilattype = ILATTP_2D
-               case ('1d2d', 'all')
-                  ilattype = ILATTP_ALL
-               case default
-                  ilattype = ILATTP_ALL
-               end select
-
-               mask(:) = 0
-               call prepare_lateral_mask(mask, ilattype)
-
-               res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, UNC_LOC_S, mask)
-               return ! This was a special case, don't continue with timespace processing below.
-            case default
-               write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
-                  ']. Ignoring this block.'
-               call warn_flush()
-               return
-            end select
-         end if
-
-         ! Derive target element set properties from the quantity's topological location type
-         call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
-         if (ierr /= DFM_NOERR) then
-            write (msgbuf, '(7a)') 'Invalid data in file ''', file_name, ''': [', group_name, &
-               ']. Line ''quantity = ', trim(quantity), ''' has no known target grid properties.'
-            call warn_flush()
-            return
-         end if
-
-         !> Prepare target mask for the quantity's target element set.
-         call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
-         if (ierr /= DFM_NOERR) then
-            write (msgbuf, '(7a)') 'Unsupported data in file ''', file_name, ''': [', group_name, &
-               ']. Line ''quantity = ', trim(quantity), ''' cannot be combined with targetMaskFile.'
-            call warn_flush()
-            return
-         end if
-
-         select case (trim(str_tolower(forcing_file_type)))
-         case ('bcascii')
-            ! NOTE: Currently, we only support name=global meteo in.bc files, later maybe station time series as well.
-            is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
-                                                    method, oper, forcingfile=forcing_file)
-         case default
-            if (is_variable_name_available) then
-               is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                       method, oper, varname=variable_name)
-            else
-               is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                       method, oper)
-            end if
-         end select
-
-         if (is_successful) then
-            select case (quantity)
-            case ('airdensity')
-               call mess(LEVEL_INFO, 'Enabled variable airdensity for windstress while reading external forcings.')
-               ja_airdensity = 1
-
-            case ('airpressure', 'atmosphericpressure')
-               japatm = 1
-
-            case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
-               jawind = 1
-               japatm = 1
-
-            case ('charnock')
-               jaspacevarcharn = 1
-
-            case ('rainfall', 'rainfall_rate')
-               jarain = 1
-               jaqin = 1
-
-            case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
-               jawind = 1
-            case ('airtemperature')
-               jatair = 1
-               btempforcingtypA = .true.
-               tair_available = .true.
-            case ('cloudiness')
-               jaclou = 1
-               btempforcingtypC = .true.
-            case ('humidity')
-               jarhum = 1
-               btempforcingtypH = .true.
-            case ('dewpoint') ! Relative humidity array used to store dewpoints
-               itempforcingtyp = 5
-               dewpoint_available = .true.
-            case ('solarradiation')
-               btempforcingtypS = .true.
-               solrad_available = .true.
-            case ('longwaveradiation')
-               btempforcingtypL = .true.
-               longwave_available = .true.
-            case ('humidity_airtemperature_cloudiness')
-               itempforcingtyp = 1
-            case ('dewpoint_airtemperature_cloudiness')
-               itempforcingtyp = 3
-               dewpoint_available = .true.
-               tair_available = .true.
-            case ('humidity_airtemperature_cloudiness_solarradiation')
-               itempforcingtyp = 2
-               tair_available = .true.
-               solrad_available = .true.
-            case ('dewpoint_airtemperature_cloudiness_solarradiation')
-               itempforcingtyp = 4
-               dewpoint_available = .true.
-               tair_available = .true.
-               solrad_available = .true.
-            end select
-
-            res = .true.
-
-         end if
-
-      end function init_meteo_forcings
-
    end subroutine init_new
+
+   !> reads boundary blocks from new external forcings file and makes required initialisations
+   function init_boundary_forcings(node_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
+      use tree_data_types, only: tree_data
+      use fm_external_forcings_data, only: filetype, qhpliname
+      use timespace_parameters, only: NODE_ID
+      use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
+      use tree_structures, only: tree_get_name, tree_get_data_string
+      use messageHandling
+      use string_module, only: strcmpi
+      use properties, only: prop_get
+      use unstruc_files, only: resolvePath
+
+      type(tree_data), pointer, intent(in) :: node_ptr
+      character(len=*), intent(in) :: base_dir
+      character(len=*), intent(in) :: file_name
+      character(len=*), intent(in) :: group_name
+      integer, dimension(:), intent(in) :: itpenzr
+      integer, dimension(:), intent(in) :: itpenur
+      integer, intent(inout) :: ib
+      integer, intent(inout) :: ibqh
+      logical :: res
+
+      integer, dimension(1) :: target_index
+      character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, forcing_file_type, property_name, property_value
+      type(tree_data), pointer :: block_ptr
+      character(len=300) :: rec
+      character(len=1) :: oper
+      logical :: is_successful
+      integer :: method, num_items_in_block, j
+
+      res = .false.
+      ! First check for required input:
+      call prop_get(node_ptr, '', 'quantity', quantity, is_successful)
+      if (.not. is_successful) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
+         call warn_flush()
+         return
+      end if
+      ib = ib + 1
+
+      call prop_get(node_ptr, '', 'nodeId', location_file, is_successful)
+      if (is_successful) then
+         filetype = NODE_ID
+         method = SPACEANDTIME
+      else
+         filetype = POLY_TIM
+         method = WEIGHTFACTORS
+         call prop_get(node_ptr, '', 'locationFile', location_file, is_successful)
+      end if
+
+      if (is_successful) then
+         call resolvePath(location_file, base_dir)
+      else
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
+         call warn_flush()
+         return
+      end if
+
+      call prop_get(node_ptr, '', 'forcingFile ', forcing_file, is_successful)
+      if (is_successful) then
+         call resolvePath(forcing_file, base_dir)
+      else
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
+         call warn_flush()
+         return
+      end if
+
+      oper = '-'
+      call prop_get(node_ptr, '', 'operand ', oper, is_successful)
+
+      num_items_in_block = 0
+      if (associated(node_ptr%child_nodes)) then
+         num_items_in_block = size(node_ptr%child_nodes)
+      end if
+
+      ! Now loop over all key-value pairs, to support reading *multiple* lines with forcingFile=...
+      do j = 1, num_items_in_block
+         block_ptr => node_ptr%child_nodes(j)%node_ptr
+         ! todo: read multiple quantities
+         property_name = trim(tree_get_name(block_ptr))
+         call tree_get_data_string(block_ptr, property_value, is_successful)
+         if (is_successful) then
+            if (property_name == 'quantity') then
+               quantity = property_value ! We already knew this
+            else if (strcmpi(property_name, 'locationFile')) then
+               location_file = property_value ! We already knew this
+               call resolvePath(location_file, base_dir)
+            else if (strcmpi(property_name, 'forcingFile')) then
+               forcing_file = property_value
+               call resolvePath(forcing_file, base_dir)
+               if (oper /= 'O' .and. oper /= '+') then
+                  oper = 'O'
+                  if (quantity_pli_combination_is_registered(quantity, location_file)) then
+                     oper = '+'
+                  end if
+               end if
+               call register_quantity_pli_combination(quantity, location_file)
+               if (filetype == node_id .or. quantity == 'qhbnd') then
+                  select case (quantity)
+                  case ('waterlevelbnd')
+                     target_index = itpenzr(ib)
+
+                  case ('qhbnd')
+                     ibqh = ibqh + 1
+                     target_index = (/ibqh/)
+                     if (filetype /= node_id) then
+                        location_file = qhpliname(ibqh)
+                     end if
+
+                  case ('dischargebnd')
+                     target_index = itpenur(ib)
+
+                  case default
+                     target_index = (/-1/)
+                  end select
+
+                  if (target_index(1) <= 0) then
+                     ! This boundary has been skipped in an earlier phase (findexternalboundarypoints),
+                     ! so, also do *not* connect it as a spacetimerelation here.
+                     is_successful = .true. ! No failure: boundaries are allowed to remain disconnected.
+                  else
+                     is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=node_id, method=method, &
+                                                                     operand=oper, forcing_file=forcing_file, targetindex=target_index(1))
+                  end if
+               else
+                  is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
+                                                                  operand=oper, forcing_file=forcing_file)
+               end if
+               res = res .and. is_successful ! Remember any previous errors.
+               oper = '-'
+            else if (property_name == 'operand') then
+               continue
+            else if (property_name == 'returntime' .or. property_name == 'return_time') then
+               continue ! used elsewhere to set Thatcher-Harleman delay
+            else if (property_name == 'openboundarytolerance') then
+               continue ! used in findexternalboundarypoints/readlocationfiles... to set search distance. Not relevant here.
+            else if (property_name == 'nodeid') then
+               continue
+            else if (property_name == 'bndwidth1d') then
+               continue
+            else if (property_name == 'bndbldepth') then
+               continue
+            else
+               ! res remains unchanged: support ignored lines in ext file.
+               write (msgbuf, '(9a)') 'Unrecognized line in file ''', file_name, ''' for block [', group_name, ']: ', &
+                  trim(property_name), ' = ', trim(property_value), '. Ignoring this line.'
+               call warn_flush()
+               cycle
+            end if
+         end if
+      end do
+      if (.not. is_successful) then ! This addtimespace was not successful
+         rec = getmeteoerror()
+         if (len_trim(rec) > 0) then
+            call mess(LEVEL_WARN, trim(rec))
+         end if
+         call mess(LEVEL_WARN, 'initboundaryblockforcings: Error while initializing quantity '''//trim(quantity)// &
+                   '''. Check preceding log lines for details.')
+      end if
+
+      res = .true.
+
+   end function init_boundary_forcings
+
+   !> Read lateral blocks from new external forcings file and makes required initialisations
+   function init_lateral_forcings(node_ptr, base_dir, block_number, major) result(is_successful)
+      use messageHandling
+      use string_module, only: str_tolower
+      use tree_data_types, only: tree_data
+      use m_laterals, only: qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd
+      use m_flowgeom, only: ndxi, xz, yz
+      use m_laterals, only: apply_transport
+      use m_missing, only: imiss, dmiss
+      use timespace_parameters, only: LOCTP_NODEID, LOCTP_BRANCHID_CHAINAGE, LOCTP_POLYGON_XY, LOCTP_POLYGON_FILE, convert_file_type_string_to_integer
+      use m_alloc, only: realloc, reserve_sufficient_space
+      use fm_external_forcings_data, only: kx, qid
+      use m_wind, only: jaqin
+      use properties, only: prop_get
+      use unstruc_files, only: resolvePath
+      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use timespace, only: selectelset_internal_nodes
+
+      type(tree_data), pointer, intent(in) :: node_ptr
+      character(len=*), intent(in) :: base_dir
+      integer, intent(in) :: block_number
+      integer, intent(in) :: major
+      character(len=INI_VALUE_LEN) :: loc_id
+      integer :: loc_spec_type, num_coordinates
+      character(len=INI_VALUE_LEN) :: node_id, branch_id, location_file, item_type
+      real(kind=dp) :: chainage
+      real(kind=dp), allocatable :: x_coordinates(:), y_coordinates(:)
+      logical :: is_successful, is_read
+      character(len=300) :: rec
+      integer :: ilattype, nlat, ierr
+
+      is_successful = .false.
+
+      loc_id = ' '
+      call prop_get(node_ptr, '', 'Id', loc_id, is_read)
+      if (.not. is_read .or. len_trim(loc_id) == 0) then
+         write (msgbuf, '(a,i0,a)') 'Required field ''Id'' missing in lateral (block #', block_number, ').'
+         call warn_flush()
+         return
+      end if
+
+      ! locationType = optional for lateral
+      ! fileVersion >= 2: locationType = 1d | 2d | all
+      ! fileVersion <= 1: Type         = 1d | 2d | 1d2d
+      item_type = ' '
+      if (major >= 2) then
+         call prop_get(node_ptr, '', 'locationType', item_type, is_read)
+      else
+         call prop_get(node_ptr, '', 'Type', item_type, is_read)
+      end if
+      select case (str_tolower(trim(item_type)))
+      case ('1d')
+         ilattype = ILATTP_1D
+      case ('2d')
+         ilattype = ILATTP_2D
+      case ('1d2d', 'all')
+         ilattype = ILATTP_ALL
+      case default
+         ilattype = ILATTP_ALL
+      end select
+
+      call reserve_sufficient_space(apply_transport, numlatsg + 1, 0)
+      call prop_get(node_ptr, '', 'applyTransport', apply_transport(numlatsg + 1), is_read)
+
+      ! [lateral]
+      ! fileVersion >= 2: nodeId                  => location_specifier = LOCTP_NODEID
+      !                   branchId+chainage       => location_specifier = LOCTP_BRANCHID_CHAINAGE
+      !                   numcoor+xcoors+ycoors   => location_specifier = LOCTP_POLYGON_XY
+      ! fileVersion <= 1: locationFile = test.pol => location_specifier = LOCTP_POLYGON_FILE
+      loc_spec_type = imiss
+      node_id = ' '
+      branch_id = ' '
+      chainage = dmiss
+      num_coordinates = imiss
+
+      if (major >= 2) then
+         call prop_get(node_ptr, '', 'nodeId', node_id, is_successful)
+         if (is_successful) then
+            loc_spec_type = LOCTP_NODEID
+            ilattype = ILATTP_1D
+         else
+            call prop_get(node_ptr, '', 'branchId', branch_id, is_successful)
+            if (is_successful) then
+               call prop_get(node_ptr, '', 'chainage', chainage, is_successful)
+            end if
+            if (is_successful) then
+               if (len_trim(branch_id) > 0 .and. chainage /= dmiss .and. chainage >= 0.0d0) then
+                  loc_spec_type = LOCTP_BRANCHID_CHAINAGE
+                  ilattype = ILATTP_1D
+               end if
+            else
+               call prop_get(node_ptr, '', 'numCoordinates', num_coordinates, is_successful)
+               if (is_successful .and. num_coordinates > 0) then
+                  allocate (x_coordinates(num_coordinates), stat=ierr)
+                  allocate (y_coordinates(num_coordinates), stat=ierr)
+                  call prop_get(node_ptr, '', 'xCoordinates', x_coordinates, num_coordinates, is_successful)
+                  call prop_get(node_ptr, '', 'yCoordinates', y_coordinates, num_coordinates, is_successful)
+                  if (is_successful) then
+                     loc_spec_type = LOCTP_POLYGON_XY
+                  end if
+               end if
+            end if
+         end if
+      else ! fileVersion <= 1
+         loc_spec_type = LOCTP_POLYGON_FILE
+
+         location_file = ''
+         call prop_get(node_ptr, '', 'locationFile', location_file, is_successful)
+         if (.not. is_successful .or. len_trim(location_file) == 0) then
+            write (msgbuf, '(a,a,a)') 'Required field ''locationFile'' missing in lateral ''', trim(loc_id), '''.'
+            call warn_flush()
+            return
+         else
+            call resolvePath(location_file, base_dir)
+         end if
+      end if
+      if (loc_spec_type == imiss) then
+         write (msgbuf, '(a,a,a)') 'Unrecognized location specification in lateral ''', trim(loc_id), '''.'
+         call warn_flush()
+         return
+      end if
+
+      call ini_alloc_laterals()
+
+      call prepare_lateral_mask(kclat, ilattype)
+
+      numlatsg = numlatsg + 1
+      call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
+      call selectelset_internal_nodes(xz, yz, kclat, ndxi, nnLat(nlatnd + 1:), nlat, &
+                                      loc_spec_type, location_file, num_coordinates, x_coordinates, y_coordinates, branch_id, chainage, node_id)
+
+      n1latsg(numlatsg) = nlatnd + 1
+      n2latsg(numlatsg) = nlatnd + nlat
+
+      nlatnd = nlatnd + nlat
+
+      if (allocated(x_coordinates)) deallocate (x_coordinates, stat=ierr)
+      if (allocated(y_coordinates)) deallocate (y_coordinates, stat=ierr)
+
+      ! [lateral]
+      ! Flow = 1.23 | test.tim | REALTIME
+      kx = 1
+      rec = ' '
+      call prop_get(node_ptr, '', 'discharge', rec, is_read)
+      if (.not. is_read .and. major <= 1) then ! Old pre-2.00 keyword 'flow'
+         call prop_get(node_ptr, '', 'flow', rec, is_read)
+      end if
+      if (len_trim(rec) > 0) then
+         call resolvePath(rec, base_dir)
+      else
+         write (msgbuf, '(a,a,a)') 'Required field ''discharge'' missing in lateral ''', trim(loc_id), '''.'
+         call warn_flush()
+         return
+      end if
+
+      qid = 'lateral_discharge' ! New quantity name in .bc files
+      is_read = adduniformtimerelation_objects(qid, '', 'lateral', trim(loc_id), 'discharge', trim(rec), numlatsg, &
+                                               kx, qplat(1, :))
+      if (is_read) then
+         jaqin = 1
+         lat_ids(numlatsg) = loc_id
+      end if
+
+      is_successful = .true.
+
+   end function init_lateral_forcings
+
+   !> Read the current [Meteo] block from new external forcings file
+      !! and do required initialisation for that quantity.
+   function init_meteo_forcings(node_ptr, base_dir, file_name, group_name) result(res)
+      use string_module, only: strcmpi, str_tolower
+      use messageHandling
+      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+      use m_missing, only: dmiss
+      use tree_data_types, only: tree_data
+      use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, update_method_in_case_extrapolation, convert_file_type_string_to_integer
+      use fm_external_forcings_data, only: filetype, transformcoef, kx, tair_available, dewpoint_available
+      use fm_external_forcings, only: allocatewindarrays
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
+      use m_wind, only: airdensity, jawindstressgiven, jaspacevarcharn, ja_airdensity, japatm, jawind, jarain, jaqin, jaqext, jatair, jaclou, jarhum, solrad_available, longwave_available, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, qext
+      use m_flowgeom, only: ndx, lnx, xz, yz
+      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypH, btempforcingtypL, btempforcingtypS, itempforcingtyp
+      use timespace, only: timespaceinitialfield
+      use m_meteo, only: ec_addtimespacerelation
+      use dfm_error, only: DFM_NOERR
+      use properties, only: prop_get
+      use unstruc_files, only: resolvePath
+      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_alloc, only: aerr
+
+      type(tree_data), pointer, intent(in) :: node_ptr
+      character(len=*), intent(in) :: base_dir
+      character(len=*), intent(in) :: file_name
+      character(len=*), intent(in) :: group_name
+      logical :: res
+
+      integer, allocatable :: mask(:)
+      logical :: invert_mask, bla
+      logical :: is_variable_name_available
+      logical :: is_extrapolation_allowed
+      character(len=INI_KEY_LEN) :: variable_name
+      character(len=INI_VALUE_LEN) :: interpolation_method, forcing_file, forcing_file_type, item_type, quantity, target_mask_file
+      character(len=1) :: oper
+      real(dp) :: max_search_radius
+      ! generalized properties+pointers to target element grid:
+      integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
+      integer :: target_num_points !< Number of points in target element set.
+      real(dp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set.
+      real(dp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set.
+      integer :: ierr, method, ilattype
+      logical :: is_successful
+
+      res = .false.
+
+      call prop_get(node_ptr, '', 'quantity ', quantity, is_successful)
+      if (.not. is_successful) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
+         call warn_flush()
+         return
+      end if
+
+      call prop_get(node_ptr, '', 'forcingFileType ', forcing_file_type, is_successful)
+      if (.not. is_successful) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
+            ']. Field ''forcingFileType'' is missing.'
+         call warn_flush()
+         return
+      end if
+
+      call prop_get(node_ptr, '', 'forcingFile ', forcing_file, is_successful)
+      if (.not. is_successful) then
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', forcing_file, ''': [', group_name, &
+            ']. Field ''forcingFile'' is missing.'
+         call warn_flush()
+         return
+      else
+         call resolvePath(forcing_file, base_dir)
+      end if
+
+      target_mask_file = ''
+      call prop_get(node_ptr, '', 'targetMaskFile ', target_mask_file)
+
+      invert_mask = .false.
+      call prop_get(node_ptr, '', 'targetMaskInvert ', invert_mask, is_successful)
+
+      is_variable_name_available = .false.
+      variable_name = ' '
+      call prop_get(node_ptr, '', 'forcingVariableName ', variable_name, is_variable_name_available)
+
+      call prop_get(node_ptr, '', 'interpolationMethod ', interpolation_method, is_successful)
+      if (is_successful) then
+         method = convert_method_string_to_integer(interpolation_method)
+      else
+         method = get_default_method_for_file_type(forcing_file_type)
+      end if
+      if (method == -1) then
+         if (is_successful) then
+            write (msgbuf, '(7a)') 'There is no method associated with ''interpolationMethod'' ', trim(interpolation_method), &
+               ' in block in file ''', file_name, ''': [', group_name, '].'
+         else
+            write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', file_name, ''': [', group_name, &
+               '] nor an internal value associated with given ''forcingFileType'':', trim(forcing_file_type), '.'
+         end if
+         call warn_flush()
+         return
+      end if
+
+      is_extrapolation_allowed = .false.
+      call prop_get(node_ptr, '', 'extrapolationAllowed ', is_extrapolation_allowed, is_successful)
+      call update_method_in_case_extrapolation(method, is_extrapolation_allowed)
+
+      max_search_radius = -1
+      call prop_get(node_ptr, '', 'extrapolationSearchRadius ', max_search_radius, is_successful)
+
+      oper = 'O'
+      call prop_get(node_ptr, '', 'operand ', oper, is_successful)
+
+      transformcoef = DMISS
+      call prop_get(node_ptr, '', 'averagingType ', transformcoef(4), is_successful)
+      call prop_get(node_ptr, '', 'averagingRelSize ', transformcoef(5), is_successful)
+      call prop_get(node_ptr, '', 'averagingNumMin ', transformcoef(8), is_successful)
+      call prop_get(node_ptr, '', 'averagingPercentile ', transformcoef(7), is_successful)
+
+      filetype = convert_file_type_string_to_integer(forcing_file_type)
+
+      ! Default location type: s-points. Only cases below that need u-points or different, will override.
+      target_location_type = UNC_LOC_S
+
+      is_successful = scan_for_heat_quantities(quantity, kx)
+      if (.not. is_successful) then
+         select case (quantity)
+         case ('airdensity')
+            kx = 1
+            if (.not. allocated(airdensity)) then
+               allocate (airdensity(ndx), stat=ierr, source=0d0)
+               call aerr('airdensity(ndx)', ierr, ndx)
+            end if
+         case ('airpressure', 'atmosphericpressure')
+            kx = 1
+            ierr = allocate_patm(0._dp)
+
+         case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
+            kx = 1
+            call allocatewindarrays()
+
+            jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
+            jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
+
+            ierr = allocate_patm(100000._dp)
+
+            if (.not. allocated(ec_pwxwy_x)) then
+               allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0d0)
+               call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
+            end if
+
+            if (jaspacevarcharn == 1) then
+               if (.not. allocated(ec_pwxwy_c)) then
+                  allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr, source=0d0)
+                  call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
+               end if
+            end if
+
+         case ('charnock')
+            kx = 1
+            if (.not. allocated(ec_charnock)) then
+               allocate (ec_charnock(ndx), stat=ierr, source=0d0)
+               call aerr('ec_charnock(ndx)', ierr, ndx)
+            end if
+            if (.not. allocated(wcharnock)) then
+               allocate (wcharnock(lnx), stat=ierr)
+               call aerr('wcharnock(lnx)', ierr, lnx)
+            end if
+
+         case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
+            kx = 1
+            target_location_type = UNC_LOC_U
+            call allocatewindarrays()
+
+            jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
+
+         case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
+            kx = 1
+            if (.not. allocated(rain)) then
+               allocate (rain(ndx), stat=ierr, source=0d0)
+               call aerr('rain(ndx)', ierr, ndx)
+            end if
+
+         case ('qext')
+            ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
+            if (jaQext == 0) then
+               write (msgbuf, '(a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
+                  '] is missing QExt=1 in MDU. Ignoring this block.'
+               call warn_flush()
+               return
+            end if
+            if (.not. strcmpi(forcing_file_type, 'sample')) then
+               write (msgbuf, '(a)') 'Unknown forcingFileType '''//trim(forcing_file_type)//' in file ''', file_name, &
+                  ''': [', group_name, '], quantity=', trim(quantity), '. Ignoring this block.'
+               call warn_flush()
+               return
+            end if
+            method = get_default_method_for_file_type(forcing_file_type)
+            call prop_get(node_ptr, '', 'locationType', item_type, is_successful)
+            select case (str_tolower(trim(item_type)))
+            case ('1d')
+               ilattype = ILATTP_1D
+            case ('2d')
+               ilattype = ILATTP_2D
+            case ('1d2d', 'all')
+               ilattype = ILATTP_ALL
+            case default
+               ilattype = ILATTP_ALL
+            end select
+
+            mask(:) = 0
+            call prepare_lateral_mask(mask, ilattype)
+
+            res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, UNC_LOC_S, mask)
+            return ! This was a special case, don't continue with timespace processing below.
+         case default
+            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
+               ']. Ignoring this block.'
+            call warn_flush()
+            return
+         end select
+      end if
+
+      ! Derive target element set properties from the quantity's topological location type
+      call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
+      if (ierr /= DFM_NOERR) then
+         write (msgbuf, '(7a)') 'Invalid data in file ''', file_name, ''': [', group_name, &
+            ']. Line ''quantity = ', trim(quantity), ''' has no known target grid properties.'
+         call warn_flush()
+         return
+      end if
+
+      !> Prepare target mask for the quantity's target element set.
+      call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
+      if (ierr /= DFM_NOERR) then
+         write (msgbuf, '(7a)') 'Unsupported data in file ''', file_name, ''': [', group_name, &
+            ']. Line ''quantity = ', trim(quantity), ''' cannot be combined with targetMaskFile.'
+         call warn_flush()
+         return
+      end if
+
+      select case (trim(str_tolower(forcing_file_type)))
+      case ('bcascii')
+         ! NOTE: Currently, we only support name=global meteo in.bc files, later maybe station time series as well.
+         is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
+                                                 method, oper, forcingfile=forcing_file)
+      case default
+         if (is_variable_name_available) then
+            is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                    method, oper, varname=variable_name)
+         else
+            is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                    method, oper)
+         end if
+      end select
+
+      if (is_successful) then
+         select case (quantity)
+         case ('airdensity')
+            call mess(LEVEL_INFO, 'Enabled variable airdensity for windstress while reading external forcings.')
+            ja_airdensity = 1
+
+         case ('airpressure', 'atmosphericpressure')
+            japatm = 1
+
+         case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
+            jawind = 1
+            japatm = 1
+
+         case ('charnock')
+            jaspacevarcharn = 1
+
+         case ('rainfall', 'rainfall_rate')
+            jarain = 1
+            jaqin = 1
+
+         case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
+            jawind = 1
+         case ('airtemperature')
+            jatair = 1
+            btempforcingtypA = .true.
+            tair_available = .true.
+         case ('cloudiness')
+            jaclou = 1
+            btempforcingtypC = .true.
+         case ('humidity')
+            jarhum = 1
+            btempforcingtypH = .true.
+         case ('dewpoint') ! Relative humidity array used to store dewpoints
+            itempforcingtyp = 5
+            dewpoint_available = .true.
+         case ('solarradiation')
+            btempforcingtypS = .true.
+            solrad_available = .true.
+         case ('longwaveradiation')
+            btempforcingtypL = .true.
+            longwave_available = .true.
+         case ('humidity_airtemperature_cloudiness')
+            itempforcingtyp = 1
+         case ('dewpoint_airtemperature_cloudiness')
+            itempforcingtyp = 3
+            dewpoint_available = .true.
+            tair_available = .true.
+         case ('humidity_airtemperature_cloudiness_solarradiation')
+            itempforcingtyp = 2
+            tair_available = .true.
+            solrad_available = .true.
+         case ('dewpoint_airtemperature_cloudiness_solarradiation')
+            itempforcingtyp = 4
+            dewpoint_available = .true.
+            tair_available = .true.
+            solrad_available = .true.
+         end select
+
+         res = .true.
+
+      end if
+
+   end function init_meteo_forcings
 
    !> Get several target grid properties for a given location type.
    !!
@@ -812,12 +853,12 @@ contains
    subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
       use fm_location_types
       use m_flowgeom, only: ndx, lnx, xz, yz, xu, yu
-      use precision_basics, only: hp
-      use dfm_error
+      use precision_basics, only: dp
+      use dfm_error, only: DFM_NOERR, DFM_NOTIMPLEMENTED
       integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
       integer, intent(out) :: target_num_points !< Number of points in target element set.
-      real(hp), dimension(:), pointer, intent(out) :: target_x !< Pointer to x-coordinates array of target element set.
-      real(hp), dimension(:), pointer, intent(out) :: target_y !< Pointer to y-coordinates array of target element set.
+      real(dp), dimension(:), pointer, intent(out) :: target_x !< Pointer to x-coordinates array of target element set.
+      real(dp), dimension(:), pointer, intent(out) :: target_y !< Pointer to y-coordinates array of target element set.
       integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if unknown quantity location was given).
 
       ierr = DFM_NOERR
@@ -893,7 +934,6 @@ contains
 
    !> Scan the quantity name for heat relatede quantities.
    function scan_for_heat_quantities(quantity, kx) result(success)
-      use precision_basics, only: dp
       use m_wind, only: tair, clou, rhum, qrad, longwave
       use m_flowgeom, only: ndx
       use m_alloc, only: aerr, realloc

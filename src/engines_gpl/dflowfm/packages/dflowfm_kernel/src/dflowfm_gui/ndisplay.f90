@@ -43,11 +43,12 @@
       use m_waves, only: waveparopt, numoptwav
       !use m_xbeach_data,   only: windmodel
       use gridoperations
+      use m_drawthis
+      use m_qnerror
 
       implicit none
       integer :: ium
       integer :: maxopt
-      integer :: ndraw
       integer :: nputz
       integer :: nwhat2, MINP
       integer :: NWHAT, KEY
@@ -57,10 +58,7 @@
       integer :: i
       integer :: ierror
       integer :: numopt
-
       integer, parameter :: MAXOP = 64
-
-      common / DRAWTHIS / ndraw(50)
       character * 40 OPTION(MAXOP), exp(MAXOP)
 
 1234  continue

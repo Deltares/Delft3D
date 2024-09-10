@@ -42,6 +42,7 @@ contains
         use protist_uptake_functions
         use protist_photosynthesis_functions
         use protist_constants
+        use m_protistlog
         use ieee_arithmetic
 
         IMPLICIT NONE
@@ -370,13 +371,13 @@ contains
                     fl (spInc + 18) = dAutChl
                     fl (spInc + 19) = dDetChl
 
-                    if (ieee_is_nan(protC)) write (*, *) 'ERROR: in Protist Green NaN in protC in segment:', iseg
-                    if (ieee_is_nan(Cfix))  write (*, *) 'ERROR: in Protist Green NaN in Cfix in segment:', iseg
-                    if (ieee_is_nan(totR))  write (*, *) 'ERROR: in Protist Green NaN in totR in segment:', iseg
-                    if (ieee_is_nan(mrt))   write (*, *) 'ERROR: in Protist Green NaN in mrt in segment:', iseg
-                    if (ieee_is_nan(NC))    write (*, *) 'ERROR: in Protist Green NaN in NC in segment:', iseg
-                    if (ieee_is_nan(PC))    write (*, *) 'ERROR: in Protist Green NaN in PC in segment:', iseg
-                    if (ieee_is_nan(ChlC))  write (*, *) 'ERROR: in Protist Green NaN in ChlC in segment:', iseg
+                    if (.not. ieee_is_finite(protC)) call write_warning('ERROR: in Protist Green NaN/Inf in protC in segment:',iseg)
+                    if (.not. ieee_is_finite(Cfix))  call write_warning('ERROR: in Protist Green NaN/Inf in Cfix in segment:', iseg)
+                    if (.not. ieee_is_finite(totR))  call write_warning('ERROR: in Protist Green NaN/Inf in totR in segment:', iseg)
+                    if (.not. ieee_is_finite(mrt))   call write_warning('ERROR: in Protist Green NaN/Inf in mrt in segment:', iseg)
+                    if (.not. ieee_is_finite(NC))    call write_warning('ERROR: in Protist Green NaN/Inf in NC in segment:', iseg)
+                    if (.not. ieee_is_finite(PC))    call write_warning('ERROR: in Protist Green NaN/Inf in PC in segment:', iseg)
+                    if (.not. ieee_is_finite(ChlC))  call write_warning('ERROR: in Protist Green NaN/Inf in ChlC in segment:', iseg)
 
                 enddo speciesLoop ! end loop over species
 

@@ -4,6 +4,7 @@ from helpers.ExcelHelper import ExcelHelper
 from helpers.KernelVersionExtractor import KernelVersionExtractor
 from helpers.PinHelper import PinHelper
 from helpers.SshClient import SshClient
+from helpers.GitClient import GitClient
 from helpers.TestbankResultParser import TestbankResultParser
 from helpers.PublicWikiHelper import PublicWikiHelper
 from helpers.PreconditionsHelper import PreconditionsHelper
@@ -20,18 +21,20 @@ class DimrAutomation(object):
     updating SVN, and preparing a mail for the release notification.
     """
 
-    def __init__(self, atlassian: Atlassian, teamcity: TeamCity, ssh_client: SshClient):
+    def __init__(self, atlassian: Atlassian, teamcity: TeamCity, ssh_client: SshClient, git_client: GitClient):
         """
         Creates a new instance of DimrAutomation.
 
         Args:
             atlassian (Atlassian): A wrapper for the Atlassian Confluence REST API.
             teamcity (TeamCity): A wrapper for the TeamCity REST API.
-            ssh_client (Ssh_Client): A wrapper for a SSH client.
+            ssh_client: A wrapper for a SSH client.
+            git_client: A wrapper for a git client.
         """
         self.__atlassian = atlassian
         self.__teamcity = teamcity
         self.__ssh_client = ssh_client
+        self.__git_client = git_client
 
         self.__kernel_versions = None
         self.__dimr_version = None
@@ -44,7 +47,7 @@ class DimrAutomation(object):
         self.__get_kernel_versions()  # This step is crucial for the script to run, do not comment this one out!
         self.__update_public_wiki()
         self.__download_and_install_artifacts()
-        print(f"WARNING: Tagging in SVN is disabled: must be replaced by a tag in Git.")
+        self.__git_client.tag_commit(self.__kernel_versions["OSS_ver"], f"DIMRset_{self.__dimr_version}")
         self.__pin_and_tag_builds()
         self.__update_excel_sheet()
         self.__prepare_email()
@@ -52,7 +55,7 @@ class DimrAutomation(object):
     def __assert_preconditions(self) -> None:
         """ Asserts some preconditions are met before the script is fully run. """
         preconditions = PreconditionsHelper(atlassian=self.__atlassian, teamcity=self.__teamcity,
-                                            ssh_client=self.__ssh_client)
+                                            ssh_client=self.__ssh_client, git_client=self.__git_client)
         preconditions.assert_preconditions()
 
     def __get_kernel_versions(self) -> None:

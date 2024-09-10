@@ -194,7 +194,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
     ! Read value of Trtrou, default NO
     !
     chulp = 'N'
-    call prop_get_string(gdp%mdfile_ptr,'*','Trtrou',chulp)
+    call prop_get(gdp%mdfile_ptr,'*','Trtrou',chulp)
     !
     ! set LFTRTO to TRUE if CHULP = Y/y
     !
@@ -259,7 +259,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
     !
     filtmp = ' '
     keyw   = 'Trtdef'
-    call prop_get_string(gdp%mdfile_ptr,'*',keyw,filtmp)
+    call prop_get(gdp%mdfile_ptr,'*',keyw,filtmp)
     !
     txtput1 = keyw
     write (lundia, '(a,a,a)') txtput1,': ',trim(filtmp)
@@ -543,7 +543,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
     !
     filtmp = ' '
     keyw   = 'Trtu'
-    call prop_get_string(gdp%mdfile_ptr,'*',keyw,filtmp)
+    call prop_get(gdp%mdfile_ptr,'*',keyw,filtmp)
     !
     txtput1 = keyw
     write (lundia, '(a,a,a)') txtput1,': ',trim(filtmp)
@@ -580,7 +580,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
     !
     filtmp = ' '
     keyw   = 'Trtv'
-    call prop_get_string(gdp%mdfile_ptr,'*',keyw,filtmp)
+    call prop_get(gdp%mdfile_ptr,'*',keyw,filtmp)
     !
     txtput1 = keyw
     write (lundia, '(a,a,a)') txtput1,': ',trim(filtmp)
@@ -617,7 +617,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
     !
     filtmp = ' '
     keyw   = 'TrtClu'
-    call prop_get_string(gdp%mdfile_ptr,'*',keyw,filtmp)
+    call prop_get(gdp%mdfile_ptr,'*',keyw,filtmp)
     !
     txtput1 = keyw
     write (lundia, '(a,a,a)') txtput1,': ',trim(filtmp)
@@ -664,7 +664,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
     !
     filtmp = ' '
     keyw   = 'TrtClv'
-    call prop_get_string(gdp%mdfile_ptr,'*',keyw,filtmp)
+    call prop_get(gdp%mdfile_ptr,'*',keyw,filtmp)
     !
     txtput1 = keyw
     write (lundia, '(a,a,a)') txtput1,': ',trim(filtmp)

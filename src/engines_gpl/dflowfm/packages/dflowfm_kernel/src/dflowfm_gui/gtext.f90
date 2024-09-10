@@ -31,12 +31,11 @@
 !
 
       subroutine GTEXT(TEX, X, Y, NCOL)
+         use m_colnow
          implicit none
          integer :: ncol
-         integer :: ncolnow
          double precision :: x
          double precision :: y
-         common / COLNOW / NCOLNOW
 !     grafische text op grafische posities
          character TEX * (*)
          call SETCOL(NCOL)

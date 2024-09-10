@@ -37,15 +37,14 @@
      use m_arcinfo
      use m_samples
      use unstruc_messages
+     use m_helpnow
      implicit none
      integer :: i
      integer :: omp_numt
 
      integer :: maxlin
      parameter(MAXLIN=11)
-     integer :: nlevel
-     common / HELPNOW / WRDKEY, NLEVEL
-     character TEX(MAXLIN) * 70, WRDKEY * 40
+     character TEX(MAXLIN) * 70
      integer, external :: omp_get_num_threads
 !
 

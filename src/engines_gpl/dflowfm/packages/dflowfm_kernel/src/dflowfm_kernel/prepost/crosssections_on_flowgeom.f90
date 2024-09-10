@@ -261,6 +261,7 @@ subroutine crosssections_on_flowgeom()
    use m_inquire_flowgeom
    use unstruc_caching, only: copyCachedCrossSections, saveLinkList
    use m_partitioninfo, only: jampi
+   use m_readyy
    implicit none
 
    integer :: ic, icmod

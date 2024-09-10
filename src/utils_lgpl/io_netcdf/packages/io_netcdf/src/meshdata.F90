@@ -343,7 +343,6 @@ function convert_cptr_to_meshgeom(c_meshgeom, c_meshgeomdim, meshgeom) result(ie
    type(t_ug_meshgeom), intent(inout)     :: meshgeom
    integer                                :: ierr
    integer                                :: i
-   character(len=ug_nameLen), pointer     :: meshname
 
    ! get the dimensions
 

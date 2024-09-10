@@ -315,6 +315,7 @@ end subroutine get_var
 subroutine set_var(c_var_name, var_ptr) bind(C, name="set_var")
     !DEC$ ATTRIBUTES DLLEXPORT :: set_var
     use iso_c_binding, only: c_double, c_char, c_loc, c_f_pointer
+    use string_module, only: str_tolower
     !
     ! Parameters
     character(kind=c_char), intent(in) :: c_var_name(*)
@@ -588,7 +589,7 @@ end subroutine get_current_time
 ! Make functions pure so they can be used as input arguments.
 integer(c_int) pure function strlen(char_array)
     character(c_char), intent(in) :: char_array(MAXSTRLEN)
-    integer :: inull, i
+    integer :: i
     strlen = 0
     do i = 1, size(char_array)
         if (char_array(i) .eq. C_NULL_CHAR) then

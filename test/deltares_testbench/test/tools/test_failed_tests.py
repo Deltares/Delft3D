@@ -47,8 +47,8 @@ class TestFailedTests:
         test_case_config: TestCaseConfig, run_data: RunData, result_string: str
     ) -> TestCaseResult:
         comparison_result = ComparisonResult()
-        comparison_result.maxAbsDiff = 0.0
-        comparison_result.maxRelDiff = 0.0
+        comparison_result.max_abs_diff = 0.0
+        comparison_result.max_rel_diff = 0.0
         comparison_result.passed = False
         comparison_result.error = True
         comparison_result.result = result_string
@@ -62,8 +62,8 @@ class TestFailedTests:
         test_case_config: TestCaseConfig, run_data: RunData, result_string: str
     ) -> TestCaseResult:
         comparison_result = ComparisonResult()
-        comparison_result.maxAbsDiff = 100.0
-        comparison_result.maxRelDiff = 100.0
+        comparison_result.max_abs_diff = 100.0
+        comparison_result.max_rel_diff = 100.0
         comparison_result.passed = True
         comparison_result.error = False
         comparison_result.result = result_string

@@ -36,7 +36,7 @@ subroutine flow_finalize_single_timestep(iresult)
    use unstruc_netcdf
    use timers
    use m_timer
-   use unstruc_display, only: jaGUI
+   use m_gui
    use dfm_error
    use dfm_signals
    use m_mass_balance_areas, only: jamba

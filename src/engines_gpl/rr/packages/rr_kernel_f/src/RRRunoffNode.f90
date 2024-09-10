@@ -1026,7 +1026,7 @@ contains
                                                    NAM_SoilParameterDefinition(:), NAM_LevelAndDepthDefinition(:), &
                                                    NAM_SurfaceRunoffDefinition(:), NAM_BaseFlowDefinition(:), &
                                                    NAM_GroundwaterForcingDefinition(:)
-    Character(Len=CharIdLength), pointer, save ::  LGSTDef(:), LGSTDef2(:), Walrus_HSMINDef(:)
+    Character(Len=CharIdLength), pointer, save ::  LGSTDef(:), LGSTDef2(:)
     Logical  Success
     Integer  NrHbvNodes, NrExtNodes, NrScsNodes, NrNAMNodes, NrLGSINodes, NrWageningenNodes, NrWalrusNodes
     ! HBV
@@ -1035,7 +1035,7 @@ contains
              BetaDum, FieldCapacityDum, EvapFractionDum, &
              KBaseFlowDum, KInterFlowDum, KQuickFlowDum, MaxPercolationDum, QuickFlowThresholdDum, &
              InitialDrySnowDum, InitialFreeWaterDum, InitialSoilMoistureDum, &
-             InitialUpperZoneDum, InitialLowerZoneDum, InitialQRunoffInMMDum
+             InitialUpperZoneDum, InitialLowerZoneDum
     !NAM
     Real     infcapdum, sldum, rzbldum, gwsbldum, u0dum, l0dum, gwd0dum, &
              cldum, ssdum, mandum, utofdum, ckifdum, utifdum, ltifdum, &
@@ -4314,7 +4314,6 @@ contains
   Integer IEvent, IOut1, i, j, k, Idebug, ilast1, inode, iu, IOutWagMod, itmstp, IRRRunoff, IRRRunoffSub, isub, ICache
   Logical  LevelError, ReadLGSICacheFile
 
-  Integer          IOUnit
   Integer          Ibnd, iow
   real             NAMAlfa, fact
 
@@ -6233,11 +6232,11 @@ enddo
 
 ! additional local variables for LGSI
 
-    double precision LGSIPrecipitation, LGSIPotEvap, LGSIActEvap, LGSITotalRunoff, LGSIPreviousTotalRunoff
+    double precision LGSIPrecipitation, LGSIPotEvap, LGSITotalRunoff, LGSIPreviousTotalRunoff
     double precision LGSIGwl, LGSIRunoff, LGSIDelayedRunoff
     double precision LGSIInterflow, LGSIHeadDiff
     double precision LGSIPreviousGwl(2), LGSIInitVolume(2)
-    double precision x, mean, sD, PrecipReduction, EvapReduction, StorageChange, LGSIVolume, NewGWLevel
+    double precision x, sD, PrecipReduction, EvapReduction, StorageChange, LGSIVolume, NewGWLevel
     double precision RiverOutflow, OverlandFlow, DrainageFlow
     double precision TotalInOutflow(LGSI_MaxNrSubAreas)
     double precision TempVolume (LGSI_MaxInterpLength)
@@ -7766,7 +7765,7 @@ enddo
         Implicit none
 
         Integer      INode, IRRRunoff, IRRRunoffSub
-        Integer      IDebug, ikind, i
+        Integer      ikind, i
 
 ! LGSI
         Do iNode=1,NcNode
@@ -8250,7 +8249,6 @@ enddo
 !
   double precision, parameter :: a = 0.0D+00
   integer, parameter          :: key = 6
-  double precision               b
   double precision               abserr
 ! double precision, parameter :: epsabs = 0.0D+00
   double precision, parameter :: epsabs = 1.0D-300
@@ -8521,7 +8519,6 @@ enddo
 
   Subroutine LGSI_ConstructDelayTable
 
-  double precision LGSITotalRunoff, LGSIDelayedRunoff
   integer          IRRRunoffSub, i, j, k, idebug, iout1
 
   Idebug = Conffil_get_Idebug()

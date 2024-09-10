@@ -118,7 +118,7 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! string with blanks, then roumet = 'C'
     !
     roumet = ' '
-    call prop_get_string(gdp%mdfile_ptr,'*','Roumet',roumet)
+    call prop_get(gdp%mdfile_ptr,'*','Roumet',roumet)
     if (roumet == ' ') then
        roumet = 'C'
        call prterr(lundia, 'U190', 'No bottom roughness formulation specification')
@@ -136,14 +136,14 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! cients in extra input file
     !
     filrgh = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filrgh', filrgh)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filrgh', filrgh)
     if (filrgh /= ' ') then
        !
        ! spatially varying roughness file specified
        ! locate 'Fmtrgh' record for format definition of input file
        !
        fmtrgh = 'FR'
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Fmtrgh', fmtrgh)
+       call prop_get(gdp%mdfile_ptr, '*', 'Fmtrgh', fmtrgh)
        fmttmp = fmtrgh
        call filfmt(lundia    ,'Fmtrgh'  ,fmttmp    ,lerror    ,gdp       )
        call hybfil(lundia    ,error     ,filrgh    ,fmttmp    ,nmax      , &
@@ -171,7 +171,7 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        ! 'Ccofu': uniform bottom roughness coefficient in x- direction
        !
        chulp = ' '
-       call prop_get_string(gdp%mdfile_ptr,'*','Ccofu',chulp)
+       call prop_get(gdp%mdfile_ptr,'*','Ccofu',chulp)
        if (chulp == ' ') then
           ccofu = rdef
           call prterr(lundia, 'U190', 'No bottom roughness specification')
@@ -192,7 +192,7 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        ! 'Ccofv': uniform bottom roughness coefficient in y- direction
        !
        chulp = ' '
-       call prop_get_string(gdp%mdfile_ptr,'*','Ccofv',chulp)
+       call prop_get(gdp%mdfile_ptr,'*','Ccofv',chulp)
        if (chulp == ' ') then
           ccofv = rdef
           call prterr(lundia, 'U190', 'No bottom roughness specification')

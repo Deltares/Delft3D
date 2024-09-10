@@ -34,6 +34,8 @@
 subroutine sample_spline(num, xs, ys, numref, Nr, xr, yr, ierror)
    use m_splines
    use m_alloc
+   use m_splint
+   use m_spline
    implicit none
 
    integer, intent(in) :: num !< number of spline control points

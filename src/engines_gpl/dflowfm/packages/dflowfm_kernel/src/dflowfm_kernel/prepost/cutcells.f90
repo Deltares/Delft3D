@@ -33,6 +33,7 @@
   subroutine CUTCELLS(n12)
      use m_netw
      use gridoperations
+     use m_readyy
      implicit none
      integer, intent(in) :: N12
      integer :: ja, KMOD

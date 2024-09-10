@@ -71,11 +71,9 @@ double precision, intent(in) :: time1
 !pointer
 !
 
-logical                                  , pointer :: lconv                   
 logical                                  , pointer :: steady    
                                          
 integer                                  , pointer :: flitmx                 
-integer                                  , pointer :: iterbc                 
 integer                                  , pointer :: ngrid   
 integer                                  , pointer :: ngridm   
 integer                                  , pointer :: nbran   
@@ -139,11 +137,6 @@ double precision, dimension(:,:)         , pointer :: hlev
 !debug
 integer                                  , pointer :: fm1dimp_debug_k1
 integer                                  , pointer :: debug_wr
-
-!local
-!integer                              :: N
-integer                              :: swaoft
-
 
 !
 !f1dimp variables

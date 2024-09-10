@@ -46,6 +46,8 @@
          use m_netw
          use m_sferic, only: jsferic, jasfer3D
          use geometry_module, only: dcosphi
+         use m_drawthis
+         use m_qnerror
          implicit none
 
          double precision :: atpfo
@@ -64,12 +66,10 @@
          integer :: n
          integer :: n1
          integer :: n2
-         integer :: ndraw
          integer :: ndraw8org
          integer :: nfo
          integer :: npo
          integer :: nr
-         common / drawthis / ndraw(50)
 
          double precision, allocatable :: XH(:, :), YH(:, :)
 

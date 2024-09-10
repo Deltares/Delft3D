@@ -605,6 +605,7 @@ contains
       use m_alloc
       use m_partitioninfo, only: jampi
       use m_sedtrails_data
+      use m_qnerror
 
       implicit none
 

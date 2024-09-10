@@ -32,8 +32,7 @@ src/test/**/ftnunit.html
 src/test/**/DFM_OUTPUT_*/**
 
 # ignore files created by updating process definition files
-src/engines_gpl/waq/resources/csvFiles/*
-!src/engines_gpl/waq/resources/csvFiles/*.csv
+src/engines_gpl/waq/resources/process_lib/csvFiles/*
 
 
 # ignore FortranCInterface header files created on linux

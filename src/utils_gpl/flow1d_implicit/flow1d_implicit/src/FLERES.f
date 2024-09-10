@@ -140,11 +140,9 @@ c
 c
 c     Declaration of local variables:
 c
-      integer  i,    j,    itab ,igr,   ibr, iter, lbrnam
-      real     eta,  dxeta, xc
+      integer  i,    j,    itab ,igr,   iter
+      real     eta,  dxeta
       double precision hact, qact
-      character(len=40) branam
-      character(len=10) xtxt
       logical  epsequ
       external epsequ
 c

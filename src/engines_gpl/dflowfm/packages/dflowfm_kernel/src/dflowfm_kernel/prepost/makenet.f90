@@ -42,6 +42,7 @@
       use gridoperations
       use m_flowparameters, only: bedslope
       use m_mergenodes
+      use m_readyy
 
       implicit none
 
@@ -54,7 +55,6 @@
 
       double precision :: X(8), Y(8), Z(8), XD, YD
       character(len=20) :: fnam
-!   COMMON /CONSTANTS/ E0, RHO, RHOW, CFL, EPS, AG, PI
 
       if (japaramscreen == 1) then
          !ntyp = 7 ; nrx = 32 ; bedslope = 1d-4

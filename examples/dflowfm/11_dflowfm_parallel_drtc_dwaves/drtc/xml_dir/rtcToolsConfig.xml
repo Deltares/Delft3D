@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rtcToolsConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rtc="http://www.wldelft.nl/fews" xmlns="http://www.wldelft.nl/fews" xsi:schemaLocation="http://www.wldelft.nl/fews D:\svn\trunk\src\DeltaShell\DeltaShell.Gui\bin\plugins\DeltaShell.Plugins.DelftModels.RealTimeControl\xsd\rtcToolsConfig.xsd">
+  <general>
+    <description>RTC Model DeltaShell</description>
+    <poolRoutingScheme>Theta</poolRoutingScheme>
+    <theta>0.5</theta>
+  </general>
+  <rules>
+    <rule>
+      <lookupTable id="Control Group 1Lookup table">
+        <table>
+          <record x="-2" y="20" />
+          <record x="0" y="20" />
+          <record x="9.5" y="20" />
+          <record x="10.0" y="5" />
+          <record x="20" y="5" />
+        </table>
+        <interpolationOption>LINEAR</interpolationOption>
+        <extrapolationOption>BLOCK</extrapolationOption>
+        <input>
+          <x ref="IMPLICIT">input_ObservationPoint01_water_level</x>
+        </input>
+        <output>
+          <y>output_weir_crest_level</y>
+        </output>
+      </lookupTable>
+    </rule>
+  </rules>
+</rtcToolsConfig>

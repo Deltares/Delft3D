@@ -38,9 +38,9 @@
 
          implicit none
 !     Bereken de afstand SS van punt TS in X,Y, tov punt met TS = 0, ofwel N=1
+         integer :: n
          double precision :: X(N), Y(N), X2(N), Y2(N)
          double precision :: ts, ss
-         integer :: n
          double precision :: dt, t0, xt0, yt0, t1, xt1, yt1, dnx, dny, dsx, dsy
 
          double precision, intent(in) :: H !< for curvature dependent meshing (>0) or disable (<=0)

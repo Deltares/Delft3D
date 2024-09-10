@@ -35,31 +35,22 @@
          use M_SAMPLES
          use m_alloc
          use ieee_arithmetic, only: ieee_is_nan
+         use m_drawthis
+         use m_pharosflow
+         use m_readyy
+         use m_qnerror
          implicit none
          integer, intent(inout) :: msam !< already opened file pointer to sample file
          integer, intent(in) :: jadoorladen !< whether to append to global set (1) or start empty (0)
          integer :: ierr
-         integer :: jflow
-         integer :: jqn
-         integer :: mcs
-         integer :: ncs
-         integer :: ndraw
          integer :: nkol
          integer :: nrow
-         integer :: ns1
          integer :: nsm
          integer :: num
          integer :: K, K0
          double precision :: x, y, z
          double precision :: XX, YY, ZZ, ZZ2
-
-         common / PHAROSFLOW / JFLOW
-         common / PHAROSLINE / REC1
-         common / SAMPLESADM / MCS, NCS, NS1
-         common / QNRGF / JQN
-         common / DRAWTHIS / ndraw(50)
-
-         character REC * 132, TEX * 10, REC1 * 132
+         character REC * 132, TEX * 10
          logical THISISANUMBER
 
          call SAVESAM()
@@ -95,7 +86,6 @@
          else
             call RESTORESAM()
             K = NS
-            NS1 = NS
          end if
          K0 = K
 

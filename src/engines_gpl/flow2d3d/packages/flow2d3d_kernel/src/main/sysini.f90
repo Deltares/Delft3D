@@ -212,7 +212,7 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
     write (lundia, '(2a)')  '***           built from : ', trim(txthlp)
     write (lundia, '(a)')   '***'
     write (lundia, '(2a)')  '***           runid      : ', trim(runid)
-    if (.not.gdp%gdnfl%skipuniqueid) then
+    if (gdp%gdnfl%add_uniqueid) then
         write (lundia, '(2a)')  '***           uniqueid   : ', trim(gdp%uniqueid)
     endif
     write (lundia, '(4a)')  '***           date,time  : ', date, ',', rundat(11:19)

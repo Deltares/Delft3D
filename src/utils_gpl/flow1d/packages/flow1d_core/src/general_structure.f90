@@ -1098,7 +1098,7 @@ contains
       logical,                  intent(in   )          :: SkipDimensionChecks     !< Flag indicating if the dimension checks have to be performed
      
       double precision :: crestwidth, totalWidth, closedWidth, closedGateWidthL, closedGateWidthR, help
-      integer :: ng, L, L0, Lf
+      integer :: L0, Lf
 
       ! 1: First determine total width of all genstru links (TODO: AvD: we should not recompute this every user time step)
       totalWidth = 0d0

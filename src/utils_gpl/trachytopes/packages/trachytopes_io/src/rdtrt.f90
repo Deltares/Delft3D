@@ -76,7 +76,6 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     integer                    , pointer :: nodir
     integer                    , pointer :: nroupa
     integer                    , pointer :: nttaru
-    integer                    , pointer :: nttarv
     integer                    , pointer :: ntrt
     integer                    , pointer :: max_cl
     integer                    , pointer :: ntrtnrm
@@ -96,14 +95,11 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     integer                    , pointer :: nmax
 
     integer , dimension(:,:)   , pointer :: ittaru
-    integer , dimension(:,:)   , pointer :: ittarv
     integer , dimension(:)     , pointer :: itrt_list
     integer , dimension(:,:)   , pointer :: ittdef
     integer , dimension(:,:)   , pointer :: ittlin
-    integer , dimension(:,:)   , pointer :: n_m_to_nm
     real(fp), dimension(:)     , pointer :: fraccu_list
     real(fp), dimension(:)     , pointer :: rgcalu
-    real(fp), dimension(:)     , pointer :: rgcalv
     real(fp), dimension(:)     , pointer :: rttaru
     real(fp), dimension(:,:)   , pointer :: rttxyz
 !    real(fp), dimension(:)     , pointer :: rttarv
@@ -158,10 +154,8 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     integer                          :: itttmp
     integer                          :: j
     integer                          :: jdir
-    integer                          :: lcurec
     integer                          :: lfile
     integer                          :: luntmp
-    integer                          :: luntmp2
     integer                          :: m
     integer                          :: m1
     integer                          :: mll
@@ -182,7 +176,6 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     integer, dimension(MAXFLD)       :: itype
     integer, dimension(MAXFLD)       :: lenchr
     integer                          :: nmaxddb
-    logical                          :: dtn
     logical                          :: lokay
     logical                          :: lrcode
     real(fp)                         :: rtimtt
@@ -286,7 +279,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     ! Read value of Trtrou, default NO
     !
     chulp = 'N'
-    call prop_get_string(mdfile_ptr, '*','Trtrou',chulp)
+    call prop_get(mdfile_ptr, '*','Trtrou',chulp)
     !
     ! set LFTRTO to TRUE if CHULP = Y/y
     !
@@ -394,7 +387,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     !
     filtmp = ' '
     keyw   = 'Trtdef'
-    call prop_get_string(mdfile_ptr, '*',keyw,filtmp)
+    call prop_get(mdfile_ptr, '*',keyw,filtmp)
     md_ttdfile = filtmp
     !
     txtput1 = keyw
@@ -938,7 +931,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
         else
             keyw   = 'Trt'//char(116+jdir)    ! 'Trtu' or 'Trtv'
         end if
-        call prop_get_string(mdfile_ptr, '*',keyw,filtmp)
+        call prop_get(mdfile_ptr, '*',keyw,filtmp)
         !
         txtput1 = keyw
         write (msgtmp, '(a,a,a)') txtput1,': ',trim(filtmp)
@@ -988,7 +981,7 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
         else
             keyw   = 'TrtCl'//char(116+jdir)    ! 'TrtClu' or 'TrtClv'
         end if
-        call prop_get_string(mdfile_ptr, '*',keyw,filtmp)
+        call prop_get(mdfile_ptr, '*',keyw,filtmp)
         !
         txtput1 = keyw
         write (msgtmp, '(a,a,a)') txtput1,': ',trim(filtmp)
@@ -1160,12 +1153,8 @@ subroutine rdttar(filnam    ,lundia    ,error     ,nttaru    ,ittaru    , &
 !
     integer                                     :: i
     integer                                     :: dimctr
-    integer                                     :: ibeg
     integer                                     :: iblbeg
-    integer                                     :: iend
     integer                                     :: iocond
-    integer                                     :: lcurec
-    integer                                     :: lfile
     integer                                     :: mcurec
     integer                                     :: mttaru
     integer                                     :: nblcks
@@ -1778,7 +1767,6 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
     integer  , pointer :: nroupa
     integer  , pointer :: nodir
     integer  , pointer :: nttaru
-    integer  , pointer :: nttarv
     integer  , pointer :: ntrt
     integer  , pointer :: ntrtnrm
     integer  , pointer :: ntrtcrs
@@ -1786,7 +1774,6 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
     integer  , pointer :: n_q
     integer  , pointer :: n_zs
     integer  , pointer :: nmmax
-    integer  , dimension(:,:), pointer :: n_m_to_nm
 !
 ! Local parameters
 !
@@ -1804,23 +1791,17 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
     integer                                       :: iocond
     integer                                       :: istr
     integer                                       :: jdir
-    integer                                       :: lfile
     integer                                       :: luntmp
-    integer                                       :: nlook
     integer                                       :: nrflds
-    integer                                       :: ntrec
     integer        , dimension(MAXFLD)            :: ifield
     integer        , dimension(MAXFLD)            :: itype
     integer        , dimension(MAXFLD)            :: lenchr
     integer                                       :: prev_trt_no    ! previous trt_no for discharge/waterlevel dependent trachytopes
     integer                                       :: prev_trt_type  ! previous type of discharge/waterlevel dependent trachytopes
     logical                                       :: lftrto
-    logical                                       :: newkw
     real(fp)       , dimension(MAXFLD)            :: rfield
     character(30)  , dimension(MAXFLD)            :: cfield
-    character(12)                                 :: fildef
     character(132)                                :: rec132
-    character(20)                                 :: cdef
     character(20)                                 :: chulp
     character(256)                                :: filtmp
     character(6)                                  :: keyw
@@ -1859,7 +1840,7 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
     ! Read value of Trtrou, default NO
     !
     chulp = 'N'
-    call prop_get_string(mdfile_ptr, '*','Trtrou',chulp)
+    call prop_get(mdfile_ptr, '*','Trtrou',chulp)
     !
     ! set LFTRTO to TRUE if CHULP = Y/y
     !
@@ -1875,7 +1856,7 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
     !
     filtmp = ' '
     keyw   = 'Trtdef'
-    call prop_get_string(mdfile_ptr, '*',keyw,filtmp)
+    call prop_get(mdfile_ptr, '*',keyw,filtmp)
     !
     ! keyword not found ?
     !
@@ -1946,7 +1927,7 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
            else
                keyw = 'Trt'//char(116+jdir)    ! 'Trtu' or 'Trtv'
            end if
-           call prop_get_string(mdfile_ptr, '*',keyw,filtmp)
+           call prop_get(mdfile_ptr, '*',keyw,filtmp)
            !
            ! keyword not found ?
            !
@@ -2070,11 +2051,7 @@ subroutine dittar(filnam    ,lundia    ,error     ,nttaru    )
 ! Local variables
 !
     integer                          :: i
-    integer                          :: ibeg
-    integer                          :: iend
     integer                          :: iocond
-    integer                          :: lcurec
-    integer                          :: lfile
     integer                          :: luntmp
     integer                          :: mcurec
     integer                          :: nrflds

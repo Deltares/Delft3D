@@ -282,8 +282,8 @@ c
 c
 c     Declaration of local variables:
 c
-      logical lslot, loop
-      integer ibr, i1, i2, i, lbrnam
+      logical lslot
+      integer ibr, i1, i2, i
       double precision hi, qi
       real    ui, h0, hh1, dz,
      +        af0, o0, r0, c0,
@@ -291,10 +291,7 @@ c
      +        af2, o2, r2, c2,
      +        p1, p2, c2r, d90,
      +        zbmain, wmain, amain, omain, rmain, cmain,
-     +        zbsub1, wsub1, asub1, osub1, rsub1, csub1,
-     +        xc
-      character(len=40) branam
-      character(len=11) xtxt
+     +        zbsub1, wsub1, asub1, osub1, rsub1, csub1
 c
 c     Include sobek constants
 c

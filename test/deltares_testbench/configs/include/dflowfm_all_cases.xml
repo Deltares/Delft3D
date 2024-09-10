@@ -3921,7 +3921,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c100_surface_netcdf_periodic_forcing" ref="dflowfm_default">
-      <path version="2024-02-22T14:50:00">e02_dflowfm/f006_external_forcing/c100_surface_netcdf_periodic_forcing</path>
+      <path version="2024-08-26T14:55:00">e02_dflowfm/f006_external_forcing/c100_surface_netcdf_periodic_forcing</path>
       <programs>
         <program ref="DFlowFM">
           <arguments>

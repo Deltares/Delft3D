@@ -36,6 +36,7 @@ subroutine assignijgrid(k, ic, jc)
    use m_netw
    use m_grid
    use m_missing
+   use m_readyy
 
    implicit none
 

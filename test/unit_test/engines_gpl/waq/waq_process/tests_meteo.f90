@@ -31,7 +31,7 @@ program tests_meteo
 
     implicit none
     character(len=200) :: cmd_arg
-    integer :: iargc, getarg
+    integer :: iargc
     real(kind=real_wp), parameter :: tolerance = 0.0001
 
     ! Administrative arrays and variables
@@ -64,7 +64,7 @@ program tests_meteo
 
         select case (trim(cmd_arg))
         case('test_meteo_nearest')
-            call test(test_meteo_nearest, 'Tests for mearest-neighbour interpolation meteo data')
+            call test(test_meteo_nearest, 'Tests for nearest-neighbour interpolation meteo data')
         case('test_meteo_linear')
             call test(test_meteo_linear, 'Tests for linear interpolation meteo data')
         case('test_meteo_quadratic')
@@ -77,7 +77,7 @@ program tests_meteo
     else
         write(*,*) "No test specified, running all tests"
 
-        call test(test_meteo_nearest, 'Tests for mearest-neighbour interpolation meteo data')
+        call test(test_meteo_nearest, 'Tests for nearest-neighbour interpolation meteo data')
         call test(test_meteo_linear, 'Tests for linear interpolation meteo data')
         call test(test_meteo_quadratic, 'Tests for quadratic interpolation meteo data')
     endif

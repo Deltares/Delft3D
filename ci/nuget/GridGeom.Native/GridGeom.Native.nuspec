@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>GridGeom.Native</id>
+        <version>1.0.0</version>
+        <authors>Deltares</authors>
+        <owners>Deltares</owners>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <licenseUrl>http://www.gnu.org/licenses/lgpl.html</licenseUrl>
+        <projectUrl>http://oss.deltares.nl/web/delta-shell</projectUrl>
+        <description>This package contains the native GridGeom library, which includes functions related to grid operations.</description>
+        <summary>Deltares GridGeom library.</summary>
+        <copyright>Deltares 2024</copyright>
+        <tags>native</tags>
+    </metadata>
+    <files>
+        <file src="..\..\..\source\x64\lib\gridgeom.dll" target="runtimes\win-x64\native\" />
+        <file src="..\..\..\source\x64\lib\libifcoremd.dll" target="runtimes\win-x64\native\" />
+        <file src="..\..\..\source\x64\lib\libmmd.dll" target="runtimes\win-x64\native\" />
+        <file src="..\..\..\source\x64\lib\svml_dispmd.dll" target="runtimes\win-x64\native\" />
+        <file src="build\**\*" target="build"/>
+    </files>
+</package>

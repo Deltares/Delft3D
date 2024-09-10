@@ -32,6 +32,7 @@
 
       subroutine QNREADERROR(W1, W2, MINP)
          use unstruc_files
+         use m_qnerror
          implicit none
          integer :: minp
          character W1 * (*), W2 * (*)

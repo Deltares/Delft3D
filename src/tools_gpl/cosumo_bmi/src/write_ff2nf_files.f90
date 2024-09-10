@@ -154,7 +154,6 @@ subroutine wri_FF2NF(idis)
     character(500)                         :: ctaua
     character(12)                          :: inttostring
     character(1000)                        :: string
-    character(1000)                        :: string_temp
     logical                                :: changed
     type(tree_data)              , pointer :: outfile_ptr       ! pointer to the output xml file.
     type(tree_data)              , pointer :: outfile_cosumo_ptr        ! pointer to the cosumo bloxk of the output xml file.

@@ -251,7 +251,7 @@ contains
          rug(num_rugs)%name(1:name_length) = name(1:name_length)
       else ! No name given, generate one.
          write (runup_gauge_digits, '(i1)') max(2, int(floor(log10(dble(runup_gauge_id)) + 1)))
-         write (rug(num_rugs)%name, '(a,i'//runup_gauge_digits//'.'//runup_gauge_digits//')'), trim(defaultName_), runup_gauge_id
+         write (rug(num_rugs)%name, '(a,i'//runup_gauge_digits//'.'//runup_gauge_digits//')') trim(defaultName_), runup_gauge_id
          runup_gauge_id = runup_gauge_id + 1
       end if
 

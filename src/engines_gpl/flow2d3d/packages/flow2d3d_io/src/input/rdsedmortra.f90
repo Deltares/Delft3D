@@ -112,7 +112,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! Read name of default transport formula
     !
     filtrn = ' '
-    call prop_get_string(gdp%mdfile_ptr,'*','TraFrm',filtrn)
+    call prop_get(gdp%mdfile_ptr,'*','TraFrm',filtrn)
     !
     call initrafrm(lundia    ,error     ,lsedtot   ,gdp%gdtrapar)
     if (.not.error) then
@@ -120,7 +120,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! Read name of sediment input file
     !
     filsed = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filsed', filsed)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filsed', filsed)
     !
     ! Sediment input has been placed in input_tree in subroutine dimsedconst
     ! get pointer
@@ -139,7 +139,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! Read name of morphology input file
     !
     filmor = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filmor', filmor)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filmor', filmor)
     !
     ! Create Morphology branch in input tree
     !

@@ -23,26 +23,25 @@
 
 module initialize_conditions
     use m_waq_precision
+    use timers
     use m_string_utils
-    use m_zlayer
-    use m_segcol
-    use m_expands_vol_area_for_bottom_cells, only : expands_vol_area_for_bottom_cells
-    use time_dependent_variables, only : initialize_time_dependent_variables
+    use m_zlayer, only: zlayer
+    use m_time_dependent_variables, only: update_time_dependent_external_forcing
     use workspace
     use m_delpar00
-    use m_chknmr
-    use m_array_manipulation, only : initialize_real_array, copy_real_array_elements, create_pointer_table
+    use m_attribute_array, only: change_attribute_array
+    use m_array_manipulation, only: initialize_real_array, copy_real_array_elements, create_pointer_table
     use m_open_waq_files
 
     private
     public :: initialize_all_conditions
 
 contains
+
+    !> Initializes all start conditions for simulation
     subroutine initialize_all_conditions(buffer, num_files, max_real_arr_size, max_int_arr_size, max_char_arr_size, &
             page_length, file_unit_list, file_name_list, filtype, gridps, dlwqd, ierr)
 
-        !> Initializes all start conditions for simulation
-        !>
         !> Performs:
         !>      - calls SPACE to allocate space for all arrays
         !>      - calls initialize_fixed_conditions to initialize all fixed conditions
@@ -50,28 +49,15 @@ contains
         !>      - calls initialize_variables for unclear reasons
         !>      - calls initialize_output to initialize the output system
         !>      - imports all grid informations and exchange tables
-        !>      - calls initialize_time_dependent_variables to initialize all time dependent variables
+        !>      - calls update_time_dependent_external_forcing to initialize all time dependent variables
         !>      - calls expands_vol_area_for_bottom_cells to initialize the water bed layers
         !>      - imports initial conditions
 
-        !     LOGICAL UNITNUMBERS : file_unit_list( 2) - system intermediate file
-        !                           file_unit_list(19) - monitoring output file
-        !
-        !     SUBROUTINES CALLED  : SPACE , initialises common blocks
-        !                           initialize_fixed_conditions, initialises fixed conditions
-        !                           initialize_processes, initialises proces system
-        !                           initialize_output, initialises output system
-        !                           initialize_time_dependent_variables, sets time functions
-        !                           open_waq_files, opens files
-        !                           MOVE  , copy's arrays
-        !                           ZERO  , zeros an real arrays
-        !
-        use m_dhisys
         use m_grid_utils_external
         use variable_declaration
         use delwaq2_data
-        use timers
-        use workspace, only : set_array_indexes
+
+        use workspace, only: set_array_indexes
         use string_module  ! string manipulation tools
         use m_waq_memory_dimensions          ! System characteristics
         use m_timer_variables          ! Timer characteristics
@@ -79,9 +65,6 @@ contains
         use m_integer_array_indices          ! Pointers in integer array workspace
         use m_character_array_indices          ! Pointers in character array workspace
 
-        !     Parameters          :
-
-        !     kind           function         name            description
         type(waq_data_buffer), intent(inout) :: buffer        !< System total array space
         integer(kind = int_wp), intent(in) :: num_files          !< Number of files
         integer(kind = int_wp), intent(inout) :: max_real_arr_size         !< dimension   A-array
@@ -97,9 +80,9 @@ contains
 
         REAL(kind = real_wp) :: RDUMMY(1)
         LOGICAL       LDUMMY, UPDATR
-        CHARACTER(len=200) FINAM
+        CHARACTER(len = 200) FINAM
         INTEGER(kind = int_wp) :: SENDBUF(3)
-        CHARACTER(len=4)   cext                          ! inital conditions file extention
+        CHARACTER(len = 4)   cext                          ! inital conditions file extention
 
         INTEGER(kind = int_wp) :: IERRIO, new_lun
 
@@ -109,7 +92,6 @@ contains
         if (timon) call timstrt ("initialize_all_conditions", ithandl)
 
         !         initialise the system
-
         ftype = filtype
         call set_array_indexes  (file_unit_list(19), .TRUE., buffer%rbuf, buffer%ibuf, buffer%chbuf, &
                 max_real_arr_size, max_int_arr_size, max_char_arr_size)
@@ -254,10 +236,10 @@ contains
             !   feature 2 == position w.r.t. the vertical direction
             !   feature 3 == segment is active segment of global domain or not
             !   feature 4 == segment belongs to own processor
-            CALL CHKNMR (file_unit_list(19), nosss, J(IKNMR:))
+            CALL change_attribute_array (file_unit_list(19), nosss, J(IKNMR:))
 
             ! determine top of the vertical columns
-            call segcol(nosss, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, &
+            call set_cell_top_of_column(nosss, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, &
                     j(ixpnt:), j(iknmr:), isegcol)
 
             ! initial conditions
@@ -321,7 +303,7 @@ contains
             ! first read of relevant time varying arrays
             IFFLAG = 1
 
-            CALL initialize_time_dependent_variables (file_unit_list, ITSTRT, ITIMEL, A(IHARM:), A(IFARR:), &
+            CALL update_time_dependent_external_forcing (file_unit_list, ITSTRT, ITIMEL, A(IHARM:), A(IFARR:), &
                     J(INRHA:), J(INRH2:), J(INRFT:), IDT, A(IVOL:), &
                     A(IDIFF:), A(IAREA:), A(IFLOW:), A(IVELO:), A(ILENG:), &
                     A(IWSTE:), A(IBSET:), A(ICONS:), A(IPARM:), A(IFUNC:), &
@@ -371,9 +353,9 @@ contains
 
             !         initial conditions coflowing substances
 
-            do iseg = 0, nosss - 1
-                volume = a(ivol + iseg)
-                do i1 = iseg * num_substances_total, iseg * num_substances_total + num_substances_transported - 1
+            do cell_i = 0, nosss - 1
+                volume = a(ivol + cell_i)
+                do i1 = cell_i * num_substances_total, cell_i * num_substances_total + num_substances_transported - 1
                     a(imass + i1) = a(iconc + i1) * volume
                 enddo
             enddo
@@ -426,28 +408,25 @@ contains
         RETURN
     END subroutine initialize_all_conditions
 
-    subroutine inact (num_cells, num_substances_transported, num_substances_total, conc, amass, &
-            num_spatial_parameters, iparm, parm, string, propor, &
-            direct)
-        !>\File
-        !>         Makes mass/gridcell from mass/m2 for the passive substances
 
-        implicit none
+    !> Makes mass/gridcell from mass/m2 for the passive substances
+    subroutine inact(num_cells, num_substances_transported, num_substances_total, conc, amass, &
+            num_spatial_parameters, iparm, parm, string, propor, direct)
 
         integer(kind = int_wp), intent(in) :: num_cells              !< number of computational volumes
-        integer(kind = int_wp), intent(in) :: num_substances_transported              !< number of transported substances
+        integer(kind = int_wp), intent(in) :: num_substances_transported        !< number of transported substances
         integer(kind = int_wp), intent(in) :: num_substances_total              !< total number of substances
         real(kind = real_wp), intent(inout) :: conc (num_substances_total, num_cells) !< the concentration values
         real(kind = real_wp), intent(out) :: amass(num_substances_total, num_cells) !< the mass values
-        integer(kind = int_wp), intent(in) :: num_spatial_parameters               !< number of parameters or segment functions
+        integer(kind = int_wp), intent(in) :: num_spatial_parameters      !< number of parameters or segment functions
         integer(kind = int_wp), intent(in) :: iparm              !< selected parameter
         real(kind = real_wp), intent(in) :: parm (num_spatial_parameters * num_cells) !< parameter or segment function array
         character(1), intent(out) :: string(7)          !< model docu substring
         logical, intent(in) :: propor             !< if .true. then /m2 in the input
         logical, intent(in) :: direct             !< if .false. segments is first index
 
-        integer(kind = int_wp) :: iseg   ! loop counter computational volumes
-        integer(kind = int_wp) :: isys   ! loop counter modelled substances
+        integer(kind = int_wp) :: cell_i   ! loop counter computational volumes
+        integer(kind = int_wp) :: substance_i   ! loop counter modelled substances
         real(kind = real_wp) :: surf   ! help variable
         integer(kind = int_wp) :: indx   ! index
 
@@ -457,14 +436,14 @@ contains
         else
             indx = (iparm - 1) * num_cells + 1       ! segment function
         endif
-        do iseg = 1, num_cells
+        do cell_i = 1, num_cells
             surf = parm(indx)
-            do isys = num_substances_transported + 1, num_substances_total
+            do substance_i = num_substances_transported + 1, num_substances_total
                 if (propor) then                                ! input / m2
-                    amass(isys, iseg) = conc(isys, iseg) * surf
+                    amass(substance_i, cell_i) = conc(substance_i, cell_i) * surf
                 else                                              ! input / gridcell
-                    amass(isys, iseg) = conc(isys, iseg)
-                    conc (isys, iseg) = conc(isys, iseg) / surf      ! conc  / m2
+                    amass(substance_i, cell_i) = conc(substance_i, cell_i)
+                    conc (substance_i, cell_i) = conc(substance_i, cell_i) / surf      ! conc  / m2
                 endif
             enddo
             if (direct) then
@@ -477,24 +456,22 @@ contains
         return
     end subroutine inact
 
-    SUBROUTINE initialize_fixed_conditions (file_unit_list, MODID, SYSID, IDUMP, DUMPID, &
-            IDPNT, IVPNT, DISP, IBPNT, BNDID, &
-            BNDNAM, BNDTYP, INWTYP, IWASTE, iwsknd, &
-            WASTID, WSTNAM, WSTTYP, ALENG, CONST, &
-            PARAM, NRFTOT, NRHARM, CONAME, PANAME, &
-            FUNAME, SFNAME, DINAME, VENAME, IKNMRK, &
-            DANAM, IPDMP, IQDMP, ISDMP, RANAM, &
-            IORAAI, NQRAAI, IQRAAI, GRDNOS, GRDREF, &
-            GRDSEG, GridPs, DMPBAL, dlwqd)
+    !> Reads the DelwaQ binary system file
+    !> Initialises all fixed conditions and names for the simulation from the binary system
+    subroutine initialize_fixed_conditions(file_unit_list, modid, sysid, idump, dumpid, &
+            idpnt, ivpnt, disp, ibpnt, bndid, &
+            bndnam, bndtyp, inwtyp, iwaste, iwsknd, &
+            wastid, wstnam, wsttyp, aleng, const, &
+            param, nrftot, nrharm, coname, paname, &
+            funame, sfname, diname, vename, iknmrk, &
+            danam, ipdmp, iqdmp, isdmp, ranam, &
+            ioraai, nqraai, iqraai, grdnos, grdref, &
+            grdseg, gridps, dmpbal, dlwqd)
 
-        !> Reads the DelwaQ binary system file
-        !>
-        !> Initialises all fixed conditions and names for the simulation from the binary system
         !>                          file at file_unit_list(2).
         !     LOGICAL UNITNUMBERS : file_unit_list( 2) - system intermediate file
         !                           file_unit_list(19) - monitoring output file
 
-        use timers
         use m_grid_utils_external
         use delwaq2_data
         use m_waq_memory_dimensions          ! System characteristics
@@ -579,20 +556,20 @@ contains
                 IWASTE(*), NRFTOT(*), NRHARM(*), file_unit_list   (*), &
                 IKNMRK(*), INWTYP(*)
         INTEGER(kind = int_wp) :: GRDSEG(num_cells + num_cells_bottom, num_grids)
-        CHARACTER(len=40) MODID (4), BNDNAM(*), WSTNAM(*)
-        CHARACTER(len=20) SYSID (*), DUMPID(*), BNDID (*), BNDTYP(*), &
+        CHARACTER(len = 40) MODID (4), BNDNAM(*), WSTNAM(*)
+        CHARACTER(len = 20) SYSID (*), DUMPID(*), BNDID (*), BNDTYP(*), &
                 WASTID(*), WSTTYP(*), CONAME(*), PANAME(*), &
                 FUNAME(*), SFNAME(*), DINAME(*), VENAME(*), &
                 DANAM (*), RANAM (*)
         real(kind = real_wp) :: DISP  (*), ALENG (*), CONST (*), PARAM (*)
-        CHARACTER(len=40)  FILLER
+        CHARACTER(len = 40)  FILLER
         type(GridPointerColl), intent(inout) :: GridPs     !< definitions of the grids
         type(delwaq_data), intent(inout) :: dlwqd      !< derived type for persistent storage
         integer(kind = int_wp) :: dmpbal(*)  !< indicates if dump area is included in the balance
         type(t_grid) :: aGrid      ! a single grid
 
-        integer(kind = int_wp) :: it, noqtt, nosss, k, igrid, iin, iseg, ierror, i_grid
-        integer(kind = int_wp) :: isys, ix, i, idummy
+        integer(kind = int_wp) :: it, noqtt, nosss, k, igrid, iin, cell_i, ierror, i_grid
+        integer(kind = int_wp) :: substance_i, ix, i, idummy
         integer(kind = int_wp) :: ithandl = 0
         if (timon) call timstrt ("initialize_fixed_conditions", ithandl)
 
@@ -616,7 +593,7 @@ contains
         ! sub-grid
         DO IGRID = 1, num_grids
             READ (IIN, END = 40, ERR = 40)  GRDNOS(IGRID), GRDREF(IGRID), &
-                    (GRDSEG(ISEG, IGRID), ISEG = 1, NOSSS)
+                    (GRDSEG(cell_i, IGRID), cell_i = 1, NOSSS)
         ENDDO
         !     the grid structures
         DO IGRID = 1, num_grids
@@ -624,8 +601,8 @@ contains
             if (ierror /= 0) goto 40
             i_grid = GridPs%add(aGrid)
         ENDDO
-        READ (IIN, END = 40, ERR = 40) (IDUMMY, ISYS = 1, num_substances_total)
-        READ (IIN, END = 40, ERR = 40) (IDUMMY, ISYS = 1, num_substances_total)
+        READ (IIN, END = 40, ERR = 40) (IDUMMY, substance_i = 1, num_substances_total)
+        READ (IIN, END = 40, ERR = 40) (IDUMMY, substance_i = 1, num_substances_total)
         READ (IIN, END = 40, ERR = 40) (IKNMRK(K), K = 1, NOSSS)
         IF (num_dispersion_arrays > 0) &
                 READ (IIN, END = 40, ERR = 40) (DINAME(K), K = 1, num_dispersion_arrays)
@@ -764,16 +741,17 @@ contains
 
     END SUBROUTINE initialize_fixed_conditions
 
-    SUBROUTINE initialize_processes(LUNWRP, LCH, LUREP, num_substances_total, process_space_int_len, &
-            num_processes_activated, num_local_vars, num_fluxes, num_defaults, PRVNIO, &
-            IFLUX, PRVVAR, PRVTYP, DEFAUL, STOCHI, &
-            PRONAM, IMODU, IERR, bloom_status_ind, &
+    !! Initialisation of PROCES system.
+    subroutine initialize_processes(lunwrp, lch, lurep, num_substances_total, process_space_int_len, &
+            num_processes_activated, num_local_vars, num_fluxes, num_defaults, prvnio, &
+            iflux, prvvar, prvtyp, defaul, stochi, &
+            pronam, imodu, ierr, bloom_status_ind, &
             bloom_ind, num_substances_transported, num_dispersion_arrays_extra, num_velocity_arrays_extra, &
-            DSTO, VSTO, num_dispersion_arrays_new, IDPNW, num_velocity_arrays_new, &
-            IVPNW, num_local_vars_exchange, PROGRD, PRONDT, num_vars, &
-            VARARR, VARIDX, VARTDA, VARDAG, VARTAG, &
-            VARAGG, num_input_ref, proref, prvpnt)
-        ! Initialisation of PROCES system .
+            dsto, vsto, num_dispersion_arrays_new, idpnw, num_velocity_arrays_new, &
+            ivpnw, num_local_vars_exchange, progrd, prondt, num_vars, &
+            vararr, varidx, vartda, vardag, vartag, &
+            varagg, num_input_ref, proref, prvpnt)
+
         !
         !     FILES               : LUNWRP, Proces work file
         !                           LUREP , Monitoring file
@@ -811,7 +789,6 @@ contains
         !     PROGRD  INTEGER   num_processes_activated     OUTPUT  Grid number for process
         !     PRONDT  INTEGER   num_processes_activated     OUTPUT  Fractional step for process
 
-        use timers
         use process_registration
 
         INTEGER(kind = int_wp) :: LUNWRP, LUREP, num_substances_total, process_space_int_len, num_processes_activated, &
@@ -826,8 +803,8 @@ contains
                 proref(*), prvpnt(*)
         REAL(kind = real_wp) :: DEFAUL(*), STOCHI(*), DSTO(*), &
                 VSTO(*)
-        CHARACTER(len=*) LCH
-        CHARACTER(len=10) PRONAM(*)
+        CHARACTER(len = *) LCH
+        CHARACTER(len = 10) PRONAM(*)
         !
         !     Local declarations
         INTEGER(kind = int_wp) :: NIPMSD, NPROCD, NOLOCD, NFLUXD, NODEFD, &
@@ -1044,15 +1021,13 @@ contains
         !
     end subroutine initialize_processes
 
-    SUBROUTINE initialize_output(LUNWRO, LCH, LUREP, num_output_files, num_output_variables_extra, &
-            output_buffer_len, IOUTPS, IOPOIN, OUNAM, OUSNM, &
-            OUUNI, OUDSC, num_substances_total, SYSNM, SYUNI, &
-            SYDSC, file_unit_list, file_name_list, IERR)
-        ! Initialisation of OUTPUT system.
-        !   - Reads output work file.
-        !
-        !     PARAMETERS          : 12
-        !
+    !! Initialisation of OUTPUT system.
+    subroutine initialize_output(lunwro, lch, lurep, num_output_files, num_output_variables_extra, &
+            output_buffer_len, ioutps, iopoin, ounam, ousnm, &
+            ouuni, oudsc, num_substances_total, sysnm, syuni, &
+            sydsc, file_unit_list, file_name_list, ierr)
+
+
         !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
         !     ----    -----    ------     ------- -----------
         !     LUNWRO  INTEGER       1     INPUT   Output work file
@@ -1080,21 +1055,18 @@ contains
         !     file_unit_list     INTEGER    *        INPUT   array with unit numbers
         !     file_name_list   CHAR*(*)   *        INPUT   filenames
         !     IERR    INTEGER       1    IN/OUT   cummulative error count
-        !
-        !     Declaration of arguments
-        !
+
         use m_open_waq_files
-        use timers
         use results
 
         integer(kind = int_wp) :: lunwro, lurep, num_output_files, num_output_variables_extra, output_buffer_len, num_substances_transported, &
                 ierr, num_substances_total
         integer(kind = int_wp) :: ioutps(7, *), iopoin(*), file_unit_list(*)
-        character(len=*) lch, file_name_list(*)
-        character(len=20)  ounam(*)
-        character(len=100) ousnm(*), sysnm(*)
-        character(len=40)  ouuni(*), syuni(*)
-        character(len=60)  oudsc(*), sydsc(*)
+        character(len = *) lch, file_name_list(*)
+        character(len = 20)  ounam(*)
+        character(len = 100) ousnm(*), sysnm(*)
+        character(len = 40)  ouuni(*), syuni(*)
+        character(len = 60)  oudsc(*), sydsc(*)
 
         ! local declarations
         integer(kind = int_wp), parameter :: luoff = 18
@@ -1202,4 +1174,228 @@ contains
                 /'          on unit number ', I3)
 
     end subroutine initialize_output
+
+    !! Initialise constant array from common block
+    subroutine dhisys (isysi, isysn)
+
+        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+        !     ----    -----    ------     ------- -----------
+        !     ISYSI   INTEGER       *     OUTPUT  copy of the SYSI common block
+        !     ISYSN   INTEGER       *     OUTPUT  copy of the SYSI common block
+
+        use m_array_manipulation, only: copy_integer_array_elements
+        use m_waq_memory_dimensions          ! System characteristics
+        use m_timer_variables          ! Timer characteristics
+
+        integer(kind = int_wp) :: isysi(:), isysn(:)
+
+        ! Fill the array's
+        call copy_integer_array_elements(ii, isysi, iisize)
+        call copy_integer_array_elements(in, isysn, insize)
+
+    end subroutine dhisys
+
+
+    !! Expands volume, area etc. for bottom cells
+    subroutine expands_vol_area_for_bottom_cells(file_unit_list, num_cells, num_cells_bottom, num_layers, num_grids, &
+            num_exchanges, num_exchanges_bottom_dir, igref, igseg, num_constants, &
+            num_spatial_parameters, num_time_functions, num_spatial_time_fuctions, const, coname, &
+            param, paname, funcs, funame, sfuncs, &
+            sfname, ipoint, volume, area, flow, &
+            aleng)
+
+        !     NAME    KIND     LENGTH     FUNCT.  DESCRIPTION
+        !     ----    -----    ------     ------- -----------
+        !     num_cells   INTEGER    1        INPUT   Number of water segments
+        !     num_cells_bottom   INTEGER    1        INPUT   Number of bottom segments
+        !     num_layers   INTEGER    1        INPUT   Number of water layers
+        !     num_grids  INTEGER    1        INPUT   Nunber of grids
+        !     num_exchanges     INTEGER    1        INPUT   Nunber of water exchanges
+        !     num_exchanges_bottom_dir    INTEGER    1        INPUT   Nunber of bottom exchanges
+        !     IGREF   INTEGER  num_grids     INPUT   Ref, neg = nr of bottom layers
+        !     IGSEG   INTEGER num_cells,num_grids INPUT  pointer from water to bottom
+        !     num_constants  INTEGER    1        INPUT   Number of constants used
+        !     num_spatial_parameters    INTEGER    1        INPUT   Number of parameters
+        !     num_time_functions   INTEGER    1        INPUT   Number of functions ( user )
+        !     num_spatial_time_fuctions  INTEGER    1        INPUT   Number of segment functions
+        !     CONST   REAL     num_constants     INPUT   value of constants
+        !     CONAME  CHAR*20  num_constants     INPUT   Constant names
+        !     PARAM   REAL    num_spatial_parameters,num_cells  INPUT   value of parameters
+        !     PANAME  CHAR*20  num_spatial_parameters       INPUT   Parameter names
+        !     FUNCS   REAL     num_time_functions      INPUT   Function values
+        !     FUNAME  CHAR*20  num_time_functions      INPUT   Function names
+        !     SFUNCS  REAL   num_cells,num_spatial_time_fuctions INPUT   Segment function values
+        !     SFNAME  CHAR*20  num_spatial_time_fuctions     INPUT   Segment function names
+        !     IPOINT  INTEGER   4,NOQT    INPUT   All exchange pointers
+        !     VOLUME  REAL   num_cells+num_cells_bottom  IN/OUT  Segment volumes
+        !     AREA    REAL    num_exchanges+num_exchanges_bottom_dir    IN/OUT  Exchange surfaces
+        !     FLOW    REAL    num_exchanges+num_exchanges_bottom_dir    IN/OUT  Exchange flows
+        !     ALENG   REAL   2,num_exchanges+num_exchanges_bottom_dir   IN/OUT  Diffusion lengthes
+        use m_logger_helper, only: stop_with_error
+        use m_grid_utils_external
+        use m_exchange_values, only: exchange_values
+
+        INTEGER(kind = int_wp) :: file_unit_list(*), IGREF(num_grids), IGSEG(num_cells, num_grids), &
+                IPOINT(4, num_exchanges + num_exchanges_bottom_dir)
+        REAL(kind = real_wp) :: CONST (num_constants), PARAM (num_spatial_parameters, num_cells), &
+                FUNCS (num_time_functions), SFUNCS(num_cells, num_spatial_time_fuctions), &
+                VOLUME(num_cells + num_cells_bottom), AREA(num_exchanges + num_exchanges_bottom_dir), &
+                ALENG (2, num_exchanges + num_exchanges_bottom_dir), FLOW(num_exchanges + num_exchanges_bottom_dir)
+        character(len = 20)         CONAME(num_constants), PANAME(num_spatial_parameters), &
+                FUNAME(num_time_functions), SFNAME(num_spatial_time_fuctions)
+        integer(kind = int_wp) :: num_cells, num_cells_bottom, num_layers, num_grids, num_exchanges, num_exchanges_bottom_dir, num_constants
+        integer(kind = int_wp) :: num_time_functions, num_spatial_time_fuctions, num_spatial_parameters
+
+        !     local
+        LOGICAL              LGET
+        logical :: first_q_column
+        REAL(kind = real_wp), Allocatable :: Horsurf(:), Thickn(:)
+        character(len = 20)         CTAG
+        integer(kind = int_wp) :: ierr, iq, cell_i, nosss
+
+        integer(kind = int_wp) :: ithandl = 0
+        if (timon) call timstrt ("expands_vol_area_for_bottom_cells", ithandl)
+        !
+        NOSSS = num_cells + num_cells_bottom
+        !
+        !     Set up the horizontal surfaces
+        !
+        10 CTAG = 'SURF'
+        LGET = .true.
+        Allocate (Horsurf(NOSSS))
+        call exchange_values (CTAG, NOSSS, Horsurf, num_constants, num_spatial_parameters, &
+                num_time_functions, num_spatial_time_fuctions, CONST, CONAME, PARAM, &
+                PANAME, FUNCS, FUNAME, SFUNCS, SFNAME, &
+                LGET, IERR)
+        IF (IERR /= 0) THEN
+            write (file_unit_list(19), *) ' ERROR: Variabele SURF not found !'
+            call stop_with_error()
+        endif
+
+        ! set surface of the first layer of sediment bed
+
+        horsurf(num_cells + 1:nosss) = 0.0
+        first_q_column = .true.
+        do iq = 1, num_exchanges_bottom_dir
+            if (first_q_column) then
+                if (ipoint(1, num_exchanges + iq) <= num_cells) then
+                    if (ipoint(2, num_exchanges + iq) > 0) then
+                        horsurf(ipoint(2, num_exchanges + iq)) = horsurf(ipoint(2, num_exchanges + iq)) + horsurf(ipoint(1, num_exchanges + iq))
+                    endif
+                endif
+            endif
+            if (ipoint(2, num_exchanges + iq) < 0) then
+                first_q_column = .not. first_q_column
+            endif
+        enddo
+
+        ! set surface of the rest of the sediment layers
+
+        first_q_column = .true.
+        do iq = 1, num_exchanges_bottom_dir
+            if (first_q_column) then
+                if (ipoint(1, num_exchanges + iq) > num_cells) then
+                    if (ipoint(2, num_exchanges + iq) > 0) then
+                        horsurf(ipoint(2, num_exchanges + iq)) = horsurf(ipoint(2, num_exchanges + iq)) + horsurf(ipoint(1, num_exchanges + iq))
+                    endif
+                endif
+            endif
+            if (ipoint(2, num_exchanges + iq) < 0) then
+                first_q_column = .not. first_q_column
+            endif
+        enddo
+
+        ! store the surface areas
+
+        LGET = .false.
+        call exchange_values (CTAG, NOSSS, Horsurf, num_constants, num_spatial_parameters, &
+                num_time_functions, num_spatial_time_fuctions, CONST, CONAME, PARAM, &
+                PANAME, FUNCS, FUNAME, SFUNCS, SFNAME, &
+                LGET, IERR)
+
+        ! Expand the volumes
+        CTAG = 'FIXTH'
+        LGET = .true.
+        Allocate (Thickn(NOSSS))
+        call exchange_values (CTAG, NOSSS, Thickn, num_constants, num_spatial_parameters, &
+                num_time_functions, num_spatial_time_fuctions, CONST, CONAME, PARAM, &
+                PANAME, FUNCS, FUNAME, SFUNCS, SFNAME, &
+                LGET, IERR)
+        IF (IERR /= 0) THEN
+            write (file_unit_list(19), *) ' ERROR: Variabele FIXTH not found !'
+            call stop_with_error()
+        endif
+        do cell_i = num_cells + 1, num_cells + num_cells_bottom
+            volume(cell_i) = Horsurf(cell_i) * Thickn(cell_i)
+        enddo
+
+        ! Expand the areas, lengthes and flows
+        do iq = 1, num_exchanges_bottom_dir
+            area (num_exchanges + iq) = Horsurf(IPOINT(1, num_exchanges + iq))
+            aleng(1, num_exchanges + iq) = 1.0
+            aleng(2, num_exchanges + iq) = 1.0
+            flow (num_exchanges + iq) = 0.0
+        enddo
+
+        deallocate (Horsurf, Thickn)
+
+        if (timon) call timstop (ithandl)
+
+    end subroutine expands_vol_area_for_bottom_cells
+
+    !! sets the top of the column for every segment
+    subroutine set_cell_top_of_column(num_cells, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
+            num_exchanges_bottom_dir, ipoint, iknmrk, isegcol)
+
+        use m_extract_waq_attribute
+
+        integer(kind = int_wp), intent(in) :: num_cells               ! total number of segments
+        integer(kind = int_wp), intent(in) :: num_exchanges_u_dir     ! number of exchange pointers in first direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_v_dir     ! number of exchange pointers in first direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_z_dir     ! number of exchange pointers in first direction
+        integer(kind = int_wp), intent(in) :: num_exchanges_bottom_dir! number of exchange pointers in first direction
+        integer(kind = int_wp), intent(in) :: ipoint(4, *)    ! exchange pointers
+        integer(kind = int_wp), intent(in) :: iknmrk(*)      ! segment attributes
+        integer(kind = int_wp), intent(out) :: isegcol(*)     ! pointer from segment to top of column
+
+        ! local declarations
+        integer(kind = int_wp) :: cell_i         ! segment index
+        integer(kind = int_wp) :: iq             ! exchange index
+        integer(kind = int_wp) :: ifrom          ! from segment in pointer
+        integer(kind = int_wp) :: ito            ! to segment in pointer
+        integer(kind = int_wp) :: ikmrkv         ! first attribute from segment
+        integer(kind = int_wp) :: num_exchanges, z_dir_start_index  ! total number of exchange pointers
+
+        do cell_i = 1, num_cells
+            isegcol(cell_i) = cell_i
+        enddo
+
+        z_dir_start_index = num_exchanges_u_dir + num_exchanges_v_dir + 1
+        num_exchanges = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
+
+        do iq = z_dir_start_index, num_exchanges
+            ifrom = ipoint(1, iq)
+            ito = ipoint(2, iq)
+
+            if (ifrom > 0 .and. ito > 0) then
+                isegcol(ito) = isegcol(ifrom)
+            endif
+        enddo
+
+        do iq = num_exchanges + 1, num_exchanges + num_exchanges_bottom_dir
+
+            ifrom = ipoint(1, iq)
+            ito = ipoint(2, iq)
+
+            ! only positive segments
+            if (ifrom <= 0 .or. ito <= 0) cycle
+
+            ! only if from segment is not a water segment
+            call extract_waq_attribute(1, iknmrk(ifrom), ikmrkv)
+            if (ikmrkv/=3) cycle
+
+            isegcol(ito) = isegcol(ifrom)
+        enddo
+
+    end subroutine set_cell_top_of_column
 end module initialize_conditions

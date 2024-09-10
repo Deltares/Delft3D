@@ -579,7 +579,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     ! Check version number of wave input file
     !
     versionstring = ''
-    call prop_get_string(mdw_ptr, 'WaveFileInformation', 'FileVersion', versionstring)
+    call prop_get(mdw_ptr, 'WaveFileInformation', 'FileVersion', versionstring)
     if (trim(versionstring) < '02.00') return
     keywbased = .true.
     !
@@ -587,7 +587,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     call tree_get_node_by_name( mdw_ptr, 'General', gen_ptr )
     ! Read the Template INPUT keyword before everything else
     sr%inputtemplatefile = ''
-    call prop_get_string (mdw_ptr, 'General', 'INPUTTemplateFile', sr%inputtemplatefile)
+    call prop_get (mdw_ptr, 'General', 'INPUTTemplateFile', sr%inputtemplatefile)
     if(sr%inputtemplatefile/='') then
         inquire (file = trim(sr%inputtemplatefile), exist = ex)
         if (.not. ex) then
@@ -602,17 +602,17 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     ! From here on we know that we read the input data from a keyword based
     ! mdw file.
     !
-    call prop_get_string (mdw_ptr, 'General', 'Projectname'    , sr%prname)
-    call prop_get_string (mdw_ptr, 'General', 'Projectnr'      , sr%prnumb)
-    call prop_get_string (mdw_ptr, 'General', 'Description1'   , sr%title1)
-    call prop_get_string (mdw_ptr, 'General', 'Description2'   , sr%title2)
-    call prop_get_string (mdw_ptr, 'General', 'Description3'   , sr%title3)
-    call prop_get_logical(mdw_ptr, 'General', 'OnlyInputVerify', flag)
+    call prop_get (mdw_ptr, 'General', 'Projectname'    , sr%prname)
+    call prop_get (mdw_ptr, 'General', 'Projectnr'      , sr%prnumb)
+    call prop_get (mdw_ptr, 'General', 'Description1'   , sr%title1)
+    call prop_get (mdw_ptr, 'General', 'Description2'   , sr%title2)
+    call prop_get (mdw_ptr, 'General', 'Description3'   , sr%title3)
+    call prop_get(mdw_ptr, 'General', 'OnlyInputVerify', flag)
     sr%compmode = .not. flag
     !
     exemode = 'exe'
     sr%scriptname = ' '
-    call prop_get_string (mdw_ptr, 'General', 'SwanMode'       , exemode)
+    call prop_get (mdw_ptr, 'General', 'SwanMode'       , exemode)
     call str_lower(exemode)
     select case (exemode)
     case ('exe')
@@ -623,7 +623,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
             write(*,*) 'SWAN_INPUT: SwanMode = lib only allowed when D-Waves is run using MPI.'
             call handle_errors_mdw(sr)
         endif
-        call prop_get_string (mdw_ptr, 'General', 'ScriptName' , sr%scriptname)
+        call prop_get (mdw_ptr, 'General', 'ScriptName' , sr%scriptname)
         if (sr%scriptname /= ' ') then
             sr%scriptname = trim(sr%scriptname)//SCRIPT_EXTENSION
             inquire (file = trim(sr%scriptname), exist = ex)
@@ -671,7 +671,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
             read(old_input,'(a)',iostat=ierr) rec
         enddo
     else
-        call prop_get_string (mdw_ptr, 'General', 'SimMode', parname)
+        call prop_get (mdw_ptr, 'General', 'SimMode', parname)
     endif
        
     select case (parname)
@@ -684,12 +684,12 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        sr%modsim = 2
     case ('non-stationary')
        sr%modsim = 3
-       call prop_get_real(mdw_ptr, 'General', 'TimeStep', sr%deltc)
+       call prop_get(mdw_ptr, 'General', 'TimeStep', sr%deltc)
        if (sr%deltc < 0.0) then
           write(*,*) '*** ERROR: Unable to read non-stationary parameter "TimeStep"'
           call handle_errors_mdw(sr)
        endif
-       call prop_get_real(mdw_ptr, 'General', 'TimeInterval', sr%nonstat_interval)
+       call prop_get(mdw_ptr, 'General', 'TimeInterval', sr%nonstat_interval)
        if (sr%nonstat_interval < 0.0) then
           write(*,*) '*** ERROR: Unable to read non-stationary parameter "TimeInterval"'
           call handle_errors_mdw(sr)
@@ -700,16 +700,16 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     end select
     !
     parname = ''
-    call prop_get_string (mdw_ptr, 'General', 'FlowFile', parname)
+    call prop_get (mdw_ptr, 'General', 'FlowFile', parname)
     if (parname /= ' ') then
        call setmode(wavedata, flow_online)
        parname = ''
-       call prop_get_string (mdw_ptr, 'General', 'FlowMudFile', parname)
+       call prop_get (mdw_ptr, 'General', 'FlowMudFile', parname)
        if (parname /= ' ') then
           call setmode(wavedata, flow_mud_online)
        endif
     else
-       call prop_get_string (mdw_ptr, 'General', 'ComFile', sr%comfile)
+       call prop_get (mdw_ptr, 'General', 'ComFile', sr%comfile)
     endif
     select case (wavedata%mode)
     case (stand_alone)
@@ -721,7 +721,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     end select
     !
     parname = ''
-    call prop_get_string (mdw_ptr, 'General', 'DirConvention', parname)
+    call prop_get (mdw_ptr, 'General', 'DirConvention', parname)
     call str_lower(parname, len(parname))
     select case (parname)
     case ('nautical')
@@ -733,13 +733,13 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        call handle_errors_mdw(sr)
     end select
     obstfil = ''
-    call prop_get_string (mdw_ptr, 'General', 'ObstacleFile', obstfil)
+    call prop_get (mdw_ptr, 'General', 'ObstacleFile', obstfil)
     !
     ! Determine reference date. Date string converted from YYYY-MM-DD
     ! to YYYYMMDD.
     !
     parname = ''
-    call prop_get_string (mdw_ptr, 'General', 'ReferenceDate', parname)
+    call prop_get (mdw_ptr, 'General', 'ReferenceDate', parname)
     parname(5:6) = parname(6:7)
     parname(7:8) = parname(9:10)
     parname(9:) = ' '
@@ -752,14 +752,14 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     sr%refjulday = ymd2jul(refdate)
     !
     sr%tzone = 0.0
-    call prop_get_real   (mdw_ptr, 'General', 'TZone', sr%tzone)
+    call prop_get   (mdw_ptr, 'General', 'TZone', sr%tzone)
     !
     tscale = 60.0
-    call prop_get_real   (mdw_ptr, 'General', 'TScale', tscale)
+    call prop_get   (mdw_ptr, 'General', 'TScale', tscale)
     call settscale(wavedata%time, tscale)
     !
     tseriesfilename = ''
-    call prop_get_string (mdw_ptr, 'General', 'TSeriesFile', tseriesfilename)
+    call prop_get (mdw_ptr, 'General', 'TSeriesFile', tseriesfilename)
     if (tseriesfilename /= ' ') then
        sr%timedependent = .true.
        call readtable(sr%tseriesfile, tseriesfilename, sr%refjulday, errorstring)
@@ -769,17 +769,17 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        endif
     endif
     sr%flowLinkConnectivity = .false.
-    call prop_get_logical (mdw_ptr, 'General', 'flowLinkConnectivity', sr%flowLinkConnectivity)
+    call prop_get (mdw_ptr, 'General', 'flowLinkConnectivity', sr%flowLinkConnectivity)
     !
     ! Write format for SWAN input
     sr%ndec = 8
-    call prop_get_integer (mdw_ptr, 'General', 'NDec', sr%ndec)
+    call prop_get (mdw_ptr, 'General', 'NDec', sr%ndec)
     !
     ! Time points
     !
     timetable = -999
     if (sr%timedependent) then
-       call prop_get_integer(mdw_ptr, 'General', 'TimePntBlock', timetable)
+       call prop_get(mdw_ptr, 'General', 'TimePntBlock', timetable)
     endif
     if (timetable > 0) then
        !
@@ -828,19 +828,19 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     !
     ! Get default values for time-varying quantities
     !
-    call prop_get_real   (mdw_ptr, 'General', 'WaterLevel', sr%zeta(1))
+    call prop_get   (mdw_ptr, 'General', 'WaterLevel', sr%zeta(1))
     sr%zeta = sr%zeta(1)
     !
-    call prop_get_real   (mdw_ptr, 'General', 'XVeloc'    , sr%ux0(1))
+    call prop_get   (mdw_ptr, 'General', 'XVeloc'    , sr%ux0(1))
     sr%ux0 = sr%ux0(1)
     !
-    call prop_get_real   (mdw_ptr, 'General', 'YVeloc'    , sr%uy0(1))
+    call prop_get   (mdw_ptr, 'General', 'YVeloc'    , sr%uy0(1))
     sr%uy0 = sr%uy0(1)
     !
-    call prop_get_real   (mdw_ptr, 'General', 'WindSpeed' , sr%wvel(1))
+    call prop_get   (mdw_ptr, 'General', 'WindSpeed' , sr%wvel(1))
     sr%wvel = sr%wvel(1)
     !
-    call prop_get_real   (mdw_ptr, 'General', 'WindDir'   , sr%wdir(1))
+    call prop_get   (mdw_ptr, 'General', 'WindDir'   , sr%wdir(1))
     sr%wdir = sr%wdir(1)
     if (timetable > 0) then
        !
@@ -859,16 +859,16 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
           case ('timepoint')
              timenr = timenr + 1
              i      = timenr
-             call prop_get_real   (tmp_ptr, '*', 'Time'      , sr%timwav(timenr))
-             call prop_get_real   (tmp_ptr, '*', 'WaterLevel', sr%zeta(i))
+             call prop_get   (tmp_ptr, '*', 'Time'      , sr%timwav(timenr))
+             call prop_get   (tmp_ptr, '*', 'WaterLevel', sr%zeta(i))
              if (timenr==0) sr%zeta = sr%zeta(1)
-             call prop_get_real   (tmp_ptr, '*', 'XVeloc'    , sr%ux0(i))
+             call prop_get   (tmp_ptr, '*', 'XVeloc'    , sr%ux0(i))
              if (timenr==0) sr%ux0 = sr%ux0(1)
-             call prop_get_real   (tmp_ptr, '*', 'YVeloc'    , sr%uy0(i))
+             call prop_get   (tmp_ptr, '*', 'YVeloc'    , sr%uy0(i))
              if (timenr==0) sr%uy0 = sr%uy0(1)
-             call prop_get_real   (tmp_ptr, '*', 'WindSpeed' , sr%wvel(i))
+             call prop_get   (tmp_ptr, '*', 'WindSpeed' , sr%wvel(i))
              if (timenr==0) sr%wvel = sr%wvel(1)
-             call prop_get_real   (tmp_ptr, '*', 'WindDir'   , sr%wdir(i))
+             call prop_get   (tmp_ptr, '*', 'WindDir'   , sr%wdir(i))
              if (timenr==0) sr%wdir = sr%wdir(1)
           case default
              !
@@ -927,7 +927,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     ! Default settings for domains
     !
     parname = ''
-    call prop_get_string (mdw_ptr, 'General', 'DirSpace', parname)
+    call prop_get (mdw_ptr, 'General', 'DirSpace', parname)
     call str_lower(parname, len(parname))
     def_dirspace = -999
     select case (parname)
@@ -948,12 +948,12 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     def_freqmin  = -999.0
     def_freqmax  = -999.0
     sr%veg_drag  = -999.0
-    call prop_get_integer(mdw_ptr, 'General', 'NDir'    , def_ndir)
-    call prop_get_real   (mdw_ptr, 'General', 'StartDir', def_startdir)
-    call prop_get_real   (mdw_ptr, 'General', 'EndDir'  , def_enddir)
-    call prop_get_integer(mdw_ptr, 'General', 'NFreq'   , def_nfreq)
-    call prop_get_real   (mdw_ptr, 'General', 'FreqMin' , def_freqmin)
-    call prop_get_real   (mdw_ptr, 'General', 'FreqMax' , def_freqmax)
+    call prop_get(mdw_ptr, 'General', 'NDir'    , def_ndir)
+    call prop_get   (mdw_ptr, 'General', 'StartDir', def_startdir)
+    call prop_get   (mdw_ptr, 'General', 'EndDir'  , def_enddir)
+    call prop_get(mdw_ptr, 'General', 'NFreq'   , def_nfreq)
+    call prop_get   (mdw_ptr, 'General', 'FreqMin' , def_freqmin)
+    call prop_get   (mdw_ptr, 'General', 'FreqMax' , def_freqmax)
     !
     ! Count number of external forcing files listed in group General
     !
@@ -1024,7 +1024,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     ! Minimum number of surrounding source-points
     !
     sr%msurpnts = 3
-    call prop_get_integer(mdw_ptr, 'General', 'MinSurroundPoints'   , sr%msurpnts)
+    call prop_get(mdw_ptr, 'General', 'MinSurroundPoints'   , sr%msurpnts)
     if (sr%msurpnts /= 3) then
        write(*,*) "Minimum number of surrounding valid source-points for a target-point to be covered: ", sr%msurpnts
     endif
@@ -1038,12 +1038,12 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     sr%inrhog     = 1
     sr%wlevelcorr = 0.0
     sr%maxerr     = 2
-    call prop_get_real   (mdw_ptr, 'Constants', 'Gravity'             , sr%grav)
-    call prop_get_real   (mdw_ptr, 'Constants', 'WaterDensity'        , sr%rho)
-    call prop_get_real   (mdw_ptr, 'Constants', 'NorthDir'            , sr%northdir)
-    call prop_get_real   (mdw_ptr, 'Constants', 'MinimumDepth'        , sr%depmin)
-    call prop_get_real   (mdw_ptr, 'Constants', 'WaterLevelCorrection', sr%wlevelcorr)
-    call prop_get_integer(mdw_ptr, 'Constants', 'MaxErrorLevel'       , sr%maxerr)
+    call prop_get   (mdw_ptr, 'Constants', 'Gravity'             , sr%grav)
+    call prop_get   (mdw_ptr, 'Constants', 'WaterDensity'        , sr%rho)
+    call prop_get   (mdw_ptr, 'Constants', 'NorthDir'            , sr%northdir)
+    call prop_get   (mdw_ptr, 'Constants', 'MinimumDepth'        , sr%depmin)
+    call prop_get   (mdw_ptr, 'Constants', 'WaterLevelCorrection', sr%wlevelcorr)
+    call prop_get(mdw_ptr, 'Constants', 'MaxErrorLevel'       , sr%maxerr)
     !
     ! Processes
     !
@@ -1066,26 +1066,26 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     sr%fshift        = .true.
     sr%alfawind      = 1.0
     !
-    call prop_get_integer(mdw_ptr, 'Processes', 'GenModePhys', sr%genmode)
+    call prop_get(mdw_ptr, 'Processes', 'GenModePhys', sr%genmode)
     if (sr%genmode < 0 .or. sr%genmode > 3) then
        write(*,*) 'SWAN_INPUT: missing or invalid generation mode'
        call handle_errors_mdw(sr)
     endif
     !
-    call prop_get_logical(mdw_ptr, 'Processes', 'WaveSetup' , sr%setup)
-    call prop_get_logical(mdw_ptr, 'Processes', 'Breaking'  , sr%breaking)
+    call prop_get(mdw_ptr, 'Processes', 'WaveSetup' , sr%setup)
+    call prop_get(mdw_ptr, 'Processes', 'Breaking'  , sr%breaking)
     if (sr%breaking) then
-       call prop_get_real   (mdw_ptr, 'Processes', 'BreakAlpha', sr%cfbr1)
-       call prop_get_real   (mdw_ptr, 'Processes', 'BreakGamma', sr%cfbr2)
+       call prop_get   (mdw_ptr, 'Processes', 'BreakAlpha', sr%cfbr1)
+       call prop_get   (mdw_ptr, 'Processes', 'BreakGamma', sr%cfbr2)
     endif
-    call prop_get_logical(mdw_ptr, 'Processes', 'Triads'    , sr%triads)
+    call prop_get(mdw_ptr, 'Processes', 'Triads'    , sr%triads)
     if (sr%triads) then
-       call prop_get_real   (mdw_ptr, 'Processes', 'TriadsAlpha', sr%cftriad1)
-       call prop_get_real   (mdw_ptr, 'Processes', 'TriadsBeta' , sr%cftriad2)
+       call prop_get   (mdw_ptr, 'Processes', 'TriadsAlpha', sr%cftriad1)
+       call prop_get   (mdw_ptr, 'Processes', 'TriadsBeta' , sr%cftriad2)
     endif
     !
     parname = ''
-    call prop_get_string (mdw_ptr, 'Processes', 'BedFriction', parname)
+    call prop_get (mdw_ptr, 'Processes', 'BedFriction', parname)
     call str_lower(parname,len(parname))
     select case (parname)
     case ('none', ' ')
@@ -1105,31 +1105,31 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        call handle_errors_mdw(sr)
     end select
     if (sr%frictype > 0) then
-       call prop_get_real   (mdw_ptr, 'Processes', 'BedFricCoef', sr%frcof)
+       call prop_get   (mdw_ptr, 'Processes', 'BedFricCoef', sr%frcof)
     endif
     !
     flag           = .true.
     sr%diffraction = 1
-    call prop_get_logical(mdw_ptr, 'Processes', 'Diffraction', flag)
+    call prop_get(mdw_ptr, 'Processes', 'Diffraction', flag)
     if (.not. flag) sr%diffraction = 0
     if (sr%diffraction == 1) then
-       call prop_get_real   (mdw_ptr, 'Processes', 'DiffracCoef' , sr%diffr_coeff)
-       call prop_get_integer(mdw_ptr, 'Processes', 'DiffracSteps', sr%diffr_smsteps)
+       call prop_get   (mdw_ptr, 'Processes', 'DiffracCoef' , sr%diffr_coeff)
+       call prop_get(mdw_ptr, 'Processes', 'DiffracSteps', sr%diffr_smsteps)
        !
        flag                  = .true.
        sr%diffr_adapt_propag = 1
-       call prop_get_logical(mdw_ptr, 'Processes', 'DiffracProp' , flag)
+       call prop_get(mdw_ptr, 'Processes', 'DiffracProp' , flag)
        if (.not. flag) sr%diffr_adapt_propag = 0
     endif
     !
-    call prop_get_logical(mdw_ptr, 'Processes', 'WindGrowth'  , sr%windgrowth)
-    call prop_get_real   (mdw_ptr, 'Processes', 'AlfaWind'    , sr%alfawind)
+    call prop_get(mdw_ptr, 'Processes', 'WindGrowth'  , sr%windgrowth)
+    call prop_get   (mdw_ptr, 'Processes', 'AlfaWind'    , sr%alfawind)
     if (sr%alfawind<1d-6 .and. sr%alfawind>-1d-6) then
        write (*,'(a)') 'SWAN_INPUT: AlfaWind is not allowed to be equal to 0.0.'
        call handle_errors_mdw(sr)
     endif
     parname = ''
-    call prop_get_string (mdw_ptr, 'Processes', 'WhiteCapping', parname)
+    call prop_get (mdw_ptr, 'Processes', 'WhiteCapping', parname)
     call str_lower(parname, len(parname))
     select case (parname)
     case ('off')
@@ -1147,12 +1147,12 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        write(*,*) 'SWAN_INPUT: [Processes] WhiteCapping: invalid input:',trim(parname)
        call handle_errors_mdw(sr)
     end select
-    call prop_get_logical(mdw_ptr, 'Processes', 'Quadruplets', sr%quadruplets)
-    call prop_get_logical(mdw_ptr, 'Processes', 'Refraction' , sr%refraction)
-    call prop_get_logical(mdw_ptr, 'Processes', 'FreqShift'  , sr%fshift)
+    call prop_get(mdw_ptr, 'Processes', 'Quadruplets', sr%quadruplets)
+    call prop_get(mdw_ptr, 'Processes', 'Refraction' , sr%refraction)
+    call prop_get(mdw_ptr, 'Processes', 'FreqShift'  , sr%fshift)
     !
     parname = ''
-    call prop_get_string (mdw_ptr, 'Processes', 'WaveForces', parname)
+    call prop_get (mdw_ptr, 'Processes', 'WaveForces', parname)
     call str_lower(parname, len(parname))
     select case (parname)
     case ('radiation stresses <2013')
@@ -1171,7 +1171,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     end select
     !
     parname = ''
-    call prop_get_string (mdw_ptr, 'Processes', 'IceDamp', parname)
+    call prop_get (mdw_ptr, 'Processes', 'IceDamp', parname)
     call str_lower(parname,len(parname))
     select case (parname)
     case ('none', ' ')
@@ -1184,10 +1184,10 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
       sr%icecoeff = 0.0
       sr%icecoeff(3) = 1.06e-3
       sr%icecoeff(5) = 2.3e-2
-      call prop_get_reals (mdw_ptr, 'Processes', 'IceCoef', sr%icecoeff, 7)
+      call prop_get(mdw_ptr, 'Processes', 'IceCoef', sr%icecoeff, 7)
       ! Icewind
       sr%icewind = 0.0
-      call prop_get_real (mdw_ptr, 'Processes', 'IceWind', sr%icewind)
+      call prop_get (mdw_ptr, 'Processes', 'IceWind', sr%icewind)
     case default
        write(*,*) 'SWAN_INPUT: invalid method for wave damping due to ice'
        call handle_errors_mdw(sr)
@@ -1207,7 +1207,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     sr%alfa    = 0.0
     !
     parname = ''
-    call prop_get_string (mdw_ptr, 'Numerics', 'Scheme', parname)
+    call prop_get (mdw_ptr, 'Numerics', 'Scheme', parname)
     call str_lower(parname, len(parname))
     select case (parname)
     case ('default')
@@ -1221,14 +1221,14 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
           goto 999
        endif
     end select
-    call prop_get_real   (mdw_ptr, 'Numerics', 'DirSpaceCDD'    , sr%cdd)
-    call prop_get_real   (mdw_ptr, 'Numerics', 'FreqSpaceCSS'   , sr%css)
-    call prop_get_real   (mdw_ptr, 'Numerics', 'RChHsTm01'      , sr%drel)
-    call prop_get_real   (mdw_ptr, 'Numerics', 'RChMeanHs'      , sr%dh_abs)
-    call prop_get_real   (mdw_ptr, 'Numerics', 'RChMeanTm01'    , sr%dt_abs)
-    call prop_get_real   (mdw_ptr, 'Numerics', 'PercWet'        , sr%percwet)
-    call prop_get_integer(mdw_ptr, 'Numerics', 'MaxIter'        , sr%itermx)
-    call prop_get_real   (mdw_ptr, 'Numerics', 'AlfaUnderRelax' , sr%alfa)
+    call prop_get   (mdw_ptr, 'Numerics', 'DirSpaceCDD'    , sr%cdd)
+    call prop_get   (mdw_ptr, 'Numerics', 'FreqSpaceCSS'   , sr%css)
+    call prop_get   (mdw_ptr, 'Numerics', 'RChHsTm01'      , sr%drel)
+    call prop_get   (mdw_ptr, 'Numerics', 'RChMeanHs'      , sr%dh_abs)
+    call prop_get   (mdw_ptr, 'Numerics', 'RChMeanTm01'    , sr%dt_abs)
+    call prop_get   (mdw_ptr, 'Numerics', 'PercWet'        , sr%percwet)
+    call prop_get(mdw_ptr, 'Numerics', 'MaxIter'        , sr%itermx)
+    call prop_get   (mdw_ptr, 'Numerics', 'AlfaUnderRelax' , sr%alfa)
     !
     ! General output options
     !
@@ -1252,31 +1252,31 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     !
     ! Standard output options
     !
-    call prop_get_integer(mdw_ptr, 'Output', 'TestOutputLevel' , sr%itest)
-    call prop_get_logical(mdw_ptr, 'Output', 'TraceCalls'      , flag)
+    call prop_get(mdw_ptr, 'Output', 'TestOutputLevel' , sr%itest)
+    call prop_get(mdw_ptr, 'Output', 'TraceCalls'      , flag)
     if (flag) sr%itrace = 1
-    call prop_get_logical(mdw_ptr, 'Output', 'UseHotFile'      , sr%hotfile)
-    call prop_get_real   (mdw_ptr, 'Output', 'MapWriteInterval', sr%wavm_write_interval)
-    call prop_get_logical(mdw_ptr, 'Output', 'WriteCOM'        , sr%swwav)
-    call prop_get_logical(mdw_ptr, 'Output', 'MassFluxToCOM'   , sr%swflux)
-    call prop_get_real   (mdw_ptr, 'Output', 'COMWriteInterval', sr%deltcom)
-    call prop_get_string (mdw_ptr, 'Output', 'FlowGridForCom'  , sr%flowgridfile)
+    call prop_get(mdw_ptr, 'Output', 'UseHotFile'      , sr%hotfile)
+    call prop_get   (mdw_ptr, 'Output', 'MapWriteInterval', sr%wavm_write_interval)
+    call prop_get(mdw_ptr, 'Output', 'WriteCOM'        , sr%swwav)
+    call prop_get(mdw_ptr, 'Output', 'MassFluxToCOM'   , sr%swflux)
+    call prop_get   (mdw_ptr, 'Output', 'COMWriteInterval', sr%deltcom)
+    call prop_get (mdw_ptr, 'Output', 'FlowGridForCom'  , sr%flowgridfile)
     if (sr%flowgridfile /= ' ') then
        write(*,'(a)') "ERROR: No longer supported: stand alone WAVE computation using FLOW data in a com-file via keyword 'FlowGridForCom'"
        call handle_errors_mdw(sr)
     endif
-    call prop_get_string (mdw_ptr, 'Output', 'COMFile'                , sr%flowgridfile)
-    call prop_get_logical(mdw_ptr, 'Output', 'AppendCOM'              , sr%append_com)
-    call prop_get_logical(mdw_ptr, 'Output', 'MapWriteNetCDF'         , sr%swmapwritenetcdf)
-    call prop_get_logical(mdw_ptr, 'Output', 'NetCDFSinglePrecision'  , sr%netcdf_sp)
-    call prop_get_logical(mdw_ptr, 'Output', 'KeepINPUT'              , sr%keepinput)
-    call prop_get_integer(mdw_ptr, 'Output', 'ncFormat'               , par)
+    call prop_get (mdw_ptr, 'Output', 'COMFile'                , sr%flowgridfile)
+    call prop_get(mdw_ptr, 'Output', 'AppendCOM'              , sr%append_com)
+    call prop_get(mdw_ptr, 'Output', 'MapWriteNetCDF'         , sr%swmapwritenetcdf)
+    call prop_get(mdw_ptr, 'Output', 'NetCDFSinglePrecision'  , sr%netcdf_sp)
+    call prop_get(mdw_ptr, 'Output', 'KeepINPUT'              , sr%keepinput)
+    call prop_get(mdw_ptr, 'Output', 'ncFormat'               , par)
     call set_ncmode(wavedata%output, ncu_format_to_cmode(par))
     !
     sr%output_ice = 0
     if (sr%icedamp > 0) then
        flag = .false.
-       call prop_get_logical(mdw_ptr, 'Output', 'IceOut'      , flag)
+       call prop_get(mdw_ptr, 'Output', 'IceOut'      , flag)
        if (flag) sr%output_ice = sr%icedamp
     endif
     !
@@ -1323,7 +1323,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        parname = tree_get_name( tmp_ptr )
        if (parname == 'locationfile') then
           nlocc = nlocc+1
-          call prop_get_string(tmp_ptr, '*', 'locationfile' ,sr%pntfilnam(nlocc))
+          call prop_get(tmp_ptr, '*', 'locationfile' ,sr%pntfilnam(nlocc))
        endif
     enddo
     sr%nloc            = nlocc
@@ -1331,11 +1331,11 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     sr%output_spec1d   = .false.
     sr%output_spec2d   = .false.
     if (sr%output_pnt_file) then
-       call prop_get_logical(mdw_ptr, 'Output', 'WriteTable'  , sr%output_table)
-       call prop_get_logical(mdw_ptr, 'Output', 'WriteSpec1D' , sr%output_spec1d)
-       call prop_get_logical(mdw_ptr, 'Output', 'WriteSpec2D' , sr%output_spec2d)
+       call prop_get(mdw_ptr, 'Output', 'WriteTable'  , sr%output_table)
+       call prop_get(mdw_ptr, 'Output', 'WriteSpec1D' , sr%output_spec1d)
+       call prop_get(mdw_ptr, 'Output', 'WriteSpec2D' , sr%output_spec2d)
     endif
-    call prop_get_string (mdw_ptr, 'Output', 'CurveFile', sr%curvefil)
+    call prop_get (mdw_ptr, 'Output', 'CurveFile', sr%curvefil)
     if (sr%curvefil /= ' ') then
        !
        ! unknown number of output curves defined in a Tekal file
@@ -1408,7 +1408,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     !  Interval to keep the hotfile
     !
     sr%int2keephotfile = 0.0
-    call prop_get_real(mdw_ptr, 'Output', 'Int2KeepHotfile', sr%int2keephotfile)
+    call prop_get(mdw_ptr, 'Output', 'Int2KeepHotfile', sr%int2keephotfile)
     !
     !  Determine the number of domains
     !
@@ -1438,17 +1438,17 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
     ! Put general FLOW mapping flags in dom(1)
     !
     if (wavedata%mode /= stand_alone) then
-       call prop_get_integer(mdw_ptr, 'General', 'FlowBedLevel'  , sr%dom(1)%qextnd(q_bath))
-       call prop_get_integer(mdw_ptr, 'General', 'FlowVegetation', sr%dom(1)%qextnd(q_veg) )
+       call prop_get(mdw_ptr, 'General', 'FlowBedLevel'  , sr%dom(1)%qextnd(q_bath))
+       call prop_get(mdw_ptr, 'General', 'FlowVegetation', sr%dom(1)%qextnd(q_veg) )
        if (sr%dom(1)%qextnd(q_veg) == 2) then
           write(*,*) 'SWAN_INPUT: FlowVegetation=2 is found while extrapolation to the outside of domain is not supported yet.'
           call handle_errors_mdw(sr)
        endif
-       call prop_get_integer(mdw_ptr, 'General', 'FlowWaterLevel', sr%dom(1)%qextnd(q_wl)  )
-       call prop_get_integer(mdw_ptr, 'General', 'FlowVelocity'  , sr%dom(1)%qextnd(q_cur) )
-       call prop_get_integer(mdw_ptr, 'General', 'FlowWind'      , sr%dom(1)%qextnd(q_wind))
+       call prop_get(mdw_ptr, 'General', 'FlowWaterLevel', sr%dom(1)%qextnd(q_wl)  )
+       call prop_get(mdw_ptr, 'General', 'FlowVelocity'  , sr%dom(1)%qextnd(q_cur) )
+       call prop_get(mdw_ptr, 'General', 'FlowWind'      , sr%dom(1)%qextnd(q_wind))
        parname = ''
-       call prop_get_string (mdw_ptr, 'General', 'FlowVelocityType', parname)
+       call prop_get (mdw_ptr, 'General', 'FlowVelocityType', parname)
        call str_lower(parname, len(parname))
        select case (parname)
        case ('depth-averaged')
@@ -1510,7 +1510,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        !
        ! Read computational grid
        !
-       call prop_get_string(tmp_ptr, '*', 'Grid', dom%curlif)
+       call prop_get(tmp_ptr, '*', 'Grid', dom%curlif)
        call readgriddims(dom%curlif, dom%mxc, dom%myc)
        if (dom%curlif == '') then
           write(*,*) 'SWAN_INPUT: grid not found for domain', domainnr
@@ -1525,7 +1525,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        ! Read bathymetry
        !
        dom%depfil   = ''
-       call prop_get_string(tmp_ptr, '*', 'BedLevelGrid', dom%depfil)
+       call prop_get(tmp_ptr, '*', 'BedLevelGrid', dom%depfil)
        if (dom%depfil /= '') then
           call readgriddims(dom%depfil, dom%mxb, dom%myb)
           !
@@ -1540,7 +1540,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
           dom%myb      = dom%myc
           dom%curvibot = 1
        endif
-       call prop_get_string(tmp_ptr, '*', 'BedLevel', dom%botfil)
+       call prop_get(tmp_ptr, '*', 'BedLevel', dom%botfil)
        if (dom%botfil == '') then
           write(*,*) 'SWAN_INPUT: bathymetry not found for domain', domainnr
           call handle_errors_mdw(sr)
@@ -1548,26 +1548,26 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        !
        flag           = .false.
        dom%vegetation  = 0 
-       call prop_get_logical(tmp_ptr, '*', 'Vegetation', flag)
+       call prop_get(tmp_ptr, '*', 'Vegetation', flag)
        if (flag) then
           dom%vegetation = 1
        endif
        flag = .false.
-       call prop_get_logical(tmp_ptr, '*', 'VegSVNPlants', flag)
+       call prop_get(tmp_ptr, '*', 'VegSVNPlants', flag)
        if (flag) then
           dom%vegetation = 2
        endif
        if (dom%vegetation >= 1) then	   
-          call prop_get_real   (tmp_ptr, '*', 'VegHeight' , dom%veg_height)
-          call prop_get_real   (tmp_ptr, '*', 'VegDiamtr' , dom%veg_diamtr)
-          call prop_get_real   (tmp_ptr, '*', 'VegDrag' ,   dom%veg_drag)
+          call prop_get   (tmp_ptr, '*', 'VegHeight' , dom%veg_height)
+          call prop_get   (tmp_ptr, '*', 'VegDiamtr' , dom%veg_diamtr)
+          call prop_get   (tmp_ptr, '*', 'VegDrag' ,   dom%veg_drag)
        endif
        if (dom%vegetation == 1) then	   
-          call prop_get_integer(tmp_ptr, '*', 'VegNstems' , dom%veg_nstems)
+          call prop_get(tmp_ptr, '*', 'VegNstems' , dom%veg_nstems)
           !
           ! Read vegetation map
           !
-          call prop_get_string(tmp_ptr, '*', 'VegetationMap', dom%vegfil)
+          call prop_get(tmp_ptr, '*', 'VegetationMap', dom%vegfil)
           if (dom%vegfil == '') then
              write(*,*) 'SWAN_INPUT: vegetation map not found for domain ', domainnr
              call handle_errors_mdw(sr)
@@ -1576,13 +1576,13 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        !
        ! Read directional space
        !
-       call prop_get_integer(tmp_ptr, '*', 'NDir', dom%ndir)
+       call prop_get(tmp_ptr, '*', 'NDir', dom%ndir)
        if (dom%ndir < 1) then
           write(*,*) 'SWAN_INPUT: invalid number of directions: ', dom%ndir
           call handle_errors_mdw(sr)
        endif
        parname = ''
-       call prop_get_string(tmp_ptr, '*', 'DirSpace', parname)
+       call prop_get(tmp_ptr, '*', 'DirSpace', parname)
        call str_lower(parname, len(parname))
        select case (parname)
        case ('circle')
@@ -1597,19 +1597,19 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        end select
        !
        if (dom%dirspace == 2) then
-          call prop_get_real(tmp_ptr, '*', 'StartDir', dom%startdir)
-          call prop_get_real(tmp_ptr, '*', 'EndDir'  , dom%enddir)
+          call prop_get(tmp_ptr, '*', 'StartDir', dom%startdir)
+          call prop_get(tmp_ptr, '*', 'EndDir'  , dom%enddir)
        endif
        !
        ! Read modelled frequency range
        !
-       call prop_get_integer(tmp_ptr, '*', 'NFreq', dom%nfreq)
-       call prop_get_real(tmp_ptr, '*', 'FreqMin', dom%freqmin)
-       call prop_get_real(tmp_ptr, '*', 'FreqMax', dom%freqmax)
+       call prop_get(tmp_ptr, '*', 'NFreq', dom%nfreq)
+       call prop_get(tmp_ptr, '*', 'FreqMin', dom%freqmin)
+       call prop_get(tmp_ptr, '*', 'FreqMax', dom%freqmax)
        !
        ! Read in which domain this domain is nested
        !
-       call prop_get_integer(tmp_ptr, '*', 'NestedInDomain', dom%nestnr)
+       call prop_get(tmp_ptr, '*', 'NestedInDomain', dom%nestnr)
        if (domainnr > 1 .and. &
           & (dom%nestnr<1 .or. dom%nestnr>=domainnr)) then
           write(*,*) 'SWAN_INPUT: domain', domainnr, ' not nested in a valid domain'
@@ -1621,11 +1621,11 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        ! Verify whether quantities should be mapped and optionally be extended
        ! for the current grid.
        !
-       call prop_get_integer(tmp_ptr, '*', 'FlowBedLevel'  , dom%qextnd(q_bath))
-       call prop_get_integer(tmp_ptr, '*', 'FlowVegetation', dom%qextnd(q_veg) )
-       call prop_get_integer(tmp_ptr, '*', 'FlowWaterLevel', dom%qextnd(q_wl)  )
-       call prop_get_integer(tmp_ptr, '*', 'FlowVelocity'  , dom%qextnd(q_cur) )
-       call prop_get_integer(tmp_ptr, '*', 'FlowWind'      , dom%qextnd(q_wind))
+       call prop_get(tmp_ptr, '*', 'FlowBedLevel'  , dom%qextnd(q_bath))
+       call prop_get(tmp_ptr, '*', 'FlowVegetation', dom%qextnd(q_veg) )
+       call prop_get(tmp_ptr, '*', 'FlowWaterLevel', dom%qextnd(q_wl)  )
+       call prop_get(tmp_ptr, '*', 'FlowVelocity'  , dom%qextnd(q_cur) )
+       call prop_get(tmp_ptr, '*', 'FlowWind'      , dom%qextnd(q_wind))
        !
        if (dom%qextnd(q_bath)>0) sr%swmor   = .true.
        if (dom%qextnd(q_veg )>0) sr%swveg   = .true.
@@ -1635,7 +1635,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        !
        if (sr%swuvt) then
           parname = ''
-          call prop_get_string (tmp_ptr, '*', 'FlowVelocityType', parname)
+          call prop_get (tmp_ptr, '*', 'FlowVelocityType', parname)
           call str_lower(parname, len(parname))
           select case (parname)
           case ('depth-averaged')
@@ -1670,7 +1670,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        ! Verify whether output to wavm-file should be written for this domain
        ! (default true)
        !
-       call prop_get_logical(tmp_ptr, '*', 'Output', dom%cgnum)
+       call prop_get(tmp_ptr, '*', 'Output', dom%cgnum)
        !
        ! Count number of external forces in current group Domain
        !
@@ -1873,17 +1873,17 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        boundnr = boundnr + 1
        bnd => sr%bnd(boundnr)
        !
-       call prop_get_string(bnd_ptr, '*', 'Name', bnd%name)
+       call prop_get(bnd_ptr, '*', 'Name', bnd%name)
        !
        parname = ''
-       call prop_get_string(bnd_ptr, '*', 'Definition', parname)
+       call prop_get(bnd_ptr, '*', 'Definition', parname)
        call str_lower(parname,len(parname))
        select case (parname)
        case ('orientation')
           bnd%bndtyp = 1
           !
           parname = ''
-          call prop_get_string(bnd_ptr, '*', 'Orientation' , parname)
+          call prop_get(bnd_ptr, '*', 'Orientation' , parname)
           call str_lower(parname,len(parname))
           select case (parname)
           case ('n','north')
@@ -1909,7 +1909,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
           bnd%turn = 1
           !
           parname = ''
-          call prop_get_string(bnd_ptr, '*', 'DistanceDir'   , parname)
+          call prop_get(bnd_ptr, '*', 'DistanceDir'   , parname)
           call str_lower(parname,len(parname))
           select case (parname)
           case ('clockwise')
@@ -1924,30 +1924,30 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        case ('grid','grid-coordinates')
           bnd%bndtyp = 2
           !
-          call prop_get_integer(bnd_ptr, '*', 'StartCoordM' , bnd%bndcrd_mn(1))
-          call prop_get_integer(bnd_ptr, '*', 'StartCoordN' , bnd%bndcrd_mn(2))
-          call prop_get_integer(bnd_ptr, '*', 'EndCoordM'   , bnd%bndcrd_mn(3))
-          call prop_get_integer(bnd_ptr, '*', 'EndCoordN'   , bnd%bndcrd_mn(4))
+          call prop_get(bnd_ptr, '*', 'StartCoordM' , bnd%bndcrd_mn(1))
+          call prop_get(bnd_ptr, '*', 'StartCoordN' , bnd%bndcrd_mn(2))
+          call prop_get(bnd_ptr, '*', 'EndCoordM'   , bnd%bndcrd_mn(3))
+          call prop_get(bnd_ptr, '*', 'EndCoordN'   , bnd%bndcrd_mn(4))
           !
        case ('xy','xy-coordinates')
           bnd%bndtyp = 3
           !
-          call prop_get_real(bnd_ptr, '*', 'StartCoordX' , bnd%bndcrd_xy(1))
-          call prop_get_real(bnd_ptr, '*', 'StartCoordY' , bnd%bndcrd_xy(2))
-          call prop_get_real(bnd_ptr, '*', 'EndCoordX'   , bnd%bndcrd_xy(3))
-          call prop_get_real(bnd_ptr, '*', 'EndCoordY'   , bnd%bndcrd_xy(4))
+          call prop_get(bnd_ptr, '*', 'StartCoordX' , bnd%bndcrd_xy(1))
+          call prop_get(bnd_ptr, '*', 'StartCoordY' , bnd%bndcrd_xy(2))
+          call prop_get(bnd_ptr, '*', 'EndCoordX'   , bnd%bndcrd_xy(3))
+          call prop_get(bnd_ptr, '*', 'EndCoordY'   , bnd%bndcrd_xy(4))
           !
        case ('fromsp2file')
           bnd%bndtyp = 4
           !
-          call prop_get_string(bnd_ptr, '*', 'OverallSpecfile' , sr%specfile)
+          call prop_get(bnd_ptr, '*', 'OverallSpecfile' , sr%specfile)
           write(*,*) 'Boundary conditions from overall 2D spectra file'
           cycle
           !      
        case ('fromwwfile')
           bnd%bndtyp = 5
           !
-          call prop_get_string(bnd_ptr, '*', 'WWspecfile' , sr%specfile)
+          call prop_get(bnd_ptr, '*', 'WWspecfile' , sr%specfile)
           write(*,*) 'Boundary conditions from WAVEWATCH III spectra file'
           cycle
           !
@@ -1957,7 +1957,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        end select
        !
        parname = ''
-       call prop_get_string(bnd_ptr, '*', 'SpectrumSpec'   , parname)
+       call prop_get(bnd_ptr, '*', 'SpectrumSpec'   , parname)
        call str_lower(parname,len(parname))
        select case (parname)
        case ('from file')
@@ -1970,7 +1970,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
           bnd%parread = 2
           !
           parname = ''
-          call prop_get_string(bnd_ptr, '*', 'SpShapeType'   , parname)
+          call prop_get(bnd_ptr, '*', 'SpShapeType'   , parname)
           call str_lower(parname,len(parname))
           select case (parname)
           case ('jonswap')
@@ -1987,7 +1987,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
           end select
           !
           parname = ''
-          call prop_get_string(bnd_ptr, '*', 'PeriodType'   , parname)
+          call prop_get(bnd_ptr, '*', 'PeriodType'   , parname)
           call str_lower(parname,len(parname))
           select case (parname)
           case ('peak')
@@ -2000,7 +2000,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
           end select
           !
           parname = ''
-          call prop_get_string(bnd_ptr, '*', 'DirSpreadType'   , parname)
+          call prop_get(bnd_ptr, '*', 'DirSpreadType'   , parname)
           call str_lower(parname,len(parname))
           select case (parname)
           case ('power')
@@ -2019,13 +2019,13 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
        !
        select case (bnd%sshape)
        case (1) ! jonswap
-          call prop_get_real(bnd_ptr, '*', 'PeakEnhanceFac'   , bnd%gamma0)
+          call prop_get(bnd_ptr, '*', 'PeakEnhanceFac'   , bnd%gamma0)
           if (boundnr == 1) then
              ! use this gamm0 instead of the default value
              sr%gamma0 = bnd%gamma0
           endif
        case (3) ! gauss
-          call prop_get_real(bnd_ptr, '*', 'GaussSpread'     , bnd%sigfr)
+          call prop_get(bnd_ptr, '*', 'GaussSpread'     , bnd%sigfr)
        end select
        !
        ! Determine the number of boundary sections
@@ -2077,37 +2077,37 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
           select case (parname)
           case ('condspecatdist')
              sectnr = sectnr+1
-             call prop_get_real(tmp_ptr, '*', 'CondSpecAtDist', bnd%distance(sectnr))
+             call prop_get(tmp_ptr, '*', 'CondSpecAtDist', bnd%distance(sectnr))
           case ('waveheight')
              if (sectnr==0) then
                 write(*,*) 'SWAN_INPUT: premature wave height specification at ',trim(bnd%name)
                 call handle_errors_mdw(sr)
              endif
-             call prop_get_real(tmp_ptr, '*', 'WaveHeight', bnd%waveheight(sectnr))
+             call prop_get(tmp_ptr, '*', 'WaveHeight', bnd%waveheight(sectnr))
           case ('period')
              if (sectnr==0) then
                 write(*,*) 'SWAN_INPUT: premature period specification at ',trim(bnd%name)
                 call handle_errors_mdw(sr)
              endif
-             call prop_get_real(tmp_ptr, '*', 'Period', bnd%period(sectnr))
+             call prop_get(tmp_ptr, '*', 'Period', bnd%period(sectnr))
           case ('direction')
              if (sectnr==0) then
                 write(*,*) 'SWAN_INPUT: premature direction specification at ',trim(bnd%name)
                 call handle_errors_mdw(sr)
              endif
-             call prop_get_real(tmp_ptr, '*', 'Direction', bnd%direction(sectnr))
+             call prop_get(tmp_ptr, '*', 'Direction', bnd%direction(sectnr))
           case ('dirspreading')
              if (sectnr==0) then
                 write(*,*) 'SWAN_INPUT: premature direction spreading specification at ',trim(bnd%name)
                 call handle_errors_mdw(sr)
              endif
-             call prop_get_real(tmp_ptr, '*', 'DirSpreading', bnd%dirspread(sectnr))
+             call prop_get(tmp_ptr, '*', 'DirSpreading', bnd%dirspread(sectnr))
           case ('spectrum')
              if (sectnr==0) then
                 write(*,*) 'SWAN_INPUT: premature spectrum file specification at ',trim(bnd%name)
                 call handle_errors_mdw(sr)
              endif
-             call prop_get_string(tmp_ptr, '*', 'Spectrum', bnd%spectrum(sectnr))
+             call prop_get(tmp_ptr, '*', 'Spectrum', bnd%spectrum(sectnr))
           end select
        enddo
        !
@@ -2183,7 +2183,7 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
           !
           nobst   = nobst + 1
           parname = ''
-          call prop_get_string (tmp_ptr, '*', 'Name' , parname)
+          call prop_get (tmp_ptr, '*', 'Name' , parname)
           call tree_get_node_by_name(pol_ptr, parname, tmp_ptr )
           if ( .not. associated(tmp_ptr) ) then
              write(*,*) 'SWAN_INPUT: obstacle polygon ''', trim(parname), ''' not found'
@@ -2228,20 +2228,20 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
           obstnr  = obstnr + 1
           !
           parname = ''
-          call prop_get_string (tmp_ptr, '*', 'Type' , parname)
+          call prop_get (tmp_ptr, '*', 'Type' , parname)
           call str_lower(parname,len(parname))
           select case (parname)
           case ('sheet')
-             call prop_get_real(tmp_ptr, '*', 'TransmCoef'   , sr%trane(obstnr))
+             call prop_get(tmp_ptr, '*', 'TransmCoef'   , sr%trane(obstnr))
           case ('dam')
              sr%trane(obstnr) = 999.9
-             call prop_get_real(tmp_ptr, '*', 'Height'       , sr%f(obstnr))
-             call prop_get_real(tmp_ptr, '*', 'Alpha'        , sr%ogam(obstnr))
-             call prop_get_real(tmp_ptr, '*', 'Beta'         , sr%obet(obstnr))
+             call prop_get(tmp_ptr, '*', 'Height'       , sr%f(obstnr))
+             call prop_get(tmp_ptr, '*', 'Alpha'        , sr%ogam(obstnr))
+             call prop_get(tmp_ptr, '*', 'Beta'         , sr%obet(obstnr))
           end select
           !
           parname = ''
-          call prop_get_string (tmp_ptr, '*', 'Reflections' , parname)
+          call prop_get (tmp_ptr, '*', 'Reflections' , parname)
           call str_lower(parname,len(parname))
           select case (parname)
           case ('no')
@@ -2256,11 +2256,11 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
           end select
           !
           if (sr%refl_type(obstnr)>0) then
-             call prop_get_real(tmp_ptr, '*', 'ReflecCoef'   , sr%refl_coeff(obstnr))
+             call prop_get(tmp_ptr, '*', 'ReflecCoef'   , sr%refl_coeff(obstnr))
           endif
           !
           parname = ''
-          call prop_get_string (tmp_ptr, '*', 'Name' , parname)
+          call prop_get (tmp_ptr, '*', 'Name' , parname)
           call tree_get_node_by_name(pol_ptr, parname, tmp_ptr )
           if ( .not. associated(tmp_ptr) ) then
              write(*,*) 'SWAN_INPUT: obstacle polygon not found'
@@ -4224,8 +4224,8 @@ subroutine adjustinput(sr)
     if (istat /= 0) return
     !
     sr%append_com = .false.
-    call prop_get_logical(input_tree, '*', 'AppendCOM'  , sr%append_com)
-    call prop_get_logical(input_tree, '*', 'checkVersionNumber'  , sr%checkVersionNumber)
+    call prop_get(input_tree, '*', 'AppendCOM'  , sr%append_com)
+    call prop_get(input_tree, '*', 'checkVersionNumber'  , sr%checkVersionNumber)
     if (.not.sr%checkVersionNumber) then
        write(*,'(a)') '*** MESSAGE: The check on the SWAN version number is disabled'
     endif
@@ -4238,7 +4238,7 @@ subroutine adjustinput(sr)
        parname = tree_get_name( domain_ptr )
        if ( parname /= 'domain') cycle
        parname = ''
-       call prop_get_string(domain_ptr, '*', 'Grid', parname)
+       call prop_get(domain_ptr, '*', 'Grid', parname)
        !
        do in = 1, sr%nnest
           if (sr%dom(in)%curlif == parname) exit
@@ -4246,11 +4246,11 @@ subroutine adjustinput(sr)
        if (in > sr%nnest) cycle
        dom => sr%dom(in)
        !
-       call prop_get_integer(domain_ptr, '*', 'FlowBedLevel'  , dom%qextnd(q_bath))
-       call prop_get_integer(domain_ptr, '*', 'FlowVegetation', dom%qextnd(q_veg) )
-       call prop_get_integer(domain_ptr, '*', 'FlowWaterLevel', dom%qextnd(q_wl)  )
-       call prop_get_integer(domain_ptr, '*', 'FlowVelocity'  , dom%qextnd(q_cur) )
-       call prop_get_integer(domain_ptr, '*', 'FlowWind'      , dom%qextnd(q_wind))
+       call prop_get(domain_ptr, '*', 'FlowBedLevel'  , dom%qextnd(q_bath))
+       call prop_get(domain_ptr, '*', 'FlowVegetation', dom%qextnd(q_veg) )
+       call prop_get(domain_ptr, '*', 'FlowWaterLevel', dom%qextnd(q_wl)  )
+       call prop_get(domain_ptr, '*', 'FlowVelocity'  , dom%qextnd(q_cur) )
+       call prop_get(domain_ptr, '*', 'FlowWind'      , dom%qextnd(q_wind))
        !
     enddo
     !

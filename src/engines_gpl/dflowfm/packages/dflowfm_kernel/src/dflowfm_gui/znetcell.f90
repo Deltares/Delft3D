@@ -38,6 +38,7 @@
       use m_missing
       use geometry_module, only: dbdistance
       use m_sferic, only: jsferic, jasfer3D
+      use m_drawthis
 
       implicit none
 
@@ -45,9 +46,6 @@
       double precision :: uu1, vv1, uu2, vv2 ! not used here
       double precision :: phimin, phimax
       double precision :: xx1, yy1, zz1, xx2, yy2, zz2, xx3, yy3, zz3, xy, R3, XN, YN, ZN, DEPTH, TSIG, SLOPE, RK
-
-      common / DRAWTHIS / ndraw(50)
-      integer :: ndraw
 
       znetcell = DMISS
 

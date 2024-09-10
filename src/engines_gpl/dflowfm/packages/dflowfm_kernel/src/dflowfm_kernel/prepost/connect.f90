@@ -33,26 +33,18 @@
   subroutine CONNECT(K1, K2, LFAC, R00)
      use m_netw
      use gridoperations
+     use m_cconstants
      implicit none
      integer :: K1, K2, LFAC
      double precision :: R00
-
-     double precision :: ag
-     double precision :: cfl
-     double precision :: e0
-     double precision :: eps
      integer :: ja
      integer :: kl
      integer :: kr
      integer :: l
      integer :: ll
      integer :: lnu
-     double precision :: pi
      double precision :: r0
-     double precision :: rho
-     double precision :: rhow
-     double precision DLENGTH
-     common / CONSTANTS / E0, RHO, RHOW, CFL, EPS, AG, PI
+     double precision :: DLENGTH
 
      do L = 1, NUML
         if (KN(1, L) == K1 .and. KN(2, L) == K2 .or. &

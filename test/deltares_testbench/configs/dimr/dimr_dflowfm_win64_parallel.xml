@@ -100,10 +100,6 @@
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
         <testCase name="postproc">
-            <programs>
-                <program ref="dfmoutput">
-                </program>
-            </programs>
             <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>
@@ -114,6 +110,6 @@
         </testCase>
     </defaultTestCases>
 
-  <xi:include href="../include/dimr_dflowfm_parallel_win64.xml"/>
+  <xi:include href="../include/dimr_dflowfm_parallel.xml"/>
 
 </deltaresTestbench_v3>

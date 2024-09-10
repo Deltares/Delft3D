@@ -322,14 +322,12 @@ contains
    end function flowinit
 
    subroutine flowstep(jastop, iresult)
-      use unstruc_display, only: ntek, plottofile, jaGUI
+      use unstruc_display, only: ntek, plottofile
+      use m_gui
       use dfm_error
+      use m_drawthis
       integer, intent(out) :: jastop !< Communicate back to caller: whether to stop computations (1) or not (0)
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
-      integer :: ndraw
-
-      common / DRAWTHIS / ndraw(50)
-
       integer :: key
 
       jastop = 0

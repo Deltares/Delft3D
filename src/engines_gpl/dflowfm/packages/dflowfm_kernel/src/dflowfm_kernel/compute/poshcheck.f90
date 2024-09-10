@@ -35,7 +35,7 @@
     use m_flowtimes
     use m_partitioninfo
     use m_timer
-    use unstruc_display, only: jaGUI
+    use m_gui
 
     implicit none
 

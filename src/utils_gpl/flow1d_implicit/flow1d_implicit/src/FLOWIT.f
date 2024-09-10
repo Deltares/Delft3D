@@ -351,29 +351,7 @@ c     mozart declarations
       character(len=40) qlatid(*), qlatnm(*)
       logical       lmoza, lgrwt
       integer       nstmoz
-c
-c     Declaration of local parameters:
-c
-
-      integer plrec, pllrec, plave, plold, pbal, grwpar
-      integer mugr, kdgr, grcgr, hbal
-      integer strunm
-      real    grdh
-c
-c     External functions
-c
-c      integer gtrpnt, soipar
-c      real sorpar
-c      external gtrpnt, soipar, sorpar
-c      integer  gtcpnt
-c      external gtcpnt
-c
-c     Include sobek error codes:
-c
-c      include '../include/errcod.i'
-c
-c     Debug variables FM1DIMP2DO: remove
-c      
+c 
       double precision dbg1
       real dbg2
       integer debug_wr

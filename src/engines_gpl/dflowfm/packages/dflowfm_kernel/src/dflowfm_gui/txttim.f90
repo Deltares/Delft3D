@@ -32,14 +32,10 @@
 
       subroutine TXTTIM()
          use m_devices
+         use m_textim
          implicit none
          integer :: l
-         double precision :: txtimsize
-         double precision :: txtimx
-         double precision :: txtimy
-         common / TEXTIM / TXTIMSIZE, TXTIMX, TXTIMY, TXTIM
 
-         character TXTIM * 60
          L = len_trim(TXTIM)
          if (L == 0) return
          call IGRCHARSIZE(real(TXTIMSIZE), real(TXTIMSIZE))

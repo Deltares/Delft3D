@@ -656,7 +656,7 @@ contains
       integer :: i
 
       do i = 1, config_set%count
-         call prop_get_string(tree, paragraph, config_set%configs(i)%key, config_set%configs(i)%input_value)
+         call prop_get(tree, paragraph, config_set%configs(i)%key, config_set%configs(i)%input_value)
       end do
 
    end subroutine scan_input_tree

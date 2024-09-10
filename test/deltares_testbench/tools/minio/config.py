@@ -92,8 +92,9 @@ class ConfigIndexer:
         self.__indexed_configs: Dict[Path, List[TestCaseData]] = {}
         config_folder = Path("configs")
         xml_files = config_folder.rglob("*.xml")
+        config = config if isinstance(config, str) else ""
         for xml in xml_files:
-            if config or "" in str(xml):
+            if config in str(xml):
                 test_cases = self._extract_test_cases_from_xml(xml)
                 if test_cases:
                     self.__indexed_configs[xml] = test_cases
@@ -255,7 +256,7 @@ class TestBenchConfigWriter(TestCaseWriter):
         with open(config_path, "r") as config_handle:
             for line in config_handle:
                 out_handle.write(line)  # Copy line
-                if re.search(r"<testCases>", line):
+                if re.search(r'<testCases(\s+xmlns="http://schemas\.deltares\.nl/deltaresTestbench_v3")?>', line):
                     self.__update_test_cases(config_handle, out_handle, updates)
                 elif mo := re.search(r"<xi:include\s+href=\"(?P<path>[-./\\:\s\w]+)\"\s*/>", line):
                     include_path = config_path.parent / mo.group("path")

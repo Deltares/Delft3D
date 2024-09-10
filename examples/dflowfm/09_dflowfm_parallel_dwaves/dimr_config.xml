@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<dimrConfig xmlns="http://schemas.deltares.nl/dimrConfig" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.deltares.nl/dimrConfig http://content.oss.deltares.nl/schemas/d_hydro-1.00.xsd">
+    <documentation>
+        <fileVersion>1.00</fileVersion>
+        <createdBy>Deltares, Coupling team</createdBy>
+        <creationDate>2015-05-20T07:56:32+01</creationDate>
+    </documentation>
+    <control>
+        <parallel>
+           <startGroup>
+              <time>0.0 3.6e3 9.99e4</time>
+              <start name="myNameWave"/>
+           </startGroup>
+           <start name="myNameDFlowFM"/>
+        </parallel>
+    </control>
+    <component name="myNameDFlowFM">
+        <library>dflowfm</library>
+        <process>0 1 2 3 4 5 6 7</process>
+        <mpiCommunicator>DFM_COMM_DFMWORLD</mpiCommunicator>
+        <workingDir>dflowfm</workingDir>
+        <inputFile>f34.mdu</inputFile>
+    </component>
+    <component name="myNameWave">
+        <library>wave</library>
+        <workingDir>dwaves</workingDir>
+        <inputFile>f34.mdw</inputFile>
+    </component>
+</dimrConfig>

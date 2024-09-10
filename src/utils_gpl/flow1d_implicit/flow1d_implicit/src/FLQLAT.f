@@ -373,24 +373,19 @@ c
 c
 c     Declaration of local variables
 c
-      character strnam*40
       logical   strsta
       integer   igr, iopt, istat, istat2, istru, itab, i1, i2, type
-      integer   formno ,lstnam, qlatnm
+      integer   formno
       integer   is1, is2, istrc, nstrc
       real      hup, hdown, hin,  hout, lbt, let, hstat, qstat,  teken
       real      uu,  ud,    zs,   wstr, cw,  slim,dum1 , qltstr
-      real      hret, ires
+      real      hret
       real      astr, bstr, cstr, estr, area, area1, width
       real      as(2), bs(2), cs(2), es(2), help
       real      w1, zb1, qltpls, qltmin, dqdhup, dqdhdn
       double precision      w2,   wsd,  zb2, ds1, ds2,   rhoast,
      +                      cgf,  cgd,  cwf, cwd, mugf,  zsg,
      +                      wstrg,dg,   tpth2,    dum2
-c
-c     External functions
-c
-      integer gtcpnt
 c
 c     Koppeling Mozart
       integer  , parameter ::  moztyp=8

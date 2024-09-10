@@ -424,6 +424,7 @@ contains
       use m_partitioninfo
       use system_utils, only: split_filename
       use unstruc_files, only: resolvePath
+      use m_qnerror
 
       implicit none
 
@@ -583,7 +584,7 @@ contains
       num_bc_ini_blocks = 0
       if (ext_force_bnd_used) then
          ! first read the bc file (new file format for boundary conditions)
-         call readlocationfilesfromboundaryblocks(trim(md_extfile_new), nx, kce, num_bc_ini_blocks, &
+         call read_location_files_from_boundary_blocks(trim(md_extfile_new), nx, kce, num_bc_ini_blocks, &
                                                   numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
       end if
 
@@ -619,7 +620,7 @@ contains
 
    end subroutine findexternalboundarypoints
 
-   subroutine readlocationfilesfromboundaryblocks(filename, nx, kce, num_bc_ini_blocks, &
+   subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
                                                   numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
       use properties
       use timespace
@@ -634,6 +635,7 @@ contains
       use string_module, only: strcmpi
       use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
       use m_missing, only: dmiss
+      use m_qnerror
 
       implicit none
 
@@ -651,8 +653,8 @@ contains
       integer, parameter :: ini_value_len = 256 !
       character(len=ini_key_len) :: groupname !
       character(len=ini_value_len) :: quantity !
-      character(len=ini_value_len) :: locationfile !< contains either the name of the polygon file (.pli) or the nodeId
-      character(len=ini_value_len) :: forcingfile !
+      character(len=ini_value_len) :: location_file !< contains either the name of the polygon file (.pli) or the nodeId
+      character(len=ini_value_len) :: forcing_file !
       double precision :: return_time !
       double precision :: tr_ws ! Tracer fall velocity
       double precision :: tr_decay_time ! Tracer decay time
@@ -678,7 +680,7 @@ contains
       ! check FileVersion
       major = 1
       minor = 0
-      call prop_get_version_number(bnd_ptr, major=major, minor=minor, success=file_ok)
+      call get_version_number(bnd_ptr, major=major, minor=minor, success=file_ok)
       if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in '''//trim(filename)//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, '. Ignoring this file.'
          call err_flush()
@@ -698,8 +700,8 @@ contains
          groupname = tree_get_name(bnd_ptr%child_nodes(i)%node_ptr)
          if (strcmpi(groupname, 'Boundary')) then
             quantity = ''
-            locationfile = ''
-            forcingfile = ''
+            location_file = ''
+            forcing_file = ''
             return_time = 0.0
 
             group_ok = .true.
@@ -712,25 +714,25 @@ contains
 
             group_ok = group_ok .and. property_ok
 
-            call prop_get(node_ptr, '', 'nodeId', locationFile, property_ok)
+            call prop_get(node_ptr, '', 'nodeId', location_file, property_ok)
             if (property_ok) then
                filetype = node_id
             else
-               call prop_get(node_ptr, '', 'locationFile', locationFile, property_ok)
+               call prop_get(node_ptr, '', 'locationFile', location_file, property_ok)
                filetype = poly_tim
             end if
 
             if (property_ok) then
-               call resolvePath(locationFile, basedir)
+               call resolvePath(location_file, basedir)
             else
                call qnerror('Expected property', 'locationFile', ' for boundary definition')
             end if
 
             group_ok = group_ok .and. property_ok
 
-            call prop_get(node_ptr, '', 'forcingFile ', forcingFile, property_ok)
+            call prop_get(node_ptr, '', 'forcingFile ', forcing_file, property_ok)
             if (property_ok) then
-               call resolvePath(forcingFile, basedir)
+               call resolvePath(forcing_file, basedir)
             else
                call qnerror('Expected property', 'forcingFile', ' for boundary definition')
             end if
@@ -759,9 +761,9 @@ contains
 
             if (group_ok) then
                if (rrtolb > 0d0) then
-                  call processexternalboundarypoints(quantity, locationFile, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=(1 + 2 * rrtolb) / (1 + 2 * rrtol), tfc=transformcoef, width1D=width1D, blDepth=blDepth)
+                  call processexternalboundarypoints(quantity, location_file, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=(1 + 2 * rrtolb) / (1 + 2 * rrtol), tfc=transformcoef, width1D=width1D, blDepth=blDepth)
                else
-                  call processexternalboundarypoints(quantity, locationFile, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=1d0, tfc=transformcoef, width1D=width1D, blDepth=blDepth)
+                  call processexternalboundarypoints(quantity, location_file, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=1d0, tfc=transformcoef, width1D=width1D, blDepth=blDepth)
                end if
                num_bc_ini_blocks = num_bc_ini_blocks + 1
             end if
@@ -776,7 +778,7 @@ contains
 
       call tree_destroy(bnd_ptr)
 
-   end subroutine readlocationfilesfromboundaryblocks
+   end subroutine read_location_files_from_boundary_blocks
 
    subroutine appendrettime(qidfm, nbnd, rettime)
 
@@ -832,6 +834,7 @@ contains
       use string_module
       use m_strucs, only: NUMGENERALKEYWRD
       use m_missing, only: dmiss
+      use m_qnerror
 
       implicit none
 
@@ -1091,11 +1094,12 @@ contains
    end subroutine processexternalboundarypoints
 
 !> Calls the ec_addtimespacerelation with all proper unstruc-specific target arrays and element set masks.
-   function addtimespacerelation_boundaries(qid, filename, filetype, method, operand, forcingFile, targetindex) result(success)
+   function addtimespacerelation_boundaries(qid, filename, filetype, method, operand, forcing_file, targetindex) result(success)
       use fm_external_forcings_data, no1 => qid, no2 => filetype, no3 => operand, no4 => success
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
       use m_flowparameters, only: jawave
       use m_flowtimes, only: dt_nodal
+      use m_qnerror
 
       implicit none
 
@@ -1104,7 +1108,7 @@ contains
       integer, intent(in) :: filetype !< File type of current quantity.
       integer, intent(in) :: method !< Time-interpolation method for current quantity.
       character(len=1), intent(in) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
-      character(len=*), optional, intent(in) :: forcingFile !< Optional forcings file, if it differs from the filename (i.e., if filename=*.pli, and forcingFile=*.bc)
+      character(len=*), optional, intent(in) :: forcing_file !< Optional forcings file, if it differs from the filename (i.e., if filename=*.pli, and forcing_file=*.bc)
       integer, optional, intent(in) :: targetIndex !< target position or rank of (complete!) vector in target array
 
       logical :: success
@@ -1119,8 +1123,8 @@ contains
       ! TODO: AVD: we now leave it to caller to fill array with length(zbnd*),
       ! instead of the number of polyline points. Cleaner alternative is to create
       ! a poly_tim provider, with the *underlying* point child providers being REALTIME.
-      if (present(forcingFile)) then
-         if (trim(forcingFile) == 'REALTIME') then
+      if (present(forcing_file)) then
+         if (trim(forcing_file) == 'REALTIME') then
             call mess(LEVEL_DEBUG, 'addtimespacerelation_boundaries: leave empty timespacerelation for '''//trim(qid)//''' from locationFile '''//trim(filename)//''' (REALTIME data).')
             return
          end if
@@ -1128,40 +1132,40 @@ contains
 
       kx = 1
       if (nbndz > 0 .and. (qid == 'waterlevelbnd' .or. qid == 'neumannbnd' .or. qid == 'riemannbnd' .or. qid == 'outflowbnd')) then
-         success = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, filename, filetype, method, operand, xy2bndz, forcingfile=forcingFile, dtnodal=dt_nodal, targetindex=targetindex)
+         success = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, filename, filetype, method, operand, xy2bndz, forcingfile=forcing_file, dtnodal=dt_nodal, targetindex=targetindex)
 
       else if (nbndz > 0 .and. nqhbnd > 0 .and. (qid == 'qhbnd')) then
-         success = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, filename, filetype, method, operand, xy2bndz, forcingfile=forcingFile, targetindex=targetindex)
+         success = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, filename, filetype, method, operand, xy2bndz, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (nbndu > 0 .and. (qid == 'dischargebnd' .or. qid == 'criticaloutflowbnd' .or. qid == 'weiroutflowbnd' .or. qid == 'absgenbnd')) then
          if (qid == 'absgenbnd') then
             jawave = 4
          end if
-         success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcingFile, targetindex=targetindex)
+         success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (nbndu > 0 .and. qid == 'velocitybnd') then
          pzmin => zminmaxu(1:nbndu)
          pzmax => zminmaxu(nbndu + 1:2 * nbndu)
          success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, &
-                                           xy2bndu, z=sigmabndu, pzmin=pzmin, pzmax=pzmax, forcingfile=forcingFile, targetindex=targetindex)
+                                           xy2bndu, z=sigmabndu, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (nbnds > 0 .and. qid == 'salinitybnd') then ! 2D
          pzmin => zminmaxs(1:nbnds)
          pzmax => zminmaxs(nbnds + 1:2 * nbnds)
          success = ec_addtimespacerelation(qid, xbnds, ybnds, kds, kx, filename, filetype, method, operand, xy2bnds, &
-                                           z=sigmabnds, pzmin=pzmin, pzmax=pzmax, forcingfile=forcingFile, targetindex=targetindex)
+                                           z=sigmabnds, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (nbndTM > 0 .and. qid == 'temperaturebnd') then
          pzmin => zminmaxtm(1:nbndTM)
          pzmax => zminmaxtm(nbndTM + 1:2 * nbndTM)
          success = ec_addtimespacerelation(qid, xbndTM, ybndTM, kdtm, kx, filename, filetype, method, operand, xy2bndtm, &
-                                           z=sigmabndtm, pzmin=pzmin, pzmax=pzmax, forcingfile=forcingFile, targetindex=targetindex)
+                                           z=sigmabndtm, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (nbndsd > 0 .and. (qid == 'sedimentbnd')) then
          pzmin => zminmaxsd(1:nbndsd)
          pzmax => zminmaxsd(nbndsd + 1:2 * nbndsd)
          success = ec_addtimespacerelation(qid, xbndsd, ybndsd, kdsd, kx, filename, filetype, method, operand, xy2bndsd, &
-                                           z=sigmabndsd, pzmin=pzmin, pzmax=pzmax, forcingfile=forcingFile, targetindex=targetindex)
+                                           z=sigmabndsd, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (numtracers > 0 .and. (qid(1:9) == 'tracerbnd')) then
          ! get tracer boundary condition number
@@ -1176,7 +1180,7 @@ contains
             pzmin => bndtr(itrac)%zminmax(1:nbndtr(itrac))
             pzmax => bndtr(itrac)%zminmax(nbndtr(itrac) + 1:2 * nbndtr(itrac))
             success = ec_addtimespacerelation(qid, bndtr(itrac)%x, bndtr(itrac)%y, bndtr(itrac)%kd, kx, filename, filetype, method, operand, bndtr(itrac)%xy2, &
-                                              z=bndtr(itrac)%sigma, forcingfile=forcingfile, pzmin=pzmin, pzmax=pzmax, targetindex=targetindex)
+                                              z=bndtr(itrac)%sigma, forcingfile=forcing_file, pzmin=pzmin, pzmax=pzmax, targetindex=targetindex)
          else
             success = .true.
          end if
@@ -1191,7 +1195,7 @@ contains
                pzmin => bndsf(isf)%zminmax(1:nbndsf(isf))
                pzmax => bndsf(isf)%zminmax(nbndsf(isf) + 1:2 * nbndsf(isf))
                success = ec_addtimespacerelation(qid, bndsf(isf)%x, bndsf(isf)%y, bndsf(isf)%kd, kx, filename, filetype, method, operand, bndsf(isf)%xy2, &
-                                                 z=bndsf(isf)%sigma, forcingfile=forcingfile, pzmin=pzmin, pzmax=pzmax, targetindex=targetindex)
+                                                 z=bndsf(isf)%sigma, forcingfile=forcing_file, pzmin=pzmin, pzmax=pzmax, targetindex=targetindex)
             else
                success = .true.
             end if
@@ -1201,17 +1205,17 @@ contains
          end if
 
       else if (nbndt > 0 .and. (qid == 'tangentialvelocitybnd')) then
-         success = ec_addtimespacerelation(qid, xbndt, ybndt, kdt, kx, filename, filetype, method, operand, xy2bndt, forcingfile=forcingFile, targetindex=targetindex)
+         success = ec_addtimespacerelation(qid, xbndt, ybndt, kdt, kx, filename, filetype, method, operand, xy2bndt, forcingfile=forcing_file, targetindex=targetindex)
 
       else if (nbnduxy > 0 .and. (qid == 'uxuyadvectionvelocitybnd')) then
          kx = 2
          pzmin => zminmaxuxy(1:nbnduxy)
          pzmax => zminmaxuxy(nbnduxy + 1:2 * nbnduxy)
          success = ec_addtimespacerelation(qid, xbnduxy, ybnduxy, kduxy, kx, filename, filetype, method, operand, xy2bnduxy, &
-                                           z=sigmabnduxy, pzmin=pzmin, pzmax=pzmax, forcingfile=forcingFile)
+                                           z=sigmabnduxy, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file)
 
       else if (nbndn > 0 .and. (qid == 'normalvelocitybnd')) then
-         success = ec_addtimespacerelation(qid, xbndn, ybndn, kdn, kx, filename, filetype, method, operand, xy2bndn, forcingfile=forcingFile, targetindex=targetindex)
+         success = ec_addtimespacerelation(qid, xbndn, ybndn, kdn, kx, filename, filetype, method, operand, xy2bndn, forcingfile=forcing_file, targetindex=targetindex)
 
       else !There is some boundary that is not detected or recognized
 !      success = .false.
@@ -1221,14 +1225,13 @@ contains
 
 !> Initializes memory for laterals on flow nodes.
    subroutine ini_alloc_laterals()
-      use m_laterals, only: qqlat, kclat, nnlat
+      use m_laterals, only: kclat, nnlat
       use m_flowgeom, only: ndx2d, ndxi, ndx
       use m_alloc
-      use m_flow, only: kmx
       integer :: ierr
       integer :: nlatndguess
 
-      if (.not. allocated(nnlat)) then                      ! just once
+      if (.not. allocated(nnlat)) then ! just once
          nlatndguess = ndx2d + 2 * (ndxi - ndx2d) ! first guess: all 2D + twice all 1D, nnlat *might* be bigger.
          allocate (nnLat(nlatndguess), stat=ierr)
          call aerr('nnLat(nlatndguess)', ierr, nlatndguess)
@@ -1245,7 +1248,7 @@ contains
 !! spatially uniform time series.
 !! Also handles inside one function the old-style *.ext quantities and
 !! the new style *.ext and structures.ini quantities.
-   function adduniformtimerelation_objects(qid, locationFile, objtype, objid, paramname, paramvalue, targetindex, vectormax, targetarray) result(success)
+   function adduniformtimerelation_objects(qid, location_file, objtype, objid, paramname, paramvalue, targetindex, vectormax, targetarray) result(success)
       !use fm_external_forcings_data, no1=>qid, no2=>filetype, no3=>operand, no4 => success
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
       use string_module, only: strcmpi
@@ -1255,7 +1258,7 @@ contains
       implicit none
 
       character(len=*), intent(in) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
-      character(len=*), intent(in) :: locationfile !< Name of location file (*.pli or *.pol) for current quantity (leave empty when valuestring contains value or filename).
+      character(len=*), intent(in) :: location_file !< Name of location file (*.pli or *.pol) for current quantity (leave empty when valuestring contains value or filename).
       character(len=*), intent(in) :: objtype !< Type name of the object for which this relation is set (e.g., 'lateral', for prettyprinting only).
       character(len=*), intent(in) :: objid !< Id of the object for which this relation is set (for prettyprinting only).
       character(len=*), intent(in) :: paramname !< Name of the parameter that is set in this relation (e.g., 'discharge', for prettyprinting only).
@@ -1281,17 +1284,17 @@ contains
 
       if (len_trim(paramvalue) > 0) then
          valuestring = paramvalue
-      else if (len_trim(locationFile) > 0) then
+      else if (len_trim(location_file) > 0) then
          ! Old-style *.ext:
          ! Prepare time series relation, if the .pli file has an associated .tim file.
-         L = index(locationFile, '.', back=.true.) - 1
-         valuestring = locationFile(1:L)//'_0001.tim'
+         L = index(location_file, '.', back=.true.) - 1
+         valuestring = location_file(1:L)//'_0001.tim'
          inquire (file=valuestring, exist=file_exists)
          if (.not. file_exists) then
-            valuestring = locationFile(1:L)//'.tim'
+            valuestring = location_file(1:L)//'.tim'
             inquire (file=valuestring, exist=file_exists)
             if (.not. file_exists) then
-               call mess(LEVEL_WARN, 'Files '''//trim(valuestring)//''' and file '''//trim(locationFile(1:L)//'_0001.tim')//''' do not exist.')
+               call mess(LEVEL_WARN, 'Files '''//trim(valuestring)//''' and file '''//trim(location_file(1:L)//'_0001.tim')//''' do not exist.')
             end if
          end if
 
@@ -1352,14 +1355,14 @@ contains
       end if
    end function adduniformtimerelation_objects
 
-   subroutine register_quantity_pli_combination(quantity, locationFile)
+   subroutine register_quantity_pli_combination(quantity, location_file)
       use m_alloc
       implicit none
       character(len=*), intent(in) :: quantity
-      character(len=*), intent(in) :: locationFile
+      character(len=*), intent(in) :: location_file
       character(len=max_registered_item_id) :: item_id
 
-      item_id = trim(quantity)//'-'//trim(locationFile)
+      item_id = trim(quantity)//'-'//trim(location_file)
 
       if (num_registered_items >= max_ext_bnd_items) then
          max_ext_bnd_items = ceiling(1.2 * num_registered_items)
@@ -1383,15 +1386,15 @@ contains
 
    end subroutine
 
-   function quantity_pli_combination_is_registered(quantity, locationFile) result(is_registered)
+   function quantity_pli_combination_is_registered(quantity, location_file) result(is_registered)
       implicit none
       logical :: is_registered
       character(len=*), intent(in) :: quantity
-      character(len=*), intent(in) :: locationFile
+      character(len=*), intent(in) :: location_file
       integer :: i
       character(len=max_registered_item_id) :: item_id
 
-      item_id = trim(quantity)//'-'//trim(locationFile)
+      item_id = trim(quantity)//'-'//trim(location_file)
 
       is_registered = .false.
 
@@ -1628,6 +1631,7 @@ contains
       use timespace_data, only: settimespacerefdat
       use timers, only: timstop, timstrt
       use unstruc_inifields, only: initialize_initial_fields
+      use m_qnerror
 
       integer, intent(out) :: iresult
 

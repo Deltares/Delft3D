@@ -28,10 +28,11 @@
 !-------------------------------------------------------------------------------
 
 !
+
 !
 
-function flow_initwaveforcings_runtime() result(retval) ! This is the general hook-up to wave conditions
-
+! This is the general hook-up to wave conditions for online wave coupling
+function flow_initwaveforcings_runtime() result(retval)
    use m_flowparameters
    use m_flowtimes ! Two stages: 1 = collect elsets for which data is provided
    use m_flowgeom !             2 = add relations between elsets and their providers
@@ -93,10 +94,10 @@ function flow_initwaveforcings_runtime() result(retval) ! This is the general ho
    else
       qid_l = 'tp'
    end if
-   if (.not. allocated(twav)) then
-      allocate (twav(ndx), stat=ierr)
-      call aerr('twav(ndx)', ierr, ndx)
-      twav = 0.0
+   if (.not. allocated(twavcom)) then
+      allocate (twavcom(ndx), stat=ierr)
+      call aerr('twavcom(ndx)', ierr, ndx)
+      twavcom = 0d0
    end if
    success = ec_addtimespacerelation(qid_l, xz(1:ndx), yz(1:ndx), kcw, kx, md_wavefile, filetype_l, method_l, operand_l, quiet=.true.)
    !

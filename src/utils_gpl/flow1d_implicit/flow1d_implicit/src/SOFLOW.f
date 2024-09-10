@@ -710,10 +710,7 @@ c      x      =     gtrpnt ( 'X'     )
       
 c      grhis  =     gtrpnt ( 'GRHIS' )
       real grhis(1)     
-      
-      double precision h2(ngrid)
-      double precision q2(ngrid)
-      
+            
 c    debug
       double precision dbg1
       integer debug_wr

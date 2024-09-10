@@ -32,11 +32,9 @@
 
       subroutine AXES()
          use unstruc_colors
+         use m_screenarea
          implicit none
-         integer :: jaxis
-         double precision :: xleft
-         double precision :: ybot
-         common / SCREENAREA / XLEFT, YBOT, JAXIS
+
          if (JAXIS == 1) then
             call SETCOL(KLAXS)
             call viewport(0.0, 0.0, 1.0, 1.0)

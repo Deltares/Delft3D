@@ -31,6 +31,7 @@
 !
 
       subroutine DISMIN(X, X2, Y, Y2, XX, YY, N, DIS, TV, XV, YV)
+         use m_splint
          implicit none
          integer :: n
          double precision :: rn

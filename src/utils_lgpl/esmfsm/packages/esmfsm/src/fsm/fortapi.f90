@@ -407,7 +407,6 @@ subroutine alignment_error (type)
     include 'globals-fsm.i'
 
     character   error*2000
-    integer     status
 
     error = 'FSM Error: ' // &
                 type (1:len (type)) // &

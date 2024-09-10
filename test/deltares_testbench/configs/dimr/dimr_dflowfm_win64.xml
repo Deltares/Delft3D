@@ -51,6 +51,16 @@
     <program name="checkhydbal" addSearchPaths="false">
       <path>thirdparty\checkhydbal\win64\checkhydbal.exe</path>
     </program>
+    <program name="dflowfm" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+      <location ref="reference_engines" type="reference">
+          <from>win64</from>
+      </location>
+      <location ref="local" type="check">
+          <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
+      </location>
+      <path>bin/run_dflowfm.bat</path>
+      <shell ref="command_prompt"/>
+    </program>
   </programs>
   <defaultTestCases>
     <testCase name="dflowfm_default">

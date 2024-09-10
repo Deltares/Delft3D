@@ -87,11 +87,6 @@ c
       real    wmain, wsub1, af, wf, o
       double precision h, zbmain, zbsub1
 c
-c     Declaration of local variables:
-c
-      character branam*40
-      integer   lbrnam
-c
 c     Include sobek error code file
 c
       include '../include/errcod.i'

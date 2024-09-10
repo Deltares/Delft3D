@@ -649,7 +649,6 @@ contains
         integer :: jacornerx
         integer :: jacornery
         integer :: k
-        integer :: l
         !    integer        :: numbersonline
         character(132) :: rec
         character(30) :: keyword

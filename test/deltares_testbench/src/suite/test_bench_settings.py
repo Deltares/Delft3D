@@ -38,6 +38,7 @@ class TestBenchSettings:
     test_bench_startup_dir: Optional[str] = None
     server_base_url: str = ""
     override_paths: str = ""
+    skip_post_processing: bool = False
 
     def log_overview(self, logger: Logger) -> None:
         """Log overview of the parameters.

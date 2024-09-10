@@ -955,7 +955,7 @@
     Integer inRain
     Character(FilCHarIdLength) string !,deletespaces
     Logical  endFil
-    Integer  iDummy, idum
+    Integer  iDummy
 
     ! body
     ! only called if not meteo data from NetCdf

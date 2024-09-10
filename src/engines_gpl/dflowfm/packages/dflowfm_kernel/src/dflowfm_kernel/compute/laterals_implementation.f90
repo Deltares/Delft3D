@@ -44,15 +44,14 @@ contains
    end subroutine reset_lateral
 
    !> allocate the arrays for laterals on 3d/BMI
-   module subroutine initialize_lateraldata(numconst)
+   module subroutine initialize_lateraldata(num_const)
       use m_flow, only: kmx
       use m_flowgeom, only: ndx
       use m_alloc, only: realloc
 
-      integer, intent(in) :: numconst !< number of constitiuents
+      integer, intent(in) :: num_const !< number of constitiuents
 
       integer :: i ! loop counter
-      integer :: ierr ! error status
 
       apply_transport_is_used = .false.
       if (allocated(apply_transport)) then
@@ -66,11 +65,11 @@ contains
       end if
 
       num_layers = max(1, kmx)
-      call realloc(incoming_lat_concentration, [num_layers, numconst, numlatsg])
+      call realloc(incoming_lat_concentration, [num_layers, num_const, numlatsg])
       incoming_lat_concentration = 0._dp
-      call realloc(outgoing_lat_concentration, [num_layers, numconst, numlatsg])
+      call realloc(outgoing_lat_concentration, [num_layers, num_const, numlatsg])
       call realloc(lateral_volume_per_layer, [num_layers, numlatsg])
-      call realloc(qqlat, [num_layers, numlatsg, ndx], fill=0._dp)
+      call realloc(qqlat, [num_layers, nlatnd], fill=0._dp)
 
    end subroutine initialize_lateraldata
 
@@ -89,45 +88,49 @@ contains
    !> At the start of an update, the outgoing_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
    !! In average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
    !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
-   module subroutine average_concentrations_for_laterals(numconst, kmx, kmxn, cell_volume, constituents, dt)
+   module subroutine average_concentrations_for_laterals(num_const, kmx, kmxn, cell_volume, constituents, dt)
 
       use m_alloc, only: aerr
 
-      integer, intent(in) :: numconst !< Number or constituents.
+      integer, intent(in) :: num_const !< Number or constituents.
       integer, intent(in) :: kmx !< Number of layers (0 means 2D computation).
       integer, dimension(:), intent(in) :: kmxn !< Maximum number of vertical cells per base node n.
       real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3].
       real(kind=dp), dimension(:, :), intent(in) :: constituents !< Concentrations of constituents.
       real(kind=dp), intent(in) :: dt !< Timestep in seconds.
 
-      integer :: ilat, i_node, iconst, k, k1, kt, kb
+      integer :: i_lat, i_node, i_const, k, k1, kt, kb
       integer :: i_layer
       integer :: iostat
 
-      real(kind=dp), dimension(:), allocatable :: total_volume
+      real(kind=dp), allocatable, dimension(:) :: total_volume !< Placeholder of total lateral-volume per layer 
+      real(kind=dp), allocatable, dimension(:, :, :) :: total_time_weighted_quantity !< Placeholder of accumulated quantity (mass and/or temperature) weighted by time, for each layer, lateral and constituent
 
       allocate (total_volume(num_layers), stat=iostat)
       call aerr('total_volume', iostat, num_layers, 'average_concentrations_for_laterals')
+      allocate (total_time_weighted_quantity(num_layers, num_const, numlatsg), stat=iostat)
+      call aerr('total_time_weighted_quantity', iostat, num_layers*num_const*numlatsg, 'average_concentrations_for_laterals')
 
-      do ilat = 1, numlatsg
-         total_volume = 0.0_dp
-         do k1 = n1latsg(ilat), n2latsg(ilat)
+      do i_lat = 1, numlatsg
+         total_volume(:) = 0.0_dp
+         total_time_weighted_quantity(:,:,:) = 0.0_dp
+         do k1 = n1latsg(i_lat), n2latsg(i_lat)
             i_node = nnlat(k1)
             if (i_node > 0) then
                if (kmx < 1) then
                   total_volume = total_volume + cell_volume(i_node)
-                  do iconst = 1, numconst
-                     outgoing_lat_concentration(1, iconst, ilat) = outgoing_lat_concentration(1, iconst, ilat) + &
-                                                                   dt * cell_volume(i_node) * constituents(iconst, i_node)
+                  do i_const = 1, num_const
+                     total_time_weighted_quantity(1, i_const, i_lat) = total_time_weighted_quantity(1, i_const, i_lat) + &
+                                                                       dt * cell_volume(i_node) * constituents(i_const, i_node)
                   end do
                else
                   i_layer = kmx - kmxn(i_node) + 1 ! initialize i_layer to the index of first active bottom layer of base node(i_node)
                   call getkbotktop(i_node, kb, kt)
                   do k = kb, kt ! loop over active layers under base node(i_node)
                      total_volume(i_layer) = total_volume(i_layer) + cell_volume(k)
-                     do iconst = 1, numconst
-                        outgoing_lat_concentration(i_layer, iconst, ilat) = outgoing_lat_concentration(i_layer, iconst, ilat) + &
-                                                                            dt * cell_volume(k) * constituents(iconst, k)
+                     do i_const = 1, num_const
+                        total_time_weighted_quantity(i_layer, i_const, i_lat) = total_time_weighted_quantity(i_layer, i_const, i_lat) + &
+                                                                     dt * cell_volume(k) * constituents(i_const, k)
                      end do
                      i_layer = i_layer + 1
                   end do
@@ -136,14 +139,13 @@ contains
          end do
          do i_layer = 1, num_layers
             if (total_volume(i_layer) > 0) then
-               outgoing_lat_concentration(i_layer, :, ilat) = outgoing_lat_concentration(i_layer, :, ilat) / total_volume(i_layer)
+               outgoing_lat_concentration(i_layer, :, i_lat) = outgoing_lat_concentration(i_layer, :, i_lat) + & 
+                                                               total_time_weighted_quantity(i_layer, :, i_lat) / total_volume(i_layer)
             else
-               outgoing_lat_concentration(i_layer, :, ilat) = 0.0_dp
+               outgoing_lat_concentration(i_layer, :, i_lat) = 0.0_dp
             end if
          end do
       end do
-
-      deallocate (total_volume)
 
    end subroutine average_concentrations_for_laterals
 
@@ -166,7 +168,7 @@ contains
                   delta_cell_volume = 1._dp / max(cell_volume(i_cell), dtol)
                   ! transport_load is added to RHS of transport equation, sink is added to diagonal:
                   ! only multiply transport_load with concentration
-                  qlat = qqlat(i_layer, i_lateral, i_cell)
+                  qlat = qqlat(i_layer, k1)
                   if (qlat >= 0) then
                      transport_load(i_const, i_cell) = transport_load(i_const, i_cell) + delta_cell_volume * qlat * incoming_lat_concentration(1, i_const, i_lateral)
                   else
@@ -233,12 +235,12 @@ contains
       use m_GlobalParameters, only: flow1d_eps10
 
       real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per layer
-      real(kind=dp), dimension(:, :, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge per layer
+      real(kind=dp), dimension(:, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge per layer
                                                                                                  !! per lateral, per cell
       integer :: i_lateral, i_layer, i_nnlat, i_node, i_flownode
       integer :: i_node_bottom_layer, i_node_top_layer, i_active_bottom_layer
 
-      lateral_discharge_per_layer_lateral_cell(:, :, :) = 0.0_dp
+      lateral_discharge_per_layer_lateral_cell(:, :) = 0.0_dp
       do i_lateral = 1, numlatsg
          if (apply_transport(i_lateral) > 0) then
             do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
@@ -248,7 +250,7 @@ contains
                i_layer = max(i_active_bottom_layer, 1)
                do i_flownode = i_node_bottom_layer, i_node_top_layer
                   if (comparereal(lateral_volume_per_layer(i_layer, i_lateral), 0.0_dp, flow1d_eps10) /= 0) then ! Avoid division by 0
-                     lateral_discharge_per_layer_lateral_cell(i_layer, i_lateral, i_flownode) = &
+                     lateral_discharge_per_layer_lateral_cell(i_layer, i_nnlat) = &
                         provided_lateral_discharge(i_layer, i_lateral) * (vol1(i_flownode) / lateral_volume_per_layer(i_layer, i_lateral))
                      i_layer = i_layer + 1
                   end if

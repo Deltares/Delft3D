@@ -44,6 +44,7 @@
     use geometry_module, only: dbdistance
     use m_sferic, only: jsferic, jasfer3D
     use m_samples
+    use m_qnerror
 
     implicit none
     integer :: ierr, MINP, LS, L, K, IBR, LL, LA, K1, K2, KA, KB, NRL, KK, ja, ium

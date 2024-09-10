@@ -155,7 +155,7 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
     !
     ! Check version number of culvert input file
     !
-    call prop_get_string(cul_ptr, 'CulvertFileInformation', 'FileVersion', &
+    call prop_get(cul_ptr, 'CulvertFileInformation', 'FileVersion', &
                        & versionnrinput)
     if (trim(versionnrinput) /= trim(versionnr)) then
        write (message, '(a,a)') 'Culvert input file must have version number ', &
@@ -189,7 +189,7 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                     !
                     numculvert = numculvert+1
                     culvert_name = ' '
-                    call prop_get_string(link_ptr, '*', 'Name', culvert_name)
+                    call prop_get(link_ptr, '*', 'Name', culvert_name)
                     !
                     ! Determine indices of mnksrc that contain data for culvert,
                     ! temporary solution for matching old fashioned overstructured
@@ -243,13 +243,13 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                         ! and wet area.
                         !
                         if (scansofculvertfile .eq. 1) then
-                            call prop_get_integer(link_ptr, '*', &
+                            call prop_get(link_ptr, '*', &
                                                 & 'NumberOfRelations1', numrel)
                             if (numrel .gt. maxnumrel) maxnumrel = numrel
-                            call prop_get_integer(link_ptr, '*', &
+                            call prop_get(link_ptr, '*', &
                                                 & 'NumberOfRelations2', numrel)
                             if (numrel .gt. maxnumrel) maxnumrel = numrel                            
-                            call prop_get_integer(link_ptr, '*', &
+                            call prop_get(link_ptr, '*', &
                                                 & 'NumberOfRelations3', numrel)
                             if (numrel .gt. maxnumrel) maxnumrel = numrel                            
                         else                     
@@ -266,7 +266,7 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                             call prop_get(link_ptr, '*', &
                                              & 'CorrectionCoefficient', &
                                              & calfa(isrc))
-                            call prop_get_integer(link_ptr, '*', &
+                            call prop_get(link_ptr, '*', &
                                                 & 'NumberOfRelations1', &
                                                 & numrel1(isrc))
                             call prop_get(link_ptr, '*', &
@@ -276,7 +276,7 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                             call prop_get(link_ptr, '*', 'WetArea1', &
                                               & wetar1(isrc, 1 : numrel1(isrc)), &
                                               & numrel1(isrc))
-                            call prop_get_integer(link_ptr, '*', &
+                            call prop_get(link_ptr, '*', &
                                                 & 'NumberOfRelations2', &
                                                 & numrel2(isrc))
                             call prop_get(link_ptr, '*', &
@@ -286,7 +286,7 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                             call prop_get(link_ptr, '*', 'WetArea2', &
                                               & wetar2(isrc, 1 : numrel2(isrc)), &
                                               & numrel2(isrc))
-                            call prop_get_integer(link_ptr, '*', &
+                            call prop_get(link_ptr, '*', &
                                                 & 'NumberOfRelations3', &
                                                 & numrel3(isrc))
                             call prop_get(link_ptr, '*', &
@@ -355,9 +355,9 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                                endif
                                !
                                dll_function(isrc) = ' '
-                               call prop_get_string(link_ptr, '*', 'CulvertFunction', dll_function(isrc))
+                               call prop_get(link_ptr, '*', 'CulvertFunction', dll_function(isrc))
                                dll_usrfil(isrc) = ' '
-                               call prop_get_string(link_ptr, '*', 'CulvertFile', dll_usrfil(isrc))
+                               call prop_get(link_ptr, '*', 'CulvertFile', dll_usrfil(isrc))
                             endif
                             write (lundia, '(a,a,a)') 'for discharge ', &
                                                      & namsrc(isrc),':'

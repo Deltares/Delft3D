@@ -90,7 +90,6 @@ subroutine santoss_orb(nt, as_effects, tw, uorb, unet, ang, tp, &
       integer                             :: i_next
       integer                             :: i_prev
       integer                             :: istat
-      real(fp)                            :: deltah
       real(fp)                            :: dt
       real(fp), dimension(:), allocatable :: ab_ts
       real(fp), dimension(:), allocatable :: ub_ts
@@ -104,10 +103,6 @@ subroutine santoss_orb(nt, as_effects, tw, uorb, unet, ang, tp, &
       real(fp)                            :: utyrepr  ! representative trough velocity perpendicular to wave direction (wave+current)
       real(fp)                            :: awmax
       real(fp)                            :: awmin
-      real(fp)                            :: kbed
-      real(fp)                            :: kbed11
-      real(fp)                            :: kbed1
-      real(fp)                            :: kbed2
 !
 !! executable statements -------------------------------------------------------
 !

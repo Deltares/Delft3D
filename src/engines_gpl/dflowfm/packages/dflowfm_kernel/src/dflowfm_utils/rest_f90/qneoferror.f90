@@ -32,6 +32,7 @@
 
       subroutine QNEOFERROR(MINP)
          use unstruc_files
+         use m_qnerror
          implicit none
          integer :: minp
          call QNERROR('UNEXPECTED END OF FILE IN ', FILENAMES(MINP), ' ')

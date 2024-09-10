@@ -37,11 +37,8 @@ subroutine tests_properties
 end subroutine tests_properties
 
 subroutine test_properties_load
-    character(len=20)        :: filename
     type(tree_data), pointer :: tree
     integer                  :: error
-    logical                  :: preprocess
-
     !
     ! Check that a non-existing file causes an error
     !
@@ -70,10 +67,8 @@ subroutine test_properties_load
 end subroutine test_properties_load
 
 subroutine test_properties_check
-    character(len=20)        :: filename
     type(tree_data), pointer :: tree1, tree2, tree
     integer                  :: error
-    logical                  :: preprocess
 
     logical                  :: success
     integer                  :: integerValue
@@ -175,7 +170,6 @@ end subroutine test_properties_check
 
 
 subroutine test_properties_version
-    character(len=20)        :: filename
     character(len=20)        :: fileVersion
     type(tree_data), pointer :: tree
     integer                  :: error
@@ -193,15 +187,15 @@ subroutine test_properties_version
     call prop_inifile( 'test_fileversion.ini', tree, error )
 
     ! test default version number
-    call prop_get_version_number(tree, major = major, minor = minor, success = success)
+    call get_version_number(tree, major = major, minor = minor, success = success)
     call assert_equal( major, 1, 'Major version')
     call assert_equal( minor, 245, 'Minor version')
 
-    call prop_get_version_number(tree, keyin = 'versionNumber', major = major, minor = minor, versionstring = fileVersion, success = success)
+    call get_version_number(tree, keyin = 'versionNumber', major = major, minor = minor, versionstring = fileVersion, success = success)
     call assert_equal( success, .false., 'Incorrect version string')
     call assert_equal( trim(fileVersion), '3', 'version string')
 
-    call prop_get_version_number(tree, 'new', 'version', major = major, minor = minor, versionstring = fileVersion, success = success)
+    call get_version_number(tree, 'new', 'version', major = major, minor = minor, versionstring = fileVersion, success = success)
     call assert_equal( major, 5, 'Major version')
     call assert_equal( minor, 1, 'Minor version')
     call assert_equal( trim(fileVersion), '5.001', 'version string')
@@ -277,7 +271,7 @@ subroutine test_properties_get_strings
     !
     expected = [ 'A', 'B', 'C', '' , 'D', 'E', '?', '?', '?', '?' ]
     string   = '?'
-    call prop_get_strings( tree, 'multiple', 'setOfStrings1', size(string), string, success )
+    call prop_get( tree, 'multiple', 'setOfStrings1', size(string), string, success )
 
     do i = 1,10
         call assert_true( success, "Retrieving the string value should succeed (chapter: multiple)" )
@@ -286,7 +280,7 @@ subroutine test_properties_get_strings
 
     expected = [ 'A', 'B', '?', '?', '?', '?', '?', '?', '?', '?' ]
     string   = '?'
-    call prop_get_strings( tree, 'multiple', 'setOfStrings1', 2, string, success )
+    call prop_get( tree, 'multiple', 'setOfStrings1', 2, string, success )
 
     do i = 1,10
         call assert_true( success, "Retrieving the string value should succeed (chapter: multiple)" )
@@ -303,7 +297,7 @@ subroutine test_properties_get_strings
                  !12345678901234567890 - all strings need to be the same length! (This has been relaxed in later standards,
                  ! but let's keep it simple
     string   = '?'
-    call prop_get_strings( tree, 'multiple', 'setOfStrings2', size(string), string, success, '@' )
+    call prop_get( tree, 'multiple', 'setOfStrings2', size(string), string, success, '@' )
 
     do i = 1,10
         call assert_true( success, "Retrieving the string value should succeed (chapter: multiple)" )

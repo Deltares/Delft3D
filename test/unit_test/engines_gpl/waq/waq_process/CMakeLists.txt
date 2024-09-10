@@ -25,8 +25,8 @@ create_test(
     tests_rear
     dependencies ${dependencies}
     visual_studio_folder tests/unit_test/engines_gpl/waq/waq_process
-    test_list test_rear_simple
-    labels "test_rear_simple:fast"
+    test_list test_rear_simple test_rear_temperature_seawater test_rear_temperature_fresh_water
+    labels "test_rear_simple:fast" "test_rear_temperature_seawater:fast" "test_rear_temperature_fresh_water:fast"
     test_files tests_rear.f90
     )
 

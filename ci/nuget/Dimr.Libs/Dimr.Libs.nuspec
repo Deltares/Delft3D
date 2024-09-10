@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>Dimr.Libs</id>
+        <version>1.0.0</version>
+        <title>DIMR libraries</title>
+        <authors>Deltares</authors>
+        <licenseUrl>http://www.gnu.org/licenses/lgpl.html</licenseUrl>
+        <projectUrl>http://oss.deltares.nl/web/delta-shell</projectUrl>
+        <iconUrl>http://bit.ly/192jI3c</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Package that will make set the DIMR kernels to the correct location.</description>
+        <summary>Deltares Integrated Model Runner libraries (DIMR Libs).</summary>
+        <copyright>Deltares 2024</copyright>
+        <tags>native</tags>
+    </metadata>
+    <files>
+        <file src="..\..\..\source\x64\**\*" target="content\native\kernels\x64" />
+        <file src="..\..\..\source\x64\share\drtc\*.xsd" target="content\drtc_xsd" />
+        <file src="build\**\*" target="build"/>
+    </files>
+</package>

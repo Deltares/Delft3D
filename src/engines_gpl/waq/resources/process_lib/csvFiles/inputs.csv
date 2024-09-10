@@ -2205,6 +2205,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "RearCO2   ","coefD2CO2 ",  23,"Y","x",1
 "RearCO2   ","coefD3CO2 ",  24,"Y","x",1
 "RearCO2   ","coefD4CO2 ",  25,"Y","x",1
+"RearCO2   ","coefD5CO2 ",  26,"Y","x",1
 "AdsPO4AAP ","SWAdsP    ",   1,"Y","x",1
 "AdsPO4AAP ","PO4       ",   2,"N","x",1
 "AdsPO4AAP ","AAP       ",   3,"N","x",1
@@ -2300,6 +2301,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "RearOXY   ","coefD2Oxy ",  23,"Y","x",1
 "RearOXY   ","coefD3Oxy ",  24,"Y","x",1
 "RearOXY   ","coefD4Oxy ",  25,"Y","x",1
+"RearOXY   ","coefD5Oxy ",  26,"Y","x",1
 "VAROXY    ","ITIME     ",   1,"N","x",1
 "VAROXY    ","RefHour   ",   2,"Y","x",1
 "VAROXY    ","AuxSys    ",   3,"Y","x",1
@@ -2948,6 +2950,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "VolatCH4  ","coefD2CH4 ",  23,"Y","x",1
 "VolatCH4  ","coefD3CH4 ",  24,"Y","x",1
 "VolatCH4  ","coefD4CH4 ",  25,"Y","x",1
+"VolatCH4  ","coefD5CH4 ",  26,"Y","x",1
 "SPECSUD   ","SUD       ",   1,"N","x",1
 "SPECSUD   ","lKstH2S   ",   2,"Y","x",1
 "SPECSUD   ","TcKstH2S  ",   3,"Y","x",1

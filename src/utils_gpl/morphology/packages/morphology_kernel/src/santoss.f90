@@ -119,19 +119,13 @@ subroutine santoss(h, d50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
 !
 ! local variables for input parameters
 !
-      integer                  :: nm
-      real(fp)                 :: timsec
       real(fp)                 :: tanphi     ! tangens of angle of natural talud
-      real(fp)                 :: u
-      real(fp)                 :: utot
-      real(fp)                 :: v
 !
 ! local variables
 !
       logical                  :: includes_waves
       integer                  :: i
       integer                  :: istat
-      integer                  :: j
       integer                  :: nt
       integer                  :: as_effects_
       integer                  :: sw_effects_
@@ -142,11 +136,7 @@ subroutine santoss(h, d50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
       real(fp)                 :: alpha
       real(fp)                 :: ang_cur
       real(fp)                 :: ang_ubot
-      real(fp)                 :: a1
-      real(fp)                 :: a2
-      real(fp)                 :: a3
       real(fp)                 :: b
-      real(fp)                 :: c1
       real(fp)                 :: delwblt
       real(fp)                 :: delta
       real(fp)                 :: dzbds_c
@@ -160,18 +150,11 @@ subroutine santoss(h, d50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
       real(fp)                 :: fsl_cr_c
       real(fp)                 :: fsl_cr_t
       real(fp)                 :: hs         ! significant wave height  [m]
-      real(fp)                 :: k
-      real(fp)                 :: k0
-      real(fp)                 :: k1
       real(fp)                 :: km
-      real(fp)                 :: l
-      real(fp)                 :: l0
       real(fp)                 :: m1
       real(fp)                 :: n1
-      real(fp)                 :: ocr
       real(fp)                 :: oc
       real(fp)                 :: ot
-      real(fp)                 :: omega
       real(fp)                 :: pcr       ! critical phase lag parameter [-]
       real(fp)                 :: phi_ab
       real(fp)                 :: phicy
@@ -189,7 +172,6 @@ subroutine santoss(h, d50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
       real(fp)                 :: scr_c
       real(fp)                 :: scr_t
       real(fp)                 :: sc
-      real(fp)                 :: s1
       real(fp)                 :: st
       real(fp)                 :: swc
       real(fp)                 :: swt
@@ -217,7 +199,6 @@ subroutine santoss(h, d50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
       real(fp)                 :: ttd
       real(fp), dimension(:), allocatable :: tw
       real(fp)                 :: theta
-      real(fp)                 :: ustar
       real(fp)                 :: unet      ! magnitude of current velocity [umod] at reference level zumod [m/s]
       real(fp)                 :: urms      ! rootmeansquare orbital velocity [m/s]
       real(fp)                 :: uw
@@ -240,7 +221,6 @@ subroutine santoss(h, d50, d90, hrms, tp, uorb, teta, uuu, vvv, umod, zumod, &
       real(fp)                 :: uwmin
       real(fp)                 :: wss
       
-      integer :: choice_a, choice_b, choice_c, choice_d, choice_e
 !
 !! executable statements -------------------------------------------------------
 !

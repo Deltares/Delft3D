@@ -79,7 +79,6 @@ contains
       type(t_spatial_dataSet) , pointer      :: spData
       
       character(len=1024)                    :: inputfiles
-      integer                                :: i
       integer                                :: ifrst
       integer                                :: isemi
       integer                                :: count
@@ -95,9 +94,9 @@ contains
       network%rgs%roughnessFileMajorVersion = RoughFileMajorVersion
       !> Check if the model definition file contains global values for roughness
       if (present(md_ptr)) then
-         call prop_get_double(md_ptr, 'GlobalValues', 'roughness', default, success)
+         call prop_get(md_ptr, 'GlobalValues', 'roughness', default, success)
          if (success) then
-            call prop_get_integer(md_ptr, 'GlobalValues', 'roughnessType', def_type, success)
+            call prop_get(md_ptr, 'GlobalValues', 'roughnessType', def_type, success)
          endif
          if (.not. success) then
             def_type = R_Chezy
@@ -225,7 +224,7 @@ contains
          return
       end if
 
-      call prop_get_version_number(tree_ptr, major = major, minor = minor, success = success)
+      call get_version_number(tree_ptr, major = major, minor = minor, success = success)
       if (.not. success) then
          major = 1
          minor = 0
@@ -312,13 +311,13 @@ contains
       if (branchdef) then
          
          ! *If* there's [Branch] blocks, then there will be one and only one [Global] block.
-         call prop_get_string(tree_ptr, 'Global', 'frictionId', frictionId, success)
+         call prop_get(tree_ptr, 'Global', 'frictionId', frictionId, success)
          if (.not. success) then
             call setmessage(LEVEL_ERROR, 'frictionId not found in roughness definition file: '//trim(inputfile))
             return
          endif
 
-         call prop_get_string(tree_ptr, 'General', 'frictionValuesFile', frictionValuesFileName, success)
+         call prop_get(tree_ptr, 'General', 'frictionValuesFile', frictionValuesFileName, success)
 
          irgh = hashsearch(roughness_set%hashlist, frictionId)
          if (irgh /= -1) then
@@ -364,7 +363,7 @@ contains
       do i = 1, count
          if (strcmpi(tree_get_name(tree_ptr%child_nodes(i)%node_ptr), 'Global')) then
             ! Get section id
-            call prop_get_string(tree_ptr%child_nodes(i)%node_ptr, '', 'frictionId', frictionId, success)
+            call prop_get(tree_ptr%child_nodes(i)%node_ptr, '', 'frictionId', frictionId, success)
             if (.not. success) then
                call setmessage(LEVEL_ERROR, 'frictionId not found in roughness definition file: '//trim(inputfile))
             endif
@@ -381,7 +380,7 @@ contains
             roughness_set%rough(irgh)%frictionValuesFile = frictionValuesFileName
             roughness_set%rough(irgh)%id                 = frictionId
             fricType = ''
-            call prop_get_string(tree_ptr%child_nodes(i)%node_ptr, '', 'frictionType', fricType, success)
+            call prop_get(tree_ptr%child_nodes(i)%node_ptr, '', 'frictionType', fricType, success)
             if (.not. success) then
                call setmessage(LEVEL_ERROR, 'frictionType not found in roughness definition file '''//trim(inputfile)//''' for frictionId='//trim(frictionId)//'.')
             end if
@@ -407,7 +406,7 @@ contains
             endif
             
             fricType = ''
-            call prop_get_string(tree_ptr%child_nodes(i)%node_ptr, '', 'frictionType', fricType, success)
+            call prop_get(tree_ptr%child_nodes(i)%node_ptr, '', 'frictionType', fricType, success)
             if (.not. success) then
                call setmessage(LEVEL_ERROR, 'Missing frictionType for branchId '//trim(branchid)//', see input file: '//trim(inputfile))
                cycle
@@ -419,7 +418,7 @@ contains
             endif
 
             funcType = 'constant'
-            call prop_get_string(tree_ptr%child_nodes(i)%node_ptr, '', 'functionType', funcType, success)
+            call prop_get(tree_ptr%child_nodes(i)%node_ptr, '', 'functionType', funcType, success)
             call functionTypeStringToInteger(funcType, rgh%fun_type_pos(ibr))
             if (rgh%fun_type_pos(ibr) < 0) then
                call setmessage(LEVEL_ERROR, 'functionType '''//trim(funcType)//''' invalid for branchId '//trim(branchid)//', see input file: '//trim(inputfile))
@@ -427,7 +426,7 @@ contains
             endif
             
             if (rgh%fun_type_pos(ibr) == R_FunctionTimeseries) then
-               call prop_get_string(tree_ptr%child_nodes(i)%node_ptr, '', 'timeSeriesId', timeseriesId, success)   
+               call prop_get(tree_ptr%child_nodes(i)%node_ptr, '', 'timeSeriesId', timeseriesId, success)   
                if (.not. success) then
                   call setmessage(LEVEL_ERROR, 'timeSeriesId is required for functionType='//trim(funcType)//', but was not found in the input for branchId '//trim(branchid)//', see input file: '//trim(inputfile))
                   cycle

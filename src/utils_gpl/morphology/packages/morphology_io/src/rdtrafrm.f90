@@ -295,7 +295,6 @@ subroutine rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
     integer           :: iformdef
     integer           :: istat
     integer           :: ll
-    character(256)    :: errmsg
 !
 !! executable statements -------------------------------------------------------
 !
@@ -491,7 +490,6 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
     character(80)                              :: string
     character(256)                             :: errmsg
     character(256)                             :: rec
-    character(256)                             :: parfile
     type(tree_data)              , pointer     :: tran_ptr
     type(tree_data)              , pointer     :: sed_ptr
 !
@@ -548,18 +546,18 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
        !
        version = 0
        versionstring = '00.00'
-       call prop_get_string(tran_ptr,'TransportFormulaFileInformation','FileVersion',versionstring)
+       call prop_get(tran_ptr,'TransportFormulaFileInformation','FileVersion',versionstring)
        if (trim(versionstring) == '01.00') then
           write (lundia, '(a,a)') '    Version number of input file  : ', trim(versionstring)
           version = 1
           !
           rec  = ' '
-          call prop_get_string(tran_ptr,'TransportFormula','DLL',rec)
-          call prop_get_string(tran_ptr,'TransportFormula','TranspLib',rec)
+          call prop_get(tran_ptr,'TransportFormula','DLL',rec)
+          call prop_get(tran_ptr,'TransportFormula','TranspLib',rec)
           dll_name(l) = rec
           if (rec /= ' ') then
              name(l) = ' '
-             call prop_get_string(tran_ptr,'TransportFormula','Name',name(l))
+             call prop_get(tran_ptr,'TransportFormula','Name',name(l))
              !
              if (sedtyp <= max_mud_sedtyp) then
                 iform(l) = 21 ! user defined version of EROSILT
@@ -579,12 +577,12 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
                 return
              endif
              dll_func(l) = ' '
-             call prop_get_string(tran_ptr,'TransportFormula','function',dll_func(l))
-             call prop_get_string(tran_ptr,'TransportFormula','TranspFunction',dll_func(l))
+             call prop_get(tran_ptr,'TransportFormula','function',dll_func(l))
+             call prop_get(tran_ptr,'TransportFormula','TranspFunction',dll_func(l))
              !
              dll_usrfil(l) = ' '
-             call prop_get_string(tran_ptr,'TransportFormula','InputFile',dll_usrfil(l))
-             call prop_get_string(tran_ptr,'TransportFormula','TranspInput',dll_usrfil(l))
+             call prop_get(tran_ptr,'TransportFormula','InputFile',dll_usrfil(l))
+             call prop_get(tran_ptr,'TransportFormula','TranspInput',dll_usrfil(l))
              !
              write (lundia, '(4a)') '    User defined routine ',trim(dll_func(l)),' from ',trim(dll_name(l))
           else
@@ -646,14 +644,14 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
     !
     if (iform(l) == 15 .or. iform(l) == 21) then
        rec  = ' '
-       call prop_get_string(sed_ptr,'Sediment','DLL',rec)
-       call prop_get_string(sed_ptr,'Sediment','TranspLib',rec)
+       call prop_get(sed_ptr,'Sediment','DLL',rec)
+       call prop_get(sed_ptr,'Sediment','TranspLib',rec)
        dll_name(l) = rec
        if (rec == ' ') then
           ! No Library name found ...
        else
           name(l) = ' '
-          call prop_get_string(sed_ptr,'Sediment','Name',name(l))
+          call prop_get(sed_ptr,'Sediment','Name',name(l))
           !
           write(rec,'(3a)') SHARED_LIB_PREFIX, trim(dll_name(l)), SHARED_LIB_EXTENSION
           !
@@ -668,12 +666,12 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
              return
           endif
           dll_func(l) = ' '
-          call prop_get_string(sed_ptr,'Sediment','function',dll_func(l))
-          call prop_get_string(sed_ptr,'Sediment','TranspFunction',dll_func(l))
+          call prop_get(sed_ptr,'Sediment','function',dll_func(l))
+          call prop_get(sed_ptr,'Sediment','TranspFunction',dll_func(l))
           !
           dll_usrfil(l) = ' '
-          call prop_get_string(sed_ptr,'Sediment','InputFile',dll_usrfil(l))
-          call prop_get_string(sed_ptr,'Sediment','TranspInput',dll_usrfil(l))
+          call prop_get(sed_ptr,'Sediment','InputFile',dll_usrfil(l))
+          call prop_get(sed_ptr,'Sediment','TranspInput',dll_usrfil(l))
           !
           write (lundia, '(4a)') '    User defined routine ',trim(dll_func(l)),' from ',trim(dll_name(l))
        endif

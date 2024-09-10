@@ -37,7 +37,7 @@ subroutine setdt()
    use m_flowtimes
    use m_flow, only: kkcflmx
    use m_timer
-   use unstruc_display, only: jaGUI
+   use m_gui
    use m_sediment, only: jased, stm_included, stmpar, jamorcfl, jamormergedtuser
    use m_fm_erosed, only: duneavalan
    use m_mormerge

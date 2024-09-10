@@ -93,7 +93,7 @@ subroutine micro_floc_settling_chassagne( tshear, tdiss, grav, viskin, rho_water
 !
 ! Local variables
 !
-    real(fp)              :: factor1, factor2, factor3, factor4
+    real(fp)              :: factor1, factor3, factor4
 
     real(fp), parameter   :: d_1         = 1.0e-5_fp ! Characteristic diameter of elementary particles [m]
     real(fp), parameter   :: ustar_micro = 0.025_fp  ! Characteristic shear velocity of micro flocs [m/s]

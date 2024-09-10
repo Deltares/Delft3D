@@ -694,7 +694,7 @@ subroutine rdstru(lunmd     ,lundia    ,error     ,mdfrec    ,nrrec     , &
     ! Initialize global parameter
     !
     filbub = fildef
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filbub', filbub)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filbub', filbub)
     !
     ! Bubble screen info in file? <YES>
     !
@@ -712,13 +712,13 @@ subroutine rdstru(lunmd     ,lundia    ,error     ,mdfrec    ,nrrec     , &
     ! Read Fil2dw
     !
     fil2dw = ' '
-    call prop_get_string(gdp%mdfile_ptr,'*','Fil2dw',fil2dw)
+    call prop_get(gdp%mdfile_ptr,'*','Fil2dw',fil2dw)
     if (fil2dw /= ' ') then
        !
        ! read flag for Upwind
        !
        upwind = .true.
-       call prop_get_logical(gdp%mdfile_ptr,'*','Upw2dw',upwind)
+       call prop_get(gdp%mdfile_ptr,'*','Upw2dw',upwind)
        !
        istruc = 9
        if (.not.upwind) istruc = -istruc

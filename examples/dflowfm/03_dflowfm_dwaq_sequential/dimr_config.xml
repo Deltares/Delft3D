@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <dimrConfig xsi:schemaLocation="http://schemas.deltares.nl/dimr http://content.oss.deltares.nl/schemas/dimr-1.2.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.deltares.nl/dimr">
+  <documentation>
+    <fileVersion>1.00</fileVersion>
+  </documentation>
+  <control>
+    <start name="DFlowFM"/>
+  </control>
+  <component name="DFlowFM">
+    <library>dflowfm</library>
+    <process>0</process>
+    <mpiCommunicator>DFM_COMM_DFMWORLD</mpiCommunicator>
+    <workingDir>dflowfm</workingDir>
+    <setting key="processlibrary" value="${PROC_DEF_DIR}/proc_def.dat"/>
+    <inputFile>f34_dynamo.mdu</inputFile>
+  </component>
+</dimrConfig>

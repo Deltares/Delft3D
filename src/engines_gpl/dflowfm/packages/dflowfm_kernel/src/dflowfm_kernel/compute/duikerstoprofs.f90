@@ -40,6 +40,7 @@
     use m_sferic
     use geometry_module, only: dbdistance
     use m_partitioninfo
+    use m_qnerror
     implicit none
 
     integer :: minp, Ls, Lf, n, k1, k2

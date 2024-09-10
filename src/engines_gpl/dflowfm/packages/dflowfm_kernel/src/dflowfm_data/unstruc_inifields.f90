@@ -80,7 +80,7 @@ contains
 
       major = 0
       minor = 0
-      call prop_get_version_number(inifield_ptr, major=major, minor=minor, success=success)
+      call get_version_number(inifield_ptr, major=major, minor=minor, success=success)
       if (.not. success .or. major < IniFieldMajorVersion) then
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') &
             'Unsupported IniFieldFile format detected in '''//trim(inifilename)//''': v', major, minor, &
@@ -880,6 +880,7 @@ contains
 !! Returns -1 when an invalid type string is given.
    subroutine averagingTypeStringToInteger(sAveragingType, iAveragingType)
       use m_ec_interpolationsettings
+      use string_module, only: str_tolower
       implicit none
       character(len=*), intent(in) :: sAveragingType ! averaging type string
       integer, intent(out) :: iAveragingType ! averaging type integer
@@ -1156,6 +1157,7 @@ contains
       use unstruc_model, only: md_extfile
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
       use m_hydrology_data, only: infiltcap, infiltrationmodel
+      use string_module, only: str_tolower
       ! use network_data
       ! use dfm_error
 
@@ -1243,6 +1245,8 @@ contains
                                   InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, InterceptHs
       use m_hydrology_data, only: infiltcap, infiltrationmodel
+      use m_qnerror
+      use string_module, only: str_tolower
 
       implicit none
 
@@ -1507,6 +1511,7 @@ contains
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemheight, stemheightstd
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
+      use string_module, only: str_tolower
 
       implicit none
 

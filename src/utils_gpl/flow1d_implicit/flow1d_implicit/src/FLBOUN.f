@@ -147,18 +147,14 @@ c
      +        ntab(4,maxtab), hbdpar(3,*), qbdpar(3,*)
       real    table(ntabm), hstat(*), qstat(nqstat), omboun
       double  precision     time
-      integer iter, ires
+      integer iter
 c
 c     Declaration of local variables:
 c
-      integer iopt, istat, itab, node, nodenm, nnode
+      integer iopt, istat, itab
       real    hbnd, qbnd
       logical EPSEQU
 c
-c     External functions
-c
-      integer gtipnt, gtcpnt
-
 c     Include sobek constants
 c
       include '../include/mempool.i'

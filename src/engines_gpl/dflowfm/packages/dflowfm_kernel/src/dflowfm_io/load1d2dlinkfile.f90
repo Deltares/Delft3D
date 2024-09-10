@@ -76,7 +76,7 @@
       ierr = 0
       major = 0
       minor = 0
-      call prop_get_version_number(md_ptr, major=major, minor=minor, success=success)
+      call get_version_number(md_ptr, major=major, minor=minor, success=success)
       if (.not. success .or. major < File1D2DLinkMajorVersion) then
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of 1D2DLinkFile detected in '''//trim(filename)//''': v', major, minor, '. Current format: v', File1D2DLinkMajorVersion, File1D2DLinkMinorVersion, '. Ignoring this file.'
          call warn_flush()
@@ -104,7 +104,7 @@
 
             ! Read Data
             contactType = 'all'
-            call prop_get_string(node_ptr, '', 'contactType', contactType, success)
+            call prop_get(node_ptr, '', 'contactType', contactType, success)
             icontactType = linkTypeToInt(contactType)
             if (icontactType < 0) then
                write (msgbuf, '(a,i0,a)') 'Error reading mesh contact parameters from block #', numcontactblocks, ' in file '''// &
@@ -114,7 +114,7 @@
                cycle
             end if
 
-            call prop_get_string(node_ptr, '', 'contactId', contactId, success)
+            call prop_get(node_ptr, '', 'contactId', contactId, success)
             if (success) then ! the contact is defined by contactId
                loc_spec_type = LOCTP_CONTACTID
             else ! the contact is defined by x, y coordinates and contactType
@@ -122,9 +122,9 @@
                if (success .and. numcoordinates > 0) then
                   allocate (xcoordinates(numcoordinates), stat=ierr)
                   allocate (ycoordinates(numcoordinates), stat=ierr)
-                  call prop_get_doubles(node_ptr, '', 'xCoordinates', xcoordinates, numcoordinates, success)
+                  call prop_get(node_ptr, '', 'xCoordinates', xcoordinates, numcoordinates, success)
                   if (success) then
-                     call prop_get_doubles(node_ptr, '', 'yCoordinates', ycoordinates, numcoordinates, success)
+                     call prop_get(node_ptr, '', 'yCoordinates', ycoordinates, numcoordinates, success)
                   end if
                   if (success) then
                      loc_spec_type = LOCTP_POLYGON_XY

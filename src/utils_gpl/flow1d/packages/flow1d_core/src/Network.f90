@@ -181,7 +181,6 @@ contains
       
       integer :: is, k1, k2, L1, L2
       integer :: ilnk
-      integer :: igpt
       integer :: ibran
       integer :: m
       integer :: icrs1
@@ -192,7 +191,6 @@ contains
       double precision                   :: chainage1
       double precision                   :: chainage2
       double precision                   :: chainage
-      double precision                   :: chainageg
       type(t_administration_1d), pointer          :: adm
       type(t_branch), pointer            :: pbran
       type(t_CrossSection), pointer      :: C1, C2

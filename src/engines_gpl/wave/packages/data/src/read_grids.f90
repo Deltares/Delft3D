@@ -341,7 +341,6 @@ subroutine replacecoordinates(filnam, mmax, nmax, xb, yb)
     integer           :: i
     integer           :: irgf
     integer           :: j
-    character(256)    :: rec
 !
 !! executable statements -------------------------------------------------------
 !
@@ -608,16 +607,13 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
 !
     byte    , dimension(:)  , allocatable  :: nelemconn
     integer                                :: commonnodes
-    integer                                :: etamax
     integer                                :: i
     integer                                :: idfile
     integer                                :: iddim_e
-    integer                                :: iddim_enclsp
     integer                                :: iddim_numencpts
     integer                                :: iddim_numencparts
     integer                                :: iddim_laydim
     integer                                :: iddim_n
-    integer                                :: iddim_mmax
     integer                                :: iddim_ndx
     integer                                :: iddim_nelm
     integer                                :: iddim_nemax
@@ -640,27 +636,18 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     integer                                :: idvar_encptsppt
     integer                                :: ierror
     integer                                :: ik
-    integer                                :: irgf
     integer                                :: j
     integer                                :: jatri
     integer                                :: jk
-    integer                                :: k
-    integer                                :: ksimax
     integer                                :: maxelem
-    integer                                :: necurnodes
     integer                                :: nemax
     integer                                :: nemaxout
     integer                                :: nelm
     integer                                :: nflowlink
     integer                                :: nnodes
-    integer                                :: npareg
     integer, external                      :: nc_def_var
     integer                                :: numedge
-    integer                                :: numencl
-    integer                                :: pos
     integer                                :: elt
-    integer                                :: lc
-    integer                                :: hc
     integer                                :: eltlink2
     integer                                :: neighblow
     integer                                :: neighbhigh
@@ -681,9 +668,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     real(hp), dimension(:)  , allocatable  :: nelmslice
     real(hp), dimension(:,:), allocatable  :: grid_corner
     logical                                :: eltlink2found
-    logical                                :: kw_found
     logical                                :: regulargrid
-    character(10)                          :: dum
     character(NF90_MAX_NAME)               :: string
     character(8)                           :: cdate
     character(10)                          :: ctime

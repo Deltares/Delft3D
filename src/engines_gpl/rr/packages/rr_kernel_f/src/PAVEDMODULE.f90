@@ -867,7 +867,7 @@ contains
   Integer      RetVal
 
   Integer       inod
-  Integer       ipoint, ivhg, iecode
+  Integer       ivhg, iecode
   Character(Len=1000) String
   Integer        Nhlp
   Parameter     (Nhlp = 32)

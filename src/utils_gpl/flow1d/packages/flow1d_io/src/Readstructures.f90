@@ -151,7 +151,7 @@ module m_readstructures
       ierr = 0
       major = 1
       minor = 0
-      call prop_get_version_number(md_ptr, major = major, minor = minor, success = success1)
+      call get_version_number(md_ptr, major = major, minor = minor, success = success1)
       if (.not. success1) then
          msgbuf = ' Early return, file '//trim(structurefile)//' is a 2D3D structure file, it will be read by function flow_init_structurecontrol.'
          call msg_flush()
@@ -209,7 +209,7 @@ module m_readstructures
             pstru%name = pstru%id
             call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'name', pstru%name)
             
-            call prop_get_string(md_ptr%child_nodes(i)%node_ptr, '', 'type', typestr, success1)
+            call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'type', typestr, success1)
             success = success .and. check_input_result(success1, st_id, 'type')
       
             iStrucType = GetStrucType_from_string(typestr)
@@ -219,8 +219,8 @@ module m_readstructures
                cycle
             endif
             
-            call prop_get_string(md_ptr%child_nodes(i)%node_ptr, '', 'branchId', branchID, success1)
-            if (success1) call prop_get_double(md_ptr%child_nodes(i)%node_ptr, '', 'chainage', pstru%chainage, success1)
+            call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'branchId', branchID, success1)
+            if (success1) call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'chainage', pstru%chainage, success1)
 
             pstru%numCoordinates = 0
             if (success1) then
@@ -335,7 +335,7 @@ module m_readstructures
       pcompound%name = pcompound%id
       call prop_get(md_ptr, '', 'name', pcompound%name)
             
-      call prop_get_integer(md_ptr, '', 'numStructures', pcompound%numstructs, success1)
+      call prop_get(md_ptr, '', 'numStructures', pcompound%numstructs, success1)
       success = success .and. check_input_result(success1, st_id, 'numStructures')
       
       if (.not. success) then
@@ -344,7 +344,7 @@ module m_readstructures
       
       allocate(pcompound%structureIds(pcompound%numstructs))
 
-      call prop_get_strings(md_ptr, '', 'structureIds', pcompound%numstructs, pcompound%structureIds, success1)
+      call prop_get(md_ptr, '', 'structureIds', pcompound%numstructs, pcompound%structureIds, success1)
       success = success .and. check_input_result(success1, st_id, 'structureIds')
       if (.not. success) then
          ! Stop processing this structure
@@ -508,18 +508,18 @@ module m_readstructures
       success = .true.
       allocate(uniweir)
       
-      call prop_get_double(md_ptr, '', 'crestLevel', uniweir%crestlevel, success1)
+      call prop_get(md_ptr, '', 'crestLevel', uniweir%crestlevel, success1)
       success = success .and. check_input_result(success1, st_id, 'crestLevel')
       
-      call prop_get_double(md_ptr, '', 'dischargeCoeff', uniweir%dischargecoeff, success1)
+      call prop_get(md_ptr, '', 'dischargeCoeff', uniweir%dischargecoeff, success1)
       success = success .and. check_input_result(success1, st_id, 'dischargeCoeff')
       
-      call prop_get_string(md_ptr, '', 'allowedFlowDir', txt, success1)
+      call prop_get(md_ptr, '', 'allowedFlowDir', txt, success1)
       success = success .and. check_input_result(success1, st_id, 'allowedFlowDir')
       
       uniweir%allowedflowdir = allowedFlowDirToInt(txt)
       
-      call prop_get_integer(md_ptr, '', 'numLevels', uniweir%yzcount, success1) 
+      call prop_get(md_ptr, '', 'numLevels', uniweir%yzcount, success1) 
       success = success .and. check_input_result(success1, st_id, 'numLevels')
 
       if (success) then
@@ -531,7 +531,7 @@ module m_readstructures
             return
          endif
 
-         call prop_get_doubles(md_ptr, '', 'yValues', uniweir%y, uniweir%yzcount, success1)
+         call prop_get(md_ptr, '', 'yValues', uniweir%y, uniweir%yzcount, success1)
          success = success .and. check_input_result(success1, st_id, 'yValues')
       
          ! Y values must be in non-descending order.
@@ -542,7 +542,7 @@ module m_readstructures
                return
             endif
          enddo
-         call prop_get_doubles(md_ptr, '', 'zValues', uniweir%z, uniweir%yzcount, success1)
+         call prop_get(md_ptr, '', 'zValues', uniweir%z, uniweir%yzcount, success1)
          success = success .and. check_input_result(success1, st_id, 'zValues')
       endif
       
@@ -601,7 +601,7 @@ module m_readstructures
       success = .true.
       allocate(culvert)
 
-      call prop_get_string(md_ptr, '', 'csDefId', CrsDefID, success1)
+      call prop_get(md_ptr, '', 'csDefId', CrsDefID, success1)
       success = success .and. check_input_result(success1, st_id, 'csDefId')
       
       if (success) then
@@ -612,7 +612,7 @@ module m_readstructures
          endif
       endif
    
-      call prop_get_string(md_ptr, '', 'bedFrictionType', txt, success1)
+      call prop_get(md_ptr, '', 'bedFrictionType', txt, success1)
       success = success .and. check_input_result(success1, st_id, 'bedFrictionType')
       if (success) then
          call frictionTypeStringToInteger(txt, bedFrictionType)
@@ -622,13 +622,13 @@ module m_readstructures
          end if
       end if
 
-      call prop_get_double(md_ptr, '', 'bedFriction', bedFriction, success1)
+      call prop_get(md_ptr, '', 'bedFriction', bedFriction, success1)
       success = success .and. check_input_result(success1, st_id, 'bedFriction')
       
       groundFrictionType = 0
       groundFriction = 45d0
-      call prop_get_integer(md_ptr, '', 'groundFrictionType', groundFrictionType)
-      call prop_get_double(md_ptr, '', 'groundFriction', groundFriction)
+      call prop_get(md_ptr, '', 'groundFrictionType', groundFrictionType)
+      call prop_get(md_ptr, '', 'groundFriction', groundFriction)
          
       icross = AddCrossSection(network%crs, network%CSDefinitions, 0, 0.0d0, CrsDefIndx, 0.0d0, &
                                bedFrictionType, bedFriction, groundFrictionType, groundFriction)
@@ -638,28 +638,28 @@ module m_readstructures
       culvert%pcross         => network%crs%cross(icross)
       culvert%crosssectionnr = icross
       
-      call prop_get_string(md_ptr, '', 'allowedFlowDir', txt, success1)
+      call prop_get(md_ptr, '', 'allowedFlowDir', txt, success1)
       success = success .and. check_input_result(success1, st_id, 'allowedFlowDir')
       if (success) culvert%allowedflowdir = allowedFlowDirToInt(txt)
       
-      call prop_get_double(md_ptr, '', 'length', culvert%length, success1) 
+      call prop_get(md_ptr, '', 'length', culvert%length, success1) 
       success = success .and. check_input_result(success1, st_id, 'length')
       
-      call prop_get_double(md_ptr, '', 'leftLevel', culvert%leftlevel, success1) 
+      call prop_get(md_ptr, '', 'leftLevel', culvert%leftlevel, success1) 
       success = success .and. check_input_result(success1, st_id, 'leftLevel')
       
-      call prop_get_double(md_ptr, '', 'rightLevel', culvert%rightlevel, success1) 
+      call prop_get(md_ptr, '', 'rightLevel', culvert%rightlevel, success1) 
       success = success .and. check_input_result(success1, st_id, 'rightLevel')
       
-      call prop_get_double(md_ptr, '', 'inletLossCoeff', culvert%inletlosscoeff, success1) 
+      call prop_get(md_ptr, '', 'inletLossCoeff', culvert%inletlosscoeff, success1) 
       success = success .and. check_input_result(success1, st_id, 'inletLossCoeff')
       
-      call prop_get_double(md_ptr, '', 'outletLossCoeff', culvert%outletlosscoeff, success1) 
+      call prop_get(md_ptr, '', 'outletLossCoeff', culvert%outletlosscoeff, success1) 
       success = success .and. check_input_result(success1, st_id, 'outletLossCoeff')
 
       subtype = 'culvert'
-      call prop_get_string(md_ptr, '', 'subType', subtype)
-      call prop_get_double(md_ptr, '', 'bendLossCoeff', culvert%bendLossCoeff, success1)
+      call prop_get(md_ptr, '', 'subType', subtype)
+      call prop_get(md_ptr, '', 'bendLossCoeff', culvert%bendLossCoeff, success1)
       call str_lower(subtype)
       select case(str_tolower(trim(subtype)))
       case ('invertedsiphon')
@@ -679,7 +679,7 @@ module m_readstructures
          call SetMessage(LEVEL_ERROR, 'Incorrect subType (= '''//trim(subtype) // ''') found for culvert ''' // trim(st_id) // '''.')
       end select
 
-      call prop_get_integer(md_ptr, '', 'valveOnOff', valveonoff, success1)
+      call prop_get(md_ptr, '', 'valveOnOff', valveonoff, success1)
       success = success .and. check_input_result(success1, st_id, 'valveOnOff')
       
       if (valveonoff == 1) then
@@ -689,7 +689,7 @@ module m_readstructures
          call get_value_or_addto_forcinglist(md_ptr, 'valveOpeningHeight', culvert%valveOpening, st_id, ST_CULVERT, forcinglist, success1)
          success = success .and. check_input_result(success1, st_id, 'valveOpeningHeight')
          
-         call prop_get_integer(md_ptr, '', 'numLossCoeff', lossCoeffCount, success1) ! UNST-2710: new consistent keyword
+         call prop_get(md_ptr, '', 'numLossCoeff', lossCoeffCount, success1) ! UNST-2710: new consistent keyword
          success = success .and. check_input_result(success1, st_id, 'numLossCoeff')
          if (success1) then   
             call realloc(relOpen, lossCoeffCount, stat=istat)
@@ -699,10 +699,10 @@ module m_readstructures
                success = .false.
             endif
 
-            call prop_get_doubles(md_ptr, '', 'relOpening', relOpen, lossCoeffCount, success1)
+            call prop_get(md_ptr, '', 'relOpening', relOpen, lossCoeffCount, success1)
             success = success .and. check_input_result(success1, st_id, 'relOpening')
             
-            call prop_get_doubles(md_ptr, '', 'lossCoeff', lossCoeff, lossCoeffCount, success1)
+            call prop_get(md_ptr, '', 'lossCoeff', lossCoeff, lossCoeffCount, success1)
             success = success .and. check_input_result(success1, st_id, 'lossCoeff')
          
             call setTable(culvert%lossCoeff, 0, relOpen, lossCoeff, lossCoeffCount)
@@ -757,21 +757,21 @@ module m_readstructures
       bridge%inletlosscoeff     = 0d0
       bridge%outletlosscoeff    = 0d0
 
-      call prop_get_string(md_ptr, 'structure', 'allowedFlowDir', txt, success1)
+      call prop_get(md_ptr, 'structure', 'allowedFlowDir', txt, success1)
       success = success .and. check_input_result(success1, st_id, 'allowedFlowDir')
       if (success) bridge%allowedflowdir = allowedFlowDirToInt(txt)
       
       ! Make distinction between a pillar bridge and a standard bridge
       
-      call prop_get_double(md_ptr, '', 'pillarWidth', bridge%pillarwidth, success1)
+      call prop_get(md_ptr, '', 'pillarWidth', bridge%pillarwidth, success1)
       if (success1) then
          ! pillar bridge
-         call prop_get_double(md_ptr, '', 'formFactor', bridge%formfactor, success1)
+         call prop_get(md_ptr, '', 'formFactor', bridge%formfactor, success1)
          success = success .and. check_input_result(success1, st_id, 'formFactor')
       endif
       
       ! Standard bridge
-      call prop_get_string(md_ptr, '', 'csDefId', CrsDefID, success1)
+      call prop_get(md_ptr, '', 'csDefId', CrsDefID, success1)
       if (success1) then
          CrsDefIndx = hashsearch(network%CSDefinitions%hashlist, CrsDefID)
          if (CrsDefIndx <= 0) then
@@ -779,7 +779,7 @@ module m_readstructures
             success = .false.
          endif
          
-         call prop_get_string(md_ptr, '', 'frictionType', txt, success1)
+         call prop_get(md_ptr, '', 'frictionType', txt, success1)
          success = success .and. check_input_result(success1, st_id, 'frictionType')
          if (success) then
             call frictionTypeStringToInteger(txt, bridge%bedFrictionType)
@@ -789,7 +789,7 @@ module m_readstructures
             end if
          end if
          
-         call prop_get_double(md_ptr, '', 'friction', bridge%bedFriction, success1)
+         call prop_get(md_ptr, '', 'friction', bridge%bedFriction, success1)
          success = success .and. check_input_result(success1, st_id, 'friction')
          
          if (success) then
@@ -808,17 +808,17 @@ module m_readstructures
 
          endif
          
-         call prop_get_double(md_ptr, '', 'shift', shift, success1)
+         call prop_get(md_ptr, '', 'shift', shift, success1)
          success = success .and. check_input_result(success1, st_id, 'shift')
          bridge%bedLevel = bridge%pcross%bedlevel + shift
          
-         call prop_get_double(md_ptr, '', 'length', bridge%length, success1)
+         call prop_get(md_ptr, '', 'length', bridge%length, success1)
          success = success .and. check_input_result(success1, st_id, 'length')
          
-         call prop_get_double(md_ptr, '', 'inletLossCoeff', bridge%inletlosscoeff, success1)
+         call prop_get(md_ptr, '', 'inletLossCoeff', bridge%inletlosscoeff, success1)
          success = success .and. check_input_result(success1, st_id, 'inletLossCoeff')
          
-         call prop_get_double(md_ptr, '', 'outletLossCoeff', bridge%outletlosscoeff, success1)
+         call prop_get(md_ptr, '', 'outletLossCoeff', bridge%outletlosscoeff, success1)
          success = success .and. check_input_result(success1, st_id, 'outletLossCoeff')
 
       endif
@@ -841,59 +841,59 @@ module m_readstructures
 
       allocate(dambr)
 
-      call prop_get_double(md_ptr, 'Structure', 'StartLocationX',  dambr%startLocationX, localsuccess)
+      call prop_get(md_ptr, 'Structure', 'StartLocationX',  dambr%startLocationX, localsuccess)
       success = success .and. check_input_result(localsuccess, st_id, 'StartLocationX')
       if (.not. success) return
 
-      call prop_get_double(md_ptr, 'Structure', 'StartLocationY',  dambr%startLocationY, localsuccess)
+      call prop_get(md_ptr, 'Structure', 'StartLocationY',  dambr%startLocationY, localsuccess)
       success = success .and. check_input_result(localsuccess, st_id, 'StartLocationY')
       if (.not. success) return
 
-      call prop_get_integer(md_ptr, 'Structure', 'Algorithm', dambr%algorithm, localsuccess)
+      call prop_get(md_ptr, 'Structure', 'Algorithm', dambr%algorithm, localsuccess)
       success = success .and. check_input_result(localsuccess, st_id, 'Algorithm')
       if (.not. success) return
 
-      call prop_get_double(md_ptr, 'Structure', 'CrestLevelIni', dambr%crestLevelIni, localsuccess)
+      call prop_get(md_ptr, 'Structure', 'CrestLevelIni', dambr%crestLevelIni, localsuccess)
       success = success .and. check_input_result(localsuccess, st_id, 'CrestLevelIni')
       if (.not. success) return
          
       if (dambr%algorithm == 2) then
          
-         call prop_get_double(md_ptr, 'Structure', 'BreachWidthIni', dambr%breachWidthIni, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'BreachWidthIni', dambr%breachWidthIni, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'BreachWidthIni')
          if (.not. success) return
 
-         call prop_get_double(md_ptr, 'Structure', 'CrestLevelMin', dambr%crestLevelMin, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'CrestLevelMin', dambr%crestLevelMin, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'CrestLevelMin')
          if (.not. success) return
 
-         call prop_get_double(md_ptr, 'Structure', 'TimeToBreachToMaximumDepth', dambr%timeToBreachToMaximumDepth, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'TimeToBreachToMaximumDepth', dambr%timeToBreachToMaximumDepth, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'TimeToBreachToMaximumDepth')
          if (.not. success) return
 
-         call prop_get_double(md_ptr, 'Structure', 'F1', dambr%f1, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'F1', dambr%f1, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'F1')
          if (.not. success) return
 
-         call prop_get_double(md_ptr, 'Structure', 'F2', dambr%f2, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'F2', dambr%f2, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'F2')
          if (.not. success) return
 
-         call prop_get_double(md_ptr, 'Structure', 'Ucrit', dambr%ucrit, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'Ucrit', dambr%ucrit, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'Ucrit')
          if (.not. success) return
          
          ! optional extra fields
-         call prop_get_string(md_ptr, 'Structure', 'waterLevelUpstreamNodeId ', dambr%waterLevelUpstreamNodeId, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'waterLevelUpstreamNodeId ', dambr%waterLevelUpstreamNodeId, localsuccess)
          if (.not. localsuccess) then
-            call prop_get_double(md_ptr, 'Structure', 'WaterLevelUpstreamLocationX', dambr%waterLevelUpstreamLocationX, localsuccess)
-            call prop_get_double(md_ptr, 'Structure', 'WaterLevelUpstreamLocationY', dambr%waterLevelUpstreamLocationY, localsuccess)
+            call prop_get(md_ptr, 'Structure', 'WaterLevelUpstreamLocationX', dambr%waterLevelUpstreamLocationX, localsuccess)
+            call prop_get(md_ptr, 'Structure', 'WaterLevelUpstreamLocationY', dambr%waterLevelUpstreamLocationY, localsuccess)
          end if
 
-         call prop_get_string(md_ptr, 'Structure', 'waterLevelDownstreamNodeId ', dambr%waterLevelDownstreamNodeId, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'waterLevelDownstreamNodeId ', dambr%waterLevelDownstreamNodeId, localsuccess)
          if (.not. localsuccess) then
-            call prop_get_double(md_ptr, 'Structure', 'WaterLevelDownstreamLocationX', dambr%waterLevelDownstreamLocationX, localsuccess)
-            call prop_get_double(md_ptr, 'Structure', 'WaterLevelDownstreamLocationY', dambr%waterLevelDownstreamLocationY, localsuccess)
+            call prop_get(md_ptr, 'Structure', 'WaterLevelDownstreamLocationX', dambr%waterLevelDownstreamLocationX, localsuccess)
+            call prop_get(md_ptr, 'Structure', 'WaterLevelDownstreamLocationY', dambr%waterLevelDownstreamLocationY, localsuccess)
          end if
       endif
       
@@ -901,12 +901,12 @@ module m_readstructures
       if (dambr%algorithm == 3) then
          ! UNST-3308: NOTE that only the .tim filename is read below. It is NOT added to the network%forcinglist.
          !            All time-space handling of the dambreak is still done in kernel.
-         call prop_get_string(md_ptr, 'Structure', 'DambreakLevelsAndWidths', dambr%levelsAndWidths, localsuccess)
+         call prop_get(md_ptr, 'Structure', 'DambreakLevelsAndWidths', dambr%levelsAndWidths, localsuccess)
          success = success .and. check_input_result(localsuccess, st_id, 'DambreakLevelsAndWidths')
          if (.not. success) return         
       endif
 
-      call prop_get_double(md_ptr, 'Structure', 'T0', dambr%t0, localsuccess)
+      call prop_get(md_ptr, 'Structure', 'T0', dambr%t0, localsuccess)
       success = success .and. check_input_result(localsuccess, st_id, 'T0')
       if (.not. success) return
       
@@ -937,7 +937,7 @@ module m_readstructures
 
       ! Compute the pump%direction from two parts: orientation and optionally controlSide.
       txt = 'positive'
-      call prop_get_string(md_ptr, '', 'orientation', txt)
+      call prop_get(md_ptr, '', 'orientation', txt)
       pump%direction = orientationToInt(txt) ! will become +1 or -1
       if (abs(pump%direction) /= 1) then
          call setMessage(LEVEL_ERROR, 'Error Reading Pump '''//trim(st_id)//''': orientation has invalid value '''//trim(txt)// '''.')
@@ -945,7 +945,7 @@ module m_readstructures
       end if
 
       pump%nrstages = 0
-      call prop_get_integer(md_ptr, '', 'numStages', pump%nrstages) ! UNST-2709: new consistent keyword
+      call prop_get(md_ptr, '', 'numStages', pump%nrstages) ! UNST-2709: new consistent keyword
 
       numcap = max(1, pump%nrstages)
       allocate(pump%capacity(numcap), stat=istat)
@@ -966,7 +966,7 @@ module m_readstructures
       else
          ! Stages with control: only support table with double precision values.
          pump%capacity = -1d0
-         call prop_get_doubles(md_ptr, '', 'capacity', pump%capacity, pump%nrstages, success1)
+         call prop_get(md_ptr, '', 'capacity', pump%capacity, pump%nrstages, success1)
          success = success .and. check_input_result(success1, st_id, 'capacity')
          if (any(pump%capacity < 0)) then
             call setMessage(LEVEL_ERROR, 'Error Reading Pump '''//trim(st_id)//''': a staged pump (numStages > 0) must have nonnegative capacity, and cannot be combined with time series or realtime setting.')
@@ -974,7 +974,7 @@ module m_readstructures
          end if
 
          txt = '' ! No default controlSide
-         call prop_get_string(md_ptr, '', 'controlSide', txt, success1)
+         call prop_get(md_ptr, '', 'controlSide', txt, success1)
          success = success .and. check_input_result(success1, st_id, 'controlSide')
          iside = controlSideToInt(txt) ! will become +1 or -1
          if (.not. (iside >= 1 .and. iside <= 3)) then
@@ -985,16 +985,16 @@ module m_readstructures
          pump%direction = pump%direction * iside  ! (+/-1 * 1 or 2 or 3)
 
          if (abs(pump%direction) == 1 .or. abs(pump%direction) == 3) then
-            call prop_get_doubles(md_ptr, '', 'startLevelSuctionSide', pump%ss_onlevel, pump%nrstages, success1)
+            call prop_get(md_ptr, '', 'startLevelSuctionSide', pump%ss_onlevel, pump%nrstages, success1)
             success = success .and. check_input_result(success1, st_id, 'startLevelSuctionSide')
-            call prop_get_doubles(md_ptr, '', 'stopLevelSuctionSide', pump%ss_offlevel, pump%nrstages, success1)
+            call prop_get(md_ptr, '', 'stopLevelSuctionSide', pump%ss_offlevel, pump%nrstages, success1)
             success = success .and. check_input_result(success1, st_id, 'stopLevelSuctionSide')
          end if
       
          if (abs(pump%direction) == 2 .or. abs(pump%direction) == 3) then
-            call prop_get_doubles(md_ptr, '', 'startLevelDeliverySide', pump%ds_onlevel, pump%nrstages, success1)
+            call prop_get(md_ptr, '', 'startLevelDeliverySide', pump%ds_onlevel, pump%nrstages, success1)
             success = success .and. check_input_result(success1, st_id, 'startLevelDeliverySide')
-            call prop_get_doubles(md_ptr, '', 'stopLevelDeliverySide', pump%ds_offlevel, pump%nrstages, success1)
+            call prop_get(md_ptr, '', 'stopLevelDeliverySide', pump%ds_offlevel, pump%nrstages, success1)
             success = success .and. check_input_result(success1, st_id, 'stopLevelDeliverySide')
          end if
       end if
@@ -1006,7 +1006,7 @@ module m_readstructures
 
       ! Reduction Table
       tabsize = 0
-      call prop_get_integer(md_ptr, '', 'numReductionLevels', tabsize) ! UNST-2709: new consistent keyword
+      call prop_get(md_ptr, '', 'numReductionLevels', tabsize) ! UNST-2709: new consistent keyword
 
       numred = max(1, tabsize)
       call realloc(head, numred, stat=istat)
@@ -1018,10 +1018,10 @@ module m_readstructures
       end if
 
       if (tabsize > 0) then
-         call prop_get_doubles(md_ptr, '', 'head', head, tabsize, success1)
+         call prop_get(md_ptr, '', 'head', head, tabsize, success1)
          success = success .and. check_input_result(success1, st_id, 'head')
 
-         call prop_get_doubles(md_ptr, '', 'reductionFactor', redfac, tabsize, success1)
+         call prop_get(md_ptr, '', 'reductionFactor', redfac, tabsize, success1)
          success = success .and. check_input_result(success1, st_id, 'reductionFactor')
       else
          ! When no reduction table given in input, always create one dummy entry in table with 100% pump capacity.
@@ -1069,7 +1069,7 @@ module m_readstructures
       character(IdLen) :: tmpstr, structuretype
       logical           :: success1
       
-      call prop_get_string(md_ptr, '', key, tmpstr, success1)
+      call prop_get(md_ptr, '', key, tmpstr, success1)
       if (success1) then
          read(tmpstr, *, iostat = istat) value
          if (istat /= 0 .or. index(tmpstr,'/') == 1) then ! No number or a string starting with '/': assume it was a filename
@@ -1112,19 +1112,19 @@ module m_readstructures
       allocate(generalst)
 
       generalst%ws = 1d10
-      call prop_get_double(md_ptr, '', 'crestWidth', generalst%ws)
+      call prop_get(md_ptr, '', 'crestWidth', generalst%ws)
 
       call get_value_or_addto_forcinglist(md_ptr, 'crestLevel', generalst%zs, st_id, ST_WEIR, forcinglist, success1)
       success = success .and. check_input_result(success1, st_id, 'crestLevel')
 
       generalst%mugf_pos = 1d0
-      if (success) call prop_get_double(md_ptr, '', 'corrCoeff',  generalst%cgf_pos)
+      if (success) call prop_get(md_ptr, '', 'corrCoeff',  generalst%cgf_pos)
 
       generalst%velheight = .true.
       call prop_get(md_ptr, '', 'useVelocityHeight',  generalst%velheight)
       
       dirString = 'both'
-      call prop_get_string(md_ptr, '', 'allowedFlowDir', dirString, success1)
+      call prop_get(md_ptr, '', 'allowedFlowDir', dirString, success1)
       generalst%allowedflowdir = allowedFlowDirToInt(dirString)
    
       ! all levels are set to -1d-10. In the time loop these parameters will be set to the bed level.
@@ -1177,10 +1177,10 @@ module m_readstructures
       success = success .and. check_input_result(success1, st_id, 'crestLevel')
 
       generalst%mugf_pos = 1d0
-      call prop_get_double(md_ptr, '', 'corrCoeff',  generalst%cgf_pos)
+      call prop_get(md_ptr, '', 'corrCoeff',  generalst%cgf_pos)
 
       generalst%ws = 1d10
-      call prop_get_double(md_ptr, '', 'crestWidth',  generalst%ws)
+      call prop_get(md_ptr, '', 'crestWidth',  generalst%ws)
       
       call get_value_or_addto_forcinglist(md_ptr, 'gateLowerEdgeLevel', generalst%gateLowerEdgeLevel, st_id, ST_ORIFICE, &
                                                        forcinglist, success1)
@@ -1190,31 +1190,31 @@ module m_readstructures
       call prop_get(md_ptr, '', 'useVelocityHeight',  generalst%velheight)
       
       dirString = 'both'
-      call prop_get_string(md_ptr, '', 'allowedFlowDir', dirString, success1)
+      call prop_get(md_ptr, '', 'allowedFlowDir', dirString, success1)
       generalst%allowedflowdir = allowedFlowDirToInt(dirString)
 
       generalst%uselimitFlowPos = .false.
-      call prop_get_logical(md_ptr, ' ', 'useLimitFlowPos', generalst%uselimitFlowPos)
+      call prop_get(md_ptr, ' ', 'useLimitFlowPos', generalst%uselimitFlowPos)
       if (generalst%uselimitFlowPos) then
          if (generalst%allowedflowdir /= 0 .and. generalst%allowedflowdir /= 1) then
             write (msgbuf, '(a,a,a,a,a)') 'Structure ''', trim(st_id), ''': useLimitFlowPos can not be combined with allowedFlowDir=', &
                allowedFlowDirToString(generalst%allowedflowdir), '. Ignoring limitFlowPos.'
             call warn_flush()
          else
-            call prop_get_double(md_ptr, ' ', 'limitFlowPos', generalst%limitFlowPos, success1)
+            call prop_get(md_ptr, ' ', 'limitFlowPos', generalst%limitFlowPos, success1)
             success = success .and. check_input_result(success1, st_id, 'limitFlowPos')
          end if
       end if
 
       generalst%uselimitFlowNeg = .false.
-      call prop_get_logical(md_ptr, ' ', 'useLimitFlowNeg', generalst%uselimitFlowNeg)
+      call prop_get(md_ptr, ' ', 'useLimitFlowNeg', generalst%uselimitFlowNeg)
       if (generalst%uselimitFlowNeg) then
          if (generalst%allowedflowdir /= 0 .and. generalst%allowedflowdir /= 2) then
             write (msgbuf, '(a,a,a,a,a)') 'Structure ''', trim(st_id), ''': useLimitFlowNeg can not be combined with allowedFlowDir=', &
                allowedFlowDirToString(generalst%allowedflowdir), '. Ignoring limitFlowNeg.'
             call warn_flush()
          else
-            call prop_get_double(md_ptr, ' ', 'limitFlowNeg', generalst%limitFlowNeg, success1)
+            call prop_get(md_ptr, ' ', 'limitFlowNeg', generalst%limitFlowNeg, success1)
             success = success .and. check_input_result(success1, st_id, 'limitFlowNeg')
          end if
       end if
@@ -1286,68 +1286,68 @@ module m_readstructures
       allocate(generalst)
 
       generalst%wu1                = 10d0
-      call prop_get_double(md_ptr, '', 'upstream1Width', generalst%wu1, success1)
+      call prop_get(md_ptr, '', 'upstream1Width', generalst%wu1, success1)
       generalst%wu2                = 10d0
-      call prop_get_double(md_ptr, '', 'upstream2Width',  generalst%wu2, success1)
+      call prop_get(md_ptr, '', 'upstream2Width',  generalst%wu2, success1)
       generalst%ws                 = 10d0
       call get_value_or_addto_forcinglist(md_ptr, 'crestWidth', generalst%ws, st_id, ST_GENERAL_ST, forcinglist)
       generalst%wd1                = 10d0
-      call prop_get_double(md_ptr, '', 'downstream1Width', generalst%wd1, success1)
+      call prop_get(md_ptr, '', 'downstream1Width', generalst%wd1, success1)
       generalst%wd2                = 10d0
-      call prop_get_double(md_ptr, '', 'downstream2Width',   generalst%wd2, success1)
+      call prop_get(md_ptr, '', 'downstream2Width',   generalst%wd2, success1)
 
       generalst%zu1                = 0d0
-      call prop_get_double(md_ptr, '', 'upstream1Level',   generalst%zu1, success1)
+      call prop_get(md_ptr, '', 'upstream1Level',   generalst%zu1, success1)
       generalst%zu2                = 0d0
-      call prop_get_double(md_ptr, '', 'upstream2Level',  generalst%zu2, success1)
+      call prop_get(md_ptr, '', 'upstream2Level',  generalst%zu2, success1)
       generalst%zs                 = 0d0
       call get_value_or_addto_forcinglist(md_ptr, 'crestLevel',    generalst%zs, st_id, ST_GENERAL_ST, forcinglist, success1)
       generalst%zd1                = 0d0
-      call prop_get_double(md_ptr, '', 'downstream1Level', generalst%zd1, success1)
+      call prop_get(md_ptr, '', 'downstream1Level', generalst%zd1, success1)
       generalst%zd2                = 0d0
-      call prop_get_double(md_ptr, '', 'downstream2Level',  generalst%zd2, success1)
+      call prop_get(md_ptr, '', 'downstream2Level',  generalst%zd2, success1)
 
       generalst%gateLowerEdgeLevel = 1d10
       call get_value_or_addto_forcinglist(md_ptr, 'gateLowerEdgeLevel', generalst%gateLowerEdgeLevel, st_id, ST_GENERAL_ST, forcinglist, success1)
       generalst%crestlength        = 0d0
-      call prop_get_double(md_ptr, '', 'crestLength',   generalst%crestlength)
+      call prop_get(md_ptr, '', 'crestLength',   generalst%crestlength)
       generalst%gatedoorheight     = 1d10
-      call prop_get_double(md_ptr, '', 'gateHeight',   generalst%gatedoorheight, success1)
+      call prop_get(md_ptr, '', 'gateHeight',   generalst%gatedoorheight, success1)
       generalst%gateopeningwidth   = 0d0
       call get_value_or_addto_forcinglist(md_ptr, 'gateOpeningWidth', generalst%gateopeningwidth, st_id, ST_GENERAL_ST, forcinglist, success1)
 
       dirString = 'symmetric'
-      call prop_get_string(md_ptr, '', 'gateOpeningHorizontalDirection',   dirString)
+      call prop_get(md_ptr, '', 'gateOpeningHorizontalDirection',   dirString)
       generalst%openingDirection = openingDirectionToInt(dirString)
       
       dirString = 'both'
-      call prop_get_string(md_ptr, '', 'allowedFlowDir', dirString, success1)
+      call prop_get(md_ptr, '', 'allowedFlowDir', dirString, success1)
       generalst%allowedflowdir = allowedFlowDirToInt(dirString)
       
       generalst%cgf_pos            = 1d0
-      call prop_get_double(md_ptr, '', 'posFreeGateflowCoeff',  generalst%cgf_pos)
+      call prop_get(md_ptr, '', 'posFreeGateflowCoeff',  generalst%cgf_pos)
       generalst%cgd_pos            = 1d0
-      call prop_get_double(md_ptr, '', 'posDrownGateFlowCoeff', generalst%cgd_pos)
+      call prop_get(md_ptr, '', 'posDrownGateFlowCoeff', generalst%cgd_pos)
       generalst%cwf_pos            = 1d0
-      call prop_get_double(md_ptr, '', 'posFreeWeirFlowCoeff',  generalst%cwf_pos)
+      call prop_get(md_ptr, '', 'posFreeWeirFlowCoeff',  generalst%cwf_pos)
       generalst%cwd_pos            = 1d0
-      call prop_get_double(md_ptr, '', 'posDrownWeirFlowCoeff', generalst%cwd_pos)
+      call prop_get(md_ptr, '', 'posDrownWeirFlowCoeff', generalst%cwd_pos)
       generalst%mugf_pos           = 1d0  
-      call prop_get_double(md_ptr, '', 'posContrCoefFreeGate',  generalst%mugf_pos)
+      call prop_get(md_ptr, '', 'posContrCoefFreeGate',  generalst%mugf_pos)
       
       generalst%cgf_neg            = 1d0
-      call prop_get_double(md_ptr, '', 'negFreeGateFlowCoeff',  generalst%cgf_neg)
+      call prop_get(md_ptr, '', 'negFreeGateFlowCoeff',  generalst%cgf_neg)
       generalst%cgd_neg            = 1d0
-      call prop_get_double(md_ptr, '', 'negDrownGateFlowCoeff', generalst%cgd_neg)
+      call prop_get(md_ptr, '', 'negDrownGateFlowCoeff', generalst%cgd_neg)
       generalst%cwf_neg            = 1d0
-      call prop_get_double(md_ptr, '', 'negFreeWeirFlowCoeff',  generalst%cwf_neg)
+      call prop_get(md_ptr, '', 'negFreeWeirFlowCoeff',  generalst%cwf_neg)
       generalst%cwd_neg            = 1d0
-      call prop_get_double(md_ptr, '', 'negDrownWeirFlowCoeff', generalst%cwd_neg)
+      call prop_get(md_ptr, '', 'negDrownWeirFlowCoeff', generalst%cwd_neg)
       generalst%mugf_neg           = 1d0
-      call prop_get_double(md_ptr, '', 'negContrCoefFreeGate',  generalst%mugf_neg)
+      call prop_get(md_ptr, '', 'negContrCoefFreeGate',  generalst%mugf_neg)
       
       generalst%extraresistance    = 0d0
-      call prop_get_double(md_ptr, '', 'extraResistance', generalst%extraresistance)
+      call prop_get(md_ptr, '', 'extraResistance', generalst%extraresistance)
       
       generalst%velheight = .true.
       call prop_get(md_ptr, '', 'useVelocityHeight',  generalst%velheight)
@@ -1413,19 +1413,19 @@ module m_readstructures
    !! An unknown/invalid value defaults to 0 (both).
    integer function allowedFlowDirToInt(flowdirString)
       character(len=*), intent(inout) :: flowdirString !< String value of the allowedFlowDir parameter.
-   
+
       call str_lower(flowdirString)
       select case(flowdirString)
       case('both')
-         allowedFlowDirToInt = 0
+         allowedFlowDirToInt = FLOWDIR_BOTH
       case('positive')
-         allowedFlowDirToInt = 1
+         allowedFlowDirToInt = FLOWDIR_POSITIVE
       case('negative')
-         allowedFlowDirToInt = 2
+         allowedFlowDirToInt = FLOWDIR_NEGATIVE
       case('none')
-         allowedFlowDirToInt = 3
+         allowedFlowDirToInt = FLOWDIR_NONE
       case default
-         allowedFlowDirToInt = 0
+         allowedFlowDirToInt = FLOWDIR_BOTH
       end select
       
    end function  allowedFlowDirToInt

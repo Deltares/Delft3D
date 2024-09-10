@@ -26,30 +26,30 @@ module integration_schemes
     !!     - Encapsulate the interface of run_integration_schemes and initialize_all_conditions:
     !!       A, J and C are now pointers to real, integer and character arrays, respectively.
     use m_waq_precision
-    use m_integration_scheme_25
-    use m_integration_scheme_24
-    use m_integration_scheme_23
-    use m_integration_scheme_21_22
-    use m_integration_scheme_18
-    use m_integration_scheme_17
-    use m_integration_scheme_16
-    use m_integration_scheme_15
-    use m_integration_scheme_13
-    use m_integration_scheme_12
-    use m_integration_scheme_11
-    use m_integration_scheme_14
-    use m_integration_scheme_7
-    use m_integration_scheme_6
-    use m_integration_scheme_5
-    use m_integration_scheme_1
-    use m_integration_scheme_0
     use m_open_waq_files
+    use m_integration_scheme_0, only: scheme_0_no_transport
+    use m_integration_scheme_1, only: scheme_1_time_explicit_space_backward
+    use m_integration_scheme_5, only: scheme_5_time_explicit_flux_corrected_transport
+    use m_integration_scheme_6, only: scheme_6_steady_state_hz_upwind
+    use m_integration_scheme_7, only: scheme_7_steady_state_hz_upwind_vl_central
+    use m_integration_scheme_11, only: scheme_11_time_explicit_forester_hz_upwind_vl_central
+    use m_integration_scheme_12, only: scheme_12_time_explicit_flux_corrected_transport
+    use m_integration_scheme_13, only: scheme_13_time_explicit_space_upwind
+    use m_integration_scheme_14, only: scheme_14_time_explicit_flux_corrected_transport
+    use m_integration_scheme_15, only: scheme_15_time_implicit_hz_upwind
+    use m_integration_scheme_16, only: scheme_16_time_implicit_hz_upwind_vl_central
+    use m_integration_scheme_17, only: scheme_17_steady_state_hz_upwind_vl_upwind
+    use m_integration_scheme_18, only: scheme_18_steady_state_hz_upwind_vl_central
+    use m_integration_scheme_21_22, only: scheme_21_22_time_implicit_adaptive_theta_hz_upwind_vl_central
+    use m_integration_scheme_23, only: scheme_23_time_explicit_leonards_quickest
+    use m_integration_scheme_24, only: scheme_24_adaptive_time_step_flux_corrected_transport
+    use m_integration_scheme_25, only: scheme_25_emission_time_explicit_space_upwind
 
     implicit none
 
-    integer(kind=int_wp), parameter :: PAGE_LENGTH = 64        !< Page length for output in lines
-    integer(kind=int_wp), parameter :: NUM_FILES = 50          !< Number of files to be opened
-    integer(kind=int_wp), parameter :: FILE_NAME_LEN = 255     !< Length file names
+    integer(kind = int_wp), parameter :: PAGE_LENGTH = 64        !< Page length for output in lines
+    integer(kind = int_wp), parameter :: NUM_FILES = 50          !< Number of files to be opened
+    integer(kind = int_wp), parameter :: FILE_NAME_LEN = 255     !< Length file names
 
     private
     public :: run_integration_schemes
@@ -57,7 +57,7 @@ module integration_schemes
 contains
 
     subroutine run_integration_schemes(buffer, max_real_arr_size, max_int_arr_size, max_char_arr_size, init, &
-                                       action, dlwqd)
+            action, dlwqd)
 
         use m_grid_utils_external
         use initialize_conditions, only: initialize_all_conditions
@@ -70,45 +70,45 @@ contains
         use m_real_array_indices          ! Pointers in real array workspace
         use m_integer_array_indices          ! Pointers in integer array workspace
         use m_character_array_indices          ! Pointers in character array workspace
-        use m_cli_utils, only : get_input_filename
-        use m_logger_helper, only : set_log_unit_number
+        use m_cli_utils, only: get_input_filename
+        use m_logger_helper, only: set_log_unit_number
 
         type(waq_data_buffer), target :: buffer        !< System total array space
-        integer(kind=int_wp) :: max_real_arr_size !< Maximum size of the real array
-        integer(kind=int_wp) :: max_int_arr_size  !< Maximum size of the integer array
-        integer(kind=int_wp) :: max_char_arr_size !< Maximum size of the character array
+        integer(kind = int_wp) :: max_real_arr_size !< Maximum size of the real array
+        integer(kind = int_wp) :: max_int_arr_size  !< Maximum size of the integer array
+        integer(kind = int_wp) :: max_char_arr_size !< Maximum size of the character array
         logical :: init              !< Sould the system be started up?, otherwise no initialisation
-        integer(kind=int_wp) :: action            !< Span of the run or type of action to perform
+        integer(kind = int_wp) :: action            !< Span of the run or type of action to perform
         !< (run_span = {initialise, time_step, finalise, whole_computation} )
         type(delwaq_data), target :: dlwqd             !< DELWAQ data structure
 
         ! Local variables
         type(gridpointercoll), pointer, save :: gridps          !< Collection of all grid definitions
-        integer(kind=int_wp) :: input_file                    !< Unit nummer of the common boot-file
+        integer(kind = int_wp) :: input_file                    !< Unit nummer of the common boot-file
         logical :: exists
 
         ! input structure for boot-file
-        integer(kind=int_wp), save :: file_unit_list(NUM_FILES)
-        character(len=FILE_NAME_LEN), save :: file_name_list(NUM_FILES)
-        integer(kind=int_wp), save :: filtype(NUM_FILES)
+        integer(kind = int_wp), save :: file_unit_list(NUM_FILES)
+        character(len = FILE_NAME_LEN), save :: file_name_list(NUM_FILES)
+        integer(kind = int_wp), save :: filtype(NUM_FILES)
         character(:), allocatable, save :: runid
 
         logical :: lfound
-        integer(kind=int_wp) :: idummy, ierr2
-        real(kind=real_wp) :: rdummy
+        integer(kind = int_wp) :: idummy, ierr2
+        real(kind = real_wp) :: rdummy
         character :: cdummy
         character(len=2) :: c2
 
-        integer(kind=int_wp), save :: ithndl = 0
+        integer(kind = int_wp), save :: ithndl = 0
 
-        integer(kind=int_wp), save :: indx
-        integer(kind=int_wp) :: ierr
-        integer(kind=int_wp) :: imr
-        integer(kind=int_wp) :: imi
-        integer(kind=int_wp) :: imc
-        integer(kind=int_wp) :: file_unit_i
-        integer(kind=int_wp) :: ierrd
-        integer(kind=int_wp) :: k
+        integer(kind = int_wp), save :: indx
+        integer(kind = int_wp) :: ierr
+        integer(kind = int_wp) :: imr
+        integer(kind = int_wp) :: imi
+        integer(kind = int_wp) :: imc
+        integer(kind = int_wp) :: file_unit_i
+        integer(kind = int_wp) :: ierrd
+        integer(kind = int_wp) :: k
 
         if (INIT) then
             call timini()
@@ -120,11 +120,11 @@ contains
 
             ! boot the system; read dimensions of sysn from delwaq03.wrk-file
             call get_input_filename(RUNID, '.mon')
-            file_name_list(1) = trim(RUNID)//'-delwaq03.wrk'
+            file_name_list(1) = trim(RUNID) // '-delwaq03.wrk'
 
             ! produce a user-friendly message if the 03 work file is missing,
             ! an indication that DELWAQ1 was not able to complete its job properly.
-            inquire (file=file_name_list(1), exist=exists)
+            inquire (file = file_name_list(1), exist = exists)
             if (.not. exists) then
                 write (*, '(a)') 'integration_schemes cannot run - the system work file is missing'
                 write (*, '(2a)') '    File name: ', trim(file_name_list(1))
@@ -138,9 +138,9 @@ contains
             read (input_file) in
             read (input_file) ii
             read (input_file) imr, imi, imc
-            read (input_file) (file_unit_list(k), k=1, num_file_units)
-            read (input_file) (file_name_list(k), k=1, num_file_units)
-            read (input_file) (filtype(k), k=1, num_file_units)
+            read (input_file) (file_unit_list(k), k = 1, num_file_units)
+            read (input_file) (file_name_list(k), k = 1, num_file_units)
+            read (input_file) (filtype(k), k = 1, num_file_units)
             do file_unit_i = 1, num_file_units
                 close (file_unit_list(file_unit_i))
             end do
@@ -159,7 +159,7 @@ contains
             IERR = 0
             gridps => dlwqd%gridps
             call initialize_all_conditions(buffer, NUM_FILES, max_real_arr_size, max_int_arr_size, max_char_arr_size, &
-                                           PAGE_LENGTH, file_unit_list, file_name_list, filtype, gridps, dlwqd, ierr)
+                    PAGE_LENGTH, file_unit_list, file_name_list, filtype, gridps, dlwqd, ierr)
 
             if (IERR > 0) goto 992
             ! end of initialisation
@@ -178,61 +178,61 @@ contains
 
         case (0)
             ! not transport, just processes
-            call integration_scheme_0(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_0_no_transport(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
         case (1)
             ! backward in space and time
-            call integration_scheme_1(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_1_time_explicit_space_backward(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
         case (2, 3, 4) ! deprecated
             goto 991
         case (5)     ! Flux corrected transport
-            call integration_scheme_5(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_5_time_explicit_flux_corrected_transport(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
         case (6)     ! Direct steady state, backward differences in space
-            call integration_scheme_6(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_6_steady_state_hz_upwind(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
         case (7)     ! Direct steady state, central differences in space
-            call integration_scheme_7(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_7_steady_state_hz_upwind_vl_central(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
         case (8, 9, 10) ! deprecated
             goto 991
         case (11)     ! Horizontal explicit upwind, vertical implicit central
-            call integration_scheme_11(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_11_time_explicit_forester_hz_upwind_vl_central(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case (12)     ! Horizontal explicit FCT   , vertical implicit central
-            call integration_scheme_12(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_12_time_explicit_flux_corrected_transport(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case (13)     ! Horizontal explicit upwind, vertical implicit upwind
-            call integration_scheme_13(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_13_time_explicit_space_upwind(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case (14)     ! Horizontal explicit FCT   , vertical implicit upwind
-            call integration_scheme_14(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_14_time_explicit_flux_corrected_transport(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case (15)     ! GMRES, horizontal upwind, vertical upwind
-            call integration_scheme_15(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_15_time_implicit_hz_upwind(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case (16)     ! GMRES, horizontal upwind, vertical central
-            call integration_scheme_16(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_16_time_implicit_hz_upwind_vl_central(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case (17)     ! stationary GMRES, horizontal upwind, vertical upwind
-            call integration_scheme_17(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_17_steady_state_hz_upwind_vl_upwind(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case (18)     ! stationary GMRES, horizontal upwind, vertical central
-            call integration_scheme_18(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_18_steady_state_hz_upwind_vl_central(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case (19, 20) ! deprecated
             goto 991
 
         case (21)     ! Self adjusting theta method (limiter Salezac)
-            call integration_scheme_21_22(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_21_22_time_implicit_adaptive_theta_hz_upwind_vl_central(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case (22)     ! Self adjusting theta method (limiter Boris and Book)
-            call integration_scheme_21_22(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_21_22_time_implicit_adaptive_theta_hz_upwind_vl_central(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case (23)     ! Leonards QUICKEST
-            call integration_scheme_23(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_23_time_explicit_leonards_quickest(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case (24)     ! Local flexible time step method by Leonard Postma
-            call integration_scheme_24(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_24_adaptive_time_step_flux_corrected_transport(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case (25)     ! Special for emission module
-            call integration_scheme_25(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
+            call scheme_25_emission_time_explicit_space_upwind(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         case default
             goto 990
@@ -240,24 +240,24 @@ contains
         end select
 
         if (action == action_finalisation .or. &
-            action == action_fullcomputation) then
+                action == action_fullcomputation) then
             ! print timer-results
             if (timon) then
                 call timstop(ithndl)
-                call timdump(trim(RUNID)//'-timers.out')
+                call timdump(trim(RUNID) // '-timers.out')
                 call timfinalize()
             end if
         end if
 
         return
 
-990     write (*, *) ' ERROR: INTEGRATION OPTION NOT IMPLEMENTED'
+        990     write (*, *) ' ERROR: INTEGRATION OPTION NOT IMPLEMENTED'
         call stop_with_error()
-991     write (*, *) ' ERROR: INTEGRATION OPTION DEPRECATED'
+        991     write (*, *) ' ERROR: INTEGRATION OPTION DEPRECATED'
         call stop_with_error()
-992     write (*, *) ' ERROR : INITIALISATION FAILED'
+        992     write (*, *) ' ERROR : INITIALISATION FAILED'
         call stop_with_error()
-999     write (*, *) ' ERROR: NO VALID SET OF MODEL-INTERMEDIATE-FILES'
+        999     write (*, *) ' ERROR: NO VALID SET OF MODEL-INTERMEDIATE-FILES'
         call stop_with_error()
     end subroutine run_integration_schemes
 end module integration_schemes

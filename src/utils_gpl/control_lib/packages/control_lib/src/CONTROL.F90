@@ -528,7 +528,7 @@ end module M_control
       CHARACTER(len=128) SigNam
       Double precision  SigTim
       LOGICAL       InitMode, Crashed, Wacht, FnmXt, Einde, firsttime
-      INTEGER       i, Fout1, Foutcd, ret, len_trim, ilen, ilenio
+      INTEGER       i, Fout1, ret, len_trim, ilen, ilenio
       INTEGER       NDone, NSignalOK
       Integer       Local_nrdep
       INTEGER       :: Sig   = 148  ! Sig is UNIT nummer Signal file
@@ -694,9 +694,8 @@ end module M_control
 !
       INTEGER         :: Sig = 148
       CHARACTER(len=1)  MyId
-      CHARACTER(len=128) SigBase, SigName, DoneBase, DoneName
-      INTEGER         i, ilen
-      LOGICAL         FnmXt
+      CHARACTER(len=128) SigBase, DoneBase, DoneName
+      INTEGER         ilen
 
 !   vertaal Id naar character
       MyId = CHAR(Id)

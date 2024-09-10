@@ -1287,7 +1287,6 @@ contains
     Parameter        (NHLP=30)
     Integer           IDUM(NHLP)
     Real              RDUM(NHLP)
-    Double Precision  DDUM(NHLP)
     Character(CharIdLength) CDUM(NHLP)
     Logical, Pointer:: AlreadyRead(:)
     Logical        success, allow, found
@@ -1949,8 +1948,6 @@ contains
     Real    rInf2(nptyp*npopp)
     Real    bMax, ratio, totUit, vNOw, vInf
     Integer iDebug, index1, index2
-    Double Precision Infiltrationmm(nptyp*npopp)
-
 
 !   write(*,*) ' Start Cmpplv'
     iDebug = ConfFil_get_iDebug()
@@ -2231,7 +2228,6 @@ contains
     ! *********************************************************************
 
     Integer iTmStp, iPlv, iMeteo, iPlv2, iNode, Iplv3
-    Real dT1, dT2, rFrac
     Real bMax, ratio, rInf2, totUit, vNOw, vInf
     Real SpecialEvapGreenRoof
     Integer iDebug, index1
@@ -2463,7 +2459,7 @@ contains
 
   SUBROUTINE ComputeWadi(Iplv, inode, RWadiInflow)
 
-  Integer    Itmstp, Iplv, Inode, idebug
+  Integer    Iplv, Inode, idebug
   Real       RWadiInflow
   real       WadiArea, WadiStor, WadiDepth, head
 

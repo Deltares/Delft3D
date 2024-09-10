@@ -36,12 +36,12 @@
          use m_sferic
          use m_wearelt
          use geometry_module, only: dbdistance
+         use m_tolocl
+         use m_grid_block
+         use m_smeerfunctie
          implicit none
          integer :: mmax, nmax, mc, nc, nump, ja
          double precision :: X(MMAX, NMAX), Y(MMAX, NMAX), XH(MMAX, NMAX), YH(MMAX, NMAX)
-
-         integer :: MB, NB, MB2, NB2, NPT, NPT2, NPUTO, ITYPE
-         common / BLOK / MB(6), NB(6), MB2(6), NB2(6), NPT, NPT2, NPUTO, ITYPE
 !     ATTRACTIE, REPULSIE
 
          integer :: M1, N1, M2, N2, IN, JN, I, J, II, JJ, ii1, ii2, jj1, jj2, JANU, numpi, numpj

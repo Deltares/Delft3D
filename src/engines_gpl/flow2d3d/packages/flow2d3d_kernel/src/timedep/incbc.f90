@@ -329,9 +329,11 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
     if (parll) then 
        !
        ! Recalculates the effective global number of open boundary conditions
+       ! Can't this be done once at the end of rdbndd? Why repeat it every time step?
        !
        call dfsync(gdp)
-       if (gdp%gdbcdat%gntoftoq > 0) then
+       if (gdp%gdbcdat%global_num_qh_bnd > 0 .or. &
+          gdp%gdbcdat%global_num_qtot_bnd > 0) then
           call dffind_duplicate(lundia, nto, nobcto, nobcgl,  gdp%gdbcdat%bct_order, gdp)
        else
           nobcto = nto
@@ -342,280 +344,290 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
        nobcgl = nto
     endif
     !
-    ! calculate zavg, using cwidth
+    ! calculate zavg for each total discharge boundary ... if any
     !
-    if (.not.associated(gdp%gdincbc%cwidth)) then
-       allocate(gdp%gdincbc%cwidth(nto), stat=istat)
-       if (istat == 0) allocate(gdp%gdincbc%zavg(nto), stat=istat)
-       if (istat /= 0) then
-          call prterr(lundia, 'P004', 'memory alloc error in incbc')
-          call d3stop(1, gdp)
-       endif
-    endif
-    cwidth => gdp%gdincbc%cwidth
-    zavg   => gdp%gdincbc%zavg
-    !
-    qtfrct = 0.0_fp
-    cwidth = 1.0e-9_fp
-    !
-    do n = 1, nrob
-       !
-       ! only for total discharge boundaries (7):
-       ! Determine average water level
-       !
-       if (nob(3,n) /= 7) then
-          cycle
-       endif
-       qtfrac(n) = 0.0_fp
-       n1        = nob(8,n)
-       mpbt      = nob(1,n)
-       npbt      = nob(2,n)
-       if (nob(4, n)==2) then
-          mpbt = mpbt - 1
-          mpbi = mpbt
-       elseif (nob(4, n)==1) then
-          mpbi = mpbt + 1
-       else
-          mpbi = mpbt
-       endif
-       if (nob(6, n)==2) then
-          npbt = npbt - 1
-          npbi = npbt
-       elseif (nob(6, n)==1) then
-          npbi = npbt + 1
-       else
-          npbi = npbt
-       endif
-       !
-       ! Determine direction dependent parameters
-       !
-       if (nob(4,n) > 0) then
-          udir = .true.
-          vdir = .false.
-          wlvl = s0(npbi, mpbi)
-          if (kfu(npbt,mpbt) == 1 .and. kcs(npbi,mpbi) == 1) then
-             width = guu(npbt,mpbt)
-          else
-             width = 0.0_fp
-          endif
-       elseif (nob(6,n) > 0) then
-          udir = .false.
-          vdir = .true.
-          wlvl = s0(npbi, mpbi)
-          if (kfv(npbt,mpbt) == 1 .and. kcs(npbi,mpbi) == 1) then
-             width = gvv(npbt,mpbt)
-          else
-             width = 0.0_fp
-          endif
-       else
-       endif
-       !
-       qtfrct(n1) = qtfrct(n1) + wlvl*width
-       cwidth(n1) = cwidth(n1) + width
-    enddo
-    !
-    ! accumulate information across MPI partitions
-    !
-    if (parll .and. gdp%gdbcdat%gntoftoq>0) then
-       call dfsync(gdp)
-       allocate( qtfrct_global(nobcgl), stat=istat)
-       if (istat /= 0) then
-          call prterr(lundia, 'P004', 'memory alloc error in incbc')
-          call d3stop(1, gdp)
-       endif
-       !
-       ! exchange cwidth data
-       !
-       qtfrct_global = 0.0_fp
-       call dfgather_filter(lundia, nto, nobcto, nobcgl, gdp%gdbcdat%bct_order, cwidth, qtfrct_global, gdp, filter_op=FILTER_SUM)
-       call dfbroadc_gdp(qtfrct_global, nobcgl, dfloat, gdp)
-       do n1 = 1, nto
-          if(typbnd(n1) == 'T') then
-             cwidth(n1) = qtfrct_global(gdp%gdbcdat%bct_order(n1))
-          endif
-       enddo
-       !
-       ! exchange qtfrct data
-       !
-       qtfrct_global = 0.0_fp
-       call dfgather_filter(lundia, nto, nobcto, nobcgl, gdp%gdbcdat%bct_order, qtfrct, qtfrct_global, gdp, filter_op=FILTER_SUM)
-       call dfbroadc_gdp(qtfrct_global, nobcgl, dfloat, gdp)
-       do n1 = 1, nto
-          if(typbnd(n1) == 'T') then
-             qtfrct(n1) = qtfrct_global(gdp%gdbcdat%bct_order(n1))
-          endif
-       enddo
-       !
-       if (allocated(qtfrct_global)) deallocate(qtfrct_global, stat=istat)
-    endif
-    !
-    ! calculate total discharge fractions
-    ! calculate qtot for QH boundaries
-    !
-    do n1 = 1, nto
-       zavg(n1) = qtfrct(n1)/cwidth(n1)
-       qtfrct(n1) = 0.0_fp
-    enddo
-    !
-    do n = 1, nrob
-       ! only do something for total discharge boundaries (7) and water level boundaries (2) of type QH
-       if (nob(3, n)/=7 .and. nob(3, n)/=2) then
-          cycle
-       endif
-       qtfrac(n) = 0.0
-       n1        = nob(8, n)
-       mpbt      = nob(1, n)
-       npbt      = nob(2, n)
-       if (nob(4, n)==2) then
-          mpbt = mpbt - 1
-          mpbi = mpbt
-       elseif (nob(4, n)==1) then
-          mpbi = mpbt + 1
-       else
-          mpbi = mpbt
-       endif
-       if (nob(6, n)==2) then
-          npbt = npbt - 1
-          npbi = npbt
-       elseif (nob(6, n)==1) then
-          npbi = npbt + 1
-       else
-          npbi = npbt
-       endif
-       !
-       ! Determine direction dependent parameters
-       !
-       ttfhsum = 0.0
-       kcsi  = kcs(npbi, mpbi)
-       if (nob(4,n) > 0) then
-          udir  = .true.
-          vdir  = .false.
-          if (use_zavg_for_qtot) then
-             dpvel = max(0.0_fp, hu(npbt, mpbt)-s0(npbt, mpbt)+zavg(n1))
-          else
-             dpvel = max(0.0_fp, hu(npbt, mpbt))
-          endif
-          width = guu(npbt, mpbt)
-          czbed = cfurou(npbt, mpbt, 1)
-          kfuv  = kfu(npbt, mpbt)
-          !
-          ! Determine depth-averaged vegetation effect
-          !
-          if (zmodel) then
-             k1st = kfumin(npbt, mpbt)
-             k2nd = kfumax(npbt, mpbt)
-             do k = k1st, k2nd
-                ttfhsum = ttfhsum + rttfu(npbt, mpbt, k)*dzu1(npbt, mpbt, k)
-             enddo
-          else
-             do k = 1, kmax
-                ttfhsum = ttfhsum + rttfu(npbt, mpbt, k)*thick(k)
-             enddo
-             ttfhsum = ttfhsum * dpvel
-          endif
-       elseif (nob(6,n) > 0) then
-          udir  = .false.
-          vdir  = .true.
-          if (use_zavg_for_qtot) then
-             dpvel = max(0.0_fp, hv(npbt, mpbt)-s0(npbt, mpbt)+zavg(n1))
-          else
-             dpvel = max(0.0_fp, hv(npbt, mpbt))
-          endif
-          width = gvv(npbt, mpbt)
-          czbed = cfvrou(npbt, mpbt, 1)
-          kfuv  = kfv(npbt, mpbt)
-          !
-          ! Determine depth-averaged vegetation effect
-          !
-          if (zmodel) then
-             k1st = kfvmin(npbt, mpbt)
-             k2nd = kfvmax(npbt, mpbt)
-             do k = k1st, k2nd
-                ttfhsum = ttfhsum + rttfv(npbt, mpbt, k)*dzv1(npbt, mpbt, k)
-             enddo
-          else
-             do k = 1, kmax
-                ttfhsum = ttfhsum + rttfv(npbt, mpbt, k)*thick(k)
-             enddo
-             ttfhsum = ttfhsum * dpvel
-          endif
-       else
-       endif
-       
-       if (nob(3,n) == 7) then
-          !
-          ! part of total discharge boundary, compute B*h^(1.5)*C
-          !
-          ! Determine effective roughness
-          ! Note: czbed contains Chezy/sqrt(ag) !!
-          !
-          if (kfuv == 0) then
-             qtfrac(n)  = 0.0_fp
-          else
-             czeff      = czbed / sqrt(1.0_fp + 0.5_fp*ttfhsum*czbed*czbed)
-             !
-             !  This leads to oscillations parallel to the open boundary:
-             ! 
-             qtfrac(n)  = (dpvel**1.5_fp) * width * czeff
-             qtfrac(n)  = qtfrac(n)*(1.0 - thetqt) + qtfrc2(n)*thetqt
-             !
-             !  Alternative (more robust?) implementation is switched off
-             !
-             !  qtfrac(n)  = dpvel*width
-          endif
-          if (kcsi==1) then ! only sum up discharge weights for boundary cells strictly inside this partition
-             qtfrct(n1) = qtfrct(n1) + qtfrac(n)
-          endif          
 
-       elseif (nob(3,n) == 2) then
-          !
-          ! waterlevel boundary might be QH boundary
-          !
-          if ((n1>ntof) .and. (n1<=ntof + ntoq)) then
-             !
-             ! QH boundary, compute Q = SUM (B*u*h)
-             ! USE 1 to KMAX for the loop index for ZMODEL and SIGMA
-             ! No differentiation in the approach is needed because
-             ! QXK/QYK = zero at the top layers anyway
-             !
-             if (kcsi==1) then ! only sum up discharge for boundary cells strictly inside this partition
-                q0avg = 0.0
-                if (udir) then
-                   do k = 1, kmax
-                      q0avg = q0avg + qxk(npbt, mpbt, k)
-                   enddo
-                elseif (vdir) then
-                   do k = 1, kmax
-                      q0avg = q0avg + qyk(npbt, mpbt, k)
-                   enddo
-                else
-                endif
-                qtfrct(n1) = qtfrct(n1) + q0avg
-             endif
+    if (gdp%gdbcdat%global_num_qtot_bnd>0 .or. &
+        gdp%gdbcdat%global_num_qh_bnd>0) then    
+       !
+       ! calculate zavg, using cwidth
+       !
+       if (.not.associated(gdp%gdincbc%cwidth)) then
+          allocate(gdp%gdincbc%cwidth(nto), stat=istat)
+          if (istat == 0) allocate(gdp%gdincbc%zavg(nto), stat=istat)
+          if (istat /= 0) then
+             call prterr(lundia, 'P004', 'memory alloc error in incbc')
+             call d3stop(1, gdp)
           endif
-       else
        endif
-    enddo
-    !
-    ! Update the discharge for total discharge or QH boundaries for the overall domain by summing up among those
-    !
-    if (parll .and. gdp%gdbcdat%gntoftoq>0) then
-       call dfsync(gdp)
-       allocate( qtfrct_global(nobcgl), stat=istat)
-       if (istat /= 0) then
-          call prterr(lundia, 'P004', 'memory alloc error in incbc')
-          call d3stop(1, gdp)
+       cwidth => gdp%gdincbc%cwidth
+       zavg   => gdp%gdincbc%zavg
+       !
+       qtfrct = 0.0_fp
+       cwidth = 1.0e-9_fp
+       !
+       do n = 1, nrob
+          !
+          ! only for total discharge boundaries (7):
+          ! Determine average water level
+          !
+          if (nob(3,n) /= 7) then
+             cycle
+          endif
+          qtfrac(n) = 0.0_fp
+          n1        = nob(8,n)
+          mpbt      = nob(1,n)
+          npbt      = nob(2,n)
+          if (nob(4, n)==2) then
+             mpbt = mpbt - 1
+             mpbi = mpbt
+          elseif (nob(4, n)==1) then
+             mpbi = mpbt + 1
+          else
+             mpbi = mpbt
+          endif
+          if (nob(6, n)==2) then
+             npbt = npbt - 1
+             npbi = npbt
+          elseif (nob(6, n)==1) then
+             npbi = npbt + 1
+          else
+             npbi = npbt
+          endif
+          !
+          ! Determine direction dependent parameters
+          !
+          if (nob(4,n) > 0) then
+             udir = .true.
+             vdir = .false.
+             wlvl = s0(npbi, mpbi)
+             if (kfu(npbt,mpbt) == 1 .and. kcs(npbi,mpbi) == 1) then
+                width = guu(npbt,mpbt)
+             else
+                width = 0.0_fp
+             endif
+          elseif (nob(6,n) > 0) then
+             udir = .false.
+             vdir = .true.
+             wlvl = s0(npbi, mpbi)
+             if (kfv(npbt,mpbt) == 1 .and. kcs(npbi,mpbi) == 1) then
+                width = gvv(npbt,mpbt)
+             else
+                width = 0.0_fp
+             endif
+          else
+          endif
+          !
+          qtfrct(n1) = qtfrct(n1) + wlvl*width
+          cwidth(n1) = cwidth(n1) + width
+       enddo
+       !
+       ! accumulate information across MPI partitions
+       !
+       if (parll) then
+          call dfsync(gdp)
+          allocate( qtfrct_global(nobcgl), stat=istat)
+          if (istat /= 0) then
+             call prterr(lundia, 'P004', 'memory alloc error in incbc')
+             call d3stop(1, gdp)
+          endif
+          !
+          ! exchange cwidth data
+          !
+          qtfrct_global = 0.0_fp
+          call dfgather_filter(lundia, nto, nobcto, nobcgl, gdp%gdbcdat%bct_order, cwidth, qtfrct_global, gdp, filter_op=FILTER_SUM)
+          call dfbroadc_gdp(qtfrct_global, nobcgl, dfloat, gdp)
+          do n1 = 1, nto
+             if(typbnd(n1) == 'T') then
+                cwidth(n1) = qtfrct_global(gdp%gdbcdat%bct_order(n1))
+             endif
+          enddo
+          !
+          ! exchange qtfrct data
+          !
+          qtfrct_global = 0.0_fp
+          call dfgather_filter(lundia, nto, nobcto, nobcgl, gdp%gdbcdat%bct_order, qtfrct, qtfrct_global, gdp, filter_op=FILTER_SUM)
+          call dfbroadc_gdp(qtfrct_global, nobcgl, dfloat, gdp)
+          do n1 = 1, nto
+             if(typbnd(n1) == 'T') then
+                qtfrct(n1) = qtfrct_global(gdp%gdbcdat%bct_order(n1))
+             endif
+          enddo
+          !
+          if (allocated(qtfrct_global)) deallocate(qtfrct_global, stat=istat)
        endif
-       qtfrct_global = 0.0_fp
-       call dfgather_filter(lundia, nto, nobcto, nobcgl, gdp%gdbcdat%bct_order, qtfrct, qtfrct_global, gdp, filter_op=FILTER_SUM)
-       call dfbroadc_gdp(qtfrct_global, nobcgl, dfloat, gdp)
+       !
        do n1 = 1, nto
-          if(typbnd(n1)=='T' .or. ((n1>ntof) .and. (n1<=ntof + ntoq))) then  ! total discharge or QH boundary
-             qtfrct(n1) = qtfrct_global(gdp%gdbcdat%bct_order(n1))
+          zavg(n1) = qtfrct(n1)/cwidth(n1)
+       enddo
+    !
+    ! calculate qtfrac and qtfrct for all total discharge boundaries and QH boundaries ... if any
+    !
+       !
+       ! initialize
+       !
+       qtfrct = 0.0_fp
+       !
+       do n = 1, nrob
+          ! only do something for total discharge boundaries (7) and water level boundaries (2) of type QH
+          if (nob(3, n)/=7 .and. nob(3, n)/=2) then
+             cycle
+          endif
+          qtfrac(n) = 0.0
+          n1        = nob(8, n)
+          mpbt      = nob(1, n)
+          npbt      = nob(2, n)
+          if (nob(4, n)==2) then
+             mpbt = mpbt - 1
+             mpbi = mpbt
+          elseif (nob(4, n)==1) then
+             mpbi = mpbt + 1
+          else
+             mpbi = mpbt
+          endif
+          if (nob(6, n)==2) then
+             npbt = npbt - 1
+             npbi = npbt
+          elseif (nob(6, n)==1) then
+             npbi = npbt + 1
+          else
+             npbi = npbt
+          endif
+          !
+          ! Determine direction dependent parameters
+          !
+          ttfhsum = 0.0
+          kcsi  = kcs(npbi, mpbi)
+          if (nob(4,n) > 0) then
+             udir  = .true.
+             vdir  = .false.
+             if (use_zavg_for_qtot) then
+                dpvel = max(0.0_fp, hu(npbt, mpbt)-s0(npbt, mpbt)+zavg(n1))
+             else
+                dpvel = max(0.0_fp, hu(npbt, mpbt))
+             endif
+             width = guu(npbt, mpbt)
+             czbed = cfurou(npbt, mpbt, 1)
+             kfuv  = kfu(npbt, mpbt)
+             !
+             ! Determine depth-averaged vegetation effect
+             !
+             if (zmodel) then
+                k1st = kfumin(npbt, mpbt)
+                k2nd = kfumax(npbt, mpbt)
+                do k = k1st, k2nd
+                   ttfhsum = ttfhsum + rttfu(npbt, mpbt, k)*dzu1(npbt, mpbt, k)
+                enddo
+             else
+                do k = 1, kmax
+                   ttfhsum = ttfhsum + rttfu(npbt, mpbt, k)*thick(k)
+                enddo
+                ttfhsum = ttfhsum * dpvel
+             endif
+          elseif (nob(6,n) > 0) then
+             udir  = .false.
+             vdir  = .true.
+             if (use_zavg_for_qtot) then
+                dpvel = max(0.0_fp, hv(npbt, mpbt)-s0(npbt, mpbt)+zavg(n1))
+             else
+                dpvel = max(0.0_fp, hv(npbt, mpbt))
+             endif
+             width = gvv(npbt, mpbt)
+             czbed = cfvrou(npbt, mpbt, 1)
+             kfuv  = kfv(npbt, mpbt)
+             !
+             ! Determine depth-averaged vegetation effect
+             !
+             if (zmodel) then
+                k1st = kfvmin(npbt, mpbt)
+                k2nd = kfvmax(npbt, mpbt)
+                do k = k1st, k2nd
+                   ttfhsum = ttfhsum + rttfv(npbt, mpbt, k)*dzv1(npbt, mpbt, k)
+                enddo
+             else
+                do k = 1, kmax
+                   ttfhsum = ttfhsum + rttfv(npbt, mpbt, k)*thick(k)
+                enddo
+                ttfhsum = ttfhsum * dpvel
+             endif
+          else
+          endif
+          
+          if (nob(3,n) == 7) then
+             !
+             ! part of total discharge boundary, compute B*h^(1.5)*C
+             !
+             ! Determine effective roughness
+             ! Note: czbed contains Chezy/sqrt(ag) !!
+             !
+             if (kfuv == 0) then
+                qtfrac(n)  = 0.0_fp
+             else
+                czeff      = czbed / sqrt(1.0_fp + 0.5_fp*ttfhsum*czbed*czbed)
+                !
+                !  This leads to oscillations parallel to the open boundary:
+                ! 
+                qtfrac(n)  = (dpvel**1.5_fp) * width * czeff
+                qtfrac(n)  = qtfrac(n)*(1.0 - thetqt) + qtfrc2(n)*thetqt
+                !
+                !  Alternative (more robust?) implementation is switched off
+                !
+                !  qtfrac(n)  = dpvel*width
+             endif
+             if (kcsi==1) then ! only sum up discharge weights for boundary cells strictly inside this partition
+                qtfrct(n1) = qtfrct(n1) + qtfrac(n)
+             endif
+
+          elseif (nob(3,n) == 2) then
+             !
+             ! waterlevel boundary might be QH boundary
+             !
+             if ((n1>ntof) .and. (n1<=ntof + ntoq)) then
+                !
+                ! QH boundary, compute Q = SUM (B*u*h)
+                ! USE 1 to KMAX for the loop index for ZMODEL and SIGMA
+                ! No differentiation in the approach is needed because
+                ! QXK/QYK = zero at the top layers anyway
+                !
+                if (kcsi==1) then ! only sum up discharge for boundary cells strictly inside this partition
+                   q0avg = 0.0
+                   if (udir) then
+                      do k = 1, kmax
+                         q0avg = q0avg + qxk(npbt, mpbt, k)
+                      enddo
+                   elseif (vdir) then
+                      do k = 1, kmax
+                         q0avg = q0avg + qyk(npbt, mpbt, k)
+                      enddo
+                   else
+                   endif
+                   qtfrct(n1) = qtfrct(n1) + q0avg
+                endif
+             endif
+          else
           endif
        enddo
-       if (allocated(qtfrct_global)) deallocate(qtfrct_global, stat=istat)
-    endif 
+       !
+       ! Update the discharge for total discharge or QH boundaries for the overall domain by summing up among those
+       !
+       if (parll) then
+          call dfsync(gdp)
+          allocate( qtfrct_global(nobcgl), stat=istat)
+          if (istat /= 0) then
+             call prterr(lundia, 'P004', 'memory alloc error in incbc')
+             call d3stop(1, gdp)
+          endif
+          qtfrct_global = 0.0_fp
+          call dfgather_filter(lundia, nto, nobcto, nobcgl, gdp%gdbcdat%bct_order, qtfrct, qtfrct_global, gdp, filter_op=FILTER_SUM)
+          call dfbroadc_gdp(qtfrct_global, nobcgl, dfloat, gdp)
+          do n1 = 1, nto
+             if(typbnd(n1)=='T' .or. ((n1>ntof) .and. (n1<=ntof + ntoq))) then  ! total discharge or QH boundary
+                qtfrct(n1) = qtfrct_global(gdp%gdbcdat%bct_order(n1))
+             endif
+          enddo
+          if (allocated(qtfrct_global)) deallocate(qtfrct_global, stat=istat)
+       endif
+    endif
     !
     ! Update QH values if necessary
     ! Necessary if: the discharge is not in the selected range

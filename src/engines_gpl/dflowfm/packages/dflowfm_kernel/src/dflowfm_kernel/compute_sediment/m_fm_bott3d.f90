@@ -101,7 +101,7 @@ contains
 
       double precision :: dtmor
       double precision :: timhr
-      
+
       logical, pointer :: cmpupd
 
    !!
@@ -1945,7 +1945,7 @@ contains
 
    subroutine fm_erosion_velocity(dtmor)
 
-      use m_flowgeom, only: ndx
+      use m_flowgeom, only: ndx, bl
       use m_fm_erosed, only: blchg, dzbdt
 
       implicit none

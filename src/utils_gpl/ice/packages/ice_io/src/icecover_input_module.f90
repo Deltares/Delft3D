@@ -46,6 +46,7 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
         & ICE_WINDDRAG_LINEAR, ICE_WINDDRAG_RAYS
     use MessageHandling, only: mess, LEVEL_ERROR
     use properties
+    use string_module, only: str_lower
     !
     implicit none
     !
@@ -59,10 +60,8 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
 !
 ! Local variables
 !
-    logical                                      :: success
     integer                                      :: istat
     integer                                      :: model
-    character(256)                               :: filename
     character(256)                               :: tmp
 !
 !! executable statements -------------------------------------------------------

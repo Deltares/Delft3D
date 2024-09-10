@@ -323,7 +323,7 @@ subroutine ini_petsc(Ndx, ierror)
          guusidxdia(numdia) = -ndn
 
          if (iglobal(ndn) == 0) then
-            write (6, *), '--> iglobal=0', my_rank, ndn
+            write (6, *) '--> iglobal=0', my_rank, ndn
          end if
 
 !           count non-zero row entries for this row

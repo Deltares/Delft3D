@@ -118,10 +118,9 @@ c
 c     Declaration of local variables:
 c      
       integer    nh1   ,nh2       ,sdbdef ,j    ,ijget  ,ijput ,
-     &           ind   ,ij1       ,ij2    ,m2   ,lstnam
+     &           ind   ,ij1       ,ij2    ,m2 
       real       h2 
       logical    inidb ,initial
-      character  strnam*40
 c
 c     Include sobek constants and error codes
 c

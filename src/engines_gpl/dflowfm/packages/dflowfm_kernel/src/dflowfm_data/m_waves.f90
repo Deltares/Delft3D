@@ -44,6 +44,7 @@ module m_waves
    double precision, allocatable, target :: hwav(:) !< [m] root mean square wave height (m) from external source, {"location": "face", "shape": ["ndx"]}
    double precision, allocatable, target :: hwavcom(:) !< [m] root mean square wave height (m) from external source
    double precision, allocatable, target :: twav(:) !< [s] wave period {"location": "face", "shape": ["ndx"]}
+   double precision, allocatable, target :: twavcom(:) !< [s] wave period from external source {"location": "face", "shape": ["ndx"]}
    double precision, allocatable, target :: phiwav(:) !< [degree] mean wave direction (degrees) from external source
    double precision, allocatable, target :: uorb(:) !< [m/s] orbital velocity {"location": "face", "shape": ["ndx"]}
    double precision, allocatable, target :: ustokes(:) !< [m/s] wave induced velocity, link-based and link-oriented
@@ -82,6 +83,7 @@ module m_waves
    double precision, allocatable :: wblt(:)
 
    double precision :: facmax !< maximum wave force
+   double precision :: JONSWAPgamma0 = 3.3 !< Peak enhancement factor JONSWAP
 
    ! for visualisation
    integer :: waveparopt

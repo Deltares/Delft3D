@@ -33,15 +33,12 @@
   subroutine SETPOINT(XP, YP, ZP, K1)
 
      use m_netw
+     use m_howtoview
 
      implicit none
      double precision :: XP, YP, ZP
      integer :: K1
-     integer :: jav
-     integer :: jview
-     double precision :: xyz
 
-     common / HOWTOVIEW / JVIEW, JAV, XYZ ! 1,2,3 OF 4
      call TWEEDRIE(XP, YP, XK(K1), YK(K1), ZK(K1))
      if (JVIEW == 1) then
         ZK(K1) = zp ! XYZ

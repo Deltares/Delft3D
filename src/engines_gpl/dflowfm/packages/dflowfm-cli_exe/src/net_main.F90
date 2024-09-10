@@ -85,16 +85,13 @@ program unstruc
 #ifdef HAVE_MPI
    use mpi
 #endif
-
+   use m_modenow
+   use m_qnrgf
+   
    implicit none
 
-   integer :: MODE, NFLD, KEY
-   integer :: JQN
-   integer :: JDEMO
+   integer :: KEY
 
-   common / MODENOW / MODE, NFLD
-   common / QNRGF / JQN
-   common / DEMO / JDEMO
    integer :: ierr, lastmode, IDUM
    logical :: JAWEL
 
@@ -143,7 +140,6 @@ program unstruc
 !   WHATST       = '@(#)   | Kernkamp Herman  ,      NETWORK, Version 1.0000; 04-07-2001'//char(0)
 !   WHATST       = '@(#)WL | Deltares,               Unstruc, Version 1.0000; 20-03-2007'//char(0)   ! Starting date
 !   WHATST       = '@(#)WL | Deltares,               Unstruc, Version 1.0011; 01-06-2009'//char(0)
-   JDEMO = 0
    JQN = 2
 
    MMAX = 0
@@ -232,7 +228,7 @@ program unstruc
          !     call axpy(md_M, md_N)
       end do
 !      output timings
-      write (6, '(a,E8.2,a,E8.2)') ' WC-time Axpy test [s]: ', gettimer(1, IAXPY), ' CPU-time Axpy test [s]: ', gettimer(0, IAXPY)
+      write (6, '(a,E9.2,a,E9.2)') ' WC-time Axpy test [s]: ', gettimer(1, IAXPY), ' CPU-time Axpy test [s]: ', gettimer(0, IAXPY)
 
       goto 1234
    end if

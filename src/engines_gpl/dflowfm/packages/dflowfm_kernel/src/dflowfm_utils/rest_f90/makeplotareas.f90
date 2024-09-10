@@ -31,6 +31,7 @@
 !
 
       subroutine MAKEPLOTAREAS(NUMROW, NUMCOL, nsize)
+         use m_dscreens
          implicit none
          double precision :: dx
          double precision :: dy
@@ -39,18 +40,13 @@
          integer :: nsc
          integer :: numcol
          integer :: numrow
-         integer :: numsc
-         double precision :: x1sc
-         double precision :: x2sc
          double precision :: xb
          double precision :: xm
          double precision :: xz
-         double precision :: y1sc
-         double precision :: y2sc
          double precision :: yb
          double precision :: ym
          double precision :: yz
-         common / GSCREENS / X1SC(100), Y1SC(100), X2SC(100), Y2SC(100), NUMSC
+
          NSC = 0
 
          if (numrow == 1) then

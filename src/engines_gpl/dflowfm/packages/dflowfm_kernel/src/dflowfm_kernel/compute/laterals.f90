@@ -56,7 +56,7 @@ module m_laterals
    !                    3) in test_laterals (unit test)
    ! so yes, 3 is necessary for now.
    real(kind=dp), allocatable, target, public :: qplat(:, :) !< [m3/s] Lateral discharge of provider {"shape": ["num_layers", "numlatsg"]}
-   real(kind=dp), allocatable, target, public :: qqlat(:, :, :) !< [m3/s] Lateral discharge at xz,yz {"location": "face", "shape": ["num_layers","numlatsg", "ndx"]}
+   real(kind=dp), allocatable, target, public :: qqlat(:, :) !< [m3/s] Lateral discharge at xz,yz {"location": "face": ["num_layers","nlatnd"]}
    real(kind=dp), allocatable, target, public :: balat(:) !< [m2] total area of all cells in provider numlatsg {"shape": ["numlatsg"]}
    character(len=128), allocatable, public :: lat_ids(:) !< id of laterals {"shape": ["numlatsg"]}
    real(kind=dp), allocatable, target, public :: qplatCum(:) !< [m3/s] Cumulative lateral discharge of provider {"shape": ["numlatsg"]}
@@ -102,8 +102,8 @@ module m_laterals
 
    !> allocate the arrays for laterals on 3d/BMI
    interface initialize_lateraldata
-      module subroutine initialize_lateraldata(numconst)
-         integer, intent(in) :: numconst !< number of constitiuents
+      module subroutine initialize_lateraldata(num_const)
+         integer, intent(in) :: num_const !< number of constitiuents
       end subroutine initialize_lateraldata
    end interface initialize_lateraldata
 
@@ -117,8 +117,8 @@ module m_laterals
    !! In average_concentrations_for_laterals, the concentrations*timestep are aggregated in outgoing_lat_concentration.
    !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
    interface average_concentrations_for_laterals
-      module subroutine average_concentrations_for_laterals(numconst, kmx, kmxn, cell_volume, constituents, dt)
-         integer, intent(in) :: numconst !< Number or constituents.
+      module subroutine average_concentrations_for_laterals(num_const, kmx, kmxn, cell_volume, constituents, dt)
+         integer, intent(in) :: num_const !< Number or constituents.
          integer, intent(in) :: kmx !< Number of layers (0 means 2D computation).
          integer, dimension(:), intent(in) :: kmxn !< Maximum number of vertical cells per base node n.
          real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells.
@@ -166,7 +166,7 @@ module m_laterals
    interface distribute_lateral_discharge
       module subroutine distribute_lateral_discharge(provided_lateral_discharge, lateral_discharge_per_layer_lateral_cell)
          real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per layer
-         real(kind=dp), dimension(:, :, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge
+         real(kind=dp), dimension(:, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge
                                                                                                     !! per layer per lateral per cell
       end subroutine distribute_lateral_discharge
    end interface distribute_lateral_discharge

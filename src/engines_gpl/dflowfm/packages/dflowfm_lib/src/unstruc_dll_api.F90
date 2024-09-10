@@ -35,7 +35,7 @@
 module dll_api
    use iso_c_binding
    use unstruc_api
-   use unstruc_display, only: jaGUI ! this should be removed when jaGUI = 0 by default
+   use m_gui ! this should be removed when jaGUI = 0 by default
 
    implicit none
 

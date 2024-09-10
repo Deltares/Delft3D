@@ -48,6 +48,8 @@
          use m_netw ! vanwege zkuni
          use unstruc_model
          use M_ARCINFO
+         use m_readyy
+         use m_qnerror
 
          implicit none
 

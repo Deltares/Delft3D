@@ -67,7 +67,7 @@ contains
 
       logical :: success
 
-      call prop_get_string(prop_ptr, chapter, key, value, success)
+      call prop_get(prop_ptr, chapter, key, value, success)
       call unstruc_ini_error_handler(chapter, key, success)
 
    end subroutine get_req_string
@@ -82,7 +82,7 @@ contains
 
       logical :: success
 
-      call prop_get_integer(prop_ptr, chapter, key, value, success)
+      call prop_get(prop_ptr, chapter, key, value, success)
       call unstruc_ini_error_handler(chapter, key, success)
 
    end subroutine get_req_integer
@@ -93,12 +93,12 @@ contains
       type(tree_data), pointer, intent(in) :: prop_ptr
       character(*), intent(in) :: chapter
       character(*), intent(in) :: key
-      integer, dimension(*), intent(out) :: value
+      integer, dimension(:), intent(out) :: value
       integer, intent(in) :: valuelength
 
       logical :: success
 
-      call prop_get_integers(prop_ptr, chapter, key, value, valuelength, success)
+      call prop_get(prop_ptr, chapter, key, value, valuelength, success)
       call unstruc_ini_error_handler(chapter, key, success)
 
    end subroutine get_req_integers
@@ -113,7 +113,7 @@ contains
 
       logical :: success
 
-      call prop_get_double(prop_ptr, chapter, key, value, success)
+      call prop_get(prop_ptr, chapter, key, value, success)
       call unstruc_ini_error_handler(chapter, key, success)
 
    end subroutine get_req_double

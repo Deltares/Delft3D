@@ -33,45 +33,36 @@
       subroutine TEKFN(NSC, NF, JW, X, Y, N, X1, X2, Y1, Y2, NCOL, TITLE, JAUTO, JP, DAG, kp1)
          use m_flow, only: kplotfrombedorsurface
          use unstruc_colors, only: ncolblack
+         use m_depmax
          implicit none
+         integer, parameter :: MX=366, NX=20
          double precision :: dag
-         double precision :: dv
          double precision :: dxh
          double precision :: dyh
-         double precision :: fmx
+         double precision :: fmx(NX)
          integer :: i, kp
          integer, save :: ini = 0
          integer :: j
-         integer :: jaauto
          integer :: jauto
          integer :: jp
          integer :: jw
-         integer :: mx
          integer :: n
          integer :: ncol
-         integer :: ncols
          integer :: nf
-         integer :: nie
-         integer :: nis
          integer :: nsc
-         integer :: nv
-         integer :: nx, kp1
-         double precision :: val, fx1, fx2, fy1, fy2
-         double precision :: vmax
-         double precision :: vmin
+         integer :: kp1
+         double precision :: fx1, fx2, fy1, fy2
          double precision :: x1
          double precision :: x2
-         double precision :: xo
+         double precision :: xo(MX, NX)
          double precision :: xtx
          double precision :: y1
          double precision :: y2
-         double precision :: yo
+         double precision :: yo(MX, NX)
          double precision :: ytx, rcx, rcy
-         parameter(MX=366, NX=20)
          character TITLE * (*), TEX * 16
          double precision :: X(N), Y(N), XX(4), YY(4), ZZ(4)
-         common / ORGARR / XO(MX, NX), YO(MX, NX), FMX(NX)
-         common / DEPMAX / VMAX, VMIN, DV, VAL(256), NCOLS(256), NV, NIS, NIE, JAAUTO
+
          ! NSC schermnr
          ! NF  functienr
          ! JW  update assen 1 = ja, niet 1 = nee
@@ -143,7 +134,7 @@
             if (abs(x1) < 1d3) then
                write (TEX, '(F8.3)') X1
             else
-               write (TEX, '(e8.3)') X1
+               write (TEX, '(e10.3)') X1
             end if
             call DRAWTEXT(real(X1), real(Y1 - DYH), TEX)
 

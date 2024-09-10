@@ -43,5 +43,4 @@ echo                     e.g. . (for the current work dir), mandatory).
 echo -h, --help, --usage print this help message and exit
 
 :end
-rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
-rem pause
+pause

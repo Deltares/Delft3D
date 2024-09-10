@@ -33,6 +33,7 @@
       !> read from rfg grid file
       subroutine ECRREA(X, MMAX, NMAX, MC, NC, MRGF, HALF)
          use m_missing
+         use m_readyy
          implicit none
          character dummy * 10, REC * 132
 !     LEES RGF
@@ -61,7 +62,7 @@
                AF = HALF + 0.5d0 * dble(J) / dble(NC)
                call READYY('Reading Grid File', AF)
             end if
-            read (MRGF, '(10X5F12.0)', err=888, end=999) (X(I, J), I=1, MC)
+            read (MRGF, '(10X,5F12.0)', err=888, end=999) (X(I, J), I=1, MC)
          end do
 
          ! where (x == 0d0) x = dxymis

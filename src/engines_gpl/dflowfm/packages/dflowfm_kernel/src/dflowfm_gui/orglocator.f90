@@ -32,19 +32,13 @@
 
       subroutine ORGLOCATOR(XL, YL)
          use m_devices
+         use m_locatora
+
          implicit none
-         integer :: jashow
-         integer :: jmouse
          integer :: ml
          integer :: nl
-         double precision :: xa
          double precision :: xl
-         double precision :: xlc
-         double precision :: ya
          double precision :: yl
-         double precision :: ylc
-!     INITIATE CURSOR LOCATION
-         common / LOCATORA / XLC, YLC, XA, YA, JMOUSE, JASHOW
 
          if (XL == 0 .and. YL == 0) then
             ML = NPX / 2

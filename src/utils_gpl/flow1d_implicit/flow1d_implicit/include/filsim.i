@@ -66,7 +66,7 @@
      &              mrpmap  , mrphis  ,                                               &
      &              gsedmap , gsedhis ,                                               &
      &              gfrcmap , gfrchis 
-      character(len=256) trainp, traout                                               &
+      character(len=256) trainp, traout,                                              &
      &              griout
       character(len=256) graout  , gralog  
       character(len=256) fsgfun, fexare,                                              &

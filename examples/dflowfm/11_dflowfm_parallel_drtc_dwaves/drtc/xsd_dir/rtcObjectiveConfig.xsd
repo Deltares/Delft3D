@@ -1,0 +1,660 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2013 rel. 2 sp2 (http://www.altova.com) by Dirk Schwanenberg (Deltares) -->
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:rtc="http://www.wldelft.nl/fews" targetNamespace="http://www.wldelft.nl/fews" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0">
+	<include schemaLocation="rtcSharedTypes.xsd"/>
+	<element name="rtcObjectiveConfig" type="rtc:RtcObjectiveConfigComplexType"/>
+	<complexType name="RtcObjectiveConfigComplexType">
+		<sequence>
+			<element name="variables" type="rtc:VariablesComplexType" minOccurs="0"/>
+			<element name="constraints" type="rtc:ConstraintsComplexType" minOccurs="0"/>
+			<element name="terms" type="rtc:TermComplexType" minOccurs="0"/>
+			<element name="termsEnsemble" type="rtc:TermEnsembleComplexType" minOccurs="0"/>
+			<element name="output" type="rtc:OutputComplexType" minOccurs="0"/>
+		</sequence>
+	</complexType>
+	<complexType name="VariablesComplexType">
+		<sequence>
+			<element name="variable" type="rtc:VariableComplexType" maxOccurs="unbounded"/>
+			<element name="aggregation" type="rtc:AggregationComplexType" minOccurs="0"/>
+		</sequence>
+	</complexType>
+	<complexType name="VariableComplexType">
+		<sequence>
+			<element name="aggregation" type="rtc:AggregationComplexType" minOccurs="0"/>
+		</sequence>
+		<attribute name="id" type="rtc:TimeSeriesSimpleType" use="required"/>
+		<attribute name="type" type="rtc:VariableTypeEnumStringType" use="required"/>
+		<attribute name="active" type="rtc:ExternalBooleanSimpleType" default="true"/>
+		<attribute name="min" type="rtc:ExternalParameterSimpleType"/>
+		<attribute name="max" type="rtc:ExternalParameterSimpleType"/>
+		<attribute name="scalingFactor" type="double" default="1.0"/>
+		<attribute name="ensembleMode" type="rtc:EnsembleModeEnumStringType" use="optional" default="JOINT"/>
+	</complexType>
+	<complexType name="AggregationComplexType">
+		<choice>
+			<element name="constant" type="anySimpleType"/>
+			<element name="equidistant" type="rtc:AggregationEquidistantComplexType">
+				<annotation>
+					<documentation>aggregation with equidistent steps, note that the number of time steps in the model needs to be a multiple of the aggregation step, i.e. 2,4,6,8 steps in case of an aggregation step of 2</documentation>
+				</annotation>
+			</element>
+			<element name="non-equidistant" type="rtc:AggregationNonEquidistantComplexType">
+				<annotation>
+					<documentation>still not implemented</documentation>
+				</annotation>
+			</element>
+		</choice>
+	</complexType>
+	<complexType name="AggregationEquidistantComplexType">
+		<sequence>
+			<element name="type" type="rtc:AggregationTypeEnumStringType">
+				<annotation>
+					<documentation>interpolation type: block or linear</documentation>
+				</annotation>
+			</element>
+			<element name="nAggregationSteps" type="integer">
+				<annotation>
+					<documentation>aggregation, simulation time nOutputSteps (simulation) = nInputSteps (optimizer) * nAggregationSteps</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="AggregationNonEquidistantComplexType">
+		<sequence>
+			<element name="type" type="rtc:AggregationTypeEnumStringType">
+				<annotation>
+					<documentation>interpolation type: block or linear</documentation>
+				</annotation>
+			</element>
+			<element name="nInputSteps" type="integer">
+				<annotation>
+					<documentation>number of input time steps</documentation>
+				</annotation>
+			</element>
+			<element name="nOutputSteps" type="integer">
+				<annotation>
+					<documentation>number of output time steps</documentation>
+				</annotation>
+			</element>
+			<element name="stepIndex" type="integer" maxOccurs="unbounded">
+				<annotation>
+					<documentation>time step indices (indexing starts from 1) on which input data is located, the has to be data on the last time step!</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="ConstraintsComplexType">
+		<sequence>
+			<element name="constraint" type="rtc:ConstraintChoiceComplexType" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="ConstraintChoiceComplexType">
+		<choice>
+			<element name="boundVariable" type="rtc:BoundVariableComplexType">
+				<annotation>
+					<documentation>implement bounds on the optimization variable</documentation>
+				</annotation>
+			</element>
+			<element name="boundVariableAverage" type="rtc:BoundVariableAverageComplexType">
+				<annotation>
+					<documentation>defines a bound on an average value of an optimization variable for example to enable min/max bounds on aggregated time series</documentation>
+				</annotation>
+			</element>
+			<element name="boundVariableRateOfChange" type="rtc:BoundVariableRateOfChangeComplexType">
+				<annotation>
+					<documentation>implements bounds on the rate-of-change of an optimization variable</documentation>
+				</annotation>
+			</element>
+			<element name="boundState" type="rtc:BoundStateComplexType">
+				<annotation>
+					<documentation>implements bounds on states or model outputs</documentation>
+				</annotation>
+			</element>
+			<element name="chanceBoundVariable" type="rtc:ChanceVariableComplexType">
+				<annotation>
+					<documentation>implement chance constraints on the optimization variable</documentation>
+				</annotation>
+			</element>
+		</choice>
+		<attribute name="active" type="rtc:ExternalBooleanSimpleType" default="true"/>
+	</complexType>
+	<complexType name="BoundVariableComplexType">
+		<sequence>
+			<element name="variable" type="rtc:TimeSeriesSimpleType">
+				<annotation>
+					<documentation>reference to the time series in the time series database (refers to the file 'rtcDataConfig.xml')</documentation>
+				</annotation>
+			</element>
+			<choice minOccurs="0">
+				<element name="upperBound" type="rtc:ExternalParameterSimpleType">
+					<annotation>
+						<documentation>upper bound as a scalar value</documentation>
+					</annotation>
+				</element>
+				<element name="upperBoundSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>upper bound from a times series, a missing value will switch out the constraint for this specific time step</documentation>
+					</annotation>
+				</element>
+			</choice>
+			<choice minOccurs="0">
+				<element name="lowerBound" type="rtc:ExternalParameterSimpleType">
+					<annotation>
+						<documentation>lower bound as a scalar</documentation>
+					</annotation>
+				</element>
+				<element name="lowerBoundSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>lower bound from a times series, a missing value will switch out the constraint for this specific time step</documentation>
+					</annotation>
+				</element>
+			</choice>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+		<attribute name="name" type="string" use="optional"/>
+	</complexType>
+	<complexType name="BoundVariableRateOfChangeComplexType">
+		<sequence>
+			<element name="variable" type="rtc:TimeSeriesSimpleType">
+				<annotation>
+					<documentation>reference to the time series in the time series database (refers to the file 'rtcDataConfig.xml')</documentation>
+				</annotation>
+			</element>
+			<element name="multipleDelay" type="rtc:MultipleDelayComplexType" minOccurs="0">
+				<annotation>
+					<documentation>option to look back more than a single time step</documentation>
+				</annotation>
+			</element>
+			<choice minOccurs="0">
+				<element name="upperBound" type="rtc:ExternalParameterSimpleType">
+					<annotation>
+						<documentation>upper bound as a scalar value</documentation>
+					</annotation>
+				</element>
+				<element name="upperBoundSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>upper bound from a times series, a missing value will switch out the constraint for this specific time step</documentation>
+					</annotation>
+				</element>
+			</choice>
+			<choice minOccurs="0">
+				<element name="lowerBound" type="rtc:ExternalParameterSimpleType">
+					<annotation>
+						<documentation>lower bound as a scalar</documentation>
+					</annotation>
+				</element>
+				<element name="lowerBoundSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>lower bound from a times series, a missing value will switch out the constraint for this specific time step</documentation>
+					</annotation>
+				</element>
+			</choice>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+		<attribute name="name" type="string" use="optional"/>
+	</complexType>
+	<complexType name="BoundVariableAverageComplexType">
+		<sequence>
+			<element name="variable" type="rtc:TimeSeriesSimpleType">
+				<annotation>
+					<documentation>reference to the time series in the time series database (refers to the file 'rtcDataConfig.xml')</documentation>
+				</annotation>
+			</element>
+			<element name="average" type="rtc:BoundAverageComplexType"/>
+			<choice minOccurs="0">
+				<element name="upperBound" type="rtc:ExternalParameterSimpleType">
+					<annotation>
+						<documentation>upper bound as a scalar value</documentation>
+					</annotation>
+				</element>
+				<element name="upperBoundSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>upper bound from a times series, a missing value will switch out the constraint for this specific time step</documentation>
+					</annotation>
+				</element>
+			</choice>
+			<choice minOccurs="0">
+				<element name="lowerBound" type="rtc:ExternalParameterSimpleType">
+					<annotation>
+						<documentation>lower bound as a scalar</documentation>
+					</annotation>
+				</element>
+				<element name="lowerBoundSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>lower bound from a times series, a missing value will switch out the constraint for this specific time step</documentation>
+					</annotation>
+				</element>
+			</choice>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+		<attribute name="name" type="string" use="optional"/>
+	</complexType>
+	<complexType name="BoundAverageComplexType">
+		<sequence>
+			<choice>
+				<element name="nStep" default="1">
+					<annotation>
+						<documentation>fixed value for nStep</documentation>
+					</annotation>
+					<simpleType>
+						<restriction base="integer">
+							<minInclusive value="1"/>
+						</restriction>
+					</simpleType>
+				</element>
+				<element name="nStepSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>nStep value is provided as a time series, the rate-of-change is computed if the value is a positive integer</documentation>
+					</annotation>
+				</element>
+			</choice>
+			<element name="variableDelayVector" type="rtc:TimeSeriesSimpleType" minOccurs="0">
+				<annotation>
+					<documentation>optional vector with historical values (t less T0) to look into the past, it is required for nStep>1, in case of the nStepSeries the user may ensure to not refer to historical value and omit this element </documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="MultipleDelayComplexType">
+		<sequence>
+			<element name="variableDelayVector" type="rtc:TimeSeriesSimpleType" minOccurs="0">
+				<annotation>
+					<documentation>optional vector with historical values (t less T0) to look into the past, it is required for nStep>1, in case of the nStepSeries the user may ensure to not refer to historical value and omit this element </documentation>
+				</annotation>
+			</element>
+			<choice>
+				<element name="nStep" default="1">
+					<annotation>
+						<documentation>fixed value for nStep</documentation>
+					</annotation>
+					<simpleType>
+						<restriction base="integer">
+							<minInclusive value="1"/>
+						</restriction>
+					</simpleType>
+				</element>
+				<element name="nStepSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>nStep value is provided as a time series, the rate-of-change is computed if the value is a positive integer</documentation>
+					</annotation>
+				</element>
+			</choice>
+			<element name="nStepMode" type="rtc:nStepModeEnum" default="CONTINUOUS" minOccurs="0">
+				<annotation>
+					<documentation>STEP only computes the difference between T0-nStep and T0, CONTINUOUS computes the differences also at all intermediate steps</documentation>
+				</annotation>
+			</element>
+			<element name="nStepCorrection" type="boolean" default="false" minOccurs="0">
+				<annotation>
+					<documentation>if TRUE, the rate-of-change bounds are given as change per time step, if FALSE, the bounds represent the total change over all time steps, default is FALSE </documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="BoundStateComplexType">
+		<sequence>
+			<element name="components" type="rtc:BoundStateComponentsComplexType">
+				<annotation>
+					<documentation>simulation components (in the order of the simulation model) which compute the state based on the variables (both defined below)</documentation>
+				</annotation>
+			</element>
+			<choice>
+				<annotation>
+					<documentation>number of time steps to compute the state from variables, set to -1 for all time steps</documentation>
+				</annotation>
+				<element name="nStep">
+					<simpleType>
+						<restriction base="integer">
+							<minInclusive value="-1"/>
+						</restriction>
+					</simpleType>
+				</element>
+				<element name="stepIndices" type="rtc:BoundStateStepIndicesComplexType"/>
+			</choice>
+			<element name="variables" type="rtc:BoundStateVariablesComplexType">
+				<annotation>
+					<documentation>references to the optimization variable which contribute to the computation of the state</documentation>
+				</annotation>
+			</element>
+			<element name="state" type="rtc:TimeSeriesSimpleType">
+				<annotation>
+					<documentation>reference to the state to constrain</documentation>
+				</annotation>
+			</element>
+			<element name="average" type="rtc:StateAverageComplexType" minOccurs="0"/>
+			<choice minOccurs="0">
+				<element name="upperBound" type="rtc:ExternalParameterSimpleType">
+					<annotation>
+						<documentation>upper bound as a scalar value</documentation>
+					</annotation>
+				</element>
+				<element name="upperBoundSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>upper bound from a times series, a missing value will switch out the constraint for this specific time step</documentation>
+					</annotation>
+				</element>
+			</choice>
+			<choice minOccurs="0">
+				<element name="lowerBound" type="rtc:ExternalParameterSimpleType">
+					<annotation>
+						<documentation>lower bound as a scalar</documentation>
+					</annotation>
+				</element>
+				<element name="lowerBoundSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>lower bound from a times series, a missing value will switch out the constraint for this specific time step</documentation>
+					</annotation>
+				</element>
+			</choice>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+		<attribute name="name" type="string" use="optional"/>
+		<attribute name="scalingFactor" type="double" default="1.0"/>
+	</complexType>
+	<complexType name="StateAverageComplexType">
+		<sequence>
+			<choice>
+				<element name="nStep" default="1">
+					<annotation>
+						<documentation>fixed value for nStep</documentation>
+					</annotation>
+					<simpleType>
+						<restriction base="integer">
+							<minInclusive value="1"/>
+						</restriction>
+					</simpleType>
+				</element>
+				<element name="nStepSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>nStep value is provided as a time series, the rate-of-change is computed if the value is a positive integer</documentation>
+					</annotation>
+				</element>
+			</choice>
+			<element name="stateDelayVector" type="rtc:TimeSeriesSimpleType">
+				<annotation>
+					<documentation>optional vector with historical values (t less T0) to look into the past, it is required for nStep>1, in case of the nStepSeries the user may ensure to not refer to historical value and omit this element </documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="BoundStateStepIndicesComplexType">
+		<sequence>
+			<element name="stepIndex" maxOccurs="unbounded">
+				<simpleType>
+					<restriction base="int">
+						<minInclusive value="0"/>
+					</restriction>
+				</simpleType>
+			</element>
+		</sequence>
+	</complexType>
+	<complexType name="BoundStateComponentsComplexType">
+		<sequence>
+			<element name="component" type="string" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="BoundStateVariablesComplexType">
+		<sequence>
+			<element name="variable" type="rtc:TimeSeriesSimpleType" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="ChanceVariableComplexType">
+		<sequence>
+			<element name="variable" type="rtc:TimeSeriesSimpleType">
+				<annotation>
+					<documentation>reference to the time series in the time series database (refers to the file 'rtcDataConfig.xml')</documentation>
+				</annotation>
+			</element>
+			<element name="f" type="double"/>
+			<choice>
+				<element name="upperBound" type="rtc:ExternalParameterSimpleType">
+					<annotation>
+						<documentation>upper bound as a scalar value</documentation>
+					</annotation>
+				</element>
+				<element name="upperBoundSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>upper bound from a times series, a missing value will switch out the constraint for this specific time step</documentation>
+					</annotation>
+				</element>
+				<element name="lowerBound" type="rtc:ExternalParameterSimpleType">
+					<annotation>
+						<documentation>lower bound as a scalar</documentation>
+					</annotation>
+				</element>
+				<element name="lowerBoundSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>lower bound from a times series, a missing value will switch out the constraint for this specific time step</documentation>
+					</annotation>
+				</element>
+			</choice>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+		<attribute name="name" type="string" use="optional"/>
+	</complexType>
+	<complexType name="TermComplexType">
+		<sequence>
+			<element name="term" type="rtc:TermChoiceComplexType" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="TermEnsembleComplexType">
+		<sequence>
+			<element name="termEnsemble" type="rtc:TermEnsembleChoiceComplexType" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="TermChoiceComplexType">
+		<choice>
+			<element name="absolute" type="rtc:TermAbsoluteComplexType"/>
+			<element name="linear" type="rtc:TermLinearComplexType"/>
+			<element name="rateOfChange" type="rtc:TermRateOfChangeComplexType"/>
+			<element name="max" type="rtc:TermMaxComplexType"/>
+			<element name="mse" type="rtc:TermMSEComplexType"/>
+			<element name="nse" type="rtc:TermNSEComplexType"/>
+			<element name="relativeVolume" type="rtc:TermRelativeVolumeComplexType"/>
+			<element name="rmse" type="rtc:TermRMSEComplexType"/>
+			<element name="rv" type="rtc:TermRVComplexType"/>
+			<element name="sum" type="rtc:TermSumComplexType"/>
+		</choice>
+		<attribute name="active" type="rtc:ExternalBooleanSimpleType" default="true"/>
+	</complexType>
+	<complexType name="TermEnsembleChoiceComplexType">
+		<choice>
+			<element name="chanceConstraint" type="rtc:ChanceConstraintComplexType"/>
+		</choice>
+		<attribute name="active" type="rtc:ExternalBooleanSimpleType" default="true"/>
+	</complexType>
+	<complexType name="TermAbsoluteComplexType">
+		<sequence>
+			<element name="weightingFactorSeries" type="rtc:TimeSeriesSimpleType" minOccurs="0"/>
+			<element name="weightingFactor" type="rtc:ExternalParameterSimpleType" default="1.0" minOccurs="0" maxOccurs="unbounded"/>
+			<element name="weightingFactorFinal" type="rtc:ExternalParameterSimpleType" default="1.0" minOccurs="0" maxOccurs="unbounded">
+				<annotation>
+					<documentation>optional final weighting factor, only considered if a weighting factor is defined, works NOT in combination with the weighting factor time series</documentation>
+				</annotation>
+			</element>
+			<element name="order" type="double" default="2.0"/>
+			<choice>
+				<element name="setPoint" type="rtc:ExternalParameterSimpleType"/>
+				<element name="setPointSeries" type="rtc:TimeSeriesSimpleType"/>
+			</choice>
+			<element name="upperBranch" type="boolean" default="true" minOccurs="0"/>
+			<element name="lowerBranch" type="boolean" default="true" minOccurs="0"/>
+			<element name="average" type="rtc:AverageComplexType" minOccurs="0">
+				<annotation>
+					<documentation>optional definition of an aggregation period over several time steps</documentation>
+				</annotation>
+			</element>
+			<element name="input" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+	</complexType>
+	<complexType name="ChanceConstraintComplexType">
+		<sequence>
+			<element name="weightingFactorSeries" type="rtc:TimeSeriesSimpleType" minOccurs="0"/>
+			<element name="weightingFactor" type="rtc:ExternalParameterSimpleType" default="1.0" minOccurs="0" maxOccurs="unbounded"/>
+			<element name="weightingFactorFinal" type="rtc:ExternalParameterSimpleType" default="1.0" minOccurs="0" maxOccurs="unbounded">
+				<annotation>
+					<documentation>optional final weighting factor, only considered if a weighting factor is defined, works NOT in combination with the weighting factor time series</documentation>
+				</annotation>
+			</element>
+			<element name="order" type="double" default="2.0"/>
+			<element name="f" type="double" default="1.0"/>
+			<choice>
+				<element name="upperBound" type="rtc:ExternalParameterSimpleType">
+					<annotation>
+						<documentation>upper bound as a scalar value</documentation>
+					</annotation>
+				</element>
+				<element name="upperBoundSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>upper bound from a times series, a missing value will switch out the constraint for this specific time step</documentation>
+					</annotation>
+				</element>
+				<element name="lowerBound" type="rtc:ExternalParameterSimpleType">
+					<annotation>
+						<documentation>lower bound as a scalar</documentation>
+					</annotation>
+				</element>
+				<element name="lowerBoundSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>lower bound from a times series, a missing value will switch out the constraint for this specific time step</documentation>
+					</annotation>
+				</element>
+			</choice>
+			<element name="input" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+	</complexType>
+	<complexType name="AverageComplexType">
+		<sequence>
+			<choice>
+				<element name="nStep" default="1">
+					<annotation>
+						<documentation>fixed value for nStep</documentation>
+					</annotation>
+					<simpleType>
+						<restriction base="integer">
+							<minInclusive value="1"/>
+						</restriction>
+					</simpleType>
+				</element>
+				<element name="nStepSeries" type="rtc:TimeSeriesSimpleType">
+					<annotation>
+						<documentation>nStep value is provided as a time series, the average is computed if the value is a positive integer</documentation>
+					</annotation>
+				</element>
+			</choice>
+			<element name="inputDelayVector" type="string" minOccurs="0"/>
+		</sequence>
+	</complexType>
+	<complexType name="TermLinearComplexType">
+		<sequence>
+			<element name="weightingFactorSeries" type="rtc:TimeSeriesSimpleType" minOccurs="0"/>
+			<element name="weightingFactor" type="rtc:ExternalParameterSimpleType" default="1.0" minOccurs="0" maxOccurs="unbounded"/>
+			<element name="weightingFactorFinal" type="rtc:ExternalParameterSimpleType" default="1.0" minOccurs="0" maxOccurs="unbounded">
+				<annotation>
+					<documentation>optional final weighting factor, only considered if a weighting factor is defined, works NOT in combination with the weighting factor time series</documentation>
+				</annotation>
+			</element>
+			<choice>
+				<element name="setPoint" type="rtc:ExternalParameterSimpleType"/>
+				<element name="setPointSeries" type="rtc:TimeSeriesSimpleType"/>
+			</choice>
+			<element name="input" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+	</complexType>
+	<complexType name="TermRateOfChangeComplexType">
+		<sequence>
+			<element name="weightingFactorSeries" type="rtc:TimeSeriesSimpleType" minOccurs="0"/>
+			<element name="weightingFactor" type="rtc:ExternalParameterSimpleType" default="1.0" minOccurs="0" maxOccurs="unbounded"/>
+			<element name="order" type="double" default="2.0"/>
+			<choice>
+				<element name="setPoint" type="double"/>
+				<element name="setPointSeries" type="rtc:TimeSeriesSimpleType"/>
+			</choice>
+			<element name="multipleDelay" type="rtc:MultipleDelayComplexType" minOccurs="0"/>
+			<element name="upperBranch" type="boolean" default="true" minOccurs="0"/>
+			<element name="lowerBranch" type="boolean" default="true" minOccurs="0"/>
+			<element name="input" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+	</complexType>
+	<complexType name="TermMaxComplexType">
+		<sequence>
+			<element name="input" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+	</complexType>
+	<complexType name="TermMSEComplexType">
+		<sequence>
+			<element name="flag" type="rtc:TimeSeriesSimpleType" minOccurs="0"/>
+			<element name="observation" type="rtc:TimeSeriesSimpleType"/>
+			<element name="simulation" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+	</complexType>
+	<complexType name="TermRMSEComplexType">
+		<sequence>
+			<element name="flag" type="rtc:TimeSeriesSimpleType" minOccurs="0"/>
+			<element name="observation" type="rtc:TimeSeriesSimpleType"/>
+			<element name="simulation" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+	</complexType>
+	<complexType name="TermNSEComplexType">
+		<sequence>
+			<element name="flag" type="rtc:TimeSeriesSimpleType" minOccurs="0"/>
+			<element name="skipNFirstSteps" type="int" minOccurs="0"/>
+			<element name="observation" type="rtc:TimeSeriesSimpleType"/>
+			<element name="simulation" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+	</complexType>
+	<complexType name="TermRelativeVolumeComplexType">
+		<sequence>
+			<element name="flag" type="rtc:TimeSeriesSimpleType" minOccurs="0"/>
+			<element name="skipNFirstSteps" type="int" minOccurs="0"/>
+			<element name="observation" type="rtc:TimeSeriesSimpleType"/>
+			<element name="simulation" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+	</complexType>
+	<complexType name="TermRVComplexType">
+		<sequence>
+			<element name="flag" type="rtc:TimeSeriesSimpleType" minOccurs="0"/>
+			<element name="w" type="double"/>
+			<element name="skipNFirstSteps" type="int" minOccurs="0"/>
+			<element name="observation" type="rtc:TimeSeriesSimpleType"/>
+			<element name="simulation" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+	</complexType>
+	<complexType name="TermSumComplexType">
+		<sequence>
+			<element name="flag" type="rtc:TimeSeriesSimpleType" minOccurs="0"/>
+			<element name="simulation" type="rtc:TimeSeriesSimpleType"/>
+		</sequence>
+		<attribute name="id" type="string" use="required"/>
+	</complexType>
+	<complexType name="OutputComplexType">
+		<sequence>
+			<element name="JInc" type="rtc:TimeSeriesSimpleType">
+				<annotation>
+					<documentation>time series reference for incremental objective function value</documentation>
+				</annotation>
+			</element>
+			<element name="JAcc" type="rtc:TimeSeriesSimpleType">
+				<annotation>
+					<documentation>time series reference for accumulating objective function value</documentation>
+				</annotation>
+			</element>
+		</sequence>
+	</complexType>
+	<simpleType name="nStepModeEnum">
+		<restriction base="string">
+			<enumeration value="CONTINUOUS"/>
+			<enumeration value="STEP"/>
+		</restriction>
+	</simpleType>
+</schema>

@@ -32,8 +32,8 @@
 
       subroutine DF0ISF1(X0, X1, KMAX)
          implicit none
-         double precision X0(KMAX), X1(KMAX)
          integer :: KMAX
+         double precision X0(KMAX), X1(KMAX)
 
          integer :: K
 

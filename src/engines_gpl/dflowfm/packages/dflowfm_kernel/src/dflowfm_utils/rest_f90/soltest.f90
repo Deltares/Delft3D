@@ -209,11 +209,11 @@
          end if
       end do
 
-      write (6, '("rank", I2, ", number of iterations: ", I4, ", max diff: ", E7.2)') my_rank, itsol, diffmax
+      write (6, '("rank", I2, ", number of iterations: ", I4, ", max diff: ", E9.2)') my_rank, itsol, diffmax
 
       if (my_rank == 0) then
-         write (6, '(a,E8.2,a,E8.2)') ' WC-time solver   [s]: ', gettimer(1, ITOTALSOL), ' CPU-time solver   [s]: ', gettimer(0, ITOTALSOL)
-         write (6, '(a,E8.2,a,E8.2)') ' WC-time MPI comm [s]: ', gettimer(1, IMPICOMM), ' CPU-time MPI comm [s]: ', gettimer(0, IMPICOMM)
+         write (6, '(a,E9.2,a,E9.2)') ' WC-time solver   [s]: ', gettimer(1, ITOTALSOL), ' CPU-time solver   [s]: ', gettimer(0, ITOTALSOL)
+         write (6, '(a,E9.2,a,E9.2)') ' WC-time MPI comm [s]: ', gettimer(1, IMPICOMM), ' CPU-time MPI comm [s]: ', gettimer(0, IMPICOMM)
       end if
 !         call mpi_barrier(DFM_COMM_DFMWORLD,ierr)
 

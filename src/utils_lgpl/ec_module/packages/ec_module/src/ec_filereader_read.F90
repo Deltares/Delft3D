@@ -692,6 +692,7 @@ module m_ec_filereader_read
          integer                                 :: varid            !< NetCDF id of NetCDF variable
          integer                                 :: i, j, k          !< loop counters
          real(hp), dimension(:,:), allocatable   :: data_block       !< 2D slice of NetCDF variable's data
+         real(hp), dimension(:,:), allocatable   :: temp_block       !< 2D slice of NetCDF variable's data
          integer                                 :: istat            !< allocation status
          real(hp)                                :: dmiss_nc         !< local netcdf missing
 
@@ -845,6 +846,15 @@ module m_ec_filereader_read
                               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=(/col0, row0/), count=(/ncol, nrow/))
                            else
                               ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, data_block, start=(/col0, row0, timesndx/), count=(/ncol, nrow, 1/))
+                              ! handle case where dimensions are permutated
+                              if (ierror /= 0) then
+                                 allocate(temp_block(nrow,ncol), stat=istat)
+                                 if (istat==0)  ierror = nf90_get_var(fileReaderPtr%fileHandle, varid, temp_block, start=(/timesndx, row0, col0/), count=(/1, nrow, ncol/))
+                                 if (ierror==0) then
+                                    data_block = transpose(temp_block)
+                                    deallocate(temp_block)
+                                 endif
+                              endif
                            end if
                         end if
                         if (ierror /= 0) then

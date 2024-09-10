@@ -89,7 +89,8 @@ subroutine gettauswave(waveswartdelwaq)
                if (kmx > 0) then
                   ust = ust + ustb(LL) * ar
                end if
-               z00 = z00 + ar * hu(LL) * exp(-1d0 - vonkar * cz / sag) ! z0ucur, to avoid double counting
+               !z00 = z00 + ar*hu(LL)*exp(-1d0 - vonkar*cz/sag)   ! z0ucur, to avoid double counting
+               z00 = z00 + ar * z0ucur(LL) ! z0ucur, to avoid double counting
             end if
          end do
          if (wa > 0d0) then

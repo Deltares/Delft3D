@@ -56,6 +56,8 @@
       use gridoperations
       use string_module, only: strcmpi
       use m_setucxcuy_leastsquare, only: reconst2nd
+      use m_drawthis
+      use m_qnerror
 
       implicit none
       integer :: NUM, NWHAT, KEY
@@ -63,8 +65,8 @@
       integer :: mlan
       integer :: midp
       integer :: mtek
-      integer :: ndraw
       integer :: i, ierror
+   integer :: ipli
       logical :: jawel
       logical, external :: read_samples_from_geotiff
 
@@ -75,9 +77,7 @@
          end subroutine realan
       end interface
 
-      common / DRAWTHIS / ndraw(50)
-      common / BACKGROUND / SCREENFILE
-      character FILNAM * 86, SCREENFILE * 86
+      character FILNAM * 86
 
       KEY = 0
 
@@ -321,7 +321,8 @@
             else
                ja = 0
             end if
-            call REAPOL(MLAN, ja) ! Read pol/pli as crs
+         ipli=0
+         CALL reapol_nampli(MLAN, ja,1,ipli) ! Read pol/pli as crs
             call pol_to_crosssections(xpl, ypl, npl, names=nampli)
             if (NPL > 0) call delpol()
             call MESSAGE('YOU LOADED ', filnam, ' ')

@@ -31,7 +31,7 @@
 !
 
 subroutine print_help_commandline()
-   use unstruc_display, only: jaGUI
+   use m_gui
    use system_utils, only: FILESEP
    implicit none
    character(len=255) :: progarg

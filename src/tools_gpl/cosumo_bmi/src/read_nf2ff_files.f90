@@ -84,10 +84,8 @@ subroutine wait_until_finished (nf_num_dif, waitfiles, idis, filename, waitlog, 
     integer                 :: lun
     integer                 :: ios
     integer                 :: i
-    integer                 :: sleeptime
     logical                 :: ex_file    ! true: file exists
     logical                 :: fileok     ! true: file contains the end tag </NF2FF>
-    logical                 :: opend
     character(300)          :: line
     !
     ! Body
@@ -168,7 +166,6 @@ subroutine nf_2_flow(filename, idis, error)
     ! Locals
     integer                                :: i
     integer                                :: idim
-    integer                                :: ierror
     integer                                :: istat
     integer                                :: numrealonline
     real(sp)                               :: version

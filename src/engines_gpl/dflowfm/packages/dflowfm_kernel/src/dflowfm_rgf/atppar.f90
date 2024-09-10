@@ -36,6 +36,7 @@
          use M_GRIDSETTINGS
          use m_orthosettings
          use M_MISSING
+         use m_drawthis
          implicit none
          double precision :: af
          double precision :: cy
@@ -46,7 +47,6 @@
          integer :: m2
          integer :: n1
          integer :: n2
-         integer :: ndraw
          integer :: ndraw8
          double precision :: ym
 !     STUURPARAMETERS (1,MC-1)
@@ -59,9 +59,6 @@
             D(MMAX, NMAX), E(MMAX, NMAX)
 
          double precision :: X1, Y1, X2, Y2, D12, X3, Y3, X4, Y4, D34, D14, D23
-
-         common / DRAWTHIS / ndraw(50)
-
          save NDRAW8
 
          A = DXYMIS; B = DXYMIS; C = DXYMIS; D = DXYMIS; E = DXYMIS; ATP = DXYMIS

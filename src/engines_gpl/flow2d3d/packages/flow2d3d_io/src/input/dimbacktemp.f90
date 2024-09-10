@@ -74,7 +74,7 @@ subroutine dimbacktemp(lundia    ,lconst    ,lstsci    ,gdp       )
     allocate (gdp%gdheat%flbcktemp(lstsci)  , stat=istat)
     !  
     ! Check for background temperature
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'Bcktem' , gdp%gdheat%back_temp)
+    call prop_get(gdp%mdfile_ptr, '*', 'Bcktem' , gdp%gdheat%back_temp)
     ! 
     icount = lstsci
     allocate(tempbackconst(icount))
@@ -98,7 +98,7 @@ subroutine dimbacktemp(lundia    ,lconst    ,lstsci    ,gdp       )
        else
           write (keyword(5:6), '(i2)') i
        endif
-       call prop_get_string(gdp%mdfile_ptr, '*', keyword, tempbackconst(j))
+       call prop_get(gdp%mdfile_ptr, '*', keyword, tempbackconst(j))
        call small(tempbackconst(j) ,999 )
     enddo
     !

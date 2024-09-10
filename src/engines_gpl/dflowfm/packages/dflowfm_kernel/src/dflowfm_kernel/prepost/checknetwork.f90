@@ -40,6 +40,7 @@ subroutine checknetwork()
    use geometry_module, only: cross
    use m_missing, only: dmiss
    use m_sferic, only: jsferic
+   use m_readyy
 
    implicit none
 

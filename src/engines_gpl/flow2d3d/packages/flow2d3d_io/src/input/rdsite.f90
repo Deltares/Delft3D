@@ -252,7 +252,7 @@ subroutine rdsite(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! Initialize file name
     !
     filsta = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filsta', filsta)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filsta', filsta)
     !
     ! monitoring station definitions in file? <YES>
     !
@@ -260,7 +260,7 @@ subroutine rdsite(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        !
        ! locate 'Fmtsta' record for format definition of input file
        !
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Fmtsta', fmttmp)
+       call prop_get(gdp%mdfile_ptr, '*', 'Fmtsta', fmttmp)
        !
        if (fmttmp(:2) == 'un') then
           fmttmp = 'unformatted'
@@ -360,7 +360,7 @@ subroutine rdsite(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     !
     if (nostat > 0) then
        filmst = ' '
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Filmst', filmst)
+       call prop_get(gdp%mdfile_ptr, '*', 'Filmst', filmst)
        if (filmst /= ' ') then
           write(lundia,'(A,A,A)') 'Reference to moving observation point file ''',trim(filmst),'''.'
           call flw_readtable(moving_stat_file, filmst, julday, gdp)
@@ -372,7 +372,7 @@ subroutine rdsite(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! Initialize file name
     !
     filtra = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filcrs', filtra)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filcrs', filtra)
     !
     ! monitoring cross-section definitions in file? <YES>
     !
@@ -380,7 +380,7 @@ subroutine rdsite(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        !
        ! locate 'Fmtcrs' record for format definition of input file
        !
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Fmtcrs', fmttmp)
+       call prop_get(gdp%mdfile_ptr, '*', 'Fmtcrs', fmttmp)
        !
        if (fmttmp(:2) == 'un') then
           fmttmp = 'unformatted'
@@ -675,18 +675,18 @@ subroutine rdsite(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! Initialize file name
     !
     fildro = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Fildro', fildro)
+    call prop_get(gdp%mdfile_ptr, '*', 'Fildro', fildro)
     if (fildro == ' ') then
        !
        ! FLOW-IP does not yet support 'Fildro', but 'Filpar'
        !
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Filpar', fildro)
+       call prop_get(gdp%mdfile_ptr, '*', 'Filpar', fildro)
     endif
     !
     ! drogue file specified? <YES>
     !
     if (fildro/=fildef) then
-       call prop_get_string(gdp%mdfile_ptr, '*', 'Fmtdro', fmttmp)
+       call prop_get(gdp%mdfile_ptr, '*', 'Fmtdro', fmttmp)
        !
        if (fmttmp(:2) == 'un') then
           fmttmp = 'unformatted'
@@ -887,7 +887,7 @@ subroutine rdsite(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     endif
     !
     rtcact = noRTC
-    call prop_get_string(gdp%mdfile_ptr, '*', 'RTCact', chulp)
+    call prop_get(gdp%mdfile_ptr, '*', 'RTCact', chulp)
     call small(chulp, 999)
     if (chulp == "bmi") then
        rtcact = RTCviaBMI
@@ -903,7 +903,7 @@ subroutine rdsite(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! Initialize file name
     !
     filrtc = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filrtc', filrtc)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filrtc', filrtc)
     !
     ! RTC input station definitions in file? <YES>
     !

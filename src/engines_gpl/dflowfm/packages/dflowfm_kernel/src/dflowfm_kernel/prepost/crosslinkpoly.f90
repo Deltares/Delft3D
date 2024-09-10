@@ -40,6 +40,7 @@
      use m_sferic, only: jsferic, jasfer3D
      use unstruc_messages
      use geometry_module, only: dbdistance, crossinbox
+     use m_qnerror
 
      implicit none
      integer :: L, JA

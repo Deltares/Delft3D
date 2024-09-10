@@ -41,6 +41,7 @@ subroutine sam2net_curvi(numk, xk, yk, zk)
    use m_ec_basic_interpolation, only: triintfast, bilin_interp_loc
    use fm_external_forcings_data, only: transformcoef
    use m_sferic, only: jsferic, jasfer3D
+   use m_qnerror
 
    implicit none
 

@@ -99,7 +99,7 @@ type gd_nfl
     ! logicals
     !
     logical                        :: nf_src_mom   ! true: Umag and Udir in nf_sour are filled, as read from NF2FF file
-    logical                        :: skipuniqueid ! true: Do not add a uniqueID to the name of the nearfield input file
+    logical                        :: add_uniqueid ! true: Add a uniqueID to the name of the nearfield input file
     !
     ! characters
     !

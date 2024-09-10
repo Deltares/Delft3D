@@ -34,6 +34,8 @@
          use m_grid ! Use m_grid directly, because isitu does this too (otherwise shadowing of ).
          use m_gridsettings
          use unstruc_messages
+         use m_readyy
+         use m_qnerror
          implicit none
          integer :: m1, n1, m2, n2, num
 

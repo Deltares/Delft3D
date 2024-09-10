@@ -29,33 +29,36 @@
 
 !
 !
+module m_spline
+   implicit none
+contains
 
-      subroutine SPLINE(Y, N, Y2)
-         implicit none
-         integer :: i
-         integer :: k
-         integer :: n
-         double precision :: Y(N), Y2(N)
-         double precision, allocatable :: U(:)
-         double precision :: P
+   subroutine SPLINE(Y, N, Y2)
+      integer :: i
+      integer :: k
+      integer :: n
+      double precision :: Y(N), Y2(N)
+      double precision, allocatable :: U(:)
+      double precision :: P
 
-         allocate (U(N))
+      allocate (U(N))
 
-         Y2(1) = 0.d0
-         U(1) = 0.d0
+      Y2(1) = 0.d0
+      U(1) = 0.d0
 
-         do I = 2, N - 1
-            P = 0.5d0 * Y2(I - 1) + 2d0
-            Y2(I) = -0.5d0 / P
-            U(I) = (6d0 * ((Y(I + 1) - Y(I)) - (Y(I) - Y(I - 1))) / 2d0 - 0.5d0 * U(I - 1)) / P
-         end do
+      do I = 2, N - 1
+         P = 0.5d0 * Y2(I - 1) + 2d0
+         Y2(I) = -0.5d0 / P
+         U(I) = (6d0 * ((Y(I + 1) - Y(I)) - (Y(I) - Y(I - 1))) / 2d0 - 0.5d0 * U(I - 1)) / P
+      end do
 
-         Y2(N) = 0.d0
+      Y2(N) = 0.d0
 
-         do K = N - 1, 1, -1
-            Y2(K) = Y2(K) * Y2(K + 1) + U(K)
-         end do
+      do K = N - 1, 1, -1
+         Y2(K) = Y2(K) * Y2(K + 1) + U(K)
+      end do
 
-         deallocate (U)
-         return
-      end subroutine SPLINE
+      deallocate (U)
+      return
+   end subroutine SPLINE
+end module m_spline

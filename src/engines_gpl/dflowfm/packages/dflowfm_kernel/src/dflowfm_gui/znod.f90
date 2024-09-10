@@ -49,11 +49,9 @@
     use m_flowparameters, only: ispirparopt
     use m_wind, only: jawind
     use unstruc_display, only: grwhydopt
+    use m_drawthis
 
     implicit none
-
-    common / drawthis / ndraw(50)
-    integer :: ndraw
 
     integer :: kk, k, nodval, L
     double precision :: seq(mxgr), wse(mxgr), hsk, dum, czc, taucurc, ustw2, U10, FetchL, FetchD, rkk, shs

@@ -106,7 +106,6 @@
 !
 ! Functions
 !
-      Double Precision frswfu
       Double Precision ActualEvaporation
       Double Precision Unsa
 !
@@ -437,7 +436,7 @@
 !
 ! Local variables
 !
-      Double Precision    e1,e2,e3,e4,e5                ! Points of graph for calculating redunction
+      Double Precision    e1,e2,e3,e4                   ! Points of graph for calculating redunction
       Double Precision    beta                          ! Reductionfactor
       Double Precision    de
 !
@@ -725,7 +724,6 @@
       integer       nuwa
       integer       nuer
       logical       kyer
-      logical       kydf
       integer       nmli
       integer       nmlicm
       integer       nm
@@ -738,14 +736,11 @@
       integer       r_ipagte
       Double Precision          r_frpric
       integer       r_icselo
-      integer       nuse
       Double Precision          RRin
 !
 ! Functions
 !
       logical isbl
-      logical ctrl_val
-      logical ctrl_real
       logical ctrl_int
       integer GetIIin
       Double Precision    GetRRin
@@ -1131,7 +1126,6 @@
       integer :: nuer = 0
       character(len=132) chline
       logical kyer
-      logical kydf
       integer ns
       integer nt
       Double Precision    r_dprz
@@ -1148,10 +1142,7 @@
 ! Functions
 !
       logical ctrl_real
-      logical ctrl_int
       logical isbl
-      Double Precision    GetRRin
-      integer GetIIin
 !
 ! Common blocks
 !
@@ -1529,7 +1520,6 @@
       integer nuwa
       integer nuer
       logical kyer
-      logical kydf
       integer nmli
       integer nmlicm
       character(len=132) chline
@@ -1555,10 +1545,7 @@
 !
 ! Functions
 !
-      logical ctrl_val
-      logical ctrl_int
       logical ctrl_real
-      logical isbl
       Double Precision    GetRRin
       integer GetIIin
       integer IndexInReallist

@@ -79,7 +79,6 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     integer                  :: j
     integer                  :: l
     integer                  :: mxnulyr
-    integer                  :: nm
     integer                  :: nval
     character(11)            :: fmttmp       !< Format file ('formatted  ') 
     character(20)            :: parname
@@ -88,7 +87,6 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     character(80)            :: bndname
     character(256)           :: errmsg
     character(256)           :: fildiff
-    logical                  :: log_temp
     logical                  :: ex
     logical                  :: found
     type(tree_data), pointer :: morbound_ptr
@@ -210,7 +208,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
     !
     ! underlayer bookkeeping mechanism
     !
-    call prop_get_integer(mor_ptr, 'Underlayer', 'IUnderLyr', iunderlyr)
+    call prop_get(mor_ptr, 'Underlayer', 'IUnderLyr', iunderlyr)
     if (iunderlyr < 1 .or. iunderlyr > 2) then
        errmsg = 'IUnderLyr should be 1 or 2 in ' // trim(filmor)
        call write_error(errmsg, unit=lundia)
@@ -227,7 +225,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        !
        ! flag for exchange layer
        !
-       call prop_get_logical(mor_ptr, 'Underlayer', 'ExchLyr', exchlyr)
+       call prop_get(mor_ptr, 'Underlayer', 'ExchLyr', exchlyr)
        txtput1 = 'Exchange layer'
        if (exchlyr) then
           txtput2 = '                 YES'
@@ -236,7 +234,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        endif
        write (lundia, '(3a)') txtput1, ':', txtput2
        !
-       call prop_get_integer(mor_ptr, 'Underlayer', 'IPorosity', iporosity)
+       call prop_get(mor_ptr, 'Underlayer', 'IPorosity', iporosity)
        txtput1 = 'Porosity'
        select case (iporosity)
        case (0)
@@ -250,14 +248,14 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        !
        nlalyr = 0
        neulyr = 0
-       call prop_get_integer(mor_ptr, 'Underlayer', 'NLaLyr', nlalyr)
+       call prop_get(mor_ptr, 'Underlayer', 'NLaLyr', nlalyr)
        if (nlalyr < 0) then
           errmsg = 'Number of Lagrangian under layers should be 0 or more in ' // trim(filmor)
           call write_error(errmsg, unit=lundia)
           error = .true.
           return
        endif
-       call prop_get_integer(mor_ptr, 'Underlayer', 'NEuLyr', neulyr)
+       call prop_get(mor_ptr, 'Underlayer', 'NEuLyr', neulyr)
        if (neulyr < 0) then
           errmsg = 'Number of Eulerian under layers should be 0 or more in ' // trim(filmor)
           call write_error(errmsg, unit=lundia)
@@ -266,7 +264,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        endif
        !
        mxnulyr = nlalyr+neulyr
-       call prop_get_integer(mor_ptr, 'Underlayer', 'MxNULyr', mxnulyr)
+       call prop_get(mor_ptr, 'Underlayer', 'MxNULyr', mxnulyr)
        if (mxnulyr < 0) then
           errmsg = 'Maximum number of under layers should be 0 or more in ' // trim(filmor)
           call write_error(errmsg, unit=lundia)
@@ -276,8 +274,8 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        if (mxnulyr /= nlalyr+neulyr) then
           nlalyr = -999
           neulyr = -999
-          call prop_get_integer(mor_ptr, 'Underlayer', 'NLaLyr', nlalyr)
-          call prop_get_integer(mor_ptr, 'Underlayer', 'NEuLyr', neulyr)
+          call prop_get(mor_ptr, 'Underlayer', 'NLaLyr', nlalyr)
+          call prop_get(mor_ptr, 'Underlayer', 'NEuLyr', neulyr)
           if (nlalyr<0 .and. neulyr<0) then
              !
              ! neither NLaLyr nor NEuLyr specified
@@ -348,7 +346,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
           endif
        endif
        !
-       call prop_get_integer(mor_ptr, 'Underlayer', 'UpdBaseLyr', updbaselyr)
+       call prop_get(mor_ptr, 'Underlayer', 'UpdBaseLyr', updbaselyr)
        if (updbaselyr < 1 .or. updbaselyr > 4) then
           errmsg = 'UpdBaseLyr should be 1-4 in ' // trim(filmor)
           call write_error(errmsg, unit=lundia)
@@ -374,7 +372,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        !
        ! Mixing between layers
        !
-       call prop_get_integer(mor_ptr, 'Underlayer', 'IDiffusion', idiffusion)       
+       call prop_get(mor_ptr, 'Underlayer', 'IDiffusion', idiffusion)       
        txtput1 = 'Mixing between layers'
        if (idiffusion>0) then
           txtput2 = '                 YES'
@@ -383,7 +381,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        endif
        write (lundia, '(3a)') txtput1, ':', txtput2
        if (idiffusion>0) then
-           call prop_get_integer(mor_ptr, 'Underlayer', 'NDiff', ndiff)
+           call prop_get(mor_ptr, 'Underlayer', 'NDiff', ndiff)
            txtput1 = '# diffusion coefficients in z-direction'
            write (lundia, '(2a,i20)') txtput1, ':', ndiff
            if (ndiff < 0) then
@@ -465,7 +463,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        endif
        !
        txtput1 = 'Thickness transport layer'
-       call prop_get_integer(mor_ptr, 'Underlayer', 'TTLForm', ttlform)
+       call prop_get(mor_ptr, 'Underlayer', 'TTLForm', ttlform)
        select case (ttlform)
        case (1)
           !
@@ -473,7 +471,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
           ! uniform or spatially varying thickness
           !
           ttlfil = ''
-          call prop_get_string(mor_ptr, 'Underlayer', 'ThTrLyr', ttlfil)
+          call prop_get(mor_ptr, 'Underlayer', 'ThTrLyr', ttlfil)
           !
           ! Intel 7.0 crashes on an inquire statement when file = ' '
           !
@@ -549,7 +547,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
           endif
           !
           txtput1 = 'Thickness exchange layer'
-          call prop_get_integer(mor_ptr, 'Underlayer', 'TELForm', telform)
+          call prop_get(mor_ptr, 'Underlayer', 'TELForm', telform)
           select case (telform)
           case (1)
              !
@@ -557,7 +555,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
              ! uniform or spatially varying thickness
              !
              telfil = ''
-             call prop_get_string(mor_ptr, 'Underlayer', 'ThExLyr', telfil)
+             call prop_get(mor_ptr, 'Underlayer', 'ThExLyr', telfil)
              !
              ! Intel 7.0 crashes on an inquire statement when file = ' '
              !
@@ -613,7 +611,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
        bndname = tree_get_name( morbound_ptr )
        if ( trim(bndname) /= 'boundary') cycle
        bndname = ''
-       call prop_get_string(morbound_ptr, '*', 'Name', bndname)
+       call prop_get(morbound_ptr, '*', 'Name', bndname)
        found = .false.
        do j = 1, nto
           !
@@ -631,7 +629,7 @@ subroutine rdmorlyr(lundia    ,error     ,filmor    , &
           return
        endif
        !
-       call prop_get_integer(morbound_ptr, '*', 'ICmpCond', cmpbnd(j)%icond)
+       call prop_get(morbound_ptr, '*', 'ICmpCond', cmpbnd(j)%icond)
        if (cmpbnd(j)%icond < 0 .or. cmpbnd(j)%icond > 3) then
           errmsg = 'Invalid composition boundary condition at "'//trim(bndname)//'" in '//trim(filmor)
           call write_error(errmsg, unit=lundia)
@@ -845,7 +843,6 @@ subroutine rdinidiff(lundia    ,fildiff   ,ndiff     ,kdiff    , &
     integer                               :: i
     integer                               :: ilyr
     integer                               :: istat
-    integer                               :: nm
     logical                               :: ex
     real(fp)                              :: rmissval
     real(fp)                              :: temp
@@ -854,7 +851,6 @@ subroutine rdinidiff(lundia    ,fildiff   ,ndiff     ,kdiff    , &
     character(11)                         :: fmttmp   ! Format file ('formatted  ') 
     character(256)                        :: filename
     character(300)                        :: message
-    character(40)                         :: txtput1
     type(tree_data), pointer              :: mor_ptr
     type(tree_data), pointer              :: layer_ptr
 !
@@ -888,7 +884,7 @@ subroutine rdinidiff(lundia    ,fildiff   ,ndiff     ,kdiff    , &
     !
     ! Check version number of mor input file
     !
-    call prop_get_string(mor_ptr,'DiffusionFileInformation','FileVersion',versionstring)
+    call prop_get(mor_ptr,'DiffusionFileInformation','FileVersion',versionstring)
     if (trim(versionstring) == '01.00') then
         !
         ilyr = 0
@@ -911,7 +907,7 @@ subroutine rdinidiff(lundia    ,fildiff   ,ndiff     ,kdiff    , &
                 return
             endif
             filename = ' '
-            call prop_get_string(layer_ptr, '*', 'Kdiff', filename)
+            call prop_get(layer_ptr, '*', 'Kdiff', filename)
             !
             ! Intel 7.0 crashes on an inquire statement when file = ' '
             !
@@ -1038,7 +1034,6 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
     real(fp)                              :: poros
     real(fp)                              :: rmissval
     real(fp)                              :: sedbed
-    real(fp)                              :: sedmass
     real(fp)                              :: svf
     real(fp)                              :: thick
     real(fp)                              :: totfrac
@@ -1323,7 +1318,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
           ! Check version number of mor input file
           !
           versionstring = 'n.a.'
-          call prop_get_string(mor_ptr, 'BedCompositionFileInformation', 'FileVersion', versionstring)
+          call prop_get(mor_ptr, 'BedCompositionFileInformation', 'FileVersion', versionstring)
           if (trim(versionstring) == '01.00' .or. trim(versionstring) == '02.00') then
              !
              ! reset mass of sediment per fraction to zero
@@ -1363,7 +1358,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                 ! Layer group found, scan it for the layer composition
                 !
                 layertype = ' '
-                call prop_get_string(layer_ptr, '*', 'Type', layertype)
+                call prop_get(layer_ptr, '*', 'Type', layertype)
                 call small(layertype, len(layertype))
                 if (layertype == ' ') then
                    !
@@ -1381,7 +1376,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                    !
                    parname  = 'Thick'
                    filename = ' '
-                   call prop_get_string(layer_ptr, '*', parname, filename)
+                   call prop_get(layer_ptr, '*', parname, filename)
                    !
                    ! Intel 7.0 crashes on an inquire statement when file = ' '
                    !
@@ -1440,7 +1435,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                          !
                          parname  = 'SedBed' // trim(lstr)
                          filename = ' '
-                         call prop_get_string(layer_ptr, '*', parname, filename)
+                         call prop_get(layer_ptr, '*', parname, filename)
                          if (filename /= ' ') then
                             write (message,'(7a,i2,2a)')  &
                                 & 'Use Fraction' ,trim(lstr), ' instead of SedBed', &
@@ -1456,7 +1451,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                          parname = namsed(ised)
                       endif
                       filename = ' '
-                      call prop_get_string(layer_ptr, '*', parname, filename)
+                      call prop_get(layer_ptr, '*', parname, filename)
                       !
                       ! Intel 7.0 crashes on an inquire statement when file = ' '
                       !
@@ -1725,7 +1720,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                          !
                          parname  = 'Fraction' // trim(lstr)
                          filename = ' '
-                         call prop_get_string(layer_ptr, '*', parname, filename)
+                         call prop_get(layer_ptr, '*', parname, filename)
                          if (filename /= ' ') then
                             write (message,'(7a,i2,2a)')  &
                                 & 'Use SedBed', trim(lstr), ' instead of Fraction', &
@@ -1741,7 +1736,7 @@ subroutine rdinimorlyr(lsedtot   ,lsed      ,lundia    ,error     , &
                          parname = namsed(ised)
                       endif
                       filename = ' '
-                      call prop_get_string(layer_ptr, '*', parname, filename)
+                      call prop_get(layer_ptr, '*', parname, filename)
                       !
                       ! Intel 7.0 crashes on an inquire statement when file = ' '
                       !

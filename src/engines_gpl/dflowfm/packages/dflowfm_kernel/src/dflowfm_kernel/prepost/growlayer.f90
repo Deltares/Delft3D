@@ -41,6 +41,8 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, j, edgevel, dt, xc, yc, ifront, i
    use m_sferic
    use m_spline2curvi, only: jaCheckFrontCollision, dtolLR
    use geometry_module, only: dbdistance, dcosphi
+   use m_drawthis
+   use m_qnerror
 
    implicit none
 
@@ -82,10 +84,6 @@ subroutine growlayer(mc, nc, mmax, nmax, idir, j, edgevel, dt, xc, yc, ifront, i
    logical :: Lalllines = .false. ! all gridlines (.true.) or not (.false.)
 
    integer, save :: numgrow = 0
-
-   integer :: ndraw
-
-   common / DRAWTHIS / ndraw(50)
 
 !  store settings
    dtolLR_bak = dtolLR

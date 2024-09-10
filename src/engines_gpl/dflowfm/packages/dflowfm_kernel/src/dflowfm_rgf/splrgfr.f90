@@ -43,6 +43,8 @@
        use M_GRIDSETTINGS
        use m_netw, only: zkUNI
        use m_alloc
+       use m_readyy
+       use m_qnerror
        implicit none
 
        double precision, allocatable, dimension(:, :) :: xspc, yspc, xh, yh, tij

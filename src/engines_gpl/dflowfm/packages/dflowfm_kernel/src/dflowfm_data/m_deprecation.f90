@@ -1,26 +1,30 @@
-!> Module that contains general functions to check deprecated keywords
+!> Module that contains general functions to check for deprecated keywords
 module m_deprecation
-
    implicit none
+   private
 
-   integer, parameter :: DEPRECATED = 1 !< integer parameter to be used in is_keyword_deprecated_or_obsolete
-   integer, parameter :: OBSOLETE = 2 !< integer parameter to be used in is_keyword_deprecated_or_obsolete
+   integer, parameter :: UNDEFINED = 0 !< integer parameter indicating that deprecation status is undefined
+   integer, parameter, public :: DEPRECATED = 1 !< integer parameter indicating that the keyword is deprecated
+   integer, parameter, public :: OBSOLETE = 2 !< integer parameter indicating that the keyword is obsolete
 
-   type deprecated_keyword
+   type, public :: deprecated_keyword
       character(len=255) :: chapter !< chapter name
       character(len=255) :: key !< keyword name
       integer :: deprecation_level !< whether the keyword is OBSOLETE (error) or DEPRECATED (warning)
+      character(len=255) :: additional_information !< additional information about the keyword
    end type
 
-   type deprecated_keyword_set
+   type, public :: deprecated_keyword_set
       type(deprecated_keyword), dimension(:), allocatable :: deprecated_keyword_list !< array of deprecated keyword types
       integer :: count = 0 !< number of keywords in the keyword set
       character(len=256) :: additional_information !< string with extra information for this keyword set
    end type
 
+   public :: is_deprecated, is_obsolete, add_deprecated_keyword, check_file_tree_for_deprecated_keywords
+
 contains
 
-!> either allocate the list or double the size if it is already allocated.
+   !> Either allocate the list or double the size if it is already allocated.
    subroutine reallocate_deprecated_keyword_list(list)
       type(deprecated_keyword), dimension(:), allocatable, intent(inout) :: list !< list of deprecated keywords that needs reallocation
 
@@ -36,52 +40,84 @@ contains
 
    end subroutine reallocate_deprecated_keyword_list
 
-!> Check if a keyword is deprecated or obsolete.
-   function is_keyword_deprecated_or_obsolete(chapter, key, set, deprecation_level) result(res)
+   !> Retrieve a deprecated keyword from the set, or an undefined deprecated keyword if not found.
+   function get_keyword(chapter, key, set, deprecation_level) result(res)
       use string_module, only: strcmpi
       character(len=*), intent(in) :: chapter !< chapter name
       character(len=*), intent(in) :: key !< keyword name
       type(deprecated_keyword_set), intent(in) :: set !< keyword set in which to check whether it is deprecated or not
-      integer, intent(in) :: deprecation_level !< which level to check (DEPRECATED or OBSOLETE)
-      logical :: res !< whether the keyword is deprecated or obsolete
+      integer, optional, intent(in) :: deprecation_level !< which level to check (DEPRECATED or OBSOLETE)
+      type(deprecated_keyword) :: res !< deprecated keyword if found, otherwise a deprecated keyword with deprecation_level UNDEFINED
 
       integer :: i
 
-      res = .false.
+      res = deprecated_keyword(chapter='', key='', deprecation_level=UNDEFINED, additional_information='')
       associate (list => set%deprecated_keyword_list)
          do i = 1, set%count
-            if (strcmpi(list(i)%chapter, chapter) .and. strcmpi(list(i)%key, key) .and. list(i)%deprecation_level == deprecation_level) then
-               res = .true.
+            if (strcmpi(list(i)%chapter, chapter) .and. strcmpi(list(i)%key, key)) then
+               if (present(deprecation_level)) then
+                  if (list(i)%deprecation_level == deprecation_level) then
+                     res = list(i)
+                  end if
+               else
+                  res = list(i)
+               end if
                exit
             end if
          end do
       end associate
-   end function is_keyword_deprecated_or_obsolete
+   end function get_keyword
 
-!> Check if a keyword is deprecated (but still supported).
-   logical function is_deprecated(chapter, key, set)
+   !> Check if a keyword is deprecated (but still supported).
+   function is_deprecated(chapter, key, set) result(res)
       character(len=*), intent(in) :: chapter !< chapter name
       character(len=*), intent(in) :: key !< keyword name
       type(deprecated_keyword_set), intent(in) :: set !< keyword set in which to check whether it is deprecated or not
+      logical :: res !< whether the keyword is deprecated
 
-      is_deprecated = is_keyword_deprecated_or_obsolete(chapter, key, set, DEPRECATED)
+      type(deprecated_keyword) :: keyword
+
+      keyword = get_keyword(chapter, key, set, DEPRECATED)
+      res = keyword%deprecation_level /= UNDEFINED
    end function is_deprecated
 
-!> Check if a keyword is obsolete and cannot be used anymore.
-   logical function is_obsolete(chapter, key, set)
+   !> Check if a keyword is obsolete and cannot be used anymore.
+   function is_obsolete(chapter, key, set) result(res)
       character(len=*), intent(in) :: chapter !< chapter name
       character(len=*), intent(in) :: key !< keyword name
       type(deprecated_keyword_set), intent(in) :: set !< keyword set in which to check whether it is deprecated or not
+      logical :: res !< whether the keyword is obsolete
 
-      is_obsolete = is_keyword_deprecated_or_obsolete(chapter, key, set, OBSOLETE)
+      type(deprecated_keyword) :: keyword
+
+      keyword = get_keyword(chapter, key, set, OBSOLETE)
+      res = keyword%deprecation_level /= UNDEFINED
    end function is_obsolete
 
-!> Add a deprecated or obsolete keyword to a deprecated keyword set.
-   subroutine add_deprecated_keyword(deprecated_keywords, chapter, key, deprecation_level)
+   !> Retrieve optional additional information for a keyword.
+   subroutine print_additional_keyword_information(chapter, key, set, prefix)
+      use unstruc_messages, only: LEVEL_INFO, mess
+      character(len=*), intent(in) :: chapter !< chapter name
+      character(len=*), intent(in) :: key !< keyword name
+      character(len=*), intent(in) :: prefix !< Message string prefix
+      type(deprecated_keyword_set), intent(in) :: set !< keyword set in which to check whether it is deprecated or not
+      character(len=255) :: res !< additional information for the keyword
+
+      type(deprecated_keyword) :: keyword
+
+      keyword = get_keyword(chapter, key, set, OBSOLETE)
+      if (len_trim(keyword%additional_information) /= 0) then
+         call mess(LEVEL_INFO, prefix//': keyword ['//trim(chapter)//'] '//trim(key)//': '//keyword%additional_information)
+      end if
+   end subroutine print_additional_keyword_information
+
+   !> Add a deprecated or obsolete keyword to a deprecated keyword set.
+   subroutine add_deprecated_keyword(deprecated_keywords, chapter, key, deprecation_level, additional_information)
       type(deprecated_keyword_set), intent(inout) :: deprecated_keywords !< keyword set to add the new keyword to
       character(len=*), intent(in) :: chapter !< chapter name
       character(len=*), intent(in) :: key !< keyword name
       integer, intent(in) :: deprecation_level !< whether the keyword is deprecated or obsolete
+      character(len=*), optional, intent(in) :: additional_information !< additional information about the keyword
 
       associate (count => deprecated_keywords%count)
          if (count >= size(deprecated_keywords%deprecated_keyword_list)) then
@@ -92,12 +128,17 @@ contains
             keyword%chapter = chapter
             keyword%key = key
             keyword%deprecation_level = deprecation_level
+            if (present(additional_information)) then
+               keyword%additional_information = additional_information
+            else
+               keyword%additional_information = ''
+            end if
          end associate
       end associate
    end subroutine add_deprecated_keyword
 
-!> Check a file tree for all keywords that were not used, deprecated or obsolete.
-!!  Throw an error for obsolete keywords, and otherwise print a warning.
+   !> Check a file tree for all keywords that were not used, deprecated or obsolete.
+   !! Throw an error for obsolete keywords, and otherwise print a warning.
    subroutine check_file_tree_for_deprecated_keywords(tree, keyword_set, status, prefix, excluded_chapters)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use tree_data_types, only: tree_data
@@ -109,7 +150,7 @@ contains
       type(TREE_DATA), pointer, intent(in) :: tree !< tree of content of the input file to check for deprecated keywords
       type(deprecated_keyword_set), intent(in) :: keyword_set !< keyword set that corresponds to the file type of the tree that is being checked
       integer, intent(out) :: status !< Result status (DFM_NOERR if no invalid (obsolete) entries were present)
-      character(len=*), optional, intent(in) :: prefix !< Optional message string prefix, default empty
+      character(len=*), intent(in) :: prefix !< Message string prefix
       character(len=*), dimension(:), optional, intent(in) :: excluded_chapters !< Tree chapters to exclude when checking for deprecated or unused keywords
 
       type(TREE_DATA), pointer :: chapter !< tree data pointer for chapter level
@@ -159,6 +200,7 @@ contains
                      if (is_obsolete(trim(chapter_name), trim(node_name), keyword_set)) then
                         num_obsolete = num_obsolete + 1
                         call mess(LEVEL_ERROR, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//' is obsolete.')
+                        call print_additional_keyword_information(trim(chapter_name), trim(node_name), keyword_set, prefix)
                      else
                         ! keyword unknown, or known keyword that was not accessed because of the reading was switched off by the value of another keyword
                         call mess(LEVEL_WARN, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//'='//trim(node_string)//' was in file, but not used. Check possible typo.')
@@ -168,6 +210,7 @@ contains
                      if (is_deprecated(trim(chapter_name), trim(node_name), keyword_set)) then
                         num_deprecated = num_deprecated + 1
                         call mess(LEVEL_WARN, prefix//': keyword ['//trim(chapter_name)//'] '//trim(node_name)//' is deprecated and may be removed in a future release.')
+                        call print_additional_keyword_information(trim(chapter_name), trim(node_name), keyword_set, prefix)
                      end if
                   end if
                end if
