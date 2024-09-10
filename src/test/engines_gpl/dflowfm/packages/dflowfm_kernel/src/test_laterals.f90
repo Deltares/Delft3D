@@ -81,9 +81,9 @@ contains
       nnlat = (/1, 2, 3, 5, 8/)
       apply_transport(:) = 1
       vol1(:) = 0.1_dp
-      hs(:) = 2_dp
+      hs(:) = 2._dp
       kmxn(:) = 1
-      lateral_volume_per_layer(1:num_layers, 1:numlatsg) = 0
+      lateral_volume_per_layer(1:num_layers, 1:numlatsg) = 0._dp
       ! top layer, per constituent, lateral 1,
       incoming_lat_concentration(1, :, 1) = (/31.0_dp, 20.0_dp, 0.23_dp/)
       ! top layer, all constituents, lateral 2.
@@ -115,13 +115,14 @@ contains
       call add_lateral_load_and_sink(transport_load, transport_sink, vol1, tolerance)
 
       do i_const = 1, numconst
-         do i_cell = 1, ndxi
+         do i_cell = n1latsg(i_lateral), n2latsg(i_lateral)
+            i_node = nnlat(i_cell)
             dvoli = 1 / (vol1(i_cell))
-            !refval = dvoli * incoming_lat_concentration(1, i_const, i_lateral) * qqlat(1, i_lateral, i_cell)
-            !call assert_comparable(transport_load(i_const, i_cell), refval, tolerance, "lateral_load value is not correct")
+            refval = dvoli * incoming_lat_concentration(1, i_const, i_lateral) * qqlat(1, i_cell)
+            call assert_comparable(transport_load(i_const, i_node), refval, tolerance, "lateral_load value is not correct")
          end do
       end do
-      call assert_comparable(sum(transport_sink), 0._dp, tolerance, "todo")
+      call assert_comparable(sum(transport_sink), 0._dp, tolerance, "lateral_sink value expected to be zero ")
 
       ! check transport out of the domain
       i_lateral = 2 ! only the second lateral is a sink
@@ -135,10 +136,11 @@ contains
       ! check that transport_load was not changed
       call assert_comparable(sum(transport_load), sum(ref_load), tolerance, "transport_load should not change")
       do i_const = 1, numconst
-         do i_cell = 1, ndxi
+         do i_cell = n1latsg(i_lateral), n2latsg(i_lateral)
+            i_node = nnlat(i_cell)
             dvoli = 1 / (vol1(i_cell))
-            !refval = dvoli * qqlat(1, i_lateral, i_cell)
-            !call assert_comparable(transport_sink(i_const, i_cell), refval, tolerance, "lateral_sink value is not correct")
+            refval = dvoli * qqlat(1, i_cell)
+            call assert_comparable(transport_sink(i_const, i_node), refval, tolerance, "lateral_sink value is not correct")
          end do
       end do
 
@@ -193,8 +195,6 @@ contains
       call aerr('hs', iostat, ndxi, 'test_lateral, setup_testcase')
       allocate (kmxn(ndkx), stat=iostat)
       call aerr('kmxn', iostat, ndx, 'test_lateral, setup_testcase')
-      allocate (lateral_volume_per_layer(num_layers, numlatsg), stat=iostat)
-      call aerr('test_lateral, setup_testcase', iostat, num_layers * numlatsg, 'test_lateral, setup_testcase')
       allocate (kbot(ndx), stat=iostat)
       call aerr('kbot', iostat, ndx, 'test_lateral, setup_testcase')
       allocate (ktop(ndx), stat=iostat)
