@@ -30,7 +30,8 @@ object Linux : BuildType({
     params {
         select("configfile", configs.joinToString(","),
             allowMultiple = true,
-            options = configs
+            options = configs,
+            display = ParameterDisplay.PROMPT
         )
     }
 
