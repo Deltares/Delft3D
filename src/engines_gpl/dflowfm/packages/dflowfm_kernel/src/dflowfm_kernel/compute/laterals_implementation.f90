@@ -169,7 +169,7 @@ contains
                   ! transport_load is added to RHS of transport equation, sink is added to diagonal:
                   ! only multiply transport_load with concentration
                   qlat = qqlat(i_layer, k1)
-                  if (qlat >= 0) then
+                  if (comparereal(qlat, 0._dp, eps10) > 0) then
                      transport_load(i_const, i_cell) = transport_load(i_const, i_cell) + delta_cell_volume * qlat * incoming_lat_concentration(1, i_const, i_lateral)
                   else
                      transport_sink(i_const, i_cell) = transport_sink(i_const, i_cell) + delta_cell_volume * qlat
@@ -218,8 +218,8 @@ contains
       outgoing_lat_concentration = 0._dp
    end subroutine reset_outgoing_lat_concentration
 
-   !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-   !! In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
+   !> At the start of the update, the outgoing_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
+   !! In  average_concentrations_for_laterals in outgoing_lat_concentration the concentrations*timestep are aggregated.
    !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
    module subroutine finish_outgoing_lat_concentration(time_interval)
       real(kind=dp), intent(in) :: time_interval
@@ -231,8 +231,6 @@ contains
    module subroutine distribute_lateral_discharge(provided_lateral_discharge, lateral_discharge_per_layer_lateral_cell)
 
       use m_flow, only: vol1, kmx, kmxn
-      use precision_basics, only: comparereal
-      use m_GlobalParameters, only: flow1d_eps10
 
       real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per layer
       real(kind=dp), dimension(:, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge per layer
@@ -249,7 +247,7 @@ contains
                i_active_bottom_layer = kmx - kmxn(i_node) + 1
                i_layer = max(i_active_bottom_layer, 1)
                do i_flownode = i_node_bottom_layer, i_node_top_layer
-                  if (comparereal(lateral_volume_per_layer(i_layer, i_lateral), 0.0_dp, flow1d_eps10) /= 0) then ! Avoid division by 0
+                  if (comparereal(lateral_volume_per_layer(i_layer, i_lateral), 0.0_dp, eps10) /= 0) then ! Avoid division by 0
                      lateral_discharge_per_layer_lateral_cell(i_layer, i_nnlat) = &
                         provided_lateral_discharge(i_layer, i_lateral) * (vol1(i_flownode) / lateral_volume_per_layer(i_layer, i_lateral))
                      i_layer = i_layer + 1

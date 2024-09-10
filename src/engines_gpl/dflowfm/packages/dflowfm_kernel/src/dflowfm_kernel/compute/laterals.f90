@@ -27,7 +27,8 @@
 !
 !-------------------------------------------------------------------------------
 module m_laterals
-   use precision_basics, only: dp
+   use precision_basics, only: dp, comparereal
+   use m_flowparameters, only: eps10
    implicit none
    private
 
