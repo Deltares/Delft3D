@@ -302,9 +302,9 @@ contains
       use m_flow, only: vol1, kbot, ktop, kmxn, kmx
       use m_alloc, only: realloc
 
-   real(kind=dp), allocatable, dimension(:,:) :: lateral_discharge_per_layer_lateral_cell !< Discharge per layer per lateral per cell,
-                                                                                        !! dimension=(number_of_layer,numlatsg,number_of_node)
-                                                                                        !!          =(kmx,numlatsg,ndkx)
+      real(kind=dp), allocatable, dimension(:,:) :: lateral_discharge_per_layer_lateral_cell !< Discharge per layer per lateral per cell,
+                                                                                             !! dimension=(number_of_layer,numlatsg,number_of_node)
+                                                                                             !!          =(kmx,numlatsg,ndkx)
       
       integer :: ierr !< error flag
       integer :: ndx, ndkx
@@ -368,11 +368,11 @@ contains
 
       ! Initialize lateral volume per layer and discharge per layer.
       call realloc(lateral_volume_per_layer, [kmx, numlatsg], stat=ierr, keepExisting=.false., fill=0d0)
-      call aerr('lateral_volume_per_layer', ierr, kmx*numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
+      call aerr('lateral_volume_per_layer', ierr, kmx * numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
       call realloc(provided_lateral_discharge, [kmx, numlatsg], stat=ierr, keepExisting=.false., fill=0d0)
-      call aerr('provided_lateral_discharge_per_layer', ierr, kmx*numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
+      call aerr('provided_lateral_discharge_per_layer', ierr, kmx * numlatsg, 'test_distribute_lateral_discharge_per_layer_per_cell')
       call realloc(lateral_discharge_per_layer_lateral_cell, [kmx, nlatnd], stat=ierr, keepExisting=.false., fill=0d0)
-      call aerr('lateral_discharge_per_layer_per_cell', ierr, kmx*numlatsg*ndkx, 'test_distribute_lateral_discharge_per_layer_per_cell')
+      call aerr('lateral_discharge_per_layer_per_cell', ierr, kmx * numlatsg*ndkx, 'test_distribute_lateral_discharge_per_layer_per_cell')
 
       lateral_volume_per_layer(1:kmx,1) = [100, 300, 250] ! Volume for the 1st lateral per layer
       lateral_volume_per_layer(1:kmx,2) = [200, 250, 330] ! Volume for the 2nd lateral per layer
