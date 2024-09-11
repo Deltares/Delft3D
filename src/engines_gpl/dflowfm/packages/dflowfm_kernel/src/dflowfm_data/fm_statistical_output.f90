@@ -2950,7 +2950,7 @@ contains
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_CLS_UCDIR                                                     )
       !call add_stat_output_items(output_set, output_config_set%configs(IDX_CLS_UCDIR_EULER                                               )
       !
-      call process_output_quantity_configs(output_config_set)
+      call process_output_quantity_configs(output_set)
       call realloc(output_set, .true.) ! set size to count
       call initialize_statistical_output(output_set%statout)
 
@@ -2958,7 +2958,7 @@ contains
 
    !> Update output quantity configs with information about the simulation model (e.g., do not write layers when simulation is 2D)
    subroutine process_output_quantity_configs(output_quantity_config_set)
-      type(t_output_quantity_config_set), intent(inout) :: output_quantity_config_set !< The set of configs for all possible output variables
+      type(t_output_quantity_config_set), intent(inout) :: output_quantity_config_set
       integer :: i
 
       do i = 1, output_quantity_config_set%count
