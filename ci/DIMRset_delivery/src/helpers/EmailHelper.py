@@ -10,20 +10,18 @@ from settings.teamcity_settings import KERNELS, TESTCASE_GROUPS
 class EmailHelper(object):
     """ Class responsible for preparing the weekly DIMR release email. """
 
-    def __init__(self, dimr_version: str, svn_revision: str, kernel_versions: Dict[str, str],
+    def __init__(self, dimr_version: str, kernel_versions: Dict[str, str],
                  current_parser: TestbankResultParser, previous_parser: TestbankResultParser):
         """
         Creates a new instance of EmailHelper.
 
         Args:
             dimr_version (str): The latest DIMR version.
-            svn_revision (str): The SVN revision number for the latest DIMR set.
             kernel_versions (str): A dictionary mapping kernel names to their version.
             current_parser (TestbankResultParser): A parser for the latest test bench results.
             previous_parser (TestbankResultParser): A parser for the previous test bench results.
         """
         self.__dimr_version = dimr_version
-        self.__svn_revision = svn_revision
         self.__kernel_versions = kernel_versions
         self.__current_parser = current_parser
         self.__previous_parser = previous_parser
@@ -50,7 +48,6 @@ class EmailHelper(object):
         html = self.__template
 
         html = html.replace("@@@DIMR_VERSION@@@", self.__dimr_version)
-        html = html.replace("@@@SVN_REVISION@@@", self.__svn_revision)
         html = html.replace("@@@LINK_TO_PUBLIC_WIKI@@@", self.__generate_wiki_link())
 
         self.__template = html

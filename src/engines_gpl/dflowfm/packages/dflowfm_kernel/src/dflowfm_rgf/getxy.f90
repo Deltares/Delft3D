@@ -29,30 +29,33 @@
 
 !
 !
+module m_getxy
+   implicit none
+contains
+!>     zoek TT in X,Y, en XT,YT met dezelfde afstand geeft als SSQ
+   subroutine GETXY(T, X, X2, Y, Y2, imax, N, NT, SSQ, XT, YT, TT, H)
+      use m_golddis
+      use m_splintxy
 
-      subroutine GETXY(T, X, X2, Y, Y2, imax, N, NT, SSQ, XT, YT, TT, H)
-!     zoek TT in X,Y, en XT,YT met dezelfde afstand geeft als
-!     SSQ
-         !USE DIMENS
-         implicit none
-         integer :: imax, n, nt
-         double precision :: ssq, xt, yt
-         double precision :: X(imax), Y(imax), X2(imax), Y2(imax), T(imax)
-         double precision, intent(in) :: H !< for curvature adapted meshing
+      integer :: imax, n, nt
+      double precision :: ssq, xt, yt
+      double precision :: X(imax), Y(imax), X2(imax), Y2(imax), T(imax)
+      double precision, intent(in) :: H !< for curvature adapted meshing
 
-         double precision, intent(out) :: TT
+      double precision, intent(out) :: TT
 
-         double precision :: ax, bx, cx, tol, dis
+      double precision :: ax, bx, cx, tol, dis
 
-         AX = T(1)
-         CX = T(NT)
-         BX = (AX + CX) / 2
-         TOL = 0.00001d0
+      AX = T(1)
+      CX = T(NT)
+      BX = (AX + CX) / 2
+      TOL = 0.00001d0
 !     Dan bijhorende T zoeken
-         call GOLDDIS(AX, BX, CX, TOL, X, X2, Y, Y2, N, TT, DIS, SSQ, H)
+      call GOLDDIS(AX, BX, CX, TOL, X, X2, Y, Y2, N, TT, DIS, SSQ, H)
 
 !     EN punt invullen
-         call SPLINTXY(X, Y, X2, Y2, N, TT, XT, YT)
+      call SPLINTXY(X, Y, X2, Y2, N, TT, XT, YT)
 
-         return
-      end
+      return
+   end
+end module m_getxy

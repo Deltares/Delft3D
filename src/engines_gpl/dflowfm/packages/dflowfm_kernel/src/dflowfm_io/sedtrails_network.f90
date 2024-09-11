@@ -137,6 +137,7 @@ contains
       use m_ec_triangle, only: jagetwf, indxx, wfxx
       use m_ec_basic_interpolation, only: triinterp2
       use m_sferic
+      use m_copynetboundstopol
 
       implicit none
 

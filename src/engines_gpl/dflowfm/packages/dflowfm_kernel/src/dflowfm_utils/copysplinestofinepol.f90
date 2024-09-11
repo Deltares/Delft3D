@@ -35,6 +35,7 @@ subroutine copySplinesToFinePol(numk)
    use M_SPLINES
    use m_polygon
    use m_missing
+   use m_sample_spline
 
    implicit none
 

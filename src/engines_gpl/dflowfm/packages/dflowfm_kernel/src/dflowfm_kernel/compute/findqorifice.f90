@@ -31,6 +31,10 @@
 !
 
 subroutine findqorifice(gateheight, crestheight, h1, h3, q, h2, hg, regime, num, qcrit) ! bepaal q en hoogte h2 achter schuif, waterstand links = h1, rechts= h4, schuif = a, alles tov bodem
+   use m_qorifdif
+   use m_getq1
+   use m_getq2
+   use m_getq3
    implicit none
    double precision :: gateheight ! gate height above crest
    double precision :: crestheight ! crest height above bed

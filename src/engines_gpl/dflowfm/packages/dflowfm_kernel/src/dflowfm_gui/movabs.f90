@@ -33,6 +33,7 @@
 !
       subroutine MOVABS(X, Y)
          use unstruc_opengl
+         use m_dproject
          implicit none
          double precision :: x, y, xx, yy
 

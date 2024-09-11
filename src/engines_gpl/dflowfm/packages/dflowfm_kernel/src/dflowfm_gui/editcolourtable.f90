@@ -33,6 +33,9 @@
       subroutine EDITCOLOURTABLE(MODE, KEY)
          use unstruc_colors
          use m_helpnow
+         use m_ktext
+         use m_putget_un
+         use m_okay
          implicit none
          integer :: key
          integer :: mode

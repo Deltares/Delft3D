@@ -87,6 +87,7 @@ program unstruc
 #endif
    use m_modenow
    use m_qnrgf
+   use m_wall_clock_time
    
    implicit none
 
@@ -111,7 +112,7 @@ program unstruc
 
    double precision :: tstartall, tstopall ! just checking...
 
-   call klok(tstartall)
+   call wall_clock_time(tstartall)
 
 !  call checkunesco83()
 
@@ -452,7 +453,7 @@ program unstruc
 !  finalize before exit in case we did "normal" computation
    call partition_finalize()
 
-   call klok(tstopall)
+   call wall_clock_time(tstopall)
 
    !call newfil(mklok, 'wallclock')
    !write(mklok,*) tstopall - tstartall, ' s'

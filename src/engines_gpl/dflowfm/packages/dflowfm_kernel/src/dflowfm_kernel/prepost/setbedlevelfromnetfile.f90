@@ -42,6 +42,7 @@ subroutine setbedlevelfromnetfile()
    use unstruc_model
    use io_netcdf
    use m_ec_interpolationsettings
+   use m_delsam
    implicit none
 
    integer :: ierr, ioncid, iconvtype, ncid, nmesh, im, id_bl, networkid

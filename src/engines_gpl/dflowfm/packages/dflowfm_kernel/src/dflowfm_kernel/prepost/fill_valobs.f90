@@ -45,6 +45,9 @@ subroutine fill_valobs()
    use Timers
    use m_alloc
    use fm_statistical_output, only: model_is_3d
+   use m_gettaus
+   use m_gettauswave
+   use m_get_kbot_ktop
    use precision, only: dp
 
    implicit none

@@ -34,6 +34,7 @@
     use m_flowgeom
     use m_flow
     use m_flowtimes
+    use m_htext
     implicit none
     if (kkcflmx /= 0) then
        call setcol(31)

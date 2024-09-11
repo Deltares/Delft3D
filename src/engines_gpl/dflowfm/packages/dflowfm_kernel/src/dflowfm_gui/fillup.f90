@@ -29,13 +29,15 @@
 
 !
 !
-
-      subroutine FILLUP(TEXT, CHAR, LEN)
-         implicit none
-         integer :: i, len
-         character TEXT * (*), CHAR * 1
-         do I = 1, LEN
-            write (TEXT(I:I), '(A)') CHAR
-         end do
-         return
-      end
+module m_fillup
+   implicit none
+contains
+   subroutine FILLUP(TEXT, CHAR, LEN)
+      integer :: i, len
+      character TEXT * (*), CHAR * 1
+      do I = 1, LEN
+         write (TEXT(I:I), '(A)') CHAR
+      end do
+      return
+   end
+end module m_fillup

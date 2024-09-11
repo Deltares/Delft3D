@@ -35,6 +35,7 @@
          use m_crosssections
          use m_polygon
          use m_missing
+         use m_wripol
          implicit none
          integer :: mpol
 

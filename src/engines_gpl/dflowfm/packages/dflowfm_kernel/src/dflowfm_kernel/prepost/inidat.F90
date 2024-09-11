@@ -299,6 +299,7 @@
       use dfm_signals
       use gridoperations
       use m_monitoring_crosssections, only: increaseCrossSections
+      use m_reapol
 
       implicit none
       character inarg * (*), EXT * 4
@@ -378,6 +379,8 @@
       use gridoperations
       use m_monitoring_crosssections, only: increaseCrossSections
       use unstruc_netcdf, only: unc_write_net
+      use m_wripol
+      use m_wrisam
 
       implicit none
       character inarg * (*), EXT * 4

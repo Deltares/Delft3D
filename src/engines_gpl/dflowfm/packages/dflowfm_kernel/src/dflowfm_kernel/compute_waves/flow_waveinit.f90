@@ -49,6 +49,7 @@
       use m_ec_basic_interpolation, only: triinterp2
       use fm_external_forcings_data, only: transformcoef
       use dfm_error
+      use m_delsam
 
       implicit none
 

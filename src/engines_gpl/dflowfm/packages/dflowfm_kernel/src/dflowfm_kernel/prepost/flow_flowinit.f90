@@ -76,6 +76,7 @@ contains
       use m_setup_structures_and_weirs_list, only: build_structures_and_weirs_list
       use m_qnerror
       use string_module, only: str_lower
+      use m_delpol
 
       implicit none
 
@@ -1315,6 +1316,7 @@ contains
       use m_cell_geometry, only: ndx
       use m_flowtimes, only: jarestart
       use m_missing, only: dmiss
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -1392,6 +1394,7 @@ contains
       use m_flow, only: kmx, tem1
       use m_flowparameters, only: initem2D
       use m_cell_geometry, only: ndx
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -1418,6 +1421,7 @@ contains
       use m_cell_geometry, only: ndx
       use m_sediment, only: mxgr, sed, sedh
       use m_missing, only: dmiss
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -1535,6 +1539,7 @@ contains
       use m_cell_geometry, only: ndx
       use m_sediment, only: stm_included
       use m_turbulence, only: rhowat
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -1571,6 +1576,8 @@ contains
       use geometry_module, only: dbdistance, half, normalout
       use m_sethu
       use m_dminmax
+      use m_get_kbot_ktop
+      use m_wripol
 
       implicit none
 

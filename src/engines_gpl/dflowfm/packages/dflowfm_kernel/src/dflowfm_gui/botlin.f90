@@ -29,12 +29,17 @@
 
 !
 !
-
+module m_botlin
+         implicit none
+contains
       subroutine BOTLIN(JA, NUMB, KEY)
          use m_devices
          use unstruc_display
          use m_helpnow
-         implicit none
+         use m_ktext
+         use m_timlin
+         use m_fkeys
+
          integer :: imenuhoriz
          integer :: infoinput
          integer :: iw
@@ -330,3 +335,4 @@
          end if
 
       end
+end module m_botlin

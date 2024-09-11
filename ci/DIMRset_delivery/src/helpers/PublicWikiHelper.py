@@ -14,7 +14,7 @@ class PublicWikiHelper(object):
     Class responsible for updating the Deltares Public Wiki for a specific DIMR version.
     """
 
-    def __init__(self, atlassian: Atlassian, teamcity: TeamCity, dimr_version: str, svn_revision_number: str):
+    def __init__(self, atlassian: Atlassian, teamcity: TeamCity, dimr_version):
         """
         Creates a new instance of PublicWikiHelper.
 
@@ -27,7 +27,6 @@ class PublicWikiHelper(object):
         self.__atlassian = atlassian
         self.__teamcity = teamcity
         self.__dimr_version = dimr_version
-        self.__svn_revision_number = svn_revision_number
 
         major, minor, patch = dimr_version.split('.')
         self.__major_version = major
@@ -197,7 +196,6 @@ class PublicWikiHelper(object):
             data = file.read()
 
         data = data.replace("@@@DATE@@@", date.today().strftime("%d-%m-%Y"))
-        data = data.replace("@@@DIMR_REVISION_NUMBER@@@", f"#{self.__svn_revision_number}")
         data = data.replace("@@@WINDOWS_VERSION_ARTIFACT@@@", f"<pre>{windows_version_artifact}</pre>")
         data = data.replace("@@@LINUX_VERSION_ARTIFACT@@@", f"<pre>{linux_version_artifact}</pre>")
         data = data.replace("@@@DIMR_RELEASE_VERSION@@@",

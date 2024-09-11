@@ -12,11 +12,14 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.script
 import testbenchMatrix.Trigger
 
 object Linux : BuildType({
+
     name = "Linux"
+    buildNumberPattern = "%dep.${Trigger.id}.build.revisions.revision%"
 
     val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
     val lines = File(filePath).readLines()
-    val configs = lines.drop(1).map { line ->
+    val linuxLines = lines.filter({ line -> line.contains("lnx64")})
+    val configs = linuxLines.drop(1).map { line ->
         line.split(",")[1]
     }
 
@@ -27,7 +30,8 @@ object Linux : BuildType({
     params {
         select("configfile", configs.joinToString(","),
             allowMultiple = true,
-            options = configs
+            options = configs,
+            display = ParameterDisplay.PROMPT
         )
     }
 

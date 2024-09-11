@@ -38,6 +38,7 @@
          use m_missing, only: dmiss
          use m_splint
          use m_spline
+         use m_comp_curv
 
          implicit none
 

@@ -35,6 +35,7 @@
     use m_devices
     use network_data, only: kn
     use unstruc_display
+    use m_ktext
     implicit none
 
     integer :: LL

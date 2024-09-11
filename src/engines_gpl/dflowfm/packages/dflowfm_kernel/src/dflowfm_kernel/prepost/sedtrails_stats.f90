@@ -122,6 +122,9 @@ contains
       use sed_support_routines, only: ruessink_etal_2012
       use m_waves, only: rlabda, hwav, uorb, phiwav
       use m_sferic, only: pi
+      use m_gettaus
+      use m_gettauswave
+      use m_get_kbot_ktop
 
       implicit none
 

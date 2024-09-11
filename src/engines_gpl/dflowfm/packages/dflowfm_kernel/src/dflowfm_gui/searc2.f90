@@ -31,6 +31,7 @@
 !
 
       subroutine SEARC2(NAHEAD, HLPTXT, NUMTXT, LOOKUP, NUMCHC, JOFND)
+         use m_okay
          implicit none
          integer :: jofnd
          integer :: k, len

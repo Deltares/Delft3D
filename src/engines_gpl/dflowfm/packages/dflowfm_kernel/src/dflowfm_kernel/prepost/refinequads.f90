@@ -35,6 +35,8 @@
      use M_AFMETING
      use gridoperations
      use m_readyy
+     use m_delpol
+     use m_copynetboundstopol
      implicit none
      integer :: jaddrand
      integer :: k, KMOD

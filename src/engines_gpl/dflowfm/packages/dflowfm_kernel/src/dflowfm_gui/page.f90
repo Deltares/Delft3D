@@ -29,20 +29,22 @@
 
 !
 !
-
-      subroutine PAGE(HLPTXT, NUMTXT, NUMTOP, IH)
-         implicit none
-         integer :: i
-         integer :: ih
-         integer :: line
-         integer :: numtop
-         integer :: numtxt
+module m_page
+   implicit none
+contains
+   subroutine PAGE(HLPTXT, NUMTXT, NUMTOP, IH)
+      integer :: i
+      integer :: ih
+      integer :: line
+      integer :: numtop
+      integer :: numtxt
 !     Display one page, take care, numtop =< numtxt-ih
-         character HLPTXT(NUMTXT) * (*)
-         LINE = 0
-         do I = NUMTOP, min(NUMTOP + IH - 1, NUMTXT)
-            LINE = LINE + 1
-            call IWinOutStringXY(1, LINE, HLPTXT(I))
-         end do
-         return
-      end
+      character HLPTXT(NUMTXT) * (*)
+      LINE = 0
+      do I = NUMTOP, min(NUMTOP + IH - 1, NUMTXT)
+         LINE = LINE + 1
+         call IWinOutStringXY(1, LINE, HLPTXT(I))
+      end do
+      return
+   end
+end module m_page

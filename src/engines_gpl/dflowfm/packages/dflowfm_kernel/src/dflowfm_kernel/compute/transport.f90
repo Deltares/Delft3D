@@ -35,7 +35,6 @@ subroutine transport() ! transport for now, advect salinity and add
    use m_flowgeom
    use m_flow
    use Timers
-   use m_flowtimes
    use m_ship
    use m_sediment
    use m_netw, only: xk, yk, zk
@@ -50,7 +49,8 @@ subroutine transport() ! transport for now, advect salinity and add
    use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
    use m_dlimitercentral
    use m_dslim
-
+   use m_get_kbot_ktop
+   
    implicit none
 
    integer :: L, k, k1, k2, kb, n

@@ -29,11 +29,14 @@
 
 !
 !
-
+module m_inview2
+     implicit none
+contains
   logical function INVIEW2(X, Y, XX, YY)
      use M_MISSING
      use m_wearelt
-     implicit none
+     use m_dproject
+     
      double precision :: x, y, xx, yy
 
      ! ZIT IK IN ZOOMGEBIED? NULLEN EN DEFAULTS NIET, IN WERELDCOORD
@@ -51,3 +54,4 @@
      end if
      return
   end function INVIEW2
+end module m_inview2

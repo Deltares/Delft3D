@@ -591,6 +591,7 @@ contains
       use m_flowgeom
       use m_flow
       use m_transport
+      use m_get_kbot_ktop
 
       integer :: nombs, nomba
       integer :: mbadef(ndxi)

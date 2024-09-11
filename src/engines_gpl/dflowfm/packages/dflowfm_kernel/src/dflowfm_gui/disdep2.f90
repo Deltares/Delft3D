@@ -32,6 +32,7 @@
 
       subroutine DISDEP2(DEP)
          use m_devices
+         use m_ktext
          implicit none
          double precision :: dep
          character DISTAN * 23

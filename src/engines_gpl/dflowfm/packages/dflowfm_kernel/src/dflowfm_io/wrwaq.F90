@@ -431,6 +431,7 @@ contains
       use m_flowgeom
       use unstruc_model
       use time_module, only: ymd2jul
+      use m_dateandtimenow
 
       implicit none
       !
@@ -717,6 +718,7 @@ contains
       use unstruc_netcdf
       use m_partitioninfo, only: jampi, idomain, iglobal_s
       use m_alloc
+      use m_wall_clock_time
 
       implicit none
 
@@ -752,9 +754,9 @@ contains
             call check_error(ierr)
 
             ! Aggregate.
-            call klok(startTime)
+            call wall_clock_time(startTime)
             success = aggregate_ugrid_geometry(meshgeom, aggregated_meshgeom, edge_type, aggregated_edge_type, waqpar%iapnt)
-            call klok(endTime)
+            call wall_clock_time(endTime)
             if (success) then ! If no errors occurred.
                write (message, "('Aggregated grid for waq geometry file, elapsed time: ', F10.3, ' s.')") endTime - startTime
                call mess(LEVEL_INFO, trim(message))
@@ -1752,6 +1754,8 @@ contains
       use fm_external_forcings_data
       use m_waves
       use unstruc_files, only: defaultFilename
+      use m_gettaus
+      use m_gettauswave
       implicit none
       !
       !           Global variables

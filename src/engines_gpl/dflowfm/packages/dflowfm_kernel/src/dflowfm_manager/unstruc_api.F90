@@ -247,6 +247,7 @@ contains
       use fm_statistical_output, only: out_variable_set_his, out_variable_set_map, out_variable_set_clm
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use m_statistical_output, only: update_source_input, update_statistical_output
+      use m_wall_clock_time
       integer, external :: flow_modelinit
       integer :: timerHandle, inner_timerhandle
 
@@ -275,7 +276,7 @@ contains
          return ! No valid flow network was initialized
       end if
 
-      call klok(cpuall0)
+      call wall_clock_time(cpuall0)
 
       inner_timerhandle = 0
       call timstrt('Update various', inner_timerhandle)

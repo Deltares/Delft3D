@@ -37,6 +37,9 @@
          use m_drawthis
          use m_grid_block
          use m_qnerror
+         use m_ktext
+         use m_putget_un
+         use m_botlin
          implicit none
 
          integer :: mode, nfld, key

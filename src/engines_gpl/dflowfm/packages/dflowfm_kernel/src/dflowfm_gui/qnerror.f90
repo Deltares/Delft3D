@@ -40,6 +40,9 @@ contains
       use m_start_parameters, only: MD_AUTOSTARTSTOP, md_jaAutoStart
       use m_gui
       use m_helpnow
+      use m_okay
+      use m_fkeys
+      use m_getkey2
 
       character(len=*), intent(in) :: W1, W2, W3
 

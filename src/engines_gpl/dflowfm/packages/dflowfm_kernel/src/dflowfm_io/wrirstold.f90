@@ -38,6 +38,7 @@
       use m_sediment, only: jaceneqtr
       use unstruc_netcdf, only: unc_write_net
       use m_transport
+      use m_get_kbot_ktop
       implicit none
       integer :: MOUT, k, kk, kb, kt
 

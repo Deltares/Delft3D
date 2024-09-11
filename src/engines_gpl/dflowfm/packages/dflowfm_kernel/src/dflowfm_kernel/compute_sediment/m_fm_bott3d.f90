@@ -977,6 +977,7 @@ contains
       use m_flowtimes, only: dts, dnt
       use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
       use unstruc_files, only: mdia
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -1551,6 +1552,7 @@ contains
       use m_sediment, m_sediment_sed => sed
       use m_fm_erosed, only: blchg
       use m_flowparameters, only: epshs, jasal
+      use m_get_kbot_ktop
 
       implicit none
 

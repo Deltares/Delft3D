@@ -31,6 +31,7 @@
 !
 
       subroutine FAILSAVE()
+         use m_wrinet
          implicit none
          integer :: MSAV
          call NEWFIL(MSAV, 'asave.net')

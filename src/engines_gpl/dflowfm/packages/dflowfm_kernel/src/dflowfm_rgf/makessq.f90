@@ -29,41 +29,43 @@
 
 !
 !
+module m_makessq
+   implicit none
+contains
+   subroutine MAKESSQ(S, A, SR, SL, SSQ, NT, MFAC, IMAX)
+      use m_makesr
 
-       subroutine MAKESSQ(S, A, SR, SL, SSQ, NT, MFAC, IMAX)
-          use m_makesr
-          implicit none
-          integer :: nt, mfac, imax
-          double precision :: S(IMAX), A(IMAX), SR(IMAX), SL(IMAX), SSQ(IMAX)
-          double precision :: glad
-          integer :: i, k, kr
-          double precision :: ar, al
-          GLAD(I) = (S(I + 1) - S(I)) / (S(I) - S(I - 1))
-          if (NT == 2) then
-             do K = 1, MFAC + 1
-                SSQ(K) = S(1) + (S(2) - S(1)) * (dble(K - 1)) / dble(MFAC)
-             end do
-          else if (NT >= 3) then
-             do I = 2, NT - 1
-                A(I) = GLAD(I)
-             end do
-             A(1) = A(2)
-             A(NT) = A(NT - 1)
+      integer :: nt, mfac, imax
+      double precision :: S(IMAX), A(IMAX), SR(IMAX), SL(IMAX), SSQ(IMAX)
+      double precision :: glad
+      integer :: i, k, kr
+      double precision :: ar, al
+      GLAD(I) = (S(I + 1) - S(I)) / (S(I) - S(I - 1))
+      if (NT == 2) then
+         do K = 1, MFAC + 1
+            SSQ(K) = S(1) + (S(2) - S(1)) * (dble(K - 1)) / dble(MFAC)
+         end do
+      else if (NT >= 3) then
+         do I = 2, NT - 1
+            A(I) = GLAD(I)
+         end do
+         A(1) = A(2)
+         A(NT) = A(NT - 1)
 
-             do I = 1, NT - 1
-                AR = A(I + 1)**(1.0 / dble(MFAC))
-                call MAKESR(AR, S(I), S(I + 1), SR, MFAC)
-                AL = A(I)**(1.0 / dble(MFAC))
-                call MAKESR(AL, S(I), S(I + 1), SL, MFAC)
-                do k = 1, MFAC + 1
-                   KR = (I - 1) * MFAC + K
-                   AR = dble(K - 1) / dble(MFAC)
-                   AL = 1 - AR
-                   SSQ(KR) = AR * SR(K) + AL * SL(K)
+         do I = 1, NT - 1
+            AR = A(I + 1)**(1.0 / dble(MFAC))
+            call MAKESR(AR, S(I), S(I + 1), SR, MFAC)
+            AL = A(I)**(1.0 / dble(MFAC))
+            call MAKESR(AL, S(I), S(I + 1), SL, MFAC)
+            do k = 1, MFAC + 1
+               KR = (I - 1) * MFAC + K
+               AR = dble(K - 1) / dble(MFAC)
+               AL = 1 - AR
+               SSQ(KR) = AR * SR(K) + AL * SL(K)
 
-                   AR = (SSQ(KR) - S(I)) / (S(I + 1) - S(I))
-                   AL = 1 - AR
-                   SSQ(KR) = AR * SR(K) + AL * SL(K)
+               AR = (SSQ(KR) - S(I)) / (S(I + 1) - S(I))
+               AL = 1 - AR
+               SSQ(KR) = AR * SR(K) + AL * SL(K)
 
 !              AL = ( S(I+1) - SL(K) ) / ( S(I+1) - S(I) )
 !              AR = ( SR(K)  -  S(I) ) / ( S(I+1) - S(I) )
@@ -71,10 +73,11 @@
 !              AL = AL/AT
 !              AR = AR/AT
 !              SSQ(KR) = AR*SR(K) + AL*SL(K)
-                end do
-             end do
+            end do
+         end do
 
-          end if
+      end if
 
-          return
-       end subroutine makessq
+      return
+   end subroutine makessq
+end module m_makessq

@@ -33,6 +33,7 @@
       subroutine DISPNODE(MP)
          use m_devices
          use m_netw, only: zk
+         use m_ktext
          implicit none
          integer :: mp
          character TEX * 23

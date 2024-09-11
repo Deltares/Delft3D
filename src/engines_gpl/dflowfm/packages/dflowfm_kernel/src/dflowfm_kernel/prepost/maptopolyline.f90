@@ -34,6 +34,7 @@
       !! The points are placed onto a polyline at the distances measured along
       !! the consecutive polyline segments.
       subroutine mapToPolyline(XHO, YHO, DPL, NO, XH, YH, DPLA, NPL) ! HAAL HUIDIGE PUNTEN OP
+         use m_interpolateOnPolyline
          implicit none
          integer, intent(in) :: NO !< Nr. of polyline points.
          integer, intent(in) :: npl !< Nr. of points to be interpolated.

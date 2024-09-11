@@ -33,6 +33,8 @@
       subroutine CONFRM(TEXT, JAZEKR)
          use unstruc_display
          use m_helpnow
+         use m_timlin
+         use m_fkeys
          implicit none
 
          character TEXT * (*)

@@ -29,53 +29,58 @@
 
 !
 !
+module m_getint
+   implicit none
+contains
+   subroutine GETINT(TEXT, IVAL)
+      use m_devices
+      use M_MISSING
+      use m_helpnow
+      use m_timlin
+      use m_fkeys
 
-      subroutine GETINT(TEXT, IVAL)
-         use m_devices
-         use M_MISSING
-         use m_helpnow
-         implicit none
-         integer :: infoattribute
-         integer :: infoinput
-         integer :: ixp
-         integer :: iyp
-         integer :: key
-         integer :: nbckgr
-         integer :: nforgr
-         integer :: iv
-         integer :: ival
-         character TEXT * (*)
+      integer :: infoattribute
+      integer :: infoinput
+      integer :: ixp
+      integer :: iyp
+      integer :: key
+      integer :: nbckgr
+      integer :: nforgr
+      integer :: iv
+      integer :: ival
+      character TEXT * (*)
 
-         IV = IVAL
-         IXP = IWS / 2
-         IYP = IHS / 2
-         NFORGR = InfoAttribute(13)
-         NBCKGR = InfoAttribute(14)
-         call INPOPUP('ON')
-20       continue
-         call ITEXTCOLOUR('BWHITE', 'RED')
-         call INHIGHLIGHT('BLUE', 'BWHITE')
-         call TIMLIN()
+      IV = IVAL
+      IXP = IWS / 2
+      IYP = IHS / 2
+      NFORGR = InfoAttribute(13)
+      NBCKGR = InfoAttribute(14)
+      call INPOPUP('ON')
+20    continue
+      call ITEXTCOLOUR('BWHITE', 'RED')
+      call INHIGHLIGHT('BLUE', 'BWHITE')
+      call TIMLIN()
 !      CALL INDOUBLEXYDEF(IXP,IYP,TEXT,1,VAL,6,'(F6.1)')
-         call ININTEGERXYDEF(IXP, IYP, TEXT, 1, IV, 12)
-         call TIMLIN()
-         KEY = InfoInput(55)
-         if (KEY >= 24 .and. KEY <= 26) then
-            NLEVEL = 3
-            WRDKEY = TEXT
-            call FKEYS(KEY)
-            if (KEY == 3) then
-               call INPOPUP('OFF')
-               call ITEXTCOLOURN(NFORGR, NBCKGR)
-               return
-            end if
-            goto 20
-         else if (KEY == 21 .or. KEY == 22) then
-            IVAL = IV
-         else
-            IVAL = int(dmiss)
+      call ININTEGERXYDEF(IXP, IYP, TEXT, 1, IV, 12)
+      call TIMLIN()
+      KEY = InfoInput(55)
+      if (KEY >= 24 .and. KEY <= 26) then
+         NLEVEL = 3
+         WRDKEY = TEXT
+         call FKEYS(KEY)
+         if (KEY == 3) then
+            call INPOPUP('OFF')
+            call ITEXTCOLOURN(NFORGR, NBCKGR)
+            return
          end if
-         call INPOPUP('OFF')
-         call ITEXTCOLOURN(NFORGR, NBCKGR)
-         return
-      end
+         goto 20
+      else if (KEY == 21 .or. KEY == 22) then
+         IVAL = IV
+      else
+         IVAL = int(dmiss)
+      end if
+      call INPOPUP('OFF')
+      call ITEXTCOLOURN(NFORGR, NBCKGR)
+      return
+   end
+end module m_getint

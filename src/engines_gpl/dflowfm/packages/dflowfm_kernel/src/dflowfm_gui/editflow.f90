@@ -47,6 +47,11 @@
         use m_depmax
         use m_helpnow
         use m_qnerror
+        use m_ktext
+        use m_putget_un
+        use m_botlin
+        use m_getint
+        use m_get_kbot_ktop
         implicit none
         integer :: MODE, KEY, kb, kt, k, NL
         integer :: newmode

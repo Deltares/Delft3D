@@ -750,6 +750,8 @@ contains
       use m_missing
       use m_flowgeom
       use m_qnerror
+      use m_wripol
+      use m_wrisam
 
       character(len=*), intent(in) :: basename !< Basename for the profdef/loc output files.
 

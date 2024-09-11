@@ -32,7 +32,6 @@
 
 !> interpolation of sample data to network nodes, in curvilinear grid coordinates
 subroutine sam2net_curvi(numk, xk, yk, zk)
-!   use network_data
    use m_grid
    use m_samples
    use m_alloc
@@ -42,6 +41,7 @@ subroutine sam2net_curvi(numk, xk, yk, zk)
    use fm_external_forcings_data, only: transformcoef
    use m_sferic, only: jsferic, jasfer3D
    use m_qnerror
+   use m_delpol
 
    implicit none
 

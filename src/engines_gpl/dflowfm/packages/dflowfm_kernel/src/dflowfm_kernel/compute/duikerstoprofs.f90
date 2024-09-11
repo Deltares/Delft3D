@@ -41,6 +41,7 @@
     use geometry_module, only: dbdistance
     use m_partitioninfo
     use m_qnerror
+    use m_reapol
     implicit none
 
     integer :: minp, Ls, Lf, n, k1, k2

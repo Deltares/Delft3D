@@ -29,13 +29,15 @@
 
 !
 !
-
-      subroutine PLANEDISTANCE(X1, Y1, X2, Y2, D12)
-         implicit none
-         double precision :: X1, Y1, X2, Y2, D12, DX, DY
+module m_planedistance
+   implicit none
+contains
+   subroutine PLANEDISTANCE(X1, Y1, X2, Y2, D12)
+      double precision :: X1, Y1, X2, Y2, D12, DX, DY
 !     D12 IS DISTANCE BETWEEN 1 AND 2 IN PLANE COORDINATES
-         DX = X1 - X2
-         DY = Y1 - Y2
-         D12 = sqrt(DX * DX + DY * DY)
-         return
-      end subroutine PLANEDISTANCE
+      DX = X1 - X2
+      DY = Y1 - Y2
+      D12 = sqrt(DX * DX + DY * DY)
+      return
+   end subroutine PLANEDISTANCE
+end module m_planedistance

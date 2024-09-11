@@ -31,6 +31,7 @@
 !
 
       subroutine GOLDLN(AX, BX, CX, TOL, XMIN, P, Q, N, XX, YY, DIS)
+         use m_dislin
          implicit none
          double precision :: ax
          double precision :: bx
@@ -54,7 +55,7 @@
          parameter(R=.61803399, C=.38196602)
 !     EENDIMENSIONAAL ZOEKEN VAN 'GEBRACKED' MINIMUM
          double precision :: P(N), Q(N)
-         double precision :: dislin
+
          X0 = AX
          X3 = CX
          if (abs(CX - BX) > abs(BX - AX)) then

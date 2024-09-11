@@ -31,6 +31,7 @@
 !
 
       subroutine DATUM(DATE)
+         use m_dateandtimenow
          implicit none
          integer :: iyear, month, iday, ihour, minute, isecnd
          character DATE * 20

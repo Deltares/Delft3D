@@ -39,6 +39,7 @@
       use unstruc_display
       use m_arcinfo
       use m_perspx
+      use m_halt2
       
       implicit none
       double precision :: RC
@@ -96,6 +97,7 @@
       use m_arcinfo
       use unstruc_display
       use m_missing, only: DMISS
+      use m_halt2
 
       implicit none
       double precision :: hrc, rc, x, y, z
@@ -132,6 +134,7 @@
       use unstruc_display
       use m_arcinfo
       use m_drawthis
+      use m_htext
 
       implicit none
 

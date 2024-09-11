@@ -36,6 +36,7 @@
     use m_flow
     use m_flowtimes
     use m_transport, only: Constituents, ISALT, ITEMP
+    use m_get_kbot_ktop
 
     implicit none
 

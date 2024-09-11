@@ -29,18 +29,22 @@
 
 !
 !
+module m_spldist
+   implicit none
+contains
+   double precision function SPLDIST(X, X2, Y, Y2, XX, YY, TV, N)
+      use m_splint
+      use m_planedistance
 
-      double precision function SPLDIST(X, X2, Y, Y2, XX, YY, TV, N)
-         use m_splint
-         implicit none
-         integer :: n
+      integer :: n
 !     AFSTAND VAN PUNT XX,YY TOT SPLINEPUNT MET PARM TV
 
-         double precision :: X(N), X2(N), Y(N), Y2(N), TV, XX, YY, XV, YV
-         TV = max(0d0, min(TV, N - 1d0))
-         call SPLINT(X, X2, N, TV, XV)
-         call SPLINT(Y, Y2, N, TV, YV)
+      double precision :: X(N), X2(N), Y(N), Y2(N), TV, XX, YY, XV, YV
+      TV = max(0d0, min(TV, N - 1d0))
+      call SPLINT(X, X2, N, TV, XV)
+      call SPLINT(Y, Y2, N, TV, YV)
 !     CALL DISTANCE(XV,YV,XX,YY,DIST)
-         call PLANEDISTANCE(XV, YV, XX, YY, SPLDIST)
-         return
-      end function SPLDIST
+      call PLANEDISTANCE(XV, YV, XX, YY, SPLDIST)
+      return
+   end function SPLDIST
+end module m_spldist

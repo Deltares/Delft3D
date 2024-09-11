@@ -567,6 +567,7 @@ contains
    subroutine perotnode3d(kk, k)
       use m_flow
       use m_flowgeom
+      use m_get_kbot_ktop
 
       implicit none
       integer, intent(in) :: kk, k

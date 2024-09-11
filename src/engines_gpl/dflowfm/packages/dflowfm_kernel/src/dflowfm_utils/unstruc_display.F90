@@ -587,6 +587,7 @@ contains
       use M_FLOWGEOM
       use m_flow
       use m_transport, only: itemp, constituents
+      use m_get_kbot_ktop
 
       integer :: n, NN, K, kb, kt
       character(len=40) :: tex
@@ -875,6 +876,7 @@ contains
       use m_flowgeom, only: lnx, lncn, bob
       use m_flow, only: hu, isimplefixedweirs
       use m_netw, only: xk, yk
+      use m_htext
 
       integer :: i, L, k3, k4, ncol
       double precision :: xu, yu

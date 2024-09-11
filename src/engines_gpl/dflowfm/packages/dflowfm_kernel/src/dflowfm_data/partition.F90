@@ -73,6 +73,7 @@ module m_partitioninfo
    use meshdata, only: ug_idsLen, ug_idsLongNamesLen
    use gridoperations, only: dlinkangle
    use m_qnerror
+   use m_delpol
 
 #ifdef HAVE_MPI
    use mpi, only: NAMECLASH_MPI_COMM_WORLD => MPI_COMM_WORLD ! Apparently PETSc causes a name clash, see commit #28532.
@@ -243,15 +244,6 @@ module m_partitioninfo
 !      integer :: n, Lb, Lt
 !    end subroutine getLbotLtop
 ! end interface
-!
-!   abstract interface
-!!>    get bottom and top layer indices (pointer to getkbotktop or getLbotLtop)
-!      subroutine p_getbottop(n,kb,kt)
-!         integer :: n   !< flow-node or link
-!         integer :: kb  !< index of bottom layer
-!         integer :: kt  !< index of top layer
-!      end subroutine
-!   end interface
 
 !   for test solver:  Schwarz method with Robin-Robin coupling
    integer :: nbndint ! number of interface links
@@ -1392,6 +1384,7 @@ contains
       use m_flowgeom, only: xu, yu
       use m_alloc
       use m_missing
+      use m_wrildb
 
       implicit none
 
@@ -1771,6 +1764,7 @@ contains
    subroutine partition_make_sendlists(idmn, fnam, ierror)
       use m_polygon
       use m_alloc
+      use m_reapol
 
       implicit none
 
@@ -2214,6 +2208,7 @@ contains
       use m_samples
       use network_data, only: xzw, yzw
       use m_flowgeom, only: xu, yu
+      use m_delsam
 
       implicit none
 
@@ -4702,6 +4697,7 @@ contains
       use m_sferic
       use unstruc_messages
       use gridoperations
+      use m_copynetboundstopol
       implicit none
 
       integer, intent(out) :: ierror
@@ -6064,6 +6060,7 @@ subroutine partition_to_idomain()
    use m_partitioninfo
    use MessageHandling
    use gridoperations
+   use m_getint
 
    implicit none
 
@@ -6267,6 +6264,7 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
    use geometry_module, only: dbdistance
    use m_missing, only: dmiss
    use m_sferic, only: jsferic, jasfer3D
+   use m_wall_clock_time
 
 #ifdef HAVE_MPI
    use mpi
@@ -6311,7 +6309,7 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
 
    double precision, parameter :: dtol = 1d-4
 
-   call klok(t0)
+   call wall_clock_time(t0)
 
    ierror = 1
 
@@ -6413,7 +6411,7 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
 !        realloc
       call realloc(jafound, num, keepExisting=.false., fill=0)
       numfound = 0
-      call klok(t2)
+      call wall_clock_time(t2)
       Lloop: do L = 1, numL
          if (kce(L) /= 1) cycle ! boundary links only
          if (idomain(ke(L)) /= my_rank) cycle ! in own domain only
@@ -6439,7 +6437,7 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
             end if
          end do
       end do Lloop
-      call klok(t3)
+      call wall_clock_time(t3)
       timefind2 = timefind2 + t3 - t2
 
 !!        BEGIN DEBUG
@@ -6521,7 +6519,7 @@ subroutine partition_reduce_mirrorcells(Nx, kce, ke, ierror)
       call mess(LEVEL_INFO, trim(str))
    end if
 
-   call klok(t1)
+   call wall_clock_time(t1)
 
    write (str, "('partition_reduce_mirrorcells, elapsed time: ', G15.5, 's.')") t1 - t0
    call mess(LEVEL_INFO, trim(str))

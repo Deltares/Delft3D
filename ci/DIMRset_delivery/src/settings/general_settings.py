@@ -16,8 +16,5 @@ SHEET_NAME = "Sheet1"
 # Name of the column containing the DIMRset name
 NAME_COLUMN = "C"
 
-# Name of the column containing the revision number
-REVISION_COLUMN = "D"
-
 # Relative path to the output folder
 RELATIVE_PATH_TO_OUTPUT_FOLDER = "..\\..\\output\\"

@@ -29,49 +29,52 @@
 
 !
 !
+module m_wrisam
+   implicit none
+contains
+   subroutine WRISAM(MSAM)
+      use M_SAMPLES
+      use M_ARCINFO
+      use M_MISSING, only: DMISS
+      use m_pharosflow
+      use m_readyy
+      use m_qnerror
 
-      subroutine WRISAM(MSAM)
-         use M_SAMPLES
-         use M_ARCINFO
-         use M_MISSING, only: DMISS
-         use m_pharosflow
-         use m_readyy
-         use m_qnerror
-         implicit none
-         integer :: msam, KMOD
+      integer :: msam, KMOD
 
-         double precision :: af
-         integer :: i
+      double precision :: af
+      integer :: i
 
-         call READYY('Writing Samples File', 0d0)
+      call READYY('Writing Samples File', 0d0)
 
-         if (MCA * NCA == NS) then
-            call wriarcsam(MSAM, ZS, MCA, NCA, MCA, NCA, X0, Y0, DXA, DYA, DMISS)
-            goto 1234
-         else if (mca * nca > maxsamarc) then
-            call wriarc(MSAM, D, mca, nca, mca, nca, X0, Y0, DXA, DYA, DMISS)
-            goto 1234
+      if (MCA * NCA == NS) then
+         call wriarcsam(MSAM, ZS, MCA, NCA, MCA, NCA, X0, Y0, DXA, DYA, DMISS)
+         goto 1234
+      else if (mca * nca > maxsamarc) then
+         call wriarc(MSAM, D, mca, nca, mca, nca, X0, Y0, DXA, DYA, DMISS)
+         goto 1234
+      end if
+
+      KMOD = max(1, NS / 100)
+      do I = 1, NS
+         if (mod(I, KMOD) == 0) then
+            AF = dble(I) / dble(NS)
+            call READYY('Writing Samples File', AF)
          end if
+         ! if (xs(i) > 179.87d0) xs(i) = xs(i) - 360d0
+         if (abs(zs(i)) < 1d6) then
+            write (MSAM, '(3(F16.7))') XS(I), YS(I), ZS(I)
+         else if (abs(zs(i)) < 1d16) then
+            write (MSAM, "(2F16.7, ' ', F26.7)") XS(I), YS(I), ZS(I)
+         else
+            call qnerror('wrisam: format error', ' ', ' ')
+         end if
+      end do
 
-         KMOD = max(1, NS / 100)
-         do I = 1, NS
-            if (mod(I, KMOD) == 0) then
-               AF = dble(I) / dble(NS)
-               call READYY('Writing Samples File', AF)
-            end if
-            ! if (xs(i) > 179.87d0) xs(i) = xs(i) - 360d0
-            if (abs(zs(i)) < 1d6) then
-               write (MSAM, '(3(F16.7))') XS(I), YS(I), ZS(I)
-            else if (abs(zs(i)) < 1d16) then
-               write (MSAM, "(2F16.7, ' ', F26.7)") XS(I), YS(I), ZS(I)
-            else
-               call qnerror('wrisam: format error', ' ', ' ')
-            end if
-         end do
+1234  continue
+      call DOCLOSE(MSAM)
+      call READYY('Writing Samples File', -1d0)
 
-1234     continue
-         call DOCLOSE(MSAM)
-         call READYY('Writing Samples File', -1d0)
-
-         return
-      end subroutine WRISAM
+      return
+   end subroutine WRISAM
+end module m_wrisam

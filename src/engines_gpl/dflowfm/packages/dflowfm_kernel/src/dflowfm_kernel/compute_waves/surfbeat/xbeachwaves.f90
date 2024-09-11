@@ -2748,6 +2748,8 @@ subroutine xbeach_spectral_wave_init()
    use m_alloc
    use stdlib_sorting, only: sort_index
    use geometry_module, only: dbdistance
+   use m_delpol
+   use m_reapol
 
    implicit none
 

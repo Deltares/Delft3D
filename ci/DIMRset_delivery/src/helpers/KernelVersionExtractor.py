@@ -23,7 +23,6 @@ class KernelVersionExtractor(object):
         self.__teamcity = teamcity
         self.__kernel_versions: Dict[str, str] = None
         self.__dimr_version = None
-        self.__svn_revision = None
 
     def get_latest_kernel_versions(self) -> Dict[str, str]:
         """
@@ -60,25 +59,6 @@ class KernelVersionExtractor(object):
         self.__dimr_version = self.__kernel_versions["DIMRset_ver"]
         return self.__dimr_version
 
-    def get_full_dimr_version(self):
-        """ Returns the fill DIMR version including SVN revision number. """
-        if self.__dimr_version is None or self.__svn_revision is None:
-            raise AssertionError("Could not get the full DIMR version: either the DIMR version or SVN revision has "
-                                 "not yet been extracted.")
-        return f"{self.__dimr_version}.{self.__svn_revision}"
-
-    def get_svn_revision_for_dimr_to_nghs(self) -> str:
-        """ Gets the correction revision number for DIMR to NGHS build. """
-        latest_dimr_to_nghs_build_log = self.__teamcity.get_build_log_for_latest_build_for_build_type_id(
-            build_type_id=DIMR_TO_NGHS_BUILD_TYPE_ID)
-        self.__svn_revision = self.__extract_svn_revision_from_build_log(build_log=latest_dimr_to_nghs_build_log)
-        return self.__svn_revision
-
-    def __extract_svn_revision_from_build_log(self, build_log: bytes) -> str:
-        """ Extracts the SVN revision number from the DIMR to NGHS build log. """
-        revision = re.findall(r"Committed revision (\d*)", build_log.decode())[
-            -1]  # Should be one, but just in case, take the last
-        return revision
 
     def __extract_kernel_versions(self, build_info: Dict[str, Any]) -> Dict[str, str]:
         """

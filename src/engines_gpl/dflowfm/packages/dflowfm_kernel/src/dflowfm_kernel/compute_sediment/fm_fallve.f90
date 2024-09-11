@@ -54,6 +54,7 @@
       use m_alloc
       use m_fm_erosed, only: taub, sedtyp
       use flocculation, only: get_tshear_tdiss
+      use m_get_kbot_ktop
       !
       implicit none
       !

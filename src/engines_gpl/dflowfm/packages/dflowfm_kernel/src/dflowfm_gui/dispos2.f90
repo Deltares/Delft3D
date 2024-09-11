@@ -33,6 +33,7 @@
       subroutine DISPOS2(X, Y)
          use M_DEVICES
          use m_disfor
+         use m_ktext
          implicit none
          double precision :: x
          double precision :: y

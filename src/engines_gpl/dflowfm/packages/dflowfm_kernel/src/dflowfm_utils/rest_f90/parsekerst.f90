@@ -41,6 +41,7 @@
        use gridoperations
        use unstruc_display, only: minmxns
        use m_wearelt, only: rcir
+       use m_delpol
 
        implicit none
 

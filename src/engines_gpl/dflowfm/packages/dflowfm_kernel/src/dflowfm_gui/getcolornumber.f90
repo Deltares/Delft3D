@@ -31,6 +31,7 @@
 !
 
       subroutine GETCOLORNUMBER(XP, YP, NUMCOL, N1O, N2O, N3O)
+         use m_disvalcolors
          implicit none
          integer :: i
          integer :: n1

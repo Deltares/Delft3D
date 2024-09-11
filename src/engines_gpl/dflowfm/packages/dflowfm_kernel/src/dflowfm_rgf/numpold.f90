@@ -29,19 +29,22 @@
 
 !
 !
-
-      subroutine NUMPold(X, mmax, nmax, MP, NUMPI)
+module m_numpold
+   implicit none
+contains
+   subroutine NUMPold(X, mmax, nmax, MP, NUMPI)
 !     GEEF AANTAL PUNTEN VAN SPLINE MP
-         !USE DIMENS
-         use m_missing
-         implicit none
-         integer :: mp, numpi, mmax, nmax
-         double precision :: X(MMAX, NMAX)
+      !USE DIMENS
+      use m_missing
 
-         integer :: j
-         NUMPI = 0
-         do J = 1, NMAX
-            if (X(MP, J) /= XYMIS) NUMPI = J
-         end do
-         return
-      end subroutine numpold
+      integer :: mp, numpi, mmax, nmax
+      double precision :: X(MMAX, NMAX)
+
+      integer :: j
+      NUMPI = 0
+      do J = 1, NMAX
+         if (X(MP, J) /= XYMIS) NUMPI = J
+      end do
+      return
+   end subroutine numpold
+end module m_numpold

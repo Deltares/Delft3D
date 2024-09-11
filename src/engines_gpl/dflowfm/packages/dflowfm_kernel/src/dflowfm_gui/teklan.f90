@@ -36,6 +36,7 @@
      use unstruc_colors
      use unstruc_display
      use m_drawthis
+     use m_fbox
 
      implicit none
      integer :: NCOL

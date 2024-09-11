@@ -44,6 +44,7 @@ subroutine extract_constituents()
    use timers
    use m_flowtimes
    use m_fm_icecover, only: freezing_temperature
+   use m_get_kbot_ktop
 
    implicit none
 

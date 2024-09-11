@@ -38,6 +38,7 @@
     use m_sferic
     use m_missing
     use m_drawthis
+    use m_halt2
     implicit none
     integer :: k, L, ja, k1, k2, ncol, linkmode
     double precision :: zlin, zL

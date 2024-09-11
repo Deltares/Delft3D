@@ -37,6 +37,7 @@ double precision function splinelength(num, xspl, yspl)
    use m_missing, only: dmiss
    use m_sferic, only: jsferic, jasfer3D
    use m_splinxy
+   use m_splintxy
    
    implicit none
 

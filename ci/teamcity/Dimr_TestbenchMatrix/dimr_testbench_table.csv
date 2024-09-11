@@ -27,7 +27,7 @@ fm drtc tutorials,dimr_dflowfm_drtc_tutorials_win64.xml,TRUE,FALSE,TRUE,FALSE,FA
 fm dwave mormerge,dimr_dflowfm_dwave_mormerge_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm dwave mormerge,dimr_dflowfm_dwave_mormerge_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves,dimr_dflowfm_dwaves_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
-fm dwaves tutorial,dimr_dflowfm_dwaves_tutorial_course_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
+fm dwaves tutorial,dimr_dflowfm_dwaves_tutorial_course_win64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves,dimr_dflowfm_dwaves_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm full-scale,dimr_dflowfm_full_scale_models_win64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm hyd,dimr_dflowfm_hyd_lnx64.xml,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,

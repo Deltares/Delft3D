@@ -37,6 +37,7 @@ subroutine coarsen_mesh()
    use stdlib_sorting, only: sort_index
    use m_sferic, only: dtol_pole
    use gridoperations
+   use m_readlocator
 
    implicit none
 

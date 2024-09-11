@@ -34,7 +34,9 @@
      ! ZIT IK IN ZOOMGEBIED? NULLEN EN DEFAULTS NIET, IN WERELDCOORD inview3
      use m_wearelt
      use m_missing
-     doubleprecision :: x, y, xx, yy
+     use m_dproject
+
+    doubleprecision :: x, y, xx, yy
      INVIEW = .false.
      if (X /= XYMIS) then
         call dPROJECT(X, Y, XX, YY, 1)

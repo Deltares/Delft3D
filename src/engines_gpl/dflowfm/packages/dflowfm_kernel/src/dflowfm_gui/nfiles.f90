@@ -58,6 +58,13 @@
       use m_setucxcuy_leastsquare, only: reconst2nd
       use m_drawthis
       use m_qnerror
+      use m_wrinet
+      use m_delpol
+      use m_reapol
+      use m_delsam
+      use m_getint
+      use m_wripol
+      use m_wrisam
 
       implicit none
       integer :: NUM, NWHAT, KEY

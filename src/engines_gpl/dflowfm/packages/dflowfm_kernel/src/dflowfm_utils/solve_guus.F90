@@ -625,6 +625,7 @@
     use m_netw, only: xzw, yzw
     use unstruc_model, only: md_ident
     use m_qnerror
+    use m_calls_saad
     
     implicit none
     integer :: ndx, its
@@ -1667,7 +1668,8 @@
     use m_flowparameters, only: icgsolver, ipre, Noderivedtypes
     use m_partitioninfo
     use m_readyy
-
+    use m_calls_saad
+    
     implicit none
 
     integer :: Ndx, Lnx
@@ -2243,6 +2245,7 @@
     use m_alloc
     use unstruc_messages
     use m_plotdots
+    use m_calls_saad
     implicit none
 
     integer, dimension(:), allocatable :: imask
@@ -2381,6 +2384,7 @@
     use network_data, only: xzw
     use m_flowparameters, only: jalogsolverconvergence
     use mpi
+    use m_calls_saad
     implicit none
 
     integer, intent(in) :: ndx

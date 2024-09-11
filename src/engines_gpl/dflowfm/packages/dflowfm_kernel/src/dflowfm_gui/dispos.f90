@@ -36,6 +36,7 @@
          use m_locatora
          use m_disfor
          use m_howtoview
+         use m_ktext
          
          implicit none
          integer :: ixmax, ixmin, ixy, ndec, nxy

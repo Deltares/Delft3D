@@ -1399,6 +1399,7 @@ contains
       use m_missing
       use m_save_ugrid_state
       use fm_location_types
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -1692,6 +1693,7 @@ contains
       use m_alloc
       use m_missing
       use fm_location_types
+      use m_get_kbot_ktop
       implicit none
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
@@ -2807,7 +2809,7 @@ contains
       use m_flowgeom !only Ndxi
       use m_missing
       use m_flowparameters !only jafullgridoutput
-!    use network_data      !
+      use m_get_kbot_ktop
 
       integer, intent(in) :: imapfile
       integer, intent(in) :: jaseparate
@@ -2950,6 +2952,9 @@ contains
       use m_GlobalParameters
       use m_longculverts
       use m_structures_saved_parameters
+      use m_gettaus
+      use m_gettauswave
+      use m_get_kbot_ktop
 
       integer, intent(in) :: irstfile
       real(kind=hp), intent(in) :: tim
@@ -5233,6 +5238,9 @@ contains
       use fm_location_types
       use m_map_his_precision
       use m_fm_icecover, only: ice_mapout, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ja_icecover, ICECOVER_SEMTNER
+      use m_gettaus
+      use m_gettauswave
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -8054,6 +8062,9 @@ contains
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_append_atts
       use m_fm_icecover, only: ice_mapout, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ja_icecover, ICECOVER_SEMTNER
+      use m_gettaus
+      use m_gettauswave
+      use m_get_kbot_ktop
 
       implicit none
 
@@ -10905,6 +10916,7 @@ contains
       use m_partitioninfo
       use geometry_module, only: get_startend, normaloutchk
       use gridoperations
+      use m_copynetboundstopol
 
       integer, intent(in) :: inetfile
 
@@ -12838,6 +12850,8 @@ contains
 
 !> Assigns the information, that has been read from a restart file and stored in array1, to a 2D array2.
    subroutine assign_restart_data_to_local_array(array1, array2, iloc, kmx, loccount, jamergedmap, iloc_own, write_only_bottom_layer, target_shift)
+      use m_get_kbot_ktop
+
       double precision, allocatable, intent(in) :: array1(:) !< Array that contains information read from a restart file
       double precision, allocatable, intent(inout) :: array2(:, :) !< Target 2D array
       integer, intent(in) :: iloc !< Index of one dimension of the 2D array
@@ -12894,6 +12908,8 @@ contains
    function get_var_and_shift(ncid, varname, targetarr, tmparr, loctype, kmx, locstart, loccount, it_read, jamergedmap, iloc_own, iloc_merge, target_shift) result(ierr)
       use dfm_error
       use fm_location_types
+      use m_get_kbot_ktop
+      
       integer, intent(in) :: ncid !< Open NetCDF data set
       character(len=*), intent(in) :: varname !< Variable name in file.
       double precision, intent(inout) :: targetarr(:) !< Data will be stored in this array.
@@ -13071,6 +13087,7 @@ contains
       use m_initsedtra, only: initsedtra
       use m_fixedweirs, only: weirdte, nfxwL
       use fm_location_types
+      use m_gettaus
 
       character(len=*), intent(in) :: filename !< Name of NetCDF file.
       integer, intent(out) :: ierr !< Return status (NetCDF operations)
@@ -14383,6 +14400,8 @@ contains
       use m_partitioninfo, only: jampi, my_rank, idomain, ighostlev, sdmn, link_ghostdata, reduce_key, reduce_int_sum
       use m_flowgeom, only: ndxi, lnx, ln, ndx
       use fm_external_forcings_data, only: ibnd_own, kbndz, ndxbnd_own, jaoldrstfile
+      use m_wrisam
+
       character(len=*), intent(in) :: filename !< Name of NetCDF file.
       integer, intent(in) :: imapfile
       integer, intent(inout) :: ierr
@@ -16932,6 +16951,7 @@ contains
       use m_sferic, only: jsferic
       use m_samples
       use m_alloc
+      use m_wall_clock_time
 
       implicit none
       type(kdtree_instance) :: treeinst
@@ -16951,7 +16971,7 @@ contains
       character(len=128) :: mesg
       double precision, allocatable :: x_tmp(:), y_tmp(:)
 
-      call klok(t0)
+      call wall_clock_time(t0)
       if (present(inode_merge2loc)) then
          jamerge2own = 1
       else
@@ -17039,7 +17059,7 @@ contains
          end if
       end do
 
-      call klok(t1)
+      call wall_clock_time(t1)
 
       write (mesg, "('done in ', F12.5, ' sec.')") t1 - t0
       call mess(LEVEL_INFO, trim(mesg))
@@ -18402,6 +18422,7 @@ contains
    subroutine flow_node_vector_to_matrix(data_values, flow_node_index1, flow_node_index2, data_values_matrix)
 
       use m_missing, only: dmiss
+      use m_get_kbot_ktop
 
       double precision, allocatable, intent(in) :: data_values(:) !< array for information at flow nodes {"location": "face", "shape": ["ndkx"]}
       integer, intent(in) :: flow_node_index1 !< start index (1:ndx) for transfer of data from vector to matrix format

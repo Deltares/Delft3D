@@ -409,63 +409,6 @@ class TeamCity(object):
             return None
         return self.get_build_info_for_build_id(build_id=latest_build_id)
 
-    def get_build_log(self, build_id: str) -> bytes:
-        """
-        Gets the build log for specific build.
-
-        The TeamCity REST API does not include an endpoint for retrieving the
-        build log. To retrieve the build log, a simple GET request is made to
-        a specific URI instead.
-
-        Arguments:
-            build_id (str): The build id.
-
-        Returns:
-            str: The build log for the latest build for a specific build type.
-
-            Returns None if the request failed.
-        """
-        endpoint = f"{self.__base_uri}httpAuth/downloadBuildLog.html?buildId={build_id}"
-        result = requests.get(
-            url=endpoint, headers=self.__default_headers, auth=self.__auth
-        )
-        if result.status_code == 200:
-            return result.content
-        print(f"Could not retrieve build log for build id {build_id}:")
-        print(f"{result.status_code} - {result.content}")
-        return None
-
-    def get_build_log_for_latest_build_for_build_type_id(
-        self, build_type_id: str, include_failed_builds: bool = False
-    ) -> bytes:
-        """
-        Gets the build log for the latest build for a specific build type.
-
-        Uses the following TeamCity REST API endpoints:
-        /app/rest/builds?<buildLocator>
-        /app/rest/buildTypes/<buildTypeLocator>/builds?<buildLocator>
-
-        The TeamCity REST API does not include an endpoint for retrieving the
-        build log. To retrieve the build log, a simple GET request is made to
-        a specific URI instead.
-
-        Arguments:
-            build_type_id (str): The build type id.
-            include_failed_builds (bool, optional): Specifies whether to include
-                builds that have failed. Defaults to False.
-
-        Returns:
-            str: The build log for the latest build for a specific build type.
-
-            Returns None if the request failed.
-        """
-        latest_build_id = self.get_latest_build_id_for_build_type_id(
-            build_type_id=build_type_id, include_failed_builds=include_failed_builds
-        )
-        if latest_build_id is None:
-            return None
-        return self.get_build_log(build_id=latest_build_id)
-
     def get_latest_build_id_for_build_type_id(
         self, build_type_id: str, include_failed_builds: bool = False
     ) -> str:

@@ -42,6 +42,7 @@ subroutine netboundtocurvi(kp)
    use m_sferic, only: jsferic, jasfer3D
    use gridoperations
    use m_qnerror
+   use m_delpol
 
    implicit none
 

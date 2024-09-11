@@ -39,6 +39,7 @@
      use gridoperations
      use m_depmax2, only: vmax=>vmax2, vmin=>vmin2
      use m_howtoview
+     use m_halt2
 
      implicit none
      integer :: MET

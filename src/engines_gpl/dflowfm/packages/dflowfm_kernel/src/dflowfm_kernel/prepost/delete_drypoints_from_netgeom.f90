@@ -39,6 +39,10 @@ subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
    use m_polygon, only: NPL, ZPL, savepol, restorepol
    use m_tpoly
    use m_samples
+   use m_wall_clock_time
+   use m_delpol
+   use m_reapol
+   use m_delsam
    implicit none
 
    character(*), intent(inout) :: dryptsfilelist !< List of file names to process for deleting dry parts. (Supported formats: .xyz, .pol)
@@ -87,7 +91,7 @@ subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
 
    call mess(LEVEL_INFO, 'removing dry cells...')
 
-   call klok(t0)
+   call wall_clock_time(t0)
 
    do ifil = 1, size(fnames)
 
@@ -158,7 +162,7 @@ subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
       end if
    end do
 
-   call klok(t1)
+   call wall_clock_time(t1)
 
    write (mesg, "('done in ', F12.5, ' sec.')") t1 - t0
    call mess(LEVEL_INFO, trim(mesg))

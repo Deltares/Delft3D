@@ -34,6 +34,9 @@
          use unstruc_files
          use m_devices
          use m_helpnow
+         use m_timlin
+         use m_fkeys
+         use m_botlin
          implicit none
          integer :: imenuvertic
          integer :: infoinput

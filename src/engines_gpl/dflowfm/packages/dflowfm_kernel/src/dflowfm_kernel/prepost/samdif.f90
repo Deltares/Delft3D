@@ -40,6 +40,7 @@ subroutine samdif()
    use m_missing
    use m_sferic, only: jsferic, jasfer3D
    use geometry_module, only: dbdistance
+   use m_delpol
 
    implicit none
 

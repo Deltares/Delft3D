@@ -33,6 +33,7 @@
       subroutine ZOOM3(KEY, NPUT)
          use m_wearelt
          use m_locatora
+         use m_zoomin
 
          implicit none
          integer :: key

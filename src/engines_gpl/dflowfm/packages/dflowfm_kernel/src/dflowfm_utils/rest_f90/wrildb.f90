@@ -29,154 +29,157 @@
 
 !
 !
-
-      !> Writes a polygon/land boundary/cross section file.
+module m_wrildb
+   implicit none
+contains
+   !> Writes a polygon/land boundary/cross section file.
       !! The polyline(s) are written as a sequence of Tekal blocks.
       !! The name for each Tekal block can be specified, or is auto-generated
       !! as 'L00x' otherwise.
-      subroutine WRILDB(MPOL, XSH, YSH, NSH, NCLAN, nnclan, ZSH, nzsh, names, namlen, nnam)
-         use M_MISSING
-         use m_polygon ! , only : zpl, DZL, DZR, jakol45
-         use gridoperations
-         use m_readyy
-         implicit none
-         integer, intent(inout) :: mpol !< Open file pointer where to write to.
-         double precision, intent(in) :: XSH(NSH), YSH(NSH) !< Coordinates, polylines can be separated by dmiss value.
-         integer, intent(in) :: nsh !< Number of points in polyline.
-         integer, intent(in) :: namlen !< string length of names.
-         character(len=namlen), intent(in) :: names(nnam) !< Names of all polylines, header of each Tekal Block.
-         integer, intent(in) :: nnam !< Number of polyline names.
-         integer, intent(in) :: NCLAN(*) !< Third integer value for each point in XSH, optional: use nnclan=0 to ignore
-         integer, intent(in) :: nnclan !< Size of NCLAN, use 0 to ignore.
-         double precision, intent(in) :: ZSH(*) !< Third double  value for each point in XSH, optional: use nzsh=0 to ignore
-         integer, intent(in) :: nzsh !< Size of ZSH, use 0 to ignore.
+   subroutine WRILDB(MPOL, XSH, YSH, NSH, NCLAN, nnclan, ZSH, nzsh, names, namlen, nnam)
+      use M_MISSING
+      use m_polygon ! , only : zpl, DZL, DZR, jakol45
+      use gridoperations
+      use m_readyy
 
-         integer :: L
+      integer, intent(inout) :: mpol !< Open file pointer where to write to.
+      double precision, intent(in) :: XSH(NSH), YSH(NSH) !< Coordinates, polylines can be separated by dmiss value.
+      integer, intent(in) :: nsh !< Number of points in polyline.
+      integer, intent(in) :: namlen !< string length of names.
+      character(len=namlen), intent(in) :: names(nnam) !< Names of all polylines, header of each Tekal Block.
+      integer, intent(in) :: nnam !< Number of polyline names.
+      integer, intent(in) :: NCLAN(*) !< Third integer value for each point in XSH, optional: use nnclan=0 to ignore
+      integer, intent(in) :: nnclan !< Size of NCLAN, use 0 to ignore.
+      double precision, intent(in) :: ZSH(*) !< Third double  value for each point in XSH, optional: use nzsh=0 to ignore
+      integer, intent(in) :: nzsh !< Size of ZSH, use 0 to ignore.
 
-         integer :: i, ipli, npli, mbna, ncol, inscreen
-         integer, allocatable :: istart(:), iend(:)
-         character(len=max(namlen, 10)) :: name
-         character(len=1) :: cdigits
-         character(len=40) :: rec
-         logical :: jaNCLAN, jaZSH
-         logical :: inview
+      integer :: L
 
-         ! Only include third column when size is equal to XSH array (or larger).
-         jaNCLAN = nNCLAN >= NSH
-         jaZSH = nZSH >= NSH
+      integer :: i, ipli, npli, mbna, ncol, inscreen
+      integer, allocatable :: istart(:), iend(:)
+      character(len=max(namlen, 10)) :: name
+      character(len=1) :: cdigits
+      character(len=40) :: rec
+      logical :: jaNCLAN, jaZSH
+      logical :: inview
 
-         call READYY('Writing Polygon / Land Boundary FILE', 0d0)
+      ! Only include third column when size is equal to XSH array (or larger).
+      jaNCLAN = nNCLAN >= NSH
+      jaZSH = nZSH >= NSH
 
-         MBNA = 0
-         if (MBNA > 0) call newfil(mbna, 'bna.bna')
+      call READYY('Writing Polygon / Land Boundary FILE', 0d0)
 
-         if (NSH <= 0) goto 11
-         allocate (istart(nsh), iend(nsh))
+      MBNA = 0
+      if (MBNA > 0) call newfil(mbna, 'bna.bna')
 
-         ! First, find starts and ends of all polylines (separated by dmiss line(s))
-         ! such that each can be written as a named Tekal block later.
-         ipli = 0
-         i = 0
-         pli: do
+      if (NSH <= 0) goto 11
+      allocate (istart(nsh), iend(nsh))
+
+      ! First, find starts and ends of all polylines (separated by dmiss line(s))
+      ! such that each can be written as a named Tekal block later.
+      ipli = 0
+      i = 0
+      pli: do
+         i = i + 1
+         if (i > nsh) exit pli
+         if (xsh(i) == dmiss) cycle pli
+
+         ! Start of a new polyline found
+         ipli = ipli + 1
+         istart(ipli) = i
+         pts: do
             i = i + 1
-            if (i > nsh) exit pli
-            if (xsh(i) == dmiss) cycle pli
+            if (i > nsh) exit pts
+            if (xsh(i) == dmiss) exit pts
+         end do pts
+         iend(ipli) = i - 1
+      end do pli
 
-            ! Start of a new polyline found
-            ipli = ipli + 1
-            istart(ipli) = i
-            pts: do
-               i = i + 1
-               if (i > nsh) exit pts
-               if (xsh(i) == dmiss) exit pts
-            end do pts
-            iend(ipli) = i - 1
-         end do pli
+      npli = ipli
 
-         npli = ipli
+      ! Start writing the set of polyline(s).
+      KMOD = max(1, NSH / 100)
 
-         ! Start writing the set of polyline(s).
-         KMOD = max(1, NSH / 100)
+      write (cdigits, '(i1)') int(floor(log10(dble(npli)) + 1)) ! nr of digits in npli
 
-         write (cdigits, '(i1)') int(floor(log10(dble(npli)) + 1)) ! nr of digits in npli
-
-         if (jaNCLAN .or. jaZSH) then
-            ncol = 3
-            if (jakol45 == 1) then
-               ncol = 5
-            else if (jakol45 == 2) then
-               ncol = 9
-            end if
-         else
-            ncol = 2
+      if (jaNCLAN .or. jaZSH) then
+         ncol = 3
+         if (jakol45 == 1) then
+            ncol = 5
+         else if (jakol45 == 2) then
+            ncol = 9
          end if
-         do ipli = 1, npli
+      else
+         ncol = 2
+      end if
+      do ipli = 1, npli
 
-            if (jakol45 == 2) then
-               inscreen = 0
-               do I = istart(ipli), iend(ipli)
-                  if (inview(xpl(i), ypl(i))) then
-                     inscreen = 1
-                  end if
-               end do
-               if (inscreen == 0) then
-                  cycle
+         if (jakol45 == 2) then
+            inscreen = 0
+            do I = istart(ipli), iend(ipli)
+               if (inview(xpl(i), ypl(i))) then
+                  inscreen = 1
                end if
+            end do
+            if (inscreen == 0) then
+               cycle
+            end if
+         end if
+
+         if (ipli <= nnam) then
+            name = names(ipli)
+         else
+            name = ' '
+         end if
+         ! Generate 'L00x' name if empty
+         if (len_trim(name) <= 0) then
+            write (name, '(A1,I'//cdigits//'.'//cdigits//')') 'L', ipli
+
+            if (MBNA > 0) then
+               rec = ' '
+               write (rec, '(A1,I'//cdigits//'.'//cdigits//')') '"', ipli
+               L = len_trim(rec)
+               write (rec(L + 1:), '(A)') '","",'
+               L = len_trim(rec)
+               write (rec(L + 1:), '(i10)') - (iend(ipli) - istart(ipli) + 1)
+               write (mbna, '(a)') rec
             end if
 
-            if (ipli <= nnam) then
-               name = names(ipli)
-            else
-               name = ' '
-            end if
-            ! Generate 'L00x' name if empty
-            if (len_trim(name) <= 0) then
-               write (name, '(A1,I'//cdigits//'.'//cdigits//')') 'L', ipli
+         end if
 
-               if (MBNA > 0) then
-                  rec = ' '
-                  write (rec, '(A1,I'//cdigits//'.'//cdigits//')') '"', ipli
-                  L = len_trim(rec)
-                  write (rec(L + 1:), '(A)') '","",'
-                  L = len_trim(rec)
-                  write (rec(L + 1:), '(i10)') - (iend(ipli) - istart(ipli) + 1)
-                  write (mbna, '(a)') rec
-               end if
-
-            end if
-
-            write (MPOL, '(A)') trim(name)
-            write (MPOL, '(I6,I6)') iend(ipli) - istart(ipli) + 1, ncol
+         write (MPOL, '(A)') trim(name)
+         write (MPOL, '(I6,I6)') iend(ipli) - istart(ipli) + 1, ncol
 
 !        rec = '"324","",-2
 
-            do I = istart(ipli), iend(ipli)
-               if (jaNCLAN) then
-                  write (MPOL, '(2F15.6,I5)') XSH(I), YSH(I), NCLAN(I)
-               elseif (jaZSH) then
-                  if (jakol45 == 1) then
-                     write (MPOL, '(5F15.6)') XSH(I), YSH(I), zpl(i), DZL(i), DZR(i)
-                  else if (jakol45 == 2) then
-                     write (MPOL, '(2F15.6, 7F7.2)') XSH(I), YSH(I), zpl(i), DZL(i), DZR(i), dcrest(i), dtL(i), dtr(i), dveg(i)
-                  else
-                     write (MPOL, '(3F15.6)') XSH(I), YSH(I), ZSH(I)
-                  end if
-                  if (MBNA > 0) write (Mbna, '(2F15.6)') XSH(I), YSH(I)
+         do I = istart(ipli), iend(ipli)
+            if (jaNCLAN) then
+               write (MPOL, '(2F15.6,I5)') XSH(I), YSH(I), NCLAN(I)
+            elseif (jaZSH) then
+               if (jakol45 == 1) then
+                  write (MPOL, '(5F15.6)') XSH(I), YSH(I), zpl(i), DZL(i), DZR(i)
+               else if (jakol45 == 2) then
+                  write (MPOL, '(2F15.6, 7F7.2)') XSH(I), YSH(I), zpl(i), DZL(i), DZR(i), dcrest(i), dtL(i), dtr(i), dveg(i)
                else
-                  write (MPOL, '(2F15.6)') XSH(I), YSH(I)
+                  write (MPOL, '(3F15.6)') XSH(I), YSH(I), ZSH(I)
                end if
+               if (MBNA > 0) write (Mbna, '(2F15.6)') XSH(I), YSH(I)
+            else
+               write (MPOL, '(2F15.6)') XSH(I), YSH(I)
+            end if
 
-               if (mod(I, KMOD) == 0) then
-                  call READYY(' ', min(1d0, dble(I) / max(1, NSH)))
-               end if
-            end do ! pts of one polyline
-         end do ! all polylines
+            if (mod(I, KMOD) == 0) then
+               call READYY(' ', min(1d0, dble(I) / max(1, NSH)))
+            end if
+         end do ! pts of one polyline
+      end do ! all polylines
 
-         deallocate (istart, iend)
-11       call READYY(' ', -1d0)
-         call doclose(MPOL)
+      deallocate (istart, iend)
+11    call READYY(' ', -1d0)
+      call doclose(MPOL)
 
-         if (MBNA > 0) call doclose(MBNA)
+      if (MBNA > 0) call doclose(MBNA)
 
-         return
-      end
+      return
+   end
+end module m_wrildb

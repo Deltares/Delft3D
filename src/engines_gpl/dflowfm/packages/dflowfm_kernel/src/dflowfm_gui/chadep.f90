@@ -32,6 +32,7 @@
 
       subroutine CHADEP(XP, YP, RD, KEY)
          use M_MISSING
+         use m_disput
          implicit none
          double precision :: XP, YP, RD
          integer :: KEY

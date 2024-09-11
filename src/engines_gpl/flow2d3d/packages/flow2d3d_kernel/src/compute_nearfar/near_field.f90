@@ -457,6 +457,8 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
                 allocate(waitfiles(no_dis), stat=ierror)
                 waitfiles = ' '
                 write(cctime,'(f14.3)') time/60.0_fp
+                write(lundia, '(3a)') "**************** Start of new coupling interval: ", cctime, " ***************************" 
+            
                 !
                 ! Read the general information from the settings.xml file every time a cortime simulation is requested.
                 ! This allows for restarting of cormix on a different pc (request Robin Morelissen)
@@ -659,6 +661,13 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
        call d3stop(1,gdp)
     endif
     !
+    ! Fix by Wilbert: set nf_src_mom to True. Even when all NF2FF files only have 6 columns it doesn't hurt to put nf_src_mom to True, 
+    ! as only zeros will be present in the glb_nf_src_momu and glb_nf_src_momv arrays, which means that it will not be taken into 
+    ! account in the cucnp and z_cucnp routines 
+    !
+    nf_src_mom = .true.
+    
+    !
     ! Copy the global disnf/sournf/nf_src_momu/nf_src_momv to the local ones, even if not parallel,
     ! only when having processed the near field data
     !
@@ -674,24 +683,6 @@ subroutine near_field(u0     ,v0     ,rho      ,thick  , &
           if (.not.error) call dfbroadc(glb_nf_src_momu ,nmaxgl*mmaxgl*kmax*no_dis       ,dfdble,error,errmsg)
           if (.not.error) call dfbroadc(glb_nf_src_momv ,nmaxgl*mmaxgl*kmax*no_dis       ,dfdble,error,errmsg)
           if (.not.error) call dfbroadc(gdp%gdnfl%momrelax, 1                            ,dfdble,error,errmsg)
-          if (.not.error) then
-             !
-             ! The master partition sets nf_src_mom based on the NF2FF input read and has to broadcast it
-             ! using the integer variant imom
-             !
-             imom = 0
-             if (inode==master) then
-                if (nf_src_mom) then
-                   imom = 1
-                endif
-             endif
-             call dfbroadc(imom, 1, dfint,error,errmsg)
-             if (imom == 1) then
-                nf_src_mom = .true.
-             else
-                nf_src_mom = .false.
-             endif
-          endif
           if (error) then
              call write_error(errmsg, unit=lundia)
           else

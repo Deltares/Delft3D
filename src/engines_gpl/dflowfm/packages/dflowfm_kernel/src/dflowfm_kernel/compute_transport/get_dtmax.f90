@@ -43,6 +43,7 @@ subroutine get_dtmax()
    use m_sediment, only: mtd, stm_included
    use m_partitioninfo
    use timers
+   use m_get_kbot_ktop
 
    implicit none
 

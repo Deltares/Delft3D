@@ -34,6 +34,7 @@
          use M_WEARELT
          use M_BITMAP
          use m_drawthis
+         use m_halt2
          implicit none
          integer :: i
          integer :: ini

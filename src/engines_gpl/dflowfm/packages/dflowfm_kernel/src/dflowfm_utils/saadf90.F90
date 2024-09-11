@@ -82,12 +82,13 @@ module m_saad
 !
 end module m_saad
 
+module m_calls_saad
+   implicit none
+contains
 subroutine inisaad(epscg_loc, maxmatvecs_loc, alpha_loc)
    use m_reduce
    use m_saad
    use m_flowparameters, only: Noderivedtypes
-
-   implicit none
 
    double precision, intent(in) :: epscg_loc !< threshold in termination criterium
    integer, intent(in) :: maxmatvecs_loc !< maximum number of matrix-vector multiplications
@@ -339,6 +340,8 @@ subroutine cgsaad(its, na, nocg, jaini, jabcgstab, ierror, res)
    end if
 
 end subroutine cgsaad
+
+end module m_calls_saad
 
 !----------------------------------------------------------------------c
 !                          S P A R S K I T                             c
@@ -2748,7 +2751,7 @@ subroutine runrc2(n, rhs, sol, ipar, fpar, wk, a, ja, ia, au, jau, ju, its, eps,
    ipar(1) = 0
 
    ! time = dtime(dt)
-   ! call klok(cp0)
+   ! call wall_clock_time(cp0)
 
 10 if (jabcgstab == 1) then
       call BCGSTAB(n, rhs, sol, ipar, fpar, wk)
@@ -2824,6 +2827,7 @@ subroutine runrc2(n, rhs, sol, ipar, fpar, wk, a, ja, ia, au, jau, ju, its, eps,
 end subroutine runrc2
 
 subroutine runrc(n, rhs, sol, sol0, ipar, fpar, wk, guess, a, ja, ia, au, jau, ju, solver)
+   use m_wall_clock_time
    implicit none
    integer n, ipar(16), ia(n + 1), ja(5 * n), ju(n), jau(30 * n)
    double precision :: fpar(16), rhs(n), sol(n), sol0(n), guess(n), wk(2 * 30 * n), a(5 * n), au(30 * n), cp0, cp1
@@ -2867,7 +2871,7 @@ subroutine runrc(n, rhs, sol, sol0, ipar, fpar, wk, guess, a, ja, ia, au, jau, j
    iou = 6
    ipar(1) = 0
 !      time = dtime(dt)
-   call klok(cp0)
+   call wall_clock_time(cp0)
 10 call solver(n, rhs, sol, ipar, fpar, wk)
 
 !
@@ -2925,7 +2929,7 @@ subroutine runrc(n, rhs, sol, sol0, ipar, fpar, wk, guess, a, ja, ia, au, jau, j
 !      write (iou, *) '# the error norm is', dnrm2(n,wk(1+n),1)
 !
 
-   call KLOK(CP1)
+   call wall_clock_time(CP1)
    write (*, '(A,F8.4,A,I4)') ' CPU time =', cp1 - cp0, &
       '   nbr of iterations =', its
    call watisdefout(n, sol, sol0)

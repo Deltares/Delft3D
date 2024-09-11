@@ -48,7 +48,8 @@
        use m_alloc
        use m_partitioninfo, only: idomain, iglobal_s, my_rank
        use m_readyy
-
+       use m_rcm
+       
        implicit none
 
        integer, allocatable :: adj_row(:)
@@ -59,7 +60,6 @@
        type(tface), allocatable :: tface1(:)
 
        integer, allocatable :: adj_tmp(:, :), adj_tmp2(:)
-       integer, external :: adj_bandwidth, adj_perm_bandwidth
 
        integer :: numltot, ii, jj, i, j, indx, isgn, k, kk, k1, k2, km, L, LL, p, p1, bw, bwrn, sumdiff, sumdiffrn
 

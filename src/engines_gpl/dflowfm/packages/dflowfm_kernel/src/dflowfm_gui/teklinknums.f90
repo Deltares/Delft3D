@@ -34,6 +34,7 @@
      use M_MISSING
      use m_netw
      use m_drawthis
+     use m_halt2
      implicit none
      integer :: MET, NCOL
 

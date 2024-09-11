@@ -40,6 +40,7 @@
     use m_transport
     use m_polygon
     use m_netw
+    use m_halt2
     implicit none
     integer :: ncol, jaall, ITYP
     integer :: L, k1, k2

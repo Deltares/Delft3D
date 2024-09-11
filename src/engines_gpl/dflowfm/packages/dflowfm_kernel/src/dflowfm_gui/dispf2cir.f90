@@ -31,6 +31,7 @@
 !
 
       subroutine DISPF2cir(X, Y, N, Rcx, Rcy, NCOL)
+         use m_fbox
          implicit none
          integer :: i
          integer :: n

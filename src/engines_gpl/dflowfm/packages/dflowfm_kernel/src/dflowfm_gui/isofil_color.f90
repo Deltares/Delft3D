@@ -36,6 +36,8 @@ contains
     subroutine isofil_color(X, Y, Z, n4, NCOLR, VAL, NCOLS, NV)
       use m_topix
       use m_drawthis
+      use m_sub_polygon
+
       integer :: n4, ncolr
       double precision :: X(n4), Y(n4), Z(n4)
 

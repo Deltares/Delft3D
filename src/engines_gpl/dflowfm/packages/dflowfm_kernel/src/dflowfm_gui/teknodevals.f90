@@ -40,6 +40,7 @@
      use gridoperations
      use m_depmax
      use m_howtoview
+     use m_halt2
      
      implicit none
      integer :: MET

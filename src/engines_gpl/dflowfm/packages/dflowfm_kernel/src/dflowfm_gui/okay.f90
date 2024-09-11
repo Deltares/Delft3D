@@ -29,21 +29,24 @@
 
 !
 !
-
+module m_okay
+   implicit none
+contains
 !
-      subroutine OKAY(JA)
-         use m_devices
-         use m_gui
-         implicit none
-         integer, intent(in) :: ja
+   subroutine OKAY(JA)
+      use m_devices
+      use m_gui
 
-         if (jaGUI /= 1) return
+      integer, intent(in) :: ja
 
-         call ISCREENBELL('ON')
-         if (JA == 1) then
-            call ISCREENBELL(' ')
-         end if
-         call ISCREENBELL('OFF')
-         return
+      if (jaGUI /= 1) return
 
-      end
+      call ISCREENBELL('ON')
+      if (JA == 1) then
+         call ISCREENBELL(' ')
+      end if
+      call ISCREENBELL('OFF')
+      return
+
+   end
+end module m_okay

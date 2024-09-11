@@ -249,6 +249,8 @@ contains
 
 !> Finds a spline point within a certain radius of a clicked point.
    subroutine isSplinePoint(xl, yl, rcir, mv, nv)
+      use m_dispnode2
+      
       double precision, intent(inout) :: xl, yl !< The clicked point
       double precision, intent(in) :: rcir !< The search radius around the point
       integer, intent(out) :: mv, nv !< The spline nr and spline-point nr found.
@@ -339,6 +341,7 @@ contains
 
 !> write splines in TEKAL format
    subroutine writeSplines(mspl)
+      use m_firstlin
       implicit none
       integer :: mspl
       character MATR * 5

@@ -50,6 +50,7 @@
          use M_ARCINFO
          use m_readyy
          use m_qnerror
+         use m_delpol
 
          implicit none
 

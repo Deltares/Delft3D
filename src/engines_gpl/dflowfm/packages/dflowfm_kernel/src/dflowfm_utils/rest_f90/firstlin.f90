@@ -29,20 +29,23 @@
 
 !
 !
+module m_firstlin
+   implicit none
+contains
+   subroutine FIRSTLIN(MRGF)
+      use dflowfm_version_module, only: version_full
+      use dflowfm_version_module, only: getbranch_dflowfm
 
-      subroutine FIRSTLIN(MRGF)
-         use dflowfm_version_module, only: version_full
-         use dflowfm_version_module, only: getbranch_dflowfm
-         implicit none
-         integer :: mrgf
+      integer :: mrgf
 
-         character TEX * 255, RUNDAT * 20
-         call DATUM(RUNDAT)
-         write (MRGF, '(A)') '* '//trim(version_full)
-         call getbranch_dflowfm(TEX)
-         write (MRGF, '(A)') '* Source: '//trim(TEX)
-         TEX = '* File creation date: '//RUNDAT
-         write (MRGF, '(A)') trim(TEX)
+      character TEX * 255, RUNDAT * 20
+      call DATUM(RUNDAT)
+      write (MRGF, '(A)') '* '//trim(version_full)
+      call getbranch_dflowfm(TEX)
+      write (MRGF, '(A)') '* Source: '//trim(TEX)
+      TEX = '* File creation date: '//RUNDAT
+      write (MRGF, '(A)') trim(TEX)
 
-         return
-      end
+      return
+   end
+end module m_firstlin

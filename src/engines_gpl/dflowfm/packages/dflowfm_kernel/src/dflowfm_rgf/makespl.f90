@@ -44,58 +44,63 @@
 !>          yh(kmax) y-coordinates of grid points
 !>          kmax     number of grid points = 1+MNfac*(NT-1)
 !>          tt(imax) spline-coordinates of grid points
-     subroutine MAKESPL(T, X, Y, imax, N, NT, MNFAC, XH, YH, KMAX, TT, H)
-        use m_gridsettings
-        implicit none
-        ! USE DIMENS
+module m_makespl
+   implicit none
+contains
+   subroutine MAKESPL(T, X, Y, imax, N, NT, MNFAC, XH, YH, KMAX, TT, H)
+      use m_gridsettings
+      use m_makes
+      use m_makessq
+      use m_getxy
 
-        integer :: imax, n, nt, kmax, mnfac
-        double precision :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX), &
-           S2(IMAX), SSQ(IMAX), XH(IMAX), YH(IMAX), &
-           A(IMAX), SL(IMAX), SR(IMAX)
-        double precision, intent(in) :: H !< for curvature adapted meshing
+      integer :: imax, n, nt, kmax, mnfac
+      double precision :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX), &
+         S2(IMAX), SSQ(IMAX), XH(IMAX), YH(IMAX), &
+         A(IMAX), SL(IMAX), SR(IMAX)
+      double precision, intent(in) :: H !< for curvature adapted meshing
 
-        double precision, dimension(IMAX), intent(out) :: TT !< spline-coordinates of grid points
+      double precision, dimension(IMAX), intent(out) :: TT !< spline-coordinates of grid points
 
-        integer :: L, k1, k2, jadip, k
+      integer :: L, k1, k2, jadip, k
 !     Maak interpolatie
 
 !     Eerst splines X,Y en S aanmaken
-        call MAKES(X, Y, X2, Y2, T, S, S2, imax, N, NT, H)
+      call MAKES(X, Y, X2, Y2, T, S, S2, imax, N, NT, H)
 
-        KMAX = MNFAC * (NT - 1) + 1
+      KMAX = MNFAC * (NT - 1) + 1
 
-        if (NT >= 2) then
-           call MAKESSQ(S, A, SR, SL, SSQ, NT, MNFAC, IMAX)
+      if (NT >= 2) then
+         call MAKESSQ(S, A, SR, SL, SSQ, NT, MNFAC, IMAX)
 
 !        Check op positief en monotoon
-           do L = 1, NT - 1
-              K1 = MNFAC * (L - 1) + 1
-              K2 = K1 + MNFAC
+         do L = 1, NT - 1
+            K1 = MNFAC * (L - 1) + 1
+            K2 = K1 + MNFAC
 
-              JADIP = 0
-23            if (JADIP == 1) then
-                 do K = K1 + 1, K2 - 1
-                    SSQ(K) = 0.5 * (SSQ(K - 1) + SSQ(K + 1))
-                 end do
-              end if
+            JADIP = 0
+23          if (JADIP == 1) then
+               do K = K1 + 1, K2 - 1
+                  SSQ(K) = 0.5 * (SSQ(K - 1) + SSQ(K + 1))
+               end do
+            end if
 
-              do K = K1, K2 - 1
-                 if (SSQ(K + 1) < SSQ(K)) then
-                    JADIP = 1
-                    goto 23
-                 end if
-              end do
+            do K = K1, K2 - 1
+               if (SSQ(K + 1) < SSQ(K)) then
+                  JADIP = 1
+                  goto 23
+               end if
+            end do
 
-           end do
-        else
-           SSQ(1) = T(1)
-        end if
+         end do
+      else
+         SSQ(1) = T(1)
+      end if
 
 !     Punten terug invullen in oorspronkelijke spline
-        do K = 1, KMAX
-           call GETXY(T, X, X2, Y, Y2, imax, N, NT, SSQ(K), XH(K), YH(K), TT(K), H)
-        end do
+      do K = 1, KMAX
+         call GETXY(T, X, X2, Y, Y2, imax, N, NT, SSQ(K), XH(K), YH(K), TT(K), H)
+      end do
 
-        return
-     end subroutine makespl
+      return
+   end subroutine makespl
+end module m_makespl

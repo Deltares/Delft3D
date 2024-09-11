@@ -40,6 +40,7 @@
 
       use network_data, only: numk, nump, xk, xzw, yzw
       use unstruc_messages
+      use m_delpol
 
       implicit none
 

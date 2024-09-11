@@ -36,6 +36,7 @@ subroutine disable_outside_curvigrid(Nk, Ns, xk, yk, xs, ys, imaskk, imasks)
    use m_polygon
    use m_missing
    use geometry_module, only: dbpinpol
+   use m_delpol
 
    implicit none
 

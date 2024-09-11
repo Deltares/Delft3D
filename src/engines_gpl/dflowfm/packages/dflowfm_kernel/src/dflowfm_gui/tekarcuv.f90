@@ -32,6 +32,7 @@
 
  subroutine tekarcuv(vfac, met)
     use M_arcuv
+    use m_htext
     implicit none
     double precision :: vfac
     integer :: met

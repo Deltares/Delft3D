@@ -48,6 +48,7 @@ subroutine setumod(jazws0) ! set cell center Perot velocities at nodes
    use m_setucxcuy_leastsquare, only: reconst2nd
    use MessageHandling
    use m_drawthis
+   use m_get_kbot_ktop
 
    implicit none
 

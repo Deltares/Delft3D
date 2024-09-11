@@ -35,6 +35,10 @@
          use unstruc_colors
          use m_helpnow
          use m_qnerror
+         use m_ktext
+         use m_putget_un
+         use m_okay
+         use m_botlin
          implicit none
          integer :: MODE, NFLD, KEY, M1, N1, M2, N2
          integer :: newmode

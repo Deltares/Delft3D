@@ -35,6 +35,8 @@
          use m_devices
          use M_MISSING
          use m_helpnow
+         use m_timlin
+         use m_fkeys
          implicit none
          integer :: infoattribute
          integer :: infoinput

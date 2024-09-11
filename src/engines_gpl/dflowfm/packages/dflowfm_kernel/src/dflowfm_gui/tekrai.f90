@@ -48,6 +48,7 @@
     use m_depmax
     use m_vfac
     use m_drawthis
+    use m_fbox
 
     implicit none
 

@@ -33,7 +33,7 @@
 !
       subroutine DISP2C(X, Y, N, RCIR, NCOL)
          use m_missing
-         !     use gridoperations
+         use m_jgrline8
          implicit none
          integer :: n, ncol
          double precision :: X(N), Y(N), rcir

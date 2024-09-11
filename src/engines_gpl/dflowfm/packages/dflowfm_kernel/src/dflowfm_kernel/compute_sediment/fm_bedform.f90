@@ -56,6 +56,7 @@ contains
       use m_flow, only: frcu,ifrcutp,hu, u1,s1, ucx_mor, ucy_mor, lnkx
       use m_flowtimes
       use m_waves
+      use m_get_kbot_ktop
       !
       implicit none
       !
@@ -651,6 +652,7 @@ contains
       use m_bedform
       use m_rdtrt
       use m_waves
+      use m_get_kbot_ktop
       !
       implicit none
       !

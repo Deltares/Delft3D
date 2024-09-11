@@ -319,6 +319,7 @@ contains
       use m_missing
       use network_data, only: kn, xk, yk, NumL, lne
       use m_flowparameters, only: izbndpos
+      use m_crosspoly
       implicit none
 
       character(len=*), intent(in) :: bndtype !< boundary condition type

@@ -778,6 +778,7 @@ contains
       use kdtree2Factory
       use unstruc_messages
       use m_find_flownode, only: find_nearest_flownodes_kdtree
+      use m_wall_clock_time
 
       implicit none
 
@@ -806,7 +807,7 @@ contains
       Nj = j2 - j1 + 1
 
       if (ini == 0) then
-         call klok(t0)
+         call wall_clock_time(t0)
 
          allocate (jasea(i1:i2, j1:j2), stat=ierr)
 
@@ -901,7 +902,7 @@ contains
             end do
          end if
 
-         call klok(t1)
+         call wall_clock_time(t1)
          write (str, "('SAL/aggregate waterlevels, elapsed time: ', G15.5, 's.')") t1 - t0
          call mess(LEVEL_INFO, trim(str))
 
@@ -1074,6 +1075,8 @@ contains
    end subroutine findleftright
 
    subroutine selfattraction(avhs, self, i1, i2, j1, j2, jaselfal)
+      use m_shaec
+      use m_shsec
       implicit none
 
       ! Input\Output parameter
@@ -5729,6 +5732,7 @@ contains
       use dfm_error
       use messageHandling
       use m_polygon
+      use m_reapol
 
       implicit none
 
@@ -5904,6 +5908,8 @@ contains
       use m_missing
       use dfm_error
       use unstruc_messages
+      use m_delpol
+      use m_reapol
 
       implicit none
 
@@ -6049,6 +6055,8 @@ contains
       use system_utils, only: FILESEP
       use m_arcinfo
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+      use m_reapol
+      use m_delsam
 
       implicit none
 
@@ -6412,6 +6420,7 @@ contains
       use m_missing
       use m_polygon
       use geometry_module, only: dbpinpol
+      use m_reapol
       implicit none
 
       logical :: success

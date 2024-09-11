@@ -29,13 +29,14 @@
 
 !
 !
-
+module m_jgrline8
+      implicit none
+contains
    subroutine JGRLINE8(X, Y, N) ! TEKEN LIJN, INCL XYMISSEN, GEBRUIK VAN INVIEW EN PROJECTIE
 
       use m_missing
-      ! use gridoperations
+      use m_inview2
 
-      implicit none
       integer :: n
       double precision :: X(N), Y(N)
 
@@ -46,7 +47,6 @@
       double precision :: XA, YA
       integer, parameter :: KMAX = 4096 ! BEPERKING VAN INTERACTER
       real :: XX(KMAX), YY(KMAX)
-      logical inview2
 
       K = 0
       L = 0
@@ -75,3 +75,4 @@
       end do
       return
    end subroutine JGRLINE8
+end module m_jgrline8

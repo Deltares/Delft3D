@@ -33,6 +33,7 @@
       subroutine DATUM2(DATE)
          use unstruc_display, only: jadatetime
          use system_utils, only: FILESEP
+         use m_dateandtimenow
          implicit none
          integer :: iyear, month, iday, ihour, minute, isecnd
          character DATE * 20

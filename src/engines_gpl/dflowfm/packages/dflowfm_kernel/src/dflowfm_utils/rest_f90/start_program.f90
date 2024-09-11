@@ -39,6 +39,10 @@
          use m_gui
          use unstruc_messages
          use m_helpnow
+         use m_fkeys
+         use m_menuh
+         use m_botlin
+         use m_firstlin
 
          implicit none
 

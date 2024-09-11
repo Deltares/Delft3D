@@ -29,13 +29,17 @@
 
 !
 !
-
-subroutine qorifdif12(hg, d, a, h1, h2, qd)
+module m_qorifdif12
    implicit none
-   double precision :: hg, d, a, h1, h2, qd
-   double precision :: ql, qr
+contains
+   subroutine qorifdif12(hg, d, a, h1, h2, qd)
+      use m_getq1
+      use m_getq3
+      double precision :: hg, d, a, h1, h2, qd
+      double precision :: ql, qr
 
-   call getq1(hg, d, h1, h2, ql)
-   call getq3(hg, a, h1, h2, qr)
-   qd = ql - qr
-end
+      call getq1(hg, d, h1, h2, ql)
+      call getq3(hg, a, h1, h2, qr)
+      qd = ql - qr
+   end
+end module m_qorifdif12

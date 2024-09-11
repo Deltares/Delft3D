@@ -36,11 +36,8 @@
 !while the kernel of FM depends on the <fm1dimp> module, the opposite is not true.
 
 subroutine flow_initialize_fm1dimp_timestep(iresult, time1)
-
-!
-!MODULES
-!
-
+   use m_fm1dimp_update_network
+   use m_fm1dimp_update_bc
    implicit none
 
 !

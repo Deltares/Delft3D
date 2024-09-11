@@ -34,6 +34,8 @@
       use m_polygon
       use unstruc_display
       use m_missing
+      use m_halt2
+      use m_htext
 
       implicit none
 

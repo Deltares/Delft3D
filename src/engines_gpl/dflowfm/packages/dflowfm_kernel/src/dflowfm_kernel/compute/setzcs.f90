@@ -33,6 +33,7 @@
  subroutine setzcs()
     use m_flow
     use m_flowgeom
+    use m_get_kbot_ktop
     implicit none
 
     integer :: kk, k, kb, kt, nlayb, nrlay

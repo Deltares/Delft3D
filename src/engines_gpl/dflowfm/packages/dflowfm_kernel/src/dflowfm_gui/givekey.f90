@@ -31,6 +31,7 @@
 !
 
       subroutine GIVEKEY(KEY)
+         use m_ktext
          implicit none
          integer :: key
          character TEX * 14

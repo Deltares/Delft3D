@@ -913,6 +913,8 @@ subroutine dfm_waq_initexternalforcings(iresult)
    use timers
    use unstruc_files, only: resolvePath
    use fm_location_types, only: UNC_LOC_S
+   use m_delpol
+   use m_get_kbot_ktop
 
    implicit none
    integer, intent(out) :: iresult
@@ -1369,6 +1371,9 @@ subroutine copy_data_from_fm_to_wq_processes(time)
    use processes_input
    use m_waves, only: fetch, nwf, hwav, rlabda, twav
    use unstruc_messages
+   use m_gettaus
+   use m_gettauswave
+   use m_get_kbot_ktop
    implicit none
 
    double precision, intent(in) :: time !< time     for waq in seconds

@@ -13,7 +13,7 @@ from settings.teamcity_settings import NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIF
 class ArtifactInstallHelper(object):
     """ Class responsible for downloading, unpacking and installing the DIMR artifacts. """
 
-    def __init__(self, teamcity: TeamCity, ssh_client: SshClient, full_dimr_version: str):
+    def __init__(self, teamcity: TeamCity, ssh_client: SshClient, dimr_version: str):
         """
         Creates a new instance of ArtifactInstallHelper.
 
@@ -24,7 +24,7 @@ class ArtifactInstallHelper(object):
         """
         self.__teamcity = teamcity
         self.__ssh_client = ssh_client
-        self.__full_dimr_version = full_dimr_version
+        self.__dimr_version = dimr_version
 
     def download_artifacts_to_network_drive(self) -> None:
         """ Downloads the DIMR artifacts to the network drive. """
@@ -48,16 +48,16 @@ class ArtifactInstallHelper(object):
         print(f"Installing DIMR on {LINUX_ADDRESS} via SSH...")
 
         # setup the command
-        command = f"cd /p/d-hydro/dimrset/weekly/{self.__full_dimr_version}/lnx64/bin;"
+        command = f"cd /p/d-hydro/dimrset/weekly/{self.__dimr_version}/lnx64/bin;"
         command += "./libtool_install.sh;"
         command += "cd /p/d-hydro/dimrset/weekly;"
-        command += f"chgrp -R dl_acl_dsc {self.__full_dimr_version}/;"
+        command += f"chgrp -R dl_acl_dsc {self.__dimr_version}/;"
         command += "rm latest;"
-        command += f"ln -s {self.__full_dimr_version} latest;"
-        command += f"chmod -R a+x,a-s {self.__full_dimr_version}/;"
+        command += f"ln -s {self.__dimr_version} latest;"
+        command += f"chmod -R a+x,a-s {self.__dimr_version}/;"
         command += "cd /p/d-hydro/dimrset;"
         command += "rm latest;"
-        command += f"ln -s weekly/{self.__full_dimr_version} latest;"
+        command += f"ln -s weekly/{self.__dimr_version} latest;"
 
         # execute command
         self.__ssh_client.execute(address=LINUX_ADDRESS, command=command)
@@ -72,9 +72,9 @@ class ArtifactInstallHelper(object):
             artifacts_to_download List[str]: A list of artifact names to download.
             build_id (str): The build id for the build to download the artifacts from.
         """
-        file_path = f"{NETWORK_BASE_PATH}{self.__full_dimr_version}"
+        file_path = f"{NETWORK_BASE_PATH}{self.__dimr_version}"
         if not os.path.exists(f"{file_path}"):
-            command = f"mkdir /p/d-hydro/dimrset/weekly/{self.__full_dimr_version}"
+            command = f"mkdir /p/d-hydro/dimrset/weekly/{self.__dimr_version}"
             self.__ssh_client.execute(address=LINUX_ADDRESS, command=command)  # via SSH due to permission issues on P:\
 
         for artifact_to_download in artifacts_to_download:

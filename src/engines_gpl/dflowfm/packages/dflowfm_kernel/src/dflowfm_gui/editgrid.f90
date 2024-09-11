@@ -36,6 +36,10 @@
          use m_modfld
          use m_helpnow
          use m_drawthis
+         use m_ktext
+         use m_putget_un
+         use m_okay
+         use m_botlin
          implicit none
          integer :: mode, nfld, key
 

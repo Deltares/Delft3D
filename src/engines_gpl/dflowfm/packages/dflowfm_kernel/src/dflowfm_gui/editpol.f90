@@ -47,6 +47,11 @@
       use m_qnrgf
       use m_settings
       use m_qnerror
+      use m_ktext
+      use m_putget_un
+      use m_halt2
+      use m_delpol
+      use m_wripol
       implicit none
       integer :: jaquit, jazoomshift, nshift
       integer :: k

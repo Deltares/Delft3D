@@ -9,7 +9,9 @@ import jetbrains.buildServer.configs.kotlin.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
 object Trigger : BuildType({
+
     name = "Trigger"
+    buildNumberPattern = "%build.revisions.revision%"
 
     vcs {
         root(DslContext.settingsRoot)
@@ -100,7 +102,7 @@ object Trigger : BuildType({
             name = "Start Windows Testbench"
 
             scriptContent = """
-                curl -sS \
+                curl --fail --verbose --silent --show-error \
                      -u %teamcity_user%:%teamcity_pass% \
                      -X POST \
                      -H "Content-Type: application/xml" \

@@ -39,6 +39,7 @@
     use m_strucs
     use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
     use m_drawthis
+    use m_get_kbot_ktop
 
     implicit none
 

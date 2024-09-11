@@ -29,25 +29,28 @@
 
 !
 !
+module m_makes
+   implicit none
+contains
+!>     maak X,Y splines + afstandsarray en splines S op basis
+!!     van NT snijpunten
+   subroutine MAKES(X, Y, X2, Y2, T, S, S2, imax, N, NT, H)
+      use m_splinxy
+      use m_spline
+      use m_getdis
 
-      subroutine MAKES(X, Y, X2, Y2, T, S, S2, imax, N, NT, H)
-!     maak X,Y splines + afstandsarray en splines S op basis
-!     van NT snijpunten
-         !USE DIMENS
-         use m_splinxy
-         use m_spline
-         implicit none
-         integer :: imax, n, nt
-         double precision :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX), S2(IMAX)
-         double precision, intent(in) :: H !< for curvature adapted meshing
+      integer :: imax, n, nt
+      double precision :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX), S2(IMAX)
+      double precision, intent(in) :: H !< for curvature adapted meshing
 
-         integer :: i
+      integer :: i
 
-         call SPLINXY(X, Y, X2, Y2, N)
+      call SPLINXY(X, Y, X2, Y2, N)
 
-         do I = 1, NT
-            call GETDIS(X, Y, X2, Y2, N, T(I), S(I), H)
-         end do
-         call SPLINE(S, NT, S2)
-         return
-      end subroutine makes
+      do I = 1, NT
+         call GETDIS(X, Y, X2, Y2, N, T(I), S(I), H)
+      end do
+      call SPLINE(S, NT, S2)
+      return
+   end subroutine makes
+end module m_makes

@@ -43,6 +43,10 @@
          use m_helpnow
          use m_cconstants
          use m_qnerror
+         use m_ktext
+         use m_putget_un
+         use m_okay
+         use m_botlin
          implicit none
          integer :: MODE, KEY
          integer :: newmode

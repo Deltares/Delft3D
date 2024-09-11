@@ -36,6 +36,7 @@ subroutine copycurvigridboundstopol()
    use m_grid
    use m_polygon
    use gridoperations
+   use m_copynetboundstopol
 
    implicit none
 

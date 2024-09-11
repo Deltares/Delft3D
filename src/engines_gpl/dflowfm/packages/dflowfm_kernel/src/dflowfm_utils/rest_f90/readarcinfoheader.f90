@@ -26,12 +26,13 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
+module m_readarcinfoheader
+   implicit none
+contains
 !
 !
 
       subroutine READARCINFOHEADER(MINP, MMAX, NMAX, X0, Y0, DX, DY, RMIS)
-         implicit none
          double precision :: dx, dy
          integer :: jacornerx
          integer :: jacornery
@@ -83,3 +84,4 @@
 105      call READERROR('LOOKING FOR CELLSIZE (ARCINFO), BUT GETTING', REC, MINP)
 106      call READERROR('LOOKING FOR MISSING VALUE (ARCINFO), BUT GETTING', REC, MINP)
       end
+end module m_readarcinfoheader

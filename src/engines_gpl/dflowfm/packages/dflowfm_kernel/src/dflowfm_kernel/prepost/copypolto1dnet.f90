@@ -35,6 +35,7 @@
      use M_netw
      use M_MISSING
      use network_data, only: kn3typ
+     use m_delpol
      implicit none
 
      integer :: k, L, kn3o

@@ -40,6 +40,7 @@
       use m_CrossSections, only: GetCSParsFlow
       use unstruc_channel_flow, only: network
       use m_f1dimp, only: f1dimppar
+      use m_get_kbot_ktop
 
       implicit none
       double precision, dimension(lnkx), intent(in) :: u1

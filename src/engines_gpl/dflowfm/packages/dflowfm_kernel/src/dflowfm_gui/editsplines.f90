@@ -36,6 +36,11 @@
          use unstruc_display, only: plotSplines
          use m_helpnow
          use m_drawthis
+         use m_ktext
+         use m_putget_un
+         use m_okay
+         use m_botlin
+         use m_dispnode2
          implicit none
          integer, intent(inout) :: mode, key
          integer :: newmode

@@ -33,6 +33,7 @@
   subroutine SETBRANCH_LC(nrl1d)
      use M_NETW
      use gridoperations
+     use m_okay
 
      implicit none
 

@@ -32,6 +32,8 @@
 
 !
       subroutine SCROLH(NUMCHC, HLPTXT, NUMTXT, NLEVEL, IH, JOFND, JATAB)
+         use m_timlin
+         use m_next
          implicit none
          integer :: ih
          integer :: jatab

@@ -70,6 +70,7 @@ contains
       use m_flowgeom, only: xz, yz, ln, lnx, lnx1D
       use stdlib_sorting, only: sort_index
       use dfm_error
+      use m_crosspoly
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
       integer, intent(in) :: npl !< Number of polyline points.
@@ -408,6 +409,9 @@ contains
       nodeindex = hashsearch(network%nds%hashlist, nodeId)
       if (nodeindex > 0) then
          nodenr = network%nds%node(nodeindex)%gridNumber
+         if (nodenr <= 0) then
+            ierr = -1
+         end if
       else
          ierr = -1
       end if
@@ -455,6 +459,9 @@ contains
 
       if (branchIndex >= 1 .and. branchIndex <= network%brs%Count) then
          nodenr = getGridPointNumber(network%brs%branch(branchindex), chainage)
+         if (nodenr == 0) then
+            ierr = -1
+         end if
       else
          ierr = -1
       end if

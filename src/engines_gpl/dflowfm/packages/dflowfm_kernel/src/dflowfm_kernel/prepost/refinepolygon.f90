@@ -37,6 +37,7 @@
          use m_sferic
          use m_missing
          use geometry_module, only: dbdistance, half
+         use m_delpol
          implicit none
          integer :: i1, i2
          integer :: key

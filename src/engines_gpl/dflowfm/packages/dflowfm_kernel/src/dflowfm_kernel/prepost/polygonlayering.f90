@@ -40,6 +40,7 @@
     use m_sferic, only: jsferic, jasfer3D
     use m_ec_basic_interpolation, only: TRIINTfast
     use geometry_module
+    use m_reapol
 
     implicit none
     integer :: mpol

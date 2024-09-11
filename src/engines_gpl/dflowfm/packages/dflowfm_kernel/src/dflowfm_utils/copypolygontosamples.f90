@@ -38,6 +38,7 @@
       use m_fixedweirs, only: SILLHEIGHTMIN
       use geometry_module, only: dbdistance, normalout
       use m_sferic, only: jsferic, jasfer3D
+      use m_delpol
 
       implicit none
       integer :: k, n, KU, KUU, KKN, KK

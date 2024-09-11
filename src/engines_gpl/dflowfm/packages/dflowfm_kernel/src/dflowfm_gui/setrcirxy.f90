@@ -35,6 +35,7 @@
          use m_sferic
          use m_devices
          use m_sferzoom
+         use m_dproject
          implicit none
          double precision :: x, y, rcx, rcy, xx, yy, xa, ya, rpx, rpy
          rcx = rcir; rcy = rcir

@@ -41,6 +41,7 @@ use m_heatfluxes
 use m_transport, only: constituents, itemp, isalt
 use m_fm_icecover, only: ja_icecover, ice_af, ice_albedo, ice_h, ice_t, snow_albedo, snow_h, snow_t, qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
 use m_physcoef, only: backgroundsalinity
+use m_get_kbot_ktop
 
 implicit none
 

@@ -1062,6 +1062,7 @@ contains
       use m_laterals, only: numlatsg, kclat, qplatCum, qLatRealCum, qLatRealCumPre, n1latsg, n2latsg, qplat, balat, qLatRealAve, nnlat, qLatReal, qplatAve, qqlat
       use m_laterals, only: qplatCumPre
       use morphology_data_module, only: get_one_transport_parameter
+      use m_get_kbot_ktop
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Variable name. May be slash separated string "name/item/field": then get_compound_field is called.
       type(c_ptr), intent(inout) :: x
@@ -3732,6 +3733,7 @@ contains
       use unstruc_files
       use m_netw
       use m_commandline_option
+      use m_reapol
 
       character(kind=c_char), intent(in) :: c_netfile_in(MAXSTRLEN)
       character(kind=c_char), intent(in) :: c_netfile_out(MAXSTRLEN)
@@ -3786,6 +3788,7 @@ contains
       use gridoperations
       use array_module
       use m_missing
+      use m_crosspoly
 
       implicit none
       integer(c_int), intent(in) :: numberOfInputVertices

@@ -81,6 +81,9 @@
       use m_oned_functions, only: convert_cross_to_prof
       use unstruc_model, only: md_ident
       use m_drawthis
+      use m_delpol
+      use m_delsam
+      use m_copynetboundstopol
 
       implicit none
       integer :: ja, n12, ikey, mnx

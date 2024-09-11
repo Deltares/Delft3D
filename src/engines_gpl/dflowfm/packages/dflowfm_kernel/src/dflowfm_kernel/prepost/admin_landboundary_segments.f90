@@ -43,6 +43,7 @@ subroutine admin_landboundary_segments()
    use m_missing, only: dmiss, JINS
    use geometry_module, only: dbpinpol, dbdistance
    use m_sferic, only: jsferic, jasfer3D
+   use m_copynetboundstopol
 
    implicit none
    integer, allocatable, dimension(:) :: lanmask ! mask the parts of the landboundary that are within the polygon

@@ -38,6 +38,10 @@
          use m_helpnow
          use m_drawthis
          use m_depmax2
+         use m_ktext
+         use m_putget_un
+         use m_okay
+         use m_delsam
          implicit none
          integer :: MODE, KEY
          integer :: jonce

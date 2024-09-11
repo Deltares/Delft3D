@@ -34,6 +34,8 @@
          use m_flow, only: kplotfrombedorsurface
          use unstruc_colors, only: ncolblack
          use m_depmax
+         use m_ktext
+         use m_fbox
          implicit none
          integer, parameter :: MX=366, NX=20
          double precision :: dag

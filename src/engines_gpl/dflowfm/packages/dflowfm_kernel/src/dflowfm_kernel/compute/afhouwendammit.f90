@@ -32,6 +32,7 @@
 
  subroutine afhouwendammit()
     use m_ship
+    use m_shipcoor
     implicit none
     integer :: n, i, j
     double precision :: sx1, sy1, sx2, sy2, eas, easm, frc

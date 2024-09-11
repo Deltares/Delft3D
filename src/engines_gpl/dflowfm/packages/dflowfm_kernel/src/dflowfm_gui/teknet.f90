@@ -37,6 +37,8 @@
          use geometry_module, only: dbdistance
          use unstruc_display
          use m_drawthis
+         use m_halt2
+         use m_fbox
 
          implicit none
          integer :: ja
@@ -51,7 +53,7 @@
 
          if (NDRAW(2) <= 0 .or. NUML == 0) return
 
-!      call klok(t0)
+!      call wall_clock_time(t0)
 
          if (ndraw(2) /= 3) then ! net zelf
 
@@ -206,7 +208,7 @@
             end do
          end if
 
-!      call klok(t1)
+!      call wall_clock_time(t1)
 
 !      write(6,"('time elapsed in teknet: ', F15.5, 'seconds')") t1-t0
 

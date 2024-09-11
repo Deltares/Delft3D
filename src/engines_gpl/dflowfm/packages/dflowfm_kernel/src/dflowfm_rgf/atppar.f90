@@ -37,6 +37,7 @@
          use m_orthosettings
          use M_MISSING
          use m_drawthis
+         use m_planedistance
          implicit none
          double precision :: af
          double precision :: cy
