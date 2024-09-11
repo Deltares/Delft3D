@@ -6,7 +6,7 @@ class Delft3DRecipe(ConanFile):
     generators = "CMakeToolchain", "CMakeDeps"
 
     def requirements(self):
-        self.requires("netcdf/4.8.1")
+        self.requires("netcdf-fortran/4.5.4")
 
     def layout(self):
         cmake_layout(self)
