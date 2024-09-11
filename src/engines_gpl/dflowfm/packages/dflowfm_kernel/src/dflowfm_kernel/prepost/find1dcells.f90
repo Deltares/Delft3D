@@ -47,7 +47,6 @@ contains
 !>    it is assumed that kc has been allocated
 !>    it is assumed that findcells has already been called (for 2d cells)
    subroutine find1dcells()
-
 #ifdef _OPENMP
       use omp_lib
 #endif
@@ -60,7 +59,8 @@ contains
       integer :: temp_threads
       integer :: ierror
       integer :: nump1d
-      integer :: nump1d2d_firstpass
+      integer :: nump1d2d_temp
+      logical :: preserve_branch_order
       ierror = 1
 
       allocate (nc1_array(NUML1D), nc2_array(NUML1D))
@@ -100,8 +100,9 @@ contains
          meshgeom1d%nodeidx_inverse(meshgeom1d%nodeidx(i)) = i !Use KC0 as inverse mapping array for branch nodes
       end do
 
+      preserve_branch_order = .true.
+      nump1d2d = nump
       do i = 1, 2 ! Two passes, first we skip all the links that don't fit the branch order.
-         nump1d2d = nump
          do L = 1, NUML1D
             k1 = KN(1, L); k2 = KN(2, L)
             if (k1 == 0) cycle
@@ -111,14 +112,11 @@ contains
                nc1 = 0
             end if
             LNN(L) = 0
-            call set_lne(nc1, k1, L, 1, nump1d2d)
-            call set_lne(nc2, k2, L, 2, nump1d2d)
+            call set_lne(nc1, k1, L, 1, nump1d2d, preserve_branch_order)
+            call set_lne(nc2, k2, L, 2, nump1d2d, preserve_branch_order)
          end do
-         if (i == 1) then
-            nump1d2d_firstpass = nump1d2d
-         end if
+         preserve_branch_order = .false.
       end do
-      nump1d2d = nump1d2d_firstpass + nump1d2d - nump !Total number of cells from both passes
 
 !     END COPY from flow_geominit
 
@@ -195,26 +193,29 @@ contains
    end function is_new_1D_cell
 
    !> Check for a new cell and set the LNE array. Will skip any cell that doesn't match the branch order + chainage sequence.
-   subroutine set_lne(NC, K, L, i_lne, nump1d2d)
+   subroutine set_lne(NC, K, L, i_lne, nump1d2d, preserve_branch_order)
       use precision_basics, only: comparereal
       integer, intent(in) :: NC !< 2D cell number
       integer, intent(in) :: K !< new node number
       integer, intent(in) :: L !< index in LNE array to set
       integer, intent(in) :: i_lne !< index specifying if the left node (1) or right node (2) in LNE array is to be set
       integer, intent(inout) :: nump1d2d !< 1D netnode counter (starts at nump)
+      logical, intent(in) :: preserve_branch_order !< flag specifying whether branch order must be preserved
       logical :: branches_first
       integer :: k_inv, next_index
 
-      branches_first = .true.
       if (NC == 0) then
-         k_inv = meshgeom1d%nodeidx_inverse(k)
-         next_index = nump1d2d - nump + 1
-         if (next_index <= size(meshgeom1d%nodebranchidx)) then
-            if (meshgeom1d%nodebranchidx(k_inv) == meshgeom1d%nodebranchidx(next_index) .and. &
-                comparereal(meshgeom1d%nodeoffsets(k_inv), meshgeom1d%nodeoffsets(next_index), 1d-6) == 0) then
-               branches_first = .true.
-            else
-               branches_first = .false.
+         branches_first = .true.
+         if (preserve_branch_order) then
+            k_inv = meshgeom1d%nodeidx_inverse(k)
+            next_index = nump1d2d - nump + 1
+            if (k_inv /= 0 .and. next_index <= size(meshgeom1d%nodebranchidx)) then
+               if (meshgeom1d%nodebranchidx(k_inv) == meshgeom1d%nodebranchidx(next_index) .and. &
+                   comparereal(meshgeom1d%nodeoffsets(k_inv), meshgeom1d%nodeoffsets(next_index), 1d-6) == 0) then
+                  branches_first = .true.
+               else
+                  branches_first = .false.
+               end if
             end if
          end if
          !> Nodes need to be found in the correct order. This is why we do 2 passes.
