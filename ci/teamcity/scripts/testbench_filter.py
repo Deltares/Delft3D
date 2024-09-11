@@ -16,8 +16,6 @@ def csv_to_dict(csv_table_path):
 
 # Function to filter values based on the 'this' list
 def filter_config(csv_table_path: str, csv_data, branch_name: str):
-    if branch_name == "main":
-        branch_name = "all"
     # Check if the branch name exists in the data
     if branch_name not in csv_data:
         raise ValueError(f"Branch name '{branch_name}' does not exist in file {csv_table_path}.")
@@ -44,6 +42,9 @@ if __name__ == "__main__":
     branch_name = sys.argv[1]
     csv_table_path = sys.argv[2]
     parameter_name = sys.argv[3]
+
+    if branch_name == "main":
+        branch_name = "all"
 
     with open(csv_table_path, mode='r', newline='') as csv_data:
         branch_config_dict = csv_to_dict(csv_table_path)
