@@ -30,12 +30,12 @@ object LinuxApprove : BuildType({
                 endsWith("dep.${Trigger.id}.teamcity.build.triggeredBy", "Release")
             }
             scriptContent = """
-                curl --fail --verbose --silent --show-error \
+                curl --fail --silent --show-error \
                      -u %teamcity_user%:%teamcity_pass% \
                      -X POST \
                      -H "Content-Type: application/xml" \
                      -d '' \
-                     "https://build.avi.directory.intra/app/rest/buildQueue/buildType:${Release.id},defaultFilter:false,state:queued/approve"
+                     "%teamcity.serverUrl%/app/rest/buildQueue/buildType:${Release.id},defaultFilter:false,state:queued/approve"
                 if (test ${'$'}? -ne 0)
                 then
                     echo Approving Linux Testbench through TC API failed.
