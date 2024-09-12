@@ -2,12 +2,12 @@ package testbench
 
 import jetbrains.buildServer.configs.kotlin.*
 
-object LinuxAll : BuildType({
+object LinuxFm : BuildType({
 
-    name = "Linux (all)"
+    name = "Linux: FM"
     templates(LinuxTestTemplate)
 
     params {
-        param("branch", "all")
+        param("branch", "fm")
     }
 })

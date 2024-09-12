@@ -5,9 +5,13 @@ import testbench.*
 version = "2024.03"
 
 project {
+
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
-    buildType(LinuxAll)
+    template(TestbenchLinux)
 
-    buildTypesOrder = arrayListOf(LinuxAll)
+    buildType(LinuxAll, LinuxFm)
+
+    buildTypesOrder = arrayListOf(LinuxAll, LinuxFm)
+
 }
