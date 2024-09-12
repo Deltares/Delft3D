@@ -34,7 +34,7 @@ module part10_mod
 contains
     subroutine part10 (lgrid, volume, flow, dx, dy, &
             area, angle, num_rows, mnmaxk, idelt, &
-            nopart, npart, mpart, xpart, ypart, &
+            nopart, npmax, npart, mpart, xpart, ypart, &
             zpart, iptime, rough, drand, lgrid2, &
             zmodel, laytop, laybot, &
             wvelo, wdir, decays, wpart, pblay, &
@@ -85,10 +85,11 @@ contains
         !**   parameters used for dimensioning
 
         integer(int_wp), intent(in) :: layt                ! number of layers of hydr. database
-        integer(int_wp), intent(in) :: num_columns                ! second grid dimension
+        integer(int_wp), intent(in) :: num_columns         ! second grid dimension
         integer(int_wp), intent(in) :: mnmaxk              ! total number of active grid cells
-        integer(int_wp), intent(in) :: num_rows                ! first grid dimension
-        integer(int_wp), intent(in) :: nopart              ! total number of particles
+        integer(int_wp), intent(in) :: num_rows            ! first grid dimension
+        integer(int_wp), intent(in) :: nopart              ! total number of active particles
+        integer(int_wp), intent(in) :: npmax               ! maximum number of particles
         integer(int_wp), intent(in) :: nosubs              ! number of substances per particle
 
         !**   other parameters
@@ -380,7 +381,9 @@ contains
         real(sp) :: cd = 1.3e-03
         real(sp) :: grav = 9.81
         real(sp) :: rhoair = 1.25
-        real(dp) :: rseed = 0.5d+00
+!        real(dp) :: rseed = 0.5d+00
+        real(dp), allocatable :: rseed(:)
+        save rseed
         real(sp) :: zsurf = 0.001
         logical :: first = .true.
         logical :: lbott = .true.
@@ -395,6 +398,10 @@ contains
 
         if (first) then
             first = .false.
+            allocate (rseed(npmax))
+            do ipart = 1, npmax
+               rseed(ipart) = (real(ipart, 8) - 0.5_dp) / real(npmax, 8)
+            end do
             !     Set initial booms flag and booms introduction counter
             booms = .false.
             iboomint = 0
@@ -538,7 +545,7 @@ contains
                 do isub = 1, nosubs
                     wpart(isub, ipart) = 0.0
                 enddo
-                a = rnd(rseed)                 !   compatibility
+                a = rnd(rseed(ipart))                 !   compatibility
                 goto 90                        !   next particle
             endif
             n03d = n0 + (kpp - 1) * num_rows * num_columns     !   3d
@@ -614,7 +621,7 @@ contains
                     else
                         pstick = 0.0
                     endif
-                    if (pstick > rnd(rseed)) then
+                    if (pstick > rnd(rseed(ipart))) then
                         lstick = .true.
                     else
                         lstick = .false.
@@ -642,8 +649,8 @@ contains
                 if (twolay .and. t0 > 0.0 .and. kp == 1) then
                     trp = max(trp, abuac * (tp + t0)**(-0.125))     ! bouyancy spreading parameter
                 endif
-                dax = sq6 * trp * (rnd(rseed) - 0.5) ! jvb: This should be changd into a distance and angle rather than x and y direction
-                day = sq6 * trp * (rnd(rseed) - 0.5) ! if we want to make dispersion dependent on direction of wind/current
+                dax = sq6 * trp * (rnd(rseed(ipart)) - 0.5) ! jvb: This should be changd into a distance and angle rather than x and y direction
+                day = sq6 * trp * (rnd(rseed(ipart)) - 0.5) ! if we want to make dispersion dependent on direction of wind/current
             else
                 dax = 0.0
                 day = 0.0
@@ -782,7 +789,7 @@ contains
                 end select
                 !            vdiff(n03d) = disp
                 dvz = 2.0 * sq6 * sqrt(disp * itdelt) * &
-                        (rnd(rseed) - 0.5) / depthl / dred
+                        (rnd(rseed(ipart)) - 0.5) / depthl / dred
             endif
             if (modtyp/=model_abm) then
                 dvzs = wsettl(ipart) * itdelt / depthl          !  settling      ?? what is the effect of this?? jvb: no bouncing for settling particles
@@ -817,7 +824,7 @@ contains
                             disp2 = max(cdisp + alpha * vdiff(n03d2), dminim)
                             pbounce = sqrt(disp2 / disp)
                             if (disp2 < disp) then
-                                if (rnd(rseed) < 1.0 - pbounce) then
+                                if (rnd(rseed(ipart)) < 1.0 - pbounce) then
                                     znew = 2.0 - znew
                                     cycle
                                 endif
@@ -863,7 +870,7 @@ contains
                             disp2 = max(cdisp + alpha * vdiff(n03d2), dminim)
                             pbounce = sqrt(disp2 / disp)
                             if (disp2 < disp) then
-                                if (rnd(rseed) < 1.0 - pbounce) then
+                                if (rnd(rseed(ipart)) < 1.0 - pbounce) then
                                     znew = - znew
                                     cycle
                                 endif
@@ -1286,7 +1293,7 @@ contains
             if(ldispo .or. (.not.booms)) then
                 boomseffective = .false.
             else
-                a = rnd(rseed)
+                a = rnd(rseed(ipart))
                 boomseffective = a < pboomcatch(1) ! ifrac is not know multiple oil to one particle??
             end if
 
@@ -1507,7 +1514,7 @@ contains
                         xpolscreens(1:nrowsscreens), ypolscreens(1:nrowsscreens), &
                         xacatch, yacatch, catch, xabounce, yabounce, bounce, leftside)
                 if (catch) then
-                    a = rnd(rseed)
+                    a = rnd(rseed(ipart))
                     if (leftside) then
                         catch = a > permealeft
                     else

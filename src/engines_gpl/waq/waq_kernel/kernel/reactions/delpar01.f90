@@ -489,7 +489,7 @@ contains
         ! Calculate actual displacement  3d version
         call part10 (lgrid, volumep, flow, dx, dy, &
                 area, angle, nmaxp, mnmaxk, idelt, &
-                nopart, npart, mpart, xpart, ypart, &
+                nopart, npmax, npart, mpart, xpart, ypart, &
                 zpart, iptime, rough, drand, lgrid2, &
                 zmodel, laytop, laybot, &
                 wvelo, wdir, decays, wpart, pblay, &
