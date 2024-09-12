@@ -11,7 +11,7 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
 import testbench.*
 
-object LinuxTest : template({
+object LinuxTest : Template({
 
     name = "Linux Test Template"
     buildNumberPattern = "%dep.${Build.id}.build.revisions.short%"
