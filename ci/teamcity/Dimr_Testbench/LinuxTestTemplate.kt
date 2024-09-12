@@ -15,7 +15,7 @@ object LinuxTest : Template({
 
     name = "Linux Test Template"
 
-    val filePath = "${DslContext.baseDir}/../Dimr_TestbenchMatrix/dimr_testbench_table.csv"
+    val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
     val lines = File(filePath).readLines()
     val linuxLines = lines.filter({ line -> line.contains("lnx64")})
     val configs = linuxLines.map { line ->
