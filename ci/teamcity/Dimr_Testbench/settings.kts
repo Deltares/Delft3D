@@ -10,7 +10,8 @@ project {
 
     template(LinuxTestTemplate)
 
-    buildType(LinuxAll, LinuxFm)
+    buildType(LinuxAll)
+    buildType(LinuxFm)
 
     buildTypesOrder = arrayListOf(LinuxAll, LinuxFm)
 
