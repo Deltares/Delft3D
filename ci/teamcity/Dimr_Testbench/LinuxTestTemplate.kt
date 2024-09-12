@@ -14,10 +14,8 @@ import testbench.*
 object LinuxTest : Template({
 
     name = "Linux Test Template"
-    buildNumberPattern = "%dep.${Build.id}.build.revisions.short%"
 
     val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
-    val headers = File(filePath).readLine()
     val branchIndex = headers.split(",").index("%branch%")
     val lines = File(filePath).readLines()
     val linuxLines = lines.filter({ line -> line.contains("lnx64")})
