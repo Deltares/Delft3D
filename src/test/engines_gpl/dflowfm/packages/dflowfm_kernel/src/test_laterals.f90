@@ -83,7 +83,6 @@ contains
       vol1(:) = 0.1_dp
       hs(:) = 2._dp
       kmxn(:) = 1
-      lateral_volume_per_layer(1:num_layers, 1:numlatsg) = 0._dp
       ! top layer, per constituent, lateral 1,
       incoming_lat_concentration(1, :, 1) = (/31.0_dp, 20.0_dp, 0.23_dp/)
       ! top layer, all constituents, lateral 2.
@@ -167,8 +166,6 @@ contains
       integer, intent(in) :: n_tracers
 
       integer :: iostat ! allocation status
-      integer :: i_cell, i_lateral, k1 ! loop counter
-      integer :: k ! node number
 
       jampi = 0
       dts = 1.0e-3_dp
@@ -241,7 +238,6 @@ contains
       use m_flowgeom, only: ndx
       use m_alloc, only: realloc
 
-      integer :: iostat
       integer :: i_cell
       integer :: n_nodes, n_nodes_on_laterals, n_laterals, n_tracers, n_layers
 
@@ -307,7 +303,7 @@ contains
                                                                                              !!          =(kmx,numlatsg,ndkx)
       
       integer :: ierr !< error flag
-      integer :: i_node, i_layer
+      integer :: i_node
       integer :: ndkx
       integer :: n_nodes, n_nodes_on_laterals, n_laterals, n_tracers, n_layers
       real(kind=dp), allocatable, dimension(:, :) :: provided_lateral_discharge
