@@ -381,9 +381,7 @@ contains
         real(sp) :: cd = 1.3e-03
         real(sp) :: grav = 9.81
         real(sp) :: rhoair = 1.25
-!        real(dp) :: rseed = 0.5d+00
         real(dp), allocatable :: rseed(:)
-        save rseed
         real(sp) :: zsurf = 0.001
         logical :: first = .true.
         logical :: lbott = .true.

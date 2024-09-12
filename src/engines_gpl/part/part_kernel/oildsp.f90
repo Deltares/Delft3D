@@ -326,7 +326,7 @@ contains
         real     (real_wp) :: de                       ! dissipation of wave energy per unit of surface area (j /m2)
         real     (real_wp) :: wfact                    ! wind factor in Delvigne/Sweeny
         real     (real_wp) :: rrand                    ! help variable for the random result
-        real     (dp) :: rseed = 0.5d10           ! seed of the random number generator
+        real(dp), allocatable :: rseed(:)              ! seed of the random number generator
         integer  (int_wp) :: idisapp                  ! counter for dispersant applications
         logical :: disapp                   ! dispersant application set for this time step
         real     (real_wp) :: pdisapp(nfract)          ! chance for effictive dispersant application
@@ -382,6 +382,11 @@ contains
             fwatoil = 0.0
             wsume = 0.0
             tmpevap = 0.0
+
+            allocate (rseed(npmax))
+            do i = 1, npmax
+               rseed(i) = (real(i, 8) - 0.5_dp) / real(npmax, 8)
+            end do
 
             !     open output files for mass balances
 
@@ -805,7 +810,7 @@ contains
                         end if
 
                         !     This is the dispersion step in the model
-                        rrand = rnd(rseed)
+                        rrand = rnd(rseed(i))
                         if (rrand < fractdapp) then
                             if (wpart(ioilt(ifrac), i) > 0.0) then
                                 wpart(ioild(ifrac), i) = wpart(ioilt(ifrac), i)
