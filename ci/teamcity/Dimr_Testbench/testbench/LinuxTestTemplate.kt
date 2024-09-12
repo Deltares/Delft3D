@@ -12,7 +12,7 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.script
 import testbench.*
 
 object LinuxTestTemplate : Template({
-
+    id("Dimr_Testbench_LinuxTestTemplate")
     name = "Linux Test Template"
 
     val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
