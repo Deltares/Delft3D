@@ -1159,4 +1159,34 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                         </file>
                 </checks>
         </testCase>
+   <!---                GROUP 8 - Leeway implementation
+
+   e05_f08_leeway_fm_p900                e05_part/f08_leeway_fm/p900/p900.mdp
+
+   -->
+        <testCase name="e05_f08_leeway_fm_p900" ref="part_default">
+                <path version="2024-09-12T08:29:00">e05_part/f08_leeway_fm/p900</path>
+                <checks>
+                        <file name="p900.out" type="NUMBERTEXT">
+                                <skipline>|</skipline>
+                                <skipline>Rewind</skipline>
+                                <skipline>.inp</skipline>
+                                <skipline>.out</skipline>
+                                <skipline>Actual date/time</skipline>
+                        </file>
+                        <file name="p900_map.nc" type="netCDF">
+                                <parameters>
+                                        <parameter name="mesh2d_TESTOBJ" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="p900_trk.nc" type="netCDF">
+                                <parameters>
+                                        <parameter name="particles_time" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="particles_x_coordinate" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="particles_y_coordinate" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="particles_z_coordinate" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                </checks>
+        </testCase>
 </testCases>

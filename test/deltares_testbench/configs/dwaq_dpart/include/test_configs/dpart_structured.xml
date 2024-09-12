@@ -1949,4 +1949,278 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                         </file>
                 </checks>
         </testCase>
+   <!---                GROUP 8 - Leeway implementation
+
+   e05_f08_leeway_p100                       e05_part/f08_leeway/p100/p100.mdp
+   e05_f08_leeway_p101                       e05_part/f08_leeway/p101/p101.mdp
+   e05_f08_leeway_p102                       e05_part/f08_leeway/p102/p102.mdp
+   e05_f08_leeway_p103                       e05_part/f08_leeway/p103/p103.mdp
+
+   -->
+        <testCase name="e05_f08_leeway_p100" ref="part_default">
+                <dependency version="2024-05-07T13:35:00" local_dir="e05_f08_leeway_hydro">e05_part/f08_leeway/hydro</dependency>
+                <path version="2024-09-12T08:28:00">e05_part/f08_leeway/p100</path>
+                <checks>
+                        <file name="p100.out" type="NUMBERTEXT">
+                   <skipline>|</skipline>
+                   <skipline>Rewind</skipline>
+                   <skipline>.inp</skipline>
+                   <skipline>.out</skipline>
+                   <skipline>Actual date/time</skipline>
+                        </file>
+                        <file name="his-p100.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="map-p100.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="plo-p100.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="trk-p100.dat" type="NEFIS">
+                                <parameters name="trk-series">
+                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                </checks>
+        </testCase>
+        <testCase name="e05_f08_leeway_p101" ref="part_default">
+                <dependency version="2024-05-07T13:35:00" local_dir="e05_f08_leeway_hydro">e05_part/f08_leeway/hydro</dependency>
+                <path version="2024-09-12T08:28:00">e05_part/f08_leeway/p101</path>
+                <checks>
+                        <file name="p101.out" type="NUMBERTEXT">
+                   <skipline>|</skipline>
+                   <skipline>Rewind</skipline>
+                   <skipline>.inp</skipline>
+                   <skipline>.out</skipline>
+                   <skipline>Actual date/time</skipline>
+                        </file>
+                        <file name="his-p101.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="map-p101.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="plo-p101.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="trk-p101.dat" type="NEFIS">
+                                <parameters name="trk-series">
+                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                </checks>
+        </testCase>
+        <testCase name="e05_f08_leeway_p102" ref="part_default">
+                <dependency version="2024-05-07T13:35:00" local_dir="e05_f08_leeway_hydro">e05_part/f08_leeway/hydro</dependency>
+                <path version="2024-09-12T08:28:00">e05_part/f08_leeway/p102</path>
+                <checks>
+                        <file name="p102.out" type="NUMBERTEXT">
+                   <skipline>|</skipline>
+                   <skipline>Rewind</skipline>
+                   <skipline>.inp</skipline>
+                   <skipline>.out</skipline>
+                   <skipline>Actual date/time</skipline>
+                        </file>
+                        <file name="his-p102.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="map-p102.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="plo-p102.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="trk-p102.dat" type="NEFIS">
+                                <parameters name="trk-series">
+                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                </checks>
+        </testCase>
+        <testCase name="e05_f08_leeway_p103" ref="part_default">
+                <dependency version="2024-05-07T13:35:00" local_dir="e05_f08_leeway_hydro">e05_part/f08_leeway/hydro</dependency>
+                <path version="2024-09-12T08:28:00">e05_part/f08_leeway/p103</path>
+                <checks>
+                        <file name="p103.out" type="NUMBERTEXT">
+                   <skipline>|</skipline>
+                   <skipline>Rewind</skipline>
+                   <skipline>.inp</skipline>
+                   <skipline>.out</skipline>
+                   <skipline>Actual date/time</skipline>
+                        </file>
+                        <file name="his-p103.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="map-p103.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="plo-p103.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="trk-p103.dat" type="NEFIS">
+                                <parameters name="trk-series">
+                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                </checks>
+        </testCase>
+        <testCase name="e05_f08_leeway_zlayers_p100" ref="part_default">
+                <dependency version="2024-05-07T13:35:00" local_dir="e05_f08_leeway_zlayers_hydro">e05_part/f08_leeway_zlayers/hydro</dependency>
+                <path version="2024-09-12T08:28:00">e05_part/f08_leeway_zlayers/p100</path>
+                <checks>
+                        <file name="p100.out" type="NUMBERTEXT">
+                   <skipline>|</skipline>
+                   <skipline>Rewind</skipline>
+                   <skipline>.inp</skipline>
+                   <skipline>.out</skipline>
+                   <skipline>Actual date/time</skipline>
+                        </file>
+                        <file name="his-p100.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="map-p100.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="plo-p100.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="trk-p100.dat" type="NEFIS">
+                                <parameters name="trk-series">
+                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                </checks>
+        </testCase>
+        <testCase name="e05_f08_leeway_zlayers_p102" ref="part_default">
+                <dependency version="2024-05-07T13:35:00" local_dir="e05_f08_leeway_zlayers_hydro">e05_part/f08_leeway_zlayers/hydro</dependency>
+                <path version="2024-09-12T08:29:00">e05_part/f08_leeway_zlayers/p102</path>
+                <checks>
+                        <file name="p102.out" type="NUMBERTEXT">
+                   <skipline>|</skipline>
+                   <skipline>Rewind</skipline>
+                   <skipline>.inp</skipline>
+                   <skipline>.out</skipline>
+                   <skipline>Actual date/time</skipline>
+                        </file>
+                        <file name="his-p102.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="map-p102.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="plo-p102.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="trk-p102.dat" type="NEFIS">
+                                <parameters name="trk-series">
+                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                </checks>
+        </testCase>
+        <testCase name="e05_f08_leeway_zlayers_p103" ref="part_default">
+                <dependency version="2024-05-07T13:35:00" local_dir="e05_f08_leeway_zlayers_hydro">e05_part/f08_leeway_zlayers/hydro</dependency>
+                <path version="2024-09-12T08:29:00">e05_part/f08_leeway_zlayers/p103</path>
+                <checks>
+                        <file name="p103.out" type="NUMBERTEXT">
+                   <skipline>|</skipline>
+                   <skipline>Rewind</skipline>
+                   <skipline>.inp</skipline>
+                   <skipline>.out</skipline>
+                   <skipline>Actual date/time</skipline>
+                        </file>
+                        <file name="his-p103.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="map-p103.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="plo-p103.dat" type="NEFIS">
+                                <parameters name="DELPAR_RESULTS">
+                                        <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="trk-p103.dat" type="NEFIS">
+                                <parameters name="trk-series">
+                                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                </checks>
+        </testCase>
 </testCases>
