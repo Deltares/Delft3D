@@ -26,18 +26,15 @@ set(headers include/throwexception.h
             ${configFile}
             )
 
-set(source  src/bmi_shared_lib_fortran_api.c
-            src/cpuinfo.cpp
+set(source  src/cpuinfo.cpp
             src/cutil.c
-            src/getcwd.c
             src/getopt.cpp
             src/getputarray.cpp
             src/meminfo.cpp
             src/sems.cpp
             src/shared_library_fortran_api.c
             src/stream.cpp
-            src/throwexception.cpp
-            src/universally_unique_id_generator.c)
+            src/throwexception.cpp)
 
 set(library_name deltares_common_c)
 add_library(${library_name} ${source} ${headers})
