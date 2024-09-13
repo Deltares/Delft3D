@@ -14,12 +14,12 @@ import testbenchMatrix.Trigger
 object Windows : BuildType({
 
     name = "Windows"
-    buildNumberPattern = "%dep.${Trigger.id}.build.revisions.revision%"
+    buildNumberPattern = "%dep.${Trigger.id}.build.revisions.short%"
 
     val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
     val lines = File(filePath).readLines()
     val windowsLines = lines.filter({ line -> line.contains("win64")})
-    val configs = windowsLines.drop(1).map { line ->
+    val configs = windowsLines.map { line ->
         line.split(",")[1]
     }
 
@@ -33,13 +33,6 @@ object Windows : BuildType({
             options = configs,
             display = ParameterDisplay.PROMPT
         )
-    }
-
-    dependencies {
-        snapshot(Trigger) {
-            onDependencyFailure = FailureAction.CANCEL
-            onDependencyCancel = FailureAction.CANCEL
-        }
     }
 
     features {

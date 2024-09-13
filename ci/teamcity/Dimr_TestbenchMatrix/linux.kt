@@ -14,12 +14,12 @@ import testbenchMatrix.Trigger
 object Linux : BuildType({
 
     name = "Linux"
-    buildNumberPattern = "%dep.${Trigger.id}.build.revisions.revision%"
+    buildNumberPattern = "%dep.${Trigger.id}.build.revisions.short%"
 
     val filePath = "${DslContext.baseDir}/dimr_testbench_table.csv"
     val lines = File(filePath).readLines()
     val linuxLines = lines.filter({ line -> line.contains("lnx64")})
-    val configs = linuxLines.drop(1).map { line ->
+    val configs = linuxLines.map { line ->
         line.split(",")[1]
     }
 
@@ -33,13 +33,6 @@ object Linux : BuildType({
             options = configs,
             display = ParameterDisplay.PROMPT
         )
-    }
-
-    dependencies {
-        snapshot(Trigger) {
-            onDependencyFailure = FailureAction.CANCEL
-            onDependencyCancel = FailureAction.CANCEL
-        }
     }
 
     features {

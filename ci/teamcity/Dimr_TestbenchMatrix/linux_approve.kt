@@ -7,7 +7,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.finishBuildTrigger
 object LinuxApprove : BuildType({
 
     name = "Linux Approve"
-    buildNumberPattern = "%dep.${Trigger.id}.build.revisions.revision%"
+    buildNumberPattern = "%dep.${Trigger.id}.build.revisions.short%"
 
     params {
         param("teamcity_user", "svc_dimr_approve_linux")
@@ -27,15 +27,16 @@ object LinuxApprove : BuildType({
             name = "Approve Release"
 
             conditions {
+                equals("dep.${Linux.id}.teamcity.build.triggeredBy.username", "%dep.${Trigger.id}.teamcity_user%")
                 endsWith("dep.${Trigger.id}.teamcity.build.triggeredBy", "Release")
             }
             scriptContent = """
-                curl --fail --verbose --silent --show-error \
+                curl --fail --silent --show-error \
                      -u %teamcity_user%:%teamcity_pass% \
                      -X POST \
                      -H "Content-Type: application/xml" \
                      -d '' \
-                     "https://build.avi.directory.intra/app/rest/buildQueue/buildType:${Release.id},defaultFilter:false,state:queued/approve"
+                     "%teamcity.serverUrl%/app/rest/buildQueue/buildType:${Release.id},defaultFilter:false,state:queued/approve"
                 if (test ${'$'}? -ne 0)
                 then
                     echo Approving Linux Testbench through TC API failed.

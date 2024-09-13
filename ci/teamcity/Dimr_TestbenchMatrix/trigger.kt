@@ -11,7 +11,7 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.script
 object Trigger : BuildType({
 
     name = "Trigger"
-    buildNumberPattern = "%build.revisions.revision%"
+    buildNumberPattern = "%build.revisions.short%"
 
     vcs {
         root(DslContext.settingsRoot)
@@ -37,7 +37,7 @@ object Trigger : BuildType({
             command = script {
                 content="""
                 if "merge-request" in "%teamcity.build.branch%":
-                    branch_name = "%teamcity.pullRequest.source.branch%".split("/")[0]
+                    branch_name = parameters["teamcity.pullRequest.source.branch"].split("/")[0]
                     print("##teamcity[setParameter name='git_head' value='refs/%teamcity.build.branch%/head']")
                     print(f"##teamcity[setParameter name='branch_name' value='{branch_name}']")
                 else:
@@ -74,22 +74,22 @@ object Trigger : BuildType({
             name = "Start Linux Testbench"
 
             scriptContent = """
-                curl -sS \
+                curl --fail --silent --show-error \
                      -u %teamcity_user%:%teamcity_pass% \
                      -X POST \
                      -H "Content-Type: application/xml" \
                      -d '<build branchName="%teamcity.build.branch%">
-                            <buildType id="Dimr_TestbenchMatrix_Linux"/>
+                            <buildType id="${Linux.id}"/>
                             <revisions>
                                 <revision version="%build.vcs.number%" vcsBranchName="%git_head%">
-                                    <vcs-root-instance vcs-root-id="Delft3dGitlab"/>
+                                    <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
                                 </revision>
                             </revisions>
                             <properties>
                                 <property name="configfile" value="%matrix_list_linux%"/>
                             </properties>
                          </build>' \
-                     "https://build.avi.directory.intra/app/rest/buildQueue"
+                     "%teamcity.serverUrl%/app/rest/buildQueue"
                 if (test $? -ne 0)
                 then
                     echo Start Linux Testbench through TC API failed.
@@ -102,22 +102,22 @@ object Trigger : BuildType({
             name = "Start Windows Testbench"
 
             scriptContent = """
-                curl --fail --verbose --silent --show-error \
+                curl --fail --silent --show-error \
                      -u %teamcity_user%:%teamcity_pass% \
                      -X POST \
                      -H "Content-Type: application/xml" \
                      -d '<build branchName="%teamcity.build.branch%">
-                            <buildType id="Dimr_TestbenchMatrix_Windows"/>
+                            <buildType id="${Windows.id}"/>
                             <revisions>
                                 <revision version="%build.vcs.number%" vcsBranchName="%git_head%">
-                                    <vcs-root-instance vcs-root-id="Delft3dGitlab"/>
+                                    <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
                                 </revision>
                             </revisions>
                             <properties>
                                 <property name="configfile" value="%matrix_list_windows%"/>
                             </properties>
                          </build>' \
-                     "https://build.avi.directory.intra/app/rest/buildQueue"
+                     "%teamcity.serverUrl%/app/rest/buildQueue"
                 if (test $? -ne 0)
                 then
                     echo Start Linux Testbench through TC API failed.
@@ -134,10 +134,7 @@ object Trigger : BuildType({
                 authType = token {
                     token = "%gitlab_private_access_token%"
                 }
-                filterSourceBranch = """
-                    -:refs/heads/none/*
-                    +:*
-                """.trimIndent()
+                filterSourceBranch = "+:*"
                 ignoreDrafts = true
             }
         }

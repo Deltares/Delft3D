@@ -75,6 +75,10 @@
          gsx = ag * (s1(ln(2, LL)) - s1(ln(1, LL))) * dxi(LL)
       end if
 
+      u1Lb = u1(Lb)
+
+10    continue
+
       if (ifrctyp < 10) then
          if (frcn > 0d0) then
             call getczz0(hu(LL), frcn, ifrctyp, cz, z00)
@@ -111,10 +115,6 @@
             hdzb = 0.5d0 * hu(Lb)
             sqcf = 0d0
          end if
-
-         u1Lb = u1(Lb)
-
-10       continue
 
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
          ! updated ustokes needed before conversion to eulerian velocities
