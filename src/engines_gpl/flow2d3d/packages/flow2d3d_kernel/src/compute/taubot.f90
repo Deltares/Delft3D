@@ -2,7 +2,7 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 & icy       ,rouflo    ,rouwav    ,kfu       ,kfv       , &
                 & kfumin    ,kfumax    ,kspu      ,kcs       ,kcscut    , &
                 & dps       ,s1        ,u1        ,v1        , &
-                & guu       ,xcor      ,ycor      ,rho       , &
+                & guu       ,gvv       ,xcor      ,ycor      ,rho       , &
                 & taubpu    ,taubsu    ,taubxu    ,dis       ,rlabda    , &
                 & teta      ,uorb      ,tp        ,wsu       ,wsv       , &
                 & grmasu    ,dfu       ,deltau    ,hrms      , &
@@ -10,7 +10,7 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 & z0ucur    ,cvalu0    ,grmsur    ,grfacu    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -34,8 +34,8 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: taubot.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/taubot.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computation coefficients bottom stresses in U-
@@ -84,6 +84,11 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     integer                , pointer :: rolcorr
     real(fp), dimension(:) , pointer :: rksr
     real(fp), dimension(:) , pointer :: rksmr
+    logical, pointer :: UavWETtau
+    integer, pointer :: cutcell
+    logical, pointer :: vvvSECord
+    integer, pointer :: PERIODalongM
+    logical, pointer :: periodSURFACE
 !
 ! Global variables
 !
@@ -103,7 +108,7 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: kfu    !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfumax !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfumin !  Description and declaration in esm_alloc_int.f90
-    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfv    !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(inout):: kfv    !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)            :: kspu   !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: kcscut !  Description and declaration in esm_alloc_int.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: cvalu0 !  Description and declaration in esm_alloc_real.f90
@@ -115,6 +120,7 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: grmsur !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: grfacu !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: guu    !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: gvv    !  Description and declaration in esm_alloc_real.f90    
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: hrms   !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: hu     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: rlabda !  Description and declaration in esm_alloc_real.f90
@@ -136,7 +142,7 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: dzu1   !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)              :: rho    !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: u1     !  Description and declaration in esm_alloc_real.f90
-    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: v1     !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(inout)  :: v1     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(kmax)                       , intent(in)  :: sig    !  Description and declaration in esm_alloc_real.f90
     character(4)                                      , intent(in)  :: rouflo !  Description and declaration in esm_alloc_char.f90
     character(4)                                      , intent(in)  :: rouwav !  Description and declaration in tricom.igs
@@ -280,6 +286,12 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
 !
 !! executable statements -------------------------------------------------------
 !
+    UavWETtau     => gdp%gdimbound%UavWETtau
+    cutcell       => gdp%gdimbound%cutcell
+    vvvSECord     => gdp%gdimbound%vvvSECord
+    PERIODalongM  => gdp%gdimbound%PERIODalongM
+    periodSURFACE => gdp%gdimbound%periodSURFACE
+    vvvSECord     => gdp%gdimbound%vvvSECord
     eps        => gdp%gdconst%eps
     fmud       => gdp%gdmudcoe%fmud
     taubng     => gdp%gdmudcoe%taubng
@@ -300,6 +312,16 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     rolcorr    => gdp%gdbetaro%rolcorr
     rksr       => gdp%gdbedformpar%rksr
     rksmr      => gdp%gdbedformpar%rksmr
+    !
+    ! TURN on periodic points only if vvvSECord=Y
+    !
+    if (periodSURFACE.and.vvvSECord) then
+       if ((icx==1.and.PERIODalongM==1).or.(icx/=1.and..not.PERIODalongM==1)) then
+          CALL OFFonPERvel_ONLYkf1(kfv,kfu,gdp%d%nlb,gdp%d%nub,gdp%d%mlb,gdp%d%mub,1, gdp)   !turn on kfu and kfv (second argument has to be the location of the tangential velocity)
+       else
+          CALL OFFonPERvel_ONLYkf1(kfu,kfv,gdp%d%nlb,gdp%d%nub,gdp%d%mlb,gdp%d%mub,1, gdp)   !turn on kfu and kfv (second argument has to be the location of the tangential velocity)
+       endif
+    endif    
     !
     ! INITIALISATION
     !
@@ -411,12 +433,16 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
           endif
           actual_avg =      (cstbnd .and. .not.zmodel .and. (kcs(nm)==2 .or. kcs(nmu)==2)) &
                      & .or. (kcs(nm)==3 .or. kcs(nmu)==3)                                  &
-                     & .or. (zmodel .and. kcscuttest)
+                     & .or. (zmodel .and. kcscuttest) .or. UavWETtau
           uuu = u1(nm, kmaxx)
           if (actual_avg) then
              svvv = max(kfv(ndm) + kfv(ndmu) + kfv(nm) + kfv(nmu), 1)
-             vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)         &
-                  & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))/svvv
+             if (cutcell>0.and.vvvSECord.and.svvv<4.and.svvv>1) then  
+                call vvvORD2sub(vvv,v1,guu,gvv,kfv,nm,kmaxx,-99999,icx,icy,gdp%d%nmlb,gdp%d%nmub,kmax,svvv)
+             else !standard delft3D             
+                vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)         &
+                     & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))/svvv
+             endif
           else
              vvv = 0.25*(v1(nm, kmaxx) + v1(ndm, kmaxx) + v1(ndmu, kmaxx)       &
                  & + v1(nmu, kmaxx))
@@ -504,12 +530,16 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
        endif
        actual_avg =      (cstbnd .and. .not.zmodel .and. (kcs(nm)==2 .or. kcs(nmu)==2)) &
                   & .or. (kcs(nm)==3 .or. kcs(nmu)==3)                                  &
-                  & .or. (zmodel .and. kcscuttest)
+                  & .or. (zmodel .and. kcscuttest) .or. UavWETtau
        uuu        = u1(nm, kmaxx)
        if (actual_avg) then
           svvv = max(kfv(ndm) + kfv(ndmu) + kfv(nm) + kfv(nmu), 1)
-          vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)            &
-               & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))/svvv
+          if (cutcell>0.and.vvvSECord.and.svvv<4.and.svvv>1) then  
+             call vvvORD2sub(vvv,v1,guu,gvv,kfv,nm,kmaxx,-99999,icx,icy,gdp%d%nmlb,gdp%d%nmub,kmax,svvv)
+          else !standard delft3D             
+             vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)            &
+                  & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))/svvv
+          endif
        else
           vvv = 0.25*(v1(nm, kmaxx) + v1(ndm, kmaxx) + v1(ndmu, kmaxx)          &
               & + v1(nmu, kmaxx))
@@ -525,8 +555,12 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
           uuu0       = u1(nm, kmax)
           if (actual_avg) then
              svvv = max(kfv(ndm) + kfv(ndmu) + kfv(nm) + kfv(nmu), 1)
-             vvv0 = (v1(ndm, kmax)*kfv(ndm) + v1(ndmu, kmax)*kfv(ndmu)            &
-                  & + v1(nm, kmax)*kfv(nm) + v1(nmu, kmax)*kfv(nmu))/svvv
+             if (cutcell>0.and.vvvSECord.and.svvv<4.and.svvv>1) then  
+                call vvvORD2sub(vvv0,v1,guu,gvv,kfv,nm,k,-99999,icx,icy,gdp%d%nmlb,gdp%d%nmub,kmax,svvv)
+             else !standard delft3D                
+                vvv0 = (v1(ndm, kmax)*kfv(ndm) + v1(ndmu, kmax)*kfv(ndmu)            &
+                     & + v1(nm, kmax)*kfv(nm) + v1(nmu, kmax)*kfv(nmu))/svvv
+             endif
           else
              vvv0 = 0.25*(v1(nm, kmax) + v1(ndm, kmax) + v1(ndmu, kmax)          &
                  & + v1(nmu, kmax))
@@ -741,12 +775,16 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                    kmaxx      = kfumin(nm) + 1
                    uuu        = u1(nm, kmaxx)
                    kcscuttest = kcscut(nm, kmaxx)==1
-                   actual_avg = (zmodel .and. kcscuttest)
+                   actual_avg = (zmodel .and. kcscuttest) .or. UavWETtau
                    if (actual_avg) then
                       svvv = max(kfv(ndm) + kfv(ndmu) + kfv(nm) + kfv(nmu), 1)
-                      vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)&
-                           & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))  &
-                           & /svvv
+                      if (cutcell>0.and.vvvSECord.and.svvv<4.and.svvv>1) then  
+                         call vvvORD2sub(vvv,v1,guu,gvv,kfv,nm,kmaxx,-99999,icx,icy,gdp%d%nmlb,gdp%d%nmub,kmax,svvv)
+                      else !standard delft3D                      
+                         vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)&
+                              & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))  &
+                              & /svvv
+                      endif
                    else
                       vvv = 0.25*(v1(nm, kmaxx) + v1(ndm, kmaxx)                &
                           & + v1(ndmu, kmaxx) + v1(nmu, kmaxx))
@@ -758,12 +796,16 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                    kmaxx      = kmaxx - 1
                    uuu        = u1(nm, kmaxx)
                    kcscuttest = kcscut(nm, kmaxx)==1
-                   actual_avg = (zmodel .and. kcscuttest)
+                   actual_avg = (zmodel .and. kcscuttest) .or. UavWETtau
                    if (actual_avg) then
                       svvv = max(kfv(ndm) + kfv(ndmu) + kfv(nm) + kfv(nmu), 1)
-                      vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)&
-                           & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))  &
-                           & /svvv
+                      if (cutcell>0.and.vvvSECord.and.svvv<4.and.svvv>1) then  
+                         call vvvORD2sub(vvv,v1,guu,gvv,kfv,nm,kmaxx,-99999,icx,icy,gdp%d%nmlb,gdp%d%nmub,kmax,svvv)
+                      else !standard delft3D                         
+                         vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)&
+                              & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))  &
+                              & /svvv
+                      endif
                    else
                       vvv = 0.25*(v1(nm, kmaxx) + v1(ndm, kmaxx)                &
                           & + v1(ndmu, kmaxx) + v1(nmu, kmaxx))
@@ -778,12 +820,16 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                    kmaxx      = kfumin(nm)
                    uuu        = u1(nm, kmaxx)
                    kcscuttest = kcscut(nm, kmaxx)==1
-                   actual_avg = (zmodel .and. kcscuttest)
+                   actual_avg = (zmodel .and. kcscuttest) .or. UavWETtau
                    if (actual_avg) then
                       svvv = max(kfv(ndm) + kfv(ndmu) + kfv(nm) + kfv(nmu), 1)
-                      vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)&
-                           & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))  &
-                           & /svvv
+                      if (cutcell>0.and.vvvSECord.and.svvv<4.and.svvv>1) then  
+                         call vvvORD2sub(vvv,v1,guu,gvv,kfv,nm,kmaxx,-99999,icx,icy,gdp%d%nmlb,gdp%d%nmub,kmax,svvv)
+                      else !standard delft3D                         
+                         vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)&
+                              & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))  &
+                              & /svvv
+                      endif
                    else
                       vvv = 0.25*(v1(nm, kmaxx) + v1(ndm, kmaxx)                &
                           & + v1(ndmu, kmaxx) + v1(nmu, kmaxx))
@@ -805,11 +851,15 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 kmaxx      = kmax
                 uuu        = u1(nm, kmaxx)
                 actual_avg =      (cstbnd .and. (kcs(nm)==2 .or. kcs(nmu)==2)) &
-                           & .or. (kcs(nm)==3 .or. kcs(nmu)==3)
+                           & .or. (kcs(nm)==3 .or. kcs(nmu)==3) .or. UavWETtau
                 if (actual_avg) then
                    svvv = max(kfv(ndm) + kfv(ndmu) + kfv(nm) + kfv(nmu), 1)
-                   vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)   &
-                        & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))/svvv
+                   if (cutcell>0.and.vvvSECord.and.svvv<4.and.svvv>1) then  
+                      call vvvORD2sub(vvv,v1,guu,gvv,kfv,nm,kmaxx,-99999,icx,icy,gdp%d%nmlb,gdp%d%nmub,kmax,svvv)
+                   else !standard delft3D                      
+                      vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)   &
+                           & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))/svvv
+                   endif
                 else
                    vvv  = 0.25*(v1(nm, kmaxx) + v1(ndm, kmaxx) + v1(ndmu, kmaxx) &
                         & + v1(nmu, kmaxx))
@@ -863,11 +913,15 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              uuu        = u1(nm, kmaxx)
              actual_avg =      (cstbnd .and. .not.zmodel .and.(kcs(nm)==2 .or. kcs(nmu)==2)) &
                         & .or. (kcs(nm)==3 .or. kcs(nmu)==3) &
-                        & .or. (zmodel .and. kcscuttest)
+                        & .or. (zmodel .and. kcscuttest) .or. UavWETtau
              if (actual_avg) then
                 svvv = max(kfv(ndm) + kfv(ndmu) + kfv(nm) + kfv(nmu), 1)
-                vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)      &
-                     & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))/svvv
+                if (cutcell>0.and.vvvSECord.and.svvv<4.and.svvv>1) then  
+                   call vvvORD2sub(vvv,v1,guu,gvv,kfv,nm,kmaxx,-99999,icx,icy,gdp%d%nmlb,gdp%d%nmub,kmax,svvv)
+                else !standard delft3D                   
+                   vvv  = (v1(ndm, kmaxx)*kfv(ndm) + v1(ndmu, kmaxx)*kfv(ndmu)      &
+                        & + v1(nm, kmaxx)*kfv(nm) + v1(nmu, kmaxx)*kfv(nmu))/svvv
+                endif
              else
                 vvv  = 0.25*(v1(nm, kmaxx) + v1(ndm, kmaxx) + v1(ndmu, kmaxx)    &
                      & + v1(nmu, kmaxx))
@@ -932,9 +986,9 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              ! Added breaker delay adjustment
              !
              if (rolcorr==1) then
-                taubsu(nm) = taubpu(nm)*(costu*ustokes + (grfacu(nm) + grmsur(nm))/hu(nm))
+                taubsu(nm) = taubpu(nm)*(costu*ustokes + grfacu(nm) + grmsur(nm))/hu(nm)
              else
-                taubsu(nm) = taubpu(nm)*(costu*ustokes + grfacu(nm)/hu(nm) )
+                taubsu(nm) = taubpu(nm)*(costu*ustokes + grfacu(nm))/hu(nm) 
              endif
              !
           endif
@@ -948,4 +1002,14 @@ subroutine taubot(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     endif
     deallocate(ka, stat=ierror)
     deallocate(kmaxxx, stat=ierror)
+    !    
+    ! TURN off periodic points only if vvvSECord=Y
+    !
+    if (periodSURFACE.and.vvvSECord) then
+       if ((icx==1.and.PERIODalongM==1).or.(icx/=1.and..not.PERIODalongM==1)) then
+          CALL OFFonPERvel_ONLYkf1(kfv,kfu,gdp%d%nlb,gdp%d%nub,gdp%d%mlb,gdp%d%mub,0, gdp)   !turn on kfu and kfv (second argument has to be the location of the tangential velocity)
+       else
+          CALL OFFonPERvel_ONLYkf1(kfu,kfv,gdp%d%nlb,gdp%d%nub,gdp%d%mlb,gdp%d%mub,0, gdp)   !turn on kfu and kfv (second argument has to be the location of the tangential velocity)
+       endif
+    endif     
 end subroutine taubot

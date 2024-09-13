@@ -2,7 +2,7 @@ subroutine decarr(lunmd     ,lundia    ,error     ,runid     , &
                 & prgnm     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine decarr(lunmd     ,lundia    ,error     ,runid     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: decarr.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/allocation/decarr.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Initialises parameters/variables
@@ -69,7 +69,7 @@ subroutine decarr(lunmd     ,lundia    ,error     ,runid     , &
     logical          , pointer :: dredge
     logical          , pointer :: drogue
     logical          , pointer :: wave
-    integer          , pointer :: waveol
+    logical          , pointer :: waveol
     logical          , pointer :: threed
     logical          , pointer :: secflo
     logical          , pointer :: iweflg
@@ -181,7 +181,7 @@ subroutine decarr(lunmd     ,lundia    ,error     ,runid     , &
     wind      = .false.
     snelli    = .false.
     cnstwv    = .false.
-    waveol    = 0
+    waveol    = .false.
     sbkol     = .false.
     bubble    = .false.
     nfl       = .false.

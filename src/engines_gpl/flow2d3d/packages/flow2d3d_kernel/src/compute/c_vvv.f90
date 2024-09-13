@@ -3,7 +3,7 @@ subroutine c_vvv(j         ,nmmaxj    ,kmax      ,nm        ,nmu       , &
                & kfv       ,kcscuttest,kmaxx     ,v1        ,vvv       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine c_vvv(j         ,nmmaxj    ,kmax      ,nm        ,nmu       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: c_vvv.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/c_vvv.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! computes average vvv velocity

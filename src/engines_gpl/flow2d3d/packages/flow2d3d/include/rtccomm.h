@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2016.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -45,17 +45,17 @@
 #if HAVE_CONFIG_H
 #   include "config.h"
 #   define STDCALL  /* nothing */
-#   define DD_RTCNOCOMMUNICATION    FC_FUNC(dd_rtcnocommunication,DD_RTCNOCOMMUNICATION)
-#   define DD_RTCSTARTCOMMUNICATION FC_FUNC(dd_rtcstartcommunication,DD_RTCSTARTCOMMUNICATION)
-#   define DD_RTCCOMMUNICATE        FC_FUNC(dd_rtccommunicate,DD_RTCCOMMUNICATE)
-#   define DD_RTCCHARCOMMUNICATE    FC_FUNC(dd_rtccharcommunicate,DD_RTCCHARCOMMUNICATE)
+#   define RTCNOCOMMUNICATION    FC_FUNC(rtcnocommunication,RTCNOCOMMUNICATION)
+#   define RTCSTARTCOMMUNICATION FC_FUNC(rtcstartcommunication,RTCSTARTCOMMUNICATION)
+#   define RTCCOMMUNICATE        FC_FUNC(rtccommunicate,RTCCOMMUNICATE)
+#   define RTCCHARCOMMUNICATE    FC_FUNC(rtccharcommunicate,RTCCHARCOMMUNICATE)
 #else
 // WIN32
 #   define STDCALL  /* nothing */
-#   define DD_RTCNOCOMMUNICATION    DD_RTCNOCOMMUNICATION
-#   define DD_RTCSTARTCOMMUNICATION DD_RTCSTARTCOMMUNICATION
-#   define DD_RTCCOMMUNICATE        DD_RTCCOMMUNICATE
-#   define DD_RTCCHARCOMMUNICATE    DD_RTCCHARCOMMUNICATE
+#   define RTCNOCOMMUNICATION    RTCNOCOMMUNICATION
+#   define RTCSTARTCOMMUNICATION RTCSTARTCOMMUNICATION
+#   define RTCCOMMUNICATE        RTCCOMMUNICATE
+#   define RTCCHARCOMMUNICATE    RTCCHARCOMMUNICATE
 #endif
 
 

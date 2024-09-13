@@ -2,13 +2,14 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
                & icy       ,zmodel    ,irocol    ,kcs       ,kfu       , &
                & kfumn0    ,kfumx0    ,s0        ,u0        ,dpu       , &
                & hu        ,umean     ,tetau     ,guu       ,gvu       , &
+               & aguu      ,nmmax     ,  &
                & dzu0      ,thick     ,circ2d    ,circ3d    ,a         , &
                & b         ,c         ,d         ,aa        ,bb        , &
                & cc        ,dd        ,aak       ,bbk       ,cck       , &
-               & ddk       ,crbc      ,wavcmp    ,gdp       )
+               & ddk       ,crbc      ,wavcmp    ,GHOSTu1   ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -32,8 +33,8 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: cucbp.f90 6324 2016-07-18 18:53:27Z canestrelli.x $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/cucbp.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Coefficients at boundary points MF, MFU, ML, and
@@ -62,6 +63,9 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
     real(fp)               , pointer :: ag
     integer                , pointer :: iro
     real(fp)               , pointer :: dzmin
+    logical               , pointer :: neuPERslope
+    real(fp), dimension(:), pointer :: huFAC
+    logical               , pointer :: periodSURFACE
 !
 ! Global variables
 !
@@ -71,8 +75,10 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
                                                                             !!  ceeds in the Y-dir.
     integer                                         , intent(in)  :: icy    !!  Increment in the Y-dir. (see ICX)
     integer                                         , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
+    integer                                         , intent(in)  :: nmmax  !
     integer                                         , intent(in)  :: norow  !  Description and declaration in esm_alloc_int.f90
-    integer, dimension(5, norow)                    , intent(in)  :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(7, norow)                    , intent(in)  :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in)  :: GHOSTu1 !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in)  :: kcs    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in)  :: kfu    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in)  :: kfumx0 !  Description and declaration in esm_alloc_int.f90
@@ -117,6 +123,9 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: u0     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                       , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax, 2, norow)             , intent(in)  :: circ3d !  Description and declaration in esm_alloc_real.f90
+!   cutcells:
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)               :: aguu      !  Description and declaration in esm_alloc_real.f90
+
 !
 ! Local variables
 !
@@ -160,11 +169,14 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
 !
 !! executable statements -------------------------------------------------------
 !
-    lundia   => gdp%gdinout%lundia
-    hdt      => gdp%gdnumeco%hdt
-    ag       => gdp%gdphysco%ag
-    iro      => gdp%gdphysco%iro
-    dzmin    => gdp%gdzmodel%dzmin
+    neuPERslope   => gdp%gdimbound%neuPERslope
+    huFAC         => gdp%gdimbound%huFAC
+    periodSURFACE => gdp%gdimbound%periodSURFACE
+    lundia        => gdp%gdinout%lundia
+    hdt           => gdp%gdnumeco%hdt
+    ag            => gdp%gdphysco%ag
+    iro           => gdp%gdphysco%iro
+    dzmin         => gdp%gdzmodel%dzmin
     !
     icxy = max(icx, icy)
     ddb  = gdp%d%ddbound
@@ -202,7 +214,7 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
        ! SET COEFFICIENTS FOR BEGIN OF ROW IN THE CASE OF A CLOSED BOUNDARY
        !
 !      if (kfu(nmf)==0) then
-       if (kfu(nmf)==0 .and. ibf/=10) then
+       if (kfu(nmf)==0.and. ibf/=10) then !if its a ghost point it means the edge is fully dry. Later I will probably set kfu deactive at ghost points before the call to cucbp
           !
           ! CLOSED BOUNDARY OR DRY VELOCITY-POINT AT BEGIN OF ROW
           !
@@ -235,7 +247,7 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
           ! SET COEFFICIENTS FOR BEGIN OF ROW IN THE CASE OF AN OPEN BOUNDARY
           !
           dep  = dpu(nmf)
-          sepu = tetau(nmf)*s0(nmf) + (1.0 - tetau(nmf))*s0(nmfu)
+          sepu = tetau(nmf)*s0(nmf) + (1._fp - tetau(nmf))*s0(nmfu)
           if (ibf==2 .and. .not.wavcmp) then
              !
              ! WATERLEVEL BOUNDARY
@@ -245,7 +257,7 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
              !
              aaaf = 1.0 + alfas*tetau(nmf)
              bbbf = alfau
-             cccf = alfas*(1.0 - tetau(nmf))
+             cccf = alfas*(1._fp - tetau(nmf))
              dddf = circ2d(1, ic) + alfau*umean(nmf) + alfas*sepu
              !
              ! LAYER VELOCITIES ARE COMPUTED USING
@@ -265,7 +277,7 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
              facc    = 1.0 + alfau
              aa(nmf) = alfas*tetau(nmf)/facc
              bb(nmf) = 1.0
-             cc(nmf) = alfas*(1.0 - tetau(nmf))/facc
+             cc(nmf) = alfas*(1._fp - tetau(nmf))/facc
              dd(nmf) = (circ2d(1, ic) + alfau*umean(nmf) + alfas*sepu)/facc
              !
              ! LAYER VELOCITIES ( VELOCITY PROFILE )
@@ -295,7 +307,7 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
              aa(nmf) = 0.0
              bb(nmf) = 1.0
              cc(nmf) = 0.0
-             dd(nmf) = circ2d(1, ic)/(guu(nmf)*hnm)
+             dd(nmf) = circ2d(1, ic)/(guu(nmf)*max(aguu(nmf),0.00000000000001_fp)*hnm)
              !
              ! LAYER VELOCITIES ( VELOCITY PROFILE )
              !
@@ -308,12 +320,18 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
                 aak(nmf, k) = 0.0
                 bbk(nmf, k) = 1.0
                 cck(nmf, k) = 0.0
-                ddk(nmf, k) = circ3d(k, 1, ic)/(guu(nmf)*relthk)
+                ddk(nmf, k) = circ3d(k, 1, ic)/(guu(nmf)*max(aguu(nmf),0.00000000000001_fp)*relthk)
              enddo
              a(nmf) =  0.0
              b(nmf) =  1.0
              c(nmf) = -1.0
              d(nmf) =  0.0
+             if (.not.PERIODsurface) then !if (.not.neuPERslope) then
+                !
+                ! Prescribe fixed slope explicitly
+                !
+                d(nmf) =  s0(nmf)-s0(nmfu)
+             endif
           elseif ((ibf==6 .or. ibf==2) .and. wavcmp) then
              !
              ! WEAKLY REFLECTIVE BOUNDARY CONDITION AT LEFT BOUNDARY
@@ -347,37 +365,21 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
              ! WEAKLY REFLECTIVE BOUNDARY
              !
              alfas   = sqrt(ag/(dep + sepu))
-             if (dep<0) then
-                aa(nmf) = 0.0
-                bb(nmf) = 1.0
-                cc(nmf) = 0.0
-                dd(nmf) = 0.0
-                !
-                ! LAYER VELOCITIES ( VELOCITY PROFILE )
-                !
-                do k = k0f, k1f
-                   aak(nmf, k) = 0.0
-                   bbk(nmf, k) = 1.0
-                   cck(nmf, k) = 0.0
-                   ddk(nmf, k) = 0.0
-                enddo               
-             else
-                aa(nmf) = alfas*tetau(nmf)
-                bb(nmf) = 1.0
-                cc(nmf) = alfas*(1.0 - tetau(nmf))
-                dd(nmf) = circ2d(1, ic) + alfas*sepu - 2.*sqrt(ag*(dep + sepu))    &
+             aa(nmf) = alfas*tetau(nmf)
+             bb(nmf) = 1.0
+             cc(nmf) = alfas*(1._fp - tetau(nmf))
+             dd(nmf) = circ2d(1, ic) + alfas*sepu - 2.*sqrt(ag*(dep + sepu))    &
                      & + 2.*sqrt(ag*dep)
-                !
-                ! LAYER VELOCITIES ( VELOCITY PROFILE )
-                !
-                do k = k0f, k1f
-                   aak(nmf, k) = aa(nmf)
-                   bbk(nmf, k) = 1.0
-                   cck(nmf, k) = cc(nmf)
-                   ddk(nmf, k) = circ3d(k, 1, ic) + alfas*sepu -                   &
-                               & 2.*sqrt(ag*(dep + sepu)) + 2.*sqrt(ag*dep)
-                enddo
-             endif
+             !
+             ! LAYER VELOCITIES ( VELOCITY PROFILE )
+             !
+             do k = k0f, k1f
+                aak(nmf, k) = aa(nmf)
+                bbk(nmf, k) = 1.0
+                cck(nmf, k) = cc(nmf)
+                ddk(nmf, k) = circ3d(k, 1, ic) + alfas*sepu -                   &
+                            & 2.*sqrt(ag*(dep + sepu)) + 2.*sqrt(ag*dep)
+             enddo
              !
              a(nmf) =  0.0
              b(nmf) =  1.0
@@ -401,7 +403,7 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
                 ddk(nmfd, k) = u0(nmfd, k)
              enddo
 !         else
-          elseif ( (ibf /= 10) .and. (kcs(nmf) /= -1) ) then
+          elseif ( (ibf /= 10) .and. (kcs(nmf) /= -1).and. ghostU1(nmf).ne.1) then !if its a ghost point it does not need boundary conditions
              write (errtxt, '(6i5)') ic, (irocol(ll, ic), ll = 1, 5)
              call prterr(lundia    ,'S200'    ,errtxt    )
              !
@@ -415,7 +417,7 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
        ! SET COEFFICIENTS FOR END OF ROW IN THE CASE OF A CLOSED BOUNDARY
        !
 !      if (kfu(nml)==0) then
-       if (kfu(nml)==0 .and. ibl/=10) then
+       if (kfu(nml)==0 .and. ibl/=10) then !if its a ghost point it means the edge is fully dry. Later I will probably set kfu deactive at ghost points before the call to cucbp
           !
           ! CLOSED BOUNDARY OR PERMANENTLY DRY VELOCITY POINT AT END OF ROW
           !
@@ -447,7 +449,7 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
           ! SET COEFFICIENTS FOR END OF ROW IN THE CASE OF AN OPEN BOUNDARY
           ! IN CASE OF COUPLING BOUNDARY, DO NOTHING
           !
-          sepu = tetau(nml)*s0(nml) + (1.0 - tetau(nml))*s0(nmlu)
+          sepu = tetau(nml)*s0(nml) + (1._fp- tetau(nml))*s0(nmlu)
           dep = dpu(nml)
           !
           if (ibl==2 .and. .not.wavcmp) then
@@ -459,7 +461,7 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
              !
              aaal = alfas*tetau(nml)
              bbbl = alfau
-             cccl = -1.0 + alfas*(1.0 - tetau(nml))
+             cccl = -1.0 + alfas*(1._fp - tetau(nml))
              dddl = -circ2d(2, ic) + alfau*umean(nml) + alfas*sepu
              !
              ! LAYER VELOCITIES ARE COMPUTED USING
@@ -479,7 +481,7 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
              facc = 1.0 + alfau
              aa(nml) = alfas*tetau(nml)/facc
              bb(nml) = 1.0
-             cc(nml) = alfas*(1.0 - tetau(nml))/facc
+             cc(nml) = alfas*(1._fp - tetau(nml))/facc
              dd(nml) = (circ2d(2, ic) + alfau*umean(nml) + alfas*sepu)/facc
              !
              ! LAYER VELOCITIES ( VELOCITY PROFILE )
@@ -495,6 +497,9 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
              b(nmlu) =  1.0
              c(nmlu) =  0.0
              d(nmlu) =  0.0
+             IF (.not.periodSURFACE) then !if (.not.neuPERslope) then
+                d(nmlu) =  s0(nmlu)-s0(nml)
+             endif
           elseif (ibl==5 .or. ibl==7) then
              !
              ! DISCHARGE BOUNDARY
@@ -510,7 +515,7 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
              aa(nml) = 0.0
              bb(nml) = 1.0
              cc(nml) = 0.0
-             dd(nml) = circ2d(2, ic)/(guu(nml)*hnm)
+             dd(nml) = circ2d(2, ic)/(guu(nml)*max(aguu(nml),0.00000000000001_fp)*hnm)
              !
              ! LAYER VELOCITIES ( VELOCITY PROFILE )
              !
@@ -523,12 +528,15 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
                 aak(nml, k) = 0.0
                 bbk(nml, k) = 1.0
                 cck(nml, k) = 0.0
-                ddk(nml, k) = circ3d(k, 2, ic)/(guu(nml)*relthk)
+                ddk(nml, k) = circ3d(k, 2, ic)/(guu(nml)*max(aguu(nml),0.00000000000001_fp)*relthk)
              enddo
              a(nmlu) = -1.0
              b(nmlu) =  1.0
              c(nmlu) =  0.0
              d(nmlu) =  0.0
+             IF (periodSURFACE) then !if (.not.neuPERslope) then
+                d(nmlu) = s0(nmlu)-s0(nml) !prescribe fixed slope explicitely
+             endif             
           elseif ((ibl==6 .or. ibl==2) .and. wavcmp) then
              !
              ! WEAKLY REFLECTIVE BOUNDARY CONDITION AT RIGHT BOUNDARY
@@ -561,37 +569,21 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
              ! WEAKLY REFLECTIVE BOUNDARY
              !
              alfas = sqrt(ag/(dep + sepu))
-             if (dep < 0) then
-                aa(nml) = 0.0
-                bb(nml) = 1.0
-                cc(nml) = 0.0
-                dd(nml) = 0.0
-                !
-                ! LAYER VELOCITIES ( VELOCITY PROFILE )
-                !
-                do k = k0l, k1l
-                   aak(nml, k) = 0.0
-                   bbk(nml, k) = 1.0
-                   cck(nml, k) = 0.0
-                   ddk(nml, k) = 0.0
-                enddo
-             else
-                aa(nml) = -alfas*tetau(nml)
-                bb(nml) = 1.0
-                cc(nml) = -alfas*(1.0 - tetau(nml))
-                dd(nml) = circ2d(2, ic) - alfas*sepu + 2.*sqrt(ag*(dep + sepu))    &
-                        & - 2.*sqrt(ag*dep)
-                !
-                ! LAYER VELOCITIES ( VELOCITY PROFILE )
-                !
-                do k = k0l, k1l
-                   aak(nml, k) = aa(nml)
-                   bbk(nml, k) = 1.0
-                   cck(nml, k) = cc(nml)
-                   ddk(nml, k) = circ3d(k, 2, ic) - alfas*sepu +                   &
-                               & 2.*sqrt(ag*(dep + sepu)) - 2.*sqrt(ag*dep)
-                enddo
-             endif
+             aa(nml) = -alfas*tetau(nml)
+             bb(nml) = 1.0
+             cc(nml) = -alfas*(1._fp - tetau(nml))
+             dd(nml) = circ2d(2, ic) - alfas*sepu + 2.*sqrt(ag*(dep + sepu))    &
+                     & - 2.*sqrt(ag*dep)
+             !
+             ! LAYER VELOCITIES ( VELOCITY PROFILE )
+             !
+             do k = k0l, k1l
+                aak(nml, k) = aa(nml)
+                bbk(nml, k) = 1.0
+                cck(nml, k) = cc(nml)
+                ddk(nml, k) = circ3d(k, 2, ic) - alfas*sepu +                   &
+                            & 2.*sqrt(ag*(dep + sepu)) - 2.*sqrt(ag*dep)
+             enddo
              a(nmlu) = -1.0
              b(nmlu) =  1.0
              c(nmlu) =  0.0
@@ -615,7 +607,7 @@ subroutine cucbp(kmax      ,norow     ,icx       , &
                 ddk(nmlu, k) = u0(nmlu, k)
              enddo
 !         else
-          elseif ( (ibl/=10) .and. (kcs(nml).ne.-1) ) then
+          elseif ( (ibl/=10) .and. (kcs(nml).ne.-1) .and.  ghostU1(nml).ne.1) then !if its a ghost point it does not need boundary conditions
              write (errtxt, '(6i5)') ic, (irocol(ll, ic), ll = 1, 5)
              call prterr(lundia    ,'S201'    ,errtxt    )
              !

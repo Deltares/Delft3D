@@ -2,7 +2,7 @@ subroutine wrd_main(lundia    ,error     ,ndro      ,itdroc    ,runtxt    , &
                   & trifil    ,dtsec     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine wrd_main(lundia    ,error     ,ndro      ,itdroc    ,runtxt    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrd_main.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrd_main.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Main routine for writing the FLOW HIS file.
@@ -39,7 +39,6 @@ subroutine wrd_main(lundia    ,error     ,ndro      ,itdroc    ,runtxt    , &
     use dfparall, only: inode, master, parll
     use datagroups
     use netcdf
-    use flow2d3d_version_module
     !
     use globaldata
     !
@@ -90,7 +89,7 @@ subroutine wrd_main(lundia    ,error     ,ndro      ,itdroc    ,runtxt    , &
     integer                                , external :: clsnef
     character(256)                                    :: filename
     !
-    character(256)                                    :: full_version
+    character(256)                                    :: version_full
     character(8)                                      :: cdate
     character(10)                                     :: ctime
     character(5)                                      :: czone
@@ -129,7 +128,7 @@ subroutine wrd_main(lundia    ,error     ,ndro      ,itdroc    ,runtxt    , &
     simdat(13:14) = rundat(15:16)
     simdat(15:16) = rundat(18:19)
     !
-    call getfullversionstring_flow2d3d(full_version)
+    call getfullversionstring_flow2d3d(version_full)
     call date_and_time(cdate, ctime, czone)
     !
     filename = trifil(1:3) // 'd' // trifil(5:)
@@ -167,14 +166,14 @@ subroutine wrd_main(lundia    ,error     ,ndro      ,itdroc    ,runtxt    , &
        elseif (filetype == FTYPE_NETCDF) then
           if (first .and. irequest == REQUESTTYPE_DEFINE) then              
              write(lundia,*) 'Creating new '//trim(filename)
-             ierror = nf90_create(filename, gdp%gdpostpr%nc_mode, fds); call nc_check_err(lundia, ierror, "creating file", filename)
+             ierror = nf90_create(filename, 0, fds); call nc_check_err(lundia, ierror, "creating file", filename)
              !
              ! global attributes
              !
              ierror = nf90_put_att(fds, nf90_global,  'Conventions', 'CF-1.6'); call nc_check_err(lundia, ierror, "put_att global Conventions", filename)
              ierror = nf90_put_att(fds, nf90_global,  'institution', trim('Deltares')); call nc_check_err(lundia, ierror, "put_att global institution", filename)
              ierror = nf90_put_att(fds, nf90_global,  'references', trim('www.deltares.nl')); call nc_check_err(lundia, ierror, "put_att global references", filename)
-             ierror = nf90_put_att(fds, nf90_global,  'source', trim(full_version)); call nc_check_err(lundia, ierror, "put_att global source", filename)
+             ierror = nf90_put_att(fds, nf90_global,  'source', trim(version_full)); call nc_check_err(lundia, ierror, "put_att global source", filename)
              ierror = nf90_put_att(fds, nf90_global,  'history', &
                     'This file is created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
                     ', '//trim('Delft3D')); call nc_check_err(lundia, ierror, "put_att global history", filename)

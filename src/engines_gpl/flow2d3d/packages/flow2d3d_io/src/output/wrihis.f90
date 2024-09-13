@@ -6,10 +6,10 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
                 & yz        ,alfas     ,dps       ,thick     ,sig       , &
                 & zk        ,irequest  ,fds       ,nostatto  ,nostatgl  , &
                 & order_sta ,ntruvto   ,ntruvgl   ,order_tra ,xcor      , &
-                & ycor      ,kcs       ,nsluv     ,nambar    ,gdp       )
+                & ycor      ,kcs       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -33,8 +33,8 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrihis.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrihis.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Writes the initial group 2 ('his-const') to
@@ -68,14 +68,11 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
     integer       , dimension(:, :) , pointer :: mnit
     integer       , dimension(:, :) , pointer :: mnstat
     integer       , dimension(:, :) , pointer :: elmdms
-    integer                         , pointer :: io_fp
-    integer                         , pointer :: io_prec
     integer       , dimension(:)    , pointer :: shlay
     real(fp)      , dimension(:, :) , pointer :: xystat
     character(20) , dimension(:)    , pointer :: namst
     character(20) , dimension(:)    , pointer :: namtra
     logical                         , pointer :: ztbml
-    type (flwoutputtype)            , pointer :: flwoutput
 !
 ! Global variables
 !
@@ -88,11 +85,10 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
     integer                                                             , intent(in)  :: lstsci   !  Description and declaration in esm_alloc_int.f90
     integer                                                             , intent(in)  :: ltur     !  Description and declaration in esm_alloc_int.f90
     integer                                                                           :: lundia   !  Description and declaration in inout.igs
-    integer                                                             , intent(in)  :: mmax     !  Description and declaration in esm_alloc_int.f90
-    integer                                                             , intent(in)  :: nmax     !  Description and declaration in esm_alloc_int.f90
-    integer                                                             , intent(in)  :: nostat   !  Description and declaration in dimens.igs
-    integer                                                             , intent(in)  :: nsluv    !  Description and declaration in dimens.igs
-    integer                                                             , intent(in)  :: ntruv    !  Description and declaration in dimens.igs
+    integer                                                                           :: mmax     !  Description and declaration in esm_alloc_int.f90
+    integer                                                                           :: nmax     !  Description and declaration in esm_alloc_int.f90
+    integer                                                                           :: nostat   !  Description and declaration in dimens.igs
+    integer                                                                           :: ntruv    !  Description and declaration in dimens.igs
     integer       , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) , intent(in)  :: kcs      !  Description and declaration in esm_alloc_int.f90
     logical                                                             , intent(out) :: error    !  Flag=TRUE if an error is encountered
     logical                                                             , intent(in)  :: sferic   !  Description and declaration in tricom.igs
@@ -112,7 +108,6 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
     real(fp)      , dimension(0:kmax)                                   , intent(in)  :: zk       !  Vertical coordinates of cell interfaces (Z-MODEL)
     character(*)                                                        , intent(in)  :: filename !  File name
     character(16)                                                       , intent(in)  :: simdat   !  Simulation date representing the flow condition at this date
-    character(20) , dimension(nsluv)                                    , intent(in)  :: nambar   !  Description and declaration in esm_alloc_char.f90
     character(20) , dimension(lmax)                                     , intent(in)  :: namcon   !  Description and declaration in esm_alloc_char.f90
     character(20) , dimension(lsedtot)                                  , intent(in)  :: namsed   !  Description and declaration in esm_alloc_char.f90
     character(23)                                                       , intent(in)  :: selhis   !  Description and declaration in tricom.igs
@@ -155,7 +150,6 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
     integer                                           :: iddim_kmaxout_restr
     integer                                           :: iddim_kmax1
     integer                                           :: iddim_nostat
-    integer                                           :: iddim_nsluv
     integer                                           :: iddim_ntruv
     integer                                           :: iddim_lsed
     integer                                           :: iddim_lsedtot
@@ -189,14 +183,11 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
     nfg         => gdp%gdparall%nfg
     mnit        => gdp%gdstations%mnit
     mnstat      => gdp%gdstations%mnstat
-    io_fp       => gdp%gdpostpr%io_fp
-    io_prec     => gdp%gdpostpr%io_prec
     shlay       => gdp%gdpostpr%shlay
     xystat      => gdp%gdstations%xystat
     namst       => gdp%gdstations%namst
     namtra      => gdp%gdstations%namtra
     ztbml       => gdp%gdzmodel%ztbml
-    flwoutput   => gdp%gdflwpar%flwoutput
     !
     ! Initialize local variables
     !
@@ -248,7 +239,6 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
        if (lsedtot >0) iddim_lsedtot= adddim(gdp, lundia, FILOUT_HIS, 'LSEDTOT'           , lsedtot ) ! Number of total sediment fractions
                        iddim_2      = adddim(gdp, lundia, FILOUT_HIS, 'length_2'          , 2       )
                        iddim_4      = adddim(gdp, lundia, FILOUT_HIS, 'length_4'          , 4       )
-       if (nsluv   >0) iddim_nsluv  = adddim(gdp, lundia, FILOUT_HIS, 'NBARRIERS'         , nsluv   ) ! Number of barriers
        !
        lhlp = 0
        if (index(selhis(5:12), 'Y')/=0 .or. index(selhis(22:23), 'Y')/=0) lhlp = lhlp + lstsci
@@ -264,9 +254,9 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
        !
        if (filetype == FTYPE_NEFIS) then ! for NEFIS only
           call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'ITDATE', ' ', IO_INT4       , 1, dimids=(/iddim_2/), longname='Initial date (input) & time (default 00:00:00)', unit='[YYYYMMDD]')
-          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'TZONE', ' ', io_prec        , 0, longname='Local time zone', unit='h')
-          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'TUNIT', ' ', io_prec        , 0, longname='Time scale related to seconds', unit='s')
-          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'DT', ' ', io_fp             , 0, longname='Time step (DT*TUNIT sec)')
+          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'TZONE', ' ', IO_REAL4       , 0, longname='Local time zone', unit='h')
+          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'TUNIT', ' ', IO_REAL4       , 0, longname='Time scale related to seconds', unit='s')
+          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'DT', ' ', IO_REAL4          , 0, longname='Time step (DT*TUNIT sec)')
           call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'SIMDAT', ' ', 16            , 0, longname='Simulation date and time [YYYYMMDD  HHMMSS]') !CHARACTER
           call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'SELHIS', ' ', 23            , 0, longname='Selection flag for time histories') !CHARACTER
           call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'NOSTAT', ' ', IO_INT4       , 0, longname='Number of monitoring stations')
@@ -276,27 +266,27 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
           call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'KMAX', ' ', IO_INT4         , 0, longname='Number of layers')
           if (nostatgl > 0) then
              call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'MNSTAT', ' ', IO_INT4    , 2, dimids=(/iddim_2, iddim_nostat/), longname='(M,N) indices of monitoring stations')
-             call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'XYSTAT', ' ', io_fp      , 2, dimids=(/iddim_2, iddim_nostat/), longname='(X,Y) coordinates of monitoring stations', unit=xcoordunit)
+             call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'XYSTAT', ' ', IO_REAL4   , 2, dimids=(/iddim_2, iddim_nostat/), longname='(X,Y) coordinates of monitoring stations', unit=xcoordunit)
           endif
        endif
        if (nostatgl > 0) then
           call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'NAMST', ' ', 20          , 1, dimids=(/iddim_nostat/), longname='Name of monitoring station') !CHARACTER
        endif
        if (filetype == FTYPE_NEFIS) then ! for NEFIS only
-          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'GRDANG', ' ', io_prec       , 0, longname='Edge between y-axis and real north', unit='arc_degrees')
+          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'GRDANG', ' ', IO_REAL4      , 0, longname='Edge between y-axis and real north', unit='arc_degrees')
        endif
        if (nostatgl > 0) then
-          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'ALFAS', ' ', io_prec     , 1, dimids=(/iddim_nostat/), longname='Orientation ksi-axis w.r.t. pos.x-axis at water level point', unit='arc_degrees')
+          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'ALFAS', ' ', IO_REAL4    , 1, dimids=(/iddim_nostat/), longname='Orientation ksi-axis w.r.t. pos.x-axis at water level point', unit='arc_degrees')
           if (filetype /= FTYPE_NETCDF) then ! for NetCDF just store the time-dependent version
-             call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'DPS', ' ', io_prec       , 1, dimids=(/iddim_nostat/), longname='Depth in station', unit='m')
+             call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'DPS', ' ', IO_REAL4      , 1, dimids=(/iddim_nostat/), longname='Depth in station', unit='m')
           endif
        endif
        if (filetype == FTYPE_NEFIS) then ! for NEFIS only
-          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'THICK', ' ', io_prec        , 1, dimids=(/iddim_kmax/), longname='Fraction part of layer thickness of total water-height', unit='[ .01*% ]')
+          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'THICK', ' ', IO_REAL4       , 1, dimids=(/iddim_kmax/), longname='Fraction part of layer thickness of total water-height', unit='[ .01*% ]')
        endif
        if (ntruvgl > 0) then
           call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'MNTRA', ' ', IO_INT4     , 2, dimids=(/iddim_4, iddim_ntruv/), longname='(M1,N1)-(M2,N2) indices of monitoring cross-sections')
-          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'XYTRA', ' ', io_fp       , 2, dimids=(/iddim_4, iddim_ntruv/), longname='(X1,Y1)-(X2,Y2) coordinates of monitoring cross-sections', unit=xcoordunit)
+          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'XYTRA', ' ', IO_REAL4    , 2, dimids=(/iddim_4, iddim_ntruv/), longname='(X1,Y1)-(X2,Y2) coordinates of monitoring cross-sections', unit=xcoordunit)
           call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'NAMTRA', ' ', 20         , 1, dimids=(/iddim_ntruv/), longname='Name of monitoring cross-section') !CHARACTER
        endif
        if (filetype == FTYPE_NEFIS) then ! for NEFIS only
@@ -313,12 +303,12 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
        endif
        if (zmodel) then
           if (filetype /= FTYPE_NEFIS) then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'ZK_LYR', ' ', io_prec    , 1, dimids=(/iddim_kmax/) , longname='Vertical coordinates of layer centres'   , unit='m', attribs=(/idatt_up/) )
+             call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'ZK_LYR', ' ', IO_REAL4   , 1, dimids=(/iddim_kmax/) , longname='Vertical coordinates of layer centres'   , unit='m', attribs=(/idatt_up/) )
           endif
-          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'ZK', ' ', io_prec           , 1, dimids=(/iddim_kmax1/), longname='Vertical coordinates of layer interfaces', unit='m', attribs=(/idatt_up/) )
+          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'ZK', ' ', IO_REAL4          , 1, dimids=(/iddim_kmax1/), longname='Vertical coordinates of layer interfaces', unit='m', attribs=(/idatt_up/) )
        elseif (filetype /= FTYPE_NEFIS) then
-          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'SIG_LYR' , 'ocean_sigma_coordinate', io_prec        , 1, dimids=(/iddim_kmax/) , longname='Sigma coordinates of layer centres'   , attribs=(/idatt_sigfc/) )
-          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'SIG_INTF', 'ocean_sigma_coordinate', io_prec        , 1, dimids=(/iddim_kmax1/), longname='Sigma coordinates of layer interfaces', attribs=(/idatt_sigfi/) )
+          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'SIG_LYR' , 'ocean_sigma_coordinate', IO_REAL4       , 1, dimids=(/iddim_kmax/) , longname='Sigma coordinates of layer centres'   , attribs=(/idatt_sigfc/) )
+          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'SIG_INTF', 'ocean_sigma_coordinate', IO_REAL4       , 1, dimids=(/iddim_kmax1/), longname='Sigma coordinates of layer interfaces', attribs=(/idatt_sigfi/) )
        endif
        if (filetype == FTYPE_NEFIS) then ! for NEFIS only
           call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'COORDINATES', ' ', 16       , 0, longname='Cartesian or Spherical coordinates') !CHARACTER
@@ -327,9 +317,6 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
        else
           call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'KMAXOUT', ' ', IO_INT4, 1, dimids=(/iddim_kmaxout/), longname='User selected output layer interfaces', attribs=(/idatt_cmpintf/) )
           call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'KMAXOUT_RESTR', ' ', IO_INT4, 1, dimids=(/iddim_kmaxout_restr/), longname='User selected output layer centres', attribs=(/idatt_cmplyr/) )
-       endif
-       if (nsluv > 0 .and. flwoutput%hisbar) then
-          call addelm(gdp, lundia, FILOUT_HIS, grnam2, 'NAMBAR', ' ', 20       , 1, dimids=(/iddim_nsluv/), longname='Barrier names') !CHARACTER
        endif
        !
     case (REQUESTTYPE_WRITE)
@@ -445,22 +432,16 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
                     & ierror, lundia, ibuff2, 'MNSTAT', station, mergedim=2)
              deallocate(ibuff2, stat=istat)
              if (ierror/=0) goto 9999
-          endif
-          !
-          ! element 'XYSTAT': filling of XYSTAT should also be done in case of
-          !                   NetCDF output since this array will otherwise
-          !                   never be filled for stationary observation points
-          !
-          do k = 1, nostat
-             m              = mnstat(1,k)
-             n              = mnstat(2,k)
-             xystat(1,k)    = xz(n,m)
-             xystat(2,k)    = yz(n,m)
-          enddo
-          if (filetype == FTYPE_NEFIS) then ! for NetCDF just store the time-dependent version
+             !
+             ! element 'XYSTAT'
+             !
              allocate(rbuff2(2, nostat), stat=istat)
              do k = 1, nostat
-                rbuff2(1:2,k)  = (/xystat(1,k), xystat(2,k)/)
+                m              = mnstat(1,k)
+                n              = mnstat(2,k)
+                xystat(1,k)    = xz(n,m)
+                xystat(2,k)    = yz(n,m)
+                rbuff2(1:2,k)  = (/xz(n,m), yz(n,m)/)
              enddo
              call wrtarray_n(fds, filename, filetype, grnam2, &
                     & 1, nostat, nostatto, nostatgl, order_sta, gdp, &
@@ -719,11 +700,6 @@ subroutine wrihis(lundia    ,error     ,filename  ,selhis    ,simdat    , &
           if (ierror/=0) goto 9999
        endif
        !
-       if (nsluv > 0 .and. flwoutput%hisbar) then
-          call wrtvar(fds, filename, filetype, grnam2, 1, &
-                 & gdp, ierror, lundia, nambar, 'NAMBAR')
-          if (ierror/=0) goto 9999
-       endif
     end select
     deallocate(shlay_restr)
     !

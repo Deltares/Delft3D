@@ -5,7 +5,7 @@ subroutine z_hormom_iupw(nmmax     ,kmax      ,icx       ,icy       ,kcs     , &
                        & bbk       ,bdy       ,ddk       ,buy       ,gdp     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                     
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                     
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,8 +29,8 @@ subroutine z_hormom_iupw(nmmax     ,kmax      ,icx       ,icy       ,kcs     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_hormom_iupw.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/z_hormom_iupw.f90 $
 !!--description-----------------------------------------------------------------
 !
 !!--pseudo code and references--------------------------------------------------
@@ -96,6 +96,7 @@ subroutine z_hormom_iupw(nmmax     ,kmax      ,icx       ,icy       ,kcs     , &
     integer            :: numu
     real(fp)           :: dgeta
     real(fp)           :: dgvnm
+    real(fp)           :: fac
     real(fp)           :: geta
     real(fp)           :: gksi
     real(fp)           :: gsqi
@@ -106,6 +107,7 @@ subroutine z_hormom_iupw(nmmax     ,kmax      ,icx       ,icy       ,kcs     , &
 !
 !! executable statements -------------------------------------------------------
 !
+    fac = 1.0_fp
     !
     do nm = 1, nmmax
        if (kfu(nm)==1) then
@@ -153,24 +155,26 @@ subroutine z_hormom_iupw(nmmax     ,kmax      ,icx       ,icy       ,kcs     , &
                 !
                 ! Advection in U- and V-direction
                 ! First order upwind, implicit
+                ! Only in this half time step using operator splitting,
+                ! therefore factor 2.0_fp in discretisation
                 !
                 if (uuu >= 0.0_fp) then
-                   bbk(nm, k) = bbk(nm, k) + kfuz0(nmd, k)*uuu/gksi
-                   bdx(nm, k) = bdx(nm, k) - kfuz0(nmd, k)*uuu/gksi
-                   ddk(nm, k) = ddk(nm, k) - kfuz0(nmd, k)*uuu*uvdgdy
+                   bbk(nm, k) = bbk(nm, k) + fac*kfuz0(nmd, k)*uuu/gksi
+                   bdx(nm, k) = bdx(nm, k) - fac*kfuz0(nmd, k)*uuu/gksi
+                   ddk(nm, k) = ddk(nm, k) - fac*kfuz0(nmd, k)*uuu*uvdgdy
                 else
-                   bbk(nm, k) = bbk(nm, k) - kfuz0(nmu, k)*uuu/gksi
-                   bux(nm, k) = bux(nm, k) + kfuz0(nmu, k)*uuu/gksi
-                   ddk(nm, k) = ddk(nm, k) - kfuz0(nmu, k)*uuu*uvdgdy
+                   bbk(nm, k) = bbk(nm, k) - fac*kfuz0(nmu, k)*uuu/gksi
+                   bux(nm, k) = bux(nm, k) + fac*kfuz0(nmu, k)*uuu/gksi
+                   ddk(nm, k) = ddk(nm, k) - fac*kfuz0(nmu, k)*uuu*uvdgdy
                 endif
                 if (vvv >= 0.0_fp) then
-                   bbk(nm, k) = bbk(nm, k) + idifd*vvv/geta
-                   bdy(nm, k) = bdy(nm, k) - idifd*vvv/geta
-                   ddk(nm, k) = ddk(nm, k) + 0.5_fp*idifd*vvv*vvdgdx
+                   bbk(nm, k) = bbk(nm, k) + fac*idifd*vvv/geta
+                   bdy(nm, k) = bdy(nm, k) - fac*idifd*vvv/geta
+                   ddk(nm, k) = ddk(nm, k) + fac*0.5_fp*idifd*vvv*vvdgdx
                 else
-                   bbk(nm, k) = bbk(nm, k) - idifu*vvv/geta
-                   buy(nm, k) = buy(nm, k) + idifu*vvv/geta
-                   ddk(nm, k) = ddk(nm, k) + 0.5_fp*idifu*vvv*vvdgdx
+                   bbk(nm, k) = bbk(nm, k) - fac*idifu*vvv/geta
+                   buy(nm, k) = buy(nm, k) + fac*idifu*vvv/geta
+                   ddk(nm, k) = ddk(nm, k) + fac*0.5_fp*idifu*vvv*vvdgdx
                 endif                
              endif
           enddo

@@ -7,7 +7,7 @@ subroutine z_disbub(kmax    ,nsrcd     ,nsrc      ,nxbub    , &
                   & s1      ,dps       ,ifirst    ,gdp      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +31,8 @@ subroutine z_disbub(kmax    ,nsrcd     ,nsrc      ,nxbub    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_disbub.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/z_disbub.f90 $
 !!--description-----------------------------------------------------------------
 ! This routine determines mid-field circulation due to the bubble screens.
 !
@@ -161,10 +161,6 @@ subroutine z_disbub(kmax    ,nsrcd     ,nsrc      ,nxbub    , &
        nm = (mnksrc(2, ibub) + ddb) + ((mnksrc(1, ibub) - 1) + ddb)*icxy
        kk = mnksrc(3, ibub)
        !
-       ! skip this point when it is outside this partition
-       !
-       if (kk == -1) cycle
-       !
        ! check for enough layers (3 or more) for bubblescreen
        !
        if (kfsmax(nm) - kfsmin(nm) < 3) then
@@ -212,10 +208,6 @@ subroutine z_disbub(kmax    ,nsrcd     ,nsrc      ,nxbub    , &
           inam  = inam + 1
           chulp = namsrc(ibub)
        endif
-       !
-       ! skip this point when it is outside this partition
-       !
-       if (kk == -1) cycle
        !
        ! Determine layer number of injection point
        !

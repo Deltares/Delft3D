@@ -1,7 +1,7 @@
 subroutine dimmud(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine dimmud(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: dimmud.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/dimmud.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads mud keywords from mdf-file
@@ -134,7 +134,7 @@ subroutine dimmud(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
           call prterr(lundia, 'G051', 'Mud layer calculation')
           mudlay = .true.
           flmd2l = .true.
-          call prop_get(gdp%mdfile_ptr, '*', 'MudWave', mudwave)
+          call prop_get_logical(gdp%mdfile_ptr, '*', 'MudWave', mudwave)
           if (mudwave) then
              call prterr(lundia, 'G051', 'Mud - Wave interaction activated')
           endif

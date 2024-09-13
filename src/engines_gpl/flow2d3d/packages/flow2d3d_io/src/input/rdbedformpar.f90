@@ -1,8 +1,8 @@
 subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
-                      & nmmax     ,sedim     ,gdp)
+                      & nmmax     ,kcs       ,sedim     ,gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdbedformpar.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdbedformpar.f90 $
   !!--description-----------------------------------------------------------------
   !
   ! Read bed form parameters from MDF file
@@ -98,6 +98,7 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     integer                                       , intent(in)  :: nmax   !  Description and declaration in esm_alloc_int.f90
     integer                                       , intent(in)  :: nmaxus !  Description and declaration in esm_alloc_int.f90
     integer                                       , intent(in)  :: nmmax  !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)  , intent(in)  :: kcs    !  Description and declaration in esm_alloc_int.f90 
     logical                                       , intent(out) :: error  !  Flag=TRUE if an error is encountered
     logical                                       , intent(in)  :: sedim  !  Flag=TRUE if sediment process is active
 !
@@ -107,8 +108,7 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     character(20)     :: ctemp
     character(60)     :: txtput2
     character(40)     :: txtput1 
-    real(fp)          :: rdum    !< value used for initialization of array
-    real(fp)          :: rtemp
+    real              :: rtemp
     logical           :: bdfhfile_exists
     logical           :: hdread
     logical           :: ldread
@@ -154,8 +154,8 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     ! Read Bedform sediment diameter
     !
     if (.not.sedim) then
-       call prop_get(gdp%mdfile_ptr, '*', 'BdfD50', flnmD50, successD50)
-       call prop_get(gdp%mdfile_ptr, '*', 'BdfD90', flnmD90, successD90)
+       call prop_get_string(gdp%mdfile_ptr, '*', 'BdfD50', flnmD50, successD50)
+       call prop_get_string(gdp%mdfile_ptr, '*', 'BdfD90', flnmD90, successD90)
        !
        ! check if D50 or D90 is spatial varying; if only one is given, both are treated so.
        !
@@ -353,7 +353,7 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     ! Reading choice for Bedform height
     !
     ctemp = ''
-    call prop_get(gdp%mdfile_ptr,'*','BdfH',ctemp)
+    call prop_get_string(gdp%mdfile_ptr,'*','BdfH',ctemp)
     call small(ctemp     ,20         )
     select case( ctemp )
     case ('vanrijn84') 
@@ -413,7 +413,7 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     ! Reading choice for Bedform relaxation
     !
     ctemp = ''
-    call prop_get(gdp%mdfile_ptr,'*','BdfRlx',ctemp)
+    call prop_get_string(gdp%mdfile_ptr,'*','BdfRlx',ctemp)
     call small(ctemp     ,20         )
     select case( ctemp )
     case ('thconst') 
@@ -534,7 +534,7 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     ! Reading choice for Bedform length
     !
     ctemp = ''
-    call prop_get(gdp%mdfile_ptr,'*','BdfL',ctemp)
+    call prop_get_string(gdp%mdfile_ptr,'*','BdfL',ctemp)
     call small(ctemp     ,20         )
     select case( ctemp )
     case ('vanrijn84') 
@@ -570,7 +570,7 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     ! Reading choice for Bedform roughness predictor
     !
     ctemp = ''
-    call prop_get(gdp%mdfile_ptr,'*','BdfRou',ctemp)
+    call prop_get_string(gdp%mdfile_ptr,'*','BdfRou',ctemp)
     call small(ctemp     ,20         )
     select case( ctemp )
     case ('vanrijn07')
@@ -650,17 +650,15 @@ subroutine rdbedformpar(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , 
     !---------------------------
     ! Reading initial dune height/dune length
     !
-    rdum = -9999999.0_fp
-    call restart_trim_bdf(lundia   ,nmaxus   ,mmax     ,duneheight, &
-                        & hdread   ,dunelength,ldread  ,rdum      , &
-                        & gdp      )
+    call restart_bdf_from_trim(lundia   ,nmaxus   ,mmax     ,duneheight, &
+                             & hdread   ,dunelength,ldread  ,gdp      )
     !
     if (.not.hdread) then
        !
        ! First assume that 'BdfUni' contains a filename
        ! If the file does not exist, assume that 'BdfUni' contains a uniform value (real)
        !
-       call prop_get(gdp%mdfile_ptr,'*','BdfUni', flbdfh)
+       call prop_get_string(gdp%mdfile_ptr,'*','BdfUni', flbdfh)
        !
        ! Intel 7.0 crashes on an inquire statement when file = ' '
        !

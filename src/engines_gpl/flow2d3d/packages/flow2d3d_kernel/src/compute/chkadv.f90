@@ -4,7 +4,7 @@ subroutine chkadv(lundia    ,nmmax     ,kmax      ,icx       , &
                 & kcs       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine chkadv(lundia    ,nmmax     ,kmax      ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: chkadv.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/chkadv.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Checks stability (Courant number) for horizontal velocity and
@@ -148,7 +148,7 @@ subroutine chkadv(lundia    ,nmmax     ,kmax      ,icx       , &
        ndm  = ndm  + 1
        nmu  = nmu  + 1
        ndmu = ndmu + 1
-       if (kfu(nm)==1 .and. kcs(nm)/=3 .and. kcs(nmu)/=3 .and. kcs(nm)/=-1 .and. kcs(nmu)/=-1) then
+       if (kfu(nm)==1 .and. kcs(nm)/=3) then
           do k = 1, kmax
              !
              ! Flow from cell nm to nmu
@@ -167,7 +167,7 @@ subroutine chkadv(lundia    ,nmmax     ,kmax      ,icx       , &
                 cflvmax    = hdt * abs(vvv/guu(nm))
                 nm_cflvmax = nm
                 k_cflvmax  = k
-                v_cflvmax  = abs(vvv)
+                v_cflvmax  = vvv
              endif
           enddo
        endif

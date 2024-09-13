@@ -1,7 +1,7 @@
 subroutine gtptrs(gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine gtptrs(gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: gtptrs.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/allocation/gtptrs.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Gets the pointers of the dynamically allocated arrays.
@@ -110,9 +110,10 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: discom
     integer(pntrsize), pointer :: discum
     integer(pntrsize), pointer :: disinp
+    integer(pntrsize), pointer :: disnf
     integer(pntrsize), pointer :: dldeta
     integer(pntrsize), pointer :: dldksi
-    integer(pntrsize), pointer :: dpd
+    integer(pntrsize), pointer :: dp
     integer(pntrsize), pointer :: dpc
     integer(pntrsize), pointer :: dpdeta
     integer(pntrsize), pointer :: dpdksi
@@ -166,6 +167,7 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: gro
     integer(pntrsize), pointer :: gsqd
     integer(pntrsize), pointer :: gsqs
+    integer(pntrsize), pointer :: gsqsR
     integer(pntrsize), pointer :: guu
     integer(pntrsize), pointer :: guv
     integer(pntrsize), pointer :: gvu
@@ -191,7 +193,6 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: precip
     integer(pntrsize), pointer :: procbc
     integer(pntrsize), pointer :: pship
-    integer(pntrsize), pointer :: qsrcrt
     integer(pntrsize), pointer :: qtfrac
     integer(pntrsize), pointer :: qtfrct
     integer(pntrsize), pointer :: qtfrt2
@@ -213,7 +214,6 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: rhowat
     integer(pntrsize), pointer :: rich
     integer(pntrsize), pointer :: rint
-    integer(pntrsize), pointer :: rintsm
     integer(pntrsize), pointer :: rlabda
     integer(pntrsize), pointer :: rmneg
     integer(pntrsize), pointer :: rnpl
@@ -246,6 +246,7 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: sinkw
     integer(pntrsize), pointer :: soumud
     integer(pntrsize), pointer :: sour
+    integer(pntrsize), pointer :: sournf
     integer(pntrsize), pointer :: sourr
     integer(pntrsize), pointer :: sourw
     integer(pntrsize), pointer :: sstr
@@ -309,7 +310,6 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: wenfm
     integer(pntrsize), pointer :: wenl
     integer(pntrsize), pointer :: wenlm
-    integer(pntrsize), pointer :: windcd
     integer(pntrsize), pointer :: windsu
     integer(pntrsize), pointer :: windsv
     integer(pntrsize), pointer :: windu
@@ -358,28 +358,19 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: zetabl
     integer(pntrsize), pointer :: zetaif
     integer(pntrsize), pointer :: zetail
-    integer(pntrsize), pointer :: zfixfac
-    integer(pntrsize), pointer :: zfrac
-    integer(pntrsize), pointer :: zhidexp
     integer(pntrsize), pointer :: zmeanf
     integer(pntrsize), pointer :: zmeanl
-    integer(pntrsize), pointer :: zmudfrac
     integer(pntrsize), pointer :: zqxk
     integer(pntrsize), pointer :: zqyk
     integer(pntrsize), pointer :: zrca
     integer(pntrsize), pointer :: zrho
     integer(pntrsize), pointer :: zrich
     integer(pntrsize), pointer :: zrsdeq
-    integer(pntrsize), pointer :: zsandfrac
     integer(pntrsize), pointer :: zsbu
     integer(pntrsize), pointer :: zsbv
-    integer(pntrsize), pointer :: zseddif
-    integer(pntrsize), pointer :: zsinkse
-    integer(pntrsize), pointer :: zsourse
     integer(pntrsize), pointer :: zssu
     integer(pntrsize), pointer :: zssv
     integer(pntrsize), pointer :: zstep
-    integer(pntrsize), pointer :: ztaub
     integer(pntrsize), pointer :: ztauet
     integer(pntrsize), pointer :: ztauks
     integer(pntrsize), pointer :: ztur
@@ -388,7 +379,6 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: zwl
     integer(pntrsize), pointer :: zws
     integer(pntrsize), pointer :: zwndsp
-    integer(pntrsize), pointer :: zwndcd
     integer(pntrsize), pointer :: zwnddr
     integer(pntrsize), pointer :: zairp
     integer(pntrsize), pointer :: drhodx
@@ -426,6 +416,7 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: kadu
     integer(pntrsize), pointer :: kadv
     integer(pntrsize), pointer :: kcs
+    integer(pntrsize), pointer :: kcs_nf
     integer(pntrsize), pointer :: kcu
     integer(pntrsize), pointer :: kcv
     integer(pntrsize), pointer :: kfs
@@ -591,11 +582,12 @@ subroutine gtptrs(gdp)
     df         => gdp%gdr_i_ch%df
     disch      => gdp%gdr_i_ch%disch
     disinp     => gdp%gdr_i_ch%disinp
+    disnf      => gdp%gdr_i_ch%disnf
     discom     => gdp%gdr_i_ch%discom
     discum     => gdp%gdr_i_ch%discum
     dldeta     => gdp%gdr_i_ch%dldeta
     dldksi     => gdp%gdr_i_ch%dldksi
-    dpd        => gdp%gdr_i_ch%dpd
+    dp         => gdp%gdr_i_ch%dp
     dpc        => gdp%gdr_i_ch%dpc
     dpdeta     => gdp%gdr_i_ch%dpdeta
     dpdksi     => gdp%gdr_i_ch%dpdksi
@@ -649,6 +641,7 @@ subroutine gtptrs(gdp)
     gro        => gdp%gdr_i_ch%gro
     gsqd       => gdp%gdr_i_ch%gsqd
     gsqs       => gdp%gdr_i_ch%gsqs
+    gsqsR      => gdp%gdr_i_ch%gsqsR
     guu        => gdp%gdr_i_ch%guu
     guv        => gdp%gdr_i_ch%guv
     gvu        => gdp%gdr_i_ch%gvu
@@ -674,7 +667,6 @@ subroutine gtptrs(gdp)
     precip     => gdp%gdr_i_ch%precip
     procbc     => gdp%gdr_i_ch%procbc
     pship      => gdp%gdr_i_ch%pship
-    qsrcrt     => gdp%gdr_i_ch%qsrcrt
     qtfrac     => gdp%gdr_i_ch%qtfrac
     qtfrct     => gdp%gdr_i_ch%qtfrct
     qtfrt2     => gdp%gdr_i_ch%qtfrt2
@@ -696,7 +688,6 @@ subroutine gtptrs(gdp)
     rhowat     => gdp%gdr_i_ch%rhowat
     rich       => gdp%gdr_i_ch%rich
     rint       => gdp%gdr_i_ch%rint
-    rintsm     => gdp%gdr_i_ch%rintsm
     rlabda     => gdp%gdr_i_ch%rlabda
     rmneg      => gdp%gdr_i_ch%rmneg
     rnpl       => gdp%gdr_i_ch%rnpl
@@ -729,6 +720,7 @@ subroutine gtptrs(gdp)
     sinkw      => gdp%gdr_i_ch%sinkw
     soumud     => gdp%gdr_i_ch%soumud
     sour       => gdp%gdr_i_ch%sour
+    sournf     => gdp%gdr_i_ch%sournf
     sourr      => gdp%gdr_i_ch%sourr
     sourw      => gdp%gdr_i_ch%sourw
     sstr       => gdp%gdr_i_ch%sstr
@@ -794,7 +786,6 @@ subroutine gtptrs(gdp)
     wenlm      => gdp%gdr_i_ch%wenlm
     windsu     => gdp%gdr_i_ch%windsu
     windsv     => gdp%gdr_i_ch%windsv
-    windcd     => gdp%gdr_i_ch%windcd
     windu      => gdp%gdr_i_ch%windu
     windv      => gdp%gdr_i_ch%windv
     wlen       => gdp%gdr_i_ch%wlen
@@ -841,28 +832,19 @@ subroutine gtptrs(gdp)
     zetabl     => gdp%gdr_i_ch%zetabl
     zetaif     => gdp%gdr_i_ch%zetaif
     zetail     => gdp%gdr_i_ch%zetail
-    zfixfac    => gdp%gdr_i_ch%zfixfac
-    zfrac      => gdp%gdr_i_ch%zfrac
-    zhidexp    => gdp%gdr_i_ch%zhidexp
     zmeanf     => gdp%gdr_i_ch%zmeanf
     zmeanl     => gdp%gdr_i_ch%zmeanl
-    zmudfrac   => gdp%gdr_i_ch%zmudfrac
     zqxk       => gdp%gdr_i_ch%zqxk
     zqyk       => gdp%gdr_i_ch%zqyk
     zrca       => gdp%gdr_i_ch%zrca
     zrho       => gdp%gdr_i_ch%zrho
     zrich      => gdp%gdr_i_ch%zrich
     zrsdeq     => gdp%gdr_i_ch%zrsdeq
-    zsandfrac  => gdp%gdr_i_ch%zsandfrac
     zsbu       => gdp%gdr_i_ch%zsbu
     zsbv       => gdp%gdr_i_ch%zsbv
-    zseddif    => gdp%gdr_i_ch%zseddif
-    zsinkse    => gdp%gdr_i_ch%zsinkse
-    zsourse    => gdp%gdr_i_ch%zsourse
     zssu       => gdp%gdr_i_ch%zssu
     zssv       => gdp%gdr_i_ch%zssv
     zstep      => gdp%gdr_i_ch%zstep
-    ztaub      => gdp%gdr_i_ch%ztaub
     ztauet     => gdp%gdr_i_ch%ztauet
     ztauks     => gdp%gdr_i_ch%ztauks
     ztur       => gdp%gdr_i_ch%ztur
@@ -871,7 +853,6 @@ subroutine gtptrs(gdp)
     zwl        => gdp%gdr_i_ch%zwl
     zws        => gdp%gdr_i_ch%zws
     zwndsp     => gdp%gdr_i_ch%zwndsp
-    zwndcd     => gdp%gdr_i_ch%zwndcd
     zwnddr     => gdp%gdr_i_ch%zwnddr
     zairp      => gdp%gdr_i_ch%zairp
     zprecp     => gdp%gdr_i_ch%zprecp
@@ -911,6 +892,7 @@ subroutine gtptrs(gdp)
     kadu       => gdp%gdr_i_ch%kadu
     kadv       => gdp%gdr_i_ch%kadv
     kcs        => gdp%gdr_i_ch%kcs
+    kcs_nf     => gdp%gdr_i_ch%kcs_nf
     kcu        => gdp%gdr_i_ch%kcu
     kcv        => gdp%gdr_i_ch%kcv
     kfs        => gdp%gdr_i_ch%kfs
@@ -1034,6 +1016,7 @@ subroutine gtptrs(gdp)
     kadu       = gtipnt('kadu'  , gdp)
     kadv       = gtipnt('kadv'  , gdp)
     kcs        = gtipnt('kcs'   , gdp)
+    kcs_nf     = gtipnt('kcs_nf', gdp)
     kcscut     = gtipnt('kcscut', gdp)
     kcshyd     = gtipnt('kcshyd', gdp)
     kcu        = gtipnt('kcu'   , gdp)
@@ -1132,9 +1115,10 @@ subroutine gtptrs(gdp)
     discom     = gtrpnt('discom', gdp)
     discum     = gtrpnt('discum', gdp)
     disinp     = gtrpnt('disinp', gdp)
+    disnf      = gtrpnt('disnf' , gdp)
     dldeta     = gtrpnt('dldeta', gdp)
     dldksi     = gtrpnt('dldksi', gdp)
-    dpd        = gtrpnt('dpd'   , gdp)
+    dp         = gtrpnt('dp'    , gdp)
     dpc        = gtrpnt('dpc'   , gdp)
     dpdeta     = gtrpnt('dpdeta', gdp)
     dpdksi     = gtrpnt('dpdksi', gdp)
@@ -1203,6 +1187,7 @@ subroutine gtptrs(gdp)
     gsqiu      = gtrpnt('gsqiu' , gdp)
     gsqiv      = gtrpnt('gsqiv' , gdp)
     gsqs       = gtrpnt('gsqs'  , gdp)
+    gsqsR      = gtrpnt('gsqsR'  , gdp)
     gud        = gtrpnt('gud'   , gdp)
     guu        = gtrpnt('guu'   , gdp)
     guv        = gtrpnt('guv'   , gdp)
@@ -1233,7 +1218,6 @@ subroutine gtptrs(gdp)
     precip     = gtrpnt('precip', gdp)
     procbc     = gtrpnt('procbc', gdp)
     pship      = gtrpnt('pship' , gdp)
-    qsrcrt     = gtrpnt('qsrcrt', gdp)
     qtfrac     = gtrpnt('qtfrac', gdp)
     qtfrct     = gtrpnt('qtfrct', gdp)
     qtfrt2     = gtrpnt('qtfrt2', gdp)
@@ -1254,7 +1238,6 @@ subroutine gtptrs(gdp)
     rhowat     = gtrpnt('rhowat', gdp)
     rich       = gtrpnt('rich'  , gdp)
     rint       = gtrpnt('rint'  , gdp)
-    rintsm     = gtrpnt('rintsm', gdp)
     rlabda     = gtrpnt('rlabda', gdp)
     rmneg      = gtrpnt('rmneg' , gdp)
     rob        = gtrpnt('rob'   , gdp)
@@ -1286,6 +1269,7 @@ subroutine gtptrs(gdp)
     sinkw      = gtrpnt('sinkw' , gdp)
     soumud     = gtrpnt('soumud', gdp)
     sour       = gtrpnt('sour'  , gdp)
+    sournf     = gtrpnt('sournf', gdp)
     sourr      = gtrpnt('sourr' , gdp)
     sourw      = gtrpnt('sourw' , gdp)
     sstr       = gtrpnt('sstr'  , gdp)
@@ -1347,7 +1331,6 @@ subroutine gtptrs(gdp)
     wenlm      = gtrpnt('wenlm' , gdp)
     windsu     = gtrpnt('windsu', gdp)
     windsv     = gtrpnt('windsv', gdp)
-    windcd     = gtrpnt('windcd' , gdp)
     windu      = gtrpnt('windu' , gdp)
     windv      = gtrpnt('windv' , gdp)
     wlen       = gtrpnt('wlen'  , gdp)
@@ -1394,28 +1377,19 @@ subroutine gtptrs(gdp)
     zetabl     = gtrpnt('zetabl', gdp)
     zetaif     = gtrpnt('zetaif', gdp)
     zetail     = gtrpnt('zetail', gdp)
-    zfixfac    = gtrpnt('zfixfc', gdp)
-    zfrac      = gtrpnt('zfrac' , gdp)
-    zhidexp    = gtrpnt('zhidex', gdp)
     zmeanf     = gtrpnt('zmeanf', gdp)
     zmeanl     = gtrpnt('zmeanl', gdp)
-    zmudfrac   = gtrpnt('zmudfr', gdp)
     zqxk       = gtrpnt('zqxk'  , gdp)
     zqyk       = gtrpnt('zqyk'  , gdp)
     zrca       = gtrpnt('zrca'  , gdp)
     zrho       = gtrpnt('zrho'  , gdp)
     zrich      = gtrpnt('zrich' , gdp)
     zrsdeq     = gtrpnt('zrsdeq', gdp)
-    zsandfrac  = gtrpnt('zsandf', gdp)
     zsbu       = gtrpnt('zsbu'  , gdp)
     zsbv       = gtrpnt('zsbv'  , gdp)
-    zseddif    = gtrpnt('zseddf', gdp)
-    zsinkse    = gtrpnt('zsinks', gdp)
-    zsourse    = gtrpnt('zsours', gdp)
     zssu       = gtrpnt('zssu'  , gdp)
     zssv       = gtrpnt('zssv'  , gdp)
     zstep      = gtrpnt('zstep' , gdp)
-    ztaub      = gtrpnt('ztaub' , gdp)
     ztauet     = gtrpnt('ztauet', gdp)
     ztauks     = gtrpnt('ztauks', gdp)
     ztur       = gtrpnt('ztur'  , gdp)
@@ -1424,7 +1398,6 @@ subroutine gtptrs(gdp)
     zwl        = gtrpnt('zwl'   , gdp)
     zws        = gtrpnt('zws'   , gdp)
     zwndsp     = gtrpnt('zwndsp', gdp)
-    zwndcd     = gtrpnt('zwndcd', gdp)
     zwnddr     = gtrpnt('zwnddr', gdp)
     zairp      = gtrpnt('zairp' , gdp)
     zprecp     = gtrpnt('zprecp', gdp)    

@@ -4,7 +4,7 @@ subroutine wridro(lundia    ,error     ,filename  ,ndro      ,itdrof    , &
                 & irequest  ,fds       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine wridro(lundia    ,error     ,filename  ,ndro      ,itdrof    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wridro.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wridro.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Writes the initial group 1 ('dro-const') to
@@ -50,8 +50,6 @@ subroutine wridro(lundia    ,error     ,filename  ,ndro      ,itdrof    , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    integer                         , pointer :: io_fp
-    integer                         , pointer :: io_prec
 !
 ! Global variables
 !
@@ -95,10 +93,6 @@ subroutine wridro(lundia    ,error     ,filename  ,ndro      ,itdrof    , &
 !
     filetype = getfiletype(gdp, FILOUT_DRO)
     ierror = 0
-    !
-    io_fp               => gdp%gdpostpr%io_fp
-    io_prec             => gdp%gdpostpr%io_prec
-    !
     select case (irequest)
     case (REQUESTTYPE_DEFINE)
        !
@@ -109,14 +103,14 @@ subroutine wridro(lundia    ,error     ,filename  ,ndro      ,itdrof    , &
        !
        if (filetype == FTYPE_NEFIS) then ! for NEFIS only
           call addelm(gdp, lundia, FILOUT_DRO, grnam1, 'ITDATE', ' ', IO_INT4 , 1, dimids=(/iddim_2/), longname='Initial date (input) & time (default 00:00:00)', unit='[YYYYMMDD]')
-          call addelm(gdp, lundia, FILOUT_DRO, grnam1, 'TUNIT', ' ', io_prec  , 0, longname='Time scale related to seconds', unit='s')
-          call addelm(gdp, lundia, FILOUT_DRO, grnam1, 'DT', ' ', io_fp       , 0, longname='Time step (DT*TUNIT sec)')
+          call addelm(gdp, lundia, FILOUT_DRO, grnam1, 'TUNIT', ' ', IO_REAL4 , 0, longname='Time scale related to seconds', unit='s')
+          call addelm(gdp, lundia, FILOUT_DRO, grnam1, 'DT', ' ', IO_REAL4    , 0, longname='Time step (DT*TUNIT sec)')
           call addelm(gdp, lundia, FILOUT_DRO, grnam1, 'SIMDAT', ' ', 16      , 0, longname='Simulation date and time [YYYYMMDD  HHMMSS]') !CHARACTER
           call addelm(gdp, lundia, FILOUT_DRO, grnam1, 'NDRO', ' ', IO_INT4   , 0, longname='Number of drogues released')
        endif
        call addelm(gdp, lundia, FILOUT_DRO, grnam1, 'NAMDRO', ' ', 20      , 1, dimids=(/iddim_ndro/), longname='Name of the drogue') !CHARACTER
        call addelm(gdp, lundia, FILOUT_DRO, grnam1, 'MNDRO', ' ', IO_INT4  , 2, dimids=(/iddim_2, iddim_ndro/), longname='(m,n) indices starting point of drogue track')
-       call addelm(gdp, lundia, FILOUT_DRO, grnam1, 'DXYDRO', ' ', io_prec , 2, dimids=(/iddim_2, iddim_ndro/), longname='(dx,dy) indices starting point of drogue track')
+       call addelm(gdp, lundia, FILOUT_DRO, grnam1, 'DXYDRO', ' ', IO_REAL4, 2, dimids=(/iddim_2, iddim_ndro/), longname='(dx,dy) indices starting point of drogue track')
        call addelm(gdp, lundia, FILOUT_DRO, grnam1, 'NTDRO', ' ', IO_INT4  , 2, dimids=(/iddim_2, iddim_ndro/), longname='actual number of step for drogue to be traced')
        !
     case (REQUESTTYPE_WRITE)

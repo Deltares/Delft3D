@@ -4,7 +4,7 @@ subroutine red_soursin(nmmax     ,kmax      ,thick     , &
                      & nst       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine red_soursin(nmmax     ,kmax      ,thick     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: red_soursin.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute_sediment/red_soursin.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Reduces sourse and sink terms to avoid large
@@ -61,11 +61,12 @@ subroutine red_soursin(nmmax     ,kmax      ,thick     , &
     real(fp)                         , pointer :: thresh
     real(fp)                         , pointer :: dzmax
     real(fp)                         , pointer :: bed
+    real(fp)                         , pointer :: tmor
     integer                          , pointer :: itmor
     logical                          , pointer :: bedupd
     real(fp)                         , pointer :: hdt
     real(fp)      , dimension(:)     , pointer :: cdryb
-    integer       , dimension(:)     , pointer :: tratyp
+    integer       , dimension(:)     , pointer :: sedtyp
 !
 ! Local parameters
 !
@@ -118,11 +119,12 @@ subroutine red_soursin(nmmax     ,kmax      ,thick     , &
     thresh              => gdp%gdmorpar%thresh
     dzmax               => gdp%gdmorpar%dzmax
     bed                 => gdp%gdmorpar%bed
+    tmor                => gdp%gdmorpar%tmor
     itmor               => gdp%gdmorpar%itmor
     bedupd              => gdp%gdmorpar%bedupd
     hdt                 => gdp%gdnumeco%hdt
     cdryb               => gdp%gdsedpar%cdryb
-    tratyp              => gdp%gdsedpar%tratyp
+    sedtyp              => gdp%gdsedpar%sedtyp
     !
     lstart         = max(lsal,ltem)
     reducmesscount = 0
@@ -132,7 +134,7 @@ subroutine red_soursin(nmmax     ,kmax      ,thick     , &
        !
        ! Reduction is not applied to mud and not to bedl
        !
-       if (tratyp(l) == TRA_COMBINE) then
+       if (sedtyp(l) == SEDTYP_NONCOHESIVE_SUSPENDED) then
           do nm = 1, nmmax
              !
              ! Apply reduction factor to source and sink terms if
@@ -185,9 +187,9 @@ subroutine red_soursin(nmmax     ,kmax      ,thick     , &
                  sour_im(nm, l) = sour_im(nm, l)*fixfac(nm,l)
                  rsedeq(nm, l)  = rsedeq(nm, l) *fixfac(nm,l)
               endif
-          enddo               ! nm
-       endif                  ! tratyp
-    enddo                     ! lsedtot
+          enddo
+       endif
+    enddo
     if (reducmesscount > reducmessmax) then
        write (lundia,'(12x,a,i0,a)') 'Reduction messages skipped (more than ',reducmessmax,')'
        write (lundia,'(12x,2(a,i0))') 'Total number of reduction messages for timestep ', &

@@ -1,7 +1,7 @@
 subroutine d3stop(iexit, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine d3stop(iexit, gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: d3stop.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/general/d3stop.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Terminates execution wit error code.
@@ -56,14 +56,14 @@ subroutine d3stop(iexit, gdp)
     !
     integer                       , pointer :: lundia
     logical                       , pointer :: wave
-    integer                       , pointer :: waveol
+    logical                       , pointer :: waveol
     logical                       , pointer :: mudlay
     logical                       , pointer :: mudwave
     logical                       , pointer :: coupleact
     logical                       , pointer :: couplemod
     logical                       , pointer :: sbkol
     integer                       , pointer :: numdomains
-    integer                       , pointer :: rtcact
+    logical                       , pointer :: rtcact
     integer                       , pointer :: rtc_domainnr
 !
 ! Global variables
@@ -76,7 +76,6 @@ subroutine d3stop(iexit, gdp)
     integer :: idate
     integer :: idumda ! Dummy Date 
     integer :: istate ! Status for RTC
-    integer :: waittime ! millisec
 !
 !! executable statements -------------------------------------------------------
 !
@@ -107,7 +106,7 @@ subroutine d3stop(iexit, gdp)
     ! Check if RTC-connection is active and if so
     ! send (negative) status to shut down RTC
     !
-    if (rtcact==RTCmodule .and. rtc_domainnr==1) then
+    if (rtcact .and. rtc_domainnr == 1) then
        call syncflowrtc_close
     endif
     !
@@ -126,14 +125,12 @@ subroutine d3stop(iexit, gdp)
        write(*,*) '--------------'
     endif
     !
-    ! Check if Wave-connection is active and if so then only the master partition
-    ! sends a (negative) status to shut down Wave.
+    ! Check if Wave-connection is active and if so send (negative) status
+    ! to shut down Wave.
     !
-    if (waveol==2) then
-       if (.not.parll .or. (parll .and. inode == master)) then
+    if (waveol) then
        ierror = flow_to_wave_command(flow_wave_comm_finalize, &
                                    & numdomains, mudlay, -1)
-       endif
     endif
     !
     ! Check if Wave-Mud-connection is active and if so send (negative) status
@@ -160,17 +157,13 @@ subroutine d3stop(iexit, gdp)
     endif
     !
     ! Abort mpi, if needed
-    ! This may also cause a direct termination, so wait a while to give other partitions the chance to finish properly.
-    ! Do not call dfsync: this may block the FLOW termination, when an error occurs in only one partition.
+    ! This may also cause a direct termination
     !
-    waittime = 10000
-    call CUTIL_SLEEP(waittime)
     if (parll) then
        call dfexitmpi(1)
     endif
     !
     ! Terminate now
     !
-    ! call cstop(iexit, char(0))
-    call throwexception()
+    call cstop(iexit, char(0))
 end subroutine d3stop

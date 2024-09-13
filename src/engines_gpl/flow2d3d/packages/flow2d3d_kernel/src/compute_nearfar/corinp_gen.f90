@@ -1,7 +1,7 @@
 subroutine corinp_gen(idensform, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,12 +25,11 @@ subroutine corinp_gen(idensform, gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: corinp_gen.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute_nearfar/corinp_gen.f90 $
 !!--description-----------------------------------------------------------------
 !
-!    Function: Reads input needed for the coupling of Corjet/Cortime/Cormix
-!              with Delft3d-Flow
+!    Function: Reads the Cormix input file
 !
 ! Method used:
 !
@@ -47,24 +46,20 @@ subroutine corinp_gen(idensform, gdp)
     type(globdat),target :: gdp
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
-    ! They replace the  include igd / include igp lines
     !
-    integer                      , pointer :: no_dis
-    integer       ,dimension(:)  , pointer :: m_diff
-    integer       ,dimension(:)  , pointer :: n_diff
-    integer       ,dimension(:)  , pointer :: no_amb
-    integer       ,dimension(:,:), pointer :: m_amb
-    integer       ,dimension(:,:), pointer :: n_amb
-    integer       ,dimension(:)  , pointer :: m_intake
-    integer       ,dimension(:)  , pointer :: n_intake
-    integer       ,dimension(:)  , pointer :: k_intake
-    real(fp)      ,dimension(:)  , pointer :: q_diff
-    real(fp)      ,dimension(:,:), pointer :: const_diff
-    real(fp)      ,dimension(:)  , pointer :: d0
-    real(fp)      ,dimension(:)  , pointer :: h0
-    real(fp)      ,dimension(:)  , pointer :: sigma0
-    real(fp)      ,dimension(:)  , pointer :: theta0
-    character(256),dimension(:,:), pointer :: basecase
+    integer           , pointer :: m_diff
+    integer           , pointer :: n_diff
+    integer           , pointer :: m_amb
+    integer           , pointer :: n_amb
+    real(fp)          , pointer :: q_diff
+    real(fp)          , pointer :: t0_diff
+    real(fp)          , pointer :: s0_diff
+    real(fp)          , pointer :: rho0_diff
+    real(fp)          , pointer :: d0
+    real(fp)          , pointer :: h0
+    real(fp)          , pointer :: sigma0
+    real(fp)          , pointer :: theta0
+    character(256)    , pointer :: nflmod
 !
 ! Global variables
 !
@@ -74,94 +69,66 @@ subroutine corinp_gen(idensform, gdp)
 !
     integer                :: luntmp
     integer, external      :: newlun
-    integer                :: idis
     real(fp)               :: dummy
-    character              :: cdummy
 !
 !! executable statements -------------------------------------------------------
 !
-    no_dis         => gdp%gdnfl%no_dis
     m_diff         => gdp%gdnfl%m_diff
     n_diff         => gdp%gdnfl%n_diff
-    no_amb         => gdp%gdnfl%no_amb
     m_amb          => gdp%gdnfl%m_amb
     n_amb          => gdp%gdnfl%n_amb
-    m_intake       => gdp%gdnfl%m_intake
-    n_intake       => gdp%gdnfl%n_intake
-    k_intake       => gdp%gdnfl%k_intake
     q_diff         => gdp%gdnfl%q_diff
-    const_diff     => gdp%gdnfl%const_diff
+    t0_diff        => gdp%gdnfl%t0_diff
+    s0_diff        => gdp%gdnfl%s0_diff
+    rho0_diff      => gdp%gdnfl%rho0_diff
     d0             => gdp%gdnfl%d0
     h0             => gdp%gdnfl%h0
     sigma0         => gdp%gdnfl%sigma0
     theta0         => gdp%gdnfl%theta0
-    basecase       => gdp%gdnfl%basecase
+    nflmod         => gdp%gdnfl%nflmod
     !
-    open (newunit=luntmp,file='corinp.dat')
-
-
-    !
-    ! Read dummy line
-    !
-
-    call skipstarlines (luntmp)
-    read (luntmp,*) cdummy
-    call skipstarlines (luntmp)
-    read (luntmp,*) dummy
-
-    !
-    ! For each diffuser
-    !
-    do idis = 1, no_dis
+    luntmp = newlun(gdp)
+    open (luntmp,file='corinp.dat')
     !
     ! Read position diffusor
     !
     call skipstarlines (luntmp)
-       read (luntmp,*) m_diff(idis)
+    read (luntmp,*) m_diff
     call skipstarlines (luntmp)
-       read (luntmp,*) n_diff(idis)
+    read (luntmp,*) n_diff
     !
     ! Read position ambient conditions
     !
     call skipstarlines (luntmp)
-       read (luntmp,*) m_amb(idis,1)
+    read (luntmp,*) m_amb
     call skipstarlines (luntmp)
-       read (luntmp,*) n_amb(idis,1)
-       !
-       ! Read intake location
-       !
-       call skipstarlines (luntmp)
-       read (luntmp,*) m_intake(idis)
-       call skipstarlines (luntmp)
-       read (luntmp,*) n_intake(idis)
-       call skipstarlines (luntmp)
-       read (luntmp,*) k_intake(idis)
+    read (luntmp,*) n_amb
     !
     ! Read discharge characteristics
     !
     call skipstarlines (luntmp)
-       read (luntmp,*) q_diff(idis)
+    read (luntmp,*) q_diff
     call skipstarlines (luntmp)
-       read (luntmp,*) const_diff(idis,1)
+    read (luntmp,*) t0_diff
     call skipstarlines (luntmp)
-       read (luntmp,*) const_diff(idis,2)
+    read (luntmp,*) s0_diff
+    select case (idensform)
+       case( dens_Eckart )
+          call dens_eck    (t0_diff, s0_diff,rho0_diff, dummy, dummy)
+       case( dens_Unesco)
+          call dens_unes   (t0_diff, s0_diff,rho0_diff, dummy, dummy)
+    end select
     !
     ! Read remainder of cormix general input
     !
     call skipstarlines (luntmp)
-       read (luntmp,*) d0(idis)
-       call skipstarlines (luntmp)
-       read (luntmp,*) h0(idis)
+    read (luntmp,*) d0
     call skipstarlines (luntmp)
-       read (luntmp,*) theta0(idis)
+    read (luntmp,*) h0
     call skipstarlines (luntmp)
-       read (luntmp,*) sigma0(idis)
+    read (luntmp,*) theta0
     call skipstarlines (luntmp)
-       read (luntmp,*) basecase(idis,1)
-       read (luntmp,*) basecase(idis,2)
-
-    enddo
-
+    read (luntmp,*) sigma0
     !
     ! Close the general cormix input file
     !

@@ -5,10 +5,10 @@ subroutine mom_waqua &
                & hu        ,guu       ,gvv       ,gvd       ,gvu       ,gsqiu     , &
                & umean     ,bbk       ,ddk       ,bddx      ,bddy      ,bdx       , &
                & bdy       ,bux       ,buy       ,buux      ,buuy      ,mom_output, &
-               & u1        ,gdp) 
+               & u1        ,ghostU1   ,ghostV1   ,aguu      ,gdp) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -32,8 +32,8 @@ subroutine mom_waqua &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: mom_waqua.f90 6388 2016-08-01 01:05:36Z canestrelli.x $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/mom_waqua.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! This subroutine is part of (called by) UZD. It computes the Horizontal 
@@ -67,6 +67,8 @@ subroutine mom_waqua &
     logical      , pointer :: cstbnd
     real(fp), dimension(:,:)          , pointer :: mom_m_convec        ! convection u*du/dx term
     real(fp), dimension(:,:)          , pointer :: mom_m_xadvec        ! cross-advection v*du/dy term
+    logical               , pointer :: EXCLouterVEL
+    integer               , pointer :: TYPEofFORCING
 !
 ! Global variables
 !
@@ -106,6 +108,9 @@ subroutine mom_waqua &
                                                                                 !  Only used in case mom_output = .true.
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                     :: umean  !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)  , intent(in) :: v
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: GHOSTu1
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: GHOSTv1
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: aguu
     logical                                           , intent(in) :: mom_output
 !
 ! Local variables
@@ -140,9 +145,11 @@ subroutine mom_waqua &
     real(fp):: vvhr
     real(fp):: uvdgdy
     real(fp):: vvdgdx
+    logical :: BOUNDpoint
 !
 !! executable statements -------------------------------------------------------
 !
+    EXCLouterVEL   => gdp%gdimbound%EXCLouterVEL
     cstbnd  => gdp%gdnumeco%cstbnd
     !
     if (mom_output) then
@@ -190,7 +197,7 @@ subroutine mom_waqua &
           if ( kcu(nm)==1 .and. kfu(nm)==1 .and. kspu0k /=4 .and. kspu0k /=10) then
              gsqi   = gsqiu(nm)
              if (       (cstbnd .and. (kcs(nm)==2 .or. kcs(nmu)==2)) &
-                 & .or. (kcs(nm)==3 .or. kcs(nmu)==3               )  ) then
+                 & .or. (kcs(nm)==3 .or. kcs(nmu)==3               )  .or. EXCLouterVEL ) then
                 kenm = max(kfv(ndm) + kfv(ndmu) + kfv(nm) + kfv(nmu), 1)
                 vvv = (v(ndm, k)*kfv(ndm) + v(ndmu, k)*kfv(ndmu) + v(nm, k)     &
                     & *kfv(nm) + v(nmu, k)*kfv(nmu))/kenm
@@ -221,8 +228,10 @@ subroutine mom_waqua &
                 termu = u0(nm, k)*adfac*(iad2)
                 termd = -u0(nm, k)*adfac*(2*iad1 - iad2)
                 if (mom_output) then
+                   if (ghostu1(nm)/=1) then
                    mom_m_convec(nm, k) = mom_m_convec(nm, k)  &
                                        & - termu*u1(nmu, k) - termc*u1(nm, k) - termd*u1(nmd, k)
+                   endif
                 else
                    bbk(nm, k) = bbk(nm, k) + termc
                    bux(nm, k) = termu
@@ -236,8 +245,10 @@ subroutine mom_waqua &
                 termd = -u0(nm, k)*adfac*(iad2)
                 termu = u0(nm, k)*adfac*(2*iad1 - iad2)
                 if (mom_output) then
-                   mom_m_convec(nm, k) = mom_m_convec(nm, k) &
-                                       & - termu*u1(nmu, k) - termc*u1(nm, k) - termd*u1(nmd, k)
+                   if (ghostu1(nm)/=1) then
+                      mom_m_convec(nm, k) = mom_m_convec(nm, k) &
+                                          & - termu*u1(nmu, k) - termc*u1(nm, k) - termd*u1(nmd, k)
+                   endif
                 else
                    bbk(nm, k) = bbk(nm, k) + termc
                    bux(nm, k) = termu
@@ -276,8 +287,10 @@ subroutine mom_waqua &
                    termdd = vvhr*(iad2)
                    termex = vvv*vvdgdx*iad1
                    if (mom_output) then
-                      mom_m_xadvec(nm, k) = mom_m_xadvec(nm, k) &
-                                          & - termc*u1(nm, k) - termd*u1(ndm, k) - termdd*u1(nddm, k) + termex
+                      if (ghostu1(nm)/=1) then
+                         mom_m_xadvec(nm, k) = mom_m_xadvec(nm, k) &
+                                             & - termc*u1(nm, k) - termd*u1(ndm, k) - termdd*u1(nddm, k) + termex
+                      endif
                    else
                       bbk(nm, k)  = bbk(nm, k) + termc
                       bdy(nm, k)  = termd
@@ -307,8 +320,10 @@ subroutine mom_waqua &
                    termuu = vvhr*( - iad2)
                    termex = vvv*vvdgdx*iad1
                    if (mom_output) then
-                      mom_m_xadvec(nm, k) = mom_m_xadvec(nm, k) &
-                                          & - termc*u1(nm, k) - termu*u1(num, k) - termuu*u1(nuum, k) + termex
+                      if (ghostu1(nm)/=1) then
+                         mom_m_xadvec(nm, k) = mom_m_xadvec(nm, k) &
+                                             & - termc*u1(nm, k) - termu*u1(num, k) - termuu*u1(nuum, k) + termex
+                      endif
                    else
                       bbk(nm, k)  = bbk(nm, k) + termc
                       buy(nm, k)  = termu

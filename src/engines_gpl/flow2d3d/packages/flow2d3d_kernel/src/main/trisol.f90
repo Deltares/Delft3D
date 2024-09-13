@@ -8,7 +8,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                 & error     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -32,8 +32,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: trisol.f90 7024 2017-02-20 13:43:29Z canestrelli.x $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/main/trisol.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! This routine basically carries out the hydrodynamics
@@ -98,6 +98,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: wrkc4
     integer(pntrsize)                    , pointer :: zwork
     real(fp)                             , pointer :: f_lam
+    real(fp)                             , pointer :: drycrt
     logical                              , pointer :: lfbedfrm
     logical                              , pointer :: lfbedfrmrou
     integer                              , pointer :: ncmax
@@ -107,6 +108,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer                              , pointer :: nub
     integer                              , pointer :: mlb
     integer                              , pointer :: mub
+    integer                              , pointer :: nmlb
+    integer                              , pointer :: nmub
     integer                              , pointer :: ddbound
     integer                              , pointer :: nmaxus
     integer                              , pointer :: kmax
@@ -144,18 +147,16 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer                              , pointer :: nsluv
     integer                              , pointer :: itplant
     integer                              , pointer :: lundia
+    integer                              , pointer :: lunscr
+    integer                              , pointer :: itmor
     real(fp)                             , pointer :: timsec
     real(fp)                             , pointer :: timhr
     integer                              , pointer :: itstrt
     integer                              , pointer :: itfinish
     integer                              , pointer :: itcomi
     integer                              , pointer :: itimtt
-    integer                              , pointer :: iti_sedtrans
     integer                              , pointer :: itnflf
     integer                              , pointer :: itnfli
-    integer                              , pointer :: itnfll
-    integer                              , pointer :: itnflrf
-    integer                              , pointer :: itnflri
     integer                              , pointer :: ittrtu
     integer                              , pointer :: itiwei
     integer                              , pointer :: itdiag
@@ -183,6 +184,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     logical                              , pointer :: struct
     logical                              , pointer :: cdwstruct
     logical                              , pointer :: sedim
+    logical                              , pointer :: massbal
     logical                              , pointer :: online
     logical                              , pointer :: htur2d
     logical                              , pointer :: flmd2l
@@ -197,7 +199,13 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     logical                              , pointer :: bubble
     logical                              , pointer :: lfsdu
     logical , dimension(:)               , pointer :: flbub
-    integer                              , pointer :: rtcact
+    real(fp)     , dimension(:,:)        , pointer :: zrtcsta
+    integer                              , pointer :: ifirstrtc
+    integer                              , pointer :: stacnt
+    integer                              , pointer :: rtcmod
+    integer      , dimension(:,:)        , pointer :: mnrtcsta
+    character(20), dimension(:)          , pointer :: namrtcsta
+    logical                              , pointer :: rtcact
     integer(pntrsize)                    , pointer :: alfas
     integer(pntrsize)                    , pointer :: alpha
     integer(pntrsize)                    , pointer :: ampbc
@@ -250,9 +258,10 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: disch
     integer(pntrsize)                    , pointer :: disinp
     integer(pntrsize)                    , pointer :: discum
+    integer(pntrsize)                    , pointer :: disnf
     integer(pntrsize)                    , pointer :: dldeta
     integer(pntrsize)                    , pointer :: dldksi
-    integer(pntrsize)                    , pointer :: dpd
+    integer(pntrsize)                    , pointer :: dp
     integer(pntrsize)                    , pointer :: dpdeta
     integer(pntrsize)                    , pointer :: dpdksi
     integer(pntrsize)                    , pointer :: dps
@@ -298,6 +307,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: grfacu
     integer(pntrsize)                    , pointer :: grfacv
     integer(pntrsize)                    , pointer :: gsqs
+    integer(pntrsize)                    , pointer :: gsqsR
     integer(pntrsize)                    , pointer :: guu
     integer(pntrsize)                    , pointer :: guv
     integer(pntrsize)                    , pointer :: gvu
@@ -319,7 +329,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: precip
     integer(pntrsize)                    , pointer :: procbc
     integer(pntrsize)                    , pointer :: pship
-    integer(pntrsize)                    , pointer :: qsrcrt
     integer(pntrsize)                    , pointer :: qtfrac
     integer(pntrsize)                    , pointer :: qtfrct
     integer(pntrsize)                    , pointer :: qtfrt2
@@ -341,7 +350,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: rhowat
     integer(pntrsize)                    , pointer :: rich
     integer(pntrsize)                    , pointer :: rint
-    integer(pntrsize)                    , pointer :: rintsm
     integer(pntrsize)                    , pointer :: rlabda
     integer(pntrsize)                    , pointer :: rmneg
     integer(pntrsize)                    , pointer :: rnpl
@@ -370,6 +378,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: sinkw
     integer(pntrsize)                    , pointer :: soumud
     integer(pntrsize)                    , pointer :: sour
+    integer(pntrsize)                    , pointer :: sournf
     integer(pntrsize)                    , pointer :: sourr
     integer(pntrsize)                    , pointer :: sourw
     integer(pntrsize)                    , pointer :: stbf
@@ -430,7 +439,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: wenlm
     integer(pntrsize)                    , pointer :: windsu
     integer(pntrsize)                    , pointer :: windsv
-    integer(pntrsize)                    , pointer :: windcd
     integer(pntrsize)                    , pointer :: windu
     integer(pntrsize)                    , pointer :: windv
     integer(pntrsize)                    , pointer :: wphy
@@ -493,6 +501,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: kadu
     integer(pntrsize)                    , pointer :: kadv
     integer(pntrsize)                    , pointer :: kcs
+    integer(pntrsize)                    , pointer :: kcs_nf
     integer(pntrsize)                    , pointer :: kcu
     integer(pntrsize)                    , pointer :: kcv
     integer(pntrsize)                    , pointer :: kfs
@@ -531,7 +540,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: namsrc
     integer(pntrsize)                    , pointer :: tprofc
     integer(pntrsize)                    , pointer :: tprofu
-    integer(pntrsize)                    , pointer :: namcon
     integer(pntrsize)                    , pointer :: ubnd
     integer(pntrsize), dimension(:, :)   , pointer :: nprptr
     integer                              , pointer :: nrcmp
@@ -540,6 +548,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     real(fp)                             , pointer :: windxt
     real(fp)                             , pointer :: windyt
     real(fp)                             , pointer :: windft
+    real(fp)                             , pointer :: morfac
     integer                              , pointer :: nprocs
     integer      , dimension(:)          , pointer :: nread
     integer      , dimension(:)          , pointer :: sedtyp
@@ -548,7 +557,60 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     character(20), dimension(:)          , pointer :: procs
     logical                              , pointer :: dryrun
     logical                              , pointer :: eulerisoglm
+    logical                              , pointer :: distr_qtq
+    logical                              , pointer :: distr_qtq_per
     integer(pntrsize)                    , pointer :: typbnd
+    integer                   , pointer :: cutcell
+    integer                   , pointer :: GhostMethod
+    integer                   , pointer :: dim_nmlist
+    integer                   , pointer :: nrper
+    logical                   , pointer :: massBALhdt
+    real(fp), dimension(:,:)  , pointer :: agsqs
+    real(fp), dimension(:,:)  , pointer :: aguu
+    real(fp), dimension(:,:)  , pointer :: agvv
+    real(fp), dimension(:,:)  , pointer :: dpL
+    real(fp), dimension(:,:)  , pointer :: dpH
+    real(fp), dimension(:,:)  , pointer :: poros
+    integer, dimension(:,:)   , pointer :: kfs_cc
+    real(prec), dimension(:,:), pointer :: dps0
+    logical                   , pointer :: virtualMERGEupdVERT
+    integer                   , pointer :: typeVIRTmergeUPDvert
+    real(fp)                  , pointer :: thresMERGE_w
+    integer, dimension(:,:)   , pointer :: NMlistMERGED_w
+    integer, dimension(:)     , pointer :: Nmerged_w
+    integer, dimension(:)     , pointer :: isMERGEDu_w
+    integer, dimension(:)     , pointer :: isMERGEDv_w
+    logical                   , pointer :: compHALFDTss
+    real(fp), dimension(:,:)  , pointer :: aguu0
+    real(fp), dimension(:,:)  , pointer :: agvv0
+    logical, dimension(:,:)   , pointer :: oneEXIT
+    logical                   , pointer :: periodSURFACE
+    integer, dimension(:)     , pointer :: MERGEDwith_w
+    integer                   , pointer :: TYPEfreeSLIP
+    integer, dimension(:,:)   , pointer :: ghostu1
+    integer                   , pointer :: totGHOSTu1
+    integer, dimension(:,:)   , pointer :: ghostv1
+    integer                   , pointer :: totGHOSTv1
+    real(fp), dimension(:,:)  , pointer :: Nx
+    real(fp), dimension(:,:)  , pointer :: Ny
+    real(fp), dimension(:,:)  , pointer :: xG_U1
+    real(fp), dimension(:,:)  , pointer :: yG_U1
+    real(fp), dimension(:,:)  , pointer :: xG_V1
+    real(fp), dimension(:,:)  , pointer :: yG_V1
+    real(fp)                  , pointer :: reltim_qtq
+    integer                   , pointer :: itmorB
+    integer                   , pointer :: exactslope
+    logical                   , pointer :: virtualLINK
+    integer, dimension(:,:)   , pointer :: NMlistMERGED_d
+    integer, dimension(:)     , pointer :: Nmerged_d
+    integer                   , pointer :: removeW1qzk
+    real(fp), dimension(:,:)  , pointer :: sourseBANK
+    real(fp), dimension(:)    , pointer :: agsqs_link
+    integer, dimension(:)     , pointer :: INTERFtype
+    logical                   , pointer :: virtuallinkSMOw1
+    real(fp), dimension(:,:)  , pointer :: w1T
+    real(fp), dimension(:,:)  , pointer :: volum0NL
+    real(fp), dimension(:,:)  , pointer :: volum1NL
 !
     include 'tri-dyn.igd'
 !
@@ -588,12 +650,12 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
 !
 ! Local variables
 !
+    integer                 :: Idummy,Idummyy,Idummyyy
     integer                 :: icx
     integer                 :: icy
-    integer                 :: imode
     integer                 :: itype
+    integer                 :: m
     integer                 :: n
-    integer                 :: nflrwmode
     integer                 :: nhystp
     integer                 :: nmaxddb
     integer                 :: nreal       ! Pointer to real array RCOUSR for UDF particle wind factor parameters 
@@ -602,10 +664,72 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)       :: vmor
     logical                 :: sscomp
     logical                 :: success
+    logical                 :: Ldummy
+    real(fp), dimension(1)  :: Rdummy1
     character(8)            :: stage       ! First or second half time step 
+    !real(fp),dimension(:,:), allocatable :: w1T   !WORK ARRAY CUTCELLS
+    real(fp),dimension(:,:), allocatable :: w1BACK,qzkBACK
 !
 !! executable statements -------------------------------------------------------
 !
+    cutcell              => gdp%gdimbound%cutcell
+    GhostMethod          => gdp%gdimbound%GhostMethod
+    dim_nmlist           => gdp%gdimbound%dim_nmlist
+    nrper                => gdp%gdimbound%nrper
+    massBALhdt           => gdp%gdimbound%massBALhdt
+    agsqs                => gdp%gdimbound%agsqs
+    aguu                 => gdp%gdimbound%aguu
+    agvv                 => gdp%gdimbound%agvv
+    dpL                  => gdp%gdimbound%dpL
+    dpH                  => gdp%gdimbound%dpH
+    poros                => gdp%gdimbound%poros
+    kfs_cc               => gdp%gdimbound%kfs_cc
+    dps0                 => gdp%gdimbound%dps0
+    virtualMERGEupdVERT  => gdp%gdimbound%virtualMERGEupdVERT
+    typeVIRTmergeUPDvert => gdp%gdimbound%typeVIRTmergeUPDvert
+    thresMERGE_w         => gdp%gdimbound%thresMERGE_w
+    NMlistMERGED_w       => gdp%gdimbound%NMlistMERGED_w
+    Nmerged_w            => gdp%gdimbound%Nmerged_w
+    isMERGEDu_w          => gdp%gdimbound%isMERGEDu_w
+    isMERGEDv_w          => gdp%gdimbound%isMERGEDv_w
+    compHALFDTss         => gdp%gdimbound%compHALFDTss
+    aguu0                => gdp%gdimbound%aguu0
+    agvv0                => gdp%gdimbound%agvv0
+    oneEXIT              => gdp%gdimbound%oneEXIT
+    periodSURFACE        => gdp%gdimbound%periodSURFACE
+    MERGEDwith_w         => gdp%gdimbound%MERGEDwith_w
+    TYPEfreeSLIP         => gdp%gdimbound%TYPEfreeSLIP
+    ghostu1              => gdp%gdimbound%ghostu1
+    totGHOSTu1           => gdp%gdimbound%totGHOSTu1
+    ghostv1              => gdp%gdimbound%ghostv1
+    totGHOSTv1           => gdp%gdimbound%totGHOSTv1
+    Nx                   => gdp%gdimbound%Nx
+    Ny                   => gdp%gdimbound%Ny
+    xG_U1                => gdp%gdimbound%xG_U1
+    yG_U1                => gdp%gdimbound%yG_U1
+    xG_V1                => gdp%gdimbound%xG_V1
+    yG_V1                => gdp%gdimbound%yG_V1
+    reltim_qtq           => gdp%gdimbound%reltim_qtq
+    itmorB               => gdp%gdimbound%itmorB
+    exactslope           => gdp%gdimbound%exactslope
+    virtualLINK          => gdp%gdimbound%virtualLINK
+    NMlistMERGED_d       => gdp%gdimbound%NMlistMERGED_d
+    Nmerged_d            => gdp%gdimbound%Nmerged_d
+    removeW1qzk          => gdp%gdimbound%removeW1qzk
+    sourseBANK           => gdp%gdimbound%sourseBANK
+    agsqs_link           => gdp%gdimbound%agsqs_link
+    INTERFtype           => gdp%gdimbound%INTERFtype
+    virtuallinkSMOw1     => gdp%gdimbound%virtuallinkSMOw1
+    w1T                  => gdp%gdimbound%Dwrka0k1_T
+    volum0NL             => gdp%gdimbound%Dwrkak7
+    volum1NL             => gdp%gdimbound%Dwrkak8
+    allocate(  w1BACK(gdp%d%nmlb:gdp%d%nmub, 0:gdp%d%kmax),qzkBACK(gdp%d%nmlb:gdp%d%nmub, 0:gdp%d%kmax))
+!
+    itmor               => gdp%gdmorpar%itmor
+    distr_qtq           => gdp%gdbcdat%distr_qtq
+    distr_qtq_per       => gdp%gdbcdat%distr_qtq_per
+    morfac              => gdp%gdmorpar%morfac
+    massbal             => gdp%gdmassbal%massbal
     iwrk1               => gdp%gdaddress%iwrk1
     iwrk2               => gdp%gdaddress%iwrk2
     wrka1               => gdp%gdaddress%wrka1
@@ -655,6 +779,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     nub                 => gdp%d%nub
     mlb                 => gdp%d%mlb
     mub                 => gdp%d%mub
+    nmlb                => gdp%d%nmlb  
+    nmub                => gdp%d%nmub
     ddbound             => gdp%d%ddbound
     nmaxus              => gdp%d%nmaxus
     kmax                => gdp%d%kmax
@@ -692,6 +818,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     nsluv               => gdp%d%nsluv
     itplant             => gdp%gdveg3d%itplant
     lundia              => gdp%gdinout%lundia
+    lunscr              => gdp%gdinout%lunscr
     timsec              => gdp%gdinttim%timsec
     timhr               => gdp%gdinttim%timhr
     itstrt              => gdp%gdinttim%itstrt
@@ -700,9 +827,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     itimtt              => gdp%gdinttim%itimtt
     itnflf              => gdp%gdinttim%itnflf
     itnfli              => gdp%gdinttim%itnfli
-    itnfll              => gdp%gdinttim%itnfll
-    itnflrf             => gdp%gdinttim%itnflrf
-    itnflri             => gdp%gdinttim%itnflri
     ittrtu              => gdp%gdinttim%ittrtu
     itiwei              => gdp%gdinttim%itiwei
     itdiag              => gdp%gdinttim%itdiag
@@ -713,7 +837,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     eqmbcmud            => gdp%gdmorpar%eqmbcmud
     densin              => gdp%gdmorpar%densin
     eulerisoglm         => gdp%gdmorpar%eulerisoglm
-    iti_sedtrans        => gdp%gdmorpar%iti_sedtrans
+    drycrt              => gdp%gdnumeco%drycrt
     hdt                 => gdp%gdnumeco%hdt
     rhow                => gdp%gdphysco%rhow
     ag                  => gdp%gdphysco%ag
@@ -745,6 +869,12 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     bubble              => gdp%gdprocs%bubble
     lfsdu               => gdp%gdprocs%lfsdu
     flbub               => gdp%gdbubble%flbub
+    zrtcsta             => gdp%gdrtc%zrtcsta
+    ifirstrtc           => gdp%gdrtc%ifirstrtc
+    stacnt              => gdp%gdrtc%stacnt
+    rtcmod              => gdp%gdrtc%rtcmod
+    mnrtcsta            => gdp%gdrtc%mnrtcsta
+    namrtcsta           => gdp%gdrtc%namrtcsta
     rtcact              => gdp%gdrtc%rtcact
     alfas               => gdp%gdr_i_ch%alfas
     alpha               => gdp%gdr_i_ch%alpha
@@ -798,9 +928,10 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     disch               => gdp%gdr_i_ch%disch
     disinp              => gdp%gdr_i_ch%disinp
     discum              => gdp%gdr_i_ch%discum
+    disnf               => gdp%gdr_i_ch%disnf
     dldeta              => gdp%gdr_i_ch%dldeta
     dldksi              => gdp%gdr_i_ch%dldksi
-    dpd                 => gdp%gdr_i_ch%dpd
+    dp                  => gdp%gdr_i_ch%dp
     dpdeta              => gdp%gdr_i_ch%dpdeta
     dpdksi              => gdp%gdr_i_ch%dpdksi
     dps                 => gdp%gdr_i_ch%dps
@@ -846,6 +977,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     grfacu              => gdp%gdr_i_ch%grfacu
     grfacv              => gdp%gdr_i_ch%grfacv
     gsqs                => gdp%gdr_i_ch%gsqs
+    gsqsR               => gdp%gdr_i_ch%gsqsR
     guu                 => gdp%gdr_i_ch%guu
     guv                 => gdp%gdr_i_ch%guv
     gvu                 => gdp%gdr_i_ch%gvu
@@ -867,7 +999,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     precip              => gdp%gdr_i_ch%precip
     procbc              => gdp%gdr_i_ch%procbc
     pship               => gdp%gdr_i_ch%pship
-    qsrcrt              => gdp%gdr_i_ch%qsrcrt
     qtfrac              => gdp%gdr_i_ch%qtfrac
     qtfrct              => gdp%gdr_i_ch%qtfrct
     qtfrt2              => gdp%gdr_i_ch%qtfrt2
@@ -889,7 +1020,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     rhowat              => gdp%gdr_i_ch%rhowat
     rich                => gdp%gdr_i_ch%rich
     rint                => gdp%gdr_i_ch%rint
-    rintsm              => gdp%gdr_i_ch%rintsm
     rlabda              => gdp%gdr_i_ch%rlabda
     rmneg               => gdp%gdr_i_ch%rmneg
     rnpl                => gdp%gdr_i_ch%rnpl
@@ -918,6 +1048,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     sinkw               => gdp%gdr_i_ch%sinkw
     soumud              => gdp%gdr_i_ch%soumud
     sour                => gdp%gdr_i_ch%sour
+    sournf              => gdp%gdr_i_ch%sournf
     sourr               => gdp%gdr_i_ch%sourr
     sourw               => gdp%gdr_i_ch%sourw
     stbf                => gdp%gdr_i_ch%stbf
@@ -978,7 +1109,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     wenlm               => gdp%gdr_i_ch%wenlm
     windsu              => gdp%gdr_i_ch%windsu
     windsv              => gdp%gdr_i_ch%windsv
-    windcd              => gdp%gdr_i_ch%windcd
     windu               => gdp%gdr_i_ch%windu
     windv               => gdp%gdr_i_ch%windv
     wphy                => gdp%gdr_i_ch%wphy
@@ -1041,6 +1171,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     kadu                => gdp%gdr_i_ch%kadu
     kadv                => gdp%gdr_i_ch%kadv
     kcs                 => gdp%gdr_i_ch%kcs
+    kcs_nf              => gdp%gdr_i_ch%kcs_nf
     kcu                 => gdp%gdr_i_ch%kcu
     kcv                 => gdp%gdr_i_ch%kcv
     kfs                 => gdp%gdr_i_ch%kfs
@@ -1079,7 +1210,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     namsrc              => gdp%gdr_i_ch%namsrc
     tprofc              => gdp%gdr_i_ch%tprofc
     tprofu              => gdp%gdr_i_ch%tprofu
-    namcon              => gdp%gdr_i_ch%namcon
     ifirst              => gdp%gdtrisol%ifirst
     nubnd               => gdp%gdtrisol%nubnd
     ubnd                => gdp%gdtrisol%ubnd
@@ -1160,7 +1290,6 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                        & r(s1)     ,d(dps)    ,ifirst    ,gdp       )
           endif
        endif
-       !
        ifirst = 0
     endif
     !
@@ -1187,6 +1316,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
               & r(ewabr0) ,r(ewabr1) , &
               & r(ewave0) ,r(ewave1) ,r(eroll0) ,r(eroll1) ,roller    , &
               & gdp       )
+    if (cutcell.gt.0.and.GhostMethod.ge.0.or.massbal)  CALL DP0isDP(r(dpu),r(dpv),d(dps),mmax,nmaxus,nlb,nub,mlb,mub,gdp)
     call timer_stop(timer_f0isf1, gdp)
     !
     call init_mom_output(gdp)
@@ -1249,8 +1379,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     !
     ! Communicate with RTC for first half time step
     !
-    if (rtcact /= noRTC) then
-       call rtc_comm_get(((nst*2)+1) * hdt, r(cbuvrt), nsluv, r(qsrcrt) , nsrc, gdp)
+    if (rtcact) then
+       call rtc_comm_get(((nst*2)+1) * hdt,r(cbuvrt) ,nsluv     , gdp)
     endif
     if (kc > 0 .or. nrcmp > 0) then
        call timer_start(timer_nodal_factor, gdp)
@@ -1264,7 +1394,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        call timer_start(timer_incmeteo, gdp)
        call incmeteo(timhr     , grdang   , &
                 & r (windu ),r (windv ),r (patm  ), &
-                & i (kcs   ),r (alfas ),r (windcd), &
+                & i (kcs   ),r (alfas ), &
                 & r (windsu),r (windsv),r (w10mag), gdp)
        !
        call timer_stop(timer_incmeteo, gdp)
@@ -1291,14 +1421,15 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              & kc        ,nrob      ,noroco    , &
              & ch(tprofu),i(itbct)  ,i(mnbnd)  ,i(nob)    ,i(kfumin) , &
              & i(kfumax) ,i(kfvmin) ,i(kfvmax) ,r(hydrbc) ,r(circ2d) , &
-             & r(circ3d) ,r(patm)   ,r(guu)    ,r(gvv)    , &
-             & r(hu)     ,r(hv)     ,r(omega)  ,r(alpha)  , &
+             & r(circ3d) ,r(patm)   ,r(guu)    ,r(gvv)    ,r(gsqs)   , &
+             & r(hu)     ,r(hv)     ,r(omega)  ,r(alpha)  ,d(dps)    , &
              & r(z0urou) ,r(z0vrou) ,r(qxk)    ,r(qyk)    ,r(s0)     , &
              & r(u0)     ,r(v0)     ,r(grmasu) ,r(grmasv) ,r(cfurou) , &
              & r(cfvrou) ,r(qtfrac) ,r(qtfrct) ,r(qtfrt2) ,r(thick)  , &
+             & r(xz)     ,r(yz)     ,r(qzk)    ,r(alfas)             , &
              & r(dzu1)   ,r(dzv1)   ,r(zwork)  ,i(kcu)    ,i(kcv)    , &
              & i(kfu)    ,i(kfv)    ,i(kcs)    ,timhr     ,ch(nambnd), &
-             & ch(typbnd),gdp       )
+             & ch(typbnd),nst       ,gdp       )
     call timer_stop(timer_incbc, gdp)
     !
     ! Boundary conditions; hydrodynamic conditions Riemann with wave forcing
@@ -1345,11 +1476,11 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & icx       ,icy       ,i(kfsmin) ,i(kfsmax) , &
                  & ch(disint),ch(dismmt),i(itdis)  ,i(kcu)    ,i(kcv)    , &
                  & i(kfs)    ,i(ibuff)  ,i(mnksrc) ,r(alfas)  ,r(xcor)   , &
-                 & r(ycor)   ,r(dpd)    ,r(disch)  ,r(voldis) , &
+                 & r(ycor)   ,r(dp)     ,r(disch)  , &
                  & r(disch0) ,r(disch1) ,r(rint)   ,r(rint0)  ,r(rint1)  , &
                  & r(umdis)  ,r(umdis0) ,r(umdis1) ,r(vmdis)  ,r(vmdis0) , &                 
                  & r(vmdis1) ,bubble    ,r(r0)     ,r(thick)  ,r(zwork)  , &
-                 & r(dzs0)   ,d(dps)    ,r(s0)     ,r(qsrcrt) ,gdp       )
+                 & r(dzs0)   ,d(dps)    ,r(s0)     ,gdp       )
        call timer_stop(timer_incdis, gdp)
        !
        ! Computation of discharge in case of culverts
@@ -1418,44 +1549,13 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! Run near field model and calculate source terms from
        ! this near field computation
        !
-       if (nfl .and. (nst==itnflf .or. nst==itnflrf)) then
-          if (nst == itnflf) then
-             ! Write near field files
-             if (nst == itnflrf) then
-                ! Also read near field files
-                if (itnflri > 0) then
-                   ! Read old files
-                   nflrwmode = NFLWRITEREADOLD
-                else
-                   ! Write files, wait until they appear and read them
-                   ! This is the default
-                   nflrwmode = NFLWRITEREADNEW
-                endif
-             else
-                ! Only write, do not read
-                nflrwmode = NFLWRITE
-             endif
-          else
-             ! Only read, do not write
-             nflrwmode = NFLREADOLD
-          endif
-          call near_field(r(u0)  , r(v0)     , r(rho)    , r(thick)  , &
-                        & kmax   , r(alfas)  , d(dps)    , r(s0)     , &
-                        & lstsci , lsal      , ltem      , r(xz)     , &
-                        & r(yz)  , nmmax     , nflrwmode , ch(namcon), &
-                        & i(kcs) , i(kfu)    , i(kfv)    , &
-                        & r(r0)  , 2*nst*hdt , saleqs    , temeqs    , &
-                        & r(s1)  , i(kfsmn0) , i(kfsmx0) , r(dzs0)   , &
-                        & r(sig) , r(sig)    , gdp       )
-          if (nflrwmode==NFLWRITE .or. nflrwmode == NFLWRITEREADOLD) then
-             itnflrf = itnflf + itnflri
-          endif
-          if (nst==itnflf .and. (itnflf+itnfli<=itnfll)) then
+       if (nfl .and. nst == itnflf) then
           itnflf = itnflf + itnfli
-          endif
-          if (nflrwmode==NFLWRITEREADNEW) then
-             itnflrf = itnflf
-          endif
+          call near_field(r (u1    )  , r (v1    ), r (rho   ), r (thick), &
+                        & kmax        , r (alfas ), d (dps   ), r (s1)   , &
+                        & r (disnf)   , r (sournf), lstsci    , lsal     , &
+                        & ltem        , r (xz    ), r (yz    ), nmmax    , &
+                        & i (kcs)     , i (kcs_nf), r (r1    ), gdp      )
        endif
        !
        ! Calculate source and sink terms for fluid mud layer
@@ -1652,6 +1752,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        call timer_start(timer_1stadi, gdp)
        call adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
               & nfltyp    ,lsecfl    ,betac     ,mmax      ,nmax      , &
+              & nmaxus    ,r(xcor)   ,r(ycor)   ,&
               & zmodel    ,jstart    ,nmmaxj    ,nmmax     ,kmax      , &
               & lstsci    ,nocol     ,norow     ,nsrc      ,ch(dismmt), &
               & i(irocol) ,i(mnksrc) ,i(kfu)    ,i(kfv)    ,i(kfs)    , &
@@ -1682,7 +1783,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
               & r(wrkb1)  ,r(wrkb2)  ,r(wrkb3)  ,r(wrkb4)  ,r(wrkb5)  , &
               & r(wrkb6)  ,r(wrkb7)  ,r(wrkb8)  ,r(wrkb9)  ,r(wrkb10) , &
               & r(wrkb11) ,r(wrkb12) ,r(wrkb13) ,r(wrkb14) ,r(wrkb15) , &
-              & r(wrkb16) ,sbkol     ,r(precip) ,gdp       )
+              & r(wrkb16) ,sbkol     ,r(disnf)  ,r(precip) ,            &
+              & r(dzs1)   ,r(dp)     ,r(alfas)  ,timnow    ,gdp       )             
        call timer_stop(timer_1stadi, gdp)
        if (roller) then
           !
@@ -1760,14 +1862,15 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        call timer_start(timer_upwhu, gdp)
        call upwhu(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 & zmodel    ,i(kcs)    ,i(kcu)    ,i(kspu)   ,d(dps)    , &
-                & r(s1)     ,r(dpu)    ,r(umean)  ,r(wrka3)  ,gdp       )
+                & r(s1)     ,r(dpu)    ,r(umean)  ,r(wrka3)  ,aguu      , &
+                & gdp       )
        call timer_stop(timer_upwhu, gdp)
        call timer_start(timer_taubot, gdp)
        call taubot(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                  & icy       ,rouflo    ,rouwav    ,i(kfu)    ,i(kfv)    , &
                  & i(kfumin) ,i(kfumax) ,i(kspu)   ,i(kcs)    ,i(kcscut) , &
                  & d(dps)    ,r(s1)     ,r(wrkb3)  ,r(wrkb4)  , &
-                 & r(guu)    ,r(xcor)   ,r(ycor)   ,r(rho)    , &
+                 & r(guu)    ,r(gvv)    ,r(xcor)   ,r(ycor)   ,r(rho)    , &
                  & r(taubpu) ,r(taubsu) ,r(wrka1)  ,r(dis)    ,r(rlabda) , &
                  & r(teta)   ,r(uorb)   ,r(tp)     ,r(wsu)    ,r(wsv)    , &
                  & r(grmasu) ,r(dfu)    ,r(deltau) ,r(hrms)   , &
@@ -1780,14 +1883,15 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        call timer_start(timer_upwhu, gdp)
        call upwhu(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 & zmodel    ,i(kcs)    ,i(kcv)    ,i(kspv)   ,d(dps)    , &
-                & r(s1)     ,r(dpv)    ,r(vmean)  ,r(wrka3)  ,gdp       )
+                & r(s1)     ,r(dpv)    ,r(vmean)  ,r(wrka3)  ,agvv      , &
+                & gdp       )
        call timer_stop(timer_upwhu, gdp)
        call timer_start(timer_taubot, gdp)
        call taubot(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                  & icy       ,rouflo    ,rouwav    ,i(kfv)    ,i(kfu)    , &
                  & i(kfvmin) ,i(kfvmax) ,i(kspv)   ,i(kcs)    ,i(kcscut) , &
                  & d(dps)    ,r(s1)     ,r(wrkb4)  ,r(wrkb3)  , &
-                 & r(gvv)    ,r(ycor)   ,r(xcor)   ,r(rho)    , &
+                 & r(gvv)    ,r(guu)    ,r(ycor)   ,r(xcor)   ,r(rho)    , &
                  & r(taubpv) ,r(taubsv) ,r(wrka2)  ,r(dis)    ,r(rlabda) , &
                  & r(teta)   ,r(uorb)   ,r(tp)     ,r(wsv)    ,r(wsu)    , &
                  & r(grmasv) ,r(dfv)    ,r(deltav) ,r(hrms)   , &
@@ -1870,15 +1974,12 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,jstart    , &
                     & nmmaxj    ,icx       ,icy       ,ch(namsrc),i(mnksrc) , &
                     & i(kfs)    ,i(kcs)    ,r(sour)   ,r(sink)   ,r(volum1) ,r(volum0) , &
-                    & r(r0)     ,r(disch)  ,r(rint)   ,r(rintsm) ,r(thick)  ,bubble    , &
+                    & r(r0)     ,r(disch)  ,r(rint)   ,r(thick)  ,bubble    , &
                     & gdp       )
-          !
-          ! Addition from nearfield-farfield model
-          !
           if (nfl) then
              call discha_nf(kmax      ,lstsci    ,nmmax   ,i(kfs)   ,r(sour)  ,r(sink)   , &
-                          & r(volum1) ,r(volum0) ,r(r0)   ,r(thick) ,i(kfsmn0) ,i(kfsmx0) , &
-                          & i(kcs)    ,gdp )
+                          & r(volum1) ,r(volum0) ,r(r0)   ,r(thick) ,r(disnf) ,r(sournf) , &
+                          & gdp       )
           endif
           call timer_stop(timer_discha, gdp)
        endif
@@ -1927,25 +2028,81 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        ! Call sediment transport routines
        !
-       if (lsedtot>0 .and. nst >= iti_sedtrans) then
+       if (removeW1qzk>=2) then
+          CALL COPYFIRSTinSECOND(r(w1),r(qzk),w1BACK,qzkBACK,kmax,nmmax,nmlb,nmub,nst)
+          CALL W1qzkZERO(r(w1),r(qzk),kmax,nmmax,nmlb,nmub,nst)
+          if (removeW1qzk==3) CALL W1prescribed(r(w1),r(qzk),r(xz),r(yz),r(gsqs),agsqs_link,kmax,nmmax,nmlb,nmub,nst)
+       endif
+       !
+       if (lsedtot>0) then
           call timer_start(timer_3dmor, gdp)
           icx = nmaxddb
           icy = 1
           !
           if (lsed > 0) then
              call timer_start(timer_fallve, gdp)
-             call d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, &
-                       & r(r0), i(kfs), i(kfsmn0), i(kfsmx0), hdt, gdp)
              call fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
-                       & i(kcs)    ,i(kfs)    ,r(u0)     ,r(v0)     , &
+                       & i(kcs)    ,i(kfs)    ,r(wrkb1)  ,r(u0)     ,r(v0)     , &
                        & r(wphy)   ,r(r0)     ,r(rtur0)  ,ltur      ,r(thick)  , &
                        & saleqs    ,temeqs    ,r(rhowat) ,r(ws)     , &
                        & icx       ,icy       ,lundia    ,d(dps)    ,r(s0)     , &
                        & r(umean)  ,r(vmean)  ,r(z0urou) ,r(z0vrou) ,i(kfu)    , &
                        & i(kfv)    ,zmodel    ,i(kfsmx0) ,i(kfsmn0) ,r(dzs0)   , &
-                       & r(taubmx) ,lstsci    ,r(rich)   ,gdp       )        
+                       & gdp       )        
              call timer_stop(timer_fallve, gdp)
           endif
+       endif
+!
+       if (gdp%gdflwpar%flwoutput%halfdt) then ! call it at stage1 only if I print halfdt
+          if (kmax > 1) then
+            !this has to be called here instead of the end of trisol since it needs the values of w1 before the virtual merging
+             icx = nmaxddb
+             icy = 1
+             call timer_start(timer_wphys, gdp)
+             call wphys(r(s1)     ,r(u1)     ,r(v1)     ,r(w1)     ,r(wphy)   , &
+                      & i(irocol) ,norow     ,nocol     ,icx       ,icy       , &
+                      & jstart    ,nmmaxj    ,kmax      ,nsrc      ,zmodel    , &
+                      & i(mnksrc) ,r(disch)  ,r(thick)  ,r(sig)    ,r(guu)    , &
+                      & r(gvv)    ,r(gsqs)   ,d(dps)    ,nmmax     ,i(kcs)    , &
+                      & r(dpu)    ,r(dpv)    ,i(kfsmin) ,i(kfsmax) ,r(gsqsR)  , &
+                      & r(porosu) ,r(porosv) ,aguu      ,agvv      ,agsqs     , &
+                      & i(kfs)    ,nst       ,gdp       )
+             call timer_stop(timer_wphys, gdp)
+          endif
+       endif
+      !
+      ! correct wphy and w1 for small cut cells. it is done here because fallve (just called) wanted wphy at the old time steps
+      ! and I need the correct w1 (and qzk)below in tritra(first time it is use after sud in the adi stage)
+       if (kmax > 1) then
+          if (cutcell.gt.0.and.virtualMERGEupdVERT.and..not.virtualLINK) THEN
+             CALL COMPUTEmergingCARATT(i(kcs),i(kfs),agsqs,aguu,agvv,icx,icy,nmmax,nmlb,nmub,nst,lundia,&
+                               virtualMERGEupdVERT,typeVIRTmergeUPDvert,thresMERGE_w,NMlistMERGED_w,Nmerged_w,&
+                               isMERGEDu_w,isMERGEDv_w,MERGEDwith_w,1._fp,dim_nmlist,gdp)  
+             call REDUCEgsqs(r(gsqs),agsqs,r(gsqsR),nmlb,nmub)  !virtMERG wants gsqsR
+             !virtual merge of w1
+             CALL TRANSPOSE_wrapper(r(w1),nmlb,nmub,0,kmax,w1T)
+             CALL virtMERG(w1T,r(gsqsR),r(s1),d(dps),Rdummy1,icx,icy,nmmax,nmlb,nmub,nst,0,kmax,0,kmax-1,lundia,Ldummy,& !1 is the iniCYCLE,endCYCLE
+                         Idummy,Idummyy,Idummyyy,0,nmaxddb,gdp%d%ddbound,& !0 do not check large bed variations
+                         NMlistMERGED_w,Nmerged_w, dim_nmlist)
+             CALL TRANSPOSE_wrapper(w1T,0,kmax,nmlb,nmub,r(w1))
+             CALL RECOMPqkz(r(w1),r(qzk),r(gsqs),agsqs,kmax,nmmax,nmlb,nmub,nst, gdp)
+          endif
+       endif
+       !spreading of s1 called here since subroutine wphys needs unspreaded s1 while erosed needs the spreaded one.
+       if (cutcell==2.and.virtualLINK) then   
+          !compute unlinked volumes (used in bott3D and forfil)
+          call comvol_onlyVOL(nmmax      ,kmax      ,zmodel      ,i(kcs)                , &
+                            & r(thick)   ,r(gsqs)   ,d(dps)      ,r(s0)      ,volum0NL  , &
+                            & r(dzs1)    ,agsqs     ,i(kfs)   ,gdp       )        !called with unlinked agsqs
+          call comvol_onlyVOL(nmmax      ,kmax      ,zmodel      ,i(kcs)                , &
+                            & r(thick)   ,r(gsqs)   ,d(dps)      ,r(s1)      ,volum1NL  , &
+                            & r(dzs1)    ,agsqs     ,i(kfs)   ,gdp       )        !called with unlinked agsqs) 
+          call VIRTUALlinkAVER_s1(r(volum0),r(s0),r(s1),d(dps),agsqs,r(gsqs),r(thick),NMlistMERGED_d,Nmerged_d,icx,icy,nmmax,nmlb,nmub,nst,kmax, dim_nmlist, gdp) !   Function:   compute "spreaded"  values of s1 and linked Volum0
+         ! if (kmax>1) call VIRTUALlinkAVER_vert(r(gsqsR),agsqs,r(gsqs),r(qzk),r(w1),NMlistMERGED_d,Nmerged_d,icx,icy,nmmax,nmlb,nmub,nst,0,kmax, gdp) !   Function:   compute "spreaded"  values of w1 and qzk !only for post processing , or if sediments its used to compute wphy that is used in subroutine fallve !
+       else
+          call volumNL_are_volumes(r(volum0),r(volum1),volum0NL,volum1NL,nmlb,nmub,kmax) 
+       endif      
+       if (lsedtot>0) then
           !
           ! Erosed should not be called when run as fluid mud
           !
@@ -1977,7 +2134,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & r(r0)     ,r(wrkb5)  ,r(wrkb6)  ,r(s0)     ,d(dps)    , &
                     & r(z0urou) ,r(z0vrou) ,r(sour)   ,r(sink)   ,r(rhowat) , &
                     & r(ws)     ,r(z0ucur) ,r(z0vcur) ,r(sigmol) , &
-                    & r(taubmx) ,r(s1)     ,r(uorb)   ,r(tp)     , &
+                    & r(taubmx) ,r(s1)     ,r(uorb)   ,r(tp)     ,r(sigdif) , &
                     & lstsci    ,r(thick)  ,r(dicww)  ,i(kcs)    , &
                     & i(kcu)    ,i(kcv)    ,r(guv)    ,r(gvu)    ,r(sbuu)   , &
                     & r(sbvv)   ,r(seddif) ,r(hrms)   ,ltur      , &
@@ -1990,10 +2147,24 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           endif
           call timer_stop(timer_3dmor, gdp)
        endif
+
+       if (exactslope==2) call EXACTslopeSUB(i(kfu),i(kfv),r(xz),r(yz),nmmax,icx,icy,gdp) !to print exact solution for slope    
        !
        ! Transport of constituents (excl. turbulence)
        !
+       if (cutcell.gt.0) then
+          call REDUCEgsqs(r(gsqs),agsqs_link,r(gsqsR),nmlb,nmub)    
+       else 
+          call gsqsR_is_gsqs(r(gsqs),r(gsqsR),nmlb,nmub) 
+       endif        
        if ((lstsci>0 .or. roller) .and. nst<itdiag) then
+          if (virtuallink.and.kmax>1) then
+             CALL COMPUTEmergingCARATT(i(kcs),i(kfs),agsqs,aguu,agvv,icx,icy,nmmax,nmlb,nmub,nst,lundia,&
+                               virtualMERGEupdVERT,typeVIRTmergeUPDvert,thresMERGE_w,NMlistMERGED_w,Nmerged_w,&
+                               isMERGEDu_w,isMERGEDv_w,MERGEDwith_w,1._fp,dim_nmlist,gdp)  
+             if (virtuallinkSMOw1) call VIRTUALlinkAVER_vert(r(gsqsR),agsqs,r(gsqs),r(qzk),r(w1),NMlistMERGED_w,Nmerged_w,icx,icy,nmmax,nmlb,nmub,nst,0,kmax, dim_nmlist) 
+          endif
+     !  write(*,*) 'here5'
           call timer_start(timer_difu, gdp)
           call timer_start(timer_tritra, gdp)
           call tritra(stage     ,lundia    ,nst       ,icreep    , &
@@ -2005,7 +2176,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & i(kfv)    ,i(kadu)   ,i(kadv)   ,r(alfas)  ,r(s0)     , &
                  & r(s1)     ,r(hu)     ,r(hv)     ,d(dps)    ,r(qxk)    , &
                  & r(qyk)    ,r(qzk)    ,r(guu)    ,r(gvv)    ,r(guv)    , &
-                 & r(gvu)    ,r(gsqs)   ,r(rbnd)   ,r(sigdif) ,r(sigmol) , &
+                 & r(gvu)    ,r(gsqsR)  ,r(rbnd)   ,r(sigdif) ,r(sigmol) , &
                  & r(r0)     ,r(r1)     ,r(sour)   ,r(sink)   ,r(ws)     , &
                  & sedtyp    ,r(thick)  ,r(sig)    ,r(dicuv)  , &
                  & r(vicww)  ,r(dsdksi) ,r(dsdeta) ,r(dtdksi) ,r(dtdeta) , &
@@ -2022,10 +2193,30 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(wenf)   ,r(wenl)   ,r(dis)    ,r(grmsur) ,r(grmsvr) , &
                  & r(areau)  ,r(areav)  ,r(volum0) ,r(volum1) ,r(xz)     , &
                  & r(yz)     ,r(rlabda) ,r(wrka4)  ,r(wrkb18) ,r(bruvai) , &
-                 & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,            &
-                 & gdp       )
+                 & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,r(sournf) , &
+                 & i(nob)    , &
+                 & nrob      ,nto       ,gdp       )
+      ! write(*,*) 'here6'
           call timer_stop(timer_tritra, gdp)
           call timer_stop(timer_difu, gdp)
+          if (cutcell==2.and.virtualLINK) then  
+             if (kmax>1) then !spreaded with NMlistMERGED_w
+                call VIRTUALlinkCONC(r(gsqsR),r(r1),r(volum1),NMlistMERGED_w,Nmerged_w,lstsci,icx,icy,nmmax,nmlb,nmub,nst,kmax, dim_nmlist, gdp) !compute "spreaded"  values of concentration
+             else
+                call VIRTUALlinkCONC(r(gsqsR),r(r1),r(volum1),NMlistMERGED_d,Nmerged_d,lstsci,icx,icy,nmmax,nmlb,nmub,nst,kmax, dim_nmlist, gdp) !compute "spreaded"  values of concentration
+             endif             
+          endif
+      ! write(*,*) 'here7'
+       endif
+       if (cutcell==2.and.virtualLINK) then  !done here cause trisol needs unspreaded qzk (s1 might maybe be spreaded any time after comvol is called)
+          !compute new volum1 given by spreaded value of S1. Done here since trisol wants the mass conservative one, not the one given by spreaded s1
+          call VIRTUALlinkAVER_volum1(r(volum1),r(s1),d(dps),r(gsqsR),r(thick),NMlistMERGED_d,Nmerged_d,icx,icy,nmmax,nmlb,nmub,nst,kmax, dim_nmlist) !   Function:   compute new volum1
+          if (kmax>1) call VIRTUALlinkAVER_vert(r(gsqsR),agsqs,r(gsqs),r(qzk),r(w1),NMlistMERGED_d,Nmerged_d,icx,icy,nmmax,nmlb,nmub,nst,0,kmax, dim_nmlist) !   Function:   compute "spreaded"  values of w1 and qzk !if done after tritra is only for post processing (or for wphy that is used in subroutine fallve for user defined subr)
+       endif
+      ! write(*,*) 'here8'
+
+       if (removeW1qzk>=2) then
+          CALL COPYFIRSTinSECOND(w1BACK,qzkBACK,r(w1),r(qzk),kmax,nmmax,nmlb,nmub,nst)
        endif
        !
        ! 3D Turbulence
@@ -2081,7 +2272,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call timer_start(timer_tur2d, gdp)
           call tur2d(dischy    ,jstart    ,nmmaxj    ,nmmax     ,nmax      , &
                    & mmax      ,kmax      ,icx       ,icy       ,i(kfs)    , &
-                   & i(kfu)    ,i(kfv)    ,i(kcs)    ,i(ibuff)  ,r(dpd)    , &
+                   & i(kfu)    ,i(kfv)    ,i(kcs)    ,i(ibuff)  ,r(dp)     , &
                    & d(dps)    ,r(s1)     ,r(umean)  ,r(vmean)  ,r(rtu2d0) , &
                    & r(rtu2d1) ,r(rtubnd) ,r(thick)  ,r(guu)    ,r(gvv)    , &
                    & r(guv)    ,r(gvu)    ,r(vicww)  ,r(dicww)  ,r(vicuv)  , &
@@ -2106,10 +2297,15 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & nst       ,forfuv    ,forfww    ,i(kfu)    ,i(kfv)    , &
                     & i(kfs)    ,i(kcu)    ,i(kcv)    ,i(kcs)    ,i(idifu)  , &
                     & r(s1)     ,d(dps)    ,r(thick)  ,r(r0)     ,r(r1)     , &
-                    & r(rmneg)  ,r(volum1) ,r(vicww)  ,r(w1)     ,&
+                    & r(rmneg)  ,volum1NL  ,r(vicww)  ,r(w1)     ,&
                     & r(sigdif) ,r(sigmol) ,r(bruvai) ,gdp       )
           call timer_stop(timer_forfil, gdp)
        endif
+       !FOR CUTCELL: merge concentration after forester filter is applied
+       if (cutcell>0) call MERGEconc(r(r1)      ,r(gsqsR)   ,d(dps)     ,r(s1)      ,r(thick)   ,&
+                                     r(volum1)  ,i(kfs)     ,lundia     ,ddbound    ,nst        ,&
+                                     lstsci     ,nmlb       ,nmub       ,kmax       ,nmmax      ,&
+                                     lsedtot    ,nmaxddb    ,gdp)
        !
        ! Compute drogues (DROGUE = .true.)
        !
@@ -2151,7 +2347,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        icy = 1
        call timer_start(timer_dersig, gdp)
        call dersig(jstart    ,nmmaxj    ,nmmax     ,icx       ,icy       , &
-                 & i(kfu)    ,i(kfv)    ,r(dpd)    ,r(s1)     ,r(dddksi) , &
+                 & i(kfu)    ,i(kfv)    ,r(dp)     ,r(s1)     ,r(dddksi) , &
                  & r(dddeta) ,r(dzdksi) ,r(dzdeta) ,gdp       )
        call timer_stop(timer_dersig, gdp)
        !
@@ -2176,13 +2372,20 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! mass flux and temporary set in WRKB5 (U0EUL) and WRKB6 (V0EUL)
        ! these are used in BOTT3D
        !
-       if (lsedtot>0 .and. nst >= iti_sedtrans) then
+       if ((lsedtot>0) .and. (.not.flmd2l)) then
+          if (cutcell.gt.0) then !computed non-linked gsqsR for bed load
+             call REDUCEgsqs(r(gsqs),agsqs,r(gsqsR),nmlb,nmub)    
+          else 
+             call gsqsR_is_gsqs(r(gsqs),r(gsqsR),nmlb,nmub) 
+          endif  
           call timer_start(timer_3dmor, gdp)
+          icx = nmaxddb
+          icy = 1
           !
           ! don't compute suspended transport vector in middle of timestep
           ! note: IWRK1 used as local work array
           !
-          sscomp = .false.
+          sscomp = compHALFDTss
           icx = nmaxddb
           icy = 1
           if (eulerisoglm) then
@@ -2202,19 +2405,20 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              vmor = v1
           endif
           call timer_start(timer_bott3d, gdp)
-          call bott3d(nmmax     ,kmax      ,lsed      , &
-                    & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
-                    & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
-                    & d(dps)    ,r(gsqs)   ,r(guu)    , &
-                    & r(gvv)    ,r(s1)     ,r(thick)  ,r(dpd)    , &
+          call bott3d(nmmax     ,kmax      ,lsed      ,timnow    ,lsedtot   , &
+                    & lsal      ,ltem      ,i(kfs)    ,i(kfu)    ,i(kfv)    , &
+                    & r(r1)     ,r(s0)     ,i(kcs)    , &
+                    & d(dps)    ,r(gsqsR)  ,r(guu)    ,agsqs     , &
+                    & r(gvv)    ,r(s1)     ,r(thick)  ,r(dp)     , &
                     & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &
                     & r(depchg) ,nst       ,r(hu)     , &
                     & r(hv)     ,r(sig)    ,r(umor)   ,r(vmor)   , &
                     & sscomp    ,i(iwrk1)  , &
                     & r(guv)    ,r(gvu)    ,i(kcu)    , &
                     & i(kcv)    ,icx       ,icy       ,timhr     , &
-                    & nto       ,r(volum0) ,r(volum1) ,hdt       , gdp       )
-          call timer_stop(timer_bott3d, gdp)
+                    & nto       ,volum0NL  ,volum1NL  ,hdt       ,aguu      , &
+                    & agvv      ,dpL       ,dpH       ,poros     ,kfs_cc    , &
+                    & gdp       )
           if (bedupd) then
                 !
                 ! Recalculate DPU/DPV (depth at velocity points)
@@ -2223,20 +2427,148 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                         &  zmodel    , &
                         &  i(kcs)    ,i(kcu)    ,i(kcv)    , &
                         &  i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
-                        &  r(umean)  ,r(vmean)  ,r(dpd)    ,r(dpu)    ,r(dpv)   , &
+                        &  r(umean)  ,r(vmean)  ,r(dp)     ,r(dpu)    ,r(dpv)   , &
                         &  d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)    , &
-                        &  r(thick)  ,gdp       )
+                        &  r(thick)  ,nst       ,gdp       )
           endif
+          !
+          ! BANK EROSION IF CUTCELLS 
+          !
+          if (cutcell.eq.2.and.nst >= itmorB) then !.and.nst >= itmorB) then 
+             ! nmaxddb = gdp%d%nmax + 2*gdp%d%ddbound to be recompute if copied in bott3D (NOTE: BOTT3D HAS Rgsqs that is reduced!!!,thats why I call it here)
+             call UPDATEbank(INTERFtype  , r(gsqs)  , i(kfs)       , i(kcs)    , r(r1)            , &
+                           & r(s1)       , r(u1)    , r(v1)        , i(kfu)    , i(kfv)           , &
+                           & r(Umean)    , r(Vmean) , r(thick)     , d(dps)    , gdp%gderosed%frac, &
+                           & sourseBANK  , Irov     , nmmax        , gdp%d%mmax, gdp%d%nmax       , &
+                           & gdp%d%nmaxus, kmax     , hdt          , morfac    , nst              , &
+                           & gdp%d%nlb   , gdp%d%nub, gdp%d%mlb    , gdp%d%mub , gdp%d%nmlb       , &                                                
+                           & gdp%d%nmub  , nmaxddb  , gdp%d%ddbound, icx       , icy              , &
+                           & lundia      , itmor    , lsedtot      , lsed      , stage            , & 
+                           & lstsci      , gdp      )
+             !
+             ! NOTE: comvol should be done after updmassbal in order not to mess up mass balance 
+             ! (or maybe not if equivalent conserving concentration in fresh cell is computed).
+             ! Note also that foisf1 is called to copy volum1 in volum0
+             !
+             ! Compute areau (to be optimized, volum1 is computed twice, here and below)
+             !
+             call comvol(nmmax     ,kmax      ,zmodel    ,i(kcs)    ,i(kcu)    , &
+                       & r(thick)  ,r(guu)    ,r(gsqs)   ,d(dps)    ,r(s1)     , &
+                       & r(dzs1)   ,r(dzu0)   ,r(hu)     ,r(porosu) ,r(volum1) , &
+                       & r(areau)  ,aguu      ,agsqs     ,i(kfs)    ,gdp       )
+             !
+             ! Compute areav (to be optimized, volum1 is computed twice, here and above)
+             !
+             call comvol(nmmax     ,kmax      ,zmodel    ,i(kcs)    ,i(kcv)    , & 
+                       & r(thick)  ,r(gvv)    ,r(gsqs)   ,d(dps)    ,r(s1)     , &
+                       & r(dzs1)   ,r(dzv0)   ,r(hv)     ,r(porosv) ,r(volum1) , &
+                       & r(areav)  ,agvv      ,agsqs     ,i(kfs)    ,gdp       )
+          endif
+          !
+          if (cutcell.eq.2 .and. nst >= itmorB) then 
+             ! 
+             ! note: hu/hv not used in PLIC_VOF_STEP (only used at first call). Then the call order is (the first three should only be done at fresh edges):
+             !       1) Call PLIC_VOF_STEP to update reconstruction (everywhere)
+             !       2) Call caldpu to update dpu/dpv (everywhere)
+             !       3) Call upwhu to  update hu/hv (everywhere)
+             !       4) Call FRESHqxqy to compute u/v qxk/qyk at fresh cell
+             !
+             ! PERFORM RECONTRUCTION AND CHECK DRY kfs_cc is changed     
+             do n = 1, nmaxus
+                 do m = 1, mmax
+                    aguu0(n,m) = aguu(n,m)
+                    agvv0(n,m) = agvv(n,m)
+                 enddo
+             enddo
+             !
+             CALL PLIC_VOF_STEP(r(gsqs),i(kfs),i(kfu),i(kfv),i(kcs),i(kcu),i(kcv),r(s1),r(u1),r(v1),d(dps),r(dpU),r(dpV),r(xcor),r(ycor),r(alfas),&
+                                lunscr,lundia,Irov,mmax,nmax,nmaxus,kmax,itstrt,nst,nlb,nub,mlb,mub,nmlb,nmub,drycrt,&
+                                r(thick),r(guu),r(gvv),r(hu),r(hv),r(porosu),r(porosv),r(qxk),r(qyk),r(Umean),r(Vmean),stage,i(kfumn0),i(kfvmn0),i(kfumx0),i(kfvmx0),ddbound,nmmax,.false., gdp) !zmodel=.false
+             !
+          endif
+          if (periodSURFACE) then
+             call PER_dp(d(dps),r(xz),r(yz),r(alfas),nlb,mlb,nub,mub,ddbound,nmaxddb, nrper, gdp)  !bed elevations need to be periodic so reconvof computes right normals    
+             if (nst >= itmorB) call WATERlevelPERIOD(r(s1),d(dps),icx,nlb,nub,mlb,mub,kmax, gdp) !s1 is modified if a new cell is eroded with bank movement. Its also modified if deposition makes bed>level
+          endif
+          if (cutcell.eq.2.and.nst >= itmorB) then 
+             !
+             ! Recalculate DPU/DPV (depth at velocity points)
+             !
+             call caldpu( lundia    ,mmax      ,nmaxus    ,kmax      , &
+                   &  zmodel    , &
+                   &  i(kcs)    ,i(kcu)    ,i(kcv)    , &
+                   &  i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
+                   &  r(umean)  ,r(vmean)  ,r(dp)     ,r(dpu)    ,r(dpv)   , &
+                   &  d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)    , &
+                   &  r(thick)  ,nst       ,gdp       )
+             !
+             ! update hu and hv, since I have eroded banks and new active edges appear
+             call timer_start(timer_upwhu, gdp)
+             icx = nmaxddb
+             icy = 1
+             call upwhu(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
+                      & zmodel    ,i(kcs)    ,i(kcu)    ,i(kspu)   ,d(dps)    , &
+                      & r(s1)     ,r(dpu)    ,r(umean)  ,r(hu)     ,aguu      , & 
+                      & gdp       )
+            icx = 1
+            icy = nmaxddb
+             call huFRESH(r(hv),i(kcu),agvv,agvv0,nmlb,nmub,nmmax,nst,icx,icy,Irov)
+            !icx = 1
+            !icy = nmaxddb
+            !call upwhu(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
+            !         & zmodel    ,i(kcs)    ,i(kcv)    ,i(kspv)   ,d(dps)    , &  !called with dps, should be dps0 but if it was fully vegetate it would give wrong results. For flood solver hv will be slightly off (it uses updated dps)
+            !         & r(s0)     ,dpv0      ,r(vmean)  ,r(hv)     ,agvv      , &  !called with s0,dpv0
+            !         & gdp       )
+            call timer_stop(timer_upwhu, gdp)  
+            !
+            icx = nmaxddb
+            icy = 1
+         !
+         !   compute new velocity for active velocity points (midpoint of edge) that were unactive (uncommon case when bank is parallel to cartesian grid.
+         !   new velocity normal to the wall would be close to zero anyway, but on the anular case improves things a bit
+         !   I have to do first this otherwise interpG_ATu1LOCATION_hart could get an undefined (i.e. v=0) value of velocity
+         !   
+             !to be checked, but it might be needed only in the stage preceeding the stage for which discharge is used in sud
+             call fullyBANKtoFRESH(r(u1),i(kcu),aguu,aguu0,nmlb,nmub,kmax,nmmax,nst,icx,icy,Irov)
+             call fullyBANKtoFRESH(r(v1),i(kcu),agvv,agvv0,nmlb,nmub,kmax,nmmax,nst,icy,icx,Irov)
+         !
+         !   new ghost points
+         !
+             IF (TYPEfreeSLIP==2) then  
+                !here icx is icy and vice versa
+                CALL interpG_ATu1LOCATION_hart(icx,icy,r(u1),ghostu1,totGHOSTu1,Nx,Ny,xG_U1,yG_U1,kfs_cc,lunscr,kmax,nst,nmlb,nmub,ddbound,1._fp, gdp)   !it was 0._fp I use 1 for bank erosion so I have always fresh grid with a value
+                CALL interpG_ATu1LOCATION_hart(icy,icx,r(v1),ghostv1,totGHOSTv1,Nx,Ny,xG_V1,yG_V1,kfs_cc,lunscr,kmax,nst,nmlb,nmub,ddbound,1._fp, gdp)
+             else
+                write(*,*) 'errore in updating the edges, not implemented yet'
+                !pause
+                stop
+             ENDIF
+!
+             call FRESHqx(r(u1),r(v1),r(hu),r(hv),r(thick),r(guu),r(gvv),aguu,agvv,aguu0,agvv0,r(qxk),oneEXIT,lunscr,kmax,nst,nmlb,nmub,ddbound,icx,icy,nmmax,Irov)
+             if ((distr_qtq.or.distr_qtq_per).and.reltim_qtq>0) call update_qfilt(stage,oneEXIT,r(qxk),r(qyk),r(u1),r(v1),r(hu),r(hv),r(guu),r(gvv),r(thick),nrob,i(nob),distr_qtq,distr_qtq_per,kmax,mlb,mub,nlb,nub, gdp)      
+             !call FRESHqx(r(v1),r(u1),r(hv),r(hu),r(thick),r(gvv),r(guu),agvv,aguu,agvv0,aguu0,r(qyk),oneEXIT,lunscr,kmax,nst,nmlb,nmub,ddbound,icy,icx,nmmax,Irov) !icx and icy inverted
+             !
+             ! FP: Should this be removed?
+             !
+             call UPDATEbankdaCANC(INTERFtype,r(gsqs),i(kfs),i(kcs),r(r1),r(s1),r(u1),r(v1),i(kfu),i(kfv),r(Umean),r(Vmean),r(thick),d(dps),gdp%gderosed%frac,sourseBANK,Irov,nmmax,gdp%d%mmax,gdp%d%nmax,gdp%d%nmaxus,kmax,hdt,morfac,nst,gdp%d%nlb,gdp%d%nub,gdp%d%mlb,gdp%d%mub,gdp%d%nmlb,gdp%d%nmub,nmaxddb,gdp%d%ddbound,icx,icy,lundia,itmor,lsedtot,lsed,stage,lstsci, gdp)
+                                   
+   
+          endif
+          call timer_stop(timer_bott3d, gdp)
           call timer_stop(timer_3dmor, gdp)
        endif
        !
        call updwaqflx(nst       ,zmodel    ,nmmax     ,kmax      ,i(kcs)    , &
                     & i(kcu)    ,i(kcv)    ,r(qxk)    ,r(qyk)    ,r(qzk)    , &
                     & nsrc      ,r(disch)  ,gdp       )
-       call updmassbal(2        ,r(qxk)    ,r(qyk)    ,i(kcs)    ,r(r1)     , &
-                    & r(volum0) ,r(volum1) ,r(sbuu)   ,r(sbvv)   ,r(disch)  , &
-                    & i(mnksrc) ,r(sink)   ,r(sour)   ,r(gsqs)   ,r(guu)    , &
-                    & r(gvv)    ,d(dps)    ,r(rintsm) ,hdt       ,gdp       )
+       !note: if updatebank changes banks, for new active cells s0 is not satisfying mass conservation. Think what to do
+       call updmassbal(nst+1 == ithisc.and.massBALhdt  ,r(qxk)    ,r(qyk)    ,i(kcs)    ,r(r1)     , &
+                     & r(volum1),r(sbuu)   ,r(sbvv)   , &
+                     & r(gsqs)  ,r(guu)    ,r(gvv)    ,d(dps)    ,nst       , &
+                     & lsal     ,ltem      ,r(s0)     ,r(s1)     ,agsqs     , &
+                     & aguu     ,agvv      ,r(disch)  ,i(mnksrc) ,nsrc      , &
+                     & r(r0)    ,dps0      ,gdp%gderosed%kfsed,i(kfs),lsecfl, &
+                     & r(volum0),icx       ,icy       ,gdp       )
        call updcomflx(nst       ,zmodel    ,nmmax     ,kmax      ,i(kcs)    , &
                     & i(kcu)    ,i(kcv)    ,r(qxk)    ,r(qyk)    ,r(qzk)    , &
                     & nsrc      ,r(disch)  ,i(kfumin) ,i(kfvmin) ,r(qu)     , &
@@ -2286,13 +2618,13 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(ewabr0) ,r(ewabr1) , &
                  & r(ewave0) ,r(ewave1) ,r(eroll0) ,r(eroll1) ,roller    , &
                  & gdp       )
+       if (cutcell.gt.0.and.GhostMethod.ge.0.or.massbal)   CALL DP0isDP(r(dpu),r(dpv),d(dps),mmax,nmaxus,nlb,nub,mlb,mub,gdp)
        call timer_stop(timer_f0isf1, gdp)
     endif
     !
-    if (rtcact /= noRTC) then
+    if (rtcact) then
        call rtc_comm_put(i(kfs)    ,i(kfsmin) ,i(kfsmax) ,r(sig)    , &
                        & r(sig)    ,r(s1)     ,d(dps)    ,r(r0)     , &
-                       & nsluv     ,r(cbuv)   ,nsrc      ,r(disch)  , &
                        & gdp)
     endif
     !
@@ -2356,8 +2688,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     !
     ! Communicate with RTC for second half time step
     !
-    if (rtcact /= noRTC) then
-       call rtc_comm_get(((nst*2)+2) * hdt, r(cbuvrt), nsluv, r(qsrcrt) , nsrc, gdp)
+    if (rtcact) then
+       call rtc_comm_get(((nst*2)+2) * hdt,r(cbuvrt) ,nsluv     , gdp)
     endif
     if (wind) then
        !
@@ -2366,7 +2698,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        call timer_start(timer_incmeteo, gdp)
        call incmeteo(timhr     , grdang   , &
                 & r (windu ),r (windv ),r (patm  ), &
-                & i (kcs   ),r (alfas ),r (windcd), &
+                & i (kcs   ),r (alfas ), &
                 & r (windsu),r (windsv),r (w10mag), gdp)
        !                   
        call timer_stop(timer_incmeteo, gdp)
@@ -2393,14 +2725,15 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              & kc        ,nrob      ,noroco    , &
              & ch(tprofu),i(itbct)  ,i(mnbnd)  ,i(nob)    ,i(kfumin) , &
              & i(kfumax) ,i(kfvmin) ,i(kfvmax) ,r(hydrbc) ,r(circ2d) , &
-             & r(circ3d) ,r(patm)   ,r(guu)    ,r(gvv)    , &
-             & r(hu)     ,r(hv)     ,r(omega)  ,r(alpha)  , &
+             & r(circ3d) ,r(patm)   ,r(guu)    ,r(gvv)    ,r(gsqs)   , &
+             & r(hu)     ,r(hv)     ,r(omega)  ,r(alpha)  ,d(dps)    , &
              & r(z0urou) ,r(z0vrou) ,r(qxk)    ,r(qyk)    ,r(s0)     , &
              & r(u0)     ,r(v0)     ,r(grmasu) ,r(grmasv) ,r(cfurou) , &
              & r(cfvrou) ,r(qtfrac) ,r(qtfrct) ,r(qtfrt2) ,r(thick)  , &
+             & r(xz)     ,r(yz)     ,r(qzk)    ,r(alfas)             , &                   
              & r(dzu1)   ,r(dzv1)   ,r(zwork)  ,i(kcu)    ,i(kcv)    , &
              & i(kfu)    ,i(kfv)    ,i(kcs)    ,timhr     ,ch(nambnd), & 
-             & ch(typbnd),gdp       )
+             & ch(typbnd),nst       ,gdp       )
     call timer_stop(timer_incbc, gdp)
     !
     ! Constituent (excl. turbulence & secondary flow)
@@ -2429,11 +2762,11 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & icx       ,icy       ,i(kfsmin) ,i(kfsmax) , &
                  & ch(disint),ch(dismmt),i(itdis)  ,i(kcu)    ,i(kcv)    , &
                  & i(kfs)    ,i(ibuff)  ,i(mnksrc) ,r(alfas)  ,r(xcor)   , &
-                 & r(ycor)   ,r(dpd)    ,r(disch)  ,r(voldis) , &
+                 & r(ycor)   ,r(dp)     ,r(disch)  , &
                  & r(disch0) ,r(disch1) ,r(rint)   ,r(rint0)  ,r(rint1)  , &
                  & r(umdis)  ,r(umdis0) ,r(umdis1) ,r(vmdis)  ,r(vmdis0) , &                 
                  & r(vmdis1) ,bubble    ,r(r0)     ,r(thick)  ,r(zwork)  , &
-                 & r(dzs0)   ,d(dps)    ,r(s0)     ,r(qsrcrt) ,gdp       )
+                 & r(dzs0)   ,d(dps)    ,r(s0)     ,gdp       )
        call timer_stop(timer_incdis, gdp)
        !
        ! Computation of discharge in case of culverts
@@ -2676,6 +3009,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        call timer_start(timer_2ndadi, gdp)
        call adi(dischy    ,solver    ,icreep    ,stage     ,nst       , &
               & nfltyp    ,lsecfl    ,betac     ,mmax      ,nmax      , &
+              & nmaxus    ,r(xcor)   ,r(ycor)   ,&
               & zmodel    ,jstart    ,nmmaxj    ,nmmax     ,kmax      , &
               & lstsci    ,nocol     ,norow     ,nsrc      ,ch(dismmt), &
               & i(irocol) ,i(mnksrc) ,i(kfu)    ,i(kfv)    ,i(kfs)    , &
@@ -2706,7 +3040,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
               & r(wrkb1)  ,r(wrkb2)  ,r(wrkb3)  ,r(wrkb4)  ,r(wrkb5)  , &
               & r(wrkb6)  ,r(wrkb7)  ,r(wrkb8)  ,r(wrkb9)  ,r(wrkb10) , &
               & r(wrkb11) ,r(wrkb12) ,r(wrkb13) ,r(wrkb14) ,r(wrkb15) , &
-              & r(wrkb16) ,sbkol     ,r(precip) ,gdp       )
+              & r(wrkb16) ,sbkol     ,r(disnf)  ,r(precip) ,            &
+              & r(dzs1)   ,r(dp)     ,r(alfas)  ,timnow    ,gdp       )   
        call timer_stop(timer_2ndadi, gdp)
        if (roller) then
           !
@@ -2783,7 +3118,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        call timer_start(timer_upwhu, gdp)
        call upwhu(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 & zmodel    ,i(kcs)    ,i(kcu)    ,i(kspu)   ,d(dps)    , &
-                & r(s1)     ,r(dpu)    ,r(umean)  ,r(wrka3)  ,gdp       )
+                & r(s1)     ,r(dpu)    ,r(umean)  ,r(wrka3)  ,aguu      , & 
+                & gdp       )
        call timer_stop(timer_upwhu, gdp)
        !
        ! CALKSC: calculate bedform roughness. 
@@ -2791,7 +3127,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        if (lfbedfrmrou) then
           call timer_start(timer_calksc, gdp)
-          call calksc(nmmax     ,d(dps)    ,r(s1)     ,lsedtot   , &
+          call calksc(nmmax     ,itimtt    ,d(dps)    ,r(s1)     ,lsedtot   , &
                     & r(wrkb3)  ,r(wrkb4)  ,i(kfs)    ,r(z0urou) ,r(z0vrou) , &
                     & i(kfu)    ,i(kfv)    ,r(sig)    ,kmax      ,r(hrms)   , &
                     & r(rlabda) ,r(tp)     ,r(deltau) ,r(deltav) ,icx       , &
@@ -2816,7 +3152,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & icy       ,rouflo    ,rouwav    ,i(kfu)    ,i(kfv)    , &
                  & i(kfumin) ,i(kfumax) ,i(kspu)   ,i(kcs)    ,i(kcscut) , &
                  & d(dps)    ,r(s1)     ,r(wrkb3)  ,r(wrkb4)  , &
-                 & r(guu)    ,r(xcor)   ,r(ycor)   ,r(rho)    , &
+                 & r(guu)    ,r(gvv)    ,r(xcor)   ,r(ycor)   ,r(rho)    , &
                  & r(taubpu) ,r(taubsu) ,r(wrka1)  ,r(dis)    ,r(rlabda) , &
                  & r(teta)   ,r(uorb)   ,r(tp)     ,r(wsu)    ,r(wsv)    , &
                  & r(grmasu) ,r(dfu)    ,r(deltau) ,r(hrms)   , &
@@ -2829,7 +3165,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        call timer_start(timer_upwhu, gdp)
        call upwhu(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 & zmodel    ,i(kcs)    ,i(kcv)    ,i(kspv)   ,d(dps)    , &
-                & r(s1)     ,r(dpv)    ,r(vmean)  ,r(wrka3)  ,gdp       )
+                & r(s1)     ,r(dpv)    ,r(vmean)  ,r(wrka3)  ,agvv      , & 
+                & gdp       )
        call timer_stop(timer_upwhu, gdp)
        !
        ! TRTROU: calculate rougness due to trachytopes.
@@ -2859,7 +3196,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & icy       ,rouflo    ,rouwav    ,i(kfv)    ,i(kfu)    , &
                  & i(kfvmin) ,i(kfvmax) ,i(kspv)   ,i(kcs)    ,i(kcscut) , &
                  & d(dps)    ,r(s1)     ,r(wrkb4)  ,r(wrkb3)  , &
-                 & r(gvv)    ,r(ycor)   ,r(xcor)   ,r(rho)    , &
+                 & r(gvv)    ,r(guu)    ,r(ycor)   ,r(xcor)   ,r(rho)    , &
                  & r(taubpv) ,r(taubsv) ,r(wrka2)  ,r(dis)    ,r(rlabda) , &
                  & r(teta)   ,r(uorb)   ,r(tp)     ,r(wsv)    ,r(wsu)    , &
                  & r(grmasv) ,r(dfv)    ,r(deltav) ,r(hrms)   , &
@@ -2943,15 +3280,12 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,jstart    , &
                     & nmmaxj    ,icx       ,icy       ,ch(namsrc),i(mnksrc) , &
                     & i(kfs)    ,i(kcs)    ,r(sour)   ,r(sink)   ,r(volum1) ,r(volum0) , &
-                    & r(r0)     ,r(disch)  ,r(rint)   ,r(rintsm) ,r(thick)  ,bubble    , &
+                    & r(r0)     ,r(disch)  ,r(rint)   ,r(thick)  ,bubble    , &
                     & gdp       )
-          !
-          ! Addition from nearfield-farfield model
-          !
           if (nfl) then
-             call discha_nf(kmax      ,lstsci    ,nmmax   ,i(kfs)   ,r(sour)   ,r(sink)   , &
-                          & r(volum1) ,r(volum0) ,r(r0)   ,r(thick) ,i(kfsmn0) ,i(kfsmx0) , &
-                          & i(kcs)    ,gdp )
+             call discha_nf(kmax      ,lstsci    ,nmmax   ,i(kfs)   ,r(sour)  ,r(sink)   , &
+                          & r(volum1) ,r(volum0) ,r(r0)   ,r(thick) ,r(disnf) ,r(sournf) , &
+                          & gdp       )
           endif
           call timer_stop(timer_discha, gdp)
        endif
@@ -2998,27 +3332,83 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & i(kspu)   ,i(kspv)   ,i(kadu)   ,i(kadv)   ,gdp       )
        call timer_stop(timer_trakad, gdp)
        !
+       ! Transport of constituents (excl. turbulence)
+       !
+       !
        ! Call sediment transport routines
        !
-       if (lsedtot>0 .and. nst >= iti_sedtrans) then
+       if (removeW1qzk>=2) then
+          CALL COPYFIRSTinSECOND(r(w1),r(qzk),w1BACK,qzkBACK,kmax,nmmax,nmlb,nmub,nst)
+          CALL W1qzkZERO(r(w1),r(qzk),kmax,nmmax,nmlb,nmub,nst)
+          if (removeW1qzk==3) CALL W1prescribed(r(w1),r(qzk),r(xz),r(yz),r(gsqs),agsqs_link,kmax,nmmax,nmlb,nmub,nst)
+       endif
+       !
+       if (lsedtot>0) then
           call timer_start(timer_3dmor, gdp)
           icx = nmaxddb
           icy = 1
           !
           if (lsed > 0) then
              call timer_start(timer_fallve, gdp)
-             call d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, &
-                       & r(r0), i(kfs), i(kfsmn0), i(kfsmx0), hdt, gdp)
              call fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
-                       & i(kcs)    ,i(kfs)    ,r(u0)     ,r(v0)     , &
+                       & i(kcs)    ,i(kfs)    ,r(wrkb1)  ,r(u0)     ,r(v0)     , &
                        & r(wphy)   ,r(r0)     ,r(rtur0)  ,ltur      ,r(thick)  , &
                        & saleqs    ,temeqs    ,r(rhowat) ,r(ws)     , &
                        & icx       ,icy       ,lundia    ,d(dps)    ,r(s0)     , &
                        & r(umean)  ,r(vmean)  ,r(z0urou) ,r(z0vrou) ,i(kfu)    , &
                        & i(kfv)    ,zmodel    ,i(kfsmx0) ,i(kfsmn0) ,r(dzs0)   , &
-                       & r(taubmx) ,lstsci    ,r(rich)   ,gdp       )
+                       & gdp       )
              call timer_stop(timer_fallve, gdp)
           endif
+       endif
+!       
+       if (kmax > 1) then
+        ! this has to be called here instead of the end of trisol since it needs the values of w1 before the virtual merging
+          icx = nmaxddb
+          icy = 1
+          call timer_start(timer_wphys, gdp)
+          call wphys(r(s1)     ,r(u1)     ,r(v1)     ,r(w1)     ,r(wphy)   , &
+                   & i(irocol) ,norow     ,nocol     ,icx       ,icy       , &
+                   & jstart    ,nmmaxj    ,kmax      ,nsrc      ,zmodel    , &
+                   & i(mnksrc) ,r(disch)  ,r(thick)  ,r(sig)    ,r(guu)    , &
+                   & r(gvv)    ,r(gsqs)   ,d(dps)    ,nmmax     ,i(kcs)    , &
+                   & r(dpu)    ,r(dpv)    ,i(kfsmin) ,i(kfsmax) ,r(gsqsR)  , &
+                   & r(porosu) ,r(porosv) ,aguu      ,agvv      ,agsqs     , &
+                   & i(kfs)    ,nst       ,gdp       )
+          call timer_stop(timer_wphys, gdp)
+       endif
+       ! correct wphy and w1 for small cut cells. it is done here because fallve (just called above) wanted wphy at the old time steps
+       ! and I need the correct w1 (and qzk) below in tritra (first time it is used after sud in the adi stage)
+       if (kmax > 1) then
+          if (cutcell>0.and. virtualMERGEupdVERT.and..not.virtualLINK) then
+             CALL COMPUTEmergingCARATT(i(kcs),i(kfs),agsqs,aguu,agvv,icx,icy,nmmax,nmlb,nmub,nst,lundia,&
+                               virtualMERGEupdVERT,typeVIRTmergeUPDvert,thresMERGE_w,NMlistMERGED_w,Nmerged_w,&
+                               isMERGEDu_w,isMERGEDv_w,MERGEDwith_w,1._fp,dim_nmlist,gdp)  
+             call REDUCEgsqs(r(gsqs),agsqs,r(gsqsR),nmlb,nmub)  !virtMERG wants gsqsR
+             !virtual merge of w1
+             CALL TRANSPOSE_wrapper(r(w1),nmlb,nmub,0,kmax,w1T)
+             CALL virtMERG(w1T,r(gsqsR),r(s1),d(dps),Rdummy1,icx,icy,nmmax,nmlb,nmub,nst,0,kmax,0,kmax-1,lundia,Ldummy,&  
+                         Idummy,Idummyy,Idummyyy,0,nmaxddb,gdp%d%ddbound,& !0 do not check large bed variations
+                         NMlistMERGED_w,Nmerged_w, dim_nmlist)
+             CALL TRANSPOSE_wrapper(w1T,0,kmax,nmlb,nmub,r(w1))
+             CALL RECOMPqkz(r(w1),r(qzk),r(gsqs),agsqs,kmax,nmmax,nmlb,nmub,nst, gdp)
+          endif
+       endif
+       !spreading of s1 called here since subroutine wphys needs unspreaded s1 while erosed needs the spreaded one.
+       if (cutcell==2.and.virtualLINK) then   
+          !compute unlinked volumes (used in bott3D and forfil)
+          call comvol_onlyVOL(nmmax      ,kmax      ,zmodel      ,i(kcs)                , &
+                            & r(thick)   ,r(gsqs)   ,d(dps)      ,r(s0)      ,volum0NL  , &
+                            & r(dzs1)    ,agsqs     ,i(kfs)   ,gdp       )        !called with unlinked agsqs
+          call comvol_onlyVOL(nmmax      ,kmax      ,zmodel      ,i(kcs)                , &
+                            & r(thick)   ,r(gsqs)   ,d(dps)      ,r(s1)      ,volum1NL  , &
+                            & r(dzs1)    ,agsqs     ,i(kfs)   ,gdp       )        !called with unlinked agsqs
+          call VIRTUALlinkAVER_s1(r(volum0),r(s0),r(s1),d(dps),agsqs,r(gsqs),r(thick),NMlistMERGED_d,Nmerged_d,icx,icy,nmmax,nmlb,nmub,nst,kmax, dim_nmlist, gdp) !   Function:   compute "spreaded"  values of s1 and linked Volum0
+         ! if (kmax>1) call VIRTUALlinkAVER_vert(r(gsqsR),agsqs,r(gsqs),r(qzk),r(w1),NMlistMERGED_d,Nmerged_d,icx,icy,nmmax,nmlb,nmub,nst,0,kmax, gdp) !   Function:   compute "spreaded"  values of w1 and qzk !if done after tritra is only for post processing (or for wphy that is used in subroutine fallve for user defined subr)
+       else
+          call volumNL_are_volumes(r(volum0),r(volum1),volum0NL,volum1NL,nmlb,nmub,kmax) 
+       endif
+       if (lsedtot>0) then
           !
           ! Erosed should not be called when run as fluid mud
           !
@@ -3050,7 +3440,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                        & r(r0)     ,r(wrkb5)  ,r(wrkb6)  ,r(s0)     ,d(dps)    , &
                        & r(z0urou) ,r(z0vrou) ,r(sour)   ,r(sink)   ,r(rhowat) , &
                        & r(ws)     ,r(z0ucur) ,r(z0vcur) ,r(sigmol) , &
-                       & r(taubmx) ,r(s1)     ,r(uorb)   ,r(tp)     , &
+                       & r(taubmx) ,r(s1)     ,r(uorb)   ,r(tp)     ,r(sigdif) , &
                        & lstsci    ,r(thick)  ,r(dicww)  ,i(kcs)    , &
                        & i(kcu)    ,i(kcv)    ,r(guv)    ,r(gvu)    ,r(sbuu)   , &
                        & r(sbvv)   ,r(seddif) ,r(hrms)   ,ltur      , &
@@ -3063,10 +3453,22 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           endif
           call timer_stop(timer_3dmor, gdp)
        endif
+       if (exactslope==2) call EXACTslopeSUB(i(kfu),i(kfv),r(xz),r(yz),nmmax,icx,icy,gdp) !to print exact solution for slope.ONLY PRINTING, since I cannot do it in adjust_bedload since I dont have xz and yz    
        !
        ! Transport of constituents (excl. turbulence)
        !
+       if (cutcell.gt.0) then
+          call REDUCEgsqs(r(gsqs),agsqs_link,r(gsqsR),nmlb,nmub)    
+       else 
+          call gsqsR_is_gsqs(r(gsqs),r(gsqsR),nmlb,nmub) 
+       endif  
        if ((lstsci>0 .or. roller) .and. nst<itdiag) then
+          if (virtuallink.and.kmax>1) then
+             CALL COMPUTEmergingCARATT(i(kcs),i(kfs),agsqs,aguu,agvv,icx,icy,nmmax,nmlb,nmub,nst,lundia,&
+                               virtualMERGEupdVERT,typeVIRTmergeUPDvert,thresMERGE_w,NMlistMERGED_w,Nmerged_w,&
+                               isMERGEDu_w,isMERGEDv_w,MERGEDwith_w,1._fp,dim_nmlist,gdp)  
+             if (virtuallinkSMOw1) call VIRTUALlinkAVER_vert(r(gsqsR),agsqs,r(gsqs),r(qzk),r(w1),NMlistMERGED_w,Nmerged_w,icx,icy,nmmax,nmlb,nmub,nst,0,kmax, dim_nmlist) 
+          endif
           call timer_start(timer_difu, gdp)
           call timer_start(timer_tritra, gdp)
           call tritra(stage     ,lundia    ,nst       ,icreep    , &
@@ -3078,7 +3480,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & i(kfv)    ,i(kadu)   ,i(kadv)   ,r(alfas)  ,r(s0)     , &
                  & r(s1)     ,r(hu)     ,r(hv)     ,d(dps)    ,r(qxk)    , &
                  & r(qyk)    ,r(qzk)    ,r(guu)    ,r(gvv)    ,r(guv)    , &
-                 & r(gvu)    ,r(gsqs)   ,r(rbnd)   ,r(sigdif) ,r(sigmol) , &
+                 & r(gvu)    ,r(gsqsR)  ,r(rbnd)   ,r(sigdif) ,r(sigmol) , &
                  & r(r0)     ,r(r1)     ,r(sour)   ,r(sink)   ,r(ws)     , &
                  & sedtyp    ,r(thick)  ,r(sig)    ,r(dicuv)  , &
                  & r(vicww)  ,r(dsdksi) ,r(dsdeta) ,r(dtdksi) ,r(dtdeta) , &
@@ -3095,10 +3497,26 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(wenf)   ,r(wenl)   ,r(dis)    ,r(grmsur) ,r(grmsvr) , &
                  & r(areau)  ,r(areav)  ,r(volum0) ,r(volum1) ,r(xz)     , &
                  & r(yz)     ,r(rlabda) ,r(wrka4)  ,r(wrkb18) ,r(bruvai) , &
-                 & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,            &
-                 & gdp       )
+                 & r(hrms)   ,r(dzs1)   ,i(kfsmin) ,i(kfsmax) ,r(sournf) , &
+                 & i(nob)    , &
+                 & nrob      ,nto       ,gdp       )
           call timer_stop(timer_tritra, gdp)
           call timer_stop(timer_difu, gdp)
+          if (cutcell==2.and.virtualLINK) then  !spreaded with NMlistMERGED_w
+             if (kmax>1) then !spreaded with NMlistMERGED_w
+                call VIRTUALlinkCONC(r(gsqsR),r(r1),r(volum1),NMlistMERGED_w,Nmerged_w,lstsci,icx,icy,nmmax,nmlb,nmub,nst,kmax, dim_nmlist, gdp) !compute "spreaded"  values of concentration
+             else
+                call VIRTUALlinkCONC(r(gsqsR),r(r1),r(volum1),NMlistMERGED_d,Nmerged_d,lstsci,icx,icy,nmmax,nmlb,nmub,nst,kmax, dim_nmlist, gdp) !compute "spreaded"  values of concentration
+             endif  
+          endif
+       endif
+       if (cutcell==2.and.virtualLINK) then  !done here cause trisol needs unspreaded qzk (s1 might maybe be spreaded any time after comvol is called)
+          !compute new volum1 given by spreaded value of S1. Done here since trisol wants the mass conservative one, not the one given by spreaded s1
+          call VIRTUALlinkAVER_volum1(r(volum1),r(s1),d(dps),r(gsqsR),r(thick),NMlistMERGED_d,Nmerged_d,icx,icy,nmmax,nmlb,nmub,nst,kmax, dim_nmlist) !   Function:   compute new volum1
+          if (kmax>1) call VIRTUALlinkAVER_vert(r(gsqsR),agsqs,r(gsqs),r(qzk),r(w1),NMlistMERGED_d,Nmerged_d,icx,icy,nmmax,nmlb,nmub,nst,0,kmax, dim_nmlist) !   Function:   compute "spreaded"  values of w1 and qzk !only for post processing , or if sediments its used to compute wphy that is used in subroutine fallve !
+       endif
+       if (removeW1qzk>=2) then
+          CALL COPYFIRSTinSECOND(w1BACK,qzkBACK,r(w1),r(qzk),kmax,nmmax,nmlb,nmub,nst)
        endif
        !
        ! Turbulence
@@ -3154,7 +3572,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call timer_start(timer_tur2d, gdp)
           call tur2d(dischy    ,jstart    ,nmmaxj    ,nmmax     ,nmax      , &
                    & mmax      ,kmax      ,icx       ,icy       ,i(kfs)    , &
-                   & i(kfu)    ,i(kfv)    ,i(kcs)    ,i(ibuff)  ,r(dpd)    , &
+                   & i(kfu)    ,i(kfv)    ,i(kcs)    ,i(ibuff)  ,r(dp)     , &
                    & d(dps)    ,r(s1)     ,r(umean)  ,r(vmean)  ,r(rtu2d0) , &
                    & r(rtu2d1) ,r(rtubnd) ,r(thick)  ,r(guu)    ,r(gvv)    , &
                    & r(guv)    ,r(gvu)    ,r(vicww)  ,r(dicww)  ,r(vicuv)  , &
@@ -3179,10 +3597,15 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & nst       ,forfuv    ,forfww    ,i(kfu)    ,i(kfv)    , &
                     & i(kfs)    ,i(kcu)    ,i(kcv)    ,i(kcs)    ,i(idifu)  , &
                     & r(s1)     ,d(dps)    ,r(thick)  ,r(r0)     ,r(r1)     , &
-                    & r(rmneg)  ,r(volum1) ,r(vicww)  ,r(w1)     ,&
+                    & r(rmneg)  ,volum1NL  ,r(vicww)  ,r(w1)     ,&
                     & r(sigdif) ,r(sigmol) ,r(bruvai) ,gdp       )
           call timer_stop(timer_forfil, gdp)
        endif
+       !FOR CUTCELL: merge concentration after forester filter is applied
+       if (cutcell>0) call MERGEconc(r(r1)      ,r(gsqsR)   ,d(dps)     ,r(s1)      ,r(thick)   ,&
+                                     r(volum1)  ,i(kfs)     ,lundia     ,ddbound    ,nst        ,&
+                                     lstsci     ,nmlb       ,nmub       ,kmax       ,nmmax      ,&
+                                     lsedtot    ,nmaxddb    ,gdp)
        !
        ! Compute drogues (DROGUE = .true.)
        !
@@ -3224,7 +3647,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        icy = 1
        call timer_start(timer_dersig, gdp)
        call dersig(jstart    ,nmmaxj    ,nmmax     ,icx       ,icy       , &
-                 & i(kfu)    ,i(kfv)    ,r(dpd)    ,r(s1)     ,r(dddksi) , &
+                 & i(kfu)    ,i(kfv)    ,r(dp)     ,r(s1)     ,r(dddksi) , &
                  & r(dddeta) ,r(dzdksi) ,r(dzdeta) ,gdp       )
        call timer_stop(timer_dersig, gdp)
        !
@@ -3244,12 +3667,18 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! Compute change in bottom sediment and bottom elevation
        ! except when run parallel to fluidmud
        ! The velocities from previous half timestep are corrected for
-       ! mass flux and temporary set in WRKB5 (U0EUL) and WRKB6 (V0EUL)
+       ! mass flux and temporary set in WRKB3 (U0EUL) and WRKB4 (V0EUL)
        ! these are used in BOTT3D
        !
        call timer_start(timer_3dmor, gdp)
-       
-       if (lsedtot>0 .and. nst >= iti_sedtrans) then
+       if ((lsedtot>0) .and. (.not.flmd2l)) then
+          if (cutcell.gt.0) then !computed non-linked gsqsR for bed load
+             call REDUCEgsqs(r(gsqs),agsqs,r(gsqsR),nmlb,nmub)    
+          else 
+             call gsqsR_is_gsqs(r(gsqs),r(gsqsR),nmlb,nmub) 
+          endif
+          icx = nmaxddb
+          icy = 1
           !
           ! compute suspended sediment transport vector at the end of each
           ! dt. Would be better to just calculate it when required for
@@ -3276,18 +3705,20 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              vmor = v1
           endif
           call timer_start(timer_bott3d, gdp)
-          call bott3d(nmmax     ,kmax      ,lsed      , &
+          call bott3d(nmmax     ,kmax      ,lsed      ,timnow    , &
                     & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
                     & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
-                    & d(dps)    ,r(gsqs)   ,r(guu)    , &
-                    & r(gvv)    ,r(s1)     ,r(thick)  ,r(dpd)    , &
+                    & d(dps)    ,r(gsqsR)  ,r(guu)    ,agsqs     , &
+                    & r(gvv)    ,r(s1)     ,r(thick)  ,r(dp)     , &
                     & r(umean)  ,r(vmean)  ,r(sbuu)   ,r(sbvv)   , &
                     & r(depchg) ,nst       ,r(hu)     , &
                     & r(hv)     ,r(sig)    ,r(umor)   ,r(vmor)   , &
                     & sscomp    ,i(iwrk1)  , &
                     & r(guv)    ,r(gvu)    ,i(kcu)    , &
                     & i(kcv)    ,icx       ,icy       ,timhr     , &
-                    & nto       ,r(volum0) ,r(volum1) ,hdt       ,gdp       )
+                    & nto       ,volum0NL  ,volum1NL  ,hdt       ,aguu      , &
+                    & agvv      ,dpL       ,dpH       ,poros     ,kfs_cc    , &
+                    & gdp       )
           call timer_stop(timer_bott3d, gdp)
        endif
        !
@@ -3297,7 +3728,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           call incsdu(timhr  ,d(dps)   ,r(s1)   ,i(kcs)  ,i(kfs) ,gdp    )
        endif
        !
-       if (((lsedtot>0) .and. bedupd) .or. lfsdu) then
+       if (((lsedtot>0) .and. (.not.flmd2l) .and. bedupd) .or. lfsdu) then
           !
           ! Recalculate DPU/DPV (depth at velocity points)
           !
@@ -3305,24 +3736,126 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                   &  zmodel    , &
                   &  i(kcs)    ,i(kcu)    ,i(kcv)    , &
                   &  i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
-                  &  r(umean)  ,r(vmean)  ,r(dpd)    ,r(dpu)    ,r(dpv)   , &
+                  &  r(umean)  ,r(vmean)  ,r(dp)     ,r(dpu)    ,r(dpv)   , &
                   &  d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)    , &
-                  &  r(thick)  ,gdp       )
+                        &  r(thick)  ,nst       ,gdp       )
+          !
+          ! BANK EROSION IF CUTCELLS 
+          !
+          if (cutcell.eq.2.and.nst >= itmorB) then  !.and.nst >= itmorB
+             ! nmaxddb = gdp%d%nmax + 2*gdp%d%ddbound to be recompute if copied in bott3D (NOTE: BOTT3D HAS Rgsqs that is reduced!!!,thats why I call it here)
+             call UPDATEbank(INTERFtype,r(gsqs),i(kfs),i(kcs),r(r1),r(s1),r(u1),r(v1),i(kfu),i(kfv),r(Umean),r(Vmean),r(thick),d(dps),gdp%gderosed%frac,sourseBANK,Irov,nmmax,gdp%d%mmax,gdp%d%nmax,gdp%d%nmaxus,kmax,hdt,morfac,nst,gdp%d%nlb,gdp%d%nub,gdp%d%mlb,gdp%d%mub,gdp%d%nmlb,gdp%d%nmub,nmaxddb,gdp%d%ddbound,icx,icy,lundia,itmor,lsedtot,lsed,stage,lstsci, gdp)
+            !NOTE: comvol should be done after updmassbal in order not to mess up mass balance (or maybe not if equivalent conserving concentration in fresh cell is computed)
+             call comvol(nmmax     ,kmax      ,zmodel    ,i(kcs)    ,i(kcu)    , & !compute areau (to be optimezed, volum1 is computed twice,here and below)
+                       & r(thick)  ,r(guu)    ,r(gsqs)   ,d(dps)    ,r(s1)     , &
+                       & r(dzs1)   ,r(dzu0)   ,r(hu)     ,r(porosu) ,r(volum1) , &
+                       & r(areau)  ,aguu      ,agsqs     ,i(kfs)    ,gdp       )
+             call comvol(nmmax     ,kmax      ,zmodel    ,i(kcs)    ,i(kcv)    , & !compute areav (to be optimezed, volum1 is computed twice,here and above)
+                       & r(thick)  ,r(gvv)    ,r(gsqs)   ,d(dps)    ,r(s1)     , &
+                       & r(dzs1)   ,r(dzv0)   ,r(hv)     ,r(porosv) ,r(volum1) , &
+                       & r(areav)  ,agvv      ,agsqs     ,i(kfs)    ,gdp       )
+          endif
+!
+          if (cutcell.eq.2.and.nst >= itmorB) then 
+             ! 
+             ! note: hu/hv not used in PLIC_VOF_STEP (only used at first call). Then the call order is (the first three should only be done at fresh edges):
+             !       1) Call PLIC_VOF_STEP to update reconstruction (everywhere)
+             !       2) Call caldpu to update dpu/dpv (everywhere)
+             !       3) Call upwhu to  update hu/hv (everywhere)
+             !       4) Call FRESHqxqy to compute u/v qxk/qyk at fresh cell
+             !
+             ! PERFORM RECONTRUCTION AND CHECK DRY kfs_cc is changed     
+             do n = 1, nmaxus
+                 do m = 1, mmax
+                    aguu0(n,m) = aguu(n,m)
+                    agvv0(n,m) = agvv(n,m)
+                 enddo
+             enddo
+             !
+             CALL PLIC_VOF_STEP(r(gsqs),i(kfs),i(kfu),i(kfv),i(kcs),i(kcu),i(kcv),r(s1),r(u1),r(v1),d(dps),r(dpU),r(dpV),r(xcor),r(ycor),r(alfas),&
+                                lunscr,lundia,Irov,mmax,nmax,nmaxus,kmax,itstrt,nst,nlb,nub,mlb,mub,nmlb,nmub,drycrt,&
+                                r(thick),r(guu),r(gvv),r(hu),r(hv),r(porosu),r(porosv),r(qxk),r(qyk),r(Umean),r(Vmean),stage,i(kfumn0),i(kfvmn0),i(kfumx0),i(kfvmx0),ddbound,nmmax,.false., gdp) !zmodel=.false
+             !
+          endif
+          if (periodSURFACE) then
+             call PER_dp(d(dps),r(xz),r(yz),r(alfas),nlb,mlb,nub,mub,ddbound,nmaxddb, nrper, gdp)  !bed elevations need to be periodic so reconvof computes right normals    
+             if (nst >= itmorB) call WATERlevelPERIOD(r(s1),d(dps),icx,nlb,nub,mlb,mub,kmax, gdp) !s1 is modified if a new cell is eroded with bank movement. Its also modified if deposition makes bed>level
+          endif
+          if (cutcell.eq.2.and.nst >= itmorB) then 
+             !
+             ! Recalculate DPU/DPV (depth at velocity points)
+             !
+             call caldpu( lundia    ,mmax      ,nmaxus    ,kmax      , &
+                   &  zmodel    , &
+                   &  i(kcs)    ,i(kcu)    ,i(kcv)    , &
+                   &  i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
+                   &  r(umean)  ,r(vmean)  ,r(dp)     ,r(dpu)    ,r(dpv)   , &
+                   &  d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)    , &
+                   &  r(thick)  ,nst       ,gdp       )
+             !
+             ! update hu and hv, since I have eroded banks and new active edges appear
+             call timer_start(timer_upwhu, gdp)
+             !icx = nmaxddb
+             !icy = 1
+             !call upwhu(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
+             !         & zmodel    ,i(kcs)    ,i(kcu)    ,i(kspu)   ,d(dps)    , &!called with dps, should be dps0 but if it was fully vegetate it would give wrong results. For flood solver hv will be slightly off (it uses updated dps)
+             !         & r(s0)     ,r(dpu0)   ,r(umean)  ,r(hu)     ,aguu      , & !called with s0,dpv0
+             !         & gdp       )
+             icx = nmaxddb
+             icy = 1
+             call huFRESH(r(hu),i(kcu),aguu,aguu0,nmlb,nmub,nmmax,nst,icx,icy,Irov)
+             icx = 1
+             icy = nmaxddb
+             call upwhu(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
+                      & zmodel    ,i(kcs)    ,i(kcv)    ,i(kspv)   ,d(dps)    , &
+                      & r(s1)     ,r(dpv)    ,r(vmean)  ,r(hv)  ,agvv      , & 
+                      & gdp       )
+             call timer_stop(timer_upwhu, gdp)  
+!
+             icx = nmaxddb
+             icy = 1
+         !   
+         !   compute new velocity for active velocity points (midpoint of edge) that were unactive (uncommon case when bank is parallel to cartesian grid.
+         !   new velocity normal to the wall would be close to zero anyway, but on the anular case improves things a bit
+         !   I have to do first this otherwise interpG_ATu1LOCATION_hart could get an undefined (i.e. v=0) value of velocity
+         !   
+             !to be checked, but it might be needed only in the stage preceeding the stage for which discharge is used in sud
+             call fullyBANKtoFRESH(r(u1),i(kcu),aguu,aguu0,nmlb,nmub,kmax,nmmax,nst,icx,icy,Irov)
+             call fullyBANKtoFRESH(r(v1),i(kcu),agvv,agvv0,nmlb,nmub,kmax,nmmax,nst,icy,icx,Irov)
+         !
+         !   new ghost points
+         !
+             IF (TYPEfreeSLIP==2) then  
+                !here icx is icy and vice versa
+                CALL interpG_ATu1LOCATION_hart(icx,icy,r(u1),ghostu1,totGHOSTu1,Nx,Ny,xG_U1,yG_U1,kfs_cc,lunscr,kmax,nst,nmlb,nmub,ddbound,1._fp, gdp)   !it was 0._fp I use 1 for bank erosion so I have always fresh grid with a value
+                CALL interpG_ATu1LOCATION_hart(icy,icx,r(v1),ghostv1,totGHOSTv1,Nx,Ny,xG_V1,yG_V1,kfs_cc,lunscr,kmax,nst,nmlb,nmub,ddbound,1._fp, gdp)
+             else
+                write(*,*) 'errore in updating the edges, not implemented yet'
+                !pause
+                stop
+             ENDIF
+             call FRESHqx(r(v1),r(u1),r(hv),r(hu),r(thick),r(gvv),r(guu),agvv,aguu,agvv0,aguu0,r(qyk),oneEXIT,lunscr,kmax,nst,nmlb,nmub,ddbound,icy,icx,nmmax,Irov) !icx and icy inverted
+             if ((distr_qtq.or.distr_qtq_per).and.reltim_qtq>0) call update_qfilt(stage,oneEXIT,r(qxk),r(qyk),r(u1),r(v1),r(hu),r(hv),r(guu),r(gvv),r(thick),nrob,i(nob),distr_qtq,distr_qtq_per,kmax,mlb,mub,nlb,nub, gdp) 
+             !call FRESHqx(r(u1),r(v1),r(hu),r(hv),r(thick),r(guu),r(gvv),aguu,agvv,aguu0,agvv0,r(qxk),oneEXIT,lunscr,kmax,nst,nmlb,nmub,ddbound,icx,icy,nmmax,Irov)
+             !
+             ! FP: Should this be removed?
+             !
+             call UPDATEbankdaCANC(INTERFtype,r(gsqs),i(kfs),i(kcs),r(r1),r(s1),r(u1),r(v1),i(kfu),i(kfv),r(Umean),r(Vmean),r(thick),d(dps),gdp%gderosed%frac,sourseBANK,Irov,nmmax,gdp%d%mmax,gdp%d%nmax,gdp%d%nmaxus,kmax,hdt,morfac,nst,gdp%d%nlb,gdp%d%nub,gdp%d%mlb,gdp%d%mub,gdp%d%nmlb,gdp%d%nmub,nmaxddb,gdp%d%ddbound,icx,icy,lundia,itmor,lsedtot,lsed,stage,lstsci, gdp)
+          endif
        endif
        call timer_stop(timer_3dmor, gdp)
        !
        call updwaqflx(nst       ,zmodel    ,nmmax     ,kmax      ,i(kcs)    , &
                     & i(kcu)    ,i(kcv)    ,r(qxk)    ,r(qyk)    ,r(qzk)    , &
                     & nsrc      ,r(disch)  ,gdp       )
-       if (nst+1 == ithisc) then
-          imode = 3 ! output needed, so update fluxes and volumes
-       else
-          imode = 2 ! no output needed, so just update fluxes
-       endif
-       call updmassbal(imode    ,r(qxk)    ,r(qyk)    ,i(kcs)    ,r(r1)     , &
-                    & r(volum0) ,r(volum1) ,r(sbuu)   ,r(sbvv)   ,r(disch)  , &
-                    & i(mnksrc) ,r(sink)   ,r(sour)   ,r(gsqs)   ,r(guu)    , &
-                    & r(gvv)    ,d(dps)    ,r(rintsm) ,hdt       ,gdp       )
+       !note: if updatebank changes banks, for new active cells s0 is not satisfying mass conservation. Think what to do                     
+       call updmassbal(nst+1 == ithisc,r(qxk)    ,r(qyk)    ,i(kcs)    ,r(r1)     , &
+                     & r(volum1),r(sbuu)   ,r(sbvv)   , &
+                     & r(gsqs)  ,r(guu)    ,r(gvv)    ,d(dps)    ,nst       , &
+                     & lsal     ,ltem      ,r(s0)     ,r(s1)     ,agsqs     , &
+                     & aguu     ,agvv      ,r(disch)  ,i(mnksrc) ,nsrc      , &
+                     & r(r0)    ,dps0      ,gdp%gderosed%kfsed,i(kfs),lsecfl, &
+                     & r(volum0),1         ,nmaxddb   ,gdp       ) !icx and icy inverted (1,nmaxddb) = (icy,icx)
        call updcomflx(nst       ,zmodel    ,nmmax     ,kmax      ,i(kcs)    , &
                     & i(kcu)    ,i(kcv)    ,r(qxk)    ,r(qyk)    ,r(qzk)    , &
                     & nsrc      ,r(disch)  ,i(kfumin) ,i(kfvmin) ,r(qu)     , &
@@ -3352,10 +3885,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! f0isf1 is now called at the START of the routine trisol.
        !
     endif
-    if (rtcact /= noRTC) then
+    if (rtcact) then
        call rtc_comm_put(i(kfs)    ,i(kfsmin) ,i(kfsmax) ,r(sig)    , &
                        & r(sig)    ,r(s1)     ,d(dps)    ,r(r0)     , &
-                       & nsluv     ,r(cbuv)   ,nsrc      ,r(disch)  , &
                        & gdp)
     endif
     if (sbkol) then
@@ -3376,19 +3908,21 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        !
        ! Define wphy
        !
-       if (kmax > 1) then
-          icx = nmaxddb
-          icy = 1
-          call timer_start(timer_wphys, gdp)
-          call wphys(r(s1)     ,r(u1)     ,r(v1)     ,r(w1)     ,r(wphy)   , &
-                   & i(irocol) ,norow     ,nocol     ,icx       ,icy       , &
-                   & jstart    ,nmmaxj    ,kmax      ,nsrc      ,zmodel    , &
-                   & i(mnksrc) ,r(disch)  ,r(thick)  ,r(sig)    ,r(guu)    , &
-                   & r(gvv)    ,r(gsqs)   ,d(dps)    ,nmmax     ,i(kcs)    , &
-                   & r(dpu)    ,r(dpv)    ,i(kfsmin) ,i(kfsmax) , &
-                   & r(porosu) ,r(porosv) ,gdp       )
-          call timer_stop(timer_wphys, gdp)
-       endif
+       !removed and put in subroutine CORRvertVELcutcell
+!       if (kmax > 1) then
+!          icx = nmaxddb
+!          icy = 1
+!          call timer_start(timer_wphys, gdp)
+!          call wphys(r(s1)     ,r(u1)     ,r(v1)     ,r(w1)     ,r(wphy)   , &
+!                   & i(irocol) ,norow     ,nocol     ,icx       ,icy       , &
+!                   & jstart    ,nmmaxj    ,kmax      ,nsrc      ,zmodel    , &
+!                   & i(mnksrc) ,r(disch)  ,r(thick)  ,r(sig)    ,r(guu)    , &
+!                   & r(gvv)    ,r(gsqs)   ,d(dps)    ,nmmax     ,i(kcs)    , &
+!                   & r(dpu)    ,r(dpv)    ,i(kfsmin) ,i(kfsmax) , &
+!                   & r(porosu) ,r(porosv) ,aguu      ,agvv      ,agsqs     , &
+!                   & i(kfs)    ,nst       ,gdp       )
+!          call timer_stop(timer_wphys, gdp)
+!       endif
        !
        ! To avoid problems with GPP, arrays VORTIC (vorticity) and ENSTRO
        ! (enstrophy) are always computed and stored in HIS and MAP files
@@ -3402,4 +3936,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(vortic) ,r(enstro) ,r(wrkb1)  ,gdp       )
        call timer_stop(timer_cvort, gdp)
     endif
+    !IF (ALLOCATED(w1T)) DEALLOCATE(w1T)
+!
+    deallocate(w1BACK,qzkBACK)
+!
 end subroutine trisol

@@ -4,7 +4,7 @@ subroutine z_vermom_horadv_mdue(kmax  , icx   , icy    , icxy   , kcs   , &
                               & kfvz0 , w0    , ddk    , gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,7 +29,7 @@ subroutine z_vermom_horadv_mdue(kmax  , icx   , icy    , icxy   , kcs   , &
 !                                                                               
 !-------------------------------------------------------------------------------
 !  $Id: z_vermom_horadv_mdue.f90 1044 2011-11-21 21:22:12Z platzek $
-!  : https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20111115_13532_z-model_improvements_oss-merge/engines_gpl/flow2d3d/packages/kernel/src/nonhydro/z_vermom_horadv_mdue.f90 $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20111115_13532_z-model_improvements_oss-merge/engines_gpl/flow2d3d/packages/kernel/src/nonhydro/z_vermom_horadv_mdue.f90 $
 !!--description-----------------------------------------------------------------
 !
 !

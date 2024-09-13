@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2016.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -82,70 +82,6 @@
 #endif
 
 
-
-//------------------------------------------------------------------------------
-// BMI interface, used by DIMR
-DllExport int initialize(char * configfile) {
-    DH = new DeltaresHydro ();
-    if (! DH->ready) {
-        printf ("ABORT: BMI:initialize failed\n");
-        return 1;
-    }
-
-    FLOW2D3D = new Flow2D3D (DH, configfile);
-    return 0;
-}
-
-//------------------------------------------------------------------------------
-// BMI interface, used by DIMR
-DllExport void update (double tStep) {
-    TRISIM_UPDATE (tStep, &FLOW2D3D->gdp);
-}
-
-//------------------------------------------------------------------------------
-// BMI interface, used by DIMR
-DllExport void finalize (void) {
-    TRISIM_FINALIZE (&FLOW2D3D->gdp);
-}
-
-//------------------------------------------------------------------------------
-// BMI interface, used by DIMR
-DllExport void get_start_time (double * tStart) {
-    TRISIM_GET_START_TIME (tStart, &FLOW2D3D->gdp);
-}
-
-//------------------------------------------------------------------------------
-// BMI interface, used by DIMR
-DllExport void get_end_time (double * tEnd) {
-    TRISIM_GET_END_TIME (tEnd, &FLOW2D3D->gdp);
-}
-
-//------------------------------------------------------------------------------
-// BMI interface, used by DIMR
-DllExport void get_time_step (double * tStep) {
-    TRISIM_GET_TIME_STEP (tStep, &FLOW2D3D->gdp);
-}
-
-//------------------------------------------------------------------------------
-// BMI interface, used by DIMR
-DllExport void get_current_time (double * tCur) {
-    TRISIM_GET_CURRENT_TIME (tCur, &FLOW2D3D->gdp);
-}
-
-//------------------------------------------------------------------------------
-// BMI interface, used by DIMR
-DllExport void get_var (const char * key, void * ref) {
-    TRISIM_GET_VAR (key, ref, &FLOW2D3D->gdp);
-}
-
-//------------------------------------------------------------------------------
-// BMI interface, used by DIMR
-DllExport void set_var (const char * key, void * value) {
-    printf ("ABORT: BMI:set_var is not implemented yet\n");
-}
-
-//------------------------------------------------------------------------------
-// D-Hydro interface, used by d-hydro
 DllExport bool
 DeltaresHydroEntry (
     DeltaresHydro * DH
@@ -162,10 +98,20 @@ DeltaresHydroEntry (
         }
     }
 
-//------------------------------------------------------------------------------
-//  Constructors
 
-// This constructor is called from d-hydro
+bool
+FLOW2D3D_MonolithicInit (
+    DeltaresHydro * DH
+    ) {
+
+    return DeltaresHydroEntry (DH);
+    }
+
+
+//------------------------------------------------------------------------------
+//  Constructor
+
+
 Flow2D3D::Flow2D3D (
     DeltaresHydro * DH
     ) : Component (
@@ -174,10 +120,10 @@ Flow2D3D::Flow2D3D (
 
     FLOW2D3D = this;
 
-    if (DH == NULL) {
-        this->flowol = NULL;
-        return;
-    }
+	if (DH == NULL) {
+		this->flowol = NULL;
+		return;
+	}
 
     this->config             = this->DH->start;
     this->dd                 = NULL;
@@ -201,90 +147,10 @@ Flow2D3D::Flow2D3D (
 
     XmlTree * dolconfig = this->DH->config->Lookup ("/deltaresHydro/delftOnline");
     if (dolconfig != NULL && this->DH->slaveArg == NULL ) {
-		if (dolconfig->GetBoolElement ("enabled", true)) {
-            this->DH->log->Write (Log::MAJOR, "Initializing DelftOnline...");
-            this->flowol = new FlowOL (this->DH, dolconfig);
-		    }
-        }
-
-    // Initialize ESM/FSM
-
-    this->esm_flags = ESM_SILENT;
-
-    /*
-    ToDo: Process ESM/FSM XML element
-
-    XmlTree * esmconfig = this->config->Lookup ("EsmFsm");
-    if (esmconfig != NULL) {
-        XmlTree * trace = esmconfig->Lookup ("Trace");
-        if (trace != NULL) {
-            this->esm_flags = ESM_TRACE;
-            }
-        }
-    */
-
-    ESM_Init (this->esm_flags);
-    }
-
-
-
-//------------------------------------------------------------------------------
-// This constructor is called by dimr:
-// - this->config is not defined (because it is defined by d_hydro)
-// - mdf/ddb is recognized based on the file extension
-// - trisim is called with the new flag initOnly=1
-// - trisim returns the (fortran) gdp pointer. It is stored in FLOW2D3D and must/can be used
-//   in all dimr-initiated calls to trisim-routines
-Flow2D3D::Flow2D3D (
-    DeltaresHydro * DH,
-    char          * configfile
-    ) : Component (
-        DH
-        ) {
-
-    FLOW2D3D = this;
-
-    if (DH == NULL) {
-        this->flowol = NULL;
-        return;
-    }
-
-    //this->config             = this->DH->start;
-    this->dd                 = NULL;
-    this->log                = DH->log;
-    this->flowol             = NULL;
-
-    const char *dot = strrchr(configfile, '.');
-    if(!dot || dot == configfile) {
-        throw new Exception (true, "ConfigFile is not recognized as mdf file (extension 'mdf') or ddb file (extension 'ddb')");
-    }
-    const char * ddbFile = NULL;
-    if(strcmp(dot,".mdf") == 0) {
-        this->mdfFile = configfile;
-    }
-    if(strcmp(dot,".ddb") == 0) {
-        this->mdfFile        = NULL;
-        const char * ddbFile = configfile;
-    }
-    this->runid              = NULL;
-
-    if (this->mdfFile == NULL && ddbFile == NULL)
-        throw new Exception (true, "ConfigFile is not recognized as mdf file (extension 'mdf') or ddb file (extension 'ddb')");
-    if (this->mdfFile != NULL && ddbFile != NULL)
-        throw new Exception (true, "Both MDF file nor DD bounds file specified");
-
-    if (ddbFile != NULL)
-        this->dd = new DD (this, this->config);
-
-    // Set up DelftOnline if requested and not in slave mode.
-    // Slaves will do it themselves at the right time.
-    // XmlTree * dolconfig = this->DH->config->Lookup ("/deltaresHydro/delftOnline");
-    XmlTree * dolconfig = NULL;
-    if (dolconfig != NULL && this->DH->slaveArg == NULL ) {
         // ToDo: Check enabled element
         this->DH->log->Write (Log::MAJOR, "Initializing DelftOnline...");
         this->flowol = new FlowOL (this->DH, dolconfig);
-    }
+        }
 
     // Initialize ESM/FSM
 
@@ -303,50 +169,9 @@ Flow2D3D::Flow2D3D (
     */
 
     ESM_Init (this->esm_flags);
-
-    try {
-        if (this->dd == NULL) {
-            this->DH->log->Write (Log::MAJOR, "Flow2D3D running single-domain simulation...");
-
-            // By convention the runid is the part of the MD file name before the extension
-
-            this->runid = strdup (this->mdfFile);
-            char * dot = strrchr (this->runid, '.'); // search last dot
-            if (dot != NULL) *dot = '\0';
-
-            if (this->flowol != NULL) {
-                this->flowol->numSubdomains = 1;
-                this->flowol->RegisterSubdomain (runid);
-                }
-
-            int numsubdomains = 0;
-            int nummappers    = 0;
-            int initOnly      = 1;
-            int fsm_flags     = this->esm_flags;
-
-            int context_id = ESM_Create (0, 0);
-            if (context_id == 0)
-                throw new Exception (true, "Cannot create memory context for Flow2D3D");
-
-            this->DH->log->Write (Log::MAJOR, "Calling TRISIM (Fortran)");
-            TRISIM (&numsubdomains, &nummappers, &context_id, &fsm_flags, runid, &initOnly, &this->gdp, strlen (runid));
-            this->DH->log->Write (Log::MAJOR, "TRISIM returns (Fortran)");
-            //
-            // This constructor is called as part of BMI_initialize
-            // Do not unregister/esm_delete
-            // if (this->flowol != NULL)
-            //     this->flowol->UnregisterSubdomain ();
-            // int result = ESM_Delete(context_id);
-        }
     }
 
-    catch (Exception * ex) {
-        this->DH->log->Write (Log::ALWAYS, "Exception in Flow2D3D::Flow2D3D: %s", ex->message);
-    }
-}
 
-
-//------------------------------------------------------------------------------
 Flow2D3D::~Flow2D3D (
     void
     ) {
@@ -356,17 +181,14 @@ Flow2D3D::~Flow2D3D (
 
     if (this->runid != NULL)
         free (this->runid);
-	
-	if (this->flowol != NULL)
-		delete this->flowol;
 
     this->DH->log->Write (Log::MAJOR, "Flow2D3D instance destroyed");
     }
 
 
-
 //------------------------------------------------------------------------------
-// Called by d-hydro
+
+
 void
 Flow2D3D::Run (
     void
@@ -407,16 +229,15 @@ Flow2D3D::Run (
                 }
 
             int numsubdomains = 0;
-            int nummappers    = 0;
-            int initOnly      = 0;
-            int fsm_flags     = this->esm_flags;
+            int nummappers = 0;
+            int fsm_flags = this->esm_flags;
 
             int context_id = ESM_Create (0, 0);
             if (context_id == 0)
                 throw new Exception (true, "Cannot create memory context for Flow2D3D");
 
             this->DH->log->Write (Log::MAJOR, "Calling TRISIM (Fortran)");
-            TRISIM (&numsubdomains, &nummappers, &context_id, &fsm_flags, runid, &initOnly, &this->gdp, strlen (runid));
+            TRISIM (&numsubdomains, &nummappers, &context_id, &fsm_flags, runid, strlen (runid));
             this->DH->log->Write (Log::MAJOR, "TRISIM returns (Fortran)");
 
             if (this->flowol != NULL)
@@ -429,30 +250,3 @@ Flow2D3D::Run (
         this->DH->log->Write (Log::ALWAYS, "Exception in Flow2D3D::Run: %s", ex->message);
         }
     }
-
-
-#undef FLOW2D3D_MAIN
-
-
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-// Ugly location for the DeltaresHydro constructor to avoid dependency on d_hydro engine
-// Used when initializing via DIMR
-#define D_HYDRO_MAIN
-
-#include "d_hydro.h"
-// #include "d_hydro_version.h"
-
-DeltaresHydro::DeltaresHydro (
-    void
-    ) {
-    this->slaveArg  = NULL;
-    this->done      = false;
-
-    Log::Mask   logMask = Log::ALWAYS;  // selector of debugging/trace information
-                                        // minLog: Log::SILENT  maxLog: Log::TRACE
-    FILE *      logFile = stdout;       // log file descriptor
-    this->clock = new Clock ();
-    this->log = new Log (logFile, this->clock, logMask);
-}

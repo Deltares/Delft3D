@@ -2,7 +2,7 @@ subroutine inised(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
                 & nmmax     ,lsed      ,lsedtot   ,kcs       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine inised(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: inised.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/inised.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Initialisation total sediment at bed in each
@@ -43,7 +43,6 @@ subroutine inised(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
     use bedcomposition_module
     use morphology_data_module, only: allocsedtra, CODE_DELFT3D
     use sediment_basics_module
-    use m_initsedtra, only: initsedtra
     !
     implicit none
     !
@@ -92,9 +91,8 @@ subroutine inised(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
                      & gdp%gdsedpar%sedd50fld,nmlb     ,nmub      )
     endif
     !
-    call allocsedtra(gdp%gderosed, gdp%gdmorpar%moroutput, gdp%d%kmax, lsed, lsedtot, &
-                   & gdp%d%nmlb, gdp%d%nmub, gdp%d%nmlb, gdp%d%nmub, nxx, &
-                   & gdp%gdmorpar%moroutput%nstatqnt, CODE_DELFT3D)
+    call allocsedtra(gdp%gderosed, gdp%d%kmax, lsed, lsedtot, &
+                   & gdp%d%nmlb, gdp%d%nmub, gdp%d%nmlb, gdp%d%nmub, nxx, CODE_DELFT3D)
     !
     ! Initialise morphology layers
     !

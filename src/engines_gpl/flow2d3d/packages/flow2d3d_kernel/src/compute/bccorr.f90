@@ -3,7 +3,7 @@ subroutine bccor(j         ,nmmaxj    ,kmax      ,norow     ,icx       , &
                & qxk       ,thick     ,circ2d    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine bccor(j         ,nmmaxj    ,kmax      ,norow     ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: bccorr.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/bccorr.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Correction for discharge boundaries so that the incoming
@@ -72,7 +72,7 @@ subroutine bccor(j         ,nmmaxj    ,kmax      ,norow     ,icx       , &
     integer                                         , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
     integer                                         , intent(in)  :: nmmaxj !  Description and declaration in dimens.igs
     integer                                         , intent(in)  :: norow  !  Description and declaration in esm_alloc_int.f90
-    integer, dimension(5, norow)                    , intent(in)  :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(7, norow)                    , intent(in)  :: irocol !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in)  :: kcs    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in)  :: kfu    !  Description and declaration in esm_alloc_int.f90
     logical                                         , intent(in)  :: zmodel !  Description and declaration in procs.igs

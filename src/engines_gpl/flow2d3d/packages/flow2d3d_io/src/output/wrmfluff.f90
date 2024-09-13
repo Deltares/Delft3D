@@ -4,7 +4,7 @@ subroutine wrmfluff(lundia    ,error     ,mmax      ,nmaxus    ,lsed      , &
                   & mf        ,ml        ,nf        ,nl        ,iarrc     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine wrmfluff(lundia    ,error     ,mmax      ,nmaxus    ,lsed      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrmfluff.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrmfluff.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Writes the time varying data for the fluff layer
@@ -55,7 +55,6 @@ subroutine wrmfluff(lundia    ,error     ,mmax      ,nmaxus    ,lsed      , &
     real(fp)        , dimension(:,:)     , pointer :: mfluff
     integer                              , pointer :: nmaxgl
     integer                              , pointer :: mmaxgl
-    integer                              , pointer :: io_prec
 !
 ! Global variables
 !
@@ -97,10 +96,9 @@ subroutine wrmfluff(lundia    ,error     ,mmax      ,nmaxus    ,lsed      , &
     if (lsed == 0) return
     !
     call getdatagroup(gdp, FILOUT_MAP, grpnam, group)
-    celidt              => group%celidt
-    mmaxgl              => gdp%gdparall%mmaxgl
-    nmaxgl              => gdp%gdparall%nmaxgl
-    io_prec             => gdp%gdpostpr%io_prec
+    celidt    => group%celidt
+    mmaxgl         => gdp%gdparall%mmaxgl
+    nmaxgl         => gdp%gdparall%nmaxgl
     !
     select case (irequest)
     case (REQUESTTYPE_DEFINE)
@@ -116,7 +114,7 @@ subroutine wrmfluff(lundia    ,error     ,mmax      ,nmaxus    ,lsed      , &
        !
        ! Define elements
        !
-       call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'MFLUFF', ' ', io_prec , 3, longname='Sediment mass in fluff layer (kg/m2)', unit='kg/m2', dimids=(/iddim_n, iddim_m, iddim_lsed/), acl='z')
+       call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'MFLUFF', ' ', IO_REAL4, 3, longname='Sediment mass in fluff layer (kg/m2)', unit='kg/m2', dimids=(/iddim_n, iddim_m, iddim_lsed/), acl='z')
        ierror = 0
     case (REQUESTTYPE_WRITE)
        !

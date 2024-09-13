@@ -4,7 +4,7 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                & nmaxus    ,cfurou    ,cfvrou    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdhyb.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdhyb.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads the following records from the MD-file:
@@ -51,6 +51,8 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
+    real(fp), pointer :: ccofu_stored
+    real(fp), pointer :: ccofv_stored
 !
 ! Global variables
 !
@@ -104,6 +106,8 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
 !
 !! executable statements -------------------------------------------------------
 !
+    ccofu_stored => gdp%gdimbound%ccofu_stored
+    ccofv_stored => gdp%gdimbound%ccofv_stored
     !
     ! initialize local parameters
     !
@@ -118,7 +122,7 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! string with blanks, then roumet = 'C'
     !
     roumet = ' '
-    call prop_get(gdp%mdfile_ptr,'*','Roumet',roumet)
+    call prop_get_string(gdp%mdfile_ptr,'*','Roumet',roumet)
     if (roumet == ' ') then
        roumet = 'C'
        call prterr(lundia, 'U190', 'No bottom roughness formulation specification')
@@ -136,14 +140,14 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! cients in extra input file
     !
     filrgh = ' '
-    call prop_get(gdp%mdfile_ptr, '*', 'Filrgh', filrgh)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Filrgh', filrgh)
     if (filrgh /= ' ') then
        !
        ! spatially varying roughness file specified
        ! locate 'Fmtrgh' record for format definition of input file
        !
        fmtrgh = 'FR'
-       call prop_get(gdp%mdfile_ptr, '*', 'Fmtrgh', fmtrgh)
+       call prop_get_string(gdp%mdfile_ptr, '*', 'Fmtrgh', fmtrgh)
        fmttmp = fmtrgh
        call filfmt(lundia    ,'Fmtrgh'  ,fmttmp    ,lerror    ,gdp       )
        call hybfil(lundia    ,error     ,filrgh    ,fmttmp    ,nmax      , &
@@ -171,7 +175,7 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        ! 'Ccofu': uniform bottom roughness coefficient in x- direction
        !
        chulp = ' '
-       call prop_get(gdp%mdfile_ptr,'*','Ccofu',chulp)
+       call prop_get_string(gdp%mdfile_ptr,'*','Ccofu',chulp)
        if (chulp == ' ') then
           ccofu = rdef
           call prterr(lundia, 'U190', 'No bottom roughness specification')
@@ -192,7 +196,7 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        ! 'Ccofv': uniform bottom roughness coefficient in y- direction
        !
        chulp = ' '
-       call prop_get(gdp%mdfile_ptr,'*','Ccofv',chulp)
+       call prop_get_string(gdp%mdfile_ptr,'*','Ccofv',chulp)
        if (chulp == ' ') then
           ccofv = rdef
           call prterr(lundia, 'U190', 'No bottom roughness specification')
@@ -259,4 +263,7 @@ subroutine rdhyb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     else
        rouwav = '    '
     endif
+    !store ccofu/v
+    ccofu_stored = ccofu
+    ccofv_stored = ccofv
 end subroutine rdhyb

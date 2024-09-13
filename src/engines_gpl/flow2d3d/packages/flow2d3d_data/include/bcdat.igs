@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,14 +24,12 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$$
+!  $Id: bcdat.igs 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/include/bcdat.igs $$
 !-------------------------------------------------------------------------------
 type gd_bcdat
    real(fp)                                :: timtap
    real(fp)                                :: depbnd
-   integer                                 :: global_num_qh_bnd   ! global number of QH boundaries
-   integer                                 :: global_num_qtot_bnd ! global number of total discharge boundaries
    integer                                 :: gntoftoq        ! ntof+ntoq in the original, global numbering, before boundaries are removed due to
                                                               ! parallel computation (and outside this partition)
    integer                                 :: nmskf
@@ -40,6 +38,11 @@ type gd_bcdat
    integer                                 :: mmskl
    integer                                 :: ncomp
    integer                                 :: nsplit
+   logical                                 :: distr_avc       ! flag - if true then BC is based on internally computed concentration profile, but matches the imposed average concentration 
+   logical                                 :: distr_qtq       ! flag - if true then total discharge BC is based on internally computed discharge profile, if false it's based on the water depth
+   logical                                 :: distr_qtq_per   ! flag - if true then total discharge BC is based on internally computed discharge at the correspondend periodical water level boundary, if false it's based on the water depth
+   logical                                 :: distr_bdl_per   ! flag - if true then total bedload   BC is based on internally computed discharge at the correspondend periodical water level boundary, if false it's based on the water depth
+   logical                                 :: distr_qtqNNprism
    integer     , dimension(:)    , pointer :: pindex          ! converts component number in internal database to component number used in hydrbc, hydrbcf and compnames
    integer     , dimension(:)    , pointer :: bct_order       ! stores the original order of the timeseries-boundaries in the bct file
                                                               ! used for parallel

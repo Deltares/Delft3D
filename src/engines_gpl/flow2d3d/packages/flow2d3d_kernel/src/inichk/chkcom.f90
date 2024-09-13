@@ -1,7 +1,7 @@
 subroutine chkcom(lundia    ,error     ,neffil    ,ftype     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine chkcom(lundia    ,error     ,neffil    ,ftype     ,gdp       )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: chkcom.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/chkcom.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Check the comm-file version by reading the element
@@ -98,7 +98,6 @@ subroutine chkcom(lundia    ,error     ,neffil    ,ftype     ,gdp       )
     coding = 'N'
     error = .false.
     errnr = ' '
-    fds   = -1
     refnr = '03.20.00.00'
     celidt = 1
     hlptxt(1) = refnr

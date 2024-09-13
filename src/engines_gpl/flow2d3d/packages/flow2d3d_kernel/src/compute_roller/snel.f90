@@ -4,7 +4,7 @@ subroutine snel(mmax      ,nmax      ,norow     ,noroco    ,ubot      , &
               & ewave0    ,wlen      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine snel(mmax      ,nmax      ,norow     ,noroco    ,ubot      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: snel.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute_roller/snel.f90 $
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -62,7 +62,7 @@ subroutine snel(mmax      ,nmax      ,norow     ,noroco    ,ubot      , &
     integer                                                        , intent(in)  :: nmax
     integer                                                        , intent(in)  :: noroco
     integer                                                        , intent(in)  :: norow
-    integer   , dimension(5, noroco)                               , intent(in)  :: irocol
+    integer   , dimension(7, noroco)                               , intent(in)  :: irocol
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: alfas
     real(prec), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dps
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              :: ewave0
@@ -89,11 +89,10 @@ subroutine snel(mmax      ,nmax      ,norow     ,noroco    ,ubot      , &
     integer                :: nf
     integer                :: nfu
     integer                :: nl
-    integer                :: nh0    ! Number of open boundary points
     integer                :: nwav
     integer                :: nlu
     real(fp)               :: cstdir
-    real(fp)               :: h0     ! Average water depth on open boundary points
+    real(fp)               :: h0
     real(fp)               :: hrms0
     real(fp)               :: hrmsl
     real(fp)               :: hw
@@ -138,10 +137,9 @@ subroutine snel(mmax      ,nmax      ,norow     ,noroco    ,ubot      , &
     tp0    = wavcon(2)
     incdir = wavcon(3)
     !
-    ! h0 is average waterdepth at boundary: first it contains the sum of all waterdepths, then it will be divided by nh0
+    ! h0 is waterdepth at boundary is now programmed ad hoc needs to be modified
     !
-    h0  = 0.0_fp
-    nh0 = 0
+    h0 = real(dps(2,1),fp) + s0(2,1)
     !
     ! orientation of grid is assumed to be constant
     !
@@ -174,10 +172,6 @@ subroutine snel(mmax      ,nmax      ,norow     ,noroco    ,ubot      , &
        ibl = irocol(5,ic)
        mf  = mfu - 1
        mlu = ml  + 1
-       do m = mf, ml
-          nh0 = nh0 + 1
-          h0  = h0 + max(0.1_fp , real(dps(n,m),fp) + s0(n,m))
-       enddo
        !
        ! Left side of row
        !
@@ -202,10 +196,6 @@ subroutine snel(mmax      ,nmax      ,norow     ,noroco    ,ubot      , &
        ibl = irocol(5,ic)
        nf  = nfu - 1
        nlu = nl + 1
-       do n = nf, nl
-          nh0 = nh0 + 1
-          h0  = h0 + max(0.1_fp , real(dps(n,m),fp) + s0(n,m))
-       enddo
        !
        ! Lower side of column
        !
@@ -219,12 +209,6 @@ subroutine snel(mmax      ,nmax      ,norow     ,noroco    ,ubot      , &
           ewave0(nlu, m) = rhow * ag * hrms0 * hrms0 / 8.0_fp
        endif
     enddo
-    !
-    ! Divide the sum of all waterdepths by nh0.
-    ! nh0 might be zero (no open boundaries)
-    ! The resulting h0 must be 0.1 or bigger
-    !
-    h0 = max(0.1_fp, h0 / real(max(1,nh0),fp) )
     !
     ! Compute the orbital velocity and wave length.
     !

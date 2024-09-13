@@ -2,10 +2,10 @@
                 & icy       ,kcs       ,kfu       ,kfv       ,kfs       , &
                 & u0        ,v         ,vicuv     ,vnu2d     ,guu       , &
                 & gvv       ,gvu       ,ddk       ,rxx       ,rxy       , &
-                & gdp       )
+                & gdp       ,kWDu      ,kWDv)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,8 +29,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: vihrov.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/vihrov.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function:
@@ -58,6 +58,7 @@
     integer                , pointer :: iro
     integer                , pointer :: irov
     real(fp)               , pointer :: hdt
+    logical, pointer :: HORIZviscZERO
 !
 ! Global variables
 !
@@ -77,6 +78,8 @@
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)   , intent(in)  :: kfs    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)   , intent(in)  :: kfu    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)   , intent(in)  :: kfv    !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(gdp%d%nmlb:gdp%d%nmub,4) , intent(in)  :: kWDu
+    integer, dimension(gdp%d%nmlb:gdp%d%nmub,4) , intent(in)  :: kWDv
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: guu    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: gvu    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: gvv    !  Description and declaration in esm_alloc_real.f90
@@ -108,6 +111,7 @@
 !
 !! executable statements -------------------------------------------------------
 !
+    HORIZviscZERO => gdp%gdimbound%HORIZviscZERO
     z0       => gdp%gdphysco%z0
     z0v      => gdp%gdphysco%z0v
     vonkar   => gdp%gdphysco%vonkar
@@ -137,7 +141,7 @@
              nmd = nm - icx
              ndm = nm - icy
              numu = nm + icx + icy
-             ki = kfu(num) + 2*kfv(nmu) + 4*kfu(nm) + 8*kfv(nm)
+             ki = kfu(num)*kWDu(num,3) + 2*kfv(nmu)*kWDv(nmu,3) + 4*kfu(nm)*kWDu(nm,4) + 8*kfv(nm)*kWDv(nm,4)
              !
              ! rxy no walls
              !
@@ -147,6 +151,7 @@
                 do k = 1, kmax
                    vi = 0.25*(vicuv(nm, k) + vicuv(nmu, k) + vicuv(num, k)      &
                       & + vicuv(numu, k)) + vnu2d(nm)
+                   if (HORIZviscZERO) vi = 0._fp
                    rxy(nm, k) = vi*((u0(num, k) - u0(nm, k))/dy + (v(nmu, k) - v&
                               & (nm, k))/dx)
                 enddo
@@ -184,7 +189,7 @@
              nmd = nm - icx
              ndm = nm - icy
              numu = nm + icx + icy
-             ki = kfu(num) + 2*kfv(nmu) + 4*kfu(nm) + 8*kfv(nm)
+             ki = kfu(num)*kWDu(num,3) + 2*kfv(nmu)*kWDv(nmu,3) + 4*kfu(nm)*kWDu(nm,4) + 8*kfv(nm)*kWDv(nm,4)
              !
              ! rxy no walls
              !
@@ -194,6 +199,7 @@
                 do k = 1, kmax
                    vi = 0.25*(vicuv(nm, k) + vicuv(nmu, k) + vicuv(num, k)      &
                       & + vicuv(numu, k)) + vnu2d(nm)
+                   if (HORIZviscZERO) vi = 0._fp
                    rxy(nm, k) = vi*((u0(num, k) - u0(nm, k))/dy + (v(nmu, k) - v&
                               & (nm, k))/dx)
                 enddo
@@ -205,6 +211,7 @@
                 do k = 1, kmax
                    vi = 0.5*(vicuv(nm, k) + vicuv(nmu, k))                      &
                       & + 0.5*(vnu2d(nm) + vnu2d(ndm))
+                   if (HORIZviscZERO) vi = 0._fp
                    rxy(nm, k) = vi*( - u0(nm, k))/dy/2
                 enddo
              elseif (ki==9 .or. ki==3 .or. ki==1) then
@@ -215,6 +222,7 @@
                 do k = 1, kmax
                    vi = 0.5*(vicuv(num, k) + vicuv(numu, k))                    &
                       & + 0.5*(vnu2d(nm) + vnu2d(num))
+                   if (HORIZviscZERO) vi = 0._fp
                    rxy(nm, k) = vi*(u0(num, k))/dy/2
                 enddo
              else
@@ -235,7 +243,7 @@
              nmd = nm - icx
              ndm = nm - icy
              numu = nm + icx + icy
-             ki = kfu(num) + 2*kfv(nmu) + 4*kfu(nm) + 8*kfv(nm)
+             ki = kfu(num)*kWDu(num,3) + 2*kfv(nmu)*kWDv(nmu,3) + 4*kfu(nm)*kWDu(nm,4) + 8*kfv(nm)*kWDv(nm,4)
              !
              ! rxy no walls
              !
@@ -245,6 +253,7 @@
                 do k = 1, kmax
                    vi = 0.25*(vicuv(nm, k) + vicuv(nmu, k) + vicuv(num, k)      &
                       & + vicuv(numu, k)) + vnu2d(nm)
+                   if (HORIZviscZERO) vi = 0._fp
                    rxy(nm, k) = vi*((u0(num, k) - u0(nm, k))/dy + (v(nmu, k) - v&
                               & (nm, k))/dx)
                 enddo
@@ -269,6 +278,7 @@
           do k = 1, kmax
              vi = vicuv(nm, k) + 0.25*(vnu2d(nm) + vnu2d(nmd) + vnu2d(ndm)      &
                 & + vnu2d(ndmd))
+             if (HORIZviscZERO) vi = 0._fp
              rxx(nm, k) = 2*vi*(u0(nm, k) - u0(nmd, k))/dx
           enddo
        endif

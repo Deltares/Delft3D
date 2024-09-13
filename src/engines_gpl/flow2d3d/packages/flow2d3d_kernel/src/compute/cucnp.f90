@@ -14,10 +14,13 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                & r0        ,diapl     ,rnpl      ,taubpu    ,taubsu    , &
                & windsu    ,patm      ,fcorio    ,ubrlsu    ,uwtypu    , &
                & hkru      ,pship     ,tgfsep    ,dteu      ,ua        , &
-               & ub        ,ustokes   ,mom_output,u1        ,s1        ,gdp       )
+               & ub        ,ustokes   ,mom_output,u1        ,s1        , &
+               & nst       ,GHOSTu1   ,GHOSTv1   , &
+               & kWDu      ,kWDv      ,xcor      ,ycor      , &
+               & aguu      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -41,8 +44,8 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: cucnp.f90 6388 2016-08-01 01:05:36Z canestrelli.x $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/cucnp.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! The coefficient for the momentum equations are computed and the stored in the
@@ -89,44 +92,47 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    real(fp)                     , pointer :: gammax
-    real(fp)                     , pointer :: hdt
-    real(fp)                     , pointer :: dryflc
-    integer                      , pointer :: ibaroc
-    logical                      , pointer :: cstbnd
-    logical                      , pointer :: old_corio
-    character(8)                 , pointer :: dpsopt
-    character(6)                 , pointer :: momsol
-    logical                      , pointer :: slplim
-    real(fp)                     , pointer :: rhow
-    real(fp)                     , pointer :: rhofrac
-    real(fp)                     , pointer :: ag
-    real(fp)                     , pointer :: vicmol
-    integer                      , pointer :: iro
-    integer                      , pointer :: irov
-    logical                      , pointer :: wind
-    logical                      , pointer :: wave
-    logical                      , pointer :: roller
-    logical                      , pointer :: xbeach
-    logical                      , pointer :: veg3d
-    real(fp), dimension(:,:)     , pointer :: mom_m_velchange     ! momentum du/dt term
-    real(fp), dimension(:,:)     , pointer :: mom_m_densforce     ! density force term in u dir
-    real(fp), dimension(:,:)     , pointer :: mom_m_flowresist    ! vegetation and porous plates in u dir
-    real(fp), dimension(:,:)     , pointer :: mom_m_corioforce    ! coriolis term in u dir
-    real(fp), dimension(:,:)     , pointer :: mom_m_visco         ! viscosity term in u dir
-    real(fp), dimension(:)       , pointer :: mom_m_pressure      ! pressure term in u dir
-    real(fp), dimension(:)       , pointer :: mom_m_tidegforce    ! tide generating forces in u dir
-    real(fp), dimension(:)       , pointer :: mom_m_windforce     ! wind shear in u dir
-    real(fp), dimension(:)       , pointer :: mom_m_bedforce      ! bed shear in u dir
-    real(fp), dimension(:,:)     , pointer :: mom_m_waveforce     ! wave forces in u dir
-    integer                      , pointer :: no_dis
-	logical                      , pointer :: nf_src_mom
-    real(fp), dimension(:,:,:)   , pointer :: nf_src_momu
-    real(fp), dimension(:,:,:)   , pointer :: nf_src_momv
-    real(fp)                     , pointer :: momrelax
+    real(fp)                          , pointer :: gammax
+    real(fp)                          , pointer :: hdt
+    real(fp)                          , pointer :: dryflc
+    integer                           , pointer :: ibaroc
+    logical                           , pointer :: cstbnd
+    logical                           , pointer :: old_corio
+    character(8)                      , pointer :: dpsopt
+    character(6)                      , pointer :: momsol
+    logical                           , pointer :: slplim
+    real(fp)                          , pointer :: rhow
+    real(fp)                          , pointer :: rhofrac
+    real(fp)                          , pointer :: ag
+    real(fp)                          , pointer :: vicmol
+    integer                           , pointer :: iro
+    integer                           , pointer :: irov
+    logical                           , pointer :: wind
+    logical                           , pointer :: wave
+    logical                           , pointer :: roller
+    logical                           , pointer :: xbeach
+    logical                           , pointer :: veg3d
+    real(fp), dimension(:,:)          , pointer :: mom_m_velchange     ! momentum du/dt term
+    real(fp), dimension(:,:)          , pointer :: mom_m_densforce     ! density force term in u dir
+    real(fp), dimension(:,:)          , pointer :: mom_m_flowresist    ! vegetation and porous plates in u dir
+    real(fp), dimension(:,:)          , pointer :: mom_m_corioforce    ! coriolis term in u dir
+    real(fp), dimension(:,:)          , pointer :: mom_m_visco         ! viscosity term in u dir
+    real(fp), dimension(:)            , pointer :: mom_m_pressure      ! pressure term in u dir
+    real(fp), dimension(:)            , pointer :: mom_m_tidegforce    ! tide generating forces in u dir
+    real(fp), dimension(:)            , pointer :: mom_m_windforce     ! wind shear in u dir
+    real(fp), dimension(:)            , pointer :: mom_m_bedforce      ! bed shear in u dir
+    real(fp), dimension(:,:)          , pointer :: mom_m_waveforce     ! wave forces in u dir
+    integer                           , pointer :: cutcell
+    logical                           , pointer :: EXCLouterVEL
+    logical                           , pointer :: originalMOMENTUM
+    real(fp), dimension(:)            , pointer :: sourceU
+    integer                           , pointer :: removeW1qzk
+    real(fp), dimension(:)            , pointer :: frict_sud
+    logical                           , pointer :: vvvSECord
 !
 ! Global variables
 !
+    integer                                           , intent(in)  :: nst
     integer                                           , intent(in)  :: icreep  !  Description and declaration in tricom.igs
     integer                                                         :: icx     !  Increment in the X-dir., if 
                                                                                !  icx= nmax: computation proceeds in the X-dir
@@ -141,6 +147,8 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     integer                                                         :: nmmaxj  !  Description and declaration in dimens.igs
     integer                                           , intent(in)  :: nsrc    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(7, nsrc)                       , intent(in)  :: mnksrc  !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: GHOSTu1  
+    integer, dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: GHOSTv1 
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)                       :: kcs     !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)                       :: kcu     !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)                       :: kfs     !  Description and declaration in esm_alloc_int.f90
@@ -149,14 +157,19 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     integer, dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)               :: kspu    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub, kmax)   , intent(in)  :: kadu    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub, kmax)   , intent(in)  :: kadv    !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(gdp%d%nmlb:gdp%d%nmub,4)       , intent(in)  :: kWDu
+    integer, dimension(gdp%d%nmlb:gdp%d%nmub,4)       , intent(in)  :: kWDv
     real(fp)                                                        :: betac   !  Description and declaration in tricom.igs
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: deltau  !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: dfu     !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)                    :: dps     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: dpu     !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: aguu    
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: dteu    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: fcorio  !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: fxw     !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: xcor    !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: ycor      !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: gsqiu   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: gsqs    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: gud     !  Description and declaration in esm_alloc_real.f90
@@ -230,7 +243,6 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     integer                    :: iadc
     integer                    :: icxy    ! MAX value of ICX and ICY
     integer                    :: isrc
-    integer                    :: idis
     integer                    :: k
     integer                    :: kdo
     integer                    :: kfw
@@ -238,6 +250,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     integer                    :: kup
     integer                    :: kspu0k
     integer                    :: maskval
+    integer                    :: maskvalf
     integer                    :: nbaroc  ! No barocline pressure on open boundary points if IBAROC = 0
     integer                    :: ndm
     integer                    :: ndmd
@@ -275,7 +288,6 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)                   :: fxwl     ! local, modified fxw
     real(fp)                   :: gksi
     real(fp)                   :: h0i
-    real(fp)                   :: h0fac
     real(fp)                   :: hl
     real(fp)                   :: hr
     real(fp)                   :: hugsqs  ! HU(NM/NMD) * GSQS(NM) Depending on UMDIS the HU of point NM or NMD will be used
@@ -284,13 +296,10 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp),external          :: redvic
     real(fp)                   :: rn
     real(fp)                   :: rhou
-    real(fp)                   :: svvv
-    real(fp)                   :: s_crit
+    integer                    :: svvv
     real(fp)                   :: tidegforce
-    real(fp)                   :: trelaxi
     real(fp)                   :: tsg1
     real(fp)                   :: tsg2
-    real(fp)                   :: twothird
     real(fp)                   :: umod
     real(fp)                   :: uuu
     real(fp)                   :: uweir
@@ -303,34 +312,38 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)                   :: wsul     ! local, modified wsu
     real(fp)                   :: wsumax
     real(fp)                   :: www
+    real(fp),allocatable       :: advecx(:,:)
+    real(fp),allocatable       :: advecy(:,:)
 !
 !! executable statements -------------------------------------------------------
 !
-    gammax     => gdp%gdnumeco%gammax
-    hdt        => gdp%gdnumeco%hdt
-    dryflc     => gdp%gdnumeco%dryflc
-    ibaroc     => gdp%gdnumeco%ibaroc
-    cstbnd     => gdp%gdnumeco%cstbnd
-    old_corio  => gdp%gdnumeco%old_corio
-    dpsopt     => gdp%gdnumeco%dpsopt
-    momsol     => gdp%gdnumeco%momsol
-    slplim     => gdp%gdnumeco%slplim
-    rhow       => gdp%gdphysco%rhow
-    rhofrac    => gdp%gdphysco%rhofrac
-    ag         => gdp%gdphysco%ag
-    vicmol     => gdp%gdphysco%vicmol
-    iro        => gdp%gdphysco%iro
-    irov       => gdp%gdphysco%irov
-    wind       => gdp%gdprocs%wind
-    wave       => gdp%gdprocs%wave
-    roller     => gdp%gdprocs%roller
-    xbeach     => gdp%gdprocs%xbeach
-    veg3d      => gdp%gdprocs%veg3d
-    no_dis         => gdp%gdnfl%no_dis
-    nf_src_mom     => gdp%gdnfl%nf_src_mom
-    nf_src_momu    => gdp%gdnfl%nf_src_momu
-    nf_src_momv    => gdp%gdnfl%nf_src_momv
-    momrelax       => gdp%gdnfl%momrelax
+    cutcell          => gdp%gdimbound%cutcell
+    EXCLouterVEL     => gdp%gdimbound%EXCLouterVEL
+    originalMOMENTUM => gdp%gdimbound%originalMOMENTUM
+    sourceU          => gdp%gdimbound%sourceU
+    removeW1qzk      => gdp%gdimbound%removeW1qzk
+    frict_sud        => gdp%gdimbound%frict_sud
+    vvvSECord        => gdp%gdimbound%vvvSECord
+    gammax           => gdp%gdnumeco%gammax
+    hdt              => gdp%gdnumeco%hdt
+    dryflc           => gdp%gdnumeco%dryflc
+    ibaroc           => gdp%gdnumeco%ibaroc
+    cstbnd           => gdp%gdnumeco%cstbnd
+    old_corio        => gdp%gdnumeco%old_corio
+    dpsopt           => gdp%gdnumeco%dpsopt
+    momsol           => gdp%gdnumeco%momsol
+    slplim           => gdp%gdnumeco%slplim
+    rhow             => gdp%gdphysco%rhow
+    rhofrac          => gdp%gdphysco%rhofrac
+    ag               => gdp%gdphysco%ag
+    vicmol           => gdp%gdphysco%vicmol
+    iro              => gdp%gdphysco%iro
+    irov             => gdp%gdphysco%irov
+    wind             => gdp%gdprocs%wind
+    wave             => gdp%gdprocs%wave
+    roller           => gdp%gdprocs%roller
+    xbeach           => gdp%gdprocs%xbeach
+    veg3d            => gdp%gdprocs%veg3d
     !
     ! INITIALISATION
     !
@@ -369,7 +382,6 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     !
     facmax       = 0.25*sqrt(ag)*rhow*gammax**2
     drythreshold = 0.1_fp * dryflc
-    twothird = 2.0_fp / 3.0_fp
     !
     if (icx==1) then
        ff = -1.0
@@ -403,7 +415,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                 if (abs(kspu(nm, 0))==9) then
                     uuu = qxk(nm, k)/(guu(nm)*hu(nm))
                 else
-                    uuu = u0(nm, k)
+                    uuu = u0(nm, k) 
                 endif
                 if (mom_output) then
                     mom_m_velchange(nm, k) = mom_m_velchange(nm, k) &
@@ -420,7 +432,17 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     call timer_stop(timer_cucnp_ini, gdp)
     !
     call timer_start(timer_cucnp_momsol, gdp)
+    allocate(advecx(gdp%d%nmlb:gdp%d%nmub,kmax),advecy(gdp%d%nmlb:gdp%d%nmub,kmax))
     if (momsol == 'cyclic' .or. momsol == 'waqua ') then
+       if (originalMOMENTUM) then
+          call mom_cw_orig &
+               &(icx       ,icy       ,nmmax     ,kmax      ,kcu       ,kcs       , &
+               & kfu       ,kfv       ,kspu      ,kadu      ,kadv      ,            &
+               & dps       ,s0        ,u0        ,v1        ,qxk       ,qyk       , &
+               & hu        ,guu       ,gvv       ,gvd       ,gvu       ,gsqiu     , &
+               & umean     ,bbk       ,ddk       ,dummy     ,dummy     ,dummy     , &
+               & dummy     ,dummy     ,dummy     ,dummy     ,dummy     ,gdp) ! TODO: add mom_output
+       else
        call mom_cw &
             &(icx       ,icy       ,nmmax     ,kmax      ,kcu       ,kcs       , &
             & kfu       ,kfv       ,kspu      ,kadu      ,kadv      ,            &
@@ -428,7 +450,10 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
             & hu        ,guu       ,gvv       ,gvd       ,gvu       ,gsqiu     , &
             & umean     ,bbk       ,ddk       ,dummy     ,dummy     ,dummy     , &
             & dummy     ,dummy     ,dummy     ,dummy     ,dummy     ,mom_output, &
-            & u1        ,gdp)
+               & u1     ,kWDu      ,kWDv      ,GHOSTu1   , &
+               & GHOSTv1   ,aguu      ,advecx    ,advecy    ,nst       ,irov      , &
+               & xcor      ,ycor      ,gdp)
+       endif
     elseif (momsol == 'flood ') then
         call mom_fls &
              &(icx       ,icy       ,nmmax     ,kmax      ,kcu       ,kcs       , &
@@ -439,6 +464,8 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
              & dummy     ,dummy     ,dummy     ,ua        ,ub        ,thick     , &
              & mom_output,gdp)
     endif
+    !extrapolate advective terms in small cut (should be done only for free slip)
+    deallocate(advecx,advecy)
     call timer_stop(timer_cucnp_momsol, gdp)
     call timer_start(timer_cucnp_rhs, gdp)
     do k = 1, kmax
@@ -465,13 +492,13 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
              gksi = gvu(nm)
              svvv = max(kfv(ndm) + kfv(ndmu) + kfv(nm) + kfv(nmu), 1)
              hl  = real(dps(nm),fp) + s0(nm)
-             hr  = real(dps(nmu),fp) + s0(nmu)
+             hr  = real(dps(nmu),fp) + s0(nmu)         
              if (       (cstbnd .and. (kcs(nm)==2 .or. kcs(nmu)==2) ) &
-                 & .or. (kcs(nm)==3 .or. kcs(nmu)==3                )  ) then
-                vvv  = (  v1(ndm, k)*kfv(ndm) + v1(ndmu, k)*kfv(ndmu) &
-                     &  + v1(nm , k)*kfv(nm ) + v1(nmu , k)*kfv(nmu )  ) / svvv
+                    & .or. (kcs(nm)==3 .or. kcs(nmu)==3                ) .or.EXCLouterVEL ) then
+                   vvv = (v1(ndm, k)*kfv(ndm)+ v1(ndmu, k)*kfv(ndmu) + v1(nm, k)  &
+                       & *kfv(nm) + v1(nmu, k)*kfv(nmu))/svvv
              else
-                vvv = 0.25_fp * (v1(ndm,k)+v1(ndmu,k)+v1(nm,k)+v1(nmu,k))
+                vvv = 0.25_fp*(v1(ndm, k) + v1(ndmu, k) + v1(nm, k) + v1(nmu, k))
              endif
              if (old_corio) then
                 vvvc = vvv
@@ -486,7 +513,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                 &          + v1(ndmu,k)*hv(ndmu)*kfv(ndmu))/max(drythreshold,hr)) &
                 &      / svvv
              endif
-             uuu  = u0(nm, k)
+             uuu  = u0(nm, k) 
              umod = sqrt(uuu*uuu + vvv*vvv)
              !
              rhou = .5*(rho(nm, k) + rho(nmu, k))
@@ -497,7 +524,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
              if (kcs(nm)*kcs(nmu)==2) nbaroc = ibaroc
              !
              ! SUBSTITUTION IN COEFFICIENTS,  including in DDK
-             !    CORIOLIS, GRAVITY AND BAROCLINIC PRESSURE TERM and TIDE GENERATING FORCES
+             !    CORIOLIS, GRAVITY PRESSURE TERM and TIDE GENERATING FORCES
              !     remember this is not a closed gate layer
              !     KSPU(NM,0)*KSPU(NM,K)<>4, so initialisation
              !     test like in loop 100 of UZD is not necessary
@@ -508,28 +535,23 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
              densforce  = - ag*(1. - icreep)/(gksi*rhow)*nbaroc*(sig(k)*rhou*(hr - hl) + (sumrho(nmu, k)*hr - sumrho(nm, k)*hl))
              !
              ! limit pressure term in case of drying/flooding on steep slopes
-             ! note barotropic correction is explicit whereas actual pressure term is implicit here (see wlpres)
-             ! explicit baroclinic pressure is set to zero in case of (supercritical) flow off the steep slope
+             ! note correction explicit whereas actual pressure term is implicit here (see wlpres)
              !
              if (slplim) then
                 dpsmax = max(-dps(nm),-dps(nmu))
                 if (s0(nm) < dpsmax) then
-                   s_crit     = twothird * max(0.0_fp, s0(nmu)-dpsmax) + dpsmax
-                   pressure   = - ag*rhofrac*(s0(nm) - s_crit)/gksi
-                   densforce  = 0.0_fp
+                   pressure = - ag*rhofrac*(s0(nm) - dpsmax)/gksi
                 elseif (s0(nmu) < dpsmax) then
-                   s_crit     = twothird * max(0.0_fp, s0(nm)-dpsmax) + dpsmax
-                   pressure   = - ag*rhofrac*(s_crit - s0(nmu))/gksi
-                   densforce  = 0.0_fp
+                   pressure = - ag*rhofrac*(dpsmax - s0(nmu))/gksi
                 else
-                   pressure   = 0.0_fp
+                   pressure = 0.0_fp
                 endif
              else
-                pressure   = 0.0_fp
+                pressure = 0.0_fp
              endif
              pressure   = pressure                                              &
                         & - (patm(nmu) - patm(nm))/(gksi*rhow)               &
-                        & - (pship(nmu) - pship(nm))/(gksi*rhow)
+                        & - (pship(nmu) - pship(nm))/(gksi*rhow)             
              tidegforce = ag*(tgfsep(nmu) - tgfsep(nm))/gksi
              !
              if (mom_output) then
@@ -569,14 +591,12 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     call timer_stop(timer_cucnp_eloss, gdp)
     !
     ndm = -icy
-    nmu =  icx
     kdo = max(1, kmax - 1)
     kup = min(kmax, 2)
     !
     call timer_start(timer_cucnp_stress, gdp)
     do nm = 1, nmmax
        ndm = ndm + 1
-       nmu = nmu  + 1
        if (kfu(nm)==1) then
           h0i = 1./hu(nm)
           !
@@ -589,7 +609,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
           ! weir. 
           ! Gates are excluded
           !
-          if (dpsopt == 'DP' .or. slplim) then
+          if (dpsopt == 'DP  ' .or. slplim) then
              if (kfu(nm) == 1 .and. abs(u0(nm,kmax)) <= 1.0e-15 .and. kspu(nm, 0) /= 4 .and. kspu(nm, 0) /= 10) then
                 !
                 ! cfurou(nm,1) contains u/u*
@@ -601,17 +621,8 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
           !
           ! WIND FRICTION AND BOTTOM STRESS DUE TO FLOW AND WAVES
           !
-          ! Apply factor h0fac to reduce wind force from cells with small depth
-          ! Note that the direction of windsu is opposite to what is expected
-          ! This is due to the change in sign in windtogridc.f90
-          !
-          h0fac = 1.0_fp
-          if (windsu(nm) < 0.0_fp .and.  s0(nm)+real(dps(nm),fp) < 2.0_fp*dryflc) then
-             h0fac = (s0(nm)+real(dps(nm),fp)) / (2.0_fp*dryflc)
-          elseif (windsu(nm) > 0.0_fp .and.  s0(nmu)+real(dps(nmu),fp) < 2.0_fp*dryflc) then
-             h0fac = (s0(nmu)+real(dps(nmu),fp)) / (2.0_fp*dryflc)
-          endif
-          qwind  = h0fac*h0i*windsu(nm)/thick(1)
+
+          qwind  = h0i*windsu(nm)/thick(1)
           if (mom_output) then
              mom_m_windforce(nm)     = mom_m_windforce(nm) - qwind/rhow
           else
@@ -711,38 +722,6 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
           endif
        endif
     enddo
-    if (nf_src_mom) then
-       !
-       ! DISCHARGE ADDITION OF MOMENTUM FROM NEARFIELD
-       !
-       ! Instead of weighting the nearfield momentum with the volume added via the nearfield source,
-       ! it is chosen to use a trelax, based on the time step.
-       ! This should force the cell velocity to get the a value "growing" fast to the nearfield momentum value.
-       !
-       ! Only change ddk/bbk when the momentum source in the present direction is non-negative
-       ! Inverse of the relaxation time:
-       !
-       trelaxi = 1.0 / (momrelax*2.0*hdt)
-       do nm = 1, nmmax
-          if (kfu(nm) == 1) then
-             do k = 1, kmax
-                do idis = 1, no_dis
-                   if (icx == 1) then
-                      if (comparereal(nf_src_momv(nm,k,idis), 0.0_fp) /= 0) then
-                         ddk(nm,k) = ddk(nm,k) + nf_src_momv(nm,k,idis)*trelaxi
-                         bbk(nm,k) = bbk(nm,k) + trelaxi
-                      endif
-                   else
-                      if (comparereal(nf_src_momu(nm,k,idis), 0.0_fp) /= 0) then
-                         ddk(nm,k) = ddk(nm,k) + nf_src_momu(nm,k,idis)*trelaxi
-                         bbk(nm,k) = bbk(nm,k) + trelaxi
-                      endif
-                   endif
-                enddo
-             enddo
-          endif
-       enddo
-    endif
     call timer_stop(timer_cucnp_dismmt, gdp)
     !
     ! VERTICAL ADVECTION AND VISCOSITY, IMPLICIT
@@ -769,6 +748,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
              ndm = ndm + 1
              nmu = nmu + 1
              if (kfu(nm)==1) then
+                maskval = min(kcs(nm), 2)*min(kcs(nmu), 2)
                 !
                 ! Free slip between open and closed layers of a gate
                 !
@@ -842,9 +822,10 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                 !
                 ! advection in vertical direction; w*du/dz
                 !
-                maskval = min(kcs(nm), 2)*min(kcs(nmu), 2)
+                !maskvalf = min(kfs(nm), 1)*min(kfs(nmu), 1) !for cut cells !not needed! if velocity is active  kfs=1 at both sides
                 www = .25*abs(maskval)*(w1(nm, k - 1) + w1(nm, k) + w1(nmu, k - 1)   &
-                    & + w1(nmu, k))
+                    & + w1(nmu, k)) !*maskvalf
+             !   if (removeW1qzk==2)  www = 0._fp
                 if (www<0.0) then
                    adza = 2.0*www*h0i*tsg2/(tsg1*(tsg1 + tsg2))*(1 - abs(kfw))  &
                         & + kfw*(1 + kfw)*www*h0i/tsg1
@@ -889,7 +870,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                  & icy       ,kcs       ,kfu       ,kfv       ,kfs       , &
                  & u0        ,v1        ,vicuv     ,vnu2d     ,guu       , &
                  & gvv       ,gvu       ,ddk       ,rxx       ,rxy       , &
-                 & gdp       )
+                 & gdp       ,kWDu      ,kWDv)
     endif
     call timer_stop(timer_cucnp_vih, gdp)
     if (kmax>1) then

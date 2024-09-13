@@ -7,12 +7,12 @@ subroutine wrcomi(comfil    ,lundia    ,error     ,zmodel    ,mmax      , &
                 & gvv       ,guv       ,gvu       ,gsqs      ,gsqd      , &
                 & alfas     ,thick     ,zk        ,namsrc    ,mnksrc    , &
                 & xyzsrc    ,irocol    ,mnbnd     ,nob       ,kcu       , &
-                & kcv       ,kcs       ,dpd       ,dps       ,cfurou    , &
+                & kcv       ,kcs       ,dp        ,dps       ,cfurou    , &
                 & cfvrou    ,ibuff     ,rbuff     ,rbuffz    ,sferic    , &
                 & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -36,8 +36,8 @@ subroutine wrcomi(comfil    ,lundia    ,error     ,zmodel    ,mmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrcomi.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrcomi.f90 $
 !!--description-----------------------------------------------------------------
 !
 !
@@ -75,7 +75,7 @@ subroutine wrcomi(comfil    ,lundia    ,error     ,zmodel    ,mmax      , &
     integer                                                             :: nsrc   !  Description and declaration in esm_alloc_int.f90
     integer                                                             :: nto    !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(7, nto)                                       :: mnbnd  !  Description and declaration in esm_alloc_int.f90
-    integer   , dimension(5, noroco)                                    :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(7, noroco)                                    :: irocol !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(7, nsrc)                                      :: mnksrc !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(8, nrob)                                      :: nob    !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: kcs    !  Description and declaration in esm_alloc_int.f90
@@ -91,7 +91,7 @@ subroutine wrcomi(comfil    ,lundia    ,error     ,zmodel    ,mmax      , &
     real(fp)                                                            :: zbot   !  Description and declaration in zmodel.igs
     real(fp)  , dimension(3, nsrc)                                      :: xyzsrc !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: alfas  !  Description and declaration in esm_alloc_real.f90
-    real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: dpd    !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: dp     !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: dps    !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: gsqd   !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)     :: gsqs   !  Description and declaration in esm_alloc_real.f90
@@ -158,7 +158,7 @@ subroutine wrcomi(comfil    ,lundia    ,error     ,zmodel    ,mmax      , &
     ! Write group INITBOT
     !
     call wribot(comfil    ,lundia    ,error     ,mmax      ,nmax      , &
-              & nmaxus    ,dpd       ,dps       ,rbuff     ,gdp       )
+              & nmaxus    ,dp        ,dps       ,rbuff     ,gdp       )
     if (error) goto 9999
     !
     ! Write group ROUGHNESS

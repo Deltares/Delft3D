@@ -1,7 +1,7 @@
 module mod_trisim
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ module mod_trisim
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: trisim_mod.F90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/manager/src/trisim_mod.F90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Main routine for the 2d / 3d program
@@ -92,6 +92,11 @@ integer function trisim_init(numdom, nummap, context_id, fsm_flags, runid_arg, o
     integer                             :: i
     integer                             :: ic           ! Length of character parameter CASE 
     integer                             :: icheck
+    integer        , pointer            :: initia
+    integer        , pointer            :: initi        ! Control parameter 
+                                                        ! = 1 initialization
+                                                        ! = 2 initialization and read restart information from the communication file
+                                                        ! = 3 no initialization 
     integer        , pointer            :: it01         ! Reference date in yymmdd 
     integer        , pointer            :: it02         ! Reference time in hhmmss 
     integer        , pointer            :: itima        ! Time to start simulation (N * tscale) according to DELFT3D conventions 
@@ -156,6 +161,8 @@ integer function trisim_init(numdom, nummap, context_id, fsm_flags, runid_arg, o
     nummappers   => gdp%gdprognm%nummappers
     prognm       => gdp%gdprognm%prognm
     rtcmod       => gdp%gdrtc%rtcmod
+    initia       => gdp%gdtricom%initia
+    initi        => gdp%gdtricom%initi 
     it01         => gdp%gdtricom%it01
     it02         => gdp%gdtricom%it02
     itima        => gdp%gdtricom%itima
@@ -199,7 +206,8 @@ integer function trisim_init(numdom, nummap, context_id, fsm_flags, runid_arg, o
        filid = 'runid'
        inquire (file = filid, exist = ex)
        if (ex) then
-          open (newunit=lunid, file = filid, form = 'formatted', status = 'old')
+          lunid = newlun(gdp)
+          open (lunid, file = filid, form = 'formatted', status = 'old')
           read (lunid, '(a)') runid
           close (lunid)
        else
@@ -267,6 +275,8 @@ integer function trisim_init(numdom, nummap, context_id, fsm_flags, runid_arg, o
     !
     ! Initialize time frame parameters for stand alone program
     !
+    initi  = 1
+    !
     it01   = 0
     it02   = 0
     !
@@ -292,6 +302,11 @@ integer function trisim_init(numdom, nummap, context_id, fsm_flags, runid_arg, o
     if ( parll ) then
        write(comfil(5+ic:5+ic+4),'(a,i3.3)') '-',inode
     endif
+    !
+    ! The following is necessary; originally, tricom was called with parameter initi
+    ! while its n-th argument was initia. Confusing. (VT)
+    !
+    initia = initi
     !
     ! Start FLOW simulation
     !

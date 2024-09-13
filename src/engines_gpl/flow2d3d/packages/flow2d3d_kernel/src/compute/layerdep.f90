@@ -1,8 +1,8 @@
-subroutine layerdep(dep   , thick, kmax, nm    , dpd   , wlev, &
+subroutine layerdep(dep   , thick, kmax, nm    , dp    , wlev, &
                   & zmodel, zk   , dzu1, kfumin, kfumax, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine layerdep(dep   , thick, kmax, nm    , dpd   , wlev, &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: layerdep.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/layerdep.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Calculate depth of all layers
@@ -54,7 +54,7 @@ subroutine layerdep(dep   , thick, kmax, nm    , dpd   , wlev, &
     integer , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: kfumax !  Description and declaration in esm_alloc_int.f90
     real(fp), dimension(0:kmax+1)                   , intent(out) :: dep    !  Depth of layers
     real(fp), dimension(kmax)                       , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: dpd
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)  :: dp
     real(fp)                                        , intent(in)  :: wlev
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)  :: dzu1   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(0:kmax)                     , intent(in)  :: zk
@@ -75,7 +75,7 @@ subroutine layerdep(dep   , thick, kmax, nm    , dpd   , wlev, &
     ! dep(kmax+1) always denotes the extrapolation region at upper side
     ! dep(kmax+1) = total water depth for both sigma and zmodel
     !
-    dep(kmax+1) = dpd(nm) + wlev
+    dep(kmax+1) = dp(nm) + wlev
     !
     if (zmodel) then
        do k = 1, kmax
@@ -90,7 +90,7 @@ subroutine layerdep(dep   , thick, kmax, nm    , dpd   , wlev, &
           endif
        enddo
     else
-       tmpval = 0.5_fp   * (dpd(nm) + wlev)
+       tmpval = 0.5_fp   * (dp(nm) + wlev)
        dep(1) = thick(1) * tmpval
        do k = 2, kmax
           dep (k) = dep(k-1) + (thick(k)+thick(k-1))*tmpval

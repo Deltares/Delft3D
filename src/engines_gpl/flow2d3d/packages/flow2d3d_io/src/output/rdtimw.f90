@@ -1,8 +1,8 @@
-subroutine rdtimw(comfil    ,lundia    ,error     ,ntwav     , &
-                & waverd    ,nmaxus    ,mmax      ,gdp       )
+subroutine rdtimw(comfil    ,lundia    ,error     ,ntwav     ,timwav    , &
+                & maxtim    ,waverd    ,nmaxus    ,mmax      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine rdtimw(comfil    ,lundia    ,error     ,ntwav     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdtimw.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/rdtimw.f90 $
 !!--description-----------------------------------------------------------------
 !
 !
@@ -38,7 +38,6 @@ subroutine rdtimw(comfil    ,lundia    ,error     ,ntwav     , &
 !!--declarations----------------------------------------------------------------
     use precision
     use globaldata
-    use m_alloc
     !
     implicit none
     !
@@ -47,16 +46,17 @@ subroutine rdtimw(comfil    ,lundia    ,error     ,ntwav     , &
 ! Global variables
 !
     integer                                   :: lundia !  Description and declaration in inout.igs
+    integer                     , intent(in)  :: maxtim !!  Max.nr. of timesteps for the communication file
     integer                                   :: mmax   !  Description and declaration in esm_alloc_int.f90
     integer                                   :: nmaxus !  Description and declaration in esm_alloc_int.f90
     integer                                   :: ntwav  !!  Total number of timesteps on comm. file (to read from)
+    integer , dimension(maxtim)               :: timwav !!  Array with time steps on comm. file for wave results
     logical                     , intent(out) :: error  !!  Flag = TRUE if an error is encountered
     logical                                   :: waverd !!  Flag = TRUE if wave process and communication file exist
     character(*)                              :: comfil !!  Name for communication file com-<case><label>
 !
 ! Local variables
 !
-    integer , dimension(:)         , pointer      :: timwav  ! Array with time steps on comm. file for wave results
     integer                                       :: fds
     integer                                       :: i
     integer                                       :: ierror  ! Flag for error when writing to Communication file 
@@ -78,7 +78,6 @@ subroutine rdtimw(comfil    ,lundia    ,error     ,ntwav     , &
 !
 !! executable statements -------------------------------------------------------
 !
-    timwav => gdp%gdtricom%timwav
     ierror = open_datdef(comfil, fds, .true.)
     if (ierror /= 0) goto 8888
     !
@@ -93,19 +92,21 @@ subroutine rdtimw(comfil    ,lundia    ,error     ,ntwav     , &
     idummy(1) = 0
     ierror = getelt(fds, grnam1, 'NTWAV', uindex, 1, 4, idummy)
     if (ierror/=0) goto 8888
+    ntwav = idummy(1)
     !
-    ! Test if number of time steps on file are inside defined array boundary.
-    ! If not then increase array size.
+    ! Test if number of time steps on file are inside defined array boundary maxtim.
+    ! If error occurred then write errormessage to diagnostic file
     !
-    if (idummy(1)>size(timwav)) then
-       call reallocP(gdp%gdtricom%timwav,max(2*size(timwav),idummy(1)))
-       timwav => gdp%gdtricom%timwav
+    if (ntwav>maxtim) then
+       call prterr(lundia    ,'D008'    ,' '       )
+       !
+       error = .true.
+       goto 9999
     endif
     !
-    ! Read the array with time information (only read the new value(s))
-    ! The time associated with NTWAV may have been updated (AppendCOM = false in MDW).
+    ! Read the array with time information
     !
-    do i = max(1,ntwav), idummy(1)
+    do i = 1, ntwav
        uindex (1,1) = i ! start index
        uindex (2,1) = i ! end index
        ierror = getelt(fds, grnam2, 'TIMWAV', uindex, 1, 4, timwav(i))
@@ -120,12 +121,7 @@ subroutine rdtimw(comfil    ,lundia    ,error     ,ntwav     , &
        ierror = neferr(0, errmsg)
        call prterr(lundia, 'P004', errmsg)
        error = .true.
-       ierror = clsnef(fds)
     endif
     !
-9999 continue
-    !
-    ! Finally, update the number of time steps read.
-    !
-    ntwav = idummy(1)
+ 9999 continue
 end subroutine rdtimw

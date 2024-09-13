@@ -1,9 +1,9 @@
 subroutine inibcq(lundia    ,error     ,runid     ,itbct     ,nto       , &
                 & ntof      ,ntoq      ,kcd       ,nambnd    ,hydrbc    , &
-                & bubble    ,kmax      ,gdp       )
+                & bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine inibcq(lundia    ,error     ,runid     ,itbct     ,nto       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: inibcq.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/inibcq.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Reads the QH relations from file for the
@@ -56,7 +56,6 @@ subroutine inibcq(lundia    ,error     ,runid     ,itbct     ,nto       , &
 !
     integer                              , intent(in)  :: kcd    !  Description and declaration in dimens.igs
     integer                                            :: lundia !  Description and declaration in inout.igs
-    integer                              , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
     integer                              , intent(in)  :: nto    !  Description and declaration in esm_alloc_int.f90
     integer                              , intent(in)  :: ntof   !  Description and declaration in dimens.igs
     integer                              , intent(in)  :: ntoq   !  Description and declaration in dimens.igs
@@ -92,7 +91,7 @@ subroutine inibcq(lundia    ,error     ,runid     ,itbct     ,nto       , &
     character(20)                          :: chlp20
     character(20)                          :: namhlp
     character(256)                         :: filnam  ! Help var. for file name 
-    character(36), dimension(1 + 2*kmax)   :: parnam  ! Number of parameter records in time dependent direct access files for BCT 
+    character(36), dimension(1 + 2*mxkmax) :: parnam  ! Number of parameter records in time dependent direct access files for BCT 
     character(36), dimension(2)            :: defpar  ! Default parameter 
     character(500)                         :: record  ! Record for BCT file 
 !
@@ -113,7 +112,8 @@ subroutine inibcq(lundia    ,error     ,runid     ,itbct     ,nto       , &
     !
     inquire (file = filnam(:8 + lrid), opened = opend)
     if (.not.opend) then
-       open (newunit=lunbcq, file = filnam(:8 + lrid), form = 'formatted',              &
+       lunbcq = newlun(gdp)
+       open (lunbcq, file = filnam(:8 + lrid), form = 'formatted',              &
             & status = 'old')
        read (lunbcq, '(a1,i5)', iostat = iocond) dumchr, lrec
        !
@@ -135,7 +135,7 @@ subroutine inibcq(lundia    ,error     ,runid     ,itbct     ,nto       , &
           !
           ! file not open as direct access!
           !
-          open (newunit=lunbcq, file = filnam(:8 + lrid), form = 'formatted')
+          open (lunbcq, file = filnam(:8 + lrid), form = 'formatted')
    10     continue
           irecrd = irecrd + 1
           read (lunbcq, '(a)', end=20) record(:lrec - 1)
@@ -163,7 +163,7 @@ subroutine inibcq(lundia    ,error     ,runid     ,itbct     ,nto       , &
        !
        ! Open file as direct access
        !
-       open (newunit=lunbcq, file = filnam(:8 + lrid), form = 'formatted',              &
+       open (lunbcq, file = filnam(:8 + lrid), form = 'formatted',              &
             & access = 'direct', recl = lrec)
        !
        ! Initialize ITBCT array

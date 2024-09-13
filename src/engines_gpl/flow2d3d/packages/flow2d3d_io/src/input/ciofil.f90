@@ -2,7 +2,7 @@ subroutine ciofil(lundia    ,error     ,filcio    ,mmax      ,nmax      , &
                 & nmaxus    ,fcorio    ,gdp       ) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine ciofil(lundia    ,error     ,filcio    ,mmax      ,nmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: ciofil.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/ciofil.f90 $
 !!--description----------------------------------------------------------------- 
 ! 
 !    Function: Reads the coriolis values from the attribute file 
@@ -102,7 +102,8 @@ subroutine ciofil(lundia    ,error     ,filcio    ,mmax      ,nmax      , &
        ! 
        if ( inode /= master ) goto 10 
        ! 
-       open (newunit=luntmp, file = filcio(1:lfile), form = 'formatted', status = 'old') 
+       luntmp = newlun(gdp) 
+       open (luntmp, file = filcio(1:lfile), form = 'formatted', status = 'old') 
        ! 
        ! Freeformatted file, skip lines starting with a '*' 
        ! 

@@ -1,7 +1,7 @@
 subroutine rdmud(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine rdmud(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdmud.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdmud.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads parameters Fluid Mud model.
@@ -138,7 +138,8 @@ subroutine rdmud(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
     !     routine DIMSED
     !     Open file and read data
     !
-    open (newunit=luninp, file = filnam, form = 'formatted', status = 'old',            &
+    luninp = newlun(gdp)
+    open (luninp, file = filnam, form = 'formatted', status = 'old',            &
         & iostat = iost)
     if (iost==0) then
        !

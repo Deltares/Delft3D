@@ -2,7 +2,7 @@ subroutine rdroll(lunmd     ,lundia    ,lunscr    ,lerror    ,nrrec     , &
                 & mdfrec    ,wavcmp    ,filrol    ,ncmax     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine rdroll(lunmd     ,lundia    ,lunscr    ,lerror    ,nrrec     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdroll.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdroll.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! - Reads the roller parameters from the MD-file :
@@ -127,7 +127,7 @@ subroutine rdroll(lunmd     ,lundia    ,lunscr    ,lerror    ,nrrec     , &
     !
     if (wavcmp) then
        filrol = ' '
-       call prop_get(gdp%mdfile_ptr, '*', 'Filwcm', filrol)
+       call prop_get_string(gdp%mdfile_ptr, '*', 'Filwcm', filrol)
        if (filrol == ' ') then
           !
           ! This is really an error: the keyword did exist in dimpro since
@@ -151,12 +151,12 @@ subroutine rdroll(lunmd     ,lundia    ,lunscr    ,lerror    ,nrrec     , &
     ! locate 'Disform' record
     !
     disform = 'R1993'
-    call prop_get(gdp%mdfile_ptr, '*', 'Disform', disform)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Disform', disform)
     !
     ! locate 'Wavrfc' record
     !
     wavfrc = .true.
-    call prop_get(gdp%mdfile_ptr, '*', 'Wavfrc', wavfrc)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'Wavfrc', wavfrc)
     !
     ! locate 'RolCor' record
     ! rolcorr is already initialized in dimpro

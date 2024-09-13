@@ -4,7 +4,7 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
                & ycor      ,kfu       ,kfv       ,itdate    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrfou.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrfou.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - open fourier analysis output file
@@ -53,41 +53,33 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    integer                              , pointer :: nofouvar
-    integer        , dimension(:)        , pointer :: fconno
-    character(1)   , dimension(:)        , pointer :: foutyp
-    character(1)   , dimension(:)        , pointer :: fouelp
-    character(16)  , dimension(:)        , pointer :: founam
-    character(50)  , dimension(:)        , pointer :: fouvarnam
-    character(50)  , dimension(:)        , pointer :: fouvarnamlong
-    character(50)  , dimension(:)        , pointer :: fouvarunit
-    integer        , dimension(:,:)      , pointer :: fouref
-    integer        , dimension(:)        , pointer :: ftmsto
-    integer        , dimension(:)        , pointer :: ftmstr
-    real(fp)       , dimension(:)        , pointer :: foufas
-    integer        , dimension(:)        , pointer :: flayno
-    integer        , dimension(:)        , pointer :: fnumcy
-    integer                              , pointer :: iblwl
-    integer                              , pointer :: ibleh
-    integer                              , pointer :: iblcn
-    integer                              , pointer :: ibluv
-    integer                              , pointer :: iblqf
-    integer                              , pointer :: iblbs
-    integer                              , pointer :: iblep
-    integer                              , pointer :: idfile
-    integer        , dimension(:)        , pointer :: idvar
-    integer                              , pointer :: ntstep
-    integer                              , pointer :: lundia
-    integer                              , pointer :: nmaxgl
-    integer                              , pointer :: mmaxgl
-    integer       , dimension(:,:)       , pointer :: iarrc
-    integer       , dimension(:)         , pointer :: mf
-    integer       , dimension(:)         , pointer :: ml
-    integer       , dimension(:)         , pointer :: nf
-    integer       , dimension(:)         , pointer :: nl
-    !
-    integer                              , pointer :: io_prec
-    logical                              , pointer :: mergemap
+    integer                        , pointer :: nofouvar
+    integer        , dimension(:)  , pointer :: fconno
+    character(1)   , dimension(:)  , pointer :: foutyp
+    character(1)   , dimension(:)  , pointer :: fouelp
+    character(16)  , dimension(:)  , pointer :: founam
+    character(50)  , dimension(:)  , pointer :: fouvarnam
+    character(50)  , dimension(:)  , pointer :: fouvarnamlong
+    character(50)  , dimension(:)  , pointer :: fouvarunit
+    integer        , dimension(:,:), pointer :: fouref
+    integer        , dimension(:)  , pointer :: ftmsto
+    integer        , dimension(:)  , pointer :: ftmstr
+    real(fp)       , dimension(:)  , pointer :: foufas
+    integer        , dimension(:)  , pointer :: flayno
+    integer        , dimension(:)  , pointer :: fnumcy
+    integer                        , pointer :: iblwl
+    integer                        , pointer :: ibleh
+    integer                        , pointer :: iblcn
+    integer                        , pointer :: ibluv
+    integer                        , pointer :: iblqf
+    integer                        , pointer :: iblbs
+    integer                        , pointer :: iblep
+    integer                        , pointer :: idfile
+    integer        , dimension(:)  , pointer :: idvar
+    integer                        , pointer :: ntstep
+    integer                        , pointer :: lundia
+    integer                         , pointer :: nmaxgl
+    integer                         , pointer :: mmaxgl
 !
 ! Global variables
 !
@@ -120,94 +112,65 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
     !
     integer, dimension(6)    :: idatt_fou
     !
-    integer                                           :: irequest
-    integer                                           :: ierror
-    integer                                           :: ifou         ! Local teller for fourier functions 
-    integer                                           :: ivar         ! Local teller for fourier functions 
-    integer                                           :: lrid         ! Length of RUNID character string 
-    integer                                           :: lunfou
-    integer                             , external    :: newlun
-    integer                             , external    :: nc_def_var
-    real(fp)                                          :: freqnt       ! Frequency in degrees per hour 
-    real(fp)                                          :: tfasto       ! Stop time in minutes 
-    real(fp)                                          :: tfastr       ! Start time in minutes 
-    character(4)                                      :: blnm
-    character(16)                                     :: fougrp
-    character(20)                                     :: namfun       ! Local name for fourier function 
-    character(30)                                     :: namfunlong   ! Local name for fourier function, including reference to the line in the fourier input file 
-    character(256)                                    :: filename     ! fixed size version of runid, needed for character concatenation 
-    character(4)                                      :: part_nr
-    integer                                           :: bck_inode
-    integer                                           :: bck_nproc
-    logical                                           :: bck_parll
-    type(dfparalltype)                  , pointer     :: bck_gdparall
+    integer                  :: irequest
+    integer                  :: ierror
+    integer                  :: ifou         ! Local teller for fourier functions 
+    integer                  :: ivar         ! Local teller for fourier functions 
+    integer                  :: lrid         ! Length of RUNID character string 
+    integer                  :: lunfou
+    integer       , external :: newlun
+    integer       , external :: nc_def_var
+    real(fp)                 :: freqnt       ! Frequency in degrees per hour 
+    real(fp)                 :: tfasto       ! Stop time in minutes 
+    real(fp)                 :: tfastr       ! Start time in minutes 
+    character(4)             :: blnm
+    character(16)            :: fougrp
+    character(20)            :: namfun       ! Local name for fourier function 
+    character(30)            :: namfunlong   ! Local name for fourier function, including reference to the line in the fourier input file 
+    character(256)           :: filename     ! fixed size version of runid, needed for character concatenation 
 !
 !! executable statements -------------------------------------------------------
 !
-    nofouvar            => gdp%gdfourier%nofouvar
-    fconno              => gdp%gdfourier%fconno
-    foutyp              => gdp%gdfourier%foutyp
-    fouelp              => gdp%gdfourier%fouelp
-    founam              => gdp%gdfourier%founam
-    fouvarnam           => gdp%gdfourier%fouvarnam
-    fouvarnamlong       => gdp%gdfourier%fouvarnamlong
-    fouvarunit          => gdp%gdfourier%fouvarunit
-    fouref              => gdp%gdfourier%fouref
-    ftmsto              => gdp%gdfourier%ftmsto
-    ftmstr              => gdp%gdfourier%ftmstr
-    foufas              => gdp%gdfourier%foufas
-    flayno              => gdp%gdfourier%flayno
-    fnumcy              => gdp%gdfourier%fnumcy
-    iblwl               => gdp%gdfourier%iblwl
-    ibleh               => gdp%gdfourier%ibleh
-    iblcn               => gdp%gdfourier%iblcn
-    ibluv               => gdp%gdfourier%ibluv
-    iblqf               => gdp%gdfourier%iblqf
-    iblbs               => gdp%gdfourier%iblbs
-    iblep               => gdp%gdfourier%iblep
-    idfile              => gdp%gdfourier%idfile
-    idvar               => gdp%gdfourier%idvar
-    ntstep              => gdp%gdinttim%ntstep
-    lundia              => gdp%gdinout%lundia
-    io_prec             => gdp%gdpostpr%io_prec
-    mergemap            => gdp%gdpostpr%mergemap
+    nofouvar      => gdp%gdfourier%nofouvar
+    fconno        => gdp%gdfourier%fconno
+    foutyp        => gdp%gdfourier%foutyp
+    fouelp        => gdp%gdfourier%fouelp
+    founam        => gdp%gdfourier%founam
+    fouvarnam     => gdp%gdfourier%fouvarnam
+    fouvarnamlong => gdp%gdfourier%fouvarnamlong
+    fouvarunit    => gdp%gdfourier%fouvarunit
+    fouref        => gdp%gdfourier%fouref
+    ftmsto        => gdp%gdfourier%ftmsto
+    ftmstr        => gdp%gdfourier%ftmstr
+    foufas        => gdp%gdfourier%foufas
+    flayno        => gdp%gdfourier%flayno
+    fnumcy        => gdp%gdfourier%fnumcy
+    iblwl         => gdp%gdfourier%iblwl
+    ibleh         => gdp%gdfourier%ibleh
+    iblcn         => gdp%gdfourier%iblcn
+    ibluv         => gdp%gdfourier%ibluv
+    iblqf         => gdp%gdfourier%iblqf
+    iblbs         => gdp%gdfourier%iblbs
+    iblep         => gdp%gdfourier%iblep
+    idfile        => gdp%gdfourier%idfile
+    idvar         => gdp%gdfourier%idvar
+    ntstep        => gdp%gdinttim%ntstep
+    lundia        => gdp%gdinout%lundia
+    mmaxgl        => gdp%gdparall%mmaxgl
+    nmaxgl        => gdp%gdparall%nmaxgl
     !
     fougrp = 'fou-fields'
     filetype = getfiletype(gdp, FILOUT_FOU)
     !
-    if (mergemap) then
-        part_nr = ''
-    else
-        bck_inode = inode
-        bck_nproc = nproc
-        bck_parll = parll
-        bck_gdparall => gdp%gdparall
-        !
-        write(part_nr,'(A,I3.3)') '-',inode
-        !
-        inode = 1
-        nproc = 1
-        parll = .false.
-        gdp%gdparall => gdp%iopartit
-    endif
-    !
-    mf                  => gdp%gdparall%mf
-    ml                  => gdp%gdparall%ml
-    nf                  => gdp%gdparall%nf
-    nl                  => gdp%gdparall%nl
-    iarrc               => gdp%gdparall%iarrc
-    mmaxgl              => gdp%gdparall%mmaxgl
-    nmaxgl              => gdp%gdparall%nmaxgl
-    !
     if (inode == master .and. filetype == FTYPE_NETCDF) then
-       filename = trifil(1:3) // 'f' // trim(trifil(5:)) // trim(part_nr) 
+       filename = trifil(1:3) // 'f' // trifil(5:)
        write(filename,'(2a)') trim(filename), '.nc'
        !
        ierror = nf90_open(filename, NF90_WRITE, idfile); call nc_check_err(lundia, ierror, "opening file", filename)
     endif
     !
     if (filetype == FTYPE_ASCII) then
-       if (ntstep==1) goto 100
+       if (ntstep==1) return
        irequest = REQUESTTYPE_DEFINE
     else
        if (ntstep==1) then
@@ -293,7 +256,7 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
              idatt_fou(5) = addatt(gdp, lundia, FILOUT_FOU, 'Number_of_cycles', fnumcy(ifou) )
              idatt_fou(6) = addatt(gdp, lundia, FILOUT_FOU, 'Frequency_degrees_per_hour', freqnt )
              !
-             call addelm(gdp, lundia, FILOUT_FOU, fougrp, trim(fouvarnam(ivar)), ' ', io_prec, 2, dimids=(/iddim_n, iddim_m/), &
+             call addelm(gdp, lundia, FILOUT_FOU, fougrp, trim(fouvarnam(ivar)), ' ', IO_REAL4, 2, dimids=(/iddim_n, iddim_m/), &
                        & longname='Fourier analysis '//trim(namfunlong)//', '//trim(fouvarnamlong(ivar)), unit=fouvarunit(ivar), &
                        & attribs=idatt_fou, acl='z')
           enddo
@@ -312,18 +275,20 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
        elseif (filetype == FTYPE_NETCDF) then ! inode /= master
           ! nothing to do
        else ! ASCII
-          filename = "fourier." // trim(runid) // trim(part_nr) 
-          !
-          ! Open output file 'fourier.'runid on master node
-          !
-          if (inode == master) then
-             open (newunit=lunfou, file = filename, status = 'unknown')
-             !
-             ! Write all requested fourier function output until IFOU > NOFOU
-             !
-             write (lunfou, '(a,a,a)') '*** Delft3D-FLOW utility FOUMOD *** version ',   &
-                                     & versio, ' ***'
+          filename = "fourier." // trim(runid)
+          if ( parll ) then
+             write(filename,'(2a,i3.3)') trim(filename), '-', inode
           endif
+          !
+          ! Open output file 'fourier.'runid
+          !
+          lunfou = newlun(gdp)
+          open (lunfou, file = filename, status = 'unknown')
+          !
+          ! Write all requested fourier function output until IFOU > NOFOU
+          !
+          write (lunfou, '(a,a,a)') '*** Delft3D-FLOW utility FOUMOD *** version ',   &
+                                  & versio, ' ***'
           !
           ! Continue writing the ascii file ...
           !
@@ -349,9 +314,7 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
              call wrfous(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
                        & nofou     ,ifou      ,lunfou    ,dtsec     ,namcon    , &
                        & kcs       ,xz        ,yz        ,xcor      ,ycor      , &
-                       & kfu       ,kfv       ,itdate    ,filename  ,filetype  , &
-                       & fougrp    ,iarrc     ,mf        ,ml        ,nf        , &
-                       & nl        ,gdp       )
+                       & kfu       ,kfv       ,itdate    ,gdp       )
              ifou = ifou + 1
           else
              !
@@ -361,9 +324,7 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
              call wrfouv(nmax      ,mmax      ,nmaxus    ,kmax      ,nofou     , &
                        & ifou      ,lunfou    ,dtsec     ,kcs       ,xz        , &
                        & yz        ,alfas     ,xcor      ,ycor      ,kfu       , &
-                       & kfv       ,itdate    ,filename  ,filetype  ,fougrp    , &
-                       & iarrc     ,mf        ,ml        ,nf        ,nl        , &
-                       & gdp       )
+                       & kfv       ,itdate    ,gdp       )
              !
              ifou = ifou + 2
           endif
@@ -376,15 +337,7 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
        if (inode == master) then
           ierror = nf90_close(idfile); call nc_check_err(lundia, ierror, "closing file", filename)
        endif
-    elseif (inode == master) then
+    else
        close (lunfou)
-    endif
-    !
-100 continue
-    if (.not.mergemap) then
-        inode = bck_inode
-        parll = bck_parll
-        nproc = bck_nproc
-        gdp%gdparall => bck_gdparall
     endif
 end subroutine wrfou

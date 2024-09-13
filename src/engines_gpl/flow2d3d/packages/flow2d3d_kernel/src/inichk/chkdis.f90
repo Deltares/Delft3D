@@ -4,7 +4,7 @@ subroutine chkdis(lundia    ,error     ,nsrc      ,zmodel    ,nmax      , &
                 & s1        ,xz        ,yz        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine chkdis(lundia    ,error     ,nsrc      ,zmodel    ,nmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: chkdis.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/chkdis.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Checks the location of the following points (if
@@ -80,7 +80,7 @@ subroutine chkdis(lundia    ,error     ,nsrc      ,zmodel    ,nmax      , &
     integer            :: m       ! Current M-index of the active point in the current computational ROW 
     integer            :: n       ! Current N-index of the active point in the current computational COLUMN 
     integer            :: nr      ! Sequence number of open boundary points 
-    real(fp)           :: h0      ! Water depth (DPS+S1) 
+    real(fp)           :: h0      ! Actual Water-height (DP+S1) 
     character(40)      :: errmsg  ! Character var. containing the error message to be written to file. The message depend on the error. 
 !
 !! executable statements -------------------------------------------------------

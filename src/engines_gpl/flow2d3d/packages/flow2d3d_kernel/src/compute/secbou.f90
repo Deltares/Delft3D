@@ -4,7 +4,7 @@ subroutine secbou(j         ,nmmaxj    ,kmax      ,icx       ,icy       , &
                 & sink      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine secbou(j         ,nmmaxj    ,kmax      ,icx       ,icy       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: secbou.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/secbou.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Horizontal boundary conditions for secondary
@@ -74,7 +74,7 @@ subroutine secbou(j         ,nmmaxj    ,kmax      ,icx       ,icy       , &
     integer, intent(in)            :: lstsci !  Description and declaration in esm_alloc_int.f90
     integer         :: nmmaxj !  Description and declaration in dimens.igs
     integer, intent(in)            :: norow !  Description and declaration in esm_alloc_int.f90
-    integer, dimension(5, norow), intent(in) :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(7, norow), intent(in) :: irocol !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: kfu !  Description and declaration in esm_alloc_int.f90
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: dps !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: s0 !  Description and declaration in esm_alloc_real.f90

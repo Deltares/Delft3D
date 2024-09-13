@@ -1,7 +1,7 @@
 subroutine gdp_alloc(gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine gdp_alloc(gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: gdp_alloc.f90 6076 2016-04-25 19:28:04Z platzek $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/gdp/gdp_alloc.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! NONE
@@ -76,6 +76,7 @@ subroutine gdp_alloc(gdp)
     allocate (gdp%gdfourier)
     allocate (gdp%gdheat)
     allocate (gdp%gdhtur2d)
+    allocate (gdp%gdimbound)
     allocate (gdp%gdinout)
     allocate (gdp%gdinttim)
     allocate (gdp%gdiwearr)
@@ -130,7 +131,6 @@ subroutine gdp_alloc(gdp)
     allocate (gdp%gdsnel)
     allocate (gdp%gdtimers)
     allocate (gdp%gdtricom)
-    allocate (gdp%gdtricom%timwav(1500))
     allocate (gdp%gdtrisol)
     allocate (gdp%gdu_ppr)
     allocate (gdp%gdupdbcc)
@@ -151,7 +151,6 @@ subroutine gdp_alloc(gdp)
     if (.not. associated(gdp%runid)) then
        allocate (gdp%runid)
     endif
-    allocate (gdp%uniqueid)
     !
     allocate (gdp%arch)
     allocate (gdp%errorcode)

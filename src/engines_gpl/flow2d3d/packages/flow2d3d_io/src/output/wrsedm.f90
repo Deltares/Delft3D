@@ -1,12 +1,12 @@
 subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 & lsed      ,lsedtot   ,irequest  ,fds       ,grpnam    , &
-                & sbuu      ,sbvv      ,ws        ,dps       ,seddif    , & 
+                & sbuu      ,sbvv      ,ws        ,dps       , & 
                 & filename  ,gdp       ,filetype  , &
                 & mf        ,ml        ,nf        ,nl        , &
                 & iarrc     ,kfsmin    ,kfsmax    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +30,8 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrsedm.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrsedm.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Writes the time varying data for sediment transport to the
@@ -59,7 +59,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     integer                              , pointer :: celidt
     type (datagroup)                     , pointer :: group
     integer                              , pointer :: nxx
-    integer                              , pointer :: io_prec
     integer  , dimension(:)              , pointer :: smlay
     type (moroutputtype)                 , pointer :: moroutput
     logical                              , pointer :: scour
@@ -101,18 +100,12 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     real(fp), dimension(:,:)             , pointer :: svcor
     real(fp), dimension(:,:)             , pointer :: sinkse
     real(fp), dimension(:,:)             , pointer :: sourse
-    real(fp), dimension(:)               , pointer :: taub
     real(fp), dimension(:,:)             , pointer :: taurat
     real(fp), dimension(:)               , pointer :: ust2
     real(fp), dimension(:)               , pointer :: umod
     real(fp), dimension(:)               , pointer :: uuu
     real(fp), dimension(:)               , pointer :: vvv
     real(fp), dimension(:)               , pointer :: zumod
-    integer          , dimension(:)      , pointer :: noutpar
-    integer          , dimension(:,:)    , pointer :: ioutpar
-    real(fp)         , dimension(:,:)    , pointer :: outpar
-    character(256)   , dimension(:,:)    , pointer :: outpar_name
-    character(256)   , dimension(:,:)    , pointer :: outpar_longname
     integer                              , pointer :: nmaxgl
     integer                              , pointer :: mmaxgl
 !
@@ -131,7 +124,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax, lsed), intent(in)  :: ws      !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, lsedtot)     , intent(in)  :: sbuu    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, lsedtot)     , intent(in)  :: sbvv    !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax, lsed), intent(in)  :: seddif  !  Description and declaration in esm_alloc_real.f90
     integer                                                                    , intent(in)  :: fds    
 
     integer                                                                    , intent(in)  :: filetype
@@ -161,7 +153,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     integer    , dimension(3,5)                   :: uindex
     real(fp)   , dimension(:,:)    , allocatable  :: rbuff2
     real(fp)   , dimension(:,:,:)  , allocatable  :: rbuff3
-    character(3)                                  :: sednr
     character(10)                                 :: transpunit
     character(16)                                 :: dxname
     character(256)                                :: errmsg      ! Character var. containing the errormessage to be written to file. The message depends on the error. 
@@ -184,7 +175,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     call getdatagroup(gdp, FILOUT_MAP, grpnam, group)
     celidt         => group%celidt
     nxx            => gdp%gdmorpar%nxx
-    io_prec        => gdp%gdpostpr%io_prec
     smlay          => gdp%gdpostpr%smlay
     moroutput      => gdp%gdmorpar%moroutput
     xx             => gdp%gdmorpar%xx
@@ -223,18 +213,12 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     svcor          => gdp%gderosed%e_scrt
     sinkse         => gdp%gderosed%sinkse
     sourse         => gdp%gderosed%sourse
-    taub           => gdp%gderosed%taub
     taurat         => gdp%gderosed%taurat
     ust2           => gdp%gderosed%ust2
     umod           => gdp%gderosed%umod
     uuu            => gdp%gderosed%uuu
     vvv            => gdp%gderosed%vvv
     zumod          => gdp%gderosed%zumod
-    noutpar        => gdp%gdtrapar%noutpar
-    ioutpar        => gdp%gdtrapar%ioutpar
-    outpar         => gdp%gdtrapar%outpar
-    outpar_name    => gdp%gdtrapar%outpar_name
-    outpar_longname=> gdp%gdtrapar%outpar_longname
     mmaxgl         => gdp%gdparall%mmaxgl
     nmaxgl         => gdp%gdparall%nmaxgl
     lfsdu          => gdp%gdprocs%lfsdu
@@ -277,136 +261,123 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           transpunit = 'm3/(s m)'
        end select
        if (lsed > 0) then
-          if (moroutput%ws) then
-              call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'WS', ' ', io_prec        , 4, dimids=(/iddim_n, iddim_m, iddim_kmaxout, iddim_lsed/), longname='Settling velocity per layer', unit='m/s', acl='z')
-          endif
-          if (kmax==1 .and. moroutput%rsedeq) then
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'RSEDEQ', ' ', io_prec , 4, dimids=(/iddim_n, iddim_m, iddim_kmax, iddim_lsed/), longname='Equilibrium concentration of sediment (2D only)', unit='kg/m3', acl='z')
+          ! 'KFSED','-','Non-active/active cells for sediment transport', (nmaxus,mmax), KFSED
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'WS', ' ', IO_REAL4       , 4, dimids=(/iddim_n, iddim_m, iddim_kmaxout, iddim_lsed/), longname='Settling velocity per layer', unit='m/s', acl='z')
+          if (kmax==1) then
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'RSEDEQ', ' ', IO_REAL4, 4, dimids=(/iddim_n, iddim_m, iddim_kmax, iddim_lsed/), longname='Equilibrium concentration of sediment (2D only)', unit='kg/m3', acl='z')
           endif
        endif
        if (moroutput%uuuvvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'UUU', ' ', io_prec       , 2, dimids=(/iddim_n , iddim_mc/), longname='Characteristic velocity u-direction (zeta point)', unit='m/s', acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'VVV', ' ', io_prec       , 2, dimids=(/iddim_nc, iddim_m /), longname='Characteristic velocity v-direction (zeta point)', unit='m/s', acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'UUU', ' ', IO_REAL4      , 2, dimids=(/iddim_n , iddim_mc/), longname='Characteristic velocity u-direction (zeta point)', unit='m/s', acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'VVV', ' ', IO_REAL4      , 2, dimids=(/iddim_nc, iddim_m /), longname='Characteristic velocity v-direction (zeta point)', unit='m/s', acl='v')
        endif
        if (moroutput%umod) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'UMOD', ' ', io_prec      , 2, dimids=(/iddim_n, iddim_m/), longname='Characteristic velocity magnitude (zeta point)', unit='m/s', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'UMOD', ' ', IO_REAL4     , 2, dimids=(/iddim_n, iddim_m/), longname='Characteristic velocity magnitude (zeta point)', unit='m/s', acl='z')
        endif
        if (moroutput%zumod) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'ZUMOD', ' ', io_prec     , 2, dimids=(/iddim_n, iddim_m/), longname='Height above bed for characteristic velocity (zeta point)', unit='m/s', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'ZUMOD', ' ', IO_REAL4    , 2, dimids=(/iddim_n, iddim_m/), longname='Height above bed for characteristic velocity (zeta point)', unit='m/s', acl='z')
        endif
        if (moroutput%ustar) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'USTAR', ' ', io_prec     , 2, dimids=(/iddim_n, iddim_m/), longname='Bed shear velocity U* (zeta point)', unit='m/s', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'USTAR', ' ', IO_REAL4    , 2, dimids=(/iddim_n, iddim_m/), longname='Bed shear velocity U* (zeta point)', unit='m/s', acl='z')
        endif
        if (moroutput%sbcuv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport u-direction due to currents (zeta point)', unit=transpunit, acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport v-direction due to currents (zeta point)', unit=transpunit, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCU', ' ', IO_REAL4     , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport u-direction due to currents (zeta point)', unit=transpunit, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCV', ' ', IO_REAL4     , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport v-direction due to currents (zeta point)', unit=transpunit, acl='z')
        endif
        if (moroutput%sbcuuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction due to currents (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction due to currents (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCUU', ' ', IO_REAL4    , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction due to currents (u point)', unit=transpunit, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBCVV', ' ', IO_REAL4    , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction due to currents (v point)', unit=transpunit, acl='v')
        endif
        if (moroutput%sbwuv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport u-direction due to waves (zeta point)', unit=transpunit, acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport v-direction due to waves (zeta point)', unit=transpunit, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWU', ' ', IO_REAL4     , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport u-direction due to waves (zeta point)', unit=transpunit, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWV', ' ', IO_REAL4     , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Bed-load transport v-direction due to waves (zeta point)', unit=transpunit, acl='z')
        endif
        if (moroutput%sbwuuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction due to waves (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction due to waves (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWUU', ' ', IO_REAL4    , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction due to waves (u point)', unit=transpunit, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBWVV', ' ', IO_REAL4    , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction due to waves (v point)', unit=transpunit, acl='v')
        endif
        if (moroutput%sswuv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWU', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Suspended transport u-direction due to waves (zeta point)', unit=transpunit, acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWV', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Suspended transport v-direction due to waves (zeta point)', unit=transpunit, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWU', ' ', IO_REAL4     , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Suspended transport u-direction due to waves (zeta point)', unit=transpunit, acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWV', ' ', IO_REAL4     , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Suspended transport v-direction due to waves (zeta point)', unit=transpunit, acl='z')
        endif
        if (moroutput%sswuuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWUU', ' ', io_prec     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Suspended transport u-direction due to waves (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWVV', ' ', io_prec     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Suspended transport v-direction due to waves (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWUU', ' ', IO_REAL4    , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Suspended transport u-direction due to waves (u point)', unit=transpunit, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSWVV', ' ', IO_REAL4    , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Suspended transport v-direction due to waves (v point)', unit=transpunit, acl='v')
        endif
-       if (lsedtot > 0 .and. moroutput%sbuuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBUU', ' ', io_prec         , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBVV', ' ', io_prec         , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction (v point)', unit=transpunit, acl='v')
+       if (lsedtot > 0) then
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBUU', ' ', IO_REAL4        , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Bed-load transport u-direction (u point)', unit=transpunit, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SBVV', ' ', IO_REAL4        , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Bed-load transport v-direction (v point)', unit=transpunit, acl='v')
        endif
        if (lsed > 0) then
-          if (moroutput%seddif) then
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SEDDIF', ' ', io_prec      , 4, dimids=(/iddim_n , iddim_m, iddim_kmaxout, iddim_lsed/), longname='Vertical sediment diffusion (zeta point)', unit='m2/s', acl='z')
-          endif
-          if (moroutput%ssuuvv) then
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSUU', ' ', io_prec      , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Suspended-load transport u-direction (u point)', unit=transpunit, acl='u')
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSVV', ' ', io_prec      , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Suspended-load transport v-direction (v point)', unit=transpunit, acl='v')
-          endif
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSUU', ' ', IO_REAL4     , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Suspended-load transport u-direction (u point)', unit=transpunit, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SSVV', ' ', IO_REAL4     , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Suspended-load transport v-direction (v point)', unit=transpunit, acl='v')
           if (moroutput%suvcor) then
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SUCOR', ' ', io_prec  , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Near-bed transport correction u-direction (u point)', unit=transpunit, acl='u')
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SVCOR', ' ', io_prec  , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Near-bed transport correction v-direction (v point)', unit=transpunit, acl='v')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SUCOR', ' ', IO_REAL4 , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Near-bed transport correction u-direction (u point)', unit=transpunit, acl='u')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SVCOR', ' ', IO_REAL4 , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Near-bed transport correction v-direction (v point)', unit=transpunit, acl='v')
           endif
           if (moroutput%sourcesink) then
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SOURSE', ' ', io_prec , 3, dimids=(/iddim_n, iddim_m, iddim_lsed/), longname='Source term suspended sediment fractions', unit='kg/(m3 s)', acl='z')
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SINKSE', ' ', io_prec , 3, dimids=(/iddim_n, iddim_m, iddim_lsed/), longname='Sink term suspended sediment fractions', unit='1/s', acl='z')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SOURSE', ' ', IO_REAL4, 3, dimids=(/iddim_n, iddim_m, iddim_lsed/), longname='Source term suspended sediment fractions', unit='kg/(m3 s)', acl='z')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SINKSE', ' ', IO_REAL4, 3, dimids=(/iddim_n, iddim_m, iddim_lsed/), longname='Sink term suspended sediment fractions', unit='1/s', acl='z')
+             ! 'sourseBANK','m/s','Source term from bank for each sediment fraction',(nmaxus,mmax,lsed)
           endif
           if (moroutput%aks) then
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'AKS', ' ', io_prec    , 3, dimids=(/iddim_n, iddim_m, iddim_lsed/), longname='Near-bed reference concentration height', unit='m', acl='z')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'AKS', ' ', IO_REAL4   , 3, dimids=(/iddim_n, iddim_m, iddim_lsed/), longname='Near-bed reference concentration height', unit='m', acl='z')
           endif
-          if (moroutput%rca) then
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'RCA', ' ', io_prec       , 3, dimids=(/iddim_n, iddim_m, iddim_lsed/), longname='Near-bed reference concentration of sediment', unit='kg/m3', acl='z')
-          endif
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'RCA', ' ', IO_REAL4      , 3, dimids=(/iddim_n, iddim_m, iddim_lsed/), longname='Near-bed reference concentration of sediment', unit='kg/m3', acl='z')
        endif
-       call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DPS', ' ', io_prec          , 2, dimids=(/iddim_n, iddim_m/), longname='Bottom depth (zeta point)', unit='m', acl='z')
+       call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DPS', ' ', IO_REAL4         , 2, dimids=(/iddim_n, iddim_m/), longname='Bottom depth (zeta point)', unit='m', acl='z')
        if (lfsdu) then       
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SDU', ' ', io_prec          , 2, dimids=(/iddim_n, iddim_m/), longname='Cumulative bed level change due to subsidence/uplift', unit='m', acl='z')
-       endif    
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SDU', ' ', IO_REAL4         , 2, dimids=(/iddim_n, iddim_m/), longname='Cumulative bed level change due to subsidence/uplift', unit='m', acl='z')
+       endif
+       ! 'curstr_print','m','Curvature (zeta point)', (nmaxus,mmax), curstr_print
        if (moroutput%dzduuvv) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DZDUU', ' ', io_prec     , 2, dimids=(/iddim_n , iddim_mc/), longname='Bed slope in u-direction (u point)', acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DZDVV', ' ', io_prec     , 2, dimids=(/iddim_nc, iddim_m /), longname='Bed slope in v-direction (v point)', acl='v')
+          ! alternatively:
+          ! 'DZDUU_w','-','Bed slope in u-direction (u point)', (nmaxus,mmax), dzduuCENTR or dzduu_w
+          ! 'DZDVV_w','-','Bed slope in v-direction (v point)', (nmaxus,mmax), dzdvvCENTR or dzdvv_w
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DZDUU', ' ', IO_REAL4    , 2, dimids=(/iddim_n , iddim_mc/), longname='Bed slope in u-direction (u point)', acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DZDVV', ' ', IO_REAL4    , 2, dimids=(/iddim_nc, iddim_m /), longname='Bed slope in v-direction (v point)', acl='v')
+          ! 'absSLOPE','-','Absolute value of bed slope at zeta point', (nmaxus,mmax), "sqrt(dzduuCENTR(nm)**2+dzdvvCENTR(nm)**2)"
        endif
        if (scour) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'TAUADD', ' ', io_prec    , 2, dimids=(/iddim_n, iddim_m/), longname='Extra shear stress due to scour feature', unit='N/m2', acl='z')
-       endif
-       if (moroutput%taub) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'TAUB', ' ', io_prec    , 2, dimids=(/iddim_n, iddim_m/), longname='Bed shear stress used for morphology', unit='N/m2', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'TAUADD', ' ', IO_REAL4   , 2, dimids=(/iddim_n, iddim_m/), longname='Extra shear stress due to scour feature', unit='N/m2', acl='z')
        endif
        if (moroutput%taurat) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'TAURAT', ' ', io_prec    , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Excess bed shear ratio', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'TAURAT', ' ', IO_REAL4   , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Excess bed shear ratio', acl='z')
        endif
        if (moroutput%dm) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DM', ' ', io_prec        , 2, dimids=(/iddim_n, iddim_m/), longname='Arithmetic mean sediment diameter', unit='m', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DM', ' ', IO_REAL4       , 2, dimids=(/iddim_n, iddim_m/), longname='Arithmetic mean sediment diameter', unit='m', acl='z')
        endif
        if (moroutput%dg) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DG', ' ', io_prec        , 2, dimids=(/iddim_n, iddim_m/), longname='Geometric mean sediment diameter', unit='m', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DG', ' ', IO_REAL4       , 2, dimids=(/iddim_n, iddim_m/), longname='Geometric mean sediment diameter', unit='m', acl='z')
        endif
        if (moroutput%dgsd) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DGSD', ' ', io_prec      , 2, dimids=(/iddim_n, iddim_m/), longname='Geometric standard deviation of particle size mix', unit='m', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'DGSD', ' ', IO_REAL4     , 2, dimids=(/iddim_n, iddim_m/), longname='Geometric standard deviation of particle size mix', unit='m', acl='z')
        endif
        if (moroutput%percentiles) then
           do l = 1, nxx
              write(dxname,'(A,I2.2)') 'DXX',l
              write(dxdescr,'(A,F4.1,A)') 'Sediment diameter percentile '    , &
                 & xx(l)*100.0,' %'
-             call addelm(gdp, lundia, FILOUT_MAP, grpnam, dxname, ' ', io_prec   , 2, dimids=(/iddim_n, iddim_m/), longname=dxdescr, unit='m')
+             call addelm(gdp, lundia, FILOUT_MAP, grpnam, dxname, ' ', IO_REAL4  , 2, dimids=(/iddim_n, iddim_m/), longname=dxdescr, unit='m')
           enddo
        endif
        if (moroutput%frac) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'FRAC', ' ', io_prec      , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Availability fraction in top layer', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'FRAC', ' ', IO_REAL4     , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Availability fraction in top layer', acl='z')
        endif
        if (moroutput%mudfrac) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'MUDFRAC', ' ', io_prec   , 2, dimids=(/iddim_n, iddim_m/), longname='Mud fraction in top layer', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'MUDFRAC', ' ', IO_REAL4  , 2, dimids=(/iddim_n, iddim_m/), longname='Mud fraction in top layer', acl='z')
        endif
        if (moroutput%sandfrac) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SANDFRAC', ' ', io_prec  , 2, dimids=(/iddim_n, iddim_m/), longname='Sand fraction in top layer', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'SANDFRAC', ' ', IO_REAL4 , 2, dimids=(/iddim_n, iddim_m/), longname='Sand fraction in top layer', acl='z')
        endif
        if (moroutput%fixfac) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'FIXFAC', ' ', io_prec    , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Reduction factor due to limited sediment thickness', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'FIXFAC', ' ', IO_REAL4   , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Reduction factor due to limited sediment thickness', acl='z')
        endif
        if (moroutput%hidexp) then
-          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'HIDEXP', ' ', io_prec    , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Hiding and exposure factor', acl='z')
-       endif
-       if (moroutput%sedpar) then
-          do l = 1, lsedtot
-             write(sednr,'(I3.3)') l
-             do k = 1, noutpar(l)
-                call addelm(gdp, lundia, FILOUT_MAP, grpnam, trim(outpar_name(k,l))//trim(sednr), ' ', io_prec    , 2, dimids=(/iddim_n, iddim_m/), longname=trim(outpar_longname(k,l))//' for '//trim(gdp%gdsedpar%namsed(l)), acl='z')
-             enddo
-          enddo
+          call addelm(gdp, lundia, FILOUT_MAP, grpnam, 'HIDEXP', ' ', IO_REAL4   , 3, dimids=(/iddim_n, iddim_m, iddim_lsedtot/), longname='Hiding and exposure factor', acl='z')
        endif
        !
-       ! Add mor fields
+       ! Add mor fields  ! this is the same for nefis and netcdf... being moved out of the if-statement
        !
        if (lsedtot > 0) then
           call wrmorm(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
@@ -423,15 +394,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                       & filename  ,gdp       ,filetype  , &
                       & mf        ,ml        ,nf        ,nl        ,iarrc     )
        endif
-       !
-       ! Add statistics fields  
-       !
-       if (lsed > 0) then
-          call wrmorst(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
-                     & REQUESTTYPE_DEFINE   ,fds       ,grpnam    , &
-                     & filename  ,gdp       ,filetype  , &
-                     & mf        ,ml        ,nf        ,nl        ,iarrc     )
-       endif
     case (REQUESTTYPE_WRITE)
        !
        ! Write data to file
@@ -444,22 +406,18 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           !
           ! element 'WS'
           !
-          if (moroutput%ws) then
-             call wrtarray_nmkl(fds, filename, filetype, grpnam, celidt, &
-                           & nf, nl, mf, ml, iarrc, gdp, &
-                           & 0, kmax, lsed, ierror, lundia, ws, 'WS', &
-                           & smlay, kmaxout, kfsmin, kfsmax)
-             if (ierror /= 0) goto 9999
-          endif
+          call wrtarray_nmkl(fds, filename, filetype, grpnam, celidt, &
+                        & nf, nl, mf, ml, iarrc, gdp, smlay, &
+                        & kmaxout, 0, kmax, lsed, ierror, lundia, ws, 'WS', kfsmin, kfsmax)
+          if (ierror /= 0) goto 9999
           !
-          if (kmax==1 .and. moroutput%rsedeq) then
+          if (kmax==1) then
              !
              ! element 'RSEDEQ'
              !
              call wrtarray_nmkl(fds, filename, filetype, grpnam, celidt, &
-                          & nf, nl, mf, ml, iarrc, gdp, &
-                          & 1, kmax, lsed, ierror, lundia, rsedeq, 'RSEDEQ', &
-                          & smlay_restr, kmaxout_restr, kfsmin, kfsmax)
+                          & nf, nl, mf, ml, iarrc, gdp, smlay_restr, &
+                          & kmaxout_restr, 1, kmax, lsed, ierror, lundia, rsedeq, 'RSEDEQ', kfsmin, kfsmax)
              if (ierror /= 0) goto 9999
           endif
        endif
@@ -862,7 +820,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           if (ierror /= 0) goto 9999
        endif
        !
-       if (lsedtot > 0 .and. moroutput%sbuuvv) then
+       if (lsedtot > 0) then
           !
           ! element 'SBUU'
           !
@@ -913,18 +871,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           if (ierror /= 0) goto 9999
        endif
        !
-       if (lsed > 0 .and. moroutput%seddif) then
-          !
-          ! element 'SEDDIF'
-          !
-          call wrtarray_nmkl(fds, filename, filetype, grpnam, celidt, &
-                        & nf, nl, mf, ml, iarrc, gdp, &
-                        & 0, kmax, lsed, ierror, lundia, seddif, 'SEDDIF', &
-                        & smlay, kmaxout, kfsmin, kfsmax)
-          if (ierror /= 0) goto 9999
-       endif
-       !
-       if (lsed > 0 .and. moroutput%ssuuvv) then
+       if (lsed > 0) then
           !
           ! element 'SSUU'
           !
@@ -1059,12 +1006,10 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           !
           ! element 'RCA'
           !
-          if (moroutput%rca) then
-             call wrtarray_nml(fds, filename, filetype, grpnam, celidt, &
-                          & nf, nl, mf, ml, iarrc, gdp, lsed, &
-                          & ierror, lundia, rca, 'RCA')
-             if (ierror /= 0) goto 9999
-          endif
+          call wrtarray_nml(fds, filename, filetype, grpnam, celidt, &
+                       & nf, nl, mf, ml, iarrc, gdp, lsed, &
+                       & ierror, lundia, rca, 'RCA')
+          if (ierror /= 0) goto 9999
        endif
        !
        ! element 'DPS'
@@ -1126,16 +1071,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                         & nf, nl, mf, ml, iarrc, gdp, &
                         & ierror, lundia, rbuff2, 'TAUADD')
           deallocate(rbuff2)
-          if (ierror /= 0) goto 9999
-       endif
-       !
-       if (moroutput%taub) then
-          !
-          ! element 'TAUB'
-          !
-          call wrtarray_nm_ptr(fds, filename, filetype, grpnam, celidt, &
-                        & nf, nl, mf, ml, iarrc, gdp, &
-                        & ierror, lundia, taub, 'TAUB')
           if (ierror /= 0) goto 9999
        endif
        !
@@ -1245,29 +1180,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           if (ierror /= 0) goto 9999
        endif
        !
-       if (moroutput%sedpar) then
-          allocate( rbuff2(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) )
-          i = 0
-          do l = 1, lsedtot
-             write(sednr,'(I3.3)') l
-             do k = 1, noutpar(l)
-                i = ioutpar(k,l)
-                rbuff2(:, :) = -999.0_fp
-                do m = 1, mmax
-                   do n = 1, nmaxus
-                      call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff2(n, m) = outpar(i,nm)
-                   enddo
-                enddo
-                call wrtarray_nm(fds, filename, filetype, grpnam, celidt, &
-                              & nf, nl, mf, ml, iarrc, gdp, &
-                              & ierror, lundia, rbuff2, trim(outpar_name(k,l))//trim(sednr))
-                if (ierror /= 0) goto 9999
-             enddo
-          enddo
-          deallocate(rbuff2)
-       endif
-       !
        ! Add mor fields
        !
        if (lsedtot > 0) then
@@ -1286,15 +1198,6 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                       & filename  ,gdp       ,filetype  , &
                       & mf        ,ml        ,nf        ,nl        ,iarrc     )
           if (error) goto 9999
-       endif
-       !
-       ! Add statistics fields  
-       !
-       if (lsed > 0) then
-          call wrmorst(lundia    ,error     ,mmax      ,nmaxus    ,lsedtot   , &
-                     & REQUESTTYPE_WRITE   ,fds       ,grpnam    , &
-                     & filename  ,gdp       ,filetype  , &
-                     & mf        ,ml        ,nf        ,nl        ,iarrc     )
        endif
        !
 9999   continue

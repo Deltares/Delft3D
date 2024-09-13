@@ -4,7 +4,7 @@
 subroutine dfexitmpi ( iexit )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2016.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -28,8 +28,8 @@ subroutine dfexitmpi ( iexit )
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: dfexitmpi.F90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/parallel_mpi/dfexitmpi.F90 $
 !!--description-----------------------------------------------------------------
 !
 !   Exit or abort parallel application
@@ -48,7 +48,6 @@ subroutine dfexitmpi ( iexit )
 #ifdef HAVE_MPI
     use mpi
 #endif
-    use dfparall
     !
     implicit none
 !
@@ -60,25 +59,20 @@ subroutine dfexitmpi ( iexit )
 !
     integer :: ierr           ! error value of MPI call
     logical :: mpi_is_initialized       ! if true, parallel process is carried out with MPI
-    logical :: mpi_is_finalized         ! if true, mpi_finalize has already been called
 !
 !! executable statements -------------------------------------------------------
 !
 #ifdef HAVE_MPI
-    ! Don't stop MPI if this component didn't start it
-    if (.not.mpi_initialized_by_engine) return
-    !
     call mpi_initialized ( mpi_is_initialized, ierr )
-    call mpi_finalized   ( mpi_is_finalized  , ierr )
-    if ( mpi_is_initialized .and. .not. mpi_is_finalized ) then
+    if ( mpi_is_initialized ) then
 
-       call mpi_barrier ( engine_comm_world, ierr )
+       call mpi_barrier ( MPI_COMM_WORLD, ierr )
 
        if ( iexit /= 0 ) then
 
        ! in case of an error abort all MPI processes
 
-          call mpi_abort ( engine_comm_world, iexit, ierr )
+          call mpi_abort ( MPI_COMM_WORLD, iexit, ierr )
 
        else
 

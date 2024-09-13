@@ -3,7 +3,7 @@ subroutine barfil(lundia    ,filbar    ,error     ,mmax      ,nmax      , &
                 & mnbar     ,nambar    ,cbuv      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine barfil(lundia    ,filbar    ,error     ,mmax      ,nmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: barfil.f90 5729 2016-01-13 16:47:58Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/barfil.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Reads the barrier location definitions and
@@ -140,7 +140,8 @@ subroutine barfil(lundia    ,filbar    ,error     ,mmax      ,nmax      , &
     !
     ! open formatted file, if not formatted IOCOND <> 0
     !
-    open (newunit=luntmp, file = filbar(:lfile), form = 'formatted', status = 'old',    &
+    luntmp = newlun(gdp)
+    open (luntmp, file = filbar(:lfile), form = 'formatted', status = 'old',    &
         & iostat = iocond)
     if (iocond/=0) then
        error = .true.

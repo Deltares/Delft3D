@@ -3,7 +3,7 @@ subroutine bubfil(lundia    ,filbub    ,error     ,mmax      ,nmax      , &
                 & mnksrc    ,namsrc    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine bubfil(lundia    ,filbub    ,error     ,mmax      ,nmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: bubfil.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/bubfil.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Reads the bubble screen location definitions and
@@ -51,8 +51,6 @@ subroutine bubfil(lundia    ,filbub    ,error     ,mmax      ,nmax      , &
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
     real(fp), dimension(:)  , pointer :: zbubl
-    integer, pointer       :: mmaxgl
-    integer, pointer       :: nmaxgl
     integer, pointer       :: mfg 
     integer, pointer       :: nfg 
     integer, pointer       :: mlg 
@@ -121,8 +119,6 @@ subroutine bubfil(lundia    ,filbub    ,error     ,mmax      ,nmax      , &
 !! executable statements -------------------------------------------------------
 !
     zbubl   => gdp%gdbubble%zbubl
-    mmaxgl  => gdp%gdparall%mmaxgl
-    nmaxgl  => gdp%gdparall%nmaxgl
     mfg     => gdp%gdparall%mfg 
     mlg     => gdp%gdparall%mlg 
     nfg     => gdp%gdparall%nfg 
@@ -150,7 +146,8 @@ subroutine bubfil(lundia    ,filbub    ,error     ,mmax      ,nmax      , &
     !
     ! open formatted file, if not formatted IOCOND <> 0
     !
-    open (newunit=luntmp, file = filbub(:lfile), status = 'old', iostat = iocond)
+    luntmp = newlun(gdp)
+    open (luntmp, file = filbub(:lfile), status = 'old', iostat = iocond)
     if (iocond /= 0) then
        error = .true.
        call prterr(lundia, 'G007', filbub(:lfile))
@@ -245,17 +242,17 @@ subroutine bubfil(lundia    ,filbub    ,error     ,mmax      ,nmax      , &
           goto 300
        endif
        !
-       ! Inside (global) computational domain ?
+       ! Inside computational domain ?
        !
-       if (m1>mmaxgl .or. m1<1 .or. m2>mmaxgl .or. m2<1) then
+       if (m1>mmax .or. m1<1 .or. m2>mmax .or. m2<1) then
           call prterr(lundia, 'V249', errmsg(:22))
-          error = .true.
-          goto 300
+          ! error = .true.
+          ! goto 300
        endif
-       if (n1>nmaxgl .or. n1<1 .or. n2>nmaxgl .or. n2<1) then
+       if (n1>nmaxus .or. n1<1 .or. n2>nmaxus .or. n2<1) then
           call prterr(lundia, 'V249', errmsg(:22))
-          error = .true.
-          goto 300
+          ! error = .true.
+          ! goto 300
        endif
        mcount           = abs(ival(3)-ival(1)) + 1
        ncount           = abs(ival(4)-ival(2)) + 1

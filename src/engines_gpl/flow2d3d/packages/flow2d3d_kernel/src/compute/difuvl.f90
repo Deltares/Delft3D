@@ -17,7 +17,7 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
                 & seddif    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -41,8 +41,8 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: difuvl.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/difuvl.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes transport in the u, v and w-direction.
@@ -98,12 +98,11 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
     real(fp), dimension(:,:,:)          , pointer :: fluxuc
     real(fp), dimension(:,:,:)          , pointer :: fluxv
     real(fp), dimension(:,:,:)          , pointer :: fluxvc
-    real(fp)                            , pointer :: dryflc
     real(fp)                            , pointer :: vicmol
     real(fp)                            , pointer :: xlo
     integer                             , pointer :: iro
     type (flwoutputtype)                , pointer :: flwoutput
-    integer                             , pointer :: max_mud_sedtyp
+    real(fp), pointer :: THRESsmallCELL
 !
 ! Global variables
 !
@@ -127,7 +126,7 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
     integer                                                     , intent(in)  :: nmmaxj     !  Description and declaration in dimens.igs
     integer                                                     , intent(in)  :: norow      !  Description and declaration in esm_alloc_int.f90
     integer                                                     , intent(in)  :: nst
-    integer, dimension(5, norow)                                , intent(in)  :: irocol     !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(7, norow)                                , intent(in)  :: irocol     !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)                   , intent(in)  :: kcs        !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)                   , intent(in)  :: kcu        !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)                   , intent(in)  :: kfs        !  Description and declaration in esm_alloc_int.f90
@@ -239,7 +238,6 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
     real(fp)                                                        :: difl
     real(fp)                                                        :: difr
     real(fp)                                                        :: diz1
-    real(fp)                                                        :: fac
     real(fp)                                                        :: flux
     real(fp)                                                        :: h0
     real(fp)                                                        :: h0i
@@ -254,24 +252,22 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
     real(fp)                                                        :: tsg
     real(fp)                                                        :: uuu
     real(fp)                                                        :: vvv
-    real(fp)                                                        :: hmin
     integer                                                         :: nm_pos ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
 !
 !! executable statements -------------------------------------------------------
 !
+    THRESsmallCELL => gdp%gdimbound%THRESsmallCELL
     eps         => gdp%gdconst%eps
     fluxu       => gdp%gdflwpar%fluxu
     fluxuc      => gdp%gdflwpar%fluxuc
     fluxv       => gdp%gdflwpar%fluxv
     fluxvc      => gdp%gdflwpar%fluxvc
     flwoutput   => gdp%gdflwpar%flwoutput
-    dryflc      => gdp%gdnumeco%dryflc
     vicmol      => gdp%gdphysco%vicmol
     dicoww      => gdp%gdphysco%dicoww
     iro         => gdp%gdphysco%iro
     xlo         => gdp%gdturcoe%xlo
     ck          => gdp%gdturcoe%ck
-    max_mud_sedtyp => gdp%gdsedpar%max_mud_sedtyp
     !
     ddb = gdp%d%ddbound
     icxy = max(icx, icy) 
@@ -300,28 +296,32 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
         flwoutput      => gdp%gdflwpar%flwoutput
         !
         if (flwoutput%cumdifuflux) then
-            fluxuc = 0.0_fp
-            fluxvc = 0.0_fp
+            fluxuc = 0.0
+            fluxvc = 0.0
         endif
     endif
     !
     ! Initialization
     !
-    fluxu = 0.0_fp
-    fluxv = 0.0_fp
+    fluxu = 0.0
+    fluxv = 0.0
     !
     !  INITIALIZE FOR ALL (nm, k)
     !
-    aak = 0.0_fp
-    cck = 0.0_fp
+    aak = 0.0
+    cck = 0.0
     !
     do k = 1, kmax
        do nm = 1, nmmax
           if (kfs(nm)==1) then
+             if (volum1(nm, k).gt.THRESsmallCELL) then
              bbk(nm, k) = volum1(nm, k)/timest
           else
-             bbk(nm, k) = 1.0_fp
-             if (lsec>0) r0(nm, k, lsecfl) = 0.0_fp
+                bbk(nm, k) = 1._fp
+             endif
+          else
+             bbk(nm, k) = 1.0
+             if (lsec>0) r0(nm, k, lsecfl) = 0.0
           endif
        enddo
     enddo
@@ -332,7 +332,11 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
        do k = 1, kmax
           do nm = 1, nmmax
              if ( (kfs(nm)==1) .and. (kcs(nm)==1) ) then 
+                if (volum1(nm, k).gt.THRESsmallCELL) then
                 ddkl(nm, k, l) = volum0(nm, k)*r0(nm, k, l)/timest
+             else
+                ddkl(nm, k, l) = r0(nm, k, l)
+             endif
              else
                 ddkl(nm, k, l) = r0(nm, k, l)
              endif
@@ -354,7 +358,7 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
           if (kfu(nm)*kadu(nm, k) == 1) then
              uuu = qxk(nm, k)/(guu(nm)*hu(nm)*thick(k))
              cfl = uuu*timest/gvu(nm)
-             if (qxk(nm, k) > 0.0_fp) then
+             if (qxk(nm, k) > 0.0) then
                 do l = 1, lstsci
                    rr1 = abs(r0(nmd, k, l) - 2.0_fp*r0(nm, k, l) + r0(nmu, k, l))
                    rr2 = abs(r0(nmd, k, l) - r0(nmu, k, l))
@@ -410,7 +414,7 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
           if (kfv(nm)*kadv(nm, k) == 1) then
              vvv = qyk(nm, k)/(gvv(nm)*hv(nm)*thick(k))
              cfl = vvv*timest/guv(nm)
-             if (qyk(nm, k) > 0.0_fp) then
+             if (qyk(nm, k) > 0.0) then
                 do l = 1, lstsci
                    rr1 = abs(r0(ndm, k, l) - 2.0_fp*r0(nm, k, l) + r0(num, k, l))
                    rr2 = abs(r0(ndm, k, l) - r0(num, k, l))
@@ -475,13 +479,12 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
              nmu = icx
              do nm = 1, nmmax
                 nmu = nmu + 1
-                hmin = min(s1(nm) + real(dps(nm),fp), s1(nmu) + real(dps(nmu),fp))
-                if (kfu(nm)*kadu(nm, k) /= 0 .and. hmin > dryflc) then
+                if (kfu(nm)*kadu(nm, k) /= 0) then
                    cl             = r0   (nm ,k,l)
                    difl           = dicuv(nm ,k)
                    cr             = r0   (nmu,k,l)
                    difr           = dicuv(nmu,k)
-                   flux           = 0.5_fp* (cr-cl) * (difl+difr) / (0.7_fp*gvu(nm))
+                   flux           = 0.5* (cr-cl) * (difl+difr) / (0.7*gvu(nm))
                    maskval        = max(0, 2 - abs(kcs(nm))) 
                    fluxu(nm,k,l)  = fluxu(nm ,k,l) + areau(nm,k)*flux*maskval
                    ddkl (nm,k,l)  = ddkl (nm ,k,l) + areau(nm,k)*flux*maskval
@@ -505,13 +508,12 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
              num = icy
              do nm = 1, nmmax
                 num = num + 1
-                hmin = min(s1(nm) + real(dps(nm),fp), s1(num) + real(dps(num),fp))
-                if (kfv(nm)*kadv(nm, k) /= 0 .and. hmin > dryflc) then
+                if (kfv(nm)*kadv(nm, k) /= 0) then
                    cl             = r0   (nm ,k,l)
                    difl           = dicuv(nm ,k)
                    cr             = r0   (num,k,l)
                    difr           = dicuv(num,k)
-                   flux           = 0.5_fp * (cr-cl) * (difl+difr) / (0.7_fp*guv(nm))
+                   flux           = 0.5 * (cr-cl) * (difl+difr) / (0.7*guv(nm))
                    maskval        = max(0, 2 - abs(kcs(nm))) 
                    fluxv(nm ,k,l) = fluxv(nm ,k,l) + areav(nm,k)*flux*maskval
                    ddkl (nm ,k,l) = ddkl (nm ,k,l) + areav(nm,k)*flux*maskval
@@ -564,12 +566,12 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
              !
              if (kfs(nm)==1) then
                 qzw = qzk(nm, k)
-                if (qzw>0.0_fp) then
-                   adza = 0.5_fp*qzw*(1 - kfw)
-                   adzc = 0.5_fp*qzw*(1 + kfw)
+                if (qzw>0.0) then
+                   adza = 0.5*qzw*(1 - kfw)
+                   adzc = 0.5*qzw*(1 + kfw)
                 else
-                   adza = 0.5_fp*qzw*(1 + kfw)
-                   adzc = 0.5_fp*qzw*(1 - kfw)
+                   adza = 0.5*qzw*(1 + kfw)
+                   adzc = 0.5*qzw*(1 - kfw)
                 endif
                 aak(nm, k + 1) = aak(nm, k + 1) + adza
                 bbk(nm, k + 1) = bbk(nm, k + 1) + adzc
@@ -605,20 +607,20 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
              ls = l - max(lsal, ltem)
           endif
           do k = 1, kmax - 1
-             tsg = 0.5_fp*(thick(k) + thick(k + 1))
+             tsg = 0.5*(thick(k) + thick(k + 1))
              do nm = 1, nmmax
                 !
                 ! DIFFUSION IN VERTICAL DIRECTION
                 !
                 if (kfs(nm) == 1) then
                    h0  = max(0.1_fp, s0(nm) + real(dps(nm),fp))
-                   h0i = 1.0_fp / h0
+                   h0i = 1.0 / h0
                    !
                    ! Internal wave contribution
                    !
                    sqrtbv = max(0.0_fp, bruvai(nm, k))
                    sqrtbv = sqrt(sqrtbv)
-                   difiwe = 0.2_fp * sqrtbv * xlo**2
+                   difiwe = 0.2 * sqrtbv * xlo**2
                    if (ls > 0) then
                       !
                       ! sediment constituent:
@@ -664,16 +666,16 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
           do l = 1, lstsc
              do k = 1, kmax
                 ddkl(nm, k, l) = r0(nm, k, l)
-                aakl(nm, k, l) = 0.0_fp
-                bbkl(nm, k, l) = 1.0_fp
-                cckl(nm, k, l) = 0.0_fp
+                aakl(nm, k, l) = 0.0
+                bbkl(nm, k, l) = 1.0
+                cckl(nm, k, l) = 0.0
              enddo
           enddo
        endif
     enddo
     !
     ! BOUNDARY CONDITIONS
-    !     On open boundary no secondary flow (=> loop over LSTSC)
+    !     On open boundary no secondarY flow (=> loop over LSTSC)
     !
     do ic = 1, norow
        n = irocol(1, ic)
@@ -706,8 +708,8 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
        lst = max(lsal, ltem)
        do l = 1, lsed
           ll = lst + l
-          if ((eqmbcsand .and. sedtyp(l) > max_mud_sedtyp) .or. &
-            & (eqmbcmud  .and. sedtyp(l) <= max_mud_sedtyp)) then
+          if ((eqmbcsand .and. sedtyp(l) == SEDTYP_NONCOHESIVE_SUSPENDED) .or. &
+            & (eqmbcmud  .and. sedtyp(l) == SEDTYP_COHESIVE)             ) then
              if (kcu(nmf) == 1) then
                 do k = 1, kmax
                    ddkl(nmf, k, ll) = max(0.0_fp, r0(nmfu, k, ll))
@@ -739,7 +741,7 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
                       h0old = s0(nm) + real(dps(nm),fp)
                       r1(nm, k, l) = sour(nm, k, l)*h0old/(sink(nm, k, l)*h0new)
                    else
-                      r1(nm, k, l) = 0.0_fp
+                      r1(nm, k, l) = 0.0
                    endif
                 endif
              enddo
@@ -748,13 +750,15 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
           do k = 1, kmax
              do nm = 1, nmmax
                 if ( (kfs(nm)==1) .and. (kcs(nm)==1) ) then 
+                   if (volum1(nm, k).gt.THRESsmallCELL) then ! I already set bbkl(nm, k, l)=1 if volum1 small
                    bbkl(nm, k, l) = bbkl(nm, k, l) + sink(nm, k, l)*volum1(nm, k)
                    ddkl(nm, k, l) = ddkl(nm, k, l) + sour(nm, k, l)*volum0(nm, k)
+                endif
                 endif
              enddo
           enddo
           !
-          ! set concentrations in dry points and in open boundary points
+          ! set concentraties in dry points and in open boundary points
           !
           do k = 1, kmax
              do nm = 1, nmmax
@@ -789,9 +793,9 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
        do nm = 1, nmmax
           if (kcs(nm) == 3 ) then
              do k = 1, kmax
-                aakl(nm,k,l) = 0.0_fp
-                bbkl(nm,k,l) = 1.0_fp
-                cckl(nm,k,l) = 0.0_fp
+                aakl(nm,k,l) = 0.0
+                bbkl(nm,k,l) = 1.0
+                cckl(nm,k,l) = 0.0
                 ddkl(nm,k,l) = r0(nm,k,l)
              enddo
           endif
@@ -848,7 +852,7 @@ subroutine difuvl(icreep    ,timest    ,lundia    ,nst       ,icx       , &
              ! because of row scaling
              !
              do k = 2, kmax
-                bi = 1.0_fp / (bbkl(nm, k, l) - aakl(nm, k, l)*cckl(nm, k - 1, l))
+                bi = 1./(bbkl(nm, k, l) - aakl(nm, k, l)*cckl(nm, k - 1, l))
                 cckl(nm, k, l) = cckl(nm, k, l) * bi
                 r1(nm, k, l) = (ddkl(nm, k, l) - aakl(nm, k, l)*r1(nm, k - 1, l)) * bi
              enddo

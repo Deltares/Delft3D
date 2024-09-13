@@ -4,7 +4,7 @@ subroutine culver(icx       ,icy       ,kmax      ,nsrc      ,kfs       , &
                 & sumrho    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine culver(icx       ,icy       ,kmax      ,nsrc      ,kfs       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: culver.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/culver.f90 $
 !!--description-----------------------------------------------------------------
 ! Computes the discharge relation through a culvert.
 !
@@ -37,7 +37,6 @@ subroutine culver(icx       ,icy       ,kmax      ,nsrc      ,kfs       , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use iso_c_binding, only: c_char
     !
     use globaldata
     !
@@ -131,17 +130,15 @@ subroutine culver(icx       ,icy       ,kmax      ,nsrc      ,kfs       , &
 
     ! Interface to dll is in High precision!
     !
-    real(hp)                                 :: disch_dll
-    real(hp)                                 :: pos1_dll
-    real(hp)                                 :: pos2_dll
-    real(hp)                                 :: rmissval
-    integer(pntrsize)                        :: error_ptr
-    integer(pntrsize), external              :: perf_function_culvert
-    character(256)                           :: errmsg
-    character(256)                           :: message        ! Contains message from shared library
-    character(kind=c_char)                   :: message_c(257) ! C- version of "message", including C_NULL_CHAR
-                                                               ! Calling perf_function_culvert with "message" caused problems
-                                                               ! Solved by using "message_c"
+    real(hp)                    :: disch_dll
+    real(hp)                    :: pos1_dll
+    real(hp)                    :: pos2_dll
+    real(hp)                    :: rmissval
+    integer(pntrsize)           :: error_ptr
+    integer(pntrsize), external :: perf_function_culvert
+    character(256)              :: errmsg
+    character(256)              :: message     ! Contains message from
+    !
     integer                        , pointer :: max_integers
     integer                        , pointer :: max_reals
     integer                        , pointer :: max_strings
@@ -399,10 +396,6 @@ subroutine culver(icx       ,icy       ,kmax      ,nsrc      ,kfs       , &
              pos1_dll     = rmissval
              pos2_dll     = rmissval
              message     = ' '
-             do i=1,256
-                message_c(i) = message(i:i)
-             enddo
-             message_c(257) = C_NULL_CHAR
              call psemlun
              error_ptr = 0
              error_ptr = perf_function_culvert(dll_handle(isrc), dll_function(isrc), &
@@ -410,8 +403,7 @@ subroutine culver(icx       ,icy       ,kmax      ,nsrc      ,kfs       , &
                                                dll_reals       , max_reals         , &
                                                dll_strings     , max_strings       , &
                                                disch_dll       , pos1_dll          , &
-                                               pos2_dll        , message_c)
-             message = transfer(message_c(1:256), message)
+                                               pos2_dll        , message)
              call vsemlun
              if (error_ptr /= 0) then
                 write(errmsg,'(a,a,a)') 'Cannot find function "',trim(dll_function(isrc)),'" in dynamic library.'
@@ -522,7 +514,7 @@ integer function intlay    (lundia     ,zmodel    ,kfsmin    ,kfsmax    , &
                           & kmax       ,thick     ,isrc      ,intake    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -546,8 +538,8 @@ integer function intlay    (lundia     ,zmodel    ,kfsmin    ,kfsmax    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: culver.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/culver.f90 $
 !!--description-----------------------------------------------------------------
 ! Computes the discharge relation through a culvert.
 !

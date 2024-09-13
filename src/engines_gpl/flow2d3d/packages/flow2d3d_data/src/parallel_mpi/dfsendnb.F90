@@ -4,7 +4,7 @@
 subroutine dfsendnb ( iptr, ilen, itype, idest, itag, gdp )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2016.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -28,8 +28,8 @@ subroutine dfsendnb ( iptr, ilen, itype, idest, itag, gdp )
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: dfsendnb.F90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/parallel_mpi/dfsendnb.F90 $
 !!--description-----------------------------------------------------------------
 !
 !   Data is sent to a neighbour
@@ -77,7 +77,7 @@ subroutine dfsendnb ( iptr, ilen, itype, idest, itag, gdp )
     if (.not.parll) return
     !
 #ifdef HAVE_MPI
-    call mpi_isend ( iptr, ilen, itype, idest-1, itag, engine_comm_world, request, ierr )
+    call mpi_isend ( iptr, ilen, itype, idest-1, itag, MPI_COMM_WORLD, request, ierr )
     call mpi_wait(request, mpistatus, ierr)
     if ( ierr /= MPI_SUCCESS ) then
        write (msgstr,'(a,i5,a,i3.3)') 'MPI produces some internal error - return code is ',ierr,' and node number is ',inode

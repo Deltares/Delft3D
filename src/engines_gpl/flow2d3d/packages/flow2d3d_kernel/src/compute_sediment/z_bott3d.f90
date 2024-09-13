@@ -2,7 +2,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                   & lsal      ,ltem      ,kfs       ,kfu       ,kfv       , &
                   & r1        ,s0        ,kcs       , &
                   & dps       ,gsqs      ,guu       , &
-                  & gvv       ,s1        ,thick     ,dpd       , &
+                  & gvv       ,s1        ,thick     ,dp        , &
                   & umean     ,vmean     ,sbuu      ,sbvv      , &
                   & depchg    ,nst       ,hu        , &
                   & hv        ,sig       ,u1        ,v1        , &
@@ -14,7 +14,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                   & kfvmax    ,dt        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -38,8 +38,8 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_bott3d.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute_sediment/z_bott3d.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes suspended sediment transport correction
@@ -62,12 +62,12 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
+    use sp_buffer
     use flow_tables
     use bedcomposition_module
     use globaldata
     use dfparall
     use sediment_basics_module
-    use morstatistics, only: morstats
     !
     implicit none
     !
@@ -81,13 +81,12 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     real(hp)                             , pointer :: morft
     real(fp)                             , pointer :: morfac
     real(fp)                             , pointer :: sus
-    real(fp)                             , pointer :: suscorfac
     real(fp)                             , pointer :: bed
-    real(fp)              , dimension(:) , pointer :: thetsd
+    real(fp)                             , pointer :: tmor
+    real(fp)                             , pointer :: thetsd
     real(fp)                             , pointer :: sedthr
     real(fp)                             , pointer :: hmaxth
     integer                              , pointer :: mergehandle
-    integer                              , pointer :: itcmp
     integer                              , pointer :: itmor
     type (handletype)                    , pointer :: bcmfile
     type (bedbndtype)     , dimension(:) , pointer :: morbnd
@@ -104,8 +103,6 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     logical                              , pointer :: sedim
     logical                              , pointer :: scour
     logical                              , pointer :: snelli
-    logical                              , pointer :: l_suscor
-    logical, dimension(:)                , pointer :: cmpupdfrac
     real(fp), dimension(:)               , pointer :: factor
     real(fp)                             , pointer :: slope
     real(fp), dimension(:)               , pointer :: bc_mor_array
@@ -132,7 +129,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     integer                              , pointer :: nmudfrac
     real(fp)      , dimension(:)         , pointer :: rhosol
     real(fp)      , dimension(:)         , pointer :: cdryb
-    integer       , dimension(:)         , pointer :: tratyp
+    integer       , dimension(:)         , pointer :: sedtyp
     integer                              , pointer :: julday
     integer                              , pointer :: ntstep
     real(fp), dimension(:,:,:)           , pointer :: fluxu
@@ -173,10 +170,10 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     integer , dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: kfu    !  Description and declaration in esm_alloc_int.f90
     integer , dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: kfv    !  Description and declaration in esm_alloc_int.f90
     logical                                            , intent(in)  :: sscomp
-    real(fp)                                           , intent(in)  :: dt     !< (half) time step in seconds
+    real(fp)                                           , intent(in)  :: dt
     real(fp)                                                         :: timhr
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                       :: depchg !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                       :: dpd    !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                       :: dp     !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)                     :: dps    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: gsqs   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: guu    !  Description and declaration in esm_alloc_real.f90
@@ -264,7 +261,6 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     real(fp) :: totfixfrac
     real(fp) :: trndiv
     real(fp) :: z
-    real(hp) :: dim_real
     real(fp) :: cellht
     real(fp) :: zusum
 !
@@ -275,13 +271,12 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     morft               => gdp%gdmorpar%morft
     morfac              => gdp%gdmorpar%morfac
     sus                 => gdp%gdmorpar%sus
-    suscorfac           => gdp%gdmorpar%suscorfac
     bed                 => gdp%gdmorpar%bed
+    tmor                => gdp%gdmorpar%tmor
     thetsd              => gdp%gdmorpar%thetsd
     sedthr              => gdp%gdmorpar%sedthr
     hmaxth              => gdp%gdmorpar%hmaxth
     mergehandle         => gdp%gdmorpar%mergehandle
-    itcmp               => gdp%gdmorpar%itcmp
     itmor               => gdp%gdmorpar%itmor
     bcmfile             => gdp%gdmorpar%bcmfile
     morbnd              => gdp%gdmorpar%morbnd
@@ -289,7 +284,6 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     bedupd              => gdp%gdmorpar%bedupd
     cmpupd              => gdp%gdmorpar%cmpupd
     neglectentrainment  => gdp%gdmorpar%neglectentrainment
-    l_suscor            => gdp%gdmorpar%l_suscor    
     multi               => gdp%gdmorpar%multi
     wind                => gdp%gdprocs%wind
     temp                => gdp%gdprocs%temp
@@ -323,10 +317,9 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     sinkse              => gdp%gderosed%sinkse
     sourse              => gdp%gderosed%sourse
     nmudfrac            => gdp%gdsedpar%nmudfrac
-    cmpupdfrac          => gdp%gdsedpar%cmpupdfrac
     rhosol              => gdp%gdsedpar%rhosol
     cdryb               => gdp%gdsedpar%cdryb
-    tratyp              => gdp%gdsedpar%tratyp
+    sedtyp              => gdp%gdsedpar%sedtyp
     julday              => gdp%gdinttim%julday
     ntstep              => gdp%gdinttim%ntstep
     fluxu               => gdp%gdflwpar%fluxu
@@ -342,7 +335,6 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     bedload = .false.
     dtmor   = dt*morfac
     nm_pos  = 1
-    dim_real = real(nmmax*lsedtot,hp)
     !
     !   Calculate suspended sediment transport correction vector (for SAND)
     !   Note: uses GLM velocites, consistent with DIFU
@@ -363,14 +355,14 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     !
     ! calculate corrections
     !
-    if (sus /= 0.0_fp .and. l_suscor) then
+    if (sus /= 0.0_fp) then
        !
        ! suspension transport correction vector only for 3D
        !
        if (kmax > 1) then
           do l = 1, lsed
              ll = lstart + l
-             if (tratyp(l) == TRA_COMBINE) then
+             if (sedtyp(l) == SEDTYP_NONCOHESIVE_SUSPENDED) then
                 do nm = 1, nmmax
                    nmu = nm + icx
                    num = nm + icy
@@ -464,14 +456,14 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                             cumflux = cumflux - u1(nm,k)*(cavg-r1avg)*dz
                          endif
                       endif
-                      sucor(nm,l) = -suscorfac * cumflux
+                      sucor(nm,l) = -cumflux
                       !
                       ! bedload will be reduced in case of sediment transport
                       ! over a non-erodible layer (no sediment in bed) in such
                       ! a case, the suspended sediment transport vector must
                       ! also be reduced.
                       !
-                      if ((sucor(nm,l)>0.0_fp .and. abs(kcs(nm))==1) .or. abs(kcs(nmu))/=1) then
+                      if ((sucor(nm,l)>0.0_fp .and. kcs(nm)==1) .or. kcs(nmu)/=1) then
                          sucor(nm,l) = sucor(nm,l) * fixfac(nm,l)
                       else
                          sucor(nm,l) = sucor(nm,l) * fixfac(nmu,l)
@@ -553,7 +545,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                             cumflux = cumflux - v1(nm,k)*(cavg-r1avg)*dz
                          endif
                       endif
-                      svcor(nm, l) = -suscorfac * cumflux
+                      svcor(nm, l) = -cumflux
                       !
                       ! bedload will be reduced in case of sediment transport
                       ! over a non-erodible layer (no sediment in bed) in such
@@ -567,7 +559,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                       endif
                    endif
                 enddo ! nm
-             endif    ! tratyp = TRA_COMBINE
+             endif    ! sedtyp = SEDTYP_NONCOHESIVE_SUSPENDED
           enddo       ! l
        endif          ! kmax>1
        !
@@ -575,7 +567,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
        ! output
        ! Note: uses DIFU fluxes
        ! if suspended sediment vector is required this half timestep
-       ! note, will be required if nst >= itmor for cumulative
+       ! note, will be required if nst.ge.itmor for cumulative
        ! transports
        !
        if (sscomp .or. nst>=itmor) then
@@ -614,26 +606,25 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
           enddo     ! l
        endif        ! sscomp .or. nst>=itmor
     endif           ! sus /= 0.0
-    ! make sure that the transport layer thickness is known
-    ! if the bed composition computations have started or
-    ! if dredging is active
     !
-    if ((nst >= itcmp .and. cmpupd) .or. dredge) then
+    ! if morphological computations have started
+    !
+    if (nst >= itmor) then
        !
-       ! Determine new thickness of transport layer
+       ! Increment morphological time
+       ! Note: dtmor in seconds, hydrt and morft in days!
        !
-       call compthick(dps       ,s1        ,nmmax     ,gdp       )
-    endif
-    !
-    ! if the bed composition computations have started ...
-    !
-    if (nst >= itcmp) then
+       morft = morft + real(dtmor,hp)/86400.0_hp
+       !
+       ! Increment hydraulic time if morfac>0; don't include morfac=0 periods while computing average morfac.
+       !
+       if (morfac > 0.0_fp) hydrt = hydrt + real(dt,hp)/86400.0_hp
        !
        ! Bed boundary conditions: transport condition
        !
        do jb = 1, nto
           icond = morbnd(jb)%icond
-          if (icond == 4 .or. icond == 5 .or. icond == 8) then
+          if (icond == 4 .or. icond == 5) then
              !
              ! Open boundary with transport boundary condition:
              ! Get data from table file
@@ -686,9 +677,9 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                 lsedbed = lsedtot - nmudfrac
                 do l = 1, lsedtot
                    !
-                   ! bed load transport only for fractions with bedload component
+                   ! bed load transport always zero for mud fractions
                    !
-                   if (.not. has_bedload(tratyp(l))) cycle
+                   if (sedtyp(l) == SEDTYP_COHESIVE) cycle
                    li = li + 1
                    !
                    if (morbnd(jb)%ibcmt(3) == lsedbed) then
@@ -701,19 +692,14 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                    !
                    if (icond == 4) then
                       !
-                      ! transport volume including pores
+                      ! transport including pores
                       !
                       rate = rate*cdryb(l)
-                   elseif (icond == 5) then
+                   else
                       !
-                      ! transport volume excluding pores
+                      ! transport excluding pores
                       !
                       rate = rate*rhosol(l)
-                   elseif (icond == 8) then
-                      !
-                      ! transport mass
-                      !
-                      !rate = rate
                    endif
                    !
                    ! impose boundary condition
@@ -725,7 +711,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                    endif
                 enddo ! l (sediment fraction)
              enddo    ! ib (boundary point)
-          endif       ! icond = 4, 5 or 8 (boundary with transport condition)
+          endif       ! icond = 4 or 5 (boundary with transport condition)
        enddo          ! jb (open boundary) 
        !
        ! Update quantity of bottom sediment
@@ -736,7 +722,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
        !
        bedchangemesscount = 0
        do l = 1, lsedtot
-          bedload = is_bedload(tratyp(l))
+          bedload = sedtyp(l)==SEDTYP_NONCOHESIVE_TOTALLOAD
           ll = lstart + l
           do nm = 1, nmmax
              !
@@ -773,7 +759,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                    !
                    ! mass balance includes entrainment and deposition
                    !
-                   if (tratyp(l) == TRA_COMBINE) then
+                   if (sedtyp(l) == SEDTYP_NONCOHESIVE_SUSPENDED) then
                       !
                       ! l runs from 1 to lsedtot, kmxsed is defined for 1:lsed
                       ! The first lsed fractions are the suspended fractions,
@@ -852,9 +838,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
              !
              dbodsd(l, nm) = dbodsd(l, nm) + dsdnm
              !
-             if (.not. bedload) then
-                call updwaqflxsed(nst, nm, l, trndiv, sedflx, eroflx, gdp)
-             endif
+             call updwaqflxsed(nst, nm, l, trndiv, sedflx, eroflx, gdp)
           enddo    ! nm
        enddo       ! l
        if (bedchangemesscount > bedchangemessmax) then
@@ -941,10 +925,10 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                 !
                 if (hmaxth > sedthr) then
                    h1   = real(dps(nm),fp) + s1(nm)
-                   thet = (h1 - sedthr)/(hmaxth - sedthr)*thetsd(nm)
-                   thet = min(thet, thetsd(nm))
+                   thet = (h1 - sedthr)/(hmaxth - sedthr)*thetsd
+                   thet = min(thet, thetsd)
                 else
-                   thet = thetsd(nm)
+                   thet = thetsd
                 endif
                 !
                 ! Combine some constant factors in variable THET
@@ -1005,13 +989,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                 mergebuf(i) = real(dbodsd(l, nm),hp)
              enddo
           enddo
-          ! First sent the array size
-          ! Needed since FM communicates the time step (dim_real=1)
-          ! Since here the dbodsed array is going to be communicated, dim_real=nmmax*lsedtot
-          call putarray (mergehandle,dim_real,1)
-          ! Then sent the dbodsed array
           call putarray (mergehandle,mergebuf(1:nmmax*lsedtot),nmmax*lsedtot)
-          ! Then receive the merged dbodsed array
           call getarray (mergehandle,mergebuf(1:nmmax*lsedtot),nmmax*lsedtot)
           i = 0
           do l = 1, lsedtot
@@ -1041,17 +1019,13 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
        !
        if (cmpupd) then
           !
-          ! exclude specific fractions if cmpupdfrac has been set
+          ! Determine new thickness of transport layer
           !
-          do l = 1, lsedtot
-             if (.not. cmpupdfrac(l)) then
-                dbodsd(l, :) = 0.0_fp 
-             endif
-          enddo
+          call compthick(dps       ,s1        , &
+                       & nmmax     ,gdp       )
           !
           ! Update layers and obtain the depth change
           !
-          call morstats(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, ssvv, gdp%d%nmlb, gdp%d%nmub, lsedtot, lsed)
           if (updmorlyr(gdp%gdmorlyr, dbodsd, depchg, gdp%messages) /= 0) then
              call writemessages(gdp%messages, lundia)
              call d3stop(1, gdp)
@@ -1065,20 +1039,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
           call bndmorlyr(lsedtot   ,timhr        , &
                        & nto       ,bc_mor_array , &
                        & gdp       )
-       endif
-    endif ! nst >= itcmp
-    !
-    ! if bed level computations have started
-    !
-    if (nst >= itmor) then
-       !
-       ! Increment morphological and hydraulic time (the latter is used to compute the average morfac over periods with morfac>0).
-       ! Note: dtmor in seconds, hydrt and morft in days!
-       !
-       morft = morft + real(dtmor,hp)/86400.0_hp
-       if (morfac > 0.0_fp) hydrt = hydrt + real(dt,hp)/86400.0_hp
-       !
-       if (.not. cmpupd) then
+       else
           !
           ! Compute bed level changes without actually updating the bed composition
           !
@@ -1130,7 +1091,6 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
              ! entries in the morbnd structure. The sum of alfa_mag(ib)**2
              ! will be equal to 1.
              !
-             icond = morbnd(jb)%icond
              if (nxmx == nmu) then
                 if (umean(nm)<0.0) icond = 0
              elseif (nxmx == nmd) then
@@ -1142,12 +1102,11 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
              endif
              !
              select case(icond)
-             case (0,4,5,8)
+             case (0,4,5)
                 !
                 ! outflow or free boundary (0)
-                ! or prescribed transport volume with pores (4)
-                ! or prescribed transport volume without pores (5)
-                ! or prescribed transport mass (8)
+                ! or prescribed transport with pores (4)
+                ! or prescribed transport without pores (5)
                 !
                 depchg(nm) = depchg(nm) + depchg(nxmx) * alfa_mag
              case (1)
@@ -1183,7 +1142,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
              end select
           enddo ! ib (boundary point)
        enddo    ! jb (open boundary)
-    else ! nst < itmor
+    else
        !
        ! if morphological computations haven't started yet
        !
@@ -1196,7 +1155,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     !
     if (bedupd) then
        !
-       ! note: dps and dpd are positive downwards.
+       ! note: dps and dp are positive downwards.
        !
        do nm = 1, nmmax
           !
@@ -1210,10 +1169,10 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
        enddo
        if (scour) then
           !
-          ! -Check bottom slopes and apply an avalanche effect if needed
+          ! -Check bottom slopes and apply an avalance effect if needed
           ! -Depths at waterlevel points (dps) will be updated,
           !  to be used for dpu and dpv
-          ! -Depth changes will be added to depchg,to be used for dpd
+          ! -Depth changes will be added to depchg,to be used for dp
           !
           call avalan(dps       ,depchg    ,gvu       ,guv       , &
                     & icx       ,icy       ,gsqs      ,kcs       ,gdp       )
@@ -1238,7 +1197,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
              endif
           endif
           !
-          ! set flag for updating dpd points below (note does not = 2 at
+          ! set flag for updating dp points below (note does not = 2 at
           ! open boundaries)
           !
           if (kcs(nm) == 0) then
@@ -1251,7 +1210,8 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
        ! Dredging and Dumping
        !
        if (dredge) then
-          call dredge_d3d4(dps, s1, timhr, nst, gdp)
+          call dredgedump(dbodsd    ,cdryb     ,nst       ,timhr     ,morft     , &
+                        & gdp       )
        endif
     endif
     ! -----------------------------------------------------------
@@ -1263,7 +1223,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
        ! CALDPU is called after BOTT3D in TRISOL when BEDUPD = TRUE
        ! instead of updating dpu/dpv here
        !
-       ! Update dpd points
+       ! Update dp points
        !
        do nm = 1, nmmax
           nmu  = nm  + icx
@@ -1272,8 +1232,8 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
           fact =   kcsbot(nm) *gsqs(nm)  + kcsbot(num) *gsqs(num)  &
                & + kcsbot(nmu)*gsqs(nmu) + kcsbot(numu)*gsqs(numu)
           if (fact > 0.0_fp) then
-             dpd(nm) = dpd(nm) - (  depchg(nm) *gsqs(nm)  + depchg(num) *gsqs(num)     &
-                     &            + depchg(nmu)*gsqs(nmu) + depchg(numu)*gsqs(numu))/fact
+             dp(nm) = dp(nm) - (  depchg(nm) *gsqs(nm)  + depchg(num) *gsqs(num)     &
+                    &           + depchg(nmu)*gsqs(nmu) + depchg(numu)*gsqs(numu))/fact
           endif
        enddo
     endif

@@ -15,7 +15,7 @@ subroutine z_hydpres_nhfull(mmax      ,nmax      ,j         ,nmmaxj    ,nmmax   
                           & sjprec    ,tj        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -39,8 +39,8 @@ subroutine z_hydpres_nhfull(mmax      ,nmax      ,j         ,nmmaxj    ,nmmax   
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_hydpres_nhfull.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/non_hydro/z_hydpres_nhfull.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! The difference equations for the non-hydrostatic
@@ -92,7 +92,7 @@ subroutine z_hydpres_nhfull(mmax      ,nmax      ,j         ,nmmaxj    ,nmmax   
     integer                                           , intent(in) :: norow     !  Description and declaration in esm_alloc_int.f90
     integer                                           , intent(in) :: nsrc      !  Description and declaration in esm_alloc_int.f90
     integer                                                        :: nst
-    integer, dimension(5, norow + nocol)              , intent(in) :: irocol    !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(7, norow + nocol)              , intent(in) :: irocol    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(7, nsrc)                       , intent(in) :: mnksrc    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: kcshyd    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: kcs       !  Description and declaration in esm_alloc_int.f90

@@ -1,7 +1,7 @@
 subroutine chkgeo(lundia    ,error     ,kmax      ,thick     ,sig       ,gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine chkgeo(lundia    ,error     ,kmax      ,thick     ,sig       ,gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: chkgeo.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/chkgeo.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Checks the geometry parameters of the model.
@@ -56,48 +56,52 @@ subroutine chkgeo(lundia    ,error     ,kmax      ,thick     ,sig       ,gdp)
 !
 ! Local variables
 !
-    integer       :: k
-    logical       :: error1
-    logical       :: error2
-    real(fp)      :: som
-    character(16) :: kstring
+    integer    :: k
+    logical    :: error1
+    logical    :: error2
+    logical    :: error3
+    real(fp)   :: som
 !
 !
 !! executable statements -------------------------------------------------------
 !
     !
-    ! initialize local parameters
+    !-----initialize local parameters
     !
-    error1  = .false.
-    error2  = .false.
-    som     = 0.0
-    kstring = ' '    !
+    error1 = .false.
+    error2 = .false.
+    error3 = .false.
+    som = 0.0
     !
-    ! redefine thick, check if thick less than or equal to 0.0 and compute the sum
+    !
+    !-----redefine thick, check if thick .lt. 0.01
     !
     do k = 1, kmax
-       if (thick(k)<=0.0_fp) then
-          error1 = .true.
-          write(kstring, '(i0)') k
-          call prterr(lundia    ,'U004'    , kstring     )
+       if (thick(k)<0.01) then
+          error2 = .true.
        endif
        thick(k) = thick(k)/100.
        som = som + thick(k)
     enddo
+    if (error2) then
+       call prterr(lundia    ,'U004'    ,' 0.01 - 100.00'     )
     !
-    ! check if sum of thick = 1.0 (100 %)
-    !
-    if (abs(som - 1.)>1.E-5) then
-       error2 = .true.
-       call prterr(lundia    ,'U006'    ,' '       )
     endif
     !
-    ! set error
+    !-----check som of thick = 1. (100 %)
     !
-    error = error1 .or. error2
+    if (abs(som - 1.)>1.E-5) then
+       error3 = .true.
+       call prterr(lundia    ,'U006'    ,' '       )
+    !
+    endif
+    !
+    !-----set error
+    !
+    error = error1 .or. error2 .or. error3
     if (error) goto 9999
     !
-    ! calculate sig from thick
+    !-----calculate sig   from thick
     !
     sig(1) = -0.5*thick(1)
     do k = 2, kmax

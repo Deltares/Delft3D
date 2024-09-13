@@ -1,7 +1,7 @@
 subroutine rdwaqpar(lundia, error, kmax, lsed, dt, itcomf, itcomi, itcoml, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine rdwaqpar(lundia, error, kmax, lsed, dt, itcomf, itcomi, itcoml, gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdwaqpar.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdwaqpar.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Read waq parameters from mdf file
@@ -111,7 +111,7 @@ subroutine rdwaqpar(lundia, error, kmax, lsed, dt, itcomf, itcomi, itcoml, gdp)
     ! If keyword Flwq is in the mdf-file, waqfil = true
     !
     txtput1 = ' '
-    call prop_get(gdp%mdfile_ptr, '*', 'Flwq', txtput1)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Flwq', txtput1)
     if (txtput1 == ' ') then
        waqfil = .false.
     else
@@ -147,7 +147,7 @@ subroutine rdwaqpar(lundia, error, kmax, lsed, dt, itcomf, itcomi, itcoml, gdp)
     ! When WaqOL = true, FLOW and WAQ communicate online via WAQ input files 
     ! Default WaqOL = false
     !
-    call prop_get(gdp%mdfile_ptr, '*', 'WaqOL', waqol)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'WaqOL', waqol)
     !
     ilaggrInput = 0
     call prop_get(gdp%mdfile_ptr, '*', 'ilaggr', ilaggrInput, kmax)
@@ -226,7 +226,7 @@ subroutine rdwaqpar(lundia, error, kmax, lsed, dt, itcomf, itcomi, itcoml, gdp)
     ! WaqAgg= #example.dwq#
     !
     flaggr = ' '
-    call prop_get(gdp%mdfile_ptr, '*', 'WaqAgg', flaggr)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'WaqAgg', flaggr)
     if (flaggr /= ' ' .and. flaggr /= 'active only') then
        if (.not. exifil(flaggr, lundia)) then
           error = .true.

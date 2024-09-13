@@ -12,7 +12,7 @@ subroutine calbf(stage     ,nmmax     ,nmaxddb   ,dps       ,s1        , &
                & sbuu      ,sbvv      ,gdp       )       
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -36,8 +36,8 @@ subroutine calbf(stage     ,nmmax     ,nmaxddb   ,dps       ,s1        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: calbf.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/calbf.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Calculate bedform height and length using bedform.f90
@@ -85,7 +85,7 @@ subroutine calbf(stage     ,nmmax     ,nmaxddb   ,dps       ,s1        , &
     integer                                              , intent(in)  :: norow   !  Description and declaration in esm_alloc_int.f90
     integer                                              , intent(in)  :: nocol   !  
     integer                                              , intent(in)  :: nst
-    integer   , dimension(5, norow+nocol)                , intent(in)  :: irocol  !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(7, norow+nocol)                , intent(in)  :: irocol  !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: kcs     !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: kcu     !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in)  :: kcv     !  Description and declaration in esm_alloc_int.f90

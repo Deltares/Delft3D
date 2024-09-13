@@ -1,7 +1,7 @@
 subroutine esm_alloc_int(lundia, error, zmodel, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: esm_alloc_int.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/allocation/esm_alloc_int.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Determines memory requirements for the INTEGER ARRAY.
@@ -135,9 +135,9 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
     ! arrays for: discharge sources
     !
     pntnam = 'MNKSRC'        !  Discharge:
-                             !     MNK indices of inlet; total column when K=0
-                             !     MNK indices of outlet; total column when K=0
-                             !     single integer specifying the type:
+                             !     1-3: MNK indices of inlet; total column when K=0
+                             !     4-6: MNK indices of outlet; total column when K=0
+                             !     7  : single integer specifying the type:
                              !         0 : Ordinary discharge (fixed position)
                              !         1 : Walking discharge (inlet is start position, outlet is time dependent current position)
                              !         2 : Power station type P (inlet and outlet are coupled, temperature and/or constituents may be changed, discharge specified)
@@ -189,11 +189,13 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
                              !                      6 - Riemann
                              !                      7 - Total disch.
                              !                      8 - Neumann
-                             !  NOB(4,I): 1 begin of the open bnd.
-                             !            2 end   of the open bnd.
+                             !  NOB(4,I): 1 begin z-point (in the halo) of the open bnd. in m direction
+                             !            2 end z-point (in the halo) of the open bnd. in m direction
+                             !            0 open bnd. not in m direction
                              !  NOB(5,I): Index to the ROW nr. in array IROCOL/IRC
-                             !  NOB(6,I): 1 begin of the open bnd.
-                             !            2 end   of the open bnd.
+                             !  NOB(6,I): 1 begin z-point (in the halo) of the open bnd. in n direction
+                             !            2 end z-point (in the halo)  of the open bnd. in n direction
+                             !            0 open bnd. not in n direction
                              !  NOB(7,I): Index to the COLUMN nr. in array IROCOL/IRC
                              !  NOB(8,I): pointer to sequence nr. of opening section
                              !        I : 1,.....,NROB
@@ -241,7 +243,7 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
     !
     pntnam = 'IROCOL'        !  Pointer table with bound. coord. and
                              !  bound. types (comp. cols. and rows)
-    ierr = mkipnt(pntnam, 5*nlcest, gdp)
+    ierr = mkipnt(pntnam, 7*nlcest, gdp)
     if (ierr <= -9) goto 9999
     !
     ! arrays for: mask arrays (permanent)
@@ -264,6 +266,13 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
                              !  = 1 active   point
                              !  = 2 open boundary point
                              !  = 3 Domain Decomposition boundary point
+    ierr = mkipnt(pntnam, nmaxddb*mmaxddb, gdp)
+    if (ierr <= -9) goto 9999
+    !
+    pntnam = 'kcs_nf'        !  Mask array to identify points coupled to a near field model (time INdependent)
+                             !  =0 inactive point
+                             !  =1 active   point
+                             !  =2 open boundary point
     ierr = mkipnt(pntnam, nmaxddb*mmaxddb, gdp)
     if (ierr <= -9) goto 9999
     !

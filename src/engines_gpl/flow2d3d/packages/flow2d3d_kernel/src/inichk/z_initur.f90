@@ -4,11 +4,10 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                   & kfvmax    ,kfsmin    ,kfsmax    ,rtur0     , &
                   & s0        ,dps       ,u0        ,v0        ,windu     , &
                   & windv     ,z0urou    ,z0vrou    ,dudz      ,dvdz      , &
-                  & dzu1      ,dzv1      ,dzs1      ,bruvai    ,rich      , &
-                  & rho       ,gdp       )
+                  & dzu1      ,dzv1      ,dzs1      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -32,8 +31,8 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_initur.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/z_initur.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Initialises turbulent energy and/or
@@ -58,7 +57,6 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
     real(fp)               , pointer :: rhow
-    real(fp)               , pointer :: ag
     real(fp)               , pointer :: z0
     real(fp)               , pointer :: z0v
     real(fp)               , pointer :: vonkar
@@ -100,15 +98,12 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in) :: windv  !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in) :: z0urou !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              , intent(in) :: z0vrou !  Description and declaration in esm_alloc_real.f90
-    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)                   :: bruvai !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)                   :: dudz   !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)                   :: dvdz   !  Description and declaration in esm_alloc_real.f90
-    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)                   :: rich   !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax, ltur)             :: rtur0  !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)        , intent(in) :: dzs1   !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)        , intent(in) :: dzu1   !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)        , intent(in) :: dzv1   !  Description and declaration in esm_alloc_real.f90
-    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)        , intent(in) :: rho    !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)        , intent(in) :: u0     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)        , intent(in) :: v0     !  Description and declaration in esm_alloc_real.f90
 !
@@ -124,8 +119,6 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     integer                               :: nmu
     integer                               :: num
     integer                               :: nm_pos ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
-    real(fp)                              :: damping
-    real(fp)                              :: drhodz
     real(fp)                              :: dz
     real(fp)                              :: ene
     real(fp)                              :: h0
@@ -137,7 +130,7 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)                              :: utot
     real(fp)                              :: uuu
     real(fp)                              :: vvv
-    real(fp), dimension(:)  , allocatable :: z0scratch
+    real(fp), dimension(:,:), allocatable :: z0scratch
     real(fp)                              :: z00
     real(fp)                              :: zw
     real(fp)                              :: zwc
@@ -150,14 +143,13 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     zwi         => gdp%gdturcoe%zwi
     inpzw       => gdp%gdturcoe%inpzw
     rhow        => gdp%gdphysco%rhow
-    ag          => gdp%gdphysco%ag
     z0          => gdp%gdphysco%z0
     z0v         => gdp%gdphysco%z0v
     vonkar      => gdp%gdphysco%vonkar
     !
     nm_pos = 1
     !
-    allocate(z0scratch(gdp%d%nmlb:gdp%d%nmub)) 
+    allocate(z0scratch(gdp%d%nmlb:gdp%d%nmub,kmax)) 
     !
     nmd = -icx
     ndm = -icy
@@ -165,37 +157,37 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
        nmd = nmd + 1
        ndm = ndm + 1
        if (kfs(nm)==1) then
-          z0scratch(nm) = (  kfu(nm)*z0urou(nm) + kfu(nmd)*z0urou(nmd)   &
-                        &  + kfv(nm)*z0vrou(nm) + kfv(ndm)*z0vrou(ndm) ) &
-                        & / max(1,kfu(nm) + kfu(nmd) + kfv(nm) + kfv(ndm))
+          z0scratch(nm, kmax) = (  kfu(nm)*z0urou(nm) + kfu(nmd)*z0urou(nmd)   &
+                              &  + kfv(nm)*z0vrou(nm) + kfv(ndm)*z0vrou(ndm) ) &
+                              & / max(1,kfu(nm) + kfu(nmd) + kfv(nm) + kfv(ndm))
        endif
     enddo
     !
     !***PRODUCTION AND BUOYANCY TERM (ONLY VERTICAL GRADIENTS)
     !
     if (lturi>0) then
+       !$DIR SCALAR
        do nm = 1, nmmax
           if (kfu(nm)==1) then
              do k = 1, kmax
+                dudz(nm, k) = 0.0
                 if (k>=kfumin(nm) .and. k<=kfumax(nm)-1) then
                    kup         = k + 1
-                   dz          = 0.5_fp*(dzu1(nm, k) + dzu1(nm, kup))
+                   dz          = .5*(dzu1(nm, k) + dzu1(nm, kup))
                    dudz(nm, k) = (u0(nm, kup) - u0(nm, k))/dz
-                else
-                   dudz(nm, k) = 0.0_fp
                 endif
              enddo
           endif
        enddo
+       !$DIR SCALAR
        do nm = 1, nmmax
           if (kfv(nm)==1) then
              do k = 1, kmax
+                dvdz(nm, k) = 0.0
                 if (k>=kfvmin(nm) .and. k<=kfvmax(nm)-1) then
                    kup         = k + 1
-                   dz          = 0.5_fp*(dzv1(nm, k) + dzv1(nm, kup))
+                   dz          = .5*(dzv1(nm, k) + dzv1(nm, kup))
                    dvdz(nm, k) = (v0(nm, kup) - v0(nm, k))/dz
-                else
-                   dvdz(nm, k) = 0.0_fp
                 endif
              enddo
           endif
@@ -215,31 +207,18 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              endif
              reldik = 0.
              do k = kfsmin(nm), kfsmax(nm)-1
-                kup = k + 1
-                dz     = 0.5_fp*(dzs1(nm, k) + dzs1(nm, kup))
-                drhodz = (rho(nm, kup) - rho(nm, k))/dz
-                bruvai(nm, k) = -ag*drhodz/rho(nm, k)
                 !
-                ! Mixing length
+                !***MIXING LENGTH
                 !
                 reldik = reldik + dzs1(nm, k)/h0
-                rl     = vonkar * h0 * reldik * sqrt(1.0_fp-reldik)
+                rl     = vonkar * h0 * reldik * sqrt(1.0-reldik)
                 !
                 !***INITIALISATION TKE and EPSILON from PRANDTL MIXING LENGTH MODEL
                 !
-                shear = maskval*0.5_fp *(  dudz(nm, k)**2 + dudz(nmd, k)**2  &
-                      &                  + dvdz(nm, k)**2 + dvdz(ndm, k)**2 )
-                shear = max(1e-8_fp, shear)
-                rich  (nm, k) = bruvai(nm, k)/shear
-                if (rich(nm,k) >= 0.0_fp) then
-                    damping = exp(-2.3_fp*min(rich(nm,k), 30.0_fp))
-                else
-                    damping = (1.0_fp - 14.0_fp*rich(nm,k))**0.25_fp
-                endif
-                rl = rl*damping
-                !
-                ene   = maskval*0.25_fp*(  u0(nm, k)**2 + u0(nmd, k)**2  &
-                      &                  + v0(nm, k)**2 + v0(ndm, k)**2 )
+                shear = maskval*0.5 *(  dudz(nm, k)**2 + dudz(nmd, k)**2  &
+                      &               + dvdz(nm, k)**2 + dvdz(ndm, k)**2 )
+                ene   = maskval*0.25*(  u0(nm, k)**2 + u0(nmd, k)**2  &
+                      &               + v0(nm, k)**2 + v0(ndm, k)**2 )
                 tke   = min(ene, rl*rl*shear/sqrt(cmukep))
                 rtur0(nm, k, 1) = tke
              enddo
@@ -269,11 +248,11 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              !
              !***AT BOTTOM
              !
-             z00  = z0scratch(nm)
-             uuu  = 0.5_fp*(u0(nmd, kmin) + u0(nm, kmin))*maskval
-             vvv  = 0.5_fp*(v0(ndm, kmin) + v0(nm, kmin))*maskval
+             z00  = z0scratch(nm, kmax)
+             uuu  = 0.5*(u0(nmd, kmin) + u0(nm, kmin))*maskval
+             vvv  = 0.5*(v0(ndm, kmin) + v0(nm, kmin))*maskval
              utot = sqrt(uuu*uuu + vvv*vvv)
-             ust  = utot*vonkar/log(1.0_fp + dzs1(nm, kmin)/z00)
+             ust  = utot*vonkar/log(1. + dzs1(nm, kmin)/z00)
              tke  = ust*ust/sqrt(cmukep)
              rtur0(nm, kmin - 1, 1) = tke
           endif
@@ -288,23 +267,18 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              nmd    = nm - icx
              ndm    = nm - icy
              h0     = max(0.01_fp, real(dps(nm),fp) + s0(nm))
-             reldik = 0.0_fp
+             reldik = 0.
              do k = kfsmin(nm), kfsmax(nm)-1
+                !$DIR SCALAR
                 !
                 !***MIXING LENGTH
                 !
                 reldik = reldik + dzs1(nm, k)/h0
-                rl     = vonkar * h0 * reldik * sqrt(1.0_fp-reldik)
-                if (rich(nm,k) >= 0.0_fp) then
-                    damping = exp(-2.3_fp*min(rich(nm,k), 30.0_fp))
-                else
-                    damping = (1.0_fp - 14.0_fp*rich(nm,k))**0.25_fp
-                endif
-                rl = rl*damping
+                rl     = vonkar * h0 * reldik * sqrt(1.0-reldik)
                 !
                 !***INITIALISATION EPSILON from PRANDTL MIXING LENGTH MODEL
                 !
-                rtur0(nm, k, 2) = max(1.E-7_fp, cde*(rtur0(nm, k, 1))**1.5_fp/rl)
+                rtur0(nm, k, 2) = max(1.E-7_fp, cde*(rtur0(nm, k, 1))**1.5/rl)
              enddo
           endif
        enddo
@@ -318,14 +292,14 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              !
              !***AT FREE SURFACE
              !
-             zwc = 0.5_fp * dzs1(nm, kfsmax(nm))
+             zwc = 0.5 * dzs1(nm, kfsmax(nm))
              zw  = inpzw*zwi + (1-inpzw)*zwc
-             rtur0(nm, kfsmax(nm), 2) = max(1.E-7_fp, cewall*(rtur0(nm, kfsmax(nm),1))**1.5_fp/zw)
+             rtur0(nm, kfsmax(nm), 2) = max(1.E-7_fp, cewall*(rtur0(nm, kfsmax(nm),1))**1.5/zw)
              !
              !***AT BOTTOM
              !
-             z00 = z0scratch(nm)
-             rtur0(nm, kmin-1, 2) = max(1.E-7_fp, cewall*(rtur0(nm, kmin-1, 1))**1.5_fp/z00)
+             z00 = z0scratch(nm, kmax)
+             rtur0(nm, kmin-1, 2) = max(1.E-7_fp, cewall*(rtur0(nm, kmin-1, 1))**1.5/z00)
           endif
        enddo
     endif
@@ -340,11 +314,11 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     !
     ! For domaindecomposition (in couple points)
     !
-    do k = 0, kmax
+    do k = 1, kmax
        do nm = 1, nmmax
           if (kcs(nm)==3) then
-             rtur0(nm, k, 1) = 1.E-7_fp
-             rtur0(nm, k, 2) = 1.E-7_fp
+             rtur0(nm, k, 1) = 1.E-7
+             rtur0(nm, k, 2) = 1.E-7
           endif
        enddo
     enddo
@@ -356,8 +330,6 @@ subroutine z_initur(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     ! exchange turbulence values with neighbours for parallel runs
     !
     call dfexchg ( rtur0(:,:,1), 0, kmax, dfloat, nm_pos, gdp )
-    if (ltur == 2) then
-       call dfexchg ( rtur0(:,:,2), 0, kmax, dfloat, nm_pos, gdp )
-    endif
+    call dfexchg ( rtur0(:,:,2), 0, kmax, dfloat, nm_pos, gdp )
     !
 end subroutine z_initur

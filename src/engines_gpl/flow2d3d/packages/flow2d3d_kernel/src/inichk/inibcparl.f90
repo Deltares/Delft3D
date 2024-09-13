@@ -2,7 +2,7 @@ subroutine inibcparl(nto       ,nrob      ,mnbnd     ,nob       ,typbnd    , &
                    & guu       ,gvv       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine inibcparl(nto       ,nrob      ,mnbnd     ,nob       ,typbnd    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: inibcparl.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/inibcparl.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: When running parallel,
@@ -121,8 +121,8 @@ subroutine inibcparl(nto       ,nrob      ,mnbnd     ,nob       ,typbnd    , &
     real(fp)                               :: guuz2
     real(fp)                               :: gvvz1
     real(fp)                               :: gvvz2
-    real(fp), dimension(:,:), allocatable  :: guu_global   ! temporary array storing guu of the full global domain
-    real(fp), dimension(:,:), allocatable  :: gvv_global   ! temporary array storing gvv of the full global domain
+    real(sp), dimension(:,:), allocatable  :: guu_global   ! temporary array storing guu of the full global domain
+    real(sp), dimension(:,:), allocatable  :: gvv_global   ! temporary array storing gvv of the full global domain
 !
 !! executable statements -------------------------------------------------------
 !
@@ -163,23 +163,27 @@ subroutine inibcparl(nto       ,nrob      ,mnbnd     ,nob       ,typbnd    , &
        call d3stop(1, gdp)
     endif
     !
-    ! Collect all guu values from all partitions in the array guu_global in the master partition
-    ! NOTE: the dfgather call will reallocate guu_global on the master
+    ! Collect all guu values from all partitions in the (single precision) array glbarr2 in the master partition
     !
-    call dfgather(guu, guu_global, nf, nl, mf, ml, iarrc, gdp)
+    call dfgather(guu,nf,nl,mf,ml,iarrc,gdp)
+    if (inode == master) then
+       guu_global = glbarr2
+    endif
     !
     ! The master partition broadcasts this guu array to all partitions
     !
-    call dfbroadc_gdp (guu_global, (nmaxgl)*(mmaxgl), dfloat, gdp )
+    call dfbroadc_gdp (guu_global, (nmaxgl)*(mmaxgl), dfreal, gdp )
     !
-    ! Collect all gvv values from all partitions in the array gvv_global in the master partition
-    ! NOTE: the dfgather call will reallocate gvv_global on the master
+    ! Collect all gvv values from all partitions in the (single precision) array glbarr2 in the master partition
     !
-    call dfgather(gvv, gvv_global, nf, nl, mf, ml, iarrc, gdp)
+    call dfgather(gvv,nf,nl,mf,ml,iarrc,gdp)
+    if (inode == master) then
+       gvv_global = glbarr2
+    endif
     !
     ! The master partition broadcasts this gvv array to all partitions
     !
-    call dfbroadc_gdp (gvv_global, (nmaxgl)*(mmaxgl), dfloat, gdp )
+    call dfbroadc_gdp (gvv_global, (nmaxgl)*(mmaxgl), dfreal, gdp )
     !
     ! loop over all boundaries that are (partly) inside this partition
     !
@@ -273,12 +277,12 @@ subroutine inibcparl(nto       ,nrob      ,mnbnd     ,nob       ,typbnd    , &
                       case (0)
                          if (nob(6,np) == 1) then
                             ! south boundary, gvv(ngg,..) and gvv(ngg+1,..) are inside domain
-                            gvvz1 = (3.0_fp*gvv_global(ngg,msta)      - gvv_global(ngg+1,msta)     ) / 2.0_fp
-                            gvvz2 = (3.0_fp*gvv_global(ngg,msta-incx) - gvv_global(ngg+1,msta-incx)) / 2.0_fp
+                            gvvz1 = (3.0_fp*real(gvv_global(ngg,msta)     ,fp) - real(gvv_global(ngg+1,msta)     ,fp)) / 2.0_fp
+                            gvvz2 = (3.0_fp*real(gvv_global(ngg,msta-incx),fp) - real(gvv_global(ngg+1,msta-incx),fp)) / 2.0_fp
                          elseif (nob(6,np) == 2) then
                             ! north boundary, gvv(ngg-1,..) and gvv(ngg-2,..) are inside domain
-                            gvvz1 = (3.0_fp*gvv_global(ngg-1,msta)      - gvv_global(ngg-2,msta)     ) / 2.0_fp
-                            gvvz2 = (3.0_fp*gvv_global(ngg-1,msta-incx) - gvv_global(ngg-2,msta-incx)) / 2.0_fp
+                            gvvz1 = (3.0_fp*real(gvv_global(ngg-1,msta)     ,fp) - real(gvv_global(ngg-2,msta)     ,fp)) / 2.0_fp
+                            gvvz2 = (3.0_fp*real(gvv_global(ngg-1,msta-incx),fp) - real(gvv_global(ngg-2,msta-incx),fp)) / 2.0_fp
                          else
                             ! nob(6) is always 1 or 2 for open boundaries that are not east or west boundaries
                          endif
@@ -288,26 +292,26 @@ subroutine inibcparl(nto       ,nrob      ,mnbnd     ,nob       ,typbnd    , &
                             if (incy > 0) then
                                ! incx<0, msta     : gvv(ngg,..)   and gvv(ngg+1,..) are inside domain
                                !         msta-incx: gvv(ngg-1,..) and gvv(ngg,..)   are inside domain
-                               gvvz1 = (3.0_fp*gvv_global(ngg  ,msta)      - gvv_global(ngg+1,msta)     ) / 2.0_fp
-                               gvvz2 = (3.0_fp*gvv_global(ngg-1,msta-incx) - gvv_global(ngg  ,msta-incx)) / 2.0_fp
+                               gvvz1 = (3.0_fp*real(gvv_global(ngg  ,msta)     ,fp) - real(gvv_global(ngg+1,msta)     ,fp)) / 2.0_fp
+                               gvvz2 = (3.0_fp*real(gvv_global(ngg-1,msta-incx),fp) - real(gvv_global(ngg  ,msta-incx),fp)) / 2.0_fp
                             else
                                ! incy<0, incx>0, msta     : gvv(ngg,..)   and gvv(ngg+1,..) are inside domain
                                !                 msta-incx: gvv(ngg+1,..) and gvv(ngg+2,..) are inside domain
-                               gvvz1 = (3.0_fp*gvv_global(ngg  ,msta)      - gvv_global(ngg+1,msta)     ) / 2.0_fp
-                               gvvz2 = (3.0_fp*gvv_global(ngg+1,msta-incx) - gvv_global(ngg+2,msta-incx)) / 2.0_fp
+                               gvvz1 = (3.0_fp*real(gvv_global(ngg  ,msta)     ,fp) - real(gvv_global(ngg+1,msta)     ,fp)) / 2.0_fp
+                               gvvz2 = (3.0_fp*real(gvv_global(ngg+1,msta-incx),fp) - real(gvv_global(ngg+2,msta-incx),fp)) / 2.0_fp
                             endif
                          elseif (nob(6,np) == 2) then
                             ! north-west boundary
                             if (incy > 0) then
                                ! incx>0, msta     : gvv(ngg-1,..) and gvv(ngg-2,..) are inside domain
                                !         msta-incx: gvv(ngg-2,..) and gvv(ngg-3,..) are inside domain
-                               gvvz1 = (3.0_fp*gvv_global(ngg-1,msta)      - gvv_global(ngg-2,msta)     ) / 2.0_fp
-                               gvvz2 = (3.0_fp*gvv_global(ngg-2,msta-incx) - gvv_global(ngg-3,msta-incx)) / 2.0_fp
+                               gvvz1 = (3.0_fp*real(gvv_global(ngg-1,msta)     ,fp) - real(gvv_global(ngg-2,msta)     ,fp)) / 2.0_fp
+                               gvvz2 = (3.0_fp*real(gvv_global(ngg-2,msta-incx),fp) - real(gvv_global(ngg-3,msta-incx),fp)) / 2.0_fp
                             else
                                ! incy<0, incx<0, msta     : gvv(ngg-1,..) and gvv(ngg-2,..) are inside domain
                                !                 msta-incx: gvv(ngg,..)   and gvv(ngg-1,..) are inside domain
-                               gvvz1 = (3.0_fp*gvv_global(ngg-1,msta)      - gvv_global(ngg-2,msta)     ) / 2.0_fp
-                               gvvz2 = (3.0_fp*gvv_global(ngg  ,msta-incx) - gvv_global(ngg-1,msta-incx)) / 2.0_fp
+                               gvvz1 = (3.0_fp*real(gvv_global(ngg-1,msta)     ,fp) - real(gvv_global(ngg-2,msta)     ,fp)) / 2.0_fp
+                               gvvz2 = (3.0_fp*real(gvv_global(ngg  ,msta-incx),fp) - real(gvv_global(ngg-1,msta-incx),fp)) / 2.0_fp
                             endif
                          else
                             ! nob(6) is always 1 or 2 for open boundaries that are not east or west boundaries
@@ -318,26 +322,26 @@ subroutine inibcparl(nto       ,nrob      ,mnbnd     ,nob       ,typbnd    , &
                             if (incy > 0) then
                                ! incx>0, msta     : gvv(ngg,..)   and gvv(ngg+1,..) are inside domain
                                !         msta-incx: gvv(ngg-1,..) and gvv(ngg,..)   are inside domain
-                               gvvz1 = (3.0_fp*gvv_global(ngg  ,msta)      - gvv_global(ngg+1,msta)     ) / 2.0_fp
-                               gvvz2 = (3.0_fp*gvv_global(ngg-1,msta-incx) - gvv_global(ngg  ,msta-incx)) / 2.0_fp
+                               gvvz1 = (3.0_fp*real(gvv_global(ngg  ,msta)     ,fp) - real(gvv_global(ngg+1,msta)     ,fp)) / 2.0_fp
+                               gvvz2 = (3.0_fp*real(gvv_global(ngg-1,msta-incx),fp) - real(gvv_global(ngg  ,msta-incx),fp)) / 2.0_fp
                             else
                                ! incy<0, incx<0, msta     : gvv(ngg,..)   and gvv(ngg+1,..) are inside domain
                                !                 msta-incx: gvv(ngg+1,..) and gvv(ngg+2,..) are inside domain
-                               gvvz1 = (3.0_fp*gvv_global(ngg  ,msta)      - gvv_global(ngg+1,msta)     ) / 2.0_fp
-                               gvvz2 = (3.0_fp*gvv_global(ngg+1,msta-incx) - gvv_global(ngg+2,msta-incx)) / 2.0_fp
+                               gvvz1 = (3.0_fp*real(gvv_global(ngg  ,msta)     ,fp) - real(gvv_global(ngg+1,msta)     ,fp)) / 2.0_fp
+                               gvvz2 = (3.0_fp*real(gvv_global(ngg+1,msta-incx),fp) - real(gvv_global(ngg+2,msta-incx),fp)) / 2.0_fp
                             endif
                          elseif (nob(6,np) == 2) then
                             ! north-east boundary
                             if (incy > 0) then
                                ! incx<0, msta     : gvv(ngg-1,..) and gvv(ngg-2,..) are inside domain
                                !         msta-incx: gvv(ngg-2,..) and gvv(ngg-3,..) are inside domain
-                               gvvz1 = (3.0_fp*gvv_global(ngg-1,msta)      - gvv_global(ngg-2,msta)     ) / 2.0_fp
-                               gvvz2 = (3.0_fp*gvv_global(ngg-2,msta-incx) - gvv_global(ngg-3,msta-incx)) / 2.0_fp
+                               gvvz1 = (3.0_fp*real(gvv_global(ngg-1,msta)     ,fp) - real(gvv_global(ngg-2,msta)     ,fp)) / 2.0_fp
+                               gvvz2 = (3.0_fp*real(gvv_global(ngg-2,msta-incx),fp) - real(gvv_global(ngg-3,msta-incx),fp)) / 2.0_fp
                             else
                                ! incy<0, incx>0, msta     : gvv(ngg-1,..) and gvv(ngg-2,..) are inside domain
                                !                 msta-incx: gvv(ngg,..)   and gvv(ngg-1,..) are inside domain
-                               gvvz1 = (3.0_fp*gvv_global(ngg-1,msta)      - gvv_global(ngg-2,msta)     ) / 2.0_fp
-                               gvvz2 = (3.0_fp*gvv_global(ngg  ,msta-incx) - gvv_global(ngg-1,msta-incx)) / 2.0_fp
+                               gvvz1 = (3.0_fp*real(gvv_global(ngg-1,msta)     ,fp) - real(gvv_global(ngg-2,msta)     ,fp)) / 2.0_fp
+                               gvvz2 = (3.0_fp*real(gvv_global(ngg  ,msta-incx),fp) - real(gvv_global(ngg-1,msta-incx),fp)) / 2.0_fp
                             endif
                          else
                             ! nob(6) is always 1 or 2 for open boundaries that are not east or west boundaries
@@ -361,12 +365,12 @@ subroutine inibcparl(nto       ,nrob      ,mnbnd     ,nob       ,typbnd    , &
                       case (0)
                          if (nob(4,np) == 1) then
                             ! west boundary, guu(..,mgg) and guu(..,mgg+1) are inside domain
-                            guuz1 = (3.0_fp*guu_global(nsta     ,mgg) - guu_global(nsta     ,mgg+1)) / 2.0_fp
-                            guuz2 = (3.0_fp*guu_global(nsta-incy,mgg) - guu_global(nsta-incy,mgg+1)) / 2.0_fp
+                            guuz1 = (3.0_fp*real(guu_global(nsta     ,mgg),fp) - real(guu_global(nsta     ,mgg+1),fp)) / 2.0_fp
+                            guuz2 = (3.0_fp*real(guu_global(nsta-incy,mgg),fp) - real(guu_global(nsta-incy,mgg+1),fp)) / 2.0_fp
                          elseif (nob(4,np) == 2) then
                             ! east boundary, guu(..,mgg-1) and guu(..,mgg-2) are inside domain
-                            guuz1 = (3.0_fp*guu_global(nsta     ,mgg-1) - guu_global(nsta     ,mgg-2)) / 2.0_fp
-                            guuz2 = (3.0_fp*guu_global(nsta-incy,mgg-1) - guu_global(nsta-incy,mgg-2)) / 2.0_fp
+                            guuz1 = (3.0_fp*real(guu_global(nsta     ,mgg-1),fp) - real(guu_global(nsta     ,mgg-2),fp)) / 2.0_fp
+                            guuz2 = (3.0_fp*real(guu_global(nsta-incy,mgg-1),fp) - real(guu_global(nsta-incy,mgg-2),fp)) / 2.0_fp
                          else
                             ! nob(4) is always 1 or 2 for open boundaries that are not north or south boundaries
                          endif
@@ -376,26 +380,26 @@ subroutine inibcparl(nto       ,nrob      ,mnbnd     ,nob       ,typbnd    , &
                             if (incx > 0) then
                                ! incy<0, nsta     : guu(..,mgg)   and guu(..,mgg+1) are inside domain
                                !         nsta-incy: guu(..,mgg-1) and guu(..,mgg)   are inside domain
-                               guuz1 = (3.0_fp*guu_global(nsta     ,mgg)   - guu_global(nsta     ,mgg+1)) / 2.0_fp
-                               guuz2 = (3.0_fp*guu_global(nsta-incy,mgg-1) - guu_global(nsta-incy,mgg)  ) / 2.0_fp
+                               guuz1 = (3.0_fp*real(guu_global(nsta     ,mgg)  ,fp) - real(guu_global(nsta     ,mgg+1),fp)) / 2.0_fp
+                               guuz2 = (3.0_fp*real(guu_global(nsta-incy,mgg-1),fp) - real(guu_global(nsta-incy,mgg)  ,fp)) / 2.0_fp
                             else
                                ! incx<0, incy>0, nsta     : guu(..,mgg)   and guu(..,mgg+1) are inside domain
                                !                 nsta-incy: guu(..,mgg+1) and guu(..,mgg+2) are inside domain
-                               guuz1 = (3.0_fp*guu_global(nsta     ,mgg)   - guu_global(nsta     ,mgg+1)) / 2.0_fp
-                               guuz2 = (3.0_fp*guu_global(nsta-incy,mgg+1) - guu_global(nsta-incy,mgg+2)) / 2.0_fp
+                               guuz1 = (3.0_fp*real(guu_global(nsta     ,mgg)  ,fp) - real(guu_global(nsta     ,mgg+1),fp)) / 2.0_fp
+                               guuz2 = (3.0_fp*real(guu_global(nsta-incy,mgg+1),fp) - real(guu_global(nsta-incy,mgg+2),fp)) / 2.0_fp
                             endif
                          elseif (nob(4,np) == 2) then
                             ! south-east boundary
                             if (incx > 0) then
                                ! incy>0, nsta     : guu(..,mgg-1) and guu(..,mgg-2) are inside domain
                                !         nsta-incy: guu(..,mgg-2) and guu(..,mgg-3) are inside domain
-                               guuz1 = (3.0_fp*guu_global(nsta     ,mgg-1) - guu_global(nsta     ,mgg-2)) / 2.0_fp
-                               guuz2 = (3.0_fp*guu_global(nsta-incy,mgg-2) - guu_global(nsta-incy,mgg-3)) / 2.0_fp
+                               guuz1 = (3.0_fp*real(guu_global(nsta     ,mgg-1),fp) - real(guu_global(nsta     ,mgg-2),fp)) / 2.0_fp
+                               guuz2 = (3.0_fp*real(guu_global(nsta-incy,mgg-2),fp) - real(guu_global(nsta-incy,mgg-3),fp)) / 2.0_fp
                             else
                                ! incx<0, incy<0, nsta     : guu(..,mgg-1) and guu(..,mgg-2) are inside domain
                                !                 nsta-incy: guu(..,mgg)   and guu(..,mgg-1) are inside domain
-                               guuz1 = (3.0_fp*guu_global(nsta     ,mgg-1) - guu_global(nsta     ,mgg-2)) / 2.0_fp
-                               guuz2 = (3.0_fp*guu_global(nsta-incy,mgg)   - guu_global(nsta-incy,mgg-1)) / 2.0_fp
+                               guuz1 = (3.0_fp*real(guu_global(nsta     ,mgg-1),fp) - real(guu_global(nsta     ,mgg-2),fp)) / 2.0_fp
+                               guuz2 = (3.0_fp*real(guu_global(nsta-incy,mgg)  ,fp) - real(guu_global(nsta-incy,mgg-1),fp)) / 2.0_fp
                             endif
                          else
                             ! nob(4) is always 1 or 2 for open boundaries that are not north or south boundaries
@@ -406,26 +410,26 @@ subroutine inibcparl(nto       ,nrob      ,mnbnd     ,nob       ,typbnd    , &
                             if (incx > 0) then
                                ! incy>0, nsta     : guu(..,mgg)   and guu(..,mgg+1) are inside domain
                                !         nsta-incy: guu(..,mgg-1) and guu(..,mgg)   are inside domain
-                               guuz1 = (3.0_fp*guu_global(nsta     ,mgg)   - guu_global(nsta     ,mgg+1)) / 2.0_fp
-                               guuz2 = (3.0_fp*guu_global(nsta-incy,mgg-1) - guu_global(nsta-incy,mgg)  ) / 2.0_fp
+                               guuz1 = (3.0_fp*real(guu_global(nsta     ,mgg)  ,fp) - real(guu_global(nsta     ,mgg+1),fp)) / 2.0_fp
+                               guuz2 = (3.0_fp*real(guu_global(nsta-incy,mgg-1),fp) - real(guu_global(nsta-incy,mgg)  ,fp)) / 2.0_fp
                             else
                                ! incx<0, incy<0, nsta     : guu(..,mgg)   and guu(..,mgg+1) are inside domain
                                !                 nsta-incy: guu(..,mgg+1) and guu(..,mgg+2) are inside domain
-                               guuz1 = (3.0_fp*guu_global(nsta     ,mgg)   - guu_global(nsta     ,mgg+1)) / 2.0_fp
-                               guuz2 = (3.0_fp*guu_global(nsta-incy,mgg+1) - guu_global(nsta-incy,mgg+2)) / 2.0_fp
+                               guuz1 = (3.0_fp*real(guu_global(nsta     ,mgg)  ,fp) - real(guu_global(nsta     ,mgg+1),fp)) / 2.0_fp
+                               guuz2 = (3.0_fp*real(guu_global(nsta-incy,mgg+1),fp) - real(guu_global(nsta-incy,mgg+2),fp)) / 2.0_fp
                             endif
                          elseif (nob(4,np) == 2) then
                             ! north-east boundary
                             if (incx > 0) then
                                ! incy<0, nsta     : guu(..,mgg-1) and guu(..,mgg-2) are inside domain
                                !         nsta-incy: guu(..,mgg-2) and guu(..,mgg-3) are inside domain
-                               guuz1 = (3.0_fp*guu_global(nsta     ,mgg-1) - guu_global(nsta     ,mgg-2)) / 2.0_fp
-                               guuz2 = (3.0_fp*guu_global(nsta-incy,mgg-2) - guu_global(nsta-incy,mgg-3)) / 2.0_fp
+                               guuz1 = (3.0_fp*real(guu_global(nsta     ,mgg-1),fp) - real(guu_global(nsta     ,mgg-2),fp)) / 2.0_fp
+                               guuz2 = (3.0_fp*real(guu_global(nsta-incy,mgg-2),fp) - real(guu_global(nsta-incy,mgg-3),fp)) / 2.0_fp
                             else
                                ! incx<0, incy>0, nsta     : guu(..,mgg-1) and guu(..,mgg-2) are inside domain
                                !                 nsta-incy: guu(..,mgg)   and guu(..,mgg-1) are inside domain
-                               guuz1 = (3.0_fp*guu_global(nsta     ,mgg-1) - guu_global(nsta     ,mgg-2)) / 2.0_fp
-                               guuz2 = (3.0_fp*guu_global(nsta-incy,mgg)   - guu_global(nsta-incy,mgg-1)) / 2.0_fp
+                               guuz1 = (3.0_fp*real(guu_global(nsta     ,mgg-1),fp) - real(guu_global(nsta     ,mgg-2),fp)) / 2.0_fp
+                               guuz2 = (3.0_fp*real(guu_global(nsta-incy,mgg)  ,fp) - real(guu_global(nsta-incy,mgg-1),fp)) / 2.0_fp
                             endif
                          else
                             ! nob(4) is always 1 or 2 for open boundaries that are not north or south boundaries
@@ -484,14 +488,14 @@ subroutine inibcparl(nto       ,nrob      ,mnbnd     ,nob       ,typbnd    , &
                       ! 0.5*guu(ngg,msta) + 0.5*guu(ngg,msta-1)
                       !
                       dist_pivot_part(pivot,n) = dist_pivot_part(pivot,n) &
-                                               &  + 0.5_fp * (gvv_global(ngg,msta) + gvv_global(ngg,msta-incx))
+                                               &  + 0.5_fp * (real(gvv_global(ngg,msta),fp)+real(gvv_global(ngg,msta-incx),fp))
                    else
                       !
                       ! The distance between xz,yz(nsta,mgg) and xz,yz(nsta-1,mgg) is:
                       ! 0.5*guu(nsta,mgg) + 0.5*guu(nsta-1,mgg)
                       !
                       dist_pivot_part(pivot,n) = dist_pivot_part(pivot,n) &
-                                               & + 0.5_fp * (guu_global(nsta,mgg) + guu_global(nsta-incy,mgg))
+                                               & + 0.5_fp * (real(guu_global(nsta,mgg),fp)+real(guu_global(nsta-incy,mgg),fp))
                    endif
                 enddo
           end select

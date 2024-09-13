@@ -7,7 +7,7 @@ subroutine z_vermom_finvol(nmmax     ,kmax      ,icx       ,icy       ,u0       
                          & dzv0      ,w1        ,p0        ,zk        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +31,8 @@ subroutine z_vermom_finvol(nmmax     ,kmax      ,icx       ,icy       ,u0       
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_vermom_finvol.f90 1044 2011-11-21 21:22:12Z platzek $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20111115_13532_z-model_improvements_oss-merge/engines_gpl/flow2d3d/packages/kernel/src/compute/z_vermom_finvol.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Vertical momentum equation. Integration for
@@ -262,7 +262,7 @@ subroutine z_vermom_finvol(nmmax     ,kmax      ,icx       ,icy       ,u0       
                 ! Horizontal viscosity
                 !
                 viscow     =   (rxz(nm,k)-rxz(nmd,k)) / (0.5_fp*(gvv(nm)+gvv(ndm)))   &
-                           & + (ryz(nm,k)-ryz(ndm,k)) / (0.5_fp*(guu(nm)+guu(nmd)))
+                           & + (ryz(nm,k)-ryz(ndm,k)) / (0.5_fp*(guu(nm)+gvv(nmd)))
                 !                
                 ddk(nm,k)  = ddk(nm,k) + viscow
                 !

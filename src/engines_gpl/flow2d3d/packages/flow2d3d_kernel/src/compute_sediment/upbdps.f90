@@ -1,8 +1,8 @@
 subroutine upbdps(mmax      ,nmax      ,kcs       ,&
-                & nmaxus    ,dpd       ,dps       ,gdp       )
+                & nmaxus    ,dp        ,dps       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine upbdps(mmax      ,nmax      ,kcs       ,&
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: upbdps.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute_sediment/upbdps.f90 $
 !!--description-----------------------------------------------------------------
 !
 !
@@ -54,7 +54,7 @@ subroutine upbdps(mmax      ,nmax      ,kcs       ,&
     integer, intent(in)         :: mmax   !  Description and declaration in esm_alloc_int.f90
     integer, intent(in)         :: nmax   !  Description and declaration in esm_alloc_int.f90
     integer, intent(in)         :: nmaxus !  Description and declaration in esm_alloc_int.f90
-    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)   :: dpd !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)   :: dp  !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub) :: dps !  Description and declaration in esm_alloc_real.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: kcs !  Description and declaration in esm_alloc_int.f90
 !
@@ -69,7 +69,7 @@ subroutine upbdps(mmax      ,nmax      ,kcs       ,&
     do n = 1 - ddb, nmaxus
        do m = 1 - ddb, mmax
           dps(n, mmax) = real(dps(n, mmax-1),fp)
-          dpd(n, mmax) = real(dpd(n, mmax-1),fp)
+          dp (n, mmax) = real( dp(n, mmax-1),fp)
        enddo
     enddo
 end subroutine upbdps

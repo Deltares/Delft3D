@@ -1,7 +1,7 @@
 subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdcul.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdcul.f90 $
 !!--description-----------------------------------------------------------------
 ! Reads dimensions, allocates space for data and reads data from INI file for
 ! culverts.
@@ -36,7 +36,6 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
 !!--declarations----------------------------------------------------------------
     use precision
     use properties
-    use system_utils, only:SHARED_LIB_PREFIX, SHARED_LIB_EXTENSION
     !
     use globaldata
     !
@@ -155,7 +154,7 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
     !
     ! Check version number of culvert input file
     !
-    call prop_get(cul_ptr, 'CulvertFileInformation', 'FileVersion', &
+    call prop_get_string(cul_ptr, 'CulvertFileInformation', 'FileVersion', &
                        & versionnrinput)
     if (trim(versionnrinput) /= trim(versionnr)) then
        write (message, '(a,a)') 'Culvert input file must have version number ', &
@@ -189,7 +188,7 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                     !
                     numculvert = numculvert+1
                     culvert_name = ' '
-                    call prop_get(link_ptr, '*', 'Name', culvert_name)
+                    call prop_get_string(link_ptr, '*', 'Name', culvert_name)
                     !
                     ! Determine indices of mnksrc that contain data for culvert,
                     ! temporary solution for matching old fashioned overstructured
@@ -243,13 +242,13 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                         ! and wet area.
                         !
                         if (scansofculvertfile .eq. 1) then
-                            call prop_get(link_ptr, '*', &
+                            call prop_get_integer(link_ptr, '*', &
                                                 & 'NumberOfRelations1', numrel)
                             if (numrel .gt. maxnumrel) maxnumrel = numrel
-                            call prop_get(link_ptr, '*', &
+                            call prop_get_integer(link_ptr, '*', &
                                                 & 'NumberOfRelations2', numrel)
                             if (numrel .gt. maxnumrel) maxnumrel = numrel                            
-                            call prop_get(link_ptr, '*', &
+                            call prop_get_integer(link_ptr, '*', &
                                                 & 'NumberOfRelations3', numrel)
                             if (numrel .gt. maxnumrel) maxnumrel = numrel                            
                         else                     
@@ -266,7 +265,7 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                             call prop_get(link_ptr, '*', &
                                              & 'CorrectionCoefficient', &
                                              & calfa(isrc))
-                            call prop_get(link_ptr, '*', &
+                            call prop_get_integer(link_ptr, '*', &
                                                 & 'NumberOfRelations1', &
                                                 & numrel1(isrc))
                             call prop_get(link_ptr, '*', &
@@ -276,7 +275,7 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                             call prop_get(link_ptr, '*', 'WetArea1', &
                                               & wetar1(isrc, 1 : numrel1(isrc)), &
                                               & numrel1(isrc))
-                            call prop_get(link_ptr, '*', &
+                            call prop_get_integer(link_ptr, '*', &
                                                 & 'NumberOfRelations2', &
                                                 & numrel2(isrc))
                             call prop_get(link_ptr, '*', &
@@ -286,7 +285,7 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                             call prop_get(link_ptr, '*', 'WetArea2', &
                                               & wetar2(isrc, 1 : numrel2(isrc)), &
                                               & numrel2(isrc))
-                            call prop_get(link_ptr, '*', &
+                            call prop_get_integer(link_ptr, '*', &
                                                 & 'NumberOfRelations3', &
                                                 & numrel3(isrc))
                             call prop_get(link_ptr, '*', &
@@ -344,7 +343,11 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                             call prop_get(link_ptr, '*', 'CulvertLib', rec)
                             dll_name(isrc) = rec
                             if (rec /= ' ') then
-                               write(rec,'(3a)') SHARED_LIB_PREFIX, trim(dll_name(isrc)), SHARED_LIB_EXTENSION
+                               if (gdp%arch == 'win32' .or. gdp%arch == 'win64') then
+                                  rec(len_trim(rec)+1:) = '.dll'
+                               else
+                                  rec(len_trim(rec)+1:) = '.so'
+                               endif
                                dll_name(isrc) = rec
                                istat_ptr = 0
                                istat_ptr = open_shared_library(dll_handle(isrc), dll_name(isrc))
@@ -355,9 +358,9 @@ subroutine rdcul(nsrc, namsrc ,mnksrc, voldis, gdp)
                                endif
                                !
                                dll_function(isrc) = ' '
-                               call prop_get(link_ptr, '*', 'CulvertFunction', dll_function(isrc))
+                               call prop_get_string(link_ptr, '*', 'CulvertFunction', dll_function(isrc))
                                dll_usrfil(isrc) = ' '
-                               call prop_get(link_ptr, '*', 'CulvertFile', dll_usrfil(isrc))
+                               call prop_get_string(link_ptr, '*', 'CulvertFile', dll_usrfil(isrc))
                             endif
                             write (lundia, '(a,a,a)') 'for discharge ', &
                                                      & namsrc(isrc),':'

@@ -1,7 +1,7 @@
 subroutine griddims( gdp )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine griddims( gdp )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: griddims.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/general/griddims.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Initialises grid related dimensions
@@ -47,21 +47,20 @@ subroutine griddims( gdp )
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    integer          , pointer :: nmax
-    integer          , pointer :: mmax
-    integer          , pointer :: nlb
-    integer          , pointer :: nub
-    integer          , pointer :: mlb
-    integer          , pointer :: mub
-    integer          , pointer :: nmlb
-    integer          , pointer :: nmub
-    integer          , pointer :: ddb
-    integer          , pointer :: jstart
-    integer          , pointer :: nmmaxj
-    integer          , pointer :: nmmax
-    integer          , pointer :: numdomains
-    integer          , pointer :: nummappers
-    type(griddimtype), pointer :: griddim
+    integer      , pointer :: nmax
+    integer      , pointer :: mmax
+    integer      , pointer :: nlb
+    integer      , pointer :: nub
+    integer      , pointer :: mlb
+    integer      , pointer :: mub
+    integer      , pointer :: nmlb
+    integer      , pointer :: nmub
+    integer      , pointer :: ddbound
+    integer      , pointer :: jstart
+    integer      , pointer :: nmmaxj
+    integer      , pointer :: nmmax
+    integer      , pointer :: numdomains
+    integer      , pointer :: nummappers
 !
 ! Global variables
 !
@@ -69,15 +68,7 @@ subroutine griddims( gdp )
 !
 ! Local variables
 !
-    integer                :: istat   !< error flag during memory (re)allocation
-    integer                :: m       !< local m index
-    integer                :: mglob   !< global m index
-    integer                :: n       !< local n index
-    integer                :: nglob   !< global n index
-    integer                :: nmaxddb !< matrix size in N direction including any domain/partition boundaries
-    integer                :: nm      !< local nm index
-    integer                :: nnodes  !< number of nodes in cell polygon
-    integer                :: node1   !< first node of cell polygon
+    integer                :: istat
 !
 !! executable statements -------------------------------------------------------
 !
@@ -89,13 +80,12 @@ subroutine griddims( gdp )
     mub          => gdp%d%mub
     nmlb         => gdp%d%nmlb
     nmub         => gdp%d%nmub
-    ddb          => gdp%d%ddbound
+    ddbound      => gdp%d%ddbound
     jstart       => gdp%d%jstart
     nmmaxj       => gdp%d%nmmaxj
     nmmax        => gdp%d%nmmax
     numdomains   => gdp%gdprognm%numdomains
     nummappers   => gdp%gdprognm%nummappers
-    griddim      => gdp%griddim
     !
     ! basic dimensions:
     ! nmmax  = mmax   *   nmax
@@ -103,86 +93,51 @@ subroutine griddims( gdp )
     ! jstart = 1      - 2*nmax
     !
     !
-    ! Probably, ddb can be 0 when numdomains=1, nummappers>=1
-    ! For safety, ddb is always 1 when nummappers>=1
+    ! Probably, ddbound can be 0 when numdomains=1, nummappers>=1
+    ! For safety, ddbound is always 1 when nummappers>=1
     !
-    ! ddb is expected to be able to be 0 when parll
+    ! ddbound is expected to be able to be 0 when parll
     ! Unfortunately, it must be 1
     !
     if (nummappers>=1 .or. parll) then
-       ddb = 1
+       gdp%d%ddbound = 1
     else
-       ddb = 0
+       gdp%d%ddbound = 0
     endif
-    nlb  = 1 - ddb
-    nub  = nmax + ddb
-    mlb  = -1 - ddb
-    mub  = mmax + 2 + ddb
-    nmaxddb = nmax + 2*ddb
-    nmmax      = (mmax + 2*ddb)*nmaxddb
-    jstart     = 1 - 2*nmaxddb
-    nmmaxj     = nmmax + 2*nmaxddb
-    nmlb = jstart
-    nmub = nmmaxj
+    gdp%d%nlb  = 1 - gdp%d%ddbound
+    gdp%d%nub  = nmax + gdp%d%ddbound
+    gdp%d%mlb  = -1 - gdp%d%ddbound
+    gdp%d%mub  = mmax + 2 + gdp%d%ddbound
+    nmmax      = (mmax + 2*gdp%d%ddbound)*(nmax + 2*gdp%d%ddbound)
+    jstart     = 1 - 2*(nmax + 2*gdp%d%ddbound)
+    nmmaxj     = nmmax + 2*(nmax + 2*gdp%d%ddbound)
+    gdp%d%nmlb = jstart
+    gdp%d%nmub = nmmaxj
     !
-    griddim%mlb    = mlb
-    griddim%mub    = mub
-    griddim%mmax   = mmax
+    gdp%griddim%mlb    = gdp%d%mlb
+    gdp%griddim%mub    = gdp%d%mub
+    gdp%griddim%mmax   = mmax
     !
-    griddim%nlb    = nlb
-    griddim%nub    = nub
-    griddim%nmax   = nmax
+    gdp%griddim%nlb    = gdp%d%nlb
+    gdp%griddim%nub    = gdp%d%nub
+    gdp%griddim%nmax   = nmax
     !
-    griddim%nmlb   = nmlb
-    griddim%nmub   = nmub
-    griddim%nmmax  = nmmax
+    gdp%griddim%nmlb   = gdp%d%nmlb
+    gdp%griddim%nmub   = gdp%d%nmub
+    gdp%griddim%nmmax  = nmmax
     !
-    griddim%mfg    = gdp%gdparall%mfg
-    griddim%mlg    = gdp%gdparall%mlg
-    griddim%mmaxgl = gdp%gdparall%mmaxgl
+    gdp%griddim%mfg    = gdp%gdparall%mfg
+    gdp%griddim%mlg    = gdp%gdparall%mlg
+    gdp%griddim%mmaxgl = gdp%gdparall%mmaxgl
     !
-    griddim%nfg    = gdp%gdparall%nfg
-    griddim%nlg    = gdp%gdparall%nlg
-    griddim%nmaxgl = gdp%gdparall%nmaxgl
+    gdp%griddim%nfg    = gdp%gdparall%nfg
+    gdp%griddim%nlg    = gdp%gdparall%nlg
+    gdp%griddim%nmaxgl = gdp%gdparall%nmaxgl
     !
-    griddim%aggrtable => null()
+    gdp%griddim%aggrtable => null()
     !
-    allocate(griddim%nmglobal(nmlb:nmub), stat=istat)
-    nm = nmlb - 1
-    do m = mlb, mub
-       do n = nlb, nub
-          nm = nm + 1
-          nglob   = griddim%nfg + n - 1
-          mglob   = griddim%mfg + m - 1
-          griddim%nmglobal(nm) = nglob + (griddim%nmaxgl + 2) * mglob + 1
-       enddo
-    enddo
+    allocate(gdp%griddim%celltype(gdp%d%nmlb:gdp%d%nmub), stat=istat)
+    gdp%griddim%celltype(:) = 1
     !
-    allocate(griddim%celltype(nmlb:nmub), stat=istat)
-    griddim%celltype(:) = 1
-    !
-    allocate(griddim%cell2node((mub-mlb+1)*(nub-nlb+1)*4), stat=istat)
-    allocate(griddim%ncellnodes(nmlb:nmub), stat=istat)
-    allocate(griddim%indexnode1(nmlb:nmub), stat=istat)
-    nm = nmlb - 1
-    node1 = 1
-    do m = mlb, mub
-       do n = nlb, nub
-          nm = nm + 1
-          if (n > 1 .and. m > 1) then
-             griddim%cell2node(node1  ) = nm
-             griddim%cell2node(node1+1) = nm - 1
-             griddim%cell2node(node1+2) = nm - 1 - nmaxddb
-             griddim%cell2node(node1+3) = nm - nmaxddb
-             nnodes = 4
-          else
-             nnodes = 0
-          endif
-          griddim%ncellnodes(nm) = nnodes
-          griddim%indexnode1(nm) = node1
-          node1 = node1 + nnodes
-       enddo
-    enddo
-    !
-    allocate(griddim%nmbnd(0,2), stat=istat)
+    allocate(gdp%griddim%nmbnd(0,2), stat=istat)
 end subroutine griddims

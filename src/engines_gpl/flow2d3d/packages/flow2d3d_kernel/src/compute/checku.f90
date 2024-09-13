@@ -2,10 +2,10 @@ subroutine checku(hu        ,s1        ,dpu       ,umean     , &
                 & kfu       ,kcs       ,kcu       , &
                 & kspu      ,hkru      ,j         ,nmmaxj    , &
                 & nmmax     ,kmax      ,icx       ,flood     ,dps       , &
-                & gdp       )
+                & aguu      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,8 +29,8 @@ subroutine checku(hu        ,s1        ,dpu       ,umean     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: checku.f90 6026 2016-04-18 08:22:12Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/checku.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: This routine checks the drying and flooding at ve-
@@ -78,10 +78,11 @@ subroutine checku(hu        ,s1        ,dpu       ,umean     , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              :: hu     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              :: s1     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              :: umean  !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub) , intent(in) :: aguu
 !
 ! Local variables
 !
-    integer :: nm
+    integer :: nm,n,m
     real(fp):: drytrsh
     real(fp):: hucres
     real(fp):: floodtrsh
@@ -99,7 +100,8 @@ subroutine checku(hu        ,s1        ,dpu       ,umean     , &
     !
     call upwhu(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              & zmodel    ,kcs       ,kcu       ,kspu      ,dps       , &
-             & s1        ,dpu       ,umean     ,hu        ,gdp       )
+             & s1        ,dpu       ,umean     ,hu        ,aguu      , &
+             & gdp       )
     do nm = 1, nmmax
        !
        ! Approach for 2D weirs (following WAQUA)
@@ -125,7 +127,7 @@ subroutine checku(hu        ,s1        ,dpu       ,umean     , &
        !
        ! check for flooding
        !
-       if (  flood .and. kfu(nm)==0 .and. (kcu(nm)==1 .or. kcu(nm)==3) &
+       if (  flood .and. kfu(nm)==0 .and. kcu(nm)==1 &
            & .and. max(s1(nm),s1(nm+icx)) - max(-real(dps(nm),fp),-real(dps(nm+icx),fp)) >= floodtrsh) then
           if (min(hu(nm), hucres)>floodtrsh) then
             kfu(nm) = 1

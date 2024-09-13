@@ -7,7 +7,7 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
                 & sigdif    ,sigmol    ,bruvai    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +31,8 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: forfil.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/forfil.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Filters concentrations. Numerical diffusion is
@@ -71,7 +71,9 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
     real(fp)               , pointer :: dicoww
     real(fp)               , pointer :: xlo
     real(fp)               , pointer :: ck
-    logical , dimension(:) , pointer :: flbcktemp
+    integer               , pointer :: idebugCUThardINI
+    integer               , pointer :: idebugCUThardFIN
+    real(fp), dimension(:), pointer :: r0prov
 !
 ! Global variables
 !
@@ -149,12 +151,14 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
 !
 !! executable statements -------------------------------------------------------
 !
+    idebugCUThardINI => gdp%gdimbound%idebugCUThardINI
+    idebugCUThardFIN => gdp%gdimbound%idebugCUThardFIN
+    r0prov           => gdp%gdimbound%Dwrka1
     lundia      => gdp%gdinout%lundia
     vicmol      => gdp%gdphysco%vicmol
     dicoww      => gdp%gdphysco%dicoww
     xlo         => gdp%gdturcoe%xlo
     ck          => gdp%gdturcoe%ck
-    flbcktemp   => gdp%gdheat%flbcktemp
     !
     ! Forester filter for UV only if FORFUV = 'Y'
     !
@@ -192,8 +196,10 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
                 ifil = 0
                 !
                 do nm = 1, nmmax
-                   r0(nm, k, l) = r1(nm, k, l)
-                   if (r0(nm, k, l)<rmneg(l) .and. kcs(nm)*kfs(nm)==1) then
+                   
+                   r0prov(nm) =  r1(nm, k, l) 
+                   !r0(nm, k, l) = r1(nm, k, l) I wanted to keep r0 as the old concentration for updmassbal
+                   if (r0prov(nm)<rmneg(l) .and. kcs(nm)*kfs(nm)==1) then !if (r0(nm, k, l)<rmneg(l) .and. kcs(nm)*kfs(nm)==1) then
                       idifu(nm) = 1
                       ifil = 1
                    endif
@@ -229,23 +235,23 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
 !                  if (kcs(nm)*kfs(nm)==1) then
                    if ( (kfs(nm)==1) .and. (kcs(nm)==1) ) then
                       volnmu = min(1.0_fp, volum1(nmu, k)/volum1(nm, k))
-                      cofnmu = 0.125*(idifu(nmu) + idifu(nm))*kfu(nm)*volnmu
+                      cofnmu = 0.125_fp*(idifu(nmu) + idifu(nm))*kfu(nm)*volnmu
                       volnmd = min(1.0_fp, volum1(nmd, k)/volum1(nm, k))
-                      cofnmd = 0.125*(idifu(nmd) + idifu(nm))*kfu(nmd)*volnmd
+                      cofnmd = 0.125_fp*(idifu(nmd) + idifu(nm))*kfu(nmd)*volnmd
                       volnum = min(1.0_fp, volum1(num, k)/volum1(nm, k))
-                      cofnum = 0.125*(idifu(num) + idifu(nm))*kfv(nm)*volnum
+                      cofnum = 0.125_fp*(idifu(num) + idifu(nm))*kfv(nm)*volnum
                       volndm = min(1.0_fp, volum1(ndm, k)/volum1(nm, k))
-                      cofndm = 0.125*(idifu(ndm) + idifu(nm))*kfv(ndm)*volndm
+                      cofndm = 0.125_fp*(idifu(ndm) + idifu(nm))*kfv(ndm)*volndm
                       !
                       ! corrections for subdomain interfaces:
                       !
-                      if (kcu(nm )==3) cofnmu = 0.0
-                      if (kcu(nmd)==3) cofnmd = 0.0
-                      if (kcv(nm )==3) cofnum = 0.0
-                      if (kcv(ndm)==3) cofndm = 0.0
+                      if (kcu(nm )==3) cofnmu = 0.0_fp
+                      if (kcu(nmd)==3) cofnmd = 0.0_fp
+                      if (kcv(nm )==3) cofnum = 0.0_fp
+                      if (kcv(ndm)==3) cofndm = 0.0_fp
                       !
-                      r1(nm, k, l) = r0(nm, k, l)                               &
-                                   & *(1 - cofnmu - cofnmd - cofndm - cofnum)   &
+                      r1(nm, k, l) = r0prov(nm) & !r0(nm, k, l)                               &
+                                   & *(1._fp - cofnmu - cofnmd - cofndm - cofnum)   &
                                    & + r0(nmu, k, l)*cofnmu + r0(nmd, k, l)     &
                                    & *cofnmd + r0(num, k, l)                    &
                                    & *cofnum + r0(ndm, k, l)*cofndm
@@ -270,9 +276,9 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
     if (forfww=='Y') then
        do l = 1, lstsci
           !
-          ! Vertical Forester filter not only for salinity and temperature but also for tracers
+          ! Vertical Forester filter only for salt and temperature
           !
-          if (l/=lsal .and. l/=ltem .and. (.not. flbcktemp(l))) then
+          if (l/=lsal .and. l/=ltem) then
              cycle
           endif
           !
@@ -299,7 +305,7 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
                          !
                          sqrtbv = max(0.0_fp, bruvai(nm, k))
                          sqrtbv = sqrt(sqrtbv)
-                         difiwe = 0.2 * sqrtbv * xlo**2
+                         difiwe = 0.2_fp * sqrtbv * xlo**2
                          !
                          ! dicoww-restriction is moved from TURCLO to here (in reddic)
                          ! vicww is used instead of dicww
@@ -311,7 +317,7 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
                          dr1 = r1(nm, k, l) - r1(nm, kd, l)
                          dr2 = r1(nm, k, l) - r1(nm, ku, l)
                          if (dr2>dr1) then
-                            dr = min(dr1, 0.5*dr2)
+                            dr = min(dr1, 0.5_fp*dr2)
                             dz1 = thick(k)*h0
                             dz2 = thick(ku)*h0
                             coef = min(dz1, dz2, 1.0_fp)
@@ -325,7 +331,7 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
                                r1(nm, ku, l) = r1(nm, ku, l) + coef*dr/dz2
                             endif
                          else
-                            dr = min(0.5*dr1, dr2)
+                            dr = min(0.5_fp*dr1, dr2)
                             dz1 = thick(k)*h0
                             dz2 = thick(kd)*h0
                             coef = min(dz1, dz2, 1.0_fp)
@@ -346,7 +352,7 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
                          !
                          sqrtbv = max(0.0_fp, bruvai(nm, k))
                          sqrtbv = sqrt(sqrtbv)
-                         difiwe = 0.2 * sqrtbv * xlo**2
+                         difiwe = 0.2_fp * sqrtbv * xlo**2
                          !
                          ! dicoww-restriction is moved from TURCLO to here (in reddic)
                          ! vicww is used instead of dicww
@@ -358,7 +364,7 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
                          dr1 = r1(nm, k, l) - r1(nm, kd, l)
                          dr2 = r1(nm, k, l) - r1(nm, ku, l)
                          if (dr2<dr1) then
-                            dr = max(dr1, 0.5*dr2)
+                            dr = max(dr1, 0.5_fp*dr2)
                             dz1 = thick(k)*h0
                             dz2 = thick(ku)*h0
                             coef = min(dz1, dz2, 1.0_fp)
@@ -372,7 +378,7 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
                                r1(nm, ku, l) = r1(nm, ku, l) + coef*dr/dz2
                             endif
                          else
-                            dr = max(0.5*dr1, dr2)
+                            dr = max(0.5_fp*dr1, dr2)
                             dz1 = thick(k)*h0
                             dz2 = thick(kd)*h0
                             coef = min(dz1, dz2, 1.0_fp)
@@ -408,4 +414,9 @@ subroutine forfil(nmmax     ,kmax      ,lstsci    , &
           enddo         ! nm-loop
        enddo            ! l-loop
     endif               ! forfww
+    if (nst.ge.idebugCUThardINI.and.nst.le.idebugCUThardFIN) THEN
+       do k =1,nmmax
+        ! write(9892000,'(2i6,15f21.15)') nst,k,r1(k,1,1) 
+       enddo
+    endif
 end subroutine forfil

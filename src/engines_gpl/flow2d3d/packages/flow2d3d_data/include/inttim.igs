@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$$
+!  $Id: inttim.igs 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/include/inttim.igs $$
 !-------------------------------------------------------------------------------
 integer, parameter :: mxprt = 50   !  Max. number of print timesteps
 !
@@ -70,11 +70,9 @@ type gd_inttim
     integer               :: itcomf = 0        !  First time to write communication file (expressed in multiples of DT)
     integer               :: itcomi = 0        !  Interval   to write communication file (expressed in multiples of DT)
     integer               :: itcoml = 0        !  Last time  to write communication file (expressed in multiples of DT)
-    integer               :: itnflf = 0        !  First time to write near field files
-    integer               :: itnfli = 0        !  Interval   to write near field files
-    integer               :: itnfll = 0        !  Last time  to write near field files
-    integer               :: itnflrf = 0       !  First time to read near field files and perform near field computations
-    integer               :: itnflri = 0       !  Interval   to read near field files and perform near field computations
+    integer               :: itnflf = 0        !  First time to perform near field computations
+    integer               :: itnfli = 0        !  Interval  to perform near field computations
+    integer               :: itnfll = 0        !  Last time to perform near field computations
     integer               :: itdrof = 0        !  First time to write drogue file (expressed in multiples of DT)
     integer               :: itdroi = 0        !  Interval   to write drogue file (expressed in multiples of DT)
     integer               :: itdrol = 0        !  Last time  to write drogue file (expressed in multiples of DT)

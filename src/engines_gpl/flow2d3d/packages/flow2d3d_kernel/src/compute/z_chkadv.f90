@@ -5,7 +5,7 @@ subroutine z_chkadv(lundia    ,nmmax     ,kmax      ,icx       , &
                   & nst       ,kcs       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,7 +30,7 @@ subroutine z_chkadv(lundia    ,nmmax     ,kmax      ,icx       , &
 !                                                                               
 !-------------------------------------------------------------------------------
 !  $Id: z_chkadv.f90$
-!  : https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20111115_13532_z-model_improvements_oss-merge/engines_gpl/flow2d3d/packages/kernel/src/compute/z_chkadv.f90 $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20111115_13532_z-model_improvements_oss-merge/engines_gpl/flow2d3d/packages/kernel/src/compute/z_chkadv.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Checks stability (Courant number) for horizontal velocity and
@@ -156,8 +156,8 @@ subroutine z_chkadv(lundia    ,nmmax     ,kmax      ,icx       , &
     nm_cflvmax = 0
     k_cflumax  = 0
     k_cflvmax  = 0
-    cflumax    = 1.0_fp
-    cflvmax    = 1.0_fp
+    cflumax    = 0.0_fp
+    cflvmax    = 0.0_fp
     u_cflumax  = 0.0_fp
     v_cflvmax  = 0.0_fp
     frac_dz    = 0.0_fp
@@ -185,55 +185,55 @@ subroutine z_chkadv(lundia    ,nmmax     ,kmax      ,icx       , &
        ndm  = ndm  + 1
        nmu  = nmu  + 1
        ndmu = ndmu + 1
-       if (kfu(nm)==1 .and. kcs(nm)/=3 .and. kcs(nmu)/=3 .and. kcs(nm)/=-1 .and. kcs(nmu)/=-1) then
+       if (kfu(nm)==1 .and. kcs(nm)/=3 .and. kcs(nmu)/=3) then
           do k = kfumin(nm), kfumx0(nm)
              if (kfuz0(nm,k) > 0) then
                 if (u0(nm,k) > 0.0_fp) then
                    !
                    ! Flow from cell nm to nmu, layer fraction based upon dzu0(nm,k) and dzs0(nm,k)
                    !
-                   !frac_dz = dzu0(nm,k) / max(dzs0(nm,k), 0.01_fp)
-                   if ( timestep*u0(nm,k)/gvu(nm) > cflumax ) then
-                      cflumax     = timestep * u0(nm,k)/gvu(nm)
+                   frac_dz = dzu0(nm,k) / max(dzs0(nm,k), 0.01_fp)
+                   if ( frac_dz*timestep*u0(nm,k)/gvu(nm) > cflumax ) then
+                      cflumax     = frac_dz * timestep * u0(nm,k)/gvu(nm)
                       nm_cflumax  = nm
                       k_cflumax   = k
-                      u_cflumax   = abs(u0(nm,k))
-                      !frac_dz_u   = frac_dz
+                      u_cflumax   = u0(nm,k)
+                      frac_dz_u   = frac_dz
                    endif
-                   !kenm    = max(1, kfvz0(nm, k) + kfvz0(ndm, k) + kfvz0(ndmu, k) + kfvz0(nmu, k))
-                   !vvv     = v0(nm  , k)*kfvz0(nm  , k) + v0(ndm, k)*kfvz0(ndm, k)      &
-                   !      & + v0(ndmu, k)*kfvz0(ndmu, k) + v0(nmu, k)*kfvz0(nmu, k)
-                   !vvv     = vvv / real(kenm,fp)
-                   !if ( frac_dz*timestep*abs(vvv/guu(nm)) > cflvmax ) then
-                   !   cflvmax    = frac_dz * timestep * abs(vvv/guu(nm))
-                   !   nm_cflvmax = nm
-                   !   k_cflvmax  = k
-                   !   v_cflvmax  = vvv
-                   !   frac_dz_v  = frac_dz
-                   !endif
+                   kenm    = max(1, kfvz0(nm, k) + kfvz0(ndm, k) + kfvz0(ndmu, k) + kfvz0(nmu, k))
+                   vvv     = v0(nm  , k)*kfvz0(nm  , k) + v0(ndm, k)*kfvz0(ndm, k)      &
+                         & + v0(ndmu, k)*kfvz0(ndmu, k) + v0(nmu, k)*kfvz0(nmu, k)
+                   vvv     = vvv / real(kenm,fp)
+                   if ( frac_dz*timestep*abs(vvv/guu(nm)) > cflvmax ) then
+                      cflvmax    = frac_dz * timestep * abs(vvv/guu(nm))
+                      nm_cflvmax = nm
+                      k_cflvmax  = k
+                      v_cflvmax  = vvv
+                      frac_dz_v  = frac_dz
+                   endif
                 elseif (u0(nm,k) < 0.0_fp) then
                    !
                    ! Flow from cell nmu to nm, layer fraction based upon dzu0(nm,k) and dzs0(nmu,k)
                    !
-                   !frac_dz = dzu0(nm,k) / max(dzs0(nmu,k), 0.01_fp)
-                   if ( -timestep*u0(nm,k)/gvu(nm) > cflumax ) then
-                      cflumax    = -timestep * u0(nm,k)/gvu(nm)
+                   frac_dz = dzu0(nm,k) / max(dzs0(nmu,k), 0.01_fp)
+                   if ( -frac_dz*timestep*u0(nm,k)/gvu(nm) > cflumax ) then
+                      cflumax    = -frac_dz * timestep * u0(nm,k)/gvu(nm)
                       nm_cflumax = nm
                       k_cflumax  = k
-                      u_cflumax  = abs(u0(nm,k))
-                      !frac_dz_u  = frac_dz
+                      u_cflumax  = u0(nm,k)
+                      frac_dz_u  = frac_dz
                    endif
-                   !kenm    = max(1, kfvz0(nm, k) + kfvz0(ndm, k) + kfvz0(ndmu, k) + kfvz0(nmu, k))
-                   !vvv     = v0(nm  , k)*kfvz0(nm  , k) + v0(ndm, k)*kfvz0(ndm, k)      &
-                   !      & + v0(ndmu, k)*kfvz0(ndmu, k) + v0(nmu, k)*kfvz0(nmu, k)
-                   !vvv     = vvv / real(kenm,fp)
-                   !if ( frac_dz*timestep*abs(vvv/guu(nm)) > cflvmax ) then
-                   !   cflvmax    = frac_dz * timestep * abs(vvv/guu(nm))
-                   !   nm_cflvmax = nm
-                   !   k_cflvmax  = k
-                   !   v_cflvmax  = vvv
-                   !   frac_dz_v  = frac_dz
-                   !endif
+                   kenm    = max(1, kfvz0(nm, k) + kfvz0(ndm, k) + kfvz0(ndmu, k) + kfvz0(nmu, k))
+                   vvv     = v0(nm  , k)*kfvz0(nm  , k) + v0(ndm, k)*kfvz0(ndm, k)      &
+                         & + v0(ndmu, k)*kfvz0(ndmu, k) + v0(nmu, k)*kfvz0(nmu, k)
+                   vvv     = vvv / real(kenm,fp)
+                   if ( frac_dz*timestep*abs(vvv/guu(nm)) > cflvmax ) then
+                      cflvmax    = frac_dz * timestep * abs(vvv/guu(nm))
+                      nm_cflvmax = nm
+                      k_cflvmax  = k
+                      v_cflvmax  = vvv
+                      frac_dz_v  = frac_dz
+                   endif
                 endif
              endif
           enddo
@@ -255,62 +255,62 @@ subroutine z_chkadv(lundia    ,nmmax     ,kmax      ,icx       , &
        !
        ! Determine advised time step
        !
-       dtadv = gvu(nm_cflumax) / abs(u_cflumax)
+       dtadv = gvu(nm_cflumax) / (abs(u_cflumax)*frac_dz_u)
        if (momsol == 'iupw  ' .or. momsol == 'mdui  ' .or. momsol == 'flood ' .or. momsol == 'finvol') then
           dtadv = 2.0_fp * dtadv
        endif
        !
        call nm_to_n_and_m(nm_cflumax, n, m, gdp)
        errmsg = ''
-       !if (frac_dz_u > 2.0_fp) then
-       !   write (errmsg, '(5a,f8.2,a,i0,a,i0,a,i0,a,i0,a,e10.3,a,e10.3,a)') &
-       !        & 'Courant number for ', vel, '-velocity in ', point, '-point equals ', cflumax, & 
-       !        & ' for (m,n,k) = (', m, ',', n, ',', k_cflumax, '),  at nst = ', nst ,', due to large gradient in layer thickness: ', frac_dz_u, &
-       !        & '. Advised time step: ', dtadv/60.0_fp, ' minutes.'
-       !   call prterr (lundia, 'G051', trim(errmsg))
-       !else
+       if (frac_dz_u > 2.0_fp) then
+          write (errmsg, '(5a,f8.2,a,i0,a,i0,a,i0,a,i0,a,e10.3,a,e10.3,a)') &
+               & 'Courant number for ', vel, '-velocity in ', point, '-point equals ', cflumax, & 
+               & ' for (m,n,k) = (', m, ',', n, ',', k_cflumax, '),  at nst = ', nst ,', due to large gradient in layer thickness: ', frac_dz_u, &
+               & '. Advised time step: ', dtadv/60.0_fp, ' minutes.'
+          call prterr (lundia, 'G051', trim(errmsg))
+       else
           write (errmsg, '(5a,f8.2,a,i0,a,i0,a,i0,a,i0,a,e10.3,a)') &
                & 'Courant number for ', vel, '-velocity in ', point, '-point equals ', cflumax, & 
                & ' for (m,n,k) = (', m, ',', n, ',', k_cflumax, '),  at nst = ', nst ,'. Advised time step: ', dtadv/60.0_fp, ' minutes.'
           call prterr (lundia, 'G051', trim(errmsg))
-       !endif
+       endif
     endif
-    !!
-    !! V-direction
-    !!
-    !if (icy == 1) then
-    !   point = 'U'
-    !   vel   = 'V'
-    !else 
-    !   point = 'V'
-    !   vel   = 'U'
-    !endif
-    !if (cflvmax > 1.0_fp) then
-    !   !
-    !   cntcflmsg = cntcflmsg + 1
-    !   !
-    !   ! Determine advised time step
-    !   !
-    !   dtadv = guu(nm_cflvmax) / (abs(v_cflvmax)*frac_dz_v)
-    !   if (momsol == 'iupw  ' .or. momsol == 'mdui  ' .or. momsol == 'flood ' .or. momsol == 'finvol') then
-    !      dtadv = 2.0_fp * dtadv
-    !   endif
-    !   !
-    !   call nm_to_n_and_m(nm_cflvmax, n, m, gdp)
-    !   errmsg = ''
-    !   if (frac_dz_v > 2.0_fp) then
-    !      write (errmsg, '(5a,f8.2,a,i0,a,i0,a,i0,a,i0,a,e10.3,a,e10.3,a)') &
-    !           & 'Courant number for ', vel, '-velocity in ', point, '-point equals ', cflvmax, & 
-    !           & ' for (m,n,k) = (', m, ',', n, ',', k_cflvmax, '),  at nst = ', nst ,', due to large gradient in layer thickness: ', frac_dz_v, &
-    !           & '. Advised time step: ', dtadv/60.0_fp, ' minutes.'
-    !      call prterr (lundia, 'G051', trim(errmsg))
-    !   else
-    !      write (errmsg, '(5a,f8.2,a,i0,a,i0,a,i0,a,i0,a,e10.3,a)') &
-    !           & 'Courant number for ', vel, '-velocity in ', point, '-point equals ', cflvmax, & 
-    !           & ' for (m,n,k) = (', m, ',', n, ',', k_cflvmax, '),  at nst = ', nst ,'. Advised time step: ', dtadv/60.0_fp, ' minutes.'
-    !      call prterr (lundia, 'G051', trim(errmsg))
-    !   endif
-    !endif
+    !
+    ! V-direction
+    !
+    if (icy == 1) then
+       point = 'U'
+       vel   = 'V'
+    else 
+       point = 'V'
+       vel   = 'U'
+    endif
+    if (cflvmax > 1.0_fp) then
+       !
+       cntcflmsg = cntcflmsg + 1
+       !
+       ! Determine advised time step
+       !
+       dtadv = guu(nm_cflvmax) / (abs(v_cflvmax)*frac_dz_v)
+       if (momsol == 'iupw  ' .or. momsol == 'mdui  ' .or. momsol == 'flood ' .or. momsol == 'finvol') then
+          dtadv = 2.0_fp * dtadv
+       endif
+       !
+       call nm_to_n_and_m(nm_cflvmax, n, m, gdp)
+       errmsg = ''
+       if (frac_dz_v > 2.0_fp) then
+          write (errmsg, '(5a,f8.2,a,i0,a,i0,a,i0,a,i0,a,e10.3,a,e10.3,a)') &
+               & 'Courant number for ', vel, '-velocity in ', point, '-point equals ', cflvmax, & 
+               & ' for (m,n,k) = (', m, ',', n, ',', k_cflvmax, '),  at nst = ', nst ,', due to large gradient in layer thickness: ', frac_dz_v, &
+               & '. Advised time step: ', dtadv/60.0_fp, ' minutes.'
+          call prterr (lundia, 'G051', trim(errmsg))
+       else
+          write (errmsg, '(5a,f8.2,a,i0,a,i0,a,i0,a,i0,a,e10.3,a)') &
+               & 'Courant number for ', vel, '-velocity in ', point, '-point equals ', cflvmax, & 
+               & ' for (m,n,k) = (', m, ',', n, ',', k_cflvmax, '),  at nst = ', nst ,'. Advised time step: ', dtadv/60.0_fp, ' minutes.'
+          call prterr (lundia, 'G051', trim(errmsg))
+       endif
+    endif
     !
     ! Write message to tri-diag file if more than the maximum number of warnings has been written
     !

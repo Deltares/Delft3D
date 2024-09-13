@@ -1,6 +1,6 @@
 subroutine tur2d(dischy    ,j         ,nmmaxj    ,nmmax     ,nmax      , &
                & mmax      ,kmax      ,icx       ,icy       ,kfs       , &
-               & kfu       ,kfv       ,kcs       ,kfd       ,dpd       , &
+               & kfu       ,kfv       ,kcs       ,kfd       ,dp        , &
                & dps       ,s1        ,umean     ,vmean     ,rtu2d0    , &
                & rtu2d1    ,rtubnd    ,thick     ,guu       ,gvv       , &
                & guv       ,gvu       ,vicww     ,dicww     ,vicuv     , &
@@ -11,7 +11,7 @@ subroutine tur2d(dischy    ,j         ,nmmaxj    ,nmmax     ,nmax      , &
                & wrka3     ,dep2      ,umea      ,vmea      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -35,8 +35,8 @@ subroutine tur2d(dischy    ,j         ,nmmaxj    ,nmmax     ,nmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: tur2d.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/tur2d.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes transport in the u and v -direction of
@@ -121,7 +121,7 @@ subroutine tur2d(dischy    ,j         ,nmmaxj    ,nmmax     ,nmax      , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: dddeta !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: dddksi !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: dep2   !!  Internal work array, for square of total water depth at (N,M)
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: dpd    !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: dp     !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: dps    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: guu    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: guv    !  Description and declaration in esm_alloc_real.f90
@@ -280,7 +280,7 @@ subroutine tur2d(dischy    ,j         ,nmmaxj    ,nmmax     ,nmax      , &
              uuu       = .5*(umean(nm) + umean(num))
              vvv       = .5*(vmean(nm) + vmean(nmu))
              s         = 0.25*(s1(nm) + s1(num) + s1(nmu) + s1(numu))
-             dep       = max(dpd(nm) + s, 0.01_fp)
+             dep       = max(dp(nm) + s, 0.01_fp)
              umod      = sqrt(uuu*uuu + vvv*vvv)
              chezy     = .25*(cfurou(nm,1) + cfurou(num,1) + cfvrou(nm,1) + cfvrou(nmu,1))
              fac       = ag/(chezy*chezy*dep)
@@ -306,7 +306,7 @@ subroutine tur2d(dischy    ,j         ,nmmaxj    ,nmmax     ,nmax      , &
           numu = nm + icy + icx
           if (kfd(nm)==1) then
              s          = 0.25*(s1(nm) + s1(num) + s1(nmu) + s1(numu))
-             dep        = max(dpd(nm) + s, 0.01_fp)
+             dep        = max(dp(nm) + s, 0.01_fp)
              dep2(nm)   = 1.
              if (l==2) dep2(nm) = dep*dep
              bux(nm, 1) = 0.0
@@ -634,7 +634,7 @@ subroutine tur2d(dischy    ,j         ,nmmaxj    ,nmmax     ,nmax      , &
                 uuu        = .5*(umean(nm) + umean(num))
                 vvv        = .5*(vmean(nm) + vmean(nmu))
                 s          = 0.25*(s1(nm) + s1(num) + s1(nmu) + s1(numu))
-                dep        = max(dpd(nm) + s, 0.01_fp)
+                dep        = max(dp(nm) + s, 0.01_fp)
                 umod       = sqrt(uuu*uuu + vvv*vvv)
                 chezy      = .25*(cfurou(nm,1) + cfurou(num,1) + cfvrou(nm,1) + cfvrou(nmu,1))
                 fac        = ag/(chezy*chezy*dep)
@@ -655,7 +655,7 @@ subroutine tur2d(dischy    ,j         ,nmmaxj    ,nmmax     ,nmax      , &
                 uuu        = .5*(umean(nm) + umean(num))
                 vvv        = .5*(vmean(nm) + vmean(nmu))
                 s          = 0.25*(s1(nm) + s1(num) + s1(nmu) + s1(numu))
-                dep        = max(dpd(nm) + s, 0.01_fp)
+                dep        = max(dp(nm) + s, 0.01_fp)
                 umod       = sqrt(uuu*uuu + vvv*vvv)
                 chezy      = .25*(cfurou(nm,1) + cfurou(num,1) + cfvrou(nm,1) + cfvrou(nmu,1))
                 bbk(nm, 1) = bbk(nm, 1) + 2*ag*umod/(chezy*chezy*dep**3)

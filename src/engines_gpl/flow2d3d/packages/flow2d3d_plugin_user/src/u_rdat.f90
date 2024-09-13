@@ -1,7 +1,7 @@
 subroutine u_rdat(lundia    ,error     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine u_rdat(lundia    ,error     ,gdp       )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: u_rdat.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/plugin_user/src/u_rdat.f90 $
 !!--description-----------------------------------------------------------------
 ! - Reads the user defined data from arbitrary input
 ! file and stores all data through the common
@@ -89,7 +89,8 @@ subroutine u_rdat(lundia    ,error     ,gdp       )
     if (.not.ex) goto 9999
     !
     call prterr(lundia    ,'G051'    ,'User defined output specified' )
-    open (newunit=luninp, file = inpfil, form = 'formatted', err = 7777)
+    luninp = newlun(gdp)
+    open (luninp, file = inpfil, form = 'formatted', err = 7777)
     !
     ! Read 3 file names from user file (EXAMPLE)
     ! One file for each of the following data: Map, History and Drogues

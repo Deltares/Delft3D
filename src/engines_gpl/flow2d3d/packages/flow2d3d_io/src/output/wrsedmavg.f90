@@ -4,7 +4,7 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
                    & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrsedmavg.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrsedmavg.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Writes the time varying data for sediment (4 & 5)
@@ -73,7 +73,6 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
     real(fp)      , dimension(:)    , pointer :: cdryb
     integer                         , pointer :: nmaxgl
     integer                         , pointer :: mmaxgl
-    integer                         , pointer :: io_prec
 !
 ! Global variables
 !
@@ -153,7 +152,6 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
     cdryb               => gdp%gdsedpar%cdryb
     mmaxgl              => gdp%gdparall%mmaxgl
     nmaxgl              => gdp%gdparall%nmaxgl
-    io_prec             => gdp%gdpostpr%io_prec
     !
     filetype = getfiletype(gdp, FILOUT_MAP)
     !
@@ -181,7 +179,7 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
           call addelm(gdp, lundia, FILOUT_MAP, grnam6, 'ITAVGS', ' ', IO_INT4, 0, longname='timestep number (ITAVG*DT*TUNIT := time in sec from ITDATE)')
        endif
        call addelm(gdp, lundia, FILOUT_MAP, grnam6, 'MFTAVG', ' ', IO_REAL8, 0, longname='morphological time (days since start of simulation)', unit='days')
-       call addelm(gdp, lundia, FILOUT_MAP, grnam6, 'MORAVG', ' ', io_prec , 0, longname='average MORFAC used during averaging period')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam6, 'MORAVG', ' ', IO_REAL4, 0, longname='average MORFAC used during averaging period')
        !
        ! map-avg-series
        !
@@ -193,11 +191,11 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
        case (2)
           transpunit = 'm3/(s m)'
        end select
-       call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SBUUA', ' ', io_prec    , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Average bed-load transport u-direction (u point)', unit=transpunit, acl='u')
-       call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SBVVA', ' ', io_prec    , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Average bed-load transport v-direction (v point)', unit=transpunit, acl='v')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SBUUA', ' ', IO_REAL4   , 3, dimids=(/iddim_n , iddim_mc, iddim_lsedtot/), longname='Average bed-load transport u-direction (u point)', unit=transpunit, acl='u')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SBVVA', ' ', IO_REAL4   , 3, dimids=(/iddim_nc, iddim_m , iddim_lsedtot/), longname='Average bed-load transport v-direction (v point)', unit=transpunit, acl='v')
        if (lsed > 0) then
-          call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SSUUA', ' ', io_prec , 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Average suspended-load transport u-direction (u point)', unit=transpunit, acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SSVVA', ' ', io_prec , 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Average suspended-load transport v-direction (v point)', unit=transpunit, acl='v')
+          call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SSUUA', ' ', IO_REAL4, 3, dimids=(/iddim_n , iddim_mc, iddim_lsed/), longname='Average suspended-load transport u-direction (u point)', unit=transpunit, acl='u')
+          call addelm(gdp, lundia, FILOUT_MAP, grnam7, 'SSVVA', ' ', IO_REAL4, 3, dimids=(/iddim_nc, iddim_m , iddim_lsed/), longname='Average suspended-load transport v-direction (v point)', unit=transpunit, acl='v')
        endif
        !
        group6%grp_dim = iddim_group

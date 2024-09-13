@@ -1,7 +1,7 @@
 subroutine rmdel(filnam    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine rmdel(filnam    ,gdp       )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rmdel.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/general/rmdel.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Test existence of file and if delete file, using
@@ -65,15 +65,16 @@ subroutine rmdel(filnam    ,gdp       )
     lundia              => gdp%gdinout%lundia
     !
     call remove_leading_spaces(filnam    ,lfil      )
-    inquire (file = filnam(:lfil), exist = ex, iostat = ierr)
-    if (ierr==0 .and. ex) then
-       inquire (file = filnam(:lfil), opened = ex, iostat = ierr)
-       if (ierr==0 .and. ex) then
+    inquire (file = filnam(:lfil), exist = ex)
+    if (ex) then
+       inquire (file = filnam(:lfil), opened = ex)
+       if (ex) then
           inquire (file = filnam(:lfil), number = luntmp)
           ! Need to close this first. The status = 'delete' triggers an error when file was opened as readonly.
           close (luntmp, iostat = ierr)
        endif
-       open (newunit=luntmp, file = filnam(:lfil), iostat = ierr)
+       luntmp = newlun(gdp)
+       open (luntmp, file = filnam(:lfil), iostat = ierr)
        if (ierr==0) then
           close (luntmp, status = 'delete', iostat = ierr)
           if (ierr==0) then

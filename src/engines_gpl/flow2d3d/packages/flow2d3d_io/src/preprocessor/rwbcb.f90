@@ -2,7 +2,7 @@ subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
                & itfinish  ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rwbcb.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/preprocessor/rwbcb.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads from BCB-file into temporary file
@@ -39,7 +39,6 @@ subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
     use precision
     use globaldata
     use string_module
-    use time_module
     !
     implicit none
     !
@@ -111,12 +110,13 @@ subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
     !-----Open output file
     !
     filout = 'TMP_Bar.bcb'
+    lunout = newlun(gdp)
     inquire (file = filout, exist = ex)
     if (ex) then
-       open (newunit=lunout, file = filout)
+       open (lunout, file = filout)
        close (lunout, status = 'delete')
     endif
-    open (newunit=lunout, file = filout, form = 'unformatted', status = 'unknown')
+    open (lunout, file = filout, form = 'unformatted', status = 'unknown')
     !
     !---- Read the data, check it and write the output file
     !
@@ -317,7 +317,7 @@ subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
           !
           !---------Calculate Date and time for RTC
           !
-          julday = ymd2jul(timref)
+          call juldat(timref    ,julday    )
           call timdat(julday    ,timrd*60.0_fp,iacdat    ,iactim    )
           !
           !---------Re-define ITOLD

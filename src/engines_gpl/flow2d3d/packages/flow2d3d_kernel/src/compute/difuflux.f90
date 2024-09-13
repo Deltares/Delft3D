@@ -2,11 +2,10 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
                   & lstsci    ,r0        ,r1        ,qxk       ,qyk       , &
                   & dicuv     ,guv       ,gvu       ,areau     ,areav     , &
                   & kfu       ,kfv       ,kfs       ,kcs       ,timest    , &
-                  & icx       ,icy       ,lsed      ,s1        ,dps       , &
-                  & gdp       )
+                  & icx       ,icy       ,lsed      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +29,8 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: difuflux.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/difuflux.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Compute flux corresponding to DIFU
@@ -58,7 +57,7 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
     type (flwoutputtype)               , pointer :: flwoutput
     !
     logical                            , pointer :: massbal
-    real(fp)                           , pointer :: dryflc
+    logical, pointer :: bnd_distr_perC
 !
 ! Global variables
 !
@@ -80,8 +79,6 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)         , intent(in) :: dicuv  !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in) :: guv    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in) :: gvu    !  Description and declaration in esm_alloc_real.f90
-    real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)             , intent(in) :: dps    !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in) :: s1     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)         , intent(in) :: qxk    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)         , intent(in) :: qyk    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci) , intent(in) :: r0     !  Description and declaration in esm_alloc_real.f90
@@ -115,10 +112,10 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
     real(fp) :: flux1
     real(fp) :: qxu
     real(fp) :: qyv
-    real(fp) :: hmin
 !
 !! executable statements -------------------------------------------------------
 !
+    bnd_distr_perC => gdp%gdimbound%bnd_distr_perC
     fluxu          => gdp%gdflwpar%fluxu
     fluxuc         => gdp%gdflwpar%fluxuc
     fluxv          => gdp%gdflwpar%fluxv
@@ -126,9 +123,8 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
     flwoutput      => gdp%gdflwpar%flwoutput
     !
     massbal        => gdp%gdmassbal%massbal
-    dryflc         => gdp%gdnumeco%dryflc
     !
-    if (.not. flwoutput%difuflux .and. lsed==0 .and. .not. massbal) return
+    if (.not. flwoutput%difuflux .and. lsed==0 .and. .not. massbal .and. .not. bnd_distr_perC) return
     !
     istat = 0
     if (.not. associated(gdp%gdflwpar%fluxu)) then
@@ -174,7 +170,7 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
              nmuuu = min(nmmaxj , nm+3*icx)
              !
              flux    = 0.5_fp*(dicuv(nm, k) + dicuv(nmu, k))/(0.7_fp*gvu(nm))
-             maskval = max(0, 2 - kcs(nm))
+             maskval = 1._fp !max(0, 2 - kcs(nm))
              flux1   = areau(nm, k)*flux*maskval
              !
              if (stage == 'stage2  ') then
@@ -199,13 +195,10 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
                 !
                 ! Explicit direction: diffusion
                 !
-                hmin = min(s1(nm) + real(dps(nm),fp), s1(nmu) + real(dps(nmu),fp))
-                if (hmin > dryflc) then
-                   do l = 1,lstsci
-                      fluxu(nm,k,l) = fluxu(nm,k,l) + &
-                                    & flux1 * (r0(nm,k,l) - r0(nmu,k,l))
-                   enddo
-                endif
+                do l = 1,lstsci
+                   fluxu(nm,k,l) = fluxu(nm,k,l) + &
+                                 & flux1 * (r0(nm,k,l) - r0(nmu,k,l))
+                enddo
              else
                 !
                 ! Implicit direction: advection
@@ -243,13 +236,10 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
                 !
                 ! Implicit direction: diffusion
                 !
-                hmin = min(s1(nm) + real(dps(nm),fp), s1(nmu) + real(dps(nmu),fp))
-                if (hmin > dryflc) then
-                   do l = 1,lstsci
-                      fluxu(nm,k,l) = fluxu(nm,k,l) + &
-                                    & flux1 * (r1(nm,k,l) - r1(nmu,k,l))
-                   enddo
-                endif
+                do l = 1,lstsci
+                   fluxu(nm,k,l) = fluxu(nm,k,l) + &
+                                 & flux1 * (r1(nm,k,l) - r1(nmu,k,l))
+                enddo
              endif    ! stage 2/1
           endif       ! kfu == 1 .and. kcs /=0
        enddo          ! nm
@@ -259,7 +249,7 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
     !
     do k = 1,kmax
        do nm = 1,nmmax
-          if (kfs(nm)==1 .and. kcs(nm)>0) then 
+          if (kfv(nm)==1 .and. kcs(nm)>0) then 
              nddm  = nm - 2*icy
              ndm   = nm - icy
              num   = nm + icy
@@ -267,7 +257,7 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
              nuuum = min(nmmaxj , nm+3*icy)
              !
              flux    = 0.5_fp*(dicuv(nm, k) + dicuv(num, k))/(0.7_fp*guv(nm))
-             maskval = max(0, 2 - kcs(nm))
+             maskval = 1._fp !max(0, 2 - kcs(nm))
              flux1   = areav(nm, k)*flux*maskval
              !
              if (stage == 'stage1  ') then
@@ -292,13 +282,10 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
                 !
                 ! Explicit direction: diffusion
                 !
-                hmin = min(s1(nm) + real(dps(nm),fp), s1(num) + real(dps(num),fp))
-                if (hmin > dryflc) then
-                   do l = 1,lstsci
-                      fluxv(nm,k,l) = fluxv(nm,k,l) + &
-                                    & flux1 * (r0(nm,k,l) - r0(num,k,l))
-                   enddo
-                endif
+                do l = 1,lstsci
+                   fluxv(nm,k,l) = fluxv(nm,k,l) + &
+                                 & flux1 * (r0(nm,k,l) - r0(num,k,l))
+                enddo
              else
                 !
                 ! Implicit direction: advection
@@ -336,13 +323,10 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
                 !
                 ! Implicit direction: diffusion
                 !
-                hmin = min(s1(nm) + real(dps(nm),fp), s1(num) + real(dps(num),fp))
-                if (hmin > dryflc) then
-                   do l = 1,lstsci
-                      fluxv(nm,k,l) = fluxv(nm,k,l) + &
-                                    & flux1 * (r1(nm,k,l) - r1(num,k,l))
-                   enddo
-                endif
+                do l = 1,lstsci
+                   fluxv(nm,k,l) = fluxv(nm,k,l) + &
+                                 & flux1 * (r1(nm,k,l) - r1(num,k,l))
+                enddo
              endif    ! stage 1/2
           endif       ! kfu == 1 .and. kcs /=0
        enddo          ! nm
@@ -351,14 +335,7 @@ subroutine difuflux(stage     ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
     ! Cumulative flux
     !
     if (flwoutput%cumdifuflux) then
-       ! Do loops are needed to avoid a stack overflow
-       do l = 1,lstsci
-          do k = 1,kmax
-             do nm = 1,nmmax
-                fluxuc(nm,k,l) = fluxuc(nm,k,l) + fluxu(nm,k,l) * timest
-                fluxvc(nm,k,l) = fluxvc(nm,k,l) + fluxv(nm,k,l) * timest
-             enddo
-          enddo
-       enddo
+       fluxuc = fluxuc + fluxu * timest  !for large arrays this gives stack overflow
+       fluxvc = fluxvc + fluxv * timest
     endif
 end subroutine difuflux

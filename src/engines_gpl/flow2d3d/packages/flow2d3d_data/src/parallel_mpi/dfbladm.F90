@@ -1,7 +1,7 @@
 subroutine dfbladm(ipown, icom, mmax, nmax, runid, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine dfbladm(ipown, icom, mmax, nmax, runid, gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: dfbladm.F90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/parallel_mpi/dfbladm.F90 $
 !!--description-----------------------------------------------------------------
 !
 !   For the present node, carries out the block administration
@@ -187,7 +187,8 @@ subroutine dfbladm(ipown, icom, mmax, nmax, runid, gdp)
        !
        call DATE_AND_TIME(date, time)
        ddbfile = trim(runid) // "_" // trim(date) // "_" // trim(time) // ".ddb"
-       open(newunit=fillun, file=trim(ddbfile), action="WRITE", iostat = istat)
+       fillun = newlun(gdp)
+       open(fillun, file=trim(ddbfile), action="WRITE", iostat = istat)
        if (istat /= 0) then
           write(message,'(3a)') "Unable to open file """,trim(ddbfile),""". Skipping generation."
           call prterr(lundia, 'U190', trim(message))
@@ -202,7 +203,7 @@ subroutine dfbladm(ipown, icom, mmax, nmax, runid, gdp)
                 ! The index of the boundary to be coupled is the last non-halo index:
                 ! nlg               for partition 1
                 ! nlg-(nfg-1)+halo  for the other partitions:
-                !                   the lines 1 to nfg-1 are not active in this partition, the model will be shifted
+                !                   the lines 1 to “nfg-1” are not active in this partition, the model will be shifted
                 !                   take into account that a halo will be added in front
                 !
                 if (i == 1) then

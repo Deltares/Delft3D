@@ -1,13 +1,13 @@
 subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
                 & temp     ,wind      ,ktemp     ,keva        ,ivapop2  , &
-                & irov     ,z0v       ,sferic      ,tgfcmp   , &
+                & irov     ,ctunit    ,z0v       ,sferic      ,tgfcmp   , &
                 & temeqs   ,saleqs    ,wstcof    ,rhoa        ,secflo   , &
                 & betac    ,equili    ,lsec      ,chzmin      ,rmincf   , &
                 & rtcmod   ,couplemod ,nonhyd    ,mmax        ,nmax     , &
                 & nmaxus   ,sedim     ,idensform ,solrad_read2, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,15 +31,15 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdproc.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdproc.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads physical coefficients for temperature
 !                model, rigid wall, tidal forces, density &
 !                wind: KTEMP, FCLOU, SAREA, IVAPOP, SECCHI,
-!                      STANTON, mulsta, DALTON, muldal, IROV, Z0V, TGFCMP,
-!                      TEMPW, SALW, WSTRES, RHOA , SDlake, Wslake
+!                      STANTON, DALTON ,IROV, Z0V, TGFCMP,
+!                      TEMPW, SALW, WSTRES, RHOA
 ! Method used:
 !
 !!--pseudo code and references--------------------------------------------------
@@ -47,7 +47,6 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
 !!--declarations----------------------------------------------------------------
     use precision
     use properties
-    use dfparall
     !
     use globaldata
     !
@@ -63,13 +62,9 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     real(fp)                   , pointer :: fclou
     real(fp)                   , pointer :: gapres
     real(fp)                   , pointer :: stanton
-    real(fp)                   , pointer :: mulsta
     real(fp)                   , pointer :: dalton
-    real(fp)                   , pointer :: muldal
     real(fp)                   , pointer :: qtotmx
     real(fp)                   , pointer :: lambda
-    integer                    , pointer :: wslake
-    integer                    , pointer :: sdlake
     integer                    , pointer :: ivapop
     integer                    , pointer :: maseva
     logical                    , pointer :: free_convec
@@ -85,7 +80,6 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     integer                    , pointer :: n1_nhy
     integer                    , pointer :: n2_nhy
     integer                    , pointer :: nhiter
-    integer                    , pointer :: sleepduringwave ! Description and decleration in tricom.igs
     real(fp)                   , pointer :: epsnh
     logical                    , pointer :: l2norm
     real(fp)                   , pointer :: rel_epsnh
@@ -100,7 +94,6 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     real(fp)                   , pointer :: ti_nodal
     logical                    , pointer :: xbeach
     real(fp)                   , pointer :: tunit
-    character(10)              , pointer :: tunitstr
     logical                    , pointer :: ztbml
 !
 ! Global variables
@@ -136,6 +129,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     real(fp)                 :: z0v         !  Description and declaration in physco.igs
     real(fp), dimension(6)   :: wstcof      !  Description and declaration in physco.igs
     character(*)             :: mdfrec      !!  Standard rec. length in MD-file (300)
+    character(1)             :: ctunit      ! Time scale for time parameters, currently set to 'M'(inute - fixed). 
     character(1)             :: equili      !!  Equilibrium or advection and diffusion default = no equilibrium ('N') which means lsec = 1
     character(36)            :: tgfcmp      !  Description and declaration in tricom.igs
 !
@@ -162,7 +156,6 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     real(fp)                    :: rsmall      ! Help variable 
     real(fp), dimension(6)      :: rval        ! Help array (real) where the data, recently read from the MD-file, are stored temporarily 
     real(sp)                    :: sprval      ! same, but for one single single precision value    
-    real(fp)                    :: fprval      ! same, but for one single flexible precision value    
     character(1)                :: cdef        ! Help var. containing default value(s) for character variable 
     character(1)                :: chulp       ! Help variabele where the data, recently read from the MD-file, are stored temporarily 
     character(6)                :: keyw        ! Name of record to look for in the MD-file (usually KEYWRD or RECNAM) 
@@ -182,46 +175,40 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     sarea               => gdp%gdheat%sarea
     fclou               => gdp%gdheat%fclou
     gapres              => gdp%gdheat%gapres
-    wslake              => gdp%gdheat%wslake
-    sdlake              => gdp%gdheat%sdlake
     stanton             => gdp%gdheat%stanton
-    mulsta              => gdp%gdheat%mulsta
     dalton              => gdp%gdheat%dalton
-    muldal              => gdp%gdheat%muldal
     qtotmx              => gdp%gdheat%qtotmx
     lambda              => gdp%gdheat%lambda
     ivapop              => gdp%gdheat%ivapop
     maseva              => gdp%gdheat%maseva
     free_convec         => gdp%gdheat%free_convec
     solrad_read         => gdp%gdheat%solrad_read
-    m1_nhy              => gdp%gdnonhyd%m1_nhy
-    m2_nhy              => gdp%gdnonhyd%m2_nhy
-    n1_nhy              => gdp%gdnonhyd%n1_nhy
-    n2_nhy              => gdp%gdnonhyd%n2_nhy
-    nhiter              => gdp%gdnonhyd%nhiter
-    rel_epsnh           => gdp%gdnonhyd%rel_epsnh
-    tetaq               => gdp%gdnonhyd%tetaq
-    tetaz               => gdp%gdnonhyd%tetaz
-    flag_pp             => gdp%gdnonhyd%flag_pp
-    updwl               => gdp%gdnonhyd%updwl
-    precon              => gdp%gdnonhyd%precon
-    krylov              => gdp%gdnonhyd%krylov
-    milu                => gdp%gdnonhyd%milu
-    nh_level            => gdp%gdnonhyd%nh_level
-    epsnh               => gdp%gdnonhyd%epsnh
-    l2norm              => gdp%gdnonhyd%l2norm
-    lunmd               => gdp%gdinout%lunmd
-    lundia              => gdp%gdinout%lundia
-    lunscr              => gdp%gdinout%lunscr
-    nrcmp               => gdp%gdtfzeta%nrcmp
-    tgfdef              => gdp%gdtfzeta%tgfdef
-    itis                => gdp%gdrdpara%itis
-    ti_nodal            => gdp%gdinttim%ti_nodal
-    xbeach              => gdp%gdprocs%xbeach
-    tunit               => gdp%gdexttim%tunit
-    tunitstr            => gdp%gdexttim%tunitstr
-    ztbml               => gdp%gdzmodel%ztbml
-    sleepduringwave     => gdp%gdtricom%sleepduringwave
+    m1_nhy    => gdp%gdnonhyd%m1_nhy
+    m2_nhy    => gdp%gdnonhyd%m2_nhy
+    n1_nhy    => gdp%gdnonhyd%n1_nhy
+    n2_nhy    => gdp%gdnonhyd%n2_nhy
+    nhiter    => gdp%gdnonhyd%nhiter
+    rel_epsnh => gdp%gdnonhyd%rel_epsnh
+    tetaq     => gdp%gdnonhyd%tetaq
+    tetaz     => gdp%gdnonhyd%tetaz
+    flag_pp   => gdp%gdnonhyd%flag_pp
+    updwl     => gdp%gdnonhyd%updwl
+    precon    => gdp%gdnonhyd%precon
+    krylov    => gdp%gdnonhyd%krylov
+    milu      => gdp%gdnonhyd%milu
+    nh_level  => gdp%gdnonhyd%nh_level
+    epsnh     => gdp%gdnonhyd%epsnh
+    l2norm    => gdp%gdnonhyd%l2norm
+    lunmd     => gdp%gdinout%lunmd
+    lundia    => gdp%gdinout%lundia
+    lunscr    => gdp%gdinout%lunscr
+    nrcmp     => gdp%gdtfzeta%nrcmp
+    tgfdef    => gdp%gdtfzeta%tgfdef
+    itis      => gdp%gdrdpara%itis
+    ti_nodal  => gdp%gdinttim%ti_nodal
+    xbeach    => gdp%gdprocs%xbeach
+    tunit     => gdp%gdexttim%tunit
+    ztbml     => gdp%gdzmodel%ztbml
     include 'tfzeta.gdt'
     !
     ! initialize local parameters
@@ -233,7 +220,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     tdef        = ' '
     idef        = 0
     nlook       = 1
-    rsmall      = 1.0e-20
+    rsmall      = 1.0e-20_fp
     !
     ! initialize parameters that are to be read
     !
@@ -250,10 +237,8 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     solrad_read2 = .false.
     ztbml        = .false.
     !
-    stanton     = 1.30e-3
-    mulsta      = 1.0_fp
-    dalton      = 1.30e-3
-    muldal      = 1.0_fp
+    stanton     = 1.30e-3_fp
+    dalton      = 1.30e-3_fp
     maseva      = 0
     !
     irov        = 0
@@ -261,8 +246,8 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     !
     tgfcmp      = ' '
     !
-    temeqs      = 15.0
-    saleqs      = 0.0
+    temeqs      = 15.0_fp
+    saleqs      = 0.0_fp
     !
     wstcof(1)   = 0.0025_fp
     wstcof(2)   = 0.0_fp
@@ -270,7 +255,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     wstcof(4)   = 50.0_fp
     wstcof(5)   = 0.0025_fp
     wstcof(6)   = 100.0_fp
-    rhoa        = 1.0
+    rhoa        = 1.0_fp
     !
     ! Density formula
     !
@@ -278,22 +263,16 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     !
     ! items related to secundairy flow
     !
-    betac       = 0.0
+    betac       = 0.0_fp
     equili      = 'N'
     lsec        = 0
-    chzmin      = 20.0
-    rmincf      = 2.5
+    chzmin      = 20.0_fp
+    rmincf      = 2.5_fp
     !
     m1_nhy      = 0
     n1_nhy      = 0
     m2_nhy      = 0
     n2_nhy      = 0
-    !
-    if (parll) then
-       sleepduringwave = 100
-    else
-       sleepduringwave = 0
-    endif
     !
     ! locate and read 'Ktemp ' number of temperature model use
     ! only if temp = .true., default value allowed => idef
@@ -315,7 +294,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        endif
        !
        sprval = -1.0_sp
-       call prop_get(gdp%mdfile_ptr, '*', 'Exchcf', sprval)
+       call prop_get_real(gdp%mdfile_ptr, '*', 'Exchcf', sprval)
        lambda = real(sprval,fp)       
        if (comparereal(lambda,-1.0_fp) /= 0) then
           if (ktemp == 3) then
@@ -327,7 +306,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
           endif
        endif
        sprval = 0.0_sp
-       call prop_get(gdp%mdfile_ptr, '*', 'Qtotmx', sprval)
+       call prop_get_real(gdp%mdfile_ptr, '*', 'Qtotmx', sprval)
        qtotmx = real(sprval,fp)       
        if (comparereal(qtotmx,0.0_fp) /= 0) then
           if (ktemp == 3) then
@@ -499,22 +478,6 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
              call prterr(lundia, 'G051', trim(message))
           endif
           !
-          ! Locate and read optional real 'mulsta'
-          !
-          fprval = -999.0_fp
-          call prop_get(gdp%mdfile_ptr, '*', 'mulsta', fprval)
-          if (comparereal(fprval, -999.0_fp) /= 0) then
-             mulsta = fprval
-             if (comparereal(mulsta, 0.7_fp) == -1 .or. comparereal(mulsta, 1.3_fp) == 1) then
-                write(message,'(a,f12.3)') 'Stanton multiplication factor mulsta has a value outside the region [0.7,1.3]: ', mulsta
-                call prterr(lundia, 'P004', trim(message))
-                call d3stop(1, gdp)
-             else
-                write(message,'(a,f12.3)') 'Stanton multiplication factor mulsta: ', mulsta
-                call prterr(lundia, 'G051', trim(message))
-             endif
-          endif
-          !
           ! reset RDEF
           !
           rdef = 0.0
@@ -554,79 +517,6 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
              call prterr(lundia, 'G051', trim(message))
           endif
           !
-          ! Locate and read optional real 'muldal'
-          !
-          fprval = -999.0_fp
-          call prop_get(gdp%mdfile_ptr, '*', 'muldal', fprval)
-          if (comparereal(fprval, -999.0_fp) /= 0) then
-             muldal = fprval
-             if (comparereal(muldal, 0.7_fp) == -1 .or. comparereal(muldal, 1.3_fp) == 1) then
-                write(message,'(a,f12.3)') 'Dalton multiplication factor muldal has a value outside the region [0.7,1.3]: ', muldal
-                call prterr(lundia, 'P004', trim(message))
-                call d3stop(1, gdp)
-             else
-                write(message,'(a,f12.3)') 'Dalton multiplication factor muldal: ', muldal
-                call prterr(lundia, 'G051', trim(message))
-             endif
-          endif
-          !
-          ! Locate and read 'Wslake'
-          ! 
-          Wslake = 0
-          call prop_get(gdp%mdfile_ptr, '*', 'Wslake', Wslake)
-          !
-          ! test constistency
-          !
-          if (Wslake<0 .or. Wslake>1) then
-             call prterr(lundia    ,'U061'    ,' '       )
-             Wslake = 0
-          endif
-          !
-          ! Locate and read 'SDlake'
-          !
-          SDlake = 0
-          call prop_get(gdp%mdfile_ptr, '*', 'SDlake', SDlake)
-          !
-          ! test constistency
-          !
-          if (SDlake<0 .or. SDlake>1) then
-             call prterr(lundia    ,'U061'    ,' '       )
-             SDlake = 0
-          endif
-          !
-          ! Some combination checks:
-          !
-          ! Error: SDlake=1 is useless when Wslake=0
-          !
-          if (Wslake==0 .and. SDlake==1) then
-             write(message,'(a,f12.3)') 'SDlake=1 is not allowed when Wslake=0'
-             call prterr(lundia, 'P004', trim(message))
-             call d3stop(1, gdp)
-          endif
-          !
-          ! Error: mulsta<>1.0 is useless when SDlake=0
-          ! Error: muldal<>1.0 is useless when SDlake=0
-          !
-          if (SDlake == 0) then
-             if (comparereal(mulsta, 1.0_fp) /= 0) then
-                write(message,'(a,f12.3)') 'mulsta<>1.0 is not allowed when SDlake=0'
-                call prterr(lundia, 'P004', trim(message))
-                call d3stop(1, gdp)
-             endif
-             if (comparereal(muldal, 1.0_fp) /= 0) then
-                write(message,'(a,f12.3)') 'muldal<>1.0 is not allowed when SDlake=0'
-                call prterr(lundia, 'P004', trim(message))
-                call d3stop(1, gdp)
-             endif
-          endif
-          !
-          ! Message: SDlake=1: Stanton and Dalton values will be replaced by windcd
-          !
-          if (SDlake == 1) then
-             write(message,'(a,f12.3)') 'SDlake=1: Stanton and Dalton values will be replaced by windCD'
-             call prterr(lundia, 'G051', trim(message))
-          endif
-          !
           ! reset RDEF
           !
           rdef = 0.0
@@ -639,7 +529,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
           ! free convection is switched on by default
           !
           free_convec = .true.
-          call prop_get(gdp%mdfile_ptr, '*', 'cfrcon', sprval)
+          call prop_get_real(gdp%mdfile_ptr, '*', 'cfrcon', sprval)
           cfrcon = real(sprval, fp)
           if (comparereal(cfrcon, -999.0_fp) == 0) then
              cfrcon = 0.14_fp
@@ -658,7 +548,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
           ! Locate and read 'SolRad' for possible specification of Nett Solar Radiation in .tem file
           ! Default value is .false.
           !
-          call prop_get(gdp%mdfile_ptr, '*', 'SolRad', solrad_read)
+          call prop_get_logical(gdp%mdfile_ptr, '*', 'SolRad', solrad_read)
           solrad_read2 = solrad_read
           if (solrad_read) then
              call prterr(lundia, 'G051', 'Using solar radiation specified in .tem file')
@@ -675,7 +565,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     !
     keva = -999
     stringval = ' '
-    call prop_get(gdp%mdfile_ptr, '*', 'Fileva', stringval)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Fileva', stringval)
     if (stringval /= ' ') then
        !
        ! FilEva specified
@@ -686,7 +576,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        ! QEvap
        !
        stringval = ' '
-       call prop_get(gdp%mdfile_ptr, '*', 'QEvap', stringval)
+       call prop_get_string(gdp%mdfile_ptr, '*', 'QEvap', stringval)
        if (stringval /= ' ') then
           call small(stringval, 999)
           select case (stringval)   
@@ -736,9 +626,6 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
         case( 'unesco' )
             idensform = dens_UNESCO
             call prterr(lundia, 'G051', 'Using UNESCO density formulation')
-        case( 'nacl' )
-            idensform = dens_NaClSol
-            call prterr(lundia, 'G051', 'Using NaCl   density formulation', gdp)
         case( ' '      )
             idensform = dens_UNESCO
             call prterr(lundia, 'G051', 'Using UNESCO density formulation by default')
@@ -762,8 +649,8 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     elseif (ktemp>0) then
        levamas = .false.
        lmaseva = .false.
-       call prop_get(gdp%mdfile_ptr, '*', 'Evamas', levamas)
-       call prop_get(gdp%mdfile_ptr, '*', 'Maseva', lmaseva)
+       call prop_get_logical(gdp%mdfile_ptr, '*', 'Evamas', levamas)
+       call prop_get_logical(gdp%mdfile_ptr, '*', 'Maseva', lmaseva)
        if (levamas .or. lmaseva) then
           if (ktemp == 3) then
              maseva = 0
@@ -1141,7 +1028,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     ! default = no ('N') which means RTCMOD = noRTC (= 0)
     !
     lhelp = .false.
-    call prop_get(gdp%mdfile_ptr, '*', 'Rtcmod', lhelp)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'Rtcmod', lhelp)
     if (lhelp) then
        rtcmod = ibset(rtcmod,dataFromRTCToFLOW)
     endif
@@ -1193,7 +1080,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        ! Read 'Nharea'
        !
        ival(1) = 0
-       call prop_get(gdp%mdfile_ptr, '*', 'Nharea', ival, 4)
+       call prop_get_integers(gdp%mdfile_ptr, '*', 'Nharea', ival, 4)
        if (ival(1) == 0) then
           !
           ! No non_hyd area specified
@@ -1296,7 +1183,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        endif
        !
        sprval = -999.999_sp
-       call prop_get(gdp%mdfile_ptr,'*','Epsnh',sprval)
+       call prop_get_real(gdp%mdfile_ptr,'*','Epsnh',sprval)
        if (sprval >= 0.0_sp) then
           epsnh = real(sprval,fp)
        else
@@ -1305,7 +1192,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Epsnh     = ', epsnh
        !
        sprval = -999.999_sp
-       call prop_get(gdp%mdfile_ptr,'*','Repsnh',sprval)
+       call prop_get_real(gdp%mdfile_ptr,'*','Repsnh',sprval)
        if ( sprval >= 0.0_sp) then
           rel_epsnh = real(sprval,fp)
        else
@@ -1314,7 +1201,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Rel_epsnh = ', rel_epsnh
        !
        sprval = -999.999_sp
-       call prop_get(gdp%mdfile_ptr,'*','Tetaq',sprval)
+       call prop_get_real(gdp%mdfile_ptr,'*','Tetaq',sprval)
        if ( sprval >= 0.0_sp) then
           tetaq = real(sprval,fp)
        else
@@ -1323,7 +1210,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Tetaq     = ', tetaq
        !
        sprval = -999.999_sp
-       call prop_get(gdp%mdfile_ptr,'*','Tetaz',sprval)
+       call prop_get_real(gdp%mdfile_ptr,'*','Tetaz',sprval)
        if ( sprval >= 0.0_sp) then
           tetaz = real(sprval,fp)
        else
@@ -1332,11 +1219,11 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Tetaz     = ', tetaz
        !
        flag_pp = .false.
-       call prop_get(gdp%mdfile_ptr,'*','Flagpp',flag_pp)
+       call prop_get_logical(gdp%mdfile_ptr,'*','Flagpp',flag_pp)
        write (lundia,*) ' Flagpp    = ', flag_pp
        !
        updwl = ' '
-       call prop_get(gdp%mdfile_ptr,'*','Updwl',updwl)
+       call prop_get_string(gdp%mdfile_ptr,'*','Updwl',updwl)
        call small(updwl,999)
        if ( (updwl /= 'conteq') .and.  (updwl /= 'momcor') ) then
           write (lundia,*) 'WARNING: wrong input for Updwl:', trim(updwl)
@@ -1345,7 +1232,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Updwl     = ', updwl
        !
        precon = ' '
-       call prop_get(gdp%mdfile_ptr,'*','Precon',precon)
+       call prop_get_string(gdp%mdfile_ptr,'*','Precon',precon)
        call small(precon,999)
        if ( (precon /= 'none') .and.  (precon /= 'diag') .and. &
           & (precon /= 'tridiag') .and.  (precon /= 'ilu') ) then
@@ -1355,7 +1242,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Precon    = ', precon
        !
        krylov = ' '
-       call prop_get(gdp%mdfile_ptr,'*','Krylov',krylov)
+       call prop_get_string(gdp%mdfile_ptr,'*','Krylov',krylov)
        call small(krylov,999)
        if ( (krylov /= 'cg') .and.  (krylov /= 'bicgstab') ) then
           write (lundia,*) 'WARNING: wrong input for Krylov'
@@ -1364,7 +1251,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        write (lundia,*) ' Krylov    = ', krylov
        !
        sprval = -999.999_sp
-       call prop_get(gdp%mdfile_ptr,'*','Milu',sprval)
+       call prop_get_real(gdp%mdfile_ptr,'*','Milu',sprval)
        if ( sprval >= 0.0_sp) then
           milu = real(sprval,fp)
        else
@@ -1379,7 +1266,7 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
     ti_nodal = 21600.0_fp / tunit
     call prop_get(gdp%mdfile_ptr, '*', 'NodalT', ti_nodal)
     if (comparereal(ti_nodal,21600.0_fp/tunit) /= 0) then
-       write (message,'(a,e12.4,3a)') 'Updating tidal node factors every ', ti_nodal, ' [',trim(tunitstr),']'
+       write (message,'(a,e12.4,3a)') 'Updating tidal node factors every ', ti_nodal, ' [',ctunit,']'
        call prterr(lundia, 'G051', trim(message))
     endif
     !
@@ -1396,7 +1283,5 @@ subroutine rdproc(error    ,nrrec     ,mdfrec    ,htur2d      ,salin    , &
        call prterr(lundia, 'G051', trim(message))
        write (lundia, '(a)') '            smooth bottom shear stress representation (Z-model only)'
     endif
-    !
-    call prop_get(gdp%mdfile_ptr, '*', 'SleepDuringWave', sleepduringwave)
  9999 continue
 end subroutine rdproc

@@ -2,7 +2,7 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
                & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: iniid.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/general/iniid.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads RUN IDentification code from file 'runid'
@@ -47,7 +47,6 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
     use globaldata
     use string_module
     use system_utils, only: exifil
-    use MessageHandling, only: SetMessageHandling
     !
     implicit none
     !
@@ -123,7 +122,8 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
        !
        if (runid==' ') then
           if (exifil(filid)) then
-             open (newunit=lunid, file = filid, form = 'formatted', status = 'old')
+             lunid = newlun(gdp)
+             open (lunid, file = filid, form = 'formatted', status = 'old')
              read (lunid, '(a)') runid
              close (lunid)
           else
@@ -173,7 +173,8 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
              endif
           endif
           !
-          open (newunit=lunmd, file = filmd(1:lfil), form = 'formatted')
+          lunmd = newlun(gdp)
+          open (lunmd, file = filmd(1:lfil), form = 'formatted')
        endif
        !
        ! Second look for md-file.<runid>
@@ -200,7 +201,8 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
                 endif
              endif
              !
-             open (newunit=lunmd, file = filmd(1:lfil), form = 'formatted')
+             lunmd = newlun(gdp)
+             open (lunmd, file = filmd(1:lfil), form = 'formatted')
           endif
        endif
        !
@@ -228,7 +230,8 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
                 endif
              endif
              !
-             open (newunit=lunmd, file = filmd(1:lfil), form = 'formatted')
+             lunmd = newlun(gdp)
+             open (lunmd, file = filmd(1:lfil), form = 'formatted')
           endif
        endif
        !
@@ -337,7 +340,8 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
              endif
           endif
           !
-          open (newunit=lunmd, file = filmd(1:lfil), form = 'formatted')
+          lunmd = newlun(gdp)
+          open (lunmd, file = filmd(1:lfil), form = 'formatted')
        else
           error = .true.
           goto 9999
@@ -360,14 +364,16 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
        if (ex) then
           inquire (file = filtmp(1:8 + lrid), opened = opend)
           if (.not.opend) then
-             open (newunit=luntmp, file = filtmp(1:8 + lrid), form = 'formatted')
+             luntmp = newlun(gdp)
+             open (luntmp, file = filtmp(1:8 + lrid), form = 'formatted')
           else
              inquire (file = filtmp(1:8 + lrid), number = luntmp)
           endif
           close (luntmp, status = 'delete')
        endif
        !
-       open (newunit=lundia, file = filtmp(1:8 + lrid), form = 'formatted',             &
+       lundia = newlun(gdp)
+       open (lundia, file = filtmp(1:8 + lrid), form = 'formatted',             &
             & status = 'new')
     !
     ! open LUNDIA (depends on value of prgnm = trisim)
@@ -420,7 +426,8 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
           !
           inquire (file = filtmp(1:9 + lrid+linod), opened = opend)
           if (.not.opend) then
-             open (newunit=luntmp, file = filtmp(1:9 + lrid+linod), form = 'formatted')
+             luntmp = newlun(gdp)
+             open (luntmp, file = filtmp(1:9 + lrid+linod), form = 'formatted')
              lundia = luntmp
              nrec = 0
              ! -->
@@ -445,7 +452,8 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
                 ! error occurred while reading, delete file and re-open
                 !
                 close (lundia, status = 'delete')
-                open (newunit=lundia, file = filtmp(1:9 + lrid + linod), form = 'formatted',  &
+                lundia = newlun(gdp)
+                open (lundia, file = filtmp(1:9 + lrid + linod), form = 'formatted',  &
                      & status = 'new')
              endif
           else
@@ -462,11 +470,11 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
           !    appending to existing tri-diag file is not supported
           !    always create a new one, replace one if it existed
           !
-          open (newunit=lundia, file = filtmp(1:9 + lrid + linod), form = 'formatted',  &
+          lundia = newlun(gdp)
+          open (lundia, file = filtmp(1:9 + lrid + linod), form = 'formatted',  &
                & status = 'replace')
        endif
     endif
-    call SetMessageHandling(write2screen = .true., useLog = .false., lunMessages = lundia)
     !
  9999 continue
 end subroutine iniid

@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2016.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -225,8 +225,7 @@ void FlowDD_Process (
     if (FLOW2D3D->flowol != NULL)
         FLOW2D3D->flowol->RegisterSubdomain (name);
 
-    int initOnly      = 0;
-    TRISIM (&FLOW2D3D->dd->numSubdomains, &numNeighborMappers, &esmContextID, &esmfsm_flags, name, &initOnly, &FLOW2D3D->gdp,strlen (name));
+    TRISIM (&FLOW2D3D->dd->numSubdomains, &numNeighborMappers, &esmContextID, &esmfsm_flags, name, strlen (name));
 
     if (FLOW2D3D->flowol != NULL)
         FLOW2D3D->flowol->UnregisterSubdomain ();

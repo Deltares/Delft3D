@@ -2,7 +2,7 @@ subroutine reacmp(lundia    ,error     ,filana    ,statns    ,nto       , &
                 & ampl      ,phas      ,jacor     ,kc        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine reacmp(lundia    ,error     ,filana    ,statns    ,nto       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: reacmp.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/reacmp.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads 'TRIANA' file or 'GETIJSYS' file
@@ -106,7 +106,8 @@ subroutine reacmp(lundia    ,error     ,filana    ,statns    ,nto       , &
        !
        inquire (file = filana, exist = ex)
        if (ex) then
-          open (newunit=mcmp, file = filana)
+          mcmp = newlun(gdp)
+          open (mcmp, file = filana)
        else
           !
           ! Triana file not found
@@ -216,7 +217,8 @@ subroutine reacmp(lundia    ,error     ,filana    ,statns    ,nto       , &
           do j = 1, 2
              inquire (file = statns(i, j), exist = ex)
              if (ex) then
-                open (newunit=mcmp, file = statns(i, j))
+                mcmp = newlun(gdp)
+                open (mcmp, file = statns(i, j))
              else
                 !
                 ! Getijsys file not found

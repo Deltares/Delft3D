@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -50,12 +50,9 @@
     integer, parameter :: IO_COMPLEX8     = -31
     integer, parameter :: IO_COMPLEX16    = -32
 !
-    integer, parameter :: FTYPE_UNKNOWN   = -999
     integer, parameter :: FTYPE_ASCII     = -1
     integer, parameter :: FTYPE_NEFIS     =  0
     integer, parameter :: FTYPE_NETCDF    =  1
-    integer, parameter :: FTYPE_UNFORM32  =  2   ! UNFORMATTED 32 bit
-    integer, parameter :: FTYPE_UNFORM64  =  3   ! UNFORMATTED 64 bit
 !
     integer, parameter :: REQUESTTYPE_DEFINE =  1
     integer, parameter :: REQUESTTYPE_WRITE  =  2

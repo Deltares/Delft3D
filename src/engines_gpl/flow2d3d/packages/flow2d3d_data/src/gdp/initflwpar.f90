@@ -1,7 +1,7 @@
 subroutine initflwpar(gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine initflwpar(gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: initflwpar.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/gdp/initflwpar.f90 $
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -59,10 +59,7 @@ subroutine initflwpar(gdp)
     gdp%gdflwpar%flwoutput%chezy           = .false.
     gdp%gdflwpar%flwoutput%cumdifuflux     = .false.
     gdp%gdflwpar%flwoutput%difuflux        = .false.
-    gdp%gdflwpar%flwoutput%dredge_map      = .false.
     gdp%gdflwpar%flwoutput%halfdt          = .false.
-    gdp%gdflwpar%flwoutput%hisbar          = .false.
-    gdp%gdflwpar%flwoutput%hisdis          = .false.
     gdp%gdflwpar%flwoutput%kf_minmax       = .false.
     gdp%gdflwpar%flwoutput%layering        = .false.
     gdp%gdflwpar%flwoutput%momentum        = .false.
@@ -70,7 +67,6 @@ subroutine initflwpar(gdp)
     gdp%gdflwpar%flwoutput%temperature     = .false.
     gdp%gdflwpar%flwoutput%vortic          = .false.
     gdp%gdflwpar%flwoutput%veuler          = .true.
-    gdp%gdflwpar%flwoutput%waveqnt         = .false.
     gdp%gdflwpar%flwoutput%z0cur           = .false.
     gdp%gdflwpar%flwoutput%z0rou           = .false.
     !

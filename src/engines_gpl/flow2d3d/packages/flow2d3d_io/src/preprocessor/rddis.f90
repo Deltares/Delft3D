@@ -6,7 +6,7 @@ subroutine rddis(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                & cqs       ,cqt       ,cqc       ,bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +30,8 @@ subroutine rddis(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rddis.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/preprocessor/rddis.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads the time dependent boundary data for the
@@ -64,6 +64,7 @@ subroutine rddis(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     !
     integer                    , pointer :: itis
     integer                    , pointer :: itdate
+    real(fp)                   , pointer :: tstop
     real(fp)                   , pointer :: dt
     character*20, dimension(:) , pointer :: keywrd
     character*39, dimension(:) , pointer :: fmtdis
@@ -153,6 +154,7 @@ subroutine rddis(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     fmtdis  => gdp%gdfmtdis%fmtdis
     keywrd  => gdp%gdkeywtd%keywrd
     itdate  => gdp%gdexttim%itdate
+    tstop   => gdp%gdexttim%tstop
     dt      => gdp%gdexttim%dt
     itis    => gdp%gdrdpara%itis
     !
@@ -251,7 +253,8 @@ subroutine rddis(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
              goto 9999
           endif
           !
-          open (newunit=lunout, file = filout(:8 + lrid))
+          lunout = newlun(gdp)
+          open (lunout, file = filout(:8 + lrid))
           read (lunout, '(a1,i5)', iostat = iocond) cdummy, lrec
           close (lunout)
           lunout = 8
@@ -286,18 +289,20 @@ subroutine rddis(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
              ! from discharge = 13+(1+lstsc)*14 (MAX = 125)
              !
              mxlrec = 125
+             lunout = newlun(gdp)
              inquire (file = filout(:8 + lrid), exist = ex)
              if (ex) then
-                open (newunit=lunout, file = filout(:8 + lrid))
+                open (lunout, file = filout(:8 + lrid))
                 close (lunout, status = 'delete')
              endif
-             open (newunit=lunout, file = filout(:8 + lrid), form = 'formatted',     &
+             open (lunout, file = filout(:8 + lrid), form = 'formatted',     &
                  & access = 'direct', status = 'unknown', recl = mxlrec)
              write (lunout, fmtdis(1), rec = 1) '#', mxlrec, eol
              !
              ! Open FILDIS to read data from
              !
-             open (newunit=lunrd, file = fildis(:lf), form = 'formatted',            &
+             lunrd = newlun(gdp)
+             open (lunrd, file = fildis(:lf), form = 'formatted',            &
                   & status = 'old')
              write (message, '(2a)') 'Reading Discharge file ', fildis(:lf)
              call prterr(lundia, 'G051', trim(message))
@@ -312,7 +317,8 @@ subroutine rddis(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
              !
              ! Open FILDIS to read data from
              !
-             open (newunit=lunrd, file = fildis(:lf), form = 'formatted',            &
+             lunrd = newlun(gdp)
+             open (lunrd, file = fildis(:lf), form = 'formatted',            &
                   & status = 'old')
              write (message, '(2a)') 'Reading Discharge file ', fildis(:lf)
              call prterr(lundia, 'G051', trim(message))
@@ -352,12 +358,13 @@ subroutine rddis(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        ! case for data in MDF file
        !
        mxlrec = 125
+       lunout = newlun(gdp)
        inquire (file = filout(:8 + lrid), exist = ex)
        if (ex) then
-          open (newunit=lunout, file = filout(:8 + lrid))
+          open (lunout, file = filout(:8 + lrid))
           close (lunout, status = 'delete')
        endif
-       open (newunit=lunout, file = filout(:8 + lrid), form = 'formatted',           &
+       open (lunout, file = filout(:8 + lrid), form = 'formatted',           &
             & access = 'direct', status = 'unknown', recl = mxlrec)
        write (lunout, fmtdis(1), rec = 1) '#', mxlrec, eol
        !

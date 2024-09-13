@@ -1,7 +1,7 @@
 module datagroups
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ module datagroups
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: datagroups.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/basics/datagroups.f90 $
 !!--description-----------------------------------------------------------------
 !   NONE
 !!--declarations----------------------------------------------------------------
@@ -147,9 +147,8 @@ function adddim(gdp, lundia, ifile, dname, length) result (id)
 !
 ! Local variables
 !
-    integer         :: ndim
-    integer         :: istat
-    character(1024) :: error_string
+    integer  :: ndim
+    integer  :: istat
 !
 !! executable statements -------------------------------------------------------
 !
@@ -161,8 +160,7 @@ function adddim(gdp, lundia, ifile, dname, length) result (id)
           if (dim_length(id) == length) then
              return
           else
-             write(error_string,'(a,i0,a,i0)') 'Adddim: inconsistent definition of dimension '//trim(dname)//' Old value: ',dim_length(id),' New value: ',length
-             call prterr(lundia, 'U021', trim(error_string))
+             call prterr(lundia, 'U021', 'Adddim: inconsistent definition of dimension '//trim(dname))
              call d3stop(1, gdp)
           endif
        endif
@@ -838,8 +836,6 @@ subroutine defnewgrp_core(fds, ifile, gname, gdp, filnam, grpdim, errlog)
           nefisunit = '[M0.5/S ]'
        case ('m2')
           nefisunit = '[  M2   ]'
-       case ('m/s')
-          nefisunit = '[  M/S  ]'
        case ('m/s2')
           nefisunit = '[  M/S2 ]'
        case ('m2/s')
@@ -937,7 +933,7 @@ subroutine defnewgrp_core(fds, ifile, gname, gdp, filnam, grpdim, errlog)
           !
           ! Now define the variable
           !
-          error = nf90_def_var(fds, elm_name(ie), nctype, localdim, varid, deflate_level = gdp%gdpostpr%nc_deflate)
+          error = nf90_def_var(fds, elm_name(ie), nctype, localdim, varid)
           call nc_check_err(lundia, error, 'writing '//trim(elm_name(ie)), filnam)
           deallocate(localdim)
           !

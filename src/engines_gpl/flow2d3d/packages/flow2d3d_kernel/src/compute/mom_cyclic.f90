@@ -5,10 +5,11 @@ subroutine mom_cyclic &
                & hu        ,guu       ,gvv       ,gvd       ,gvu       ,gsqiu     , &
                & umean     ,bbk       ,ddk       ,bddx      ,bddy      ,bdx       , &
                & bdy       ,bux       ,buy       ,buux      ,buuy      ,mom_output, &
-               & u1        ,gdp)
+               & u1        ,kWDu      ,kWDv      ,ghostU1   ,ghostV1   ,aguu      , &
+               & xcor      ,ycor      ,nst       ,gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -32,8 +33,8 @@ subroutine mom_cyclic &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: mom_cyclic.f90 6388 2016-08-01 01:05:36Z canestrelli.x $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/mom_cyclic.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! This subroutine is part of (called by) UZD. It computes the Horizontal
@@ -70,6 +71,21 @@ subroutine mom_cyclic &
     logical      , pointer :: struct
     real(fp), dimension(:,:)          , pointer :: mom_m_convec        ! convection u*du/dx term
     real(fp), dimension(:,:)          , pointer :: mom_m_xadvec        ! cross-advection v*du/dy term
+    logical                       , pointer :: EXCLouterVEL
+    integer                       , pointer :: cutcell
+    integer                       , pointer :: MODadvecGHOSTuzd
+    logical                       , pointer :: getADJACENTgrad
+    integer, dimension(:,:)       , pointer :: kfs_cc
+    real(fp), dimension(:,:)      , pointer :: PSIx
+    real(fp), dimension(:,:)      , pointer :: PSIy
+    real(fp), dimension(:,:)      , pointer :: xG_V1
+    real(fp), dimension(:,:)      , pointer :: yG_V1
+    real(fp), dimension(:,:,:,:,:), pointer :: EDGExyBANK
+    real(fp), dimension(:,:)      , pointer :: xG_U1
+    real(fp), dimension(:,:)      , pointer :: yG_U1
+    logical                       , pointer :: cntrUZDbnd_n
+    logical                       , pointer :: cntrUZDbnd_m
+    logical                       , pointer :: vvvSECord
 !
 ! Global variables
 !
@@ -77,6 +93,8 @@ subroutine mom_cyclic &
     integer                                                           :: icy
     integer                                                           :: kmax   !  Description and declaration in esm_alloc_int.f90
     integer                                                           :: nmmax  !  Description and declaration in dimens.igs
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: GHOSTu1
+    integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: GHOSTv1
     integer,    dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: kcs    !  Description and declaration in esm_alloc_int.f90
     integer,    dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: kcu    !  Description and declaration in esm_alloc_int.f90
     integer,    dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: kfu    !  Description and declaration in esm_alloc_int.f90
@@ -91,6 +109,10 @@ subroutine mom_cyclic &
     real(fp),   dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: gvv    !  Description and declaration in esm_alloc_real.f90
     real(fp),   dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: gvd    !  Description and declaration in esm_alloc_real.f90
     real(fp),   dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: gvu    !  Description and declaration in esm_alloc_real.f90
+    real(fp),   dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: xcor    !  Description and declaration in esm_alloc_real.f90
+    real(fp),   dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: ycor    !  Description and declaration in esm_alloc_real.f90    
+    integer,    dimension(gdp%d%nmlb:gdp%d%nmub,4)       , intent(in) :: kWDu
+    integer,    dimension(gdp%d%nmlb:gdp%d%nmub,4)       , intent(in) :: kWDv
     real(fp),   dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: gsqiu  !  Description and declaration in esm_alloc_real.f90
     real(fp),   dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                :: bddx
     real(fp),   dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                :: bddy
@@ -109,12 +131,16 @@ subroutine mom_cyclic &
                                                                                 !  Only used in case mom_output = .true.
     real(fp),   dimension(gdp%d%nmlb:gdp%d%nmub, kmax)   , intent(in) :: v
     real(fp),   dimension(gdp%d%nmlb:gdp%d%nmub)                      :: umean  !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: aguu      !  Description and declaration in esm_alloc_real.f90
     logical                                              , intent(in) :: mom_output
+    integer                                              , intent(in) :: nst    
 !
 ! Local variables
 !
+    integer :: iad3
     integer :: iad1
     integer :: iad2
+    integer :: iad4
     integer :: k
     integer :: kenm
     integer :: kspu0k
@@ -132,6 +158,17 @@ subroutine mom_cyclic &
     integer :: num
     integer :: numu
     integer :: nuum
+    integer :: numdd
+    integer :: numd
+    integer :: ndmdd
+    integer :: numuu
+    integer :: ndmuu
+    integer :: kfv_ndm  
+    integer :: kfv_ndmu  
+    integer :: kfv_nm   
+    integer :: kfv_nmu
+    integer :: nmLmax
+    real(fp):: Lmax 
     real(fp):: adfac
     real(fp):: gsqi
     real(fp):: termc
@@ -142,12 +179,30 @@ subroutine mom_cyclic &
     real(fp):: termuu
     real(fp):: uu
     real(fp):: vvv
+    real(fp):: vvvANA
     real(fp):: vvhr
     real(fp):: uvdgdy
     real(fp):: vvdgdx
+    real(fp):: advEXP 
+    logical :: BOUNDpoint
 !
 !! executable statements -------------------------------------------------------
 !
+    EXCLouterVEL     => gdp%gdimbound%EXCLouterVEL
+    cutcell          => gdp%gdimbound%cutcell
+    MODadvecGHOSTuzd => gdp%gdimbound%MODadvecGHOSTuzd
+    getADJACENTgrad  => gdp%gdimbound%getADJACENTgrad
+    kfs_cc           => gdp%gdimbound%kfs_cc
+    PSIx             => gdp%gdimbound%PSIx
+    PSIy             => gdp%gdimbound%PSIy
+    xG_V1            => gdp%gdimbound%xG_V1
+    yG_V1            => gdp%gdimbound%yG_V1
+    EDGExyBANK       => gdp%gdimbound%EDGExyBANK
+    xG_U1            => gdp%gdimbound%xG_U1
+    yG_U1            => gdp%gdimbound%yG_U1
+    cntrUZDbnd_n     => gdp%gdimbound%cntrUZDbnd_n
+    cntrUZDbnd_m     => gdp%gdimbound%cntrUZDbnd_m
+    vvvSECord        => gdp%gdimbound%vvvSECord
     wind       => gdp%gdprocs%wind
     struct     => gdp%gdprocs%struct
     cstbnd     => gdp%gdnumeco%cstbnd
@@ -177,6 +232,14 @@ subroutine mom_cyclic &
        numu  = icx + icy
        nmuu  = icx + icx
        ndmu  = -icy + icx
+       !added for transmissive gradient (IBM)
+       numd  = +icy - icx 
+       numdd = +icy - icx - icx 
+       numuu = +icy + icx + icx
+       ndmdd = -icy - icx - icx
+       ndmuu = -icy + icx + icx
+! 
+       Lmax=-1
        do nm = 1, nmmax
           nmd   = nmd + 1
           nmdd  = nmdd + 1
@@ -190,20 +253,35 @@ subroutine mom_cyclic &
           numu  = numu + 1
           nmuu  = nmuu + 1
           ndmu  = ndmu + 1
+          !added for transmissive gradient (IBM)
+          numd  = numd + 1
+          numdd = numdd + 1
+          numuu = numuu + 1 
+          ndmdd = ndmdd + 1 
+          ndmuu = ndmuu + 1
+
           kspu0k= kspu(nm, 0)*kspu(nm, k)
           !
           ! For an active point and not a gate or plate
           !
           if ( ((kcu(nm)==1) .and. (kfu(nm)==1)) .and. kspu0k /=4 .and. kspu0k /=10) then
              gsqi   = gsqiu(nm)
+             kfv_ndm  = kfv(ndm) * kWDv(ndm,2) !* NINT(1._fp - real(min(ghostV1(ndm),1),fp))
+             kfv_ndmu = kfv(ndmu)* kWDv(ndmu,2)!* NINT(1._fp - real(min(ghostV1(ndmu),1),fp))
+             kfv_nm   = kfv(nm)  * kWDv(nm,1)  !* NINT(1._fp - real(min(ghostV1(nm),1),fp))
+             kfv_nmu  = kfv(nmu) * kWDv(nmu,1) !* NINT(1._fp - real(min(ghostV1(nmu),1),fp))
+             kenm = max(kfv_ndm+kfv_ndmu+kfv_nm+kfv_nmu, 1)             
+             if (cutcell>0.and.vvvSECord.and.kenm>1.and.kenm<4) then !ghostu1(nm)/=1.and.(kcs(nm)==1.or.kcs(nmu)==1)
+                call vvvORD2sub(vvv,v,guu,gvv,kfv,nm,k,nst,icx,icy,gdp%d%nmlb,gdp%d%nmub,kmax,kenm)
+             else !standard delft3D             
              if (       (cstbnd .and. (kcs(nm)==2 .or. kcs(nmu)==2)) &
-                 & .or. (kcs(nm)==3 .or. kcs(nmu)==3               )  ) then
-                kenm = max(kfv(ndm) + kfv(ndmu) + kfv(nm) + kfv(nmu), 1)
-                vvv = (v(ndm, k)*kfv(ndm) + v(ndmu, k)*kfv(ndmu) + v(nm, k)     &
-                    & *kfv(nm) + v(nmu, k)*kfv(nmu))/kenm
+                    & .or. (kcs(nm)==3 .or. kcs(nmu)==3               ) .or. EXCLouterVEL) then
+                   vvv = (v(ndm, k)*kfv_ndm + v(ndmu, k)*kfv_ndmu + v(nm, k)     &
+                       & *kfv_nm + v(nmu, k)*kfv_nmu)/kenm
              else
                 vvv = .25*(v(nm, k) + v(nmu, k) + v(ndm, k) + v(ndmu, k))
              endif
+             endif          
              !
              ! CURVATURE TERM DUE TO CONVECTION IN U-DIRECTION
              !
@@ -232,11 +310,19 @@ subroutine mom_cyclic &
                    ! Energy conservative discretisation for structure points
                    !
                    uu = adfac*(u0(nm, k) + u0(nmd, k))
-                   termc = (uu + uvdgdy)*kfu(nmd)*neigat
-                   termd = -uu*kfu(nmd)*neigat
+                   termc = (uu + uvdgdy)*kfu(nmd)*kWDu(nmd,2)*neigat
+                   termd = -uu*kfu(nmd)*kWDu(nmd,2)*neigat
+                   if (cutcell.eq.2.and.MODadvecGHOSTuzd==2) THEN
+                      if (GHOSTu1(nm).eq.1.or.GHOSTu1(nmd).EQ.1) then  
+                         termc = 0._fp
+                         termd = 0._fp
+                      endif
+                   endif
                    if (mom_output) then
+                      if (ghostu1(nm)/=1) then
                       mom_m_convec(nm, k) = mom_m_convec(nm, k) &
                                           & - termc*u1(nm, k) - termd*u1(nmd, k)
+                      endif
                    else
                       bbk(nm, k) = bbk(nm, k) + termc
                       bdx(nm, k) = termd
@@ -245,9 +331,6 @@ subroutine mom_cyclic &
                    !
                    ! Upwind approach near structure points and inactive u-points
                    !
-                   iad1 = (kfu(nmd) + kfu(nmd))*kadu(nmd, k)
-                   iad2 = kfu(nmd)*kfu(nmdd)*kfu(nmu)*kadu(nmd, k)*kadu(nmdd, k)&
-                        & *kadu(nmu, k)
                    !
                    ! CONSERVATIVE FORM ( LESS STABLE! )
                    !             BBK (NM,K)=BBK(NM,K)
@@ -257,13 +340,84 @@ subroutine mom_cyclic &
                    !
                    ! NON CONSERVATIVE FORM
                    !
-                   termc  = u0(nm, k)*adfac*(iad1 + iad2) + uvdgdy*kfu(nmd)*neigat
+                   if (cntrUZDbnd_m) then     
+                      ! new version: i dont send gradient to zero if kfu(nmdd) = 0 as in the original version, but I make it centered
+                      iad1 = kfu(nmd)*kWDu(nmd,2)*kadu(nmd, k)
+                      iad2 = iad1*kfu(nmdd)*kWDu(nmdd,2)                      
+                      if (iad2==0) then !centred
+                         iad4 = iad1*kfu(nmu)*kWDu(nmu,1)                           
+                         termu =  u0(nm, k)*adfac* iad4
+                         termd = -u0(nm, k)*adfac*(2*iad1 - iad4)
+                         termc =  u0(nm, k)*adfac*(2*iad1 - 2*iad4)
+                         termdd = 0._fp                         
+                      else !upwind
+                         termu  = 0._fp
+                         termc  = u0(nm, k)*adfac*(2*iad1 + iad2) + uvdgdy*neigat
+                         termd  = u0(nm, k)*adfac*( - 2*iad1 - 2*iad2)
+                         termdd = u0(nm, k)*adfac*(iad2)                            
+                      endif
+                   else
+                      iad1 = (2*kfu(nmd)*kWDu(nmd,2))*kadu(nmd, k)
+                      iad2 = kfu(nmd)*kWDu(nmd,2)*kfu(nmdd)*kWDu(nmdd,2)*kfu(nmu)*kWDu(nmu,1)*kadu(nmd, k)*kadu(nmdd, k)&
+                           & *kadu(nmu, k)                       
+                      termu  = 0._fp
+                      termc  = u0(nm, k)*adfac*(iad1 + iad2) + uvdgdy*neigat
                    termd  = u0(nm, k)*adfac*( - iad1 - iad2 - iad2)
                    termdd = u0(nm, k)*adfac*(iad2)
+                   endif
+                   if (cutcell.eq.2.and.MODadvecGHOSTuzd==2) THEN
+                      if (getADJACENTgrad) then
+                         if (comparereal(aguu(nm),0._fp).gt.0.and.comparereal(aguu(nm),1._fp).lt.0) then
+                            if (kfu(num)==1) then !use gradient above (explicit)
+                               iad1 = (2*kfu(numd)*kWDu(numd,2))*kadu(numd, k)
+                               iad2 = kfu(numd)*kWDu(numd,2)*kfu(numdd)*kWDu(numdd,2)*kfu(numu)*kWDu(numu,1)*kadu(numd, k)*kadu(numdd, k)&
+                                    & *kadu(numu, k)
+                               termc  = u0(nm, k)*adfac*(iad1 + iad2) !+ uvdgdy*neigat !no curv for cutcell
+                               termd  = u0(nm, k)*adfac*( - iad1 - iad2 - iad2)
+                               termdd = u0(nm, k)*adfac*(iad2)
+                               advEXP =  - termc*u0(num, k) - termd*u0(numd, k) - termdd*u0(numdd, k)
+                               ddk(nm,k) = ddk(nm,k) + advEXP
+                               termc  = 0._fp
+                               termd  = 0._fp
+                               termdd = 0._fp
+                               if (mom_output) then
+                                  mom_m_convec(nm, k) = mom_m_convec(nm, k) + advEXP
+                               endif
+                            elseif (kfu(ndm)==1) then
+                               iad1 = (2*kfu(ndmd)*kWDu(ndmd,2))*kadu(ndmd, k)
+                               iad2 = kfu(ndmd)*kWDu(ndmd,2)*kfu(ndmdd)*kWDu(ndmdd,2)*kfu(ndmu)*kWDu(ndmu,1)*kadu(ndmd, k)*kadu(ndmdd, k)&
+                                    & *kadu(ndmu, k)
+                               termc  = u0(nm, k)*adfac*(iad1 + iad2) !+ uvdgdy*neigat !no curv for cutcell
+                               termd  = u0(nm, k)*adfac*( - iad1 - iad2 - iad2)
+                               termdd = u0(nm, k)*adfac*(iad2)
+                               advEXP =  - termc*u0(ndm, k) - termd*u0(ndmd, k) - termdd*u0(ndmdd, k)
+                               ddk(nm,k) = ddk(nm,k) + advEXP
+                               termc  = 0._fp
+                               termd  = 0._fp
+                               termdd = 0._fp
+                               if (mom_output) then
+                                  mom_m_convec(nm, k) = mom_m_convec(nm, k) + advEXP
+                               endif
+                            else
+                               iad1 = 0
+                               iad2 = 0
+                            endif
+                         endif
+                      else
+                         if (GHOSTu1(nm).eq.1.or.GHOSTu1(nmd).EQ.1) then !.or.GHOSTu1(nmdd).EQ.1) then  
+                            termc = 0._fp
+                            termd = 0._fp
+                            termdd= 0._fp
+                         endif
+                      endif
+                   endif
                    if (mom_output) then
-                      mom_m_convec(nm, k) = mom_m_convec(nm, k) &
-                                          & - termc*u1(nm, k) - termd*u1(nmd, k) - termdd*u1(nmdd, k)
+                      if (ghostu1(nm)/=1) then
+                         mom_m_convec(nm, k) = mom_m_convec(nm, k) &
+                                             & - termu*u1(nmu, k) - termc*u1(nm, k) - termd*u1(nmd, k) - termdd*u1(nmdd, k)
+                      endif
                    else
+                      bux(nm, k)  = termu
                       bbk(nm, k)  = bbk(nm, k) + termc
                       bdx(nm, k)  = termd
                       bddx(nm, k) = termdd
@@ -281,11 +435,19 @@ subroutine mom_cyclic &
                    ! Energy conservative discretisation for structure points
                    !
                    uu = adfac*(u0(nm, k) + u0(nmu, k))
-                   termc = (uvdgdy - uu)*kfu(nmu)*neigat
-                   termu = uu*kfu(nmu)*neigat
+                   termc = (uvdgdy - uu)*kfu(nmu)*kWDu(nmu,1)*neigat
+                   termu = uu*kfu(nmu)*kWDu(nmu,1)*neigat
+                   if (cutcell.eq.2.and.MODadvecGHOSTuzd==2) THEN
+                      if (GHOSTu1(nm).eq.1.or.GHOSTu1(nmu).EQ.1) then  
+                         termc = 0._fp
+                         termu = 0._fp
+                      endif
+                   endif
                    if (mom_output) then
+                      if (ghostu1(nm)/=1) then
                       mom_m_convec(nm, k) = mom_m_convec(nm, k) &
                                           & - termc*u1(nm, k) - termu*u1(nmu, k)
+                      endif
                    else
                       bbk(nm, k) = bbk(nm, k) + termc
                       bux(nm, k) = termu
@@ -294,9 +456,6 @@ subroutine mom_cyclic &
                    !
                    ! Upwind approach near structure points and inactive u-points
                    !
-                   iad1 = (kfu(nmu) + kfu(nmu))*kadu(nmu, k)
-                   iad2 = kfu(nmu)*kfu(nmuu)*kfu(nmd)*kadu(nmu, k)*kadu(nmuu, k)&
-                        & *kadu(nmd, k)
                    !
                    ! CONSERVATIVE FORM ( LESS STABLE! )
                    !
@@ -308,13 +467,84 @@ subroutine mom_cyclic &
                    !
                    ! NON CONSERVATIVE FORM
                    !
-                   termc  = u0(nm, k)*adfac*( - iad1 - iad2) + uvdgdy*kfu(nmu)*neigat
+                   if (cntrUZDbnd_m) then      
+                      ! new version: i dont send gradient to zero if kfu(nmuu) = 0 as in the original version, but I make it centered
+                      iad1 = kfu(nmu)*kWDu(nmu,1)*kadu(nmu, k)
+                      iad2 = iad1*kfu(nmuu)*kWDu(nmuu,1)                      
+                      if (iad2==0) then !centred
+                         iad4 = iad1*kfu(nmd)*kWDu(nmd,1)                           
+                         termu =  u0(nm, k)*adfac* (2*iad1 - iad4)
+                         termd = -u0(nm, k)*adfac* iad4
+                         termc =  u0(nm, k)*adfac* (2*iad1 - 2*iad4)
+                         termuu = 0._fp
+                      else !upwind     
+                         termd  = 0._fp
+                         termc  = u0(nm, k)*adfac*(-2*iad1 -   iad2) + uvdgdy*neigat
+                         termu  = u0(nm, k)*adfac*( 2*iad1 + 2*iad2)
+                         termuu = u0(nm, k)*adfac*( - iad2)                            
+                      endif
+                   else       
+                       iad1 = (2*kfu(nmu)*kWDu(nmu,1))*kadu(nmu, k)
+                       iad2 = kfu(nmu)*kWDu(nmu,1)*kfu(nmuu)*kWDu(nmuu,1)*kfu(nmd)*kWDu(nmd,2)*kadu(nmu, k)*kadu(nmuu, k)&
+                            & *kadu(nmd, k)    
+                       termd  = 0._fp
+                       termc  = u0(nm, k)*adfac*( - iad1 - iad2) + uvdgdy*neigat
                    termu  = u0(nm, k)*adfac*(iad1 + iad2 + iad2)
                    termuu = u0(nm, k)*adfac*( - iad2)
+                   endif
+                   if (cutcell.eq.2.and.MODadvecGHOSTuzd==2) THEN
+                     if (getADJACENTgrad) then
+                         if (comparereal(aguu(nm),0._fp).gt.0.and.comparereal(aguu(nm),1._fp).lt.0) then
+                            if(kfu(num)==1) then !use gradient above (explicit)
+                               iad1 = (2*kfu(numu)*kWDu(numu,1))*kadu(numu, k)
+                               iad2 = kfu(numu)*kWDu(numu,1)*kfu(numuu)*kWDu(numuu,1)*kfu(numd)*kWDu(numd,2)*kadu(numu, k)*kadu(numuu, k)&
+                                    & *kadu(numd, k)
+                               termc  = u0(nm, k)*adfac*( - iad1 - iad2) !+ uvdgdy*neigat
+                               termu  = u0(nm, k)*adfac*(iad1 + iad2 + iad2)
+                               termuu = u0(nm, k)*adfac*( - iad2)
+                               advEXP = - termc*u0(num, k) - termu*u0(numu, k) - termuu*u0(numuu, k)
+                               ddk(nm,k) = ddk(nm,k) + advEXP
+                               termc  = 0._fp
+                               termu  = 0._fp
+                               termuu = 0._fp
+                               if (mom_output) then
+                                  mom_m_convec(nm, k) = mom_m_convec(nm, k) + advEXP
+                               endif
+                            elseif (kfu(ndm)==1) then
+                               iad1 = (2*kfu(ndmu)*kWDu(ndmu,1))*kadu(ndmu, k)
+                               iad2 = kfu(ndmu)*kWDu(ndmu,1)*kfu(ndmuu)*kWDu(ndmuu,1)*kfu(ndmd)*kWDu(ndmd,2)*kadu(ndmu, k)*kadu(ndmuu, k)&
+                                    & *kadu(ndmd, k)
+                               termc  = u0(nm, k)*adfac*( - iad1 - iad2) !+ uvdgdy*neigat
+                               termu  = u0(nm, k)*adfac*(iad1 + iad2 + iad2)
+                               termuu = u0(nm, k)*adfac*( - iad2)
+                               advEXP =  - termc*u0(ndm, k) - termu*u0(ndmu, k) - termuu*u0(ndmuu, k)
+                               ddk(nm,k) = ddk(nm,k) + advEXP
+                               termc  = 0._fp
+                               termu  = 0._fp
+                               termuu = 0._fp
+                               if (mom_output) then
+                                  mom_m_convec(nm, k) = mom_m_convec(nm, k) + advEXP
+                               endif
+                            else
+                               iad1 = 0
+                               iad2 = 0
+                            endif
+                         endif
+                      else
+                         if (GHOSTu1(nm).eq.1.or.GHOSTu1(nmu).EQ.1) then !.or.GHOSTu1(nmuu).EQ.1) then  
+                            termc = 0._fp
+                            termu = 0._fp
+                            termuu= 0._fp
+                         endif
+                      endif
+                   endif
                    if (mom_output) then
-                      mom_m_convec(nm, k) = mom_m_convec(nm, k) &
-                                          & - termc*u1(nm, k) - termu*u1(nmu, k) - termuu*u1(nmuu, k)
+                      if (ghostu1(nm)/=1) then
+                          mom_m_convec(nm, k) = mom_m_convec(nm, k) &
+                                              & - termd*u1(nmd, k) - termc*u1(nm, k) - termu*u1(nmu, k) - termuu*u1(nmuu, k)
+                      endif
                    else
+                      bdx(nm, k)  = termd
                       bbk(nm, k)  = bbk(nm, k) + termc
                       bux(nm, k)  = termu
                       buux(nm, k) = termuu
@@ -331,62 +561,123 @@ subroutine mom_cyclic &
              !
              if (kadu(num, k)*kadu(ndm, k)*kadu(nm, k)==1) then
                 if (vvhr>0.0) then
+                   if (MODadvecGHOSTuzd==2) then !it works also with cutcell==2
+                      iad1 = kfu(ndm)*kWDu(ndm,4) !kfv(ndm)*kWDv(ndm,2)*kfv(ndmu)*kWDv(ndmu,2)
+                      iad2 = iad1*kfu(nddm)*kWDu(nddm,4)
+                      iad3 = iad1
+                   else
                    if (cstbnd) then
                       if (kcs(nm)==2) then
-                         iad1 = kfu(ndm)*kfv(ndmu)
-                         iad2 = iad1*kfv(nddmu)*kfu(nddm)
-                         vvdgdx = 0.0
+                            iad1 = kfu(ndm)*kWDu(ndm,4)*kfv(ndmu)*kWDv(ndmu,2)
+                            iad2 = iad1*kfv(nddmu)*kWDv(nddmu,2)*kfu(nddm)*kWDu(nddm,4)
+                            iad3 = iad1
+                           ! vvdgdx = 0.0
                       elseif (kcs(nmu)==2) then
-                         iad1 = kfu(ndm)*kfv(ndm)
-                         iad2 = iad1*kfv(nddm)*kfu(nddm)
-                         vvdgdx = 0.0
+                            iad1 = kfu(ndm)*kWDu(ndm,4)*kfv(ndm)*kWDv(ndm,2)
+                            iad2 = iad1*kfv(nddm)*kWDv(nddm,2)*kfu(nddm)*kWDu(nddm,4)
+                            iad3 = iad1
+                           ! vvdgdx = 0.0
+                         else
+                            !iad1 = kfu(ndm)*kfv(ndm)*kfv(ndmu)
+                            iad3 = kfv(ndm)*kWDv(ndm,2)*kfv(ndmu)*kWDv(ndmu,2)
+                            iad1 = kfu(ndm)*kWDu(ndm,4)*iad3
+                            iad2 = iad1*kfv(nddm)*kWDv(nddm,2)*kfv(nddmu)*kWDv(nddmu,2)*kfu(nddm)*kWDu(nddm,4)
+                         endif
                       else
-                         iad1 = kfu(ndm)*kfv(ndm)*kfv(ndmu)
-                         iad2 = iad1*kfv(nddm)*kfv(nddmu)*kfu(nddm)
+                         iad1 = kfu(ndm)*kWDu(ndm,4) !v(ndm)*kWDv(ndm,2)*kfv(ndmu)*kWDv(ndmu,2) !removed all kfv, they are taken care of above (same in mom_cyclic called from sud)
+                         iad2 = iad1*kfu(nddm)*kWDu(nddm,4) !iad1*kfv(nddm)*kWDv(nddm,2)*kfv(nddmu)*kWDv(nddmu,2)*kfu(nddm)*kWDu(nddm,4)
+                         iad3 = iad1
                       endif
-                   else
-                      iad1 = kfv(ndm)*kfv(ndmu)
-                      iad2 = iad1*kfv(nddm)*kfv(nddmu)*kfu(nddm)
                    endif
+                   if (iad2==0.and.cntrUZDbnd_n) then
+                      iad4 = iad1*kfu(num)*kWDu(num,4) !kWDu(num,4) to be changed
+                      termu =  vvhr * iad4
+                      termd = -vvhr *(2*iad1 - iad4)
+                      termc =  vvhr*(2*iad1 - 2*iad4)
+                   else
+                      termu = 0._fp
                    termc  = vvhr*(iad1 + iad1 + iad2)
                    termd  = vvhr*( - iad1 - iad1 - iad2 - iad2)
                    termdd = vvhr*(iad2)
-                   termex = vvv*vvdgdx*iad1
+                      termex = vvv*vvdgdx*iad3                      
+                   endif
+                   if (cutcell.eq.2.and.MODadvecGHOSTuzd==2) THEN
+                      if (GHOSTu1(nm).eq.1 .or.GHOSTu1(ndm).EQ.1) then !.or.GHOSTu1(nddm).EQ.1) then  
+                         termc = 0._fp
+                         termd = 0._fp
+                         termdd= 0._fp
+                      endif
+                   endif
                    if (mom_output) then
+                      if (ghostu1(nm)/=1) then
                       mom_m_xadvec(nm, k) = mom_m_xadvec(nm, k) &
-                                          & - termc*u1(nm, k) - termd*u1(ndm, k) - termdd*u1(nddm, k) + termex
-                   else
+                                             & - termu*u1(nmu, k) - termc*u1(nm, k) - termd*u1(ndm, k) - termdd*u1(nddm, k) + termex
+                      endif
+                   else 
+                      buy(nm, k)  = termu
                       bbk(nm, k)  = bbk(nm, k) + termc
                       bdy(nm, k)  = termd
                       bddy(nm, k) = termdd
                       ddk(nm, k)  = ddk(nm, k) + termex
                    endif
                 else
-                   if (cstbnd) then
-                      if (kcs(nm)==2) then
-                         iad1 = kfu(num)*kfv(nmu)
-                         iad2 = iad1*kfv(numu)*kfu(nuum)
-                         vvdgdx = 0.0
-                      elseif (kcs(nmu)==2) then
-                         iad1 = kfu(num)*kfv(nm)
-                         iad2 = iad1*kfv(num)*kfu(nuum)
-                         vvdgdx = 0.0
+                   if (MODadvecGHOSTuzd==2) then !it works also with cutcell==2
+                     ! if (getADJACENTgrad) then
+                     ! else
+                      iad1 = kfu(num)*kWDu(num,3) 
+                      iad2 = iad1*kfu(nuum)*kWDu(nuum,3)
+                      iad3 = iad1
+                     ! endif
+                   else
+                      if (cstbnd) then
+                         if (kcs(nm)==2) then
+                            iad1 = kfu(num)*kWDu(num,3)*kfv(nmu)*kWDv(nmu,1)
+                            iad2 = iad1*kfv(numu)*kWDv(numu,1)*kfu(nuum)*kWDu(nuum,3)
+                            iad3 = iad1
+                  !          vvdgdx = 0.0
+                         elseif (kcs(nmu)==2) then
+                            iad1 = kfu(num)*kWDu(num,3)*kfv(nm)*kWDv(nm,1)
+                            iad2 = iad1*kfv(num)*kWDv(num,1)*kfu(nuum)*kWDu(nuum,3)
+                            iad3 = iad1
+                   !         vvdgdx = 0.0
+                         else
+                          !  iad1 = kfu(num)*kfv(nm)*kfv(nmu)
+                            iad3 = kfv(nm)*kWDv(nm,1)*kfv(nmu)*kWDv(nmu,1)
+                            iad1 = kfu(num)*kWDu(num,3)*iad3
+                            iad2 = iad1*kfv(num)*kWDv(num,1)*kfv(numu)*kWDv(numu,1)*kfu(nuum)*kWDu(nuum,3)
+                         endif
                       else
-                         iad1 = kfu(num)*kfv(nm)*kfv(nmu)
-                         iad2 = iad1*kfv(num)*kfv(numu)*kfu(nuum)
+                         iad1 = kfu(num)*kWDu(num,4) !kfv(nm)*kWDv(nm,1)*kfv(nmu)*kWDv(nmu,1)
+                         iad2 = iad1*kfu(nuum)*kWDu(nuum,4) !iad1*kfv(num)*kWDv(num,1)*kfv(numu)*kWDv(numu,1)*kfu(nuum)*kWDu(nuum,3)
+                         iad3 = iad1
+                      endif
+                   endif
+                   if (iad2==0.and.cntrUZDbnd_n) then    
+                      iad4 = iad1*kfu(ndm)*kWDu(ndm,4) !4 to be changed
+                      termu =  vvhr * (2*iad1 - iad4)
+                      termd = -vvhr * iad4
+                      termc =  vvhr * (2*iad1 - 2*iad4)
+                   else
+                      termd  = 0._fp
+                      termc  = vvhr*( - iad1 - iad1 - iad2)
+                      termu  = vvhr*(iad1 + iad1 + iad2 + iad2)
+                      termuu = vvhr*( - iad2)
+                      termex = vvv*vvdgdx*iad3
+                   endif
+                   if (cutcell.eq.2.and.MODadvecGHOSTuzd==2) THEN
+                      if ((vvhr>0.and.GHOSTu1(ndm).EQ.1).or.(vvhr<0.and.GHOSTu1(num).EQ.1)) then !.or.GHOSTu1(nuum).EQ.1) then 
+                          termc = 0._fp
+                          termu = 0._fp
+                          termuu= 0._fp
+                      endif
+                   endif
+                   if (mom_output) then
+                      if (ghostu1(nm)/=1) then
+                      mom_m_xadvec(nm, k) = mom_m_xadvec(nm, k) &
+                                             & - termd*u1(ndm, k) - termc*u1(nm, k) - termu*u1(num, k) - termuu*u1(nuum, k) + termex
                       endif
                    else
-                      iad1 = kfv(nm)*kfv(nmu)
-                      iad2 = iad1*kfv(num)*kfv(numu)*kfu(nuum)
-                   endif
-                   termc  = vvhr*( - iad1 - iad1 - iad2)
-                   termu  = vvhr*(iad1 + iad1 + iad2 + iad2)
-                   termuu = vvhr*( - iad2)
-                   termex = vvv*vvdgdx*iad1
-                   if (mom_output) then
-                      mom_m_xadvec(nm, k) = mom_m_xadvec(nm, k) &
-                                          & - termc*u1(nm, k) - termu*u1(num, k) - termuu*u1(nuum, k) + termex
-                   else
+                      bdy(nm, k)  = termd
                       bbk(nm, k)  = bbk(nm, k) + termc
                       buy(nm, k)  = termu
                       buuy(nm, k) = termuu
@@ -397,4 +688,6 @@ subroutine mom_cyclic &
           endif
        enddo
     enddo
+    !WRITE (289457,*) Lmax,nmLmax
+    !
 end subroutine mom_cyclic

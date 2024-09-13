@@ -6,12 +6,10 @@
      &                      chez   , nsrc   , mnksrc , namsrc , runid  , &
      &                      nowalk , iwlk   , aggre  , flaggr , zmodel , &
      &                      ilaggr , nd     , nlb    , nub    , mlb    , &
-     &                      mub    , kfsmin , ksrwaq , noseg  , noq1   , &
-     &                      noq2   , noq3   , xz     , yz     , zbot   , &
-     &                      ztop, gdp)
+     &                      mub    , kfsmin , ksrwaq )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2016.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -35,21 +33,15 @@
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrwaqhyd.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrwaqhyd.f90 $
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
       use precision
-      use time_module
-      use flow2d3d_version_module
-      use globaldata
-            
       implicit none
-!      
-      type(globdat),target :: gdp
 !
 !           Global variables
 !
@@ -86,14 +78,6 @@
       integer(4)    mub                !<  Upper bound of all m dimensions
       integer  kfsmin(nlb:nub,mlb:mub) !<  Variable lowest active layer (z-model-only)
       integer(4)    ksrwaq(2*nsrc)     !<  stored value of nr of layers source locations
-      integer(4)    noseg              !<  Total number of segments
-      integer(4)    noq1               !<  Exchanges in first direction
-      integer(4)    noq2               !<  Exchanges in second direction
-      integer(4)    noq3               !<  Exchanges in third direction
-      real(fp) , dimension(nlb:nub,mlb:mub) , intent(in) :: xz     !  Description and declaration in esm_alloc_real.f90
-      real(fp) , dimension(nlb:nub,mlb:mub) , intent(in) :: yz     !  Description and declaration in esm_alloc_real.f90
-      real(fp)      zbot               !<  Maximum depth in the model (relative to the reference level; unit: metres; positive upwards).
-      real(fp)      ztop               !<  The "imaginary" maximum water level in the model (relative to the reference level; unit: metres; positive upwards).
 !
 !           Local  variables
 !
@@ -105,294 +89,178 @@
       integer       n, m, nl           !! grid indices
       real     ( 4) anl                !! for waq layers
       integer  ( 4) kfmin, kfmax       !! help variables z-model
-      character(256) full_version      !! Delft3D FLOW version information
+      character(256) version_full      !! Delft3D FLOW version information
       character(20)  rundat            !! Current date and time containing a combination of DATE and TIME
       character(21)  datetime          !! Date/time to be filled in the header
-      character(256) filstring, file1, file2
-      character(6) sf                  !! character variable for s(ediment)f(iles)
-      integer(4)    lunout1 !! write hyd file for structured grid needed for delpar
-      integer(4)    lunout2 !! write hyd-file for DeltaShell (unstructured format)
-      integer(4)    nm_sink !! NM lcoation of the sink (sink-sources)
-      integer(4)    nm_source !! NM lcoation of the sourc (sin-sources)
+      character(256) filstring
+      character(5) sf                  !! character variable for s(ediment)f(iles)
+      integer, external :: newunit
+      integer(4)    lunout
 !
 !! executable statements -------------------------------------------------------
 !
-      file1 = trim(filnam)//'.hyd'
-      open  ( newunit = lunout1 , file=trim(file1) )
-      file2 = trim(filnam)//'_unstructured.hyd'
-      open  ( newunit = lunout2 , file=trim(file2) )
+      lunout = newunit()
+      filstring = trim(filnam)//'hyd'
+      open  ( lunout , file=trim(filstring) )
 
-      full_version  = ' '
-      call getfullversionstring_flow2d3d(full_version)
-      write(lunout1,'(a,a)') 'file-created-by  '//trim(full_version)
-      write(lunout2,'(a,a)') 'file-created-by  '//trim(full_version)
+      version_full  = ' '
+      call getfullversionstring_flow2d3d(version_full)
+      write(lunout,'(A,A)') 'file-created-by  '//trim(version_full)
 
       call dattim(rundat)
       datetime = rundat(1:4)//'-'//rundat(6:7)//'-'//rundat(9:10)//','//rundat(11:19)
-      write(lunout1,'(a,a)') 'file-creation-date  '//datetime
-      write(lunout2,'(a,a)') 'file-creation-date  '//datetime
+      write(lunout,'(A,A)') 'file-creation-date  '//datetime
 
-      write ( lunout1 , '(a      )' ) 'task      full-coupling'
-      write ( lunout2 , '(a      )' ) 'task      full-coupling'
+      write ( lunout , '(A      )' ) 'task      full-coupling'
       if (zmodel) then
-         write ( lunout1 , '(a      )' ) 'geometry  curvilinear-grid  z-layers'
-         write ( lunout2 , '(a      )' ) 'geometry  unstructured  z-layers'
+         write ( lunout , '(A      )' ) 'geometry  curvilinear-grid  z-layers'
       else
-         write ( lunout1 , '(a      )' ) 'geometry  curvilinear-grid'
-         write ( lunout2 , '(a      )' ) 'geometry  unstructured'
+         write ( lunout , '(A      )' ) 'geometry  curvilinear-grid'
       end if
-      if ( aggre .lt. 0 ) then
-         write ( lunout1 , '(a,a    )' ) 'horizontal-aggregation       ','no'
-         write ( lunout2 , '(a,a    )' ) 'horizontal-aggregation       ','no'
-      end if 
-      if ( aggre .eq. 0 ) then
-         write ( lunout1 , '(a,a    )' ) 'horizontal-aggregation       ','automatic'
-         write ( lunout2 , '(a,a    )' ) 'horizontal-aggregation       ','automatic'
-      end if 
-      if ( aggre .gt. 0 ) then
-         write ( lunout1 , '(a,a    )' ) 'horizontal-aggregation       ','yes'
-         write ( lunout2 , '(a,a    )' ) 'horizontal-aggregation       ','yes'
-      end if 
-      write ( lunout1 , '(a,a    )' ) 'minimum-vert-diffusion-used  ','no'
-      write ( lunout2 , '(a,a    )' ) 'minimum-vert-diffusion-used  ','no'
-      write ( lunout1 , '(a,a    )' ) 'vertical-diffusion           ','calculated'
-      write ( lunout2 , '(a,a    )' ) 'vertical-diffusion           ','calculated'
-      write ( lunout1 , '(a      )' ) 'description'
-      write ( lunout2 , '(a      )' ) 'description'
-      write ( lunout1 , '(a      )' ) '''                                                            '''
-      write ( lunout2 , '(a      )' ) '''                                                            '''
-      write ( lunout1 , '(a      )' ) '''                                                            '''
-      write ( lunout2 , '(a      )' ) '''                                                            '''
-      write ( lunout1 , '(a      )' ) '''                                                            '''
-      write ( lunout2 , '(a      )' ) '''                                                            '''
-      write ( lunout1 , '(a      )' ) 'end-description'
-      write ( lunout2 , '(a      )' ) 'end-description'
-      julday = ymd2jul ( itdate )
-      write ( lunout1 , '(a,i8,a )' ) 'reference-time           ''',itdate,'000000'''
-      write ( lunout2 , '(a,i8,a )' ) 'reference-time           ''',itdate,'000000'''
+      if ( aggre .lt. 0 )                                                &
+     &   write ( lunout , '(A,A    )' ) 'horizontal-aggregation       ','no'
+      if ( aggre .eq. 0 )                                                &
+     &   write ( lunout , '(A,A    )' ) 'horizontal-aggregation       ','automatic'
+      if ( aggre .gt. 0 )                                                &
+     &   write ( lunout , '(A,A    )' ) 'horizontal-aggregation       ','yes'
+      write ( lunout , '(A,A    )' ) 'minimum-vert-diffusion-used  ','no'
+      write ( lunout , '(A,A    )' ) 'vertical-diffusion           ','calculated'
+      write ( lunout , '(A      )' ) 'description'
+      write ( lunout , '(A      )' ) '''                                                            '''
+      write ( lunout , '(A      )' ) '''                                                            '''
+      write ( lunout , '(A      )' ) '''                                                            '''
+      write ( lunout , '(A      )' ) 'end-description'
+      call juldat ( itdate, julday )
+      write ( lunout , '(A,I8,A )' ) 'reference-time           ''',itdate,'000000'''
       timsec = tstart*60.0
       call timdat( julday, timsec, idate, itime )
-      write ( lunout1 , '(a,i8,i6.6,a)') 'hydrodynamic-start-time  ''',idate,itime,''''
-      write ( lunout2 , '(a,i8,i6.6,a)') 'hydrodynamic-start-time  ''',idate,itime,''''
+      write ( lunout , '(A,I8,I6.6,A)') 'hydrodynamic-start-time  ''',idate,itime,''''
       timsec = tstop *60.0
       call timdat( julday, timsec, idate, itime )
-      write ( lunout1 , '(a,i8,i6.6,a)') 'hydrodynamic-stop-time   ''',idate,itime,''''
-      write ( lunout2 , '(a,i8,i6.6,a)') 'hydrodynamic-stop-time   ''',idate,itime,''''
+      write ( lunout , '(A,I8,I6.6,A)') 'hydrodynamic-stop-time   ''',idate,itime,''''
       timsec = dt    *60.0
       call timdat( julday, timsec, idate, itime )
-      write ( lunout1 , '(a,i6.6,a )' ) 'hydrodynamic-timestep    ''00000000',itime,''''
-      write ( lunout2 , '(a,i6.6,a )' ) 'hydrodynamic-timestep    ''00000000',itime,''''
-      write ( lunout1 , '(a,i8,a )' ) 'conversion-ref-time      ''',itdate,'000000'''
-      write ( lunout2 , '(a,i8,a )' ) 'conversion-ref-time      ''',itdate,'000000'''
-      timsec = max(itwqff*dt*60.0,  tstart*60.0)
+      write ( lunout , '(A,I6.6,A )' ) 'hydrodynamic-timestep    ''00000000',itime,''''
+      write ( lunout , '(A,I8,A )' ) 'conversion-ref-time      ''',itdate,'000000'''
+      timsec = itwqff*dt*60.0
       call timdat( julday, timsec, idate, itime )
-      write ( lunout1 , '(a,i8,i6.6,a)') 'conversion-start-time    ''',idate,itime,''''
-      write ( lunout2 , '(a,i8,i6.6,a)') 'conversion-start-time    ''',idate,itime,''''
+      write ( lunout , '(A,I8,I6.6,A)') 'conversion-start-time    ''',idate,itime,''''
       timsec = itwqfl*dt*60.0
       call timdat( julday, timsec, idate, itime )
-      write ( lunout1 , '(a,i8,i6.6,a)') 'conversion-stop-time     ''',idate,itime,''''
-      write ( lunout2 , '(a,i8,i6.6,a)') 'conversion-stop-time     ''',idate,itime,''''
+      write ( lunout , '(A,I8,I6.6,A)') 'conversion-stop-time     ''',idate,itime,''''
       timsec = itwqfi*dt*60.0
       call timdat( julday, timsec, idate, itime )
       idate = idate - itdate
-      write ( lunout1 , '(a,i8.8,i6.6,a )' ) 'conversion-timestep      ''',idate,itime,''''
-      write ( lunout2 , '(a,i8.8,i6.6,a )' ) 'conversion-timestep      ''',idate,itime,''''
-      
-      write ( lunout1 , '(a,i7   )' ) 'grid-cells-first-direction              ', mmax
-      write ( lunout2 , '(a,i7   )' ) 'grid-cells-first-direction              ', mmax
-      write ( lunout1 , '(a,i7   )' ) 'grid-cells-second-direction             ', nmax
-      write ( lunout2 , '(a,i7   )' ) 'grid-cells-second-direction             ', nmax
-      write ( lunout1 , '(a,i7   )' ) 'number-hydrodynamic-layers              ', kmax
-      write ( lunout2 , '(a,i7   )' ) 'number-hydrodynamic-layers              ', kmax
-      
-      write ( lunout2 , '(a,i7   )' ) 'number-horizontal-exchanges             ', noq1+noq2
-      write ( lunout2 , '(a,i7   )' ) 'number-vertical-exchanges               ', noq3
-      write ( lunout2 , '(a,i7   )' ) 'number-water-quality-segments-per-layer ', noseg/ilaggr(kmax)
-
-      write ( lunout1 , '(a,i7   )' ) 'number-water-quality-layers             ', ilaggr(kmax)
-      write ( lunout2 , '(a,i7   )' ) 'number-water-quality-layers             ', ilaggr(kmax)
-      filstring = ''''//trim(filnam)//'.dat'''
-      write ( lunout1 , '(a,a    )' ) 'hydrodynamic-file        ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'hydrodynamic-file        ',trim(filstring)
+      write ( lunout , '(A,I8.8,I6.6,A )' ) 'conversion-timestep      ''',idate,itime,''''
+      write ( lunout , '(A,I7   )' ) 'grid-cells-first-direction ',mmax
+      write ( lunout , '(A,I7   )' ) 'grid-cells-second-direction',nmax
+      write ( lunout , '(A,I7   )' ) 'number-hydrodynamic-layers ',kmax
+      write ( lunout , '(A,I7   )' ) 'number-water-quality-layers',ilaggr(kmax)
+      filstring = ''''//trim(filnam)//'dat'''
+      write ( lunout , '(A,A    )' ) 'hydrodynamic-file        ',trim(filstring)
       if ( aggre .le. 0 ) then
-         write ( lunout1 , '(a,a    )' ) 'aggregation-file         none'
-         write ( lunout2 , '(a,a    )' ) 'aggregation-file         none'
+         write ( lunout , '(A,A    )' ) 'aggregation-file         none'
       else
          filstring = ''''//flaggr(1:len_trim(flaggr))//''''
-         write ( lunout1 , '(a,a    )' ) 'aggregation-file         ',trim(filstring)
-         write ( lunout2 , '(a,a    )' ) 'aggregation-file         ',trim(filstring)
+         write ( lunout , '(A,A    )' ) 'aggregation-file         ',trim(filstring)
       endif
-      
-      filstring = ''''//trim(filnam)//'.lga'''
-      write ( lunout1 , '(a,a    )' ) 'grid-indices-file        ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'grid-indices-file        ',trim(filstring)
-      filstring = ''''//trim(filnam)//'.bnd'''
-      write ( lunout2 , '(a,a    )' ) 'boundaries-file          ',trim(filstring)
-      
-      filstring = ''''//trim(filnam)//'.cco'''
-      write ( lunout1 , '(a,a    )' ) 'grid-coordinates-file    ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'grid-coordinates-file    ',trim(filstring)
-      filstring = ''''//trim(filnam)//'_waqgeom.nc'''
-      write ( lunout2 , '(a,a    )' ) 'waqgeom-file             ',trim(filstring)
-
-      filstring = ''''//trim(filnam)//'.vol'''
-      write ( lunout1 , '(a,a    )' ) 'volumes-file             ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'volumes-file             ',trim(filstring)
-
-      filstring = ''''//trim(filnam)//'.are'''
-      write ( lunout1 , '(a,a    )' ) 'areas-file               ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'areas-file               ',trim(filstring)
-
-      filstring = ''''//trim(filnam)//'.flo'''
-      write ( lunout1 , '(a,a    )' ) 'flows-file               ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'flows-file               ',trim(filstring)
-
-      filstring = ''''//trim(filnam)//'.poi'''
-      write ( lunout1 , '(a,a    )' ) 'pointers-file            ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'pointers-file            ',trim(filstring)
-
-      filstring = ''''//trim(filnam)//'.len'''
-      write ( lunout1 , '(a,a    )' ) 'lengths-file             ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'lengths-file             ',trim(filstring)
-
+      filstring = ''''//trim(filnam)//'lga'''
+      write ( lunout , '(A,A    )' ) 'grid-indices-file        ',trim(filstring)
+      filstring = ''''//trim(filnam)//'cco'''
+      write ( lunout , '(A,A    )' ) 'grid-coordinates-file    ',trim(filstring)
+      filstring = ''''//trim(filnam)//'vol'''
+      write ( lunout , '(A,A    )' ) 'volumes-file             ',trim(filstring)
+      filstring = ''''//trim(filnam)//'are'''
+      write ( lunout , '(A,A    )' ) 'areas-file               ',trim(filstring)
+      filstring = ''''//trim(filnam)//'flo'''
+      write ( lunout , '(A,A    )' ) 'flows-file               ',trim(filstring)
+      filstring = ''''//trim(filnam)//'poi'''
+      write ( lunout , '(A,A    )' ) 'pointers-file            ',trim(filstring)
+      filstring = ''''//trim(filnam)//'len'''
+      write ( lunout , '(A,A    )' ) 'lengths-file             ',trim(filstring)
       if ( lsal .gt. 0 ) then
-         filstring = ''''//trim(filnam)//'.sal'''
+         filstring = ''''//trim(filnam)//'sal'''
       else
          filstring = 'none'
       endif
-      write ( lunout1 , '(a,a    )' ) 'salinity-file            ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'salinity-file            ',trim(filstring)
+      write ( lunout , '(A,A    )' ) 'salinity-file            ',trim(filstring)
       if ( ltem .gt. 0 ) then
-         filstring = ''''//trim(filnam)//'.tem'''
+         filstring = ''''//trim(filnam)//'tem'''
       else
          filstring = 'none'
       endif
-      write ( lunout1 , '(a,a    )' ) 'temperature-file         ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'temperature-file         ',trim(filstring)
+      write ( lunout , '(A,A    )' ) 'temperature-file         ',trim(filstring)
       do l = 1, lsed
-         sf = ".sed00"
-         write( sf(5:6), '(i2.2)' ) l
+         sf = "sed00"
+         write( sf(4:5), '(i2.2)' ) l
          filstring = ''''//trim(filnam)//sf//''''
-         write ( lunout1 , '(A,A )' ) 'sediment-file            ',trim(filstring)
-         write ( lunout2 , '(A,A )' ) 'sediment-file            ',trim(filstring)
+         write ( lunout , '(A,A )' ) 'sediment-file            ',trim(filstring)
       enddo
       if ( ilaggr(kmax) .gt. 1 ) then
-         filstring = ''''//trim(filnam)//'.vdf'''
+         filstring = ''''//trim(filnam)//'vdf'''
       else
          filstring = 'none'
       endif
-      write ( lunout1 , '(a,a    )' ) 'vert-diffusion-file      ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'vert-diffusion-file      ',trim(filstring)
-
-      filstring = ''''//trim(filnam)//'.srfold'''
-      write ( lunout1 , '(a,a    )' ) 'surfaces-file            ',trim(filstring)
-      filstring = ''''//trim(filnam)//'.srf'''
-      write ( lunout2 , '(a,a    )' ) 'horizontal-surfaces-file ',trim(filstring)
-
-      filstring = ''''//trim(filnam)//'.dps'''
-      write ( lunout1 , '(a,a    )' ) 'depths-file              ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'depths-file              ',trim(filstring)
-
-      filstring = ''''//trim(filnam)//'.lgt'''
-      write ( lunout1 , '(a,a    )' ) 'total-grid-file          ',trim(filstring)
-      ! write ( lunout2 , '(a,a    )' ) 'total-grid-file          ',trim(filstring) ! not needed for unstructured
-
-      filstring = ''''//trim(filnam)//'.src'''
-      write ( lunout1 , '(a,a    )' ) 'discharges-file          ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'discharges-file          ',trim(filstring)
-
+      write ( lunout , '(A,A    )' ) 'vert-diffusion-file      ',trim(filstring)
+      filstring = ''''//trim(filnam)//'srf'''
+      write ( lunout , '(A,A    )' ) 'surfaces-file            ',trim(filstring)
+      filstring = ''''//trim(filnam)//'dps'''
+      write ( lunout , '(A,A    )' ) 'depths-file              ',trim(filstring)
+      filstring = ''''//trim(filnam)//'lgt'''
+      write ( lunout , '(A,A    )' ) 'total-grid-file          ',trim(filstring)
+      filstring = ''''//trim(filnam)//'src'''
+      write ( lunout , '(A,A    )' ) 'discharges-file          ',trim(filstring)
       if ( chez ) then
-         filstring = ''''//trim(filnam)//'.chz'''
+         filstring = ''''//trim(filnam)//'chz'''
       else
          filstring = 'none'
       endif
-      write ( lunout1 , '(a,a    )' ) 'chezy-coefficients-file  ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'chezy-coefficients-file  ',trim(filstring)
-
-      filstring = ''''//trim(filnam)//'.tau'''
-      write ( lunout1 , '(a,a    )' ) 'shear-stresses-file      ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'shear-stresses-file      ',trim(filstring)
-
-      filstring = ''''//trim(filnam)//'.wlk'''
-      write ( lunout1 , '(a,a    )' ) 'walking-discharges-file  ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'walking-discharges-file  ',trim(filstring)
-
-      filstring = ''''//trim(filnam)//'.atr'''
-      write ( lunout1 , '(a,a    )' ) 'attributes-file          ',trim(filstring)
-      write ( lunout2 , '(a,a    )' ) 'attributes-file          ',trim(filstring)
-
-      if (zmodel) then
-         write ( lunout1 , '(a, f15.6 )' ) 'z-layers-ztop ', ztop
-         write ( lunout2 , '(a, f15.6 )' ) 'z-layers-ztop ', ztop
-         write ( lunout1 , '(a, f15.6 )' ) 'z-layers-zbot ', zbot
-         write ( lunout2 , '(a, f15.6 )' ) 'z-layers-zbot ', zbot
-      endif
-
+      write ( lunout , '(A,A    )' ) 'chezy-coefficients-file  ',trim(filstring)
+      filstring = ''''//trim(filnam)//'tau'''
+      write ( lunout , '(A,A    )' ) 'shear-stresses-file      ',trim(filstring)
+      filstring = ''''//trim(filnam)//'wlk'''
+      write ( lunout , '(A,A    )' ) 'walking-discharges-file  ',trim(filstring)
+      filstring = ''''//trim(filnam)//'atr'''
+      write ( lunout , '(A,A    )' ) 'attributes-file          ',trim(filstring)
       if ( ilaggr(kmax) .gt. 1 ) then
-         write ( lunout1 , '(a,a    )' ) 'minimum-vert-diffusion   '
-         write ( lunout2 , '(a,a    )' ) 'minimum-vert-diffusion   '
-         write ( lunout1 , '(a,e13.4)' ) '   upper-layer    ',   0.0000E+00
-         write ( lunout2 , '(a,e13.4)' ) '   upper-layer    ',   0.0000E+00
-         write ( lunout1 , '(a,e13.4)' ) '   lower-layer    ',   0.0000E+00
-         write ( lunout2 , '(a,e13.4)' ) '   lower-layer    ',   0.0000E+00
-         write ( lunout1 , '(a,e13.4)' ) '   interface-depth',   0.0000E+00
-         write ( lunout2 , '(a,e13.4)' ) '   interface-depth',   0.0000E+00
-         write ( lunout1 , '(a      )' ) 'end-minimum-vert-diffusion'
-         write ( lunout2 , '(a      )' ) 'end-minimum-vert-diffusion'
+         write ( lunout , '(A,A    )' ) 'minimum-vert-diffusion   '
+         write ( lunout , '(A,E13.4)' ) '   upper-layer    ',   0.0000E+00
+         write ( lunout , '(A,E13.4)' ) '   lower-layer    ',   0.0000E+00
+         write ( lunout , '(A,E13.4)' ) '   interface-depth',   0.0000E+00
+         write ( lunout , '(A      )' ) 'end-minimum-vert-diffusion'
       endif
-      write ( lunout1 , '(a      )' ) 'constant-dispersion       '
-      write ( lunout2 , '(a      )' ) 'constant-dispersion       '
-      write ( lunout1 , '(a,e13.4)' ) '   first-direction ',   0.1000E+01
-      write ( lunout2 , '(a,e13.4)' ) '   first-direction ',   0.1000E+01
-      write ( lunout1 , '(a,e13.4)' ) '   second-direction',   0.1000E+01
-      write ( lunout2 , '(a,e13.4)' ) '   second-direction',   0.1000E+01
-      write ( lunout1 , '(a,e13.4)' ) '   third-direction ',   0.1000E-06
-      write ( lunout2 , '(a,e13.4)' ) '   third-direction ',   0.1000E-06
-      write ( lunout1 , '(a      )' ) 'end-constant-dispersion'
-      write ( lunout2 , '(a      )' ) 'end-constant-dispersion'
-      write ( lunout1 , '(a      )' ) 'hydrodynamic-layers'
-      write ( lunout2 , '(a      )' ) 'hydrodynamic-layers'
-      if (zmodel) then
-         do i = kmax, 1, -1
-            write ( lunout1 , '(f15.8  )' ) thick(i)
-            write ( lunout2 , '(f15.8  )' ) thick(i)
-         enddo
-      else
-         do i = 1,kmax
-            write ( lunout1 , '(f15.8  )' ) thick(i)
-            write ( lunout2 , '(f15.8  )' ) thick(i)
-         enddo
-      endif
-      write ( lunout1 , '(a      )' ) 'end-hydrodynamic-layers'
-      write ( lunout2 , '(a      )' ) 'end-hydrodynamic-layers'
-      write ( lunout1 , '(a      )' ) 'water-quality-layers   '
-      write ( lunout2 , '(a      )' ) 'water-quality-layers   '
+      write ( lunout , '(A      )' ) 'constant-dispersion       '
+      write ( lunout , '(A,E13.4)' ) '   first-direction ',   0.1000E+01
+      write ( lunout , '(A,E13.4)' ) '   second-direction',   0.1000E+01
+      write ( lunout , '(A,E13.4)' ) '   third-direction ',   0.1000E-06
+      write ( lunout , '(A      )' ) 'end-constant-dispersion'
+      write ( lunout , '(A      )' ) 'hydrodynamic-layers'
+      do i = 1,kmax
+         write ( lunout , '(F15.3  )' ) thick(i)
+      enddo
+      write ( lunout , '(A      )' ) 'end-hydrodynamic-layers'
+      write ( lunout , '(A      )' ) 'water-quality-layers   '
       anl = 1.000
       do i = 1,kmax-1
          if ( ilaggr(i+1) .ne. ilaggr(i) ) then
-            write ( lunout1 , '(f13.1  )' ) anl
-            write ( lunout2 , '(f13.1  )' ) anl
+            write ( lunout , '(F13.3  )' ) anl
             anl = 1.000
          else
             anl = anl + 1.000
          endif
       enddo
-      write ( lunout1 , '(f13.1  )' ) anl
-      write ( lunout2 , '(f13.1  )' ) anl
-      write ( lunout1 , '(a      )' ) 'end-water-quality-layers'
-      write ( lunout2 , '(a      )' ) 'end-water-quality-layers'
-      write ( lunout1 , '(a      )' ) 'discharges'
-      write ( lunout2 , '(a      )' ) 'sink-sources'
+      write ( lunout , '(F13.3  )' ) anl
+      write ( lunout , '(A      )' ) 'end-water-quality-layers'
+      write ( lunout , '(A      )' ) 'discharges'
       nowalk = 0
       il     = 1
       do i = 1,nsrc
          if (mnksrc(3,i) == -1) cycle ! awkward disabling of discharges outside partition when running parallel
-         if (mnksrc(7,i) == 4 .or. mnksrc(7,i) == 5 .or. mnksrc(7,i) == 8) cycle ! skip e,d and f culverts, output is not correct
          m = mnksrc(1,i)
          n = mnksrc(2,i)
-         filstring = ''''//trim(namsrc(i))//''''//' normal'
+         filstring = ''''//namsrc(i)(1:LEN_TRIM(namsrc(i)))//''''//' normal'
          if ( mnksrc(7,i) .eq. 1 ) then
-            filstring = ''''//trim(namsrc(i))//''''//' walking'
+            filstring = ''''//namsrc(i)(1:LEN_TRIM(namsrc(i)))//''''//' walking'
             nowalk = nowalk + 1
             iwlk(nowalk) = i
          endif
@@ -401,7 +269,7 @@
                               write ( filstring(7:7),'(I1)' ) il
             if ( il .gt.  9 ) write ( filstring(7:8),'(I2)' ) il
             if ( il .gt. 99 ) write ( filstring(7:9),'(I3)' ) il
-            filstring = trim(filstring)//' '//trim(namsrc(i))//''''//' inlet'
+            filstring = trim(filstring)//' '//namsrc(i)(1:LEN_TRIM(namsrc(i)))//''''//' inlet'
             il = il + 1
          endif
          if ( mnksrc(7,i) .eq. 3 ) then
@@ -409,44 +277,32 @@
                               write ( filstring(7:7),'(I1)' ) il
             if ( il .gt.  9 ) write ( filstring(7:8),'(I2)' ) il
             if ( il .gt. 99 ) write ( filstring(7:9),'(I3)' ) il
-            filstring = trim(filstring)//' '//trim(namsrc(i))//''''//' culvert-inlet'
+            filstring = trim(filstring)//' '//namsrc(i)(1:LEN_TRIM(namsrc(i)))//''''//' culvert-inlet'
             il = il + 1
          endif
-         call n_and_m_to_nm(mnksrc(2,i), mnksrc(1,i), nm_sink, gdp)
-         call n_and_m_to_nm(mnksrc(5,i), mnksrc(4,i), nm_source, gdp)
          if ( zmodel ) then
             kfmin     = kfsmin(n,m)
             ksrwaq(i) = ilaggr(kmax-kfmin+1)     ! store value with source index
             if ( mnksrc(3,i) .eq. 0 ) then ! uniform source over depth
                do ilay = 1, ksrwaq(i)
-                  write ( lunout1 , '(3(i0,3x),a)' ) n, m, ilay, trim(filstring)
-                  write ( lunout2 , '(3(i0,3x),4es15.7,1x,i0,1x,a)' ) i, nm_sink, nm_source, &
-                          xz(mnksrc(2,i), mnksrc(1,i)), yz(mnksrc(2,1), mnksrc(1,i)), &
-                          xz(mnksrc(5,i), mnksrc(4,i)), yz(mnksrc(5,i), mnksrc(4,i)), ilay, trim(namsrc(i))
+                  write ( lunout , '(3(I0,3X),A)' ) n, m, ilay, trim(filstring)
                enddo
             else
                nl = ilaggr(kmax-max(kfmin,mnksrc(3,i))+1)
-               write ( lunout1 , '(3(i0,3x),a)' ) n, m, nl, trim(filstring)
-               write ( lunout2 , '(3(i0,3x),4es15.7,1x,i0,1x,a)' ) i, nm_sink, nm_source, &
-                       xz(mnksrc(2,i), mnksrc(1,i)), yz(mnksrc(2,1), mnksrc(1,i)), &
-                       xz(mnksrc(5,i), mnksrc(4,i)), yz(mnksrc(5,i), mnksrc(4,i)), nl, trim(namsrc(i))
+               write ( lunout , '(3(I0,3X),A)' ) n, m, nl, trim(filstring)
             endif
          else
             if ( mnksrc(3,i) .eq. 0 ) then
-               write ( lunout1 , '(3(i0,3x),a)' ) n, m, 0, trim(filstring)
+               write ( lunout , '(3(I0,3X),A)' ) n, m, 0, trim(filstring)
             else
-               write ( lunout1 , '(3(i0,3x),a)' ) n, m, ilaggr(mnksrc(3,i)), trim(filstring)
+               write ( lunout , '(3(I0,3X),A)' ) n, m, ilaggr(mnksrc(3,i)), trim(filstring)
             endif
-            write ( lunout2 , '(3(i0,3x),4es15.7,1x,a)' ) i, nm_sink, nm_source, &
-                    xz(mnksrc(2,i), mnksrc(1,i)), yz(mnksrc(2,1), mnksrc(1,i)), &
-                    xz(mnksrc(5,i), mnksrc(4,i)), yz(mnksrc(5,i), mnksrc(4,i)), trim(namsrc(i))
          endif
       enddo
       il = 1
       do i = 1,nsrc
-         if (mnksrc(3,i) ==  -1) cycle ! awkward disabling of discharges outside partition when running parallel
-         if (mnksrc(7,i) == 4 .or. mnksrc(7,i) == 5 .or. mnksrc(7,i) == 8) cycle ! skip e,d and f culverts, output is not correct
-         if (mnksrc(7,i) .le. 1) cycle
+         if ( mnksrc(3,i) ==  -1 ) cycle ! awkward disabling of discharges outside partition when running parallel
+         if ( mnksrc(7,i) .le. 1 ) cycle
          m = mnksrc(4,i)
          n = mnksrc(5,i)
          if ( mnksrc(7,i) .eq. 2 ) then
@@ -454,7 +310,7 @@
                               write ( filstring(8: 8),'(I1)' ) il
             if ( il .gt.  9 ) write ( filstring(8: 9),'(I2)' ) il
             if ( il .gt. 99 ) write ( filstring(8:10),'(I3)' ) il
-            filstring = trim(filstring)//' '//trim(namsrc(i))//''''//' outlet'
+            filstring = trim(filstring)//' '//namsrc(i)(1:LEN_TRIM(namsrc(i)))//''''//' outlet'
             il = il + 1
          endif
          if ( mnksrc(7,i) .eq. 3 ) then
@@ -462,41 +318,29 @@
                               write ( filstring(8: 8),'(I1)' ) il
             if ( il .gt.  9 ) write ( filstring(8: 9),'(I2)' ) il
             if ( il .gt. 99 ) write ( filstring(8:10),'(I3)' ) il
-            filstring = trim(filstring)//' '//trim(namsrc(i))//''''//' culvert-outlet'
+            filstring = trim(filstring)//' '//namsrc(i)(1:LEN_TRIM(namsrc(i)))//''''//' culvert-outlet'
             il = il + 1
          endif
-         call n_and_m_to_nm(mnksrc(2,i), mnksrc(1,i), nm_sink, gdp)
-         call n_and_m_to_nm(mnksrc(5,i), mnksrc(4,i), nm_source, gdp)
          if ( zmodel ) then
             kfmin     = kfsmin(n,m)
             ksrwaq(nsrc+i) = ilaggr(kmax-kfmin+1)     ! store value with source index
             if ( mnksrc(6,i) .eq. 0 ) then ! uniform source over depth
                do ilay = 1, ksrwaq(nsrc+i)
-                  write ( lunout1 , '(3(i0,3x),a)' ) n, m, ilay, trim(filstring)
-                  write ( lunout2 , '(3(i0,3x),4es15.7,1x,i0,2x,a)' ) i, nm_sink, nm_source, &
-                          xz(mnksrc(2,i), mnksrc(1,i)), yz(mnksrc(2,1), mnksrc(1,i)), &
-                          xz(mnksrc(5,i), mnksrc(4,i)), yz(mnksrc(5,i), mnksrc(4,i)), ilay, trim(namsrc(i))
+                  write ( lunout , '(3(I0,3X),A)' ) n, m, ilay, trim(filstring)
                enddo
             else
                nl = ilaggr(kmax-max(kfmin,mnksrc(6,i))+1)
-               write ( lunout1 , '(3(i0,3x),a)' ) n, m, nl, trim(filstring)
-               write ( lunout2 , '(3(i0,3x),4es15.7,1x,i0,2x,a)' ) i, nm_sink, nm_source, &
-                       xz(mnksrc(2,i), mnksrc(1,i)), yz(mnksrc(2,1), mnksrc(1,i)), &
-                       xz(mnksrc(5,i), mnksrc(4,i)), yz(mnksrc(5,i), mnksrc(4,i)), nl, trim(namsrc(i))
+               write ( lunout , '(3(I0,3X),A)' ) n, m, nl, trim(filstring)
             endif
          else 
             if ( mnksrc(6,i) .eq. 0 ) then
-               write ( lunout1 , '(3(i0,3x),a)' ) n, m, 0, trim(filstring)
+               write ( lunout , '(3(I0,3X),A)' ) n, m, 0, trim(filstring)
             else
-               write ( lunout1 , '(3(i0,3x),a)' ) n, m, ilaggr(mnksrc(6,i)), trim(filstring)
+               write ( lunout , '(3(I0,3X),A)' ) n, m, ilaggr(mnksrc(6,i)),   &
+     &                                                    trim(filstring)
             endif
-            write ( lunout2 , '(3(i0,3x),4es15.7,1x,a)' ) i, nm_sink, nm_source, & 
-                    xz(mnksrc(2,i), mnksrc(1,i)), yz(mnksrc(2,1), mnksrc(1,i)), &
-                    xz(mnksrc(5,i), mnksrc(4,i)), yz(mnksrc(5,i), mnksrc(4,i)), trim(namsrc(i))
          endif
       enddo
-      write ( lunout1 , '(a      )' ) 'end-discharges'
-      write ( lunout2 , '(a      )' ) 'end-sink-sources'
-      close ( lunout1 )
-      close ( lunout2 )
+      write ( lunout , '(A      )' ) 'end-discharges'
+      close ( lunout )
       end subroutine wrwaqhyd

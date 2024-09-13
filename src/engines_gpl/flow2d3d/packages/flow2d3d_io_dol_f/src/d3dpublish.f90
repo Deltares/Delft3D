@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: d3dpublish.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io_dol_f/src/d3dpublish.f90 $
 !
 ! Utility module for DOL / Delft OnLine
 !
@@ -62,7 +62,6 @@ contains
         use precision
         use globaldata
         use d3d_olv_class
-        use flow2d3d_version_module
         
         implicit none
 
@@ -178,7 +177,7 @@ contains
 
         !The following variables/parameters are optional
         call FLOWOL_Publish( 's1'   , 'Water level'                  , '' , '', 'nm'  , realDouble , r(gdp%gdr_i_ch%s1)   , DOL_OUT)  
-        call FLOWOL_Publish( 'dp'   , 'Depth'                        , '' , '', 'nm'  , realDouble , r(gdp%gdr_i_ch%dpd)  , DOL_OUT)  
+        call FLOWOL_Publish( 'dp'   , 'Depth'                        , '' , '', 'nm'  , realDouble , r(gdp%gdr_i_ch%dp)   , DOL_OUT)  
         call FLOWOL_Publish( 'dps'  , 'Bedlevel'                     , '' , '', 'nm'  , DOL_DOUBLE , d(gdp%gdr_i_ch%dps)  , DOL_OUT)
         call FLOWOL_Publish( 'u1'   , 'Velocity ksi component'       , '' , '', 'nmk' , realDouble , r(gdp%gdr_i_ch%u1)   , DOL_OUT)
         call FLOWOL_Publish( 'v1'   , 'Velocity eta component'       , '' , '', 'nmk' , realDouble , r(gdp%gdr_i_ch%v1)   , DOL_OUT)  

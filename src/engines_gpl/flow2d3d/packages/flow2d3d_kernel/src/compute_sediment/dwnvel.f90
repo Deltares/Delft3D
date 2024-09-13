@@ -1,12 +1,13 @@
-subroutine dwnvel(nmmax     ,kmax      ,icx       , &
-                & kcs       ,kfu       ,kfv       , &
-                & kcu       ,kcv       ,s1        ,dps       ,u0eul     , &
-                & v0eul     ,uuu       ,vvv       ,umod      ,zumod     , &
-                & sig       ,hu        ,hv        ,kfsed     ,deltau    , &
-                & deltav    ,gdp       )
+subroutine dwnvel(nmmax     ,kmax      ,icx       ,kcs       ,kfu       ,&
+                & kfv       ,kcu       ,kcv       ,s1        ,dps       ,&
+                & u0eul     ,v0eul     ,uuu       ,vvv       ,umod      ,&
+                & deltau    ,deltav    ,zumod     ,sig       ,hu        ,&
+                & hv        ,kfsed     ,gsqs      ,dxk       ,dyk       ,&
+                & agsqs     ,ETAx      ,ETAy      ,PSIx      ,PSIy      ,&
+                & guu       ,gvv       ,aguu      ,agvv      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +31,8 @@ subroutine dwnvel(nmmax     ,kmax      ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: dwnvel.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute_sediment/dwnvel.f90 $
 !!--description-----------------------------------------------------------------
 ! Calculate velocity components and magnitude at the
 ! zeta points based on velocity in the bottom
@@ -57,6 +58,9 @@ subroutine dwnvel(nmmax     ,kmax      ,icx       , &
     real(fp)                             , pointer :: eps
     type (mornumericstype)               , pointer :: mornum
     logical                              , pointer :: v2dwbl
+    integer, pointer :: cutcell
+    logical, pointer :: AVvelCUT
+    logical, pointer :: modDWNVEL
 !
 ! Global variables
 !
@@ -82,6 +86,18 @@ subroutine dwnvel(nmmax     ,kmax      ,icx       , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: uuu
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: vvv
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(out) :: zumod
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: agsqs
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: gsqs !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: PSIx !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: PSIy !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: ETAx !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: ETAy !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: guu !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: gvv !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: aguu !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: agvv !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, 4), intent(in) :: dxk !  Description and declaration in esm_alloc_real.f9
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, 4), intent(in) :: dyk !  Description and declaration in esm_alloc_real.f9
 !
 ! Local variables
 !
@@ -108,9 +124,17 @@ subroutine dwnvel(nmmax     ,kmax      ,icx       , &
     real(fp) :: vfac
     real(fp) :: vv
     real(fp) :: deltas
+    real(fp)                       :: edgek(4)
+    real(fp)                       :: normk(2,4)
+    real(fp)                       :: velk(4)
+    real(fp)                       :: summ(2)
+    real(fp)                       :: distGG(2)
 !
 !! executable statements -------------------------------------------------------
 !
+    cutcell   => gdp%gdimbound%cutcell
+    AVvelCUT  => gdp%gdimbound%AVvelCUT
+    modDWNVEL => gdp%gdimbound%modDWNVEL
     eps                 => gdp%gdconst%eps
     mornum              => gdp%gdmorpar%mornum
     v2dwbl              => gdp%gdnumeco%v2dwbl
@@ -168,6 +192,10 @@ subroutine dwnvel(nmmax     ,kmax      ,icx       , &
           !
           nm_v1 = nm
           nm_v2 = ndm
+          if (cutcell.GT.0) then !to be removed if I keep modification below
+            ufac = 1.0_fp/max(kfu(nm_u1)+kfu(nm_u2),1)
+            vfac = 1.0_fp/max(kfv(nm_v1)+kfv(nm_v2),1)
+          endif
        elseif (kcu(nm) + kcu(nmd) == 1) then
           !
           ! Open boundary (kcs(nm)==2) in v-direction
@@ -220,10 +248,17 @@ subroutine dwnvel(nmmax     ,kmax      ,icx       , &
           vfac  = 1.0_fp
        endif
        !
-       uu = ufac * (  kfu(nm_u1)*u0eul(nm_u1, kmx)*hu(nm_u1) &
-          &         + kfu(nm_u2)*u0eul(nm_u2, kmx)*hu(nm_u2)  )
-       vv = vfac * (  kfv(nm_v1)*v0eul(nm_v1, kmx)*hv(nm_v1) &
-          &         + kfv(nm_v2)*v0eul(nm_v2, kmx)*hv(nm_v2)  )
+       if (modDWNVEL) then
+          uu = ufac * (  kfu(nm_u1)*u0eul(nm_u1, kmx)*hu(nm_u1) &
+             &         + kfu(nm_u2)*u0eul(nm_u2, kmx)*hu(nm_u2)  )
+          vv = vfac * (  kfv(nm_v1)*v0eul(nm_v1, kmx)*hv(nm_v1) &
+             &         + kfv(nm_v2)*v0eul(nm_v2, kmx)*hv(nm_v2)  )
+       else
+          uu = ufac * (  kfu(nm_u1)*u0eul(nm_u1, kmx) &
+             &         + kfu(nm_u2)*u0eul(nm_u2, kmx)  )
+          vv = vfac * (  kfv(nm_v1)*v0eul(nm_v1, kmx) &
+             &         + kfv(nm_v2)*v0eul(nm_v2, kmx)  )
+       endif
        !
        if (mornum%maximumwaterdepth) then
           !
@@ -234,11 +269,55 @@ subroutine dwnvel(nmmax     ,kmax      ,icx       , &
           if (kfv(nm_v1)==1) h1 = max(h1,hv(nm_v1))
           if (kfv(nm_v2)==1) h1 = max(h1,hv(nm_v2))
        endif
+
+       if (CUTCELL.gt.0.AND.AVvelCUT) then
+          if (agsqs(nm).lt.0.999_fp) then
+            !use eq 11 Kernkamp et al 2011 
+            edgek(1) = agvv(ndm)* gvv(ndm)
+            edgek(2) = aguu(nm) * guu(nm)
+            edgek(3) = agvv(nm) * gvv(nm)
+            edgek(4) = aguu(nmd)* guu(nmd)
+            normk(1,1)= -ETAx(nm)
+            normk(2,1)= -ETAy(nm)
+            normk(1,2)=  PSIx(nm)
+            normk(2,2)=  PSIy(nm)
+            normk(1,3)=  ETAx(nm)
+            normk(2,3)=  ETAy(nm)
+            normk(1,4)= -PSIx(nm)
+            normk(2,4)= -PSIy(nm)
+            summ = 0._fp
+            velk = (/ v0eul(ndm, kmx)*hv(ndm), u0eul(nm, kmx)*hu(nm) ,v0eul(nm, kmx)*hv(nm) , u0eul(nmd, kmx)*hu(nmd)  /)
+            !note this only works if the grid is oriented with m increasing along x. has to be changed
+            do k=1,3,2
+               if (velk(k)*normk(2,k).gt.0._fp) then
+                  velk(k) = abs(velk(k))  !positive=exiting flux
+               else
+                  velk(k) = -abs(velk(k)) !negative=entering flux
+               endif
+            enddo
+            do k=2,4,2
+               if (velk(k)*normk(1,k).gt.0._fp) then
+                  velk(k) = abs(velk(k)) !positive=exiting flux
+               else
+                  velk(k) = -abs(velk(k)) !negative=entering flux            
+               endif
+            enddo          
+            do k=1,4
+               distGG = (/dxk(nm,k) , dyk(nm,k)/) !its the vector from the barycenter of the polygon to the center of the edge
+               summ = summ + distGG*edgek(k)*velk(k)
+            enddo
+            summ = summ/(agsqs(nm)*gsqs(nm))
+            uu  = summ(1)
+            vv  = summ(2)     
+          endif 
+       endif 
        !
        ! h1 will not be zero, because of cycle statement when kfsed==0
        !
-       uu = uu/h1
-       vv = vv/h1
+       if (modDWNVEL) then
+          uu = uu/h1
+          vv = vv/h1
+       endif
        !
        if (abs(uu) < eps) then
           uu = 0.0_fp

@@ -3,11 +3,10 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                 & nprttm    ,itfinish  ,iphisf    ,iphisi    ,iphisl    , &
                 & itmapf    ,itmapi    ,itmapl    ,ithisf    ,ithisi    , &
                 & ithisl    ,itcomf    ,itcomi    ,itcoml    ,itrsti    , &
-                & itnflf    ,itnfli    ,itnfll    ,itnflrf   ,itnflri   , &
-                & lstsci    ,gdp       )
+                & itnflf    ,itnfli    ,itnfll    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +30,8 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdtimo.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdtimo.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads records from the MD-file related to the
@@ -61,6 +60,7 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                            , pointer :: ifis
     integer                            , pointer :: itis
     logical                            , pointer :: ztbml
+    logical, pointer :: QUARTERdt
 !
 ! Global variables
 !
@@ -79,13 +79,10 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                                          :: itnflf   !  Description and declaration in inttim.igs
     integer                                          :: itnfli   !  Description and declaration in inttim.igs
     integer                                          :: itnfll   !  Description and declaration in inttim.igs
-    integer                                          :: itnflrf  !  Description and declaration in inttim.igs
-    integer                                          :: itnflri  !  Description and declaration in inttim.igs
     integer                                          :: itrsti   !  Description and declaration in inttim.igs
     integer                          , intent(in)    :: itfinish !  Description and declaration in inttim.igs
     integer                                          :: lundia   !  Description and declaration in inout.igs
     integer                                          :: lunmd    !  Description and declaration in inout.igs
-    integer                                          :: lstsci   !  Description and declaration in esm_alloc_int.f90
     integer                          , intent(in)    :: maxprt
     integer                                          :: nprttm   !!  Number of print times steps
     integer                                          :: nrrec    !!  Pointer to the record number in the MD-file
@@ -114,10 +111,9 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     real(fp)                          :: rdef        ! Help var. containing default va- lue(s) for real variable 
     real(fp)      , dimension(3)      :: rval        ! Help array (real) where the data, recently read from the MD-file, are stored temporarily 
     real(sp)                          :: sval
-    real(fp)                          :: tfnflf      ! First time to write near field files
-    real(fp)                          :: tfnfli      ! Time interval to write near field files
-    real(fp)                          :: tfnfll      ! Last time to write near field files
-    real(fp)                          :: tfnflri     ! Time interval between writing near field files and reading them (and do near field computations)
+    real(fp)                          :: tfnflf      ! First time to do near field computations
+    real(fp)                          :: tfnfli      ! Time interval to do near field computations
+    real(fp)                          :: tfnfll      ! Last time to do near field computations
     real(fp)                          :: tfcomf      ! First time    to write the DELWAQ / communication file
     real(fp)                          :: tfcomi      ! Time interval to write the DELWAQ / communication file
     real(fp)                          :: tfcoml      ! Last time     to write the DELWAQ / communication file
@@ -140,6 +136,7 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
 !
 !! executable statements -------------------------------------------------------
 !
+    QUARTERdt => gdp%gdimbound%QUARTERdt
     smiss          => gdp%gdconst%smiss
     smax           => gdp%gdf0isf1%smax
     velmax         => gdp%gdf0isf1%velmax
@@ -368,7 +365,7 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     tfnfli = rval(2)
     tfnfll = rval(3)
     !
-    ! calculate integer multiples of DT and test calculated values
+    ! caluculate integer multiples of DT and test calculated values
     !
     itnflf = nint(tfnflf/dt)
     itnfli = nint(tfnfli/dt)
@@ -385,27 +382,6 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        error = .true.
        call prterr(lundia    ,'U044'    ,'Near field comp. stop time'    )
     endif
-    !
-    ! locate 'Nflwdr' record for near field computations
-    !
-    rval = 0.0_fp
-    call prop_get(gdp%mdfile_ptr,'*','Nflwdr',rval,1)
-    tfnflri = rval(1)
-    !
-    ! calculate integer multiples of DT and test calculated values
-    !
-    itnflri = nint(tfnflri/dt)
-    if (dtn(itnflri, tfnflri, dt)) then
-       error = .true.
-       call prterr(lundia    ,'U044'    ,'Near field comp. delayed read'   )
-    endif
-    if (itnflri > itnfli) then
-       error = .true.
-       write (message,'(a,e12.2,a,e12.2,a)') 'Near field comp.: delay in read (', tfnflri, &
-                                 & ') is bigger than the write interval (', tfnfli, ').'
-       call prterr(lundia, 'P004', trim(message))
-    endif
-    itnflrf = itnflf + itnflri
     !
     ! locate 'Flrst' record for print field values
     !
@@ -448,7 +424,7 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        ! default value allowed => defaul
        !
        restrt = .true.
-       call prop_get(gdp%mdfile_ptr,'*','Restrt',restrt)
+       call prop_get_logical(gdp%mdfile_ptr,'*','Restrt',restrt)
        if (restrt) then
           tfrsti = rdef
        else
@@ -467,18 +443,15 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     !
     ! Additional output options
     !
-    if (lstsci>0) then
-       call prop_get(gdp%mdfile_ptr, '*', 'AdvFlx', flwoutput%difuflux)
-       call prop_get(gdp%mdfile_ptr, '*', 'CumAFl', flwoutput%cumdifuflux)
-    endif
-    call prop_get(gdp%mdfile_ptr, '*', 'MomTrm'   , flwoutput%momentum)
-    call prop_get(gdp%mdfile_ptr, '*', 'Chezy'    , flwoutput%chezy)
-    call prop_get(gdp%mdfile_ptr, '*', 'DredgeMap', flwoutput%dredge_map)
-    call prop_get(gdp%mdfile_ptr, '*', 'Rough'    , flwoutput%roughness)
-    call prop_get(gdp%mdfile_ptr, '*', 'Vortic'   , flwoutput%vortic)
-    call prop_get(gdp%mdfile_ptr, '*', 'Z0Cur'    , flwoutput%z0cur)
-    call prop_get(gdp%mdfile_ptr, '*', 'Z0Rou'    , flwoutput%z0rou)
-    call prop_get(gdp%mdfile_ptr, '*', 'KfMnMx'   , flwoutput%kf_minmax)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'AdvFlx', flwoutput%difuflux)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'CumAFl', flwoutput%cumdifuflux)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'MomTrm', flwoutput%momentum)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'Chezy' , flwoutput%chezy)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'Rough' , flwoutput%roughness)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'Vortic' , flwoutput%vortic)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'Z0Cur' , flwoutput%z0cur)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'Z0Rou' , flwoutput%z0rou)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'KfMnMx', flwoutput%kf_minmax)
     if (flwoutput%cumdifuflux) flwoutput%difuflux = .true.
     !
     ! Old flag: WindUV
@@ -486,32 +459,26 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! New flag: AirOut
     ! have the same meaning
     !
-    call prop_get(gdp%mdfile_ptr, '*', 'WindUV', flwoutput%air)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'WindUV', flwoutput%air)
     if (.not. flwoutput%air) then
-       call prop_get(gdp%mdfile_ptr, '*', 'AirOut', flwoutput%air)
+       call prop_get_logical(gdp%mdfile_ptr, '*', 'AirOut', flwoutput%air)
     endif
     !
     ! Flag for output of heat fluxes determined by temperature models
     !
-    call prop_get(gdp%mdfile_ptr, '*', 'HeaOut' , flwoutput%temperature)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'HeaOut' , flwoutput%temperature)
     !
     ! Flag for output at half time steps
     !
-    call prop_get(gdp%mdfile_ptr, '*', 'HdtOut' , flwoutput%halfdt)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'HdtOut' , flwoutput%halfdt)
     !
-    ! Flag for writing barrier height to history file
+    ! Flag for output at quarter time steps (print after uzd is called)
     !
-    call prop_get(gdp%mdfile_ptr, '*', 'HisBar' , flwoutput%hisbar)
-    !
-    ! Flag for writing flow rates and in-/outflow locations of discharges to history file
-    ! For historical reasons this flag is set to true for simulations with culverts.
-    !
-    if (gdp%gdprocs%culvert) flwoutput%hisdis = .true.
-    call prop_get(gdp%mdfile_ptr, '*', 'HisDis' , flwoutput%hisdis)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'QUARTERdt' , QUARTERdt) 
     !
     ! Flag for additional timers (print extra timers in tri-diag file)
     !
-    call prop_get(gdp%mdfile_ptr, '*', 'AddTim', flwoutput%addtim)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'AddTim', flwoutput%addtim)
     !
     ! Flag for output of vertical coordinates of layer interfaces to the MAP-file
     !
@@ -522,21 +489,17 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        !
        flwoutput%layering = .true.
     endif
-    call prop_get(gdp%mdfile_ptr, '*', 'LayOut' , flwoutput%layering)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'LayOut' , flwoutput%layering)
     !
     ! Flag for writing warnings concerning too high advective Courant numbers 
     ! during the whole simulation period instead of with a maximum of 100 warnings
     !
-    call prop_get(gdp%mdfile_ptr, '*', 'CflMsg' , flwoutput%cflmsg)
-    !
-    ! Flag for writing wave quantities to the trim-file
-    !
-    call prop_get(gdp%mdfile_ptr, '*', 'MapWav' , flwoutput%waveqnt)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'CflMsg' , flwoutput%cflmsg)
     !
     ! smax
     !
     sval = smiss
-    call prop_get(gdp%mdfile_ptr, '*', 'SgrThr', sval)
+    call prop_get_real(gdp%mdfile_ptr, '*', 'SgrThr', sval)
     if (comparereal(real(sval,fp), real(smiss,fp)) /= 0) then
        if (comparereal(real(sval,fp), 1.0e-3_fp) == -1 .or. &
          & comparereal(real(sval,fp), 1.0e3_fp ) ==  1) then
@@ -550,7 +513,7 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! velmax
     !
     sval = smiss
-    call prop_get(gdp%mdfile_ptr, '*', 'UgrThr', sval)
+    call prop_get_real(gdp%mdfile_ptr, '*', 'UgrThr', sval)
     if (comparereal(real(sval,fp), real(smiss,fp)) /= 0) then
        if (comparereal(real(sval,fp), 1.0e-3_fp) == -1 .or. &
          & comparereal(real(sval,fp), 1.0e3_fp ) ==  1) then
@@ -572,5 +535,5 @@ subroutine rdtimo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        write (message,'(a)') 'Writing GLM velocities to map and his file'
        call prterr(lundia, 'G051', trim(message))
     endif
-    call prop_get(gdp%mdfile_ptr, '*', 'IterOutputSteps', flwoutput%iteroutputsteps)
+    call prop_get_integer(gdp%mdfile_ptr, '*', 'IterOutputSteps', flwoutput%iteroutputsteps)
 end subroutine rdtimo

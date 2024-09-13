@@ -9,10 +9,10 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
                 & zwndsp    ,zwnddr    ,zairp     ,wind      ,sferic    , &
                 & zprecp    ,zevap     ,itdate    ,dtsec     ,irequest  , &
                 & fds       ,nostatto  ,nostatgl  ,order_sta ,ntruvto   , &
-                & ntruvgl   ,order_tra ,nsluv     ,cbuv      ,zwndcd    ,gdp       )
+                & ntruvgl   ,order_tra ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -36,8 +36,8 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrthis.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrthis.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Writes the time varying groups (1 & 3) to the
@@ -68,8 +68,6 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
     integer       , dimension(:, :) , pointer :: mnstat
     integer                         , pointer :: mfg
     integer                         , pointer :: nfg
-    integer                         , pointer :: io_fp
-    integer                         , pointer :: io_prec
     integer       , dimension(:)    , pointer :: shlay
     logical                         , pointer :: temp
     real(fp)      , dimension(:, :) , pointer :: xystat
@@ -78,34 +76,23 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
     type (datagroup)                , pointer :: group1
     type (datagroup)                , pointer :: group3
     type (flwoutputtype)            , pointer :: flwoutput
-    integer                         , pointer :: ktemp
-    logical                         , pointer :: free_convec 
-    real(fp)      , dimension(:)    , pointer :: zqeva_out  
-    real(fp)      , dimension(:)    , pointer :: zqco_out  
-    real(fp)      , dimension(:)    , pointer :: zqbl_out   
-    real(fp)      , dimension(:)    , pointer :: zqin_out   
-    real(fp)      , dimension(:)    , pointer :: zqnet_out  
-    real(fp)      , dimension(:)    , pointer :: zhlc_out   
-    real(fp)      , dimension(:)    , pointer :: zhfree_out 
-    real(fp)      , dimension(:)    , pointer :: zefree_out 
 !
 ! Global variables
 !
     integer                                                             , intent(in)  :: irequest !  REQUESTTYPE_DEFINE: define variables, REQUESTTYPE_WRITE: write variables
     integer                                                             , intent(in)  :: itdate   !  Description and declaration in exttim.igs
     integer                                                             , intent(in)  :: ithisc   !!  Current time counter for the history data file
-    integer                                                             , intent(in)  :: ithisi   !  Description and declaration in inttim.igs
-    integer                                                             , intent(in)  :: itstrt   !  Description and declaration in inttim.igs
-    integer                                                             , intent(in)  :: kmax     !  Description and declaration in esm_alloc_int.f90
-    integer                                                             , intent(in)  :: lmax     !  Description and declaration in dimens.igs
-    integer                                                             , intent(in)  :: lsal     !  Description and declaration in dimens.igs
-    integer                                                             , intent(in)  :: lstsci   !  Description and declaration in esm_alloc_int.f90
-    integer                                                             , intent(in)  :: ltem     !  Description and declaration in dimens.igs
-    integer                                                             , intent(in)  :: ltur     !  Description and declaration in esm_alloc_int.f90
+    integer                                                                           :: ithisi   !  Description and declaration in inttim.igs
+    integer                                                                           :: itstrt   !  Description and declaration in inttim.igs
+    integer                                                                           :: kmax     !  Description and declaration in esm_alloc_int.f90
+    integer                                                                           :: lmax     !  Description and declaration in dimens.igs
+    integer                                                                           :: lsal     !  Description and declaration in dimens.igs
+    integer                                                                           :: lstsci   !  Description and declaration in esm_alloc_int.f90
+    integer                                                                           :: ltem     !  Description and declaration in dimens.igs
+    integer                                                                           :: ltur     !  Description and declaration in esm_alloc_int.f90
     integer                                                                           :: lundia   !  Description and declaration in inout.igs
-    integer                                                             , intent(in)  :: nostat   !  Description and declaration in dimens.igs
-    integer                                                             , intent(in)  :: nsluv    !  Description and declaration in dimens.igs
-    integer                                                             , intent(in)  :: ntruv    !  Description and declaration in dimens.igs
+    integer                                                                           :: nostat   !  Description and declaration in dimens.igs
+    integer                                                                           :: ntruv    !  Description and declaration in dimens.igs
     integer      , dimension(nostat)                                                  :: zkfs     !  KFS in monitoring station
     logical                                                             , intent(out) :: error    !!  Flag=TRUE if an error is encountered
     logical                                                             , intent(in)  :: sferic   !  Description and declaration in tricom.igs
@@ -117,7 +104,6 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
     real(fp)     , dimension(nostat)                                                  :: ztauks   !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(nostat)                                                  :: zwl      !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(nostat)                                                  :: zwndsp   !  Description and declaration in esm_alloc_real.f90
-    real(fp)     , dimension(nostat)                                                  :: zwndcd   !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(nostat)                                                  :: zprecp   !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(nostat)                                                  :: zevap    !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(nostat)                                                  :: zwnddr   !  Description and declaration in esm_alloc_real.f90
@@ -140,7 +126,6 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
     real(fp)     , dimension(ntruv)                                                   :: fltr     !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(ntruv, lstsci)                                           :: atr      !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(ntruv, lstsci)                                           :: dtr      !  Description and declaration in esm_alloc_real.f90
-    real(fp)     , dimension(4, nsluv)                                  , intent(in)  :: cbuv     !  Description and declaration in esm_alloc_real.f90
     character(*)                                                        , intent(in)  :: filename !  File name
     character(23)                                                       , intent(in)  :: selhis   !  Description and declaration in tricom.igs
     character(10)                                                       , intent(in)  :: velt     !! Velocity type 'eulerian' or 'GLM'
@@ -174,11 +159,9 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
     integer                                           :: iddim_lstsci
     integer                                           :: iddim_ltur
     integer                                           :: iddim_nostat
-    integer                                           :: iddim_nsluv
     integer                                           :: iddim_ntruv
     integer                                           :: iddim_2
     !
-    integer                                           :: idatt_bar
     integer                                           :: idatt_cal
     integer                                           :: idatt_sta
     integer                                           :: idatt_tra
@@ -212,29 +195,15 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
 !
     call getdatagroup(gdp, FILOUT_HIS, grnam1, group1)
     call getdatagroup(gdp, FILOUT_HIS, grnam3, group3)
-    celidt      => group1%celidt
-    mnstat      => gdp%gdstations%mnstat
-    xystat      => gdp%gdstations%xystat
-    flwoutput   => gdp%gdflwpar%flwoutput
-    namst       => gdp%gdstations%namst
-    mfg         => gdp%gdparall%mfg
-    nfg         => gdp%gdparall%nfg
-    io_fp       => gdp%gdpostpr%io_fp
-    io_prec     => gdp%gdpostpr%io_prec
-    shlay       => gdp%gdpostpr%shlay
-    temp        => gdp%gdprocs%temp
-    xystat      => gdp%gdstations%xystat
-    flwoutput   => gdp%gdflwpar%flwoutput
-    ktemp       => gdp%gdtricom%ktemp
-    free_convec => gdp%gdheat%free_convec
-    zqeva_out   => gdp%gdheat%zqeva_out
-    zqco_out    => gdp%gdheat%zqco_out
-    zqbl_out    => gdp%gdheat%zqbl_out
-    zqin_out    => gdp%gdheat%zqin_out
-    zqnet_out   => gdp%gdheat%zqnet_out
-    zhlc_out    => gdp%gdheat%zhlc_out
-    zhfree_out  => gdp%gdheat%zhfree_out
-    zefree_out  => gdp%gdheat%zefree_out
+    celidt     => group1%celidt
+    mnstat     => gdp%gdstations%mnstat
+    namst      => gdp%gdstations%namst
+    mfg        => gdp%gdparall%mfg
+    nfg        => gdp%gdparall%nfg
+    shlay      => gdp%gdpostpr%shlay
+    temp       => gdp%gdprocs%temp
+    xystat     => gdp%gdstations%xystat
+    flwoutput  => gdp%gdflwpar%flwoutput
     !
     ! Initialize local variables
     !
@@ -259,7 +228,7 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
        if (sferic) then
           xcoordname = 'longitude'
           xcoordunit = 'degrees_east'
-          ycoordname = 'latitude'
+          ycoordname = 'laitude'
           ycoordunit = 'degrees_north'
        else
           xcoordname = 'projection_x_coordinate'
@@ -285,14 +254,12 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
        idatt_cal = addatt(gdp, lundia, FILOUT_HIS, 'calendar','proleptic_gregorian')
        idatt_sta = addatt(gdp, lundia, FILOUT_HIS, 'coordinates','NAMST XSTAT YSTAT')
        idatt_tra = addatt(gdp, lundia, FILOUT_HIS, 'coordinates','NAMTRA')
-       idatt_bar = addatt(gdp, lundia, FILOUT_HIS, 'coordinates','NAMBAR')
        !
-       if (lstsci  >0) iddim_lstsci = adddim(gdp, lundia, FILOUT_HIS, 'LSTSCI'            , lstsci  ) ! Number of constituents
-       if (ltur    >0) iddim_ltur   = adddim(gdp, lundia, FILOUT_HIS, 'LTUR'              , ltur    ) ! Number of turbulence quantities
-       if (nostat  >0) iddim_nostat = adddim(gdp, lundia, FILOUT_HIS, 'NOSTAT'            , nostatgl) ! Number of monitoring stations
-       if (ntruv   >0) iddim_ntruv  = adddim(gdp, lundia, FILOUT_HIS, 'NTRUV'             , ntruvgl ) ! Number of monitoring cross-sections
+       if (lstsci  >0) iddim_lstsci = adddim(gdp, lundia, FILOUT_HIS, 'LSTSCI'            , lstsci  ) !'Number of constituents             '
+       if (ltur    >0) iddim_ltur   = adddim(gdp, lundia, FILOUT_HIS, 'LTUR'              , ltur    ) !'Number of turbulence quantities    '
+       if (nostat  >0) iddim_nostat = adddim(gdp, lundia, FILOUT_HIS, 'NOSTAT'            , nostatgl) !'Number of monitoring stations      '
+       if (ntruv   >0) iddim_ntruv  = adddim(gdp, lundia, FILOUT_HIS, 'NTRUV'             , ntruvgl ) !'Number of monitoring cross-sections'
                        iddim_2      = adddim(gdp, lundia, FILOUT_HIS, 'length_2'          , 2       )
-       if (nsluv   >0) iddim_nsluv  = adddim(gdp, lundia, FILOUT_HIS, 'NBARRIERS'         , nsluv   ) ! Number of barriers'
        !
        ! his-info-series
        !
@@ -303,7 +270,7 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
           month = (itdate - year*10000) / 100
           day   = itdate - year*10000 - month*100
           write(string,'(a,i0.4,a,i0.2,a,i0.2,a)') 'seconds since ', year, '-', month, '-', day,' 00:00:00'
-          call addelm(gdp, lundia, FILOUT_HIS, grnam1, 'time'  , 'time', io_fp    , 0, longname='time', unit=trim(string), attribs=(/idatt_cal/) )
+          call addelm(gdp, lundia, FILOUT_HIS, grnam1, 'time'  , 'time', IO_REAL4 , 0, longname='time', unit=trim(string), attribs=(/idatt_cal/) )
        endif
        !
        ! his-series
@@ -313,93 +280,79 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
              call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZKFS', ' ', IO_INT4    , 1, dimids=(/iddim_nostat/), longname='Non-active (0) or active (1) zeta point (time-dependent)')
           endif
           if (selhis(1:1)=='Y') then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZWL', ' ', io_prec     , 1, dimids=(/iddim_nostat/), longname='Water-level in station (zeta point)', unit='m', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZWL', ' ', IO_REAL4    , 1, dimids=(/iddim_nostat/), longname='Water-level in station (zeta point)', unit='m', attribs=(/idatt_sta/))
           endif
           if (index(selhis(2:3), 'Y')>0) then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZCURU', ' ', io_prec   , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='U-velocity per layer in station (zeta point, '//velt//')', unit='m/s', attribs=(/idatt_sta/))
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZCURV', ' ', io_prec   , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='V-velocity per layer in station (zeta point, '//velt//')', unit='m/s', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZCURU', ' ', IO_REAL4  , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='U-velocity per layer in station (zeta point, '//velt//')', unit='m/s', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZCURV', ' ', IO_REAL4  , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='V-velocity per layer in station (zeta point, '//velt//')', unit='m/s', attribs=(/idatt_sta/))
           endif
           if (selhis(4:4)=='Y') then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZCURW', ' ', io_prec   , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='W-velocity per layer in station (zeta point)', unit='m/s', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZCURW', ' ', IO_REAL4  , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='W-velocity per layer in station (zeta point)', unit='m/s', attribs=(/idatt_sta/))
           endif
           if (selhis(20:20)=='Y') then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZQXK', ' ', io_prec    , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='U-discharge per layer in station (zeta point)', unit='m3/s', attribs=(/idatt_sta/))
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZQYK', ' ', io_prec    , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='V-discharge per layer in station (zeta point)', unit='m3/s', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZQXK', ' ', IO_REAL4   , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='U-discharge per layer in station (zeta point)', unit='m3/s', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZQYK', ' ', IO_REAL4   , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='V-discharge per layer in station (zeta point)', unit='m3/s', attribs=(/idatt_sta/))
           endif
           if (index(selhis(5:12), 'Y')/=0) then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'GRO', ' ', io_prec     , 3, dimids=(/iddim_nostat, iddim_kmaxout_restr, iddim_lstsci/), longname='Concentrations per layer in station (zeta point)', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'GRO', ' ', IO_REAL4    , 3, dimids=(/iddim_nostat, iddim_kmaxout_restr, iddim_lstsci/), longname='Concentrations per layer in station (zeta point)', attribs=(/idatt_sta/))
           endif
           if (index(selhis(13:14), 'Y')/=0) then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZTUR', ' ', io_prec    , 3, dimids=(/iddim_nostat, iddim_kmaxout, iddim_ltur/), longname='Turbulent quantity per layer in station (zeta point)', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZTUR', ' ', IO_REAL4   , 3, dimids=(/iddim_nostat, iddim_kmaxout, iddim_ltur/), longname='Turbulent quantity per layer in station (zeta point)', attribs=(/idatt_sta/))
           endif
           if (index(selhis(15:16), 'Y')>0) then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZTAUKS', ' ', io_prec  , 1, dimids=(/iddim_nostat/), longname='Bottom stress U in station (zeta point)', unit='N/m2', attribs=(/idatt_sta/))
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZTAUET', ' ', io_prec  , 1, dimids=(/iddim_nostat/), longname='Bottom stress V in station (zeta point)', unit='N/m2', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZTAUKS', ' ', IO_REAL4 , 1, dimids=(/iddim_nostat/), longname='Bottom stress U in station (zeta point)', unit='N/m2', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZTAUET', ' ', IO_REAL4 , 1, dimids=(/iddim_nostat/), longname='Bottom stress V in station (zeta point)', unit='N/m2', attribs=(/idatt_sta/))
           endif
           if (selhis(17:17)=='Y') then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZVICWW', ' ', io_prec  , 2, dimids=(/iddim_nostat, iddim_kmaxout/), longname='Vertical eddy viscosity-3D in station (zeta point)', unit='m2/s', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZVICWW', ' ', IO_REAL4 , 2, dimids=(/iddim_nostat, iddim_kmaxout/), longname='Vertical eddy viscosity-3D in station (zeta point)', unit='m2/s', attribs=(/idatt_sta/))
           endif
           if (selhis(18:18)=='Y') then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZDICWW', ' ', io_prec  , 2, dimids=(/iddim_nostat, iddim_kmaxout/), longname='Vertical eddy diffusivity-3D in station (zeta point)', unit='m2/s', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZDICWW', ' ', IO_REAL4 , 2, dimids=(/iddim_nostat, iddim_kmaxout/), longname='Vertical eddy diffusivity-3D in station (zeta point)', unit='m2/s', attribs=(/idatt_sta/))
           endif
           if (index(selhis(17:18), 'Y')>0) then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZRICH', ' ', io_prec   , 2, dimids=(/iddim_nostat, iddim_kmaxout/), longname='Richardson number in station (zeta point)', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZRICH', ' ', IO_REAL4  , 2, dimids=(/iddim_nostat, iddim_kmaxout/), longname='Richardson number in station (zeta point)', attribs=(/idatt_sta/))
           endif
           if (selhis(19:19)=='Y') then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZRHO', ' ', io_prec    , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='Density per layer in station (zeta point)', unit='kg/m3', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZRHO', ' ', IO_REAL4   , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='Density per layer in station (zeta point)', unit='kg/m3', attribs=(/idatt_sta/))
           endif
           if (wind .and. flwoutput%air) then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZWNDSPD', ' ', io_prec , 1, dimids=(/iddim_nostat/), longname='Wind-speed in station', unit='m/s', attribs=(/idatt_sta/))
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZWNDDIR', ' ', io_prec , 1, dimids=(/iddim_nostat/), longname='Wind-direction in station', unit='degrees_Celsius', attribs=(/idatt_sta/))
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'PATM', ' ', io_prec    , 1, dimids=(/iddim_nostat/), longname='Air pressure', unit='N/m2', attribs=(/idatt_sta/))
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZWNDCD', ' ', io_prec , 1, dimids=(/iddim_nostat/), longname='Wind drag coef', unit='-', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZWNDSPD', ' ', IO_REAL4, 1, dimids=(/iddim_nostat/), longname='Wind-speed in station', unit='m/s', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZWNDDIR', ' ', IO_REAL4, 1, dimids=(/iddim_nostat/), longname='Wind-direction in station', unit='degrees_Celsius', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'PATM', ' ', IO_REAL4   , 1, dimids=(/iddim_nostat/), longname='Air pressure', unit='N/m2', attribs=(/idatt_sta/))
           endif
           if (flwoutput%air .and. temp) then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZPRECP', ' ', io_prec  , 1, dimids=(/iddim_nostat/), longname='Instantaneous precipitation rate in station', unit='mm/h', attribs=(/idatt_sta/))
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZEVAP', ' ', io_prec   , 1, dimids=(/iddim_nostat/), longname='Instantaneous evaporation rate in station', unit='mm/h', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZPRECP', ' ', IO_REAL4 , 1, dimids=(/iddim_nostat/), longname='Instantaneous precipitation rate in station', unit='mm/h', attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZEVAP', ' ', IO_REAL4  , 1, dimids=(/iddim_nostat/), longname='Instantaneous evaporation rate in station', unit='mm/h', attribs=(/idatt_sta/))
           endif
           if (zmodel) then
              if (selhis(2:2)=='Y') then
-                call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'HYDPRES', ' ', io_prec , 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='Non-hydrostatic pressure at station (zeta point)', unit='N/m2', attribs=(/idatt_sta/))
+                call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'HYDPRES', ' ', IO_REAL4, 2, dimids=(/iddim_nostat, iddim_kmaxout_restr/), longname='Non-hydrostatic pressure at station (zeta point)', unit='N/m2', attribs=(/idatt_sta/))
              endif
           endif
           if (filetype == FTYPE_NEFIS) then ! for NEFIS only
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'XYSTAT', ' ', io_fp          , 2, dimids=(/iddim_2, iddim_nostat/), longname='(X,Y) coordinates of monitoring stations', unit=xcoordunit, attribs=(/idatt_sta/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'XYSTAT', ' ', IO_REAL4       , 2, dimids=(/iddim_2, iddim_nostat/), longname='(X,Y) coordinates of monitoring stations', unit=xcoordunit, attribs=(/idatt_sta/))
           else
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'XSTAT', xcoordname, io_fp    , 1, dimids=(/iddim_nostat/), longname='X coordinates of monitoring stations', unit=xcoordunit)
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'YSTAT', ycoordname, io_fp    , 1, dimids=(/iddim_nostat/), longname='Y coordinates of monitoring stations', unit=ycoordunit)
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'XSTAT', xcoordname, IO_REAL4 , 1, dimids=(/iddim_nostat/), longname='X coordinates of monitoring stations', unit=xcoordunit)
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'YSTAT', ycoordname, IO_REAL4 , 1, dimids=(/iddim_nostat/), longname='Y coordinates of monitoring stations', unit=ycoordunit)
           endif
           call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'MNSTAT', ' ', IO_INT4        , 2, dimids=(/iddim_2, iddim_nostat/), longname='(M,N) indices of monitoring stations', attribs=(/idatt_sta/))
-          call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'DPS', ' ', io_prec           , 1, dimids=(/iddim_nostat/), longname='Depth in station', unit='m', attribs=(/idatt_sta/))
+          call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'DPS', ' ', IO_REAL4          , 1, dimids=(/iddim_nostat/), longname='Depth in station', unit='m', attribs=(/idatt_sta/))
        endif
        if (ntruvgl > 0) then
           if (selhis(20:20)=='Y') then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'FLTR', ' ', io_prec       , 1, dimids=(/iddim_ntruv/), longname='Total discharge through cross section (velocity points)', unit='m3', attribs=(/idatt_tra/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'FLTR', ' ', IO_REAL4      , 1, dimids=(/iddim_ntruv/), longname='Total discharge through cross section (velocity points)', unit='m3', attribs=(/idatt_tra/))
           endif
           if (selhis(21:21)=='Y') then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'CTR', ' ', io_prec        , 1, dimids=(/iddim_ntruv/), longname='Momentary discharge through cross section (velocity points)', unit='m3/s', attribs=(/idatt_tra/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'CTR', ' ', IO_REAL4       , 1, dimids=(/iddim_ntruv/), longname='Momentary discharge through cross section (velocity points)', unit='m3/s', attribs=(/idatt_tra/))
           endif
           if (selhis(22:22)=='Y') then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ATR', ' ', io_prec        , 2, dimids=(/iddim_ntruv, iddim_lstsci/), longname='Advective transport through cross section (velocity points)', attribs=(/idatt_tra/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ATR', ' ', IO_REAL4       , 2, dimids=(/iddim_ntruv, iddim_lstsci/), longname='Advective transport through cross section (velocity points)', attribs=(/idatt_tra/))
           endif
           if (selhis(23:23)=='Y') then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'DTR', ' ', io_prec        , 2, dimids=(/iddim_ntruv, iddim_lstsci/), longname='Dispersive transport through cross section (velocity points)', attribs=(/idatt_tra/))
+             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'DTR', ' ', IO_REAL4       , 2, dimids=(/iddim_ntruv, iddim_lstsci/), longname='Dispersive transport through cross section (velocity points)', attribs=(/idatt_tra/))
           endif
        endif
-       if (nsluv > 0 .and. flwoutput%hisbar) then
-          call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZBAR', ' ', io_prec        , 1, dimids=(/iddim_nsluv/), longname='Barrier height', unit='m', attribs=(/idatt_bar/))
-       endif
-       if (ktemp>0 .and. flwoutput%temperature) then       
-          call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZQEVA ', ' ', io_prec   , 1, dimids=(/iddim_nostat/), longname='Evaporation heat flux in ZETA-point'         , unit='W/m2', attribs=(/idatt_sta/))       !
-          call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZQCO  ', ' ', io_prec   , 1, dimids=(/iddim_nostat/), longname='Heat flux of forced convection in ZETA-point', unit='W/m2', attribs=(/idatt_sta/)) 
-          call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZQBL  ', ' ', io_prec   , 1, dimids=(/iddim_nostat/), longname='Back radiation in ZETA-point'                , unit='W/m2', attribs=(/idatt_sta/))       !
-          call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZQIN  ', ' ', io_prec   , 1, dimids=(/iddim_nostat/), longname='Incoming solar radiation flux in ZETA-point' , unit='W/m2', attribs=(/idatt_sta/))              
-          call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZQNET ', ' ', io_prec   , 1, dimids=(/iddim_nostat/), longname='INetto heat flux in ZETA-point'              , unit='W/m2', attribs=(/idatt_sta/))  
-          if (free_convec) then
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZEFREE', ' ',io_prec   , 1, dimids=(/iddim_nostat/), longname='Heat flux free convection in ZETA-point'   , unit='W/m2', attribs=(/idatt_sta/))       !   
-             call addelm(gdp, lundia, FILOUT_HIS, grnam3, 'ZHFREE',' ', io_prec   , 1, dimids=(/iddim_nostat/), longname='Heat flux forced convection in ZETA-point' , unit='W/m2', attribs=(/idatt_sta/)) 
-          endif
-       endif
+       !
        group1%grp_dim = iddim_time
        group3%grp_dim = iddim_time
        celidt = 0
@@ -572,7 +525,7 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
              if (ierror/=0) goto 9999
           endif
           !
-          ! element 'ZWNDSPD', 'ZWNDDIR', 'PATM' & 'ZWNDCD'
+          ! element 'ZWNDSPD', 'ZWNDDIR' & 'PATM'
           !
           if (wind .and. flwoutput%air) then
              call wrtarray_n(fds, filename, filetype, grnam3, &
@@ -588,10 +541,6 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
              call wrtarray_n(fds, filename, filetype, grnam3, &
                     & celidt, nostat, nostatto, nostatgl, order_sta, gdp, &
                     & ierror, lundia, zairp, 'PATM', station)
-             !
-             call wrtarray_n(fds, filename, filetype, grnam3, &
-                    & celidt, nostat, nostatto, nostatgl, order_sta, gdp, &
-                    & ierror, lundia, zwndcd, 'ZWNDCD', station)
              if (ierror/=0) goto 9999
           endif
           !
@@ -682,47 +631,6 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
                  & celidt, nostat, nostatto, nostatgl, order_sta, gdp, &
                  & ierror, lundia, zdps, 'DPS', station)
           if (ierror/=0) goto 9999
-          !          
-          ! Output of heat fluxes from temperature model
-          ! 
-          if (ktemp > 0 .and. flwoutput%temperature) then
-             call wrtarray_n(fds, filename, filetype, grnam3, &
-                           & celidt, nostat, nostatto, nostatgl, order_sta, gdp, &
-                           & ierror, lundia, zqeva_out, 'ZQEVA', station)
-             if (ierror/=0) goto 9999
-             !
-             call wrtarray_n(fds, filename, filetype, grnam3, &
-                           & celidt, nostat, nostatto, nostatgl, order_sta, gdp, &
-                           & ierror, lundia, zqco_out, 'ZQCO', station)
-             if (ierror/=0) goto 9999
-             !
-             call wrtarray_n(fds, filename, filetype, grnam3, &
-                           & celidt, nostat, nostatto, nostatgl, order_sta, gdp, &
-                           & ierror, lundia, zqbl_out, 'ZQBL ', station)
-             if (ierror/=0) goto 9999
-             !
-             call wrtarray_n(fds, filename, filetype, grnam3, &
-                           & celidt, nostat, nostatto, nostatgl, order_sta, gdp, &
-                           & ierror, lundia, zqin_out, 'ZQIN  ', station)
-             if (ierror/=0) goto 9999
-             !
-             call wrtarray_n(fds, filename, filetype, grnam3, &
-                           & celidt, nostat, nostatto, nostatgl, order_sta, gdp, &
-                           & ierror, lundia, zqnet_out, 'ZQNET  ', station)
-             if (ierror/=0) goto 9999
-             !
-             if (free_convec) then
-                call wrtarray_n(fds, filename, filetype, grnam3, &
-                              & celidt, nostat, nostatto, nostatgl, order_sta, gdp, &
-                              & ierror, lundia, zefree_out, 'ZEFREE  ', station)
-                if (ierror/=0) goto 9999
-                !
-                call wrtarray_n(fds, filename, filetype, grnam3, &
-                              & celidt, nostat, nostatto, nostatgl, order_sta, gdp, &
-                              & ierror, lundia, zhfree_out, 'ZHFREE  ', station)
-                if (ierror/=0) goto 9999
-             endif
-          endif
        endif
        !
        if (ntruvgl > 0) then
@@ -764,19 +672,6 @@ subroutine wrthis(lundia    ,error     ,filename  ,selhis    ,ithisc    , &
                     & ierror, lundia, dtr, 'DTR', transec)
              if (ierror/=0) goto 9999
           endif
-       endif
-       !
-       ! Following not yet compatible with parallel simulations (also check WRTHISDIS)
-       !
-       if (inode == master .and. nsluv > 0 .and. flwoutput%hisbar) then
-          allocate(rbuff1(nsluv), stat=istat)
-          do i = 1, nsluv
-             rbuff1(i) = cbuv(1,i)
-          enddo
-          call wrtvar(fds, filename, filetype, grnam3, celidt, &
-                    & gdp, ierror, lundia, rbuff1, 'ZBAR')
-          deallocate(rbuff1, stat=istat)
-          if (ierror/=0) goto 9999
        endif
        !
     end select

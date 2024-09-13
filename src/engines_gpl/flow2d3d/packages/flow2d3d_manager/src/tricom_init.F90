@@ -1,7 +1,7 @@
 subroutine tricom_init(olv_handle, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine tricom_init(olv_handle, gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: tricom_init.F90 6076 2016-04-25 19:28:04Z platzek $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/manager/src/tricom_init.F90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Read md-file
@@ -44,7 +44,6 @@ subroutine tricom_init(olv_handle, gdp)
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use time_module
     use meteo
     use SyncRtcFlow
     use sync_flm
@@ -116,6 +115,10 @@ subroutine tricom_init(olv_handle, gdp)
     real(fp)                            , pointer :: cp
     real(fp)                            , pointer :: sarea
     real(fp)                            , pointer :: fclou
+    real(fp), dimension(:,:)            , pointer :: dpL
+    real(fp), dimension(:,:)            , pointer :: dpH
+    integer                             , pointer :: itmorB
+    real(fp)                            , pointer :: tmorB
     integer                             , pointer :: lunmd
     integer                             , pointer :: lundia
     integer                             , pointer :: lunprt
@@ -152,10 +155,8 @@ subroutine tricom_init(olv_handle, gdp)
     integer                             , pointer :: itdiag
     integer                             , pointer :: julday
     integer                             , pointer :: ntstep
-    real(fp)                            , pointer :: tcmp
     real(fp)                            , pointer :: tmor
     real(fp)                            , pointer :: rdc
-    integer                             , pointer :: itcmp
     integer                             , pointer :: itmor
     type (bedbndtype) , dimension(:)    , pointer :: morbnd
     logical                             , pointer :: densin
@@ -173,7 +174,7 @@ subroutine tricom_init(olv_handle, gdp)
     logical                             , pointer :: dredge
     logical                             , pointer :: drogue
     logical                             , pointer :: wave
-    integer                             , pointer :: waveol
+    logical                             , pointer :: waveol
     logical                             , pointer :: threed
     logical                             , pointer :: secflo
     logical                             , pointer :: struct
@@ -182,7 +183,6 @@ subroutine tricom_init(olv_handle, gdp)
     logical                             , pointer :: flmd2l
     logical                             , pointer :: mudlay
     logical                             , pointer :: mudwave
-    logical                             , pointer :: nfl
     logical                             , pointer :: coupleact
     logical                             , pointer :: couplemod
     logical                             , pointer :: zmodel
@@ -199,8 +199,6 @@ subroutine tricom_init(olv_handle, gdp)
     integer(pntrsize)                   , pointer :: alfas
     integer(pntrsize)                   , pointer :: ampbc
     integer(pntrsize)                   , pointer :: c
-    integer(pntrsize)                   , pointer :: cbuv
-    integer(pntrsize)                   , pointer :: cbuvrt
     integer(pntrsize)                   , pointer :: cgc
     integer(pntrsize)                   , pointer :: ctr
     integer(pntrsize)                   , pointer :: dircom
@@ -209,7 +207,7 @@ subroutine tricom_init(olv_handle, gdp)
     integer(pntrsize)                   , pointer :: dis
     integer(pntrsize)                   , pointer :: disch
     integer(pntrsize)                   , pointer :: discom
-    integer(pntrsize)                   , pointer :: dpd
+    integer(pntrsize)                   , pointer :: dp
     integer(pntrsize)                   , pointer :: dpc
     integer(pntrsize)                   , pointer :: dps
     integer(pntrsize)                   , pointer :: dpu
@@ -327,7 +325,7 @@ subroutine tricom_init(olv_handle, gdp)
     integer(pntrsize)                   , pointer :: namsrc
     character(256)                      , pointer :: restid
     integer                             , pointer :: rtcmod
-    integer                             , pointer :: rtcact
+    logical                             , pointer :: rtcact
     integer                             , pointer :: rtc_domainnr
     character(256)                      , pointer :: sbkConfigFile
     logical                             , pointer :: tstprt
@@ -362,6 +360,7 @@ subroutine tricom_init(olv_handle, gdp)
     character(23)                       , pointer :: prshis
     character(23)                       , pointer :: selhis
     character(36)                       , pointer :: tgfcmp
+    integer                             , pointer :: initia  !!  if < 0: iteration process of morsys else  : equal to INITI =1 initialization =2 initialization and read restart information from the communication file =3 no initialization
     integer                             , pointer :: it01    !  Description and declaration in esm_alloc_int.f90
     integer                             , pointer :: it02    !  Description and declaration in esm_alloc_int.f90
     integer                             , pointer :: itima   !!  Time to start simulation (N * tscale) according to DELFT3D conventions
@@ -394,9 +393,10 @@ subroutine tricom_init(olv_handle, gdp)
     real(fp)                            , pointer :: anglon        ! Angle of longitude of the model centre (used to determine solar radiation) 
     real(fp)                            , pointer :: dtsec         ! DT in seconds 
     real(fp)                            , pointer :: timnow        ! Current timestep (multiples of dt)  = number of time steps since itdate, 00:00:00 hours
-    real(fp)                            , pointer :: ti_sedtrans   ! Sediment transport start time
-    integer                             , pointer :: iti_sedtrans  ! Sediment transport start time step
-    
+!    
+! Local parameters
+!
+    integer, parameter :: maxtim = 1500
 !
 ! Global variables
 !
@@ -407,6 +407,7 @@ subroutine tricom_init(olv_handle, gdp)
     integer                                       :: icx
     integer                                       :: icy
     integer                                       :: ierror        ! Value is non-zero when an error is encountered
+    integer                                       :: initi         ! Control parameter 
     integer                                       :: iplus
     integer                                       :: istat
     integer                                       :: mmaxddb
@@ -421,6 +422,7 @@ subroutine tricom_init(olv_handle, gdp)
     integer                                       :: timrst        ! Restart time in combination with restart option from comm. file 
     integer                                       :: trilen        ! Length of trifil 
     integer        , dimension(2)                 :: ifcore        ! Time indices (cell id's) of the wave functions which are in core available 
+    integer        , dimension(maxtim)            :: timcur        ! Array with time steps on comm. file for restart option 
     integer(pntrsize)                  , external :: gtcpnt
     integer(pntrsize)                  , external :: gtipnt
     integer(pntrsize)                  , external :: gtrpnt
@@ -446,6 +448,7 @@ subroutine tricom_init(olv_handle, gdp)
     character(60)                                 :: txtput        ! Text to be print
     character(300)                                :: message
     character(256)                                :: errstring
+    character(256)                                :: filic
 !
 !! executable statements -------------------------------------------------------
 !
@@ -498,6 +501,10 @@ subroutine tricom_init(olv_handle, gdp)
     cp                  => gdp%gdheat%cp
     sarea               => gdp%gdheat%sarea
     fclou               => gdp%gdheat%fclou
+    dpL                 => gdp%gdimbound%dpL
+    dpH                 => gdp%gdimbound%dpH
+    itmorB              => gdp%gdimbound%itmorB
+    tmorB               => gdp%gdimbound%tmorB
     lunmd               => gdp%gdinout%lunmd
     lundia              => gdp%gdinout%lundia
     lunprt              => gdp%gdinout%lunprt
@@ -535,12 +542,8 @@ subroutine tricom_init(olv_handle, gdp)
     itdiag              => gdp%gdinttim%itdiag
     julday              => gdp%gdinttim%julday
     ntstep              => gdp%gdinttim%ntstep
-    ti_sedtrans         => gdp%gdmorpar%ti_sedtrans
-    tcmp                => gdp%gdmorpar%tcmp
     tmor                => gdp%gdmorpar%tmor
     rdc                 => gdp%gdmorpar%rdc
-    iti_sedtrans        => gdp%gdmorpar%iti_sedtrans
-    itcmp               => gdp%gdmorpar%itcmp
     itmor               => gdp%gdmorpar%itmor
     morbnd              => gdp%gdmorpar%morbnd
     densin              => gdp%gdmorpar%densin
@@ -568,7 +571,6 @@ subroutine tricom_init(olv_handle, gdp)
     flmd2l              => gdp%gdprocs%flmd2l
     mudlay              => gdp%gdprocs%mudlay
     mudwave             => gdp%gdprocs%mudwave
-    nfl                 => gdp%gdprocs%nfl
     coupleact           => gdp%gdprocs%coupleact
     couplemod           => gdp%gdprocs%couplemod
     zmodel              => gdp%gdprocs%zmodel
@@ -585,8 +587,6 @@ subroutine tricom_init(olv_handle, gdp)
     alfas               => gdp%gdr_i_ch%alfas
     ampbc               => gdp%gdr_i_ch%ampbc
     c                   => gdp%gdr_i_ch%c
-    cbuv                => gdp%gdr_i_ch%cbuv
-    cbuvrt              => gdp%gdr_i_ch%cbuvrt
     cgc                 => gdp%gdr_i_ch%cgc
     ctr                 => gdp%gdr_i_ch%ctr
     dircom              => gdp%gdr_i_ch%dircom
@@ -595,7 +595,7 @@ subroutine tricom_init(olv_handle, gdp)
     dis                 => gdp%gdr_i_ch%dis
     disch               => gdp%gdr_i_ch%disch
     discom              => gdp%gdr_i_ch%discom
-    dpd                 => gdp%gdr_i_ch%dpd
+    dp                  => gdp%gdr_i_ch%dp
     dpc                 => gdp%gdr_i_ch%dpc
     dps                 => gdp%gdr_i_ch%dps
     dpu                 => gdp%gdr_i_ch%dpu
@@ -753,6 +753,7 @@ subroutine tricom_init(olv_handle, gdp)
     trifil              => gdp%gdtricom%trifil
     versio              => gdp%gdtricom%versio
     lrdok               => gdp%gdtricom%lrdok
+    initia              => gdp%gdtricom%initia
     iphisc              => gdp%gdtricom%iphisc
     itcomc              => gdp%gdtricom%itcomc
     itcur               => gdp%gdtricom%itcur
@@ -782,6 +783,7 @@ subroutine tricom_init(olv_handle, gdp)
     mmaxddb   = mmax + 2*gdp%d%ddbound
     nmaxddb   = nmax + 2*gdp%d%ddbound
     !
+    initi     = abs(initia)
     error     = .false.
     commrd    = .true.
     !
@@ -793,84 +795,85 @@ subroutine tricom_init(olv_handle, gdp)
     !
     maxmn     = max(mmax, nmax)
     !
-    rtcact    = noRTC
+    rtcact    = .false.
     lrdok     = .false.
     !
     ! Define pointers
     !
     call gtptrs(gdp)
     !
+    ! Test value of ITLEN in combination with INITI
+    !
+    if (itlen==0 .and. initi==3) then
+       call prterr(lundia    ,'D001'    ,' '       )
+       error = .true.
+       goto 9996
+    endif
+    !
     ! Put header on the screen
     !
-    txtput = 'Part IV   - Reading complete MD-file...'
-    if (.not.parll .or. (parll .and. inode == master)) then
-       write (lunscr, '(a)') txtput
-    endif
-    !
-    ! Read md-file, only if initialisation is wanted
-    !
-    call readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt    , &
-              & filrgf    ,dx        ,dy        ,sferic    , &
-              & anglat    ,anglon    ,grdang    ,tgfcmp    ,roumet    ,rouwav    , &
-              & temeqs    ,saleqs    ,betac     ,dml       , &
-              & restid    ,icreep    ,trasol    , &
-              & forfuv    ,forfww    ,ktemp     ,keva      , &
-              & temint    ,evaint    , &
-              & lturi     ,tkemod    ,riglid    , &
-              & tstprt    ,prsmap    ,prshis    ,selmap    , &
-              & selhis    ,filrol    ,kmax      ,gdp       )
-    call dfsync (gdp)
-    if (error) goto 9996
-    !
-    ! Initialize 2-Layer Fluid Mud communication
-    !
-    if (flmd2l) then
-       call timer_start(timer_wait, gdp)
-       call syncom_init(mudlay, densin, mlb, mub, nlb, nub)
-       call timer_stop(timer_wait, gdp)
-    endif
-    !
-    ! Initialize Couple-communication
-    !
-    if (couplemod) then
-       call timer_start(timer_wait, gdp)
-       write(*,*) 'Initializing communication with COUPLE ...'
-       call syncflowcouple_init(error, gdp%runid       , gdp%gdcoup%flowtocouple, &
-                              &       gdp%gdcoup%pars , gdp%gdcoup%locs        )
-       write(*,*) '... continuing'
-       call timer_stop(timer_wait, gdp)
-       if (error) then
-          coupleact = .false.
-          call prterr(lundia    ,'J020'    ,'SyncFlowCouple_Init')
-          goto 9996
-       else
-          coupleact = .true.
+    if (initi==1 .or. initi==2) then
+       txtput = 'Part IV   - Reading complete MD-file...'
+       if (.not.parll .or. (parll .and. inode == master)) then
+          write (lunscr, '(a)') txtput
        endif
+       !
+       ! Read md-file, only if initialisation is wanted
+       !
+       call readmd(lunmd     ,lundia    ,lunscr    ,error     ,runid     ,runtxt    , &
+                 & filrgf    ,dx        ,dy        ,sferic    , &
+                 & anglat    ,anglon    ,grdang    ,tgfcmp    ,roumet    ,rouwav    , &
+                 & temeqs    ,saleqs    ,betac     ,dml       , &
+                 & restid    ,icreep    ,trasol    , &
+                 & forfuv    ,forfww    ,ktemp     ,keva      , &
+                 & temint    ,evaint    , &
+                 & lturi     ,tkemod    ,riglid    , &
+                 & tstprt    ,prsmap    ,prshis    ,selmap    , &
+                 & selhis    ,filrol    ,filic     ,gdp       )
+       call dfsync (gdp)
+       if (error) goto 9996
+       !
+       ! Initialize 2-Layer Fluid Mud communication
+       !
+       if (flmd2l) then
+          call timer_start(timer_wait, gdp)
+          call syncom_init(mudlay, densin, mlb, mub, nlb, nub)
+          call timer_stop(timer_wait, gdp)
+       endif
+       !
+       ! Initialize Couple-communication
+       !
+       if (couplemod) then
+          call timer_start(timer_wait, gdp)
+          write(*,*) 'Initializing communication with COUPLE ...'
+          call syncflowcouple_init(error, gdp%runid       , gdp%gdcoup%flowtocouple, &
+                                 &       gdp%gdcoup%pars , gdp%gdcoup%locs        )
+          write(*,*) '... continuing'
+          call timer_stop(timer_wait, gdp)
+          if (error) then
+             coupleact = .false.
+             call prterr(lundia    ,'J020'    ,'SyncFlowCouple_Init')
+             goto 9996
+          else
+             coupleact = .true.
+          endif
+       endif
+       !
+       ! Define time differences for writing output files
+       ! for MAP print the times should be defined ( >= 0)
+       !
+       ! No resetting of MAP and HIS times
+       !
+       ditcof = itfinish - itcomf
+       ditcol = itfinish - itcoml
+       !
+       ! Initialize numerical parameters
+       !
+       call inimet(lundia    ,error     ,versio    ,wave      ,trasol    , &
+                 & momsol    ,method    ,dischy    ,solver    ,icreep    , &
+                 & disctr    ,gdp       )
+       if (error) goto 9996
     endif
-    !
-    ! Initialises arrays for nearfield/farfield coupling
-    !
-    if (nfl) then
-       call init_nfl(kmax,lstsci, gdp)
-    else
-       coupleact = .true.
-       gdp%gdnfl%nf_src_mom = .false.
-    endif
-    !
-    ! Define time differences for writing output files
-    ! for MAP print the times should be defined ( >= 0)
-    !
-    ! No resetting of MAP and HIS times
-    !
-    ditcof = itfinish - itcomf
-    ditcol = itfinish - itcoml
-    !
-    ! Initialize numerical parameters
-    !
-    call inimet(lundia    ,error     ,versio    ,wave      ,trasol    , &
-              & momsol    ,method    ,dischy    ,solver    ,icreep    , &
-              & disctr    ,gdp       )
-    if (error) goto 9996
     !
     ! Check conflicting settings
     !
@@ -894,11 +897,11 @@ subroutine tricom_init(olv_handle, gdp)
                  & tscale    ,gdp       )
        if (error) goto 9996
        !
-       ! Test value COMMRD
+       ! Test value COMMRD in combination with INITI
        !
        if (.not.commrd) then
           tscale = dt*tunit
-          if (waveol==0) then
+          if (.not.waveol) then
              itlen  = itfinish + 1
           endif
        else
@@ -929,6 +932,11 @@ subroutine tricom_init(olv_handle, gdp)
     ! stand alone and no initialisation not permitted !!
     !
     itp = nint(dt*tunit/tscale)
+    if (initi == 3) then
+       call prterr(lundia    ,'D003'    ,' '       )
+       error = .true.
+       goto 9996
+    endif
     it01 = itdate
     it02 = 0
     !
@@ -946,7 +954,7 @@ subroutine tricom_init(olv_handle, gdp)
     !
     ! Calculate Julian start day for use in TRISOL
     !
-    julday = ymd2jul(itdate)
+    call juldat(itdate    ,julday    )
     !
     ! Define start time and timesteps (in seconds)
     !
@@ -987,131 +995,135 @@ subroutine tricom_init(olv_handle, gdp)
     !
     ! Initialisation and Checking
     !
-    ! Put header on the screen
-    !
-    txtput = 'Part V    - Initialisation & checking input...'
-    if (.not.parll .or. (parll .and. inode == master)) then
-       write (lunscr, '(a)') txtput
-    endif
-    !
-    ! calculate timestep number for starting morphological changes
-    ! Need to have delay from simulation start so that can have a
-    ! spin-up time each time simulation starts if have multiple
-    ! continuing simulations
-    !
-    if (sedim) then
-       tdif  = tcmp + itstrt*dt
-       itcmp = nint(tdif/dt)
-       if (abs(itcmp*dt-tdif) > (0.1*dt)) then
-          error  = .true.
-          txtput = 'Bed composition updating start time'
-          call prterr(lundia, 'U044', txtput)
+    if (initi==1 .or. initi==2) then
+       !
+       ! Put header on the screen
+       !
+       txtput = 'Part V    - Initialisation & checking input...'
+       if (.not.parll .or. (parll .and. inode == master)) then
+          write (lunscr, '(a)') txtput
        endif
-       write(txtput,'(a,i0)') 'Bed composition updating starts at (step) : ',itcmp
-       call prterr(lundia, 'G051', txtput)
        !
-       tdif  = tmor + itstrt*dt
-       itmor = nint(tdif/dt)
-       if (abs(itmor*dt-tdif) > (0.1*dt)) then
-          error  = .true.
-          txtput = 'Bed level updating start time'
-          call prterr(lundia, 'U044', txtput)
+       ! calculate timestep number for starting morphological changes
+       ! Need to have delay from simulation start so that can have a
+       ! spin-up time each time simulation starts if have multiple
+       ! continuing simulations
+       !
+       if (sedim) then
+          !compute itmor for bed changes
+          tdif  = tmor + itstrt*dt
+          itmor = nint(tdif/dt)
+          if (abs(itmor*dt-tdif) > (0.1*dt)) then
+             error  = .true.
+             txtput = 'Morphological (bed) calculation start time '
+             call prterr(lundia, 'U044', txtput)
+          endif
+          write(txtput,'(a,i0)') 'Bed Morphological Changes Start Time (step) : ',itmor
+          call prterr(lundia, 'G051', txtput)
+          !compute itmorB for bank changes
+          if (tmorB.gt.0._fp) then
+             tdif   = tmorB + itstrt*dt
+             itmorB = nint(tdif/dt)
+             if (abs(itmorB*dt-tdif) > (0.1*dt)) then
+                error  = .true.
+                txtput = 'Morphological (banks) calculation start time'
+                call prterr(lundia, 'U044', txtput)
+             endif
+             write(txtput,'(a,i0)') 'Bank Morphological Changes Start Time (step) : ',itmorB
+             call prterr(lundia, 'G051', txtput)
+          else
+             itmorB = itmor
+          endif
+       else
+          itmorB = 2000000000  !needed in reconvof. (close to maximum signed integer  2,147,483,647)
        endif
-       write(txtput,'(a,i0)') 'Bed level updating starts at (step) : ',itmor
-       call prterr(lundia, 'G051', txtput)
-       
        !
-       tdif  = ti_sedtrans + itstrt*dt
-       iti_sedtrans = nint(tdif/dt)
-       if (abs(iti_sedtrans*dt-tdif) > (0.1*dt)) then
-          error  = .true.
-          txtput = 'Sediment transport start time'
-          call prterr(lundia, 'U044', txtput)
+       ! Initialize input arrays and verify input
+       ! INCHKI is placed between semaphores; in case of a fluidmud
+       ! calculation and when both water and mud fraction use the same
+       ! grid-file, they may try to read the grid-file at the same time.
+       ! This was first noticed on an XP-platform. The use of semaphores
+       ! reduces the collapse chance, but does not guarantee that it
+       ! will not happen.
+       !
+       call inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
+                 & dx        ,dy        ,anglat    ,anglon    ,grdang    , &
+                 & tgfcmp    ,riglid    , &
+                 & temeqs    ,saleqs    ,ktemp     ,fclou     , &
+                 & sarea     ,roumet    ,rouflo    ,restid    , &
+                 & lturi     ,gdp       )
+       if (error) goto 9996
+       !
+       ! Set some single variables in the memory
+       ! comform how they are declared in the initial part of the
+       ! communication file
+       !
+       i(gtipnt('NMAX', gdp))        = nmax
+       i(gtipnt('NMAXUS', gdp))      = nmaxus
+       i(gtipnt('MMAX', gdp))        = mmax
+       i(gtipnt('NOROW', gdp))       = norow
+       i(gtipnt('NOCOL', gdp))       = nocol
+       i(gtipnt('NOROCO', gdp))      = noroco
+       i(gtipnt('NTO', gdp))         = nto
+       i(gtipnt('NROB', gdp))        = nrob
+       i(gtipnt('KMAX', gdp))        = kmax
+       i(gtipnt('NSRC', gdp))        = nsrc
+       i(gtipnt('ITLEN', gdp))       = itlen
+       i(gtipnt('IT01', gdp))        = it01
+       i(gtipnt('IT02', gdp))        = it02
+       r(gtrpnt('AG', gdp))          = ag
+       r(gtrpnt('RHOW', gdp))        = rhow
+       r(gtrpnt('DT', gdp))          = dt
+       r(gtrpnt('TSCALE', gdp))      = tscale
+       ch(gtcpnt('ROUFLO', gdp))     = rouflo(1:1)
+       ch(gtcpnt('ROUFLO', gdp) + 1) = rouflo(2:2)
+       ch(gtcpnt('ROUFLO', gdp) + 2) = rouflo(3:3)
+       ch(gtcpnt('ROUFLO', gdp) + 3) = rouflo(4:4)
+       !
+       ! User defined functions (reading and checking)
+       !
+       call usrdef(lundia    ,error     ,grdang    ,secflo    ,gdp       )
+       if (error) goto 9996
+       !
+       ! Balance output?
+       !
+       call rdmassbal(r(xz)     ,r(yz)     ,i(kcs)    ,r(gsqs)   , &
+                    & mmax      ,nmax      ,nmaxus    ,nmmax     , &
+                    & lsedtot   ,gdp       )
+       !
+       ! Read the file with wave components
+       !
+       if (roller) then
+          if (wavcmp) then
+             call rbsig(ncmax     ,r(ampbc)  ,r(ombc)   ,r(phibc)  ,r(thetbc) , &
+                      & filrol    ,lundia    ,gdp       )
+          endif
        endif
-       write(txtput,'(a,i0)') 'Sediment transport starts at (step) : ',iti_sedtrans
-       call prterr(lundia, 'G051', txtput)       
+       if (dredge) then
+          !
+          ! Read dredge input and initialize related data
+          !
+          call rddredge(r(xcor)   ,r(ycor)   ,r(xz)     ,r(yz)     ,r(gsqs)   , &
+                      & mmax      ,nmax      ,nmaxus    ,nmmax     ,lsedtot   , &
+                      & i(kcs)    ,gdp       )
+       endif
+       if (multi) then
+          !
+          ! Initialise parallel online mor run for multiple conditions
+          !
+          call initmerge(nmmax, lsedtot, runid, gdp)
+       endif
        !
-    endif
-    !
-    ! Initialize input arrays and verify input
-    ! INCHKI is placed between semaphores; in case of a fluidmud
-    ! calculation and when both water and mud fraction use the same
-    ! grid-file, they may try to read the grid-file at the same time.
-    ! This was first noticed on an XP-platform. The use of semaphores
-    ! reduces the collapse chance, but does not guarantee that it
-    ! will not happen.
-    !
-    call inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
-              & dx        ,dy        ,anglat    ,anglon    ,grdang    , &
-              & tgfcmp    ,riglid    ,keva      , &
-              & temeqs    ,saleqs    ,ktemp     ,fclou     , &
-              & sarea     ,roumet    ,rouflo    ,restid    , &
-              & lturi     ,gdp       )
-    if (error) goto 9996
-    !
-    ! Set some single variables in the memory
-    ! comform how they are declared in the initial part of the
-    ! communication file
-    !
-    i(gtipnt('NMAX', gdp))        = nmax
-    i(gtipnt('NMAXUS', gdp))      = nmaxus
-    i(gtipnt('MMAX', gdp))        = mmax
-    i(gtipnt('NOROW', gdp))       = norow
-    i(gtipnt('NOCOL', gdp))       = nocol
-    i(gtipnt('NOROCO', gdp))      = noroco
-    i(gtipnt('NTO', gdp))         = nto
-    i(gtipnt('NROB', gdp))        = nrob
-    i(gtipnt('KMAX', gdp))        = kmax
-    i(gtipnt('NSRC', gdp))        = nsrc
-    i(gtipnt('ITLEN', gdp))       = itlen
-    i(gtipnt('IT01', gdp))        = it01
-    i(gtipnt('IT02', gdp))        = it02
-    r(gtrpnt('AG', gdp))          = ag
-    r(gtrpnt('RHOW', gdp))        = rhow
-    r(gtrpnt('DT', gdp))          = dt
-    r(gtrpnt('TSCALE', gdp))      = tscale
-    ch(gtcpnt('ROUFLO', gdp))     = rouflo(1:1)
-    ch(gtcpnt('ROUFLO', gdp) + 1) = rouflo(2:2)
-    ch(gtcpnt('ROUFLO', gdp) + 2) = rouflo(3:3)
-    ch(gtcpnt('ROUFLO', gdp) + 3) = rouflo(4:4)
-    !
-    ! User defined functions (reading and checking)
-    !
-    call usrdef(lundia    ,error     ,grdang    ,secflo    ,gdp       )
-    if (error) goto 9996
-    !
-    ! Balance output?
-    !
-    call rdmassbal(r(xz)     ,r(yz)     ,i(kcs)    ,r(gsqs)   , &
-                 & mmax      ,nmax      ,nmaxus    ,nmmax     , &
-                 & lsedtot   ,gdp       )
-    !
-    ! Read the file with wave components
-    !
-    if (roller) then
-       if (wavcmp) then
-          call rbsig(ncmax     ,r(ampbc)  ,r(ombc)   ,r(phibc)  ,r(thetbc) , &
-                   & filrol    ,lundia    ,gdp       )
+       ! Read culvert input and initialize related data
+       !
+       if (culvert) then
+          call rdcul(nsrc, ch(namsrc), i(mnksrc) ,r(voldis), gdp)       
        endif
     endif
-    if (dredge) then
-       !
-       ! Read dredge input and initialize related data
-       !
-       call rddredge_d3d4(r(gsqs)   ,gdp       )
-    endif
-    if (multi) then
-       !
-       ! Initialise parallel online mor run for multiple conditions
-       !
-       call initmerge(nmmax, lsedtot, runid, gdp)
-    endif
     !
-    ! Read culvert input and initialize related data
+    ! Re-define Diagnostic mode start time for INITI = 3
     !
-    if (culvert) then
-       call rdcul(nsrc, ch(namsrc), i(mnksrc) ,r(voldis), gdp)       
-    endif
+    if (initi == 3) itdiag = itfinish + 1
     !
     ! Put header on the screen
     !
@@ -1127,19 +1139,9 @@ subroutine tricom_init(olv_handle, gdp)
     !
     waverd = wave .and. commrd
     if (waverd) then
-       !
-       ! Initialize NTWAV = 0 (this is the number of wave times read so far).
-       !
-       ntwav = 0
-       call rdtimw(comfil    ,lundia    ,error     ,ntwav     , &
-                 & waverd    ,nmaxus    ,mmax      ,gdp       )
+       call rdtimw(comfil    ,lundia    ,error     ,ntwav     ,timwav    , &
+                 & maxtim    ,waverd    ,nmaxus    ,mmax      ,gdp       )
        if (error) goto 9996
-       !
-       ! Don't read waves during first time step when online coupling to wave (WAVEOL=2) (or mimicking that; WAVEOL=1)
-       ! If WAVEOL=2 we probably have COMMRD=FALSE, but in case an old com-file exists we don't want the program to read it (unless we are restarting?).
-       ! If WAVEOL=1 the com-file will exist, but we shouldn't read it yet for consistency.
-       !
-       if (waveol>0) waverd = .false.
     endif
     !
     ! Wave is true and not able to read wave information from comm-file:
@@ -1148,12 +1150,33 @@ subroutine tricom_init(olv_handle, gdp)
     ! - Continue when online coupling with waves is applied
     !
     if (wave .and. .not.waverd) then
-       if (.not. (cnstwv .or. snelli) .and. waveol==0 .and. .not. xbeach) then
+       if (.not. (cnstwv .or. snelli) .and. .not. waveol .and. .not. xbeach) then
           error = .true.
           call prterr(lundia    ,'D007'    ,' '       )
           goto 9996
        else
           ! Warning about missing COM-file removed.
+       endif
+    endif
+    ! Read restart information from the communication file
+    ! NOTE: In the past the test was on INITT=2 and gave wrong results
+    !       for INITI=3 In case INITI=3 and CYCLIC=.false. the result
+    !       should be tested for a) read from comm. file or b) not read
+    !
+    if (initi /= 1) then
+       timrst = modlen(itstrt*itp, itlen)
+       !
+       ! Read the time array and corresponding water-level and
+       ! velocities, rbuff is used as work array and set smoothing
+       ! time to 0.
+       !
+       itlfsm = 0
+       if (initia > 0) then
+          call rstcom(comfil    ,lundia    ,error     ,mmax      ,nmax      , &
+                    & kmax      ,nmaxus    ,lstsci    ,lsecfl    ,lsec      , &
+                    & timrst    ,itlen     ,timcur    ,maxtim    ,r(s1)     , &
+                    & r(u1)     ,r(v1)     ,r(r1)     ,r(rbuff)  ,gdp       )
+          if (error) goto 9996
        endif
     endif
     !
@@ -1168,61 +1191,70 @@ subroutine tricom_init(olv_handle, gdp)
               & itnfli    ,itnfll    ,error     ,gdp       )
     if (error) goto 9996
     !
-    ! Write DPD to comm. file for ITCOMI > 0
+    ! Write DP to comm. file for INITI=1 and ITCOMI > 0
+    ! or read  DP from comm. file for INITI=2 or 3, a comm. file is
+    ! presumed and if not this will generate an error message
+    ! Subroutines RWBOTC, CALDPS and CALDPU should not be called when
+    ! initi=3 and lsed>0: MOR has calculated dp as the averages of
+    ! dpu/dpv.
     !
-    ! Calculate DPS depending on DPSOPT
-    ! NFLTYP must be set in CALDPS because it is being used by
-    ! MOR-transport
-    !
-    icx = nmaxddb
-    icy = 1
-    call caldps(nmmax     ,nfltyp    ,icx       , &
-              & icy       ,i(kcs)    ,r(dpd)    ,d(dps)    ,gdp       )
-    if (waveol>0) then
+    if (initi/=3 .or. lsed==0) then
        !
-       ! In case of wave online: write DPS to comm-file instead of DPD
+       ! Calculate DPS depending on DPSOPT
+       ! NFLTYP must be set in CALDPS because it is being used by
+       ! MOR-transport
        !
-       if (prec == hp) then
-          call rwbotc_double(comfil    ,lundia    ,error     ,itima     , &
-                           & itcomi    ,mmax      ,nmax      ,nmaxus    ,d(dps)    , &
-                           & r(rbuff)  ,gdp       )
+       icx = nmaxddb
+       icy = 1
+       call caldps(nmmax     ,nfltyp    ,icx       , &
+                 & icy       ,i(kcs)    ,r(dp)     ,d(dps)    , &
+                 & gdp%gdimbound%dpL    ,gdp%gdimbound%dpH    ,gdp       )
+       if (waveol) then
+          !
+          ! In case of wave online: write DPS to comm-file instead of DP
+          !
+          if (prec == hp) then
+             call rwbotc_double(comfil    ,lundia    ,error     ,initi     ,itima     , &
+                              & itcomi    ,mmax      ,nmax      ,nmaxus    ,d(dps)    , &
+                              & r(rbuff)  ,gdp       )
+          else
+             call rwbotc(comfil    ,lundia    ,error     ,initi     ,itima     , &
+                       & itcomi    ,mmax      ,nmax      ,nmaxus    ,d(dps)    , &
+                       & r(rbuff)  ,gdp       )
+          endif
        else
-          call rwbotc(comfil    ,lundia    ,error     ,itima     , &
-                    & itcomi    ,mmax      ,nmax      ,nmaxus    ,d(dps)    , &
+          call rwbotc(comfil    ,lundia    ,error     ,initi     ,itima     , &
+                    & itcomi    ,mmax      ,nmax      ,nmaxus    ,r(dp)     , &
                     & r(rbuff)  ,gdp       )
        endif
-    else
-       call rwbotc(comfil    ,lundia    ,error     ,itima     , &
-                 & itcomi    ,mmax      ,nmax      ,nmaxus    ,r(dpd)    , &
-                 & r(rbuff)  ,gdp       )
+       if (error) goto 9996
+       !
+       ! DD code added:
+       ! This code must be performed before inchkr and caldpu is called
+       !
+       i(gtipnt('lstsci', gdp)) = lstsci
+       i(gtipnt('ltur'  , gdp)) = ltur
+       i(gtipnt('lsed'  , gdp)) = lsed
+       i(gtipnt('lsedtt', gdp)) = lsedtot
+       r(gtrpnt('hdt'   , gdp)) = hdt
+       i(gtipnt('ddb'   , gdp)) = gdp%d%ddbound
+       i(gtipnt('mmaxdb', gdp)) = mmaxddb
+       i(gtipnt('nmaxdb', gdp)) = nmaxddb
+       !
+       if (zmodel) then
+          izmodl = 1
+       else
+          izmodl = 0
+       endif
+       i(gtipnt('izmodl', gdp)) = izmodl
+       !
+       if (roller) then
+          iroll = 1
+       else
+          iroll = 0
+       endif
+       i(gtipnt('iroll', gdp)) = iroll
     endif
-    if (error) goto 9996
-    !
-    ! DD code added:
-    ! This code must be performed before inchkr and caldpu is called
-    !
-    i(gtipnt('lstsci', gdp)) = lstsci
-    i(gtipnt('ltur'  , gdp)) = ltur
-    i(gtipnt('lsed'  , gdp)) = lsed
-    i(gtipnt('lsedtt', gdp)) = lsedtot
-    r(gtrpnt('hdt'   , gdp)) = hdt
-    i(gtipnt('ddb'   , gdp)) = gdp%d%ddbound
-    i(gtipnt('mmaxdb', gdp)) = mmaxddb
-    i(gtipnt('nmaxdb', gdp)) = nmaxddb
-    !
-    if (zmodel) then
-       izmodl = 1
-    else
-       izmodl = 0
-    endif
-    i(gtipnt('izmodl', gdp)) = izmodl
-    !
-    if (roller) then
-       iroll = 1
-    else
-       iroll = 0
-    endif
-    i(gtipnt('iroll', gdp)) = iroll
     !
     ! Synchronisation point 1
     ! =======================
@@ -1246,8 +1278,6 @@ subroutine tricom_init(olv_handle, gdp)
     nhystp = nxtstp(d3dflow_init, gdp)
     call timer_stop(timer_d3dflowinit, gdp)
     !
-    if (dredge) call dredge_initialize_d3d4(gdp) ! Initialize dredging data across partitions
-    !
     ! related vseminit is in tricom.f90, at label 9997
     !
     call pseminit
@@ -1257,15 +1287,19 @@ subroutine tricom_init(olv_handle, gdp)
     ! End of synchronisation point 1
     ! ==============================
     !
-    ! Calculate DPU/DPV (depth at velocity points)
-    !
-    call caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
-              & zmodel    , &
-              & i(kcs)    ,i(kcu)    ,i(kcv)    , &
-              & i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
-              & r(umean)  ,r(vmean)  ,r(dpd)    ,r(dpu)    ,r(dpv)    , &
-              & d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)     , &
-              & r(thick)  ,gdp       )
+    if (initi/=3 .or. lsed==0) then
+       !
+       ! Calculate DPU/DPV (depth at velocity points)
+       !
+       nst = -100
+       call caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
+                 & zmodel    , &
+                 & i(kcs)    ,i(kcu)    ,i(kcv)    , &
+                 & i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
+                 & r(umean)  ,r(vmean)  ,r(dp)     ,r(dpu)    ,r(dpv)    , &
+                 & d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)     , &
+                 & r(thick)  ,nst       ,gdp       )
+    endif
     !
     ! After Flowmapper has adjusted the KC[UVS] arrays, recalculate some
     ! geometric information in D3dFlow in vicinity of interfaces
@@ -1315,7 +1349,7 @@ subroutine tricom_init(olv_handle, gdp)
                  & r(msvcom) ,r(ubcom)   ,r(wlcom)   ,r(rlabda)     , &
                  & r(dircos) ,r(dirsin)  ,r(ewave1)  ,roller        ,wavcmp        , &
                  & r(ewabr1) ,r(wsbodyu) ,r(wsbodyv) ,r(wsbodyucom) ,r(wsbodyvcom) , &
-                 & waveol    ,gdp       )
+                 & gdp       )
        if (error) goto 9997
     endif
     !
@@ -1323,12 +1357,15 @@ subroutine tricom_init(olv_handle, gdp)
     !
     ! Initialize arithmetic arrays, depending on initial input as well
     ! as on previous defined input (read from comm. file or in arrays)
+    ! inchkr should not be called when initi == 3 (warm restart in MOR)
     !
-    call inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
-              & cyclic    ,sferic    ,grdang    ,temeqs    ,saleqs    , &
-              & lturi     ,rouflo    ,rouwav    ,ktemp     ,temint    , &
-              & evaint    ,gdp       )
-    if (error) goto 9997
+    if (initi==1 .or. initi==2) then
+       call inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
+                 & cyclic    ,sferic    ,grdang    ,temeqs    ,saleqs    , &
+                 & lturi     ,rouflo    ,rouwav    ,ktemp     ,temint    , &
+                 & evaint    ,initia    ,filic     ,gdp       )
+       if (error) goto 9997
+    endif
     !
     ! Initialize Delft3D-Sobek after coordinates etc have been set 
     !
@@ -1373,13 +1410,19 @@ subroutine tricom_init(olv_handle, gdp)
        write (lunscr, '(a)') txtput
     endif
     !
-    ! The following files may be generated for "debug" purpose
-    ! Remove them if they are already there from a previous run
+    ! CMT will create dummy files for all output. Delete FLOW Nefis
+    ! files first for INITI=1 and file requested (times <> 0)
     !
-    call rmdel('tstprt.'//trim(gdp%runid), gdp) 
-    call rmdel('discharge.'//trim(gdp%runid), gdp) 
-    call rmdel('averagetemp.'//trim(gdp%runid), gdp) 
-    call rmdel('pdfs.'//trim(gdp%runid), gdp) 
+    if (initi == 1) then
+       !
+       ! The following files may be generated for "debug" purpose
+       ! Remove them if they are already there from a previous run
+       !
+       call rmdel('tstprt.'//trim(gdp%runid), gdp) 
+       call rmdel('discharge.'//trim(gdp%runid), gdp) 
+       call rmdel('averagetemp.'//trim(gdp%runid), gdp) 
+       call rmdel('pdfs.'//trim(gdp%runid), gdp) 
+    endif
     !
     ! Initialise trachytope roughness time parameter for periodic calculations
     !
@@ -1449,7 +1492,7 @@ subroutine tricom_init(olv_handle, gdp)
     ! Write initial input to output files after checking output file times
     !
     call inippr(lundia    ,error     ,trifil    ,comfil    , &
-              & selhis    ,selmap    ,tscale    ,commrd    , &
+              & initi     ,selhis    ,selmap    ,tscale    ,commrd    , &
               & itlen     ,itcur     ,itimc     , &
               & it01      ,it02      ,sferic    ,grdang    , &
               & rouflo    ,nfltyp    , &
@@ -1459,7 +1502,7 @@ subroutine tricom_init(olv_handle, gdp)
     ! Re-define default values in depth array for online visualisation
     ! Hence all 999.999 will be set to 0.0
     !
-    call dp999(r(dpd)    ,nmax      ,mmax      ,gdp       )
+    call dp999(r(dp)     ,nmax      ,mmax      ,gdp       )
     !
     ! DD code added:
     !
@@ -1477,7 +1520,7 @@ subroutine tricom_init(olv_handle, gdp)
     !
     ! DD code added end
     !
-    if (wave .and. waveol==2) then
+    if (wave .and. waveol) then
        !
        ! Onlinecoupling with waves
        ! Initialise communication with Waves
@@ -1521,7 +1564,7 @@ subroutine tricom_init(olv_handle, gdp)
        endif
     endif
     !
-    if (lsedtot>0) then
+    if ((lsedtot>0) .and. (.not.flmd2l)) then
        call morbndfill(i(kcs)    ,r(guu)    ,r(gvv)    ,icx       , &
                      & icy       ,i(mnbnd)  ,nto       ,gdp       )
     endif
@@ -1565,12 +1608,10 @@ subroutine tricom_init(olv_handle, gdp)
     !
     ! Initialize RTC-communication
     !
-    call rtc_comm_init(error     ,ch(nambar),ch(namcon),ch(namsrc), &
-                     & r(cbuvrt) ,gdp)
+    call rtc_comm_init(error     ,ch(nambar),ch(namcon),gdp)
     if (error) goto 9998
     call rtc_comm_put (i(kfs)    ,i(kfsmin) ,i(kfsmax) ,r(sig)    , &
                      & r(sig)    ,r(s1)     ,d(dps)    ,r(r0)     , &
-                     & nsluv     ,r(cbuv)   ,nsrc      ,r(disch)  , &
                      & gdp)
     !
     ! End of synchronisation point 2

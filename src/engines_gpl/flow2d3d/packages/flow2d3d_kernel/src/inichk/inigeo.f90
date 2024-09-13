@@ -7,7 +7,7 @@ subroutine inigeo(lundia    ,error     ,filrgf    ,sferic    ,            &
                 & kcs       ,dfguu     ,dfgvv     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +31,8 @@ subroutine inigeo(lundia    ,error     ,filrgf    ,sferic    ,            &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: inigeo.f90 6021 2016-04-15 14:20:51Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/inigeo.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Sets the geometry parameters of the model. if the
@@ -474,6 +474,32 @@ subroutine inigeo(lundia    ,error     ,filrgf    ,sferic    ,            &
              endif
           enddo
        enddo
+!
+       !
+       ! Mirroring of interior cells to the boundaries: needed for anular channel (testcase with cutcells). Otherwise area at kcs=2 is equal to zero and  INTERPvATuPOINT gives NaN
+       !
+       do n = 1, nmaxus
+          nd = max(n-1, 1)
+          nu = min(n+1, nmaxus)
+          do m = 1, mmax
+             md = max(m-1, 1)
+             mu = min(m+1, mmax)
+             if (kcs(n,m) == 2) then
+                !
+                ! boundary cell
+                !
+                if (kcs(n,md) == 1) then
+                   gsqs(n,m) = gsqs(n,md)
+                elseif (kcs(n,mu) == 1) then
+                   gsqs(n,m) = gsqs(n,mu)
+                elseif(kcs(nd,m) == 1) then
+                   gsqs(n,m) = gsqs(nd,m)
+                elseif(kcs(nu,m) == 1) then
+                   gsqs(n,m) = gsqs(nu,m)
+                endif
+             endif
+          enddo
+       enddo
     endif
     !
     ! Check computed GUU, GVU, GVV, GUV and GSQS
@@ -527,22 +553,6 @@ subroutine inigeo(lundia    ,error     ,filrgf    ,sferic    ,            &
                    call prterr(lundia, 'V016', errmsg)
                 endif
              endif
-          elseif (kcs(n, m) == -1) then
-             if (gsqs(n, m) <= 0.) then
-                gsqs(n, m) = 1.23456789000000_fp
-             endif
-             if (guu(n, m) <= 0.) then
-                guu (n, m) = 1.23456789000000_fp
-             endif
-             if (guv(n, m) <= 0.) then
-                guv (n, m) = 1.23456789000000_fp
-             endif
-             if (gvu(n, m) <= 0.) then
-                gvu (n, m) = 1.23456789000000_fp
-             endif
-             if (gvv(n, m) <= 0.) then
-                gvv (n, m) = 1.23456789000000_fp
-             endif
           endif
        enddo
     enddo
@@ -554,10 +564,12 @@ subroutine inigeo(lundia    ,error     ,filrgf    ,sferic    ,            &
     ! results in existing models.
     ! This holds for all alfas calculations in this inigeo subroutine.
     !
-    do n = 2, nmaxus
+    do n = 2, nmaxus - 1
        nd = n - 1
-       do m = 2, mmax
+       nu = n + 1
+       do m = 2, mmax - 1
           md = m - 1
+          mu = m + 1
           if (abs(kcs(n, m)) == 1) then   
              if (sferic) then
                 xndm  = xcor(nd,m)

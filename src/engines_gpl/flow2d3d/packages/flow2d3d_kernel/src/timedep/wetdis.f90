@@ -1,9 +1,9 @@
-subroutine wetdis(i         ,isrc      ,jsrc      ,dpd       ,xcor      , &
+subroutine wetdis(i         ,isrc      ,jsrc      ,dp        ,xcor      , &
                 & ycor      ,kcu       ,kcv       ,kfs       ,kfd       , &
                 & j         ,nmmaxj    ,icx       ,icy       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine wetdis(i         ,isrc      ,jsrc      ,dpd       ,xcor      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wetdis.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/timedep/wetdis.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! NONE
@@ -68,7 +68,7 @@ subroutine wetdis(i         ,isrc      ,jsrc      ,dpd       ,xcor      , &
                                                                      !!  =0 not yet used for searching
                                                                      !!  =1 already used
     integer,  dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: kfs    !  Description and declaration in esm_alloc_int.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: dpd    !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: dp     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: xcor   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: ycor   !  Description and declaration in esm_alloc_real.f90
 !
@@ -139,10 +139,10 @@ subroutine wetdis(i         ,isrc      ,jsrc      ,dpd       ,xcor      , &
     istep = istep + 1
     !     write(lundia,'(5x,3i5,2(1pe11.3))') istep,nisrc,njsrc,x,y
     !
-    dp1 = 0.5_fp * (dpd(ndmd) + dpd(nmd))
-    dp2 = 0.5_fp * (dpd(ndm ) + dpd(nm ))
-    dp3 = 0.5_fp * (dpd(ndmd) + dpd(ndm))
-    dp4 = 0.5_fp * (dpd(nmd ) + dpd(nm ))
+    dp1 = 0.5_fp * (dp(ndmd) + dp(nmd))
+    dp2 = 0.5_fp * (dp(ndm ) + dp(nm ))
+    dp3 = 0.5_fp * (dp(ndmd) + dp(ndm))
+    dp4 = 0.5_fp * (dp(nmd ) + dp(nm ))
     !
     ! find greatest depth
     !

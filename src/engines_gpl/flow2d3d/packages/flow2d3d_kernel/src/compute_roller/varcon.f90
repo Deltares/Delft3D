@@ -2,7 +2,7 @@ subroutine varcon(fname     ,timmin    ,result    ,isdir     ,nres      , &
                 & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine varcon(fname     ,timmin    ,result    ,isdir     ,nres      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: varcon.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute_roller/varcon.f90 $
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -98,7 +98,8 @@ subroutine varcon(fname     ,timmin    ,result    ,isdir     ,nres      , &
     !     isdir    input     mask array, 0 if scalar, 1 if direction (deg)
     !     nres     input     number of values on record
     !
-    open (newunit=iuntim, file = fname, err = 999)
+    iuntim = newlun(gdp)
+    open (iuntim, file = fname, err = 999)
   100 continue
     read (iuntim, '(A)') blname
     if (blname(1:1)=='*') goto 100

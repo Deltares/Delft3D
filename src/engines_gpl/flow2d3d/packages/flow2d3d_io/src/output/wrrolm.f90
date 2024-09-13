@@ -2,12 +2,11 @@ subroutine wrrolm(lundia    ,error     ,filename  ,itmapc    ,nmax      , &
                 & mmax      ,nmaxus    ,ewave1    ,eroll1    ,qxkr      , &
                 & qykr      ,qxkw      ,qykw      ,fxw       ,fyw       , &
                 & wsu       ,wsv       ,guu       ,gvv       ,rbuff1    , &
-                & hrms      ,tp        ,teta      ,rlabda    ,uorb      , &
-                & irequest  ,fds       ,iarrc     ,mf        ,ml        , &
-                & nf        ,nl        ,roller    ,xbeach    ,gdp       )
+                & hrms      ,irequest  ,fds       ,iarrc     ,mf        , &
+                & ml        ,nf        ,nl        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,11 +30,11 @@ subroutine wrrolm(lundia    ,error     ,filename  ,itmapc    ,nmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrrolm.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrrolm.f90 $
 !!--description-----------------------------------------------------------------
 !
-! Writes the time varying data for wave model (WAVE coupling, Roller, or XBeach)
+! Writes the time varying data for roller model
 !
 !!--pseudo code and references--------------------------------------------------
 ! NONE
@@ -45,6 +44,7 @@ subroutine wrrolm(lundia    ,error     ,filename  ,itmapc    ,nmax      , &
     use globaldata
     use dfparall, only: inode, master, nproc
     use wrtarray, only: wrtarray_nm, wrtvar
+    use dffunctionals, only: dfcleanup_glbarrs
     use netcdf
     !
     implicit none
@@ -58,7 +58,6 @@ subroutine wrrolm(lundia    ,error     ,filename  ,itmapc    ,nmax      , &
     type (datagroup)                , pointer :: group2
     integer                         , pointer :: nmaxgl
     integer                         , pointer :: mmaxgl
-    integer                         , pointer :: io_prec
 !
 ! Global variables
 !
@@ -68,8 +67,6 @@ subroutine wrrolm(lundia    ,error     ,filename  ,itmapc    ,nmax      , &
     integer                                                                           , intent(in)  :: nmax        !  Description and declaration in esm_alloc_int.f90
     integer                                                                                         :: nmaxus      !  Description and declaration in esm_alloc_int.f90
     logical                                                                           , intent(out) :: error       
-    logical                                                                           , intent(in)  :: roller
-    logical                                                                           , intent(in)  :: xbeach
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: eroll1      !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: ewave1      !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: fxw         !  Description and declaration in esm_alloc_real.f90
@@ -81,10 +78,6 @@ subroutine wrrolm(lundia    ,error     ,filename  ,itmapc    ,nmax      , &
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: qxkw        !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: qykr        !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: qykw        !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: rlabda      !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: teta        !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: tp          !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: uorb        !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: wsu         !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: wsv         !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                                   :: rbuff1
@@ -128,11 +121,10 @@ subroutine wrrolm(lundia    ,error     ,filename  ,itmapc    ,nmax      , &
 !
     call getdatagroup(gdp, FILOUT_MAP, grnam1, group1)
     call getdatagroup(gdp, FILOUT_MAP, grnam2, group2)
-    celidt              => group1%celidt
+    celidt         => group1%celidt
     !
-    mmaxgl              => gdp%gdparall%mmaxgl
-    nmaxgl              => gdp%gdparall%nmaxgl
-    io_prec             => gdp%gdpostpr%io_prec
+    mmaxgl         => gdp%gdparall%mmaxgl
+    nmaxgl         => gdp%gdparall%nmaxgl
     !
     filetype = getfiletype(gdp, FILOUT_MAP)
     !
@@ -158,27 +150,17 @@ subroutine wrrolm(lundia    ,error     ,filename  ,itmapc    ,nmax      , &
        !
        ! map-rol-series
        !
-       call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'HS'    , ' ', io_prec , 2, dimids=(/iddim_n, iddim_m/), longname='Significant wave height', unit='m', acl='z')
-       if (gdp%gdflwpar%flwoutput%waveqnt) then
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'TP'    , ' ', io_prec , 2, dimids=(/iddim_n, iddim_m/) , longname='Peak period', unit='s', acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'TETA'  , ' ', io_prec , 2, dimids=(/iddim_n, iddim_m/) , longname='Wave direction relative to local grid direction', unit='deg', acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'LAMBDA', ' ', io_prec , 2, dimids=(/iddim_n, iddim_m/) , longname='Wave length', unit='m', acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'UORB'  , ' ', io_prec , 2, dimids=(/iddim_n, iddim_m/) , longname='Orbital velocity near bed', unit='m/s', acl='z')
-       endif
-       if (roller) then
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'EWAVE1', ' ', io_prec , 2, dimids=(/iddim_n, iddim_m/) , longname='Short-wave energy', unit='J/m2', acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'EROLL1', ' ', io_prec , 2, dimids=(/iddim_n, iddim_m/) , longname='Roller energy', unit='J/m2', acl='z')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'QXKR'  , ' ', io_prec , 2, dimids=(/iddim_n, iddim_mc/), longname='Transport velocity of roller energy in ksi direction', unit='m/s', acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'QYKR'  , ' ', io_prec , 2, dimids=(/iddim_nc, iddim_m/), longname='Transport velocity of roller energy in eta direction', unit='m/s', acl='v')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'QXKW'  , ' ', io_prec , 2, dimids=(/iddim_n, iddim_mc/), longname='Transport velocity of wave energy in ksi direction', unit='m/s', acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'QYKW'  , ' ', io_prec , 2, dimids=(/iddim_nc, iddim_m/), longname='Transport velocity of wave energy in eta direction', unit='m/s', acl='v')
-       endif
-       if (roller .or. xbeach) then
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'FXW'   , ' ', io_prec , 2, dimids=(/iddim_n, iddim_mc/), longname='Component of wave force in ksi direction', unit='N/m2', acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'FYW'   , ' ', io_prec , 2, dimids=(/iddim_nc, iddim_m/), longname='Component of wave force in eta direction', unit='N/m2', acl='v')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'WSU'   , ' ', io_prec , 2, dimids=(/iddim_n, iddim_mc/), longname='Component of roller force in ksi direction', unit='N/m2', acl='u')
-          call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'WSV'   , ' ', io_prec , 2, dimids=(/iddim_nc, iddim_m/), longname='Component of roller force in eta direction', unit='N/m2', acl='v')
-       endif
+       call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'HS', ' ', IO_REAL4    , 2, dimids=(/iddim_n, iddim_m/), longname='Significant wave height', unit='m', acl='z')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'EWAVE1', ' ', IO_REAL4, 2, dimids=(/iddim_n, iddim_m/), longname='Short-wave energy', unit='J/m2', acl='z')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'EROLL1', ' ', IO_REAL4, 2, dimids=(/iddim_n, iddim_m/), longname='Roller energy', unit='J/m2', acl='z')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'QXKR', ' ', IO_REAL4  , 2, dimids=(/iddim_n, iddim_mc/), longname='Transport velocity of roller energy in ksi direction', unit='m/s', acl='u')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'QYKR', ' ', IO_REAL4  , 2, dimids=(/iddim_nc, iddim_m/), longname='Transport velocity of roller energy in eta direction', unit='m/s', acl='v')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'QXKW', ' ', IO_REAL4  , 2, dimids=(/iddim_n, iddim_mc/), longname='Transport velocity of wave energy in ksi direction', unit='m/s', acl='u')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'QYKW', ' ', IO_REAL4  , 2, dimids=(/iddim_nc, iddim_m/), longname='Transport velocity of wave energy in eta direction', unit='m/s', acl='v')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'FXW', ' ', IO_REAL4   , 2, dimids=(/iddim_n, iddim_mc/), longname='Component of wave force in ksi direction', unit='N/m2', acl='u')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'FYW', ' ', IO_REAL4   , 2, dimids=(/iddim_nc, iddim_m/), longname='Component of wave force in eta direction', unit='N/m2', acl='v')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'WSU', ' ', IO_REAL4   , 2, dimids=(/iddim_n, iddim_mc/), longname='Component of roller force in ksi direction', unit='N/m2', acl='u')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam2, 'WSV', ' ', IO_REAL4   , 2, dimids=(/iddim_nc, iddim_m/), longname='Component of roller force in eta direction', unit='N/m2', acl='v')
        !
        group1%grp_dim = iddim_time
        group2%grp_dim = iddim_time
@@ -210,131 +192,103 @@ subroutine wrrolm(lundia    ,error     ,filename  ,itmapc    ,nmax      , &
                     & ierror, lundia, rbuff1, 'HS')
        if (ierror /= 0) goto 9999
        !
-       if (gdp%gdflwpar%flwoutput%waveqnt) then
-           call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                        & nf, nl, mf, ml, iarrc, gdp, &
-                        & ierror, lundia, tp, 'TP')
-           if (ierror /= 0) goto 9999
-           !
-           call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                        & nf, nl, mf, ml, iarrc, gdp, &
-                        & ierror, lundia, teta, 'TETA')
-           if (ierror /= 0) goto 9999
-           !
-           call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                        & nf, nl, mf, ml, iarrc, gdp, &
-                        & ierror, lundia, rlabda, 'LAMBDA')
-           if (ierror /= 0) goto 9999
-           !
-           call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                        & nf, nl, mf, ml, iarrc, gdp, &
-                        & ierror, lundia, uorb, 'UORB')
-           if (ierror /= 0) goto 9999
-       endif
+       ! element 'EWAVE1'
        !
-       if (roller) then
-          !
-          ! element 'EWAVE1'
-          !
-          call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, ewave1, 'EWAVE1')
-          if (ierror /= 0) goto 9999
-          !
-          ! element 'EROLL1'
-          !
-          call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, eroll1, 'EROLL1')
-          if (ierror /= 0) goto 9999
-          !
-          ! element 'QXKR'
-          !
-          do m = 1, mmax
-             do n = 1, nmaxus
-                if (abs(guu(n, m))>0.) then
-                   rbuff1(n, m) = qxkr(n, m)/guu(n, m)
-                endif
-             enddo
-          enddo
-          call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, rbuff1, 'QXKR')
-          if (ierror /= 0) goto 9999
-          !
-          ! element 'QYKR'
-          !
-          do m = 1, mmax
-             do n = 1, nmaxus
-                if (abs(gvv(n, m))>0.) then
-                   rbuff1(n, m) = qykr(n, m)/gvv(n, m)
-                endif
-             enddo
-          enddo
-          call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, rbuff1, 'QYKR')
-          if (ierror /= 0) goto 9999
-          !
-          ! element 'QXKW'
-          !
-          do m = 1, mmax
-             do n = 1, nmaxus
-                if (abs(guu(n, m))>0.) then
-                   rbuff1(n, m) = qxkw(n, m)/guu(n, m)
-                endif
-             enddo
-          enddo
-          call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, rbuff1, 'QXKW')
-          if (ierror /= 0) goto 9999
-          !
-          ! element 'QYKW'
-          !
-          do m = 1, mmax
-             do n = 1, nmaxus
-                if (abs(gvv(n, m))>0.) then
-                   rbuff1(n, m) = qykw(n, m)/gvv(n, m)
-                endif
-             enddo
-          enddo
-          call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, rbuff1, 'QYKW')
-          if (ierror /= 0) goto 9999
-       endif
+       call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
+                    & nf, nl, mf, ml, iarrc, gdp, &
+                    & ierror, lundia, ewave1, 'EWAVE1')
+       if (ierror /= 0) goto 9999
        !
-       if (roller .or. xbeach) then
-          !
-          ! element 'FXW'
-          !
-          call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, fxw, 'FXW')
-          if (ierror /= 0) goto 9999
-          !
-          ! element 'FYW'
-          !
-          call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, fyw, 'FYW')
-          if (ierror /= 0) goto 9999
-          !
-          ! element 'WSU'
-          !
-          call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, wsu, 'WSU')
-          if (ierror /= 0) goto 9999
-          !
-          ! element 'WSV'
-          !
-          call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
-                       & nf, nl, mf, ml, iarrc, gdp, &
-                       & ierror, lundia, wsv, 'WSV')
-          if (ierror /= 0) goto 9999
-       endif
+       ! element 'EROLL1'
+       !
+       call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
+                    & nf, nl, mf, ml, iarrc, gdp, &
+                    & ierror, lundia, eroll1, 'EROLL1')
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'QXKR'
+       !
+       do m = 1, mmax
+          do n = 1, nmaxus
+             if (abs(guu(n, m))>0.) then
+                rbuff1(n, m) = qxkr(n, m)/guu(n, m)
+             endif
+          enddo
+       enddo
+       call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
+                    & nf, nl, mf, ml, iarrc, gdp, &
+                    & ierror, lundia, rbuff1, 'QXKR')
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'QYKR'
+       !
+       do m = 1, mmax
+          do n = 1, nmaxus
+             if (abs(gvv(n, m))>0.) then
+                rbuff1(n, m) = qykr(n, m)/gvv(n, m)
+             endif
+          enddo
+       enddo
+       call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
+                    & nf, nl, mf, ml, iarrc, gdp, &
+                    & ierror, lundia, rbuff1, 'QYKR')
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'QXKW'
+       !
+       do m = 1, mmax
+          do n = 1, nmaxus
+             if (abs(guu(n, m))>0.) then
+                rbuff1(n, m) = qxkw(n, m)/guu(n, m)
+             endif
+          enddo
+       enddo
+       call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
+                    & nf, nl, mf, ml, iarrc, gdp, &
+                    & ierror, lundia, rbuff1, 'QXKW')
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'QYKW'
+       !
+       do m = 1, mmax
+          do n = 1, nmaxus
+             if (abs(gvv(n, m))>0.) then
+                rbuff1(n, m) = qykw(n, m)/gvv(n, m)
+             endif
+          enddo
+       enddo
+       call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
+                    & nf, nl, mf, ml, iarrc, gdp, &
+                    & ierror, lundia, rbuff1, 'QYKW')
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'FXW'
+       !
+       call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
+                    & nf, nl, mf, ml, iarrc, gdp, &
+                    & ierror, lundia, fxw, 'FXW')
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'FYW'
+       !
+       call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
+                    & nf, nl, mf, ml, iarrc, gdp, &
+                    & ierror, lundia, fyw, 'FYW')
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'WSU'
+       !
+       call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
+                    & nf, nl, mf, ml, iarrc, gdp, &
+                    & ierror, lundia, wsu, 'WSU')
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'WSV'
+       !
+       call wrtarray_nm(fds, filename, filetype, grnam2, celidt, &
+                    & nf, nl, mf, ml, iarrc, gdp, &
+                    & ierror, lundia, wsv, 'WSV')
+       if (ierror /= 0) goto 9999
        !
     end select
     !

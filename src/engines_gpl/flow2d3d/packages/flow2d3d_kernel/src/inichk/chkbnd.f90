@@ -3,7 +3,7 @@ subroutine chkbnd(lundia    ,error     ,nmax      ,mmax      ,nrob      , &
                 & irocol    ,icom      ,idupl     ,mnbnd     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine chkbnd(lundia    ,error     ,nmax      ,mmax      ,nrob      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: chkbnd.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/chkbnd.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Checks whether open boundaries lie on in- or
@@ -76,7 +76,7 @@ subroutine chkbnd(lundia    ,error     ,nmax      ,mmax      ,nrob      , &
     integer                                                          :: noroco !  Description and declaration in esm_alloc_int.f90
     integer                                                          :: norow  !  Description and declaration in esm_alloc_int.f90
     integer                                            , intent(in)  :: nrob   !  Description and declaration in esm_alloc_int.f90
-    integer, dimension(5, nlcest)                                    :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(7, nlcest)                                    :: irocol !  Description and declaration in esm_alloc_int.f90
     integer, dimension(8, nrob)                                      :: nob    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%mlb:gdp%d%mub, gdp%d%nlb:gdp%d%nub)     :: icom   !!  Temporary work array containing:
                                                                                !!      0 = if a point is not active
@@ -225,6 +225,7 @@ subroutine chkbnd(lundia    ,error     ,nmax      ,mmax      ,nrob      , &
     ! When running sequential, "n-1" will cause an abort: the halo is not available.
     ! Therefore the addbndpnt conditions MUST be different for parallel and sequential
     !
+    irocol = 0
     do n = 1, nmax
        do m = 2, mmax - 1
           if (parll) then
@@ -367,6 +368,7 @@ subroutine chkbnd(lundia    ,error     ,nmax      ,mmax      ,nrob      , &
           if (parll.and.norow==1) commBotBoundary=1
        else
           irocol(4, i)  = nob(3, -ibt1)
+          irocol(6, i)  = -ibt1
           nob(4, -ibt1) = 1
           nob(5, -ibt1) = i
        endif
@@ -394,6 +396,7 @@ subroutine chkbnd(lundia    ,error     ,nmax      ,mmax      ,nrob      , &
           if (parll.and.norow==1) commTopBoundary=1
        else
           irocol(5, i)  = nob(3, -ibt2)
+          irocol(7, i)  = -ibt2
           nob(4, -ibt2) = 2
           nob(5, -ibt2) = i
           !
@@ -418,6 +421,7 @@ subroutine chkbnd(lundia    ,error     ,nmax      ,mmax      ,nrob      , &
        ibt2 = icom(ml+1, n)
        if ( (commBotBoundary==1) .and. (mf.lt.ihalom) ) then
           irocol(4, i) = 10
+          irocol(6, i) = 0
           !
           ! adjust boundaries irocol(2,i) and irocol(3,i) within halo area
           !
@@ -438,6 +442,7 @@ subroutine chkbnd(lundia    ,error     ,nmax      ,mmax      ,nrob      , &
        endif
        if ( (commTopBoundary==1) .and. (ml.gt.(mmax-ihalom)) ) then
           irocol(5, i) = 10
+          irocol(6, i) = 0
           !
           ! adjust boundaries irocol(2,i) and irocol(3,i) within halo area
           !
@@ -490,10 +495,13 @@ subroutine chkbnd(lundia    ,error     ,nmax      ,mmax      ,nrob      , &
           exit
        elseif (ibt1 == 0) then
           irocol(4, i) = 1
+          irocol(6, i) = 0
        elseif (ibt1==parll_int_flag) then
           irocol(4, i) = 10
+          irocol(6, i) = 0
        else
           irocol(4, i) = nob(3, -ibt1)
+          irocol(6, i) = -ibt1
           nob(6, -ibt1) = 1
           nob(7, -ibt1) = i
           !
@@ -512,10 +520,13 @@ subroutine chkbnd(lundia    ,error     ,nmax      ,mmax      ,nrob      , &
           exit
        elseif (ibt2 == 0) then
           irocol(5, i) = 1
+          irocol(7, i) = 0
        elseif (ibt2==parll_int_flag) then
           irocol(5, i) = 10
+          irocol(7, i) = 0
        else
           irocol(5, i)  = nob(3, -ibt2)
+          irocol(7, i)  = -ibt2
           nob(6, -ibt2) = 2
           nob(7, -ibt2) = i
           !
@@ -560,6 +571,7 @@ subroutine chkbnd(lundia    ,error     ,nmax      ,mmax      ,nrob      , &
        ibt2 = icom(m, nlu)
        if ( (commBotBoundary==1) .and. (nf.lt.ihalon) ) then
           irocol(4, i) = 10
+          irocol(6, i) = 0
           ! 
           ! adjust boundaries irocol(2,i) and irocol(3,i) within halo area
           !
@@ -581,6 +593,7 @@ subroutine chkbnd(lundia    ,error     ,nmax      ,mmax      ,nrob      , &
        !
        if ( (commTopBoundary==1) .and. (nl.gt.(nmaxus-ihalon)) ) then
           irocol(5, i) = 10
+          irocol(7, i) = 0
           ! 
           ! adjust boundaries irocol(2,i) and irocol(3,i) within halo area
           !

@@ -2,7 +2,7 @@ subroutine wrthisdad(lundia    ,error     ,filename  ,ithisc    , &
                    & lsedtot   ,irequest  ,fds       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine wrthisdad(lundia    ,error     ,filename  ,ithisc    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrthisdad.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrthisdad.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Writes the time varying Dredge and Dump group to the NEFIS HIS-DAT file
@@ -53,17 +53,16 @@ subroutine wrthisdad(lundia    ,error     ,filename  ,ithisc    , &
     real(fp)            , dimension(:)   , pointer :: totvoldred
     real(fp)            , dimension(:,:) , pointer :: voldump
     real(fp)            , dimension(:)   , pointer :: totvoldump
-    real(fp)            , dimension(:)   , pointer :: tim_dredged
-    real(fp)            , dimension(:)   , pointer :: tim_ploughed
+    integer             , dimension(:)   , pointer :: ndredged
+    integer             , dimension(:)   , pointer :: nploughed
     integer                              , pointer :: nadred
     integer                              , pointer :: nadump
     integer                              , pointer :: nasupl
     integer                              , pointer :: nalink
-    real(fp)                             , pointer :: tim_accum
+    integer                              , pointer :: ntimaccum
     character(24)                        , pointer :: date_time
     integer                              , pointer :: celidt
     type (datagroup)                     , pointer :: group
-    integer                              , pointer :: io_prec
 !
 ! Global variables
 !
@@ -111,15 +110,14 @@ subroutine wrthisdad(lundia    ,error     ,filename  ,ithisc    , &
     totvoldred        => gdp%gddredge%totvoldred
     voldump           => gdp%gddredge%voldump
     totvoldump        => gdp%gddredge%totvoldump
-    tim_dredged       => gdp%gddredge%tim_dredged
-    tim_ploughed      => gdp%gddredge%tim_ploughed
+    ndredged          => gdp%gddredge%ndredged
+    nploughed         => gdp%gddredge%nploughed
     nadred            => gdp%gddredge%nadred
     nadump            => gdp%gddredge%nadump
     nasupl            => gdp%gddredge%nasupl
     nalink            => gdp%gddredge%nalink
-    tim_accum         => gdp%gddredge%tim_accum
+    ntimaccum         => gdp%gddredge%ntimaccum
     date_time         => gdp%gdinttim%date_time
-    io_prec           => gdp%gdpostpr%io_prec
     !
     ierror = 0
     select case (irequest)
@@ -140,11 +138,11 @@ subroutine wrthisdad(lundia    ,error     ,filename  ,ithisc    , &
           call addelm(gdp, lundia, FILOUT_HIS, grnam, 'ITHISC', ' ', IO_INT4        , 0, longname='timestep number (ITHISC*DT*TUNIT := time in sec from ITDATE)')
           call addelm(gdp, lundia, FILOUT_HIS, grnam, 'DATE_TIME', ' ', 24          , 0, longname='Current simulation date and time [YYYY-MM-DD HH:MM:SS.FFFF]') !CHARACTER
        endif
-       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'LINK_SUM', ' ', io_prec      , 2, dimids=(/iddim_nalink, iddim_lsedtot/), longname='Cumulative dredged material transported via this link', unit='m3')
-       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'DREDGE_VOLUME', ' ', io_prec , 1, dimids=(/iddim_nsource/), longname='Cumulative dredged material for this dredge area', unit='m3', attribs=(/idatt_crd_drd/) )
-       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'DUMP_VOLUME', ' ', io_prec   , 1, dimids=(/iddim_ndump/), longname='Cumulative dumped material for this dump area', unit='m3', attribs=(/idatt_crd_dmp/) )
-       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'DREDGE_TFRAC', ' ', io_prec  , 1, dimids=(/iddim_nsource/), longname='Time fraction spent dredging', attribs=(/idatt_crd_drd/) )
-       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'PLOUGH_TFRAC', ' ', io_prec  , 1, dimids=(/iddim_nsource/), longname='Time fraction spent sploughing', attribs=(/idatt_crd_drd/) )
+       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'LINK_SUM', ' ', IO_REAL4     , 2, dimids=(/iddim_nalink, iddim_lsedtot/), longname='Cumulative dredged material transported via this link', unit='m3')
+       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'DREDGE_VOLUME', ' ', IO_REAL4, 1, dimids=(/iddim_nsource/), longname='Cumulative dredged material for this dredge area', unit='m3', attribs=(/idatt_crd_drd/) )
+       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'DUMP_VOLUME', ' ', IO_REAL4  , 1, dimids=(/iddim_ndump/), longname='Cumulative dumped material for this dump area', unit='m3', attribs=(/idatt_crd_dmp/) )
+       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'DREDGE_TFRAC', ' ', IO_REAL4 , 1, dimids=(/iddim_nsource/), longname='Time fraction spent dredging', attribs=(/idatt_crd_drd/) )
+       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'PLOUGH_TFRAC', ' ', IO_REAL4 , 1, dimids=(/iddim_nsource/), longname='Time fraction spent sploughing', attribs=(/idatt_crd_drd/) )
        !
        group%grp_dim = iddim_time
        celidt = 0
@@ -187,17 +185,17 @@ subroutine wrthisdad(lundia    ,error     ,filename  ,ithisc    , &
                     & gdp, ierror, lundia, totvoldump, 'DUMP_VOLUME')
           if (ierror/= 0) goto 9999
           !
-          if (tim_accum > 0.0_fp) then
-             tfrac = 1.0_fp/tim_accum
-          else
+          if (ntimaccum==0) then
              tfrac = 1.0_fp
+          else
+             tfrac = 1.0_fp/ntimaccum
           endif
           !
           ! element 'DREDGE_TFRAC'
           !
           allocate(rbuff1(nadred+nasupl), stat=istat)
           do i = 1, nadred+nasupl
-             rbuff1(i) = tfrac*tim_dredged(i)
+             rbuff1(i) = tfrac*ndredged(i)
           enddo
           call wrtvar(fds, filename, filetype, grnam, celidt, &
                     & gdp, ierror, lundia, rbuff1, 'DREDGE_TFRAC')
@@ -206,7 +204,7 @@ subroutine wrthisdad(lundia    ,error     ,filename  ,ithisc    , &
           ! element 'PLOUGH_TFRAC'
           !
           do i = 1, nadred+nasupl
-             rbuff1(i) = tfrac*tim_ploughed(i)
+             rbuff1(i) = tfrac*nploughed(i)
           enddo
           call wrtvar(fds, filename, filetype, grnam, celidt, &
                     & gdp, ierror, lundia, rbuff1, 'PLOUGH_TFRAC')
@@ -214,9 +212,9 @@ subroutine wrthisdad(lundia    ,error     ,filename  ,ithisc    , &
           if (ierror/= 0) goto 9999
        endif
        !
-       tim_accum    = 0.0_fp
-       tim_dredged  = 0.0_fp
-       tim_ploughed = 0.0_fp
+       ntimaccum = 0
+       ndredged  = 0
+       nploughed = 0
        !
     end select
     !

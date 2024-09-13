@@ -8,7 +8,7 @@ subroutine rdstru(lunmd     ,lundia    ,error     ,mdfrec    ,nrrec     , &
                 & cdwlsu    ,cdwlsv    , gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -32,8 +32,8 @@ subroutine rdstru(lunmd     ,lundia    ,error     ,mdfrec    ,nrrec     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdstru.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdstru.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Read rigid lid factor from MDF file
@@ -694,7 +694,7 @@ subroutine rdstru(lunmd     ,lundia    ,error     ,mdfrec    ,nrrec     , &
     ! Initialize global parameter
     !
     filbub = fildef
-    call prop_get(gdp%mdfile_ptr, '*', 'Filbub', filbub)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Filbub', filbub)
     !
     ! Bubble screen info in file? <YES>
     !
@@ -712,13 +712,13 @@ subroutine rdstru(lunmd     ,lundia    ,error     ,mdfrec    ,nrrec     , &
     ! Read Fil2dw
     !
     fil2dw = ' '
-    call prop_get(gdp%mdfile_ptr,'*','Fil2dw',fil2dw)
+    call prop_get_string(gdp%mdfile_ptr,'*','Fil2dw',fil2dw)
     if (fil2dw /= ' ') then
        !
        ! read flag for Upwind
        !
        upwind = .true.
-       call prop_get(gdp%mdfile_ptr,'*','Upw2dw',upwind)
+       call prop_get_logical(gdp%mdfile_ptr,'*','Upw2dw',upwind)
        !
        istruc = 9
        if (.not.upwind) istruc = -istruc

@@ -6,7 +6,7 @@ subroutine detvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                 & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +30,8 @@ subroutine detvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: detvic.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/detvic.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Determines horizontal viscosity and
@@ -62,10 +62,11 @@ subroutine detvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
     real(fp)               , pointer :: gamma
     real(fp)               , pointer :: dicmol
     logical                , pointer :: elder
-    real(fp)               , pointer :: drycrt
     real(fp)               , pointer :: ag
     real(fp)               , pointer :: vonkar
     real(fp)               , pointer :: vicmol
+    logical, pointer :: HORIZdiffZERO
+    logical, pointer :: HORIZviscZERO
 !
 ! Global variables
 !
@@ -116,7 +117,6 @@ subroutine detvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
     real(fp)       :: b      ! Help var. See "first2d.doc" formula (1a) 
     real(fp)       :: chezy  ! Total chezy value in zeta point 
     real(fp)       :: depth  ! Total depth 
-    real(fp)       :: drytrsh
     real(fp)       :: ks     ! Help var. See "first2d.doc" formula (3a) 
     real(fp)       :: sag
     real(fp)       :: ustar
@@ -130,25 +130,25 @@ subroutine detvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
 !
 !! executable statements -------------------------------------------------------
 !
+    HORIZdiffZERO => gdp%gdimbound%HORIZdiffZERO
+    HORIZviscZERO => gdp%gdimbound%HORIZviscZERO
     nd        => gdp%gdhtur2d%nd
     sigmat    => gdp%gdhtur2d%sigmat
     flp       => gdp%gdhtur2d%flp
     gamma     => gdp%gdhtur2d%gamma
     dicmol    => gdp%gdhtur2d%dicmol
     elder     => gdp%gdhtur2d%elder
-    drycrt    => gdp%gdnumeco%drycrt
     ag        => gdp%gdphysco%ag
     vonkar    => gdp%gdphysco%vonkar
     vicmol    => gdp%gdphysco%vicmol
     !
     ! Initialisation local variables
     !
-    ddb     = gdp%d%ddbound
-    icount  = 0
-    error   = .false.
-    sag     = sqrt(ag)
-    drytrsh = drycrt
-    nm_pos  = 1
+    ddb    = gdp%d%ddbound
+    icount = 0
+    error  = .false.
+    sag    = sqrt(ag)
+    nm_pos = 1
     !
     ! The HLES contribution to vicuv/dicuv is stored in array element kmax+2
     ! The background contribution is stored in array element kmax+1
@@ -164,15 +164,13 @@ subroutine detvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
           ndm   = nm - icy
           kkfu  = max( 1 , kfu(nm)+kfu(nmd) )
           kkfv  = max( 1 , kfv(nm)+kfv(ndm) )
-          uuu   = (umean(nmd)*kfu(nmd) + umean(nm)*kfu(nm)) / real(kkfu,fp)
-          vvv   = (vmean(ndm)*kfv(ndm) + vmean(nm)*kfv(nm)) / real(kkfv,fp)
+          uuu   = (umean(nmd)*kfu(nmd) + umean(nm)*kfu(nm)) / kkfu
+          vvv   = (vmean(ndm)*kfv(ndm) + vmean(nm)*kfv(nm)) / kkfv
           utot  = sqrt(uuu*uuu + vvv*vvv)
-          ken   = max( 1 , kfu(nm) + kfu(nmd) + kfv(nm) + kfv(ndm) )
-          !
-          ! Limit Chezy to be larger than 1 to avoid division by zero in points that all inactive (although this should not be possible for kfs(nm)=1)
-          !
-          chezy = max( 1.0_fp , (kfu(nmd)*cvalu(nmd) + kfu(nm)*cvalu(nm) + kfv(ndm)*cvalv(ndm) + kfv(nm)*cvalv(nm)) / real(ken,fp) )
-          depth = max( drytrsh , real(dps(nm),fp) + s1(nm) )
+          ken   = kfu(nm) + kfu(nmd) + kfv(nm) + kfv(ndm)
+          chezy = (kfu(nmd)*cvalu(nmd) + kfu(nm)*cvalu(nm) + kfv(ndm)*cvalv(ndm) &
+                & + kfv(nm)*cvalv(nm)) / ken
+          depth = real(dps(nm),fp) + s1(nm)
           b     = 0.75*ag*utot / (depth*chezy*chezy)
           !
           ! determine ks
@@ -186,7 +184,9 @@ subroutine detvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
              ! not in coupling points because VICUV/DICUV is communicated
              ! by the mapper
              !
-             vicuv(nm, khtur) = (sqrt(gamma*gamma*sigmat*sigmat*ptke(nm) + b*b) - b) / (ks*ks)
+             vicuv(nm, khtur) = &
+                   (sqrt(gamma*gamma*sigmat*sigmat*ptke(nm) + b*b) - b) &
+                   / (ks*ks)
           endif
           !
           ! Add Elder to subgrid viscosity
@@ -211,6 +211,8 @@ subroutine detvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
              vicuv(nm, khtur) = vicuv(nm, khtur) + vicmol
              dicuv(nm, khtur) = dicuv(nm, khtur) + dicmol
           endif
+          if (HORIZdiffZERO) dicuv(nm, khtur) = 0._fp !
+          if (HORIZviscZERO) vicuv(nm, khtur) = 0._fp ! HORIZviscZERO is used in uzd also (after HLES viscosity is added)
        else
           vicuv(nm, khtur) = 0.0
           dicuv(nm, khtur) = 0.0

@@ -1,7 +1,7 @@
-function ulim(du1,du2)
+function ulim(du1,du2, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ function ulim(du1,du2)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: ulim.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/ulim.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! This routine computes a limiter value based on the velocity gradients du1 & 
@@ -37,12 +37,16 @@ function ulim(du1,du2)
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
-    use precision
+    use globaldata
+    !
     implicit none
+    !
+    type(globdat),target :: gdp
 !
 ! Function return value
 !
     real(fp) :: ulim
+    logical, pointer :: SECordVEL
 !
 ! Global variables
 !
@@ -51,11 +55,14 @@ function ulim(du1,du2)
 !
 !! executable statements -------------------------------------------------------
 !
+    SECordVEL => gdp%gdimbound%SECordVEL
     !
     ! default value of ULIM = 0.0
     !
     ulim = 0.0
-     if (du1*du2 > 0.0) then
-        ulim = 0.5*min(1.0_fp,du2/du1)
-     endif
+    IF (SECordVEL) THEN
+       if (du1*du2 > 0.0) then
+          ulim = 0.5*min(1.0_fp,du2/du1)
+       endif
+    ENDIF
 end function ulim

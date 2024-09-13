@@ -11,7 +11,7 @@ subroutine z_turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                   & veul      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -35,8 +35,8 @@ subroutine z_turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_turclo.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/z_turclo.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes eddy viscosity and eddy diffusivity.
@@ -299,26 +299,28 @@ subroutine z_turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
        call dfexchg(dvdz, 0, kmax, dfloat, nm_pos, gdp)
        !
        do nm = 1, nmmax
-          if (kfs(nm)==1) then
+          do k = kfsmin(nm), kfsmax(nm) - 1
+             kup = k + 1
              nmd = nm - icx
              ndm = nm - icy
-             h0     = max(s1(nm) + real(dps(nm),fp), 0.01_fp)
-             if (kcs(nm)==3) then
-                maskval = kcs(nm) - 2
-             else
-                maskval = kcs(nm)
-             endif
-             do k = kfsmin(nm), kfsmax(nm) - 1
-                kup = k + 1
+             if (kfs(nm)==1) then
+                h0     = max(s1(nm) + real(dps(nm),fp), 0.01_fp)
                 dz     = 0.5_fp*(dzs1(nm, k) + dzs1(nm, kup))
                 drhodz = (rho(nm, kup) - rho(nm, k))/dz
+                if (kcs(nm)==3) then
+                   maskval = kcs(nm) - 2
+                else
+                   maskval = kcs(nm)
+                endif
                 shear = maskval*0.5_fp*(  dudz(nm, k)**2 + dudz(nmd, k)**2         &
                       &                 + dvdz(nm, k)**2 + dvdz(ndm, k)**2)
-                shear = max(1E-8, shear)
+                if (shear<1E-8) then
+                   shear = 1E-8
+                endif
                 bruvai(nm, k) = -ag*drhodz/rho(nm, k)
                 rich  (nm, k) = bruvai(nm, k)/shear
-             enddo
-          endif
+             endif
+          enddo
        enddo
        !=======================================================================
        !

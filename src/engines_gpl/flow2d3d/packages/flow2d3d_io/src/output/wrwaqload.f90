@@ -7,7 +7,7 @@
      &                       lunsrc )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +31,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrwaqload.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrwaqload.f90 $
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -105,7 +105,6 @@
       nsr2  = 0
       do isrc = 1, nsrc
          if (mnksrc(3,isrc) == -1) cycle ! awkward disabling of discharges outside partition when running parallel
-         if (mnksrc(7,isrc) == 4 .or. mnksrc(7,isrc) == 5 .or. mnksrc(7,isrc) == 8) cycle ! skip e,d and f culverts, output is not correct
          k = mnksrc(3,isrc)
          iwpnt(isrc) = nosrc + 1
          if ( k .eq. 0 ) then
@@ -121,9 +120,8 @@
          endif
       enddo
       do isrc = 1, nsrc
-         if (mnksrc(3,isrc) ==  -1 ) cycle   ! awkward disabling of discharges outside partition when running parallel
-         if (mnksrc(7,isrc) == 4 .or. mnksrc(7,isrc) == 5 .or. mnksrc(7,isrc) == 8) cycle ! skip e,d and f culverts, output is not correct
-         if (mnksrc(7,isrc) .le. 1 ) cycle   ! no inlet outlet
+         if ( mnksrc(3,isrc) ==  -1 ) cycle   ! awkward disabling of discharges outside partition when running parallel
+         if ( mnksrc(7,isrc) .le. 1 ) cycle   ! no inlet outlet
          k = mnksrc(6,isrc)
          iwpnt(isrc+nsrc) = nosrc + 1
          if ( k .eq. 0 ) then
@@ -176,7 +174,6 @@
          nsr2 = 1
          do isrc = 1, nsrc
             if (mnksrc(3,isrc) == -1) cycle ! awkward disabling of discharges outside partition when running parallel
-            if (mnksrc(7,isrc) == 4 .or. mnksrc(7,isrc) == 5 .or. mnksrc(7,isrc) == 8) cycle ! skip e,d and f culverts, output is not correct
             k = mnksrc(3,isrc)
             iwp = iwpnt(isrc)
             write ( lunsrc , '(6X,E15.6,A,I4)' ) awaste(iwp),               &
@@ -191,9 +188,8 @@
             endif
          enddo
          do isrc = 1, nsrc
-            if (mnksrc(3,isrc) ==  -1) cycle   ! awkward disabling of discharges outside partition when running parallel
-            if (mnksrc(7,isrc) == 4 .or. mnksrc(7,isrc) == 5 .or. mnksrc(7,isrc) == 8) cycle ! skip e,d and f culverts, output is not correct
-            if (mnksrc(7,isrc) .le. 1) cycle   ! not an intake - outfall or other construct
+            if ( mnksrc(3,isrc) ==  -1 ) cycle   ! awkward disabling of discharges outside partition when running parallel
+            if ( mnksrc(7,isrc) .le. 1 ) cycle   ! not an intake - outfall or other construct
             k = mnksrc(6,isrc)
             iwp = iwpnt(isrc+nsrc)
             write ( lunsrc , '(6X,E15.6,A,I4)' ) awaste(iwp),               &
@@ -210,9 +206,8 @@
          if ( .not. zmodel ) then               ! zmodel alraedy dealt with
             do ilay = 1, nolay-1
                do isrc = 1, nsrc
-                  if (mnksrc(3,isrc) ==  -1) cycle   ! awkward disabling of discharges outside partition when running parallel
-                  if (mnksrc(7,isrc) == 4 .or. mnksrc(7,isrc) == 5 .or. mnksrc(7,isrc) == 8) cycle ! skip e,d and f culverts, output is not correct
-                  if (mnksrc(3,isrc) .eq. 0) then    ! depth average loads
+                  if ( mnksrc(3,isrc) ==  -1 ) cycle   ! awkward disabling of discharges outside partition when running parallel
+                  if ( mnksrc(3,isrc) .eq. 0 ) then    ! depth average loads
                      iwp = iwpnt(isrc)
                      write ( lunsrc , '(6X,E15.6,A,I4)' ) awaste(iwp+ilay), &
      &                                  '    1.0  ; SOURCE:',nsr2
@@ -220,11 +215,10 @@
                   endif
                enddo
                do isrc = 1, nsrc
-                  if (mnksrc(3,isrc) ==  -1) cycle   ! awkward disabling of discharges outside partition when running parallel
-                  if (mnksrc(7,isrc) == 4 .or. mnksrc(7,isrc) == 5 .or. mnksrc(7,isrc) == 8) cycle ! skip e,d and f culverts, output is not correct
-                  if (mnksrc(7,isrc) .le. 1) cycle   ! not an intake - outfall or other construct
-                  if (mnksrc(6,isrc) .eq. 0) then    ! depth average loads
-                     iwp = iwpnt(isrc+nsrc)
+                  if ( mnksrc(3,isrc) ==  -1 ) cycle   ! awkward disabling of discharges outside partition when running parallel
+                  if ( mnksrc(7,isrc) .le. 1 ) cycle   ! not an intake - outfall or other construct
+                  if ( mnksrc(6,isrc) .eq. 0 ) then    ! depth average loads
+                     iwp = iwpnt(isrc)
                      write ( lunsrc , '(6X,E15.6,A,I4)' ) awaste(iwp+ilay), &
      &                                  '    1.0  ; SOURCE:',nsr2
                      nsr2 = nsr2 + 1

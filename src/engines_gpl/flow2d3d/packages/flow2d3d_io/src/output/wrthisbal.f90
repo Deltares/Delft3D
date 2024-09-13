@@ -2,7 +2,7 @@ subroutine wrthisbal(ithisc    ,filename  ,lundia    ,error     ,irequest  , &
                    & fds       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine wrthisbal(ithisc    ,filename  ,lundia    ,error     ,irequest  , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrthisbal.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrthisbal.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Writes the time varying mass balance data to the FLOW HIS file
@@ -41,7 +41,6 @@ subroutine wrthisbal(ithisc    ,filename  ,lundia    ,error     ,irequest  , &
     use netcdf, only: nf90_unlimited
     use dfparall, only: inode, master
     use wrtarray, only: wrtvar
-    use dfparall, only: dfloat, dfsum
     !
     implicit none
     !
@@ -66,7 +65,6 @@ subroutine wrthisbal(ithisc    ,filename  ,lundia    ,error     ,irequest  , &
     !
     integer                        , pointer :: lstsci
     integer                        , pointer :: lsedtot
-    integer                        , pointer :: io_prec
 !
 ! Global variables
 !
@@ -88,10 +86,8 @@ subroutine wrthisbal(ithisc    ,filename  ,lundia    ,error     ,irequest  , &
     !
     integer                                           :: idatt_coord
     !
-    real(fp)        , dimension(:)    , allocatable   :: tvolumes
     real(fp)        , dimension(:)    , allocatable   :: rbuff1
     real(fp)        , dimension(:,:)  , allocatable   :: rbuff2
-    real(fp)        , dimension(:,:,:), allocatable   :: rbuff3
     integer                                           :: filetype
     integer                                           :: istat
     integer                                           :: ierror       ! Local error flag
@@ -122,7 +118,6 @@ subroutine wrthisbal(ithisc    ,filename  ,lundia    ,error     ,irequest  , &
     !
     lstsci         => gdp%d%lstsci
     lsedtot        => gdp%d%lsedtot
-    io_prec        => gdp%gdpostpr%io_prec
     !
     ierror = 0
     select case (irequest)
@@ -142,15 +137,15 @@ subroutine wrthisbal(ithisc    ,filename  ,lundia    ,error     ,irequest  , &
        if (filetype /= FTYPE_NETCDF) then ! don't store duplicate times
           call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'ITHISC', ' ', IO_INT4       , 0, longname='timestep number (ITHISC*DT*TUNIT := time in sec from ITDATE)')
        endif
-       call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'BALVOLUME', ' ', io_prec    , 1, dimids=(/iddim_nbalpol/), longname='Volume within polygon', unit='m3', attribs=(/idatt_coord/) )
-       call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'BALFLUX', ' ', io_prec      , 2, dimids=(/iddim_2, iddim_nneighb/), longname='Accumulated flux between polygons', unit='m3')
+       call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'BALVOLUME', ' ', IO_REAL4   , 1, dimids=(/iddim_nbalpol/), longname='Volume within polygon', unit='m3', attribs=(/idatt_coord/) )
+       call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'BALFLUX', ' ', IO_REAL4     , 2, dimids=(/iddim_2, iddim_nneighb/), longname='Accumulated flux between polygons', unit='m3')
        if (lstsci>0) then
-          call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'BALR1CONC', ' ', io_prec , 2, dimids=(/iddim_nbalpol, iddim_lstsci/), longname='Average concentration within polygon', attribs=(/idatt_coord/) )
-          call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'BALR1FLUX', ' ', io_prec , 3, dimids=(/iddim_2, iddim_nneighb, iddim_lstsci/), longname='Accumulated constituent flux between polygons')
+          call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'BALR1CONC', ' ', IO_REAL4, 2, dimids=(/iddim_nbalpol, iddim_lstsci/), longname='Average concentration within polygon', attribs=(/idatt_coord/) )
+          call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'BALR1FLUX', ' ', IO_REAL4, 3, dimids=(/iddim_2, iddim_nneighb, iddim_lstsci/), longname='Accumulated constituent flux between polygons')
        endif
        if (lsedtot>0) then
-          call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'BALDPS', ' ', io_prec    , 1, dimids=(/iddim_nbalpol/), longname='Average bottom depth within polygon', unit='m', attribs=(/idatt_coord/) )
-          call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'BALSDFLUX', ' ', io_prec , 3, dimids=(/iddim_2, iddim_nneighb, iddim_lsedtot/), longname='Accumulated sediment flux between polygons')
+          call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'BALDPS', ' ', IO_REAL4   , 1, dimids=(/iddim_nbalpol/), longname='Average bottom depth within polygon', unit='m', attribs=(/idatt_coord/) )
+          call addelm(gdp, lundia, FILOUT_HIS, grpnam, 'BALSDFLUX', ' ', IO_REAL4, 3, dimids=(/iddim_2, iddim_nneighb, iddim_lsedtot/), longname='Accumulated sediment flux between polygons')
        endif
        !
        group%grp_dim = iddim_time
@@ -160,81 +155,56 @@ subroutine wrthisbal(ithisc    ,filename  ,lundia    ,error     ,irequest  , &
        !
        celidt = celidt + 1
        !
-       if (filetype /= FTYPE_NETCDF) then ! don't store duplicate times
+       if (inode == master) then
+          if (filetype /= FTYPE_NETCDF) then ! don't store duplicate times
+             call wrtvar(fds, filename, filetype, grpnam, celidt, &
+                       & gdp, ierror, lundia, ithisc, 'ITHISC')
+             if (ierror/=0) goto 9999
+          endif
+          !
           call wrtvar(fds, filename, filetype, grpnam, celidt, &
-                    & gdp, ierror, lundia, ithisc, 'ITHISC')
-          if (ierror/=0) goto 9999
-       endif
-       !
-       allocate(tvolumes(nbalpol), stat=istat)
-       do n = 1,nbalpol
-          tvolumes(n) = volumes(n)
-       enddo
-       call dfreduce_gdp (tvolumes, nbalpol, dfloat, dfsum, gdp )
-       call wrtvar(fds, filename, filetype, grpnam, celidt, &
-                 & gdp, ierror, lundia, tvolumes, 'BALVOLUME')
-       if (ierror/= 0) goto 9999
-       !
-       allocate(rbuff2(2,nneighb), stat=istat)
-       rbuff2(:,:) = fluxes(:,:)
-       call dfreduce_gdp (rbuff2, 2*nneighb, dfloat, dfsum, gdp )
-       call wrtvar(fds, filename, filetype, grpnam, celidt, &
-                 & gdp, ierror, lundia, rbuff2, 'BALFLUX')
-       deallocate(rbuff2, stat=istat)
-       if (ierror/= 0) goto 9999
-       !
-       if (lstsci>0) then
-          allocate(rbuff2(nbalpol,lstsci), stat=istat)
-          rbuff2(:,:) = mass_r1(:,:)
-          call dfreduce_gdp ( rbuff2, nbalpol*lstsci, dfloat, dfsum, gdp )
-          do l = 1,lstsci
-             do n = 1,nbalpol
-                rbuff2(n,l) = rbuff2(n,l)/tvolumes(n)
+                    & gdp, ierror, lundia, volumes, 'BALVOLUME')
+          if (ierror/= 0) goto 9999
+          !
+          call wrtvar(fds, filename, filetype, grpnam, celidt, &
+                    & gdp, ierror, lundia, fluxes, 'BALFLUX')
+          !
+          if (lstsci>0) then
+             allocate(rbuff2(nbalpol,lstsci), stat=istat)
+             do l = 1,lstsci
+                do n = 1,nbalpol
+                   rbuff2(n,l) = mass_r1(n,l)/volumes(n)
+                enddo
              enddo
-          enddo
-          call wrtvar(fds, filename, filetype, grpnam, celidt, &
-                    & gdp, ierror, lundia, rbuff2, 'BALR1CONC')
-          deallocate(rbuff2, stat=istat)
-          if (ierror/= 0) goto 9999
+             call wrtvar(fds, filename, filetype, grpnam, celidt, &
+                       & gdp, ierror, lundia, rbuff2, 'BALR1CONC')
+             deallocate(rbuff2)
+             if (ierror/= 0) goto 9999
+             !
+             call wrtvar(fds, filename, filetype, grpnam, celidt, &
+                       & gdp, ierror, lundia, fluxes_r1, 'BALR1FLUX')
+          endif
           !
-          allocate(rbuff3(2,nneighb,lstsci), stat=istat)
-          rbuff3(:,:,:) = fluxes_r1(:,:,:)
-          call dfreduce_gdp ( rbuff3, 2*nneighb*lstsci, dfloat, dfsum, gdp )
-          call wrtvar(fds, filename, filetype, grpnam, celidt, &
-                    & gdp, ierror, lundia, rbuff3, 'BALR1FLUX')
-          deallocate(rbuff3, stat=istat)
-          if (ierror/= 0) goto 9999
-       endif
-       !
-       if (lsedtot>0) then
-          allocate(rbuff1(nbalpol), rbuff2(2,nbalpol), stat=istat)
-          do n = 1,nbalpol
-             rbuff2(1,n) = accdps(n)
-             rbuff2(2,n) = horareas(n)
-          enddo
-          call dfreduce_gdp ( rbuff2, 2*nbalpol, dfloat, dfsum, gdp )
-          do n = 1,nbalpol
-             rbuff1(n) = rbuff2(1,n)/rbuff2(2,n)
-          enddo
-          call wrtvar(fds, filename, filetype, grpnam, celidt, &
-                    & gdp, ierror, lundia, rbuff1, 'BALDPS')
-          deallocate(rbuff1, rbuff2, stat=istat)
-          if (ierror/= 0) goto 9999
-          !
-          allocate(rbuff3(2,nneighb,lsedtot), stat=istat)
-          rbuff3(:,:,:) = fluxes_sd(:,:,:)
-          call dfreduce_gdp ( rbuff3, 2*nneighb*lsedtot, dfloat, dfsum, gdp )
-          call wrtvar(fds, filename, filetype, grpnam, celidt, &
-                    & gdp, ierror, lundia, rbuff3, 'BALSDFLUX')
-          deallocate(rbuff3, stat=istat)
-          if (ierror/= 0) goto 9999
+          if (lsedtot>0) then
+             allocate(rbuff1(nbalpol), stat=istat)
+             do n = 1,nbalpol
+                rbuff1(n) = accdps(n)/horareas(n)
+             enddo
+             call wrtvar(fds, filename, filetype, grpnam, celidt, &
+                       & gdp, ierror, lundia, rbuff1, 'BALDPS')
+             deallocate(rbuff1)
+             if (ierror/= 0) goto 9999
+             !
+             call wrtvar(fds, filename, filetype, grpnam, celidt, &
+                       & gdp, ierror, lundia, fluxes_sd, 'BALSDFLUX')
+             if (ierror/= 0) goto 9999
+          endif
        endif
        !
     end select
     !
     ! write error message if error occured and set error = .true.
     !
-9999 continue
-    if (allocated(tvolumes)) deallocate(tvolumes, stat=istat)
+9999   continue
     if (ierror /= 0) error = .true.
 end subroutine wrthisbal

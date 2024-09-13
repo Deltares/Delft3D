@@ -1,7 +1,7 @@
 subroutine prterr(lundia, msgno, filtxt)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine prterr(lundia, msgno, filtxt)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: prterr.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/general/prterr.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: This routine prints a message to output device.
@@ -92,6 +92,9 @@ subroutine prterr(lundia, msgno, filtxt)
             & ' the Delft3D input !!'
     case ('D007')
        msg = '*** ERROR Waves activated but no COM-file present !!'
+    case ('D008')
+       msg = '*** ERROR Number of Timesteps on COM-file too ' //                &
+            & 'large. Contact Deltares'
     case ('F001')
        msg = '*** ERROR Variable # not known'
     case ('F002')
@@ -225,6 +228,8 @@ subroutine prterr(lundia, msgno, filtxt)
        msg = '*** WARNING No convergence in DIFU for resp. constituent nr. & tstep: #'
     case ('S208')
        msg = '*** WARNING Sinks set to zero at tstep and (dry) discharge point nr. #'
+    case ('S209')
+       msg = '*** WARNING No convergence in SUD at tstep: #'       
     case ('S220')
        msg = '*** ERROR Tide Generating Forces file not found. Re-run program from the shell'
     case ('U001')
@@ -234,7 +239,7 @@ subroutine prterr(lundia, msgno, filtxt)
     case ('U003')
        msg = '*** ERROR Undefined grid dimensions - goto domain/grid/dimension menu'
     case ('U004')
-       msg = '*** ERROR Layer thickness is equal to or less than zero for k = #'
+       msg = '*** ERROR Value lies outside the valid range #'
     case ('U005')
        msg = '*** WARNING Iteration parameter is set to #'
     case ('U006')
@@ -347,8 +352,6 @@ subroutine prterr(lundia, msgno, filtxt)
        msg = '*** ERROR Blank label/identifier not accepted'
     case ('U060')
        msg = '*** ERROR Consecutive times in # must increase'
-    case ('U061')
-       msg = '*** ERROR Invalid Heat module parameters CD/Stanton/Dalton option (only 0 or 1 allowed)'
     case ('U062')
        msg = '*** ERROR Consecutive times on file # should increase'
     case ('U063')

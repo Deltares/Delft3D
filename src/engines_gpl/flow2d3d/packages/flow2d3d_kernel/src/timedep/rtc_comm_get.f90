@@ -1,7 +1,7 @@
-subroutine rtc_comm_get(cursec    ,cbuvrt    ,nsluv     ,qsrcrt    ,nsrc     ,gdp       )
+subroutine rtc_comm_get(cursec    ,cbuvrt    ,nsluv     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine rtc_comm_get(cursec    ,cbuvrt    ,nsluv     ,qsrcrt    ,nsrc     ,gd
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rtc_comm_get.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/timedep/rtc_comm_get.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! This routine receives data from the RTC module
@@ -37,7 +37,6 @@ subroutine rtc_comm_get(cursec    ,cbuvrt    ,nsluv     ,qsrcrt    ,nsrc     ,gd
     use flow2d3d_timers
     use SyncRtcFlow
     use globaldata
-    use dfparall, only: parll, dfloat, dfsum
     !
     implicit none
     !
@@ -52,7 +51,7 @@ subroutine rtc_comm_get(cursec    ,cbuvrt    ,nsluv     ,qsrcrt    ,nsrc     ,gd
     integer                       , pointer :: parget_offset
     integer                       , pointer :: rtc_domainnr
     integer                       , pointer :: rtc_ndomains
-    integer                       , pointer :: rtcact
+    logical                       , pointer :: rtcact
     logical                       , pointer :: anyRTCtoFLOW
     integer                       , pointer :: rtcmod
     integer                       , pointer :: stacnt
@@ -62,17 +61,13 @@ subroutine rtc_comm_get(cursec    ,cbuvrt    ,nsluv     ,qsrcrt    ,nsrc     ,gd
 ! Global variables
 !
     integer                      , intent(in) :: nsluv  ! number of barriers
-    integer                      , intent(in) :: nsrc   ! number of discharge points
     real(fp)                     , intent(in) :: cursec ! Current simulation time in seconds 
     real(fp), dimension(2, nsluv)             :: cbuvrt ! Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(2, nsrc)              :: qsrcrt ! Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
     integer                                :: id
     integer                                :: rtcsta      ! Status from RTC: If < 0, RTC quits And Flow also must quit. 
-    logical                                :: error
-    character(80)                          :: msgstr
 !
 !! executable statements -------------------------------------------------------
 !
@@ -92,26 +87,6 @@ subroutine rtc_comm_get(cursec    ,cbuvrt    ,nsluv     ,qsrcrt    ,nsrc     ,gd
     !
     ! RTC  -> FLOW : get steering parameters for current date and time
     !
-    if (rtcact == RTCviaBMI) then
-       !
-       ! set appropriate flag when values are set via BMI
-       !
-       do id = 1, nsluv
-          if (comparereal(cbuvrt(2,id), -998.0_fp) == 1) then
-             cbuvrt(1,id) = 1.0_fp
-          endif
-       enddo
-       do id = 1, nsrc
-          if (comparereal(qsrcrt(2,id), -998.0_fp) == 1) then
-             qsrcrt(1,id) = 1.0_fp
-          endif
-       enddo
-       !
-       ! For BMI exchange, we are finished here
-       !
-       return
-    endif
-    !
     call timer_start(timer_wait, gdp)
     !
     ! get barrier levels
@@ -129,10 +104,8 @@ subroutine rtc_comm_get(cursec    ,cbuvrt    ,nsluv     ,qsrcrt    ,nsrc     ,gd
        !
        ! distribute data to all domains
        !
-       if (parll) then
-           call dfreduce (tparget, 2*tnparget, dfloat, dfsum, error, msgstr )
-       elseif (rtc_ndomains > 1) then
-           call dd_rtccommunicate(tparget, 2*tnparget)
+       if (rtc_ndomains > 1) then
+          call rtccommunicate(tparget, 2*tnparget)
        endif
        !
        ! copy data to local array
@@ -140,14 +113,11 @@ subroutine rtc_comm_get(cursec    ,cbuvrt    ,nsluv     ,qsrcrt    ,nsrc     ,gd
        do id = 1, nsluv
           cbuvrt(:,id) = tparget(:,parget_offset+id)
        enddo
-       do id = 1, nsrc
-          qsrcrt(:,id) = tparget(:,parget_offset+nsluv+id)
-       enddo
     endif
     call timer_stop(timer_wait, gdp)
     !
     if (rtcsta < 0) then
-       rtcact = noRTC
+       rtcact = .false.
        write (*, '(a)') ' '
        write (*, '(a)') ' Stop signal from RTC '
        call prterr(lundia, 'P004', 'Stop signal from RTC ')

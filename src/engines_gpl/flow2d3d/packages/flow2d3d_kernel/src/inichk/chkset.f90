@@ -3,7 +3,7 @@ subroutine chkset(lundia    ,error     ,sferic    ,method    ,trasol    , &
                 & keva      ,iphisi    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine chkset(lundia    ,error     ,sferic    ,method    ,trasol    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: chkset.f90 7024 2017-02-20 13:43:29Z canestrelli.x $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/chkset.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Checks the combination of Domain Decomposition with various program modes
@@ -58,8 +58,10 @@ subroutine chkset(lundia    ,error     ,sferic    ,method    ,trasol    , &
     integer                       , pointer :: nto
     integer                       , pointer :: ntoq
     integer                       , pointer :: ndro
+    integer                       , pointer :: lsedtot
     logical                       , pointer :: multi
     integer                       , pointer :: nh_level
+    integer                       , pointer :: cutcell    
     character(8)                  , pointer :: dpsopt
     character(8)                  , pointer :: dpuopt
 
@@ -68,7 +70,7 @@ subroutine chkset(lundia    ,error     ,sferic    ,method    ,trasol    , &
     logical                       , pointer :: temp
     logical                       , pointer :: dredge
     logical                       , pointer :: wave
-    integer                       , pointer :: waveol
+    logical                       , pointer :: waveol
     logical                       , pointer :: xbeach
     logical                       , pointer :: iweflg
     logical                       , pointer :: struct
@@ -122,6 +124,7 @@ subroutine chkset(lundia    ,error     ,sferic    ,method    ,trasol    , &
     nto                 => gdp%d%nto
     ntoq                => gdp%d%ntoq
     ndro                => gdp%d%ndro
+    lsedtot             => gdp%d%lsedtot    
     multi               => gdp%gdmorpar%multi
     nh_level            => gdp%gdnonhyd%nh_level
     dpsopt              => gdp%gdnumeco%dpsopt
@@ -154,6 +157,7 @@ subroutine chkset(lundia    ,error     ,sferic    ,method    ,trasol    , &
     itcomi              => gdp%gdinttim%itcomi
     ztbml               => gdp%gdzmodel%ztbml
     ztbml_upd_r1        => gdp%gdzmodel%ztbml_upd_r1
+    cutcell             => gdp%gdimbound%cutcell
     !
     ierror = 0
     iwarn  = 0
@@ -269,8 +273,8 @@ subroutine chkset(lundia    ,error     ,sferic    ,method    ,trasol    , &
           ierror = ierror+ 1
        endif
        if (ztbml .and. rst_layer_model == 'UNKNOWN') then
-          call prterr(lundia    ,'U190'    ,'Restarting with modified layering (ZTBML=#Y#) from a restart/map')
-          write (lundia, '(a)') '          file without layer model information. Restart may be non-conservative.'
+          call prterr(lundia    ,'P004'    ,'Restarting with modified layering (ZTBML=#Y#) only allowed')
+          write (lundia, '(a)') '          from MAP-files with correct layer model'
           ierror = ierror + 1
        endif    
        if (.not. ztbml .and. rst_layer_model == 'Z-MODEL, ZTBML') then
@@ -417,7 +421,7 @@ subroutine chkset(lundia    ,error     ,sferic    ,method    ,trasol    , &
        ierror = ierror+ 1
     endif
     !
-    if (wave .and. waveol>0 .and. (.not.xbeach) .and. itcomi==1) then
+    if (wave .and. waveol .and. (.not.xbeach) .and. itcomi==1) then
        !
        ! Calling wave every timestep is not supported (yet).
        ! If tried, FLOW does not read wave information at all.
@@ -435,6 +439,13 @@ subroutine chkset(lundia    ,error     ,sferic    ,method    ,trasol    , &
           call prterr(lundia ,'U021' ,errtxt )
           ierror = ierror+ 1
        endif
+    endif
+    !
+    ! IBM
+    !    
+    if (cutcell>0.and.lsedtot>1) then
+       call prterr(lundia, 'P004', 'Cutcells are not allowed with multiple grain sizes')
+       ierror = ierror+ 1
     endif
     !
     !

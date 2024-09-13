@@ -8,7 +8,7 @@ subroutine mom_fls &
                & mom_output,gdp) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -32,8 +32,8 @@ subroutine mom_fls &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: mom_fls.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/mom_fls.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! This subroutine is part of (called by) CUCNP and UZD. It computes the
@@ -68,6 +68,7 @@ subroutine mom_fls &
     logical      , pointer :: cstbnd
     real(fp), dimension(:,:)          , pointer :: mom_m_convec        ! convection u*du/dx term
     real(fp), dimension(:,:)          , pointer :: mom_m_xadvec        ! cross-advection v*du/dy term
+    logical, pointer :: EXCLouterVEL
 !
 ! Global variables
 !
@@ -147,6 +148,7 @@ subroutine mom_fls &
 !
 !! executable statements -------------------------------------------------------
 !
+    EXCLouterVEL => gdp%gdimbound%EXCLouterVEL
     dgcuni  => gdp%gdnumeco%dgcuni
     dryflc  => gdp%gdnumeco%dryflc
     cstbnd  => gdp%gdnumeco%cstbnd
@@ -188,20 +190,20 @@ subroutine mom_fls &
           !
           du2 = (u0(nm,k)-u0(nmd,k)) * kfu(nm) * kfu(nmd)
           if (kspu(nm,0) > 0 .or. kspu(nmd,0) > 0) then
-             du2 = 0.0_fp
+             du2 = 0.0_sp
           endif
           if (qxk(nm,k)+qxk(nmd,k) > 0.0_fp) then
             du1      = (u0(nmd,k)-u0(nmdd,k)) * kfu(nmd) * kfu(nmdd) * kadu(nmd,k) * kadu(nmdd,k)
             if (kspu(nmd,0)>0 .or. kspu(nmdd,0)>0 ) then
                du1 = 0.0_fp
             endif
-            ua(nm,k) =  u0(nmd,k) + ulim(du1,du2)*du1
+            ua(nm,k) =  u0(nmd,k) + ulim(du1,du2, gdp)*du1
           else
             du1      = (u0(nmu,k)-u0(nm,k)) * kfu(nmu) * kfu(nm) * kadu(nmu,k) * kadu(nm,k)
             if (kspu(nm,0)>0 .or. kspu(nmu,0)>0 ) then
                du1 = 0.0_fp
             endif
-            ua(nm,k) =  u0(nm,k)  - ulim(du1,du2)*du1
+            ua(nm,k) =  u0(nm,k)  - ulim(du1,du2, gdp)*du1
           endif
 
           !
@@ -213,11 +215,11 @@ subroutine mom_fls &
             if (qyk(nm,k)+qyk(nmu,k) > 0.0_fp) then
               du1      = (u0(nm ,k) - u0(ndm,k)) * kfu(nm)  * kfu(ndm) * kadu(nm,k) * kadu(ndm,k)
               du2      = (u0(num,k) - u0(nm ,k)) * kfu(num) * kfu(nm)  * kadu(nm,k) * kadu(num,k)
-              ub(nm,k) =  u0(nm ,k) + ulim(du1,du2)*du1
+              ub(nm,k) =  u0(nm ,k) + ulim(du1,du2, gdp)*du1
             else
               du1      = (u0(nuum,k) - u0(num,k)) * kfu(nuum) * kfu(num) * kadu(nuum,k) * kadu(num,k)
               du2      = (u0(num ,k) - u0(nm ,k)) * kfu(num)  * kfu(nm)  * kadu(num,k)  * kadu(nm,k)
-              ub(nm,k) =  u0(num ,k) - ulim(du1,du2)*du1
+              ub(nm,k) =  u0(num ,k) - ulim(du1,du2, gdp)*du1
             endif
           endif
        enddo
@@ -259,7 +261,7 @@ subroutine mom_fls &
              ! Compute VVV
              !
              if (       (cstbnd .and. (kcs(nm)==2 .or. kcs(nmu)==2)) &
-                 & .or. (kcs(nm)==3 .or. kcs(nmu)==3               )  ) then
+                 & .or. (kcs(nm)==3 .or. kcs(nmu)==3               ) .or. EXCLouterVEL) then
                 svvv = max(kfv(ndm) + kfv(ndmu) + kfv(nm) + kfv(nmu), 1)
                 vvv  = (  v1(ndm,k)*kfv(ndm) + v1(ndmu,k)*kfv(ndmu)  &
                      &  + v1(nm ,k)*kfv(nm ) + v1(nmu ,k)*kfv(nmu )   ) / svvv

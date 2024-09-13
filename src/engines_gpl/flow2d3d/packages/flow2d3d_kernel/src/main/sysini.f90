@@ -2,7 +2,7 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
                 & version_short ,filmd     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: sysini.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/main/sysini.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Initialises the FLOW system (EXCEPT for the
@@ -44,7 +44,6 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
     use string_module
     use deltares_common_version_module
     use dfparall
-    use flow2d3d_version_module
     !
     implicit none
     !
@@ -86,7 +85,7 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
     character(10)              :: date        ! Date to be filled in the header
     character(message_len)     :: txthlp       ! Help var.
     character(20)              :: rundat       ! Current date and time containing a combination of DATE and TIME
-    character(256)             :: full_version
+    character(256)             :: version_full
     character(256)             :: filtmp       ! Help var. to specify file name
     character(55)              :: txtput       ! Texts to be filled in the header
     type(message_stack)        :: stack
@@ -139,9 +138,9 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
     !
     call util_getenv('ARCH',txthlp)
     call small(txthlp,message_len)
-    if (txthlp == 'win32' .or. txthlp == 'w32' .or. txthlp == 'x86') then
+    if (txthlp == 'win32' .or. txthlp == 'w32') then
        gdp%arch = 'win32'
-    elseif (txthlp == 'win64' .or. txthlp == 'x64') then
+    elseif (txthlp == 'win64') then
        gdp%arch = 'win64'
     else
        gdp%arch = 'linux'
@@ -150,15 +149,15 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
     !
     ! check userfile consistency
     !
-    full_version  = ' '
+    version_full  = ' '
     version_short = ' '
     !
     ! Force the version information of the module precision to be displayed within the what tool
     !
-    call getfullversionstring_deltares_common(full_version)
-    call getfullversionstring_flow2d3d(full_version)
+    call getfullversionstring_deltares_common(version_full)
+    call getfullversionstring_flow2d3d(version_full)
     call getshortversionstring_flow2d3d(version_short)
-    call flwlic(lunscr    ,full_version ,prgnm     ,gdp       )
+    call flwlic(lunscr    ,version_full ,prgnm     ,gdp       )
     !
     ! put header on screen
     !
@@ -208,13 +207,10 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
     write (lundia, '(a)')
     write (lundia, '(80a1)') ('*', n = 1, 80)
     write (lundia, '(a)')   '***'
-    write (lundia, '(2a)')  '*** ', trim(full_version)
+    write (lundia, '(2a)')  '*** ', trim(version_full)
     write (lundia, '(2a)')  '***           built from : ', trim(txthlp)
     write (lundia, '(a)')   '***'
     write (lundia, '(2a)')  '***           runid      : ', trim(runid)
-    if (gdp%gdnfl%add_uniqueid) then
-        write (lundia, '(2a)')  '***           uniqueid   : ', trim(gdp%uniqueid)
-    endif
     write (lundia, '(4a)')  '***           date,time  : ', date, ',', rundat(11:19)
     write (lundia, '(a)')   '***'
     write (lundia, '(80a1)') ('*', n = 1, 80)
@@ -229,7 +225,8 @@ subroutine sysini(error     ,runid     ,filmrs    ,prgnm     , &
        filtmp(1:8 + lrid) = 'td-diag.' // runid
        inquire (file = filtmp(1:8 + lrid), exist = ex)
        if (ex) then
-          open (newunit=lunhlp, file = filtmp(1:8 + lrid), form = 'formatted')
+          lunhlp = newlun(gdp)
+          open (lunhlp, file = filtmp(1:8 + lrid), form = 'formatted')
    50     continue
           read (lunhlp, '(a)', end = 100, err = 100) txthlp
           write (lundia, '(a,a)') '      ',trim(txthlp)

@@ -7,7 +7,7 @@ subroutine rdnum(lunmd     ,lundia    ,nrrec     ,mdfrec    , &
                & nudge     ,nudvic    ,v2dwbl    ,ftauw     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +31,8 @@ subroutine rdnum(lunmd     ,lundia    ,nrrec     ,mdfrec    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdnum.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdnum.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads numerical parameters ITER, DRYFLC and
@@ -55,13 +55,10 @@ subroutine rdnum(lunmd     ,lundia    ,nrrec     ,mdfrec    , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    real(fp), pointer :: ad_epsabs
-    real(fp), pointer :: ad_epsrel
     real(fp), pointer :: depini
-    integer , pointer :: ad_itrmax
+    logical , pointer :: slplim
     integer , pointer :: itis
     logical , pointer :: chz_k2d
-    logical , pointer :: slplim
 !
 ! Global variables
 !
@@ -120,13 +117,10 @@ subroutine rdnum(lunmd     ,lundia    ,nrrec     ,mdfrec    , &
 !
 !! executable statements -------------------------------------------------------
 !
-    ad_itrmax   => gdp%gdnumeco%ad_itrmax
-    ad_epsabs   => gdp%gdnumeco%ad_epsabs
-    ad_epsrel   => gdp%gdnumeco%ad_epsrel
-    depini      => gdp%gdnumeco%depini
-    slplim      => gdp%gdnumeco%slplim
-    itis        => gdp%gdrdpara%itis
-    chz_k2d     => gdp%gdrivpro%chz_k2d
+    depini  => gdp%gdnumeco%depini
+    slplim  => gdp%gdnumeco%slplim
+    itis    => gdp%gdrdpara%itis
+    chz_k2d => gdp%gdrivpro%chz_k2d
     !
     ! initialize local parameters
     !
@@ -138,10 +132,9 @@ subroutine rdnum(lunmd     ,lundia    ,nrrec     ,mdfrec    , &
     !
     ! initialize parameters that are to be read
     ! 
+    ! eps was initialized here, but is moved from numeco.igs to const.igs
+    !
     iter1  = 2
-    ad_itrmax = 50
-    ad_epsabs = 1.e-8_fp
-    ad_epsrel = 0.5e-3_fp
     dryflc = 0.1_fp
     drycrt = -999.999_fp
     dco    = -999.999_fp
@@ -175,7 +168,7 @@ subroutine rdnum(lunmd     ,lundia    ,nrrec     ,mdfrec    , &
     !
     dpuopt = ' '
     lenc   = 8
-    call prop_get(gdp%mdfile_ptr, '*', 'Dpuopt', dpuopt)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Dpuopt', dpuopt)
     if (dpuopt(1:lenc) /= ' ') then
        !
        ! Make sure dpuopt is in upper case
@@ -351,19 +344,13 @@ subroutine rdnum(lunmd     ,lundia    ,nrrec     ,mdfrec    , &
     !
     chz_k2d = .false.
     if (momsol == 'waqua') chz_k2d = .true.
-    call prop_get(gdp%mdfile_ptr, '*', 'ChzK2d', chz_k2d)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'ChzK2d', chz_k2d)
     !
     ! 'Iter  ' restrict number of iterations
     ! WARNING: momsol is supposed to be already read/set
     !          then iter1 has a default value
     !
-    call prop_get(gdp%mdfile_ptr, '*', 'Iter', iter1)
-    !
-    ! Numerical settings for iteration in advection-diffusion solver (DIFU)
-    !
-    call prop_get(gdp%mdfile_ptr, '*', 'ADmxIt', ad_itrmax)
-    call prop_get(gdp%mdfile_ptr, '*', 'ADepAb', ad_epsabs)
-    call prop_get(gdp%mdfile_ptr, '*', 'ADepRl', ad_epsrel)
+    call prop_get_integer(gdp%mdfile_ptr, '*', 'Iter', iter1)
     !
     ! Before DPSOPT existed, Delft3D-FLOW used the variable DRYFLP.
     ! This variable could be set to NO or MIN/MAX/MEAN. With the
@@ -377,12 +364,12 @@ subroutine rdnum(lunmd     ,lundia    ,nrrec     ,mdfrec    , &
     ! WARNING: Dryflp must be read before Dpsopt
     !
     dpsopt = ' '
-    call prop_get(gdp%mdfile_ptr, '*', 'Dryflp', dpsopt)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Dryflp', dpsopt)
     !
     ! locate and read 'Dpsopt' record for determining DPS procedure
     !
     chulp = ' '
-    call prop_get(gdp%mdfile_ptr, '*', 'Dpsopt', chulp)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Dpsopt', chulp)
     !
     lenc = 8
     if (dpsopt(1:lenc) /= ' ' .and. chulp(1:lenc) /= ' ') then

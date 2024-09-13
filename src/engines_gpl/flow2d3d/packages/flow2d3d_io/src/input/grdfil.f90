@@ -2,7 +2,7 @@ subroutine grdfil(lundia    ,lungrd    ,error     ,filgrd    ,fmttmp    , &
                 & flgrd     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine grdfil(lundia    ,lungrd    ,error     ,filgrd    ,fmttmp    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: grdfil.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/grdfil.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Reads the COMPUTATIONAL GRID ENCL. from the attri-
@@ -78,7 +78,8 @@ subroutine grdfil(lundia    ,lungrd    ,error     ,filgrd    ,fmttmp    , &
     lfile = len(filgrd)
     !
     if (exifil(filgrd, lundia)) then
-       open (newunit=luntmp, file = filgrd(1:lfile), form = fmttmp, status = 'old')
+       luntmp = newlun(gdp)
+       open (luntmp, file = filgrd(1:lfile), form = fmttmp, status = 'old')
        !
        !--------unformatted file
        !

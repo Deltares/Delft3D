@@ -1,7 +1,7 @@
 subroutine initem(runid, cyclic, timnow, ktemp, temint, patm, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine initem(runid, cyclic, timnow, ktemp, temint, patm, gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: initem.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/initem.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Reads the time dependent data for heat models
@@ -38,7 +38,6 @@ subroutine initem(runid, cyclic, timnow, ktemp, temint, patm, gdp)
 !!--declarations----------------------------------------------------------------
     use precision
     !
-    use physicalconsts, only: CtoKelvin
     use globaldata
     use string_module
     !
@@ -106,7 +105,6 @@ subroutine initem(runid, cyclic, timnow, ktemp, temint, patm, gdp)
                               ! N = No interpolation. Y = Linear interpolation
     logical        :: opend   ! Help flag = TRUE when file is still open (DELFT3D) and 
     character(256) :: filnam  ! Help var. for file name 
-    real(fp), parameter :: fCtoKelvin = real(CtoKelvin, fp) ! conversion offset between Celsius and Kelvin
 !
 !! executable statements -------------------------------------------------------
 !
@@ -203,7 +201,8 @@ subroutine initem(runid, cyclic, timnow, ktemp, temint, patm, gdp)
        !
        inquire (file = filnam(:8 + lrid), opened = opend)
        if (.not.opend) then
-          open (newunit=luntem, file = filnam(:8 + lrid), form = 'unformatted',         &
+          luntem = newlun(gdp)
+          open (luntem, file = filnam(:8 + lrid), form = 'unformatted',         &
                & status = 'old')
        endif
        !
@@ -242,9 +241,9 @@ subroutine initem(runid, cyclic, timnow, ktemp, temint, patm, gdp)
        ! will be calculated See also EASP in the routine HEATU
        !
        if (ktemp <= 2) then
-          vapres = 23.38_fp * (rhum/100.0_fp) * exp(18.1_fp - 5303.3_fp/(tdryb + fCtoKelvin))
+          vapres = 23.38_fp * (rhum/100.0_fp) * exp(18.1_fp - 5303.3_fp/(tdryb + 273.15_fp))
        elseif (ktemp == 4 .and. ivapop == 0) then
-          vapres = 23.38_fp * (rhum/100.0_fp) * exp(18.1_fp - 5303.3_fp/(tair + fCtoKelvin))
+          vapres = 23.38_fp * (rhum/100.0_fp) * exp(18.1_fp - 5303.3_fp/(tair + 273.15_fp))
        else
        endif
     endif

@@ -3,7 +3,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
                & kcu       ,kcv       ,kcs       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: chkkc.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/chkkc.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Sets the mask arrays to indicate active computa-
@@ -58,7 +58,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
     integer                                                      , intent(in) :: nmax   !  Description and declaration in esm_alloc_int.f90
     integer                                                      , intent(in) :: noroco !  Description and declaration in esm_alloc_int.f90
     integer                                                      , intent(in) :: norow  !  Description and declaration in esm_alloc_int.f90
-    integer, dimension(5, noroco)                                , intent(in) :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(7, noroco)                                , intent(in) :: irocol !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              :: kcs    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              :: kcu    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)              :: kcv    !  Description and declaration in esm_alloc_int.f90
@@ -283,6 +283,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
     !     open and read file till EOF
     !
     if (fldry) then
+       lundry = newlun(gdp)
        filnam = 'TMP_' // runid(:lrid) // '.dry'
        !
        ! append node number to file name in case of parallel computing within single-domain case
@@ -293,7 +294,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
           write(filnam(8+lrid+1:8+lrid+linod),'(a,i3.3)') '-', inode
        endif
        !
-       open (newunit=lundry, file = filnam(:8 + lrid+linod), form = 'unformatted',      &
+       open (lundry, file = filnam(:8 + lrid+linod), form = 'unformatted',      &
             & status = 'old')
             ! -->
   310  continue
@@ -349,6 +350,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
     !     open and read file till EOF
     !
     if (fltd) then
+       luntd = newlun(gdp)
        filnam = 'TMP_' // runid(:lrid) // '.td '
        !
        ! append node number to file name in case of parallel computing within single-domain case
@@ -359,7 +361,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
           write(filnam(7+lrid+1:7+lrid+linod),'(a,i3.3)') '-', inode
        endif
        !
-       open (newunit=luntd, file = filnam(:7 + lrid+linod), form = 'unformatted',       &
+       open (luntd, file = filnam(:7 + lrid+linod), form = 'unformatted',       &
             & status = 'old')
             ! -->
   410  continue

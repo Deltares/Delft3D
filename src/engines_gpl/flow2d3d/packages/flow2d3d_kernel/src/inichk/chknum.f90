@@ -1,7 +1,7 @@
 subroutine chknum(lundia    ,error     ,roumet    ,rouflo    ,gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine chknum(lundia    ,error     ,roumet    ,rouflo    ,gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: chknum.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/chknum.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Checks the numerical parameters
@@ -36,7 +36,6 @@ subroutine chknum(lundia    ,error     ,roumet    ,rouflo    ,gdp)
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use time_module
     !
     use globaldata
     !
@@ -98,8 +97,8 @@ subroutine chknum(lundia    ,error     ,roumet    ,rouflo    ,gdp)
     ! Define TIMJAN
     !
     itjan1 = itdate - mod(itdate, 10000) + 0101
-    julday = ymd2jul(itdate)
-    juljan = ymd2jul(itjan1)
+    call juldat(itdate    ,julday    )
+    call juldat(itjan1    ,juljan    )
     timjan = (julday - juljan)*24.
     !
     ! check ITER1, only warning will be issued
@@ -107,7 +106,7 @@ subroutine chknum(lundia    ,error     ,roumet    ,rouflo    ,gdp)
     if (momsol == 'flood ') then
        defaultiter = 1
     else
-       defaultiter = 2
+       defaultiter = iter1 !2
     endif
     if (iter1 < defaultiter) then
        iter1 = defaultiter

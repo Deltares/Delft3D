@@ -1,7 +1,8 @@
 subroutine difu(icreep    ,timest    ,lundia    ,nst       ,icx       , &
               & icy       ,j         ,nmmaxj    ,nmmax     ,kmax      , &
               & lstsci    ,lstsc     ,lsal      ,ltem      ,lsecfl    , &
-              & lsec      ,lsed      ,lsts      ,norow     ,irocol    , &
+              & lsec      ,lsed      ,lsts      ,norow     ,nocol     ,irocol    , &
+              & nob       ,nto,      &
               & kcs       ,kcu       ,kfs       ,kfu       ,kfv       , &
               & kadu      ,kadv      ,s0        ,s1        ,hu        , &
               & hv        ,dps       ,qxk       ,qyk       ,qzk       , &
@@ -14,10 +15,10 @@ subroutine difu(icreep    ,timest    ,lundia    ,nst       ,icx       , &
               & buuux     ,uvdwk     ,vvdwk     ,areau     ,areav     , &
               & aakl      ,bbkl      ,cckl      ,ddkl      , &
               & eqmbcsand ,eqmbcmud  ,seddif    ,volum0    ,volum1    , &
-              & rscale    ,bruvai    ,gdp       )
+              & rscale    ,bruvai    ,nrob      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -41,8 +42,8 @@ subroutine difu(icreep    ,timest    ,lundia    ,nst       ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: difu.f90 6340 2016-07-20 15:43:16Z platzek $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/difu.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes transport in the u, v and w-direction.
@@ -93,25 +94,37 @@ subroutine difu(icreep    ,timest    ,lundia    ,nst       ,icx       , &
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
     include 'flow_steps_f.inc'
-    integer                , pointer :: ad_itrmax
     integer                , pointer :: iro
     integer                , pointer :: mfg
     integer                , pointer :: nfg
     integer                , pointer :: nudge
-    real(fp)               , pointer :: ad_epsabs
-    real(fp)               , pointer :: ad_epsrel
-    real(fp)               , pointer :: dryflc
+    integer                , pointer :: itmor
+    integer                , pointer :: itstrt
     real(fp)               , pointer :: ck
     real(fp)               , pointer :: dicoww
     real(fp)               , pointer :: eps
     real(fp)               , pointer :: hdt
-
     real(fp)               , pointer :: vicmol
     real(fp)               , pointer :: xlo
-    integer                , pointer :: max_mud_sedtyp
+    real(fp), dimension(:,:,:)         , pointer :: fluxu
+    real(fp), dimension(:,:,:)         , pointer :: fluxv
+    logical                   , pointer :: bnd_distr_perC
+    integer                   , pointer :: distQHn
+    integer                   , pointer :: distQHm
+    real(fp)                  , pointer :: reltim_qtq_C
+    real(fp), dimension(:,:,:), pointer :: qfiltC
+    logical                   , pointer :: suspLOADper
+    logical                   , pointer :: suspCONCper
+    logical                   , pointer :: printFLUXuv
+    logical                   , pointer :: USEfixedBEDequilQS
+    logical                   , pointer :: periodSURFACE
+    real(fp)                  , pointer :: DELAYfixedBEDequilQS
+    integer                   , pointer :: idebugCUThardINI
+    integer                   , pointer :: idebugCUThardFIN
 !
 ! Global variables
 !
+    integer                                             , intent(in)  :: nto   !  Description and declaration in esm_alloc_int.f90
 integer                                                 , intent(in)  :: icreep    !  Description and declaration in tricom.igs
 integer                                                               :: icx       !!  Increment in the X-dir., if ICX= NMAX
                                                                                    !!  then computation proceeds in the X-
@@ -135,8 +148,11 @@ integer                                                               :: lundia 
 integer                                                               :: nmmax     !  Description and declaration in dimens.igs
 integer                                                               :: nmmaxj    !  Description and declaration in dimens.igs
 integer                                                               :: norow     !  Description and declaration in esm_alloc_int.f90
+integer                                                               :: nocol     !  Description and declaration in esm_alloc_int.f90
+integer                                                               :: nrob
 integer                                                 , intent(in)  :: nst
-integer, dimension(5, norow)                                          :: irocol    !  Description and declaration in esm_alloc_int.f90
+integer , dimension(8, nrob)                            , intent(in)  :: nob 
+integer, dimension(7, norow+nocol)                                    :: irocol    !  Description and declaration in esm_alloc_int.f90
 integer, dimension(gdp%d%nmlb:gdp%d%nmub)                             :: kcs       !  Description and declaration in esm_alloc_int.f90
 integer, dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in)  :: kcu       !  Description and declaration in esm_alloc_int.f90
 integer, dimension(gdp%d%nmlb:gdp%d%nmub)                             :: kfs       !  Description and declaration in esm_alloc_int.f90
@@ -217,85 +233,143 @@ real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)              :: sink   
 real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)              :: sour      !  Description and declaration in esm_alloc_real.f90
 real(fp), dimension(kmax)                                             :: sig       !  Description and declaration in esm_alloc_real.f90
 real(fp), dimension(kmax)                                             :: thick     !  Description and declaration in esm_alloc_real.f90
-real(fp), dimension(kmax, max(lstsc, 1), 2, norow)      , intent(in)  :: rbnd      !  Description and declaration in esm_alloc_real.f90
+real(fp), dimension(kmax, max(lstsc, 1), 2, norow+nocol), intent(in)  :: rbnd      !  Description and declaration in esm_alloc_real.f90
 real(fp), dimension(lstsci)                                           :: sigdif    !  Description and declaration in esm_alloc_real.f90
 real(fp), dimension(lstsci)                             , intent(in)  :: sigmol    !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
 !
-integer                 :: nmsta
-integer                 :: ddb
-integer                 :: iad1
-integer                 :: iad2
-integer                 :: iad3
-integer                 :: ic
-integer                 :: icxy
-integer                 :: iter
-integer                 :: itr
-integer                 :: j1
-integer                 :: j2
-integer                 :: j3
-integer                 :: jj
-integer                 :: k
-integer                 :: kfw
-integer                 :: l
-integer                 :: ll
-integer                 :: ls
-integer                 :: lst
-integer                 :: maskval
-integer                 :: mf
-integer                 :: ml
-integer                 :: n
-integer                 :: ndm
-integer                 :: nhystp
-integer                 :: nm
-integer                 :: nmd
-integer                 :: nmdd
-integer                 :: nmf
-integer                 :: nmfu
-integer                 :: nml
-integer                 :: nmlu
-integer, dimension(10)  :: nms
-integer                 :: nmu
-integer                 :: nmuu
-integer                 :: nnudge
-integer                 :: num
-real(fp)                :: adza
-real(fp)                :: adzc
-real(fp)                :: bi
-real(fp)                :: cl
-real(fp)                :: cr
-real(fp)                :: d0k    ! Internal work array
-real(fp)                :: ddzc
-real(fp)                :: difiwe
-real(fp)                :: difl
-real(fp)                :: difr
-real(fp)                :: diz1
-real(fp)                :: epsitr ! Maximum value of relative error and absolute error of iteration process
-real(fp)                :: fac
-real(fp)                :: flux
-real(fp)                :: h0
-real(fp)                :: h0i
-real(fp)                :: h0new
-real(fp)                :: h0old
-real(fp)                :: hmin
-real(fp), dimension(10) :: mu
-real(fp)                :: nudgefac
-real(fp)                :: qxu
-real(fp)                :: qyv
-real(fp)                :: qzw
-real(fp)                :: rb
-real(fp), external      :: reddic
-real(fp)                :: rp
-real(fp)                :: sqrtbv
-real(fp)                :: timesti ! inverse of time step
-real(fp)                :: tnudge
-real(fp)                :: tsg
-character(20)           :: errtxt
-integer                 :: nm_pos ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
+integer                               :: icxOK
+integer                               :: icyOK
+integer                               :: nmsta
+integer                               :: ddb
+integer                               :: iad1
+integer                               :: iad2
+integer                               :: iad3
+integer                               :: ib
+integer                               :: ibf
+integer                               :: ibl
+integer                               :: ic
+integer                               :: icstart
+integer                               :: icend
+integer                               :: icxy
+integer                               :: iter
+integer                               :: itr
+integer                               :: j1
+integer                               :: j2
+integer                               :: j3
+integer                               :: jj
+integer                               :: k
+integer                               :: kfw
+integer                               :: l
+integer                               :: ll
+integer                               :: ls
+integer                               :: lst
+integer                               :: maskval
+integer                               :: mf
+integer                               :: ml
+integer                               :: n
+integer                               :: ndm
+integer                               :: nhystp
+integer                               :: nm
+integer                               :: nmd
+integer                               :: nmdd
+integer                               :: nmf
+integer                               :: nmfu
+integer                               :: nml
+integer                               :: nmlu
+integer, dimension(10)                :: nms
+integer                               :: nmu
+integer                               :: nmuu
+integer                               :: nnudge
+integer                               :: num
+integer                               :: n1
+integer                               :: npbi
+integer                               :: mpbi
+integer                               :: npbt
+integer                               :: mpbt
+integer                               :: npbAL
+integer                               :: mpbAL
+integer                               :: npbORT
+integer                               :: mpbORT
+integer                               :: npbORTm1
+integer                               :: mpbORTm1
+integer                               :: kcsi
+integer                               :: nmpbt   ! NM index of boundary velocity point
+integer                               :: nmpbi   ! NM index of 1st water level point inside domain
+integer                               :: nmpbtAL ! NM index of 1st velocity point inside domain ALigned with the direction of the boundary discharge
+integer                               :: nmpbORT  
+integer                               :: nmpbORTm1 
+integer                               :: shiftPERnm
+real(fp)                              :: a
+real(fp)                              :: qsk(1:kmax,lstsc,nrob)
+real(fp)                              :: qk(1:kmax,nrob)
+real(fp)                              :: qBOU(kmax)
+real(fp)                              :: qAL (kmax)
+real(fp)                              :: F_AL(kmax,lstsc)
+real(fp),allocatable,save             :: Qs_EQ(:,:)
+real(fp)                              :: QStot(lstsc,nto)
+real(fp)                              :: Qtot(nto)
+real(fp)                              :: q
+real(fp)                              :: qz
+real(fp)                              :: qs(lstsc)
+real(fp)                              :: qsz
+real(fp)                              :: adza
+real(fp)                              :: adzc
+real(fp)                              :: bi
+real(fp), dimension(:,:), allocatable :: cavg
+real(fp)                              :: cl
+real(fp)                              :: cr
+real(fp)                              :: d0k    ! Internal work array
+real(fp)                              :: ddzc
+real(fp)                              :: difiwe
+real(fp)                              :: difl
+real(fp)                              :: difr
+real(fp)                              :: diz1
+real(fp)                              :: epsitr ! Maximum value of relative error and absolute error of iteration process
+real(fp)                              :: flux
+real(fp), dimension(:,:), allocatable :: cflx
+real(fp)                              :: h0
+real(fp)                              :: h0i
+real(fp)                              :: h0new
+real(fp)                              :: h0old
+real(fp), dimension(10)               :: mu
+real(fp)                              :: nudgefac
+real(fp)                              :: qxu
+real(fp)                              :: qyv
+real(fp)                              :: qzw
+real(fp)                              :: rb
+real(fp), external                    :: reddic
+real(fp)                              :: rp
+real(fp)                              :: sqrtbv
+real(fp)                              :: timesti ! inverse of time step
+real(fp)                              :: tnudge
+real(fp)                              :: tsg
+real(fp), dimension(kmax,lstsc,nrob)  :: distFAC      !  correction factor to distribute concentration BC based on internal values
+character(20)                         :: errtxt
+integer                               :: nm_pos ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
+logical                               :: bnd_distr_avgc
+logical                               :: posdir
+logical                               :: udir
+logical                               :: vdir
+logical,SAVE                          :: firstCALL = .TRUE.
+logical                               :: ACTIVEequilQS
 !
 !! executable statements -------------------------------------------------------
 !
+    bnd_distr_perC       => gdp%gdimbound%bnd_distr_perC
+    distQHn              => gdp%gdimbound%distQHn
+    distQHm              => gdp%gdimbound%distQHm
+    reltim_qtq_C         => gdp%gdimbound%reltim_qtq_C
+    qfiltC               => gdp%gdimbound%qfiltC
+    suspLOADper          => gdp%gdimbound%suspLOADper
+    suspCONCper          => gdp%gdimbound%suspCONCper
+    printFLUXuv          => gdp%gdimbound%printFLUXuv
+    USEfixedBEDequilQS   => gdp%gdimbound%USEfixedBEDequilQS
+    periodSURFACE        => gdp%gdimbound%periodSURFACE
+    DELAYfixedBEDequilQS => gdp%gdimbound%DELAYfixedBEDequilQS
+    idebugCUThardINI     => gdp%gdimbound%idebugCUThardINI
+    idebugCUThardFIN     => gdp%gdimbound%idebugCUThardFIN
     eps         => gdp%gdconst%eps
     vicmol      => gdp%gdphysco%vicmol
     dicoww      => gdp%gdphysco%dicoww
@@ -306,11 +380,10 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
     nfg         => gdp%gdparall%nfg
     nudge       => gdp%gdnumeco%nudge
     hdt         => gdp%gdnumeco%hdt
-    ad_itrmax   => gdp%gdnumeco%ad_itrmax
-    ad_epsabs   => gdp%gdnumeco%ad_epsabs
-    ad_epsrel   => gdp%gdnumeco%ad_epsrel
-    dryflc      => gdp%gdnumeco%dryflc
-    max_mud_sedtyp => gdp%gdsedpar%max_mud_sedtyp
+    fluxu       => gdp%gdflwpar%fluxu
+    fluxv       => gdp%gdflwpar%fluxv
+    itmor       => gdp%gdmorpar%itmor
+    itstrt      => gdp%gdinttim%itstrt
     !
     ! INITIALISATION
     !
@@ -321,6 +394,414 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
     !  INITIALIZE
     !
     call timer_start(timer_difu_ini, gdp)
+    !
+    ! Preprocess boundaries if we want to distribute the influx based on the
+    ! concentrations computed inside the model domain.
+    !
+    ! Alberto version: This part can be put in a subroutine called before "call difu"  that provides variable distFAC, that is 
+    ! then passed to difu. In this way the if(icy) can all be removed.
+    !
+    ! bnd_distr_avgc: distribute C at Q boundary using neighbour cells and conserving total Qsusp 
+    ! bnd_distr_perC: distribute C at Q boundary using distribution at correspondent periodic H boundary. 
+    ! suspLOADper: periodical NOT prescribed: copy suspended load from downstream to upstream (and impose correspondend concentration)
+    ! suspCONCper: periodical NOT prescribed: copy suspended conc from downstream to upstream make load 
+    !                 
+    !
+    ACTIVEequilQS =  USEfixedBEDequilQS.and.nst >= itmor*DELAYfixedBEDequilQS
+    !by prescribing DELAYfixedBEDequilQS<0 I allow to compute the sed disch exiting downstream on the first time step and then prescr that value upstream for all the duration of the simulation
+    bnd_distr_avgc = gdp%gdbcdat%distr_avc
+    if (COUNT ((/bnd_distr_avgc, bnd_distr_perC,suspLOADper,suspCONCper/))>1) then !move it at the beginning of the code
+       write(lundia,*) 'ERROR in difu: Only one between bnd_distr_avgc, bnd_distr_perC,suspLOADper and suspCONCper can be prescribed' 
+       call d3stop(1, gdp)
+    endif
+    if (USEfixedBEDequilQS.and.itmor-itstrt==0.and.DELAYfixedBEDequilQS>0._fp) then !move it at the beginning of the code
+       write(lundia,*) 'ERROR in difu: If USEfixedBEDequilQS=Y then itmor must be >0'
+       call d3stop(1, gdp)
+    endif
+    distFAC(1:kmax,1:lstsc,:) = 1._fp ! needed for activating Neumann when both bnd_distr_avgc and bnd_distr_perC are false
+    if (bnd_distr_avgc .or. bnd_distr_perC .or. suspLOADper .or. suspCONCper) then  
+       if (USEfixedBEDequilQS.and..not. allocated(Qs_EQ)) allocate(Qs_EQ(lstsc,nto))
+       do n1 = 1, nto
+          Qtot(n1) = 0._fp
+          QStot(1:lstsc,n1) = 0.0_fp
+       enddo
+       !
+       ! calculate total suspended discharge for each cell
+       ! calculate qtot  
+       !
+       do n = 1, nrob
+! 
+          if ((bnd_distr_perC.or. suspLOADper .or. suspCONCper).and.nob(3, n)/=7 ) cycle !if periodic only do it on the Q section (otherwise shiftPERnm is meaning less)
+          q = 0._fp
+          ! only do something for total discharge boundaries (7)  
+         ! if (nob(3, n)/=7 ) then !.and. nob(3, n)/=2) then for now exclude water level boundaries (2) (that can be of type QH, otherwise for qtq_per it is going out of array when doing qsk(k,n) = qxk(npbAL-distQHn, mpbAL-distQHm, k)
+         !    cycle
+         ! endif
+         !If not periodic I do it also for water level boundary (and QH boundary), so it works for tidal waves too
+          n1        = nob(8, n)
+          mpbt      = nob(1, n)
+          npbt      = nob(2, n)
+          if (nob(4, n)==2) then
+             mpbt = mpbt - 1
+             mpbi = mpbt
+             mpbAL = mpbt - 1
+             mpbORT = mpbAL
+             mpbORTm1 = mpbAL 
+             posdir = .false.
+          elseif (nob(4, n)==1) then
+             mpbi = mpbt + 1
+             mpbAL = mpbt + 1
+             mpbORT = mpbAL
+             mpbORTm1 = mpbAL 
+             posdir = .true.
+          else
+             mpbi = mpbt
+             mpbAL = mpbt
+             mpbORT = mpbAL
+             mpbORTm1 = mpbORT-1
+          endif
+          if (nob(6, n)==2) then
+             npbt = npbt - 1
+             npbi = npbt
+             npbAL = npbt - 1
+             npbORT = npbAL
+             npbORTm1 = npbAL
+             posdir = .false.
+          elseif (nob(6, n)==1) then
+             npbi = npbt + 1
+             npbAL = npbt + 1
+             npbORT = npbAL
+             npbORTm1 = npbAL
+             posdir = .true.
+          else
+             npbi = npbt
+             npbAL = npbt
+             npbORT = npbAL
+             npbORTm1 = npbORT-1
+          endif
+          if (icy==1) then ! if I do separate directory only the first if is used
+             icxOK = icx
+             icyOK = icy
+          else
+             icxOK = icy
+             icyOK = icx
+          endif
+          if (bnd_distr_perC) then
+             shiftPERnm = icyOK*distQHn+icxOK*distQHm
+          else
+             shiftPERnm = 0
+          endif
+          nmpbt   = (npbt   + ddb)  *icyOK + (mpbt   + ddb)  *icxOK - icxy              !if periodic, its the Q boundary
+          nmpbi   = (npbi   + ddb)  *icyOK + (mpbi   + ddb)  *icxOK - icxy - shiftPERnm !if periodic, its the zeta point just inside the domain at the H boundary
+          nmpbtAL = (npbAL  + ddb)  *icyOK + (mpbAL  + ddb)  *icxOK - icxy - shiftPERnm !if periodic, its at the H boundary
+     !     nmpbORT   = (npbORT + ddb)  *icyOK + (mpbORT + ddb)  *icxOK - icxy
+     !     nmpbORTm1 = (npbORTm1 + ddb)*icyOK + (mpbORTm1 + ddb)*icxOK - icxy
+          kcsi  = kcs(nmpbi)
+          !
+          ! Determine direction dependent parameters
+          !
+          q  = 0._fp
+          qs(:) = 0._fp
+
+          if (nob(4,n) > 0) then
+             udir  = .true.
+             vdir  = .false.
+             if (icy==1) then ! if I do separate directory only the first if is used
+                qBOU(1:kmax) = qxk(nmpbt, 1:kmax) !qxk is qxk
+                qAL (1:kmax) = qxk(nmpbtAL, 1:kmax)
+             else
+                qBOU(1:kmax) = qyk(nmpbt, 1:kmax) !qyk is qxk
+                qAL (1:kmax) = qyk(nmpbtAL, 1:kmax)
+             endif
+             F_AL(1:kmax,1:lstsc) = fluxu(nmpbtAL,1:kmax,1:lstsc)
+          elseif (nob(6,n) > 0) then
+             udir  = .false.
+             vdir  = .true.
+             if (icy==1) then   ! if I do separate directory only the first if is used
+                qBOU(1:kmax) = qyk(nmpbt, 1:kmax) !qxk is qxk
+                qAL (1:kmax) = qyk(nmpbtAL, 1:kmax)
+             else
+                qBOU(1:kmax) = qxk(nmpbt, 1:kmax) !qyk is qxk
+                qAL (1:kmax) = qxk(nmpbtAL, 1:kmax)
+             endif
+             F_AL(1:kmax,1:lstsc) = fluxv(nmpbtAL,1:kmax,1:lstsc)
+          else
+          endif 
+          if (printFLUXuv.and.bnd_distr_perC) then !print FLUXu and FLUXv in order to have boundary value at equilibrium.
+             write(9999988,'(i9,100f25.15)')    nst, (sum(F_AL(1:kmax,j)),j=1,lstsc)
+          endif
+             !
+             ! qxk/qyk should be zero for z-layers out of range?
+             !
+          if (bnd_distr_avgc) then
+             if (kcsi==1) then
+                q= 0._fp
+                do k = 1, kmax
+                   qz = 0._fp !used in case one day I wanna implement non-PRISMATIC CASE
+                   if (posdir .and. qBOU(k)>0.0) then
+                      qz = qz + qBOU(k) !water discharge  ! only sum up discharge weights for boundary cells strictly inside this partition
+                      qk(k,n) = qz
+                   elseif (.not.posdir .and. qBOU(k)<0.0) then
+                      qz = qz - qBOU(k) !water discharge  ! only sum up discharge weights for boundary cells strictly inside this partition
+                      qk(k,n) = qz
+                   else                   
+                      qk(k,n) = 0._fp
+                   endif
+                   q = q + qz
+                enddo     
+             endif
+             do l = 1, lstsc   
+                do k = 1, kmax
+                   qsz = 0._fp
+                   if (posdir .and. qAL(k)>0.0) then                   
+                      qsz = qsz   + F_AL(k,l) !r0(nmpbi, k, l)*qAL(k)  !suspended discharge
+                      qsk(k,l,n) = qsz
+                   elseif (.not.posdir .and. qAL(k)<0.0) then                   
+                      qsz = qsz   - F_AL(k,l) ! r0(nmpbi, k, l)*qAL(k) ! suspended discharge
+                      qsk(k,l,n) = qsz
+                   else                   
+                      qsk(k,l,n) = 0._fp
+                   endif
+                   qs(l) = qs(l) + qsz
+                enddo     
+                if (reltim_qtq_C>0) then
+                   if (.NOT.firstCALL) then
+                      do k=1,kmax
+                         a = exp( - hdt/reltim_qtq_C/60.0_fp) !hdt in sec, reltim in minutes
+                         qfiltC(k,l,n) = a*qfiltC(k,l,n) + (1._fp - a)*qsk(k,l,n)
+                         qsk(k,l,n) = qfiltC(k,l,n)
+                      enddo
+                      qs(l) = sum(qsk(:,l,n))  
+                   else
+                      qfiltC(1:kmax,l,n) = qsk(1:kmax,l,n)
+                   endif
+                endif      
+             enddo           
+!
+          elseif (bnd_distr_perC.or.suspLOADper) then
+
+             if (kcsi==1) then
+                qk(1:kmax,n) = qBOU(1:kmax) ! doesnt matter if exiting (the fraction will be negative), see comment below next to distFAC.
+                q = q + sum(qBOU(1:kmax)) !water discharge  ! only sum up discharge weights for boundary cells strictly inside this partition
+             endif
+             do l = 1, lstsc   
+                do k = 1, kmax
+                   qsk(k,l,n) = F_AL(k,l) !r0(nmpbi, k, l)*qAL(k) !!here nmpbi contains shift in m,n between the Q (internal)  boundary and the H (internal) periodic boundary
+                   if (reltim_qtq_C>0) then
+                      if (.NOT.firstCALL) then
+                         a = exp( - hdt/reltim_qtq_C/60.0_fp) !hdt in sec, reltim in minutes. note "a" can be precomputed
+                         qfiltC(k,l,n) = a*qfiltC(k,l,n) + (1._fp - a)*qsk(k,l,n)
+                         qsk(k,l,n) = qfiltC(k,l,n)
+                      else
+                         qfiltC(k,l,n) = qsk(k,l,n)
+                      endif
+                   endif
+                enddo
+                qs(l) = sum(qsk(:,l,n))  
+             enddo
+          elseif (suspCONCper) then
+             q = 0._fp !not used, just not to have NaN in Qtot
+             qs(:) = 0._fp !not used, just not to have NaN in Qtot
+             do l = 1, lstsc   
+                do k = 1, kmax
+                   qsk(k,l,n) = r0(nmpbi, k, l)
+                enddo
+             enddo
+          endif
+! 
+          ! Parrallel code: check if above I need to use kcsi also for sediment
+          if (kcsi==1) then ! only sum up discharge weights for boundary cells strictly inside this partition
+             Qtot(n1)  = Qtot(n1)  + q
+             do l = 1, lstsc
+                QStot(l,n1) = QStot(l,n1) + qs(l)
+             enddo
+          endif 
+       enddo  
+       if (USEfixedBEDequilQS.and.((nst < itmor .and. DELAYfixedBEDequilQS>0._fp)   .or. nst == itstrt )) then !if (nst < itmor) then 
+
+          do n1 = 1, nto
+             Qs_EQ(1:lstsc,n1) = QStot(1:lstsc,n1) !if periodic it is undefined at H boundary
+          enddo
+
+       endif
+ !
+       do n = 1, nrob
+          if (bnd_distr_perC.and.nob(3, n)/=7 ) then
+             !if periodic only do it on the Q section (otherwise shiftPERnm is meaningless)
+             distFAC(1:kmax,1:lstsc,n) = 1._fp
+             cycle
+          endif
+          n1 = nob(8, n)
+          if (bnd_distr_avgc .or. bnd_distr_perC) then
+             do l = 1, lstsc
+                if (comparereal(QStot(l,n1),0._fp)/=0) then        
+                   do k=1,kmax
+                      if (comparereal(qk(k,n),0._fp)/=0) then 
+                         if (.not.ACTIVEequilQS) then !it might get unstable if I do it during warm-up, i.e. far from equilibrium
+                            distFAC(k,l,n) = qsk(k,l,n)/QStot(l,n1)*Qtot(n1)/qk(k,n) !it cannot be negative even if qk/Qtot is negative, since ifi it is also qsk(k,l,n)/QStot(l,n1) is negative
+                         else
+                            distFAC(k,l,n) = qsk(k,l,n)/QStot(l,n1)*Qs_EQ(l,n1)/qk(k,n) !Qtot(n1)*C0 has been replaced by the constant Qs_EQ
+                         endif
+                      else
+                         distFAC(k,l,n) = 1._fp !does it matter which value i give to the corrective coefficient or Neumann condition overwrites everything?
+                      endif
+                   enddo
+                else
+                   distFAC(1:kmax,l,n) = 1._fp 
+                endif
+             enddo
+          elseif (suspLOADper) then
+             do l = 1, lstsc
+                if (comparereal(QStot(l,n1),0._fp)/=0) then        
+                   do k=1,kmax
+                      if (comparereal(qk(k,n),0._fp)/=0) then 
+                          distFAC(k,l,n) = qsk(k,l,n)/qk(k,n) !it gives me a concentration then I force distFAC
+                      else
+                         distFAC(k,l,n) = 0._fp !first step zero concentration is prescribed
+                      endif
+                   enddo
+                else
+                   distFAC(1:kmax,l,n) = 0._fp !first step zero concentration is prescribed
+                endif
+             enddo
+          elseif(suspCONCper) then
+             do l = 1, lstsc    
+                do k=1,kmax
+                   distFAC(k,l,n) = qsk(k,l,n) !it has concentration!
+                enddo
+             enddo            
+          endif
+       enddo
+
+!    !Bert and Alberto version
+!    if (bnd_distr_avgc .or. bnd_distr_perC) then !.or.distr_perC) then
+!
+!       allocate( cavg(lstsc,nrob), cflx(0:lstsc,nrob) )
+!       !
+!       ! Compute total flux through open boundaries if the concentration imposed
+!       ! would be equal to the computed concentration just inside the model.
+!       !
+!       cavg = 0.0_fp
+!       cflx = 0.0_fp
+!       do ic = 1, norow+nocol
+!          n    = irocol(1, ic)
+!          mf   = irocol(2, ic) - 1
+!          ml   = irocol(3, ic)
+!          ibf  = irocol(6, ic)
+!          ibl  = irocol(7, ic)
+!          nmf  = (n + ddb)*icy + (mf + ddb)*icx - icxy
+!          nml  = (n + ddb)*icy + (ml + ddb)*icx - icxy
+!          nmfu = nmf + icx
+!          nmlu = nml + icx
+!          !
+!          if (ibf>0) then
+!             do k = 1, kmax
+!                if (qxk(nmf, k) > 0.0) then    !old version by Bert and Alberto
+!                   cflx(0,ibf) = cflx(0,ibf) + qxk(nmf, k)
+!                   do l = 1, lstsc
+!                      cavg(l, ibf) = rbnd(k, l, 1, ic)
+!                      cflx(l, ibf) = cflx(l, ibf) + r0(nmfu, k, l)*qxk(nmf, k)  
+!                   enddo !new version by Alberto
+!                endif
+!             enddo
+!          endif
+!          if (ibl>0) then
+!             do k = 1, kmax
+!                if (qxk(nml, k) < 0.0) then
+!                   cflx(0, ibl) = cflx(0, ibl) + qxk(nml, k)
+!                   do l = 1, lstsc
+!                      cavg(l, ibl) = rbnd(k, l, 2, ic)
+!                      cflx(l, ibl) = cflx(l, ibl) + r0(nml, k, l)*qxk(nml, k)
+!                   enddo
+!                endif
+!             enddo
+!          endif
+!       enddo
+!       !
+!       ! Compute the correction factor: we would like the influx to be equal to
+!       ! cavg * total influx, while the concentration profile matches the internally
+!       ! computed concentration profile. After this step cflux(l,ib) will contain the
+!       ! correction factor if it's possible to distribute the flux proportionally to
+!       ! the concentrations, while cavg(l,ib) will contain the average concentration
+!       ! if it's not possible to distribute the flux proportionally. The latter only
+!       ! happens if the flux computed above is zero (usually only during startup).
+!       !
+!       do ib = 1, nrob
+!          do l = 1, lstsc
+!             if (abs(cflx(l, ib)) > 0.0_fp) then
+!                !
+!                ! We want to make concentration at the boundary equal to:
+!                !
+!                ! c_{nm,k;bnd} = (c_{nm,k;intern} * c_{avg} * SUM q_{nm,k}) / SUM ( c_{nm,k;intern} q_{nm,k})
+!                !
+!                ! We precompute the part that is independent of local index nm,k.
+!                ! Set the average concentration to zero.
+!                !
+!                ! f = (c_{avg} * SUM q_{nm,k}) / SUM ( c_{nm,k;intern} q_{nm,k})
+!                !
+!                cflx(l, ib) = (cavg(l, ib)*cflx(0, ib)) / cflx(l, ib)
+!                cavg(l, ib) = 0.0_fp
+!             else
+!                !
+!                ! Concentrations are zero, so we can't distribute the flux proportially to computed concentrations
+!                ! so, we use the average concentration uniformly
+!                !
+!                cflx(l, ib) = 0.0_fp
+!             endif
+!          enddo
+!       enddo
+       !
+       ! Adjust the concentrations for the explicit Y direction.
+       ! Messing with r0 is not so nice, but it avoids having to make exceptions for Y-boundaries below and in difuflux.
+       !
+       icxOK = icy
+       icyOK = icx
+       if (icy==1) then
+          icstart = norow+1
+          icend   = norow+nocol
+       else
+          icstart = 1
+          icend   = norow
+       endif
+       do ic = icstart, icend
+          n    = irocol(1, ic)
+          mf   = irocol(2, ic) - 1
+          ml   = irocol(3, ic)
+          ibf  = irocol(6, ic)
+          ibl  = irocol(7, ic)
+          nmf  = (n + ddb)*icyOK + (mf + ddb)*icxOK - icxy
+          nml  = (n + ddb)*icyOK + (ml + ddb)*icxOK - icxy
+          nmfu = nmf + icxOK
+          nmlu = nml + icxOK
+          !
+          if (ibf>0) then
+             do k = 1, kmax
+                if (qyk(nmf, k) > 0.0) then
+                   do l = 1, lstsc
+                      if ((bnd_distr_avgc .or. bnd_distr_perC).and..not.ACTIVEequilQS) then
+                         r0(nmf, k, l) = rbnd(k, l, 1, ic)*distFAC(k,l,ibf)   
+                      else
+                         r0(nmf, k, l) =                   distFAC(k,l,ibf)   
+                      endif
+                   enddo
+                endif
+             enddo
+          endif
+          if (ibl>0) then
+             do k = 1, kmax
+                if (qyk(nml, k) < 0.0) then
+                   do l = 1, lstsc
+                      if ((bnd_distr_avgc .or. bnd_distr_perC).and..not.ACTIVEequilQS) then
+                         r0(nmlu, k, l) = rbnd(k, l, 2, ic)*distFAC(k,l,ibl)
+                      else
+                         r0(nmlu, k, l) =                   distFAC(k,l,ibl)
+                      endif
+                   enddo
+                endif
+             enddo
+          endif
+       enddo
+     endif
     !
     ! Initialise arrays aak - cck for all (nm,k)
     !
@@ -337,7 +818,11 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
     do k = 1, kmax
        do nm = 1, nmmax
           if (kfs(nm) == 1) then
+             !if (volum1(nm, k).gt.THRESsmallCELL) then
              bbk(nm, k) = volum1(nm, k) * timesti
+             !else
+             !   bbk(nm, k) = 1._fp
+             !endif
           else
              bbk(nm, k) = 1.0_fp
              if (lsec > 0) r0(nm, k, lsecfl) = 0.0_fp
@@ -351,7 +836,11 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
        do k = 1, kmax
           do nm = 1, nmmax
              if ( (kfs(nm)==1) .and. (kcs(nm)==1) ) then
+                !if (volum1(nm, k).gt.THRESsmallCELL) then
                 ddkl(nm, k, l) = volum0(nm, k) * r0(nm, k, l) * timesti
+                !else
+                !   ddkl(nm, k, l) = r0(nm, k, l)
+                !endif
              else
                 ddkl(nm, k, l) = r0(nm, k, l)
              endif
@@ -462,11 +951,10 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
           nmu = icx
           do nm = 1, nmmax
              nmu = nmu + 1
-             hmin = min(s1(nm) + real(dps(nm),fp), s1(nmu) + real(dps(nmu),fp))
-             if (kfu(nm)*kadu(nm, k) /= 0 .and. hmin > dryflc) then
+             if (kfu(nm)*kadu(nm, k) /= 0) then
                 difl    = dicuv(nm, k)
                 difr    = dicuv(nmu, k)
-                flux    = 0.5_fp*(difl + difr)/(0.7_fp*gvu(nm))
+                flux    = 0.5*(difl + difr)/(0.7*gvu(nm))
                 maskval = max(0, 2 - abs(kcs(nm)))
                 bbk(nm, k) = bbk(nm, k) + areau(nm, k)*flux*maskval
                 bux(nm, k) = bux(nm, k) - areau(nm, k)*flux*maskval
@@ -490,13 +978,12 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
              num = icy
              do nm = 1, nmmax
                 num = num + 1
-                hmin = min(s1(nm) + real(dps(nm),fp), s1(num) + real(dps(num),fp))
-                if (kfv(nm)*kadv(nm, k) /= 0 .and. hmin > dryflc) then
+                if (kfv(nm)*kadv(nm, k) /= 0) then
                    cl      = r0(nm, k, l)
                    difl    = dicuv(nm, k)
                    cr      = r0(num, k, l)
                    difr    = dicuv(num, k)
-                   flux    = 0.5_fp*(cr - cl)*(difl + difr)/(0.7_fp*guv(nm))
+                   flux    = 0.5_fp*(cr - cl)*(difl + difr)/(0.7*guv(nm))
                    maskval = max(0, 2 - abs(kcs(nm)))
                    ddkl(nm, k, l)  = ddkl(nm, k, l) + areav(nm, k)*flux*maskval
                    maskval         = max(0, 2 - abs(kcs(num)))
@@ -535,6 +1022,7 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
              !
              if (kfs(nm) == 1) then
                 qzw = qzk(nm, k)
+               ! if (k==1.and.mod(nst,10)==0) write(*,*) ' qzw is zeroooo' 
                 if (qzw > 0.0) then
                    adza = 0.5_fp*qzw*(1 - kfw)
                    adzc = 0.5_fp*qzw*(1 + kfw)
@@ -573,6 +1061,7 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
           ! l = sediment: ls > 0
           ! else        : ls = 0
           !
+          !if (mod(nst,100)==0) write(*,*)'tolta diffusione ddzc'
           ls = 0
           if ((l>max(lsal, ltem)) .and. (l<=lsts)) ls = l - max(lsal, ltem)
           do k = 1, kmax - 1
@@ -643,9 +1132,16 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
     enddo
     !
     ! BOUNDARY CONDITIONS
-    !     On open boundary no secondary flow (=> loop over LSTSC)
+    !     On open boundary no seconday flow (=> loop over LSTSC)
     !
-    do ic = 1, norow
+    if (icy==1) then
+       icstart = 1
+       icend   = norow
+    else
+       icstart = norow+1
+       icend   = norow+nocol
+    endif
+    do ic = icstart, icend
        n    = irocol(1, ic)
        mf   = irocol(2, ic) - 1
        ml   = irocol(3, ic)
@@ -656,6 +1152,39 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
        !
        ! IMPLEMENTATION OF BOUNDARY CONDITIONS
        !
+       if (bnd_distr_avgc.or.bnd_distr_perC) then
+          !
+          ! average concentration at boundary specified, concentration to be imposed at the
+          ! boundary depends on the locally computed concentration inside the model
+          !
+          if (kcu(nmf) == 1) then
+             ibf  = irocol(6, ic)
+             do k = 1, kmax
+                do l = 1, lstsc
+                   if ((bnd_distr_avgc .or. bnd_distr_perC).and..not.ACTIVEequilQS) then
+                      ddkl(nmf, k, l) = rbnd(k, l, 1, ic)*distFAC(k,l,ibf)
+                   else
+                      ddkl(nmf, k, l) =                   distFAC(k,l,ibf)
+                   endif
+                enddo     
+             enddo
+          endif
+          if (kcu(nml) == 1) then
+             ibl  = irocol(7, ic)
+             do k = 1, kmax
+                do l = 1, lstsc
+                   if ((bnd_distr_avgc .or. bnd_distr_perC).and..not.ACTIVEequilQS) then
+                      ddkl(nmlu, k, l) = rbnd(k, l, 2, ic)*distFAC(k,l,ibl)
+                   else
+                      ddkl(nmlu, k, l) =                   distFAC(k,l,ibl)
+                   endif
+                enddo     
+             enddo
+          endif
+       else
+          !
+          ! default: local concentration at boundary specified
+          !
        if (kcu(nmf) == 1) then
           do k = 1, kmax
              do l = 1, lstsc
@@ -670,22 +1199,29 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
              enddo
           enddo
        endif
+       endif
        !
        ! optional Neumann boundary condition for suspended sediment fractions
        !
        lst = max(lsal, ltem)
        do l = 1, lsed
           ll = lst + l
-          if ((eqmbcsand .and. sedtyp(l) > max_mud_sedtyp) .or. &
-            & (eqmbcmud  .and. sedtyp(l) <= max_mud_sedtyp)) then
+          if ((eqmbcsand .and. sedtyp(l) == SEDTYP_NONCOHESIVE_SUSPENDED) .or. &
+            & (eqmbcmud  .and. sedtyp(l) == SEDTYP_COHESIVE)             ) then
              if (kcu(nmf) == 1) then
+                ibf  = irocol(6, ic)
                 do k = 1, kmax
+                   if (comparereal(distFAC(k,ll,ibf),1._fp)==0) then !If C is distributed, do not prescribe Neumann!
                    ddkl(nmf, k, ll) = max(0.0_fp, r0(nmfu, k, ll))
+                   endif
                 enddo
              endif
              if (kcu(nml) == 1) then
+                ibl  = irocol(7, ic)
                 do k = 1, kmax
+                   if (comparereal(distFAC(k,ll,ibl),1._fp)==0) then !If C is distributed, do not prescribe Neumann!
                    ddkl(nmlu, k, ll) = max(0.0_fp, r0(nml, k, ll))
+                   endif
                 enddo
              endif
           endif
@@ -722,8 +1258,10 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
           do k = 1, kmax
              do nm = 1, nmmax
                 if ( (kfs(nm)==1) .and. (kcs(nm)==1) ) then
+                   !if (volum1(nm, k).gt.THRESsmallCELL) then ! I already set bbkl(nm, k, l)=1 if volum1 small
                    bbkl(nm, k, l) = bbkl(nm, k, l) + sink(nm, k, l)*volum1(nm, k)
                    ddkl(nm, k, l) = ddkl(nm, k, l) + sour(nm, k, l)*volum0(nm, k)
+                   !endif
                 endif
              enddo
           enddo
@@ -745,10 +1283,21 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
           ! boundary conditions secondary flow (spiral motion intensity)
           !
           call timer_start(timer_difu_secbou, gdp)
+         ! if (periodSURFACE) then !CAN BE UNCOMMENTED AFTER THE PERIODIC WATER DEPTH PROBLEM IS FIXED
+         !    call periodSPIRAL(r0,r1,gdp%d%nlb,gdp%d%nub,gdp%d%mlb,gdp%d%mub,kmax,lsecfl,lstsci,gdp)
+         ! else
+             if (icy==1) then
           call secbou(j         ,nmmaxj    ,kmax      ,icx       ,icy       , &
                     & lstsci    ,lsecfl    ,kfu       ,irocol    ,norow     , &
                     & s0        ,s1        ,dps       ,r1        ,sour      , &
                     & sink      ,gdp       )
+             else
+                call secbou(j         ,nmmaxj    ,kmax      ,icx       ,icy       , &
+                          & lstsci    ,lsecfl    ,kfu       ,irocol(1,norow+1),nocol     , &
+                          & s0        ,s1        ,dps       ,r1        ,sour      , &
+                          & sink      ,gdp       )
+             endif
+         ! endif
           call timer_stop(timer_difu_secbou, gdp)
           if (lsec == 2) then
              !
@@ -904,6 +1453,18 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
              endif
           enddo
        enddo
+   !  if (nst.ge.764.and.nst.le.764.and. iter<=3) THEN
+   !     do nm = nmsta, nmmax, 2        
+   !         if ( (kfs(nm)==1) .and. (kcs(nm)==1) ) then             
+   !            do k=1,kmax
+   !              write(9892003,'(5i6,35f21.15)') nst,nm,iter,k,L,uvdwk(nm, k), ddkl(nm,k,l),bdddx(nm,k),bddx(nm,k),bdx (nm,k), &
+   !                           bux(nm,k),buux(nm,k),buuux(nm,k),bbkl(nm, k,l),aakl(nm, k,l),cckl(nm, k,l),&
+   !                           r1(nm - icx - icx - icx, k, l),r1(nm - icx - icx, k, l),r1(nm - icx, k, l),r1(nm + icx, k, l),&
+   !                           r1(nm + icx + icx, k, l), r1(nm + icx + icx + icx, k, l)
+   !            enddo
+   !         endif
+   !     enddo
+   !  endif
        if(icx == 1) then
          call timer_stop(timer_difu_solve4u, gdp)
          call timer_start(timer_difu_solve5u, gdp)
@@ -936,7 +1497,7 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
        do k = 1, kmax
           do nm = nmsta, nmmax, 2
              if ( (kfs(nm)==1) .and. (kcs(nm)==1) ) then
-                epsitr = max(ad_epsabs, ad_epsrel*abs(r1(nm, k, l)))
+                epsitr = max(1.e-9_fp, 1.e-9_fp*abs(r1(nm, k, l)))
                 if (abs(vvdwk(nm, k) - r1(nm, k, l)) > epsitr) itr = 1
                 r1(nm, k, l) = vvdwk(nm, k)
              endif
@@ -972,6 +1533,18 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
              endif
           enddo
        enddo
+    !  if (nst.ge.764.and.nst.le.764.and. iter<=3) THEN
+    !     do nm = nmsta, nmmax, 2         
+    !         if ( (kfs(nm)==1) .and. (kcs(nm)==1) ) then   
+    !            do k=1,kmax
+    !              write(9892003,'(5i6,35f21.15)') nst,nm,iter,k,L,uvdwk(nm, k), ddkl(nm,k,l),bdddx(nm,k),bddx(nm,k),bdx (nm,k), &
+    !                           bux(nm,k),buux(nm,k),buuux(nm,k),bbkl(nm, k,l),aakl(nm, k,l),cckl(nm, k,l),&
+    !                           r1(nm - icx - icx - icx, k, l),r1(nm - icx - icx, k, l),r1(nm - icx, k, l),r1(nm + icx, k, l),&
+    !                           r1(nm + icx + icx, k, l), r1(nm + icx + icx + icx, k, l)
+    !            enddo
+    !         endif
+    !     enddo
+    !  endif
        if(icx == 1) then
          call timer_stop(timer_difu_solve4u, gdp)
          call timer_start(timer_difu_solve5u, gdp)
@@ -1004,7 +1577,7 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
        do k = 1, kmax
           do nm = nmsta, nmmax, 2
              if ( (kfs(nm)==1) .and. (kcs(nm)==1) ) then
-                epsitr = max(ad_epsabs, ad_epsrel*abs(r1(nm, k, l)))
+                epsitr = max(1.e-9_fp, 1.e-9_fp*abs(r1(nm, k, l)))
                 if (abs(vvdwk(nm, k) - r1(nm, k, l)) > epsitr) itr = 1
                 r1(nm, k, l) = vvdwk(nm, k)
              endif
@@ -1022,12 +1595,12 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
        !
        call dfreduce_gdp( itr, 1, dfint, dfmax, gdp )
        !
-       if (itr>0 .and. iter<ad_itrmax) goto 1100
+       if (itr>0 .and. iter<50) goto 1100
        !
        if (gdp%gdflwpar%flwoutput%iteroutputsteps >= gdp%gdinttim%ntstep) then
           write (lundia, '(3(a,i0))') 'difu(ntstep,l,iter):',gdp%gdinttim%ntstep, ' ', l, ' ',iter
        endif
-       if (iter >= ad_itrmax) then
+       if (iter >= 50) then
           write (errtxt, '(i0,a,i0)') l, ' ', nst
           call prterr(lundia    ,'S206'    ,trim(errtxt)    )
        endif
@@ -1093,4 +1666,14 @@ integer                 :: nm_pos ! indicating the array to be exchanged has nm 
        endif
        !
     enddo
+    if (nst.ge.idebugCUThardINI.and.nst.le.idebugCUThardFIN) THEN
+       do k =1,nmmax
+         write(9891998,'(2i6,15f21.15)') nst,k,r0(k,1,1),r1(k,1,1) 
+       enddo
+    endif
+    !
+    if (bnd_distr_avgc.or.bnd_distr_perC) then
+   !    deallocate( cavg, cflx )
+    endif
+    firstCALL = .false.
 end subroutine difu

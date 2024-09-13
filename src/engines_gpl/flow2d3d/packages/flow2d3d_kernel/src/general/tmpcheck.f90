@@ -1,7 +1,7 @@
 subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: tmpcheck.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/general/tmpcheck.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Checks if all necessary temporary (unformatted) files
@@ -97,7 +97,7 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
     ! Check keyword 'ReTMP' which defines if temporary files 
     ! have to be reused if possible        
     !
-    call prop_get(gdp%mdfile_ptr, '*', 'ReTMP', reusetmp)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'ReTMP', reusetmp)
     !
     ! Check if all necessary temporary files are available if they 
     ! need to be reused.
@@ -110,7 +110,7 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
         !   
         if ( ex ) then
              filrd = fildef
-             call prop_get(gdp%mdfile_ptr, '*', 'FilbcC', filrd)
+             call prop_get_string(gdp%mdfile_ptr, '*', 'FilbcC', filrd)
              if (filrd /= fildef) then
                 filnam = 'TMP_' // runid(:lrid) // '.bcc'
                 ex = exifil(filnam)
@@ -122,7 +122,7 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
         !
         if ( ex ) then
              filrd = fildef
-             call prop_get(gdp%mdfile_ptr, '*', 'FilbcH', filrd)
+             call prop_get_string(gdp%mdfile_ptr, '*', 'FilbcH', filrd)
              if (filrd /= fildef) then
                 filnam = 'TMP_' // runid(:lrid) // '.bch'
                 ex = exifil(filnam)
@@ -134,7 +134,7 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
         !
         if ( ex ) then
              filrd = fildef
-             call prop_get(gdp%mdfile_ptr, '*', 'Filana', filrd)
+             call prop_get_string(gdp%mdfile_ptr, '*', 'Filana', filrd)
              if (filrd /= fildef) then
                 filnam = 'TMP_' // runid(:lrid) // '.bch'
                 ex = exifil(filnam)
@@ -147,7 +147,7 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
         !   
         if ( ex ) then
              filrd = fildef
-             call prop_get(gdp%mdfile_ptr, '*', 'FilbcQ', filrd)
+             call prop_get_string(gdp%mdfile_ptr, '*', 'FilbcQ', filrd)
              if (filrd /= fildef) then
                 filnam = 'TMP_' // runid(:lrid) // '.bcq'
                 ex = exifil(filnam)
@@ -160,7 +160,7 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
         !    
         if ( ex ) then
              filrd = fildef
-             call prop_get(gdp%mdfile_ptr, '*', 'FilbcT', filrd)
+             call prop_get_string(gdp%mdfile_ptr, '*', 'FilbcT', filrd)
              if (filrd /= fildef) then
                 filnam = 'TMP_' // runid(:lrid) // '.bct'
                 ex = exifil(filnam)
@@ -173,7 +173,7 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
         !   
         if ( ex ) then
              filrd = fildef
-             call prop_get(gdp%mdfile_ptr, '*', 'Fildis', filrd)
+             call prop_get_string(gdp%mdfile_ptr, '*', 'Fildis', filrd)
              if (filrd /= fildef) then
                 filnam = 'TMP_' // runid(:lrid) // '.dis'
                 ex = exifil(filnam)
@@ -186,7 +186,7 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
         !   
         if ( ex ) then
              filrd = fildef
-             call prop_get(gdp%mdfile_ptr, '*', 'Fileva', filrd)
+             call prop_get_string(gdp%mdfile_ptr, '*', 'Fileva', filrd)
              if (filrd /= fildef) then
                 filnam = 'TMP_' // runid(:lrid) // '.eva'
                 ex = exifil(filnam)
@@ -198,7 +198,7 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
         !   
         if ( ex ) then
              filrd = fildef
-             call prop_get(gdp%mdfile_ptr, '*', 'Filtmp', filrd)
+             call prop_get_string(gdp%mdfile_ptr, '*', 'Filtmp', filrd)
              if (filrd /= fildef) then
                 filnam = 'TMP_' // runid(:lrid) // '.tem'
                 ex = exifil(filnam)

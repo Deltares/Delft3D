@@ -5,7 +5,7 @@ subroutine chkvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                 & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,13 +29,13 @@ subroutine chkvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: chkvic.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/chkvic.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Checkes stability criterion for horizontal viscosity and
 !              diffusivity according to "first2d.doc"
-!              (R.E. Uittenbogaard 24-12-99)
+!              (R.E. Uittenboogaard 24-12-99)
 !              NOTE: changes to incorporate HLES in DD
 ! Method used:
 !     Comment: The HLES contribution to vicuv/dicuv is stored in array element
@@ -165,7 +165,7 @@ subroutine chkvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
        !
        if (real(icount,fp) > real(itotal,fp)/10.0_fp) then
           write (errmsg, '(a)') &
-               & 'The courant number is violated in the viscosity term in more than 10% of the points. Decrease the time step to solve this problem.'
+               & 'The explicit wall roughness formula violates the courant number in too many points. Decrease the time step to solve this problem.'
           call prterr(lundia, 'P004', trim(errmsg))
           !
           ! stop routine for DELFT3D
@@ -218,7 +218,7 @@ subroutine chkvic(lundia    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
           !
           if (real(icount,fp) > real(itotal,fp)/10.0_fp) then
              write (errmsg, '(a)') &
-                  & 'The courant number is violated in the viscosity term in more than 10% of the points. Decrease the time step to solve this problem.'
+                  & 'The explicit wall roughness formula violates the courant number in too many points. Decrease the time step to solve this problem.'
              call prterr(lundia, 'P004', trim(errmsg))
              !
              ! stop routine for DELFT3D

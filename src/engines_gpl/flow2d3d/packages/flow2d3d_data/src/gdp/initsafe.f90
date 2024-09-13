@@ -1,7 +1,7 @@
 subroutine initsafe(gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine initsafe(gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: initsafe.f90 6061 2016-04-21 08:39:24Z platzek $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/gdp/initsafe.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! NONE
@@ -39,7 +39,6 @@ subroutine initsafe(gdp)
     use message_module
     use bedcomposition_module
     use morphology_data_module
-    use dredge_data_module, only: initdredge
     !
     use globaldata
     !
@@ -104,16 +103,17 @@ subroutine initsafe(gdp)
     call initz_initcg  (gdp)
     call initzmodel    (gdp)
     call initsdu       (gdp)
+    call initimbound   (gdp)
     !
     call sbuff_init
     !
     call initdfparall  (gdp%gdparall) 
     call initdfparall  (gdp%iopartit) 
     ! 
-    ! Since GDP allocation has not yet succeeded, calling prterr(...,gdp) and d3stop(...) does not work
+    ! Since GDP allocation has not yet succeeded, I can't call prterr(...,gdp) and d3stop(...)
     !
     if (istat /= 0) then
        write(*,*) 'ERROR during initialization of GDP structure'
-       call throwexception()
+       stop 1
     endif
 end subroutine initsafe

@@ -6,7 +6,7 @@ subroutine incbcc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                 & zstep     ,dzs1      ,zk        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +30,8 @@ subroutine incbcc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: incbcc.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/timedep/incbcc.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Carry out interpolation in space, determine time
@@ -143,8 +143,6 @@ subroutine incbcc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
     real(fp)                                     :: gvvz1
     real(fp)                                     :: gvvz2
     real(fp)                                     :: h0
-    real(fp)                                     :: r1
-    real(fp)                                     :: r2
     real(fp)                                     :: reldep
     real(fp)                                     :: sigjmp
     real(fp)                                     :: timscl  ! Multiple factor to create minutes from read times 
@@ -584,22 +582,14 @@ subroutine incbcc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                 mp     = nob(1, n)
                 np     = nob(2, n)
                 h0     = real(dps(np, mp),fp) + s0(np, mp)
-                zjmp   = s0(np, mp) - zstep(1, n1, l)
-                sigjmp = (zjmp-s0(np, mp))/max(h0, 0.01_fp)
+                zjmp   = -zstep(1, n1, l)
+                sigjmp = zjmp/max(h0, 0.01_fp)
                 do k = 1, kmax
                    if (zmodel) then
-                      !
-                      ! In the z-model we start from the bottom layer upwards, 
-                      ! with z running from the bed level to the free surface level
-                      !
-                      if (zk(k) > zjmp) then
+                      if (zjmp > zk(k)) then
                          kstp(n, l) = k
                          goto 610
                       endif
-                      !
-                      ! In the sigma-model we start from the top layer downwards, 
-                      ! with sig running from 0 to -1
-                      !
                    elseif (sigjmp > sig(k)) then
                       kstp(n, l) = max(k - 1, 1)
                       goto 610
@@ -608,24 +598,12 @@ subroutine incbcc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                 enddo
                 kstp(n, l) = kmax
              endif
-610          continue
-             !
-             ! Since rob(1,n) contains the bc-value near the free-surface and 
-             ! rob(kmax,n) the value near the bed, we need to switch the order
-             ! for sigma- and z-layer models
-             !
-             if (zmodel) then
-                 r2 = rob(1, n)
-                 r1 = rob(kmax, n)
-             else
-                 r1 = rob(1, n)
-                 r2 = rob(kmax, n)
-             endif
+  610        continue
              do k = 1, kmax
                 if (k <= kstp(n, l)) then
-                   rbnd(k, l, kp, kq) = r1
+                   rbnd(k, l, kp, kq) = rob(1, n)
                 else
-                   rbnd(k, l, kp, kq) = r2
+                   rbnd(k, l, kp, kq) = rob(kmax, n)
                 endif
              enddo
           elseif (tprofc(n1, l) == '3d-profile') then

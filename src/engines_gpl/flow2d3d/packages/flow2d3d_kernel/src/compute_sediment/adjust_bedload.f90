@@ -8,7 +8,7 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
                         & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -32,8 +32,8 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: adjust_bedload.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute_sediment/adjust_bedload.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes 
@@ -68,10 +68,29 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
     real(fp)                         , pointer :: alfpa
     real(fp)                         , pointer :: thcrpa
     integer                          , pointer :: islope
-    integer       , dimension(:)     , pointer :: tratyp
+    integer       , dimension(:)     , pointer :: sedtyp
     real(fp)                         , pointer :: eps
     real(fp)                         , pointer :: morfac
     real(fp)                         , pointer :: hdt
+    integer                 , pointer :: cutcell
+    logical                 , pointer :: useCUTstyle
+    logical                 , pointer :: skip_aval_adjust
+    real(fp), dimension(:)  , pointer :: dzduu_w
+    real(fp), dimension(:)  , pointer :: dzdvv_w
+    integer, dimension(:)   , pointer :: isMERGEDv_bed
+    integer, dimension(:)   , pointer :: isMERGEDu_bed
+    integer                 , pointer :: CORRbedSLOPEcut
+    real(fp), dimension(:)  , pointer :: dzduuCENTR
+    real(fp), dimension(:)  , pointer :: dzdvvCENTR
+    integer                 , pointer :: exactSLOPE
+    real(fp), dimension(:,:), pointer :: xG_U1
+    real(fp), dimension(:,:), pointer :: YG_U1
+    real(fp), dimension(:,:), pointer :: xG_V1
+    real(fp), dimension(:,:), pointer :: yG_V1
+    real(fp), dimension(:,:), pointer :: xG
+    real(fp), dimension(:,:), pointer :: yG
+    real(fp)                , pointer :: ccofu_stored
+    logical                 , pointer :: bdslpINupwnbed
 !
 ! Global variables
 !
@@ -117,6 +136,7 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
 !
     integer  :: idir      ! direction U=1, V=2
     integer  :: l
+    integer  :: kf
     integer  :: ndu
     integer  :: ndv
     integer  :: ndm
@@ -127,6 +147,8 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
     integer  :: nmu
     integer  :: num
     integer  :: numd
+    integer  :: m
+    integer  :: n
     logical  :: di50spatial
     real(fp) :: alfas
     real(fp) :: bagnol
@@ -158,14 +180,42 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
     real(fp) :: avtime
     real(fp) :: avflux
     real(fp) :: slp
+    real(fp) :: xx  
+    real(fp) :: yy 
+    real(fp) :: dzdr 
+    real(fp) :: dzdteta 
+    real(fp) :: x2y2 
+    real(fp) :: drdx 
+    real(fp) :: drdy  
+    real(fp) :: dtetadx
+    real(fp) :: dtetady 
 !
 !! executable statements -------------------------------------------------------
 !
+    cutcell          => gdp%gdimbound%cutcell
+    useCUTstyle      => gdp%gdimbound%useCUTstyle
+    skip_aval_adjust => gdp%gdimbound%skip_aval_adjust
+    dzduu_w          => gdp%gdimbound%dzduu_w
+    dzdvv_w          => gdp%gdimbound%dzdvv_w
+    isMERGEDv_bed    => gdp%gdimbound%isMERGEDv_bed
+    isMERGEDu_bed    => gdp%gdimbound%isMERGEDu_bed
+    CORRbedSLOPEcut  => gdp%gdimbound%CORRbedSLOPEcut
+    dzduuCENTR       => gdp%gdimbound%dzduuCENTR
+    dzdvvCENTR       => gdp%gdimbound%dzdvvCENTR
+    exactSLOPE       => gdp%gdimbound%exactSLOPE
+    xG_U1            => gdp%gdimbound%xG_U1
+    YG_U1            => gdp%gdimbound%YG_U1
+    xG_V1            => gdp%gdimbound%xG_V1
+    yG_V1            => gdp%gdimbound%yG_V1
+    xG               => gdp%gdimbound%xG
+    yG               => gdp%gdimbound%yG
+    ccofu_stored     => gdp%gdimbound%ccofu_stored
+    bdslpINupwnbed   => gdp%gdimbound%bdslpINupwnbed
     ag                  => gdp%gdphysco%ag
     rhosol              => gdp%gdsedpar%rhosol
     sedd50              => gdp%gdsedpar%sedd50
     sedd50fld           => gdp%gdsedpar%sedd50fld
-    tratyp              => gdp%gdsedpar%tratyp
+    sedtyp              => gdp%gdsedpar%sedtyp
     alfabs              => gdp%gdmorpar%alfabs
     alfabn              => gdp%gdmorpar%alfabn
     wetslope            => gdp%gdmorpar%wetslope
@@ -187,7 +237,7 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
     tphi = tan(phi)
     !
     do l = 1, lsedtot
-       if (has_bedload(tratyp(l))) then
+       if (sedtyp(l) /= SEDTYP_COHESIVE) then
           di50        = sedd50(l)
           di50spatial = .false.
           if (di50<0 .and. lsedtot==1) di50spatial = .true.
@@ -224,32 +274,64 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
                    !
                    ! set bed gradients in u and v directions at u point
                    !
-                   dzdu = dzduu(nm)
                    dzdv =0.0_fp
                    ndv = 0
-                   if (kcv(nmu) > 0) then
-                      dzdv = dzdv + dzdvv(nmu)
-                      ndv  = ndv + 1
-                   endif
-                   if (kcv(nm) > 0) then
-                      dzdv = dzdv + dzdvv(nm)
-                      ndv  = ndv + 1
-                   endif
-                   if (kcv(ndmu) > 0) then
-                      dzdv = dzdv + dzdvv(ndmu)
-                      ndv  = ndv + 1
-                   endif
-                   if (kcv(ndm) > 0) then
-                      dzdv = dzdv + dzdvv(ndm)
-                      ndv  = ndv + 1
+                   if (cutcell==0.AND..not.useCUTstyle) then
+                      dzdu = dzduu(nm)
+                      if (kcv(nmu) > 0) then
+                         dzdv = dzdv + dzdvv(nmu)
+                         ndv  = ndv + 1
+                      endif
+                      if (kcv(nm) > 0) then
+                         dzdv = dzdv + dzdvv(nm)
+                         ndv  = ndv + 1
+                      endif
+                      if (kcv(ndmu) > 0) then
+                         dzdv = dzdv + dzdvv(ndmu)
+                         ndv  = ndv + 1
+                      endif
+                      if (kcv(ndm) > 0) then
+                         dzdv = dzdv + dzdvv(ndm)
+                         ndv  = ndv + 1
+                      endif
+                   else 
+                      dzdu = dzduu_w(nm)
+                      if (CORRbedSLOPEcut==1.or.CORRbedSLOPEcut==0) then
+                      !uses kfv, so slope on points that are on bank are not considered. Also use slopes of wet velocity points dzduu_w/dzdvv_w
+                         if (kfv(nmu) > 0 .and. isMERGEDv_bed(nmu)==0) then
+                            dzdv = dzdv + dzdvv_w(nmu)
+                            ndv  = ndv + 1
+                         endif
+                         if (kfv(nm) > 0 .and. isMERGEDv_bed(nm)==0) then
+                            dzdv = dzdv + dzdvv_w(nm)
+                            ndv  = ndv + 1
+                         endif
+                         if (kfv(ndmu) > 0 .and. isMERGEDv_bed(ndmu)==0) then
+                            dzdv = dzdv + dzdvv_w(ndmu)
+                            ndv  = ndv + 1
+                         endif
+                         if (kfv(ndm) > 0 .and. isMERGEDv_bed(ndm)==0) then
+                            dzdv = dzdv + dzdvv_w(ndm)
+                            ndv  = ndv + 1
+                         endif
+                      else !if (CORRbedSLOPEcut==2.or.CORRbedSLOPEcut==3) then
+                         ! I dont need mask. kfu is 1 here (tested above). So dzdvvCENTR is defined.
+                         dzdv = 0._fp !(dzdvvCENTR(nm) + dzdvvCENTR(num))*0.5_fp !max(1,ndv) is 1 since ndv is zero
+                      endif
                    endif
                    dzdv = dzdv/max(1,ndv)
                    !
                    ! set bed load transports in u and v directions at u point
                    !
                    sbedu    = suu(nm, l)
-                   sbedv    = (svv(nm, l) + svv(nmu, l) + svv(ndm, l)           &
-                            & + svv(ndmu, l))/4.0_fp
+                   if (cutcell==0) then
+                      sbedv    = (svv(nm, l) + svv(nmu, l) + svv(ndm, l)               &
+                               & + svv(ndmu, l))/4.0_fp
+                   else
+                      kf = max(kfv(nm) + kfv(nmu) + kfv(ndm) + kfv(ndmu),1)
+                      sbedv = (kfv(nm)*svv(nm, l) + kfv(nmu)*svv(nmu, l) + kfv(ndm)*svv(ndm, l) &
+                               & + kfv(ndmu)*svv(ndmu, l))/kf
+                   endif
                    sbedcorr = sbedu
                    !
                    nm2   = nmu
@@ -262,36 +344,106 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
                    !
                    ! set bed gradients in u and v directions at v point
                    !
-                   dzdv = dzdvv(nm)
                    dzdu =0.0_fp
                    ndu = 0
-                   if (kcu(num) > 0) then
-                      dzdu = dzdu + dzduu(num)
-                      ndu  = ndu + 1
-                   endif
-                   if (kcu(nm) > 0) then
-                      dzdu = dzdu + dzduu(nm)
-                      ndu  = ndu + 1
-                   endif
-                   if (kcu(numd) > 0) then
-                      dzdu = dzdu + dzduu(numd)
-                      ndu  = ndu + 1
-                   endif
-                   if (kcu(nmd) > 0) then
-                      dzdu = dzdu + dzduu(nmd)
-                      ndu  = ndu + 1
+                   if (cutcell==0.and..not.useCUTstyle) then
+                      dzdv = dzdvv(nm)
+                      if (kcu(num) > 0) then
+                         dzdu = dzdu + dzduu(num)
+                         ndu  = ndu + 1
+                      endif
+                      if (kcu(nm) > 0) then
+                         dzdu = dzdu + dzduu(nm)
+                         ndu  = ndu + 1
+                      endif
+                      if (kcu(numd) > 0) then
+                         dzdu = dzdu + dzduu(numd)
+                         ndu  = ndu + 1
+                      endif
+                      if (kcu(nmd) > 0) then
+                         dzdu = dzdu + dzduu(nmd)
+                         ndu  = ndu + 1
+                      endif
+                   else !uses kfu, so slope on points that are on bank are not considered. Also use slopes of wet velocity points dzduu_w/dzdvv_w
+                      dzdv = dzdvv_w(nm)
+                      if (CORRbedSLOPEcut==1.or.CORRbedSLOPEcut==0) then
+                         if (kfu(num) > 0 .and. isMERGEDu_bed(num)==0) then
+                            dzdu = dzdu + dzduu_w(num)
+                            ndu  = ndu + 1
+                         endif
+                         if (kfu(nm) > 0 .and. isMERGEDu_bed(nm)==0) then
+                            dzdu = dzdu + dzduu_w(nm)
+                            ndu  = ndu + 1
+                         endif
+                         if (kfu(numd) > 0 .and. isMERGEDu_bed(numd)==0) then
+                            dzdu = dzdu + dzduu_w(numd)
+                            ndu  = ndu + 1
+                         endif
+                         if (kfu(nmd) > 0 .and. isMERGEDu_bed(nmd)==0) then
+                            dzdu = dzdu + dzduu_w(nmd)
+                            ndu  = ndu + 1
+                         endif
+                      else !if (CORRbedSLOPEcut==2.or.CORRbedSLOPEcut==3) then
+                         ! I dont need mask. kfv is 1 here (tested above). So dzduuCENTR is defined.
+                         dzdu = 0._fp !(dzduuCENTR(nm) + dzduuCENTR(num))*0.5_fp !max(1,ndu) is 1 since ndu is zero
+                      endif
                    endif
                    dzdu = dzdu/max(1,ndu)
                    !
                    ! set bed load transports in u and v directions at v point
                    !
                    sbedv    = svv(nm, l)
-                   sbedu    = (suu(nm, l) + suu(num, l) + suu(nmd, l)           &
-                            & + suu(numd, l))/4.0_fp
+                   if (cutcell==0) then
+                      sbedu    = (suu(nm, l) + suu(num, l) + suu(nmd, l)           &
+                               & + suu(numd, l))/4.0_fp
+                   else
+                      kf = max(kfu(nm) + kfu(num) + kfu(ndm) + kfu(numd),1)
+                      sbedu = (kfu(nm)*suu(nm, l) + kfu(num)*suu(num, l) + kfu(ndm)*suu(ndm, l) &
+                               & + kfu(numd)*suu(numd, l))/kf
+                   endif
                    sbedcorr = sbedv
                    !
                    nm2   = num
                    depth = hv(nm)
+                endif
+                ! if exactSLOPE>0 overwrite the numerical slope with the analytical one
+                If (exactSLOPE ==1.and.cutcell==2) then
+                   call nm_to_n_and_m(nm, n, m, gdp)
+                   if (idir==1) then
+                      xx = xG_U1(n,m)
+                      yy = yG_U1(n,m)
+                   else
+                      xx = xG_V1(n,m)
+                      yy = yG_V1(n,m)
+                   endif
+                   select case (exactSLOPE)
+                   case(1)
+                   !anular channel with 60 m of radius
+                      dzdr =    0.043955483387823_fp !0.035 !
+                      dzdteta = 0.06_fp
+                      x2y2 = xx**2+yy**2
+                      drdx = xx/sqrt(x2y2)
+                      drdy = yy/sqrt(x2y2)
+                      dtetadx = - yy/x2y2
+                      dtetady =   xx/x2y2
+                      dzdu = dzdr*drdx+dzdteta*dtetadx
+                      dzdv = dzdr*drdy+dzdteta*dtetady
+                      ! provide dzduu_w,dzdvv_w for printing
+                      if (idir==1) then
+                        dzduu_w(nm) = dzdu
+                      else
+                        dzdvv_w(nm) = dzdv
+                      endif
+                   case default
+                      write(*,*) ' exactSLOPE not admitted' 
+                      !pause
+                      stop
+                   end select
+                   if (idir==1) then
+                      write(98989898,*) nm,dzdu
+                   else
+                      write(98989899,*) nm,dzdv
+                   endif
                 endif
                 !
                 ! changed to reduce bed-load component perpendicular to dry points
@@ -300,11 +452,11 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
                 !
                 sbedm    = sqrt(sbedu**2 + sbedv**2)
                 !
-                if (sbedm>eps .and. slopecor) then
+                if (sbedm>eps .and. slopecor.and..not.bdslpINupwnbed) then
                    dzds =  dzdu*sbedu/sbedm + dzdv*sbedv/sbedm
                    dzdn = -dzdu*sbedv/sbedm + dzdv*sbedu/sbedm
                    !
-                   ! limit dzds to 90% of phi
+                   ! limit dzds to 90% of phi (Alberto: should not this also be applied to dzdn?)
                    !
                    dzds = min(0.9*tphi, dzds)
                    !
@@ -355,12 +507,14 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
                       else
                          sbedcorr = sbedv + sbedu*fnorm
                       endif
-                   case(3,4)
+                   case(3,4,5)
                       !
                       ! 3: Formulation according Van Bendegom (1947), Koch & Flokstra (1980)
                       ! as described in Struiksma et al. (1985)
                       !
                       ! 4: Formulation according Parker & Andrews (1985)
+                      !
+                      ! 5: Formulaiton as Talmon 1995, but with constant Shield, h and v (typically at the centerline of the circular channel)
                       !
                       ust2avg = (ust2(nm) + ust2(nm2)) / 2.0_fp
                       if (di50spatial) then
@@ -381,13 +535,29 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
                             endif
                             ftheta  = ashld*(shield**bshld)* &
                                     & ((di50/depth)**cshld)*((di50/dmloc)**dshld)
-                         else ! islope==4
+                         elseif(islope==4) then
                             hidexploc = (hidexp(nm, l)+hidexp(nm2, l)) / 2.0_fp
                             ftheta    = alfpa * sqrt( shield / &
                                       & max(shield*0.1_fp , hidexploc*thcrpa) )
                          endif
                       else
                          ftheta  = 0.0_fp
+                      endif
+                      if (islope==5) then
+                         !u_axis = 1.473450872804613
+                         shield = 1.473450872804613_fp**2/di50/delta/ccofu_stored**2;
+                         !if (comparereal(di50,0.0002_fp)==0) then
+                         !   shield =    4.111851277592192_fp 
+                         !elseif (comparereal(di50,0.001_fp)==0) then
+                         !   shield =     0.822370255518438_fp 
+                         !elseif (comparereal(di50,0.002_fp)==0) then
+                         !   shield =     0.411185127759219_fp
+                         !else
+                         !   write(*,*) 'shield not defined for islope=5'
+                         !   stop 
+                         !   pause
+                         !endif
+                         ftheta  = ashld*(shield**bshld)  !note  cshld and dshld are zero by default,while ashld=0.85 and bshld=0.5 . So ftheta  = 0.85*(shield**0.5), as in eq 17 of Talmon 1995                           
                       endif
                       !
                       ! deal with exeptional case when ftheta, dzdv and dzdu are exactly
@@ -414,7 +584,7 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
                    endselect
                 endif
                 ! 
-                if (avalan) then
+                if (avalan.and..not.skip_aval_adjust) then !TO BE MODIFIED BY ADDING AGSQS, PAYING ATTENTION TO BY ZERO DIVISIONS
                    !               
                    ! Avalanching (MvO, 2011-04-06)
                    !
@@ -466,10 +636,35 @@ subroutine adjust_bedload(nmmax     ,icx       ,icy       ,kcs       , &
                 else
                    sbvvt(nm) = sbedcorr
                 endif
+                !
+                ! continue to next direction
+                !
              enddo
-             !
-             ! continue to next direction
-             !
+             If (exactSLOPE ==1.and.cutcell==2) then !xG not defined for non cutcells
+                if (kfu(nm)==1.or.kfv(nm)==1.or.kfu(nmd)==1.or.kfv(ndm)==1) then !since kfs is not passed
+                  call nm_to_n_and_m(nm, n, m, gdp)
+                  ! provide dzduuCENTR,dzdvvCENTR for printing. Note that it has done twice (idir==1 and 2) but it still not enough, since both the dir for a cut cell can be wall and it is skipped 
+                  !dzdr and dzdteta defined above
+                  select case (exactSLOPE)
+                  case(1)
+                  !anular channel with 60 m of radius
+                     xx = xG(n,m)
+                     yy = yG(n,m)
+                     x2y2 = xx**2+yy**2
+                     drdx = xx/sqrt(x2y2)
+                     drdy = yy/sqrt(x2y2)
+                     dtetadx = - yy/x2y2
+                     dtetady =   xx/x2y2
+                     dzduuCENTR(nm) = dzdr*drdx+dzdteta*dtetadx
+                     dzdvvCENTR(nm) = dzdr*drdy+dzdteta*dtetady  
+                  case default
+                     write(*,*) ' exactSLOPE not admitted' 
+                     !pause
+                     stop
+                  end select
+
+                endif
+             endif                 
           enddo
           !
           ! continue to next nm

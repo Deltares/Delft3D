@@ -10,14 +10,14 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                  & aak       ,bbk       ,cck       ,ddk       ,bbka      , &
                  & bbkc      ,vicuv     ,vnu2d     ,vicww     ,tgfsep    , &
                  & drhodx    ,wsu       ,wsbodyu   ,taubpu    ,taubsu    ,rxx       , &
-                 & rxy       ,windsu    ,patm      ,fcorio    ,p0        , &
+                 & rxy       ,windu     ,patm      ,fcorio    ,p0        , &
                  & tp        ,rlabda    ,dfu       ,deltau    ,fxw       , &
                  & ubrlsu    ,pship     ,diapl     ,rnpl      ,cfurou    , &
                  & qxk       ,qyk       ,umean     ,dps       ,s0        , &
                  & ustokes   ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -41,8 +41,8 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_cucnp.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/z_cucnp.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: The coefficient for the momentum equations are
@@ -84,28 +84,23 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    real(fp)                     , pointer :: drycrt
-    real(fp)                     , pointer :: dryflc
-    real(fp)                     , pointer :: gammax
-    character(8)                 , pointer :: dpsopt
-    character(6)                 , pointer :: momsol
-    logical                      , pointer :: old_corio
-    logical                      , pointer :: slplim
-    real(fp)                     , pointer :: hdt
-    real(fp)                     , pointer :: rhow
-    real(fp)                     , pointer :: ag
-    real(fp)                     , pointer :: vicmol
-    integer                      , pointer :: iro
-    integer                      , pointer :: irov
-    logical                      , pointer :: wave
-    logical                      , pointer :: roller
-    logical                      , pointer :: xbeach
-    real(fp)                     , pointer :: dzmin
-    integer                      , pointer :: no_dis
-	logical                      , pointer :: nf_src_mom
-    real(fp), dimension(:,:,:)   , pointer :: nf_src_momu
-    real(fp), dimension(:,:,:)   , pointer :: nf_src_momv
-    real(fp)                     , pointer :: momrelax
+    real(fp)               , pointer :: drycrt
+    real(fp)               , pointer :: dryflc
+    real(fp)               , pointer :: gammax
+    character(8)           , pointer :: dpsopt
+    character(6)           , pointer :: momsol
+    logical                , pointer :: old_corio
+    logical                , pointer :: slplim
+    real(fp)               , pointer :: hdt
+    real(fp)               , pointer :: rhow
+    real(fp)               , pointer :: ag
+    real(fp)               , pointer :: vicmol
+    integer                , pointer :: iro
+    integer                , pointer :: irov
+    logical                , pointer :: wave
+    logical                , pointer :: roller
+    logical                , pointer :: xbeach
+    real(fp)               , pointer :: dzmin
 !
 ! Global variables
 !
@@ -168,7 +163,7 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: tp      !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: umean   !  Description and declaration in esm_alloc_real.f90    
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: vnu2d   !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: windsu  !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: windu   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: wsu     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: wsbodyu !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax), intent(in)  :: vicww   !  Description and declaration in esm_alloc_real.f90
@@ -214,7 +209,6 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     integer            :: idifc
     integer            :: idifd
     integer            :: idifu
-    integer            :: idis
     integer            :: isrc
     integer            :: k
     integer            :: kdo
@@ -277,7 +271,6 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)           :: gsqi
     real(fp)           :: hl
     real(fp)           :: hr
-    real(fp)           :: h0fac
     real(fp)           :: drytrsh
     real(fp)           :: hugsqs  ! HU(NM/NMD) * GSQS(NM) Depending on UMDIS the HU of point NM or NMD will be used 
     real(fp)           :: qwind
@@ -285,7 +278,6 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)           :: svvv
     real(fp)           :: thvert     ! theta coefficient for vertical advection terms
     real(fp)           :: timest
-    real(fp)           :: trelaxi
     real(fp)           :: uuu
     real(fp)           :: uweir
     real(fp)           :: vih
@@ -300,28 +292,23 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
 !
 !! executable statements -------------------------------------------------------
 !
-    drycrt         => gdp%gdnumeco%drycrt
-    dryflc         => gdp%gdnumeco%dryflc
-    dpsopt         => gdp%gdnumeco%dpsopt
-    momsol         => gdp%gdnumeco%momsol
-    old_corio      => gdp%gdnumeco%old_corio
-    slplim         => gdp%gdnumeco%slplim
-    gammax         => gdp%gdnumeco%gammax
-    rhow           => gdp%gdphysco%rhow
-    ag             => gdp%gdphysco%ag
-    vicmol         => gdp%gdphysco%vicmol
-    iro            => gdp%gdphysco%iro
-    irov           => gdp%gdphysco%irov
-    wave           => gdp%gdprocs%wave
-    roller         => gdp%gdprocs%roller
-    xbeach         => gdp%gdprocs%xbeach
-    hdt            => gdp%gdnumeco%hdt
-    dzmin          => gdp%gdzmodel%dzmin
-    no_dis         => gdp%gdnfl%no_dis
-    nf_src_mom     => gdp%gdnfl%nf_src_mom
-    nf_src_momu    => gdp%gdnfl%nf_src_momu
-    nf_src_momv    => gdp%gdnfl%nf_src_momv
-    momrelax       => gdp%gdnfl%momrelax
+    drycrt    => gdp%gdnumeco%drycrt
+    dryflc    => gdp%gdnumeco%dryflc
+    dpsopt    => gdp%gdnumeco%dpsopt
+    momsol    => gdp%gdnumeco%momsol
+    old_corio => gdp%gdnumeco%old_corio
+    slplim    => gdp%gdnumeco%slplim
+    gammax    => gdp%gdnumeco%gammax
+    rhow      => gdp%gdphysco%rhow
+    ag        => gdp%gdphysco%ag
+    vicmol    => gdp%gdphysco%vicmol
+    iro       => gdp%gdphysco%iro
+    irov      => gdp%gdphysco%irov
+    wave      => gdp%gdprocs%wave
+    roller    => gdp%gdprocs%roller
+    xbeach    => gdp%gdprocs%xbeach
+    hdt       => gdp%gdnumeco%hdt
+    dzmin     => gdp%gdzmodel%dzmin
     !
     call timer_start(timer_cucnp_ini, gdp)
     !
@@ -517,7 +504,7 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
           ! weir.
           ! Gates are excluded
           !
-          if (dpsopt == 'DP' .or. slplim) then
+          if (dpsopt == 'DP  ' .or. slplim) then
              if (kfu(nm)==1 .and. abs(u0(nm,kmin)) <= 1.0e-15 .and. kspu(nm, 0) /= 4 .and. kspu(nm, 0) /= 10) then
                 !
                 ! cfurou(nm,1) contains u/u*
@@ -547,18 +534,8 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
           !
           ! Bottom and wind shear stress
           !
-          ! Apply factor h0fac to reduce wind force from cells with small depth
-          ! Note that the direction of windsu is opposite to what is expected
-          ! This is due to the change in sign in windtogridc.f90
-          !
-          h0fac = 1.0_fp
-          if (windsu(nm) < 0.0_fp .and.  s0(nm)+real(dps(nm),fp) < 2.0_fp*dryflc) then
-             h0fac = (s0(nm)+real(dps(nm),fp)) / (2.0_fp*dryflc)
-          elseif (windsu(nm) > 0.0_fp .and.  s0(nmu)+real(dps(nmu),fp) < 2.0_fp*dryflc) then
-             h0fac = (s0(nmu)+real(dps(nmu),fp)) / (2.0_fp*dryflc)
-          endif          
-          qwind          = h0fac*windsu(nm) / max(dzu0(nm, kkmax),drytrsh)
           cbot           = taubpu(nm)
+          qwind          = windu(nm)/max(dzu0(nm, kkmax),drytrsh)
           bdmwrp         = cbot/max(dzu0(nm, kmin),drytrsh)
           bdmwrs         = taubsu(nm)/max(dzu0(nm, kmin),drytrsh)
           bbk(nm, kmin)  = bbk(nm, kmin) + bdmwrp
@@ -634,40 +611,6 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
           endif
        endif
     enddo
-    if (nf_src_mom) then
-       !
-       ! DISCHARGE ADDITION OF MOMENTUM FROM NEARFIELD
-       !
-       ! Instead of weighting the nearfield momentum with the volume added via the nearfield source,
-       ! it is choosen to use a trelax, based on the time step.
-       ! This should force the cell velocity to get the a value "growing" fast to the nearfield momentum value.
-       !
-       ! Only change ddk/bbk when the momentum source in the present direction is non-negative
-       ! Inverse of the relaxation time:
-       !
-       trelaxi = 1.0 / (momrelax*2.0*hdt)
-       do nm = 1, nmmax
-          if (kfu(nm) == 1) then
-             do k = kfumn0(nm), kfumx0(nm)
-                if (kfuz0(nm, k) == 1) then
-                  do idis = 1, no_dis
-                     if (icx == 1 ) then
-                        if (comparereal(nf_src_momv(nm,k,idis), 0.0_fp) /= 0) then
-                           ddk(nm,k) = ddk(nm,k) + nf_src_momv(nm,k,idis)*trelaxi
-                           bbk(nm,k) = bbk(nm,k) + trelaxi
-                        endif
-                     else 
-                        if (comparereal(nf_src_momu(nm,k,idis), 0.0_fp) /= 0) then
-                           ddk(nm,k) = ddk(nm,k) + nf_src_momu(nm,k,idis)*trelaxi
-                           bbk(nm,k) = bbk(nm,k) + trelaxi
-                        endif
-                     endif
-                  enddo
-                endif
-             enddo
-          endif
-       enddo
-    endif
     call timer_stop(timer_cucnp_dismmt, gdp)
     !
     ! VERTICAL ADVECTION AND VISCOSITY
@@ -800,7 +743,7 @@ subroutine z_cucnp(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     enddo
     call timer_stop(timer_cucnp_advdiffv, gdp)
     !
-    ! HORIZONTAL VISCOSITY
+    ! HORIZONTAL VISCOSTY
     !
     call timer_start(timer_cucnp_vih, gdp)
     if (irov>0) then

@@ -1,8 +1,9 @@
 subroutine caldps(nmmax     ,nfltyp    ,icx       , &
-                & icy       ,kcs       ,dpd       ,dps       ,gdp       )
+                & icy       ,kcs       ,dp        ,dps      ,&
+                & dpL       ,dpH       ,gdp )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +27,8 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: caldps.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/caldps.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Initiates the depth values at water level points
@@ -35,22 +36,22 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
 !                procedure (In UI only NO and MAX procedure
 !                allowed)
 !              - Initializes nfltyp (used by MOR-transport)
-! Method used: DPSOPT = MEAN-> .25 * (  dpd(nm  ) + dpd(nmd )
-!                                     + dpd(ndmd) + dpd(ndm ) )
+! Method used: DPSOPT = MEAN-> .25 * (  dp(nm  ) + dp(nmd )
+!                                     + dp(ndmd) + dp(ndm ) )
 !                              nfltyp = 1
 !
-!              DPSOPT = MAX -> MAX   ( dpd(nm  ) , dpd(nmd ),
-!                                      dpd(ndmd) , dpd(ndm ) )
+!              DPSOPT = MAX -> MAX   ( dp(nm  ) , dp(nmd ),
+!                                      dp(ndmd) , dp(ndm ) )
 !                              nfltyp = 2
 !
-!              DPSOPT = MIN -> .5  * (  MIN (dpd(nm  ), dpd(ndmd))
-!                                     + MIN (dpd(nmd ), dpd(ndm )) )
+!              DPSOPT = MIN -> .5  * (  MIN (dp(nm  ), dp(ndmd))
+!                                     + MIN (dp(nmd ), dp(ndm )) )
 !                              nfltyp = 3
 !
-!              DPSOPT = DP  -> dpd(nm)
+!              DPSOPT = DP  -> dp (nm)
 !                              nfltyp = 4
-!                              dpd = .25 * (  dps(numu) + dps(num)
-!                                           + dps(nmu ) + dps(nm ) )
+!                              dp = .25 * (  dps(numu) + dps(num)
+!                                          + dps(nmu ) + dps(nm ) )
 !
 !!--pseudo code and references--------------------------------------------------
 ! NONE
@@ -67,6 +68,8 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
     !
     character(8)   , pointer :: dpsopt
     logical        , pointer :: rst_dp
+    integer, pointer :: cutcell
+    logical, pointer :: bndBEDfromFILE
 !
 ! Global variables
 !
@@ -75,7 +78,9 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
     integer                                     , intent(out) :: nfltyp !  Description and declaration in esm_alloc_int.f90
     integer                                     , intent(in)  :: nmmax  !  Description and declaration in dimens.igs
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)              :: kcs    !  Description and declaration in esm_alloc_int.f90
-    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              :: dpd    !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              :: dp     !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              :: dpH    !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)              :: dpL    !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub), intent(out) :: dps    !  Description and declaration in esm_alloc_real.f90
 !
 ! Local variables
@@ -102,6 +107,8 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
 !
 !! executable statements -------------------------------------------------------
 !
+    cutcell        => gdp%gdimbound%cutcell
+    bndBEDfromFILE => gdp%gdimbound%bndBEDfromFILE
     dpsopt             => gdp%gdnumeco%dpsopt
     rst_dp             => gdp%gdrestart%rst_dp
     !
@@ -121,7 +128,7 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
           ndm  = nm - icy
           ndmd = ndm - icx
           if (kcs(nm)==1) then
-             dps(nm) = real(0.25*(dpd(nm) + dpd(nmd) + dpd(ndmd) + dpd(ndm)),prec)
+             dps(nm) = real(0.25*(dp(nm) + dp(nmd) + dp(ndmd) + dp(ndm)),prec)
           elseif (kcs(nm)==2) then
              nmu = nm + icx
              num = nm + icy
@@ -134,8 +141,8 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
              kcddu = 0
              if (kcs(ndm)==1 .or. kcs(nmu)==1) kcddu = 1
              fact = 1.0_fp/real(kcduu + kcdud + kcddd + kcddu,fp)
-             dps(nm) = real(fact*(kcduu*dpd(nm) + kcdud*dpd(nmd) + kcddd*dpd(ndmd)      &
-                     & + kcddu*dpd(ndm)),prec)
+             dps(nm) = real(fact*(kcduu*dp(nm) + kcdud*dp(nmd) + kcddd*dp(ndmd)      &
+                     & + kcddu*dp(ndm)),prec)
           else
           endif
        enddo
@@ -152,15 +159,15 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
           ndm  = nm - icy
           ndmd = ndm - icx
           if (kcs(nm)==1) then
-             dps(nm) = real(max(dpd(nm), dpd(nmd), dpd(ndmd), dpd(ndm)),prec)
+             dps(nm) = real(max(dp(nm), dp(nmd), dp(ndmd), dp(ndm)),prec)
           elseif (kcs(nm)==2) then
              nmu = nm + icx
              num = nm + icy
              dep = -1.0e+32
-             if (kcs(nmu)==1) dep = max(dep, dpd(ndm), dpd(nm))
-             if (kcs(num)==1) dep = max(dep, dpd(nmd), dpd(nm))
-             if (kcs(nmd)==1) dep = max(dep, dpd(nmd), dpd(ndmd))
-             if (kcs(ndm)==1) dep = max(dep, dpd(ndm), dpd(ndmd))
+             if (kcs(nmu)==1) dep = max(dep, dp(ndm), dp(nm))
+             if (kcs(num)==1) dep = max(dep, dp(nmd), dp(nm))
+             if (kcs(nmd)==1) dep = max(dep, dp(nmd), dp(ndmd))
+             if (kcs(ndm)==1) dep = max(dep, dp(ndm), dp(ndmd))
              dps(nm) = real(dep,prec)
           else
           endif
@@ -179,16 +186,20 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
           ndm  = nm - icy
           ndmd = ndm - icx
           if (kcs(nm)==1) then
-             dps(nm) = real(0.5*(min(dpd(nm), dpd(ndmd)) + min(dpd(nmd), dpd(ndm))),prec)
+             dps(nm) = real(0.5*(min(dp(nm), dp(ndmd)) + min(dp(nmd), dp(ndm))),prec)
           elseif (kcs(nm)==2) then
              nmu = nm + icx
              num = nm + icy
              dep = 1.0e+32
-             if (kcs(nmu)==1) dep = min(dep, dpd(ndm), dpd(nm))
-             if (kcs(num)==1) dep = min(dep, dpd(nmd), dpd(nm))
-             if (kcs(nmd)==1) dep = min(dep, dpd(nmd), dpd(ndmd))
-             if (kcs(ndm)==1) dep = min(dep, dpd(ndm), dpd(ndmd))
+             if (kcs(nmu)==1) dep = min(dep, dp(ndm), dp(nm))
+             if (kcs(num)==1) dep = min(dep, dp(nmd), dp(nm))
+             if (kcs(nmd)==1) dep = min(dep, dp(nmd), dp(ndmd))
+             if (kcs(ndm)==1) dep = min(dep, dp(ndm), dp(ndmd))
              dps(nm) = real(dep,prec)
+             if (cutcell.eq.2) then
+               dpL(nm) = dps(nm)
+               dpH(nm) = dpL(nm)
+             endif
           else
           endif
        enddo
@@ -199,7 +210,7 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
        !
        nfltyp = 4
        !
-       ! Set DPS depth in zeta point = DPD (INDIA)
+       ! Set DPS depth in zeta point = DP  (INDIA)
        ! NOTE: that the contents of KFS are here identical to KCS
        !       (except for boundary points)
        ! -ICX := -1 in M-direction, -ICY := -1 in N-direction
@@ -208,21 +219,29 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
           nmd  = nm - icx
           ndm  = nm - icy
           ndmd = ndm - icx
-          if (kcs(nm)==1 .or. rst_dp .or. comparereal(real(dpd(nm),fp),rmissval)/=0) then
-             dps(nm) = real(dpd(nm),prec)
+          if (kcs(nm)==1 .or. rst_dp) then
+             dps(nm) = real(dp(nm),prec)
           elseif (kcs(nm)==2) then
              nmu = nm + icx
              num = nm + icy
-             if (kcs(nmu)==1) dep = dpd(nmu)
-             if (kcs(num)==1) dep = dpd(num)
-             if (kcs(nmd)==1) dep = dpd(nmd)
-             if (kcs(ndm)==1) dep = dpd(ndm)
-             dps(nm) = real(dep,prec)
+             if (.NOT.bndBEDfromFILE) then
+                if (kcs(nmu)==1) dep = dp(nmu)
+                if (kcs(num)==1) dep = dp(num)
+                if (kcs(nmd)==1) dep = dp(nmd)
+                if (kcs(ndm)==1) dep = dp(ndm)
+                dps(nm) = real(dep,prec)
+                if (cutcell.eq.2) then
+                  dpL(nm) = dps(nm)
+                  dpH(nm) = dpL(nm)
+                endif
+             else
+                dps(nm) = real(dp(nm),prec)
+             endif
           else
           endif
        enddo
        !
-       ! Compute DPD from DPS
+       ! Compute DP from DPS
        !
        do nm = 1, nmmax
           nmu  = nm  + icx
@@ -238,10 +257,10 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
           if (kcs(num) ==1 .and. comparereal(real(dps(num ),fp),rmissval)/=0) fac4=1.0_fp
           fact = fac1 + fac2 + fac3 + fac4
           if (comparereal(real(fact,fp),0.0_fp) == 1) then
-             dpd(nm) = (  fac1*real(dps(numu),fp) &
-                        + fac2*real(dps(nmu ),fp) &
-                        + fac3*real(dps(nm  ),fp) &
-                        + fac4*real(dps(num ),fp)  ) / fact
+             dp(nm) = (  fac1*real(dps(numu),fp) &
+                       + fac2*real(dps(nmu ),fp) &
+                       + fac3*real(dps(nm  ),fp) &
+                       + fac4*real(dps(num ),fp)  ) / fact
           endif
        enddo
     else
@@ -249,7 +268,7 @@ subroutine caldps(nmmax     ,nfltyp    ,icx       , &
     !
     ! exchange depths with neighbours for parallel runs
     !
-    call dfexchg ( dpd, 1, 1, dfloat, nm_pos, gdp )
+    call dfexchg (  dp, 1, 1, dfloat, nm_pos, gdp )
     call dfexchg ( dps, 1, 1, dfprec, nm_pos, gdp )
     !
     ! Adapt kcs: if dps = missval, kcs = 0

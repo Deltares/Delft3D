@@ -24,10 +24,11 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                 & wenf      ,wenl      ,dis       ,grmsur    ,grmsvr    , &
                 & areau     ,areav     ,volum0    ,volum1    ,xz        , &
                 & yz        ,rlabda    ,hbd       ,rscale    ,bruvai    , &
-                & hrms      ,dzs1      ,kfsmin    ,kfsmax    ,gdp       )
+                & hrms      ,dzs1      ,kfsmin    ,kfsmax    ,sournf    , &
+                & nob       ,nrob      ,nto       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -51,8 +52,8 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: tritra.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/tritra.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Main routine to compute transports for conserva-
@@ -105,8 +106,11 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
     integer                                                         :: nmmaxj       !  Description and declaration in dimens.igs
     integer                                                         :: nocol        !  Description and declaration in esm_alloc_int.f90
     integer                                                         :: norow        !  Description and declaration in esm_alloc_int.f90
+    integer                                                         :: nrob
     integer                                                         :: nst
-    integer   , dimension(5, norow + nocol)                         :: irocol       !  Description and declaration in esm_alloc_int.f90
+    integer                                           , intent(in)  :: nto   !  Description and declaration in esm_alloc_int.f90
+    integer , dimension(8, nrob)                      , intent(in)  :: nob 
+    integer   , dimension(7, norow + nocol)                         :: irocol       !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: kcs          !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: kcu          !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: kcv          !  Description and declaration in esm_alloc_int.f90
@@ -215,6 +219,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)      :: r1           !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)      :: sink         !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)      :: sour         !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)      :: sournf       !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(kmax)                                     :: sig          !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(kmax)                                     :: thick        !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(kmax, max(lstsc, 1), 2, norow+nocol)      :: rbnd         !  Description and declaration in esm_alloc_real.f90
@@ -294,7 +299,8 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                 call difu(icreep    ,timest    ,lundia    ,nst       ,icx       , &
                         & icy       ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                         & lstsci    ,lstsc     ,lsal      ,ltem      ,lsecfl    , &
-                        & lsec      ,lsed      ,lsts      ,norow     ,irocol    , &
+                        & lsec      ,lsed      ,lsts      ,norow     ,nocol     ,irocol    , &
+                        & nob       ,nto       ,&
                         & kcs       ,kcu       ,kfs       ,kfu       ,kfv       , &
                         & kadu      ,kadv      ,s0        ,s1        ,hu        , &
                         & hv        ,dps       ,qxk       ,qykfac    ,qzk       , &  ! qykfac
@@ -307,12 +313,13 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                         & buuux     ,uvdwk     ,vvdwk     ,areau     ,areav     , &
                         & aakl      ,bbkl      ,cckl      ,ddkl      , &
                         & eqmbcsand ,eqmbcmud  ,seddif    ,volum0    ,volum1    , &
-                        & rscale    ,bruvai    ,gdp       )
+                        & rscale    ,bruvai    ,nrob      ,gdp       )
              else
                 call difu(icreep    ,timest    ,lundia    ,nst       ,icx       , &
                         & icy       ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                         & lstsci    ,lstsc     ,lsal      ,ltem      ,lsecfl    , &
-                        & lsec      ,lsed      ,lsts      ,norow     ,irocol    , &
+                        & lsec      ,lsed      ,lsts      ,norow     ,nocol     ,irocol    , &
+                        & nob       ,nto       ,&
                         & kcs       ,kcu       ,kfs       ,kfu       ,kfv       , &
                         & kadu      ,kadv      ,s0        ,s1        ,hu        , &
                         & hv        ,dps       ,qxk       ,qyk       ,qzk       , &  ! qyk
@@ -325,7 +332,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                         & buuux     ,uvdwk     ,vvdwk     ,areau     ,areav     , &
                         & aakl      ,bbkl      ,cckl      ,ddkl      , &
                         & eqmbcsand ,eqmbcmud  ,seddif    ,volum0    ,volum1    , &
-                        & rscale    ,bruvai    ,gdp       )
+                        & rscale    ,bruvai    ,nrob      ,gdp       )
              endif
              call timer_stop(timer_1stdifu, gdp)
              !
@@ -334,8 +341,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                          & lstsci    ,r0        ,r1        ,qxk       ,qyk       , &
                          & dicuv     ,guv       ,gvu       ,areau     ,areav     , &
                          & kfu       ,kfv       ,kfs       ,kcs       ,timest    , &
-                         & icx       ,icy       ,lsed      ,s1        ,dps       , &
-                         & gdp       )
+                         & icx       ,icy       ,lsed      ,gdp       )
              if (roller) then
                  call rolcor(hrms      ,tp        ,theta     ,hu        ,hv         , &
                            & guu       ,gvv       ,qxk       ,qyk       ,eulerisoglm, &
@@ -364,6 +370,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                 icy   = 1
                 sourw = 0.0
                 sinkw = 0.0
+                !note: here for cutcell maybe a threshold on gsqs has to be used
                 call difuwe(timest    ,lundia    ,nst       ,icx       ,icy       , &
                           & nmmax     ,norow     ,irocol    ,kadu      ,kadv      , &
                           & kcs       ,kcu       ,kfs       ,kfu       ,kfv       , &
@@ -478,12 +485,13 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                 call difu(icreep    ,timest    ,lundia    ,nst       ,icx       , &
                         & icy       ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                         & lstsci    ,lstsc     ,lsal      ,ltem      ,lsecfl    , &
-                        & lsec      ,lsed      ,lsts      ,nocol     ,irocol(1,norow+1) , &
+                        & lsec      ,lsed      ,lsts      ,norow     ,nocol     ,irocol    , &
+                        & nob       ,nto       ,&
                         & kcs       ,kcv       ,kfs       ,kfv       ,kfu       , &
                         & kadv      ,kadu      ,s0        ,s1        ,hv        , &
                         & hu        ,dps       ,qykfac    ,qxk       ,qzk       , &          ! qykfac
                         & gvv       ,guu       ,gvu       ,guv       ,gsqs      , &
-                        & rbnd(1,1,1,norow+1)  ,sigdif    ,sigmol    ,r0        ,r1     , &
+                        & rbnd      ,sigdif    ,sigmol    ,r0        ,r1        , &
                         & sour      ,sink      ,ws        ,sedtyp    ,thick     , &
                         & sig       ,dicuv     ,vicww     ,dsdeta    ,dsdksi    , &
                         & dtdeta    ,dtdksi    ,aak       ,bbk       ,cck       , &
@@ -491,17 +499,18 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                         & buuux     ,uvdwk     ,vvdwk     ,areav     ,areau     , &
                         & aakl      ,bbkl      ,cckl      ,ddkl      , &
                         & eqmbcsand ,eqmbcmud  ,seddif    ,volum0    ,volum1    , &
-                        & rscale    ,bruvai    ,gdp       )
+                        & rscale    ,bruvai    ,nrob      ,gdp       )
              else
                 call difu(icreep    ,timest    ,lundia    ,nst       ,icx       , &
                         & icy       ,j         ,nmmaxj    ,nmmax     ,kmax      , &
                         & lstsci    ,lstsc     ,lsal      ,ltem      ,lsecfl    , &
-                        & lsec      ,lsed      ,lsts      ,nocol     ,irocol(1,norow+1) , &
+                        & lsec      ,lsed      ,lsts      ,norow     ,nocol     ,irocol    , &
+                        & nob       ,nto       ,&
                         & kcs       ,kcv       ,kfs       ,kfv       ,kfu       , &
                         & kadv      ,kadu      ,s0        ,s1        ,hv        , &
                         & hu        ,dps       ,qyk       ,qxk       ,qzk       , &          ! qyk
                         & gvv       ,guu       ,gvu       ,guv       ,gsqs      , &
-                        & rbnd(1,1,1,norow+1)  ,sigdif    ,sigmol    ,r0        ,r1     , &
+                        & rbnd      ,sigdif    ,sigmol    ,r0        ,r1        , &
                         & sour      ,sink      ,ws        ,sedtyp    ,thick     , &
                         & sig       ,dicuv     ,vicww     ,dsdeta    ,dsdksi    , &
                         & dtdeta    ,dtdksi    ,aak       ,bbk       ,cck       , &
@@ -509,7 +518,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                         & buuux     ,uvdwk     ,vvdwk     ,areav     ,areau     , &
                         & aakl      ,bbkl      ,cckl      ,ddkl      , &
                         & eqmbcsand ,eqmbcmud  ,seddif    ,volum0    ,volum1    , &
-                        & rscale    ,bruvai    ,gdp       )
+                        & rscale    ,bruvai    ,nrob      ,gdp       )
              endif
              call timer_stop(timer_2nddifu, gdp)
              !
@@ -518,8 +527,7 @@ subroutine tritra(stage     ,lundia    ,nst       ,icreep    , &
                          & lstsci    ,r0        ,r1        ,qxk       ,qyk       , &
                          & dicuv     ,guv       ,gvu       ,areau     ,areav     , &
                          & kfu       ,kfv       ,kfs       ,kcs       ,timest    , &
-                         & icy       ,icx       ,lsed      ,s1        ,dps       , &
-                         & gdp       )
+                         & icy       ,icx       ,lsed      ,gdp       )
              if (roller) then
                  call rolcor(hrms      ,tp        ,theta     ,hu        ,hv         , &
                            & guu       ,gvv       ,qxk       ,qyk       ,eulerisoglm, &

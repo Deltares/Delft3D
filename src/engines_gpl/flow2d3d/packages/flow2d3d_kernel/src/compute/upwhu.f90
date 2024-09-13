@@ -1,9 +1,10 @@
 subroutine upwhu(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                & zmodel    ,kcs       ,kcu       ,kspu      ,dps       , &
-               & s0        ,dpu       ,umean     ,hu        ,gdp       )
+               & s0        ,dpu       ,umean     ,hu        ,aguu      , &
+               & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +28,8 @@ subroutine upwhu(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: upwhu.f90 6265 2016-07-07 13:56:06Z platzek $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/upwhu.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Switch which makes it possible to use
@@ -55,6 +56,10 @@ subroutine upwhu(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     character(8) , pointer :: dpuopt
     character(6) , pointer :: momsol
     integer      , pointer :: nh_level
+    logical                  , pointer :: RECdepth
+    integer                  , pointer :: cutcell
+    logical                  , pointer :: noFLOODINGbanks
+    integer, dimension(:,:,:), pointer :: EDGEtypeBANK
 !
 ! Global variables
 !
@@ -72,6 +77,7 @@ subroutine upwhu(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: hu     !  Description and declaration in esm_alloc_real.f90
     real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: s0     !  Description and declaration in esm_alloc_real.f90
     real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: umean  !  Description and declaration in esm_alloc_real.f90
+    real(fp)   , dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: aguu
 !
 ! Local variables
 !
@@ -89,6 +95,10 @@ subroutine upwhu(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
 !
 !! executable statements -------------------------------------------------------
 !
+    RECdepth        => gdp%gdimbound%RECdepth
+    cutcell         => gdp%gdimbound%cutcell
+    noFLOODINGbanks => gdp%gdimbound%noFLOODINGbanks
+    EDGEtypeBANK    => gdp%gdimbound%EDGEtypeBANK
     dco      => gdp%gdnumeco%dco
     dgcuni   => gdp%gdnumeco%dgcuni
     nonhyd   => gdp%gdprocs%nonhyd
@@ -153,9 +163,11 @@ subroutine upwhu(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              & kspu(nm, 0) > 0 .or. &
              & dpuopt == 'UPW' .or. &
              & zmodel               ) then
-             if (umean(nm) > 0.001_fp) then
+            ! if (umean(nm) > 0.001_fp) then
+             if (comparereal(umean(nm),0._fp).gt.0) then
                 hu(nm) = s0(nm) + dpu(nm)
-             elseif (umean(nm) < -0.001_fp) then
+            ! elseif (umean(nm) < -0.001_fp) then
+             elseif (comparereal(umean(nm),0._fp).lt.0) then
                 hu(nm) = s0(nmu) + dpu(nm)
              else
                 hu(nm) = max(s0(nmu), s0(nm)) + dpu(nm)
@@ -166,40 +178,78 @@ subroutine upwhu(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
           ! Special approach for steep bottom slopes
           !
           if (momsol=='flood ') then
-             if (umean(nm) >= 0.001_fp) then
-                nmd  = nm  - icx
-                ds1  = (s0(nm )-s0(nmd)) * kcu(nmd)
-                ds2  = (s0(nmu)-s0(nm )) * kcu(nm )
-                if (kspu(nm,0)>0 .or. kspu(nmd,0)>0) then
-                   ds2 = 0.0_fp
+            ! if (umean(nm) >= 0.001_fp) then
+             if (comparereal(umean(nm),0._fp).ge.0) then
+                IF(RECdepth) then
+                   nmd  = nm  - icx
+                   ds1  = (hu(nm )  - hu(nmd))*kcu(nmd)
+                   ds2  = (hu(nmu)  - hu(nm ))*kcu(nm )
+                   if (kspu(nm,0) > 0 .or. kspu(nmd,0) > 0 ) then
+                      ds2=0.0
+                   endif
+                   hu(nm) = hu(nm) +  slim(ds1,ds2, gdp)
+                   if (real(dps(nm),fp) > real(dps(nmu),fp)+ dgcuni) then
+                      h1     = 2.0 * hu(nm)/3.0
+                      h2     = s0(nmu) + dpu(nm)
+                      hu(nm) = MIN(hu(nm) , MAX(h1,h2))
+                   endif
+                else
+                   nmd  = nm  - icx
+                   ds1  = (s0(nm ) - s0(nmd))*kcu(nmd)
+                   ds2  = (s0(nmu) - s0(nm ))*kcu(nm )
+                   if (kspu(nm,0) > 0 .or. kspu(nmd,0) > 0 ) then
+                      ds2=0.0
+                   endif
+                   level= s0(nm) + slim(ds1,ds2, gdp)
+                   hu(nm) = level + dpu(nm)
+                   if (real(dps(nm),fp) > real(dps(nmu),fp)+dgcuni) then
+                      h1     = 2.0_fp * hu(nm) / 3.0_fp
+                      h2     = s0(nmu) + dpu(nm)
+                      hu(nm) = MIN(hu(nm) , MAX(h1,h2))
+                   endif
                 endif
-                level= s0(nm) + slim(ds1,ds2)
-                hu(nm) = level + dpu(nm)
-                if (real(dps(nm),fp) > real(dps(nmu),fp)+dgcuni) then
-                   h1     = 2.0_fp * hu(nm) / 3.0_fp
-                   h2     = s0(nmu) + dpu(nm)
-                   hu(nm) = MIN(hu(nm) , MAX(h1,h2))
-                endif
-             elseif (umean(nm) <= - 0.001_fp) then
-                nmuu = nmu + icx
-                ds1  = (s0(nmuu)-s0(nmu)) * kcu(nmu)
-                ds2  = (s0(nmu )-s0(nm )) * kcu(nm )
-                if (kspu(nm,0)>0 .or. kspu(nmu,0)>0) then
-                   ds2 = 0.0_fp
-                endif
-                level  = s0(nmu) - slim(ds1,ds2)
-                hu(nm) = level + dpu(nm)
-                if (real(dps(nm),fp)+dgcuni < real(dps(nmu),fp)) then
-                   h1     = 2.0_fp * hu(nm) / 3.0_fp
-                   h2     = s0(nm) + dpu(nm)
-                   hu(nm) = MIN(hu(nm) , MAX(h1,h2))
-                endif
+            ! elseif (umean(nm)<= - 0.001_fp) then
+             elseif (comparereal(umean(nm),0._fp).lt.0) then
+                IF(RECdepth) then
+                   nmuu = nmu + icx
+                   ds1  = (hu(nmuu) - hu(nmu))*kcu(nmu)
+                   ds2  = (hu(nmu ) - hu(nm ))*kcu(nm )
+                   if (kspu(nm,0) > 0 .or. kspu(nmu,0) > 0 ) then
+                      ds2=0.0
+                   endif
+                   hu(nm) = hu(nmu) - slim(ds1,ds2, gdp)
+                   if (real(dps(nm),fp) + dgcuni < real(dps(nmu),fp)) then
+                      h1     = 2.0 * hu(nm)/3.0
+                      h2     = s0(nm) + dpu(nm)
+                      hu(nm) = MIN(hu(nm) , MAX(h1,h2))
+                   endif
+                ELSE
+                   nmuu = nmu + icx
+                   ds1  = (s0(nmuu) - s0(nmu))*kcu(nmu)
+                   ds2  = (s0(nmu ) - s0(nm ))*kcu(nm )
+                   if (kspu(nm,0) > 0 .or. kspu(nmu,0) > 0 ) then
+                      ds2=0.0
+                   endif
+                   level  = s0(nmu) - slim(ds1,ds2, gdp)
+                   hu(nm) = level + dpu(nm)
+                   if (real(dps(nm),fp)+dgcuni < real(dps(nmu),fp)) then
+                      h1     = 2.0_fp * hu(nm) / 3.0_fp
+                      h2     = s0(nm) + dpu(nm)
+                      hu(nm) = MIN(hu(nm) , MAX(h1,h2))
+                   endif
+                ENDIF
              else 
                 hu(nm) = dpu(nm) + MAX(s0(nmu),s0(nm))
              endif
           endif
        endif
     enddo
+    !
+    ! Correct depths that are >0 and edge is closed (2 adjacent cells can be partially wet but the connecting edge is closed)
+    !
+    if (cutcell==2.and.noFLOODINGbanks) then
+        call deactivateBANKS(hu, aguu, EDGEtypeBANK, zmodel, nmmax, gdp%d%nmlb, gdp%d%nmub, icx)
+    endif
     !
     ! exchange height with neighbours for parallel runs
     !

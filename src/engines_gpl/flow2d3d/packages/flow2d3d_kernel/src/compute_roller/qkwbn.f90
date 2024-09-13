@@ -2,7 +2,7 @@ subroutine qkwbn(qxkw      ,cgc       ,kfu       ,irocol    ,norow     , &
                & icx       ,icy       ,gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine qkwbn(qxkw      ,cgc       ,kfu       ,irocol    ,norow     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: qkwbn.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute_roller/qkwbn.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Transport velocities at boundary points are set.
@@ -50,7 +50,7 @@ subroutine qkwbn(qxkw      ,cgc       ,kfu       ,irocol    ,norow     , &
     integer                                  , intent(in) :: icx
     integer                                  , intent(in) :: icy
     integer                                  , intent(in) :: norow !  Description and declaration in esm_alloc_int.f90
-    integer, dimension(5, norow)             , intent(in) :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(7, norow)             , intent(in) :: irocol !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: kfu !  Description and declaration in esm_alloc_int.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)             :: cgc !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)             :: qxkw !  Description and declaration in esm_alloc_real.f90

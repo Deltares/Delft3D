@@ -5,7 +5,7 @@ subroutine updbar(nsluv     ,mnbar     ,cbuv      ,cbuvrt    ,nmax      , &
                 & zk        ,zcor      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,8 +29,8 @@ subroutine updbar(nsluv     ,mnbar     ,cbuv      ,cbuvrt    ,nmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: updbar.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/updbar.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Calculates for all barrier points :
@@ -53,7 +53,6 @@ subroutine updbar(nsluv     ,mnbar     ,cbuv      ,cbuvrt    ,nmax      , &
     !
     logical                       , pointer :: zmodel
     integer                       , pointer :: rtcmod
-    integer                       , pointer :: rtcact
     integer                       , pointer :: lundia
 !
 ! Global variables
@@ -69,7 +68,7 @@ subroutine updbar(nsluv     ,mnbar     ,cbuv      ,cbuvrt    ,nmax      , &
     integer, dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)        , intent(in) :: kfvmin !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax), intent(out):: kspu   !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax), intent(out):: kspv   !  Description and declaration in esm_alloc_int.f90
-    real(fp), dimension(4, nsluv)                                                    :: cbuv   !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(4, nsluv)                                       , intent(in) :: cbuv   !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(2, nsluv)                                       , intent(in) :: cbuvrt !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)       , intent(in) :: dpu    !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)       , intent(in) :: dpv    !  Description and declaration in esm_alloc_real.f90
@@ -121,8 +120,7 @@ subroutine updbar(nsluv     ,mnbar     ,cbuv      ,cbuvrt    ,nmax      , &
 !
     zmodel     => gdp%gdprocs%zmodel
     rtcmod     => gdp%gdrtc%rtcmod
-    rtcact     => gdp%gdrtc%rtcact
-    lundia     => gdp%gdinout%lundia
+    lundia       => gdp%gdinout%lundia
     !
     do ibar = 1, nsluv
        !
@@ -141,12 +139,22 @@ subroutine updbar(nsluv     ,mnbar     ,cbuv      ,cbuvrt    ,nmax      , &
        m = m1 - incx
        n = n1 - incy
        !
-       ! Overrule barrier height if it has been set by RTC
+       if (btest(rtcmod,dataFromRTCToFLOW)) then
+          !
+          ! barriers are updated by RTC
        !
-       if (btest(rtcmod,dataFromRTCToFLOW) .and. cbuvrt(1,ibar)>0) then
-          cbuv(1, ibar) = cbuvrt(2, ibar)
+          if (comparereal(cbuvrt(1,ibar),0.0_fp) == -1) then
+             write(errmsg,'(a,i0)') 'No valid value obtained from RTC for barrier number ', ibar
+             call prterr(lundia, 'P004', trim(errmsg))
+             call d3stop(1,gdp)
+          endif
+          hgate = cbuvrt(2, ibar)
+       else
+          !
+          ! Use constant barrier height as read from file
+          !
+          hgate = cbuv(1, ibar)
        endif
-       hgate = cbuv(1, ibar)
        !
        do inc = 1, maxinc + 1
           m = m + incx

@@ -25,11 +25,11 @@ subroutine z_predict_nhfull(j         ,nmmaxj    ,nmmax     ,kmax      , &
                           & wrkb12    ,wrkb13    ,wrkb14    , &
                           & zk        ,p0        ,crbc      , &
                           & pship     ,diapl     ,rnpl      ,cfurou    ,cfvrou    , &
-                          & precip    ,gdp       )
+                          & precip    ,nmaxus    ,xcor      ,ycor      ,gdp       )
 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -53,8 +53,8 @@ subroutine z_predict_nhfull(j         ,nmmaxj    ,nmmax     ,kmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_predict_nhfull.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/z_predict_nhfull.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: ADI performs one time step of the Alternating
@@ -82,9 +82,12 @@ subroutine z_predict_nhfull(j         ,nmmaxj    ,nmmax     ,kmax      , &
     real(fp)     , dimension(:,:)        , pointer :: ustokes
     real(fp)     , dimension(:,:)        , pointer :: vstokes
     include 'flow_steps_f.inc'
+    real(fp), dimension(:,:), pointer :: aguu
+    real(fp), dimension(:,:), pointer :: agvv
 !
 ! Global variables
 !
+    integer                                               :: nmaxus
     integer                                               :: j       !!  Begin pointer for arrays which have been transformed into 1D arrays. Due to the shift in the 2nd (M-) index, J = -2*NMAX + 1
     integer                                               :: kmax    !  Description and declaration in esm_alloc_int.f90
     integer                                               :: mmax    !  Description and declaration in esm_alloc_int.f90
@@ -96,7 +99,7 @@ subroutine z_predict_nhfull(j         ,nmmaxj    ,nmmax     ,kmax      , &
     integer                                               :: norow   !  Description and declaration in esm_alloc_int.f90
     integer                                               :: nsrc    !  Description and declaration in esm_alloc_int.f90
     integer                                               :: nst     !!  Time step number
-    integer, dimension(5, norow + nocol)                  :: irocol  !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(7, norow + nocol)                  :: irocol  !  Description and declaration in esm_alloc_int.f90
     integer, dimension(7, nsrc)                           :: mnksrc  !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)             :: kcs     !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)             :: kcu     !  Description and declaration in esm_alloc_int.f90
@@ -140,6 +143,8 @@ subroutine z_predict_nhfull(j         ,nmmaxj    ,nmmax     ,kmax      , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)            :: gud     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)            :: guu     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)            :: guv     !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)            :: xcor     !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)            :: ycor     !  Description and declaration in esm_alloc_real.f90    
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)            :: guz     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)            :: gvd     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)            :: gvu     !  Description and declaration in esm_alloc_real.f90
@@ -220,9 +225,13 @@ subroutine z_predict_nhfull(j         ,nmmaxj    ,nmmax     ,kmax      , &
     integer :: nhystp
     integer :: nmaxddb
     logical :: flood   ! Flag for activating flooding part of checku subroutine
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                :: v0INTu
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                :: u0INTv
 !
 !! executable statements -------------------------------------------------------
 !
+    aguu => gdp%gdimbound%aguu
+    agvv => gdp%gdimbound%agvv
     ustokes             => gdp%gdtrisol%ustokes
     vstokes             => gdp%gdtrisol%vstokes
     !
@@ -241,7 +250,7 @@ subroutine z_predict_nhfull(j         ,nmmaxj    ,nmmax     ,kmax      , &
                 & flood     ,kfu       ,kcs       ,kcu       ,kspu      , &
                 & kfumn0    ,kfumx0    ,hu        ,s0        ,dpu       , &
                 & dps       ,umean     ,kfuz0     ,kfsmn0    ,kfsmx0    , &
-                & u0        ,dzu0      ,zk        ,gdp       )
+                & u0        ,dzu0      ,zk        ,aguu      ,gdp       )
     !
     ! Calculate HV and set KFV = 0 for HV < HTRSH (.5*DRYFLC)
     ! Calling checku is necessary because the hv calculation
@@ -256,7 +265,7 @@ subroutine z_predict_nhfull(j         ,nmmaxj    ,nmmax     ,kmax      , &
                 & flood     ,kfv       ,kcs       ,kcv       ,kspv      , &
                 & kfvmn0    ,kfvmx0    ,hv        ,s0        ,dpv       , &
                 & dps       ,vmean     ,kfvz0     ,kfsmn0    ,kfsmx0    , &
-                & v0        ,dzv0      ,zk        ,gdp       )
+                & v0        ,dzv0      ,zk        ,agvv      ,gdp       )
     !
     ! Computation of U1, i.e. evaluate momentum equation for one timest
     !     calculate hu and set kfu = 0 for hu < htrsh (.5*dryflc)
@@ -285,7 +294,8 @@ subroutine z_predict_nhfull(j         ,nmmaxj    ,nmmax     ,kmax      , &
              & ubrlsu    ,pship     ,diapl     ,rnpl      ,cfurou    , &
              & u1        ,s0        ,dpu       ,qxk       ,qyk       , &
              & norow     ,nocol     ,irocol(1, 1)         ,nst       ,umean     , &
-             & crbc(1,1) ,ustokes   ,gdp       )
+             & nmax      ,mmax      ,nmaxus    ,v0INTu    ,u0INTv    ,& 
+             & crbc(1,1) ,ustokes   ,xcor      ,ycor      ,gdp       )
     !
     ! Computation of V1, i.e. evaluate momentum equation for one half timest
     !     calculate hv and set kfv = 0 for hv < htrsh (.5*dryflc)
@@ -314,7 +324,8 @@ subroutine z_predict_nhfull(j         ,nmmaxj    ,nmmax     ,kmax      , &
              & ubrlsv    ,pship     ,diapl     ,rnpl      ,cfvrou    , &
              & v1        ,s0        ,dpv       ,qyk       ,qxk       , &
              & nocol     ,norow     ,irocol(1, norow + 1) ,nst       ,vmean     , &
-             & crbc(1,norow + 1)    ,vstokes   ,gdp       )
+             & nmax      ,mmax      ,nmaxus    ,u0INTv    ,v0INTu    ,  &
+             & crbc(1,norow + 1)    ,vstokes   ,xcor      ,ycor      ,gdp       )
     call timer_stop(timer_uzd, gdp)
     !
     ! DD code added:

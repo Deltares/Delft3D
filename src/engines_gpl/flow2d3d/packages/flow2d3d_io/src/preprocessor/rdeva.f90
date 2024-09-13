@@ -3,7 +3,7 @@ subroutine rdeva(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                & itfinish  ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine rdeva(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdeva.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/preprocessor/rdeva.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads the time dependent data for the rainfall/
@@ -231,7 +231,8 @@ subroutine rdeva(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                 goto 9999
              endif
              !
-             open (newunit=lunout, file = filout(:8 + lrid), form = 'unformatted')
+             lunout = newlun(gdp)
+             open (lunout, file = filout(:8 + lrid), form = 'unformatted')
              read (lunout, iostat = iocond) rdummy
              close (lunout)
              lunout = 8
@@ -269,12 +270,13 @@ subroutine rdeva(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
           !
           !-----------open unformatted eva-file
           !
+          lunout = newlun(gdp)
           inquire (file = filout(:8 + lrid), exist = ex)
           if (ex) then
-             open (newunit=lunout, file = filout(:8 + lrid))
+             open (lunout, file = filout(:8 + lrid))
              close (lunout, status = 'delete')
           endif
-          open (newunit=lunout, file = filout(:8 + lrid), form = 'unformatted',      &
+          open (lunout, file = filout(:8 + lrid), form = 'unformatted',      &
               & status = 'unknown')
           !
           write (message, '(2a)') 'Reading Evaporation & Rain file ', fileva(:lf)
@@ -306,12 +308,13 @@ subroutine rdeva(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        !
        !---------Open file
        !
+       lunout = newlun(gdp)
        inquire (file = filout(:8 + lrid), exist = ex)
        if (ex) then
-          open (newunit=lunout, file = filout(:8 + lrid))
+          open (lunout, file = filout(:8 + lrid))
           close (lunout, status = 'delete')
        endif
-       open (newunit=lunout, file = filout(:8 + lrid), form = 'unformatted',         &
+       open (lunout, file = filout(:8 + lrid), form = 'unformatted',         &
             & status = 'unknown')
        !
        !-------time varying evaporation/rain data contains a group of records

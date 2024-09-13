@@ -4,7 +4,7 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
                 & namcon    ,bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdtdcn.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/preprocessor/rdtdcn.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Reads time dependent constituent data from new
@@ -52,10 +52,11 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     !
     include 'pardef.igd'
     integer                    , pointer :: itdate
+    real(fp)                   , pointer :: tstop
     real(fp)                   , pointer :: dt
     real(fp)                   , pointer :: tunit
     character*20, dimension(:) , pointer :: keywrd
-    character*38, dimension(:) , pointer :: fmtbcc
+    character*37, dimension(:) , pointer :: fmtbcc
 !
 ! Global variables
 !
@@ -125,11 +126,11 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     character(1)                              :: quote  ! Apostrophe ASCII-character 39 
     character(10), dimension(2)               :: parunt ! Unit name fitting the parameter 
     character(10), dimension(:,:),allocatable :: tprofc ! Vertical profile for constituent - uniform - linear - step - 3d-profile 
-    character(36), dimension(1 + 2*kmax)      :: parrd  ! Parameter names read 
+    character(36), dimension(1 + 2*mxkmax)    :: parrd  ! Parameter names read 
     character(36), dimension(2)               :: parnam ! Names of the paramaters to write to time dependent files for BCC 
     character(40)                             :: cntain
     character(400)                            :: errmsg ! Character var. containing the error message to be written to file. The message depends on the error. 
-    character(kmax*24*2+48)                   :: record ! Standard rec. length in an attribute file (maximum kmax*24*2 + 48) 
+    character(5000)                           :: record ! Standard rec. length in an attribute file (maximum MXKMAX*24*2 + 48) 
     character(63)                             :: tablnm ! Table name specification 
     !
     data rarray/5*0.0/
@@ -142,10 +143,11 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     fmtbcc  => gdp%gdfmtbcc%fmtbcc
     keywrd  => gdp%gdkeywtd%keywrd
     itdate  => gdp%gdexttim%itdate
+    tstop   => gdp%gdexttim%tstop
     dt      => gdp%gdexttim%dt
     tunit   => gdp%gdexttim%tunit
     !
-    allocate(rwbval(kmax, 2, mxnto, lstsc))
+    allocate(rwbval(mxkmax, 2, mxnto, lstsc))
     allocate(zstep(mxnto, lstsc))
     allocate(tprofc(mxnto, lstsc))
     !
@@ -292,7 +294,7 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
                 do nb = 1, mxfmtc
                    ix = index(fmtbcc(nb), 't89')
                    if (ix/=0) then
-                      write (fmtbcc(nb)(ix + 1:ix + 5), '(i5.5)') mxlrec
+                      write (fmtbcc(nb)(ix + 1:ix + 4), '(i4.4)') mxlrec
                    endif
                 enddo
              endif
@@ -300,12 +302,13 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
              ! Open output file
              ! and write length direct access file to file first
              !
+             lunout = newlun(gdp)
              inquire (file = filout(:lflout), exist = ex)
              if (ex) then
-                open (newunit=lunout, file = filout(:lflout))
+                open (lunout, file = filout(:lflout))
                 close (lunout, status = 'delete')
              endif
-             open (newunit=lunout, file = filout(:lflout), form = 'formatted',          &
+             open (lunout, file = filout(:lflout), form = 'formatted',          &
                   & access = 'direct', status = 'unknown', recl = mxlrec)
              irec = 1
              write (lunout, fmtbcc(1), rec = irec) '#', mxlrec, eol

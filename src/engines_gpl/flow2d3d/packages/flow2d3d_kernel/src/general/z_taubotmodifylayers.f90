@@ -7,7 +7,7 @@ subroutine z_taubotmodifylayers(nmmax  ,kmax     ,lstsci       ,icx     ,icy    
                               & vmean  ,dzs0     ,ztbml_upd_r1 ,gdp      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -32,7 +32,7 @@ subroutine z_taubotmodifylayers(nmmax  ,kmax     ,lstsci       ,icx     ,icy    
 !                                                                               
 !-------------------------------------------------------------------------------
 !  $Id: z_taubotmodifylayers.f90 1246 2012-02-09 11:25:49Z platzek $
-!  : https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20111115_13532_z-model_improvements_oss-merge/engines_gpl/flow2d3d/packages/kernel/src/general/z_taubotmodifylayers.f90 $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20111115_13532_z-model_improvements_oss-merge/engines_gpl/flow2d3d/packages/kernel/src/general/z_taubotmodifylayers.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Computes inproduct between two vectors.

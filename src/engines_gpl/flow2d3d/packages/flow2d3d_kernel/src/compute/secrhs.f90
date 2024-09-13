@@ -7,7 +7,7 @@ subroutine secrhs(s0        ,s1        ,dps       ,u1        ,v1        , &
                 & xy2       ,y3        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +31,8 @@ subroutine secrhs(s0        ,s1        ,dps       ,u1        ,v1        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: secrhs.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/secrhs.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes righthandside terms for the transport
@@ -60,6 +60,23 @@ subroutine secrhs(s0        ,s1        ,dps       ,u1        ,v1        , &
     real(fp)               , pointer :: chzmin
     real(fp)               , pointer :: dryflc
     real(fp)               , pointer :: rmincf
+    integer                   , pointer :: cutcell
+    real(fp), dimension(:,:)  , pointer :: aguu
+    real(fp), dimension(:,:)  , pointer :: agvv
+    real(fp), dimension(:,:)  , pointer :: xG_L
+    real(fp), dimension(:,:)  , pointer :: yG_L
+    real(fp), dimension(:,:,:), pointer :: dxk
+    real(fp), dimension(:,:,:), pointer :: dyk
+    real(fp), dimension(:,:)  , pointer :: agsqs
+    real(fp), dimension(:,:)  , pointer :: ETAx
+    real(fp), dimension(:,:)  , pointer :: ETAy
+    real(fp), dimension(:,:)  , pointer :: PSIx
+    real(fp), dimension(:,:)  , pointer :: PSIy
+    logical                   , pointer :: printCURV
+    real(fp), dimension(:,:)  , pointer :: curstr_print
+    logical                   , pointer :: EXACTcurv
+    logical                   , pointer :: CURVboogaard
+    logical, dimension(:,:)   , pointer :: oneEXIT
 !
 ! Global variables
 !
@@ -101,15 +118,18 @@ subroutine secrhs(s0        ,s1        ,dps       ,u1        ,v1        , &
 !
 ! Local variables
 !
+    integer        :: kenm
     integer        :: ierr    ! Error counter 
     integer        :: iexit   ! Exit code when ALPHA < 0.5 
     integer        :: k
+    integer        :: n
+    integer        :: m
     integer        :: ndm
     integer        :: nm
     integer        :: nmd
     real(fp)       :: alpha
     real(fp)       :: bendeq  ! Bend equilibrium for spiral motion 
-    real(fp)       :: czosg   ! Chezy/sqrt(ag) coefficient at zeta point 
+    real(fp)       :: chezy   ! Chezy coefficient at zeta point 
     real(fp)       :: corieq  ! Coriolis equilibrium for spiral m. 
     real(fp)       :: geta2
     real(fp)       :: gksi2
@@ -129,6 +149,24 @@ subroutine secrhs(s0        ,s1        ,dps       ,u1        ,v1        , &
 !
 !! executable statements -------------------------------------------------------
 !
+    cutcell      => gdp%gdimbound%cutcell
+    aguu         => gdp%gdimbound%aguu
+    agvv         => gdp%gdimbound%agvv
+    cutcell      => gdp%gdimbound%cutcell
+    xG_L         => gdp%gdimbound%xG_L
+    yG_L         => gdp%gdimbound%yG_L
+    dxk          => gdp%gdimbound%dxk
+    dyk          => gdp%gdimbound%dyk
+    agsqs        => gdp%gdimbound%agsqs
+    ETAx         => gdp%gdimbound%ETAx
+    ETAy         => gdp%gdimbound%ETAy
+    PSIx         => gdp%gdimbound%PSIx
+    PSIy         => gdp%gdimbound%PSIy
+    printCURV    => gdp%gdimbound%printCURV
+    curstr_print => gdp%gdimbound%curstr_print
+    EXACTcurv    => gdp%gdimbound%EXACTcurv
+    CURVboogaard => gdp%gdimbound%CURVboogaard
+    oneEXIT      => gdp%gdimbound%oneEXIT
     !
     !
     chzmin   => gdp%gdnumeco%chzmin
@@ -143,10 +181,33 @@ subroutine secrhs(s0        ,s1        ,dps       ,u1        ,v1        , &
     !
     !     compute curvature of streakline
     !
-    call curvat(u1        ,v1        ,gsqs      ,guu       ,gvv       , &
-              & j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
-              & icy       ,kcs       ,kfs       ,curstr    ,x3        , &
-              & x2y       ,xy2       ,y3        ,gdp       )
+    if (cutcell>0.and..not.CURVboogaard) then
+       call curvat_bis(u1        ,v1        ,gsqs      ,guu       ,gvv       , &
+                     & j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
+                     & icy       ,kcs       ,kfs       ,curstr    ,x3        , &
+                     & x2y       ,xy2       ,y3        ,kfu       ,kfv       , &
+                     & aguu      ,agvv      ,cutcell   ,xG_L      ,yG_L      , & !it I pass xG ,yG instead of xG_L,yG_L I have also to change definition of dxk
+                     & dxk       ,dyk       ,agsqs     ,ETAx      ,ETAy      , &
+                     & PSIx      ,PSIy      ,oneEXIT   ,gdp       )
+    else
+       call curvat(u1        ,v1        ,gsqs      ,guu       ,gvv       , &
+                 & j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
+                 & icy       ,kcs       ,kfs       ,curstr    ,x3        , &
+                 & x2y       ,xy2       ,y3        ,kfu       ,kfv       , &
+                 & aguu      ,agvv      ,cutcell   ,gdp       )
+    endif
+    IF (EXACTcurv) then !OVERWRITE EVERYTHING WITH THE EXACT CURVATURE FOR A CIRCULAR CHANNEL CENTERED IN (0,0)
+       do nm = 1, nmmax
+           call nm_to_n_and_m(nm, n, m, gdp)
+           curstr(nm) = 1._fp/(sqrt(xG_L(n,m)**2+yG_L(n,m)**2))
+       enddo
+    ENDIF
+    if (printCURV) THEN
+        do nm = 1, nmmax
+           call nm_to_n_and_m(nm, n, m, gdp)
+           curstr_print(n,m) = curstr(nm)
+        enddo
+    endif
     !
     !     compute source and sink terms
     !     For SOUR the old time and for SINK the new time
@@ -164,8 +225,18 @@ subroutine secrhs(s0        ,s1        ,dps       ,u1        ,v1        , &
        if ( (kfs(nm)==1) .and. (kcs(nm)==1) ) then
           h0old = max(htrsh, s0(nm) + real(dps(nm),fp))
           h0new = max(htrsh, s1(nm) + real(dps(nm),fp))
-          uuu = 0.5*(u1(nm, k) + u1(nmd, k))
-          vvv = 0.5*(v1(nm, k) + v1(ndm, k))
+
+          if (cutcell>0) then
+            kenm = max(kfu(nm)+kfu(nmd),1)
+            uuu = u1(nm, k)*kfu(nm) + u1(nmd, k)*kfu(nmd)
+            uuu = uuu/kenm
+            kenm = max(kfv(nm)+kfv(ndm),1)
+            vvv = v1(nm, k)*kfv(nm) + v1(ndm, k)*kfv(ndm)
+            vvv = vvv/kenm
+          else
+            uuu = 0.5_fp*(u1(nm, k) + u1(nmd, k))
+            vvv = 0.5_fp*(v1(nm, k) + v1(ndm, k))
+          endif
           umod = sqrt(uuu*uuu + vvv*vvv)
           gksi2 = gvv(nm) + gvv(ndm)
           geta2 = guu(nm) + guu(nmd)
@@ -177,15 +248,18 @@ subroutine secrhs(s0        ,s1        ,dps       ,u1        ,v1        , &
           endif
           bendeq = umod*h0old*riv
           corieq = 0.5*fcorio(nm)*h0old
-          czosg = (kfu(nm)*cfurou(nm, 1) + kfu(nmd)*cfurou(nmd, 1) + kfv(nm)    &
+          chezy = (kfu(nm)*cfurou(nm, 1) + kfu(nmd)*cfurou(nmd, 1) + kfv(nm)    &
                 & *cfvrou(nm, 1) + kfv(ndm)*cfvrou(ndm, 1))                     &
                 & /(kfu(nm) + kfu(nmd) + kfv(nm) + kfv(ndm))
           !
           !---------ALPHA should be >= .5 else SOURC & SINK become < 0.
           !         because TAH0 = 0.5*(1.-2.*ALPHA)*H0 should be > 0
           !
-          czosg = max(czosg, chzmin/sqrt(ag))
-          alpha = 1.0_fp/(vonkar*czosg)
+          if (chezy>chzmin) then
+             alpha = sqrt(ag)/(vonkar*chezy)
+          else
+             alpha = sqrt(ag)/(vonkar*chzmin)
+          endif
           if (alpha>=0.5) then
              ierr = ierr + 1
           endif

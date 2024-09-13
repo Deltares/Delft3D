@@ -1,9 +1,9 @@
 subroutine rdqh(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
               & filbcq    ,runid     ,eol       ,nto       ,ntof      , &
-              & ntoq      ,nambnd    ,bubble    ,kmax      ,gdp       )
+              & ntoq      ,nambnd    ,bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine rdqh(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdqh.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/preprocessor/rdqh.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Reads QH boundary condition from the .bcq file
@@ -58,7 +58,6 @@ subroutine rdqh(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
                                                          !!  help file between tdatom and trisim
     integer                                    :: lunrd  !!  Unit number of the attribute file
                                                          !!  containing the time series
-    integer                      , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
     integer                      , intent(in)  :: nto    !  Description and declaration in esm_alloc_int.f90
     integer                      , intent(in)  :: ntof   !  Description and declaration in dimens.igs
     integer                      , intent(in)  :: ntoq   !  Description and declaration in dimens.igs
@@ -103,12 +102,12 @@ subroutine rdqh(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     character(1)                           :: quote   ! Apostrophe ASCII-character 39 
     character(10), dimension(2)            :: parunt  ! Unit name fitting the parameter 
     character(20)                          :: cntent
-    character(36), dimension(1 + 2*kmax)   :: parrd   ! Parameter names read 
+    character(36), dimension(1 + 2*mxkmax) :: parrd   ! Parameter names read 
     character(36), dimension(2)            :: parnam  ! Names of the paramaters to write to BCQ file 
     character(37), dimension(13)           :: fmtbcq
     character(300)                         :: errmsg ! Character var. containing the error message to be written to file. The message depends on the error.
     character(42)                          :: tablnm  ! Table name specification 
-    character(kmax*24*2 + 48)              :: record  ! Standard rec. length in an attribute file (maximum kmax*24*2 + 48) 
+    character(5000)                        :: record  ! Standard rec. length in an attribute file (maximum MXKMAX*24*2 + 48) 
     !
     !
     data parnam/'total discharge (t) ', 'water elevation (z) '/
@@ -215,12 +214,13 @@ subroutine rdqh(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
           ! Open output file
           ! and write length direct access file to file first
           !
+          lunout = newlun(gdp)
           inquire (file = filout(:lflout), exist = ex)
           if (ex) then
-             open (newunit=lunout, file = filout(:lflout))
+             open (lunout, file = filout(:lflout))
              close (lunout, status = 'delete')
           endif
-          open (newunit=lunout, file = filout(:lflout), form = 'formatted',             &
+          open (lunout, file = filout(:lflout), form = 'formatted',             &
                & access = 'direct', status = 'unknown', recl = mxlrec)
           !
           irec = 1

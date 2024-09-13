@@ -1,7 +1,7 @@
 subroutine incsdu(timhr  ,dps  ,s1  ,kcs  ,kfs,  gdp    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine incsdu(timhr  ,dps  ,s1  ,kcs  ,kfs,  gdp    )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: incsdu.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/timedep/incsdu.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Determine increments and update the current time
@@ -102,7 +102,7 @@ subroutine incsdu(timhr  ,dps  ,s1  ,kcs  ,kfs,  gdp    )
        !
        !  Update dps point 
        !
-       if (kcs(nm) /= 0) then 
+       if (kcs(nm) > 0) then 
            dps(nm) = dps(nm) - sdu_tn(nm) + sdu_tp(nm)
            if (kfs(nm) == 0 .or. lfsdus1) then 
                s1(nm)  = s1(nm)  + sdu_tn(nm) - sdu_tp(nm)                  

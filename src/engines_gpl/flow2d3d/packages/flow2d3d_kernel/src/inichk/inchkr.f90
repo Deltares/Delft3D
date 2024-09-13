@@ -1,10 +1,10 @@
 subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
                 & cyclic    ,sferic    ,grdang    ,temeqs    ,saleqs    , &
                 & lturi     ,rouflo    ,rouwav    ,ktemp     ,temint    , &
-                & evaint    ,gdp       )
+                & evaint    ,initia    ,filic     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2016.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -28,8 +28,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
 !  Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: inchkr.f90 6388 2016-08-01 01:05:36Z canestrelli.x $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/inchkr.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Initialises and checks various params. and arrays
@@ -43,7 +43,6 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     use precision
     use meteo
     use flow_tables
-    !
     use globaldata
     use dfparall
     !
@@ -87,7 +86,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer                              , pointer :: lsecfl
     integer                              , pointer :: lsec
     integer                              , pointer :: ltur
-    integer                              , pointer :: nrob 
+    integer                              , pointer :: nrob
     integer                              , pointer :: nto
     integer                              , pointer :: ntof
     integer                              , pointer :: ntoq
@@ -114,13 +113,11 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     real(fp), dimension(:)               , pointer :: tairarr
     real(fp), dimension(:)               , pointer :: clouarr
     real(fp), dimension(:)               , pointer :: swrfarr
-    real(fp), dimension(:)               , pointer :: secchi
     logical                              , pointer :: rhum_file
     logical                              , pointer :: tair_file
     logical                              , pointer :: clou_file
     logical                              , pointer :: prcp_file
     logical                              , pointer :: swrf_file
-    logical                              , pointer :: scc_file
     real(fp)                             , pointer :: morfac
     integer                              , pointer :: morfacpar
     integer                              , pointer :: morfacrec
@@ -133,6 +130,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     real(fp)                             , pointer :: ag
     real(fp)                             , pointer :: z0
     real(fp)                             , pointer :: z0v
+    real(fp)                             , pointer :: dt
+    real(fp)                             , pointer :: drycrt
     integer                              , pointer :: iro
     integer                              , pointer :: irov
     logical                              , pointer :: wind
@@ -154,7 +153,6 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer(pntrsize)                    , pointer :: alfas
     integer(pntrsize)                    , pointer :: areau
     integer(pntrsize)                    , pointer :: areav
-    integer(pntrsize)                    , pointer :: bruvai
     integer(pntrsize)                    , pointer :: c
     integer(pntrsize)                    , pointer :: cdwlsu
     integer(pntrsize)                    , pointer :: cdwlsv
@@ -180,14 +178,12 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer(pntrsize)                    , pointer :: df
     integer(pntrsize)                    , pointer :: disch
     integer(pntrsize)                    , pointer :: discum
-    integer(pntrsize)                    , pointer :: dpd
+    integer(pntrsize)                    , pointer :: dp
     integer(pntrsize)                    , pointer :: dps
     integer(pntrsize)                    , pointer :: dpu
     integer(pntrsize)                    , pointer :: dpv
     integer(pntrsize)                    , pointer :: rint0
     integer(pntrsize)                    , pointer :: rint1
-    integer(pntrsize)                    , pointer :: sink
-    integer(pntrsize)                    , pointer :: sour
     integer(pntrsize)                    , pointer :: umdis0
     integer(pntrsize)                    , pointer :: umdis1
     integer(pntrsize)                    , pointer :: vmdis0
@@ -238,9 +234,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer(pntrsize)                    , pointer :: r1
     integer(pntrsize)                    , pointer :: rho
     integer(pntrsize)                    , pointer :: rhowat
-    integer(pntrsize)                    , pointer :: rich
     integer(pntrsize)                    , pointer :: rint
-    integer(pntrsize)                    , pointer :: rintsm
     integer(pntrsize)                    , pointer :: rlabda
     integer(pntrsize)                    , pointer :: rnpl
     integer(pntrsize)                    , pointer :: rob
@@ -283,7 +277,6 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer(pntrsize)                    , pointer :: w10mag
     integer(pntrsize)                    , pointer :: windsu
     integer(pntrsize)                    , pointer :: windsv
-    integer(pntrsize)                    , pointer :: windcd
     integer(pntrsize)                    , pointer :: windu
     integer(pntrsize)                    , pointer :: windv
     integer(pntrsize)                    , pointer :: ws
@@ -334,7 +327,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer(pntrsize)                    , pointer :: kfv
     integer(pntrsize)                    , pointer :: kspu
     integer(pntrsize)                    , pointer :: kspv
-    integer(pntrsize)                    , pointer :: mnbnd 
+    integer(pntrsize)                    , pointer :: mnbnd
     integer(pntrsize)                    , pointer :: mndro
     integer(pntrsize)                    , pointer :: mnksrc
     integer(pntrsize)                    , pointer :: kcshyd
@@ -369,16 +362,101 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer(pntrsize)                    , pointer :: tprofc
     integer(pntrsize)                    , pointer :: tprofu
     integer(pntrsize)                    , pointer :: typbnd
+    integer                              , pointer :: lunscr
+    integer                              , pointer :: itlfsm
     logical                              , pointer :: flcut
     logical                              , pointer :: fl45
     logical                              , pointer :: flbct
     logical                              , pointer :: flbcc
     logical                              , pointer :: fldis
     include 'tri-dyn.igd'
-    real(fp)      , dimension(:)         , pointer :: rhosol
+    real(fp)       , dimension(:)        , pointer :: rhosol
+    character(256)                       , pointer :: restid
+    real(fp)       , dimension(:,:)      , pointer :: agsqs
+    real(fp)       , dimension(:,:)      , pointer :: aguu
+    real(fp)       , dimension(:,:)      , pointer :: agvv
+    real(fp)       , dimension(:)        , pointer :: cutfac
+    real(fp)       , dimension(:,:)      , pointer :: curstr_print
+    integer        , dimension(:,:,:)    , pointer :: EDGEtypeBANK
+    integer        , dimension(:,:)      , pointer :: ghosts1
+    integer        , dimension(:,:)      , pointer :: ghostu1
+    integer        , dimension(:,:)      , pointer :: ghostv1
+    integer        , dimension(:,:)      , pointer :: kflcut   
+    real(fp)       , dimension(:,:)      , pointer :: qfilt
+    real(fp)       , dimension(:,:,:)    , pointer :: qfiltC
+    real(fp)       , dimension(:,:)      , pointer :: qfilt_bdl
+    real(fp)       , dimension(:)        , pointer :: qfilt_s1
+    real(fp)       , dimension(:,:,:)    , pointer :: qxk_tinycut
+    real(fp)       , dimension(:,:,:)    , pointer :: qyk_tinycut
+    real(fp)       , dimension(:,:,:)    , pointer :: ufaccut
+    real(fp)       , dimension(:,:,:)    , pointer :: vfaccut
+    real(fp)       , dimension(:,:)      , pointer :: xG_L
+    real(fp)       , dimension(:,:)      , pointer :: yG_L
+    real(fp)       , dimension(:,:)      , pointer :: dps0
+    real(fp)       , dimension(:,:)      , pointer :: dpu0
+    real(fp)       , dimension(:,:)      , pointer :: dpv0
+    real(fp)       , dimension(:,:)      , pointer :: dpL
+    real(fp)       , dimension(:,:)      , pointer :: dpH
+    real(fp)       , dimension(:,:)      , pointer :: poros
+    integer        , dimension(:,:)      , pointer :: kfs_cc
+    real(fp)       , dimension(:,:)      , pointer :: PSIx
+    real(fp)       , dimension(:,:)      , pointer :: PSIy
+    real(fp)       , dimension(:,:)      , pointer :: ETAx
+    real(fp)       , dimension(:,:)      , pointer :: ETAy
+    real(fp)       , dimension(:,:,:)    , pointer :: dxk
+    real(fp)       , dimension(:,:,:)    , pointer :: dyk
+    real(fp)       , dimension(:,:)      , pointer :: z_aguu
+    real(fp)       , dimension(:,:)      , pointer :: z_agvv
+    real(fp)       , dimension(:,:)      , pointer :: z_agsqs
+    real(fp)       , dimension(:)        , pointer :: agsqs_link
+    real(fp)       , dimension(:,:)      , pointer :: sourseBANK
+    real(fp)       , dimension(:)        , pointer :: gradS1_sud
+    real(fp)       , dimension(:)        , pointer :: gradS1_uzd
+    real(fp)       , dimension(:)        , pointer :: vdudy
+    real(fp)       , dimension(:)        , pointer :: ududx
+    real(fp)       , dimension(:)        , pointer :: sourceU
+    real(fp)       , dimension(:)        , pointer :: frict_uzd
+    real(fp)       , dimension(:)        , pointer :: frict_sud
+    real(fp)       , dimension(:,:)      , pointer :: deltaUcut
+    real(fp)       , dimension(:)        , pointer :: deltaS1cut
+    real(fp)       , dimension(:)        , pointer :: EXPsouR
+    real(fp)       , dimension(:)        , pointer :: EXPsouL
+    real(fp)       , dimension(:,:)      , pointer :: eeC
+    integer        , dimension(:)        , pointer :: isMERGEDu_bed
+    integer        , dimension(:)        , pointer :: isMERGEDv_bed
+    integer        , dimension(:)        , pointer :: MERGEDwith_d
+    integer        , dimension(:,:)      , pointer :: kWDu
+    integer        , dimension(:,:)      , pointer :: kWDv
+    real(fp)       , dimension(:)        , pointer :: huFAC
+    real(fp)       , dimension(:)        , pointer :: dhFACcut
+    real(fp)       , dimension(:)        , pointer :: dzduuCENTR
+    real(fp)       , dimension(:)        , pointer :: dzdvvCENTR
+    real(fp)       , dimension(:,:,:,:,:), pointer :: EDGExyBANK
+    real(fp)       , dimension(:,:,:)    , pointer :: u1_FLLYghst
+    real(fp)       , dimension(:,:,:)    , pointer :: v1_FLLYghst
+    real(fp)       , dimension(:,:)      , pointer :: xCORU1
+    real(fp)       , dimension(:,:)      , pointer :: yCORU1
+    real(fp)       , dimension(:,:)      , pointer :: xCORV1
+    real(fp)       , dimension(:,:)      , pointer :: yCORV1
+    real(fp)       , dimension(:,:)      , pointer :: xG_U1
+    real(fp)       , dimension(:,:)      , pointer :: yG_U1
+    real(fp)       , dimension(:,:)      , pointer :: xG_V1
+    real(fp)       , dimension(:,:)      , pointer :: yG_V1
+    integer                              , pointer :: cutcell
+    integer                              , pointer :: nstREST
+    logical                              , pointer :: PERIODsurface
+    integer                              , pointer :: nrPER
+    logical                              , pointer :: virtualMERGEdisch
+    integer                              , pointer :: GhostMethod
+    integer                              , pointer :: EXACTslope
+    logical                              , pointer :: printCURV
+    logical                              , pointer :: useFULL
+    logical                              , pointer :: perCIRC
 !
 ! Global variables
 !
+    integer              :: initia      !!  if < 0: iteration process of morsys
+                                        !!  else  : equal to initi
     integer              :: ktemp       !  Description and declaration in tricom.igs
     integer              :: lturi       !  Description and declaration in tricom.igs
     integer              :: lundia      !  Description and declaration in inout.igs
@@ -390,6 +468,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     real(fp)             :: temeqs      !  Description and declaration in tricom.igs
     real(fp), intent(in) :: timhr       !  Current timestep (in hours) TIMNOW * 2 * HDT / 3600.
     character(*)         :: runid
+    character(*)         :: filic
     character(1)         :: evaint      !  Description and declaration in tricom.igs
     character(1)         :: temint      !  Description and declaration in tricom.igs
     character(4)         :: rouflo      !  Description and declaration in esm_alloc_char.f90
@@ -398,6 +477,9 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
 !
 ! Local variables
 !
+    real(fp), allocatable              :: u0INTv(:,:)
+    real(fp), allocatable              :: u1INTv(:,:)
+    real(fp), allocatable              :: v0INTu(:,:)
     integer                            :: icx
     integer                            :: icy
     integer                            :: ierror
@@ -418,6 +500,77 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
 !
 !! executable statements -------------------------------------------------------
 !
+    cutcell             => gdp%gdimbound%cutcell
+    nstREST             => gdp%gdimbound%nstREST
+    PERIODsurface       => gdp%gdimbound%PERIODsurface
+    nrPER               => gdp%gdimbound%nrPER
+    virtualMERGEdisch   => gdp%gdimbound%virtualMERGEdisch
+    GhostMethod         => gdp%gdimbound%GhostMethod
+    EXACTslope          => gdp%gdimbound%EXACTslope
+    printCURV           => gdp%gdimbound%printCURV
+    useFULL             => gdp%gdimbound%useFULL
+    u1_FLLYghst         => gdp%gdimbound%u1_FLLYghst
+    v1_FLLYghst         => gdp%gdimbound%v1_FLLYghst
+    xCORU1              => gdp%gdimbound%xCORU1
+    yCORU1              => gdp%gdimbound%yCORU1
+    xCORV1              => gdp%gdimbound%xCORV1
+    yCORV1              => gdp%gdimbound%yCORV1
+    xG_U1               => gdp%gdimbound%xG_U1
+    yG_U1               => gdp%gdimbound%yG_U1
+    xG_V1               => gdp%gdimbound%xG_V1
+    yG_V1               => gdp%gdimbound%yG_V1
+    EDGExyBANK          => gdp%gdimbound%EDGExyBANK
+    agsqs               => gdp%gdimbound%agsqs
+    kFLcut              => gdp%gdimbound%kFLcut
+    cutfac              => gdp%gdimbound%cutfac
+    qxk_tinyCUT         => gdp%gdimbound%qxk_tinyCUT
+    qyk_tinyCUT         => gdp%gdimbound%qyk_tinyCUT
+    GHOSTs1             => gdp%gdimbound%GHOSTs1
+    GHOSTu1             => gdp%gdimbound%GHOSTu1
+    GHOSTv1             => gdp%gdimbound%GHOSTv1
+    uFACcut             => gdp%gdimbound%uFACcut
+    vFACcut             => gdp%gdimbound%vFACcut
+    xG_L                => gdp%gdimbound%xG_L
+    yG_L                => gdp%gdimbound%yG_L
+    dps0                => gdp%gdimbound%dps0
+    dpu0                => gdp%gdimbound%dpu0
+    dpv0                => gdp%gdimbound%dpv0
+    dpL                 => gdp%gdimbound%dpL
+    dpH                 => gdp%gdimbound%dpH
+    poros               => gdp%gdimbound%poros
+    kfs_cc              => gdp%gdimbound%kfs_cc
+    PSIx                => gdp%gdimbound%PSIx
+    PSIy                => gdp%gdimbound%PSIy
+    ETAx                => gdp%gdimbound%ETAx
+    ETAy                => gdp%gdimbound%ETAy
+    dxk                 => gdp%gdimbound%dxk
+    dyk                 => gdp%gdimbound%dyk
+    z_aguu              => gdp%gdimbound%z_aguu
+    z_agvv              => gdp%gdimbound%z_agvv
+    z_agsqs             => gdp%gdimbound%z_agsqs
+    agsqs_link          => gdp%gdimbound%agsqs_link
+    sourseBANK          => gdp%gdimbound%sourseBANK
+    gradS1_sud          => gdp%gdimbound%gradS1_sud
+    gradS1_uzd          => gdp%gdimbound%gradS1_uzd
+    vdudy               => gdp%gdimbound%vdudy
+    ududx               => gdp%gdimbound%ududx
+    sourceU             => gdp%gdimbound%sourceU
+    frict_uzd           => gdp%gdimbound%frict_uzd
+    frict_sud           => gdp%gdimbound%frict_sud
+    deltaUcut           => gdp%gdimbound%deltaUcut
+    deltaS1cut          => gdp%gdimbound%deltaS1cut
+    EXPsouR             => gdp%gdimbound%EXPsouR
+    EXPsouL             => gdp%gdimbound%EXPsouL
+    eeC                 => gdp%gdimbound%eeC
+    isMERGEDu_bed       => gdp%gdimbound%isMERGEDu_bed
+    isMERGEDv_bed       => gdp%gdimbound%isMERGEDv_bed
+    MERGEDwith_d        => gdp%gdimbound%MERGEDwith_d
+    kWDu                => gdp%gdimbound%kWDu
+    kWDv                => gdp%gdimbound%kWDv
+    huFAC               => gdp%gdimbound%huFAC
+    dhFACcut            => gdp%gdimbound%dhFACcut
+    dzduuCENTR          => gdp%gdimbound%dzduuCENTR
+    dzdvvCENTR          => gdp%gdimbound%dzdvvCENTR    !
     wrka1               => gdp%gdaddress%wrka1
     wrka2               => gdp%gdaddress%wrka2
     wrka3               => gdp%gdaddress%wrka3
@@ -451,7 +604,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     lsecfl              => gdp%d%lsecfl
     lsec                => gdp%d%lsec
     ltur                => gdp%d%ltur
-    nrob                => gdp%d%nrob 
+    nrob                => gdp%d%nrob
     nto                 => gdp%d%nto
     ntof                => gdp%d%ntof
     ntoq                => gdp%d%ntoq
@@ -478,13 +631,11 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     tairarr             => gdp%gdheat%tairarr
     clouarr             => gdp%gdheat%clouarr
     swrfarr             => gdp%gdheat%swrfarr
-    secchi              => gdp%gdheat%secchi
     rhum_file           => gdp%gdheat%rhum_file
     tair_file           => gdp%gdheat%tair_file
     clou_file           => gdp%gdheat%clou_file
     prcp_file           => gdp%gdheat%prcp_file
     swrf_file           => gdp%gdheat%swrf_file
-    scc_file            => gdp%gdheat%scc_file
     morfac              => gdp%gdmorpar%morfac
     morfacpar           => gdp%gdmorpar%morfacpar
     morfacrec           => gdp%gdmorpar%morfacrec
@@ -518,7 +669,6 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     alfas               => gdp%gdr_i_ch%alfas
     areau               => gdp%gdr_i_ch%areau
     areav               => gdp%gdr_i_ch%areav
-    bruvai              => gdp%gdr_i_ch%bruvai
     c                   => gdp%gdr_i_ch%c
     cdwlsu              => gdp%gdr_i_ch%cdwlsu
     cdwlsv              => gdp%gdr_i_ch%cdwlsv
@@ -544,14 +694,12 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     df                  => gdp%gdr_i_ch%df
     disch               => gdp%gdr_i_ch%disch
     discum              => gdp%gdr_i_ch%discum
-    dpd                 => gdp%gdr_i_ch%dpd
+    dp                  => gdp%gdr_i_ch%dp
     dps                 => gdp%gdr_i_ch%dps
     dpu                 => gdp%gdr_i_ch%dpu
     dpv                 => gdp%gdr_i_ch%dpv
     rint0               => gdp%gdr_i_ch%rint0
     rint1               => gdp%gdr_i_ch%rint1
-    sink                => gdp%gdr_i_ch%sink
-    sour                => gdp%gdr_i_ch%sour
     umdis0              => gdp%gdr_i_ch%umdis0
     umdis1              => gdp%gdr_i_ch%umdis1
     vmdis0              => gdp%gdr_i_ch%vmdis0
@@ -601,9 +749,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     r1                  => gdp%gdr_i_ch%r1
     rho                 => gdp%gdr_i_ch%rho
     rhowat              => gdp%gdr_i_ch%rhowat
-    rich                => gdp%gdr_i_ch%rich
     rint                => gdp%gdr_i_ch%rint
-    rintsm              => gdp%gdr_i_ch%rintsm
     rlabda              => gdp%gdr_i_ch%rlabda
     rnpl                => gdp%gdr_i_ch%rnpl
     rob                 => gdp%gdr_i_ch%rob
@@ -646,7 +792,6 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     w10mag              => gdp%gdr_i_ch%w10mag
     windsu              => gdp%gdr_i_ch%windsu
     windsv              => gdp%gdr_i_ch%windsv
-    windcd              => gdp%gdr_i_ch%windcd
     windu               => gdp%gdr_i_ch%windu
     windv               => gdp%gdr_i_ch%windv
     ws                  => gdp%gdr_i_ch%ws
@@ -697,7 +842,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     kfv                 => gdp%gdr_i_ch%kfv
     kspu                => gdp%gdr_i_ch%kspu
     kspv                => gdp%gdr_i_ch%kspv
-    mnbnd               => gdp%gdr_i_ch%mnbnd 
+    mnbnd               => gdp%gdr_i_ch%mnbnd
     mndro               => gdp%gdr_i_ch%mndro
     mnksrc              => gdp%gdr_i_ch%mnksrc
     kcshyd              => gdp%gdr_i_ch%kcshyd
@@ -712,7 +857,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     kfsmx0              => gdp%gdr_i_ch%kfsmx0
     kfumn0              => gdp%gdr_i_ch%kfumn0
     kfvmn0              => gdp%gdr_i_ch%kfvmn0
-    kfsmn0              => gdp%gdr_i_ch%kfsmn0    
+    kfsmn0              => gdp%gdr_i_ch%kfsmn0
     kfsz0               => gdp%gdr_i_ch%kfsz0
     kfsz1               => gdp%gdr_i_ch%kfsz1
     kfuz0               => gdp%gdr_i_ch%kfuz0
@@ -738,6 +883,12 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     flbcc               => gdp%gdtmpfil%flbcc
     fldis               => gdp%gdtmpfil%fldis
     rhosol              => gdp%gdsedpar%rhosol
+    lunscr              => gdp%gdinout%lunscr
+    dt                  => gdp%gdexttim%dt
+    drycrt              => gdp%gdnumeco%drycrt
+    restid              => gdp%gdrestart%restid
+    itlfsm              => gdp%gdinttim%itlfsm
+    perCIRC             => gdp%gdimbound%perCIRC
     !
     icx     = 0
     icy     = 0
@@ -793,7 +944,14 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     if (ntoq /= 0) then
        call inibcq(lundia    ,error     ,runid     ,i(itbct)  ,nto       , &
                  & ntof      ,ntoq      ,kcd       ,ch(nambnd),r(hydrbc) , &
-                 & bubble    ,kmax      ,gdp       )
+                 & bubble    ,gdp       )
+       if (error) goto 9999
+    endif
+    !
+    ! if cutcell, check that the discharge boundary does not have only 1 cell (if thin cut cell discharge per unit width and velocity very high)
+    !  (to be moved in subroutines where all the boundary checks are performed
+    if (cutcell==2) then
+       call checkQbnd(i(nob),nrob,nto,error,lundia,gdp)
        if (error) goto 9999
     endif
     !
@@ -849,13 +1007,13 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     ! The following arrays must be filled (when relevant)
     ! before the first call to postpr.
     ! - windu, windv, patm
-    ! - rhumarr, tairarr, clouarr, swrfarr, secchi
-    ! - sdu_t0 (subsidence/uplift) 
-    ! 
+    ! - rhumarr, tairarr, clouarr, swrfarr
+    ! - sdu_t0 (subsidence/uplift)
+    !
     if (wind) then
        call incmeteo(timhr     , grdang   , &
                    & r (windu ),r (windv ),r (patm  ), &
-                   & i (kcs   ),r (alfas ), r(windcd), &
+                   & i (kcs   ),r (alfas ), &
                    & r (windsu),r (windsv),r (w10mag), gdp)
     endif
     if (rhum_file) then
@@ -883,15 +1041,9 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
                            &gdp%gdparall%mfg, gdp%gdparall%nfg, nlb, nub, mlb, mub, swrfarr , 0)
        call checkmeteoresult(success, gdp)
     endif
-    if (scc_file) then
-       success = getmeteoval(gdp%runid, 'Secchi_depth', timhr * 60.0_fp, &
-                           &gdp%gdparall%mfg, gdp%gdparall%nfg, nlb, nub, mlb, mub, secchi , 0)
-       call checkmeteoresult(success, gdp)
-    endif
-    if (lfsdu) then 
+    if (lfsdu) then
        call incsdu(timhr  ,d(dps)   ,r(s1)   ,i(kcs)  ,i(kfs) ,gdp    )
-    endif                  
-
+    endif
     !
     ! INIEVA: read initial arrays values for time dependent data for
     ! rainfall / evaporation model
@@ -915,7 +1067,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     ! INISED: set initial array values for sediment
     ! only initialise sediment at beginning of morsys simulation
     !
-    if (sedim) then
+    if (sedim .and. initia/=3) then
        call inised(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
                  & nmmax     ,lsed      ,lsedtot   ,i(kcs)    ,gdp       )
        if (error) goto 9999
@@ -957,22 +1109,35 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     ! subroutine parameter(8) = ICY := 1
     ! ONLY FOR SIGMA LAYER MODEL ! FOR Z_MODEL CALL Z_CHKDRY
     !
+    !allocate aguu/agvv and EDGEtypeBANK since they are needed in checkdry and upwhu respctively
+    allocate(gdp%gdimbound%aguu(nlb:nub,mlb:mub))
+    allocate(gdp%gdimbound%agvv(nlb:nub,mlb:mub))
+    allocate(gdp%gdimbound%EDGEtypeBANK(4,nlb:nub,mlb:mub))
+    !
+    aguu              => gdp%gdimbound%aguu
+    agvv              => gdp%gdimbound%agvv
+    EDGEtypeBANK      => gdp%gdimbound%EDGEtypeBANK
+    !
+    aguu(nlb:nub,mlb:mub)           = 1.0_fp
+    agvv(nlb:nub,mlb:mub)           = 1.0_fp
+    EDGEtypeBANK(:,nlb:nub,mlb:mub) = 1.0_fp
+!
     if (.not.zmodel) then
        icx = nmaxddb
        icy = 1
        call chkdry(jstart    ,nmmaxj    ,nmmax     ,kmax      ,lsec      , &
                  & lsecfl    ,lstsci    ,ltur      ,icx       ,icy       , &
-                 & i(kcu)    ,i(kcv)    ,i(kcs)    ,i(kfu)    , &
+                 & initia    ,i(kcu)    ,i(kcv)    ,i(kcs)    ,i(kfu)    , &
                  & i(kfv)    ,i(kfs)    ,i(kspu)   ,i(kspv)   ,r(dpu)    , &
                  & r(dpv)    ,r(hu)     ,r(hv)     ,r(hkru)   ,r(hkrv)   , &
                  & r(thick)  ,r(s1)     ,d(dps)    ,r(u1)     ,r(v1)     , &
                  & r(umean)  ,r(vmean)  ,r(r1)     ,r(rtur1)  ,r(guu)    , &
-                 & r(gvv)    ,r(qxk)    ,r(qyk)    ,gdp       )
+                 & r(gvv)    ,r(qxk)    ,r(qyk)    ,filic     ,gdp       )
     else
        icx = nmaxddb
        icy = 1
        call z_chkdry(jstart    ,nmmaxj    ,nmmax     ,kmax      ,lstsci    , &
-                   & ltur      ,icx       ,icy       ,i(kcu)    , &
+                   & ltur      ,icx       ,icy       ,initia    ,i(kcu)    , &
                    & i(kcv)    ,i(kcs)    ,i(kfu)    ,i(kfv)    ,i(kfs)    , &
                    & i(kspu)   ,i(kspv)   ,i(kfuz1)  ,i(kfvz1)  ,i(kfsz1)  , &
                    & i(kfumin) ,i(kfumax) ,i(kfvmin) ,i(kfvmax) ,i(kfsmin) , &
@@ -1013,6 +1178,251 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
                  & r(cdwztv) ,r(cdwzbv) ,r(cdwlsv) ,gdp       )
     endif
     !
+    !
+    icx = nmaxddb
+    icy = 1
+    CALL IScurvilinear(r(guu),r(gvv),icx,icy,nmlb,nmub,nmmax, gdp) !check if mesh is curvilinear. To be removed
+    if (PERIODsurface) CALL defineINTEXTper(i(kcs),r(xcor),r(ycor),nlb,nub,mlb,mub,gdp)
+    if (perCIRC) then 
+       allocate(gdp%gdimbound%dpL_m_aver(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)) 
+    endif    
+    allocate(gdp%gdimbound%qfilt(kmax,nrob))
+    allocate(gdp%gdimbound%qfiltC(kmax,lstsc,nrob))
+    allocate(gdp%gdimbound%qfilt_bdl(nrPER,lsedtot))
+    allocate(gdp%gdimbound%qfilt_s1(nrPER))   !  if (nrPER.EQ.0) IS OK, ZERO-SIZED ARRAY ARE OK IN FORTRAN 90
+    !
+    qfilt             => gdp%gdimbound%qfilt
+    qfilt_bdl         => gdp%gdimbound%qfilt_bdl
+    qfilt_s1          => gdp%gdimbound%qfilt_s1
+    qfiltC            => gdp%gdimbound%qfiltC
+    !
+    !+++++++++++++++++++++++ ADJUST GEOMETRICAL DATA FOR IMMERSED BOUNDARY (Canestrelli et al., 2014) ++++++++++
+    !
+    if (printCURV) then
+        allocate(gdp%gdimbound%curstr_print(nlb:nub,mlb:mub))
+        curstr_print      => gdp%gdimbound%curstr_print
+    endif
+    !
+    call allocateWORKARRAYS(nmlb,nmub,nlb,nub,mlb,mub,kmax,lstsci,lsec,gdp)
+    if(cutcell.eq.0) then
+     ! in case they are used in the standard delft3d, set the default values of:
+     !  CALL SETdefaultVALUES_cc poros(:,:) = 1._fp   guu_cc(:,:) =guu(:),gvv_cc(:,:) =gvv(:)
+       allocate(gdp%gdimbound%agsqs(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%kFLcut(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%cutfac(nmlb:nmub))
+       allocate(gdp%gdimbound%qxk_tinyCUT(nlb:nub,mlb:mub,1:kmax))
+       allocate(gdp%gdimbound%qyk_tinyCUT(nlb:nub,mlb:mub,1:kmax))
+       allocate(gdp%gdimbound%GHOSTs1(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%GHOSTu1(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%GHOSTv1(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%uFACcut(nlb:nub,mlb:mub,1:kmax))
+       allocate(gdp%gdimbound%vFACcut(nlb:nub,mlb:mub,1:kmax))
+       allocate(gdp%gdimbound%xG_L(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%yG_L(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%dps0(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%dpu0(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%dpv0(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%poros(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%kfs_cc(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%PSIx(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%PSIy(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%ETAx(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%ETAy(nlb:nub,mlb:mub))
+       allocate(gdp%gdimbound%dxk(nlb:nub,mlb:mub,4))
+       allocate(gdp%gdimbound%dyk(nlb:nub,mlb:mub,4))
+       allocate(gdp%gdimbound%z_aguu(nmlb:nmub,1:kmax))
+       allocate(gdp%gdimbound%z_agvv(nmlb:nmub,1:kmax))
+       allocate(gdp%gdimbound%z_agsqs(nmlb:nmub,1:kmax))
+       allocate(gdp%gdimbound%agsqs_link(nmlb:nmub))
+       allocate(gdp%gdimbound%sourseBANK(nmlb:nmub,1:lsed))
+       allocate(gdp%gdimbound%gradS1_sud(nmlb:nmub))
+       allocate(gdp%gdimbound%gradS1_uzd(nmlb:nmub))
+       allocate(gdp%gdimbound%vdudy(nmlb:nmub))
+       allocate(gdp%gdimbound%ududx(nmlb:nmub))
+       allocate(gdp%gdimbound%sourceU(nmlb:nmub))
+       allocate(gdp%gdimbound%frict_uzd(nmlb:nmub))
+       allocate(gdp%gdimbound%frict_sud(nmlb:nmub))
+       allocate(gdp%gdimbound%deltaUcut(nmlb:nmub,1:kmax))
+       allocate(gdp%gdimbound%deltaS1cut(nmlb:nmub))
+       allocate(gdp%gdimbound%EXPsouR(nmlb:nmub))
+       allocate(gdp%gdimbound%EXPsouL(nmlb:nmub))
+       allocate(gdp%gdimbound%eeC(nmlb:nmub,1:3))
+       allocate(gdp%gdimbound%isMERGEDu_bed(nmlb:nmub))
+       allocate(gdp%gdimbound%isMERGEDv_bed(nmlb:nmub))
+       allocate(gdp%gdimbound%MERGEDwith_d(nmlb:nmub))
+       allocate(gdp%gdimbound%kWDu(nmlb:nmub,4))
+       allocate(gdp%gdimbound%kWDv(nmlb:nmub,4))
+       allocate(gdp%gdimbound%huFAC(nmlb:nmub))
+       allocate(gdp%gdimbound%dhFACcut(nmlb:nmub))
+       allocate (gdp%gdimbound%xcorU1          (nlb:nub,mlb-1:mub-1))
+       allocate (gdp%gdimbound%ycorU1          (nlb:nub,mlb-1:mub-1))
+       allocate (gdp%gdimbound%xcorV1          (nlb-1:nub-1,mlb:mub))
+       allocate (gdp%gdimbound%ycorV1          (nlb-1:nub-1,mlb:mub))
+       allocate (gdp%gdimbound%xG_V1           (nlb:nub,mlb:mub))      
+       allocate (gdp%gdimbound%xG_U1           (nlb:nub,mlb:mub))      
+       allocate (gdp%gdimbound%yG_V1           (nlb:nub,mlb:mub))      
+       allocate (gdp%gdimbound%yG_U1           (nlb:nub,mlb:mub))
+       allocate (gdp%gdimbound%EDGExyBANK      (nlb:nub,mlb:mub,4,2,2))
+       !
+       if (EXACTslope==2) then
+          allocate(gdp%gdimbound%dzduuCENTR(nmlb:nmub))
+          allocate(gdp%gdimbound%dzdvvCENTR(nmlb:nmub))
+       endif
+       !
+       agsqs             => gdp%gdimbound%agsqs
+       kFLcut            => gdp%gdimbound%kFLcut
+       cutfac            => gdp%gdimbound%cutfac
+       qxk_tinyCUT       => gdp%gdimbound%qxk_tinyCUT
+       qyk_tinyCUT       => gdp%gdimbound%qyk_tinyCUT
+       GHOSTs1           => gdp%gdimbound%GHOSTs1
+       GHOSTu1           => gdp%gdimbound%GHOSTu1
+       GHOSTv1           => gdp%gdimbound%GHOSTv1
+       uFACcut           => gdp%gdimbound%uFACcut
+       vFACcut           => gdp%gdimbound%vFACcut
+       xG_L              => gdp%gdimbound%xG_L
+       yG_L              => gdp%gdimbound%yG_L
+       dps0              => gdp%gdimbound%dps0
+       dpu0              => gdp%gdimbound%dpu0
+       dpv0              => gdp%gdimbound%dpv0
+       dpL               => gdp%gdimbound%dpL
+       dpH               => gdp%gdimbound%dpH
+       poros             => gdp%gdimbound%poros
+       kfs_cc            => gdp%gdimbound%kfs_cc
+       PSIx              => gdp%gdimbound%PSIx
+       PSIy              => gdp%gdimbound%PSIy
+       ETAx              => gdp%gdimbound%ETAx
+       ETAy              => gdp%gdimbound%ETAy
+       dxk               => gdp%gdimbound%dxk
+       dyk               => gdp%gdimbound%dyk
+       z_aguu            => gdp%gdimbound%z_aguu
+       z_agvv            => gdp%gdimbound%z_agvv
+       z_agsqs           => gdp%gdimbound%z_agsqs
+       agsqs_link        => gdp%gdimbound%agsqs_link
+       sourseBANK        => gdp%gdimbound%sourseBANK
+       gradS1_sud        => gdp%gdimbound%gradS1_sud
+       gradS1_uzd        => gdp%gdimbound%gradS1_uzd
+       vdudy             => gdp%gdimbound%vdudy
+       ududx             => gdp%gdimbound%ududx
+       sourceU           => gdp%gdimbound%sourceU
+       frict_uzd         => gdp%gdimbound%frict_uzd
+       frict_sud         => gdp%gdimbound%frict_sud
+       deltaUcut         => gdp%gdimbound%deltaUcut
+       deltaS1cut        => gdp%gdimbound%deltaS1cut
+       EXPsouR           => gdp%gdimbound%EXPsouR
+       EXPsouL           => gdp%gdimbound%EXPsouL
+       eeC               => gdp%gdimbound%eeC
+       isMERGEDu_bed     => gdp%gdimbound%isMERGEDu_bed
+       isMERGEDv_bed     => gdp%gdimbound%isMERGEDv_bed
+       MERGEDwith_d      => gdp%gdimbound%MERGEDwith_d
+       kWDu              => gdp%gdimbound%kWDu
+       kWDv              => gdp%gdimbound%kWDv
+       huFAC             => gdp%gdimbound%huFAC
+       dhFACcut          => gdp%gdimbound%dhFACcut
+       dzduuCENTR        => gdp%gdimbound%dzduuCENTR
+       dzdvvCENTR        => gdp%gdimbound%dzdvvCENTR
+       xcorU1            => gdp%gdimbound%xcorU1
+       ycorU1            => gdp%gdimbound%ycorU1
+       xcorV1            => gdp%gdimbound%xcorV1
+       ycorV1            => gdp%gdimbound%ycorV1
+       xG_V1             => gdp%gdimbound%xG_V1
+       xG_U1             => gdp%gdimbound%xG_U1
+       yG_V1             => gdp%gdimbound%yG_V1
+       yG_U1             => gdp%gdimbound%yG_U1
+       EDGExyBANK        => gdp%gdimbound%EDGExyBANK
+       !
+       huFAC(:) = 1._fp
+       kFLcut(:,:) = 1 ! in this way when cut cells are not used sud is correctly solved as in the standard Delft3D
+       qxk_tinyCUT(:,:,:) = 0._fp
+       qyk_tinyCUT(:,:,:) = 0._fp
+       agsqs(:,:)= 1
+       agsqs_link(:) = 1._fp
+       !agvv(:,:)= 1 !already initialized
+       !aguu(:,:)= 1 !already initialized
+       GHOSTs1(:,:) = 0
+       GHOSTu1(:,:) = 0
+       GHOSTv1(:,:) = 0
+       isMERGEDu_bed(:) = 0
+       isMERGEDv_bed(:) = 0
+       MERGEDwith_d(:) = -999999
+       kWDu(:,:) = 1
+       kWDv(:,:) = 1
+       dhFACcut(:) = 1._fp
+       uFACcut(:,:,:) = 1._fp
+       vFACcut(:,:,:) = 1._fp
+       z_aguu(:,:) = 1._fp
+       z_agvv(:,:) = 1._fp
+       z_agsqs(:,:) = 1._fp
+       poros(:,:) = 1._fp
+       cutfac(:) = 1._fp
+       sourseBANK(:,:) = 0._fp
+       deltaUcut (:,:) = 0._fp
+       deltaS1cut (:) = 0._fp
+       eeC(:,:) = 0._fp
+       EXPsouR(:) = 0._fp
+       EXPsouL(:) = 0._fp
+       xcorU1     = 0.0_fp
+       ycorU1     = 0.0_fp
+       xcorV1     = 0.0_fp
+       ycorV1     = 0.0_fp
+       EDGExyBANK = 0.0_fp
+       !
+       CALL xGL_dpL(xG_L,yG_L,r(xz),r(yz),dpL,dpH,d(dps),nmlb,nmub,nmmax) !set xG_L=xz,yG_L=yz,dpL=dps
+       CALL DP0isDP(r(dpu),r(dpv),d(dps),mmax,nmaxus,nlb,nub,mlb,mub,gdp) !dps0 is used for updmassbal
+    elseif (cutcell.eq.2) then
+       nstREST = itstrt
+       CALL PLIC_VOF_INIT(mmax      ,nmax      ,nmaxus  ,kmax     ,lunscr     &
+                       & ,lundia    ,dt        ,irov    ,itstrt   ,nlb        &
+                       & ,nub       ,mlb       ,mub     ,nmlb     ,nmub       &
+                       & ,i(kcs)    ,i(kcu)    ,i(kcv)  ,i(kfs)   ,i(kfu)     &
+                       & ,i(kfv)    ,restid    ,lsed                          &
+                       & ,r(xcor)   ,r(ycor)   ,r(guu)  ,r(gvv)               &
+                       & ,d(dps)                                              &
+                       & ,r(porosu) ,r(porosv)                                &
+                       & ,r(qxk)    ,r(qyk)    ,r(umean),r(vmean) ,r(thick)   &
+                       & ,r(hu)     ,r(hv)     ,r(dpu)  ,r(dpv)               &
+                       & ,r(s1)     ,r(u1)     ,r(v1)   ,r(gsqs)  ,gdp)
+!
+       CALL PLIC_VOF_STEP(r(gsqs),i(kfs),i(kfu),i(kfv),i(kcs),i(kcu),i(kcv),r(s1),r(u1),r(v1),d(dps),r(dpU),r(dpV),r(xcor),r(ycor),r(alfas),&
+                     lunscr,lundia,Irov,mmax,nmax,nmaxus,kmax,itstrt,-100,nlb,nub,mlb,mub,nmlb,nmub,drycrt,& !negative nst so it skips printing s1_u1_v1  on this call
+                     r(thick),r(guu),r(gvv),r(hu),r(hv),r(porosu),r(porosv),r(qxk),r(qyk),r(Umean),r(Vmean),'init    ',&
+                     i(kfumn0),i(kfvmn0),i(kfumx0),i(kfvmx0),gdp%d%ddbound,nmmax,Zmodel, gdp) !IMP: init MUST have 4 trailing spaces since the dummy character stage has size 8 (otherwise the compiler crashes
+       if (periodSURFACE) then
+          call PER_dp(d(dps), r(xz), r(yz), r(alfas), nlb, mlb, nub, mub, gdp%d%ddbound, nmaxddb, nrper, gdp)  !bed elevations need to be periodic so reconvof computes right normals
+          if (itlfsm<=0) then
+              call WATERlevelPERIOD(r(s1),d(dps),icx,nlb,nub,mlb,mub,kmax, gdp) !s1 might have wrong value in kcs==2
+          endif
+       endif
+       CALL INIT_kfuv(i(kfu),i(kfv),mmax,nmax,nlb,nub,mlb,mub,nmlb,nmub, gdp)
+       if (virtualMERGEdisch) then
+          call virtMERGdisch(r(hu),i(kfu),i(kcs),aguu,r(guu),r(u1),r(thick),r(porosu),r(qxk),icx,icy,nmmax,kmax,nmlb,nmub, gdp)
+          call virtMERGdisch(r(hv),i(kfv),i(kcs),agvv,r(gvv),r(v1),r(thick),r(porosv),r(qyk),icy,icx,nmmax,kmax,nmlb,nmub, gdp)
+       endif
+       !
+       !caldpu was skipped in tricom_init since EDGEtypeBANK was not defined yet
+       !THIS MODALITY IS STILL NOT CORRECT, AND IT USES UNDEFINED ELEMENT OF VECTOR dpu/dpv. They are infact undefined
+       ! when computing hu in chkdry above. howver,caldpu needs EDGEtypeBANK to be defined. Best solution would be moving all
+       !this block outside inchkr, but there are still some dependence on kfu/kfv and hu,hv that should first removed if possible
+       !from checkDRY and reconvof.
+       call caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
+                 & zmodel    , &
+                 & i(kcs)    ,i(kcu)    ,i(kcv)    , &
+                 & i(kspu)   ,i(kspv)   ,r(hkru)   ,r(hkrv)   , &
+                 & r(umean)  ,r(vmean)  ,r(dp)     ,r(dpu)    ,r(dpv)    , &
+                 & d(dps)    ,r(dzs1)   ,r(u1)     ,r(v1)     ,r(s1)     , &
+                 & r(thick)  ,999     ,gdp       ) ! nst not defined yet, I use a dummy value different from -100
+    endif
+    !
+    !+++++++++++++++++++++++ END OF CUT CELLS ADJUST ++++++++++
+    !
+    !
+    ! Allocate and INTIALIZE to zero fluxu fluxv (to be used in difu at the first half time step when not yet initialized
+
+    call difuflux('stage2  '    ,lundia    ,kmax      ,nmmax     ,nmmaxj      , &
+                  & lstsci    ,r(r1)     ,r(r1)     ,r(qxk)    ,r(qyk)      , & ! pass r1 twice since r0 not defined
+                  & r(dicuv)  ,r(guv)    ,r(gvu)    ,r(areau)  ,r(areav)    , &
+                  & i(kfu)    ,i(kfv)    ,i(kfs)    ,i(kcs)    ,0._fp       , & !time step 0._fp
+                  & icx       ,icy       ,lsed      ,gdp       )
+    !
     ! Compute volumes and areas
     !
     call inivol(jstart    ,nmmaxj    ,nmmax     ,kmax      ,zmodel    , &
@@ -1020,11 +1430,15 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
               & i(kfumin) ,i(kfumax) ,i(kfvmin) ,i(kfvmax) ,r(thick)  , &
               & r(s1)     ,d(dps)    ,r(gsqs)   ,r(guu)    ,r(gvv)    , &
               & r(hu)     ,r(hv)     ,r(dzs1)   ,r(dzu1)   ,r(dzv1)   , &
-              & r(volum1) ,r(porosu) ,r(porosv) ,r(areau)  ,r(areav)  ,gdp       )
-    call updmassbal(1         ,r(qxk)    ,r(qyk)    ,i(kcs)    ,r(r1)     , &
-                  & r(volum0) ,r(volum1) ,r(sbuu)   ,r(sbvv)   ,r(disch)  , &
-                  & i(mnksrc) ,r(sink)   ,r(sour)   ,r(gsqs)   ,r(guu)    , &
-                  & r(gvv)    ,d(dps)    ,r(rintsm) ,0.0_fp    ,gdp       )
+              & r(volum1) ,r(porosu) ,r(porosv) ,r(areau)  ,r(areav)  , &
+              & aguu      ,agvv      ,agsqs     ,i(kfs)    ,gdp       )
+    call updmassbal(.true.   ,r(qxk)    ,r(qyk)    ,i(kcs)    ,r(r1)     , &
+                  & r(volum1),r(sbuu)   ,r(sbvv)   , &
+                  & r(gsqs)  ,r(guu)    ,r(gvv)    ,d(dps)    ,-100      , &
+                  & lsal     ,ltem      ,r(s0)     ,r(s1)     ,agsqs     , &
+                  & aguu     ,agvv      ,r(disch)  ,i(mnksrc) ,nsrc      , &
+                  & r(r0)    ,dps0      ,gdp%gderosed%kfsed,i(kfs),lsecfl, &
+                  & r(volum0),icx       ,icy       ,gdp       )
     !
     ! F0ISF1: copy old (1) in new arrays (0)
     ! N.B.:
@@ -1057,6 +1471,44 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
               & r(ewabr0) ,r(ewabr1) , &
               & r(ewave0) ,r(ewave1) ,r(eroll0) ,r(eroll1) ,roller    , &
               & gdp       )
+    !
+    ! initialize ghost points at U points for uzd in stage1. Values are stored in u1_FLLYghst so they are then copied in u0 in subr u1isuFULL
+    !
+    if (cutcell==2.and.(GhostMethod.eq.1.or.GhostMethod.eq.2)) then ! .and.useFULL)) then !if usefull=Y  the calls to periodic_u0INTv (if exact interpolation) are not correct, some points stay undefined
+       allocate(u0INTv(gdp%d%nmlb:gdp%d%nmub, kmax))
+       allocate(u1INTv(gdp%d%nmlb:gdp%d%nmub, kmax))
+       allocate(v0INTu(gdp%d%nmlb:gdp%d%nmub, kmax))
+       !
+       CALL u1isu0(v1_FLLYghst,r(v0),nlb,nub,mlb,mub,kmax)  ! so v1_FLLYghst in cutcell_pre_uzd_stage2 is not undefined,but nothing should change
+       CALL u1isu0(u1_FLLYghst,r(u0),nlb,nub,mlb,mub,kmax)
+
+       call cutcell_pre_uzd_stage2(icx        ,icy        ,r(u0)      ,r(v0)      ,r(u1)      ,& ! this is called in order not to have v0INTu undefined when calling cutcell_pre_sud_stage2 below
+                                 & u0INTv     ,v0INTu     ,r(guu)     ,r(gvv)     ,r(xcor)    ,&
+                                 & r(ycor)                                                    ,&
+                                 & r(v1)      ,r(gsqs)    ,i(kcs)     ,r(dpu)     ,r(dpv)     ,&
+                                 & r(Umean)   ,r(Vmean)   ,r(thick)   ,r(qxk)     ,r(qyk)     ,&
+                                 & r(hu)      ,r(hv)      ,r(s0)      ,r(s1)      ,d(dps)     ,&
+                                 & i(kfs)     ,i(kfu)     ,i(kfv)     ,i(kcu)     ,i(kcv)     ,&
+                                 & mmax       ,nmax       ,nmmax      ,nmaxus     ,kmax       ,&
+                                 & nst        ,nlb        ,nub        ,mlb        ,mub        ,&
+                                 & nmlb       ,nmub       ,ddbound    ,lunscr     ,Irov       ,gdp)
+       !note: at boundary cut edges with aguu<0.5 and normal to m direction here I force the ghost u0 velocity. But the fluxes are already correctly
+       !computed in reconVOF so things are correct. I have clearly to reconstruct the value on the active edge after uzd and before sud
+       call cutcell_pre_sud_stage2(icy        ,icx        ,r(u0)      ,r(v0)      ,u1_FLLYghst,& !icx inverted with icy, since sud stage2 is along y
+                                 & u0INTv     ,u1INTv     ,v0INTu                             ,&
+                                 & r(v1)      ,r(gsqs)    ,i(kcs)     ,r(dpu)     ,r(dpv)     ,&
+                                 & r(Umean)   ,r(Vmean)   ,r(thick)   ,r(qxk)     ,r(qyk)     ,&
+                                 & r(hu)      ,r(hv)      ,r(s0)      ,r(s1)      ,d(dps)     ,&
+                                 & r(guu)     ,r(gvv)                 ,r(xcor)    ,r(ycor)    ,&
+                                 & i(kfs)     ,i(kfu)     ,i(kfv)     ,i(kcu)     ,i(kcv)     ,&
+                                 & mmax       ,nmax       ,nmmax      ,nmaxus     ,kmax       ,&
+                                 & nst        ,nlb        ,nub        ,mlb        ,mub        ,&
+                                 & nmlb       ,nmub       ,ddbound    ,lunscr     ,Irov       ,gdp)
+       call kfsuv_ghost(r(Umean),r(Vmean),r(qxk),r(qyk),r(hu),r(hv),r(dpu),r(dpv),r(gsqs),i(kfs),i(kfu),i(kfv),i(kcs),i(kcu),i(kcv),r(s1),r(u1),r(v1),r(s0),r(u0),r(v0),r(dps),mmax,nmax,kmax,nmaxus,0,0,nlb,nub,mlb,mub,nmlb,nmub, gdp) !set kfs,kfu,kfv non active in ghost points, since cutcell_pre_sud_stage2 activate them
+       call u1isu0(r(u1),r(u0),nlb,nub,mlb,mub,kmax) !copy u0 to u1, so then f0isf1 does not change the value of u0
+       call u1isu0(r(v1),r(v0),nlb,nub,mlb,mub,kmax)
+       deallocate(u0INTv,u1INTv,v0INTu)
+    endif
     !
     ! DENS  : compute densities for the first time
     !
@@ -1104,14 +1556,14 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
               & rouflo    ,zmodel    , &
               & i(kcs)    ,i(kcu)    ,i(kfu)    ,i(kspu)   , &
               & r(s1)     ,r(dpu)    ,r(umean)  ,r(wrkb1)  ,d(dps)    , &
-              & r(cfurou) ,r(z0urou) ,gdp       )
+              & r(cfurou) ,r(z0urou) ,aguu      ,gdp       )
     icx = 1
     icy = nmaxddb
     call initau(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
               & rouflo    ,zmodel    , &
               & i(kcs)    ,i(kcv)    ,i(kfv)    ,i(kspv)   , &
               & r(s1)     ,r(dpv)    ,r(vmean)  ,r(wrkb2)  ,d(dps)    , &
-              & r(cfvrou) ,r(z0vrou) ,gdp       )
+              & r(cfvrou) ,r(z0vrou) ,agvv      ,gdp       )
     !
     ! EULER: calculate adjusted velocities for mass flux
     ! NOTE: Array SIG has a different meaning (ZK) in case
@@ -1145,20 +1597,23 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     ! kcu/v is used inside TAUBOT as weight factor to calculate v(u)
     ! in u(v) points. Therefore, kcu/v should not contain the value
     ! 2 (open boundary) or 3 (dd boundary). That's why the (cleaned)
-    ! copies of kcu/v are used.
+    ! copies of kcu/v are used. Note by Alberto Canestrelli: for cut cells (and in general)
+    ! I want to use the right averaging to compute v(u) in u(v) points. Therefore
+    ! I pass kfv(kfu) as the transversal component.
     !
     icx = nmaxddb
     icy = 1
     if (.not. zmodel) then
        call upwhu(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 & zmodel    ,i(kcs)    ,i(kcu)    ,i(kspu)   ,d(dps)    , &
-                & r(s1)     ,r(dpu)    ,r(umean)  ,r(wrkb1)  ,gdp       )
+                & r(s1)     ,r(dpu)    ,r(umean)  ,r(wrkb1)  ,aguu      , &
+                & gdp       )
     endif
     call taubot(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
-              & icy       ,rouflo    ,rouwav    ,kcucopy   ,kcvcopy   , &
+              & icy       ,rouflo    ,rouwav    ,kcucopy   ,i(kfv)    , &
               & i(kfumin) ,i(kfumax) ,i(kspu)   ,i(kcs)    ,i(kcscut) , &
               & d(dps)    ,r(s1)     ,r(wrkb3)  ,r(wrkb4)  , &
-              & r(guu)    ,r(xcor)   ,r(ycor)   ,r(rho)    , &
+              & r(guu)    ,r(gvv)    ,r(xcor)   ,r(ycor)   ,r(rho)    , &
               & r(taubpu) ,r(taubsu) ,r(wrka1)  ,r(dis)    ,r(rlabda) , &
               & r(teta)   ,r(uorb)   ,r(tp)     ,r(wsu)    ,r(wsv)    , &
               & r(grmasu) ,r(dfu)    ,r(deltau) ,r(hrms)   , &
@@ -1169,13 +1624,14 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     if (.not. zmodel) then
        call upwhu(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 & zmodel    ,i(kcs)    ,i(kcv)    ,i(kspv)   ,d(dps)    , &
-                & r(s1)     ,r(dpv)    ,r(vmean)  ,r(wrkb2)  ,gdp       )
+                & r(s1)     ,r(dpv)    ,r(vmean)  ,r(wrkb2)  ,agvv      , &
+                & gdp       )
     endif
     call taubot(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
-              & icy       ,rouflo    ,rouwav    ,kcvcopy   ,kcucopy   , &
+              & icy       ,rouflo    ,rouwav    ,kcvcopy   ,i(kfu)    , &
               & i(kfvmin) ,i(kfvmax) ,i(kspv)   ,i(kcs)    ,i(kcscut) , &
               & d(dps)    ,r(s1)     ,r(wrkb4)  ,r(wrkb3)  , &
-              & r(gvv)    ,r(ycor)   ,r(xcor)   ,r(rho)    , &
+              & r(gvv)    ,r(guu)    ,r(ycor)   ,r(xcor)   ,r(rho)    , &
               & r(taubpv) ,r(taubsv) ,r(wrka2)  ,r(dis)    ,r(rlabda) , &
               & r(teta)   ,r(uorb)   ,r(tp)     ,r(wsv)    ,r(wsu)    , &
               & r(grmasv) ,r(dfv)    ,r(deltav) ,r(hrms)   , &
@@ -1263,8 +1719,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
                     & r(s1)     ,d(dps)    ,r(hu)     ,r(hv)     ,r(u1)     , &
                     & r(v1)     ,r(thick)  ,r(windsu) ,r(windsv) ,r(z0urou) , &
                     & r(z0vrou) ,i(kfu)    ,i(kfv)    ,i(kfs)    ,i(kcs)    , &
-                    & r(wrkb1)  ,r(wrkb2)  ,r(bruvai) ,r(rich)   ,r(rho)    , &
-                    & gdp       )
+                    & r(wrkb1)  ,r(wrkb2)  ,gdp       )
        else
           icx = nmaxddb
           icy = 1
@@ -1274,8 +1729,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
                       & i(kfvmax) ,i(kfsmin) ,i(kfsmax) ,r(rtur1)  , &
                       & r(s1)     ,d(dps)    ,r(u1)     ,r(v1)     ,r(windsu) , &
                       & r(windsv) ,r(z0urou) ,r(z0vrou) ,r(wrkb1)  ,r(wrkb2)  , &
-                      & r(dzu1)   ,r(dzv1)   ,r(dzs1)   ,r(bruvai) ,r(rich)   , &
-                      & r(rho)    ,gdp       )
+                      & r(dzu1)   ,r(dzv1)   ,r(dzs1)   ,gdp       )
        endif
     endif
     !
@@ -1288,7 +1742,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
        icx = nmaxddb
        icy = 1
        call dersig(jstart    ,nmmaxj    ,nmmax     ,icx       ,icy       , &
-                 & i(kfu)    ,i(kfv)    ,r(dpd)    ,r(s1)     ,r(dddksi) , &
+                 & i(kfu)    ,i(kfv)    ,r(dp)     ,r(s1)     ,r(dddksi) , &
                  & r(dddeta) ,r(dzdksi) ,r(dzdeta) ,gdp       )
     endif
     !

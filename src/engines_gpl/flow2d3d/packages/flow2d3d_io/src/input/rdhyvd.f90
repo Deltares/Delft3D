@@ -4,7 +4,7 @@ subroutine rdhyvd(error     ,nrrec     ,mdfrec    ,filedy    ,fmtedy    , &
                 & lstsci    ,vicuv     ,dicuv     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine rdhyvd(error     ,nrrec     ,mdfrec    ,filedy    ,fmtedy    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdhyvd.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdhyvd.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads the following records from the MD-file:
@@ -74,6 +74,8 @@ subroutine rdhyvd(error     ,nrrec     ,mdfrec    ,filedy    ,fmtedy    , &
     real(fp) , pointer :: dicmol
     logical  , pointer :: elder
     logical  , pointer :: htur2d
+    logical, pointer :: HORIZdiffZERO
+    logical, pointer :: HORIZviscZERO
 !
 ! Global variables
 !
@@ -125,6 +127,8 @@ subroutine rdhyvd(error     ,nrrec     ,mdfrec    ,filedy    ,fmtedy    , &
 !
 !! executable statements -------------------------------------------------------
 !
+    HORIZdiffZERO => gdp%gdimbound%HORIZdiffZERO
+    HORIZviscZERO => gdp%gdimbound%HORIZviscZERO
     htur2d     => gdp%gdprocs%htur2d
     nd         => gdp%gdhtur2d%nd
     alpha      => gdp%gdhtur2d%alpha
@@ -220,14 +224,14 @@ subroutine rdhyvd(error     ,nrrec     ,mdfrec    ,filedy    ,fmtedy    , &
     ! diffusivity coefficients in extra input file
     !
     filedy = ' '
-    call prop_get(gdp%mdfile_ptr, '*', 'Filedy', filedy)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Filedy', filedy)
     if (filedy /= ' ') then
        !
        ! eddy viscosity and diffusifity values in file
        ! locate 'Fmtedy' record for format definition of input file
        !
        fmtedy = 'FR'
-       call prop_get(gdp%mdfile_ptr, '*', 'Fmtedy', fmtedy)
+       call prop_get_string(gdp%mdfile_ptr, '*', 'Fmtedy', fmtedy)
        fmttmp = fmtedy
        call filfmt(lundia    ,'Fmtedy'  ,fmttmp    ,lerror    ,gdp       )
        call edyfil(lundia    ,error     ,filedy    ,fmttmp    ,nmax      , &
@@ -239,11 +243,13 @@ subroutine rdhyvd(error     ,nrrec     ,mdfrec    ,filedy    ,fmtedy    , &
        ! 'Vicouv': uniform horizontal eddy-viscosity
        !
        call prop_get(gdp%mdfile_ptr,'*','Vicouv',vicouv)
+       if (HORIZviscZERO) dicouv = 0._fp
        if (lstsci > 0) then
           !
           ! 'dicouv': uniform horizontal eddy-diffusivity
           !
           call prop_get(gdp%mdfile_ptr,'*','Dicouv',dicouv)
+          if (HORIZdiffZERO) dicouv = 0._fp
        endif
        !
        ! write per nmaxus mmax vicouv in vicuv array
@@ -280,7 +286,7 @@ subroutine rdhyvd(error     ,nrrec     ,mdfrec    ,filedy    ,fmtedy    , &
     !
     if (kmax > 1) then
        tkemod = ' '
-       call prop_get(gdp%mdfile_ptr,'*','Tkemod',tkemod)
+       call prop_get_string(gdp%mdfile_ptr,'*','Tkemod',tkemod)
        if (tkemod == ' ') then
           tkemod = 'Algebraic   '
        endif

@@ -1,11 +1,11 @@
 subroutine discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j         , &
                 & nmmaxj    ,icx       ,icy       ,namsrc    ,mnksrc    , &
-                & kfs       ,kcs       ,sour      ,sink      ,volum1    , &
-                & volum0    ,r0        ,disch     ,rint      ,rintsm    ,thick     , &
+                & kfs       ,kcs       , sour     ,sink      ,volum1    , &
+                & volum0    ,r0        ,disch     ,rint      ,thick     , &
                 & bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,8 +29,8 @@ subroutine discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j      
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: discha.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/discha.f90 $
 !!--description-----------------------------------------------------------------
 ! The discharges are added to the sink and source terms of
 ! the continuity equation.
@@ -52,7 +52,6 @@ subroutine discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j      
     integer , pointer :: ltem
     integer , pointer :: lundia
     real(fp), pointer :: maxTOutlet
-    logical , dimension(:) , pointer :: flbcktemp
 !
 ! Global variables
 !
@@ -72,7 +71,6 @@ subroutine discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j      
     real(fp), dimension(nsrc)                               , intent(in)  :: disch  ! Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci), intent(in)  :: r0     ! Description and declaration in esm_alloc_real.f90
     real(fp), dimension(lstsc, nsrc)                        , intent(in)  :: rint   ! Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(lstsc, nsrc)                        , intent(out) :: rintsm ! Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)              :: sink   ! Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)              :: sour   ! Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                               , intent(in)  :: thick  ! Description and declaration in esm_alloc_real.f90
@@ -96,6 +94,7 @@ subroutine discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j      
     integer          :: nmin
     integer          :: offset
     real(fp)         :: concin
+    real(fp)         :: concinWrite
     character(200)   :: filename
 !
 !! executable statements -------------------------------------------------------
@@ -103,7 +102,6 @@ subroutine discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j      
     ltem       => gdp%d%ltem
     lundia     => gdp%gdinout%lundia
     maxTOutlet => gdp%gddischarge%maxTOutlet
-    flbcktemp  => gdp%gdheat%flbcktemp
     !
     ddb  = gdp%d%ddbound
     icxy = max(icx, icy)
@@ -136,19 +134,7 @@ subroutine discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j      
              ! concentration at outfall is prescribed in rint
              !
              concin = rint(lcon, isrc)
-             !
-             ! For background temperatures the current temperature is used (Temprature at the outfall location)
-             !
-             if ( flbcktemp(lcon) ) then
-                if (kkout == 0) then
-                   concin = 0.0_fp
-                   do k2 = 1, kmax
-                      concin = concin + r0(nmout,k2, lcon)*thick(k2)
-                   enddo
-                else
-                  concin = r0(nmout, kkout, lcon)
-                endif
-             endif
+             concinWrite = concin
           else
              !
              ! discharge with intake (culverts, power station)
@@ -177,6 +163,7 @@ subroutine discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j      
                    concin = r0(nmout, kkout, lcon)
                 endif
              endif
+             concinWrite = concin
              if (mnksrc(7,isrc)==6 .and. lcon==ltem) then
                 !
                 ! Q-type power station and this is constituent 'temperature'
@@ -203,48 +190,47 @@ subroutine discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j      
           !
           ! source/sink addition at outfall
           !
-          rintsm(lcon, isrc) = concin
           if (kcs(nmout)/=-1) then
-             if (disch(isrc) > 0.0_fp) then
-                !
-                ! positive discharge; addition to sour
-                ! Allowed in dry cells,
-                ! as long as all cell volumes > 0.
-                ! testing for volume(k=1) is enough
-                !
-                if (volum0(nmout, 1) > 0.0_fp) then
-                   if (kkout==0) then
-                      do k = 1, kmax
-                         sour(nmout, k, lcon) = sour(nmout, k, lcon) + disch(isrc)             &
-                                        & *concin*thick(k)/volum0(nmout, k)
-                      enddo
-                   else
-                      sour(nmout, kkout, lcon) = sour(nmout, kkout, lcon) + disch(isrc)              &
-                                      & *concin/volum0(nmout, kkout)
-                   endif
+          if (disch(isrc) > 0.0_fp) then
+             !
+             ! positive discharge; addition to sour
+             ! Allowed in dry cells,
+             ! as long as all cell volumes > 0.
+             ! testing for volume(k=1) is enough
+             !
+             if (volum0(nmout, 1) > 0.0_fp) then
+                if (kkout==0) then
+                   do k = 1, kmax
+                      sour(nmout, k, lcon) = sour(nmout, k, lcon) + disch(isrc)             &
+                                     & *concin*thick(k)/volum0(nmout, k)
+                   enddo
                 else
-                   call prterr(lundia, 'S101', namsrc(isrc))
+                   sour(nmout, kkout, lcon) = sour(nmout, kkout, lcon) + disch(isrc)              &
+                                   & *concin/volum0(nmout, kkout)
                 endif
-                !
-             elseif ( disch(isrc) < 0.0_fp) then
-                if (kfs(nmout) > 0) then
-                   if (kkout == 0) then
-                      do k = 1, kmax
-                         sink(nmout, k, lcon) = sink(nmout, k, lcon)                           &
-                                        & - disch(isrc)*thick(k)/volum1(nmout, k)
-                      enddo
-                   else
-                      sink(nmout, kkout, lcon) = sink(nmout, kkout, lcon)                            &
-                                      & - disch(isrc)/volum1(nmout, kkout)
-                   endif
-                else
-                   !
-                   ! negative discharge; addition to sink
-                   ! NOT allowed in dry cells
-                   !
-                   call prterr(lundia, 'S102', namsrc(isrc))
-                endif
+             else
+                call prterr(lundia, 'S101', namsrc(isrc))
              endif
+             !
+          elseif ( disch(isrc) < 0.0_fp) then
+             if (kfs(nmout) > 0) then
+                if (kkout == 0) then
+                   do k = 1, kmax
+                      sink(nmout, k, lcon) = sink(nmout, k, lcon)                           &
+                                     & - disch(isrc)*thick(k)/volum1(nmout, k)
+                   enddo
+                else
+                   sink(nmout, kkout, lcon) = sink(nmout, kkout, lcon)                            &
+                                   & - disch(isrc)/volum1(nmout, kkout)
+                endif
+             else
+                !
+                ! negative discharge; addition to sink
+                ! NOT allowed in dry cells
+                !
+                call prterr(lundia, 'S102', namsrc(isrc))
+             endif
+          endif
           endif
           !
           ! sink addition at intake (for power stations and culverts)

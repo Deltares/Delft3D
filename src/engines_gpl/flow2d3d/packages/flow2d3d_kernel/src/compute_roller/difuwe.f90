@@ -9,7 +9,7 @@ subroutine difuwe(timest    ,lundia    ,nst       ,icx       ,icy       , &
                 & wenf      ,wenl      ,dps       ,s0        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -33,8 +33,8 @@ subroutine difuwe(timest    ,lundia    ,nst       ,icx       ,icy       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: difuwe.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute_roller/difuwe.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Computes transport of wave energy in u- and
@@ -88,7 +88,7 @@ subroutine difuwe(timest    ,lundia    ,nst       ,icx       ,icy       , &
     integer                                           , intent(in)   :: nmmax  !  Description and declaration in dimens.igs
     integer                                           , intent(in)   :: norow  !  Description and declaration in esm_alloc_int.f90
     integer                                           , intent(in)   :: nst
-    integer   , dimension(5, norow)                   , intent(in)   :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(7, norow)                   , intent(in)   :: irocol !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)   :: kadu   !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(in)   :: kadv   !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in)   :: kcs    !  Description and declaration in esm_alloc_int.f90

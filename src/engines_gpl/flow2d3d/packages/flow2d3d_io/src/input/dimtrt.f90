@@ -1,7 +1,7 @@
 subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: dimtrt.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/dimtrt.f90 $
 !!--description-----------------------------------------------------------------
 ! Reads the dimensions ntrt, nttaru, nttarv
 ! Initializes nroupa
@@ -106,7 +106,7 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
     ! Read value of Trtrou, default NO
     !
     chulp = 'N'
-    call prop_get(gdp%mdfile_ptr,'*','Trtrou',chulp)
+    call prop_get_string(gdp%mdfile_ptr,'*','Trtrou',chulp)
     !
     ! set LFTRTO to TRUE if CHULP = Y/y
     !
@@ -122,7 +122,7 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
     !
     filtmp = ' '
     keyw   = 'Trtdef'
-    call prop_get(gdp%mdfile_ptr,'*',keyw,filtmp)
+    call prop_get_string(gdp%mdfile_ptr,'*',keyw,filtmp)
     !
     ! keyword not found ?
     !
@@ -146,7 +146,8 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
     !
     ! open trachytope definition file
     !
-    open (newunit=luntmp, file = filtmp(1:lfile), form = 'formatted', iostat = iocond,  &
+    luntmp = newlun(gdp)
+    open (luntmp, file = filtmp(1:lfile), form = 'formatted', iostat = iocond,  &
         & status = 'old')
     if (iocond/=0) then
        call prterr(lundia    ,'U015'    ,filtmp(1:lfile)      )
@@ -189,7 +190,7 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
        !
        filtmp = ' '
        keyw = 'Trtu'
-       call prop_get(gdp%mdfile_ptr,'*',keyw,filtmp)
+       call prop_get_string(gdp%mdfile_ptr,'*',keyw,filtmp)
        !
        ! keyword not found ?
        !
@@ -215,7 +216,7 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
        !
        filtmp = ' '
        keyw = 'Trtv'
-       call prop_get(gdp%mdfile_ptr,'*',keyw,filtmp)
+       call prop_get_string(gdp%mdfile_ptr,'*',keyw,filtmp)
        !
        ! keyword not found ?
        !

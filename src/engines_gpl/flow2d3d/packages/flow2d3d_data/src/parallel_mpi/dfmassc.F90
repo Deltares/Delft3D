@@ -4,7 +4,7 @@ subroutine dfmassc (s1        ,u1        ,qxk       ,hu        ,d0        , &
                   & kmax      ,icx       ,gdp )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine dfmassc (s1        ,u1        ,qxk       ,hu        ,d0        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: dfmassc.F90 6026 2016-04-18 08:22:12Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/parallel_mpi/dfmassc.F90 $
 !!--description-----------------------------------------------------------------
 !
 !   adapts waterlevels and velocities at coupling boundaries

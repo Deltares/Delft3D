@@ -10,7 +10,7 @@ subroutine z_hormom_fls(nmmax     ,kmax      ,icx       , &
                       & ub        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -34,22 +34,15 @@ subroutine z_hormom_fls(nmmax     ,kmax      ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_hormom_fls.f90 1044 2011-11-21 21:22:12Z platzek $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20111115_13532_z-model_improvements_oss-merge/engines_gpl/flow2d3d/packages/kernel/src/compute/z_hormom_fls.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! This subroutine solves the momentum equation with a
 ! conservative discretization.
-! It is an explicit scheme. Energy conserving for converging flow and momentum
-! conserving for expanding flow (Flooding Scheme-FLS)
-
 !
 !!--pseudo code and references--------------------------------------------------
-!
-! Stelling & Duijnmeijer "A Staggered conservative scheme for every Froude
-!                         number in rapidly varied shallow water flows", 
-!                         Numerical Methods in Fluids, No. 34, 2003.
-!
+! NONE
 !!--declarations----------------------------------------------------------------
     use precision
     use flow2d3d_timers
@@ -140,6 +133,10 @@ subroutine z_hormom_fls(nmmax     ,kmax      ,icx       , &
     real(fp)           :: cvn
     real(fp)           :: cvp
     real(fp)           :: cvv
+    real(fp)           :: dgeta
+    real(fp)           :: dgvnm
+    real(fp)           :: geta
+    real(fp)           :: gksi
     real(fp)           :: gvndm
     real(fp)           :: gvnm
     real(fp)           :: dpsu
@@ -199,9 +196,6 @@ subroutine z_hormom_fls(nmmax     ,kmax      ,icx       , &
        endif
     enddo
     !
-    ua = 0.0_fp
-    ub = 0.0_fp
-    !
     do nm = 1, nmmax
        nmd    = nm  - icx
        nmdd   = nmd - icx
@@ -227,13 +221,13 @@ subroutine z_hormom_fls(nmmax     ,kmax      ,icx       , &
              if (kspu(nmd,0) > 0 .or. kspu(nmdd,0) > 0 ) then
                 du1   = 0.0_fp
              endif
-             ua(nm,k) =  u0(nmd,k) + ulim(du1,du2)*du1
+             ua(nm,k) =  u0(nmd,k) + ulim(du1,du2, gdp)*du1
           else
              du1      = (u0(nmu,k)-u0(nm,k)) * kfuz0(nmu,k) * kfuz0(nm,k)
              if (kspu(nm,0) > 0 .or. kspu(nmu,0) > 0 ) then
                 du1   = 0.0_fp
              endif
-             ua(nm,k) =  u0(nm,k) - ulim(du1,du2)*du1
+             ua(nm,k) =  u0(nm,k)  - ulim(du1,du2, gdp)*du1
           endif
           !
           ! Compute UB (appr. of velocity in depth points) at internal points
@@ -244,11 +238,11 @@ subroutine z_hormom_fls(nmmax     ,kmax      ,icx       , &
              if (qyk(nm,k) + qyk(nmu,k) > 0.0_fp) then
                 du1      = (u0(nm ,k)-u0(ndm,k)) * kfuz0(nm ,k) * kfuz0(ndm,k)
                 du2      = (u0(num,k)-u0(nm ,k)) * kfuz0(num,k) * kfuz0(nm ,k)
-                ub(nm,k) =  u0(nm ,k) + ulim(du1,du2)*du1
+                ub(nm,k) =  u0(nm ,k) + ulim(du1,du2, gdp)*du1
              else
                 du1      = (u0(nuum,k)-u0(num,k)) * kfuz0(nuum,k) * kfuz0(num,k)
                 du2      = (u0(num ,k)-u0(nm ,k)) * kfuz0(num ,k) * kfuz0(nm ,k)
-                ub(nm,k) =  u0(num ,k) - ulim(du1,du2)*du1
+                ub(nm,k) =  u0(num ,k) - ulim(du1,du2, gdp)*du1
              endif
           endif
        enddo
@@ -267,8 +261,12 @@ subroutine z_hormom_fls(nmmax     ,kmax      ,icx       , &
           numu   = nm + icx + icy
           ndmu   = nm + icx - icy
           numd   = nm - icx + icy
+          gksi   = gvu(nm)
+          geta   = guu(nm)
           gvnm   = gvd(nm)
           gvndm  = gvd(ndm)
+          dgeta  = guz(nmu) - guz(nm)
+          dgvnm  = gvd(nm)  - gvd(ndm)
           gsqi   = gsqiu(nm)
           !
           !
@@ -281,6 +279,7 @@ subroutine z_hormom_fls(nmmax     ,kmax      ,icx       , &
                 uvdgdy = 0.0_fp
                 hl     = real(dps(nm) ,fp) + s0(nm) 
                 hr     = real(dps(nmu),fp) + s0(nmu)
+                dpsu   = 0.5_fp*(hl + hr)
                 factor = 1.0_fp
                 !
                 ! Compute VVV
@@ -288,8 +287,8 @@ subroutine z_hormom_fls(nmmax     ,kmax      ,icx       , &
                 if (       (cstbnd .and. (kcs(nm)==2 .or. kcs(nmu)==2)) &
                     & .or. (kcs(nm)==3 .or. kcs(nmu)==3               )  ) then
                    svvv = max(kfvz0(ndm,k) + kfvz0(ndmu,k) + kfvz0(nm,k) + kfvz0(nmu,k),1)
-                   vvv = ( v1(ndm, k)*kfvz0(ndm,k) + v1(ndmu, k)*kfvz0(ndmu,k)  &
-                       & + v1(nm , k)*kfvz0(nm ,k) + v1(nmu , k)*kfvz0(nmu ,k)  ) / real(svvv,fp)
+                   vvv = (v1(ndm, k)*kfvz0(ndm,k) + v1(ndmu, k)*kfvz0(ndmu,k) + v1(nm, k)  &
+                       & *kfvz0(nm,k) + v1(nmu, k)*kfvz0(nmu,k))/svvv
                 else
                    vvv = 0.25_fp*(v1(ndm, k) + v1(ndmu, k) + v1(nm, k) + v1(nmu, k))
                 endif
@@ -336,7 +335,7 @@ subroutine z_hormom_fls(nmmax     ,kmax      ,icx       , &
                     & .or. (umean(nm) < 0.0_fp .and. (hr > hl) .and. kfu(nmd) == 1)  ) then
                     if (       (real(dps(nm),fp)          > real(dps(nmu),fp)+ dgcuni) & 
                         & .or. (real(dps(nm),fp) + dgcuni < real(dps(nmu),fp)        )  ) then
-                       factor = hr * hl / (dpsu*dpsu)
+                       factor = hr * hl / max(dpsu*dpsu,trsh)
                        !
                        ! avoid factor becoming small (synchronised with SOBEK FLS)
                        !

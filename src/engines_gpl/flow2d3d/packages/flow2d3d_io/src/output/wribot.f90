@@ -1,8 +1,8 @@
 subroutine wribot(comfil    ,lundia    ,error     ,mmax      ,nmax      , &
-                & nmaxus    ,dpd       ,dps       ,rbuff     ,gdp       )
+                & nmaxus    ,dp        ,dps       ,rbuff     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine wribot(comfil    ,lundia    ,error     ,mmax      ,nmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wribot.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wribot.f90 $
 !!--description-----------------------------------------------------------------
 !
 !
@@ -57,7 +57,7 @@ subroutine wribot(comfil    ,lundia    ,error     ,mmax      ,nmax      , &
     integer                                                                        :: nmax   !  Description and declaration in esm_alloc_int.f90
     integer                                                                        :: nmaxus !  Description and declaration in esm_alloc_int.f90
     logical                                                          , intent(out) :: error  !!  Flag=TRUE if an error is encountered
-    real(fp)    , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dpd    !  Description and declaration in esm_alloc_real.f90
+    real(fp)    , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dp     !  Description and declaration in esm_alloc_real.f90
     real(prec)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dps    !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(nmaxus, mmax)                                          :: rbuff  !  Description and declaration in r-i-ch.igs
     character(*)                                                                   :: comfil !!  Name for communication file
@@ -119,7 +119,7 @@ subroutine wribot(comfil    ,lundia    ,error     ,mmax      ,nmax      , &
     do m = 1, mmax
        do n = 1, nmaxus
           i = i+1
-          sbuff(i) = real(dpd(n, m),sp)
+          sbuff(i) = real(dp(n, m),sp)
        enddo
     enddo
     ierror = putelt(fds, grpnam, 'DP0', uindex, 1, sbuff)

@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$$
+!  $Id: postpr.igs 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/include/postpr.igs $$
 !-------------------------------------------------------------------------------
 type sv_postpr
     !
@@ -35,12 +35,9 @@ type sv_postpr
     !
     ! integers
     !
-	integer :: nc_deflate !  deflate_level argument when defining variables on NetCDF4 files
-	integer :: nc_mode    !  cmode argument when creating new NetCDF files (NF90_64BIT_OFFSET for NetCDF3, NF90_NETCDF4 for NetCDF4)
-    integer :: nuprpg     !  Current page number print file
-    integer :: nuprln     !  Current line number in print page
-    integer :: io_fp      !  Output precision matching simulation precision (IO_REAL4 or IO_REAL8)
-    integer :: io_prec    !  Output precision (IO_REAL4 or IO_REAL8)
+    integer :: nuprpg  !  Current page number print file
+    integer :: nuprln  !  Current line number in print page
+    integer :: nc_prec !  NetCDF precision identifier (nf90_float or nf90_double)
     !
     ! pointers
     !

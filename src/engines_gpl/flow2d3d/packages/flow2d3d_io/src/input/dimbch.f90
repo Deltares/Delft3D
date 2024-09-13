@@ -2,7 +2,7 @@ subroutine dimbch(lunmd     ,lundia    ,error     ,nrrec     ,kc        , &
                 & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine dimbch(lunmd     ,lundia    ,error     ,nrrec     ,kc        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: dimbch.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/dimbch.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Reads the dimension for harmonic components from
@@ -159,7 +159,8 @@ subroutine dimbch(lunmd     ,lundia    ,error     ,nrrec     ,kc        , &
        ! determine kc by reading the TRIANA file, and look for components used
        ! first, set pindex(component number)
        !
-       open (newunit=mcmp, file = filana)
+       mcmp = newlun(gdp)
+       open (mcmp, file = filana)
        do
           read (mcmp, '(a)', iostat = iocond) rec132
           if (iocond < 0) exit
@@ -234,7 +235,8 @@ subroutine dimbch(lunmd     ,lundia    ,error     ,nrrec     ,kc        , &
           !
           ! open input file
           !
-          open (newunit=luntmp, file = filtmp(1:lfile), form = fmttmp, status = 'old')
+          luntmp = newlun(gdp)
+          open (luntmp, file = filtmp(1:lfile), form = fmttmp, status = 'old')
           !
           ! unformatted file, start with KC = MXKC, and substract till actual value for KC is found
           ! NOTE: this does not work on SUN (rvar array and test on 0.)

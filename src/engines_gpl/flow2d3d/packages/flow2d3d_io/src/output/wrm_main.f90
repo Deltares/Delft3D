@@ -1,8 +1,9 @@
 subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
-                  & itmapc    ,runtxt    ,trifil    ,wrifou    ,gdp       )
+                  & itmapc    ,runtxt    ,trifil    ,wrifou    ,initi     , &
+                  & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +27,8 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrm_main.f90 6324 2016-07-18 18:53:27Z canestrelli.x $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrm_main.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Main routine for writing the FLOW HIS file.
@@ -40,7 +41,6 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     use datagroups
     use netcdf
     use dffunctionals, only: dffind_duplicate
-    use flow2d3d_version_module
     !
     use globaldata
     !
@@ -53,7 +53,6 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    integer                              , pointer :: itmapl
     integer                              , pointer :: nmax
     integer                              , pointer :: nmaxus
     integer                              , pointer :: mmax
@@ -91,7 +90,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     integer(pntrsize)                    , pointer :: cvalu0
     integer(pntrsize)                    , pointer :: cvalv0
     integer(pntrsize)                    , pointer :: dicww
-    integer(pntrsize)                    , pointer :: dpd
+    integer(pntrsize)                    , pointer :: dp
     integer(pntrsize)                    , pointer :: dps
     integer(pntrsize)                    , pointer :: dpu
     integer(pntrsize)                    , pointer :: dpv
@@ -106,18 +105,21 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     integer(pntrsize)                    , pointer :: guu
     integer(pntrsize)                    , pointer :: gvv
     integer(pntrsize)                    , pointer :: hrms
+    integer(pntrsize)                    , pointer :: hu
+    integer(pntrsize)                    , pointer :: hv
     integer(pntrsize)                    , pointer :: p1
     integer(pntrsize)                    , pointer :: patm
     integer(pntrsize)                    , pointer :: precip
+    integer(pntrsize)                    , pointer :: qxk
     integer(pntrsize)                    , pointer :: qxkr
     integer(pntrsize)                    , pointer :: qxkw
+    integer(pntrsize)                    , pointer :: qyk
     integer(pntrsize)                    , pointer :: qykr
     integer(pntrsize)                    , pointer :: qykw
     integer(pntrsize)                    , pointer :: r1
     integer(pntrsize)                    , pointer :: rbuff
     integer(pntrsize)                    , pointer :: rho
     integer(pntrsize)                    , pointer :: rich
-    integer(pntrsize)                    , pointer :: rlabda
     integer(pntrsize)                    , pointer :: rtur1
     integer(pntrsize)                    , pointer :: s1
     integer(pntrsize)                    , pointer :: sig
@@ -126,19 +128,15 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     integer(pntrsize)                    , pointer :: taubpv
     integer(pntrsize)                    , pointer :: taubsu
     integer(pntrsize)                    , pointer :: taubsv
-    integer(pntrsize)                    , pointer :: teta
     integer(pntrsize)                    , pointer :: thick
-    integer(pntrsize)                    , pointer :: tp
     integer(pntrsize)                    , pointer :: u1
     integer(pntrsize)                    , pointer :: umnldf
-    integer(pntrsize)                    , pointer :: uorb
     integer(pntrsize)                    , pointer :: v1
     integer(pntrsize)                    , pointer :: vicuv
     integer(pntrsize)                    , pointer :: vicww
     integer(pntrsize)                    , pointer :: vmnldf
     integer(pntrsize)                    , pointer :: vortic
     integer(pntrsize)                    , pointer :: w1
-    integer(pntrsize)                    , pointer :: windcd
     integer(pntrsize)                    , pointer :: windu
     integer(pntrsize)                    , pointer :: windv
     integer(pntrsize)                    , pointer :: wphy
@@ -160,7 +158,6 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     real(fp)                             , pointer :: dt
     real(fp)                             , pointer :: tunit
     real(fp)                             , pointer :: tzone
-    logical                              , pointer :: dredge
     logical                              , pointer :: lfbedfrm
     logical                              , pointer :: roller
     logical                              , pointer :: sferic
@@ -201,6 +198,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     character(30) , dimension(10)                :: runtxt !!  Textual description of model input
     character(*)                   , intent(in)  :: trifil !  File name for FLOW NEFIS output files (tri"h/m"-"casl""labl".dat/def)
     logical                                      :: wrifou
+    integer                                      :: initi
 !
 ! Local variables
 !
@@ -219,7 +217,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     character(256)                                    :: filename
     integer(pntrsize)                                 :: velu           ! U velocity array (FSM r-index)
     integer(pntrsize)                                 :: velv           ! V velocity array (FSM r-index)
-    character(256)                                    :: full_version
+    character(256)                                    :: version_full
     character(8)                                      :: cdate
     character(10)                                     :: ctime
     character(5)                                      :: czone
@@ -244,7 +242,6 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
 !
     wrkb3               => gdp%gdaddress%wrkb3
     wrkb4               => gdp%gdaddress%wrkb4
-    itmapl              => gdp%gdinttim%itmapl
     nmax                => gdp%d%nmax
     nmaxus              => gdp%d%nmaxus
     mmax                => gdp%d%mmax
@@ -281,7 +278,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     cvalu0              => gdp%gdr_i_ch%cvalu0
     cvalv0              => gdp%gdr_i_ch%cvalv0
     dicww               => gdp%gdr_i_ch%dicww
-    dpd                 => gdp%gdr_i_ch%dpd
+    dp                  => gdp%gdr_i_ch%dp
     dps                 => gdp%gdr_i_ch%dps
     dpu                 => gdp%gdr_i_ch%dpu
     dpv                 => gdp%gdr_i_ch%dpv
@@ -296,18 +293,21 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     guu                 => gdp%gdr_i_ch%guu
     gvv                 => gdp%gdr_i_ch%gvv
     hrms                => gdp%gdr_i_ch%hrms
+    hu                  => gdp%gdr_i_ch%hu
+    hv                  => gdp%gdr_i_ch%hv
     p1                  => gdp%gdr_i_ch%p1
     patm                => gdp%gdr_i_ch%patm
     precip              => gdp%gdr_i_ch%precip
+    qxk                 => gdp%gdr_i_ch%qxk
     qxkr                => gdp%gdr_i_ch%qxkr
     qxkw                => gdp%gdr_i_ch%qxkw
+    qyk                 => gdp%gdr_i_ch%qyk
     qykr                => gdp%gdr_i_ch%qykr
     qykw                => gdp%gdr_i_ch%qykw
     r1                  => gdp%gdr_i_ch%r1
     rbuff               => gdp%gdr_i_ch%rbuff
     rho                 => gdp%gdr_i_ch%rho
     rich                => gdp%gdr_i_ch%rich
-    rlabda              => gdp%gdr_i_ch%rlabda
     rtur1               => gdp%gdr_i_ch%rtur1
     s1                  => gdp%gdr_i_ch%s1
     sig                 => gdp%gdr_i_ch%sig
@@ -316,19 +316,15 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     taubpv              => gdp%gdr_i_ch%taubpv
     taubsu              => gdp%gdr_i_ch%taubsu
     taubsv              => gdp%gdr_i_ch%taubsv
-    teta                => gdp%gdr_i_ch%teta
     thick               => gdp%gdr_i_ch%thick
-    tp                  => gdp%gdr_i_ch%tp
     u1                  => gdp%gdr_i_ch%u1
     umnldf              => gdp%gdr_i_ch%umnldf
-    uorb                => gdp%gdr_i_ch%uorb
     v1                  => gdp%gdr_i_ch%v1
     vicuv               => gdp%gdr_i_ch%vicuv
     vicww               => gdp%gdr_i_ch%vicww
     vmnldf              => gdp%gdr_i_ch%vmnldf
     vortic              => gdp%gdr_i_ch%vortic
     w1                  => gdp%gdr_i_ch%w1
-    windcd              => gdp%gdr_i_ch%windcd
     windu               => gdp%gdr_i_ch%windu
     windv               => gdp%gdr_i_ch%windv
     wphy                => gdp%gdr_i_ch%wphy
@@ -348,7 +344,6 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     dt                  => gdp%gdexttim%dt
     tunit               => gdp%gdexttim%tunit
     tzone               => gdp%gdexttim%tzone
-    dredge              => gdp%gdprocs%dredge
     lfbedfrm            => gdp%gdbedformpar%lfbedfrm
     roller              => gdp%gdprocs%roller
     sferic              => gdp%gdtricom%sferic
@@ -455,7 +450,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     simdat(13:14) = rundat(15:16)
     simdat(15:16) = rundat(18:19)
     !
-    call getfullversionstring_flow2d3d(full_version)
+    call getfullversionstring_flow2d3d(version_full)
     call date_and_time(cdate, ctime, czone)
     !
     filetype = getfiletype(gdp, ifile)
@@ -485,10 +480,10 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
        call dfsync(gdp)
        call dffind_duplicate(lundia, ntruv, ntruvto, ntruvgl, order_tra, gdp)
        !
-       ! When order_tra points to tra_orgline, both partition-related and re-ordering-related stuff are taken care of
+       ! When order_tra points to tra_orgline, both partition-related and re-ordering-related stuff is taken care of
        !
        order_tra => gdp%gdstations%tra_orgline
-    elseif (mergemap) then ! sequential run
+    else
        nostatto = nostat
        nostatgl = nostat
        ntruvto  = ntruv
@@ -529,14 +524,14 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
        elseif (filetype == FTYPE_NETCDF) then
           if (first .and. irequest == REQUESTTYPE_DEFINE) then              
              write(lundia,*) 'Creating new '//trim(filename)
-             ierror = nf90_create(filename, gdp%gdpostpr%nc_mode, fds); call nc_check_err(lundia, ierror, "creating file", filename)
+             ierror = nf90_create(filename, 0, fds); call nc_check_err(lundia, ierror, "creating file", filename)
              !
              ! global attributes
              !
-             ierror = nf90_put_att(fds, nf90_global,  'Conventions', 'CF-1.6 SGRID-0.3'); call nc_check_err(lundia, ierror, "put_att global Conventions", filename)
+             ierror = nf90_put_att(fds, nf90_global,  'Conventions', 'CF-1.6'); call nc_check_err(lundia, ierror, "put_att global Conventions", filename)
              ierror = nf90_put_att(fds, nf90_global,  'institution', trim('Deltares')); call nc_check_err(lundia, ierror, "put_att global institution", filename)
              ierror = nf90_put_att(fds, nf90_global,  'references', trim('www.deltares.nl')); call nc_check_err(lundia, ierror, "put_att global references", filename)
-             ierror = nf90_put_att(fds, nf90_global,  'source', trim(full_version)); call nc_check_err(lundia, ierror, "put_att global source", filename)
+             ierror = nf90_put_att(fds, nf90_global,  'source', trim(version_full)); call nc_check_err(lundia, ierror, "put_att global source", filename)
              ierror = nf90_put_att(fds, nf90_global,  'history', &
                     'This file is created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
                     ', '//trim('Delft3D')); call nc_check_err(lundia, ierror, "put_att global history", filename)
@@ -557,19 +552,12 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
                     & zmodel    ,ch(namsrc),ch(namcon),namsed    , &
                     & i(kcu)    ,i(kcv)    ,i(kcs)    ,i(irocol) , &
                     & r(xcor)   ,r(ycor)   ,r(xz)     ,r(yz)     ,r(alfas)  , &
-                    & r(dpd)    ,r(thick)  ,r(sig)    ,r(sig)    , &
+                    & r(dp)     ,r(thick)  ,r(sig)    ,r(sig)    , &
                     & d(dps)    ,r(dpu)    ,r(dpv)    ,r(gsqs)   ,wrifou    , &
                     & irequest  ,fds       ,iarrc     ,mf        ,ml        , &
                     & nf        ,nl        ,nostatto  ,nostatgl  ,order_sta , &
                     & ntruvto   ,ntruvgl   ,order_tra ,ipartition,gdp       )
           if (error) goto 9999
-          !
-          if (dredge .and. gdp%gdflwpar%flwoutput%dredge_map) then
-             call wrimapdad(lundia    ,error     ,filename  ,irequest  , &
-                          & fds       ,iarrc     ,mf        ,ml        , &
-                          & nf        ,nl        ,gdp       )
-             if (error) goto 9999
-          endif
        endif
        !
        ! data per time step
@@ -583,7 +571,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
                     & nsrc      ,zmodel    ,i(kcs)    ,i(kfs)    ,i(kfu)    , &
                     & i(kfv)    ,i(kfumin) ,i(kfvmin) ,i(kfumax) ,i(kfvmax) , &
                     & i(kfsmin) ,i(kfsmax) ,i(mnksrc) ,r(s1)     , &
-                    & d(dps)    ,r(dzs1)   ,r(thick)  ,r(windcd)  , &
+                    & d(dps)    ,r(dzs1)   ,r(thick)  , &
                     & r(velu)   ,r(velv)   ,r(w1)     ,r(wphy)   ,r(r1)     , &
                     & r(rtur1)  ,r(taubpu) ,r(taubpv) ,r(taubsu) ,r(taubsv) , &
                     & r(vicww)  ,r(dicww)  ,r(rich)   ,r(rho)    ,r(p1)     , &
@@ -595,6 +583,14 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
                     & mf        ,ml        ,nf        ,nl        ,gdp       )
           if (error) goto 9999
           !
+          call wrtbanks(lundia    ,error     ,filename  ,itmapc    ,nmax      , &
+                      & mmax      ,nmaxus    ,r(rbuff)  ,irequest  ,fds       , &
+                      & iarrc     ,mf        ,ml        ,nf        ,nl        , &
+                      & velt      ,kmax      ,r(u1)     ,r(v1)     ,r(s1)     , &
+                      & r(qxk)    ,r(qyk)    ,i(kfumin) ,i(kfumax) ,i(kfvmin) , &
+                      & i(kfvmax) ,d(dps)    ,r(hu)     ,r(hv)     ,r(dpu)    , &
+                      & r(dpv)    ,r(guu)    ,r(gvv)    ,gdp       )
+          !
           if (lsedtot>0 .or. lfbedfrm .or. lfsdu) then
              call wrsedmgrp(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
                           & kmax      ,nmaxus    ,lsed      ,lsedtot   , &
@@ -604,7 +600,7 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
           endif
           !
           if (lsedtot > 0) then
-             if (itmapc==itmapl .or. gdp%gdmorpar%moroutput%cumavg .or. irequest==REQUESTTYPE_DEFINE) then
+             if (initi>=4 .or. gdp%gdmorpar%moroutput%cumavg .or. irequest==REQUESTTYPE_DEFINE) then
                 call wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
                              & nmaxus    ,lsed      ,lsedtot   ,irequest  ,fds       , &
                              & iarrc     ,mf        ,ml        ,nf        ,nl        , &
@@ -613,14 +609,22 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
              endif
           endif
           !
-          if (gdp%gdflwpar%flwoutput%waveqnt .or. roller .or. xbeach) then
+          if (roller) then
              call wrrolm(lundia    ,error     ,filename  ,itmapc    ,nmax      , &
                        & mmax      ,nmaxus    ,r(ewave1) ,r(eroll1) ,r(qxkr)   , &
                        & r(qykr)   ,r(qxkw)   ,r(qykw)   ,r(fxw)    ,r(fyw)    , &
                        & r(wsu)    ,r(wsv)    ,r(guu)    ,r(gvv)    ,r(rbuff)  , &
-                       & r(hrms)   ,r(tp)     ,r(teta)   ,r(rlabda) ,r(uorb)   , &
-                       & irequest  ,fds       ,iarrc     ,mf        ,ml        , &
-                       & nf        ,nl        ,roller    ,xbeach    ,gdp       )
+                       & r(hrms)   ,irequest  ,fds       ,iarrc     ,mf        , &
+                       & ml        ,nf        ,nl        ,gdp       )
+             if (error) goto 9999
+          endif
+          !
+          if (xbeach) then
+             call wrxbm(lundia    ,error     ,filename  ,itmapc    ,nmax      , &
+                      & mmax      ,nmaxus    ,r(fxw)    ,r(fyw)    , &
+                      & r(wsu)    ,r(wsv)    ,r(guu)    ,r(gvv)    ,r(rbuff)  , &
+                      & r(hrms)   ,irequest  ,fds       ,iarrc     ,mf        , &
+                      & ml        ,nf        ,nl        ,gdp       )
              if (error) goto 9999
           endif
        endif

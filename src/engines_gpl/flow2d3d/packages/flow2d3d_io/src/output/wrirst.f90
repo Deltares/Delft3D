@@ -4,7 +4,7 @@ subroutine wrirst(lundia    ,runid     ,itrstc    ,nmaxus    ,mmax      , &
                 & vmnldf    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine wrirst(lundia    ,runid     ,itrstc    ,nmaxus    ,mmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrirst.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrirst.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: This routine writes the relevant output arrays to
@@ -42,8 +42,6 @@ subroutine wrirst(lundia    ,runid     ,itrstc    ,nmaxus    ,mmax      , &
     use precision
     use globaldata
     use string_module
-    use wrtarray, only: wrtarray_nm, wrtarray_nmk, wrtarray_nmkl
-    use dfparall, only: inode, master
     !
     implicit none
     !
@@ -56,11 +54,6 @@ subroutine wrirst(lundia    ,runid     ,itrstc    ,nmaxus    ,mmax      , &
     real(fp)              , pointer :: timsec
     integer               , pointer :: julday
     integer               , pointer :: ifirst
-    integer       , dimension(:,:)       , pointer :: iarrc
-    integer       , dimension(:)         , pointer :: mf
-    integer       , dimension(:)         , pointer :: ml
-    integer       , dimension(:)         , pointer :: nf
-    integer       , dimension(:)         , pointer :: nl
 !
 ! Global variables
 !
@@ -83,9 +76,7 @@ subroutine wrirst(lundia    ,runid     ,itrstc    ,nmaxus    ,mmax      , &
 !
 ! Local variables
 !
-    integer        :: ftype    ! File type FTYPE_UNFORM32 or FTYPE_UNFORM64
     integer        :: idate    ! Absolute date related to ITDATE and TIMSEC 
-    integer        :: ierr     ! Error flag
     integer        :: itime    ! Absolute time related to ITDATE and TIMSEC 
     integer        :: k        ! Help var. 
     integer        :: l        ! Help var. 
@@ -104,94 +95,83 @@ subroutine wrirst(lundia    ,runid     ,itrstc    ,nmaxus    ,mmax      , &
     julday      => gdp%gdinttim%julday
     dt          => gdp%gdexttim%dt
     tunit       => gdp%gdexttim%tunit
-    iarrc   => gdp%gdparall%iarrc
-    mf      => gdp%gdparall%mf
-    ml      => gdp%gdparall%ml
-    nf      => gdp%gdparall%nf
-    nl      => gdp%gdparall%nl
+    !-----statics
     !
-    if (inode == master) then
+    !
+    !-----initialisation local parameters
+    !
+    filrst = ' '
+    timsec = real(itrstc,fp)*dt*tunit
+    !
+    !-----Get absolute date and time
+    !
+    call timdat(julday    ,timsec    ,idate    ,itime     )
+    !
+    !-----get file name and test file existence
+    !
+    call remove_leading_spaces(runid     ,lrid      )
+    !
+    filrst(:8 + lrid) = 'tri-rst.' // runid(:lrid)
+    write (filrst(8 + lrid + 1:8 + lrid + 16), '(a1,i8.8,a1,i6.6)') &
+        & '.', idate, '.', itime
+    !
+    !-----Define new unit number
+    !
+    lunrst = newlun(gdp)
+    !
+    !-----Test existence of restart file
+    !
+    inquire (file = filrst(1:8 + lrid + 16), exist = ex)
+    if (ex) then
        !
-       !-----initialisation local parameters
+       !--------First entry write warning
        !
-       filrst = ' '
-       timsec = real(itrstc,fp)*dt*tunit
+       if (ifirst==1) then
+          call prterr(lundia    ,'S014'    ,filrst(:8 + lrid + 16)          )
        !
-       !-----Get absolute date and time
-       !
-       call timdat(julday    ,timsec    ,idate    ,itime     )
-       !
-       !-----get file name and test file existence
-       !
-       call remove_leading_spaces(runid     ,lrid      )
-       !
-       filrst(:8 + lrid) = 'tri-rst.' // runid(:lrid)
-       write (filrst(8 + lrid + 1:8 + lrid + 16), '(a1,i8.8,a1,i6.6)') &
-           & '.', idate, '.', itime
-       !
-       !-----Test existence of restart file
-       !
-       inquire (file = filrst(1:8 + lrid + 16), exist = ex)
-       if (ex) then
-          !
-          !--------First entry write warning
-          !
-          if (ifirst==1) then
-             call prterr(lundia    ,'S014'    ,filrst(:8 + lrid + 16)          )
-          !
-          endif
-          open (newunit=lunrst, file = filrst(:8 + lrid + 16))
-          close (lunrst, status = 'delete')
        endif
-       !
-       !-----New file => open file
-       !
-       open (newunit=lunrst, file = filrst(:8 + lrid + 16), form = 'unformatted',          &
-            & status = 'new')
-       !
+       open (lunrst, file = filrst(:8 + lrid + 16))
+       close (lunrst, status = 'delete')
     endif
     !
-    ftype = FTYPE_UNFORM32 ! switch to FTYPE_UNFORM64 for double precision
+    !-----New file => open file
+    !
+    open (lunrst, file = filrst(:8 + lrid + 16), form = 'unformatted',          &
+         & status = 'new')
     !
     !-----write restart values S1, U1, V1, R1 and RTUR1
     !
-    call wrtarray_nm(lunrst, filrst, ftype, 'DUMMY', &
-                   & 0, nf, nl, mf, ml, iarrc, gdp, &
-                   & ierr, lundia, s1, 'DUMMY')
+    write (lunrst) ((real(s1(n, m) ,sp), m = 1, mmax), n = 1, nmaxus)
     !
-    call wrtarray_nmk(lunrst, filrst, ftype, 'DUMMY', &
-                    & 0, nf, nl, mf, ml, iarrc, gdp, &
-                    & 1, kmax, ierr, lundia, u1, 'DUMMY')
+    do k = 1, kmax
+       write (lunrst) ((real(u1(n, m, k) ,sp), m = 1, mmax), n = 1, nmaxus)
+    enddo
     !
-    call wrtarray_nmk(lunrst, filrst, ftype, 'DUMMY', &
-                    & 0, nf, nl, mf, ml, iarrc, gdp, &
-                    & 1, kmax, ierr, lundia, v1, 'DUMMY')
+    do k = 1, kmax
+       write (lunrst) ((real(v1(n, m, k) ,sp), m = 1, mmax), n = 1, nmaxus)
+    enddo
     !
-    call wrtarray_nmkl(lunrst, filrst, ftype, 'DUMMY', &
-                    & 0, nf, nl, mf, ml, iarrc, gdp, &
-                    & 1, kmax, lstsci, ierr, lundia, r1, 'DUMMY')
+    do l = 1, lstsci
+       do k = 1, kmax
+          write (lunrst) ((real(r1(n, m, k, l) ,sp), m = 1, mmax), n = 1, nmaxus)
+       enddo
+    enddo
     !
-    call wrtarray_nmkl(lunrst, filrst, ftype, 'DUMMY', &
-                    & 0, nf, nl, mf, ml, iarrc, gdp, &
-                    & 0, kmax, ltur, ierr, lundia, rtur1, 'DUMMY')
+    do l = 1, ltur
+       do k = 0, kmax
+          write (lunrst) ((real(rtur1(n, m, k, l) ,sp), m = 1, mmax), n = 1, nmaxus)
+       enddo
+    enddo
     !
     !-----write filtered velocities to restart file to allow for
     !     restarts using subgrid viscosity model
     !
-    call wrtarray_nm(lunrst, filrst, ftype, 'DUMMY', &
-                   & 0, nf, nl, mf, ml, iarrc, gdp, &
-                   & ierr, lundia, umnldf, 'DUMMY')
-    call wrtarray_nm(lunrst, filrst, ftype, 'DUMMY', &
-                   & 0, nf, nl, mf, ml, iarrc, gdp, &
-                   & ierr, lundia, vmnldf, 'DUMMY')
+    write (lunrst) ((real(umnldf(n, m) ,sp), m = 1, mmax), n = 1, nmaxus)
+    write (lunrst) ((real(vmnldf(n, m) ,sp), m = 1, mmax), n = 1, nmaxus)
     !
-    if (inode == master) then
-       !
-       !-----Close unit
-       !
-       close (lunrst)
-       !
-    endif
+    !-----Close unit
+    !
+    close (lunrst)
     !
     !-----Redefine entry number
     !

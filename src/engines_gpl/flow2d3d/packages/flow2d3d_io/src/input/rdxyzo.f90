@@ -5,7 +5,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                 & nmax      ,xcor      ,ycor      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,8 +29,8 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdxyzo.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdxyzo.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Initialises local en global parameters for the
@@ -50,7 +50,6 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     use globaldata
     use dfparall
     use system_utils, only: exifil
-    use m_rdrgf_paral
     !
     implicit none
     !
@@ -116,7 +115,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     logical                          :: nodef    ! Flag set to YES if default value may NOT be applied in case var. read is empty (ier <= 0, or nrread < nlook)
     real(fp)                         :: rdef     ! Help var. containing default value(s) for real variable
     real(fp)                         :: rmissval
-    real(fp)     , dimension(kmax)   :: rval     ! Help array (real) where the data, recently read from the MD-file, are stored temporarily
+    real(fp)     , dimension(mxkmax) :: rval     ! Help array (real) where the data, recently read from the MD-file, are stored temporarily
     character(1)                     :: cdef     ! Default value for chulp
     character(11)                    :: fmtdef   ! Default file format (usually=blank)
     character(11)                    :: fmttmp   ! Character string defining the format of the curvi-linear grid file, file will be read formatted
@@ -153,7 +152,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     enddo
     !
     filrgf = ' '
-    call prop_get(gdp%mdfile_ptr, '*', 'Filcco', filrgf)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Filcco', filrgf)
     if (filrgf /= fildef) then
        !
        ! Grid specified in a file
@@ -199,8 +198,8 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        !
        ! Read sferic, xcor and ycor
        !
-       call rdrgf_paral(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
-                      & xcor      ,ycor      ,sferic    ,gdp       )
+       call rdrgf(filrgf    ,lundia    ,error     ,nmax      ,mmax      , &
+                & xcor      ,ycor      ,sferic    ,gdp       )
     else
        !
        ! No grid file
@@ -216,7 +215,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
           call prterr(lundia, 'P004', 'No grid file defined')
        else
           cdef = ' '
-          call prop_get(gdp%mdfile_ptr,'*','Sphere',cdef)
+          call prop_get_string(gdp%mdfile_ptr,'*','Sphere',cdef)
           if (cdef /= 'y' .and. cdef /= 'Y') then
              if (parll) then
                 call prterr(lundia, 'P004', 'The combination of constant dx and dy and parallel is not available')
@@ -254,7 +253,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! Z definition
     !
     cval = ' '
-    call prop_get(gdp%mdfile_ptr, '*', 'laydis', cval)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'laydis', cval)
     if (cval == ' ') then
        !
        ! locate and read 'Thick' record

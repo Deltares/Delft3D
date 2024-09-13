@@ -1,10 +1,10 @@
 subroutine drychk(idry      ,s1        ,qxk       ,qyk       ,icx       , &
                 & icy       ,dps       ,kfu       ,kfv       ,kfs       , &
                 & j         ,nmmaxj    ,nmmax     ,kmax      ,nfltyp    , &
-                & excbed    ,kcs       ,gdp       )
+                & excbed    ,kcs       ,nst       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine drychk(idry      ,s1        ,qxk       ,qyk       ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: drychk.f90 7020 2017-02-16 21:50:45Z platzek $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/drychk.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: This subroutine checks for drying in water level
@@ -51,14 +51,14 @@ subroutine drychk(idry      ,s1        ,qxk       ,qyk       ,icx       , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    real(fp)     , pointer :: drycrt
-    real(fp)     , pointer :: hdt
-    real(fp)     , pointer :: cbed
     logical      , pointer :: sedim
     logical      , pointer :: mudlay
+    real(fp)     , pointer :: cbed
+    real(fp)     , pointer :: hdt
 !
 ! Global variables
 !
+    integer                                         , intent(in)  :: nst
     integer                                         , intent(in)  :: icx    !!  Increment in the X-dir., if ICX= NMAX then computation proceeds in the X-dir. If icx=1 then computation proceeds in the Y-dir.
     integer                                         , intent(in)  :: icy    !!  Increment in the Y-dir. (see ICX)
     integer                                                       :: idry   !!  Flag set to 1 if a dry point is detected in routine DRYCHK after SUD is completed
@@ -86,13 +86,11 @@ subroutine drychk(idry      ,s1        ,qxk       ,qyk       ,icx       , &
     integer       :: ndm
     integer       :: nm
     integer       :: nmd
-    real(fp)      :: drytrsh
     character(18) :: tmpname
     integer       :: nm_pos  ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
 !
 !! executable statements -------------------------------------------------------
 !
-    drycrt     => gdp%gdnumeco%drycrt
     hdt        => gdp%gdnumeco%hdt
     cbed       => gdp%gdmudcoe%cbed
     sedim      => gdp%gdprocs%sedim
@@ -100,25 +98,18 @@ subroutine drychk(idry      ,s1        ,qxk       ,qyk       ,icx       , &
     !
     idry   = 0
     nm_pos = 1
-    !
-    ! A drying treshold to avoid very thin layers in active cells
-    ! 0.01 * dryflc (0.02*drycrt), but limited between 10^(-9) and 10^(-3)
-    ! Such thin layers cause inaccuracies in the solution of the transport equation (in conservative formulation)
-    ! This choice of limits was chosen avoid too thin layers, but to simultaneously allow thin layers when 
-    ! demanded by the user through a small dryflc, e.g. for dry dambreak problems.
-    !
-    drytrsh = max(1.0e-9_fp, min(0.02_fp*drycrt, 1.0e-3_fp))
     if (nfltyp/=0) then
        do nm = 1, nmmax
           if ( (kcs(nm)==1 .or. kcs(nm)==2) ) then
              nmd = nm - icx
              ndm = nm - icy
-             !
-             ! Check on kfs(nm) == 1 is necessary, because when the last active cell edge of a cell
-             ! was set dry in SUD, all KFU/KFV are zero and this check would not be performed
-             !
-             if ( kfu(nm)==1 .or. kfu(nmd)==1  .or.  kfv(nm)==1 .or. kfv(ndm)==1  .or. kfs(nm)==1 ) then
-                if ( s1(nm) <= -real(dps(nm),fp)+drytrsh ) then
+             if (       ( kfu(nm)==1 .or. kfu(nmd)==1 ) &
+                 & .or. ( kfv(nm)==1 .or. kfv(ndm)==1 )  ) then
+                if ( comparereal(s1(nm),-real(dps(nm),fp))<=0) then
+                   !write(111213,'(5i6,10f25.15)') nm, kfu(nm),kfv(nm) ,kfu(nmd),kfv(ndm),s1(nm),dps(nm)
+                   !write(*,'(a,i0,a,i0,a)') 'nst=',nst,': z-point nm = ',nm,' is dry!!!'
+                   !write(515151,'(a,i0,a,i0,a)') 'nst=',nst,': z-point nm = ',nm,' is dry!!!'
+                   !call d3stop(1, gdp)
                    kfu(nm) = 0
                    kfu(nmd) = 0
                    kfv(nm) = 0

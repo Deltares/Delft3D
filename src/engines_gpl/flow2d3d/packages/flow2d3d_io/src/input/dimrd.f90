@@ -8,7 +8,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
                & nfl       ,nflmod    ,lfsdu     ,lfsdus1   ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -32,8 +32,8 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: dimrd.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/dimrd.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Initialises the grid and process
@@ -136,7 +136,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     logical                      :: sedim     !  Description and declaration in procs.igs
     logical                      :: temp      !  Description and declaration in procs.igs
     logical                      :: wave      !  Description and declaration in procs.igs
-    integer                      :: waveol    !  Description and declaration in procs.igs
+    logical                      :: waveol    !  Description and declaration in procs.igs
     logical                      :: wavcmp
     logical                      :: wind      !  Description and declaration in procs.igs
     logical        , intent(out) :: zmodel    !  Description and declaration in procs.igs
@@ -307,7 +307,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     temp    = .false.
     wavcmp  = .false.
     wave    = .false.
-    waveol  = 0
+    waveol  = .false.
     wind    = .false.
     zmodel  = .false.
     sbkol   = .false.
@@ -333,7 +333,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     ! defined NMAX
     !
     iarray = 0
-    call prop_get(gdp%mdfile_ptr, '*', 'MNKmax', iarray, 3)
+    call prop_get_integers(gdp%mdfile_ptr, '*', 'MNKmax', iarray, 3)
     if (iarray(1) == 0 .or. iarray(2) == 0 .or. iarray(3) == 0) then
        error = .true.
        call prterr(lundia, 'P004', ' on reading grid dimensions')
@@ -414,7 +414,8 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
               filbch = 'TMP_' // fixid(1:lrid) // '.bch'
               inquire (file = filbch, exist = lexist)
               if (lexist) then
-                  open (newunit=luntmp, file = filbch, form = 'unformatted', status = 'old')
+                  luntmp = newlun(gdp)
+                  open (luntmp, file = filbch, form = 'unformatted', status = 'old')
                   read (luntmp) kc
                   close (luntmp)
               else
@@ -660,7 +661,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
     !             nonhyd = full
     !
     stringval = ' '
-    call prop_get(gdp%mdfile_ptr, '*', 'Nonhyd', stringval)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Nonhyd', stringval)
     if (stringval /= ' ') then
        call small(stringval,999)
        if (stringval == 'weak') then
@@ -670,7 +671,7 @@ subroutine dimrd(lunmd     ,lundia    ,error     ,runid     ,nrver     , &
           nonhyd   = .true.
           nh_level = nh_full
        else
-          call prop_get(gdp%mdfile_ptr, '*', 'Nonhyd', nonhyd)
+          call prop_get_logical(gdp%mdfile_ptr, '*', 'Nonhyd', nonhyd)
           if (nonhyd) then
              nh_level = nh_weak
              write(lundia,'(3a)') 'Keyword "Nonhyd" found in mdf-file with value ', trim(stringval), '. Interpreted as "ON: Weak formulation (Bijvelds)"'

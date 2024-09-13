@@ -2,7 +2,7 @@ subroutine rbsig(ncmax     ,ampbc     ,ombc      ,phibc     ,thetbc    , &
                & filrol    ,lundia    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine rbsig(ncmax     ,ampbc     ,ombc      ,phibc     ,thetbc    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rbsig.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute_roller/rbsig.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! The subroutine reads the input file 'wavcmp' which
@@ -133,7 +133,8 @@ subroutine rbsig(ncmax     ,ampbc     ,ombc      ,phibc     ,thetbc    , &
     !
     inquire (file = filrol(1:lfile), exist = ex)
     if (ex) then
-       open (newunit=uw, file = filrol(1:lfile), form = 'formatted',               &
+       uw = newlun(gdp)
+       open (uw, file = filrol(1:lfile), form = 'formatted',               &
            & status = 'old')
        write (lundia, *)
        write (lundia, '(a)') '*** Wave components input'

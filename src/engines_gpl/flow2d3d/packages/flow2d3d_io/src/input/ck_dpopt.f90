@@ -2,7 +2,7 @@ subroutine ck_dpopt(lundia    ,lsedtot   ,zmodel    ,bedupd    ,dpsopt    , &
                   & dpuopt    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine ck_dpopt(lundia    ,lsedtot   ,zmodel    ,bedupd    ,dpsopt    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: ck_dpopt.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/ck_dpopt.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! - Determines the value of DPSOPT and DPUOPT and
@@ -61,6 +61,7 @@ subroutine ck_dpopt(lundia    ,lsedtot   ,zmodel    ,bedupd    ,dpsopt    , &
     !
     character(6)   , pointer :: momsol
     logical        , pointer :: rst_dp
+    integer, pointer :: cutcell
 !
 ! Global variables
 !
@@ -74,6 +75,7 @@ subroutine ck_dpopt(lundia    ,lsedtot   ,zmodel    ,bedupd    ,dpsopt    , &
 !
 !! executable statements -------------------------------------------------------
 !
+    cutcell => gdp%gdimbound%cutcell
     momsol             => gdp%gdnumeco%momsol
     rst_dp             => gdp%gdrestart%rst_dp
     !
@@ -173,6 +175,12 @@ subroutine ck_dpopt(lundia    ,lsedtot   ,zmodel    ,bedupd    ,dpsopt    , &
     !
     ! dpsopt
     !
+    ! cut cell only compatible with depth at cell centers.
+    if (dpsopt /= 'DP'.and.cutcell>0) then
+       call prterr(lundia, 'U021', 'Depths have to be at cell centers if cutcell>0.')
+       call d3stop(1, gdp)          
+    endif
+!
     if (dpsopt == 'MIN_DPD' ) dpsopt = 'MIN'
     if (dpsopt == 'MAX_DPD' ) dpsopt = 'MAX'
     if (dpsopt == 'MEAN_DPD') dpsopt = 'MEAN'

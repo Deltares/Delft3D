@@ -1,10 +1,10 @@
 subroutine rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                & citdat    ,tstart    ,tstop     ,tzone     ,iitdat    , &
-               & julday    ,itstrt    ,itfinish  ,dt        ,tunit     , &
-               & gdp       )
+               & julday    ,itstrt    ,itfinish  ,dt        ,ctunit    , &
+               & rtunit    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdirt.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdirt.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Initialises global time parameters
@@ -42,7 +42,6 @@ subroutine rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
 !!--declarations----------------------------------------------------------------
     use precision
     use properties
-    use time_module
     !
     use globaldata
     !
@@ -54,7 +53,6 @@ subroutine rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     !
     integer , pointer :: itis
     logical , pointer :: dryrun
-    character(10), pointer :: tunitstr
 !
 ! Global variables
 !
@@ -67,11 +65,12 @@ subroutine rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                    :: nrrec    !!  Pointer to the record number in the MD-file
     logical      , intent(out) :: error    !!  Flag=TRUE if an error is encountered
     real(fp)                   :: dt       !  Description and declaration in esm_alloc_real.f90
-    real(fp)     , intent(out) :: tunit    !  Time scale for time parameters (sec)
+    real(fp)     , intent(out) :: rtunit   !!  Time scale for time parameters (sec)
     real(fp)                   :: tstart   !  Description and declaration in exttim.igs
     real(fp)                   :: tstop    !  Description and declaration in exttim.igs
     real(fp)     , intent(out) :: tzone    !  Description and declaration in exttim.igs
     character(*)               :: mdfrec   !!  Standard rec. length in MD-file (300)
+    character(1)               :: ctunit   !!  Time scale for time parameters, currently set to 'M'(inute - fixed).
     character(10)              :: citdat   !!  Reference date for the simulation times. Format: "YYYY-MM-DD"
 !
 ! Local variables
@@ -98,7 +97,7 @@ subroutine rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     logical                :: nodef  ! Flag set to YES if default value may NOT be applied in case var. read is empty (ier <= 0, or nrread < nlook) 
     real(fp)               :: rdef   ! Help var. containing default va- lue(s) for real variable 
     real(fp), dimension(1) :: rval   ! Help array (real) where the data, recently read from the MD-file, are stored temporarily 
-    character(1)           :: ctunit ! Help var for time scale
+    real(fp), dimension(5) :: scale  ! Array containing the time scale mul- tiplier (now only the 2-nd value = 60.0 is used) as TUNIT = 'M' (fixed) 
     character(10)          :: cdef   ! Default value when CVAR not found 
     character(100)         :: chulp  ! Help var. 
     character(3)           :: maand  ! Actual month of CITDAT 
@@ -108,12 +107,12 @@ subroutine rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     character(3)           :: sign   ! Sign of local time zone 
     !
     data month/'jan feb mar apr may jun jul aug sep oct nov dec '/
+    data scale/1.0, 60.0, 3600.0, 86400.0, 604800.0/
 !
 !! executable statements -------------------------------------------------------
 !
     itis   => gdp%gdrdpara%itis
     dryrun => gdp%gdtmpfil%dryrun
-    tunitstr => gdp%gdexttim%tunitstr
     !
     ! initialize local parameters
     !
@@ -265,7 +264,7 @@ subroutine rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
           !
           ! test if iitdat is a legal date: JULDAY = 0 not allowed
           !
-          julday = ymd2jul(iitdat)
+          call juldat(iitdat    ,julday    )
           if (julday == 0) then
              error = .true.
              call prterr(lundia    ,'V007'    ,keyw      )
@@ -279,26 +278,22 @@ subroutine rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! Time UNIT
     !
     ctunit = ' '
-    call prop_get(gdp%mdfile_ptr, '*', 'Tunit', ctunit)
-    if (ctunit == ' ') ctunit = 'M'
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Tunit', ctunit)
+    if (ctunit == ' ') then
+       ctunit = 'M'
+    endif
     if (ctunit == 'S') then
-       tunit = 1.0_fp
-       tunitstr = 's'
+       rtunit = scale(1)
     elseif (ctunit == 'M') then
-       tunit = 60.0_fp
-       tunitstr = 'min'
+    rtunit = scale(2)
     elseif (ctunit == 'H') then
-       tunit = 3600.0_fp
-       tunitstr = 'h'
+       rtunit = scale(3)
     elseif (ctunit == 'D') then
-       tunit = 86400.0_fp
-       tunitstr = 'day'
+       rtunit = scale(4)
     elseif (ctunit == 'W') then
-       tunit = 604800.0_fp
-       tunitstr = 'week'
+       rtunit = scale(5)
     else
        call prterr(lundia, 'V006', ' ')
-       tunitstr = 'UNKNOWN'
     endif
     !
     ! Time step, start time, stop time and time step for time-dependent
@@ -445,7 +440,7 @@ subroutine rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     ! Locate and read keyword 'DryRun', used for running without actual calculations
     !
     dryrun = .false.
-    call prop_get(gdp%mdfile_ptr, '*', 'DryRun', dryrun)
+    call prop_get_logical(gdp%mdfile_ptr, '*', 'DryRun', dryrun)
     if (dryrun) then
        call prterr(lundia, 'U190', 'DryRun switched on; running without actual calculations')
        write(*,'(a)') '*** WARNING: DryRun switched on; running without actual calculations'

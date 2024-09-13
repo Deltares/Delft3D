@@ -3,7 +3,7 @@ subroutine inimet(lundia    ,error     ,versio    ,wave      ,trasol    , &
                 & disctr    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine inimet(lundia    ,error     ,versio    ,wave      ,trasol    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: inimet.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/inimet.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! - Initialisation of numerical parameters which define the numerical methods.
@@ -131,7 +131,8 @@ subroutine inimet(lundia    ,error     ,versio    ,wave      ,trasol    , &
                 ! YES file, read input
                 !
                 if (ex) then
-                   open (newunit=lunmet, file = filusr(nfil)(:lfil), form = 'formatted',&
+                   lunmet = newlun(gdp)
+                   open (lunmet, file = filusr(nfil)(:lfil), form = 'formatted',&
                        & status = 'old')
                    !
                    ! Read numerical method

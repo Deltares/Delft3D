@@ -16,7 +16,7 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
                   & veul      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -40,8 +40,8 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_tratur.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/z_tratur.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Computes transport in the u, v and w-direction of the turbulent kinetic energy
@@ -351,9 +351,7 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     ! exchange rtur1 with neighbours for parallel runs
     !
     call dfexchg ( rtur1(:, :, 1), 1, kmax-1, dfloat, nm_pos, gdp )
-    if (ltur == 2) then
-       call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
-    endif
+    call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
     !
     ! advective transport
     !
@@ -387,9 +385,7 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     ! exchange rtur1 with neighbours for parallel runs
     !
     call dfexchg ( rtur1(:, :, 1), 1, kmax-1, dfloat, nm_pos, gdp )
-    if (ltur == 2) then
-       call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
-    endif
+    call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
     !
     do n = nmax, 1, -1
        do m = mmax, 1, -1
@@ -418,9 +414,7 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     ! exchange rtur1 with neighbours for parallel runs
     !
     call dfexchg ( rtur1(:, :, 1), 1, kmax-1, dfloat, nm_pos, gdp )
-    if (ltur == 2) then
-       call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
-    endif
+    call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
     !
     do n = 1, nmax, 1
        do m = mmax, 1, -1
@@ -449,9 +443,7 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     ! exchange rtur1 with neighbours for parallel runs
     !
     call dfexchg ( rtur1(:, :, 1), 1, kmax-1, dfloat, nm_pos, gdp )
-    if (ltur == 2) then
-       call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
-    endif
+    call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
     !
     do n = nmax, 1, -1
        do m = 1, mmax, 1
@@ -480,9 +472,7 @@ subroutine z_tratur(dischy    ,nubnd     ,j         ,nmmaxj    ,nmmax     , &
     ! exchange rtur1 with neighbours for parallel runs
     !
     call dfexchg ( rtur1(:, :, 1), 1, kmax-1, dfloat, nm_pos, gdp )
-    if (ltur == 2) then
-       call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
-    endif
+    call dfexchg ( rtur1(:, :, 2), 1, kmax-1, dfloat, nm_pos, gdp )
     !
     ! production term (only vertical gradients)
     !

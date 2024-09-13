@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$$
+!  $Id: dimens.igs 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/include/dimens.igs $$
 !-------------------------------------------------------------------------------
     type gd_dimens
 !
@@ -57,7 +57,7 @@
                              !  and Suspended Sediment)
        integer :: lstsc      !  Number of Constituents (Salinity, Temperature,
                              !  Suspended Sediment & Conservative Constituents)
-       integer :: lstsci     !  Total number of transporable quantities: all
+       integer :: lstsci     !  Total number of transportable quantities: all
                              !  constituents plus secondary flow intensity.
        integer :: lsal       !  Pointer for Salinity in array R1 for
                              !  constituents (if used, always 1)
@@ -91,7 +91,7 @@
        integer :: nfreqs     !  Number of angular frequency intervals for
                              !  inspecting roots of the TG equation (IWE)
        integer :: nlcest     !  Estimated number of computational rows and
-                             !  columns in IROCOL-table = 5 * max(NMAX,MMAX)
+                             !  columns in IROCOL-table = 7 * max(NMAX,MMAX)
        integer :: noroco     !  Number of computational rows & cols
        integer :: norow      !  Number of computational rows in IROCOL-array 
        integer :: nocol      !  Number of computational columns in IROCOL-array 

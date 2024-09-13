@@ -1,7 +1,7 @@
 subroutine postpr_hdt(nst, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine postpr_hdt(nst, gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: postpr_hdt.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/postpr_hdt.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: 
@@ -62,6 +62,7 @@ subroutine postpr_hdt(nst, gdp)
     character(256)                      , pointer :: runid   !!  Run identification code for the current simulation (used to determine the names of the in- /output files used by the system)
     character(256)                      , pointer :: trifil  !!  File name for TRISULA NEFIS output files (tri"h/m"-"casl""labl".dat/def)
     character(5)                        , pointer :: versio  !!  Version nr. of the current package
+    integer                             , pointer :: initi   ! Control parameter 
     integer                             , pointer :: iphisc  ! Current time counter for printing history data 
     integer                             , pointer :: itcomc  ! Current time counter for the communication file 
     integer                             , pointer :: itcur   ! Current time counter for the communication file, where starting point depend on CYCLIC 
@@ -74,7 +75,7 @@ subroutine postpr_hdt(nst, gdp)
     integer                             , pointer :: ntcur   ! Total number of timesteps on comm. file (to write to) 
     real(fp)                            , pointer :: dtsec   ! DT in seconds 
 !
-! Arguments
+! Call variables
 !
     integer                                       :: nst           ! Current time step counter 
 !
@@ -97,6 +98,7 @@ subroutine postpr_hdt(nst, gdp)
     runid               => gdp%runid
     trifil              => gdp%gdtricom%trifil
     versio              => gdp%gdtricom%versio
+    initi               => gdp%gdtricom%initi
     iphisc              => gdp%gdtricom%iphisc
     itcomc              => gdp%gdtricom%itcomc
     itcur               => gdp%gdtricom%itcur
@@ -117,7 +119,7 @@ subroutine postpr_hdt(nst, gdp)
     call timer_start(timer_postpr, gdp)
     call postpr(lundia    ,lunprt    ,error     ,versio    ,comfil    , &
               & trifil    ,runid     ,prsmap    ,prshis    ,selmap    , &
-              & selhis    ,rhow      ,grdang    ,dtsec     , &
+              & selhis    ,rhow      ,grdang    ,initi     ,dtsec     , &
               & nst+1     ,iphisc    ,npmap     ,itcomc    ,itimc     , &
               & itcur     ,ntcur     ,ithisc    ,itmapc    ,itdroc    , &
               & itrstc    ,ktemp     ,.true.    ,gdp       )

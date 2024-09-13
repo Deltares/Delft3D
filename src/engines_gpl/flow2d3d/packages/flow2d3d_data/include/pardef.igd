@@ -24,9 +24,10 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$$
+!  $Id: pardef.igd 5619 2015-11-28 14:35:04Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/include/pardef.igd $$
 !-------------------------------------------------------------------------------
+integer, parameter :: mxkmax =    100 ! Max. number of layers
 integer, parameter :: mxnsrc =   5000 ! Max. number of discharge points
 integer, parameter :: mxnto  =    500 ! Max. number of open boundaries
 integer, parameter :: mxkc   =    234 ! Max. number of frequencies for harmonic boundary conditions

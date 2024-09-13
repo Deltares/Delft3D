@@ -6,14 +6,14 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
                   & zmodel    ,namsrc    ,namcon    ,namsed    , &
                   & kcu       ,kcv       ,kcs       ,irocol    , &
                   & xcor      ,ycor      ,xz        ,yz        ,alfas     , &
-                  & dpd       ,thick     ,zk        ,sig       , &
+                  & dp        ,thick     ,zk        ,sig       , &
                   & dps       ,dpu       ,dpv       ,gsqs      ,wrifou    , &
                   & irequest  ,fds       ,iarrc     ,mf        ,ml        , &
                   & nf        ,nl        ,nostatto  ,nostatgl  ,order_sta , &
                   & ntruvto   ,ntruvgl   ,order_tra ,ipartition,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -37,8 +37,8 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrimap.f90 5846 2016-02-15 17:33:03Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrimap.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Writes the initial group 2 ('map-const') to
@@ -74,8 +74,6 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
     integer                         , pointer :: nfg
     integer                         , pointer :: nmaxgl
     integer                         , pointer :: mmaxgl
-    integer                         , pointer :: io_fp
-    integer                         , pointer :: io_prec
     integer       , dimension(:)    , pointer :: smlay
     logical                         , pointer :: densin
     character(20) , dimension(:)    , pointer :: namst
@@ -103,7 +101,7 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
     integer                                                                                         :: nsrc        !  Description and declaration in esm_alloc_int.f90
     integer                                                                                         :: ntruv       !  Description and declaration in dimens.igs
     integer , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: ipartition  !  Partition number
-    integer , dimension(5, noroco)                                                                  :: irocol      !  Description and declaration in esm_alloc_int.f90
+    integer , dimension(7, noroco)                                                                  :: irocol      !  Description and declaration in esm_alloc_int.f90
     integer , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: kcs         !  Description and declaration in esm_alloc_int.f90
     integer , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: kcu         !  Description and declaration in esm_alloc_int.f90
     integer , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: kcv         !  Description and declaration in esm_alloc_int.f90
@@ -116,7 +114,7 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
     real(fp)                                                                          , intent(in)  :: tunit       !  Description and declaration in exttim.igs
     real(fp)                                                                          , intent(in)  :: tzone       !  Description and declaration in exttim.igs
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: alfas       !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: dpd         !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: dp          !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                   , intent(in)  :: dps         !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: dpu         !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                     , intent(in)  :: dpv         !  Description and declaration in esm_alloc_real.f90
@@ -199,7 +197,6 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
     integer                                           :: iddim_lsedbl
     integer                                           :: iddim_2
     integer                                           :: iddim_4
-    integer                                           :: iddim_5
     integer                                           :: iddim_7
     integer                                           :: iddim_x
     !
@@ -221,10 +218,9 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
     integer        , dimension(:)       , allocatable :: smlay_restr   ! copy of smlay, excluding layer zero
     real(fp)       , dimension(:)       , allocatable :: rbuff1      ! local work array for gathering reals (1 dim)
     !
-    character(8)   , dimension(1)                     :: cdum8     ! Help array to write Nefis files 
-    character(16)  , dimension(1)                     :: layermode ! Help array to write LAYER_MODEL
-    character(16)  , dimension(1)                     :: cdum16    ! Help array to write Nefis files
-    character(21)  , dimension(1)                     :: cdum21    ! Help array to write Nefis files
+    character(8)   , dimension(1)                     :: cdum8     ! Help array to read/write Nefis files 
+    character(16)  , dimension(1)                     :: cdum16    ! Help array to read/write Nefis files
+    character(21)  , dimension(1)                     :: cdum21    ! Help array to read/write Nefis files
     character(20)  , dimension(:)       , allocatable :: csbuff2   ! work array for gathering names of stations (exc. duplicates)
     character(11)                                     :: epsgstring
     character(16)                                     :: grnam2    ! Data-group name defined for the NEFIS-files
@@ -233,6 +229,7 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
     character(64)                                     :: xcoordunit  ! Unit of X coordinate: M or DEGREES_EAST
     character(64)                                     :: ycoordname  ! Name of Y coordinate: PROJECTION_Y_COORDINATE or LATITUDE
     character(64)                                     :: ycoordunit  ! Unit of Y coordinate: M or DEGREES_NORTH
+    character(256)                                    :: string
 !
 ! Data statements
 !
@@ -240,21 +237,19 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
 !
 !! executable statements -------------------------------------------------------
 !
-    dearthrad      => gdp%gdconstd%dearthrad
+    dearthrad  => gdp%gdconstd%dearthrad
     !
-    mnit           => gdp%gdstations%mnit
-    mnstat         => gdp%gdstations%mnstat
-    io_fp          => gdp%gdpostpr%io_fp
-    io_prec        => gdp%gdpostpr%io_prec
-    smlay          => gdp%gdpostpr%smlay
-    namst          => gdp%gdstations%namst
-    namtra         => gdp%gdstations%namtra
-    ztbml          => gdp%gdzmodel%ztbml
-    rhow           => gdp%gdphysco%rhow
-    ag             => gdp%gdphysco%ag
-    lsal           => gdp%d%lsal
-    ltem           => gdp%d%ltem
-    densin         => gdp%gdmorpar%densin
+    mnit       => gdp%gdstations%mnit
+    mnstat     => gdp%gdstations%mnstat
+    smlay      => gdp%gdpostpr%smlay
+    namst      => gdp%gdstations%namst
+    namtra     => gdp%gdstations%namtra
+    ztbml      => gdp%gdzmodel%ztbml
+    rhow       => gdp%gdphysco%rhow
+    ag         => gdp%gdphysco%ag
+    lsal       => gdp%d%lsal
+    ltem       => gdp%d%ltem
+    densin     => gdp%gdmorpar%densin
     !
     ! Initialize local variables
     !
@@ -277,16 +272,6 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
     filetype = getfiletype(gdp, ifile)
     lsedbl  = lsedtot - lsed
     !
-    if (zmodel) then
-       if (ztbml) then
-          layermode(1) = 'Z-MODEL, ZTBML'
-       else
-          layermode(1) = 'Z-MODEL'
-       endif
-    else
-       layermode(1) = 'SIGMA-MODEL'
-    endif
-    !
     mfg    => gdp%gdparall%mfg
     nfg    => gdp%gdparall%nfg
     mmaxgl => gdp%gdparall%mmaxgl
@@ -299,7 +284,7 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
        if (sferic) then
           xcoordname = 'longitude'
           xcoordunit = 'degrees_east'
-          ycoordname = 'latitude'
+          ycoordname = 'laitude'
           ycoordunit = 'degrees_north'
        else
           xcoordname = 'projection_x_coordinate'
@@ -331,9 +316,9 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
        !
        if (lstsci  >0) iddim_lstsci = adddim(gdp, lundia, ifile, 'LSTSCI'            , lstsci  ) ! Number of constituents
        if (ltur    >0) iddim_ltur   = adddim(gdp, lundia, ifile, 'LTUR'              , ltur    ) ! Number of turbulence quantities
-       if (nostatgl>0) iddim_nostat = adddim(gdp, lundia, ifile, 'NOSTAT'            , nostatgl) ! Number of monitoring stations
+       if (nostat  >0) iddim_nostat = adddim(gdp, lundia, ifile, 'NOSTAT'            , nostatgl) ! Number of monitoring stations
        if (nsrc    >0) iddim_nsrc   = adddim(gdp, lundia, ifile, 'NSRC'              , nsrc    ) ! Number of discharges
-       if (ntruvgl >0) iddim_ntruv  = adddim(gdp, lundia, ifile, 'NTRUV'             , ntruvgl ) ! Number of monitoring cross-sections
+       if (ntruv   >0) iddim_ntruv  = adddim(gdp, lundia, ifile, 'NTRUV'             , ntruvgl ) ! Number of monitoring cross-sections
                        iddim_norow  = adddim(gdp, lundia, ifile, 'NOROW'             , norow   ) ! Number of rows for IROCOL table 
                        iddim_noroco = adddim(gdp, lundia, ifile, 'NOROCO'            , noroco  ) ! Number of columns of IROCOL table
        if (lsed    >0) iddim_lsed   = adddim(gdp, lundia, ifile, 'LSED'              , lsed    ) ! Number of sediment constituents
@@ -341,7 +326,6 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
        if (lsedbl  >0) iddim_lsedbl = adddim(gdp, lundia, ifile, 'LSEDBL'            , lsedbl  ) ! Number of bedload sediment fractions
                        iddim_2      = adddim(gdp, lundia, ifile, 'length_2'          , 2       )
                        iddim_4      = adddim(gdp, lundia, ifile, 'length_4'          , 4       )
-                       iddim_5      = adddim(gdp, lundia, ifile, 'length_5'          , 5       )
                        iddim_7      = adddim(gdp, lundia, ifile, 'length_7'          , 7       )
        !
        idatt_xyc  = addatt(gdp, lundia, ifile, 'coordinates','XCOR YCOR')
@@ -361,7 +345,7 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
        if (index(selmap(6:13), 'Y')/=0) lhlp = lhlp + lstsci
        if (index(selmap(14:15), 'Y')/=0) lhlp = lhlp + ltur
        lhlp = max(1, lhlp)
-       iddim_x      = adddim(gdp, lundia, ifile, 'length_x'          , lhlp    )
+                       iddim_x      = adddim(gdp, lundia, ifile, 'length_x'          , lhlp    )
        !
        if (lsedtot>0) then
           idatt_sigfc   = addatt(gdp, lundia, ifile, 'formula_terms', 'sigma: SIG_LYR eta: S1 depth: DPS')
@@ -376,9 +360,9 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
        !
        if (filetype == FTYPE_NEFIS) then ! for NEFIS only
           call addelm(gdp, lundia, ifile, grnam2, 'ITDATE', ' ', IO_INT4      , 1, dimids=(/iddim_2/), longname='Initial date (input) & time (default 00:00:00)', unit='[YYYYMMDD]')
-          call addelm(gdp, lundia, ifile, grnam2, 'TZONE', ' ', io_prec       , 0, longname='Local time zone', unit='h')
-          call addelm(gdp, lundia, ifile, grnam2, 'TUNIT', ' ', io_prec       , 0, longname='Time scale related to seconds', unit='s')
-          call addelm(gdp, lundia, ifile, grnam2, 'DT',    ' ', io_fp         , 0, longname='Time step (DT*TUNIT sec)')
+          call addelm(gdp, lundia, ifile, grnam2, 'TZONE', ' ', IO_REAL4      , 0, longname='Local time zone', unit='h')
+          call addelm(gdp, lundia, ifile, grnam2, 'TUNIT', ' ', IO_REAL4      , 0, longname='Time scale related to seconds', unit='s')
+          call addelm(gdp, lundia, ifile, grnam2, 'DT',    ' ', IO_REAL4      , 0, longname='Time step (DT*TUNIT sec)')
           call addelm(gdp, lundia, ifile, grnam2, 'SIMDAT', ' ', 16           , 0, longname='Simulation date and time [YYYYMMDD  HHMMSS]') !CHARACTER
           call addelm(gdp, lundia, ifile, grnam2, 'SELMAP', ' ', 21           , 0, longname='Selection flag for field values (2dH, 1dV & 2dV)') !CHARACTER
           call addelm(gdp, lundia, ifile, grnam2, 'NMAX', ' ', IO_INT4        , 0, longname='Number of N-grid points')
@@ -390,30 +374,26 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
           call addelm(gdp, lundia, ifile, grnam2, 'NOSTAT', ' ', IO_INT4      , 0, longname='Number of monitoring stations')
           call addelm(gdp, lundia, ifile, grnam2, 'NSRC', ' ', IO_INT4        , 0, longname='Number of discharge')
           call addelm(gdp, lundia, ifile, grnam2, 'NTRUV', ' ', IO_INT4       , 0, longname='Number of monitoring cross-sections')
-          call addelm(gdp, lundia, ifile, grnam2, 'GRDANG', ' ', io_prec      , 0, longname='Edge between y-axis and real north', unit='arc_degrees')
+          call addelm(gdp, lundia, ifile, grnam2, 'GRDANG', ' ', IO_REAL4     , 0, longname='Edge between y-axis and real north', unit='arc_degrees')
        endif
-       call addelm(gdp, lundia, ifile, grnam2, 'XCOR', xcoordname, io_fp   , 2, dimids=(/iddim_nc, iddim_mc/), longname='X-coordinate of grid points', unit=xcoordunit)
-       call addelm(gdp, lundia, ifile, grnam2, 'YCOR', ycoordname, io_fp   , 2, dimids=(/iddim_nc, iddim_mc/), longname='Y-coordinate of grid points', unit=ycoordunit)
-       call addelm(gdp, lundia, ifile, grnam2, 'XZ', xcoordname, io_fp     , 2, dimids=(/iddim_n , iddim_m /), longname='X-coordinate of cell centres', unit=xcoordunit)
-       call addelm(gdp, lundia, ifile, grnam2, 'YZ', ycoordname, io_fp     , 2, dimids=(/iddim_n , iddim_m /), longname='Y-coordinate of cell centres', unit=ycoordunit)
-       call addelm(gdp, lundia, ifile, grnam2, 'ALFAS', ' ', io_prec       , 2, dimids=(/iddim_n , iddim_m /), longname='Orientation ksi-axis w.r.t. pos.x-axis at water level point', unit='arc_degrees', acl='z')
+       call addelm(gdp, lundia, ifile, grnam2, 'XCOR', xcoordname, IO_REAL4, 2, dimids=(/iddim_nc, iddim_mc/), longname='X-coordinate of grid points', unit=xcoordunit) ! optionally double precision?
+       call addelm(gdp, lundia, ifile, grnam2, 'YCOR', ycoordname, IO_REAL4, 2, dimids=(/iddim_nc, iddim_mc/), longname='Y-coordinate of grid points', unit=ycoordunit) ! optionally double precision?
+       call addelm(gdp, lundia, ifile, grnam2, 'XZ', xcoordname, IO_REAL4  , 2, dimids=(/iddim_n , iddim_m /), longname='X-coordinate of cell centres', unit=xcoordunit) ! optionally double precision?
+       call addelm(gdp, lundia, ifile, grnam2, 'YZ', ycoordname, IO_REAL4  , 2, dimids=(/iddim_n , iddim_m /), longname='Y-coordinate of cell centres', unit=ycoordunit) ! optionally double precision?
+       call addelm(gdp, lundia, ifile, grnam2, 'ALFAS', ' ', IO_REAL4      , 2, dimids=(/iddim_n , iddim_m /), longname='Orientation ksi-axis w.r.t. pos.x-axis at water level point', unit='arc_degrees', acl='z')
        call addelm(gdp, lundia, ifile, grnam2, 'KCU', ' ', IO_INT4         , 2, dimids=(/iddim_n , iddim_mc/), longname='Mask array for U-velocity points', acl='u')
        call addelm(gdp, lundia, ifile, grnam2, 'KCV', ' ', IO_INT4         , 2, dimids=(/iddim_nc, iddim_m /), longname='Mask array for V-velocity points', acl='v')
        call addelm(gdp, lundia, ifile, grnam2, 'KCS', ' ', IO_INT4         , 2, dimids=(/iddim_n , iddim_m /), longname='Non-active/active water-level point', acl='z')
-       if (dpsopt == 'DP') then
-          call addelm(gdp, lundia, ifile, grnam2, 'DP0', ' ', io_prec         , 2, dimids=(/iddim_n, iddim_m/), longname='Initial bottom depth (positive down)', unit='m', acl='z')
-       else
-          call addelm(gdp, lundia, ifile, grnam2, 'DP0', ' ', io_prec         , 2, dimids=(/iddim_nc, iddim_mc/), longname='Initial bottom depth (positive down)', unit='m', acl='d')
-       endif
-       call addelm(gdp, lundia, ifile, grnam2, 'DPS0', ' ', io_prec        , 2, dimids=(/iddim_n , iddim_m /), longname='Initial bottom depth at zeta points (positive down)', unit='m', acl='z')
-       call addelm(gdp, lundia, ifile, grnam2, 'DPU0', ' ', io_prec        , 2, dimids=(/iddim_n , iddim_mc/), longname='Initial bottom depth at u points (positive down)', unit='m', acl='u')
-       call addelm(gdp, lundia, ifile, grnam2, 'DPV0', ' ', io_prec        , 2, dimids=(/iddim_nc, iddim_m /), longname='Initial bottom depth at v points (positive down)', unit='m', acl='v')
+       call addelm(gdp, lundia, ifile, grnam2, 'DP0', ' ', IO_REAL4        , 2, dimids=(/iddim_nc, iddim_mc/), longname='Initial bottom depth (positive down)', unit='m', acl='d')
+       call addelm(gdp, lundia, ifile, grnam2, 'DPS0', ' ', IO_REAL4       , 2, dimids=(/iddim_n , iddim_m /), longname='Initial bottom depth at zeta points (positive down)', unit='m', acl='z')
+       call addelm(gdp, lundia, ifile, grnam2, 'DPU0', ' ', IO_REAL4       , 2, dimids=(/iddim_n , iddim_mc/), longname='Initial bottom depth at u points (positive down)', unit='m', acl='u')
+       call addelm(gdp, lundia, ifile, grnam2, 'DPV0', ' ', IO_REAL4       , 2, dimids=(/iddim_nc, iddim_m /), longname='Initial bottom depth at v points (positive down)', unit='m', acl='v')
        if (filetype == FTYPE_NEFIS) then ! for NEFIS only
           call addelm(gdp, lundia, ifile, grnam2, 'DRYFLP', ' ', 8            , 0, longname='Criterium to calculate depth in zeta points') !CHARACTER
           call addelm(gdp, lundia, ifile, grnam2, 'NOROW', ' ', IO_INT4       , 0, longname='Number of rows for IROCOL table')
           call addelm(gdp, lundia, ifile, grnam2, 'NOROCO', ' ', IO_INT4      , 0, longname='Number of rows & columns of IROCOL table')
-          call addelm(gdp, lundia, ifile, grnam2, 'IROCOL', ' ', IO_INT4      , 2, dimids=(/iddim_5, iddim_noroco/), longname='Administration of zeta points')
-          call addelm(gdp, lundia, ifile, grnam2, 'THICK', ' ', io_prec       , 1, dimids=(/iddim_kmax/), longname='Fraction part of layer thickness of total water-height', unit='[ .01*% ]')
+          call addelm(gdp, lundia, ifile, grnam2, 'IROCOL', ' ', IO_INT4      , 2, dimids=(/iddim_7, iddim_noroco/), longname='Administration of zeta points')
+          call addelm(gdp, lundia, ifile, grnam2, 'THICK', ' ', IO_REAL4      , 1, dimids=(/iddim_kmax/), longname='Fraction part of layer thickness of total water-height', unit='[ .01*% ]')
           call addelm(gdp, lundia, ifile, grnam2, 'NAMCON', ' ', 20           , 1, dimids=(/iddim_x/), longname='Name of constituent & turbulent quantity') !CHARACTER
           if (nostatgl>0) then
              call addelm(gdp, lundia, ifile, grnam2, 'MNSTAT', ' ', IO_INT4   , 2, dimids=(/iddim_2, iddim_nostat/), longname='(M,N) indices of monitoring stations')
@@ -435,31 +415,21 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
           if (lsedtot>0) then
              call addelm(gdp, lundia, ifile, grnam2, 'NAMSED', ' ', 20         , 1, dimids=(/iddim_lsedtot/), longname='Name of sediment fraction') !CHARACTER
           endif
-       else
-          if (lstsci>0) then
-             call addelm(gdp, lundia, ifile, grnam2, 'NAMCON', ' ', 20           , 1, dimids=(/iddim_lstsci/), longname='Name of constituent quantity') !CHARACTER
-          endif
-          if (ltur>0) then
-             call addelm(gdp, lundia, ifile, grnam2, 'NAMTUR', ' ', 20           , 1, dimids=(/iddim_ltur/)  , longname='Name of turbulent quantity'  ) !CHARACTER
-          endif
        endif
        if (zmodel) then
           if (filetype /= FTYPE_NEFIS) then
-             call addelm(gdp, lundia, ifile, grnam2, 'ZK_LYR', ' ', io_prec    , 1, dimids=(/iddim_kmax/) , longname='Vertical coordinates of layer centres'   , unit='m', attribs=(/idatt_up/) )
+             call addelm(gdp, lundia, ifile, grnam2, 'ZK_LYR', ' ', IO_REAL4   , 1, dimids=(/iddim_kmax/) , longname='Vertical coordinates of layer centres'   , unit='m', attribs=(/idatt_up/) )
           endif
-          call addelm(gdp, lundia, ifile, grnam2, 'ZK', ' ', io_prec        , 1, dimids=(/iddim_kmax1/), longname='Vertical coordinates of layer interfaces', unit='m', attribs=(/idatt_up/) )
+          call addelm(gdp, lundia, ifile, grnam2, 'ZK', ' ', IO_REAL4       , 1, dimids=(/iddim_kmax1/), longname='Vertical coordinates of layer interfaces', unit='m', attribs=(/idatt_up/) )
        elseif (filetype /= FTYPE_NEFIS) then
-          call addelm(gdp, lundia, ifile, grnam2, 'SIG_LYR' , 'ocean_sigma_coordinate', io_prec        , 1, dimids=(/iddim_kmax/) , longname='Sigma coordinates of layer centres'   , attribs=(/idatt_sigfc/) )
-          call addelm(gdp, lundia, ifile, grnam2, 'SIG_INTF', 'ocean_sigma_coordinate', io_prec        , 1, dimids=(/iddim_kmax1/), longname='Sigma coordinates of layer interfaces', attribs=(/idatt_sigfi/) )
+          call addelm(gdp, lundia, ifile, grnam2, 'SIG_LYR' , 'ocean_sigma_coordinate', IO_REAL4       , 1, dimids=(/iddim_kmax/) , longname='Sigma coordinates of layer centres'   , attribs=(/idatt_sigfc/) )
+          call addelm(gdp, lundia, ifile, grnam2, 'SIG_INTF', 'ocean_sigma_coordinate', IO_REAL4       , 1, dimids=(/iddim_kmax1/), longname='Sigma coordinates of layer interfaces', attribs=(/idatt_sigfi/) )
        endif
        if (filetype == FTYPE_NEFIS) then ! for NEFIS only
           call addelm(gdp, lundia, ifile, grnam2, 'COORDINATES', ' ', 16       , 0, longname='Cartesian or Spherical coordinates') !CHARACTER
           call addelm(gdp, lundia, ifile, grnam2, 'LAYER_MODEL', ' ', 16       , 0, longname='Sigma-model or Z-model') !CHARACTER
-       elseif (filetype == FTYPE_NETCDF) then
-           ierror = nf90_put_att(fds, nf90_global,  'LAYER_MODEL', layermode(1));
-           call nc_check_err(lundia, ierror, "put_att global LAYER_MODEL", filename)
        endif
-       call addelm(gdp, lundia, ifile, grnam2, 'GSQS', ' ', io_prec         , 2, dimids=(/iddim_n, iddim_m/), longname='Horizontal area of computational cell', unit='m2', acl='z')
+       call addelm(gdp, lundia, ifile, grnam2, 'GSQS', ' ', IO_REAL4        , 2, dimids=(/iddim_n, iddim_m/), longname='Horizontal area of computational cell', unit='m2', acl='z')
        call addelm(gdp, lundia, ifile, grnam2, 'PPARTITION', ' ', IO_INT4   , 2, dimids=(/iddim_n, iddim_m/), longname='Partition', acl='z')
        if (filetype == FTYPE_NEFIS) then ! for NEFIS only
           call addelm(gdp, lundia, ifile, grnam2, 'OUTPUT_LAYERS', ' ', IO_INT4, 1, dimids=(/iddim_kmaxout/), longname='User selected output layers')
@@ -467,8 +437,8 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
           call addelm(gdp, lundia, ifile, grnam2, 'KMAXOUT', ' ', IO_INT4, 1, dimids=(/iddim_kmaxout/), longname='User selected output layer interfaces', attribs=(/idatt_cmpintf/) )
           call addelm(gdp, lundia, ifile, grnam2, 'KMAXOUT_RESTR', ' ', IO_INT4, 1, dimids=(/iddim_kmaxout_restr/), longname='User selected output layer centres', attribs=(/idatt_cmplyr/) )
        endif
-       call addelm(gdp, lundia, ifile, grnam2, 'RHOCONST', ' ', io_prec     , 0, longname='User specified constant density', unit='kg/m3')
-       call addelm(gdp, lundia, ifile, grnam2, 'GRAVITY', ' ', io_prec      , 0, longname='Gravitational acceleration', unit='m/s2')
+       call addelm(gdp, lundia, ifile, grnam2, 'RHOCONST', ' ', IO_REAL4    , 0, longname='User specified constant density', unit='kg/m3')
+       call addelm(gdp, lundia, ifile, grnam2, 'GRAVITY', ' ', IO_REAL4     , 0, longname='Gravitational acceleration', unit='m/s2')
        !
        if (filetype == FTYPE_NETCDF) then
           !
@@ -492,12 +462,12 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
           !ierror = nf90_def_var(fds, 'projected_coordinate_system', nf90_int, idvar_coordmap); call nc_check_err(lundia, ierror, "def_var coordinate mapping", filename)
           !if (sferic) then
           !    epsg       = 4326
-          !    epsgstring = 'EPSG:4326'
+          !    epsgstring = 'EPGS:4326'
           !    ierror = nf90_put_att(fds, idvar_coordmap, 'name',                        'WGS84'             ); call nc_check_err(lundia, ierror, "coordinate mapping put_att", filename)
           !    ierror = nf90_put_att(fds, idvar_coordmap, 'grid_mapping_name',           'latitude_longitude'); call nc_check_err(lundia, ierror, "coordinate mapping put_att", filename)
           !else
           !    epsg       = 28992
-          !    epsgstring = 'EPSG:28992'
+          !    epsgstring = 'EPGS:28992'
           !    ierror = nf90_put_att(fds, idvar_coordmap, 'name',                        'Unknown projected' ); call nc_check_err(lundia, ierror, "coordinate mapping put_att", filename)
           !    ierror = nf90_put_att(fds, idvar_coordmap, 'grid_mapping_name',           'Unknown projected' ); call nc_check_err(lundia, ierror, "coordinate mapping put_att", filename)
           !endif
@@ -694,7 +664,7 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
        else
           call wrtarray_nm(fds, filename, filetype, grnam2, 1, &
                         & nf, nl, mf, ml, iarrc, gdp, &
-                        & ierror, lundia, dpd, 'DP0')    
+                        & ierror, lundia, dp, 'DP0')    
        endif
        if (ierror/=0) goto 9999
        !
@@ -877,33 +847,6 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
                        & gdp, ierror, lundia, namsed, 'NAMSED')
              if (ierror/=0) goto 9999
           endif
-       else
-          !
-          ! element 'NAMCON'
-          !
-          if (lstsci>0) then
-             allocate(namhlp(lstsci), stat=istat)
-             do l = 1, lstsci
-                namhlp(l) = namcon(l)
-             enddo
-             call wrtvar(fds, filename, filetype, grnam2, 1, &
-                       & gdp, ierror, lundia, namhlp, 'NAMCON')
-             if (ierror/=0) goto 9999
-             deallocate(namhlp, stat=istat)
-          endif
-          !
-          ! element 'NAMTUR'
-          !
-          if (ltur>0) then
-             allocate(namhlp(ltur), stat=istat)
-             do l = 1, ltur
-                namhlp(l) = namcon(lstsci+l)
-             enddo
-             call wrtvar(fds, filename, filetype, grnam2, 1, &
-                       & gdp, ierror, lundia, namhlp, 'NAMTUR')
-             if (ierror/=0) goto 9999
-             deallocate(namhlp, stat=istat)
-          endif
        endif
        !
        ! element 'ZK'
@@ -947,14 +890,25 @@ subroutine wrimap(lundia      ,error     ,filename  ,selmap    ,simdat    , &
           else
              cdum16(1) = 'CARTESIAN'
           endif
+          string = cdum16(1)
           call wrtvar(fds, filename, filetype, grnam2, 1, &
                    & gdp, ierror, lundia, cdum16, 'COORDINATES')
           if (ierror/=0) goto 9999
           !
           ! element 'LAYER_MODEL'
           !
+          if (zmodel) then
+             if (ztbml) then
+                cdum16(1) = 'Z-MODEL, ZTBML'
+             else
+                cdum16(1) = 'Z-MODEL'
+             endif
+          else
+             cdum16(1) = 'SIGMA-MODEL'
+          endif
+          string = cdum16(1)
           call wrtvar(fds, filename, filetype, grnam2, 1, &
-                   & gdp, ierror, lundia, layermode, 'LAYER_MODEL')
+                   & gdp, ierror, lundia, cdum16, 'LAYER_MODEL')
           if (ierror/=0) goto 9999
        endif
        !

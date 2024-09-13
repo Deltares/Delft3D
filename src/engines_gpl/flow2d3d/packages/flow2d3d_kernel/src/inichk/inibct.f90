@@ -4,7 +4,7 @@ subroutine inibct(lundia    ,error     ,runid     , &
                 & hydrbc    ,bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine inibct(lundia    ,error     ,runid     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: inibct.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/inibct.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Reads the time dependent data from file for the
@@ -99,10 +99,10 @@ subroutine inibct(lundia    ,error     ,runid     , &
     character(20)                            :: cntent ! String with <contence> input
     character(20)                            :: namhlp
     character(256)                           :: filnam ! Help var. for file name 
-    character(36)  , dimension(1 + 2*kmax)   :: parnam ! Number of parameter records in time dependent direct access files for BCT 
+    character(36)  , dimension(1 + 2*mxkmax) :: parnam ! Number of parameter records in time dependent direct access files for BCT 
     character(36)  , dimension(6)            :: defpar ! Default parameter 
     character(6)                             :: typtst ! Data string to test type of boundary 
-    character(kmax*24*2 + 48)                :: record ! Record for BCT file 
+    character(5000)                          :: record ! Record for BCT file 
     !
     data typtst/'ZCQRTN'/
 !
@@ -132,7 +132,8 @@ subroutine inibct(lundia    ,error     ,runid     , &
     !
     inquire (file = filnam(:8 + lrid), opened = opend)
     if (.not.opend) then
-       open (newunit=lunbct, file = filnam(:8 + lrid), form = 'formatted',              &
+       lunbct = newlun(gdp)
+       open (lunbct, file = filnam(:8 + lrid), form = 'formatted',              &
             & status = 'old')
        read (lunbct, '(a1,i5)', iostat = iocond) dumchr, lrec
        !
@@ -154,7 +155,7 @@ subroutine inibct(lundia    ,error     ,runid     , &
           !
           ! file not open as direct access!
           !
-          open (newunit=lunbct, file = filnam(:8 + lrid), form = 'formatted')
+          open (lunbct, file = filnam(:8 + lrid), form = 'formatted')
    10     continue
           irecrd = irecrd + 1
           read (lunbct, '(a)', end=20) record(:lrec - 1)
@@ -182,7 +183,7 @@ subroutine inibct(lundia    ,error     ,runid     , &
        !
        ! Open file as direct access
        !
-       open (newunit=lunbct, file = filnam(:8 + lrid), form = 'formatted',              &
+       open (lunbct, file = filnam(:8 + lrid), form = 'formatted',              &
             & access = 'direct', recl = lrec)
        !
        ! Initialize ITBCT array

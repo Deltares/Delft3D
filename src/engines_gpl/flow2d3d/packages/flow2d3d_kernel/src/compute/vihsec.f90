@@ -5,7 +5,7 @@ subroutine vihsec(u         ,v         ,guu       ,gvu       ,gvv       , &
                 & rxx       ,rxy       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,8 +29,8 @@ subroutine vihsec(u         ,v         ,guu       ,gvu       ,gvv       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: vihsec.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/vihsec.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes the horizontal stresses RXX, RXY and RYY
@@ -55,6 +55,7 @@ subroutine vihsec(u         ,v         ,guu       ,gvu       ,gvv       , &
     real(fp)               , pointer :: ag
     real(fp)               , pointer :: vonkar
     real(fp)               , pointer :: chzmin
+    integer, pointer :: cutcell
 !
 ! Global variables
 !
@@ -113,7 +114,8 @@ subroutine vihsec(u         ,v         ,guu       ,gvu       ,gvv       , &
     real(fp)                       :: alpha
     real(fp)                       :: beta
     real(fp)                       :: betast
-    real(fp)                       :: czosg                ! Chezy/sqrt(ag) coefficient at zeta point 
+    real(fp)                       :: chezy                ! Chezy coefficient at zeta point 
+    real(fp)                       :: chezyr
     real(fp)                       :: dgdx
     real(fp)                       :: dgdy
     real(fp)                       :: dgdyl
@@ -127,6 +129,7 @@ subroutine vihsec(u         ,v         ,guu       ,gvu       ,gvv       , &
 !
 !! executable statements -------------------------------------------------------
 !
+    cutcell => gdp%gdimbound%cutcell
     !
     !
     chzmin   => gdp%gdnumeco%chzmin
@@ -157,11 +160,17 @@ subroutine vihsec(u         ,v         ,guu       ,gvu       ,gvv       , &
        kenm = kfu(nm) + kfu(nmd)
        if (kenm==2) then
           uuu = 0.5*(u(nm, k) + u(nmd, k))
-          vvv = 0.5*(v(nm, k) + v(ndm, k))
+!         not sure this if is needed. if zero velocity likely that the cell is inactive since ghost points areon here
+          if ( cutcell>0) then
+            kenmv  = max(kfv(nm) + kfv(ndm),1)
+            vvv    = (v(nm, k)*kfv(nm) + v(ndm, k)*kfv(ndm))/kenmv
+          else
+            vvv    = 0.5_fp*(v(nm, k) + v(ndm, k))
+          endif
           umod = max(1.E-8_fp, sqrt(uuu*uuu + vvv*vvv))
-          czosg = 0.5*(cfurou(nm, 1) + cfurou(nmd, 1))
-          czosg = max(czosg, chzmin/sqrt(ag))
-          alpha = 1.0_fp/(vonkar*czosg)
+          chezy = 0.5*(cfurou(nm, 1) + cfurou(nmd, 1))
+          chezyr = max(chezy, chzmin)
+          alpha = sqrt(ag)/(vonkar*chezyr)
           betast = betac*(5.0*alpha - 15.6*alpha*alpha + 37.5*alpha*alpha*alpha)
           beta = betast*r0(nm, k, lsecfl)/umod
           !
@@ -189,10 +198,10 @@ subroutine vihsec(u         ,v         ,guu       ,gvu       ,gvv       , &
           if (kenmu>0) uuu = (kfu(nm)*u(nm, k) + kfu(num)*u(num, k))/kenmu
           if (kenmv>0) vvv = (kfv(nm)*v(nm, k) + kfv(nmu)*v(nmu, k))/kenmv
           umod = max(1.E-8_fp, sqrt(uuu*uuu + vvv*vvv))
-          czosg = (kfu(nm)*cfurou(nm, 1) + kfu(num)*cfurou(num, 1) + kfv(nm)    &
+          chezy = (kfu(nm)*cfurou(nm, 1) + kfu(num)*cfurou(num, 1) + kfv(nm)    &
                 & *cfvrou(nm, 1) + kfv(nmu)*cfvrou(nmu, 1))/(kenmu + kenmv)
-          czosg = max(czosg, chzmin/sqrt(ag))
-          alpha = 1.0_fp/(vonkar*czosg)
+          chezyr = max(chezy, chzmin)
+          alpha = sqrt(ag)/(vonkar*chezyr)
           betast = betac*(5.0*alpha - 15.6*alpha*alpha + 37.5*alpha*alpha*alpha)
           rsecfl = (kfu(nm)*(r0(nm, k, lsecfl) + r0(nmu, k, lsecfl)) + kfu(num) &
                  & *(r0(num, k, lsecfl) + r0(numu, k, lsecfl)) + kfv(nm)        &

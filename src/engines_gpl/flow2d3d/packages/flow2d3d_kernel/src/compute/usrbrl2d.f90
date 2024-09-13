@@ -5,7 +5,7 @@ subroutine usrbrl2d(icx       ,icy       ,nmmax     ,kmax      ,kfu       , &
                   & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,8 +29,8 @@ subroutine usrbrl2d(icx       ,icy       ,nmmax     ,kmax      ,kfu       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: usrbrl2d.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/usrbrl2d.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! The routine adds additional energy losses due to 2D  hydraulic structures.
@@ -95,7 +95,6 @@ subroutine usrbrl2d(icx       ,icy       ,nmmax     ,kmax      ,kfu       , &
     integer      :: nm     ! Loop counter over NMMAX 
     integer      :: nmu    ! NM+ICX 
     real(fp)     :: avolk  ! help constant in computation of qvolk
-    real(fp)     :: absvbov! absolute value of vbov
     real(fp)     :: d1     ! Distance between crest and downstream depth 
     real(fp)     :: dd     ! Downstream depth 
     real(fp)     :: dte0   ! Local backup of DTEU value 
@@ -210,10 +209,9 @@ subroutine usrbrl2d(icx       ,icy       ,nmmax     ,kmax      ,kfu       , &
           !
           dteu(nm) = (1.0_fp - thetaw)*dteu(nm) + thetaw*dte0
           if (toest=='volk') vbov = qvolk/max(hu(nm), 1E-6_fp)
-          absvbov = abs(vbov)
-          if (absvbov>eps) then
+          if (vbov>eps) then
              do k = 1, kmax
-                bbk(nm, k) = bbk(nm, k) + (ag*dteu(nm)/absvbov)*ubrlsu(nm, k)      &
+                bbk(nm, k) = bbk(nm, k) + (ag*dteu(nm)/vbov)*ubrlsu(nm, k)      &
                            & /(gvu(nm)*thick(k))
              enddo
           endif

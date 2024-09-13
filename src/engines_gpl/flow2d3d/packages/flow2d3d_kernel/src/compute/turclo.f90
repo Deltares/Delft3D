@@ -8,7 +8,7 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                 & dvdz      ,ueul      ,veul      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -32,8 +32,8 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: turclo.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/turclo.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes eddy viscosity and eddy diffusivity.
@@ -75,6 +75,9 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
     real(fp)               , pointer :: zwi
     real(fp)               , pointer :: ck
     integer                , pointer :: inpzw
+    logical, pointer :: HORIZdiffZERO
+    integer, pointer :: cutcell
+    logical, pointer :: periodSURFACE
 !
 ! Global variables
 !
@@ -148,6 +151,10 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
     real(fp) :: ustwin
     real(fp) :: ustwkw
     real(fp) :: uuu
+    real(fp) :: uAV !weighted average of edge u velocities
+    real(fp) :: vAV !weighted average of edge v velocities
+    real(fp) :: dudzAV !weighted average of edge dudz  
+    real(fp) :: dvdzAV !weighted average of edge dvdz  
     real(fp) :: zw
     real(fp) :: zwc
     integer  :: nm_pos ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
@@ -156,6 +163,9 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
 !
 !! executable statements -------------------------------------------------------
 !
+    HORIZdiffZERO => gdp%gdimbound%HORIZdiffZERO
+    cutcell       => gdp%gdimbound%cutcell
+    periodSURFACE => gdp%gdimbound%periodSURFACE
     cmukl       => gdp%gdturcoe%cmukl
     cmukep      => gdp%gdturcoe%cmukep
     zwi         => gdp%gdturcoe%zwi
@@ -267,8 +277,14 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                 else
                    maskval = kcs(nm)
                 endif
-                shear = maskval*0.5*(dudz(nm, k)**2 + dudz(nmd, k)              &
-                      & **2 + dvdz(nm, k)**2 + dvdz(ndm, k)**2)
+                if (cutcell>0) then
+                   dudzAV = (kfu(nm)*dudz(nm, k) + kfu(nmd)*dudz(nmd, k))/max(1,kfu(nm) + kfu(nmd))
+                   dvdzAV = (kfv(nm)*dvdz(nm, k) + kfv(ndm)*dvdz(ndm, k))/max(1,kfv(nm) + kfv(ndm))
+                   shear = (dudzAV**2 + dvdzAV**2)  !I removed maskval. Check if ok for kcs==3. It was computing double vertical viscosity at kcs(nm)=2. then in cucnp and in uzd viz1 and viz2 were computed with average of a correct value (kcs=1) and a double one (kcs=2)
+                else
+                   shear = maskval*0.5*(dudz(nm, k)**2 + dudz(nmd, k)              &
+                         & **2 + dvdz(nm, k)**2 + dvdz(ndm, k)**2)
+                endif
                 if (shear<1E-8) shear = 1E-8
                 bruvai(nm, k) = -ag*drhodz/rho(nm, k)
                 rich(nm, k) = bruvai(nm, k)/shear
@@ -295,13 +311,21 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                    else
                       maskval = kcs(nm)
                    endif
-                   uuu = 0.5*maskval*sqrt(  (ueul(nm, k) + ueul(nmd, k))**2         &
-                       &                  + (veul(nm, k) + veul(ndm, k))**2 )
+                   if (cutcell>0) then
+                      uAV = (kfu(nm)*ueul(nm, k) + kfu(nmd)*ueul(nmd, k))/max(1,kfu(nm) + kfu(nmd))
+                      vAV = (kfv(nm)*veul(nm, k) + kfv(ndm)*veul(ndm, k))/max(1,kfv(nm) + kfv(ndm))
+                      uuu = sqrt( uAV**2 + vAV**2 )  !I removed maskval. Check if ok for kcs==3. It was computing double vertical viscosity at kcs(nm)=2. then in cucnp and in uzd viz1 and viz2 were computed with average of a correct value (kcs=1) and a double one (kcs=2)
+                   else
+                      uuu = 0.5*maskval*sqrt(  (ueul(nm, k) + ueul(nmd, k))**2         &
+                          &                  + (veul(nm, k) + veul(ndm, k))**2 )
+                   endif
+
                    !
                    ! bottom is assumed at Z0
                    !
                    rz = 1.0 + (1. + sig(k))*h0/dicww(nm, kmax)
                    vicww(nm, kmax) = vicww(nm, kmax) + uuu*vonkar/(log(rz)*kmax)
+                 !  if (nm==4955.or.nm==4955+icx)  write(1414141,'(2i9,4f25.15)') nm,k,rz,uuu,uuu*vonkar/(log(rz)*kmax),vicww(nm, kmax)
                 endif
              enddo
           enddo
@@ -319,8 +343,14 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                 else
                    maskval = kcs(nm)
                 endif
-                uuu = 0.5*maskval*sqrt(  (ueul(nm, kmax) + ueul(nmd, kmax))**2     &
-                    &                  + (veul(nm, kmax) + veul(ndm, kmax))**2 )
+                if (cutcell>0) then
+                   uAV = (kfu(nm)*ueul(nm, kmax) + kfu(nmd)*ueul(nmd, kmax))/max(1,kfu(nm) + kfu(nmd))
+                   vAV = (kfv(nm)*veul(nm, kmax) + kfv(ndm)*veul(ndm, kmax))/max(1,kfv(nm) + kfv(ndm))
+                   uuu = sqrt( uAV**2 + vAV**2 )  !I removed maskval. Check if ok for kcs==3. It was computing double vertical viscosity at kcs(nm)=2. then in cucnp and in uzd viz1 and viz2 were computed with average of a correct value (kcs=1) and a double one (kcs=2)
+                else
+                   uuu = 0.5*maskval*sqrt(  (ueul(nm, kmax) + ueul(nmd, kmax))**2     &
+                       &                  + (veul(nm, kmax) + veul(ndm, kmax))**2 )
+                endif
                 !
                 ! bottom is assumed at Z0
                 !
@@ -379,8 +409,14 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                    else
                       maskval = kcs(nm)
                    endif
-                   shear = 0.5*maskval*(dudz(nm, k)**2 + dudz(nmd, k)           &
-                         & **2 + dvdz(nm, k)**2 + dvdz(ndm, k)**2)
+                   if (cutcell>0) then
+                      dudzAV = (kfu(nm)*dudz(nm, k) + kfu(nmd)*dudz(nmd, k))/max(1,kfu(nm) + kfu(nmd))
+                      dvdzAV = (kfv(nm)*dvdz(nm, k) + kfv(ndm)*dvdz(ndm, k))/max(1,kfv(nm) + kfv(ndm))
+                      shear = (dudzAV**2 + dvdzAV**2)  !I removed maskval. Check if ok for kcs==3. It was computing double vertical viscosity at kcs(nm)=2. then in cucnp and in uzd viz1 and viz2 were computed with average of a correct value (kcs=1) and a double one (kcs=2)
+                   else
+                      shear = 0.5*maskval*(dudz(nm, k)**2 + dudz(nmd, k)           &
+                            & **2 + dvdz(nm, k)**2 + dvdz(ndm, k)**2)
+                   endif
                    shear = max(epsd, shear)
                    vicww(nm, k) = max(vicww(nm, k), rl*rl*sqrt(shear))
                    dicww(nm, k) = vicww(nm, k)/fs
@@ -481,8 +517,14 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
              else
                 maskval = kcs(nm)
              endif
-             uuu = 0.5*maskval*sqrt(  (ueul(nm, kmax) + ueul(nmd, kmax))**2      &
-                 &                  + (veul(nm, kmax) + veul(ndm, kmax))**2 )
+             if (cutcell>0) then
+                uAV = (kfu(nm)*ueul(nm, kmax) + kfu(nmd)*ueul(nmd, kmax))/max(1,kfu(nm) + kfu(nmd))
+                vAV = (kfv(nm)*veul(nm, kmax) + kfv(ndm)*veul(ndm, kmax))/max(1,kfv(nm) + kfv(ndm))
+                uuu = sqrt( uAV**2 + vAV**2 )  !I removed maskval. Check if ok for kcs==3. It was computing double vertical viscosity at kcs(nm)=2. then in cucnp and in uzd viz1 and viz2 were computed with average of a correct value (kcs=1) and a double one (kcs=2)
+             else
+                uuu = 0.5*maskval*sqrt(  (ueul(nm, kmax) + ueul(nmd, kmax))**2      &
+                    &                  + (veul(nm, kmax) + veul(ndm, kmax))**2 )
+             endif
              rz = 1.0 + (1. + sig(kmax))*h0/dicww(nm, kmax)
              ustbot = abs(uuu)*vonkar/log(rz)
              vicww(nm, kmax) = vonkar*ustbot*dicww(nm, kmax)
@@ -534,9 +576,12 @@ subroutine turclo(j         ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
                           & + vicuv(nm, kbg) + vicuv(nm, khtur)
              dicuv(nm, k) = 0.5 * (dicww(nm, k) + dicww(nm, k-1)) &
                           & + dicuv(nm, kbg) + dicuv(nm, khtur)
+             if (HORIZdiffZERO) dicuv(nm, k) = 0._fp !HORIZviscZERO is used in uzd instead (after HLES viscosity is added)
           endif
        enddo
     enddo
+    !
+    if (periodSURFACE) call perVISCdiff(vicww,dicww,gdp%d%nlb,gdp%d%nub,gdp%d%mlb,gdp%d%mub,kmax, gdp)
     !
  2000 continue
 end subroutine turclo

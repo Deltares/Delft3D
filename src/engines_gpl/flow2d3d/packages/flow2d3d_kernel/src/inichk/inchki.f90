@@ -1,12 +1,12 @@
 subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
                 & dx        ,dy        ,anglat    ,anglon    ,grdang    , &
-                & tgfcmp    ,riglid    ,keva      , &
+                & tgfcmp    ,riglid    , &
                 & temeqs    ,saleqs    ,ktemp     ,fclou     , &
                 & sarea     ,roumet    ,rouflo    ,restid    , &
                 & lturi     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +30,8 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: inchki.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/inchki.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Initialises and checks various params. and arrays
@@ -58,6 +58,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     integer(pntrsize)      , pointer :: cfurou
     integer(pntrsize)      , pointer :: cfvrou
     integer(pntrsize)      , pointer :: dicuv
+    integer(pntrsize)      , pointer :: dp
     integer(pntrsize)      , pointer :: fcorio
     integer(pntrsize)      , pointer :: gsqd
     integer(pntrsize)      , pointer :: gsqs
@@ -158,12 +159,13 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     logical                , pointer :: fltd
     logical                , pointer :: solrad_read
     logical                , pointer :: swrf_file
+    logical                , pointer :: cstbnd
     character(256)         , pointer :: flbdfh
     real(fp), dimension(:) , pointer :: duneheight
+    logical, pointer :: periodSURFACE
 !
 ! Global variables
 !
-    integer       :: keva   !  Description and declaration in tricom.igs
     integer       :: ktemp  !  Description and declaration in tricom.igs
     integer       :: lturi  !  Description and declaration in tricom.igs
     integer       :: lundia !  Description and declaration in inout.igs
@@ -222,6 +224,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
 !
 !! executable statements -------------------------------------------------------
 !
+    periodSURFACE => gdp%gdimbound%periodSURFACE
     nmax        => gdp%d%nmax
     mmax        => gdp%d%mmax
     ddbound     => gdp%d%ddbound
@@ -276,6 +279,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     cfurou      => gdp%gdr_i_ch%cfurou
     cfvrou      => gdp%gdr_i_ch%cfvrou
     dicuv       => gdp%gdr_i_ch%dicuv
+    dp          => gdp%gdr_i_ch%dp
     fcorio      => gdp%gdr_i_ch%fcorio
     gsqd        => gdp%gdr_i_ch%gsqd
     gsqs        => gdp%gdr_i_ch%gsqs
@@ -329,6 +333,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     duneheight  => gdp%gdbedformpar%duneheight
     solrad_read => gdp%gdheat%solrad_read
     swrf_file   => gdp%gdheat%swrf_file
+    cstbnd      => gdp%gdnumeco%cstbnd
     !
     icx     = 0
     icy     = 0
@@ -389,6 +394,8 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
              & i(kcu)    ,i(kcv)    ,i(kcs)    ,gdp       )
     if (error) goto 9999
     !
+    call griddims_admin( i(kcs), gdp )
+    !
     ! check important geometry parameters and
     ! redefine THICK array and initialize SIG
     !
@@ -413,7 +420,8 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
               & i(kcs + iofset)      ,r(guu)               ,r(gvv)               ,gdp       )
     if (error) goto 9999
     !
-    call griddims_admin( i(kcs), r(xz), r(yz), r(xcor), r(ycor),  gdp )
+    if(cstbnd.or.periodSURFACE) call guu0gvv0(r(guu)     ,r(gvv)    ,mmax      ,nmax      ,nmaxus, &
+                           & i(kcs)     ,gdp)
     !
     ! DFUPDGEO: exchange geometrical information as computed in routine inigeo with neighbours in case of parallel runs
     !
@@ -546,10 +554,5 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
        call mirror_bnd(1       ,gdp%d%nub-gdp%d%nlb+1,gdp%d%nmmax     , &
                      & i(kcs)  ,duneheight           ,gdp%d%nmlb      ,gdp%d%nmub      )
     endif
-    !
-    ! Allocate and initialize arrays for output of heatfluxes
-    !
-    call init_out_heatfluxes(lundia, ktemp, keva, nostat, gdp)
-    !
  9999 continue
 end subroutine inchki

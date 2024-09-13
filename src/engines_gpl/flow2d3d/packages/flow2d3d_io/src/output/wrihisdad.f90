@@ -3,7 +3,7 @@ subroutine wrihisdad(lundia    ,error     ,filename  ,itdate    , &
                    & fds       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine wrihisdad(lundia    ,error     ,filename  ,itdate    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrihisdad.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrihisdad.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Writes the initial Dredge and Dump group to HIS-DAT
@@ -57,7 +57,6 @@ subroutine wrihisdad(lundia    ,error     ,filename  ,itdate    , &
     integer       , dimension(:,:) , pointer :: link_def
     character( 80), dimension(:)   , pointer :: dredge_areas
     character( 80), dimension(:)   , pointer :: dump_areas
-    integer                        , pointer :: io_prec
 !
 ! Global variables
 !
@@ -105,7 +104,6 @@ subroutine wrihisdad(lundia    ,error     ,filename  ,itdate    , &
     link_def          => gdp%gddredge%link_def
     dredge_areas      => gdp%gddredge%dredge_areas
     dump_areas        => gdp%gddredge%dump_areas
-    io_prec           => gdp%gdpostpr%io_prec
     !
     ! Initialize local variables
     !
@@ -124,14 +122,14 @@ subroutine wrihisdad(lundia    ,error     ,filename  ,itdate    , &
        !
        if (filetype /= FTYPE_NETCDF) then ! don't store duplicates for NetCDF       
           call addelm(gdp, lundia, FILOUT_HIS, grnam, 'ITDATE', ' ', IO_INT4           , 1, dimids=(/iddim_2/), longname='Initial date (input) & time (default 00:00:00)', unit='[YYYYMMDD]')
-          call addelm(gdp, lundia, FILOUT_HIS, grnam, 'TUNIT', ' ', io_prec            , 0, longname='Time scale related to seconds', unit='s')
-          call addelm(gdp, lundia, FILOUT_HIS, grnam, 'DT', ' ', io_prec               , 0, longname='Time step (DT*TUNIT sec)')
+          call addelm(gdp, lundia, FILOUT_HIS, grnam, 'TUNIT', ' ', IO_REAL4           , 0, longname='Time scale related to seconds', unit='s')
+          call addelm(gdp, lundia, FILOUT_HIS, grnam, 'DT', ' ', IO_REAL4              , 0, longname='Time step (DT*TUNIT sec)')
        endif
        call addelm(gdp, lundia, FILOUT_HIS, grnam, 'DREDGE_AREAS', ' ', 80          , 1, dimids=(/iddim_nsource/), longname='Names identifying dredge areas/dredge polygons') !CHARACTER
        call addelm(gdp, lundia, FILOUT_HIS, grnam, 'DUMP_AREAS', ' ', 80            , 1, dimids=(/iddim_ndump/), longname='Names identifying dump areas/dump polygons') !CHARACTER
        call addelm(gdp, lundia, FILOUT_HIS, grnam, 'LINK_DEF', ' ', IO_INT4         , 2, dimids=(/iddim_nalink, iddim_2/), longname='Actual transports from dredge(1st col) to dump(2nd col) areas')
-       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'LINK_PERCENTAGES', ' ', io_prec , 2, dimids=(/iddim_nalink, iddim_lsedtot/), longname='Distribution of dredged material from dredge to dump areas', unit='percent')
-       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'LINK_DISTANCE', ' ', io_prec    , 2, dimids=(/iddim_nalink, iddim_1/), longname='Link Distance between dredge and dump areas', unit='m')
+       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'LINK_PERCENTAGES', ' ', IO_REAL4, 2, dimids=(/iddim_nalink, iddim_lsedtot/), longname='Distribution of dredged material from dredge to dump areas', unit='percent')
+       call addelm(gdp, lundia, FILOUT_HIS, grnam, 'LINK_DISTANCE', ' ', IO_REAL4   , 2, dimids=(/iddim_nalink, iddim_1/), longname='Link Distance between dredge and dump areas', unit='m')
        !
     case (REQUESTTYPE_WRITE)
        !

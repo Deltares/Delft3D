@@ -2,7 +2,7 @@ subroutine inigrd(lundia    ,error     ,runid     ,nmax      ,mmax      , &
                 & nmaxus    ,icom      ,ipx       ,ipy       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine inigrd(lundia    ,error     ,runid     ,nmax      ,mmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: inigrd.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/inigrd.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads the computational grid enclosure file
@@ -131,6 +131,7 @@ subroutine inigrd(lundia    ,error     ,runid     ,nmax      ,mmax      , &
     !
     ! open unformatted scratch file for grid (see rdgrid)
     !
+    lungrd = newlun(gdp)
     filnam = 'TMP_' // fixid(1:lrid) // '.grd'
     !
     ! append node number to file name in case of parallel computing within single-domain case
@@ -141,7 +142,7 @@ subroutine inigrd(lundia    ,error     ,runid     ,nmax      ,mmax      , &
        write(filnam(8+lrid+1:8+lrid+linod),'(a,i3.3)') '-', inode
     endif
     !
-    open (newunit=lungrd, file = filnam(:8 + lrid+linod),                      &
+    open (lungrd, file = filnam(:8 + lrid+linod),                      &
         & form = 'unformatted', status = 'old')
     !
     ! in case of parallel Delft3D-FLOW array ICOM is already stored in scratch file

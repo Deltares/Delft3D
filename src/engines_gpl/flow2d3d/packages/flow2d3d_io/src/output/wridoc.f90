@@ -1,7 +1,7 @@
 subroutine wridoc(error, neffil, ftype, simdat, runtxt, commrd, part_nr, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine wridoc(error, neffil, ftype, simdat, runtxt, commrd, part_nr, gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wridoc.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wridoc.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Writes the initial group 4 ('"ftype"-version') to
@@ -40,7 +40,6 @@ subroutine wridoc(error, neffil, ftype, simdat, runtxt, commrd, part_nr, gdp)
     use datagroups
     use globaldata
     use string_module
-    use flow2d3d_version_module
     !
     implicit none
     !
@@ -91,7 +90,7 @@ subroutine wridoc(error, neffil, ftype, simdat, runtxt, commrd, part_nr, gdp)
     character(4)                                  :: errnr        ! Character var. containing the errormessage number corresponding to errormessage in ERRFIL 
     character(256)                                :: errmsg       ! Character var. containing the errormessage to be written to file. The message depends on the error. 
     character(20)                                 :: rundat       ! Current date and time containing a combination of DATE and TIME 
-    character(256)                                :: full_version ! Version nr. of the module of the current package
+    character(256)                                :: version_full ! Version nr. of the module of the current package
     character(256), dimension(1)                  :: cdumcident   ! Help array to read/write Nefis files 
 !
 !! executable statements -------------------------------------------------------
@@ -112,9 +111,9 @@ subroutine wridoc(error, neffil, ftype, simdat, runtxt, commrd, part_nr, gdp)
     !
     ! Write system definition to diagnostic file for ftype = 'dia' and skip rest of routine
     !
-    full_version  = ' '
+    version_full  = ' '
     !version_short = ' '
-    call getfullversionstring_flow2d3d(full_version)
+    call getfullversionstring_flow2d3d(version_full)
     !
     if (ftype(1:3) == 'dia') then
        ! nothing
@@ -140,7 +139,7 @@ subroutine wridoc(error, neffil, ftype, simdat, runtxt, commrd, part_nr, gdp)
        write (header(2 ), '(a,a,a,a,a,a,a,a,a,t129,a)') &
            & '*** Print of ', 'Delft3D-FLOW', ' for Run ', gdp%runid(:lridmx) , ' - Simulation date: ',  &
            & date, ' ', rundat(11:19), '  page     1', '***'
-       write (header(3 ), '(2a,t129,a)') '*** ', trim(full_version), '***'
+       write (header(3 ), '(2a,t129,a)') '*** ', trim(version_full), '***'
        write (header(4 ), '(a,t129,a)' ) '*** User: Unknown ', '***'
        write (header(5 ), '(131a1)'    ) ('*', na = 1, 131)
        write (header(6 ), '(a)'        )
@@ -196,7 +195,7 @@ subroutine wridoc(error, neffil, ftype, simdat, runtxt, commrd, part_nr, gdp)
        !
        ! element 'FLOW-SYSTXT'
        !
-       cdumcident(1) = trim(full_version)
+       cdumcident(1) = trim(version_full)
        ierror = putels(fds, grnam4, 'FLOW-SYSTXT', uindex, 1, cdumcident)
        if (ierror/= 0) goto 9999
        !

@@ -1,9 +1,9 @@
 subroutine caldpu_dd(nmaxus ,mmax   ,kcs    ,kcu    ,kcv    , &
-                   & umean  ,vmean  ,dpd    ,dps    ,dpu    , &
+                   & umean  ,vmean  ,dp     ,dps    ,dpu    , &
                    & dpv    ,gdp    ) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine caldpu_dd(nmaxus ,mmax   ,kcs    ,kcu    ,kcv    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: caldpu_dd.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/dd/caldpu_dd.f90 $
 !!--description-----------------------------------------------------------------
 !
 !     Correction for coupling points. Apply this only at the subdomain
@@ -69,7 +69,7 @@ subroutine caldpu_dd(nmaxus ,mmax   ,kcs    ,kcu    ,kcv    , &
     integer   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: kcs    !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: kcu    !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: kcv    !  Description and declaration in esm_alloc_int.f90
-    real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dpd    !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dp     !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: dps    !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(out) :: dpu    !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(out) :: dpv    !  Description and declaration in esm_alloc_real.f90
@@ -115,7 +115,7 @@ subroutine caldpu_dd(nmaxus ,mmax   ,kcs    ,kcu    ,kcv    , &
                 elseif (dpuopt=='MIN') then
                    dpu(n, m) = min(real(dps(n, mu),fp), real(dps(n, m),fp))
                 elseif (dpuopt=='MEAN') then
-                   dpu(n, m) = 0.5_fp*(dpd(n, m) + dpd(nd, m))
+                   dpu(n, m) = 0.5_fp*(dp(n, m) + dp(nd, m))
                 elseif (dpuopt=='MEAN_DPS') then
                    dpu(n, m) = 0.5_fp*(real(dps(n, mu) + dps(n, m),fp))
                 else
@@ -151,7 +151,7 @@ subroutine caldpu_dd(nmaxus ,mmax   ,kcs    ,kcu    ,kcv    , &
                 elseif (dpuopt=='MIN') then
                    dpv(n, m) = min(real(dps(nu, m),fp), real(dps(n, m),fp))
                 elseif (dpuopt=='MEAN') then
-                   dpv(n, m) = 0.5_fp*(dpd(n, m) + dpd(n, md))
+                   dpv(n, m) = 0.5_fp*(dp(n, m) + dp(n, md))
                 elseif (dpuopt=='MEAN_DPS') then
                    dpv(n, m) = 0.5_fp*(real(dps(nu, m) + dps(n, m),fp))
                 else

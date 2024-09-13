@@ -7,7 +7,7 @@ subroutine euler(j         ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
                & grmsur    ,grmsvr    ,grfacu    ,grfacv    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +31,8 @@ subroutine euler(j         ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: euler.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/euler.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: EULER corrects the velocities with the
@@ -55,7 +55,9 @@ subroutine euler(j         ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
     logical                 , pointer :: wave
+    logical                 , pointer :: struct
     logical                 , pointer :: zmodel
+    logical                 , pointer :: roller
     integer                 , pointer :: rolcorr
     real(fp)                , pointer :: ag
     real(fp), dimension(:,:), pointer :: ustokes
@@ -126,7 +128,9 @@ subroutine euler(j         ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
 !
     ag         => gdp%gdphysco%ag
     wave       => gdp%gdprocs%wave
+    struct     => gdp%gdprocs%struct
     zmodel     => gdp%gdprocs%zmodel
+    roller     => gdp%gdprocs%roller
     rolcorr    => gdp%gdbetaro%rolcorr
     ustokes    => gdp%gdtrisol%ustokes
     vstokes    => gdp%gdtrisol%vstokes
@@ -191,7 +195,7 @@ subroutine euler(j         ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
                           ustokes(nm, k) = 0.0
                       enddo
                       !
-                      if (rolcorr==2) then
+                      if (rolcorr==2 .and. kmax>1) then
                          !
                          ! Compute contribution of roller mass flux (distributed over top of water column (0.5*Hrms))
                          !
@@ -290,7 +294,7 @@ subroutine euler(j         ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
                           vstokes(nm, k) = 0.0
                       enddo
                       !
-                      if (rolcorr==2) then
+                      if (rolcorr==2 .and. kmax>1) then
                          !
                          ! Compute contribution of roller mass flux (distributed over top of water column (0.5*Hrms))
                          !

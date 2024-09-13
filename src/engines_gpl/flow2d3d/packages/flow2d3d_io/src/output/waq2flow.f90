@@ -1,30 +1,32 @@
 subroutine waq2flow(dps, mmax, nmaxus, kmax, lundia, mlb, mub, nlb, nub, gdp)
 !----- GPL ---------------------------------------------------------------------
-!
-!  Copyright (C)  Stichting Deltares, 2011-2024.
-!
-!  This program is free software: you can redistribute it and/or modify
-!  it under the terms of the GNU General Public License as published by
-!  the Free Software Foundation version 3.
-!
-!  This program is distributed in the hope that it will be useful,
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!  GNU General Public License for more details.
-!
-!  You should have received a copy of the GNU General Public License
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-!
-!  contact: delft3d.support@deltares.nl
-!  Stichting Deltares
-!  P.O. Box 177
-!  2600 MH Delft, The Netherlands
-!
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"
-!  are registered trademarks of Stichting Deltares, and remain the property of
-!  Stichting Deltares. All rights reserved.
-!
+!                                                                               
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
+!                                                                               
+!  This program is free software: you can redistribute it and/or modify         
+!  it under the terms of the GNU General Public License as published by         
+!  the Free Software Foundation version 3.                                      
+!                                                                               
+!  This program is distributed in the hope that it will be useful,              
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
+!  GNU General Public License for more details.                                 
+!                                                                               
+!  You should have received a copy of the GNU General Public License            
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
+!                                                                               
+!  contact: delft3d.support@deltares.nl                                         
+!  Stichting Deltares                                                           
+!  P.O. Box 177                                                                 
+!  2600 MH Delft, The Netherlands                                               
+!                                                                               
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
+!  are registered trademarks of Stichting Deltares, and remain the property of  
+!  Stichting Deltares. All rights reserved.                                     
+!                                                                               
 !-------------------------------------------------------------------------------
+!  $Id: waq2flow.f90 1180 2012-01-13 17:05:48Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/trunk/src/utils_lgpl/delftio_sync/packages/delftio_sync/src/waq2flow.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Receive updated bed level
@@ -54,7 +56,7 @@ subroutine waq2flow(dps, mmax, nmaxus, kmax, lundia, mlb, mub, nlb, nub, gdp)
     real(prec), dimension(nlb:nub, mlb:mub)              :: dps    !  Description and declaration in esm_alloc_real.f90
 
     real(fp), dimension(:,:)   , pointer :: vegh2d
-    real(fp), dimension(:,:)   , pointer :: vden2d
+    real(fp), dimension(:,:)   , pointer :: vden2d 
     type (gd_trachy)           , pointer :: gdtrachy
 !
 ! Local variables
@@ -63,7 +65,7 @@ subroutine waq2flow(dps, mmax, nmaxus, kmax, lundia, mlb, mub, nlb, nub, gdp)
     integer, external                 :: dioGetPltDataSetInfo
     integer, save                     :: diooutset
     integer, save                     :: diooutstream
-    integer                           :: ierr_alloc
+    integer                           :: ierr_alloc    
     integer                           :: ilumon
     integer                           :: istep,iseg,m,n
     integer                           :: noseg
@@ -105,9 +107,9 @@ subroutine waq2flow(dps, mmax, nmaxus, kmax, lundia, mlb, mub, nlb, nub, gdp)
           allocate(dps0(nlb:nub, mlb:mub))
        endif
        if ( ierr_alloc .ne. 0 ) then
-          write(*,*)      'ERROR waq2flow: allocating work array'
-          write(lundia,*) 'ERROR waq2flow: allocating work array'
-          call throwexception()
+          write(*,*)      'errror waq2flow: allocating work array'
+          write(lundia,*) 'errror waq2flow: allocating work array'
+          stop 'errror waq2flow: allocating work array'
        endif
        !
        write(lundia,*) '--------------------------------------------'
@@ -120,7 +122,7 @@ subroutine waq2flow(dps, mmax, nmaxus, kmax, lundia, mlb, mub, nlb, nub, gdp)
        !
        streamname   = 'waq2flow'
        datasetname  = 'datawaq2flow'
-       write(*,*) '--------------'
+       write(*,*) '--------------' 
        write(*,*) 'FLOW: waiting for waq2flow DIO stream to open'
        diooutstream = diocreatestreamsynched(dio_binary_stream, streamname, 'r')
        write(*,*) 'FLOW: waq2flow DIO stream is open'
@@ -135,7 +137,7 @@ subroutine waq2flow(dps, mmax, nmaxus, kmax, lundia, mlb, mub, nlb, nub, gdp)
     write(*,*) 'FLOW: waiting for GetPltDataSetReals waq2flow (datawaq2flow)'
     success = diogetpltdatasetreals(diooutset, tims(1), nrvar, noseg, parval)
     write(*,*) 'FLOW: GetPltDataSetReals waq2flow (datawaq2flow) returned ', success
-    write(*,*) '--------------'
+    write(*,*) '--------------' 
     !
     if (nrvar == 1) then
        iseg=mmax*nmaxus*(kmax-1)

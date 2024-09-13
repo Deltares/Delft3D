@@ -1,9 +1,9 @@
 subroutine incmeteo(timhr  ,grdang ,windu  ,windv ,patm   , &
-                    kcs    ,alfas  ,windcd ,                &
+                    kcs    ,alfas ,         &
                     windsu ,windsv ,w10mag ,gdp   )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine incmeteo(timhr  ,grdang ,windu  ,windv ,patm   , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: incmeteo.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/timedep/incmeteo.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Update meteo related items
@@ -73,7 +73,6 @@ subroutine incmeteo(timhr  ,grdang ,windu  ,windv ,patm   , &
     real(fp)                                                        , intent(in)  :: timhr
     real(fp)                                                        , intent(in)  :: grdang
     real(fp)   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(in)  :: alfas
-    real(fp)   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(out) :: windcd
     real(fp)   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(out) :: windu
     real(fp)   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(out) :: windv
     real(fp)   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub), intent(out) :: windsu
@@ -190,7 +189,7 @@ subroutine incmeteo(timhr  ,grdang ,windu  ,windv ,patm   , &
     call dfexchg(patm,  1, 1, dfloat, nm_pos, gdp)    
     call dfexchg(windu, 1, 1, dfloat, nm_pos, gdp)    
     call dfexchg(windv, 1, 1, dfloat, nm_pos, gdp)    
-    call windtostress(mmax ,nmax ,nmaxus, grdang, kcs, w10mag, windu, windv, windsu, windsv, windcd, gdp)
+    call windtostress(mmax ,nmax ,nmaxus, grdang, kcs, w10mag, windu, windv, windsu, windsv, gdp)
     !
     ! Exchange data between partitions
     !

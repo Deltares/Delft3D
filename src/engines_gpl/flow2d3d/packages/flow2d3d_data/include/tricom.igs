@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$$
+!  $Id: tricom.igs 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/include/tricom.igs $$
 !-------------------------------------------------------------------------------
     type sv_tricom
 !
@@ -213,40 +213,54 @@
 !
 !  NEWLY ADDED because of splitting trisim,tricom (VT):
 !
-       integer                            :: it01            ! Description and declaration in esm_alloc_int.f90
-       integer                            :: it02            ! Description and declaration in esm_alloc_int.f90
-       integer                            :: itima           ! Time to start simulation (N * tscale) according to DELFT3D conventions
-       integer                            :: itlen           ! Description and declaration in esm_alloc_int.f90
-       integer                            :: iphisc          ! Current time counter for printing history data 
-       integer                            :: itcomc          ! Current time counter for the com- munication file 
-       integer                            :: itcur           ! Current time counter for the com- munication file, where starting point depend on CYCLIC 
-       integer                            :: itdroc          ! Current time counter for the dro- gue data file 
-       integer                            :: ithisc          ! Current time counter for the his- tory file 
-       integer                            :: itimc           ! Current time step counter for 2D system 
-       integer                            :: itiwec          ! Current time counter for the cali- bration of internal wave energy 
-       integer                            :: itlent          ! Lenght of the tide cycle in steps of ITP 
-       integer                            :: itmapc          ! Current time counter for the map file 
-       integer                            :: itp             ! Timestep for computation 2D system 
-       integer                            :: itrstc          ! Current time counter for the re- start file. Start writing after first interval is passed. Last time will always be written to file for ITRSTI > 0 
-       integer                            :: itwav           ! Current time counter for executation of a wave computation (online coupling with wave)
-       integer                            :: itrw            ! Time to read the wave information in case of online wave coupling
-       integer                            :: maxmn           ! Maximum of MMAX and NMAX
-       integer                            :: npmap           ! Current array counter for printing map data
-       integer                            :: ntcur           ! Total number of timesteps on comm. file (to write to)
-       integer                            :: ntwav           ! Total number of timesteps on comm. file (to read from) for waves
-       integer                            :: sleepduringwave ! <=0 (default for sequential     ): FLOW partitions wait at dfreduce_gdp     ,         consuming CPU time
-                                                             ! >=1 (default is 100 for parallel): FLOW partitions wait in a "do-sleep"-loop, without consuming CPU time
-       logical                            :: cyclic          ! Flag = TRUE if cyclic system assumed 
-       logical                            :: fout            ! Flag=TRUE if an error is encountered 
-       logical                            :: lrdok           ! Logical to check if reading phase has been passed. 
-       logical                            :: waverd          ! Flag = TRUE if wave process and communication file exist 
-       real(fp)                           :: anglat          ! Angle of latitude of the model centre (used to determine the coeff. for the coriolis force) 
-       real(fp)                           :: anglon          ! Angle of longitude of the model centre (used to determine solar radiation) 
-       real(fp)                           :: dtsec           ! DT in seconds 
-       real(fp)                           :: tscale          ! Description and declaration in esm_alloc_real.f90
-       character(256)                     :: comfil          ! Communication file name
-       character(256)                     :: filmd           ! File name for MD FLOW file 
-       character(256)                     :: trifil          ! File name for TRISULA NEFIS output files (tri"h/m"-"casl""labl".dat/def)
-       character(5)                       :: versio          ! Version nr. of the current package
-       integer , dimension(:)  , pointer  :: timwav          ! Array with time steps on comm. file for wave results 
+       integer                            :: initia !!  if < 0: iteration process of morsys
+                                                    !!  else  : equal to INITI
+                                                    !!  =1 initialization
+                                                    !!  =2 initialization and read restart
+                                                    !!     information from the communication
+                                                    !!     file
+                                                    !!  =3 no initialization
+       integer                            :: it01   !  Description and declaration in esm_alloc_int.f90
+       integer                            :: it02   !  Description and declaration in esm_alloc_int.f90
+       integer                            :: itima  !!  Time to start simulation (N * tscale)
+                                                    !!  according to DELFT3D conventions
+       integer                            :: itlen  !  Description and declaration in esm_alloc_int.f90
+       
+       integer                            :: initi  ! Control parameter 
+       integer                            :: iphisc ! Current time counter for printing history data 
+       
+       integer                            :: itcomc ! Current time counter for the com- munication file 
+       integer                            :: itcur  ! Current time counter for the com- munication file, where starting point depend on CYCLIC 
+       integer                            :: itdroc ! Current time counter for the dro- gue data file 
+       integer                            :: ithisc ! Current time counter for the his- tory file 
+       integer                            :: itimc  ! Current time step counter for 2D system 
+       integer                            :: itiwec ! Current time counter for the cali- bration of internal wave energy 
+       integer                            :: itlent ! Lenght of the tide cycle in steps of ITP 
+       integer                            :: itmapc ! Current time counter for the map file 
+       integer                            :: itp    ! Timestep for computation 2D system 
+       integer                            :: itrstc ! Current time counter for the re- start file. Start writing after first interval is passed. Last time will always be written to file for ITRSTI > 0 
+       integer                            :: itwav  ! Current time counter for executation of a wave computation (online coupling with wave)
+       integer                            :: itrw   ! Time to read the wave information in case of online wave coupling
+
+       integer                            :: maxmn  ! Maximum of MMAX and NMAX 
+       integer                            :: npmap  ! Current array counter for printing map data 
+       integer                            :: ntcur  ! Total number of timesteps on comm. file (to write to) 
+       integer                            :: ntwav  ! Total number of timesteps on comm. file (to read from) for waves 
+
+       logical                            :: cyclic ! Flag = TRUE if cyclic system assumed 
+       logical                            :: fout   ! Flag=TRUE if an error is encountered 
+       logical                            :: lrdok  ! Logical to check if reading phase has been passed. 
+       logical                            :: waverd ! Flag = TRUE if wave process and communication file exist 
+
+       real(fp)                           :: anglat ! Angle of latitude of the model centre (used to determine the coeff. for the coriolis force) 
+       real(fp)                           :: anglon ! Angle of longitude of the model centre (used to determine solar radiation) 
+       real(fp)                           :: dtsec  ! DT in seconds 
+       real(fp)                           :: tscale !  Description and declaration in esm_alloc_real.f90
+       character(256)                     :: comfil !!  Communication file name
+       character(256)                     :: filmd  ! File name for MD FLOW file 
+       character(256)                     :: trifil !!  File name for TRISULA NEFIS output
+                                                    !!  files (tri"h/m"-"casl""labl".dat/def)
+       character(5)                       :: versio !!  Version nr. of the current package
+       
+       integer        , dimension(1500)   :: timwav  ! Array with time steps on comm. file for wave results 
     end type sv_tricom

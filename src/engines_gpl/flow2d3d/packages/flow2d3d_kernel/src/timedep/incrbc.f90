@@ -11,7 +11,7 @@ subroutine incrbc(timsec    ,j         ,nmmaxj    ,nmax      ,norow     , &
                 & ombc      ,phibc     ,thetbc    ,circ2d    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -35,8 +35,8 @@ subroutine incrbc(timsec    ,j         ,nmmaxj    ,nmax      ,norow     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: incrbc.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/timedep/incrbc.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Determine from the incoming signals the coefficients for the Riemann Boundary 
@@ -68,7 +68,7 @@ subroutine incrbc(timsec    ,j         ,nmmaxj    ,nmax      ,norow     , &
     integer                                :: nmmaxj !  Description and declaration in dimens.igs
     integer                                :: nocol !  Description and declaration in esm_alloc_int.f90
     integer                                :: norow !  Description and declaration in esm_alloc_int.f90
-    integer, dimension(5, norow + nocol)   :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(7, norow + nocol)   :: irocol !  Description and declaration in esm_alloc_int.f90
     real(fp)                               :: hdt !  Description and declaration in esm_alloc_real.f90
     real(fp)                               :: timsec !  Description and declaration in inttim.igs
     real(fp), dimension(4, norow + nocol)      :: circ2d !  Description and declaration in esm_alloc_real.f90

@@ -4,7 +4,7 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
                 & z0rou     ,deltadir  ,idir      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +28,8 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: trtrou.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/trtrou.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Calculate rougness due to trachytopes.
@@ -53,11 +53,9 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
     integer                    , pointer :: i50
     integer                    , pointer :: i90
     integer                    , pointer :: iarea_avg
-    integer                    , pointer :: max_cl
     integer                    , pointer :: nttaru
     integer                    , pointer :: nttarv
     integer                    , pointer :: ntrt
-    integer, dimension(:)      , pointer :: itrt_list
     integer , dimension(:,:)   , pointer :: ittaru
     integer , dimension(:,:)   , pointer :: ittarv
     integer , dimension(:,:)   , pointer :: ittdef
@@ -70,7 +68,6 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
     real(fp)                   , pointer :: dryflc
     real(fp)                   , pointer :: alf_area_ser
     real(fp)                   , pointer :: trtminh
-    real(fp), dimension(:)     , pointer :: fraccu_list
     real(fp), dimension(:,:)   , pointer :: rgcalu
     real(fp), dimension(:,:)   , pointer :: rgcalv
     real(fp), dimension(:)     , pointer :: rttaru
@@ -95,6 +92,7 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
 !
 ! Local parameters
 !
+    integer , parameter :: max_cl   = 8
     integer , parameter :: ch_type  = 1
     integer , parameter :: kn_type  = 0
     integer , parameter :: area_rgh = 1
@@ -132,6 +130,7 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
     integer                     :: ita
     integer                     :: ito
     integer                     :: itrt
+    integer, dimension(max_cl)  :: itrt_list
     integer                     :: itrt_user
     integer                     :: k
     integer                     :: kmaxx
@@ -179,6 +178,7 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
     real(fp)                    :: f
     real(fp)                    :: fracbu
     real(fp)                    :: fraccu
+    real(fp), dimension(max_cl) :: fraccu_list
     real(fp)                    :: fracto
     real(fp)                    :: hk
     real(fp)                    :: kbed
@@ -224,8 +224,6 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
     real(fp)                    :: zcc
     character(12), dimension(2) :: cnum
     character(132)              :: cmsg
-    character(256)              :: errmsg      ! Character var. containing the errormessage to be written to file. The message depends on the error. 
-    character(1)                :: cdir   
 !
     integer                   , pointer :: nttar
     integer , dimension(:,:)  , pointer :: ittar
@@ -247,15 +245,12 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
     alf_area_ser    => gdp%gdtrachy%alf_area_ser
     trtminh         => gdp%gdtrachy%trtminh
     iarea_avg       => gdp%gdtrachy%iarea_avg
-    max_cl          => gdp%gdtrachy%max_cl
     nttaru          => gdp%gdtrachy%nttaru
     nttarv          => gdp%gdtrachy%nttarv
     ntrt            => gdp%gdtrachy%ntrt
-    itrt_list       => gdp%gdtrachy%itrt_list
     ittaru          => gdp%gdtrachy%ittaru
     ittarv          => gdp%gdtrachy%ittarv
     ittdef          => gdp%gdtrachy%ittdef
-    fraccu_list     => gdp%gdtrachy%fraccu_list
     rgcalu          => gdp%gdtrachy%rgcalu
     rgcalv          => gdp%gdtrachy%rgcalv
     rttaru          => gdp%gdtrachy%rttaru
@@ -300,8 +295,6 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
        rttf  => rttfv
        rttar => rttarv
     endif
-    !
-    cdir = char(116+idir)
     !
     ! initialize ...
     !
@@ -558,9 +551,7 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
              !
              nlist = nlist+1
              if (nlist>max_cl) then
-                write (errmsg, '(a,i6,a,i4,a,a,a)') 'TRTROU: Maximum recursion depth reached for line ', &
-                    & ita, ' containing roughness code ', ittar(ita, 3), ' in ', cdir,'-direction.'
-                call prterr(lundia    ,'J001'    ,errmsg )
+                call prterr(lundia    ,'J001'    ,'TRTROU: Maximum recursion depth.' )
                 call d3stop(1, gdp)
              endif
              itrt_list(ilist)   = nint(rttdef(itrt, 1))
@@ -854,8 +845,8 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
                          & drag*densit/hk*(cbed*cbed)/(ch_icode*ch_icode)
              endif
              !
-             !rgh_type = ch_type
-             !rgh_geom = area_rgh
+             rgh_type = ch_type
+             rgh_geom = area_rgh
           elseif (ircod==201) then
              !
              ! Get coefficients for hedges

@@ -2,7 +2,7 @@ subroutine dimstr(lunmd     ,filnam    ,lundia    ,error     ,nrrec     , &
                 & nodim     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine dimstr(lunmd     ,filnam    ,lundia    ,error     ,nrrec     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: dimstr.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/dimstr.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Reads the number of U- and V-Barriers from the
@@ -84,7 +84,8 @@ subroutine dimstr(lunmd     ,filnam    ,lundia    ,error     ,nrrec     , &
     !
     ! open formatted file, if not formatted IOCOND <> 0
     !
-    open (newunit=luntmp, file = filnam(:lfile), form = 'formatted',              &
+    luntmp = newlun(gdp)
+    open (luntmp, file = filnam(:lfile), form = 'formatted',              &
         & status = 'old', iostat = iocond)
     if (iocond/=0) then
        error = .true.

@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$$
+!  $Id: procs.igs 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/include/procs.igs $$
 !-------------------------------------------------------------------------------
 type gd_procs
    logical :: wind                 = .false. !  Wind
@@ -36,6 +36,7 @@ type gd_procs
    logical :: dredge               = .false. ! Dredge and Dump
    logical :: drogue               = .false. ! Drogue(s)
    logical :: wave                 = .false. ! Waves
+   logical :: waveol               = .false. ! Waves computed by Delft3D-WAVES online
    logical :: threed               = .false. ! KMAX > 1
    logical :: secflo               = .false. ! Secondary flow
    logical :: iweflg               = .false. ! Internal Wave Energy
@@ -74,8 +75,4 @@ type gd_procs
    logical :: xbeach               = .false. ! XBeach wave driver is used   
    logical :: lfsdu                = .false. ! Subsidence and Uplift included  
    logical :: lfsdus1              = .false. ! Subsidence and Uplift effects waterlevel  
-   !
-   integer :: waveol               = 0       ! 0 = Waves from existing COM-file (linear interpolation)
-                                             ! 1 = Waves from existing COM-file (constant like when online)
-											 ! 2 = Waves computed by Delft3D-WAVES online
 end type gd_procs

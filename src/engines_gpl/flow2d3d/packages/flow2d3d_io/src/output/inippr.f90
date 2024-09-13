@@ -1,12 +1,12 @@
 subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
-                & selhis    ,selmap    ,tscale    ,commrd    , &
+                & initi     ,selhis    ,selmap    ,tscale    ,commrd    , &
                 & itlen     ,itcur     ,itimc     , &
                 & it01      ,it02      ,sferic    ,grdang    , &
                 & rouflo    ,nfltyp    , &
                 & runtxt    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +30,8 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: inippr.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/inippr.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Writes initial output to output files
@@ -98,7 +98,7 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
     integer(pntrsize)                , pointer :: cfurou
     integer(pntrsize)                , pointer :: cfvrou
     integer(pntrsize)                , pointer :: dis
-    integer(pntrsize)                , pointer :: dpd
+    integer(pntrsize)                , pointer :: dp
     integer(pntrsize)                , pointer :: dps
     integer(pntrsize)                , pointer :: dpu
     integer(pntrsize)                , pointer :: dpv
@@ -139,6 +139,11 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
 !
 ! Global variables
 !
+    integer                       , intent(in) :: initi  !!  Control parameter
+                                                         !!  =1 initialization
+                                                         !!  =2 initialization and read restart
+                                                         !!     information from the communication file
+                                                         !!  =3 no initialization
     integer                                    :: it01   !  Description and declaration in esm_alloc_int.f90
     integer                                    :: it02   !  Description and declaration in esm_alloc_int.f90
     integer                                    :: itcur  !!  Current time counter for the com-
@@ -221,7 +226,7 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
     cfurou      => gdp%gdr_i_ch%cfurou
     cfvrou      => gdp%gdr_i_ch%cfvrou
     dis         => gdp%gdr_i_ch%dis
-    dpd         => gdp%gdr_i_ch%dpd
+    dp          => gdp%gdr_i_ch%dp
     dps         => gdp%gdr_i_ch%dps
     dpu         => gdp%gdr_i_ch%dpu
     dpv         => gdp%gdr_i_ch%dpv
@@ -270,8 +275,9 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
     simdat(15:16) = rundat(18:19)
     !
     ! Write the time independent data to the communication file
+    ! Only when initial reading from MDF file (INITI = 1)
     !
-    if (itcomi>0) then
+    if (itcomi>0 .and. initi==1) then
        call wrcomi(comfil    ,lundia    ,error     ,zmodel    ,mmax      , &
                  & nmax      ,kmax      ,nmaxus    ,nsrc      ,norow     , &
                  & nocol     ,noroco    ,nto       ,nrob      ,zbot      , &
@@ -281,7 +287,7 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
                  & r(gvv)    ,r(guv)    ,r(gvu)    ,r(gsqs)   ,r(gsqd)   , &
                  & r(alfas)  ,r(thick)  ,r(sig)    ,ch(namsrc),i(mnksrc) , &
                  & r(xyzsrc) ,i(irocol) ,i(mnbnd)  ,i(nob)    ,i(kcu)    , &
-                 & i(kcv)    ,i(kcs)    ,r(dpd)    ,d(dps)    ,r(cfurou) , &
+                 & i(kcv)    ,i(kcs)    ,r(dp)     ,d(dps)    ,r(cfurou) , &
                  & r(cfvrou) ,i(ibuff)  ,r(rbuff)  ,r(rbuff)  ,sferic    , &
                  & gdp       )
        if (error) goto 9999
@@ -336,7 +342,8 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
     if (itmapi > 0) then
        wrifou = .false.
        call wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
-                   & itmapc    ,runtxt    ,trifil    ,wrifou    ,gdp       )
+                   & itmapc    ,runtxt    ,trifil    ,wrifou    ,initi     , &
+                   & gdp       )
        if (error) goto 9999
     endif
     if (drogue) then
@@ -347,7 +354,8 @@ subroutine inippr(lundia    ,error     ,trifil    ,comfil    , &
     if (nofou>0 .and. (getfiletype(gdp,FILOUT_FOU) == FTYPE_NETCDF)) then
        wrifou = .true.
        call wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
-                   & itmapc    ,runtxt    ,trifil    ,wrifou    ,gdp       )
+                   & itmapc    ,runtxt    ,trifil    ,wrifou    ,initi     , &
+                   & gdp       )
        if (error) goto 9999
     endif
  9999 continue

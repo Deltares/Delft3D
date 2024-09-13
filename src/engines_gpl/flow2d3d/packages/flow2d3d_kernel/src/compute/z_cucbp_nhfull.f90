@@ -7,7 +7,7 @@ subroutine z_cucbp_nhfull(kmax      ,norow     ,icx       , &
                         & crbc      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +31,8 @@ subroutine z_cucbp_nhfull(kmax      ,norow     ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_cucbp_nhfull.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/z_cucbp_nhfull.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: For the fully non-hydrostatic approach, boundary 
@@ -72,7 +72,7 @@ subroutine z_cucbp_nhfull(kmax      ,norow     ,icx       , &
     integer                                                       :: icy    !!  Increment in the Y-dir. (see ICX)
     integer                                         , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
     integer                                         , intent(in)  :: norow  !  Description and declaration in esm_alloc_int.f90
-    integer, dimension(5, norow)                    , intent(in)  :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(7, norow)                    , intent(in)  :: irocol !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in)  :: kcs    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in)  :: kfu    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in)  :: kfumx0 !  Description and declaration in esm_alloc_int.f90
@@ -257,23 +257,14 @@ subroutine z_cucbp_nhfull(kmax      ,norow     ,icx       , &
              ! WEAKLY REFLECTIVE BOUNDARY
              !
              alfas = sqrt(ag/(dep+sepu))
-             if (dep < 0) then
-                do k = k0f, k1f
-                   aak(nmf,k) = 0.0_fp
-                   bbk(nmf,k) = 1.0_fp
-                   cck(nmf,k) = 0.0_fp
-                   ddk(nmf,k) = 0.0_fp
-                enddo
-             else
-                do k = k0f, k1f
-                   aak(nmf,k) = alfas * tetau
-                   bbk(nmf,k) = 1.0_fp
-                   cck(nmf,k) = alfas * (1.0_fp-tetau)
-                   ddk(nmf,k) = circ3d(k, 1, ic) + alfas*sepu  &
+             do k = k0f, k1f
+                aak(nmf,k) = alfas * tetau
+                bbk(nmf,k) = 1.0_fp
+                cck(nmf,k) = alfas * (1.0_fp-tetau)
+                ddk(nmf,k) = circ3d(k, 1, ic) + alfas*sepu  &
                            & - 2.0_fp*sqrt(ag*(dep+sepu))   &
                            & + 2.0_fp*sqrt(ag*dep)
-                enddo
-             endif
+             enddo
           elseif (ibf == 8) then
              !
              ! NEUMANN BOUNDARY CONDITION INHOMOGENEOUS
@@ -390,21 +381,14 @@ subroutine z_cucbp_nhfull(kmax      ,norow     ,icx       , &
              ! WEAKLY REFLECTIVE BOUNDARY
              !
              alfas = sqrt(ag/(dep+sepu))
-             if (dep < 0) then
-                aak(nml,k) = 0.0_fp
+             do k = k0l, k1l
+                aak(nml,k) = -alfas * tetau
                 bbk(nml,k) = 1.0_fp
-                cck(nml,k) = 0.0_fp
-                ddk(nml,k) = 0.0_fp
-             else
-                do k = k0l, k1l
-                   aak(nml,k) = -alfas * tetau
-                   bbk(nml,k) = 1.0_fp
-                   cck(nml,k) = -alfas * (1.0_fp-tetau)
-                   ddk(nml,k) = circ3d(k,2,ic) - alfas*sepu  &
-                              & + 2.0_fp*sqrt(ag*(dep+sepu)) &
-                              & - 2.0_fp*sqrt(ag*dep)
-                enddo
-             endif
+                cck(nml,k) = -alfas * (1.0_fp-tetau)
+                ddk(nml,k) = circ3d(k,2,ic) - alfas*sepu  &
+                           & + 2.0_fp*sqrt(ag*(dep+sepu)) &
+                           & - 2.0_fp*sqrt(ag*dep)
+             enddo
           elseif (ibl == 8) then
              !
              ! NEUMANN BOUNDARY CONDITIONS INHOMOGENEOUS

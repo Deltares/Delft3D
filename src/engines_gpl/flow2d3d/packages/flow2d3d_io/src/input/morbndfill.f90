@@ -2,7 +2,7 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
                     & mnbnd     ,nto       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: morbndfill.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/morbndfill.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Fill arrays for open boundary
@@ -90,8 +90,6 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
     real(fp) :: width2
     real(fp) :: widthprev
     real(fp) :: totdist
-    !
-    character(120) :: errmsg
 !
 !! executable statements -------------------------------------------------------
 !
@@ -127,9 +125,11 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
          & .and. (kcs(num) == 1 .or. kcs(ndm) == 1)  ) nf = 2
        !
        morbnd(jb)%npnt = nf*npnt
+       if (morbnd(jb)%npnt.gt.gdp%gdmorpar%MAXnpnt) gdp%gdmorpar%MAXnpnt = morbnd(jb)%npnt !note MAXnpnt is initialized to zero in initmorpar
        istat           = 0
                        allocate(morbnd(jb)%alfa_dist(nf*npnt), stat = istat)
        if (istat == 0) allocate(morbnd(jb)%alfa_mag(nf*npnt) , stat = istat)
+       if (istat == 0) allocate(morbnd(jb)%width(nf*npnt)    , stat = istat)
        if (istat == 0) allocate(morbnd(jb)%idir(nf*npnt)     , stat = istat)
        if (istat == 0) allocate(morbnd(jb)%nm(nf*npnt)       , stat = istat)
        if (istat == 0) allocate(morbnd(jb)%nxmx(nf*npnt)     , stat = istat)
@@ -158,15 +158,15 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
           ! in v/n direction, we need to add a minus sign if the direction
           ! of u/m and v/n directions are opposite.
           !
-          if (abs(kcs(nmu)) == 1) then
+          if (kcs(nmu) == 1) then
              idir  = 1  ! u boundary
              nxmx  = nmu
              width = guu(nm)
-             if (abs(kcs(num)) == 1) then
+             if (kcs(num) == 1) then
                 nxmx2  = num
                 idir2  = 2  ! v boundary
                 width2 = gvv(nm)
-             elseif (abs(kcs(ndm)) == 1) then
+             elseif (kcs(ndm) == 1) then
                 nxmx2 = ndm
                 idir2 = 2  ! v boundary
                 !
@@ -177,18 +177,18 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
                 width2 = 0.0
              endif
              totwidth = sqrt(width**2 + width2**2)
-          elseif (abs(kcs(nmd)) == 1) then
+          elseif (kcs(nmd) == 1) then
              idir  = 1  ! u boundary
              nxmx  = nmd
              width = guu(nmd)
-             if (abs(kcs(num)) == 1) then
+             if (kcs(num) == 1) then
                 nxmx2 = num
                 idir2 = 2  ! v boundary
                 !
                 ! negative since v/n direction is reversed compared to u/m direction
                 !
                 width2 = -gvv(nm)
-             elseif (abs(kcs(ndm)) == 1) then
+             elseif (kcs(ndm) == 1) then
                 nxmx2  = ndm
                 idir2  = 2  ! v boundary
                 width2 = gvv(ndm)
@@ -198,16 +198,12 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
              totwidth = sqrt(width**2 + width2**2)
           else
              idir = 2  ! v boundary
-             if (abs(kcs(num)) == 1) then
+             if (kcs(num) == 1) then
                 nxmx  = num
                 width = gvv(nm)
-             elseif (abs(kcs(ndm)) == 1) then
+             elseif (kcs(ndm) == 1) then
                 nxmx  = ndm
                 width = gvv(ndm)
-             else
-                write(errmsg,'(A,I0,A,I0,A)') 'MORBNDFIL: unable to determine orientation of mor boundary at M=',m,' N=',n,'.'
-                call prterr(lundia, 'U021', errmsg)
-                call d3stop(1, gdp)
              endif
              totwidth = width
           endif
@@ -223,6 +219,7 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
           !
           morbnd(jb)%alfa_dist(i) = totdist
           morbnd(jb)%alfa_mag(i)  = 1.0
+          morbnd(jb)%width(i)     = width
           morbnd(jb)%idir(i)      = idir
           morbnd(jb)%nm(i)        = nm
           morbnd(jb)%nxmx(i)      = nxmx
@@ -231,6 +228,7 @@ subroutine morbndfill(kcs       ,guu       ,gvv       ,icx       ,icy       , &
              morbnd(jb)%alfa_mag(i)  = width / totwidth
              i = i + 1
              morbnd(jb)%alfa_mag(i)  = width2 / totwidth
+             morbnd(jb)%width(i)     = width2
              morbnd(jb)%alfa_dist(i) = totdist
              morbnd(jb)%idir(i)      = idir2
              morbnd(jb)%nm(i)        = nm

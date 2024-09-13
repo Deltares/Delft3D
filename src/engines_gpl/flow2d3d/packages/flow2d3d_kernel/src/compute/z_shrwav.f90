@@ -3,7 +3,7 @@ subroutine z_shrwav(nmmax     ,kmax      ,icx       ,dfu       ,deltau    , &
                   & kfumn0    ,kfumx0    ,dzu1      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine z_shrwav(nmmax     ,kmax      ,icx       ,dfu       ,deltau    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_shrwav.f90 1044 2011-11-21 21:22:12Z platzek $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20111115_13532_z-model_improvements_oss-merge/engines_gpl/flow2d3d/packages/kernel/src/compute/z_shrwav.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! NONE
@@ -100,7 +100,7 @@ subroutine z_shrwav(nmmax     ,kmax      ,icx       ,dfu       ,deltau    , &
                 ! dfu is dissipation multiplied with costu (see TAUBOT)
                 ! angle between waves and current. (so dissipation can be negative) 
                 !
-                ku = 2.0_fp * pi / (max(0.5_fp*(rlabda(nm)+rlabda(nmu)),1.0e-12_fp))
+                ku = 2.0_fp * pi / (0.5_fp*(rlabda(nm)+rlabda(nmu)))
                 !
                 ! Add term for streaming in momentum equations 
                 ! for layers in the wave boundary layer

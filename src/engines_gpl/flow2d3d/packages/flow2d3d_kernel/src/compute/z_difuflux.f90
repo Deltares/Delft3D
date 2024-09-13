@@ -1,6 +1,6 @@
 subroutine z_difuflux(stage   ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
                   & lstsci    ,r0        ,r1        ,qxk       ,qyk       , &
-                  & u         ,v         ,s1        ,dps       , &
+                  & u         ,v         , &
                   & dicuv     ,guv       ,gvu       ,areau     ,areav     , &
                   & kfuz1     ,kfvz1     ,kfsz1     ,kcs       ,kfs       , &
                   & kfu       ,kfuz0     ,kfv       ,kfvz0     , &
@@ -9,7 +9,7 @@ subroutine z_difuflux(stage   ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
                   & timest    ,icx       ,icy       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -33,8 +33,8 @@ subroutine z_difuflux(stage   ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
 !  Stichting Deltares. All rights reserved.                                     
 !
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_difuflux.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/z_difuflux.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Compute flux corresponding to Z_DIFU
@@ -60,7 +60,6 @@ subroutine z_difuflux(stage   ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
     real(fp) , dimension(:,:,:)         , pointer :: fluxuc
     real(fp) , dimension(:,:,:)         , pointer :: fluxv
     real(fp) , dimension(:,:,:)         , pointer :: fluxvc
-    real(fp)                            , pointer :: dryflc
     character(13)                       , pointer :: trasol
     type (flwoutputtype)                , pointer :: flwoutput
     type (gd_flwpar)                    , pointer :: gdflwpar
@@ -97,8 +96,6 @@ subroutine z_difuflux(stage   ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)         , intent(in) :: dicuv  !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in) :: guv    !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in) :: gvu    !  Description and declaration in esm_alloc_real.f90
-    real(prec)   , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in) :: dps    !  Description and declaration in esm_alloc_real.f90
-    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)               , intent(in) :: s1     !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)         , intent(in) :: qxk    !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)         , intent(in) :: qyk    !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci) , intent(in) :: r0     !  Description and declaration in esm_alloc_real.f90
@@ -128,7 +125,6 @@ subroutine z_difuflux(stage   ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
     real(fp) :: cl, cr, difl, difr
     real(fp) :: cfl
     real(fp) :: flux
-    real(fp) :: hmin
     real(fp) :: r00
     real(fp) :: rr1, rr2
     real(fp) :: rmax
@@ -143,7 +139,6 @@ subroutine z_difuflux(stage   ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
     fluxuc         => gdp%gdflwpar%fluxuc
     fluxv          => gdp%gdflwpar%fluxv
     fluxvc         => gdp%gdflwpar%fluxvc
-    dryflc         => gdp%gdnumeco%dryflc
     trasol         => gdp%gdtricom%trasol
     flwoutput      => gdp%gdflwpar%flwoutput
     gdflwpar       => gdp%gdflwpar
@@ -244,8 +239,7 @@ subroutine z_difuflux(stage   ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
           !
           ! DIFFUSIVE TRANSPORT IN X-DIRECTION
           !
-          hmin = min(s1(nm) + real(dps(nm),fp), s1(nmu) + real(dps(nmu),fp))
-          if (kfs(nm)*kfs(nmu) == 1 .and. hmin > dryflc) then
+          if (kfs(nm)*kfs(nmu) == 1) then
              do k = kfumin(nm), kmax
                 if (kfuz0(nm, k)==1 .and. kfsz0(nm, k)*kfsz0(nmu, k)==1) then
                    difl = dicuv(nm, k)
@@ -309,8 +303,7 @@ subroutine z_difuflux(stage   ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
           !
           ! DIFFUSIVE TRANSPORT IN Y-DIRECTION
           !
-          hmin = min(s1(nm) + real(dps(nm),fp), s1(num) + real(dps(num),fp))
-          if (kfs(nm)*kfs(num) == 1 .and. hmin > dryflc) then
+          if (kfs(nm)*kfs(num) == 1) then
              do k = kfvmin(nm), kmax
                 if (kfvz0(nm, k)==1 .and. kfsz0(nm, k)*kfsz0(num, k)==1) then
                    difl = dicuv(nm, k)
@@ -413,8 +406,7 @@ subroutine z_difuflux(stage   ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
           !
           ! DIFFUSIVE TRANSPORT IN X-DIRECTION
           !
-          hmin = min(s1(nm) + real(dps(nm),fp), s1(nmu) + real(dps(nmu),fp))
-          if (kfu(nm) == 1 .and. hmin > dryflc) then
+          if (kfu(nm) == 1) then
              mink_old = min(kfsmx0(nm),kfsmx0(nmu))
              mink_new = min(kfsmax(nm),kfsmax(nmu))
              mink     = min(mink_old  ,mink_new)
@@ -433,8 +425,7 @@ subroutine z_difuflux(stage   ,lundia    ,kmax      ,nmmax     ,nmmaxj    , &
           !
           ! DIFFUSIVE TRANSPORT IN Y-DIRECTION
           !
-          hmin = min(s1(nm) + real(dps(nm),fp), s1(num) + real(dps(num),fp))
-          if (kfv(nm) == 1 .and. hmin > dryflc) then
+          if (kfv(nm) == 1) then
              mink_old = min(kfsmx0(nm),kfsmx0(num))
              mink_new = min(kfsmax(nm),kfsmax(num))
              mink     = min(mink_old  ,mink_new)

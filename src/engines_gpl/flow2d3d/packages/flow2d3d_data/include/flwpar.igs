@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,33 +24,29 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$$
+!  $Id: flwpar.igs 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/include/flwpar.igs $$
 !-------------------------------------------------------------------------------
 type flwoutputtype
     integer :: iteroutputsteps     ! number of steps since calculation start during whick iteration info is printed to diag-file
     integer :: cntcflmsg           ! Counter of number of warnings concerning high advective Courant numbers
     integer :: maxcflmsg           ! Maximum number of warnings concerning high advective Courant numbers
-    logical :: air                 ! Flag for writing meteo quantities to map and history file
+    logical :: air
     logical :: addtim              ! Flag for additional timings output
     logical :: cflmsg              ! Flag for always writing warnings concerning high advective Courant numbers
-    logical :: chezy               ! Flag for writing Chezy values to map file
-    logical :: cumdifuflux         ! Flag for writing cumulative horizontal advection-diffusion fluxes to map file
-    logical :: difuflux            ! Flag for writing instaneous horizontal advection-diffusion fluxes to map file
-    logical :: dredge_map          ! Flag for writing dredge and dump area information to map file
-    logical :: halfdt              ! Flag for writing map and history file output at half time steps
-    logical :: hisbar              ! Flag for writing barrier height data to history file
-    logical :: hisdis              ! Flag for writing discharge (culvert and bubble screen) data to history file
-    logical :: kf_minmax           ! Flag for writing Z-layer KF[S/U/V][MIN/MAX] arrays to map file
-    logical :: layering            ! Flag for writing 3D array of layer interfaces to map file
-    logical :: momentum            ! Flag for writing momentum terms to map file
-    logical :: roughness           ! Flag for writing specified roughness parameter to map file
-    logical :: temperature         ! Flag for writing heat fluxes to map file
-    logical :: veuler              ! Flag for writing Eulerian velocities instead of GLM velocities to map file
-    logical :: vortic              ! Flag for writing vorticity and enstrophy calculation and writing to output
-    logical :: waveqnt             ! Flag for writing wave quantities to map file
-    logical :: z0cur               ! Flag for writing currents-only bed roughness to map file
-    logical :: z0rou               ! Flag for writing wave enhanced bed roughness to map file
+    logical :: chezy
+    logical :: cumdifuflux
+    logical :: difuflux
+    logical :: halfdt
+    logical :: kf_minmax           ! Z-layer KF[S/U/V][MIN/MAX] arrays
+    logical :: layering
+    logical :: momentum
+    logical :: roughness
+    logical :: temperature
+    logical :: veuler
+    logical :: vortic              ! Vorticity and enstrophy calculation and writing to output
+    logical :: z0cur
+    logical :: z0rou
 end type flwoutputtype
 
 !

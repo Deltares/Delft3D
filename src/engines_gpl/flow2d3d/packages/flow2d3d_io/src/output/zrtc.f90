@@ -1,7 +1,7 @@
-subroutine zrtc(mlb, mub, nlb, nub, kfs, kfsmin, kfsmax, sig, zk, s1, dps, r0, kmax, lstsci, gdp)
+subroutine zrtc(mlb, mub, nlb, nub, kfs, kfsmin, kfsmax, sig, zk, s1, dps, kmax, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine zrtc(mlb, mub, nlb, nub, kfs, kfsmin, kfsmax, sig, zk, s1, dps, r0, k
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: zrtc.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/zrtc.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Determines the elevation of the cell centres used in the output 
@@ -46,29 +46,26 @@ subroutine zrtc(mlb, mub, nlb, nub, kfs, kfsmin, kfsmax, sig, zk, s1, dps, r0, k
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    logical                        , pointer :: zmodel
-    real(fp)     , dimension(:,:,:), pointer :: r0rtcsta
-    real(fp)     , dimension(:)    , pointer :: s1rtcsta
-    real(fp)     , dimension(:,:)  , pointer :: zrtcsta
-    integer                        , pointer :: stacnt
-    integer      , dimension(:,:)  , pointer :: mnrtcsta
+    logical                       , pointer :: zmodel
+    real(fp)     , dimension(:,:) , pointer :: zrtcsta
+    real(fp)     , dimension(:)   , pointer :: s1rtcsta
+    integer                       , pointer :: stacnt
+    integer      , dimension(:,:) , pointer :: mnrtcsta
 !
 ! Global variables
 !
-    integer                                           , intent(in) :: mlb
-    integer                                           , intent(in) :: mub
-    integer                                           , intent(in) :: nlb
-    integer                                           , intent(in) :: nub
-    integer   , dimension(nlb:nub,mlb:mub)            , intent(in) :: kfsmax !  Description and declaration in esm_alloc_int.f90
-    integer   , dimension(nlb:nub,mlb:mub)            , intent(in) :: kfsmin !  Description and declaration in esm_alloc_int.f90
-    integer   , dimension(nlb:nub,mlb:mub)            , intent(in) :: kfs    !  Description and declaration in esm_alloc_int.f90
-    integer                                           , intent(in) :: kmax   !  Description and declaration in esm_alloc_int.f90
-    integer                                           , intent(in) :: lstsci !  Description and declaration in esm_alloc_int.f90
-    real(prec), dimension(nlb:nub,mlb:mub)            , intent(in) :: dps    !  Description and declaration in esm_alloc_real.f90
-    real(fp)  , dimension(nlb:nub,mlb:mub,kmax,lstsci), intent(in) :: r0     !  Description and declaration in esm_alloc_real.f90
-    real(fp)  , dimension(nlb:nub,mlb:mub)            , intent(in) :: s1     !  Description and declaration in esm_alloc_real.f90
-    real(fp)  , dimension(  kmax)                     , intent(in) :: sig
-    real(fp)  , dimension(0:kmax)                     , intent(in) :: zk
+    integer                               , intent(in) :: mlb
+    integer                               , intent(in) :: mub
+    integer                               , intent(in) :: nlb
+    integer                               , intent(in) :: nub
+    integer   , dimension(nlb:nub,mlb:mub), intent(in) :: kfsmax !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(nlb:nub,mlb:mub), intent(in) :: kfsmin !  Description and declaration in esm_alloc_int.f90
+    integer   , dimension(nlb:nub,mlb:mub), intent(in) :: kfs    !  Description and declaration in esm_alloc_int.f90
+    integer                               , intent(in) :: kmax   !  Description and declaration in esm_alloc_int.f90
+    real(prec), dimension(nlb:nub,mlb:mub), intent(in) :: dps    !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(nlb:nub,mlb:mub), intent(in) :: s1     !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(  kmax)         , intent(in) :: sig
+    real(fp)  , dimension(0:kmax)         , intent(in) :: zk
 !
 ! Local variables
 !
@@ -76,14 +73,12 @@ subroutine zrtc(mlb, mub, nlb, nub, kfs, kfsmin, kfsmax, sig, zk, s1, dps, r0, k
     integer   :: m
     integer   :: n
     integer   :: k
-    integer   :: l
 !
 !! executable statements -------------------------------------------------------
 !
     zmodel     => gdp%gdprocs%zmodel
-    r0rtcsta   => gdp%gdrtc%r0rtcsta
-    s1rtcsta   => gdp%gdrtc%s1rtcsta
     zrtcsta    => gdp%gdrtc%zrtcsta
+    s1rtcsta   => gdp%gdrtc%s1rtcsta
     stacnt     => gdp%gdrtc%stacnt
     mnrtcsta   => gdp%gdrtc%mnrtcsta
     !
@@ -92,12 +87,7 @@ subroutine zrtc(mlb, mub, nlb, nub, kfs, kfsmin, kfsmax, sig, zk, s1, dps, r0, k
     do i = 1, stacnt
        m = mnrtcsta(1, i)
        n = mnrtcsta(2, i)
-       if (m==0) then
-          ! value determined by other partition
-          s1rtcsta(i)      = 0.0_fp
-          zrtcsta(:, i)    = 0.0_fp
-          r0rtcsta(:,:, i) = 0.0_fp
-       elseif (zmodel) then
+       if (zmodel) then
           do k = 1, kmax
              if (k>kfsmin(n, m) .and. k<kfsmax(n, m)) then
                 zrtcsta(k, i) = 0.5_fp * (zk(k)+zk(k-1))
@@ -108,9 +98,6 @@ subroutine zrtc(mlb, mub, nlb, nub, kfs, kfsmin, kfsmax, sig, zk, s1, dps, r0, k
              else
                 zrtcsta(k, i) = -999.0_sp
              endif
-             do l = 1,lstsci
-                r0rtcsta(l, k, i) = r0(n, m, k, l)
-             enddo
           enddo
        else
           do k = 1, kmax
@@ -119,9 +106,6 @@ subroutine zrtc(mlb, mub, nlb, nub, kfs, kfsmin, kfsmax, sig, zk, s1, dps, r0, k
              else
                 zrtcsta(k, i) = -999.0_sp
              endif
-             do l = 1,lstsci
-                r0rtcsta(l, k, i) = r0(n, m, k, l)
-             enddo
           enddo
        endif
        s1rtcsta(i) = s1(n,m)

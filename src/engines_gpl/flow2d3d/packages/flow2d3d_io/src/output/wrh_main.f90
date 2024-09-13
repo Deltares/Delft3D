@@ -2,7 +2,7 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
                   & ithisc    ,runtxt    ,trifil    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wrh_main.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/output/wrh_main.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Main routine for writing the FLOW HIS file.
@@ -40,7 +40,6 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     use datagroups
     use netcdf
     use dffunctionals, only: dffind_duplicate
-    use flow2d3d_version_module
     !
     use globaldata
     !
@@ -58,6 +57,8 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     integer(pntrsize)                    , pointer :: wrka3 ! zdir
     integer(pntrsize)                    , pointer :: wrka4 ! zrlabd
     integer(pntrsize)                    , pointer :: wrka5 ! zuwb
+    integer                              , pointer :: nmax
+    integer                              , pointer :: mmax
     integer                              , pointer :: kmax
     integer                              , pointer :: lmax
     integer                              , pointer :: lstsci
@@ -66,9 +67,6 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     integer                              , pointer :: lsedtot
     integer                              , pointer :: ltem
     integer                              , pointer :: ltur
-    integer                              , pointer :: mmax
-    integer                              , pointer :: nmax
-    integer                              , pointer :: nsluv
     integer                              , pointer :: nsrc
     integer                              , pointer :: nostat
     integer                              , pointer :: ntruv
@@ -83,7 +81,6 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     integer(pntrsize)                    , pointer :: kcs
     integer(pntrsize)                    , pointer :: alfas
     integer(pntrsize)                    , pointer :: atr
-    integer(pntrsize)                    , pointer :: cbuv
     integer(pntrsize)                    , pointer :: ctr
     integer(pntrsize)                    , pointer :: disch
     integer(pntrsize)                    , pointer :: dps
@@ -111,26 +108,17 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     integer(pntrsize)                    , pointer :: zdps
     integer(pntrsize)                    , pointer :: zdpsed
     integer(pntrsize)                    , pointer :: zenst
-    integer(pntrsize)                    , pointer :: zfixfac
-    integer(pntrsize)                    , pointer :: zfrac
-    integer(pntrsize)                    , pointer :: zhidexp
     integer(pntrsize)                    , pointer :: zkfs
-    integer(pntrsize)                    , pointer :: zmudfrac
     integer(pntrsize)                    , pointer :: zqxk
     integer(pntrsize)                    , pointer :: zqyk
     integer(pntrsize)                    , pointer :: zrca
     integer(pntrsize)                    , pointer :: zrho
     integer(pntrsize)                    , pointer :: zrich
     integer(pntrsize)                    , pointer :: zrsdeq
-    integer(pntrsize)                    , pointer :: zsandfrac
     integer(pntrsize)                    , pointer :: zsbu
     integer(pntrsize)                    , pointer :: zsbv
-    integer(pntrsize)                    , pointer :: zseddif
-    integer(pntrsize)                    , pointer :: zsinkse
-    integer(pntrsize)                    , pointer :: zsourse
     integer(pntrsize)                    , pointer :: zssu
     integer(pntrsize)                    , pointer :: zssv
-    integer(pntrsize)                    , pointer :: ztaub
     integer(pntrsize)                    , pointer :: ztauet
     integer(pntrsize)                    , pointer :: ztauks
     integer(pntrsize)                    , pointer :: ztur
@@ -139,14 +127,12 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     integer(pntrsize)                    , pointer :: zwl
     integer(pntrsize)                    , pointer :: zws
     integer(pntrsize)                    , pointer :: zwndsp
-    integer(pntrsize)                    , pointer :: zwndcd
     integer(pntrsize)                    , pointer :: zwnddr
     integer(pntrsize)                    , pointer :: zairp
     integer(pntrsize)                    , pointer :: zprecp
     integer(pntrsize)                    , pointer :: zevap
     integer(pntrsize)                    , pointer :: hydprs
     integer(pntrsize)                    , pointer :: mnksrc
-    integer(pntrsize)                    , pointer :: nambar
     integer(pntrsize)                    , pointer :: namcon
     integer(pntrsize)                    , pointer :: namsrc
     integer                              , pointer :: itdate
@@ -191,7 +177,7 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     integer                                , external :: clsnef
     character(256)                                    :: filename
     !
-    character(256)                                    :: full_version
+    character(256)                                    :: version_full
     character(8)                                      :: cdate
     character(10)                                     :: ctime
     character(5)                                      :: czone
@@ -209,6 +195,8 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     wrka3               => gdp%gdaddress%wrka3
     wrka4               => gdp%gdaddress%wrka4
     wrka5               => gdp%gdaddress%wrka5
+    nmax                => gdp%d%nmax
+    mmax                => gdp%d%mmax
     kmax                => gdp%d%kmax
     lmax                => gdp%d%lmax
     lstsci              => gdp%d%lstsci
@@ -217,9 +205,6 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     lsedtot             => gdp%d%lsedtot
     ltem                => gdp%d%ltem
     ltur                => gdp%d%ltur
-    mmax                => gdp%d%mmax
-    nmax                => gdp%d%nmax
-    nsluv               => gdp%d%nsluv
     nsrc                => gdp%d%nsrc
     nostat              => gdp%d%nostat
     ntruv               => gdp%d%ntruv
@@ -233,7 +218,6 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     kcs                 => gdp%gdr_i_ch%kcs
     alfas               => gdp%gdr_i_ch%alfas
     atr                 => gdp%gdr_i_ch%atr
-    cbuv                => gdp%gdr_i_ch%cbuv
     ctr                 => gdp%gdr_i_ch%ctr
     disch               => gdp%gdr_i_ch%disch
     dps                 => gdp%gdr_i_ch%dps
@@ -261,26 +245,17 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     zdps                => gdp%gdr_i_ch%zdps
     zdpsed              => gdp%gdr_i_ch%zdpsed
     zenst               => gdp%gdr_i_ch%zenst
-    zfixfac             => gdp%gdr_i_ch%zfixfac
-    zfrac               => gdp%gdr_i_ch%zfrac
-    zhidexp             => gdp%gdr_i_ch%zhidexp
     zkfs                => gdp%gdr_i_ch%zkfs
-    zmudfrac            => gdp%gdr_i_ch%zmudfrac
     zqxk                => gdp%gdr_i_ch%zqxk
     zqyk                => gdp%gdr_i_ch%zqyk
     zrca                => gdp%gdr_i_ch%zrca
     zrho                => gdp%gdr_i_ch%zrho
     zrich               => gdp%gdr_i_ch%zrich
     zrsdeq              => gdp%gdr_i_ch%zrsdeq
-    zsandfrac           => gdp%gdr_i_ch%zsandfrac
     zsbu                => gdp%gdr_i_ch%zsbu
     zsbv                => gdp%gdr_i_ch%zsbv
-    zseddif             => gdp%gdr_i_ch%zseddif
-    zsinkse             => gdp%gdr_i_ch%zsinkse
-    zsourse             => gdp%gdr_i_ch%zsourse
     zssu                => gdp%gdr_i_ch%zssu
     zssv                => gdp%gdr_i_ch%zssv
-    ztaub               => gdp%gdr_i_ch%ztaub
     ztauet              => gdp%gdr_i_ch%ztauet
     ztauks              => gdp%gdr_i_ch%ztauks
     ztur                => gdp%gdr_i_ch%ztur
@@ -289,14 +264,12 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     zwl                 => gdp%gdr_i_ch%zwl
     zws                 => gdp%gdr_i_ch%zws
     zwndsp              => gdp%gdr_i_ch%zwndsp
-    zwndcd              => gdp%gdr_i_ch%zwndcd
     zwnddr              => gdp%gdr_i_ch%zwnddr
     zairp               => gdp%gdr_i_ch%zairp
     zprecp              => gdp%gdr_i_ch%zprecp
     zevap               => gdp%gdr_i_ch%zevap
     hydprs              => gdp%gdr_i_ch%hydprs
     mnksrc              => gdp%gdr_i_ch%mnksrc
-    nambar              => gdp%gdr_i_ch%nambar
     namcon              => gdp%gdr_i_ch%namcon
     namsrc              => gdp%gdr_i_ch%namsrc
     itdate              => gdp%gdexttim%itdate
@@ -322,7 +295,7 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     simdat(13:14) = rundat(15:16)
     simdat(15:16) = rundat(18:19)
     !
-    call getfullversionstring_flow2d3d(full_version)
+    call getfullversionstring_flow2d3d(version_full)
     call date_and_time(cdate, ctime, czone)
     !
     filename = trifil(1:3) // 'h' // trifil(5:)
@@ -392,14 +365,14 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
        elseif (filetype == FTYPE_NETCDF) then
           if (first .and. irequest == REQUESTTYPE_DEFINE) then              
              write(lundia,*) 'Creating new '//trim(filename)
-             ierror = nf90_create(filename, gdp%gdpostpr%nc_mode, fds); call nc_check_err(lundia, ierror, "creating file", filename)
+             ierror = nf90_create(filename, 0, fds); call nc_check_err(lundia, ierror, "creating file", filename)
              !
              ! global attributes
              !
              ierror = nf90_put_att(fds, nf90_global,  'Conventions', 'CF-1.6'); call nc_check_err(lundia, ierror, "put_att global Conventions", filename)
              ierror = nf90_put_att(fds, nf90_global,  'institution', trim('Deltares')); call nc_check_err(lundia, ierror, "put_att global institution", filename)
              ierror = nf90_put_att(fds, nf90_global,  'references', trim('www.deltares.nl')); call nc_check_err(lundia, ierror, "put_att global references", filename)
-             ierror = nf90_put_att(fds, nf90_global,  'source', trim(full_version)); call nc_check_err(lundia, ierror, "put_att global source", filename)
+             ierror = nf90_put_att(fds, nf90_global,  'source', trim(version_full)); call nc_check_err(lundia, ierror, "put_att global source", filename)
              ierror = nf90_put_att(fds, nf90_global,  'history', &
                     'This file is created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
                     ', '//trim('Delft3D')); call nc_check_err(lundia, ierror, "put_att global history", filename)
@@ -420,10 +393,10 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
                     & r(yz)     ,r(alfas)  ,d(dps)    ,r(thick)  ,r(sig)    , &
                     & r(sig)    ,irequest  ,fds       ,nostatto  ,nostatgl  , &
                     & order_sta ,ntruvto   ,ntruvgl   ,order_tra ,r(xcor)   , &
-                    & r(ycor)   ,i(kcs)    ,nsluv     ,ch(nambar),gdp       )
+                    & r(ycor)   ,i(kcs)    ,gdp       )
           if (error) goto 9999
           !
-          if (nsrc>0 .and. gdp%gdflwpar%flwoutput%hisdis) then
+          if (culvert) then
              call wrihisdis(lundia    ,error     ,filename  ,itdate    ,tunit     , &
                           & dt        ,nsrc      ,ch(namsrc),irequest  ,fds       , &
                           & gdp       )
@@ -455,10 +428,10 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
                     & r(zwndsp) ,r(zwnddr) ,r(zairp)  ,wind      ,sferic    , &
                     & r(zprecp) ,r(zevap)  ,itdate    ,dtsec     ,irequest  , &
                     & fds       ,nostatto  ,nostatgl  ,order_sta ,ntruvto   , &
-                    & ntruvgl   ,order_tra ,nsluv     ,r(cbuv)   ,r(zwndcd) ,gdp       )
+                    & ntruvgl   ,order_tra ,gdp       )
           if (error) goto 9999
           !
-          if (nsrc>0 .and. gdp%gdflwpar%flwoutput%hisdis) then
+          if (culvert) then
              call wrthisdis(lundia    ,error     ,filename  ,ithisc    , &
                           & zmodel    ,kmax      ,lstsci    ,nsrc      , &
                           & i(mnksrc) ,r(disch)  ,d(dps)    ,r(rint)   , &
@@ -472,15 +445,14 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
                        & fds       ,gdp       )
           !
           if (lsedtot>0 .or. lfsdu) then
-             call wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
-                       & nostat    ,kmax      ,lsed      ,lsedtot   ,zmodel    , &
+             call wrsedh(lundia    ,error     ,filename  ,ithisc    , &
+                       & nostat    ,kmax      ,lsed      ,lsedtot   , &
                        & r(zws)    ,r(zrsdeq) ,r(zbdsed) ,r(zdpsed) ,r(zdps)   , &
+                       & ntruv     ,zmodel    , &
                        & r(zsbu)   ,r(zsbv)   ,r(zssu)   ,r(zssv)   ,r(sbtr)   , &
-                       & r(sstr)   ,r(sbtrc)  ,r(sstrc)  ,r(zrca)   ,r(zsourse), &
-                       & r(zsinkse),r(zfrac)  ,r(zmudfrac),r(zsandfrac),r(zfixfac), &
-                       & r(ztaub)  ,r(zhidexp),r(zseddif), &
-                       & irequest  ,fds       ,nostatto  ,nostatgl  ,order_sta , &
-                       & ntruvto   ,ntruvgl   ,order_tra ,gdp       )
+                       & r(sstr)   ,r(sbtrc)  ,r(sstrc)  ,r(zrca)   ,irequest  , &
+                       & fds       ,nostatto  ,nostatgl  ,order_sta ,ntruvto   , &
+                       & ntruvgl   ,order_tra ,gdp       )
              if (error) goto 9999
           endif
           !

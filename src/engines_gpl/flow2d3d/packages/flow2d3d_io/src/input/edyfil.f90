@@ -3,7 +3,7 @@ subroutine edyfil(lundia    ,error     ,filedy    ,fmttmp    ,nmax      , &
                 & dicuv     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine edyfil(lundia    ,error     ,filedy    ,fmttmp    ,nmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: edyfil.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/edyfil.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Reads the eddy viscosity arrays VICUV and eddy
@@ -60,6 +60,8 @@ subroutine edyfil(lundia    ,error     ,filedy    ,fmttmp    ,nmax      , &
     integer, pointer                      :: nlg 
     integer, pointer                      :: mmaxgl 
     integer, pointer                      :: nmaxgl 
+    logical, pointer :: HORIZdiffZERO
+    logical, pointer :: HORIZviscZERO
 !
 ! Global variables
 !
@@ -90,6 +92,8 @@ subroutine edyfil(lundia    ,error     ,filedy    ,fmttmp    ,nmax      , &
 !
 !! executable statements -------------------------------------------------------
 !
+    HORIZdiffZERO => gdp%gdimbound%HORIZdiffZERO
+    HORIZviscZERO => gdp%gdimbound%HORIZviscZERO
     !
     mfg    => gdp%gdparall%mfg 
     mlg    => gdp%gdparall%mlg 
@@ -118,7 +122,8 @@ subroutine edyfil(lundia    ,error     ,filedy    ,fmttmp    ,nmax      , &
        endif
        !
        if (inode == master) then
-          open (newunit=luntmp, file = filedy(1:lfile), form = fmttmp, status = 'old')
+          luntmp = newlun(gdp)
+          open (luntmp, file = filedy(1:lfile), form = fmttmp, status = 'old')
        endif
        !
        ! Read records with horizontal eddy-viscosity, for each row one record
@@ -148,6 +153,7 @@ subroutine edyfil(lundia    ,error     ,filedy    ,fmttmp    ,nmax      , &
        do m = mfg, mlg 
           do n = nfg, nlg 
              vicuv(n-nfg+1,m-mfg+1,kbg) = tmp(n,m) 
+             if (HORIZviscZERO)  vicuv(n-nfg+1,m-mfg+1,kbg)  = 0._fp
           enddo 
        enddo
        !
@@ -174,6 +180,7 @@ subroutine edyfil(lundia    ,error     ,filedy    ,fmttmp    ,nmax      , &
           do m = mfg, mlg 
              do n = nfg, nlg 
                 dicuv(n-nfg+1,m-mfg+1,kbg) = tmp(n,m)
+                if (HORIZdiffZERO) dicuv(n-nfg+1,m-mfg+1,kbg) = 0._fp
              enddo
           enddo
        endif

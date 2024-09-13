@@ -2,12 +2,12 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
                 & zmodel    , &
                 & kcs       ,kcu       ,kcv       , &
                 & kspu      ,kspv      ,hkru      ,hkrv      , &
-                & umean     ,vmean     ,dpd       ,dpu       ,dpv       , &
+                & umean     ,vmean     ,dp        ,dpu       ,dpv       , &
                 & dps       ,dzs1      ,u1        ,v1        ,s1        , &
-                & thick     ,gdp       )
+                & thick     ,nst       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -31,8 +31,8 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: caldpu.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/caldpu.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Computes depth at vel. points
@@ -59,9 +59,11 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
     !
     real(fp)     , pointer :: bed
     character(8) , pointer :: dpuopt
+    integer, pointer :: cutcell
 !
 ! Global variables
-!
+
+    integer                                                                , intent(in)  :: nst    !  Description and declaration in esm_alloc_int.f90!
     integer                                                                , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
     integer                                                                              :: lundia !  Description and declaration in inout.igs
     integer                                                                , intent(in)  :: mmax   !  Description and declaration in esm_alloc_int.f90
@@ -72,7 +74,7 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
     integer   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax), intent(in)  :: kspu   !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax), intent(in)  :: kspv   !  Description and declaration in esm_alloc_int.f90
     logical                                                                , intent(in)  :: zmodel !  Description and declaration in procs.igs
-    real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)        , intent(in)  :: dpd    !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)        , intent(in)  :: dp     !  Description and declaration in esm_alloc_real.f90
     real(prec), dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)        , intent(in)  :: dps    !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                      :: dpu    !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)                      :: dpv    !  Description and declaration in esm_alloc_real.f90
@@ -104,6 +106,7 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
 !
 !! executable statements -------------------------------------------------------
 !
+    cutcell => gdp%gdimbound%cutcell
     dpuopt              => gdp%gdnumeco%dpuopt
     bed                 => gdp%gdmorpar%bed
     !
@@ -116,7 +119,7 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
     !   Determine UMEAN and VMEAN
     !
     !   Note: in case of parallel runs, s1, u1 and v1 are also available in halo area
-    !         (see rdic), so no exchanging with neighbours is needed, i.e.
+    !         (see rdic or rstcom), so no exchanging with neighbours is needed, i.e.
     !         redundant for points in halo area at coupling interfaces
     !
     do n = 1 - ddb, nmaxus
@@ -141,214 +144,223 @@ subroutine caldpu(lundia    ,mmax      ,nmaxus    ,kmax      , &
           enddo
        enddo
     enddo
-    !
-    !   For Z-model MIN or UPW required
-    !
-    if (dpuopt=='UPW') then
-       do n = 1 - ddb, nmaxus
-          do m = 1 - ddb, mmax
-             nu = min(n + 1, nmaxus)
-             mu = min(m + 1, mmax)
-             !
-             if (kcu(n, m)==1) then
-                if (umean(n, m)>=0.001) then
-                   dpu(n, m) = real(dps(n, m),fp)
-                elseif (umean(n, m)<= - 0.001) then
-                   dpu(n, m) = real(dps(n, mu),fp)
-                else
-                   dpu(n, m) = min(real(dps(n, mu),fp), real(dps(n, m),fp))
-                endif
-             endif
-             !
-             if (kcv(n, m)==1) then
-                if (vmean(n, m)>=0.001) then
-                   dpv(n, m) = real(dps(n, m),fp)
-                elseif (vmean(n, m)<= - 0.001) then
-                   dpv(n, m) = real(dps(nu, m),fp)
-                else
-                   dpv(n, m) = min(real(dps(nu, m),fp), real(dps(n, m),fp))
-                endif
-             endif
-          enddo
-       enddo
-    !
-    !    For Drying and flooding of areas when DPSOPT = DP, like in India -
-    !    Use DPUOPT = MIN(DPS(nm), DPS(N,MU))
-    !-----IF KSPU(nm,0) = 3
-    !        DPU already filled with Crest height (see call STRFIL in RDSTRU)
-    !        hence now only limit DPU if crest depth > bottom depth
-    !     ELSE
-    !         Compute DPU as min of DPS
-    !         IF KSPU(n,m,0) = 9
-    !               HKRU already filled with Crest height (see call STRFIL in RDSTRU)
-    !               hence now only limit HKRU if crest height > bottom depth
-    !
-    elseif (dpuopt=='MIN') then
-       do n = 1 - ddb, nmaxus
-          do m = 1 - ddb, mmax
-             mu = min(m + 1, mmax)
-             nu = min(n + 1, nmaxus)
-             if (kcu(n, m)==1) then
-                dpuw = min(real(dps(n, mu),fp), real(dps(n, m),fp))
-                if (abs(kspu(n, m, 0))==3) then
-                   if (dpu(n, m) > dpuw) then
-                      hkru(n, m) = dpuw
-                      dpu(n, m)  = dpuw
-                      write (errms1(2:7) , '(i6)') m
-                      write (errms1(9:14), '(i6)') n
-                      call prterr(lundia    ,'V058'    ,errms1    )
-                   else
-                      hkru(n, m) = dpu(n, m)
-                   endif
-                else
-                   dpu(n, m) = dpuw
-                   if (abs(kspu(n, m, 0))==9 .and. hkru(n, m)>dpuw) then
-                      hkru(n, m) = dpuw
-                      write (errms1(2:7) , '(i6)') m
-                      write (errms1(9:14), '(i6)') n
-                      call prterr(lundia    ,'V058'    ,errms1    )
-                   endif
-                endif
-             endif
-             !
-             if (kcv(n, m)==1) then
-                dpvw = min(real(dps(nu, m),fp), real(dps(n, m),fp))
-                if (abs(kspv(n, m, 0))==3) then
-                   if (dpv(n, m) > dpvw) then
-                      hkrv(n, m) = dpvw
-                      dpv(n, m)  = dpvw
-                      write (errms2(2:7) , '(i6)') m
-                      write (errms2(9:14), '(i6)') n
-                      call prterr(lundia    ,'V058'    ,errms2    )
-                   else
-                      hkrv(n, m) = dpv(n, m)
-                   endif
-                else
-                   dpv(n, m) = dpvw
-                   if (abs(kspv(n, m, 0))==9 .and. hkrv(n, m)>dpvw) then
-                      hkrv(n, m) = dpvw
-                      write (errms2(2:7) , '(i6)') m
-                      write (errms2(9:14), '(i6)') n
-                      call prterr(lundia    ,'V058'    ,errms2    )
-                   endif
-                endif
-             endif
-          enddo
-       enddo
-    elseif (dpuopt=='MEAN_DPS') then
-       do n = 1 - ddb, nmaxus
-          do m = 1 - ddb, mmax
-             mu = min(m + 1, mmax)
-             nu = min(n + 1, nmaxus)
-             if (kcu(n, m)==1) then
-                dpuw = 0.5_fp*real(dps(n, mu) + dps(n, m),fp)
-                if (abs(kspu(n, m, 0))==3) then
-                   if (dpu(n, m) > dpuw) then
-                      hkru(n, m) = dpuw
-                      dpu(n, m)  = dpuw
-                      write (errms1(2:7) , '(i6)') m
-                      write (errms1(9:14), '(i6)') n
-                      call prterr(lundia    ,'V058'    ,errms1    )
-                   else
-                      hkru(n, m) = dpu(n, m)
-                   endif
-                else
-                   dpu(n, m) = dpuw
-                   if (abs(kspu(n, m, 0))==9 .and. hkru(n, m)>dpuw) then
-                      hkru(n, m) = dpuw
-                      write (errms1(2:7) , '(i6)') m
-                      write (errms1(9:14), '(i6)') n
-                      call prterr(lundia    ,'V058'    ,errms1    )
-                   endif
-                endif
-             endif
-             !
-             if (kcv(n, m)==1) then
-                dpvw = 0.5_fp*real(dps(nu, m) + dps(n, m),fp)
-                if (abs(kspv(n, m, 0))==3) then
-                   if (dpv(n, m) > dpvw) then
-                      hkrv(n, m) = dpvw
-                      dpv(n, m)  = dpvw
-                      write (errms2(2:7) , '(i6)') m
-                      write (errms2(9:14), '(i6)') n
-                      call prterr(lundia    ,'V058'    ,errms2    )
-                   else
-                      hkrv(n, m) = dpv(n, m)
-                   endif
-                else
-                   dpv(n, m) = dpvw
-                   if (abs(kspv(n, m, 0))==9 .and. hkrv(n, m)>dpvw) then
-                      hkrv(n, m) = dpvw
-                      write (errms2(2:7) , '(i6)') m
-                      write (errms2(9:14), '(i6)') n
-                      call prterr(lundia    ,'V058'    ,errms2    )
-                   endif
-                endif
-             endif
-          enddo
-       enddo
-    elseif (dpuopt=='MEAN') then
+    if (cutcell==0 .or. nst.eq.-100) then
        !
-       !     standard option = MEAN
+       !   For Z-model MIN or UPW required
+       !
+       if (dpuopt=='UPW') then
+          do n = 1 - ddb, nmaxus
+             do m = 1 - ddb, mmax
+                nu = min(n + 1, nmaxus)
+                mu = min(m + 1, mmax)
+                !
+                if (kcu(n, m)==1) then
+                   if (umean(n, m)>=0.001) then
+                      dpu(n, m) = real(dps(n, m),fp)
+                   elseif (umean(n, m)<= - 0.001) then
+                      dpu(n, m) = real(dps(n, mu),fp)
+                   else
+                      dpu(n, m) = min(real(dps(n, mu),fp), real(dps(n, m),fp))
+                   endif
+                endif
+                !
+                if (kcv(n, m)==1) then
+                   if (vmean(n, m)>=0.001) then
+                      dpv(n, m) = real(dps(n, m),fp)
+                   elseif (vmean(n, m)<= - 0.001) then
+                      dpv(n, m) = real(dps(nu, m),fp)
+                   else
+                      dpv(n, m) = min(real(dps(nu, m),fp), real(dps(n, m),fp))
+                   endif
+                endif
+             enddo
+          enddo
+       !
+       !    For Drying and flooding of areas when DPSOPT = DP, like in India -
+       !    Use DPUOPT = MIN(DPS(nm), DPS(N,MU))
        !-----IF KSPU(nm,0) = 3
        !        DPU already filled with Crest height (see call STRFIL in RDSTRU)
        !        hence now only limit DPU if crest depth > bottom depth
        !     ELSE
-       !         Compute DPU from averaged DPD at velocity point
+       !         Compute DPU as min of DPS
        !         IF KSPU(n,m,0) = 9
        !               HKRU already filled with Crest height (see call STRFIL in RDSTRU)
        !               hence now only limit HKRU if crest height > bottom depth
        !
-       do n = 1 - ddb, nmaxus
-          do m = 1 - ddb, mmax
-             nd = max(n - 1, 1 - ddb)
-             md = max(m - 1, 1 - ddb)
-             write (errms1(2:7), '(i6)') m
-             write (errms1(9:14), '(i6)') n
-             errms2(:14) = errms1(:14)
-             if (kcu(n, m)==1) then
-                dpuw = .5*(dpd(n, m) + dpd(nd, m))
-                if (abs(kspu(n, m, 0))==3) then
-                   if (dpu(n, m) > dpuw) then
-                      hkru(n, m) = dpuw
-                      dpu (n, m) = dpuw
-                      call prterr(lundia    ,'V058'    ,errms1    )
+       elseif (dpuopt=='MIN') then
+          do n = 1 - ddb, nmaxus
+             do m = 1 - ddb, mmax
+                mu = min(m + 1, mmax)
+                nu = min(n + 1, nmaxus)
+                if (kcu(n, m)==1) then
+                   dpuw = min(real(dps(n, mu),fp), real(dps(n, m),fp))
+                   if (abs(kspu(n, m, 0))==3) then
+                      if (dpu(n, m) > dpuw) then
+                         hkru(n, m) = dpuw
+                         dpu(n, m)  = dpuw
+                         write (errms1(2:7) , '(i6)') m
+                         write (errms1(9:14), '(i6)') n
+                         call prterr(lundia    ,'V058'    ,errms1    )
+                      else
+                         hkru(n, m) = dpu(n, m)
+                      endif
                    else
-                      hkru(n, m) = dpu(n, m)
-                   endif
-                else
-                   dpu(n, m) = dpuw
-                   if (abs(kspu(n, m, 0))==9 .and. hkru(n, m)>dpuw) then
-                      hkru(n, m) = dpuw
-                      call prterr(lundia    ,'V058'    ,errms1    )
+                      dpu(n, m) = dpuw
+                      if (abs(kspu(n, m, 0))==9 .and. hkru(n, m)>dpuw) then
+                         hkru(n, m) = dpuw
+                         write (errms1(2:7) , '(i6)') m
+                         write (errms1(9:14), '(i6)') n
+                         call prterr(lundia    ,'V058'    ,errms1    )
+                      endif
                    endif
                 endif
-             endif
-             !
-             if (kcv(n, m)==1) then
-                dpvw = .5*(dpd(n, m) + dpd(n, md))
-                if (abs(kspv(n, m, 0))==3) then
-                   if (dpv(n, m) > dpvw) then
-                      hkrv(n, m) = dpvw
-                      dpv (n, m) = dpvw
-                      call prterr(lundia    ,'V058'    ,errms2    )
+                !
+                if (kcv(n, m)==1) then
+                   dpvw = min(real(dps(nu, m),fp), real(dps(n, m),fp))
+                   if (abs(kspv(n, m, 0))==3) then
+                      if (dpv(n, m) > dpvw) then
+                         hkrv(n, m) = dpvw
+                         dpv(n, m)  = dpvw
+                         write (errms2(2:7) , '(i6)') m
+                         write (errms2(9:14), '(i6)') n
+                         call prterr(lundia    ,'V058'    ,errms2    )
+                      else
+                         hkrv(n, m) = dpv(n, m)
+                      endif
                    else
-                      hkrv(n, m) = dpv(n, m)
-                   endif
-                else
-                   dpv(n, m) = dpvw
-                   if (abs(kspv(n, m, 0))==9 .and. hkrv(n, m)>dpvw) then
-                      hkrv(n, m) = dpvw
-                      call prterr(lundia    ,'V058'    ,errms2    )
+                      dpv(n, m) = dpvw
+                      if (abs(kspv(n, m, 0))==9 .and. hkrv(n, m)>dpvw) then
+                         hkrv(n, m) = dpvw
+                         write (errms2(2:7) , '(i6)') m
+                         write (errms2(9:14), '(i6)') n
+                         call prterr(lundia    ,'V058'    ,errms2    )
+                      endif
                    endif
                 endif
-             endif
+             enddo
           enddo
-       enddo
-    else
+       elseif (dpuopt=='MEAN_DPS') then
+          do n = 1 - ddb, nmaxus
+             do m = 1 - ddb, mmax
+                mu = min(m + 1, mmax)
+                nu = min(n + 1, nmaxus)
+                if (kcu(n, m)==1) then
+                   dpuw = 0.5_fp*real(dps(n, mu) + dps(n, m),fp)
+                   if (abs(kspu(n, m, 0))==3) then
+                      if (dpu(n, m) > dpuw) then
+                         hkru(n, m) = dpuw
+                         dpu(n, m)  = dpuw
+                         write (errms1(2:7) , '(i6)') m
+                         write (errms1(9:14), '(i6)') n
+                         call prterr(lundia    ,'V058'    ,errms1    )
+                      else
+                         hkru(n, m) = dpu(n, m)
+                      endif
+                   else
+                      dpu(n, m) = dpuw
+                      if (abs(kspu(n, m, 0))==9 .and. hkru(n, m)>dpuw) then
+                         hkru(n, m) = dpuw
+                         write (errms1(2:7) , '(i6)') m
+                         write (errms1(9:14), '(i6)') n
+                         call prterr(lundia    ,'V058'    ,errms1    )
+                      endif
+                   endif
+                endif
+                !
+                if (kcv(n, m)==1) then
+                   dpvw = 0.5_fp*real(dps(nu, m) + dps(n, m),fp)
+                   if (abs(kspv(n, m, 0))==3) then
+                      if (dpv(n, m) > dpvw) then
+                         hkrv(n, m) = dpvw
+                         dpv(n, m)  = dpvw
+                         write (errms2(2:7) , '(i6)') m
+                         write (errms2(9:14), '(i6)') n
+                         call prterr(lundia    ,'V058'    ,errms2    )
+                      else
+                         hkrv(n, m) = dpv(n, m)
+                      endif
+                   else
+                      dpv(n, m) = dpvw
+                      if (abs(kspv(n, m, 0))==9 .and. hkrv(n, m)>dpvw) then
+                         hkrv(n, m) = dpvw
+                         write (errms2(2:7) , '(i6)') m
+                         write (errms2(9:14), '(i6)') n
+                         call prterr(lundia    ,'V058'    ,errms2    )
+                      endif
+                   endif
+                endif
+             enddo
+          enddo
+       elseif (dpuopt=='MEAN') then
+          !
+          !     standard option = MEAN
+          !-----IF KSPU(nm,0) = 3
+          !        DPU already filled with Crest height (see call STRFIL in RDSTRU)
+          !        hence now only limit DPU if crest depth > bottom depth
+          !     ELSE
+          !         Compute DPU from averaged DP at velocity point
+          !         IF KSPU(n,m,0) = 9
+          !               HKRU already filled with Crest height (see call STRFIL in RDSTRU)
+          !               hence now only limit HKRU if crest height > bottom depth
+          !
+          do n = 1 - ddb, nmaxus
+             do m = 1 - ddb, mmax
+                nd = max(n - 1, 1 - ddb)
+                md = max(m - 1, 1 - ddb)
+                write (errms1(2:7), '(i6)') m
+                write (errms1(9:14), '(i6)') n
+                errms2(:14) = errms1(:14)
+                if (kcu(n, m)==1) then
+                   dpuw = .5*(dp(n, m) + dp(nd, m))
+                   if (abs(kspu(n, m, 0))==3) then
+                      if (dpu(n, m) > dpuw) then
+                         hkru(n, m) = dpuw
+                         dpu (n, m) = dpuw
+                         call prterr(lundia    ,'V058'    ,errms1    )
+                      else
+                         hkru(n, m) = dpu(n, m)
+                      endif
+                   else
+                      dpu(n, m) = dpuw
+                      if (abs(kspu(n, m, 0))==9 .and. hkru(n, m)>dpuw) then
+                         hkru(n, m) = dpuw
+                         call prterr(lundia    ,'V058'    ,errms1    )
+                      endif
+                   endif
+                endif
+                !
+                if (kcv(n, m)==1) then
+                   dpvw = .5*(dp(n, m) + dp(n, md))
+                   if (abs(kspv(n, m, 0))==3) then
+                      if (dpv(n, m) > dpvw) then
+                         hkrv(n, m) = dpvw
+                         dpv (n, m) = dpvw
+                         call prterr(lundia    ,'V058'    ,errms2    )
+                      else
+                         hkrv(n, m) = dpv(n, m)
+                      endif
+                   else
+                      dpv(n, m) = dpvw
+                      if (abs(kspv(n, m, 0))==9 .and. hkrv(n, m)>dpvw) then
+                         hkrv(n, m) = dpvw
+                         call prterr(lundia    ,'V058'    ,errms2    )
+                      endif
+                   endif
+                endif
+             enddo
+          enddo
+       else
+       endif
+!
+    else !if (cutcell>0) 
+!
+       !except for first time step call this for cutcells
+       call caldpu_cc(dpu,dpv,hkru,hkrv,kcu,kcv,kspu,kspv,zmodel,nmaxus,mmax,gdp%d%nlb,gdp%d%nub,gdp%d%mlb,gdp%d%mub,ddb,kmax,lundia,dpuopt,gdp)
+!
     endif
+!
     call caldpu_dd(nmaxus ,mmax   ,kcs    ,kcu    ,kcv    , &
-                 & umean  ,vmean  ,dpd    ,dps    ,dpu    , &
+                 & umean  ,vmean  ,dp     ,dps    ,dpu    , &
                  & dpv    ,gdp    ) 
     !
     ! exchange depths and heights with neighbours for parallel runs

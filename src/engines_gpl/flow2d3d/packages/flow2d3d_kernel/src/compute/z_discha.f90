@@ -2,11 +2,11 @@ subroutine z_discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j    
                   & nmmaxj    ,icx       ,icy       ,namsrc    ,mnksrc    , &
                   & kfs       ,kcs       ,kfsmin    ,kfsmx0    ,sour      , &
                   & sink      ,dps       ,s0        ,dzs0      ,r0        , &
-                  & disch     ,rint      ,rintsm    ,relthkin  ,relthkout ,bubble    , &
+                  & disch     ,rint      ,relthkin  ,relthkout ,bubble    , &
                   & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +30,8 @@ subroutine z_discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j    
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_discha.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/z_discha.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: The discharges are added to the right hand side of
@@ -55,7 +55,6 @@ subroutine z_discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j    
     integer , pointer :: ltem
     integer , pointer :: lundia
     real(fp), pointer :: maxTOutlet
-    logical , dimension(:) , pointer :: flbcktemp
 !
 ! Global variables
 !
@@ -89,7 +88,6 @@ subroutine z_discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j    
     real(fp), dimension(kmax)                                             :: relthkin
     real(fp), dimension(kmax)                                             :: relthkout
     real(fp), dimension(lstsc, nsrc)                        , intent(in)  :: rint   !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(lstsc, nsrc)                        , intent(out) :: rintsm !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(nsrc)                               , intent(in)  :: disch  !  Description and declaration in esm_alloc_real.f90
     character(20), dimension(nsrc)                                        :: namsrc !  Description and declaration in esm_alloc_char.f90
 !
@@ -112,6 +110,7 @@ subroutine z_discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j    
     integer          :: kk
     integer          :: offset
     real(fp)         :: concin
+    real(fp)         :: concinWrite
     real(fp)         :: sumrelthk
     character(20)    :: chulp       ! Help character string
     character(200)   :: filename
@@ -121,7 +120,6 @@ subroutine z_discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j    
     ltem       => gdp%d%ltem
     lundia     => gdp%gdinout%lundia
     maxTOutlet => gdp%gddischarge%maxTOutlet
-    flbcktemp  => gdp%gdheat%flbcktemp
     !
     ddb  = gdp%d%ddbound
     icxy = max(icx, icy)
@@ -169,23 +167,7 @@ subroutine z_discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j    
              ! concentration at outfall is prescribed in rint
              !
              concin = rint(lcon, isrc)
-             !
-             ! For background temperatures the current temperature is used
-             !
-             if ( flbcktemp(lcon) ) then
-                nmin = (mnksrc(2, isrc) + ddb) + ((mnksrc(1, isrc) - 1) + ddb)*icxy
-                kkin = mnksrc(3, isrc)
-                if (kkin == 0) then
-                   concin = 0.0_fp
-                   do k2 = kfsmin(nmin), kfsmx0(nmin)
-                      concin = concin + r0(nmin, k2, lcon)*relthkin(k2)
-                   enddo
-                else
-                   if (kkin > kfsmx0(nmin)) kkin = max(kfsmx0(nmin), kfsmin(nmin))
-                   if (kkin < kfsmin(nmin)) kkin = kfsmin(nmin)
-                   concin = r0(nmin, kkin, lcon)
-                endif
-             endif
+             concinWrite = concin
           else
              !
              ! discharge with intake (culverts, power station)
@@ -221,6 +203,7 @@ subroutine z_discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j    
                    if (kkin < kfsmin(nmin)) kkin = kfsmin(nmin)
                    concin = r0(nmin, kkin, lcon)
                 endif
+                concinWrite = concin
                 if (mnksrc(7,isrc)==6 .and. lcon==ltem) then
                    !
                    ! Q-type power station and this is constituent 'temperature'
@@ -243,12 +226,13 @@ subroutine z_discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j    
                       call prterr(lundia, 'S100', namsrc(isrc))
                    endif
                 endif
+             else
+                concinWrite = -1.0_fp
              endif
           endif
           !
           ! source/sink addition at outfall
           !
-          rintsm(lcon, isrc) = concin
           if (disch(isrc) > 0.0_fp) then
              !
              ! positive discharge; addition to sour

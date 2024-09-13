@@ -1,7 +1,7 @@
-subroutine griddims_admin( kcs, xz, yz, xcor, ycor, gdp )
+subroutine griddims_admin( kcs, gdp )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine griddims_admin( kcs, xz, yz, xcor, ycor, gdp )
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: griddims_admin.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/general/griddims_admin.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: ...
@@ -41,17 +41,12 @@ subroutine griddims_admin( kcs, xz, yz, xcor, ycor, gdp )
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
-    integer          , pointer :: nmlb
-    integer          , pointer :: nmub
-    type(griddimtype), pointer :: griddim
+    !   NONE
+
 !
 ! Global variables
 !
-   integer , dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: kcs
-   real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: xz
-   real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: yz
-   real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: xcor
-   real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: ycor
+   integer, dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: kcs
 !
 ! Local variables
 !
@@ -64,25 +59,21 @@ subroutine griddims_admin( kcs, xz, yz, xcor, ycor, gdp )
 !
 !! executable statements -------------------------------------------------------
 !
-    nmlb         => gdp%d%nmlb
-    nmub         => gdp%d%nmub
-    griddim      => gdp%griddim
-    !
     icx = 1
-    icy = griddim%nmax + 2*gdp%d%ddbound
+    icy = gdp%d%nmax + 2*gdp%d%ddbound
     !
-    do nm = nmlb, nmub
-       griddim%celltype(nm) = kcs(nm)
+    do nm = gdp%d%nmlb, gdp%d%nmub
+       gdp%griddim%celltype(nm) = kcs(nm)
     enddo
     !
     i = 0
-    do nm = 1, griddim%nmmax
+    do nm = 1, gdp%d%nmmax
        if (kcs(nm)==2) i = i+1
     enddo
     !
     call reallocP(gdp%griddim%nmbnd, (/i,2/), stat=istat)
     i = 0
-    do nm = 1, griddim%nmmax
+    do nm = 1, gdp%d%nmmax
        if (kcs(nm)==2) then
           i = i+1
           !
@@ -100,17 +91,8 @@ subroutine griddims_admin( kcs, xz, yz, xcor, ycor, gdp )
              nm2 = nm+icy
           endif
           !
-          griddim%nmbnd(i,1) = nm   ! open boundary cell
-          griddim%nmbnd(i,2) = nm2  ! corresponding internal cell
+          gdp%griddim%nmbnd(i,1) = nm   ! open boundary cell
+          gdp%griddim%nmbnd(i,2) = nm2  ! corresponding internal cell
        endif
     enddo
-    !
-    allocate(griddim%xz(nmlb:nmub), stat=istat)
-    allocate(griddim%yz(nmlb:nmub), stat=istat)
-    allocate(griddim%xnode(nmlb:nmub), stat=istat)
-    allocate(griddim%ynode(nmlb:nmub), stat=istat)
-    griddim%xz(:) = xz(:)
-    griddim%yz(:) = yz(:)
-    griddim%xnode(:) = xcor(:)
-    griddim%ynode(:) = ycor(:)
 end subroutine griddims_admin

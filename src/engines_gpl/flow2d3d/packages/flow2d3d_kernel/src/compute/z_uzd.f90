@@ -13,14 +13,15 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                & vicuv     ,vnu2d     ,vicww     ,tgfsep    ,dps       , &
                & dfu       ,deltau    ,tp        ,rlabda    ,fxw       ,wsbodyu   , &
                & drhodx    ,wsu       ,taubpu    ,taubsu    ,rxx       , &
-               & rxy       ,windsu    ,patm      ,fcorio    ,p0        , &
+               & rxy       ,windu     ,patm      ,fcorio    ,p0        , &
                & ubrlsu    ,pship     ,diapl     ,rnpl      ,cfurou    , &
                & u1        ,s0        ,dpu       ,qxk       ,qyk       , &
                & norow     ,nocol     ,irocol    ,nst       ,umean     , &
-               & crbc      ,ustokes   ,gdp       )
+               & nmax      ,mmax      ,nmaxus    ,u0INTv    ,v0INTu    , &
+               & crbc      ,ustokes   ,xcor      ,ycor      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -44,8 +45,8 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_uzd.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/z_uzd.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! This subroutine evaluates/solves the horizontal momentum equation for a Z-layer
@@ -92,38 +93,46 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     !
     include 'flow_steps_f.inc'
     !    
-    real(fp)                     , pointer :: hdt
-    real(fp)                     , pointer :: ag
-    integer                      , pointer :: iro
-    integer                      , pointer :: irov
-    real(fp)                     , pointer :: rhow
-    real(fp)                     , pointer :: vicmol
-    character(8)                 , pointer :: dpsopt
-    real(fp)                     , pointer :: eps
-    integer                      , pointer :: lundia
-    real(fp)                     , pointer :: drycrt
-    real(fp)                     , pointer :: dryflc
-    real(fp)                     , pointer :: gammax
-    integer                      , pointer :: ibaroc
-    logical                      , pointer :: cstbnd
-    logical                      , pointer :: old_corio
-    character(6)                 , pointer :: momsol
-    logical                      , pointer :: slplim
-    real(fp)                     , pointer :: rhofrac
-    logical                      , pointer :: wind
-    logical                      , pointer :: wave
-    logical                      , pointer :: roller
-    logical                      , pointer :: xbeach
-    integer                      , pointer :: nh_level
-    logical                      , pointer :: nonhyd
-    real(fp)                     , pointer :: dzmin
-    integer                      , pointer :: mfg
-    integer                      , pointer :: nfg
-    integer                      , pointer :: no_dis
-    logical                      , pointer :: nf_src_mom
-    real(fp), dimension(:,:,:)   , pointer :: nf_src_momu
-    real(fp), dimension(:,:,:)   , pointer :: nf_src_momv
-    real(fp)                     , pointer :: momrelax
+    real(fp)                , pointer :: hdt
+    real(fp)                , pointer :: ag
+    integer                 , pointer :: iro
+    integer                 , pointer :: irov
+    real(fp)                , pointer :: rhow
+    real(fp)                , pointer :: vicmol
+    character(8)            , pointer :: dpsopt
+    real(fp)                , pointer :: eps
+    integer                 , pointer :: lundia
+    real(fp)                , pointer :: drycrt
+    real(fp)                , pointer :: dryflc
+    real(fp)                , pointer :: gammax
+    integer                 , pointer :: ibaroc
+    logical                 , pointer :: cstbnd
+    logical                 , pointer :: old_corio
+    character(6)            , pointer :: momsol
+    logical                 , pointer :: slplim
+    real(fp)                , pointer :: rhofrac
+    logical                 , pointer :: wind
+    logical                 , pointer :: wave
+    logical                 , pointer :: roller
+    logical                 , pointer :: xbeach
+    integer                 , pointer :: nh_level
+    logical                 , pointer :: nonhyd
+    real(fp)                , pointer :: dzmin
+    integer                 , pointer :: mfg
+    integer                 , pointer :: nfg
+    integer                 , pointer :: lunscr
+    integer                 , pointer :: nmlb
+    integer                 , pointer :: nmub
+    integer                 , pointer :: mlb
+    integer                 , pointer :: mub
+    integer                 , pointer :: nlb
+    integer                 , pointer :: nub
+    integer, pointer :: cutcell
+    integer, pointer :: GhostMethod
+    logical, pointer :: periodSURFACE
+    integer, pointer :: PERIODalongM
+    logical, pointer :: TRANSVperIMPL
+    integer, pointer :: GHOSTIMPL
 !
 ! Global variables
 !
@@ -136,12 +145,15 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     integer                                                              :: kmax    !  Description and declaration in esm_alloc_int.f90
     integer                                                              :: nmmax   !  Description and declaration in dimens.igs
     integer                                                              :: nmmaxj  !  Description and declaration in dimens.igs
+    integer                                                 , intent(in) :: nmax      
+    integer                                                 , intent(in) :: mmax 
+    integer                                                 , intent(in) :: nmaxus 
     integer                                                 , intent(in) :: nsrc    !  Description and declaration in esm_alloc_int.f90
     integer                                                 , intent(in) :: nst     !  Time step number
     integer     , dimension(7, nsrc)                        , intent(in) :: mnksrc  !  Description and declaration in esm_alloc_int.f90
     integer                                                              :: nocol   !  Description and declaration in esm_alloc_int.f90
     integer                                                              :: norow   !  Description and declaration in esm_alloc_int.f90
-    integer     , dimension(5, norow)                                    :: irocol  !  Description and declaration in esm_alloc_int.f90
+    integer     , dimension(7, norow)                                    :: irocol  !  Description and declaration in esm_alloc_int.f90
     integer     , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: kcs     !  Description and declaration in esm_alloc_int.f90
     integer     , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: kfs     !  Description and declaration in esm_alloc_int.f90
     integer     , dimension(gdp%d%nmlb:gdp%d%nmub)          , intent(in) :: kfsmn0  !  Description and declaration in esm_alloc_int.f90
@@ -174,6 +186,8 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: gud     !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: guu     !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: guv     !  Description and declaration in esm_alloc_real.f90
+    real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: xcor     !  Description and declaration in esm_alloc_real.f90
+    real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: ycor     !  Description and declaration in esm_alloc_real.f90    
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)          , intent(in) :: guz     !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: gvd     !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: gvu     !  Description and declaration in esm_alloc_real.f90
@@ -191,7 +205,7 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: tp      !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: umean   !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: vnu2d   !  Description and declaration in esm_alloc_real.f90
-    real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)          , intent(in) :: windsu  !  Description and declaration in esm_alloc_real.f90
+    real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)          , intent(in) :: windu   !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: wsu     !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub)                       :: wsbodyu !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)  , intent(in) :: vicww   !  Description and declaration in esm_alloc_real.f90
@@ -236,6 +250,8 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)    , intent(in) :: ubrlsu  !  Description and declaration in esm_alloc_real.f90
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                 :: ustokes !  Description and declaration in trisol.igs
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                 :: v0      !  Description and declaration in esm_alloc_real.f90
+    real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                 :: v0INTu
+    real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                 :: u0INTv
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                 :: uvdwk   !  Internal work array for Jac.iteration
     real(fp)    , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                 :: vvdwk   !  Internal work array for Jac.iteration
     real(fp)    , dimension(nsrc)                           , intent(in) :: disch   !  Description and declaration in esm_alloc_real.f90
@@ -254,7 +270,6 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     integer            :: idifc
     integer            :: idifd
     integer            :: idifu
-    integer            :: idis
     integer            :: isrc
     integer            :: iter
     integer            :: itr
@@ -328,7 +343,6 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)           :: hl
     real(fp)           :: hr
     real(fp)           :: hnm
-    real(fp)           :: h0fac
     real(fp)           :: drytrsh
     real(fp)           :: hugsqs   ! HU(NM/NMD) * GSQS(NM) Depending on UMDIS the HU of point NM or NMD will be used 
     real(fp)           :: qwind
@@ -337,7 +351,6 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)           :: svvv
     real(fp)           :: thvert   ! theta coefficient for vertical advection terms
     real(fp)           :: timest
-    real(fp)           :: trelaxi
     real(fp)           :: uuu
     real(fp)           :: uweir
     real(fp)           :: vih
@@ -350,43 +363,48 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     real(fp)           :: wsul     ! local, modified wsu
     real(fp)           :: wsumax
     real(fp)           :: zz
+    real(fp)           :: bddx(1, 1) !dummy 
+    real(fp)           :: bddy(1, 1) !dummy 
+    real(fp)           :: buux(1, 1) !dummy  
+    real(fp)           :: buuy(1, 1) !dummy 
     character(20)      :: errtxt
 !
 !! executable statements -------------------------------------------------------
 !
+    cutcell       => gdp%gdimbound%cutcell
+    GhostMethod   => gdp%gdimbound%GhostMethod
+    periodSURFACE => gdp%gdimbound%periodSURFACE
+    PERIODalongM  => gdp%gdimbound%PERIODalongM
+    TRANSVperIMPL => gdp%gdimbound%TRANSVperIMPL
+    GHOSTIMPL     => gdp%gdimbound%GHOSTIMPL
     !
-    eps            => gdp%gdconst%eps
-    lundia         => gdp%gdinout%lundia
-    drycrt         => gdp%gdnumeco%drycrt
-    dryflc         => gdp%gdnumeco%dryflc
-    gammax         => gdp%gdnumeco%gammax
-    hdt            => gdp%gdnumeco%hdt
-    ibaroc         => gdp%gdnumeco%ibaroc
-    cstbnd         => gdp%gdnumeco%cstbnd
-    old_corio      => gdp%gdnumeco%old_corio
-    momsol         => gdp%gdnumeco%momsol
-    slplim         => gdp%gdnumeco%slplim
-    ag             => gdp%gdphysco%ag
-    iro            => gdp%gdphysco%iro
-    irov           => gdp%gdphysco%irov
-    rhofrac        => gdp%gdphysco%rhofrac
-    rhow           => gdp%gdphysco%rhow
-    vicmol         => gdp%gdphysco%vicmol
-    wind           => gdp%gdprocs%wind
-    wave           => gdp%gdprocs%wave
-    roller         => gdp%gdprocs%roller
-    xbeach         => gdp%gdprocs%xbeach
-    dpsopt         => gdp%gdnumeco%dpsopt
-    nh_level       => gdp%gdnonhyd%nh_level
-    nonhyd         => gdp%gdprocs%nonhyd
-    dzmin          => gdp%gdzmodel%dzmin
-    mfg            => gdp%gdparall%mfg
-    nfg            => gdp%gdparall%nfg
-    no_dis         => gdp%gdnfl%no_dis
-    nf_src_mom     => gdp%gdnfl%nf_src_mom
-    nf_src_momu    => gdp%gdnfl%nf_src_momu
-    nf_src_momv    => gdp%gdnfl%nf_src_momv
-    momrelax       => gdp%gdnfl%momrelax
+    eps        => gdp%gdconst%eps
+    lundia     => gdp%gdinout%lundia
+    drycrt     => gdp%gdnumeco%drycrt
+    dryflc     => gdp%gdnumeco%dryflc
+    gammax     => gdp%gdnumeco%gammax
+    hdt        => gdp%gdnumeco%hdt
+    ibaroc     => gdp%gdnumeco%ibaroc
+    cstbnd     => gdp%gdnumeco%cstbnd
+    old_corio  => gdp%gdnumeco%old_corio
+    momsol     => gdp%gdnumeco%momsol
+    slplim     => gdp%gdnumeco%slplim
+    ag         => gdp%gdphysco%ag
+    iro        => gdp%gdphysco%iro
+    irov       => gdp%gdphysco%irov
+    rhofrac    => gdp%gdphysco%rhofrac
+    rhow       => gdp%gdphysco%rhow
+    vicmol     => gdp%gdphysco%vicmol
+    wind       => gdp%gdprocs%wind
+    wave       => gdp%gdprocs%wave
+    roller     => gdp%gdprocs%roller
+    xbeach     => gdp%gdprocs%xbeach
+    dpsopt     => gdp%gdnumeco%dpsopt
+    nh_level   => gdp%gdnonhyd%nh_level
+    nonhyd     => gdp%gdprocs%nonhyd
+    dzmin      => gdp%gdzmodel%dzmin
+    mfg        => gdp%gdparall%mfg
+    nfg        => gdp%gdparall%nfg
     !
     drytrsh      = drycrt
     drythreshold = 0.1_fp * dryflc
@@ -632,7 +650,7 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              ! weir.
              ! Gates are excluded
              !
-             if (dpsopt == 'DP' .or. slplim) then
+             if (dpsopt == 'dp' .or. slplim) then
                 if (kfu(nm) == 1 .and. abs(u0(nm,kmin)) <= 1.0e-15_fp .and. kspu(nm, 0) /= 4 .and. kspu(nm, 0) /= 10) then
                    !
                    ! cfurou(nm,1) contains u/u*
@@ -660,20 +678,8 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              !
              ! End of special measures for smooth inundation
              !
-             ! WIND FRICTION AND BOTTOM STRESS DUE TO FLOW AND WAVES
-             !
-             ! Apply factor h0fac to reduce wind force from cells with small depth
-             ! Note that the direction of windsu is opposite to what is expected
-             ! This is due to the change in sign in windtogridc.f90
-             !
-             h0fac = 1.0_fp
-             if (windsu(nm) < 0.0_fp .and.  s0(nm)+real(dps(nm),fp) < 2.0_fp*dryflc) then
-                h0fac = (s0(nm)+real(dps(nm),fp)) / (2.0_fp*dryflc)
-             elseif (windsu(nm) > 0.0_fp .and.  s0(nmu)+real(dps(nmu),fp) < 2.0_fp*dryflc) then
-                h0fac = (s0(nmu)+real(dps(nmu),fp)) / (2.0_fp*dryflc)
-             endif          
-             qwind          = h0fac*windsu(nm) / max(dzu0(nm, kkmax),drytrsh)
              cbot           = taubpu(nm)
+             qwind          = windu(nm) / max(dzu0(nm, kkmax),drytrsh)
              bdmwrp         = cbot / max(dzu0(nm, kmin),drytrsh)
              bdmwrs         = taubsu(nm) / max(dzu0(nm, kmin),drytrsh)
              bbk(nm, kmin)  = bbk(nm, kmin) + bdmwrp
@@ -751,40 +757,6 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              endif
           endif
        enddo
-       if (nf_src_mom) then
-          !
-          ! DISCHARGE ADDITION OF MOMENTUM FROM NEARFIELD
-          !
-          ! Instead of weighting the nearfield momentum with the volume added via the nearfield source,
-          ! it is choosen to use a trelax, based on the time step.
-          ! This should force the cell velocity to get the a value "growing" fast to the nearfield momentum value.
-          !
-          ! Only change ddk/bbk when the momentum source in the present direction is non-negative
-          ! Inverse of the relaxation time:
-          !
-          trelaxi = 1.0 / (momrelax*2.0*hdt)
-          do nm = 1, nmmax
-             if (kfu(nm) == 1) then
-                do k = kfumn0(nm), kfumx0(nm)
-                   if (kfuz0(nm, k) == 1) then
-                     do idis = 1, no_dis
-                        if (icx == 1 ) then
-                           if (comparereal(nf_src_momv(nm,k,idis), 0.0_fp) /= 0) then
-                              ddk(nm,k) = ddk(nm,k) + nf_src_momv(nm,k,idis)*trelaxi
-                              bbk(nm,k) = bbk(nm,k) + trelaxi
-                           endif
-                        else 
-                           if (comparereal(nf_src_momu(nm,k,idis), 0.0_fp) /= 0) then
-                              ddk(nm,k) = ddk(nm,k) + nf_src_momu(nm,k,idis)*trelaxi
-                              bbk(nm,k) = bbk(nm,k) + trelaxi
-                           endif
-                        endif
-                     enddo
-                   endif
-                enddo
-             endif
-          enddo
-       endif
        call timer_stop(timer_uzd_dismmt, gdp)
        !
        ! VERTICAL ADVECTION AND VISCOSITY, IMPLICIT
@@ -945,8 +917,8 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              numu = nm + icx + icy
              ndmu = nm + icx - icy
              numd = nm - icx + icy
-             if (kfu(nm) == 1 .and. kcs(nm) > 0 .and. kcs(nmu) > 0) then
-                do k = kfumn0(nm), kfumx0(nm)
+             do k = kfumn0(nm), kfumx0(nm)
+                if (kfu(nm) == 1 .and. kcs(nm) > 0 .and. kcs(nmu) > 0) then
                    if (kfuz0(nm, k) == 1) then
                       gksid = gvz(nm)
                       gksiu = gvz(nmu)
@@ -972,8 +944,8 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                       buy(nm, k) = buy(nm, k) - vih/(getau*geta)*idifu
                       bdy(nm, k) = bdy(nm, k) - vih/(getad*geta)*idifd
                    endif
-                enddo
-             endif
+                endif
+             enddo
           enddo
        !
        endif
@@ -1060,6 +1032,28 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              enddo
           endif
        enddo
+      !
+      !  cut cell modification
+      !
+       if (cutcell.gt.0.and.(GhostMethod.eq.1.or.GhostMethod.eq.2)) THEN
+          call forceGHOSTuzd(icx        ,icy        ,u0         ,& !CALLED WITH u0!
+                           & aak        ,bbk        ,cck        ,ddk        ,&
+                           & buux       ,bux        ,bdx        ,&
+                           & bddx       ,buuy       ,buy        ,bdy        ,bddy       ,&
+                           & mmax       ,nmax       ,kmax       ,&
+                           & nst        ,nlb        ,nub        ,mlb        ,mub        ,&
+                           & nmlb       ,nmub       ,0          ,.true.     ,gdp) !iter=0
+       endif
+!     
+       if (periodSURFACE) then
+          CALL forcePERvelUZD(u0,bbk,ddk,aak,buux,bux,bdx,bddx,buuy,buy,bdy,bddy,cck,hdt,icx,nlb,nub,mlb,mub,kmax, gdp)
+          if ((icx==1.and.PERIODalongM==1).or.(icx/=1.and..not.PERIODalongM==1)) then
+             CALL OFFonPERvel(kfv,kfu,icy,nlb,nub,mlb,mub,1, gdp)   !turn on kfu and kfv (second argument has to be the location of the tangential velocity)
+          else
+             CALL OFFonPERvel(kfu,kfv,icy,nlb,nub,mlb,mub,1, gdp)   !turn on kfu and kfv (second argument has to be the location of the tangential velocity)
+          endif
+      
+       endif
        call timer_stop(timer_uzd_lhs, gdp)
        !
        ! Domain decomposition:
@@ -1179,6 +1173,37 @@ subroutine z_uzd(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
           else
              call timer_start(timer_uzd_solve5v, gdp)
           endif
+          !
+          !recompute the transversal velocity point value if periodic is implicit
+          if (TRANSVperIMPL.AND.iter.gt.1) then !
+             if ((icx==1.and.PERIODalongM==1).or.(icx/=1.and..not.PERIODalongM==1)) then
+                call velocityPERIOD(v0,u1,icx,nlb,nub,mlb,mub,kmax, gdp)  !in this way I copy also the explicit parallel, no big deal.
+             else
+                call velocityPERIOD(u1,v0,icx,nlb,nub,mlb,mub,kmax, gdp)  !in this way I copy also the explicit parallel, no big deal.
+             endif
+             !    call WATERlevelPERIOD(s0,dps,icx,nlb,nub,mlb,mub,kmax) not needed, it does not change
+             CALL forcePERvelUZD(u1,bbk,ddk,aak,buux,bux,bdx,bddx,buuy,buy,bdy,bddy,cck,1._fp,icx,nlb,nub,mlb,mub,kmax, gdp)   !hdt=1.fp here
+          endif
+          !
+          !recompute the ghost value at u-velocity point if scheme is implicit (note that only u is updated, so s0 hu and hv stay the same)
+          if (cutcell.gt.0.and.(GhostMethod.eq.1.or.GhostMethod.eq.2)) THEN
+             if ((GHOSTimpl.eq.1).AND.(iter.gt.1)) then
+                call recompGHOSTiterUZD(icx        ,icy        ,u1         ,v0          ,u0INTv     ,&
+                                      & v0INTu     ,kcs        ,guu        ,xcor       ,ycor       ,&
+                                      & gvv        ,mmax       ,nmax       ,kmax                   ,&
+                                      & nst        ,nlb        ,nub        ,mlb        ,mub        ,&
+                                      & nmlb       ,nmub       ,iter       ,Irov       ,gdp%d%ddbound    ,&
+                                      & kcu        ,lunscr     ,nmmax      ,nmaxus     ,gdp)    
+                call forceGHOSTuzd(icx        ,icy        ,u1         ,&  !CALLED WITH u1!
+                                 & aak        ,bbk        ,cck        ,ddk        ,&
+                                 & buux       ,bux        ,bdx        ,&
+                                 & bddx       ,buuy       ,buy        ,bdy        ,bddy       ,&
+                                 & mmax       ,nmax       ,kmax       ,&
+                                 & nst        ,nlb        ,nub        ,mlb        ,mub        ,&
+                                 & nmlb       ,nmub       ,iter       ,.true.     ,gdp)  
+             endif
+          endif
+   
           !
           ! loop starts at red or black point depending on own subdomain
           !

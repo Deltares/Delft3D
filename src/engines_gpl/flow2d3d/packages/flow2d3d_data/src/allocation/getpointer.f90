@@ -1,7 +1,7 @@
 function getpointer(pntnam, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ function getpointer(pntnam, gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: getpointer.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/src/allocation/getpointer.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! ESM function gtcpnt/gtipnt/gtrpnt can only be used during initialization phase.
@@ -136,7 +136,7 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: disnf
     integer(pntrsize) , pointer :: dldeta
     integer(pntrsize) , pointer :: dldksi
-    integer(pntrsize) , pointer :: dpd
+    integer(pntrsize) , pointer :: dp
     integer(pntrsize) , pointer :: dpc
     integer(pntrsize) , pointer :: dpdeta
     integer(pntrsize) , pointer :: dpdksi
@@ -175,6 +175,7 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: gro
     integer(pntrsize) , pointer :: gsqd
     integer(pntrsize) , pointer :: gsqs
+    integer(pntrsize) , pointer :: gsqsR
     integer(pntrsize) , pointer :: guu
     integer(pntrsize) , pointer :: guv
     integer(pntrsize) , pointer :: gvu
@@ -214,7 +215,6 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: rhowat
     integer(pntrsize) , pointer :: rich
     integer(pntrsize) , pointer :: rint
-    integer(pntrsize) , pointer :: rintsm
     integer(pntrsize) , pointer :: rlabda
     integer(pntrsize) , pointer :: rmneg
     integer(pntrsize) , pointer :: rnpl
@@ -289,7 +289,6 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: vsus
     integer(pntrsize) , pointer :: w1
     integer(pntrsize) , pointer :: w10mag
-    integer(pntrsize) , pointer :: windcd
     integer(pntrsize) , pointer :: windsu
     integer(pntrsize) , pointer :: windsv
     integer(pntrsize) , pointer :: windu
@@ -344,7 +343,6 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: zwl
     integer(pntrsize) , pointer :: zws
     integer(pntrsize) , pointer :: zwndsp
-    integer(pntrsize) , pointer :: zwndcd
     integer(pntrsize) , pointer :: zwnddr
     integer(pntrsize) , pointer :: zairp
     integer(pntrsize) , pointer :: zevap
@@ -380,6 +378,7 @@ function getpointer(pntnam, gdp)
     integer(pntrsize) , pointer :: kadu
     integer(pntrsize) , pointer :: kadv
     integer(pntrsize) , pointer :: kcs
+    integer(pntrsize) , pointer :: kcs_nf
     integer(pntrsize) , pointer :: kcu
     integer(pntrsize) , pointer :: kcv
     integer(pntrsize) , pointer :: kfs
@@ -491,7 +490,7 @@ function getpointer(pntnam, gdp)
     disnf      => gdp%gdr_i_ch%disnf
     dldeta     => gdp%gdr_i_ch%dldeta
     dldksi     => gdp%gdr_i_ch%dldksi
-    dpd        => gdp%gdr_i_ch%dpd
+    dp         => gdp%gdr_i_ch%dp
     dpc        => gdp%gdr_i_ch%dpc
     dpdeta     => gdp%gdr_i_ch%dpdeta
     dpdksi     => gdp%gdr_i_ch%dpdksi
@@ -569,7 +568,6 @@ function getpointer(pntnam, gdp)
     rhowat     => gdp%gdr_i_ch%rhowat
     rich       => gdp%gdr_i_ch%rich
     rint       => gdp%gdr_i_ch%rint
-    rintsm     => gdp%gdr_i_ch%rintsm
     rlabda     => gdp%gdr_i_ch%rlabda
     rmneg      => gdp%gdr_i_ch%rmneg
     rnpl       => gdp%gdr_i_ch%rnpl
@@ -646,7 +644,6 @@ function getpointer(pntnam, gdp)
     w10mag     => gdp%gdr_i_ch%w10mag
     windsu     => gdp%gdr_i_ch%windsu
     windsv     => gdp%gdr_i_ch%windsv
-    windcd     => gdp%gdr_i_ch%windcd
     windu      => gdp%gdr_i_ch%windu
     windv      => gdp%gdr_i_ch%windv
     wlen       => gdp%gdr_i_ch%wlen
@@ -699,7 +696,6 @@ function getpointer(pntnam, gdp)
     zwl        => gdp%gdr_i_ch%zwl
     zws        => gdp%gdr_i_ch%zws
     zwndsp     => gdp%gdr_i_ch%zwndsp
-    zwndcd     => gdp%gdr_i_ch%zwndcd
     zwnddr     => gdp%gdr_i_ch%zwnddr
     zairp      => gdp%gdr_i_ch%zairp
     zevap      => gdp%gdr_i_ch%zevap
@@ -735,6 +731,7 @@ function getpointer(pntnam, gdp)
     kadu       => gdp%gdr_i_ch%kadu
     kadv       => gdp%gdr_i_ch%kadv
     kcs        => gdp%gdr_i_ch%kcs
+    kcs_nf     => gdp%gdr_i_ch%kcs_nf
     kcu        => gdp%gdr_i_ch%kcu
     kcv        => gdp%gdr_i_ch%kcv
     kfs        => gdp%gdr_i_ch%kfs
@@ -919,8 +916,8 @@ function getpointer(pntnam, gdp)
        returnval = dldksi
     case ('dldeta')
        returnval = dldeta
-    case ('dpd')
-       returnval = dpd
+    case ('dp')
+       returnval = dp
     case ('dpc')
        returnval = dpc
     case ('dpdeta')
@@ -1001,6 +998,8 @@ function getpointer(pntnam, gdp)
        returnval = gsqiv
     case ('gsqs')
        returnval = gsqs
+    case ('gsqsR')
+       returnval = gsqsR
     case ('gud')
        returnval = gud
     case ('guu')
@@ -1087,8 +1086,6 @@ function getpointer(pntnam, gdp)
        returnval = rich
     case ('rint')
        returnval = rint
-    case ('rintsm')
-       returnval = rintsm
     case ('rlabda')
        returnval = rlabda
     case ('rmneg')
@@ -1241,8 +1238,6 @@ function getpointer(pntnam, gdp)
        returnval = windsu
     case ('windsv')
        returnval = windsv
-    case ('windcd')
-       returnval = windcd
     case ('windu')
        returnval = windu
     case ('windv')
@@ -1347,8 +1342,6 @@ function getpointer(pntnam, gdp)
        returnval = zws
     case ('zwndsp')
        returnval = zwndsp
-    case ('zwndcd')
-       returnval = zwndcd
     case ('zwnddr')
        returnval = zwnddr
     case ('zairp')
@@ -1405,6 +1398,8 @@ function getpointer(pntnam, gdp)
        returnval = kadv
     case ('kcs')
        returnval = kcs
+    case ('kcs_nf')
+       returnval = kcs_nf
     case ('kcscut')
        returnval = kcscut
     case ('kcu')

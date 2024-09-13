@@ -2,10 +2,10 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
                 & mdfrec    ,runid     ,mmax      ,nmaxus    ,filgrd    , &
                 & fmtgrd    ,flgrd     ,fildry    ,fmtdry    ,fldry     , &
                 & filtd     ,fmttd     ,fltd      ,filcut    ,flcut     , &
-                & fil45     ,fl45      ,gdp       )
+                & fil45     ,fl45      ,kmax      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,8 +29,8 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdgrid.f90 6076 2016-04-25 19:28:04Z platzek $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdgrid.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads from either the MD-file or the attribute
@@ -62,6 +62,8 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
+    real(fp),pointer :: eps
+    integer, pointer :: irov
     integer, pointer :: itis
     integer, pointer :: mfg
     integer, pointer :: nfg
@@ -71,6 +73,8 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     integer                                      :: lundia !  Description and declaration in inout.igs
     integer                                      :: lunmd  !  Description and declaration in inout.igs
     integer                        , intent(in)  :: mmax   !  Description and declaration in esm_alloc_int.f90
+    integer                        , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
+
     integer                        , intent(in)  :: nmaxus !  Description and declaration in esm_alloc_int.f90
     integer                                      :: nrrec  !!  Pointer to the record number in the MD-file
     logical                                      :: fl45
@@ -98,6 +102,7 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
 !
 ! Local variables
 !
+    integer               :: k
     integer               :: i      ! Help var. 
     integer               :: idef   ! Help var. containing default va- lue(s) for integer variable 
     integer               :: imnd   ! Help var. for the dry points 
@@ -111,6 +116,7 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     integer               :: lun45
     integer               :: luncut
     integer               :: lundry ! Unit number of local scratch file for dry point sections 
+    integer               :: lunPER ! Unit number of local scratch file for periodic locations
     integer               :: lungrd ! Unit number of local scratch file for grid enclosure points 
     integer               :: luntd  ! Unit number of local scratch file for thin dam point sections 
     integer               :: n
@@ -119,6 +125,7 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     integer               :: ntrec  ! Help. var to keep track of NRREC 
     integer, dimension(4) :: ival   ! Help array 
     logical               :: defaul ! Flag set to YES if default value may be applied in case var. read is empty (ier <= 0, or nrread < nlook) 
+    logical               :: ex
     logical               :: found  ! FOUND=TRUE if KEYW in the MD-file was found 
     logical               :: lerror ! Flag=TRUE if a local error is encountered 
     logical               :: newkw  ! Logical var. specifying whether a new recnam should be read from the MD-file or just new data in the continuation line 
@@ -133,6 +140,21 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     character(256)        :: fixid  ! fixed size version of runid, needed for character concatenation 
     character(3)          :: errmsg ! Help string for errormessage 
     character(6)          :: keyw   ! Name of record to look for in the MD-file (usually KEYWRD or RECNAM) 
+    character(200)        :: txtput2
+    character(60)         :: txtput1      
+    real(sp)              :: percEDGE_sp
+    real(sp)              :: THRESextCUTedge_sp
+    real(sp)              :: THRlocalMASSbal_sp
+    real(sp)              :: THRESsmallCELL_sp
+    real(sp)              :: perSMOfac_sp
+    real(sp)              :: perSMOfac_Qb_sp
+    real(sp)              :: reltim_qtq_sp
+    real(sp)              :: reltim_qtq_C_sp
+    real(sp)              :: thresMERGE_d_sp
+    real(sp)              :: thresMERGE_w_sp
+    real(sp)              :: thresMERGE_zb_sp
+    real(sp)              :: reltim_S1_sp
+    real(sp)              :: reltim_qtq_bdl_sp
 !
 !! executable statements -------------------------------------------------------
 !
@@ -185,13 +207,14 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     !
     ! open semi-scratch file
     !
-    open (newunit=lungrd, file = 'TMP_' // fixid(1:lrid) // '.grd',                  &
+    lungrd = newlun(gdp)
+    open (lungrd, file = 'TMP_' // fixid(1:lrid) // '.grd',                  &
         & form = 'unformatted', status = 'unknown')
     !
     ! 'Filgrd': grid enclosure file
     !
     filgrd = fildef
-    call prop_get(gdp%mdfile_ptr,'*','Filgrd',filgrd)
+    call prop_get_string(gdp%mdfile_ptr,'*','Filgrd',filgrd)
     if (filgrd /= fildef) then
        !
        ! Grid enclosure in file
@@ -251,6 +274,7 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     !=======================================================================
     ! open semi-scratch file
     !
+    lundry = newlun(gdp)
     filnam = 'TMP_' // fixid(1:lrid) // '.dry'
     !
     ! append node number to file name in case of parallel computing within single-domain case
@@ -259,7 +283,7 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
        call remove_leading_spaces(filnam,lfnm)
        write(filnam(lfnm+1:lfnm+4),666) inode
     endif
-    open (newunit=lundry, file = trim(filnam), form = 'unformatted', status = 'unknown')
+    open (lundry, file = trim(filnam), form = 'unformatted', status = 'unknown')
     !
     ! locate 'Fildry' record for dry points in extra input file
     ! If NLOOK = 0 and 'Fildry' not found => no error and item skipped
@@ -417,6 +441,7 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     !=======================================================================
     ! open semi-scratch file
     !
+    luntd = newlun(gdp)
     filnam = 'TMP_' // fixid(1:lrid) // '.td'
     !
     ! append node number to file name in case of parallel computing within single-domain case
@@ -425,12 +450,12 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
        call remove_leading_spaces(filnam,lfnm)
        write(filnam(lfnm+1:lfnm+4),666) inode
     endif
-    open (newunit=luntd, file = trim(filnam), form = 'unformatted', status = 'unknown')
+    open (luntd, file = trim(filnam), form = 'unformatted', status = 'unknown')
     !
     ! locate 'Filtd ' record for thin dams in extra input file
     !
     filtd = fildef
-    call prop_get(gdp%mdfile_ptr, '*', 'Filtd', filtd)
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Filtd', filtd)
     !
     ! thin dams in file? <YES>
     !
@@ -577,6 +602,7 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     !
     ! open semi-scratch file for "cut-cell" definition of grids
     !
+    luncut = newlun(gdp)
     !   open (luncut, file = 'TMP_' // fixid(1:lrid) // '.cut',                     &
     !       & form = 'unformatted', status = 'unknown')
     filnam = 'TMP_' // fixid(1:lrid) // '.cut'
@@ -587,7 +613,7 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
        call remove_leading_spaces(filnam,lfnm)
        write(filnam(lfnm+1:lfnm+4),666) inode
     endif
-    open (newunit=luncut, file = trim(filnam), form = 'unformatted', status = 'unknown')
+    open (luncut, file = trim(filnam), form = 'unformatted', status = 'unknown')
     !
     ! locate 'Filcut' record for grid enclosure in extra input file
     !
@@ -629,6 +655,7 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     !
     ! open semi-scratch file for 45 degrees staircase closed boundary
     !
+    lun45 = newlun(gdp)
     !   open (lun45, file = 'TMP_' // fixid(1:lrid) // '.45', form = 'unformatted', &
     !       & status = 'unknown')
     filnam = 'TMP_' // fixid(1:lrid) // '.45'
@@ -639,7 +666,7 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
        call remove_leading_spaces(filnam,lfnm)
        write(filnam(lfnm+1:lfnm+4),666) inode
     endif
-    open (newunit=lun45, file = trim(filnam), form = 'unformatted', status = 'unknown')
+    open (lun45, file = trim(filnam), form = 'unformatted', status = 'unknown')
     !
     ! locate 'Filcut' record for grid enclosure in extra input file
     !

@@ -3,7 +3,7 @@ subroutine rdq2eb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                 & mnbnd     ,rtubnd    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine rdq2eb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: rdq2eb.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/input/rdq2eb.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: - Reads boundary condition for 2D turbulence model
@@ -164,7 +164,8 @@ subroutine rdq2eb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
        !
        ! file = exist
        !
-       open (newunit=luntmp, file = filq2e(1:lfile), form = 'formatted', status = 'old')
+       luntmp = newlun(gdp)
+       open (luntmp, file = filq2e(1:lfile), form = 'formatted', status = 'old')
        !
        !-->     read boundary condition (at each boundary point, optional)
        !
@@ -181,7 +182,7 @@ subroutine rdq2eb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
           goto 1100
        endif
        !
-       ! Define boundary conditions
+       ! Define boundary coniditions
        ! Loop over boundary for rows
        ! The definition of the open boundary has already been checked
        ! previously therefore the outcome of error in INCREM will

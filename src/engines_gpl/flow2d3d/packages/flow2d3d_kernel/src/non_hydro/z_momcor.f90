@@ -12,7 +12,7 @@ subroutine z_momcor(nmmax     ,kmax      ,icx       ,icy       ,s1        , &
                   & gdp )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -36,8 +36,8 @@ subroutine z_momcor(nmmax     ,kmax      ,icx       ,icy       ,s1        , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_momcor.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/non_hydro/z_momcor.f90 $
 !!--description-----------------------------------------------------------------
 !
 !
@@ -84,7 +84,7 @@ subroutine z_momcor(nmmax     ,kmax      ,icx       ,icy       ,s1        , &
     integer                                            , intent(in) :: nst    !!  Time step number
     integer                                            , intent(in) :: nocol  !  Description and declaration in esm_alloc_int.f90
     integer                                            , intent(in) :: norow  !  Description and declaration in esm_alloc_int.f90
-    integer , dimension(5, norow + nocol)              , intent(in) :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer , dimension(7, norow + nocol)              , intent(in) :: irocol !  Description and declaration in esm_alloc_int.f90
     integer , dimension(7, nsrc)                                    :: mnksrc !  Description and declaration in esm_alloc_int.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                :: d0k    !!  Internal work array
     real(prec), dimension(gdp%d%nmlb:gdp%d%nmub)       , intent(in) :: dps    !  Description and declaration in esm_alloc_real.f90
@@ -220,7 +220,7 @@ subroutine z_momcor(nmmax     ,kmax      ,icx       ,icy       ,s1        , &
        if (kenm/=0 .or. disch(i)>=0.0_fp) then
           if (k/=0) then
              !
-             ! The order is important at dry points (kfsmax=-1)
+             ! The order is inportant at dry points (kfsmax=-1)
              !
              if (k>kfsmax(nm)) then
                 k = kfsmax(nm)
@@ -255,7 +255,7 @@ subroutine z_momcor(nmmax     ,kmax      ,icx       ,icy       ,s1        , &
           if (kenm/=0 .or. -disch(i)>=0.0_fp) then
              if (k /= 0) then
                 !
-                ! The order is important at dry points (kfsmax=-1)
+                ! The order is inportant at dry points (kfsmax=-1)
                 !
                 if (k>kfsmax(nm)) then
                    k = kfsmax(nm)

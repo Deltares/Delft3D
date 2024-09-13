@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -24,8 +24,8 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  $Id$
-!  $HeadURL$$
+!  $Id: restart.igs 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/data/include/restart.igs $$
 !-------------------------------------------------------------------------------
 type sv_restart
     !
@@ -37,8 +37,7 @@ type sv_restart
     !
     ! integers
     !
-    integer        :: filetype          !  Type of restart file
-    integer        :: i_restart         !  Restart index
+    integer        :: i_restart !  Restart index
     !
     ! pointers
     !
@@ -54,7 +53,6 @@ type sv_restart
     !
     ! characters
     !
-    character(256) :: filename          !  Name of restart file
     character(256) :: restid            !  Identification restart file
     character(16)  :: rst_layer_model   !  Layer type of the restart/map file, options:
                                         !  1) SIGMA-MODEL     (restarting from a map-file with sigma-layering)

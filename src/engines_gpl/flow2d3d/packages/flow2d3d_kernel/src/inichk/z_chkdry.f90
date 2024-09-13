@@ -1,5 +1,5 @@
 subroutine z_chkdry(j         ,nmmaxj    ,nmmax     ,kmax      ,lstsci    , &
-                  & ltur      ,icx       ,icy       ,kcu       , &
+                  & ltur      ,icx       ,icy       ,initia    ,kcu       , &
                   & kcv       ,kcs       ,kfu       ,kfv       ,kfs       , &
                   & kspu      ,kspv      ,kfuz1     ,kfvz1     ,kfsz1     , &
                   & kfumin    ,kfumax    ,kfvmin    ,kfvmax    ,kfsmin    , &
@@ -10,7 +10,7 @@ subroutine z_chkdry(j         ,nmmaxj    ,nmmax     ,kmax      ,lstsci    , &
                   & dzv1      ,dzs1      ,zk        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -34,8 +34,8 @@ subroutine z_chkdry(j         ,nmmaxj    ,nmmax     ,kmax      ,lstsci    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_chkdry.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/z_chkdry.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: ONLY for ZMODEL:
@@ -69,12 +69,16 @@ subroutine z_chkdry(j         ,nmmaxj    ,nmmax     ,kmax      ,lstsci    , &
     logical        , pointer :: kfuv_from_restart
     real(fp)       , pointer :: dzmin
     
+    real(fp), dimension(:,:), pointer :: aguu
+    real(fp), dimension(:,:), pointer :: agvv
 !
 ! Global variables
 !
     integer                                                                 :: icx    !!  Increment in the X-dir., if ICX= NMAX then computation proceeds in the X-dir.
                                                                                       !!  If icx=1 then computation proceeds in the Y-dir.
     integer                                                                 :: icy    !!  Increment in the Y-dir. (see ICX)
+    integer                                                   , intent(in)  :: initia !!  if < 0: iteration process of morsys
+                                                                                      !!  else  : equal to initi
     integer                                                                 :: j      !!  Begin pointer for arrays which have been transformed into 1D arrays.
                                                                                       !!  Due to the shift in the 2nd (M-)index, J = -2*NMAX + 1
     integer                                                                 :: kmax   !  Description and declaration in esm_alloc_int.f90
@@ -148,6 +152,8 @@ subroutine z_chkdry(j         ,nmmaxj    ,nmmax     ,kmax      ,lstsci    , &
 !
 !! executable statements -------------------------------------------------------
 !
+    aguu => gdp%gdimbound%aguu
+    agvv => gdp%gdimbound%agvv
     lundia             => gdp%gdinout%lundia
     zmodel             => gdp%gdprocs%zmodel
     drycrt             => gdp%gdnumeco%drycrt
@@ -161,267 +167,274 @@ subroutine z_chkdry(j         ,nmmaxj    ,nmmax     ,kmax      ,lstsci    , &
     !NOTE: that the contents of KFS are here identical to KCS
     !      (except for boundary points)
     !
-    ! Initialize global arrays
-    ! (HU, HV, QXK and QYK are initialized in esm_alloc_real)
-    ! (KFS/U/V are already initialised in Z_INIZM)
-    !
-    umean = 0.0_fp
-    vmean = 0.0_fp
-    !
-    do nm = 1, nmmax
+    if (initia > 0) then
        !
-       ! Check based on KFU/V but also on HU because HU can be zero
-       ! despite KFU/V = 1. Altering of KFU/V value (to 0, when
-       ! velocity point is dry)is done after UPWHU
+       ! Initialize global arrays
+       ! (HU, HV, QXK and QYK are initialized in esm_alloc_real)
+       ! (KFS/U/V are already initialised in Z_INIZM)
        !
-       ! First determine umean for the top layer(s) of cells NM and NMU
-       ! to find the upwind direction
+       umean = 0.0_fp
+       vmean = 0.0_fp
        !
-       !nmu   = nm + icx
-       !
-       ! Determine layers participating in velocity point
-       !
-       !kkmin = min(kfsmax(nm), kfsmax(nmu))
-       !kkmax = max(kfsmax(nm), kfsmax(nmu))
-       !
-       ! kkmin below the bottom in NM or NMU?
-       !
-       !kkmin = max( kkmin, max(kfsmin(nm), kfsmin(nmu)) )
-       !
-       if (kfu(nm) == 1 .and. hu(nm)>=drytrsh) then
-          hnm = 0.0_fp
-          !do k = kkmin, kkmax
-          do k = kfumin(nm), kfumax(nm)
-             umean(nm) = umean(nm) + u1(nm,k)*dzu1(nm,k)
-             hnm       = hnm + dzu1(nm,k)
-          enddo
-          umean(nm) = umean(nm) / max(hnm, 0.01_fp)
-       else
-       endif
-       !
-       !num   = nm + icy
-       !
-       ! Determine layers participating in velocity point
-       !
-       !kkmin = min(kfsmax(nm), kfsmax(num))
-       !kkmax = max(kfsmax(nm), kfsmax(num))
-       !
-       ! kkmin below the bottom in NM or NUM?
-       !
-       !kkmin = max( kkmin, max(kfsmin(nm), kfsmin(num)) )
-       !
-       if (kfv(nm) == 1 .and. hv(nm)>=drytrsh) then
-          hnm = 0.0_fp
-          !do k = kkmin, kkmax
-          do k = kfvmin(nm), kfvmax(nm)
-             vmean(nm) = vmean(nm) + v1(nm,k)*dzv1(nm,k)
-             hnm       = hnm + dzv1(nm,k)
-          enddo
-          vmean(nm) = vmean(nm) / max(hnm, 0.01_fp)
-       else
-       endif
-    enddo
-    !
-    ! Redefine S1 in case they are smaller then DPS and reset the mask
-    ! arrays KFU,KFV and KFS
-    ! -icx := -1 in m-direction, -icy := -1 in n-direction
-    ! In Z_INIZM all relevant depths and waterlevels are already checked.
-    ! This may be redundant
-    !
-    do nm = 1, nmmax
-       nmd = nm - icx
-       ndm = nm - icy
-       if (kcs(nm) /= 0) then
-          if (s1(nm)<= - real(dps(nm),fp)) then
-             s1(nm)   = -real(dps(nm),fp)
-             kfu(nm)  = 0
-             kfu(nmd) = 0
-             kfv(nm)  = 0
-             kfv(ndm) = 0
-             kfs(nm)  = 0
-             do k = 1, kmax
-                kfuz1(nm, k)  = 0
-                kfuz1(nmd, k) = 0
-                kfvz1(nm, k)  = 0
-                kfvz1(ndm, k) = 0
-                kfsz1(nm, k)  = 0
+       do nm = 1, nmmax
+          !
+          ! Check based on KFU/V but also on HU because HU can be zero
+          ! despite KFU/V = 1. Altering of KFU/V value (to 0, when
+          ! velocity point is dry)is done after UPWHU
+          !
+          ! First determine umean for the top layer(s) of cells NM and NMU
+          ! to find the upwind direction
+          !
+          !nmu   = nm + icx
+          !
+          ! Determine layers participating in velocity point
+          !
+          !kkmin = min(kfsmax(nm), kfsmax(nmu))
+          !kkmax = max(kfsmax(nm), kfsmax(nmu))
+          !
+          ! kkmin below the bottom in NM or NMU?
+          !
+          !kkmin = max( kkmin, max(kfsmin(nm), kfsmin(nmu)) )
+          !
+          if (kfu(nm) == 1 .and. hu(nm)>=drytrsh) then
+             hnm = 0.0_fp
+             !do k = kkmin, kkmax
+             do k = kfumin(nm), kfumax(nm)
+                umean(nm) = umean(nm) + u1(nm,k)*dzu1(nm,k)
+                hnm       = hnm + dzu1(nm,k)
              enddo
+             umean(nm) = umean(nm) / max(hnm, 0.01_fp)
+          else
           endif
-       endif
-    enddo
-    !
-    ! Delft3D-16494: NOT NECESSARY? Could the loop above also be done with kcs/=0 instead of kcs>0
-    ! otherwise also need to communicate kfu/kfv and s1?
-    !
-    ! exchange mask array kfs with neighbours for parallel runs
-    !
-    !call dfexchg ( kfs, 1, 1, dfint, nm_pos, gdp )
-    !call dfexchg ( kfu, 1, 1, dfint, nm_pos, gdp )
-    !call dfexchg ( kfv, 1, 1, dfint, nm_pos, gdp )
-    !
-    ! Check whether the minimum layer thickness (0.1*Dryflc) is smaller 
-    ! than one of the internal layers for the Z-model, 
-    ! so excluding the bottom and free-surface layers, which can be thin
-    !
-    dzfound     = drytrsh
-    found       = .false.
-    do nm = 1, nmmax
-       if (kfs(nm) == 1) then
-          do k = kfsmin(nm)+1, kfsmax(nm)-1
-             if (dzmin > dzs1(nm,k)) then
-                found  = .true.
-                dzfound = min(dzfound, dzs1(nm,k))
+          !
+          !num   = nm + icy
+          !
+          ! Determine layers participating in velocity point
+          !
+          !kkmin = min(kfsmax(nm), kfsmax(num))
+          !kkmax = max(kfsmax(nm), kfsmax(num))
+          !
+          ! kkmin below the bottom in NM or NUM?
+          !
+          !kkmin = max( kkmin, max(kfsmin(nm), kfsmin(num)) )
+          !
+          if (kfv(nm) == 1 .and. hv(nm)>=drytrsh) then
+             hnm = 0.0_fp
+             !do k = kkmin, kkmax
+             do k = kfvmin(nm), kfvmax(nm)
+                vmean(nm) = vmean(nm) + v1(nm,k)*dzv1(nm,k)
+                hnm       = hnm + dzv1(nm,k)
+             enddo
+             vmean(nm) = vmean(nm) / max(hnm, 0.01_fp)
+          else
+          endif
+       enddo
+       !
+       ! Redefine S1 in case they are smaller then DPS and reset the mask
+       ! arrays KFU,KFV and KFS
+       ! -icx := -1 in m-direction, -icy := -1 in n-direction
+       ! In Z_INIZM all relevant depths and waterlevels are already checked.
+       ! This may be redundant
+       !
+       do nm = 1, nmmax
+          nmd = nm - icx
+          ndm = nm - icy
+          if (kcs(nm) /= 0) then
+             if (s1(nm)<= - real(dps(nm),fp)) then
+                s1(nm)   = -real(dps(nm),fp)
+                kfu(nm)  = 0
+                kfu(nmd) = 0
+                kfv(nm)  = 0
+                kfv(ndm) = 0
+                kfs(nm)  = 0
+                do k = 1, kmax
+                   kfuz1(nm, k)  = 0
+                   kfuz1(nmd, k) = 0
+                   kfvz1(nm, k)  = 0
+                   kfvz1(ndm, k) = 0
+                   kfsz1(nm, k)  = 0
+                enddo
              endif
-         enddo
+          endif
+       enddo
+       !
+       ! Delft3D-16494: NOT NECESSARY? Could the loop above also be done with kcs/=0 instead of kcs>0
+       ! otherwise also need to communicate kfu/kfv and s1?
+       !
+       ! exchange mask array kfs with neighbours for parallel runs
+       !
+       !call dfexchg ( kfs, 1, 1, dfint, nm_pos, gdp )
+       !call dfexchg ( kfu, 1, 1, dfint, nm_pos, gdp )
+       !call dfexchg ( kfv, 1, 1, dfint, nm_pos, gdp )
+       !
+       ! Check whether the minimum layer thickness (0.1*Dryflc) is smaller 
+       ! than one of the internal layers for the Z-model, 
+       ! so excluding the bottom and free-surface layers, which can be thin
+       !
+       dzfound     = drytrsh
+       found       = .false.
+       do nm = 1, nmmax
+          if (kfs(nm) == 1) then
+             do k = kfsmin(nm)+1, kfsmax(nm)-1
+                if (dzmin > dzs1(nm,k)) then
+                   found  = .true.
+                   dzfound = min(dzfound, dzs1(nm,k))
+                endif
+            enddo
+          endif
+       enddo
+       if (found) then
+          call prterr(lundia, 'U190',  'Minimum layer thickness (0.1*Dryflc) is too large for the vertical')
+          write (lundia, '(a,f10.4,a)')'            grid layering. Decrease Dryflc to smaller than ', 10.0_fp*dzfound, ' m,'
+          write (lundia, '(a)')        '            to avoid problems with the vertical layering.'
        endif
-    enddo
-    if (found) then
-       call prterr(lundia, 'U190',  'Minimum layer thickness (0.1*Dryflc) is too large for the vertical')
-       write (lundia, '(a,f10.4,a)')'            grid layering. Decrease Dryflc to smaller than ', 10.0_fp*dzfound, ' m,'
-       write (lundia, '(a)')        '            to avoid problems with the vertical layering.'
     endif
     !
     ! Calculate HU and HV
     !
     call upwhu(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              & zmodel    ,kcs       ,kfu       ,kspu      ,dps       , &
-             & s1        ,dpu       ,umean     ,hu        ,gdp       )
+             & s1        ,dpu       ,umean     ,hu        ,aguu      , &
+             & gdp       )
     call upwhu(j         ,nmmaxj    ,nmmax     ,kmax      ,icy       , &
              & zmodel    ,kcs       ,kfv       ,kspv      ,dps       , &
-             & s1        ,dpv       ,vmean     ,hv        ,gdp       )
+             & s1        ,dpv       ,vmean     ,hv        ,agvv      , &
+             & gdp)
    !
     ! Check for dry velocity points
     ! Approach for 2D weirs (following WAQUA)
     ! HUCRES is initially set to extreme large value to guarantee
     ! the MIN operator works as planned
     !
-    do nm = 1, nmmax
-       nmu = nm + icx
-       num = nm + icy
-       !
-       ! s1u is used for setting kfumax
-       !
-       if (umean(nm) > 0.0_fp) then
-          s1u = s1(nm)
-       elseif (umean(nm) < 0.0_fp) then
-          s1u = s1(nmu)
-       else
-          s1u = max(s1(nm), s1(nmu))
-       endif
-       !
-       ! s1v is used for setting kfvmax
-       !
-       if (vmean(nm) > 0.0_fp) then
-          s1v = s1(nm)
-       elseif (vmean(nm) < 0.0_fp) then
-          s1v = s1(num)
-       else
-          s1v = max(s1(nm), s1(num))
-       endif
-       !
-       ! set hucres / hvcres
-       !
-       hucres = 1.0e+9_fp
-       if (abs(kspu(nm, 0)) == 9) then
-          hucres = s1u + hkru(nm)
-       endif
-       !
-       hvcres = 1.0e+9_fp
-       if (abs(kspv(nm, 0)) == 9) then
-          hvcres = s1v + hkrv(nm)
-       endif
-       if (.not.kfuv_from_restart) then
-          if (kfu(nm)*min(hu(nm), hucres)<dryflc .and. kcu(nm)*kfu(nm)==1) then
-             kfu(nm) = 0
-          endif
-          if (kfv(nm)*min(hv(nm), hvcres)<dryflc .and. kcv(nm)*kfv(nm)==1) then
-             kfv(nm) = 0
-          endif
-       endif
-       !
-       ! Determine KFUMAX, using S1U, starting from the top layer KMAX
-       !
-       do k = kmax, kfumin(nm), -1
-          kfuz1(nm, k) = 0
+    if (initia > 0) then
+       do nm = 1, nmmax
+          nmu = nm + icx
+          num = nm + icy
           !
-          ! 15-3-2007 change to allow S1 > ZK(KMAX), needed for NH-models
+          ! s1u is used for setting kfumax
           !
-          if ( kcu(nm) > 0 .and. (zk(k - 1)+dzmin <= s1u .or. (s1u>zk(kmax) .and. k==kmax)) ) then
-             kfumax(nm) = k
-             exit
+          if (umean(nm) > 0.0_fp) then
+             s1u = s1(nm)
+          elseif (umean(nm) < 0.0_fp) then
+             s1u = s1(nmu)
+          else
+             s1u = max(s1(nm), s1(nmu))
           endif
-       enddo
-       !
-       ! Set kfuz1 but overwrite kfuz1 at points with gates
-       !
-       kkmin = min(kfsmin(nm), kfsmin(nmu))
-       kkmax = max(kfsmax(nm), kfsmax(nmu))
-       do k = kkmin, kfumin(nm)-1
-          kfuz1(nm,k) = 0
-       enddo
-       do k = kfumin(nm), kkmax
-          if (kspu(nm, 0)*kspu(nm, k)==4 .or. kspu(nm, 0)*kspu(nm, k)==10) then
+          !
+          ! s1v is used for setting kfvmax
+          !
+          if (vmean(nm) > 0.0_fp) then
+             s1v = s1(nm)
+          elseif (vmean(nm) < 0.0_fp) then
+             s1v = s1(num)
+          else
+             s1v = max(s1(nm), s1(num))
+          endif
+          !
+          ! set hucres / hvcres
+          !
+          hucres = 1.0e+9_fp
+          if (abs(kspu(nm, 0)) == 9) then
+             hucres = s1u + hkru(nm)
+          endif
+          !
+          hvcres = 1.0e+9_fp
+          if (abs(kspv(nm, 0)) == 9) then
+             hvcres = s1v + hkrv(nm)
+          endif
+          if (.not.kfuv_from_restart) then
+             if (kfu(nm)*min(hu(nm), hucres)<dryflc .and. kcu(nm)*kfu(nm)==1) then
+                kfu(nm) = 0
+             endif
+             if (kfv(nm)*min(hv(nm), hvcres)<dryflc .and. kcv(nm)*kfv(nm)==1) then
+                kfv(nm) = 0
+             endif
+          endif
+          !
+          ! Determine KFUMAX, using S1U, starting from the top layer KMAX
+          !
+          do k = kmax, kfumin(nm), -1
              kfuz1(nm, k) = 0
-          else
-             if (umean(nm) > 0.0_fp) then
-                kfuz1(nm, k) = kfsz1(nm,k)
-             elseif (umean(nm) < 0.0_fp) then
-                kfuz1(nm, k) = kfsz1(nmu,k)
-             elseif (k <= kfumax(nm)) then
-                kfuz1(nm, k) = 1
-             else
+             !
+             ! 15-3-2007 change to allow S1 > ZK(KMAX), needed for NH-models
+             !
+             if ( kcu(nm) > 0 .and. (zk(k - 1)+dzmin <= s1u .or. (s1u>zk(kmax) .and. k==kmax)) ) then
+                kfumax(nm) = k
+                exit
+             endif
+          enddo
+          !
+          ! Set kfuz1 but overwrite kfuz1 at points with gates
+          !
+          kkmin = min(kfsmin(nm), kfsmin(nmu))
+          kkmax = max(kfsmax(nm), kfsmax(nmu))
+          do k = kkmin, kfumin(nm)-1
+             kfuz1(nm,k) = 0
+          enddo
+          do k = kfumin(nm), kkmax
+             if (kspu(nm, 0)*kspu(nm, k)==4 .or. kspu(nm, 0)*kspu(nm, k)==10) then
                 kfuz1(nm, k) = 0
-             endif
-          endif
-       enddo
-       !
-       ! Determine KFVMAX, using S1V, starting from the top layer KMAX
-       !
-       do k = kmax, kfvmin(nm), -1
-          kfvz1(nm, k) = 0
-          !
-          ! 15-3-2007 change to allow S1 > ZK(KMAX), needed for NH-models
-          !
-          if ( kcv(nm) > 0 .and. (zk(k - 1)+dzmin <= s1v .or. (s1v>zk(kmax) .and. k==kmax)) ) then
-             kfvmax(nm) = k
-             exit
-          endif
-       enddo
-       !
-       ! Set kfuz1 but overwrite kfuz1 at points with gates
-       !
-       kkmin = min(kfsmin(nm), kfsmin(num))
-       kkmax = max(kfsmax(nm), kfsmax(num))
-       do k = kkmin, kfvmin(nm)-1
-          kfvz1(nm,k) = 0
-       enddo
-       do k = kfvmin(nm), kkmax
-          if (kspv(nm, 0)*kspv(nm, k)==4 .or. kspv(nm, 0)*kspv(nm, k)==10) then
-             kfvz1(nm, k) = 0
-          else
-             if (vmean(nm) > 0.0_fp) then
-                kfvz1(nm, k) = kfsz1(nm,k)
-             elseif (vmean(nm) < 0.0_fp) then
-                kfvz1(nm, k) = kfsz1(num,k)
-             elseif (k <= kfvmax(nm)) then
-                kfvz1(nm, k) = 1
              else
-                kfvz1(nm, k) = 0
+                if (umean(nm) > 0.0_fp) then
+                   kfuz1(nm, k) = kfsz1(nm,k)
+                elseif (umean(nm) < 0.0_fp) then
+                   kfuz1(nm, k) = kfsz1(nmu,k)
+                elseif (k <= kfumax(nm)) then
+                   kfuz1(nm, k) = 1
+                else
+                   kfuz1(nm, k) = 0
+                endif
              endif
-          endif
+          enddo
+          !
+          ! Determine KFVMAX, using S1V, starting from the top layer KMAX
+          !
+          do k = kmax, kfvmin(nm), -1
+             kfvz1(nm, k) = 0
+             !
+             ! 15-3-2007 change to allow S1 > ZK(KMAX), needed for NH-models
+             !
+             if ( kcv(nm) > 0 .and. (zk(k - 1)+dzmin <= s1v .or. (s1v>zk(kmax) .and. k==kmax)) ) then
+                kfvmax(nm) = k
+                exit
+             endif
+          enddo
+          !
+          ! Set kfuz1 but overwrite kfuz1 at points with gates
+          !
+          kkmin = min(kfsmin(nm), kfsmin(num))
+          kkmax = max(kfsmax(nm), kfsmax(num))
+          do k = kkmin, kfvmin(nm)-1
+             kfvz1(nm,k) = 0
+          enddo
+          do k = kfvmin(nm), kkmax
+             if (kspv(nm, 0)*kspv(nm, k)==4 .or. kspv(nm, 0)*kspv(nm, k)==10) then
+                kfvz1(nm, k) = 0
+             else
+                if (vmean(nm) > 0.0_fp) then
+                   kfvz1(nm, k) = kfsz1(nm,k)
+                elseif (vmean(nm) < 0.0_fp) then
+                   kfvz1(nm, k) = kfsz1(num,k)
+                elseif (k <= kfvmax(nm)) then
+                   kfvz1(nm, k) = 1
+                else
+                   kfvz1(nm, k) = 0
+                endif
+             endif
+          enddo
        enddo
-    enddo
-    !
-    ! Delft3D-16494: NOT NECESSARY?
-    !
-    ! exchange mask arrays with neighbours for parallel runs
-    !
-    call dfexchg ( kfu   , 1, 1   , dfint, nm_pos, gdp )
-    call dfexchg ( kfv   , 1, 1   , dfint, nm_pos, gdp )
-    !call dfexchg ( kfumax, 1, 1   , dfint, nm_pos, gdp )
-    !call dfexchg ( kfvmax, 1, 1   , dfint, nm_pos, gdp )
-    !call dfexchg ( kfuz1 , 1, kmax, dfint, nm_pos, gdp )
-    !call dfexchg ( kfvz1 , 1, kmax, dfint, nm_pos, gdp )
+       !
+       ! Delft3D-16494: NOT NECESSARY?
+       !
+       ! exchange mask arrays with neighbours for parallel runs
+       !
+       call dfexchg ( kfu   , 1, 1   , dfint, nm_pos, gdp )
+       call dfexchg ( kfv   , 1, 1   , dfint, nm_pos, gdp )
+       !call dfexchg ( kfumax, 1, 1   , dfint, nm_pos, gdp )
+       !call dfexchg ( kfvmax, 1, 1   , dfint, nm_pos, gdp )
+       !call dfexchg ( kfuz1 , 1, kmax, dfint, nm_pos, gdp )
+       !call dfexchg ( kfvz1 , 1, kmax, dfint, nm_pos, gdp )
+    endif
     !
     ! set KFS to 0 if the surrounding velocity points are dry
     !

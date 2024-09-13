@@ -3,10 +3,11 @@ subroutine inivol(j         ,nmmaxj    ,nmmax     ,kmax      ,zmodel    , &
                 & kfumin    ,kfumax    ,kfvmin    ,kfvmax    ,thick     , &
                 & s1        ,dps       ,gsqs      ,guu       ,gvv       , &
                 & hu        ,hv        ,dzs1      ,dzu1      ,dzv1      , &
-                & volum1    ,porosu    ,porosv    ,areau     ,areav     ,gdp       )
+                & volum1    ,porosu    ,porosv    ,areau     ,areav     , &
+                & aguu      ,agvv      ,agsqs     ,kfs       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -30,8 +31,8 @@ subroutine inivol(j         ,nmmaxj    ,nmmax     ,kmax      ,zmodel    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: inivol.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/inivol.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Computes volumes and areas from depth values at water level
@@ -53,6 +54,13 @@ subroutine inivol(j         ,nmmaxj    ,nmmax     ,kmax      ,zmodel    , &
     !
     ! The following list of pointer parameters is used to point inside the gdp structure
     !
+    integer                , pointer :: dim_nmlist
+    integer, dimension(:,:), pointer :: NMlistMERGED_d
+    integer, dimension(:)  , pointer :: Nmerged_d
+    logical                , pointer :: virtualLINK
+    real(fp)               , pointer :: thresMERGE_d
+    real(fp), dimension(:) , pointer :: agsqs_link
+    integer                , pointer :: cutcell
 !
 ! Global variables
 !
@@ -60,6 +68,7 @@ subroutine inivol(j         ,nmmaxj    ,nmmax     ,kmax      ,zmodel    , &
     integer                                     , intent(in)  :: kmax
     integer                                     , intent(in)  :: nmmax
     integer                                                   :: nmmaxj
+    integer, dimension(gdp%d%nmlb:gdp%d%nmub)   , intent(in)  :: kfs
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)   , intent(in)  :: kcs
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)   , intent(in)  :: kcu
     integer, dimension(gdp%d%nmlb:gdp%d%nmub)   , intent(in)  :: kcv
@@ -86,25 +95,43 @@ subroutine inivol(j         ,nmmaxj    ,nmmax     ,kmax      ,zmodel    , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)              :: porosv
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax), intent(out) :: volum1
     real(fp), dimension(kmax)                       , intent(in)  :: thick
+!   cutcells:
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub), intent(in)  :: aguu      !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub), intent(in)  :: agvv      !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub), intent(in)  :: agsqs
 !
 ! Local variables
 !
     integer :: k
     integer :: nm
+    integer :: idummy
 !
 !! executable statements -------------------------------------------------------
 !
+    dim_nmlist     => gdp%gdimbound%dim_nmlist
+    NMlistMERGED_d => gdp%gdimbound%NMlistMERGED_d
+    Nmerged_d      => gdp%gdimbound%Nmerged_d
+    virtualLINK    => gdp%gdimbound%virtualLINK
+    thresMERGE_d   => gdp%gdimbound%thresMERGE_d
+    agsqs_link     => gdp%gdimbound%agsqs_link
+    cutcell        => gdp%gdimbound%cutcell
+agsqs_link(gdp%d%nmlb:gdp%d%nmub) = agsqs(gdp%d%nmlb:gdp%d%nmub) 
+if (cutcell==2.and.virtualLINK) then
+   call VIRTUALlinkAREAS(kfs,agsqs_link,agsqs,gsqs,NMlistMERGED_d,Nmerged_d,thresMERGE_d,idummy,idummy,gdp%d%nmmax,gdp%d%nmlb,gdp%d%nmub,idummy, dim_nmlist, gdp)
+endif
+
 if (.not.zmodel) then
    do k = 1, kmax
       do nm = 1, nmmax
          if (kcs(nm)/=0) then
-            volum1(nm, k) = thick(k)*(s1(nm) + real(dps(nm),fp))*gsqs(nm)
+            volum1(nm, k) = thick(k)*(s1(nm) + real(dps(nm),fp))*gsqs(nm)*agsqs_link(nm)
+           ! write(898900,'(2i10,15f25.15)') kmax-kmax,nm,s1(nm),real(dps(nm),fp),agsqs(nm)
          endif
          if (kcu(nm)/=0) then
-            areau(nm, k) = thick(k)*hu(nm)*guu(nm)*porosu(nm, k)
+            areau(nm, k) = thick(k)*hu(nm)*aguu(nm)*guu(nm)*porosu(nm, k)
          endif
          if (kcv(nm)/=0) then
-            areav(nm, k) = thick(k)*hv(nm)*gvv(nm)*porosv(nm, k)
+            areav(nm, k) = thick(k)*hv(nm)*agvv(nm)*gvv(nm)*porosv(nm, k)
          endif
       enddo
    enddo
@@ -112,17 +139,17 @@ else
    do nm = 1, nmmax
       if (kcs(nm)/=0) then
          do k = 1, kmax
-            volum1(nm, k) = dzs1(nm, k)*gsqs(nm)
+            volum1(nm, k) = dzs1(nm, k)*gsqs(nm)*agsqs(nm)
          enddo
       endif
       if (kcu(nm)/=0) then
          do k = 1, kmax
-            areau(nm, k) = dzu1(nm, k)*guu(nm)*porosu(nm, k)
+            areau(nm, k) = dzu1(nm, k)*aguu(nm)*guu(nm)*porosu(nm, k)
          enddo
       endif
       if (kcv(nm)/=0) then
          do k = 1, kmax
-            areav(nm, k) = dzv1(nm, k)*gvv(nm)*porosv(nm, k)
+            areav(nm, k) = dzv1(nm, k)*agvv(nm)*gvv(nm)*porosv(nm, k)
          enddo
       endif
    enddo

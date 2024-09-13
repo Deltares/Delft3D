@@ -1,9 +1,9 @@
 subroutine dersig(j         ,nmmaxj    ,nmmax     ,icx       ,icy       , &
-                & kfu       ,kfv       ,dpd       ,s1        ,dddksi    , &
+                & kfu       ,kfv       ,dp        ,s1        ,dddksi    , &
                 & dddeta    ,dzdksi    ,dzdeta    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine dersig(j         ,nmmaxj    ,nmmax     ,icx       ,icy       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: dersig.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/dersig.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes transformation coefficients sigma-
@@ -60,7 +60,7 @@ subroutine dersig(j         ,nmmaxj    ,nmmax     ,icx       ,icy       , &
     integer, dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: kfv !  Description and declaration in esm_alloc_int.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(out) :: dddeta !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(out) :: dddksi !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: dpd !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: dp !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(out) :: dzdeta !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(out) :: dzdksi !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: s1 !  Description and declaration in esm_alloc_real.f90
@@ -96,7 +96,7 @@ subroutine dersig(j         ,nmmaxj    ,nmmax     ,icx       ,icy       , &
        !
        ! DDEPTH/DETA IN U-POINTS
        !
-       dddeta(nm) = dpd(nm) - dpd(ndm)
+       dddeta(nm) = dp(nm) - dp(ndm)
        !
        ! DZETA/DETA IN V-POINTS
        !
@@ -108,7 +108,7 @@ subroutine dersig(j         ,nmmaxj    ,nmmax     ,icx       ,icy       , &
        !
        ! DDEPTH/DKSI IN V-POINTS
        !
-       dddksi(nm) = dpd(nm) - dpd(nmd)
+       dddksi(nm) = dp(nm) - dp(nmd)
     enddo
     !
     ! exchange transformation coefficients with neighbours for parallel runs

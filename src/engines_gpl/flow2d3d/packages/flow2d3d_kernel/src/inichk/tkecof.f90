@@ -2,7 +2,7 @@ subroutine tkecof(lturi     ,vonkar    ,sigdif    ,sigmol    , &
                 & rtur1     ,rtu2d1    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine tkecof(lturi     ,vonkar    ,sigdif    ,sigmol    , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: tkecof.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/inichk/tkecof.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: initialises RTUR1 and RTU2D1
@@ -73,12 +73,9 @@ subroutine tkecof(lturi     ,vonkar    ,sigdif    ,sigmol    , &
     integer, pointer :: kmax !  Description and declaration in esm_alloc_int.f90
     integer, pointer :: lstsci !  Description and declaration in esm_alloc_int.f90
     integer, pointer :: lsal !  Description and declaration in dimens.igs
-    integer, pointer :: lsed !  Number of suspended sediment fractions
     integer, pointer :: ltem !  Description and declaration in dimens.igs
     integer, pointer :: ltur !  Description and declaration in esm_alloc_int.f90
     integer, pointer :: ltur2d !  Description and declaration in dimens.igs
-!
-    real(fp)         , dimension(:)      , pointer :: tpsnumber ! turbulent Prandtl-Schmidt number for sediment fractions
 !
 ! Global variables
 !
@@ -93,8 +90,6 @@ subroutine tkecof(lturi     ,vonkar    ,sigdif    ,sigmol    , &
 !
     integer :: k
     integer :: l
-    integer :: lsedmin
-    integer :: lsedmax
     integer :: m
     integer :: n
 !
@@ -122,12 +117,9 @@ subroutine tkecof(lturi     ,vonkar    ,sigdif    ,sigmol    , &
     kmax     => gddimens%kmax
     lstsci   => gddimens%lstsci
     lsal     => gddimens%lsal
-    lsed     => gddimens%lsed
     ltem     => gddimens%ltem
     ltur     => gddimens%ltur
     ltur2d   => gddimens%ltur2d
-    !
-    tpsnumber => gdp%gdsedpar%tpsnumber
     !
     ! Initialisation
     !
@@ -154,21 +146,14 @@ subroutine tkecof(lturi     ,vonkar    ,sigdif    ,sigmol    , &
     ! Prandtl/Schmidt- and Moleculair Prandtl numbers for constituents,
     ! salt and temperature
     !
-    lsedmin = max(lsal, ltem) + 1
-    lsedmax = max(lsal, ltem) + lsed
     do l = 1, lstsci
+       sigdif(l) = 0.7
        if (l == lsal) then
           sigmol(l) = 700.0
        elseif (l == ltem) then
           sigmol(l) = 6.7
        else ! constituents
           sigmol(l) = 1.0
-       endif
-       !
-       if (l >= lsedmin .and. l <= lsedmax) then
-           sigdif(l) = tpsnumber(l - lsedmin + 1)
-       else
-           sigdif(l) = 0.7
        endif
     enddo
     !

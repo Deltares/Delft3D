@@ -2,10 +2,10 @@ subroutine z_checku(j         ,nmmaxj    ,nmmax     ,icx       ,kmax      , &
                   & flood     ,kfu       ,kcs       ,kcu       ,kspu      , &
                   & kfumn0    ,kfumx0    ,hu        ,s0        ,dpu       , &
                   & dps       ,umean     ,kfuz0     ,kfsmn0    ,kfsmx0    , &
-                  & u0        ,dzu0      ,zk        ,gdp       )
+                  & u0        ,dzu0      ,zk        ,aguu      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,8 +29,8 @@ subroutine z_checku(j         ,nmmaxj    ,nmmax     ,icx       ,kmax      , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: z_checku.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/z_checku.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: This routine checks the drying and flooding at ve-
@@ -96,6 +96,7 @@ subroutine z_checku(j         ,nmmaxj    ,nmmax     ,icx       ,kmax      , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)              :: u0     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                    :: umean  !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(0:kmax)                     , intent(in)  :: zk
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)      , intent(in) :: aguu
 !
 ! Local variables
 !
@@ -167,7 +168,8 @@ subroutine z_checku(j         ,nmmaxj    ,nmmax     ,icx       ,kmax      , &
     !
     call upwhu(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
              & zmodel    ,kcs       ,kcu       ,kspu      ,dps       , &
-             & s0        ,dpu       ,umean     ,hu        ,gdp       )
+             & s0        ,dpu       ,umean     ,hu        ,aguu      , &
+             & gdp       )
     do nm = 1, nmmax
        nmd = nm - icx
        nmu = nm + icx
@@ -188,7 +190,7 @@ subroutine z_checku(j         ,nmmaxj    ,nmmax     ,icx       ,kmax      , &
              !
              if (kfu(nm) == 0) then
                 !
-                if ( hu(nm) > floodtrsh .and. kcu(nm)==1 &
+                if ( hu(nm) > floodtrsh &
                    & .and. max(s0(nm),s0(nmu)) - max(-real(dps(nm),fp),-real(dps(nmu),fp)) >= floodtrsh) then
                    !
                    ! set kfuz0 for the flooded points

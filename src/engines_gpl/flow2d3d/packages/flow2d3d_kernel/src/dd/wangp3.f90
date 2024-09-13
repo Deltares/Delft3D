@@ -3,7 +3,7 @@ subroutine wangp3(s1        ,kcs       ,irocol    ,norow     ,icx       , &
                 & c         ,d         ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -27,8 +27,8 @@ subroutine wangp3(s1        ,kcs       ,irocol    ,norow     ,icx       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: wangp3.f90 5834 2016-02-11 14:39:48Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/dd/wangp3.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: WANGP3 performs step 3 of the so-called
@@ -66,7 +66,7 @@ subroutine wangp3(s1        ,kcs       ,irocol    ,norow     ,icx       , &
                                                                       !!  index, J = -2*NMAX + 1
     integer                                                 :: nmmaxj !  Description and declaration in dimens.igs
     integer                                   , intent(in)  :: norow  !  Description and declaration in esm_alloc_int.f90
-    integer , dimension(5, norow)             , intent(in)  :: irocol !  Description and declaration in esm_alloc_int.f90
+    integer , dimension(7, norow)             , intent(in)  :: irocol !  Description and declaration in esm_alloc_int.f90
     integer , dimension(gdp%d%nmlb:gdp%d%nmub), intent(in)  :: kcs    !  Description and declaration in esm_alloc_int.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in)  :: a
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in)  :: b

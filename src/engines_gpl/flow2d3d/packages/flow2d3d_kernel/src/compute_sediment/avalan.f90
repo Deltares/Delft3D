@@ -2,7 +2,7 @@ subroutine avalan(dps       ,depchg    ,gvu       ,guv       , &
                 & icx       ,icy       ,gsqs      ,kcs       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -26,8 +26,8 @@ subroutine avalan(dps       ,depchg    ,gvu       ,guv       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: avalan.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute_sediment/avalan.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! Smooth bottom, using avalance effect
@@ -127,7 +127,7 @@ subroutine avalan(dps       ,depchg    ,gvu       ,guv       , &
        ! traversed, whereas slumps in opposite direction will propagate not
        ! further than one grid cell.
        !
-       if (kcs(nm)/=0 .and. kcs(nmu)/=0) then
+       if (kcs(nm)>0 .and. kcs(nmu)>0) then
           depnm  = dps(nm)
           depnmu = dps(nmu)
           ddep   = real(depnmu - depnm,fp)
@@ -152,7 +152,7 @@ subroutine avalan(dps       ,depchg    ,gvu       ,guv       , &
        !
        ! Do the same thing as before but now in the other grid direction
        !
-       if (kcs(nm)/=0 .and. kcs(num)/=0) then
+       if (kcs(nm)>0 .and. kcs(num)>0) then
           depnm  = dps(nm)
           depnum = dps(num)
           ddep   = real(depnum - depnm,fp)

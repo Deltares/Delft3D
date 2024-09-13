@@ -1,7 +1,7 @@
 subroutine tdatom(runid, filmrs, nuerr, gdp) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: tdatom.f90 5717 2016-01-12 11:35:24Z mourits $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/io/src/preprocessor/tdatom.f90 $
 !!--description----------------------------------------------------------------- 
 ! 
 !    Function: Reads and writes the time dependent data from the 
@@ -101,7 +101,7 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
     logical                         , pointer :: dredge 
     logical                         , pointer :: drogue 
     logical                         , pointer :: wave 
-    integer                         , pointer :: waveol 
+    logical                         , pointer :: waveol 
     logical                         , pointer :: threed 
     logical                         , pointer :: secflo 
     logical                         , pointer :: iweflg 
@@ -237,6 +237,7 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
     real(fp), dimension(:), pointer                     :: alpha 
     real(fp), dimension(:), pointer                     :: rtime 
     character(1)                                        :: ascon       ! 'Y' if open bnd. contains type 'A'  
+    character(1)                                        :: ctunit      ! Time scale for time parameters, currently set to 'M'(inute - fixed).  
     character(1)                                        :: eol         ! ASCII code for End-Of-Line (^J)  
     character(1)                                        :: equili      ! Equilibrium or advection and diffusion default = no equilibrium ('N') which means lsec = 1  
     character(1)                                        :: evaint      ! Interpolation option for the rainfall / evaporation  
@@ -384,7 +385,7 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
     threed      = .false. 
     wavcmp      = .false. 
     wave        = .false. 
-    waveol      = 0
+    waveol      = .false. 
     wind        = .false. 
     nfl         = .false. 
     !
@@ -459,7 +460,7 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
         if (istat==0) allocate(nhsub (mxnto)                          , stat = istat)
         if (istat==0) allocate(wstcof(6)                              , stat = istat)
         if (istat==0) allocate(omega (mxkc)                           , stat = istat)
-        if (istat==0) allocate(thick (kmax)                           , stat = istat)
+        if (istat==0) allocate(thick (mxkmax)                         , stat = istat)
         if (istat==0) allocate(alpha (mxnto )                         , stat = istat)
         if (istat==0) allocate(rtime (mxtime)                         , stat = istat)
         if (istat==0) allocate(disint(mxnsrc)                         , stat = istat)
@@ -488,7 +489,7 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
         ! 
         ! Test local dimensions, and define LCONC 
         ! 
-        call chklod(lundia    ,error     ,nto       ,nsrc      , & 
+        call chklod(lundia    ,error     ,nto       ,kmax      ,nsrc      , & 
                   & gdp       ) 
         if (error) goto 999 
         ! 
@@ -519,8 +520,8 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
         ! 
         call rdirt(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , & 
                  & citdat    ,tstart    ,tstop     ,tzone     ,itdate    , & 
-                 & julday    ,itstrt    ,itfinish  ,dt        ,tunit     , & 
-                 & gdp       ) 
+                 & julday    ,itstrt    ,itfinish  ,dt        ,ctunit    , & 
+                 & tunit     ,gdp       ) 
         if (error) goto 999 
         ! 
         ! Read KTEMP (Process heat module) 
@@ -528,7 +529,7 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
         ! 
         call rdproc(error    ,nrrec     ,mdfrec    ,htur2d     ,salin    , & 
                   & temp     ,wind      ,ktemp     ,keva       ,ivapop   , & 
-                  & irov     ,z0v       ,sferic     ,tgfcmp   , &
+                  & irov     ,ctunit    ,z0v       ,sferic     ,tgfcmp   , &
                   & temeqs   ,saleqs    ,wstcof    ,rhoa       ,secflo   , & 
                   & betac    ,equili    ,lsec      ,chzmin     ,rmincf   , & 
                   & rtcmod   ,couplemod ,nonhyd    ,mmax       ,nmax     , & 
@@ -603,8 +604,9 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
               ! Write an unformatted intermediate file with 
               ! OMEGA, AMPLITUDES and PHASES 
               ! 
+              lunbch = newlun(gdp) 
               filnam = 'TMP_' // runid(:lrid) // '.bch' 
-              open (newunit=lunbch, file = filnam(:8 + lrid), form = 'unformatted',            & 
+              open (lunbch, file = filnam(:8 + lrid), form = 'unformatted',            & 
                    & status = 'unknown') 
               ! 
               ! Write file for DATBND values of NTOF are 'H' 
@@ -626,7 +628,7 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
            ! 
            call rdbcq(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , & 
                     & runid     ,filnam    ,eol       ,nambnd    ,nto       , & 
-                    & ntof      ,ntoq      ,bubble    ,kmax      ,gdp       ) 
+                    & ntof      ,ntoq      ,bubble    ,gdp       ) 
            if (error) goto 999 
         endif 
         ! 
@@ -685,7 +687,7 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
         ! Discharge sources Time series 
         ! only if NSLUV > 0 and RTC-coupling for Barrier heights to FLOW 
         ! 
-        if (btest(rtcmod,dataFromRTCToFLOW) .and. nsluv+nsrc>0) then
+        if (btest(rtcmod,dataFromRTCToFLOW) .and. nsluv>0) then
            filnam = ' ' 
            ntimtm = 0 
            ! 

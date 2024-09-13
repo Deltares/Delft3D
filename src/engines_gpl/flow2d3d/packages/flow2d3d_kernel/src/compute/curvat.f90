@@ -1,10 +1,11 @@
 subroutine curvat(u1        ,v1        ,gsqs      ,guu       ,gvv       , &
                 & j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
                 & icy       ,kcs       ,kfs       ,curstr    ,x3        , &
-                & x2y       ,xy2       ,y3        ,gdp       )
+                & x2y       ,xy2       ,y3        ,kfu       ,kfv       , &
+                & aguu      ,agvv      ,cutcell   ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -28,8 +29,8 @@ subroutine curvat(u1        ,v1        ,gsqs      ,guu       ,gvv       , &
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: curvat.f90 6021 2016-04-15 14:20:51Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/curvat.f90 $
 !!--description-----------------------------------------------------------------
 !
 !    Function: Computes the local curvature of streakline (2dh)
@@ -65,9 +66,14 @@ subroutine curvat(u1        ,v1        ,gsqs      ,guu       ,gvv       , &
                                    !!  index, J = -2*NMAX + 1
     integer, intent(in)            :: kmax !  Description and declaration in esm_alloc_int.f90
     integer, intent(in)            :: nmmax !  Description and declaration in dimens.igs
+    integer, intent(in)            :: cutcell
     integer         :: nmmaxj !  Description and declaration in dimens.igs
     integer, dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: kcs !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: kfs !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: kfu !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: kfv !  Description and declaration in esm_alloc_int.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: aguu !  Description and declaration in esm_alloc_int.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: agvv !  Description and declaration in esm_alloc_int.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(out) :: curstr
                                    !!  Local curvature of streakline [1/M]
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub), intent(in) :: gsqs !  Description and declaration in esm_alloc_real.f90
@@ -83,6 +89,8 @@ subroutine curvat(u1        ,v1        ,gsqs      ,guu       ,gvv       , &
 !
 ! Local variables
 !
+    integer                        :: kfLU,klRU,klLD,klRD,kf1
+    integer                        :: kfTOT 
     integer                        :: k                    ! 2dH application 
     integer                        :: kenm
     integer                        :: kfsd                 ! Equal 1 if KFS(-1)=1 else 0 
@@ -106,6 +114,9 @@ subroutine curvat(u1        ,v1        ,gsqs      ,guu       ,gvv       , &
     real(fp)                       :: uuu                  ! U-velocity at zeta point 
     real(fp)                       :: vv                   ! VVV/GETA 
     real(fp)                       :: vvv                  ! V-velocity at zeta point 
+    real(fp)                       :: derLU,derRU,derLD,derRD 
+    real(fp)                       :: gpsiLU,gpsiRU,gpsiLD,gpsiRD 
+    real(fp)                       :: getaLU,getaRU,getaLD,getaRD 
 !
 !
 !! executable statements -------------------------------------------------------
@@ -135,40 +146,71 @@ subroutine curvat(u1        ,v1        ,gsqs      ,guu       ,gvv       , &
        !
        curstr(nm) = 0.
        if (kfs(nm)*kcs(nm)==1) then
-          uuu = 0.5*(u1(nm, k) + u1(nmd, k))
-          vvv = 0.5*(v1(nm, k) + v1(ndm, k))
+          if (cutcell>0) then
+            kenm = max(kfu(nm)+kfu(nmd),1)
+            uuu = u1(nm, k)*kfu(nm) + u1(nmd, k)*kfu(nmd)
+            uuu = uuu/kenm
+            kenm = max(kfv(nm)+kfv(ndm),1)
+            vvv = v1(nm, k)*kfv(nm) + v1(ndm, k)*kfv(ndm)
+            vvv = vvv/kenm
+          else
+            uuu = 0.5_fp*(u1(nm, k) + u1(nmd, k))
+            vvv = 0.5_fp*(v1(nm, k) + v1(ndm, k))
+          endif
           umod = sqrt(uuu*uuu + vvv*vvv)
           if (umod>1.E-6) then
              !
-             !     derivatives of velocities in fysical space
+             !     derivatives of velocities in physical space
              !
              gksi = 0.5*(gvv(nm) + gvv(ndm))
              geta = 0.5*(guu(nm) + guu(nmd))
-             dux = (u1(nm, k) - u1(nmd, k))/gksi
-             dvy = (v1(nm, k) - v1(ndm, k))/geta
+             kf1 = min(kfu(nm),kfu(nmd))
+             dux = (u1(nm, k) - u1(nmd, k))/gksi*kf1
+             kf1 = min(kfv(nm),kfv(ndm))
+             dvy = (v1(nm, k) - v1(ndm, k))/geta*kf1
              !
              duy = 0.
-             kfsu = 0
-             if (kfs(num)==1) kfsu = 1
-             kfsd = 0
-             if (kfs(ndm)==1) kfsd = 1
-             kenm = kfsu + kfsd
-             if (kenm/=0) then
-                duy = (kfsu*(u1(numd, k) + u1(num, k) - u1(nmd, k) - u1(nm, k)) &
-                    & + kfsd*(u1(nmd, k) + u1(nm, k) - u1(ndmd, k) - u1(ndm, k))&
-                    & )/(2.*geta*(kfsu + kfsd))
+             kfLU = min(kfu(numd),kfu(nmd))
+             klRU = min(kfu(num) ,kfu(nm))
+             klLD = min(kfu(nmd) ,kfu(ndmd))
+             klRD = min(kfu(nm)  ,kfu(ndm))
+             kfTOT = kfLU+klRU+klLD+klRD
+             if (kfTOT/=0) then
+                getaLU = 0.5*(guu(numd)+ guu(nmd))
+                getaRU = 0.5*(guu(num) + guu(nm))
+                getaLD = 0.5*(guu(nmd) + guu(ndmd))
+                getaRD = 0.5*(guu(nm)  + guu(ndm))
+                derLU = (u1(numd, k) - u1(nmd, k)) /getaLU * kfLU
+                derRU = (u1(num, k)  - u1(nm, k))  /getaRU * klRU
+                derLD = (u1(nmd, k)  - u1(ndmd, k))/getaLD * klLD 
+                derRD = (u1(nm, k)   - u1(ndm, k)) /getaRD * klRD
+                duy = (derLU+derRU+derLD+derRD) /kfTOT
+                !to be removed
+!                duy = (kfsu*(u1(numd, k) + u1(num, k) - u1(nmd, k) - u1(nm, k)) &
+!                    & + kfsd*(u1(nmd, k) + u1(nm, k) - u1(ndmd, k) - u1(ndm, k))&
+!                    & )/(2.*geta*(kfsu + kfsd))
              endif
              !
              dvx = 0.
-             kfsu = 0
-             if (kfs(nmu)==1) kfsu = 1
-             kfsd = 0
-             if (kfs(nmd)==1) kfsd = 1
-             kenm = kfsu + kfsd
-             if (kenm/=0) then
-                dvx = (kfsu*(v1(ndmu, k) + v1(nmu, k) - v1(ndm, k) - v1(nm, k)) &
-                    & + kfsd*(v1(ndm, k) + v1(nm, k) - v1(ndmd, k) - v1(nmd, k))&
-                    & )/(2.*gksi*(kfsu + kfsd))
+             kfLU = min(kfv(nm)  ,kfv(nmd))
+             klRU = min(kfv(nmu) ,kfv(nm))
+             klLD = min(kfv(ndm) ,kfv(ndmd))
+             klRD = min(kfv(ndmu),kfv(ndm))
+             kfTOT = kfLU+klRU+klLD+klRD
+             if (kfTOT/=0) then
+                gpsiLU = 0.5*(gvv(nm)  + gvv(nmd))
+                gpsiRU = 0.5*(gvv(nmu) + gvv(nm))
+                gpsiLD = 0.5*(gvv(ndm) + gvv(ndmd))
+                gpsiRD = 0.5*(gvv(ndmu)+ gvv(ndm))
+                derLU = (v1(nm, k)   - v1(nmd, k)) /gpsiLU * kfLU
+                derRU = (v1(nmu, k)  - v1(nm, k))  /gpsiRU * klRU
+                derLD = (v1(ndm, k)  - v1(ndmd, k))/gpsiLD * klLD 
+                derRD = (v1(ndmu, k) - v1(ndm, k)) /gpsiRD * klRD
+                dvx = (derLU+derRU+derLD+derRD) / kfTOT
+                !to be removed
+!                dvx = (kfsu*(v1(ndmu, k) + v1(nmu, k) - v1(ndm, k) - v1(nm, k)) &
+!                    & + kfsd*(v1(ndm, k) + v1(nm, k) - v1(ndmd, k) - v1(nmd, k))&
+!                    & )/(2.*gksi*(kfsu + kfsd))
              endif
              !
              !     compute local curvature of streakline
@@ -178,6 +220,7 @@ subroutine curvat(u1        ,v1        ,gsqs      ,guu       ,gvv       , &
              curstr(nm) = -(x3(nm)*uu**3 + x2y(nm)*uu**2*vv + xy2(nm)*uu*vv**2 +&
                         & y3(nm)*vv**3 + gsqs(nm)                               &
                         & *(uu*uu*dvx + uu*vv*(dvy - dux) - vv*vv*duy))/umod**3
+          !   write(10191817,'(i9,10f25.15)') nm,dux,duy,dvx,dvy,uuu,vvv,uu,vv,curstr(nm)
           endif
        endif
     enddo

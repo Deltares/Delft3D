@@ -1,7 +1,7 @@
-function slim(ds1,ds2)
+function slim(ds1,ds2, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2016.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -25,8 +25,8 @@ function slim(ds1,ds2)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
+!  $Id: slim.f90 6033 2016-04-19 08:23:40Z jagers $
+!  $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20160126_PLIC_VOF_bankEROSION/src/engines_gpl/flow2d3d/packages/kernel/src/compute/slim.f90 $
 !!--description-----------------------------------------------------------------
 !
 ! This routine computes the Van Leer limiter value based on the water elevation
@@ -40,12 +40,16 @@ function slim(ds1,ds2)
 !    Int. J. Numer. Meth. Fluids,  Vol. 43, pp 1329 - 1354
 !
 !!--declarations----------------------------------------------------------------
-    use precision
+    use globaldata
+    !
     implicit none
-!
+    !
+    type(globdat),target :: gdp
+    !
 ! Function return value
 !
     real(fp) :: slim
+    logical, pointer :: SECordLEVEL
 !
 ! Global variables
 !
@@ -57,11 +61,15 @@ function slim(ds1,ds2)
 !
 !! executable statements -------------------------------------------------------
 !
+    SECordLEVEL => gdp%gdimbound%SECordLEVEL
     !
     ! default value of SLIM = 0.0
     !
     slim = 0.0
-!    if (ds1*ds2 > 0.) then
-!       slim = ds1*ds2/(ds1+ds2)
-!    endif
+    IF (SECordLEVEL) THEN
+       if (ds1*ds2 > 0.) then
+          slim = ds1*ds2/(ds1+ds2)
+       endif
+    ENDIF
+
 end function slim
