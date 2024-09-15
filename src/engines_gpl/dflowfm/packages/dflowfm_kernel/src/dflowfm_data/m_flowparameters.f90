@@ -134,6 +134,8 @@ module m_flowparameters
 
    integer :: jawaveStokes !< Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
 
+   integer :: jawavebreakturbulence !< Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+
    integer :: jawavedelta = 1 !< Wave boundary layer formulation: 1=Sana 2007
 
    integer :: jawaveforces !< Apply wave forces to model (1, default), or not (0)
@@ -560,8 +562,8 @@ module m_flowparameters
    integer :: jamapwav_phiwav !< output waves to map file for variable phiwav, 0: no, 1: yes
    integer :: jamapwav_sxwav !< output waves to map file for variable sxwav,  0: no, 1: yes
    integer :: jamapwav_sywav !< output waves to map file for variable sywav,  0: no, 1: yes
- integer                           :: jamapwav_sbxwav           !< output waves to map file for variable sxbwav, 0: no, 1: yes
- integer                           :: jamapwav_sbywav           !< output waves to map file for variable sybwav, 0: no, 1: yes
+   integer :: jamapwav_sbxwav !< output waves to map file for variable sxbwav, 0: no, 1: yes
+   integer :: jamapwav_sbywav !< output waves to map file for variable sybwav, 0: no, 1: yes
    integer :: jamapwav_mxwav !< output waves to map file for variable mxwav,  0: no, 1: yes
    integer :: jamapwav_mywav !< output waves to map file for variable mywav,  0: no, 1: yes
    integer :: jamapwav_dsurf !< output waves to map file for variable dsurf,  0: no, 1: yes
@@ -763,6 +765,8 @@ contains
       jawavestreaming = 0 ! Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
 
       jawavestokes = 1 ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
+
+      jawavebreakturbulence = 0 ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
 
       jawavedelta = 1 ! Wave boundary layer formulation: 1=Sana; 2=Nguyen
 

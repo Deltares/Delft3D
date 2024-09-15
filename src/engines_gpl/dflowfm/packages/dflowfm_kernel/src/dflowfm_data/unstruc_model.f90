@@ -95,7 +95,6 @@ module unstruc_model
    ! History File1D2DLinkVersion:
    ! 1.00 (2019-12-04): Initial version.
 
-
    type(tree_data), pointer, public :: md_ptr !< Unstruc Model Data in tree_data
 
    character(len=64), target :: md_ident = ' ' !< Identifier of the model, used as suggested basename for some files. (runid)
@@ -976,7 +975,7 @@ contains
                   call mess(LEVEL_ERROR, '"StretchCoef" values are not properly set.')
                end if
             end if
-         end if   
+         end if
 
          call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success)
          if (.not. success) then
@@ -1633,15 +1632,21 @@ contains
          fwfac = 0d0
       end if
 
-      ! using stokes drift in very discontinuous wave fields in the fetch approach is discouraged (experience from SF Bay)
-      if (jawave == 1 .or. jawave == 2) then
+      if (jawave <= 2) then
          jawaveStokes = 0
+         jawaveforces = 0
+         jawavestreaming = 0
+         jawavedelta = 0
+         jawavebreakturbulence = 0 ! default switch off, but switchable see below
       end if
+
       call prop_get(md_ptr, 'waves', '3Dstokesprofile', jawaveStokes) ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity
       if ((jawave == 1 .or. jawave == 2) .and. jawaveStokes > 0) then
          write (msgbuf, *) 'unstruc_model::readMDUFile: wavemodelnr=', jawave, ', and 3Dstokesprofile=', jawavestokes, '. It is *strongly* advised to leave 3Dstokesprofile at 0 when using fetch based wave models.'
          call warn_flush()
       end if
+
+      call prop_get(md_ptr, 'waves', '3Dwavebreakturbulence', jawavebreakturbulence) ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
       call prop_get(md_ptr, 'waves', '3Dwavestreaming', jawavestreaming) ! Influence of wave streaming. 0: no, 1: added to adve
       call prop_get(md_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta) ! Boundary layer formulation. 1: Sana
       call prop_get(md_ptr, 'waves', '3Dwaveforces', jawaveforces) ! Diagnostic mode: apply wave forces (1) or not (0)
@@ -3556,6 +3561,7 @@ contains
          end if
          if (writeall .or. kmx > 0) then
             call prop_set(prop_ptr, 'waves', '3Dstokesprofile', jawaveStokes, 'Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve ')
+            call prop_set(prop_ptr, 'waves', '3Dwavebreakturbulence', jawavebreakturbulence, 'Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes')
             call prop_set(prop_ptr, 'waves', '3Dwavestreaming', jawavestreaming, 'Influence of wave streaming. 0: no, 1: added to adve                                                                 ')
             call prop_set(prop_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta, 'Boundary layer formulation. 1: Sana                                                                                  ')
          end if
@@ -4201,7 +4207,7 @@ contains
          ti_tv = 0.0_dp
          ti_tv_rel = tstop_user
       end if
-      
+
    end subroutine set_output_time_vector
 
 end module unstruc_model
