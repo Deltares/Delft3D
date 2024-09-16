@@ -265,9 +265,9 @@ contains
         real   (dp) :: wsumt      (nfract)    ! total mass of floating oil
         real   (dp) :: wevapt     (nfract)    !
         real   (real_wp), pointer :: evemul     (:)         ! evaporated fraction at which emulsification starts (default 1.0)
-        real   (real_wp) :: viscsurf   (nfract)    !
-        real   (real_wp) :: fwatoilsurf(nfract)    !
-        real   (real_wp) :: densurf    (nfract)    !
+        real   (dp) :: viscsurf   (nfract)    !
+        real   (dp) :: fwatoilsurf(nfract)    !
+        real   (dp) :: densurf    (nfract)    !
         !      real   (rp)              :: c1         (nfract)    ! emulsification parameter ( constant nr. 6 )
 
         !     locals
