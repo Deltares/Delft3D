@@ -29,7 +29,9 @@
 
 !
 !
-
+module m_find_crossed_links_kdtree2
+   implicit none
+contains
 !---------------------------------------------------------------
 ! the following subroutines use kdtree2
 !---------------------------------------------------------------
@@ -39,13 +41,11 @@
       use m_flowgeom
       use kdtree2Factory
       use m_sferic
-      use unstruc_messages
-      use m_missing
-      use m_alloc
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
+      use m_missing, only: dmiss
       use geometry_module, only: dbdistance, crossinbox
       use m_readyy
-
-      implicit none
+      use m_get_link_neighboring_cell_coords
 
       type(kdtree_instance), intent(inout) :: treeinst
       integer, intent(in) :: NPL !< polyline length
@@ -243,3 +243,4 @@
 
       return
    end subroutine find_crossed_links_kdtree2
+end module m_find_crossed_links_kdtree2

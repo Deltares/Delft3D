@@ -29,13 +29,13 @@
 
 !
 !
-
+module m_comp_roots4
+   implicit none
+contains
 !> solves the quartic equation Ax^4+Bx^3+Cx^2+Dx+E=0
 subroutine comp_roots4(coeffs, x)
-   use m_missing
+   use m_missing, only: dmiss
    use Solve_Real_Poly
-
-   implicit none
 
    double precision, dimension(5), intent(in) :: coeffs !< coefficient vector (A,B,C,D,E)
    double precision, dimension(4), intent(out) :: x !< roots
@@ -98,3 +98,4 @@ subroutine comp_roots4(coeffs, x)
    end do
 
 end subroutine comp_roots4
+end module m_comp_roots4

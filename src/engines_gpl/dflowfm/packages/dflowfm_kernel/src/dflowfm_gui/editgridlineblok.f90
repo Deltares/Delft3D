@@ -31,7 +31,7 @@
 !
 
       subroutine EDITGRIDLINEBLOK(MODE, NFLD, KEY)
-         use unstruc_colors
+         use unstruc_colors, only: ncolln, ncolrg, ncoldg
          use m_grid
          use m_helpnow
          use m_drawthis
@@ -40,6 +40,9 @@
          use m_ktext
          use m_putget_un
          use m_botlin
+         use m_draw_nu
+         use m_cirr
+         use m_restore_grd
          implicit none
 
          integer :: mode, nfld, key

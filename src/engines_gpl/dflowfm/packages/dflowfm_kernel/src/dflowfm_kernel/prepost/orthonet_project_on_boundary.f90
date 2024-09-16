@@ -33,6 +33,7 @@
 !> project boundary-nodes back to the boundary of an original net
 subroutine orthonet_project_on_boundary(nmkx, kk1, k_bc, xkb, ykb)
    use m_netw
+   use m_d_line_dis3
 
    implicit none
 

@@ -40,6 +40,7 @@
       use m_arcinfo
       use m_perspx
       use m_halt2
+      use m_set_col
       
       implicit none
       double precision :: RC
@@ -98,6 +99,7 @@
       use unstruc_display
       use m_missing, only: DMISS
       use m_halt2
+      use m_set_col
 
       implicit none
       double precision :: hrc, rc, x, y, z
@@ -135,12 +137,15 @@
       use m_arcinfo
       use m_drawthis
       use m_htext
+      use m_hi_text
+      use m_krec5
+      use m_set_col
+      use m_inview
 
       implicit none
 
       double precision :: x, y, z, hrc
       integer :: met, m, ncol
-      logical, external :: inview
 
       if (INVIEW(X, Y)) then
          if (NDRAW(9) == 2) then

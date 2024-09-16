@@ -34,9 +34,11 @@
 subroutine makestep_samplepath(ipprev, ipcur, ipnext, Nsub, ipsub, ierror)
    use m_samples
    use m_samples_refine
-   use m_missing
+   use m_missing, only: dmiss, dxymis
    use geometry_module, only: dbdistance, dcosphi
    use m_sferic, only: jsferic, jasfer3D
+   use m_cirr
+   use m_set_col
 
    implicit none
 

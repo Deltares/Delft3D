@@ -42,6 +42,7 @@
     use m_xbeach_data, only: Lwave
     use m_fm_icecover, only: ice_p, fm_ice_update_press, ice_apply_pressure, ice_reduce_waves, ice_af, ice_apply_friction, ice_frctp, ice_frcuni, FRICT_AS_DRAG_COEFF
     use m_get_Lbot_Ltop
+    use m_get_cz
     use m_links_to_centers, only: links_to_centers
 
     implicit none

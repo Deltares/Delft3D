@@ -31,8 +31,9 @@
 !
 
       subroutine MODLN2(X, Y, Z, MMAX, NUMPI, MP, XP, YP, NPUT)
-         use M_MISSING
+         use m_missing, only: dmiss
          use m_okay
+         use m_dispnode
          implicit none
 !     WIJZIG AANTAL PUNTEN OP EEN ENKELE LIJN
 !     DELETE , NPUT = -2

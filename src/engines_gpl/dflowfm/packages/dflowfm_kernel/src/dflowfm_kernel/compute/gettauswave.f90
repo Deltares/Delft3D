@@ -39,6 +39,7 @@ contains
       use m_flowgeom
       use m_sediment, only: sedtra, stm_included
       use m_get_kbot_ktop
+      use m_get_cz
 
       ! Input variables
       integer, intent(in) :: waveswartdelwaq

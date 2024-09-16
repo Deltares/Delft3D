@@ -37,11 +37,12 @@
     use m_missing
     use m_transport
     use m_drawthis
+    use m_pfiller
+    use m_inview
     implicit none
     integer :: nodemode, nodewhat
     integer :: k, ja, ja2, nn, ncol
     double precision :: znod, zn
-    logical inview
 
     nodemode = ndraw(19)
     nodewhat = ndraw(28)

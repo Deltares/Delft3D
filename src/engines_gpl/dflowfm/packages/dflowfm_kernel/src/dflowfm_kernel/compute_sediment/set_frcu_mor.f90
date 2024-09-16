@@ -29,7 +29,9 @@
 
 !
 !
-
+module m_set_frcu_mor
+   implicit none
+contains
 subroutine set_frcu_mor(dim)
    use m_flow, only: frcu, frcu_mor
    use m_flowgeom, only: lnx, lnxi, lnx1d, lnx1Db
@@ -54,3 +56,4 @@ subroutine set_frcu_mor(dim)
       end do
    end if
 end subroutine set_frcu_mor
+end module m_set_frcu_mor

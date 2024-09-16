@@ -40,6 +40,9 @@
     use m_missing, only: dmiss, JINS
     use geometry_module, only: pinpok, dbpinpol
     use m_set_kbot_ktop
+    use m_volsur
+    use m_flow_f0isf1
+    use m_pfiller
 
     implicit none
     double precision, intent(in) :: xp, yp !< Clicked point, which flow node to drop. If a polygon is active, drop all contained points, independent of xp, yp.

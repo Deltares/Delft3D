@@ -33,6 +33,7 @@
       subroutine DISP3CAB(X, Y, Z, NCL, N, RCIR, NCOL, A, B)
          use M_MISSING
          use m_halt2
+         use m_set_col
          implicit none
          double precision :: a
          double precision :: b

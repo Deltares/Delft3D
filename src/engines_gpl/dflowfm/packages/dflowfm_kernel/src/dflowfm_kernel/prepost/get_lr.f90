@@ -29,16 +29,16 @@
 
 !
 !
-
+module m_get_lr
+   implicit none
+contains
 !> get left and right neighboring grid layer points
 subroutine get_LR(mc, xc, yc, i, iL, iR)
 
-   use m_missing
+   use m_missing, only: dmiss
    use m_spline2curvi
    use geometry_module, only: dbdistance
    use m_sferic, only: jsferic, jasfer3D
-
-   implicit none
 
    integer, intent(in) :: mc !< grid layer size
    double precision, dimension(mc), intent(in) :: xc, yc !< grid layer point coordinates
@@ -88,3 +88,4 @@ subroutine get_LR(mc, xc, yc, i, iL, iR)
 
    return
 end subroutine get_LR
+end module m_get_lr

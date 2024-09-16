@@ -29,14 +29,14 @@
 
 !
 !
-
+module m_disln
+   implicit none
+contains
  subroutine DISLN(LL) ! print link values
-    use m_flowgeom
-    use m_devices
-    use network_data, only: kn
-    use unstruc_display
+    use m_flowgeom, only: ln, xz, yz
+    use unstruc_display, only: iws
     use m_ktext
-    implicit none
+    use m_gtext
 
     integer :: LL
     character TEX * 23
@@ -64,3 +64,4 @@
 
     return
  end subroutine DISLN
+end module m_disln

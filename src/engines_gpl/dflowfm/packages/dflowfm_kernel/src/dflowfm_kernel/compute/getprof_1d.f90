@@ -29,22 +29,21 @@
 
 !
 !
-
+module m_get_prof_1D
+   implicit none
+contains
 ! =================================================================================================
 ! =================================================================================================
 subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
-   use m_profiles
    use m_flow
    use m_flowgeom
-   use m_flowtimes
-   use m_missing
+   use m_flowtimes, only: time1, times_update_roughness
    use unstruc_channel_flow
-   use m_crosssections
    use m_cross_helper
    use unstruc_model, only: md_restartfile
    use precision_basics
+   use m_get_cz
 
-   implicit none
    integer :: L, japerim, calcConv
    double precision :: hprL !< hoogte in profiel
    double precision :: area !< wet cross sectional area
@@ -288,3 +287,4 @@ subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
    end if
 
 end subroutine getprof_1D
+end module m_get_prof_1D

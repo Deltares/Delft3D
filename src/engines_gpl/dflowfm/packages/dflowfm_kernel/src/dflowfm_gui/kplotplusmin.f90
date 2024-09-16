@@ -29,12 +29,14 @@
 
 !
 !
-
+module m_k_plot_plus_min
+   implicit none
+contains
      subroutine KPLOTPLUSMIN(IPM)
-        use M_FLOWGEOM
-        use M_FLOW
+        use M_FLOWGEOM, only: ntheta
+        use M_FLOW, only: kmx, kplotfrombedorsurface, kplot, jawave
         use m_xbeach_data, only: itheta_view
-        implicit none
+
         integer :: IP, IPM
 
         if (kmx >= 1) then
@@ -52,3 +54,4 @@
            itheta_view = max(min(itheta_view + sign(1, ipm), ntheta), 1)
         end if
      end subroutine KPLOTPLUSMIN
+end module m_k_plot_plus_min

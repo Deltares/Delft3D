@@ -34,6 +34,7 @@
     use m_flowgeom
     use m_spiderweb
     use m_wind
+    use m_set_col
     implicit none
     double precision :: vfac, shft
 

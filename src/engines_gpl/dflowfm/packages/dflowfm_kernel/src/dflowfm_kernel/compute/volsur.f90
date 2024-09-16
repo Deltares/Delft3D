@@ -29,14 +29,14 @@
 
 !
 !
-
+module m_volsur
+   implicit none
+contains
  subroutine volsur() ! volsur entirely in s1 because of s1 iteration
     use timers
     use m_flowgeom
     use m_flow
-    use m_ship
 
-    implicit none
     ! locals
     integer :: japerim
     integer :: L, n, k1, k2
@@ -96,3 +96,4 @@
     call timstop(handle)
 
  end subroutine volsur
+end module m_volsur

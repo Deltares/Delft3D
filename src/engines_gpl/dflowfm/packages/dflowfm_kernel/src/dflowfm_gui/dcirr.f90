@@ -31,7 +31,9 @@
 !
 
       subroutine DCIRR(XD, YD, ZD, NCOL)
-         use gridoperations
+         use m_three_two
+         use m_cirr
+
          implicit none
          integer :: ncol
          double precision :: x

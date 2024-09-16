@@ -33,15 +33,15 @@
 subroutine heatun(n, timhr, qsno)
 use m_flow
 use m_flowgeom
-use m_sferic
-use m_itdate
-use unstruc_model
-use m_flowtimes
+use m_sferic, only: jsferic
+use precision, only: comparereal, fp
+use m_flowtimes, only: dts
 use m_heatfluxes
 use m_transport, only: constituents, itemp, isalt
 use m_fm_icecover, only: ja_icecover, ice_af, ice_albedo, ice_h, ice_t, snow_albedo, snow_h, snow_t, qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
 use m_physcoef, only: backgroundsalinity
 use m_get_kbot_ktop
+use m_get_link1
 
 implicit none
 

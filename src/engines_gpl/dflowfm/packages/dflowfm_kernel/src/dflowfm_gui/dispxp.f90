@@ -31,6 +31,7 @@
 !
 
       subroutine DISPXP(X, Y, N, NCOL)
+         use m_set_col
          implicit none
          integer :: i
          integer :: n

@@ -36,7 +36,7 @@
          use M_MISSING
          use M_POLYGON
          use geometry_module, only: pinpok
-         use gridoperations
+         use m_d_line_dis3
          implicit none
          double precision, intent(in) :: xx, yy !< coordinates of reference point
          integer, intent(in) :: JSTART, JEND !< start end end node of land boundary segment respectively

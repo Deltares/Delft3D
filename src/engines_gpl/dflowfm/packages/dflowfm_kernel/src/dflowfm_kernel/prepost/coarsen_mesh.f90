@@ -39,6 +39,7 @@ subroutine coarsen_mesh()
    use gridoperations
    use m_readlocator
    use m_makenetnodescoding
+   use m_cirr
 
    implicit none
 

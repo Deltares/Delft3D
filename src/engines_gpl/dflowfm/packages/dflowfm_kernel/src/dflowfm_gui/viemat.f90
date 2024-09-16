@@ -35,6 +35,7 @@
   subroutine viemat(the, phi)
      use m_viewmat
      use m_perspx
+     use m_matm4
      implicit none
      double precision :: cp
      double precision :: ct

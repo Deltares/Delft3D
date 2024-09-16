@@ -33,6 +33,7 @@
 !     plot stencil for higher-order corrections to screen
       subroutine plotklnup(L)
          use m_flowgeom
+         use m_cirr
          implicit none
 
          integer, intent(in) :: L !< flowlink number

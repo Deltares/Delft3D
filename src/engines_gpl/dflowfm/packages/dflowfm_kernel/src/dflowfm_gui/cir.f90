@@ -33,6 +33,7 @@
       subroutine CIR(R)
          use unstruc_opengl
          use m_colnow
+         use m_krec5
          implicit none
          double precision :: r, Hr
 

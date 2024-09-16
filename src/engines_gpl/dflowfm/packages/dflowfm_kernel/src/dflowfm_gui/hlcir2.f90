@@ -33,6 +33,7 @@
       !> Draw a filled circle at current position.
       !! Filled means: one colour for inside, one colour for edge.
       subroutine HLCIR2(R, icolfill, icoledge)
+         use m_set_col
          implicit none
          double precision, intent(in) :: R !< Radius in world coords.
          integer, intent(in) :: icolfill !< Colour number for inner fill

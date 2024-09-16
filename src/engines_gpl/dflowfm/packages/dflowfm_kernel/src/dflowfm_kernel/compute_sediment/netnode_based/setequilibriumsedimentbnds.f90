@@ -35,6 +35,7 @@ subroutine setequilibriumsedimentbnds(nbnd, n4, kbnd, kban, i01)
    use m_flowgeom
    use m_sediment
    use m_get_Lbot_Ltop
+   use m_get_equilibrium_transport_rates
    implicit none
 
    integer :: nbnd, kban(2, nbnd), n4, kbnd(n4, nbnd), i01

@@ -36,6 +36,7 @@
        use m_flow
        use m_sferic
        use unstruc_display
+       use m_set_bobs
        implicit none
 
        integer :: k, L

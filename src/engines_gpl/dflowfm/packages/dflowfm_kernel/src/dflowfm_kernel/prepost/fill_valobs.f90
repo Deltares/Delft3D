@@ -53,6 +53,7 @@ subroutine fill_valobs()
    use m_get_layer_indices_l_max
    use m_reconstruct_ucz
    use m_get_ucx_ucy_eul_mag
+   use m_get_link1
    use m_links_to_centers, only: links_to_centers
 
    implicit none

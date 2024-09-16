@@ -36,6 +36,8 @@ subroutine tekbanfs()
    use m_flow, only: kbot
    use m_sediment
    use m_drawthis
+   use m_get_equilibrium_transport_rates
+   use m_set_col
    implicit none
    double precision :: x, y, z, v, hsk
    integer :: kk, n, k, ncol

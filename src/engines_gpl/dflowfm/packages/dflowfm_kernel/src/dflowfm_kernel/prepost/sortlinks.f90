@@ -33,9 +33,9 @@
 !> sort per-node link administration (nod()%lin), based on connectivity
 subroutine sortlinks()
    use m_netw
-   use m_inverse_map
-   use unstruc_colors
+   use unstruc_colors, only: ncolhl
    use m_qnerror
+   use m_cirr
 
    implicit none
 

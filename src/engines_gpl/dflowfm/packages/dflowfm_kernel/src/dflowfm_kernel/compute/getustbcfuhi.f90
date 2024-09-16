@@ -38,6 +38,8 @@
       use m_sediment, only: stm_included
       use m_turbulence, only: tkepro
       use m_flowtimes, only: dts
+      use m_get_ustwav
+      use m_get_czz0
 
       implicit none
       integer, intent(in) :: LL, Lb

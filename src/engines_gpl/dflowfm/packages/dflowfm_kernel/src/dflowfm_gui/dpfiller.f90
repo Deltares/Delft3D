@@ -31,7 +31,8 @@
 !
 
       subroutine DPFILLER(X, Y, Z, N, NCOL, NCOLR)
-         use gridoperations
+         use m_three_two
+         use m_pfiller
          implicit none
          integer :: k
          integer :: n

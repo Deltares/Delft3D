@@ -33,6 +33,7 @@
   subroutine TEKBOTTOM(MET)
      use m_wearelt
      use m_howtoview
+     use m_set_col
      implicit none
      double precision :: dz
      integer :: i

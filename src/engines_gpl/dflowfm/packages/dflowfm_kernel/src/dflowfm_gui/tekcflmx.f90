@@ -35,6 +35,7 @@
     use m_flow
     use m_flowtimes
     use m_htext
+    use m_set_col
     implicit none
     if (kkcflmx /= 0) then
        call setcol(31)

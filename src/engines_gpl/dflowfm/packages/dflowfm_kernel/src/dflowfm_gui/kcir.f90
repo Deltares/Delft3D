@@ -34,6 +34,7 @@
          use unstruc_colors
          use M_MISSING
          use m_wearelt
+         use m_set_col
          implicit none
          integer :: ncol
          double precision :: x

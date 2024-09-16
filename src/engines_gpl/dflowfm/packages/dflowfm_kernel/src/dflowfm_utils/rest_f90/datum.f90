@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_datum
+   implicit none
+contains
       subroutine DATUM(DATE)
          use m_dateandtimenow
-         implicit none
+
          integer :: iyear, month, iday, ihour, minute, isecnd
          character DATE * 20
 !              1  4  7   11 14 17
@@ -48,3 +50,4 @@
          write (DATE(17:20), '(I4)') IYEAR
          return
       end
+end module m_datum

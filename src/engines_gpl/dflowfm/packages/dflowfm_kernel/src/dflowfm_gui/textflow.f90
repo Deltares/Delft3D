@@ -32,18 +32,16 @@
 
  subroutine TEXTFLOW()
     use time_module, only: seconds_to_datetimestring
-    use m_flowgeom
+    use m_flowgeom, only: ndx, lnx
     use Timers
-    !USE M_NETW
-    use M_FLOW
-    use M_FLOWTIMES
+    use m_flow
+    use m_flowtimes
     use m_reduce, only: nocg, nogauss
-    use M_RAAITEK
-    use m_statistics
-    use UNSTRUC_MODEL, only: md_ident
-    use unstruc_colors
+    use m_raaitek
+    use unstruc_model, only: md_ident
     use m_transport, only: nsubsteps, numnonglobal
     use m_drawthis
+    use m_get_link1
     implicit none
     double precision, external :: znod, zlin
     double precision :: cpuperstep, solrest, znn, dtav

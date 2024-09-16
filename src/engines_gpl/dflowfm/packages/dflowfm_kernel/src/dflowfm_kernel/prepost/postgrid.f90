@@ -29,17 +29,19 @@
 
 !
 !
-
+module m_postgrid
+   implicit none
+contains
 !> remove skewed cells and cells whose aspect ratio exceeds a prescibed value
 !> note: latter not implemented yet
 subroutine postgrid()
 
    use m_grid
-   use m_missing
+   use m_missing, only: dmiss, dxymis
    use geometry_module, only: dbdistance, dcosphi
    use m_sferic, only: jsferic, jasfer3D
-
-   implicit none
+   use m_cirr
+   use m_get_lr
 
    integer, dimension(mc) :: ifront
    double precision :: dcos, dcosR, xn, yn
@@ -130,3 +132,4 @@ subroutine postgrid()
 
    return
 end subroutine postgrid
+end module m_postgrid

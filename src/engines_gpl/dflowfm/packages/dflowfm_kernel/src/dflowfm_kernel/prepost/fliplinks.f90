@@ -43,6 +43,7 @@ subroutine fliplinks()
    use gridoperations
    use m_qnerror
    use m_makenetnodescoding
+   use m_tek_link
 
    implicit none
 

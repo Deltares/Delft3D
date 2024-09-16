@@ -36,6 +36,7 @@ subroutine MINMXNETCELLS()
    use m_flowgeom
    use m_missing
    use m_depmax
+   use m_inview
    
    implicit none
 
@@ -46,7 +47,6 @@ subroutine MINMXNETCELLS()
    double precision :: rmin
 
    double precision, external :: znetcell
-   logical inview
 
    if (JAAUTO > 0) then
       RMIN = 1.0d30

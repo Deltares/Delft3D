@@ -33,6 +33,7 @@
       subroutine TEKGRPT(X, Y, mmax, nmax, MC, NC, MP, NP, NCOL)
 !     TEKEN GRIDLIJNEN UITKOMEND OP DIT PUNT
          use m_missing
+         use m_set_col
          implicit none
          integer :: mmax, nmax, mc, nc, mp, np, ncol
          double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)

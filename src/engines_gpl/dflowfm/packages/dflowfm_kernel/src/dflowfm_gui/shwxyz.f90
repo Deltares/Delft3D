@@ -36,6 +36,7 @@
          use unstruc_colors
          use m_locatora
          use m_helpnow
+         use m_set_col
 
          implicit none
 

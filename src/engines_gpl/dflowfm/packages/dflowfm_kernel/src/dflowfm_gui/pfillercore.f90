@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_pfiller_core
+   implicit none
+contains
     subroutine PFILLERCORE(XR, YR, N)
-       use unstruc_opengl
-       implicit none
+       use unstruc_opengl, only: inopenglrendering, FillPolygon
+
        integer :: n
        real xr(N), yr(N)
 
@@ -47,3 +49,4 @@
        end if
 
     end subroutine
+end module m_pfiller_core

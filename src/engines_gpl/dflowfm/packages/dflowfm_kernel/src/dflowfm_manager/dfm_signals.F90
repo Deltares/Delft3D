@@ -86,6 +86,7 @@ contains
    function dfm_check_signals() result(ierror)
       use unstruc_messages
       use dfm_error
+      use m_datum
       implicit none
       integer :: ierror !< Tells the caller what to do (either DFM_NOERR, or DFM_SIGINT)
 #ifdef HAVE_SIGIWATCH

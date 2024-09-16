@@ -481,7 +481,7 @@ subroutine unc_write_his(tim) ! wrihis
       end if
 
       ! WAQ statistic outputs are kept outside of the statistical output framework
-      if (jawaqproc <= 0) then
+      if (jawaqproc > 0) then
          ierr = unc_def_his_station_waq_statistic_outputs(id_hwq)
       end if
 
@@ -848,7 +848,7 @@ subroutine unc_write_his(tim) ! wrihis
    end if
 
    ! WAQ statistic outputs are kept outside of the statistical output framework
-   if (ntot <= 0 .or. jawaqproc <= 0) then
+   if (jawaqproc > 0) then
       ierr = unc_put_his_station_waq_statistic_outputs(id_hwq)
    end if
 
@@ -1472,7 +1472,7 @@ contains
 
       character(len=255) :: variable_name, description
       character(len=1024) :: station_coordinate_string
-      integer :: statistics_index
+      integer :: statistics_index, output_index
       integer, allocatable :: nc_dimensions(:), specific_nc_dimensions(:)
 
       ierr = DFM_NOERR
@@ -1493,12 +1493,13 @@ contains
          else
             specific_nc_dimensions = nc_dimensions
          end if
+         output_index = statistics_index + noout_user
          variable_name = ' '
          write (variable_name, "('water_quality_stat_',I0)") statistics_index
          call definencvar(ihisfile, waq_statistics_ids(statistics_index), nc_precision, specific_nc_dimensions, &
-                          trim(variable_name), trim(wq_user_outputs%names(statistics_index)), &
-                          trim(wq_user_outputs%units(statistics_index)), trim(station_coordinate_string), 'station_geom', fillVal=dmiss)
-         description = trim(wq_user_outputs%names(statistics_index))//' - '//trim(wq_user_outputs%description(statistics_index))//' in flow element'
+                          trim(variable_name), trim(wq_user_outputs%names(output_index)), &
+                          trim(wq_user_outputs%units(output_index)), trim(station_coordinate_string), 'station_geom', fillVal=dmiss)
+         description = trim(wq_user_outputs%names(output_index))//' - '//trim(wq_user_outputs%description(output_index))//' in flow element'
          call replace_multiple_spaces_by_single_spaces(description)
          call check_netcdf_error(nf90_put_att(ihisfile, waq_statistics_ids(statistics_index), 'description', description))
       end do

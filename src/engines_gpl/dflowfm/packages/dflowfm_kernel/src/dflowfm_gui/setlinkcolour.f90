@@ -33,6 +33,7 @@
   subroutine SETLINKCOLOUR(L, NCOL)
      use m_netw
      use unstruc_colors
+     use m_set_col
      implicit none
      integer :: L, NCOL, NCL
      if (NCOL == 0) then ! ERASE

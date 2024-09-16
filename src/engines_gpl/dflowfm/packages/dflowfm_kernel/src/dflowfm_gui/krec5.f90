@@ -29,9 +29,12 @@
 
 !
 !
-
+module m_krec5
+   implicit none
+contains
       subroutine KREC5(XX, YY, XD, YD)
-         implicit none
+         use m_pfiller_core
+         
          double precision :: xd
          double precision :: xx
          double precision :: yd
@@ -48,3 +51,4 @@
          call PFILLERCORE(X, Y, 4)
          return
       end
+end module m_krec5

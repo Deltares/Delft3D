@@ -32,11 +32,12 @@
 
   subroutine MAKECOARSE2FINETRIANGLECONNECTIONCELLS()
      use m_netw
-     use m_sferic, only: jsferic, jasfer3D, dtol_pole
+     use m_sferic, only: jsferic, jasfer3D
      use m_missing, only: dxymis
      use geometry_module, only: dcosphi
      use gridoperations
      use m_set_nod_adm
+     use m_new_link
 
      implicit none
      integer :: N3(6)

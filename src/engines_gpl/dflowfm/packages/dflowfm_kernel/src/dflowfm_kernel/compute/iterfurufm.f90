@@ -58,6 +58,7 @@ logical function iterfurufm(m, su, sd, ustru, cu, rhsc, dxdt, lambda)
    use m_strucs
    use m_flow
    use m_flowgeom, only: dx
+   use m_get_cz
 
    implicit none
 !

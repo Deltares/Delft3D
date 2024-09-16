@@ -855,6 +855,7 @@ contains
       use m_sediment, only: stm_included
       use m_fm_erosed, only: lsed, lsedtot, stmpar
       use m_transport, only: ised1, isedn
+      use m_datum
 
       integer :: lunbal ! logical unit
 

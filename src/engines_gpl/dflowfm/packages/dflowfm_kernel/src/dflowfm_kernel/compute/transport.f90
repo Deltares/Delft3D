@@ -35,22 +35,18 @@ subroutine transport() ! transport for now, advect salinity and add
    use m_flowgeom
    use m_flow
    use Timers
-   use m_ship
    use m_sediment
    use m_netw, only: xk, yk, zk
    use m_flowtimes
    use m_flowparameters, only: jadiagnostictransport
    use m_physcoef, only: idensform, difmolsal
-   use m_partitioninfo
-   use m_timer
-   use m_missing
-   use unstruc_messages
    use m_transport, only: NUMCONST, constituents, ISALT, ITEMP
    use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
    use m_dlimitercentral
    use m_dslim
    use m_get_kbot_ktop
    use m_get_Lbot_Ltop
+   use m_get_equilibrium_transport_rates
    
    implicit none
 

@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_save_keys
+   implicit none
+contains
       subroutine SAVEKEYS()
          use m_keycodes
-         implicit none
+         
          integer :: i
          integer :: infoinput
 
@@ -41,3 +43,4 @@
          end do
          return
       end
+end module m_save_keys

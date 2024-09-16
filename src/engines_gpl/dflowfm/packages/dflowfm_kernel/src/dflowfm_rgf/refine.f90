@@ -36,6 +36,8 @@
          use unstruc_messages
          use m_readyy
          use m_qnerror
+         use m_increase_grid
+         use m_isitu
          implicit none
          integer :: m1, n1, m2, n2, num
 

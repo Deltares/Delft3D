@@ -35,6 +35,9 @@
          use M_BITMAP
          use m_drawthis
          use m_halt2
+         use m_krec5
+         use m_bilinxy
+         use m_set_col
          implicit none
          integer :: i
          integer :: ini

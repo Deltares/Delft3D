@@ -52,6 +52,7 @@
     use m_hydrology, only: jadhyd, alloc_hydrology, init_hydrology
     use m_qnerror
     use m_get_zlayer_indices
+    use m_get_zlayer_indices_bobL
 
     implicit none
     integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2

@@ -41,6 +41,7 @@
     use m_polygon
     use m_netw
     use m_halt2
+    use m_set_col
     implicit none
     integer :: ncol, jaall, ITYP
     integer :: L, k1, k2

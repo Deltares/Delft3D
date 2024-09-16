@@ -39,6 +39,7 @@
          use m_helpnow
          use m_disvalcolors
          use m_disput
+         use m_set_col
          
          implicit none
          integer :: ic

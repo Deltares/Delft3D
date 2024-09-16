@@ -33,23 +33,17 @@
  double precision function znod(kk) ! get various values at flow nodes
     use m_flow
     use m_flowgeom
-    use m_reduce
     use m_flowtimes ! for volerr
     use m_sediment
     use m_fm_erosed, only: ucxq_mor, ucyq_mor
-    use m_missing
-    use m_partitioninfo
     use m_xbeach_data
     use m_transportdata
-    use m_missing
     use m_observations
-    use bedcomposition_module
-    use precision
-    use m_waves
     use m_flowparameters, only: ispirparopt
     use m_wind, only: jawind
     use unstruc_display, only: grwhydopt
     use m_drawthis
+    use m_get_equilibrium_transport_rates
 
     implicit none
 

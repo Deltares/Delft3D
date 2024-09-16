@@ -34,12 +34,12 @@
 subroutine derefine_mesh(xp, yp, Lconfirm)
 
    use m_netw
-   use m_alloc
    use geometry_module, only: pinpok
    use m_missing, only: jins, dmiss
    use gridoperations
    use m_qnerror
    use m_makenetnodescoding
+   use m_cirr
 
    implicit none
 

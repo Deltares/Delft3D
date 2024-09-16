@@ -33,8 +33,9 @@
  subroutine addlink2D(L, japerim) ! and add area's and volumes of 2D links
     use m_flowgeom
     use m_flow
-    use m_missing
-    use m_sferic
+    use m_sferic, only: jasfer3d
+    use m_get_link_area_wid2D
+    use m_get_prof2d
 
     implicit none
 

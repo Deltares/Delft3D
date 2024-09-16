@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_paramtext
+   implicit none
+contains
    subroutine PARAMTEXT(OPTION, NR)
       use M_isoscaleunit
-      implicit none
+
       integer :: l1
       integer :: l2
       character * (*) OPTION
@@ -44,3 +46,4 @@
       write (PARAMTEX(NR) (1:14), '(A)') OPTION(1:14)
       return
    end subroutine PARAMTEXT
+end module m_paramtext

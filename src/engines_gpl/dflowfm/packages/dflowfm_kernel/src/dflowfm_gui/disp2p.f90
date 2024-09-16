@@ -32,6 +32,7 @@
 
 !
       subroutine DISP2P(X, Y, MMAX, MC, NC, NCOL)
+         use m_set_col
          implicit none
          integer :: i
          integer :: j

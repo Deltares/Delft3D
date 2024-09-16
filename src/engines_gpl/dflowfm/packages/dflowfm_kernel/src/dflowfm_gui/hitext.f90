@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_hi_text
+   implicit none
+contains
       subroutine HITEXT(IVAL, X, Y)
          use m_colnow
-         implicit none
+
          integer :: ival
          integer :: l
          double precision :: x
@@ -53,3 +55,4 @@
          end if
          return
       end
+end module m_hi_text

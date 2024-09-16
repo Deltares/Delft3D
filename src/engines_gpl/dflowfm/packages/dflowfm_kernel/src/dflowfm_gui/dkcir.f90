@@ -31,7 +31,7 @@
 !
 
       subroutine DKCIR(XD, YD, ZD, V)
-         use gridoperations
+         use m_three_two
          implicit none
          double precision :: v
          double precision :: x

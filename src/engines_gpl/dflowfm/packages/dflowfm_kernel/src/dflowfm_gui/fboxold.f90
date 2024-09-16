@@ -35,6 +35,7 @@ contains
     
       subroutine FBOXOLD(XB1, YB1, XB2, YB2)
          use m_colnow
+         use m_pfiller_core
          integer :: n
          double precision :: xb1
          double precision :: xb2

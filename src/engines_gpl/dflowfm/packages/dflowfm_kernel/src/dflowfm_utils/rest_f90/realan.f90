@@ -35,6 +35,8 @@
        use M_landboundary
        use M_MISSING
        use m_readyy
+       use m_qn_read_error
+       use m_qn_eof_error
        implicit none
        integer, intent(inout) :: mlan
        integer, intent(inout), optional :: antot

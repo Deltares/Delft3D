@@ -2593,6 +2593,7 @@ contains
       use m_output_config, only: set_properties
       use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
       use m_map_his_precision
+      use m_datum
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values

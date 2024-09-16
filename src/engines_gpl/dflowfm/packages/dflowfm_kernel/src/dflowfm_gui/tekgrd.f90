@@ -33,6 +33,8 @@
       subroutine TEKgrd(XC, YC, MMAX, NMAX, m1, n1, m2, n2, NCOL, MET, key, MC)
          use m_halt2
          use m_jgrline8
+         use m_tek_num_netcells
+         use m_set_col
          implicit none
          integer :: mmax, nmax, m1, n1, m2, n2, ncol, met, key, mc
          double precision :: XC(MMAX, NMAX), YC(MMAX, NMAX), xlist(nmax), ylist(nmax)

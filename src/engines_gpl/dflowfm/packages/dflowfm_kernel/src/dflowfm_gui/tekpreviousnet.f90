@@ -33,6 +33,7 @@
       subroutine TEKPREVIOUSNET(NCOL)
          use m_netw
          use m_drawthis
+         use m_set_col
          implicit none
          integer :: NCOL
          integer :: k1

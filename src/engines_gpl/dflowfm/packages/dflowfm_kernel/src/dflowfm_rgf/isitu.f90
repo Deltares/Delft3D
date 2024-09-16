@@ -29,12 +29,12 @@
 
 !
 !
-
+module m_isitu
+   implicit none
+contains
       subroutine ISITU()
-         use m_grid
-         use M_MISSING
-
-         implicit none
+         use m_grid, only: ijc, ijyes, mc, nc, mmax, nmax, xc, yc
+         use m_missing, only: dxymis
 
 !C     IJYES, WELKE CELLEN DOEN MEE 1 OF 0
 !C     IJC  , CODE VAN PUNT, ZIE FIGUUR
@@ -219,3 +219,4 @@
 
          return
       end subroutine ISITU
+end module m_isitu

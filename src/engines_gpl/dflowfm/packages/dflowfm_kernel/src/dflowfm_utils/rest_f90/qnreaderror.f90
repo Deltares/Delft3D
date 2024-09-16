@@ -29,13 +29,16 @@
 
 !
 !
-
+module m_qn_read_error
+   implicit none
+contains
       subroutine QNREADERROR(W1, W2, MINP)
          use unstruc_files
          use m_qnerror
-         implicit none
+
          integer :: minp
          character W1 * (*), W2 * (*)
 
          call QNERROR(W1, W2, ' IN FILE '//FILENAMES(MINP))
       end
+end module m_qn_read_error

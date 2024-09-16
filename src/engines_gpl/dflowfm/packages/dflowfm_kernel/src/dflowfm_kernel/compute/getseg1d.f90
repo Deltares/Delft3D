@@ -31,6 +31,7 @@
 !
 
 subroutine getseg1D(hpr, wu2, dz, ai, frcn, ifrctyp, wid, ar, conv, perim, jaconv) ! copy of above routine dressed out for 1D
+   use m_get_cz
    implicit none
    double precision, intent(in) :: hpr, wu2, dz, ai, frcn
    double precision, intent(out) :: wid, ar, conv, perim !
