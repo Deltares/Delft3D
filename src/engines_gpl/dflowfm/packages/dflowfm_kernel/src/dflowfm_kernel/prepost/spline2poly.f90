@@ -37,6 +37,7 @@ subroutine spline2poly()
    use m_gridsettings
    use m_polygon
    use m_missing
+   use m_delpol
 
    implicit none
 

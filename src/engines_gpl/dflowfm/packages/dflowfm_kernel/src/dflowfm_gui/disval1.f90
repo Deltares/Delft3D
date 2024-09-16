@@ -32,6 +32,7 @@
 
       subroutine DISVAL1(DEP)
          use unstruc_colors
+         use m_ktext
          implicit none
          double precision :: DEP
          character TEX * 8

@@ -32,6 +32,9 @@
 
       subroutine DISP3C(X, Y, Z, NCL, N, RCIR, NCOL)
          use M_MISSING
+         use m_halt2
+         use m_jgrline8
+         use m_set_col
          implicit none
          integer :: i
          integer :: istart

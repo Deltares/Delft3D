@@ -31,10 +31,11 @@
 !
 
       subroutine setrcirxy(x, y, rcx, rcy) ! determine x and y search tols on the spot where you click
-         use m_wearelt
+         use m_wearelt, only: rcir, x1, x2, y1, y2
          use m_sferic
-         use m_devices
-         use m_sferzoom
+         use m_devices, only: npx, npy
+         use m_dproject
+         use m_dbdistance_hk
          implicit none
          double precision :: x, y, rcx, rcy, xx, yy, xa, ya, rpx, rpy
          rcx = rcir; rcy = rcir

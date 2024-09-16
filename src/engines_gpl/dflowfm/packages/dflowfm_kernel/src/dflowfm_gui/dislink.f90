@@ -32,6 +32,7 @@
 
       subroutine DISLINK(MP)
          use m_devices
+         use m_ktext
          implicit none
          integer :: mp
          character TEX * 23

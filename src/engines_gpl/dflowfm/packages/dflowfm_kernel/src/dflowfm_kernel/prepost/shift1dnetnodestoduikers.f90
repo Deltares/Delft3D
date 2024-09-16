@@ -40,6 +40,8 @@
     use geometry_module, only: dbdistance
     use m_sferic, only: jsferic, jasfer3D
     use gridoperations
+    use m_reapol
+    use m_wripol
 
     implicit none
     integer :: minp, Ls, n, k1, k2, kL, kR, LnL

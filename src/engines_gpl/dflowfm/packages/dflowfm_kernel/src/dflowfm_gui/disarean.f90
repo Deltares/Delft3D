@@ -32,6 +32,7 @@
 
       subroutine DISAREAN(AREAN)
          use m_devices
+         use m_ktext
          implicit none
          double precision :: arean
          character(len=32) :: DISTAN

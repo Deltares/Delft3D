@@ -45,6 +45,7 @@
     use m_sferic, only: jsferic, jasfer3D
     use m_samples
     use m_qnerror
+    use m_set_branch_lc
 
     implicit none
     integer :: ierr, MINP, LS, L, K, IBR, LL, LA, K1, K2, KA, KB, NRL, KK, ja, ium

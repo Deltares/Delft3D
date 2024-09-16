@@ -34,10 +34,9 @@
 
      use m_netw
      use m_missing, only: dmiss, JINS
-     use m_polygon, only: NPL, xpl, ypl, zpl
-     use geometry_module, only: dbpinpol
-     use gridoperations
      use m_readyy
+     use m_set_nod_adm
+     use m_new_link
 
      implicit none
      

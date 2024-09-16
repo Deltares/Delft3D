@@ -35,6 +35,7 @@
      use M_GRIDSETTINGS
      use m_missing, only: dmiss, jins
      use geometry_module, only: pinpok
+     use m_del_elem
      implicit none
 
      integer :: INL

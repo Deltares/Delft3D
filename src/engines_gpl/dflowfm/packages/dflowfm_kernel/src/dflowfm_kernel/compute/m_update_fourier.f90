@@ -95,6 +95,7 @@ contains
       use m_flow, only: ndkx, workx, worky, ucmag, jaeulervel
       use unstruc_channel_flow, only: network
       use m_oned_functions, only: updateFreeboard, updateDepthOnGround, updateVolOnGround
+      use m_get_ucx_ucy_eul_mag
 
       double precision, intent(in) :: ti_fou !< Fourier time step
 

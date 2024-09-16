@@ -31,6 +31,7 @@
 !
 
       integer function USECP()
+         use m_dateandtimenow
          implicit none
          integer :: ihour
          integer :: isecnd

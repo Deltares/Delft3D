@@ -45,6 +45,9 @@
       use gridoperations
       use m_drawthis
       use m_qnerror
+      use m_paramtext
+      use m_tek_num_netcells
+      use m_set_branch_lc
 
       implicit none
       integer :: ium

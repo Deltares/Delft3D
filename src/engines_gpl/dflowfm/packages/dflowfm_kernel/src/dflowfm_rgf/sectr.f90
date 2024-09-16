@@ -40,6 +40,8 @@
         use m_spline
         use m_readyy
         use m_qnerror
+        use m_numpold
+        use m_get_ij
 
         implicit none
         integer :: mmax, nmax, imax

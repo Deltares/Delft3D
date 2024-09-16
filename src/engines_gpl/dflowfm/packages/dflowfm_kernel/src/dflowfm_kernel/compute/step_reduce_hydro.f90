@@ -48,6 +48,8 @@
     use m_waves
     use m_1d2d_fixedweirs, only: compute_1d2d_fixedweirs, set_discharge_on_1d2d_fixedweirs, compfuru_1d2d_fixedweirs, check_convergence_1d2d_fixedweirs
     use m_drawthis
+    use m_okay
+    use m_volsur
 
     implicit none
 

@@ -39,6 +39,7 @@ subroutine create_samples_in_triangle()
    use m_missing
    use m_sferic, only: jsferic, jasfer3D
    use geometry_module, only: dbdistance, dcosphi
+   use m_delsam
 
    implicit none
 

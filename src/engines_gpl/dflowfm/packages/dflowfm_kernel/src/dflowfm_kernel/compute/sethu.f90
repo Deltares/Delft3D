@@ -190,7 +190,7 @@ contains
       ! Make sure at least 1 flow link per discharge/velocity boundary is open
       do nq = 1, nqbnd
          is_already_wet = .false.
-         if (l2qbnd(nq) > l1qbnd(nq)) then
+         if (l2qbnd(nq) >= l1qbnd(nq)) then
             lowest_bob = huge(1._dp)
             do n = L1qbnd(nq), L2qbnd(nq)
                L = kbndu(3, n)

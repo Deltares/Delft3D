@@ -37,6 +37,7 @@
       use m_advec
       use m_alloc
       use m_qnerror
+      use m_writematrix
       implicit none
 
       integer, intent(inout) :: ierror

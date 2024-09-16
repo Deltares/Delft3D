@@ -38,6 +38,9 @@
     use m_polygon
     use m_sferic, only: jsferic, jasfer3D
     use m_qnerror
+    use m_reapol
+    use m_reasam
+
     integer :: minp, ierr
     character FILNAM * 86
     minp = 0

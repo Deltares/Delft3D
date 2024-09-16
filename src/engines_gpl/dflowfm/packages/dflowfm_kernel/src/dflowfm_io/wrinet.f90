@@ -29,31 +29,34 @@
 
 !
 !
+module m_wrinet
+   implicit none
+contains
+   subroutine WRINET(MNET)
+      use m_netw
 
-      subroutine WRINET(MNET)
-         use m_netw
-         implicit none
-         integer :: MNET
+      integer :: MNET
 
-         integer :: k
-         integer :: l
-         integer :: lcdum
+      integer :: k
+      integer :: l
+      integer :: lcdum
 
-         write (mNET, '(A,I12)') 'NR of NETNODES  = ', numk ! nump = ndx
-         write (mNET, '(A,I12)') 'NR of NETLINKS  = ', numL ! nump = ndx
-         write (MNET, '(A)') 'NODE LIST, X, Y COORDINATES'
+      write (mNET, '(A,I12)') 'NR of NETNODES  = ', numk ! nump = ndx
+      write (mNET, '(A,I12)') 'NR of NETLINKS  = ', numL ! nump = ndx
+      write (MNET, '(A)') 'NODE LIST, X, Y COORDINATES'
 
-         do K = 1, NUMK
-            write (MNET, '(3F26.15)') XK(K), YK(K), ZK(K)
-         end do
+      do K = 1, NUMK
+         write (MNET, '(3F26.15)') XK(K), YK(K), ZK(K)
+      end do
 
-         write (MNET, '(A)') 'LINK LIST, LEFT AND RIGHT NODE NRS'
+      write (MNET, '(A)') 'LINK LIST, LEFT AND RIGHT NODE NRS'
 
-         LCDUM = 1
-         do L = 1, NUML
-            write (MNET, '(3I16)') KN(1, L), KN(2, L), KN(3, L)
-         end do
+      LCDUM = 1
+      do L = 1, NUML
+         write (MNET, '(3I16)') KN(1, L), KN(2, L), KN(3, L)
+      end do
 
-         call DOCLOSE(MNET)
-         return
-      end subroutine WRINET
+      call DOCLOSE(MNET)
+      return
+   end subroutine WRINET
+end module m_wrinet

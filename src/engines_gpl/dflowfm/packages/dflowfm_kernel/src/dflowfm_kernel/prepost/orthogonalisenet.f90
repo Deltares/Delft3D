@@ -33,14 +33,11 @@
 !> net orthogonalisation and smoothing
 subroutine ORTHOGONALISENET(jarerun)
    use m_netw
-   use M_FLOWGEOM
-   use m_polygon
+   use m_flowgeom, only: ndx, lnx
    use m_sferic
    use m_orthosettings
-   use m_missing
-   use unstruc_messages
+   use m_missing, only: jins, dmiss
    use m_samples
-   use m_alloc
    use m_inverse_map
    use unstruc_colors, only: ncolhl
    use m_ec_basic_interpolation, only: triinterp2
@@ -50,6 +47,10 @@ subroutine ORTHOGONALISENET(jarerun)
    use m_drawthis
    use m_readyy
    use m_qnerror
+   use m_delsam
+   use m_makenetnodescoding
+   use m_cirr
+   use m_orthonet_admin
 
    implicit none
 
@@ -903,6 +904,7 @@ contains
       use m_alloc
       use unstruc_messages
       use unstruc_colors, only: ncolhl
+      use m_tek_link
 
       implicit none
 
@@ -1943,6 +1945,7 @@ contains
       use m_sferic
       use m_inverse_map
       use unstruc_colors
+      use m_tek_link
 
       implicit none
 

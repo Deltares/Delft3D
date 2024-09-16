@@ -29,12 +29,12 @@
 
 !
 !
-
+module m_deallocate_spline_props
+   implicit none
+contains
 !> deallocate splineprops array
 subroutine deallocate_splineprops()
    use m_spline2curvi
-
-   implicit none
 
    integer :: ispline
 
@@ -55,3 +55,4 @@ subroutine deallocate_splineprops()
 
    return
 end subroutine deallocate_splineprops
+end module m_deallocate_spline_props

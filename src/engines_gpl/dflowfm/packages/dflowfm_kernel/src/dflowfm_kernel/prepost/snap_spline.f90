@@ -40,6 +40,8 @@ subroutine snap_spline(ispline)
    use m_missing, only: dmiss
    use m_sferic, only: jsferic, jasfer3D
    use m_spline
+   use m_wall_clock_time
+   use m_comp_curv
 
    implicit none
 
@@ -158,11 +160,11 @@ subroutine snap_spline(ispline)
 
    do
 !     compute projected sample points
-      call klok(t0)
+      call wall_clock_time(t0)
       do i = 1, Numnew
          call toland(xf(i), yf(i), 1, MXLAN, 2, xb(i), yb(i), dis, j, rL)
       end do
-      call klok(t1)
+      call wall_clock_time(t1)
 
       write (6, "('elapsed time:', F7.2, ' sec.')") t1 - t0
 

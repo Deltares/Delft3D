@@ -37,6 +37,7 @@
          use m_missing
          use m_grid
          use geometry_module, only: pinpok
+         use m_increase_grid
 
          implicit none
          integer :: is, js, mp, np

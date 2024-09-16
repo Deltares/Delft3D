@@ -36,13 +36,17 @@ subroutine spline2curvi()
    use m_grid
    use m_splines
    use m_gridsettings
-   use m_alloc
-   use m_missing
+   use m_missing, only: dmiss, jins
    use m_spline2curvi
    use m_sferic
    use m_polygon
    use geometry_module, only: pinpok, normalout
    use m_readyy
+   use m_increase_grid
+   use m_restore_grd
+   use m_deallocate_spline_props
+   use m_postgrid
+   use m_grow_layer
 
    implicit none
 

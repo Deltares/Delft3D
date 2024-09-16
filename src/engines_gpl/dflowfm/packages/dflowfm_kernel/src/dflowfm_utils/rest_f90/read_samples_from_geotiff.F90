@@ -44,6 +44,7 @@ function read_samples_from_geotiff(filename) result(success)
    use string_module, only: strcmpi
    use m_drawthis
    use m_readyy
+   use m_get_samples_boundingbox
    implicit none
 
    character(len=*), intent(in) :: filename !< Path of the file to be read

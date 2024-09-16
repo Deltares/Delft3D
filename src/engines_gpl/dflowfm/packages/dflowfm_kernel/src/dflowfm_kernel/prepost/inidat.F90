@@ -86,6 +86,10 @@
       use m_cconstants
       use m_plotfil
       use m_perspx
+      use m_zeronet
+      use m_paramtext
+      use m_increase_grid
+      use m_ini_sferic
       implicit none
 
       double precision :: dx
@@ -299,6 +303,8 @@
       use dfm_signals
       use gridoperations
       use m_monitoring_crosssections, only: increaseCrossSections
+      use m_reapol
+      use m_reasam
 
       implicit none
       character inarg * (*), EXT * 4
@@ -378,6 +384,8 @@
       use gridoperations
       use m_monitoring_crosssections, only: increaseCrossSections
       use unstruc_netcdf, only: unc_write_net
+      use m_wripol
+      use m_wrisam
 
       implicit none
       character inarg * (*), EXT * 4

@@ -38,6 +38,8 @@
     use m_partitioninfo
     use m_missing
     use m_drawthis
+    use m_get_kbot_ktop
+    use m_get_Lbot_Ltop
     implicit none
 
     integer, intent(out) :: jareduced ! maximum time-step is already globally reduced (1) or not (0)

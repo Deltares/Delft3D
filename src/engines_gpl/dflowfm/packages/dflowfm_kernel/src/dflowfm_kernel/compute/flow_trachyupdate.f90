@@ -48,6 +48,7 @@ subroutine flow_trachyupdate()
    use m_alloc
    use m_vegetation, only: alfav
    use m_waves, only: ustokes
+   use m_get_kbot_ktop
    !
    implicit none
    !

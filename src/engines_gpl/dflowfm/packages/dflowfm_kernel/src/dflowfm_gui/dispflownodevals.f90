@@ -34,6 +34,7 @@ subroutine DISPFLOWNODEVALS(KP)
    use m_flowgeom
    use m_flow
    use M_DEVICES
+   use m_ktext
 
    implicit none
    double precision :: ZNOD

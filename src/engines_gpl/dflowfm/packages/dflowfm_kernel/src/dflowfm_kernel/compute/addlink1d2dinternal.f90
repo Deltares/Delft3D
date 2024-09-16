@@ -33,8 +33,10 @@
  subroutine addlink1D2Dinternal(L, japerim) ! and add area's and volumes of 1D2D links
     use m_flowgeom
     use m_flow
-    use m_missing
-    use unstruc_channel_flow
+    use unstruc_channel_flow, only: network
+    use m_get_link_area_wid2D
+    use m_get_prof2d
+    use m_get_cz
 
     implicit none
 

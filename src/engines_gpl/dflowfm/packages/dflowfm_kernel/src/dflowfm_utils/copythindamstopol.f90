@@ -34,7 +34,8 @@
 !! to the active polygons in xpl,...
 subroutine copyThinDamsToPol()
    use m_thindams
-   use m_polygon
+   use m_polygon, only: npl
+   use m_append_crspath_to_pol
    implicit none
    integer :: i
 

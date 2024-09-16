@@ -33,6 +33,8 @@
       subroutine REABOT(MMDD, JA)
          use M_GRID
          use m_readyy
+         use m_qn_read_error
+         use m_qn_eof_error
          implicit none
 
          integer :: mmdd, ja, m1, n1, m2, n2, L1, L2, L3, L4, L5

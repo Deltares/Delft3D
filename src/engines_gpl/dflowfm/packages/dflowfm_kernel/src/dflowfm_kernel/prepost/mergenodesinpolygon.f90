@@ -42,6 +42,8 @@
     use gridoperations
     use m_mergenodes
     use m_readyy
+    use m_set_nod_adm
+    use m_set_branch_lc
 
     implicit none
 

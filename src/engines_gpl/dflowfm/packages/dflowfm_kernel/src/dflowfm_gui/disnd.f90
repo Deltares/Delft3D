@@ -35,6 +35,7 @@
     use m_flowgeom
     use network_data, only: rnod, netcell, xk, yk, nump
     use m_save_ugrid_state, only: nodeids
+    use m_ktext
 
     implicit none
     integer, intent(in) :: nn !< Node number (either net or flow node)

@@ -34,6 +34,8 @@
      use m_netw
      use gridoperations
      use m_readyy
+     use m_set_nod_adm
+     use m_new_link
      implicit none
      integer, intent(in) :: N12
      integer :: ja, KMOD

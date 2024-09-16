@@ -1339,7 +1339,6 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     real(fp)                  :: xxinv               !< Help var. [1/xx or 1/(1-xx) in log unif distrib.]
     real(fp)                  :: xm
     logical                   :: cmpupdall           !< flag indicating whether bed composition is updated for all fractions
-    logical        , external :: stringsequalinsens
     character(45)             :: txtput1
     character(12)             :: txtput2
     character(100)            :: txtput3

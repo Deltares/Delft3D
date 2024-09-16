@@ -36,6 +36,7 @@
          use m_samples
          use m_drawthis
          use m_readyy
+         use m_get_samples_boundingbox
          implicit none
          character(len=*), intent(in) :: filnam
          integer, intent(in) :: jadoorladen

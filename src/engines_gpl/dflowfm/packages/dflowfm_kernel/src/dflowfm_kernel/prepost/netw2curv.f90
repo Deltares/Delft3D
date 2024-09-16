@@ -38,6 +38,7 @@ subroutine netw2curv(xp, yp)
    use m_missing
    use unstruc_messages
    use gridoperations
+   use m_set_nod_adm
 
    implicit none
 

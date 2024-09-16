@@ -47,6 +47,8 @@
      use m_transport !, only: NUMCONST, ISALT, ITEMP, ISED1, ISEDN, ITRA1, ITRAN, ITRAN0, constituents, itrac2const, const_names, const_units
      use m_drawthis
      use m_depmax2, only: vmax=>vmax2, vmin=>vmin2
+     use m_get_kbot_ktop
+     use m_get_czz0
 
      implicit none
 

@@ -37,6 +37,8 @@
      use m_polygon, only: NPL, xpl, ypl, zpl
      use geometry_module, only: dbpinpol, half
      use gridoperations
+     use m_delpol
+     use m_set_nod_adm
 
      implicit none
      integer :: KEY, jacheckcells, JASAVE

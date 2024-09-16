@@ -33,6 +33,8 @@
       subroutine AXES()
          use unstruc_colors
          use m_screenarea
+         use m_set_col
+         use m_view_port
          implicit none
 
          if (JAXIS == 1) then

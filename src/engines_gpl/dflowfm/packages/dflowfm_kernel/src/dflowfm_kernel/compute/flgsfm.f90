@@ -43,6 +43,7 @@ subroutine flgsfm(n, ng, L, jarea)
 
    use m_strucs
    use m_flow
+   use m_get_Lbot_Ltop
 
    implicit none
 !

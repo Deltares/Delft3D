@@ -29,12 +29,13 @@
 
 !
 !
-
+module m_set_branch_lc
+   implicit none
+contains
   subroutine SETBRANCH_LC(nrl1d)
      use M_NETW
-     use gridoperations
-
-     implicit none
+     use m_okay
+     use m_set_nod_adm
 
      integer :: NRL1D, NRL, NRLO, L, K, K1, K2, K3, IBR, N, JASTOP, JASTART, IERR, IBX, KS, KK, KE, ja
      integer :: NRL1D6, KN316, NRL1D16, J
@@ -155,3 +156,4 @@
      netstat = NETSTAT_OK
 
   end subroutine SETBRANCH_LC
+end module m_set_branch_lc

@@ -72,6 +72,9 @@
     use m_drawthis
     use m_readyy
     use m_qnerror
+    use m_dlinedis2
+    use m_ini_sferic
+    use m_set_bobs
 
     implicit none
 

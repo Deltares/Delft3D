@@ -950,6 +950,7 @@ contains
       use m_xbeach_avgoutput
       use m_alloc
       use m_sferic
+      use m_get_ucx_ucy_eul_mag
       implicit none
 
       double precision, intent(in) :: dt ! timestep

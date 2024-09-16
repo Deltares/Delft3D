@@ -34,6 +34,8 @@
    subroutine getstring(text, string)
       use m_devices
       use m_helpnow
+      use m_timlin
+      use m_fkeys
       implicit none
       character(len=*), intent(in) :: text
       character(len=*), intent(out) :: string

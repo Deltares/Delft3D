@@ -31,6 +31,7 @@
 !
 
  subroutine checksuspended_transport()
+    use m_check_einstein_garcia
     implicit none
     double precision :: hsk
     double precision :: ucr, ueff, Ucur, Pmob, sster, wster, ws

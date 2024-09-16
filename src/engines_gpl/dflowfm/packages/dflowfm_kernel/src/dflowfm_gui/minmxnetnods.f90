@@ -35,12 +35,12 @@
      use m_missing
      use unstruc_display
      use m_depmax
+     use m_inview
      
      implicit none
 
      integer :: i, k
      double precision :: rd, rmax, rmin
-     logical inview
 
      ! BEPAAL MINIMUM EN MAXIMUM VAN DIEPTES BINNEN VIEWING AREA
 

@@ -34,6 +34,7 @@ subroutine addbaroclinicpressure()
    use m_flowgeom
    use m_flow
    use m_flowtimes
+   use m_get_Lbot_Ltop
 
    implicit none
    integer :: LL, Lb, Lt, n, lnxbc

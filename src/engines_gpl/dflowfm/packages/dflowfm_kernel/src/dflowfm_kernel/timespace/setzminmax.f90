@@ -36,6 +36,7 @@
     use m_flow
     use m_flowparameters
     use m_sediment, only: stm_included
+    use m_get_kbot_ktop
     implicit none
 
     integer :: i, ki, kb, kt, itrac, isf

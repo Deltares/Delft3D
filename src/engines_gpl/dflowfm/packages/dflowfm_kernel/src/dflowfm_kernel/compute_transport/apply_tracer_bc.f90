@@ -37,6 +37,7 @@ subroutine apply_tracer_bc()
    use m_flowgeom, only: ln
    use m_flow, only: kmxd, q1, kmxL
    use timers
+   use m_get_Lbot_Ltop
    implicit none
 
    double precision :: valtop

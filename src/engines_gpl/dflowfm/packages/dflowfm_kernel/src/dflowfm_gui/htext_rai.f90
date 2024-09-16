@@ -32,6 +32,7 @@
 
  subroutine htext_rai(val, x, y, xx, zz, ihv)
     use m_raaitek
+    use m_htext
     implicit none
     double precision :: val, x, y, xx, zz
     double precision :: fx, fy, xa, ya

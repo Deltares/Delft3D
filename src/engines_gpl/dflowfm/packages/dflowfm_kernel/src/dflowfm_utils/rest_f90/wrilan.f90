@@ -32,6 +32,7 @@
 
       subroutine WRILAN(MPOL)
          use M_LANDBOUNDARY
+         use m_wrildb
          implicit none
          integer :: mpol
          integer :: mx

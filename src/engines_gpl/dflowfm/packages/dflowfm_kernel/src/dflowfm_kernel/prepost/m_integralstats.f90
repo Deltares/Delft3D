@@ -76,6 +76,8 @@ contains
       use m_flowtimes
       use m_flow
       use m_flowgeom
+      use m_gettaus
+      use m_gettauswave
 
       integer :: k
 

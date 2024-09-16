@@ -29,11 +29,14 @@
 
 !
 !
-
+module m_tek_link
+   implicit none
+contains
   subroutine TEKLINK(L, NCOL)
-     use m_netw
+     use m_netw, only: kn, yk, xk
      use unstruc_colors
-     implicit none
+     use m_set_col
+
      integer :: L, NCOL
      integer :: k1
      integer :: k2
@@ -53,3 +56,4 @@
      end if
      return
   end subroutine TEKLINK
+end module m_tek_link

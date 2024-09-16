@@ -50,6 +50,7 @@ subroutine fill_constituents(jas) ! if jas == 1 do sources
    use m_missing, only: dmiss
    use timers, only: timon, timstrt, timstop
    use m_alloc, only: aerr
+   use m_get_kbot_ktop
 
    implicit none
 

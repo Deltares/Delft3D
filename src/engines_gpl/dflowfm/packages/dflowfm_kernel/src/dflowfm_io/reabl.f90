@@ -34,6 +34,10 @@
     use m_flowgeom
     use M_samples
     use m_missing
+    use m_delsam
+    use m_reasam
+    use m_qn_read_error
+    use m_interpdivers
     implicit none
     integer :: mout
     character(len=256) :: rec

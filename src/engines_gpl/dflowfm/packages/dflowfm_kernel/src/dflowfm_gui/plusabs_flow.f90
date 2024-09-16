@@ -36,6 +36,8 @@
     use m_flowgeom
     use m_transport, only: ISALT, constituents
     use m_qnerror
+    use m_get_kbot_ktop
+    use m_set_bobs
 
     implicit none
 

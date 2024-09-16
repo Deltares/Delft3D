@@ -32,6 +32,8 @@
 
       subroutine DHITEXT(IVAL, XD, YD)
          use gridoperations
+         use m_dproject
+         use m_hi_text
          implicit none
          integer :: ival
          double precision :: x

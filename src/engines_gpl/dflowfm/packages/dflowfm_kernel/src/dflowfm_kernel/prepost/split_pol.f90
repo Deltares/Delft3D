@@ -37,6 +37,7 @@
     use m_alloc
     use m_missing
     use unstruc_messages
+    use m_wrildb
     implicit none
 
     integer, intent(in) :: Ni

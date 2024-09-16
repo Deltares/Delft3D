@@ -38,6 +38,7 @@
     use m_missing
     use stdlib_sorting, only: sort_index
     use gridoperations
+    use m_makenetnodescoding
     implicit none
 
     double precision, dimension(2) :: xz_st, yz_st

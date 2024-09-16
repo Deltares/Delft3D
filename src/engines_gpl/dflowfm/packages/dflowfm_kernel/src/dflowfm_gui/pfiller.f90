@@ -29,14 +29,19 @@
 
 !
 !
-
+module m_pfiller
+   implicit none
+contains
     subroutine PFILLER(X, Y, N_, NCOL, NCLR)
-       use unstruc_opengl
-       use m_sferic
+       use unstruc_opengl, only: inopenglrendering
+       use m_sferic, only: jsfertek
        use m_colnow
        use m_drawthis
+       use m_dproject
+       use m_set_col
+       use m_realpolygon
+       use m_pfiller_core
 
-       implicit none
        integer :: N_
        integer :: nclr
        integer :: ncol, i, n
@@ -67,3 +72,4 @@
 
        return
     end
+end module m_pfiller

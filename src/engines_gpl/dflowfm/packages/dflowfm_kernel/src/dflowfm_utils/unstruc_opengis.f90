@@ -552,6 +552,7 @@ contains
 !> Write D-Flow FM info+version as an OpenFOAM header into an ASCII file.
    subroutine foam_write_dflowfminfo(mout)
       use dflowfm_version_module
+      use m_datum
       integer, intent(in) :: mout !< File unit nr for output.
 
       character(len=20) :: rundat

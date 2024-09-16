@@ -29,139 +29,16 @@
 
 !
 !
-
-! m_WEARELT movet to gridgeom
-
-module m_textlines
-   double precision :: txsize
-   double precision :: txxpos
-   double precision :: txypos
-   character(len=60) :: txlin(3)
-end module m_textlines
-
-module unstruc_colors
-
-   use m_WEARELT
-   use M_DEVICES
-   use m_textlines
-!! Centralizes color definitions for unstruc.
-!! Color specifications are based on Interactor.
-
-   implicit none
-
-   integer :: klvec = 4, klaxs = 30, klscl = 221, kltex = 3, klfra = 31, klobs = 227, klsam = 33, klzm = 31, klank = 31, klprof = 222, KLSRC = 233
-
-   ! Color numbers for standard colors.
-   integer :: ncolgray = 255
-   integer :: ncolred = 252
-   integer :: ncolyellow = 251
-   integer :: ncolgreen = 250
-   integer :: ncolcyan = 249
-   integer :: ncolblue = 248
-   integer :: ncolmagenta = 247
-   integer :: ncolmaroon = 246
-   integer :: ncoldarkgreen = 245
-   integer :: ncolteal = 244
-   integer :: ncolpink = 243
-   integer :: ncolorange = 242
-   integer :: ncollavender = 241
-   integer :: ncolbrown = 240
-
-   integer :: ncoldn = 3 !< Design net
-   integer :: ncolrn = 211 !< Previous state net
-   integer :: ncolnn = 89 ! 203 !< Net node dots
-   integer :: ncoldg = 31 !< Design grid
-   integer :: ncolrg = 212 !< Previous state grid
-   integer :: ncolln = 120 !< Land boundary
-   integer :: ncolsp = 204 !< Splines
-   integer :: ncoltx = 210 !< Some textlines
-   integer :: ncolpl = 221 !< Polygons
-   integer :: ncolcrs = 230 !< Cross sections
-   integer :: ncolthd = 231 !< Thin dams
-   integer :: ncolfxw = 232 !< Fixed weirs
-   integer :: ncolmh = 191 !< Fixed weirs
-   integer :: ncolwarn1 = 191 ! warning1
-   integer :: ncolwarn2 = 31 ! warning2
-   integer :: ncolwarn3 = 22 ! warning3
-   integer :: ncolhl = 31 ! Highlight nodes/links
-   integer :: ncolANA = 63 ! 180! ANALYTIC SOLOUTIONS
-
-   integer :: ncolblack = 254
-   integer :: ncolwhite = 253
-
-   ! colors in text screens
-   ! 0 : Black       4 : Cyan
-   ! 1 : Red         5 : Blue
-   ! 2 : Yellow      6 : Magenta
-   ! 3 : Green       7 : White
-
-   integer :: STDFOR = 0, STDBCK = 5, & !   std
-              MNUFOR = 0, MNUBCK = 4, & !   choice menu's
-              INPFOR = 0, INPBCK = 4, & !   input menu's
-              ERRFOR = 1, ERRBCK = 7, & !   error messages
-              LBLFOR = 7, LBLBCK = 5, & !   menu names
-              LINFOR = 0, LINBCK = 4, & !   lines
-              TOPFOR = 1, TOPBCK = 7, & !   top line
-              HLPFOR = 7, HLPBCK = 5, & !   help window
-              BOTFOR = 7, BOTBCK = 5, & !   page indication
-              KEYFOR = 1, KEYBCK = 4, & !   key indication
-              WNDFOR = 0, WNDBCK = 4, & !   menu indication, POPUP WINDOW HELP
-              SHAFOR = 7, SHABCK = 0 !   menu indication, shadow behind input forms
-
-   integer :: nbluep
-   integer :: nblues
-   integer :: ngreenp
-   integer :: ngreens
-   integer :: nredp
-   integer :: nreds
-
-   character(len=255) :: coltabfile = ' '
-   character(len=255) :: coltabfile2 = ' '
-
-end module unstruc_colors
-
 module unstruc_display
 !! Handles all display settings and screen plotting for Unstruc
 !! (Not yet, a lot is still in REST.F90 [AvD])
 
 !
-
    use unstruc_colors
    use m_gui
+   use unstruc_display_data
+   use m_set_col
    implicit none
-
-   integer :: ntek = 0
-   integer :: plottofile = 0
-   integer :: jadatetime = 0
-   integer :: jareinitialize = 0
-
-   ! Highlight certain net/flow node/link numbers
-   integer :: nhlNetNode = 0 !< Number of netnode  to be highlighted
-   integer :: nhlNetLink = 0 !< Number of netlink  to be highlighted
-   integer :: nhlFlowNode = 0 !< Number of flownode to be highlighted
-   integer :: nhlFlowLink = 0 !< Number of flowlink to be highlighted
-   integer :: NPOS(4) !< Size + position of HELP text screen
-   integer :: jaHighlight = 0 !< Completely enable/disable highlighting.
-
-   integer :: ndrawPol = 2 !< Polygon, 1=No, 2=Regular, 3=plus numbers ZPL, 4=plus isocolour ZPL
-   integer :: ndrawObs = 2 !< Observationstation : 1='NO, 2=Cross, 3=Cross + name4=Polyfil,5='Polyfil + name,6=Cross+waterlevel,7=Cross+velocity magnitudes
-   integer :: ndrawCrossSections = 5 !< how draw cross sections
-   integer :: ndrawThinDams = 2 !< show thin dams  0=no, 1=polylines, 2=net links
-   integer :: ndrawFixedWeirs = 1 !< show fixed weirs 0=no, 1=polylines, 2=flow links
-   integer :: ndrawPart = 2 !< Particles, 1=No, 2=Yes
-   integer :: ndrawDots = 2 !< dots, 1=No, 2=Yes
-   integer :: ndrawStructures = 1 !< structures, 1=No, 2=Yes (only symbols), 3=Yes (symbols and IDs)
-   integer :: idisLink = 0 !< Index of flowlink which is to be displayed with more information
-
-   integer :: grwhydopt = 1 !< Groundwater & Hydrology display menu item
-
-   integer :: numzoomshift = 250 !< nr of steps in zoomshift
-   double precision :: wetplot = 0.001 !< only show wet waterlevel points if (hs>wetplot)
-   double precision :: yfac = 0.0 !< cheap perspective
-   integer :: jafullbottomline = 0 !<larger bottomline with more complete description in screen
-   double precision :: profmax(20) = -999d0 !< minmax axes of tekprofiles
-   double precision :: profmin(20) = -999d0
-   double precision :: ymn, zmn ! for tekrailines
 
    public dis_info_1d_link
    public plotStructures
@@ -404,6 +281,7 @@ contains
       use m_vfac
       use m_drawthis
       use m_depmax2
+      use m_datum
 
       character(len=*), intent(in) :: filename
 
@@ -587,11 +465,14 @@ contains
       use M_FLOWGEOM
       use m_flow
       use m_transport, only: itemp, constituents
+      use m_get_kbot_ktop
+      use m_pfiller
+      use m_gtext
+      use m_inview
 
       integer :: n, NN, K, kb, kt
       character(len=40) :: tex
       double precision :: znod, temb, temt
-      logical inview
 
       if (ndrawobs == 1) return
 
@@ -875,6 +756,7 @@ contains
       use m_flowgeom, only: lnx, lncn, bob
       use m_flow, only: hu, isimplefixedweirs
       use m_netw, only: xk, yk
+      use m_htext
 
       integer :: i, L, k3, k4, ncol
       double precision :: xu, yu
@@ -947,13 +829,14 @@ contains
       use m_missing, only: dmiss, dxymis
       use m_sferic, only: jsferic, jasfer3D
       use gridoperations
+      use m_gtext
+      use m_inview
 
       type(tcrspath), intent(in) :: path !< Path definition
       integer, intent(in) :: met !< Method: 1=plot polyline, 2=plot crossed net/flow links (as stored in path%xk)
       integer, intent(in) :: ncol !< Drawing color
       character(len=*), intent(in) :: label !< Text label to be displayed.
       integer, intent(in) :: jaArrow !< Whether or not (1/0) to draw an outgoing arrow.
-      logical inview
 
       integer :: j, jj, jmin, jmax
       double precision :: xt, yt, rn, rt, xx1, yy1, xx2, yy2, xx, yy
@@ -1173,12 +1056,14 @@ contains
       use m_flowparameters, only: epshu
       use m_flow, only: hu
       use m_wearelt, only: rcir
+      use m_gtext
+      use m_inview
       implicit none
 
       integer :: is, link
       double precision :: icon_rw_size !< Size of plotted icons in real-world coordinates.
       double precision :: x, y
-      logical :: active, inview
+      logical :: active
 
       if (ndrawStructures <= 1) then
          return
@@ -1564,6 +1449,7 @@ end subroutine zoomshift
 
 subroutine tekship()
    use m_ship
+   use m_set_col
    implicit none
    double precision :: sx2, sy2, css, sns, rr, cr, sr, snum
    integer :: n
@@ -1641,6 +1527,7 @@ subroutine tekwindvector()
    use m_statistics
    use messagehandling
    use m_drawthis
+   use m_gtext
 
    implicit none
    double precision :: xp, yp, vfw, ws, dyp, upot, ukin, ueaa

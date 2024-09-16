@@ -41,6 +41,10 @@
      use m_cutcells
      use gridoperations
      use unstruc_model
+     use m_wall_clock_time
+     use m_delpol
+     use m_reapol
+     use m_set_nod_adm
      implicit none
 
      integer, intent(in) :: n12 !< type of operation (1, 2, 3, 4, 5), see docs below.
@@ -148,7 +152,7 @@
         end if
 
         do ipoly = 1, numpols
-           call klok(t0)
+           call wall_clock_time(t0)
 
            ipol_stored = ipol_stored + 1
            call delpol()
@@ -175,7 +179,7 @@
               call CUTCELWU(n12, jamasks, ipol_stored) ! calls SAVEPOL via split_pol
            end if
 
-           call klok(t1)
+           call wall_clock_time(t1)
 
            write (mesg, "('done in ', F12.5, ' sec.')") t1 - t0
            call mess(LEVEL_INFO, trim(mesg))
@@ -299,6 +303,7 @@
         use m_alloc
         use m_missing
         use m_tpoly
+        use m_find_crossed_links_kdtree2
         implicit none
 
         integer, intent(in) :: numpols !< number of tpoly-type polygons
@@ -337,7 +342,7 @@
         allocate (polynum(num))
         allocate (polysec(num))
 
-        call klok(t0)
+        call wall_clock_time(t0)
         num = 0
         do i = 1, numpols
 !          copy i-the tpoly-type polygon
@@ -403,7 +408,7 @@
 
 1234    continue
 
-        call klok(t1)
+        call wall_clock_time(t1)
         write (mesg, "('cutcell with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
         call mess(LEVEL_INFO, trim(mesg))
 !       deallocate

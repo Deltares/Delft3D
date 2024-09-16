@@ -34,9 +34,14 @@
 subroutine refinequads_casulli
    use m_netw
    use m_inverse_map
-   use m_missing
+   use m_missing, only: dmiss
    use gridoperations
    use m_qnerror
+   use m_delpol
+   use m_copynetboundstopol
+   use m_makenetnodescoding
+   use m_set_nod_adm
+   use m_cirr
 
    implicit none
 
@@ -181,6 +186,7 @@ contains
 
 !> perform the administration and node masking in refinequads_casulli
    subroutine admin_mask()
+      use m_orthonet_admin
       implicit none
 
       integer :: icell
@@ -359,6 +365,7 @@ contains
    subroutine makenodes_directional(xp, yp, Lstart, ierror)
       ! use m_grid
       use unstruc_colors, only: ncolln
+      use m_tek_link
 
       implicit none
 
@@ -591,6 +598,7 @@ contains
 
 !> make links in refinequads_casulli
    subroutine makelinks()
+      use m_new_link
       implicit none
 
       integer, dimension(nmkx) :: node, link ! nodes and links connected to boundary node resp.

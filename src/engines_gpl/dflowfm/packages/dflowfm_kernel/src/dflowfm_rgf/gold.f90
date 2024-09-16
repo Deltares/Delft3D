@@ -31,6 +31,7 @@
 !
 
       subroutine GOLD(AX, BX, CX, TOL, XMIN, P, P2, Q, Q2, XX, YY, N, DIS)
+         use m_spldist
          implicit none
          double precision :: c
          double precision :: f0
@@ -41,7 +42,6 @@
          double precision :: r
          double precision :: x0
          double precision :: x3
-         double precision :: spldist
          parameter(R=.61803399, C=.38196602)
 
          double precision :: AX, BX, CX, TOL, DIS, XMIN, XX, YY, X1, X2

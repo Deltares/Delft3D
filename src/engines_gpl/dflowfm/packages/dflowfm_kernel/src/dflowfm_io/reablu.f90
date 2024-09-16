@@ -33,6 +33,8 @@
  subroutine reablu(mout) ! read bottom level u points
     use M_FLOWGEOM
     use m_qnerror
+    use m_qn_read_error
+    use m_set_bobs
     implicit none
     integer :: mout
     character(len=256) :: rec

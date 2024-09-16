@@ -29,13 +29,14 @@
 
 !
 !
-
+module m_dlinedis2
+   implicit none
+contains
       subroutine dLINEDIS2(X3, Y3, X1, Y1, X2, Y2, JA, DIS, XN, YN, rl)
          use m_sferic
          use geometry_module, only: getdx, getdy, dbdistance, sphertoCart3D, cart3Dtospher
          use m_missing, only: dmiss
 
-         implicit none
          integer :: ja
          double precision :: X1, Y1, X2, Y2, X3, Y3, DIS, XN, YN
          double precision :: R2, RL, X21, Y21, Z21, X31, Y31, Z31
@@ -100,3 +101,4 @@
 
          return
       end subroutine DLINEDIS2
+end module m_dlinedis2

@@ -44,6 +44,7 @@
     use m_sferic, only: jsferic, jasfer3D
     use MessageHandling, only: IdLen
     use m_find_flownode, only: find_nearest_flownodes
+    use m_reapol
 
     implicit none
 

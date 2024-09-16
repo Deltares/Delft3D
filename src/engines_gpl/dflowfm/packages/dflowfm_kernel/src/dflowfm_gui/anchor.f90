@@ -29,44 +29,51 @@
 
 !
 !
+module m_anchor
+   implicit none
+contains
+   subroutine ANCHOR(X, Y)
+      use unstruc_colors
+      use m_flow, only: nplot
+      use m_GlobalParameters, only: INDTP_ALL
+      use m_locatora
+      use m_dproject
+      use m_inflowcell
+      use m_disdis
+      use m_set_col
 
-      subroutine ANCHOR(X, Y)
-         use unstruc_colors
-         use m_flow, only: nplot
-         use m_GlobalParameters, only: INDTP_ALL
-         use m_locatora
-         implicit none
-         integer :: ma
-         integer :: na
-         integer :: k
-         double precision :: x, y, xx, yy
-         real :: xr, yr
-         !    VEEG OUDE CROSS UIT EN ZET NIEUWE
+      integer :: ma
+      integer :: na
+      integer :: k
+      double precision :: x, y, xx, yy
+      real :: xr, yr
+      !    VEEG OUDE CROSS UIT EN ZET NIEUWE
 
-         if (X == 0 .and. Y == 0) then
-            MA = 25
-            NA = 40
-            call TOWOR(MA, NA, XA, YA)
-         else
-            call SETXOR(1)
-            call SETCOL(KLANK)
-            call dPROJECT(xa, ya, xx, yy, 1); xr = xx; yr = yy
-            call IGrMARKER(xr, yr, 2)
-            call SETXOR(0)
-            XA = X
-            YA = Y
-         end if
-
-         call inflowcell(XA, YA, k, 1, INDTP_ALL) ! Use anchor for new nplot point (vertical profile)
-         if (k > 0) nplot = k
-
+      if (X == 0 .and. Y == 0) then
+         MA = 25
+         NA = 40
+         call TOWOR(MA, NA, XA, YA)
+      else
          call SETXOR(1)
          call SETCOL(KLANK)
          call dPROJECT(xa, ya, xx, yy, 1); xr = xx; yr = yy
          call IGrMARKER(xr, yr, 2)
          call SETXOR(0)
+         XA = X
+         YA = Y
+      end if
 
-         call DISDIS()
+      call inflowcell(XA, YA, k, 1, INDTP_ALL) ! Use anchor for new nplot point (vertical profile)
+      if (k > 0) nplot = k
 
-         return
-      end
+      call SETXOR(1)
+      call SETCOL(KLANK)
+      call dPROJECT(xa, ya, xx, yy, 1); xr = xx; yr = yy
+      call IGrMARKER(xr, yr, 2)
+      call SETXOR(0)
+
+      call DISDIS()
+
+      return
+   end
+end module m_anchor

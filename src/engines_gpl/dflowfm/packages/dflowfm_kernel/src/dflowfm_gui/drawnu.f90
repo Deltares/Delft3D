@@ -29,15 +29,18 @@
 
 !
 !
-
+module m_draw_nu
+   implicit none
+contains
    subroutine DRAWNU(KEY)
-      use m_netw
-      use M_SAMPLES
+      use M_SAMPLES, only: ns
       use m_arcinfo
       use unstruc_display
       use unstruc_opengl
       use m_drawthis
-      implicit none
+      use m_dispos
+      use m_plot_dots
+      use m_disln
 
       integer :: metdraw
       integer :: KEY, nsiz
@@ -169,3 +172,4 @@
 
       return
    end subroutine DRAWNU
+end module m_draw_nu

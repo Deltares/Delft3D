@@ -32,6 +32,7 @@
 
       subroutine BOXX(X, Y, NCOL)
          use m_colnow
+         use m_set_col
          implicit none
          integer :: ncol
          double precision :: x

@@ -26,13 +26,15 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-!
-!
-
-function dpsequfm(dvar1, dvar2, eps) ! equal within eps?
+module m_dpsequfm
    implicit none
-   logical :: dpsequfm
-   double precision, intent(in) :: dvar1, dvar2, eps
-   dpsequfm = abs(dvar1 - dvar2) < eps
-end function dpsequfm
+contains
+!
+!
+
+   function dpsequfm(dvar1, dvar2, eps) ! equal within eps?
+      logical :: dpsequfm
+      double precision, intent(in) :: dvar1, dvar2, eps
+      dpsequfm = abs(dvar1 - dvar2) < eps
+   end function dpsequfm
+end module m_dpsequfm

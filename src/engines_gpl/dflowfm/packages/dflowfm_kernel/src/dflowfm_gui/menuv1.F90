@@ -33,6 +33,8 @@
    subroutine MENUV1(NUM, NWHAT)
       use m_netw
       use m_modenow
+      use m_menuv2
+      use m_fieldopt
 
       implicit none
       integer :: NUM, NWHAT

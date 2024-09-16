@@ -32,6 +32,7 @@
 
       subroutine PTABS(X, Y)
          use unstruc_opengl
+         use m_dproject
          implicit none
          double precision :: x, y, xx, yy
          call DPROJECT(X, Y, XX, YY, 1)

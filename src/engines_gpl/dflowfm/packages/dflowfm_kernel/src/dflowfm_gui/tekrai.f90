@@ -32,7 +32,6 @@
 
  subroutine tekrai(nsiz)
 
-    use unstruc_colors
     use m_netw
     use m_flow
     use m_flowgeom
@@ -48,6 +47,14 @@
     use m_depmax
     use m_vfac
     use m_drawthis
+    use m_fbox
+    use m_get_Lbot_Ltop
+    use m_find_crossed_links_kdtree2
+    use m_cirr
+    use m_pfiller
+    use m_set_col
+    use m_inview
+    use m_view_port
 
     implicit none
 
@@ -71,8 +78,6 @@
 
     integer, allocatable :: iLink(:), iPol(:)
     double precision, allocatable :: dSL(:)
-
-    logical inview
 
     if (ndx < 1) return
 

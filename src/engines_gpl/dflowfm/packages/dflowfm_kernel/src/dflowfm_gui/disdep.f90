@@ -32,6 +32,7 @@
 
       subroutine DISDEP(m, n, dep)
          use m_devices
+         use m_ktext
          implicit none
          double precision :: dep
          integer :: m

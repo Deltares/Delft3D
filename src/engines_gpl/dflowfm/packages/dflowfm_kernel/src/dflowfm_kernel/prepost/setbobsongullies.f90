@@ -42,6 +42,9 @@
     use m_polygon
     use geometry_module, only: crossinbox, dbdistance
     use m_readyy
+    use m_wall_clock_time
+    use m_reapol
+    use m_find_crossed_links_kdtree2
 
     implicit none
 
@@ -63,7 +66,7 @@
     call reapol(minp, 0)
 
     if (jakdtree == 1) then
-       call klok(t0)
+       call wall_clock_time(t0)
        allocate (iLink(Lnx), ipol(Lnx), dSL(Lnx))
        call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, 2, numL, 0, numcrossedLinks, iLink, iPol, dSL, ierror)
        numLL = numcrossedLinks
@@ -71,7 +74,7 @@
           deallocate (iLink, ipoL, dSL)
           jakdtree = 0
        end if
-       call klok(t1)
+       call wall_clock_time(t1)
        write (mesg, "('set bobs (on gullies) with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
        call mess(LEVEL_INFO, trim(mesg))
     else

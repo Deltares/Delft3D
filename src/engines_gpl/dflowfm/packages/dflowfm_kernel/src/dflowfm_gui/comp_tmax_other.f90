@@ -32,10 +32,11 @@
 
 !> compute maximum allowable grid layer growth time; with other grid points
 subroutine comp_tmax_other(mc, jlay, xc, yc, vel, mc1, xc1, yc1, vel1, idx1, tmax)
-   use m_missing
+   use m_missing, only: dmiss
    use m_sferic
    use m_spline2curvi, only: dtolLR
    use geometry_module, only: dbdistance
+   use m_get_lr
 
    implicit none
 

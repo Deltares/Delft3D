@@ -43,6 +43,9 @@ subroutine setbobsonroofs() ! override bobs along pliz's
    use geometry_module
    use m_roofs
    use m_readyy
+   use m_wall_clock_time
+   use m_reapol
+   use m_find_crossed_links_kdtree2
 
    implicit none
 
@@ -85,7 +88,7 @@ subroutine setbobsonroofs() ! override bobs along pliz's
    end do
 
    if (jakdtree == 1) then
-      call klok(t0)
+      call wall_clock_time(t0)
       allocate (iLink(Lnx), ipol(Lnx), dSL(Lnx))
       call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, 2, Lnxi, 0, numcrossedLinks, iLink, iPol, dSL, ierror)
       numLL = numcrossedLinks
@@ -93,7 +96,7 @@ subroutine setbobsonroofs() ! override bobs along pliz's
          deallocate (iLink, ipoL, dSL)
          jakdtree = 0
       end if
-      call klok(t1)
+      call wall_clock_time(t1)
       write (mesg, "('set bobs (on roofs) with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
       call mess(LEVEL_INFO, trim(mesg))
    else

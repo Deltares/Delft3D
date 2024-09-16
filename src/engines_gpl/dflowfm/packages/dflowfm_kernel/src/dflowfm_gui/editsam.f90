@@ -32,12 +32,15 @@
 
       subroutine EDITSAM(MODE, KEY)
          use m_samples
-         use M_MISSING
-         use unstruc_colors
-         use m_partitioninfo
          use m_helpnow
          use m_drawthis
          use m_depmax2
+         use m_ktext
+         use m_putget_un
+         use m_okay
+         use m_delsam
+         use m_draw_nu
+         use m_cirr
          implicit none
          integer :: MODE, KEY
          integer :: jonce

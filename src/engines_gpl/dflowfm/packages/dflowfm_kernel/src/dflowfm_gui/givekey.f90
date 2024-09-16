@@ -29,9 +29,12 @@
 
 !
 !
-
+module m_givekey
+   implicit none
+contains
       subroutine GIVEKEY(KEY)
-         implicit none
+         use m_ktext
+
          integer :: key
          character TEX * 14
          TEX = ' KEYPRESS=    '
@@ -39,3 +42,4 @@
          call KTEXT(TEX, 1, 3, 15)
          return
       end
+end module m_givekey

@@ -96,6 +96,7 @@ contains
    subroutine write_map_classes_ugrid(incids, tim)
       use m_alloc
       use fm_location_types
+      use m_get_ucx_ucy_eul_mag
       type(t_unc_mapids), intent(inout) :: incids !< class file and other NetCDF ids.
       real(kind=hp), intent(in) :: tim !< simulation time
 

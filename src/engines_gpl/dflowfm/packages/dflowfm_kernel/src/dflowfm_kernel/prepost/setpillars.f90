@@ -39,6 +39,7 @@
      use gridoperations
      use m_flowparameters, only: japillar
      use m_crspath
+     use m_crspath_on_flowgeom
      implicit none
      integer :: i, j, k, L, Lf, La, m, n
      double precision :: pi

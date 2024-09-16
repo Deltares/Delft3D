@@ -40,6 +40,7 @@
       use m_waves, m_waves_hminlw => hminlw
       use m_xbeach_data, xb_hminlw => hminlw
       use m_physcoef, only: sag
+      use m_get_Lbot_Ltop
       implicit none
 
       integer :: L, LL, Lb, Lt

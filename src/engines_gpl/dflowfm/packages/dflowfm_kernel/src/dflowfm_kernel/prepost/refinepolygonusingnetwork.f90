@@ -41,6 +41,7 @@
       use m_sferic, only: jsferic, jasfer3D
       use gridoperations
       use m_readyy
+      use m_set_nod_adm
 
       implicit none
 

@@ -31,7 +31,8 @@
 !
 
     subroutine DHTEXT(VAL, XD, YD, ZD)
-       use gridoperations
+       use m_htext
+       use m_three_two
        implicit none
        double precision :: val
        double precision :: x

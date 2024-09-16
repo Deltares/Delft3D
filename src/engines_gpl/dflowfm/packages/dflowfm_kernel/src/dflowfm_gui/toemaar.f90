@@ -29,21 +29,27 @@
 
 !
 !
-
-      subroutine TOEMAAR()
-         implicit none
-         integer :: key
-         call OKAY(0)
-         call TIMLIN()
-10       continue
-         call INFLUSH()
-         call INKEYEVENT(KEY)
-         if (KEY == 50 .or. (KEY >= 254 .and. KEY <= 259)) then
-            goto 10
-         else if (KEY >= 24 .and. KEY <= 26) then
-            call FKEYS(KEY)
-            goto 10
-         end if
-         call TIMLIN()
-         return
-      end
+module m_toemaar
+   implicit none
+contains
+   subroutine TOEMAAR()
+      use m_okay
+      use m_timlin
+      use m_fkeys
+      
+      integer :: key
+      call OKAY(0)
+      call TIMLIN()
+10    continue
+      call INFLUSH()
+      call INKEYEVENT(KEY)
+      if (KEY == 50 .or. (KEY >= 254 .and. KEY <= 259)) then
+         goto 10
+      else if (KEY >= 24 .and. KEY <= 26) then
+         call FKEYS(KEY)
+         goto 10
+      end if
+      call TIMLIN()
+      return
+   end
+end module m_toemaar

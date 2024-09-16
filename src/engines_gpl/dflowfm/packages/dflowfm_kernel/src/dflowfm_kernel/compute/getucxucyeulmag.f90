@@ -29,15 +29,14 @@
 
 !
 !
-
+module m_get_ucx_ucy_eul_mag
+   implicit none
+contains
 !> Computes/gets cell centered horizontal x/y velocities, either Eulerian or Lagrangian, and when requested also magnitude.
 !! Centralized routine for multiple uses in output files.
 subroutine getucxucyeulmag(N, ucxeulg, ucyeulg, ucmago, jaeulervel, jaucmag)
-   use m_flowgeom
    use m_flow, only: ndkx, ucx, ucy
    use m_flowparameters, only: jawave, flowWithoutWaves
-
-   implicit none
 
    integer, intent(in) :: N !< Length of cell arrays (probably ndkx)
    double precision, intent(out) :: ucxeulg(N) !< Target array in which to store x-velocities.
@@ -61,3 +60,4 @@ subroutine getucxucyeulmag(N, ucxeulg, ucyeulg, ucmago, jaeulervel, jaucmag)
    end if
 
 end subroutine getucxucyeulmag
+end module m_get_ucx_ucy_eul_mag

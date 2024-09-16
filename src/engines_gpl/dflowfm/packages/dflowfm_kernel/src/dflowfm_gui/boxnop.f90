@@ -29,9 +29,10 @@
 
 !
 !
-
+module m_box_nop
+   implicit none
+contains
       subroutine BOXnop(XB1, YB1, XB2, YB2)
-         implicit none
          double precision :: xb1
          double precision :: xb2
          double precision :: yb1
@@ -43,3 +44,4 @@
          call LNABSnop(XB1, YB1)
          return
       end
+end module m_box_nop

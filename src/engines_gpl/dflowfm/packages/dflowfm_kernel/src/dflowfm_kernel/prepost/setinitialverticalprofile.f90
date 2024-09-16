@@ -34,6 +34,9 @@
     use m_flowgeom
     use m_flow
     use m_polygon
+    use m_reapol
+    use m_get_kbot_ktop
+    use m_get_zlayer_indices
     implicit none
     integer :: ny
     double precision :: xx(kmxx)
@@ -71,6 +74,8 @@
  subroutine keepzlayering()
     use m_flowgeom
     use m_flow
+    use m_get_kbot_ktop
+    use m_get_zlayer_indices
     implicit none
 
     integer :: n, kb, kt, nlayb, nrlay, Ltn

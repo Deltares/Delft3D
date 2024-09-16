@@ -43,6 +43,12 @@
       use gridoperations
       use m_vfac
       use m_drawthis
+      use m_halt2
+      use m_makenetnodescoding
+      use m_set_nod_adm
+      use m_pfiller
+      use m_set_col
+      use m_inview
 
       implicit none
 
@@ -53,7 +59,6 @@
       integer :: ntopology, numcellstoplot
       double precision, external :: znetcell
       double precision, external :: coarsening_info
-      logical inview
 
       if (netwhat <= 1) return
 

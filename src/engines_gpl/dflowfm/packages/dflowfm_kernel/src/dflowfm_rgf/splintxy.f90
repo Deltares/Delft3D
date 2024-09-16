@@ -29,17 +29,19 @@
 
 !
 !
+module m_splintxy
+   implicit none
+contains
+   subroutine SPLINTXY(X, Y, X2, Y2, N, T, XT, YT)
+      use m_splint
 
-      subroutine SPLINTXY(X, Y, X2, Y2, N, T, XT, YT)
-         use m_splint
-         implicit none
-         !USE DIMENS
-         integer :: n
-         double precision :: T
-         double precision :: X(N), Y(N), X2(N), Y2(N)
-         double precision :: xt, yt
+      integer :: n
+      double precision :: T
+      double precision :: X(N), Y(N), X2(N), Y2(N)
+      double precision :: xt, yt
 
-         call SPLINT(X, X2, N, T, XT)
-         call SPLINT(Y, Y2, N, T, YT)
-         return
-      end
+      call SPLINT(X, X2, N, T, XT)
+      call SPLINT(Y, Y2, N, T, YT)
+      return
+   end
+end module m_splintxy

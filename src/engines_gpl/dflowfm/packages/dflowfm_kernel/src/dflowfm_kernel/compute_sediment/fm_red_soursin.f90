@@ -48,6 +48,7 @@
       use message_module, only: write_warning
       use m_flowgeom
       use m_fm_erosed
+      use m_get_kbot_ktop
       !
       implicit none
       !

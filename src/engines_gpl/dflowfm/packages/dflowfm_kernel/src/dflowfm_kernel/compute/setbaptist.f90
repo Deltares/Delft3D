@@ -33,6 +33,7 @@
  subroutine setbaptist()
     use m_flow
     use m_flowgeom
+    use m_get_cz
     implicit none
     integer :: L, k1, k2
     double precision :: ap, Cz, Czb, Czr, rnL, diaL, stemhL, gamhg, Cda, areastem, umag, fac, facL, Cdaleaf

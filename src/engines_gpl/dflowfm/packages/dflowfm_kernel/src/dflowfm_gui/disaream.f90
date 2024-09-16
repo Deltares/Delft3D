@@ -32,6 +32,7 @@
 
       subroutine DISAREAM(AREAM)
          use m_devices
+         use m_ktext
          implicit none
          double precision :: aream
          character(len=32) :: DISTAN

@@ -492,12 +492,13 @@
 
  subroutine solve_matrix(s1, ndx, itsol)
     use Timers
-    use m_flowparameters
+    use m_flowparameters, only: noderivedtypes, icgsolver, ipre
     use m_reduce
-    use m_flowtimes
+    use m_flowtimes, only: handle_sol
     use m_partitioninfo, only: my_rank, ndomains
     use m_timer
     use m_qnerror
+    use m_solve_jacobi
 
 #ifdef HAVE_PETSC
     use m_petsc
@@ -625,6 +626,7 @@
     use m_netw, only: xzw, yzw
     use unstruc_model, only: md_ident
     use m_qnerror
+    use m_calls_saad
     
     implicit none
     integer :: ndx, its
@@ -1667,7 +1669,8 @@
     use m_flowparameters, only: icgsolver, ipre, Noderivedtypes
     use m_partitioninfo
     use m_readyy
-
+    use m_calls_saad
+    
     implicit none
 
     integer :: Ndx, Lnx
@@ -2240,9 +2243,9 @@
     use m_reduce
     use m_flowgeom, only: Ndx, Lnx, ln, xu, yu, xz, yz
     use m_partitioninfo
-    use m_alloc
-    use unstruc_messages
+    use messagehandling, only: mess, LEVEL_ERROR
     use m_plotdots
+    use m_calls_saad
     implicit none
 
     integer, dimension(:), allocatable :: imask
@@ -2381,6 +2384,7 @@
     use network_data, only: xzw
     use m_flowparameters, only: jalogsolverconvergence
     use mpi
+    use m_calls_saad
     implicit none
 
     integer, intent(in) :: ndx

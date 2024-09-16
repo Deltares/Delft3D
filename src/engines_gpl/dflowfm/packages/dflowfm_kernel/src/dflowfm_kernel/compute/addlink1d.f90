@@ -37,6 +37,8 @@
     use m_flowparameters
     use unstruc_channel_flow
     use precision_basics
+    use m_get_prof_1D
+    use m_get_prof_1D_min
 
     implicit none
 

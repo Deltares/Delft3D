@@ -29,7 +29,9 @@
 
 !
 !
-
+module m_get_ustwav
+   implicit none
+contains
 subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! at u-point, get ustarwave and get ustokes
    use m_flow
    use m_flowgeom
@@ -37,7 +39,8 @@ subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uor
    use m_sferic
    use m_physcoef
    use m_xbeach_data, only: R, cwav, gammaxxb, roller
-   implicit none
+   use m_get_Lbot_Ltop
+
    integer, intent(in) :: LL
    double precision, intent(in) :: z00 ! current only z0
    double precision, intent(out) :: fw, ustw2, csw, snw
@@ -166,3 +169,4 @@ subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uor
    end if
 
 end subroutine getustwav
+end module m_get_ustwav

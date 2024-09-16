@@ -34,6 +34,7 @@
       subroutine BNDSMT(XR, YR, XI2, YI2, XJ2, YJ2, ATP, M1, N1, M2, N2)
          use m_grid
          use m_gridsettings
+         use m_get_ij
          implicit none
          double precision :: bfe
          integer :: i

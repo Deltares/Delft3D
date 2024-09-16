@@ -34,6 +34,7 @@ subroutine flqhgsfm(m, teken, husb, hdsb, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, 
                     dg, cgf, cgd, cwf, cwd, mugf, lambda, strdamf, jarea, ds)
 
    use m_physcoef, only: ag
+   use m_dpsequfm
 
    implicit none
 !
@@ -67,7 +68,6 @@ subroutine flqhgsfm(m, teken, husb, hdsb, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, 
 ! Local variables
 !
    integer :: formno
-   logical :: dpsequfm
    logical :: imag
    double precision :: cgd2
    double precision :: cgda

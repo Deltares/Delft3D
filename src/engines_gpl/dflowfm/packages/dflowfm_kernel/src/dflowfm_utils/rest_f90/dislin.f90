@@ -29,25 +29,28 @@
 
 !
 !
+module m_dislin
+   implicit none
+contains
+!>     AFSTAND VAN PUNT XX,YY TOT LIJN MET PARM TV
+   double precision function DISLIN(X, Y, N, XX, YY, TV)
 
-      double precision function DISLIN(X, Y, N, XX, YY, TV)
+      use geometry_module, only: dbdistance
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3D
+      use m_lint
 
-!     AFSTAND VAN PUNT XX,YY TOT LIJN MET PARM TV
-         use geometry_module, only: dbdistance
-         use m_missing, only: dmiss
-         use m_sferic, only: jsferic, jasfer3D
+      integer :: n
+      double precision :: tv
+      double precision :: xv
+      double precision :: xx
+      double precision :: yv
+      double precision :: yy
 
-         implicit none
-         integer :: n
-         double precision :: tv
-         double precision :: xv
-         double precision :: xx
-         double precision :: yv
-         double precision :: yy
-
-         double precision :: X(N), Y(N)
-         TV = max(0d0, min(TV, N - 1d0))
-         call LINT(X, Y, N, TV, XV, YV)
-         dislin = dbdistance(XV, YV, XX, YY, jsferic, jasfer3D, dmiss)
-         return
-      end function dislin
+      double precision :: X(N), Y(N)
+      TV = max(0d0, min(TV, N - 1d0))
+      call LINT(X, Y, N, TV, XV, YV)
+      dislin = dbdistance(XV, YV, XX, YY, jsferic, jasfer3D, dmiss)
+      return
+   end function dislin
+end module m_dislin

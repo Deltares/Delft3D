@@ -29,14 +29,14 @@
 
 !
 !
-
+module m_get_layer_indices
+    implicit none
+contains
  !> Gets the local layer numbers for a given grid cell.
  !! Note: works both for sigma and z, but for sigma, the return values are trivial: nlayb==1, nrlay==kmx.
  subroutine getlayerindices(n, nlayb, nrlay)
-    use m_flowgeom
-    use m_flow
-    use m_missing
-    implicit none
+    use m_flow, only: laydefnr, laytyp, laymx
+    use m_get_zlayer_indices
 
     integer, intent(in) :: n !< Flow node/grid cell number
     integer, intent(out) :: nlayb !< Layer number for the bottom layer (in 1:kmx)
@@ -53,3 +53,4 @@
     end if
 
  end subroutine getlayerindices
+end module m_get_layer_indices

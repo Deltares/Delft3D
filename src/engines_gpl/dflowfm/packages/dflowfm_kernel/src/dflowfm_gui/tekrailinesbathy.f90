@@ -39,6 +39,8 @@
     use m_netw, only: xk, yk, zk, kc
     use m_sediment
     use m_polygon
+    use m_halt2
+    use m_set_col
 
     implicit none
     integer :: ncol, ITYP

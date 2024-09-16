@@ -70,6 +70,7 @@ contains
       use m_flowgeom, only: xz, yz, ln, lnx, lnx1D
       use stdlib_sorting, only: sort_index
       use dfm_error
+      use m_crosspoly
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
       integer, intent(in) :: npl !< Number of polyline points.

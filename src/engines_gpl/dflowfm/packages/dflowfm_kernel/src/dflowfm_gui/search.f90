@@ -31,6 +31,7 @@
 !
 
       subroutine SEARCH(NAHEAD, NLEVEL, HLPTXT, NUMTXT, WRDKEY, NUMCHC, JOFND)
+         use m_okay
          implicit none
          integer :: jofnd
          integer :: k

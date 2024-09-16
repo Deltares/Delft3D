@@ -29,9 +29,10 @@
 
 !
 !
-
+module m_matm4
+   implicit none
+contains
   subroutine MATM4(a, b, c)
-     implicit none
      integer :: i
      integer :: j
      integer :: k
@@ -46,3 +47,4 @@
         end do
      end do
   end subroutine MATM4
+end module m_matm4

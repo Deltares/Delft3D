@@ -33,13 +33,18 @@
    subroutine tekpolygon()
       use m_polygon
       use unstruc_display
-      use m_missing
+      use m_missing, only: dmiss
+      use m_halt2
+      use m_htext
+      use m_disp2c
+      use m_isoline
+      use m_set_col
+      use m_inview
 
       implicit none
 
       integer :: k, kk, key, k2
       double precision :: a, b, x, y, z, s, c, d, dx, dy, dc, dl, dr, dxL, dyL, dxR, dyR, sL, sR, dcxR, dcyR, dcxL, dcyL
-      logical inview
 
       if (ndrawpol == 2) then
 

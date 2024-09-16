@@ -29,13 +29,14 @@
 
 !
 !
-
+module m_view_port
+   implicit none
+contains
       subroutine viewport(xs1, ys1, xs2, ys2)
          use unstruc_opengl
 #ifdef HAVE_OPENGL
          use IFOPNGL, only: fglViewPort
 #endif
-         implicit none
          real xs1, ys1, xs2, ys2
          if (InOpenGLRendering) then
 #ifdef HAVE_OPENGL
@@ -46,3 +47,4 @@
             call igrarea(xs1, ys1, xs2, ys2)
          end if
       end
+end module m_view_port

@@ -29,35 +29,37 @@
 
 !
 !
-
-      !> Find a point on a polyline at a certain distance from the start.
+module m_interpolateOnPolyline
+   implicit none
+contains
+   !> Find a point on a polyline at a certain distance from the start.
       !! The distance is measured along the consecutive polyline segments.
-      subroutine interpolateOnPolyline(X, Y, Z, T, MMAX, XP, YP, ZP, TP, JA)
-         implicit none
-         integer, intent(in) :: mmax !< Nr. of polyline points.
-         double precision, intent(in) :: X(MMAX), Y(MMAX), Z(mmax) !< The polyline coordinates.
-         double precision, intent(in) :: T(MMAX) !< Accumulated segment lengths at all points.
-         double precision, intent(out) :: XP, YP, ZP !< interpolated point coordinates at distance TP.
-         double precision, intent(in) :: TP !< Distance from polyline start at which to place point XP,YP.
-         integer, intent(out) :: ja !< Whether distance is within polyline length (1) or not (0).
+   subroutine interpolateOnPolyline(X, Y, Z, T, MMAX, XP, YP, ZP, TP, JA)
+      integer, intent(in) :: mmax !< Nr. of polyline points.
+      double precision, intent(in) :: X(MMAX), Y(MMAX), Z(mmax) !< The polyline coordinates.
+      double precision, intent(in) :: T(MMAX) !< Accumulated segment lengths at all points.
+      double precision, intent(out) :: XP, YP, ZP !< interpolated point coordinates at distance TP.
+      double precision, intent(in) :: TP !< Distance from polyline start at which to place point XP,YP.
+      integer, intent(out) :: ja !< Whether distance is within polyline length (1) or not (0).
 
-         integer :: i
-         double precision :: DT, TI
-         I = 0
-10       continue
-         I = I + 1
-         JA = 0
-         if (T(I) <= TP) then
-            if (I <= MMAX - 1) then
-               goto 10
-            end if
+      integer :: i
+      double precision :: DT, TI
+      I = 0
+10    continue
+      I = I + 1
+      JA = 0
+      if (T(I) <= TP) then
+         if (I <= MMAX - 1) then
+            goto 10
          end if
-         JA = 1
-         DT = T(I) - T(I - 1)
-         TI = 0d0
-         if (DT /= 0d0) TI = (TP - T(I - 1)) / DT
-         XP = (1d0 - TI) * X(I - 1) + TI * X(I)
-         YP = (1d0 - TI) * Y(I - 1) + TI * Y(I)
-         ZP = (1d0 - TI) * Z(I - 1) + TI * Z(I)
-         return
-      end subroutine interpolateOnPolyline
+      end if
+      JA = 1
+      DT = T(I) - T(I - 1)
+      TI = 0d0
+      if (DT /= 0d0) TI = (TP - T(I - 1)) / DT
+      XP = (1d0 - TI) * X(I - 1) + TI * X(I)
+      YP = (1d0 - TI) * Y(I - 1) + TI * Y(I)
+      ZP = (1d0 - TI) * Z(I - 1) + TI * Z(I)
+      return
+   end subroutine interpolateOnPolyline
+end module m_interpolateOnPolyline

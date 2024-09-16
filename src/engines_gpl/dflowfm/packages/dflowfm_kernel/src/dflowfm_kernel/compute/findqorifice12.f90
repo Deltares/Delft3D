@@ -31,6 +31,8 @@
 !
 
 subroutine findqorifice12(gateheight, crestheight, h1, h2, q, hg, regime, num, qcrit) ! bepaal q en hg waterstand links = h1, rechts= h2
+   use m_getq3
+   use m_qorifdif12
    implicit none
    double precision :: gateheight ! gate height above crest
    double precision :: crestheight ! crest height above bed

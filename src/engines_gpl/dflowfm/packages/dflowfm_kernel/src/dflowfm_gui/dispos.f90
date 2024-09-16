@@ -29,15 +29,17 @@
 
 !
 !
-
+module m_dispos
+   implicit none
+contains
       subroutine DISPOS()
          use m_devices
          use m_sferic
          use m_locatora
          use m_disfor
          use m_howtoview
+         use m_ktext
          
-         implicit none
          integer :: ixmax, ixmin, ixy, ndec, nxy
          character POSITI * 25
 
@@ -69,3 +71,4 @@
 
          return
       end
+end module m_dispos

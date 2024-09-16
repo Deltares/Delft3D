@@ -29,7 +29,9 @@
 
 !
 !
-
+module m_crspath_on_flowgeom
+   implicit none
+contains
 !> Constructs the set of crossed flow links for a single path on the
 !! current *flow* geometry.
 !!
@@ -48,8 +50,6 @@ subroutine crspath_on_flowgeom(path, includeghosts, jalinklist, numlinks, linkli
    use geometry_module, only: dbdistance, normalout
    use m_missing, only: dmiss, dxymis
    use m_alloc
-
-   implicit none
 
    type(tcrspath), intent(inout) :: path !< Cross section path that must be imposed on flow geometry.
    integer, intent(in) :: includeghosts !< include ghost links in path (1) or not (0)
@@ -162,3 +162,4 @@ subroutine crspath_on_flowgeom(path, includeghosts, jalinklist, numlinks, linkli
    end if
 
 end subroutine crspath_on_flowgeom
+end module m_crspath_on_flowgeom

@@ -35,6 +35,7 @@
          use m_sferic
          use unstruc_messages
          use kdtree2Factory
+         use m_wall_clock_time
 
          implicit none
 
@@ -77,7 +78,7 @@
          !   jakdtree=0
          !end if
 
-         call klok(t0)
+         call wall_clock_time(t0)
 
          if (jakdtree == 1) then
 !        force Cartesian coordinates
@@ -184,7 +185,7 @@
 
          end if
 
-         call klok(t1)
+         call wall_clock_time(t1)
 
 !     remove double samples
          K = 0
@@ -199,7 +200,7 @@
             end if
          end do
 
-         call klok(t2)
+         call wall_clock_time(t2)
 
 !     update permutation array
          k = 0
@@ -211,7 +212,7 @@
             end if
          end do
 
-         call klok(t3)
+         call wall_clock_time(t3)
 
 !     set new number of samples
          NS = K
@@ -224,7 +225,7 @@
             ! CALL QNERROR('NUMBER OF DOUBLE POINTS REMOVED',OUD,' ')
          end if
 
-         call klok(t4)
+         call wall_clock_time(t4)
 
 !     output message
          if (jakdtree == 1) then

@@ -44,6 +44,7 @@
          use m_flowparameters, only: ifixedweirscheme
          use m_readyy
          use m_qnerror
+         use m_qn_read_error
 
          implicit none
          integer :: mpol

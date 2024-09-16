@@ -39,6 +39,7 @@
       use m_sediment, only: sedtot2sedsus
       use sediment_basics_module
       use m_fm_erosed
+      use m_get_Lbot_Ltop
       implicit none
 
       integer :: j, kb, ki, L, ll, iconst, k, kk, Lb, Lt, LLL

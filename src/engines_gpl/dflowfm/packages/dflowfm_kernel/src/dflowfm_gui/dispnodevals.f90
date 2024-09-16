@@ -33,6 +33,7 @@
   subroutine DISPNODEVALS(KP)
      use m_netw
      use M_DEVICES
+     use m_ktext
      implicit none
      integer :: KP
 

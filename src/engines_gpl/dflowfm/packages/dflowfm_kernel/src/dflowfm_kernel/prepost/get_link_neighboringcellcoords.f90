@@ -29,12 +29,13 @@
 
 !
 !
-
+module m_get_link_neighboring_cell_coords
+   implicit none
+contains
 !> get neighboring cell center coordinates
   subroutine get_link_neighboringcellcoords(L, isactive, xza, yza, xzb, yzb)
      use network_data
      use m_flowgeom, only: xz, yz ! Note that xz,yz are already filled after findcells.
-     implicit none
 
      integer, intent(in) :: L !< link number
      integer, intent(out) :: isactive !< active link (1) or not (0)
@@ -61,3 +62,4 @@
 
      return
   end subroutine get_link_neighboringcellcoords
+end module m_get_link_neighboring_cell_coords

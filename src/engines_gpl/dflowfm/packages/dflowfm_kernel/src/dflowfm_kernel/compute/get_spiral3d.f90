@@ -33,6 +33,7 @@
    subroutine get_spiral3d
       use m_flow, only: ucx, ucy, spirint, zws, hs, dzslay, spiratx, spiraty
       use m_flowgeom, only: ndx
+      use m_get_kbot_ktop
 
       implicit none
       integer :: k, kk, k1, kb, kt

@@ -48,6 +48,7 @@
          use geometry_module, only: dcosphi
          use m_drawthis
          use m_qnerror
+         use m_increase_grid
          implicit none
 
          double precision :: atpfo

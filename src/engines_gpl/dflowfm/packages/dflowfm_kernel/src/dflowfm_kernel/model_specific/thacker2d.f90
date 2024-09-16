@@ -36,6 +36,7 @@
        use m_flow
        use m_sferic
        use m_dminmax
+       use m_set_bobs
        implicit none
        double precision :: t, rms
        integer :: ini, k, L, k1, k2

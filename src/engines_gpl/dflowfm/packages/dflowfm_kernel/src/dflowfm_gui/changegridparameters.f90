@@ -38,6 +38,8 @@
          use m_polygon
          use dflowfm_version_module, only: company, product_name
          use m_helpnow
+         use m_save_keys
+         use m_restore_keys
          implicit none
 
          integer :: numpar, numfld, numparactual, numfldactual

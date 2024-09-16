@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_zeronet
+     implicit none
+contains
   subroutine ZERONET()
      use m_netw
-     implicit none
+
      integer :: nl
      integer :: numtotr
      XK = 0; YK = 0; ZK = 0
@@ -43,3 +45,4 @@
      NUMTOTR = 0
      return
   end subroutine ZERONET
+end module m_zeronet

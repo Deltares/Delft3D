@@ -29,10 +29,13 @@
 
 !
 !
-
+module m_fieldopt
+         implicit none
+contains
       subroutine FIELDOPT(NFLD)
          use M_GRID
-         implicit none
+         use m_menuv2
+
          integer :: nfld
          integer, parameter :: MAXOP = 64
          integer :: nwhat2, maxopt, i
@@ -58,3 +61,4 @@
          end if
          return
       end subroutine fieldopt
+end module m_fieldopt

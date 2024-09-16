@@ -2,20 +2,20 @@ import sys
 import csv
 
 def csv_to_dict(csv_table_path):
-    reader = csv.reader(csv_table_path)
-    headers = next(reader)  # Get the first line as headers
-    data_dict = {header: [] for header in headers}  # Initialize dictionary with headers as keys
 
-    for row in reader:
-        for header, value in zip(headers, row):
-            data_dict[header].append(value)  # Append values to the corresponding key
+    with open(csv_table_path, mode='r', newline='') as file:
+        reader = csv.reader(file)
+        headers = next(reader)  # Get the first line as headers
+        data_dict = {header: [] for header in headers}  # Initialize dictionary with headers as keys
 
-    return data_dict
+        for row in reader:
+            for header, value in zip(headers, row):
+                data_dict[header].append(value)  # Append values to the corresponding key
+
+        return data_dict
 
 # Function to filter values based on the 'this' list
 def filter_config(csv_table_path: str, csv_data, branch_name: str):
-    if branch_name == "main":
-        branch_name = "all"
     # Check if the branch name exists in the data
     if branch_name not in csv_data:
         raise ValueError(f"Branch name '{branch_name}' does not exist in file {csv_table_path}.")
@@ -25,8 +25,10 @@ def filter_config(csv_table_path: str, csv_data, branch_name: str):
     this_values   = csv_data[branch_name]
     
     # Filtered list based on 'this' values being "TRUE"
-    filtered_values = [f"{name}=>{config}" for name, config, this in zip(config_names, config_values, this_values) if this == "TRUE"]
-    
+
+    filtered_values = [f"{config}" for name, config, this in zip(config_names, config_values, this_values) if this == "TRUE"]
+    # Have to research how to pass {name}=>{config} through TeamCity REST API
+
     return filtered_values
 
 
@@ -40,6 +42,9 @@ if __name__ == "__main__":
     branch_name = sys.argv[1]
     csv_table_path = sys.argv[2]
     parameter_name = sys.argv[3]
+
+    if branch_name == "main":
+        branch_name = "all"
 
     with open(csv_table_path, mode='r', newline='') as csv_data:
         branch_config_dict = csv_to_dict(csv_table_path)

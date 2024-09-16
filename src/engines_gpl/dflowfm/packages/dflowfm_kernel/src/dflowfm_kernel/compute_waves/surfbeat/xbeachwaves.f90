@@ -404,6 +404,7 @@ subroutine xbeach_wave_init()
    use network_data
    use m_flow, only: hs, ucx, ucy
    use m_waves, only: rlabda
+   use m_makenetnodescoding
 
    implicit none
 
@@ -2740,7 +2741,7 @@ subroutine xbeach_spectral_wave_init()
    use m_flowgeom
    use m_xbeach_errorhandling
    use m_polygon
-   use m_missing
+   use m_missing, only: dmiss
    use m_sferic, only: twopi, jsferic, jasfer3D
    use timespace_triangle
    use m_flowtimes, only: time0
@@ -2748,6 +2749,9 @@ subroutine xbeach_spectral_wave_init()
    use m_alloc
    use stdlib_sorting, only: sort_index
    use geometry_module, only: dbdistance
+   use m_delpol
+   use m_reapol
+   use m_d_line_dis3
 
    implicit none
 

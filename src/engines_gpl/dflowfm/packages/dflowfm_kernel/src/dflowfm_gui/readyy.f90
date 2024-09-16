@@ -36,6 +36,7 @@ contains
    subroutine READYY(TEXT, AF)
       use m_devices
       use m_gui
+      use m_fillup
       implicit none
 
       character TEXT * (*), BALK * 400

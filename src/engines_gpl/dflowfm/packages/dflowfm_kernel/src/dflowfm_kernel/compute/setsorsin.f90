@@ -39,6 +39,7 @@
     use m_transport, only: NUMCONST, constituents
     use MessageHandling
     use m_partitioninfo
+    use m_get_kbot_ktop
     implicit none
     integer :: n, kk, k, kb, kt, kk2, ku, numvals, L
     double precision :: qsrck, qsrckk, dzss

@@ -29,20 +29,24 @@
 
 !
 !
+module m_fbox
+   implicit none
+contains
+   subroutine FBOX(X1, Y1, X2, Y2)
+      use m_fboxold
+      use m_drawthis
+      use m_dproject
 
-      subroutine FBOX(X1, Y1, X2, Y2)
-         use m_fboxold
-         use m_drawthis
-         implicit none
-         double precision :: x1, x2, y1, y2
-         double precision :: xb1, xb2, yb1, yb2
+      double precision :: x1, x2, y1, y2
+      double precision :: xb1, xb2, yb1, yb2
 
-         call DPROJECT(X1, Y1, XB1, YB1, 1)
-         call DPROJECT(X2, Y2, XB2, YB2, 1)
-         if (ndraw(10) == 0) then
-            call RECTANGLE(real(XB1), real(YB1), real(XB2), real(YB2))
-         else
-            call fboxold(XB1, YB1, XB2, YB2)
-         end if
-         return
-      end
+      call DPROJECT(X1, Y1, XB1, YB1, 1)
+      call DPROJECT(X2, Y2, XB2, YB2, 1)
+      if (ndraw(10) == 0) then
+         call RECTANGLE(real(XB1), real(YB1), real(XB2), real(YB2))
+      else
+         call fboxold(XB1, YB1, XB2, YB2)
+      end if
+      return
+   end
+end module m_fbox

@@ -84,6 +84,7 @@ subroutine update_constituents(jarhoonly)
    use m_waves
    use timers
    use mass_balance_areas_routines, only: comp_horfluxmba
+   use m_get_Lbot_Ltop
 
    implicit none
 

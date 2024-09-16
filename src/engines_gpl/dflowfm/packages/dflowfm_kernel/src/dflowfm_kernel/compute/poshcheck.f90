@@ -36,6 +36,8 @@
     use m_partitioninfo
     use m_timer
     use m_gui
+    use m_okay
+    use m_set_col
 
     implicit none
 

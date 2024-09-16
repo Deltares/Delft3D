@@ -43,6 +43,7 @@
      use m_statistics
      use m_depmax
      use m_cconstants
+     use m_makenetnodescoding
      use m_find1dcells, only: find1dcells
      
      implicit none

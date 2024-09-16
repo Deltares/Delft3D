@@ -29,9 +29,10 @@
 
 !
 !
-
+module m_put_ij
+   implicit none
+contains
       subroutine PUTIJ(X, XH, MMAX, NMAX, MNMAX, I1, I2, J1, J2)
-         implicit none
          integer :: i
          integer :: i1
          integer :: i2
@@ -54,3 +55,4 @@
          end do
          return
       end subroutine PUTIJ
+end module m_put_ij

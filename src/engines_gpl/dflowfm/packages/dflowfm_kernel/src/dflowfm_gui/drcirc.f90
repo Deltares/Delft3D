@@ -31,7 +31,7 @@
 !
 
       subroutine DRCIRC(XD, YD, ZD)
-         use gridoperations
+         use m_three_two
          implicit none
          double precision :: x
          double precision :: y

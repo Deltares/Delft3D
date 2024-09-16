@@ -33,7 +33,8 @@
 subroutine getfetch(k, U10, FetchL, FetchD) !and windspeed
    use m_flow, only: Hs, Wx, Wy
    use m_waves, only: fetch, nwf, fetdp
-   use m_sferic
+   use m_sferic, only: twopi
+   use m_get_link1
    implicit none
 
    integer :: k

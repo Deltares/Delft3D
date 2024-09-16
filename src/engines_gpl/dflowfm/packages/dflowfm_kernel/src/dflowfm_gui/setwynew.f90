@@ -36,6 +36,7 @@
          use m_sferic
          use m_sferzoom
          use unstruc_display
+         use m_dproject
 
          implicit none
          double precision :: asp, x, y, dy, dx, XA, Y1A, y2a

@@ -37,6 +37,7 @@ subroutine nettoland()
    use M_MISSING
    use m_observations
    use gridoperations
+   use m_makenetnodescoding
 
    implicit none
 

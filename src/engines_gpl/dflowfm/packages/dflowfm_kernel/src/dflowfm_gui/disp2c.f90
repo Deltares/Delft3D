@@ -29,15 +29,18 @@
 
 !
 !
-
+module m_disp2c
+   implicit none
+contains
 !
       subroutine DISP2C(X, Y, N, RCIR, NCOL)
          use m_missing
-         !     use gridoperations
-         implicit none
+         use m_jgrline8
+         use m_set_col
+         use m_inview
+
          integer :: n, ncol
          double precision :: X(N), Y(N), rcir
-         logical :: inview
 
          integer :: i, istart, in
 !     LAAT EEN TWEEDIMENSIONALE FUNCTIE ZIEN MET CIRKELS
@@ -80,3 +83,4 @@
 
          return
       end
+end module m_disp2c

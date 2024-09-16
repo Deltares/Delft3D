@@ -32,6 +32,7 @@
 
       subroutine SMALLSCREEN()
          use m_screenarea
+         use m_view_port
 
          implicit none
          double precision :: xright

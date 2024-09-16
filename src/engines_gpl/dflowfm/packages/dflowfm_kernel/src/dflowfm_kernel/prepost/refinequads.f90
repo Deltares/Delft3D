@@ -32,9 +32,13 @@
 
   subroutine REFINEQUADS()
      use m_netw
-     use M_AFMETING
+     use m_afmeting, only: k0
      use gridoperations
      use m_readyy
+     use m_delpol
+     use m_copynetboundstopol
+     use m_set_nod_adm
+     use m_new_link
      implicit none
      integer :: jaddrand
      integer :: k, KMOD

@@ -39,6 +39,7 @@
          use m_sferic, only: dtol_pole
          use gridoperations
          use m_qnerror
+         use m_makenetnodescoding
 
          implicit none
          integer :: l1

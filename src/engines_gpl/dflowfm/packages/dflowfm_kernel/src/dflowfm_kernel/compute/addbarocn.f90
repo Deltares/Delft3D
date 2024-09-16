@@ -33,6 +33,7 @@
  subroutine addbarocn(n) ! rho at cell centers
     use m_flowgeom
     use m_flow
+    use m_get_kbot_ktop
 
     implicit none
     integer, intent(in) :: n
@@ -91,6 +92,7 @@
     use m_flow
     use m_transport, only: ISALT, ITEMP, constituents
     use m_physcoef, only: rhomean
+    use m_get_kbot_ktop
 
     implicit none
     integer, intent(in) :: n
@@ -155,6 +157,7 @@
  subroutine addbarocnorg(n)
     use m_flowgeom
     use m_flow
+    use m_get_kbot_ktop
 
     implicit none
     integer, intent(in) :: n

@@ -33,6 +33,9 @@
       subroutine ISOFILTRI(X, Y, Z, NCOLR)
          use m_topix
          use m_depmax
+         use m_sub_polygon
+         use m_pfiller
+         use m_set_col
          implicit none
          double precision :: dzn
          double precision :: frac

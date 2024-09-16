@@ -48,6 +48,8 @@
          use m_arcinfo
          use m_polygon
          use m_readyy
+         use m_firstlin
+         use m_wripol
 
          implicit none
          double precision :: half

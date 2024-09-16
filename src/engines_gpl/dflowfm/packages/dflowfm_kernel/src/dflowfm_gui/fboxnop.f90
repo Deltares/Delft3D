@@ -29,11 +29,13 @@
 
 !
 !
-
+module m_fbox_nop
+   implicit none
+contains
       subroutine FBOXNOP(XB1, YB1, XB2, YB2)
          use m_fboxold
          use m_drawthis
-         implicit none
+
          double precision :: xb1, xb2, yb1, yb2
 
          if (ndraw(10) == 0) then
@@ -43,3 +45,4 @@
          end if
          return
       end
+end module m_fbox_nop

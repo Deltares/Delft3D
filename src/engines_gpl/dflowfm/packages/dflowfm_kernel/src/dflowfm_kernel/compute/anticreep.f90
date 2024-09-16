@@ -37,6 +37,9 @@ subroutine anticreep(L)
    use m_flowgeom
    use m_transport
    use m_flowparameters
+   use m_get_kbot_ktop
+   use m_get_Lbot_Ltop
+   use m_dens_eck
 
    implicit none
    double precision, allocatable, dimension(:) :: polal ! Z-coordinate horizontal layers in nm

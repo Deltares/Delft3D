@@ -35,6 +35,7 @@
 subroutine remove_isolated_hanging_nodes(linkbrother, num)
    use m_netw
    use unstruc_messages
+   use m_find_common_node
 
    implicit none
 

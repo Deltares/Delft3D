@@ -29,7 +29,9 @@
 
 !
 !
-
+module m_disdis
+   implicit none
+contains
       subroutine DISDIS()
 
          use m_devices
@@ -38,9 +40,8 @@
          use m_sferic, only: jsferic, jasfer3D
          use m_locatora
          use m_disfor
+         use m_ktext
          
-         implicit none
-
          double precision :: dis
 !     -------------------------------
 !     write distance
@@ -56,3 +57,4 @@
 
          return
       end
+end module m_disdis

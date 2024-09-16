@@ -45,6 +45,7 @@
     use m_1d2d_fixedweirs, only: compfuru_1d2d_fixedweirs
     use m_flowparameters, only: ifixedWeirScheme1d2d
     use fm_manhole_losses, only: calculate_manhole_losses
+    use m_get_Lbot_Ltop
 
     implicit none
 

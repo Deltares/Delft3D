@@ -31,6 +31,8 @@
 !
 
  subroutine shtext(n, snum, sx1, sy1)
+    use m_shipcoor
+    use m_htext
     implicit none
     integer :: n
     double precision :: snum, sx1, sx2, sy1, sy2

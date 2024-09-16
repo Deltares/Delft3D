@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_isoline
+   implicit none
+contains
       subroutine isoline(xa, ya, za, xb, yb, zb)
-         use unstruc_display
-         implicit none
+         use unstruc_display, only: rcir
+
          double precision :: xa, ya, za, xb, yb, zb, dx, s, c, d, xh(4), yh(4), zh(4)
          dx = 0.2d0 * rcir
          call sincosdis(xa, ya, xb, yb, s, c, d)
@@ -50,3 +52,4 @@
          zh(4) = za
          call ISOFIL(Xh, Yh, Zh, 4, 0)
       end subroutine isoline
+end module m_isoline

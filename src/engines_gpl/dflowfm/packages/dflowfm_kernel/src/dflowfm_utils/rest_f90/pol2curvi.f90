@@ -47,6 +47,7 @@ subroutine pol2curvi(i1, i2, i3, ja4)
    use m_missing
    use m_polygon
    use m_qnerror
+   use m_increase_grid
    implicit none
 
    integer, intent(in) :: i1, i2, i3 !< first, second and third corner point in polygon, respectively

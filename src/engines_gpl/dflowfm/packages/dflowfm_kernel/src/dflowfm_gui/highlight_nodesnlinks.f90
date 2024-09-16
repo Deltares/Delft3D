@@ -33,9 +33,10 @@
 !> Highlights net/flow nodes and/or links, when specified in display parameters.
 subroutine highlight_nodesnlinks()
    use unstruc_display
-   use unstruc_colors
    use network_data
    use m_flowgeom
+   use m_tek_link
+   use m_cirr
    implicit none
 
    if (nhlNetNode > 0 .and. nhlNetNode <= numk) then

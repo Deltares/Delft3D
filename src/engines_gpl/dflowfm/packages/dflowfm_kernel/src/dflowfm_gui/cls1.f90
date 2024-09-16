@@ -34,6 +34,8 @@
       subroutine CLS1()
          use unstruc_display
          use m_drawthis
+         use m_fbox_nop
+         use m_set_col
          implicit none
 
          call IGRAREACLEAR()

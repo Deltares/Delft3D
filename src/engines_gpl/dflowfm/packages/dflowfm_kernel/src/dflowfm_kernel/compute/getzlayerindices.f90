@@ -29,13 +29,13 @@
 
 !
 !
-
+module m_get_zlayer_indices
+    implicit none
+contains
  !> Gets the local layer numbers for a given grid cell.
  subroutine getzlayerindices(n, nlayb, nrlay)
-    use m_flowgeom
+    use m_flowgeom, only: bl
     use m_flow
-    use m_missing
-    implicit none
 
     integer, intent(in) :: n !< Flow node/grid cell number
     integer, intent(out) :: nlayb !< Layer number for the bottom layer (in 1:kmx)
@@ -81,3 +81,4 @@
     end if
 
  end subroutine getzlayerindices
+end module m_get_zlayer_indices

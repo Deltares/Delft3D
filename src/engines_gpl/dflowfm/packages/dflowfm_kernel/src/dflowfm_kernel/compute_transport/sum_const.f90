@@ -34,6 +34,7 @@ subroutine sum_const(iter, vol1)
    use m_transport
    use m_flowgeom, only: Ndx
    use m_flow, only: Ndkx
+   use m_get_kbot_ktop
    implicit none
 
    integer, intent(in) :: iter

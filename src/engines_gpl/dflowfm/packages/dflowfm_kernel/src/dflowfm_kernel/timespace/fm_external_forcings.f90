@@ -2310,6 +2310,8 @@ contains
       use m_trachy, only: trachy_resistance
       use m_structures, only: check_model_has_structures_across_partitions
       use m_laterals, only: initialize_lateraldata
+      use m_get_kbot_ktop
+      use m_get_prof_1D
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar

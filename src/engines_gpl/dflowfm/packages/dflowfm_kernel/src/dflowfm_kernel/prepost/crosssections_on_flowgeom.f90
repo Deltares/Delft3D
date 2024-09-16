@@ -262,6 +262,9 @@ subroutine crosssections_on_flowgeom()
    use unstruc_caching, only: copyCachedCrossSections, saveLinkList
    use m_partitioninfo, only: jampi
    use m_readyy
+   use m_wall_clock_time
+   use m_find_crossed_links_kdtree2
+   use m_crspath_on_flowgeom
    implicit none
 
    integer :: ic, icmod
@@ -294,7 +297,7 @@ subroutine crosssections_on_flowgeom()
    idum = 0
 
    if (jakdtree == 1) then
-      call klok(t0)
+      call wall_clock_time(t0)
 
       call copyCachedCrossSections(iLink, ipol, success)
 
@@ -379,7 +382,7 @@ subroutine crosssections_on_flowgeom()
       if (allocated(istartcrs)) deallocate (istartcrs)
       if (allocated(xx)) deallocate (xx, yy)
 
-      call klok(t1)
+      call wall_clock_time(t1)
       write (mesg, "('cross sections with kdtree2, elapsed time: ', G15.5, 's.')") t1 - t0
       call mess(LEVEL_INFO, trim(mesg))
    end if

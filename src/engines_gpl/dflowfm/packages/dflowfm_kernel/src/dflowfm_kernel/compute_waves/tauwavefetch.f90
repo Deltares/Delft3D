@@ -175,6 +175,7 @@ subroutine calculate_fetch_values_for_all_wind_directions(total_nr_cells)
    use m_missing, only: dmiss
    use m_sferic
    use m_fetch_local_data
+   use m_set_col
 
    implicit none
 

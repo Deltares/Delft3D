@@ -48,6 +48,7 @@ subroutine setbedlevelfromextfile() ! setbedlevels()  ! check presence of old ce
    use fm_deprecated_keywords, only: deprecated_ext_keywords
    use m_deprecation, only: check_file_tree_for_deprecated_keywords
    use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+   use m_delpol
    implicit none
 
    logical, external :: timespaceinitialfield_mpi

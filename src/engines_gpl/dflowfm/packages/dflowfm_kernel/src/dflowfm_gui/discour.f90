@@ -32,6 +32,7 @@
 
       subroutine DISCOUR(M, N, DEP)
          use m_devices
+         use m_ktext
          implicit none
          double precision :: dep
          integer :: m

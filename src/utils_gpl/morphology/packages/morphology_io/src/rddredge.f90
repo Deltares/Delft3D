@@ -55,6 +55,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     use morphology_data_module, only: sedpar_type, morpar_type
     use dredge_data_module
     use grid_dimens_module, only: griddimtype
+    use string_module, only: strcmpi
     !
     implicit none
     !
@@ -173,7 +174,6 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     real(sp)                                :: versionnr
     real(sp)                                :: versionnrinput
     logical                                 :: ex
-    logical, external                       :: stringsequalinsens
     logical                                 :: success
     logical                                 :: unique
     logical                                 :: def_dredgewhendry
@@ -1058,7 +1058,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                          call prop_get(node_ptr, '*', 'Sediment' , sedname)
                          sfound = .false.
                          do j2 = 1, lsedtot
-                            if ( stringsequalinsens(namsed(j2), sedname) ) then
+                            if ( strcmpi(namsed(j2), sedname) ) then
                                cntsedidx = j2
                                sfound    = .true.
                             endif
@@ -1161,7 +1161,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                          call prop_get(node_ptr, '*', 'Sediment', sedname)
                          sfound = .false.
                          do j2 = 1, lsedtot
-                            if ( stringsequalinsens(namsed(j2), sedname) ) then
+                            if ( strcmpi(namsed(j2), sedname) ) then
                                cntsedidx = j2
                                sfound    = .true.
                             endif

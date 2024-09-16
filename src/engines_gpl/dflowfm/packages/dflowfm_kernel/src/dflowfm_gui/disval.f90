@@ -33,6 +33,7 @@
       subroutine DISVAL(M, N, DEP)
          use m_devices
          use m_drawthis
+         use m_ktext
          implicit none
          double precision :: dep
          integer :: m

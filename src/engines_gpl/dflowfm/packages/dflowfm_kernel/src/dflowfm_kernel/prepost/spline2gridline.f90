@@ -32,7 +32,7 @@
 
 !> make a gridline on the spline
 subroutine spline2gridline(mc, num, xsp, ysp, xc, yc, sc, h)
-!   use m_splines
+   use m_makespl
 
    implicit none
 

@@ -591,6 +591,7 @@ contains
       use m_flowgeom
       use m_flow
       use m_transport
+      use m_get_kbot_ktop
 
       integer :: nombs, nomba
       integer :: mbadef(ndxi)
@@ -746,23 +747,15 @@ contains
       end do
 
       do n = 1, numsrc
-         k1 = ksrc(1, n) ! 2D pressure cell nr FROM
-         k2 = ksrc(4, n) ! 2D pressure cell nr TO
-         if (k1 <= 0 .and. k2 <= 0) cycle
-         if (jampi == 1) then
-            if (k1 > 0) then
-               if (idomain(k1) /= my_rank) cycle
-            else
-               if (k2 > 0) then
-                  if (idomain(k2) /= my_rank) cycle
-               end if
-            end if
-         end if
          qsrck = qsrc(n)
          if (qsrck > 0) then
-            mbaflowsorsin(2, n) = mbaflowsorsin(2, n) + qsrck * dts
+            if (mbasorsin(2, n) /= 0) then
+               mbaflowsorsin(2, n) = mbaflowsorsin(2, n) + qsrck * dts
+            end if
          else if (qsrck < 0) then
-            mbaflowsorsin(1, n) = mbaflowsorsin(1, n) - qsrck * dts
+            if (mbasorsin(1, n) /= 0) then
+               mbaflowsorsin(1, n) = mbaflowsorsin(1, n) - qsrck * dts
+            end if
          end if
       end do
 
@@ -862,6 +855,7 @@ contains
       use m_sediment, only: stm_included
       use m_fm_erosed, only: lsed, lsedtot, stmpar
       use m_transport, only: ised1, isedn
+      use m_datum
 
       integer :: lunbal ! logical unit
 

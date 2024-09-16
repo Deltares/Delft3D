@@ -33,6 +33,7 @@
    subroutine plotnu(fnam)
       use m_drawthis
       use m_plotfil
+      use m_draw_nu
       implicit none
       integer :: key
       character(len=*) fnam

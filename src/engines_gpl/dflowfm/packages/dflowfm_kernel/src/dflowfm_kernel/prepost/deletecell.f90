@@ -40,6 +40,7 @@ subroutine deletecell(k, ndirect, nindirect, kdirect, kindirect, kne, Lprompt_no
    use gridoperations
    use m_mergenodes
    use m_qnerror
+   use m_find_common_node
 
    implicit none
 

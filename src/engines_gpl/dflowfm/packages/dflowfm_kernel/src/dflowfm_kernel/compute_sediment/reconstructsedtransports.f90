@@ -29,14 +29,14 @@
 
 !
 !
-
+module m_reconstruct_sed_transports
+   implicit none
+contains
    subroutine reconstructsedtransports()
       ! Reconstructs cell centre transports from link based values for output purposes
       use m_fm_erosed
-      use m_flowgeom
-      use m_sediment
-
-      implicit none
+      use m_flowgeom, only: ln, lnx, ndx, wcx1, wcx2, wcy1, wcy2
+      use m_sediment, only: sedtot2sedsus
 
       integer :: l, ll, k1, k2, k
 
@@ -92,3 +92,4 @@
       end do
 
    end subroutine reconstructsedtransports
+end module m_reconstruct_sed_transports

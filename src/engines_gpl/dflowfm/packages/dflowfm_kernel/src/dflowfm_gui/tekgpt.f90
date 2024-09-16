@@ -35,6 +35,7 @@
 !     TEKEN GRIDLIJNEN UITKOMEND OP DIT PUNT
          use m_missing
          use m_wearelt
+         use m_set_col
          implicit none
          integer :: mmax, nmax, mc, nc, mp, np, ncol
          double precision :: X(MMAX, NMAX), Y(MMAX, NMAX), RD1(MMAX, NMAX)

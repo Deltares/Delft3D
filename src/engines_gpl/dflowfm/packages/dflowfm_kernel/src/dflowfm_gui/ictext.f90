@@ -32,6 +32,7 @@
 
       subroutine ICTEXT(TEX, NX, NY, NCOL)
          use unstruc_colors
+         use m_set_col
          implicit none
          integer :: l
          integer :: ncol

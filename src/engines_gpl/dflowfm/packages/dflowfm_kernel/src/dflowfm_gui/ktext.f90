@@ -29,15 +29,17 @@
 
 !
 !
-
-      subroutine KTEXT(TEXNU, NX, NY, NCOL)
-         implicit none
-         integer :: ncol
-         integer :: nx
-         integer :: ny
+module m_ktext
+   implicit none
+contains
+   subroutine KTEXT(TEXNU, NX, NY, NCOL)
+      integer :: ncol
+      integer :: nx
+      integer :: ny
 !     tekst op normale text posities met standaard blauwe achtergrond
-         character(len=*) TEXNU
-         call ITEXTCOLOURN(NCOL, 5)
-         call IOUTSTRINGXY(NX, NY, trim(TEXNU))
-         return
-      end
+      character(len=*) TEXNU
+      call ITEXTCOLOURN(NCOL, 5)
+      call IOUTSTRINGXY(NX, NY, trim(TEXNU))
+      return
+   end
+end module m_ktext

@@ -47,6 +47,7 @@ contains
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
+      use m_inflowcell
 
       implicit none
 
@@ -145,6 +146,7 @@ contains
       use unstruc_messages
       use gridoperations
       use geometry_module, only: dbdistance, pinpok
+      use m_wall_clock_time
 
       implicit none
 
@@ -174,7 +176,7 @@ contains
 
       node_nr_nearest = 0
 
-      call klok(t0)
+      call wall_clock_time(t0)
 
       ! build kdtree
       call build_kdtree(treeinst, Ns, xs, ys, ierror, jsferic, dmiss)
@@ -270,7 +272,7 @@ contains
          end do
       end do
 
-      call klok(t1)
+      call wall_clock_time(t1)
 
       write (mesg, "('done in ', F12.5, ' sec.')") t1 - t0
       call mess(LEVEL_INFO, trim(mesg))

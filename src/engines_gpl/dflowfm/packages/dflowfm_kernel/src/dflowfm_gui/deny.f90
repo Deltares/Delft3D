@@ -31,6 +31,7 @@
 !
 
       subroutine DENY(IXP, IYP)
+         use m_toemaar
          implicit none
          integer :: infoattribute
          integer :: ixp

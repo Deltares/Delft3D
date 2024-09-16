@@ -42,6 +42,8 @@ subroutine fliplinks()
    use m_missing, only: dmiss
    use gridoperations
    use m_qnerror
+   use m_makenetnodescoding
+   use m_tek_link
 
    implicit none
 

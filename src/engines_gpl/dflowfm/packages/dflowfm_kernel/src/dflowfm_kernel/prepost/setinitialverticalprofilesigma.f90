@@ -34,6 +34,8 @@ subroutine setinitialverticalprofilesigma(yy, ny, filename) ! polyfil
    use m_flowgeom
    use m_flow
    use m_polygon
+   use m_reapol
+   use m_get_kbot_ktop
    implicit none
    integer :: ny
    double precision :: xx(kmxx), xxx(kmxx)

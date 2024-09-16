@@ -31,7 +31,8 @@
 !
 
       subroutine SETWINDOW(NSC, X1, Y1, X2, Y2, DXH, DYH)
-      use m_dscreens
+         use m_dscreens
+         use m_view_port
          implicit none
          double precision :: dx
          double precision :: dxh

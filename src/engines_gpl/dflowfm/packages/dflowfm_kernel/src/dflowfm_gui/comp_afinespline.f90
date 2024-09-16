@@ -36,6 +36,7 @@
 !>   where x and y are the spline control-point coordinates and
 !>   xf and yf are the sample point coordinates
 subroutine comp_Afinespline(N, numref, Nr, A, ierror)
+   use m_sample_spline
    implicit none
 
    integer, intent(in) :: N !< number of spline control points

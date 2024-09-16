@@ -1554,6 +1554,8 @@ contains
    contains
 
       subroutine find_field_pointer(fieldptr, fieldname)
+         use m_gettaus
+         use m_gettauswave
          double precision, pointer :: fieldptr(:)
          character(len=*), intent(in) :: fieldname
 

@@ -31,7 +31,7 @@
 !
 
       subroutine D1ARROWS(X, Y, Z, U, V, W, PSI0, VFAC)
-         use gridoperations
+         use m_three_two
          implicit none
          double precision :: psi0
          double precision :: vfac

@@ -32,17 +32,18 @@
 
   subroutine REFINECELLSANDFACES()
      use m_netw
-     use m_polygon
-     use M_SAMPLES
-     use M_FLOWTIMES
-     use m_physcoef
+     use m_samples
+     use m_flowtimes, only: dt_max
+     use m_physcoef, only: ag
      use m_missing
      use m_ec_interpolationsettings
      use m_sferic, only: jsferic, jasfer3D, dtol_pole
-     use m_ec_basic_interpolation, only: triinterp2, bilin_interp, averaging2, TerrorInfo
+     use m_ec_basic_interpolation, only: TerrorInfo
      use fm_external_forcings_data, only: transformcoef
-     use gridoperations
      use m_qnerror
+     use m_set_nod_adm
+     use m_dlinedis2
+     use m_new_link
 
      implicit none
 
