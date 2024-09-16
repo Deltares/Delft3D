@@ -78,7 +78,7 @@ contains
                 IN6, IN7, IN8, IN9, IN10, &
                 IN11
         INTEGER(kind = int_wp) :: ISEG
-        INTEGER(kind = int_wp) :: IB, IPBUCK, IPTCNT, LUNREP, IACTION, ATTRIB
+        INTEGER(kind = int_wp) :: IB, IPBUCK, IPTCNT, lunrep, IACTION, ATTRIB
 
         INTEGER(kind = int_wp) :: NOBUCK
         INTEGER(kind = int_wp) :: MAXBCK
@@ -91,6 +91,8 @@ contains
 
         INTEGER(kind = int_wp), PARAMETER :: MAXWARN = 50
         INTEGER(kind = int_wp), SAVE :: NOWARN = 0
+
+        call get_log_unit_number(lunrep)
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -126,11 +128,10 @@ contains
         BMAX = process_space_real(IP8)
 
         IF (NOBUCK > MAXBCK) THEN
-            CALL get_log_unit_number(LUNREP)
-            WRITE(LUNREP, *) 'ERROR in STAQTL'
-            WRITE(LUNREP, *) &
+            WRITE(lunrep, *) 'ERROR in STAQTL'
+            WRITE(lunrep, *) &
                     'Number of buckets too large'
-            WRITE(LUNREP, *) &
+            WRITE(lunrep, *) &
                     'Number of buckets: ', NOBUCK - 1, ' - maximum: ', MAXBCK - 1
             CALL stop_with_error()
         ENDIF
@@ -230,45 +231,45 @@ contains
                 !
                 process_space_real(IP11) = -999.0
                 BSUM = process_space_real(IBUCK(1))
-                IF (BSUM < PQUANT) THEN
-                    DO IB = 2, NOBUCK
-                        BSUM = BSUM + process_space_real(IBUCK(IB))
-                        IF (BSUM >= PQUANT) THEN
-                            process_space_real(IP11) = BCKLIM(IB) - &
-                                    (BSUM - PQUANT) * BDIFF / process_space_real(IBUCK(IB))
-                            EXIT
-                        ENDIF
-                    ENDDO
+               IF (BSUM < PQUANT) THEN
+                   DO IB = 2, NOBUCK
+                       BSUM = BSUM + process_space_real(IBUCK(IB))
+                       IF (BSUM >= PQUANT) THEN
+                           process_space_real(IP11) = BCKLIM(IB) - &
+                                   (BSUM - PQUANT) * BDIFF / process_space_real(IBUCK(IB))
+                           EXIT
+                       ENDIF
+                   ENDDO
 
-                    IF (BSUM < PQUANT) THEN
-                        process_space_real(IP11) = BMAX
+                   IF (BSUM < PQUANT .AND. BSUM /=  -999.0) THEN
+                       process_space_real(IP11) = BMAX
 
-                        IF (NOWARN < MAXWARN) THEN
-                            NOWARN = NOWARN + 1
-                            WRITE(*, '(a,i0)')      'Quantile could not be determined for segment ', ISEG
-                            WRITE(*, '(a,e12.4,a)') '    - too many values above ', BMAX, ' (assuming this value)'
+                       IF (NOWARN < MAXWARN) THEN
+                           NOWARN = NOWARN + 1
+                           WRITE(lunrep, '(a,i0)')      'Quantile could not be determined for segment ', ISEG
+                           WRITE(lunrep, '(a,e12.4,a)') '    - too many values above ', BMAX, ' (assuming this value)'
 
-                            IF (NOWARN == MAXWARN) THEN
-                                WRITE(*, '(a)') '(Further messages suppressed)'
-                            ENDIF
-                        ENDIF
-                    ENDIF
-                ELSE
-                    process_space_real(IP11) = BMIN
+                           IF (NOWARN == MAXWARN) THEN
+                               WRITE(lunrep, '(a)') '(Further messages suppressed)'
+                           ENDIF
+                       ENDIF
+                   ENDIF
+               ELSE
+                   process_space_real(IP11) = BMIN
 
-                    IF (NOWARN < MAXWARN) THEN
-                        CALL extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
-                        IF (ATTRIB /= 0) THEN
-                            NOWARN = NOWARN + 1
-                            WRITE(*, '(a,i0)')    'Quantile could not be determined for segment ', ISEG
-                            WRITE(*, '(a,e12.4)') '    - too many values below ', BMIN, ' (assuming this value)'
+                   IF (NOWARN < MAXWARN) THEN
+                       CALL extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
+                       IF (ATTRIB /= 0) THEN
+                           NOWARN = NOWARN + 1
+                           WRITE(lunrep, '(a,i0)')    'Quantile could not be determined for segment ', ISEG
+                           WRITE(lunrep, '(a,e12.4)') '    - too many values below ', BMIN, ' (assuming this value)'
 
-                            IF (NOWARN == MAXWARN) THEN
-                                WRITE(*, '(a)') '(Further messages suppressed)'
-                            ENDIF
-                        ENDIF
-                    ENDIF
-                ENDIF
+                           IF (NOWARN == MAXWARN) THEN
+                               WRITE(lunrep, '(a)') '(Further messages suppressed)'
+                           ENDIF
+                       ENDIF
+                   ENDIF
+               ENDIF
             ENDIF
 
             IP1 = IP1 + IN1

@@ -21,55 +21,54 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 module m_rd_stt
-    use m_waq_precision
-    use m_delwaq_statistical_process, only : setup_statistical
-    use m_logger_helper, only : stop_with_error
+   use m_waq_precision
+   use m_delwaq_statistical_process, only: setup_statistical
+   use m_logger_helper, only: stop_with_error
 
-    implicit none
+   implicit none
 
 contains
 
+   subroutine rd_stt(lunrep, sttfil, statprocesdef, allitems, status)
 
-    subroutine rd_stt(lunrep, sttfil, statprocesdef, allitems, status)
+      use m_waq_data_structure ! for definition and storage of data
+      use processet ! processet definitions
+      use rd_token ! tokenized reading
+      use m_error_status
 
-        use m_waq_data_structure      ! for definition and storage of data
-        use processet      ! processet definitions
-        use rd_token       ! tokenized reading
-        use m_error_status
+      implicit none
 
-        implicit none
+      integer(kind=int_wp), intent(inout) :: lunrep !< logical unit of report file
+      character(len=256), intent(inout) :: sttfil !< filename stt
+      type(procespropcoll), intent(inout) :: statprocesdef !< the statistical proces definition
+      type(itempropcoll), intent(inout) :: allitems !< all items of the proces system
+      type(error_status), intent(inout) :: status !< current error status
 
-        integer(kind = int_wp), intent(inout) :: lunrep          !< logical unit of report file
-        character(len = 256), intent(inout) :: sttfil          !< filename stt
-        type(procespropcoll), intent(inout) :: statprocesdef   !< the statistical proces definition
-        type(itempropcoll), intent(inout) :: allitems        !< all items of the proces system
-        type(error_status), intent(inout) :: status !< current error status
+      integer(kind=int_wp) :: iostat
+      integer(kind=int_wp) :: output_verbose_level
+      logical :: is_date_format
+      logical :: is_yyddhh_format
 
-        integer(kind = int_wp) :: iostat
-        integer(kind = int_wp) :: output_verbose_level
-        logical :: is_date_format
-        logical :: is_yyddhh_format
+      ilun = 0
+      lch(1) = sttfil
+      open (newunit=ilun(1), file=lch(1), status='old', iostat=iostat)
+      if (iostat /= 0) then
+         write (*, *) 'Error reading file: ', trim(lch(1))
+         call stop_with_error()
+      end if
+      npos = 1000
+      cchar = ';'
+      output_verbose_level = 0
+      is_date_format = .true.
+      is_yyddhh_format = .false.
 
-        ilun = 0
-        lch (1) = sttfil
-        open (newunit = ilun(1), file = lch(1), status = 'old', iostat = iostat)
-        if(iostat /= 0) then
-            write(*, *) 'Error reading file: ', trim(lch(1))
-            call stop_with_error()
-        endif
-        npos = 1000
-        cchar = ';'
-        output_verbose_level = 0
-        is_date_format = .true.
-        is_yyddhh_format = .false.
+      call status%initialize(0, 0, 0)
 
-        call status%initialize(0, 0, 0)
+      call setup_statistical(lunrep, npos, cchar, ilun, lch, &
+                             lstack, output_verbose_level, is_date_format, is_yyddhh_format, statprocesdef, allitems, &
+                             status, alone=.false.)
 
-        call setup_statistical (lunrep, npos, cchar, ilun, lch, &
-                lstack, output_verbose_level, is_date_format, is_yyddhh_format, statprocesdef, allitems, &
-                status)
+      close (ilun(1))
 
-        close(ilun(1))
-
-    end subroutine rd_stt
+   end subroutine rd_stt
 end module m_rd_stt

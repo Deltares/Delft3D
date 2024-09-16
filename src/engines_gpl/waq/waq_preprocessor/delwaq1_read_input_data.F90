@@ -161,7 +161,7 @@ contains
                 lstack, output_verbose_level, &
                 is_date_format, is_yyddhh_format, &
                 statprocesdef, allitems, &
-                status)
+                status, alone = .true.)
         write (lunrep, '(//'' Messages presented in this .lst file:'')')
         write (lunrep, '( /'' Number of WARNINGS            :'',I6)') status%iwar
         write (lunrep, '(  '' Number of ERRORS during input :'',I6)') status%ierr
