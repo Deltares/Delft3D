@@ -86,7 +86,6 @@ contains
       integer, allocatable :: mask(:)
       double precision, allocatable :: xdum(:), ydum(:)
       integer, allocatable :: kdum(:)
-      double precision, parameter :: SEA_LEVEL_PRESSURE = 101325d0
 
       ! Finish with all remaining old-style ExtForceFile quantities.
       if (mext == 0) then
@@ -760,7 +759,7 @@ contains
                if (.not. allocated(patm)) then
                   allocate (patm(ndx), stat=ierr)
                   call aerr('patm(ndx)', ierr, ndx)
-                  patm = SEA_LEVEL_PRESSURE
+                  patm = 100000d0
                end if
 
                if (.not. allocated(ec_pwxwy_x)) then

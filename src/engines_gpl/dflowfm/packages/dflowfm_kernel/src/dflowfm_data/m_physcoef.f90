@@ -136,6 +136,7 @@ module m_physcoef
    double precision :: xlozmidov ! Ozmidov length scale (m)
 
    double precision :: viskinair !< kinematic  viscosity
+   double precision :: backgroundairpressure !< background air pressure (Pa)
    double precision :: backgroundairtemperature !< background air   temp (C)
    double precision :: backgroundwatertemperature !< background water temp (C)
    double precision :: backgroundsalinity !< background salinity (ppt)
@@ -210,6 +211,7 @@ contains
       rhog = ag * rhomean
       c9of1 = 9d0 ! vonkar/log(c9of1 + dzb / z0)
 
+      backgroundairpressure = 101325d0 ! background air pressure (Pa)
       backgroundairtemperature = 20d0 ! background air   temp (degC)
       backgroundwatertemperature = 20d0 ! background water temp (degC)
       backgroundsalinity = 30d0 ! background salinity (ppt), in eq of state, if salinity not computed

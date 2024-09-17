@@ -113,12 +113,12 @@ contains
       use m_flowgeom, only: ln, lnx, ndx
       use precision_basics
       use m_flowparameters, only: eps10
+      use m_physcoef, only: backgroundairpressure
       use dfm_error
 
       double precision, intent(in) :: time_in_seconds !< Current time when setting wind data
       integer, intent(out) :: iresult !< Error indicator
 
-      double precision, parameter :: SEA_LEVEL_PRESSURE = 101325d0
       integer :: ec_item_id, first, last, link, i, k
       logical :: first_time_wind
 
@@ -225,7 +225,7 @@ contains
       if (item_atmosphericpressure /= ec_undef_int) then
          do k = 1, ndx
             if (comparereal(patm(k), dmiss, eps10) == 0) then
-               patm(k) = SEA_LEVEL_PRESSURE
+               patm(k) = backgroundairpressure
             end if
          end do
       end if
