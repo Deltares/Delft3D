@@ -1,4 +1,4 @@
-subroutine write_wave_map_netcdf (sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, singleprecision, sif_mmax, sif_nmax, sif_veg, output_ice)
+subroutine write_wave_map_netcdf (sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, singleprecision, sif_mmax, sif_nmax, sif_veg, output_ice, output_veg)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2024.                                
@@ -51,6 +51,7 @@ subroutine write_wave_map_netcdf (sg, sof, sif, n_swan_grids, wavedata, casl, pr
     logical                       , intent(in)  :: prevtime     ! true: the time to be written is the "previous time"
     logical                       , intent(in)  :: singleprecision
     integer                       , intent(in)  :: output_ice   ! switch for writing ice quantities
+    integer                       , intent(in)  :: output_veg   ! switch for writing vegetation quantities
     integer                       , intent(in)  :: sif_mmax
     integer                       , intent(in)  :: sif_nmax
     real   , dimension(sif_mmax,sif_nmax)       :: sif_veg
@@ -269,7 +270,9 @@ subroutine write_wave_map_netcdf (sg, sof, sif, n_swan_grids, wavedata, casl, pr
        idvar_fy      = nc_def_var(idfile, 'fy'      , precision, 3, (/iddim_mmax, iddim_nmax, iddim_time/), ''    , 'Wave induced force (y-component)'    , 'n/m2', .true., filename)
        idvar_windu   = nc_def_var(idfile, 'windu'   , precision, 3, (/iddim_mmax, iddim_nmax, iddim_time/), ''    , 'Wind velocity (x-component)'    , 'm/s', .true., filename)
        idvar_windv   = nc_def_var(idfile, 'windv'   , precision, 3, (/iddim_mmax, iddim_nmax, iddim_time/), ''    , 'Wind velocity (y-component)'    , 'm/s', .true., filename)
+       if (output_veg > 0) then
        idvar_nstems  = nc_def_var(idfile, 'nstems'  , precision, 3, (/iddim_mmax, iddim_nmax, iddim_time/), ''    , 'Stem density'    , '1/m2', .true., filename)
+       end if
        if (output_ice > 0) then
           idvar_icefrac = nc_def_var(idfile, 'icefrac' , precision, 3, (/iddim_mmax, iddim_nmax, iddim_time/), ''    , 'Area fraction covered by ice'   , '1', .true., filename)
           if (output_ice == 1) then
@@ -321,7 +324,9 @@ subroutine write_wave_map_netcdf (sg, sof, sif, n_swan_grids, wavedata, casl, pr
        ierror = nf90_inq_varid(idfile, 'fy'      , idvar_fy     ); call nc_check_err(ierror, "inq_varid fy     ", filename)
        ierror = nf90_inq_varid(idfile, 'windu'   , idvar_windu  ); call nc_check_err(ierror, "inq_varid windu  ", filename)
        ierror = nf90_inq_varid(idfile, 'windv'   , idvar_windv  ); call nc_check_err(ierror, "inq_varid windv  ", filename)
+       if (output_veg > 0) then
        ierror = nf90_inq_varid(idfile, 'nstems'  , idvar_nstems ); call nc_check_err(ierror, "inq_varid nstems ", filename)
+       end if
        if (output_ice > 0) then
           ierror = nf90_inq_varid(idfile, 'icefrac' , idvar_icefrac); call nc_check_err(ierror, "inq_varid icefrac", filename)
           if (output_ice == 1) then
@@ -369,7 +374,9 @@ subroutine write_wave_map_netcdf (sg, sof, sif, n_swan_grids, wavedata, casl, pr
     ierror = nf90_put_var(idfile, idvar_fy     , sof%fy        , start=(/ 1, 1, wavedata%output%count /), count = (/ sof%mmax, sof%nmax, 1 /)); call nc_check_err(ierror, "put_var fy     ", filename)
     ierror = nf90_put_var(idfile, idvar_windu  , sof%windu     , start=(/ 1, 1, wavedata%output%count /), count = (/ sof%mmax, sof%nmax, 1 /)); call nc_check_err(ierror, "put_var windu  ", filename)
     ierror = nf90_put_var(idfile, idvar_windv  , sof%windv     , start=(/ 1, 1, wavedata%output%count /), count = (/ sof%mmax, sof%nmax, 1 /)); call nc_check_err(ierror, "put_var windv  ", filename)
+    if (output_veg > 0) then
     ierror = nf90_put_var(idfile, idvar_nstems , sif_veg     , start=(/ 1, 1, wavedata%output%count /), count = (/ sof%mmax, sof%nmax, 1 /)); call nc_check_err(ierror, "put_var nstems ", filename)
+    end if
     if (output_ice > 0) then
        ierror = nf90_put_var(idfile, idvar_icefrac, sif%ice_frac  , start=(/ 1, 1, wavedata%output%count /), count = (/ sof%mmax, sof%nmax, 1 /)); call nc_check_err(ierror, "put_var icefrac", filename)
        if (output_ice == 1) then

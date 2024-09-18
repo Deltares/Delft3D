@@ -63,6 +63,7 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
    integer                                       :: offset
    real(fp)                                      :: wave_timezone
    real(fp)                                      :: wave_timmin
+   real :: mult
    real(fp)        , dimension(:,:), pointer     :: patm_fp
    real(fp)        , dimension(:,:), pointer     :: windu_fp
    real(fp)        , dimension(:,:), pointer     :: windv_fp
@@ -146,8 +147,12 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
          !
          ! Vegetation map
          if (dom%vegetation == 1) then
-            write(*,'(a)') '  Allocate and read vegetation map'
-            call get_vegi_map (swan_input_fields,dom%vegfil)
+            if (dom%vegfil /= '') then
+               write(*,'(a)') '  Allocate and read vegetation map'
+               call get_vegi_map (swan_input_fields,dom%vegfil)
+            else
+               swan_input_fields%veg = dom%veg_nstems
+            end if
          endif
          ! If flow results are used
          !
@@ -296,21 +301,25 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
                                 & 'MUDNOW', extr_var1, extr_var2, &
                                 & sumvars , 0.0)
          endif
-         if (dom%vegetation == 2) then
+         mult = 1.0
+         if (dom%vegetation == 2 .or. (dom%vegetation == 1 .and. dom%vegfil /= '')) then
             !
             ! Write Vegetation map file
             !
             write(*,'(a)') '  Write Vegetation map file'
-            sumvars      = .true.
+            !
+            ! mult needed for writing correct stem density to output
+            ! in SWAN, the applied density is veg*nstems
+            if (dom%vegetation == 1) then
+               mult = dom%veg_nstems
+            end if
+            !
             extr_var1 = .false.
-            extr_var2 = .false.
             call write_swan_file (swan_input_fields%veg         , &
-                                & swan_input_fields%s1veg       , &
                                 & swan_input_fields%mmax        , &
                                 & swan_input_fields%nmax        , &
                                 & swan_grids(i_swan)%covered    , &
-                                & 'VEGNOW', extr_var1, extr_var2, &
-                                & sumvars )
+                                & 'VEGNOW', extr_var1)
          endif
          if (swan_run%icedamp == 2 .and. dom%ice == 1) then
             !
@@ -380,7 +389,7 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
                   write(*,'(a,i10,a,f10.3)') '  Write WAVE NetCDF map file, nest ',i_swan,' time ',wavedata%time%timmin
                   call write_wave_map_netcdf (swan_grids(i_swan), swan_output_fields, swan_input_fields, &
                                      & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
-                                     & swan_run%netcdf_sp, swan_input_fields%mmax,swan_input_fields%nmax, swan_input_fields%veg, swan_run%output_ice)
+                                     & swan_run%netcdf_sp, swan_input_fields%mmax, swan_input_fields%nmax, swan_input_fields%veg*mult, swan_run%output_ice, swan_run%output_veg)
                endif
                call setoutputcount(wavedata%output, wavedata%output%count + 1)
             endif
@@ -423,7 +432,7 @@ subroutine swan_tot (n_swan_grids, n_flow_grids, wavedata, selectedtime)
                write(*,'(a,i10,a,f10.3)') '  Write WAVE NetCDF map file, nest ',i_swan,' time ',wavedata%time%timmin
                call write_wave_map_netcdf (swan_grids(i_swan), swan_output_fields, swan_input_fields, &
                                   & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
-                                  & swan_run%netcdf_sp, swan_input_fields%mmax,swan_input_fields%nmax, swan_input_fields%veg, swan_run%output_ice)
+                                  & swan_run%netcdf_sp, swan_input_fields%mmax, swan_input_fields%nmax, swan_input_fields%veg*mult, swan_run%output_ice, swan_run%output_veg)
             endif
          endif
          if (swan_run%output_points .and. swan_run%output_table) then

@@ -216,6 +216,7 @@ module swan_input
        integer                                 :: swdis
        integer                                 :: msurpnts         ! minimum number of surrounding valid source-points for a target-point to be covered. default: 3, Delft3D: 4
        integer                                 :: output_ice
+       integer :: output_veg
        !
        integer       , dimension(4)            :: ts_wl
        integer       , dimension(4)            :: ts_xv
@@ -1569,11 +1570,16 @@ subroutine read_keyw_mdw(sr          ,wavedata   ,keywbased )
           !
           call prop_get(tmp_ptr, '*', 'VegetationMap', dom%vegfil)
           if (dom%vegfil == '') then
-             write(*,*) 'SWAN_INPUT: vegetation map not found for domain ', domainnr
-             call handle_errors_mdw(sr)
+               write (*, *) 'SWAN_INPUT: no vegetation map used for domain ', domainnr
+               !call handle_errors_mdw(sr)
           endif
        endif       
        !
+       sr%output_veg = 0
+       if (dom%vegetation > 0) then
+          sr%output_veg = 1
+       end if
+         !
        ! Read directional space
        !
        call prop_get(tmp_ptr, '*', 'NDir', dom%ndir)
@@ -2947,6 +2953,28 @@ subroutine write_swan_inp (wavedata, calccount, &
     !
     !     Vegetation map
     !
+      if (dom%vegetation == 1) then
+         if (dom%vegfil /= '') then
+            write (luninp, '(1X,A)') '$'
+            lijn = 'INPGRID _'
+            line(1:19) = 'NPLANTS CURV 0. 0. '
+            write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
+            write (luninp, '(1X,A)') lijn
+            write (luninp, '(1X,A)') trim(line)
+            line = ' '
+            !
+            !     File-name vegetation map (use temporary file)
+            !
+            line = 'READINP NPLANTS 1.0 '''//trim(vegfil)//''' 4 0 FREE'
+            write (luninp, '(1X,A)') trim(line)
+         end if
+         line = ' '
+         line(1:10) = 'VEGETATION'
+         write (line(15:), '(F6.2,1X,F7.4,1X,1I4,1X,F6.2)') dom%veg_height, dom%veg_diamtr, dom%veg_nstems, dom%veg_drag
+         write (luninp, '(1X,A)') line
+         line = ' '
+      end if
+      !
     if (dom%vegetation == 2) then
        write (luninp, '(1X,A)') '$'
        lijn = 'INPGRID _'
@@ -3593,7 +3621,7 @@ subroutine write_swan_inp (wavedata, calccount, &
        ! The following do-loop is used to write an underscore (_) at the end of the last line with varnam elements
        ! Is there a more easy way?
        !
-       do j = 1, CEILING(real(size(varnam1))/6.0)
+         do j = 1, ceiling(real(size(varnam1)) / 6.0)
           m = min(6, size(varnam1)-(j-1)*6)
           lijn = ' '
           write(lijn, '(A,I1.1,A)') "(", m, "(2X,A),'_')"
@@ -3627,7 +3655,7 @@ subroutine write_swan_inp (wavedata, calccount, &
        ! The following do-loop is used to write an underscore (_) at the end of the last line with varnam elements
        ! Is there a more easy way?
        !
-       do j = 1, CEILING(real(size(varnam2))/6.0)
+         do j = 1, ceiling(real(size(varnam2)) / 6.0)
           m = min(6, size(varnam2)-(j-1)*6)
           lijn = ' '
           write(lijn, '(A,I1.1,A)') "(", m, "(2X,A),' _')"
@@ -4212,7 +4240,7 @@ subroutine adjustinput(sr)
     type(tree_data)   , pointer :: input_tree
     type(swan_dom)    , pointer :: dom
     !
-    filnam = TRIM(sr%filnam) // '.opt'
+      filnam = trim(sr%filnam)//'.opt'
     inquire (file = trim(filnam), exist = exists)
     if (.not.exists) return
     !

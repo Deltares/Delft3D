@@ -102,10 +102,9 @@ module swan_flow_grid_maps
        real   , dimension(:,:), pointer         :: floe_dia        ! floe_diameter
        real   , dimension(:,:), pointer         :: s1mud           ! mud level
        real   , dimension(:,:), pointer         :: dpsmud          ! mud related depth in water level points
-       real   , dimension(:,:), pointer         :: veg             ! vegetation map - densities of plants per m2
+       real   , dimension(:,:), pointer         :: veg             ! vegetation map - densities of plants [m-2]
        real   , dimension(:,:), pointer         :: diaveg          ! vegetation map - stem diameter of plants [m]
        real   , dimension(:,:), pointer         :: veg_stemheight  ! vegetation map - stem height of plants [m]
-       real   , dimension(:,:), pointer         :: s1veg           ! vegetation level - dummy field of zeros
     end type input_fields                       
     !                                           
     type output_fields                          
@@ -599,7 +598,6 @@ subroutine alloc_input_fields (g, inpfld, mode, ice)
    allocate (inpfld%veg  (inpfld%mmax,inpfld%nmax))
    allocate (inpfld%diaveg        (inpfld%mmax,inpfld%nmax))
    allocate (inpfld%veg_stemheight(inpfld%mmax,inpfld%nmax))
-   allocate (inpfld%s1veg         (inpfld%mmax,inpfld%nmax))
    !
    ! Initialise arrays
    !
@@ -610,7 +608,6 @@ subroutine alloc_input_fields (g, inpfld, mode, ice)
    inpfld%veg   = 0.
    inpfld%diaveg         = 0.
    inpfld%veg_stemheight = 0.
-   inpfld%s1veg = 0.
    inpfld%kfu   = 0
    inpfld%windu = 0.
    inpfld%windv = 0.
@@ -696,7 +693,6 @@ subroutine dealloc_input_fields (inpfld, mode, ice)
    deallocate (inpfld%veg  , stat=ierr)
    deallocate (inpfld%diaveg        , stat=ierr)
    deallocate (inpfld%veg_stemheight, stat=ierr)
-   deallocate (inpfld%s1veg, stat=ierr)
    deallocate (inpfld%windu, stat=ierr)
    deallocate (inpfld%windv, stat=ierr)
    if (mode == flow_mud_online) then
