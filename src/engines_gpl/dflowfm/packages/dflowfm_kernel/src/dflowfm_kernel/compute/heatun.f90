@@ -76,9 +76,9 @@ else
     afrac = 1d0
 endif
 
-presn   = 1d-2*paver                 ! Air pressure (mbar)
-rhumn   = 1d-2*backgroundhumidity    ! ( )
-cloun   = 1d-2*backgroundcloudiness  ! ( )
+presn   = 1d-2*BACKGROUND_AIR_PRESSURE ! Air pressure (mbar)
+rhumn   = 1d-2*BACKGROUND_HUMIDITY    ! ( )
+cloun   = 1d-2*BACKGROUND_CLOUDINESS  ! ( )
 ce      = Dalton                     ! Dalton  number = 1.50e-3 (Gill, 1982)           evaporative flux
 ch      = Stanton                    ! Stanton number = 1.45e-3 (Friehe&Schmitt, 1976) convective heat flux
 qsun    = 0d0

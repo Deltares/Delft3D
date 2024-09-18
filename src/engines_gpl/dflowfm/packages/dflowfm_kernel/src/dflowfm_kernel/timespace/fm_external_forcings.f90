@@ -113,12 +113,12 @@ contains
       use m_flowgeom, only: ln, lnx, ndx
       use precision_basics
       use m_flowparameters, only: eps10
+      use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use dfm_error
 
       double precision, intent(in) :: time_in_seconds !< Current time when setting wind data
       integer, intent(out) :: iresult !< Error indicator
 
-      double precision, parameter :: SEA_LEVEL_PRESSURE = 101325d0
       integer :: ec_item_id, first, last, link, i, k
       logical :: first_time_wind
 
@@ -225,7 +225,7 @@ contains
       if (item_atmosphericpressure /= ec_undef_int) then
          do k = 1, ndx
             if (comparereal(patm(k), dmiss, eps10) == 0) then
-               patm(k) = SEA_LEVEL_PRESSURE
+               patm(k) = BACKGROUND_AIR_PRESSURE
             end if
          end do
       end if
@@ -585,7 +585,7 @@ contains
       if (ext_force_bnd_used) then
          ! first read the bc file (new file format for boundary conditions)
          call read_location_files_from_boundary_blocks(trim(md_extfile_new), nx, kce, num_bc_ini_blocks, &
-                                                  numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+                                                       numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
       end if
 
       do while (ja_ext_force == 1) ! read *.ext file
@@ -621,7 +621,7 @@ contains
    end subroutine findexternalboundarypoints
 
    subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
-                                                  numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+                                                       numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
       use properties
       use timespace
       use tree_data_types
@@ -2381,8 +2381,9 @@ contains
       end if
 
       if (ja_computed_airdensity == 1) then
-         if (.not. ((japatm == 1) .and. tair_available .and. dewpoint_available)) then
-            call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected in ext-file in combination with keyword computedAirdensity in mdu-file.')
+         if ( (japatm /= 1) .or. .not. tair_available .or. .not. dewpoint_available .or. &
+            (item_atmosphericpressure == ec_undef_int) .or. (item_airtemperature == ec_undef_int) .or. (item_humidity == ec_undef_int) ) then
+            call mess(LEVEL_ERROR, 'Quantities airpressure, airtemperature and dewpoint are expected, as separate quantities (e.g., QUANTITY = airpressure), in ext-file in combination with keyword computedAirdensity in mdu-file.')
          else
             if (ja_airdensity == 1) then
                call mess(LEVEL_ERROR, 'Quantity airdensity in ext-file is unexpected in combination with keyword computedAirdensity = 1 in mdu-file.')

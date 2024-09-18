@@ -136,11 +136,12 @@ module m_physcoef
    double precision :: xlozmidov ! Ozmidov length scale (m)
 
    double precision :: viskinair !< kinematic  viscosity
-   double precision :: backgroundairtemperature !< background air   temp (C)
    double precision :: backgroundwatertemperature !< background water temp (C)
    double precision :: backgroundsalinity !< background salinity (ppt)
-   double precision :: backgroundcloudiness !< (%) cloudiness        for non-specified points
-   double precision :: backgroundhumidity !< (%) relative humidity for non-specified points
+   double precision, parameter :: BACKGROUND_AIR_PRESSURE = 101325d0 !< background air pressure (Pa)
+   double precision, parameter :: BACKGROUND_AIR_TEMPERATURE = 20d0 !< background air temperature (degrees Celsius)
+   double precision, parameter :: BACKGROUND_CLOUDINESS = 50d0 !< (%) cloudiness for non-specified points
+   double precision, parameter :: BACKGROUND_HUMIDITY = 50d0 !< (%) relative humidity for non-specified points
    double precision :: secchidepth !< (m) secchidepth
    double precision :: secchidepth2 !< (m) secchidepth2
    double precision :: secchidepth2fraction !< (m) fraction of total absorbed by profile 2
@@ -210,11 +211,8 @@ contains
       rhog = ag * rhomean
       c9of1 = 9d0 ! vonkar/log(c9of1 + dzb / z0)
 
-      backgroundairtemperature = 20d0 ! background air   temp (degC)
       backgroundwatertemperature = 20d0 ! background water temp (degC)
       backgroundsalinity = 30d0 ! background salinity (ppt), in eq of state, if salinity not computed
-      backgroundcloudiness = 50d0 ! (%) cloudiness        for non-specified points
-      backgroundhumidity = 50d0 !<(%) relative humidity for non-specified points
       secchidepth = 1d0 !< (m) secchidepth
       secchidepth2 = 0d0 !< (m) secchidepth2
       secchidepth2fraction = 0d0 !< (m) fraction of total absorbed by profile 2

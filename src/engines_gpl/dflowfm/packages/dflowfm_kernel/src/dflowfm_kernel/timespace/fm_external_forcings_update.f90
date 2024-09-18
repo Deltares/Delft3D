@@ -44,6 +44,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_airdensity, only: get_airdensity
    use dfm_error
    use m_laterals, only: numlatsg
+   use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    implicit none
 
    integer, parameter :: HUMIDITY_AIRTEMPERATURE_CLOUDINESS = 1
@@ -68,6 +69,7 @@ contains
    !> set field oriented boundary conditions
    module subroutine set_external_forcings(time_in_seconds, initialization, iresult)
       use m_set_frcu_mor
+      use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       double precision, intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
@@ -77,9 +79,14 @@ contains
       success = .true.
 
       if (allocated(patm)) then
-         ! To prevent any pressure jumps at the boundary, set (initial) patm in interior to PavBnd.
-         ! May of course be overridden later by spatially varying patm values.
-         patm = PavBnd
+         ! Set the initial value to PavBnd (if provided by user) or BACKGROUND_AIR_PRESSURE with each update.
+         ! An initial/reference value is required since .spw files may contain pressure drops/differences.
+         ! patm may later be overridden by spatially varying air pressure values.
+         if (PavBnd > 0) then
+            patm(:) = PavBnd
+         else
+            patm(:) = BACKGROUND_AIR_PRESSURE
+         end if
       end if
 
       call retrieve_icecover(time_in_seconds)
@@ -91,7 +98,7 @@ contains
          call get_timespace_value_by_item_array_consider_success_value(item_atmosphericpressure, patm, time_in_seconds)
          call get_timespace_value_by_item_array_consider_success_value(item_airtemperature, tair, time_in_seconds)
          call get_timespace_value_by_item_array_consider_success_value(item_humidity, rhum, time_in_seconds)
-         call get_airdensity(patm, tair, rhum, airdensity, ierr)
+         call get_airdensity(patm, tair, rhum, airdensity, iresult)
       end if
 
       if (update_wind_stress_each_time_step == 0) then ! Update wind in set_external_forcing (each user timestep)
