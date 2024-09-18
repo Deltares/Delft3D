@@ -41,6 +41,7 @@ subroutine make_orthocenters(dmaxnonortho, maxiter)
    use gridoperations
    use m_readyy
    use m_qnerror
+   use m_cirr
 
    implicit none
 

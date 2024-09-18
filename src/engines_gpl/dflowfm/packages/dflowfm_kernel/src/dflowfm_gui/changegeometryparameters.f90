@@ -41,6 +41,9 @@
       use m_fixedweirs
       use dflowfm_version_module, only: company, product_name
       use m_helpnow
+      use m_ini_sferic
+      use m_save_keys
+      use m_restore_keys
 
       implicit none
 

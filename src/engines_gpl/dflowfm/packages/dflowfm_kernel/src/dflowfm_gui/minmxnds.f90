@@ -37,6 +37,7 @@
     use m_missing
     use m_depmax
     use m_drawthis
+    use m_inview
     
     implicit none
     integer :: i
@@ -44,7 +45,6 @@
     double precision, external :: znod
     double precision :: zn
     integer :: n, ja2
-    logical inview
 
     if (jaauto > 0) then
        rmin = 1d30; ndmin = 0

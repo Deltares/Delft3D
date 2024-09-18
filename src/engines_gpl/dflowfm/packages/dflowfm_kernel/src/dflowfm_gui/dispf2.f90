@@ -32,6 +32,7 @@
 
 !
       subroutine DISPF2(X, Y, N, NMAX, NCOL)
+         use m_set_col
          implicit none
          integer :: i
          integer :: n

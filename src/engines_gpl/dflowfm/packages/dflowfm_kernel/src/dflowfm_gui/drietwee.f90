@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_three_two
+   implicit none
+contains
    subroutine DRIETWEE(XD, YD, ZD, X, Y, Z)
       use m_howtoview
-      implicit none
+
       double precision XD, YD, ZD, X, Y, Z
 
       if (JVIEW == 1) then ! NORMAL
@@ -57,3 +59,4 @@
       end if
       return
    end subroutine DRIETWEE
+end module m_three_two

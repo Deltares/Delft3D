@@ -34,6 +34,8 @@
          use m_netw
          use gridoperations
          use m_set_nod_adm
+         use m_qn_read_error
+         use m_qn_eof_error
 
          implicit none
          integer :: MNET, JA, JADOORLADEN

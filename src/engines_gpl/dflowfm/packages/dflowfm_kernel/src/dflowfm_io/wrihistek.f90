@@ -29,18 +29,18 @@
 
 !
 !
-
+module m_wrihistek
+   implicit none
+contains
    subroutine wrihistek(tim)
       use m_observations
-      use m_monitoring_crosssections
-      use m_flow
-      use m_flowgeom
+      use m_monitoring_crosssections, only: ncrs, crs
+      use m_flow, only: hs, ucy, ucx, s1, ag
+      use m_flowgeom, only: bl
       use m_ship
-      use unstruc_model
       use m_flowtimes
       use unstruc_files, only: defaultFilename
 
-      implicit none
       integer :: n, ntbal, k1, k2
       double precision :: tim, ue, te
       double precision :: vv1, vv2, eh1, eh2, ee1, ee2, ft, dinch, wid, h1, h2, rr1, rr2, xl1, xl2, df1, df2, hb, AA1, AA2, QQ, s12, froude2
@@ -121,3 +121,4 @@
       end if
 
    end subroutine wrihistek
+end module m_wrihistek

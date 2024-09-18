@@ -36,6 +36,8 @@
          use string_module, only: find_first_letter, find_first_char
          use m_drawthis
          use m_qnerror
+         use m_qn_read_error
+         use m_qn_eof_error
          implicit none
          integer :: ierr
          integer :: k

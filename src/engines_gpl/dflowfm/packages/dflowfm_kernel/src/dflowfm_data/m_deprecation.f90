@@ -96,7 +96,7 @@ contains
 
    !> Retrieve optional additional information for a keyword.
    subroutine print_additional_keyword_information(chapter, key, set, prefix)
-      use unstruc_messages, only: LEVEL_INFO, mess
+      use messagehandling, only: LEVEL_INFO, mess
       character(len=*), intent(in) :: chapter !< chapter name
       character(len=*), intent(in) :: key !< keyword name
       character(len=*), intent(in) :: prefix !< Message string prefix

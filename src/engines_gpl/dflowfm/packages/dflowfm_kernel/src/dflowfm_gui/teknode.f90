@@ -33,6 +33,7 @@
   subroutine TEKNODE(KP, NCOL)
      use m_netw
      use unstruc_colors
+     use m_set_col
      implicit none
      integer :: KP, NCOL
      integer :: k1

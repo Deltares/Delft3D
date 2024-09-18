@@ -29,9 +29,10 @@
 
 !
 !
-
+module m_dispform_scale
+   implicit none
+contains
   subroutine DISPFORMscale(value, fmt, NDEC)
-     implicit none
      integer :: n1
      integer :: n2
      integer :: n3 ! nr of digits behind decimal dot
@@ -67,3 +68,4 @@
      write (fmt(6:6), '(i1)') n3
      return
   end
+end module m_dispform_scale

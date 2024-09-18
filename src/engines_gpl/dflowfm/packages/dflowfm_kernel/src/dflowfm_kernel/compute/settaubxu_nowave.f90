@@ -35,6 +35,7 @@
       use m_flow
       use m_physcoef
       use m_get_Lbot_Ltop
+      use m_get_cz
       implicit none
 
       logical, intent(in) :: use_u1 !< Flag for using `u1` (.true.) or `u0` (.false.) in computing `taubxu` in subroutine `settaubxu_nowave`

@@ -31,7 +31,7 @@
 !
 
       subroutine EDITGRID(MODE, NFLD, KEY)
-         use unstruc_colors
+         use unstruc_colors, only: ncolrg, ncoldg
          use m_grid
          use m_modfld
          use m_helpnow
@@ -40,6 +40,9 @@
          use m_putget_un
          use m_okay
          use m_botlin
+         use m_draw_nu
+         use m_tek_num_netcells
+         use m_restore_grd
          implicit none
          integer :: mode, nfld, key
 

@@ -87,6 +87,9 @@
       use m_plotfil
       use m_perspx
       use m_zeronet
+      use m_paramtext
+      use m_increase_grid
+      use m_ini_sferic
       implicit none
 
       double precision :: dx

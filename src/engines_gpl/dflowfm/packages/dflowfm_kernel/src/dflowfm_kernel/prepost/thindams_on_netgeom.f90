@@ -41,6 +41,9 @@ subroutine thindams_on_netgeom()
    use kdtree2Factory
    use m_wall_clock_time
    use m_delpol
+   use m_find_crossed_links_kdtree2
+   use m_get_link_neighboring_cell_coords
+   use m_append_crspath_to_pol
    implicit none
 
    double precision, dimension(:), allocatable :: dSL

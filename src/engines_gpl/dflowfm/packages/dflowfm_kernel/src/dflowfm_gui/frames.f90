@@ -35,6 +35,7 @@ contains
 !
    subroutine FRAMES(NCOL)
       use M_DEVICES
+      use m_set_col
 
       integer :: ncol
       if (NOPSYS >= 2) return

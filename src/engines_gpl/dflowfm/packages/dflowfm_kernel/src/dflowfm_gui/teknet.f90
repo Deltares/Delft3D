@@ -33,12 +33,15 @@
       subroutine TEKNET(ja)
 
          use m_netw
-         use unstruc_colors
          use geometry_module, only: dbdistance
          use unstruc_display
          use m_drawthis
          use m_halt2
          use m_fbox
+         use m_tek_link
+         use m_cirr
+         use m_set_col
+         use m_inview
 
          implicit none
          integer :: ja
@@ -49,7 +52,6 @@
          integer :: k3
          integer :: L, LL
          double precision :: d1, d2, x, y
-         logical inview
 
          if (NDRAW(2) <= 0 .or. NUML == 0) return
 

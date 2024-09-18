@@ -29,23 +29,22 @@
 
 !
 !
-
+module m_tek_num_netcells
+   implicit none
+contains
       subroutine TEKnumnetcells(jatel)
-         use m_grid
-         use m_netw
+         use m_grid, only: ijyes, nc, mc, xc, yc
+         use m_netw, only: nump, xzw, yzw
          use m_polygon
-         use m_missing
-         use unstruc_display
+         use m_missing, only: dmiss, jins
          use geometry_module, only: dbpinpol
-         use gridoperations
+         use gridoperations, only: findcells
          use m_depmax
          use m_htext
+         use m_inview
          
-         implicit none
          integer :: i, j, n, jatel, in, k, im, jm, mxnum
          double precision :: x, y, z
-
-         logical inview
 
          call savepol()
 
@@ -130,3 +129,4 @@
          end if
 
       end subroutine TEKnumnetcells
+end module m_tek_num_netcells

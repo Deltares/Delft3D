@@ -31,14 +31,13 @@
 !
 
    subroutine EDITPOL(MODE, KEY, NETFLOW)
-      use m_sferic
-      use M_POLYGON
+      use m_sferic, only: jsfertek
+      use m_polygon
       use network_data, only: netstat, NETSTAT_CELLS_DIRTY
-      use M_MISSING
-      use m_partitioninfo
-      use unstruc_colors
+      use m_missing, only: dmiss
+      use m_partitioninfo, only: jampi, my_rank
       use unstruc_model
-      use unstruc_display
+      use unstruc_display, only: numzoomshift, ndrawpol, rcir, ncoltx
       use m_flow, only: kmx, jasal, iturbulencemodel
       use unstruc_api
       use dfm_error
@@ -52,6 +51,11 @@
       use m_halt2
       use m_delpol
       use m_wripol
+      use m_n_plot_plus_min
+      use m_k_plot_plus_min
+      use m_draw_nu
+      use m_disp2c
+      use m_set_col
       implicit none
       integer :: jaquit, jazoomshift, nshift
       integer :: k

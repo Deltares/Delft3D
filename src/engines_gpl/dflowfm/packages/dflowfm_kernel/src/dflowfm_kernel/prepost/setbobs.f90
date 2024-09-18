@@ -29,23 +29,17 @@
 
 !
 !
-
+module m_set_bobs
+   implicit none
+contains
  subroutine setbobs() ! and set blu, weigthed depth at u point
     use m_netw
     use m_flowgeom
     use m_flow
-    ! DEBUG
-    use m_flowtimes
-    use m_sediment
-    use m_oned_functions
-    use unstruc_channel_flow
-    use m_structures
+    use m_sediment, only: stm_included
+    use m_oned_functions, only: setbobs_1d
+    use m_structures, only: network
     use m_longculverts
-    use unstruc_caching, only: cacheRetrieved
-    !\ DEBUG
-    use m_missing
-
-    implicit none
 
     integer L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, mis, i, numcoords
     double precision :: bl1, bl2, blv, bln, zn1, zn2, zn3, wn, alf, skewn, xt, yt, xn, yn
@@ -376,3 +370,4 @@
 
     jaupdbndbl = 0 ! after first run of setbobs set to 0 = no update
  end subroutine setbobs
+end module m_set_bobs

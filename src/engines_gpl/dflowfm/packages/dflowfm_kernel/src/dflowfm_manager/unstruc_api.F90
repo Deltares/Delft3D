@@ -51,6 +51,7 @@ contains
       use dflowfm_version_module, only: base_name
       use gridoperations
       use m_samples
+      use m_increase_grid
 
 !if (.not. allocated(xk)) then
       !   allocate( xk (1), yk (1), zk (1) , NOD (1) , KC (1) , NMK (1) , RNOD(1)   )
@@ -101,6 +102,7 @@ contains
       use m_flowgeom
       use m_monitoring_crosssections
       use unstruc_model
+      use m_qn_read_error
       implicit none
       integer :: ierr, minp, mout, L1, istat, i
       integer :: MODE, NUM, NWHAT, KEY
@@ -327,6 +329,8 @@ contains
       use m_gui
       use dfm_error
       use m_drawthis
+      use m_draw_nu
+
       integer, intent(out) :: jastop !< Communicate back to caller: whether to stop computations (1) or not (0)
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
       integer :: key

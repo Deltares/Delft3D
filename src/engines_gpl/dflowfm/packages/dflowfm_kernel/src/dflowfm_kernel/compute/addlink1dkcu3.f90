@@ -36,6 +36,7 @@
     use m_missing
     use unstruc_channel_flow
     use precision_basics
+    use m_get_prof_1D
 
     implicit none
 

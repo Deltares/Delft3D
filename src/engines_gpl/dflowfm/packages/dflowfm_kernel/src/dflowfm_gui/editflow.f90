@@ -52,6 +52,10 @@
         use m_botlin
         use m_getint
         use m_get_kbot_ktop
+        use m_n_plot_plus_min
+        use m_k_plot_plus_min
+        use m_draw_nu
+        use m_set_col
         implicit none
         integer :: MODE, KEY, kb, kt, k, NL
         integer :: newmode

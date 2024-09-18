@@ -29,10 +29,12 @@
 
 !
 !
-
+module m_restore_keys
+   implicit none
+contains
       subroutine RESTOREKEYS()
          use m_keycodes
-         implicit none
+
          integer :: i
 
          do I = 1, MAXKEY
@@ -40,3 +42,4 @@
          end do
          return
       end
+end module m_restore_keys

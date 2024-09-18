@@ -36,6 +36,7 @@
          use m_grid
          use M_ARCINFO
          use M_MISSING
+         use m_increase_grid
          implicit none
 
          integer :: Marc, JA

@@ -34,6 +34,8 @@
        use unstruc_opengl
        use m_colnow
        use m_drawthis
+       use m_set_col
+       use m_realpolygon
        implicit none
        integer :: N_
        integer :: nclr

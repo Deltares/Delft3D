@@ -51,7 +51,7 @@ module m_statistical_output_types
 
    !> Derived type for the statistical output items.
    type, public :: t_output_variable_item
-      type(t_output_quantity_config), pointer :: output_config !< Pointer to output configuration item.
+      type(t_output_quantity_config), allocatable :: output_config !< Output configuration item.
       integer :: operation_type !< Specifies the kind of operation to perform on the output variable.
       integer :: id_var !< NetCDF variable ID, to be set and used by actual writing functions.
       real(dp), pointer, dimension(:) :: stat_output !< Array that is to be written to the Netcdf file. In case the current values are

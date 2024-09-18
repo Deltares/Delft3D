@@ -39,6 +39,7 @@
          use m_screenarea
          use m_colnow
          use m_initscreen
+         use m_view_port
          
          implicit none
          integer :: icrhf

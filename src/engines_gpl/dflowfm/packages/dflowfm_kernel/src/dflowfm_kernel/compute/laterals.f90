@@ -27,7 +27,8 @@
 !
 !-------------------------------------------------------------------------------
 module m_laterals
-   use precision_basics, only: dp
+   use precision_basics, only: dp, comparereal
+   use m_flowparameters, only: eps10
    implicit none
    private
 
@@ -37,7 +38,6 @@ module m_laterals
    public dealloc_lateraldata
    public average_concentrations_for_laterals
    public add_lateral_load_and_sink
-   public get_lateral_discharge
    public get_lateral_volume_per_layer
    public reset_outgoing_lat_concentration
    public finish_outgoing_lat_concentration
@@ -147,24 +147,13 @@ module m_laterals
 
    !> Add lateral input contribution to the load being transported
    interface add_lateral_load_and_sink
-      module subroutine add_lateral_load_and_sink(transport_load, transport_sink, discharge_in, discharge_out, cell_volume, dtol)
+      module subroutine add_lateral_load_and_sink(transport_load, transport_sink, cell_volume, dtol)
          real(kind=dp), dimension(:, :), intent(inout) :: transport_load !< Load being transported into domain
          real(kind=dp), dimension(:, :), intent(inout) :: transport_sink !< Load being transported out
-         real(kind=dp), dimension(:, :, :), intent(in) :: discharge_in !< Lateral discharge going into domain (source)
-         real(kind=dp), dimension(:, :, :), intent(in) :: discharge_out !< Lateral discharge going out (sink)
          real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3]
          real(kind=dp), intent(in) :: dtol !< cut off value for vol1, to prevent division by zero
       end subroutine add_lateral_load_and_sink
    end interface add_lateral_load_and_sink
-
-   !> Calculate lateral discharges at each of the active grid cells, both source (lateral_discharge_in) and sink (lateral_discharge_out).
-   interface get_lateral_discharge
-      module subroutine get_lateral_discharge(lateral_discharge_in, lateral_discharge_out, cell_volume)
-         real(kind=dp), dimension(:, :, :), intent(inout) :: lateral_discharge_in !< Lateral discharge flowing into the model (source)
-         real(kind=dp), dimension(:, :, :), intent(inout) :: lateral_discharge_out !< Lateral discharge extracted out of the model (sink)
-         real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3]
-      end subroutine get_lateral_discharge
-   end interface get_lateral_discharge
 
    !> Compute water volume per layer in each lateral
    interface get_lateral_volume_per_layer

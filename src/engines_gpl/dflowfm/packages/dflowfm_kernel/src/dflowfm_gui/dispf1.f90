@@ -31,6 +31,7 @@
 !
 
       subroutine DISPF1(Y, DX, N, NCOL)
+         use m_set_col
          implicit none
          double precision :: dx
          integer :: i

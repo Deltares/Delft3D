@@ -29,14 +29,17 @@
 
 !
 !
-
+module m_inview
+   implicit none
+contains
   logical function INVIEW(X, Y)
      ! ZIT IK IN ZOOMGEBIED? NULLEN EN DEFAULTS NIET, IN WERELDCOORD inview3
      use m_wearelt
-     use m_missing
+     use m_missing, only: xymis
      use m_dproject
 
-    doubleprecision :: x, y, xx, yy
+     double precision :: x, y, xx, yy
+     
      INVIEW = .false.
      if (X /= XYMIS) then
         call dPROJECT(X, Y, XX, YY, 1)
@@ -46,3 +49,4 @@
      end if
      return
   end
+end module m_inview

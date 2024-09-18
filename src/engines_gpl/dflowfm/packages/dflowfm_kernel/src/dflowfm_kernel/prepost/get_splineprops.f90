@@ -36,7 +36,7 @@ subroutine get_splineprops(mcs_old, id, iLRmfac)
    use m_splines
    use m_spline2curvi
    use m_alloc
-   use m_missing
+   use m_deallocate_spline_props
 
    implicit none
 

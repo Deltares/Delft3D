@@ -52,6 +52,7 @@ subroutine setfixedweirs()
    use m_1d2d_fixedweirs, only: find_1d2d_fixedweirs
    use m_readyy
    use m_wall_clock_time
+   use m_find_crossed_links_kdtree2
 
    implicit none
 

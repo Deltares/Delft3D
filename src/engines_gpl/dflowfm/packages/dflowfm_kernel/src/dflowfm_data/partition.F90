@@ -6672,42 +6672,6 @@ end subroutine update_ghostboundvals
 
 ! =================================================================================================
 ! =================================================================================================
-subroutine fill_reduce_buffer(vals, nvals)
-   use m_partitioninfo
-   implicit none
-   integer :: i
-   integer, intent(in) :: nvals
-   double precision, dimension(1:nvals) :: vals
-
-   if (jampi == 0) then
-      return
-   end if
-
-   do i = 1, nvals
-      reducebuf(nreducebuf + i) = vals(i)
-   end do
-   nreducebuf = nreducebuf + nvals
-
-end subroutine fill_reduce_buffer
-
-! =================================================================================================
-! =================================================================================================
-subroutine subsitute_reduce_buffer(vals, nvals)
-   use m_partitioninfo
-   implicit none
-   integer :: i
-   integer, intent(in) :: nvals
-   double precision, dimension(1:nvals) :: vals
-
-   nreducebuf = nreducebuf - nvals
-   do i = 1, nvals
-      vals(i) = reducebuf(nreducebuf + i)
-   end do
-
-end subroutine subsitute_reduce_buffer
-
-! =================================================================================================
-! =================================================================================================
 !> Sets weights of edges and vsize on mesh that is to be partitioned by METIS
 !! If there are structures defined by polylines, then for structure related cells and edges, it gives special values to edges weights and vertex size.
 !! The purpose is to avoid structures intercross partition boundaries including ghost cells.

@@ -175,7 +175,11 @@ contains
             if (itime - idelt              >=  icwsto) mapfil = .false.
             if (mod(itime - icwsta, icwste)  >=  idelt) mapfil = .false.
 
-            if (trkfil .and. mod(itime, notrak * idelt) >= idelt) trkfil = .false.
+            if (trkfil) then
+                if (mod(itime, notrak * idelt) >= idelt) then
+                    trkfil = .false.
+                endif
+            endif
             if (trkfil) call unc_write_trk()
             if (mapfil) call unc_write_map()
 

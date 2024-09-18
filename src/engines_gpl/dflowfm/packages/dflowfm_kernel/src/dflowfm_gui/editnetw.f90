@@ -47,6 +47,10 @@
          use m_putget_un
          use m_okay
          use m_botlin
+         use m_tek_link
+         use m_is_link
+         use m_draw_nu
+         use m_set_col
          implicit none
          integer :: MODE, KEY
          integer :: newmode

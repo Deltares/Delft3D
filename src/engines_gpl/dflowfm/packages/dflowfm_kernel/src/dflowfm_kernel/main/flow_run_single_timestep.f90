@@ -39,6 +39,7 @@ subroutine flow_run_single_timestep(key, iresult) ! do only 1 flow timestep
    use unstruc_netcdf
    use m_timer
    use dfm_error
+   use m_wrimap
 
    implicit none
 

@@ -78,6 +78,8 @@ contains
       use string_module, only: str_lower
       use m_delpol
       use m_set_kbot_ktop
+      use m_ini_sferic
+      use m_volsur
 
       implicit none
 
@@ -773,6 +775,8 @@ contains
       use iso_varying_string, only: len_trim, index
       use m_setucxcuy_leastsquare, only: reconst2nd
       use dfm_error
+      use m_set_bobs
+      use m_flow_obsinit
 
       implicit none
 
@@ -1585,6 +1589,9 @@ contains
       use m_get_kbot_ktop
       use m_wripol
       use m_set_kbot_ktop
+      use m_ini_sferic
+      use m_set_bobs
+      use m_get_czz0
 
       implicit none
 

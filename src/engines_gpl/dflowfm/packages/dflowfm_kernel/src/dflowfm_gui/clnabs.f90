@@ -31,6 +31,7 @@
 !
 
       subroutine cLNABS(X, Y, ncol)
+         use m_set_col
          implicit none
          double precision :: x, y
          integer :: ncol

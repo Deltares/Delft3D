@@ -34,6 +34,7 @@
     use m_ship
     use m_flowgeom
     use m_flow
+    use m_get_link_area_wid2D
     implicit none
 
     integer :: L, k1, k2, k3, k4

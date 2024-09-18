@@ -31,6 +31,7 @@
 !
 
       subroutine tekpoly(n, x, y, ncol)
+         use m_set_col
          implicit none
          integer, intent(in) :: N !< polygon dimension
          double precision, dimension(n), intent(in) :: x, y !< polygon coordinates

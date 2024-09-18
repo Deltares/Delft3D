@@ -31,19 +31,17 @@
 !
 
 subroutine writesomeinitialoutput()
-   use m_sferic
-   use timers
    use m_flow
-   use m_netw
    use m_flowgeom
-   use m_flowtimes
-   use unstruc_messages
+   use m_flowtimes, only: rundat0
+   use messagehandling, only: msgbuf, msg_flush
    use m_partitioninfo
-   use m_samples
+   use m_samples, only: ns, xs, ys, zs
    use unstruc_model, only: md_ident
-   use geometry_module, only: dbdistance
    use gridoperations, only: network_dimensions_message
    use m_reasam
+   use m_datum
+   use m_dbdistance_hk
 
    implicit none
    integer :: k, mbalat, mwrong, L, msam, n, nf, jacheckba = 0

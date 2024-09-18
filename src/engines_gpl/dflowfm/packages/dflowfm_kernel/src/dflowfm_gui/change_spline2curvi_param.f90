@@ -34,6 +34,8 @@ subroutine change_spline2curvi_param(jacancelled)
    use dflowfm_version_module, only: company, product_name
    use m_spline2curvi
    use m_helpnow
+   use m_save_keys
+   use m_restore_keys
 
    implicit none
    integer, intent(out) :: jacancelled !< Whether or not (1/0) user has pressed 'Esc' in parameter screen.

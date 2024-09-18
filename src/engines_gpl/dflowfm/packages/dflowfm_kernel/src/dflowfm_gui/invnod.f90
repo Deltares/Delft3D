@@ -33,9 +33,9 @@
       logical function INVNOD(K)
          use m_netw
          use unstruc_display
+         use m_inview
          implicit none
          integer :: k
-         logical inview
          INVNOD = INVIEW(XK(K), YK(K))
          return
       end

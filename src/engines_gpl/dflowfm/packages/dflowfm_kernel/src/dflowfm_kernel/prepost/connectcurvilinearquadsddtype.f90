@@ -39,6 +39,7 @@
      use m_mergenodes
      use gridoperations
      use m_set_nod_adm
+     use m_new_link
 
      implicit none
      integer :: ins

@@ -39,6 +39,12 @@
      use m_vfac
      use m_drawthis
      use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, val=>val2, ncols=>ncols2, nv=>nv2
+     use m_gtext
+     use m_jgtext
+     use m_dispform_scale
+     use m_box_nop
+     use m_fbox_nop
+     use m_set_col
      implicit none
 
      double precision :: hic

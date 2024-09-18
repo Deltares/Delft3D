@@ -31,6 +31,7 @@
 !
 
       subroutine TEKTRI(XL, YL, NCOL)
+         use m_set_col
          implicit none
          integer :: ncol
          double precision :: XL(3), YL(3)

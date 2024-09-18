@@ -29,11 +29,11 @@
 
 !
 !
-
+module m_wrimap
+contains
 subroutine wrimap(tim)
-   use m_flow
+   use m_flow, only: jamapbnd
    use m_flowtimes
-   use m_observations
    use unstruc_netcdf
    use unstruc_model
    use unstruc_files, only: defaultFilename
@@ -143,3 +143,4 @@ subroutine wrimap(tim)
       it_map_tec = it_map_tec + 1
    end if
 end subroutine wrimap
+end module m_wrimap

@@ -31,7 +31,7 @@ contains
     subroutine stageo (process_space_real, fl, ipoint, increm, num_cells, &
             noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
             num_exchanges_z_dir, num_exchanges_bottom_dir)
-        use m_logger_helper, only : stop_with_error, get_log_unit_number
+        use m_logger_helper, only: stop_with_error, get_log_unit_number
         use m_extract_waq_attribute
 
         !>\file
@@ -81,12 +81,14 @@ contains
                 IN1, IN2, IN3, IN4, IN5, &
                 IN6, IN7, IN8, IN9, IN10
         INTEGER(kind = int_wp) :: ISEG
-        INTEGER(kind = int_wp) :: LUNREP, IACTION, ATTRIB
+        INTEGER(kind = int_wp) :: lunrep, IACTION, ATTRIB
         REAL(kind = real_wp) :: TSTART, TSTOP, TIME, DELT
         REAL(kind = real_wp) :: THRESH, TCOUNT, THRLOG, PMLOG
 
         INTEGER(kind = int_wp), PARAMETER :: MAXWARN = 50
         INTEGER(kind = int_wp), SAVE :: NOWARN = 0
+
+        call get_log_unit_number(lunrep)
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -127,16 +129,15 @@ contains
         THRESH = process_space_real(IP6)
 
         IF (THRESH <= 0.0) THEN
-            CALL get_log_unit_number(LUNREP)
-            WRITE(LUNREP, *) 'ERROR in STAGEO'
-            WRITE(LUNREP, *) &
+            WRITE(lunrep, *) 'ERROR in STAGEO'
+            WRITE(lunrep, *) &
                     'Threshold must be a positive value'
-            WRITE(LUNREP, *) &
+            WRITE(lunrep, *) &
                     'Threshold: ', THRESH
-            WRITE(*, *) 'ERROR in STAGEO'
-            WRITE(*, *) &
+            WRITE(lunrep, *) 'ERROR in STAGEO'
+            WRITE(lunrep, *) &
                     'Threshold must be a positive value'
-            WRITE(LUNREP, *) &
+            WRITE(lunrep, *) &
                     'Threshold: ', THRESH
             CALL stop_with_error()
         ENDIF
@@ -222,11 +223,11 @@ contains
                         CALL extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
                         IF (ATTRIB /= 0) THEN
                             NOWARN = NOWARN + 1
-                            WRITE(*, '(a,i0)') 'Geometric mean could not be determined for segment ', ISEG
-                            WRITE(*, '(a)')    '    - not enough values. Mean set to zero'
+                            WRITE(lunrep, '(a,i0)') 'Geometric mean could not be determined for segment ', ISEG
+                            WRITE(lunrep, '(a)')    '    - not enough values. Mean set to zero'
 
                             IF (NOWARN == MAXWARN) THEN
-                                WRITE(*, '(a)') '(Further messages suppressed)'
+                                WRITE(lunrep, '(a)') '(Further messages suppressed)'
                             ENDIF
                         ENDIF
                     ENDIF

@@ -36,6 +36,7 @@
          use m_ktext
          use m_putget_un
          use m_okay
+         use m_draw_nu
          implicit none
          integer :: key
          integer :: mode

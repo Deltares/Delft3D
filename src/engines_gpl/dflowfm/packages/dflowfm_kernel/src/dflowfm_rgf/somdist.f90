@@ -33,6 +33,7 @@
       subroutine SOMDIST(A, B, C, D, M1, N1, M2, N2)
          use m_grid
          use m_missing
+         use m_isitu
          implicit none
          integer :: i
          integer :: i2

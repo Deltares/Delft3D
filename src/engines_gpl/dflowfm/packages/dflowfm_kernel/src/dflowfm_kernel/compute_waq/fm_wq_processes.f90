@@ -1366,14 +1366,11 @@ subroutine copy_data_from_fm_to_wq_processes(time)
    use m_fm_wq_processes
    use m_transport, only: constituents, itemp, isalt
    use m_sferic, only: twopi, rd2dg
-   use m_wind
    use m_meteo
-   use processes_input
-   use m_waves, only: fetch, nwf, hwav, rlabda, twav
-   use unstruc_messages
    use m_gettaus
    use m_gettauswave
    use m_get_kbot_ktop
+   use m_get_link1
    implicit none
 
    double precision, intent(in) :: time !< time     for waq in seconds

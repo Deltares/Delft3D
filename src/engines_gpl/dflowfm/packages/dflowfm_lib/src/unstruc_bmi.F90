@@ -1790,6 +1790,7 @@ contains
       use m_polygon
       use dfm_error
       use kdtree2Factory
+      use m_find_crossed_links_kdtree2
 
       character(kind=c_char), intent(in) :: c_feat_name(*) !< Name/type of the features set, e.g., 'thindams'
       type(c_ptr), value, intent(in) :: xpli_ptr !< Pointer (by value) to the C-compatible x-coordinates of all features's polyline (one long array).

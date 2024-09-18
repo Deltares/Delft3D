@@ -88,6 +88,7 @@ program unstruc
    use m_modenow
    use m_qnrgf
    use m_wall_clock_time
+   use m_draw_nu
    
    implicit none
 

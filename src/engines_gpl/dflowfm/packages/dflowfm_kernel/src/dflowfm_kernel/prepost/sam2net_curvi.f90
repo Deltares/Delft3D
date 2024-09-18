@@ -35,13 +35,14 @@ subroutine sam2net_curvi(numk, xk, yk, zk)
    use m_grid
    use m_samples
    use m_alloc
-   use m_missing
+   use m_missing, only: dmiss, jins
    use m_polygon
    use m_ec_basic_interpolation, only: triintfast, bilin_interp_loc
    use fm_external_forcings_data, only: transformcoef
    use m_sferic, only: jsferic, jasfer3D
    use m_qnerror
    use m_delpol
+   use m_restore_grd
 
    implicit none
 

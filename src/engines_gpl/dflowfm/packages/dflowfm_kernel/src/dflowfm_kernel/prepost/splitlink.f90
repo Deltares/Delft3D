@@ -42,6 +42,8 @@ subroutine splitlink(xp, yp, L_, dcosmin, jatek, ierror)
    use gridoperations
    use m_alloc
    use m_qnerror
+   use m_tek_link
+   use m_is_link
 
    implicit none
 

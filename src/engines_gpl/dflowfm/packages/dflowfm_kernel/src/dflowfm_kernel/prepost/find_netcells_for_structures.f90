@@ -47,6 +47,7 @@ subroutine find_netcells_for_structures(size_istrucells, nstrucells, istrucells)
    use timespace, only: read1polylin
    use kdtree2Factory
    use m_alloc
+   use m_find_crossed_links_kdtree2
    implicit none
 
    integer, intent(in) :: size_istrucells !< size of istrucells array

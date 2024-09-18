@@ -35,6 +35,7 @@
       use unstruc_display, only: jaHighlight
       use m_netw
       use m_drawthis
+      use m_gtext
       implicit none
       double precision :: XP, YP
       integer :: key, K1, K2

@@ -31,8 +31,8 @@
 !
 
       subroutine DMOVABS(XD, YD, ZD)
-         use m_oldz
-         use gridoperations
+         use m_oldz, only: oz
+         use m_three_two
          implicit none
          double precision :: x
          double precision :: y

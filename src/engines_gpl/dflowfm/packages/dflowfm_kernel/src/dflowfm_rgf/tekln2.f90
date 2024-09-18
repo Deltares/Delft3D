@@ -29,11 +29,15 @@
 
 !
 !
-
+module m_tekln2
+   implicit none
+contains
       subroutine TEKLN2(X, Y, mmax, nmax, M1, N1, M2, N2, NCOL)
 !     TEKEN EEN LIJN IN GRID (MET CIRKELS ROND DE UITEINDEN)
-         use m_missing
-         implicit none
+         use m_missing, only: xymis
+         use m_cirr
+         use m_set_col
+
          integer :: mmax, nmax, m1, n1, m2, n2, ncol
          double precision :: X(MMAX, NMAX), Y(MMAX, NMAX)
 
@@ -63,3 +67,4 @@
          end if
          return
       end subroutine tekln2
+end module m_tekln2

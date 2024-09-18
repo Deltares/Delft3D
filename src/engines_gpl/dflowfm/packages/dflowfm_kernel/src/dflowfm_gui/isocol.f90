@@ -32,6 +32,7 @@
 
      subroutine ISOCOL(VALC, NCOL)
         use m_depmax
+        use m_set_col
         implicit none
         integer :: i, ncol
         double precision :: valc

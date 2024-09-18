@@ -34,6 +34,7 @@
       use M_POLYGON
       use m_missing, only: dmiss, jins
       use geometry_module, only: dpinpok
+      use m_min_max_pol
       implicit none
       integer :: N
       double precision :: X(N), Y(N), ZK

@@ -38,6 +38,7 @@ subroutine pol2curvi_tri(i1, i2_, i3_)
    use m_missing
    use m_polygon
    use m_qnerror
+   use m_increase_grid
    implicit none
 
    integer, intent(in) :: i1, i2_, i3_ !< first, second and third corner point in polygon, respectively

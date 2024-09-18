@@ -35,6 +35,11 @@
       use m_qnerror
       use m_ktext
       use m_putget_un
+      use m_n_plot_plus_min
+      use m_k_plot_plus_min
+      use m_tek_link
+      use m_is_link
+      use m_draw_nu
       implicit none
 
       double precision, intent(out) :: xp, yp !< coordinates of clicked point

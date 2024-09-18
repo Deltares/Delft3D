@@ -31,9 +31,10 @@
 !
 
  subroutine tekprofpoint()
-    use m_flowgeom
-    use m_flow
+    use m_flowgeom, only: xz, yz
+    use m_flow, only: nplot
     use unstruc_display
+    use m_cirr
     implicit none
     if (klprof > 0 .and. nplot > 0) then
        call cirr(xz(nplot), yz(nplot), ncolblack) !klprof)

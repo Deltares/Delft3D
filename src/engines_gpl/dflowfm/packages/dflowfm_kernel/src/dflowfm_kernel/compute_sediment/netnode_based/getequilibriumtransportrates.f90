@@ -29,7 +29,9 @@
 
 !
 !
-
+module m_get_equilibrium_transport_rates
+   implicit none
+contains
  subroutine getequilibriumtransportrates(kk, seq, wse, mx, hsk) ! get them for flowcell kk or ban kk
     use m_flowgeom
     use m_flow
@@ -39,8 +41,7 @@
     use geometry_module, only: dbdistance
     use m_missing, only: dmiss
     use m_sferic, only: jsferic, jasfer3D
-
-    implicit none
+    use m_get_czz0
 
     integer, intent(in) :: kk, mx ! flowcell kk or ban kk, mx fracnr
     double precision, intent(out) :: seq(mx) ! seq(kg/m3)
@@ -295,3 +296,4 @@
     end if
 
  end subroutine getequilibriumtransportrates
+end module m_get_equilibrium_transport_rates

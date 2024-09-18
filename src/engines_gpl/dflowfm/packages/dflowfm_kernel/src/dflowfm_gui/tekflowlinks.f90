@@ -31,14 +31,16 @@
 !
 
  subroutine tekflowlinks()
-    use unstruc_display
-    use m_netw
+    use m_netw, only: xk, yk
     use m_flowgeom
-    use m_flow
+    use m_flow, only: hu, au
     use m_sferic
-    use m_missing
+    use m_missing, only: dmiss
     use m_drawthis
     use m_halt2
+    use m_three_two
+    use m_inview
+    use m_pfiller_core
     implicit none
     integer :: k, L, ja, k1, k2, ncol, linkmode
     double precision :: zlin, zL
@@ -48,7 +50,6 @@
     double precision :: x3, y3, x4, y4 ! help only
     double precision :: x(4), y(4), z(4), hw, cs, sn
     real :: xr(4), yr(4)
-    logical inview
 
     linkmode = ndraw(11)
     if (LINKMODE > 1 .and. ndraw(29) >= 2) then ! show VALUES AT links

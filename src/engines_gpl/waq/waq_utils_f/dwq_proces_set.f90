@@ -103,17 +103,17 @@ module ProcesSet
     integer, parameter :: ITEM_ACTION_PPEQUAL2 = 10     ! for internal use, the conditions for ITEM_ACTION_PPEQUAL are met
 
     type ItemProp
-        character(len = ITEM_NAME_SIZE) :: name            ! item name
-        character(len = ITEM_TEXT_SIZE) :: text            ! item description
-        character(len = ITEM_NAME_SIZE) :: unit            ! item unit
-        character(len = ITEM_STDN_SIZE) :: stdn            ! item standard name
-        character(len = ITEM_STDU_SIZE) :: stdu            ! item standar unit
+        character(len = ITEM_NAME_SIZE) :: name = ' '      ! item name
+        character(len = ITEM_TEXT_SIZE) :: text = ' '      ! item description
+        character(len = ITEM_NAME_SIZE) :: unit = ' '      ! item unit
+        character(len = ITEM_STDN_SIZE) :: stdn = ' '      ! item standard name
+        character(len = ITEM_STDU_SIZE) :: stdu = ' '      ! item standar unit
         real :: default         ! default value
-        character(len = ITEM_NAME_SIZE) :: aggrega         ! aggregation wheight variable
-        character(len = ITEM_NAME_SIZE) :: disaggr         ! dis-aggregation wheight variable
-        character(len = ITEM_TEXT_SIZE) :: groupid         ! groupid
-        character :: segx            ! defined on segment or exchange
-        character :: wk              ! wk
+        character(len = ITEM_NAME_SIZE) :: aggrega = ' '   ! aggregation wheight variable
+        character(len = ITEM_NAME_SIZE) :: disaggr = ' '   ! dis-aggregation wheight variable
+        character(len = ITEM_TEXT_SIZE) :: groupid = ' '   ! groupid
+        character :: segx   = ' '                          ! defined on segment or exchange
+        character :: wk     = ' '                          ! wk
         integer :: waqtype         ! indication were the value can be found
         integer :: index           ! index in the array
     end type ItemProp

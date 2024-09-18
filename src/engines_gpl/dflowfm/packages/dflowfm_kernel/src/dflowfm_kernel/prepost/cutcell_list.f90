@@ -303,6 +303,7 @@
         use m_alloc
         use m_missing
         use m_tpoly
+        use m_find_crossed_links_kdtree2
         implicit none
 
         integer, intent(in) :: numpols !< number of tpoly-type polygons

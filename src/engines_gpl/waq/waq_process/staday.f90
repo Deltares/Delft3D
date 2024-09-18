@@ -22,6 +22,7 @@
 !!  rights reserved.
 module m_staday
     use m_waq_precision
+    use m_logger_helper, only: get_log_unit_number
 
     implicit none
 
@@ -81,12 +82,14 @@ contains
                 IN6, IN7, IN8, IN9, IN10, &
                 IN11, IN12
         INTEGER(kind = int_wp) :: IKMRK, ISEG
-        INTEGER(kind = int_wp) :: IACTION
+        INTEGER(kind = int_wp) :: IACTION, lunrep
         INTEGER(kind = int_wp) :: ATTRIB
         REAL(kind = real_wp) :: TINIT, PERIOD, TIME, DELT, TCOUNT
 
         INTEGER(kind = int_wp), PARAMETER :: MAXWARN = 50
         INTEGER(kind = int_wp), SAVE :: NOWARN = 0
+
+        call get_log_unit_number(lunrep)
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -194,11 +197,11 @@ contains
                         CALL extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
                         IF (ATTRIB /= 0) THEN
                             NOWARN = NOWARN + 1
-                            WRITE(*, '(a,i0)') 'Periodic average, minimum and maximum could not be determined for segment ', ISEG
-                            WRITE(*, '(a)')    '    - segment was not active. Average set to zero'
+                            WRITE(lunrep, '(a,i0)') 'Periodic average, minimum and maximum could not be determined for segment ', ISEG
+                            WRITE(lunrep, '(a)')    '    - segment was not active. Average set to zero'
 
                             IF (NOWARN == MAXWARN) THEN
-                                WRITE(*, '(a)') '(Further messages suppressed)'
+                                WRITE(lunrep, '(a)') '(Further messages suppressed)'
                             ENDIF
                         ENDIF
                     ENDIF

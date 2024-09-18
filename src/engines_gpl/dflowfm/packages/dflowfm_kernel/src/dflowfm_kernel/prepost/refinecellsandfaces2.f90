@@ -936,12 +936,9 @@ contains
 !> refine the cells, based on a cell and link refinement mask
    subroutine refine_cells(jarefine, jalink, linkbrother, ierror)
 
-      use m_netw
-      use m_alloc
-      use network_data, only: dcenterinside
-      use m_sferic, only: jsferic
-      use geometry_module, only: dbdistance, getcircumcenter
-      use m_missing, only: dmiss, dxymis
+      use geometry_module, only: getcircumcenter
+      use m_find_common_node
+      use m_new_link
 
       implicit none
 
@@ -1360,6 +1357,7 @@ contains
       use m_sferic
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
+      use m_tek_link
 
       implicit none
 
@@ -1463,6 +1461,7 @@ contains
       use m_netw
       use m_plotdots
       use messagehandling
+      use m_plot_dots
       implicit none
 
       integer, dimension(:), intent(inout) :: jarefine !< refine cell (>0), or not
@@ -1612,6 +1611,7 @@ contains
 
    subroutine find_hangingnodes(ic, linkmask, linkbrother, numhang, Lhang, numhangnod, ishangingnod, numrefine)
       use m_netw
+      use m_find_common_node
       implicit none
 
       integer, parameter :: MMAX = 6 ! maximum number of nodes and links per netcell
