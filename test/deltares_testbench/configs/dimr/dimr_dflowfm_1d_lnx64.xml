@@ -89,7 +89,7 @@
                 <from>.</from>
             </location>
             <location ref="reference_results" type="reference">
-                <from>lnx64</from>
+                <from>win64</from>
             </location>
             <maxRunTime>600.0</maxRunTime> <!-- seconds -->
         </testCase>

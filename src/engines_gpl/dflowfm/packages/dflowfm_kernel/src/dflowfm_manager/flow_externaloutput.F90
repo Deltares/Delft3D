@@ -57,6 +57,7 @@
     use m_wrimap
     use m_wribal
     use m_wrihistek
+    use m_unc_write_his, only: unc_write_his
 
 #ifdef _OPENMP
     use omp_lib

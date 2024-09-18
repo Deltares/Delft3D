@@ -883,7 +883,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c04_pump" ref="dimr_default">
-		<path version="2024-01-11T13:00:00">e02_dflowfm/f106_hydraulic-structures/c04_Pump</path>
+		<path version="2024-09-17T13:12:00">e02_dflowfm/f106_hydraulic-structures/c04_Pump</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
@@ -907,7 +907,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c05_Bridge" ref="dimr_default">
-		<path version="2024-01-11T13:00:00">e02_dflowfm/f106_hydraulic-structures/c05_Bridge</path>
+		<path version="2024-09-17T13:08:00">e02_dflowfm/f106_hydraulic-structures/c05_Bridge</path>
 		<checks>
 			<file name="DFM_OUTPUT_flowFM/flowFM_map.nc" type="netCDF">
 				<parameters>
