@@ -12843,6 +12843,7 @@ contains
       integer, optional, intent(in) :: target_shift !< shift of the index where the array is to be written (1:ndx), default = 0
       integer :: i, kloc, k, kb, kt, target_shift_
       integer :: i_target
+      integer :: i_source
 
       target_shift_ = 0
       if (present(target_shift)) then
@@ -12850,12 +12851,14 @@ contains
       end if
 
       do i = 1, loccount
-         i_target = i + target_shift_
+         
          if (jamergedmap == 1) then
-            kloc = iloc_own(i_target)
+            i_source = iloc_own(i)
          else
-            kloc = i_target
+            i_source = i
          end if
+         i_target = i_source + target_shift_
+         kloc = i_target
 
          if (jaWaqbot == 0 .or. wqbot3D_output > 0) then ! It is not a 2D waq bottom variable
             if (kmx > 0) then
@@ -12864,7 +12867,7 @@ contains
                   array2(iloc, k) = array1(k)
                end do
             else
-               array2(iloc, kloc) = array1(kloc)
+               array2(iloc, i_target) = array1(i_source)
             end if
          else ! It is a 2D waq bottom variable
             call getkbotktop(kloc, kb, kt)
@@ -12949,16 +12952,16 @@ contains
                end if
                ! Then assign the data based on the mapping
                do i = 1, loccount
-                  i_target = i + target_shift_
-                  imap = iloc_merge(i_target)
-                  targetarr(iloc_own(i_target)) = tmparray1D(imap)
+                  imap = iloc_merge(i)
+                  i_target = iloc_own(i) + target_shift_
+                  targetarr(i_target) = tmparray1D(imap)
                end do
             else
                ierr = nf90_get_var(ncid, id_var, tmparr(1:loccount), start=[locstart, it_read], count=[loccount, 1])
                if (ierr /= nf90_noerr) goto 999
                do i = 1, loccount
-                  i_target = i + target_shift_
-                  targetarr(iloc_own(i_target)) = tmparr(i)
+                  i_target = iloc_own(i) + target_shift_
+                  targetarr(i_target) = tmparr(i)
                end do
             end if
          end if
@@ -13618,11 +13621,11 @@ contains
             call check_error(ierr, 'ucyq_bnd')
             ! Read rho_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
             ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
-                                     um%jamergedmap, ibnd_own, um%ibnd_merge)
+                                     um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
             if (stm_included) then
                ! Read rhowat_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
                ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
-                                        um%jamergedmap, ibnd_own, um%ibnd_merge)
+                                        um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
             end if
             do i = 1, ndxbnd_own
                j = ibnd_own(i)
@@ -13888,7 +13891,7 @@ contains
             call read_sediment(constituents, '', imapfile, kstart, um%ndxi_own, it_read, um, 0)
             !boundary cells
             if (um%nbnd_read > 0) then
-               call read_sediment(constituents, '_bnd', imapfile, 1, um%nbnd_read, it_read, um, um%ndxi_own)
+               call read_sediment(constituents, '_bnd', imapfile, 1, um%nbnd_read, it_read, um, ndxi)
             end if !um%nbnd_read > 0
             sed = constituents(ISED1:ISEDN, :)
          end if !lsedsus
@@ -18311,11 +18314,13 @@ contains
    subroutine read_sediment(var, stradd, imapfile, kstart, kcount, it_read, um, target_shift)
 
       use m_flow, only: kmx, ndkx
+      use m_flowgeom, only: ndxi
       use m_transport, only: ISED1, ISEDN, const_names
       use unstruc_messages, only: mess, LEVEL_WARN
       use m_alloc, only: realloc
       use m_partitioninfo, only: um
       use fm_location_types, only: UNC_LOC_S3D, UNC_LOC_S
+      use fm_external_forcings_data, only: ibnd_own
 
 !input/output
       double precision, allocatable, dimension(:, :), intent(inout) :: var !< (:,ndkx) Data array into which the sediment data will be read.
@@ -18348,12 +18353,20 @@ contains
          call replace_char(tmpstr, 32, 95)
          call replace_char(tmpstr, 47, 95)
          ! concentrations exists in restart file
-         ierr = get_var_and_shift(imapfile, trim(tmpstr)//trim(stradd), tmpvar1D, tmpvar1, tmp_loc, kmx, kstart, kcount, it_read, um%jamergedmap, um%inode_own, um%inode_merge, target_shift)
+         if (stradd /= '_bnd') then
+             ierr = get_var_and_shift(imapfile, trim(tmpstr)//trim(stradd), tmpvar1D, tmpvar1, tmp_loc, kmx, kstart, kcount, it_read, um%jamergedmap, um%inode_own, um%inode_merge)
+         else
+             ierr = get_var_and_shift(imapfile, trim(tmpstr)//trim(stradd), tmpvar1D, tmpvar1, tmp_loc, kmx, kstart, kcount, it_read, um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
+         end if
          if (ierr /= nf90_noerr) then
             call mess(LEVEL_WARN, 'unc_read_map_or_rst: cannot read variable '''//trim(tmpstr)//trim(stradd)//''' from the specified restart file. Skip reading this variable.')
             call check_error(ierr, const_names(i), LEVEL_WARN)
          else
-            call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, kcount, um%jamergedmap, um%inode_own, 0, 0, target_shift)
+            if (stradd /= '_bnd') then
+               call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, kcount, um%jamergedmap, um%inode_own, 0, 0, target_shift)
+            else
+               call assign_restart_data_to_local_array(tmpvar1D, var, i, kmx, kcount, um%jamergedmap, ibnd_own, 0, 0, target_shift)
+            end if
          end if
       end do
 
