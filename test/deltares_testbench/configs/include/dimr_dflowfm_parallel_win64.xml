@@ -566,7 +566,7 @@
         <program ref="dflowfm" seq="4">
           <arguments>
             <argument>da3_rst.mdu</argument>
-            <argument>--partition:ndomains=2:icgsolver=6</argument>
+            <argument>--partition:ndomains=3:icgsolver=6</argument>
           </arguments>
         </program>
         <program ref="dimr" seq="5">
@@ -605,7 +605,7 @@
         <program ref="dflowfm" seq="1">
           <arguments>
             <argument>da3.mdu</argument>
-            <argument>--partition:ndomains=2:icgsolver=6</argument>
+            <argument>--partition:ndomains=3:icgsolver=6</argument>
           </arguments>
         </program>
         <program ref="dimr" seq="2">
@@ -680,48 +680,6 @@
           </arguments>
         </program>
         <program ref="dimr" seq="4">
-           <arguments>
-               <argument>2 dimr_restart.xml</argument>
-           </arguments>
-        </program>
-      </programs>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/da3_rst_0000_20050127_120000_rst.nc" type="netCDF">
-           <parameters>
-               <parameter name="waterlevel" toleranceAbsolute="0.001" />
-               <parameter name="x_velocity" toleranceAbsolute="0.001" />
-               <parameter name="y_velocity" toleranceAbsolute="0.001" />
-               <parameter name="msed" toleranceAbsolute="0.0001" />
-               <parameter name="thlyr" toleranceAbsolute="0.0001" />
-           </parameters>
-        </file>
-        <file name="dflowfmoutput/da3_rst_0001_20050127_120000_rst.nc" type="netCDF">
-           <parameters>
-               <parameter name="waterlevel" toleranceAbsolute="0.001" />
-               <parameter name="x_velocity" toleranceAbsolute="0.001" />
-               <parameter name="y_velocity" toleranceAbsolute="0.001" />
-               <parameter name="msed" toleranceAbsolute="0.0001" />
-               <parameter name="thlyr" toleranceAbsolute="0.0001" />
-           </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f022_c106_graded_sediment_ConcBc_restart_1_2" ref="dimr">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f022_morphology/c106_graded_sediment_ConcBc_restart_2_1</path>
-      <programs>
-        <program ref="dimr" seq="1">
-           <arguments>
-               <argument>dimr.xml</argument>
-           </arguments>
-        </program>
-        <program ref="dflowfm" seq="2">
-          <arguments>
-            <argument>da3_rst.mdu</argument>
-            <argument>--partition:ndomains=2:icgsolver=6</argument>
-          </arguments>
-        </program>
-        <program ref="dimr" seq="3">
            <arguments>
                <argument>2 dimr_restart.xml</argument>
            </arguments>
