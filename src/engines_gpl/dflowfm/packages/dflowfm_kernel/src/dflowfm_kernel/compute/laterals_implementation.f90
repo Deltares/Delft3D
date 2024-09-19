@@ -153,8 +153,10 @@ contains
    ! Add lateral input contribution to the load being transported
    module subroutine add_lateral_load_and_sink(transport_load, transport_sink, cell_volume, dtol)
       use m_transportdata, only: numconst
-      real(kind=dp), dimension(:, :), intent(inout) :: transport_load !< Load being transported into domain
-      real(kind=dp), dimension(:, :), intent(inout) :: transport_sink !< Load being transported out
+      real(kind=dp), dimension(:, :), intent(inout) :: transport_load !< Load being transported into domain. 
+                                                                      !< Sign-convention: positive means load being transported into model.
+      real(kind=dp), dimension(:, :), intent(inout) :: transport_sink !< Load being transported out. 
+                                                                      !< Sign-convention: positive means load being transported out.
       real(kind=dp), dimension(:), intent(in) :: cell_volume !< Volume of water in computational cells [m3]
       real(kind=dp), intent(in) :: dtol !< cut off value for cell_volume, to prevent division by zero
 
@@ -167,13 +169,15 @@ contains
                do k1 = n1latsg(i_lateral), n2latsg(i_lateral)
                   i_cell = nnlat(k1)
                   delta_cell_volume = 1._dp / max(cell_volume(i_cell), dtol)
-                  ! transport_load is added to RHS of transport equation, sink is added to diagonal:
-                  ! only multiply transport_load with concentration
+                  ! Transport_load is added to RHS of transport equation, sink is added to diagonal:
+                  ! only multiply transport_load with concentration.
                   qlat = qqlat(i_layer, k1)
                   if (comparereal(qlat, 0._dp, eps10) > 0) then
-                     transport_load(i_const, i_cell) = transport_load(i_const, i_cell) + delta_cell_volume * qlat * incoming_lat_concentration(1, i_const, i_lateral)
+                     transport_load(i_const, i_cell) = transport_load(i_const, i_cell) &
+                                                     + delta_cell_volume * qlat * incoming_lat_concentration(1, i_const, i_lateral)
                   else
-                     transport_sink(i_const, i_cell) = transport_sink(i_const, i_cell) + delta_cell_volume * qlat
+                  ! Sink sign-convention: positive means flux going out of model, hence the negative sign here
+                     transport_sink(i_const, i_cell) = transport_sink(i_const, i_cell) - delta_cell_volume * qlat
                   end if
                end do
             end do
