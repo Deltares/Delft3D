@@ -138,7 +138,8 @@ contains
          do i_cell = n1latsg(i_lateral), n2latsg(i_lateral)
             i_node = nnlat(i_cell)
             dvoli = 1 / (vol1(i_cell))
-            refval = dvoli * qqlat(1, i_cell)
+            ! sink sign-convention: positive means flux going out of model, hence the abs().
+            refval = dvoli * abs(qqlat(1, i_cell))
             call assert_comparable(transport_sink(i_const, i_node), refval, tolerance, "lateral_sink value is not correct")
          end do
       end do
