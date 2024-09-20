@@ -645,7 +645,7 @@ subroutine dnzft(nlat, m, n, th, cz, zh)
    integer, intent(inout) :: nlat, m, n
    real(dp), intent(inout) :: th, cz(1), zh
 
-   integer :: lmod, mmod, nmod, lc, lq, ls, k
+   integer :: mmod, nmod, lc, lq, ls, k
    real(dp) :: cdt, sdt, cth, sth, chh
 
    zh = 0.

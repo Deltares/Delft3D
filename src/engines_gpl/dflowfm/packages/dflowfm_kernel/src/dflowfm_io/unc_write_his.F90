@@ -120,7 +120,7 @@ contains
       use m_structures
       use m_GlobalParameters
       use m_longculverts
-      use m_laterals, only: numlatsg, nNodesLat, lat_ids, geomXLat, geomYLat, nlatnd, nodeCountLat
+      use m_laterals, only: numlatsg, nNodesLat, geomXLat, geomYLat, nlatnd, nodeCountLat
       use odugrid
       use m_statistical_output_types, only: SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
       use fm_statistical_output
@@ -147,7 +147,6 @@ contains
       character(len=255) :: filename
       character(len=25) :: transpunit
       character(len=1024) :: statcoordstring, local_statcoordstring
-      integer :: igen, istru
       integer :: ndims
       integer :: jawrizc = 0
       integer :: jawrizw = 0
@@ -1489,9 +1488,7 @@ contains
 
       structure_names = [(pump_ids(i), integer :: i=1, npumpsg)]
       call unc_put_his_structure_names(ncid, jahispump, id_pump_id, structure_names)
-      call unc_put_his_structure_mid_points(ncid, ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), &
-                                            id_pumpdim, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
-                                            id_poly_xmid=id_pump_xmid, id_poly_ymid=id_pump_ymid)
+      call unc_put_his_structure_mid_points(ncid, ST_PUMP, jahispump, npumpsg, 'line', id_poly_xmid=id_pump_xmid, id_poly_ymid=id_pump_ymid)
 
       structure_names = [(gate_ids(i), integer :: i=1, ngatesg)]
       call unc_put_his_structure_names(ncid, jahisgate, id_gate_id, structure_names)
@@ -1642,25 +1639,23 @@ contains
    end subroutine unc_put_his_structure_names
 
    !> Write ('put') the static variables for a single structure type.
-   subroutine unc_put_his_structure_mid_points(ncid, struc_type_id, output_enabled, count, geom_type, ngeom_node, &
-                                               id_strdim, id_geom_node_count, id_geom_coordx, id_geom_coordy, &
-                                               add_latlon, id_geom_coordlon, id_geom_coordlat, id_poly_xmid, id_poly_ymid)
+   subroutine unc_put_his_structure_mid_points(ncid, struc_type_id, output_enabled, count, geom_type, id_poly_xmid, id_poly_ymid)
       use string_module, only: strcmpi
       integer, intent(in) :: ncid !< NetCDF id of already open dataset
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
       integer, intent(in) :: output_enabled !< Whether or not (1/0) this structure's output must be written.
       integer, intent(in) :: count !< Number of structures for this structure_type
       character(len=*), intent(in) :: geom_type !< Geometry type, one of: 'point', 'line', 'polygon' (or 'none')
-      integer, intent(in) :: ngeom_node !< Total number of geometry nodes for this structure_type
-      integer, intent(in) :: id_strdim !< NetCDF dimension id created for this structure type
-      integer, optional, intent(in) :: id_geom_node_count !< NetCDF variable id created for the node count of the structures of this type
-      integer, optional, intent(in) :: id_geom_coordx !< NetCDF variable id created for the node x coordinates for all structures of this type
-      integer, optional, intent(in) :: id_geom_coordy !< NetCDF variable id created for the node y coordinates for all structures of this type
-      logical, optional, intent(in) :: add_latlon !< Whether or not to add extra lon/lat coordinates for the nodes
+      !integer, intent(in) :: ngeom_node !< Total number of geometry nodes for this structure_type
+      !integer, intent(in) :: id_strdim !< NetCDF dimension id created for this structure type
+      !integer, optional, intent(in) :: id_geom_node_count !< NetCDF variable id created for the node count of the structures of this type
+      !integer, optional, intent(in) :: id_geom_coordx !< NetCDF variable id created for the node x coordinates for all structures of this type
+      !integer, optional, intent(in) :: id_geom_coordy !< NetCDF variable id created for the node y coordinates for all structures of this type
+      !logical, optional, intent(in) :: add_latlon !< Whether or not to add extra lon/lat coordinates for the nodes
       !< (only applicable when the coordx/y variables contain projected coordinates,
       !< and requires id_node_lon/lat to be passed as well).
-      integer, optional, intent(in) :: id_geom_coordlon !< NetCDF variable id created for the node longitude coordinates for all structures of this type
-      integer, optional, intent(in) :: id_geom_coordlat !< NetCDF variable id created for the node latitude  coordinates for all structures of this type
+      !integer, optional, intent(in) :: id_geom_coordlon !< NetCDF variable id created for the node longitude coordinates for all structures of this type
+      !integer, optional, intent(in) :: id_geom_coordlat !< NetCDF variable id created for the node latitude  coordinates for all structures of this type
       integer, optional, intent(in) :: id_poly_xmid !< NetCDF variable id created for the x-coordinate of the structure's polyline midpoint
       integer, optional, intent(in) :: id_poly_ymid !< NetCDF variable id created for the y-coordinate of the structure's polyline midpoint
 

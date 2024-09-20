@@ -93,7 +93,9 @@ contains
 
    subroutine transform_qplat(source_input)
       use m_laterals, only: qplat
-      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "qplat" item.
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Unused
+      associate (source_input => source_input) ! Unused, since qplat is a module variable
+      end associate
       qplat_data = sum(qplat, dim=1)
    end subroutine transform_qplat
 
@@ -358,10 +360,13 @@ contains
       use m_monitoring_crosssections
       use m_transport, only: ISED1, NUMCONST_MDU, ISEDN
       use m_sediment, only: sedtot2sedsus, stmpar, jased, stm_included
-      real(dp), pointer, dimension(:), intent(inout) :: data_pointer !< pointer to constit_crs_obs_data
+      real(dp), pointer, dimension(:), intent(inout) :: data_pointer !< pointer to constit_crs_obs_data, unused
 
       integer :: i, IP, num, l, lsed
       real(dp) :: rhol
+
+      associate (data_pointer => data_pointer) ! Unused, since obscrs_data is a module variable
+      end associate
 
       if (ncrs == 0) then
          return

@@ -36,7 +36,7 @@ subroutine fm_wq_processes_ini_sub()
    use m_transport
    use m_partitioninfo
    use unstruc_model
-   use m_flowparameters, only: jawriteDetailedTimers, jahiswqbot3d, jamapwqbot3d
+   use m_flowparameters, only: jawriteDetailedTimers
    use unstruc_files, only: mdia
    use m_flowtimes
    use timers

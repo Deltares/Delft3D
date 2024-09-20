@@ -72,7 +72,7 @@ contains
       integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
       double precision :: maxSearchRadius
       character(len=256) :: filename, sourcemask
-      character(len=256) :: varname, varname2
+      character(len=256) :: varname
       character(len=NAMTRACLEN) :: tracnam, qidnam
       character(len=NAMSFLEN) :: sfnam
       character(len=20) :: wqinput

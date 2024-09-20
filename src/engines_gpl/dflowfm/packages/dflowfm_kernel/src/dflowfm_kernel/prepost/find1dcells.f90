@@ -52,15 +52,13 @@ contains
 #endif
       implicit none
 
-      integer :: k1, k2, k3, L, N, left_cell, right_cell, new_cell
+      integer :: k1, k2, k3, L, N, new_cell
       integer :: i, ierr, k, kcell
       integer, dimension(:), allocatable :: left_2D_cells, right_2D_cells
       logical :: Lisnew
       integer :: temp_threads
       integer :: ierror
       integer :: nump1d
-      integer :: nump1d2d_temp
-      logical :: preserve_branch_order
       ierror = 1
 
       allocate (left_2D_cells(NUML1D), right_2D_cells(NUML1D))

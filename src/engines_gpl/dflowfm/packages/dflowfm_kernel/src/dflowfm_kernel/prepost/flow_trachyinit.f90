@@ -62,7 +62,6 @@ subroutine flow_trachyinit()
    use m_sferic, only: jsferic, jasfer3D
    use geometry_module, only: dbdistance, half
    use m_vegetation, only: jabaptist
-   use m_physcoef
    !
    implicit none
    !

@@ -7,21 +7,28 @@ target_compile_options(all_compiler_warnings INTERFACE
                        "$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<Fortran_COMPILER_ID:GNU>>:${gcc_all_warning_flags}>"
 )
 
+add_library(additional_compiler_warnings INTERFACE)
+set(intel_fortran_windows_extra_warning_flags /warn:declarations /warn:ignore_loc /warn:truncated_source /warn:shape /warn:unused)
+set(intel_fortran_linux_extra_warning_flags "SHELL:-warn declarations" "SHELL:-warn ignore_loc" "SHELL:-warn truncated_source" "SHELL:-warn shape" "SHELL:-warn unused")
+target_compile_options(additional_compiler_warnings INTERFACE
+                       "$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<Fortran_COMPILER_ID:Intel,IntelLLVM>>:$<IF:$<BOOL:${WIN32}>,${intel_fortran_windows_extra_warning_flags},${intel_fortran_linux_extra_warning_flags}>>"
+)
+
 add_library(compiler_warnings_as_errors INTERFACE)
-set(intel_windows_warning_error_flag /warn:errors /warn:stderrors)
-set(intel_linux_warning_error_flag "SHELL:-warn errors" "SHELL:-warn stderrors")
+set(intel_windows_warning_error_flag /warn:errors)
+set(intel_linux_warning_error_flag "SHELL:-warn errors")
 set(gcc_warning_error_flag -Werror)
 target_compile_options(compiler_warnings_as_errors INTERFACE
                        "$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<Fortran_COMPILER_ID:Intel,IntelLLVM>>:$<IF:$<BOOL:${WIN32}>,${intel_windows_warning_error_flag},${intel_linux_warning_error_flag}>>"
                        "$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<Fortran_COMPILER_ID:GNU>>:${gcc_warning_error_flag}>"
 )
 
-add_library(limit_compiler_warnings INTERFACE)
+add_library(mute_unwanted_compiler_warnings INTERFACE)
 # Disable warning 5462, global name too long. The compiler limit of 90 characters is too restrictive, see https://community.intel.com/t5/Intel-Fortran-Compiler/Many-quot-Global-name-too-long-quot-warnings/td-p/1505843
 # Disable warning 5268, allow text longer than 132 characters
 set(intel_windows_disabled_warning_flags /Qdiag-disable:5462 /Qdiag-disable:5268)
 set(intel_linux_disabled_warning_flags "SHELL:-diag-disable 5462" "SHELL:-diag-disable 5268")
-target_compile_options(limit_compiler_warnings INTERFACE
+target_compile_options(mute_unwanted_compiler_warnings INTERFACE
                        "$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<Fortran_COMPILER_ID:Intel,IntelLLVM>>:$<IF:$<BOOL:${WIN32}>,${intel_windows_disabled_warning_flags},${intel_linux_disabled_warning_flags}>>"
 )
 

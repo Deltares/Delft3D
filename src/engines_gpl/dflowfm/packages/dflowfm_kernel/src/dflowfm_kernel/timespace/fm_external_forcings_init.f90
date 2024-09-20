@@ -69,7 +69,6 @@ contains
       integer :: i
       integer :: num_items_in_file
       character(len=INI_VALUE_LEN) :: fnam, base_dir
-      integer :: ierr ! error number from allocate function
       integer :: k, n, k1
       integer :: ib, ibqh, ibt
       integer :: maxlatsg
@@ -224,7 +223,7 @@ contains
       logical :: res
 
       integer, dimension(1) :: target_index
-      character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, forcing_file_type, property_name, property_value
+      character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
       type(tree_data), pointer :: block_ptr
       character(len=300) :: error_message
       character(len=1) :: oper
@@ -630,7 +629,7 @@ contains
       logical :: res
 
       integer, allocatable :: mask(:)
-      logical :: invert_mask, bla
+      logical :: invert_mask
       logical :: is_variable_name_available
       logical :: is_extrapolation_allowed
       character(len=INI_KEY_LEN) :: variable_name

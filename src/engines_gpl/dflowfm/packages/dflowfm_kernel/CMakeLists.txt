@@ -117,6 +117,11 @@ set(library_source_list     ${fortran_version_files}
 
 add_library(${library_name} ${library_source_list})
 
+target_link_libraries(${library_name} PRIVATE
+    mute_unwanted_compiler_warnings
+    additional_compiler_warnings
+)
+
 # Add dependencies
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
@@ -164,66 +169,65 @@ if (UNIX)
                             interacter_stub)
 
     oss_include_libraries(${library_name} oss_dependencies)
-    target_link_libraries(${library_name} ${oss_dependencies}
+    target_link_libraries(${library_name} PRIVATE ${oss_dependencies}
          PkgConfig::PETSC
-         uuid)
+         uuid
+    )
 
 endif(UNIX)
 
 if (WIN32)
-set(oss_dependencies    deltares_common
-                        deltares_common_c
-                        deltares_common_mpi
-                        dhydrology_kernel
-                        ec_module
-                        flow1d
-                        flow1d_core
-                        flow1d_io
-                        flow1d_implicit
-                        gridgeom
-                        ice_data
-                        ice_io
-                        io_netcdf
-                        io_netcdf_data
-                        kdtree_wrapper
-                        kdtree2
-                        fortrangis
-                        libsigwatch
-                        md5digest
-                        md5
-                        metis
-                        metisoptions
-                        morphology_data
-                        morphology_io
-                        morphology_kernel
-                        morphology_plugins_c
-                        netcdf4
-                        netcdff
-                        petsc
-                        polypack
-                        trachytopes_io
-                        trachytopes_kernel
-                        triangle_c
-                        waq_definition
-                        waq_process
-                        waq_hyd_data
-                        waq_utils_c
-                        waq_utils_f
-                        wq_processes)
+    set(oss_dependencies deltares_common
+                         deltares_common_c
+                         deltares_common_mpi
+                         dhydrology_kernel
+                         ec_module
+                         flow1d
+                         flow1d_core
+                         flow1d_io
+                         flow1d_implicit
+                         gridgeom
+                         ice_data
+                         ice_io
+                         io_netcdf
+                         io_netcdf_data
+                         kdtree_wrapper
+                         kdtree2
+                         fortrangis
+                         libsigwatch
+                         md5digest
+                         md5
+                         metis
+                         metisoptions
+                         morphology_data
+                         morphology_io
+                         morphology_kernel
+                         morphology_plugins_c
+                         netcdf4
+                         netcdff
+                         petsc
+                         polypack
+                         trachytopes_io
+                         trachytopes_kernel
+                         triangle_c
+                         waq_definition
+                         waq_process
+                         waq_hyd_data
+                         waq_utils_c
+                         waq_utils_f
+                         wq_processes
+    )
 
     if(NOT WITH_INTERACTER)
         set(oss_dependencies ${oss_dependencies} interacter_stub)
     endif()
 
+    oss_include_libraries(${library_name} oss_dependencies)
+    target_link_libraries(${library_name} PRIVATE
+                          ${oss_dependencies}
+    )
 
-
-oss_include_libraries(${library_name} oss_dependencies)
-target_link_libraries(${library_name} PRIVATE
-                      ${oss_dependencies}
-                      limit_compiler_warnings
-)
-
-include_directories(${petsc_path})
+    include_directories(${petsc_path})
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"

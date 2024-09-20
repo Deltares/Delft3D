@@ -34,7 +34,7 @@ module m_derefine
 contains
 !***************7***  INTERPOLATION ************************************
       subroutine DEREFINE(M1, N1, M2, N2, NUM)
-         use m_grid, only: ijyes, nc, mc, mmax, mnmax, nmax, xc, yc
+         use m_grid, only: nc, mc, mmax, nmax, xc, yc
          use m_gridsettings, only: mfac, nfac
          use messagehandling, only: LEVEL_DEBUG, mess
          use m_missing, only: dmiss

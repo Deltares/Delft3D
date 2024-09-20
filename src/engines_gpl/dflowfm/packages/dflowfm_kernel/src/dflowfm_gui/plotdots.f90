@@ -35,7 +35,6 @@ contains
 !>    plot dots
       subroutine plotdots()
          use m_plotdots
-         use unstruc_colors, only: ncolhl
          use unstruc_display, only: ndrawdots
          use m_cirr
 
