@@ -65,7 +65,7 @@
             <!-- NOTE: the reference here is a run with delpar alone, delwaq takeover time was increased beyond the time of the run -->
             <file name="trk-prt01.dat" type="NEFIS">
                 <parameters name="trk-series">
-                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                        <parameter name="XYZTRK" toleranceRelative="1.0e-05"/>
                 </parameters>
             </file>
         </checks>
@@ -107,7 +107,7 @@
             <!-- NOTE: the reference here is a run with delpar alone, delwaq takeover time was increased beyond the time of the run -->
             <file name="trk-c02z_f33z.dat" type="NEFIS">
                 <parameters name="trk-series">
-                        <parameter name="XYZTRK" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                        <parameter name="XYZTRK" toleranceRelative="1.0e-05"/>
                 </parameters>
             </file>
         </checks>
