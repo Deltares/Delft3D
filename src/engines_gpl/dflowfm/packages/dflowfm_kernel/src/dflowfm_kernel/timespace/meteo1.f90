@@ -378,9 +378,9 @@ contains
       pairs(5)%key = 'AVERAGINGTYPE'
       pairs(5)%value = 4
       pairs(6)%key = 'TRACERFALLVELOCITY'
-      pairs(6)%value = 4
+      pairs(6)%value = 24
       pairs(7)%key = 'TRACERDECAYTIME'
-      pairs(7)%value = 5
+      pairs(7)%value = 25
       pairs(8)%key = 'RELATIVESEARCHCELLSIZE'
       pairs(8)%value = 5
       pairs(9)%key = 'EXTRAPOLTOL'
