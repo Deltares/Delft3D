@@ -1,38 +1,24 @@
-# Set directories
-# Set the directory of where the source code is located.
-set(src_path src)
-set(include_path include)
-
-# Set the DFlow FM component path
-set(dflowfm_path "${CMAKE_CURRENT_SOURCE_DIR}/../../")
-
-# Set the directory referring to the ref folder
-set(res_path ${dflowfm_path}/res)
-
-#Version includes
+# Add the resource files as a separate target, since we don't want to share the compiler flags for the Fortran and RC compilers.
+set(dflowfm_path "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
-set(dflowfm_version_header_path ${dflowfm_path}/version)
-set(rc_version_file ${dflowfm_version_header_path}/dflowfm_dll_version.rc)
-
-if(UNIX)
-   include_directories("${CMAKE_CURRENT_SOURCE_DIR}/${include_path}")
-endif(UNIX)
+set(dflowfm_dll_version_file ${dflowfm_path}/version/dflowfm_dll_version.rc)
+add_library(dflowfm_dll_resources ${dflowfm_dll_version_file})
+target_include_directories(dflowfm_dll_resources PRIVATE ${version_include_dir})
+set_target_properties (dflowfm_dll_resources PROPERTIES FOLDER engines_gpl/dflowfm/resources)
 
 # Gather the source files
-set(source ${src_path}/unstruc_bmi.F90
-           ${src_path}/unstruc_dll_api.F90
-           )
-file(GLOB includes ${include_path}/*.inc)
-
-# Define the executable
-set(library_name dflowfm_dll)
-add_library(${library_name} SHARED  ${source}
-                                    ${includes}
-                                    ${rc_version_file})
-
-target_include_directories(${library_name} PRIVATE ${dflowfm_version_header_path}
-                                                   ${version_include_dir}
+set(source src/unstruc_bmi.F90
+           src/unstruc_dll_api.F90
 )
+file(GLOB includes include/*.inc)
+
+# Define the executable.
+set(library_name dflowfm_dll)
+add_library(${library_name} SHARED ${source}
+                                   ${includes}
+)
+
+target_include_directories(${library_name} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 # Add dependencies
 if (UNIX)
@@ -65,7 +51,6 @@ if (UNIX)
                             morphology_kernel
                             morphology_plugins_c
                             nefis
-                            netcdf-fortran::netcdf-fortran
                             polypack
                             trachytopes_io
                             trachytopes_kernel
@@ -111,7 +96,6 @@ if (WIN32)
                             morphology_kernel
                             morphology_plugins_c
                             nefis
-                            netcdf-fortran::netcdf-fortran
                             petsc
                             polypack
                             trachytopes_io
@@ -147,9 +131,7 @@ set_source_files_properties(${source}
 
 
 if (WIN32)
-
-    target_include_directories(${library_name} PRIVATE  ${include_path}
-                                                        ${mpi_module_path}
+    target_include_directories(${library_name} PRIVATE  ${mpi_module_path}
                                                         ${petsc_libdir}
                                                         ${tecplot_path})
 
@@ -183,12 +165,15 @@ if (WIN32)
     target_link_options(${library_name} PRIVATE ${nologo_flag})
 endif(WIN32)
 
+target_link_libraries(${library_name} PRIVATE dflowfm_dll_resources
+                                              netcdf-fortran::netcdf-fortran
+)
+
 # Change the name of the target library to dflowfm.dll
-set_target_properties (${library_name} PROPERTIES OUTPUT_NAME  dflowfm)
+set_target_properties (${library_name} PROPERTIES OUTPUT_NAME dflowfm)
 
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source} ${includes})
-source_group(Resources FILES ${rc_version_file})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/dflowfm)
 
 # post-build

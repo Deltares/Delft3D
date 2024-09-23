@@ -1,17 +1,13 @@
-# Set directories
-# Set the directory of where the source code is located.
-set(src_path src)
-
-# Set the DFlow FM component path
-set(dflowfm_path "${CMAKE_CURRENT_SOURCE_DIR}/../../")
-set(dflowfm_cli_path "${CMAKE_CURRENT_SOURCE_DIR}/src/")
-
-# Set the directory referring to the res folder
+# Add the resource files as a separate target, since we don't want to share the compiler flags for the Fortran and RC compilers.
+set(dflowfm_path "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 set(res_path ${dflowfm_path}/res)
-
+set(icon_file ${res_path}/dflowfm_icon.rc)
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
-set(dflowfm_version_header_path ${dflowfm_path}/version)
-set(rc_version_file ${dflowfm_version_header_path}/dflowfm_cli_version.rc)
+set(dflowfm_cli_version_file ${dflowfm_path}/version/dflowfm_cli_version.rc)
+
+add_library(dflowfm_cli_resources ${icon_file} ${dflowfm_cli_version_file})
+target_include_directories(dflowfm_cli_resources PRIVATE ${version_include_dir})
+set_target_properties (dflowfm_cli_resources PROPERTIES FOLDER engines_gpl/dflowfm/resources)
 
 # Interacter
 if(WITH_INTERACTER)
@@ -29,15 +25,11 @@ if(WITH_INTERACTER)
 endif()
 
 # Gather the source files
-file(GLOB source    ${dflowfm_cli_path}/net_main.F90)
-
-set(icon_file ${res_path}/dflowfm_icon.rc)
+file(GLOB source src/net_main.F90)
 
 # Define the executable
 set(executable_name dflowfm-cli)
-add_executable(${executable_name}   ${source}
-                                    ${icon_file}
-                                    ${rc_version_file})
+add_executable(${executable_name} ${source})
 
 # Add dependencies
 if(UNIX)
@@ -70,7 +62,6 @@ if(UNIX)
                             morphology_kernel
                             morphology_plugins_c
                             nefis
-                            netcdf-fortran::netcdf-fortran
                             polypack
                             trachytopes_io
                             trachytopes_kernel
@@ -114,7 +105,6 @@ if(WIN32)
                             morphology_kernel
                             morphology_plugins_c
                             nefis
-                            netcdf-fortran::netcdf-fortran
                             petsc
                             polypack
                             trachytopes_io
@@ -154,14 +144,13 @@ endif(WIN32)
 
 
 # Define additional compilation flags
-set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/net_main.F90
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/net_main.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 if (WIN32)
     include_directories(${mpi_module_path}
                         ${petsc_libdir}
                         ${tecplot_path}
-                        ${version_include_dir}
                         ${dflowfm_version_path})
 
 
@@ -205,11 +194,10 @@ endif(WIN32)
 target_link_directories(${executable_name} PRIVATE
                         "${mpi_library_path}")
                         
-target_link_libraries(${executable_name} PRIVATE "${mpi_fortran_library}")
-
-# Create the folder structure in Visual Studio
-source_group("Resources" FILES  ${icon_file}
-                                ${rc_version_file})
+target_link_libraries(${executable_name} PRIVATE "${mpi_fortran_library}"
+                                                 netcdf-fortran::netcdf-fortran
+                                                 dflowfm_cli_resources
+)
 
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
@@ -230,4 +218,3 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/ru
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dflowfm_processes.${platform_extension} DESTINATION bin)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dfmoutput.${platform_extension}         DESTINATION bin)
 install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dflowfm/scripts/team-city/run_dfm_volume_tool.${platform_extension}   DESTINATION bin)
-
