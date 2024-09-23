@@ -32,7 +32,7 @@ include: yum
     VENDOR Deltares
     CATEGORY Science
     DESCRIPTION Delft3D Open Source. Computational cores: D-Flow FM, D-Water Quality, D-FeedBack Control and D-Waves. Usage: See Installation_manual.pdf shipped with the Windows distribution.
-    MAINTAINER delft3d.support@deltares.nl
+    MAINTAINER software.support@deltares.nl
     LICENSE Affero General Public License
     LICENSEFILE /opt/delft3dfm_latest/license/License.pdf
     ITERATION <singularityVersionNumberDelft3DFM>
