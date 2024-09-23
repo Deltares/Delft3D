@@ -37,5 +37,5 @@ else
     cd dflowfm
     $dimrdir/lnx64/bin/run_dflowfm.sh --partition:ndomains=$nPart:icgsolver=6 $mduFile
     cd ..
-    $dimrdir/lnx64/bin/run_dimr.sh --dockerparallel -c $nProc -m $dimrFile
+    $dimrdir/lnx64/bin/run_dimr.sh -c $nProc -m $dimrFile
 fi
