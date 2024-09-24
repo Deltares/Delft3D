@@ -6,10 +6,10 @@ PIW_H_SU,PIW,Horizontal,Survival suit,--,0.014,0.05,30
 PIW_H_SC,PIW,Horizontal,Scuba suit,--,0.007,0.04,30
 PIW_H_D,PIW,Horizontal,deceased,--,0.015,0.04,30
 S_CRAFT_M,Survival Craft,Marine Life Rafts,--,--,0.042,0.02,28
-S_CRAFT_M_NB1,Survival Craft,Marine Life Rafts,No Ballast Systems,no canopy, no drogue,0.057,0.11,24
-S_CRAFT_M_NB2,Survival Craft,Marine Life Rafts,No Ballast Systems,no canopy, w/ drogue,0.044,-0.10,28
-S_CRAFT_M_NB3,Survival Craft,Marine Life Rafts,No Ballast Systems,canopy, no drogue,0.037,0.06,24
-S_CRAFT_M_NB4,Survival Craft,Marine Life Rafts,No Ballast Systems,canopy, w/ drogue,0.030,0.00,28
+S_CRAFT_M_NB1,Survival Craft,Marine Life Rafts,No Ballast Systems,no canopy no drogue,0.057,0.11,24
+S_CRAFT_M_NB2,Survival Craft,Marine Life Rafts,No Ballast Systems,no canopy w/ drogue,0.044,-0.10,28
+S_CRAFT_M_NB3,Survival Craft,Marine Life Rafts,No Ballast Systems,canopy no drogue,0.037,0.06,24
+S_CRAFT_M_NB4,Survival Craft,Marine Life Rafts,No Ballast Systems,canopy w/ drogue,0.030,0.00,28
 S_CRAFT_M_SB1,Survival Craft,Marine Life Rafts,Shallow Ballast Systems and Canopy,--,0.029,0.00,22
 S_CRAFT_M_SB2,Survival Craft,Marine Life Rafts,Shallow Ballast Systems and Canopy,no drogue,0.032,-0.01,22
 S_CRAFT_M_SB3,Survival Craft,Marine Life Rafts,Shallow Ballast Systems and Canopy,with drogue,0.025,0.01,22
@@ -17,7 +17,7 @@ S_CRAFT_M_SB4,Survival Craft,Marine Life Rafts,Shallow Ballast Systems and Canop
 S_CRAFT_M_DB,Survival Craft,Marine Life Rafts,Deep Ballast Systems & Canopies,(table 1-2 for levels 4-6),0.030,0.01,13
 S_CRAFT_OM_L,Survival Craft,Other Maritime survival Craft,life capsule USCG,--,0.038,-0.04,22
 S_CRAFT_OM_U,Survival Craft,Other Maritime survival Craft,USCG Sea Rescue Kit,--,0.025,-0.02,7
-S_CRAFT_A_NB,Survival Craft,Aviation life rafts,no ballast, w/canopy,4-6-person, w/o/ frogue,0.037,0.06,24
+S_CRAFT_A_NB,Survival Craft,Aviation life rafts,no ballast,w/canopy 4-6-person w/o/ frogue,0.037,0.06,24
 S_CRAFT_A_E,Survival Craft,Aviation life rafts,Evac/ Slide,4-6-person,0.028,-0.01,15
 P_CRAFT_SK,Person-powered Craft,Sea kayak,W/person on aft deck,--,0.011,0.12,15
 P_CRAFT_SB,Person-powered Craft,surtf board,w/ person,--,0.020,0.00,15
