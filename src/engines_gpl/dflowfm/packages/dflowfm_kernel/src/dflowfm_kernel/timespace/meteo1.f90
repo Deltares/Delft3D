@@ -7187,7 +7187,7 @@ contains
          continue
       case ('friction_coefficient_Chezy', 'friction_coefficient_Manning', 'friction_coefficient_WalLlawNikuradse', &
             'friction_coefficient_WhiteColebrook', 'friction_coefficient_StricklerNikuradse', &
-            'friction_coefficient_Strickler', 'friction_coefficient_deDosBijkerk')
+            'friction_coefficient_Strickler', 'friction_coefficient_deBosBijkerk')
          itemPtr1 => item_frcutim ! the same for all types (type is stored elsewhere)
       case ('bedrock_surface_elevation')
          itemPtr1 => item_subsiduplift
