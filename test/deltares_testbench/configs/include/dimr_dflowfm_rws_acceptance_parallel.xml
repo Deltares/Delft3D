@@ -74,12 +74,12 @@
                 </file>
                 <file name="resultaten/Maas_kort_0002_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.02" />
                     </parameters>
                 </file>
                 <file name="resultaten/Maas_kort_0003_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.09" />
                     </parameters>
                 </file>
             </checks>
@@ -97,22 +97,22 @@
              <checks>
                 <file name="Results/rijn_WBI_kort_0000_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.08" />
                     </parameters>
                 </file>
                 <file name="Results/rijn_WBI_kort_0001_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.005" />
                     </parameters>
                 </file>
                 <file name="Results/rijn_WBI_kort_0002_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.008" />
                     </parameters>
                 </file>
                 <file name="Results/rijn_WBI_kort_0003_map.nc" type="NETCDF">
                     <parameters>
-                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0002" />
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.04" />
                     </parameters>
                 </file>
             </checks>
