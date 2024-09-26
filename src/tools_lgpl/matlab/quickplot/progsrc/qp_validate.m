@@ -361,10 +361,14 @@ try
                 delete('*')
                 FileName=inifile('getstring',CaseInfo,'','FileName','');
                 FileName2=inifile('getstring',CaseInfo,'','FileName2','');
+                if length(FileName)<7 || ~isequal(lower(FileName(1:7)),'http://')
+                    FileName = portpath(FileName);
+                end
                 if isempty(FileName2)
                     FileName2={};
                     write_section(logid2,'Opening ''%s''',protected(FileName));
                 else
+                    FileName2=portpath(FileName2);
                     write_section(logid2,'Opening ''%s'' with ''%s''',protected(FileName),protected(FileName2));
                     FileName2={[sdata,FileName2]};
                 end
