@@ -8,7 +8,7 @@ from html_pre_tag_parser import extract_text_from_last_pre_tag
 
 @dataclass
 class WarningMessage:
-    file_path: str
+    file_path: Path
     line_number: int
     message_type: str
     message_number: int
@@ -32,7 +32,7 @@ def parse_log(log_text: str) -> List[WarningMessage]:
     for line in lines:
         match = pattern.match(line)
         if match:
-            file_path = Path(match.group('file_path')).as_posix()
+            file_path = Path(match.group('file_path'))
             line_number = int(match.group('line_number'))
             message_type = match.group('message_type')
             message_number = int(match.group('message_number'))
@@ -80,12 +80,12 @@ def main():
     if args.filter:
         # Flatten the list of lists into a single list
         filters = [item for sublist in args.filter for item in sublist]
-        messages = [entry for entry in messages if any(f in entry.file_path for f in filters)]
+        messages = [entry for entry in messages if any(f in entry.file_path.as_posix() for f in filters)]
 
     if args.print_messages:
         for entry in messages:
             print(f"{f'{args.project_name}: ' if args.project_name else ''}The following {entry.message_type} was treated as an error:")
-            print(f"{entry.file_path}({entry.line_number}) error #{entry.message_number}: {entry.message_string}")
+            print(f"{entry.file_path}({entry.line_number}): error #{entry.message_number}: {entry.message_string}")
         print(f"Number of warnings and remarks found: {len(messages)}")
 
     # Exit with a nonzero code if there are any messages
