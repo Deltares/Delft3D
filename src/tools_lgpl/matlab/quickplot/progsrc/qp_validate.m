@@ -158,7 +158,7 @@ NCrashed=0;
 NSlower=0;
 TotTimeRef=0;
 TotTime=0;
-fs=filesep;
+fs='/'; % always use forward slash here instead of filesep because the backward slash on Windows gives problems in LaTeX ...
 sdata=['..',fs,'data',fs];
 sref=['..',fs,'reference',fs];
 % some file are platform specific, use a prefix to separate them.
