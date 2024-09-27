@@ -37,7 +37,6 @@
       use m_missing
       use m_partitioninfo
       use m_alloc
-      use unstruc_model, only: md_netfile
       use unstruc_messages
       use m_sferic, only: jsferic, dg2rd
       use gridoperations

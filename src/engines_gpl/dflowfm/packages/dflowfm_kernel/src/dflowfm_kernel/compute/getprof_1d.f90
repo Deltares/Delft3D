@@ -40,7 +40,6 @@ subroutine getprof_1D(L, hprL, area, width, japerim, calcConv, perim)
    use m_flowtimes, only: time1, times_update_roughness
    use unstruc_channel_flow
    use m_cross_helper
-   use unstruc_model, only: md_restartfile
    use precision_basics
    use m_get_cz
 

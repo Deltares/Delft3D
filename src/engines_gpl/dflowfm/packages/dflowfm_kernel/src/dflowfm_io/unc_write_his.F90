@@ -86,7 +86,6 @@ contains
       use m_flowtimes
       use m_flow
       use m_flowgeom
-      use network_data, only: xk, yk
       use m_observations
       use m_monitoring_crosssections
       use m_monitoring_runupgauges

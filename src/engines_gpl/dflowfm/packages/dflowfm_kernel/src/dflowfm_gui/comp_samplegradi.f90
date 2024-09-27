@@ -32,7 +32,7 @@
 
 !> compute sample gradient at (j=constant) or (i=constant) edges
 subroutine comp_samplegradi(IDIR, i, j, grad, Sn, DareaL, DareaR)
-   use m_samples, only: NS, MXSAM, MYSAM, xs, ys
+   use m_samples, only: MXSAM, MYSAM
    use m_samples_refine
 
    implicit none

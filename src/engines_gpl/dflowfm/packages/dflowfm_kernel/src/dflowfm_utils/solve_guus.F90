@@ -495,7 +495,6 @@
     use m_flowparameters, only: noderivedtypes, icgsolver, ipre
     use m_reduce
     use m_flowtimes, only: handle_sol
-    use m_partitioninfo, only: my_rank, ndomains
     use m_timer
     use m_qnerror
     use m_solve_jacobi
@@ -622,7 +621,6 @@
     use m_flowgeom, only: kfs
     use MessageHandling
     use m_flowparameters, only: Noderivedtypes
-    use m_partitioninfo, only: my_rank
     use m_netw, only: xzw, yzw
     use unstruc_model, only: md_ident
     use m_qnerror
@@ -2381,7 +2379,6 @@
     use m_flowgeom, only: kfs
     use unstruc_messages
     use m_timer
-    use network_data, only: xzw
     use m_flowparameters, only: jalogsolverconvergence
     use mpi
     use m_calls_saad

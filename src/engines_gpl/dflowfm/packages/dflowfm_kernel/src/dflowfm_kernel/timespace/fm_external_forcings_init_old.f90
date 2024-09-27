@@ -43,7 +43,7 @@ contains
       use m_netw, only: xk, yk, zk, numk, numl
       use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, selectelset_internal_nodes, getmeteoerror, readprovider
-      use m_structures, only: jaoldstr, network
+      use m_structures, only: jaoldstr
       use m_meteo
       use m_sediment, only: sedh, sed, mxgr, jaceneqtr, grainlay, jagrainlayerthicknessspecified
       use m_transport, only: ised1, numconst, const_names, constituents, itrac2const
@@ -1359,13 +1359,13 @@ contains
       use m_flowgeom, only: ln, xz, yz, iadv, ba, wu
       use unstruc_model, only: md_extfile_dir
       use timespace, only: uniform, spaceandtime, readprovider
-      use m_structures, only: jaoldstr, network
+      use m_structures, only: jaoldstr
       use m_meteo
       use m_transport, only: numconst
       use m_strucs, only: generalstruc, idx_crestlevel, idx_gateloweredgelevel, idx_gateopeningwidth
       use dfm_error, only: dfm_extforcerror, dfm_noerr, dfm_strerror
       use m_sobekdfm, only: nbnd1d2d
-      use m_partitioninfo, only: is_ghost_node, jampi, idomain, my_rank, reduce_sum
+      use m_partitioninfo, only: is_ghost_node, jampi, reduce_sum
       use m_laterals, only: numlatsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, nnlat, n1latsg, n2latsg, balat, qplat, lat_ids, &
          initialize_lateraldata, apply_transport
       use m_sobekdfm, only: init_1d2d_boundary_points

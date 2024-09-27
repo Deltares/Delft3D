@@ -19,9 +19,19 @@ set(intel_windows_warning_error_flag /warn:errors)
 set(intel_linux_warning_error_flag "SHELL:-warn errors")
 set(gcc_warning_error_flag -Werror)
 target_compile_options(compiler_warnings_as_errors INTERFACE
-                       "$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<Fortran_COMPILER_ID:Intel,IntelLLVM>>:$<IF:$<BOOL:${WIN32}>,${intel_windows_warning_error_flag},${intel_linux_warning_error_flag}>>"
                        "$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<Fortran_COMPILER_ID:GNU>>:${gcc_warning_error_flag}>"
 )
+
+# Turning on warnings as errors in the intel compiler (/warn:errors) also gives errors for warnings that were turned off.
+# Parse the output of the build log instead
+function(add_warnings_as_errors_post_build_windows target_name)
+    add_custom_command(TARGET ${target_name}
+                       POST_BUILD
+                       COMMAND python fortran_warnings_as_errors.py "${CMAKE_CURRENT_BINARY_DIR}/${target_name}.dir/$<CONFIG>/BuildLog.htm" --print-messages --project-name "${target_name}"
+                       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/../../tools/warnings_as_errors
+                       VERBATIM
+                       )
+endfunction()
 
 add_library(mute_unwanted_compiler_warnings INTERFACE)
 # Disable warning 5462, global name too long. The compiler limit of 90 characters is too restrictive, see https://community.intel.com/t5/Intel-Fortran-Compiler/Many-quot-Global-name-too-long-quot-warnings/td-p/1505843

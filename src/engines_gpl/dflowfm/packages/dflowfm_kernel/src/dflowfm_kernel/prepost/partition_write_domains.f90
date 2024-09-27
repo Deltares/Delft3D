@@ -39,7 +39,6 @@
       use unstruc_model, only: md_ident
       use m_polygon, only: NPL
       use dfm_error
-      use network_data, only: lne
       use m_flowparameters, only: japartdomain
       use gridoperations
       use system_utils, only: find_last_slash

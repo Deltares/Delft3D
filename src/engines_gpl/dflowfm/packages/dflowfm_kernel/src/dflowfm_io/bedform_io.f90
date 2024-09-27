@@ -213,7 +213,6 @@ contains
       use table_handles
       use m_flowgeom, only: ndx, griddim, lnx
       use unstruc_files, only: mdia
-      use unstruc_model, only: md_tunit
       use m_sediment, only: stm_included
       use m_bedform_data
       use MessageHandling

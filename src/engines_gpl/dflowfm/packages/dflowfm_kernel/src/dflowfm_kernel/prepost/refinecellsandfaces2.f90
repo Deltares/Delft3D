@@ -431,7 +431,6 @@ contains
       use m_netw
       use m_samples
       use m_ec_interpolationsettings
-      use m_physcoef, only: ag
       use m_missing
 
       implicit none

@@ -890,7 +890,7 @@ contains
       use m_flow
       use io_ugrid
       use m_flowgeom, only: ndx2d
-      use unstruc_netcdf, only: crs, check_error, get_2d_edge_data
+      use unstruc_netcdf, only: check_error, get_2d_edge_data
       use m_missing
       use m_alloc
 
