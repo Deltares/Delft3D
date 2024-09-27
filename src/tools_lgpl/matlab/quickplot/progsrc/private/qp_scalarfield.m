@@ -122,7 +122,8 @@ switch presentationtype
             Y(isnan(Y))=mean(Y(~isnan(Y)));
         end
         hNew=gencontour(hNew,Ops,Parent,X,Y,Val,Ops.Thresholds);
-        if strcmp(Ops.presentationtype,'contour lines')
+        if strcmp(Ops.presentationtype,'contour lines') || ...
+                strcmp(Ops.presentationtype,'coloured contour lines')
             set(hNew,Ops.LineParams{:});
         end
         
@@ -186,13 +187,14 @@ switch presentationtype
         switch Ops.presentationtype
             case 'contour lines'
                 hNew=tricontour(TRI,XYZ(:,1),XYZ(:,2),Val(:),Ops.Thresholds,'k');
-                set(hNew,'color',Ops.colour,'linestyle',Ops.linestyle,'marker',Ops.marker,'markeredgecolor',Ops.markercolour,'markerfacecolor',Ops.markerfillcolour)
+                set(hNew,Ops.LineParams{:})
             case 'coloured contour lines'
                 hNew=tricontour(TRI,XYZ(:,1),XYZ(:,2),Val(:),Ops.Thresholds);
                 for i=1:length(hNew)
                     c=get(hNew(i),'FaceVertexCData');
                     set(hNew(i),'FaceVertexCData',0*c+i)
                 end
+                set(hNew,Ops.LineParams{:})
             case 'contour patches'
                 hNew=tricontourf(TRI,XYZ(:,1),XYZ(:,2),Val(:),Ops.Thresholds,'clevel','index0','zplane',0);
             case 'contour patches with lines'
@@ -344,6 +346,7 @@ switch data.ValLocation
                             c=get(hNew(i),'FaceVertexCData');
                             set(hNew(i),'FaceVertexCData',0*c+i)
                         end
+                        set(hNew,Ops.LineParams{:})
                     case 'contour patches'
                         hNew=tricontourf(TRI,data.X,data.Y,Val,Ops.Thresholds,'clevel','index0','zplane',0);
                     case 'contour patches with lines'

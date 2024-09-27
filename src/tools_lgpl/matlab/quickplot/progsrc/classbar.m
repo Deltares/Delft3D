@@ -12,6 +12,10 @@ function classbar(ax,Th,varargin)
 %   labeled in case of a CONTOUR plot, the transitions should be labeled in
 %   case of a CONTOURF plot.
 %
+%   ...,'labellines')
+%   labels the colors instead of the transitions, and plots the colors as
+%   lines instead of patches.
+%
 %   ...,'plotall')
 %   makes sure that all classes are drawn irrespective of the classes used
 %   in the plot. This includes the last class >= maximum threshold.
@@ -96,6 +100,8 @@ PlotRange=[];
 ColorByIndex=0;
 sTh=[];
 LabelCol=0;
+PlotLines=0;
+LineParams={};
 MaxValues=0;
 ClimMode='extend';
 TickLabelInterpreter='none';
@@ -110,6 +116,12 @@ if nargin>2
                     PlotAll=inf;
                 case 'labelcolor'
                     LabelCol=1;
+                case 'labellines'
+                    LabelCol=1;
+                    PlotLines=1;
+                case 'lineparams'
+                    i=i+1;
+                    LineParams=varargin{i};
                 case 'colorbyindex'
                     ColorByIndex=1;
                 case 'climmode'
@@ -286,18 +298,27 @@ I=findobj(ax,'tag','classbounds');
 if ~isempty(I)
     delete(I)
 end
-XP=[(1:N)+1; (1:N)+1; (1:N); (1:N)]-MaxValues;
-YP=[repmat(YLim(1),[1 N]);repmat(YLim(2),[1 N])
-    repmat(YLim(2),[1 N]);repmat(YLim(1),[1 N])];
-if ~horbar
-    TMP=YP;
-    YP=XP;
-    XP=TMP;
-end
 if ColorByIndex
     cdat = transpose(1:N);
 else
     cdat = transpose(Th(1:N));
 end
-patch(XP,YP,1,'cdata',cdat,'parent',ax,'tag','classbounds')
+if PlotLines
+    XP=[(1:N)+0.5; (1:N)+0.5; NaN([1 N])]-MaxValues;
+    YP=[repmat(YLim(1),[1 N]);repmat(YLim(2),[1 N])
+        NaN([1 N])];
+    cdat = repmat(cdat,3,1);
+    plotOps = [{'EdgeColor','flat'},LineParams];
+else
+    XP=[(1:N)+1; (1:N)+1; (1:N); (1:N)]-MaxValues;
+    YP=[repmat(YLim(1),[1 N]);repmat(YLim(2),[1 N])
+        repmat(YLim(2),[1 N]);repmat(YLim(1),[1 N])];
+    plotOps = {};
+end
+if ~horbar
+    TMP=YP;
+    YP=XP;
+    XP=TMP;
+end
+patch(XP,YP,1,'cdata',cdat,'parent',ax,'tag','classbounds',plotOps{:})
 set(OrigAx,'clim',get(ax,'clim'))
