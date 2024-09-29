@@ -206,7 +206,7 @@
             cwall = 1d0 / (cf**2)
             taubu(L) = cwall * rhoL * umod * (u1(L) + ustokes(L))
             taubxu(L) = cwall * rhoL * umod * umod
-            cfwavhi(L) = cfuhi(L) ! modind = 0 when running waves. Removed modind>0 statement in furu
+            cfwavhi(L) = cfuhi(L)*umod ! modind = 0 when running waves. Removed modind>0 statement in furu
          else if (modind == 10) then
             umod = sqrt((u1(L) - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16d0 * uorbu * fsqrtt)**2)
             z0urou(L) = huL * exp(-1d0 - vonkar * cz / sag)
