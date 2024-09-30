@@ -1,0 +1,1 @@
+"C:\\Program Files (x86)\\Intel\\oneAPI\\setvars.bat" && "C:\\Program Files (x86)\\Intel\\oneAPI\\setvars-vcvarsall.bat" && "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\Tools\\VsDevCmd.bat"
