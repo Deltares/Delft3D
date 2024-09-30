@@ -36,7 +36,7 @@ subroutine transport() ! transport for now, advect salinity and add
    use m_flow
    use Timers
    use m_sediment
-   use m_netw, only: xk, yk, zk
+   use m_netw, only: zk
    use m_flowtimes
    use m_flowparameters, only: jadiagnostictransport
    use m_physcoef, only: idensform, difmolsal

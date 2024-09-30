@@ -43,7 +43,7 @@
     use m_xbeach_netcdf
     use waq
     use m_timer
-    use m_partitioninfo, only: ndomains, jampi, my_rank
+    use m_partitioninfo, only: jampi, my_rank
     use m_flowparameters, only: jashp_crs, jashp_obs, jashp_weir, jashp_thd, jashp_gate, jashp_emb, jashp_fxw, jashp_src
     use m_flowgeom, only: ndx2d, ndxi, lnx1d
     use unstruc_channel_flow, only: network

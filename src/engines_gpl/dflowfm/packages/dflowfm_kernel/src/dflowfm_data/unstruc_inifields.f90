@@ -174,7 +174,6 @@ contains
       use fm_external_forcings_data, only: qid, operand, transformcoef, success
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
                                   DFM_HYD_INTERCEPT_LAYER
-      use unstruc_model, only: md_extfile
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
@@ -1059,7 +1058,7 @@ contains
       use m_flowparameters, only: ibedlevtyp
       use m_meteo, only: ec_addtimespacerelation
       ! use m_flow, only:
-      use network_data, only: numk, xk, yk
+      use network_data, only: numk
       use m_flowgeom, only: lnx
       use m_alloc, only: aerr
 
@@ -1154,7 +1153,6 @@ contains
       use fm_external_forcings_data, only: success
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
-      use unstruc_model, only: md_extfile
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
       use m_hydrology_data, only: infiltcap, infiltrationmodel
       use string_module, only: str_tolower
@@ -1505,7 +1503,6 @@ contains
       use m_hydrology_data, only: infiltcap, DFM_HYD_INFILT_CONST, &
                                   DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, ActEvap
-      use unstruc_model, only: md_extfile
       use m_grw, only: jaintercept2D
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation

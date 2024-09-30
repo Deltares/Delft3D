@@ -471,8 +471,6 @@ contains
       use m_missing, only: intmiss
       use unstruc_files, only: mdia
       use system_utils, only: exifil
-      use m_monitoring_crosssections, only: crs
-      use m_observations, only: namobs
       use network_data, only: lnn, numl
       use kdtree2Factory
       use m_sferic, only: jsferic

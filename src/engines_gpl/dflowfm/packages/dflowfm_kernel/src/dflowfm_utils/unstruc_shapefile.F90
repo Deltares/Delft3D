@@ -767,7 +767,6 @@ contains
       use network_data, only: kn, xk, yk
       use m_flowgeom, only: ln2lne, iadv, bob, wu
       use m_fixedweirs
-      use m_polygon, only: iweirt
       implicit none
 
       integer, parameter :: lencharattr = 256, tshp = shpt_arc ! arcs (Polylines, possible in parts)

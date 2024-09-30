@@ -5121,7 +5121,7 @@ contains
 
 !> get ghost corners
    subroutine get_ghost_corners(domain_number, min_ghost_level, max_ghost_level, ghost_type, ghost_list)
-      use network_data, only: kn, numk, nmk, nod
+      use network_data, only: numk, nmk, nod
       use m_alloc
 
       implicit none

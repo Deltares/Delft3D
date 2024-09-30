@@ -1339,7 +1339,6 @@ contains
 
    !> check whether the end point of of the long culvert polyline coincides exactly with a 2D cell center. If so shift its x-coordinate
    subroutine longculvert_check_polyline(j, yplCulv, xplCulv)
-      use network_data, only: xzw, yzw
       use m_cell_geometry, only: xz, yz
       use m_GlobalParameters, only: flow1d_eps10
       use precision, only: comparereal

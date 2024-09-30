@@ -719,7 +719,6 @@ contains
       use m_flowtimes, only: dts
       use fm_external_forcings_data, only: numsrc, qsrc
       use m_mass_balance_areas
-      use m_partitioninfo, only: idomain, my_rank
       use timers
 
       integer :: LL, L, Lb, Lt, k1, k2, i, n

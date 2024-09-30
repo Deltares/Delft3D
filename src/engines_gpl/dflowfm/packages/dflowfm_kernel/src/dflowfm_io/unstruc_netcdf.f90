@@ -5288,7 +5288,7 @@ contains
 
       double precision, dimension(:), allocatable :: numlimdtdbl
       double precision, dimension(:), allocatable :: work1d, work1d2
-      double precision :: vicc, dicc
+      double precision :: dicc
 
       double precision, dimension(:), pointer :: dens
 

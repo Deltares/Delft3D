@@ -32,7 +32,7 @@
 
 !> make the mirror cells for open boundaries
 subroutine make_mirrorcells(Nx, xe, ye, xyen, kce, ke, ierror)
-   use network_data, only: numL, kn, lne, nmk, xk, yk
+   use network_data, only: numL, kn, lne, xk, yk
    implicit none
 
    integer, intent(in) :: Nx !< number of links
