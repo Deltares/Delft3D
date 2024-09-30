@@ -33,4 +33,4 @@ target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${floating_
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER tests/utils_lgpl/io_netcdf)
 
-install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
+install(TARGETS ${executable_name} RUNTIME DESTINATION test)

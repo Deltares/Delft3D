@@ -143,8 +143,10 @@ target_compile_options(${executable_name} PRIVATE "$<$<CONFIG:Debug>:${floating_
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})
 set_target_properties (${executable_name} PROPERTIES FOLDER tests/engines_gpl/dflowfm)
 
-install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../test_dflowfm/test_data DESTINATION share)
+configure_visual_studio_user_file(${executable_name})
+
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../test_dflowfm/test_data DESTINATION test)
 if (WIN32)
-	install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
+	install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION test)
 endif()
-install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install(TARGETS ${executable_name} RUNTIME  DESTINATION test)

@@ -28,12 +28,13 @@ set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 set(build_project ${executable_name})
 
+configure_visual_studio_user_file(${executable_name})
 
-install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install(TARGETS ${executable_name} RUNTIME  DESTINATION test)
 if(WIN32)
-install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION bin)
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/ DESTINATION test)
 endif()
-install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data DESTINATION share)
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/test_data DESTINATION test)
 
 
 
