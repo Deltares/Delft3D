@@ -30,6 +30,12 @@
 !
 !
 
+module m_hitlin
+
+implicit none
+
+contains
+
       subroutine HITLIN(P1, P2, X1, Y1, X2, Y2, V, XHIT, YHIT, JA)
          implicit none
          double precision :: dp, dv, dx, dy, frac, p1, p2, v, x1, x2, xhit, y1, y2, yhit
@@ -54,3 +60,5 @@
          end if
          return
       end
+
+end module m_hitlin

@@ -33,6 +33,7 @@
 !> derefine mesh
 subroutine derefine_mesh(xp, yp, Lconfirm)
 
+   use m_confrm
    use m_netw
    use geometry_module, only: pinpok
    use m_missing, only: jins, dmiss

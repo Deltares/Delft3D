@@ -31,6 +31,7 @@
 !
 
       subroutine checkdislin()
+         use m_rcirc
          use m_polygon
          use m_sferic
          use geometry_module, only: dlinedis

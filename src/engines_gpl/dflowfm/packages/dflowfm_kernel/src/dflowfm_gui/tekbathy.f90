@@ -31,6 +31,8 @@
 !
 
  subroutine tekbathy(ja)
+    use m_isocol2
+    use m_halt
     use unstruc_display
     use m_flowgeom
     use m_flow

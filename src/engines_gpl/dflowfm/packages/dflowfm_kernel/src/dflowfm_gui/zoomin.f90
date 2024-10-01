@@ -30,6 +30,9 @@
 !
 !
 module m_zoomin
+use m_orglocator
+use m_inqasp
+
    implicit none
 contains
    subroutine ZOOMIN(KEY, NPUT)

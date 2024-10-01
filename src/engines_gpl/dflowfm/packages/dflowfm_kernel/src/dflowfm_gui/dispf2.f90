@@ -31,11 +31,17 @@
 !
 
 !
+module m_dispf2
+
+implicit none
+
+contains
+
       subroutine DISPF2(X, Y, N, NMAX, NCOL)
          use m_set_col
          use m_movabs
          use m_lnabs
-         implicit none
+
          integer :: i
          integer :: n
          integer :: ncol
@@ -49,3 +55,5 @@
          end do
          return
       end
+
+end module m_dispf2

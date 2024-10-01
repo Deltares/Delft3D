@@ -30,6 +30,8 @@
 !
 !
 module m_jgtext
+use m_getpos
+
    implicit none
 contains
   subroutine JGTEXT(TEX, X, Y, NCOL, WIC, HIC, JAHOOG) ! grafische tekst, grafische posities, met kleurblokjes ERONDER

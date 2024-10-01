@@ -32,6 +32,7 @@
 
 !> get the grid heights from the cross spline information
 subroutine get_heights()
+   use m_comp_subheights
    use m_splines
    use m_spline2curvi
    use m_missing

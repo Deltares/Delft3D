@@ -32,6 +32,7 @@
 
    subroutine TEKSAM(MET)
 
+      use m_minmxsam
       use unstruc_colors
       use m_missing, only: DMISS
       use unstruc_opengl, only: jaopengl
@@ -95,6 +96,7 @@
    end subroutine TEKSAM
 
    subroutine TEKarc(MET)
+      use m_minmxsam
       use m_arcinfo
       use unstruc_display
       use m_missing, only: DMISS
@@ -132,6 +134,9 @@
    end subroutine TEKarc
 
    subroutine tek1sample(x, y, z, met, hrc, m)
+      use m_isocol2
+      use m_cir
+      use m_box
       use unstruc_colors
       use unstruc_display
       use m_arcinfo

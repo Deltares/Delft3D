@@ -33,6 +33,7 @@
  !> Initializes the entire current model (geometry, boundaries, initial state)
  !! @return Error status: error (/=0) or not (0)
  integer function flow_modelinit() result(iresult) ! initialise flowmodel
+    use m_d3dflow_dimensioninit
     use timers
     use m_flowgeom, only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln
     use waq, only: reset_waq

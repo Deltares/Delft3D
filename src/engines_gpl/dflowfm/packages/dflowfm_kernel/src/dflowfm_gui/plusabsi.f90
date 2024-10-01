@@ -30,13 +30,22 @@
 !
 !
 
+module m_plusabsi
+
+implicit none
+
+contains
+
       subroutine PLUSABSI(XK, YK, ZK, KN, NUMK, NUML, KEY, kndefault)
+         use m_menuv3
+         use m_getreal
+         use m_confrm
          use M_polygon
          use m_missing
          use geometry_module, only: dpinpok
          use gridoperations
          use m_readyy
-         implicit none
+
          integer, parameter :: MAXOP = 64
          integer :: NUMK, NUML, KEY
          double precision XK(NUMK), YK(NUMK), ZK(NUMK), XI, YI, ZI
@@ -157,3 +166,5 @@
          KEY = 3
          return
       end subroutine PLUSABSI
+
+end module m_plusabsi

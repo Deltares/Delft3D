@@ -31,25 +31,28 @@
 !
 
 !> plot the ridges
+module m_plot_ridges
+
+implicit none
+
+contains
+
 subroutine plot_ridges(ierror)
 
    use m_samples
    use m_samples_refine
-   use m_missing
+   use m_missing, only: dmiss
    use geometry_module, only: dbdistance
    use m_set_col
    use m_movabs
    use m_lnabs
-
-   implicit none
+   use m_comp_sampleDh
 
    integer, intent(out) :: ierror !< error (1) or not (0)
 
    integer :: i, j, ip
 
    double precision :: Dx, Dy, dum, Dh, x0, y0, x1, y1, x2, y2
-
-   double precision, external :: comp_sampleDh
 
    ierror = 1
 
@@ -92,3 +95,5 @@ subroutine plot_ridges(ierror)
 
    return
 end subroutine plot_ridges
+
+end module m_plot_ridges

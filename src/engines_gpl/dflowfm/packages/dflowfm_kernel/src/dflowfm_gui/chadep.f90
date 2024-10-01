@@ -30,6 +30,15 @@
 !
 !
 
+module m_chadep
+use m_kcir
+use m_disval1
+
+
+implicit none
+
+contains
+
       subroutine CHADEP(XP, YP, RD, KEY)
          use M_MISSING
          use m_disput
@@ -92,3 +101,5 @@
          end if
          goto 10
       end subroutine CHADEP
+
+end module m_chadep

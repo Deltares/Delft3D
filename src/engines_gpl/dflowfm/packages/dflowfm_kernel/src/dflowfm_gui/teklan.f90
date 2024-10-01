@@ -31,6 +31,9 @@
 !
 
   subroutine TEKLAN(NCOL)
+     use m_linewidth
+     use m_disp3c
+     use m_dhitext
      use M_LANDBOUNDARY
      use m_wearelt
      use unstruc_colors

@@ -30,10 +30,17 @@
 !
 !
 
+module m_dispxp
+
+implicit none
+
+contains
+
       subroutine DISPXP(X, Y, N, NCOL)
+         use m_cir
          use m_set_col
          use m_movabs
-         implicit none
+
          integer :: i
          integer :: n
          integer :: ncol
@@ -47,3 +54,5 @@
          end do
          return
       end
+
+end module m_dispxp

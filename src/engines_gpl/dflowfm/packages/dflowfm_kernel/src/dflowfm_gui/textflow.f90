@@ -31,6 +31,7 @@
 !
 
  subroutine TEXTFLOW()
+    use m_ictext
     use time_module, only: seconds_to_datetimestring
     use m_flowgeom, only: ndx, lnx
     use Timers

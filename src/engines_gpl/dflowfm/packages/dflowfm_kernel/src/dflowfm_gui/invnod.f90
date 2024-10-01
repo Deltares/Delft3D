@@ -30,12 +30,19 @@
 !
 !
 
+module m_invnod
+
+implicit none
+
+contains
+
       logical function INVNOD(K)
-         use m_netw
-         use unstruc_display
+         use m_netw, only: xk, yk
          use m_inview
-         implicit none
+
          integer :: k
          INVNOD = INVIEW(XK(K), YK(K))
          return
       end
+
+end module m_invnod

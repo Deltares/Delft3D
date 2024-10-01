@@ -34,6 +34,16 @@
 ! subroutines from unstruc.f90
 !----------------------------------------------------------------------
  subroutine tekflowstuff(ja)
+    use m_rcirc
+    use m_minmxnds
+    use m_isocol
+    use m_getktoplot
+    use m_dmovabs
+    use m_dlnabs
+    use m_dhtext
+    use m_dcirr
+    use m_arrowsxy
+    use m_arrowrcir
     use unstruc_display
     use m_netw
     use m_flowgeom

@@ -43,6 +43,7 @@
 
 !> Print model-specific text strings on screen, based on current solution state.
 subroutine textflowspecific()
+   use m_ictext
    use unstruc_model, only: md_ident
    use m_flowgeom
    use network_data
@@ -375,6 +376,7 @@ subroutine equatorialexact(t, xz, uexa, zexa, nx, deltax)
 end subroutine equatorialexact
 
 subroutine riverfloodwave()
+   use m_ictext
    use m_flow
    use m_flowgeom
    use unstruc_colors
@@ -422,6 +424,7 @@ subroutine riverfloodwave()
 end subroutine riverfloodwave
 
 subroutine weirtheo(j12)
+   use m_ictext
    use time_module, only: seconds_to_datetimestring
    use m_flow
    use m_flowgeom
@@ -632,6 +635,7 @@ subroutine weirtheo(j12)
 end subroutine weirtheo
 
 subroutine gatetheo()
+   use m_ictext
    use m_flowgeom
    use m_flow
 
@@ -661,6 +665,7 @@ subroutine gatetheo()
 end subroutine gatetheo
 
 subroutine poiseuille(init)
+   use m_rcirc
    use m_netw
    use m_flowgeom
    use m_flow

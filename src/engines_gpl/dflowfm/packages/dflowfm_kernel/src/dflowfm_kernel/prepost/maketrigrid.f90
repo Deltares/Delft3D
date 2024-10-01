@@ -32,6 +32,8 @@
 
  !> make structured triangular mesh from curvlinear grid
  subroutine maketrigrid()
+    use m_confrm
+    use m_cleargrid
     use m_grid, only: nc, mc, xc, yc
     use m_sferic, only: jsferic, jasfer3D
     use geometry_module, only: half

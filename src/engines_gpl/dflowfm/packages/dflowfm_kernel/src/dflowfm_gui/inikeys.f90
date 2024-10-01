@@ -30,6 +30,12 @@
 !
 !
 
+module m_inikeys
+
+implicit none
+
+contains
+
       subroutine INIKEYS()
          use m_devices
          use m_nkeys
@@ -92,3 +98,5 @@
 !     EXPOSE RESIZE                CALL INCONTROLKEY(50, 259)
          return
       end
+
+end module m_inikeys

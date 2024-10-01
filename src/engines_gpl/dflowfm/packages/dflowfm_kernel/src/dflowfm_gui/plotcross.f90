@@ -30,11 +30,17 @@
 !
 !
 
+module m_plotcross
+
+implicit none
+
+contains
+
       subroutine plotCross(x, y)
          use m_wearelt
          use m_movabs
          use m_lnabs
-         implicit none
+
          double precision :: x
          double precision :: y
 
@@ -44,3 +50,5 @@
          call LNABS(X + .5 * RCIR, Y - .5 * RCIR)
          return
       end
+
+end module m_plotcross

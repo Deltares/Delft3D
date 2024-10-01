@@ -30,15 +30,19 @@
 !
 !
 
+module m_cosphiu
+
+implicit none
+
+contains
+
  double precision function cosphiu(L) ! get link cos
 
     use m_flowgeom
-    use m_netw
+    use m_netw, only: xk, yk
     use geometry_module, only: normalin
     use m_missing, only: dxymis
     use m_sferic, only: jsferic, jasfer3D
-
-    implicit none
 
     integer :: L ! for link L,
 
@@ -54,3 +58,5 @@
     cosphiu = rnl * rn + rtl * rt
 
  end function cosphiu
+
+end module m_cosphiu

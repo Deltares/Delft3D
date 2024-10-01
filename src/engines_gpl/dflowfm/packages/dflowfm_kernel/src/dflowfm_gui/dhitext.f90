@@ -30,11 +30,16 @@
 !
 !
 
+module m_dhitext
+
+implicit none
+
+contains
+
       subroutine DHITEXT(IVAL, XD, YD)
-         use gridoperations
          use m_dproject
          use m_hi_text
-         implicit none
+
          integer :: ival
          double precision :: x
          double precision :: y
@@ -44,3 +49,5 @@
          call HITEXT(IVAL, X, Y)
          return
       end
+
+end module m_dhitext

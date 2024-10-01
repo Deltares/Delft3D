@@ -32,6 +32,7 @@
 
 !
       subroutine SETWY(X1, Y1, X2)
+         use m_inqasp
          use m_sferic
          implicit none
          double precision :: x1, x2, y1

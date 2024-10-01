@@ -31,6 +31,7 @@
 !
 
       subroutine TEKXZ(NCOL)
+         use m_dcirr
          use m_netw
          use M_FLOWGEOM
          implicit none

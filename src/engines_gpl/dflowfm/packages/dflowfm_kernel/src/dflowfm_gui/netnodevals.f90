@@ -30,15 +30,19 @@
 !
 !
 
+module m_netnodevals
+
+implicit none
+
+contains
+
   subroutine NETNODEVALS(MET)
-     use M_FLOW
-     use M_FLOWGEOM
+     use m_flow
+     use m_flowgeom
      use m_netw
      use m_sediment
-     use M_MISSING
      use m_ship
 
-     implicit none
      integer :: MET
 
      integer :: k, L, j, K1, K2, K3, K4
@@ -129,3 +133,5 @@
      end if
      return
   end subroutine NETNODEVALS
+
+end module m_netnodevals

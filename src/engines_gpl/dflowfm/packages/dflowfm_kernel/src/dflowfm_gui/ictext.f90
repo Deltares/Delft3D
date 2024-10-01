@@ -30,6 +30,12 @@
 !
 !
 
+module m_ictext
+
+implicit none
+
+contains
+
       subroutine ICTEXT(TEX, NX, NY, NCOL)
          use unstruc_colors
          use m_set_col
@@ -50,3 +56,5 @@
          call DRAWTEXT(real(X), real(Y), TEX(1:L))
          return
       end
+
+end module m_ictext

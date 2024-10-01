@@ -30,7 +30,14 @@
 !
 !
 
+module m_cirr2
+
+implicit none
+
+contains
+
       subroutine CIRR2(X, Y, NCOL, R)
+         use m_cir
          use m_wearelt
          use m_set_col
          use m_movabs
@@ -42,3 +49,5 @@
          call CIR(RCIR * R)
          return
       end
+
+end module m_cirr2

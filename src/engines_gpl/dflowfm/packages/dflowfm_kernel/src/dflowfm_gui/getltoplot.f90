@@ -30,6 +30,12 @@
 !
 !
 
+module m_getltoplot
+
+implicit none
+
+contains
+
 subroutine getLtoplot(kk, k)
    use m_flowgeom
    use m_flow
@@ -47,3 +53,5 @@ subroutine getLtoplot(kk, k)
       end if
    end if
 end subroutine getLtoplot
+
+end module m_getltoplot

@@ -30,6 +30,12 @@
 !
 !
 
+module m_arrowrcir
+
+implicit none
+
+contains
+
       subroutine ARROWrcir(X0, Y0, cs, sn)
          use M_WEARELT
          use m_movabs
@@ -57,3 +63,5 @@
          call LNABS(XR(3), YR(3))
          return
       end
+
+end module m_arrowrcir

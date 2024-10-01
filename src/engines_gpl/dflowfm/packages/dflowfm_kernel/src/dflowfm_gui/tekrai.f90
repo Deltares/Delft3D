@@ -32,6 +32,14 @@
 
  subroutine tekrai(nsiz)
 
+    use m_linewidth
+    use m_isofil
+    use m_isocol2
+    use m_isocol
+    use m_htext_rai
+    use m_getktoplot
+    use m_dhtext
+    use m_arrowsxyzfac
     use m_netw
     use m_flow
     use m_flowgeom

@@ -30,11 +30,17 @@
 !
 !
 
+module m_isosmoothflownode
+
+implicit none
+
+contains
+
  subroutine isosmoothflownode(k) ! smooth isolines in flow cells
+    use m_isofil
     use m_flowgeom
-    use m_flow
-    use m_netw
-    implicit none
+    use m_netw, only: rnod
+
     integer :: k
 
     integer :: nn4, n
@@ -48,3 +54,5 @@
     call isofil(nd(k)%x, nd(k)%y, zz, nn4, 0)
     !call isocel(nd(k)%x, nd(k)%y, zz, nn4, 0)
  end subroutine isosmoothflownode
+
+end module m_isosmoothflownode

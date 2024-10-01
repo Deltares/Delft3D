@@ -89,6 +89,14 @@ program unstruc
    use m_qnrgf
    use m_wall_clock_time
    use m_draw_nu
+   use m_editgrid
+   use m_editgridlineblok
+   use m_editflow
+   use m_editgridblok
+   use m_editpol
+   use m_editsplines
+   use m_editsam
+   use m_editnetw
    
    implicit none
 

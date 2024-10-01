@@ -30,13 +30,17 @@
 !
 !
 
+module m_pixcount
+
+implicit none
+
+contains
+
  subroutine pixcount(xs, ys, zs, jatel)
 
-    use M_FLOWGEOM
+    use m_flowgeom
     use m_missing, only: jins, dmiss
     use geometry_module, only: pinpok
-
-    implicit none
 
     double precision :: xs, ys, zs
     integer :: jatel
@@ -74,3 +78,5 @@
     end if
 
  end subroutine pixcount
+
+end module m_pixcount

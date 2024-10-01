@@ -31,6 +31,12 @@
 !
 
 !> compute growth velocity vectors at grid points
+module m_comp_vel
+
+implicit none
+
+contains
+
 subroutine comp_vel(mc, xc, yc, edgevel, vel)
    use m_missing, only: dmiss, dxymis
    use m_sferic
@@ -126,3 +132,5 @@ subroutine comp_vel(mc, xc, yc, edgevel, vel)
 
    return
 end subroutine comp_vel
+
+end module m_comp_vel

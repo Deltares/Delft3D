@@ -31,6 +31,7 @@
 !
 
  subroutine tekspw(vfac)
+    use m_arrowsxy
     use m_flowgeom
     use m_spiderweb
     use m_wind

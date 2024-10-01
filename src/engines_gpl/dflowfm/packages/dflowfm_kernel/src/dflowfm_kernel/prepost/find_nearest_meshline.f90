@@ -32,6 +32,7 @@
 
 !> find meshline nearest to land boundary
 subroutine find_nearest_meshline(jasnap)
+   use m_clnabs
    use m_netw
    use m_landboundary
    use m_missing

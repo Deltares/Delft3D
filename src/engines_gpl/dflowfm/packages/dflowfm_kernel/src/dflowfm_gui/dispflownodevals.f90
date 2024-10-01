@@ -30,13 +30,19 @@
 !
 !
 
+module m_dispflownodevals
+use m_drcirc
+
+
+implicit none
+
+contains
+
 subroutine DISPFLOWNODEVALS(KP)
-   use m_flowgeom
-   use m_flow
-   use M_DEVICES
+   use m_flowgeom, only: xz, yz, bl, nd
+   use m_devices, only: iws
    use m_ktext
 
-   implicit none
    double precision :: ZNOD
    integer :: KP
 
@@ -75,3 +81,5 @@ subroutine DISPFLOWNODEVALS(KP)
       call KTEXT(TEX, IWS - 22, 16 + N, 15)
    end do
 end subroutine DISPFLOWNODEVALS
+
+end module m_dispflownodevals

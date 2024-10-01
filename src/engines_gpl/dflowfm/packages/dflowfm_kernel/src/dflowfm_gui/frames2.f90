@@ -30,6 +30,12 @@
 !
 !
 
+module m_frames2
+
+implicit none
+
+contains
+
       subroutine FRAMES2(NCOL)
          use M_DEVICES
          use m_set_col
@@ -39,3 +45,5 @@
          call IGRBORDER()
          return
       end
+
+end module m_frames2

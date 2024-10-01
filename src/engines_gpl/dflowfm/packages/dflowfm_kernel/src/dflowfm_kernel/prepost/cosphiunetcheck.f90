@@ -41,10 +41,10 @@ subroutine cosphiunetcheck(jausererror)
    use m_plotdots
    use m_drawthis
    use m_qnerror
+   use m_cosphiunet
 
    implicit none
    integer, intent(in) :: jausererror !< Whether or not (1/0) to topup a error message when bad ortho occurs.
-   double precision, external :: cosphiunet
    double precision :: csph
    integer :: L
    integer :: i

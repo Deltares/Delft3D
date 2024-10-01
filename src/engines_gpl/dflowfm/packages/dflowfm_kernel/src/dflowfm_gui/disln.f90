@@ -34,7 +34,7 @@ module m_disln
 contains
  subroutine DISLN(LL) ! print link values
     use m_flowgeom, only: ln, xz, yz
-    use unstruc_display, only: iws
+    use m_devices, only: iws
     use m_ktext
     use m_gtext
 

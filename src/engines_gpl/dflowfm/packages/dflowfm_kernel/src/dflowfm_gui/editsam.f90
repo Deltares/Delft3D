@@ -30,7 +30,18 @@
 !
 !
 
+module m_editsam
+use m_minmxsam
+use m_kcir
+
+
+implicit none
+
+contains
+
       subroutine EDITSAM(MODE, KEY)
+         use m_choices
+         use m_chadep
          use m_samples
          use m_helpnow
          use m_drawthis
@@ -41,7 +52,7 @@
          use m_delsam
          use m_draw_nu
          use m_cirr
-         implicit none
+
          integer :: MODE, KEY
          integer :: jonce
          integer :: k, L1, L2
@@ -266,3 +277,5 @@
          goto 10
 
       end subroutine EDITSAM
+
+end module m_editsam

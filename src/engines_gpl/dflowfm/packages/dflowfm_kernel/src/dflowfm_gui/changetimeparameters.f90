@@ -30,23 +30,30 @@
 !
 !
 
+module m_changetimeparameters
+
+implicit none
+
+contains
+
   subroutine CHANGETIMEPARAMETERS()
-     use M_FLOWTIMES
-     use unstruc_display
+     use m_flowtimes
+     use unstruc_colors
+     use unstruc_display_data
      use dflowfm_version_module, only: company, product_name
-     use unstruc_messages
-     use m_flow
+     use unstruc_messages, only: msgbuf, msg_flush
+     use m_flow, only: squ2d, ndkx
      use m_helpnow
      use m_save_keys
      use m_restore_keys
      use m_help
+     use m_highlight_form_line
      implicit none
      integer :: numpar, numfld, numparactual, numfldactual
      parameter(NUMPAR=14, NUMFLD=2 * NUMPAR)
      integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
      character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
      integer, external :: infoinput
-     external :: highlight_form_line
 !
      integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key
      integer :: nbut, imp, inp, ierr
@@ -247,3 +254,5 @@
      goto 30
 
   end subroutine CHANGETIMEPARAMETERS
+
+end module m_changetimeparameters

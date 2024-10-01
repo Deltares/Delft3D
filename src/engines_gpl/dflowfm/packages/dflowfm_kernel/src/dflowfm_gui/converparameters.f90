@@ -33,14 +33,22 @@
 !----------------------------------------------------------------------
 ! subroutines from rgfstuff.f90
 !----------------------------------------------------------------------
+module m_converparameters
+
+implicit none
+
+contains
+
       subroutine CONVERPARAMETERS(JA)
-         use M_MAPPROPARAMETERS
-         use unstruc_display
+         use m_mapproparameters
+         use unstruc_colors
+         use unstruc_display_data
          use m_sferic
          use m_helpnow
          use m_save_keys
          use m_restore_keys
          use m_help
+         use m_highlight_form_line
          implicit none
          integer :: i
          integer :: ifexit
@@ -63,8 +71,6 @@
          integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
          character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60, TEX * 132
          integer, external :: infoinput
-         external :: highlight_form_line
-
 !
          JA = 0
          NLEVEL = 3
@@ -245,3 +251,5 @@
          goto 30
 
       end subroutine CONVERPARAMETERS
+
+end module m_converparameters

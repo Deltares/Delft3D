@@ -31,6 +31,7 @@
 !
 
       subroutine SHOWBITMAP(jainterpolate)
+         use m_pixcount
          use M_WEARELT
          use M_BITMAP
          use m_drawthis

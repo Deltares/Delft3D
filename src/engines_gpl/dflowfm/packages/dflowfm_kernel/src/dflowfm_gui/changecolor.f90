@@ -33,7 +33,17 @@
 !----------------------------------------------------------------------
 ! subroutines from rest.F90
 !----------------------------------------------------------------------
+module m_changecolor
+use m_orglocator
+use m_getcolornumber
+
+
+implicit none
+
+contains
+
       subroutine CHANGECOLOR(XP, YP)
+         use m_allcolours
          use unstruc_colors
          use m_depmax
          use m_helpnow
@@ -103,3 +113,5 @@
 
          goto 20
       end
+
+end module m_changecolor

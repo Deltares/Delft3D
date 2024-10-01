@@ -30,10 +30,17 @@
 !
 !
 
+module m_changedisplayparameters
+
+implicit none
+
+contains
+
    subroutine CHANGEDISPLAYPARAMETERS()
       use M_RAAITEK
-      use M_MISSING
-      use unstruc_display
+      use m_missing, only: dmiss
+      use unstruc_colors
+      use unstruc_display_data
       use m_sediment
       use m_flow, only: kplotfrombedorsurface, kplotordepthaveraged
 
@@ -48,6 +55,7 @@
       use m_vfac
       use m_drawthis
       use m_help
+      use m_highlight_form_line
       
       implicit none
       integer :: i
@@ -72,7 +80,6 @@
       character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
 
       integer, external :: infoinput
-      external :: highlight_form_line
 !
       NLEVEL = 3
       OPTION(1) = 'HARDCOPY DRIVER NUMBER                  '; IT(2 * 1) = 2
@@ -351,3 +358,5 @@
       goto 30
 
    end subroutine CHANGEDISPLAYPARAMETERS
+
+end module m_changedisplayparameters

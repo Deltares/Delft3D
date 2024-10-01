@@ -30,6 +30,12 @@
 !
 !
 
+module m_chekhw
+
+implicit none
+
+contains
+
       subroutine CHEKHW()
          implicit none
          integer :: infogrscreen
@@ -49,3 +55,5 @@
          end if
          return
       end
+
+end module m_chekhw

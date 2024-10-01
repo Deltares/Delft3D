@@ -30,16 +30,21 @@
 !
 !
 
+module m_minmxnds
+
+implicit none
+
+contains
+
  subroutine minmxnds()
-    use unstruc_display ! bepaal minimum en maximum van znod in viewing area
-    use m_flowgeom
-    use m_flow
-    use m_missing
+    use unstruc_display_data ! bepaal minimum en maximum van znod in viewing area
+    use m_flowgeom, only: ndx, xz, yz
+    use m_flow, only: ndmin, ndmax, hs
+    use m_missing, only: dmiss
     use m_depmax
     use m_drawthis
     use m_inview
     
-    implicit none
     integer :: i
     double precision :: rmin, rmax
     double precision, external :: znod
@@ -80,3 +85,5 @@
     end do
 
  end subroutine minmxnds
+
+end module m_minmxnds

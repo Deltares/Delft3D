@@ -30,11 +30,17 @@
 !
 !
 
+module m_plotnu
+
+implicit none
+
+contains
+
    subroutine plotnu(fnam)
       use m_drawthis
       use m_plotfil
       use m_draw_nu
-      implicit none
+
       integer :: key
       character(len=*) fnam
 
@@ -43,3 +49,5 @@
       call drawnu(key)
 
    end subroutine plotnu
+
+end module m_plotnu

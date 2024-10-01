@@ -30,6 +30,12 @@
 !
 !
 
+module m_htext_rai
+
+implicit none
+
+contains
+
  subroutine htext_rai(val, x, y, xx, zz, ihv)
     use m_raaitek
     use m_htext
@@ -59,3 +65,5 @@
     end if
     call htext(val, xa, ya)
  end subroutine htext_rai
+
+end module m_htext_rai

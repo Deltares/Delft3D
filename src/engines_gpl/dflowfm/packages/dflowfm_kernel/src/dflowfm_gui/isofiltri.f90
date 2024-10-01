@@ -30,6 +30,12 @@
 !
 !
 
+module m_isofiltri
+
+implicit none
+
+contains
+
       subroutine ISOFILTRI(X, Y, Z, NCOLR)
          use m_topix
          use m_depmax
@@ -37,7 +43,7 @@
          use m_pfiller
          use m_set_col
          use m_ptabs
-         implicit none
+
          double precision :: dzn
          double precision :: frac
          integer :: i
@@ -192,3 +198,5 @@
          end if
          return
       end
+
+end module m_isofiltri

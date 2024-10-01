@@ -32,6 +32,7 @@
 
    subroutine MAKENET(japaramscreen)
 
+      use m_makenetparameters
       use m_netw
       use m_makenet ! NTYP ANGLE SIZE THICK NRX NRY
       use m_grid, only:nc, mc, xc, yc

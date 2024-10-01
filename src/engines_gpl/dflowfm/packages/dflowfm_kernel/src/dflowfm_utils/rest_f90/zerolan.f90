@@ -31,6 +31,7 @@
 !
 
       subroutine ZEROLAN(KEY)
+         use m_confrm
          use m_landboundary
          use m_polygon
          use m_missing

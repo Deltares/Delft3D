@@ -30,10 +30,18 @@
 !
 !
 
+module m_qnmessagewait
+
+implicit none
+
+contains
+
       subroutine QNMESSAGEWAIT(TEX)
-         use unstruc_messages
-         use unstruc_display
-         implicit none
+         use unstruc_messages, only: msgbuf, msg_flush
+         use unstruc_display_data, only: npos
+         use unstruc_colors
+         use m_devices, only: iws, ihs
+         
          integer :: ih
          integer :: iw
          integer :: ixp
@@ -58,3 +66,5 @@
 
          return
       end
+
+end module m_qnmessagewait

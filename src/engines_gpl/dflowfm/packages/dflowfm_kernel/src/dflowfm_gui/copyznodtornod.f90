@@ -30,11 +30,17 @@
 !
 !
 
+module m_copyznodtornod
+
+implicit none
+
+contains
+
  subroutine copyznodtornod() ! for smooth plotting only
     use m_flowgeom
     use m_flow
     use m_netw
-    implicit none
+
     integer :: k, kk, kkk, n, nn, ierr, ja
     real, allocatable, save :: rn(:)
     double precision :: znn
@@ -77,3 +83,5 @@
     end do
 
  end subroutine copyznodtornod
+
+end module m_copyznodtornod

@@ -30,9 +30,17 @@
 !
 !
 
+module m_isocel
+
+implicit none
+
+contains
+
       subroutine ISOCEL(X, Y, P, NCOLR)
+         use m_hitlin
+         use m_dispf2
          use m_depmax
-         implicit none
+
          integer :: i, ih, ja, ncolr, nh, nplus
          double precision :: p, p1, p2, vn, x, x1, x2, xh, xhit, y, y1, y2, yh, yhit
 
@@ -67,3 +75,5 @@
 
          return
       end
+
+end module m_isocel

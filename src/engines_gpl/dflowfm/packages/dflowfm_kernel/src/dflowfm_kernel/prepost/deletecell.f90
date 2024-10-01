@@ -32,6 +32,7 @@
 
 !> delete cell and update administration (no direct need for findcells afterwards)
 subroutine deletecell(k, ndirect, nindirect, kdirect, kindirect, kne, Lprompt_nogo, jadeleted)
+   use m_confrm
    use m_netw
    use m_missing
    use m_netstore

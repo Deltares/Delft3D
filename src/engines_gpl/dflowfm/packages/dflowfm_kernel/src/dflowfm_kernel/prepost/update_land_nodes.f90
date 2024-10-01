@@ -30,6 +30,8 @@
 !
 !
 module m_update_land_nodes
+use m_isocol
+
    implicit none
 contains
 ! updates zk value at specified net node index using diven delta

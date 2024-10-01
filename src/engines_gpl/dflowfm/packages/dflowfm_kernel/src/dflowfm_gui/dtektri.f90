@@ -30,10 +30,16 @@
 !
 !
 
+module m_dtektri
+
+implicit none
+
+contains
+
       subroutine DTEKTRI(X1, Y1, Z1, X2, Y2, Z2, X3, Y3, Z3, NCOL, NCOLR)
          use m_three_two
          use m_pfiller
-         implicit none
+
          integer :: ncol
          integer :: ncolr
          double precision :: zz
@@ -45,3 +51,5 @@
          call PFILLER(XX, YY, 3, NCOL, NCOLR)
          return
       end
+
+end module m_dtektri

@@ -31,17 +31,24 @@
 !
 
 !> refinecellsandfaces2 parameter menu
+module m_change_samples_refine_param
+
+implicit none
+
+contains
+
 subroutine change_samples_refine_param(jacancelled)
-   use unstruc_display
+   use unstruc_colors
+   use unstruc_display_data
    use dflowfm_version_module, only: company, product_name
    use m_samples_refine
-   use m_ec_interpolationsettings
-   use m_arcinfo
+   use m_ec_interpolationsettings, only: interpolationtype
    use network_data, only: NUMITCOURANT
    use m_helpnow
    use m_save_keys
    use m_restore_keys
    use m_help
+   use m_highlight_form_line
 
    implicit none
    integer, intent(out) :: jacancelled !< Whether or not (1/0) user has pressed 'Esc' in parameter screen.
@@ -67,8 +74,6 @@ subroutine change_samples_refine_param(jacancelled)
    character OPTION(NUMPAR) * 60, HELPM(NUMPAR) * 60
    character(len=60) :: text
    integer, external :: infoinput
-
-   external :: highlight_form_line
 
    jacancelled = 0
    NLEVEL = 4
@@ -256,3 +261,5 @@ subroutine change_samples_refine_param(jacancelled)
 
    return
 end subroutine change_samples_refine_param
+
+end module m_change_samples_refine_param

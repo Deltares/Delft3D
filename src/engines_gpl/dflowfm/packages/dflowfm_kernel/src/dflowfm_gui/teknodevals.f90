@@ -31,6 +31,11 @@
 !
 
   subroutine TEKNODEVALS(MET)
+     use m_isosmoothnet
+     use m_isocol
+     use m_drcirc
+     use m_dmovabs
+     use m_dlnabs
      use m_missing
      use m_netw
      use geometry_module, only: getdxdy, getdx, getdy
@@ -44,6 +49,8 @@
      use m_cirr
      use m_pfiller
      use m_inview
+     use m_getrcir
+     use m_invnod
      
      implicit none
      integer :: MET
@@ -58,8 +65,6 @@
      double precision :: vv
      double precision XD, YD, ZD, DX, DY, DZ, XX1, YY1, ZZ1, XX2, YY2, ZZ2, H
      double precision :: X(4), Y(4), Z(4)
-     double precision :: getrcir
-     logical INVNOD
 
      KMOD = max(1, NUMK / 100)
 

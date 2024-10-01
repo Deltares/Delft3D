@@ -30,6 +30,12 @@
 !
 !
 
+module m_geduld
+
+implicit none
+
+contains
+
       subroutine GEDULD()
          implicit none
          integer :: i
@@ -40,3 +46,5 @@
          end do
          return
       end
+
+end module m_geduld

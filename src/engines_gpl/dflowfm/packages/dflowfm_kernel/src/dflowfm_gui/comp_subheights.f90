@@ -31,6 +31,12 @@
 !
 
 !> compute the height of the subintervals of grid layers on a cross spline, w.r.t. a center spline
+module m_comp_subheights
+
+implicit none
+
+contains
+
 subroutine comp_subheights(is, Lorient, num, xs, ys, ncs, ics, t, nsubL, nsubR, hL, hR)
    use m_splines
    use m_spline2curvi
@@ -131,3 +137,5 @@ subroutine comp_subheights(is, Lorient, num, xs, ys, ncs, ics, t, nsubL, nsubR, 
 
    return
 end subroutine comp_subheights
+
+end module m_comp_subheights

@@ -30,7 +30,17 @@
 !
 !
 
+module m_editgridlineblok
+use m_ispoin
+use m_editgridlineshift
+
+
+implicit none
+
+contains
+
       subroutine EDITGRIDLINEBLOK(MODE, NFLD, KEY)
+         use m_choices
          use unstruc_colors, only: ncolln, ncolrg, ncoldg
          use m_grid
          use m_helpnow
@@ -45,13 +55,13 @@
          use m_restore_grd
          use m_local_refine
          use m_tek_grd
-         implicit none
+         use m_fieldop
 
          integer :: mode, nfld, key
          integer :: newmode
          integer :: NCOL
          integer :: jonce
-         character TEX * 20, FIELDOP * 40
+         character TEX * 20
          integer :: num, nwhat, numb, nump, mp, np, ipt, ja, m1b, n1b, m2b, n2b, m1, n1, m2, n2, m, n
          integer :: nput
          double precision :: xp, yp
@@ -238,3 +248,5 @@
          goto 10
 !
       end subroutine editgridlineblok
+
+end module m_editgridlineblok

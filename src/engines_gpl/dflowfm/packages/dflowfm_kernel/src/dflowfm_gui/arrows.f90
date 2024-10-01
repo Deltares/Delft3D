@@ -30,6 +30,12 @@
 !
 !
 
+module m_arrows
+
+implicit none
+
+contains
+
       subroutine ARROWS(X0, Y0, UR, VR, PSI0, VFAC)
          use m_movabs
          use m_lnabs
@@ -68,3 +74,5 @@
          call LNABS(XR(3), YR(3))
          return
       end
+
+end module m_arrows

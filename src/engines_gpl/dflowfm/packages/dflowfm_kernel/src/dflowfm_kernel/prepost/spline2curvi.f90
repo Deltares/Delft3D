@@ -33,6 +33,9 @@
 !> generate curvilinear grid from spline
 subroutine spline2curvi()
 
+   use m_confrm
+   use m_comp_edgevel
+   use m_change_spline2curvi_param
    use m_grid
    use m_splines
    use m_gridsettings

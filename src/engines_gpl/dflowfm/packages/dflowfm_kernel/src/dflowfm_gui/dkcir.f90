@@ -30,9 +30,17 @@
 !
 !
 
+module m_dkcir
+use m_kcir
+
+
+implicit none
+
+contains
+
       subroutine DKCIR(XD, YD, ZD, V)
          use m_three_two
-         implicit none
+
          double precision :: v
          double precision :: x
          double precision :: y
@@ -42,3 +50,5 @@
          call KCIR(X, Y, V)
          return
       end
+
+end module m_dkcir

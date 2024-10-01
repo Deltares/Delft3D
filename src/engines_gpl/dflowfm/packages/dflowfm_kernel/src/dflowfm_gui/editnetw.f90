@@ -30,7 +30,20 @@
 !
 !
 
+module m_editnetw
+use m_kcir
+use m_highlight_nodesnlinks
+
+
+implicit none
+
+contains
+
       subroutine EDITNETW(MODE, KEY)
+         use m_dispnodevals
+         use m_disnd
+         use m_dcirr
+         use m_choices
          use m_netw
          use unstruc_colors
          use M_MISSING
@@ -51,7 +64,7 @@
          use m_is_link
          use m_draw_nu
          use m_set_col
-         implicit none
+
          integer :: MODE, KEY
          integer :: newmode
          integer :: ja
@@ -545,3 +558,5 @@
          goto 10
 !
       end subroutine EDITNETW
+
+end module m_editnetw

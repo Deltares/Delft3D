@@ -30,6 +30,12 @@
 !
 !
 
+module m_d3dflow_dimensioninit
+
+implicit none
+
+contains
+
 subroutine D3Dflow_dimensioninit()
    use m_flowgeom
    use grid_dimens_module
@@ -101,3 +107,5 @@ subroutine D3Dflow_dimensioninit()
    griddim%ynode => yk
 
 end subroutine D3Dflow_dimensioninit
+
+end module m_d3dflow_dimensioninit

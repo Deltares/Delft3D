@@ -30,6 +30,12 @@
 !
 !
 
+module m_nfiles
+
+implicit none
+
+contains
+
    subroutine NFILES(NUM, NWHAT, KEY)
 !  grid lijst
 !  NUM = 0, GELUKT, NUM = 1, NIET GELUKT
@@ -39,9 +45,8 @@
       use m_monitoring_crosssections
       use m_thindams
       use M_SPLINES, notinusenump => nump
-      use unstruc_model
-      use m_samples
-      use m_flowgeom
+      use m_samples, only: ns, savesam
+      use m_flowgeom, only: lnx, ndx
       use unstruc_display
       use m_flowparameters
       use unstruc_files, only: defaultFilename, close_all_files
@@ -66,8 +71,10 @@
       use m_wripol
       use m_wrisam
       use m_reasam
+      use m_change_kml_parameters
+      use m_filemenu
+      use m_loadbitmap
 
-      implicit none
       integer :: NUM, NWHAT, KEY
       integer :: ja, ierr
       integer :: mlan
@@ -829,3 +836,5 @@
       NUM = 0
       return
    end subroutine NFILES
+
+end module m_nfiles

@@ -31,11 +31,14 @@
 !
 
   subroutine TEKLINKNUMS(MET, NCOL)
+     use m_dhtext
+     use m_dhitext
      use M_MISSING
      use m_netw
      use m_drawthis
      use m_halt2
      use m_set_col
+     use m_invnod
      implicit none
      integer :: MET, NCOL
 
@@ -44,7 +47,6 @@
      integer :: key
      integer :: l
      double precision :: vv
-     logical :: invnod
 
      double precision XP, YP, ZP
      call SETCOL(NCOL)

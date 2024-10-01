@@ -30,10 +30,16 @@
 !
 !
 
+module m_copyzlintornod
+
+implicit none
+
+contains
+
  subroutine copyzlintornod() ! for smooth plotting only
-    use m_flowgeom
-    use m_flow
-    use m_netw
+    use m_flowgeom, only: lnxi, lnx1d, lncn, wu, dx
+    use network_data
+    use m_alloc
     implicit none
     integer :: L, k, k1, k2, ierr, ja
     real, allocatable, save :: rn(:)
@@ -70,3 +76,5 @@
     end do
 
  end subroutine copyzlintornod
+
+end module m_copyzlintornod

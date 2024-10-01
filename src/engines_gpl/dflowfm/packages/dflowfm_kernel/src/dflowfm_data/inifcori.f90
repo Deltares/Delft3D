@@ -30,6 +30,12 @@
 !
 !
 
+module m_inifcori
+
+implicit none
+
+contains
+
 subroutine inifcori()
    use m_flowgeom
    use m_flow
@@ -253,3 +259,5 @@ subroutine orginifcori()
    end if
 
 end subroutine orginifcori
+
+end module m_inifcori

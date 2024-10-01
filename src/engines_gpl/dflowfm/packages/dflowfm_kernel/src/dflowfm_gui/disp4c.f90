@@ -30,6 +30,14 @@
 !
 !
 
+module m_disp4c
+use m_rcirc
+
+
+implicit none
+
+contains
+
       subroutine DISP4C(X, Y, N)
          use M_MISSING
          use m_halt2
@@ -64,3 +72,5 @@
          end do
          return
       end
+
+end module m_disp4c

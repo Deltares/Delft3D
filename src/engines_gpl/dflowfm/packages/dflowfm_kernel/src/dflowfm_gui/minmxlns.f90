@@ -30,15 +30,20 @@
 !
 !
 
+module m_minmxlns
+
+implicit none
+
+contains
+
  subroutine minmxlns()
 
-    use m_flowgeom
-    use m_flow
-    use m_missing
+    use m_flowgeom, only: ln, lnx, xz, yz
+    use m_flow, only: lnmin, lnmax
+    use m_missing, only: dmiss
     use m_depmax2, only: vmax=>vmax2, vmin=>vmin2, dv=>dv2, val=>val2, nv=>nv2, jaauto=>jaauto2
     use m_inview
 
-    implicit none
     double precision :: zlin
     double precision :: zn
     double precision :: rmin, rmax
@@ -72,3 +77,5 @@
 
     return
  end subroutine minmxlns
+
+end module m_minmxlns

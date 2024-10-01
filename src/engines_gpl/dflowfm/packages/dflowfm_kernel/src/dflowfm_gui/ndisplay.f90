@@ -30,9 +30,19 @@
 !
 !
 
+module m_ndisplay
+
+implicit none
+
+contains
+
    subroutine NDISPLAY(NWHAT, KEY)
-      use M_FLOW
-      use M_FLOWGEOM
+      use m_menuv3
+      use m_filemenu
+      use m_changeisoparameters
+      use m_changedisplayparameters
+      use m_flow
+      use m_flowgeom, only: lnx1d, xz
       use unstruc_display
       use unstruc_model, only: md_ident
       use unstruc_startup, only: initgui
@@ -41,7 +51,6 @@
       use m_plotdots
       use m_transport
       use m_waves, only: waveparopt, numoptwav
-      !use m_xbeach_data,   only: windmodel
       use gridoperations
       use m_drawthis
       use m_qnerror
@@ -49,7 +58,6 @@
       use m_tek_num_netcells
       use m_set_branch_lc
 
-      implicit none
       integer :: ium
       integer :: maxopt
       integer :: nputz
@@ -1157,3 +1165,5 @@
       end if
       return
    end subroutine NDISPLAY
+
+end module m_ndisplay

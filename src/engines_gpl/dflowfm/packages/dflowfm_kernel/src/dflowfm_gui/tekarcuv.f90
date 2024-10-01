@@ -31,6 +31,7 @@
 !
 
  subroutine tekarcuv(vfac, met)
+    use m_arrowsxy
     use M_arcuv
     use m_htext
     use m_set_col

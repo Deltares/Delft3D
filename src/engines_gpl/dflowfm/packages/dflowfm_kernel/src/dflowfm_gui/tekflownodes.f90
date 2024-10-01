@@ -31,6 +31,13 @@
 !
 
  subroutine tekflownodes(ja)
+    use m_isosmoothflownode
+    use m_isocol
+    use m_halt
+    use m_drcirc
+    use m_dhtext
+    use m_dhitext
+    use m_copyznodtornod
     use unstruc_display
     use m_flowgeom
     use m_flow

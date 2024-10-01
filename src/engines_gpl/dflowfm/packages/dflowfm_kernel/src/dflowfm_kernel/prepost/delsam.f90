@@ -30,6 +30,8 @@
 !
 !
 module m_delsam
+use m_confrm
+
    implicit none
 contains
 !>    delete samples

@@ -32,6 +32,7 @@
 
       subroutine READADCIRCNET(MNET, JA, JADOORLADEN)
 
+         use m_confrm
          use m_netw
          use m_polygon
          use m_landboundary

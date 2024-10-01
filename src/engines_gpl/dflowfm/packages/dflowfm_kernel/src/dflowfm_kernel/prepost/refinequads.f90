@@ -31,6 +31,7 @@
 !
 
   subroutine REFINEQUADS()
+     use m_confrm
      use m_netw
      use m_afmeting, only: k0
      use gridoperations

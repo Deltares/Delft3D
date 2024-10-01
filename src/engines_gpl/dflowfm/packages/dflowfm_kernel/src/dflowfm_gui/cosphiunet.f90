@@ -30,15 +30,19 @@
 !
 !
 
+module m_cosphiunet
+
+implicit none
+
+contains
+
  double precision function cosphiunet(L) ! get link cos on net link
 
-    use m_flowgeom
+    use m_flowgeom, only: xz, yz
     use m_netw
     use geometry_module, only: dcosphi
     use m_sferic, only: jsferic, jasfer3D
     use m_missing, only: dxymis
-
-    implicit none
 
     integer :: L ! for net link L,
 
@@ -70,3 +74,5 @@
     cosphiunet = dcosphi(xz(k1), yz(k1), xz(k2), yz(k2), xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dxymis)
 
  end function cosphiunet
+
+end module m_cosphiunet

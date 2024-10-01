@@ -30,6 +30,10 @@
 !
 !
 module m_flow_flowinit
+   use m_inifcori
+   use m_inidensconstants
+   use m_alloc_jacobi
+
 
    implicit none
 

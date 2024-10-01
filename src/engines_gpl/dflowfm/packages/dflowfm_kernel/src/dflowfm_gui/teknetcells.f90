@@ -31,6 +31,14 @@
 !
 
    subroutine teknetcells(netwhat, jahalt, jacol)
+      use m_minmxnetcells
+      use m_isosmoothnet
+      use m_isocol
+      use m_copynetcellstonetnodes
+      use m_drcirc
+      use m_dhtext
+      use m_dhitext
+      use m_arrowsxy
       use m_netw
       use m_flowgeom
       use unstruc_display

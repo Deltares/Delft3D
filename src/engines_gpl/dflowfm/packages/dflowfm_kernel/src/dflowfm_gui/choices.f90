@@ -68,7 +68,38 @@
 !----------------------------------------------------------------------
 ! subroutines from net.F90
 !----------------------------------------------------------------------
+module m_choices
+use m_plusabs_flow
+use m_plusabsi
+use m_plusabsd
+use m_nfiles
+use m_ndisplay
+use m_menuv3
+use m_copywaterlevelstosamples
+use m_copynetwtonetw
+use m_copynetnodestosam
+use m_copynetlinkstosam
+use m_copygridtosam
+use m_copyzlintosamples
+
+
+implicit none
+
+contains
+
    subroutine CHOICES(NUM, NWHAT, KEY)
+      use m_changetimeparameters
+      use m_changephysicalparameters
+      use m_changeorthoparameters
+      use m_changenumericalparameters4
+      use m_changenumericalparameters3
+      use m_changenumericalparameters2
+      use m_changenumericalparameters
+      use m_changenetworkparameters
+      use m_changeinterpolationparameters
+      use m_changegridparameters
+      use m_changegeometryparameters
+      use m_changecolournumbers
       use m_netw
       use m_samples
       use m_grid
@@ -483,3 +514,5 @@
 
       return
    end subroutine CHOICES
+
+end module m_choices

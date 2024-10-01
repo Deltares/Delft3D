@@ -30,10 +30,16 @@
 !
 !
 
+module m_dgtext
+
+implicit none
+
+contains
+
       subroutine DGTEXT(TEX, XD, YD, ZD, NCOL)
          use m_three_two
          use m_gtext
-         implicit none
+
          integer :: ncol
          double precision :: x
          double precision :: y
@@ -44,3 +50,5 @@
          call GTEXT(TEX, X, Y, NCOL)
          return
       end
+
+end module m_dgtext

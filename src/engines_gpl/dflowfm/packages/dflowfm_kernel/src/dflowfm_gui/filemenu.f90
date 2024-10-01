@@ -30,7 +30,15 @@
 !
 !
 
+module m_filemenu
+
+implicit none
+
+contains
+
       subroutine FILEMENU(mrgf, filnam, ierror)
+         use m_deny
+         use m_confrm
          use unstruc_display
          use dflowfm_version_module, only: company, product_name
          use unstruc_files, only: filnammenu
@@ -39,7 +47,7 @@
          use m_qnerror
          use m_timlin
          use m_help
-         implicit none
+
          integer, intent(inout) :: mrgf !<  call with mrgf = 0 means LOAD, mrgf = 1  means SAVE, mrgf = 2 means get filename only
          character(len=*), intent(inout) :: filnam
          integer, intent(out) :: ierror !<  return value -1 = ESC
@@ -269,3 +277,5 @@
          filnammenu = filnam
          return
       end
+
+end module m_filemenu

@@ -31,6 +31,7 @@
 !
 
       subroutine REAARC(MINP, japrompt)
+         use m_getreal
          use M_ARCINFO
          use m_polygon
          use m_missing

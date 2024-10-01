@@ -31,6 +31,8 @@
 !
 
 subroutine SETCOLTABFILE(FILNAM, JASECOND)
+   use m_qnmessage
+   use m_filemenu
    use unstruc_colors
    use m_depmax
    use m_depmax2

@@ -30,13 +30,21 @@
 !
 !
 
+module m_kcir
+
+implicit none
+
+contains
+
       subroutine KCIR(X, Y, Z)
+         use m_isocol
+         use m_cir
          use unstruc_colors
-         use M_MISSING
+         use m_missing, only: dmiss
          use m_wearelt
          use m_set_col
          use m_movabs
-         implicit none
+
          integer :: ncol
          double precision :: x
          double precision :: y
@@ -53,3 +61,5 @@
          end if
          return
       end
+
+end module m_kcir

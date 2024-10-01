@@ -31,6 +31,12 @@
 !
 
 !
+module m_getpos
+
+implicit none
+
+contains
+
       subroutine GETPOS(X, Y)
          implicit none
          double precision :: x
@@ -40,3 +46,5 @@
          Y = INFOGRAPHICS(2)
          return
       end
+
+end module m_getpos

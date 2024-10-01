@@ -31,6 +31,8 @@
 !
 
 subroutine tekbanfs()
+   use m_isocol
+   use m_dhtext
    use m_netw
    use m_flowgeom
    use m_flow, only: kbot

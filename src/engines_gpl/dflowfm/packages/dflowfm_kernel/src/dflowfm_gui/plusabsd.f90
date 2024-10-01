@@ -30,13 +30,21 @@
 !
 !
 
+module m_plusabsd
+
+implicit none
+
+contains
+
       subroutine PLUSABSD(XK, YK, ZK, NUMK, KEY, EA)
+         use m_menuv3
+         use m_getreal
+         use m_confrm
          use m_polygon
          use m_missing
          use geometry_module, only: dpinpok
          use m_readyy
 
-         implicit none
          integer, parameter :: MAXOP = 64
          character(len=40) :: OPTION(MAXOP), exp(MAXOP)
          integer :: NUMK, KEY
@@ -142,3 +150,5 @@
          KEY = 3
          return
       end subroutine PLUSABSD
+
+end module m_plusabsd

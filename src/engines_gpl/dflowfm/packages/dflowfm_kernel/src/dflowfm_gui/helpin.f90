@@ -30,6 +30,12 @@
 !
 !
 !>    reads info from a help file and puts it into HELPTEXT
+module m_helpin
+
+implicit none
+
+contains
+
       subroutine HELPIN()
          use unstruc_files
          use m_helpc
@@ -52,3 +58,5 @@
 
          return
       end
+
+end module m_helpin

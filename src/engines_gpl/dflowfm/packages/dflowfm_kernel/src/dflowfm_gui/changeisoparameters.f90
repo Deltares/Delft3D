@@ -30,15 +30,23 @@
 !
 !
 
+module m_changeisoparameters
+
+implicit none
+
+contains
+
       subroutine CHANGEISOPARAMETERS()
-         use unstruc_display
+         use unstruc_colors
+         use unstruc_display_data
          use dflowfm_version_module, only: company, product_name
          use m_depmax
          use m_helpnow
          use m_scalepos
          use m_depmax2
          use m_help
-         implicit none
+         use m_highlight_form_line
+
          double precision :: dvi, dvi2
          double precision :: dvnu
          integer :: i
@@ -65,7 +73,6 @@
          integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
          character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
          integer, external :: infoinput
-         external :: highlight_form_line
 !
          NLEVEL = 3
          OPTION(1) = 'AUTOSCALE ON OR OFF                     '
@@ -330,3 +337,5 @@
          goto 30
 
       end
+
+end module m_changeisoparameters

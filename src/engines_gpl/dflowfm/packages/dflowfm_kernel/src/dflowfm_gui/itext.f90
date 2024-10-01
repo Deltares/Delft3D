@@ -30,11 +30,17 @@
 !
 !
 
+module m_itext
+
+implicit none
+
+contains
+
       subroutine ITEXT(TEX, NX, NY)
          use unstruc_colors
          use m_set_col
          use m_draw_text
-         implicit none
+
          integer :: l
          integer :: nx
          integer :: ny
@@ -49,3 +55,5 @@
          call DRAWTEXT(real(X), real(Y), TEX(1:L))
          return
       end
+
+end module m_itext

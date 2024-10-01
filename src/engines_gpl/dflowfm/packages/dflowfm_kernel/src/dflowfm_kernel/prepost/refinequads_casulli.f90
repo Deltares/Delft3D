@@ -32,6 +32,8 @@
 
 !> "Casulli"-type refinement of quads
 subroutine refinequads_casulli
+   use m_getlink_gui
+   use m_confrm
    use m_netw
    use m_inverse_map
    use m_missing, only: dmiss
@@ -363,7 +365,7 @@ contains
 
 !> create and store the new nodes in directional refinequads_casulli
    subroutine makenodes_directional(xp, yp, Lstart, ierror)
-      ! use m_grid
+      use m_confrm
       use unstruc_colors, only: ncolln
       use m_tek_link
 

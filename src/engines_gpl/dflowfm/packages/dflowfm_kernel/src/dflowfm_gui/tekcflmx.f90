@@ -31,6 +31,7 @@
 !
 
  subroutine tekcflmx()
+    use m_rcirc
     use m_flowgeom
     use m_flow
     use m_flowtimes

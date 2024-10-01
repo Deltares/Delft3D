@@ -32,6 +32,7 @@
 
 !> link-based mesh-topology information
 double precision function topo_info(L)
+   use m_comp_ntopo
    use m_netw
    use m_landboundary
    use m_missing

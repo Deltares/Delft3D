@@ -30,15 +30,20 @@
 !
 !
 
+module m_copynetnodestosam
+
+implicit none
+
+contains
+
  subroutine copynetnodestosam(jarnod)
 
-    use m_samples
-    use m_netw
-    use m_missing
+    use m_samples, only: ns, xs, ys, zs, increasesam
+    use m_netw, only: kc, numk, rnod, xk, yk, zk
+    use m_missing, only: dmiss, jins
     use m_polygon, only: NPL, xpl, ypl, zpl
     use geometry_module, only: dbpinpol
 
-    implicit none
     integer :: in, k, n, jarnod
     real :: r
 
@@ -79,3 +84,5 @@
     ns = k
 
  end subroutine copynetnodestosam
+
+end module m_copynetnodestosam

@@ -31,8 +31,15 @@
 !
 
 ! determine the grid grow factor for a given total grid height, first grid layer height and number of grid layers
+module m_comp_dgrow
+
+implicit none
+
+contains
+
 double precision function comp_dgrow(height, dheight0, nfac, ierror)
    use m_missing
+   use m_comp_h
 
    implicit none
 
@@ -44,8 +51,6 @@ double precision function comp_dgrow(height, dheight0, nfac, ierror)
    integer :: iter
 
    double precision :: fkp1, fk, fkm1, gkp1, gk, gkm1
-
-   double precision, external :: comp_h
 
    integer, parameter :: maxiter = 1000
 
@@ -93,3 +98,5 @@ double precision function comp_dgrow(height, dheight0, nfac, ierror)
 
    return
 end function comp_dgrow
+
+end module m_comp_dgrow

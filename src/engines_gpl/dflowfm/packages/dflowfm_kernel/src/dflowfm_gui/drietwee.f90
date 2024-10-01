@@ -30,6 +30,8 @@
 !
 !
 module m_three_two
+use m_dview
+
    implicit none
 contains
    subroutine DRIETWEE(XD, YD, ZD, X, Y, Z)

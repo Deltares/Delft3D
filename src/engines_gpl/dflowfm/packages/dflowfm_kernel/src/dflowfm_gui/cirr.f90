@@ -30,6 +30,8 @@
 !
 !
 module m_cirr
+   use m_cir
+
    implicit none
 contains
       subroutine CIRR(X, Y, NCOL)

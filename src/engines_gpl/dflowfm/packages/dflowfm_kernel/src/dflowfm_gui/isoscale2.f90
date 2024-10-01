@@ -30,11 +30,17 @@
 !
 !
 
+module m_isoscale2
+
+implicit none
+
+contains
+
   subroutine ISOSCALE2() !   tekenen legenda
-     use M_isoscaleunit
-     use unstruc_display
-     use m_samples
-     use m_hardcopy
+     use m_arrows
+     use m_isoscaleunit
+     use unstruc_colors
+     use m_samples, only: ns
      use m_scalepos
      use m_vfac
      use m_drawthis
@@ -45,7 +51,6 @@
      use m_box_nop
      use m_fbox_nop
      use m_set_col
-     implicit none
 
      double precision :: hic
      integer :: i, j
@@ -146,3 +151,5 @@
 
      return
   end
+
+end module m_isoscale2

@@ -30,6 +30,12 @@
 !
 !
 
+module m_hkcircle
+
+implicit none
+
+contains
+
  subroutine hkcircle(x, y, r) ! plotdevice routine interacter is niet goed, zie file fout.bmp
     use m_movabs
     use m_lnabs
@@ -44,3 +50,5 @@
        call lnabs(x + r * cos(phi), y + r * sin(phi))
     end do
  end subroutine hkcircle
+
+end module m_hkcircle

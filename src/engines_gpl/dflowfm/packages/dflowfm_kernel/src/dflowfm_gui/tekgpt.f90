@@ -33,6 +33,8 @@
       subroutine TEKGPT(X, Y, mmax, nmax, MC, NC, &
                         MP, NP, NCOL, RD1)
 !     TEKEN GRIDLIJNEN UITKOMEND OP DIT PUNT
+         use m_isocol
+         use m_cir
          use m_missing
          use m_wearelt
          use m_set_col

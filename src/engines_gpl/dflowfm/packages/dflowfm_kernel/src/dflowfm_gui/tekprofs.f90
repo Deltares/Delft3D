@@ -31,6 +31,8 @@
 !
 
   subroutine tekprofs() ! and initialise some turb pars
+     use m_getvminmax
+     use m_fullscreen
      use m_flow
      use m_flowgeom
      use m_wearelt

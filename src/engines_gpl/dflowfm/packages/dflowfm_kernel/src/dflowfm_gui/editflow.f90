@@ -30,12 +30,23 @@
 !
 !
 
+module m_editflow
+use m_plotklnup
+use m_moveprobe
+use m_minmxnds
+use m_highlight_nodesnlinks
+use m_getstring
+
+
+implicit none
+
+contains
+
      subroutine EDITflow(MODE, KEY, NL)
+        use m_disnd
         use m_netw
-        use m_flowgeom, only: iadv, kcu
         use m_flow
         use unstruc_colors
-        use M_MISSING
         use unstruc_api
         use m_snappol
         use dfm_error
@@ -56,7 +67,7 @@
         use m_k_plot_plus_min
         use m_draw_nu
         use m_set_col
-        implicit none
+
         integer :: MODE, KEY, kb, kt, k, NL
         integer :: newmode
         integer :: ncol, nput
@@ -274,3 +285,5 @@
         goto 10
 !
      end subroutine EDITflow
+
+end module m_editflow

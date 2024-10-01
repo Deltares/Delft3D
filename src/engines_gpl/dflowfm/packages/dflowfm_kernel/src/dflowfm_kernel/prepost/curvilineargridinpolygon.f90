@@ -37,6 +37,7 @@
       !
       !END SUBROUTINE SPLINESFROMLANDBOUNDARY
       subroutine curvilinearGRIDinpolygon()
+         use m_rcirc
          use M_POLYGON
          use M_SAMPLES
          use M_GRID

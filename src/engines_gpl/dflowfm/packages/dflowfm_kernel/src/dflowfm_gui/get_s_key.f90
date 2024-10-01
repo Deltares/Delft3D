@@ -30,6 +30,12 @@
 !
 !
 
+module m_get_s_key
+
+implicit none
+
+contains
+
       subroutine get_s_key(JA) ! s or left mouse
          implicit none
          integer :: ja
@@ -43,3 +49,5 @@
          end if
          return
       end
+
+end module m_get_s_key

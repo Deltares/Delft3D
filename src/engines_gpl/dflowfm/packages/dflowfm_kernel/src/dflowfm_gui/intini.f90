@@ -30,7 +30,16 @@
 !
 !
 
+module m_intini
+use m_minmaxworld
+
+
+implicit none
+
+contains
+
       subroutine INTINI()
+         use m_inikeys
          use m_sferic
          use dflowfm_version_module, only: company, product_name, version_full
          use m_wearelt
@@ -41,7 +50,6 @@
          use m_initscreen
          use m_view_port
          
-         implicit none
          integer :: icrhf
          integer :: infoopsystem
 
@@ -127,3 +135,5 @@
 
          return
       end
+
+end module m_intini

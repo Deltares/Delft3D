@@ -30,24 +30,30 @@
 !
 !
 
+module m_changeinterpolationparameters
+
+implicit none
+
+contains
+
    subroutine CHANGEINTERPOLATIONPARAMETERS()
       use m_ec_interpolationsettings
       use M_SAMPLES, only: mxsam
       use m_arcinfo, only: mca
-      use unstruc_display
+      use unstruc_colors
+      use unstruc_display_data
       use dflowfm_version_module, only: company, product_name
       use m_helpnow
       use m_save_keys
       use m_restore_keys
       use m_help
+      use m_highlight_form_line
 
-      implicit none
       integer :: numpar, numfld, numparactual, numfldactual
       parameter(NUMPAR=8, NUMFLD=2 * NUMPAR)
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
       character OPTION(NUMPAR) * 45, HELPM(NUMPAR) * 60
       integer, external :: infoinput
-      external :: highlight_form_line
 !
       integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key
       integer :: nbut, imp, inp
@@ -211,3 +217,5 @@
       goto 30
 
    end subroutine CHANGEINTERPOLATIONPARAMETERS
+
+end module m_changeinterpolationparameters

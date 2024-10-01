@@ -31,6 +31,7 @@
 !
 
  double precision function znod(kk) ! get various values at flow nodes
+    use m_getktoplot
     use m_flow
     use m_flowgeom
     use m_flowtimes ! for volerr

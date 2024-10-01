@@ -30,11 +30,17 @@
 !
 !
 
+module m_plotdiamond
+
+implicit none
+
+contains
+
       subroutine plotDiamond(x, y)
          use m_wearelt
          use m_movabs
          use m_lnabs
-         implicit none
+
          double precision :: x
          double precision :: y
 
@@ -46,3 +52,5 @@
 
          return
       end
+
+end module m_plotdiamond

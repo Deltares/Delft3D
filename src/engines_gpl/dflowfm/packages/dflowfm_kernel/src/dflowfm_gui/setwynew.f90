@@ -32,6 +32,7 @@
 
       subroutine SETWYnew(X, Y, DY)
 !     Set zoomwindow limits at proper aspect ratio
+         use m_inqasp
          use m_wearelt
          use m_sferic
          use m_sferzoom

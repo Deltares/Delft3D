@@ -31,6 +31,15 @@
 !
 
  subroutine tekflowlinks()
+    use m_minmxlns
+    use m_isosmoothflownode2
+    use m_isocol2
+    use m_drcirc
+    use m_dmovabs
+    use m_dlnabs
+    use m_dhtext
+    use m_dhitext
+    use m_copyzlintornod
     use m_netw, only: xk, yk
     use m_flowgeom
     use m_flow, only: hu, au

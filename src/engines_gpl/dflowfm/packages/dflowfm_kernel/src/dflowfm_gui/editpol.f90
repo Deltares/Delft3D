@@ -30,7 +30,19 @@
 !
 !
 
+module m_editpol
+use m_plotnu
+use m_kcir
+
+
+implicit none
+
+contains
+
    subroutine EDITPOL(MODE, KEY, NETFLOW)
+      use m_confrm
+      use m_cir
+      use m_choices
       use m_sferic, only: jsfertek
       use m_polygon
       use network_data, only: netstat, NETSTAT_CELLS_DIRTY
@@ -59,7 +71,7 @@
       use m_hlcir
       use m_dropland
       use m_movabs
-      implicit none
+
       integer :: jaquit, jazoomshift, nshift
       integer :: k
       integer :: l1
@@ -547,3 +559,5 @@
       goto 10
 !
    end subroutine EDITPOL
+
+end module m_editpol

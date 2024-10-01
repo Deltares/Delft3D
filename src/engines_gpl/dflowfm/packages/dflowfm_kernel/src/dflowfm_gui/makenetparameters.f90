@@ -30,15 +30,24 @@
 !
 !
 
+module m_makenetparameters
+
+implicit none
+
+contains
+
    subroutine MAKENETPARAMETERS()
-      use M_MAKENET
-      use unstruc_display
+      use m_makenet
+      use unstruc_colors
+      use m_devices, only: iws, ihs
+      use unstruc_display_data, only: npos
       use dflowfm_version_module, only: company, product_name
       use m_helpnow
       use m_save_keys
       use m_restore_keys
       use m_help
-      implicit none
+      use m_highlight_form_line
+
       integer :: i
       integer :: ifexit
       integer :: ifinit
@@ -59,7 +68,6 @@
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
       character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
-      external :: highlight_form_line
 
       NLEVEL = 4
       OPTION(1) = 'MAZE TYPE: SQUARE, WIEBER, HEX, TRI  ( )'; IT(1 * 2) = 2
@@ -245,3 +253,5 @@
       goto 30
 
    end subroutine MAKENETPARAMETERS
+
+end module m_makenetparameters

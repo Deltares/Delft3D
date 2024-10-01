@@ -30,6 +30,12 @@
 !
 !
 
+module m_getkey
+
+implicit none
+
+contains
+
       subroutine GETKEY(KEY)
          use m_nkeys
          implicit none
@@ -46,3 +52,5 @@
          if (KEYNUM /= -999) KEY = NUMC(KEYNUM)
          return
       end
+
+end module m_getkey

@@ -30,6 +30,19 @@
 !
 !
 module m_draw_nu
+   use m_plot
+   use m_netnodevals
+   use m_netlinkvals
+   use m_minmxnetnods
+   use m_minmxnetlins
+   use m_isoscale2
+   use m_isoscale
+   use m_highlight_nodesnlinks
+   use m_fullscreen
+   use m_cls1
+   use m_axes
+   use m_anchorcls
+
    implicit none
 contains
    subroutine DRAWNU(KEY)

@@ -305,6 +305,7 @@
       use m_monitoring_crosssections, only: increaseCrossSections
       use m_reapol
       use m_reasam
+      use m_loadbitmap
 
       implicit none
       character inarg * (*), EXT * 4

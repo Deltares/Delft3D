@@ -30,11 +30,17 @@
 !
 !
 
+module m_dmovabs
+
+implicit none
+
+contains
+
       subroutine DMOVABS(XD, YD, ZD)
          use m_oldz, only: oz
          use m_three_two
          use m_movabs
-         implicit none
+
          double precision :: x
          double precision :: y
          double precision :: z
@@ -43,3 +49,5 @@
          call MOVABS(X, Y)
          OZ = Z
       end
+
+end module m_dmovabs

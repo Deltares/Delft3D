@@ -34,6 +34,14 @@ module unstruc_display
 !! (Not yet, a lot is still in REST.F90 [AvD])
 
 !
+   use m_plotdiamond
+   use m_plotcross
+   use m_minmaxworld
+   use m_linewidth
+   use m_isocol
+   use m_inqasp
+   use m_cir
+   use m_arrowsxy
    use unstruc_colors
    use m_gui
    use unstruc_display_data

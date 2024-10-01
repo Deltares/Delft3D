@@ -30,17 +30,25 @@
 !
 !
 
+module m_changegridparameters
+
+implicit none
+
+contains
+
       subroutine CHANGEGRIDPARAMETERS()
-         use M_GRID
-         use M_GRIDSETTINGS
+         use m_grid, only: mc, mmax, nmax, nc
+         use m_gridsettings
          use m_sferic
-         use unstruc_display
+         use unstruc_colors
+         use unstruc_display_data
          use m_polygon
          use dflowfm_version_module, only: company, product_name
          use m_helpnow
          use m_save_keys
          use m_restore_keys
          use m_help
+         use m_highlight_form_line
          implicit none
 
          integer :: numpar, numfld, numparactual, numfldactual
@@ -48,7 +56,6 @@
          integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
          character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
          integer, external :: infoinput
-         external :: highlight_form_line
 !
          integer :: ip, ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key
          integer :: nbut, imp, inp, k
@@ -276,3 +283,5 @@
          goto 30
 
       end subroutine CHANGEGRIDPARAMETERS
+
+end module m_changegridparameters

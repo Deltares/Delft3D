@@ -31,6 +31,10 @@
 !
 
   subroutine TEKNODE(KP, NCOL)
+     use m_dptabs
+     use m_dmovabs
+     use m_dlnabs
+     use m_dcirr
      use m_netw
      use unstruc_colors
      use m_set_col

@@ -30,6 +30,11 @@
 !
 !
 module m_grow_layer
+   use m_halt3
+   use m_comp_vel
+   use m_comp_tmax_self
+   use m_comp_tmax_other
+
    implicit none
 contains
 !> grow a gridlayer

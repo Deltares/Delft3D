@@ -30,10 +30,18 @@
 !
 !
 
+module m_netlinkvals
+
+implicit none
+
+contains
+
   subroutine NETLINKVALS(MET)
 
+     use m_makepdf
+     use m_dhitext
      use m_flowgeom, only: XZ, YZ, lne2ln
-     use m_missing
+     use m_missing, only: dmiss, dxymis
      use network_data
      use m_alloc
      use m_flow, only: cftrt
@@ -46,8 +54,6 @@
      use m_makenetnodescoding
      use m_find1dcells, only: find1dcells
      
-     implicit none
-
      integer :: MET
      integer :: jacftrt
      double precision :: fsp
@@ -203,3 +209,5 @@
 
      return
   end subroutine NETLINKVALS
+
+end module m_netlinkvals

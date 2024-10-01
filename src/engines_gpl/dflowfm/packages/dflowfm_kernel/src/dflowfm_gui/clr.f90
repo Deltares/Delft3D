@@ -31,7 +31,15 @@
 !
 
 !
+module m_clr
+
+implicit none
+
+contains
+
       subroutine CLR()
          implicit none
          call IWINCLEAR()
       end
+
+end module m_clr

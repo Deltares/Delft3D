@@ -31,6 +31,7 @@
 !
 
    subroutine tekpolygon()
+      use m_rcirc
       use m_polygon
       use unstruc_display
       use m_missing, only: dmiss

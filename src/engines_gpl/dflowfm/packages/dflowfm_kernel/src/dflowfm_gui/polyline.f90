@@ -30,11 +30,17 @@
 !
 !
 
+module m_polyline
+
+implicit none
+
+contains
+
     subroutine POLYLINE(XR, YR, N)
-       use unstruc_opengl
+       use unstruc_opengl, only: InOpenGLRendering
        use m_movabs_nop
        use m_lnabs_nop
-       implicit none
+
        integer :: n, I
        real xr(N), yr(N)
 
@@ -48,3 +54,5 @@
        end if
 
     end subroutine
+
+end module m_polyline

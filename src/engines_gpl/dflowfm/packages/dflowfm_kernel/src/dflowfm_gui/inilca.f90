@@ -30,12 +30,16 @@
 !
 !
 
+module m_inilca
+
+implicit none
+
+contains
+
       subroutine INILCA()
          use m_wearelt
-         use m_locatora
          use m_anchor
 
-         implicit none
          double precision :: xla, yla
          !CALL ORGLOCATOR(XLA,XLB)
          XLA = 0.05 * xmax + 0.95 * xmin
@@ -43,3 +47,5 @@
          call ANCHOR(XLA, yla)
          return
       end
+
+end module m_inilca

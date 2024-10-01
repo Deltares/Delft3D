@@ -31,6 +31,8 @@
 !
 
   subroutine TEKBOTTOM(MET)
+     use m_dmovabs
+     use m_dlnabs
      use m_wearelt
      use m_howtoview
      use m_set_col

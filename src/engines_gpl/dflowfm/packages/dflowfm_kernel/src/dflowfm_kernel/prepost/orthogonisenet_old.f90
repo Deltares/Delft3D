@@ -32,6 +32,7 @@
 
    subroutine ORTHOGONISENET_old()
 
+      use m_clnabs
       use m_netw
       use M_FLOWGEOM
       use M_POLYGON

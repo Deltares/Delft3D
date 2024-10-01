@@ -30,9 +30,16 @@
 !
 !
 
+module m_krec
+
+implicit none
+
+contains
+
       subroutine KREC(X, Y, Z, XD)
+         use m_isocol
          use m_colnow
-         implicit none
+
          integer :: ncol
          double precision :: x
          double precision :: xd
@@ -43,3 +50,5 @@
          if (NCOLNOW >= 0) call RECTANGLE(real(X - XD), real(Y - XD), real(X + XD), real(Y + XD))
          return
       end
+
+end module m_krec

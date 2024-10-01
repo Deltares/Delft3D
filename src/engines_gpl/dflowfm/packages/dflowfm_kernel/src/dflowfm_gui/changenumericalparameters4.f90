@@ -30,16 +30,23 @@
 !
 !
 
+module m_changenumericalparameters4
+
+implicit none
+
+contains
+
    subroutine CHANGENUMERICALPARAMETERS4()
-      use M_FLOW
+      use m_flow
       use m_flowgeom
-      use unstruc_display
+      use unstruc_colors
+      use unstruc_display_data
       use dflowfm_version_module, only: company, product_name
-      use unstruc_messages
       use m_helpnow
       use m_save_keys
       use m_restore_keys
       use m_help
+      use m_highlight_form_line
       implicit none
 
       integer :: numpar, numfld, numparactual, numfldactual
@@ -47,7 +54,6 @@
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD), L
       character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
-      external :: highlight_form_line
 !
       integer :: ir, il, iw, ixp, iyp, ih, i, ifexit, ifinit, key
       integer :: nbut, imp, inp
@@ -303,3 +309,5 @@
       goto 30
 
    end subroutine CHANGENUMERICALPARAMETERS4
+
+end module m_changenumericalparameters4

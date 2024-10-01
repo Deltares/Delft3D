@@ -29,7 +29,6 @@
 
 !
 !
-
       subroutine HISTOR()
          use unstruc_files, only: mdia
          use unstruc_colors

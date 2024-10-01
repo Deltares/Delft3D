@@ -30,12 +30,18 @@
 !
 !
 
+module m_dispos2
+
+implicit none
+
+contains
+
       subroutine DISPOS2(X, Y)
-         use M_DEVICES
+         use m_devices, only: iws
          use m_disfor
          use m_ktext
          use m_disdis
-         implicit none
+
          double precision :: x
          double precision :: y
          character POSITI * 25
@@ -49,3 +55,5 @@
 
          return
       end
+
+end module m_dispos2

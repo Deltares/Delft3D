@@ -30,6 +30,12 @@
 !
 !
 
+module m_halt
+
+implicit none
+
+contains
+
       subroutine HALT(JA)
          implicit none
          integer, intent(out) :: ja
@@ -40,3 +46,5 @@
          if (NUMKEY /= -999 .and. NUMKEY /= 257 .and. NUMKEY /= 254) JA = 1
          return
       end
+
+end module m_halt

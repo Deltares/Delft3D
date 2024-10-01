@@ -32,6 +32,10 @@
 
       ! NOTE: japes is disabled [AvD]
       subroutine SHWXYZ(X, Y, RD1, mmax, nmax, MC, NC, JAPERS, KEY, M, N)
+         use m_orglocator
+         use m_dispos2
+         use m_disdep
+         use m_cir
          use m_missing
          use unstruc_colors
          use m_locatora

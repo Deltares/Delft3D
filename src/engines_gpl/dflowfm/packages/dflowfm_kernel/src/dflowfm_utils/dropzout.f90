@@ -31,6 +31,7 @@
 !
 
  subroutine dropzout(idir)
+    use m_isocol
     use m_polygon
     use m_flowgeom
     use m_flow

@@ -31,6 +31,12 @@
 !
 
 !> compute the number of grid layers for a given grow factor, first grid layer height and total grid height
+module m_comp_nfac
+
+implicit none
+
+contains
+
 integer function comp_nfac(h_h0, dgrow)
    implicit none
 
@@ -46,3 +52,5 @@ integer function comp_nfac(h_h0, dgrow)
 
    return
 end function comp_nfac
+
+end module m_comp_nfac

@@ -30,11 +30,17 @@
 !
 !
 
+module m_disval
+
+implicit none
+
+contains
+
       subroutine DISVAL(M, N, DEP)
-         use m_devices
+         use m_devices, only: iws
          use m_drawthis
          use m_ktext
-         implicit none
+
          double precision :: dep
          integer :: m
          integer :: n
@@ -89,3 +95,5 @@
 
          return
       end
+
+end module m_disval

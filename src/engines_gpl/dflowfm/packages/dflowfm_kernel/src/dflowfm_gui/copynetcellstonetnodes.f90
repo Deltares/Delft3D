@@ -30,11 +30,17 @@
 !
 !
 
+module m_copynetcellstonetnodes
+
+implicit none
+
+contains
+
 subroutine copynetcellstonetnodes() ! for smooth plotting only
-   use m_flowgeom
-   use m_flow
-   use m_netw
-   implicit none
+   use m_flowgeom, only: ndx2d, ba
+   use m_netw, only: numk, rnod, netcell, rlin
+   use m_alloc, only: aerr
+
    integer :: k, kk, kkk, n, nn4, ierr, ja
    real, allocatable, save :: rn(:)
    double precision :: znn
@@ -70,3 +76,5 @@ subroutine copynetcellstonetnodes() ! for smooth plotting only
    end do
 
 end subroutine copynetcellstonetnodes !in afwachting van isosmoothflownodes
+
+end module m_copynetcellstonetnodes

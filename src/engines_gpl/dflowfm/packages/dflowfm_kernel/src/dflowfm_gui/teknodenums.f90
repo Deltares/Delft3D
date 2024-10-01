@@ -31,11 +31,14 @@
 !
 
  subroutine TEKNODENUMS(MET, NCOL)
+    use m_dhtext
+    use m_dhitext
     use M_MISSING
     use m_netw
     use m_drawthis
     use m_halt2
     use m_set_col
+    use m_invnod
     implicit none
     integer :: MET, NCOL
     integer :: k
@@ -44,7 +47,6 @@
     integer :: key
     integer :: l
     integer :: n
-    logical INVNOD
     double precision X, Y, Z
     
     call SETCOL(NCOL)

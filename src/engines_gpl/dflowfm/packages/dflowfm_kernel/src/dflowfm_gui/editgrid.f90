@@ -30,7 +30,16 @@
 !
 !
 
+module m_editgrid
+use m_ispoin
+
+
+implicit none
+
+contains
+
       subroutine EDITGRID(MODE, NFLD, KEY)
+         use m_choices
          use unstruc_colors, only: ncolrg, ncoldg
          use m_grid
          use m_modfld
@@ -44,13 +53,14 @@
          use m_tek_num_netcells
          use m_restore_grd
          use m_tek_grd
-         implicit none
+         use m_fieldop
+
          integer :: mode, nfld, key
 
          integer :: L, JA, NUM, NWHAT, NPUT, NUMB, MP, NP, MD, ND, &
                     ML, NL, MH, NH, NUMP, NLOC, IN, JN, INSIDE, NCOL
          integer :: newmode
-         character TEX * 20, FIELDOP * 40
+         character TEX * 20
          double precision :: xp, yp, wf(4)
 
          TEX = ' '//FIELDOP(NFLD)
@@ -189,3 +199,5 @@
          goto 10
 !
       end subroutine editgrid
+
+end module m_editgrid

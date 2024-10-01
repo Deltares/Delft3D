@@ -31,10 +31,16 @@
 !
 
 !     plot stencil for higher-order corrections to screen
+module m_plotklnup
+
+implicit none
+
+contains
+
       subroutine plotklnup(L)
+         use m_dhtext
          use m_flowgeom
          use m_cirr
-         implicit none
 
          integer, intent(in) :: L !< flowlink number
 
@@ -69,3 +75,5 @@
 
          return
       end subroutine plotklnup
+
+end module m_plotklnup

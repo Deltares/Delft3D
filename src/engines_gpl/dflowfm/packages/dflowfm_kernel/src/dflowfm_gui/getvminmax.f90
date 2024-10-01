@@ -30,10 +30,16 @@
 !
 !
 
+module m_getvminmax
+
+implicit none
+
+contains
+
   subroutine getvminmax(num, vmin, vmax, v, n)
-     use unstruc_display
-     use m_missing
-     implicit none
+     use unstruc_display_data
+     use m_missing, only: dmiss
+
      integer :: n
      integer, intent(in) :: num
      double precision :: vmin, vmax, v(n)
@@ -52,3 +58,5 @@
         vmax = profmax(num)
      end if
   end subroutine getvminmax
+
+end module m_getvminmax

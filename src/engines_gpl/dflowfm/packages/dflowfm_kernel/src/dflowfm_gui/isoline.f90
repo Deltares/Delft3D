@@ -30,6 +30,8 @@
 !
 !
 module m_isoline
+use m_isofil
+
    implicit none
 contains
       subroutine isoline(xa, ya, za, xb, yb, zb)

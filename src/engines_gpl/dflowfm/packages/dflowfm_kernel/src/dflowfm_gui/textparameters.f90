@@ -38,6 +38,7 @@
          use m_save_keys
          use m_restore_keys
          use m_help
+         use m_highlight_form_line
          
          implicit none
          integer :: i
@@ -56,7 +57,6 @@
          integer :: numfld
          integer :: numpar
          integer, external :: infoinput
-         external :: highlight_form_line
 
          parameter(NUMPAR=9, NUMFLD=2 * NUMPAR)
          integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)

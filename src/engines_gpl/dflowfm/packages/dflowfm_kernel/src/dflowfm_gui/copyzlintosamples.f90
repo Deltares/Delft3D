@@ -30,14 +30,18 @@
 !
 !
 
+module m_copyzlintosamples
+
+implicit none
+
+contains
+
  !> copy values that are displayed at flowlinks to samples
  subroutine copyzlintosamples()
     use m_samples
-    use m_flowgeom
-    use m_flow
+    use m_flowgeom, only: lnx, xu, yu
+    use m_flow, only: epshu, hu
 
-    use M_MISSING
-    implicit none
     integer :: k, L
     double precision, external :: zlin
 
@@ -54,3 +58,5 @@
     Ns = k
 
  end subroutine copyzlintosamples
+
+end module m_copyzlintosamples

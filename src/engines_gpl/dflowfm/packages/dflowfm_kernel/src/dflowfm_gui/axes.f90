@@ -30,6 +30,12 @@
 !
 !
 
+module m_axes
+
+implicit none
+
+contains
+
       subroutine AXES()
          use unstruc_colors
          use m_screenarea
@@ -51,3 +57,5 @@
          end if
          return
       end
+
+end module m_axes

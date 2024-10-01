@@ -30,6 +30,8 @@
 !
 !
 module m_disp2c
+   use m_cir
+
    implicit none
 contains
 !

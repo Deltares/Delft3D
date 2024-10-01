@@ -30,9 +30,16 @@
 !
 !
 
+module m_d1arrows
+
+implicit none
+
+contains
+
       subroutine D1ARROWS(X, Y, Z, U, V, W, PSI0, VFAC)
+         use m_arrows
          use m_three_two
-         implicit none
+
          double precision :: psi0
          double precision :: vfac
          double precision :: X, Y, Z, U, V, W
@@ -49,3 +56,5 @@
          call ARROWS(XP, YP, UR, VR, PSI0, VFAC)
          return
       end subroutine D1ARROWS
+
+end module m_d1arrows

@@ -31,6 +31,7 @@
 !
 
   subroutine DELNET(KEY, jacheckcells, JASAVE)
+     use m_confrm
      use m_netw
      use m_missing
      use m_sferic, only: jsferic, jasfer3D

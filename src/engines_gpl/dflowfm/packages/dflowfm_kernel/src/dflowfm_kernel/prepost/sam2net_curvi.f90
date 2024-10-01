@@ -32,6 +32,7 @@
 
 !> interpolation of sample data to network nodes, in curvilinear grid coordinates
 subroutine sam2net_curvi(numk, xk, yk, zk)
+   use m_confrm
    use m_grid
    use m_samples
    use m_alloc

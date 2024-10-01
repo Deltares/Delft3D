@@ -31,6 +31,12 @@
 !
 
 !> select link for directional refinement in GUI
+module m_getlink_gui
+
+implicit none
+
+contains
+
    subroutine getlink_GUI(xp, yp, L)
       use m_qnerror
       use m_ktext
@@ -93,3 +99,5 @@
 
       return
    end subroutine
+
+end module m_getlink_gui

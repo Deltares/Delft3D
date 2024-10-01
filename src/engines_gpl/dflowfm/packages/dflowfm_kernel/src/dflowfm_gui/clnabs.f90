@@ -30,6 +30,12 @@
 !
 !
 
+module m_clnabs
+
+implicit none
+
+contains
+
       subroutine cLNABS(X, Y, ncol)
          use m_set_col
          use m_lnabs
@@ -39,3 +45,5 @@
          call setcol(ncol)
          call LNABS(X, Y)
       end
+
+end module m_clnabs

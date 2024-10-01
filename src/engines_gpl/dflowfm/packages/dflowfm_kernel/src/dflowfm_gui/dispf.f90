@@ -31,11 +31,17 @@
 !
 
 !
+module m_dispf
+
+implicit none
+
+contains
+
       subroutine DISPF(Y, N, NCOL)
          use m_set_col
          use m_movabs
          use m_lnabs
-         implicit none
+
          integer :: i
          integer :: n
          integer :: ncol
@@ -48,3 +54,5 @@
          end do
          return
       end
+
+end module m_dispf

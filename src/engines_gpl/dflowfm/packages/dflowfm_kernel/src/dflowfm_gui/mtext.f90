@@ -30,13 +30,19 @@
 !
 !
 
+module m_mtext
+
+implicit none
+
+contains
+
       subroutine MTEXT(TEX, X, Y, NCOL)
          use unstruc_colors
          use m_box_nop
          use m_fbox_nop
          use m_set_col
          use m_draw_text
-         implicit none
+
          double precision :: heigth
          integer :: l
          integer :: ncol
@@ -62,3 +68,5 @@
          call DRAWTEXT(real(XT + W1 / 2 - WIDTH / 2), real(YT), TEX)
          return
       end
+
+end module m_mtext

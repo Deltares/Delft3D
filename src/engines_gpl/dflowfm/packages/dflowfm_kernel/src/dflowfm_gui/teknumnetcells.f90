@@ -30,6 +30,8 @@
 !
 !
 module m_tek_num_netcells
+use m_kcir
+
    implicit none
 contains
       subroutine TEKnumnetcells(jatel)

@@ -30,12 +30,18 @@
 !
 !
 
+module m_dispf2cir
+
+implicit none
+
+contains
+
       subroutine DISPF2cir(X, Y, N, Rcx, Rcy, NCOL)
          use m_fbox
          use m_set_col
          use m_movabs
          use m_lnabs
-         implicit none
+
          integer :: i
          integer :: n
          integer :: ncol
@@ -54,3 +60,5 @@
 
          return
       end
+
+end module m_dispf2cir

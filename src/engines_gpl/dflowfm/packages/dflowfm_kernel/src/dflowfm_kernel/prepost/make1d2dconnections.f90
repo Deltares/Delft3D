@@ -31,6 +31,7 @@
 !
 
  subroutine make1D2Dconnections()
+    use m_filemenu
     use network_data, only: imake1d2dtype, searchRadius1D2DLateral, I1D2DTP_1TO1, I1D2DTP_1TON_EMB, I1D2DTP_1TON_LAT
     use geometry_module
     use gridoperations

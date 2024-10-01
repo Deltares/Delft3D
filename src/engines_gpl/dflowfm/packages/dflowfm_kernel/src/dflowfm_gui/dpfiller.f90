@@ -30,10 +30,16 @@
 !
 !
 
+module m_dpfiller
+
+implicit none
+
+contains
+
       subroutine DPFILLER(X, Y, Z, N, NCOL, NCOLR)
          use m_three_two
          use m_pfiller
-         implicit none
+
          integer :: k
          integer :: n
          integer :: ncol
@@ -47,3 +53,5 @@
          call PFILLER(XX, YY, N, NCOL, NCOLR)
          return
       end
+
+end module m_dpfiller

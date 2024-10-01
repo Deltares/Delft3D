@@ -30,8 +30,13 @@
 !
 !
 
+module m_ktext2
+
+implicit none
+
+contains
+
       subroutine KTEXT2(TEX, NX, NY, NCOL, NCOL2)
-         implicit none
          integer :: ncol
          integer :: ncol2
          integer :: nx
@@ -42,3 +47,5 @@
          call IOUTSTRINGXY(NX, NY, trim(TEX))
          return
       end
+
+end module m_ktext2

@@ -30,14 +30,19 @@
 !
 !
 
+module m_disnd
+
+implicit none
+
+contains
+
  subroutine DISND(NN, netorflow) ! print net or flow node values
-    use m_devices
-    use m_flowgeom
+    use m_devices, only: iws
+    use m_flowgeom, only: xz, yz
     use network_data, only: rnod, netcell, xk, yk, nump
     use m_save_ugrid_state, only: nodeids
     use m_ktext
 
-    implicit none
     integer, intent(in) :: nn !< Node number (either net or flow node)
     integer, intent(in) :: netorflow !< Whether to display net node info (0) or flow node info (1)
 
@@ -105,3 +110,5 @@
 
     return
  end subroutine DISND
+
+end module m_disnd

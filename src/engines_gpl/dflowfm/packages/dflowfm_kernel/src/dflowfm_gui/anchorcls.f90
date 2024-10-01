@@ -30,6 +30,12 @@
 !
 !
 
+module m_anchorcls
+
+implicit none
+
+contains
+
       subroutine ANCHORCLS()
          use unstruc_colors
          use m_locatora
@@ -48,3 +54,5 @@
 
          return
       end
+
+end module m_anchorcls

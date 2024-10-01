@@ -30,10 +30,16 @@
 !
 !
 
+module m_dtekpenta
+
+implicit none
+
+contains
+
       subroutine DTEKPENTA(X1, Y1, Z1, X2, Y2, Z2, X3, Y3, Z3, X4, Y4, Z4, X5, Y5, Z5, NCOL, NCOLR)
          use m_three_two
          use m_pfiller
-         implicit none
+
          integer :: ncol
          integer :: ncolr
          double precision :: zz
@@ -47,3 +53,5 @@
          call PFILLER(XX, YY, 5, NCOL, NCOLR)
          return
       end
+
+end module m_dtekpenta

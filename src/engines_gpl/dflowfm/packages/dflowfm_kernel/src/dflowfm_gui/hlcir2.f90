@@ -30,6 +30,8 @@
 !
 !
 module m_hlcir2
+   use m_cir
+
    implicit none
 contains
       !> Draw a filled circle at current position.

@@ -32,6 +32,9 @@
 
 !> net orthogonalisation and smoothing
 subroutine ORTHOGONALISENET(jarerun)
+   use m_copynetnodestosam
+   use m_halt3
+   use m_confrm
    use m_netw
    use m_flowgeom, only: ndx, lnx
    use m_sferic

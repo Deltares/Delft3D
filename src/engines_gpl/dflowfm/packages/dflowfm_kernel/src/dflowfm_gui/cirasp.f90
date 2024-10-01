@@ -30,6 +30,12 @@
 !
 !
 
+module m_cirasp
+
+implicit none
+
+contains
+
    subroutine CIRasp(R)
       use unstruc_opengl
       implicit none
@@ -44,3 +50,5 @@
          call IGrCircleRel(real(R))
       end if
    end
+
+end module m_cirasp

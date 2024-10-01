@@ -31,13 +31,19 @@
 !
 
 !> Highlights net/flow nodes and/or links, when specified in display parameters.
+module m_highlight_nodesnlinks
+
+implicit none
+
+contains
+
 subroutine highlight_nodesnlinks()
-   use unstruc_display
-   use network_data
-   use m_flowgeom
+   use unstruc_display_data
+   use unstruc_colors, only: ncolhl
+   use network_data, only: numk, numl, kn, xk, yk
+   use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu
    use m_tek_link
    use m_cirr
-   implicit none
 
    if (nhlNetNode > 0 .and. nhlNetNode <= numk) then
       call cirr(xk(nhlNetNode), yk(nhlNetNode), ncolhl)
@@ -58,3 +64,5 @@ subroutine highlight_nodesnlinks()
    end if
 
 end subroutine highlight_nodesnlinks
+
+end module m_highlight_nodesnlinks

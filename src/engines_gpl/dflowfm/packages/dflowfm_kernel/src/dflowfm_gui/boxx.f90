@@ -30,6 +30,12 @@
 !
 !
 
+module m_boxx
+
+implicit none
+
+contains
+
       subroutine BOXX(X, Y, NCOL)
          use m_colnow
          use m_set_col
@@ -42,3 +48,5 @@
          if (NCOLNOW >= 0) call IGrMARKER(real(X), real(Y), 3)
          return
       end
+
+end module m_boxx

@@ -30,10 +30,17 @@
 !
 !
 
+module m_minmaxworld
+
+implicit none
+
+contains
+
       subroutine MINMAXWORLD(XMI, YMI, XMA, YMA)
          ! ASPECT RATIO VAN HET DEFAULTGEBIED GOED ZETTEN
-         use M_WEARELT
-         use m_sferic
+         use m_inqasp
+         use m_wearelt
+         
          double precision :: XMI, YMI, XMA, YMA, ASPECT, XC, YC, DY, dx
          XMIN = XMI
          YMIN = YMI
@@ -53,3 +60,5 @@
          call SETWYNEW(XC, YC, DY)
          return
       end
+
+end module m_minmaxworld

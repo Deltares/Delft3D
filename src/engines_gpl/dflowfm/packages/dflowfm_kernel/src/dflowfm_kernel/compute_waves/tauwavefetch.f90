@@ -31,6 +31,8 @@
 !
 
 module m_fetch_local_data
+use m_kcir
+
    logical, allocatable :: calculate_for(:)
    integer, allocatable :: list_of_upwind_cells(:), number_of_upwind_cells(:)
    double precision, allocatable :: data_at_upwind_cells(:, :)
@@ -163,6 +165,7 @@ end subroutine tauwavefetch
 
 !> calculates fetch length and depth
 subroutine calculate_fetch_values_for_all_wind_directions(total_nr_cells)
+   use m_arrowsxy
    use m_netw
    use m_flowgeom
    use m_flow
@@ -176,6 +179,7 @@ subroutine calculate_fetch_values_for_all_wind_directions(total_nr_cells)
    use m_sferic
    use m_fetch_local_data
    use m_set_col
+   use m_cls1
 
    implicit none
 

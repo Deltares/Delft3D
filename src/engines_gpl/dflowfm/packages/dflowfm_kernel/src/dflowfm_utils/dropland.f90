@@ -30,6 +30,8 @@
 !
 !
 module m_dropland
+use m_isocol
+
    implicit none
 contains
  !> Drop land *during* flow computation.

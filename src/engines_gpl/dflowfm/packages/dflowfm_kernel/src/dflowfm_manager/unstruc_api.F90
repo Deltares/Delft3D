@@ -30,6 +30,8 @@
 !
 !
 module unstruc_api
+   use m_plotnu
+   use m_choices
    use m_flowtimes
    use m_timer
    use m_flowgeom

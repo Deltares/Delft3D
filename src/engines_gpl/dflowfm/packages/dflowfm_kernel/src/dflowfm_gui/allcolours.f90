@@ -30,6 +30,12 @@
 !
 !
 
+module m_allcolours
+
+implicit none
+
+contains
+
       subroutine ALLCOLOURS()
          use m_wearelt
          use m_box_nop
@@ -75,3 +81,5 @@
          end do
          return
       end
+
+end module m_allcolours

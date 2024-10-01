@@ -30,16 +30,20 @@
 !
 !
 
+module m_minmxnetcells
+
+implicit none
+
+contains
+
 subroutine MINMXNETCELLS()
 
    use m_netw
-   use m_flowgeom
-   use m_missing
+   use m_flowgeom, only: xz, yz
+   use m_missing, only: dmiss
    use m_depmax
    use m_inview
    
-   implicit none
-
    integer :: i
    integer :: k
    double precision :: rd
@@ -79,3 +83,5 @@ subroutine MINMXNETCELLS()
 
    return
 end subroutine MINMXNETCELLS
+
+end module m_minmxnetcells

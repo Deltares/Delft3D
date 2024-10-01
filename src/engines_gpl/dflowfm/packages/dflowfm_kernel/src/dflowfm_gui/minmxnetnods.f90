@@ -30,15 +30,18 @@
 !
 !
 
+module m_minmxnetnods
+
+implicit none
+
+contains
+
   subroutine MINMXNETNODS()
      use m_netw
-     use m_missing
-     use unstruc_display
+     use m_missing, only: dmiss
      use m_depmax
      use m_inview
      
-     implicit none
-
      integer :: i, k
      double precision :: rd, rmax, rmin
 
@@ -75,3 +78,5 @@
 
      return
   end subroutine MINMXNETNODS
+
+end module m_minmxnetnods

@@ -31,6 +31,7 @@
 !
 
  subroutine setship()
+    use m_getshipcontrol
     use m_netw
     use m_flowgeom
     use m_flow

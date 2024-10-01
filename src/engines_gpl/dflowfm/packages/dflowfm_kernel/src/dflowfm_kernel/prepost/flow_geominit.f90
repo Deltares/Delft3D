@@ -31,6 +31,8 @@
 !
 
  subroutine flow_geominit(iphase) ! initialise flow geometry
+    use m_allocateandset2dnodexyarrays
+    use m_allocateandset1dnodexyarrays
     use m_netw
     use m_flowgeom
     use m_GlobalParameters, only: INDTP_2D

@@ -30,11 +30,18 @@
 !
 !
 
+module m_changenetworkparameters
+use m_filemenu
+
+implicit none
+
+contains
+
    subroutine changenetworkPARAMETERS()
-      use m_sferic
+      use m_sferic, only: jamidlat
       use network_data
-      use unstruc_display
-      use m_ec_triangle
+      use unstruc_colors
+      use unstruc_display_data
       use m_missing
       use dflowfm_version_module, only: company, product_name
       use unstruc_model, only: md_dryptsfile
@@ -42,8 +49,8 @@
       use m_save_keys
       use m_restore_keys
       use m_help
+      use m_highlight_form_line
 
-      implicit none
       integer :: i
       integer :: ierror
       integer :: ifexit
@@ -68,7 +75,6 @@
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
       character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
-      external :: highlight_form_line
 
       jins_old = jins
 
@@ -326,3 +332,5 @@
       goto 30
 
    end subroutine changenetworkPARAMETERS
+
+end module m_changenetworkparameters

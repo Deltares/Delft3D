@@ -30,10 +30,16 @@
 !
 !
 
+module m_disdep
+
+implicit none
+
+contains
+
       subroutine DISDEP(m, n, dep)
-         use m_devices
+         use m_devices, only: iws
          use m_ktext
-         implicit none
+
          double precision :: dep
          integer :: m
          integer :: n
@@ -50,3 +56,5 @@
 
          return
       end
+
+end module m_disdep
