@@ -12,15 +12,10 @@
 **/*.jar
 
 # Python
-.venv
-data/
-logs/
 **/__pycache__
 **/*.pyd
-**/.mypy_cache
-**/.pytest_cache
-**/.ruff_cache
 
 # Documents and other media
 **/*.doc
 **/*.pdf
+**/*.nc

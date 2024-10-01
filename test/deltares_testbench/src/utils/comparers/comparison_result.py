@@ -8,7 +8,7 @@ class ComparisonResult:
     - The coordinates in the table where the values were found.
     """
 
-    def __init__(self, error: bool =False) -> None:
+    def __init__(self, error: bool = False) -> None:
         self.passed = None
         self.error = error
         self.result = ""

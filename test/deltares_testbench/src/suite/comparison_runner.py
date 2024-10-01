@@ -266,7 +266,9 @@ class ComparisonRunner(TestSetRunner):
             )
             table["MaxAbsDiff"].append(w_cr.max_abs_diff if not is_ignored else "---")
             table["MaxRelDiff"].append(w_cr.max_rel_diff if not is_ignored else "---")
-            table["Information"].append("at coordinates" + str(w_cr.max_abs_diff_coordinates) if not is_ignored else "---")
+            table["Information"].append(
+                "at coordinates" + str(w_cr.max_abs_diff_coordinates) if not is_ignored else "---"
+            )
 
         log_table(table, logger)
         log_separator(logger)
