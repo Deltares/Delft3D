@@ -386,5 +386,6 @@ module spec_feat_par
       character( 20)           :: leeway_id         ! identifier of the leeway object
       real     ( sp)           :: leeway_multiplier ! leeway multiplier (factor)
       real     ( sp)           :: leeway_modifier   ! leeway modifier (correction)
+      real     ( sp)           :: leeway_modifier_rad ! leeway modifier (correction) for spherical models
       real     ( sp)           :: leeway_angle      ! leeway divergence angle
 end module spec_feat_par

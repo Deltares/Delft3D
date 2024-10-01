@@ -1170,10 +1170,11 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
    <!---                GROUP 8 - Leeway implementation
 
    e05_f08_leeway_fm_p900                e05_part/f08_leeway_fm/p900/p900.mdp
+   e05_f08_leeway_fm_p901                e05_part/f08_leeway_fm/p901/p901.mdp
 
    -->
         <testCase name="e05_f08_leeway_fm_p900" ref="part_default">
-                <path version="2024-09-12T12:15:00">e05_part/f08_leeway_fm/p900</path>
+                <path version="2024-09-30T14:38:00">e05_part/f08_leeway_fm/p900</path>
                 <checks>
                         <file name="p900.out" type="NUMBERTEXT">
                                 <skipline>|</skipline>
@@ -1188,6 +1189,31 @@ e05_f04_oil_c303_oil                      e05_part/f04_oil/c303_oil/p303.mdp
                                 </parameters>
                         </file>
                         <file name="p900_trk.nc" type="netCDF">
+                                <parameters>
+                                        <parameter name="particles_time" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="particles_x_coordinate" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="particles_y_coordinate" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                        <parameter name="particles_z_coordinate" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                </checks>
+        </testCase>
+        <testCase name="e05_f08_leeway_fm_p901" ref="part_default">
+                <path version="2024-10-01T08:49:00">e05_part/f08_leeway_fm/p901</path>
+                <checks>
+                        <file name="p901.out" type="NUMBERTEXT">
+                                <skipline>|</skipline>
+                                <skipline>Rewind</skipline>
+                                <skipline>.inp</skipline>
+                                <skipline>.out</skipline>
+                                <skipline>Actual date/time</skipline>
+                        </file>
+                        <file name="p901_map.nc" type="netCDF">
+                                <parameters>
+                                        <parameter name="mesh2d_S_CRAFT_M_NB3" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                                </parameters>
+                        </file>
+                        <file name="p901_trk.nc" type="netCDF">
                                 <parameters>
                                         <parameter name="particles_time" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
                                         <parameter name="particles_x_coordinate" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>

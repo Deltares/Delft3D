@@ -389,6 +389,7 @@ contains
         ypartold = ypart(ipart)
         mpartold = mpart(ipart)
         partdomain = mpart(ipart) == 0
+        leeway_ang_sign = 1.0
         !partdomain = .FALSE.    ! if false the particle is in the domain
         niter = 0
         cdrag = drand(3) / 100.0          !  wind drag as a fraction
@@ -398,6 +399,7 @@ contains
         elseif ( leeway ) then
             defang = leeway_angle  * twopi / 360.0    !  divergence angle when using leeway
             cdrag  = leeway_multiplier          !  windage (leeway), given as a fraction
+            leeway_modifier_rad = atan2(leeway_modifier, earth_radius) * raddeg_hp
         endif
   
         ! the next section is taken from the oildsp routine to allow access to the stickyness (if oilmod).
@@ -446,14 +448,14 @@ contains
             endif
 
             if (depthp .lt. max_wind_drag_depth) then
-                leeway_ang_sign = float(mod(ipart, 3) - 1)
+                if ( leeway ) leeway_ang_sign = float(mod(ipart, 3) - 1)
                 vxw  = - wvelo(mpart(ipart)) * sin( wdirr + leeway_ang_sign * defang )
                 vyw  = - wvelo(mpart(ipart)) * cos( wdirr + leeway_ang_sign * defang )
                 vw_net = sqrt((vxw-ux0)**2 + (vyw-uy0)**2)  ! net wind for drag (to accommodate scaling the modifier)
     !           drag on the difference vector: cd * (wind - flow)
-                if ( vw_net .gt. 0 ) then    ! if no net wind velocity (so no drag) then nothing will happen 
-                    dwx = ((cdrag*(vxw-ux0) + leeway_modifier * sin ((vxw-ux0)/vw_net))) * dts    ! THis modifier may need to be adjusted de to the angle
-                    dwy = ((cdrag*(vyw-uy0) + leeway_modifier * cos ((vyw-uy0)/vw_net))) * dts    !
+                if ( abs( vw_net .gt. 0 .and. leeway )) then    ! if no net wind velocity (so no drag) then nothing will happen 
+                    dwx = ((cdrag*(vxw-ux0old) + leeway_modifier * sin ((vxw-ux0old)/vw_net))) * dts    ! THis modifier may need to be adjusted de to the angle
+                    dwy = ((cdrag*(vyw-uy0old) + leeway_modifier * cos ((vyw-uy0old)/vw_net))) * dts    !
                 endif
             end if
         end if
@@ -467,10 +469,20 @@ contains
             zpartold = zpart(ipart)
             ux0old = atan2(ux0old, earth_radius) * raddeg_hp
             uy0old = atan2(uy0old, earth_radius) * raddeg_hp
-            dpxwind = - wvel_sf * sin(wdirr)  ! in degrees (radians). note that the direction is from the north and defined clockwise, 0 means no x displacement
-            dpywind = - wvel_sf * cos(wdirr)
+!            vw_net = atan2(vw_net, earth_radius) * raddeg_hp
+            wvel_sf = atan2(wvelo(mpart(ipart)), earth_radius) * raddeg_hp !wind magnitude in degrees/sec
+            dpxwind = - wvel_sf * sin(wdirr + leeway_ang_sign * defang )  ! in degrees (radians). note that the direction is from the north and defined clockwise, 0 means no x displacement
+            dpywind = - wvel_sf * cos(wdirr + leeway_ang_sign * defang )
             dwx = cdrag * (dpxwind - ux0old) * dts
             dwy = cdrag * (dpywind - uy0old) * dts
+            if ( apply_wind_drag .and. depthp .lt. max_wind_drag_depth .and. leeway) then
+!           drag on the difference vector: cd * (wind - flow)
+                if ( abs( wvel_sf .gt. 0 .and. leeway )) then    ! if no net wind velocity (so no drag) then nothing will happen 
+                    dwx = ((cdrag * (dpxwind - ux0old) + leeway_modifier_rad * sin ((dpxwind - ux0old)/vw_net))) * dts    ! THis modifier may need to be adjusted de to the angle
+                    dwy = ((cdrag * (dpywind - uy0old) + leeway_modifier_rad * cos ((dpywind - uy0old)/vw_net))) * dts    !
+                endif
+ 
+            endif
             call Cart3Dtospher(xpartold, ypartold, zpartold, xx(1), yy(1), ptref)
             xx(1) = xx(1) + dwx
             yy(1) = yy(1) + dwy
