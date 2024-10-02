@@ -41,7 +41,7 @@ module load intel/2022a
 #---You will need to modify the input below this line---
 
 # The root folder of the model, i.e. the folder that contains ALL of the input files and sub-folders:
-modelFolder=${PWD}
+modelFolder=${PWD} # You can use parent-directories relative to your current directory, e.g.: modelFolder=${PWD}/../../..
 
 # Or, for large models that generate a lot of output, copying the model to your scratch file space '/scratch-shared/<username>' and running from there might be faster.
 # See: https://servicedesk.surf.nl/wiki/display/WIKI/Snellius+filesystems#Snelliusfilesystems-Thescratchfilesystems
