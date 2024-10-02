@@ -61,7 +61,7 @@ subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uor
    Tsig = 0.5d0 * (twav(k1) + twav(k2))
    ustokes(Lb:Lt) = 0d0; vstokes(Lb:Lt) = 0d0
    ustokes(LL) = 0d0; vstokes(LL) = 0d0
-   
+
    if (tsig > 0.05d0) then
       omeg = twopi / tsig
    else
