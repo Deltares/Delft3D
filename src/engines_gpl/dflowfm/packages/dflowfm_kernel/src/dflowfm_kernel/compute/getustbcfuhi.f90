@@ -123,7 +123,7 @@
          if (jawave > 0 .and. .not. flowwithoutwaves) then
             ! get ustar wave squared, fw and wavedirection cosines based upon Swart, ustokes
             call getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu)
-            if (jawaveStokes >= 1) then
+            if (jawaveStokes > 0) then
                umod = sqrt((u1Lb - ustokes(Lb)) * (u1Lb - ustokes(Lb)) + (v(Lb) - vstokes(Lb)) * (v(Lb) - vstokes(Lb)))
             end if
          end if

@@ -367,8 +367,6 @@ subroutine update_verticalprofiles()
 
             ! Calculate turkin source from wave dissipation: preparation
             if (jawave > 0) then
-
-               !JRE with HK move out of subroutine getustb
                if (jawaveStokes > 0 .and. .not. flowWithoutWaves) then ! Ustokes correction at bed
                   adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                end if
